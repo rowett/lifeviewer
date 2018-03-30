@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>MAP too few characters</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = MAP3141592653589793238462643383279502884197169399375105820974944592307816406286208998628
+o!
+#C [[ AUTOSTART AUTOFIT ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>MAP too many characters</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = MAP314159265358979323846264338327950288419716939937510582097494459230781640628620899862803
+o!
+#C [[ AUTOSTART AUTOFIT ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>MAP illegal base64 character</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = MAP3!415926535897932384626433832795028841971693993751058209749445923078164062862089986280
+o!
+#C [[ AUTOSTART AUTOFIT ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

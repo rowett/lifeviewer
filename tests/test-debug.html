@@ -1,0 +1,2312 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Crash also</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+##MikeP 2 (dimer)
+.C$C.A.2A$.2A.A2.A$3.A2.2A$.2A$.A4.2A$3.A.A.A$2.2A.2A!
+6.C$2.2A.A.C$A2.A.2A$2A2.A$5.2A$2A4.A$A.A.A$.2A.2A!
+.2A.2A$A.A.A$2A4.A$5.2A$2A2.A$A2.A.2A$2.2A.A.C$6.C!
+2.2A.2A$3.A.A.A$.A4.2A$.2A$3.A2.2A$.2A.A2.A$C.A.2A$.C!
+
+##MikeP 2 (tetramer)
+.C$C.A.2A$.2A.A2.A$3.A2.2A$.2A5.2A$.A6.A$3.A6.A$2.2A5.2A$4.2A2.A$4.A
+2.A.2A$6.2A.A.C$10.C!
+10.C$6.2A.A.C$4.A2.A.2A$4.2A2.A$2.2A5.2A$3.A6.A$.A6.A$.2A5.2A$3.A2.2A
+$.2A.A2.A$C.A.2A$.C!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Crash?</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#S max-active 12
+#S first-encounter 6
+#S max-live 95
+#P 0 0
+.
+.
+..???????????????????????????????????
+..???????????????????????????????????
+..???????????????????????????????????
+..?????????......????????????????????
+..?????????.@@@..????????????????????
+..?????????..@...????????????????????
+..?????????..@@@.????????????????????
+..?????????......????????????????????
+..???????????????????????????????????
+..???????????????????????????????????
+..???????????????????????????????????
+..???????????????????????????????????
+..???????????????????????????????????
+..???????????????????????????????????
+..???????????????????????????????????
+..???????????????????????????????????
+..???????????????????????????????????
+#F 127 17 14
+@@@
+@.@
+@.@
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Rule names</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 13, y = 5, rule = 2x2
+3ob2ob2ob3o$bo2bo2bo3bo$bo2b2ob2o2bo$bo2bo3bo2bo$bo2b2ob2o2bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Colour names</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C B/S format is assumed
+#C [[ COLOUR ALIVE Red COLOUR DEAD Blue COLOUR ALIVERAMP 260 COLOUR DEADRAMP ZOOM 6 COLOUR BACKGROUND peachy ]]
+#C [[ COLOR TEXT green ]]
+x = 13, y = 5, rule = 23/3
+3ob2ob2ob3o$bo2bo2bo3bo$bo2b2ob2o2bo$bo2bo3bo2bo$bo2b2ob2o2bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Double slash rule</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C generations rules are played ignoring extra states and with B/S flipped
+x = 13, y = 5, rule = 12/34/3
+ABA.AB.BA.ABA$.A2.B2.A3.A$.B2.AB.BA2.B$.A2.B3.B2.A$.B2.AB.BA2.B!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Rule order no B/S</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C B/S format is assumed
+x = 13, y = 5, rule = 23/3
+3ob2ob2ob3o$bo2bo2bo3bo$bo2b2ob2o2bo$bo2bo3bo2bo$bo2b2ob2o2bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Rule name lowercase life</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C I think this should be accounted for as well
+x = 13, y = 5, rule = life
+3ob2ob2ob3o$bo2bo2bo3bo$bo2b2ob2o2bo$bo2bo3bo2bo$bo2b2ob2o2bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Two state extended format Life</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C your call - I've only seen one user posting RLEs in this format, so it's probably not worth handling
+x = 13, y = 5, rule = Life
+3A.2A.2A.3A$.A2.A2.A3.A$.A2.2A.2A2.A$.A2.A3.A2.A$.A2.2A.2A2.A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		<h2>LifeHistory overlay test 2</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C B/S format is assumed
+x = 13, y = 5, rule = 23/3
+3ob2ob2ob3o$bo2bo2bo3bo$bo2b2ob2o2bo$bo2bo3bo2bo$bo2b2ob2o2bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C [[ THEME 10 ]]
+x = 156, y = 80, rule = LifeHistory
+18.A4.2A8.A110.4B$17.A.A2.A.A6.3A109.4B$16.A2.4A7.A101.2A8.4B$16.A.A
+4.A6.2A96.A.A2.A7.4B3.A$15.2A.2A2.2A4.4B94.3A.2A8.4B3.A.A$13.A4.B3.4B
+.3B95.A4.B8.4B4.A.A$10.A2.4AB2AB3.6B92.A2.4AB2AB5.4B4.2A.2A$10.3A3.A.
+2AB.7B.B91.3A3.A.2AB.2B.4B6.B$13.A4.14B93.A4.10B6.2AB2A3.2A$12.2AB4.
+12B3.2B88.2AB4.9B6.2A.A.A.A.A$12.5B.20B86.5B.12B3.4B2.A.A$14.25B87.
+23B.2A.2A$12.28B84.25B$12.28B84.25B$11.28B84.27B$11.28B84.27B$12.26BD
+B84.25B$11.25B3DB83.21B.4B.2B2.2A$9.20B2.5BDBD82.20B5.3B2ABA2.A$7.19B
+5.5BD82.19B10.ABAB3A$7.2BE16B5.5B83.2BC16B10.A.A$6.3BEBE4B.9B6.3B83.
+3BCBC4B.9B8.3A.5A$7.2B3E4B2.7B94.2B3C4B2.7B8.A3.A4.A$6.5BE4B3.5B94.5B
+C4B3.5B9.2A2.A.A$5.10B5.4B93.10B5.3B15.2A$4.4B10.4B.B2A90.4B10.7B$4.
+3B11.2A3.BA.A88.4B11.2A.B.2A$2.4B13.A6.A104.A3.A$2.2A12.3A7.2A100.3A
+5.3A$3.A12.A111.A9.A$3A$A19$19.2A$16.2A2.A$14.3A.2A8.2B$13.A4.B8.3B$
+10.A2.4AB2AB5.5B$10.3A3.A.2AB.2B.6B$13.A4.14B$12.2AB4.14B7.2A$12.5B.
+15B7.A$14.22B.BA.A$12.24B.B2A$12.26B$11.27B$11.27B$12.20BD2B2D$11.20B
+2.3D$9.20B5.D$7.19B$7.2BE16B$6.3BEBE4B.9B$7.2B3E4B2.7B$6.5BE4B3.5B$5.
+10B5.3B$4.4B10.7B$4.3B11.2A.B.2A$2.4B13.A3.A$2.2A12.3A5.3A$3.A12.A9.A
+$3A$A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>LifeHistory overlay test 1</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C [[ THEME 10 ]]
+x = 140, y = 83, rule = LifeHistory
+45.2D3.2D41.2D3.2D$44.D2.D.D2.D39.D2.D.D2.D$46.D2.D2.D35.3D3.D2.D2.D$
+45.D3.D2.D40.D3.D2.D$44.4D2.2D40.4D2.2D2$40.D3.2D53.D3.2D$39.2D2.D2.D
+9.3A23.3A13.2D2.D2.D$3D.6D.3D26.D2.D2.D9.A3B21.3BA9.3D2.D2.D2.D21.3D.
+9D$.2D2.D2.D3.D27.D2.D2.D10.A2BA19.A2BA15.D2.D2.D22.2D2.D2.D3.D$.2D2.
+D2.D3.D26.3D2.2D12.4B17.4B15.3D2.2D23.2D2.D2.D.D$.D.D.D2.D.D.D46.A2BA
+15.A2BA46.D.D.D2.3D$.D.D.D2.D.D.D25.2D11.3A6.4B13.4B6.3A11.2D25.D.D.D
+2.D.D$.D.D.D2.D.D.D24.D2.D10.A3B6.A2BA11.A2BA6.3BA10.D2.D24.D.D.D2.D$
+.D2.2D2.D.D.D24.D2.D11.A2BA6.4B9.4B6.A2BA11.D2.D24.D2.2D2.D3.D$3D.2D
+3.D.D25.D2.D12.4B6.A2BA7.A2BA6.4B12.D2.D23.3D.2D.6D$38.2D14.A2BA6.4B
+5.4B6.A2BA14.2D$46.3A6.4B6.A2BA3.A2BA6.4B6.3A$28.D3.2D12.A3B6.A2BA6.
+3B2.4B6.A2BA6.3BA12.D3.2D$27.2D2.D2.D12.A2BA6.4B6.AB3.BA6.4B6.A2BA12.
+2D2.D2.D$23.3D2.D2.D2.D13.4B6.A2BA17.A2BA6.4B14.D2.D2.D$28.D2.D2.D14.
+A2BA6.4B15.4B6.A2BA15.D2.D2.D$27.3D2.2D7.3A6.4B6.A2BA13.A2BA6.4B6.3A
+6.3D2.2D$41.A3B6.A2BA6.4B11.4B6.A2BA6.3BA$21.2D3.2D14.A2BA6.4B6.AB13.
+BA6.4B6.A2BA14.2D3.2D$20.D2.D.D2.D14.4B6.A2BA27.A2BA6.4B14.D2.D.D2.D$
+16.3D3.D2.D2.D15.A2BA6.4B25.4B6.A2BA17.D2.D2.D$21.D3.D2.D7.3A6.4B6.A
+2BA23.A2BA6.4B6.3A8.D3.D2.D$20.4D2.2D8.A3B6.A2BA6.4B21.4B6.A2BA6.3BA
+7.4D2.2D$37.A2BA6.4B6.A2BA19.A2BA6.4B6.A2BA$38.4B6.A2BA6.4B17.4B6.A2B
+A6.4B$39.A2BA6.4B6.A2BA15.A2BA6.4B6.A2BA$40.4B6.A2BA6.4B13.4B6.A2BA6.
+4B$41.A2BA6.4B6.A2BA11.A2BA6.4B6.A2BA$42.4B6.AB8.4B9.4B8.BA6.4B$43.A
+2BA16.A2BA7.A2BA16.A2BA$44.4B16.4B5.4B16.4B$45.A2BA16.AB7.BA16.A2BA$
+46.4B41.4B$47.AB43.BA$69.3D20.B$70.CD$69.3D$47.AB43.BA$46.4B41.4B$45.
+A2BA16.AB7.BA16.A2BA$44.4B16.4B5.4B16.4B$43.A2BA16.A2BA7.A2BA16.A2BA$
+42.4B6.AB8.4B9.4B8.BA6.4B$41.A2BA6.4B6.A2BA11.A2BA6.4B6.A2BA$40.4B6.A
+2BA6.4B13.4B6.A2BA6.4B$39.A2BA6.4B6.A2BA15.A2BA6.4B6.A2BA$38.4B6.A2BA
+6.4B17.4B6.A2BA6.4B$37.A2BA6.4B6.A2BA19.A2BA6.4B6.A2BA$21.2D3.2D8.A3B
+6.A2BA6.4B21.4B6.A2BA6.3BA8.2D3.2D$20.D2.D.D2.D7.3A6.4B6.A2BA23.A2BA
+6.4B6.3A7.D2.D.D2.D$16.3D3.D2.D2.D15.A2BA6.4B25.4B6.A2BA17.D2.D2.D$
+21.D3.D2.D14.4B6.A2BA27.A2BA6.4B15.D3.D2.D$20.4D2.2D14.A2BA6.4B6.AB
+13.BA6.4B6.A2BA13.4D2.2D$41.A3B6.A2BA6.4B11.4B6.A2BA6.3BA$28.D3.2D7.
+3A6.4B6.A2BA13.A2BA6.4B6.3A7.D3.2D$27.2D2.D2.D14.A2BA6.4B15.4B6.A2BA
+14.2D2.D2.D$23.3D2.D2.D2.D13.4B6.A2BA17.A2BA6.4B14.D2.D2.D$28.D2.D2.D
+12.A2BA6.4B6.AB3.BA6.4B6.A2BA13.D2.D2.D$27.3D2.2D12.A3B6.A2BA6.4B.4B
+6.A2BA6.3BA11.3D2.2D$46.3A6.4B6.A2BA3.A2BA6.4B6.3A$38.2D14.A2BA6.4B5.
+4B6.A2BA14.2D$2.4D.3D.3D23.D2.D12.4B6.A2BA7.A2BA6.4B12.D2.D25.4D.6D$.
+D3.D2.D3.D24.D2.D11.A2BA6.4B9.4B6.A2BA11.D2.D24.D3.D2.D3.D$.D6.D3.D
+24.D2.D10.A3B6.A2BA11.A2BA6.3BA10.D2.D24.D6.D.D$2.3D3.D.D.D25.2D11.3A
+6.4B13.4B6.3A11.2D26.3D3.3D$5.D2.D.D.D46.A2BA15.A2BA50.D2.D.D$5.D2.D.
+D.D27.D3.2D12.4B17.4B16.D3.2D27.D2.D$.D3.D2.D.D.D26.2D2.D2.D10.A2BA
+19.A2BA14.2D2.D2.D22.D3.D2.D3.D$.4D4.D.D28.D2.D2.D9.A3B21.3BA9.3D2.D
+2.D2.D22.4D2.6D$40.D2.D2.D9.3A23.3A14.D2.D2.D$39.3D2.2D52.3D2.2D2$45.
+2D3.2D41.2D3.2D$44.D2.D.D2.D39.D2.D.D2.D$46.D2.D2.D35.3D3.D2.D2.D$45.
+D3.D2.D40.D3.D2.D$44.4D2.2D40.4D2.2D!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Missing S value</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 13, y = 5, rule = B1/S
+3ob2ob2ob3o$bo2bo2bo3bo$bo2b2ob2o2bo$bo2bo3bo2bo$bo2b2ob2o2bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>NOSTEPBACK</h2>
+		<h2>Missing B value</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 13, y = 5, rule = B/S1
+3ob2ob2ob3o$bo2bo2bo3bo$bo2b2ob2o2bo$bo2bo3bo2bo$bo2b2ob2o2bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>No B or S but S value</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 13, y = 5, rule = /1
+3ob2ob2ob3o$bo2bo2bo3bo$bo2b2ob2o2bo$bo2bo3bo2bo$bo2b2ob2o2bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>No B or S but B value</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 13, y = 5, rule = 1/
+3ob2ob2ob3o$bo2bo2bo3bo$bo2b2ob2o2bo$bo2bo3bo2bo$bo2b2ob2o2bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>No B or S</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 13, y = 5, rule = /
+3ob2ob2ob3o$bo2bo2bo3bo$bo2b2ob2o2bo$bo2bo3bo2bo$bo2b2ob2o2bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>NOSTEPBACK</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 3, y = 3, rule=B3/S23
+b2o$obo$2bo!
+[[ NOSTEPBACK ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>No space around rule inverts birth and survival</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 3, y = 3, rule=B3/S23
+b2o$obo$2bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>LifeHistory rule should execute</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 258, y = 110, rule = LifeHistory
+70.12D$67.17D$65.8D6.5D$64.6D12.2D$63.6D$62.5D$61.5D$60.6D$60.5D$59.
+5D53.5D.8D7.9D13.9D14.9D$59.5D26.4D12.5D6.14D5.13D9.13D10.13D$59.5D
+26.4D12.5D6.9D2.3D4.5D4.5D7.7D3.6D8.5D4.5D$58.5D27.4D12.5D6.8D9.5D7.
+3D7.5D6.6D6.5D7.3D$58.5D27.4D12.5D6.7D9.5D17.5D8.5D5.5D$58.5D27.4D12.
+5D6.6D10.5D16.5D10.5D4.5D$58.5D27.4D12.5D6.6D10.5D16.4D11.5D4.5D$58.
+5D27.4D12.5D6.6D10.5D15.5D12.4D4.5D$58.5D27.4D12.5D6.5D11.5D15.5D12.
+5D3.5D$58.5D27.4D12.5D6.5D12.5D14.4D13.5D4.5D$58.5D27.4D12.5D6.5D12.
+6D13.4D13.5D4.6D$58.5D27.4D12.5D6.5D13.7D10.23D5.7D$58.5D27.4D12.5D6.
+5D14.8D8.23D6.8D$58.5D27.4D12.5D6.5D16.8D6.5D26.8D$59.5D26.4D12.5D6.
+5D18.7D5.5D28.7D$59.5D26.4D12.5D6.5D20.6D5.4D30.6D$59.6D25.4D12.5D6.
+5D22.5D4.4D32.5D$60.5D25.5D11.5D6.5D22.5D4.5D31.5D$61.5D24.5D11.5D6.
+5D23.4D4.5D32.4D$61.6D23.5D10.6D6.5D23.4D4.5D32.4D$62.6D22.5D10.6D6.
+5D23.4D5.5D31.4D6.5D$63.7D11.3D7.5D8.7D6.5D22.5D5.6D10.4D15.5D5.5D$
+65.7D6.6D7.6D6.8D6.5D11.3D8.5D6.6D8.5D4.3D8.5D5.5D$66.18D8.6D3.10D6.
+5D11.6D3.6D8.7D3.7D5.6D3.6D6.4D$69.12D12.18D6.5D11.14D10.15D6.14D6.5D
+$95.9D31.10D14.10D11.10D8.5D$198.4D$197.5D$197.5D$197.4D$197.4D24$8.
+8A40.5A48.5C$7.9A40.5A48.5C$6.5A2.3A29.5A6.5A48.5C98.5A35.5A$5.5A35.
+6A5.5A48.5C98.6A34.5A$5.5A35.6A5.5A48.5C98.6A34.5A$5.4A36.5A6.5A48.5C
+98.5A35.5A$4.5A47.5A48.5C138.5A$4.5A47.5A48.5C138.5A$4.5A47.5A48.5C
+138.5A$4.5A47.5A48.5C138.5A$4.5A47.5A48.5C138.5A$4.5A14.10A23.5A12.9A
+16.9C2.5C25.10A16.9C18.10A29.8A13.5A$15A6.14A10.5A6.5A10.13A12.18C23.
+13A13.18C9.13A9.5A6.5A.12A11.5A$15A5.6A4.7A8.5A6.5A8.7A3.6A10.6C3.10C
+21.7A3.6A11.6C3.10C7.7A3.6A8.5A6.10A3.6A10.5A$4.5A10.5A8.6A7.5A6.5A8.
+5A6.6A8.5C7.8C21.5A7.5A9.5C7.8C7.5A7.5A7.5A6.8A7.5A9.5A$4.5A9.5A10.5A
+7.5A6.5A7.5A8.5A7.5C9.7C21.3A10.5A7.5C9.7C7.3A10.5A6.5A6.7A8.5A9.5A$
+4.5A8.5A12.5A6.5A6.5A6.5A10.5A5.5C11.6C34.5A6.5C11.6C20.5A6.5A6.6A10.
+5A8.5A$4.5A8.5A13.4A6.5A6.5A6.4A11.5A5.5C11.6C34.5A6.4C13.5C20.5A6.5A
+6.6A10.5A8.5A$4.5A7.5A14.5A5.5A6.5A5.5A12.4A4.5C13.5C35.4A5.5C13.5C
+21.4A6.5A6.5A11.5A8.5A$4.5A7.5A14.5A5.5A6.5A5.5A12.5A3.5C13.5C35.4A5.
+5C13.5C21.4A6.5A6.5A12.4A8.5A$4.5A7.4A16.4A5.5A6.5A5.4A13.5A3.4C14.5C
+35.4A5.4C14.5C21.4A6.5A6.5A12.4A8.5A$4.5A7.4A16.4A5.5A6.5A5.4A13.5A3.
+4C14.5C31.8A5.4C14.5C17.8A6.5A6.5A12.4A8.5A$4.5A6.5A16.5A4.5A6.5A4.
+23A2.5C14.5C26.13A4.5C14.5C12.13A6.5A6.5A12.4A8.5A$4.5A6.5A16.5A4.5A
+6.5A4.23A2.5C14.5C23.11A.4A4.5C14.5C9.11A.4A6.5A6.5A12.4A8.5A$4.5A6.
+5A16.5A4.5A6.5A4.5A20.5C14.5C21.7A7.4A4.5C14.5C7.7A7.4A6.5A6.5A12.4A
+8.5A$4.5A6.5A16.5A4.5A6.5A4.5A20.5C14.5C20.5A10.4A4.5C14.5C6.5A10.4A
+6.5A6.5A12.4A8.5A$4.5A7.4A16.4A5.5A6.5A5.4A20.5C14.5C20.4A11.4A5.4C
+14.5C6.4A11.4A6.5A6.5A12.4A$4.5A7.4A16.4A5.5A6.5A5.4A21.4C14.5C19.5A
+11.4A5.4C14.5C5.5A11.4A6.5A6.5A12.4A$4.5A7.5A14.5A5.5A6.5A5.5A20.5C
+13.5C19.5A10.5A5.5C13.5C5.5A10.5A6.5A6.5A12.4A$4.5A7.5A14.5A5.5A6.5A
+5.5A20.5C13.5C19.4A11.5A5.5C12.6C5.4A11.5A6.5A6.5A12.4A$4.5A8.5A13.4A
+6.5A6.5A5.5A20.5C12.6C19.5A10.5A6.5C11.6C5.5A10.5A6.5A6.5A12.4A$4.5A
+8.5A12.5A6.5A6.5A6.5A20.5C11.6C19.5A9.6A6.5C10.7C5.5A9.6A6.5A6.5A12.
+4A$4.5A9.5A10.5A7.5A6.5A6.6A10.4A5.6C9.7C19.5A8.7A7.6C7.8C5.5A8.7A6.
+5A6.5A12.4A8.5A$4.5A10.5A8.5A8.5A6.5A7.6A8.5A6.6C7.8C20.5A6.8A8.6C4.
+10C6.5A6.8A6.5A6.5A12.4A7.7A$4.5A11.6A4.7A8.5A6.5A8.7A3.7A8.6C4.10C
+20.6A3.10A9.19C6.6A3.10A6.5A6.5A12.4A7.7A$4.5A12.14A10.5A6.5A9.15A10.
+13C.5C21.12A2.4A11.9C3.5C7.12A2.4A6.5A6.5A12.4A8.5A$23.10A39.10A15.9C
+31.9A30.5C9.9A$176.5C$176.5C$175.5C$175.5C$174.6C$174.5C$159.4C9.6C$
+159.6C5.7C$160.16C$163.10C!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Hex rule should not execute</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 4, y = 4, rule = B245/S35H
+b3o$bobo$4o$bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>WOW!</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C [[ THEME 9 LAYERS 4 DEPTH 2 ANGLE 5 ZOOM 10 ]]
+#C [[ AUTOSTART LOOP 5 GPS 5 ]]
+x = 48, y = 30, rule = B8/S678
+48A$48A$48A$48A$48A$48A$6A36.6A$6A36.6A$6A36.6A$6A36.6A$6A4.A5.A4.2A
+4.A5.A3.A4.6A$6A4.A5.A3.A2.A3.A5.A3.A4.6A$6A4.A5.A2.A4.A2.A5.A3.A4.6A
+$6A4.A5.A2.A4.A2.A5.A3.A4.6A$6A4.A5.A2.A4.A2.A5.A3.A4.6A$6A4.A5.A2.A
+4.A2.A5.A3.A4.6A$6A4.A2.A2.A2.A4.A2.A2.A2.A3.A4.6A$6A4.A.A.A.A2.A4.A
+2.A.A.A.A3.A4.6A$6A4.2A3.2A3.A2.A3.2A3.2A8.6A$6A4.A5.A4.2A4.A5.A3.A4.
+6A$6A36.6A$6A36.6A$6A36.6A$6A36.6A$48A$48A$48A$48A$48A$48A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Search decoration</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 897, y = 903
+2o$2o4$3o$o$bo8$21b3o$21bo$22bo28$17b3o$17bo$18bo8$38b3o$38bo$39bo28$
+34b3o$34bo$35bo8$55b3o$55bo$56bo28$72b3o$72bo$73bo8$91b3o$91bo$92bo8$
+104b3o$104bo$105bo28$119b2o$118b2o$120bo8$149b2o$148b2o$150bo18$179b2o
+$178b2o$180bo33$212b3o$212bo$213bo28$250b3o$250bo$251bo28$281b3o$281bo
+$282bo28$285b3o$285bo$286bo28$315b3o$315bo$316bo28$360b3o$360bo$361bo
+28$375b3o$375bo$376bo28$412b2o$411b2o$413bo28$435b2o$434b2o$436bo8$
+493b3o$493bo$494bo28$519b3o$519bo$520bo28$551b3o$551bo$552bo28$574b3o$
+574bo$575bo28$615b2o$614b2o$616bo48$654b3o$654bo$655bo28$687b3o$687bo$
+688bo28$724b3o$724bo$725bo28$753b2o$752b2o$754bo28$787b3o$787bo$788bo
+28$803b2o$802b2o$804bo28$836b2o$835b2o$837bo28$865b2o$864b2o$866bo28$
+894b3o$894bo$895bo!
+[[ STEP 8 ZOOM 4 X 445 Y 415 PAUSE 2 &quot;<span class="posthilit">loaf2GtoG</span> slow salvo\n35 gliders total&quot; LOOP 4000 COLOR TEXT Pink ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>No Viewer?</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 4, y = 7, rule = B3678/S23
+2o$2o$2o2$2b2o2$b2o$2b2o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Alpha-1 Colours</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 41, y = 45, rule = Alpha-1
+36.C$34.C5.A7$34.C5.A7$34.C$18.D8.D12.A$35.C2$15.C9.C2$36.C$40.A$34.C
+2$36.C$40.A$33.C5$11.A2$A5$.D2$13.A3$2.A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Zoom, waypoints and thumbnail</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C [[ PAUSE 2 AUTOSTART THUMBNAIL ZOOM 18 LOOP 120 WIDTH 656 ]]
+x = 29, y = 10, rule = B3/S23
+4bo$4bo$4bo15bo$b4obo3bo2b3o2b2obo2bob2o$o3bobo3bobo3bobo3bob2o2bo$o3b
+obo3bobo3bobo5bo3bo$o3bo2bobo2bo3bobo5bo3bo$b4o3bo4b4obo5bo3bo$16bo$
+12b4o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Mites colour set</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 38, y = 10, rule = Mites
+$12.2E.2E$8.E.E5.E$10.E.2E$.DA9.E22.AD$13.E$5.E4.E5.E$5.2E3.2E3.2E$
+14.2E!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>STEP after last waypoint</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 897, y = 903, rule = B3/S23
+2o$2o4$3o$o$bo8$21b3o$21bo$22bo28$17b3o$17bo$18bo8$38b3o$38bo$39bo28$
+34b3o$34bo$35bo8$55b3o$55bo$56bo28$72b3o$72bo$73bo8$91b3o$91bo$92bo8$
+104b3o$104bo$105bo28$119b2o$118b2o$120bo8$149b2o$148b2o$150bo18$179b2o
+$178b2o$180bo33$212b3o$212bo$213bo28$250b3o$250bo$251bo28$281b3o$281bo
+$282bo28$285b3o$285bo$286bo28$315b3o$315bo$316bo28$360b3o$360bo$361bo
+28$375b3o$375bo$376bo28$412b2o$411b2o$413bo28$435b2o$434b2o$436bo8$
+493b3o$493bo$494bo28$519b3o$519bo$520bo28$551b3o$551bo$552bo28$574b3o$
+574bo$575bo28$615b2o$614b2o$616bo48$654b3o$654bo$655bo28$687b3o$687bo$
+688bo28$724b3o$724bo$725bo28$753b2o$752b2o$754bo28$787b3o$787bo$788bo
+28$803b2o$802b2o$804bo28$836b2o$835b2o$837bo28$865b2o$864b2o$866bo28$
+894b3o$894bo$895bo!
+[[ AUTOSTART GPS 10 T 0 STEP 8 ZOOM 16 X 450 Y 450 PAUSE 5 "loaf2GtoG slow salvo\n35 gliders total" ]]
+[[ T 1000 ZOOM 8 X 445 Y 415 ]]
+[[ T 3600 ZOOM 4 X 445 Y 415 ]]
+[[ LOOP 4000 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>B0 with S8 rule and AUTOFIT not at waypoint</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 3, y = 3, rule = B0123478/S01234678
+bo$2bo$3o!
+[[ AUTOFIT ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>B0 no S8 rule with AUTOFIT overrides</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 16, y = 37, rule = B017/S01
+4bo$2bo3bo$6bo$4bo$bo$obo$4bo$6bo$6bo$4bo6$11bo$13bo$o12bo$2bo8bo$2bo$
+o$13bo$11bo3bo$15bo$13bo$10bo$9bobo$13bo$3bo11bo$5bo9bo$5bo7bo$3bo2$3b
+o$5bo$5bo$3bo!
+[[ T 0 AUTOFIT X 10
+T 100 AUTOFIT Y 20
+T 200 AUTOFIT ZOOM 3
+T 300 AUTOFIT X 10 Y 20
+T 400 AUTOFIT X 10 ZOOM 3
+T 500 AUTOFIT X 10 Y 20 ZOOM 3
+T 600 AUTOFIT X 10 ZOOM 3
+T 700 AUTOFIT Y 20 ZOOM 3 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Double space after double brackets</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C if double space after double brackets, script is silently ignored
+x = 244, y = 228, rule = B3/S23
+222b2o$222b2o4$242b2o$242b2o4$211b2o$211b2o6$238b2o$238bobo$239bo$231b
+2o$231b2o19$206b3o$208bo$207bo18$190b3o$192bo$191bo18$180b2o$181b2o$
+180bo18$145b3o$147bo$146bo18$122b2o$123b2o$122bo32$62b2o$61bobo$63bo
+10$40b2o$39bobo$41bo25$20b3o$22bo$21bo30$b2o$obo$2bo!
+#C [[  ZOOM 2 PAUSE 2 AUTOSTART STEP 4 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>DEPTH check</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C [[ AUTOSTART STOP 500 ZOOM 3 THEME 2 DEPTH 2.5 LAYERS 5 ANGLE 135 GPS 30 ]]
+#C soup producing a (known) p156 multi-glider shotgun,
+#C found by Dongook Lee, 9 January 2015
+#C http://www.conwaylife.com/forums/viewto ... 200#p15913
+x = 32, y = 32, rule = B3/S23
+2o2bo2b3o7b3obobo2bo3b2o$2ob2o2b2o2b3o4b11ob2o$10bo2bo3b4o2b3o2bo$bob
+4obobob3o2bobobob2ob5o$2ob3o4bo3bob2ob4o2b4obo$3b2ob2obo2b3ob3o2bo2bo
+2b2ob2o$3bob2ob2obo8bo2b3obob2o$2o3bo2b2o3b3o9b2ob3o$2obo2b7o2b3ob5obo
+2b4o$o4b4o2bob2obo2b2o2bo3bo2bo$2b3o3bobo3bobob2obobo2b3ob2o$bo4bob2ob
+2o3bob3ob2obobob2o$bobobo2bo2bobo2bo3b4o3b5o$b3obobobo2b2o2bobob2o4bo
+2b3o$3b3obob2o3b4o5bo2b4obo$7b2o5b10o2b2o$4b2o2b10o5b2o$ob4o2bo5b4o3b
+2obob3o$3o2bo4b2obobo2b2o2bobobob3o$5o3b4o3bo2bobo2bo2bobobo$b2obobob
+2ob3obo3b2ob2obo4bo$2ob3o2bobob2obobo3bobo3b3o$bo2bo3bo2b2o2bob2obo2b
+4o4bo$4o2bob5ob3o2b7o2bob2o$b3ob2o9b3o3b2o2bo3b2o$b2obob3o2bo8bob2ob2o
+bo$2ob2o2bo2bo2b3ob3o2bob2ob2o$bob4o2b4ob2obo3bo4b3ob2o$b5ob2obobobo2b
+3obobob4obo$3bo2b3o2b4o3bo2bo$2ob11o4b3o2b2o2b2ob2o$2o3bo2bobob3o7b3o
+2bo2b2o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>LOOP restart speed</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C pseudo p53 = pseudo p49_1
+x = 192, y = 59, rule = B3/S23
+41bo11b2o98bo11b2o$40bobo10b2o97bobo10b2o$32bo3b2o2bobo101bo3b2o2bobo$
+31bobo2bo2b2ob2o99bobo2bo2b2ob2o$17b2o12bobo3bobo37b2o50b2o12bobo3bobo
+$18bo13bob4o2bob2o33b2o22b2o27bo13bob4o2bob2o$18bobo13bo3bobob2o57bo
+28bobo13bo3bobob2o$19b2o12bo3bobo62bo11bo16b2o12bo3bobo$32bo3bobo62b2o
+9b3o29bo3bobo$32b2o3bo73bo32b2o3bo9bo$5b2o41b2o61b2o10b2o10b2o18bob4o$
+5b2o38b2o25b2o23bo25bo32b2ob3o$44b3o2bo22b2o22bo2bo21bobo33bo$43bobob
+2o47bo24b2o$42b2o2b2o51bo$43b4o13b2o26b3o6b2o73b2o$44b3o12bo2bo25bo6bo
+b2obo70bo2bo$2o58b2obo24bobo7bob2o70b2obo$2o61bo25b2o3bo2b3ob2o72bo$
+63b2o30bo4bo74b2o$6b2o2bobo35b2o74b2o3bo30b2o$5bo2b2o2bo36bo73bob2obo
+3bo28bo$5bo2b2o10b2o24b3o73b2o4bobo2bo24b3o$5bobo2b2o8b2o11b2o11bo54bo
+5b2o14b2o2b3o2b2o11b2o11bo$33bo26b2o37b3o6bo18b2o16bo$34b3o22b2o37bo6b
+3o38b3o$36bo24bo36b2o5bo42bo2$175b3o$43bo42bo68bo19bo$43b3o38b3o11bo
+56b3o18bo$46bo36bo12bobo59bo$33bo11bo12b2o23b2o12b2o46bo11b2o11b2o$31b
+3o11bo3b3o6b2o83b3o24b2o$30bo19b4o88bo$30b2o15bob2ob2o88b2o$15b2o32bo
+2bob2o31bo39b2o30b2o$16bo31b2obo3b2o29bobo39bo28b3ob2o27b2o$16bob2o28b
+2obobobo28b2o3bo38bob2o25bobob2o27b2o$17bo2bo31b3o29b2o9b2o32bo2bo6bob
+o13b2obo$18b2o8b2o23bo30bo2b2o5bo2bo32b2o8b2o$27bobo12bo42b2o8b2o43bo
+4b2o7bo$27bo14bobo25b2o73b2o$27bobo12b2o27bo38bo$28b2o38b3o6bob2o17b2o
+11b2o72b2o$68bo6b3ob2o17bo11b2o73b2o$42bo3b2o26bo24b3o52bo3b2o$41bobo
+3bo27b3ob2o20bo51bobo3bo$40bobo3bo12b2o16bobo72bobo3bo12b2o$36b2obobo
+3bo13bobo15bobo4b2o62b2obobo3bo13bobo$36b2obo2b4obo13bo16bo6bo62b2obo
+2b4obo13bo$40bobo3bobo12b2o19b3o67bobo3bobo12b2o$36b2ob2o2bo2bobo33bo
+65b2ob2o2bo2bobo$37bobo2b2o3bo101bobo2b2o3bo$25b2o10bobo97b2o10bobo$
+25b2o11bo98b2o11bo$124bo$125bo$123b3o!
+[[ AUTOSTART ZOOM 3 HEIGHT 240 LOOP 160 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Step size check</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 897, y = 903, rule = B3/S23
+2o$2o4$3o$o$bo8$21b3o$21bo$22bo28$17b3o$17bo$18bo8$38b3o$38bo$39bo28$
+34b3o$34bo$35bo8$55b3o$55bo$56bo28$72b3o$72bo$73bo8$91b3o$91bo$92bo8$
+104b3o$104bo$105bo28$119b2o$118b2o$120bo8$149b2o$148b2o$150bo18$179b2o
+$178b2o$180bo33$212b3o$212bo$213bo28$250b3o$250bo$251bo28$281b3o$281bo
+$282bo28$285b3o$285bo$286bo28$315b3o$315bo$316bo28$360b3o$360bo$361bo
+28$375b3o$375bo$376bo28$412b2o$411b2o$413bo28$435b2o$434b2o$436bo8$
+493b3o$493bo$494bo28$519b3o$519bo$520bo28$551b3o$551bo$552bo28$574b3o$
+574bo$575bo28$615b2o$614b2o$616bo48$654b3o$654bo$655bo28$687b3o$687bo$
+688bo28$724b3o$724bo$725bo28$753b2o$752b2o$754bo28$787b3o$787bo$788bo
+28$803b2o$802b2o$804bo28$836b2o$835b2o$837bo28$865b2o$864b2o$866bo28$
+894b3o$894bo$895bo!
+[[ AUTOSTART STEP 8 ZOOM 16 X 450 Y 450 PAUSE 5 "loaf2GtoG slow salvo\n35 gliders total" ]]
+[[ T 1800 ZOOM 0.5 STEP 20 ]]
+[[ T 3600 STEP 4 ]]
+[[ LOOP 4000 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Thumbnail and notifications</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C pseudo p53 = pseudo p49_1
+x = 192, y = 59, rule = B3/S23
+41bo11b2o98bo11b2o$40bobo10b2o97bobo10b2o$32bo3b2o2bobo101bo3b2o2bobo$
+31bobo2bo2b2ob2o99bobo2bo2b2ob2o$17b2o12bobo3bobo37b2o50b2o12bobo3bobo
+$18bo13bob4o2bob2o33b2o22b2o27bo13bob4o2bob2o$18bobo13bo3bobob2o57bo
+28bobo13bo3bobob2o$19b2o12bo3bobo62bo11bo16b2o12bo3bobo$32bo3bobo62b2o
+9b3o29bo3bobo$32b2o3bo73bo32b2o3bo9bo$5b2o41b2o61b2o10b2o10b2o18bob4o$
+5b2o38b2o25b2o23bo25bo32b2ob3o$44b3o2bo22b2o22bo2bo21bobo33bo$43bobob
+2o47bo24b2o$42b2o2b2o51bo$43b4o13b2o26b3o6b2o73b2o$44b3o12bo2bo25bo6bo
+b2obo70bo2bo$2o58b2obo24bobo7bob2o70b2obo$2o61bo25b2o3bo2b3ob2o72bo$
+63b2o30bo4bo74b2o$6b2o2bobo35b2o74b2o3bo30b2o$5bo2b2o2bo36bo73bob2obo
+3bo28bo$5bo2b2o10b2o24b3o73b2o4bobo2bo24b3o$5bobo2b2o8b2o11b2o11bo54bo
+5b2o14b2o2b3o2b2o11b2o11bo$33bo26b2o37b3o6bo18b2o16bo$34b3o22b2o37bo6b
+3o38b3o$36bo24bo36b2o5bo42bo2$175b3o$43bo42bo68bo19bo$43b3o38b3o11bo
+56b3o18bo$46bo36bo12bobo59bo$33bo11bo12b2o23b2o12b2o46bo11b2o11b2o$31b
+3o11bo3b3o6b2o83b3o24b2o$30bo19b4o88bo$30b2o15bob2ob2o88b2o$15b2o32bo
+2bob2o31bo39b2o30b2o$16bo31b2obo3b2o29bobo39bo28b3ob2o27b2o$16bob2o28b
+2obobobo28b2o3bo38bob2o25bobob2o27b2o$17bo2bo31b3o29b2o9b2o32bo2bo6bob
+o13b2obo$18b2o8b2o23bo30bo2b2o5bo2bo32b2o8b2o$27bobo12bo42b2o8b2o43bo
+4b2o7bo$27bo14bobo25b2o73b2o$27bobo12b2o27bo38bo$28b2o38b3o6bob2o17b2o
+11b2o72b2o$68bo6b3ob2o17bo11b2o73b2o$42bo3b2o26bo24b3o52bo3b2o$41bobo
+3bo27b3ob2o20bo51bobo3bo$40bobo3bo12b2o16bobo72bobo3bo12b2o$36b2obobo
+3bo13bobo15bobo4b2o62b2obobo3bo13bobo$36b2obo2b4obo13bo16bo6bo62b2obo
+2b4obo13bo$40bobo3bobo12b2o19b3o67bobo3bobo12b2o$36b2ob2o2bo2bobo33bo
+65b2ob2o2bo2bobo$37bobo2b2o3bo101bobo2b2o3bo$25b2o10bobo97b2o10bobo$
+25b2o11bo98b2o11bo$124bo$125bo$123b3o!
+[[ THUMBNAIL AUTOSTART STEP 8 ZOOM 3 HEIGHT 240 STOP 106 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Should not execute</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#CXRLE Pos=-13,-11
+x = 14, y = 6, rule = b3s23mmg:T1000,1000
+11.2A$3.2A5.A2.A$2.A2.A3.A.2A$.A2.2A2.A.A$A7.A.A$2A7.A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Broken PAUSE 5</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#Life 1.05
+#D Lightspeed wire and some simple signals
+#D
+#D Well known.
+#D
+#D No corners or branches have been found yet.
+#D See also ZIP2, MAX.
+#D [[ AUTOSTART HEIGHT 240 LOOP 80 PAUSE 5 ]]
+#N
+#P -38 -6
+....*..*..*..*..*..*..*..*..*..*..*..*..*..*..*..*..*..*
+..******************************************************
+.*
+.*******************************************************
+........................................*........*
+.******.**.*..******..*****************....******....***
+*......*...**......**........*........*.........*
+.********..*..******..******....*******....******....***
+............................*..........*.........*
+.*******************************************************
+.*
+..******************************************************
+....*..*..*..*..*..*..*..*..*..*..*..*..*..*..*..*..*..*
+#P 18 -6
+..*..*..*..*..*..*..*..*..*..*..*..*..*..*..*..*..*..*
+******************************************************
+.
+******************************************************
+....*.................................................*
+****...************************************************
+.....*
+****...************************************************
+....*.................................................*
+******************************************************
+.
+******************************************************
+..*..*..*..*..*..*..*..*..*..*..*..*..*..*..*..*..*..*
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Custom rule colours 1</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 7, y = 7, rule = 0_24_4H_O3
+3.4D$2.D3.D$.D4.D$D5.D$D4.D$D3.D$4D!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Big zoom</h2>
+		<h2>Custom rule colours 2</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#CXRLE Pos=-9,-14
+x = 4, y = 4, rule = b3s23mmg
+2A$A$CBAE$.2A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+
+		<h2>Big zoom AUTOFIT</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 826, y = 829, rule = B3/S23
+2o2b3o$2o2bo$5bo14$30b3o$30bo$31bo34$32b3o$32bo$33bo14$70b3o$70bo$71bo
+14$54b3o$54bo$55bo14$105b3o$105bo$106bo14$89b3o$89bo$90bo14$137b3o$
+137bo$138bo14$118b3o$118bo$119bo14$177b3o$177bo$178bo14$142b3o$142bo$
+143bo14$206b3o$206bo$207bo14$187b2o$186b2o$188bo14$235b2o$234b2o$236bo
+19$207b3o$207bo$208bo9$268b3o$268bo$269bo9$256b3o$256bo$257bo19$298b3o
+$298bo$299bo30$330b3o$330bo$331bo6$308b3o$308bo$309bo18$331b3o$331bo$
+332bo2$363b2o$362b2o$364bo14$358b3o$358bo$359bo14$407b3o$407bo$408bo
+14$391b3o$391bo$392bo14$424b2o$423b2o$425bo14$415b2o$414b2o$416bo14$
+468b3o$468bo$469bo14$454b3o$454bo$455bo14$489b3o$489bo$490bo14$474b2o$
+473b2o$475bo14$514b3o$514bo$515bo14$499b3o$499bo$500bo14$544b3o$544bo$
+545bo14$543b3o$543bo$544bo14$593b3o$593bo$594bo26$598b3o$598bo$599bo2$
+625b3o$625bo$626bo14$616b3o$616bo$617bo14$667b3o$667bo$668bo14$637b3o$
+637bo$638bo14$669b3o$669bo$670bo14$669b3o$669bo$670bo14$704b3o$704bo$
+705bo14$698b3o$698bo$699bo14$744b3o$744bo$745bo14$723b3o$723bo$724bo
+14$764b3o$764bo$765bo14$763b3o$763bo$764bo36$823b3o$823bo$824bo!
+[[ AUTOSTART X 0 Y 0 ZOOM .5 THEME 9 LOOP 3400 ]]
+[[ PAUSE 5 "Zooming in starting at T=200..." ]]
+[[ T 200 ]]
+[[ T 3200 X 410 Y 410 AUTOFIT ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Big zoom</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 826, y = 829, rule = B3/S23
+2o2b3o$2o2bo$5bo14$30b3o$30bo$31bo34$32b3o$32bo$33bo14$70b3o$70bo$71bo
+14$54b3o$54bo$55bo14$105b3o$105bo$106bo14$89b3o$89bo$90bo14$137b3o$
+137bo$138bo14$118b3o$118bo$119bo14$177b3o$177bo$178bo14$142b3o$142bo$
+143bo14$206b3o$206bo$207bo14$187b2o$186b2o$188bo14$235b2o$234b2o$236bo
+19$207b3o$207bo$208bo9$268b3o$268bo$269bo9$256b3o$256bo$257bo19$298b3o
+$298bo$299bo30$330b3o$330bo$331bo6$308b3o$308bo$309bo18$331b3o$331bo$
+332bo2$363b2o$362b2o$364bo14$358b3o$358bo$359bo14$407b3o$407bo$408bo
+14$391b3o$391bo$392bo14$424b2o$423b2o$425bo14$415b2o$414b2o$416bo14$
+468b3o$468bo$469bo14$454b3o$454bo$455bo14$489b3o$489bo$490bo14$474b2o$
+473b2o$475bo14$514b3o$514bo$515bo14$499b3o$499bo$500bo14$544b3o$544bo$
+545bo14$543b3o$543bo$544bo14$593b3o$593bo$594bo26$598b3o$598bo$599bo2$
+625b3o$625bo$626bo14$616b3o$616bo$617bo14$667b3o$667bo$668bo14$637b3o$
+637bo$638bo14$669b3o$669bo$670bo14$669b3o$669bo$670bo14$704b3o$704bo$
+705bo14$698b3o$698bo$699bo14$744b3o$744bo$745bo14$723b3o$723bo$724bo
+14$764b3o$764bo$765bo14$763b3o$763bo$764bo36$823b3o$823bo$824bo!
+[[ AUTOSTART X 0 Y 0 ZOOM .5 THEME 9 LOOP 3400 ]]
+[[ PAUSE 5 "Zooming in starting at T=200..." ]]
+[[ T 200 ]]
+[[ T 3200 X 410 Y 410 ZOOM 12 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Python is Life!</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+import golly as g
+from hashlib import sha256
+from itertools import chain
+
+#arbitrary numbers
+MAX_GENERATIONS = 256
+MAX_POPULATION = 40
+MAX_GLIDERS = 4
+
+#NE glider
+GLIDER = g.parse('3o$2bo$bo!')
+
+#put any ad-hoc patterns that you want to bombard with slow gliders here.
+TARGET_PATTERNS = []#('known_splitter', 'bo$obo$b2o$5bo$4bobo$5bobo$6b2o!')]
+
+#put simple targets here, along with rotational symmetry
+SIMPLE_TARGETS = [
+  ('block', '2o$2o!', 4),
+#  ('blinker', '3o$!', 4),
+#  ('tub', 'bo$obo$bo!', 4),
+#  ('boat', 'b2o$obo$bo!', 1),
+#  ('hive', 'b2o$o2bo$b2o!', 2),
+#  ('ship', 'b2o$obo$2o!', 2),
+#  ('loaf', 'b2o$o2bo$bobo$2bo!', 1),
+#  ('lboat', '2b2o$bobo$obo$bo!', 1),
+#  ('pond', 'b2o$o2bo$o2bo$b2o!', 4),
+# ('tlight', '4bo$4bo$4bo2$3o3b3o2$4bo$4bo$4bo!', 4),
+# ('hfarm', '6bo$5bobo$5bobo$6bo2$b2o7b2o$o2bo5bo2bo$b2o7b2o2$6bo$5bobo$5bobo$6bo!', 4),
+]
+
+def get_pattern_variants(cells, symmetry):
+  variants = []
+  for t in range(0, 4, symmetry):
+    variants.append(cells)
+    cells = g.transform(cells, 0, 0, 0, -1, 1, 0)
+  return variants
+
+TARGETS = []
+for name, pattern in TARGET_PATTERNS:
+  cells = g.parse(pattern)
+  p = len(cells) / 2
+  TARGETS.append((name, cells, p))
+
+for name, pattern, sym in SIMPLE_TARGETS:
+  cells = g.parse(pattern)
+  variants = get_pattern_variants(cells, sym)
+  for i, v in enumerate(variants):
+    p = len(v) / 2
+    TARGETS.append((name+str(i), v, p))
+  
+def patterns_identical(cells1, cells2):
+  if len(cells1) != len(cells2):
+    return False
+  if sum(cells1) != sum(cells2):
+    return False
+  return sorted(zip(cells1[::2], cells1[1::2])) == sorted(zip(cells2[::2], cells2[1::2]))
+
+def get_pattern_period(cells):
+  temp_cells = cells
+  for p in range(0, 2):
+    temp_cells = g.evolve(temp_cells, 1)
+    if patterns_identical(cells, temp_cells):
+      return p+1
+  return None
+
+def get_shooting_range(cells):
+
+  min_d1 = max_d1 = cells[0] + cells[1]
+  min_d2 = cells[0] - cells[1]
+
+  for i in range(2, len(cells), 2):
+    min_d1 = min(min_d1, cells[i] + cells[i+1])
+    max_d1 = max(max_d1, cells[i] + cells[i+1])
+    min_d2 = min(min_d2, cells[i] - cells[i+1])
+  
+  min_lane = min_d1 - 6
+  max_lane = max_d1 + 3
+  shift = 6 - min_d2 // 2
+
+  return min_lane, max_lane, shift
+
+def get_pattern_to_try(cells, lane, parity, offset=50):
+  glider = g.transform(GLIDER, lane - lane // 2 - offset, lane // 2 + offset)
+  if parity % 2:
+    glider = g.evolve(glider, 1)
+  return list(chain(cells, glider))
+
+offset = 0
+
+def display_solution(start, lanes, debug, last_cells):
+
+  global offset
+
+  cells = [c for n, c, _ in TARGETS if n == start][0]
+  i = 100
+  for lane in lanes:
+    lane_num, parity = lane
+    cells = get_pattern_to_try(cells, lane_num, parity, i)
+    i += 100
+  g.putcells(cells, 0, offset)
+  for i, p in enumerate(debug):
+    g.putcells(p, 100 + 100 * i, offset)
+  g.putcells(last_cells, 100 + 100 * len(debug), offset)
+  g.fit()
+  g.update()
+  g.show(' '.join(chain([str(start), str(len(lanes))], [str(lane) for lane in lanes])))
+  offset += 400
+
+
+randoms = []
+for i in range(4096):
+  randoms.append(int(sha256(str(i)).hexdigest()[:16], 16))
+
+def to_hashable(cells):
+  if not cells:
+    return 0
+
+  minx = min(cells[::2])
+  miny = min(cells[1::2])
+  
+  hash = 0
+  for i in range(0, len(cells), 2):
+    hash ^= randoms[64 * ((cells[i] - minx) & 63) + ((cells[i+1] - miny) & 63)]
+
+  return hash
+
+def deltas(cells):
+  return len(cells), sum(cells[::2]), sum(cells[1::2])
+
+def bombard_final(start, lanes, cells, period, debug, flipx, flipy):
+
+  cells = g.transform(cells, 0, 0, flipx, 0, 0, flipy)
+
+  min_lane, max_lane, shift = get_shooting_range(cells)
+  
+  for lane_num in range(min_lane, max_lane + 1):
+
+    for parity in range(period):
+      
+      lane = (lane_num, parity)
+      start_cells = get_pattern_to_try(cells, lane[0], lane[1], shift)
+      new_cells = g.evolve(start_cells, MAX_GENERATIONS)
+
+      # Test if new_cells looks like a glider
+      if len(new_cells) == 10:
+        n1, dx1, dy1 = deltas(new_cells)
+        n2, dx2, dy2 = deltas(g.evolve(new_cells, 4))
+        if n1 != n2:
+          continue
+        dx = dx2-dx1
+        dy = dy2-dy1
+        if abs(dx) == abs(dy) == 5:
+
+          #Success??
+
+          #flip back for display purposes
+          start_cells = g.transform(start_cells, 0, 0, flipx, 0, 0, flipy)
+          new_cells = g.transform(new_cells, 0, 0, flipx, 0, 0, flipy)
+          #add
+          debug.append(start_cells)
+          lanes.append(lane)
+          #display
+          display_solution(start, lanes, debug, new_cells)
+          #remove
+          lanes.pop()
+          debug.pop()
+
+g.new('')
+
+new_queue = []
+for name, cells, _ in TARGETS:
+  period = get_pattern_period(cells)
+  new_queue.append( (name, [], cells, period, []) )
+
+seen = set()
+
+for n in range(MAX_GLIDERS):
+
+  queue = new_queue
+  new_queue = []
+  
+  count = 0
+
+  for start, lanes, last, period, debug in queue:
+  
+    g.show(str((n+1,count,len(queue))))
+    count += 1
+
+    min_lane, max_lane, shift = get_shooting_range(last)
+
+    for lane_num in range(min_lane, max_lane + 1):
+
+      for parity in range(period):
+        
+        lane = (lane_num, parity)
+        start_cells = get_pattern_to_try(last, lane[0], lane[1], shift)
+        new_cells = g.evolve(start_cells, MAX_GENERATIONS)
+
+        if not new_cells or len(new_cells) > 2 * MAX_POPULATION:
+          continue
+
+        new_period = get_pattern_period(new_cells)
+        if new_period is None:
+          continue
+
+        new_hashable = to_hashable(new_cells)        
+
+        if new_hashable in seen:
+          continue
+
+        seen.add(new_hashable)
+        if new_period > 1:
+          seen.add(to_hashable(g.evolve(new_cells, 1)))
+        
+        new_lanes = lanes + [lane]
+        new_debug = debug + [start_cells]
+          
+        bombard_final(start, new_lanes, new_cells, new_period, new_debug, 1, 1)
+        bombard_final(start, new_lanes, new_cells, new_period, new_debug, 1, -1)
+        bombard_final(start, new_lanes, new_cells, new_period, new_debug, -1, -1)
+
+        if n + 1 < MAX_GLIDERS:
+          new_queue.append( (start, new_lanes, new_cells, new_period, new_debug) )
+				
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Colours used test</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 18, y = 26, rule = 24_235_4H_O3
+10.CD$9.2D$8.CD.3C$8.D.C2A$10.C2A$10.C2$15.C.C$16.2A$15.C2A7$14.BA$
+13.C2A$12.BCB$8.C$4.CB$4.BA2.C$.F.B2A$BF.3B$2F2.C$BF!
+[[ COLOR 0 0 0 0
+COLOR 7 20 30 40
+COLOR 1 255 0 0
+COLOR 2 0 255 0
+COLOR 3 0 0 255
+COLOR 4 255 255 0
+COLOR 5 0 255 255
+COLOR 6 255 0 255 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Multi-state test</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 24, y = 11, rule = test
+ABCDEFGHIJKLMNOPQRSTUVWX$
+pApBpCpDpEpFpGpHpIpJpKpLpMpNpOpPpQpRpSpTpUpVpWpX$
+qAqBqCqDqEqFqGqHqIqJqKqLqMqNqOqPqQqRqSqTqUqVqWqX$
+rArBrCrDrErFrGrHrIrJrKrLrMrNrOrPrQrRrSrTrUrVrWrX$
+sAsBsCsDsEsFsGsHsIsJsKsLsMsNsOsPsQsRsSsTsUsVsWsX$
+tAtBtCtDtEtFtGtHtItJtKtLtMtNtOtPtQtRtStTtUtVtWtX$
+uAuBuCuDuEuFuGuHuIuJuKuLuMuNuOuPuQuRuSuTuUuVuWuX$
+vAvBvCvDvEvFvGvHvIvJvKvLvMvNvOvPvQvRvSvTvUvVvWvX$
+wAwBwCwDwEwFwGwHwIwJwKwLwMwNwOwPwQwRwSwTwUwVwWwX$
+xAxBxCxDxExFxGxHxIxJxKxLxMxNxOxPxQxRxSxTxUxVxWxX$
+yAyByCyDyEyFyGyHyIyJyKyLyMyNyO!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Stutter after waypoint pause and camera move</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 826, y = 829, rule = B3/S23
+2o2b3o$2o2bo$5bo14$30b3o$30bo$31bo34$32b3o$32bo$33bo14$70b3o$70bo$71bo
+14$54b3o$54bo$55bo14$105b3o$105bo$106bo14$89b3o$89bo$90bo14$137b3o$
+137bo$138bo14$118b3o$118bo$119bo14$177b3o$177bo$178bo14$142b3o$142bo$
+143bo14$206b3o$206bo$207bo14$187b2o$186b2o$188bo14$235b2o$234b2o$236bo
+19$207b3o$207bo$208bo9$268b3o$268bo$269bo9$256b3o$256bo$257bo19$298b3o
+$298bo$299bo30$330b3o$330bo$331bo6$308b3o$308bo$309bo18$331b3o$331bo$
+332bo2$363b2o$362b2o$364bo14$358b3o$358bo$359bo14$407b3o$407bo$408bo
+14$391b3o$391bo$392bo14$424b2o$423b2o$425bo14$415b2o$414b2o$416bo14$
+468b3o$468bo$469bo14$454b3o$454bo$455bo14$489b3o$489bo$490bo14$474b2o$
+473b2o$475bo14$514b3o$514bo$515bo14$499b3o$499bo$500bo14$544b3o$544bo$
+545bo14$543b3o$543bo$544bo14$593b3o$593bo$594bo26$598b3o$598bo$599bo2$
+625b3o$625bo$626bo14$616b3o$616bo$617bo14$667b3o$667bo$668bo14$637b3o$
+637bo$638bo14$669b3o$669bo$670bo14$669b3o$669bo$670bo14$704b3o$704bo$
+705bo14$698b3o$698bo$699bo14$744b3o$744bo$745bo14$723b3o$723bo$724bo
+14$764b3o$764bo$765bo14$763b3o$763bo$764bo36$823b3o$823bo$824bo!
+[[ AUTOSTART X 380 Y 400 ZOOM 3 THEME 0 ]]
+[[ PAUSE 5 "block + 49G -> semi-Snark" ]]
+[[ T 1600 X 395 Y 405 ZOOM 6 THEME 2 ]]
+[[ T 3200 X 410 Y 410 ZOOM 9 THEME 4 ]]
+[[ PAUSE 5 "semi-Snark construction complete" ]]
+[[ T 3400 THEME 3 ANGLE 270 ]]
+[[ LOOP 3500 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Too big pattern should be invalid</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 433887, y = 354946, rule = Marked22da
+421596.A2.2A$421599.2A$421598.A2$421600.A48608$294527.A$294527.A32$
+294559.A$294537.A23.A$294537.2A$294538.A$294537.A2.A26$294550.A2$
+294551.2A$294550.A.2A5$294570.A2$294571.2A$294570.A.2A656$293300.A2$
+293301.A4$293276.A$293275.A14$293292.A2$293292.2A$293292.2A.A$293259.
+A2$293260.2A$293259.A.2A9$293279.A2$293280.2A$293279.A.2A326$293495.A
+$293494.2A$293493.A.3A$293494.A.A$293495.A23850$269079.A.A$269079.A.
+2A2$269081.2A320$269302.A$269302.2A$269303.A$269302.A2.A14$269283.A$
+269282.A2$269314.A$269314.2A$269315.A$269314.A2.A10$269298.A2$269298.
+2A$269298.2A.A6$269276.A$269278.A665$267985.2A9$268020.A2$268021.2A$
+268020.A.2A10$268049.A$268049.2A$268050.A$268049.A2.A7$268018.A2$
+268019.A8$268057.A$268057.2A$268058.A$268057.A2.A15472$331490.A$
+331490.A$331484.A2.2A$331487.2A$331486.A2$331488.A508$330972.A2.2A$
+330975.2A$330974.A2$330976.A508$330460.A2.2A$330463.2A$330462.A2$
+330464.A508$329948.A2.2A$329951.2A$329950.A2$329952.A508$329436.A2.2A
+$329439.2A$329438.A2$329440.A508$328924.A2.2A$328927.2A$328926.A2$
+328928.A508$328412.A2.2A$328415.2A$328414.A2$328416.A508$327900.A2.2A
+$327903.2A$327902.A2$327904.A508$327388.A2.2A$327391.2A$327390.A2$
+327392.A508$326876.A2.2A$326879.2A$326878.A2$326880.A508$326364.A2.2A
+$326367.2A$326366.A2$326368.A508$325852.A2.2A$325855.2A$325854.A2$
+325856.A508$325340.A2.2A$325343.2A$325342.A2$325344.A508$324828.A2.2A
+$324831.2A$324830.A2$324832.A508$324316.A2.2A$324319.2A$324318.A2$
+324320.A508$323804.A2.2A$323807.2A$323806.A2$323808.A508$323292.A2.2A
+$323295.2A$323294.A2$323296.A508$322780.A2.2A$322783.2A$322782.A2$
+322784.A321$319780.A2$319780.2A$319780.2A.A9$319772.A2$319772.2A$
+319772.2A.A$319809.A2$319810.2A$319809.A.2A12$319824.A$319823.A155$
+322268.A2.2A$322271.2A$322270.A2$322272.A505$318527.A2$318527.2A$
+318527.2A.A3225.A2.2A$321759.2A$321758.A2$321760.A$318515.A2$318515.
+2A$318515.2A.A26$318531.A$318531.2A$318532.A$318531.A2.A12$318546.A$
+318545.A462$321244.A2.2A$321247.2A$321246.A2$321248.A216$319988.A$
+319989.A291$320732.A2.2A$320735.2A$320734.A2$320736.A129$320779.A$
+320777.A.2A$320778.A$320779.A145$320793.A$320794.A230$320220.A2.2A$
+320223.2A$320222.A2$320224.A439$322471.A$322470.A11$322483.A$322483.
+2A$322484.A$322483.A2.A26$322499.A2$322499.2A$322499.2A.A5$322487.A2$
+322487.2A$322487.2A.A17$319708.A2.2A$319711.2A$319710.A2$319712.A508$
+319196.A2.2A$319199.2A$319198.A2$319200.A508$318684.A2.2A$318687.2A$
+318686.A2$318688.A508$318172.A2.2A$318175.2A$318174.A2$318176.A508$
+317660.A2.2A$317663.2A$317662.A2$317664.A508$317148.A2.2A$317151.2A$
+317150.A2$317152.A508$316636.A2.2A$316639.2A$316638.A2$316640.A508$
+316124.A2.2A$316127.2A$316126.A2$316128.A508$315612.A2.2A$315615.2A$
+315614.A2$315616.A508$315100.A2.2A$315103.2A$315102.A2$315104.A508$
+314588.A2.2A$314591.2A$314590.A2$314592.A508$314076.A2.2A$314079.2A$
+314078.A2$314080.A508$313564.A2.2A$313567.2A$313566.A2$313568.A508$
+313052.A2.2A$313055.2A$313054.A2$313056.A508$312540.A2.2A$312543.2A$
+312542.A2$312544.A508$312028.A2.2A$312031.2A$312030.A2$312032.A508$
+311516.A2.2A$311519.2A$311518.A2$311520.A508$311004.A2.2A$311007.2A$
+311006.A2$311008.A508$310492.A2.2A$310495.2A$310494.A2$310496.A508$
+309980.A2.2A$309983.2A$309982.A2$309984.A508$309468.A2.2A$309471.2A$
+309470.A2$309472.A508$308956.A2.2A$308959.2A$308958.A2$308960.A508$
+308444.A2.2A$308447.2A$308446.A2$308448.A508$307932.A2.2A$307935.2A$
+307934.A2$307936.A508$307420.A2.2A$307423.2A$307422.A2$307424.A508$
+306908.A2.2A$306911.2A$306910.A2$306912.A508$306396.A2.2A$306399.2A$
+306398.A2$306400.A508$305884.A2.2A$305887.2A$305886.A2$305888.A508$
+305372.A2.2A$305375.2A$305374.A2$305376.A508$304860.A2.2A$304863.2A$
+304862.A2$304864.A508$304348.A2.2A$304351.2A$304350.A2$304352.A508$
+303836.A2.2A$303839.2A$303838.A2$303840.A508$303324.A2.2A$303327.2A$
+303326.A2$303328.A508$302812.A2.2A$302815.2A$302814.A2$302816.A508$
+302300.A2.2A$302303.2A$302302.A2$302304.A508$301788.A2.2A$301791.2A$
+301790.A2$301792.A508$301276.A2.2A$301279.2A$301278.A2$301280.A508$
+300764.A2.2A$300767.2A$300766.A2$300768.A508$300252.A2.2A$300255.2A$
+300254.A2$300256.A508$299740.A2.2A$299743.2A$299742.A2$299744.A508$
+299228.A2.2A$299231.2A$299230.A2$299232.A508$298716.A2.2A$298719.2A$
+298718.A2$298720.A508$298204.A2.2A$298207.2A$298206.A2$298208.A508$
+297692.A2.2A$297695.2A$297694.A2$297696.A508$297180.A2.2A$297183.2A$
+297182.A2$297184.A508$296668.A2.2A$296671.2A$296670.A2$296672.A508$
+296156.A2.2A$296159.2A$296158.A2$296160.A508$295644.A2.2A$295647.2A$
+295646.A2$295648.A508$295132.A2.2A$295135.2A$295134.A2$295136.A508$
+294620.A2.2A$294623.2A$294622.A2$294624.A90$372957.A$372957.2A$
+372958.A$372957.A2.A9$372997.A2$372998.A6$372965.A$372965.2A$372966.A
+$372965.A2.A10$372994.A2$372995.2A$372994.A.2A10$373030.2A372$294108.
+A2.2A$294111.2A$294110.A2$294112.A508$293596.A2.2A$293599.2A$293598.A
+2$293600.A142$371933.A$371932.2A$371931.A.3A$371932.A.A$371933.A362$
+293084.A2.2A$293087.2A$293086.A2$293088.A508$292572.A2.2A$292575.2A$
+292574.A2$292576.A508$292060.A2.2A$292063.2A$292062.A2$292064.A508$
+291548.A2.2A$291551.2A$291550.A2$291552.A508$291036.A2.2A$291039.2A$
+291038.A2$291040.A508$290524.A2.2A$290527.2A$290526.A2$290528.A508$
+290012.A2.2A$290015.2A$290014.A2$290016.A508$289500.A2.2A$289503.2A$
+289502.A2$289504.A124$383326.A$383325.A11$383338.A$383338.2A$383339.A
+$383338.A2.A26$383354.A2$383354.2A$383354.2A.A5$383342.A2$383342.2A$
+383342.2A.A332$288988.A2.2A$288991.2A$288990.A2$288992.A508$288476.A
+2.2A$288479.2A$288478.A2$288480.A508$287964.A2.2A$287967.2A$287966.A
+2$287968.A508$287452.A2.2A$287455.2A$287454.A2$287456.A508$286940.A2.
+2A$286943.2A$286942.A2$286944.A508$286428.A2.2A$286431.2A$286430.A2$
+286432.A508$285916.A2.2A$285919.2A$285918.A2$285920.A508$285404.A2.2A
+$285407.2A$285406.A2$285408.A508$284892.A2.2A$284895.2A$284894.A2$
+284896.A508$284380.A2.2A$284383.2A$284382.A2$284384.A508$283868.A2.2A
+$283871.2A$283870.A2$283872.A508$283356.A2.2A$283359.2A$283358.A2$
+283360.A508$282844.A2.2A$282847.2A$282846.A2$282848.A508$282332.A2.2A
+$282335.2A$282334.A2$282336.A508$281820.A2.2A$281823.2A$281822.A2$
+281824.A508$281308.A2.2A$281311.2A$281310.A2$281312.A508$280796.A2.2A
+$280799.2A$280798.A2$280800.A508$280284.A2.2A$280287.2A$280286.A2$
+280288.A508$279772.A2.2A$279775.2A$279774.A2$279776.A508$279260.A2.2A
+$279263.2A$279262.A2$279264.A508$278748.A2.2A$278751.2A$278750.A2$
+278752.A508$278236.A2.2A$278239.2A$278238.A2$278240.A508$277724.A2.2A
+$277727.2A$277726.A2$277728.A508$277212.A2.2A$277215.2A$277214.A2$
+277216.A508$276700.A2.2A$276703.2A$276702.A2$276704.A508$276188.A2.2A
+$276191.2A$276190.A2$276192.A508$275676.A2.2A$275679.2A$275678.A2$
+275680.A508$275164.A2.2A$275167.2A$275166.A2$275168.A508$274652.A2.2A
+$274655.2A$274654.A2$274656.A508$274140.A2.2A$274143.2A$274142.A2$
+274144.A508$273628.A2.2A$273631.2A$273630.A2$273632.A508$273116.A2.2A
+$273119.2A$273118.A2$273120.A508$272604.A2.2A$272607.2A$272606.A2$
+272608.A508$272092.A2.2A$272095.2A$272094.A2$272096.A508$271580.A2.2A
+$271583.2A$271582.A2$271584.A508$271068.A2.2A$271071.2A$271070.A2$
+271072.A508$270556.A2.2A$270559.2A$270558.A2$270560.A292$270310.A$
+270309.A.A$270308.3A.A$270310.2A$270310.A4$270288.A2.2A$270291.2A$
+270290.A2$270292.A16$270257.A2.2A$270260.2A$270259.A2$270261.A33$
+270237.A$270236.A.A$270235.3A.A$270237.2A$270237.A20$270208.A$270207.
+A.A$270206.3A.A$270208.2A$270208.A32$270175.A2.2A$270178.2A$270177.A
+2$270179.A19$270155.A2.2A$270158.2A$270157.A2$270159.A20$270102.A.A$
+270102.A.2A2$270104.2A22$270077.A2.2A$270080.2A$270079.A2$270081.A15$
+270044.A2.2A$270047.2A$270046.A2$270048.A508$269532.A2.2A$269535.2A$
+269534.A2$269536.A258$347735.A2$347736.2A$347735.A.2A9$347755.A2$
+347756.2A$347755.A.2A$347722.A2$347722.2A$347722.2A.A15$347741.A$
+347740.A4$347715.A2$347716.A209$269020.A2.2A$269023.2A$269022.A2$
+269024.A508$268508.A2.2A$268511.2A$268510.A2$268512.A508$267996.A2.2A
+$267999.2A$267998.A2$268000.A508$267484.A2.2A$267487.2A$267486.A2$
+267488.A508$266972.A2.2A$266975.2A$266974.A2$266976.A508$266460.A2.2A
+$266463.2A$266462.A2$266464.A508$265948.A2.2A$265951.2A$265950.A2$
+265952.A508$265436.A2.2A$265439.2A$265438.A2$265440.A508$264924.A2.2A
+$264927.2A$264926.A2$264928.A508$264412.A2.2A$264415.2A$264414.A2$
+264416.A287$433812.A$433812.2A$433813.A$433812.A2.A9$433852.A2$
+433853.A6$433820.A$433820.2A$433821.A$433820.A2.A10$433849.A2$433850.
+2A$433849.A.2A10$433885.2A175$263900.A2.2A$263903.2A$263902.A2$
+263904.A508$263388.A2.2A$263391.2A$263390.A2$263392.A508$262876.A2.2A
+$262879.2A$262878.A2$262880.A508$262364.A2.2A$262367.2A$262366.A2$
+262368.A508$261852.A2.2A$261855.2A$261854.A2$261856.A508$261340.A2.2A
+$261343.2A$261342.A2$261344.A508$260828.A2.2A$260831.2A$260830.A2$
+260832.A508$260316.A2.2A$260319.2A$260318.A2$260320.A508$259804.A2.2A
+$259807.2A$259806.A2$259808.A508$259292.A2.2A$259295.2A$259294.A2$
+259296.A508$258780.A2.2A$258783.2A$258782.A2$258784.A508$258268.A2.2A
+$258271.2A$258270.A2$258272.A508$257756.A2.2A$257759.2A$257758.A2$
+257760.A508$257244.A2.2A$257247.2A$257246.A2$257248.A508$256732.A2.2A
+$256735.2A$256734.A2$256736.A508$256220.A2.2A$256223.2A$256222.A2$
+256224.A508$255708.A2.2A$255711.2A$255710.A2$255712.A508$255196.A2.2A
+$255199.2A$255198.A2$255200.A508$254684.A2.2A$254687.2A$254686.A2$
+254688.A508$254172.A2.2A$254175.2A$254174.A2$254176.A508$253660.A2.2A
+$253663.2A$253662.A2$253664.A508$253148.A2.2A$253151.2A$253150.A2$
+253152.A508$252636.A2.2A$252639.2A$252638.A2$252640.A508$252124.A2.2A
+$252127.2A$252126.A2$252128.A508$251612.A2.2A$251615.2A$251614.A2$
+251616.A508$251100.A2.2A$251103.2A$251102.A2$251104.A318$402621.3A2$
+402622.3A$402623.2A$402623.A.A186$250588.A2.2A$250591.2A$250590.A2$
+250592.A508$250076.A2.2A$250079.2A$250078.A2$250080.A508$249564.A2.2A
+$249567.2A$249566.A2$249568.A508$249052.A2.2A$249055.2A$249054.A2$
+249056.A508$248540.A2.2A$248543.2A$248542.A2$248544.A508$248028.A2.2A
+$248031.2A$248030.A2$248032.A508$247516.A2.2A$247519.2A$247518.A2$
+247520.A508$247004.A2.2A$247007.2A$247006.A2$247008.A508$246492.A2.2A
+$246495.2A$246494.A2$246496.A508$245980.A2.2A$245983.2A$245982.A2$
+245984.A508$245468.A2.2A$245471.2A$245470.A2$245472.A508$244956.A2.2A
+$244959.2A$244958.A2$244960.A508$244444.A2.2A$244447.2A$244446.A2$
+244448.A508$243932.A2.2A$243935.2A$243934.A2$243936.A508$243420.A2.2A
+$243423.2A$243422.A2$243424.A508$242908.A2.2A$242911.2A$242910.A2$
+242912.A508$242396.A2.2A$242399.2A$242398.A2$242400.A508$241884.A2.2A
+$241887.2A$241886.A2$241888.A508$241372.A2.2A$241375.2A$241374.A2$
+241376.A508$240860.A2.2A$240863.2A$240862.A2$240864.A508$240348.A2.2A
+$240351.2A$240350.A2$240352.A508$239836.A2.2A$239839.2A$239838.A2$
+239840.A508$239324.A2.2A$239327.2A$239326.A2$239328.A455$408590.A2$
+408591.2A$408590.A.2A9$408610.A2$408611.2A$408610.A.2A$408577.A2$
+408577.2A$408577.2A.A15$408596.A$408595.A4$408570.A2$408571.A12$
+238812.A2.2A$238815.2A$238814.A2$238816.A508$238300.A2.2A$238303.2A$
+238302.A2$238304.A508$237788.A2.2A$237791.2A$237790.A2$237792.A508$
+237276.A2.2A$237279.2A$237278.A2$237280.A508$236764.A2.2A$236767.2A$
+236766.A2$236768.A508$236252.A2.2A$236255.2A$236254.A2$236256.A508$
+235740.A2.2A$235743.2A$235742.A2$235744.A508$235228.A2.2A$235231.2A$
+235230.A2$235232.A508$234716.A2.2A$234719.2A$234718.A2$234720.A508$
+234204.A2.2A$234207.2A$234206.A2$234208.A508$233692.A2.2A$233695.2A$
+233694.A2$233696.A508$233180.A2.2A$233183.2A$233182.A2$233184.A508$
+232668.A2.2A$232671.2A$232670.A2$232672.A508$232156.A2.2A$232159.2A$
+232158.A2$232160.A508$231644.A2.2A$231647.2A$231646.A2$231648.A508$
+231132.A2.2A$231135.2A$231134.A2$231136.A508$230620.A2.2A$230623.2A$
+230622.A2$230624.A508$230108.A2.2A$230111.2A$230110.A2$230112.A508$
+229596.A2.2A$229599.2A$229598.A2$229600.A508$229084.A2.2A$229087.2A$
+229086.A2$229088.A508$228572.A2.2A$228575.2A$228574.A2$228576.A508$
+228060.A2.2A$228063.2A$228062.A2$228064.A508$227548.A2.2A$227551.2A$
+227550.A2$227552.A508$227036.A2.2A$227039.2A$227038.A2$227040.A508$
+226524.A2.2A$226527.2A$226526.A2$226528.A508$226012.A2.2A$226015.2A$
+226014.A2$226016.A508$225500.A2.2A$225503.2A$225502.A2$225504.A508$
+224988.A2.2A$224991.2A$224990.A2$224992.A508$224476.A2.2A$224479.2A$
+224478.A2$224480.A508$223964.A2.2A$223967.2A$223966.A2$223968.A508$
+223452.A2.2A$223455.2A$223454.A2$223456.A508$222940.A2.2A$222943.2A$
+222942.A2$222944.A508$222428.A2.2A$222431.2A$222430.A2$222432.A508$
+221916.A2.2A$221919.2A$221918.A2$221920.A508$221404.A2.2A$221407.2A$
+221406.A2$221408.A508$220892.A2.2A$220895.2A$220894.A2$220896.A508$
+220380.A2.2A$220383.2A$220382.A2$220384.A508$219868.A2.2A$219871.2A$
+219870.A2$219872.A508$219356.A2.2A$219359.2A$219358.A2$219360.A508$
+218844.A2.2A$218847.2A$218846.A2$218848.A508$218332.A2.2A$218335.2A$
+218334.A2$218336.A508$217820.A2.2A$217823.2A$217822.A2$217824.A508$
+217308.A2.2A$217311.2A$217310.A2$217312.A508$216796.A2.2A$216799.2A$
+216798.A2$216800.A508$216284.A2.2A$216287.2A$216286.A2$216288.A508$
+215772.A2.2A$215775.2A$215774.A2$215776.A508$215260.A2.2A$215263.2A$
+215262.A2$215264.A508$214748.A2.2A$214751.2A$214750.A2$214752.A508$
+214236.A2.2A$214239.2A$214238.A2$214240.A146$133199.A$133199.A32$
+133231.A$133209.A23.A$133209.2A$133210.A$133209.A2.A26$133222.A2$
+133223.2A$133222.A.2A5$133242.A2$133243.2A$133242.A.2A288$213724.A2.
+2A$213727.2A$213726.A2$213728.A508$213212.A2.2A$213215.2A$213214.A2$
+213216.A508$212700.A2.2A$212703.2A$212702.A2$212704.A9$2A25$117.A$
+116.A33$139.3A$139.A2.A$140.A.A2$141.3A$142.2A$143.A23$157.3A$155.2A.
+2A$155.A3.A$156.A.A$157.2A4$145.3A$143.2A.2A$143.A3.A$144.A.A$145.2A
+399$212188.A2.2A$212191.2A$212190.A2$212192.A508$211676.A2.2A$211679.
+2A$211678.A2$211680.A508$211164.A2.2A$211167.2A$211166.A2$211168.A
+508$210652.A2.2A$210655.2A$210654.A2$210656.A508$210140.A2.2A$210143.
+2A$210142.A2$210144.A508$209628.A2.2A$209631.2A$209630.A2$209632.A9$
+127260.A$127260.A32$127292.A$127270.A23.A$127270.2A$127271.A$127270.A
+2.A26$127283.A2$127284.2A$127283.A.2A5$127303.A2$127304.2A$127303.A.
+2A425$209116.A2.2A$209119.2A$209118.A2$209120.A508$208604.A2.2A$
+208607.2A$208606.A2$208608.A508$208092.A2.2A$208095.2A$208094.A2$
+208096.A508$207580.A2.2A$207583.2A$207582.A2$207584.A508$207068.A2.2A
+$207071.2A$207070.A2$207072.A508$206556.A2.2A$206559.2A$206558.A2$
+206560.A508$206044.A2.2A$206047.2A$206046.A2$206048.A508$205532.A2.2A
+$205535.2A$205534.A2$205536.A508$205020.A2.2A$205023.2A$205022.A2$
+205024.A508$204508.A2.2A$204511.2A$204510.A2$204512.A508$203996.A2.2A
+$203999.2A$203998.A2$204000.A121$121765.A$121765.A32$121797.A$121799.
+A$121774.A2.A$121776.A$121776.2A$121777.A26$121787.2A.A$121788.2A2$
+121790.A5$121807.2A.A$121808.2A2$121810.A312$203484.A2.2A$203487.2A$
+203486.A2$203488.A26$122631.A$122630.2A$122629.A.3A$122630.A.A$
+122631.A478$202972.A2.2A$202975.2A$202974.A2$202976.A508$202460.A2.2A
+$202463.2A$202462.A2$202464.A508$201948.A2.2A$201951.2A$201950.A2$
+201952.A508$201436.A2.2A$201439.2A$201438.A2$201440.A508$200924.A2.2A
+$200927.2A$200926.A2$200928.A3$117425.A$117425.A32$117457.A$117435.A
+23.A$117435.2A$117436.A$117435.A2.A26$117448.A2$117449.2A$117448.A.2A
+5$117468.A2$117469.2A$117468.A.2A431$200412.A2.2A$200415.2A$200414.A
+2$200416.A508$199900.A2.2A$199903.2A$199902.A2$199904.A508$199388.A2.
+2A$199391.2A$199390.A2$199392.A508$198876.A2.2A$198879.2A$198878.A2$
+198880.A508$198364.A2.2A$198367.2A$198366.A2$198368.A508$197852.A2.2A
+$197855.2A$197854.A2$197856.A508$197340.A2.2A$197343.2A$197342.A2$
+197344.A508$196828.A2.2A$196831.2A$196830.A2$196832.A508$196316.A2.2A
+$196319.2A$196318.A2$196320.A432$95338.A$95338.A32$95370.A$95372.A$
+95347.A2.A$95349.A$95349.2A$95350.A26$95360.2A.A$95361.2A2$95363.A5$
+95380.2A.A$95381.2A2$95383.A$195804.A2.2A$195807.2A$195806.A2$195808.
+A304$96647.A$96647.A32$96679.A$96657.A23.A$96657.2A$96658.A$96657.A2.
+A26$96670.A2$96671.2A$96670.A.2A5$96690.A2$96691.2A$96690.A.2A130$
+195292.A2.2A$195295.2A$195294.A2$195296.A508$194780.A2.2A$194783.2A$
+194782.A2$194784.A292$194534.A$194533.A.A$194532.3A.A$194534.2A$
+194534.A4$194512.A2.2A$194515.2A$194514.A2$194516.A16$194481.A2.2A$
+194484.2A$194483.A2$194485.A33$194461.A$194460.A.A$194459.3A.A$
+194461.2A$194461.A20$194432.A$194431.A.A$194430.3A.A$194432.2A$
+194432.A32$194399.A2.2A$194402.2A$194401.A2$194403.A19$194379.A2.2A$
+194382.2A$194381.A2$194383.A20$194326.A.A$194326.A.2A2$194328.2A22$
+194301.A2.2A$194304.2A$194303.A2$194305.A15$194268.A2.2A$194271.2A$
+194270.A2$194272.A59$112514.A$112514.A32$112546.A$112548.A$112523.A2.
+A$112525.A$112525.2A$112526.A26$112536.2A.A$112537.2A2$112539.A5$
+112556.2A.A$112557.2A2$112559.A374$193756.A2.2A$193759.2A$193758.A2$
+193760.A508$193244.A2.2A$193247.2A$193246.A2$193248.A195$91931.A$
+91931.A23$110728.A2$110730.A$110728.2A$110728.2A2.A5$91963.A$91965.A$
+91940.A2.A$91942.A$91942.2A$91943.A26$91953.2A.A$91954.2A2$91956.A5$
+91973.2A.A$91974.2A2$91976.A238$192732.A2.2A$192735.2A$192734.A2$
+192736.A508$192220.A2.2A$192223.2A$192222.A2$192224.A508$191708.A2.2A
+$191711.2A$191710.A2$191712.A508$191196.A2.2A$191199.2A$191198.A2$
+191200.A508$190684.A2.2A$190687.2A$190686.A2$190688.A508$190172.A2.2A
+$190175.2A$190174.A2$190176.A508$189660.A2.2A$189663.2A$189662.A2$
+189664.A508$189148.A2.2A$189151.2A$189150.A2$189152.A331$107974.A$
+107974.2A$107975.A$107974.A2.A14$107955.A$107954.A2$107986.A$107986.
+2A$107987.A$107986.A2.A10$107970.A2$107970.2A$107970.2A.A6$107948.A$
+107950.A134$188636.A2.2A$188639.2A$188638.A2$188640.A508$188124.A2.2A
+$188127.2A$188126.A2$188128.A508$187612.A2.2A$187615.2A$187614.A2$
+187616.A508$187100.A2.2A$187103.2A$187102.A2$187104.A162$105640.A$
+105640.A32$105672.A$105674.A$105649.A2.A$105651.A$105651.2A$105652.A
+26$105662.2A.A$105663.2A2$105665.A5$105682.2A.A$105683.2A2$105685.A
+271$186588.A2.2A$186591.2A$186590.A2$186592.A508$186076.A2.2A$186079.
+2A$186078.A2$186080.A508$185564.A2.2A$185567.2A$185566.A2$185568.A
+508$185052.A2.2A$185055.2A$185054.A2$185056.A508$184540.A2.2A$184543.
+2A$184542.A2$184544.A194$102035.A$102035.2A$102036.A$102035.A2.A14$
+102016.A$102015.A2$102047.A$102047.2A$102048.A$102047.A2.A10$102031.A
+2$102031.2A$102031.2A.A6$102009.A$102011.A271$184028.A2.2A$184031.2A$
+184030.A2$184032.A508$183516.A2.2A$183519.2A$183518.A2$183520.A508$
+183004.A2.2A$183007.2A$183006.A2$183008.A508$182492.A2.2A$182495.2A$
+182494.A2$182496.A508$181980.A2.2A$181983.2A$181982.A2$181984.A249$
+99685.A$99684.2A$99683.A.3A$99684.A.A$99685.A255$181468.A2.2A$181471.
+2A$181470.A2$181472.A508$180956.A2.2A$180959.2A$180958.A2$180960.A
+508$180444.A2.2A$180447.2A$180446.A2$180448.A508$179932.A2.2A$179935.
+2A$179934.A2$179936.A508$179420.A2.2A$179423.2A$179422.A2$179424.A
+508$178908.A2.2A$178911.2A$178910.A2$178912.A307$96539.A2.A$96541.A$
+96541.2A$96542.A13$96521.A$96520.A3$96551.A2.A$96553.A$96553.2A$
+96554.A10$96535.A.2A$96537.2A2$96538.A5$96514.A$96516.A159$178396.A2.
+2A$178399.2A$178398.A2$178400.A508$177884.A2.2A$177887.2A$177886.A2$
+177888.A508$177372.A2.2A$177375.2A$177374.A2$177376.A508$176860.A2.2A
+$176863.2A$176862.A2$176864.A508$176348.A2.2A$176351.2A$176350.A2$
+176352.A508$175836.A2.2A$175839.2A$175838.A2$175840.A188$92200.A$
+92200.2A$92201.A$92200.A2.A14$92181.A$92180.A2$92212.A$92212.2A$
+92213.A$92212.A2.A10$92196.A2$92196.2A$92196.2A.A6$92174.A$92176.A
+277$175324.A2.2A$175327.2A$175326.A2$175328.A508$174812.A2.2A$174815.
+2A$174814.A2$174816.A390$94600.2A2$94600.A.2A$94601.A.A115$174300.A2.
+2A$174303.2A$174302.A2$174304.A508$173788.A2.2A$173791.2A$173790.A2$
+173792.A508$173276.A2.2A$173279.2A$173278.A2$173280.A508$172764.A2.2A
+$172767.2A$172766.A2$172768.A508$172252.A2.2A$172255.2A$172254.A2$
+172256.A508$171740.A2.2A$171743.2A$171742.A2$171744.A508$171228.A2.2A
+$171231.2A$171230.A2$171232.A508$170716.A2.2A$170719.2A$170718.A2$
+170720.A106$70112.A2.A$70114.A$70114.2A$70115.A13$70094.A$70093.A3$
+70124.A2.A$70126.A$70126.2A$70127.A10$70108.A.2A$70110.2A2$70111.A5$
+70087.A$70089.A341$71422.A$71422.2A$71423.A$71422.A2.A14$71403.A$
+71402.A$170204.A2.2A$71434.A98772.2A$71434.2A98770.A$71435.A$71434.A
+2.A98770.A10$71418.A2$71418.2A$71418.2A.A6$71396.A$71398.A488$169692.
+A2.2A$169695.2A$169694.A2$169696.A508$169180.A2.2A$169183.2A$169182.A
+2$169184.A245$87288.A2.A$87290.A$87290.2A$87291.A13$87270.A$87269.A3$
+87300.A2.A$87302.A$87302.2A$87303.A10$87284.A.2A$87286.2A2$87287.A5$
+87263.A$87265.A221$168668.A2.2A$168671.2A$168670.A2$168672.A508$
+168156.A2.2A$168159.2A$168158.A2$168160.A381$66705.A2.A$66707.A$
+66707.2A$66708.A13$66687.A$66686.A3$66717.A2.A$66719.A$66719.2A$
+66720.A10$66701.A.2A$66703.2A2$66704.A5$66680.A$66682.A85$167644.A2.
+2A$167647.2A$167646.A2$167648.A508$167132.A2.2A$167135.2A$167134.A2$
+167136.A508$166620.A2.2A$166623.2A$166622.A2$166624.A508$166108.A2.2A
+$166111.2A$166110.A2$166112.A508$165596.A2.2A$165599.2A$165598.A2$
+165600.A508$165084.A2.2A$165087.2A$165086.A2$165088.A508$164572.A2.2A
+$164575.2A$164574.A2$164576.A508$164060.A2.2A$164063.2A$164062.A2$
+164064.A499$158452.A2$158452.2A$158452.2A.A6$163548.A2.2A$163551.2A$
+163550.A$158444.A$163552.A$158444.2A$158444.2A.A$158481.A2$158482.2A$
+158481.A.2A12$158496.A$158495.A489$163036.A2.2A$163039.2A$163038.A2$
+163040.A266$99571.A2$99571.A$99573.2A$99571.A2.2A238$162524.A2.2A$
+162527.2A$162526.A2$162528.A508$162012.A2.2A$162015.2A$162014.A2$
+162016.A348$80414.A2.A$80416.A$80416.2A$80417.A13$80396.A$80395.A3$
+80426.A2.A$80428.A$80428.2A$80429.A10$80410.A.2A$80412.2A2$80413.A5$
+80389.A$80391.A118$161500.A2.2A$161503.2A$161502.A2$161504.A508$
+160988.A2.2A$160991.2A$160990.A2$160992.A508$160476.A2.2A$160479.2A$
+160478.A2$160480.A508$159964.A2.2A$159967.2A$159966.A2$159968.A508$
+159452.A2.2A$159455.2A$159454.A2$159456.A362$152513.A2$152513.2A$
+152513.2A.A9$152505.A2$152505.2A$152505.2A.A$152542.A2$152543.2A$
+152542.A.2A12$152557.A$152556.A114$158940.A2.2A$158943.2A$158942.A2$
+158944.A458$163544.A$163543.A11$163556.A$163556.2A$163557.A$163556.A
+2.A26$163572.A2$163572.2A$163572.2A.A5$163560.A$158428.A2.2A$158431.
+2A5127.2A$158430.A5129.2A.A2$158432.A508$157916.A2.2A$157919.2A$
+157918.A2$157920.A508$157404.A2.2A$157407.2A$157406.A2$157408.A508$
+156892.A2.2A$156895.2A$156894.A2$156896.A176$161859.A$161858.A12$
+161870.2A.A$161871.2A2$161873.A$161907.A.2A$161909.2A2$161910.A9$
+161899.A.2A$161901.2A2$161902.A300$156380.A2.2A$156383.2A$156382.A2$
+156384.A508$155868.A2.2A$155871.2A$155870.A2$155872.A508$155356.A2.2A
+$155359.2A$155358.A2$155360.A508$154844.A2.2A$154847.2A$154846.A2$
+154848.A508$154332.A2.2A$154335.2A$154334.A2$154336.A508$153820.A2.2A
+$153823.2A$153822.A2$153824.A475$147017.A.2A$147019.2A2$147020.A9$
+147009.A.2A$147011.2A2$147012.A$147046.2A.A$147047.2A2$147049.A11$
+147062.A$147061.A2$153308.A2.2A$153311.2A$153310.A2$153312.A508$
+152796.A2.2A$152799.2A$152798.A2$152800.A45$155665.A$155664.A11$
+155677.A2$155678.2A$155677.A.2A$155714.A2$155714.2A$155714.2A.A9$
+155706.A2$155706.2A$155706.2A.A176$159072.A$159071.A11$159084.A$
+159084.2A$159085.A$159084.A2.A26$159100.A2$159100.2A$159100.2A.A5$
+159088.A2$159088.2A$159088.2A.A204$152284.A2.2A$152287.2A$152286.A2$
+152288.A508$151772.A2.2A$151775.2A$151774.A2$151776.A508$151260.A2.2A
+$151263.2A$151262.A2$151264.A508$150748.A2.2A$150751.2A$150750.A2$
+150752.A356$142678.A2$142678.2A$142678.2A.A9$142670.A2$142670.2A$
+142670.2A.A$142707.A2$142708.2A$142707.A.2A12$142722.A$142721.A120$
+150236.A2.2A$150239.2A$150238.A2$150240.A508$149724.A2.2A$149727.2A$
+149726.A2$149728.A508$149212.A2.2A$149215.2A$149214.A2$149216.A508$
+148700.A2.2A$148703.2A$148702.A2$148704.A177$106649.A2$106649.A$
+106651.2A$106649.A2.2A327$148188.A2.2A$148191.2A$148190.A2$148192.A
+23$115496.A2$115496.A$115498.2A$115496.A2.2A481$147676.A2.2A$147679.
+2A$147678.A2$147680.A491$116913.2A2$116913.A.2A$116914.A.A14$147164.A
+2.2A$147167.2A$147166.A2$147168.A145$153358.A$153357.A12$153369.A2.A$
+153371.A$153371.2A$153372.A26$153385.A.2A$153387.2A2$153388.A5$
+153373.A.2A$153375.2A2$153376.A310$146652.A2.2A$146655.2A$146654.A2$
+146656.A508$146140.A2.2A$146143.2A$146142.A2$146144.A508$145628.A2.2A
+$145631.2A$145630.A2$145632.A85$115684.A$115684.2A$115685.A2$115684.A
+.A.A185$120590.A.2A$120592.2A2$120593.A9$120582.A.2A$120584.2A2$
+120585.A$120619.2A.A$120620.2A2$120622.A11$120635.A$120634.A203$
+145116.A2.2A$145119.2A$145118.A2$145120.A145$121900.A2$121900.2A$
+121900.2A.A9$121892.A2$121892.2A$121892.2A.A$121929.A2$121930.2A$
+121929.A.2A12$121944.A$121943.A102$151257.A$151256.A11$151269.A2$
+151270.2A$151269.A.2A$151306.A2$151306.2A$151306.2A.A9$151298.A2$
+151298.2A$151298.2A.A198$144604.A2.2A$144607.2A$144606.A2$144608.A
+508$144092.A2.2A$144095.2A$144094.A2$144096.A413$137766.A.2A$137768.
+2A2$137769.A9$137758.A.2A$137760.2A2$137761.A$137795.2A.A$137796.2A2$
+137798.A11$137811.A$137810.A64$143580.A2.2A$143583.2A$143582.A2$
+143584.A508$143068.A2.2A$143071.2A$143070.A2$143072.A386$150401.A$
+150400.A11$150413.A$150413.2A$150414.A$150413.A2.A26$150429.A2$
+150429.2A$150429.2A.A5$150417.A2$150417.2A$150417.2A.A70$142556.A2.2A
+$142559.2A$142558.A2$142560.A37$117183.A.2A$117185.2A2$117186.A9$
+117175.A.2A$117177.2A2$117178.A$117212.2A.A$117213.2A2$117215.A11$
+117228.A$117227.A440$142044.A2.2A$142047.2A$142046.A2$142048.A508$
+141532.A2.2A$141535.2A$141534.A2$141536.A508$141020.A2.2A$141023.2A$
+141022.A2$141024.A38$143452.35B$143450.2B35.11B$143447.3B48.9B$
+143447.B59.7B$143447.B66.6B$143447.B72.7B$143447.B79.7B$143447.B86.7B
+$143447.B93.5B$143447.B98.2B$143448.B99.B$143448.B100.B$143448.B101.B
+$143448.B102.2B$143448.B104.B$143448.B105.B$143449.B20.3A82.B$143449.
+B20.A2.A82.B$143449.B21.A.A83.B$143449.B21.A2.A83.B$143449.B21.A.A.A
+83.B$143450.B109.B$143450.B21.A.A.A84.2B$143450.B23.2A87.B$143450.B
+113.B$143450.B114.B$143451.B114.B$143451.B115.B$143451.B116.B$143451.
+B117.B$143451.B118.B$143451.B118.B$143451.B119.B$143451.B120.B$
+143451.B121.B$143452.B121.B$143452.B25.3A94.B$143452.B25.A2.A94.B$
+143452.B26.A.A95.B$143453.B25.A2.A94.B$143453.B25.A.A.A94.B$143453.B
+124.B$143453.B26.A.A.A94.B$143453.B28.2A95.B$143453.B126.B$143454.B
+125.B$143454.B126.B$143454.B126.B$143454.B126.B$143455.B125.B$143455.
+B52.A72.B$143455.B51.A2.A70.B$143455.B51.2A2.A69.B$143456.B53.A.2A68.
+B$143456.B51.A5.A67.B$143456.B53.3A.A67.B$143456.B56.2A67.B$143457.B
+124.B$143457.B124.B$143457.B124.B$143458.B78.2A43.B$143458.B123.B$
+143458.B123.B$143458.B123.B$143459.B122.B$143459.B122.B$143459.B122.B
+$143459.B122.B$143459.B121.B$143460.B120.B$143460.B119.B$143460.B118.
+B$143460.B117.B$143461.B115.B$143461.B114.B$143462.B112.B$143462.B
+111.B$143463.B109.B$143463.B107.2B$143463.B105.2B$143464.B103.B$
+143464.B101.2B$143464.B99.2B$143465.B97.B$143465.B95.2B$143465.B93.2B
+$143466.B91.B$143466.B89.2B$143466.B87.2B$143467.B85.B$143467.B83.2B$
+143467.B81.2B$143468.B79.B$143468.B77.2B$143469.B74.2B$143469.B72.2B$
+143469.B68.4B$143470.B64.3B$143470.B60.4B$143471.B56.3B$143471.B52.4B
+$143471.2B48.3B$143473.2B42.4B$143475.4B35.3B$143479.6B25.4B$143485.
+25B365$140508.A2.2A$140511.2A$140510.A2$140512.A457$147834.A$147833.A
+12$147845.2A.A$147846.2A2$147848.A$147882.A.2A$147884.2A2$147885.A9$
+147874.A.2A$147876.2A2$147877.A19$139996.A2.2A$139999.2A$139998.A2$
+140000.A508$139484.A2.2A$139487.2A$139486.A2$139488.A11$118717.A.A.A
+2$118720.A$118720.2A$118721.A493$138972.A2.2A$138975.2A$138974.A2$
+138976.A508$138460.A2.2A$138463.2A$138462.A2$138464.A508$137948.A2.2A
+$137951.2A$137950.A2$137952.A172$143684.A$143683.A12$143695.A2.A$
+143697.A$143697.2A$143698.A26$143711.A.2A$143713.2A2$143714.A5$
+143699.A.2A$143701.2A2$143702.A283$137436.A2.2A$137439.2A$137438.A2$
+137440.A508$136924.A2.2A$136927.2A$136926.A2$136928.A508$136412.A2.2A
+$136415.2A$136414.A2$136416.A4$130892.A.2A$130894.2A2$130895.A9$
+130884.A.2A$130886.2A2$130887.A$130921.2A.A$130922.2A2$130924.A11$
+130937.A$130936.A473$135900.A2.2A$135903.2A$135902.A2$135904.A151$
+141715.A$141714.A11$141727.A2$141728.2A$141727.A.2A$141764.A2$141764.
+2A$141764.2A.A9$141756.A2$141756.2A$141756.2A.A326$135388.A2.2A$
+135391.2A$135390.A2$135392.A508$134876.A2.2A$134879.2A$134878.A2$
+134880.A508$134364.A2.2A$134367.2A$134366.A2$134368.A508$133852.A2.2A
+$133855.2A$133854.A2$133856.A508$133340.A2.2A$133343.2A$133342.A2$
+133344.A109$214030.A$214030.2A$214031.A$214030.A2.A9$214070.A2$
+214071.A6$214038.A$214038.2A$214039.A$214038.A2.A10$214067.A2$214068.
+2A$214067.A.2A10$214103.2A353$132828.A2.2A$132831.2A$132830.A2$
+132832.A140$132748.A$132748.A$132748.A.2A$132751.A365$132316.A2.2A$
+132319.2A$132318.A2$132320.A508$131804.A2.2A$131807.2A$131806.A2$
+131808.A333$212404.A$212406.A6$212381.A.2A$212383.2A2$212384.A10$
+212365.A2.A$212367.A$212367.2A$212368.A2$212400.A$212399.A14$212377.A
+2.A$212379.A$212379.2A$212380.A132$131292.A2.2A$131295.2A$131294.A2$
+131296.A403$136426.A$136425.A12$136437.A2.A$136439.A$136439.2A$
+136440.A26$136453.A.2A$136455.2A2$136456.A5$136441.A.2A$136443.2A2$
+136444.A52$130780.A2.2A$130783.2A$130782.A2$130784.A508$130268.A2.2A$
+130271.2A$130270.A2$130272.A508$129756.A2.2A$129759.2A$129758.A2$
+129760.A203$129605.A$129605.A$129605.A.2A$129608.A302$129244.A2.2A$
+129247.2A$129246.A2$129248.A425$128868.A2$128869.2A$128868.A.2A80$
+128732.A2.2A$128735.2A$128734.A2$128736.A508$128220.A2.2A$128223.2A$
+128222.A2$128224.A508$127708.A2.2A$127711.2A$127710.A2$127712.A202$
+206210.A$206212.A5$206188.A2$206188.2A$206188.2A.A10$206172.A$206172.
+2A$206173.A$206172.A2.A3$206206.A$206205.A13$206184.A$206184.2A$
+206185.A$206184.A2.A171$209558.A$209558.2A$209559.A$209558.A2.A9$
+209598.A2$209599.A6$209566.A$209566.2A$209567.A$209566.A2.A10$209595.
+A2$209596.2A$209595.A.2A10$209631.2A47$127196.A2.2A$127199.2A$127198.
+A2$127200.A508$126684.A2.2A$126687.2A$126686.A2$126688.A508$126172.A
+2.2A$126175.2A$126174.A2$126176.A508$125660.A2.2A$125663.2A$125662.A
+2$125664.A61$125638.A$125638.2A.A$125641.A$125641.A444$125148.A2.2A$
+125151.2A$125150.A2$125152.A508$124636.A2.2A$124639.2A$124638.A2$
+124640.A508$124124.A2.2A$124127.2A$124126.A2$124128.A508$123612.A2.2A
+$123615.2A$123614.A2$123616.A508$123100.A2.2A$123103.2A$123102.A2$
+123104.A481$203470.A$203469.2A$203468.A.3A$203469.A.A$203470.A23$
+122588.A2.2A$122591.2A$122590.A2$122592.A508$122076.A2.2A$122079.2A$
+122078.A2$122080.A172$144980.A$144979.A11$144992.A$144992.2A$144993.A
+$144992.A2.A26$145008.A2$145008.2A$145008.2A.A5$144996.A2$144996.2A$
+144996.2A.A85$203843.A2.A$203845.A$203845.2A$203846.A8$203884.A2$
+203885.A7$203851.A2.A$203853.A$203853.2A$203854.A10$203880.2A.A$
+203881.2A2$203883.A9$203917.2A154$121564.A2.2A$121567.2A$121566.A2$
+121568.A508$121052.A2.2A$121055.2A$121054.A2$121056.A453$145360.A$
+145359.A12$145371.A2.A$145373.A$145373.2A$145374.A26$145387.A.2A$
+145389.2A2$145390.A5$145375.A.2A$145377.2A2$145378.A2$120540.A2.2A$
+120543.2A$120542.A2$120544.A508$120028.A2.2A$120031.2A$120030.A2$
+120032.A436$201802.A$201804.A5$201780.A2$201780.2A$201780.2A.A10$
+201764.A$201764.2A$201765.A$201764.A2.A3$201798.A$201797.A13$201776.A
+$201776.2A$201777.A$201776.A2.A30$119516.A2.2A$119519.2A$119518.A2$
+119520.A508$119004.A2.2A$119007.2A$119006.A2$119008.A308$139494.2A2.A
+$139495.2A$139498.A2$139498.A196$118492.A2.2A$118495.2A$118494.A2$
+118496.A508$117980.A2.2A$117983.2A$117982.A2$117984.A416$196265.A2.2A
+$196268.2A$196267.A2$196269.A88$117468.A2.2A$117471.2A$117470.A2$
+117472.A37$200887.A$200887.2A$200888.A$200887.A2.A9$200927.A2$200928.
+A6$200895.A$200895.2A$200896.A$200895.A2.A10$200924.A2$200925.2A$
+200924.A.2A10$200960.2A182$142514.A$142513.A12$142525.A2.A$142527.A$
+142527.2A$142528.A26$142541.A.2A$142543.2A2$142544.A5$142529.A.2A$
+142531.2A2$142532.A190$116956.A2.2A$116959.2A$116958.A2$116960.A76$
+147218.2A$147219.A$147218.A2.A$147219.A.A81$197727.A.A$197727.A.2A2$
+197729.2A162$179950.2A2.A$179951.2A$179954.A2$179954.A179$116444.A2.
+2A$116447.2A$116446.A2$116448.A15$198637.A.A$198637.A.2A2$198639.2A
+434$195952.A.A$195952.2A.A2$195954.2A53$115932.A2.2A$115935.2A$
+115934.A2$115936.A269$145564.A2$145564.A$145566.2A$145564.A2.2A199$
+148201.A$148201.2A$148202.A2$148201.A.A.A32$115420.A2.2A$115423.2A$
+115422.A2$115424.A508$114908.A2.2A$114911.2A$114910.A2$114912.A102$
+198379.A$198381.A6$198356.A.2A$198358.2A2$198359.A10$198340.A2.A$
+198342.A$198342.2A$198343.A2$198375.A$198374.A14$198352.A2.A$198354.A
+$198354.2A$198355.A363$114396.A2.2A$114399.2A$114398.A2$114400.A508$
+113884.A2.2A$113887.2A$113886.A2$113888.A508$113372.A2.2A$113375.2A$
+113374.A2$113376.A508$112860.A2.2A$112863.2A$112862.A2$112864.A336$
+194169.A2.A$194171.A$194171.2A$194172.A8$194210.A2$194211.A7$194177.A
+2.A$194179.A$194179.2A$194180.A10$194206.2A.A$194207.2A2$194209.A9$
+194243.2A127$112348.A2.2A$112351.2A$112350.A2$112352.A508$111836.A2.
+2A$111839.2A$111838.A2$111840.A508$111324.A2.2A$111327.2A$111326.A2$
+111328.A508$110812.A2.2A$110815.2A$110814.A2$110816.A93$193034.A2$
+193036.A$193034.2A$193034.2A2.A211$192260.A$192262.A5$192238.A2$
+192238.2A$192238.2A.A10$192222.A$192222.2A$192223.A$192222.A2.A3$
+192256.A$192255.A13$192234.A$192234.2A$192235.A$192234.A2.A158$
+110300.A2.2A$110303.2A$110302.A2$110304.A508$109788.A2.2A$109791.2A$
+109790.A2$109792.A508$109276.A2.2A$109279.2A$109278.A2$109280.A508$
+108764.A2.2A$108767.2A$108766.A2$108768.A508$108252.A2.2A$108255.2A$
+108254.A2$108256.A277$188808.A2$188809.2A$188808.A.2A9$188828.A2$
+188829.2A$188828.A.2A$188795.A2$188795.2A$188795.2A.A15$188814.A$
+188813.A4$188788.A2$188789.A190$107740.A2.2A$107743.2A$107742.A2$
+107744.A508$107228.A2.2A$107231.2A$107230.A2$107232.A508$106716.A2.2A
+$106719.2A$106718.A2$106720.A111$148567.A$148567.2A$148568.A2$148567.
+A.A.A372$187109.2A.A$187110.2A2$187112.A5$187129.2A.A$187130.2A2$
+187132.A10$106204.A2.2A$106207.2A$106206.A2$106208.A12$187142.A2.A$
+187144.A$187144.2A$187121.A23.A$187123.A32$187155.A$187155.A459$
+105692.A2.2A$105695.2A$105694.A2$105696.A55$186911.A2.A$186913.A$
+186913.2A$186914.A8$186952.A2$186953.A7$186919.A2.A$186921.A$186921.
+2A$186922.A10$186948.2A.A$186949.2A2$186951.A9$186985.2A408$105180.A
+2.2A$105183.2A$105182.A2$105184.A508$104668.A2.2A$104671.2A$104670.A
+2$104672.A508$104156.A2.2A$104159.2A$104158.A2$104160.A508$103644.A2.
+2A$103647.2A$103646.A2$103648.A508$103132.A2.2A$103135.2A$103134.A2$
+103136.A508$102620.A2.2A$102623.2A$102622.A2$102624.A355$180916.A2$
+180917.2A$180916.A.2A5$180936.A2$180937.2A$180936.A.2A26$180949.A$
+180949.2A$180950.A$180949.A2.A$180927.A$180929.A32$180961.A$180961.A
+78$102108.A2.2A$102111.2A$102110.A2$102112.A71$184336.A2$184337.2A$
+184336.A.2A9$184356.A2$184357.2A$184356.A.2A$184323.A2$184323.2A$
+184323.2A.A15$184342.A$184341.A4$184316.A2$184317.A396$101596.A2.2A$
+101599.2A$101598.A2$101600.A508$101084.A2.2A$101087.2A$101086.A2$
+101088.A508$100572.A2.2A$100575.2A$100574.A2$100576.A508$100060.A2.2A
+$100063.2A$100062.A2$100064.A416$181772.A$181771.2A$181770.A.3A$
+181771.A.A$181772.A88$99548.A2.2A$99551.2A$99550.A2$99552.A8$162801.A
+$162801.2A$162802.A2$162801.A.A.A496$99036.A2.2A$99039.2A$99038.A2$
+99040.A508$98524.A2.2A$98527.2A$98526.A2$98528.A508$98012.A2.2A$
+98015.2A$98014.A2$98016.A508$97500.A2.2A$97503.2A$97502.A2$97504.A
+508$96988.A2.2A$96991.2A$96990.A2$96992.A335$195466.A$195466.2A$
+195467.A$195466.A2.A9$195506.A2$195507.A6$195474.A$195474.2A$195475.A
+$195474.A2.A10$195503.A2$195504.2A$195503.A.2A10$195539.2A96$178621.
+2A.A$178622.2A2$178624.A9$178641.2A.A$178642.2A2$178644.A$178608.A.2A
+$178610.2A2$178611.A12$96476.A2.2A$96479.2A$96478.A82149.A$178627.A$
+96480.A3$178602.A2$178603.A503$95964.A2.2A$95967.2A$95966.A2$95968.A
+508$95452.A2.2A$95455.2A$95454.A2$95456.A105$195845.A2.A$195847.A$
+195847.2A$195848.A8$195886.A2$195887.A7$195853.A2.A$195855.A$195855.
+2A$195856.A10$195882.2A.A$195883.2A2$195885.A9$195919.2A358$94940.A2.
+2A$94943.2A$94942.A2$94944.A377$174459.2A$174460.A$174459.A2.A$
+174460.A.A128$94428.A2.2A$94431.2A$94430.A2$94432.A77$176508.A2$
+176509.2A$176508.A.2A5$176528.A2$176529.2A$176528.A.2A26$176541.A$
+176541.2A$176542.A$176541.A2.A$176519.A$176521.A32$176553.A$176553.A
+356$93916.A2.2A$93919.2A$93918.A2$93920.A508$93404.A2.2A$93407.2A$
+93406.A2$93408.A508$92892.A2.2A$92895.2A$92894.A2$92896.A508$92380.A
+2.2A$92383.2A$92382.A2$92384.A205$175665.A2$175666.2A$175665.A.2A9$
+175685.A2$175686.2A$175685.A.2A$175652.A2$175652.2A$175652.2A.A15$
+175671.A$175670.A4$175645.A2$175646.A183$192999.A2.A$193001.A$193001.
+2A$193002.A8$193040.A2$193041.A7$193007.A2.A$193009.A$193009.2A$
+193010.A10$193036.2A.A$193037.2A2$193039.A9$193073.2A34$91868.A2.2A$
+91871.2A$91870.A2$91872.A508$91356.A2.2A$91359.2A$91358.A2$91360.A
+508$90844.A2.2A$90847.2A$90846.A2$90848.A508$90332.A2.2A$90335.2A$
+90334.A2$90336.A508$89820.A2.2A$89823.2A$89822.A2$89824.A256$173084.
+2A.A$173085.2A2$173087.A5$173104.2A.A$173105.2A2$173107.A26$173117.A
+2.A$173119.A$173119.2A$173096.A23.A$173098.A32$173130.A$173130.A178$
+89308.A2.2A$89311.2A$89310.A2$89312.A508$88796.A2.2A$88799.2A$88798.A
+2$88800.A508$88284.A2.2A$88287.2A$88286.A2$88288.A508$87772.A2.2A$
+87775.2A$87774.A2$87776.A504$168947.2A.A$168948.2A2$168950.A$87260.A
+2.2A$87263.2A$87262.A2$87264.A4$168967.2A.A$168968.2A2$168970.A$
+168934.A.2A$168936.2A2$168937.A14$168954.A$168953.A4$168928.A2$
+168929.A476$86748.A2.2A$86751.2A$86750.A2$86752.A508$86236.A2.2A$
+86239.2A$86238.A2$86240.A508$85724.A2.2A$85727.2A$85726.A2$85728.A
+461$166966.A2$166967.2A$166966.A.2A5$166986.A2$166987.2A$166986.A.2A
+26$166999.A$166999.2A$167000.A$166999.A2.A$166977.A$166979.A5$85212.A
+2.2A$85215.2A$85214.A2$85216.A23$167011.A$167011.A484$84700.A2.2A$
+84703.2A$84702.A2$84704.A508$84188.A2.2A$84191.2A$84190.A2$84192.A
+508$83676.A2.2A$83679.2A$83678.A2$83680.A508$83164.A2.2A$83167.2A$
+83166.A2$83168.A508$82652.A2.2A$82655.2A$82654.A2$82656.A508$82140.A
+2.2A$82143.2A$82142.A2$82144.A508$81628.A2.2A$81631.2A$81630.A2$
+81632.A508$81116.A2.2A$81119.2A$81118.A2$81120.A508$80604.A2.2A$
+80607.2A$80606.A2$80608.A223$161689.2A.A$161690.2A2$161692.A9$161709.
+2A.A$161710.2A2$161712.A$161676.A.2A$161678.2A2$161679.A14$161696.A$
+161695.A4$161670.A2$161671.A245$80092.A2.2A$80095.2A$80094.A2$80096.A
+508$79580.A2.2A$79583.2A$79582.A2$79584.A508$79068.A2.2A$79071.2A$
+79070.A2$79072.A508$78556.A2.2A$78559.2A$78558.A2$78560.A508$78044.A
+2.2A$78047.2A$78046.A2$78048.A508$77532.A2.2A$77535.2A$77534.A2$
+77536.A508$77020.A2.2A$77023.2A$77022.A2$77024.A508$76508.A2.2A$
+76511.2A$76510.A2$76512.A508$75996.A2.2A$75999.2A$75998.A2$76000.A
+508$75484.A2.2A$75487.2A$75486.A2$75488.A508$74972.A2.2A$74975.2A$
+74974.A2$74976.A508$74460.A2.2A$74463.2A$74462.A2$74464.A508$73948.A
+2.2A$73951.2A$73950.A2$73952.A508$73436.A2.2A$73439.2A$73438.A2$
+73440.A508$72924.A2.2A$72927.2A$72926.A2$72928.A508$72412.A2.2A$
+72415.2A$72414.A2$72416.A508$71900.A2.2A$71903.2A$71902.A2$71904.A13$
+70265.A2$70266.A4$70241.A$70240.A13$70255.A$70257.A2.A$70255.A$70256.
+3A$70225.A28.A.A.A.A$70221.A2.A30.4A$70227.A27.2A2.A.A$70225.3A29.A$
+70224.A.A.A.A$70227.4A$70225.A.A2.2A$70230.A5$70245.A$70241.A2.A$
+70247.A$70245.3A$70244.A.A.A.A$70247.4A$70245.A.A2.2A$70250.A120$
+70038.2A8$70074.A$70070.A2.A$70076.A$70074.3A$70073.A.A.A.A$70076.4A$
+70074.A.A2.2A$70079.A3$70100.A$70099.4A$70101.A$70101.2A$70100.2A.2A$
+70102.2A$70100.A2.A2.A$70102.A2.A3$70105.A4$70071.A2$70072.A4$70108.A
+$70107.4A$70109.A$70109.2A$70108.2A.2A$70110.2A$70108.A2.A2.A$70110.A
+2.A3$70113.A59$70371.A.A$70371.A2.A$70373.A$70373.2A45$70402.A$70404.
+A2.A$70402.A$70403.3A$70401.A.A.A.A$70402.4A$70402.2A2.A.A$70404.A$
+70390.A$70392.A2.A$70390.A$70391.3A$70389.A.A.A.A$70390.4A$70390.2A2.
+A.A$70392.A19$70406.A$70405.4A$70407.A$70407.2A$70406.2A.2A$70408.2A$
+70406.A2.A2.A$70408.A2.A3$70411.A9$70423.A$70422.A118$170244.A2$
+170245.2A$170244.A.2A2$71388.A2.2A$71391.2A$71390.A2$71392.A3$170264.
+A2$170265.2A$170264.A.2A$170231.A2$170231.2A$170231.2A.A15$170250.A$
+170249.A4$170224.A2$170225.A128$71047.3A2$71049.A$71049.2A10$71088.2A
+7$71055.3A2$71057.A$71057.2A11$71085.A$71085.2A.A$71088.A$71088.A8$
+71121.A2$71122.A111$70924.3A$70925.2A$70926.A.2A$70929.A9$70944.3A$
+70945.2A$70946.A.2A$70949.A$70912.3A$70913.2A$70911.2A.A$70912.A8$
+71016.A$71012.A2.A$71018.A$71016.3A$71015.A.A.A.A$71018.4A$71016.A.A
+2.2A$71021.A7$70902.A$70902.A71$70923.A$70925.A10$70922.2A$70923.A2$
+70923.3A$70924.2A$70925.A26$70935.3A$70936.2A$70937.A.2A$70940.A5$
+70955.3A$70956.2A$70957.A.2A$70960.A54$70977.2A$70978.A$70977.A2.A$
+70978.A.A28$71118.A$71119.A11$71130.2A$71130.A.A$71130.A3.A$71131.2A.
+2A$71134.3A31.2A$71168.A.A$71167.A3.A$71167.2A.2A$71167.3A4$70775.2A$
+70776.A2$70776.3A$70777.2A381.2A$70778.A381.A.A$71159.A3.A$71159.2A.
+2A$71159.3A5$70748.A2$70749.A5$70787.2A$70788.A2$70788.3A$70789.2A$
+70790.A$71219.A.A$71219.2A.A2$71221.2A6$70772.3A$70773.2A$70771.2A.A$
+70772.A9$70748.2A86$71489.A$71489.A5$71466.2A$71466.A.A$71465.A3.A$
+71465.2A.2A$71465.3A7$71449.A$71449.2A$71449.3A2$71450.A.A$71450.A2.A
+$71451.3A2$71483.A$71484.A11$71078.3A380.A$71079.2A380.2A$71077.2A.A
+380.3A$71078.A$71462.A.A$71462.A2.A$71463.3A6$71070.3A$71071.2A$
+71069.2A.A$71070.A$71106.3A$71107.2A$71108.A.2A$71111.A14$71106.A$
+71108.A4$71137.A2$71138.A76$71281.2A$71281.A.A$71281.A3.A$71282.2A.2A
+$71285.3A4$71301.2A$71301.A.A$71301.A3.A$71302.2A.2A$71305.3A23$
+71314.A$71314.2A$71314.3A2$71315.A.A$71315.A2.A$71294.A21.3A$71294.A
+32$71326.A$71328.A343$170623.2A.A$170624.2A2$170626.A9$170643.2A.A$
+170644.2A2$170646.A$170610.A.2A$170612.2A2$170613.A14$170630.A$
+170629.A4$170604.A2$170605.A3356$167777.2A.A$167778.2A2$167780.A9$
+167797.2A.A$167798.2A2$167800.A$167764.A.2A$167766.2A2$167767.A14$
+167784.A$167783.A4$167758.A2$167759.A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+
+		<h2>Too big pattern should be invalid</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 433887, y = 354946, rule = B3/S23
+421596.A2.2A$421599.2A$421598.A2$421600.A48608$294527.A$294527.A32$
+294559.A$294537.A23.A$294537.2A$294538.A$294537.A2.A26$294550.A2$
+294551.2A$294550.A.2A5$294570.A2$294571.2A$294570.A.2A656$293300.A2$
+293301.A4$293276.A$293275.A14$293292.A2$293292.2A$293292.2A.A$293259.
+A2$293260.2A$293259.A.2A9$293279.A2$293280.2A$293279.A.2A326$293495.A
+$293494.2A$293493.A.3A$293494.A.A$293495.A23850$269079.A.A$269079.A.
+2A2$269081.2A320$269302.A$269302.2A$269303.A$269302.A2.A14$269283.A$
+269282.A2$269314.A$269314.2A$269315.A$269314.A2.A10$269298.A2$269298.
+2A$269298.2A.A6$269276.A$269278.A665$267985.2A9$268020.A2$268021.2A$
+268020.A.2A10$268049.A$268049.2A$268050.A$268049.A2.A7$268018.A2$
+268019.A8$268057.A$268057.2A$268058.A$268057.A2.A15472$331490.A$
+331490.A$331484.A2.2A$331487.2A$331486.A2$331488.A508$330972.A2.2A$
+330975.2A$330974.A2$330976.A508$330460.A2.2A$330463.2A$330462.A2$
+330464.A508$329948.A2.2A$329951.2A$329950.A2$329952.A508$329436.A2.2A
+$329439.2A$329438.A2$329440.A508$328924.A2.2A$328927.2A$328926.A2$
+328928.A508$328412.A2.2A$328415.2A$328414.A2$328416.A508$327900.A2.2A
+$327903.2A$327902.A2$327904.A508$327388.A2.2A$327391.2A$327390.A2$
+327392.A508$326876.A2.2A$326879.2A$326878.A2$326880.A508$326364.A2.2A
+$326367.2A$326366.A2$326368.A508$325852.A2.2A$325855.2A$325854.A2$
+325856.A508$325340.A2.2A$325343.2A$325342.A2$325344.A508$324828.A2.2A
+$324831.2A$324830.A2$324832.A508$324316.A2.2A$324319.2A$324318.A2$
+324320.A508$323804.A2.2A$323807.2A$323806.A2$323808.A508$323292.A2.2A
+$323295.2A$323294.A2$323296.A508$322780.A2.2A$322783.2A$322782.A2$
+322784.A321$319780.A2$319780.2A$319780.2A.A9$319772.A2$319772.2A$
+319772.2A.A$319809.A2$319810.2A$319809.A.2A12$319824.A$319823.A155$
+322268.A2.2A$322271.2A$322270.A2$322272.A505$318527.A2$318527.2A$
+318527.2A.A3225.A2.2A$321759.2A$321758.A2$321760.A$318515.A2$318515.
+2A$318515.2A.A26$318531.A$318531.2A$318532.A$318531.A2.A12$318546.A$
+318545.A462$321244.A2.2A$321247.2A$321246.A2$321248.A216$319988.A$
+319989.A291$320732.A2.2A$320735.2A$320734.A2$320736.A129$320779.A$
+320777.A.2A$320778.A$320779.A145$320793.A$320794.A230$320220.A2.2A$
+320223.2A$320222.A2$320224.A439$322471.A$322470.A11$322483.A$322483.
+2A$322484.A$322483.A2.A26$322499.A2$322499.2A$322499.2A.A5$322487.A2$
+322487.2A$322487.2A.A17$319708.A2.2A$319711.2A$319710.A2$319712.A508$
+319196.A2.2A$319199.2A$319198.A2$319200.A508$318684.A2.2A$318687.2A$
+318686.A2$318688.A508$318172.A2.2A$318175.2A$318174.A2$318176.A508$
+317660.A2.2A$317663.2A$317662.A2$317664.A508$317148.A2.2A$317151.2A$
+317150.A2$317152.A508$316636.A2.2A$316639.2A$316638.A2$316640.A508$
+316124.A2.2A$316127.2A$316126.A2$316128.A508$315612.A2.2A$315615.2A$
+315614.A2$315616.A508$315100.A2.2A$315103.2A$315102.A2$315104.A508$
+314588.A2.2A$314591.2A$314590.A2$314592.A508$314076.A2.2A$314079.2A$
+314078.A2$314080.A508$313564.A2.2A$313567.2A$313566.A2$313568.A508$
+313052.A2.2A$313055.2A$313054.A2$313056.A508$312540.A2.2A$312543.2A$
+312542.A2$312544.A508$312028.A2.2A$312031.2A$312030.A2$312032.A508$
+311516.A2.2A$311519.2A$311518.A2$311520.A508$311004.A2.2A$311007.2A$
+311006.A2$311008.A508$310492.A2.2A$310495.2A$310494.A2$310496.A508$
+309980.A2.2A$309983.2A$309982.A2$309984.A508$309468.A2.2A$309471.2A$
+309470.A2$309472.A508$308956.A2.2A$308959.2A$308958.A2$308960.A508$
+308444.A2.2A$308447.2A$308446.A2$308448.A508$307932.A2.2A$307935.2A$
+307934.A2$307936.A508$307420.A2.2A$307423.2A$307422.A2$307424.A508$
+306908.A2.2A$306911.2A$306910.A2$306912.A508$306396.A2.2A$306399.2A$
+306398.A2$306400.A508$305884.A2.2A$305887.2A$305886.A2$305888.A508$
+305372.A2.2A$305375.2A$305374.A2$305376.A508$304860.A2.2A$304863.2A$
+304862.A2$304864.A508$304348.A2.2A$304351.2A$304350.A2$304352.A508$
+303836.A2.2A$303839.2A$303838.A2$303840.A508$303324.A2.2A$303327.2A$
+303326.A2$303328.A508$302812.A2.2A$302815.2A$302814.A2$302816.A508$
+302300.A2.2A$302303.2A$302302.A2$302304.A508$301788.A2.2A$301791.2A$
+301790.A2$301792.A508$301276.A2.2A$301279.2A$301278.A2$301280.A508$
+300764.A2.2A$300767.2A$300766.A2$300768.A508$300252.A2.2A$300255.2A$
+300254.A2$300256.A508$299740.A2.2A$299743.2A$299742.A2$299744.A508$
+299228.A2.2A$299231.2A$299230.A2$299232.A508$298716.A2.2A$298719.2A$
+298718.A2$298720.A508$298204.A2.2A$298207.2A$298206.A2$298208.A508$
+297692.A2.2A$297695.2A$297694.A2$297696.A508$297180.A2.2A$297183.2A$
+297182.A2$297184.A508$296668.A2.2A$296671.2A$296670.A2$296672.A508$
+296156.A2.2A$296159.2A$296158.A2$296160.A508$295644.A2.2A$295647.2A$
+295646.A2$295648.A508$295132.A2.2A$295135.2A$295134.A2$295136.A508$
+294620.A2.2A$294623.2A$294622.A2$294624.A90$372957.A$372957.2A$
+372958.A$372957.A2.A9$372997.A2$372998.A6$372965.A$372965.2A$372966.A
+$372965.A2.A10$372994.A2$372995.2A$372994.A.2A10$373030.2A372$294108.
+A2.2A$294111.2A$294110.A2$294112.A508$293596.A2.2A$293599.2A$293598.A
+2$293600.A142$371933.A$371932.2A$371931.A.3A$371932.A.A$371933.A362$
+293084.A2.2A$293087.2A$293086.A2$293088.A508$292572.A2.2A$292575.2A$
+292574.A2$292576.A508$292060.A2.2A$292063.2A$292062.A2$292064.A508$
+291548.A2.2A$291551.2A$291550.A2$291552.A508$291036.A2.2A$291039.2A$
+291038.A2$291040.A508$290524.A2.2A$290527.2A$290526.A2$290528.A508$
+290012.A2.2A$290015.2A$290014.A2$290016.A508$289500.A2.2A$289503.2A$
+289502.A2$289504.A124$383326.A$383325.A11$383338.A$383338.2A$383339.A
+$383338.A2.A26$383354.A2$383354.2A$383354.2A.A5$383342.A2$383342.2A$
+383342.2A.A332$288988.A2.2A$288991.2A$288990.A2$288992.A508$288476.A
+2.2A$288479.2A$288478.A2$288480.A508$287964.A2.2A$287967.2A$287966.A
+2$287968.A508$287452.A2.2A$287455.2A$287454.A2$287456.A508$286940.A2.
+2A$286943.2A$286942.A2$286944.A508$286428.A2.2A$286431.2A$286430.A2$
+286432.A508$285916.A2.2A$285919.2A$285918.A2$285920.A508$285404.A2.2A
+$285407.2A$285406.A2$285408.A508$284892.A2.2A$284895.2A$284894.A2$
+284896.A508$284380.A2.2A$284383.2A$284382.A2$284384.A508$283868.A2.2A
+$283871.2A$283870.A2$283872.A508$283356.A2.2A$283359.2A$283358.A2$
+283360.A508$282844.A2.2A$282847.2A$282846.A2$282848.A508$282332.A2.2A
+$282335.2A$282334.A2$282336.A508$281820.A2.2A$281823.2A$281822.A2$
+281824.A508$281308.A2.2A$281311.2A$281310.A2$281312.A508$280796.A2.2A
+$280799.2A$280798.A2$280800.A508$280284.A2.2A$280287.2A$280286.A2$
+280288.A508$279772.A2.2A$279775.2A$279774.A2$279776.A508$279260.A2.2A
+$279263.2A$279262.A2$279264.A508$278748.A2.2A$278751.2A$278750.A2$
+278752.A508$278236.A2.2A$278239.2A$278238.A2$278240.A508$277724.A2.2A
+$277727.2A$277726.A2$277728.A508$277212.A2.2A$277215.2A$277214.A2$
+277216.A508$276700.A2.2A$276703.2A$276702.A2$276704.A508$276188.A2.2A
+$276191.2A$276190.A2$276192.A508$275676.A2.2A$275679.2A$275678.A2$
+275680.A508$275164.A2.2A$275167.2A$275166.A2$275168.A508$274652.A2.2A
+$274655.2A$274654.A2$274656.A508$274140.A2.2A$274143.2A$274142.A2$
+274144.A508$273628.A2.2A$273631.2A$273630.A2$273632.A508$273116.A2.2A
+$273119.2A$273118.A2$273120.A508$272604.A2.2A$272607.2A$272606.A2$
+272608.A508$272092.A2.2A$272095.2A$272094.A2$272096.A508$271580.A2.2A
+$271583.2A$271582.A2$271584.A508$271068.A2.2A$271071.2A$271070.A2$
+271072.A508$270556.A2.2A$270559.2A$270558.A2$270560.A292$270310.A$
+270309.A.A$270308.3A.A$270310.2A$270310.A4$270288.A2.2A$270291.2A$
+270290.A2$270292.A16$270257.A2.2A$270260.2A$270259.A2$270261.A33$
+270237.A$270236.A.A$270235.3A.A$270237.2A$270237.A20$270208.A$270207.
+A.A$270206.3A.A$270208.2A$270208.A32$270175.A2.2A$270178.2A$270177.A
+2$270179.A19$270155.A2.2A$270158.2A$270157.A2$270159.A20$270102.A.A$
+270102.A.2A2$270104.2A22$270077.A2.2A$270080.2A$270079.A2$270081.A15$
+270044.A2.2A$270047.2A$270046.A2$270048.A508$269532.A2.2A$269535.2A$
+269534.A2$269536.A258$347735.A2$347736.2A$347735.A.2A9$347755.A2$
+347756.2A$347755.A.2A$347722.A2$347722.2A$347722.2A.A15$347741.A$
+347740.A4$347715.A2$347716.A209$269020.A2.2A$269023.2A$269022.A2$
+269024.A508$268508.A2.2A$268511.2A$268510.A2$268512.A508$267996.A2.2A
+$267999.2A$267998.A2$268000.A508$267484.A2.2A$267487.2A$267486.A2$
+267488.A508$266972.A2.2A$266975.2A$266974.A2$266976.A508$266460.A2.2A
+$266463.2A$266462.A2$266464.A508$265948.A2.2A$265951.2A$265950.A2$
+265952.A508$265436.A2.2A$265439.2A$265438.A2$265440.A508$264924.A2.2A
+$264927.2A$264926.A2$264928.A508$264412.A2.2A$264415.2A$264414.A2$
+264416.A287$433812.A$433812.2A$433813.A$433812.A2.A9$433852.A2$
+433853.A6$433820.A$433820.2A$433821.A$433820.A2.A10$433849.A2$433850.
+2A$433849.A.2A10$433885.2A175$263900.A2.2A$263903.2A$263902.A2$
+263904.A508$263388.A2.2A$263391.2A$263390.A2$263392.A508$262876.A2.2A
+$262879.2A$262878.A2$262880.A508$262364.A2.2A$262367.2A$262366.A2$
+262368.A508$261852.A2.2A$261855.2A$261854.A2$261856.A508$261340.A2.2A
+$261343.2A$261342.A2$261344.A508$260828.A2.2A$260831.2A$260830.A2$
+260832.A508$260316.A2.2A$260319.2A$260318.A2$260320.A508$259804.A2.2A
+$259807.2A$259806.A2$259808.A508$259292.A2.2A$259295.2A$259294.A2$
+259296.A508$258780.A2.2A$258783.2A$258782.A2$258784.A508$258268.A2.2A
+$258271.2A$258270.A2$258272.A508$257756.A2.2A$257759.2A$257758.A2$
+257760.A508$257244.A2.2A$257247.2A$257246.A2$257248.A508$256732.A2.2A
+$256735.2A$256734.A2$256736.A508$256220.A2.2A$256223.2A$256222.A2$
+256224.A508$255708.A2.2A$255711.2A$255710.A2$255712.A508$255196.A2.2A
+$255199.2A$255198.A2$255200.A508$254684.A2.2A$254687.2A$254686.A2$
+254688.A508$254172.A2.2A$254175.2A$254174.A2$254176.A508$253660.A2.2A
+$253663.2A$253662.A2$253664.A508$253148.A2.2A$253151.2A$253150.A2$
+253152.A508$252636.A2.2A$252639.2A$252638.A2$252640.A508$252124.A2.2A
+$252127.2A$252126.A2$252128.A508$251612.A2.2A$251615.2A$251614.A2$
+251616.A508$251100.A2.2A$251103.2A$251102.A2$251104.A318$402621.3A2$
+402622.3A$402623.2A$402623.A.A186$250588.A2.2A$250591.2A$250590.A2$
+250592.A508$250076.A2.2A$250079.2A$250078.A2$250080.A508$249564.A2.2A
+$249567.2A$249566.A2$249568.A508$249052.A2.2A$249055.2A$249054.A2$
+249056.A508$248540.A2.2A$248543.2A$248542.A2$248544.A508$248028.A2.2A
+$248031.2A$248030.A2$248032.A508$247516.A2.2A$247519.2A$247518.A2$
+247520.A508$247004.A2.2A$247007.2A$247006.A2$247008.A508$246492.A2.2A
+$246495.2A$246494.A2$246496.A508$245980.A2.2A$245983.2A$245982.A2$
+245984.A508$245468.A2.2A$245471.2A$245470.A2$245472.A508$244956.A2.2A
+$244959.2A$244958.A2$244960.A508$244444.A2.2A$244447.2A$244446.A2$
+244448.A508$243932.A2.2A$243935.2A$243934.A2$243936.A508$243420.A2.2A
+$243423.2A$243422.A2$243424.A508$242908.A2.2A$242911.2A$242910.A2$
+242912.A508$242396.A2.2A$242399.2A$242398.A2$242400.A508$241884.A2.2A
+$241887.2A$241886.A2$241888.A508$241372.A2.2A$241375.2A$241374.A2$
+241376.A508$240860.A2.2A$240863.2A$240862.A2$240864.A508$240348.A2.2A
+$240351.2A$240350.A2$240352.A508$239836.A2.2A$239839.2A$239838.A2$
+239840.A508$239324.A2.2A$239327.2A$239326.A2$239328.A455$408590.A2$
+408591.2A$408590.A.2A9$408610.A2$408611.2A$408610.A.2A$408577.A2$
+408577.2A$408577.2A.A15$408596.A$408595.A4$408570.A2$408571.A12$
+238812.A2.2A$238815.2A$238814.A2$238816.A508$238300.A2.2A$238303.2A$
+238302.A2$238304.A508$237788.A2.2A$237791.2A$237790.A2$237792.A508$
+237276.A2.2A$237279.2A$237278.A2$237280.A508$236764.A2.2A$236767.2A$
+236766.A2$236768.A508$236252.A2.2A$236255.2A$236254.A2$236256.A508$
+235740.A2.2A$235743.2A$235742.A2$235744.A508$235228.A2.2A$235231.2A$
+235230.A2$235232.A508$234716.A2.2A$234719.2A$234718.A2$234720.A508$
+234204.A2.2A$234207.2A$234206.A2$234208.A508$233692.A2.2A$233695.2A$
+233694.A2$233696.A508$233180.A2.2A$233183.2A$233182.A2$233184.A508$
+232668.A2.2A$232671.2A$232670.A2$232672.A508$232156.A2.2A$232159.2A$
+232158.A2$232160.A508$231644.A2.2A$231647.2A$231646.A2$231648.A508$
+231132.A2.2A$231135.2A$231134.A2$231136.A508$230620.A2.2A$230623.2A$
+230622.A2$230624.A508$230108.A2.2A$230111.2A$230110.A2$230112.A508$
+229596.A2.2A$229599.2A$229598.A2$229600.A508$229084.A2.2A$229087.2A$
+229086.A2$229088.A508$228572.A2.2A$228575.2A$228574.A2$228576.A508$
+228060.A2.2A$228063.2A$228062.A2$228064.A508$227548.A2.2A$227551.2A$
+227550.A2$227552.A508$227036.A2.2A$227039.2A$227038.A2$227040.A508$
+226524.A2.2A$226527.2A$226526.A2$226528.A508$226012.A2.2A$226015.2A$
+226014.A2$226016.A508$225500.A2.2A$225503.2A$225502.A2$225504.A508$
+224988.A2.2A$224991.2A$224990.A2$224992.A508$224476.A2.2A$224479.2A$
+224478.A2$224480.A508$223964.A2.2A$223967.2A$223966.A2$223968.A508$
+223452.A2.2A$223455.2A$223454.A2$223456.A508$222940.A2.2A$222943.2A$
+222942.A2$222944.A508$222428.A2.2A$222431.2A$222430.A2$222432.A508$
+221916.A2.2A$221919.2A$221918.A2$221920.A508$221404.A2.2A$221407.2A$
+221406.A2$221408.A508$220892.A2.2A$220895.2A$220894.A2$220896.A508$
+220380.A2.2A$220383.2A$220382.A2$220384.A508$219868.A2.2A$219871.2A$
+219870.A2$219872.A508$219356.A2.2A$219359.2A$219358.A2$219360.A508$
+218844.A2.2A$218847.2A$218846.A2$218848.A508$218332.A2.2A$218335.2A$
+218334.A2$218336.A508$217820.A2.2A$217823.2A$217822.A2$217824.A508$
+217308.A2.2A$217311.2A$217310.A2$217312.A508$216796.A2.2A$216799.2A$
+216798.A2$216800.A508$216284.A2.2A$216287.2A$216286.A2$216288.A508$
+215772.A2.2A$215775.2A$215774.A2$215776.A508$215260.A2.2A$215263.2A$
+215262.A2$215264.A508$214748.A2.2A$214751.2A$214750.A2$214752.A508$
+214236.A2.2A$214239.2A$214238.A2$214240.A146$133199.A$133199.A32$
+133231.A$133209.A23.A$133209.2A$133210.A$133209.A2.A26$133222.A2$
+133223.2A$133222.A.2A5$133242.A2$133243.2A$133242.A.2A288$213724.A2.
+2A$213727.2A$213726.A2$213728.A508$213212.A2.2A$213215.2A$213214.A2$
+213216.A508$212700.A2.2A$212703.2A$212702.A2$212704.A9$2A25$117.A$
+116.A33$139.3A$139.A2.A$140.A.A2$141.3A$142.2A$143.A23$157.3A$155.2A.
+2A$155.A3.A$156.A.A$157.2A4$145.3A$143.2A.2A$143.A3.A$144.A.A$145.2A
+399$212188.A2.2A$212191.2A$212190.A2$212192.A508$211676.A2.2A$211679.
+2A$211678.A2$211680.A508$211164.A2.2A$211167.2A$211166.A2$211168.A
+508$210652.A2.2A$210655.2A$210654.A2$210656.A508$210140.A2.2A$210143.
+2A$210142.A2$210144.A508$209628.A2.2A$209631.2A$209630.A2$209632.A9$
+127260.A$127260.A32$127292.A$127270.A23.A$127270.2A$127271.A$127270.A
+2.A26$127283.A2$127284.2A$127283.A.2A5$127303.A2$127304.2A$127303.A.
+2A425$209116.A2.2A$209119.2A$209118.A2$209120.A508$208604.A2.2A$
+208607.2A$208606.A2$208608.A508$208092.A2.2A$208095.2A$208094.A2$
+208096.A508$207580.A2.2A$207583.2A$207582.A2$207584.A508$207068.A2.2A
+$207071.2A$207070.A2$207072.A508$206556.A2.2A$206559.2A$206558.A2$
+206560.A508$206044.A2.2A$206047.2A$206046.A2$206048.A508$205532.A2.2A
+$205535.2A$205534.A2$205536.A508$205020.A2.2A$205023.2A$205022.A2$
+205024.A508$204508.A2.2A$204511.2A$204510.A2$204512.A508$203996.A2.2A
+$203999.2A$203998.A2$204000.A121$121765.A$121765.A32$121797.A$121799.
+A$121774.A2.A$121776.A$121776.2A$121777.A26$121787.2A.A$121788.2A2$
+121790.A5$121807.2A.A$121808.2A2$121810.A312$203484.A2.2A$203487.2A$
+203486.A2$203488.A26$122631.A$122630.2A$122629.A.3A$122630.A.A$
+122631.A478$202972.A2.2A$202975.2A$202974.A2$202976.A508$202460.A2.2A
+$202463.2A$202462.A2$202464.A508$201948.A2.2A$201951.2A$201950.A2$
+201952.A508$201436.A2.2A$201439.2A$201438.A2$201440.A508$200924.A2.2A
+$200927.2A$200926.A2$200928.A3$117425.A$117425.A32$117457.A$117435.A
+23.A$117435.2A$117436.A$117435.A2.A26$117448.A2$117449.2A$117448.A.2A
+5$117468.A2$117469.2A$117468.A.2A431$200412.A2.2A$200415.2A$200414.A
+2$200416.A508$199900.A2.2A$199903.2A$199902.A2$199904.A508$199388.A2.
+2A$199391.2A$199390.A2$199392.A508$198876.A2.2A$198879.2A$198878.A2$
+198880.A508$198364.A2.2A$198367.2A$198366.A2$198368.A508$197852.A2.2A
+$197855.2A$197854.A2$197856.A508$197340.A2.2A$197343.2A$197342.A2$
+197344.A508$196828.A2.2A$196831.2A$196830.A2$196832.A508$196316.A2.2A
+$196319.2A$196318.A2$196320.A432$95338.A$95338.A32$95370.A$95372.A$
+95347.A2.A$95349.A$95349.2A$95350.A26$95360.2A.A$95361.2A2$95363.A5$
+95380.2A.A$95381.2A2$95383.A$195804.A2.2A$195807.2A$195806.A2$195808.
+A304$96647.A$96647.A32$96679.A$96657.A23.A$96657.2A$96658.A$96657.A2.
+A26$96670.A2$96671.2A$96670.A.2A5$96690.A2$96691.2A$96690.A.2A130$
+195292.A2.2A$195295.2A$195294.A2$195296.A508$194780.A2.2A$194783.2A$
+194782.A2$194784.A292$194534.A$194533.A.A$194532.3A.A$194534.2A$
+194534.A4$194512.A2.2A$194515.2A$194514.A2$194516.A16$194481.A2.2A$
+194484.2A$194483.A2$194485.A33$194461.A$194460.A.A$194459.3A.A$
+194461.2A$194461.A20$194432.A$194431.A.A$194430.3A.A$194432.2A$
+194432.A32$194399.A2.2A$194402.2A$194401.A2$194403.A19$194379.A2.2A$
+194382.2A$194381.A2$194383.A20$194326.A.A$194326.A.2A2$194328.2A22$
+194301.A2.2A$194304.2A$194303.A2$194305.A15$194268.A2.2A$194271.2A$
+194270.A2$194272.A59$112514.A$112514.A32$112546.A$112548.A$112523.A2.
+A$112525.A$112525.2A$112526.A26$112536.2A.A$112537.2A2$112539.A5$
+112556.2A.A$112557.2A2$112559.A374$193756.A2.2A$193759.2A$193758.A2$
+193760.A508$193244.A2.2A$193247.2A$193246.A2$193248.A195$91931.A$
+91931.A23$110728.A2$110730.A$110728.2A$110728.2A2.A5$91963.A$91965.A$
+91940.A2.A$91942.A$91942.2A$91943.A26$91953.2A.A$91954.2A2$91956.A5$
+91973.2A.A$91974.2A2$91976.A238$192732.A2.2A$192735.2A$192734.A2$
+192736.A508$192220.A2.2A$192223.2A$192222.A2$192224.A508$191708.A2.2A
+$191711.2A$191710.A2$191712.A508$191196.A2.2A$191199.2A$191198.A2$
+191200.A508$190684.A2.2A$190687.2A$190686.A2$190688.A508$190172.A2.2A
+$190175.2A$190174.A2$190176.A508$189660.A2.2A$189663.2A$189662.A2$
+189664.A508$189148.A2.2A$189151.2A$189150.A2$189152.A331$107974.A$
+107974.2A$107975.A$107974.A2.A14$107955.A$107954.A2$107986.A$107986.
+2A$107987.A$107986.A2.A10$107970.A2$107970.2A$107970.2A.A6$107948.A$
+107950.A134$188636.A2.2A$188639.2A$188638.A2$188640.A508$188124.A2.2A
+$188127.2A$188126.A2$188128.A508$187612.A2.2A$187615.2A$187614.A2$
+187616.A508$187100.A2.2A$187103.2A$187102.A2$187104.A162$105640.A$
+105640.A32$105672.A$105674.A$105649.A2.A$105651.A$105651.2A$105652.A
+26$105662.2A.A$105663.2A2$105665.A5$105682.2A.A$105683.2A2$105685.A
+271$186588.A2.2A$186591.2A$186590.A2$186592.A508$186076.A2.2A$186079.
+2A$186078.A2$186080.A508$185564.A2.2A$185567.2A$185566.A2$185568.A
+508$185052.A2.2A$185055.2A$185054.A2$185056.A508$184540.A2.2A$184543.
+2A$184542.A2$184544.A194$102035.A$102035.2A$102036.A$102035.A2.A14$
+102016.A$102015.A2$102047.A$102047.2A$102048.A$102047.A2.A10$102031.A
+2$102031.2A$102031.2A.A6$102009.A$102011.A271$184028.A2.2A$184031.2A$
+184030.A2$184032.A508$183516.A2.2A$183519.2A$183518.A2$183520.A508$
+183004.A2.2A$183007.2A$183006.A2$183008.A508$182492.A2.2A$182495.2A$
+182494.A2$182496.A508$181980.A2.2A$181983.2A$181982.A2$181984.A249$
+99685.A$99684.2A$99683.A.3A$99684.A.A$99685.A255$181468.A2.2A$181471.
+2A$181470.A2$181472.A508$180956.A2.2A$180959.2A$180958.A2$180960.A
+508$180444.A2.2A$180447.2A$180446.A2$180448.A508$179932.A2.2A$179935.
+2A$179934.A2$179936.A508$179420.A2.2A$179423.2A$179422.A2$179424.A
+508$178908.A2.2A$178911.2A$178910.A2$178912.A307$96539.A2.A$96541.A$
+96541.2A$96542.A13$96521.A$96520.A3$96551.A2.A$96553.A$96553.2A$
+96554.A10$96535.A.2A$96537.2A2$96538.A5$96514.A$96516.A159$178396.A2.
+2A$178399.2A$178398.A2$178400.A508$177884.A2.2A$177887.2A$177886.A2$
+177888.A508$177372.A2.2A$177375.2A$177374.A2$177376.A508$176860.A2.2A
+$176863.2A$176862.A2$176864.A508$176348.A2.2A$176351.2A$176350.A2$
+176352.A508$175836.A2.2A$175839.2A$175838.A2$175840.A188$92200.A$
+92200.2A$92201.A$92200.A2.A14$92181.A$92180.A2$92212.A$92212.2A$
+92213.A$92212.A2.A10$92196.A2$92196.2A$92196.2A.A6$92174.A$92176.A
+277$175324.A2.2A$175327.2A$175326.A2$175328.A508$174812.A2.2A$174815.
+2A$174814.A2$174816.A390$94600.2A2$94600.A.2A$94601.A.A115$174300.A2.
+2A$174303.2A$174302.A2$174304.A508$173788.A2.2A$173791.2A$173790.A2$
+173792.A508$173276.A2.2A$173279.2A$173278.A2$173280.A508$172764.A2.2A
+$172767.2A$172766.A2$172768.A508$172252.A2.2A$172255.2A$172254.A2$
+172256.A508$171740.A2.2A$171743.2A$171742.A2$171744.A508$171228.A2.2A
+$171231.2A$171230.A2$171232.A508$170716.A2.2A$170719.2A$170718.A2$
+170720.A106$70112.A2.A$70114.A$70114.2A$70115.A13$70094.A$70093.A3$
+70124.A2.A$70126.A$70126.2A$70127.A10$70108.A.2A$70110.2A2$70111.A5$
+70087.A$70089.A341$71422.A$71422.2A$71423.A$71422.A2.A14$71403.A$
+71402.A$170204.A2.2A$71434.A98772.2A$71434.2A98770.A$71435.A$71434.A
+2.A98770.A10$71418.A2$71418.2A$71418.2A.A6$71396.A$71398.A488$169692.
+A2.2A$169695.2A$169694.A2$169696.A508$169180.A2.2A$169183.2A$169182.A
+2$169184.A245$87288.A2.A$87290.A$87290.2A$87291.A13$87270.A$87269.A3$
+87300.A2.A$87302.A$87302.2A$87303.A10$87284.A.2A$87286.2A2$87287.A5$
+87263.A$87265.A221$168668.A2.2A$168671.2A$168670.A2$168672.A508$
+168156.A2.2A$168159.2A$168158.A2$168160.A381$66705.A2.A$66707.A$
+66707.2A$66708.A13$66687.A$66686.A3$66717.A2.A$66719.A$66719.2A$
+66720.A10$66701.A.2A$66703.2A2$66704.A5$66680.A$66682.A85$167644.A2.
+2A$167647.2A$167646.A2$167648.A508$167132.A2.2A$167135.2A$167134.A2$
+167136.A508$166620.A2.2A$166623.2A$166622.A2$166624.A508$166108.A2.2A
+$166111.2A$166110.A2$166112.A508$165596.A2.2A$165599.2A$165598.A2$
+165600.A508$165084.A2.2A$165087.2A$165086.A2$165088.A508$164572.A2.2A
+$164575.2A$164574.A2$164576.A508$164060.A2.2A$164063.2A$164062.A2$
+164064.A499$158452.A2$158452.2A$158452.2A.A6$163548.A2.2A$163551.2A$
+163550.A$158444.A$163552.A$158444.2A$158444.2A.A$158481.A2$158482.2A$
+158481.A.2A12$158496.A$158495.A489$163036.A2.2A$163039.2A$163038.A2$
+163040.A266$99571.A2$99571.A$99573.2A$99571.A2.2A238$162524.A2.2A$
+162527.2A$162526.A2$162528.A508$162012.A2.2A$162015.2A$162014.A2$
+162016.A348$80414.A2.A$80416.A$80416.2A$80417.A13$80396.A$80395.A3$
+80426.A2.A$80428.A$80428.2A$80429.A10$80410.A.2A$80412.2A2$80413.A5$
+80389.A$80391.A118$161500.A2.2A$161503.2A$161502.A2$161504.A508$
+160988.A2.2A$160991.2A$160990.A2$160992.A508$160476.A2.2A$160479.2A$
+160478.A2$160480.A508$159964.A2.2A$159967.2A$159966.A2$159968.A508$
+159452.A2.2A$159455.2A$159454.A2$159456.A362$152513.A2$152513.2A$
+152513.2A.A9$152505.A2$152505.2A$152505.2A.A$152542.A2$152543.2A$
+152542.A.2A12$152557.A$152556.A114$158940.A2.2A$158943.2A$158942.A2$
+158944.A458$163544.A$163543.A11$163556.A$163556.2A$163557.A$163556.A
+2.A26$163572.A2$163572.2A$163572.2A.A5$163560.A$158428.A2.2A$158431.
+2A5127.2A$158430.A5129.2A.A2$158432.A508$157916.A2.2A$157919.2A$
+157918.A2$157920.A508$157404.A2.2A$157407.2A$157406.A2$157408.A508$
+156892.A2.2A$156895.2A$156894.A2$156896.A176$161859.A$161858.A12$
+161870.2A.A$161871.2A2$161873.A$161907.A.2A$161909.2A2$161910.A9$
+161899.A.2A$161901.2A2$161902.A300$156380.A2.2A$156383.2A$156382.A2$
+156384.A508$155868.A2.2A$155871.2A$155870.A2$155872.A508$155356.A2.2A
+$155359.2A$155358.A2$155360.A508$154844.A2.2A$154847.2A$154846.A2$
+154848.A508$154332.A2.2A$154335.2A$154334.A2$154336.A508$153820.A2.2A
+$153823.2A$153822.A2$153824.A475$147017.A.2A$147019.2A2$147020.A9$
+147009.A.2A$147011.2A2$147012.A$147046.2A.A$147047.2A2$147049.A11$
+147062.A$147061.A2$153308.A2.2A$153311.2A$153310.A2$153312.A508$
+152796.A2.2A$152799.2A$152798.A2$152800.A45$155665.A$155664.A11$
+155677.A2$155678.2A$155677.A.2A$155714.A2$155714.2A$155714.2A.A9$
+155706.A2$155706.2A$155706.2A.A176$159072.A$159071.A11$159084.A$
+159084.2A$159085.A$159084.A2.A26$159100.A2$159100.2A$159100.2A.A5$
+159088.A2$159088.2A$159088.2A.A204$152284.A2.2A$152287.2A$152286.A2$
+152288.A508$151772.A2.2A$151775.2A$151774.A2$151776.A508$151260.A2.2A
+$151263.2A$151262.A2$151264.A508$150748.A2.2A$150751.2A$150750.A2$
+150752.A356$142678.A2$142678.2A$142678.2A.A9$142670.A2$142670.2A$
+142670.2A.A$142707.A2$142708.2A$142707.A.2A12$142722.A$142721.A120$
+150236.A2.2A$150239.2A$150238.A2$150240.A508$149724.A2.2A$149727.2A$
+149726.A2$149728.A508$149212.A2.2A$149215.2A$149214.A2$149216.A508$
+148700.A2.2A$148703.2A$148702.A2$148704.A177$106649.A2$106649.A$
+106651.2A$106649.A2.2A327$148188.A2.2A$148191.2A$148190.A2$148192.A
+23$115496.A2$115496.A$115498.2A$115496.A2.2A481$147676.A2.2A$147679.
+2A$147678.A2$147680.A491$116913.2A2$116913.A.2A$116914.A.A14$147164.A
+2.2A$147167.2A$147166.A2$147168.A145$153358.A$153357.A12$153369.A2.A$
+153371.A$153371.2A$153372.A26$153385.A.2A$153387.2A2$153388.A5$
+153373.A.2A$153375.2A2$153376.A310$146652.A2.2A$146655.2A$146654.A2$
+146656.A508$146140.A2.2A$146143.2A$146142.A2$146144.A508$145628.A2.2A
+$145631.2A$145630.A2$145632.A85$115684.A$115684.2A$115685.A2$115684.A
+.A.A185$120590.A.2A$120592.2A2$120593.A9$120582.A.2A$120584.2A2$
+120585.A$120619.2A.A$120620.2A2$120622.A11$120635.A$120634.A203$
+145116.A2.2A$145119.2A$145118.A2$145120.A145$121900.A2$121900.2A$
+121900.2A.A9$121892.A2$121892.2A$121892.2A.A$121929.A2$121930.2A$
+121929.A.2A12$121944.A$121943.A102$151257.A$151256.A11$151269.A2$
+151270.2A$151269.A.2A$151306.A2$151306.2A$151306.2A.A9$151298.A2$
+151298.2A$151298.2A.A198$144604.A2.2A$144607.2A$144606.A2$144608.A
+508$144092.A2.2A$144095.2A$144094.A2$144096.A413$137766.A.2A$137768.
+2A2$137769.A9$137758.A.2A$137760.2A2$137761.A$137795.2A.A$137796.2A2$
+137798.A11$137811.A$137810.A64$143580.A2.2A$143583.2A$143582.A2$
+143584.A508$143068.A2.2A$143071.2A$143070.A2$143072.A386$150401.A$
+150400.A11$150413.A$150413.2A$150414.A$150413.A2.A26$150429.A2$
+150429.2A$150429.2A.A5$150417.A2$150417.2A$150417.2A.A70$142556.A2.2A
+$142559.2A$142558.A2$142560.A37$117183.A.2A$117185.2A2$117186.A9$
+117175.A.2A$117177.2A2$117178.A$117212.2A.A$117213.2A2$117215.A11$
+117228.A$117227.A440$142044.A2.2A$142047.2A$142046.A2$142048.A508$
+141532.A2.2A$141535.2A$141534.A2$141536.A508$141020.A2.2A$141023.2A$
+141022.A2$141024.A38$143452.35B$143450.2B35.11B$143447.3B48.9B$
+143447.B59.7B$143447.B66.6B$143447.B72.7B$143447.B79.7B$143447.B86.7B
+$143447.B93.5B$143447.B98.2B$143448.B99.B$143448.B100.B$143448.B101.B
+$143448.B102.2B$143448.B104.B$143448.B105.B$143449.B20.3A82.B$143449.
+B20.A2.A82.B$143449.B21.A.A83.B$143449.B21.A2.A83.B$143449.B21.A.A.A
+83.B$143450.B109.B$143450.B21.A.A.A84.2B$143450.B23.2A87.B$143450.B
+113.B$143450.B114.B$143451.B114.B$143451.B115.B$143451.B116.B$143451.
+B117.B$143451.B118.B$143451.B118.B$143451.B119.B$143451.B120.B$
+143451.B121.B$143452.B121.B$143452.B25.3A94.B$143452.B25.A2.A94.B$
+143452.B26.A.A95.B$143453.B25.A2.A94.B$143453.B25.A.A.A94.B$143453.B
+124.B$143453.B26.A.A.A94.B$143453.B28.2A95.B$143453.B126.B$143454.B
+125.B$143454.B126.B$143454.B126.B$143454.B126.B$143455.B125.B$143455.
+B52.A72.B$143455.B51.A2.A70.B$143455.B51.2A2.A69.B$143456.B53.A.2A68.
+B$143456.B51.A5.A67.B$143456.B53.3A.A67.B$143456.B56.2A67.B$143457.B
+124.B$143457.B124.B$143457.B124.B$143458.B78.2A43.B$143458.B123.B$
+143458.B123.B$143458.B123.B$143459.B122.B$143459.B122.B$143459.B122.B
+$143459.B122.B$143459.B121.B$143460.B120.B$143460.B119.B$143460.B118.
+B$143460.B117.B$143461.B115.B$143461.B114.B$143462.B112.B$143462.B
+111.B$143463.B109.B$143463.B107.2B$143463.B105.2B$143464.B103.B$
+143464.B101.2B$143464.B99.2B$143465.B97.B$143465.B95.2B$143465.B93.2B
+$143466.B91.B$143466.B89.2B$143466.B87.2B$143467.B85.B$143467.B83.2B$
+143467.B81.2B$143468.B79.B$143468.B77.2B$143469.B74.2B$143469.B72.2B$
+143469.B68.4B$143470.B64.3B$143470.B60.4B$143471.B56.3B$143471.B52.4B
+$143471.2B48.3B$143473.2B42.4B$143475.4B35.3B$143479.6B25.4B$143485.
+25B365$140508.A2.2A$140511.2A$140510.A2$140512.A457$147834.A$147833.A
+12$147845.2A.A$147846.2A2$147848.A$147882.A.2A$147884.2A2$147885.A9$
+147874.A.2A$147876.2A2$147877.A19$139996.A2.2A$139999.2A$139998.A2$
+140000.A508$139484.A2.2A$139487.2A$139486.A2$139488.A11$118717.A.A.A
+2$118720.A$118720.2A$118721.A493$138972.A2.2A$138975.2A$138974.A2$
+138976.A508$138460.A2.2A$138463.2A$138462.A2$138464.A508$137948.A2.2A
+$137951.2A$137950.A2$137952.A172$143684.A$143683.A12$143695.A2.A$
+143697.A$143697.2A$143698.A26$143711.A.2A$143713.2A2$143714.A5$
+143699.A.2A$143701.2A2$143702.A283$137436.A2.2A$137439.2A$137438.A2$
+137440.A508$136924.A2.2A$136927.2A$136926.A2$136928.A508$136412.A2.2A
+$136415.2A$136414.A2$136416.A4$130892.A.2A$130894.2A2$130895.A9$
+130884.A.2A$130886.2A2$130887.A$130921.2A.A$130922.2A2$130924.A11$
+130937.A$130936.A473$135900.A2.2A$135903.2A$135902.A2$135904.A151$
+141715.A$141714.A11$141727.A2$141728.2A$141727.A.2A$141764.A2$141764.
+2A$141764.2A.A9$141756.A2$141756.2A$141756.2A.A326$135388.A2.2A$
+135391.2A$135390.A2$135392.A508$134876.A2.2A$134879.2A$134878.A2$
+134880.A508$134364.A2.2A$134367.2A$134366.A2$134368.A508$133852.A2.2A
+$133855.2A$133854.A2$133856.A508$133340.A2.2A$133343.2A$133342.A2$
+133344.A109$214030.A$214030.2A$214031.A$214030.A2.A9$214070.A2$
+214071.A6$214038.A$214038.2A$214039.A$214038.A2.A10$214067.A2$214068.
+2A$214067.A.2A10$214103.2A353$132828.A2.2A$132831.2A$132830.A2$
+132832.A140$132748.A$132748.A$132748.A.2A$132751.A365$132316.A2.2A$
+132319.2A$132318.A2$132320.A508$131804.A2.2A$131807.2A$131806.A2$
+131808.A333$212404.A$212406.A6$212381.A.2A$212383.2A2$212384.A10$
+212365.A2.A$212367.A$212367.2A$212368.A2$212400.A$212399.A14$212377.A
+2.A$212379.A$212379.2A$212380.A132$131292.A2.2A$131295.2A$131294.A2$
+131296.A403$136426.A$136425.A12$136437.A2.A$136439.A$136439.2A$
+136440.A26$136453.A.2A$136455.2A2$136456.A5$136441.A.2A$136443.2A2$
+136444.A52$130780.A2.2A$130783.2A$130782.A2$130784.A508$130268.A2.2A$
+130271.2A$130270.A2$130272.A508$129756.A2.2A$129759.2A$129758.A2$
+129760.A203$129605.A$129605.A$129605.A.2A$129608.A302$129244.A2.2A$
+129247.2A$129246.A2$129248.A425$128868.A2$128869.2A$128868.A.2A80$
+128732.A2.2A$128735.2A$128734.A2$128736.A508$128220.A2.2A$128223.2A$
+128222.A2$128224.A508$127708.A2.2A$127711.2A$127710.A2$127712.A202$
+206210.A$206212.A5$206188.A2$206188.2A$206188.2A.A10$206172.A$206172.
+2A$206173.A$206172.A2.A3$206206.A$206205.A13$206184.A$206184.2A$
+206185.A$206184.A2.A171$209558.A$209558.2A$209559.A$209558.A2.A9$
+209598.A2$209599.A6$209566.A$209566.2A$209567.A$209566.A2.A10$209595.
+A2$209596.2A$209595.A.2A10$209631.2A47$127196.A2.2A$127199.2A$127198.
+A2$127200.A508$126684.A2.2A$126687.2A$126686.A2$126688.A508$126172.A
+2.2A$126175.2A$126174.A2$126176.A508$125660.A2.2A$125663.2A$125662.A
+2$125664.A61$125638.A$125638.2A.A$125641.A$125641.A444$125148.A2.2A$
+125151.2A$125150.A2$125152.A508$124636.A2.2A$124639.2A$124638.A2$
+124640.A508$124124.A2.2A$124127.2A$124126.A2$124128.A508$123612.A2.2A
+$123615.2A$123614.A2$123616.A508$123100.A2.2A$123103.2A$123102.A2$
+123104.A481$203470.A$203469.2A$203468.A.3A$203469.A.A$203470.A23$
+122588.A2.2A$122591.2A$122590.A2$122592.A508$122076.A2.2A$122079.2A$
+122078.A2$122080.A172$144980.A$144979.A11$144992.A$144992.2A$144993.A
+$144992.A2.A26$145008.A2$145008.2A$145008.2A.A5$144996.A2$144996.2A$
+144996.2A.A85$203843.A2.A$203845.A$203845.2A$203846.A8$203884.A2$
+203885.A7$203851.A2.A$203853.A$203853.2A$203854.A10$203880.2A.A$
+203881.2A2$203883.A9$203917.2A154$121564.A2.2A$121567.2A$121566.A2$
+121568.A508$121052.A2.2A$121055.2A$121054.A2$121056.A453$145360.A$
+145359.A12$145371.A2.A$145373.A$145373.2A$145374.A26$145387.A.2A$
+145389.2A2$145390.A5$145375.A.2A$145377.2A2$145378.A2$120540.A2.2A$
+120543.2A$120542.A2$120544.A508$120028.A2.2A$120031.2A$120030.A2$
+120032.A436$201802.A$201804.A5$201780.A2$201780.2A$201780.2A.A10$
+201764.A$201764.2A$201765.A$201764.A2.A3$201798.A$201797.A13$201776.A
+$201776.2A$201777.A$201776.A2.A30$119516.A2.2A$119519.2A$119518.A2$
+119520.A508$119004.A2.2A$119007.2A$119006.A2$119008.A308$139494.2A2.A
+$139495.2A$139498.A2$139498.A196$118492.A2.2A$118495.2A$118494.A2$
+118496.A508$117980.A2.2A$117983.2A$117982.A2$117984.A416$196265.A2.2A
+$196268.2A$196267.A2$196269.A88$117468.A2.2A$117471.2A$117470.A2$
+117472.A37$200887.A$200887.2A$200888.A$200887.A2.A9$200927.A2$200928.
+A6$200895.A$200895.2A$200896.A$200895.A2.A10$200924.A2$200925.2A$
+200924.A.2A10$200960.2A182$142514.A$142513.A12$142525.A2.A$142527.A$
+142527.2A$142528.A26$142541.A.2A$142543.2A2$142544.A5$142529.A.2A$
+142531.2A2$142532.A190$116956.A2.2A$116959.2A$116958.A2$116960.A76$
+147218.2A$147219.A$147218.A2.A$147219.A.A81$197727.A.A$197727.A.2A2$
+197729.2A162$179950.2A2.A$179951.2A$179954.A2$179954.A179$116444.A2.
+2A$116447.2A$116446.A2$116448.A15$198637.A.A$198637.A.2A2$198639.2A
+434$195952.A.A$195952.2A.A2$195954.2A53$115932.A2.2A$115935.2A$
+115934.A2$115936.A269$145564.A2$145564.A$145566.2A$145564.A2.2A199$
+148201.A$148201.2A$148202.A2$148201.A.A.A32$115420.A2.2A$115423.2A$
+115422.A2$115424.A508$114908.A2.2A$114911.2A$114910.A2$114912.A102$
+198379.A$198381.A6$198356.A.2A$198358.2A2$198359.A10$198340.A2.A$
+198342.A$198342.2A$198343.A2$198375.A$198374.A14$198352.A2.A$198354.A
+$198354.2A$198355.A363$114396.A2.2A$114399.2A$114398.A2$114400.A508$
+113884.A2.2A$113887.2A$113886.A2$113888.A508$113372.A2.2A$113375.2A$
+113374.A2$113376.A508$112860.A2.2A$112863.2A$112862.A2$112864.A336$
+194169.A2.A$194171.A$194171.2A$194172.A8$194210.A2$194211.A7$194177.A
+2.A$194179.A$194179.2A$194180.A10$194206.2A.A$194207.2A2$194209.A9$
+194243.2A127$112348.A2.2A$112351.2A$112350.A2$112352.A508$111836.A2.
+2A$111839.2A$111838.A2$111840.A508$111324.A2.2A$111327.2A$111326.A2$
+111328.A508$110812.A2.2A$110815.2A$110814.A2$110816.A93$193034.A2$
+193036.A$193034.2A$193034.2A2.A211$192260.A$192262.A5$192238.A2$
+192238.2A$192238.2A.A10$192222.A$192222.2A$192223.A$192222.A2.A3$
+192256.A$192255.A13$192234.A$192234.2A$192235.A$192234.A2.A158$
+110300.A2.2A$110303.2A$110302.A2$110304.A508$109788.A2.2A$109791.2A$
+109790.A2$109792.A508$109276.A2.2A$109279.2A$109278.A2$109280.A508$
+108764.A2.2A$108767.2A$108766.A2$108768.A508$108252.A2.2A$108255.2A$
+108254.A2$108256.A277$188808.A2$188809.2A$188808.A.2A9$188828.A2$
+188829.2A$188828.A.2A$188795.A2$188795.2A$188795.2A.A15$188814.A$
+188813.A4$188788.A2$188789.A190$107740.A2.2A$107743.2A$107742.A2$
+107744.A508$107228.A2.2A$107231.2A$107230.A2$107232.A508$106716.A2.2A
+$106719.2A$106718.A2$106720.A111$148567.A$148567.2A$148568.A2$148567.
+A.A.A372$187109.2A.A$187110.2A2$187112.A5$187129.2A.A$187130.2A2$
+187132.A10$106204.A2.2A$106207.2A$106206.A2$106208.A12$187142.A2.A$
+187144.A$187144.2A$187121.A23.A$187123.A32$187155.A$187155.A459$
+105692.A2.2A$105695.2A$105694.A2$105696.A55$186911.A2.A$186913.A$
+186913.2A$186914.A8$186952.A2$186953.A7$186919.A2.A$186921.A$186921.
+2A$186922.A10$186948.2A.A$186949.2A2$186951.A9$186985.2A408$105180.A
+2.2A$105183.2A$105182.A2$105184.A508$104668.A2.2A$104671.2A$104670.A
+2$104672.A508$104156.A2.2A$104159.2A$104158.A2$104160.A508$103644.A2.
+2A$103647.2A$103646.A2$103648.A508$103132.A2.2A$103135.2A$103134.A2$
+103136.A508$102620.A2.2A$102623.2A$102622.A2$102624.A355$180916.A2$
+180917.2A$180916.A.2A5$180936.A2$180937.2A$180936.A.2A26$180949.A$
+180949.2A$180950.A$180949.A2.A$180927.A$180929.A32$180961.A$180961.A
+78$102108.A2.2A$102111.2A$102110.A2$102112.A71$184336.A2$184337.2A$
+184336.A.2A9$184356.A2$184357.2A$184356.A.2A$184323.A2$184323.2A$
+184323.2A.A15$184342.A$184341.A4$184316.A2$184317.A396$101596.A2.2A$
+101599.2A$101598.A2$101600.A508$101084.A2.2A$101087.2A$101086.A2$
+101088.A508$100572.A2.2A$100575.2A$100574.A2$100576.A508$100060.A2.2A
+$100063.2A$100062.A2$100064.A416$181772.A$181771.2A$181770.A.3A$
+181771.A.A$181772.A88$99548.A2.2A$99551.2A$99550.A2$99552.A8$162801.A
+$162801.2A$162802.A2$162801.A.A.A496$99036.A2.2A$99039.2A$99038.A2$
+99040.A508$98524.A2.2A$98527.2A$98526.A2$98528.A508$98012.A2.2A$
+98015.2A$98014.A2$98016.A508$97500.A2.2A$97503.2A$97502.A2$97504.A
+508$96988.A2.2A$96991.2A$96990.A2$96992.A335$195466.A$195466.2A$
+195467.A$195466.A2.A9$195506.A2$195507.A6$195474.A$195474.2A$195475.A
+$195474.A2.A10$195503.A2$195504.2A$195503.A.2A10$195539.2A96$178621.
+2A.A$178622.2A2$178624.A9$178641.2A.A$178642.2A2$178644.A$178608.A.2A
+$178610.2A2$178611.A12$96476.A2.2A$96479.2A$96478.A82149.A$178627.A$
+96480.A3$178602.A2$178603.A503$95964.A2.2A$95967.2A$95966.A2$95968.A
+508$95452.A2.2A$95455.2A$95454.A2$95456.A105$195845.A2.A$195847.A$
+195847.2A$195848.A8$195886.A2$195887.A7$195853.A2.A$195855.A$195855.
+2A$195856.A10$195882.2A.A$195883.2A2$195885.A9$195919.2A358$94940.A2.
+2A$94943.2A$94942.A2$94944.A377$174459.2A$174460.A$174459.A2.A$
+174460.A.A128$94428.A2.2A$94431.2A$94430.A2$94432.A77$176508.A2$
+176509.2A$176508.A.2A5$176528.A2$176529.2A$176528.A.2A26$176541.A$
+176541.2A$176542.A$176541.A2.A$176519.A$176521.A32$176553.A$176553.A
+356$93916.A2.2A$93919.2A$93918.A2$93920.A508$93404.A2.2A$93407.2A$
+93406.A2$93408.A508$92892.A2.2A$92895.2A$92894.A2$92896.A508$92380.A
+2.2A$92383.2A$92382.A2$92384.A205$175665.A2$175666.2A$175665.A.2A9$
+175685.A2$175686.2A$175685.A.2A$175652.A2$175652.2A$175652.2A.A15$
+175671.A$175670.A4$175645.A2$175646.A183$192999.A2.A$193001.A$193001.
+2A$193002.A8$193040.A2$193041.A7$193007.A2.A$193009.A$193009.2A$
+193010.A10$193036.2A.A$193037.2A2$193039.A9$193073.2A34$91868.A2.2A$
+91871.2A$91870.A2$91872.A508$91356.A2.2A$91359.2A$91358.A2$91360.A
+508$90844.A2.2A$90847.2A$90846.A2$90848.A508$90332.A2.2A$90335.2A$
+90334.A2$90336.A508$89820.A2.2A$89823.2A$89822.A2$89824.A256$173084.
+2A.A$173085.2A2$173087.A5$173104.2A.A$173105.2A2$173107.A26$173117.A
+2.A$173119.A$173119.2A$173096.A23.A$173098.A32$173130.A$173130.A178$
+89308.A2.2A$89311.2A$89310.A2$89312.A508$88796.A2.2A$88799.2A$88798.A
+2$88800.A508$88284.A2.2A$88287.2A$88286.A2$88288.A508$87772.A2.2A$
+87775.2A$87774.A2$87776.A504$168947.2A.A$168948.2A2$168950.A$87260.A
+2.2A$87263.2A$87262.A2$87264.A4$168967.2A.A$168968.2A2$168970.A$
+168934.A.2A$168936.2A2$168937.A14$168954.A$168953.A4$168928.A2$
+168929.A476$86748.A2.2A$86751.2A$86750.A2$86752.A508$86236.A2.2A$
+86239.2A$86238.A2$86240.A508$85724.A2.2A$85727.2A$85726.A2$85728.A
+461$166966.A2$166967.2A$166966.A.2A5$166986.A2$166987.2A$166986.A.2A
+26$166999.A$166999.2A$167000.A$166999.A2.A$166977.A$166979.A5$85212.A
+2.2A$85215.2A$85214.A2$85216.A23$167011.A$167011.A484$84700.A2.2A$
+84703.2A$84702.A2$84704.A508$84188.A2.2A$84191.2A$84190.A2$84192.A
+508$83676.A2.2A$83679.2A$83678.A2$83680.A508$83164.A2.2A$83167.2A$
+83166.A2$83168.A508$82652.A2.2A$82655.2A$82654.A2$82656.A508$82140.A
+2.2A$82143.2A$82142.A2$82144.A508$81628.A2.2A$81631.2A$81630.A2$
+81632.A508$81116.A2.2A$81119.2A$81118.A2$81120.A508$80604.A2.2A$
+80607.2A$80606.A2$80608.A223$161689.2A.A$161690.2A2$161692.A9$161709.
+2A.A$161710.2A2$161712.A$161676.A.2A$161678.2A2$161679.A14$161696.A$
+161695.A4$161670.A2$161671.A245$80092.A2.2A$80095.2A$80094.A2$80096.A
+508$79580.A2.2A$79583.2A$79582.A2$79584.A508$79068.A2.2A$79071.2A$
+79070.A2$79072.A508$78556.A2.2A$78559.2A$78558.A2$78560.A508$78044.A
+2.2A$78047.2A$78046.A2$78048.A508$77532.A2.2A$77535.2A$77534.A2$
+77536.A508$77020.A2.2A$77023.2A$77022.A2$77024.A508$76508.A2.2A$
+76511.2A$76510.A2$76512.A508$75996.A2.2A$75999.2A$75998.A2$76000.A
+508$75484.A2.2A$75487.2A$75486.A2$75488.A508$74972.A2.2A$74975.2A$
+74974.A2$74976.A508$74460.A2.2A$74463.2A$74462.A2$74464.A508$73948.A
+2.2A$73951.2A$73950.A2$73952.A508$73436.A2.2A$73439.2A$73438.A2$
+73440.A508$72924.A2.2A$72927.2A$72926.A2$72928.A508$72412.A2.2A$
+72415.2A$72414.A2$72416.A508$71900.A2.2A$71903.2A$71902.A2$71904.A13$
+70265.A2$70266.A4$70241.A$70240.A13$70255.A$70257.A2.A$70255.A$70256.
+3A$70225.A28.A.A.A.A$70221.A2.A30.4A$70227.A27.2A2.A.A$70225.3A29.A$
+70224.A.A.A.A$70227.4A$70225.A.A2.2A$70230.A5$70245.A$70241.A2.A$
+70247.A$70245.3A$70244.A.A.A.A$70247.4A$70245.A.A2.2A$70250.A120$
+70038.2A8$70074.A$70070.A2.A$70076.A$70074.3A$70073.A.A.A.A$70076.4A$
+70074.A.A2.2A$70079.A3$70100.A$70099.4A$70101.A$70101.2A$70100.2A.2A$
+70102.2A$70100.A2.A2.A$70102.A2.A3$70105.A4$70071.A2$70072.A4$70108.A
+$70107.4A$70109.A$70109.2A$70108.2A.2A$70110.2A$70108.A2.A2.A$70110.A
+2.A3$70113.A59$70371.A.A$70371.A2.A$70373.A$70373.2A45$70402.A$70404.
+A2.A$70402.A$70403.3A$70401.A.A.A.A$70402.4A$70402.2A2.A.A$70404.A$
+70390.A$70392.A2.A$70390.A$70391.3A$70389.A.A.A.A$70390.4A$70390.2A2.
+A.A$70392.A19$70406.A$70405.4A$70407.A$70407.2A$70406.2A.2A$70408.2A$
+70406.A2.A2.A$70408.A2.A3$70411.A9$70423.A$70422.A118$170244.A2$
+170245.2A$170244.A.2A2$71388.A2.2A$71391.2A$71390.A2$71392.A3$170264.
+A2$170265.2A$170264.A.2A$170231.A2$170231.2A$170231.2A.A15$170250.A$
+170249.A4$170224.A2$170225.A128$71047.3A2$71049.A$71049.2A10$71088.2A
+7$71055.3A2$71057.A$71057.2A11$71085.A$71085.2A.A$71088.A$71088.A8$
+71121.A2$71122.A111$70924.3A$70925.2A$70926.A.2A$70929.A9$70944.3A$
+70945.2A$70946.A.2A$70949.A$70912.3A$70913.2A$70911.2A.A$70912.A8$
+71016.A$71012.A2.A$71018.A$71016.3A$71015.A.A.A.A$71018.4A$71016.A.A
+2.2A$71021.A7$70902.A$70902.A71$70923.A$70925.A10$70922.2A$70923.A2$
+70923.3A$70924.2A$70925.A26$70935.3A$70936.2A$70937.A.2A$70940.A5$
+70955.3A$70956.2A$70957.A.2A$70960.A54$70977.2A$70978.A$70977.A2.A$
+70978.A.A28$71118.A$71119.A11$71130.2A$71130.A.A$71130.A3.A$71131.2A.
+2A$71134.3A31.2A$71168.A.A$71167.A3.A$71167.2A.2A$71167.3A4$70775.2A$
+70776.A2$70776.3A$70777.2A381.2A$70778.A381.A.A$71159.A3.A$71159.2A.
+2A$71159.3A5$70748.A2$70749.A5$70787.2A$70788.A2$70788.3A$70789.2A$
+70790.A$71219.A.A$71219.2A.A2$71221.2A6$70772.3A$70773.2A$70771.2A.A$
+70772.A9$70748.2A86$71489.A$71489.A5$71466.2A$71466.A.A$71465.A3.A$
+71465.2A.2A$71465.3A7$71449.A$71449.2A$71449.3A2$71450.A.A$71450.A2.A
+$71451.3A2$71483.A$71484.A11$71078.3A380.A$71079.2A380.2A$71077.2A.A
+380.3A$71078.A$71462.A.A$71462.A2.A$71463.3A6$71070.3A$71071.2A$
+71069.2A.A$71070.A$71106.3A$71107.2A$71108.A.2A$71111.A14$71106.A$
+71108.A4$71137.A2$71138.A76$71281.2A$71281.A.A$71281.A3.A$71282.2A.2A
+$71285.3A4$71301.2A$71301.A.A$71301.A3.A$71302.2A.2A$71305.3A23$
+71314.A$71314.2A$71314.3A2$71315.A.A$71315.A2.A$71294.A21.3A$71294.A
+32$71326.A$71328.A343$170623.2A.A$170624.2A2$170626.A9$170643.2A.A$
+170644.2A2$170646.A$170610.A.2A$170612.2A2$170613.A14$170630.A$
+170629.A4$170604.A2$170605.A3356$167777.2A.A$167778.2A2$167780.A9$
+167797.2A.A$167798.2A2$167800.A$167764.A.2A$167766.2A2$167767.A14$
+167784.A$167783.A4$167758.A2$167759.A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

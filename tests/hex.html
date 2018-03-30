@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Hex test with GRID</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ GRID ]]
+#N Hex test
+#O Not sure but put into LifeViewer tests
+x = 23, y = 23, rule = B2/S34H
+5bo$6bo$5b4o$4b3ob3o$3b3o4b3o$2b3o7b3obo$4o10b3o$2bo13bo$2b2o12b2o$3bo
+13bo$3b2o12b2o$4bo13bo$4b2o12b2o$5bo13bo$5b2o4bo2bo4b2o$6bo6bo6bo$6b3o
+10b4o$6bob3o3bo3b3o$10b3o4b3o$12b3ob3o$14b4o$16bo$17bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Hex test History</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 4023, y = 23, rule = B2/S34HHistory
+5bC$6bo$5b4o$4b3ob3o$3b3o4b3o$2b3o7b3obo$4o10b3o$2bo13bo$2b2o12b2o$3bo
+13bo$3b2o12b2o$4bo13bo$4b2o12b2o$5bo13bo$5b2o4bo2bo4b2o$6bo6bo6bo$6b3o
+10b4o$6bob3o3bo3b3o$10b3o4b3o$12b3ob3o$14b4o$16bo$17bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Non-Hex test</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 23, y = 23, rule = B2/S34
+5bo$6bo$5b4o$4b3ob3o$3b3o4b3o$2b3o7b3obo$4o10b3o$2bo13bo$2b2o12b2o$3bo
+13bo$3b2o12b2o$4bo13bo$4b2o12b2o$5bo13bo$5b2o4bo2bo4b2o$6bo6bo6bo$6b3o
+10b4o$6bob3o3bo3b3o$10b3o4b3o$12b3ob3o$14b4o$16bo$17bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Non-Hex rule with HEXDISPLAY test</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ HEXDISPLAY ]]
+x = 23, y = 23, rule = UnknownHexRule
+5bo$6bo$5b4o$4b3ob3o$3b3o4b3o$2b3o7b3obo$4o10b3o$2bo13bo$2b2o12b2o$3bo
+13bo$3b2o12b2o$4bo13bo$4b2o12b2o$5bo13bo$5b2o4bo2bo4b2o$6bo6bo6bo$6b3o
+10b4o$6bob3o3bo3b3o$10b3o4b3o$12b3ob3o$14b4o$16bo$17bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Hex rule with SQUAREDISPLAY test</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ SQUAREDISPLAY ]]
+x = 23, y = 23, rule = B2/S34H
+5bo$6bo$5b4o$4b3ob3o$3b3o4b3o$2b3o7b3obo$4o10b3o$2bo13bo$2b2o12b2o$3bo
+13bo$3b2o12b2o$4bo13bo$4b2o12b2o$5bo13bo$5b2o4bo2bo4b2o$6bo6bo6bo$6b3o
+10b4o$6bob3o3bo3b3o$10b3o4b3o$12b3ob3o$14b4o$16bo$17bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Illegal digit in Hex test</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 23, y = 23, rule = B28/S34H
+5bo$6bo$5b4o$4b3ob3o$3b3o4b3o$2b3o7b3obo$4o10b3o$2bo13bo$2b2o12b2o$3bo
+13bo$3b2o12b2o$4bo13bo$4b2o12b2o$5bo13bo$5b2o4bo2bo4b2o$6bo6bo6bo$6b3o
+10b4o$6bob3o3bo3b3o$10b3o4b3o$12b3ob3o$14b4o$16bo$17bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Hex test 2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C p9:  p9 inside, p3 outside
+x = 37, y = 37, rule = B2/S34H
+10b2o$9b5o$8b3o2b3o$8b2o5b2o8b2o$9bo6bo7b5o$2b2o5b2o5b2o5b3o2b3o$b5o4b
+o6bo5b2o5b2o$3o2b3o2b2o5b2o5bo6bo$2o5b2o2b3o2b3o5b2o5b2o$bo6bo4b5o7bo
+6bo$b2o5b2o5b2o8b2o5b2o$2bo6bo6bo7b5o2b3o$2b2o5b2o4b4o4b3o2b5o$3b3o2b
+5ob3ob3ob3o5b2o$5b5o2b4o4b4o$7b2o5bo7bo$14b10o$15bo7bo$15b10o3b2o$16bo
+7bo2b5o$8b2o5b4o4b6o2b3o$7b5o2b3ob3ob3ob2o5b2o$6b3o2b5o4b4o3bo6bo$6b2o
+5b2o7bo4b2o5b2o$7bo6bo7b2o4bo6bo$7b2o5b2o7bo4b2o5b2o$8bo6bo7b2o4b3o2b
+3o$8b2o5b2o5b5o4b5o$9b3o2b3o4b3o2b3o4b2o$11b5o5b2o5b2o$13b2o7bo6bo$22b
+2o5b2o$23bo6bo$23b2o5b2o$24b3o2b3o$26b5o$28b2o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Hex test 3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 50, y = 136, rule = B2/S34H
+46bo$24bo17bo$22bo23bo$24bo17bobo$22b3o18bo3b2o$25bo19bobo$23b3o17bob
+2obo$25bobo14bo3b2o$25bobo$24b2o17b2o$22bo5bo$23bo22b2o$27b2o14b4o$27b
+o17b3o$23bo$25b2obo13bobo$23bo2bobo15b3o$25bob3o12b2o$21bo2bob3o12bo4b
+o$22b3o3b2o15b3o$21bo2bob2o13bo3bo$26bobo15bobobo$23b2o2bo15b2o2b2o$
+24b2o3bo14b2o3bo$25b2obo16b2obo$27bo19bo6$47bo$24bo2b2o14b2o$23bo23bo$
+24bo3bo14bo2b2o$26bo17bo$25b2o2bo13bob3o$23bo2b3o15bob2obo$25bo17bo4bo
+$24bobo$bo43b3o$25bo18b2o$2b2o20b4o17b3o$3bo21b4o17b2o$4bo42b2o$22bobo
+17bobo$2bo21b3o17b3o$bobo18b2o18b2o$o20bo4bo14bo4bo$b2o22b3o17b3o$3bo
+17bo3bo15bo3bo$2bo21bobobo15bobobo$2bobo18b2o2b2o14b2o2b2o$3bo20b2o3bo
+14b2o3bo$2b2o21b2obo16b2obo$6bobo18bo19bo$3b3o$4b2ob2o2$7bo$3bo$4bobob
+o32bo$3b2o2bo19bo$4b2o36b2o$5b2o14bo3bobo$7bo16bo17bobo$27bo$25b3o14bo
+$22bo2bo16bo2bo$23bo19bo$25b2o18b2o$24bo19bo$21bob2o2b2o12bob2o2b2o$
+24bobo17bobo$21bobo17bobo$26bo19bo$21b3o17b3o$26bo19bo$8bo12bo4bo14bo
+4bo$7b2o13b4o16b4o$6bo3bo10bo2b2o15bo2b2o$2bo4b3o16bobo17bobo$6bo2b2o
+12b2o2bo15b2o2bo$2b3o3bo15b2o3bo14b2o3bo$3bo3bo17b2obo16b2obo$27bo19bo
+$4b2obo$5b2o$3bo4bo$3b3o2$4bo$3b2o$4b2o$5b2o36bo$7bo19bo14bo2$27bo14bo
+$25bo16bo2bo$24b2o2b2o13bo$4bo17bo5bo16b2o$23bo5bo14bo$2bobo22b2o12bob
+2o2b2o$3bo23bo16bobo$2b2o19bo17bobo$6bobo16b2obo17bo$3b3o17bo2bobo12b
+3o$4b2ob2o16bob3o16bo$21bo2bob3o12bo4bo$7bo14b3o3b2o12b4o$3bo17bo2bob
+2o13bo2b2o$4bobobo17bobo17bobo$3b2o2bo15b2o2bo15b2o2bo$4b2o18b2o3bo14b
+2o3bo$5b2o18b2obo16b2obo$7bo19bo19bo6$2bo$6bo$2b3o$3bo3bo$32bobo$4b2ob
+o26b3o$5b2o25b2o$3bo4bo22bo4bo$3b3o29b3o$31bo3bo$4bo29bobobo$3b2o28b2o
+2b2o$4b2o28b2o3bo$5b2o28b2obo$7bo29bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Hex test 3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 5, y = 5, rule = B256/S34H
+o2$bo$b2o$o3bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Hex Generations!</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ AUTOFIT ]]
+x = 5, y = 5, rule = B23456/S2456/8H
+o2$bo$b2o$o3bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Hex test 3 - bounded grid</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 5, y = 5, rule = B256/S34H:T20,20
+o2$bo$b2o$o3bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Hex Generations! - bounded grid</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 5, y = 5, rule = B23456/S2456/8H:T20,20
+o2$bo$b2o$o3bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

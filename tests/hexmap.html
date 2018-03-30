@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Bottom right Hex MAP</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = MAPIIA45D4DEAA128390372D4
+o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Hex MAP</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 25, y = 13, rule = MAPFAMgVwhXAP4AP4B+gH4A6A
+17b2o$2bo15b2obo$b2obo13bob2o$2ob3o13b2ob2o$2bobobo13bobo$2b2ob4o3b2o
+6bob2o$2bob2obo5b3o4b3obo$13bobo6bo$12b4o$12bo3bo$13b5o$15bo$15bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Hex as full MAP</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 25, y = 13, rule = MAPEUQAMyIAVXcRRAAzIgBVdwCIVXcAAP/uAIhVdwAA/+4AADP/iAB37gAAM/+IAHfuiAB37gAA7oiIAHfuAADuiA
+17b2o$2bo15b2obo$b2obo13bob2o$2ob3o13b2ob2o$2bobobo13bobo$2b2ob4o3b2o
+6bob2o$2bob2obo5b3o4b3obo$13bobo6bo$12b4o$12bo3bo$13b5o$15bo$15bo!
+[[ HEXDISPLAY ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

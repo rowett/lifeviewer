@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer"content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Missing yellow in Star Wars</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 173, y = 201, rule = 345/2/4
+84.C.C.C2$84.C2$84.C2$84.C2$84.C.C.C3$86.C$86.C$86.C$86.C$86.C$86.C$
+86.C$86.C$86.C$86.C$86.C$86.C$86.C$84.C.C.C$85.3C$86.C6$85.2B$85.2A
+57$C.C2$C3.C2$C.C.C18.C.C.C2$C3.C18.C3.C2$C.C20.C.C.C$71.A$2.C20.C3.C
+42.3A$2.C68.A$2.C20.C3.C$2.C30.A133.A$2.C22.C6.3A131.3A$2.C22.C7.A
+133.A$2.C22.C19.A7.A$2.C22.C11.A6.3A5.3A5.A9.A92.A$2.C22.C10.3A6.A7.A
+5.3A7.3A90.3A$2.C22.C11.A7.A14.A9.A92.A$2.C22.C18.3A$C.C.C20.C19.A$.
+3C21.C$2.C22.C$25.C$25.C$23.C.C.C$24.3C$25.C$.BA$.BA$69.A$68.3A$69.A$
+24.BA$24.BA47.A$38.A33.3A$37.3A33.A$38.A$138.A$42.A94.3A$41.3A94.A$
+42.A29.A2.A$71.6A23.A$72.A2.A23.3A$100.A$112.A7.A50.A$104.A6.3A5.3A5.
+A9.A32.3A$103.3A6.A7.A5.3A7.3A25.A6.A$72.A2.A28.A7.A14.A9.A25.3A$71.
+6A34.3A50.2A.A$72.A2.A36.A51.A.3A$164.2A.A$163.3A$164.A5$71.A$70.3A$
+71.A64.A$135.3A$60.A6.A68.A$59.3A4.3A16.A$60.A6.A16.3A53.A$85.A19.A
+33.3A$104.3A33.A$81.A23.A$80.3A$81.A27.A$108.3A$109.A29.A2.A$138.6A$
+42.A22.A73.A2.A$41.3A20.3A$42.A22.A2$38.A30.A$37.3A28.3A68.A2.A$38.A
+30.A68.6A$139.A2.A8$138.A$137.3A$138.A2$127.A6.A$126.3A4.3A$127.A6.A
+9$109.A22.A$108.3A20.3A$109.A22.A2$105.A30.A$104.3A28.3A$105.A30.A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<h2>Missing yellow in Star Wars</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 352, y = 263, rule = 345/2/4
+248.A$247.3A$248.A2$252.A$251.3A87.C3.C$252.A$341.C3.C$304.A$297.A5.
+3A35.C.C.C3.3C$296.3A5.A44.C$297.A47.C3.3C$351.C$345.C3.3C21$21.C.C2$
+21.C3.C2$21.C.C.C18.C.C.C2$21.C3.C18.C3.C2$21.C.C20.C.C.C2$23.C20.C3.
+C$23.C$23.C20.C3.C$23.C$23.C22.C$23.C22.C$23.C22.C$23.C22.C$23.C22.C$
+23.C22.C$23.C22.C$21.C.C.C20.C$22.3C21.C$6.C.C.C12.C22.C$38.A7.C$10.C
+26.3A6.C$38.A5.C.C.C$6.C.C.C3.3C28.3C$14.C19.A11.C$6.C7.3C5.BA9.3A25.
+A$16.C5.BA10.A25.3A$6.C.C.C3.3C44.A2$57.A$45.BA9.3A$45.BA10.A7$199.A
+30.A$198.3A28.3A$199.A30.A2$203.A22.A$202.3A20.3A$203.A22.A9$221.A6.A
+$220.3A4.3A$221.A6.A2$232.A$231.3A107.C.C.C$232.A$345.C$304.A$297.A5.
+3A35.C.C.C3.3C$296.3A5.A44.C$297.A43.C7.3C$351.C$341.C.C.C3.3C$233.A
+2.A$132.A30.A68.6A$131.3A28.3A68.A2.A$132.A30.A2$136.A22.A$135.3A20.
+3A$136.A22.A73.A2.A$232.6A$203.A29.A2.A$202.3A$175.A27.A$174.3A$175.A
+23.A$198.3A33.A$179.A19.A33.3A$154.A6.A16.3A53.A$153.3A4.3A16.A73.A$
+154.A6.A68.A21.3A$229.3A21.A$165.A64.A$164.3A$165.A2$35.A219.A$34.3A
+217.3A$35.A219.A2$55.A2.A200.A$54.6A198.3A$34.A20.A2.A107.A2.A36.A52.
+A$33.3A129.6A34.3A49.2A.2A$34.A131.A2.A28.A7.A13.A10.A24.7A$197.3A6.A
+7.A4.3A8.3A24.A3.A$198.A6.3A5.3A4.A10.A$206.A7.A$194.A$166.A2.A23.3A$
+165.6A23.A$136.A29.A2.A$135.3A94.A$136.A94.3A$232.A$132.A$77.A7.A7.A
+7.A7.A7.A13.3A33.A$76.3A5.3A5.3A5.3A5.3A5.3A13.A33.3A$68.A8.A7.A7.A7.
+A7.A7.A49.A$67.3A7.A7.A7.A7.A7.A7.A$56.A8.2B.A7.3A5.3A5.3A5.3A5.3A5.
+3A44.A$55.3A7.2B10.A7.A7.A7.A7.A7.A44.3A$56.A106.A$123.A$52.A69.3A$
+42.2B7.3A7.A61.A$42.2B8.A7.3A$61.A$61.A$60.3A$33.A27.A$32.3A$33.A105.
+A32.A11.A7.A7.A7.A7.A7.A7.A$138.3A30.3A9.3A5.3A5.3A5.3A5.3A5.3A5.3A$
+29.A101.A7.A14.A9.A7.A11.A7.A7.A7.A7.A7.A7.A13.A10.A$28.3A99.3A6.A7.A
+5.3A7.3A6.A11.A7.A7.A7.A7.A7.A7.A7.A4.3A8.3A$29.A101.A6.3A5.3A5.A9.A
+6.3A9.3A5.3A5.3A5.3A5.3A5.3A5.3A5.3A4.A10.A$139.A7.A24.A11.A7.A7.A7.A
+7.A7.A7.A7.A$127.A133.A$126.3A131.3A$127.A133.A2$165.A$164.3A$165.A5$
+59.A30.A$58.3A28.3A$59.A30.A2$63.A22.A$62.3A20.3A$63.A22.A9$81.A6.A$
+80.3A4.3A$81.A6.A2$92.A$91.3A$92.A2$304.A$297.A5.3A$296.3A5.A$297.A3$
+93.A2.A$92.6A$93.A2.A2$345.C2$345.C$93.A2.A$92.6A247.C3.3C$63.A29.A2.
+A252.C$62.3A280.C3.3C$63.A287.C$345.C3.3C$59.A$58.3A33.A$59.A33.3A$C
+44.BA47.A$45.BA$C89.A$89.3A$C3.3C83.A$4.C17.BA$C3.3C15.BA$6.C39.C$C3.
+3C38.3C$44.C.C.C$46.C$46.C$23.C22.C$22.3C21.C$21.C.C.C20.C19.A$23.C
+22.C18.3A$23.C22.C11.A7.A14.A9.A88.A$23.C22.C10.3A6.A7.A5.3A7.3A86.3A
+$23.C22.C11.A6.3A5.3A5.A9.A88.A$23.C22.C19.A7.A$23.C22.C7.A129.A$23.C
+22.C6.3A127.3A$23.C30.A129.A$23.C20.C.C.C$23.C68.A$23.C20.C3.C42.3A$
+92.A$21.C.C20.C.C.C2$21.C3.C18.C3.C2$21.C.C.C18.C3.C2$21.C3.C2$21.C.C
+!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

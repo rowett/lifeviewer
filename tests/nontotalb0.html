@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Non-totalistic B0 test 1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 3, y = 6, rule = B01c2c35i/S23
+bo$bo$3o$obo$obo$o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Non-totalistic B0 test 2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 104, y = 79, rule = B012ai3-ciy4aceqryz5cenqr6n/S1e2aik3acjkq4jnqrtwy5cjnr6e
+49bobo$48b2ob2o2$48b2ob2o$49bobo$56b2o21bobo$55b4o18bobob2o$56bob2o7bo
+bob3o3b5o$55bo2bob2o4b3o2b7obob2o5b2o4bo$15bo36bo2bobo2bobobob2obob5o
+2bobob2o2b6o$14bob2o39bo3b6ob8obo2b2o2bobo2bob4o$15bobo6b3o29bobob17ob
+4o3b2ob4o$15b3o5bob3o8bo18b3o4b23o3bob6o$15b4o3bo3b2o5b2o14bo4bobo3bo
+4b20o2b2o2b3obo$18bo4bo2b3o6bob2o9bob5ob3obob2ob21obo2b6o$17bobob2o4b
+2ob4o3bo2bo6bob3obo2bo5bo2b20ob2o2bob4o$17b2o9b2obob2obo2b2ob2ob5obob
+6o3b24o6bob2ob2o$16b7obobob2o2b2obo4b3ob4obobob5obo2b2obobob13ob2o8bo$
+16bobo8b5obo6bob4ob2ob2ob3ob5ob4obo4b3obobo14bo$13bob2ob2obo2b4ob2o9b
+5o2b2obob5o2bob4o3bo3b2o2b3o15bo$11b3obo3bo4b3ob3o11b6o3bob5obob3o10bo
+bo$16b2ob2ob2obob2o2bo9bob9o2b5o14b3o$12b2ob2o3bo3b2o3bo12bob16o12b2ob
+o$12bob2o2bob3o19bob12obo$13b2ob2obobo17bo3b7o4bo3bo$11bob2obo22b2o3b
+5obob3obo46bo$11bo2b2o24bob6ob2o3bo46b2o$10bobobobo23bobob5obobobo6bo
+40b2o$10b3ob3o20bo5bob4o2b4o6b2o39bo$10b3ob3o17b3o5bo2b5obo22bo10b4o
+12b2o$7bob7obo16b2obo3b2ob2o2bob2obo33b2o$8b11o14bob2o7b4ob2o14bobo3b
+3o11bo4bo$3bobob11o12bo2bob2o9b5obo19bobo15b2o$b18o9b2obob2obo11bobob
+2o11bobo21b2obob2o$6ob14o7bobobob3o12b4o12bobo23b6o$5obob13o7b7obo12b
+3o36bob6o$b5o2b9ob5o3b3o3b4o14bo14bobo16b2o3b8o$2b3o4b10ob2o5b3o2b2o
+51b11o$7bo2b5o2bobobobobob5o53b11o$5b3ob5o4bobo2bobo2bob3o53b9o$7b2obo
+bobo4bob2obob3obobobo34bo2bo11bo2b8o$14bo4b5ob4obobo38bo13b11o$18b3o3b
+ob4o39b4ob2o8b13o$16b2ob3o3b5obo39b2obo7b16o$14b2obob4o3b4ob3o37b2ob2o
+7b16o$14b9ob7o2bo36bo2bob2o8b13o$12bob8obob4o6b2o33bo2b2obo8b14o$14b4o
+b4o3b2obo5bobobobo20bobo2bobob3ob2o8b14o$12b2ob2ob2o2b3ob4ob2o8b2o19bo
+3b9ob2obo4b16o$15b2o3b3o2b5o7bob2obobo16bob13obobob2ob2ob14o$16bo5b2ob
+7obo7bo17b25o2b15o$11bo3b3o2b12o8bob2obo14b23ob4ob11o$8b4o2bob5o3bob8o
+10bo12b25o2bo3bob11o$6bob2o5bo2b4o2bobo3bo10bo2bo10bo2b22obob6ob2obobo
+b5o$7b2ob2ob2obobo7bo18b2obob2ob3ob19obob2o7b3o3b9o$8b2o4bob2ob3o19bob
+2o2b4ob7o2b12o3b3o7b3o4b3ob6o$8bobob7o11bo12b2o2b6o3bo4bob11ob2o10bo5b
+ob2o3b2o$9bob13o16b2ob13obobo3b6o5bob2o10b2obo6b3o$9b11ob4o15b6o2b12o
+4bo2b2o2b2ob2o13bobobobob5o$9b12o17b2o3b3o4b5o4bob4ob2obob3o13b3o7b4o$
+11b10obo16b4ob3ob2ob4o3b2ob2o2bobob5obo22b4o$8bobo2b6ob3o16b7o3b2ob3ob
+3ob3ob2obo3b4o12b2o8b4o$7b4o2b5ob3o16b8ob2o4bob5o2bobo3bo2bo2bo10bobo
+10b2o$13bobob3o18b6o2b4o4bo3bo3b2o6b2o$8bo4b2o2b3o17b10obo5b2ob2obobo
+5b3o$20bo16b5obobob2o8b2ob2o5b2o$19bo17b4obo2bobo9bo3bo2b2o3bo$19bo16b
+2ob2obobobo9bo3bo4b2o2bo$39b2obobo13bo5bo4b2o$56bo2bo5bobo2b2o$43bo15b
+o8b5o$56bo9b4obo$67b4o$67b3o$67bo$65bobo$38b2o26b2obo$37bo30bo$38bo30b
+o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Non-totalistic B0 test 3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 5, y = 4, rule = B012ai3-ciy4aceqryz5cenqr6n/S1e2aik3acjkq4jnqrtwy5cjnr6e
+bobo2$2b2o$2bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

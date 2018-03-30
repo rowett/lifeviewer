@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Bounded grid pattern not defined size</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 25, y = 25, rule = B3/S23:P25,25
+$8b2o$7b2o$8b2o$9bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Bounded grid tube bug?</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 11, y = 52, rule = B2/S234:T0,52
+3bo$3bob3o$3bo$3bo4b2o$3bo6bo$2b8o2$b8o$2bo6bo$2bo4b2o$2bo$2bob3o$2bo$
+2bo$2bob3o$2bo$2bo4b2o$2bo6bo$b8o2$8o$bo6bo$bo4b2o$bo$bob3o$bo$bo$bob
+3o$bo$bo4b2o$bo6bo$8o2$b8o$2bo6bo$2bo4b2o$2bo$2bob3o$2bo$2bo$2bob3o$2b
+o$2bo4b2o$2bo6bo$b8o2$2b8o$3bo6bo$3bo4b2o$3bo$3bob3o$3bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Bounded grid P test 1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 20, y = 20, rule = B3/S23:P20,20
+bo2b3ob2ob3ob4o$2ob4o2b5obob3o$b2o2b5o2b2o3b2o$4ob2ob3ob5ob2o$2bob8ob
+2ob3o$3ob4obob2o5bo$obobob3obo2b2o2bobo$3bo3b2obobobo2b3o$o4b3obo2b2ob
+o2b2o$bobo2b2obob8o$8obo2bobo2bobo$3b2ob3o4b5obo$2bobo2b2o2b3ob2ob2o$b
+ob3obo3bobo3bobo$2o2b2obob8ob2o$2o5b3obob2o2b3o$2b2obob3o2bob6o$2o2b2o
+bo2b2o2bo2b2o$2obobo5b3ob4o$o2b4obo3bob4o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Bounded grid T test 1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 20, y = 7, rule = B3/S23:T20,20
+o4bo8bo4bo$o3bo10bo3bo$4b3o6b3o3$9b2o$9b2o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Bounded grid T test 2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 362, y = 362, rule = B3/S23:T362,362
+b3o226b3o19bo2bo11bo24b2o17b2o11bo22bo2bo$o2bo19b3o226b3o12bo2bo22bo
+11b2o17b2o24bo$o22bo2bo12b3o226b3o19bo2bo11bo24b2o17b2o$2o24bo11bo2bo
+19b3o226b3o12bo2bo22bo11b2o$6b2o17b2o11bo22bo2bo12b3o226b3o19bo2bo11bo
+$7bo11b2o17b2o24bo11bo2bo19b3o226b3o12bo2bo$4bo2bo11bo24b2o17b2o11bo
+22bo2bo12b3o226b3o$4b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$20b3o19bo
+2bo11bo24b2o17b2o11bo22bo2bo12b3o$42b3o12bo2bo22bo11b2o17b2o24bo11bo2b
+o19b3o$58b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$80b3o12bo2bo22bo11b
+2o17b2o24bo11bo2bo19b3o$96b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$
+118b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$134b3o19bo2bo11bo24b2o17b
+2o11bo22bo2bo12b3o$156b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$172b3o
+19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$194b3o12bo2bo22bo11b2o17b2o24bo
+11bo2bo19b3o$210b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$3b3o226b3o12b
+o2bo22bo11b2o17b2o24bo11bo2bo$3bo2bo12b3o226b3o19bo2bo11bo24b2o17b2o
+11bo$6bo11bo2bo19b3o226b3o12bo2bo22bo11b2o17b2o$5b2o11bo22bo2bo12b3o
+226b3o19bo2bo11bo24b2o$o17b2o24bo11bo2bo19b3o226b3o12bo2bo22bo11bo$24b
+2o17b2o11bo22bo2bo12b3o226b3o19bo2bo11bo$2bo22bo11b2o17b2o24bo11bo2bo
+19b3o226b3o12bo$3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$22b3o12bo2bo
+22bo11b2o17b2o24bo11bo2bo19b3o$38b3o19bo2bo11bo24b2o17b2o11bo22bo2bo
+12b3o$60b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$76b3o19bo2bo11bo24b2o
+17b2o11bo22bo2bo12b3o$98b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$114b
+3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$136b3o12bo2bo22bo11b2o17b2o24b
+o11bo2bo19b3o$152b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$174b3o12bo2b
+o22bo11b2o17b2o24bo11bo2bo19b3o$190b3o19bo2bo11bo24b2o17b2o11bo22bo2bo
+12b3o$212b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$2o226b3o19bo2bo11bo
+24b2o17b2o11bo22bo2bo12bo$bo19b3o226b3o12bo2bo22bo11b2o17b2o24bo11bo$
+21bo2bo12b3o226b3o19bo2bo11bo24b2o17b2o11bo$24bo11bo2bo19b3o226b3o12bo
+2bo22bo11b2o17b2o$4b2o17b2o11bo22bo2bo12b3o226b3o19bo2bo11bo$5bo11b2o
+17b2o24bo11bo2bo19b3o226b3o12bo2bo$2bo2bo11bo24b2o17b2o11bo22bo2bo12b
+3o226b3o$2b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$18b3o19bo2bo11bo24b
+2o17b2o11bo22bo2bo12b3o$40b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$56b
+3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$78b3o12bo2bo22bo11b2o17b2o24bo
+11bo2bo19b3o$94b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$116b3o12bo2bo
+22bo11b2o17b2o24bo11bo2bo19b3o$132b3o19bo2bo11bo24b2o17b2o11bo22bo2bo
+12b3o$154b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$170b3o19bo2bo11bo24b
+2o17b2o11bo22bo2bo12b3o$192b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$
+208b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$b3o226b3o12bo2bo22bo11b2o
+17b2o24bo11bo2bo$bo2bo12b3o226b3o19bo2bo11bo24b2o17b2o11bo$4bo11bo2bo
+19b3o226b3o12bo2bo22bo11b2o17b2o$3b2o11bo22bo2bo12b3o226b3o19bo2bo11bo
+24b2o$16b2o24bo11bo2bo19b3o226b3o12bo2bo22bo11b2o$22b2o17b2o11bo22bo2b
+o12b3o226b3o19bo2bo11bo$o22bo11b2o17b2o24bo11bo2bo19b3o226b3o12bo$o19b
+o2bo11bo24b2o17b2o11bo22bo2bo12b3o226b2o$20b3o12bo2bo22bo11b2o17b2o24b
+o11bo2bo19b3o$36b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$58b3o12bo2bo
+22bo11b2o17b2o24bo11bo2bo19b3o$74b3o19bo2bo11bo24b2o17b2o11bo22bo2bo
+12b3o$96b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$112b3o19bo2bo11bo24b
+2o17b2o11bo22bo2bo12b3o$134b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$
+150b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$172b3o12bo2bo22bo11b2o17b
+2o24bo11bo2bo19b3o$188b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$210b3o
+12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$226b3o19bo2bo11bo24b2o17b2o11bo
+22bo2bo12b3o$19b3o226b3o12bo2bo22bo11b2o17b2o24bo11bo2bo$19bo2bo12b3o
+226b3o19bo2bo11bo24b2o17b2o11bo$22bo11bo2bo19b3o226b3o12bo2bo22bo11b2o
+17b2o$2b2o17b2o11bo22bo2bo12b3o226b3o19bo2bo11bo$3bo11b2o17b2o24bo11bo
+2bo19b3o226b3o12bo2bo$o2bo11bo24b2o17b2o11bo22bo2bo12b3o226b3o$3o12bo
+2bo22bo11b2o17b2o24bo11bo2bo19b3o$16b3o19bo2bo11bo24b2o17b2o11bo22bo2b
+o12b3o$38b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$54b3o19bo2bo11bo24b
+2o17b2o11bo22bo2bo12b3o$76b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$92b
+3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$114b3o12bo2bo22bo11b2o17b2o24b
+o11bo2bo19b3o$130b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$152b3o12bo2b
+o22bo11b2o17b2o24bo11bo2bo19b3o$168b3o19bo2bo11bo24b2o17b2o11bo22bo2bo
+12b3o$190b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$206b3o19bo2bo11bo24b
+2o17b2o11bo22bo2bo12b3o$2o226b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19bo$
+2bo12b3o226b3o19bo2bo11bo24b2o17b2o11bo22bo$2bo11bo2bo19b3o226b3o12bo
+2bo22bo11b2o17b2o$b2o11bo22bo2bo12b3o226b3o19bo2bo11bo24b2o$14b2o24bo
+11bo2bo19b3o226b3o12bo2bo22bo11b2o$20b2o17b2o11bo22bo2bo12b3o226b3o19b
+o2bo11bo$21bo11b2o17b2o24bo11bo2bo19b3o226b3o12bo2bo$18bo2bo11bo24b2o
+17b2o11bo22bo2bo12b3o226b3o$18b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o
+$34b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$56b3o12bo2bo22bo11b2o17b2o
+24bo11bo2bo19b3o$72b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$94b3o12bo
+2bo22bo11b2o17b2o24bo11bo2bo19b3o$110b3o19bo2bo11bo24b2o17b2o11bo22bo
+2bo12b3o$132b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$148b3o19bo2bo11bo
+24b2o17b2o11bo22bo2bo12b3o$170b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o
+$186b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$208b3o12bo2bo22bo11b2o17b
+2o24bo11bo2bo19b3o$224b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$17b3o
+226b3o12bo2bo22bo11b2o17b2o24bo11bo2bo$17bo2bo12b3o226b3o19bo2bo11bo
+24b2o17b2o11bo$20bo11bo2bo19b3o226b3o12bo2bo22bo11b2o17b2o$2o17b2o11bo
+22bo2bo12b3o226b3o19bo2bo11bo$bo11b2o17b2o24bo11bo2bo19b3o226b3o12bo2b
+o$bo11bo24b2o17b2o11bo22bo2bo12b3o226b3o19bo$o12bo2bo22bo11b2o17b2o24b
+o11bo2bo19b3o226b2o$14b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$36b3o
+12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$52b3o19bo2bo11bo24b2o17b2o11bo
+22bo2bo12b3o$74b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$90b3o19bo2bo
+11bo24b2o17b2o11bo22bo2bo12b3o$112b3o12bo2bo22bo11b2o17b2o24bo11bo2bo
+19b3o$128b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$150b3o12bo2bo22bo11b
+2o17b2o24bo11bo2bo19b3o$166b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$
+188b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$204b3o19bo2bo11bo24b2o17b
+2o11bo22bo2bo12b3o$226b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$o12b3o
+226b3o19bo2bo11bo24b2o17b2o11bo22bo$o11bo2bo19b3o226b3o12bo2bo22bo11b
+2o17b2o$o11bo22bo2bo12b3o226b3o19bo2bo11bo24b2o17bo$12b2o24bo11bo2bo
+19b3o226b3o12bo2bo22bo11b2o$18b2o17b2o11bo22bo2bo12b3o226b3o19bo2bo11b
+o$19bo11b2o17b2o24bo11bo2bo19b3o226b3o12bo2bo$16bo2bo11bo24b2o17b2o11b
+o22bo2bo12b3o226b3o$16b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$32b3o
+19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$54b3o12bo2bo22bo11b2o17b2o24bo
+11bo2bo19b3o$70b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$92b3o12bo2bo
+22bo11b2o17b2o24bo11bo2bo19b3o$108b3o19bo2bo11bo24b2o17b2o11bo22bo2bo
+12b3o$130b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$146b3o19bo2bo11bo24b
+2o17b2o11bo22bo2bo12b3o$168b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$
+184b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$206b3o12bo2bo22bo11b2o17b
+2o24bo11bo2bo19b3o$222b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$15b3o
+226b3o12bo2bo22bo11b2o17b2o24bo11bo2bo$15bo2bo12b3o226b3o19bo2bo11bo
+24b2o17b2o11bo$18bo11bo2bo19b3o226b3o12bo2bo22bo11b2o17b2o$17b2o11bo
+22bo2bo12b3o226b3o19bo2bo11bo24b2o$11b2o17b2o24bo11bo2bo19b3o226b3o12b
+o2bo22bo$11bo24b2o17b2o11bo22bo2bo12b3o226b3o19bo2bo$11bo2bo22bo11b2o
+17b2o24bo11bo2bo19b3o226b3o$12b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o
+$34b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$50b3o19bo2bo11bo24b2o17b2o
+11bo22bo2bo12b3o$72b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$88b3o19bo
+2bo11bo24b2o17b2o11bo22bo2bo12b3o$110b3o12bo2bo22bo11b2o17b2o24bo11bo
+2bo19b3o$126b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$148b3o12bo2bo22bo
+11b2o17b2o24bo11bo2bo19b3o$164b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o
+$186b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$202b3o19bo2bo11bo24b2o17b
+2o11bo22bo2bo12b3o$224b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$11b3o
+226b3o19bo2bo11bo24b2o17b2o11bo22bo2bo$10bo2bo19b3o226b3o12bo2bo22bo
+11b2o17b2o24bo$10bo22bo2bo12b3o226b3o19bo2bo11bo24b2o17b2o$10b2o24bo
+11bo2bo19b3o226b3o12bo2bo22bo11b2o$16b2o17b2o11bo22bo2bo12b3o226b3o19b
+o2bo11bo$17bo11b2o17b2o24bo11bo2bo19b3o226b3o12bo2bo$14bo2bo11bo24b2o
+17b2o11bo22bo2bo12b3o226b3o$14b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o
+$30b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$52b3o12bo2bo22bo11b2o17b2o
+24bo11bo2bo19b3o$68b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$90b3o12bo
+2bo22bo11b2o17b2o24bo11bo2bo19b3o$106b3o19bo2bo11bo24b2o17b2o11bo22bo
+2bo12b3o$128b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$144b3o19bo2bo11bo
+24b2o17b2o11bo22bo2bo12b3o$166b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o
+$182b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$204b3o12bo2bo22bo11b2o17b
+2o24bo11bo2bo19b3o$220b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$13b3o
+226b3o12bo2bo22bo11b2o17b2o24bo11bo2bo$13bo2bo12b3o226b3o19bo2bo11bo
+24b2o17b2o11bo$16bo11bo2bo19b3o226b3o12bo2bo22bo11b2o17b2o$15b2o11bo
+22bo2bo12b3o226b3o19bo2bo11bo24b2o$9b2o17b2o24bo11bo2bo19b3o226b3o12bo
+2bo22bo$9bo24b2o17b2o11bo22bo2bo12b3o226b3o19bo2bo$9bo2bo22bo11b2o17b
+2o24bo11bo2bo19b3o226b3o$10b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$
+32b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$48b3o19bo2bo11bo24b2o17b2o
+11bo22bo2bo12b3o$70b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$86b3o19bo
+2bo11bo24b2o17b2o11bo22bo2bo12b3o$108b3o12bo2bo22bo11b2o17b2o24bo11bo
+2bo19b3o$124b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$146b3o12bo2bo22bo
+11b2o17b2o24bo11bo2bo19b3o$162b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o
+$184b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$200b3o19bo2bo11bo24b2o17b
+2o11bo22bo2bo12b3o$222b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$9b3o
+226b3o19bo2bo11bo24b2o17b2o11bo22bo2bo$8bo2bo19b3o226b3o12bo2bo22bo11b
+2o17b2o24bo$8bo22bo2bo12b3o226b3o19bo2bo11bo24b2o17b2o$8b2o24bo11bo2bo
+19b3o226b3o12bo2bo22bo11b2o$14b2o17b2o11bo22bo2bo12b3o226b3o19bo2bo11b
+o$15bo11b2o17b2o24bo11bo2bo19b3o226b3o12bo2bo$12bo2bo11bo24b2o17b2o11b
+o22bo2bo12b3o226b3o$12b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$28b3o
+19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$50b3o12bo2bo22bo11b2o17b2o24bo
+11bo2bo19b3o$66b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$88b3o12bo2bo
+22bo11b2o17b2o24bo11bo2bo19b3o$104b3o19bo2bo11bo24b2o17b2o11bo22bo2bo
+12b3o$126b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$142b3o19bo2bo11bo24b
+2o17b2o11bo22bo2bo12b3o$164b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$
+180b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$202b3o12bo2bo22bo11b2o17b
+2o24bo11bo2bo19b3o$218b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$11b3o
+226b3o12bo2bo22bo11b2o17b2o24bo11bo2bo$11bo2bo12b3o226b3o19bo2bo11bo
+24b2o17b2o11bo$14bo11bo2bo19b3o226b3o12bo2bo22bo11b2o17b2o$13b2o11bo
+22bo2bo12b3o226b3o19bo2bo11bo24b2o$7b2o17b2o24bo11bo2bo19b3o226b3o12bo
+2bo22bo$7bo24b2o17b2o11bo22bo2bo12b3o226b3o19bo2bo$7bo2bo22bo11b2o17b
+2o24bo11bo2bo19b3o226b3o$8b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$30b
+3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$46b3o19bo2bo11bo24b2o17b2o11bo
+22bo2bo12b3o$68b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$84b3o19bo2bo
+11bo24b2o17b2o11bo22bo2bo12b3o$106b3o12bo2bo22bo11b2o17b2o24bo11bo2bo
+19b3o$122b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$144b3o12bo2bo22bo11b
+2o17b2o24bo11bo2bo19b3o$160b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$
+182b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$198b3o19bo2bo11bo24b2o17b
+2o11bo22bo2bo12b3o$220b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$7b3o
+226b3o19bo2bo11bo24b2o17b2o11bo22bo2bo$6bo2bo19b3o226b3o12bo2bo22bo11b
+2o17b2o24bo$6bo22bo2bo12b3o226b3o19bo2bo11bo24b2o17b2o$6b2o24bo11bo2bo
+19b3o226b3o12bo2bo22bo11b2o$12b2o17b2o11bo22bo2bo12b3o226b3o19bo2bo11b
+o$13bo11b2o17b2o24bo11bo2bo19b3o226b3o12bo2bo$10bo2bo11bo24b2o17b2o11b
+o22bo2bo12b3o226b3o$10b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$26b3o
+19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$48b3o12bo2bo22bo11b2o17b2o24bo
+11bo2bo19b3o$64b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$86b3o12bo2bo
+22bo11b2o17b2o24bo11bo2bo19b3o$102b3o19bo2bo11bo24b2o17b2o11bo22bo2bo
+12b3o$124b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$140b3o19bo2bo11bo24b
+2o17b2o11bo22bo2bo12b3o$162b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$
+178b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$200b3o12bo2bo22bo11b2o17b
+2o24bo11bo2bo19b3o$216b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$9b3o
+226b3o12bo2bo22bo11b2o17b2o24bo11bo2bo$9bo2bo12b3o226b3o19bo2bo11bo24b
+2o17b2o11bo$12bo11bo2bo19b3o226b3o12bo2bo22bo11b2o17b2o$11b2o11bo22bo
+2bo12b3o226b3o19bo2bo11bo24b2o$5b2o17b2o24bo11bo2bo19b3o226b3o12bo2bo
+22bo$5bo24b2o17b2o11bo22bo2bo12b3o226b3o19bo2bo$5bo2bo22bo11b2o17b2o
+24bo11bo2bo19b3o226b3o$6b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$28b3o
+12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$44b3o19bo2bo11bo24b2o17b2o11bo
+22bo2bo12b3o$66b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$82b3o19bo2bo
+11bo24b2o17b2o11bo22bo2bo12b3o$104b3o12bo2bo22bo11b2o17b2o24bo11bo2bo
+19b3o$120b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$142b3o12bo2bo22bo11b
+2o17b2o24bo11bo2bo19b3o$158b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$
+180b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$196b3o19bo2bo11bo24b2o17b
+2o11bo22bo2bo12b3o$218b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$5b3o
+226b3o19bo2bo11bo24b2o17b2o11bo22bo2bo$4bo2bo19b3o226b3o12bo2bo22bo11b
+2o17b2o24bo$4bo22bo2bo12b3o226b3o19bo2bo11bo24b2o17b2o$4b2o24bo11bo2bo
+19b3o226b3o12bo2bo22bo11b2o$10b2o17b2o11bo22bo2bo12b3o226b3o19bo2bo11b
+o$11bo11b2o17b2o24bo11bo2bo19b3o226b3o12bo2bo$8bo2bo11bo24b2o17b2o11bo
+22bo2bo12b3o226b3o$8b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$24b3o19bo
+2bo11bo24b2o17b2o11bo22bo2bo12b3o$46b3o12bo2bo22bo11b2o17b2o24bo11bo2b
+o19b3o$62b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$84b3o12bo2bo22bo11b
+2o17b2o24bo11bo2bo19b3o$100b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$
+122b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$138b3o19bo2bo11bo24b2o17b
+2o11bo22bo2bo12b3o$160b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$176b3o
+19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$198b3o12bo2bo22bo11b2o17b2o24bo
+11bo2bo19b3o$214b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$7b3o226b3o12b
+o2bo22bo11b2o17b2o24bo11bo2bo$7bo2bo12b3o226b3o19bo2bo11bo24b2o17b2o
+11bo$10bo11bo2bo19b3o226b3o12bo2bo22bo11b2o17b2o$9b2o11bo22bo2bo12b3o
+226b3o19bo2bo11bo24b2o$3b2o17b2o24bo11bo2bo19b3o226b3o12bo2bo22bo$3bo
+24b2o17b2o11bo22bo2bo12b3o226b3o19bo2bo$3bo2bo22bo11b2o17b2o24bo11bo2b
+o19b3o226b3o$4b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$26b3o12bo2bo22b
+o11b2o17b2o24bo11bo2bo19b3o$42b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o
+$64b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$80b3o19bo2bo11bo24b2o17b2o
+11bo22bo2bo12b3o$102b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$118b3o19b
+o2bo11bo24b2o17b2o11bo22bo2bo12b3o$140b3o12bo2bo22bo11b2o17b2o24bo11bo
+2bo19b3o$156b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$178b3o12bo2bo22bo
+11b2o17b2o24bo11bo2bo19b3o$194b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o
+$216b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$3b3o226b3o19bo2bo11bo24b
+2o17b2o11bo22bo2bo$2bo2bo19b3o226b3o12bo2bo22bo11b2o17b2o24bo$2bo22bo
+2bo12b3o226b3o19bo2bo11bo24b2o17b2o$2b2o24bo11bo2bo19b3o226b3o12bo2bo
+22bo11b2o$8b2o17b2o11bo22bo2bo12b3o226b3o19bo2bo11bo$9bo11b2o17b2o24bo
+11bo2bo19b3o226b3o12bo2bo$6bo2bo11bo24b2o17b2o11bo22bo2bo12b3o226b3o$
+6b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$22b3o19bo2bo11bo24b2o17b2o
+11bo22bo2bo12b3o$44b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$60b3o19bo
+2bo11bo24b2o17b2o11bo22bo2bo12b3o$82b3o12bo2bo22bo11b2o17b2o24bo11bo2b
+o19b3o$98b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$120b3o12bo2bo22bo11b
+2o17b2o24bo11bo2bo19b3o$136b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$
+158b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$174b3o19bo2bo11bo24b2o17b
+2o11bo22bo2bo12b3o$196b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$212b3o
+19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$5b3o226b3o12bo2bo22bo11b2o17b2o
+24bo11bo2bo$5bo2bo12b3o226b3o19bo2bo11bo24b2o17b2o11bo$8bo11bo2bo19b3o
+226b3o12bo2bo22bo11b2o17b2o$7b2o11bo22bo2bo12b3o226b3o19bo2bo11bo24b2o
+$b2o17b2o24bo11bo2bo19b3o226b3o12bo2bo22bo$bo24b2o17b2o11bo22bo2bo12b
+3o226b3o19bo2bo$bo2bo22bo11b2o17b2o24bo11bo2bo19b3o226b3o$2b3o19bo2bo
+11bo24b2o17b2o11bo22bo2bo12b3o$24b3o12bo2bo22bo11b2o17b2o24bo11bo2bo
+19b3o$40b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$62b3o12bo2bo22bo11b2o
+17b2o24bo11bo2bo19b3o$78b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$100b
+3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$116b3o19bo2bo11bo24b2o17b2o11b
+o22bo2bo12b3o$138b3o12bo2bo22bo11b2o17b2o24bo11bo2bo19b3o$154b3o19bo2b
+o11bo24b2o17b2o11bo22bo2bo12b3o$176b3o12bo2bo22bo11b2o17b2o24bo11bo2bo
+19b3o$192b3o19bo2bo11bo24b2o17b2o11bo22bo2bo12b3o$214b3o12bo2bo22bo11b
+2o17b2o24bo11bo2bo19b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Bounded grid T test 3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 79, y = 79, rule = B3/S23:T79,79
+10b2o12b2o12bobo12b2o12b2o$2b2o20b2o12b2o12bobo12b2o$2b2o12b2o20b2o12b
+2o12bobo$bobo12b2o12b2o20b2o12b2o$b2o12bobo12b2o12b2o20b2o$b2o12b2o12b
+obo12b2o12b2o$15b2o12b2o12bobo12b2o12b2o$7b2o20b2o12b2o12bobo12b2o$7b
+2o12b2o20b2o12b2o12bobo$6bobo12b2o12b2o20b2o12b2o$6b2o12bobo12b2o12b2o
+20b2o$6b2o12b2o12bobo12b2o12b2o$20b2o12b2o12bobo12b2o12b2o$12b2o20b2o
+12b2o12bobo12b2o$12b2o12b2o20b2o12b2o12bobo$11bobo12b2o12b2o20b2o12b2o
+$11b2o12bobo12b2o12b2o20b2o$11b2o12b2o12bobo12b2o12b2o$3b2o20b2o12b2o
+12bobo12b2o$3b2o12b2o20b2o12b2o12bobo$2bobo12b2o12b2o20b2o12b2o$2b2o
+12bobo12b2o12b2o20b2o$2b2o12b2o12bobo12b2o12b2o$16b2o12b2o12bobo12b2o
+12b2o$8b2o20b2o12b2o12bobo12b2o$8b2o12b2o20b2o12b2o12bobo$7bobo12b2o
+12b2o20b2o12b2o$7b2o12bobo12b2o12b2o20b2o$7b2o12b2o12bobo12b2o12b2o$o
+20b2o12b2o12bobo12b2o12bo$o12b2o20b2o12b2o12bobo12bo$o12b2o12b2o20b2o
+12b2o12bo$12bobo12b2o12b2o20b2o12b2o$12b2o12bobo12b2o12b2o20b2o$12b2o
+12b2o12bobo12b2o12b2o$4b2o20b2o12b2o12bobo12b2o$4b2o12b2o20b2o12b2o12b
+obo$3bobo12b2o12b2o20b2o12b2o$3b2o12bobo12b2o12b2o20b2o$3b2o12b2o12bob
+o12b2o12b2o$17b2o12b2o12bobo12b2o12b2o$9b2o20b2o12b2o12bobo12b2o$9b2o
+12b2o20b2o12b2o12bobo$8bobo12b2o12b2o20b2o12b2o$8b2o12bobo12b2o12b2o
+20b2o$8b2o12b2o12bobo12b2o12b2o$2o20b2o12b2o12bobo12b2o$2o12b2o20b2o
+12b2o12bobo$bo12b2o12b2o20b2o12b2o12bo$o12bobo12b2o12b2o20b2o12bo$o12b
+2o12bobo12b2o12b2o20bo$13b2o12b2o12bobo12b2o12b2o$5b2o20b2o12b2o12bobo
+12b2o$5b2o12b2o20b2o12b2o12bobo$4bobo12b2o12b2o20b2o12b2o$4b2o12bobo
+12b2o12b2o20b2o$4b2o12b2o12bobo12b2o12b2o$18b2o12b2o12bobo12b2o12b2o$
+10b2o20b2o12b2o12bobo12b2o$10b2o12b2o20b2o12b2o12bobo$9bobo12b2o12b2o
+20b2o12b2o$9b2o12bobo12b2o12b2o20b2o$9b2o12b2o12bobo12b2o12b2o$b2o20b
+2o12b2o12bobo12b2o$b2o12b2o20b2o12b2o12bobo$obo12b2o12b2o20b2o12b2o$2o
+12bobo12b2o12b2o20b2o$2o12b2o12bobo12b2o12b2o$14b2o12b2o12bobo12b2o12b
+2o$6b2o20b2o12b2o12bobo12b2o$6b2o12b2o20b2o12b2o12bobo$5bobo12b2o12b2o
+20b2o12b2o$5b2o12bobo12b2o12b2o20b2o$5b2o12b2o12bobo12b2o12b2o$19b2o
+12b2o12bobo12b2o12b2o$11b2o20b2o12b2o12bobo12b2o$11b2o12b2o20b2o12b2o
+12bobo$10bobo12b2o12b2o20b2o12b2o$10b2o12bobo12b2o12b2o20b2o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Golly T0,68 test</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C Life in a Tube investigated intermittently by Tony Smith since 1985.
+#C
+#C Circumference 17 tube shown rolled out 4 times for aesthetic reasons.
+#C
+#C Pulsars was discovered almost immediately after the general principle
+#C of Life in a Tube was revealed when applying Full Paint's command-L
+#C Easter Egg to a screen dump which included a MacDraw ruler. This 
+#C particular discovery helped keep the project motivated.
+x = 2, y = 68, rule = B3/S23:T0,68
+bo$bo$bo$bo$bo$bo$bo$bo$2o$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$b
+o$bo$2o$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$2o$bo$bo$bo$bo
+$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$2o$bo$bo$bo$bo$bo$bo$bo$bo!
+			</textarea>
+			<br>
+			<canvas width="960" height="480"></canvas>
+		</div>
+		<h2>Golly S30 test</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C If the adjacent edges of a bounded grid are joined then the
+#C result is a sphere.  Note how the gliders behave differently
+#C as they pass through the corner cells at a "pole" or "equator".
+#C For more details see Help > Bounded Grids.
+#C
+x = 20, y = 20, rule = LifeHistory:S30
+2A16.2A$A.A14.A.A$A18.A13$12.3A$12.A2.A$12.A$12.A$13.A.A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Golly C40,20 test</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C If both pairs of opposite edges of a bounded grid are reversed and then
+#C joined, the result is a cross-surface (or real projective plane).  
+#C Note that gliders cannot pass through the corner cells.
+#C For more details see Help > Bounded Grids.
+#C
+x = 26, y = 12, rule = LifeHistory:C40,20
+15.A$2A12.A9.2A$A.A11.3A6.A.A$A24.A4$9.A.A$8.A$8.A$8.A2.A$8.3A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Golly T600,136 lightspeed test</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C A "bubble" in a sea of stripes moves at light speed.
+#C Created by Gabriel Nivasch.
+#C [[ NOSTEPBACK ZOOM 2 ]]
+x = 600, y = 136, rule = B3/S23:T600,136
+600o2$600o$379bo$347o2b4ob2ob2ob2ob2ob2ob2ob4o4b220o$348b2o4b2o4b2o4b
+2o4b2o4bo$347o3bo5bo5bo5bo5b226o$375bo$347o29b224o$348bo4bo4bo17bo3bo$
+347o3b2o2bobo2bo16b3o3b218o$350bobob5o17bo5bo3bo$352ob5o18b3o3b3o3b
+212o$350b2o24bo5bo5bo3bo$57o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b
+3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o
+2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b
+3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b2o25b3o3b3o3b3o3b
+206o$58b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b
+2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b4o24bo5bo5bo5bo3bo$57o3b2o3b2o3b2o3b2o3b
+2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b
+2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o6bo22b3o3b3o3b3o3b3o3b200o$353bo22bo5bo5bo5bo5bo3bo$55o321b3o3b3o
+3b3o3b3o3b3o3b194o$376bo5bo5bo5bo5bo5bo3bo$53o5b2o299bo16b3o3b3o3b3o3b
+3o3b3o3b3o3b188o$56b2o3bo20b2o274bobo15bo5bo5bo5bo5bo5bo5bo3bo$55ob2ob
+2obob2o3bo3bo3bo3b3o274bobo15b3o3b3o3b3o3b3o3b3o3b3o3b3o3b182o$61bo4bo
+bobobobobobob2o294bo5bo5bo5bo5bo5bo5bo5bo3bo$59o6bo3bo3bo3bo2b2obo292b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b176o$64bo15bo2bo259b3o30bo5bo5bo5bo5bo
+5bo5bo5bo5bo3bo$57o23bo261bo2bo30b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+170o$80bo264bo30bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$55o25bo260bo3bo30b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b164o$80bo264bo30bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo3bo$55o25b2o260bobo31b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b158o$80b3o10bo282bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$
+55o25b3o6b2ob3o281b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+152o$80b3ob3o2b2obo2bo231b3o46bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3b
+o$55o25b3ob3o4bo234bo2bo46b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b146o$80b3ob3o6b3o233bo46bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo3bo$55o25b3ob3o5bob2o229bo3bo46b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b140o$80b3ob3o5b3o234bo46bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo3bo$55o25b3ob3o5b3o231bobo47b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b134o$80b3ob3o289bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$55o25b3ob3o5b2o282b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b128o$80b3o3bobo
+3bo218b3o62bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$55o
+25b3o2b2ob2obo218bo2bo62b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b122o$80b2o3b2o2bo223bo62bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$55o25bo4b3obo17bo201bo3bo62b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b116o
+$80bo2bo3b2o19b2o203bo62bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo3bo$55o25bo26b2o201bobo63b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b110o$80b2o294bo5bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$55o25b3o44bo248b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b104o$80b3o45b2o165b3o78bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo3bo$55o25b2o45b2o165bo2bo78b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b98o$
+80bo2bo213bo78bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo3bo$53o5b2o20bo66bo145bo3bo78b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b92o$56b2o3bo
+18bo2bo64b2o147bo78bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo3bo$55ob2ob2obob2o3bo3bo3bo2b2obo63b2o145bobo79b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b86o$61bo4bobobobobobobob2o294bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$59o6bo3bo3bo3bo3b
+3o83bo208b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b80o$64bo17b2o84b2o109b3o94bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$
+57o110b2o109bo2bo94b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b74o$281bo94bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+3bo$55o5b2o125bo89bo3bo94b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b68o$58b2o
+3bo32bo91b2o91bo94bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$57ob2ob2obob2o3bo3bo3bo3bo3bo3b4o2b2o
+88b2o89bobo95b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b62o$63bo4bobobobob
+obobobobobobobob2o282bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$61o6bo3bo3bo3bo3bo3bo3bo2bo112bo
+168b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b56o$66bo25b2o114b2o53b3o
+110bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo3bo$57obo33bo3bo110b2o53bo2bo110b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b50o$58bo33bo172bo110bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo
+$55o37bo134bo33bo3bo110b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b44o$92b2o134b2o35bo110bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo$55o37b3o132b2o33bobo
+111b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b44o$92b3o6b2o2bo
+270bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo3bo$55o37b3ob3o2b2o2bo141bo128b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b50o$92b3ob3o149b2o126bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo
+$55o37b3ob3o147bo2bo126b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b56o$
+92b3ob3o147bo2bo126bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$55o37b3o2b2o20b2o14b2o14b2o14b2o
+14b2o14b2o14b2o14b2o16bo126b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b62o$
+92b3o17bo5bo2bo13bobo13bobo13bobo13bobo13bobo13bobo13bobo10bo4bo126bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo3bo$55o37b3o5b2o9b2o23bo15bo15bo15bo15bo15bo15bo10bo4bo127b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b68o$92b3o5b3o7bo10b2o122b2o129bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+3bo$55o37b3o4b2ob2o2b7o263b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b74o$92b3o4bo
+3bobo5b2o4bo106b2o150bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo3bo$57o35b3o9bob2o3bo5bo105bobo150b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b80o$58bobobo29b2o16bo114bo150bo5bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$57o3bo31bo2bo21bo
+258b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b86o$62bo29bo111b2o170bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$59o2bo8bo21b2o109bobo
+170b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b92o$60b5o6bo3bo3bo3bo3bo3bo2bo110bo170bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$59o8bo4bobo
+bobobobobobobobob2o282b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b98o$62b2ob2obob2o3bo3bo3bo3bo3b
+4o2b2o85b2o190bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo3bo$61ob2o3bo28bo86bobo190b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b104o$64b2o119bo190bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$59o317b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+110o$62bo21b2o3bo74b2o210bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo5bo3bo$57o6bo3bo3bo3bo3bo3bo2bo2bo73bobo210b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b116o$59bo4bobo
+bobobobobobobobo82bo210bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo3bo$53ob2ob2obob2o3bo3bo3bo3bo3bo2bo289b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b122o$54b2o3bo23b3o58b2o
+230bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$51o5b2o25b2o
+58bobo230b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b128o$83b2o60bo230bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3b
+o$53o30bo292b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b134o$83bo40b2o250bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$
+53o30bo39bobo250b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b140o$83bo2bo38bo250bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$
+53o30b2o291b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b146o$
+83b3o4bo14bo270bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$53o30b2o3b2ob
+o12b2o270b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b152o$83bo2bo
+bo2bo11bobo270bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$53o30bo5bo7b2o4b
+2o271b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b158o$83bo3bo8b2obo6b
+2o268bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$53o30bo3bo18b2o268b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b164o$83bo3bo6bo281bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo3bo$53o30bo3bo4bobo281b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b170o
+$83bo3bo3bo3bo280bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$53o30bo3bo3bo3bo280b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b176o$83bo3bo3bo284bo5bo5bo5bo5bo5bo5bo5b
+o3bo$53o30bo3bo6bo281b3o3b3o3b3o3b3o3b3o3b3o3b3o3b182o$83bo3bo3bobo
+282bo5bo5bo5bo5bo5bo5bo3bo$53o30bo3bo3b2o283b3o3b3o3b3o3b3o3b3o3b3o3b
+188o$83bo292bo5bo5bo5bo5bo5bo3bo$53o30bo2bo289b3o3b3o3b3o3b3o3b3o3b
+194o$83b2o291bo5bo5bo5bo5bo3bo$53o30b3o290b3o3b3o3b3o3b3o3b200o$83b3o
+290bo5bo5bo5bo3bo$51o5b2o25b2o291b3o3b3o3b3o3b206o$54b2o3bo23b3o290bo
+5bo5bo3bo$53ob2ob2obob2o3bo3bo3bo3bo3bo2bo289b3o3b3o3b212o$59bo4bobobo
+bobobobobobobo293bo5bo3bo$57o6bo3bo3bo3bo3bo3bo2bo2bo286b3o3b218o$62bo
+21b2o3bo286bo3bo$55o321b224o$375bo$55o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b
+2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b
+2o3b2o3bo5b226o$56b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b
+2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o4b2o4bo$
+55o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b
+3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o
+2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b
+3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b4ob4o4b220o$379bo!
+			</textarea>
+			<br>
+			<canvas width="1280" height="480"></canvas>
+		</div>
+		<h2>Golly T30+7 shift Torus</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C A torus can have a shift on the horizontal edges (as in this example)
+#C or on the vertical edges, but not both.
+#C For more details see Help > Bounded Grids.
+#C
+x = 4, y = 5, rule = LifeHistory:T30+7,20
+A.A$3.A$3.A$A2.A$.3A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Golly K40* Klein bottle</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C If one pair of opposite edges of a bounded grid are twisted 180 degrees
+#C (ie. reversed) before being joined then the result is a Klein bottle.
+#C In this example the twist is on the horizontal edges.  
+#C For more details see Help > Bounded Grids.
+#C
+x = 20, y = 6, rule = LifeHistory:K40*,20
+16.3A$16.A2.A$16.A$3A13.A$A16.A.A$.A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Vertical tube</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 3, y = 3, rule = LifeHistory:T10,0
+.oo$
+o.o$
+..o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Pattern too big for bounded grid</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 20, y = 20, rule = B3/S23:P15,20
+bo2b3ob2ob3ob4o$2ob4o2b5obob3o$b2o2b5o2b2o3b2o$4ob2ob3ob5ob2o$2bob8ob
+2ob3o$3ob4obob2o5bo$obobob3obo2b2o2bobo$3bo3b2obobobo2b3o$o4b3obo2b2ob
+o2b2o$bobo2b2obob8o$8obo2bobo2bobo$3b2ob3o4b5obo$2bobo2b2o2b3ob2ob2o$b
+ob3obo3bobo3bobo$2o2b2obob8ob2o$2o5b3obob2o2b3o$2b2obob3o2bob6o$2o2b2o
+bo2b2o2bo2b2o$2obobo5b3ob4o$o2b4obo3bob4o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Bounded grid P test one dimension</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 20, y = 20, rule = B3/S23:P20
+bo2b3ob2ob3ob4o$2ob4o2b5obob3o$b2o2b5o2b2o3b2o$4ob2ob3ob5ob2o$2bob8ob
+2ob3o$3ob4obob2o5bo$obobob3obo2b2o2bobo$3bo3b2obobobo2b3o$o4b3obo2b2ob
+o2b2o$bobo2b2obob8o$8obo2bobo2bobo$3b2ob3o4b5obo$2bobo2b2o2b3ob2ob2o$b
+ob3obo3bobo3bobo$2o2b2obob8ob2o$2o5b3obob2o2b3o$2b2obob3o2bob6o$2o2b2o
+bo2b2o2bo2b2o$2obobo5b3ob4o$o2b4obo3bob4o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Bounded grid T test one dimension</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 20, y = 7, rule = B3/S23:T20
+o4bo8bo4bo$o3bo10bo3bo$4b3o6b3o3$9b2o$9b2o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

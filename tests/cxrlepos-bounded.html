@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Toroidal: agar p3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#CXRLE Pos=-36,-24
+#C
+#C A period 3 agar in a toroidal grid.
+#C Discovered by Gabriel Nivasch's Random Agar program.
+#C
+x = 72, y = 48, rule = B3/S23:T72,48
+obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bo
+bo$4bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo$b2obo2bob2obo2bob2obo
+2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bo$o5bobo5bobo5bobo5b
+obo5bobo5bobo5bobo5bobo5bo$bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob
+2obo2bob2obo2bob2obo2bob2obo$obo5bobo5bobo5bobo5bobo5bobo5bobo5bobo5bo
+bo$o2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2b
+ob2o$2bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo$obo2bob2obo2bob2obo
+2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bobo$4bobo5bobo5bobo
+5bobo5bobo5bobo5bobo5bobo5bobo$b2obo2bob2obo2bob2obo2bob2obo2bob2obo2b
+ob2obo2bob2obo2bob2obo2bob2obo2bo$o5bobo5bobo5bobo5bobo5bobo5bobo5bobo
+5bobo5bo$bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2o
+bo2bob2obo$obo5bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo$o2bob2obo2bob2o
+bo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2o$2bobo5bobo5bo
+bo5bobo5bobo5bobo5bobo5bobo5bobo$obo2bob2obo2bob2obo2bob2obo2bob2obo2b
+ob2obo2bob2obo2bob2obo2bob2obo2bobo$4bobo5bobo5bobo5bobo5bobo5bobo5bob
+o5bobo5bobo$b2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob
+2obo2bob2obo2bo$o5bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo5bo$bob2obo2b
+ob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo$obo5bob
+o5bobo5bobo5bobo5bobo5bobo5bobo5bobo$o2bob2obo2bob2obo2bob2obo2bob2obo
+2bob2obo2bob2obo2bob2obo2bob2obo2bob2o$2bobo5bobo5bobo5bobo5bobo5bobo
+5bobo5bobo5bobo$obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bo
+b2obo2bob2obo2bobo$4bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo$b2obo
+2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bo$o
+5bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo5bo$bob2obo2bob2obo2bob2obo2bo
+b2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo$obo5bobo5bobo5bobo5bobo
+5bobo5bobo5bobo5bobo$o2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo
+2bob2obo2bob2obo2bob2o$2bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo$o
+bo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob
+o$4bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo$b2obo2bob2obo2bob2obo
+2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bo$o5bobo5bobo5bobo5b
+obo5bobo5bobo5bobo5bobo5bo$bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob
+2obo2bob2obo2bob2obo2bob2obo$obo5bobo5bobo5bobo5bobo5bobo5bobo5bobo5bo
+bo$o2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2b
+ob2o$2bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo$obo2bob2obo2bob2obo
+2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bobo$4bobo5bobo5bobo
+5bobo5bobo5bobo5bobo5bobo5bobo$b2obo2bob2obo2bob2obo2bob2obo2bob2obo2b
+ob2obo2bob2obo2bob2obo2bob2obo2bo$o5bobo5bobo5bobo5bobo5bobo5bobo5bobo
+5bobo5bo$bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2o
+bo2bob2obo$obo5bobo5bobo5bobo5bobo5bobo5bobo5bobo5bobo$o2bob2obo2bob2o
+bo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2obo2bob2o$2bobo5bobo5bo
+bo5bobo5bobo5bobo5bobo5bobo5bobo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Cross-surface</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#CXRLE Pos=-13,-4
+#C
+#C If both pairs of opposite edges of a bounded grid are reversed and then
+#C joined, the result is a cross-surface (or real projective plane).  
+#C Note that gliders cannot pass through the corner cells.
+#C For more details see Help > Bounded Grids.
+#C
+x = 26, y = 12, rule = LifeHistory:C40,20
+15.A$2A12.A9.2A$A.A11.3A6.A.A$A24.A4$9.A.A$8.A$8.A$8.A2.A$8.3A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Toroidal: agar p14</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#CXRLE Pos=-24,-24
+#C
+#C A period 14 agar with herringbone symmetry in a toroidal grid.
+#C Discovered by Gabriel Nivasch's Random Agar program.
+#C
+x = 48, y = 48, rule = B3/S23:T48,48
+2b3o3b2o2bo13b3o3b2o2bo$2b2o3b4o5bo6bo2b2o3b4o5bo6bo$2bo13b3o3b2o2bo
+13b3o3b2o$o5bo6bo2b2o3b4o5bo6bo2b2o3b3o$6b3o3b2o2bo13b3o3b2o2bo$3bo2b
+2o3b4o5bo6bo2b2o3b4o5bo$2b2o2bo13b3o3b2o2bo13b3o$b4o5bo6bo2b2o3b4o5bo
+6bo2b2o$10b3o3b2o2bo13b3o3b2o2bo$o6bo2b2o3b4o5bo6bo2b2o3b4o$3o3b2o2bo
+13b3o3b2o2bo$2o3b4o5bo6bo2b2o3b4o5bo6bo$o13b3o3b2o2bo13b3o3b2o$4bo6bo
+2b2o3b4o5bo6bo2b2o3b4o$4b3o3b2o2bo13b3o3b2o2bo$bo2b2o3b4o5bo6bo2b2o3b
+4o5bo$2o2bo13b3o3b2o2bo13b3o$3o5bo6bo2b2o3b4o5bo6bo2b2o3bo$8b3o3b2o2bo
+13b3o3b2o2bo$5bo2b2o3b4o5bo6bo2b2o3b4o5bo$o3b2o2bo13b3o3b2o2bo13b2o$3b
+4o5bo6bo2b2o3b4o5bo6bo2b2o$12b3o3b2o2bo13b3o3b2o2bo$2bo6bo2b2o3b4o5bo
+6bo2b2o3b4o$2b3o3b2o2bo13b3o3b2o2bo$2b2o3b4o5bo6bo2b2o3b4o5bo6bo$2bo
+13b3o3b2o2bo13b3o3b2o$o5bo6bo2b2o3b4o5bo6bo2b2o3b3o$6b3o3b2o2bo13b3o3b
+2o2bo$3bo2b2o3b4o5bo6bo2b2o3b4o5bo$2b2o2bo13b3o3b2o2bo13b3o$b4o5bo6bo
+2b2o3b4o5bo6bo2b2o$10b3o3b2o2bo13b3o3b2o2bo$o6bo2b2o3b4o5bo6bo2b2o3b4o
+$3o3b2o2bo13b3o3b2o2bo$2o3b4o5bo6bo2b2o3b4o5bo6bo$o13b3o3b2o2bo13b3o3b
+2o$4bo6bo2b2o3b4o5bo6bo2b2o3b4o$4b3o3b2o2bo13b3o3b2o2bo$bo2b2o3b4o5bo
+6bo2b2o3b4o5bo$2o2bo13b3o3b2o2bo13b3o$3o5bo6bo2b2o3b4o5bo6bo2b2o3bo$8b
+3o3b2o2bo13b3o3b2o2bo$5bo2b2o3b4o5bo6bo2b2o3b4o5bo$o3b2o2bo13b3o3b2o2b
+o13b2o$3b4o5bo6bo2b2o3b4o5bo6bo2b2o$12b3o3b2o2bo13b3o3b2o2bo$2bo6bo2b
+2o3b4o5bo6bo2b2o3b4o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Bounded grid - Klein-bottle</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#CXRLE Pos=-10,-3
+#C
+#C If one pair of opposite edges of a bounded grid are twisted 180 degrees
+#C (ie. reversed) before being joined then the result is a Klein bottle.
+#C In this example the twist is on the horizontal edges.  
+#C For more details see Help > Bounded Grids.
+#C
+x = 20, y = 6, rule = LifeHistory:K40*,20
+16.3A$16.A2.A$16.A$3A13.A$A16.A.A$.A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Toroidal: lightspeed bubble</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#CXRLE Pos=-300,-68
+#C
+#C A "bubble" in a sea of stripes moves at light speed.
+#C Created by Gabriel Nivasch.
+#C
+x = 600, y = 136, rule = B3/S23:T600,136
+600o2$600o$379bo$347o2b4ob2ob2ob2ob2ob2ob2ob4o4b220o$348b2o4b2o4b2o4b
+2o4b2o4bo$347o3bo5bo5bo5bo5b226o$375bo$347o29b224o$348bo4bo4bo17bo3bo$
+347o3b2o2bobo2bo16b3o3b218o$350bobob5o17bo5bo3bo$352ob5o18b3o3b3o3b
+212o$350b2o24bo5bo5bo3bo$57o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b
+3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o
+2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b
+3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b2o25b3o3b3o3b3o3b
+206o$58b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b
+2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b4o24bo5bo5bo5bo3bo$57o3b2o3b2o3b2o3b2o3b
+2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b
+2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o6bo22b3o3b3o3b3o3b3o3b200o$353bo22bo5bo5bo5bo5bo3bo$55o321b3o3b3o
+3b3o3b3o3b3o3b194o$376bo5bo5bo5bo5bo5bo3bo$53o5b2o299bo16b3o3b3o3b3o3b
+3o3b3o3b3o3b188o$56b2o3bo20b2o274bobo15bo5bo5bo5bo5bo5bo5bo3bo$55ob2ob
+2obob2o3bo3bo3bo3b3o274bobo15b3o3b3o3b3o3b3o3b3o3b3o3b3o3b182o$61bo4bo
+bobobobobobob2o294bo5bo5bo5bo5bo5bo5bo5bo3bo$59o6bo3bo3bo3bo2b2obo292b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b176o$64bo15bo2bo259b3o30bo5bo5bo5bo5bo
+5bo5bo5bo5bo3bo$57o23bo261bo2bo30b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+170o$80bo264bo30bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$55o25bo260bo3bo30b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b164o$80bo264bo30bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo3bo$55o25b2o260bobo31b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b158o$80b3o10bo282bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$
+55o25b3o6b2ob3o281b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+152o$80b3ob3o2b2obo2bo231b3o46bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3b
+o$55o25b3ob3o4bo234bo2bo46b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b146o$80b3ob3o6b3o233bo46bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo3bo$55o25b3ob3o5bob2o229bo3bo46b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b140o$80b3ob3o5b3o234bo46bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo3bo$55o25b3ob3o5b3o231bobo47b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b134o$80b3ob3o289bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$55o25b3ob3o5b2o282b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b128o$80b3o3bobo
+3bo218b3o62bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$55o
+25b3o2b2ob2obo218bo2bo62b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b122o$80b2o3b2o2bo223bo62bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$55o25bo4b3obo17bo201bo3bo62b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b116o
+$80bo2bo3b2o19b2o203bo62bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo3bo$55o25bo26b2o201bobo63b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b110o$80b2o294bo5bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$55o25b3o44bo248b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b104o$80b3o45b2o165b3o78bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo3bo$55o25b2o45b2o165bo2bo78b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b98o$
+80bo2bo213bo78bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo3bo$53o5b2o20bo66bo145bo3bo78b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b92o$56b2o3bo
+18bo2bo64b2o147bo78bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo3bo$55ob2ob2obob2o3bo3bo3bo2b2obo63b2o145bobo79b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b86o$61bo4bobobobobobobob2o294bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$59o6bo3bo3bo3bo3b
+3o83bo208b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b80o$64bo17b2o84b2o109b3o94bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$
+57o110b2o109bo2bo94b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b74o$281bo94bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+3bo$55o5b2o125bo89bo3bo94b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b68o$58b2o
+3bo32bo91b2o91bo94bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$57ob2ob2obob2o3bo3bo3bo3bo3bo3b4o2b2o
+88b2o89bobo95b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b62o$63bo4bobobobob
+obobobobobobobob2o282bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$61o6bo3bo3bo3bo3bo3bo3bo2bo112bo
+168b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b56o$66bo25b2o114b2o53b3o
+110bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo3bo$57obo33bo3bo110b2o53bo2bo110b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b50o$58bo33bo172bo110bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo
+$55o37bo134bo33bo3bo110b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b44o$92b2o134b2o35bo110bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo$55o37b3o132b2o33bobo
+111b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b44o$92b3o6b2o2bo
+270bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo3bo$55o37b3ob3o2b2o2bo141bo128b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b50o$92b3ob3o149b2o126bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo
+$55o37b3ob3o147bo2bo126b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b56o$
+92b3ob3o147bo2bo126bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$55o37b3o2b2o20b2o14b2o14b2o14b2o
+14b2o14b2o14b2o14b2o16bo126b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b62o$
+92b3o17bo5bo2bo13bobo13bobo13bobo13bobo13bobo13bobo13bobo10bo4bo126bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo3bo$55o37b3o5b2o9b2o23bo15bo15bo15bo15bo15bo15bo10bo4bo127b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b68o$92b3o5b3o7bo10b2o122b2o129bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+3bo$55o37b3o4b2ob2o2b7o263b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b74o$92b3o4bo
+3bobo5b2o4bo106b2o150bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo3bo$57o35b3o9bob2o3bo5bo105bobo150b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b80o$58bobobo29b2o16bo114bo150bo5bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$57o3bo31bo2bo21bo
+258b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b86o$62bo29bo111b2o170bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$59o2bo8bo21b2o109bobo
+170b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b92o$60b5o6bo3bo3bo3bo3bo3bo2bo110bo170bo5bo5bo5b
+o5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$59o8bo4bobo
+bobobobobobobobob2o282b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b98o$62b2ob2obob2o3bo3bo3bo3bo3b
+4o2b2o85b2o190bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo3bo$61ob2o3bo28bo86bobo190b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b104o$64b2o119bo190bo5bo5bo
+5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$59o317b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+110o$62bo21b2o3bo74b2o210bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo5bo5bo3bo$57o6bo3bo3bo3bo3bo3bo2bo2bo73bobo210b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b116o$59bo4bobo
+bobobobobobobobo82bo210bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo
+5bo5bo3bo$53ob2ob2obob2o3bo3bo3bo3bo3bo2bo289b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b122o$54b2o3bo23b3o58b2o
+230bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$51o5b2o25b2o
+58bobo230b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b128o$83b2o60bo230bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3b
+o$53o30bo292b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b134o$83bo40b2o250bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$
+53o30bo39bobo250b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b
+3o3b140o$83bo2bo38bo250bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$
+53o30b2o291b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b146o$
+83b3o4bo14bo270bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$53o30b2o3b2ob
+o12b2o270b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b152o$83bo2bo
+bo2bo11bobo270bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$53o30bo5bo7b2o4b
+2o271b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b158o$83bo3bo8b2obo6b
+2o268bo5bo5bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$53o30bo3bo18b2o268b3o3b3o3b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b164o$83bo3bo6bo281bo5bo5bo5bo5bo5bo5bo5b
+o5bo5bo3bo$53o30bo3bo4bobo281b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b170o
+$83bo3bo3bo3bo280bo5bo5bo5bo5bo5bo5bo5bo5bo3bo$53o30bo3bo3bo3bo280b3o
+3b3o3b3o3b3o3b3o3b3o3b3o3b3o3b176o$83bo3bo3bo284bo5bo5bo5bo5bo5bo5bo5b
+o3bo$53o30bo3bo6bo281b3o3b3o3b3o3b3o3b3o3b3o3b3o3b182o$83bo3bo3bobo
+282bo5bo5bo5bo5bo5bo5bo3bo$53o30bo3bo3b2o283b3o3b3o3b3o3b3o3b3o3b3o3b
+188o$83bo292bo5bo5bo5bo5bo5bo3bo$53o30bo2bo289b3o3b3o3b3o3b3o3b3o3b
+194o$83b2o291bo5bo5bo5bo5bo3bo$53o30b3o290b3o3b3o3b3o3b3o3b200o$83b3o
+290bo5bo5bo5bo3bo$51o5b2o25b2o291b3o3b3o3b3o3b206o$54b2o3bo23b3o290bo
+5bo5bo3bo$53ob2ob2obob2o3bo3bo3bo3bo3bo2bo289b3o3b3o3b212o$59bo4bobobo
+bobobobobobobo293bo5bo3bo$57o6bo3bo3bo3bo3bo3bo2bo2bo286b3o3b218o$62bo
+21b2o3bo286bo3bo$55o321b224o$375bo$55o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b
+2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b
+2o3b2o3bo5b226o$56b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b
+2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o
+3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o3b2o4b2o4bo$
+55o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b
+3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o
+2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b
+3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b3o2b4ob4o4b220o$379bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Tube</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#CXRLE Pos=-1,-34
+#C
+#C Life in a Tube investigated intermittently by Tony Smith since 1985.
+#C
+#C Circumference 17 tube shown rolled out 4 times for aesthetic reasons.
+#C
+#C Pulsars was discovered almost immediately after the general principle
+#C of Life in a Tube was revealed when applying Full Paint's command-L
+#C Easter Egg to a screen dump which included a MacDraw ruler. This 
+#C particular discovery helped keep the project motivated.
+x = 2, y = 68, rule = B3/S23:T0,68
+bo$bo$bo$bo$bo$bo$bo$bo$2o$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$b
+o$bo$2o$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$2o$bo$bo$bo$bo
+$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$bo$2o$bo$bo$bo$bo$bo$bo$bo$bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Sphere</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#CXRLE Pos=-10,-10
+#C
+#C If the adjacent edges of a bounded grid are joined then the
+#C result is a sphere.  Note how the gliders behave differently
+#C as they pass through the corner cells at a "pole" or "equator".
+#C For more details see Help > Bounded Grids.
+#C
+x = 20, y = 20, rule = LifeHistory:S30
+2A16.2A$A.A14.A.A$A18.A13$12.3A$12.A2.A$12.A$12.A$13.A.A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Torus</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#CXRLE Pos=-2,-2
+#C
+#C If the opposite edges of a bounded grid are joined then the result
+#C is a torus.  If the edge lengths are relatively prime, as in this
+#C example, then a glider will eventually visit every cell.
+#C For more details see Help > Bounded Grids.
+#C
+x = 3, y = 3, rule = LifeHistory:T31,20
+.A$2.A$3A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Torus with shift</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#CXRLE Pos=-2,-2
+#C
+#C A torus can have a shift on the horizontal edges (as in this example)
+#C or on the vertical edges, but not both.
+#C For more details see Help > Bounded Grids.
+#C
+x = 4, y = 5, rule = LifeHistory:T30+7,20
+A.A$3.A$3.A$A2.A$.3A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

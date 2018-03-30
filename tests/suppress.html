@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+	<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>SUPPRESS test</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ X 0 Y 0 ZOOM 6 ANGLE 0 STEP 1 GPS 60 LAYERS 1 DEPTH 1 THEME 2 LOOP 1000 STOP 1000 WIDTH 600 HEIGHT 480 ]]
+#C [[ SUPPRESS ]]
+#C [[ X 1 Y 1 ZOOM 7 ANGLE 1 STEP 2 GPS 59 LAYERS 2 DEPTH 2 THEME 3 LOOP 1001 STOP 1001 WIDTH 608 HEIGHT 488 ]]
+x = 2, y = 2, rule = Faders
+2A$A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>No SUPRESS test</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ X 0 Y 0 ZOOM 6 ANGLE 0 STEP 1 GPS 60 LAYERS 1 DEPTH 1 THEME 2 LOOP 1000 STOP 1000 WIDTH 600 HEIGHT 480 ]]
+#C [[ X 1 Y 1 ZOOM 7 ANGLE 1 STEP 2 GPS 59 LAYERS 2 DEPTH 2 THEME 3 LOOP 1001 STOP 1001 WIDTH 608 HEIGHT 488 ]]
+x = 2, y = 2, rule = Faders
+2A$A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

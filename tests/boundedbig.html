@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer"content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Bounded grid too big</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 82, y = 76, rule = R2,C6,M0,S10..18,B5..10,NM:T10000,10000
+71.4A$70.4B3A$69.4C6A$68.4D8A$67.4E3A.B5A$62.4A4.6A2B3A$61.4B3A.4A2D
+2AB4A$60.4C3A.3A.4D4ABA$59.4D7A3.C3D2ACBA$58.4E3A.4A2C.2C2DBDCBA$61.
+3A.C2A.AED2.3CEDCB$57.2A.5AD2A.2B2.2DC.EDC$56.2B.3A.4A2DA2.3E2.ED$55.
+2C4A2.2A.ABC8.E$54.2D.8A$53.2E.2AC.3ACDE$54.4A2.BDEBE$51.6A2BC.2A$50.
+2B.3A.DE$49.2C.3A.AE.E$48.2D.5ACD$47.2E.2A2.BCE$48.B3A2.BDE$45.2AC4A.
+ADC$44.2B3A2.4A$43.AC.3A2.2ABD$42.AD.5A.ACBE$41.EB.2A2.3AE2A$39.E2.4A
+2.3ADB$36.A2BAC8A.AC$35.ABC.A.2A2.4AEBAE$35.BCA.6A.3AB$33.E.2D5A.D.C
+2D2A$33.3EA.3A2.B.2E2C$37.AD3AE$32.7A.ADC$31.ABD3A.AEDCB$29.2BC.5A.2C
+B$28.2CD2.4A.AB$27.CAE4A2.EBA$26.BD.5A3.BA$25.ABD3A.4ACB$24.ACBA.2A2.
+3AECE$24.BCE.3A3.3AD$21.E.ED3A.5A.A.C$20.E2.2A.2A2.5AEDB$22.CB6A.5AC$
+21.AE2A.A.2C.2A.DCB$19.2BD.3A.DE3BEDCB$17.3CDCA.2ADB.AEA$16.2DA2.A.AD
+CA$16.DEB2A2.2BA.E$14.2E.5A.EC.2E$15.A2.6ACD$13.DB4A2.3AD$11.EAC5A2.
+2ADC$10.DE4A.5AEC$11.ED.2A2.3A2.B$12.D3A3.4A$13.BC4A.2A$13.EBA.5AE$
+14.D.5A.D$16.4A.E$14.2ECBA.E$14.C2D2ED$16.DC4$E$2.DCE$.D4CD$.D3CD$.ED
+CBD.E$4.2E$4.E!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

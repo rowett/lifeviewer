@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Dave's waypoints LINEAR</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 58, y = 126, rule = B2i34c/S2-i3
+6bo$5b2o$2o4bo$2o2$51bo$51b2o$51bo4b2o$56b2o2$10bo$9b2o$2o8bo$2o2$47bo
+$47b2o$47bo8b2o$56b2o2$14bo$13b2o$2o12bo$2o2$43bo$43b2o$43bo12b2o$56b
+2o2$18bo$17b2o$2o16bo$2o2$39bo$39b2o$39bo16b2o$56b2o2$22bo$21b2o$2o20b
+o$2o2$35bo$35b2o$35bo20b2o$56b2o2$26bo$25b2o$2o24bo18bo$2o42b2o$45bo$
+31bo9b2o$31b2o8b2o$12bo18bo24b2o$12b2o42b2o$12bo$15b2o13bo$15b2o12b2o$
+2o28bo18bo$2o46b2o$49bo$27bo13b2o$27b2o12b2o$8bo18bo28b2o$8b2o46b2o$8b
+o$15b2o17bo15bo2bo$15b2o16b2o13bobo$2o32bo13bo3bobo$2o47bo2b2o$52bo$4b
+o2bo15bo17b2o$7bobo13b2o16b2o$3bobo3bo13bo32b2o$4b2o2bo26bo2bo17b2o$5b
+o27bobo$15b2o16bo3bobo12b2o$15b2o17bo2b2o7b2o4bobo$2o35bo8b2o6bo$2o17b
+o2bo30bobo$22bobo$4b2o12bobo3bo16b2o$3bobo4b2o7b2o2bo17b2o$3bo6b2o8bo
+26bo8b2o$2bobo32b2o8bo8b2o$31b2o4bobo$15b2o14b2o6bo8b2o$15b2o21bobo6b
+4o$2o8bo35bo3bo$2o8bo8b2o25bo2bo$18bobo4b2o20b3o$8b2o8bo6b2o5bo8b2o$7b
+4o6bobo12bo8b2o$7bo3bo44b2o$8bo2bo21b2o21b2o$8b3o21b4o$15b2o8bo5bo3bo$
+15b2o8bo5bo2bo$2o30b3o$2o21b2o$22b4o$22bo3bo14b2o$23bo2bo14b2o6b2o$23b
+3o30b2o$56b2o2$15b2o$7b2o6b2o25bo$2o40bo$2o53bobo$43b2o$42b4o10bo$15bo
+25bo3bo$15bo25bo2bo8b3o$obo39b3o8bo2b2o$13b2o39b3o$bo10b4o39bo$12bo3bo
+$2b3o8bo2bo$2o2bo8b3o$b3o$2bo!
+#C [[ THEME 6 ]]
+#C [[ PAUSE 2 ]]
+#C [[ T 2000 X 0 Y -1000 LINEAR X LINEAR Y ]]
+#C [[ LOOP 2000 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+
+		<h2>Dave's waypoints BEZIER</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 58, y = 126, rule = B2i34c/S2-i3
+6bo$5b2o$2o4bo$2o2$51bo$51b2o$51bo4b2o$56b2o2$10bo$9b2o$2o8bo$2o2$47bo
+$47b2o$47bo8b2o$56b2o2$14bo$13b2o$2o12bo$2o2$43bo$43b2o$43bo12b2o$56b
+2o2$18bo$17b2o$2o16bo$2o2$39bo$39b2o$39bo16b2o$56b2o2$22bo$21b2o$2o20b
+o$2o2$35bo$35b2o$35bo20b2o$56b2o2$26bo$25b2o$2o24bo18bo$2o42b2o$45bo$
+31bo9b2o$31b2o8b2o$12bo18bo24b2o$12b2o42b2o$12bo$15b2o13bo$15b2o12b2o$
+2o28bo18bo$2o46b2o$49bo$27bo13b2o$27b2o12b2o$8bo18bo28b2o$8b2o46b2o$8b
+o$15b2o17bo15bo2bo$15b2o16b2o13bobo$2o32bo13bo3bobo$2o47bo2b2o$52bo$4b
+o2bo15bo17b2o$7bobo13b2o16b2o$3bobo3bo13bo32b2o$4b2o2bo26bo2bo17b2o$5b
+o27bobo$15b2o16bo3bobo12b2o$15b2o17bo2b2o7b2o4bobo$2o35bo8b2o6bo$2o17b
+o2bo30bobo$22bobo$4b2o12bobo3bo16b2o$3bobo4b2o7b2o2bo17b2o$3bo6b2o8bo
+26bo8b2o$2bobo32b2o8bo8b2o$31b2o4bobo$15b2o14b2o6bo8b2o$15b2o21bobo6b
+4o$2o8bo35bo3bo$2o8bo8b2o25bo2bo$18bobo4b2o20b3o$8b2o8bo6b2o5bo8b2o$7b
+4o6bobo12bo8b2o$7bo3bo44b2o$8bo2bo21b2o21b2o$8b3o21b4o$15b2o8bo5bo3bo$
+15b2o8bo5bo2bo$2o30b3o$2o21b2o$22b4o$22bo3bo14b2o$23bo2bo14b2o6b2o$23b
+3o30b2o$56b2o2$15b2o$7b2o6b2o25bo$2o40bo$2o53bobo$43b2o$42b4o10bo$15bo
+25bo3bo$15bo25bo2bo8b3o$obo39b3o8bo2b2o$13b2o39b3o$bo10b4o39bo$12bo3bo
+$2b3o8bo2bo$2o2bo8b3o$b3o$2bo!
+#C [[ THEME 6 ]]
+#C [[ PAUSE 2 ]]
+#C [[ T 2000 X 0 Y -1000 BEZIER X BEZIER Y ]]
+#C [[ LOOP 2000 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+
+		<h2>Dave's waypoints validation</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 58, y = 126, rule = B2i34c/S2-i3
+6bo$5b2o$2o4bo$2o2$51bo$51b2o$51bo4b2o$56b2o2$10bo$9b2o$2o8bo$2o2$47bo
+$47b2o$47bo8b2o$56b2o2$14bo$13b2o$2o12bo$2o2$43bo$43b2o$43bo12b2o$56b
+2o2$18bo$17b2o$2o16bo$2o2$39bo$39b2o$39bo16b2o$56b2o2$22bo$21b2o$2o20b
+o$2o2$35bo$35b2o$35bo20b2o$56b2o2$26bo$25b2o$2o24bo18bo$2o42b2o$45bo$
+31bo9b2o$31b2o8b2o$12bo18bo24b2o$12b2o42b2o$12bo$15b2o13bo$15b2o12b2o$
+2o28bo18bo$2o46b2o$49bo$27bo13b2o$27b2o12b2o$8bo18bo28b2o$8b2o46b2o$8b
+o$15b2o17bo15bo2bo$15b2o16b2o13bobo$2o32bo13bo3bobo$2o47bo2b2o$52bo$4b
+o2bo15bo17b2o$7bobo13b2o16b2o$3bobo3bo13bo32b2o$4b2o2bo26bo2bo17b2o$5b
+o27bobo$15b2o16bo3bobo12b2o$15b2o17bo2b2o7b2o4bobo$2o35bo8b2o6bo$2o17b
+o2bo30bobo$22bobo$4b2o12bobo3bo16b2o$3bobo4b2o7b2o2bo17b2o$3bo6b2o8bo
+26bo8b2o$2bobo32b2o8bo8b2o$31b2o4bobo$15b2o14b2o6bo8b2o$15b2o21bobo6b
+4o$2o8bo35bo3bo$2o8bo8b2o25bo2bo$18bobo4b2o20b3o$8b2o8bo6b2o5bo8b2o$7b
+4o6bobo12bo8b2o$7bo3bo44b2o$8bo2bo21b2o21b2o$8b3o21b4o$15b2o8bo5bo3bo$
+15b2o8bo5bo2bo$2o30b3o$2o21b2o$22b4o$22bo3bo14b2o$23bo2bo14b2o6b2o$23b
+3o30b2o$56b2o2$15b2o$7b2o6b2o25bo$2o40bo$2o53bobo$43b2o$42b4o10bo$15bo
+25bo3bo$15bo25bo2bo8b3o$obo39b3o8bo2b2o$13b2o39b3o$bo10b4o39bo$12bo3bo
+$2b3o8bo2bo$2o2bo8b3o$b3o$2bo!
+#C [[ THEME 6 ]]
+#C [[ PAUSE 2 ]]
+#C [[ T 2000 LINEAR X LINEAR X LINEAR AUTOFIT BEZIER X BEZIER X LINEAR X LINEAR HELLO LINEAR ALL ]]
+#C [[ LOOP 2000 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer"content="viewer textarea 150">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin</h1>
+		<div class="viewer">
+			<textarea rows=5 cols=79>
+# Type or paste RLE data into this box and click on the View button.
+x = 9, y = 5, rule = B3/S23
+$bo3b3o$b3o2bo$2bo!
+</textarea>
+			<br>
+			<br>
+			<button type="button" onclick="updateMe(this); return false;">View</button><br>
+			<br>
+			<canvas width="200" height="480"></canvas> 
+		</div>
+		<br>
+		<p>
+			Hotkey O on LifeViewer window will create screenshot image below. Shift and hotkey O will create population graph screenshot.
+		<p>
+		<img id="screenshot" width="240" height="240" alt="LifeViewer screenshot." />
+		<br>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

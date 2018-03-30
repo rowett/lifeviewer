@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer"content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>THUMBLAUNCH</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+b2o2b2o$3b2o$3b2o$obo2bobo$o6bo2$o6bo$b2o2b2o$2b4o2$3b2o$3b2o!
+#C [[ THUMBLAUNCH GRID THEME 6 AUTOSTART GPS 5 TRACKLOOP 10 0 -1/10 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<h2>THUMBNAIL / 4</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+b2o2b2o$3b2o$3b2o$obo2bobo$o6bo2$o6bo$b2o2b2o$2b4o2$3b2o$3b2o!
+#C [[ GRID THEME 6 AUTOSTART GPS 5 THUMBNAIL TRACKLOOP 10 0 -1/10 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<h2>THUMBNAIL / 3</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+b2o2b2o$3b2o$3b2o$obo2bobo$o6bo2$o6bo$b2o2b2o$2b4o2$3b2o$3b2o!
+#C [[ GRID THEME 6 AUTOSTART GPS 5 THUMBNAIL THUMBSIZE 3 TRACKLOOP 10 0 -1/10 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<h2>THUMBNAIL / 2</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+b2o2b2o$3b2o$3b2o$obo2bobo$o6bo2$o6bo$b2o2b2o$2b4o2$3b2o$3b2o!
+#C [[ GRID THEME 6 AUTOSTART GPS 5 THUMBNAIL THUMBSIZE 2 TRACKLOOP 10 0 -1/10 SHOWTIMING ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<h2>Loafer TRACKLOOP THUMBLAUNCH</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+b2o2bob2o$o2bo2b2o$bobo$2bo$8bo$6b3o$5bo$6bo$7b2o!
+#C [[ THEME 0 GRID GRIDMAJOR 0 THUMBLAUNCH AUTOSTART ]]
+#C [[ ZOOM 32 TRACKLOOP 7 -1/7 0 GPS 5 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="400"></canvas> 
+		</div>
+		<br>
+		<h2>Loafer THUMBLAUNCH</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+b2o2bob2o$o2bo2b2o$bobo$2bo$8bo$6b3o$5bo$6bo$7b2o!
+#C [[ THEME 0 GRID GRIDMAJOR 0 THUMBLAUNCH AUTOSTART ]]
+#C [[ ZOOM 32 GPS 5 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="400"></canvas> 
+		</div>
+		<br>
+		<h2>Script errors?</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+b2o2b2o$3b2o$3b2o$obo2bobo$o6bo2$o6bo$b2o2b2o$2b4o2$3b2o$3b2o!
+#C [[ THEME 6 GRID COLOR GRID 229 229 229 GRIDMAJOR 0 THUMBLAUNCH THUMBSIZE 3 AUTOSTART GPS 5 ZOOM 32 THUMBNAIL T 98 LINEAR Y Y -10 LOOP 99 HEIGHT 800 WIDTH 483 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="400"></canvas> 
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

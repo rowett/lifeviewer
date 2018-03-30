@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>MAP of Conway's Life</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#N Acorn
+#O Charles Corderman
+#C A methuselah with lifespan 5206.
+x = 7, y = 3, rule = MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaIDogGiA6ICAAIAAaIDogIAAgACAAIAAAAAAAA
+bo5b$3bo3b$2o2b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Conway's Life (for comparison)</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#N Acorn
+#O Charles Corderman
+#C A methuselah with lifespan 5206.
+x = 7, y = 3, rule = B3/S23
+bo5b$3bo3b$2o2b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>MAP of Conway's Life with 4 Generations states</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#N Acorn
+#O Charles Corderman
+#C A methuselah with lifespan 5206.
+x = 7, y = 3, rule = MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaIDogGiA6ICAAIAAaIDogIAAgACAAIAAAAAAAA/4
+bo5b$3bo3b$2o2b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>MAP of LifeHistory</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#N Acorn
+#O Charles Corderman
+#C A methuselah with lifespan 5206.
+x = 7, y = 3, rule = MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaIDogGiA6ICAAIAAaIDogIAAgACAAIAAAAAAAAHistory
+bo5b$3bo3b$2o2b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>MAP of Conway's Life</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ HEIGHT 240 ]]
+#N Acorn
+#O Charles Corderman
+#C A methuselah with lifespan 5206.
+x = 7, y = 3, rule = MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaIDogGiA6ICAAIAAaIDogIAAgACAAIAAAAAAAA
+bo5b$3bo3b$2o2b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>SE MAP - pattern should go NW</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 37, y = 13, rule = MAPQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+o9bo9bo9bo$bo9bo9bo$2bo9bo$3bo$4bo15bo$5bo13bo$6bo11bo5bo$7bo9bo5bo$8b
+o7bo5bo4bo$9bo5bo5bo4bo$o13bo5bo4bo4bo$13bo15bo$33bo2$5bo8bo$4b3o$3b5o
+$4b3o12b2o$5bo13b2o$27b3o$o9bo16b3o$27b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>S MAP - pattern should go N</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 37, y = 13, rule = MAPIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+9bo9bo9bo$bo9bo9bo$2bo9bo$3bo$4bo15bo$5bo13bo$6bo11bo5bo$7bo9bo5bo$8b
+o7bo5bo4bo$9bo5bo5bo4bo$o13bo5bo4bo4bo$13bo15bo$33bo2$5bo8bo$4b3o$3b5o
+$4b3o12b2o$5bo13b2o$27b3o$o9bo16b3o$27b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>SW MAP - pattern should go NE</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 37, y = 13, rule = MAPCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+o9bo9bo9bo$bo9bo9bo$2bo9bo$3bo$4bo15bo$5bo13bo$6bo11bo5bo$7bo9bo5bo$8b
+o7bo5bo4bo$9bo5bo5bo4bo$o13bo5bo4bo4bo$13bo15bo$33bo2$5bo8bo$4b3o$3b5o
+$4b3o12b2o$5bo13b2o$27b3o$o9bo16b3o$27b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>E MAP - pattern should go W</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 37, y = 13, rule = MAPAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+o9bo9bo9bo$bo9bo9bo$2bo9bo$3bo$4bo15bo$5bo13bo$6bo11bo5bo$7bo9bo5bo$8b
+o7bo5bo4bo$9bo5bo5bo4bo$o13bo5bo4bo4bo$13bo15bo$33bo2$5bo8bo$4b3o$3b5o
+$4b3o12b2o$5bo13b2o$27b3o$o9bo16b3o$27b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Center MAP - pattern should not move</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 37, y = 13, rule = MAPAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+o9bo9bo9bo$bo9bo9bo$2bo9bo$3bo$4bo15bo$5bo13bo$6bo11bo5bo$7bo9bo5bo$8b
+o7bo5bo4bo$9bo5bo5bo4bo$o13bo5bo4bo4bo$13bo15bo$33bo2$5bo8bo$4b3o$3b5o
+$4b3o12b2o$5bo13b2o$27b3o$o9bo16b3o$27b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>W MAP - pattern should go E</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 37, y = 13, rule = MAPAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+o9bo9bo9bo$bo9bo9bo$2bo9bo$3bo$4bo15bo$5bo13bo$6bo11bo5bo$7bo9bo5bo$8b
+o7bo5bo4bo$9bo5bo5bo4bo$o13bo5bo4bo4bo$13bo15bo$33bo2$5bo8bo$4b3o$3b5o
+$4b3o12b2o$5bo13b2o$27b3o$o9bo16b3o$27b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>NE MAP - pattern should go SW</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 37, y = 13, rule = MAPAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+o9bo9bo9bo$bo9bo9bo$2bo9bo$3bo$4bo15bo$5bo13bo$6bo11bo5bo$7bo9bo5bo$8b
+o7bo5bo4bo$9bo5bo5bo4bo$o13bo5bo4bo4bo$13bo15bo$33bo2$5bo8bo$4b3o$3b5o
+$4b3o12b2o$5bo13b2o$27b3o$o9bo16b3o$27b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>N MAP - pattern should go S</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 37, y = 13, rule = MAPAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+o9bo9bo9bo$bo9bo9bo$2bo9bo$3bo$4bo15bo$5bo13bo$6bo11bo5bo$7bo9bo5bo$8b
+o7bo5bo4bo$9bo5bo5bo4bo$o13bo5bo4bo4bo$13bo15bo$33bo2$5bo8bo$4b3o$3b5o
+$4b3o12b2o$5bo13b2o$27b3o$o9bo16b3o$27b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>NW MAP - pattern should go SE</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 37, y = 13, rule = MAPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+o9bo9bo9bo$bo9bo9bo$2bo9bo$3bo$4bo15bo$5bo13bo$6bo11bo5bo$7bo9bo5bo$8b
+o7bo5bo4bo$9bo5bo5bo4bo$o13bo5bo4bo4bo$13bo15bo$33bo2$5bo8bo$4b3o$3b5o
+$4b3o12b2o$5bo13b2o$27b3o$o9bo16b3o$27b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

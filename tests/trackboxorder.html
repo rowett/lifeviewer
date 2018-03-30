@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer"content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>TRACKBOX parameters correct E S W N</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 140, y = 21, rule = B3-ekrj4-j5-enqy68/S2eki3-ek4cnqjz
+126bo11bo$126bo11bo$90bo34b4o7b4o$88b2o2bo34b2o7b2o$90b3o34b3o5b3o$5bo
+2bo76b2o3b3o34b3o5b3o$3bo6bo76bo2b3o35bo7bo$84bo5b2o12b4o21bo5bo$2b3ob
+2ob3o72b7o13bo2bo19bobo5bobo$bo2b2o2b2o2bo72bobob2o12b2o2b2o18bobo5bob
+o$2b2obo2bob2o74bo3bo13b4o18b4obobob4o$87b3o13b2o2b2o17b3o7b3o$51bo36b
+o15bo2bo20bob5obo$6o2b6o36bo2bo8bo$6o2b6o24bo14bo10bo64b3ob3o$bo2bo4bo
+2bo25b2obo8bo2bo7bo2bo62bob7obo$2b2o6b2o27b3o9b3o8b3o62b3obobob3o$b4o
+4b4o27bo86bob2o3b2obo$2b2o6b2o116b2o5b2o$127b4obob4o$128b2o5b2o!
+#C [[ HEIGHT 320 WIDTH 480 AUTOSTART TRACKBOX 0 1/2 0 1/6 LOOP 1000 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>TRACKBOX parameters incorrect (N > S)</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 140, y = 21, rule = B3-ekrj4-j5-enqy68/S2eki3-ek4cnqjz
+126bo11bo$126bo11bo$90bo34b4o7b4o$88b2o2bo34b2o7b2o$90b3o34b3o5b3o$5bo
+2bo76b2o3b3o34b3o5b3o$3bo6bo76bo2b3o35bo7bo$84bo5b2o12b4o21bo5bo$2b3ob
+2ob3o72b7o13bo2bo19bobo5bobo$bo2b2o2b2o2bo72bobob2o12b2o2b2o18bobo5bob
+o$2b2obo2bob2o74bo3bo13b4o18b4obobob4o$87b3o13b2o2b2o17b3o7b3o$51bo36b
+o15bo2bo20bob5obo$6o2b6o36bo2bo8bo$6o2b6o24bo14bo10bo64b3ob3o$bo2bo4bo
+2bo25b2obo8bo2bo7bo2bo62bob7obo$2b2o6b2o27b3o9b3o8b3o62b3obobob3o$b4o
+4b4o27bo86bob2o3b2obo$2b2o6b2o116b2o5b2o$127b4obob4o$128b2o5b2o!
+#C [[ HEIGHT 320 WIDTH 480 AUTOSTART TRACKBOX 0 1/6 0 1/2 LOOP 1000 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

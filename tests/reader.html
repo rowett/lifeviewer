@@ -1,0 +1,37 @@
+<html>
+	<head>
+		<meta name="LifeViewer" content="viewer textarea">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+	</head>
+	<body>
+		<h1>LifeViewer plugin</h1>
+		<p>This page shows how you embed the LifeViewer plugin in a webpage</p>
+		<div class="viewer">
+			<textarea rows=3 cols=50 id="readme">bo$2bo$3o!</textarea><br><canvas width="480" height="480"></canvas>
+		</div>
+	</body>
+	<script>
+xmlhttp = new XMLHttpRequest();
+xmlhttp.open("GET", "1beacon_105.lif", false);
+xmlhttp.send();
+xmlDoc = xmlhttp.responseXML;
+	</script>
+</html>
+

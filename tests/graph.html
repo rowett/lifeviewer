@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+	<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Graph Thumbnail</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ AUTOSTART STOP 400 AUTOFIT ]]
+#C [[ GRAPH THUMBNAIL ]]
+x = 2, y = 2, rule = Faders
+2A$A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Graph</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ AUTOSTART STOP 400 AUTOFIT ]]
+#C [[ GRAPH ]]
+x = 2, y = 2, rule = Faders
+2A$A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Graph Points</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ AUTOSTART STOP 400 AUTOFIT ]]
+#C [[ GRAPH GRAPHPOINTS ]]
+x = 2, y = 2, rule = Faders
+2A$A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Graph Custom Colors</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ AUTOSTART STOP 400 AUTOFIT ]]
+#C [[ GRAPH COLOR GRAPHBG Cyan COLOR GRAPHAXIS Blue ]]
+#C [[ COLOR GRAPHALIVE DarkOrange ]]
+#C [[ COLOR GRAPHBIRTH Pink COLOR GRAPHDEATH Yellow ]]
+x = 2, y = 2, rule = Faders
+2A$A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Hide Births and Deaths with color and opacity</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ AUTOSTART STOP 400 AUTOFIT ]] 
+#C [[ GRAPH COLOR GRAPHBIRTH 0 0 48 ]]
+#C [[ COLOR GRAPHDEATH 0 0 48 GRAPHOPACITY 1 ]]
+x = 2, y = 2, rule = Faders
+2A$A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

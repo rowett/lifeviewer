@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer"content="viewer textarea 150">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>Waypoint Zoom</h1>
+		<div class="viewer">
+			<textarea rows=5 cols=79>
+x = 761, y = 777, rule = B3/S23
+2o$2o4$3o$o$bo9$11b3o$11bo$12bo8$13b2o$12b2o$14bo5$13b3o$13bo$14bo$31b
+3o$31bo$32bo39$75b2o$74b2o$76bo2$80b2o$79b2o$81bo11$59b2o29b2o$58b2o
+29b2o$60bo30bo11$99b2o$98b2o$100bo$113b2o$112b2o$114bo21$144b2o$119b2o
+22b2o$118b2o25bo$120bo$113b2o$112b2o$114bo8$128b2o$127b2o$129bo3$117b
+2o$116b2o$118bo24b2o$142b2o$144bo2$133b2o$132b2o$134bo7$155b2o$154b2o$
+156bo10$165b3o$165bo$166bo4$165b2o$164b2o$166bo8b2o$174b2o$176bo13$
+193b2o$192b2o$194bo2$196b3o$196bo$197bo8$209b3o$209bo$210bo4$217b3o$
+217bo$218bo2$207b3o$207bo$208bo23b3o$232bo$213b3o17bo$213bo$214bo$203b
+2o$202b2o$204bo29b3o$234bo$224b3o8bo$224bo$225bo$236b2o$214b2o19b2o$
+213b2o22bo$215bo8$240b2o$230b2o7b2o$229b2o10bo$231bo11$228b2o$227b2o$
+229bo14$246b2o$245b2o$247bo36$266b3o$266bo$267bo8$279b3o$279bo$280bo5$
+294b3o$294bo$295bo3$291b2o$290b2o$292bo21$319b3o$319bo$320bo9$313b3o$
+313bo$314bo14b3o$329bo$330bo3$320b3o$320bo$321bo2$338b3o$338bo$339bo5$
+353b3o$353bo$354bo9$378b2o$377b2o$365b3o11bo$365bo$366bo8$380b3o$380bo
+$381bo5$374b3o$374bo$375bo2$392b3o$369b2o21bo$368b2o23bo$370bo6$384b2o
+$383b2o$385bo7$376b2o$375b2o$377bo$413b2o$412b2o$414bo$417b3o$417bo$
+418bo2$414b2o$413b2o$415bo3$470b2o$393b2o74b2o$392b2o77bo$394bo5$427b
+3o$427bo$428bo3$479b2o$438b2o38b2o$437b2o41bo$439bo2$442b2o$441b2o$
+443bo3$495b2o$490b2o2b2o$489b2o5bo$491bo10$517b2o$516b2o$518bo13$512b
+3o$512bo$513bo3$434b3o93b2o$434bo94b2o4b2o$435bo95bo2b2o$536bo4$507b3o
+$507bo$508bo3$502b2o$501b2o$503bo5$463b2o$462b2o52b3o$464bo51bo$517bo
+9$528b3o$528bo$529bo$521b2o$483b3o34b2o$483bo38bo$484bo3$488b2o$487b2o
+$489bo44b2o$482b2o49b2o10b2o6b3o$481b2o52bo8b2o7bo$483bo62bo7bo8$498b
+2o$497b2o$499bo7b2o$506b2o$508bo48b3o$557bo7b3o$558bo6bo$566bo2$572b2o
+$571b2o$573bo2$519b2o$518b2o66b3o$520bo56b2o7bo$530b2o44b2o9bo$529b2o
+47bo$531bo2$579b3o$579bo26b2o$580bo24b2o$607bo5$605b3o$605bo$554b2o50b
+o$553b2o$555bo6$618b3o$618bo$619bo6$621b3o$621bo$622bo$629b3o$629bo$
+567b2o61bo$566b2o$568bo55b3o$624bo$625bo3$566b2o$565b2o$567bo2$645b3o$
+645bo$646bo3b3o$650bo$651bo12$670b3o$670bo$671bo125$758b2o$758bobo$
+758bo!
+#C [[ THUMBNAIL THUMBSIZE 2 AUTOSTART STEP 5 ZOOM -2 STOP 4200 ]]
+#C [[PAUSE 2 LINEAR ZOOM HEIGHT 600 ]]
+#C [[ T 3000 X -350 Y -350 ZOOM 2 LINEAR ZOOM ]]
+#C [[ T 3200 X -350 Y -350 ZOOM 4 LINEAR ZOOM ]] 
+#C [[ T 4000 X -425 Y -425 ZOOM 7 ]]
+#C [[ STOP 4200 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

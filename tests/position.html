@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Bug report</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+# Type or paste RLE data into this box and click on the View button.
+#CXRLE Pos=-10,5
+x = 3, y = 3, rule = 23/3/64
+3o$2bo$bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Normal</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+# Type or paste RLE data into this box and click on the View button.
+x = 8, y = 4, rule = LifeHistory
+bo3b3o$b3o2bo$2bo$BBB..FFF!
+[[ GRID ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>CXRLE Pos</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#CXRLE Pos=-4,2
+# Type or paste RLE data into this box and click on the View button.
+x = 8, y = 4, rule = LifeHistory
+bo3b3o$b3o2bo$2bo$BBB..FFF!
+[[ GRID ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Bounded</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+# Type or paste RLE data into this box and click on the View button.
+x = 8, y = 4, rule = LifeHistory:T20
+bo3b3o$b3o2bo$2bo$BBB..FFF!
+[[ GRID ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Bounded with CXRLEPOS</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#CXRLE Pos=-4,2
+# Type or paste RLE data into this box and click on the View button.
+x = 8, y = 4, rule = LifeHistory:T20
+bo3b3o$b3o2bo$2bo$BBB..FFF!
+[[ GRID ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

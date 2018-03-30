@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer"content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>NOREPORT on test</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+#C [[ NOREPORT PAUSE 2 AUTOSTART ZOOM 18 LOOP 120 WIDTH 656 ]]
+x = 29, y = 10, rule = B3/S23
+4bo$4bo$4bo15bo$b4obo3bo2b3o2b2obo2bob2o$o3bobo3bobo3bobo3bob2o2bo$o3b
+obo3bobo3bobo5bo3bo$o3bo2bobo2bo3bobo5bo3bo$b4o3bo4b4obo5bo3bo$16bo$
+12b4o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>NOREPORT off test</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+#C [[ PAUSE 2 AUTOSTART ZOOM 18 LOOP 120 WIDTH 656 ]]
+x = 29, y = 10, rule = B3/S23
+4bo$4bo$4bo15bo$b4obo3bo2b3o2b2obo2bob2o$o3bobo3bobo3bobo3bob2o2bo$o3b
+obo3bobo3bobo5bo3bo$o3bo2bobo2bo3bobo5bo3bo$b4o3bo4b4obo5bo3bo$16bo$
+12b4o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

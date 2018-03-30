@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer"content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>HISTORYFIT bug</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+#C p96 8-engine Corderman rake
+#C Dean Hickerson, 7/3/1998
+x = 73, y = 73, rule = B3/S23
+54bo$37b3o8bo5bo$36bo3bo6bo7bo$37b2o9b4o2b2o$39b2ob2o9b3o$41b2o11bobo$
+55bo7b2o$55bo7b2o4$30b3o$29bo3bo$28bo3b2o17bo$29bo20bobo18b2o$30b4o16b
+o2bo17b2o$32bob2o15b2o$32bo2bo$33b2o12b2o$47b2o3$40bo21bobo$39bobo19bo
+$39bobo20bo2bo$40bo23bobo$67bo$66b3o$13bo52bo$12bobo49b2o$11bo3bo50bo$
+11bo3bo48bo2bo$11bobob3o46bobo$12b2obo2bo45bo$16bobo31bo$16b2o31bobo$
+2bo$bobo45bo2bo3bob3o$bobo47bo4bo$bo2bo18b2o27bob2obobo$2bobo17bo2bo
+27b2o3bo$5bo17b2o29bo$4b2o$4bo4$2bo15b2o$bobo14b2o$3bo29b3o$3bo10b2o
+21bo12b2o$3bo9bo2bo20b2o10bo$14bobo20bo2bo8b2o$4bo10bo22bobo$2ob3o32bo
+$2b3ob2o29b2o12b2o$5bo30bobo12b2o$38b2o$35b2o$37bo2$24b3o$24b3o$6b2o
+17bo$6b2o18b2o$27bo$26bo4$24b2o$14b2o8b2o$14b2o9bo!
+[[ HISTORYFIT AUTOFIT ]]
+			</textarea>
+			<br>
+			<canvas width="800" height="500"></canvas> 
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

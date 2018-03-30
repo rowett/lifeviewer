@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Life ended at with STEP > 1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ STEP 50 ]]
+x = 993, y = 989, rule = B3/S23
+991b2o$987b2o2b2o$986bobo$985bo5b2o$984bo4bo2bo$983bo5b2o$982bo$981bo$
+980bo$979bo$978bo$977bo$976bo$975bo$974bo$973bo$972bo$971bo$970bo$969b
+o$968bo$967bo$966bo$965bo$964bo$963bo$962bo$961bo$960bo$959bo$958bo$
+957bo$956bo$955bo$954bo$953bo$952bo$951bo$950bo$949bo$948bo$947bo$946b
+o$945bo$944bo$943bo$942bo$941bo$940bo$939bo$938bo$937bo$936bo$935bo$
+934bo$933bo$932bo$931bo$930bo$929bo$928bo$927bo$926bo$925bo$924bo$923b
+o$922bo$921bo$920bo$919bo$918bo$917bo$916bo$915bo$914bo$913bo$912bo$
+911bo$910bo$909bo$908bo$907bo$906bo$905bo$904bo$903bo$902bo$901bo$900b
+o$899bo$898bo$897bo$896bo$895bo$894bo$893bo$892bo$891bo$890bo$889bo$
+888bo$887bo$886bo$885bo$884bo$883bo$882bo$881bo$880bo$879bo$878bo$877b
+o$876bo$875bo$874bo$873bo$872bo$871bo$870bo$869bo$868bo$867bo$866bo$
+865bo$864bo$863bo$862bo$861bo$860bo$859bo$858bo$857bo$856bo$855bo$854b
+o$853bo$852bo$851bo$850bo$849bo$848bo$847bo$846bo$845bo$844bo$843bo$
+842bo$841bo$840bo$839bo$838bo$837bo$836bo$835bo$834bo$833bo$832bo$831b
+o$830bo$829bo$828bo$827bo$826bo$825bo$824bo$823bo$822bo$821bo$820bo$
+819bo$818bo$817bo$816bo$815bo$814bo$813bo$812bo$811bo$810bo$809bo$808b
+o$807bo$806bo$805bo$804bo$803bo$802bo$801bo$800bo$799bo$798bo$797bo$
+796bo$795bo$794bo$793bo$792bo$791bo$790bo$789bo$788bo$787bo$786bo$785b
+o$784bo$783bo$782bo$781bo$780bo$779bo$778bo$777bo$776bo$775bo$774bo$
+773bo$772bo$771bo$770bo$769bo$768bo$767bo$766bo$765bo$764bo$763bo$762b
+o$761bo$760bo$759bo$758bo$757bo$756bo$755bo$754bo$753bo$752bo$751bo$
+750bo$749bo$748bo$747bo$746bo$745bo$744bo$743bo$742bo$741bo$740bo$739b
+o$738bo$737bo$736bo$735bo$734bo$733bo$732bo$731bo$730bo$729bo$728bo$
+727bo$726bo$725bo$724bo$723bo$722bo$721bo$720bo$719bo$718bo$717bo$716b
+o$715bo$714bo$713bo$712bo$711bo$710bo$709bo$708bo$707bo$706bo$705bo$
+704bo$703bo$702bo$701bo$700bo$699bo$698bo$697bo$696bo$695bo$694bo$693b
+o$692bo$691bo$690bo$689bo$688bo$687bo$686bo$685bo$684bo$683bo$682bo$
+681bo$680bo$679bo$678bo$677bo$676bo$675bo$674bo$673bo$672bo$671bo$670b
+o$669bo$668bo$667bo$666bo$665bo$664bo$663bo$662bo$661bo$660bo$659bo$
+658bo$657bo$656bo$655bo$654bo$653bo$652bo$651bo$650bo$649bo$648bo$647b
+o$646bo$645bo$644bo$643bo$642bo$641bo$640bo$639bo$638bo$637bo$636bo$
+635bo$634bo$633bo$632bo$631bo$630bo$629bo$628bo$627bo$626bo$625bo$624b
+o$623bo$622bo$621bo$620bo$619bo$618bo$617bo$616bo$615bo$614bo$613bo$
+612bo$611bo$610bo$609bo$608bo$607bo$606bo$605bo$604bo$603bo$602bo$601b
+o$600bo$599bo$598bo$597bo$596bo$595bo$594bo$593bo$592bo$591bo$590bo$
+589bo$588bo$587bo$586bo$585bo$584bo$583bo$582bo$581bo$580bo$579bo$578b
+o$577bo$576bo$575bo$574bo$573bo$572bo$571bo$570bo$569bo$568bo$567bo$
+566bo$565bo$564bo$563bo$562bo$561bo$560bo$559bo$558bo$557bo$556bo$555b
+o$554bo$553bo$552bo$551bo$550bo$549bo$548bo$547bo$546bo$545bo$544bo$
+543bo$542bo$541bo$540bo$539bo$538bo$537bo$536bo$535bo$534bo$533bo$532b
+o$531bo$530bo$529bo$528bo$527bo$526bo$525bo$524bo$523bo$522bo$521bo$
+520bo$519bo$518bo$517bo$516bo$515bo$514bo$513bo$512bo$511bo$510bo$509b
+o$508bo$507bo$506bo$505bo$504bo$503bo$502bo$501bo$500bo$499bo$498bo$
+497bo$496bo$495bo$494bo$493bo$492bo$491bo$490bo$489bo$488bo$487bo$486b
+o$485bo$484bo$483bo$482bo$481bo$480bo$479bo$478bo$477bo$476bo$475bo$
+474bo$473bo$472bo$471bo$470bo$469bo$468bo$467bo$466bo$465bo$464bo$463b
+o$462bo$461bo$460bo$459bo$458bo$457bo$456bo$455bo$454bo$453bo$452bo$
+451bo$450bo$449bo$448bo$447bo$446bo$445bo$444bo$443bo$442bo$441bo$440b
+o$439bo$438bo$437bo$436bo$435bo$434bo$433bo$432bo$431bo$430bo$429bo$
+428bo$427bo$426bo$425bo$424bo$423bo$422bo$421bo$420bo$419bo$418bo$417b
+o$416bo$415bo$414bo$413bo$412bo$411bo$410bo$409bo$408bo$407bo$406bo$
+405bo$404bo$403bo$402bo$401bo$400bo$399bo$398bo$397bo$396bo$395bo$394b
+o$393bo$392bo$391bo$390bo$389bo$388bo$387bo$386bo$385bo$384bo$383bo$
+382bo$381bo$380bo$379bo$378bo$377bo$376bo$375bo$374bo$373bo$372bo$371b
+o$370bo$369bo$368bo$367bo$366bo$365bo$364bo$363bo$362bo$361bo$360bo$
+359bo$358bo$357bo$356bo$355bo$354bo$353bo$352bo$351bo$350bo$349bo$348b
+o$347bo$346bo$345bo$344bo$343bo$342bo$341bo$340bo$339bo$338bo$337bo$
+336bo$335bo$334bo$333bo$332bo$331bo$330bo$329bo$328bo$327bo$326bo$325b
+o$324bo$323bo$322bo$321bo$320bo$319bo$318bo$317bo$316bo$315bo$314bo$
+313bo$312bo$311bo$310bo$309bo$308bo$307bo$306bo$305bo$304bo$303bo$302b
+o$301bo$300bo$299bo$298bo$297bo$296bo$295bo$294bo$293bo$292bo$291bo$
+290bo$289bo$288bo$287bo$286bo$285bo$284bo$283bo$282bo$281bo$280bo$279b
+o$278bo$277bo$276bo$275bo$274bo$273bo$272bo$271bo$270bo$269bo$268bo$
+267bo$266bo$265bo$264bo$263bo$262bo$261bo$260bo$259bo$258bo$257bo$256b
+o$255bo$254bo$253bo$252bo$251bo$250bo$249bo$248bo$247bo$246bo$245bo$
+244bo$243bo$242bo$241bo$240bo$239bo$238bo$237bo$236bo$235bo$234bo$233b
+o$232bo$231bo$230bo$229bo$228bo$227bo$226bo$225bo$224bo$223bo$222bo$
+221bo$220bo$219bo$218bo$217bo$216bo$215bo$214bo$213bo$212bo$211bo$210b
+o$209bo$208bo$207bo$206bo$205bo$204bo$203bo$202bo$201bo$200bo$199bo$
+198bo$197bo$196bo$195bo$194bo$193bo$192bo$191bo$190bo$189bo$188bo$187b
+o$186bo$185bo$184bo$183bo$182bo$181bo$180bo$179bo$178bo$177bo$176bo$
+175bo$174bo$173bo$172bo$171bo$170bo$169bo$168bo$167bo$166bo$165bo$164b
+o$163bo$162bo$161bo$160bo$159bo$158bo$157bo$156bo$155bo$154bo$153bo$
+152bo$151bo$150bo$149bo$148bo$147bo$146bo$145bo$144bo$143bo$142bo$141b
+o$140bo$139bo$138bo$137bo$136bo$135bo$134bo$133bo$132bo$131bo$130bo$
+129bo$128bo$127bo$126bo$125bo$124bo$123bo$122bo$121bo$120bo$119bo$118b
+o$117bo$116bo$115bo$114bo$113bo$112bo$111bo$110bo$109bo$108bo$107bo$
+106bo$105bo$104bo$103bo$102bo$101bo$100bo$99bo$98bo$97bo$96bo$95bo$94b
+o$93bo$92bo$91bo$90bo$89bo$88bo$87bo$86bo$85bo$84bo$83bo$82bo$81bo$80b
+o$79bo$78bo$77bo$76bo$75bo$74bo$73bo$72bo$71bo$70bo$69bo$68bo$67bo$66b
+o$65bo$64bo$63bo$62bo$61bo$60bo$59bo$58bo$57bo$56bo$55bo$54bo$53bo$52b
+o$51bo$50bo$49bo$48bo$47bo$46bo$45bo$44bo$43bo$42bo$41bo$40bo$39bo$38b
+o$37bo$36bo$35bo$34bo$33bo$32bo$31bo$30bo$29bo$28bo$27bo$26bo$25bo$24b
+o$23bo$22bo$21bo$20bo$19bo$18bo$17bo$16bo$15bo$14bo$13bo$12bo$11bo$10b
+o$9bo$8bo$7bo$6bo$5bo$4bo$3bo$2bo$bo$o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

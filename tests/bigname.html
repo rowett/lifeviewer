@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h2>LifeViewer Plugin</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 59, y = 7, rule = B3/S23
+o5b5ob5ob5obo3bob5ob5obobobob5ob4o$o7bo3bo5bo5bo3bo3bo3bo5bobobobo5bo
+3bo$o7bo3bo5bo5bo3bo3bo3bo5bobobobo5bo3bo$o7bo3b3o3b3o3bo3bo3bo3b3o3bo
+bobob3o3b4o$o7bo3bo5bo5bo3bo3bo3bo5bobobobo5bo3bo$o7bo3bo5bo6bobo4bo3b
+o5bobobobo5bo3bo$5ob5obo5b5o3bo3b5ob5o2bobo2b5obo3bo!
+#C [[ COLOUR DEAD 0 0 0 COLOUR ALIVE 0 0 0 ]]
+#C [[ AUTOSTART X 90 Y -60 LAYERS 6 ZOOM 4 DEPTH 3 ]]
+#C [[ PAUSE 3 X -90 Y 60 ANGLE 20 THEME 0 ]]
+#C [[ PAUSE 1.5 X -90 Y -60 ANGLE 340 ZOOM 6 ]]
+#C [[ PAUSE 1.5 X 0 Y 0 ANGLE 0 THEME 3 ZOOM 4 ]]
+#C [[ PAUSE 1 X 0 DEPTH 0.2 ZOOM 6 THEME 4 ]]
+#C [[ T 1 THEME 7 ]]
+#C [[ T 400 ZOOM 5 X -5 Y 10 THEME 2 ]]
+#C [[ T 450 DEPTH 5 ]]
+#C [[ T 560 X 155 Y -127 DEPTH 0.5 ]]
+#C [[ T 950 X 242 Y -214 ANGLE 20 ]]
+#C [[ T 1050 DEPTH 0 ANGLE 0 AUTOFIT "LifeViewer" ]]
+#C [[ T 1100 X 0 Y 0 ZOOM 0.125 THEME CUSTOM ]]
+#C [[ LOOP 1100 STARS WIDTH 800 HEIGHT 640 ]]
+#C [[ NOSTEPBACK ]]
+#C [[ TITLE "LifeViewer name evolution!" ]]
+			</textarea>
+			<br>
+			<canvas width="800" height="640"></canvas> 
+		</div>
+		<br>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

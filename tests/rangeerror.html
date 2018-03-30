@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer"content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Run this until grid expands to 4096x4096</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 53, y = 53, rule = B04568/S068
+obobobobobobobobobobobobobobobobobobobobobobobobobobo$obobobobobobobob
+obobobobobobobobobobobobobobobobobobo$obobobobobobobobobobobobobobobob
+obobobobobobobobobobo$obobobobobobobobobobobobobobobobobobobobobobobob
+obobo$obobobobobobobobobobobobobobobobobobobobobobobobobobo$obobobobob
+obobobobobobobobobobobobobobobobobobobobobo$obobobobobobobobobobobobob
+obobobobobobobobobobobobobo$obobobobobobobobobobobobobobobobobobobobob
+obobobobobo$obobobobobobobobobobobobobobobobobobobobobobobobobobo$obob
+obobobobobobobobobobobobobobobobobobobobobobobobo$obobobobobobobobobob
+obobobobobobobobobobobobobobobobo$obobobobobobobobobobobobobobobobobob
+obobobobobobobobo$obobobobobobobobobobobobobobobobobobobobobobobobobob
+o$obobobobobobobobobobobobobobobobobobobobobobobobobobo$obobobobobobob
+obobobobobobobobobobobobobobobobobobobo$obobobobobobobobobobobobobobob
+obobobobobobobobobobobo$obobobobobobobobobobobobobobobobobobobobobobob
+obobobo$obobobobobobobobobobobobobobobobobobobobobobobobobobo$obobobob
+obobobobobobobobobobobobobobobobobobobobobobo$obobobobobobobobobobobob
+obobobobobobobobobobobobobobo$obobobobobobobobobobobobobobobobobobobob
+obobobobobobo$obobobobobobobobobobobobobobobobobobobobobobobobobobo$ob
+obobobobobobobobobobobobobobobobobobobobobobobobobo$obobobobobobobobob
+obobobobobobobobobobobobobobobobobo$obobobobobobobobobobobobobobobobob
+obobobobobobobobobo$obobobobobobobobobobobobobobobobobobobobobobobobob
+obo$obobobobobobobobobobobobobobobobobobobobobobobobobobo$obobobobobob
+obobobobobobobobobobobobobobobobobobobobo$obobobobobobobobobobobobobob
+obobobobobobobobobobobobo$obobobobobobobobobobobobobobobobobobobobobob
+obobobobo$obobobobobobobobobobobobobobobobobobobobobobobobobobo$obobob
+obobobobobobobobobobobobobobobobobobobobobobobo$obobobobobobobobobobob
+obobobobobobobobobobobobobobobo$obobobobobobobobobobobobobobobobobobob
+obobobobobobobo$obobobobobobobobobobobobobobobobobobobobobobobobobobo$
+obobobobobobobobobobobobobobobobobobobobobobobobobobo$obobobobobobobob
+obobobobobobobobobobobobobobobobobobo$obobobobobobobobobobobobobobobob
+obobobobobobobobobobo$obobobobobobobobobobobobobobobobobobobobobobobob
+obobo$obobobobobobobobobobobobobobobobobobobobobobobobobobo$obobobobob
+obobobobobobobobobobobobobobobobobobobobobo$obobobobobobobobobobobobob
+obobobobobobobobobobobobobo$obobobobobobobobobobobobobobobobobobobobob
+obobobobobo$obobobobobobobobobobobobobobobobobobobobobobobobobobo$obob
+obobobobobobobobobobobobobobobobobobobobobobobobo$obobobobobobobobobob
+obobobobobobobobobobobobobobobobo$obobobobobobobobobobobobobobobobobob
+obobobobobobobobo$obobobobobobobobobobobobobobobobobobobobobobobobobob
+o$obobobobobobobobobobobobobobobobobobobobobobobobobobo$obobobobobobob
+obobobobobobobobobobobobobobobobobobobo$obobobobobobobobobobobobobobob
+obobobobobobobobobobobo$obobobobobobobobobobobobobobobobobobobobobobob
+obobobo$obobobobobobobobobobobobobobobobobobobobobobobobobobo!
+			</textarea>
+			<br>
+			<canvas width="800" height="500"></canvas> 
+		</div>
+		<h2>Then run this</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 30, y = 30, rule = B1568/S012356:T30,30
+o2b4o2b2obobobo5b3ob3o$2ob8o5bo3b2o3bob3o$b2o2b7obo2bobo5b2ob3o$3o5bo
+5bo4b3obo2b4o$2o2b2o4bo4b2o7bobo2bo$8ob7obo2b3obob3o$obo2b2o3bob2o2bob
+o2b2o2b3o$o2bo4b2o3bob3o5b2obo2bo$o4bobo2b6o2b3o3bo4bo$o2b2o4b10obo2b
+3o2bo$2o4b2o2b7obo2bo7bo$2o7bob4obo2bo3b3obobo$2ob3ob9o3b3o$8b5o2bo2b
+4o3b3o$o6bo5bob2o6b4o$2ob2obo3bo4b2o7b4o$4b2obo3bob5obob2o2bo2bo$o2b2o
+2bobob2o4b2ob3obo$o2bo8bo2b3o2b5o4bo$ob2obob2obo7b2obo4bo$ob2obo3b2o3b
+2o2bo4bo4bo$7b2ob2obobobo5bobo$bobob2o4b7o2b2obo3bobo$2bo2bobobo4bob3o
+bo2bo2bo$4b2o5bobo2bobobo5bo$o2b2o2bob2obobo3bo3bobo2b3o$b5o2b3o2bo3bo
+bobobo2bob2o$3b3obo3b3obo6b2o2bo2bo$2bo5b4o4bo3b2ob2obo$ob3obo2bob2obo
+2bobo4b3o2bo!
+			</textarea>
+			<br>
+			<canvas width="800" height="500"></canvas> 
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

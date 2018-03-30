@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Performance Tests</h1>
+		<h2>Performance test 1</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 0, y = 0, rule = B1/S8
+o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>Performance test - breeder</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C disable step back [[ NOSTEPBACK ]]
+x = 555, y = 283, rule = B013468/S02
+555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$
+555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$
+555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$
+555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$
+555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$
+555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$
+555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$
+555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$
+555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$
+555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$
+555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$
+555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$
+555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$
+555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$555o$
+555o$555o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$
+424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$
+424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$
+424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$
+424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$
+424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$424o$
+424o$424o$424o!
+			</textarea>
+			<br>
+			<canvas width="1200" height="800"></canvas> 
+		</div>
+		<h2>Work?</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 42, y = 19, rule = 345/25678/7
+35.ABCDEF$34.ABCDEF$33.ABCDEF$32.ABCDEF$16.A.C.E10.A.B.D.F$14.A.16ACA
+EC.E$5.C7.3ACAEA.ABADAF7ABCDEF$2.A.DAD2.E3.3ACBED.FA.CBED.F$5AE6ABADB
+FD.F14.8A$3AC3A.4ABADBFD.F14.8A$2.B.B.FCF4.3ACBED.FA.CBED.F$3.A3.E5.
+3ACAEA.ABADAF7ABCDEF$14.A.16ACAEC.E$16.A.C.E10.A.B.D.F$32.ABCDEF$33.A
+BCDEF$34.ABCDEF$35.ABCDEF$36.ABCDEF!
+			</textarea>
+			<br>
+			<canvas width="640" height="640"></canvas> 
+		</div>
+		<h2>Work?</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 19, y = 15, rule = LifeHistory
+x = 29, y = 28, rule = LifeHistory
+7.A.2A$7.2A.A2$5.5A$4.A4.A$3.A.BAB$3.A.2AB$2A.A.4BA$.A.A3.BABA$A2.2A
+2.A2BA$2A6.2A2B.D2B$10.2B3DB$10.2BDB2D2B$3.E.B.B.B.7B$.E.2BE13B2.B2.D
+$3.3BE4B2D11BDB$.E4BE4B2D11BDB$2.5E21B$2.12B2E4B3D3B3D$4.B.8BEBE11B$
+7.8BE8BDB$8.16BDB$8.14B2.D$9.8B.3B$9.7B3.B$10.5B$10.5B$12.B!
+			</textarea>
+			<br>
+			<canvas width="640" height="640"></canvas> 
+		</div>
+		<br>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>
