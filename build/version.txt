@@ -1,0 +1,1074 @@
+Build 254
+- gps control was incorrectly showing 10.0 for 10
+- added colour names to help information
+- aligned R G B values in help information
+- hotkey shift and Page Up moves to previous help topic
+- hotkey shift and Page Down moves to next help topic
+
+Build 253
+- waypoints now work with step back
+- LOOP no longer resets camera
+- fit zoom UI control is now disabled when AutoFit enabled
+- fixed a crash when invalid patterns have a bounded grid specification
+
+Build 252
+- fixed a display flicker with PAUSE 0
+
+Build 251
+- [[ PAUSE ]] script command can now take 0 as an argument for instant camera relocation
+- removed bounded grid postfix from rule name display
+
+Build 250
+- hex neighbourhood MAP rules were not working correctly
+- playback speeds < 60gps are much more accurate
+- gps UI control now shows steps per second and values less than 10 show one decimal place
+
+
+Build 249
+- patterns larger than bounded grids are now correctly clipped to top left
+
+Build 248
+- corrected coordinate display
+
+Build 247
+- popup Viewer should not respect meta width limit
+
+Build 246
+- fixed error when STOP or LOOP defined before first waypoint
+
+Build 245
+- validation error with THUMBNAIL
+
+Build 244
+- added [[ STARS OFF ]] script command
+- added [[ THUMBNAIL OFF ]] and [[ THUMBLAUNCH OFF ]] script commands
+- both stars and grid display can be defined per POI
+- added [[ AUTOFIT OFF ]] and [[ HISTORYFIT OFF ]] script commands
+- fixed TRACKLOOP that had stopped looping
+- fixed pattern position in bounded box when specified pattern size is not actual size
+- LOOP and STOP definitions not at POIs change the initial settings
+- pattern actual size vs specified size shown in Help information
+
+Build 243
+- added [[ AUTOSTART OFF ]] and [[ GRID OFF ]] script commands
+
+Build 242
+- added [[ POPUPWIDTH ]] and [[ POPUPHEIGHT ]] script commands
+
+Build 241
+- RLE patterns without 'rule =' now default to Conway's Life
+- allowed click to work on Viewers that are not fully on the window
+- maximum WIDTH and HEIGHT increased to 2048
+
+Build 240
+- mouse was behaving badly
+
+Build 239
+- previous build broke LifeHistory states 2 and 6
+
+Build 238
+- help information now marks current POI with a *
+- added [[ SUPPRESS ]] which suppresses overwrite error message for duplicate definitions once
+- [[ WIDTH ]] and [[ HEIGHT ]] are now checked for duplicate definitions
+
+Build 237
+- POI definitions were always inheriting X, Y, ZOOM and ANGLE
+- [[ POI INITIAL ]] was not making the default POI the current POI (for next and previous POI hotkeys)
+- [[ POI INITIAL ]] was not setting ANGLE or STEP
+
+Build 236
+- further enhancements to POI capability:
+	- you can now specify a THEME at a POI
+		- if none specified then the current THEME is not changed
+	- you can specify DEPTH and LAYERS at a POI
+	- you can specify STOP and LOOP generation at a POI
+	- [[ POIT <generation> ]] will start the POI at the defined generation
+	- added parameter value [[ INITIAL ]]
+		- [[ POI INITIAL ]] makes the defined POI current on pattern load
+		- [[ ALL INITIAL ]] specifies that all values for the current POI are copied from the initial camera
+		- [[ X|Y|Z|ZOOM|ANGLE|LAYERS|DEPTH|GPS|STEP|THEME|LOOP|STOP INITIAL ]] copy the defined value for the current POI from its initial value
+- STOP and LOOP can now take the parameter OFF to disable them (useful for POI definitions)
+- non-totalistic rules with repeated neighbour counts were decoded incorrectly
+- POITRANS speeds up to 200 are now valid
+- MAP rules now allow base64 padding
+- hotkey shift and "c" now cycles backwards through colour themes
+- hotkey alt and "c" selects the default theme
+- panning with the cursor keys is faster when zoomed out
+- hotkey shift and "l" will toggle LOOP mode if defined
+- LOOP was performing a camera reset when LOOP enabled after the LOOP generation
+- Life 1.05 format patterns now support all rules including bounded grids
+- Waypoint error messages were showing incorrect sign when overwriting X or Y camera positions
+- if there were more script errors than could fit on the viewer then the last error could not be scrolled to
+- bounded grids now work correctly with CXRLE POS
+
+Build 235
+- whitespace at the beginning of lines is now removed before copying patterns to clipboard (to be nice to Golly)
+- rules in the format SnnBnn were being decoded with S and B transposed
+- error could be generated about XOFFSET and YOFFSET when they weren't specified
+- updated event handling for UI to handle spurious mouseleave events posted when mouseup and mousedown both happen between updates
+- enhanced POI (point of interest) capability:
+	- there are new script commands that allow you specify actions when switching to a POI
+		- [[ POIRESET ]] will reset playback to T=0
+		- [[ POIPLAY ]] will start playback (if stopped)
+		- [[ POISTOP ]] will stop playback (if playing)
+		- if neither [[ POIPLAY ]] or [[ POISTOP ]] are specified then playback status is unaffected
+	- [[ POITRANS 0..60 ]] specifies transition speed
+		- 0 means instantaneous transition
+		- if not specified then the default is 12
+	- hotkeys alt-1 to alt-9 will switch to respective POIs (if specified)
+- STOP and LOOP tooltips now show generation
+
+Build 234
+- added support for Hex and von Neumann neighbourhoods with MAP rules
+- LifeHistory patterns were not respecting Themes at generation 0
+- [[ NOSOURCE ]] now also hides the "CODE: SELECT ALL" line
+- copy pattern source (hotkey "c") was not working correctly in the standalone viewer
+
+Build 233
+- added support for Larger Than Life rules
+	- support two rule formats:
+		- Rr,Cc,Mm,Ssmin..smax,Bbmin..bmax,Nn
+		- r,bmin,bmax,smin,smax
+	- r specifies the range from 1 to 15
+	- c specifies number of states from 0 to 255
+	- m specifies if the middle cell is included in neighbourhood count is 0 or 1
+	- smin..smax specify the count limits for a state 1 cell to survive
+	- bmin..bmax specify the count limits for a dead cell to become a birth
+	- n is the neighbourhood (M for Moore or N for von Neumann)
+- patterns are now centered in bounded grids
+
+Build 234
+- the [[ NOSOURCE ]] script command now also hides the "CODE: SELECT ALL" box on the forums
+
+Build 233
+- the RLE reader could skip rule definition if previous line was just a # character
+- bounded grids are now checked to make sure they fit
+- fixed MAP rules so final character is canonical
+- help information now shows MAP rules on multiple lines
+
+Build 232
+- improved compatibility of copy pattern source
+- renamed [[ NORLE ]] to [[ NOCOPY ]] and the link from "RLE" to "Copy"
+- added [[ NOSOURCE ]] which hides the pattern source textbox
+
+Build 231
+- added [[ NORLE ]] which disables the "RLE" link when you mouse over a [[ NOGUI ]] image
+- hotkey control and "c" will copy pattern source to clipboard
+
+Build 230
+- when you mouse over a [[ NOGUI ]] viewer an RLE link appears which when clicked will copy the displayed pattern's RLE into the Clipboard
+- [[ NOGUI ]] minimum width and height now 64
+- [[ NOGUI ]] silently disables [[ GRAPH ]], [[ THUMB ]], [[ THUMBLAUNCH ]], [[ SHOWTIMING ]], [[ SHOWGENSTATS ]] and [[ SHOWINFOBAR ]] if specified
+- viewers that have [[ NOGUI ]] specified with script errors will not enforce [[ NOGUI ]] so the script errors can be seen
+
+Build 229
+- screenshots can now be generated inline in an img tag (rather than in a separate window)
+- added [[ NOGUI ]] to disable menus and hotkeys
+	- also reduces [[ WIDTH ]] and [[ HEIGHT ]] minimum limit to 16
+	- silently disables [[ AUTOSTART ]] if specified
+Build 228
+- variable substitution can now be used in waypoint messages
+	- #B the LifeViewer build number
+	- #N the pattern name (if defined)
+	- #O the pattern originator (if defined)
+	- #R the pattern rule name
+	- #A the pattern rule alias name
+	- #T the program title ("LifeViewer")
+	- ## the # symbol
+- added [[ COLOR ERROR R G B ]] to set colour for error messages
+- rule decoder was failing on totalistic rules with no slash and only one of B or S
+- fixed a bug with Torus bounded grids with Y shift
+
+Build 227
+- Generations does not support B0 rules
+- status bar errors are now drawn in red
+- generation statistics tooltips for alive, births and deaths shows full value (rather than abbreviated, e.g. 102302 vs 102K)
+
+Build 226
+- fixed an issue with canonical representation of non-totalistic rules
+
+Build 225
+- statistics generation was not being reset when new pattern loaded in existing viewer
+- added script command [[ NOGRAPH ]] which disables graph
+	- slight performance increase when not tracking population data
+
+Build 224
+- AUTOSTART no longer runs patterns with illegal rules
+- better error reporting for MAP rules
+
+Build 223
+- graphs now display properly in thumbnail mode
+- fit zoom and thumbnail mode now work together
+- graph colors were incorrect on some browsers
+- fixed an issue with MAP rules and bounded grids
+
+Build 222
+- fixed an issue with the allocator during startup
+
+Build 221
+- tooltips in multi-item controls now work after item clicked
+
+Build 220
+- added ability to customize graph colors:
+	- [[ COLOR GRAPHBG R G B ]] to set background color
+	- [[ COLOR GRAPHAXIS R G B ]] to set axis color
+	- [[ COLOR GRAPHALIVE R G B ]] to set alive color
+	- [[ COLOR GRAPHBIRTH R G B ]] to set birth color
+	- [[ COLOR GRAPHDEATH R G B ]] to set death color
+- added graph colors to help information
+- fixed an issue when just COLOR BACKGROUND and COLOR ALIVE were defined which caused an invalid COLOR DEADRAMP
+
+Build 219
+- hotkey shift and "o" now opens population graph snapshot in separate window
+- graph x axis limit was wrong for generations less than the graph width
+
+Build 218
+- new graph script commands:
+	- [[ GRAPH ]] enables population graph display on pattern load
+	- [[ GRAPHOPACITY <0.0..1.0> ]] set graph background opacity
+	- [[ GRAPHPOINTS ]] draw the graph with points rather than lines
+- graph data added to help information
+- graph y axis label now abbreviates automatically when viewer height is small
+- fixed graph scale issue if first generation deaths or births was greater than population
+- added "Just Friends" to the non-totalistic aliases
+
+Build 217
+- hotkey "y" now toggles a graph display of population over time
+- hotkey shift and "y" to toggle graph lines or points
+- hotkey "7" to decrease and hotkey "9" to increase graph opacity
+
+Build 216
+- patterns were not correctly centered when bounded grid had a zero dimension
+- Faders and Sticks aliases were incorrect
+- native support for MAP rules (2 state and Generations)
+- deprecated [[ FILL ]], [[ MAP ]] and [[ MAPODD ]] script commmands
+- added non-totalistic rule B0 support
+
+Build 215
+- [[ TRACK ]], [[ TRACKBOX ]] and [[ TRACKLOOP ]] now scroll more smoothly at low GPS
+- changed timing display to show load%
+- error display wasn't hiding UI controls correctly
+- added a close button to the navigation menu
+- accurate "Life ended at" generation when using STEP > 1
+- new script command [[ STATE1FIT ]] that forces autofit only to use state 1
+	- hotkey shift and "s" to toggle
+
+Build 214
+- [[ HISTORYFIT ]] would not work correctly until pattern reset
+- added another non-totalistic alias
+
+Build 213
+- resizing snapshots could leave unused buffers not resized
+- numeric keypad now works as hotkeys
+- changed the behaviour of speed up (hotkey "=" or num "+") and speed down (hotkey "-" or num "-") so it flows from GPS to STEP
+- hotkey "0" and num "0" now reset speed and gps
+- hotkey "5" now resets angle
+- all COLOR recipients can now use named colours
+- hex patterns now support bounded grids
+
+Build 212
+- CXRLE Pos now works with [R]History
+- UI controls now step forward and back one generation
+- hotkey "Space" and "b" now step forward and back one generation
+- hotkey "Tab" and Shift "Tab" now step forward and back STEP generations
+
+Build 211
+- non-totalistic rules now use correct canonical form
+- tooltips are now in boxes with shadows
+- at some zooms the right hand grid line was not being drawn
+
+Build 210
+- added new variable to [[ TITLE ]] string
+	- #A the pattern rule alias name
+- number of times [[ FILL ]] used is displayed in help information
+- fixed TRACKBOX so N is top and S is bottom
+- fixed TRACKBOX error so it doesn't need to wrap
+
+Build 209
+- new script command [[ RANDOMSEED <string> ]] to define the random seed
+	- used by the [[ MAP ]] and [[ FILL ]] script commands
+	- if not specified then a seed based on the system time is used
+	- random seed is displayed in help information
+	- starfield uses its own random number stream
+- Track mode details were sometimes incorrect in help information
+- rule name is now canonical
+- added tooltip for rule name and rule alias (if defined)
+- rule alias is shown in help information if defined
+- rule names are shown as aliases if an alias exists for the rule
+- added tooltips for population statistics, elapsed time, coordinate state value, and the information bar
+
+Build 208
+- script errors are now displayed on the thumbnail (rather than just the error header)
+- Viewers with a height too small to display the navigation menu were not correctly respositioning the adjacent UI controls
+- bounded grids that wrap (Torus, Klein, Sphere, Cross-Surface) failed when grid edges were on tile boundaries
+- Klein bottles without a twist specification now default to horizontal twist
+- CXRLE Gen and Pos only displayed in help information if defined
+- shift and hotkey "g" only toggles relative generation display if CXRLE Gen defined
+- added support for #CXRLE Pos
+
+Build 207
+- timer was not being properly reset on the standalone viewer when a second pattern loaded
+- viewer height and width were not being properly constrained when limit no in force
+
+Build 206
+- full zoom range is available again in Track mode
+- improved elapsed time display
+- added 19 new rule aliases
+- removed a brief glitch on the zoom UI control when Track mode switched on using TRACK button
+- grid UI button now reflects hex/square mode
+- improved when tooltips appear
+
+Build 205
+- zoom to mouse position now works with track mode
+- fixed issue with pausing playback and slow GPS tracking
+- integer zoom now works with track mode
+
+Build 204
+- improved formatting of timing information
+- shift and hotkey "t" toggles extended timing information
+
+Build 203
+- switching AutoFit on when playback paused would not AutoFit until playback resumed
+- TRACK, TRACKLOOP and TRACKBOX now use dynamic origin rather than AutoFit
+	- all controls are available
+- text messages defined in scripts now appear in thumbnail mode
+- "Expand" and "Launch" messages are now vertically centered
+- script error indication is shown in thumbnail mode
+- first Reset no longer resets camera, use hotkey "v" to do so
+- you can now toggle TRACK/Waypoints and LOOP by clicking the UI indicators
+	- if both are defined then they toggle together
+- you can now use [[ Z ]] as an alias for [[ ZOOM ]]
+- step back no longer disables LOOP if defined
+- help hides population statistics overlay and navigation menu
+- added Shrink button to navigation menu which shrinks the viewer back to the thumbnail
+- shift and hotkey "x" toggles major grid lines (if not disabled with GRIDMAJOR 0)
+- grid lines are now more accurate
+- drawing grid lines is now about 10% faster
+- error is raised if TRACKBOX W is greater than E or S is greater than N
+- improved AutoFit and Fit Zoom icons
+- added tool tips for UI controls
+- improved notification when STOP point reached
+- stars and coordinate display were using angle in Hex display mode (which doesn't allow rotation)
+- coordinates label now disappears if coordinates aren't displayed and generation statistics are off
+- [[ NOREPORT ]] now also disables STOP message
+- new "FPS" button in navigation menu to toggle timing display
+- timing display now positioned correctly in thumbnail mode
+
+Build 202
+- Generations rules were failing to draw some decay states at T=0
+
+Build 201
+- the vertical bounding box calculation was incorrect for AutoFit
+
+Build 200
+- fixed an issue with Fit Zoom in THUMBNAIL mode
+- fixed an issue with Waypoints and AutoFit in THUMBNAIL mode
+
+Build 199
+- when playback loops only the camera position, zoom and angle are reset
+- further layout improvements to the information bar
+- Reset and STEP now work better together
+
+Build 198
+- changed TRACKBOX parameter order to E S W N
+- improved layout on information bar
+- new AutoFit engine
+	- now has four modes
+		- Regular (uses live cells)
+		- TRACK X Y (horizontal and vertical speeds in cells/generation)
+		- TRACKLOOP P X Y (loop period, horizontal and vertical speeds in cells/generation)
+		- TRACKBOX E S W N (east, south, west and north box edge speeds in cells/generation)
+	- additionally HISTORYFIT can be used to modify each mode to include cells that died
+	- when Paused all controls are enabled
+	- first Reset disables AutoFit, second Reset enables AutoFit if defined
+
+Build 197
+- shift and hotkey "i" now toggles display of the information bar which displays the camera X, Y, ANGLE and the TRACKBOX speeds
+- new script command [[ SHOWINFOBAR ]] which turns the information bar on at pattern load
+- ensure navigation menu appears above population statistics
+- first Reset now also resets camera
+- TRACKBOX mode no longer disables STEP and GPS controls
+- angle, layers and depth hotkeys were not disabled when corresponding UI controls were disabled
+
+Build 196
+- fixed an edge case where the grid could grow too late based on the increase in maximum STEP size
+- numeric values in scripts can now be specified as fractions [[ DEPTH 2/3 ]]
+	- division by zero is treated as zero
+- inverted X and Y offsets
+- hotkey "w" will now toggle LOOP mode when no waypoints defined
+- added UI indicators for AUTOSTART, LOOP, TRACK and STOP
+- don't show "Life ended at generation" notification if LOOP defined and enabled
+- reduced the font size of the generation statistics, rule, elapsed time and mouse coordinates
+- Shift and hotkey "r" will reset all viewers
+- new script command [[ HISTORYFIT ]] that changes AUTOFIT so it uses cells that have died as well as live cells to set the camera position
+	- Shift and hotkey "h" will toggle HISTORYFIT mode
+	- HISTORYFIT just defines the AUTOFIT mode, you still need to switch AUTOFIT on
+- added AUTOFIT status to help information
+- close button is now larger on standalone viewer
+- added bounding box speed (cells/generation) N, E, S and W to help information
+- new script command TRACKBOX N E S W which makes camera track the bounding box starting at the initial pattern position by applying N E S W as speeds in cells/generation to the North, East, South and West edges
+- pause no longer disables LOOP if no Waypoints are specified
+
+Build 195
+- new script command [[ TRACK N X Y ]] makes tracking spaceships with the camera easier
+	- N is the period and X and Y define the offset in cells at the period generation
+- fixed Reset behaviour with LOOP only and no Pause
+- fixed flicker while looping
+- Reset notification now also shows whether AutoStart was switched On or Off
+
+Build 194
+- fixed Reset behaviour with any combination of LOOP and Waypoints so that first Reset always gives manual control and second is full reset
+- Waypoint playback at < 60 GPS was not spending enough time at T=0
+
+Build 193
+- improved title bar styling
+- [[ TITLE ]] string is now correctly clipped to the title bar
+- new script command [[ NOREPORT ]] that disables the "Life ended at generation" notification
+
+Build 192
+- title bar styling for LifeWiki
+- rle patterns beginning with "o" were being treated as Cells format and failing to decode
+- patterns with Waypoints defined and no theme were defaulting to the wrong theme
+- patterns with Waypoints defined were ignoring initial ZOOM
+
+Build 191
+- enable standalone viewer to work with LifeWiki
+- standalone viewer should ignore WIDTH and HEIGHT validation since they are not used
+- first Reset no longer enables LOOP if defined
+- [[ THUMBLAUNCH ]] script command also enables [[ THUMBNAIL ]] mode (no need to use both)
+
+Build 190
+- added [[ THUMBSIZE ]] script command to define thumbnail divisor (2, 3 or 4)
+- when a thumbnail is expanded briefly display hotkey to shrink
+- saving (hotkey "v") and restoring (shift and hotkey "v") camera position now works with thumbnail view
+- default grid line colours are based on brightness of background colour
+- added [[ THUMBLAUNCH ]] script command which changes thumbnail behaviour so when clicked on launches the standalone viewer
+
+Build 189
+- hotkey "Esc" will close the standalone viewer
+- standalone viewer grabs focus when open
+- added support for #CXRLE Gen
+- generations >= 1000,000,000 are shown as "1B+" in the UI
+- shift and hotkey "g" toggles generation display between absolute generation and offset from start (these are the same unless #CXRLE Gen is defined and non-zero)
+- fixed an issue with Generations algorithm when only decaying cells remain
+
+Build 188
+- fixed a visual glitch caused by a previous optimization
+- [[ TITLE ]] string was ignoring text after last variable substitution
+- & symbols in script strings were being converted to html friendly versions
+- snapshots were not working with patterns containing no live cells
+- Wolfram rule number must be even
+- added B0 emulation support for totalistic rules with Hex or Von Neumann neighbourhoods
+- when all cells died the STEP size was ignored
+- if the STEP size is too large to allow frequent update then it will by dynamically reduced to keep the UI responsive
+- initial fix for <code> tags embedded in <viewer> tags on forum
+
+Build 187
+- von Neumann neighbourhoods are now supported (e.g. B12/S1V)
+- state 1 of Generations patterns with 2 states were being drawn in black
+- neighbourhood is now displayed in help information
+- display mode (hex or square) is now displayed in help information
+- you can now specify just one dimension for bounded grids and it is used for both width and height
+- shift and hotkey "/" now sets display to pattern default (hex or square)
+- shift and hotkey "1" zooms to the nearest integer zoom
+- added support for Wolfram 1D rules
+- bounded grids with an odd height were being drawn one line off
+
+Build 186
+- points of interest would get lost if mode switched between Hex and Square
+- when waypoints are defined the reset state should use the first waypoint theme
+- new script commands [[ LINEAR ALL|X|Y|ZOOM ]] and [[ BEZIER ALL|X|Y|ZOOM ]] that set the camera mode for X, Y and ZOOM or ALL elements at once
+	- the default is bezier motion is used for camera transitions
+
+Build 185
+- added GlideLife to the aliases
+- aliases in help information are now grouped by rule family
+- two of the Generations aliases were incorrect
+- improved rule error checking, pattern state validation and error messages
+- TITLE string can contain new variable:
+	- #T the program title (LifeViewer)
+
+Build 184
+- new script command [[ SQUAREDISPLAY ]] to force square display (for unknown rules that are autodetected as Hex)
+- increased maximum STEP to 50
+- increased step back generations to 2500
+- left column of bounded box was sometimes not drawing correctly
+- improved the "Auto", "Fit" and "Help" buttons
+
+Build 183
+- state display was incorrect for Generations rules
+- Generations decay states were not counted in bounding box
+- Generations rule patterns with scripts were marked as VIEWONLY
+- angle UI slider should not display in Hex mode
+- TITLE string can contain variables
+	- #B the LifeViewer build number
+	- #N the pattern name (if defined)
+	- #O the pattern originator (if defined)
+	- #R the pattern rule name
+	- ## the # symbol
+- performance improvements for next generation calculations and colour updates
+
+Build 182
+- added Generations aliases
+- bottom line error messages were not being cleared in the standalone viewer
+
+Build 181
+- make patterns that are larger than their bounded grids invalid
+- bounded grid is not valid for hex rules
+- bottom line of LifeViewer window now displays "VIEWONLY" or reason why a pattern is not exectuable or valid
+- [R]History is not valid with Generations rules
+
+Build 180
+- help information now includes pattern name and originator if specified in the RLE (#N and #O)
+- added support for Generations rules (including Moore and Hex neighbourhoods and bounded grids)
+- generation display now shows decimal places for millions
+- RLE patterns without ! were missing last row
+
+Build 179
+- added support for bounded grids
+	- Plane
+	- Tube/Torus
+	- Cross-surface
+	- Klein-bottle
+	- Sphere
+- tile counts were only updated every even generation in help information
+
+Build 178
+- new script command [[ HEXDISPLAY ]] to switch on hex display (used for unspported rule patterns you want to show as hex)
+- x coordinate display for hex rules now works correctly
+- better whitespace handling for rule decoding
+
+Build 177
+- patterns of any size can now be deleted in one go when they hit the boundary
+- added support for Alan Hensel's non-totalistic rule format
+- added support for Mark Niemiec's x, y and z states
+- added support for hex neighbourhoods
+- hotkey "/" will toggle hex display (note this does not change the rule)
+- added alias list to help information
+- moving the mouse within a Viewer without focus will also trigger the "click to control" message
+	- previously this was only triggered when moving the mouse onto the Viewer
+
+Build 176
+- state value in coordinate display now works with non-executable patterns
+- multiple [[ LOOP ]] or [[ STOP ]] script commands are now flagged as errors
+- added ability to define generation transition tables
+	- [[ MAP <map>|<threshold> ]] defines transition for all generations
+	- [[ MAPODD <map>|<threshold> ]] defines transition for odd generations (in which case MAP is used for even generations)
+	- <map> is a base64 encoding of 512 bit transition map
+	- <threshold> is a value <0.0..1.0>
+- bounding box calculation occasionally create a box too high
+- scripts can now display a message when waypoints not defined [[ "This is a message" ]]
+- custom colors DEAD and DEADRAMP were switched
+- notification now displayed when all cells are dead
+
+Build 175
+- creating rule lookup table is now 5x faster
+- UI icons are now shared across all viewers
+- "Click to Control" message now uses colour animation
+- added state value to coordinate display
+
+Build 174
+- new script command [[ DELETERANGE <1..16> ]] that defines how near live cells have to be to each other to be deleted as part of a pattern
+	- default is 3 cells
+- RLE decoder was not failing on some invalid patterns
+- removed support for LV85 format patterns
+
+Build 173
+- patterns that hit the boundary are now instantly deleted in their entirety
+
+Build 172
+- drawing starfield is now 25% faster in the general case and 4x faster at ANGLE=0
+- drawing gridlines is now 3.5x faster
+
+Build 171
+- validate that patterns still fit on the grid when XOFFSET or YOFFSET specified
+- only clear boundaries if pattern is near the edge of the grid
+- clicking step back on a running pattern now functions identically to the pause button (i.e. looping is cancelled if defined)
+- left and right boundaries are no longer 16 pixels from the edge
+
+Build 170
+- added state names to [R]History colours in help information
+- modest performance improvements to boundary clear
+- added custom state colours for [R]History
+	- COLOR <name> RGB where <name> is "OFF", "ON", "HISTORY", "MARK1", "MARKOFF", "MARK2" or "KILL"
+- hotkey ZOOM changes were resetting ANGLE to 0
+- new script commands [[ XOFFSET <number> ]] and [[ YOFFSET <number> ]] to define pattern position offset on grid
+- added [[ COLOR BOUNDARY R G B ]] to define custom boundary colour
+- fixed an issue with the RLE pattern decoder which would ignore invalid characters in rule names
+
+Build 169
+- integration with Molly
+	- add a link to "Show in Molly" on the forum for patterns that are too big or use a rule that LifeViewer can not execute
+- switched Depth and Theme controls
+- some invalid [R]History style rules were being marked as LifeHistory
+- switched position of Layers and Depth controls to match hotkey positions
+- layers now use dynamic zoom level of detail
+- [R]History state 6 execution is now much faster
+- fixed potential issue with initial grid size (step speed)
+- better [R]History zoom out due to priority state reordering
+
+Build 168
+- smooth camera transitions
+	- between POIs (hotkey "j")
+	- when restoring saved View (hotkey "v")
+	- when using fit zoom (hotkey "f")
+	- when setting zoom to a multiple (hotkeys "1", "2", "3", "4" "6", "8")
+- saved View and POIs now also remember ANGLE
+- fit zoom and autofit controls disabled during waypoint playback
+- further performance improvements to rendering when ANGLE=0 but clipping required
+- better handling of patterns hitting the grid boundary for non-explosive rules
+- [[ X ]] and [[ Y ]] script commands now allow arguments between +/- half maximum grid size rather than half current grid size
+
+Build 167
+- improved performance when computing previous generations for step back function (hotkey "b")
+- script command [[ SHOWGENSTATS ]] will display the generation statistics at pattern load (hotkey "g" to toggle)
+- script command [[ SHOWTIMING ]] will display timing information at pattern load (hotkey "t" to toggle)
+- [[ AUTOFIT ]] keyword will now set AutoFit on at pattern load when no Waypoints are specified
+- ensure AutoFit gets to target camera position
+
+Build 166
+- ability to define points of interest
+	- script command [[ POI ]] followed by X, Y, and ZOOM definitions
+	- hotkey "j" to jump to next point of interest
+	- shift and hotkey "j" to jump to previous point of interest
+	- list of POI definitions added to help information
+	- notification if attempt to switch POI while AutoFit is enabled
+- added "OPEN MOLLY" link for patterns that are either too big for LifeViewer or patterns that LifeViewer can display but not execute
+	- currently just points to Molly on Andrew's site but will be updated to a "SHOW IN MOLLY" link once we agree a pattern passing mechanism
+
+Build 165
+- increased maximum step back generations to 1024
+- when step back generations exhausted automatically compute the previous set of generations
+- shift and hotkey "v" now saves the camera position, hotkey "v" restores camera position
+- area outside maximum grid size is drawn in grey
+- shift and hotkey "c" sets default Theme
+
+Build 164
+- improved notification message when Pause other LifeViewers is used (hotkey "z")
+- faster rendering when ANGLE=0 and/or clipping not required
+- shift and hotkey "2" now sets ZOOM to -2x (used to be hotkey "5" which now does nothing)
+- shift and hotkey "4" now sets ZOOM to -4x
+- shift and hotkey "8" now sets ZOOM to -8x
+- shift and hotkey "6" now sets ZOOM to -16x
+- shift and hotkey "z" now pauses all Viewers (unlike hotkey "z" which pauses other Viewers)
+- population count for T=0 was incorrect in some cases
+- fit zoom was incorrect for [R]History patterns that had no live cells
+- RLE pattern decoder is now case-insensitive for rule names
+- RLE pattern decoder can now deal with incorrect x and y values
+- Life 1.05 pattern decoder now ignores non-standard # commands
+- display coordinates under mouse cursor (when ANGLE = 0)
+- coordinates automatically display when paused and disappear during playback unless stats are on
+- [[ ZOOM ]] script command now accepts negative zoom values -16 to -1 (as well as 0.0625 to 1)
+
+Build 163
+- added a notification when AutoFit switched on or off
+- improved the pattern decoder so it is less lenient on files that look like Life 1.05 but aren't
+- hide the AutoFit, Fit, Zoom and Grid UI controls when help is displayed
+- corrected colours on AutoFit button
+- faster rendering when ZOOM < 1
+- extended minimum zoom from 0.25x (-4x) to 0.0625x (-16x) and adjusted how zoom values are displayed
+- removed duplicate grid clears during startup
+- removed duplicate initialization during standalone viewer creation
+- improved snapshot memory usage after reset
+- snapshot memory now dynamically grows to reduce GC
+- added coloured boxes to help information when showing colours
+- increased number of stars for larger zoom out
+- improved tile usage during snapshot restore and reset
+- moved timing information so it no longer overlaps help button
+- improved validation of rule names for RLE decoder
+- when step back disabled do not allocate snapshot 0
+- fixed an issue with tile clear failing causing extra tiles to be processed
+- made the zoom control always available at the top of the window
+- zoom control hides when help displayed
+- help information now shows number of grid tiles and colour tiles
+- help information also shows when grid lines are switched on but hidden (due to non-zero ANGLE or ZOOM < 4)
+- added button for fit zoom
+- added toggle button for grid display
+- lock ZOOM UI control when AutoFit on
+- display notification when ZOOM change attempted via hotkeys or mouse wheel and AutoFit is on
+- display notification when X or Y change attempted via hotkeys or mouse pan and AutoFit is on
+- increased the height of the standalone Viewer so area without menus is square
+- UI library can now draw icons on simple buttons
+- corrected the highlight on UI items that are selected
+- AutoFit is now smoother
+- updated help text to document "Esc" stops playback
+- help display for [R]History rules now includes state colours as well as Theme colours (since Theme only defines states 0, 1 and 2)
+- background drag now scrolls help information and error list when displayed
+- zoom control was not being disabled during waypoint playback
+
+Build 162
+- do not run [R]History patterns with an invalid number of states
+- added support for HTML5 colour names [[ COLOR ALIVE Red ]]
+- added [[ COLOR TEXT R G B ]] to set colour for waypoint messages
+- if help is open then hotkey "i" will move to the info section
+- shift and hotkey "e" will set STEP to maximum (32)
+- shift and hotkey "d" will set STEP to minimum (1)
+- shift and hotkey "+" will set GPS to maximum (60)
+- shift and hotkey "-" will set GPS to minimum (1)
+- only allocate the [R]History overlay for [R]History rule patterns that contain cells in states >= 2
+- only allocate the [R]History state 6 bitmaps when pattern contains cells in state 6
+- moved stars further away to create better depth perception
+- LifeHistory pattern fit zoom failed after grid grows
+- pattern decoder now accepts well known rule names (2x2, Bugs, Gnarl, etc.)
+- fixed a crash after failing to decode an invalid multi-state pattern
+- when step back disabled (with [[ NOSTEPBACK ]]) and step back attempted display a more useful message
+- help information now displays counts of cells in each state present at pattern load
+- failing to decode an invalid RLE pattern (i.e. illegal number of states) could be then marked valid by another decoder
+- added [R]History support which extends LifeHistory features to any supported Life-like rule
+- with multiple viewers and more than one non-library rule the rule names were displayed as the first non-library rule
+- added some rule aliases
+- added new button (top left) to toggle AutoFit
+	- shift and hotkey "f" to toggle
+
+Build 161
+- updated help text for step back and step forward hotkeys
+- implemented LifeHistory state 6 execution
+- added support for "life" as as rule name
+- shift and hotkey "." or "," will rotate left or right in 90 degree steps
+- shift and hotkey "[" or "]" will zoom in or out by a factor of 2
+- zoom via hotkeys is now centered around cell under the mouse cursor
+- corrected generations rule decoding
+- rules without B or S prefixes were being read in the wrong order
+
+Build 160
+- improved LifeHistory display for ZOOM < 1x
+
+Build 159
+- opening a new pattern in the standalone viewer was not resetting the stars mode
+- fixed minor overflow in mouse wheel zoom
+- failed to read rules where one of the sections was empty
+- improved support for executing LifeHistory
+- added the "step back" button to the UI
+- hotkey "b" will pause execution if running
+- pause button image becomes "step forward" when paused
+- LifeViewer build number now at top of help text
+- added a help button to the UI
+
+Build 158
+- improved performance of step back function
+- notification system now discards duplicate notifications
+- LifeHistory patterns were not executing
+- significant performance optimizations for allocating, copying and growing the grids
+- rules were incorrectly decoding if no space between the equals sign and the rule definition
+- the standalone viewer title was not centered correctly
+- modified the standalone viewer title
+- NOSTEPBACK was not being reset when new patterns were opened in the standalone viewer
+- added keyword [[ TITLE ]] that allows you to specify the window title for the standalone viewer (up to 30 characters)
+
+Build 157
+- arrow keys now use the zoom level to determine how far to move the pattern
+- shift key with the arrow keys now moves diagonally
+- improved key handling for non hotkeys
+- updated pattern decoder did not respect "Life" rule name
+- patterns with x and y defined but no rule defined were not defaulting to B3/S23
+- increased step back one generation (hotkey "b") to a maximum of 512 generations
+- step back function now uses step size1
+- added keyword [[ NOSTEPBACK ]] to disable step back function
+- added snapshot details to help information
+
+Build 156
+- you can now specify THEME CUSTOM to use the custom definition at a waypoint
+- added hotkey "5" for 0.5x ZOOM
+- disabled THUMBNAIL, WIDTH and HEIGHT commands for standalone Viewer
+- added keyword [[ STARS ]] to switch on starfield background
+- hotkey "s" to toggle starfield
+- added COLOR STARS R G B to set stars colour (default is white)
+- toggle thumbnail mode is now hotkey "n"
+- addded hotkey "0" to reset angle to 0
+- the Theme UI was not extending when a custom theme was defined
+- remove forum search decoration from patterns
+- patterns bigger than their defined width or height were failing to decode with an exception (that was caught)
+- step back one generation (hotkey "b") now limited to a maximum of 64 generations
+- hex rules are no longer executable
+
+Build 155
+- enhanced the pattern decoders to support simple ASCII "." and "*" with no header
+- default fit zoom display was not being updated after grid grows
+- patterns in extended RLE format but with valid rule definition and two states were being treated as multi-state
+- waypoint ZOOM was not working correctly in THUMBNAIL mode
+- LOOP in waypoint mode was showing a single non-waypoint controlled frame
+- added step back one generation (hotkey "b")
+- mousewheel ZOOM was broken
+
+Build 154
+- improved error checking in Cells decoder
+- grid growth had been inadvertently disabled
+- further minor improvements to start up time
+
+Build 153
+- fit zoom widened a little
+- added some more colour sets
+- further improved styling to the standalone viewer
+
+Build 152
+- DEPTH was not being read correctly for initial waypoint
+- births and deaths are now computed when stats switched from off to on (rather than just population)
+- initial population statistics are remembered for faster Reset
+- automatically increase grid size to ensure display doesn't wrap at 1x ZOOM
+- minor (~15%) improvements to start up time
+- ZOOM rate of change is now a constant factor (for smoother zooms)
+- waypoint interpolation now uses Bezier curves to smooth start and stop of a camera move
+- correctly handle non-breaking spaces in patterns
+- waypoints with no initial zoom defined were using a default rather than the fit to zoom value
+- fit zoom (hotkey "F") no longer keeps a border around the pattern and avoids the UI controls
+- fit zoom and reset view are now disabled during waypoint playback (but work if waypoint playback paused)
+- improved the styling on the standalone viewer window
+- standalone viewer window no longer intrudes on vertical scrollbar if present
+- added support for B0 rules via emulation
+- manual adjustment during waypoint catch up now works correctly
+- disabled manual THEME change during waypoint playback
+- improved colour history display at ZOOM < 0.5x
+- new script command [[ AUTOFIT ]] which can be used as a target for [[ T ]] and [[ PAUSE ]] waypoint commands
+	- it is an error to use AUTOFIT not at a waypoint
+	- AUTOFIT overrides any X, Y or ZOOM setting at the waypoint
+- STEP size was not being respected after last waypoint or when waypoints disabled
+- when waypoint playback passes the last defined waypoint the help information displays ">" at the last waypoint in the list rather than "*"
+
+Build 151
+- minimum zoom is now 0.25x
+- 4x supersampling is used when 0.5x <= zoom < 1.0x
+- 16x supersampling is used when 0.25x <= zoom < 0.5x
+- waypoint playback was not performing smooth course correction after manual adjustment at last waypoint
+- switched to smaller tile size
+- it was possible to create a Viewer whose width was not a multiple of 8
+- locking a UI item would not cancel any current interaction
+
+Build 150
+- only "Expand" notifications display when in thumbnail mode
+- generations per step was not being reset when different patterns were opened in the standalone viewer
+- gps and STEP sliders background goes red if playback is not happening in "real time" due to machine performance
+- more consistent handling of playback when machine performance is low
+- vastly improved reset time
+- Themes with no colour history perform better playback than other Themes when STEP > 1 is used (Theme 0 and Theme 6 or any custom Theme with just an ALIVE and DEAD colour defined)
+- zooms < 1 use super-sample to ensure alive cells are displayed
+- display no longer appears to wrap at low zooms
+
+Build 149
+- tile-based generation engine for faster performance on sparse patterns
+- increased maximum STEP to 32
+- switching on or off waypoint playback (with hotkey "W") also turns on or off LOOP mode if defined
+
+Build 148
+- ensure initial standalone viewer all visible
+- if the screenshot window could not be opened display a notification (usually because popups are blocked by the browser)
+- initial waypoints without position information were not resetting to defaults in the standalone viewer
+- only display LOOP on and off message at Pause and Reset if LOOP is actually defined
+- increased the duration of error notifications
+- hotkey "M" was toggling navigation menu when disabled
+- prevent progress bar from drawing > 100% on systems that are not fast enough to keep up
+- step slider was not being displayed in the standalone viewer if the previous pattern was VIEWONLY
+
+Build 147
+- don't display progress bar in viewonly mode
+- improved the waypoint catch up algorithm after pause or waypoint playback disable/enable
+- limit catch up rate to prevent race condition
+- when waypoints are defined LOOP is not disabled on pause but on first Reset (to match waypoint playback mode)
+- only the first 128 state colours were being displayed
+- help information correctly shows subset of custom colours used
+- out of range state colours are now silently ignored
+- pattern decoder was too lenient
+- prevent standalone viewer window from being dragged off the main window
+- some pattern rule names were causing colours to be set to all white
+
+Build 146
+- opening a multi-state pattern in the standalone viewer after it previously contained an executable pattern caused the colours to be wrong
+- valid patterns that are too large now display a "Pattern too big!" message rather than "Invalid pattern!"
+- added step slider to ui
+- hotkey "d" to decrease and "e" to increase step size
+
+Build 145
+- closing and opening the standalone viewer on the same pattern now correctly enables looping and waypoints (where specified)
+- waypoint messages and system messages are now displayed on separate lines
+- waypoint messages can now be two lines [[ "This is a\ntwo line message" ]]
+- [[ STEP ]] can now be used in waypoints
+- in some cases a third reset caused odd behaviour
+- added a progress bar behind the Gen button when LOOP or waypoint playback enabled
+- the Pause and Reset messages will now say if LOOP or waypoint playback have changed or if AutoStart is activated
+- waypoint messages containing more than one newline are reported as errors
+- startup time was being counted in the first waypoint
+- waypoint messages are cleared when waypoints are switched off
+
+Build 144
+- waypoint playback can be toggled with hotkey "W"
+- controls are unlocked after final waypoint
+- controls are temporarily unlocked when waypoint playback paused
+- first reset will disable waypoint playback (if available)
+	- second reset will enable
+- hotkey "Esc" will pause playback and if already paused will disable waypoints
+- if you pause during waypoint playback and move the camera then restarting will glide to the correct waypoint position
+- added waypoint details to help information
+- angle changes always take the shortest path (e.g. 350 -> 10 degrees)
+
+Build 143
+- [[ GPS ]] and [[ THEME ]] can now be specified at each waypoint
+- playback continues after the last defined waypoint at the current gps
+- pan, zoom, angle, layer, depth, theme and gps controls are locked (greyed out) during waypoint playback
+
+Build 142
+- extended maximum STEP to 20
+- intial implementation of Waypoint system
+- script command [[ T {generation} ]] defines a waypoint at the specified generation
+- script command [[ PAUSE {seconds} ]] pauses Life for the specified number of seconds
+- both the [[ T ]] and [[ PAUSE ]] commands can be followed by camera setting commands
+	- [[ X ]] to set the target camera X position
+	- [[ Y ]] to set the target camera Y position
+	- [[ ZOOM ]] to set the target camera zoom
+	- [[ ANGLE ]] to set the target camera angle
+	- [[ LAYERS ]] to set the number of layers
+	- [[ DEPTH ]] to set the layer depth
+- text in double quotes is displayed for the duration of the waypoint [[ "This is a message" ]]
+
+Build 141
+- added hotkey "Z" to stop playback in all other LifeViewers
+- help information now shows number of viewers that are playing
+- re-enabled scrolling the error list
+- inverted cursor keys to align with Golly
+- <code> blocks on phpbb will now get a "Show in Viewer" link that when clicked will open a standalone Viewer in a moveable window
+- added script command [[ STEP 1..10 ]] that defines generations per step
+	- the gps slider controls steps per second
+	- the display is only updated at the end of each step
+
+Build 140
+- added notification if grid lines switched on or off when the grid lines can't be displayed
+- menus work correctly when canvas is contained in a style="position:fixed;" div
+- added missing LifeHistory state colour
+- LifeHistory patterns now center correctly when in VIEWONLY mode
+- existing Viewers can be reused with a new pattern
+- corrected extended RLE format states > 24
+
+Build 139
+- fixed rule reader broken in build 136
+
+Build 138
+- major gridlines drawn after minor gridlines
+- added Page Up, Page Down, Home and End keys to error list
+- Up or Down message is greyed if help or error list at top or bottom
+
+Build 137
+- added ability to create an image of the LifeViewer in a new browser window
+	- overlays are removed for the captured image (menus, population count, timing information, etc.)
+	- image is saved in PNG format
+
+Build 136
+- added major grid lines to grid line display
+	- script command "GRIDMAJOR <0..16>" to define interval (default 10)
+	- script command "COLOR GRIDMAJOR R G B" to define colour
+	- grid is now drawn with bottom layer rather than over the top
+	- extended multi-state support to 256 states
+	- corrected multi-state fit zoom for non-LifeHistory rules
+
+Build 135
+- added grid line diplay (disabled by default)
+	- will only display at zoom levels >= 4 and angle 0
+	- hotkey 'X' to toggle
+	- script command "GRID" to enable on startup
+	- COLOR or COLOUR GRID R G B will define grid line colour
+- correctly handle ":" character in rule name
+- added "shapeloop-b" and "2armshapeloop-a" to the "shapeloop" set
+
+Build 134
+- <meta> "limit" now both limits the width of the Viewer to that of the assosicate pattern element and sets it as the default width
+- default width without "limit" increased to 1024
+- added ability to define a custom Theme
+- error list can now be scrolled with cursor keys, page up and down, and the mouse wheel
+
+Build 133
+- parameters to integrate the Viewer in a web page are now read from a meta tag
+	- <meta name="LifeViewer" content="viewer textarea 30 hide limit">
+	- "viewer" is the class name of the div
+	- "textarea" is the embedded element name containing the pattern
+	- "30" is the maximum height in px of the element containing the pattern, or -1 not to change the height
+	- "hide" is optional and if present indicates that canvas element should be hidden if the browser doesn't support the viewer
+	- "limit" is optional and if present indicates that the Viewer width is limited by the width of the element containing the pattern
+
+Build 132
+- RLE pattern reader now copes with blank lines between comments and header
+- mouse wheel will now scroll help text
+
+Build 131
+- code block is only shortened if height is greater than 2.5 lines
+- improved start up time for each Viewer
+	- start up time is typically 67% of previous builds
+	- viewers with the same rule as the last viewer start in 25% of previous builds
+
+Build 130
+- missing custom colours now use the corresponding state colour from the rule's set (or default set if no rule set exists)
+- missing colour errors now display the RGB value substituted
+- the information display shows the set name as "(default)", the rule set name (e.g. "LifeHistory"), "(custom)" where all states are custom or "LifeHistory (custom*)"
+- in the latter mode the custom entries are marked with a * 
+- added hotkey V to reset camera view
+- help and error visibility is retained across thumbnail toggle
+- slightly reduced notification font size
+- removed error report for STOP generation being later than LOOP generation since you can disable LOOP with pause and then continue to the STOP
+- fixed a problem which allowed non-LifeHistory multistate rules to be AUTOSTART when VIEWONLY wasn't specified
+
+Build 129
+- default colour set is not Golly's default
+- errors are now only generated for missing colours for states that area actually in the pattern
+- missing colours are defaulted to Golly's
+
+Build 128
+- Viewer now has a list of default colour sets for a range of rules
+- multi-state patterns that aren't LifeHistory are forced to be VIEWONLY if not specified
+- rule name now displays correctly in the help information for multi-state patterns
+- added COLOR and COLOUR script commands to define multi-state colour sets
+- udpated help so only hotkeys available in the current mode are displayed
+
+Build 127
+- maximum Viewer size is now limited to maximum width of Code element
+- added hotkey "S" to toggle thumbnail view
+
+Build 126
+- added THUMBNAIL script command which starts Viewer at a quarter size, click to expand to full size
+
+Build 125
+- remove 'M' from help if navigation menu unavailable
+- added ZOOM and ANGLE to information display
+
+Build 124
+- fixed menus and zoom not behaving in nested scrolled panes
+- play now respects the gps setting for the first generation
+
+Build 123
+- pause now temporarily disables LOOP until the next reset
+- cursor up/down now work in help. page up/down now do scroll a page at a time
+- added X and Y position to the information page in help
+
+Build 122
+- fixed broken X and Y
+
+Build 121
+- basic support for displaying static multi-state patterns
+
+Build 120
+- fixed zoom and menus after a change is made to browser zoom
+- trim pattern text to help decoders
+- report error if LOOP generation appears before STOP generation
+- added new script command, VIEWONLY, to disable playback
+- fit zoom display hotkey was not updating zoom control
+
+Build 119
+- added zoom to cursor position
+- display 2.5 lines of "code" block
+
+Build 118
+- display two lines of "code" block
+
+Build 117
+- reduced font size for notifications
+- removed "Control On" and "Control Off" notifications
+- reduced minimum window height (via HEIGHT script command) to 240 pixels
+	- heights below 480 pixels do not show the navigation menu
+- added keys Page Up and Page Down to scroll through help text
+- corrected helptext for X and Y script commands to show correct range
+- added keys Home and End to go to the top and bottom of the help text
+- added hotkey I to toggle information display on the pattern and Viewer
+- if there is no support for the Viewer then automatically hide the rle div
+- added more information
+	- decoder for current pattern
+	- number of running Viewers
+	- number of script commands and errors
+
+Build 116
+- first plugin build (fork from main LifeViewer)
+
