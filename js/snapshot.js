@@ -819,10 +819,6 @@
 	 * @constructor
 	 */
 	function SnapshotManager(allocator, bitcounts) {
-		var i = 0,
-		    v = 0,
-		    c = 0;
-
 		// allocator
 		this.allocator = allocator;
 

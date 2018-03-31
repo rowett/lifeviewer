@@ -1744,7 +1744,6 @@
 		    currentTime = 0,
 		    currentWaypoint = me.waypointManager.current,
 		    tempGeneration = 0,
-		    i = 0,
 
 		    // whether update needed
 		    updateNeeded = false,
@@ -2500,9 +2499,6 @@
 		// target generation
 		var targetGen = me.computeHistoryTarget,
 
-		    // number of generations in this batch
-		    numUpdates = 0,
-
 		    // start time of updates
 		    startTime = performance.now(),
 
@@ -2528,9 +2524,6 @@
 			// compute the next generation
 			me.engine.nextGeneration(false, 0, noSnapshots, me.graphDisabled);
 			me.engine.convertToPensTile();
-
-			// increment number of updates in this batch
-			numUpdates += 1;
 		}
 
 		// check if complete
@@ -3692,7 +3685,9 @@
 	};
 
 	// close button
+	/* eslint-disable no-unused-vars */
 	View.prototype.closePressed = function(me) {
+		/* eslint-enable no-unused-vars */
 		// hide the viewer
 		hideViewer();
 	};

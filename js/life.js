@@ -1493,8 +1493,7 @@
 
 	// create the colours
 	Life.prototype.createColours = function() {
-		var i, mixWeight, weight, currentComponent, targetComponent,
-		    stateMap = ViewConstants.stateMap;
+		var i, mixWeight, weight, currentComponent, targetComponent;
 
 		// set the weighting between the two colour ranges
 		mixWeight = (this.colourChange - 1) / this.colourChangeSteps;

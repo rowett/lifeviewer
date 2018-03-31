@@ -231,7 +231,7 @@
 		default:
 			// illegal type specified
 			result = null;
-			console.debug("Illegal type specified to allocator.typedView for " + name + ": " + type);
+			alert("Illegal type specified to allocator.typedView for " + name + ": " + type);
 		}
 
 		// return memory
@@ -292,7 +292,7 @@
 		default:
 			// illegal type specified
 			result = null;
-			console.debug("Illegal type specified to allocator.typedMemory for " + name + ": " + type);
+			alert("Illegal type specified to allocator.typedMemory for " + name + ": " + type);
 		}
 
 		// return memory

@@ -2057,9 +2057,6 @@
 		    // valid rule letters
 		    validRuleLetters = this.validRuleLetters,
 
-		    // valid digit index
-		    validDigitIndex = 9,
-
 		    // valid character index
 		    validIndex = -1,
 
@@ -2222,7 +2219,6 @@
 
 						// update the valid rule letters to hex digits
 						validRuleLetters = this.hexDigits;
-						validDigitIndex = this.hexDigits.length;
 					}
 
 					// check for Von Neumann rules
@@ -2236,7 +2232,6 @@
 
 						// update the valid rule letters to vonNeumann digits
 						validRuleLetters = this.vonNeumannDigits;
-						validDigitIndex = this.vonNeumannDigits.length;
 					}
 
 					// check if the rule contains a slash

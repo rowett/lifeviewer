@@ -18,6 +18,9 @@
 	function LTL(allocator) {
 		// allocator
 		this.allocator = allocator;
+
+		this.intMin = LTLConstants.intMin;
+		this.intMax = LTLConstants.intMax;
 	}
 
 	// create the global interface

@@ -763,7 +763,9 @@
 	};
 
 	// output a point of interest start generation as text
+	/* eslint-disable no-unused-vars */
 	WaypointManager.prototype.poiStartGenAsText = function(i, stringDelimiter) {
+		/* eslint-enable no-unused-vars */
 		// build the text
 		var text = "",
 		    poi = null;
