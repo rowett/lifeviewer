@@ -43,7 +43,7 @@ life|algorithms to compute the next generation
 lifeview|main program
 ltl|LtL algorithm (unfinished)
 patterns|pattern reader and decoder
-random|psuedo-random number generator
+random|pseudo-random number generator
 script|functions to read script commands
 snapshot|snapshot manager for going back to earlier generations
 stars|starfield
