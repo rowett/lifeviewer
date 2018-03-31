@@ -3,13 +3,22 @@
 This is LifeViewer, a scriptable pattern viewer for Life-like cellular automata.
 Written in plain Javascript/HTML5 without any external libraries.
 
+### What's supported?
+Topic|Supported
+-----|---------
+File formats|RLE, Life 1.06, Life 1.05, Cells
+Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP
+Bounded Grid|Plane, Torus, Klein, Cross-Surface, Sphere
+States|2 state, [R]History, Niemiec, Generations
+Neighbourhoods|Moore, Hex, Von Neumann, 1D
+
 ### Folders:
 Folder|Description
 ------|-----------
-**build**|build script and Google Closure compiler
-**images**|icons for UI and keyboard map
-**js**|Javascript source files
-**tests**|HTML test cases
+build|build script and Google Closure compiler
+images|icons for UI and keyboard map
+js|Javascript source files
+tests|HTML test cases
 
 ### Building the plugin:
 The **build** folder contains a Windows script to create the single minified plugin file **lv-plugin.js** from the source files in the **js** folder.
