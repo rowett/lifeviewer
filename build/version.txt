@@ -4,6 +4,7 @@ Build 254
 - aligned R G B values in help information
 - hotkey shift and Page Up moves to previous help topic
 - hotkey shift and Page Down moves to next help topic
+- hotkey control and "r" now resets the pattern (like Golly) rather than refreshing the browser
 
 Build 253
 - waypoints now work with step back

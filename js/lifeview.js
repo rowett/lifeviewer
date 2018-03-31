@@ -4055,8 +4055,11 @@
 		if (!me.noGUI) {
 			// check for control (other than control-C) or meta
 			if ((event.ctrlKey && keyCode !== 67) || event.metaKey) {
-				// clear key code so it is not handled here
-				keyCode = -1;
+				// handle control-R since it would refresh the browser and Golly uses it for pattern reset
+				if (!(event.ctrlKey && keyCode === 82)) {
+					// clear key code so it is not handled here
+					keyCode = -1;
+				}
 			}
 
 			// check for alt-number
