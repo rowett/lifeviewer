@@ -5,6 +5,9 @@
 	// use strict mode
 	"use strict";
 
+	// define globals
+	/* global Uint8Array Uint16Array Uint32Array Int8Array Int16Array Int32Array Float32Array Float64Array */
+
 	// allocation bits
 	var AllocBits = {
 		// - - c f s w w w

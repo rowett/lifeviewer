@@ -5,6 +5,9 @@
 	// use strict mode
 	"use strict";
 
+	// define globals
+	/* global registerEvent */
+
 	// PopupWindow
 	/**
 	 * @constructor

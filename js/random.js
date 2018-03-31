@@ -4,6 +4,9 @@
 	// use strict mode
 	"use strict";
 
+	// define globals
+	/* global Uint8Array */
+
 	// Random object
 	/**
 	 * @constructor

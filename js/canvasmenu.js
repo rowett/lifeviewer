@@ -5,6 +5,9 @@
 	// use strict mode
 	"use strict";
 
+	// define global variables
+	/* global registerEvent */
+
 	// TextAlert
 	/**
 	 * @constructor
@@ -2002,7 +2005,6 @@
 
 		// whether a click happened (mouse up + mouse down before update)
 		this.clickHappened = false;
-
 		// register event listeners for canvas click
 		registerEvent(mainCanvas, "mousedown", function(event) {me.canvasMouseDown(me, event);}, false);
 		registerEvent(mainCanvas, "mousemove", function(event) {me.canvasMouseMove(me, event);}, false);

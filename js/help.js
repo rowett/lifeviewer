@@ -5,6 +5,9 @@
 	// use strict mode
 	"use strict";
 
+	// define globals
+	/* global ViewConstants ColourManager Keywords WaypointConstants DocConfig PatternManager Controller AliasManager */
+
 	// Help singleton
 	var Help = {
 	};

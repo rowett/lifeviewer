@@ -5,6 +5,9 @@
 	// use strict mode
 	"use strict";
  
+	// define globals
+	/* global Keywords ViewConstants */
+
         // WaypointConstants singleton
 	var WaypointConstants = {
 		// POI mode

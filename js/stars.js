@@ -5,6 +5,9 @@
 	// use strict mode
 	"use strict";
 
+	// define globals
+	/* global Float32 Random littleEndian */
+
 	// Stars constructor
 	/**
 	 * @constructor

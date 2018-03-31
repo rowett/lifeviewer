@@ -5,6 +5,9 @@
 	// use strict mode
 	"use strict";
 
+	// define globals
+	/* global littleEndian BoundingBox AliasManager PatternManager Allocator Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager LTL ViewConstants */
+
 	// Life constants
 	/** @const */
 	var LifeConstants = {

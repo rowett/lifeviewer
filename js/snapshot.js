@@ -5,6 +5,9 @@
 	// use strict mode
 	"use strict";
 
+	// define globals
+	/* global BoundingBox Uint16 Uint32 */
+
 	// Snapshot object
 	/**
 	 * @constructor

@@ -6,6 +6,9 @@
 	// use strict mode
 	"use strict";
 
+	// define globals
+	/* global Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager */
+
 	// Life 1.05 section
 	/**
 	 * @constructor

@@ -6,6 +6,9 @@
 	// use strict mode
 	"use strict";
 
+	// define globals
+	/* global Allocator PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager Script Uint16 Uint32Array myRand PopupWindow typedArrays Float32 */
+
 	// LifeViewer document configuration
 	var DocConfig = {
 		// meta tag name

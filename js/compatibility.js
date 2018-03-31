@@ -6,6 +6,9 @@
 	// use strict mode
 	"use strict";
 
+	// define globals
+	/* global Uint8Array Uint32Array */
+
 	// for determining endian
 	var data8, data32;
 
