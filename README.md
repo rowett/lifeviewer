@@ -19,7 +19,17 @@ Written in plain Javascript/HTML5 without any external libraries.
 * [How do I run the test cases?](#running-the-test-cases)
 
 ## What does it do?
-LifeViewer displays and animates cellular automata in the web browser.
+LifeViewer simulates and animates cellular automata in the web browser.
+
+LifeViewer features:
+* Smooth non-integer zoom and rotation.
+* Colour themes with cell history and longevity.
+* Square and hex grid displays.
+* Pseudo 3D layers and stars.
+* Multiple ways to automatically track patterns as they evolve.
+* Script language that allows many features to be customized including Waypoint animations and POIs.
+* Support for multiple embedded LifeViewers and/or a single popup LifeViewer.
+
 
 LifeViewer supports several different file formats, rules and neighbourhoods, as well as bounded grids.
 
@@ -78,6 +88,11 @@ If you omit the `<meta>` tag then it defaults to the following settings (which a
 <meta name="LifeViewer" content="rle code 37 hide limit">
 ```
 
+## How do I build it?
+The **build** folder contains a Windows script to create the single minified plugin file **lv-plugin.js** from the source files in the **js** folder.
+
+From the **build** folder run **compile.bat**. This requires Java and the included Google Closure compiler **compiler.jar**. The path to Java is hard coded in **compile.bat** and will need to be updated to wherever Java is installed on your machine.
+
 ## Folders:
 Folder|Description
 ------|-----------
@@ -86,15 +101,7 @@ images|icons for UI and keyboard map
 js|Javascript source files
 tests|HTML test cases
 
-## How do I build it?
-The **build** folder contains a Windows script to create the single minified plugin file **lv-plugin.js** from the source files in the **js** folder.
-
-From the **build** folder run **compile.bat**. This requires Java and the included Google Closure compiler **compiler.jar**. The path to Java is hard coded in **compile.bat** and will need to be updated to wherever Java is installed on your machine.
-
-## Running the test cases:
-The tests are simple HTML files which run against the uncompiled source files in the **js** folder. Just open them in your browser.
-
-## Javascript source files in **js** folder:
+## Source files:
 File|Description
 ----|-----------
 alias|common alias names for rules
@@ -115,3 +122,6 @@ snapshot|snapshot manager for going back to earlier generations
 stars|starfield
 waypoint|waypoint management
 window|popup window management
+
+## Running the test cases:
+The tests are simple HTML files which run against the uncompiled source files in the **js** folder. Just open them in your browser.
