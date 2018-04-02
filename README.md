@@ -32,10 +32,11 @@ Neighbourhoods|Moore, Hex, Von Neumann, 1D
 ## How do I use it?
 * [Build](#how-do-i-build-it) the plugin file **lv-plugin.js**
 * In the `<head>` section of your web page:
-1. Add a `<script src="lv-plugin.js">` tag pointing to where you installed the plugin.
-2. Add a `<meta name="LifeViewer" content="viewer textarea">` tag.
-* In the `<body>` section of your web page:
-1. For each LifeViewer you want displayed add `<div class="viewer">` containing a `<textarea>` element with the pattern and a `<canvas width="480" height="480"></canvas>` element for LifeViewer to draw the pattern.
+  1. Add a `<script src="lv-plugin.js">` tag pointing to where you installed the plugin.
+  2. Add a `<meta name="LifeViewer" content="viewer textarea">` tag.
+* In the `<body>` section of your web page for each LifeViewer you want displayed:
+  1. Add `<div class="viewer">` containing a `<textarea>` element with the pattern definition.
+  2. Add a `<canvas width="480" height="480"></canvas>` element on which LifeViewer can draw the pattern.
 ```
 <!DOCTYPE html>
 <html>
@@ -54,13 +55,13 @@ Neighbourhoods|Moore, Hex, Von Neumann, 1D
 </html>
 ```
 * The content part of the <meta> tag must contain two mandatory items:
-1. The name of the `<div>` element that contains an element containing the pattern definition and the `<canvas>` element.
-2. The name of the element in that `<div>` that contains the pattern definition.
+  1. The name of the `<div>` element that contains an element containing the pattern definition and the `<canvas>` element.
+  2. The name of the element in that `<div>` that contains the pattern definition.
 In the example above the `<div>` name is **viewer** and the pattern definition element is **textarea**.
 * The content part of the `<meta>` tag may also contain up to three optional items:
-1. an integer (example: "30") - if specified then sets the height in pixels of the element containing the pattern definition.
-2. the word "hide" - if specified then hide the `<canvas>` element on browsers that don't support LifeViewer.
-3. the word "limit" - if specified then limit the width of LifeViewer to the width of the element containing the pattern.
+  1. *an integer* (example: "30") - if specified then sets the height in pixels of the element containing the pattern definition.
+  2. "*hide*" - if specified then hide the `<canvas>` element on browsers that don't support LifeViewer.
+  3. "*limit*" - if specified then limit the width of LifeViewer to the width of the element containing the pattern.
 
 You can put multiple LifeViewers on a single page. Each time you want one just specify an enclosing `<div>` containing both the `<textarea>` with the pattern definition and a `<canvas>`.
 ```
