@@ -18,7 +18,7 @@ Written in plain Javascript/HTML5 without any external libraries.
 * [What's each source file?](#source-files)
 * [How do I run the test cases?](#running-the-test-cases)
 
-## What does it do
+## What does it do?
 LifeViewer supports several different file formats, rules and neighbourhoods, as well as bounded grids.
 
 Topic|Supported
@@ -31,47 +31,46 @@ Neighbourhoods|Moore, Hex, Von Neumann, 1D
 
 ## How do I use it?
 * [Build](#how-do-i-build-it) the plugin file **lv-plugin.js**
-* In the example below you will need to change the `<script>` tag to point to where you have installed the plugin.
-* Create a `<meta>` tag with a name of "LifeViewer" in your webpage `<head>` section:
+* In the `<head>` section of your web page:
+1. Add a `<script>` tag to pointing to where you installed the plugin.
+2. Add a `<meta>` tag with the name "LifeViewer".
 ```
+<!DOCTYPE html>
 <html>
     <head>
         <meta name="LifeViewer" content="viewer textarea 30 hide limit">
         <script src="js/lv-plugin.js"></script>
-        ...
-    </head>
-    ...
-</html>
-```
-* The content part of the <meta> tag should contain a list of two mandatory words in a specific order and then up to three optional words in any order:
-* "viewer" - the class name of the `<div>` that wraps the element containing the pattern definition and the `<canvas>` element
-* "textarea" - the name of the element containing the pattern definition (in one of the supported pattern formats, typically RLE)
-* (optional) "30" - if specified then sets the height in pixels of the element containing the pattern definition
-* (optional) "hide" - if specified then hide the <canvas> element if the browser doesn't support LifeViewer
-* (optional) "limit" - if specified then limit the width of the LifeViewer to the width of the element containing the pattern
-
-The example below shows how you embed LifeViewer in your page with the glider pattern. In this case without limiting the LifeViewer width to the `<textarea>`, without limiting the `<textarea>` height, but still hiding the LifeViewer if the browser doesn't support it (since we specified "hide").
-```
-<html>
-    <head>
-        <meta name="LifeViewer" content="viewer textarea hide">
-        <script src="js/lv-plugin.js"></script>
     </head>
     <body>
-        <div class="viewer"><textarea>bo$2bo$3o!</textarea><br><canvas width="480" height="480"></canvas></div>
+        <h1>This is LifeViewer</h1>
+        <div class="viewer">
+            <textarea>3o$bbo$bo!</textarea>
+            <br>
+            <canvas width="480" height="480"><canvas>
+        </div>
     </body>
 </html>
 ```
-If you omit the `<meta>` tag then it defaults to the following settings (which are used on the [ConwayLife Forums](http://www.conwaylife.com/forums):
+* The content part of the <meta> tag must contain two mandatory items:
+1. The name of the `<div>` element that contains an element containing the pattern definition and the `<canvas>` element.
+2. The name of the element in that `<div>` that contains the pattern definition.
+In the example above the `<div>` name is **viewer** and the pattern definition element is **textarea**.
+* The content part of the `<meta>` tag may also contain up to three optional items:
+1. an integer (example: "30") - if specified then sets the height in pixels of the element containing the pattern definition.
+2. the word "hide" - if specified then hide the `<canvas>` element on browsers that don't support LifeViewer.
+3. the word "limit" - if specified then limit the width of LifeViewer to the width of the element containing the pattern.
+
+You can put multiple LifeViewers on a single page. Each time you want one just specify an enclosing `<div>` containing both the `<textarea>` with the pattern definition and a `<canvas>`.
 ```
-<meta name="LifeViewer" content="rle code 37 hide limit">
-```
-You can put multiple LifeViewers on a single page. Each time you want one just specify an enclosing `<div>` containing both the `<textarea>` with the pattern and a `<canvas>`.
-```
-]<div class="viewer">
+<div class="viewer">
     <textarea>bo$2bo$3!</textarea>
     <canvas width="480" height="480"></canvas>
 </div>
+```
+
+If you omit the `<meta>` tag then it defaults to the following settings (which are used on the [ConwayLife Forums](http://www.conwaylife.com/forums)
+```
+<meta name="LifeViewer" content="rle code 37 hide limit">
 ```
 
 ## Folders:
