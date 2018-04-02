@@ -19,6 +19,8 @@ Written in plain Javascript/HTML5 without any external libraries.
 * [How do I run the test cases?](#running-the-test-cases)
 
 ## What does it do?
+LifeViewer displays and animates cellular automata in the web browser.
+
 LifeViewer supports several different file formats, rules and neighbourhoods, as well as bounded grids.
 
 Topic|Supported
@@ -30,7 +32,7 @@ States|2 state, [R]History, Niemiec, Generations
 Neighbourhoods|Moore, Hex, Von Neumann, 1D
 
 ## How do I use it?
-* [Build](#how-do-i-build-it) the plugin file **lv-plugin.js**
+* [Build](#how-do-i-build-it) the plugin file **lv-plugin.js**.
 * In the `<head>` section of your web page:
   1. Add a `<script src="lv-plugin.js">` tag pointing to where you installed the plugin.
   2. Add a `<meta name="LifeViewer" content="viewer textarea">` tag.
@@ -71,7 +73,7 @@ You can put multiple LifeViewers on a single page. Each time you want one just s
 </div>
 ```
 
-If you omit the `<meta>` tag then it defaults to the following settings (which are used on the [ConwayLife Forums](http://www.conwaylife.com/forums)).
+If you omit the `<meta>` tag then it defaults to the following settings (which are used on the [ConwayLife Forums](http://www.conwaylife.com/forums)):
 ```
 <meta name="LifeViewer" content="rle code 37 hide limit">
 ```
