@@ -34,9 +34,9 @@ Neighbourhoods|Moore, Hex, Von Neumann, 1D
 * In the `<head>` section of your web page:
   1. Add a `<script src="lv-plugin.js">` tag pointing to where you installed the plugin.
   2. Add a `<meta name="LifeViewer" content="viewer textarea">` tag.
-* In the `<body>` section of your web page for each LifeViewer you want displayed:
-  1. Add `<div class="viewer">` containing a `<textarea>` element with the pattern definition.
-  2. Add a `<canvas width="480" height="480"></canvas>` element on which LifeViewer can draw the pattern.
+* In the `<body>` section of your web page for each LifeViewer you want displayed add `<div class="viewer">` containing:
+  1. A `<textarea>` element containing the pattern definition.
+  2. A `<canvas width="480" height="480"></canvas>` element on which LifeViewer can draw the pattern.
 ```
 <!DOCTYPE html>
 <html>
@@ -71,7 +71,7 @@ You can put multiple LifeViewers on a single page. Each time you want one just s
 </div>
 ```
 
-If you omit the `<meta>` tag then it defaults to the following settings (which are used on the [ConwayLife Forums](http://www.conwaylife.com/forums)
+If you omit the `<meta>` tag then it defaults to the following settings (which are used on the [ConwayLife Forums](http://www.conwaylife.com/forums)).
 ```
 <meta name="LifeViewer" content="rle code 37 hide limit">
 ```
