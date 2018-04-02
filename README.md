@@ -1,9 +1,24 @@
 # LifeViewer
 
 This is LifeViewer, a scriptable pattern viewer for Life-like cellular automata.
+Designed to be easy to embed in your own web site.
+Currently used on:
+* [Conwaylife.com]http://www.conwaylife.com/
+* [ConwayLife forums]http://www.conwaylife.com/forums
+* [ConwayLife Wiki]http://www.conwaylife.com/wiki
 Written in plain Javascript/HTML5 without any external libraries.
 
-### What's supported?
+## Contents
+* [What does it do?](#what-does-it-do)
+* [How do I use it own my own web page?](#how-do-i-use-it?)
+* [How do I build the plugin?](#how-do-i-build-it?)
+* [What's in each folder?](#folders)
+* [What's each source file?](#source-files)
+* [How do I run the test cases?](#running-the-test-cases)
+
+### What does it do
+LifeViewer supports several different file formats, rules and neighbourhoods, as well as bounded grids.
+
 Topic|Supported
 -----|---------
 File formats|RLE, Life 1.06, Life 1.05, Cells
@@ -11,6 +26,9 @@ Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP
 Bounded Grid|Plane, Torus, Klein, Cross-Surface, Sphere
 States|2 state, [R]History, Niemiec, Generations
 Neighbourhoods|Moore, Hex, Von Neumann, 1D
+
+### How do I use it?
+
 
 ### Folders:
 Folder|Description
@@ -20,7 +38,7 @@ images|icons for UI and keyboard map
 js|Javascript source files
 tests|HTML test cases
 
-### Building the plugin:
+### How do I build it?
 The **build** folder contains a Windows script to create the single minified plugin file **lv-plugin.js** from the source files in the **js** folder.
 
 From the **build** folder run **compile.bat**. This requires Java and the included Google Closure compiler **compiler.jar**. The path to Java is hard coded in **compile.bat** and will need to be updated to wherever Java is installed on your machine.
@@ -49,4 +67,3 @@ snapshot|snapshot manager for going back to earlier generations
 stars|starfield
 waypoint|waypoint management
 window|popup window management
-
