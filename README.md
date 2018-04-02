@@ -32,8 +32,10 @@ Neighbourhoods|Moore, Hex, Von Neumann, 1D
 ## How do I use it?
 * [Build](#how-do-i-build-it) the plugin file **lv-plugin.js**
 * In the `<head>` section of your web page:
-1. Add a `<script>` tag to pointing to where you installed the plugin.
-2. Add a `<meta>` tag with the name "LifeViewer".
+1. Add a `<script src="lv-plugin.js">` tag pointing to where you installed the plugin.
+2. Add a `<meta name="LifeViewer" content="viewer textarea">` tag.
+* In the `<body>` section of your web page:
+1. For each LifeViewer you want displayed add `<div class="viewer">` containing a `<textarea>` element with the pattern and a `<canvas width="480" height="480"></canvas>` element for LifeViewer to draw the pattern.
 ```
 <!DOCTYPE html>
 <html>
