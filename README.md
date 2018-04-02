@@ -5,7 +5,7 @@ Designed to be easy to embed in your own web site.
 
 Currently used on:
 * [Conwaylife.com](http://www.conwaylife.com/)
-* [ConwayLife forums](http://www.conwaylife.com/forums)
+* [ConwayLife Forums](http://www.conwaylife.com/forums)
 * [ConwayLife Wiki](http://www.conwaylife.com/wiki)
 
 Written in plain Javascript/HTML5 without any external libraries.
@@ -31,8 +31,8 @@ Neighbourhoods|Moore, Hex, Von Neumann, 1D
 
 ## How do I use it?
 * [Build](#how-do-i-build-it) the plugin file **lv-plugin.js**
-* In the example below you will need to change the <script> tag to point to where you have installed the plugin.
-* Create a <meta> tag with a name of "LifeViewer" in your webpage <head> section:
+* In the example below you will need to change the `<script>` tag to point to where you have installed the plugin.
+* Create a `<meta>` tag with a name of "LifeViewer" in your webpage `<head>` section:
 ```
 <html>
     <head>
@@ -44,13 +44,13 @@ Neighbourhoods|Moore, Hex, Von Neumann, 1D
 </html>
 ```
 * The content part of the <meta> tag should contain a list of two mandatory words in a specific order and then up to three optional words in any order:
-* "viewer" - the class name of the <div> that wraps the element containing the pattern definition and the <canvas> element
+* "viewer" - the class name of the `<div>` that wraps the element containing the pattern definition and the `<canvas>` element
 * "textarea" - the name of the element containing the pattern definition (in one of the supported pattern formats, typically RLE)
 * (optional) "30" - if specified then sets the height in pixels of the element containing the pattern definition
 * (optional) "hide" - if specified then hide the <canvas> element if the browser doesn't support LifeViewer
 * (optional) "limit" - if specified then limit the width of the LifeViewer to the width of the element containing the pattern
 
-The example below shows how you embed LifeViewer in your page with the glider pattern. In this case without limiting the LifeViewer width to the <textarea>, without limiting the <textarea> height, but still hiding the LifeViewer if the browser doesn't support it (since we specified "hide").
+The example below shows how you embed LifeViewer in your page with the glider pattern. In this case without limiting the LifeViewer width to the `<textarea>`, without limiting the `<textarea>` height, but still hiding the LifeViewer if the browser doesn't support it (since we specified "hide").
 ```
 <html>
     <head>
@@ -62,11 +62,11 @@ The example below shows how you embed LifeViewer in your page with the glider pa
     </body>
 </html>
 ```
-If you omit the <meta> tag then it defaults to the following settings:
+If you omit the `<meta>` tag then it defaults to the following settings (which are used on the [ConwayLife Forums](http://www.conwaylife.com/forums):
 ```
 <meta name="LifeViewer" content="rle code 37 hide limit">
 ```
-You can put multiple LifeViewers on a single page. Each time you want one just specify an enclosing <div> containing both the <textarea> with the pattern and a <canvas>.
+You can put multiple LifeViewers on a single page. Each time you want one just specify an enclosing `<div>` containing both the `<textarea>` with the pattern and a `<canvas>`.
 ```
 ]<div class="viewer">
     <textarea>bo$2bo$3!</textarea>
