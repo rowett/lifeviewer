@@ -9590,6 +9590,9 @@
 				}
 			}
 
+			// copy custom colours to engine
+			this.engine.customColours = this.customColours;
+
 			// mark pattern not clipped to bounded grid
 			this.wasClipped = false;
 
