@@ -147,7 +147,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 254,
+		/** @const {number} */ versionBuild : 255,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
