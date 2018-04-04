@@ -9378,12 +9378,6 @@
 			}
 		}
 
-		// create the colour palettee
-		this.engine.createColours();
-
-		// create the pixel colours from the palette at full brightness
-		this.engine.createPixelColours(1);	
-
 		// set the default generation speed
 		this.genSpeed = 60;
 
@@ -9590,9 +9584,6 @@
 				}
 			}
 
-			// copy custom colours to engine
-			this.engine.customColours = this.customColours;
-
 			// mark pattern not clipped to bounded grid
 			this.wasClipped = false;
 
@@ -9710,6 +9701,15 @@
 				this.ruleLabel.toolTip += " alias " + this.patternAliasName;
 			}
 		}
+
+		// copy custom colours to engine
+		this.engine.customColours = this.customColours;
+
+		// create the colour palette
+		this.engine.createColours();
+
+		// create the pixel colours from the palette at full brightness
+		this.engine.createPixelColours(1);	
 
 		// set the graph controls
 		this.opacityItem.current = this.viewOpacityRange([this.popGraphOpacity, this.popGraphOpacity], false, this);
