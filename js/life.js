@@ -1,6 +1,8 @@
 // Life
 // written by Chris Rowett
 
+// @ts-check
+
 (function() {
 	// use strict mode
 	"use strict";

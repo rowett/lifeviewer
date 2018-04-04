@@ -5,6 +5,7 @@ Build 254
 - hotkey shift and Page Up moves to previous help topic
 - hotkey shift and Page Down moves to next help topic
 - hotkey control and "r" now resets the pattern (like Golly) rather than refreshing the browser
+- fixed an issue with Waypoint playback that was causing stuttering
 
 Build 253
 - waypoints now work with step back

@@ -2,12 +2,14 @@
 // written by Chris Rowett
 // "This started small and then kind of got away from me."
 
+// @ts-nocheck
+
 (function() {
 	// use strict mode
 	"use strict";
 
 	// define globals
-	/* global Allocator PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager Script Uint16 Uint32Array myRand PopupWindow typedArrays Float32 */
+	/* global Allocator PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager Script Uint32Array myRand PopupWindow typedArrays Float32 */
 
 	// LifeViewer document configuration
 	var DocConfig = {
@@ -63,7 +65,7 @@
 		/** @const {number} */ defaultThumbSize : 4,
 
 		// maximum time in ms between UI updates when STEP > 1
-		/** @const {number} */ updateThreshold : 45,
+		/** @const {number} */ updateThreshold : 16.7,
 
 		// minimum and maximum density for random fill
 		/** @const {number} */ minDensity : 0.0,
@@ -127,7 +129,7 @@
 		/** @const {number} */ perfGreenStep : 20,
 
 		// frame time budget in ms
-		/** @const {number} */ frameBudget : 19,
+		/** @const {number} */ frameBudget : 17,
 
 		// whether colour theme has colour history
 		/** @const {boolean} */ colourHistory : false,
@@ -379,6 +381,9 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// whether to hide source element
+		this.noSource = false;
+
 		// initial value flags
 		this.initialX = false;
 		this.initialY = false;
@@ -1295,7 +1300,7 @@
 
 		// check for thumbnail
 		if (this.thumbnail) {
-			fitZoom = this.engine.fitZoomDisplay(this.floatCounter, this.displayWidth * this.thumbnailDivisor, this.displayHeight * this.thumbnailDivisor, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateDisplay, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit);
+			fitZoom = this.engine.fitZoomDisplay(this.floatCounter, this.displayWidth * this.thumbnailDivisor, this.displayHeight * this.thumbnailDivisor, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit);
 			fitZoom[0] /= this.thumbnailDivisor;
 		}
 		else {
@@ -1303,7 +1308,7 @@
 			if (this.noGUI) {
 				heightAdjust = 0;
 			}
-			fitZoom = this.engine.fitZoomDisplay(this.floatCounter, this.displayWidth, this.displayHeight - heightAdjust, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateDisplay, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit);
+			fitZoom = this.engine.fitZoomDisplay(this.floatCounter, this.displayWidth, this.displayHeight - heightAdjust, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit);
 		}
 
 		// check for auto fit
@@ -1758,7 +1763,10 @@
 		    waypointsEnded = false,
 
 		    // whether bailing out of stepping
-		    bailout = false;
+			bailout = false,
+			
+			// how many steps to take
+			stepsToTake = 1;
 
 		// unlock controls
 		me.controlsLocked = false;
@@ -1872,7 +1880,7 @@
 				}
 				me.floatCounter += (me.genSpeed * timeSinceLastUpdate / 1000);
 				if ((me.floatCounter | 0) > me.engine.counter) {
-					me.floatCounter += (me.gensPerStep -1);
+					me.floatCounter += (me.gensPerStep - 1);
 					me.nextStep = true;
 				}
 			}
@@ -1978,7 +1986,7 @@
 			}
 		}
 		else {
-			// waypoints not defined to check for autofit
+			// if autofit and waypoints not defined then lock the UI controls
 			if (me.autoFit && me.playList.current !== ViewConstants.modePause) {
 				me.controlsLocked = true;
 			}
@@ -1997,6 +2005,9 @@
 			if (me.anythingAlive) {
 				// get current time
 				currentTime = performance.now();
+
+				// compute how many steps there are to take
+				stepsToTake = (me.floatCounter | 0) - me.engine.counter;
 
 				// check if statistics are displayed and if so compute them
 				while (!bailout && (me.engine.counter < (me.floatCounter | 0))) {
@@ -2026,7 +2037,7 @@
 					}
 
 					// save elasped time for this generation
-					me.saveElapsedTime(timeSinceLastUpdate, me.gensPerStep);
+					me.saveElapsedTime(timeSinceLastUpdate, stepsToTake);
 
 					// check for loop
 					if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled) {
@@ -3339,7 +3350,7 @@
 		this.lastDragY = 0;
 		this.viewDrag(dx, dy, true, this);
 		this.lastDragX = -1;
-		this.lastDrayY = -1;
+		this.lastDragY = -1;
 	};
 
 	// create icons
@@ -5558,7 +5569,7 @@
 		// points/lines toggle
 		this.linesToggle = this.viewMenu.addListItem(this.toggleLines, Menu.northWest, 90, 0, 40, 40, [""], [false], Menu.multi);
 		this.linesToggle.icon = [ViewConstants.iconManager.icon("lines")];
-		this.linesToggle.toolTip = ["toggle lines"];
+		this.linesToggle.toolTip = ["toggle graph lines/points"];
 
 		// graph close button
 		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -130, 0, 40, 40, "X");
@@ -5661,9 +5672,6 @@
 			// create the starfield
 			this.starField = new Stars(ViewConstants.numStars, this.engine.allocator);
 			this.starField.init(8192, 8192, 1024);
-
-			// create the fill all buffer
-			this.fillAllBuffer = this.engine.allocator.allocate(Uint16, 1024, "Life.fillAllBuffer");
 
 			// set the font alignment
 			this.offContext.textAlign = "left";

@@ -63,7 +63,9 @@
 	}
 
 	// resize window
+	/* eslint-disable no-unused-vars */
 	PopupWindow.prototype.resizeWindow = function(me, event) {
+	    /* eslint-enable no-unused-vars */
 		// check the popup window is on the display
 		me.setWindowPosition(me.left, me.top, me.wrappedElement);
 	};

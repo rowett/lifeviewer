@@ -118,9 +118,6 @@
 
 		// whether waypoint has been processed
 		this.processed = false;
-
-		// whether last waypoint has been reached
-		this.lastReached = false;
 	}
 
 	// set a waypoint to the same as another waypoint
@@ -375,6 +372,9 @@
 
 		// waypoint index to return to after temporary glide
 		this.tempIndex = 0;
+
+		// whether last waypoint has been reached
+		this.lastReached = false;
 	}
 
 	// process step back
