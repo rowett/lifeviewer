@@ -923,7 +923,7 @@
 			y = this.renderHelpLine(view, "", "Set:", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Name", view.colourSetName, ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Used", view.patternUsedStates, ctx, x, y, height, helpLine);
-			for (i = 0; i < colourList.length; i += 1) {
+			for (i = 0; i < view.customColourUsed.length; i += 1) {
 				// check if the state is used
 				if (view.customColourUsed[i] !== ViewConstants.stateNotUsed) {
 					// get colour value

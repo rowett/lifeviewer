@@ -1,3 +1,6 @@
+Build 255
+- custom colours now work with Generations rules
+
 Build 254
 - gps control was incorrectly showing 10.0 for 10
 - added colour names to help information

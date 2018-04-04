@@ -118,6 +118,9 @@
 		// allocator
 		this.allocator = new Allocator();
 
+		// custom state colours
+		this.customColours = null;
+
 		// bit counts for 16bit values
 		this.bitCounts16 = this.allocator.allocate(Uint8, 65536, "Life.bitCounts16");
 		this.initBitCounts16();
@@ -1495,11 +1498,11 @@
 
 	// create the colours
 	Life.prototype.createColours = function() {
-		var i, mixWeight, weight, currentComponent, targetComponent;
+		var i, mixWeight, weight, currentComponent, targetComponent, current;
 
 		// set the weighting between the two colour ranges
 		mixWeight = (this.colourChange - 1) / this.colourChangeSteps;
-
+	
 		// set unoccupied colour
 		i = 0;
 		this.redChannel[i] = this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight);
@@ -1532,6 +1535,26 @@
 				currentComponent = this.aliveColCurrent.startColour.blue * weight + this.deadColCurrent.startColour.blue * (1 - weight);
 				targetComponent = this.aliveColTarget.startColour.blue * weight + this.deadColTarget.startColour.blue * (1 - weight);
 				this.blueChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+
+				// override with custom colour if specified
+				if (this.customColours.length >= i) {
+					current = this.customColours[i];
+					if (current !== -1) {
+						this.redChannel[i] = current >> 16;
+						this.greenChannel[i] = (current >> 8) & 255; 
+						this.blueChannel[i] = (current & 255);
+					}
+				}
+			}
+
+			// override colour 0 if specified
+			if (this.customColours.length > 0) {
+				current = this.customColours[0];
+				if (current !== -1) {
+					this.redChannel[0] = current >> 16;
+					this.greenChannel[0] = (current >> 8) & 255; 
+					this.blueChannel[0] = (current & 255);
+				}
 			}
 		}
 		else {

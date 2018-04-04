@@ -9588,7 +9588,6 @@
 						this.displayHeight = ViewConstants.minMenuHeight + 80;
 					}
 				}
-
 			}
 
 			// mark pattern not clipped to bounded grid
