@@ -1238,7 +1238,7 @@
 		}
 
 		// display colour names
-		tabs[1] = 320;
+		tabs[1] = 330;
 		tabs[2] = 380;
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
@@ -1249,7 +1249,8 @@
 		y = this.renderHelpLine(view, "", "The following names can be used in place of R G B:", ctx, x, y, height, helpLine);
 		for (i = 0; i < keys.length; i += 1) {
 			namedCol = cmList[keys[i]];
-			y = this.renderHelpLine(view, namedCol[0], namedCol[1] + "\t" + namedCol[2] + "\t" + namedCol[3], ctx, x, y, height, helpLine);
+			this.renderColourBox(view, namedCol[1], namedCol[2], namedCol[3], ctx, x + tabs[0], y, height, helpLine);
+			y = this.renderHelpLine(view, namedCol[0], this.rgbString(namedCol[1], namedCol[2], namedCol[3]), ctx, x, y, height, helpLine);
 		}
 
 		// save number of help lines
