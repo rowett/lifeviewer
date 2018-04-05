@@ -322,8 +322,11 @@
 		    whole = null;
 
 		// save reference the the type and allocator
+		// @ts-ignore
 		mat.allocator = allocator;
+		// @ts-ignore
 		mat.type = type;
+		// @ts-ignore
 		mat.whole = null;
 
 		// check if there is anything to allocate
@@ -332,6 +335,7 @@
 			whole = allocator.allocate(type, m * n, name);
 
 			// save reference to the whole array
+			// @ts-ignore
 			mat.whole = whole;
 
 			// create rows
