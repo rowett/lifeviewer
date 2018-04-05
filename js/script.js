@@ -124,8 +124,8 @@
 			rightPart = token.substr(slashIndex + 1);
 
 			// check for divison by zero
-			if (rightPart !== 0) {
-				result = leftPart / rightPart;
+			if (Number(rightPart) !== 0) {
+				result = Number(leftPart) / Number(rightPart);
 			}
 		}
 		else {

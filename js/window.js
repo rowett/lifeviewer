@@ -48,6 +48,10 @@
 		// scrollbar width
 		this.scrollBarWidth = 21;
 
+		// element offset
+		this.offsetLeft = 0;
+		this.offsetTop = 0;
+
 		// register event listeners for element click
 		registerEvent(element, "mousedown", function(event) {me.elementMouseDown(me, event);}, false);
 		registerEvent(document, "mousemove", function(event) {me.elementMouseMove(me, event);}, false);

@@ -24,21 +24,26 @@
 
 	// implement cross-browser performance now
 	if (!window.performance) {
+		// @ts-ignore
 		window.performance = {};
 	}
 	if (!window.performance.now) {
 		window.performance.now = (function() {
+			// @ts-ignore
 			return (performance.now || performance.mozNow || performance.msNow || performance.oNow || performance.webkitNow || function() { return new Date().getTime(); });
 		}());
 	}
 
 	// implement cross-browser requestAnimationFrame
 	if (!window.requestAnimationFrame) {
+		// @ts-ignore
 		window.requestAnimationFrame = (function() { return (window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame); }());
 	}
 
 	// implement cross-browser cancelRequestAnimationFrame
+	// @ts-ignore
 	if (!window.cancelRequestAnimationFrame) {
+		// @ts-ignore
 		window.cancelRequestAnimationFrame = (function() { return (window.webkitCancelRequestAnimationFrame || window.mozCancelRequestAnimationFrame || window.oCancelRequestAnimationFrame || window.msCancelRequestAnimationFrame) ; }());
 	}
 

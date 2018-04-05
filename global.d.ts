@@ -5,6 +5,13 @@ declare var AliasManager;
 
 // allocator.js
 declare var Allocator, Uint8, Uint8Clamped, Uint16, Uint32, Int8, Int16, Int32, Float32, Float64;
+interface ArrayConstructor {
+    matrix;
+    addRow;
+    copy;
+    matrixView;
+    matrixViewWithOffset;
+}
 
 // box.js
 declare var BoundingBox;
@@ -17,6 +24,12 @@ declare var ColourManager;
 
 // compatibility.js
 declare var littleEndian, registerEvent;
+interface Window {
+    Uint8Array;
+    Uint8ClampedArray;
+    Uint16Array;
+    Uint32Array;
+}
 
 // help.js
 declare var Help;
@@ -41,6 +54,10 @@ declare var Random, myRand;
 
 // script.js
 declare var Script;
+interface NumberConstructor {
+    isNaN;
+    isFinite;
+}
 
 // snapshot.js
 declare var SnapshotManager, Snapshot;

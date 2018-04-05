@@ -801,7 +801,7 @@
 
 	// check parent toggle menu state for visibility
 	MenuList.prototype.parentMenu = function(parentItem, cascade) {
-		var result, i, l = parentItem.numToggleMenuParents;
+		var result = false, i, l = parentItem.numToggleMenuParents;
 
 		// start from this toggle menu
 		if (parentItem.type === Menu.list && parentItem.upper === Menu.multi) {
@@ -819,7 +819,7 @@
 		// combine with any parent toggle menus
 		if (result && cascade) {
 			for (i = 0; i < l; i += 1) {
-				result &= this.parentMenu(parentItem.toggleMenuParents[i][0], parentItem.toggleMenuParents[i][1]);
+				result = result && this.parentMenu(parentItem.toggleMenuParents[i][0], parentItem.toggleMenuParents[i][1]);
 			}
 		}
 
@@ -828,14 +828,14 @@
 
 	// set whether this item is enabled (visible) based on any toggle menu parents
 	MenuList.prototype.toggleMenu = function(menuItem) {
-		var result, i, l = menuItem.numToggleMenuParents;
+		var result = true, i, l = menuItem.numToggleMenuParents;
 
 		// assume enabled
 		result = true;
 
 		// combine with the toggle menu parents state
 		for (i = 0; i < l; i += 1) {
-			result &= this.parentMenu(menuItem.toggleMenuParents[i][0], menuItem.toggleMenuParents[i][1]);
+			result = result && this.parentMenu(menuItem.toggleMenuParents[i][0], menuItem.toggleMenuParents[i][1]);
 		}
 
 		// set the enabled state
@@ -2005,6 +2005,11 @@
 
 		// whether a click happened (mouse up + mouse down before update)
 		this.clickHappened = false;
+
+		// canvas offset
+		this.offsetLeft = 0;
+		this.offsetTop = 0;
+
 		// register event listeners for canvas click
 		registerEvent(mainCanvas, "mousedown", function(event) {me.canvasMouseDown(me, event);}, false);
 		registerEvent(mainCanvas, "mousemove", function(event) {me.canvasMouseMove(me, event);}, false);
