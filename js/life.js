@@ -9337,8 +9337,43 @@
 		return result;
 	};
 
+	// make zoom an exact value if close enough to the exact value
+	Life.prototype.makeIntegerZoom = function(zoom) {
+		var testZoom = zoom,
+		    percent = 0,
+			intZoom;
+
+		// check for negative zooms and convert to positive
+		if (zoom < 1) {
+			testZoom = 1 / zoom;
+		}
+
+		// get integer zoom
+		intZoom = Math.round(testZoom);
+
+		// compute what percentage the integer zoom is of the actual zoom
+		if (intZoom < testZoom) {
+			percent = intZoom / testZoom;
+		}
+		else {
+			percent = testZoom / intZoom;
+		}
+		
+		// check if the percentage is within a threshold
+		if (percent >= ViewConstants.integerZoomThreshold) {
+			if (zoom < 1) {
+				zoom = 1 / intZoom;
+			}
+			else {
+				zoom = intZoom;
+			}
+		}
+
+		return zoom;
+	};
+
 	// fit zoom to display
-	Life.prototype.fitZoomDisplay = function(accurateCounter, displayWidth, displayHeight, minZoom, maxZoom, scaleFactor, patternWidth, patternHeight, usePattern, historyFit, useTrackBox, trackN, trackE, trackS, trackW, genSpeed, state1Fit) {
+	Life.prototype.fitZoomDisplay = function(accurateCounter, displayWidth, displayHeight, minZoom, maxZoom, scaleFactor, patternWidth, patternHeight, usePattern, historyFit, useTrackBox, trackN, trackE, trackS, trackW, genSpeed, state1Fit, autoFit) {
 		var zoomBox = this.zoomBox,
 		    initialBox = this.initialBox,
 		    historyBox = this.historyBox,
@@ -9353,7 +9388,7 @@
 		    leftX = 0,
 		    rightX = 0,
 		    topY = 0,
-		    bottomY = 0;
+			bottomY = 0;
 
 		// check for track box mode
 		if (useTrackBox) {
@@ -9493,6 +9528,11 @@
 		newY = bottomY - this.originY + (height / 2);
 		newX = leftX - this.originX + (width / 2);
 		
+		// make zoom an exact value if close to the exact value
+		if (!autoFit) {
+			zoom = this.makeIntegerZoom(zoom);
+		}
+
 		// return zoom
 		return [zoom, newX, newY];
 	};

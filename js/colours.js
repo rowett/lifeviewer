@@ -293,7 +293,7 @@
 			this.colourSetList[numColourSets] = current;
 
 			// create mapping to rules that use it
-			ColourManager.addRuleMapping(["LifeHistory", numColourSets]);
+			this.addRuleMapping(["LifeHistory", numColourSets]);
 
 			// next colour set
 			numColourSets += 1;
@@ -307,7 +307,7 @@
 			this.colourSetList[numColourSets] = current;
 
 			// create mapping to rules that use it
-			ColourManager.addRuleMapping(["WireWorld", numColourSets]);
+			this.addRuleMapping(["WireWorld", numColourSets]);
 
 			// next colour set
 			numColourSets += 1;
@@ -340,11 +340,11 @@
 			this.colourSetList[numColourSets] = current;
 
 			// create mapping to rules that use it
-			ColourManager.addRuleMapping(["WWE", numColourSets]);
-			ColourManager.addRuleMapping(["WWE2", numColourSets]);
-			ColourManager.addRuleMapping(["WWEJ", numColourSets]);
-			ColourManager.addRuleMapping(["WWEJ2", numColourSets]);
-			ColourManager.addRuleMapping(["WWEJ3", numColourSets]);
+			this.addRuleMapping(["WWE", numColourSets]);
+			this.addRuleMapping(["WWE2", numColourSets]);
+			this.addRuleMapping(["WWEJ", numColourSets]);
+			this.addRuleMapping(["WWEJ2", numColourSets]);
+			this.addRuleMapping(["WWEJ3", numColourSets]);
 
 			// next colour set
 			numColourSets += 1;
@@ -364,7 +364,7 @@
 			this.colourSetList[numColourSets] = current;
 			
 			// create mapping to rules that use it
-			ColourManager.addRuleMapping(["Novoloop", numColourSets]);
+			this.addRuleMapping(["Novoloop", numColourSets]);
 
 			// next colour set
 			numColourSets += 1;
@@ -393,15 +393,15 @@
 			this.colourSetList[numColourSets] = current;
 
 			// create mapping to rules that use it
-			ColourManager.addRuleMapping(["shapeloop", numColourSets]);
-			ColourManager.addRuleMapping(["shapeloop-b", numColourSets]);
-			ColourManager.addRuleMapping(["shapeloop2", numColourSets]);
-			ColourManager.addRuleMapping(["shapeloop-ltd", numColourSets]);
-			ColourManager.addRuleMapping(["2armshapeloop-a", numColourSets]);
-			ColourManager.addRuleMapping(["2armshapeloop2-a", numColourSets]);
-			ColourManager.addRuleMapping(["shapeloop2a-bounded", numColourSets]);
-			ColourManager.addRuleMapping(["foodshapeloop", numColourSets]);
-			ColourManager.addRuleMapping(["foodshapeloop2", numColourSets]);
+			this.addRuleMapping(["shapeloop", numColourSets]);
+			this.addRuleMapping(["shapeloop-b", numColourSets]);
+			this.addRuleMapping(["shapeloop2", numColourSets]);
+			this.addRuleMapping(["shapeloop-ltd", numColourSets]);
+			this.addRuleMapping(["2armshapeloop-a", numColourSets]);
+			this.addRuleMapping(["2armshapeloop2-a", numColourSets]);
+			this.addRuleMapping(["shapeloop2a-bounded", numColourSets]);
+			this.addRuleMapping(["foodshapeloop", numColourSets]);
+			this.addRuleMapping(["foodshapeloop2", numColourSets]);
 
 			// next colour set
 			numColourSets += 1;
@@ -417,7 +417,7 @@
 			this.colourSetList[numColourSets] = current;
 
 			// create mapping to rules that use it
-			ColourManager.addRuleMapping(["b3s23mmg", numColourSets]);
+			this.addRuleMapping(["b3s23mmg", numColourSets]);
 
 			// next colour set
 			numColourSets += 1;
@@ -438,18 +438,18 @@
 			this.colourSetList[numColourSets] = current;
 
 			// create mapping to rules that use it
-			ColourManager.addRuleMapping(["_235_4_O3", numColourSets]);
-			ColourManager.addRuleMapping(["0_245_5_O4", numColourSets]);
-			ColourManager.addRuleMapping(["0_245_5_O3", numColourSets]);
-			ColourManager.addRuleMapping(["58_27_4_O3", numColourSets]);
-			ColourManager.addRuleMapping(["0_24_4H_O3", numColourSets]);
-			ColourManager.addRuleMapping(["2_235_4H_O3", numColourSets]);
-			ColourManager.addRuleMapping(["24_235_4H_O3", numColourSets]);
-			ColourManager.addRuleMapping(["3_25_4_O2", numColourSets]);
-			ColourManager.addRuleMapping(["Snake_O5", numColourSets]);
-			ColourManager.addRuleMapping(["Mites", numColourSets]);
-			ColourManager.addRuleMapping(["Mites2", numColourSets]);
-			ColourManager.addRuleMapping(["Mites3", numColourSets]);
+			this.addRuleMapping(["_235_4_O3", numColourSets]);
+			this.addRuleMapping(["0_245_5_O4", numColourSets]);
+			this.addRuleMapping(["0_245_5_O3", numColourSets]);
+			this.addRuleMapping(["58_27_4_O3", numColourSets]);
+			this.addRuleMapping(["0_24_4H_O3", numColourSets]);
+			this.addRuleMapping(["2_235_4H_O3", numColourSets]);
+			this.addRuleMapping(["24_235_4H_O3", numColourSets]);
+			this.addRuleMapping(["3_25_4_O2", numColourSets]);
+			this.addRuleMapping(["Snake_O5", numColourSets]);
+			this.addRuleMapping(["Mites", numColourSets]);
+			this.addRuleMapping(["Mites2", numColourSets]);
+			this.addRuleMapping(["Mites3", numColourSets]);
 
 			// next colour set
 			numColourSets += 1;
@@ -465,7 +465,51 @@
 			this.colourSetList[numColourSets] = current;
 
 			// create mapping to rules that use it
-			ColourManager.addRuleMapping(["Alpha-1", numColourSets]);
+			this.addRuleMapping(["Alpha-1", numColourSets]);
+
+			// next colour set
+			numColourSets += 1;
+
+			// create the colour set
+			current = new ColourSet();
+			current.add(48, 48, 48);
+			current.add(255, 0, 0);
+			current.add(255, 125, 0);
+			current.add(255, 150, 25);
+			current.add(255, 175, 50);
+			current.add(255, 200, 75);
+			current.add(255, 225, 100);
+			current.add(255, 250, 125);
+			current.add(251, 255, 0);
+			current.add(89, 89, 255);
+			current.add(106, 106, 255);
+			current.add(122, 122, 255);
+			current.add(139, 139, 255);
+			current.add(27, 176, 27);
+			current.add(36, 200, 36);
+			current.add(73, 255, 73);
+			current.add(106, 255, 106);
+			current.add(235, 36, 36);
+			current.add(255, 56, 56);
+			current.add(255, 73, 73);
+			current.add(255, 89, 89);
+			current.add(185, 56, 255);
+			current.add(191, 73, 255);
+			current.add(197, 89, 255);
+			current.add(203, 106, 255);
+			current.add(0, 255, 128);
+			current.add(255, 128, 64);
+			current.add(255, 255, 128);
+			current.add(33, 215, 215);
+			current.add(27, 176, 176);
+			current.add(24, 156, 156);
+			current.add(21, 137, 137);
+
+			// create mapping to rules that use it
+			this.addRuleMapping(["JvN29", numColourSets]);
+			this.addRuleMapping(["Hutton32", numColourSets]);
+			this.addRuleMapping(["Nobili32", numColourSets]);
+			this.colourSetList[numColourSets] = current;
 		}
 	};
 

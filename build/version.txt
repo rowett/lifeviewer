@@ -1,3 +1,7 @@
+Build 256
+- added colour sets for JvN29, Hutton32 and Nobili32
+- inital zoom and single fit zoom (but not autofit) will snap to integer if zoom is within 1% of an integer
+
 Build 255
 - custom colours now work with Generations rules
 
