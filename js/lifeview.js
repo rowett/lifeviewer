@@ -2,8 +2,6 @@
 // written by Chris Rowett
 // "This started small and then kind of got away from me."
 
-// @ts-nocheck
-
 (function() {
 	// use strict mode
 	"use strict";
@@ -2398,7 +2396,9 @@
 	View.prototype.updateInfoBar = function() {
 		// compute the x and y coordinates
 		var xVal = -((this.engine.width / 2 - this.engine.xOff - this.engine.originX) | 0),
-		    yVal = -((this.engine.height / 2 - this.engine.yOff - this.engine.originY) | 0);
+			yVal = -((this.engine.height / 2 - this.engine.yOff - this.engine.originY) | 0),
+			xValStr = String(xVal),
+			yValStr = String(yVal);
 
 		// determine whether to display the infobar
 		this.infoBarLabelXLeft.deleted = !this.infoBarEnabled;
@@ -2419,17 +2419,17 @@
 
 		// format infobar camera X
 		if (xVal < -99999 || xVal > 99999) {
-			xVal = ((xVal / 1000) | 0) + "K";
+			xValStr = ((xVal / 1000) | 0) + "K";
 		}
 
 		// format infobar camera Y
 		if (yVal < -99999 || yVal > 99999) {
-			yVal = ((yVal / 1000) | 0) + "K";
+			yValStr = ((yVal / 1000) | 0) + "K";
 		}
 
 		// update infobar X, Y and ANGLE
-		this.infoBarLabelXValue.preText = xVal;
-		this.infoBarLabelYValue.preText = yVal;
+		this.infoBarLabelXValue.preText = xValStr;
+		this.infoBarLabelYValue.preText = yValStr;
 		this.infoBarLabelAngleValue.preText = (this.engine.angle.toFixed(0) + "\u00B0");
 		
 		// update the infobar trackbox E, S, W and N speeds

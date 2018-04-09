@@ -41,7 +41,21 @@ declare var Keywords;
 declare var LifeConstants, Life;
 
 // lifeview.js
-declare var DocConfig, Controller, ViewConstants, startAllViewers, updateViewer, updateMe, hideViewer, launchInMolly;
+declare var typedArrays, DocConfig, Controller, ViewConstants, startAllViewers, updateViewer, updateMe, hideViewer, launchInMolly;
+interface HTMLElement {
+    src;
+}
+interface Window {
+    width;
+    height;
+}
+interface Element {
+    style;
+    offsetWidth;
+}
+interface Node {
+    className;
+}
 
 // ltl.js
 declare var LTL;
