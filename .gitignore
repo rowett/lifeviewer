@@ -1,4 +1,5 @@
 *~
 *.swp
 Thumbs.db
-lv-plugin.js
+lv-plugin.*
+launch.json
