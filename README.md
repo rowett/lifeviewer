@@ -31,11 +31,11 @@ LifeViewer features:
 * Support for multiple embedded LifeViewers and/or a single popup LifeViewer.
 
 
-LifeViewer supports several different file formats, rules and neighbourhoods, as well as bounded grids.
+LifeViewer supports several different pattern formats, rules and neighbourhoods, as well as bounded grids.
 
 Topic|Supported
 -----|---------
-File formats|RLE, Life 1.06, Life 1.05, Cells
+Pattern formats|RLE, Life 1.06, Life 1.05, Cells
 Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP
 Bounded Grid|Plane, Torus, Klein, Cross-Surface, Sphere
 States|2 state, [R]History, Niemiec, Generations
@@ -67,9 +67,9 @@ Neighbourhoods|Moore, Hex, Von Neumann, 1D
 </html>
 ```
 * The content part of the <meta> tag must contain two mandatory items:
-  1. The name of the `<div>` element that contains an element containing the pattern definition and the `<canvas>` element.
+  1. The class name of the `<div>` element that contains an element containing the pattern definition and the `<canvas>` element.
   2. The name of the element in that `<div>` that contains the pattern definition.
-In the example above the `<div>` name is **viewer** and the pattern definition element is **textarea**.
+In the example above the `<div>` class name is **viewer** and the pattern definition element is **textarea**.
 * The content part of the `<meta>` tag may also contain up to three optional items:
   1. *an integer* (example: "30") - if specified then sets the height in pixels of the element containing the pattern definition.
   2. "*hide*" - if specified then hide the `<canvas>` element on browsers that don't support LifeViewer.
@@ -87,6 +87,17 @@ If you omit the `<meta>` tag then it defaults to the following settings (which a
 ```
 <meta name="LifeViewer" content="rle code 37 hide limit">
 ```
+
+In addition to having one or more LifeViewers embedded in a web page a single popup LifeViewer is also allowed which can be launched in a moveable window above the current page.
+
+In this case create an `<anchor>` element within the LifeViewer `<div>` as follows:
+
+<div class="viewer">
+    <a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+    <textarea>bo$2bo$3!</textarea>
+</div>
+
+Note there is no need for the `<canvas>` element in this case since the pattern will be drawn on the popup window.
 
 ## How do I build it?
 The **build** folder contains a Windows script to create the single minified plugin file **lv-plugin.js** from the source files in the **js** folder.
