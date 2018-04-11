@@ -100,6 +100,8 @@ In this case create an anchor `<a>` element within the LifeViewer `<div>` as fol
 
 Note there is no need for the `<canvas>` element in this case since the pattern will be drawn on the popup window.
 
+Once you have [built](#how-do-i-build-it) the plugin you can see both embedded and popup LifeViewers in action in this [example](build/example.html).
+
 ## How do I build it?
 The **build** folder contains a Windows script to create the single minified plugin file **lv-plugin.js** from the source files in the **js** folder.
 

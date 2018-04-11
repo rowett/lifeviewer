@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea">
+		<script src="./lv-plugin.js"></script>
+		<title>LifeViewer Plugin Example</title>
+	</head>
+	<body>
+		<h1>LifeViewer Examples</h1>
+		<h2>Embedded pattern 1</h2>
+		<div class="viewer">
+			<textarea rows=4 cols=70>
+x = 8, y = 3, rule = B3/S23
+bo3b3o$b3o2bo$2bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>Popup with pattern 1</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=4 cols=70>
+x = 8, y = 3, rule = B3/S23
+bo3b3o$b3o2bo$2bo!
+			</textarea>
+			<br>
+		</div>
+		<h2>Popup with pattern 2</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=4 cols=70>
+x = 3, y = 3, rule = B3/S23
+3o$bbo$bo!
+			</textarea>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>
