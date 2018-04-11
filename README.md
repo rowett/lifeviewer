@@ -91,11 +91,12 @@ If you omit the `<meta>` tag then it defaults to the following settings (which a
 In addition to having one or more LifeViewers embedded in a web page a single popup LifeViewer is also allowed which can be launched in a moveable window above the current page.
 
 In this case create an `<anchor>` element within the LifeViewer `<div>` as follows:
-
+```
 <div class="viewer">
     <a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
     <textarea>bo$2bo$3!</textarea>
 </div>
+```
 
 Note there is no need for the `<canvas>` element in this case since the pattern will be drawn on the popup window.
 
