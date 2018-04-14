@@ -61,6 +61,9 @@
 			result = false;
 		}
 
+		// hard code to true for now - TBD
+		result = true;
+
 		return result;
 	};
 

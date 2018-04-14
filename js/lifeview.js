@@ -145,7 +145,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 256,
+		/** @const {number} */ versionBuild : 257,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1766,8 +1766,14 @@
 		    // whether bailing out of stepping
 			bailout = false,
 			
+			// whether manual stepping (so ignore bailout)
+			manualStepping = false,
+			
 			// how many steps to take
-			stepsToTake = 1;
+			stepsToTake = 1,
+
+			// many many steps taken
+			stepsTaken = 0;
 
 		// unlock controls
 		me.controlsLocked = false;
@@ -1818,6 +1824,12 @@
 		else {
 			// if paused but stepping then compute step target
 			if (me.nextStep) {
+				// flag that manual step is happening
+				manualStepping = true;
+
+				// clear slow flag
+				tooSlow = false;
+
 				// advance the time to the next whole generation
 				if (me.singleStep) {
 					me.floatCounter = me.engine.counter + 1;
@@ -2009,14 +2021,15 @@
 
 				// compute how many steps there are to take
 				stepsToTake = (me.floatCounter | 0) - me.engine.counter;
+				stepsTaken = 0;
 
 				// check if statistics are displayed and if so compute them
 				while (!bailout && (me.engine.counter < (me.floatCounter | 0))) {
 					// compute time since generations started
 					deltaTime = performance.now() - currentTime;
 
-					// check for stop or delta time being too large or single step
-					if (me.engine.counter === me.stopGeneration - 1 || deltaTime > ViewConstants.updateThreshold) {
+					// check for stop or delta time being too large or single step (ignore time for manual stepping)
+					if (me.engine.counter === me.stopGeneration - 1 || (deltaTime > ViewConstants.updateThreshold) && !manualStepping) {
 						// bail out of loop
 						bailout = true;
 					}
@@ -2030,6 +2043,7 @@
 						// just compute next generation
 						me.engine.nextGeneration(false, me.noHistory, me.graphDisabled);
 					}
+					stepsTaken += 1;
 
 					// check theme has history or this is the last generation in the step
 					if (me.engine.themeHistory || (me.engine.counter === (me.floatCounter | 0))) {
@@ -2038,7 +2052,7 @@
 					}
 
 					// save elasped time for this generation
-					me.saveElapsedTime(timeSinceLastUpdate, stepsToTake);
+					me.saveElapsedTime(timeSinceLastUpdate, me.gensPerStep); // TBD was stepsToTake
 
 					// check for loop
 					if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled) {
@@ -2071,6 +2085,9 @@
 						me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 600, 15, true);
 					}
 				}
+
+				// remove steps not taken from target counter
+				me.floatCounter -= (stepsToTake - stepsTaken);
 			}
 			else {
 				// check if still fading
