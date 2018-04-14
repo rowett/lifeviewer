@@ -1827,9 +1827,6 @@
 				// flag that manual step is happening
 				manualStepping = true;
 
-				// clear slow flag
-				tooSlow = false;
-
 				// advance the time to the next whole generation
 				if (me.singleStep) {
 					me.floatCounter = me.engine.counter + 1;
@@ -2249,7 +2246,7 @@
 
 		// update gps and step control background based on performance
 		// check for STEP skip
-		if (deltaTime > ViewConstants.updateThreshold) {
+		if ((deltaTime > ViewConstants.updateThreshold) && !manualStepping) {
 			// ramp the green colour up
 			me.perfColGreen += ViewConstants.perfGreenStep;
 			if (me.perfColGreen >= (2 * ViewConstants.perfMaxGreen)) {
@@ -2264,7 +2261,7 @@
 		}
 
 		// check for frame skip
-		if (tooSlow) {
+		if (tooSlow && !manualStepping) {
 			// ramp the red colour up
 			if (me.perfColRed < ViewConstants.perfMaxRed) {
 				me.perfColRed += ViewConstants.perfRedStep;
