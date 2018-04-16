@@ -145,7 +145,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 257,
+		/** @const {number} */ versionBuild : 258,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2032,7 +2032,7 @@
 					}
 
 					// check if stats are on and this is the last generation in the step
-					if (me.statsOn && (me.engine.counter === (me.floatCounter | 0) - 1)) {
+					if (me.statsOn && ((me.engine.counter === (me.floatCounter | 0) - 1) || bailout)) {
 						// compute next generation with stats
 						me.engine.nextGeneration(true, me.noHistory, me.graphDisabled);
 					}
@@ -2043,7 +2043,7 @@
 					stepsTaken += 1;
 
 					// check theme has history or this is the last generation in the step
-					if (me.engine.themeHistory || (me.engine.counter === (me.floatCounter | 0))) {
+					if (me.engine.themeHistory || ((me.engine.counter === (me.floatCounter | 0)) || bailout)) {
 						// convert life grid to pen colours
 						me.anythingAlive = me.engine.convertToPensTile();
 					}

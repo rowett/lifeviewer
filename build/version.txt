@@ -1,3 +1,6 @@
+Build 258
+- better fix for Themes without history
+
 Build 257
 - Themes without history were causing rendering issues
 - improved elapsed time calculation for multi-generation steps
