@@ -1,5 +1,12 @@
 Build 258
 - better fix for Themes without history
+- hotkey "u" toggles NOGUI mode
+	- will be ignored if [[ NOGUI ]] defined
+- hotkey "k" copies the current position to the clipboard as script commands
+	- [[ X 10 Y -5 ZOOM 3 ]]
+- shift and hotkey "k" copies the current position and the view to the clipboard as script commands
+	- [[ X 5 Y 13 ZOOM 2.33 ]]
+	- [[ THEME 3 WIDTH 640 HEIGHT 400 ]]
 
 Build 257
 - Themes without history were causing rendering issues
@@ -179,10 +186,11 @@ Build 230
 - viewers that have [[ NOGUI ]] specified with script errors will not enforce [[ NOGUI ]] so the script errors can be seen
 
 Build 229
-- screenshots can now be generated inline in an img tag (rather than in a separate window)
+- screenshots can now be generated inline in an <img id="screenshot"> tag (rather than in a separate window)
 - added [[ NOGUI ]] to disable menus and hotkeys
 	- also reduces [[ WIDTH ]] and [[ HEIGHT ]] minimum limit to 16
 	- silently disables [[ AUTOSTART ]] if specified
+
 Build 228
 - variable substitution can now be used in waypoint messages
 	- #B the LifeViewer build number

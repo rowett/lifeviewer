@@ -735,6 +735,9 @@
 		// whether to disable GUI
 		this.noGUI = false;
 
+		// whether NOGUI defined
+		this.noGUIDefined = false;
+
 		// whether to hide pattern source
 		this.hideSource = false;
 
@@ -4046,12 +4049,12 @@
 		}
 	};
 
-	// select and copy rle
-	View.prototype.copyRLE = function(me) {
+	// copy string to clipboard
+	View.prototype.copyToClipboard = function(me, contents) {
 		// copy the element contents to a temporary off-screen element
 		// since selection doesn't work on hidden elements
 		var tempInput = document.createElement("textarea");
-		tempInput.innerHTML = cleanPattern(me.element);
+		tempInput.innerHTML = contents;
 		document.body.appendChild(tempInput);
 
 		// select and copy the temporary elements contents to the clipboard
@@ -4069,6 +4072,74 @@
 		me.mainContext.canvas.focus();
 	};
 
+	// add the current position to the clipboard as script commands
+	View.prototype.copyPosition = function(me, full) {
+		// start with script start
+		var string = Keywords.scriptStartWord + " ",
+
+		    // compute the x and y coordinates
+		    xVal = -((me.engine.width / 2 - me.engine.xOff - me.engine.originX) | 0),
+			yVal = -((me.engine.height / 2 - me.engine.yOff - me.engine.originY) | 0),
+			xValStr = String(xVal),
+			yValStr = String(yVal),
+
+			// get the zoom
+			zoom = me.engine.zoom,
+			zoomStr,
+
+			// get the angle
+			angleStr = me.engine.angle | 0;
+
+		// check for non-zero generation
+		if (me.engine.counter !== 0) {
+			// add T and the generation
+			string += Keywords.tWord + me.engine.counter + " ";
+		} 
+
+		// camera position
+		string += Keywords.xWord + " " + xValStr + " " + Keywords.yWord + " " + yValStr + " ";
+
+		// camera zoom
+		if (zoom === (zoom | 0)) {
+			zoomStr = String(zoom);
+		}
+		else {
+			zoomStr = String(zoom.toFixed(2));
+		}
+		string += Keywords.zoomWord + " " + zoomStr + " ";
+
+		// camera angle
+		string += Keywords.angleWord + " " + angleStr + " ";
+
+		// add script end
+		string += Keywords.scriptEndWord + "\n";
+
+		// check for view
+		if (full) {
+			// add start word
+			string += Keywords.scriptStartWord + " ";
+
+			// add theme
+			string += Keywords.themeWord + " " + me.engine.colourTheme + " "; 
+
+			// add width and height
+			string += Keywords.widthWord + " " + me.displayWidth + " ";
+			string += Keywords.heightWord + " " + me.displayHeight + " ";
+
+			// add script end
+			string += Keywords.scriptEndWord + "\n";
+		}
+
+		// copy to clipboard
+		me.copyToClipboard(me, string);
+	};
+
+	// select and copy rle
+	View.prototype.copyRLE = function(me) {
+		// copy the source pattern to the clipboard
+		me.copyToClipboard(me, cleanPattern(me.element));
+	};
+
 	// process key
 	View.prototype.processKey = function(me, keyCode, event) {
 		// flag event processed
@@ -4078,7 +4149,18 @@
 		    value = 0;
 
 		// check if gui enabled
-		if (!me.noGUI) {
+		if (me.noGUI) {
+			// gui disabled so check if NOGUI was defined
+			if (!me.noGUIDefined) {
+				// user disabled the GUI so check for toggle key 'u'
+				if (keyCode == 85) {
+					me.noGUI = !me.noGUI;
+					me.viewMenu.deleted = me.noGUI;
+					me.menuManager.noGUI = me.noGUI;
+				}
+			}
+		}
+		else {
 			// check for control (other than control-C) or meta
 			if ((event.ctrlKey && keyCode !== 67) || event.metaKey) {
 				// handle control-R since it would refresh the browser and Golly uses it for pattern reset
@@ -4425,6 +4507,21 @@
 						me.popGraph = !me.popGraph;
 						me.menuManager.notification.notify("Population Graph " + (me.popGraph ? "On" : "Off"), 15, 40, 15, true);
 					}
+				}
+				break;
+
+			// k for copy position to clipboard
+			case 75:
+				// check for shift
+				if (event.shiftKey) {
+					// copy view
+					me.copyPosition(me, true);
+					me.menuManager.notification.notify("Copied view to clipboard", 15, 180, 15, true);
+				}
+				else {
+					// copy position
+					me.copyPosition(me, false);
+					me.menuManager.notification.notify("Copied position to clipboard", 15, 180, 15, true);
 				}
 				break;
 
@@ -4905,6 +5002,16 @@
 				}
 				break;
 				
+			// u for UI
+			case 85:
+				// ignore if NOGUI defined
+				if (!me.noGUIDefined) {
+					me.noGUI = !me.noGUI;
+					me.viewMenu.deleted = me.noGUI;
+					me.menuManager.noGUI = me.noGUI;
+				}
+				break;
+
 			// g for generation statistics
 			case 71:
 				// do not display if view only mode
@@ -6982,6 +7089,7 @@
 						// no GUI
 						case Keywords.noGUIWord:
 							this.noGUI = true;
+							this.noGUIDefined = true;
 							itemValid = true;
 							break;
 
@@ -8988,6 +9096,7 @@
 
 		// clear no GUI mode
 		this.noGUI = false;
+		this.noGUIDefined = false;
 
 		// clear hide source mode
 		this.noSource = false;
