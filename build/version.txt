@@ -1,3 +1,8 @@
+Build 259
+- script commands copied to the clipboard are now prefixed with RLE comments
+- with bounded grids the stats show cell density rather than births and deaths
+- fixed population count for bounded grids
+
 Build 258
 - better fix for Themes without history
 - hotkey "u" toggles NOGUI mode

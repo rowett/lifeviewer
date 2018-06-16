@@ -3388,11 +3388,16 @@
 
 		    // left and right mask
 		    leftMask = ~(1 << (~(leftX - extra) & 15)),
-		    rightMask = ~(1 << (~(rightX + extra) & 15)),
+			rightMask = ~(1 << (~(rightX + extra) & 15)),
 
 		    // counters
 		    x = 0,
-		    y = 0;
+			y = 0,
+			
+			// cell population to adjust
+			bitCounts16 = this.bitCounts16,
+			remove = 0,
+			gridy = null;
 
 		// determine the buffer for current generation
 		if ((this.counter & 1) !== 0) {
@@ -3412,7 +3417,9 @@
 			left16 = 0;
 			right16 = this.width >> 4;
 			for (x = left16; x < right16; x += 1) {
+				remove += bitCounts16[bottomRow[x]];
 				bottomRow[x] = 0;
+				remove += bitCounts16[topRow[x]];
 				topRow[x] = 0;
 			}
 		}
@@ -3423,24 +3430,43 @@
 				bottomY = 0;
 				topY = this.height;
 				for (y = 0; y < topY; y += 1) {
-					grid[y][leftWord] &= leftMask;
-					grid[y][rightWord] &= rightMask;
+					gridy = grid[y]
+					if (gridy[leftWord] & ~leftMask) {
+						remove += 1;
+					}
+					gridy[leftWord] &= leftMask;
+					if (gridy[rightWord] & ~rightMask) {
+						remove += 1;
+					}
+					gridy[rightWord] &= rightMask;
 				}
 			}
 			else {
 				// clear top and bottom boundary
 				for (x = left16; x <= right16; x += 1) {
+					remove += bitCounts16[bottomRow[x]];
 					bottomRow[x] = 0;
+					remove += bitCounts16[topRow[x]];
 					topRow[x] = 0;
 				}
 
 				// clear left and right boundary
 				for (y = bottomY - extra + 1; y <= topY + extra - 1; y += 1) {
-					grid[y][leftWord] &= leftMask;
-					grid[y][rightWord] &= rightMask;
+					gridy = grid[y];
+					if (gridy[leftWord] & ~leftMask) {
+						remove += 1;
+					}
+					gridy[leftWord] &= leftMask;
+					if (gridy[rightWord] & ~rightMask) {
+						remove += 1;
+					}
+					gridy[rightWord] &= rightMask;
 				}
 			}
 		}
+
+		// adjust population
+		this.population -= remove;
 
 		// check for Generations or LTL
 		if (this.multiNumStates !== -1) {
@@ -4583,11 +4609,14 @@
 			}
 		}
 
-		// draw deaths
-		this.renderGraph(ctx, graphDeathColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.deathGraphData, lines);
+		// only draw births and deaths if grid is not bounded
+		if (this.boundedGridType === -1) {
+			// draw deaths
+			this.renderGraph(ctx, graphDeathColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.deathGraphData, lines);
 
-		// draw births
-		this.renderGraph(ctx, graphBirthColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.birthGraphData, lines);
+			// draw births
+			this.renderGraph(ctx, graphBirthColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.birthGraphData, lines);
+		}
 
 		// draw population
 		this.renderGraph(ctx, graphAliveColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.popGraphData, lines);

@@ -145,7 +145,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 258,
+		/** @const {number} */ versionBuild : 259,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1194,6 +1194,30 @@
 		}
 	};
 
+	// whether grid is finitely bounded
+	View.prototype.finitelyBounded = function() {
+		var result = false;
+
+		// check for a bounded grid with non-zero (not infinite) width or height
+		if (this.engine.boundedGridType !== -1 && this.engine.boundedGridWidth !== 0 && this.engine.boundedGridHeight !== 0) {
+			result = true;
+		}
+
+		return result;
+	};
+
+	// whether grid is infinitely bounded
+	View.prototype.infinitelyBounded = function() {
+		var result = false;
+
+		// check for a bounded grid with a zero (infinite) width or height
+		if (this.engine.boundedGridType !== -1 && (this.engine.boundedGridWidth === 0 || this.engine.boundedGridHeight === 0)) {
+			result = true;
+		}
+
+		return result;
+	};
+
 	// opacity range
 	View.prototype.viewOpacityRange = function(newValue, change, me) {
 		var result = newValue[0];
@@ -2236,16 +2260,28 @@
 		// update population counter label
 		me.popValue.preText = me.shortenNumber(me.engine.population);
 
-		// update births label
-		me.birthsValue.preText = me.shortenNumber(me.engine.births);
-
-		// update deaths label
-		me.deathsValue.preText = me.shortenNumber(me.engine.deaths);
+		if (me.finitelyBounded()) {
+			// update births label with density
+			me.birthsValue.preText = (((me.engine.population * 100) / (me.engine.boundedGridHeight * me.engine.boundedGridWidth)) | 0) + "%";
+		}
+		else {
+			// update births label
+			me.birthsValue.preText = me.shortenNumber(me.engine.births);
+			// update deaths label
+			me.deathsValue.preText = me.shortenNumber(me.engine.deaths);
+		}
 
 		// update tool tips for alive, births and deaths
 		me.popValue.toolTip = "alive " + me.engine.population;
-		me.birthsValue.toolTip = "births " + me.engine.births;
-		me.deathsValue.toolTip = "deaths " + me.engine.deaths;
+		if (me.finitelyBounded()) {
+			// show density
+            me.birthsValue.toolTip = "density " + (((me.engine.population * 100) / (me.engine.boundedGridHeight * me.engine.boundedGridWidth)) | 0) + "%";
+		}
+		else {
+			// show births and deaths
+			me.birthsValue.toolTip = "births " + me.engine.births;
+			me.deathsValue.toolTip = "deaths " + me.engine.deaths;
+		}
 
 		// update gps and step control background based on performance
 		// check for STEP skip
@@ -2375,10 +2411,10 @@
 		this.elapsedTimeLabel.deleted = hide;
 		this.popLabel.deleted = hide;
 		this.popValue.deleted = hide;
-		this.birthsLabel.deleted = hide;
-		this.birthsValue.deleted = hide;
-		this.deathsLabel.deleted = hide;
-		this.deathsValue.deleted = hide;
+		this.birthsLabel.deleted = hide || this.infinitelyBounded();
+		this.birthsValue.deleted = hide || this.infinitelyBounded();
+		this.deathsLabel.deleted = hide || this.finitelyBounded() || this.infinitelyBounded();
+		this.deathsValue.deleted = hide || this.finitelyBounded() || this.infinitelyBounded();
 		this.ruleLabel.deleted = hide;
 
 		// navigation menu
@@ -4074,8 +4110,11 @@
 
 	// add the current position to the clipboard as script commands
 	View.prototype.copyPosition = function(me, full) {
-		// start with script start
-		var string = Keywords.scriptStartWord + " ",
+		// comment prefix
+		var commentPrefix = "#C ",
+
+		    // start with script start command
+		    string = commentPrefix + Keywords.scriptStartWord + " ",
 
 		    // compute the x and y coordinates
 		    xVal = -((me.engine.width / 2 - me.engine.xOff - me.engine.originX) | 0),
@@ -4117,7 +4156,7 @@
 		// check for view
 		if (full) {
 			// add start word
-			string += Keywords.scriptStartWord + " ";
+			string += commentPrefix + Keywords.scriptStartWord + " ";
 
 			// add theme
 			string += Keywords.themeWord + " " + me.engine.colourTheme + " "; 
@@ -10126,6 +10165,16 @@
 
 		// set saved view to current view
 		this.saveCamera(this);
+
+		// if grid is finitely bounded then show density rather than births and deaths
+		if (this.finitelyBounded()) {
+			this.birthsLabel.preText = "Density";
+			this.birthsLabel.toolTip = "cell density";
+		}
+		else {
+			this.birthsLabel.preText = "Births"
+			this.birthsLabel.toolTip = "cells born this generation";
+		}
 
 		// ensure update
 		this.menuManager.toggleRequired = true;
