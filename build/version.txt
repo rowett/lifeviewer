@@ -52,7 +52,6 @@ Build 250
 - playback speeds < 60gps are much more accurate
 - gps UI control now shows steps per second and values less than 10 show one decimal place
 
-
 Build 249
 - patterns larger than bounded grids are now correctly clipped to top left
 
