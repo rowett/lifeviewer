@@ -1314,12 +1314,12 @@
 			// get the next character as a number
 			current = rule.charCodeAt(i) - asciiZero;
 
-			// set canonical
-			alreadyUsed = used & (1 << current);
-			used |= 1 << current;
-
 			// check if it is a digit
 			if (current >= 0 && current <= 8) {
+				// set canonical
+				alreadyUsed = used & (1 << current);
+				used |= 1 << current;
+
 				// determine what follows the digit
 				next = rule[i + 1];
 
@@ -1356,6 +1356,9 @@
 					next = rule[i + 1];
 					letterIndex = validSymmetricalLetters.indexOf(next);
 				}
+			} else {
+				// character found without digit prefix
+				this.failureReason = "missing digit prefix";
 			}
 		}
 
@@ -2399,6 +2402,9 @@
 		if (valid && pattern.wolframRule === -1 && pattern.isLTL === false) {
 			// create the canonical name and the rule map
 			pattern.ruleName = this.createRuleMap(birthPart, survivalPart, base64, pattern.isHex, pattern.isVonNeumann, pattern.multiNumStates);
+			if (this.failureReason !== "") {
+				valid = false;
+			}
 
 			// add any postfixes
 			this.addNamePostfixes(pattern, base64);
