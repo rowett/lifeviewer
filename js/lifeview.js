@@ -2943,11 +2943,6 @@
 
 		// perform hard reset if required
 		if (hardReset) {
-			// reset the camera
-			if (!looping) {
-				me.resetCamera(me, hardReset);
-			}
-
 			// enable waypoints
 			if (me.waypointsDefined) {
 				me.waypointsDisabled = false;
@@ -2958,13 +2953,19 @@
 				me.trackDisabled = false;
 			}
 
-			// enable looping
-			me.loopDisabled = false;
-
 			// enable autofit
 			if (me.autoFitDefined) {
 				me.autoFit = true;
 			}
+
+			// reset the camera
+			if (!looping || me.waypointsDefined || me.autoFit) {
+				me.resetCamera(me, hardReset);
+			}
+
+			// enable looping
+			me.loopDisabled = false;
+
 		}
 
 		// check for simple view

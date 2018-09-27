@@ -1,5 +1,6 @@
 Build 260
 - non-totalistic rules without digits were not being marked as invalid
+- LOOP with Waypoints or AutoFit now resets camera on reset
 
 Build 259
 - script commands copied to the clipboard are now prefixed with RLE comments
