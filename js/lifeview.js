@@ -27,7 +27,7 @@
 		hide : true,
 
 		// whether to limit width to the pattern source element width
-		limitWidth : true,
+		limitWidth : false,
 
 		// div class name containing code block
 		divCodeClassName : "codebox"
@@ -10282,7 +10282,7 @@
 
 				// split into tokens
 				tokens = content.match(/\S+/g);
-				if (tokens.length >= 2 && tokens.length <= 5) {
+				if (tokens && tokens.length >= 2 && tokens.length <= 5) {
 					// set the div class name
 					DocConfig.divClassName = tokens[0];
 
