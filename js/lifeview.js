@@ -1422,11 +1422,7 @@
 	};
 	
 	// copy pattern pan X and Y
-	View.prototype.computePanXY = function(pattern) {
-		// lookup the pattern width and height
-		var width = pattern.width,
-		    height = pattern.height;
-
+	View.prototype.computePanXY = function(width, height) {
 		// check specified width and height
 		if (this.specifiedWidth !== -1) {
 			width = this.specifiedWidth;
@@ -2227,6 +2223,10 @@
 					me.defaultX -= me.engine.height >> 3;
 					me.savedX -= me.engine.height >> 3;
 				}
+
+				// update pan position
+				me.panX += me.engine.width >> 2;
+				me.panY += me.engine.height >> 2;
 			}
 		}
 
@@ -9800,7 +9800,7 @@
 			}
 
 			// compute pan X and Y for the pattern on the grid
-			this.computePanXY(pattern);
+			this.computePanXY(pattern.width, pattern.height);
 
 			// populate the state 6 mask
 			if (this.engine.isLifeHistory) {

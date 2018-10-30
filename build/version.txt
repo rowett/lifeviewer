@@ -3,6 +3,7 @@ Build 260
 - LOOP with Waypoints or AutoFit now resets camera on reset
 - fixed a potential crash when reading meta settings
 - meta "limit" setting default is now false, not true
+- displayed XY location was incorrect after grid growth
 
 Build 259
 - script commands copied to the clipboard are now prefixed with RLE comments
