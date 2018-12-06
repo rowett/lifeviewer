@@ -164,6 +164,11 @@
 		minMiddleLTL : 0,
 		maxMiddleLTL : 1,
 
+		// LTL neighborhoods
+		mooreLTL: 0,
+		vonNeumannLTL : 1,
+		circularLTL : 2,
+
 		// specified width and height from RLE pattern
 		specifiedWidth : -1,
 		specifiedHeight : -1
@@ -243,6 +248,9 @@
 
 		// LTL Bmax
 		this.BmaxLTL = -1;
+
+		// LTL neightborhood (0 Moore, 1 von Neumann, 2 circular)
+		this.neighborhoodLTL = -1;
 
 		// states for generations or LTL
 		this.multiNumStates = -1;
@@ -1475,6 +1483,11 @@
 				}
 				ruleArray[swapArray[i]] = tempArray[k];
 			}
+
+			// check for generation states
+			if (generationsStates !== -1) {
+				canonicalName += "/" + generationsStates;
+			}
 		}
 		else {
 			// check for neighbourhoods that are totalistic only
@@ -1797,14 +1810,19 @@
 			// check for N part
 			if (part === "n") {
 				// check for neighborhood
-				if (next === "m" || next === "n") {
+				if (next === "m" || next === "n" || next === "c") {
 					this.index += 1;
+					result = this.mooreLTL;
 					if (next === "n") {
-						result = 1;
+						result = this.vonNeumannLTL;
+					} else {
+						if (next === "c") {
+							result = this.circularLTL;
+						}
 					}
 				}
 				else {
-					this.failureReason = "LTL expected 'NM' or 'NN' got 'N" + next.toUpperCase() + "'";
+					this.failureReason = "LTL expected 'NM', 'NN' or 'NC' got 'N" + next.toUpperCase() + "'";
 					this.index = -1;
 				}
 			}
@@ -1893,12 +1911,7 @@
 									// decode N part
 									value = this.decodeLTLpart(rule, ",n", -1, -1, "");
 									if (this.index !== -1) {
-										if (value) {
-											pattern.isVonNeumann = true;
-										}
-										else {
-											pattern.isVonNeumann = false;
-										}
+										this.neighborhoodLTL = value;
 
 										// mark rule valid
 										result = true;
