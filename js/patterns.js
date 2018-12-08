@@ -1239,7 +1239,7 @@
 					// invert maximum letters for this count
 					bits = ~bits & ((1 << maxbits) - 1);
 					if (bits) {
-						negative = !negative;
+						negative = 1 - negative;
 					}
 				}
 			}
@@ -1325,7 +1325,7 @@
 			// check if it is a digit
 			if (current >= 0 && current <= 8) {
 				// set canonical
-				alreadyUsed = used & (1 << current);
+				alreadyUsed = ((used & (1 << current)) != 0);
 				used |= 1 << current;
 
 				// determine what follows the digit
@@ -1835,7 +1835,7 @@
 				else {
 					// read digits
 					while (next >= "0" && next <= "9") {
-						result = 10 * result + (next - "0");
+						result = 10 * result + (next - "0".charCodeAt(0));
 						this.index += 1;
 						next = rule[this.index];
 					}
@@ -3482,7 +3482,7 @@
 			value = 0;
 			valueFound = false;
 			while (index < length && (source[index] >= "0" && source[index] <= "9")) {
-				value = 10 * value + (source[index] - "0");
+				value = 10 * value + (source[index] - "0".charCodeAt(0));
 				index += 1;
 				valueFound = true;
 			}
@@ -3525,7 +3525,7 @@
 			value = 0;
 			valueFound = false;
 			while (index < length && (source[index] >= "0" && source[index] <= "9")) {
-				value = 10 * value + (source[index] - "0");
+				value = 10 * value + (source[index] - "0".charCodeAt(0));
 				index += 1;
 				valueFound = true;
 			}
