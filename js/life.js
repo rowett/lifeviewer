@@ -426,6 +426,9 @@
 		// colour tile history grid (where life has ever been)
 		this.colourTileHistoryGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid");
 
+		// LTL counts
+		this.ltlCounts = null;
+
 		// state 6 grid for [R]History
 		this.state6Mask = null;
 		this.state6Cells = null;
@@ -503,7 +506,7 @@
 		this.graphDeathColor = [255, 0, 0];
 
 		// LTL engine
-		this.LTL = new LTL(this.allocator);
+		this.LTL = new LTL(this.allocator, this.width, this.height);
 	}
 
 	// get state
@@ -822,6 +825,11 @@
 			this.width *= 2;
 			this.height *= 2;
 
+			// grow LTL buffers if used
+			if (this.isLTL) {
+				this.LTL.resize(this.width, this.height);
+			}
+
 			// allocate the new buffers
 			this.grid = Array.matrix(Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.grid");
 			this.nextGrid = Array.matrix(Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.nextGrid");
@@ -1005,29 +1013,47 @@
 	};
 
 	// reset population for grid region
-	Life.prototype.resetPopulationBox = function(grid16) {
+	Life.prototype.resetPopulationBox = function(grid16, colourGrid) {
 		var h = 0, w = 0,
-		    gridRow16 = null,
+		    nextRow = null,
 		    population = 0,
 		    count = 0,
 		    bitCounts16 = this.bitCounts16,
 
 		    // get grid bounding box
 		    zoomBox = this.zoomBox,
-		    leftX = zoomBox.leftX >> 4,
-		    rightX = zoomBox.rightX >> 4,
+		    leftX = zoomBox.leftX,
+		    rightX = zoomBox.rightX,
 		    topY = zoomBox.topY,
-		    bottomY = zoomBox.bottomY;
+			bottomY = zoomBox.bottomY;
+			
+		// check for Generations or LTL
+		if (this.multiNumStates !== -1) {
+			// compute popuation from colour grid
+			for (h = bottomY; h <= topY; h += 1) {
+				// get next row
+				nextRow = colourGrid[h];
 
-		// compute population
-		for (h = bottomY; h <= topY; h += 1) {
-			// get next row
-			gridRow16 = grid16[h];
-
-			// count population along row
-			for (w = leftX; w <= rightX; w += 1) {
-				count = bitCounts16[gridRow16[w]];
-				population += count;
+				// count population along the row
+				for (w = leftX; w <= rightX; w += 1) {
+					if (nextRow[w] > 0) {
+						population += 1;
+					}
+				}
+			}
+		} else {
+			// compute population from bit grid
+			leftX >>= 4;
+			rightX >>= 4;
+			for (h = bottomY; h <= topY; h += 1) {
+				// get next row
+				nextRow = grid16[h];
+	
+				// count population along row
+				for (w = leftX; w <= rightX; w += 1) {
+					count = bitCounts16[nextRow[w]];
+					population += count;
+				}
 			}
 		}
 
@@ -1423,6 +1449,10 @@
 
 		// Generations - yellow to red
 		this.themes[i] = new Theme(new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new ColourRange(new Colour(255, 0, 0), new Colour(255, 0, 0)), new Colour(0, 0, 0));
+		i += 1;
+
+		// LTL - red to yellow
+		this.themes[i] = new Theme(new ColourRange(new Colour(255, 0, 0), new Colour(255, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// custom theme
@@ -6123,8 +6153,114 @@
 
 	// update the life grid region using LTL
 	Life.prototype.nextGenerationLTL = function() {
-		Array.copy(this.tileGrid, this.nextTileGrid);
-		Array.copy(this.grid, this.nextGrid);
+		var x = 0,
+			y = 0,
+			i = 0,
+			j = 0,
+			zoomBox = this.zoomBox,
+			leftX = zoomBox.leftX,
+			rightX = zoomBox.rightX,
+			bottomY = zoomBox.bottomY,
+			topY = zoomBox.topY,
+			ltl = this.LTL,
+			range = ltl.range,
+			minB = ltl.minB,
+			maxB = ltl.maxB,
+			minS = ltl.minS,
+			maxS = ltl.maxS,
+			scount = ltl.scount,
+			counts = ltl.counts,
+			maxGeneration = scount - 1,
+			count = 0,
+			colourGrid = this.colourGrid,
+			population = this.population,
+			state = 0,
+			colourRow = null,
+			countRow = null,
+			minX = this.width,
+			maxX = 0,
+			minY = this.height,
+			maxY = 0,
+			widths = ltl.widths,
+			width = 0;
+
+		// compute counts for given neighborhood
+		for (y = bottomY - range; y <= topY + range; y += 1) {
+			countRow = counts[y];
+			for (x = leftX - range; x <= rightX + range; x += 1) {
+				count = 0;
+				for (j = -range; j <= range; j++) {
+					width = widths[j + range];
+					colourRow = colourGrid[y + j];
+					for (i = -width; i <= width; i++) {
+						if ((colourRow[x + i]) === maxGeneration) {
+							count += 1;
+						}
+					}
+				}
+				countRow[x] = count;
+			}
+		}
+
+		// compute next generation
+		for (y = bottomY - range; y <= topY + range; y += 1) {
+			colourRow = colourGrid[y];
+			countRow = counts[y];
+			for (x = leftX - range; x <= rightX + range; x += 1) {
+				state = colourRow[x];
+				count = countRow[x];
+				countRow[x] = 0;
+				if (state === 0) {
+					// this cell is dead
+					if (count >= minB && count <= maxB) {
+						// new cell is born
+						state = maxGeneration;
+						population += 1;
+					}
+				} else if (state === maxGeneration) {
+					// this cell is alive
+					if (count < minS || count > maxS) {
+						// this cell doesn't survive
+						if (scount > 2) {
+							// cell decays by one state
+							state -= 1;
+						} else {
+							// cell dies
+							state = 0;
+							population -= 1;
+						}
+					}
+				} else {
+					// this cell will eventually die
+					state -= 1;
+					if (state === 0) {
+						// cell dies
+						population -= 1;
+					}
+				}
+				colourRow[x] = state;
+				// update bounding box
+				if (state > 0) {
+					if (x < minX) minX = x;
+					if (x > maxX) maxX = x;
+					if (y < minY) minY = y;
+					if (y > maxY) maxY = y;
+				}
+			}
+		}
+
+		// save population and bounding box
+		this.population = population;
+		zoomBox.leftX = minX;
+		zoomBox.rightX = maxX;
+		zoomBox.bottomY = minY;
+		zoomBox.topY = maxY;
+
+		// stop if population zero
+		if (population === 0) {
+			this.generationsAlive = 0;
+			this.anythingAlive = 0;
+		}
 	};
 
 	// update the life grid region using tiles
@@ -8469,7 +8605,7 @@
 		    // current generation number
 		    savedCounter = this.counter;
 
-		// check for generations rule
+		// check for generations or LTL rule
 		if (this.multiNumStates === -1) {
 			// check if Life already stopped
 			if (result === 0) {
@@ -8495,7 +8631,7 @@
 			result = this.anythingAlive;
 		}
 		else {
-			// generations
+			// generations or LTL
 			result = this.anythingAlive | this.generationsAlive;
 		}
 

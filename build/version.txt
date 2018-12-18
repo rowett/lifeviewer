@@ -1,10 +1,14 @@
 Build 260
+- added support for Larger than Life (LTL) rules
+	- Moore, von Neumann and Circular neighborhoods
+	- maximum range of 500 cells
 - non-totalistic rules without digits were not being marked as invalid
 - LOOP with Waypoints or AutoFit now resets camera on reset
 - fixed a potential crash when reading meta settings
 - meta "limit" setting default is now false, not true
 - displayed XY location was incorrect after grid growth
-- canonical form of MAP rules with generations now adds the generations
+- canonical form of MAP rules with Generations now adds the generations
+- population for Generations rules now includes all non-dead states
 
 Build 259
 - script commands copied to the clipboard are now prefixed with RLE comments

@@ -1796,7 +1796,10 @@
 			stepsToTake = 1,
 
 			// many many steps taken
-			stepsTaken = 0;
+			stepsTaken = 0,
+
+			// border for growth
+			borderSize = 0;
 
 		// unlock controls
 		me.controlsLocked = false;
@@ -2211,7 +2214,11 @@
 
 		// check if grid buffer needs to grow
 		if (me.engine.counter && me.anythingAlive) {
-			if (me.engine.checkForGrowth(ViewConstants.maxStepSpeed)) {
+			borderSize = ViewConstants.maxStepSpeed;
+			if (me.isLTL && ((me.engine.LTL.range * 2) > ViewConstants.maxStepSpeed)) {
+				borderSize = me.engine.LTL.range * 2;
+			}
+			if (me.engine.checkForGrowth(borderSize)) {
 				// update the default x and y
 				me.defaultX += me.engine.width >> 2;
 				me.defaultY += me.engine.height >> 2;
@@ -9370,19 +9377,12 @@
 			// check if the rule is LTL
 			this.engine.isLTL = pattern.isLTL;
 			if (pattern.isLTL) {
-				this.engine.LTL.range = pattern.rangeLTL;
-				this.engine.LTL.totalistic = pattern.middleLTL;
 				this.engine.LTL.minS = pattern.SminLTL;
 				this.engine.LTL.maxS = pattern.SmaxLTL;
 				this.engine.LTL.minB = pattern.BminLTL;
 				this.engine.LTL.maxB = pattern.BmaxLTL;
 				this.engine.LTL.scount = pattern.multiNumStates;
-				if (pattern.isVonNeumann) {
-					this.engine.LTL.type = "N";
-				}
-				else {
-					this.engine.LTL.type = "M";
-				}
+				this.engine.LTL.setTypeAndRange(pattern.neighborhoodLTL, pattern.rangeLTL);
 			}
 
 			// check if the neighbourhood is hex
@@ -9535,8 +9535,13 @@
 		else {
 			// check for Generations and LTL
 			if (this.engine.multiNumStates !== -1) {
-				// default to theme 11
-				this.engine.setTheme(11, 1);
+				if (this.engine.isLTL) {
+					// LTL is theme 12
+					this.engine.setTheme(12, 1);
+				} else {
+					// Generations is theme 11
+					this.engine.setTheme(11, 1);
+				}
 			}
 			else {
 				// default to theme 1
@@ -9935,7 +9940,7 @@
 			}
 
 			// reset population
-			this.engine.resetPopulationBox(this.engine.grid16);
+			this.engine.resetPopulationBox(this.engine.grid16, this.engine.colourGrid);
 
 			// set the bounded grid tiles if specified
 			if (this.engine.boundedGridType !== -1) {

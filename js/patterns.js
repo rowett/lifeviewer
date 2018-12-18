@@ -1780,7 +1780,12 @@
 		var result = 0,
 		    partlen = part.length,
 		    rulepart = rule.substr(this.index, partlen),
-		    next;
+		    // ASCII 0
+			asciiZero = String("0").charCodeAt(0),
+			// ASCII 9
+			asciiNine = String("9").charCodeAt(0),
+			next,
+			nextCode;
 
 
 		// check if the next character is the expected part
@@ -1806,6 +1811,7 @@
 			}
 			this.index += partlen;
 			next = rule[this.index];
+			nextCode = next.charCodeAt(0);
 			
 			// check for N part
 			if (part === "n") {
@@ -1828,16 +1834,16 @@
 			}
 			else {
 				// check for digit
-				if (next < "0" || next > "9") {
+				if (nextCode < asciiZero || nextCode > asciiNine) {
 					this.failureReason = "LTL '" + partof + part.toUpperCase() + "' needs a number";
 					this.index = -1;
 				}
 				else {
 					// read digits
-					while (next >= "0" && next <= "9") {
-						result = 10 * result + (next - "0".charCodeAt(0));
+					while (nextCode >= asciiZero && nextCode <= asciiNine) {
+						result = 10 * result + (nextCode - asciiZero);
 						this.index += 1;
-						next = rule[this.index];
+						nextCode = rule[this.index].charCodeAt(0);
 					}
 
 					// check range
@@ -1911,7 +1917,7 @@
 									// decode N part
 									value = this.decodeLTLpart(rule, ",n", -1, -1, "");
 									if (this.index !== -1) {
-										this.neighborhoodLTL = value;
+										pattern.neighborhoodLTL = value;
 
 										// mark rule valid
 										result = true;
@@ -2203,11 +2209,12 @@
 					pattern.isLTL = true;
 					// set canonical name
 					pattern.ruleName = "R" + pattern.rangeLTL + ",C" + pattern.multiNumStates + ",M" + pattern.middleLTL + ",S" + pattern.SminLTL + ".." + pattern.SmaxLTL + ",B" + pattern.BminLTL + ".." + pattern.BmaxLTL + ",N";
-					if (pattern.isVonNeumann) {
+					if (pattern.neighborhoodLTL == this.mooreLTL) {
 						pattern.ruleName += "N";
-					}
-					else {
+					} else if (pattern.neighborhoodLTL == this.vonNeumannLTL) {
 						pattern.ruleName += "M";
+					} else {
+						pattern.ruleName += "C";
 					}
 
 					// adjust the survival range if the center cell is not included
@@ -3457,7 +3464,12 @@
 	PatternManager.decodeSpecifiedSize = function(source, length) {
 		var index = 0,
 		    value = 0,
-		    valueFound = false;
+			valueFound = false,
+			// ASCII 0
+			asciiZero = String("0").charCodeAt(0),
+			// ASCII 9
+			asciiNine = String("9").charCodeAt(0),
+			sourceCode;
 
 		// check for specified width and height
 		this.specifiedWidth = -1;
@@ -3481,10 +3493,12 @@
 			// decode number
 			value = 0;
 			valueFound = false;
-			while (index < length && (source[index] >= "0" && source[index] <= "9")) {
-				value = 10 * value + (source[index] - "0".charCodeAt(0));
+			sourceCode = source[index].charCodeAt(0);
+			while (index < length && (sourceCode >= asciiZero && sourceCode <= asciiNine)) {
+				value = 10 * value + (sourceCode - asciiZero);
 				index += 1;
 				valueFound = true;
+				sourceCode = source[index].charCodeAt(0);
 			}
 
 			// save the width if found
@@ -3524,10 +3538,12 @@
 			// decode number
 			value = 0;
 			valueFound = false;
-			while (index < length && (source[index] >= "0" && source[index] <= "9")) {
-				value = 10 * value + (source[index] - "0".charCodeAt(0));
+			sourceCode = source[index];
+			while (index < length && (sourceCode >= asciiZero && sourceCode <= asciiNine)) {
+				value = 10 * value + (sourceCode - asciiZero);
 				index += 1;
 				valueFound = true;
+				sourceCode = source[index].charCodeAt(0);
 			}
 
 			// save the height if found
