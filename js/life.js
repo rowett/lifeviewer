@@ -350,7 +350,7 @@
 		this.unoccupiedTarget = null;
 
 		// number of  colour themes
-		this.numThemes = 12;
+		this.numThemes = 13;
 
 		// 8 bit view of image data required if CanvasPixelArray used
 		this.data8 = null;
