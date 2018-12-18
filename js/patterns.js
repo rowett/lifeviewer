@@ -3877,6 +3877,10 @@
 				this.executable = false;
 				pattern.isHex = false;
 			}
+			if (pattern.BminLTL == 0) {
+				this.failureReason = "LTL does not support B0";
+				this.executable = false;
+			}
 		}
 
 		// check for generations and [R]History
