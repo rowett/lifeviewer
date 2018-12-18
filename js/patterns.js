@@ -2239,9 +2239,9 @@
 					// set canonical name
 					pattern.ruleName = "R" + pattern.rangeLTL + ",C" + pattern.multiNumStates + ",M" + pattern.middleLTL + ",S" + pattern.SminLTL + ".." + pattern.SmaxLTL + ",B" + pattern.BminLTL + ".." + pattern.BmaxLTL + ",N";
 					if (pattern.neighborhoodLTL == this.mooreLTL) {
-						pattern.ruleName += "N";
-					} else if (pattern.neighborhoodLTL == this.vonNeumannLTL) {
 						pattern.ruleName += "M";
+					} else if (pattern.neighborhoodLTL == this.vonNeumannLTL) {
+						pattern.ruleName += "N";
 					} else {
 						pattern.ruleName += "C";
 					}
