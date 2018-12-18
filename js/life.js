@@ -426,9 +426,6 @@
 		// colour tile history grid (where life has ever been)
 		this.colourTileHistoryGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid");
 
-		// LTL counts
-		this.ltlCounts = null;
-
 		// state 6 grid for [R]History
 		this.state6Mask = null;
 		this.state6Cells = null;
@@ -1027,8 +1024,8 @@
 		    topY = zoomBox.topY,
 			bottomY = zoomBox.bottomY;
 			
-		// check for Generations or LTL
-		if (this.multiNumStates !== -1) {
+		// check for LTL
+		if (this.isLTL) {
 			// compute popuation from colour grid
 			for (h = bottomY; h <= topY; h += 1) {
 				// get next row
@@ -6173,10 +6170,12 @@
 			maxGeneration = scount - 1,
 			count = 0,
 			colourGrid = this.colourGrid,
+			colourTileHistoryGrid = this.colourTileHistoryGrid,
 			population = this.population,
 			state = 0,
 			colourRow = null,
 			countRow = null,
+			colourTileRow = null,
 			minX = this.width,
 			maxX = 0,
 			minY = this.height,
@@ -6206,6 +6205,7 @@
 		for (y = bottomY - range; y <= topY + range; y += 1) {
 			colourRow = colourGrid[y];
 			countRow = counts[y];
+			colourTileRow = colourTileHistoryGrid[y >> 4];
 			for (x = leftX - range; x <= rightX + range; x += 1) {
 				state = colourRow[x];
 				count = countRow[x];
@@ -6241,6 +6241,7 @@
 				colourRow[x] = state;
 				// update bounding box
 				if (state > 0) {
+					colourTileRow[x >> 8] = 65535;
 					if (x < minX) minX = x;
 					if (x > maxX) maxX = x;
 					if (y < minY) minY = y;
