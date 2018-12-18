@@ -1787,7 +1787,6 @@
 			next,
 			nextCode;
 
-
 		// check if the next character is the expected part
 		if (rulepart !== part) {
 			// check for comma
@@ -1811,7 +1810,11 @@
 			}
 			this.index += partlen;
 			next = rule[this.index];
-			nextCode = next.charCodeAt(0);
+			if (this.index < rule.length) {
+				nextCode = next.charCodeAt(0);
+			} else {
+				nextCode = -1;
+			}
 			
 			// check for N part
 			if (part === "n") {
@@ -1843,7 +1846,11 @@
 					while (nextCode >= asciiZero && nextCode <= asciiNine) {
 						result = 10 * result + (nextCode - asciiZero);
 						this.index += 1;
-						nextCode = rule[this.index].charCodeAt(0);
+						if (this.index < rule.length) {
+							nextCode = rule[this.index].charCodeAt(0);
+						} else {
+							nextCode = -1;
+						}
 					}
 
 					// check range
@@ -1870,7 +1877,11 @@
 	PatternManager.decodeLTLMC = function(pattern, rule) {
 		var value = 0,
 		    result = false,
-		    maxCells = 0;
+			maxCells = 0,
+			i = 0,
+			count = 0,
+			width = 0,
+			r2 = 0;
 
 		// reset string index
 		this.index = 0;
@@ -1939,9 +1950,27 @@
 			}
 			else {
 				// check Smax and Bmax based on range and neighborhood
-				maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1);
-				if (pattern.isVonNeumann) {
-					maxCells = (maxCells + 1) / 2;
+				switch(pattern.neighborhoodLTL) {
+					case PatternManager.mooreLTL:
+						maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1);
+						break;
+
+					case PatternManager.vonNeumannLTL:
+						maxCells = 2 * pattern.rangeLTL * (pattern.rangeLTL + 1) + 1;
+						break;
+
+					case PatternManager.circularLTL:
+						count = 0;
+						r2 = pattern.rangeLTL * pattern.rangeLTL + pattern.rangeLTL;
+						for (i = -pattern.rangeLTL; i <= pattern.rangeLTL; i += 1) {
+							width = 0;
+							while ((width + 1) * (width + 1) + (i * i) <= r2) {
+								width += 1;
+							}
+							count += 2 * width + 1;
+						}
+						maxCells = count;
+						break;
 				}
 				if (pattern.BminLTL > maxCells) {
 					result = false;
@@ -1974,10 +2003,10 @@
 		// reset string index
 		this.index = 0;
 
-		// set unspecified defaults: 2 states, whether middle is included (no) and neighborhood (Moore)
+		// set unspecified defaults: 2 states, whether middle is included (yes) and neighborhood (Moore)
 		pattern.multiNumStates = 2;
-		pattern.middleLTL = 0;
-		pattern.isVonNeumann = false;
+		pattern.middleLTL = 1;
+		pattern.neighborhoodLTL = PatternManager.mooreLTL;
 
 		// decode R part
 		value = this.decodeLTLpart(rule, "", this.minRangeLTL, this.maxRangeLTL, "");
@@ -3498,7 +3527,9 @@
 				value = 10 * value + (sourceCode - asciiZero);
 				index += 1;
 				valueFound = true;
-				sourceCode = source[index].charCodeAt(0);
+				if (index < length) {
+					sourceCode = source[index].charCodeAt(0);
+				}
 			}
 
 			// save the width if found
@@ -3543,7 +3574,9 @@
 				value = 10 * value + (sourceCode - asciiZero);
 				index += 1;
 				valueFound = true;
-				sourceCode = source[index].charCodeAt(0);
+				if (index < length) {
+					sourceCode = source[index].charCodeAt(0);
+				}
 			}
 
 			// save the height if found
