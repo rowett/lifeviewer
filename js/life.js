@@ -756,7 +756,7 @@
 
 		// save reset position as initial snapshot if history enabled
 		if (!noHistory) {
-			this.saveSnapshot(0);
+			this.saveSnapshot();
 		}
 	};
 
@@ -772,11 +772,11 @@
 		this.snapshotManager.reset();
 
 		// save initial position for reset
-		this.saveToSnapshot(true, this.grid, this.tileGrid, 0);
+		this.saveToSnapshot(true, this.grid, this.tileGrid);
 
 		// save reset position as initial snapshot if history enabled
 		if (!noHistory) {
-			this.saveSnapshot(0);
+			this.saveSnapshot();
 		}
 	};
 
