@@ -914,7 +914,7 @@
 		y = this.renderHelpLine(view, "N'hoods", "Moore, Hex, von Neumann, Circular, 1D", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Rules", "Wolfram, Totalistic, Generations,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Isotropic Non-Totalistic (Hensel),", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Larger Than Life, MAP", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Larger than Life, MAP", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "BoundedGrid", "Plane, Torus, Klein, Cross-surface, Sphere", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "States", "2 state, [R]History, Niemiec,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Generations, Larger Than Life", ctx, x, y, height, helpLine);

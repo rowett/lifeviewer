@@ -6181,7 +6181,8 @@
 			minY = this.height,
 			maxY = 0,
 			widths = ltl.widths,
-			width = 0;
+			width = 0,
+			somethingAlive = false;
 
 		// compute counts for given neighborhood
 		for (y = bottomY - range; y <= topY + range; y += 1) {
@@ -6221,26 +6222,23 @@
 					// this cell is alive
 					if (count < minS || count > maxS) {
 						// this cell doesn't survive
+						population -= 1;
 						if (scount > 2) {
 							// cell decays by one state
 							state -= 1;
 						} else {
 							// cell dies
 							state = 0;
-							population -= 1;
 						}
 					}
 				} else {
 					// this cell will eventually die
 					state -= 1;
-					if (state === 0) {
-						// cell dies
-						population -= 1;
-					}
 				}
 				colourRow[x] = state;
 				// update bounding box
 				if (state > 0) {
+					somethingAlive = true;
 					colourTileRow[x >> 8] = 65535;
 					if (x < minX) minX = x;
 					if (x > maxX) maxX = x;
@@ -6258,7 +6256,7 @@
 		zoomBox.topY = maxY;
 
 		// stop if population zero
-		if (population === 0) {
+		if (!somethingAlive) {
 			this.generationsAlive = 0;
 			this.anythingAlive = 0;
 		}

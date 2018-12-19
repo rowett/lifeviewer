@@ -1800,7 +1800,7 @@
 					part = part[0];
 				}
 			}
-			this.failureReason = "LTL expected '" + part.toUpperCase() + "' got '" + rulepart.toUpperCase() + "'";
+			this.failureReason = "LtL expected '" + part.toUpperCase() + "' got '" + rulepart.toUpperCase() + "'";
 			this.index = -1;
 		}
 		else {
@@ -1831,14 +1831,14 @@
 					}
 				}
 				else {
-					this.failureReason = "LTL expected 'NM', 'NN' or 'NC' got 'N" + next.toUpperCase() + "'";
+					this.failureReason = "LtL expected 'NM', 'NN' or 'NC' got 'N" + next.toUpperCase() + "'";
 					this.index = -1;
 				}
 			}
 			else {
 				// check for digit
 				if (nextCode < asciiZero || nextCode > asciiNine) {
-					this.failureReason = "LTL '" + partof + part.toUpperCase() + "' needs a number";
+					this.failureReason = "LtL '" + partof + part.toUpperCase() + "' needs a number";
 					this.index = -1;
 				}
 				else {
@@ -1856,13 +1856,13 @@
 					// check range
 					if (lower !== -1) {
 						if (result < lower) {
-							this.failureReason = "LTL '" + partof + part.toUpperCase() + result + "' < " + lower;
+							this.failureReason = "LtL '" + partof + part.toUpperCase() + result + "' < " + lower;
 							this.index = -1;
 						}
 					}
 					if (upper !== -1) {
 						if (result > upper) {
-							this.failureReason = "LTL '" + partof + part.toUpperCase() + result + "' > " + upper;
+							this.failureReason = "LtL '" + partof + part.toUpperCase() + result + "' > " + upper;
 							this.index = -1;
 						}
 					}
@@ -1946,7 +1946,7 @@
 			// check for trailing characters
 			if (this.index !== rule.length) {
 				result = false;
-				this.failureReason = "LTL invalid characters after rule";
+				this.failureReason = "LtL invalid characters after rule";
 			}
 			else {
 				// check Smax and Bmax based on range and neighborhood
@@ -1974,19 +1974,19 @@
 				}
 				if (pattern.BminLTL > maxCells) {
 					result = false;
-					this.failureReason = "LTL 'B" + pattern.BmaxLTL + "..' > " + maxCells;
+					this.failureReason = "LtL 'B" + pattern.BmaxLTL + "..' > " + maxCells;
 				}
 				if (pattern.BmaxLTL > maxCells) {
 					result = false;
-					this.failureReason = "LTL 'B.." + pattern.BmaxLTL + "' > " + maxCells;
+					this.failureReason = "LtL 'B.." + pattern.BmaxLTL + "' > " + maxCells;
 				}
 				if (pattern.SminLTL > maxCells) {
 					result = false;
-					this.failureReason = "LTL 'S" + pattern.SmaxLTL + "..' > " + maxCells;
+					this.failureReason = "LtL 'S" + pattern.SmaxLTL + "..' > " + maxCells;
 				}
 				if (pattern.SmaxLTL > maxCells) {
 					result = false;
-					this.failureReason = "LTL 'S.." + pattern.SmaxLTL + "' > " + maxCells;
+					this.failureReason = "LtL 'S.." + pattern.SmaxLTL + "' > " + maxCells;
 				}
 			}
 		}
@@ -2046,26 +2046,26 @@
 			// check for trailing characters
 			if (this.index !== rule.length) {
 				result = false;
-				this.failureReason = "LTL invalid characters after rule";
+				this.failureReason = "LtL invalid characters after rule";
 			}
 			else {
 				// check Smax and Bmax based on range and neighborhood
 				maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1);
 				if (pattern.BminLTL > maxCells) {
 					result = false;
-					this.failureReason = "LTL 'B" + pattern.BmaxLTL + "..' > " + maxCells;
+					this.failureReason = "LtL 'B" + pattern.BmaxLTL + "..' > " + maxCells;
 				}
 				if (pattern.BmaxLTL > maxCells) {
 					result = false;
-					this.failureReason = "LTL 'B.." + pattern.BmaxLTL + "' > " + maxCells;
+					this.failureReason = "LtL 'B.." + pattern.BmaxLTL + "' > " + maxCells;
 				}
 				if (pattern.SminLTL > maxCells) {
 					result = false;
-					this.failureReason = "LTL 'S" + pattern.SmaxLTL + "..' > " + maxCells;
+					this.failureReason = "LtL 'S" + pattern.SmaxLTL + "..' > " + maxCells;
 				}
 				if (pattern.SmaxLTL > maxCells) {
 					result = false;
-					this.failureReason = "LTL 'S.." + pattern.SmaxLTL + "' > " + maxCells;
+					this.failureReason = "LtL 'S.." + pattern.SmaxLTL + "' > " + maxCells;
 				}
 			}
 		}
@@ -3868,17 +3868,17 @@
 		// check whether LTL bounded grid type is valid
 		if (pattern.isLTL) {
 			if (pattern.gridType > 1) {
-				this.failureReason = "LTL only supports Plane or Torus";
+				this.failureReason = "LtL only supports Plane or Torus";
 				this.executable = false;
 				this.gridType = -1;
 			}
 			if (pattern.isHex) {
-				this.failureReason = "LTL does not support Hex grid";
+				this.failureReason = "LtL does not support Hex grid";
 				this.executable = false;
 				pattern.isHex = false;
 			}
 			if (pattern.BminLTL == 0) {
-				this.failureReason = "LTL does not support B0";
+				this.failureReason = "LtL does not support B0";
 				this.executable = false;
 			}
 		}

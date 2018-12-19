@@ -1,5 +1,5 @@
 Build 260
-- added support for Larger than Life (LTL) rules
+- added support for Larger than Life (LtL) rules
 	- Moore, von Neumann and Circular neighborhoods
 	- maximum range of 500 cells
 - non-totalistic rules without digits were not being marked as invalid
