@@ -4022,7 +4022,7 @@
 		}
 
 		// remove bounded grid postfix if present
-		if (newPattern.gridType !== -1) {
+		if (newPattern.gridType !== -1 && !newPattern.isLTL) {
 			newPattern.ruleName = newPattern.ruleName.substr(0, newPattern.ruleName.lastIndexOf(":"));
 		}
 

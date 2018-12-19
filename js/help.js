@@ -752,11 +752,21 @@
 				ruleName = "Hex";
 			}
 			else {
-				if (view.engine.isVonNeumann) {
-					ruleName = "Von Neumann";
-				}
-				else {
-					ruleName = "Moore";
+				if (view.engine.isLTL) {
+					if (view.engine.LTL.type == PatternManager.mooreLTL) {
+						ruleName = "Moore";
+					} else if (view.engine.LTL.type == PatternManager.vonNeumannLTL) {
+						ruleName = "von Neumann";
+					} else {
+						ruleName = "Circular";
+					}
+				} else {
+					if (view.engine.isVonNeumann) {
+						ruleName = "von Neumann";
+					}
+					else {
+						ruleName = "Moore";
+					}
 				}
 			}
 		}
@@ -901,7 +911,7 @@
 		y = this.renderHelpLine(view, "Build", ViewConstants.versionBuild, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Author", ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Decoders", "RLE, Life 1.06, Life 1.05, Cells", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "N'hoods", "Moore, Hex, Von Neumann, 1D", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "N'hoods", "Moore, Hex, von Neumann, Circular, 1D", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Rules", "Wolfram, Totalistic, Generations,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Isotropic Non-Totalistic (Hensel),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Larger Than Life, MAP", ctx, x, y, height, helpLine);
