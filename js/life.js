@@ -6185,6 +6185,28 @@
 				sourceRow[lx - x - 1] = sourceRow[rx - x];
 			}
 		}
+
+		// copy bottom left cells to top right border
+		// and bottom right cells to top left border
+		for (y = 0; y < range; y += 1) {
+			sourceRow = colourGrid[by + y];
+			destRow = colourGrid[ty + y + 1];
+			for (x = 0; x < range; x += 1) {
+				destRow[x + rx + 1] = sourceRow[x + lx];
+				destRow[lx - x - 1] = sourceRow[rx - x];
+			}
+		}
+
+		// copy top left cells to bottom right border
+		// and top right cells to bottom left border
+		for (y = 0; y < range; y += 1) {
+			sourceRow = colourGrid[ty - y];
+			destRow = colourGrid[by - y - 1];
+			for (x = 0; x < range; x += 1) {
+				destRow[x + rx + 1] = sourceRow[x + lx];
+				destRow[lx - x - 1] = sourceRow[rx - x];
+			}
+		}
 	};
 
 	// clear the wrap for LTL torus
@@ -6217,6 +6239,26 @@
 			destRow = colourGrid[y];
 			for (x = 0; x < range; x += 1) {
 				destRow[rx + x + 1] = 0;
+				destRow[lx - x - 1] = 0;
+			}
+		}
+
+		// clear top right border
+		// and top left border
+		for (y = 0; y < range; y += 1) {
+			destRow = colourGrid[ty + y + 1];
+			for (x = 0; x < range; x += 1) {
+				destRow[x + rx + 1] = 0;
+				destRow[lx - x - 1] = 0;
+			}
+		}
+
+		// clear bottom right border
+		// and bottom left border
+		for (y = 0; y < range; y += 1) {
+			destRow = colourGrid[by - y - 1];
+			for (x = 0; x < range; x += 1) {
+				destRow[x + rx + 1] = 0;
 				destRow[lx - x - 1] = 0;
 			}
 		}
