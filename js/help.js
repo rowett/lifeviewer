@@ -753,9 +753,9 @@
 			}
 			else {
 				if (view.engine.isLTL) {
-					if (view.engine.LTL.type == PatternManager.mooreLTL) {
+					if (view.engine.LTL.type === PatternManager.mooreLTL) {
 						ruleName = "Moore";
-					} else if (view.engine.LTL.type == PatternManager.vonNeumannLTL) {
+					} else if (view.engine.LTL.type === PatternManager.vonNeumannLTL) {
 						ruleName = "von Neumann";
 					} else {
 						ruleName = "Circular";

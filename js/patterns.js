@@ -1793,12 +1793,8 @@
 			if (part[0] === ",") {
 				if (rulepart[0] === ",") {
 					rulepart = rulepart.substr(1);
-					part = part.substr(1);
 				}
-				else {
-					rulepart = rulepart[0];
-					part = part[0];
-				}
+				part = part.substr(1);
 			}
 			this.failureReason = "LtL expected '" + part.toUpperCase() + "' got '" + rulepart.toUpperCase() + "'";
 			this.index = -1;
@@ -2238,9 +2234,9 @@
 					pattern.isLTL = true;
 					// set canonical name
 					pattern.ruleName = "R" + pattern.rangeLTL + ",C" + pattern.multiNumStates + ",M" + pattern.middleLTL + ",S" + pattern.SminLTL + ".." + pattern.SmaxLTL + ",B" + pattern.BminLTL + ".." + pattern.BmaxLTL + ",N";
-					if (pattern.neighborhoodLTL == this.mooreLTL) {
+					if (pattern.neighborhoodLTL === this.mooreLTL) {
 						pattern.ruleName += "M";
-					} else if (pattern.neighborhoodLTL == this.vonNeumannLTL) {
+					} else if (pattern.neighborhoodLTL === this.vonNeumannLTL) {
 						pattern.ruleName += "N";
 					} else {
 						pattern.ruleName += "C";
@@ -3870,16 +3866,23 @@
 			if (pattern.gridType > 1) {
 				this.failureReason = "LtL only supports Plane or Torus";
 				this.executable = false;
-				this.gridType = -1;
+				pattern.gridType = -1;
 			}
 			if (pattern.isHex) {
 				this.failureReason = "LtL does not support Hex grid";
 				this.executable = false;
 				pattern.isHex = false;
 			}
-			if (pattern.BminLTL == 0) {
-				this.failureReason = "LtL does not support B0";
+			if (pattern.BminLTL === 0 && pattern.gridType === -1) {
+				this.failureReason = "LtL does not support B0 unbounded";
 				this.executable = false;
+			}
+			if (pattern.gridType === 0 || pattern.gridType === 1) {
+				if (pattern.gridWidth === 0 || pattern.gridHeight === 0) {
+					this.failureReason = "LtL bounded grid must be finite";
+					this.executable = false;
+					pattern.gridType = -1;
+				}
 			}
 		}
 

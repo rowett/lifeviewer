@@ -10,6 +10,7 @@ Build 260
 - canonical form of MAP rules with Generations now adds the generations
 - UI now has a button to toggle hex display
 - label UI controls under buttons no longer receive clicks
+- Help information now shows neighborhood range when greater than 1
 
 Build 259
 - script commands copied to the clipboard are now prefixed with RLE comments

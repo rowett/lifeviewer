@@ -6148,6 +6148,80 @@
 		}
 	};
 
+	// wrap the grid for LTL torus
+	Life.prototype.wrapTorusLTL = function(lx, by, rx, ty) {
+		var colourGrid = this.colourGrid,
+			sourceRow = null,
+			destRow = null,
+			ltl = this.LTL,
+			range = ltl.range,
+			x = 0,
+			y = 0;
+
+		// copy the bottom rows to the top border
+		for (y = 0; y < range; y += 1) {
+			sourceRow = colourGrid[by + y];
+			destRow = colourGrid[ty + y + 1];
+			for (x = lx; x <= rx; x += 1) {
+				destRow[x] = sourceRow[x];
+			}
+		}
+
+		// copy the top rows to the bottom border
+		for (y = 0; y < range; y += 1) {
+			sourceRow = colourGrid[ty - y];
+			destRow = colourGrid[by - y - 1];
+			for (x = lx; x <= rx; x += 1) {
+				destRow[x] = sourceRow[x];
+			}
+		}
+
+		// copy the left columns to the right border
+		// and the right columns to the left border
+		for (y = by; y <= ty; y += 1) {
+			sourceRow = colourGrid[y];
+			for (x = 0; x < range; x += 1) {
+				sourceRow[rx + x + 1] = sourceRow[lx + x];
+				sourceRow[lx - x - 1] = sourceRow[rx - x];
+			}
+		}
+	};
+
+	// clear the wrap for LTL torus
+	Life.prototype.clearWrapLTL = function(lx, by, rx, ty) {
+		var colourGrid = this.colourGrid,
+			destRow = null,
+			ltl = this.LTL,
+			range = ltl.range,
+			x = 0,
+			y = 0;
+
+		// clear the top border
+		for (y = 0; y < range; y += 1) {
+			destRow = colourGrid[ty + y + 1];
+			for (x = lx; x <= rx; x += 1) {
+				destRow[x] = 0;
+			}
+		}
+
+		// copy the bottom border
+		for (y = 0; y < range; y += 1) {
+			destRow = colourGrid[by - y - 1];
+			for (x = lx; x <= rx; x += 1) {
+				destRow[x] = 0;
+			}
+		}
+
+		// clear the left and right columns
+		for (y = by; y <= ty; y += 1) {
+			destRow = colourGrid[y];
+			for (x = 0; x < range; x += 1) {
+				destRow[rx + x + 1] = 0;
+				destRow[lx - x - 1] = 0;
+			}
+		}
+	};
+
 	// update the life grid region using LTL
 	Life.prototype.nextGenerationLTL = function() {
 		var x = 0,
@@ -6184,15 +6258,35 @@
 			width = 0,
 			somethingAlive = false,
 			bgWidth = this.boundedGridWidth,
-			bgHeight = this.boundedGridHeight;
+			bgHeight = this.boundedGridHeight,
+			gridLeftX, gridRightX, gridBottomY, gridTopY;
 
 		// check for bounded grid
 		if (this.boundedGridType !== -1) {
-		    leftX = Math.round((this.width - bgWidth) / 2),
-		    bottomY = Math.round((this.height - bgHeight) / 2),
-		    rightX = leftX + bgWidth - 1,
-			topY = bottomY + bgHeight - 1,
-			//console.debug(leftX + "," + bottomY + " " + rightX + "," + topY);
+			// get grid extent
+			gridLeftX = Math.round((this.width - bgWidth) / 2);
+			gridBottomY = Math.round((this.height - bgHeight) / 2);
+			gridRightX = gridLeftX + bgWidth - 1;
+			gridTopY = gridBottomY + bgHeight - 1;
+
+			// if B0 or Torus then process every cell
+			if (minB === 0 || this.boundedGridType == 1) {
+				leftX = gridLeftX + range;
+				rightX = gridRightX - range;
+				topY = gridTopY - range;
+				bottomY = gridBottomY + range;
+			} else {
+				// clip to bounded grid
+				if (leftX < gridLeftX) leftX = gridLeftX;
+				if (gridRightX > rightX) rightX = gridRightX;
+				if (bottomY < gridBottomY) bottomY = gridBottomY;
+				if (topY > gridTopY) topY = gridTopY;
+			}
+
+			// check if the bounded grid is a torus
+			if (this.boundedGridType === 1) {
+				this.wrapTorusLTL(gridLeftX, gridBottomY, gridRightX, gridTopY);
+			}
 		}
 
 		// compute counts for given neighborhood
@@ -6257,6 +6351,12 @@
 					if (y > maxY) maxY = y;
 				}
 			}
+		}
+
+		// check if the bounded grid is a torus
+		if (this.boundedGridType === 1) {
+			// clear the wrap
+			this.clearWrapLTL(gridLeftX, gridBottomY, gridRightX, gridTopY);
 		}
 
 		// save population and bounding box

@@ -36,10 +36,10 @@ LifeViewer supports several different pattern formats, rules and neighbourhoods,
 Topic|Supported
 -----|---------
 Pattern formats|RLE, Life 1.06, Life 1.05, Cells
-Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP
+Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP, Larger than Life
 Bounded Grid|Plane, Torus, Klein, Cross-Surface, Sphere
-States|2 state, [R]History, Niemiec, Generations
-Neighbourhoods|Moore, Hex, Von Neumann, 1D
+States|2 state, [R]History, Niemiec, Generations, Larger than Life
+Neighbourhoods|Moore, Hex, Von Neumann, 1D, Circular
 
 ## How do I use it?
 * [Build](#how-do-i-build-it) the plugin file **lv-plugin.js**.
