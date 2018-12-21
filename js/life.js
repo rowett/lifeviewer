@@ -6332,20 +6332,73 @@
 		}
 
 		// compute counts for given neighborhood
-		for (y = bottomY - range; y <= topY + range; y += 1) {
-			countRow = counts[y];
-			for (x = leftX - range; x <= rightX + range; x += 1) {
+		if (ltl.type === PatternManager.mooreLTL) {
+			// Moore
+			var colCounts = [];
+			var colCount = 0;
+
+			// process each row
+			for (y = bottomY - range; y <= topY + range; y += 1) {
+				x = leftX - range;
+				countRow = counts[y];
+				
+				// for the first cell compute the whole neighbourhood
 				count = 0;
-				for (j = -range; j <= range; j++) {
-					width = widths[j + range];
-					colourRow = colourGrid[y + j];
-					for (i = -width; i <= width; i++) {
-						if ((colourRow[x + i]) === maxGeneration) {
-							count += 1;
+				for (i = -range; i <= range; i += 1) {
+					colCount = 0;
+					for (j = -range; j <= range; j += 1) {
+						if ((colourGrid[y + j][x + i]) === maxGeneration) {
+							colCount += 1;
 						}
 					}
+					colCounts[i + range] = colCount;
+					count += colCount;
 				}
 				countRow[x] = count;
+
+				// process remaining columns
+				x += 1;
+				while (x <= rightX + range) {
+					// shift column counts left
+					//count -= colCounts[0];
+					count = 0;
+					for (i = 0; i < range + range; i += 1) {
+						colCounts[i] = colCounts[i + 1];
+						count += colCounts[i];
+					}
+
+					// compute right hand column
+					colCount = 0;
+					for (j = -range; j <= range; j += 1) {
+						if (((colourGrid[y + j][x + range])) === maxGeneration) {
+							colCount += 1;
+						}
+					}
+					colCounts[range + range] = colCount;
+					count += colCount;
+					countRow[x] = count;
+
+					// next column
+					x += 1;
+				}
+			}
+		} else {
+			// von Neumann and Circular
+			for (y = bottomY - range; y <= topY + range; y += 1) {
+				countRow = counts[y];
+				for (x = leftX - range; x <= rightX + range; x += 1) {
+					count = 0;
+					for (j = -range; j <= range; j += 1) {
+						width = widths[j + range];
+						colourRow = colourGrid[y + j];
+						for (i = -width; i <= width; i += 1) {
+							if ((colourRow[x + i]) === maxGeneration) {
+								count += 1;
+							}
+						}
+					}
+					countRow[x] = count;
+				}
 			}
 		}
 
