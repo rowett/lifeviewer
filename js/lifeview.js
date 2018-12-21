@@ -878,6 +878,9 @@
 		// close button (for popup)
 		this.closeButton = null;
 
+		// hex toggle button
+		this.hexButton = null;
+
 		// close button for graph
 		this.graphCloseButton = null;
 
@@ -2433,6 +2436,7 @@
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
 		this.closeButton.deleted = hide || !this.isInPopup;
 		this.fpsButton.deleted = hide;
+		this.hexButton.deleted = hide;
 
 		// infobar
 		this.infoBarLabelXLeft.deleted = hide || !this.infoBarEnabled;
@@ -2675,6 +2679,34 @@
 
 		// flag just started for first frame measurement
 		me.justStarted = true;
+	};
+
+	// toggle hex display
+	View.prototype.viewHexToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			me.engine.isHex = newValue[0];
+			// toggle hex mode
+			if (!me.engine.isHex) {
+				// update x offset
+				me.engine.xOff += me.engine.yOff / 2;
+				me.defaultX += me.engine.yOff / 2;
+				me.savedX += me.engine.yOff / 2;
+			}
+			else {
+				// update x offset
+				me.engine.xOff -= me.engine.yOff / 2;
+				me.defaultX -= me.engine.yOff / 2;
+				me.savedX -= me.engine.yOff / 2;
+			}
+			// update grid icon
+			me.updateGridIcon();
+
+			// update angle control
+			me.angleItem.deleted = me.engine.isHex;
+		}
+
+		return [me.engine.isHex];
 	};
 
 	// toggle fps display
@@ -4252,48 +4284,16 @@
 				if (event.shiftKey) {
 					// check if the pattern mode is currently used
 					if (me.engine.patternDisplayMode !== me.engine.isHex) {
-						// switch to default
-						if (me.engine.isHex) {
-							// update x offset
-							me.engine.xOff += me.engine.yOff / 2;
-							me.defaultX += me.engine.yOff / 2;
-							me.savedX += me.engine.yOff / 2;
-							me.engine.isHex = false;
-						}
-						else {
-							// update x offset
-							me.engine.xOff -= me.engine.yOff / 2;
-							me.defaultX -= me.engine.yOff / 2;
-							me.savedX -= me.engine.yOff / 2;
-							me.engine.isHex = true;
-						}
+						me.hexButton.current = me.viewHexToggle([me.engine.patternDisplayMode], true, me);
 					}
 				}
 				else {
 					// toggle hex mode
-					if (me.engine.isHex) {
-						// update x offset
-						me.engine.xOff += me.engine.yOff / 2;
-						me.defaultX += me.engine.yOff / 2;
-						me.savedX += me.engine.yOff / 2;
-						me.engine.isHex = false;
-					}
-					else {
-						// update x offset
-						me.engine.xOff -= me.engine.yOff / 2;
-						me.defaultX -= me.engine.yOff / 2;
-						me.savedX -= me.engine.yOff / 2;
-						me.engine.isHex = true;
-					}
+					me.hexButton.current = me.viewHexToggle([!me.engine.isHex], true, me);
 				}
 
 				// display notification
 				me.menuManager.notification.notify("Hex Display " + (me.engine.isHex ? "On" : "Off"), 15, 40, 15, true);
-				// update grid icon
-				me.updateGridIcon();
-
-				// update angle control
-				me.angleItem.deleted = me.engine.isHex;
 				break;
 
 			// b for back one step
@@ -5724,6 +5724,10 @@
 		this.shrinkButton.icon = ViewConstants.iconManager.icon("shrink");
 		this.shrinkButton.toolTip = "shrink to thumbnail";
 
+		// hex/square toggle button
+		this.hexButton = this.viewMenu.addListItem(this.viewHexToggle, Menu.southWest, 0, -90, 40, 40, ["Hx"], [this.engine.isHex], Menu.multi);
+		this.hexButton.toolTip = ["toggle hex display"];
+
 		// close button
 		this.closeButton = this.viewMenu.addButtonItem(this.closePressed, Menu.southEast, -40, -90, 40, 40, "X");
 		this.closeButton.toolTip = "close window";
@@ -5769,7 +5773,7 @@
 		this.playList.toolTip = ["reset", "previous generation", "pause", "play"];
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.fpsButton], []);
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.fpsButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);

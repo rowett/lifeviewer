@@ -1791,11 +1791,13 @@
 						this.mouseOverItem = i;
 					}
 
-					// update active item if no active item and mouse down over an item
+					// update active item if no active item and mouse down over an item and the item can respond to a click
 					if ((this.mouseDown && activeItem === -1 && mouseIsOver) || (mouseIsOver && this.clickHappened)) {
-						activeItem = i;
-						if (this.clickHappened) {
-							currentItem.lastMouseDown = i;
+						if (currentItem.type !== Menu.label) {
+							activeItem = i;
+							if (this.clickHappened) {
+								currentItem.lastMouseDown = i;
+							}
 						}
 					}
 

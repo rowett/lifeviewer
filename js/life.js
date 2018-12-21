@@ -6182,7 +6182,18 @@
 			maxY = 0,
 			widths = ltl.widths,
 			width = 0,
-			somethingAlive = false;
+			somethingAlive = false,
+			bgWidth = this.boundedGridWidth,
+			bgHeight = this.boundedGridHeight;
+
+		// check for bounded grid
+		if (this.boundedGridType !== -1) {
+		    leftX = Math.round((this.width - bgWidth) / 2),
+		    bottomY = Math.round((this.height - bgHeight) / 2),
+		    rightX = leftX + bgWidth - 1,
+			topY = bottomY + bgHeight - 1,
+			//console.debug(leftX + "," + bottomY + " " + rightX + "," + topY);
+		}
 
 		// compute counts for given neighborhood
 		for (y = bottomY - range; y <= topY + range; y += 1) {

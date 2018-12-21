@@ -760,6 +760,9 @@
 					} else {
 						ruleName = "Circular";
 					}
+					if (view.engine.LTL.range > 1) {
+						ruleName += " range " + view.engine.LTL.range;
+					}
 				} else {
 					if (view.engine.isVonNeumann) {
 						ruleName = "von Neumann";

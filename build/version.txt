@@ -8,6 +8,8 @@ Build 260
 - meta "limit" setting default is now false, not true
 - displayed XY location was incorrect after grid growth
 - canonical form of MAP rules with Generations now adds the generations
+- UI now has a button to toggle hex display
+- label UI controls under buttons no longer receive clicks
 
 Build 259
 - script commands copied to the clipboard are now prefixed with RLE comments
