@@ -28,8 +28,11 @@
 		// neighbour count array
 		this.counts = Array.matrix(Uint32, height, width, 0, allocator, "LTL.counts");
 
+		// column count array
+		this.colCounts = allocator.allocate(Uint32, this.range * 2 + 1, "LTL.colCounts");
+
 		// range width array
-		this.widths = allocator.allocate(Uint32, this.range, "LTL.widths");
+		this.widths = allocator.allocate(Uint32, this.range * 2 + 1, "LTL.widths");
 	}
 
 	// set type and range
@@ -44,6 +47,7 @@
 		this.type = type;
 		this.range = range;
 		this.widths = this.allocator.allocate(Uint32, range * 2 + 1, "LTL.widths");
+		this.colCounts = this.allocator.allocate(Uint32, range * 2 + 1, "LTL.colCounts");
 
 		// create the widths array based on the neighborhood type
 		switch(type) {

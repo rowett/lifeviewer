@@ -6283,6 +6283,9 @@
 			maxS = ltl.maxS,
 			scount = ltl.scount,
 			counts = ltl.counts,
+			colCounts = ltl.colCounts,
+			colCount = 0,
+			saveCol = 0,
 			maxGeneration = scount - 1,
 			count = 0,
 			colourGrid = this.colourGrid,
@@ -6299,6 +6302,7 @@
 			widths = ltl.widths,
 			width = 0,
 			somethingAlive = false,
+			rowAlive = false,
 			bgWidth = this.boundedGridWidth,
 			bgHeight = this.boundedGridHeight,
 			gridLeftX, gridRightX, gridBottomY, gridTopY;
@@ -6333,11 +6337,7 @@
 
 		// compute counts for given neighborhood
 		if (ltl.type === PatternManager.mooreLTL) {
-			// Moore
-			var colCounts = [];
-			var colCount = 0;
-
-			// process each row
+			// Moore - process each row
 			for (y = bottomY - range; y <= topY + range; y += 1) {
 				x = leftX - range;
 				countRow = counts[y];
@@ -6358,25 +6358,27 @@
 
 				// process remaining columns
 				x += 1;
+				saveCol = 0;
 				while (x <= rightX + range) {
-					// shift column counts left
-					//count -= colCounts[0];
-					count = 0;
-					for (i = 0; i < range + range; i += 1) {
-						colCounts[i] = colCounts[i + 1];
-						count += colCounts[i];
-					}
+					// remove left column count from running total
+					count -= colCounts[saveCol];
 
-					// compute right hand column
+					// compute and save right hand column count
 					colCount = 0;
 					for (j = -range; j <= range; j += 1) {
 						if (((colourGrid[y + j][x + range])) === maxGeneration) {
 							colCount += 1;
 						}
 					}
-					colCounts[range + range] = colCount;
+					colCounts[saveCol] = colCount;
+
+					// add right hand column count to running total
 					count += colCount;
 					countRow[x] = count;
+
+					// rotate through column counts
+					saveCol += 1;
+					if (saveCol > range + range) saveCol = 0;
 
 					// next column
 					x += 1;
@@ -6403,10 +6405,12 @@
 		}
 
 		// compute next generation
+		somethingAlive = false;
 		for (y = bottomY - range; y <= topY + range; y += 1) {
 			colourRow = colourGrid[y];
 			countRow = counts[y];
 			colourTileRow = colourTileHistoryGrid[y >> 4];
+			rowAlive = false;
 			for (x = leftX - range; x <= rightX + range; x += 1) {
 				state = colourRow[x];
 				count = countRow[x];
@@ -6436,16 +6440,20 @@
 					state -= 1;
 				}
 				colourRow[x] = state;
-				// update bounding box
+				// update bounding box columns
 				if (state > 0) {
-					somethingAlive = true;
+					rowAlive = true;
 					colourTileRow[x >> 8] = 65535;
 					if (x < minX) minX = x;
 					if (x > maxX) maxX = x;
-					if (y < minY) minY = y;
-					if (y > maxY) maxY = y;
 				}
 			}
+			if (rowAlive) {
+				// if something was alive in the row then update bounding box rows
+				if (y < minY) minY = y;
+				if (y > maxY) maxY = y;
+			}
+			somethingAlive |= rowAlive;
 		}
 
 		// check if the bounded grid is a torus

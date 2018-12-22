@@ -9808,6 +9808,11 @@
 				}
 			}
 
+			// resize the LTL buffer to the current width and height
+			if (pattern.isLTL) {
+				this.engine.LTL.resize(this.engine.width, this.engine.height);
+			}
+
 			// compute pan X and Y for the pattern on the grid
 			this.computePanXY(pattern.width, pattern.height);
 
