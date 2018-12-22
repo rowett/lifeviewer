@@ -4330,7 +4330,8 @@
 	Life.prototype.nextGeneration = function(statsOn, noHistory, graphDisabled) {
 		var performSave = false,
 		    zoomBox = this.zoomBox,
-		    historyBox = this.historyBox;
+			historyBox = this.historyBox,
+			boundarySize = 16;
 
 		// turn stats on unless graph disabled
 		if (!graphDisabled) {
@@ -4404,10 +4405,20 @@
 
 		// clear boundary if maximum grid size
 		if (this.width === this.maxGridSize) {
+			// check for LtL
+			if (this.isLTL) {
+				boundarySize = this.LTL.range * 2;
+			} else {
+				boundarySize = 16;
+			}
 			// check if the pattern is near a boundary
-			if (zoomBox.leftX <= 16 || zoomBox.rightX >= (this.maxGridSize - 16) || zoomBox.bottomY <= 16 || zoomBox.topY >= (this.maxGridSize - 16)) {
+			if (zoomBox.leftX <= boundarySize || zoomBox.rightX >= (this.maxGridSize - boundarySize) || zoomBox.bottomY <= boundarySize || zoomBox.topY >= (this.maxGridSize - boundarySize)) {
 				// clear grid boundary
-				this.clearGridBoundary();
+				if (this.isLTL) {
+					this.clearLTLBoundary();
+				} else {
+					this.clearGridBoundary();
+				}
 			}
 		}
 
@@ -5090,6 +5101,83 @@
 		}
 	};
 
+	// remove LTL patterns that touch the boundary
+	Life.prototype.clearLTLBoundary = function() {
+		// grid
+		var colourGrid = this.colourGrid,
+			colourRow = null,
+
+			// height and width
+			ht = colourGrid.length,
+			wd = colourGrid[0].length,
+
+			// used grid
+			zoomBox = this.zoomBox,
+			leftX = zoomBox.leftX,
+			rightX = zoomBox.rightX,
+			bottomY = zoomBox.bottomY,
+			topY = zoomBox.topY,
+
+			// range
+			range = this.LTL.range * 2 + 1,
+
+			// counters
+			x = 0,
+			y = 0;
+
+		// clear top boundary
+		if ((ht - topY) <= range) {
+			for (y = ht - range; y <= topY; y += 1) {
+				colourRow = colourGrid[y];
+				for (x = leftX; x <= rightX; x += 1) {
+					if (colourRow[x] > 0) {
+						colourRow[x] = 0;
+					}
+				}
+			}
+			zoomBox.topY = ht - range;
+		}
+
+		// clear bottom boundary
+		if (bottomY <= range) {
+			for (y = bottomY; y <= range; y += 1) {
+				colourRow = colourGrid[y];
+				for (x = leftX; x <= rightX; x += 1) {
+					if (colourRow[x] > 0) {
+						colourRow[x] = 0;
+					}
+				}
+			}
+			zoomBox.bottomY = range;
+		}
+
+		// clear left boundary
+		if (leftX <= range) {
+			for (y = bottomY; y <= topY; y += 1) {
+				colourRow = colourGrid[y];
+				for (x = leftX; x <= range; x += 1) {
+					if (colourRow[x] > 0) {
+						colourRow[x] = 0;
+					}
+				}
+			}
+			zoomBox.leftX = range;
+		}
+
+		// clear right boundary
+		if ((wd - rightX) <= range) {
+			for (y = bottomY; y <= topY; y += 1) {
+				colourRow = colourGrid[y];
+				for (x = leftX; x <= range; x += 1) {
+					if (colourRow[x] > 0) {
+						colourRow[x] = 0;
+					}
+				}
+			}
+			zoomBox.rightX = range;
+		}
+	};
+	
 	// update the life grid region using tiles (no stats)
 	Life.prototype.nextGenerationOnlyTile = function() {
 		var indexLookup63 = null,
