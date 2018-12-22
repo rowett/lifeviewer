@@ -1874,7 +1874,6 @@
 		var value = 0,
 		    result = false,
 			maxCells = 0,
-			maxSCells = 0,
 			i = 0,
 			count = 0,
 			width = 0,
@@ -1969,6 +1968,8 @@
 						maxCells = count;
 						break;
 				}
+				// adjust max cells by middle cell setting
+				maxCells -= (1 - pattern.middleLTL);
 				if (pattern.BminLTL > maxCells) {
 					result = false;
 					this.failureReason = "LtL 'B" + pattern.BmaxLTL + "..' > " + maxCells;
@@ -1977,16 +1978,13 @@
 					result = false;
 					this.failureReason = "LtL 'B.." + pattern.BmaxLTL + "' > " + maxCells;
 				}
-
-				// adjust Smax depending on middle cell inclusion
-				maxSCells = maxCells - (1 - pattern.middleLTL);
-				if (pattern.SminLTL > maxSCells) {
+				if (pattern.SminLTL > maxCells) {
 					result = false;
-					this.failureReason = "LtL 'S" + pattern.SmaxLTL + "..' > " + maxSCells;
+					this.failureReason = "LtL 'S" + pattern.SmaxLTL + "..' > " + maxCells;
 				}
-				if (pattern.SmaxLTL > maxSCells) {
+				if (pattern.SmaxLTL > maxCells) {
 					result = false;
-					this.failureReason = "LtL 'S.." + pattern.SmaxLTL + "' > " + maxSCells;
+					this.failureReason = "LtL 'S.." + pattern.SmaxLTL + "' > " + maxCells;
 				}
 			}
 		}
