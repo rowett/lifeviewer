@@ -6297,8 +6297,8 @@
 		}
 	};
 
-	// clear the wrap for LTL torus
-	Life.prototype.clearWrapLTL = function(lx, by, rx, ty) {
+	// clear the outside the bounded grid
+	Life.prototype.clearLTLOutside = function(lx, by, rx, ty) {
 		var colourGrid = this.colourGrid,
 			destRow = null,
 			ltl = this.LTL,
@@ -6562,10 +6562,10 @@
 			somethingAlive |= rowAlive;
 		}
 
-		// check if the bounded grid is a torus
-		if (this.boundedGridType === 1) {
-			// clear the wrap
-			this.clearWrapLTL(gridLeftX, gridBottomY, gridRightX, gridTopY);
+		// check if there is a bounded grid
+		if (this.boundedGridType !== -1) {
+			// clear outside
+			this.clearLTLOutside(gridLeftX, gridBottomY, gridRightX, gridTopY);
 		}
 
 		// save population and bounding box
