@@ -71,19 +71,20 @@
 			case PatternManager.circularLTL:
 			for (i = -range; i <= range; i += 1) {
 				w = 0;
-				while ((w + 1) * (w + 1) + (i * i) <= r2) w++;
+				while ((w + 1) * (w + 1) + (i * i) <= r2) {
+					w += 1;
+				}
 				this.widths[i + range] = w;
 			}
 			break;
 		}
-
-	}
+	};
 
 	// resize counts array
 	LTL.prototype.resize = function(width, height) {
 		// resize count array
 		this.counts = Array.matrix(Uint32, height, width, 0, this.allocator, "LTL.counts");
-	}
+	};
 
 	// create the global interface
 	window["LTL"] = LTL;

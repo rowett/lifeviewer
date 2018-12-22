@@ -3457,7 +3457,7 @@
 				bottomY = 0;
 				topY = this.height;
 				for (y = 0; y < topY; y += 1) {
-					gridy = grid[y]
+					gridy = grid[y];
 					if (gridy[leftWord] & ~leftMask) {
 						remove += 1;
 					}
@@ -6316,17 +6316,25 @@
 			gridTopY = gridBottomY + bgHeight - 1;
 
 			// if B0 or Torus then process every cell
-			if (minB === 0 || this.boundedGridType == 1) {
+			if (minB === 0 || this.boundedGridType === 1) {
 				leftX = gridLeftX + range;
 				rightX = gridRightX - range;
 				topY = gridTopY - range;
 				bottomY = gridBottomY + range;
 			} else {
 				// clip to bounded grid
-				if (leftX < gridLeftX) leftX = gridLeftX;
-				if (gridRightX > rightX) rightX = gridRightX;
-				if (bottomY < gridBottomY) bottomY = gridBottomY;
-				if (topY > gridTopY) topY = gridTopY;
+				if (leftX < gridLeftX) {
+					leftX = gridLeftX;
+				}
+				if (gridRightX > rightX) {
+					rightX = gridRightX;
+				}
+				if (bottomY < gridBottomY) {
+					bottomY = gridBottomY;
+				}
+				if (topY > gridTopY) {
+					topY = gridTopY;
+				}
 			}
 
 			// check if the bounded grid is a torus
@@ -6347,7 +6355,7 @@
 				for (i = -range; i <= range; i += 1) {
 					colCount = 0;
 					for (j = -range; j <= range; j += 1) {
-						if ((colourGrid[y + j][x + i]) === maxGeneration) {
+						if (colourGrid[y + j][x + i] === maxGeneration) {
 							colCount += 1;
 						}
 					}
@@ -6366,7 +6374,7 @@
 					// compute and save right hand column count
 					colCount = 0;
 					for (j = -range; j <= range; j += 1) {
-						if (((colourGrid[y + j][x + range])) === maxGeneration) {
+						if (colourGrid[y + j][x + range] === maxGeneration) {
 							colCount += 1;
 						}
 					}
@@ -6378,7 +6386,9 @@
 
 					// rotate through column counts
 					saveCol += 1;
-					if (saveCol > range + range) saveCol = 0;
+					if (saveCol > range + range) {
+						saveCol = 0;
+					}
 
 					// next column
 					x += 1;
@@ -6444,14 +6454,22 @@
 				if (state > 0) {
 					rowAlive = true;
 					colourTileRow[x >> 8] = 65535;
-					if (x < minX) minX = x;
-					if (x > maxX) maxX = x;
+					if (x < minX) {
+						minX = x;
+					}
+					if (x > maxX) {
+						maxX = x;
+					}
 				}
 			}
 			if (rowAlive) {
 				// if something was alive in the row then update bounding box rows
-				if (y < minY) minY = y;
-				if (y > maxY) maxY = y;
+				if (y < minY) {
+					minY = y;
+				}
+				if (y > maxY) {
+					maxY = y;
+				}
 			}
 			somethingAlive |= rowAlive;
 		}

@@ -1325,7 +1325,7 @@
 			// check if it is a digit
 			if (current >= 0 && current <= 8) {
 				// set canonical
-				alreadyUsed = ((used & (1 << current)) != 0);
+				alreadyUsed = ((used & (1 << current)) !== 0);
 				used |= 1 << current;
 
 				// determine what follows the digit

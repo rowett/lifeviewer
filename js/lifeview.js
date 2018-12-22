@@ -2055,7 +2055,7 @@
 					deltaTime = performance.now() - currentTime;
 
 					// check for stop or delta time being too large or single step (ignore time for manual stepping)
-					if (me.engine.counter === me.stopGeneration - 1 || (deltaTime > ViewConstants.updateThreshold) && !manualStepping) {
+					if (me.engine.counter === me.stopGeneration - 1 || ((deltaTime > ViewConstants.updateThreshold) && !manualStepping)) {
 						// bail out of loop
 						bailout = true;
 					}
@@ -2218,8 +2218,8 @@
 		// check if grid buffer needs to grow
 		if (me.engine.counter && me.anythingAlive) {
 			borderSize = ViewConstants.maxStepSpeed;
-			if (me.isLTL && ((me.engine.LTL.range * 2) > ViewConstants.maxStepSpeed)) {
-				borderSize = me.engine.LTL.range * 2;
+			if (me.engine.isLTL && ((me.engine.LTL.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
+				borderSize = me.engine.LTL.range * 2 + 1;
 			}
 			if (me.engine.checkForGrowth(borderSize)) {
 				// update the default x and y
@@ -4232,7 +4232,7 @@
 			// gui disabled so check if NOGUI was defined
 			if (!me.noGUIDefined) {
 				// user disabled the GUI so check for toggle key 'u'
-				if (keyCode == 85) {
+				if (keyCode === 85) {
 					me.noGUI = !me.noGUI;
 					me.viewMenu.deleted = me.noGUI;
 					me.menuManager.noGUI = me.noGUI;
@@ -10187,7 +10187,7 @@
 			this.birthsLabel.toolTip = "cell density";
 		}
 		else {
-			this.birthsLabel.preText = "Births"
+			this.birthsLabel.preText = "Births";
 			this.birthsLabel.toolTip = "cells born this generation";
 		}
 
