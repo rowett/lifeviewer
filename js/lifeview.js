@@ -997,6 +997,10 @@
 		// whether clicking on thumbnail launches popup viewer
 		this.thumbLaunch = false;
 
+		// whether thumbnail zoom defined
+		this.thumbZoomDefined = false;
+		this.thumbZoomValue = 0;
+
 		// screenshot scheduled
 		this.screenShotScheduled = 0;
 	}
@@ -5959,7 +5963,8 @@
 			case Keywords.noCopyWord:
 			case Keywords.thumbnailWord:
 			case Keywords.thumbSizeWord:
-			case Keywords.thumbLaunch:
+			case Keywords.thumbLaunchWord:
+			case Keywords.thumbZoomWord:
 			case Keywords.autoStartWord:
 			case Keywords.scriptStartWord:
 			case Keywords.scriptEndWord:
@@ -7897,6 +7902,33 @@
 							itemValid = true;
 							break;
 
+						// thumbnail zoom
+						case Keywords.thumbZoomWord:
+							// get the thumbnail zoom
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
+									// set thumbnail zoom
+									this.thumbZoomDefined = true;
+									this.thumbZoomValue = numberValue;
+									itemValid = true;
+								} else {
+									// check for negative zoom format
+									if (numberValue >= ViewConstants.minNegZoom && numberValue <= ViewConstants.maxNegZoom) {
+										// set thumbnail zoom
+										this.thumbZoomDefined = true;
+										this.thumbZoomValue = -(1 / numberValue);
+										itemValid = true;
+									}
+								}
+							}
+							break;
+
 						// zoom and alternate zoom
 						case Keywords.alternateZoomWord:
 						case Keywords.zoomWord:
@@ -9615,6 +9647,7 @@
 		this.thumbnailDivisor = ViewConstants.defaultThumbSize;
 		this.thumbLaunch = false;
 		this.menuManager.thumblaunch = false;
+		this.thumbZoomDefined = false;
 
 		// reset parameters to defaults
 		this.multiStateView = false;
@@ -9994,6 +10027,11 @@
 		// update the waypoints if the defaults were not used
 		if (this.waypointsDefined) {
 			this.validateWaypoints(this.scriptErrors);
+		}
+
+		// set thumbnail zoom if specified
+		if (this.thumbnail && this.thumbZoomDefined) {
+			this.engine.zoom = this.thumbZoomValue;
 		}
 
 		// make this current position the default

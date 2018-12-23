@@ -254,11 +254,14 @@
 		// height of Viewer
 		/** @const {string} */ heightWord : "HEIGHT",
 
-		// width of Viewer
+		// width of popup Viewer
 		/** @const {string} */ popupWidthWord : "POPUPWIDTH",
 
-		// height of Viewer
+		// height of popup Viewer
 		/** @const {string} */ popupHeightWord : "POPUPHEIGHT",
+
+		// thumbnail zoom
+		/** @const {string} */ thumbZoomWord : "THUMBZOOM",
 
 		// variable prefix
 		/** @const {string} */ variablePrefixSymbol : "#"

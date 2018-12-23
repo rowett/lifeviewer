@@ -1,5 +1,6 @@
 Build 261
 - mousewheel shouldn't zoom thumbnails
+- new script command [[ THUMBZOOM ]] to set the zoom in the thumbnail
 
 Build 260
 - added support for Larger than Life (LtL) rules
