@@ -6403,8 +6403,8 @@
 			gridRightX = gridLeftX + bgWidth - 1;
 			gridTopY = gridBottomY + bgHeight - 1;
 
-			// if B0 or Torus then process every cell
-			if (minB === 0 || this.boundedGridType === 1) {
+			// if B0 then process every cell
+			if (minB === 0) {
 				leftX = gridLeftX + range;
 				rightX = gridRightX - range;
 				topY = gridTopY - range;
@@ -6414,7 +6414,7 @@
 				if (leftX < gridLeftX) {
 					leftX = gridLeftX;
 				}
-				if (gridRightX > rightX) {
+				if (rightX > gridRightX) {
 					rightX = gridRightX;
 				}
 				if (bottomY < gridBottomY) {
@@ -6427,6 +6427,19 @@
 
 			// check if the bounded grid is a torus
 			if (this.boundedGridType === 1) {
+				// extend range if needed for wrap
+				if (leftX - gridLeftX < range) {
+					rightX = gridRightX;
+				}
+				if (gridRightX - rightX < range) {
+					leftX = gridLeftX;
+				}
+				if (gridTopY - topY < range) {
+					bottomY = gridBottomY;
+				}
+				if (bottomY - gridBottomY < range) {
+					topY = gridTopY;
+				}
 				this.wrapTorusLTL(gridLeftX, gridBottomY, gridRightX, gridTopY);
 			}
 		}
