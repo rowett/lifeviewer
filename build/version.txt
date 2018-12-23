@@ -1,3 +1,6 @@
+Build 261
+- mousewheel shouldn't zoom thumbnails
+
 Build 260
 - added support for Larger than Life (LtL) rules
 	- Moore, von Neumann and Circular neighborhoods

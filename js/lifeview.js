@@ -145,7 +145,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 260,
+		/** @const {number} */ versionBuild : 261,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1732,7 +1732,7 @@
 		var zoomValue = 0;
 
 		// check if GUI enabled
-		if (!this.noGUI) {
+		if (!this.noGUI && !this.thumbnail) {
 			// check if help displayed
 			if (this.displayHelp > 0) {
 				// scroll the help text
