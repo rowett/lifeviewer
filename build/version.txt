@@ -1,6 +1,8 @@
 Build 261
 - mousewheel shouldn't zoom thumbnails
 - new script command [[ THUMBZOOM ]] to set the zoom in the thumbnail
+- autofit on reset wasn't centering pattern if hex/square display mode had changed
+- hex UI control wasn't set correctly on hex pattern load
 
 Build 260
 - added support for Larger than Life (LtL) rules

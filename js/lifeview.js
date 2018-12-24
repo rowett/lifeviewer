@@ -2940,8 +2940,8 @@
 			me.engine.anythingAlive = true;
 			me.engine.generationsAlive = true;
 
-		        // reset history box
-		        me.engine.resetHistoryBox();
+			// reset history box
+			me.engine.resetHistoryBox();
 		}
 	};
 
@@ -3004,11 +3004,13 @@
 			// reset the camera
 			if (!looping || me.waypointsDefined || me.autoFit) {
 				me.resetCamera(me, hardReset);
+				if (me.autoFit) {
+					me.fitZoomDisplay(true, false);
+				}
 			}
 
 			// enable looping
 			me.loopDisabled = false;
-
 		}
 
 		// check for simple view
@@ -9791,6 +9793,9 @@
 					}
 				}
 			}
+
+			// set the hex UI control
+			this.hexButton.current = [this.engine.isHex];
 
 			// mark pattern not clipped to bounded grid
 			this.wasClipped = false;
