@@ -6378,7 +6378,7 @@
 			count = 0,
 			colourGrid = this.colourGrid,
 			colourTileHistoryGrid = this.colourTileHistoryGrid,
-			population = this.population,
+			population = 0,
 			state = 0,
 			colourRow = null,
 			countRow = null,
@@ -6515,7 +6515,24 @@
 			}
 		}
 
+		// adjust range if using bounded grid
+		if (this.boundedGridType !== -1) {
+			if (leftX < gridLeftX + range) {
+				leftX = gridLeftX + range;
+			}
+			if (rightX > gridRightX - range) {
+				rightX = gridRightX - range;
+			}
+			if (bottomY < gridBottomY + range) {
+				bottomY = gridBottomY + range;
+			}
+			if (topY > gridTopY - range) {
+				topY = gridTopY - range;
+			}
+		}
+
 		// compute next generation
+		population = 0;
 		somethingAlive = false;
 		for (y = bottomY - range; y <= topY + range; y += 1) {
 			colourRow = colourGrid[y];
@@ -6531,13 +6548,11 @@
 					if (count >= minB && count <= maxB) {
 						// new cell is born
 						state = maxGeneration;
-						population += 1;
 					}
 				} else if (state === maxGeneration) {
 					// this cell is alive
 					if (count < minS || count > maxS) {
 						// this cell doesn't survive
-						population -= 1;
 						if (scount > 2) {
 							// cell decays by one state
 							state -= 1;
@@ -6561,6 +6576,9 @@
 					if (x > maxX) {
 						maxX = x;
 					}
+					if (state === maxGeneration) {
+						population += 1;
+					}
 				}
 			}
 			if (rowAlive) {
@@ -6575,8 +6593,8 @@
 			somethingAlive |= rowAlive;
 		}
 
-		// check if there is a bounded grid
-		if (this.boundedGridType !== -1) {
+		// check if there is a Torus bounded grid
+		if (this.boundedGridType === 1) {
 			// clear outside
 			this.clearLTLOutside(gridLeftX, gridBottomY, gridRightX, gridTopY);
 		}
