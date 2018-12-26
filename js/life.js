@@ -6380,6 +6380,8 @@
 			colourGrid = this.colourGrid,
 			colourTileHistoryGrid = this.colourTileHistoryGrid,
 			population = 0,
+			births = 0,
+			deaths = 0,
 			state = 0,
 			colourRow = null,
 			countRow = null,
@@ -6413,20 +6415,6 @@
 				rightX = gridRightX - range;
 				topY = gridTopY - range;
 				bottomY = gridBottomY + range;
-			} else {
-				// clip to bounded grid
-				if (leftX < gridLeftX) {
-					leftX = gridLeftX;
-				}
-				if (rightX > gridRightX) {
-					rightX = gridRightX;
-				}
-				if (bottomY < gridBottomY) {
-					bottomY = gridBottomY;
-				}
-				if (topY > gridTopY) {
-					topY = gridTopY;
-				}
 			}
 
 			// check if the bounded grid is a torus
@@ -6445,6 +6433,20 @@
 					topY = gridTopY;
 				}
 				this.wrapTorusLTL(gridLeftX, gridBottomY, gridRightX, gridTopY);
+			}
+
+			// fit to bounded grid
+			if (leftX - gridLeftX < range) {
+				leftX = gridLeftX + range;
+			}
+			if (gridRightX - rightX < range) {
+				rightX = gridRightX - range;
+			}
+			if (gridTopY - topY < range) {
+				topY = gridTopY - range;
+			}
+			if (bottomY - gridBottomY < range) {
+				bottomY = gridBottomY + range;
 			}
 		}
 
@@ -6593,6 +6595,8 @@
 
 		// compute next generation
 		population = 0;
+		births = 0;
+		deaths = 0;
 		somethingAlive = false;
 		if (maxGeneration === 1) {
 			// 2 state version
@@ -6610,12 +6614,14 @@
 						if (count >= minB && count <= maxB) {
 							// new cell is born
 							state = maxGeneration;
+							births += 1;
 						}
 					} else if (state === maxGeneration) {
 						// this cell is alive
 						if (count < minS || count > maxS) {
 							// this cell doesn't survive
 							state = 0;
+							deaths += 1;
 						}
 					}
 					colourRow[x] = state;
@@ -6661,18 +6667,14 @@
 						if (count >= minB && count <= maxB) {
 							// new cell is born
 							state = maxGeneration;
+							births += 1;
 						}
 					} else if (state === maxGeneration) {
 						// this cell is alive
 						if (count < minS || count > maxS) {
-							// this cell doesn't survive
-							if (scount > 2) {
-								// cell decays by one state
-								state -= 1;
-							} else {
-								// cell dies
-								state = 0;
-							}
+							// cell decays by one state
+							state -= 1;
+							deaths += 1;
 						}
 					} else {
 						// this cell will eventually die
@@ -6715,6 +6717,8 @@
 
 		// save population and bounding box
 		this.population = population;
+		this.births = births;
+		this.deaths = deaths;
 		zoomBox.leftX = minX;
 		zoomBox.rightX = maxX;
 		zoomBox.bottomY = minY;
