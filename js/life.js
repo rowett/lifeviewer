@@ -6526,25 +6526,33 @@
 			ltl = this.LTL,
 			range = ltl.range,
 			minB = ltl.minB,
+			maxB = ltl.maxB,
+			minS = ltl.minS,
+			maxS = ltl.maxS,
 			scount = ltl.scount,
 			counts = ltl.counts,
-			colCounts = ltl.colCounts,
-			colCount = 0,
-			saveCol = 0,
 			maxGeneration = scount - 1,
 			count = 0,
-			xcol = 0,
+			minX = this.width,
+			maxX = 0,
+			minY = this.height,
+			maxY = 0,
 			colourGrid = this.colourGrid,
 			colourRow = null,
 			countRow = null,
+			prevCountRow = null,
 			widths = ltl.widths,
 			width = 0,
 			bgWidth = this.boundedGridWidth,
 			bgHeight = this.boundedGridHeight,
 			gridLeftX, gridRightX, gridBottomY, gridTopY,
-			maxj = range + range,
-			ymr = 0,
-			chunk = 5;  // don't change this without changing loop unroll below!
+			population = 0,
+			births = 0,
+			deaths = 0,
+			state = 0,
+			rowAlive = false,
+			colAlive = false,
+			somethingAlive = false;
 
 		// check for bounded grid
 		if (this.boundedGridType !== -1) {
@@ -6595,112 +6603,243 @@
 			}
 		}
 
+		// temporarily expand bounding box
+		leftX -= range;
+		bottomY -= range;
+		rightX += range;
+		topY += range;
+
 		// compute counts for given neighborhood
 		if (ltl.type === PatternManager.mooreLTL) {
-			// Moore - process each row
-			for (y = bottomY - range; y <= topY + range; y += 1) {
-				x = leftX - range;
+			// put zeros in top 2*range rows
+			for (y = bottomY; y < bottomY + range + range; y += 1) {
 				countRow = counts[y];
-				ymr = y - range;
-				
-				// for the first cell compute the whole neighbourhood
+				for (x = leftX; x <= rightX; x += 1) {
+					countRow[x] = 0;
+				}
+			}
+
+			// put zeros in left 2*range columns
+			for (x = leftX; x < leftX + range + range; x += 1) {
+				for (y = bottomY + range + range; y <= topY; y += 1) {
+					counts[y][x] = 0;
+				}
+			}
+
+			// calculate cumulative counts for each column
+			for (y = bottomY + range + range; y <= topY; y += 1) {
+				prevCountRow = counts[y - 1];
+				countRow = counts[y];
+				colourRow = colourGrid[y];
 				count = 0;
-				if (maxGeneration === 1) {
-					// 2 state version
-					for (i = -range; i <= range; i += 1) {
-						colCount = 0;
-						xcol = x + i;
-						j = 0;
-						while (j + chunk <= maxj) {
-							// loop unroll must match chunk size!
-							colCount += colourGrid[ymr + j][xcol];
-							j += 1;
-							colCount += colourGrid[ymr + j][xcol];
-							j += 1;
-							colCount += colourGrid[ymr + j][xcol];
-							j += 1;
-							colCount += colourGrid[ymr + j][xcol];
-							j += 1;
-							colCount += colourGrid[ymr + j][xcol];
-							j += 1;
-						}
-						while (j <= maxj) {
-							colCount += colourGrid[ymr + j][xcol];
-							j += 1;
-						}
-						colCounts[i + range] = colCount;
-						count += colCount;
+				for (x = leftX + range + range; x <= rightX; x += 1) {
+					if (colourRow[x] == maxGeneration) {
+						count += 1;
+					}
+					countRow[x] = prevCountRow[x] + count;
+				}
+			}
+
+			// restore limits
+			leftX += range;
+			bottomY += range;
+			rightX -= range;
+			topY -= range;
+
+			// calculate final neighborhood counts and update cells
+
+			// process bottom left cell
+			state = colourGrid[bottomY][leftX];
+			count = counts[bottomY + range][leftX + range];
+			if (state === 0) {
+				// this cell is dead
+				if (count >= minB && count <= maxB) {
+					// new cell is born
+					state = maxGeneration;
+					births += 1;
+				}
+			} else if (state === maxGeneration) {
+				// this cell is alive
+				if (count < minS || count > maxS) {
+					// cell decays by one state
+					state -= 1;
+					deaths += 1;
+				}
+			} else {
+				// this cell will eventually die
+				state -= 1;
+			}
+			// update the cell
+			colourGrid[bottomY][leftX] = state;
+			if (state === maxGeneration) {
+				population += 1;
+			}
+			if (state > 0) {
+				minX = leftX;
+				maxX = leftX;
+				minY = bottomY;
+				maxY = bottomY;
+			}
+
+			// process remainder of bottom row (bottom left cell was done above)
+			rowAlive = false;
+			countRow = counts[bottomY];
+			prevCountRow = counts[bottomY];
+			colourRow = colourGrid[bottomY];
+			for (x = leftX + 1; x <= rightX; x += 1) {
+				state = colourRow[x];
+				count = countRow[x + range] - prevCountRow[x - (range + 1)];
+				if (state === 0) {
+					// this cell is dead
+					if (count >= minB && count <= maxB) {
+						// new cell is born
+						state = maxGeneration;
+						births += 1;
+					}
+				} else if (state === maxGeneration) {
+					// this cell is alive
+					if (count < minS || count > maxS) {
+						// cell decays by one state
+						state -= 1;
+						deaths += 1;
 					}
 				} else {
-					// >2 state version
-					for (i = -range; i <= range; i += 1) {
-						colCount = 0;
-						xcol = x + i;
-						for (j = 0; j <= maxj; j += 1) {
-							if (colourGrid[ymr + j][xcol] === maxGeneration) {
-								colCount += 1;
-							}
-						}
-						colCounts[i + range] = colCount;
-						count += colCount;
-					}
+					// this cell will eventually die
+					state -= 1;
 				}
-				countRow[x] = count;
+				// update the cell
+				colourRow[x] = state;
+				if (state === maxGeneration) {
+					population += 1;
+				}
+				if (state > 0) {
+					if (x < minX) {
+						minX = x;
+					}
+					if (x > maxX) {
+						maxX = x;
+					}
+					rowAlive = true;
+				}
+			}
+			if (rowAlive) {
+				minY = bottomY;
+				maxY = bottomY;
+			}
 
-				// process remaining columns
-				x += 1;
-				saveCol = 0;
+			// process remainder of left column (bottom left cell was done above)
+			colAlive = false;
+			for (y = bottomY + 1; y <= topY; y += 1) {
+				state = colourGrid[y][leftX];
+				count = counts[y][leftX + range] - counts[y][leftX - (range + 1)];
+				if (state === 0) {
+					// this cell is dead
+					if (count >= minB && count <= maxB) {
+						// new cell is born
+						state = maxGeneration;
+						births += 1;
+					}
+				} else if (state === maxGeneration) {
+					// this cell is alive
+					if (count < minS || count > maxS) {
+						// cell decays by one state
+						state -= 1;
+						deaths += 1;
+					}
+				} else {
+					// this cell will eventually die
+					state -= 1;
+				}
+				// update the cell
+				colourGrid[y][leftX] = state;
+				if (state === maxGeneration) {
+					population += 1;
+				}
+				if (state > 0) {
+					if (y < minY) {
+						minY = y;
+					}
+					if (y > maxY) {
+						maxY = y;
+					}
+					colAlive = true;
+				}
+			}
+			if (colAlive) {
+				if (leftX < minX) {
+					minX = leftX;
+				}
+				if (leftX > maxX) {
+					maxX = rightX;
+				}
+			}
 
-				while (x <= rightX + range) {
-					// remove left column count from running total
-					count -= colCounts[saveCol];
-
-					// compute and save right hand column count
-					colCount = 0;
-					xcol = x + range;
-					if (maxGeneration === 1) {
-						// 2 state version
-						j = 0;
-						while (j + chunk <= maxj) {
-							// loop unroll must match chunk size!
-							colCount += colourGrid[ymr + j][xcol];
-							j += 1;
-							colCount += colourGrid[ymr + j][xcol];
-							j += 1;
-							colCount += colourGrid[ymr + j][xcol];
-							j += 1;
-							colCount += colourGrid[ymr + j][xcol];
-							j += 1;
-							colCount += colourGrid[ymr + j][xcol];
-							j += 1;
+			// compute the rest of the grid
+			for (y = bottomY + 1; y <= topY; y += 1) {
+				colourRow = colourGrid[y];
+				rowAlive = false;
+				for (x = leftX + 1; x <= rightX; x += 1) {
+					state = colourRow[x];
+					count = counts[y + range][x + range]
+						+ counts[y - (range + 1)][x - (range + 1)]
+						- counts[y +  range][x - (range + 1)]
+						- counts[y - (range + 1)][x + range];
+					if (state === 0) {
+						// this cell is dead
+						if (count >= minB && count <= maxB) {
+							// new cell is born
+							state = maxGeneration;
+							births += 1;
 						}
-						while (j <= maxj) {
-							colCount += colourGrid[ymr + j][xcol];
-							j += 1;
+					} else if (state === maxGeneration) {
+						// this cell is alive
+						if (count < minS || count > maxS) {
+							// cell decays by one state
+							state -= 1;
+							deaths += 1;
 						}
 					} else {
-						// >2 state version
-						for (j = 0; j <= maxj; j += 1) {
-							if (colourGrid[ymr + j][xcol] === maxGeneration) {
-								colCount += 1;
-							}
+						// this cell will eventually die
+						state -= 1;
+					}
+					// update the cell
+					colourRow[x] = state;
+					if (state === maxGeneration) {
+						population += 1;
+					}
+					if (state > 0) {
+						if (y < minY) {
+							minY = y;
 						}
+						if (y > maxY) {
+							maxY = y;
+						}
+						rowAlive = true;
 					}
-					colCounts[saveCol] = colCount;
-
-					// add right hand column count to running total
-					count += colCount;
-					countRow[x] = count;
-
-					// rotate through column counts
-					saveCol += 1;
-					if (saveCol > range + range) {
-						saveCol = 0;
-					}
-
-					// next column
-					x += 1;
 				}
+				if (rowAlive) {
+					if (y < minY) {
+						minY = y;
+					}
+					if (y > maxY) {
+						maxY = y;
+					}
+				}
+			}
+
+			// save statistics
+			this.population = population;
+			this.births = births;
+			this.deaths = deaths;
+			zoomBox.leftX = minX;
+			zoomBox.rightX = maxX;
+			zoomBox.bottomY = minY;
+			zoomBox.topY = maxY;
+
+			// stop if population zero
+			if (!somethingAlive) {
+				this.generationsAlive = 0;
+				this.anythingAlive = 0;
 			}
 		} else {
 			// von Neumann and Circular
@@ -6738,8 +6877,10 @@
 			}
 		}
 
-		// compute next generation from counts
-		this.updateGridFromCountsLTL(leftX, bottomY, rightX, topY);
+		// compute next generation from counts if not Moore which was done above
+		if (ltl.type !== PatternManager.mooreLTL) {
+			this.updateGridFromCountsLTL(leftX, bottomY, rightX, topY);
+		}
 
 		// check if there is a Torus bounded grid
 		if (this.boundedGridType === 1) {
