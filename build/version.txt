@@ -1,3 +1,6 @@
+Build 262
+- LtL now computes births and deaths
+
 Build 261
 - mousewheel shouldn't zoom thumbnails
 - new script command [[ THUMBZOOM ]] to set the zoom in the thumbnail

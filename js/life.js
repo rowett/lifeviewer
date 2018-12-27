@@ -6352,6 +6352,166 @@
 		}
 	};
 
+	// update the life grid region using computed counts
+	Life.prototype.updateGridFromCountsLTL = function(leftX, bottomY, rightX, topY) {
+		var x = 0,
+			y = 0,
+			population = 0,
+			births = 0,
+			deaths = 0,
+			state = 0,
+			count = 0,
+			somethingAlive = false,
+			rowAlive = false,
+			colourGrid = this.colourGrid,
+			colourTileHistoryGrid = this.colourTileHistoryGrid,
+			colourRow = null,
+			countRow = null,
+			colourTileRow = null,
+			minX = this.width,
+			maxX = 0,
+			minY = this.height,
+			maxY = 0,
+			zoomBox = this.zoomBox,
+			ltl = this.LTL,
+			range = ltl.range,
+			minB = ltl.minB,
+			maxB = ltl.maxB,
+			minS = ltl.minS,
+			maxS = ltl.maxS,
+			counts = ltl.counts,
+			maxGeneration = ltl.scount - 1;
+
+		// compute next generation
+		population = 0;
+		births = 0;
+		deaths = 0;
+		somethingAlive = false;
+		if (maxGeneration === 1) {
+			// 2 state version
+			for (y = bottomY - range; y <= topY + range; y += 1) {
+				colourRow = colourGrid[y];
+				countRow = counts[y];
+				colourTileRow = colourTileHistoryGrid[y >> 4];
+				rowAlive = false;
+				for (x = leftX - range; x <= rightX + range; x += 1) {
+					state = colourRow[x];
+					count = countRow[x];
+					if (state === 0) {
+						// this cell is dead
+						if (count >= minB && count <= maxB) {
+							// new cell is born
+							state = maxGeneration;
+							births += 1;
+						}
+					} else if (state === maxGeneration) {
+						// this cell is alive
+						if (count < minS || count > maxS) {
+							// this cell doesn't survive
+							state = 0;
+							deaths += 1;
+						}
+					}
+					colourRow[x] = state;
+					// update bounding box columns
+					if (state > 0) {
+						rowAlive = true;
+						colourTileRow[x >> 8] = 65535;
+						if (x < minX) {
+							minX = x;
+						}
+						if (x > maxX) {
+							maxX = x;
+						}
+						population += 1;
+					}
+				}
+				if (rowAlive) {
+					// if something was alive in the row then update bounding box rows
+					if (y < minY) {
+						minY = y;
+					}
+					if (y > maxY) {
+						maxY = y;
+					}
+				}
+			}
+			if (population > 0) {
+				somethingAlive = true;
+			}
+		} else {
+			// >2 state version
+			for (y = bottomY - range; y <= topY + range; y += 1) {
+				colourRow = colourGrid[y];
+				countRow = counts[y];
+				colourTileRow = colourTileHistoryGrid[y >> 4];
+				rowAlive = false;
+				for (x = leftX - range; x <= rightX + range; x += 1) {
+					state = colourRow[x];
+					count = countRow[x];
+					if (state === 0) {
+						// this cell is dead
+						if (count >= minB && count <= maxB) {
+							// new cell is born
+							state = maxGeneration;
+							births += 1;
+						}
+					} else if (state === maxGeneration) {
+						// this cell is alive
+						if (count < minS || count > maxS) {
+							// cell decays by one state
+							state -= 1;
+							deaths += 1;
+						}
+					} else {
+						// this cell will eventually die
+						state -= 1;
+					}
+					colourRow[x] = state;
+					// update bounding box columns
+					if (state > 0) {
+						rowAlive = true;
+						colourTileRow[x >> 8] = 65535;
+						if (x < minX) {
+							minX = x;
+						}
+						if (x > maxX) {
+							maxX = x;
+						}
+						if (state === maxGeneration) {
+							population += 1;
+						}
+					}
+				}
+				if (rowAlive) {
+					// if something was alive in the row then update bounding box rows
+					if (y < minY) {
+						minY = y;
+					}
+					if (y > maxY) {
+						maxY = y;
+					}
+				}
+				somethingAlive |= rowAlive;
+			}
+		}
+
+		// save population and bounding box
+		this.population = population;
+		this.births = births;
+		this.deaths = deaths;
+		zoomBox.leftX = minX;
+		zoomBox.rightX = maxX;
+		zoomBox.bottomY = minY;
+		zoomBox.topY = maxY;
+
+		// stop if population zero
+		if (!somethingAlive) {
+			this.generationsAlive = 0;
+			this.anythingAlive = 0;
+		}
+	};
+
 	// update the life grid region using LTL
 	Life.prototype.nextGenerationLTL = function() {
 		var x = 0,
@@ -6366,9 +6526,6 @@
 			ltl = this.LTL,
 			range = ltl.range,
 			minB = ltl.minB,
-			maxB = ltl.maxB,
-			minS = ltl.minS,
-			maxS = ltl.maxS,
 			scount = ltl.scount,
 			counts = ltl.counts,
 			colCounts = ltl.colCounts,
@@ -6378,22 +6535,10 @@
 			count = 0,
 			xcol = 0,
 			colourGrid = this.colourGrid,
-			colourTileHistoryGrid = this.colourTileHistoryGrid,
-			population = 0,
-			births = 0,
-			deaths = 0,
-			state = 0,
 			colourRow = null,
 			countRow = null,
-			colourTileRow = null,
-			minX = this.width,
-			maxX = 0,
-			minY = this.height,
-			maxY = 0,
 			widths = ltl.widths,
 			width = 0,
-			somethingAlive = false,
-			rowAlive = false,
 			bgWidth = this.boundedGridWidth,
 			bgHeight = this.boundedGridHeight,
 			gridLeftX, gridRightX, gridBottomY, gridTopY,
@@ -6593,141 +6738,13 @@
 			}
 		}
 
-		// compute next generation
-		population = 0;
-		births = 0;
-		deaths = 0;
-		somethingAlive = false;
-		if (maxGeneration === 1) {
-			// 2 state version
-			for (y = bottomY - range; y <= topY + range; y += 1) {
-				colourRow = colourGrid[y];
-				countRow = counts[y];
-				colourTileRow = colourTileHistoryGrid[y >> 4];
-				rowAlive = false;
-				for (x = leftX - range; x <= rightX + range; x += 1) {
-					state = colourRow[x];
-					count = countRow[x];
-					countRow[x] = 0;
-					if (state === 0) {
-						// this cell is dead
-						if (count >= minB && count <= maxB) {
-							// new cell is born
-							state = maxGeneration;
-							births += 1;
-						}
-					} else if (state === maxGeneration) {
-						// this cell is alive
-						if (count < minS || count > maxS) {
-							// this cell doesn't survive
-							state = 0;
-							deaths += 1;
-						}
-					}
-					colourRow[x] = state;
-					// update bounding box columns
-					if (state > 0) {
-						rowAlive = true;
-						colourTileRow[x >> 8] = 65535;
-						if (x < minX) {
-							minX = x;
-						}
-						if (x > maxX) {
-							maxX = x;
-						}
-						population += 1;
-					}
-				}
-				if (rowAlive) {
-					// if something was alive in the row then update bounding box rows
-					if (y < minY) {
-						minY = y;
-					}
-					if (y > maxY) {
-						maxY = y;
-					}
-				}
-			}
-			if (population > 0) {
-				somethingAlive = true;
-			}
-		} else {
-			// >2 state version
-			for (y = bottomY - range; y <= topY + range; y += 1) {
-				colourRow = colourGrid[y];
-				countRow = counts[y];
-				colourTileRow = colourTileHistoryGrid[y >> 4];
-				rowAlive = false;
-				for (x = leftX - range; x <= rightX + range; x += 1) {
-					state = colourRow[x];
-					count = countRow[x];
-					countRow[x] = 0;
-					if (state === 0) {
-						// this cell is dead
-						if (count >= minB && count <= maxB) {
-							// new cell is born
-							state = maxGeneration;
-							births += 1;
-						}
-					} else if (state === maxGeneration) {
-						// this cell is alive
-						if (count < minS || count > maxS) {
-							// cell decays by one state
-							state -= 1;
-							deaths += 1;
-						}
-					} else {
-						// this cell will eventually die
-						state -= 1;
-					}
-					colourRow[x] = state;
-					// update bounding box columns
-					if (state > 0) {
-						rowAlive = true;
-						colourTileRow[x >> 8] = 65535;
-						if (x < minX) {
-							minX = x;
-						}
-						if (x > maxX) {
-							maxX = x;
-						}
-						if (state === maxGeneration) {
-							population += 1;
-						}
-					}
-				}
-				if (rowAlive) {
-					// if something was alive in the row then update bounding box rows
-					if (y < minY) {
-						minY = y;
-					}
-					if (y > maxY) {
-						maxY = y;
-					}
-				}
-				somethingAlive |= rowAlive;
-			}
-		}
+		// compute next generation from counts
+		this.updateGridFromCountsLTL(leftX, bottomY, rightX, topY);
 
 		// check if there is a Torus bounded grid
 		if (this.boundedGridType === 1) {
 			// clear outside
 			this.clearLTLOutside(gridLeftX, gridBottomY, gridRightX, gridTopY);
-		}
-
-		// save population and bounding box
-		this.population = population;
-		this.births = births;
-		this.deaths = deaths;
-		zoomBox.leftX = minX;
-		zoomBox.rightX = maxX;
-		zoomBox.bottomY = minY;
-		zoomBox.topY = maxY;
-
-		// stop if population zero
-		if (!somethingAlive) {
-			this.generationsAlive = 0;
-			this.anythingAlive = 0;
 		}
 	};
 
