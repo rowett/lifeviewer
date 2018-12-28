@@ -6543,7 +6543,9 @@
 			gridLeftX = 0, gridRightX = 0, gridBottomY = 0, gridTopY = 0,
 			population = 0, births = 0, deaths = 0,
 			state = 0,
-			rowAlive = false, colAlive = false, somethingAlive = false;
+			rowpop = 0, xpr = 0, xmrp1 = 0,
+			rowAlive = false, colAlive = false, somethingAlive = false,
+			chunk = 8;  // must be the same as the unrolled loop!
 
 		// check for bounded grid
 		if (this.boundedGridType !== -1) {
@@ -6628,13 +6630,13 @@
 			if (maxGeneration === 1) {
 				// 2 state version
 				prevCountRow = counts[bottomY + r2 - 1];
-				var chunk = 8;
 				for (y = bottomY + r2; y <= topY; y += 1) {
 					countRow = counts[y];
 					colourRow = colourGrid[y];
 					count = 0;
 					x = leftX + r2;
 					while (x + chunk <= rightX) {
+						// unrolled loop must match chunk value
 						count += colourRow[x];
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
@@ -6837,34 +6839,36 @@
 				for (y = bottomY + 1; y <= topY; y += 1) {
 					colourRow = colourGrid[y];
 					colourTileRow = colourTileHistoryGrid[y >> 4];
-					rowAlive = false;
 					countRowYpr = counts[y + range];
 					countRowYmrp1 = counts[y - rp1];
+					rowpop = population;
+					xpr = leftX + 1 + range;
+					xmrp1 = leftX + 1 - rp1;
 					for (x = leftX + 1; x <= rightX; x += 1) {
 						state = colourRow[x];
-						count = countRowYpr[x + range]
-							+ countRowYmrp1[x - rp1]
-							- countRowYpr[x - rp1]
-							- countRowYmrp1[x + range];
+						count = countRowYpr[xpr]
+							+ countRowYmrp1[xmrp1]
+							- countRowYpr[xmrp1]
+							- countRowYmrp1[xpr];
 						if (state === 0) {
 							// this cell is dead
 							if (count >= minB && count <= maxB) {
 								// new cell is born
 								state = maxGeneration;
+								colourRow[x] = state;
 								births += 1;
 							}
 						} else {
 							// this cell is alive
 							if (count < minS || count > maxS) {
-								// cell decays by one state
+								// cell dies
 								state = 0;
+								colourRow[x] = 0;
 								deaths += 1;
 							}
 						}
 						// update the cell
-						colourRow[x] = state;
 						if (state > 0) {
-							rowAlive = true;
 							colourTileRow[x >> 8] = 65535;
 							if (x < minX) {
 								minX = x;
@@ -6874,8 +6878,10 @@
 							}
 							population += 1;
 						}
+						xpr += 1;
+						xmrp1 += 1;
 					}
-					if (rowAlive) {
+					if (rowpop !== population) {
 						if (y < minY) {
 							minY = y;
 						}
@@ -6892,15 +6898,17 @@
 				for (y = bottomY + 1; y <= topY; y += 1) {
 					colourRow = colourGrid[y];
 					colourTileRow = colourTileHistoryGrid[y >> 4];
-					rowAlive = false;
 					countRowYpr = counts[y + range];
 					countRowYmrp1 = counts[y - rp1];
+					rowpop = population;
+					xpr = leftX + 1 + range;
+					xmrp1 = leftX + 1 - rp1;
 					for (x = leftX + 1; x <= rightX; x += 1) {
 						state = colourRow[x];
-						count = countRowYpr[x + range]
-							+ countRowYmrp1[x - rp1]
-							- countRowYpr[x - rp1]
-							- countRowYmrp1[x + range];
+						count = countRowYpr[xpr]
+							+ countRowYmrp1[xmrp1]
+							- countRowYpr[xmrp1]
+							- countRowYmrp1[xpr];
 						if (state === 0) {
 							// this cell is dead
 							if (count >= minB && count <= maxB) {
@@ -6925,7 +6933,6 @@
 							population += 1;
 						}
 						if (state > 0) {
-							rowAlive = true;
 							colourTileRow[x >> 8] = 65535;
 							if (x < minX) {
 								minX = x;
@@ -6934,8 +6941,10 @@
 								maxX = x;
 							}
 						}
+						xpr += 1;
+						xmrp1 += 1;
 					}
-					if (rowAlive) {
+					if (rowpop !== population) {
 						somethingAlive = true;
 						if (y < minY) {
 							minY = y;
