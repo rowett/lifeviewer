@@ -6404,7 +6404,7 @@
 							state = maxGeneration;
 							births += 1;
 						}
-					} else if (state === maxGeneration) {
+					} else {
 						// this cell is alive
 						if (count < minS || count > maxS) {
 							// this cell doesn't survive
@@ -6514,48 +6514,36 @@
 
 	// update the life grid region using LTL
 	Life.prototype.nextGenerationLTL = function() {
-		var x = 0,
-			y = 0,
-			i = 0,
-			j = 0,
-			zoomBox = this.zoomBox,
-			leftX = zoomBox.leftX,
-			rightX = zoomBox.rightX,
-			bottomY = zoomBox.bottomY,
-			topY = zoomBox.topY,
-			ltl = this.LTL,
-			range = ltl.range,
+		var x = 0, y = 0, i = 0, j = 0,
+			leftX = this.zoomBox.leftX,
+			rightX = this.zoomBox.rightX,
+			bottomY = this.zoomBox.bottomY,
+			topY = this.zoomBox.topY,
+			range = this.LTL.range,
 			r2 = range + range,
-			minB = ltl.minB,
-			maxB = ltl.maxB,
-			minS = ltl.minS,
-			maxS = ltl.maxS,
-			scount = ltl.scount,
-			counts = ltl.counts,
+			rp1 = range + 1,
+			minB = this.LTL.minB, maxB = this.LTL.maxB,
+			minS = this.LTL.minS, maxS = this.LTL.maxS,
+			scount = this.LTL.scount,
+			counts = this.LTL.counts,
+			type = this.LTL.type,
 			maxGeneration = scount - 1,
 			count = 0,
-			minX = this.width,
-			maxX = 0,
-			minY = this.height,
-			maxY = 0,
+			minX = this.width, maxX = 0,
+			minY = this.height, maxY = 0,
 			colourGrid = this.colourGrid,
 			colourTileHistoryGrid = this.colourTileHistoryGrid,
-			colourRow = null,
+			colourRow = null, countRowYpr = null, countRowYmrp1 = null,
 			colourTileRow = null,
-			countRow = null,
-			prevCountRow = null,
-			widths = ltl.widths,
+			countRow = null, prevCountRow = null,
+			widths = this.LTL.widths,
 			width = 0,
 			bgWidth = this.boundedGridWidth,
 			bgHeight = this.boundedGridHeight,
-			gridLeftX, gridRightX, gridBottomY, gridTopY,
-			population = 0,
-			births = 0,
-			deaths = 0,
+			gridLeftX = 0, gridRightX = 0, gridBottomY = 0, gridTopY = 0,
+			population = 0, births = 0, deaths = 0,
 			state = 0,
-			rowAlive = false,
-			colAlive = false,
-			somethingAlive = false;
+			rowAlive = false, colAlive = false, somethingAlive = false;
 
 		// check for bounded grid
 		if (this.boundedGridType !== -1) {
@@ -6605,7 +6593,7 @@
 				bottomY = gridBottomY + range;
 			}
 
-			if (ltl.type === PatternManager.mooreLTL) {
+			if (type === PatternManager.mooreLTL) {
 				leftX -= r2;
 				bottomY -= r2;
 				rightX += r2;
@@ -6614,7 +6602,7 @@
 		}
 
 		// compute counts for given neighborhood
-		if (ltl.type === PatternManager.mooreLTL) {
+		if (type === PatternManager.mooreLTL) {
 			// temporarily expand bounding box
 			leftX -= r2;
 			bottomY -= r2;
@@ -6687,7 +6675,7 @@
 					colourRow = colourGrid[y];
 					count = 0;
 					for (x = leftX + r2; x <= rightX; x += 1) {
-						if (colourRow[x] == maxGeneration) {
+						if (colourRow[x] === maxGeneration) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
@@ -6753,7 +6741,7 @@
 			colourTileRow = colourTileHistoryGrid[bottomY >> 4];
 			for (x = leftX + 1; x <= rightX; x += 1) {
 				state = colourRow[x];
-				count = countRow[x + range] - prevCountRow[x - (range + 1)];
+				count = countRow[x + range] - prevCountRow[x - rp1];
 				if (state === 0) {
 					// this cell is dead
 					if (count >= minB && count <= maxB) {
@@ -6785,11 +6773,11 @@
 						maxX = x;
 					}
 					rowAlive = true;
-					somethingAlive = true;
 					colourTileRow[x >> 8] = 65535;
 				}
 			}
 			if (rowAlive) {
+				somethingAlive = true;
 				minY = bottomY;
 				maxY = bottomY;
 			}
@@ -6798,7 +6786,7 @@
 			colAlive = false;
 			for (y = bottomY + 1; y <= topY; y += 1) {
 				state = colourGrid[y][leftX];
-				count = counts[y + range][leftX + range] - counts[y - (range + 1)][leftX + range];
+				count = counts[y + range][leftX + range] - counts[y - rp1][leftX + range];
 				if (state === 0) {
 					// this cell is dead
 					if (count >= minB && count <= maxB) {
@@ -6830,11 +6818,11 @@
 						maxY = y;
 					}
 					colAlive = true;
-					somethingAlive = true;
 					colourTileHistoryGrid[y >> 4][leftX >> 8] = 65535;
 				}
 			}
 			if (colAlive) {
+				somethingAlive = true;
 				if (leftX < minX) {
 					minX = leftX;
 				}
@@ -6844,57 +6832,117 @@
 			}
 
 			// compute the rest of the grid
-			for (y = bottomY + 1; y <= topY; y += 1) {
-				colourRow = colourGrid[y];
-				colourTileRow = colourTileHistoryGrid[y >> 4];
-				rowAlive = false;
-				for (x = leftX + 1; x <= rightX; x += 1) {
-					state = colourRow[x];
-					count = counts[y + range][x + range]
-						+ counts[y - (range + 1)][x - (range + 1)]
-						- counts[y +  range][x - (range + 1)]
-						- counts[y - (range + 1)][x + range];
-					if (state === 0) {
-						// this cell is dead
-						if (count >= minB && count <= maxB) {
-							// new cell is born
-							state = maxGeneration;
-							births += 1;
+			if (maxGeneration === 1) {
+				// 2 state version
+				for (y = bottomY + 1; y <= topY; y += 1) {
+					colourRow = colourGrid[y];
+					colourTileRow = colourTileHistoryGrid[y >> 4];
+					rowAlive = false;
+					countRowYpr = counts[y + range];
+					countRowYmrp1 = counts[y - rp1];
+					for (x = leftX + 1; x <= rightX; x += 1) {
+						state = colourRow[x];
+						count = countRowYpr[x + range]
+							+ countRowYmrp1[x - rp1]
+							- countRowYpr[x - rp1]
+							- countRowYmrp1[x + range];
+						if (state === 0) {
+							// this cell is dead
+							if (count >= minB && count <= maxB) {
+								// new cell is born
+								state = maxGeneration;
+								births += 1;
+							}
+						} else {
+							// this cell is alive
+							if (count < minS || count > maxS) {
+								// cell decays by one state
+								state = 0;
+								deaths += 1;
+							}
 						}
-					} else if (state === maxGeneration) {
-						// this cell is alive
-						if (count < minS || count > maxS) {
-							// cell decays by one state
-							state -= 1;
-							deaths += 1;
+						// update the cell
+						colourRow[x] = state;
+						if (state > 0) {
+							rowAlive = true;
+							colourTileRow[x >> 8] = 65535;
+							if (x < minX) {
+								minX = x;
+							}
+							if (x > maxX) {
+								maxX = x;
+							}
+							population += 1;
 						}
-					} else {
-						// this cell will eventually die
-						state -= 1;
 					}
-					// update the cell
-					colourRow[x] = state;
-					if (state === maxGeneration) {
-						population += 1;
-					}
-					if (state > 0) {
-						rowAlive = true;
-						somethingAlive = true;
-						colourTileRow[x >> 8] = 65535;
-						if (x < minX) {
-							minX = x;
+					if (rowAlive) {
+						if (y < minY) {
+							minY = y;
 						}
-						if (x > maxX) {
-							maxX = x;
+						if (y > maxY) {
+							maxY = y;
 						}
 					}
 				}
-				if (rowAlive) {
-					if (y < minY) {
-						minY = y;
+				if (population > 0) {
+					somethingAlive = true;
+				}
+			} else {
+				// >2 state version
+				for (y = bottomY + 1; y <= topY; y += 1) {
+					colourRow = colourGrid[y];
+					colourTileRow = colourTileHistoryGrid[y >> 4];
+					rowAlive = false;
+					countRowYpr = counts[y + range];
+					countRowYmrp1 = counts[y - rp1];
+					for (x = leftX + 1; x <= rightX; x += 1) {
+						state = colourRow[x];
+						count = countRowYpr[x + range]
+							+ countRowYmrp1[x - rp1]
+							- countRowYpr[x - rp1]
+							- countRowYmrp1[x + range];
+						if (state === 0) {
+							// this cell is dead
+							if (count >= minB && count <= maxB) {
+								// new cell is born
+								state = maxGeneration;
+								births += 1;
+							}
+						} else if (state === maxGeneration) {
+							// this cell is alive
+							if (count < minS || count > maxS) {
+								// cell decays by one state
+								state -= 1;
+								deaths += 1;
+							}
+						} else {
+							// this cell will eventually die
+							state -= 1;
+						}
+						// update the cell
+						colourRow[x] = state;
+						if (state === maxGeneration) {
+							population += 1;
+						}
+						if (state > 0) {
+							rowAlive = true;
+							colourTileRow[x >> 8] = 65535;
+							if (x < minX) {
+								minX = x;
+							}
+							if (x > maxX) {
+								maxX = x;
+							}
+						}
 					}
-					if (y > maxY) {
-						maxY = y;
+					if (rowAlive) {
+						somethingAlive = true;
+						if (y < minY) {
+							minY = y;
+						}
+						if (y > maxY) {
+							maxY = y;
+						}
 					}
 				}
 			}
@@ -6903,10 +6951,10 @@
 			this.population = population;
 			this.births = births;
 			this.deaths = deaths;
-			zoomBox.leftX = minX;
-			zoomBox.rightX = maxX;
-			zoomBox.bottomY = minY;
-			zoomBox.topY = maxY;
+			this.zoomBox.leftX = minX;
+			this.zoomBox.rightX = maxX;
+			this.zoomBox.bottomY = minY;
+			this.zoomBox.topY = maxY;
 
 			// stop if population zero
 			if (!somethingAlive) {
@@ -6950,7 +6998,7 @@
 		}
 
 		// compute next generation from counts if not Moore which was done above
-		if (ltl.type !== PatternManager.mooreLTL) {
+		if (type !== PatternManager.mooreLTL) {
 			this.updateGridFromCountsLTL(leftX, bottomY, rightX, topY);
 		}
 
