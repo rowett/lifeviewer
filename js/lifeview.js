@@ -2224,6 +2224,9 @@
 			borderSize = ViewConstants.maxStepSpeed;
 			if (me.engine.isLTL && ((me.engine.LTL.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
 				borderSize = me.engine.LTL.range * 2 + 1;
+				if (me.engine.boundedGridType !== -1) {
+					borderSize += me.engine.LTL.range * 2;
+				}
 			}
 			if (me.engine.checkForGrowth(borderSize)) {
 				// update the default x and y
@@ -9359,7 +9362,8 @@
 		    savedThumbnail = false,
 		    resizeRequired = false,
 		    neededWidth = 0,
-		    neededHeight = 0,
+			neededHeight = 0,
+			borderSize = 0,
 		    i = 0;
 
 		// clear script error list
@@ -9827,7 +9831,14 @@
 			}
 
 			// check if the grid is smaller than the pattern and/or bounded grid plus the maximum step speed
-			while (this.engine.width < this.engine.maxGridSize && ((neededWidth + ViewConstants.maxStepSpeed + Math.abs(this.xOffset) * 2) >= this.engine.width || (neededHeight + ViewConstants.maxStepSpeed + Math.abs(this.yOffset) * 2) >= this.engine.height)) {
+			borderSize = ViewConstants.maxStepSpeed;
+			if (this.engine.isLTL && ((this.engine.LTL.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
+				borderSize = this.engine.LTL.range * 2 + 1;
+				if (this.boundedGridType !== -1) {
+					borderSize += this.engine.LTL.range * 2;
+				}
+			}
+			while (this.engine.width < this.engine.maxGridSize && ((neededWidth + borderSize + Math.abs(this.xOffset) * 2) >= this.engine.width || (neededHeight + borderSize + Math.abs(this.yOffset) * 2) >= this.engine.height)) {
 				// grow the grid
 				this.engine.growGrid();
 
