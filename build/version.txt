@@ -1,5 +1,6 @@
 Build 262
 - LtL now computes births and deaths
+- faster Moore algorithm
 
 Build 261
 - mousewheel shouldn't zoom thumbnails

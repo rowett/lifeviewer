@@ -6525,6 +6525,7 @@
 			topY = zoomBox.topY,
 			ltl = this.LTL,
 			range = ltl.range,
+			r2 = range + range,
 			minB = ltl.minB,
 			maxB = ltl.maxB,
 			minS = ltl.minS,
@@ -6538,7 +6539,9 @@
 			minY = this.height,
 			maxY = 0,
 			colourGrid = this.colourGrid,
+			colourTileHistoryGrid = this.colourTileHistoryGrid,
 			colourRow = null,
+			colourTileRow = null,
 			countRow = null,
 			prevCountRow = null,
 			widths = ltl.widths,
@@ -6601,18 +6604,25 @@
 			if (bottomY - gridBottomY < range) {
 				bottomY = gridBottomY + range;
 			}
-		}
 
-		// temporarily expand bounding box
-		leftX -= range;
-		bottomY -= range;
-		rightX += range;
-		topY += range;
+			if (ltl.type === PatternManager.mooreLTL) {
+				leftX -= r2;
+				bottomY -= r2;
+				rightX += r2;
+				topY += r2;
+			}
+		}
 
 		// compute counts for given neighborhood
 		if (ltl.type === PatternManager.mooreLTL) {
+			// temporarily expand bounding box
+			leftX -= r2;
+			bottomY -= r2;
+			rightX += r2;
+			topY += r2;
+
 			// put zeros in top 2*range rows
-			for (y = bottomY; y < bottomY + range + range; y += 1) {
+			for (y = bottomY; y < bottomY + r2; y += 1) {
 				countRow = counts[y];
 				for (x = leftX; x <= rightX; x += 1) {
 					countRow[x] = 0;
@@ -6620,23 +6630,68 @@
 			}
 
 			// put zeros in left 2*range columns
-			for (x = leftX; x < leftX + range + range; x += 1) {
-				for (y = bottomY + range + range; y <= topY; y += 1) {
+			for (x = leftX; x < leftX + r2; x += 1) {
+				for (y = bottomY + r2; y <= topY; y += 1) {
 					counts[y][x] = 0;
 				}
 			}
 
 			// calculate cumulative counts for each column
-			for (y = bottomY + range + range; y <= topY; y += 1) {
-				prevCountRow = counts[y - 1];
-				countRow = counts[y];
-				colourRow = colourGrid[y];
-				count = 0;
-				for (x = leftX + range + range; x <= rightX; x += 1) {
-					if (colourRow[x] == maxGeneration) {
-						count += 1;
+			if (maxGeneration === 1) {
+				// 2 state version
+				prevCountRow = counts[bottomY + r2 - 1];
+				var chunk = 8;
+				for (y = bottomY + r2; y <= topY; y += 1) {
+					countRow = counts[y];
+					colourRow = colourGrid[y];
+					count = 0;
+					x = leftX + r2;
+					while (x + chunk <= rightX) {
+						count += colourRow[x];
+						countRow[x] = prevCountRow[x] + count;
+						x += 1;
+						count += colourRow[x];
+						countRow[x] = prevCountRow[x] + count;
+						x += 1;
+						count += colourRow[x];
+						countRow[x] = prevCountRow[x] + count;
+						x += 1;
+						count += colourRow[x];
+						countRow[x] = prevCountRow[x] + count;
+						x += 1;
+						count += colourRow[x];
+						countRow[x] = prevCountRow[x] + count;
+						x += 1;
+						count += colourRow[x];
+						countRow[x] = prevCountRow[x] + count;
+						x += 1;
+						count += colourRow[x];
+						countRow[x] = prevCountRow[x] + count;
+						x += 1;
+						count += colourRow[x];
+						countRow[x] = prevCountRow[x] + count;
+						x += 1;
 					}
-					countRow[x] = prevCountRow[x] + count;
+					while (x <= rightX) {
+						count += colourRow[x];
+						countRow[x] = prevCountRow[x] + count;
+						x += 1;
+					}
+					prevCountRow = countRow;
+				}
+			} else {
+				// >2 state version
+				for (y = bottomY + r2; y <= topY; y += 1) {
+					prevCountRow = counts[y - 1];
+					countRow = counts[y];
+					colourRow = colourGrid[y];
+					count = 0;
+					for (x = leftX + r2; x <= rightX; x += 1) {
+						if (colourRow[x] == maxGeneration) {
+							count += 1;
+						}
+						countRow[x] = prevCountRow[x] + count;
+					}
 				}
 			}
 
@@ -6645,6 +6700,13 @@
 			bottomY += range;
 			rightX -= range;
 			topY -= range;
+
+			if (this.boundedGridType !== -1) {
+				leftX += r2;
+				bottomY += r2;
+				rightX -= r2;
+				topY -= r2;
+			}
 
 			// calculate final neighborhood counts and update cells
 
@@ -6679,13 +6741,16 @@
 				maxX = leftX;
 				minY = bottomY;
 				maxY = bottomY;
+				somethingAlive = true;
+				colourTileHistoryGrid[bottomY >> 4][leftX >> 8] = 65535;
 			}
 
 			// process remainder of bottom row (bottom left cell was done above)
 			rowAlive = false;
-			countRow = counts[bottomY];
-			prevCountRow = counts[bottomY];
+			countRow = counts[bottomY + range];
+			prevCountRow = counts[bottomY + range];
 			colourRow = colourGrid[bottomY];
+			colourTileRow = colourTileHistoryGrid[bottomY >> 4];
 			for (x = leftX + 1; x <= rightX; x += 1) {
 				state = colourRow[x];
 				count = countRow[x + range] - prevCountRow[x - (range + 1)];
@@ -6720,6 +6785,8 @@
 						maxX = x;
 					}
 					rowAlive = true;
+					somethingAlive = true;
+					colourTileRow[x >> 8] = 65535;
 				}
 			}
 			if (rowAlive) {
@@ -6731,7 +6798,7 @@
 			colAlive = false;
 			for (y = bottomY + 1; y <= topY; y += 1) {
 				state = colourGrid[y][leftX];
-				count = counts[y][leftX + range] - counts[y][leftX - (range + 1)];
+				count = counts[y + range][leftX + range] - counts[y - (range + 1)][leftX + range];
 				if (state === 0) {
 					// this cell is dead
 					if (count >= minB && count <= maxB) {
@@ -6763,6 +6830,8 @@
 						maxY = y;
 					}
 					colAlive = true;
+					somethingAlive = true;
+					colourTileHistoryGrid[y >> 4][leftX >> 8] = 65535;
 				}
 			}
 			if (colAlive) {
@@ -6777,6 +6846,7 @@
 			// compute the rest of the grid
 			for (y = bottomY + 1; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
+				colourTileRow = colourTileHistoryGrid[y >> 4];
 				rowAlive = false;
 				for (x = leftX + 1; x <= rightX; x += 1) {
 					state = colourRow[x];
@@ -6808,13 +6878,15 @@
 						population += 1;
 					}
 					if (state > 0) {
-						if (y < minY) {
-							minY = y;
-						}
-						if (y > maxY) {
-							maxY = y;
-						}
 						rowAlive = true;
+						somethingAlive = true;
+						colourTileRow[x >> 8] = 65535;
+						if (x < minX) {
+							minX = x;
+						}
+						if (x > maxX) {
+							maxX = x;
+						}
 					}
 				}
 				if (rowAlive) {
