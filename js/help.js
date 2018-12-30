@@ -767,9 +767,12 @@
 				} else {
 					if (view.engine.isVonNeumann) {
 						ruleName = "von Neumann";
-					}
-					else {
-						ruleName = "Moore";
+					} else {
+						if (view.engine.isHROT) {
+							ruleName = "Moore range " + view.engine.HROT.range;
+						} else {
+							ruleName = "Moore";
+						}
 					}
 				}
 			}
@@ -918,10 +921,10 @@
 		y = this.renderHelpLine(view, "N'hoods", "Moore, Hex, von Neumann, Circular, 1D", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Rules", "Wolfram, Totalistic, Generations,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Isotropic Non-Totalistic (Hensel),", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Larger than Life, MAP", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Larger than Life (LtL), MAP,", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Higher-range outer-totalistic (HROT)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "BoundedGrid", "Plane, Torus, Klein, Cross-surface, Sphere", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "States", "2 state, [R]History, Niemiec,", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Generations, Larger Than Life", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "States", "2 state, [R]History, Niemiec, Generations", ctx, x, y, height, helpLine);
 
 		y = this.renderHelpLine(view, "Viewers", Controller.viewers.length, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Playing", Controller.viewersPlaying(), ctx, x, y, height, helpLine);

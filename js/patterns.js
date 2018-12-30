@@ -2185,9 +2185,9 @@
 			} else {
 				// allocate array
 				if (which === "B") {
-					allocName += "birth";
+					allocName += "births";
 				} else {
-					allocName += "survival";
+					allocName += "survivals";
 				}
 				// 4 bits per digit plus zero entry
 				list = allocator.allocate(Uint8, (numDigits << 2) + 1, allocName);

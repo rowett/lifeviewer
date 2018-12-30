@@ -8,7 +8,7 @@
 	"use strict";
 
 	// define globals
-	/* global littleEndian BoundingBox AliasManager PatternManager Allocator Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager LTL ViewConstants */
+	/* global littleEndian BoundingBox AliasManager PatternManager Allocator Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager LTL HROT ViewConstants */
 
 	// Life constants
 	/** @const */
@@ -189,7 +189,7 @@
 		// whether nieghbourhood is Von Neumann
 		this.isVonNeumann = false;
 
-		// number of states for multi-state rules (Generations and LTL)
+		// number of states for multi-state rules (Generations, LTL and HROT)
 		this.multiNumStates = -1;
 
 		// whether pattern is LifeHistory
@@ -197,6 +197,9 @@
 
 		// whether pattern is LTL
 		this.isLTL = false;
+
+		// whether pattern is HROT
+		this.isHROT = false;
 
 		// whether to draw overlay
 		this.drawOverlay = false;
@@ -503,7 +506,10 @@
 		this.graphDeathColor = [255, 0, 0];
 
 		// LTL engine
-		this.LTL = new LTL(this.allocator, this.width, this.height);
+		this.LTL = new LTL(this.allocator, this.width, this.height, this);
+
+		// HROT engine
+		this.HROT = new HROT(this.allocator, this.width, this.height, this);
 	}
 
 	// get state
@@ -524,7 +530,7 @@
 			// get the colour grid result
 			col = this.colourGrid[y][x];
 
-			// check if raw data requested or Generations or LTL rule used
+			// check if raw data requested or Generations, LTL or HROT rule used
 			if (rawRequested || this.multiNumStates !== -1) {
 				if (this.multiNumStates !== -1 && col > 0) {
 					result = this.multiNumStates - col;
@@ -827,6 +833,11 @@
 				this.LTL.resize(this.width, this.height);
 			}
 
+			// grow HROT buffers if used
+			if (this.isHROT) {
+				this.HROT.resize(this.width, this.height);
+			}
+
 			// allocate the new buffers
 			this.grid = Array.matrix(Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.grid");
 			this.nextGrid = Array.matrix(Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.nextGrid");
@@ -1024,8 +1035,8 @@
 		    topY = zoomBox.topY,
 			bottomY = zoomBox.bottomY;
 			
-		// check for LTL
-		if (this.isLTL) {
+		// check for LTL or HROT
+		if (this.isLTL || this.isHROT) {
 			// compute popuation from colour grid
 			for (h = bottomY; h <= topY; h += 1) {
 				// get next row
@@ -1448,7 +1459,7 @@
 		this.themes[i] = new Theme(new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new ColourRange(new Colour(255, 0, 0), new Colour(255, 0, 0)), new Colour(0, 0, 0));
 		i += 1;
 
-		// LTL - red to yellow
+		// LTL and HROT - red to yellow
 		this.themes[i] = new Theme(new ColourRange(new Colour(255, 0, 0), new Colour(255, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0));
 		i += 1;
 
@@ -1536,7 +1547,7 @@
 		this.greenChannel[i] = this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight);
 		this.blueChannel[i] = this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight);
 
-		// check for Generations or LTL rules
+		// check for Generations, LTL or HROT rules
 		if (this.multiNumStates !== -1) {
 			// set generations ramp
 			for (i = 1; i < this.multiNumStates; i += 1) {
@@ -1690,7 +1701,7 @@
 		gridLineBoldRaw = this.gridLineBoldRaw,
 		i = 0, j = 0;
 
-		// check for Generations or LTL
+		// check for Generations, LTL or HROT
 		if (this.multiNumStates !== -1) {
 			if (this.littleEndian) {
 				for (i = 0; i < this.multiNumStates; i += 1) {
@@ -3204,7 +3215,7 @@
 			nextTileGrid[h].set(blankTileRow);
 		}
 
-		// check for Generations or LTL
+		// check for Generations, LTL or HROT
 		if (this.multiNumStates !== -1) {
 			// check each row
 			for (h = 0; h < height; h += 1) {
@@ -3495,7 +3506,7 @@
 		// adjust population
 		this.population -= remove;
 
-		// check for Generations or LTL
+		// check for Generations, LTL or HROT
 		if (this.multiNumStates !== -1) {
 			// clear the colour grid boundary
 			grid = this.colourGrid;
@@ -4350,8 +4361,8 @@
 			}
 		}
 
-		// perform bounded grid pre-processing
-		if (this.boundedGridType !== -1 && !this.isLTL) {
+		// perform bounded grid pre-processing unless rule is LTL or HROT
+		if (this.boundedGridType !== -1 && !(this.isLTL || !this.isHROT)) {
 			this.preProcessBoundedGrid();
 		}
 
@@ -4365,15 +4376,18 @@
 		if (this.anythingAlive) {
 			if (this.isLTL) {
 				// compute LTL next generation
-				this.nextGenerationLTL();
-			}
-			else {
-				// check if stats are required
-				if (statsOn) {
-					this.nextGenerationTile();
-				}
-				else {
-					this.nextGenerationOnlyTile();
+				this.LTL.nextGenerationLTL();
+			} else {
+				if (this.isHROT) {
+					// compute HROT next generation
+					this.HROT.nextGenerationHROT();
+				} else {
+					// check if stats are required
+					if (statsOn) {
+						this.nextGenerationTile();
+					} else {
+						this.nextGenerationOnlyTile();
+					}
 				}
 			}
 		}
@@ -4382,7 +4396,7 @@
 		this.counter += 1;
 
 		// check for Generations
-		if (this.multiNumStates !== -1 && !this.isLTL) {
+		if (this.multiNumStates !== -1 && !(this.isLTL || this.isHROT)) {
 			// now deal with decay states
 			if (this.anythingAlive) {
 				this.nextGenerationGenerations();
@@ -4399,7 +4413,7 @@
 		}
 
 		// perform bounded grid post-processing
-		if (this.boundedGridType !== -1 && !this.isLTL) {
+		if (this.boundedGridType !== -1 && !(this.isLTL || this.isHROT)) {
 			this.postProcessBoundedGrid();
 		}
 
@@ -4409,13 +4423,17 @@
 			if (this.isLTL) {
 				boundarySize = this.LTL.range * 2;
 			} else {
-				boundarySize = 16;
+				if (this.isHROT) {
+					boundarySize = this.HROT.range * 2;
+				} else {
+					boundarySize = 16;
+				}
 			}
 			// check if the pattern is near a boundary
 			if (zoomBox.leftX <= boundarySize || zoomBox.rightX >= (this.maxGridSize - boundarySize) || zoomBox.bottomY <= boundarySize || zoomBox.topY >= (this.maxGridSize - boundarySize)) {
 				// clear grid boundary
-				if (this.isLTL) {
-					this.clearLTLBoundary();
+				if (this.isLTL || this.isHROT) {
+					this.clearHRBoundary();
 				} else {
 					this.clearGridBoundary();
 				}
@@ -5101,8 +5119,8 @@
 		}
 	};
 
-	// remove LTL patterns that touch the boundary
-	Life.prototype.clearLTLBoundary = function() {
+	// remove LTL or HROT patterns that touch the boundary
+	Life.prototype.clearHRBoundary = function() {
 		// grid
 		var colourGrid = this.colourGrid,
 			colourRow = null,
@@ -5124,6 +5142,11 @@
 			// counters
 			x = 0,
 			y = 0;
+
+		// check for HROT
+		if (this.isHROT) {
+			range = this.HROT.range * 2 + 1;
+		}
 
 		// clear top boundary
 		if ((ht - topY) <= range) {
@@ -6233,788 +6256,6 @@
 		// clear the blank tile row since it may have been written to at top and bottom
 		for (th = 0; th < blankTileRow.length; th += 1) {
 			blankTileRow[th] = 0;
-		}
-	};
-
-	// wrap the grid for LTL torus
-	Life.prototype.wrapTorusLTL = function(lx, by, rx, ty) {
-		var colourGrid = this.colourGrid,
-			sourceRow = null,
-			destRow = null,
-			ltl = this.LTL,
-			range = ltl.range,
-			x = 0,
-			y = 0;
-
-		// copy the bottom rows to the top border
-		for (y = 0; y < range; y += 1) {
-			sourceRow = colourGrid[by + y];
-			destRow = colourGrid[ty + y + 1];
-			for (x = lx; x <= rx; x += 1) {
-				destRow[x] = sourceRow[x];
-			}
-		}
-
-		// copy the top rows to the bottom border
-		for (y = 0; y < range; y += 1) {
-			sourceRow = colourGrid[ty - y];
-			destRow = colourGrid[by - y - 1];
-			for (x = lx; x <= rx; x += 1) {
-				destRow[x] = sourceRow[x];
-			}
-		}
-
-		// copy the left columns to the right border
-		// and the right columns to the left border
-		for (y = by; y <= ty; y += 1) {
-			sourceRow = colourGrid[y];
-			for (x = 0; x < range; x += 1) {
-				sourceRow[rx + x + 1] = sourceRow[lx + x];
-				sourceRow[lx - x - 1] = sourceRow[rx - x];
-			}
-		}
-
-		// copy bottom left cells to top right border
-		// and bottom right cells to top left border
-		for (y = 0; y < range; y += 1) {
-			sourceRow = colourGrid[by + y];
-			destRow = colourGrid[ty + y + 1];
-			for (x = 0; x < range; x += 1) {
-				destRow[x + rx + 1] = sourceRow[x + lx];
-				destRow[lx - x - 1] = sourceRow[rx - x];
-			}
-		}
-
-		// copy top left cells to bottom right border
-		// and top right cells to bottom left border
-		for (y = 0; y < range; y += 1) {
-			sourceRow = colourGrid[ty - y];
-			destRow = colourGrid[by - y - 1];
-			for (x = 0; x < range; x += 1) {
-				destRow[x + rx + 1] = sourceRow[x + lx];
-				destRow[lx - x - 1] = sourceRow[rx - x];
-			}
-		}
-	};
-
-	// clear the outside the bounded grid
-	Life.prototype.clearLTLOutside = function(lx, by, rx, ty) {
-		var colourGrid = this.colourGrid,
-			destRow = null,
-			ltl = this.LTL,
-			range = ltl.range,
-			x = 0,
-			y = 0;
-
-		// clear the top border
-		for (y = 0; y < range; y += 1) {
-			destRow = colourGrid[ty + y + 1];
-			for (x = lx; x <= rx; x += 1) {
-				destRow[x] = 0;
-			}
-		}
-
-		// copy the bottom border
-		for (y = 0; y < range; y += 1) {
-			destRow = colourGrid[by - y - 1];
-			for (x = lx; x <= rx; x += 1) {
-				destRow[x] = 0;
-			}
-		}
-
-		// clear the left and right columns
-		for (y = by; y <= ty; y += 1) {
-			destRow = colourGrid[y];
-			for (x = 0; x < range; x += 1) {
-				destRow[rx + x + 1] = 0;
-				destRow[lx - x - 1] = 0;
-			}
-		}
-
-		// clear top right border
-		// and top left border
-		for (y = 0; y < range; y += 1) {
-			destRow = colourGrid[ty + y + 1];
-			for (x = 0; x < range; x += 1) {
-				destRow[x + rx + 1] = 0;
-				destRow[lx - x - 1] = 0;
-			}
-		}
-
-		// clear bottom right border
-		// and bottom left border
-		for (y = 0; y < range; y += 1) {
-			destRow = colourGrid[by - y - 1];
-			for (x = 0; x < range; x += 1) {
-				destRow[x + rx + 1] = 0;
-				destRow[lx - x - 1] = 0;
-			}
-		}
-	};
-
-	// update the life grid region using computed counts
-	Life.prototype.updateGridFromCountsLTL = function(leftX, bottomY, rightX, topY) {
-		var x = 0,
-			y = 0,
-			population = 0,
-			births = 0,
-			deaths = 0,
-			state = 0,
-			count = 0,
-			somethingAlive = false,
-			rowAlive = false,
-			colourGrid = this.colourGrid,
-			colourTileHistoryGrid = this.colourTileHistoryGrid,
-			colourRow = null,
-			countRow = null,
-			colourTileRow = null,
-			minX = this.width,
-			maxX = 0,
-			minY = this.height,
-			maxY = 0,
-			zoomBox = this.zoomBox,
-			ltl = this.LTL,
-			range = ltl.range,
-			minB = ltl.minB,
-			maxB = ltl.maxB,
-			minS = ltl.minS,
-			maxS = ltl.maxS,
-			counts = ltl.counts,
-			maxGeneration = ltl.scount - 1;
-
-		// compute next generation
-		population = 0;
-		births = 0;
-		deaths = 0;
-		somethingAlive = false;
-		if (maxGeneration === 1) {
-			// 2 state version
-			for (y = bottomY - range; y <= topY + range; y += 1) {
-				colourRow = colourGrid[y];
-				countRow = counts[y];
-				colourTileRow = colourTileHistoryGrid[y >> 4];
-				rowAlive = false;
-				for (x = leftX - range; x <= rightX + range; x += 1) {
-					state = colourRow[x];
-					count = countRow[x];
-					if (state === 0) {
-						// this cell is dead
-						if (count >= minB && count <= maxB) {
-							// new cell is born
-							state = maxGeneration;
-							births += 1;
-						}
-					} else {
-						// this cell is alive
-						if (count < minS || count > maxS) {
-							// this cell doesn't survive
-							state = 0;
-							deaths += 1;
-						}
-					}
-					colourRow[x] = state;
-					// update bounding box columns
-					if (state > 0) {
-						rowAlive = true;
-						colourTileRow[x >> 8] = 65535;
-						if (x < minX) {
-							minX = x;
-						}
-						if (x > maxX) {
-							maxX = x;
-						}
-						population += 1;
-					}
-				}
-				if (rowAlive) {
-					// if something was alive in the row then update bounding box rows
-					if (y < minY) {
-						minY = y;
-					}
-					if (y > maxY) {
-						maxY = y;
-					}
-				}
-			}
-			if (population > 0) {
-				somethingAlive = true;
-			}
-		} else {
-			// >2 state version
-			for (y = bottomY - range; y <= topY + range; y += 1) {
-				colourRow = colourGrid[y];
-				countRow = counts[y];
-				colourTileRow = colourTileHistoryGrid[y >> 4];
-				rowAlive = false;
-				for (x = leftX - range; x <= rightX + range; x += 1) {
-					state = colourRow[x];
-					count = countRow[x];
-					if (state === 0) {
-						// this cell is dead
-						if (count >= minB && count <= maxB) {
-							// new cell is born
-							state = maxGeneration;
-							births += 1;
-						}
-					} else if (state === maxGeneration) {
-						// this cell is alive
-						if (count < minS || count > maxS) {
-							// cell decays by one state
-							state -= 1;
-							deaths += 1;
-						}
-					} else {
-						// this cell will eventually die
-						state -= 1;
-					}
-					colourRow[x] = state;
-					// update bounding box columns
-					if (state > 0) {
-						rowAlive = true;
-						colourTileRow[x >> 8] = 65535;
-						if (x < minX) {
-							minX = x;
-						}
-						if (x > maxX) {
-							maxX = x;
-						}
-						if (state === maxGeneration) {
-							population += 1;
-						}
-					}
-				}
-				if (rowAlive) {
-					// if something was alive in the row then update bounding box rows
-					if (y < minY) {
-						minY = y;
-					}
-					if (y > maxY) {
-						maxY = y;
-					}
-				}
-				somethingAlive |= rowAlive;
-			}
-		}
-
-		// save population and bounding box
-		this.population = population;
-		this.births = births;
-		this.deaths = deaths;
-		zoomBox.leftX = minX;
-		zoomBox.rightX = maxX;
-		zoomBox.bottomY = minY;
-		zoomBox.topY = maxY;
-
-		// stop if population zero
-		if (!somethingAlive) {
-			this.generationsAlive = 0;
-			this.anythingAlive = 0;
-		}
-	};
-
-	// update the life grid region using LTL
-	Life.prototype.nextGenerationLTL = function() {
-		var x = 0, y = 0, i = 0, j = 0,
-			leftX = this.zoomBox.leftX,
-			rightX = this.zoomBox.rightX,
-			bottomY = this.zoomBox.bottomY,
-			topY = this.zoomBox.topY,
-			range = this.LTL.range,
-			r2 = range + range,
-			rp1 = range + 1,
-			minB = this.LTL.minB, maxB = this.LTL.maxB,
-			minS = this.LTL.minS, maxS = this.LTL.maxS,
-			scount = this.LTL.scount,
-			counts = this.LTL.counts,
-			type = this.LTL.type,
-			maxGeneration = scount - 1,
-			count = 0,
-			minX = this.width, maxX = 0,
-			minY = this.height, maxY = 0,
-			colourGrid = this.colourGrid,
-			colourTileHistoryGrid = this.colourTileHistoryGrid,
-			colourRow = null, countRowYpr = null, countRowYmrp1 = null,
-			colourTileRow = null,
-			countRow = null, prevCountRow = null,
-			widths = this.LTL.widths,
-			width = 0,
-			bgWidth = this.boundedGridWidth,
-			bgHeight = this.boundedGridHeight,
-			gridLeftX = 0, gridRightX = 0, gridBottomY = 0, gridTopY = 0,
-			population = 0, births = 0, deaths = 0,
-			state = 0,
-			rowpop = 0, xpr = 0, xmrp1 = 0,
-			rowAlive = false, colAlive = false, somethingAlive = false,
-			chunk = 8;  // must be the same as the unrolled loop!
-
-		// check for bounded grid
-		if (this.boundedGridType !== -1) {
-			// get grid extent
-			gridLeftX = Math.round((this.width - bgWidth) / 2);
-			gridBottomY = Math.round((this.height - bgHeight) / 2);
-			gridRightX = gridLeftX + bgWidth - 1;
-			gridTopY = gridBottomY + bgHeight - 1;
-
-			// if B0 then process every cell
-			if (minB === 0) {
-				leftX = gridLeftX + range;
-				rightX = gridRightX - range;
-				topY = gridTopY - range;
-				bottomY = gridBottomY + range;
-			}
-
-			// check if the bounded grid is a torus
-			if (this.boundedGridType === 1) {
-				// extend range if needed for wrap
-				if (leftX - gridLeftX < range) {
-					rightX = gridRightX;
-				}
-				if (gridRightX - rightX < range) {
-					leftX = gridLeftX;
-				}
-				if (gridTopY - topY < range) {
-					bottomY = gridBottomY;
-				}
-				if (bottomY - gridBottomY < range) {
-					topY = gridTopY;
-				}
-				this.wrapTorusLTL(gridLeftX, gridBottomY, gridRightX, gridTopY);
-			}
-
-			// fit to bounded grid
-			if (leftX - gridLeftX < range) {
-				leftX = gridLeftX + range;
-			}
-			if (gridRightX - rightX < range) {
-				rightX = gridRightX - range;
-			}
-			if (gridTopY - topY < range) {
-				topY = gridTopY - range;
-			}
-			if (bottomY - gridBottomY < range) {
-				bottomY = gridBottomY + range;
-			}
-
-			if (type === PatternManager.mooreLTL) {
-				leftX -= r2;
-				bottomY -= r2;
-				rightX += r2;
-				topY += r2;
-			}
-		}
-
-		// compute counts for given neighborhood
-		if (type === PatternManager.mooreLTL) {
-			// temporarily expand bounding box
-			leftX -= r2;
-			bottomY -= r2;
-			rightX += r2;
-			topY += r2;
-
-			// put zeros in top 2*range rows
-			for (y = bottomY; y < bottomY + r2; y += 1) {
-				countRow = counts[y];
-				for (x = leftX; x <= rightX; x += 1) {
-					countRow[x] = 0;
-				}
-			}
-
-			// put zeros in left 2*range columns
-			for (x = leftX; x < leftX + r2; x += 1) {
-				for (y = bottomY + r2; y <= topY; y += 1) {
-					counts[y][x] = 0;
-				}
-			}
-
-			// calculate cumulative counts for each column
-			if (maxGeneration === 1) {
-				// 2 state version
-				prevCountRow = counts[bottomY + r2 - 1];
-				for (y = bottomY + r2; y <= topY; y += 1) {
-					countRow = counts[y];
-					colourRow = colourGrid[y];
-					count = 0;
-					x = leftX + r2;
-					while (x + chunk <= rightX) {
-						// unrolled loop must match chunk value
-						count += colourRow[x];
-						countRow[x] = prevCountRow[x] + count;
-						x += 1;
-						count += colourRow[x];
-						countRow[x] = prevCountRow[x] + count;
-						x += 1;
-						count += colourRow[x];
-						countRow[x] = prevCountRow[x] + count;
-						x += 1;
-						count += colourRow[x];
-						countRow[x] = prevCountRow[x] + count;
-						x += 1;
-						count += colourRow[x];
-						countRow[x] = prevCountRow[x] + count;
-						x += 1;
-						count += colourRow[x];
-						countRow[x] = prevCountRow[x] + count;
-						x += 1;
-						count += colourRow[x];
-						countRow[x] = prevCountRow[x] + count;
-						x += 1;
-						count += colourRow[x];
-						countRow[x] = prevCountRow[x] + count;
-						x += 1;
-					}
-					while (x <= rightX) {
-						count += colourRow[x];
-						countRow[x] = prevCountRow[x] + count;
-						x += 1;
-					}
-					prevCountRow = countRow;
-				}
-			} else {
-				// >2 state version
-				for (y = bottomY + r2; y <= topY; y += 1) {
-					prevCountRow = counts[y - 1];
-					countRow = counts[y];
-					colourRow = colourGrid[y];
-					count = 0;
-					for (x = leftX + r2; x <= rightX; x += 1) {
-						if (colourRow[x] === maxGeneration) {
-							count += 1;
-						}
-						countRow[x] = prevCountRow[x] + count;
-					}
-				}
-			}
-
-			// restore limits
-			leftX += range;
-			bottomY += range;
-			rightX -= range;
-			topY -= range;
-
-			if (this.boundedGridType !== -1) {
-				leftX += r2;
-				bottomY += r2;
-				rightX -= r2;
-				topY -= r2;
-			}
-
-			// calculate final neighborhood counts and update cells
-
-			// process bottom left cell
-			state = colourGrid[bottomY][leftX];
-			count = counts[bottomY + range][leftX + range];
-			if (state === 0) {
-				// this cell is dead
-				if (count >= minB && count <= maxB) {
-					// new cell is born
-					state = maxGeneration;
-					births += 1;
-				}
-			} else if (state === maxGeneration) {
-				// this cell is alive
-				if (count < minS || count > maxS) {
-					// cell decays by one state
-					state -= 1;
-					deaths += 1;
-				}
-			} else {
-				// this cell will eventually die
-				state -= 1;
-			}
-			// update the cell
-			colourGrid[bottomY][leftX] = state;
-			if (state === maxGeneration) {
-				population += 1;
-			}
-			if (state > 0) {
-				minX = leftX;
-				maxX = leftX;
-				minY = bottomY;
-				maxY = bottomY;
-				somethingAlive = true;
-				colourTileHistoryGrid[bottomY >> 4][leftX >> 8] = 65535;
-			}
-
-			// process remainder of bottom row (bottom left cell was done above)
-			rowAlive = false;
-			countRow = counts[bottomY + range];
-			prevCountRow = counts[bottomY + range];
-			colourRow = colourGrid[bottomY];
-			colourTileRow = colourTileHistoryGrid[bottomY >> 4];
-			for (x = leftX + 1; x <= rightX; x += 1) {
-				state = colourRow[x];
-				count = countRow[x + range] - prevCountRow[x - rp1];
-				if (state === 0) {
-					// this cell is dead
-					if (count >= minB && count <= maxB) {
-						// new cell is born
-						state = maxGeneration;
-						births += 1;
-					}
-				} else if (state === maxGeneration) {
-					// this cell is alive
-					if (count < minS || count > maxS) {
-						// cell decays by one state
-						state -= 1;
-						deaths += 1;
-					}
-				} else {
-					// this cell will eventually die
-					state -= 1;
-				}
-				// update the cell
-				colourRow[x] = state;
-				if (state === maxGeneration) {
-					population += 1;
-				}
-				if (state > 0) {
-					if (x < minX) {
-						minX = x;
-					}
-					if (x > maxX) {
-						maxX = x;
-					}
-					rowAlive = true;
-					colourTileRow[x >> 8] = 65535;
-				}
-			}
-			if (rowAlive) {
-				somethingAlive = true;
-				minY = bottomY;
-				maxY = bottomY;
-			}
-
-			// process remainder of left column (bottom left cell was done above)
-			colAlive = false;
-			for (y = bottomY + 1; y <= topY; y += 1) {
-				state = colourGrid[y][leftX];
-				count = counts[y + range][leftX + range] - counts[y - rp1][leftX + range];
-				if (state === 0) {
-					// this cell is dead
-					if (count >= minB && count <= maxB) {
-						// new cell is born
-						state = maxGeneration;
-						births += 1;
-					}
-				} else if (state === maxGeneration) {
-					// this cell is alive
-					if (count < minS || count > maxS) {
-						// cell decays by one state
-						state -= 1;
-						deaths += 1;
-					}
-				} else {
-					// this cell will eventually die
-					state -= 1;
-				}
-				// update the cell
-				colourGrid[y][leftX] = state;
-				if (state === maxGeneration) {
-					population += 1;
-				}
-				if (state > 0) {
-					if (y < minY) {
-						minY = y;
-					}
-					if (y > maxY) {
-						maxY = y;
-					}
-					colAlive = true;
-					colourTileHistoryGrid[y >> 4][leftX >> 8] = 65535;
-				}
-			}
-			if (colAlive) {
-				somethingAlive = true;
-				if (leftX < minX) {
-					minX = leftX;
-				}
-				if (leftX > maxX) {
-					maxX = rightX;
-				}
-			}
-
-			// compute the rest of the grid
-			if (maxGeneration === 1) {
-				// 2 state version
-				for (y = bottomY + 1; y <= topY; y += 1) {
-					colourRow = colourGrid[y];
-					colourTileRow = colourTileHistoryGrid[y >> 4];
-					countRowYpr = counts[y + range];
-					countRowYmrp1 = counts[y - rp1];
-					rowpop = population;
-					xpr = leftX + 1 + range;
-					xmrp1 = leftX + 1 - rp1;
-					for (x = leftX + 1; x <= rightX; x += 1) {
-						state = colourRow[x];
-						count = countRowYpr[xpr]
-							+ countRowYmrp1[xmrp1]
-							- countRowYpr[xmrp1]
-							- countRowYmrp1[xpr];
-						if (state === 0) {
-							// this cell is dead
-							if (count >= minB && count <= maxB) {
-								// new cell is born
-								state = maxGeneration;
-								colourRow[x] = state;
-								births += 1;
-							}
-						} else {
-							// this cell is alive
-							if (count < minS || count > maxS) {
-								// cell dies
-								state = 0;
-								colourRow[x] = 0;
-								deaths += 1;
-							}
-						}
-						// update the cell
-						if (state > 0) {
-							colourTileRow[x >> 8] = 65535;
-							if (x < minX) {
-								minX = x;
-							}
-							if (x > maxX) {
-								maxX = x;
-							}
-							population += 1;
-						}
-						xpr += 1;
-						xmrp1 += 1;
-					}
-					if (rowpop !== population) {
-						if (y < minY) {
-							minY = y;
-						}
-						if (y > maxY) {
-							maxY = y;
-						}
-					}
-				}
-				if (population > 0) {
-					somethingAlive = true;
-				}
-			} else {
-				// >2 state version
-				for (y = bottomY + 1; y <= topY; y += 1) {
-					colourRow = colourGrid[y];
-					colourTileRow = colourTileHistoryGrid[y >> 4];
-					countRowYpr = counts[y + range];
-					countRowYmrp1 = counts[y - rp1];
-					rowpop = population;
-					xpr = leftX + 1 + range;
-					xmrp1 = leftX + 1 - rp1;
-					for (x = leftX + 1; x <= rightX; x += 1) {
-						state = colourRow[x];
-						count = countRowYpr[xpr]
-							+ countRowYmrp1[xmrp1]
-							- countRowYpr[xmrp1]
-							- countRowYmrp1[xpr];
-						if (state === 0) {
-							// this cell is dead
-							if (count >= minB && count <= maxB) {
-								// new cell is born
-								state = maxGeneration;
-								births += 1;
-							}
-						} else if (state === maxGeneration) {
-							// this cell is alive
-							if (count < minS || count > maxS) {
-								// cell decays by one state
-								state -= 1;
-								deaths += 1;
-							}
-						} else {
-							// this cell will eventually die
-							state -= 1;
-						}
-						// update the cell
-						colourRow[x] = state;
-						if (state === maxGeneration) {
-							population += 1;
-						}
-						if (state > 0) {
-							colourTileRow[x >> 8] = 65535;
-							if (x < minX) {
-								minX = x;
-							}
-							if (x > maxX) {
-								maxX = x;
-							}
-						}
-						xpr += 1;
-						xmrp1 += 1;
-					}
-					if (rowpop !== population) {
-						somethingAlive = true;
-						if (y < minY) {
-							minY = y;
-						}
-						if (y > maxY) {
-							maxY = y;
-						}
-					}
-				}
-			}
-
-			// save statistics
-			this.population = population;
-			this.births = births;
-			this.deaths = deaths;
-			this.zoomBox.leftX = minX;
-			this.zoomBox.rightX = maxX;
-			this.zoomBox.bottomY = minY;
-			this.zoomBox.topY = maxY;
-
-			// stop if population zero
-			if (!somethingAlive) {
-				this.generationsAlive = 0;
-				this.anythingAlive = 0;
-			}
-		} else {
-			// von Neumann and Circular
-			for (y = bottomY - range; y <= topY + range; y += 1) {
-				countRow = counts[y];
-				for (x = leftX - range; x <= rightX + range; x += 1) {
-					count = 0;
-					for (j = -range; j <= range; j += 1) {
-						width = widths[j + range];
-						colourRow = colourGrid[y + j];
-						for (i = -width; i <= width; i += 1) {
-							if ((colourRow[x + i]) === maxGeneration) {
-								count += 1;
-							}
-						}
-					}
-					countRow[x] = count;
-				}
-			}
-		}
-
-		// adjust range if using bounded grid
-		if (this.boundedGridType !== -1) {
-			if (leftX < gridLeftX + range) {
-				leftX = gridLeftX + range;
-			}
-			if (rightX > gridRightX - range) {
-				rightX = gridRightX - range;
-			}
-			if (bottomY < gridBottomY + range) {
-				bottomY = gridBottomY + range;
-			}
-			if (topY > gridTopY - range) {
-				topY = gridTopY - range;
-			}
-		}
-
-		// compute next generation from counts if not Moore which was done above
-		if (type !== PatternManager.mooreLTL) {
-			this.updateGridFromCountsLTL(leftX, bottomY, rightX, topY);
-		}
-
-		// check if there is a Torus bounded grid
-		if (this.boundedGridType === 1) {
-			// clear outside
-			this.clearLTLOutside(gridLeftX, gridBottomY, gridRightX, gridTopY);
 		}
 	};
 
@@ -9360,7 +8601,7 @@
 		    // current generation number
 		    savedCounter = this.counter;
 
-		// check for generations or LTL rule
+		// check for generations, LTL or HROT rule
 		if (this.multiNumStates === -1) {
 			// check if Life already stopped
 			if (result === 0) {
@@ -9386,7 +8627,7 @@
 			result = this.anythingAlive;
 		}
 		else {
-			// generations or LTL
+			// generations, LTL or HROT
 			result = this.anythingAlive | this.generationsAlive;
 		}
 

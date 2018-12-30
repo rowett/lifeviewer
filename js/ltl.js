@@ -864,9 +864,10 @@
 		// check if there is a Torus bounded grid
 		if (this.engine.boundedGridType === 1) {
 			// clear outside
-			this.engine.clearLTLOutside(gridLeftX, gridBottomY, gridRightX, gridTopY);
+			this.clearLTLOutside(gridLeftX, gridBottomY, gridRightX, gridTopY);
 		}
 	};
+
 	// create the global interface
 	window["LTL"] = LTL;
 }
