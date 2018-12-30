@@ -1,4 +1,5 @@
 Build 263
+- HROT (higher range outer totalistic) rules are now supported
 - LifeViewer now accepts lifelib style rule names:
 	- generations rules can be specified with "g<num>" prefix rather than "/<num>" postfix
 	- r<num>b<num>t<num>s<num>t<num> is now supported for LtL
