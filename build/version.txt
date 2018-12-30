@@ -1,3 +1,9 @@
+Build 263
+- LifeViewer now accepts lifelib style rule names:
+	- generations rules can be specified with "g<num>" prefix rather than "/<num>" postfix
+	- r<num>b<num>t<num>s<num>t<num> is now supported for LtL
+	- canonical forms remain the original formats
+
 Build 262
 - LtL now computes births and deaths
 - faster Moore algorithm

@@ -1972,7 +1972,7 @@
 				maxCells -= (1 - pattern.middleLTL);
 				if (pattern.BminLTL > maxCells) {
 					result = false;
-					this.failureReason = "LtL 'B" + pattern.BmaxLTL + "..' > " + maxCells;
+					this.failureReason = "LtL 'B" + pattern.BminLTL + "..' > " + maxCells;
 				}
 				if (pattern.BmaxLTL > maxCells) {
 					result = false;
@@ -1980,7 +1980,7 @@
 				}
 				if (pattern.SminLTL > maxCells) {
 					result = false;
-					this.failureReason = "LtL 'S" + pattern.SmaxLTL + "..' > " + maxCells;
+					this.failureReason = "LtL 'S" + pattern.SminLTL + "..' > " + maxCells;
 				}
 				if (pattern.SmaxLTL > maxCells) {
 					result = false;
@@ -2051,7 +2051,7 @@
 				maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1);
 				if (pattern.BminLTL > maxCells) {
 					result = false;
-					this.failureReason = "LtL 'B" + pattern.BmaxLTL + "..' > " + maxCells;
+					this.failureReason = "LtL 'B" + pattern.BminLTL + "..' > " + maxCells;
 				}
 				if (pattern.BmaxLTL > maxCells) {
 					result = false;
@@ -2059,7 +2059,7 @@
 				}
 				if (pattern.SminLTL > maxCells) {
 					result = false;
-					this.failureReason = "LtL 'S" + pattern.SmaxLTL + "..' > " + maxCells;
+					this.failureReason = "LtL 'S" + pattern.SminLTL + "..' > " + maxCells;
 				}
 				if (pattern.SmaxLTL > maxCells) {
 					result = false;
@@ -2070,6 +2070,96 @@
 
 		return result;
 	};
+
+
+	// decode LTL rule in RBTST format
+	PatternManager.decodeLTLRBTST = function(pattern, rule) {
+		var value = 0,
+		    result = false,
+		    maxCells = 0;
+
+		// reset string index
+		this.index = 0;
+
+		// set unspecified defaults: 2 states, whether middle is included (yes) and neighborhood (Moore)
+		if (pattern.multiNumStates == -1) {
+			pattern.multiNumStates = 2;
+		}
+		pattern.middleLTL = 1;
+		pattern.neighborhoodLTL = PatternManager.mooreLTL;
+
+		// decode R part
+		value = this.decodeLTLpart(rule, "r", this.minRangeLTL, this.maxRangeLTL, "");
+		if (this.index !== -1) {
+			pattern.rangeLTL = value;
+			
+			// decode first B part
+			value = this.decodeLTLpart(rule, "b", 0, -1, "");
+			if (this.index !== -1) {
+				pattern.BminLTL = value;
+
+				// decode second B part
+				value = this.decodeLTLpart(rule, "t", pattern.BminLTL, -1, "B");
+				if (this.index !== -1) {
+					pattern.BmaxLTL = value;
+
+					// decode S first part
+					value = this.decodeLTLpart(rule, "s", 0, -1, "");
+					if (this.index !== -1) {
+						pattern.SminLTL = value;
+
+						// decode second S part
+						value = this.decodeLTLpart(rule, "t", pattern.SminLTL, -1, "S");
+						if (this.index !== -1) {
+							pattern.SmaxLTL = value;
+
+							// mark rule valid
+							result = true;
+						}
+					}
+				}
+			}
+		}
+
+		// final validation
+		if (result) {
+			// check for trailing characters
+			if (this.index !== rule.length) {
+				result = false;
+				this.failureReason = "LtL invalid characters after rule";
+			}
+			else {
+				// check Smax and Bmax based on range and neighborhood
+				maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1);
+				if (pattern.BminLTL > maxCells) {
+					result = false;
+					this.failureReason = "LtL 'B" + pattern.BminLTL + "' > " + maxCells;
+				}
+				if (pattern.BmaxLTL > maxCells) {
+					result = false;
+					this.failureReason = "LtL 'B..T" + pattern.BmaxLTL + "' > " + maxCells;
+				}
+				if (pattern.SminLTL > maxCells) {
+					result = false;
+					this.failureReason = "LtL 'S" + pattern.SminLTL + "..' > " + maxCells;
+				}
+				if (pattern.SmaxLTL > maxCells) {
+					result = false;
+					this.failureReason = "LtL 'S..T" + pattern.SmaxLTL + "' > " + maxCells;
+				}
+			}
+		}
+
+		return result;
+	}
+
+	// decode HROT fule
+	PatternManager.decodeHROT = function(pattern, rule) {
+		var result = false;
+
+		this.failureReason = "HROT not supported";
+		return result;
+	}
 
 	// decode rule string and return whether valid
 	PatternManager.decodeRuleString = function(pattern, rule) {
@@ -2122,8 +2212,8 @@
 		    vonNeumannLength = PatternManager.vonNeumannPostfix.length,
 
 		    // base64 map string
-		    base64 = "",
-
+			base64 = "",
+			
 		    // counter
 		    i = 0;
 
@@ -2150,8 +2240,7 @@
 					// remove padding
 					base64 = base64.substr(0, base64.length - 2);
 				}
-			}
-			else {
+			} else {
 				// slash version
 				if (base64.substr(validIndex - 2, 2) === "==") {
 					// remove padding
@@ -2180,8 +2269,7 @@
 						if (validIndex !== -1) {
 							// add the digit to the number of generations states
 							pattern.multiNumStates = pattern.multiNumStates * 10 + validIndex;
-						}
-						else {
+						} else {
 							// mark as invalid
 							this.failureReason = "Illegal character in generations number";
 							pattern.multiNumStates = -1;
@@ -2197,8 +2285,7 @@
 						pattern.multiNumStates = -1;
 						valid = false;
 					}
-				}
-				else {
+				} else {
 					if (generationsPart !== "") {
 						// illegal trailing characters
 						i = generationsPart.length;
@@ -2206,237 +2293,271 @@
 						valid = false;
 					}
 				}
-			}
-			else {
+			} else {
 				// illegal map
 				if (base64.length === PatternManager.map512Length || base64.length === PatternManager.map128Length || base64.length === PatternManager.map32Length) {
 					this.failureReason = "MAP contains illegal base64 character";
-				}
-				else {
+				} else {
 					this.failureReason = "MAP length must be " + PatternManager.map32Length + ", " + PatternManager.map128Length + " or " + PatternManager.map512Length + " not " + base64.length;
 				}
 			}
-		}
-		else {
+		} else {
 			// convert to lower case
 			rule = rule.toLowerCase();
 
 			// remove whitespace
 			rule = this.removeWhiteSpace(rule);
 
-			// check for LTL rule
-			if (rule[0] === "r" || ((rule[0] >= "1" && rule[0] <= "9") && rule.indexOf(",") !== -1)) {
-				if (rule[0] === "r") {
-					valid = this.decodeLTLMC(pattern, rule);
-				}
-				else {
-					valid = this.decodeLTLnum(pattern, rule);
-				}
-				if (valid) {
-					pattern.isLTL = true;
-					// set canonical name
-					pattern.ruleName = "R" + pattern.rangeLTL + ",C" + pattern.multiNumStates + ",M" + pattern.middleLTL + ",S" + pattern.SminLTL + ".." + pattern.SmaxLTL + ",B" + pattern.BminLTL + ".." + pattern.BmaxLTL + ",N";
-					if (pattern.neighborhoodLTL === this.mooreLTL) {
-						pattern.ruleName += "M";
-					} else if (pattern.neighborhoodLTL === this.vonNeumannLTL) {
-						pattern.ruleName += "N";
-					} else {
-						pattern.ruleName += "C";
-					}
+			// check for generations prefix
+			valid = true;
+			if (rule[0] === "g") {
+				i = 1;
+				pattern.multiNumStates = 0;
 
-					// adjust the survival range if the center cell is not included
-					if (pattern.middleLTL === 0) {
-						pattern.SminLTL += 1;
-						pattern.SmaxLTL += 1;
+				// read generations digits
+				validIndex = 0;
+				while (i < rule.length && validIndex !== -1) {
+					// check each character is a valid digit
+					validIndex = this.decimalDigits.indexOf(rule[i]);
+					if (validIndex !== -1) {
+						// add the digit to the number of generations states
+						pattern.multiNumStates = pattern.multiNumStates * 10 + validIndex;
+						i += 1;
+					}
+				}
+
+				// check if digits were present
+				if (i > 1) {
+					// check if generations states are valid
+					if (pattern.multiNumStates < 2 || pattern.multiNumStates > 256) {
+						// mark as invalid
+						this.failureReason = "Generations number must be 2-256";
+						pattern.multiNumStates = -1;
+						valid = false;
+					} else {
+						// remove prefix from rule
+						rule = rule.substr(i);
+						valid = true;
 					}
 				}
 			}
-			else {
-				// check for Wolfram rule
-				if (rule[0] === "w") {
-					// decode Wolframe rule
-					valid = this.decodeWolfram(pattern, rule);
-				}
-				else {
-					// check for Hex rules
-					hexIndex = rule.lastIndexOf(PatternManager.hexPostfix);
-					if ((hexIndex !== -1) && (hexIndex === rule.length - hexLength)) {
-						// rule is a hex type
-						pattern.isHex = true;
 
-						// remove the postfix
-						rule = rule.substr(0, rule.length - hexLength);
-
-						// update the valid rule letters to hex digits
-						validRuleLetters = this.hexDigits;
-					}
-
-					// check for Von Neumann rules
-					vonNeumannIndex = rule.lastIndexOf(PatternManager.vonNeumannPostfix);
-					if ((vonNeumannIndex !== -1) && (vonNeumannIndex === rule.length - vonNeumannLength)) {
-						// rule is a vonNeumann type
-						pattern.isVonNeumann = true;
-
-						// remove the postfix
-						rule = rule.substr(0, rule.length - vonNeumannLength);
-
-						// update the valid rule letters to vonNeumann digits
-						validRuleLetters = this.vonNeumannDigits;
-					}
-
-					// check if the rule contains a slash
-					slashIndex = rule.indexOf("/");
-					
-					// if no slash then check for underscore
-					if (slashIndex === -1) {
-						slashIndex = rule.indexOf("_");
-					}
-
-					// check for Generations rule
-					if (slashIndex !== -1) {
-						// check for second slash
-						generationsIndex = rule.lastIndexOf("/");
-						if (generationsIndex === -1) {
-							// check for underscore
-							generationsIndex = rule.lastIndexOf("_");
-						}
-
-						// check if this is a second slash
-						if (generationsIndex !== slashIndex) {
-							// generations found
-							generationsPart = rule.substring(generationsIndex + 1);
-
-							// remove the generations part
-							rule = rule.substr(0, generationsIndex);
-						}
-					}
-
-					// check if the rule contains a B and/or S
-					bIndex = rule.indexOf("b");
-					sIndex = rule.indexOf("s");
-
-					// check if there was a slash to divide birth from survival
-					if (slashIndex === -1) {
-						// no slash so B or S must exist and one must be at the start of the string
-						if (bIndex === 0 || sIndex === 0) {
-							// check if birth exists
-							if (sIndex === -1) {
-								birthPart = rule;
-								survivalPart = "";
+			// if rule still valid then continue decoding
+			if (valid) {
+				valid = false;
+				// check for LTL or HROT rule
+				if (rule[0] === "r" || ((rule[0] >= "1" && rule[0] <= "9") && rule.indexOf(",") !== -1)) {
+					if (rule[0] === "r") {
+						// check for Wojtowicz format LTL
+						if (rule.indexOf("c") !== -1) {
+							valid = this.decodeLTLMC(pattern, rule);
+						} else {
+							// check for Goucher format LTL
+							if (rule.indexOf("t") !== -1) {
+								valid = this.decodeLTLRBTST(pattern, rule);
+							} else {
+								valid = this.decodeHROT(pattern.rule);
 							}
-							else {
-								// check if only survival exists
-								if (bIndex === -1) {
-									survivalPart = rule;
-									birthPart = "";
-								}
-								else {
-									// both exist so determine whether B or S is first
-									if ((bIndex < sIndex) && sIndex !== -1) {
-										// cut the string using S
-										birthPart = rule.substring(bIndex + 1, sIndex);
-										survivalPart = rule.substring(sIndex + 1);
+						}
+					} else {
+						// check for Evans format LTL
+						valid = this.decodeLTLnum(pattern, rule);
+					}
+					if (valid) {
+						pattern.isLTL = true;
+						// set canonical name
+						pattern.ruleName = "R" + pattern.rangeLTL + ",C" + pattern.multiNumStates + ",M" + pattern.middleLTL + ",S" + pattern.SminLTL + ".." + pattern.SmaxLTL + ",B" + pattern.BminLTL + ".." + pattern.BmaxLTL + ",N";
+						if (pattern.neighborhoodLTL === this.mooreLTL) {
+							pattern.ruleName += "M";
+						} else if (pattern.neighborhoodLTL === this.vonNeumannLTL) {
+							pattern.ruleName += "N";
+						} else {
+							pattern.ruleName += "C";
+						}
+
+						// adjust the survival range if the center cell is not included
+						if (pattern.middleLTL === 0) {
+							pattern.SminLTL += 1;
+							pattern.SmaxLTL += 1;
+						}
+					}
+				} else {
+					// check for Wolfram rule
+					if (rule[0] === "w") {
+						// decode Wolframe rule
+						valid = this.decodeWolfram(pattern, rule);
+					} else {
+						// check for Hex rules
+						hexIndex = rule.lastIndexOf(PatternManager.hexPostfix);
+						if ((hexIndex !== -1) && (hexIndex === rule.length - hexLength)) {
+							// rule is a hex type
+							pattern.isHex = true;
+
+							// remove the postfix
+							rule = rule.substr(0, rule.length - hexLength);
+
+							// update the valid rule letters to hex digits
+							validRuleLetters = this.hexDigits;
+						}
+
+						// check for Von Neumann rules
+						vonNeumannIndex = rule.lastIndexOf(PatternManager.vonNeumannPostfix);
+						if ((vonNeumannIndex !== -1) && (vonNeumannIndex === rule.length - vonNeumannLength)) {
+							// rule is a vonNeumann type
+							pattern.isVonNeumann = true;
+
+							// remove the postfix
+							rule = rule.substr(0, rule.length - vonNeumannLength);
+
+							// update the valid rule letters to vonNeumann digits
+							validRuleLetters = this.vonNeumannDigits;
+						}
+
+						// check if the rule contains a slash
+						slashIndex = rule.indexOf("/");
+						
+						// if no slash then check for underscore
+						if (slashIndex === -1) {
+							slashIndex = rule.indexOf("_");
+						}
+
+						// check for Generations rule
+						if (slashIndex !== -1) {
+							// check for second slash
+							generationsIndex = rule.lastIndexOf("/");
+							if (generationsIndex === -1) {
+								// check for underscore
+								generationsIndex = rule.lastIndexOf("_");
+							}
+
+							// check if this is a second slash
+							if (generationsIndex !== slashIndex) {
+								// generations found
+								generationsPart = rule.substring(generationsIndex + 1);
+
+								// remove the generations part
+								rule = rule.substr(0, generationsIndex);
+							}
+						}
+
+						// check if the rule contains a B and/or S
+						bIndex = rule.indexOf("b");
+						sIndex = rule.indexOf("s");
+
+						// check if there was a slash to divide birth from survival
+						if (slashIndex === -1) {
+							// no slash so B or S must exist and one must be at the start of the string
+							if (bIndex === 0 || sIndex === 0) {
+								// check if birth exists
+								if (sIndex === -1) {
+									birthPart = rule;
+									survivalPart = "";
+								} else {
+									// check if only survival exists
+									if (bIndex === -1) {
+										survivalPart = rule;
+										birthPart = "";
+									} else {
+										// both exist so determine whether B or S is first
+										if ((bIndex < sIndex) && sIndex !== -1) {
+											// cut the string using S
+											birthPart = rule.substring(bIndex + 1, sIndex);
+											survivalPart = rule.substring(sIndex + 1);
+										} else {
+											// cut the rule using B
+											survivalPart = rule.substring(sIndex + 1, bIndex);
+											birthPart = rule.substring(bIndex + 1);
+										}
 									}
-									else {
-										// cut the rule using B
-										survivalPart = rule.substring(sIndex + 1, bIndex);
-										birthPart = rule.substring(bIndex + 1);
-									}
 								}
+							} else {
+								// invalid rule name
+								this.failureReason = "Unsupported rule name";
+							}
+						} else {
+							// slash exists so set left and right rule
+							if (bIndex < sIndex) {
+								birthPart = rule.substring(0, slashIndex);
+								survivalPart = rule.substring(slashIndex + 1);
+							} else {
+								birthPart = rule.substring(slashIndex + 1);
+								survivalPart = rule.substring(0, slashIndex);
 							}
 						}
-						else {
-							// invalid rule name
-							this.failureReason = "Unsupported rule name";
-						}
-					}
-					else {
-						// slash exists so set left and right rule
-						if (bIndex < sIndex) {
-							birthPart = rule.substring(0, slashIndex);
-							survivalPart = rule.substring(slashIndex + 1);
-						}
-						else {
-							birthPart = rule.substring(slashIndex + 1);
-							survivalPart = rule.substring(0, slashIndex);
-						}
-					}
 
-					// remove "b" or "s" if present
-					if (bIndex !== -1 && birthPart) {
-						if (birthPart[0] === "b") {
-							birthPart = birthPart.substring(1);
-						}
-					}
-					if (sIndex !== -1 && survivalPart) {
-						if (survivalPart[0] === "s") {
-							survivalPart = survivalPart.substring(1);
-						}
-					}
-
-					// if generations then check it is valid
-					if (generationsPart !== null) {
-						i = 0;
-						pattern.multiNumStates = 0;
-
-						// read generations digits
-						validIndex = 0;
-						while (i < generationsPart.length && validIndex !== -1) {
-							// check each character is a valid digit
-							validIndex = this.decimalDigits.indexOf(generationsPart[i]);
-							if (validIndex !== -1) {
-								// add the digit to the number of generations states
-								pattern.multiNumStates = pattern.multiNumStates * 10 + validIndex;
+						// remove "b" or "s" if present
+						if (bIndex !== -1 && birthPart) {
+							if (birthPart[0] === "b") {
+								birthPart = birthPart.substring(1);
 							}
-							else {
+						}
+						if (sIndex !== -1 && survivalPart) {
+							if (survivalPart[0] === "s") {
+								survivalPart = survivalPart.substring(1);
+							}
+						}
+
+						// if generations then check it is valid
+						if (generationsPart !== null) {
+							i = 0;
+							pattern.multiNumStates = 0;
+
+							// read generations digits
+							validIndex = 0;
+							while (i < generationsPart.length && validIndex !== -1) {
+								// check each character is a valid digit
+								validIndex = this.decimalDigits.indexOf(generationsPart[i]);
+								if (validIndex !== -1) {
+									// add the digit to the number of generations states
+									pattern.multiNumStates = pattern.multiNumStates * 10 + validIndex;
+								} else {
+									// mark as invalid
+									this.failureReason = "Illegal character in generations number";
+									pattern.multiNumStates = -1;
+									birthPart = null;
+								}
+								i += 1;
+							}
+
+							// check if generations states are valid
+							if (pattern.multiNumStates !== -1 && (pattern.multiNumStates < 2 || pattern.multiNumStates > 256)) {
 								// mark as invalid
-								this.failureReason = "Illegal character in generations number";
+								this.failureReason = "Generations number must be 2-256";
 								pattern.multiNumStates = -1;
 								birthPart = null;
 							}
-							i += 1;
 						}
 
-						// check if generations states are valid
-						if (pattern.multiNumStates !== -1 && (pattern.multiNumStates < 2 || pattern.multiNumStates > 256)) {
-							// mark as invalid
-							this.failureReason = "Generations number must be 2-256";
-							pattern.multiNumStates = -1;
-							birthPart = null;
-						}
-					}
+						// check if rule split correctly
+						if (birthPart !== null && survivalPart !== null) {
+							// mark as potentially valid
+							valid = true;
 
-					// check if rule split correctly
-					if (birthPart !== null && survivalPart !== null) {
-						// mark as potentially valid
-						valid = true;
-
-						// check the birth part is valid
-						i = 0;
-						while (i < birthPart.length) {
-							validIndex = validRuleLetters.indexOf(birthPart[i]);
-							if (validIndex === -1) {
-								this.failureReason = "Illegal character in birth specification";
-								valid = false;
-								i = birthPart.length;
-							}
-							else {
-								i += 1;
-							}
-						}
-
-						// check the survival part is valid
-						if (valid) {
+							// check the birth part is valid
 							i = 0;
-							while (i < survivalPart.length) {
-								validIndex = validRuleLetters.indexOf(survivalPart[i]);
+							while (i < birthPart.length) {
+								validIndex = validRuleLetters.indexOf(birthPart[i]);
 								if (validIndex === -1) {
-									this.failureReason = "Illegal character in survival specification";
+									this.failureReason = "Illegal character in birth specification";
 									valid = false;
-									i = survivalPart.length;
-								}
-								else {
+									i = birthPart.length;
+								} else {
 									i += 1;
+								}
+							}
+
+							// check the survival part is valid
+							if (valid) {
+								i = 0;
+								while (i < survivalPart.length) {
+									validIndex = validRuleLetters.indexOf(survivalPart[i]);
+									if (validIndex === -1) {
+										this.failureReason = "Illegal character in survival specification";
+										valid = false;
+										i = survivalPart.length;
+									} else {
+										i += 1;
+									}
 								}
 							}
 						}

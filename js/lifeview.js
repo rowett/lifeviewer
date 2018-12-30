@@ -145,7 +145,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 262,
+		/** @const {number} */ versionBuild : 263,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2224,9 +2224,6 @@
 			borderSize = ViewConstants.maxStepSpeed;
 			if (me.engine.isLTL && ((me.engine.LTL.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
 				borderSize = me.engine.LTL.range * 2 + 1;
-				if (me.engine.boundedGridType !== -1) {
-					borderSize += me.engine.LTL.range * 2;
-				}
 			}
 			if (me.engine.checkForGrowth(borderSize)) {
 				// update the default x and y
