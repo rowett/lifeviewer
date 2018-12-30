@@ -523,9 +523,9 @@
 				colourTileRow = colourTileHistoryGrid[y >> 4];
 				countRowYpr = counts[y + range];
 				countRowYmrp1 = counts[y - rp1];
-				rowpop = population;
 				xpr = leftX + 1 + range;
 				xmrp1 = leftX + 1 - rp1;
+				rowAlive = false;
 				for (x = leftX + 1; x <= rightX; x += 1) {
 					state = colourRow[x];
 					count = countRowYpr[xpr]
@@ -563,18 +563,19 @@
 						if (x > maxX) {
 							maxX = x;
 						}
+						rowAlive = true;
 					}
 					xpr += 1;
 					xmrp1 += 1;
 				}
-				if (rowpop !== population) {
-					somethingAlive = true;
+				if (rowAlive) {
 					if (y < minY) {
 						minY = y;
 					}
 					if (y > maxY) {
 						maxY = y;
 					}
+					somethingAlive = true;
 				}
 			}
 		}
