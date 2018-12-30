@@ -342,7 +342,7 @@
 						maxY = y;
 					}
 				}
-				somethingAlive |= rowAlive;
+				somethingAlive = true;
 			}
 		}
 
@@ -398,10 +398,10 @@
 			chunk = 8;  // must be the same as the unrolled loop!
 
 		// check for bounded grid
-		if (this.boundedGridType !== -1) {
+		if (this.engine.boundedGridType !== -1) {
 			// get grid extent
-			gridLeftX = Math.round((this.width - bgWidth) / 2);
-			gridBottomY = Math.round((this.height - bgHeight) / 2);
+			gridLeftX = Math.round((this.engine.width - bgWidth) / 2);
+			gridBottomY = Math.round((this.engine.height - bgHeight) / 2);
 			gridRightX = gridLeftX + bgWidth - 1;
 			gridTopY = gridBottomY + bgHeight - 1;
 
@@ -414,7 +414,7 @@
 			}
 
 			// check if the bounded grid is a torus
-			if (this.boundedGridType === 1) {
+			if (this.engine.boundedGridType === 1) {
 				// extend range if needed for wrap
 				if (leftX - gridLeftX < range) {
 					rightX = gridRightX;
@@ -541,7 +541,7 @@
 			rightX -= range;
 			topY -= range;
 
-			if (this.boundedGridType !== -1) {
+			if (this.engine.boundedGridType !== -1) {
 				leftX += r2;
 				bottomY += r2;
 				rightX -= r2;
