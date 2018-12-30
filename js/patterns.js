@@ -49,6 +49,9 @@
 		// base64 digits
 		base64Characters : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
 
+		// hex digits
+		hexCharacters : "0123456789abcdef",
+
 		// number of base64 characters in 512bit (Moore) map string
 		map512Length : 86,
 
@@ -169,6 +172,10 @@
 		vonNeumannLTL : 1,
 		circularLTL : 2,
 
+		// HROT min and max range
+		minRangeHROT: 2,
+		maxRangeHROT: 5,
+
 		// specified width and height from RLE pattern
 		specifiedWidth : -1,
 		specifiedHeight : -1
@@ -251,6 +258,18 @@
 
 		// LTL neightborhood (0 Moore, 1 von Neumann, 2 circular)
 		this.neighborhoodLTL = -1;
+
+		// is HROT rule
+		this.isHROT = false;
+
+		// HROT range
+		this.rangeHROT = -1;
+
+		// HROT birth array
+		this.birthHROT = null;
+
+		// HROT death array
+		this.deathHROT = null;
 
 		// states for generations or LTL
 		this.multiNumStates = -1;
@@ -474,7 +493,7 @@
 			this.executable = true;
 
 			// set Conway rule
-			this.decodeRuleString(pattern, "");
+			this.decodeRuleString(pattern, "", allocator);
 		}
 	};
 
@@ -641,7 +660,7 @@
 			pattern.patternFormat = "Life 1.06";
 
 			// set Conway rule
-			this.decodeRuleString(pattern, "");
+			this.decodeRuleString(pattern, "", allocator);
 
 			// set the cells
 			for (i = 0; i < n; i += 1) {
@@ -983,7 +1002,7 @@
 			// set rule
 			if (sawCustom) {
 				// code the rule
-				this.decodeRule(pattern, customRule, false);
+				this.decodeRule(pattern, customRule, false, allocator);
 				if (this.executable) {
 					// check for multi-state rule
 					if (!(pattern.multiNumStates >= 0 || pattern.isHistory)) {
@@ -999,7 +1018,7 @@
 			}
 			else {
 				// default to Conway's Life
-				this.decodeRuleString(pattern, "");
+				this.decodeRuleString(pattern, "", allocator);
 			}
 
 			// populate the array
@@ -1616,8 +1635,7 @@
 			digit = this.decimalDigits.indexOf(rule[i]);
 			if (digit !== -1) {
 				number = number * 10 + digit;
-			}
-			else {
+			} else {
 				this.failureReason = "Illegal character in Wolfram rule";
 				valid = false;
 			}
@@ -1630,13 +1648,11 @@
 			if (number < 2 || number > 254) {
 				this.failureReason = "Wolfram rule number must be 2-254";
 				valid = false;
-			}
-			else {
+			} else {
 				if ((number & 1) !== 0) {
 					this.failureReason = "Wolfram rule number must be even";
 					valid = false;
-				}
-				else {
+				} else {
 					// build the map
 					this.createWolframMap(this.ruleArray, number);
 					pattern.wolframRule = number;
@@ -1658,8 +1674,7 @@
 		if (base64 === "") {
 			if (pattern.isHex) {
 				pattern.ruleName += "H";
-			}
-			else {
+			} else {
 				if (pattern.isVonNeumann) {
 					pattern.ruleName += "V";
 				}
@@ -1715,8 +1730,7 @@
 			if (aliasName === "") {
 				if (pattern.isHistory) {
 					aliasName = "Life";
-				}
-				else {
+				} else {
 					aliasName = "Conway's Life";
 				}
 			}
@@ -1741,22 +1755,19 @@
 		if (currentLen >= testLen) {
 			// Moore
 			this.mapNeighbours = 8;
-		}
-		else {
+		} else {
 			testLen = PatternManager.map128Length;
 			if (currentLen >= testLen) {
 				// Hex
 				this.mapNeighbours = 6;
 				pattern.isHex = true;
-			}
-			else {
+			} else {
 				testLen = PatternManager.map32Length;
 				if (currentLen >= testLen) {
 					// von Neumann
 					this.mapNeighbours = 4;
 					pattern.isVonNeumann = true;
-				}
-				else {
+				} else {
 					// invalid map length
 					testLen = -1;
 				}
@@ -1798,8 +1809,7 @@
 			}
 			this.failureReason = "LtL expected '" + part.toUpperCase() + "' got '" + rulepart.toUpperCase() + "'";
 			this.index = -1;
-		}
-		else {
+		} else {
 			// remove comma from part if present
 			if (part[0] === ",") {
 				part = part.substr(1);
@@ -1825,19 +1835,16 @@
 							result = this.circularLTL;
 						}
 					}
-				}
-				else {
+				} else {
 					this.failureReason = "LtL expected 'NM', 'NN' or 'NC' got 'N" + next.toUpperCase() + "'";
 					this.index = -1;
 				}
-			}
-			else {
+			} else {
 				// check for digit
 				if (nextCode < asciiZero || nextCode > asciiNine) {
 					this.failureReason = "LtL '" + partof + part.toUpperCase() + "' needs a number";
 					this.index = -1;
-				}
-				else {
+				} else {
 					// read digits
 					while (nextCode >= asciiZero && nextCode <= asciiNine) {
 						result = 10 * result + (nextCode - asciiZero);
@@ -1943,8 +1950,7 @@
 			if (this.index !== rule.length) {
 				result = false;
 				this.failureReason = "LtL invalid characters after rule";
-			}
-			else {
+			} else {
 				// check Smax and Bmax based on range and neighborhood
 				switch(pattern.neighborhoodLTL) {
 					case PatternManager.mooreLTL:
@@ -2045,8 +2051,7 @@
 			if (this.index !== rule.length) {
 				result = false;
 				this.failureReason = "LtL invalid characters after rule";
-			}
-			else {
+			} else {
 				// check Smax and Bmax based on range and neighborhood
 				maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1);
 				if (pattern.BminLTL > maxCells) {
@@ -2071,7 +2076,6 @@
 		return result;
 	};
 
-
 	// decode LTL rule in RBTST format
 	PatternManager.decodeLTLRBTST = function(pattern, rule) {
 		var value = 0,
@@ -2081,10 +2085,12 @@
 		// reset string index
 		this.index = 0;
 
-		// set unspecified defaults: 2 states, whether middle is included (yes) and neighborhood (Moore)
-		if (pattern.multiNumStates == -1) {
+		// set number of states the default unless set by generations prefix
+		if (pattern.multiNumStates === -1) {
 			pattern.multiNumStates = 2;
 		}
+
+		// set unspecified defaults: whether middle is included (yes) and neighborhood (Moore)
 		pattern.middleLTL = 1;
 		pattern.neighborhoodLTL = PatternManager.mooreLTL;
 
@@ -2127,8 +2133,7 @@
 			if (this.index !== rule.length) {
 				result = false;
 				this.failureReason = "LtL invalid characters after rule";
-			}
-			else {
+			} else {
 				// check Smax and Bmax based on range and neighborhood
 				maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1);
 				if (pattern.BminLTL > maxCells) {
@@ -2151,18 +2156,217 @@
 		}
 
 		return result;
-	}
+	};
+
+	// decode HROT hex digits
+	PatternManager.readHexDigits = function(rule, which, numDigits, pattern, allocator) {
+		var result = false,
+			hexValue = 0,
+			list = null,
+			allocName = "HROT.",
+		    i = 0, j = 0;
+
+		// check there are enough digits
+		if (this.index + numDigits > rule.length) {
+			this.failureReason = "HROT '" + which + "' needs " + numDigits + " hex digits";
+		} else {
+			i = 0;
+			hexValue = 0;
+			// check all of the digits are hex
+			while (i < numDigits && hexValue !== -1) {
+				hexValue = this.hexCharacters.indexOf(rule[this.index]);
+				if (hexValue !== -1) {
+					this.index += 1;
+					i += 1;
+				}
+			}
+			if (hexValue === -1) {
+				this.failureReason = "HROT '" + which + "' expected hex got '" + rule[this.index] + "'";
+			} else {
+				// allocate array
+				if (which === "B") {
+					allocName += "birth";
+				} else {
+					allocName += "survival";
+				}
+				// 4 bits per digit plus zero entry
+				list = allocator.allocate(Uint8, (numDigits << 2) + 1, allocName);
+
+				// populate array
+				j = 0;
+				list[j] = 0;
+				j += 1;
+				i -= 1;
+				while (i >= 0) {
+					hexValue = this.hexCharacters.indexOf(rule[this.index - numDigits + i]);
+					i -= 1;
+					list[j] = hexValue & 1;
+					j += 1;
+					list[j] = (hexValue >> 1) & 1;
+					j += 1;
+					list[j] = (hexValue >> 2) & 1;
+					j += 1;
+					list[j] = (hexValue >> 3) & 1;
+					j += 1;
+				}
+
+				// save array in the pattern
+				if (which === "B") {
+					pattern.birthHROT = list;
+				} else{
+					pattern.survivalHROT = list;
+				}
+				result = true;
+			}
+		}
+
+		return result;
+	};
 
 	// decode HROT fule
-	PatternManager.decodeHROT = function(pattern, rule) {
-		var result = false;
+	PatternManager.decodeHROT = function(pattern, rule, allocator) {
+		var value = 0,
+		    result = false,
+			// ASCII 0
+			asciiZero = String("0").charCodeAt(0),
+			// ASCII 9
+			asciiNine = String("9").charCodeAt(0),
+			nextCode = 0,
+			numHexDigits = 0;
 
-		this.failureReason = "HROT not supported";
+		// reset string index
+		this.index = 0;
+
+		// set number of states the default unless set by generations prefix
+		if (pattern.multiNumStates === -1) {
+			pattern.multiNumStates = 2;
+		}
+
+		// decode R part
+		if (rule[this.index] !== "r") {
+			this.failureReason = "HROT expected 'R' got '" + rule[this.index].topUpperCase() + "'";
+		} else {
+			// read range
+			nextCode = -1;
+			this.index += 1;
+			// check for digit
+			if (this.index < rule.length) {
+				nextCode = rule[this.index].charCodeAt(0);
+			}
+			if (nextCode < asciiZero || nextCode > asciiNine) {
+				this.failureReason = "HROT 'R' needs a number";
+			} else {
+				// read digits
+				value = nextCode - asciiZero;
+				this.index += 1;
+				nextCode = -1;
+				if (this.index < rule.length) {
+					nextCode = rule[this.index].charCodeAt(0);
+				}
+				while (nextCode >= asciiZero && nextCode <= asciiNine) {
+					value = 10 * value + (nextCode - asciiZero);
+					this.index += 1;
+					if (this.index < rule.length) {
+						nextCode = rule[this.index].charCodeAt(0);
+					} else {
+						nextCode = -1;
+					}
+				}
+				// check range
+				if (value < this.minRangeHROT) {
+					this.failureReason = "HROT 'R' < " + this.minRangeHROT;
+				} else {
+					if (value > this.maxRangeHROT) {
+						this.failureReason = "HROT 'R' > " + this.maxRangeHROT;
+					} else {
+						// save result
+						pattern.rangeHROT = value;
+						result = true;
+
+						// compute hex digits
+						numHexDigits = value * (value + 1);
+					}
+				}
+			}
+		}
+
+		// decode births
+		if (result) {
+			result = false;
+			if (this.index < rule.length) {
+				// check for B
+				if (rule[this.index] !== "b") {
+					this.failureReason = "HROT expected 'B' got " + rule[this.index].toUpperCase() + "'";
+				} else {
+					// check for hex part
+					this.index += 1;
+					result = this.readHexDigits(rule, "B", numHexDigits, pattern, allocator);
+				}
+			} else {
+				this.failureReason = "HROT expected 'B'";
+			}
+		}
+
+		// decode survivals
+		if (result) {
+			result = false;
+			if (this.index < rule.length) {
+				// check for S
+				if (rule[this.index] !== "s") {
+					this.failureReason = "HROT expected 'S' got " + rule[this.index].toUpperCase() + "'";
+				} else {
+					// check for hex part
+					this.index += 1;
+					result = this.readHexDigits(rule, "S", numHexDigits, pattern, allocator);
+				}
+			} else {
+				this.failureReason = "HROT expected 'S'";
+			}
+		}
+
+		// decode optional z
+		if (result) {
+			if (this.index < rule.length) {
+				// check for Z
+				if (rule[this.index] === "z") {
+					// do stuff
+					pattern.survivalHROT[0] = 1;
+					this.index += 1;
+				}
+			}
+		}
+
+		// final validation
+		if (result) {
+			// check for trailing characters
+			if (this.index !== rule.length) {
+				result = false;
+				this.failureReason = "HROT invalid characters after rule";
+			} else {
+				pattern.isHROT = true;
+			}
+		}
+
+		return result;
+	};
+
+	// convert array to hex string for HROT
+	PatternManager.asHex = function(list) {
+		var length = list.length,
+			hexValue = 0,
+			result = "";
+
+		// read from the end of the array backwards
+		while (length > 1) {
+			hexValue = (list[length - 1] << 3) + (list[length - 2] << 2) + (list[length - 3] << 1) + list[length - 4];
+			length -= 4;
+			result += this.hexCharacters[hexValue];
+		}
 		return result;
 	}
 
 	// decode rule string and return whether valid
-	PatternManager.decodeRuleString = function(pattern, rule) {
+	PatternManager.decodeRuleString = function(pattern, rule, allocator) {
 		// whether the rule contains a slash
 		var slashIndex = -1,
 
@@ -2349,14 +2553,15 @@
 				if (rule[0] === "r" || ((rule[0] >= "1" && rule[0] <= "9") && rule.indexOf(",") !== -1)) {
 					if (rule[0] === "r") {
 						// check for Wojtowicz format LTL
-						if (rule.indexOf("c") !== -1) {
+						if (rule.indexOf("m") !== -1) {
 							valid = this.decodeLTLMC(pattern, rule);
 						} else {
 							// check for Goucher format LTL
 							if (rule.indexOf("t") !== -1) {
 								valid = this.decodeLTLRBTST(pattern, rule);
 							} else {
-								valid = this.decodeHROT(pattern.rule);
+								// try HROT
+								valid = this.decodeHROT(pattern, rule, allocator);
 							}
 						}
 					} else {
@@ -2364,21 +2569,36 @@
 						valid = this.decodeLTLnum(pattern, rule);
 					}
 					if (valid) {
-						pattern.isLTL = true;
 						// set canonical name
-						pattern.ruleName = "R" + pattern.rangeLTL + ",C" + pattern.multiNumStates + ",M" + pattern.middleLTL + ",S" + pattern.SminLTL + ".." + pattern.SmaxLTL + ",B" + pattern.BminLTL + ".." + pattern.BmaxLTL + ",N";
-						if (pattern.neighborhoodLTL === this.mooreLTL) {
-							pattern.ruleName += "M";
-						} else if (pattern.neighborhoodLTL === this.vonNeumannLTL) {
-							pattern.ruleName += "N";
+						if (pattern.isHROT) {
+							// HROT
+							pattern.ruleName = "";
+							if (pattern.multiNumStates !== 2) {
+								pattern.ruleName = "g" + pattern.multiNumStates;
+							}
+							pattern.ruleName += "r" + pattern.rangeHROT;
+							pattern.ruleName += "b" + this.asHex(pattern.birthHROT);
+							pattern.ruleName += "s" + this.asHex(pattern.survivalHROT);
+							if (pattern.survivalHROT[0] === 1) {
+								pattern.ruleName += "z";
+							}
 						} else {
-							pattern.ruleName += "C";
-						}
+							// LTL
+							pattern.isLTL = true;
+							pattern.ruleName = "R" + pattern.rangeLTL + ",C" + pattern.multiNumStates + ",M" + pattern.middleLTL + ",S" + pattern.SminLTL + ".." + pattern.SmaxLTL + ",B" + pattern.BminLTL + ".." + pattern.BmaxLTL + ",N";
+							if (pattern.neighborhoodLTL === this.mooreLTL) {
+								pattern.ruleName += "M";
+							} else if (pattern.neighborhoodLTL === this.vonNeumannLTL) {
+								pattern.ruleName += "N";
+							} else {
+								pattern.ruleName += "C";
+							}
 
-						// adjust the survival range if the center cell is not included
-						if (pattern.middleLTL === 0) {
-							pattern.SminLTL += 1;
-							pattern.SmaxLTL += 1;
+							// adjust the survival range if the center cell is not included
+							if (pattern.middleLTL === 0) {
+								pattern.SminLTL += 1;
+								pattern.SmaxLTL += 1;
+							}
 						}
 					}
 				} else {
@@ -2567,7 +2787,7 @@
 		}
 
 		// if valid the create the rule
-		if (valid && pattern.wolframRule === -1 && pattern.isLTL === false) {
+		if (valid && pattern.wolframRule === -1 && pattern.isLTL === false && pattern.isHROT === false) {
 			// create the canonical name and the rule map
 			pattern.ruleName = this.createRuleMap(birthPart, survivalPart, base64, pattern.isHex, pattern.isVonNeumann, pattern.multiNumStates);
 			if (this.failureReason !== "") {
@@ -3711,7 +3931,7 @@
 	};
 
 	// decode rule
-	PatternManager.decodeRule = function(pattern, source, needPrefix) {
+	PatternManager.decodeRule = function(pattern, source, needPrefix, allocator) {
 		// end of line index
 		var endIndex = source.indexOf("\n"),
 
@@ -3786,7 +4006,7 @@
 		}
 
 		// decode the rule
-		if (this.decodeRuleString(pattern, ruleString) && boundedIndex !== -2) {
+		if (this.decodeRuleString(pattern, ruleString, allocator) && boundedIndex !== -2) {
 			// mark executable
 			this.executable = true;
 		}
@@ -3875,6 +4095,10 @@
 		pattern.SmaxLTL = -1;
 		pattern.BminLTL = -1;
 		pattern.BmaxLTL = -1;
+		pattern.isHROT = false;
+		pattern.birthHROT = null;
+		pattern.survivalHROT = null;
+		pattern.rangeHROT = -1;
 		pattern.title = "";
 		pattern.numStates = 2;
 		pattern.numUsedStates = 0;
@@ -3930,7 +4154,7 @@
 			// found size and rule definition
 			case "x":
 				// decode rule (size is ignored and computed from the read pattern)
-				index += this.decodeRule(pattern, source.substring(index), true);
+				index += this.decodeRule(pattern, source.substring(index), true, allocator);
 				sawRule = true;
 				break;
 
@@ -3964,7 +4188,7 @@
 		// check whether a rule definition was seen
 		if (!sawRule) {
 			// default to Conway's Life
-			if (this.decodeRuleString(pattern, "")) {
+			if (this.decodeRuleString(pattern, "", allocator)) {
 				// mark executable
 				this.executable = true;
 			}
