@@ -25,8 +25,8 @@
 		this.births = allocator.allocate(Uint8, 1, "HROT.births");
 		this.survivals = allocator.allocate(Uint8, 1, "HROT.survivals");
 
-		// neighbour count array
-		this.counts = Array.matrix(Uint32, height, width, 0, allocator, "HROT.counts");
+		// neighbour count array (will be resized)
+		this.counts = Array.matrix(Uint32, 1, 1, 0, allocator, "HROT.counts");
 	}
 
 	// resize counts array

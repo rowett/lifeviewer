@@ -26,12 +26,34 @@
 	</head>
 	<body>
 		<h1>LifeViewer Plugin Tests</h1>
-		<h2>HROT 2 state</h2>
+		<h2>HROT 2 state hex encoding</h2>
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
 			<textarea rows=10 cols=70>
 # Type or paste RLE data into this box and click on the View button.
 x = 5, y = 5, rule = r2b000008s03ff00
+ooooo$obbbo$obbbo$obbbo$ooooo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>HROT 2 state canonical</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+# Type or paste RLE data into this box and click on the View button.
+x = 5, y = 5, rule = R2,C2,S9-18,B4
+ooooo$obbbo$obbbo$obbbo$ooooo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>LTL canonical equivalent</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+# Type or paste RLE data into this box and click on the View button.
+x = 5, y = 5, rule = R2,C0,M1,S10..19,B4..4,NM
 ooooo$obbbo$obbbo$obbbo$ooooo!
 			</textarea>
 			<br>
@@ -48,26 +70,48 @@ ooooo$obbbo$obbbo$obbbo$ooooo!
 			<br>
 			<canvas width="480" height="480"></canvas>
 		</div>
-		<h2>HROT 5 state</h2>
+		<h2>HROT 100 state hex encoding</h2>
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
 			<textarea rows=10 cols=70>
 # Type or paste RLE data into this box and click on the View button.
-x = 8, y = 8, rule = g5r2b00000cs03ff00:T180
+x = 8, y = 8, rule = g100r2b00000cs03ff00:T360
 oooooooo$obbbbbbo$obbbbbbo$obboobbo$obboobbo$obbbbbbo$obbbbbbo$oooooooo!
-[[ ZOOM 2 ]]
+[[ ZOOM 1 ]]
 			</textarea>
 			<br>
 			<canvas width="480" height="480"></canvas>
 		</div>
+		<h2>HROT 100 state canonical</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+# Type or paste RLE data into this box and click on the View button.
+x = 8, y = 8, rule = R2,C100,S9-18,B3-4:T360
+oooooooo$obbbbbbo$obbbbbbo$obboobbo$obboobbo$obbbbbbo$obbbbbbo$oooooooo!
+[[ ZOOM 1 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		<h2>LTL canonical equivalent</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+# Type or paste RLE data into this box and click on the View button.
+x = 5, y = 5, rule = R2,C100,M1,S10..19,B3..4,NM:T360
+oooooooo$obbbbbbo$obbbbbbo$obboobbo$obboobbo$obbbbbbo$obbbbbbo$oooooooo!
+[[ ZOOM 1 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
 		<h2>LTL equivalent</h2>
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
 			<textarea rows=10 cols=70>
 # Type or paste RLE data into this box and click on the View button.
-x = 5, y = 5, rule = g5r2b3t4s10t19:T180
+x = 5, y = 5, rule = g100r2b3t4s10t19:T360
 oooooooo$obbbbbbo$obbbbbbo$obboobbo$obboobbo$obbbbbbo$obbbbbbo$oooooooo!
-[[ ZOOM 2 ]]
+[[ ZOOM 1 ]]
 			</textarea>
 			<br>
 			<canvas width="480" height="480"></canvas>

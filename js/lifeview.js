@@ -145,7 +145,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 263,
+		/** @const {number} */ versionBuild : 264,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -9844,13 +9844,13 @@
 			borderSize = ViewConstants.maxStepSpeed;
 			if (this.engine.isLTL && ((this.engine.LTL.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
 				borderSize = this.engine.LTL.range * 2 + 1;
-				if (this.boundedGridType !== -1) {
+				if (this.engine.boundedGridType !== -1) {
 					borderSize += this.engine.LTL.range * 2;
 				}
 			}
 			if (this.engine.isHROT && ((this.engine.HROT.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
 				borderSize = this.engine.HROT.range * 2 + 1;
-				if (this.boundedGridType !== -1) {
+				if (this.engine.boundedGridType !== -1) {
 					borderSize += this.engine.HROT.range * 2;
 				}
 			}

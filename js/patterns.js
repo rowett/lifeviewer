@@ -174,7 +174,11 @@
 
 		// HROT min and max range
 		minRangeHROT: 2,
-		maxRangeHROT: 5,
+		maxRangeHROT: 500,
+
+		// HROT min and max states
+		minStatesHROT : 0,
+		maxStatesHROT : 255,
 
 		// specified width and height from RLE pattern
 		specifiedWidth : -1,
@@ -268,8 +272,8 @@
 		// HROT birth array
 		this.birthHROT = null;
 
-		// HROT death array
-		this.deathHROT = null;
+		// HROT survival array
+		this.survivalHROT = null;
 
 		// states for generations or LTL
 		this.multiNumStates = -1;
@@ -2085,7 +2089,7 @@
 		// reset string index
 		this.index = 0;
 
-		// set number of states the default unless set by generations prefix
+		// set number of states to the default unless set by generations prefix
 		if (pattern.multiNumStates === -1) {
 			pattern.multiNumStates = 2;
 		}
@@ -2223,8 +2227,247 @@
 		return result;
 	};
 
-	// decode HROT fule
-	PatternManager.decodeHROT = function(pattern, rule, allocator) {
+	// decode HROT number (returns -1 if number is invalid)
+	PatternManager.decodeHROTNumber = function(rule, partName) {
+		var value = -1,
+			// ASCII 0
+			asciiZero = String("0").charCodeAt(0),
+			// ASCII 9
+			asciiNine = String("9").charCodeAt(0),
+			nextCode = 0;
+
+		this.index += 1;
+		if (this.index < rule.length) {
+			nextCode = rule[this.index].charCodeAt(0);
+			if (nextCode < asciiZero || nextCode > asciiNine) {
+				this.failureReason = "HROT '" + partName + "' needs a number";
+			} else {
+				// read digits
+				value = nextCode - asciiZero;
+				this.index += 1;
+				nextCode = -1;
+				if (this.index < rule.length) {
+					nextCode = rule[this.index].charCodeAt(0);
+				}
+				while (nextCode >= asciiZero && nextCode <= asciiNine) {
+					value = 10 * value + (nextCode - asciiZero);
+					this.index += 1;
+					if (this.index < rule.length) {
+						nextCode = rule[this.index].charCodeAt(0);
+					} else {
+						nextCode = -1;
+					}
+				}
+			}
+		} else {
+			this.failureReason = "HROT '" + partName + "' needs a number";
+		}
+		return value;
+	};
+
+	// decode HROT range
+	PatternManager.decodeHROTRange = function(rule, list, partName, maxCount) {
+		var result = true,
+			lower = -1,
+			upper = -1,
+			i = 0;
+
+		lower = this.decodeHROTNumber(rule, partName);
+		while (result && lower !== -1) {
+			// check if next character is a "-"
+			upper = -1;
+			if (this.index < rule.length && rule[this.index] === "-") {
+				upper = this.decodeHROTNumber(rule, partName);
+				if (upper === -1) {
+					this.failureReason = "HROT '" + partName + lower + "-' needs a number";
+					result = false;
+				}
+			}
+			if (result) {
+				if (upper === -1) {
+					upper = lower;
+				}
+				if (lower > upper) {
+					this.failureReason = "HROT '" + partName + lower + "-" + upper + "' wrong order";
+					result = false;
+				} else {
+					if (lower > maxCount) {
+						if (lower === upper) {
+							this.failureReason = "HROT '" + partName + lower + "' > " + maxCount;
+						} else {
+							this.failureReason = "HROT '" + partName + lower + "-' > " + maxCount;
+						}
+						result = false;
+					} else {
+						if (upper > maxCount) {
+							this.failureReason = "HROT '" + partName + lower + "-" + upper + "' > " + maxCount;
+							result = false;
+						}
+					}
+				}
+				if (result) {
+					for (i = lower; i <= upper; i += 1) {
+						list[i] = 1;
+					}
+					lower = -1;
+					if (this.index < rule.length && rule[this.index] === ",") {
+						lower = this.decodeHROTNumber(rule, partName);
+						if (lower === -1) {
+							// no number so preserve command
+							this.index -= 1;
+						}
+					}
+				}
+			}
+		}
+
+		return result;
+	};
+
+	// decode HROT rule in Rr,Cc,S,B format
+	PatternManager.decodeHROTMulti = function(pattern, rule, allocator) {
+		var value = 0,
+			result = false,
+			maxCount = 0;
+
+			// reset string index
+			this.index = 0;
+
+		// decode R part
+		if (rule[this.index] !== "r") {
+			this.failureReason = "HROT expected 'R' got '" + rule[this.index].topUpperCase() + "'";
+		} else {
+			// read range
+			value = this.decodeHROTNumber(rule, "R");
+			if (value !== -1) {
+				// check range
+				if (value < this.minRangeHROT) {
+					this.failureReason = "HROT 'R' < " + this.minRangeHROT;
+				} else {
+					if (value > this.maxRangeHROT) {
+						this.failureReason = "HROT 'R' > " + this.maxRangeHROT;
+					} else {
+						// save result
+						pattern.rangeHROT = value;
+						result = true;
+						// compute maximum count value for Moore neighbourhood
+						maxCount = (value * 2 + 1) * (value * 2 + 1);
+					}
+				}
+			}
+		}
+
+		// decode states
+		if (result) {
+			result = false;
+			if (this.index < rule.length) {
+				// check for comma
+				if (rule[this.index] !== ",") {
+					this.failureReason = "HROT expected ',' got " + rule[this.index].toUpperCase();
+				} else {
+					// check for c
+					this.index += 1;
+					if (this.index < rule.length) {
+						if (rule[this.index] !== "c") {
+							this.failureReason = "HROT expected 'C' got " + rule[this.index].toUpperCase();
+						} else {
+							value = this.decodeHROTNumber(rule, "C");
+							if (value !== -1) {
+								if (value < this.minStatesHROT) {
+									this.failureReason = "HROT 'C" + value + "' < " + this.minStatesHROT;
+								} else {
+									if (value > this.maxStatesHROT) {
+										this.failureReason = "HROT 'C" + value  + "' > " + this.maxStatesHROT;
+									} else {
+										// ensure at least 2 states
+										if (value < 2) {
+											value = 2;
+										}
+										pattern.multiNumStates = value;
+										result = true;
+									}
+								}
+							}
+						}
+					} else {
+						this.failureReason = "HROT expected 'C'";
+					}
+				}
+			} else {
+				this.failureReason = "HROT expected ','";
+			}
+		}
+
+		// decode survivals
+		if (result) {
+			result = false;
+			if (this.index < rule.length) {
+				// check for comma
+				if (rule[this.index] !== ",") {
+					this.failureReason = "HROT expected ',' got " + rule[this.index].toUpperCase();
+				} else {
+					// check for s
+					this.index += 1;
+					if (this.index < rule.length) {
+						if (rule[this.index] !== "s") {
+							this.failureReason = "HROT expected 'S' got " + rule[this.index].toUpperCase();
+						} else {
+							// read and save survivals
+							pattern.survivalHROT = allocator.allocate(Uint8, maxCount, "HROT.survivals");
+							result = this.decodeHROTRange(rule, pattern.survivalHROT, "S", maxCount);
+						}
+					} else {
+						this.failureReason = "HROT expected 'S'";
+					}
+				}
+			} else {
+				this.failureReason = "HROT expected ','";
+			}
+		}
+
+		// decode births
+		if (result) {
+			result = false;
+			if (this.index < rule.length) {
+				// check for comma
+				if (rule[this.index] !== ",") {
+					this.failureReason = "HROT expected ',' got " + rule[this.index].toUpperCase();
+				} else {
+					// check for b
+					this.index += 1;
+					if (this.index < rule.length) {
+						if (rule[this.index] !== "b") {
+							this.failureReason = "HROT expected 'B' got " + rule[this.index].toUpperCase();
+						} else {
+							// read and save survivals
+							pattern.birthHROT = allocator.allocate(Uint8, maxCount, "HROT.births");
+							result = this.decodeHROTRange(rule, pattern.birthHROT, "B", maxCount);
+						}
+					} else {
+						this.failureReason = "HROT expected 'B'";
+					}
+				}
+			} else {
+				this.failureReason = "HROT expected ','";
+			}
+		}
+
+		// final validation
+		if (result) {
+			// check for trailing characters
+			if (this.index !== rule.length) {
+				result = false;
+				this.failureReason = "HROT invalid characters after rule";
+			} else {
+				pattern.isHROT = true;
+			}
+		}
+
+		return result;
+	};
+
+	// decode HROT rule in r<num>b<hex>s<hex> format
+	PatternManager.decodeHROTHex = function(pattern, rule, allocator) {
 		var value = 0,
 		    result = false,
 			// ASCII 0
@@ -2237,7 +2480,7 @@
 		// reset string index
 		this.index = 0;
 
-		// set number of states the default unless set by generations prefix
+		// set number of states to the default unless set by generations prefix
 		if (pattern.multiNumStates === -1) {
 			pattern.multiNumStates = 2;
 		}
@@ -2560,8 +2803,13 @@
 							if (rule.indexOf("t") !== -1) {
 								valid = this.decodeLTLRBTST(pattern, rule);
 							} else {
-								// try HROT
-								valid = this.decodeHROT(pattern, rule, allocator);
+								// check for multi format HROT
+								if (rule.indexOf("-") !== -1) {
+									valid = this.decodeHROTMulti(pattern, rule, allocator);
+								} else {
+									// try Goucher format HROT
+									valid = this.decodeHROTHex(pattern, rule, allocator);
+								}
 							}
 						}
 					} else {
@@ -4233,8 +4481,33 @@
 			}
 		}
 
+		// check whether HROT bounded grid type is valid
+		if (pattern.isHROT) {
+			if (pattern.gridType > 1) {
+				this.failureReason = "HROT only supports Plane or Torus";
+				this.executable = false;
+				pattern.gridType = -1;
+			}
+			if (pattern.isHex) {
+				this.failureReason = "HROT does not support Hex grid";
+				this.executable = false;
+				pattern.isHex = false;
+			}
+			if (pattern.birthHROT[0] === 1 && pattern.gridType === -1) {
+				this.failureReason = "HROT does not support B0 unbounded";
+				this.executable = false;
+			}
+			if (pattern.gridType === 0 || pattern.gridType === 1) {
+				if (pattern.gridWidth === 0 || pattern.gridHeight === 0) {
+					this.failureReason = "HROT bounded grid must be finite";
+					this.executable = false;
+					pattern.gridType = -1;
+				}
+			}
+		}
+
 		// check for generations and [R]History
-		if (pattern.multiNumStates !== -1 && pattern.isHistory && !pattern.isLTL) {
+		if (pattern.multiNumStates !== -1 && pattern.isHistory && !(pattern.isLTL || pattern.isHROT)) {
 			// make invalid
 			this.failureReason = "[R]History not valid with Generations";
 			pattern.isHistory = false;
@@ -4242,14 +4515,21 @@
 		}
 
 		// check for generations and B0
-		if (pattern.multiNumStates !== -1 && this.ruleArray[0] && !pattern.isLTL) {
+		if (pattern.multiNumStates !== -1 && this.ruleArray[0] && !(pattern.isLTL || pattern.isHROT)) {
 			this.failureReason = "Generations does not support B0";
 			this.executable = false;
 		}
 
 		// check for LTL and [R]History
 		if (pattern.isLTL && pattern.isHistory) {
-			this.failureReason = "[R]History not valid with LTL";
+			this.failureReason = "[R]History not valid with LtL";
+			pattern.isHistory = false;
+			this.executable = false;
+		}
+
+		// check for HROT and [R]History
+		if (pattern.isHROT && pattern.isHistory) {
+			this.failureReason = "[R]History not valid with HROT";
 			pattern.isHistory = false;
 			this.executable = false;
 		}
@@ -4276,10 +4556,13 @@
 					if (pattern.multiNumStates !== -1) {
 						if (pattern.numStates > pattern.multiNumStates) {
 							if (pattern.isLTL) {
-								this.failureReason = "Illegal state in pattern for LTL";
-							}
-							else {
-								this.failureReason = "Illegal state in pattern for Generations";
+								this.failureReason = "Illegal state in pattern for LtL";
+							} else {
+								if (pattern.isHROT) {
+									this.failureReason = "Illegal state in pattern for HROT";
+								} else {
+									this.failureReason = "Illegal state in pattern for Generations";
+								}
 							}
 							this.executable = false;
 						}
@@ -4372,7 +4655,7 @@
 		}
 
 		// remove bounded grid postfix if present
-		if (newPattern.gridType !== -1 && !newPattern.isLTL) {
+		if (newPattern.gridType !== -1 && !(newPattern.isLTL || newPattern.isHROT)) {
 			newPattern.ruleName = newPattern.ruleName.substr(0, newPattern.ruleName.lastIndexOf(":"));
 		}
 

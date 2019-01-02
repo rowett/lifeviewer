@@ -28,8 +28,8 @@
 		this.scount = 2;
 		this.type = PatternManager.mooreLTL;
 
-		// neighbour count array
-		this.counts = Array.matrix(Uint32, height, width, 0, allocator, "LTL.counts");
+		// neighbour count array (will be reszied)
+		this.counts = Array.matrix(Uint32, 1, 1, 0, allocator, "LTL.counts");
 
 		// column count array
 		this.colCounts = allocator.allocate(Uint32, this.range * 2 + 1, "LTL.colCounts");
