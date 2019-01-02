@@ -2606,7 +2606,47 @@
 			result += this.hexCharacters[hexValue];
 		}
 		return result;
-	}
+	};
+
+	// convert array to multi string for HROT
+	PatternManager.asMulti = function(list) {
+		var length = list.length,
+			start = -1,
+			result = "",
+			i = 0;
+
+		// read the array looking for ranges
+		while (i < length) {
+			// check for set value
+			if (list[i] === 1) {
+				// if no current run then set as start of run
+				if (start === -1) {
+					start = i;
+				}
+			} else {
+				// zero so check if current run being processed
+				if (start !== -1) {
+					// output current run
+					if (result !== "") {
+						result += ",";
+					}
+					result += start;
+					if ((i - 1) !== start) {
+						result += "-" + (i - 1);
+					}
+
+					// reset run
+					start = -1;
+				}
+				
+			}
+			// next item
+			i += 1;
+		}
+
+		// return string
+		return result;
+	};
 
 	// decode rule string and return whether valid
 	PatternManager.decodeRuleString = function(pattern, rule, allocator) {
@@ -2804,7 +2844,7 @@
 								valid = this.decodeLTLRBTST(pattern, rule);
 							} else {
 								// check for multi format HROT
-								if (rule.indexOf("-") !== -1) {
+								if (rule.indexOf(",") !== -1) {
 									valid = this.decodeHROTMulti(pattern, rule, allocator);
 								} else {
 									// try Goucher format HROT
@@ -2820,16 +2860,10 @@
 						// set canonical name
 						if (pattern.isHROT) {
 							// HROT
-							pattern.ruleName = "";
-							if (pattern.multiNumStates !== 2) {
-								pattern.ruleName = "g" + pattern.multiNumStates;
-							}
-							pattern.ruleName += "r" + pattern.rangeHROT;
-							pattern.ruleName += "b" + this.asHex(pattern.birthHROT);
-							pattern.ruleName += "s" + this.asHex(pattern.survivalHROT);
-							if (pattern.survivalHROT[0] === 1) {
-								pattern.ruleName += "z";
-							}
+							pattern.ruleName = "R" + pattern.rangeHROT + ",";
+							pattern.ruleName += "C" + pattern.multiNumStates + ",";
+							pattern.ruleName += "S" + this.asMulti(pattern.survivalHROT) + ",";
+							pattern.ruleName += "B" + this.asMulti(pattern.birthHROT);
 						} else {
 							// LTL
 							pattern.isLTL = true;
