@@ -1,0 +1,7 @@
+HROT support for von Neumann and Moore neighbourhoods
+LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE stuff rather than just clear)
+Investigate Paul's non-totalistic hex notation
+Investigate Brian's BSFKL notation
+New script keywords to put non-temporal labels on the display at specific locations triggered by position and zoom ranges
+Meta world view
+multistate rules using just 2 states should use LifeViewer Themes

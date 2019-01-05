@@ -1455,11 +1455,7 @@
 		this.themes[i] = new Theme(new ColourRange(new Colour(0, 0, 96), new Colour(0, 0, 160)), new ColourRange(new Colour(0, 240, 0), new Colour(16, 255, 16)), new Colour(0, 0, 0));
 		i += 1;
 
-		// Generations - yellow to red
-		this.themes[i] = new Theme(new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new ColourRange(new Colour(255, 0, 0), new Colour(255, 0, 0)), new Colour(0, 0, 0));
-		i += 1;
-
-		// LTL and HROT - red to yellow
+		// Multi-state (Generations, LTL and HROT) - red to yellow
 		this.themes[i] = new Theme(new ColourRange(new Colour(255, 0, 0), new Colour(255, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0));
 		i += 1;
 

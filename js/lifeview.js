@@ -9583,19 +9583,12 @@
 		if (this.engine.isLifeHistory) {
 			// default to theme 10
 			this.engine.setTheme(10, 1);
-		}
-		else {
+		} else {
 			// check for Generations, LTL or HROT
 			if (this.engine.multiNumStates !== -1) {
-				if (this.engine.isLTL || this.engine.isHROT) {
-					// LTL and HROT are theme 12
-					this.engine.setTheme(12, 1);
-				} else {
-					// Generations is theme 11
-					this.engine.setTheme(11, 1);
-				}
-			}
-			else {
+				// multi state uses theme 11
+				this.engine.setTheme(11, 1);
+			} else {
 				// default to theme 1
 				this.engine.setTheme(1, 1);
 			}
