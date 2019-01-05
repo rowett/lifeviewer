@@ -1042,8 +1042,7 @@
 		imageElement = document.getElementById("screenshot");
 		if (imageElement) {
 			imageElement.src = dataURL;
-		}
-		else {
+		} else {
 			// open or lookup the screenshot window
 			shotWindow = window.open("", ViewConstants.screenShotTitle);
 
@@ -1060,8 +1059,7 @@
 
 				// notify that image captured
 				me.menuManager.notification.notify("Image Captured", 15, 300, 15, true);
-			}
-			else {
+			} else {
 				// notify that image capture failed
 				me.menuManager.notification.notify("Could not open Image window!", 15, ViewConstants.errorDuration, 15, true);
 			}
@@ -1141,8 +1139,7 @@
 					if (copyWidth > bRightX - bLeftX + 1) {
 						copyWidth = bRightX - bLeftX + 1;
 					}
-				}
-				else {
+				} else {
 					panX = Math.round(this.engine.width / 2);
 				}
 				// check for infinite height
@@ -1151,8 +1148,7 @@
 					if (copyHeight > bTopY - bBottomY + 1) {
 						copyHeight = bTopY - bBottomY + 1;
 					}
-				}
-				else {
+				} else {
 					panY = Math.round(this.engine.height / 2);
 				}
 			}
@@ -1249,16 +1245,14 @@
 
 			// convert the range into a zoom value
 			me.engine.zoom = ViewConstants.minZoom * Math.pow(ViewConstants.maxZoom / ViewConstants.minZoom, newValue[0]) / me.engine.originZ;
-		}
-		else {
+		} else {
 			// convert the zoom value into a range
 			result = Math.log(me.engine.zoom * me.engine.originZ / ViewConstants.minZoom) / Math.log(ViewConstants.maxZoom / ViewConstants.minZoom);
 
 			// ensure the result is in range
 			if (result < 0) {
 				result = 0;
-			}
-			else {
+			} else {
 				if (result > 1) {
 					result = 1;
 				}
@@ -1268,16 +1262,14 @@
 		// work out the display value using the origin
 		if (this.trackDefined && !this.trackDisabled) {
 			displayValue = me.engine.zoom * me.engine.originZ;
-		}
-		else {
+		} else {
 			displayValue = me.engine.zoom;
 		}
 
 		// ensure in range
 		if (displayValue < ViewConstants.minZoom) {
 			displayValue = ViewConstants.minZoom;
-		}
-		else {
+		} else {
 			if (displayValue > ViewConstants.maxZoom) {
 				displayValue = ViewConstants.maxZoom;
 			}
@@ -1337,8 +1329,7 @@
 		if (this.thumbnail) {
 			fitZoom = this.engine.fitZoomDisplay(this.floatCounter, this.displayWidth * this.thumbnailDivisor, this.displayHeight * this.thumbnailDivisor, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit, this.autoFit);
 			fitZoom[0] /= this.thumbnailDivisor;
-		}
-		else {
+		} else {
 			var heightAdjust = ViewConstants.guiExtraHeight;
 			if (this.noGUI) {
 				heightAdjust = 0;
@@ -1356,24 +1347,21 @@
 			// compute the zoom delta
 			if (this.engine.zoom > origZoom) {
 				zoomDelta = (this.engine.zoom / origZoom) - 1;
-			}
-			else {
+			} else {
 				zoomDelta = (origZoom / this.engine.zoom) - 1;
 			}
 
 			// compute the x delta
 			if (this.engine.xOff > origX) {
 				xDelta = this.engine.xOff - origX;
-			}
-			else {
+			} else {
 				xDelta = origX - this.engine.xOff;
 			}
 
 			// compute the y delta
 			if (this.engine.yOff > origY) {
 				yDelta = this.engine.yOff - origY;
-			}
-			else {
+			} else {
 				yDelta = origY - this.engine.yOff;
 			}
 
@@ -1392,8 +1380,7 @@
 				this.engine.xOff = fitZoom[1];
 				this.engine.yOff = fitZoom[2];
 			}
-		}
-		else {
+		} else {
 			// save start point
 			this.startXPOI = this.engine.width / 2 - this.engine.xOff;
 			this.startYPOI = this.engine.height / 2 - this.engine.yOff;
@@ -1410,8 +1397,7 @@
 			this.targetPOI = WaypointConstants.poiDefaultSpeed;
 			if (smooth) {
 				this.stepsPOI = 0;
-			}
-			else {
+			} else {
 				this.stepsPOI = WaypointConstants.poiDefaultSpeed;
 				this.updateCameraPOI();
 			}
@@ -1442,8 +1428,7 @@
 		if (this.engine.boundedGridType !== -1 && this.posDefined) {
 			this.panX = (this.engine.width >> 1) + this.xOffset;
 			this.panY = (this.engine.height >> 1) + this.yOffset;
-		} 
-		else {
+		} else {
 			// compute position to center pattern on display and add the x and y offsets
 			this.panX = Math.round((this.engine.width - width) / 2) + this.xOffset;
 			this.panY = Math.round((this.engine.height - height) / 2) + this.yOffset;
@@ -1464,23 +1449,19 @@
 		// check for huge number
 		if (value >= 1000000000) {
 			result = "1B+";
-		}
-		else {
+		} else {
 			// check for hundreds of millions
 			if (value >= 100000000) {
 				result = ((value / 1000000) | 0) + "M";
-			}
-			else {
+			} else {
 				// check for tens of millions
 				if (value >= 10000000) {
 					result = Number(value / 1000000).toFixed(1) + "M";
-				}
-				else {
+				} else {
 					// check for millions
 					if (value >= 1000000) {
 						result = Number(value / 1000000).toFixed(2) + "M";
-					}
-					else {
+					} else {
 						// check for one hundred thousand
 						if (value >= 100000) {
 							result = ((value / 1000) | 0) + "K";
@@ -1515,8 +1496,7 @@
 		// check new zoom is in range
 		if (newZoom < 0) {
 			newZoom = 0;
-		}
-		else {
+		} else {
 			if (newZoom > 1) {
 				newZoom = 1;
 			}
@@ -1529,8 +1509,7 @@
 		// ensure the new zoom is in range
 		if (newZoom < ViewConstants.minZoom) {
 			newZoom = ViewConstants.minZoom;
-		}
-		else {
+		} else {
 			if (newZoom > ViewConstants.maxZoom) {
 				newZoom = ViewConstants.maxZoom;
 			}
@@ -1595,8 +1574,7 @@
 			if (waypointsRunning && isLooping) {
 				// set progress based on time to generation
 				progress = me.elapsedTime / me.waypointManager.elapsedTimeTo(me.loopGeneration);
-			}
-			else {
+			} else {
 				if (waypointsRunning) {
 					// set progress based on elapsed time to final waypoint
 					journey = me.waypointManager.lastWaypoint().targetTime;
@@ -1607,8 +1585,7 @@
 							isDeleted = true;
 						}
 					}
-				}
-				else {
+				} else {
 					// set progress based on generation
 					if (me.loopGeneration > 0) {
 						progress = me.engine.counter / me.loopGeneration;
@@ -1623,8 +1600,7 @@
 
 			// update the progress bar
 			me.progressBar.current = 100 * progress;
-		}
-		else {
+		} else {
 			// hide progress bar
 			isDeleted = true;
 		}
@@ -1634,8 +1610,7 @@
 		if (isDeleted) {
 			// set the bg alpha from the parent menu
 			me.genToggle.bgAlpha = me.viewMenu.bgAlpha;
-		}
-		else {
+		} else {
 			// clear the bg alpha to show the progress bar
 			me.genToggle.bgAlpha = 0;
 		}
@@ -1681,8 +1656,7 @@
 
 			// delete label if generation statistics are hidden
 			this.xyLabel.deleted = !this.statsOn;
-		}
-		else {
+		} else {
 			// read the state
 			stateDisplay = this.engine.getState(xPos + this.panX, yPos + this.panY, this.multiStateView && this.viewOnly);
 
@@ -1697,14 +1671,12 @@
 			// check the size of the coordinates
 			if (xPos < -9999 || xPos > 9999) {
 				xDisplay = (Number(xPos / 10000).toFixed(1)) + "K";
-			}
-			else {
+			} else {
 				xDisplay = String(xPos);
 			}
 			if (yPos < -9999 || yPos > 9999) {
 				yDisplay = (Number(yPos / 10000).toFixed(1)) + "K";
-			}
-			else {
+			} else {
 				yDisplay = String(yPos);
 			}
 
@@ -1719,13 +1691,11 @@
 			if (this.displayHelp || this.displayErrors || this.patternWidth === 0) {
 				// hide the coordinates
 				this.xyLabel.enabled = false;
-			}
-			else {
+			} else {
 				// show the coordinates
 				this.xyLabel.enabled = true;
 			}
-		}
-		else {
+		} else {
 			// hide the coordinates
 			this.xyLabel.enabled = false;
 		}
@@ -1742,29 +1712,24 @@
 				// scroll the help text
 				if (mouseZoom > 0) {
 					this.scrollHelpUp(this, 3);
-				}
-				else {
+				} else {
 					this.scrollHelpDown(this, 3);
 				}
-			}
-			else {
+			} else {
 				if (this.displayErrors > 0) {
 					// scroll the error list
 					if (mouseZoom > 0) {
 						this.scrollErrorsUp(this, 3);
-					}
-					else {
+					} else {
 						this.scrollErrorsDown(this, 3);
 					}
-				}
-				else {
+				} else {
 					// update the zoom if controls not locked
 					if (!this.controlsLocked) {
 						zoomValue = this.zoomItem.current[0];
 						if (mouseZoom < 0) {
 							this.adjustZoomPosition(zoomValue, -0.05);
-						}
-						else {
+						} else {
 							this.adjustZoomPosition(zoomValue, 0.05);
 						}
 					}
@@ -1847,14 +1812,12 @@
 				if ((me.floatCounter | 0) > me.engine.counter) {
 					me.floatCounter += (me.gensPerStep -1);
 					me.nextStep = true;
-				}
-				else {
+				} else {
 					// update elapsed time here (otherwise happens during next step processing below)
 					me.elapsedTime += timeSinceLastUpdate;
 				}
 			}
-		}
-		else {
+		} else {
 			// if paused but stepping then compute step target
 			if (me.nextStep) {
 				// flag that manual step is happening
@@ -1864,8 +1827,7 @@
 				if (me.singleStep) {
 					me.floatCounter = me.engine.counter + 1;
 					me.originCounter = me.floatCounter;
-				}
-				else {
+				} else {
 					me.floatCounter = me.engine.counter + me.gensPerStep;
 					me.originCounter = me.floatCounter;
 				}
@@ -1926,8 +1888,7 @@
 					me.floatCounter += (me.gensPerStep - 1);
 					me.nextStep = true;
 				}
-			}
-			else {
+			} else {
 				// check whether paused
 				if (me.playList.current !== ViewConstants.modePause) {
 					// lock controls if playing
@@ -1989,8 +1950,7 @@
 				if (currentWaypoint.targetGen > me.engine.counter) {
 					me.nextStep = true;
 					me.floatCounter = currentWaypoint.targetGen;
-				}
-				else {
+				} else {
 					me.nextStep = false;
 				}
 
@@ -2000,8 +1960,7 @@
 					if (currentWaypoint.textMessage === "") {
 						// clear message
 						me.menuManager.notification.clear(false, false);
-					}
-					else {
+					} else {
 						// draw new message
 						me.menuManager.notification.notify(currentWaypoint.textMessage, 15, 1000, 15, false);
 					}
@@ -2027,8 +1986,7 @@
 			if (!me.nextStep) {
 				me.elapsedTime += timeSinceLastUpdate;
 			}
-		}
-		else {
+		} else {
 			// if autofit and waypoints not defined then lock the UI controls
 			if (me.autoFit && me.playList.current !== ViewConstants.modePause) {
 				me.controlsLocked = true;
@@ -2068,8 +2026,7 @@
 					if (me.statsOn && ((me.engine.counter === (me.floatCounter | 0) - 1) || bailout)) {
 						// compute next generation with stats
 						me.engine.nextGeneration(true, me.noHistory, me.graphDisabled);
-					}
-					else {
+					} else {
 						// just compute next generation
 						me.engine.nextGeneration(false, me.noHistory, me.graphDisabled);
 					}
@@ -2118,8 +2075,7 @@
 
 				// remove steps not taken from target counter
 				me.floatCounter -= (stepsToTake - stepsTaken);
-			}
-			else {
+			} else {
 				// check if still fading
 				if (me.fading) {
 					// decrease fade time
@@ -2255,8 +2211,7 @@
 		// display help if requested
 		if (me.displayHelp) {
 			Help.drawHelpText(me);
-		}
-		else {
+		} else {
 			// display script errors if present
 			if (me.scriptErrors.length) {
 				Help.drawErrors(me);
@@ -2266,8 +2221,7 @@
 		// update generation counter label
 		if (me.genRelative) {
 			me.genToggle.lower[0] = "+ " + me.shortenNumber(me.engine.counter);
-		}
-		else {
+		} else {
 			me.genToggle.lower[0] = "T " + me.shortenNumber(me.engine.counter + me.genOffset);
 		}
 
@@ -2280,8 +2234,7 @@
 		if (me.finitelyBounded()) {
 			// update births label with density
 			me.birthsValue.preText = (((me.engine.population * 100) / (me.engine.boundedGridHeight * me.engine.boundedGridWidth)) | 0) + "%";
-		}
-		else {
+		} else {
 			// update births label
 			me.birthsValue.preText = me.shortenNumber(me.engine.births);
 			// update deaths label
@@ -2293,8 +2246,7 @@
 		if (me.finitelyBounded()) {
 			// show density
             me.birthsValue.toolTip = "density " + (((me.engine.population * 100) / (me.engine.boundedGridHeight * me.engine.boundedGridWidth)) | 0) + "%";
-		}
-		else {
+		} else {
 			// show births and deaths
 			me.birthsValue.toolTip = "births " + me.engine.births;
 			me.deathsValue.toolTip = "deaths " + me.engine.deaths;
@@ -2308,8 +2260,7 @@
 			if (me.perfColGreen >= (2 * ViewConstants.perfMaxGreen)) {
 				me.perfColGreen = 0;
 			}
-		}
-		else {
+		} else {
 			// ramp the green colour down
 			if (me.perfColGreen > 0) {
 				me.perfColGreen -= ViewConstants.perfGreenStep;
@@ -2322,8 +2273,7 @@
 			if (me.perfColRed < ViewConstants.perfMaxRed) {
 				me.perfColRed += ViewConstants.perfRedStep;
 			}
-		}
-		else {
+		} else {
 			// ramp the red colour down
 			if (me.perfColRed > ViewConstants.perfMinRed) {
 				me.perfColRed -= ViewConstants.perfRedStep;
@@ -2333,8 +2283,7 @@
 		// set the background on the generation and step UI controls
 		if (me.perfColGreen < ViewConstants.perfMaxGreen) {
 			controlColour = "rgb(" + me.perfColRed + "," + me.perfColGreen + ",0)";
-		}
-		else {
+		} else {
 			controlColour = "rgb(" + me.perfColRed + "," + (2 * ViewConstants.perfMaxGreen - me.perfColGreen) + ",0)";
 		}
 		me.stepRange.bgCol = controlColour;
@@ -2394,8 +2343,7 @@
 			initialZoom = this.engine.zoomAt(0, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.displayWidth, this.displayHeight - 80, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor);
 			currentZoom = this.engine.zoomAt(this.originCounter, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.displayWidth, this.displayHeight - 80, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor);
 			this.engine.originZ = currentZoom / initialZoom;
-		}
-		else {
+		} else {
 			// reset origin
 			this.engine.originX = 0;
 			this.engine.originY = 0;
@@ -2519,8 +2467,7 @@
 			this.currentTrackSpeedS = 0;
 			this.currentTrackSpeedE = 0;
 			this.currentTrackSpeedW = 0;
-		}
-		else {
+		} else {
 			// compute cells per generation
 			this.currentTrackSpeedS = (this.engine.zoomBox.topY - this.engine.initialBox.topY) / this.engine.counter;
 			this.currentTrackSpeedN = (this.engine.zoomBox.bottomY - this.engine.initialBox.bottomY) / this.engine.counter;
@@ -2544,8 +2491,7 @@
 			this.waypointsIndicator.current = [(!this.trackDisabled && this.trackDefined)];
 			this.waypointsIndicator.locked = !(this.trackDefined);
 			this.waypointsIndicator.toolTip = ["toggle track mode"];
-		}
-		else {
+		} else {
 			this.waypointsIndicator.lower[0] = "WAYPT";
 			this.waypointsIndicator.current = [(!this.waypointsDisabled && this.waypointsDefined)];
 			this.waypointsIndicator.locked = !(this.waypointsDefined);
@@ -2601,8 +2547,7 @@
 			// check whether to save snapshots
 			if (targetGen - 1 - me.engine.counter <= snapshotBufferGens) {
 				noSnapshots = false;
-			}
-			else {
+			} else {
 				noSnapshots = true;
 			}
 
@@ -2627,8 +2572,7 @@
 
 			// unlock the menu
 			me.viewMenu.locked = false;
-		}
-		else {
+		} else {
 			// lock the menu
 			me.viewMenu.locked = true;
 		}
@@ -2642,8 +2586,7 @@
 		// display help if requested
 		if (me.displayHelp) {
 			Help.drawHelpText(me);
-		}
-		else {
+		} else {
 			// display script errors if present
 			if (me.scriptErrors.length) {
 				Help.drawErrors(me);
@@ -2659,8 +2602,7 @@
 		// check view mode
 		if (me.computeHistory) {
 			me.viewAnimateHistory(me);
-		}
-		else {
+		} else {
 			me.viewAnimateNormal(timeSinceLastUpdate, me);
 		}
 	};
@@ -2699,8 +2641,7 @@
 				me.engine.xOff += me.engine.yOff / 2;
 				me.defaultX += me.engine.yOff / 2;
 				me.savedX += me.engine.yOff / 2;
-			}
-			else {
+			} else {
 				// update x offset
 				me.engine.xOff -= me.engine.yOff / 2;
 				me.defaultX -= me.engine.yOff / 2;
@@ -2745,14 +2686,12 @@
 				// check for custom theme
 				if (me.customTheme && newTheme === me.engine.numThemes) {
 					me.menuManager.notification.notify("Custom Theme", 15, 40, 15, true);
-				}
-				else {
+				} else {
 					me.menuManager.notification.notify("Theme " + newTheme, 15, 40, 15, true);
 				}
 			}
 			result = newValue[0];
-		}
-		else {
+		} else {
 			result = me.engine.colourTheme;
 		}
 
@@ -2777,8 +2716,7 @@
 		var result = "";
 		if (value.toFixed(1) < 10) {
 			result = value.toFixed(1);
-		}
-		else {
+		} else {
 			result = value.toFixed(0);
 		}
 		result += "/s";
@@ -2795,8 +2733,7 @@
 			me.genSpeed = ViewConstants.minGenSpeed + (newValue[0] * newValue[0] * (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
 
 			result = newValue[0];
-		}
-		else {
+		} else {
 			result = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
 		}
 		
@@ -2836,8 +2773,7 @@
 		// check for thumbnail
 		if (me.thumbnail) {
 			me.endZoomPOI = me.savedZoom / me.thumbnailDivisor;
-		}
-		else {
+		} else {
 			me.endZoomPOI = me.savedZoom;
 		}
 
@@ -2906,8 +2842,7 @@
 			this.engine.xOff += this.engine.originX;
 			this.engine.yOff += this.engine.originY;
 			this.engine.zoom *= this.engine.originZ;
-		}
-		else {
+		} else {
 			// track just switched on
 			this.updateOrigin();
 			this.engine.xOff -= this.engine.originX;
@@ -2920,8 +2855,7 @@
 		// ensure zoom in range
 		if (this.engine.zoom < ViewConstants.minZoom) {
 			this.engine.zoom = ViewConstants.minZoom;
-		}
-		else {
+		} else {
 			if (this.engine.zoom > ViewConstants.maxZoom) {
 				this.engine.zoom = ViewConstants.maxZoom;
 			}
@@ -3058,8 +2992,7 @@
 			// set to pause icon
 			this.playList.icon[2] = ViewConstants.iconManager.icon("pause");
 			this.playList.toolTip[2] = "pause";
-		}
-		else {
+		} else {
 			// set to step forward icon
 			this.playList.icon[2] = ViewConstants.iconManager.icon("stepforward");
 			this.playList.toolTip[2] = "next generation";
@@ -3099,8 +3032,7 @@
 				// switch to play mode depending on autostart
 				if (me.hardReset || (me.autoStart && me.engine.counter === 0 && me.elapsedTime === 0)) {
 					me.autoStartDisabled = false;
-				}
-				else {
+				} else {
 					me.autoStartDisabled = true;
 				}
 
@@ -3108,8 +3040,7 @@
 				if (me.autoStart && !me.autoStartDisabled) {
 					newValue = ViewConstants.modePlay;
 					me.generationOn = true;
-				}
-				else {
+				} else {
 					newValue = ViewConstants.modePause;
 					me.generationOn = false;
 				}
@@ -3186,19 +3117,16 @@
 						if (loopChange !== 0) {
 							if (autoStartChange !== 0) {
 								message += ", ";
-							}
-							else {
+							} else {
 								message += " and ";
 							}
 						}
 						if (waypointsChange !== 0) {
 							message += "Waypoints";
-						}
-						else {
+						} else {
 							if (trackChange !== 0) {
 								message += "Track";
-							}
-							else {
+							} else {
 								message += "AutoFit";
 							}
 						}
@@ -3216,8 +3144,7 @@
 					// check for on or off
 					if (loopChange > 0 || waypointsChange > 0 || trackChange > 0 || autoStartChange > 0 || autoFitChange > 0) {
 						message += " On";
-					}
-					else {
+					} else {
 						message += " Off";
 					}
 
@@ -3248,8 +3175,7 @@
 						// run from start to previous generation
 						me.runTo(me.engine.counter - me.gensPerStep);
 					}
-				}
-				else {
+				} else {
 					// pause
 					me.generationOn = false;
 
@@ -3271,8 +3197,7 @@
 					if (!(me.engine.counter === me.stopGeneration && !me.genNotifications)) {
 						me.menuManager.notification.notify("Pause", 15, 40, 15, true);
 					}
-				}
-				else {
+				} else {
 					// step
 					me.nextStep = true;
 				}
@@ -3318,8 +3243,7 @@
 			// set the layers
 			me.engine.layers = (newValue[0] + 0.5) | 0;
 			result = newValue[0];
-		}
-		else {
+		} else {
 			result = me.engine.layers;
 		}
 
@@ -3364,14 +3288,12 @@
 					// scroll help text
 					if (dy > 0) {
 						me.scrollHelpDown(me, dy);
-					}
-					else {
+					} else {
 						if (dy < 0) {
 							me.scrollHelpUp(me, -dy);
 						}
 					}
-				}
-				else {
+				} else {
 					// check if errors are displayed
 					if (me.displayErrors) {
 						// compute the movement
@@ -3381,14 +3303,12 @@
 						// scroll errors
 						if (dy > 0) {
 							me.scrollErrorsDown(me, dy);
-						}
-						else {
+						} else {
 							if (dy < 0) {
 								me.scrollErrorsUp(me, -dy);
 							}
 						}
-					}
-					else {
+					} else {
 						// compute the movement
 						dx = (me.lastDragX - x) / me.engine.camZoom;
 						dy = (me.lastDragY - y) / me.engine.camZoom;
@@ -3396,8 +3316,7 @@
 						// check for hex
 						if (me.engine.isHex) {
 							angle = 0;
-						}
-						else {
+						} else {
 							angle = -me.engine.angle;
 						}
 
@@ -3421,8 +3340,7 @@
 			// save last drag position
 			me.lastDragX = x;
 			me.lastDragY = y;
-		}
-		else {
+		} else {
 			// drag finished
 			me.lastDragX = -1;
 			me.lastDragY = -1;
@@ -3435,8 +3353,7 @@
 		if (this.engine.zoom < 8) {
 			if (dx < 0) {
 				dx = -8;
-			}
-			else {
+			} else {
 				if (dx > 0) {
 					dx = 8;
 				}
@@ -3444,8 +3361,7 @@
 
 			if (dy < 0) {
 				dy = -8;
-			}
-			else {
+			} else {
 				if (dy > 0) {
 					dy = 8;
 				}
@@ -3506,8 +3422,7 @@
 		// check for hex mode
 		if (this.engine.isHex) {
 			this.gridToggle.icon = [ViewConstants.iconManager.icon("hexgrid")];
-		}
-		else {
+		} else {
 			this.gridToggle.icon = [ViewConstants.iconManager.icon("grid")];
 		}
 	};
@@ -3520,8 +3435,7 @@
 			if (!me.computeHistory) {
 				if (event.wheelDelta) {
 					me.wheelDelta = event.wheelDelta / 120;
-				}
-				else {
+				} else {
 					if (event.detail) {
 						me.wheelDelta = -event.detail / 3;
 					}
@@ -3559,8 +3473,7 @@
 		// check if angle wrap around needed
 		if (endAngle - startAngle > 180) {
 			startAngle += 360;
-		}
-		else {
+		} else {
 			if (endAngle - startAngle < -180) {
 				endAngle += 360;
 			}
@@ -3629,26 +3542,22 @@
 		// save end point
 		if (poi.xDefined) {
 			me.endXPOI = poi.x;
-		}
-		else {
+		} else {
 			me.endXPOI = me.startXPOI;
 		}
 		if (poi.yDefined) {
 			me.endYPOI = poi.y;
-		}
-		else {
+		} else {
 			me.endYPOI = me.startYPOI;
 		}
 		if (poi.zoomDefined) {
 			me.endZoomPOI = poi.zoom;
-		}
-		else {
+		} else {
 			me.endZoomPOI = me.startZoomPOI;
 		}
 		if (poi.angleDefined) {
 			me.endAnglePOI = poi.angle;
-		}
-		else {
+		} else {
 			me.endAnglePOI = me.startAnglePOI;
 		}
 
@@ -3684,8 +3593,7 @@
 		// check for play or stop
 		if (poi.modeAtPOI === WaypointConstants.play) {
 			me.playList.current = me.viewPlayList(ViewConstants.modePlay, true, me);
-		}
-		else {
+		} else {
 			if (poi.modeAtPOI === WaypointConstants.stop) {
 				// check if already paused
 				if (me.playList.current !== ViewConstants.modePause) {
@@ -3706,8 +3614,7 @@
 		// check for message
 		if (poi.textMessage !== "") {
 			me.menuManager.notification.notify(poi.textMessage, 15, 180, 15, false);
-		}
-		else {
+		} else {
 			me.menuManager.notification.clear(false, true);
 		}
 
@@ -3769,8 +3676,7 @@
 		if (integerOnly) {
 			if (newZoom >= 1) {
 				newZoom = Math.round(newZoom);
-			}
-			else {
+			} else {
 				newZoom = 1 / Math.round(1 / newZoom);
 			}
 			adjustedZoom = newZoom / me.engine.originZ;
@@ -3885,8 +3791,7 @@
 					// set waypoints to loop mode
 					me.waypointsDisabled = me.loopDisabled;
 					me.menuManager.notification.notify("Loop and Waypoints " + (me.loopDisabled ? "Off" : "On"), 15, 40, 15, true);
-				}
-				else {
+				} else {
 					// check for track
 					if (me.trackDefined) {
 						// set track to loop mode
@@ -3895,8 +3800,7 @@
 
 						// adjust origin if track switched on or off
 						me.adjustOrigin(me.trackDisabled);
-					}
-					else {
+					} else {
 						// just loop
 						me.menuManager.notification.notify("Loop " + (me.loopDisabled ? "Off" : "On"), 15, 40, 15, true);
 					}
@@ -3924,13 +3828,11 @@
 					// set loop to track mode
 					me.loopDisabled = me.trackDisabled;
 					me.menuManager.notification.notify("Loop and Track " + (me.loopDisabled ? "Off" : "On"), 15, 40, 15, true);
-				}
-				else {
+				} else {
 					// just track
 					me.menuManager.notification.notify("Track " + (me.trackDisabled ? "Off" : "On"), 15, 40, 15, true);
 				}
-			}
-			else {
+			} else {
 				// check for waypoints
 				if (me.waypointsDefined) {
 					me.waypointsDisabled = !newValue[0];
@@ -3940,8 +3842,7 @@
 						// set loop to waypoints mode
 						me.loopDisabled = me.waypointsDisabled;
 						me.menuManager.notification.notify("Loop and Waypoints " + (me.loopDisabled ? "Off" : "On"), 15, 40, 15, true);
-					}
-					else {
+					} else {
 						// just waypoints
 						me.menuManager.notification.notify("Waypoints " + (me.waypointsDisabled ? "Off" : "On"), 15, 40, 15, true);
 					}
@@ -3952,8 +3853,7 @@
 		// check for track
 		if (me.trackDefined) {
 			result = [me.trackDisabled];
-		}
-		else {
+		} else {
 			result = [me.waypointsDisabled];
 		}
 
@@ -3983,8 +3883,7 @@
 						me.engine.population = me.engine.resetSnapshot.population;
 						me.engine.births = me.engine.resetSnapshot.births;
 						me.engine.deaths = me.engine.resetSnapshot.deaths;
-					}
-					else {
+					} else {
 						// check for Generations rule  TBD LTL and HROT?
 						if (me.engine.multiNumStates === -1) {
 							// go to previous generation
@@ -3994,8 +3893,7 @@
 							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled);
 						}
 					}
-				}
-				else {
+				} else {
 					// zero the population
 					me.engine.population = 0;
 					me.engine.births = 0;
@@ -4061,8 +3959,7 @@
 		while (i >= 0 && !found) {
 			if (me.displayHelp <= me.helpSections[i]) {
 				i = i - 1;
-			}
-			else {
+			} else {
 				found = true;
 			}
 		}
@@ -4080,8 +3977,7 @@
 		while (i < me.helpSections.length && !found) {
 			if (me.displayHelp >= me.helpSections[i]) {
 				i = i + 1;
-			}
-			else {
+			} else {
 				found = true;
 			}
 		}
@@ -4095,8 +3991,7 @@
 		// check whether history enabled
 		if (this.noHistory) {
 			this.menuManager.notification.notify("Step back disabled", 15, 40, 15, true);
-		}
-		else {
+		} else {
 			// ensure target generation is not negative
 			if (targetGen < 0) {
 				targetGen = 0;
@@ -4190,8 +4085,7 @@
 		// camera zoom
 		if (zoom === (zoom | 0)) {
 			zoomStr = String(zoom);
-		}
-		else {
+		} else {
 			zoomStr = String(zoom.toFixed(2));
 		}
 		string += Keywords.zoomWord + " " + zoomStr + " ";
@@ -4247,8 +4141,7 @@
 					me.menuManager.noGUI = me.noGUI;
 				}
 			}
-		}
-		else {
+		} else {
 			// check for control (other than control-C) or meta
 			if ((event.ctrlKey && keyCode !== 67) || event.metaKey) {
 				// handle control-R since it would refresh the browser and Golly uses it for pattern reset
@@ -4268,8 +4161,7 @@
 						// set camera
 						me.setCameraFromPOI(me, me.currentPOI);
 					}
-				}
-				else {
+				} else {
 					switch (keyCode) {
 						// c for default theme
 						case 67:
@@ -4295,8 +4187,7 @@
 					if (me.engine.patternDisplayMode !== me.engine.isHex) {
 						me.hexButton.current = me.viewHexToggle([me.engine.patternDisplayMode], true, me);
 					}
-				}
-				else {
+				} else {
 					// toggle hex mode
 					me.hexButton.current = me.viewHexToggle([!me.engine.isHex], true, me);
 				}
@@ -4316,8 +4207,7 @@
 							// run from start to previous generation
 							me.runTo(me.engine.counter - 1);
 						}
-					}
-					else {
+					} else {
 						// pause
 						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 					}
@@ -4332,8 +4222,7 @@
 					if (me.playList.current === ViewConstants.modePlay) {
 						// switch to pause
 						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
-					}
-					else {
+					} else {
 						// switch to play
 						me.playList.current = me.viewPlayList(ViewConstants.modePlay, true, me);
 					}
@@ -4348,8 +4237,7 @@
 					if (me.generationOn) {
 						// pause
 						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
-					}
-					else {
+					} else {
 						// check for shift key
 						if (event.shiftKey) {
 							// step back if not at start
@@ -4357,8 +4245,7 @@
 								// run from start to previous step
 								me.runTo(me.engine.counter - me.gensPerStep);
 							}
-						}
-						else {
+						} else {
 							// step forward
 							me.nextStep = true;
 						}
@@ -4374,8 +4261,7 @@
 					if (me.generationOn) {
 						// pause
 						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
-					}
-					else {
+					} else {
 						// next generation
 						me.nextStep = true;
 						me.singleStep = true;
@@ -4397,8 +4283,7 @@
 
 						// display notification
 						me.menuManager.notification.notify("Loop and Waypoints " + (me.waypointsDisabled ? "Off" : "On"), 15, 40, 15, true);
-					}
-					else {
+					} else {
 						// display notification
 						me.menuManager.notification.notify("Waypoints " + (me.waypointsDisabled ? "Off" : "On"), 15, 40, 15, true);
 					}
@@ -4419,13 +4304,11 @@
 							// clear manual change flag
 							me.manualChange = false;
 						}
-					}
-					else {
+					} else {
 						// waypoints just disabled so remove any waypoint message
 						me.menuManager.notification.clear(false, false);
 					}
-				}
-				else {
+				} else {
 					// check if track defined
 					if (me.trackDefined) {
 						// toggle track mode
@@ -4438,16 +4321,14 @@
 
 							// display notification
 							me.menuManager.notification.notify("Loop and Track " + (me.trackDisabled ? "Off" : "On"), 15, 40, 15, true);
-						}
-						else {
+						} else {
 							// display notification
 							me.menuManager.notification.notify("Track " + (me.trackDisabled ? "Off" : "On"), 15, 40, 15, true);
 						}
 
 						// if track just disabled then add origin to position
 						me.adjustOrigin(me.trackDisabled);
-					}
-					else {
+					} else {
 						// check if loop defined
 						if (me.loopGeneration !== -1) {
 							me.loopDisabled = !me.loopDisabled;
@@ -4466,8 +4347,7 @@
 						if (event.shiftKey) {
 							// go to maximum step
 							me.gensPerStep = ViewConstants.maxStepSpeed;
-						}
-						else {
+						} else {
 							// increase step
 							me.gensPerStep += 1;
 						}
@@ -4485,8 +4365,7 @@
 						if (event.shiftKey) {
 							// go to minimum step
 							me.gensPerStep = ViewConstants.minStepSpeed;
-						}
-						else {
+						} else {
 							// decrease step
 							me.gensPerStep -= 1;
 						}
@@ -4503,8 +4382,7 @@
 					value = Controller.stopAllViewers();
 					if (value === 0) {
 						me.menuManager.notification.notify("No LifeViewers playing", 15, 100, 15, true);
-					}
-					else {
+					} else {
 						if (value > 1) {
 							me.menuManager.notification.notify("Paused all LifeViewers", 15, 100, 15, true);
 						}
@@ -4515,12 +4393,10 @@
 					value = Controller.stopOtherViewers(me);
 					if (value === 0) {
 						me.menuManager.notification.notify("No other LifeViewers playing", 15, 100, 15, true);
-					}
-					else {
+					} else {
 						if (value > 1) {
 							me.menuManager.notification.notify("Paused " + value + " other LifeViewers", 15, 100, 15, true);
-						}
-						else {
+						} else {
 							me.menuManager.notification.notify("Paused " + value + " other LifeViewer", 15, 100, 15, true);
 						}
 					}
@@ -4536,8 +4412,7 @@
 					if (me.engine.gridLineMajor > 0) {
 						me.menuManager.notification.notify("Major Grid Lines " + (me.engine.gridLineMajorEnabled ? "On" : "Off"), 15, 40, 15, true);
 					}
-				}
-				else {
+				} else {
 					// toggle grid
 					me.engine.displayGrid = !me.engine.displayGrid;
 					me.gridToggle.current = me.toggleGrid([me.engine.displayGrid], true, me);
@@ -4549,16 +4424,14 @@
 				// check if graph disabled
 				if (me.graphDisabled) {
 					me.menuManager.notification.notify("Graph Disabled", 15, 40, 15, true);
-				}
-				else {
+				} else {
 					// check for shift
 					if (event.shiftKey) {
 						// toggle lines
 						me.popGraphLines = !me.popGraphLines;
 						me.linesToggle.current = me.toggleLines([me.popGraphLines], true, me);
 						me.menuManager.notification.notify("Graph " + (me.popGraphLines ? "Lines" : "Points"), 15, 40, 15, true);
-					}
-					else {
+					} else {
 						// toggle population graph
 						me.popGraph = !me.popGraph;
 						me.menuManager.notification.notify("Population Graph " + (me.popGraph ? "On" : "Off"), 15, 40, 15, true);
@@ -4573,8 +4446,7 @@
 					// copy view
 					me.copyPosition(me, true);
 					me.menuManager.notification.notify("Copied view to clipboard", 15, 180, 15, true);
-				}
-				else {
+				} else {
 					// copy position
 					me.copyPosition(me, false);
 					me.menuManager.notification.notify("Copied position to clipboard", 15, 180, 15, true);
@@ -4588,8 +4460,7 @@
 					if (!me.depthItem.locked) {
 						if (me.depthItem.current[0] <= 0.99) {
 							me.depthItem.current = me.viewDepthRange([me.depthItem.current[0] + 0.01, me.depthItem.current[1]], true, me);
-						}
-						else {
+						} else {
 							me.depthItem.current = me.viewDepthRange([1, me.depthItem.current[1]], true, me);
 						}
 					}
@@ -4605,15 +4476,13 @@
 						me.loopDisabled = !me.loopDisabled;
 						me.loopIndicator.current = [me.loopDisabled];
 					}
-				}
-				else {
+				} else {
 					// disable depth in multi-state mode
 					if (!me.multiStateView) {
 						if (!me.depthItem.locked) {
 							if (me.depthItem.current[0] >= 0.01) {
 								me.depthItem.current = me.viewDepthRange([me.depthItem.current[0] - 0.01, me.depthItem.current[1]], true, me);
-							}
-							else {
+							} else {
 								me.depthItem.current = me.viewDepthRange([0, me.depthItem.current[1]], true, me);
 							}
 						}
@@ -4650,8 +4519,7 @@
 				// check for shift key
 				if (event.shiftKey) {
 					Controller.resetAllViewers();
-				}
-				else {
+				} else {
 					// reset this viewer
 					me.playList.current = me.viewPlayList(ViewConstants.modeReset, true, me);
 				}
@@ -4667,8 +4535,7 @@
 						me.state1Fit = !me.state1Fit;
 						me.menuManager.notification.notify("AutoFit State 1 Mode " + (me.state1Fit ? "On" : "Off"), 15, 40, 15, true);
 					}
-				}
-				else {
+				} else {
 					// toggle stars
 					me.starsOn = !me.starsOn;
 				}
@@ -4682,8 +4549,7 @@
 					if (me.thumbnail) {
 						// switch it off
 						me.switchOffThumbnail();
-					}
-					else {
+					} else {
 						// switch it on
 						me.switchOnThumbnail();
 
@@ -4705,8 +4571,7 @@
 					// save current camera position
 					me.saveCamera(me);
 					me.menuManager.notification.notify("Saved camera position", 15, 100, 15, true);
-				}
-				else {
+				} else {
 					// check if controls are disabled
 					if (!me.controlsLocked) {
 						// reset camera
@@ -4729,8 +4594,7 @@
 					if (event.shiftKey) {
 						// zoom in by a factor of 2
 						me.adjustZoomPosition(me.zoomItem.current[0], Math.log((me.engine.zoom * me.engine.originZ) * 2 / ViewConstants.minZoom) / Math.log(ViewConstants.maxZoom / ViewConstants.minZoom) - me.zoomItem.current[0]);
-					}
-					else {
+					} else {
 						// zoom in slowly
 						me.adjustZoomPosition(me.zoomItem.current[0], 0.01);
 					}
@@ -4745,8 +4609,7 @@
 					if (event.shiftKey) {
 						// zoom out by a factor of 2
 						me.adjustZoomPosition(me.zoomItem.current[0], Math.log((me.engine.zoom * me.engine.originZ) / 2 / ViewConstants.minZoom) / Math.log(ViewConstants.maxZoom / ViewConstants.minZoom) - me.zoomItem.current[0]);
-					}
-					else {
+					} else {
 						// zoom out slowly
 						me.adjustZoomPosition(me.zoomItem.current[0], -0.01);
 					}
@@ -4773,8 +4636,7 @@
 
 					// display notification
 					me.menuManager.notification.notify("Integer Zoom", 15, 40, 15, true);
-				}
-				else {
+				} else {
 					// change zoom to 100%
 					me.changeZoom(me, 1, false);
 				}
@@ -4787,8 +4649,7 @@
 				if (event.shiftKey) {
 					// zoom to -2x
 					me.changeZoom(me, 0.5, false);
-				}
-				else {
+				} else {
 					// zoom to 200%
 					me.changeZoom(me, 2, false);
 				}
@@ -4808,8 +4669,7 @@
 				if (event.shiftKey) {
 					// zoom to -4x
 					me.changeZoom(me, 0.25, false);
-				}
-				else {
+				} else {
 					// zoom to 400%
 					me.changeZoom(me, 4, false);
 				}
@@ -4822,8 +4682,7 @@
 				if (event.shiftKey) {
 					// zoom to -16x
 					me.changeZoom(me, 0.0625, false);
-				}
-				else {
+				} else {
 					// zoom to 1600%
 					me.changeZoom(me, 16, false);
 				}
@@ -4834,8 +4693,7 @@
 				// check if graph disabled
 				if (me.graphDisabled) {
 					me.menuManager.notification.notify("Graph Disabled", 15, 40, 15, true);
-				}
-				else {
+				} else {
 					if (me.popGraphOpacity > 0) {
 						me.popGraphOpacity -= 0.05;
 						if (me.popGraphOpacity < 0) {
@@ -4853,8 +4711,7 @@
 				if (event.shiftKey) {
 					// zoom to -8x
 					me.changeZoom(me, 0.125, false);
-				}
-				else {
+				} else {
 					// zoom to 800%
 					me.changeZoom(me, 8, false);
 				}
@@ -4865,8 +4722,7 @@
 				// check if graph disabled
 				if (me.graphDisabled) {
 					me.menuManager.notification.notify("Graph Disabled", 15, 40, 15, true);
-				}
-				else {
+				} else {
 					if (me.popGraphOpacity < 1) {
 						me.popGraphOpacity += 0.05;
 						if (me.popGraphOpacity > 1) {
@@ -4899,20 +4755,17 @@
 						if (event.shiftKey) {
 							// go to minimum step
 							me.gensPerStep = ViewConstants.minStepSpeed;
-						}
-						else {
+						} else {
 							// decrease step
 							me.gensPerStep -= 1;
 						}
 						me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
-					}
-					else {
+					} else {
 						// decrease generation speed
 						if (me.generationRange) {
 							if (me.generationRange.current[0] >= 0.01 && !event.shiftKey) {
 								me.generationRange.current = me.viewGenerationRange([me.generationRange.current[0] - 0.01, me.generationRange.current[1]], true, me);
-							}
-							else {
+							} else {
 								me.generationRange.current = me.viewGenerationRange([0, me.generationRange.current[1]], true, me);
 							}
 						}
@@ -4929,14 +4782,12 @@
 					if (me.generationRange) {
 						if (me.generationRange.current[0] <= 0.99 && !event.shiftKey) {
 							me.generationRange.current = me.viewGenerationRange([me.generationRange.current[0] + 0.01, me.generationRange.current[1]], true, me);
-						}
-						else {
+						} else {
 							// check whether speed was maximum
 							if (me.generationRange.current[0] <= 0.99) {
 								// set maximum
 								me.generationRange.current = me.viewGenerationRange([1, me.generationRange.current[1]], true, me);
-							}
-							else {
+							} else {
 								// set maximum
 								me.generationRange.current = me.viewGenerationRange([1, me.generationRange.current[1]], true, me);
 								// increase step
@@ -4945,8 +4796,7 @@
 									if (event.shiftKey) {
 										// go to maximum step
 										me.gensPerStep = ViewConstants.maxStepSpeed;
-									}
-									else {
+									} else {
 										// increase step
 										me.gensPerStep += 1;
 									}
@@ -4968,8 +4818,7 @@
 					if (event.shiftKey) {
 						// decrease by a quarter
 						value -= 90;
-					}
-					else {
+					} else {
 						// decrease by a degree
 						value -= 1;
 					}
@@ -4994,8 +4843,7 @@
 					if (event.shiftKey) {
 						// increase by a quarter
 						value += 90;
-					}
-					else {
+					} else {
 						// increase by a degree
 						value += 1;
 					}
@@ -5026,8 +4874,7 @@
 
 							// set camera
 							me.setCameraFromPOI(me, me.currentPOI);
-						}
-						else {
+						} else {
 
 							// got to next POI
 							me.currentPOI += 1;
@@ -5039,8 +4886,7 @@
 							me.setCameraFromPOI(me, me.currentPOI);
 						}
 					}
-				}
-				else {
+				} else {
 					me.menuManager.notification.notify("No POIs defined", 15, 80, 15, true);
 				}
 				break;
@@ -5051,8 +4897,7 @@
 				if (event.shiftKey) {
 					// toggle extended timing
 					me.menuManager.showExtendedTiming = !me.menuManager.showExtendedTiming;
-				}
-				else {
+				} else {
 					// toggle fps
 					me.fpsButton.current = me.viewFpsToggle([!me.menuManager.showTiming], true, me);
 				}
@@ -5078,8 +4923,7 @@
 						if (me.genDefined) {
 							me.genRelative = !me.genRelative;
 						}
-					}
-					else {
+					} else {
 						// toggle statistics
 						me.viewStats([!me.statsOn], true, me);
 						if (me.genToggle) {
@@ -5099,8 +4943,7 @@
 						me.autoFit = !me.autoFit;
 						me.autoFitToggle.current = me.toggleAutoFit([me.autoFit], true, me);
 					}
-				}
-				else {
+				} else {
 					// fit zoom
 					if (!me.fitButton.locked) {
 						me.fitZoomDisplay(true, true);
@@ -5120,8 +4963,7 @@
 				if (event.shiftKey) {
 					// capture graph
 					me.screenShotScheduled = 2;
-				}
-				else {
+				} else {
 					// capture life
 					me.screenShotScheduled = 1;
 				}
@@ -5133,8 +4975,7 @@
 				if (event.shiftKey) {
 					// scroll pattern diagonally
 					me.moveView(me.engine.zoom, me.engine.zoom);
-				}
-				else {
+				} else {
 					// scroll pattern right
 					me.moveView(me.engine.zoom, 0);
 				}
@@ -5146,20 +4987,17 @@
 				if (me.displayHelp) {
 					// scroll help up
 					me.scrollHelpUp(me, 1);
-				}
-				else {
+				} else {
 					// check if errors displayed
 					if (me.displayErrors) {
 						// scroll error list up
 						me.scrollErrorsUp(me, 1);
-					}
-					else {
+					} else {
 						// check for shift key
 						if (event.shiftKey) {
 							// scroll pattern diagonally
 							me.moveView(-me.engine.zoom, me.engine.zoom);
-						}
-						else {
+						} else {
 							// scroll pattern down
 							me.moveView(0, me.engine.zoom);
 						}
@@ -5173,9 +5011,7 @@
 				if (event.shiftKey) {
 					// scroll pattern diagonally
 					me.moveView(-me.engine.zoom, -me.engine.zoom);
-				}
-				else {
-
+				} else {
 					// scroll pattern left
 					me.moveView(-me.engine.zoom, 0);
 				}
@@ -5187,19 +5023,16 @@
 				if (me.displayHelp) {
 					// scroll help down
 					me.scrollHelpDown(me, 1);
-				}
-				else {
+				} else {
 					// check if errors displayed
 					if (me.displayErrors) {
 						// scroll error list down
 						me.scrollErrorsDown(me, 1);
-					}
-					else {
+					} else {
 						// check for shift key
 						if (event.shiftKey) {
 							me.moveView(me.engine.zoom, -me.engine.zoom);
-						}
-						else {
+						} else {
 							// scroll pattern up
 							me.moveView(0, -me.engine.zoom);
 						}
@@ -5226,8 +5059,7 @@
 						me.copyRLE(me);
 						me.menuManager.notification.notify("Copied to Clipboard", 15, 180, 15, true);
 					}
-				}
-				else {
+				} else {
 					// disable colour themes in multi-state mode
 					if (!me.multiStateView) {
 						if (me.themeItem && !me.themeItem.locked) {
@@ -5240,13 +5072,11 @@
 									// check for custom theme
 									if (me.customTheme) {
 										value = me.engine.numThemes;
-									}
-									else {
+									} else {
 										value = me.engine.numThemes - 1;
 									}
 								}
-							}
-							else {
+							} else {
 								// increment colour theme
 								value = me.themeItem.current[0];
 								value += 1;
@@ -5257,8 +5087,7 @@
 									if (value >= me.engine.numThemes + 1) {
 										value = 0;
 									}
-								}
-								else {
+								} else {
 									// no custom theme
 									if (value >= me.engine.numThemes) {
 										value = 0;
@@ -5280,24 +5109,20 @@
 					// toggle history fit mode
 					me.historyFit = !me.historyFit;
 					me.menuManager.notification.notify("AutoFit History Mode " + (me.historyFit ? "On" : "Off"), 15, 40, 15, true);
-				}
-				else {
+				} else {
 					// if errors then set script help page
 					if (me.scriptErrors.length) {
 						// toggle help page
 						if (me.displayHelp) {
 							me.displayHelp = 0;
-						}
-						else {
+						} else {
 							me.displayHelp = me.scriptHelpLine;
 						}
-					}
-					else {
+					} else {
 						// toggle help
 						if (me.displayHelp) {
 							me.displayHelp = 0;
-						}
-						else {
+						} else {
 							// do not display help if in thumbnail mode
 							if (!me.thumbnail) {
 								me.displayHelp = 1;
@@ -5317,20 +5142,17 @@
 				if (event.shiftKey) {
 					// toggle infobar
 					me.infoBarEnabled = !me.infoBarEnabled;
-				}
-				else {
+				} else {
 					// check if help displayed
 					if (me.displayHelp) {
 						// check if on the info line
 						if (me.displayHelp !== me.infoHelpLine) {
 							me.displayHelp = me.infoHelpLine;
-						}
-						else {
+						} else {
 							// close help
 							me.displayHelp = 0;
 						}
-					}
-					else {
+					} else {
 						// do not display information if in thumbnail mode
 						if (!me.thumbnail) {
 							me.displayHelp = me.infoHelpLine;
@@ -5352,26 +5174,22 @@
 						// clear errors
 						me.scriptErrors = [];
 						me.displayErrors = 0;
-					}
-					else {
+					} else {
 						// close the popup Viewer
 						hideViewer();
 					}
-				}
-				else {
+				} else {
 					// check if help displayed
 					if (me.displayHelp) {
 						// close help
 						me.displayHelp = 0;
-					}
-					else {
+					} else {
 						// check if errors displayed
 						if (me.scriptErrors.length) {
 							// clear errors
 							me.scriptErrors = [];
 							me.displayErrors = 0;
-						}
-						else {
+						} else {
 							// check if playing
 							if (me.generationOn) {
 								// switch to pause
@@ -5397,13 +5215,11 @@
 					if (event.shiftKey) {
 						// move to previous section
 						me.previousHelpSection(me);
-					}
-					else {
+					} else {
 						// move to previous page
 						me.scrollHelpUp(me, me.numHelpPerPage);
 					}
-				}
-				else {
+				} else {
 					// check if errors displayed
 					if (me.displayErrors) {
 						// move to previous page
@@ -5420,13 +5236,11 @@
 					if (event.shiftKey) {
 						// move to next help section
 						me.nextHelpSection(me);
-					}
-					else {
+					} else {
 						// move to next page
 						me.scrollHelpDown(me, me.numHelpPerPage);
 					}
-				}
-				else {
+				} else {
 					// check if errors displayed
 					if (me.displayErrors) {
 						// move to next page
@@ -5441,8 +5255,7 @@
 				if (me.displayHelp) {
 					// move to top
 					me.displayHelp = 1;
-				}
-				else {
+				} else {
 					// check if errors displayed
 					if (me.displayErrors) {
 						// move to top
@@ -5457,8 +5270,7 @@
 				if (me.displayHelp) {
 					// move to bottom
 					me.displayHelp = me.numHelpLines - me.numHelpPerPage;
-				}
-				else {
+				} else {
 					// check if errors displayed
 					if (me.displayErrors) {
 						// move to bottom
@@ -5523,8 +5335,7 @@
 		if (me.computeHistory) {
 			// process the key in history mode
 			processed = me.processKeyHistory(me, keyCode, event);
-		}
-		else {
+		} else {
 			// process the key
 			processed = me.processKey(me, keyCode, event);
 		}
@@ -5893,8 +5704,7 @@
 
 			// success
 			result = true;
-		}
-		else {
+		} else {
 			// no canvas support
 			result = false;
 		}
@@ -5924,6 +5734,7 @@
 			case Keywords.deleteRangeWord:
 			case Keywords.poiWord:
 			case Keywords.titleWord:
+			case Keywords.labelWord:
 			case Keywords.noHistoryWord:
 			case Keywords.noReportWord:
 			case Keywords.trackWord:
@@ -6001,8 +5812,7 @@
 		if (peekToken === "" || this.isScriptCommand(peekToken)) {
 			// argument missing
 			scriptErrors[scriptErrors.length] = [nextToken, itemDescription + " missing"];
-		}
-		else {
+		} else {
 			// argument invalid
 			scriptErrors[scriptErrors.length] = [nextToken + " " + peekToken, itemDescription + " must be " + itemType];
 			// eat the invalid token
@@ -6049,8 +5859,7 @@
 					// check it is in range
 					if (blueValue < 0 || blueValue > 255) {
 						scriptErrors[scriptErrors.length] = [whichColour + " " + elementName + " " + redValue + " " + greenValue + " " + blueValue, "BLUE out of range"];
-					}
-					else {
+					} else {
 						// colour is valid
 						badColour = false;
 					}
@@ -6059,13 +5868,11 @@
 					// illegal or missing blue component
 					this.nonNumericTokenError(scriptReader, scriptErrors, whichColour + " " + elementName + " " + redValue + " " + greenValue, "BLUE", "numeric");
 				}
-			}
-			else {
+			} else {
 				// illegal or missing green component
 				this.nonNumericTokenError(scriptReader, scriptErrors, whichColour + " " + elementName + " " + redValue, "GREEN", "numeric");
 			}
-		}
-		else {
+		} else {
 			// check for colour name
 			peekToken = scriptReader.peekAtNextToken();
 
@@ -6082,14 +5889,12 @@
 
 				// mark good colour
 				badColour = false;
-			}
-			else {
+			} else {
 				// illegal colour name
 				if (peekToken === "" || this.isScriptCommand(peekToken)) {
 					// argument missing
 					scriptErrors[scriptErrors.length] = [whichColour + " " + elementName, "name missing"];
-				}
-				else {
+				} else {
 					// argument invalid
 					scriptErrors[scriptErrors.length] = [whichColour + " " + elementName + " " + peekToken, "name not known"];
 
@@ -6146,8 +5951,7 @@
 				// copy to boundary colour
 				if (this.engine.littleEndian) {
 					this.engine.boundaryColour = 255 << 24 | blueValue << 16 | greenValue << 8 | redValue;
-				}
-				else {
+				} else {
 					this.engine.boundaryColour = redValue << 24 | greenValue << 16 | blueValue << 8 | 255;
 				}
 				break;
@@ -6381,8 +6185,7 @@
 			if (readingTitle) {
 				// display error
 				scriptErrors[scriptErrors.length] = [Keywords.titleWord + " " + Keywords.stringDelimiter + this.shortenMessage(message, 23) + Keywords.stringDelimiter, "only one line allowed"];
-			}
-			else {
+			} else {
 				// check for second newline
 				index = message.substr(index + 2).indexOf("\\n");
 				if (index !== -1) {
@@ -6401,16 +6204,14 @@
 		// create the error source
 		if (newTheme >= this.engine.numThemes) {
 			errorSource += Keywords.themeCustomWord;
-		}
-		else {
+		} else {
 			errorSource += newTheme;
 		}
 
 		// create the error reason
 		if (currentTheme >= this.engine.numThemes) {
 			errorReason += Keywords.themeCustomWord;
-		}
-		else {
+		} else {
 			errorReason += currentTheme;
 		}
 
@@ -6435,8 +6236,7 @@
 			if (redValue < 0 || redValue > 255) {
 				scriptErrors[scriptErrors.length] = [nextToken + " " + colName + " " + redValue, "RED out of range"];
 				badColour = true;
-			}
-			else {
+			} else {
 				// read the green value
 				if (scriptReader.nextTokenIsNumeric()) {
 					// get the green
@@ -6446,8 +6246,7 @@
 					if (greenValue < 0 || greenValue > 255) {
 						scriptErrors[scriptErrors.length] = [nextToken + " " + colName + " " + redValue + " " + greenValue, "GREEN out of range"];
 						badColour = true;
-					}
-					else {
+					} else {
 						// read the blue value
 						if (scriptReader.nextTokenIsNumeric()) {
 							// get the blue
@@ -6464,15 +6263,13 @@
 							badColour = true;
 						}
 					}
-				}
-				else {
+				} else {
 					// illegal or missing green component
 					this.nonNumericTokenError(scriptReader, scriptErrors, nextToken + " " + colName + " " + redValue, "GREEN", "numeric");
 					badColour = true;
 				}
 			}
-		}
-		else {
+		} else {
 			// check for colour name
 			peekToken = scriptReader.peekAtNextToken();
 
@@ -6486,16 +6283,14 @@
 				redValue = colourTriple[1];
 				greenValue = colourTriple[2];
 				blueValue = colourTriple[3];
-			}
-			else {
+			} else {
 				badColour = true;
 
 				// illegal colour name
 				if (peekToken === "" || this.isScriptCommand(peekToken)) {
 					// argument missing
 					scriptErrors[scriptErrors.length] = [nextToken + " " + colName, "name missing"];
-				}
-				else {
+				} else {
 					// argument invalid
 					scriptErrors[scriptErrors.length] = [nextToken + " " + colName + " " + peekToken, "name not known"];
 
@@ -6526,8 +6321,7 @@
 		if (varIndex === -1) {
 			// no variables so just return the input
 			result = string;
-		}
-		else {
+		} else {
 			// substitute each variable
 			while (varIndex !== -1) {
 				// add the portion before the variable to the result
@@ -6561,8 +6355,7 @@
 							// add the alias
 							if (this.patternAliasName === "") {
 								result += this.patternRuleName;
-							}
-							else {
+							} else {
 								result += this.patternAliasName;
 							}
 							break;
@@ -6590,8 +6383,7 @@
 
 					// find the next variable
 					varIndex = string.indexOf(Keywords.variablePrefixSymbol);
-				}
-				else {
+				} else {
 					varIndex = -1;
 				}
 			}
@@ -6610,17 +6402,14 @@
 			// check if linear command
 			if (command === Keywords.linearWord) {
 				scriptErrors[scriptErrors.length] = [command + " " + argument, "already defined"];
-			}
-			else {
+			} else {
 				scriptErrors[scriptErrors.length] = [command + " " + argument, "overwrites " + Keywords.linearWord];
 			}
-		}
-		else {
+		} else {
 			// check if linear command
 			if (command === Keywords.linearWord) {
 				scriptErrors[scriptErrors.length] = [command + " " + argument, "overwrites " + Keywords.bezierWord];
-			}
-			else {
+			} else {
 				scriptErrors[scriptErrors.length] = [command + " " + argument, "already defined"];
 			}
 		}
@@ -6632,8 +6421,7 @@
 
 		if (number === (number | 0)) {
 			result = String(number);
-		}
-		else {
+		} else {
 			result = number.toFixed(places);
 		}
 
@@ -6661,7 +6449,8 @@
 		    stringValue = "",
 		    
 		    // number value
-		    numberValue = 0,
+			numberValue = 0,
+			numberValue2 = 0,
 
 		    // item valid flag
 		    itemValid = false,
@@ -6695,7 +6484,13 @@
 		    // whether points of interest found
 		    poiFound = false,
 
-		    // whether colour balid
+			// current label
+			currentLabel = null,
+
+			// whether reading label
+			readingLabel = false,
+
+		    // whether colour valid
 		    badColour = false,
 
 		    // type of argument
@@ -6798,19 +6593,23 @@
 
 							// flag not reading title
 							readingTitle = false;
+						} else {
+							if (readingLabel) {
+								// set label message
+								currentLabel.message = this.substituteVariables(stringValue);
+								readingLabel = false;
+								this.waypointManager.addLabel(currentLabel);
+							} else {
+								// set text message
+								currentWaypoint.textMessage = this.substituteVariables(stringValue);
+								currentWaypoint.textDefined = true;
+							}
 						}
-						else {
-							// set text message
-							currentWaypoint.textMessage = this.substituteVariables(stringValue);
-							currentWaypoint.textDefined = true;
-						}
-					}
-					else {
+					} else {
 						// add to current string
 						stringValue = stringValue + " " + nextToken;
 					}
-				}
-				else {
+				} else {
 					// check for new string
 					if (nextToken[0] === Keywords.stringDelimiter) {
 						// create the new string
@@ -6839,15 +6638,20 @@
 
 								// flag not reading title
 								readingTitle = false;
-							}
-							else {
-								// set the text message
-								currentWaypoint.textMessage = this.substituteVariables(stringValue);
-								currentWaypoint.textDefined = true;
+							} else {
+								if (readingLabel) {
+									// set label message
+									currentLabel.message = this.substituteVariables(stringValue);
+									readingLabel = false;
+									this.waypointManager.addLabel(currentLabel);
+								} else {
+									// set the text message
+									currentWaypoint.textMessage = this.substituteVariables(stringValue);
+									currentWaypoint.textDefined = true;
+								}
 							}
 						}
-					}
-					else {
+					} else {
 						// read command
 						// flag the item is invalid
 						isNumeric = false;
@@ -6864,6 +6668,45 @@
 							readingTitle = true;
 
 							itemValid = true;
+							break;
+
+						// label
+						case Keywords.labelWord:
+							// get the x position
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= -this.engine.maxGridSize / 2 && numberValue <= this.engine.maxGridSize / 2) {
+									isNumeric = false;
+									numberValue2 = numberValue;
+
+									// get the y position
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+
+										// get the value
+										numberValue = scriptReader.getNextTokenAsNumber();
+
+										if (numberValue >= -this.engine.maxGridSize / 2 && numberValue <= this.engine.maxGridSize / 2) {
+											// check there is text
+											peekToken = scriptReader.peekAtNextToken();
+											if (peekToken[0] === Keywords.stringDelimiter) {
+												// save the label
+												currentLabel = this.waypointManager.createLabel(numberValue2, numberValue);
+												readingLabel = true;
+												itemValid = true;
+											} else {
+												isNumeric = false;
+											}
+										}
+									}
+								}
+							}
+
 							break;
 
 						// no history
@@ -6889,8 +6732,7 @@
 								peekToken = scriptReader.getNextToken();
 								// switch stars off
 								currentWaypoint.stars = false;
-							}
-							else {
+							} else {
 								currentWaypoint.stars = true;
 							}
 							currentWaypoint.starsDefined = true;
@@ -6907,8 +6749,7 @@
 								peekToken = scriptReader.getNextToken();
 								// switch fit zoom off
 								currentWaypoint.fitZoom = false;
-							}
-							else {
+							} else {
 								currentWaypoint.fitZoom = true;
 							}
 
@@ -6924,8 +6765,7 @@
 								peekToken = scriptReader.getNextToken();
 								// switch fit zoom off
 								this.historyFit = false;
-							}
-							else {
+							} else {
 								this.historyFit = true;
 							}
 
@@ -6941,8 +6781,7 @@
 								peekToken = scriptReader.getNextToken();
 								// switch grid off
 								currentWaypoint.grid = false;
-							}
-							else {
+							} else {
 								// switch grid on
 								currentWaypoint.grid = true;
 							}
@@ -6989,8 +6828,7 @@
 
 								// decode the rgb value
 								this.decodeRGB(scriptReader, scriptErrors, colNum, nextToken, badColour, colNum);
-							}
-							else {
+							} else {
 								// check if it is a custom theme element
 								peekToken = scriptReader.peekAtNextToken();
 								switch(peekToken) {
@@ -7208,8 +7046,7 @@
 								} else {
 									scriptErrors[scriptErrors.length] = [Keywords.allWord + " " + Keywords.initialWord, "only valid at a POI"];
 								}
-							}
-							else {
+							} else {
 								scriptErrors[scriptErrors.length] = [Keywords.allWord, "must be followed by INITIAL"];
 							}
 							itemValid = true;
@@ -7229,8 +7066,7 @@
 								// token valid so eat it
 								peekToken = scriptReader.getNextToken();
 								this.autoStart = false;
-							}
-							else {
+							} else {
 								if (this.executable) {
 									this.autoStart = true;
 								}
@@ -7313,8 +7149,7 @@
 								peekToken = scriptReader.getNextToken();
 								// switch state 1 fit off
 								this.state1Fit = false;
-							}
-							else {
+							} else {
 								this.state1Fit = true;
 							}
 							itemValid = true;
@@ -7492,13 +7327,11 @@
 															// check that W < E
 															if (trackBoxW > trackBoxE) {
 																scriptErrors[scriptErrors.length] = [Keywords.trackBoxWord + " W " + this.toPlaces(trackBoxW, 2) + " E " + this.toPlaces(trackBoxE, 2), "W is greater than E"];
-															}
-															else {
+															} else {
 																// check that N < S
 																if (trackBoxN > trackBoxS) {
 																	scriptErrors[scriptErrors.length] = [Keywords.trackBoxWord + " N " + this.toPlaces(trackBoxN, 2) + " S " + this.toPlaces(trackBoxS, 2), "N is greater than S"];
-																}
-																else {
+																} else {
 																	if (this.trackBoxDefined) {
 																		scriptErrors[scriptErrors.length] = [Keywords.trackBoxWord + " " + this.toPlaces(trackBoxE, 2) + " " + this.toPlaces(trackBoxS, 2) + " " + this.toPlaces(trackBoxW, 2) + " " + this.toPlaces(trackBoxN, 2), "overwrites " + this.toPlaces(this.trackBoxE, 2) + " " + this.toPlaces(this.trackBoxS, 2) + " " + this.toPlaces(this.trackBoxW, 2) + " " + this.toPlaces(this.trackBoxN, 2)];
 																	}
@@ -7557,8 +7390,7 @@
 									suppressErrors.stop = false;
 									itemValid = true;
 								}
-							}
-							else {
+							} else {
 								peekToken = scriptReader.peekAtNextToken();
 								if (peekToken === Keywords.offWord) {
 									// token valid so eat it
@@ -7577,8 +7409,7 @@
 									this.initialStop = false;
 									suppressErrors.stop = false;
 									itemValid = true;
-								}
-								else {
+								} else {
 									if (peekToken === Keywords.initialWord) {
 										// token valid so eat it
 										peekToken = scriptReader.getNextToken();
@@ -7631,8 +7462,7 @@
 									suppressErrors.loop = false;
 									itemValid = true;
 								}
-							}
-							else {
+							} else {
 								peekToken = scriptReader.peekAtNextToken();
 								if (peekToken === Keywords.offWord) {
 									// token valid so eat it
@@ -7651,8 +7481,7 @@
 									this.initialLoop = false;
 									suppressErrors.loop = false;
 									itemValid = true;
-								}
-								else {
+								} else {
 									if (peekToken === Keywords.initialWord) {
 										// token valid so eat it
 										peekToken = scriptReader.getNextToken();
@@ -7693,8 +7522,7 @@
 									suppressErrors.angle = false;
 									itemValid = true;
 								}
-							}
-							else {
+							} else {
 								// check for initial
 								peekToken = scriptReader.peekAtNextToken();
 								if (peekToken === Keywords.initialWord) {
@@ -7732,8 +7560,7 @@
 									suppressErrors.layers = false;
 									itemValid = true;
 								}
-							}
-							else {
+							} else {
 								// check for initial
 								peekToken = scriptReader.peekAtNextToken();
 								if (peekToken === Keywords.initialWord) {
@@ -7771,8 +7598,7 @@
 									suppressErrors.depth = false;
 									itemValid = true;
 								}
-							}
-							else {
+							} else {
 								// check for initial
 								peekToken = scriptReader.peekAtNextToken();
 								if (peekToken === Keywords.initialWord) {
@@ -7846,8 +7672,7 @@
 									suppressErrors.x = false;
 									itemValid = true;
 								}
-							}
-							else {
+							} else {
 								// check for initial
 								peekToken = scriptReader.peekAtNextToken();
 								if (peekToken === Keywords.initialWord) {
@@ -7885,8 +7710,7 @@
 									suppressErrors.y = false;
 									itemValid = true;
 								}
-							}
-							else {
+							} else {
 								// check for initial
 								peekToken = scriptReader.peekAtNextToken();
 								if (peekToken === Keywords.initialWord) {
@@ -7950,8 +7774,7 @@
 									if (currentWaypoint.zoomDefined && !this.initialZ && !suppressErrors.zoom) {
 										if (currentWaypoint.zoom < 1) {
 											scriptErrors[scriptErrors.length] = [Keywords.zoomWord + " " + numberValue, "overwrites " + (-(1 / currentWaypoint.zoom))];
-										}
-										else {
+										} else {
 											scriptErrors[scriptErrors.length] = [Keywords.zoomWord + " " + numberValue, "overwrites " + currentWaypoint.zoom];
 										}
 									}
@@ -7962,16 +7785,14 @@
 									this.initialZ = false;
 									suppressErrors.zoom = false;
 									itemValid = true;
-								}
-								else {
+								} else {
 									// check for negative zoom format
 									if (numberValue >= ViewConstants.minNegZoom && numberValue <= ViewConstants.maxNegZoom) {
 										// check if zoom already defined
 										if (currentWaypoint.zoomDefined && !this.initialZ) {
 											if (currentWaypoint.zoom < 1) {
 												scriptErrors[scriptErrors.length] = [Keywords.zoomWord + " " + numberValue, "overwrites " + (-(1 / currentWaypoint.zoom))];
-											}
-											else {
+											} else {
 												scriptErrors[scriptErrors.length] = [Keywords.zoomWord + " " + numberValue, "overwrites " + currentWaypoint.zoom];
 											}
 										}
@@ -7983,8 +7804,7 @@
 										itemValid = true;
 									}
 								}
-							}
-							else {
+							} else {
 								// check for initial
 								peekToken = scriptReader.peekAtNextToken();
 								if (peekToken === Keywords.initialWord) {
@@ -8022,8 +7842,7 @@
 									suppressErrors.gps = false;
 									itemValid = true;
 								}
-							}
-							else {
+							} else {
 								// check for initial
 								peekToken = scriptReader.peekAtNextToken();
 								if (peekToken === Keywords.initialWord) {
@@ -8050,8 +7869,7 @@
 									this.thumbnail = false;
 									this.thumbnailEverOn = false;
 								}
-							}
-							else {
+							} else {
 								// set the thumbnail flag if not in a popup window
 								if (!this.isInPopup) {
 									this.thumbnail = true;
@@ -8075,8 +7893,7 @@
 									this.thumbLaunch = false;
 									this.menuManager.thumbLaunch = false;
 								}
-							}
-							else {
+							} else {
 								// clicking on thumbnail launches popup viewer if not in a popup window
 								if (!this.isInPopup) {
 									this.thumbnail = true;
@@ -8130,8 +7947,7 @@
 									suppressErrors.theme = false;
 									itemValid = true;
 								}
-							}
-							else {
+							} else {
 								// check for custom theme
 								peekToken = scriptReader.peekAtNextToken();
 								if (peekToken === Keywords.themeCustomWord) {
@@ -8151,14 +7967,12 @@
 										currentWaypoint.themeDefined = true;
 										this.initialTheme = false;
 										itemValid = true;
-									}
-									else {
+									} else {
 										// raise error
 										scriptErrors[scriptErrors.length] = [Keywords.themeWord + " " + Keywords.themeCustomWord, "no custom THEME defined"];
 										itemValid = true;
 									}
-								}
-								else {
+								} else {
 									// check for initial
 									if (peekToken === Keywords.initialWord) {
 										// token valid so eat it
@@ -8563,8 +8377,7 @@
 									suppressErrors.step = false;
 									itemValid = true;
 								}
-							}
-							else {
+							} else {
 								// check for initial
 								peekToken = scriptReader.peekAtNextToken();
 								if (peekToken === Keywords.initialWord) {
@@ -8717,8 +8530,7 @@
 							if (isNumeric) {
 								// argument was not in range
 								scriptErrors[scriptErrors.length] = [nextToken + " " + numberValue, "argument out of range"];
-							}
-							else {
+							} else {
 								// raise a non-numeric token error
 								this.nonNumericTokenError(scriptReader, scriptErrors, nextToken, "argument", type);
 							}
@@ -8742,12 +8554,10 @@
 				// check which track mode was defined
 				if (this.trackBoxDefined) {
 					notPossibleError = Keywords.trackBoxWord;
-				}
-				else {
+				} else {
 					if (this.trackLoopDefined) {
 						notPossibleError = Keywords.trackLoopWord;
-					}
-					else {
+					} else {
 						notPossibleError = Keywords.trackWord;
 					}
 				}
@@ -8791,8 +8601,7 @@
 				if (waypointsFound) {
 					currentWaypoint = this.waypointManager.firstWaypoint();
 					this.waypointsDefined = true;
-				}
-				else {
+				} else {
 					// check for initial POI defined
 					if (this.defaultPOI !== -1) {
 						currentWaypoint = this.waypointManager.poiList[this.defaultPOI];
@@ -8817,25 +8626,21 @@
 									if (currentWaypoint.yDefined) {
 										if (currentWaypoint.zoomDefined) {
 											stringValue += ", Y " + currentWaypoint.y + " and ZOOM " + currentWaypoint.zoom;
-										}
-										else {
+										} else {
 											stringValue += " and Y " + currentWaypoint.y;
 										}
-									}
-									else {
+									} else {
 										if (currentWaypoint.zoomDefined) {
 											stringValue += " and ZOOM " + currentWaypoint.zoom;
 										}
 									}
-								}
-								else {
+								} else {
 									if (currentWaypoint.yDefined) {
 										stringValue = "Y " + currentWaypoint.y;
 										if (currentWaypoint.zoomDefined) {
 											stringValue += " and ZOOM " + currentWaypoint.zoom;
 										}
-									}
-									else {
+									} else {
 										if (currentWaypoint.zoomDefined) {
 											stringValue = "ZOOM " + currentWaypoint.zoom;
 										}
@@ -8963,8 +8768,7 @@
 							if (this.strict) {
 								if (this.engine.isLifeHistory) {
 									scriptErrors[scriptErrors.length] = [whichColour + " " + ViewConstants.stateDisplayNames[i], "definition missing (used " + (colValue >> 16) + " " + ((colValue >> 8) & 255) + " " + (colValue & 255) + ")"];
-								}
-								else {
+								} else {
 									scriptErrors[scriptErrors.length] = [whichColour + " " + i, "definition missing (used " + (colValue >> 16) + " " + ((colValue >> 8) & 255) + " " + (colValue & 255) +  ")"];
 								}
 							}
@@ -8977,13 +8781,11 @@
 
 							// mark state used default colour
 							this.customColourUsed[i] = ViewConstants.stateUsedDefault;
-						}
-						else {
+						} else {
 							// mark state used custom colour
 							this.customColourUsed[i] = ViewConstants.stateUsedCustom;
 						}
-					}
-					else {
+					} else {
 						// mark state was not used
 						this.customColourUsed[i] = ViewConstants.stateNotUsed;
 					}
@@ -8992,12 +8794,10 @@
 				// change the colour set name
 				if (this.allCustom) {
 					this.colourSetName = "(custom)";
-				}
-				else {
+				} else {
 					this.colourSetName += " (custom*)";
 				}
-			}
-			else {
+			} else {
 				// clear custom colours
 				this.customColours  = [];
 			}
@@ -9263,8 +9063,7 @@
 		if (this.thumbLaunch) {
 			// launch the standalone viewer
 			updateViewer(this.element);
-		}
-		else {
+		} else {
 			// switch to full size
 			this.displayWidth = this.thumbOrigWidth;
 			this.displayHeight = this.thumbOrigHeight;
@@ -9272,8 +9071,7 @@
 			// set original zoom
 			if (!this.autoFit) {
 				this.engine.zoom = this.thumbOrigZoom;
-			}
-			else {
+			} else {
 				this.thumbnail = false;
 				this.fitZoomDisplay(true, false);
 			}
@@ -9302,8 +9100,7 @@
 		if (me.thumbnail) {
 			me.switchOffThumbnail();
 			me.resize();
-		}
-		else {
+		} else {
 			// check for NOGUI
 			if (me.noGUI) {
 				me.copyRLE(me);
@@ -9461,8 +9258,7 @@
 			for (i = 0; i < this.patternStates; i += 1) {
 				this.patternStateCount[i] = PatternManager.stateCount[i];
 			}
-		}
-		else {
+		} else {
 			// clear pattern data
 			this.genDefined = false;
 			this.genOffset = 0;
@@ -9512,8 +9308,7 @@
 		this.engine.anythingAlive = true;
 		if (this.engine.multiNumStates === -1) {
 			this.engine.generationsAlive = false;
-		}
-		else {
+		} else {
 			this.engine.generationsAlive = true;
 		}
 		this.engine.stoppedGeneration = -1;
@@ -9698,14 +9493,16 @@
 		this.customBoundaryColour = [96, 96, 96];
 		if (this.engine.littleEndian) {
 			this.engine.boundaryColour = 0xff606060;
-		}
-		else {
+		} else {
 			this.engine.boundaryColour = 0x606060ff;
 		}
 
 		// reset waypoints
 		this.waypointManager.reset();
 		this.waypointsDefined = false;
+
+		// reset labels
+		this.waypointManager.clearLabels();
 
 		// enable history
 		this.noHistory = false;
@@ -9719,16 +9516,14 @@
 
 					// set the history colour to the Theme 10 dead colour
 					this.colourList[2] = 0 << 16 | 0 << 8 | 96;
-				}
-				else {
+				} else {
 					this.colourList = ColourManager.colourSet(pattern.ruleName);
 				}
 
 				// check if a colour list was found
 				if (this.colourList.length) {
 					this.colourSetName = pattern.ruleName;
-				}
-				else {
+				} else {
 					// load the default set
 					this.colourList = ColourManager.defaultSet();
 					this.colourSetName = "(default)";
@@ -9784,8 +9579,7 @@
 							this.displayWidth = this.requestedPopupWidth;
 							resizeRequired = true;
 						}
-					}
-					else {
+					} else {
 						this.displayWidth = ViewConstants.minViewerWidth;
 					}
 
@@ -9794,8 +9588,7 @@
 							this.displayHeight = this.requestedPopupHeight;
 							resizeRequired = true;
 						}
-					}
-					else {
+					} else {
 						this.displayHeight = ViewConstants.minMenuHeight + 80;
 					}
 				}
@@ -9820,8 +9613,7 @@
 				if (neededHeight === 0) {
 					neededHeight = pattern.height;
 				}
-			}
-			else {
+			} else {
 				// use pattern
 				neededWidth = pattern.width;
 				neededHeight = pattern.height;
@@ -9891,8 +9683,7 @@
 			if (this.customTextColour) {
 				// copy to text colour
 				this.menuManager.notification.colour = "rgb(" + this.customTextColour[0] + "," + this.customTextColour[1] + "," + this.customTextColour[2] + ")";
-			}
-			else {
+			} else {
 				// set default
 				this.menuManager.notification.colour = this.menuManager.notification.priorityColour;
 			}
@@ -9902,8 +9693,7 @@
 				for (i = 0; i < this.colourList.length; i += 1) {
 					if (PatternManager.stateCount[i]) {
 						this.customColourUsed[i] = ViewConstants.stateUsedDefault;
-					}
-					else {
+					} else {
 						this.customColourUsed[i] = ViewConstants.stateNotUsed;
 					}
 				}
@@ -9916,8 +9706,7 @@
 
 				// flag overlay drawing required
 				this.engine.drawOverlay = true;
-			}
-			else {
+			} else {
 				this.engine.drawOverlay = false;
 			}
 
@@ -9930,8 +9719,7 @@
 			// update rule label
 			if (this.patternAliasName !== "") {
 				this.ruleLabel.preText = this.patternAliasName;
-			}
-			else {
+			} else {
 				this.ruleLabel.preText = this.patternRuleName;
 			}
 
@@ -9993,8 +9781,7 @@
 
 			// reset snapshot manager
 			this.engine.snapshotManager.reset();
-		}
-		else {
+		} else {
 			// create the colour grid if not Generations, LTL or HROT rule
 			if (this.engine.multiNumStates === -1) {
 				this.engine.resetColourGridBox(this.engine.grid16);
@@ -10116,8 +9903,7 @@
 		if (this.autoStart && !this.autoStartDisabled) {
 			this.generationOn = true;
 			this.playList.current = ViewConstants.modePlay;
-		}
-		else {
+		} else {
 			this.generationOn = false;
 			this.playList.current = ViewConstants.modePause;
 		}
@@ -10139,8 +9925,7 @@
 
 			this.stepRange.x = this.stepRangeX + 45;
 			this.stepRange.relX = this.stepRange.x;
-		}
-		else {
+		} else {
 			// reset gps and play control position
 			this.playList.x = this.playListX;
 			this.playList.relX = this.playList.x;
@@ -10168,8 +9953,7 @@
 			// check if the pattern was too big
 			if (PatternManager.tooBig) {
 				this.menuManager.notification.notify("Pattern too big!", 15, ViewConstants.errorDuration, 15, false);
-			}
-			else {
+			} else {
 				this.menuManager.notification.notify("Invalid pattern!", 15, ViewConstants.errorDuration, 15, false);
 			}
 		}
@@ -10177,8 +9961,7 @@
 		// close help if errors found
 		if (this.scriptErrors.length) {
 			this.displayHelp = 0;
-		}
-		else {
+		} else {
 			// close errors
 			this.displayErrors = 0;
 		}
@@ -10223,13 +10006,11 @@
 				// label reason is VIEWONLY
 				this.reasonLabel.preText = Keywords.viewOnlyWord;
 				this.reasonLabel.fgCol = ViewConstants.helpFontColour;
-			}
-			else {
+			} else {
 				this.reasonLabel.preText = this.failureReason;
 				this.reasonLabel.fgCol = this.errorsFontColour;
 			}
-		}
-		else {
+		} else {
 			this.reasonLabel.deleted = true;
 		}
 
@@ -10252,8 +10033,7 @@
 		if (this.finitelyBounded()) {
 			this.birthsLabel.preText = "Density";
 			this.birthsLabel.toolTip = "cell density";
-		}
-		else {
+		} else {
 			this.birthsLabel.preText = "Births";
 			this.birthsLabel.toolTip = "cells born this generation";
 		}
@@ -10268,8 +10048,7 @@
 			if (this.titleElement) {
 				if (this.windowTitle === "") {
 					this.titleElement.nodeValue = "LifeViewer";
-				}
-				else {
+				} else {
 					this.titleElement.nodeValue = this.fitTitle(this.windowTitle);
 				}
 			}
@@ -10294,8 +10073,7 @@
 		while (i < Controller.viewers.length && !newView) {
 			if (Controller.viewers[i][0].tabIndex === canvasItem.tabIndex) {
 				newView = Controller.viewers[i][1];
-			}
-			else {
+			} else {
 				i += 1;
 			}
 		}
@@ -10558,8 +10336,7 @@
 			// reset it
 			viewer[1].element = textItem;
 			viewer[1].viewStart(viewer[1]);
-		}
-		else {
+		} else {
 			// create canvas and set width and height
 			canvasItem = document.createElement("canvas");
 			canvasItem.width = ViewConstants.minViewerWidth;
@@ -10791,15 +10568,13 @@
 						// initalise viewer not in popup
 						startView(cleanItem, canvasItem, textItem.offsetWidth, false, textItem);
 					}
-				}
-				else {
+				} else {
 					// hide the canvas item
 					if (DocConfig.hide && canvasItem) { 
 						canvasItem.style.display = "none";
 					}
 				}
-			}
-			else {
+			} else {
 				// check if typedArrays are supported
 				if (typedArrays) {
 					// check if it is a div containing a codebox (that isn't in an rle div)
@@ -10837,8 +10612,7 @@
 										// add to the parent
 										anchorItem.parentNode.appendChild(nodeItem);
 										anchorItem.parentNode.appendChild(newAnchor);
-									}
-									else {
+									} else {
 										// add to the parent
 										textItem.parentNode.appendChild(newAnchor);
 									}

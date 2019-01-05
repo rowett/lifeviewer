@@ -8,7 +8,7 @@
 	// define globals
 	/* global Keywords ViewConstants */
 
-        // WaypointConstants singleton
+    // WaypointConstants singleton
 	var WaypointConstants = {
 		// POI mode
 		/** @const {number} */ none : 0,
@@ -347,6 +347,21 @@
 		this.fitZoom = toWaypoint.fitZoom;
 	};
 
+	// Label constructor
+	/**
+	 * @constructor
+	 */
+	function Label(x, y) {
+		// message
+		this.message = "";
+
+		// x position
+		this.x = x;
+
+		// y position
+		this.y = y;
+	}
+
 	// WaypointManager constructor
 	/**
 	 * @constructor
@@ -357,6 +372,9 @@
 
 		// list of points of interest
 		this.poiList = [];
+
+		// list of labels
+		this.labelList = [];
 
 		// current position
 		this.current = new Waypoint(this);
@@ -376,6 +394,21 @@
 		// whether last waypoint has been reached
 		this.lastReached = false;
 	}
+
+	// create a label
+	WaypointManager.prototype.createLabel = function(x, y) {
+		return new Label(x, y);
+	};
+
+	// clear all labels
+	WaypointManager.prototype.clearLabels = function() {
+		this.labelList = [];
+	};
+
+	// add a label to the list
+	WaypointManager.prototype.addLabel = function(label) {
+		this.labelList[this.labelList.length] = label;
+	};
 
 	// process step back
 	WaypointManager.prototype.steppedBack = function(elapsedTime) {

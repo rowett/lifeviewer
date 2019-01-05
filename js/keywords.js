@@ -115,6 +115,9 @@
 		// window title
 		/** @const {string} */ titleWord : "TITLE",
 
+		// label
+		/** @const {string} */ labelWord : "LABEL",
+
 		// starfield word
 		/** @const {string} */ starfieldWord : "STARS",
 
