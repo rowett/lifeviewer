@@ -7,6 +7,8 @@ Build 265
 	- sets opacity for following label definitions from 0 (transparent) to 1 (opaque - the default)
 - new script command [[ LABELSIZE 4..32 ]]
 	- sets the label font size for following label definitions (default is 18)
+- new script command [[ COLOR LABEL <colourname>|R G B ]]
+	- sets the label text colour (default is 240 255 255)
 
 Build 264
 - new canonical HROT rule format:
