@@ -9,6 +9,7 @@ Build 265
 	- sets the label font size for following label definitions (default is 18)
 - new script command [[ COLOR LABEL <colourname>|R G B ]]
 	- sets the label text colour (default is 240 255 255)
+- fixed broken Torus
 
 Build 264
 - new canonical HROT rule format:
