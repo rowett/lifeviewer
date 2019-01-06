@@ -5934,7 +5934,7 @@
 		// save the colour if it is valid
 		if (!badColour) {
 			// see if the slot is available
-			if (this.customThemeValue[customThemeElement] !== -1) {
+			if ((this.customThemeValue[customThemeElement] !== -1) && (customThemeElement !== ViewConstants.customThemeLabel)) {
 				scriptErrors[scriptErrors.length] = [whichColour + " " + elementName + " " + redValue + " " + greenValue + " " + blueValue, "overwrites " + (this.customThemeValue[customThemeElement] >> 16) + " " + ((this.customThemeValue[customThemeElement] >> 8) & 255) + " " + (this.customThemeValue[customThemeElement] & 255)];
 			}
 
