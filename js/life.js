@@ -4358,7 +4358,7 @@
 		}
 
 		// perform bounded grid pre-processing unless rule is LTL or HROT
-		if (this.boundedGridType !== -1 && !(this.isLTL || !this.isHROT)) {
+		if (this.boundedGridType !== -1 && !(this.isLTL || this.isHROT)) {
 			this.preProcessBoundedGrid();
 		}
 
