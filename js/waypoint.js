@@ -351,7 +351,7 @@
 	/**
 	 * @constructor
 	 */
-	function Label(x, y) {
+	function Label(x, y, zoom) {
 		// message
 		this.message = "";
 
@@ -360,6 +360,9 @@
 
 		// y position
 		this.y = y;
+
+		// zoom
+		this.zoom = zoom;
 	}
 
 	// WaypointManager constructor
@@ -396,8 +399,8 @@
 	}
 
 	// create a label
-	WaypointManager.prototype.createLabel = function(x, y) {
-		return new Label(x, y);
+	WaypointManager.prototype.createLabel = function(x, y, zoom) {
+		return new Label(x, y, zoom);
 	};
 
 	// clear all labels
@@ -408,6 +411,78 @@
 	// add a label to the list
 	WaypointManager.prototype.addLabel = function(label) {
 		this.labelList[this.labelList.length] = label;
+	};
+
+	// draw labels
+	WaypointManager.prototype.drawLabels = function(view) {
+		var i = 0,
+			current = null,
+			engine = view.engine,
+			context = engine.context,
+			xPos = 0,
+			xOff = engine.width / 2 - engine.xOff - engine.originX,
+			yOff = engine.height / 2 - engine.yOff - engine.originY,
+			zoom = engine.zoom,
+			halfDisplayWidth = engine.displayWidth / 2,
+			halfDisplayHeight = engine.displayHeight / 2,
+			x = 0, y = 0,
+			currentSize = 0,
+			shadowColour = ViewConstants.labelShadowColour,
+			textColour = ViewConstants.labelFontColour,
+			fontSize = ViewConstants.labelFontSize,
+			fontEnd = "px " + ViewConstants.labelFontFamily,
+			minFont = ViewConstants.minLabelFontSize,
+			maxFont = ViewConstants.maxLabelFontSize,
+			linearZoom = 1,
+			changedAlpha = false;
+			
+
+		// draw each label
+		for (i = 0; i < this.labelList.length; i += 1) {
+			// get the next label
+			current = this.labelList[i];
+
+			// scale the font based on the zoom
+			currentSize = (fontSize * zoom / current.zoom) | 0;
+
+			// do not draw if too big or too small
+			if (currentSize >= minFont && currentSize <= maxFont) {
+				// convert zoom into a linear range
+				linearZoom = Math.log(currentSize / minFont) / Math.log(maxFont / minFont);
+				context.font = currentSize + fontEnd;
+
+				// make more transparent if in bottom or top 20% of linear range
+				if (linearZoom <= 0.2) {
+					context.globalAlpha = linearZoom * 5;
+					changedAlpha = true;
+				} else {
+					if (linearZoom >= 0.8) {
+						context.globalAlpha = (1 - linearZoom) * 5;
+						changedAlpha = true;
+					} else {
+						context.globalAlpha = 1;
+					}
+				}
+
+				// measure text at current font
+				xPos = context.measureText(current.message).width >> 1;
+				x = -xPos + ((xOff + current.x) * zoom) + halfDisplayWidth;
+				y = ((yOff + current.y) * zoom) + halfDisplayHeight;
+	
+				// draw shadow
+				context.fillStyle = shadowColour;
+				context.fillText(current.message, x + 2, y + 2);
+	
+				// draw message
+				context.fillStyle = textColour;
+				context.fillText(current.message, x, y);
+			}
+		}
+
+		// restore alpha if changed
+		if (changedAlpha) {
+			context.globalAlpha = 1;
+		}
 	};
 
 	// process step back

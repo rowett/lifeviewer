@@ -212,6 +212,22 @@
 		// small menu font
 		/** @const {string} */ smallMenuFont : "9px Arial",
 
+		// label font colour
+		/** @const {string} */ labelFontColour : "rgb(240,255,255)",
+
+		// label shadow colour
+		/** @const {string} */ labelShadowColour : "rgb(0,0,0)",
+
+		// label standard font size
+		/** @const {string} */ labelFontSize : 18,
+
+		// label minimum and maximum font sizes
+		/** @const {string} */ minLabelFontSize : 4,
+		/** @const {string} */ maxLabelFontSize : 90,
+
+		// label font family
+		/** @const {string} */ labelFontFamily : "Arial",
+
 		// help font colour
 		/** @const {string} */ helpFontColour : "rgb(32,255,255)",
 
@@ -2320,6 +2336,9 @@
 
 		// hide the UI controls if help or errors are displayed
 		me.updateUIForHelp(me.displayHelp || me.scriptErrors.length);
+
+		// draw any labels
+		me.waypointManager.drawLabels(me);
 
 		// set the auto update mode
 		me.menuManager.setAutoUpdate(updateNeeded);
@@ -6450,7 +6469,6 @@
 		    
 		    // number value
 			numberValue = 0,
-			numberValue2 = 0,
 
 		    // item valid flag
 		    itemValid = false,
@@ -6509,6 +6527,9 @@
 		    trackBoxS = 0,
 		    trackBoxE = 0,
 		    trackBoxW = 0,
+
+			// holders
+			x = 0, y = 0, z = 0,
 
 		    // loop counter
 		    i = 0,
@@ -6682,7 +6703,7 @@
 								// check it is in range
 								if (numberValue >= -this.engine.maxGridSize / 2 && numberValue <= this.engine.maxGridSize / 2) {
 									isNumeric = false;
-									numberValue2 = numberValue;
+									x = numberValue;
 
 									// get the y position
 									if (scriptReader.nextTokenIsNumeric()) {
@@ -6691,16 +6712,40 @@
 										// get the value
 										numberValue = scriptReader.getNextTokenAsNumber();
 
+										// check it is in range
 										if (numberValue >= -this.engine.maxGridSize / 2 && numberValue <= this.engine.maxGridSize / 2) {
-											// check there is text
-											peekToken = scriptReader.peekAtNextToken();
-											if (peekToken[0] === Keywords.stringDelimiter) {
-												// save the label
-												currentLabel = this.waypointManager.createLabel(numberValue2, numberValue);
-												readingLabel = true;
-												itemValid = true;
-											} else {
-												isNumeric = false;
+											isNumeric = false;
+											y = numberValue;
+
+											// get the zoom
+											if (scriptReader.nextTokenIsNumeric()) {
+												isNumeric = true;
+
+												// get the value
+												numberValue = scriptReader.getNextTokenAsNumber();
+
+												// check it is in range
+												z = -1000;
+												if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
+													z = numberValue;
+												} else {
+													// check for negative zoom format
+													if (numberValue >= ViewConstants.minNegZoom && numberValue <= ViewConstants.maxNegZoom) {
+														z = -(1 / numberValue);
+													}
+												}
+												if (z !== -1000) {
+													// check there is text
+													peekToken = scriptReader.peekAtNextToken();
+													if (peekToken[0] === Keywords.stringDelimiter) {
+														// save the label
+														currentLabel = this.waypointManager.createLabel(x, y, z);
+														readingLabel = true;
+														itemValid = true;
+													} else {
+														isNumeric = false;
+													}
+												}
 											}
 										}
 									}

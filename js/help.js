@@ -552,7 +552,7 @@
 		y = this.renderHelpLine(view, Keywords.poiTransWord + " <" + WaypointConstants.poiMinSpeed + ".." + WaypointConstants.poiMaxSpeed + ">", "set POI transition speed", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "<command>|ALL " + Keywords.initialWord, "use initial value for POI", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "define message", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.labelWord + " X Y " + Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "define label at position", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.labelWord + " X Y Z " + Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "define label at position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.titleWord + " " + Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "set window title", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "B", "program build number", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "N", "pattern name", ctx, x, y, height, helpLine);
