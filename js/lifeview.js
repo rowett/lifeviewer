@@ -219,11 +219,11 @@
 		/** @const {string} */ labelShadowColour : "rgb(0,0,0)",
 
 		// label standard font size
-		/** @const {string} */ labelFontSize : 18,
+		/** @const {number} */ labelFontSize : 18,
 
 		// label minimum and maximum font sizes
-		/** @const {string} */ minLabelFontSize : 4,
-		/** @const {string} */ maxLabelFontSize : 90,
+		/** @const {number} */ minLabelFontSize : 4,
+		/** @const {number} */ maxLabelFontSize : 90,
 
 		// label font family
 		/** @const {string} */ labelFontFamily : "Arial",
