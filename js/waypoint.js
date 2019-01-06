@@ -351,7 +351,7 @@
 	/**
 	 * @constructor
 	 */
-	function Label(x, y, zoom, alpha, size) {
+	function Label(x, y, zoom, colour, alpha, size) {
 		// message
 		this.message = "";
 
@@ -363,6 +363,9 @@
 
 		// zoom
 		this.zoom = zoom;
+
+		// colour
+		this.colour = colour;
 
 		// alpha
 		this.alpha = alpha;
@@ -405,8 +408,8 @@
 	}
 
 	// create a label
-	WaypointManager.prototype.createLabel = function(x, y, zoom, alpha, size) {
-		return new Label(x, y, zoom, alpha, size);
+	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size) {
+		return new Label(x, y, zoom, colour, alpha, size);
 	};
 
 	// clear all labels
@@ -485,11 +488,11 @@
 				context.font = currentSize + fontEnd;
 
 				// make more transparent if in bottom or top 20% of linear range
-				if (linearZoom <= 0.2) {
-					alphaValue = linearZoom * 5;
+				if (linearZoom <= 0.25) {
+					alphaValue = linearZoom * 4;
 				} else {
-					if (linearZoom >= 0.8) {
-						alphaValue = (1 - linearZoom) * 5;
+					if (linearZoom >= 0.75) {
+						alphaValue = (1 - linearZoom) * 4;
 					} else {
 						alphaValue = 1;
 					}
@@ -515,7 +518,7 @@
 					context.fillText(line, x + 2, y + 2);
 		
 					// draw message
-					context.fillStyle = textColour;
+					context.fillStyle = current.colour;
 					context.fillText(line, x, y);
 
 					// compute y coordinate for next text line
@@ -534,7 +537,7 @@
 				context.fillText(message, x + 2, y + 2);
 	
 				// draw message
-				context.fillStyle = textColour;
+				context.fillStyle = current.colour;
 				context.fillText(message, x, y);
 			}
 		}
