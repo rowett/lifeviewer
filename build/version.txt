@@ -1,3 +1,8 @@
+Build 265
+- fixed canonical HROT rule decoder
+- new script command [[ LABEL X Y ZOOM "<string>" ]]
+	- displays a static label at the given cell position and zoom
+
 Build 264
 - new canonical HROT rule format:
 	- R<range>,C<states>,S<list>,B<list>
@@ -5,8 +10,6 @@ Build 264
 	- <states> is from 0 to 255 (and values < 2 are treated as 2)
 	- <list> is a comma separated list of counts e.g. S2,4,6-9,10,12-15
 - improved validation for LTL and HROT rules
-- new script command [[ LABEL X Y ZOOM "<string>" ]]
-	- displays a static label at the given cell position and zoom
 
 Build 263
 - HROT (higher range outer totalistic) rules are now supported
