@@ -221,9 +221,9 @@
 		// label standard font size
 		/** @const {number} */ labelFontSize : 18,
 
-		// label minimum and maximum font sizes
-		/** @const {number} */ minLabelFontSize : 4,
-		/** @const {number} */ maxLabelFontSize : 90,
+		// min and max label size
+		/** @const {number} */ minLabelSize : 4,
+		/** @const {number} */ maxLabelSize : 32,
 
 		// label font family
 		/** @const {string} */ labelFontFamily : "Arial",
@@ -2219,6 +2219,11 @@
 			}
 		}
 
+		// draw any labels TBD only angle=0
+		if (me.engine.angle === 0) {
+			me.waypointManager.drawLabels(me);
+		}
+
 		// draw population graph if required
 		if (me.popGraph) {
 			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail);
@@ -2336,9 +2341,6 @@
 
 		// hide the UI controls if help or errors are displayed
 		me.updateUIForHelp(me.displayHelp || me.scriptErrors.length);
-
-		// draw any labels
-		me.waypointManager.drawLabels(me);
 
 		// set the auto update mode
 		me.menuManager.setAutoUpdate(updateNeeded);
@@ -5754,6 +5756,8 @@
 			case Keywords.poiWord:
 			case Keywords.titleWord:
 			case Keywords.labelWord:
+			case Keywords.labelAlphaWord:
+			case Keywords.labelSizeWord:
 			case Keywords.noHistoryWord:
 			case Keywords.noReportWord:
 			case Keywords.trackWord:
@@ -6195,19 +6199,19 @@
 	};
 
 	// validate waypoint message string
-	View.prototype.validateString = function(message, scriptErrors, readingTitle) {
+	View.prototype.validateString = function(message, scriptErrors, readingTitle, readingLabel) {
 		// check for newline
 		var index = message.indexOf("\\n");
 
 		if (index !== -1) {
 			// check whether this is the window title
 			if (readingTitle) {
-				// display error
+				// display error since only one line allowed
 				scriptErrors[scriptErrors.length] = [Keywords.titleWord + " " + Keywords.stringDelimiter + this.shortenMessage(message, 23) + Keywords.stringDelimiter, "only one line allowed"];
 			} else {
-				// check for second newline
+				// check for second newline and reading label
 				index = message.substr(index + 2).indexOf("\\n");
-				if (index !== -1) {
+				if (index !== -1 && !readingLabel) {
 					// display error
 					scriptErrors[scriptErrors.length] = [Keywords.stringDelimiter + this.shortenMessage(message, 23), "only two lines allowed"];
 				}
@@ -6505,6 +6509,12 @@
 			// current label
 			currentLabel = null,
 
+			// current label alpha
+			currentLabelAlpha = 1,
+
+			// current label size
+			currentLabelSize = ViewConstants.labelFontSize,
+
 			// whether reading label
 			readingLabel = false,
 
@@ -6600,7 +6610,7 @@
 						readingString = false;
 
 						// validate string
-						this.validateString(stringValue, scriptErrors, readingTitle);
+						this.validateString(stringValue, scriptErrors, readingTitle, readingLabel);
 
 						// check whether it is a waypoint message or window title
 						if (readingTitle) {
@@ -6645,7 +6655,7 @@
 							stringValue = stringValue.substr(0, stringValue.length - 1);
 
 							// validate string
-							this.validateString(stringValue, scriptErrors, readingTitle);
+							this.validateString(stringValue, scriptErrors, readingTitle, readingLabel);
 
 							// check whether it is a waypoint message or window title
 							if (readingTitle) {
@@ -6689,6 +6699,38 @@
 							readingTitle = true;
 
 							itemValid = true;
+							break;
+
+						// label size
+						case Keywords.labelSizeWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= ViewConstants.minLabelSize && numberValue <= ViewConstants.maxLabelSize) {
+									currentLabelSize = numberValue;
+									itemValid = true;
+								}
+							}
+							break;
+
+						// label alpha
+						case Keywords.labelAlphaWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= 0 && numberValue <= 1) {
+									currentLabelAlpha = numberValue;
+									itemValid = true;
+								}
+							}
 							break;
 
 						// label
@@ -6739,7 +6781,7 @@
 													peekToken = scriptReader.peekAtNextToken();
 													if (peekToken[0] === Keywords.stringDelimiter) {
 														// save the label
-														currentLabel = this.waypointManager.createLabel(x, y, z);
+														currentLabel = this.waypointManager.createLabel(x, y, z, currentLabelAlpha, currentLabelSize);
 														readingLabel = true;
 														itemValid = true;
 													} else {

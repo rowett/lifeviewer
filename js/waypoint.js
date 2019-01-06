@@ -351,7 +351,7 @@
 	/**
 	 * @constructor
 	 */
-	function Label(x, y, zoom) {
+	function Label(x, y, zoom, alpha, size) {
 		// message
 		this.message = "";
 
@@ -363,6 +363,12 @@
 
 		// zoom
 		this.zoom = zoom;
+
+		// alpha
+		this.alpha = alpha;
+
+		// size
+		this.size = size;
 	}
 
 	// WaypointManager constructor
@@ -399,8 +405,8 @@
 	}
 
 	// create a label
-	WaypointManager.prototype.createLabel = function(x, y, zoom) {
-		return new Label(x, y, zoom);
+	WaypointManager.prototype.createLabel = function(x, y, zoom, alpha, size) {
+		return new Label(x, y, zoom, alpha, size);
 	};
 
 	// clear all labels
@@ -411,6 +417,34 @@
 	// add a label to the list
 	WaypointManager.prototype.addLabel = function(label) {
 		this.labelList[this.labelList.length] = label;
+	};
+
+	// return number of labels
+	WaypointManager.prototype.numLabels = function() {
+		return this.labelList.length;
+	};
+
+	// return given label as a text string
+	WaypointManager.prototype.labelAsText = function(number) {
+		var result = "",
+			zoom = 0,
+		    current = null;
+
+		if (number >= 0 && number < this.labelList.length) {
+			current = this.labelList[number];
+			zoom = current.zoom;
+			if (zoom >= 0 && zoom < 1) {
+				zoom = -1 / zoom;
+			}
+			result = current.x + "\t" + current.y + "\t" + zoom.toFixed(1) + "\t\"" + current.message + "\"";
+		}
+
+		return result;
+	};
+
+	// return header text for label as a text string
+	WaypointManager.prototype.labelHeaderText = function() {
+		return "X\tY\tZOOM\tTEXT";
 	};
 
 	// draw labels
@@ -429,13 +463,10 @@
 			currentSize = 0,
 			shadowColour = ViewConstants.labelShadowColour,
 			textColour = ViewConstants.labelFontColour,
-			fontSize = ViewConstants.labelFontSize,
 			fontEnd = "px " + ViewConstants.labelFontFamily,
-			minFont = ViewConstants.minLabelFontSize,
-			maxFont = ViewConstants.maxLabelFontSize,
-			linearZoom = 1,
-			changedAlpha = false;
-			
+			minFont = 0, maxFont = 0,
+			linearZoom = 1, alphaValue = 1,
+			index = 0, message = "", line = "";
 
 		// draw each label
 		for (i = 0; i < this.labelList.length; i += 1) {
@@ -443,7 +474,9 @@
 			current = this.labelList[i];
 
 			// scale the font based on the zoom
-			currentSize = (fontSize * zoom / current.zoom) | 0;
+			currentSize = (current.size * zoom / current.zoom) | 0;
+			minFont = current.size / 4;
+			maxFont = current.size * 4;
 
 			// do not draw if too big or too small
 			if (currentSize >= minFont && currentSize <= maxFont) {
@@ -453,36 +486,61 @@
 
 				// make more transparent if in bottom or top 20% of linear range
 				if (linearZoom <= 0.2) {
-					context.globalAlpha = linearZoom * 5;
-					changedAlpha = true;
+					alphaValue = linearZoom * 5;
 				} else {
 					if (linearZoom >= 0.8) {
-						context.globalAlpha = (1 - linearZoom) * 5;
-						changedAlpha = true;
+						alphaValue = (1 - linearZoom) * 5;
 					} else {
-						context.globalAlpha = 1;
+						alphaValue = 1;
 					}
 				}
+				context.globalAlpha = alphaValue * current.alpha;
 
-				// measure text at current font
-				xPos = context.measureText(current.message).width >> 1;
-				x = -xPos + ((xOff + current.x) * zoom) + halfDisplayWidth;
+				// draw each line of the label
+				message = current.message;
+				index = message.indexOf("\\n");
 				y = ((yOff + current.y) * zoom) + halfDisplayHeight;
+
+				while (index !== -1) {
+					// get the next line
+					line = message.substr(0, index);
+					message = message.substr(index + 2);
+
+					// measure text line width
+					xPos = context.measureText(line).width >> 1;
+					x = -xPos + ((xOff + current.x) * zoom) + halfDisplayWidth;
 	
+					// draw shadow
+					context.fillStyle = shadowColour;
+					context.fillText(line, x + 2, y + 2);
+		
+					// draw message
+					context.fillStyle = textColour;
+					context.fillText(line, x, y);
+
+					// compute y coordinate for next text line
+					y += currentSize;
+
+					// check for more lines
+					index = message.indexOf("\\n");
+				}
+
+				// measure final text line width
+				xPos = context.measureText(message).width >> 1;
+				x = -xPos + ((xOff + current.x) * zoom) + halfDisplayWidth;
+
 				// draw shadow
 				context.fillStyle = shadowColour;
-				context.fillText(current.message, x + 2, y + 2);
+				context.fillText(message, x + 2, y + 2);
 	
 				// draw message
 				context.fillStyle = textColour;
-				context.fillText(current.message, x, y);
+				context.fillText(message, x, y);
 			}
 		}
 
-		// restore alpha if changed
-		if (changedAlpha) {
-			context.globalAlpha = 1;
-		}
+		// restore alpha
+		context.globalAlpha = 1;
 	};
 
 	// process step back

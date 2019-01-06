@@ -553,6 +553,8 @@
 		y = this.renderHelpLine(view, "<command>|ALL " + Keywords.initialWord, "use initial value for POI", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "define message", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelWord + " X Y Z " + Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "define label at position", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.labelSizeWord + " " + ViewConstants.minLabelSize + ".." + ViewConstants.maxLabelSize, "define label font size", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.labelAlphaWord + " 0.0..1.0", "define label font alpha", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.titleWord + " " + Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "set window title", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "B", "program build number", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "N", "pattern name", ctx, x, y, height, helpLine);
@@ -1198,6 +1200,22 @@
 				if (colourName !== "") {
 					y = this.renderHelpLine(view, (flag ? " " : themeName), (flag ? "  " : "") + colourName, ctx, x, y, height, helpLine);
 					flag = true;
+				}
+			}
+		}
+
+		// labels
+		if (view.waypointManager.numLabels()) {
+			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+			sections[sectionNum] = view.lineNo;
+			sectionNum += 1;
+			value = view.waypointManager.numLabels();
+			y = this.renderHelpLine(view, "", "Labels:", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Number", value, ctx, x, y, height, helpLine);
+			if (value > 0) {
+				y = this.renderHelpLine(view, "ID", view.waypointManager.labelHeaderText(), ctx, x, y, height, helpLine);
+				for (i = 0; i < value; i += 1) {
+					y = this.renderHelpLine(view, String(i), view.waypointManager.labelAsText(i), ctx, x, y, height, helpLine);
 				}
 			}
 		}

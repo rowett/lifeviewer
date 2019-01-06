@@ -118,6 +118,12 @@
 		// label
 		/** @const {string} */ labelWord : "LABEL",
 
+		// label alpha
+		/** @const {string} */ labelAlphaWord : "LABELALPHA",
+
+		// label size
+		/** @const {string} */ labelSizeWord : "LABELSIZE",
+
 		// starfield word
 		/** @const {string} */ starfieldWord : "STARS",
 

@@ -2,6 +2,11 @@ Build 265
 - fixed canonical HROT rule decoder
 - new script command [[ LABEL X Y ZOOM "<string>" ]]
 	- displays a static label at the given cell position and zoom
+	- Help information contains label definitions
+- new script command [[ LABELALPHA 0.0..0.1 ]]
+	- sets opacity for following label definitions from 0 (transparent) to 1 (opaque - the default)
+- new script command [[ LABELSIZE 4..32 ]]
+	- sets the label font size for following label definitions (default is 18)
 
 Build 264
 - new canonical HROT rule format:
