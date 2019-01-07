@@ -128,13 +128,14 @@ help|help information
 keywords|script command keywords
 life|algorithms to compute the next generation
 lifeview|main program
-ltl|LtL algorithm (unfinished)
+ltl|LtL algorithm
+hrot|HROT algorithm
 patterns|pattern reader and decoder
 random|pseudo-random number generator
 script|functions to read script commands
 snapshot|snapshot manager for going back to earlier generations
 stars|starfield
-waypoint|waypoint management
+waypoint|waypoint, POI and label management
 window|popup window management
 
 ## Running the test cases:
