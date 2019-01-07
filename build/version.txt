@@ -10,6 +10,7 @@ Build 265
 - new script command [[ COLOR LABEL <colourname>|R G B ]]
 	- sets the label text colour (default is 240 255 255)
 - fixed broken Torus
+- fixed LtL and HROT patterns not clearing correctly on right boundary
 
 Build 264
 - new canonical HROT rule format:
