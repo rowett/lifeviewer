@@ -5193,7 +5193,7 @@
 					}
 				}
 			}
-			zoomBox.rightX = range;
+			zoomBox.rightX = wd - range;
 		}
 	};
 	
