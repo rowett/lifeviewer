@@ -1,3 +1,8 @@
+Build 266
+- new script command [[ LABELT t1 t2 ]]
+	- sets a range of generations for subsequent labels to be visible
+	- use [[ LABELT ALL ]] to specify all generations
+
 Build 265
 - fixed canonical HROT rule decoder
 - new script command [[ LABEL X Y ZOOM "<string>" ]]

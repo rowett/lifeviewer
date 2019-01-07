@@ -5762,6 +5762,7 @@
 			case Keywords.labelWord:
 			case Keywords.labelAlphaWord:
 			case Keywords.labelSizeWord:
+			case Keywords.labelTWord:
 			case Keywords.noHistoryWord:
 			case Keywords.noReportWord:
 			case Keywords.trackWord:
@@ -6524,6 +6525,10 @@
 			// current label size
 			currentLabelSize = ViewConstants.labelFontSize,
 
+			// current label T1 and T2
+			currentLabelT1 = -1,
+			currentLabelT2 = -1,
+
 			// whether reading label
 			readingLabel = false,
 
@@ -6727,6 +6732,48 @@
 							}
 							break;
 
+						// label T
+						case Keywords.labelTWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the T1 value
+								numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+								// check it is in range
+								if (numberValue >= 0) {
+									x = numberValue | 0;
+									if (scriptReader.nextTokenIsNumeric()) {
+										// get the T2 value
+										numberValue = scriptReader.getNextTokenAsNumber() | 0;
+										if (numberValue >= x) {
+											currentLabelT1 = x;
+											currentLabelT2 = numberValue;
+											itemValid = true;
+										} else {
+											itemValid = true;
+											scriptErrors[scriptErrors.length] = [nextToken + " " + x + " " + numberValue, "second argument must be >= first"];
+										}
+									} else {
+										isNumeric = false;
+									}
+								}
+							} else {
+								// check for all
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken === Keywords.allWord) {
+									// consume token
+									peekToken = scriptReader.getNextToken();
+									currentLabelT1 = -1;
+									currentLabelT2 = -1;
+									itemValid = true;
+								} else {
+									// fail needing a number
+									isNumeric = false;
+								}
+							}
+							break;
+
 						// label alpha
 						case Keywords.labelAlphaWord:
 							if (scriptReader.nextTokenIsNumeric()) {
@@ -6791,7 +6838,7 @@
 													peekToken = scriptReader.peekAtNextToken();
 													if (peekToken[0] === Keywords.stringDelimiter) {
 														// save the label
-														currentLabel = this.waypointManager.createLabel(x, y, z, this.customLabelColour, currentLabelAlpha, currentLabelSize);
+														currentLabel = this.waypointManager.createLabel(x, y, z, this.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelT1, currentLabelT2);
 														readingLabel = true;
 														itemValid = true;
 													} else {

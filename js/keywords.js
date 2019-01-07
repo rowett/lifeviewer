@@ -124,6 +124,9 @@
 		// label size
 		/** @const {string} */ labelSizeWord : "LABELSIZE",
 
+		// label generation range
+		/** @const {string} */ labelTWord : "LABELT",
+
 		// starfield word
 		/** @const {string} */ starfieldWord : "STARS",
 

@@ -351,7 +351,7 @@
 	/**
 	 * @constructor
 	 */
-	function Label(x, y, zoom, colour, alpha, size) {
+	function Label(x, y, zoom, colour, alpha, size, t1, t2) {
 		// message
 		this.message = "";
 
@@ -372,6 +372,12 @@
 
 		// size
 		this.size = size;
+
+		// start generation
+		this.t1 = t1;
+
+		// end generation
+		this.t2 = t2;
 	}
 
 	// WaypointManager constructor
@@ -408,8 +414,8 @@
 	}
 
 	// create a label
-	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size) {
-		return new Label(x, y, zoom, colour, alpha, size);
+	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size, t1, t2) {
+		return new Label(x, y, zoom, colour, alpha, size, t1, t2);
 	};
 
 	// clear all labels
@@ -465,80 +471,93 @@
 			x = 0, y = 0,
 			currentSize = 0,
 			shadowColour = ViewConstants.labelShadowColour,
-			textColour = ViewConstants.labelFontColour,
 			fontEnd = "px " + ViewConstants.labelFontFamily,
 			minFont = 0, maxFont = 0,
 			linearZoom = 1, alphaValue = 1,
-			index = 0, message = "", line = "";
+			index = 0, message = "", line = "",
+			counter = view.engine.counter,
+			inrange = false;
 
 		// draw each label
 		for (i = 0; i < this.labelList.length; i += 1) {
 			// get the next label
 			current = this.labelList[i];
 
-			// scale the font based on the zoom
-			currentSize = (current.size * zoom / current.zoom) | 0;
-			minFont = current.size / 4;
-			maxFont = current.size * 4;
-
-			// do not draw if too big or too small
-			if (currentSize >= minFont && currentSize <= maxFont) {
-				// convert zoom into a linear range
-				linearZoom = Math.log(currentSize / minFont) / Math.log(maxFont / minFont);
-				context.font = currentSize + fontEnd;
-
-				// make more transparent if in bottom or top 20% of linear range
-				if (linearZoom <= 0.25) {
-					alphaValue = linearZoom * 4;
-				} else {
-					if (linearZoom >= 0.75) {
-						alphaValue = (1 - linearZoom) * 4;
-					} else {
-						alphaValue = 1;
-					}
+			// check if the label has a defined generation range
+			inrange = true;
+			if (current.t1 !== -1) {
+				// check if current generation is within the defined range
+				if (counter < current.t1 || counter > current.t2) {
+					inrange = false;
 				}
-				context.globalAlpha = alphaValue * current.alpha;
+			}
 
-				// draw each line of the label
-				message = current.message;
-				index = message.indexOf("\\n");
-				y = ((yOff + current.y) * zoom) + halfDisplayHeight;
-
-				while (index !== -1) {
-					// get the next line
-					line = message.substr(0, index);
-					message = message.substr(index + 2);
-
-					// measure text line width
-					xPos = context.measureText(line).width >> 1;
+			// continue if in generation range
+			if (inrange) {
+				// scale the font based on the zoom
+				currentSize = (current.size * zoom / current.zoom) | 0;
+				minFont = current.size / 4;
+				maxFont = current.size * 4;
+	
+				// do not draw if too big or too small
+				if (currentSize >= minFont && currentSize <= maxFont) {
+					// convert zoom into a linear range
+					linearZoom = Math.log(currentSize / minFont) / Math.log(maxFont / minFont);
+					context.font = currentSize + fontEnd;
+	
+					// make more transparent if in bottom or top 20% of linear range
+					if (linearZoom <= 0.25) {
+						alphaValue = linearZoom * 4;
+					} else {
+						if (linearZoom >= 0.75) {
+							alphaValue = (1 - linearZoom) * 4;
+						} else {
+							alphaValue = 1;
+						}
+					}
+					context.globalAlpha = alphaValue * current.alpha;
+	
+					// draw each line of the label
+					message = current.message;
+					index = message.indexOf("\\n");
+					y = ((yOff + current.y) * zoom) + halfDisplayHeight;
+	
+					while (index !== -1) {
+						// get the next line
+						line = message.substr(0, index);
+						message = message.substr(index + 2);
+	
+						// measure text line width
+						xPos = context.measureText(line).width >> 1;
+						x = -xPos + ((xOff + current.x) * zoom) + halfDisplayWidth;
+		
+						// draw shadow
+						context.fillStyle = shadowColour;
+						context.fillText(line, x + 2, y + 2);
+			
+						// draw message
+						context.fillStyle = current.colour;
+						context.fillText(line, x, y);
+	
+						// compute y coordinate for next text line
+						y += currentSize;
+	
+						// check for more lines
+						index = message.indexOf("\\n");
+					}
+	
+					// measure final text line width
+					xPos = context.measureText(message).width >> 1;
 					x = -xPos + ((xOff + current.x) * zoom) + halfDisplayWidth;
 	
 					// draw shadow
 					context.fillStyle = shadowColour;
-					context.fillText(line, x + 2, y + 2);
+					context.fillText(message, x + 2, y + 2);
 		
 					// draw message
 					context.fillStyle = current.colour;
-					context.fillText(line, x, y);
-
-					// compute y coordinate for next text line
-					y += currentSize;
-
-					// check for more lines
-					index = message.indexOf("\\n");
+					context.fillText(message, x, y);
 				}
-
-				// measure final text line width
-				xPos = context.measureText(message).width >> 1;
-				x = -xPos + ((xOff + current.x) * zoom) + halfDisplayWidth;
-
-				// draw shadow
-				context.fillStyle = shadowColour;
-				context.fillText(message, x + 2, y + 2);
-	
-				// draw message
-				context.fillStyle = current.colour;
-				context.fillText(message, x, y);
 			}
 		}
 

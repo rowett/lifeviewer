@@ -553,8 +553,9 @@
 		y = this.renderHelpLine(view, "<command>|ALL " + Keywords.initialWord, "use initial value for POI", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "define message", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelWord + " X Y Z " + Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "define label at position", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.labelSizeWord + " " + ViewConstants.minLabelSize + ".." + ViewConstants.maxLabelSize, "define label font size", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.labelAlphaWord + " 0.0..1.0", "define label font alpha", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.labelSizeWord + " <" + ViewConstants.minLabelSize + ".." + ViewConstants.maxLabelSize + ">", "define label font size", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.labelAlphaWord + " <0.0..1.0>", "define label font alpha", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.labelTWord + " <0..> <0..>", "define label generation range", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.titleWord + " " + Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "set window title", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "B", "program build number", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "N", "pattern name", ctx, x, y, height, helpLine);
