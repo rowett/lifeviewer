@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/ltl.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Right boundary fix</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 201, y = 202, rule = R100,C0,M1,S10350..15740,B9350..12360,NM
+78b2o$75b9o$74b13o$73b16o$74b17o$76b16o$77b17o$78b17o$79b18o$64b4o13b
+17o$63b10o10b16o$65b12o9b14o$69b13o7b13o$72b14o8b9o$74b15o9b8o$72b21o
+10b5o$71b25o11b5o$70b28o13b5o$68b33o13b7o$67b36o14b8o$66b39o15b10o$65b
+42o15b11o$64b45o15b13o$62b49o16b13o$61b52o16b14o$60b55o16b14o$59b58o
+16b15o$58b61o16b15o$57b63o17b15o$56b66o16b16o$55b69o16b16o$54b74o14b
+16o$53b80o11b15o$52b85o9b15o$51b90o7b15o$50b94o6b15o$49b98o5b15o$47b
+102o4b16o$46b106o3b16o$45b109o2b17o$44b112o2b17o$42b116ob17o$41b137o$
+40b139o$39b141o$38b144o$37b146o$36b148o$34b151o$32b154o$25b2o3b157o$
+24b164o$23b31o7b128o$22b24o3b3o12b126o$21b24o22b124o$20b24o25b8o5b110o
+$20b23o27b5o10b107o$19b23o30bo15b105o$18b23o49b104o$18b22o52b102o$17b
+22o54b102o$16b22o57b100o$15b23o59b99o$15b22o61b98o$14b22o63b98o$13b22o
+66b96o$13b21o68b96o$12b22o70b94o$11b22o73b92o$11b21o76b91o$10b22o78b
+89o$9b22o81b87o$9b21o85b85o$8b22o87b83o$7b22o90b81o$7b22o92b79o$6b22o
+95b77o$6b22o96b77o$6b21o99b75o$5b22o100b74o$5b22o101b73o$4b22o103b72o$
+4b22o104b71o$3b23o105b70o$3b22o107b69o$2b23o108b68o$2b23o109b67o$2b22o
+110b67o$2b22o111b66o$b23o111b66o$b23o112b65o$b23o112b65o$b22o114b64o$
+23o114b64o$23o115b63o$23o115b63o$23o116b62o$23o116b62o$23o116b62o$b22o
+116b62o$b22o116b62o$b22o115b63o$b22o115b63o$b22o115b63o$b22o114b64o$b
+22o114b64o$2b21o114b64o$2b22o113b64o$2b22o112b65o$2b22o112b65o$2b22o
+111b66o$3b21o111b66o$3b21o110b67o$3b22o109b67o$3b22o108b68o$4b21o108b
+68o$4b21o107b69o$5b21o105b70o$5b21o104b71o$6b20o103b72o$6b21o101b73o$
+7b20o99b75o$7b21o97b75o$8b20o95b77o$8b21o92b79o$9b20o90b81o$10b20o87b
+83o$10b20o85b85o$11b20o81b87o$12b20o78b89o$12b20o75b92o$13b20o72b94o$
+14b20o69b95o$15b4ob14o67b97o$20b15o65b97o$21b15o8b3o52b98o$22b15o4b7o
+49b99o$23b27o17bo27b101o$23b29o13b4o24b102o$24b30o8b9o20b103o$25b47o
+17b105o$26b48o13b106o$27b49o8b108o$27b164o$28b163o$29b161o$30b159o$31b
+157o$32b155o$33b153o$34b150o$36b147o$37b145o$37b144o$38b141o$39b139o$
+40b136o$41b134o$42b131o$43b128o$44b125o$45b123o$46b120o$47b117o$47b
+116o$48b113o$49b111o$50b108o$51b106o$52b103o$53b101o$54b98o$55b96o$56b
+65o2b26o$57b60o4b27o$58b55o7b26o$59b50o9b26o$60b45o11b27o$61b42o11b27o
+$62b39o11b27o$63b36o11b27o$64b34o10b27o$66b30o10b27o$67b28o9b27o$67b
+26o8b28o$64b3o3b22o7b28o$62bo8b19o6b29o$55bo2b2o13b15o4b30o$56b2o16b
+12o3b31o$76b7o2b31o$82b30o$80b29o$78b28o$77b26o$75b26o$73b27o$71b27o$
+68b28o$69b25o$71b21o$73b16o$76b10o!
+[[ ZOOM -16 X 400 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>
