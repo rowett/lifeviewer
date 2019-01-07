@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global Uint8 Uint32 */
+	/* global Uint8 Uint32 PatternManager */
 
 	// HROT object
 	/**
@@ -24,15 +24,63 @@
 		this.scount = 2;
 		this.births = allocator.allocate(Uint8, 1, "HROT.births");
 		this.survivals = allocator.allocate(Uint8, 1, "HROT.survivals");
+		this.type = PatternManager.mooreHROT;
 
 		// neighbour count array (will be resized)
 		this.counts = Array.matrix(Uint32, 1, 1, 0, allocator, "HROT.counts");
+
+		// range width array
+		this.widths = allocator.allocate(Uint32, this.range * 2 + 1, "HROT.widths");
 	}
 
 	// resize counts array
 	HROT.prototype.resize = function(width, height) {
 		// resize counts array
 		this.counts = Array.matrix(Uint32, height, width, 0, this.allocator, "HROT.counts");
+	};
+
+	// set type and range
+	HROT.prototype.setTypeAndRange = function(type, range) {
+		// compute widest width
+		var width = range * 2 + 1,
+			r2 = range * range + range,
+			i = 0,
+			w = 0;
+
+		// save type and range and allocate widths array
+		this.type = type;
+		this.range = range;
+		this.widths = this.allocator.allocate(Uint32, range * 2 + 1, "HROT.widths");
+
+		// create the widths array based on the neighborhood type
+		switch(type) {
+			case PatternManager.mooreHROT:
+			// Moore is a square
+			for (i = 0; i < width; i += 1) {
+				this.widths[i] = range;
+			}
+			break;
+
+			// von Neumann is a diamond
+			case PatternManager.vonNeumannHROT:
+			for (i = 0; i < range; i += 1) {
+				this.widths[i] = i;
+				this.widths[width - i - 1] = i;
+			}
+			this.widths[i] = range;
+			break;
+
+			// circular is a circle
+			case PatternManager.circularHROT:
+			for (i = -range; i <= range; i += 1) {
+				w = 0;
+				while ((w + 1) * (w + 1) + (i * i) <= r2) {
+					w += 1;
+				}
+				this.widths[i + range] = w;
+			}
+			break;
+		}
 	};
 
 	// wrap the grid for HROT torus

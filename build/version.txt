@@ -11,6 +11,7 @@ Build 265
 	- sets the label text colour (default is 240 255 255)
 - fixed broken Torus
 - fixed LtL and HROT patterns not clearing correctly on right boundary
+- added support for von Neumann and Circular neighborhoods to HROT rules
 
 Build 264
 - new canonical HROT rule format:

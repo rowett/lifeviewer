@@ -9332,7 +9332,7 @@
 				this.engine.HROT.births = pattern.birthHROT;
 				this.engine.HROT.survivals = pattern.survivalHROT;
 				this.engine.HROT.scount = pattern.multiNumStates;
-				this.engine.HROT.range = pattern.rangeHROT;
+				this.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT);
 			}
 
 			// check if the neighbourhood is hex

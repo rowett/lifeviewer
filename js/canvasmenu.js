@@ -165,7 +165,7 @@
 		    alpha = 0,
 
 		    // line height
-                    lineHeight = 0;
+			lineHeight = 0;
 
 		// make font smaller if canvas is small
 		if (this.context.canvas.width < 96) {

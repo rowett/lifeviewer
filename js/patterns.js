@@ -180,6 +180,11 @@
 		minStatesHROT : 0,
 		maxStatesHROT : 255,
 
+		// HROT neighborhoods
+		mooreHROT : 0,
+		vonNeumannHROT : 1,
+		circularHROT : 2,
+
 		// specified width and height from RLE pattern
 		specifiedWidth : -1,
 		specifiedHeight : -1
@@ -274,6 +279,9 @@
 
 		// HROT survival array
 		this.survivalHROT = null;
+
+		// HROT neighborhood (0 Moore, 1 von Neumann, 2 circular)
+		this.neighborhoodHROT = -1;
 
 		// states for generations or LTL
 		this.multiNumStates = -1;
@@ -2315,6 +2323,7 @@
 						if (lower === -1) {
 							// no number so preserve command
 							this.index -= 1;
+							this.failureReason = "";
 						}
 					}
 				}
@@ -2324,7 +2333,7 @@
 		return result;
 	};
 
-	// decode HROT rule in Rr,Cc,S,B format
+	// decode HROT rule in Rr,Cc,S,B,Nn format
 	PatternManager.decodeHROTMulti = function(pattern, rule, allocator) {
 		var value = 0,
 			result = false,
@@ -2449,6 +2458,42 @@
 				}
 			} else {
 				this.failureReason = "HROT expected ','";
+			}
+		}
+
+		// decode optional neighborhood
+		pattern.neighborhoodHROT = this.mooreHROT;
+		if (result && this.index < rule.length && rule[this.index] === ",") {
+			// comma found so check for neighborhood
+			result = false;
+			this.index += 1;
+			if (this.index < rule.length) {
+				if (rule[this.index] === "n") {
+					// check for neighborhood
+					this.index += 1;
+					if (this.index < rule.length) {
+						if (rule[this.index] === "m" || rule[this.index] === "n" || rule[this.index] === "c") {
+							if (rule[this.index] === "n") {
+								pattern.neighborhoodHROT = this.vonNeumannHROT;
+							} else {
+								if (rule[this.index] === "c") {
+									pattern.neighborhoodHROT = this.circularHROT;
+								}
+							}
+							// mark rule valid
+							this.index += 1;
+							result = true;
+						} else {
+							this.failureReason = "HROT expected 'NM', 'NN' or 'NC' got 'N" + rule[this.index].toUpperCase() + "'";
+						}
+					} else {
+						this.failureReason = "HROT 'N' needs a neighborhood";
+					}
+				} else {
+					this.failureReason = "HROT expected 'N' got '" + rule[this.index].toUpperCase() + "'";
+				}
+			} else {
+				this.failureReason = "HROT expected 'N'";
 			}
 		}
 
@@ -2586,6 +2631,8 @@
 				result = false;
 				this.failureReason = "HROT invalid characters after rule";
 			} else {
+				// default to Moore
+				pattern.neighborhoodHROT = PatternManager.mooreHROT;
 				pattern.isHROT = true;
 			}
 		}
@@ -2836,7 +2883,7 @@
 				if (rule[0] === "r" || ((rule[0] >= "1" && rule[0] <= "9") && rule.indexOf(",") !== -1)) {
 					if (rule[0] === "r") {
 						// check for Wojtowicz format LTL
-						if (rule.indexOf("m") !== -1) {
+						if (rule.indexOf(".") !== -1) {
 							valid = this.decodeLTLMC(pattern, rule);
 						} else {
 							// check for Goucher format LTL
@@ -2864,6 +2911,14 @@
 							pattern.ruleName += "C" + pattern.multiNumStates + ",";
 							pattern.ruleName += "S" + this.asMulti(pattern.survivalHROT) + ",";
 							pattern.ruleName += "B" + this.asMulti(pattern.birthHROT);
+							if (pattern.neighborhoodHROT !== this.mooreHROT) {
+								pattern.ruleName += ",N";
+								if (pattern.neighborhoodHROT == this.vonNeumannHROT) {
+									pattern.ruleName += "N";
+								} else {
+									pattern.ruleName += "C";
+								}
+							}
 						} else {
 							// LTL
 							pattern.isLTL = true;

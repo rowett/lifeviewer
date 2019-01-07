@@ -769,11 +769,20 @@
 						ruleName += " range " + view.engine.LTL.range;
 					}
 				} else {
-					if (view.engine.isVonNeumann) {
-						ruleName = "von Neumann";
+					if (view.engine.isHROT) {
+						if (view.engine.HROT.type === PatternManager.mooreLTL) {
+							ruleName = "Moore";
+						} else if (view.engine.HROT.type === PatternManager.vonNeumannHROT) {
+							ruleName = "von Neumann";
+						} else {
+							ruleName = "Circular";
+						}
+						if (view.engine.HROT.range > 1) {
+							ruleName += " range " + view.engine.HROT.range;
+						}
 					} else {
-						if (view.engine.isHROT) {
-							ruleName = "Moore range " + view.engine.HROT.range;
+						if (view.engine.isVonNeumann) {
+							ruleName = "von Neumann";
 						} else {
 							ruleName = "Moore";
 						}
