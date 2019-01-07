@@ -7,6 +7,7 @@ Currently used on:
 * [Conwaylife.com](http://www.conwaylife.com/)
 * [ConwayLife Forums](http://www.conwaylife.com/forums)
 * [ConwayLife Wiki](http://www.conwaylife.com/wiki)
+* [Catagolue](http://catagolue.appspot.com)
 
 Written in plain Javascript/HTML5 without any external libraries.
 
