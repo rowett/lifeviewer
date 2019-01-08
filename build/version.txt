@@ -1,3 +1,6 @@
+Build 268
+- Labels work with non-zero angle
+
 Build 267
 - new script command [[ MAXGRIDSIZE <10..14> ]]
 	- specifies the maximum grid size 2^n

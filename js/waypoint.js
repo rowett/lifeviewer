@@ -514,6 +514,7 @@
 			halfDisplayWidth = engine.displayWidth / 2,
 			halfDisplayHeight = engine.displayHeight / 2,
 			x = 0, y = 0,
+			cx = 0, cy = 0,
 			currentSize = 0,
 			shadowColour = ViewConstants.labelShadowColour,
 			fontEnd = "px " + ViewConstants.labelFontFamily,
@@ -522,6 +523,7 @@
 			index = 0, message = "", line = "",
 			counter = view.engine.counter,
 			inrange = false,
+			radius = 0, theta = 0,
 			shadowOffset = 0;
 
 		// draw each label
@@ -583,11 +585,38 @@
 
 					// set the alpha
 					context.globalAlpha = alphaValue * current.alpha * timeAlpha;
-	
+
+					// get label position
+					cx = current.x + xOff;
+					cy = current.y + yOff;
+
+					// check for camera rotation
+					if (engine.camAngle !== 0) {
+						// compute radius
+						radius = Math.sqrt((cx * cx) + (cy * cy));
+
+						// apply angle
+						theta = Math.atan2(cy, cx) * (180 / Math.PI);
+
+						// add current rotation
+						theta += engine.camAngle;
+
+						// check it is in range
+						if (theta < 0) {
+							theta += 360;
+						} else {
+							if (theta >= 360) {
+								theta -= 360;
+							}
+						}
+						cx = radius * Math.cos(theta * (Math.PI / 180));
+						cy = radius * Math.sin(theta * (Math.PI / 180));
+					}
+
 					// draw each line of the label
 					message = current.message;
 					index = message.indexOf("\\n");
-					y = ((yOff + current.y + engine.originY) * zoom) + halfDisplayHeight;
+					y = ((cy + engine.originY) * zoom) + halfDisplayHeight;
 	
 					while (index !== -1) {
 						// get the next line
@@ -596,7 +625,7 @@
 	
 						// measure text line width
 						xPos = context.measureText(line).width >> 1;
-						x = -xPos + ((xOff + current.x + engine.originX) * zoom) + halfDisplayWidth;
+						x = -xPos + ((cx + engine.originX) * zoom) + halfDisplayWidth;
 		
 						// draw shadow
 						context.fillStyle = shadowColour;
@@ -615,7 +644,7 @@
 	
 					// measure final text line width
 					xPos = context.measureText(message).width >> 1;
-					x = -xPos + ((xOff + current.x + engine.originX) * zoom) + halfDisplayWidth;
+					x = -xPos + ((cx + engine.originX) * zoom) + halfDisplayWidth;
 	
 					// draw shadow
 					context.fillStyle = shadowColour;

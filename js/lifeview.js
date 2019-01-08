@@ -65,10 +65,6 @@
 		// maximum time in ms between UI updates when STEP > 1
 		/** @const {number} */ updateThreshold : 16.7,
 
-		// minimum and maximum density for random fill
-		/** @const {number} */ minDensity : 0.0,
-		/** @const {number} */ maxDensity : 1.0,
-
 		// minimum and maximum grid size 2^n
 		/** @const {number} */ minGridPower : 10,  // 2^10 = 1024
 		/** @const {number} */ maxGridPower : 14,  // 2^14 = 16384
@@ -2227,10 +2223,8 @@
 			}
 		}
 
-		// draw any labels TBD only angle=0
-		if (me.engine.angle === 0) {
-			me.waypointManager.drawLabels(me);
-		}
+		// draw any labels
+		me.waypointManager.drawLabels(me);
 
 		// draw population graph if required
 		if (me.popGraph) {
