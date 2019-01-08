@@ -146,7 +146,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 268,
+		/** @const {number} */ versionBuild : 269,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1657,26 +1657,37 @@
 		    engineX = this.panX - this.engine.xOff - (this.engine.isHex ? this.engine.yOff / 2 : 0),
 
 		    // cell position
-		    yPos,
-		    xPos,
+		    yPos = 0, xPos = 0,
 		    
 		    // display strings
 		    xDisplay = "",
 		    yDisplay = "",
-		    stateDisplay = "";
-
-		// compute the x and y cell coordinate
-		yPos = Math.floor(displayY / this.engine.zoom - engineY);
-		xPos = Math.floor((displayX / this.engine.zoom) + (this.engine.isHex ? engineY / 2 : 0) - engineX);
+			stateDisplay = "",
+			
+			// rotation
+			theta = 0, radius = 0;
 
 		// check if there are mouse coordinates or non-zero angle
-		if (this.viewMenu.mouseX === -1 || this.engine.camAngle !== 0) {
+		if (this.viewMenu.mouseX === -1) {
 			// no coordinates to display
 			this.xyLabel.preText = "";
 
 			// delete label if generation statistics are hidden
 			this.xyLabel.deleted = !this.statsOn;
 		} else {
+			// apply rotation to the display position
+			if (this.engine.camAngle !== 0) {
+				radius = Math.sqrt((displayX * displayX) + (displayY * displayY));
+				theta = Math.atan2(displayY, displayX) * (180 / Math.PI);
+				theta -= this.engine.camAngle;
+				displayX = radius * Math.cos(theta * (Math.PI / 180));
+				displayY = radius * Math.sin(theta * (Math.PI / 180));
+			}
+
+			// compute the x and y cell coordinate
+			yPos = Math.floor(displayY / this.engine.zoom - engineY + this.engine.originY);
+			xPos = Math.floor((displayX / this.engine.zoom) + (this.engine.isHex ? engineY / 2 : 0) - engineX + this.engine.originX);
+
 			// read the state
 			stateDisplay = this.engine.getState(xPos + this.panX, yPos + this.panY, this.multiStateView && this.viewOnly);
 
@@ -6536,6 +6547,9 @@
 			currentLabelAngle = 0,
 			currentLabelAngleFixed = false,
 
+			// current position locked
+			currentLabelPositionFixed = false,
+
 			// whether reading label
 			readingLabel = false,
 
@@ -6879,11 +6893,19 @@
 													}
 												}
 												if (z !== -1000) {
-													// check there is text
+													// check for optional fixed keyword
 													peekToken = scriptReader.peekAtNextToken();
+													currentLabelPositionFixed = false;
+													if (peekToken === Keywords.fixedWord) {
+														// consume the token
+														peekToken = scriptReader.getNextToken();
+														currentLabelPositionFixed = true;
+														peekToken = scriptReader.peekAtNextToken();
+													}
+													// check there is text
 													if (peekToken[0] === Keywords.stringDelimiter) {
 														// save the label
-														currentLabel = this.waypointManager.createLabel(x, y, z, this.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelT1, currentLabelT2, currentLabelTFade, currentLabelAngle, currentLabelAngleFixed);
+														currentLabel = this.waypointManager.createLabel(x, y, z, this.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelT1, currentLabelT2, currentLabelTFade, currentLabelAngle, currentLabelAngleFixed, currentLabelPositionFixed);
 														readingLabel = true;
 														itemValid = true;
 													} else {

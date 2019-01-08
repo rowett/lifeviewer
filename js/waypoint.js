@@ -351,7 +351,7 @@
 	/**
 	 * @constructor
 	 */
-	function Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked) {
+	function Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked) {
 		// message
 		this.message = "";
 
@@ -385,8 +385,11 @@
 		// angle
 		this.angle = angle;
 
-		// angle locked
+		// angle locked when camera rotated
 		this.angleLocked = angleLocked;
+
+		// position locked when TRACK used
+		this.positionLocked = positionLocked;
 	}
 
 	// WaypointManager constructor
@@ -423,8 +426,8 @@
 	}
 
 	// create a label
-	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked) {
-		return new Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked);
+	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked) {
+		return new Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked);
 	};
 
 	// clear all labels
@@ -446,7 +449,9 @@
 	WaypointManager.prototype.labelAsText1 = function(number) {
 		var result = "",
 			zoom = 0,
-		    current = null;
+			current = null,
+			posLocked = "",
+			angLocked = "";
 
 		if (number >= 0 && number < this.labelList.length) {
 			current = this.labelList[number];
@@ -454,7 +459,14 @@
 			if (zoom >= 0 && zoom < 1) {
 				zoom = -1 / zoom;
 			}
-			result = "X " + current.x + "\tY " + current.y + "\tZ " + zoom.toFixed(1) + "\tA " + current.angle.toFixed(1);
+			if (current.positionLocked) {
+				posLocked = "*";
+			}
+			if (current.angleLocked) {
+				angLocked = "*";
+			}
+			result = "X" + posLocked + " " + current.x + "\tY" + posLocked + " " + current.y;
+			result += "\tZ " + zoom.toFixed(1) + "\tA" + angLocked + " " + current.angle.toFixed(1);
 		}
 
 		return result;
@@ -594,8 +606,14 @@
 					context.globalAlpha = alphaValue * current.alpha * timeAlpha;
 
 					// get label position
-					cx = current.x + xOff + engine.originX + hexAdjust;
-					cy = current.y + yOff + engine.originY;
+					cx = current.x + xOff + hexAdjust;
+					cy = current.y + yOff;
+					
+					// check for fixed position
+					if (!current.positionLocked) {
+						cx += engine.originX;
+						cy += engine.originY;
+					}
 
 					// check for camera rotation
 					if (engine.camAngle !== 0) {
@@ -608,7 +626,7 @@
 						// add current rotation
 						theta += engine.camAngle;
 
-						// compute rotate position
+						// compute rotated position
 						cx = radius * Math.cos(theta * (Math.PI / 180));
 						cy = radius * Math.sin(theta * (Math.PI / 180));
 					}
