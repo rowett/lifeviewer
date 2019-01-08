@@ -1,5 +1,5 @@
 Build 269
-- updated script command: [[ LABEL X Y ZOOM (FIXED) "<string"> ]]
+- updated script command: [[ LABEL X Y ZOOM (FIXED) "<string>" ]]
 	- optional FIXED argument makes the position static when TRACK mode is on
 - cell under mouse display was incorrect when TRACK mode is on
 - cell under mouse display now works at any ANGLE
