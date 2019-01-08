@@ -351,7 +351,7 @@
 	/**
 	 * @constructor
 	 */
-	function Label(x, y, zoom, colour, alpha, size, t1, t2, tFade) {
+	function Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked) {
 		// message
 		this.message = "";
 
@@ -381,6 +381,12 @@
 
 		// fade generations
 		this.tFade = tFade;
+
+		// angle
+		this.angle = angle;
+
+		// angle locked
+		this.angleLocked = angleLocked;
 	}
 
 	// WaypointManager constructor
@@ -417,8 +423,8 @@
 	}
 
 	// create a label
-	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size, t1, t2, tFade) {
-		return new Label(x, y, zoom, colour, alpha, size, t1, t2, tFade);
+	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked) {
+		return new Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked);
 	};
 
 	// clear all labels
@@ -448,7 +454,7 @@
 			if (zoom >= 0 && zoom < 1) {
 				zoom = -1 / zoom;
 			}
-			result = "X " + current.x + "\tY " + current.y + "\tZ " + zoom.toFixed(1) + "\tSize " + current.size;
+			result = "X " + current.x + "\tY " + current.y + "\tZ " + zoom.toFixed(1) + "\tA " + current.angle.toFixed(1);
 		}
 
 		return result;
@@ -466,7 +472,7 @@
 			if (zoom >= 0 && zoom < 1) {
 				zoom = -1 / zoom;
 			}
-			result = "A " + current.alpha.toFixed(1);
+			result = "Alpha " + current.alpha.toFixed(1);
 			if (current.t1 !== -1) {
 				result += "\tT1 " + current.t1 + "\tT2 " + current.t2;
 				if (current.tFade > 0) {
@@ -490,7 +496,7 @@
 			if (zoom >= 0 && zoom < 1) {
 				zoom = -1 / zoom;
 			}
-			result = "\"" + current.message + "\"";
+			result = "Size " + current.size + "\t\"" + current.message + "\"";
 		}
 
 		return result;
@@ -601,14 +607,7 @@
 						// add current rotation
 						theta += engine.camAngle;
 
-						// check it is in range
-						if (theta < 0) {
-							theta += 360;
-						} else {
-							if (theta >= 360) {
-								theta -= 360;
-							}
-						}
+						// compute rotate position
 						cx = radius * Math.cos(theta * (Math.PI / 180));
 						cy = radius * Math.sin(theta * (Math.PI / 180));
 					}
@@ -617,6 +616,17 @@
 					message = current.message;
 					index = message.indexOf("\\n");
 					y = (cy * zoom) + halfDisplayHeight;
+					x = (cx * zoom) + halfDisplayWidth;
+
+					// rotate context for drawing
+					context.save();
+					context.translate(x, y);
+					theta = current.angle;
+					if (!current.angleLocked) {
+						theta += engine.camAngle;
+					}
+					context.rotate(theta / 180 * Math.PI);
+					y = 0;
 	
 					while (index !== -1) {
 						// get the next line
@@ -625,16 +635,15 @@
 	
 						// measure text line width
 						xPos = context.measureText(line).width >> 1;
-						x = -xPos + (cx * zoom) + halfDisplayWidth;
 		
 						// draw shadow
 						context.fillStyle = shadowColour;
-						context.fillText(line, x + shadowOffset, y + shadowOffset);
+						context.fillText(line, -xPos + shadowOffset, y + shadowOffset);
 			
 						// draw message
 						context.fillStyle = current.colour;
-						context.fillText(line, x, y);
-	
+						context.fillText(line, -xPos, y);
+
 						// compute y coordinate for next text line
 						y += currentSize;
 	
@@ -644,15 +653,17 @@
 	
 					// measure final text line width
 					xPos = context.measureText(message).width >> 1;
-					x = -xPos + (cx * zoom) + halfDisplayWidth;
 	
 					// draw shadow
 					context.fillStyle = shadowColour;
-					context.fillText(message, x + shadowOffset, y + shadowOffset);
+					context.fillText(message, -xPos + shadowOffset, y + shadowOffset);
 		
 					// draw message
 					context.fillStyle = current.colour;
-					context.fillText(message, x, y);
+					context.fillText(message, -xPos, y);
+
+					// restore context
+					context.restore();
 				}
 			}
 		}

@@ -124,8 +124,14 @@
 		// label size
 		/** @const {string} */ labelSizeWord : "LABELSIZE",
 
-		// label generation range
+		// label generation range and fade
 		/** @const {string} */ labelTWord : "LABELT",
+
+		// label angle and fixed 
+		/** @const {string} */ labelAngleWord : "LABELANGLE",
+
+		// label angle fixed
+		/** @const {string} */ fixedWord: "FIXED",
 
 		// maximum grid size
 		/** @const {string} */ maxGridSizeWord : "MAXGRIDSIZE",

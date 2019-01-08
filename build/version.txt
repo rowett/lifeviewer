@@ -1,5 +1,8 @@
 Build 268
 - Labels work with non-zero angle
+- new script command [[ LABELANGLE <0..359> (FIXED) ]]
+	- sets the label angle for subsequent label definitions
+	- optional keyword FIXED means label will not rotate when camera rotates
 
 Build 267
 - new script command [[ MAXGRIDSIZE <10..14> ]]

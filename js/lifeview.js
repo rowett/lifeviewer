@@ -146,7 +146,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 267,
+		/** @const {number} */ versionBuild : 268,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5761,6 +5761,7 @@
 			case Keywords.labelAlphaWord:
 			case Keywords.labelSizeWord:
 			case Keywords.labelTWord:
+			case Keywords.labelAngleWord:
 			case Keywords.noHistoryWord:
 			case Keywords.noReportWord:
 			case Keywords.trackWord:
@@ -6531,6 +6532,10 @@
 			// current label TFade
 			currentLabelTFade = 0,
 
+			// current label angle and locked
+			currentLabelAngle = 0,
+			currentLabelAngleFixed = false,
+
 			// whether reading label
 			readingLabel = false,
 
@@ -6734,6 +6739,30 @@
 							}
 							break;
 
+						// label angle
+						case Keywords.labelAngleWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the angle value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= 0 && numberValue < 360) {
+									currentLabelAngle = numberValue;
+									currentLabelAngleFixed = false;
+									// check for optional FIXED keyword
+									peekToken = scriptReader.peekAtNextToken();
+									if (peekToken === Keywords.fixedWord) {
+										// consume token
+										peekToken = scriptReader.getNextToken();
+										currentLabelAngleFixed = true;
+									}
+									itemValid = true;
+								}
+							}
+							break;
+
 						// label T
 						case Keywords.labelTWord:
 							if (scriptReader.nextTokenIsNumeric()) {
@@ -6854,7 +6883,7 @@
 													peekToken = scriptReader.peekAtNextToken();
 													if (peekToken[0] === Keywords.stringDelimiter) {
 														// save the label
-														currentLabel = this.waypointManager.createLabel(x, y, z, this.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelT1, currentLabelT2, currentLabelTFade);
+														currentLabel = this.waypointManager.createLabel(x, y, z, this.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelT1, currentLabelT2, currentLabelTFade, currentLabelAngle, currentLabelAngleFixed);
 														readingLabel = true;
 														itemValid = true;
 													} else {

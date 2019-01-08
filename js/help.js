@@ -556,6 +556,8 @@
 		y = this.renderHelpLine(view, Keywords.labelSizeWord + " <" + ViewConstants.minLabelSize + ".." + ViewConstants.maxLabelSize + ">", "define label font size", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelAlphaWord + " <0.0..1.0>", "define label font alpha", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelTWord + " <0..> <0..> <0..>", "label generation range / fade", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.labelAngleWord + " <0..359>", "label angle", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "fix label angle", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.titleWord + " " + Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "set window title", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "B", "program build number", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "N", "pattern name", ctx, x, y, height, helpLine);
