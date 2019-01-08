@@ -1,3 +1,11 @@
+Build 267
+- new script command [[ MAXGRIDSIZE <10..14> ]]
+	- specifies the maximum grid size 2^n
+	- if not specified the grid size starts at 2^10 (1024) and automatically grows as needed up to 2^13 (8192)
+	- 2^14 (16384) is only available if specified with this command
+- Labels now work wth [[ TRACK ]] and [[ TRACKLOOP ]]
+- Label shadow is now based on label size
+
 Build 266
 - new script command [[ LABELT <t1> <t2> <fade> ]]
 	- sets a range of generations from <t1> to <t2> for subsequent labels to be visible

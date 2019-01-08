@@ -488,7 +488,7 @@
 		// column occupancy array for grid bounding box calculation
 		this.columnOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16");
 
-		// maximum grid size
+		// current maximum grid size
 		this.maxGridSize = 8192;
 
 		// graph default colours

@@ -127,6 +127,9 @@
 		// label generation range
 		/** @const {string} */ labelTWord : "LABELT",
 
+		// maximum grid size
+		/** @const {string} */ maxGridSizeWord : "MAXGRIDSIZE",
+
 		// starfield word
 		/** @const {string} */ starfieldWord : "STARS",
 

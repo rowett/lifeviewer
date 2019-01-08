@@ -69,6 +69,10 @@
 		/** @const {number} */ minDensity : 0.0,
 		/** @const {number} */ maxDensity : 1.0,
 
+		// minimum and maximum grid size 2^n
+		/** @const {number} */ minGridPower : 10,  // 2^10 = 1024
+		/** @const {number} */ maxGridPower : 14,  // 2^14 = 16384
+
 		// icons
 		icons : null,
 
@@ -146,7 +150,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 266,
+		/** @const {number} */ versionBuild : 267,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5783,6 +5787,7 @@
 			case Keywords.graphOpacityWord:
 			case Keywords.graphPointsWord:
 			case Keywords.starfieldWord:
+			case Keywords.maxGridSizeWord:
 			case Keywords.autoFitWord:
 			case Keywords.historyFitWord:
 			case Keywords.tWord:
@@ -6882,6 +6887,23 @@
 							this.genNotifications = false;
 
 							itemValid = true;
+							break;
+
+						// maximum grid size
+						case Keywords.maxGridSizeWord:
+							// get the grid size
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+								// check it is in range
+								if (numberValue >= ViewConstants.minGridPower && numberValue <= ViewConstants.maxGridPower) {
+									this.engine.maxGridSize = 1 << numberValue;
+									itemValid = true;
+								}
+							}
 							break;
 
 						// starfield

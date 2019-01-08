@@ -521,7 +521,8 @@
 			linearZoom = 1, alphaValue = 1, timeAlpha = 1,
 			index = 0, message = "", line = "",
 			counter = view.engine.counter,
-			inrange = false;
+			inrange = false,
+			shadowOffset = 0;
 
 		// draw each label
 		for (i = 0; i < this.labelList.length; i += 1) {
@@ -543,6 +544,13 @@
 				currentSize = (current.size * zoom / current.zoom) | 0;
 				minFont = current.size / 4;
 				maxFont = current.size * 4;
+				shadowOffset = 1;
+				if (currentSize >= 24) {
+					shadowOffset = 2;
+					if (currentSize >= 48) {
+						shadowOffset = 3;
+					}
+				}
 	
 				// do not draw if too big or too small
 				if (currentSize >= minFont && currentSize <= maxFont) {
@@ -579,7 +587,7 @@
 					// draw each line of the label
 					message = current.message;
 					index = message.indexOf("\\n");
-					y = ((yOff + current.y) * zoom) + halfDisplayHeight;
+					y = ((yOff + current.y + engine.originY) * zoom) + halfDisplayHeight;
 	
 					while (index !== -1) {
 						// get the next line
@@ -588,11 +596,11 @@
 	
 						// measure text line width
 						xPos = context.measureText(line).width >> 1;
-						x = -xPos + ((xOff + current.x) * zoom) + halfDisplayWidth;
+						x = -xPos + ((xOff + current.x + engine.originX) * zoom) + halfDisplayWidth;
 		
 						// draw shadow
 						context.fillStyle = shadowColour;
-						context.fillText(line, x + 2, y + 2);
+						context.fillText(line, x + shadowOffset, y + shadowOffset);
 			
 						// draw message
 						context.fillStyle = current.colour;
@@ -607,11 +615,11 @@
 	
 					// measure final text line width
 					xPos = context.measureText(message).width >> 1;
-					x = -xPos + ((xOff + current.x) * zoom) + halfDisplayWidth;
+					x = -xPos + ((xOff + current.x + engine.originX) * zoom) + halfDisplayWidth;
 	
 					// draw shadow
 					context.fillStyle = shadowColour;
-					context.fillText(message, x + 2, y + 2);
+					context.fillText(message, x + shadowOffset, y + shadowOffset);
 		
 					// draw message
 					context.fillStyle = current.colour;
