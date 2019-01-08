@@ -587,8 +587,8 @@
 					context.globalAlpha = alphaValue * current.alpha * timeAlpha;
 
 					// get label position
-					cx = current.x + xOff;
-					cy = current.y + yOff;
+					cx = current.x + xOff + engine.originX;
+					cy = current.y + yOff + engine.originY;
 
 					// check for camera rotation
 					if (engine.camAngle !== 0) {
@@ -616,7 +616,7 @@
 					// draw each line of the label
 					message = current.message;
 					index = message.indexOf("\\n");
-					y = ((cy + engine.originY) * zoom) + halfDisplayHeight;
+					y = (cy * zoom) + halfDisplayHeight;
 	
 					while (index !== -1) {
 						// get the next line
@@ -625,7 +625,7 @@
 	
 						// measure text line width
 						xPos = context.measureText(line).width >> 1;
-						x = -xPos + ((cx + engine.originX) * zoom) + halfDisplayWidth;
+						x = -xPos + (cx * zoom) + halfDisplayWidth;
 		
 						// draw shadow
 						context.fillStyle = shadowColour;
@@ -644,7 +644,7 @@
 	
 					// measure final text line width
 					xPos = context.measureText(message).width >> 1;
-					x = -xPos + ((cx + engine.originX) * zoom) + halfDisplayWidth;
+					x = -xPos + (cx * zoom) + halfDisplayWidth;
 	
 					// draw shadow
 					context.fillStyle = shadowColour;
