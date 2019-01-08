@@ -267,7 +267,7 @@
 		}
 
 		// check if this is a zero time waypoint
-		if (endTime - startTime == ViewConstants.singleFrameMS) {
+		if (endTime - startTime === ViewConstants.singleFrameMS) {
 			startTime = endTime;
 		}
 
@@ -351,7 +351,7 @@
 	/**
 	 * @constructor
 	 */
-	function Label(x, y, zoom, colour, alpha, size, t1, t2) {
+	function Label(x, y, zoom, colour, alpha, size, t1, t2, tFade) {
 		// message
 		this.message = "";
 
@@ -378,6 +378,9 @@
 
 		// end generation
 		this.t2 = t2;
+
+		// fade generations
+		this.tFade = tFade;
 	}
 
 	// WaypointManager constructor
@@ -414,8 +417,8 @@
 	}
 
 	// create a label
-	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size, t1, t2) {
-		return new Label(x, y, zoom, colour, alpha, size, t1, t2);
+	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size, t1, t2, tFade) {
+		return new Label(x, y, zoom, colour, alpha, size, t1, t2, tFade);
 	};
 
 	// clear all labels
@@ -433,8 +436,8 @@
 		return this.labelList.length;
 	};
 
-	// return given label as a text string
-	WaypointManager.prototype.labelAsText = function(number) {
+	// return given label as a text string line 1
+	WaypointManager.prototype.labelAsText1 = function(number) {
 		var result = "",
 			zoom = 0,
 		    current = null;
@@ -445,15 +448,57 @@
 			if (zoom >= 0 && zoom < 1) {
 				zoom = -1 / zoom;
 			}
-			result = current.x + "\t" + current.y + "\t" + zoom.toFixed(1) + "\t\"" + current.message + "\"";
+			result = "X " + current.x + "\tY " + current.y + "\tZ " + zoom.toFixed(1) + "\tSize " + current.size;
 		}
 
 		return result;
 	};
 
-	// return header text for label as a text string
-	WaypointManager.prototype.labelHeaderText = function() {
-		return "X\tY\tZOOM\tTEXT";
+	// return given label as a text string line 2
+	WaypointManager.prototype.labelAsText2 = function(number) {
+		var result = "",
+			zoom = 0,
+		    current = null;
+
+		if (number >= 0 && number < this.labelList.length) {
+			current = this.labelList[number];
+			zoom = current.zoom;
+			if (zoom >= 0 && zoom < 1) {
+				zoom = -1 / zoom;
+			}
+			result = "A " + current.alpha.toFixed(1);
+			if (current.t1 !== -1) {
+				result += "\tT1 " + current.t1 + "\tT2 " + current.t2;
+				if (current.tFade > 0) {
+					result += "\tFade " + current.tFade;
+				}
+			}
+		}
+
+		return result;
+	};
+
+	// return given label as a text string line 3
+	WaypointManager.prototype.labelAsText3 = function(number) {
+		var result = "",
+			zoom = 0,
+		    current = null;
+
+		if (number >= 0 && number < this.labelList.length) {
+			current = this.labelList[number];
+			zoom = current.zoom;
+			if (zoom >= 0 && zoom < 1) {
+				zoom = -1 / zoom;
+			}
+			result = "\"" + current.message + "\"";
+		}
+
+		return result;
+	};
+
+	// sort labels into zoom order for depth drawing
+	WaypointManager.prototype.sortLabels = function() {
+		this.labelList.sort(function(a, b) { return a.zoom - b.zoom; });
 	};
 
 	// draw labels
@@ -473,7 +518,7 @@
 			shadowColour = ViewConstants.labelShadowColour,
 			fontEnd = "px " + ViewConstants.labelFontFamily,
 			minFont = 0, maxFont = 0,
-			linearZoom = 1, alphaValue = 1,
+			linearZoom = 1, alphaValue = 1, timeAlpha = 1,
 			index = 0, message = "", line = "",
 			counter = view.engine.counter,
 			inrange = false;
@@ -515,7 +560,21 @@
 							alphaValue = 1;
 						}
 					}
-					context.globalAlpha = alphaValue * current.alpha;
+
+					// if in a generation range the fade if near limits
+					timeAlpha = 1;
+					if (current.t1 !== -1 && current.tFade > 0) {
+						if (counter - current.t1 <= current.tFade) {
+							timeAlpha = (counter - current.t1 + 1) / current.tFade;
+						} else {
+							if (current.t2 - counter <= current.tFade) {
+								timeAlpha = (current.t2 - counter + 1) / current.tFade;
+							}
+						}
+					}
+
+					// set the alpha
+					context.globalAlpha = alphaValue * current.alpha * timeAlpha;
 	
 					// draw each line of the label
 					message = current.message;

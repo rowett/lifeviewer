@@ -1224,9 +1224,10 @@
 			y = this.renderHelpLine(view, "", "Labels:", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Number", value, ctx, x, y, height, helpLine);
 			if (value > 0) {
-				y = this.renderHelpLine(view, "ID", view.waypointManager.labelHeaderText(), ctx, x, y, height, helpLine);
 				for (i = 0; i < value; i += 1) {
-					y = this.renderHelpLine(view, String(i), view.waypointManager.labelAsText(i), ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, String(i), view.waypointManager.labelAsText1(i), ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, " ", view.waypointManager.labelAsText2(i), ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, " ", view.waypointManager.labelAsText3(i), ctx, x, y, height, helpLine);
 				}
 			}
 		}

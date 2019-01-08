@@ -1,6 +1,7 @@
 Build 266
-- new script command [[ LABELT t1 t2 ]]
-	- sets a range of generations for subsequent labels to be visible
+- new script command [[ LABELT <t1> <t2> <fade> ]]
+	- sets a range of generations from <t1> to <t2> for subsequent labels to be visible
+	- <fade> specifies generations to fade label in/out
 	- use [[ LABELT ALL ]] to specify all generations
 
 Build 265

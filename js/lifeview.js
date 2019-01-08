@@ -6529,6 +6529,9 @@
 			currentLabelT1 = -1,
 			currentLabelT2 = -1,
 
+			// current label TFade
+			currentLabelTFade = 0,
+
 			// whether reading label
 			readingLabel = false,
 
@@ -6742,14 +6745,27 @@
 
 								// check it is in range
 								if (numberValue >= 0) {
-									x = numberValue | 0;
+									x = numberValue;
 									if (scriptReader.nextTokenIsNumeric()) {
 										// get the T2 value
 										numberValue = scriptReader.getNextTokenAsNumber() | 0;
 										if (numberValue >= x) {
-											currentLabelT1 = x;
-											currentLabelT2 = numberValue;
-											itemValid = true;
+											y = numberValue;
+											if (scriptReader.nextTokenIsNumeric()) {
+												// get the Fade value
+												numberValue = scriptReader.getNextTokenAsNumber() | 0;
+												if (numberValue >= 0 && numberValue <= ((y - x) >> 1)) {
+													currentLabelT1 = x;
+													currentLabelT2 = y;
+													currentLabelTFade = numberValue;
+													itemValid = true;
+												} else {
+													itemValid = true;
+													scriptErrors[scriptErrors.length] = [nextToken + " " + x + " " + y + " "+ numberValue, "third argument must from 0 to " + ((y - x) >> 1)];
+												}
+											} else {
+												isNumeric = false;
+											}
 										} else {
 											itemValid = true;
 											scriptErrors[scriptErrors.length] = [nextToken + " " + x + " " + numberValue, "second argument must be >= first"];
@@ -6766,6 +6782,7 @@
 									peekToken = scriptReader.getNextToken();
 									currentLabelT1 = -1;
 									currentLabelT2 = -1;
+									currentLabelTFade = 0;
 									itemValid = true;
 								} else {
 									// fail needing a number
@@ -6838,7 +6855,7 @@
 													peekToken = scriptReader.peekAtNextToken();
 													if (peekToken[0] === Keywords.stringDelimiter) {
 														// save the label
-														currentLabel = this.waypointManager.createLabel(x, y, z, this.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelT1, currentLabelT2);
+														currentLabel = this.waypointManager.createLabel(x, y, z, this.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelT1, currentLabelT2, currentLabelTFade);
 														readingLabel = true;
 														itemValid = true;
 													} else {
@@ -9124,6 +9141,9 @@
 				}
 			}
 		}
+
+		// sort labels into zoom order
+		this.waypointManager.sortLabels();
 	};
 
 	// reset any view controls that scripts can overwrite
