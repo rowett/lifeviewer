@@ -530,7 +530,8 @@
 			counter = view.engine.counter,
 			inrange = false,
 			radius = 0, theta = 0,
-			shadowOffset = 0;
+			shadowOffset = 0,
+			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0;
 
 		// draw each label
 		for (i = 0; i < this.labelList.length; i += 1) {
@@ -593,7 +594,7 @@
 					context.globalAlpha = alphaValue * current.alpha * timeAlpha;
 
 					// get label position
-					cx = current.x + xOff + engine.originX;
+					cx = current.x + xOff + engine.originX + hexAdjust;
 					cy = current.y + yOff + engine.originY;
 
 					// check for camera rotation
