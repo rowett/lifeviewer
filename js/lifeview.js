@@ -146,7 +146,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 271,
+		/** @const {number} */ versionBuild : 272,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3752,7 +3752,8 @@
 	// graph close button
 	View.prototype.graphClosePressed = function(me) {
 		me.popGraph = false;
-	};
+		me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
+};
 
 	// close button
 	/* eslint-disable no-unused-vars */

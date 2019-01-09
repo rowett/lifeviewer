@@ -26,7 +26,29 @@
 	</head>
 	<body>
 		<h1>LifeViewer Plugin Tests</h1>
-		<h2>Labels visible based on viewpoint - pan to the red digits</h2>
+		<h2>Labels at the same cell but different zoom levels</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 300, y = 300, rule = B3/S23
+oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo!
+#C [[ LABELTARGET 0 0 4 ]]
+#C [[ LABEL 0 0 16 "Zoom x 16" ]]
+#C [[ LABELTARGET 0 0 16 ]]
+#C [[ LABEL 0 0 4 "Zoom x 4" ]]
+#C [[ LABELTARGET 0 0 64 ]]
+#C [[ LABEL 0 0 1 "Zoom x 1" ]]
+#C [[ LABELTARGET 0 0 256 ]]
+#C [[ LABEL 0 0 -4 "Zoom x -4" ]]
+#C [[ LABELTARGET 0 0 1024 ]]
+#C [[ LABEL 0 0 -16 "Zoom x -16" ]]
+            </textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+x = 9, y = 5, rule = B3/S23
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
 			<textarea rows=10 cols=70>

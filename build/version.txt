@@ -1,3 +1,6 @@
+Build 272
+- graph close button was not updating graph toggle button
+
 Build 271
 - new script command [[ LABELTARGET X Y D|OFF ]]
 	- sets the target point and distance for subsequent label definitions
