@@ -1,3 +1,8 @@
+Build 270
+- labels now use non-integer font point sizes
+- labels now work with TRACKBOX
+
+
 Build 269
 - updated script command: [[ LABEL X Y ZOOM (FIXED) "<string>" ]]
 	- optional FIXED argument makes the position static when TRACK mode is on

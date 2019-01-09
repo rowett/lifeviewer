@@ -528,7 +528,7 @@
 			xPos = 0,
 			xOff = engine.width / 2 - engine.xOff - engine.originX,
 			yOff = engine.height / 2 - engine.yOff - engine.originY,
-			zoom = engine.zoom,
+			zoom = engine.zoom * engine.originZ,
 			halfDisplayWidth = engine.displayWidth / 2,
 			halfDisplayHeight = engine.displayHeight / 2,
 			x = 0, y = 0,
@@ -562,7 +562,7 @@
 			// continue if in generation range
 			if (inrange) {
 				// scale the font based on the zoom
-				currentSize = (current.size * zoom / current.zoom) | 0;
+				currentSize = (current.size * zoom / current.zoom);
 				minFont = current.size / 4;
 				maxFont = current.size * 4;
 				shadowOffset = 1;
