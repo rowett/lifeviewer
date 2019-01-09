@@ -353,7 +353,7 @@
 		this.unoccupiedTarget = null;
 
 		// number of  colour themes
-		this.numThemes = 13;
+		this.numThemes = 12;
 
 		// 8 bit view of image data required if CanvasPixelArray used
 		this.data8 = null;
@@ -9701,11 +9701,38 @@
 		    h = this.displayHeight,
 
 		    // pixel offset in bitmap
-		    offset = y * w + startX,
+		    offset = 0,
+		    end = 0,
+			endTarget = 0,
+			temp = 0;
 
-		    // end pixel offset
-		    end = y * w + endX,
-		    endTarget = end - 15;
+		// order the x coordinates
+		if (startX > endX) {
+			temp = endX;
+			endX = startX;
+			startX = temp;
+		}
+
+		// clip to the display
+		if (startX < 0) {
+			startX = 0;
+		} else {
+			if (startX >= w) {
+				startX = w - 1;
+			}
+		}
+		if (endX < 0) {
+			endX = 0;
+		} else {
+			if (endX >= w) {
+				endX = w - 1;
+			}
+		}
+
+		// pixel offsets in bitmap
+		offset = y * w + startX;
+		end = y * w + endX;
+		endTarget = end - 15;
 
 		// see if the line is on the display
 		if (y >= 0 && y < h) {
@@ -9756,14 +9783,42 @@
 	// draw vertical line
 	Life.prototype.drawVLine = function(x, startY, endY, colour) {
 		var data32 = this.data32,
-		    w = this.displayWidth,
+			w = this.displayWidth,
+			h = this.displayHeight,
 
-		    // pixel offset in bitmap
-		    offset = startY * w + x,
+		    // pixel offsets in bitmap
+		    offset = 0, 
+			end = 0,
+			endTarget = 0,
+			temp = 0;
 
-		    // end pixel offset
-		    end = endY * w + x,
-		    endTarget = end - w * 15;
+		// order the y coordinates
+		if (startY > endY) {
+			temp = endY;
+			endY = startY;
+			startY = temp;
+		}
+
+		// clip to the display
+		if (startY < 0) {
+			startY = 0;
+		} else {
+			if (startY >= h) {
+				startY = h - 1;
+			}
+		}
+		if (endY < 0) {
+			endY = 0;
+		} else {
+			if (endY >= h) {
+				endY = h - 1;
+			}
+		}
+
+		// pixel offsets in bitmap
+		offset = startY * w + x;
+		end = endY * w + x;
+		endTarget = end - w * 15;
 
 		// see if the line is on the display
 		if (x >= 0 && x < w) {
@@ -9812,7 +9867,7 @@
 	};
 
 	// bresenham line draw
-	Life.prototype.drawLine = function(startX, startY, endX, endY, colour) {
+	Life.prototype.drawBresenhamLine = function(startX, startY, endX, endY, colour) {
 		var dx = Math.abs(endX - startX),
 		    dy = Math.abs(endY - startY),
 		    sx = (startX < endX) ? 1 : -1,
@@ -9877,6 +9932,46 @@
 		}
 	};
 
+	// draw a line
+	Life.prototype.drawLine = function(startX, startY, endX, endY, colour) {
+		var radius = 0, theta = 0,
+			halfDisplayWidth = this.displayWidth / 2,
+			halfDisplayHeight = this.displayHeight / 2;
+
+		// check for rotation
+		if (this.camAngle !== 0) {
+			// rotate start point around center
+			startX -= halfDisplayWidth;
+			startY -= halfDisplayHeight;
+			radius = Math.sqrt((startX * startX) + (startY * startY));
+			theta = Math.atan2(startY, startX) * (180 / Math.PI);
+			theta += this.camAngle;
+			// grow radius
+			startX = Math.round(radius * Math.cos(theta * (Math.PI / 180)) + halfDisplayWidth);
+			startY = Math.round(radius * Math.sin(theta * (Math.PI / 180)) + halfDisplayHeight);
+
+			// rotate end point
+			endX -= halfDisplayWidth;
+			endY -= halfDisplayHeight;
+			radius = Math.sqrt((endX * endX) + (endY * endY));
+			theta = Math.atan2(endY, endX) * (180 / Math.PI);
+			theta += this.camAngle;
+			endX = Math.round(radius * Math.cos(theta * (Math.PI / 180)) + halfDisplayWidth);
+			endY = Math.round(radius * Math.sin(theta * (Math.PI / 180)) + halfDisplayHeight);
+		}
+
+		// check for vertical line
+		if (startX === endX) {
+			this.drawVLine(startX, startY, endY, colour);
+		} else {
+			if (startY === endY) {
+				this.drawHLine(startX, endX, startY, colour);
+			} else {
+				this.drawBresenhamLine(startX, startY, endX, endY, colour);
+			}
+		}
+	};
+
 	// draw grid lines
 	Life.prototype.drawGridLines = function() {
 		var x = 0,
@@ -9890,7 +9985,9 @@
 		    gridLineNum = 0,
 		    vLineNum = 0,
 		    drawCol = gridCol,
-		    targetCol = gridCol,
+			targetCol = gridCol,
+			startX = 0, startY = 0, endX = 0, endY = 0,
+			leftX = 0, rightX = w, bottomY = 0, topY = h,
 
 		    // compute single cell offset
 		    yOff = (((this.height / 2 - (this.yOff + this.originY)) * zoomStep) + (h / 2)) % zoomStep,
@@ -9911,8 +10008,18 @@
 			// compute major grid line vertical offset
 			gridLineNum = -(w / 2 / zoomStep) - (this.width / 2 - this.xOff - this.originX) | 0;
 
+			// extend the number of lines to cope with 45 degrees rotation
+			startX = -zoomStep * 22;
+			endX = w + zoomStep + zoomStep * 22;
+			startY = yOff - zoomStep * 22;
+			endY = h + zoomStep * 22;
+			leftX = -w / 1.5;
+			rightX = w + w / 1.5;
+			bottomY = -h / 1.5;
+			topY = h + h / 1.5;
+
 			// draw vertical lines
-			for (x = 0; x <= w + zoomStep; x += zoomStep) {
+			for (x = startX; x <= endX; x += zoomStep) {
 				// check if major gridlines are enabled
 				if (this.gridLineMajor > 0 && this.gridLineMajorEnabled) {
 					// choose whether to use major or minor colour
@@ -9933,19 +10040,19 @@
 						vLineNum = -(h / 2 / zoomStep) - (this.height / 2 - this.yOff - this.originY) | 0;
 
 						// draw staggered vertical line
-						for (y = yOff; y < h; y += zoomStep) {
+						for (y = startY; y < endY; y += zoomStep) {
 							if ((vLineNum & 1) === 0) {
-								this.drawVLine(Math.round(x + xOff), Math.round(y), Math.round(y + zoomStep - 1), drawCol);
+								this.drawLine(Math.round(x + xOff), Math.round(y), Math.round(x + xOff), Math.round(y + zoomStep - 1), drawCol);
 							}
 							else {
-								this.drawVLine(Math.round(x + xOff + zoomStep / 2), Math.round(y), Math.round(y + zoomStep - 1), drawCol);
+								this.drawLine(Math.round(x + xOff + zoomStep / 2), Math.round(y), Math.round(x + xOff + zoomStep / 2), Math.round(y + zoomStep - 1), drawCol);
 							}
 							vLineNum += 1;
 						}
 					}
 					else {
 						// draw vertical line
-						this.drawVLine(Math.round(x + xOff), 0, h - 1, drawCol);
+						this.drawLine(Math.round(x + xOff), bottomY, Math.round(x + xOff), topY - 1, drawCol);
 					}
 				}
 			}
@@ -9954,7 +10061,7 @@
 			gridLineNum = -(h / 2 / zoomStep) - (this.height / 2 - this.yOff - this.originY) | 0;
 
 			// draw horizontal lines
-			for (y = yOff; y < h; y += zoomStep) {
+			for (y = startY; y < endY; y += zoomStep) {
 				// check if major gridlines are enabled
 				if (this.gridLineMajor > 0 && this.gridLineMajorEnabled) {
 					// choose whether to use major or minor colour
@@ -9969,7 +10076,7 @@
 
 				// draw the line
 				if (drawCol === targetCol) { 
-					this.drawHLine(0, w - 1, Math.round(y), drawCol);
+					this.drawLine(leftX, Math.round(y), rightX - 1, Math.round(y), drawCol);
 				}
 			}
 
@@ -9983,8 +10090,8 @@
 
 	// check whether the grid can be displayed
 	Life.prototype.canDisplayGrid = function() {
-		// grid can be displayed if zoom >= 4 and no rotation
-		return (this.camZoom >= 4 && this.camAngle === 0);
+		// grid can be displayed if zoom >= 4
+		return (this.camZoom >= 4);
 	};
 
 	// draw the bounded grid border

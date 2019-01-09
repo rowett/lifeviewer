@@ -1,7 +1,8 @@
 Build 270
 - labels now use non-integer font point sizes
 - labels now work with TRACKBOX
-
+- grid lines now work at all angles
+- fixed an issue with custom Themes
 
 Build 269
 - updated script command: [[ LABEL X Y ZOOM (FIXED) "<string>" ]]
