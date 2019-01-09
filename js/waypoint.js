@@ -612,7 +612,7 @@
 					inrange = true;
 					distAlpha = 1;
 					if (current.tDistance !== -1) {
-						rangeFromTarget = Math.sqrt((-xOff - current.tx) * (-xOff - current.tx) + (-yOff - current.ty) * (-yOff - current.ty));
+						rangeFromTarget = Math.sqrt((-(xOff + hexAdjust) - current.tx) * (-(xOff + hexAdjust) - current.tx) + (-yOff - current.ty) * (-yOff - current.ty));
 						if (rangeFromTarget > current.tDistance) {
 							inrange = false;
 						} else {

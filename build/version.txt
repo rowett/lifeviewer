@@ -2,7 +2,7 @@ Build 271
 - new script command [[ LABELTARGET X Y D|OFF ]]
 	- sets the target point and distance for subsequent label definitions
 	- the viewpoint must be within the distance of the target point for the label to be displayed
-	- [[ LABELTARGET OFF ]] turns off the target for subsequent label defitions
+	- [[ LABELTARGET OFF ]] turns off the target for subsequent label definitions
 - new menu button to toggle population graph
 
 Build 270
