@@ -26,7 +26,26 @@
 	</head>
 	<body>
 		<h1>LifeViewer Plugin Tests</h1>
-		<h2>Labels track</h2>
+		<h2>Labels and TRACKBOX</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C [[ LABEL 0 0 1.8 "TRACKBOX" ]]
+#C [[ LABELSIZE 12 ]]
+#C [[ LABEL 0 4 1.8 FIXED "Leave me behind!" ]]
+#C [[ TRACKBOX 0 0 -1/12 -1/12 ]]
+#C [[ THEME 4 STARS LOOP 7250 STEP 4 ]]
+x = 51, y = 34, rule = B3/S23
+32bo$30b2ob2o$32bo$47b2o$46bo2bo$33b2o11b2ob2o$32bo2bo11bo$31b2o3bo10b
+3o$31bo4bo$31bo3bo$32bo2bo$33bo3$21bo7bo14b2o$20b3o5bobo12bob2o$19b2ob
+4o2bo2bo10b2o$20b3o2bo18bo$21bo2b2o2bo$25b2obobo$29bo10b2o$40b2o2$3o$
+4bo28bo$4b2o13bo12bobo$4bo2bo11bo12bobo$5bobo11bo13bo$5bo$4b2o15bo$3bo
+bo14bobo$5b2o14bo$2b2o$4bo!
+            </textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Labels and TRACKLOOP</h2>
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
 			<textarea rows=10 cols=70>

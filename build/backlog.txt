@@ -4,7 +4,6 @@ LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE stuff r
 Investigate Paul's non-totalistic hex notation
 Investigate Brian's BSFKL notation
 [IN PROGRESS] New script keywords to put labels on the display at specific locations triggered by generation and zoom ranges
-- implement for TRACKBOX
 - appearance near a position
 Meta world view
 multistate rules using just 2 states should use LifeViewer Themes
