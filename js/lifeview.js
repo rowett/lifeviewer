@@ -146,7 +146,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 270,
+		/** @const {number} */ versionBuild : 271,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -900,6 +900,9 @@
 
 		// hex toggle button
 		this.hexButton = null;
+
+		// graph toggle button
+		this.graphButton = null;
 
 		// close button for graph
 		this.graphCloseButton = null;
@@ -2426,6 +2429,7 @@
 		this.closeButton.deleted = hide || !this.isInPopup;
 		this.fpsButton.deleted = hide;
 		this.hexButton.deleted = hide;
+		this.graphButton.deleted = hide;
 
 		// infobar
 		this.infoBarLabelXLeft.deleted = hide || !this.infoBarEnabled;
@@ -2662,6 +2666,16 @@
 
 		// flag just started for first frame measurement
 		me.justStarted = true;
+	};
+
+	// toggle graph display
+	View.prototype.viewGraphToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			me.popGraph = newValue[0];
+		}
+
+		return [me.popGraph];
 	};
 
 	// toggle hex display
@@ -4468,6 +4482,7 @@
 					} else {
 						// toggle population graph
 						me.popGraph = !me.popGraph;
+						me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
 						me.menuManager.notification.notify("Population Graph " + (me.popGraph ? "On" : "Off"), 15, 40, 15, true);
 					}
 				}
@@ -5579,8 +5594,12 @@
 		this.shrinkButton.toolTip = "shrink to thumbnail";
 
 		// hex/square toggle button
-		this.hexButton = this.viewMenu.addListItem(this.viewHexToggle, Menu.southWest, 0, -90, 40, 40, ["Hx"], [this.engine.isHex], Menu.multi);
+		this.hexButton = this.viewMenu.addListItem(this.viewHexToggle, Menu.northWest, 80, 100, 80, 40, ["Hex"], [this.engine.isHex], Menu.multi);
 		this.hexButton.toolTip = ["toggle hex display"];
+
+		// graph toggle button
+		this.graphButton = this.viewMenu.addListItem(this.viewGraphToggle, Menu.northEast, -160, 100, 80, 40, ["Graph"], [this.popGraph], Menu.multi);
+		this.graphButton.toolTip = ["toggle graph display"];
 
 		// close button
 		this.closeButton = this.viewMenu.addButtonItem(this.closePressed, Menu.southEast, -40, -90, 40, 40, "X");
@@ -5627,7 +5646,7 @@
 		this.playList.toolTip = ["reset", "previous generation", "pause", "play"];
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.fpsButton], []);
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.graphButton, this.fpsButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -5773,6 +5792,7 @@
 			case Keywords.labelSizeWord:
 			case Keywords.labelTWord:
 			case Keywords.labelAngleWord:
+			case Keywords.labelTargetWord:
 			case Keywords.noHistoryWord:
 			case Keywords.noReportWord:
 			case Keywords.trackWord:
@@ -6550,6 +6570,11 @@
 			// current position locked
 			currentLabelPositionFixed = false,
 
+			// current label target and distance
+			currentLabelTX = 0,
+			currentLabelTY = 0,
+			currentLabelTDistance = -1,
+
 			// whether reading label
 			readingLabel = false,
 
@@ -6753,6 +6778,64 @@
 							}
 							break;
 
+						// label target
+						case Keywords.labelTargetWord:
+							// get the x position
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= -this.engine.maxGridSize / 2 && numberValue <= this.engine.maxGridSize / 2) {
+									isNumeric = false;
+									x = numberValue;
+
+									// get the y position
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+
+										// get the value
+										numberValue = scriptReader.getNextTokenAsNumber();
+
+										// check it is in range
+										if (numberValue >= -this.engine.maxGridSize / 2 && numberValue <= this.engine.maxGridSize / 2) {
+											isNumeric = false;
+											y = numberValue;
+
+											// get the distance
+											if (scriptReader.nextTokenIsNumeric()) {
+												isNumeric = true;
+
+												// get the value
+												numberValue = scriptReader.getNextTokenAsNumber();
+
+												// check it is in range
+												if (numberValue >= 0 && numberValue <= this.engine.maxGridSize / 2) {
+													currentLabelTX = x;
+													currentLabelTY = y;
+													currentLabelTDistance = numberValue;
+													itemValid = true;
+												}
+											}
+										}
+									}
+								}
+							} else {
+								// check for OFF keyword
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken === Keywords.offWord) {
+									// consume token
+									peekToken = scriptReader.getNextToken();
+									currentLabelTX = 0;
+									currentLabelTY = 0;
+									currentLabelTDistance = -1;
+									itemValid = true;
+								}
+							}
+							break;
+
 						// label angle
 						case Keywords.labelAngleWord:
 							if (scriptReader.nextTokenIsNumeric()) {
@@ -6905,7 +6988,9 @@
 													// check there is text
 													if (peekToken[0] === Keywords.stringDelimiter) {
 														// save the label
-														currentLabel = this.waypointManager.createLabel(x, y, z, this.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelT1, currentLabelT2, currentLabelTFade, currentLabelAngle, currentLabelAngleFixed, currentLabelPositionFixed);
+														currentLabel = this.waypointManager.createLabel(x, y, z, this.customLabelColour, currentLabelAlpha, currentLabelSize,
+															currentLabelT1, currentLabelT2, currentLabelTFade, currentLabelAngle, currentLabelAngleFixed, currentLabelPositionFixed,
+															currentLabelTX, currentLabelTY, currentLabelTDistance);
 														readingLabel = true;
 														itemValid = true;
 													} else {
@@ -9832,6 +9917,10 @@
 					}
 				}
 			}
+
+			// set the graph UI control
+			this.graphButton.locked = this.graphDisabled;
+			this.graphButton.current = [this.popGraph];
 
 			// set the hex UI control
 			this.hexButton.current = [this.engine.isHex];

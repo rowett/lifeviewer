@@ -130,6 +130,9 @@
 		// label angle and fixed 
 		/** @const {string} */ labelAngleWord : "LABELANGLE",
 
+		// label target 
+		/** @const {string} */ labelTargetWord : "LABELTARGET",
+
 		// label angle fixed
 		/** @const {string} */ fixedWord: "FIXED",
 

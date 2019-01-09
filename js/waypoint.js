@@ -351,7 +351,7 @@
 	/**
 	 * @constructor
 	 */
-	function Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked) {
+	function Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance) {
 		// message
 		this.message = "";
 
@@ -390,6 +390,11 @@
 
 		// position locked when TRACK used
 		this.positionLocked = positionLocked;
+
+		// target location and distance
+		this.tx = tx;
+		this.ty = ty;
+		this.tDistance = tDistance;
 	}
 
 	// WaypointManager constructor
@@ -426,8 +431,8 @@
 	}
 
 	// create a label
-	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked) {
-		return new Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked);
+	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance) {
+		return new Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance);
 	};
 
 	// clear all labels
@@ -537,12 +542,13 @@
 			shadowColour = ViewConstants.labelShadowColour,
 			fontEnd = "px " + ViewConstants.labelFontFamily,
 			minFont = 0, maxFont = 0,
-			linearZoom = 1, alphaValue = 1, timeAlpha = 1,
+			linearZoom = 1, alphaValue = 1, timeAlpha = 1, distAlpha = 1,
 			index = 0, message = "", line = "",
 			counter = view.engine.counter,
 			inrange = false,
 			radius = 0, theta = 0,
 			shadowOffset = 0,
+			rangeFromTarget = 0,
 			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0;
 
 		// draw each label
@@ -602,87 +608,106 @@
 						}
 					}
 
+					// check if the target is set
+					inrange = true;
+					distAlpha = 1;
+					if (current.tDistance !== -1) {
+						rangeFromTarget = Math.sqrt((-xOff - current.tx) * (-xOff - current.tx) + (-yOff - current.ty) * (-yOff - current.ty));
+						if (rangeFromTarget > current.tDistance) {
+							inrange = false;
+						} else {
+							// fade towards the maximum distance
+							if (current.tDistance > 0) {
+								if (rangeFromTarget / current.tDistance > 0.75) {
+									distAlpha = 4 * (1 - (rangeFromTarget / current.tDistance));
+								}
+							}
+						}
+					}
+
 					// set the alpha
-					context.globalAlpha = alphaValue * current.alpha * timeAlpha;
+					if (inrange) {
+						context.globalAlpha = alphaValue * current.alpha * timeAlpha * distAlpha;
 
-					// get label position
-					cx = current.x + xOff + hexAdjust;
-					cy = current.y + yOff;
-					
-					// check for fixed position
-					if (!current.positionLocked) {
-						cx += engine.originX;
-						cy += engine.originY;
-					}
-
-					// check for camera rotation
-					if (engine.camAngle !== 0) {
-						// compute radius
-						radius = Math.sqrt((cx * cx) + (cy * cy));
-
-						// apply angle
-						theta = Math.atan2(cy, cx) * (180 / Math.PI);
-
-						// add current rotation
-						theta += engine.camAngle;
-
-						// compute rotated position
-						cx = radius * Math.cos(theta * (Math.PI / 180));
-						cy = radius * Math.sin(theta * (Math.PI / 180));
-					}
-
-					// draw each line of the label
-					message = current.message;
-					index = message.indexOf("\\n");
-					y = (cy * zoom) + halfDisplayHeight;
-					x = (cx * zoom) + halfDisplayWidth;
-
-					// rotate context for drawing
-					context.save();
-					context.translate(x, y);
-					theta = current.angle;
-					if (!current.angleLocked) {
-						theta += engine.camAngle;
-					}
-					context.rotate(theta / 180 * Math.PI);
-					y = 0;
+						// get label position
+						cx = current.x + xOff + hexAdjust;
+						cy = current.y + yOff;
+						
+						// check for fixed position
+						if (!current.positionLocked) {
+							cx += engine.originX;
+							cy += engine.originY;
+						}
 	
-					while (index !== -1) {
-						// get the next line
-						line = message.substr(0, index);
-						message = message.substr(index + 2);
+						// check for camera rotation
+						if (engine.camAngle !== 0) {
+							// compute radius
+							radius = Math.sqrt((cx * cx) + (cy * cy));
 	
-						// measure text line width
-						xPos = context.measureText(line).width >> 1;
+							// apply angle
+							theta = Math.atan2(cy, cx) * (180 / Math.PI);
+	
+							// add current rotation
+							theta += engine.camAngle;
+	
+							// compute rotated position
+							cx = radius * Math.cos(theta * (Math.PI / 180));
+							cy = radius * Math.sin(theta * (Math.PI / 180));
+						}
+	
+						// draw each line of the label
+						message = current.message;
+						index = message.indexOf("\\n");
+						y = (cy * zoom) + halfDisplayHeight;
+						x = (cx * zoom) + halfDisplayWidth;
+	
+						// rotate context for drawing
+						context.save();
+						context.translate(x, y);
+						theta = current.angle;
+						if (!current.angleLocked) {
+							theta += engine.camAngle;
+						}
+						context.rotate(theta / 180 * Math.PI);
+						y = 0;
+		
+						while (index !== -1) {
+							// get the next line
+							line = message.substr(0, index);
+							message = message.substr(index + 2);
+		
+							// measure text line width
+							xPos = context.measureText(line).width >> 1;
+			
+							// draw shadow
+							context.fillStyle = shadowColour;
+							context.fillText(line, -xPos + shadowOffset, y + shadowOffset);
+				
+							// draw message
+							context.fillStyle = current.colour;
+							context.fillText(line, -xPos, y);
+	
+							// compute y coordinate for next text line
+							y += currentSize;
+		
+							// check for more lines
+							index = message.indexOf("\\n");
+						}
+		
+						// measure final text line width
+						xPos = context.measureText(message).width >> 1;
 		
 						// draw shadow
 						context.fillStyle = shadowColour;
-						context.fillText(line, -xPos + shadowOffset, y + shadowOffset);
+						context.fillText(message, -xPos + shadowOffset, y + shadowOffset);
 			
 						// draw message
 						context.fillStyle = current.colour;
-						context.fillText(line, -xPos, y);
-
-						// compute y coordinate for next text line
-						y += currentSize;
+						context.fillText(message, -xPos, y);
 	
-						// check for more lines
-						index = message.indexOf("\\n");
+						// restore context
+						context.restore();
 					}
-	
-					// measure final text line width
-					xPos = context.measureText(message).width >> 1;
-	
-					// draw shadow
-					context.fillStyle = shadowColour;
-					context.fillText(message, -xPos + shadowOffset, y + shadowOffset);
-		
-					// draw message
-					context.fillStyle = current.colour;
-					context.fillText(message, -xPos, y);
-
-					// restore context
-					context.restore();
 				}
 			}
 		}

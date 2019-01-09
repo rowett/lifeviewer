@@ -26,6 +26,43 @@
 	</head>
 	<body>
 		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Labels visible based on viewpoint - pan to the red digits</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 9, y = 5, rule = B3/S23
+$bo3b3o$b3o2bo$2bo!
+#C Label at 0, 0 is visible when viewpoint is 3 cells from 0, 0
+#C [[ LABELTARGET 0 0 3 ]]
+#C [[ LABEL 0 0 24 "Label 1\nVisible near 0, 0" ]]
+#C Label at 4, 4 is visible when viewpoint is 3 cells from 6, 4
+#C [[ LABELTARGET 4 4 3 ]]
+#C [[ LABEL 0 3 24 "Label 2\nVisible near 6, 4" ]]
+#C Many labels visible when viewpoint is 3 cells from 5, -2
+#C [[ LABELTARGET 5 -2 3 ]]
+#C [[ COLOR LABEL Yellow ]]
+#C [[ LABEL 5 -5 32 "I'm visbile!" ]]
+#C [[ COLOR LABEL Orange ]]
+#C [[ LABEL 8 -4 32 "So am I!" ]]
+#C [[ COLOR LABEL Pink ]]
+#C [[ LABEL 6 -3 32 "Me too!" ]]
+#C [[ COLOR LABEL Magenta ]]
+#C [[ LABEL 7 -2 32 "Don't look!" ]]
+#C [[ COLOR LABEL Cyan ]]
+#C [[ LABEL 9 -1 32 "I'm not shy!" ]]
+#C Label is always visible
+#C [[ LABELTARGET OFF ]]
+#C [[ COLOR LABEL White ]]
+#C [[ LABEL 0 6 24 "Lable 3\nAlways visible" ]]
+#C Put labels at the target points
+#C [[ COLOR LABEL Red ]]
+#C [[ LABEL 0 0 16 "1" ]]
+#C [[ LABEL 6 4 16 "2" ]]
+#C [[ LABEL 5 -2 16 "3" ]]
+            </textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
 		<h2>Labels and TRACKBOX</h2>
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
