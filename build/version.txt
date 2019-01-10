@@ -1,3 +1,6 @@
+Build 273
+- 2 state LtL and HROT rules now use standard Themes
+
 Build 272
 - graph close button was not updating graph toggle button
 - HROT rules now support von Neumann and Circular neighbourhoods

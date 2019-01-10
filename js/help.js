@@ -993,8 +993,8 @@
 			this.renderColourBox(view, view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0], ctx, x + tabs[0], y, height, helpLine);
 			y = this.renderHelpLine(view, "Background", this.rgbString(view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0]), ctx, x, y, height, helpLine);
 
-			// check for generations rule
-			if (view.engine.multiNumStates !== -1) {
+			// check for Generations, LTL or HROT rules
+			if (view.engine.multiNumStates > 2) {
 				for (i = 1; i < view.engine.multiNumStates; i += 1) {
 					this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + tabs[0], y, height, helpLine);
 					y = this.renderHelpLine(view, "State " + i, this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);

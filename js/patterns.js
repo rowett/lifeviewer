@@ -7,7 +7,7 @@
 	"use strict";
 
 	// define globals
-	/* global Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager */
+	/* global Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants */
 
 	// Life 1.05 section
 	/**
@@ -283,7 +283,7 @@
 		// HROT neighborhood (0 Moore, 1 von Neumann, 2 circular)
 		this.neighborhoodHROT = -1;
 
-		// states for generations or LTL
+		// states for generations, LTL or HROT
 		this.multiNumStates = -1;
 
 		// width of grid
@@ -3366,15 +3366,22 @@
 						if (pattern.multiNumStates === -1) {
 							// save cell normally
 							pattern.multiStateMap[y][x] = stateNum;
-						}
-						else {
-							// check state is valid
-							if (pattern.multiNumStates - stateNum >= 0) {
-								// change state order for layer rendering
-								pattern.multiStateMap[y][x] = pattern.multiNumStates - stateNum;
-							}
-							else {
-								pattern.multiStateMap[y][x] = 1;
+						} else {
+							// check for 2 state LTL or HROT
+							if (pattern.multiNumStates === 2) {
+								if (stateNum === 1) {
+									pattern.multiStateMap[y][x] = LifeConstants.aliveStart;
+								} else {
+									pattern.multiStateMap[y][x] = 0;
+								}
+							} else {
+								// check state is valid
+								if (pattern.multiNumStates - stateNum >= 0) {
+									// change state order for layer rendering
+									pattern.multiStateMap[y][x] = pattern.multiNumStates - stateNum;
+								} else {
+									pattern.multiStateMap[y][x] = 1;
+								}
 							}
 						}
 

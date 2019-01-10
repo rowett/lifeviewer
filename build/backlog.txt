@@ -5,4 +5,4 @@ Investigate Brian's BSFKL notation
 [DONE] New script keywords to put labels on the display at specific locations triggered by generation and zoom ranges
 Meta world view
 [IN PROGRESS]multistate rules using just 2 states should use LifeViewer Themes
-- DONE for Generations
+- DONE for Generations and LtL

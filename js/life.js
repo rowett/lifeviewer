@@ -31,6 +31,12 @@
 		// maximum number of population samples for graph
 		/** @const {number} */ maxPopSamples : 262144,
 
+		// cell value for alive start (for colour Themes)
+		/** @const {number} */ aliveStart : 64,
+
+		// cell value for alive maximum (for colour Themes)
+		/** @const {number} */ aliveMax : 127,
+
 		// bit masks for surrounding tiles
 		/** @const {number} */ leftSet : 1,
 		/** @const {number} */ rightSet : 2,
@@ -271,10 +277,10 @@
 		this.deaths = 0;
 
 		// cell colour index for new cell
-		this.aliveStart = 64;
+		this.aliveStart = LifeConstants.aliveStart;
 
 		// cell colour index for cell alive longest
-		this.aliveMax = 127;
+		this.aliveMax = LifeConstants.aliveMax;
 
 		// cell colour index for cell just dead
 		this.deadStart = 63;
@@ -532,14 +538,12 @@
 
 			// check if raw data requested or Generations, LTL or HROT rule used
 			if (rawRequested || this.multiNumStates !== -1) {
-				if (this.multiNumStates !== -1 && col > 0) {
+				if (this.multiNumStates > 2 && col > 0) {
 					result = this.multiNumStates - col;
-				}
-				else {
+				} else {
 					result = col;
 				}
-			}
-			else {
+			} else {
 				// check for the overlay grid
 				if (this.overlayGrid) {
 					// get the overlay colour
@@ -552,8 +556,7 @@
 							over = state3;
 						}
 						result = ViewConstants.stateMap[over - 128];
-					}
-					else {
+					} else {
 						// states 3 and 5
 						if (over === state3 || over === state5) {
 							// if dead cell then use state 4
@@ -561,29 +564,24 @@
 								over = state4;
 							}
 							result = ViewConstants.stateMap[over - 128];
-						}
-						else {
+						} else {
 							if (col === this.unoccupied) {
 								result = 0;
-							}
-							else {
+							} else {
 								if (col <= this.deadStart) {
 									result = 2;
-								}
-								else {
+								} else {
 									result = 1;
 								}
 							}
 						}
 					}
 
-				}
-				else {
+				} else {
 					// no overlay grid
 					if (col <= this.deadStart) {
 						result = 0;
-					}
-					else {
+					} else {
 						result = 1;
 					}
 				}
@@ -1037,7 +1035,7 @@
 			
 		// check for LTL or HROT
 		if (this.isLTL || this.isHROT) {
-			// compute popuation from colour grid
+			// compute population from colour grid
 			for (h = bottomY; h <= topY; h += 1) {
 				// get next row
 				nextRow = colourGrid[h];
@@ -1544,7 +1542,7 @@
 		this.blueChannel[i] = this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight);
 
 		// check for Generations, LTL or HROT rules
-		if (this.multiNumStates !== -1) {
+		if (this.multiNumStates > 2) {
 			// set generations ramp
 			for (i = 1; i < this.multiNumStates; i += 1) {
 				// compute the weighting between the start and end colours in the range
@@ -1698,7 +1696,7 @@
 		i = 0, j = 0;
 
 		// check for Generations, LTL or HROT
-		if (this.multiNumStates !== -1) {
+		if (this.multiNumStates > 2) {
 			if (this.littleEndian) {
 				for (i = 0; i < this.multiNumStates; i += 1) {
 					if (i > 0) {

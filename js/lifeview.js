@@ -146,7 +146,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 272,
+		/** @const {number} */ versionBuild : 273,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -9702,7 +9702,7 @@
 			this.engine.setTheme(10, 1);
 		} else {
 			// check for Generations, LTL or HROT
-			if (this.engine.multiNumStates !== -1) {
+			if (this.engine.multiNumStates > 2) {
 				// multi state uses theme 11
 				this.engine.setTheme(11, 1);
 			} else {
@@ -10111,8 +10111,8 @@
 			// reset snapshot manager
 			this.engine.snapshotManager.reset();
 		} else {
-			// create the colour grid if not Generations, LTL or HROT rule
-			if (this.engine.multiNumStates === -1) {
+			// create the colour grid if not multi-state Generations, LTL or HROT rule
+			if (this.engine.multiNumStates <= 2) {
 				this.engine.resetColourGridBox(this.engine.grid16);
 			}
 

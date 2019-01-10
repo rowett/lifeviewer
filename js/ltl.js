@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global Uint32 PatternManager */
+	/* global Uint32 PatternManager LifeConstants */
 
 	// LTL object
 	/**
@@ -230,7 +230,10 @@
 			minS = this.minS,
 			maxS = this.maxS,
 			counts = this.counts,
-			maxGeneration = this.scount - 1;
+			maxGeneration = this.scount - 1,
+			aliveStart = LifeConstants.aliveStart,
+			aliveIndex = 0,
+			colourLookup = this.engine.colourLookup;
 
 		// compute next generation
 		population = 0;
@@ -247,21 +250,24 @@
 				for (x = leftX - range; x <= rightX + range; x += 1) {
 					state = colourRow[x];
 					count = countRow[x];
-					if (state === 0) {
+					aliveIndex = 0;
+					if (state < aliveStart) {
 						// this cell is dead
 						if (count >= minB && count <= maxB) {
 							// new cell is born
-							state = maxGeneration;
 							births += 1;
+							aliveIndex = 128;
 						}
 					} else {
 						// this cell is alive
 						if (count < minS || count > maxS) {
 							// this cell doesn't survive
-							state = 0;
 							deaths += 1;
+						} else {
+							aliveIndex = 128;
 						}
 					}
+					state = colourLookup[state + aliveIndex];
 					colourRow[x] = state;
 					// update bounding box columns
 					if (state > 0) {
@@ -395,7 +401,10 @@
 			state = 0,
 			rowpop = 0, xpr = 0, xmrp1 = 0,
 			rowAlive = false, colAlive = false, somethingAlive = false,
-			chunk = 8;  // must be the same as the unrolled loop!
+			chunk = 8,  // must be the same as the unrolled loop!
+			aliveStart = LifeConstants.aliveStart,
+			aliveIndex = 0,
+			colourLookup = this.engine.colourLookup;
 
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {
@@ -487,33 +496,51 @@
 					x = leftX + r2;
 					while (x + chunk <= rightX) {
 						// unrolled loop must match chunk value
-						count += colourRow[x];
+						if (colourRow[x] >= aliveStart) {
+							count += 1;
+						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						count += colourRow[x];
+						if (colourRow[x] >= aliveStart) {
+							count += 1;
+						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						count += colourRow[x];
+						if (colourRow[x] >= aliveStart) {
+							count += 1;
+						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						count += colourRow[x];
+						if (colourRow[x] >= aliveStart) {
+							count += 1;
+						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						count += colourRow[x];
+						if (colourRow[x] >= aliveStart) {
+							count += 1;
+						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						count += colourRow[x];
+						if (colourRow[x] >= aliveStart) {
+							count += 1;
+						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						count += colourRow[x];
+						if (colourRow[x] >= aliveStart) {
+							count += 1;
+						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						count += colourRow[x];
+						if (colourRow[x] >= aliveStart) {
+							count += 1;
+						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
 					}
 					while (x <= rightX) {
-						count += colourRow[x];
+						if (colourRow[x] >= aliveStart) {
+							count += 1;
+						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
 					}
@@ -700,24 +727,26 @@
 							+ countRowYmrp1[xmrp1]
 							- countRowYpr[xmrp1]
 							- countRowYmrp1[xpr];
-						if (state === 0) {
+						aliveIndex = 0;
+						if (state <= aliveStart - 1) {
 							// this cell is dead
 							if (count >= minB && count <= maxB) {
 								// new cell is born
-								state = maxGeneration;
-								colourRow[x] = state;
+								aliveIndex = 128;
 								births += 1;
 							}
 						} else {
 							// this cell is alive
 							if (count < minS || count > maxS) {
 								// cell dies
-								state = 0;
-								colourRow[x] = 0;
 								deaths += 1;
+							} else {
+								aliveIndex = 128;
 							}
 						}
 						// update the cell
+						state = colourLookup[state + aliveIndex];
+						colourRow[x] = state;
 						if (state > 0) {
 							colourTileRow[x >> 8] = 65535;
 							if (x < minX) {
@@ -823,20 +852,41 @@
 			}
 		} else {
 			// von Neumann and Circular
-			for (y = bottomY - range; y <= topY + range; y += 1) {
-				countRow = counts[y];
-				for (x = leftX - range; x <= rightX + range; x += 1) {
-					count = 0;
-					for (j = -range; j <= range; j += 1) {
-						width = widths[j + range];
-						colourRow = colourGrid[y + j];
-						for (i = -width; i <= width; i += 1) {
-							if ((colourRow[x + i]) === maxGeneration) {
-								count += 1;
+			if (maxGeneration === 1) {
+				// 2 state version
+				for (y = bottomY - range; y <= topY + range; y += 1) {
+					countRow = counts[y];
+					for (x = leftX - range; x <= rightX + range; x += 1) {
+						count = 0;
+						for (j = -range; j <= range; j += 1) {
+							width = widths[j + range];
+							colourRow = colourGrid[y + j];
+							for (i = -width; i <= width; i += 1) {
+								if ((colourRow[x + i]) >= aliveStart) {
+									count += 1;
+								}
 							}
 						}
+						countRow[x] = count;
 					}
-					countRow[x] = count;
+				}
+			} else {
+				// >2 state version
+				for (y = bottomY - range; y <= topY + range; y += 1) {
+					countRow = counts[y];
+					for (x = leftX - range; x <= rightX + range; x += 1) {
+						count = 0;
+						for (j = -range; j <= range; j += 1) {
+							width = widths[j + range];
+							colourRow = colourGrid[y + j];
+							for (i = -width; i <= width; i += 1) {
+								if ((colourRow[x + i]) === maxGeneration) {
+									count += 1;
+								}
+							}
+						}
+						countRow[x] = count;
+					}
 				}
 			}
 		}
