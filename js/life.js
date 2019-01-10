@@ -537,7 +537,7 @@
 			col = this.colourGrid[y][x];
 
 			// check if raw data requested or Generations, LTL or HROT rule used
-			if (rawRequested || this.multiNumStates !== -1) {
+			if (rawRequested || this.multiNumStates > 2) {
 				if (this.multiNumStates > 2 && col > 0) {
 					result = this.multiNumStates - col;
 				} else {
