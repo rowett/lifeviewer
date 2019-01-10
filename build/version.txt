@@ -2,6 +2,7 @@ Build 272
 - graph close button was not updating graph toggle button
 - HROT rules now support von Neumann and Circular neighbourhoods
 	- new optional neighbourhood postfix: Rr,Cc,Slist,Blist(,Nm)
+- 2 state Generations rules now use standard Themes
 
 Build 271
 - new script command [[ LABELTARGET X Y D|OFF ]]
