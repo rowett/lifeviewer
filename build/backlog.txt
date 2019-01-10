@@ -1,9 +1,7 @@
-[IN PROGRESS] HROT support for von Neumann and Moore neighbourhoods
-- rule parsing done, implement runtime
+[DONE] HROT support for von Neumann and Moore neighbourhoods
 LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE stuff rather than just clear)
 Investigate Paul's non-totalistic hex notation
 Investigate Brian's BSFKL notation
-[IN PROGRESS] New script keywords to put labels on the display at specific locations triggered by generation and zoom ranges
-- appearance near a position
+[DONE] New script keywords to put labels on the display at specific locations triggered by generation and zoom ranges
 Meta world view
 multistate rules using just 2 states should use LifeViewer Themes

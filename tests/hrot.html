@@ -26,6 +26,56 @@
 	</head>
 	<body>
 		<h1>LifeViewer Plugin Tests</h1>
+		<h2>HROT von Neumann</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 65, y = 55, rule = R2,C6,S2-3,B3,NN
+56.A.A2$56.A.A16$60.AD$30.A.A25.AB2A$58.2ACECA$30.A.A26.A4CA$37.A.A
+20.4A$11.4A$11.ACEB22.A.A$11.2A2E$A.A8.2AE$12.D2E$A.A12$41.ABE.E$41.A
+4E$41.AC2AD$41.4A9$44.A.A2$44.A.A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>LTL von Neumann equivalent</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 65, y = 55, rule = R2,C6,M0,S2..3,B3..3,NN
+56.A.A2$56.A.A16$60.AD$30.A.A25.AB2A$58.2ACECA$30.A.A26.A4CA$37.A.A
+20.4A$11.4A$11.ACEB22.A.A$11.2A2E$A.A8.2AE$12.D2E$A.A12$41.ABE.E$41.A
+4E$41.AC2AD$41.4A9$44.A.A2$44.A.A!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>HROT Circular</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 83, y = 45, rule = R2,C0,S3-6,B5,NC
+3o$2o$bo8$2o8b3o7b2o9bo8bo9bo9bobo8bo8bobo$2o8bo9bo9b2o8bobo7b2o9bo8bo
+bo7bobo$21bo10bo7bo10bo9bo9bo8$2o8b3o7b2o8b3o7b3o$obo7bo9bo9bo9bo2bo$b
+2o7bobo7bobo7bobo7bobo$21bo9bo9bo7$b2o8b3o7b3o$o2bo6bo2bo6bo2bo$o2bo6b
+o2bo6bo2bo$b2o8b2o7b3o7$b3o7b3o$o3bo5bo3bo$o3bo5bo3bo$b3o6bo3bo$11b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>LTL Circular equivalent</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 83, y = 45, rule = R2,C0,M0,S3..6,B5..5,NC
+3o$2o$bo8$2o8b3o7b2o9bo8bo9bo9bobo8bo8bobo$2o8bo9bo9b2o8bobo7b2o9bo8bo
+bo7bobo$21bo10bo7bo10bo9bo9bo8$2o8b3o7b2o8b3o7b3o$obo7bo9bo9bo9bo2bo$b
+2o7bobo7bobo7bobo7bobo$21bo9bo9bo7$b2o8b3o7b3o$o2bo6bo2bo6bo2bo$o2bo6b
+o2bo6bo2bo$b2o8b2o7b3o7$b3o7b3o$o3bo5bo3bo$o3bo5bo3bo$b3o6bo3bo$11b3o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
 		<h2>HROT 2 state hex encoding</h2>
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
