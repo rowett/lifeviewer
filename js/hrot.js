@@ -224,6 +224,7 @@
 			counts = this.counts,
 			maxGeneration = this.scount - 1,
 			aliveStart = LifeConstants.aliveStart,
+			deadMin = LifeConstants.deadMin,
 			aliveIndex = 0,
 			colourLookup = this.engine.colourLookup;
 
@@ -265,7 +266,7 @@
 						population += 1;
 					}
 					// update bounding box columns
-					if (state > 0) {
+					if (state > deadMin) {
 						rowAlive = true;
 						colourTileRow[x >> 8] = 65535;
 						if (x < minX) {
@@ -391,7 +392,7 @@
 			gridLeftX = 0, gridRightX = 0, gridBottomY = 0, gridTopY = 0,
 			population = 0, births = 0, deaths = 0,
 			state = 0,
-			rowpop = 0, xpr = 0, xmrp1 = 0,
+			xpr = 0, xmrp1 = 0,
 			rowAlive = false, colAlive = false, somethingAlive = false,
 			chunk = 8,  // must be the same as the unrolled loop!
 			aliveStart = LifeConstants.aliveStart,
@@ -846,7 +847,6 @@
 					colourTileRow = colourTileHistoryGrid[y >> 4];
 					countRowYpr = counts[y + range];
 					countRowYmrp1 = counts[y - rp1];
-					rowpop = population;
 					xpr = leftX + 1 + range;
 					xmrp1 = leftX + 1 - rp1;
 					for (x = leftX + 1; x <= rightX; x += 1) {
