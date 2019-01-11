@@ -404,7 +404,6 @@
 			rowAlive = false, colAlive = false, somethingAlive = false,
 			chunk = 8,  // must be the same as the unrolled loop!
 			aliveStart = LifeConstants.aliveStart,
-			aliveMax = LifeConstants.aliveMax,
 			deadMin = LifeConstants.deadMin,
 			aliveIndex = 0,
 			colourLookup = this.engine.colourLookup;
@@ -441,6 +440,12 @@
 					topY = gridTopY;
 				}
 				this.wrapTorusLTL(gridLeftX, gridBottomY, gridRightX, gridTopY);
+			} else {
+				// for 2-state Plane need to remove the bounded grid since it appears as 255 on the cell grid
+				// it will be redrawn before rendering
+				if (maxGeneration === 1) {
+					this.engine.drawBoundedGridBorder(0);
+				}
 			}
 
 			// fit to bounded grid
@@ -499,49 +504,49 @@
 					x = leftX + r2;
 					while (x + chunk <= rightX) {
 						// unrolled loop must match chunk value
-						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
+						if (colourRow[x] >= aliveStart) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
+						if (colourRow[x] >= aliveStart) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
+						if (colourRow[x] >= aliveStart) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
+						if (colourRow[x] >= aliveStart) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
+						if (colourRow[x] >= aliveStart) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
+						if (colourRow[x] >= aliveStart) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
+						if (colourRow[x] >= aliveStart) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
+						if (colourRow[x] >= aliveStart) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
 					}
 					while (x <= rightX) {
-						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
+						if (colourRow[x] >= aliveStart) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
@@ -1000,7 +1005,7 @@
 							width = widths[j + range];
 							colourRow = colourGrid[y + j];
 							for (i = -width; i <= width; i += 1) {
-								if ((colourRow[x + i]) >= aliveStart && colourRow[x + i] <= aliveMax) {
+								if ((colourRow[x + i]) >= aliveStart) {
 									count += 1;
 								}
 							}

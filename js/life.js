@@ -10096,7 +10096,7 @@
 	};
 
 	// draw the bounded grid border
-	Life.prototype.drawBoundedGridBorder = function() {
+	Life.prototype.drawBoundedGridBorder = function(border) {
 		// get width and height
 		var width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
@@ -10109,9 +10109,6 @@
 		    rightX = leftX + width + 1,
 		    bottomY = Math.round((this.height - height) / 2 - 1),
 		    topY = bottomY + height + 1,
-
-		    // border colour
-		    border = LifeConstants.boundedBorderColour,
 
 		    // top and bottom row
 		    bottomRow = colourGrid[bottomY],
@@ -10193,7 +10190,7 @@
 
 		// create bounded grid border if specified
 		if (this.boundedGridType !== -1) {
-			this.drawBoundedGridBorder();
+			this.drawBoundedGridBorder(LifeConstants.boundedBorderColour);
 		}
 
 		// create small colour grids if zoomed out
