@@ -146,7 +146,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 273,
+		/** @const {number} */ versionBuild : 274,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2088,22 +2088,24 @@
 					}
 
 					// check for all cells died
-					if (!me.anythingAlive) {
+					if (!me.anythingAlive || (me.engine.multiNumStates === 2 && me.engine.population === 0)) {
 						bailout = true;
 					}
 				}
 
 				// check if life just stopped
-				if ((!me.anythingAlive) || (me.engine.multiNumStates === 2 && me.engine.population === 0 && me.diedGeneration === -1)) {
+				if ((!me.anythingAlive) || (me.engine.multiNumStates === 2 && me.engine.population === 0)) {
 					// set fade interval
 					me.fading = ViewConstants.fadeWhenStoppedDuration;
 
 					// remember the generation that life stopped
-					me.diedGeneration = me.engine.counter;
+					if (me.diedGeneration === -1) {
+						me.diedGeneration = me.engine.counter;
 
-					// notify simulation stopped unless loop defined and enabled
-					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled)) {
-						me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 600, 15, true);
+						// notify simulation stopped unless loop defined and enabled
+						if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled)) {
+							me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 600, 15, true);
+						}
 					}
 				}
 
@@ -3009,7 +3011,6 @@
 			me.anythingAlive = true;
 			me.engine.anythingAlive = true;
 			me.engine.generationsAlive = true;
-			me.diedGeneration = -1;
 		}
 
 		// reset population data for graph
@@ -3032,6 +3033,9 @@
 
 		// clear any waypoint messages
 		me.menuManager.notification.clear(false, false);
+
+		// reset died generation
+		me.diedGeneration = -1;
 	};
 
 	// set the pause icon to pause or step forward based on play mode
