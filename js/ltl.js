@@ -233,6 +233,7 @@
 			maxGeneration = this.scount - 1,
 			aliveStart = LifeConstants.aliveStart,
 			aliveIndex = 0,
+			deadMin = LifeConstants.deadMin,
 			colourLookup = this.engine.colourLookup;
 
 		// compute next generation
@@ -273,7 +274,7 @@
 						population += 1;
 					}
 					// update bounding box columns
-					if (state > LifeConstants.deadMin) {
+					if (state > deadMin) {
 						rowAlive = true;
 						colourTileRow[x >> 8] = 65535;
 						if (x < minX) {
@@ -404,6 +405,7 @@
 			chunk = 8,  // must be the same as the unrolled loop!
 			aliveStart = LifeConstants.aliveStart,
 			aliveMax = LifeConstants.aliveMax,
+			deadMin = LifeConstants.deadMin,
 			aliveIndex = 0,
 			colourLookup = this.engine.colourLookup;
 
@@ -606,7 +608,7 @@
 				if (state >= aliveStart) {
 					population += 1;
 				}
-				if (state > LifeConstants.deadMin) {
+				if (state > deadMin) {
 					minX = leftX;
 					maxX = leftX;
 					minY = bottomY;
@@ -683,7 +685,7 @@
 					if (state >= aliveStart) {
 						population += 1;
 					}
-					if (state > LifeConstants.deadMin) {
+					if (state > deadMin) {
 						if (x < minX) {
 							minX = x;
 						}
@@ -728,7 +730,7 @@
 					if (state === maxGeneration) {
 						population += 1;
 					}
-					if (state > LifeConstants.deadMin) {
+					if (state > deadMin) {
 						if (x < minX) {
 							minX = x;
 						}
@@ -776,7 +778,7 @@
 					if (state >= aliveStart) {
 						population += 1;
 					}
-					if (state > LifeConstants.deadMin) {
+					if (state > deadMin) {
 						if (y < minY) {
 							minY = y;
 						}
@@ -885,7 +887,7 @@
 						if (state >= aliveStart) {
 							population += 1;
 						}
-						if (state > LifeConstants.deadMin) {
+						if (state > deadMin) {
 							rowAlive = true;
 							colourTileRow[x >> 8] = 65535;
 							if (x < minX) {
