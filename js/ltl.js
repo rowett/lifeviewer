@@ -273,7 +273,7 @@
 						population += 1;
 					}
 					// update bounding box columns
-					if (state > 0) {
+					if (state > LifeConstants.deadMin) {
 						rowAlive = true;
 						colourTileRow[x >> 8] = 65535;
 						if (x < minX) {
@@ -292,10 +292,8 @@
 					if (y > maxY) {
 						maxY = y;
 					}
+					somethingAlive = true;
 				}
-			}
-			if (population > 0) {
-				somethingAlive = true;
 			}
 		} else {
 			// >2 state version
@@ -349,8 +347,8 @@
 					if (y > maxY) {
 						maxY = y;
 					}
+					somethingAlive = true;
 				}
-				somethingAlive = true;
 			}
 		}
 
@@ -401,10 +399,11 @@
 			gridLeftX = 0, gridRightX = 0, gridBottomY = 0, gridTopY = 0,
 			population = 0, births = 0, deaths = 0,
 			state = 0,
-			rowpop = 0, xpr = 0, xmrp1 = 0,
+			xpr = 0, xmrp1 = 0,
 			rowAlive = false, colAlive = false, somethingAlive = false,
 			chunk = 8,  // must be the same as the unrolled loop!
 			aliveStart = LifeConstants.aliveStart,
+			aliveMax = LifeConstants.aliveMax,
 			aliveIndex = 0,
 			colourLookup = this.engine.colourLookup;
 
@@ -498,49 +497,49 @@
 					x = leftX + r2;
 					while (x + chunk <= rightX) {
 						// unrolled loop must match chunk value
-						if (colourRow[x] >= aliveStart) {
+						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						if (colourRow[x] >= aliveStart) {
+						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						if (colourRow[x] >= aliveStart) {
+						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						if (colourRow[x] >= aliveStart) {
+						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						if (colourRow[x] >= aliveStart) {
+						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						if (colourRow[x] >= aliveStart) {
+						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						if (colourRow[x] >= aliveStart) {
+						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
-						if (colourRow[x] >= aliveStart) {
+						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
 						x += 1;
 					}
 					while (x <= rightX) {
-						if (colourRow[x] >= aliveStart) {
+						if (colourRow[x] >= aliveStart && colourRow[x] <= aliveMax) {
 							count += 1;
 						}
 						countRow[x] = prevCountRow[x] + count;
@@ -607,6 +606,14 @@
 				if (state >= aliveStart) {
 					population += 1;
 				}
+				if (state > LifeConstants.deadMin) {
+					minX = leftX;
+					maxX = leftX;
+					minY = bottomY;
+					maxY = bottomY;
+					somethingAlive = true;
+					colourTileHistoryGrid[bottomY >> 4][leftX >> 8] = 65535;
+				}
 			} else {
 				// >2 state version
 				if (state === 0) {
@@ -632,14 +639,14 @@
 				if (state === maxGeneration) {
 					population += 1;
 				}
-			}
-			if (state > 0) {
-				minX = leftX;
-				maxX = leftX;
-				minY = bottomY;
-				maxY = bottomY;
-				somethingAlive = true;
-				colourTileHistoryGrid[bottomY >> 4][leftX >> 8] = 65535;
+				if (state > 0) {
+					minX = leftX;
+					maxX = leftX;
+					minY = bottomY;
+					maxY = bottomY;
+					somethingAlive = true;
+					colourTileHistoryGrid[bottomY >> 4][leftX >> 8] = 65535;
+				}
 			}
 
 			// process remainder of bottom row (bottom left cell was done above)
@@ -676,7 +683,7 @@
 					if (state >= aliveStart) {
 						population += 1;
 					}
-					if (state > 0) {
+					if (state > LifeConstants.deadMin) {
 						if (x < minX) {
 							minX = x;
 						}
@@ -721,7 +728,7 @@
 					if (state === maxGeneration) {
 						population += 1;
 					}
-					if (state > 0) {
+					if (state > LifeConstants.deadMin) {
 						if (x < minX) {
 							minX = x;
 						}
@@ -769,7 +776,7 @@
 					if (state >= aliveStart) {
 						population += 1;
 					}
-					if (state > 0) {
+					if (state > LifeConstants.deadMin) {
 						if (y < minY) {
 							minY = y;
 						}
@@ -786,7 +793,7 @@
 						minX = leftX;
 					}
 					if (leftX > maxX) {
-						maxX = rightX;
+						maxX = leftX;
 					}
 				}
 			} else {
@@ -834,7 +841,7 @@
 						minX = leftX;
 					}
 					if (leftX > maxX) {
-						maxX = rightX;
+						maxX = leftX;
 					}
 				}
 			}
@@ -847,7 +854,6 @@
 					colourTileRow = colourTileHistoryGrid[y >> 4];
 					countRowYpr = counts[y + range];
 					countRowYmrp1 = counts[y - rp1];
-					rowpop = population;
 					xpr = leftX + 1 + range;
 					xmrp1 = leftX + 1 - rp1;
 					for (x = leftX + 1; x <= rightX; x += 1) {
@@ -879,7 +885,8 @@
 						if (state >= aliveStart) {
 							population += 1;
 						}
-						if (state > 0) {
+						if (state > LifeConstants.deadMin) {
+							rowAlive = true;
 							colourTileRow[x >> 8] = 65535;
 							if (x < minX) {
 								minX = x;
@@ -891,17 +898,15 @@
 						xpr += 1;
 						xmrp1 += 1;
 					}
-					if (rowpop !== population) {
+					if (rowAlive) {
 						if (y < minY) {
 							minY = y;
 						}
 						if (y > maxY) {
 							maxY = y;
 						}
+						somethingAlive = true;
 					}
-				}
-				if (population > 0) {
-					somethingAlive = true;
 				}
 			} else {
 				// >2 state version
@@ -993,7 +998,7 @@
 							width = widths[j + range];
 							colourRow = colourGrid[y + j];
 							for (i = -width; i <= width; i += 1) {
-								if ((colourRow[x + i]) >= aliveStart) {
+								if ((colourRow[x + i]) >= aliveStart && colourRow[x + i] <= aliveMax) {
 									count += 1;
 								}
 							}

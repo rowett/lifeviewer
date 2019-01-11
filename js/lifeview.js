@@ -645,7 +645,7 @@
 		this.maxCodeWidth = ViewConstants.maxViewerWidth;
 
 		// generation that life died
-		this.diedGeneration = 0;
+		this.diedGeneration = -1;
 
 		// requested viewer width and height
 		this.requestedWidth = -1;
@@ -2094,7 +2094,7 @@
 				}
 
 				// check if life just stopped
-				if (!me.anythingAlive) {
+				if ((!me.anythingAlive) || (me.engine.multiNumStates === 2 && me.engine.population === 0 && me.diedGeneration === -1)) {
 					// set fade interval
 					me.fading = ViewConstants.fadeWhenStoppedDuration;
 
@@ -3009,6 +3009,7 @@
 			me.anythingAlive = true;
 			me.engine.anythingAlive = true;
 			me.engine.generationsAlive = true;
+			me.diedGeneration = -1;
 		}
 
 		// reset population data for graph

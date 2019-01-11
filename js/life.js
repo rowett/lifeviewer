@@ -37,6 +37,9 @@
 		// cell value for alive maximum (for colour Themes)
 		/** @const {number} */ aliveMax : 127,
 
+		// cell colour index for cell dead longest
+		/** @const {number} */ deadMin : 1,
+
 		// bit masks for surrounding tiles
 		/** @const {number} */ leftSet : 1,
 		/** @const {number} */ rightSet : 2,
@@ -286,7 +289,7 @@
 		this.deadStart = 63;
 
 		// cell colour index for cell dead longest
-		this.deadMin = 1;
+		this.deadMin = LifeConstants.deadMin;
 
 		// cell colour index for cell never occupied
 		this.unoccupied = 0;
