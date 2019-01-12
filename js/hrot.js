@@ -722,6 +722,7 @@
 				countRowYmrp1 = counts[y - rp1];
 				xpr = leftX + 1 + range;
 				xmrp1 = leftX + 1 - rp1;
+				rowAlive = false;
 				for (x = leftX + 1; x <= rightX; x += 1) {
 					state = colourRow[x];
 					count = countRowYpr[xpr]
