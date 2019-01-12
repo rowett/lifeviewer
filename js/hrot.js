@@ -474,8 +474,28 @@
 			// put zeros in top 2*range rows
 			for (y = bottomY; y < bottomY + r2; y += 1) {
 				countRow = counts[y];
-				for (x = leftX; x <= rightX; x += 1) {
+				x = leftX;
+				while (x + chunk <= rightX) {
 					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+				}
+				while (x <= rightX) {
+					countRow[x] = 0;
+					x += 1;
 				}
 			}
 
