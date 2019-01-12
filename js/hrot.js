@@ -667,9 +667,10 @@
 
 			// process remainder of left column (bottom left cell was done above)
 			colAlive = false;
+			xpr = leftX + range;
 			for (y = bottomY + 1; y <= topY; y += 1) {
 				state = colourGrid[y][leftX];
-				count = counts[y + range][leftX + range] - counts[y - rp1][leftX + range];
+				count = counts[y + range][xpr] - counts[y - rp1][xpr];
 				aliveIndex = 0;
 				if (state < aliveStart) {
 					// this cell is dead
@@ -1073,10 +1074,10 @@
 
 			// process remainder of left column (bottom left cell was done above)
 			colAlive = false;
-			// >2 state version
+			xpr = leftX + range;
 			for (y = bottomY + 1; y <= topY; y += 1) {
 				state = colourGrid[y][leftX];
-				count = counts[y + range][leftX + range] - counts[y - rp1][leftX + range];
+				count = counts[y + range][xpr] - counts[y - rp1][xpr];
 				if (state === 0) {
 					// this cell is dead
 					if (birthList[count] === 1) {
