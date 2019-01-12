@@ -763,35 +763,22 @@
 				ruleName = "Hex";
 			}
 			else {
-				if (view.engine.isLTL) {
-					if (view.engine.LTL.type === PatternManager.mooreLTL) {
+				if (view.engine.isHROT) {
+					if (view.engine.HROT.type === PatternManager.mooreHROT) {
 						ruleName = "Moore";
-					} else if (view.engine.LTL.type === PatternManager.vonNeumannLTL) {
+					} else if (view.engine.HROT.type === PatternManager.vonNeumannHROT) {
 						ruleName = "von Neumann";
 					} else {
 						ruleName = "Circular";
 					}
-					if (view.engine.LTL.range > 1) {
-						ruleName += " range " + view.engine.LTL.range;
+					if (view.engine.HROT.range > 1) {
+						ruleName += " range " + view.engine.HROT.range;
 					}
 				} else {
-					if (view.engine.isHROT) {
-						if (view.engine.HROT.type === PatternManager.mooreLTL) {
-							ruleName = "Moore";
-						} else if (view.engine.HROT.type === PatternManager.vonNeumannHROT) {
-							ruleName = "von Neumann";
-						} else {
-							ruleName = "Circular";
-						}
-						if (view.engine.HROT.range > 1) {
-							ruleName += " range " + view.engine.HROT.range;
-						}
+					if (view.engine.isVonNeumann) {
+						ruleName = "von Neumann";
 					} else {
-						if (view.engine.isVonNeumann) {
-							ruleName = "von Neumann";
-						} else {
-							ruleName = "Moore";
-						}
+						ruleName = "Moore";
 					}
 				}
 			}
@@ -993,7 +980,7 @@
 			this.renderColourBox(view, view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0], ctx, x + tabs[0], y, height, helpLine);
 			y = this.renderHelpLine(view, "Background", this.rgbString(view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0]), ctx, x, y, height, helpLine);
 
-			// check for Generations, LTL or HROT rules
+			// check for Generations or HROT rules
 			if (view.engine.multiNumStates > 2) {
 				for (i = 1; i < view.engine.multiNumStates; i += 1) {
 					this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + tabs[0], y, height, helpLine);

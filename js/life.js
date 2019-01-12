@@ -8,7 +8,7 @@
 	"use strict";
 
 	// define globals
-	/* global littleEndian BoundingBox AliasManager PatternManager Allocator Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager LTL HROT ViewConstants */
+	/* global littleEndian BoundingBox AliasManager PatternManager Allocator Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager HROT ViewConstants */
 
 	// Life constants
 	/** @const */
@@ -198,14 +198,11 @@
 		// whether nieghbourhood is Von Neumann
 		this.isVonNeumann = false;
 
-		// number of states for multi-state rules (Generations, LTL and HROT)
+		// number of states for multi-state rules (Generations or HROT)
 		this.multiNumStates = -1;
 
 		// whether pattern is LifeHistory
 		this.isLifeHistory = false;
-
-		// whether pattern is LTL
-		this.isLTL = false;
 
 		// whether pattern is HROT
 		this.isHROT = false;
@@ -514,9 +511,6 @@
 		this.graphBirthColor = [0, 255, 0];
 		this.graphDeathColor = [255, 0, 0];
 
-		// LTL engine
-		this.LTL = new LTL(this.allocator, this.width, this.height, this);
-
 		// HROT engine
 		this.HROT = new HROT(this.allocator, this.width, this.height, this);
 	}
@@ -539,7 +533,7 @@
 			// get the colour grid result
 			col = this.colourGrid[y][x];
 
-			// check if raw data requested or Generations, LTL or HROT rule used
+			// check if raw data requested or Generations or HROT rule used
 			if (rawRequested || this.multiNumStates > 2) {
 				if (this.multiNumStates > 2 && col > 0) {
 					result = this.multiNumStates - col;
@@ -829,11 +823,6 @@
 			this.width *= 2;
 			this.height *= 2;
 
-			// grow LTL buffers if used
-			if (this.isLTL) {
-				this.LTL.resize(this.width, this.height);
-			}
-
 			// grow HROT buffers if used
 			if (this.isHROT) {
 				this.HROT.resize(this.width, this.height);
@@ -1036,8 +1025,8 @@
 		    topY = zoomBox.topY,
 			bottomY = zoomBox.bottomY;
 			
-		// check for LTL or HROT
-		if (this.isLTL || this.isHROT) {
+		// check for HROT
+		if (this.isHROT) {
 			// compute population from colour grid
 			for (h = bottomY; h <= topY; h += 1) {
 				// get next row
@@ -1456,7 +1445,7 @@
 		this.themes[i] = new Theme(new ColourRange(new Colour(0, 0, 96), new Colour(0, 0, 160)), new ColourRange(new Colour(0, 240, 0), new Colour(16, 255, 16)), new Colour(0, 0, 0));
 		i += 1;
 
-		// Multi-state (Generations, LTL and HROT) - red to yellow
+		// Multi-state (Generations and HROT) - red to yellow
 		this.themes[i] = new Theme(new ColourRange(new Colour(255, 0, 0), new Colour(255, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0));
 		i += 1;
 
@@ -1544,7 +1533,7 @@
 		this.greenChannel[i] = this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight);
 		this.blueChannel[i] = this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight);
 
-		// check for Generations, LTL or HROT rules
+		// check for Generations or HROT rules
 		if (this.multiNumStates > 2) {
 			// set generations ramp
 			for (i = 1; i < this.multiNumStates; i += 1) {
@@ -1698,7 +1687,7 @@
 		gridLineBoldRaw = this.gridLineBoldRaw,
 		i = 0, j = 0;
 
-		// check for Generations, LTL or HROT
+		// check for Generations or HROT
 		if (this.multiNumStates > 2) {
 			if (this.littleEndian) {
 				for (i = 0; i < this.multiNumStates; i += 1) {
@@ -3212,7 +3201,7 @@
 			nextTileGrid[h].set(blankTileRow);
 		}
 
-		// check for Generations, LTL or HROT
+		// check for Generations or HROT
 		if (this.multiNumStates !== -1) {
 			// check each row
 			for (h = 0; h < height; h += 1) {
@@ -3503,7 +3492,7 @@
 		// adjust population
 		this.population -= remove;
 
-		// check for Generations, LTL or HROT
+		// check for Generations or HROT
 		if (this.multiNumStates !== -1) {
 			// clear the colour grid boundary
 			grid = this.colourGrid;
@@ -4358,8 +4347,8 @@
 			}
 		}
 
-		// perform bounded grid pre-processing unless rule is LTL or HROT
-		if (this.boundedGridType !== -1 && !(this.isLTL || this.isHROT)) {
+		// perform bounded grid pre-processing unless rule is HROT
+		if (this.boundedGridType !== -1 && !this.isHROT) {
 			this.preProcessBoundedGrid();
 		}
 
@@ -4371,20 +4360,15 @@
 
 		// check if any bitmap cells are alive
 		if (this.anythingAlive) {
-			if (this.isLTL) {
-				// compute LTL next generation
-				this.LTL.nextGenerationLTL();
+			if (this.isHROT) {
+				// compute HROT next generation
+				this.HROT.nextGenerationHROT();
 			} else {
-				if (this.isHROT) {
-					// compute HROT next generation
-					this.HROT.nextGenerationHROT();
+				// check if stats are required
+				if (statsOn) {
+					this.nextGenerationTile();
 				} else {
-					// check if stats are required
-					if (statsOn) {
-						this.nextGenerationTile();
-					} else {
-						this.nextGenerationOnlyTile();
-					}
+					this.nextGenerationOnlyTile();
 				}
 			}
 		}
@@ -4393,7 +4377,7 @@
 		this.counter += 1;
 
 		// check for Generations
-		if (this.multiNumStates !== -1 && !(this.isLTL || this.isHROT)) {
+		if (this.multiNumStates !== -1 && !this.isHROT) {
 			// now deal with decay states
 			if (this.anythingAlive) {
 				this.nextGenerationGenerations();
@@ -4410,26 +4394,22 @@
 		}
 
 		// perform bounded grid post-processing
-		if (this.boundedGridType !== -1 && !(this.isLTL || this.isHROT)) {
+		if (this.boundedGridType !== -1 && !this.isHROT) {
 			this.postProcessBoundedGrid();
 		}
 
 		// clear boundary if maximum grid size
 		if (this.width === this.maxGridSize) {
-			// check for LtL
-			if (this.isLTL) {
-				boundarySize = this.LTL.range * 2;
+			// check for LtL or HROT
+			if (this.isHROT) {
+				boundarySize = this.HROT.range * 2;
 			} else {
-				if (this.isHROT) {
-					boundarySize = this.HROT.range * 2;
-				} else {
-					boundarySize = 16;
-				}
+				boundarySize = 16;
 			}
 			// check if the pattern is near a boundary
 			if (zoomBox.leftX <= boundarySize || zoomBox.rightX >= (this.maxGridSize - boundarySize) || zoomBox.bottomY <= boundarySize || zoomBox.topY >= (this.maxGridSize - boundarySize)) {
 				// clear grid boundary
-				if (this.isLTL || this.isHROT) {
+				if (this.isHROT) {
 					this.clearHRBoundary();
 				} else {
 					this.clearGridBoundary();
@@ -5116,7 +5096,7 @@
 		}
 	};
 
-	// remove LTL or HROT patterns that touch the boundary
+	// remove HROT patterns that touch the boundary
 	Life.prototype.clearHRBoundary = function() {
 		// grid
 		var colourGrid = this.colourGrid,
@@ -5134,16 +5114,11 @@
 			topY = zoomBox.topY,
 
 			// range
-			range = this.LTL.range * 2 + 1,
+			range = this.HROT.range * 2 + 1,
 
 			// counters
 			x = 0,
 			y = 0;
-
-		// check for HROT
-		if (this.isHROT) {
-			range = this.HROT.range * 2 + 1;
-		}
 
 		// clear top boundary
 		if ((ht - topY) <= range) {
@@ -8598,7 +8573,7 @@
 		    // current generation number
 		    savedCounter = this.counter;
 
-		// check for generations, LTL or HROT rule
+		// check for generations or HROT rule
 		if (this.multiNumStates === -1) {
 			// check if Life already stopped
 			if (result === 0) {
@@ -8624,7 +8599,7 @@
 			result = this.anythingAlive;
 		}
 		else {
-			// generations, LTL or HROT
+			// generations or HROT
 			result = this.anythingAlive | this.generationsAlive;
 		}
 

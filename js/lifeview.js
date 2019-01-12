@@ -1182,7 +1182,7 @@
 			patternRow = pattern.lifeMap[y];
 			gridRow = grid[(y + panY) & hm];
 
-			// check for multi-state view or Generations, LTL or HROT
+			// check for multi-state view or Generations or HROT
 			if (this.multiStateView || this.engine.multiNumStates !== -1) {
 				multiStateRow = pattern.multiStateMap[y];
 				colourGridRow = colourGrid[(y + panY) & hm];
@@ -2214,9 +2214,6 @@
 		// check if grid buffer needs to grow
 		if (me.engine.counter && me.anythingAlive) {
 			borderSize = ViewConstants.maxStepSpeed;
-			if (me.engine.isLTL && ((me.engine.LTL.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
-				borderSize = me.engine.LTL.range * 2 + 1;
-			}
 			if (me.engine.isHROT && ((me.engine.HROT.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
 				borderSize = me.engine.HROT.range * 2 + 1;
 			}
@@ -3938,7 +3935,7 @@
 						me.engine.births = me.engine.resetSnapshot.births;
 						me.engine.deaths = me.engine.resetSnapshot.deaths;
 					} else {
-						// check for Generations rule  TBD LTL and HROT?
+						// check for Generations or HROT rule
 						if (me.engine.multiNumStates === -1) {
 							// go to previous generation
 							me.engine.counter -= 1;
@@ -9537,19 +9534,8 @@
 			// check if the rule is a History rule
 			this.engine.isLifeHistory = pattern.isHistory;
 
-			// read the number of states (Generations, LTL or HROT)
+			// read the number of states (Generations or HROT)
 			this.engine.multiNumStates = pattern.multiNumStates;
-
-			// check if the rule is LTL
-			this.engine.isLTL = pattern.isLTL;
-			if (pattern.isLTL) {
-				this.engine.LTL.minS = pattern.SminLTL;
-				this.engine.LTL.maxS = pattern.SmaxLTL;
-				this.engine.LTL.minB = pattern.BminLTL;
-				this.engine.LTL.maxB = pattern.BmaxLTL;
-				this.engine.LTL.scount = pattern.multiNumStates;
-				this.engine.LTL.setTypeAndRange(pattern.neighborhoodLTL, pattern.rangeLTL);
-			}
 
 			// check if the rule is HROT
 			this.engine.isHROT = pattern.isHROT;
@@ -9608,7 +9594,6 @@
 			this.engine.patternDisplayMode = false;
 			this.engine.multiNumStates = -1;
 			this.engine.boundedGridType = -1;
-			this.engine.isLTL = false;
 			this.engine.isHROT = false;
 			this.engine.multiState = false;
 		}
@@ -9706,7 +9691,7 @@
 			// default to theme 10
 			this.engine.setTheme(10, 1);
 		} else {
-			// check for Generations, LTL or HROT
+			// check for Generations or HROT
 			if (this.engine.multiNumStates > 2) {
 				// multi state uses theme 11
 				this.engine.setTheme(11, 1);
@@ -9961,12 +9946,6 @@
 
 			// check if the grid is smaller than the pattern and/or bounded grid plus the maximum step speed
 			borderSize = ViewConstants.maxStepSpeed;
-			if (this.engine.isLTL && ((this.engine.LTL.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
-				borderSize = this.engine.LTL.range * 2 + 1;
-				if (this.engine.boundedGridType !== -1) {
-					borderSize += this.engine.LTL.range * 2;
-				}
-			}
 			if (this.engine.isHROT && ((this.engine.HROT.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
 				borderSize = this.engine.HROT.range * 2 + 1;
 				if (this.engine.boundedGridType !== -1) {
@@ -9992,10 +9971,6 @@
 				}
 			}
 
-			// resize the LTL buffer to the current width and height
-			if (pattern.isLTL) {
-				this.engine.LTL.resize(this.engine.width, this.engine.height);
-			}
 			// resize the HROT buffer to the current width and height
 			if (pattern.isHROT) {
 				this.engine.HROT.resize(this.engine.width, this.engine.height);
@@ -10116,7 +10091,7 @@
 			// reset snapshot manager
 			this.engine.snapshotManager.reset();
 		} else {
-			// create the colour grid if not multi-state Generations, LTL or HROT rule
+			// create the colour grid if not multi-state Generations or HROT rule
 			if (this.engine.multiNumStates <= 2) {
 				this.engine.resetColourGridBox(this.engine.grid16);
 			}

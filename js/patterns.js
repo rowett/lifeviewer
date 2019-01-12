@@ -2209,6 +2209,10 @@
 				list[j] = 0;
 				j += 1;
 				i -= 1;
+				if (which === "S") {
+					list[j] = 0;
+					j += 1;
+				}
 				while (i >= 0) {
 					hexValue = this.hexCharacters.indexOf(rule[this.index - numDigits + i]);
 					i -= 1;
@@ -2314,6 +2318,10 @@
 					}
 				}
 				if (result) {
+					if (partName == "S") {
+						lower += 1;
+						upper += 1;
+					}
 					for (i = lower; i <= upper; i += 1) {
 						list[i] = 1;
 					}
@@ -2331,6 +2339,32 @@
 		}
 
 		return result;
+	};
+
+	// create HROT arrays from Bmin to Bmax and Smin to Smax
+	PatternManager.setupHROTfromLTL = function(pattern, allocator) {
+		var range = pattern.rangeLTL,
+			maxCount = (range * 2 + 1) * (range * 2 + 1),
+			i = 0;
+			
+		// copy the range and neighborhood
+		pattern.rangeHROT = range,
+		pattern.neighborhoodHROT = pattern.neighborhoodLTL;
+
+		// allocate the survival and birth arrays
+		pattern.survivalHROT = allocator.allocate(Uint8, maxCount, "HROT.survivals");
+		pattern.birthHROT = allocator.allocate(Uint8, maxCount, "HROT.births");
+
+		// populate the arrays
+		for (i = pattern.SminLTL; i <= pattern.SmaxLTL; i += 1) {
+			pattern.survivalHROT[i] = 1;
+		}
+		for (i = pattern.BminLTL; i <= pattern.BmaxLTL; i += 1) {
+			pattern.birthHROT[i] = 1;
+		}
+
+		// mark pattern as HROT
+		pattern.isHROT = true;
 	};
 
 	// decode HROT rule in Rr,Cc,S,B,Nn format
@@ -4670,6 +4704,11 @@
 					}
 				}
 			}
+		}
+
+		// if pattern is LtL then copy parameters to HROT engine
+		if (pattern.isLTL) {
+			this.setupHROTfromLTL(pattern, allocator);
 		}
 	};
 
