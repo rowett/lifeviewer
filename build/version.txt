@@ -1,3 +1,6 @@
+Build 275
+- fixed layer rendering for 2 state generations, LtL and HROT rules
+
 Build 274
 - fixed an issue with 2 state LtL HROT rules and Plane
 
