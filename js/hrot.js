@@ -31,12 +31,16 @@
 
 		// range width array
 		this.widths = allocator.allocate(Uint32, this.range * 2 + 1, "HROT.widths");
+
+		// used row array (will be resized)
+		this.rowUsed = allocator.allocate(Uint8, 1, "HROT.rowUsed");
 	}
 
 	// resize counts array
 	HROT.prototype.resize = function(width, height) {
 		// resize counts array
 		this.counts = Array.matrix(Uint32, height, width, 0, this.allocator, "HROT.counts");
+		this.rowUsed = this.allocator.allocate(Uint8, height, "HROT.rowUsed");
 	};
 
 	// set type and range
@@ -476,6 +480,7 @@
 				countRow = counts[y];
 				x = leftX;
 				while (x + chunk <= rightX) {
+					// unrolled loop must match chunk value
 					countRow[x] = 0;
 					x += 1;
 					countRow[x] = 0;
@@ -500,9 +505,33 @@
 			}
 
 			// put zeros in left 2*range columns
-			for (x = leftX; x < leftX + r2; x += 1) {
-				for (y = bottomY + r2; y <= topY; y += 1) {
-					counts[y][x] = 0;
+			for (y = bottomY + r2; y <= topY; y += 1) {
+				countRow = counts[y];
+				x = leftX;
+				while (x + chunk <= leftX + r2) {
+					// unrolled loop must match chunk value
+					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+					countRow[x] = 0;
+					x += 1;
+				}
+				while (x <= leftX + r2) {
+					countRow[x] = 0;
+					x += 1;
 				}
 			}
 
