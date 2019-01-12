@@ -33,14 +33,14 @@
 		this.widths = allocator.allocate(Uint32, this.range * 2 + 1, "HROT.widths");
 
 		// used row array (will be resized)
-		this.rowUsed = allocator.allocate(Uint8, 1, "HROT.rowUsed");
+		this.colUsed = allocator.allocate(Uint8, 1, "HROT.colUsed");
 	}
 
 	// resize counts array
 	HROT.prototype.resize = function(width, height) {
 		// resize counts array
 		this.counts = Array.matrix(Uint32, height, width, 0, this.allocator, "HROT.counts");
-		this.rowUsed = this.allocator.allocate(Uint8, height, "HROT.rowUsed");
+		this.colUsed = this.allocator.allocate(Uint8, width, "HROT.colUsed");
 	};
 
 	// set type and range
@@ -402,7 +402,8 @@
 			aliveStart = LifeConstants.aliveStart,
 			deadMin = LifeConstants.deadMin,
 			aliveIndex = 0,
-			colourLookup = this.engine.colourLookup;
+			colourLookup = this.engine.colourLookup,
+			colUsed = this.colUsed;
 
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {
@@ -637,8 +638,7 @@
 				population += 1;
 			}
 			if (state > deadMin) {
-				minX = leftX;
-				maxX = leftX;
+				colUsed[leftX] = 1;
 				minY = bottomY;
 				maxY = bottomY;
 				somethingAlive = true;
@@ -678,12 +678,7 @@
 					population += 1;
 				}
 				if (state > deadMin) {
-					if (x < minX) {
-						minX = x;
-					}
-					if (x > maxX) {
-						maxX = x;
-					}
+					colUsed[x] = 1;
 					rowAlive = true;
 					colourTileRow[x >> 8] = 65535;
 				}
@@ -736,12 +731,7 @@
 			}
 			if (colAlive) {
 				somethingAlive = true;
-				if (leftX < minX) {
-					minX = leftX;
-				}
-				if (leftX > maxX) {
-					maxX = leftX;
-				}
+				colUsed[leftX] = 1;
 			}
 
 			// compute the rest of the grid
@@ -785,12 +775,7 @@
 					if (state > deadMin) {
 						rowAlive = true;
 						colourTileRow[x >> 8] = 65535;
-						if (x < minX) {
-							minX = x;
-						}
-						if (x > maxX) {
-							maxX = x;
-						}
+						colUsed[x] = 1;
 					}
 					xpr += 1;
 					xmrp1 += 1;
@@ -803,6 +788,19 @@
 						maxY = y;
 					}
 					somethingAlive = true;
+				}
+			}
+
+			// update min and max column from array
+			for (x = leftX; x <= rightX; x += 1) {
+				if (colUsed[x]) {
+					colUsed[x] = 0;
+					if (x < minX) {
+						minX = x;
+					}
+					if (x > maxX) {
+						maxX = x;
+					}
 				}
 			}
 
