@@ -10432,7 +10432,7 @@
 		// render each layer
 		for (i = 1; i < layerTarget; i += 1) {
 			// compute the transparent target
-			if (this.multiNumStates !== -1) {
+			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
 			}
@@ -10827,7 +10827,7 @@
 		// render each layer
 		for (i = 1; i < layerTarget; i += 1) {
 			// compute the transparent target
-			if (this.multiNumStates !== -1) {
+			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
 			}
@@ -11144,7 +11144,7 @@
 		// render each layer
 		for (i = 1; i < layerTarget; i += 1) {
 			// compute the transparent target
-			if (this.multiNumStates !== -1) {
+			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
 			}
@@ -11437,7 +11437,7 @@
 		// render each layer
 		for (i = 1; i < layerTarget; i += 1) {
 			// compute the transparent target
-			if (this.multiNumStates !== -1) {
+			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
 			}
@@ -12051,7 +12051,7 @@
 		// render each layer
 		for (i = 1; i < layerTarget; i += 1) {
 			// compute the transparent target
-			if (this.multiNumStates !== -1) {
+			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
 			}
@@ -12527,7 +12527,7 @@
 		// render each layer
 		for (i = 1; i < layerTarget; i += 1) {
 			// compute the transparent target
-			if (this.multiNumStates !== -1) {
+			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
 			}
@@ -12986,7 +12986,7 @@
 		// render each layer
 		for (i = 1; i < layerTarget; i += 1) {
 			// compute the transparent target
-			if (this.multiNumStates !== -1) {
+			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
 			}
@@ -13526,7 +13526,7 @@
 		// render each layer
 		for (i = 1; i < layerTarget; i += 1) {
 			// compute the transparent target
-			if (this.multiNumStates !== -1) {
+			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
 			}
