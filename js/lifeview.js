@@ -2216,6 +2216,9 @@
 			borderSize = ViewConstants.maxStepSpeed;
 			if (me.engine.isHROT && ((me.engine.HROT.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
 				borderSize = me.engine.HROT.range * 2 + 1;
+				if (this.engine.boundedGridType !== -1) {
+					borderSize += this.engine.HROT.range * 2;
+				}
 			}
 			if (me.engine.checkForGrowth(borderSize)) {
 				// update the default x and y

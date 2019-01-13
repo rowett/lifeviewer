@@ -4449,7 +4449,10 @@
 
 		    // state used flags and counts
 		    stateCount = this.stateCount,
-		    maxStates = PatternManager.maxStates,
+			maxStates = PatternManager.maxStates,
+			
+			// border for bounded grid
+			border = 4,
 
 		    // counters
 		    i = 0;
@@ -4580,7 +4583,14 @@
 
 		// check bounded grid size
 		if (pattern.gridType !== -1) {
-			if (pattern.gridWidth >= this.maxWidth - 4 || pattern.gridHeight >= this.maxHeight - 4) {
+			// check for LtL or HROT rules
+			if (pattern.isHROT) {
+				border = pattern.rangeHROT * 6;
+			}
+			if (pattern.isLTL) {
+				border = pattern.rangeLTL * 6;
+			}
+			if (pattern.gridWidth >= this.maxWidth - border || pattern.gridHeight >= this.maxHeight - border) {
 				// make invalid
 				this.failureReason = "Bounded grid is too big";
 				this.executable = false;
