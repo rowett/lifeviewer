@@ -2215,7 +2215,7 @@
 		if (me.engine.counter && me.anythingAlive) {
 			borderSize = ViewConstants.maxStepSpeed;
 			if (me.engine.isHROT && ((me.engine.HROT.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
-				borderSize = me.engine.HROT.range * 2 + 1;
+				borderSize = me.engine.HROT.range * 4 + 1;
 				if (this.engine.boundedGridType !== -1) {
 					borderSize += this.engine.HROT.range * 2;
 				}
@@ -9949,8 +9949,8 @@
 
 			// check if the grid is smaller than the pattern and/or bounded grid plus the maximum step speed
 			borderSize = ViewConstants.maxStepSpeed;
-			if (this.engine.isHROT && ((this.engine.HROT.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
-				borderSize = this.engine.HROT.range * 2 + 1;
+			if (this.engine.isHROT && ((this.engine.HROT.range * 4 + 1) > ViewConstants.maxStepSpeed)) {
+				borderSize = this.engine.HROT.range * 4 + 1;
 				if (this.engine.boundedGridType !== -1) {
 					borderSize += this.engine.HROT.range * 2;
 				}
