@@ -596,13 +596,13 @@
 						}
 					}
 
-					// if in a generation range the fade if near limits
+					// if in a generation range then fade if near limits
 					timeAlpha = 1;
 					if (current.t1 !== -1 && current.tFade > 0) {
-						if (counter - current.t1 <= current.tFade) {
+						if (counter - current.t1 < current.tFade) {
 							timeAlpha = (counter - current.t1 + 1) / current.tFade;
 						} else {
-							if (current.t2 - counter <= current.tFade) {
+							if (current.t2 - counter < current.tFade) {
 								timeAlpha = (current.t2 - counter + 1) / current.tFade;
 							}
 						}
@@ -630,8 +630,8 @@
 						context.globalAlpha = alphaValue * current.alpha * timeAlpha * distAlpha;
 
 						// get label position
-						cx = current.x + xOff + hexAdjust;
-						cy = current.y + yOff;
+						cx = current.x + xOff + hexAdjust - (view.patternWidth >> 1) + 0.5;
+						cy = current.y + yOff - (view.patternHeight >> 1) + 0.5;
 						
 						// check for fixed position
 						if (!current.positionLocked) {

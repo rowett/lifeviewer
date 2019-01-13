@@ -173,7 +173,7 @@
 		circularLTL : 2,
 
 		// HROT min and max range
-		minRangeHROT: 2,
+		minRangeHROT: 1,
 		maxRangeHROT: 500,
 
 		// HROT min and max states
@@ -1657,8 +1657,8 @@
 
 		// check if number is valid
 		if (valid) {
-			if (number < 2 || number > 254) {
-				this.failureReason = "Wolfram rule number must be 2-254";
+			if (number < 0 || number > 254) {
+				this.failureReason = "Wolfram rule number must be 0-254";
 				valid = false;
 			} else {
 				if ((number & 1) !== 0) {
@@ -2176,7 +2176,8 @@
 			hexValue = 0,
 			list = null,
 			allocName = "HROT.",
-		    i = 0, j = 0;
+			i = 0, j = 0,
+			extra = 0;
 
 		// check there are enough digits
 		if (this.index + numDigits > rule.length) {
@@ -2200,9 +2201,10 @@
 					allocName += "births";
 				} else {
 					allocName += "survivals";
+					extra = 1;
 				}
 				// 4 bits per digit plus zero entry
-				list = allocator.allocate(Uint8, (numDigits << 2) + 1, allocName);
+				list = allocator.allocate(Uint8, (numDigits << 2) + 1 + extra, allocName);
 
 				// populate array
 				j = 0;
@@ -2352,7 +2354,7 @@
 		pattern.neighborhoodHROT = pattern.neighborhoodLTL;
 
 		// allocate the survival and birth arrays
-		pattern.survivalHROT = allocator.allocate(Uint8, maxCount, "HROT.survivals");
+		pattern.survivalHROT = allocator.allocate(Uint8, maxCount + 1, "HROT.survivals");
 		pattern.birthHROT = allocator.allocate(Uint8, maxCount, "HROT.births");
 
 		// populate the arrays
@@ -2651,8 +2653,8 @@
 			if (this.index < rule.length) {
 				// check for Z
 				if (rule[this.index] === "z") {
-					// do stuff
-					pattern.survivalHROT[0] = 1;
+					// set the survival on zero element
+					pattern.survivalHROT[1] = 1;
 					this.index += 1;
 				}
 			}
@@ -2671,21 +2673,6 @@
 			}
 		}
 
-		return result;
-	};
-
-	// convert array to hex string for HROT
-	PatternManager.asHex = function(list) {
-		var length = list.length,
-			hexValue = 0,
-			result = "";
-
-		// read from the end of the array backwards
-		while (length > 1) {
-			hexValue = (list[length - 1] << 3) + (list[length - 2] << 2) + (list[length - 3] << 1) + list[length - 4];
-			length -= 4;
-			result += this.hexCharacters[hexValue];
-		}
 		return result;
 	};
 
@@ -2723,6 +2710,16 @@
 			}
 			// next item
 			i += 1;
+		}
+		// check if still processing a run
+		if (start !== -1) {
+			if (result !== "") {
+				result += ",";
+			}
+			result += start;
+			if ((i - 1) !== start) {
+				result += "-" + (i - 1);
+			}
 		}
 
 		// return string

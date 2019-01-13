@@ -1,3 +1,11 @@
+Build 276
+- allow Wolfram W0 rule
+- allow range 1 HROT rules
+- fixed an issue with decoding hex format HROT rules
+- fixed an issue with canonical form of HROT rules
+- Label coordinates are now relative to pattern coordinates and respect CXRLE Pos
+- LABELT fading was going one step too far
+
 Build 275
 - fixed layer rendering for 2 state generations, LtL and HROT rules
 

@@ -29,25 +29,24 @@
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
 			<textarea rows=10 cols=70>
-x = 300, y = 300, rule = B3/S23
-oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+x = 320, y = 320, rule = B3/S23
+oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo$
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo!
 #C [[ LABELTARGET 0 0 4 ]]
-#C [[ LABEL 0 0 16 "Zoom x 16" ]]
+#C [[ LABEL 160 160 16 "Zoom x 16" ]]
 #C [[ LABELTARGET 0 0 16 ]]
-#C [[ LABEL 0 0 4 "Zoom x 4" ]]
+#C [[ LABEL 160 160 4 "Zoom x 4" ]]
 #C [[ LABELTARGET 0 0 64 ]]
-#C [[ LABEL 0 0 1 "Zoom x 1" ]]
+#C [[ LABEL 160 160 1 "Zoom x 1" ]]
 #C [[ LABELTARGET 0 0 256 ]]
-#C [[ LABEL 0 0 -4 "Zoom x -4" ]]
+#C [[ LABEL 160 160 -4 "Zoom x -4" ]]
 #C [[ LABELTARGET 0 0 1024 ]]
-#C [[ LABEL 0 0 -16 "Zoom x -16" ]]
+#C [[ LABEL 160 160 -16 "Zoom x -16" ]]
             </textarea>
 			<br>
 			<canvas width="480" height="480"></canvas>
 		</div>
-x = 9, y = 5, rule = B3/S23
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
 			<textarea rows=10 cols=70>
@@ -55,10 +54,10 @@ x = 9, y = 5, rule = B3/S23
 $bo3b3o$b3o2bo$2bo!
 #C Label at 0, 0 is visible when viewpoint is 3 cells from 0, 0
 #C [[ LABELTARGET 0 0 3 ]]
-#C [[ LABEL 0 0 24 "Label 1\nVisible near 0, 0" ]]
+#C [[ LABEL 4 -1 24 "Label 1\nVisible near 0, 0" ]]
 #C Label at 4, 4 is visible when viewpoint is 3 cells from 6, 4
-#C [[ LABELTARGET 4 4 3 ]]
-#C [[ LABEL 0 3 24 "Label 2\nVisible near 6, 4" ]]
+#C [[ LABELTARGET 6 4 3 ]]
+#C [[ LABEL 4 3 24 "Label 2\nVisible near 6, 4" ]]
 #C Many labels visible when viewpoint is 3 cells from 5, -2
 #C [[ LABELTARGET 5 -2 3 ]]
 #C [[ COLOR LABEL Yellow ]]
@@ -74,12 +73,12 @@ $bo3b3o$b3o2bo$2bo!
 #C Label is always visible
 #C [[ LABELTARGET OFF ]]
 #C [[ COLOR LABEL White ]]
-#C [[ LABEL 0 6 24 "Lable 3\nAlways visible" ]]
+#C [[ LABEL 4 6 24 "Lable 3\nAlways visible" ]]
 #C Put labels at the target points
 #C [[ COLOR LABEL Red ]]
-#C [[ LABEL 0 0 16 "1" ]]
-#C [[ LABEL 6 4 16 "2" ]]
-#C [[ LABEL 5 -2 16 "3" ]]
+#C [[ LABEL 3.5 1 16 "1" ]]
+#C [[ LABEL 9.5 5 16 "2" ]]
+#C [[ LABEL 8.5 -0.5 16 "3" ]]
             </textarea>
 			<br>
 			<canvas width="480" height="480"></canvas>
@@ -88,9 +87,9 @@ $bo3b3o$b3o2bo$2bo!
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
 			<textarea rows=10 cols=70>
-#C [[ LABEL 0 0 1.8 "TRACKBOX" ]]
+#C [[ LABEL 25 18 1.8 "TRACKBOX" ]]
 #C [[ LABELSIZE 12 ]]
-#C [[ LABEL 0 4 1.8 FIXED "Leave me behind!" ]]
+#C [[ LABEL 25 22 1.8 FIXED "Leave me behind!" ]]
 #C [[ TRACKBOX 0 0 -1/12 -1/12 ]]
 #C [[ THEME 4 STARS LOOP 7250 STEP 4 ]]
 x = 51, y = 34, rule = B3/S23
@@ -110,8 +109,8 @@ bo14bobo$5b2o14bo$2b2o$4bo!
 3o$o$bo!
 #C [[ AUTOSTART GRID GRIDMAJOR 10 THEME 6 GPS 5 ZOOM 32 ]]
 #C [[ TRACKLOOP 4 -1/4 -1/4 ]]
-#C [[ COLOR LABEL Red LABEL 0.5 -3 16 "Glider" ]]
-#C [[ COLOR LABEL Green LABEL 0.5 3 16 FIXED "Fixed Label" ]]
+#C [[ COLOR LABEL Red LABEL 1 -2 16 "Glider" ]]
+#C [[ COLOR LABEL Green LABEL 1 4 16 FIXED "Fixed Label" ]]
             </textarea>
 			<br>
 			<canvas width="480" height="480"></canvas>
@@ -123,84 +122,85 @@ bo14bobo$5b2o14bo$2b2o$4bo!
 #C [[ AUTOSTART LOOP 300 ]]
 #C Label that changes every 10 generations
 #C [[ COLOR LABEL Cyan ]]
-#C [[ LABELT 0 9 0 LABEL 0 0 8 "I count 1" ]]
-#C [[ LABELT 10 19 0 LABEL 0 0 8 "I count 2" ]]
-#C [[ LABELT 20 29 0 LABEL 0 0 8 "I count 3" ]]
-#C [[ LABELT 30 39 0 LABEL 0 0 8 "I count 4" ]]
-#C [[ LABELT 40 49 0 LABEL 0 0 8 "I count 5" ]]
-#C [[ LABELT 50 59 0 LABEL 0 0 8 "I count 6" ]]
-#C [[ LABELT 60 69 0 LABEL 0 0 8 "I count 7" ]]
-#C [[ LABELT 70 79 0 LABEL 0 0 8 "I count 8" ]]
-#C [[ LABELT 80 89 0 LABEL 0 0 8 "I count 9" ]]
-#C [[ LABELT 90 99 0 LABEL 0 0 8 "I count 10" ]]
-#C [[ LABELT 100 109 0 LABEL 0 0 8 "I count 11" ]]
-#C [[ LABELT 110 119 0 LABEL 0 0 8 "I count 12" ]]
-#C [[ LABELT 120 129 0 LABEL 0 0 8 "I count 13" ]]
-#C [[ LABELT 130 139 0 LABEL 0 0 8 "I count 14" ]]
-#C [[ LABELT 140 149 0 LABEL 0 0 8 "I count 15" ]]
-#C [[ LABELT 150 159 0 LABEL 0 0 8 "I count 16" ]]
-#C [[ LABELT 160 169 0 LABEL 0 0 8 "I count 17" ]]
-#C [[ LABELT 170 179 0 LABEL 0 0 8 "I count 18" ]]
-#C [[ LABELT 180 189 0 LABEL 0 0 8 "I count 19" ]]
-#C [[ LABELT 190 199 0 LABEL 0 0 8 "I count 20" ]]
+#C [[ LABELT 0 9 0 LABEL 15 4 8 "I count 1" ]]
+#C [[ LABELT 10 19 0 LABEL 15 4 8 "I count 2" ]]
+#C [[ LABELT 20 29 0 LABEL 15 4 8 "I count 3" ]]
+#C [[ LABELT 30 39 0 LABEL 15 4 8 "I count 4" ]]
+#C [[ LABELT 40 49 0 LABEL 15 4 8 "I count 5" ]]
+#C [[ LABELT 50 59 0 LABEL 15 4 8 "I count 6" ]]
+#C [[ LABELT 60 69 0 LABEL 15 4 8 "I count 7" ]]
+#C [[ LABELT 70 79 0 LABEL 15 4 8 "I count 8" ]]
+#C [[ LABELT 80 89 0 LABEL 15 4 8 "I count 9" ]]
+#C [[ LABELT 90 99 0 LABEL 15 4 8 "I count 10" ]]
+#C [[ LABELT 100 109 0 LABEL 15 4 8 "I count 11" ]]
+#C [[ LABELT 110 119 0 LABEL 15 4 8 "I count 12" ]]
+#C [[ LABELT 120 129 0 LABEL 15 4 8 "I count 13" ]]
+#C [[ LABELT 130 139 0 LABEL 15 4 8 "I count 14" ]]
+#C [[ LABELT 140 149 0 LABEL 15 4 8 "I count 15" ]]
+#C [[ LABELT 150 159 0 LABEL 15 4 8 "I count 16" ]]
+#C [[ LABELT 160 169 0 LABEL 15 4 8 "I count 17" ]]
+#C [[ LABELT 170 179 0 LABEL 15 4 8 "I count 18" ]]
+#C [[ LABELT 180 189 0 LABEL 15 4 8 "I count 19" ]]
+#C [[ LABELT 190 199 0 LABEL 15 4 8 "I count 20" ]]
 #C Groups of labels with fade in/out
 #C [[ LABELT 0 99 10 ]]
-#C [[ COLOR LABEL Red LABEL -10 2 8 "Left 1" ]]
-#C [[ COLOR LABEL Orange LABEL -11 4 8 "Left 2" ]]
-#C [[ COLOR LABEL Yellow LABEL -12 6 8 "Left 3" ]]
-#C [[ COLOR LABEL Green LABEL -13 8 8 "Left 4" ]]
-#C [[ COLOR LABEL Blue LABEL -14 10 8 "Left 5" ]]
-#C [[ COLOR LABEL Purple LABEL -15 12 8 "Left 6" ]]
+#C [[ COLOR LABEL Red LABEL 5 9 8 "Left 1" ]]
+#C [[ COLOR LABEL Orange LABEL 4 11 8 "Left 2" ]]
+#C [[ COLOR LABEL Yellow LABEL 3 13 8 "Left 3" ]]
+#C [[ COLOR LABEL Green LABEL 2 15 8 "Left 4" ]]
+#C [[ COLOR LABEL Blue LABEL 1 17 8 "Left 5" ]]
+#C [[ COLOR LABEL Purple LABEL 0 19 8 "Left 6" ]]
 #C [[ LABELT 50 149 10 ]]
-#C [[ COLOR LABEL Red LABEL 0 2 8 "Middle 1" ]]
-#C [[ COLOR LABEL Orange LABEL 0 4 8 "Middle 2" ]]
-#C [[ COLOR LABEL Yellow LABEL 0 6 8 "Middle 3" ]]
-#C [[ COLOR LABEL Green LABEL 0 8 8 "Middle 4" ]]
-#C [[ COLOR LABEL Blue LABEL 0 10 8 "Middle 5" ]]
-#C [[ COLOR LABEL Purple LABEL 0 12 8 "Middle 6" ]]
+#C [[ COLOR LABEL Red LABEL 15 9 8 "Middle 1" ]]
+#C [[ COLOR LABEL Orange LABEL 15 11 8 "Middle 2" ]]
+#C [[ COLOR LABEL Yellow LABEL 15 13 8 "Middle 3" ]]
+#C [[ COLOR LABEL Green LABEL 15 15 8 "Middle 4" ]]
+#C [[ COLOR LABEL Blue LABEL 15 17 8 "Middle 5" ]]
+#C [[ COLOR LABEL Purple LABEL 15 19 8 "Middle 6" ]]
 #C [[ LABELT 100 199 10 ]]
-#C [[ COLOR LABEL Red LABEL 10 2 8 "Right 1" ]]
-#C [[ COLOR LABEL Orange LABEL 12 4 8 "Right 2" ]]
-#C [[ COLOR LABEL Yellow LABEL 14 6 8 "Right 3" ]]
-#C [[ COLOR LABEL Green LABEL 16 8 8 "Right 4" ]]
-#C [[ COLOR LABEL Blue LABEL 18 10 8 "Right 5" ]]
-#C [[ COLOR LABEL Purple LABEL 20 12 8 "Right 6" ]]
+#C [[ COLOR LABEL Red LABEL 25 9 8 "Right 1" ]]
+#C [[ COLOR LABEL Orange LABEL 26 11 8 "Right 2" ]]
+#C [[ COLOR LABEL Yellow LABEL 27 13 8 "Right 3" ]]
+#C [[ COLOR LABEL Green LABEL 28 15 8 "Right 4" ]]
+#C [[ COLOR LABEL Blue LABEL 29 17 8 "Right 5" ]]
+#C [[ COLOR LABEL Purple LABEL 30 19 8 "Right 6" ]]
 #C Small blinking label with quick fade
 #C [[ COLOR LABEL Gold ]]
-#C [[ LABELT 0 9 3 LABELSIZE 10 ]]
-#C [[ LABEL 0 -10 8 "Hey there!\nI'm pretending to blink" ]]
-#C [[ LABELT 20 29 3 ]]
-#C [[ LABEL 0 -10 8 "Hey there!\nI'm pretending to blink" ]]
-#C [[ LABELT 40 49 3 ]]
-#C [[ LABEL 0 -10 8 "Hey there!\nI'm pretending to blink" ]]
-#C [[ LABELT 60 69 3 ]]
-#C [[ LABEL 0 -10 8 "Hey there!\nI'm pretending to blink" ]]
-#C [[ LABELT 80 89 3 ]]
-#C [[ LABEL 0 -10 8 "Hey there!\nI'm pretending to blink" ]]
-#C [[ LABELT 100 109 3 ]]
-#C [[ LABEL 0 -10 8 "Hey there!\nI'm pretending to blink" ]]
-#C [[ LABELT 120 129 3 ]]
-#C [[ LABEL 0 -10 8 "Hey there!\nI'm pretending to blink" ]]
-#C [[ LABELT 140 149 3 ]]
-#C [[ LABEL 0 -10 8 "Hey there!\nI'm pretending to blink" ]]
-#C [[ LABELT 160 169 3 ]]
-#C [[ LABEL 0 -10 8 "Hey there!\nI'm pretending to blink" ]]
-#C [[ LABELT 180 189 3 ]]
-#C [[ LABEL 0 -10 8 "Hey there!\nI'm pretending to blink" ]]
+#C [[ LABELT 0 11 3 LABELSIZE 10 ]]
+#C [[ LABEL 15 -6 8 "Hey there!\nI'm pretending to blink" ]]
+#C [[ LABELT 19 31 3 ]]
+#C [[ LABEL 15 -6 8 "Hey there!\nI'm pretending to blink" ]]
+#C [[ LABELT 39 51 3 ]]
+#C [[ LABEL 15 -6 8 "Hey there!\nI'm pretending to blink" ]]
+#C [[ LABELT 59 71 3 ]]
+#C [[ LABEL 15 -6 8 "Hey there!\nI'm pretending to blink" ]]
+#C [[ LABELT 79 91 3 ]]
+#C [[ LABEL 15 -6 8 "Hey there!\nI'm pretending to blink" ]]
+#C [[ LABELT 99 111 3 ]]
+#C [[ LABEL 15 -6 8 "Hey there!\nI'm pretending to blink" ]]
+#C [[ LABELT 119 131 3 ]]
+#C [[ LABEL 15 -6 8 "Hey there!\nI'm pretending to blink" ]]
+#C [[ LABELT 139 151 3 ]]
+#C [[ LABEL 15 -6 8 "Hey there!\nI'm pretending to blink" ]]
+#C [[ LABELT 159 171 3 ]]
+#C [[ LABEL 15 -6 8 "Hey there!\nI'm pretending to blink" ]]
+#C [[ LABELT 179 191 3 ]]
+#C [[ LABEL 15 -6 8 "Hey there!\nI'm pretending to blink" ]]
 #C Permanent label
 #C [[ LABELT ALL ]]
 #C [[ LABELSIZE 24 COLOR LABEL White ]]
-#C [[ LABEL 0 -5 8 "I'm always here!" ]]
+#C [[ LABEL 15 -2 8 "I'm always here!" ]]
 #C Upright 90 degree rotated label
 #C [[ LABELSIZE 18 ]]
 #C [[ LABELANGLE 90 COLOR LABEL Orange ]]
-#C [[ LABEL -6 0 12 "I'm upright!" ]]
+#C [[ LABEL 9 4 12 "I'm upright!" ]]
 #C Upright 270 degree rotated fixed angle label
 #C [[ LABELANGLE 270 FIXED COLOR LABEL Pink ]]
-#C [[ LABEL 6 0 12 "I'm fixed upright!" ]]
+#C [[ LABEL 21 4 12 "I'm fixed upright!" ]]
+#C [[ ZOOM 11 ]]
 x = 30, y = 10
 oooooooooooooooooooooooooooooo$
-$$$$$$$
+$$$$$$$$
 oooooooooooooooooooooooooooooo!
             </textarea>
 			<br>
@@ -210,12 +210,12 @@ oooooooooooooooooooooooooooooo!
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
 			<textarea rows=10 cols=70>
-#C [[ LABEL 0 0 -3 "Entire Pattern" ]]
+#C [[ LABEL 605 425 -3 "Entire Pattern" ]]
 #C [[ COLOR LABEL 32 128 255 ]]
-#C [[ LABEL -453 -252 2 "Box A1" COLOR LABEL 240 255 255 ]]
-#C [[ LABELALPHA 0.5 LABEL -188 -8 2 "Box C3\nHalf opaque" ]]
+#C [[ LABEL 155 160 2 "Box A1" COLOR LABEL 240 255 255 ]]
+#C [[ LABELALPHA 0.5 LABEL 414 414 2 "Box C3\nHalf opaque" ]]
 #C [[ LABELALPHA 1 LABELSIZE 8 COLOR LABEL Yellow ]]
-#C [[ LABEL -178 0 10 "Glider in C3\nYou've found it!\nBonus points awarded..." ]]
+#C [[ LABEL 426 436 10 "Glider in C3\nYou've found it!\nBonus points awarded..." ]]
 #C Herschel + Bellman catalyst matrix.
 #C Fixed B1 and B6 as per Sokwe's notes.
 #C Added E1-E4 for Kazyan's 5-6 Feb 2015 postings
