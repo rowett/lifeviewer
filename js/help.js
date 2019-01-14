@@ -986,6 +986,10 @@
 					this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + tabs[0], y, height, helpLine);
 					y = this.renderHelpLine(view, "State " + i, this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
 				}
+				if (view.engine.drawHistory) {
+					this.renderColourBox(view, view.engine.redChannel[254], view.engine.greenChannel[254], view.engine.blueChannel[254], ctx, x + tabs[0], y, height, helpLine);
+					y = this.renderHelpLine(view, "History", this.rgbString(view.engine.redChannel[254], view.engine.greenChannel[254], view.engine.blueChannel[254]), ctx, x, y, height, helpLine);
+				}
 			}
 			else {
 				// normal theme

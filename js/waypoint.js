@@ -273,7 +273,7 @@
 
 		// compute percentage complete
 		if (endTime !== startTime) {
-			percentLinearComplete = ((elapsedTime - startTime) / (endTime - startTime)) + 0.0;
+			percentLinearComplete = Math.round(1000000 * ((elapsedTime - startTime) / (endTime - startTime))) / 1000000;
 			percentBezierComplete = (this.manager.bezierX(percentLinearComplete, 0, 0, 1, 1)) + 0.0;
 		}
 

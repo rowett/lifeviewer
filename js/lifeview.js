@@ -129,6 +129,9 @@
 
 		// frame time budget in ms
 		/** @const {number} */ frameBudget : 17,
+		
+		// frame cap for 60Hz in ms
+		/** @const {number} */ sixtyHz : 1000 / 60,
 
 		// whether colour theme has colour history
 		/** @const {boolean} */ colourHistory : false,
@@ -146,7 +149,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 276,
+		/** @const {number} */ versionBuild : 277,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1828,15 +1831,17 @@
 		// copy gens per step from control since it gets overwritten by waypoint playback
 		me.gensPerStep = me.stepRange.current[0];
 
+		console.debug("tick");
+
 		// update elapsed time if not paused
 		if (me.playList.current !== ViewConstants.modePause) {
 			// check if actual interval is greater than frame budget
 			if (timeSinceLastUpdate > ViewConstants.frameBudget) {
-				// set update time to frame budget
-				timeSinceLastUpdate = ViewConstants.frameBudget;
-
 				// flag machine too slow
 				tooSlow = true;
+			}
+			if (timeSinceLastUpdate > ViewConstants.sixtyHz) {
+				timeSinceLastUpdate = ViewConstants.sixtyHz;
 			}
 
 			// update floating counter
@@ -9536,6 +9541,9 @@
 
 			// check if the rule is a History rule
 			this.engine.isLifeHistory = pattern.isHistory;
+
+			// check if multi-state rule should draw history
+			this.engine.drawHistory = pattern.drawHistory;
 
 			// read the number of states (Generations or HROT)
 			this.engine.multiNumStates = pattern.multiNumStates;

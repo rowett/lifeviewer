@@ -1,3 +1,7 @@
+Build 277
+- experimental history support for Generations
+- clear B0 in totalistic rules before decoding multi-state rules to prevent false positive error detection
+
 Build 276
 - allow Wolfram W0 rule
 - allow range 1 HROT rules

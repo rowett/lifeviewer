@@ -232,6 +232,9 @@
 		// is history rule
 		this.isHistory = false;
 
+		// draw history for multi-state rule
+		this.drawHistory = false;
+
 		// contains Niemiec extended states
 		this.isNiemiec = false;
 
@@ -2782,6 +2785,9 @@
 		    // counter
 		    i = 0;
 
+		// zero the first element of the rule array so later B0 checks don't fail
+		this.ruleArray[0] = 0;
+
 		// check if the rule is an alias
 		alias = AliasManager.getRuleFromAlias(rule);
 		if (alias !== null) {
@@ -4650,11 +4656,11 @@
 
 		// check for generations and [R]History
 		if (pattern.multiNumStates !== -1 && pattern.isHistory && !(pattern.isLTL || pattern.isHROT)) {
-			// make invalid
 			this.failureReason = "[R]History not valid with Generations";
 			pattern.isHistory = false;
 			this.executable = false;
 		}
+		pattern.drawHistory = true;  // TBD remove !!!
 
 		// check for generations and B0
 		if (pattern.multiNumStates !== -1 && this.ruleArray[0] && !(pattern.isLTL || pattern.isHROT)) {

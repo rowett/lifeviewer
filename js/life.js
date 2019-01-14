@@ -204,6 +204,9 @@
 		// whether pattern is LifeHistory
 		this.isLifeHistory = false;
 
+		// whether to draw history for multi-state patterns
+		this.drawHistory = false;
+
 		// whether pattern is HROT
 		this.isHROT = false;
 
@@ -1446,7 +1449,7 @@
 		i += 1;
 
 		// Multi-state (Generations and HROT) - red to yellow
-		this.themes[i] = new Theme(new ColourRange(new Colour(255, 0, 0), new Colour(255, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme(new ColourRange(new Colour(64, 0, 0), new Colour(255, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// custom theme
@@ -1546,18 +1549,18 @@
 				}
 
 				// compute the red component of the current and target colour
-				currentComponent = this.aliveColCurrent.startColour.red * weight + this.deadColCurrent.startColour.red * (1 - weight);
-				targetComponent = this.aliveColTarget.startColour.red * weight + this.deadColTarget.startColour.red * (1 - weight);
+				currentComponent = this.aliveColCurrent.endColour.red * weight + this.deadColCurrent.endColour.red * (1 - weight);
+				targetComponent = this.aliveColTarget.endColour.red * weight + this.deadColTarget.endColour.red * (1 - weight);
 				this.redChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 				// compoute the green component of the current and target colour
-				currentComponent = this.aliveColCurrent.startColour.green * weight + this.deadColCurrent.startColour.green * (1 - weight);
-				targetComponent = this.aliveColTarget.startColour.green * weight + this.deadColTarget.startColour.green * (1 - weight);
+				currentComponent = this.aliveColCurrent.endColour.green * weight + this.deadColCurrent.endColour.green * (1 - weight);
+				targetComponent = this.aliveColTarget.endColour.green * weight + this.deadColTarget.endColour.green * (1 - weight);
 				this.greenChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 				// compoute the blue component of the current and target colour
-				currentComponent = this.aliveColCurrent.startColour.blue * weight + this.deadColCurrent.startColour.blue * (1 - weight);
-				targetComponent = this.aliveColTarget.startColour.blue * weight + this.deadColTarget.startColour.blue * (1 - weight);
+				currentComponent = this.aliveColCurrent.endColour.blue * weight + this.deadColCurrent.endColour.blue * (1 - weight);
+				targetComponent = this.aliveColTarget.endColour.blue * weight + this.deadColTarget.endColour.blue * (1 - weight);
 				this.blueChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 				// override with custom colour if specified
@@ -1569,6 +1572,13 @@
 						this.blueChannel[i] = (current & 255);
 					}
 				}
+			}
+
+			// create history colour if specified
+			if (this.drawHistory) {
+				this.redChannel[254] = this.deadColTarget.startColour.red;
+				this.greenChannel[254] = this.deadColTarget.startColour.green;
+				this.blueChannel[254] = this.deadColTarget.startColour.blue;
 			}
 
 			// override colour 0 if specified
@@ -1703,6 +1713,15 @@
 						j = this.multiNumStates - i;
 					}
 					pixelColours[i] = (redChannel[j] << 24) | (greenChannel[j] << 16) | (blueChannel[j] << 8) | 255;
+				}
+			}
+
+			// check for draw history
+			if (this.drawHistory) {
+				if (this.littleEndian) {
+					pixelColours[254] = (255 << 24) | (blueChannel[254] << 16) | (greenChannel[254] << 8) | redChannel[254];
+				} else {
+					pixelColours[254] = (redChannel[254] << 24) | (greenChannel[254] << 16) | (blueChannel[254] << 8) | 255;
 				}
 			}
 		}
@@ -4335,6 +4354,7 @@
 			statsOn = true;
 		}
 
+		console.debug(this.counter);
 		// check if snapshot should be saved
 		if (this.counter === this.nextSnapshotTarget - 1) {
 			// save snapshot after next generation computed
@@ -8084,7 +8104,10 @@
 
 		    // starting and ending tile row
 		    tileStartRow = 0,
-		    tileEndRow = tileRows;
+			tileEndRow = tileRows,
+			
+			// whether to draw history
+			drawHistory = this.drawHistory;
 
 		// clear anything alive
 		this.anythingAlive = 0;
@@ -8156,15 +8179,18 @@
 								value = colourGridRow[cr];
 
 								// process the Generations rule
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 
@@ -8175,15 +8201,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
@@ -8192,15 +8221,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
@@ -8209,15 +8241,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
@@ -8226,15 +8261,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
@@ -8243,15 +8281,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
@@ -8260,15 +8301,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
@@ -8277,15 +8321,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
@@ -8294,15 +8341,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
@@ -8311,15 +8361,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
@@ -8328,15 +8381,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
@@ -8345,15 +8401,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
@@ -8362,15 +8421,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
@@ -8379,15 +8441,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
@@ -8396,15 +8461,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
@@ -8413,15 +8481,18 @@
 
 								// loop unroll
 								value = colourGridRow[cr];
-								if ((value === 0 || value === maxGenState) && ((nextCell & n) !== 0)) {
+								if ((value === 0 || value === maxGenState || value === 254) && ((nextCell & n) !== 0)) {
 									value = maxGenState;
 									tileAlive |= value;
 								}
 								else {
 									nextCell &= ~n;
-									if (value > 0) {
+									if (value > 0 && value < 254) {
 										value -= 1;
 										tileAlive |= value;
+										if (value === 0 && drawHistory) {
+											value = 254;
+										}
 									}
 								}
 								colourGridRow[cr] = value;
