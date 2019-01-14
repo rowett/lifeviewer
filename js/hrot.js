@@ -436,7 +436,7 @@
 				if (bottomY - gridBottomY < range) {
 					topY = gridTopY;
 				}
-				this.wrapTorusHROT(gridLeftX, gridBottomY, gridRightX, gridTopY, leftX, bottomY, rightX, topY);
+				this.wrapTorusHROT(gridLeftX, gridBottomY, gridRightX, gridTopY);
 			}
 
 			// check if the bounded grid is a plane and there are just 2 states
