@@ -88,47 +88,37 @@
 	};
 
 	// wrap the grid for HROT torus
-	HROT.prototype.wrapTorusHROT = function(lx, by, rx, ty, leftX, bottomY, rightX, topY) {
+	HROT.prototype.wrapTorusHROT = function(lx, by, rx, ty) {
 		var colourGrid = this.engine.colourGrid,
 			sourceRow = null,
 			destRow = null,
 			range = this.range,
 			x = 0,
-			y = 0,
-			target = range;
+			y = 0;
 
 		// copy the bottom rows to the top border
-		target = ty - topY;
-		if (target <= range) {
-			target = range - target;
-			for (y = 0; y < target; y += 1) {
-				sourceRow = colourGrid[by + y];
-				destRow = colourGrid[ty + y + 1];
-				for (x = lx; x <= rx; x += 1) {
-					destRow[x] = sourceRow[x];
-				}
+		for (y = 0; y < range; y += 1) {
+			sourceRow = colourGrid[by + y];
+			destRow = colourGrid[ty + y + 1];
+			for (x = lx; x <= rx; x += 1) {
+				destRow[x] = sourceRow[x];
 			}
 		}
 
 		// copy the top rows to the bottom border
-		target = bottomY - by;
-		if (target <= range) {
-			target = range - target;
-			for (y = 0; y < range; y += 1) {
-				sourceRow = colourGrid[ty - y];
-				destRow = colourGrid[by - y - 1];
+		for (y = 0; y < range; y += 1) {
+			sourceRow = colourGrid[ty - y];
+			destRow = colourGrid[by - y - 1];
 				for (x = lx; x <= rx; x += 1) {
-					destRow[x] = sourceRow[x];
-				}
+				destRow[x] = sourceRow[x];
 			}
 		}
 
 		// copy the left columns to the right border
 		// and the right columns to the left border
-		target = range;
 		for (y = by; y <= ty; y += 1) {
 			sourceRow = colourGrid[y];
-			for (x = 0; x < target; x += 1) {
+			for (x = 0; x < range; x += 1) {
 				sourceRow[rx + x + 1] = sourceRow[lx + x];
 				sourceRow[lx - x - 1] = sourceRow[rx - x];
 			}
@@ -139,7 +129,7 @@
 		for (y = 0; y < range; y += 1) {
 			sourceRow = colourGrid[by + y];
 			destRow = colourGrid[ty + y + 1];
-			for (x = 0; x < target; x += 1) {
+			for (x = 0; x < range; x += 1) {
 				destRow[x + rx + 1] = sourceRow[x + lx];
 				destRow[lx - x - 1] = sourceRow[rx - x];
 			}
@@ -150,7 +140,7 @@
 		for (y = 0; y < range; y += 1) {
 			sourceRow = colourGrid[ty - y];
 			destRow = colourGrid[by - y - 1];
-			for (x = 0; x < target; x += 1) {
+			for (x = 0; x < range; x += 1) {
 				destRow[x + rx + 1] = sourceRow[x + lx];
 				destRow[lx - x - 1] = sourceRow[rx - x];
 			}
