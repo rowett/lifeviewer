@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Smooth animation test</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C [[ X -133 Y -18 Z 10 GRID PAUSE 0.2 AUTOSTART LOOP 4000 WIDTH 800 POPUPWIDTH 800 ]]
+#C [[ T 1895 X 77 Y -23 Z 3 ]]
+#C [[ T 2000 X 100 Y 0 STEP 5 GPS 30 ]]
+#C [[ T 2500 X 400 Y 150 Z 2 GPS 60 ]]
+#C [[ COLOR LABEL Yellow LABELSIZE 24 ]]
+#C [[ LABELT 300 500 10 LABEL 50 -2 10 "Well, we ain't" ]]
+#C [[ LABELT 440 640 10 LABEL 70 -2 10 "got a barrel of" ]]
+#C [[ COLOR LABEL Green LABELSIZE 32 ]]
+#C [[ LABELT 580 1000 100 LABEL 90 -2 9 "money --" ]]
+#C [[ COLOR LABEL Orange LABELSIZE 24 ]]
+#C [[ LABELT 700 900 10 LABEL 110 32 8 "We may be" ]]
+#C [[ LABELT 840 1040 10 LABEL 130 32 8 "ragged and" ]]
+#C [[ COLOR LABEL White LABELSIZE 32 ]]
+#C [[ LABELT 980 1200 10 LABEL 150 32 7 "funny --" ]]
+#C [[ COLOR LABEL Yellow LABELSIZE 24 ]]
+#C [[ LABELT 1100 1300 10 LABEL 170 -2 6 "but we're loafin' along" ]]
+#C [[ COLOR LABEL Orange LABELSIZE 24 ]]
+#C [[ LABELT 1240 1440 10 LABEL 190 32 5 "singin' a song" ]]
+#C [[ LABELANGLE 20 ]]
+#C  [[ COLOR LABEL Yellow LABELSIZE 24 ]]
+#C [[ LABELT 1300 1500 10 LABEL 220 -2 5 "SIDE" ]]
+#C [[ LABELT 1400 1550 10 LABEL 230 17 4.5 "BY" ]]
+#C [[ COLOR LABEL Orange LABELSIZE 24 ]]
+#C [[ LABELT 1500 1600 10 LABEL 240 32 4 "SIDE" ]]
+#C [[ LABELANGLE 0 COLOR LABEL Red ]]
+#C [[ LABELT 1600 1775 10 LABEL 240 32 4 "-- Look out,\n Sundance,\nobstruction ahead." ]]
+#C [[ LABELT 1750 1900 10 LABEL 250 -5 4  "We're gonna have to glide outta here, Butch!" ]]
+#C [[ LABELANGLE 45 LABELALPHA 0.50 COLOR LABEL Cyan ]]
+#C [[ LABELT 1850 2000 10 LABEL 275 52 3 "Here goes nothin' --" ]]
+#C [[ COLOR LABEL Yellow LABELALPHA 1.00 ]]
+#C [[ LABELT 1900 3500 500 LABEL 455 220 2 "YEEEE-HAW!" ]]
+x = 315, y = 71, rule = B3/S23
+306b2o$307bo$307bob2o$304b2ob2obo$2obo2b2o297bo$b2o2bo2bo296bo$5bobo
+296b2ob2o$6bo300bo$o303b2obo$3o301b2ob2o$3bo$2bo$2o304b2obo$306bob2o2$
+283b2o14b2o$284bo14b2o$284bob2o$281b2ob2obo$2obo2b2o274bo$b2o2bo2bo
+273bo$5bobo273b2ob2o$6bo277bo$o280b2obo4b2o$3o278b2ob2o4bo$3bo286bobo$
+2bo288b2o$2o281b2obo$283bob2o2$276b2o32bo$276b2o30b3o$307bo$307b2o5$
+266b2o$267bo$267bobo43b2o$268b2o43bo$311bobo$311b2o$294b2o$287bo6b2o$
+285b3o$284bo$284b2o7b2o$294bo$291b3o$291bo6b2o$297bobo$297bo$296b2o7b
+2o$290b2o13b2o$290bo$288bobo$288b2o$271b2o$271b2o3$270b2o$271bo$268b3o
+$268bo6b2o$274bobo$274bo$273b2o7b2o$282b2o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>
