@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Generations with history</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 16, y = 10, rule = 24/24/10:S100
+9.D5.I$4.A3.EFE$3.BAB2.GFG.HI$2.2ABCF.3H2.H$2AB3D2GH.I2.I$2ABDCEGCH$
+2.3BEDB2FHI$2.A.ADBCFHFH$8.EDGF$8.DCE!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Star Wars with history</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 10, y = 10, rule = Star Wars
+#D Star Wars Fun collection
+#D 
+#D Steeplechase, p20
+#D 
+#D Mirek Wojtowicz, May 1999
+135.A$134.3A$4.CB118.A10.A$6.C9.A12.A6.A11.A6.A6.A..A11.A4.A8.A4.A4.A
+11.A9.3A9.A$3.A.A.B7.3A10.3A4.3A9.3A4.3A4.6A9.3A..3A6.3A..3A..3A9.3A7.
+AA.AA8.AA$A.6A8.A12.A6.A11.A6.A6.A..A11.A.AA.A8.A.AA.A.AA.A9.AA.AA5.AA
+.A.AA7.A$BAA..A.A8.A12.A6.A11.A6.A6.A..A11.A.AA.A8.A.AA.A.AA.A8.AA.A.
+AA5.AA.A.AA6.A$C.BA.CB8.3A10.3A4.3A9.3A4.3A4.6A9.3A..3A6.3A..3A..3A6.
+AA.A.AA7.AA.AA7.AA$16.A12.A6.A11.A6.A6.A..A11.A4.A8.A4.A4.A8.AA.AA9.3A
+8.A$111.3A11.A9.A$112.A21.3A$135.A16$37.A$36.3A15.A..A$37.A15.6A$37.A
+16.A..A$36.3A15.A..A$37.A15.6A$37.A16.A..A49.CB$36.3A15.A..A49.A.A25.A
+$37.A15.6A47.3A25.3A$4.CB31.A16.A..A12.A..A..A..A..A24.A27.A$6.C29.3A
+15.A..A11.15A51.A$3.A.A.B29.A15.6A11.A..A..A..A..A35.A.C14.AA$A.6A29.A
+16.A..A12.A..A..A..A..A34.3AB14.A$BAA..A.A15.A12.3A15.A..A11.15A34.A.A
+14.A$C.BA.CB15.3A12.A15.6A11.A..A..A..A..A52.AA$23.A13.A16.A..A77.A$
+23.A12.3A96.A$22.3A12.A96.3A$23.A13.A97.A$23.A12.3A$22.3A12.A$23.A13.A
+$23.A12.3A$22.3A12.A$23.A$$105.AB$105.A.C11.C$104.3A11.B.A$105.A12.4A$
+120.A
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

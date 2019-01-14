@@ -18,7 +18,7 @@ Build 273
 Build 272
 - graph close button was not updating graph toggle button
 - HROT rules now support von Neumann and Circular neighbourhoods
-	- new optional neighbourhood postfix: Rr,Cc,Slist,Blist(,Nm)
+	- new optional neighbourhood postfix: Rr,Cc,Slist,Blist(,Nn)
 - 2 state Generations rules now use standard Themes
 
 Build 271
@@ -65,9 +65,9 @@ Build 265
 - new script command [[ LABEL X Y ZOOM "<string>" ]]
 	- displays a static label at the given cell position and zoom
 	- Help information contains label definitions
-- new script command [[ LABELALPHA 0.0..0.1 ]]
+- new script command [[ LABELALPHA <0.0..1.0> ]]
 	- sets opacity for following label definitions from 0 (transparent) to 1 (opaque - the default)
-- new script command [[ LABELSIZE 4..32 ]]
+- new script command [[ LABELSIZE <4..32> ]]
 	- sets the label font size for following label definitions (default is 18)
 - new script command [[ COLOR LABEL <colourname>|R G B ]]
 	- sets the label text colour (default is 240 255 255)
