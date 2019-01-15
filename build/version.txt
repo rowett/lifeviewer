@@ -1,6 +1,6 @@
 Build 277
 - multi-state Generations patterns now display history
-- clear B0 in totalistic rules before decoding multi-state rules to prevent false positive error detection
+- fixed rare incorrect B0 error report when decoding multi-state patterns
 - more consistent timing for animation
 
 Build 276
