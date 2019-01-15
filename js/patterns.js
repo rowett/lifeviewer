@@ -3177,8 +3177,8 @@
 			}
 		}
 
-		// if multi-state rule and less than 256 states then turn on history drawing
-		if (pattern.multiNumStates > 2 && pattern.multiNumStates < 256) {
+		// if Generations rule and less than 256 states then turn on history drawing
+		if (pattern.multiNumStates > 2 && pattern.multiNumStates < 256 && !(pattern.isHROT || pattern.isLTL)) {
 			pattern.drawHistory = true;
 		}
 
