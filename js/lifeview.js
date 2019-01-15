@@ -1831,8 +1831,6 @@
 		// copy gens per step from control since it gets overwritten by waypoint playback
 		me.gensPerStep = me.stepRange.current[0];
 
-		console.debug("tick");
-
 		// update elapsed time if not paused
 		if (me.playList.current !== ViewConstants.modePause) {
 			// check if actual interval is greater than frame budget

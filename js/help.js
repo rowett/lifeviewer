@@ -982,13 +982,18 @@
 
 			// check for Generations or HROT rules
 			if (view.engine.multiNumStates > 2) {
-				for (i = 1; i < view.engine.multiNumStates; i += 1) {
-					this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + tabs[0], y, height, helpLine);
-					y = this.renderHelpLine(view, "State " + i, this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
-				}
 				if (view.engine.drawHistory) {
-					this.renderColourBox(view, view.engine.redChannel[254], view.engine.greenChannel[254], view.engine.blueChannel[254], ctx, x + tabs[0], y, height, helpLine);
-					y = this.renderHelpLine(view, "History", this.rgbString(view.engine.redChannel[254], view.engine.greenChannel[254], view.engine.blueChannel[254]), ctx, x, y, height, helpLine);
+					for (i = 2; i < view.engine.multiNumStates + 1; i += 1) {
+						this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + tabs[0], y, height, helpLine);
+						y = this.renderHelpLine(view, "State " +  (i - 1), this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
+					}
+					this.renderColourBox(view, view.engine.redChannel[1], view.engine.greenChannel[1], view.engine.blueChannel[1], ctx, x + tabs[0], y, height, helpLine);
+					y = this.renderHelpLine(view, "History", this.rgbString(view.engine.redChannel[1], view.engine.greenChannel[1], view.engine.blueChannel[1]), ctx, x, y, height, helpLine);
+				} else {
+					for (i = 1; i < view.engine.multiNumStates; i += 1) {
+						this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + tabs[0], y, height, helpLine);
+						y = this.renderHelpLine(view, "State " + i, this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
+					}
 				}
 			}
 			else {

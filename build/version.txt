@@ -1,5 +1,5 @@
 Build 277
-- experimental history support for Generations
+- multi-state Generations patterns now display history
 - clear B0 in totalistic rules before decoding multi-state rules to prevent false positive error detection
 - more consistent timing for animation
 

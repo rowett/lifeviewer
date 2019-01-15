@@ -3177,6 +3177,11 @@
 			}
 		}
 
+		// if multi-state rule and less than 256 states then turn on history drawing
+		if (pattern.multiNumStates > 2 && pattern.multiNumStates < 256) {
+			pattern.drawHistory = true;
+		}
+
 		// return whether rule is valid
 		return valid;
 	};
@@ -3217,7 +3222,10 @@
 		    codep = String("p").charCodeAt(0) - 1,
 
 		    // state counts
-		    stateCount = this.stateCount;
+			stateCount = this.stateCount,
+			
+			// offset if drawing history
+			drawHistoryOffset = pattern.drawHistory ? 1 : 0;
 
 		// get the first character
 		next = string[index];
@@ -3415,9 +3423,9 @@
 								// check state is valid
 								if (pattern.multiNumStates - stateNum >= 0) {
 									// change state order for layer rendering
-									pattern.multiStateMap[y][x] = pattern.multiNumStates - stateNum;
+									pattern.multiStateMap[y][x] = pattern.multiNumStates - stateNum + drawHistoryOffset;
 								} else {
-									pattern.multiStateMap[y][x] = 1;
+									pattern.multiStateMap[y][x] = 1 + drawHistoryOffset;
 								}
 							}
 						}
@@ -4491,6 +4499,7 @@
 		pattern.title = "";
 		pattern.numStates = 2;
 		pattern.numUsedStates = 0;
+		pattern.drawHistory = false;
 		
 		// clear the state used counts
 		for (i = 0; i < maxStates; i += 1) {
@@ -4660,7 +4669,6 @@
 			pattern.isHistory = false;
 			this.executable = false;
 		}
-		pattern.drawHistory = true;  // TBD remove !!!
 
 		// check for generations and B0
 		if (pattern.multiNumStates !== -1 && this.ruleArray[0] && !(pattern.isLTL || pattern.isHROT)) {
