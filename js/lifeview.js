@@ -149,7 +149,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 277,
+		/** @const {number} */ versionBuild : 278,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -227,7 +227,7 @@
 
 		// min and max label size
 		/** @const {number} */ minLabelSize : 4,
-		/** @const {number} */ maxLabelSize : 32,
+		/** @const {number} */ maxLabelSize : 128,
 
 		// label font family
 		/** @const {string} */ labelFontFamily : "Arial",
@@ -445,6 +445,9 @@
 		this.randomSeed = Date.now().toString();
 		this.randomSeedCustom = false;
 
+		// whether labels displayed
+		this.showLabels = true;
+
 		// whether population graph displayed
 		this.popGraph = false;
 
@@ -581,7 +584,7 @@
 		this.errorsFontColour = ViewConstants.errorsFontColour;
 
 		// boundary colour (for help display)
-		this.customBoundaryColour = [80, 80, 80];
+		this.customBoundaryColour = [96, 96, 96];
 
 		// window title element
 		this.titleElement = null;
@@ -2243,7 +2246,9 @@
 		}
 
 		// draw any labels
-		me.waypointManager.drawLabels(me);
+		if (me.showLabels) {
+			me.waypointManager.drawLabels(me);
+		}
 
 		// draw population graph if required
 		if (me.popGraph) {
@@ -2431,7 +2436,7 @@
 		this.layersItem.deleted = hide;
 		this.fitButton.deleted = hide;
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
-		this.closeButton.deleted = hide || !this.isInPopup;
+		this.closeButton.deleted = !this.isInPopup;
 		this.fpsButton.deleted = hide;
 		this.hexButton.deleted = hide;
 		this.graphButton.deleted = hide;
@@ -4511,15 +4516,24 @@
 				}
 				break;
 
-			// p for increase depth
+			// p for increase depth or toggle loop
 			case 80:
-				// disable depth in multi-state mode
-				if (!me.multiStateView) {
-					if (!me.depthItem.locked) {
-						if (me.depthItem.current[0] <= 0.99) {
-							me.depthItem.current = me.viewDepthRange([me.depthItem.current[0] + 0.01, me.depthItem.current[1]], true, me);
-						} else {
-							me.depthItem.current = me.viewDepthRange([1, me.depthItem.current[1]], true, me);
+				// check for shift
+				if (event.shiftKey) {
+					if (me.loopDefined !== -1) {
+						// toggle loop mode
+						me.loopDisabled = !me.loopDisabled;
+						me.loopIndicator.current = [me.loopDisabled];
+					}
+				} else {
+					// disable depth in multi-state mode
+					if (!me.multiStateView) {
+						if (!me.depthItem.locked) {
+							if (me.depthItem.current[0] <= 0.99) {
+								me.depthItem.current = me.viewDepthRange([me.depthItem.current[0] + 0.01, me.depthItem.current[1]], true, me);
+							} else {
+								me.depthItem.current = me.viewDepthRange([1, me.depthItem.current[1]], true, me);
+							}
 						}
 					}
 				}
@@ -4529,11 +4543,7 @@
 			case 76:
 				// check for shift
 				if (event.shiftKey) {
-					if (me.loopDefined !== -1) {
-						// toggle loop mode
-						me.loopDisabled = !me.loopDisabled;
-						me.loopIndicator.current = [me.loopDisabled];
-					}
+					me.showLabels = !me.showLabels;
 				} else {
 					// disable depth in multi-state mode
 					if (!me.multiStateView) {
@@ -9480,6 +9490,34 @@
 		this.thumbnail = true;
 	};
 
+	// clear pattern data
+	View.prototype.clearPatternData = function() {
+		// clear pattern data
+		this.genDefined = false;
+		this.genOffset = 0;
+		this.posDefined = false;
+		this.posXOffset = 0;
+		this.posYOffset = 0;
+		this.patternRuleName = "";
+		this.patternAliasName = "";
+		this.patternName = "";
+		this.patternOriginator = "";
+		this.patternWidth = 0;
+		this.patternHeight = 0;
+		this.patternStates = 0;
+		this.patternUsedStates = 0;
+		this.patternFormat = "(none)";
+		this.engine.isLifeHistory = false;
+		this.engine.isHex = false;
+		this.engine.isVonNeumann = false;
+		this.engine.wolframRule = -1;
+		this.engine.patternDisplayMode = false;
+		this.engine.multiNumStates = -1;
+		this.engine.boundedGridType = -1;
+		this.engine.isHROT = false;
+		this.engine.multiState = false;
+	};
+
 	// start the viewer from a supplied pattern string
 	View.prototype.startViewer = function(patternString, ignoreThumbnail) {
 		var pattern = null,
@@ -9581,31 +9619,11 @@
 				this.patternStateCount[i] = PatternManager.stateCount[i];
 			}
 		} else {
-			// clear pattern data
-			this.genDefined = false;
-			this.genOffset = 0;
-			this.posDefined = false;
-			this.posXOffset = 0;
-			this.posYOffset = 0;
-			this.patternRuleName = "";
-			this.patternAliasName = "";
-			this.patternName = "";
-			this.patternOriginator = "";
-			this.patternWidth = 0;
-			this.patternHeight = 0;
-			this.patternStates = 0;
-			this.patternUsedStates = 0;
-			this.patternFormat = "(none)";
-			this.engine.isLifeHistory = false;
-			this.engine.isHex = false;
-			this.engine.isVonNeumann = false;
-			this.engine.wolframRule = -1;
-			this.engine.patternDisplayMode = false;
-			this.engine.multiNumStates = -1;
-			this.engine.boundedGridType = -1;
-			this.engine.isHROT = false;
-			this.engine.multiState = false;
+			this.clearPatternData();
 		}
+
+		// show labels
+		this.showLabels = true;
 
 		// do not display population graph
 		this.popGraph = false;
@@ -9916,6 +9934,14 @@
 						this.displayHeight = ViewConstants.minMenuHeight + 80;
 					}
 				}
+			}
+
+			// check pattern size (script command may have increased maximum allowed size)
+			if (pattern.width > this.engine.maxGridSize || pattern.height >= this.engine.maxGridSize) {
+				this.failureReason = "Pattern too big (maximum " + this.engine.maxGridSize + "x" + this.engine.maxGridSize + ")";
+				this.tooBig = true;
+				this.executable = false;
+				this.clearPatternData();
 			}
 
 			// set the graph UI control

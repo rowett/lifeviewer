@@ -110,8 +110,8 @@
 		negativeBit : 13,
 
 		// maximum width and height of patterns
-		maxWidth : 8192,
-		maxHeight : 8192,
+		maxWidth : 16384,
+		maxHeight : 16384,
 
 		// maxmimum states
 		maxStates : 256,

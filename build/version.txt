@@ -1,3 +1,11 @@
+Build 278
+- close button in bottom right menu is available in PopUp viewers when help or errors are displayed
+- increased maximum LABELSIZE to 128
+- bounded grid border colour no longer overwrites state colour for 256 state patterns
+- hotkey shift and l is now toggle labels
+	- hotkey shift and p is toggle loop mode
+- MAXGRIDSIZE was only allowing patterns to grow to the specified size rather than start at the specified size
+
 Build 277
 - multi-state Generations patterns now display history
 - fixed rare incorrect B0 error report when decoding multi-state patterns

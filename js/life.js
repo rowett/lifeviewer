@@ -1786,11 +1786,10 @@
 		}
 
 		// create bounded grid border colour if specified
-		if (this.boundedGridType !== -1) {
+		if (this.boundedGridType !== -1 && this.multiNumStates < (256 - drawHistoryOffset)) {
 			if (this.littleEndian) {
 				pixelColours[LifeConstants.boundedBorderColour] = 0xff808080;
-			}
-			else {
+			} else {
 				pixelColours[LifeConstants.boundedBorderColour] = 0x808080ff;
 			}
 		}
@@ -8116,14 +8115,11 @@
 		    tileStartRow = 0,
 			tileEndRow = tileRows,
 			
-			// whether to draw history
-			drawHistory = this.drawHistory,
-
 		    // maximum generations state
-		    maxGenState = this.multiNumStates - (drawHistory ? 0 : 1),
+		    maxGenState = this.multiNumStates - (this.drawHistory ? 0 : 1),
 
 			// maximum dead state number (0 normally - 1 if drawing history),
-			deadState = (drawHistory ? 1 : 0);
+			deadState = (this.drawHistory ? 1 : 0);
 
 		// clear anything alive
 		this.anythingAlive = 0;
@@ -8525,7 +8521,10 @@
 
 		    // starting and ending tile row
 		    tileStartRow = 0,
-		    tileEndRow = tileRows;
+			tileEndRow = tileRows,
+
+			// maximum dead state number (0 normally - 1 if drawing history),
+			deadState = (this.drawHistory ? 1 : 0);
 
 		// clear anything alive
 		this.generationsAlive = 0;
@@ -8575,7 +8574,7 @@
 									value = colourGridRow[cr];
 
 									// process the Generations rule
-									if (value > 0) {
+									if (value > deadState) {
 										value -= 1;
 									}
 
