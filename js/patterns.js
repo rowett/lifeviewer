@@ -2832,8 +2832,8 @@
 					i = 1;
 					pattern.multiNumStates = 0;
 
-					// check for and ignore G so "23/3/2" and "B3/S23/G2" are both supported
-					if (i < generationsPart.length && generationsPart[i].toLowerCase() === "g") {
+					// check for and ignore G or C so "23/3/2", "B3/S23/G2" and "B3/S23/C2" are all supported
+					if (i < generationsPart.length && (generationsPart[i].toLowerCase() === "g" || generationsPart[i].toLowerCase() === "c")) {
 						i += 1;
 					}
 
@@ -3110,8 +3110,8 @@
 							} else {
 								pattern.multiNumStates = 0;
 
-								// check for and ignore G so "23/3/2" and "B3/S23/G2" are both supported
-								if (i < generationsPart.length && generationsPart[i] === "g") {
+								// check for and ignore G or C so "23/3/2", "B3/S23/G2" and "B3/S23/C2" are all supported
+								if (i < generationsPart.length && (generationsPart[i].toLowerCase() === "g" || generationsPart[i].toLowerCase() === "c")) {
 									i += 1;
 								}
 	

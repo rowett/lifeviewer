@@ -149,7 +149,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 280,
+		/** @const {number} */ versionBuild : 281,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5609,7 +5609,7 @@
 		this.angleItem.toolTip = "camera angle";
 
 		// shrink button
-		this.shrinkButton = this.viewMenu.addButtonItem(this.shrinkPressed, Menu.northWest, 0, 50, 40, 40, "");
+		this.shrinkButton = this.viewMenu.addButtonItem(this.shrinkPressed, Menu.southEast, -40, -90, 40, 40, "");
 		this.shrinkButton.icon = ViewConstants.iconManager.icon("shrink");
 		this.shrinkButton.toolTip = "shrink to thumbnail";
 

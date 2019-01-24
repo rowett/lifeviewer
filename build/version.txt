@@ -1,3 +1,7 @@
+Build 281
+- moved Shrink button from top left to bottom right
+- added support for C in generations postfix e.g. B3/S23/C3
+
 Build 280
 - rule names now support slash after generations prefix and G in generations postfix
 	- prefix: G3/B3/S23
