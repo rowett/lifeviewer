@@ -129,8 +129,7 @@ help|help information
 keywords|script command keywords
 life|algorithms to compute the next generation
 lifeview|main program
-ltl|LtL algorithm
-hrot|HROT algorithm
+hrot|LtL/HROT algorithm
 patterns|pattern reader and decoder
 random|pseudo-random number generator
 script|functions to read script commands
