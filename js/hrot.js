@@ -230,7 +230,13 @@
 			aliveStart = LifeConstants.aliveStart,
 			deadMin = LifeConstants.deadMin,
 			aliveIndex = 0,
-			colourLookup = this.engine.colourLookup;
+			colourLookup = this.engine.colourLookup,
+
+			// maximum generations state
+			maxGenState = maxGeneration + (this.engine.drawHistory ? 1 : 0),
+
+			// maximum dead state number (0 normal - 1 if drawing history),
+			deadState = (this.engine.drawHistory ? 1 : 0);
 
 		// compute next generation
 		population = 0;
@@ -302,14 +308,14 @@
 				for (x = leftX - range; x <= rightX + range; x += 1) {
 					state = colourRow[x];
 					count = countRow[x];
-					if (state === 0) {
+					if (state <= deadState) {
 						// this cell is dead
 						if (birthList[count] === 1) {
 							// new cell is born
-							state = maxGeneration;
+							state = maxGenState;
 							births += 1;
 						}
-					} else if (state === maxGeneration) {
+					} else if (state === maxGenState) {
 						// this cell is alive
 						if (survivalList[count] === 0) {
 							// cell decays by one state
@@ -331,7 +337,7 @@
 						if (x > maxX) {
 							maxX = x;
 						}
-						if (state === maxGeneration) {
+						if (state === maxGenState) {
 							population += 1;
 						}
 					}
@@ -898,7 +904,13 @@
 			population = 0, births = 0, deaths = 0,
 			state = 0,
 			xpr = 0, xmrp1 = 0,
-			rowAlive = false, colAlive = false, somethingAlive = false;
+			rowAlive = false, colAlive = false, somethingAlive = false,
+
+			// maximum generations state
+			maxGenState = maxGeneration + (this.engine.drawHistory ? 1 : 0),
+
+			// maximum dead state number (0 normal - 1 if drawing history),
+			deadState = (this.engine.drawHistory ? 1 : 0);
 
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {
@@ -932,13 +944,6 @@
 					topY = gridTopY;
 				}
 				this.wrapTorusHROT(gridLeftX, gridBottomY, gridRightX, gridTopY);
-			}
-
-			// check if the bounded grid is a plane and there are just 2 states
-			if (this.engine.boundedGridType === 0 && maxGeneration === 1) {
-				// clear bounded grid cells since they have value 255
-				// they will be replaced before rendering
-				this.engine.drawBoundedGridBorder(0);
 			}
 
 			// fit to bounded grid
@@ -993,7 +998,7 @@
 				colourRow = colourGrid[y];
 				count = 0;
 				for (x = leftX + r2; x <= rightX; x += 1) {
-					if (colourRow[x] === maxGeneration) {
+					if (colourRow[x] === maxGenState) {
 						count += 1;
 					}
 					countRow[x] = prevCountRow[x] + count;
@@ -1018,14 +1023,14 @@
 			// process bottom left cell
 			state = colourGrid[bottomY][leftX];
 			count = counts[bottomY + range][leftX + range];
-			if (state === 0) {
+			if (state <= deadState) {
 				// this cell is dead
 				if (birthList[count] === 1) {
 					// new cell is born
-					state = maxGeneration;
+					state = maxGenState;
 					births += 1;
 				}
-			} else if (state === maxGeneration) {
+			} else if (state === maxGenState) {
 				// this cell is alive
 				if (survivalList[count] === 0) {
 					// cell decays by one state
@@ -1038,7 +1043,7 @@
 			}
 			// update the cell
 			colourGrid[bottomY][leftX] = state;
-			if (state === maxGeneration) {
+			if (state === maxGenState) {
 				population += 1;
 			}
 			if (state > 0) {
@@ -1059,14 +1064,14 @@
 			for (x = leftX + 1; x <= rightX; x += 1) {
 				state = colourRow[x];
 				count = countRow[x + range] - prevCountRow[x - rp1];
-				if (state === 0) {
+				if (state <= deadState) {
 					// this cell is dead
 					if (birthList[count] === 1) {
 						// new cell is born
-						state = maxGeneration;
+						state = maxGenState;
 						births += 1;
 					}
-				} else if (state === maxGeneration) {
+				} else if (state === maxGenState) {
 					// this cell is alive
 					if (survivalList[count] === 0) {
 						// cell decays by one state
@@ -1079,7 +1084,7 @@
 				}
 				// update the cell
 				colourRow[x] = state;
-				if (state === maxGeneration) {
+				if (state === maxGenState) {
 					population += 1;
 				}
 				if (state > 0) {
@@ -1105,14 +1110,14 @@
 			for (y = bottomY + 1; y <= topY; y += 1) {
 				state = colourGrid[y][leftX];
 				count = counts[y + range][xpr] - counts[y - rp1][xpr];
-				if (state === 0) {
+				if (state <= deadState) {
 					// this cell is dead
 					if (birthList[count] === 1) {
 						// new cell is born
-						state = maxGeneration;
+						state = maxGenState;
 						births += 1;
 					}
-				} else if (state === maxGeneration) {
+				} else if (state === maxGenState) {
 					// this cell is alive
 					if (survivalList[count] === 0) {
 						// cell decays by one state
@@ -1125,7 +1130,7 @@
 				}
 				// update the cell
 				colourGrid[y][leftX] = state;
-				if (state === maxGeneration) {
+				if (state === maxGenState) {
 					population += 1;
 				}
 				if (state > 0) {
@@ -1164,14 +1169,14 @@
 						+ countRowYmrp1[xmrp1]
 						- countRowYpr[xmrp1]
 						- countRowYmrp1[xpr];
-					if (state === 0) {
+					if (state <= deadState) {
 						// this cell is dead
 						if (birthList[count] === 1) {
 							// new cell is born
-							state = maxGeneration;
+							state = maxGenState;
 							births += 1;
 						}
-					} else if (state === maxGeneration) {
+					} else if (state === maxGenState) {
 						// this cell is alive
 						if (survivalList[count] === 0) {
 							// cell decays by one state
@@ -1184,7 +1189,7 @@
 					}
 					// update the cell
 					colourRow[x] = state;
-					if (state === maxGeneration) {
+					if (state === maxGenState) {
 						population += 1;
 					}
 					if (state > 0) {
@@ -1235,7 +1240,7 @@
 						width = widths[j + range];
 						colourRow = colourGrid[y + j];
 						for (i = -width; i <= width; i += 1) {
-							if ((colourRow[x + i]) === maxGeneration) {
+							if ((colourRow[x + i]) === maxGenState) {
 								count += 1;
 							}
 						}
