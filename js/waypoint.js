@@ -644,8 +644,13 @@
 						}
 
 						// add movement
-						cx += current.dx * view.floatCounter;
-						cy += current.dy * view.floatCounter;
+						if (current.t1 !== -1) {
+							cx += current.dx * (view.floatCounter - current.t1);
+							cy += current.dy * (view.floatCounter - current.t1);
+						} else {
+							cx += current.dx * view.floatCounter;
+							cy += current.dy * view.floatCounter;
+						}
 	
 						// check for camera rotation
 						if (engine.camAngle !== 0) {

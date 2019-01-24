@@ -1,3 +1,6 @@
+Build 279
+- LABELTRACK positions are now relative to T1 if defined by LABELT
+
 Build 278
 - close button in bottom right menu is available in PopUp viewers when help or errors are displayed
 - fps toggle in bottom right menu is available when help or errors are displayed

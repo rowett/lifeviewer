@@ -31,20 +31,30 @@
 			<textarea rows=10 cols=70>
 x = 9, y = 5, rule = B3/S23
 $bo3b3o$b3o2bo$2bo!
+x = 9, y = 5, rule = B3/S23
+$bo3b3o$b3o2bo$2bo!
 #C TRACK on (reset pattern once and run again to see with TRACK OFF)
-#C [[ TRACK 0.1 0.02 GRID ZOOM 16 ]]
+#C [[ TRACK 0.1 0.02 GRID ZOOM 4 ]]
 #C Tracks slower than TRACK speed
-#C [[ LABELTRACK 0.05 0.01 LABEL 4 -2 16 FIXED "Tracking Slow" ]]
+#C [[ LABELTRACK 0.05 0.01 LABEL 4 -4 4 FIXED "Tracking Slow" ]]
 #C Tracks at the same speed as TRACK speed so will appear static if TRACK is ON
-#C [[ LABELTRACK 0.1 0.02 LABEL 4 0 16 FIXED "Tracking Normal" ]]
+#C [[ LABELTRACK 0.1 0.02 LABEL 4 0 4 FIXED "Tracking Normal" ]]
 #C Tracks faster than TRACK speed
-#C [[ LABELTRACK 0.15 0.03 LABEL 4 2 16 FIXED "Tracking Fast" ]]
+#C [[ LABELTRACK 0.15 0.03 LABEL 4 4 4 FIXED "Tracking Fast" ]]
 #C Turn LABELTRACK OFF (set it to FIXED)
 #C [[ LABELTRACK FIXED ]]
 #C Standard label will be relative to TRACK if ON
-#C [[ LABEL 4 4 16 "Normal" ]]
+#C [[ LABEL 4 8 4 "Normal" ]]
 #C Fixed position label doesn't move if TRACK is ON
-#C [[ LABEL 4 6 16 FIXED "Fixed" ]]
+#C [[ LABEL 4 12 4 FIXED "Fixed" ]]
+#C Track three gliders from when they are formed
+#C [[ COLOR LABEL Yellow ]]
+#C Track first NW glider until T=10000
+#C [[ LABELT 144 10000 10 LABELTRACK -0.25 -0.25 LABEL -0.5 -12 4 FIXED "Glider" ]]
+#C Track second NW glider for its' short lifespan
+#C [[ LABELT 216 265 10 LABEL 10 26 4 FIXED "Transient\nGlider" ]]
+#C Track NE glider for 200 generations
+#C [[ LABELT 268 468 10 LABELTRACK 0.25 -0.25 LABEL 29.5 32 4 FIXED "Another\nGlider" ]]
             </textarea>
 			<br>
 			<canvas width="480" height="480"></canvas>
