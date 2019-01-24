@@ -38,8 +38,7 @@
 				if (!drawingShadow) {
 					if ((view.displayHelp | 0) > 1) {
 						ctx.fillStyle = ViewConstants.helpFontColour;
-					}
-					else {
+					} else {
 						ctx.fillStyle = ViewConstants.greyFontColour;
 					}
 				}
@@ -55,8 +54,7 @@
 				if (!drawingShadow) {
 					if ((view.displayHelp | 0) < view.numHelpLines - view.numHelpPerPage) {
 						ctx.fillStyle = ViewConstants.helpFontColour;
-					}
-					else {
+					} else {
 						ctx.fillStyle = ViewConstants.greyFontColour;
 					}
 				}
@@ -149,8 +147,7 @@
 
 					// draw the line of text
 					ctx.fillText(text, x + view.tabs[tabNo], y);
-				}
-				else {
+				} else {
 					ctx.font = ViewConstants.variableFont;
 					ctx.fillText(text, x, y);
 				}
@@ -189,8 +186,7 @@
 				// mark found and exit loop
 				found = true;
 				i = keys.length;
-			}
-			else {
+			} else {
 				// try next
 				i += 1;
 			}
@@ -219,8 +215,7 @@
 				width = view.engine.zoomBox.rightX - view.engine.zoomBox.leftX + 1;
 				height = view.engine.zoomBox.topY - view.engine.zoomBox.bottomY + 1;
 			}
-		}
-		else {
+		} else {
 			// at T=0 so get dimensions from pattern
 			width = view.patternWidth;
 			height = view.patternHeight;
@@ -327,8 +322,7 @@
 		y = this.renderHelpLine(view, "", "Playback controls:", ctx, x, y, height, helpLine);
 		if (view.multiStateView) {
 			y = this.renderHelpLine(view, "R", "reset", ctx, x, y, height, helpLine);
-		}
-		else {
+		} else {
 			y = this.renderHelpLine(view, "Enter", "toggle play / pause", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Space", "pause / next generation", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "B", "pause / previous generation", ctx, x, y, height, helpLine);
@@ -336,8 +330,7 @@
 			y = this.renderHelpLine(view, "Shift Tab", "pause / previous step", ctx, x, y, height, helpLine);
 			if (view.isInPopup) {
 				y = this.renderHelpLine(view, "Esc", "close LifeViewer", ctx, x, y, height, helpLine);
-			}
-			else {
+			} else {
 				y = this.renderHelpLine(view, "Esc", "pause if playing", ctx, x, y, height, helpLine);
 			}
 			y = this.renderHelpLine(view, "R", "reset to generation 0", ctx, x, y, height, helpLine);
@@ -354,14 +347,11 @@
 			if (view.waypointsDefined) {
 				if (view.loopGeneration !== -1) {
 					y = this.renderHelpLine(view, "W", "toggle waypoint playback and loop", ctx, x, y, height, helpLine);
-				}
-				else {
+					y = this.renderHelpLine(view, "Shift P", "toggle just loop", ctx, x, y, height, helpLine);
+				} else {
 					y = this.renderHelpLine(view, "W", "toggle waypoint playback", ctx, x, y, height, helpLine);
 				}
-				y = this.renderHelpLine(view, "Y", "move back in time", ctx, x, y, height, helpLine);
-				y = this.renderHelpLine(view, "U", "move forward in time", ctx, x, y, height, helpLine);
-			}
-			else {
+			} else {
 				if (view.loopGeneration !== -1) {
 					y = this.renderHelpLine(view, "W", "toggle loop", ctx, x, y, height, helpLine);
 				}
@@ -467,6 +457,9 @@
 		y = this.renderHelpLine(view, "X", "toggle grid lines", ctx, x, y, height, helpLine);
 		if (view.engine.gridLineMajor > 0) {
 			y = this.renderHelpLine(view, "Shift X", "toggle major grid lines", ctx, x, y, height, helpLine);
+		}
+		if (view.waypointManager.numLabels()) {
+			y = this.renderHelpLine(view, "Shift L", "toggle label display", ctx, x, y, height, helpLine);
 		}
 		// check if thumbnail ever on
 		if (view.thumbnailEverOn) {
@@ -674,12 +667,10 @@
 		if (view.viewOnly) {
 			if (view.multiStateView) {
 				modeName = "Multi-State Viewer";
-			}
-			else {
+			} else {
 				modeName = "Viewer";
 			}
-		}
-		else {
+		} else {
 			if (view.engine.isLifeHistory) {
 				modeName = "History Player";
 			}
@@ -687,8 +678,7 @@
 		y = this.renderHelpLine(view, "Type", modeName, ctx, x, y, height, helpLine);
 		if (view.engine.isHex) {
 			modeName = "Hex";
-		}
-		else {
+		} else {
 			modeName = "Square";
 		}
 		y = this.renderHelpLine(view, "Mode", modeName, ctx, x, y, height, helpLine);
@@ -730,8 +720,7 @@
 			if (ruleName === "") {
 				ruleName = "(none)";
 			}
-		}
-		else {
+		} else {
 			ruleName = view.patternRuleName;
 		}
 
@@ -744,8 +733,7 @@
 				y = this.renderHelpLine(view, "  " + (value - 3), ruleName.substr(value, 16), ctx, x, y, height, helpLine);
 				value += 16;
 			}
-		}
-		else {
+		} else {
 			// display short MAP or non-MAP rule on a single line
 			y = this.renderHelpLine(view, "Rule", ruleName, ctx, x, y, height, helpLine);
 		}
@@ -758,12 +746,10 @@
 		// display neighbourhood
 		if (view.engine.wolframRule !== -1) {
 			ruleName = "1D";
-		}
-		else {
+		} else {
 			if (view.engine.patternDisplayMode) {
 				ruleName = "Hex";
-			}
-			else {
+			} else {
 				if (view.engine.isHROT) {
 					if (view.engine.HROT.type === PatternManager.mooreHROT) {
 						ruleName = "Moore";
@@ -815,8 +801,7 @@
 		y = this.renderHelpLine(view, "Area", this.areaString(view), ctx, x, y, height, helpLine);
 		if ((view.engine.counter & 1) !== 0) {
 			y = this.renderHelpLine(view, "Tiles", (view.engine.tileCount(view.engine.nextTileGrid) + " / " + view.engine.tileCount(view.engine.colourTileHistoryGrid)), ctx, x, y, height, helpLine);
-		}
-		else {
+		} else {
 			y = this.renderHelpLine(view, "Tiles", (view.engine.tileCount(view.engine.tileGrid) + " / " + view.engine.tileCount(view.engine.colourTileHistoryGrid)), ctx, x, y, height, helpLine);
 		}
 		if (view.engine.state6TileGrid) {
@@ -835,16 +820,14 @@
 			y = this.renderHelpLine(view, "Type", PatternManager.boundedGridName(view.engine.boundedGridType), ctx, x, y, height, helpLine);
 			if (view.engine.boundedGridWidth === 0) {
 				y = this.renderHelpLine(view, "Width", "Infinite", ctx, x, y, height, helpLine);
-			}
-			else {
+			} else {
 				y = this.renderHelpLine(view, "Width", view.engine.boundedGridWidth, ctx, x, y, height, helpLine);
 			}
 			// sphere only has width
 			if (view.engine.boundedGridType !== 4) {
 				if (view.engine.boundedGridHeight === 0) {
 					y = this.renderHelpLine(view, "Height", "Infinite", ctx, x, y, height, helpLine);
-				}
-				else {
+				} else {
 					y = this.renderHelpLine(view, "Height", view.engine.boundedGridHeight, ctx, x, y, height, helpLine);
 				}
 
@@ -852,8 +835,7 @@
 				if (view.engine.boundedGridType === 2) {
 					if (view.engine.boundedGridHorizontalTwist) {
 						y = this.renderHelpLine(view, "Twist", "Horizontal", ctx, x, y, height, helpLine);
-					}
-					else {
+					} else {
 						y = this.renderHelpLine(view, "Twist", "Vertical", ctx, x, y, height, helpLine);
 					}
 				}
@@ -886,8 +868,7 @@
 			if (view.trackBoxDefined) {
 				y = this.renderHelpLine(view, "Mode", "Track Box", ctx, x, y, height, helpLine);
 				y = this.renderHelpLine(view, "Definition", "E " + view.trackBoxE.toFixed(3) + "  S " + view.trackBoxS.toFixed(3) + "  W " + view.trackBoxW.toFixed(3) + "  N " + view.trackBoxN.toFixed(3), ctx, x, y, height, helpLine);
-			}
-			else {
+			} else {
 				y = this.renderHelpLine(view, "Mode", "Track", ctx, x, y, height, helpLine);
 				y = this.renderHelpLine(view, "Definition", "X " + view.trackBoxE.toFixed(3) + "  Y " + view.trackBoxS.toFixed(3), ctx, x, y, height, helpLine);
 			}
@@ -965,16 +946,14 @@
 					y = this.renderHelpLine(view, colourName, colourValue, ctx, x, y, height, helpLine);
 				}
 			}
-		}
-		else {
+		} else {
 			// colour theme information
 			sections[sectionNum] = view.lineNo;
 			sectionNum += 1;
 			y = this.renderHelpLine(view, "", "Theme:", ctx, x, y, height, helpLine);
 			if (view.engine.colourTheme === view.engine.numThemes) {
 				themeName = "(custom)";
-			}
-			else {
+			} else {
 				themeName = String(view.engine.colourTheme);
 			}
 			y = this.renderHelpLine(view, "Name", themeName, ctx, x, y, height, helpLine);
@@ -996,8 +975,7 @@
 						y = this.renderHelpLine(view, "State " + i, this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
 					}
 				}
-			}
-			else {
+			} else {
 				// normal theme
 				this.renderColourBox(view, theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue, ctx, x + tabs[0], y, height, helpLine);
 				y = this.renderHelpLine(view, "Alive", this.rgbObjectString(theme.aliveRange.startColour), ctx, x, y, height, helpLine);
@@ -1006,8 +984,7 @@
 				if (theme.aliveRange.startColour.red !== theme.aliveRange.endColour.red || theme.aliveRange.startColour.green !== theme.aliveRange.endColour.green || theme.aliveRange.startColour.blue !== theme.aliveRange.endColour.blue) {
 					this.renderColourBox(view, theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
 					y = this.renderHelpLine(view, "AliveRamp", this.rgbObjectString(theme.aliveRange.endColour), ctx, x, y, height, helpLine);
-				}
-				else {
+				} else {
 					y = this.renderHelpLine(view, "AliveRamp", "    (none)", ctx, x, y, height, helpLine);
 				}
 
@@ -1018,8 +995,7 @@
 				if (theme.deadRange.startColour.red !== theme.deadRange.endColour.red || theme.deadRange.startColour.green !== theme.deadRange.endColour.green || theme.deadRange.startColour.blue !== theme.deadRange.endColour.blue) {
 					this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
 					y = this.renderHelpLine(view, "DeadRamp", this.rgbObjectString(theme.deadRange.endColour), ctx, x, y, height, helpLine);
-				}
-				else {
+				} else {
 					y = this.renderHelpLine(view, "DeadRamp", "    (none)", ctx, x, y, height, helpLine);
 				}
 			}
@@ -1091,8 +1067,7 @@
 		// grid line major interval
 		if (view.engine.gridLineMajor > 0 && view.engine.gridLineMajorEnabled) {
 			themeName = String(view.engine.gridLineMajor);
-		}
-		else {
+		} else {
 			themeName = "Off";
 		}
 		y = this.renderHelpLine(view, "Interval", themeName, ctx, x, y, height, helpLine);
@@ -1159,8 +1134,7 @@
 					// check if at last waypoint
 					if (view.waypointManager.atLast(view.elapsedTime)) {
 						themeName += ">";
-					}
-					else {
+					} else {
 						themeName += "*";
 					}
 				}
@@ -1277,8 +1251,7 @@
 				sections[sectionNum] = view.lineNo;
 				sectionNum += 1;
 				y = this.renderHelpLine(view, "", AliasManager.aliases[i][0] + " Aliases:", ctx, x, y, height, helpLine);
-			}
-			else {
+			} else {
 				// check for default alias
 				if (AliasManager.aliases[i][0] !== "") {
 					// render non-default alias
@@ -1319,8 +1292,7 @@
 		y = this.renderHelpLineUpDown(view, "Up", " / ", "Down", "scroll help", ctx, x, y, height, 0);
 		if (view.isInPopup) {
 			y = this.renderHelpLine(view, "H", "close help", ctx, x, y, height, 0);
-		}
-		else {
+		} else {
 			y = this.renderHelpLine(view, "H / Esc", "close help", ctx, x, y, height, 0);
 		}
 	};
@@ -1375,8 +1347,7 @@
 			if (!drawingShadow) {
 				if ((view.displayErrors | 0) > 1) {
 					ctx.fillStyle = view.errorsFontColour;
-				}
-				else {
+				} else {
 					ctx.fillStyle = ViewConstants.greyFontColour;
 				}
 			}
@@ -1392,8 +1363,7 @@
 			if (!drawingShadow) {
 				if ((view.displayErrors | 0) < view.scriptErrors.length - view.numHelpPerPage + 1) {
 					ctx.fillStyle = view.errorsFontColour;
-				}
-				else {
+				} else {
 					ctx.fillStyle = ViewConstants.greyFontColour;
 				}
 			}

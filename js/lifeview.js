@@ -4524,6 +4524,7 @@
 						// toggle loop mode
 						me.loopDisabled = !me.loopDisabled;
 						me.loopIndicator.current = [me.loopDisabled];
+						me.menuManager.notification.notify("Loop " + (me.loopDisabled ? "Off" : "On"), 15, 40, 15, true);
 					}
 				} else {
 					// disable depth in multi-state mode
