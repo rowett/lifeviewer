@@ -1,4 +1,4 @@
-[DONE] HROT support for von Neumann and Moore neighbourhoods
+[DONE] HROT support for von Neumann and Circular neighbourhoods
 LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE stuff rather than just clear)
 Investigate Paul's non-totalistic hex notation
 Investigate Brian's BSFKL notation
