@@ -1,3 +1,8 @@
+Build 280
+- rule names now support slash after generations prefix and G in generations postfix
+	- prefix: G3/B3/S23
+	- postfix: B3/S23/G3
+
 Build 279
 - LABELTRACK positions are now relative to T1 if defined by LABELT
 

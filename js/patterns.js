@@ -2832,6 +2832,11 @@
 					i = 1;
 					pattern.multiNumStates = 0;
 
+					// check for and ignore G so "23/3/2" and "B3/S23/G2" are both supported
+					if (i < generationsPart.length && generationsPart[i].toLowerCase() === "g") {
+						i += 1;
+					}
+
 					// read generations digits
 					validIndex = 0;
 					while (i < generationsPart.length && validIndex !== -1) {
@@ -2906,6 +2911,10 @@
 						pattern.multiNumStates = -1;
 						valid = false;
 					} else {
+						// if the next character is a / then remove it so "G3S23B3" and "G3/S23/B3" are both supported
+						if (i < rule.length && rule[i] === "/") {
+							i += 1;
+						}
 						// remove prefix from rule
 						rule = rule.substr(i);
 						valid = true;
@@ -3094,31 +3103,42 @@
 						// if generations then check it is valid
 						if (generationsPart !== null) {
 							i = 0;
-							pattern.multiNumStates = 0;
+							// check generations has not already been specified
+							if (pattern.multiNumStates !== -1) {
+								this.failureReason = "Generations defined twice";
+								birthPart = null;
+							} else {
+								pattern.multiNumStates = 0;
 
-							// read generations digits
-							validIndex = 0;
-							while (i < generationsPart.length && validIndex !== -1) {
-								// check each character is a valid digit
-								validIndex = this.decimalDigits.indexOf(generationsPart[i]);
-								if (validIndex !== -1) {
-									// add the digit to the number of generations states
-									pattern.multiNumStates = pattern.multiNumStates * 10 + validIndex;
-								} else {
+								// check for and ignore G so "23/3/2" and "B3/S23/G2" are both supported
+								if (i < generationsPart.length && generationsPart[i] === "g") {
+									i += 1;
+								}
+	
+								// read generations digits
+								validIndex = 0;
+								while (i < generationsPart.length && validIndex !== -1) {
+									// check each character is a valid digit
+									validIndex = this.decimalDigits.indexOf(generationsPart[i]);
+									if (validIndex !== -1) {
+										// add the digit to the number of generations states
+										pattern.multiNumStates = pattern.multiNumStates * 10 + validIndex;
+									} else {
+										// mark as invalid
+										this.failureReason = "Illegal character in generations number";
+										pattern.multiNumStates = -1;
+										birthPart = null;
+									}
+									i += 1;
+								}
+
+								// check if generations states are valid
+								if (pattern.multiNumStates !== -1 && (pattern.multiNumStates < 2 || pattern.multiNumStates > 256)) {
 									// mark as invalid
-									this.failureReason = "Illegal character in generations number";
+									this.failureReason = "Generations number must be 2-256";
 									pattern.multiNumStates = -1;
 									birthPart = null;
 								}
-								i += 1;
-							}
-
-							// check if generations states are valid
-							if (pattern.multiNumStates !== -1 && (pattern.multiNumStates < 2 || pattern.multiNumStates > 256)) {
-								// mark as invalid
-								this.failureReason = "Generations number must be 2-256";
-								pattern.multiNumStates = -1;
-								birthPart = null;
 							}
 						}
 
