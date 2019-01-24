@@ -531,6 +531,14 @@
 		    state5 = ViewConstants.stateMap[5] + 128,
 			state6 = ViewConstants.stateMap[6] + 128,
 			
+		    // bounded grid top left
+		    leftX = Math.round((this.width - this.boundedGridWidth) / 2),
+		    bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
+
+		    // bounded grid bottom right
+		    rightX = leftX + this.boundedGridWidth - 1,
+			topY = bottomY + this.boundedGridHeight - 1,
+
 			// draw history offset
 			drawHistoryOffset = (this.drawHistory ? 1 : 0);
 
@@ -541,11 +549,18 @@
 
 			// check if raw data requested or Generations or HROT rule used
 			if (rawRequested || this.multiNumStates > 2) {
+				// check if state is not dead
 				if (this.multiNumStates > 2 && col > 0) {
+					// check for history state
 					if (col === drawHistoryOffset) {
 						result = 0;
 					} else {
-						result = this.multiNumStates + drawHistoryOffset - col;
+						// check for bounded grid border cell
+						if (this.boundedGridType !== -1 && col === LifeConstants.boundedBorderColour && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
+							result = 0;
+						} else {
+							result = this.multiNumStates + drawHistoryOffset - col;
+						}
 					}
 				} else {
 					result = col;
@@ -586,7 +601,7 @@
 
 				} else {
 					// no overlay grid
-					if (col <= this.deadStart) {
+					if (col <= this.deadStart || col === LifeConstants.boundedBorderColour) {
 						result = 0;
 					} else {
 						result = 1;
