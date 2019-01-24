@@ -273,7 +273,7 @@
 
 		// compute percentage complete
 		if (endTime !== startTime) {
-			percentLinearComplete = Math.round(1000000 * ((elapsedTime - startTime) / (endTime - startTime))) / 1000000;
+			percentLinearComplete = Math.round(1000000 * ((elapsedTime - startTime) / (endTime - startTime))) / 1000000;  // TBD !!!
 			percentBezierComplete = (this.manager.bezierX(percentLinearComplete, 0, 0, 1, 1)) + 0.0;
 		}
 
@@ -351,7 +351,7 @@
 	/**
 	 * @constructor
 	 */
-	function Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance) {
+	function Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
 		// message
 		this.message = "";
 
@@ -395,6 +395,10 @@
 		this.tx = tx;
 		this.ty = ty;
 		this.tDistance = tDistance;
+
+		// label movement vector
+		this.dx = dx;
+		this.dy = dy;
 	}
 
 	// WaypointManager constructor
@@ -431,8 +435,8 @@
 	}
 
 	// create a label
-	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance) {
-		return new Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance);
+	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
+		return new Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
 	};
 
 	// clear all labels
@@ -638,6 +642,10 @@
 							cx += engine.originX;
 							cy += engine.originY;
 						}
+
+						// add movement
+						cx += current.dx * view.floatCounter;
+						cy += current.dy * view.floatCounter;
 	
 						// check for camera rotation
 						if (engine.camAngle !== 0) {

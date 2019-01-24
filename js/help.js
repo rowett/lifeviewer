@@ -552,7 +552,7 @@
 		y = this.renderHelpLine(view, Keywords.poiTransWord + " <" + WaypointConstants.poiMinSpeed + ".." + WaypointConstants.poiMaxSpeed + ">", "set POI transition speed", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "<command>|ALL " + Keywords.initialWord, "use initial value for POI", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "define message", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.labelWord + " X Y ZOOM (FIXED)", "define label at position", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.labelWord + " X Y ZOOM (" + Keywords.fixedWord + ")", "define label at position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "... optionally fix position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelSizeWord + " <" + ViewConstants.minLabelSize + ".." + ViewConstants.maxLabelSize + ">", "define label font size", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelAlphaWord + " <0.0..1.0>", "define label font alpha", ctx, x, y, height, helpLine);
@@ -560,6 +560,7 @@
 		y = this.renderHelpLine(view, Keywords.labelAngleWord + " <0..359>", "label angle", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix label angle", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelTargetWord + " X Y D", "label target and distance", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.labelTrackWord + " DX DY|" + Keywords.fixedWord, "label move per generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.titleWord + " " + Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "set window title", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "B", "program build number", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "N", "pattern name", ctx, x, y, height, helpLine);

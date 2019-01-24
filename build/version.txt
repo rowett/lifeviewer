@@ -1,10 +1,14 @@
 Build 278
 - close button in bottom right menu is available in PopUp viewers when help or errors are displayed
+- fps toggle in bottom right menu is available when help or errors are displayed
 - increased maximum LABELSIZE to 128
 - bounded grid border colour no longer overwrites state colour for 256 state patterns
 - hotkey shift and l is now toggle labels
 	- hotkey shift and p is toggle loop mode
 - MAXGRIDSIZE was only allowing patterns to grow to the specified size rather than start at the specified size
+- new script command [[ LABELTRACK DX DY|FIXED ]]
+	- sets movement vector for subsequent label definitions
+	- [[ LABELTRACK FIXED ]] turns off movement for subsequent label definitions
 
 Build 277
 - multi-state Generations patterns now display history

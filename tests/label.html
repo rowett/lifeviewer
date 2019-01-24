@@ -25,6 +25,30 @@
 	</head>
 	<body>
 		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Labels with movement - run once (TRACK ON), reset and run again (TRACK OFF)</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 9, y = 5, rule = B3/S23
+$bo3b3o$b3o2bo$2bo!
+#C TRACK on (reset pattern once and run again to see with TRACK OFF)
+#C [[ TRACK 0.1 0.02 GRID ZOOM 16 ]]
+#C Tracks slower than TRACK speed
+#C [[ LABELTRACK 0.05 0.01 LABEL 4 -2 16 FIXED "Tracking Slow" ]]
+#C Tracks at the same speed as TRACK speed so will appear static if TRACK is ON
+#C [[ LABELTRACK 0.1 0.02 LABEL 4 0 16 FIXED "Tracking Normal" ]]
+#C Tracks faster than TRACK speed
+#C [[ LABELTRACK 0.15 0.03 LABEL 4 2 16 FIXED "Tracking Fast" ]]
+#C Turn LABELTRACK OFF (set it to FIXED)
+#C [[ LABELTRACK FIXED ]]
+#C Standard label will be relative to TRACK if ON
+#C [[ LABEL 4 4 16 "Normal" ]]
+#C Fixed position label doesn't move if TRACK is ON
+#C [[ LABEL 4 6 16 FIXED "Fixed" ]]
+            </textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
 		<h2>Labels at the same cell but different zoom levels</h2>
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>

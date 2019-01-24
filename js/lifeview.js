@@ -2437,7 +2437,7 @@
 		this.fitButton.deleted = hide;
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
 		this.closeButton.deleted = !this.isInPopup;
-		this.fpsButton.deleted = hide;
+		//this.fpsButton.deleted = hide;
 		this.hexButton.deleted = hide;
 		this.graphButton.deleted = hide;
 
@@ -5812,6 +5812,7 @@
 			case Keywords.labelTWord:
 			case Keywords.labelAngleWord:
 			case Keywords.labelTargetWord:
+			case Keywords.labelTrackWord:
 			case Keywords.noHistoryWord:
 			case Keywords.noReportWord:
 			case Keywords.trackWord:
@@ -6594,6 +6595,10 @@
 			currentLabelTY = 0,
 			currentLabelTDistance = -1,
 
+			// current label movement vector
+			currentLabelDX = 0,
+			currentLabelDY = 0,
+
 			// whether reading label
 			readingLabel = false,
 
@@ -6795,6 +6800,49 @@
 									itemValid = true;
 								}
 							}
+							break;
+
+						// label track
+						case Keywords.labelTrackWord:
+							// get dx
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= ViewConstants.minTrackSpeed && numberValue <= ViewConstants.maxTrackSpeed) {
+									x = numberValue;
+									isNumeric = false;
+
+									// get dy
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+
+										// get the value
+										numberValue = scriptReader.getNextTokenAsNumber();
+
+										// check it is in range
+										if (numberValue >= ViewConstants.minTrackSpeed && numberValue <= ViewConstants.maxTrackSpeed) {
+											currentLabelDX = x;
+											currentLabelDY = numberValue;
+											itemValid = true;
+										}
+									}
+								}
+							} else {
+								// check for FIXED keyword
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken === Keywords.fixedWord) {
+									// consume token
+									peekToken = scriptReader.getNextToken();
+									currentLabelDX = 0;
+									currentLabelDY = 0;
+									itemValid = true;
+								}
+							}
+
 							break;
 
 						// label target
@@ -7009,7 +7057,7 @@
 														// save the label
 														currentLabel = this.waypointManager.createLabel(x, y, z, this.customLabelColour, currentLabelAlpha, currentLabelSize,
 															currentLabelT1, currentLabelT2, currentLabelTFade, currentLabelAngle, currentLabelAngleFixed, currentLabelPositionFixed,
-															currentLabelTX, currentLabelTY, currentLabelTDistance);
+															currentLabelTX, currentLabelTY, currentLabelTDistance, currentLabelDX, currentLabelDY);
 														readingLabel = true;
 														itemValid = true;
 													} else {

@@ -5,3 +5,7 @@ Investigate Brian's BSFKL notation
 [DONE] New script keywords to put labels on the display at specific locations triggered by generation and zoom ranges
 Meta world view
 [DONE]multistate rules using just 2 states should use LifeViewer Themes
+getState() needs to cope with Bounded Grid and 255 or 256 states (currently bounded grid border showing as 1, should be 0)
+[PARTIAL]multistate rules using > 3 states and < 256 states should have history colour
+    - done for Generations, LtL/HROT to do
+[DONE]LABELTRACK DX DY command to allow labels to move over generations

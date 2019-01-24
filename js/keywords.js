@@ -133,6 +133,9 @@
 		// label target 
 		/** @const {string} */ labelTargetWord : "LABELTARGET",
 
+		// label track
+		/** @const {string} */ labelTrackWord : "LABELTRACK",
+
 		// label angle fixed
 		/** @const {string} */ fixedWord: "FIXED",
 
