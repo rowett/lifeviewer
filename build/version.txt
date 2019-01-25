@@ -1,3 +1,7 @@
+Build 282
+- survival counts in canonical HROT form were off by 1
+- improved rule validation for non-totalistic rules
+
 Build 281
 - moved Shrink button from top left to bottom right
 - added support for C in generations postfix e.g. B3/S23/C3

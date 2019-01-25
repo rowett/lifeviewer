@@ -97,6 +97,9 @@
 		// rule letters
 		ruleLetters : ["ce", "ceaikn", "ceaiknjqry", "ceaiknjqrytwz"],
 
+		// valid letters per digit
+		validLettersPerDigit : ["", "ce", "ceaikn", "ceaiknjqry", "ceaiknjqrytwz", "ceaiknjqry", "ceaikn", "ce", ""],
+
 		// maximum number of letters for each neighbour count
 		maxLetters : [0, 2, 6, 10, 13, 10, 6, 2, 0],
 
@@ -1316,13 +1319,13 @@
 		    length = rule.length,
 
 		    // whether character meaning normal or inverted
-		    normal = 1,
+			normal = 1,
+
+			// used to check for normal and inverted
+			check = 0,
 
 		    // ASCII 0
 		    asciiZero = String("0").charCodeAt(0),
-
-		    // valid symmetrical letters
-		    validSymmetricalLetters = this.ruleLetters[3],
 
 		    // letter index
 		    letterIndex = 0,
@@ -1366,7 +1369,7 @@
 				next = rule[i + 1];
 
 				// check if it is a letter
-				letterIndex = validSymmetricalLetters.indexOf(next);
+				letterIndex = this.validLettersPerDigit[current].indexOf(next);
 				if (letterIndex === -1 && !alreadyUsed) {
 					// not a letter so set totalistic
 					this.setTotalistic(ruleArray, current, survival, mask);
@@ -1379,24 +1382,50 @@
 					normal = 0;
 					i += 1;
 					next = rule[i + 1];
-					letterIndex = validSymmetricalLetters.indexOf(next);
+					letterIndex = this.validLettersPerDigit[current].indexOf(next);
+				}
+
+				// if the next character is not a valid letter report an error if it is not a digit or space
+				if (letterIndex === -1 && !((next >= "0" && next <= "9") || next == " ")) {
+					this.failureReason = (survival ? "S" : "B") + current + next + " not valid";
+					i = length;
+				}
+
+				// check for minus and non-minus use of this digit
+				if (alreadyUsed) {
+					check = 0;
+					if ((lettersArray[current] & 1 << this.negativeBit) === 0) {
+						check = 1;
+					}
+					if (check !== normal) {
+						this.failureReason = (survival ? "S" : "B") + current + " can not have minus and non-minus";
+						letterIndex = -1;
+						i = length;
+					}
 				}
 
 				// process non-totalistic characters
 				while (letterIndex !== -1) {
-					// set symmetrical
-					this.setSymmetrical(ruleArray, current, survival, next, normal, mask);
+					// check if the letter has already been used
+					if ((lettersArray[current] & (1 << letterIndex)) !== 0) {
+						this.failureReason = "duplicate " + current + this.validLettersPerDigit[current][letterIndex];
+						letterIndex = -1;
+						i = length;
+					} else {
+						// set symmetrical
+						this.setSymmetrical(ruleArray, current, survival, next, normal, mask);
 
-					// update the letter bits
-					lettersArray[current] |= 1 << letterIndex;
+						// update the letter bits
+						lettersArray[current] |= 1 << letterIndex;
 
-					if (!normal) {
-						// set the negative bit
-						lettersArray[current] |= 1 << this.negativeBit;
+						if (!normal) {
+							// set the negative bit
+							lettersArray[current] |= 1 << this.negativeBit;
+						}
+						i += 1;
+						next = rule[i + 1];
+						letterIndex = this.validLettersPerDigit[current].indexOf(next);
 					}
-					i += 1;
-					next = rule[i + 1];
-					letterIndex = validSymmetricalLetters.indexOf(next);
 				}
 			} else {
 				// character found without digit prefix
@@ -2680,7 +2709,7 @@
 	};
 
 	// convert array to multi string for HROT
-	PatternManager.asMulti = function(list) {
+	PatternManager.asMulti = function(list, offset) {
 		var length = list.length,
 			start = -1,
 			result = "",
@@ -2701,9 +2730,9 @@
 					if (result !== "") {
 						result += ",";
 					}
-					result += start;
+					result += start + offset;
 					if ((i - 1) !== start) {
-						result += "-" + (i - 1);
+						result += "-" + (i - 1 + offset);
 					}
 
 					// reset run
@@ -2719,9 +2748,9 @@
 			if (result !== "") {
 				result += ",";
 			}
-			result += start;
+			result += start + offset;
 			if ((i - 1) !== start) {
-				result += "-" + (i - 1);
+				result += "-" + (i - 1 + offset);
 			}
 		}
 
@@ -2955,8 +2984,8 @@
 							// HROT
 							pattern.ruleName = "R" + pattern.rangeHROT + ",";
 							pattern.ruleName += "C" + pattern.multiNumStates + ",";
-							pattern.ruleName += "S" + this.asMulti(pattern.survivalHROT) + ",";
-							pattern.ruleName += "B" + this.asMulti(pattern.birthHROT);
+							pattern.ruleName += "S" + this.asMulti(pattern.survivalHROT, -1) + ",";
+							pattern.ruleName += "B" + this.asMulti(pattern.birthHROT, 0);
 							if (pattern.neighborhoodHROT !== this.mooreHROT) {
 								pattern.ruleName += ",N";
 								if (pattern.neighborhoodHROT == this.vonNeumannHROT) {
