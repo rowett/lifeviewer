@@ -1386,7 +1386,7 @@
 				}
 
 				// if the next character is not a valid letter report an error if it is not a digit or space
-				if (letterIndex === -1 && !((next >= "0" && next <= "9") || next == " ")) {
+				if (letterIndex === -1 && !((next >= "0" && next <= "9") || next === " ")) {
 					this.failureReason = (survival ? "S" : "B") + current + next + " not valid";
 					i = length;
 				}
@@ -2352,7 +2352,7 @@
 					}
 				}
 				if (result) {
-					if (partName == "S") {
+					if (partName === "S") {
 						lower += 1;
 						upper += 1;
 					}
@@ -2382,7 +2382,7 @@
 			i = 0;
 			
 		// copy the range and neighborhood
-		pattern.rangeHROT = range,
+		pattern.rangeHROT = range;
 		pattern.neighborhoodHROT = pattern.neighborhoodLTL;
 
 		// allocate the survival and birth arrays
@@ -2988,7 +2988,7 @@
 							pattern.ruleName += "B" + this.asMulti(pattern.birthHROT, 0);
 							if (pattern.neighborhoodHROT !== this.mooreHROT) {
 								pattern.ruleName += ",N";
-								if (pattern.neighborhoodHROT == this.vonNeumannHROT) {
+								if (pattern.neighborhoodHROT === this.vonNeumannHROT) {
 									pattern.ruleName += "N";
 								} else {
 									pattern.ruleName += "C";
