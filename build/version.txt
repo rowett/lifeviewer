@@ -1,3 +1,7 @@
+Build 283
+- added new rule aliases
+- better error reporting when invalid characters in RLE
+
 Build 282
 - survival counts in canonical HROT form were off by 1
 - improved rule validation for non-totalistic rules

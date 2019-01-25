@@ -149,7 +149,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 282,
+		/** @const {number} */ versionBuild : 283,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -9565,6 +9565,7 @@
 		this.engine.boundedGridType = -1;
 		this.engine.isHROT = false;
 		this.engine.multiState = false;
+		this.executable = false;
 	};
 
 	// start the viewer from a supplied pattern string

@@ -3380,8 +3380,7 @@
 				if (current >= "A" && current <= "X") {
 					valid = true;
 					stateNum = current.charCodeAt(0) - codeA;
-				}
-				else {
+				} else {
 					// check if dual digit extended state
 					if (current >= "p" && current < "y") {
 						// check next digit
@@ -3393,8 +3392,7 @@
 							// eat the second digit
 							index += 1;
 							next = string[index + 1];
-						}
-						else {
+						} else {
 							// check for Niemiec
 							if (current === "x") {
 								valid = true;
@@ -3403,8 +3401,7 @@
 								stateNum = 3;
 							}
 						}
-					}
-					else {
+					} else {
 						if (current === "y") {
 							// check next digit
 							if (next >= "A" && next <= "O") {
@@ -3415,8 +3412,7 @@
 								// eat the second digit
 								index += 1;
 								next = string[index + 1];
-							}
-							else {
+							} else {
 								// check for Niemiec
 								valid = true;
 								pattern.isHistory = true;
@@ -3488,8 +3484,7 @@
 						x += 1;
 						runCount -= 1;
 					}
-				}
-				else {
+				} else {
 					// state 0 or not saving so just skip
 					x += runCount;
 					runCount = 0;
@@ -3502,9 +3497,9 @@
 				if (current === " " || current === "\t" || current === "\n") {
 					// all ok
 					valid = true;
-				}
-				else {
+				} else {
 					// invalid character found so mark pattern as invalid and stop
+					this.failureReason = "Illegal character in pattern: " + current;
 					pattern.invalid = true;
 					finished = true;
 				}
@@ -3550,8 +3545,7 @@
 					// flag pattern too large
 					pattern.tooBig = true;
 					pattern.invalid = true;
-				}
-				else {
+				} else {
 					// allocate 2d cell array
 					pattern.lifeMap = Array.matrix(Uint16, y, ((width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
 
@@ -4871,9 +4865,15 @@
 
 		// check if the new pattern was decoded
 		if (newPattern.lifeMap === null) {
-			if (!newPattern.tooBig) {
+			if (!newPattern.tooBig && this.failureReason === "") {
 				this.failureReason = "Invalid pattern";
 			}
+			newPattern = null;
+			this.executable = false;
+		}
+
+		// check if the RLE was valid
+		if (newPattern && newPattern.invalid) {
 			newPattern = null;
 			this.executable = false;
 		}
