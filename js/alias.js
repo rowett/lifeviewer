@@ -16,11 +16,9 @@
 		// clear the current list
 		this.aliases = [];
 
-		/*
-		this.aliases.push(["Hex Life", "B2o3m56/S2-p4oh"]);
-		this.aliases.push(["22da", "B2o/S2-m"]);
-		this.aliases.push(["Hexrule b2o", "B2o/S2m34"]);
-		*/
+		//this.aliases.push(["Hex Life", "B2o3m56/S2-p4oh"]);
+		//this.aliases.push(["22da", "B2o/S2-m"]);
+		//this.aliases.push(["Hexrule b2o", "B2o/S2m34"]);
 
 		// add 2 state totalistic aliases
 		this.aliases.push(["Totalistic Moore", ""]);

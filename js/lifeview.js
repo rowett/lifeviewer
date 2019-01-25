@@ -402,6 +402,10 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// cell X and Y coordinate
+		this.cellX = 0;
+		this.cellY = 0;
+
 		// whether to hide source element
 		this.noSource = false;
 
@@ -1032,6 +1036,12 @@
 
 		// screenshot scheduled
 		this.screenShotScheduled = 0;
+
+		// whether drawing
+		this.drawing = false;
+
+		// pen colour for drawing
+		this.penColour = -1;
 	}
 
 	// set initial value flags to a value
@@ -1655,6 +1665,154 @@
 		this.starField.create2D(this.engine.width / 2 - this.engine.camXOff, this.engine.height / 2 - this.engine.camYOff, this.engine.camZoom, this.engine.camAngle, displayWidth, displayHeight, data32, this.engine.pixelColours[0]);
 	};
 
+	// read a single cell
+	View.prototype.readCell = function() {
+		// position relative to display width and height
+		var displayX = this.viewMenu.mouseX - this.displayWidth / 2,
+		    displayY = this.viewMenu.mouseY - this.displayHeight / 2,
+
+		    // engine camera x and y
+		    engineY = this.panY - this.engine.yOff,
+		    engineX = this.panX - this.engine.xOff - (this.engine.isHex ? this.engine.yOff / 2 : 0),
+
+		    // cell position
+		    yPos = 0, xPos = 0,
+		    
+			// rotation
+			theta = 0, radius = 0,
+
+			// cell state
+			state = -1;
+
+		// check if there are mouse coordinates
+		if (this.viewMenu.mouseX !== -1) {
+			// apply rotation to the display position
+			if (this.engine.camAngle !== 0) {
+				radius = Math.sqrt((displayX * displayX) + (displayY * displayY));
+				theta = Math.atan2(displayY, displayX) * (180 / Math.PI);
+				theta -= this.engine.camAngle;
+				displayX = radius * Math.cos(theta * (Math.PI / 180));
+				displayY = radius * Math.sin(theta * (Math.PI / 180));
+			}
+
+			// compute the x and y cell coordinate
+			yPos = Math.floor(displayY / this.engine.zoom - engineY + this.engine.originY);
+			xPos = Math.floor((displayX / this.engine.zoom) + (this.engine.isHex ? engineY / 2 : 0) - engineX + this.engine.originX);
+
+			// draw the cell
+			state = this.engine.getState(xPos + this.panX, yPos + this.panY, this.multiStateView && this.viewOnly);
+		}
+
+		// return the cell state
+		return state;
+	};
+
+	// cell cell location
+	View.prototype.updateCellLocation = function(mouseX, mouseY) {
+		// position relative to display width and height
+		var displayX = mouseX - this.displayWidth / 2,
+		    displayY = mouseY - this.displayHeight / 2,
+
+		    // engine camera x and y
+		    engineY = this.panY - this.engine.yOff,
+		    engineX = this.panX - this.engine.xOff - (this.engine.isHex ? this.engine.yOff / 2 : 0),
+
+		    // cell position
+		    yPos = 0, xPos = 0,
+		    
+			// rotation
+			theta = 0, radius = 0;
+
+		// check if there are mouse coordinates
+		if (mouseX !== -1) {
+			// apply rotation to the display position
+			if (this.engine.camAngle !== 0) {
+				radius = Math.sqrt((displayX * displayX) + (displayY * displayY));
+				theta = Math.atan2(displayY, displayX) * (180 / Math.PI);
+				theta -= this.engine.camAngle;
+				displayX = radius * Math.cos(theta * (Math.PI / 180));
+				displayY = radius * Math.sin(theta * (Math.PI / 180));
+			}
+
+			// compute the x and y cell coordinate
+			yPos = Math.floor(displayY / this.engine.zoom - engineY + this.engine.originY);
+			xPos = Math.floor((displayX / this.engine.zoom) + (this.engine.isHex ? engineY / 2 : 0) - engineX + this.engine.originX);
+		}
+
+		// set cell position
+		this.cellX = xPos + this.panX;
+		this.cellY = yPos + this.panY;
+	};
+
+	// draw a single cell
+	View.prototype.drawCell = function(x, y, colour) {
+		this.engine.setState(x, y, colour);
+	};
+
+	// draw a line of cells using Bresenham
+	View.prototype.drawCellLine = function(startX, startY, endX, endY, colour) {
+		var dx = Math.abs(endX - startX),
+		    dy = Math.abs(endY - startY),
+		    sx = (startX < endX) ? 1 : -1,
+		    sy = (startY < endY) ? 1 : -1,
+		    err = dx - dy,
+		    e2 = 0,
+		    w = this.engine.width,
+		    h = this.engine.height;
+
+		// see if the line is on the display
+		if (!((startX < 0 && endX < 0) || (startX >= w && endX >= w) || (startY < 0 && endY < 0) || (startY >= h && endY >= h))) {
+			// see if bounds checking is required
+			if (startX >= 0 && startX < w && startY >=0 && startY < h && endX >= 0 && endX < w && endY >= 0 && endY < h) {
+				// line all on display so no bounds checking
+				// set the first point
+				this.drawCell(startX, startY, colour);
+
+				// loop for each pixel on the line
+				while (!((startX === endX) && (startY === endY))) {
+					// move to next pixel
+					e2 = err + err;
+					if (e2 > -dy) {
+						err -= dy;
+						startX += sx;
+					}
+					if (e2 < dx) {
+						err += dx;
+						startY += sy;
+					}
+
+					// draw the point
+					this.drawCell(startX, startY, colour);
+				}
+			} else {
+				// some or all of the line is off display so use bounds checking
+				// set the first point
+				if (startX >= 0 && startX < w && startY >=0 && startY < h) {
+					this.drawCell(startX, startY, colour);
+				}
+
+				// loop for each pixel on the line
+				while (!((startX === endX) && (startY === endY))) {
+					// move to next pixel
+					e2 = err + err;
+					if (e2 > -dy) {
+						err -= dy;
+						startX += sx;
+					}
+					if (e2 < dx) {
+						err += dx;
+						startY += sy;
+					}
+
+					// draw the point
+					if (startX >= 0 && startX < w && startY >=0 && startY < h) {
+						this.drawCell(startX, startY, colour);
+					}
+				}
+			}
+		}
+	};
+
 	// set the x/y position on the UI
 	View.prototype.setXYPosition = function() {
 		// position relative to display width and height
@@ -1676,7 +1834,7 @@
 			// rotation
 			theta = 0, radius = 0;
 
-		// check if there are mouse coordinates or non-zero angle
+		// check if there are mouse coordinates
 		if (this.viewMenu.mouseX === -1) {
 			// no coordinates to display
 			this.xyLabel.preText = "";
@@ -3328,71 +3486,109 @@
 		return [Math.sqrt(me.engine.layerDepth), me.engine.layerDepth * ViewConstants.depthScale];
 	};
 
+	// draw cells
+	View.prototype.drawCells = function(toX, toY, fromX, fromY) {
+		var startCellX = 0,
+			startCellY = 0,
+			endCellX = 0,
+			endCellY = 0;
+
+		// check if this is the start of drawing
+		if (fromX === -1 && fromY === -1) {
+			// set the pen to the state at the current position
+			this.penColour = this.readCell();
+			if (this.engine.multiNumStates <= 2) {
+				this.penColour = 1 - this.penColour;
+			}
+		} else {
+			// draw from the last position to the current position
+			this.updateCellLocation(fromX, fromY);
+			startCellX = this.cellX;
+			startCellY = this.cellY;
+
+			// current position
+			this.updateCellLocation(toX, toY);
+			endCellX = this.cellX;
+			endCellY = this.cellY;
+
+			// draw cells
+			this.drawCellLine(startCellX, startCellY, endCellX, endCellY, this.penColour);
+		}
+	};
+
 	// view menu background drag
 	View.prototype.viewDrag = function(x, y, dragOn, me) {
 		var dx = 0,
 		    dy = 0,
 		    angle = 0,
 		    sinAngle = 0,
-		    cosAngle = 0;
+			cosAngle = 0;
 
 		// check if this is a drag or cancel drag
 		if (dragOn) {
-			// check if this is the start of a drag
-			if (me.lastDragX !== -1) {
-				// check if help is displayed
-				if (me.displayHelp) {
-					// compute the movement
-					dy = (me.lastDragY - y);
-					dy /= ViewConstants.fontSize;
-
-					// scroll help text
-					if (dy > 0) {
-						me.scrollHelpDown(me, dy);
-					} else {
-						if (dy < 0) {
-							me.scrollHelpUp(me, -dy);
-						}
-					}
+			if (me.drawing) {
+				if (me.engine.zoom < 1) {
+					me.menuManager.notification.notify("Drawing allowed from Zoom 1", 15, 60, 15, true);
 				} else {
-					// check if errors are displayed
-					if (me.displayErrors) {
+					me.drawCells(x, y, me.lastDragX, me.lastDragY);
+				}
+			} else {
+				// check if this is the start of a drag
+				if (me.lastDragX !== -1) {
+					// check if help is displayed
+					if (me.displayHelp) {
 						// compute the movement
 						dy = (me.lastDragY - y);
 						dy /= ViewConstants.fontSize;
-
-						// scroll errors
+	
+						// scroll help text
 						if (dy > 0) {
-							me.scrollErrorsDown(me, dy);
+							me.scrollHelpDown(me, dy);
 						} else {
 							if (dy < 0) {
-								me.scrollErrorsUp(me, -dy);
+								me.scrollHelpUp(me, -dy);
 							}
 						}
 					} else {
-						// compute the movement
-						dx = (me.lastDragX - x) / me.engine.camZoom;
-						dy = (me.lastDragY - y) / me.engine.camZoom;
-
-						// check for hex
-						if (me.engine.isHex) {
-							angle = 0;
+						// check if errors are displayed
+						if (me.displayErrors) {
+							// compute the movement
+							dy = (me.lastDragY - y);
+							dy /= ViewConstants.fontSize;
+	
+							// scroll errors
+							if (dy > 0) {
+								me.scrollErrorsDown(me, dy);
+							} else {
+								if (dy < 0) {
+									me.scrollErrorsUp(me, -dy);
+								}
+							}
 						} else {
-							angle = -me.engine.angle;
-						}
-
-						// compute x and y
-						sinAngle = Math.sin(angle / 180 * Math.PI);
-						cosAngle = Math.cos(angle / 180 * Math.PI);
-
-						// only update position if controls not locked
-						if (!me.controlsLocked) {
-							// set manual change happened
-							me.manualChange = true;
-
-							// update position
-							me.engine.xOff += dx * cosAngle + dy * (-sinAngle);
-							me.engine.yOff += dx * sinAngle + dy * cosAngle;
+							// compute the movement
+							dx = (me.lastDragX - x) / me.engine.camZoom;
+							dy = (me.lastDragY - y) / me.engine.camZoom;
+	
+							// check for hex
+							if (me.engine.isHex) {
+								angle = 0;
+							} else {
+								angle = -me.engine.angle;
+							}
+	
+							// only update position if controls not locked
+							if (!me.controlsLocked) {
+								// compute x and y
+								sinAngle = Math.sin(angle / 180 * Math.PI);
+								cosAngle = Math.cos(angle / 180 * Math.PI);
+	
+								// set manual change happened
+								me.manualChange = true;
+	
+								// update position
+								me.engine.xOff += dx * cosAngle + dy * (-sinAngle);
+								me.engine.yOff += dx * sinAngle + dy * cosAngle;
+							}
 						}
 					}
 				}
@@ -5346,6 +5542,12 @@
 						me.displayErrors = me.scriptErrors.length - me.numHelpPerPage;
 					}
 				}
+				break;
+
+			// f1 for toggle edit mode
+			case 112:
+				me.drawing = !me.drawing;
+				me.menuManager.notification.notify("Edit Mode " + (me.drawing ? "On" : "Off"), 15, 40, 15, true);
 				break;
 
 			// ignore other keys

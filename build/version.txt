@@ -1,6 +1,8 @@
 Build 283
 - added new rule aliases
 - better error reporting when invalid characters in RLE
+- Generations rules were not displaying Life ended message
+- secret function prototype available on hotkey F1
 
 Build 282
 - survival counts in canonical HROT form were off by 1

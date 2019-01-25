@@ -518,6 +518,42 @@
 		this.HROT = new HROT(this.allocator, this.width, this.height, this);
 	}
 
+	// set state
+	Life.prototype.setState = function(x, y, state) {
+		var grid = this.grid16,
+			tileGrid = this.tileGrid,
+			nextGrid = this.nextGrid16,
+			nextTileGrid = this.nextTileGrid,
+			colourGrid = this.colourGrid,
+			colourTileGrid = this.colourTileGrid,
+			colourTileHistoryGrid = this.colourTileHistoryGrid;
+
+		// check if coordinates are on the grid
+		if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
+			// check for multi-state rules
+			if (this.multiNumStates <= 2) {
+				// draw alive or dead
+				if (state) {
+					colourGrid[y][x] = this.aliveStart;
+					colourTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					colourTileHistoryGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					grid[y][x >> 4] |= (1 << (~x & 15));
+					tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					nextGrid[y][x >> 4] |= (1 << (~x & 15));
+					nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+				} else {
+					colourGrid[y][x] = this.unoccupied;
+					colourTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					colourTileHistoryGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					grid[y][x >> 4] &= ~(1 << (~x & 15));
+					tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					nextGrid[y][x >> 4] &= ~(1 << (~x & 15));
+					nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+				}
+			}
+		}
+	};
+
 	// get state
 	Life.prototype.getState = function(x, y, rawRequested) {
 		// result
@@ -8487,7 +8523,11 @@
 								nextTiles |= (1 << b);
 
 								// flag generations alive
-								this.generationsAlive = tileAlive;
+								if (tileAlive <= deadState) {
+									this.generationsAlive = 0;
+								} else {
+									this.generationsAlive = tileAlive;
+								}
 							}
 						}
 

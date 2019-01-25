@@ -9,3 +9,5 @@ Meta world view
 [DONE]multistate rules using > 2 states and < 256 states should have history colour
 [DONE]LABELTRACK DX DY command to allow labels to move over generations
 Grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
+Pattern Editor
+User preferences
