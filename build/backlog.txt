@@ -1,7 +1,10 @@
 [DONE] HROT support for von Neumann and Circular neighbourhoods
+Implement faster Ltl/HROT von Neumann algorithm
 LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE stuff rather than just clear)
 Investigate Paul's non-totalistic hex notation
 Investigate Brian's BSFKL notation
+Investigate "Extended" Generations
+Investigate deficient rules
 [DONE] New script keywords to put labels on the display at specific locations triggered by generation and zoom ranges
 Meta world view
 [DONE]multistate rules using just 2 states should use LifeViewer Themes
@@ -9,5 +12,6 @@ Meta world view
 [DONE]multistate rules using > 2 states and < 256 states should have history colour
 [DONE]LABELTRACK DX DY command to allow labels to move over generations
 Grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
-Pattern Editor
+[STARTED]Pattern Editor
+- basic 2-state editing with no undo
 User preferences

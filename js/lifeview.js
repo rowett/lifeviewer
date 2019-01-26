@@ -406,6 +406,9 @@
 		this.cellX = 0;
 		this.cellY = 0;
 
+		// number of history states (default and maximum is 63 for 2 state patterns and 1 for multi-state patterns)
+		this.historyStates = 63;
+
 		// whether to hide source element
 		this.noSource = false;
 
@@ -5845,8 +5848,7 @@
 		this.closeButton.toolTip = "close window";
 		
 		// fps button
-		//this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.northEast, -40, 50, 40, 40, [""], [this.menuManager.showTiming], Menu.multi);
-		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.southEast, -40, -150, 40, 40, [""], [this.menuManager.showTiming], Menu.multi);
+		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.northEast, -40, 50, 40, 40, [""], [this.menuManager.showTiming], Menu.multi);
 		this.fpsButton.icon = [ViewConstants.iconManager.icon("fps")];
 		this.fpsButton.toolTip = ["toggle timing display"];
 
@@ -6057,6 +6059,7 @@
 			case Keywords.maxGridSizeWord:
 			case Keywords.autoFitWord:
 			case Keywords.historyFitWord:
+			case Keywords.historyStatesWord:
 			case Keywords.tWord:
 			case Keywords.stepWord:
 			case Keywords.pauseWord:
@@ -7355,6 +7358,23 @@
 							}
 
 							itemValid = true;
+							break;
+
+						// number of history states
+						case Keywords.historyStatesWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+								// check it is in range
+								if (numberValue >= 0 && numberValue <= ((this.engine.multiNumStates > 2) ? 1 : 63)) {
+									this.historyStates = numberValue;
+
+									itemValid = true;
+								}
+							}
 							break;
 
 						// history fit mode
@@ -9664,6 +9684,9 @@
 
 		// clear stats on
 		this.statsOn = false;
+
+		// reset history states
+		this.historyStates = ((this.engine.multiNumStates > 2) ? 1 : 63);
 	};
 	
 	// switch off thumbnail view

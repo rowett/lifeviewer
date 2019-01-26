@@ -578,6 +578,7 @@
 		y = this.renderHelpLine(view, Keywords.graphOpacityWord + " <0.0..1.0>", "population graph opacity", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.graphPointsWord, "population graph use points", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noGraphWord, "disable population graph", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.historyStatesWord + " <0.." + ((view.engine.multiNumStates > 2) ? 1 : 63) + ">", "number of history states", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.starfieldWord + " (" + Keywords.offWord + ")", "display stars", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.hexDisplayWord, "force hex display", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.squareDisplayWord, "force square display", ctx, x, y, height, helpLine);

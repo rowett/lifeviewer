@@ -526,29 +526,42 @@
 			nextTileGrid = this.nextTileGrid,
 			colourGrid = this.colourGrid,
 			colourTileGrid = this.colourTileGrid,
-			colourTileHistoryGrid = this.colourTileHistoryGrid;
+			colourTileHistoryGrid = this.colourTileHistoryGrid,
+
+		    // bounded grid top left
+		    leftX = Math.round((this.width - this.boundedGridWidth) / 2),
+		    bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
+
+		    // bounded grid bottom right
+		    rightX = leftX + this.boundedGridWidth - 1,
+			topY = bottomY + this.boundedGridHeight - 1;
 
 		// check if coordinates are on the grid
 		if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
-			// check for multi-state rules
-			if (this.multiNumStates <= 2) {
-				// draw alive or dead
-				if (state) {
-					colourGrid[y][x] = this.aliveStart;
-					colourTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-					colourTileHistoryGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-					grid[y][x >> 4] |= (1 << (~x & 15));
-					tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-					nextGrid[y][x >> 4] |= (1 << (~x & 15));
-					nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-				} else {
-					colourGrid[y][x] = this.unoccupied;
-					colourTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-					colourTileHistoryGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-					grid[y][x >> 4] &= ~(1 << (~x & 15));
-					tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-					nextGrid[y][x >> 4] &= ~(1 << (~x & 15));
-					nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+			// if bounded grid defined check the coordinates are within it
+			if (this.boundedGridType !== -1 && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
+				// do nothing
+			} else {
+				// check for multi-state rules
+				if (this.multiNumStates <= 2) {
+					// draw alive or dead
+					if (state) {
+						colourGrid[y][x] = this.aliveStart;
+						colourTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						colourTileHistoryGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						grid[y][x >> 4] |= (1 << (~x & 15));
+						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						nextGrid[y][x >> 4] |= (1 << (~x & 15));
+						nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					} else {
+						colourGrid[y][x] = this.unoccupied;
+						colourTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						colourTileHistoryGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						grid[y][x >> 4] &= ~(1 << (~x & 15));
+						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						nextGrid[y][x >> 4] &= ~(1 << (~x & 15));
+						nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					}
 				}
 			}
 		}

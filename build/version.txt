@@ -1,12 +1,17 @@
 Build 284
-- Esc button to close error display
+- Esc button to close error display in bottom right menu
 - when specifying a Klein bounded grid without defining the twist edge the default is now vertical (to match Golly)
+- new script command [[ HISTORYSTATES <0..> ]] to define the number of history states to use
+	- default and maximum is 63 for 2 state patterns and 1 for multi-state patterns
+	- set to 0 to disable cell history drawing
+- pattern editor now respects bounded grid boundaries
 
 Build 283
 - added new rule aliases
 - better error reporting when invalid characters in RLE
 - Generations rules were not displaying Life ended message
-- secret function prototype available on hotkey F1
+- pattern edit mode toggle available on hotkey F1
+	- only works for 2-state patterns
 
 Build 282
 - survival counts in canonical HROT form were off by 1

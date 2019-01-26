@@ -170,6 +170,9 @@
 		// history fit word
 		/** @const {string} */ historyFitWord : "HISTORYFIT",
 
+		// history states word
+		/** @const {string} */ historyStatesWord : "HISTORYSTATES",
+
 		// step word
 		/** @const {string} */ stepWord : "STEP",
 
