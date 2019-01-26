@@ -1,5 +1,6 @@
 Build 284
 - Esc button to close error display
+- when specifying a Klein bounded grid without defining the twist edge the default is now vertical (to match Golly)
 
 Build 283
 - added new rule aliases

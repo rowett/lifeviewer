@@ -4122,7 +4122,7 @@
 
 		// one twist must be specified
 		if (!horizontalTwist && !verticalTwist) {
-			horizontalTwist = true;	
+			verticalTwist = true;	
 		}
 
 		// save read values
