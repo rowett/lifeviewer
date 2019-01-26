@@ -1080,11 +1080,6 @@
 
 		// draw the string
 		this.drawShadowString(itemString, item, false);
-
-		// draw the icon if present
-		if (item.icon) {
-			this.iconManager.draw(item.icon, item.x, item.y);
-		}
 	};
 
 	// draw progress bar item value
@@ -1341,23 +1336,6 @@
 			}
 		}
 
-		// draw the icons if present
-		this.context.globalAlpha = this.fgAlpha;
-		if (item.orientation === Menu.horizontal) {
-			for (i = 0; i < l; i += 1) {
-				if (item.icon[i]) {
-					this.iconManager.draw(item.icon[i], item.x + itemSize * i, item.y);
-				}
-			}
-		}
-		else {
-			for (i = 0; i < l; i += 1) {
-				if (item.icon[i]) {
-					this.iconManager.draw(item.icon[i], item.x, item.y + itemSize * i);
-				}
-			}
-		}
-
 		// draw highlight if required
 		if (highlight) {
 			this.context.globalAlpha = this.hlAlpha;
@@ -1382,6 +1360,23 @@
 		else {
 			// mark no highlight item
 			item.highlightItem = -1;
+		}
+
+		// draw the icons if present
+		this.context.globalAlpha = this.fgAlpha;
+		if (item.orientation === Menu.horizontal) {
+			for (i = 0; i < l; i += 1) {
+				if (item.icon[i]) {
+					this.iconManager.draw(item.icon[i], item.x + itemSize * i, item.y);
+				}
+			}
+		}
+		else {
+			for (i = 0; i < l; i += 1) {
+				if (item.icon[i]) {
+					this.iconManager.draw(item.icon[i], item.x, item.y + itemSize * i);
+				}
+			}
 		}
 
 		// draw the items
@@ -1531,13 +1526,6 @@
 				// draw the icon
 				this.context.globalAlpha = item.fgAlpha;
 				this.iconManager.draw(item.icon, item.x, item.y);
-			
-				// if item is a button then highlight if required
-				if ((itemNum === activeNum || (activeNum === -1 && mouseIsOver)) && (item.type === Menu.button || item.type === Menu.toggle)) {
-
-					this.context.globalAlpha = item.selectedAlpha;
-					this.context.fillRect(item.x, item.y, item.width, item.height);
-				}
 			}
 		}
 
