@@ -2600,6 +2600,7 @@
 		this.closeButton.deleted = !(this.isInPopup || this.scriptErrors.length);
 		this.hexButton.deleted = hide;
 		this.graphButton.deleted = hide;
+		this.infoBarButton.deleted = hide;
 
 		// infobar
 		this.infoBarLabelXLeft.deleted = hide || !this.infoBarEnabled;
@@ -2846,6 +2847,16 @@
 
 		// flag just started for first frame measurement
 		me.justStarted = true;
+	};
+
+	// toggle infobar display
+	View.prototype.viewInfoBarToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			me.infoBarEnabled = newValue[0];
+		}
+
+		return [me.infoBarEnabled];
 	};
 
 	// toggle graph display
@@ -5426,7 +5437,7 @@
 				// check for shift key
 				if (event.shiftKey) {
 					// toggle infobar
-					me.infoBarEnabled = !me.infoBarEnabled;
+					me.infoBarButton.current = me.viewInfoBarToggle([!me.infoBarEnabled], true, me);
 				} else {
 					// check if help displayed
 					if (me.displayHelp) {
@@ -5843,6 +5854,10 @@
 		this.graphButton = this.viewMenu.addListItem(this.viewGraphToggle, Menu.northEast, -160, 100, 80, 40, ["Graph"], [this.popGraph], Menu.multi);
 		this.graphButton.toolTip = ["toggle graph display"];
 
+		// infobar toggle button
+		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.north, 0, 100, 80, 40, ["Info"], [this.infoBarEnabled], Menu.multi);
+		this.infoBarButton.toolTip = ["toggle InfoBar"];
+
 		// close button
 		this.closeButton = this.viewMenu.addButtonItem(this.closePressed, Menu.southEast, -40, -90, 40, 40, "X");
 		this.closeButton.toolTip = "close window";
@@ -5888,7 +5903,7 @@
 		this.playList.toolTip = ["reset", "previous generation", "pause", "play"];
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.graphButton, this.fpsButton], []);
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.graphButton, this.fpsButton, this.infoBarButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -10243,6 +10258,9 @@
 
 			// set the hex UI control
 			this.hexButton.current = [this.engine.isHex];
+
+			// set the InfoBar UI control
+			this.infoBarButton.current = [this.infoBarEnabled];
 
 			// mark pattern not clipped to bounded grid
 			this.wasClipped = false;

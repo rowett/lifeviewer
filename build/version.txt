@@ -4,7 +4,8 @@ Build 284
 - new script command [[ HISTORYSTATES <0..> ]] to define the number of history states to use
 	- default and maximum is 63 for 2 state patterns and 1 for multi-state patterns
 	- set to 0 to disable cell history drawing
-- pattern editor now respects bounded grid boundaries
+- pattern editor now respects bounded grid
+- new Info button in bottom right menu to toggle InfoBar display
 
 Build 283
 - added new rule aliases
