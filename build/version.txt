@@ -18,6 +18,8 @@ Build 284
 - memory for population graph is not allocated if NOGRAPH specified
 - only allocate memory for Stars on first use
 - pattern editor automatically switches temporarily to pan mode while ZOOM < 1
+- HROT patterns were defaulting S8 to on
+- canonical HROT patterns were not validating counts against von Neumann or Circular neighborhoods
 
 Build 283
 - added new rule aliases

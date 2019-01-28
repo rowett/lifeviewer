@@ -183,6 +183,10 @@
 		minStatesHROT : 0,
 		maxStatesHROT : 255,
 
+		// max state seen
+		maxSurvivalHROT : 0,
+		maxBirthHROT : 0,
+
 		// HROT neighborhoods
 		mooreHROT : 0,
 		vonNeumannHROT : 1,
@@ -2336,25 +2340,21 @@
 				if (lower > upper) {
 					this.failureReason = "HROT '" + partName + lower + "-" + upper + "' wrong order";
 					result = false;
-				} else {
-					if (lower > maxCount) {
-						if (lower === upper) {
-							this.failureReason = "HROT '" + partName + lower + "' > " + maxCount;
-						} else {
-							this.failureReason = "HROT '" + partName + lower + "-' > " + maxCount;
-						}
-						result = false;
-					} else {
-						if (upper > maxCount) {
-							this.failureReason = "HROT '" + partName + lower + "-" + upper + "' > " + maxCount;
-							result = false;
-						}
-					}
 				}
 				if (result) {
 					if (partName === "S") {
+						this.maxSurvivalHROT = upper;
 						lower += 1;
 						upper += 1;
+					} else {
+						this.maxBirthHROT = upper;
+					}
+
+					if (lower > maxCount) {
+						lower = maxCount;
+					}
+					if (upper > maxCount) {
+						upper = maxCount;
 					}
 					for (i = lower; i <= upper; i += 1) {
 						list[i] = 1;
@@ -2401,14 +2401,22 @@
 		pattern.isHROT = true;
 	};
 
-	// decode HROT rule in Rr,Cc,S,B,Nn format
+	// decode HROT rule in Rr,Cc,S,B(,Nn) format
 	PatternManager.decodeHROTMulti = function(pattern, rule, allocator) {
 		var value = 0,
 			result = false,
+			count = 0,
+			width = 0,
+			r2 = 0,
+			i = 0,
 			maxCount = 0;
 
 			// reset string index
 			this.index = 0;
+
+		// reset maximum S and B seen
+		this.maxBirthHROT = 0;
+		this.maxSurvivalHROT = 0;
 
 		// decode R part
 		if (rule[this.index] !== "r") {
@@ -2428,7 +2436,7 @@
 						pattern.rangeHROT = value;
 						result = true;
 						// compute maximum count value for Moore neighbourhood
-						maxCount = (value * 2 + 1) * (value * 2 + 1);
+						maxCount = (value * 2 + 1) * (value * 2 + 1) - 1;
 					}
 				}
 			}
@@ -2567,12 +2575,55 @@
 
 		// final validation
 		if (result) {
-			// check for trailing characters
-			if (this.index !== rule.length) {
+			// check neighborhood counts for the neighborhood
+			switch(pattern.neighborhoodHROT) {
+				case PatternManager.mooreHROT:
+					maxCount = (value * 2 + 1) * (value * 2 + 1);
+					break;
+
+				case PatternManager.vonNeumannHROT:
+					maxCount = 2 * pattern.rangeHROT * (pattern.rangeHROT + 1) + 1;
+					break;
+
+				case PatternManager.circularHROT:
+					count = 0;
+					r2 = pattern.rangeHROT * pattern.rangeHROT + pattern.rangeHROT;
+					for (i = -pattern.rangeHROT; i <= pattern.rangeHROT; i += 1) {
+						width = 0;
+						while ((width + 1) * (width + 1) + (i * i) <= r2) {
+							width += 1;
+						}
+						count += 2 * width + 1;
+					}
+					maxCount = count;
+					break;
+			}
+
+			// adjust max count since middle cell is not included
+			maxCount -= 1;
+
+			// check maximum survival count
+			if (this.maxSurvivalHROT > maxCount) {
 				result = false;
-				this.failureReason = "HROT invalid characters after rule";
-			} else {
-				pattern.isHROT = true;
+				this.failureReason = "HROT 'S" + this.maxSurvivalHROT + "' > " + maxCount;
+			}
+
+			// check maximum birth count
+			if (result) {
+				if (this.maxBirthHROT > maxCount) {
+					result = false;
+					this.failureReason = "HROT 'B" + this.maxBirthHROT + "' > " + maxCount;
+				}
+			}
+
+			// check for trailing characters
+			if (result) {
+				if (this.index !== rule.length) {
+					result = false;
+					this.failureReason = "HROT invalid characters after rule";
+				} else {
+					pattern.isHROT = true;
+				}
 			}
 		}
 
