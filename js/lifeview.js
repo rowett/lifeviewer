@@ -66,8 +66,9 @@
 		/** @const {number} */ updateThreshold : 16.7,
 
 		// minimum and maximum grid size 2^n
-		/** @const {number} */ minGridPower : 10,  // 2^10 = 1024
+		/** @const {number} */ minGridPower : 9,  // 2^10 = 512
 		/** @const {number} */ maxGridPower : 14,  // 2^14 = 16384
+		/** @const {number} */ defaultGridPower : 13,  // 2^13 = 8192
 
 		// icons
 		icons : null,
@@ -824,10 +825,10 @@
 		this.elapsedTime = 0;
 
 		// default grid width
-		this.defaultGridWidth = 1024;
+		this.defaultGridWidth = 512;
 
 		// default grid height
-		this.defaultGridHeight = 1024;
+		this.defaultGridHeight = 512;
 
 		// display width
 		this.displayWidth = 640;
@@ -9649,6 +9650,9 @@
 
 	// reset any view controls that scripts can overwrite
 	View.prototype.resetScriptControls = function() {
+		// reset maximum grid size
+		this.engine.maxGridSize = 1 << ViewConstants.defaultGridPower;
+
 		// clear default POI
 		this.defaultPOI = -1;
 
@@ -10340,6 +10344,9 @@
 				this.xOffset += this.posXOffset;
 				this.yOffset += this.posYOffset;
 			}
+
+			// reset the grid size
+			this.engine.resetGridSize(this.defaultGridWidth, this.defaultGridHeight);
 
 			// check if the grid is smaller than the pattern and/or bounded grid plus the maximum step speed
 			borderSize = ViewConstants.maxStepSpeed;

@@ -855,6 +855,87 @@
 		}
 	};
 
+	// reset grid size
+	Life.prototype.resetGridSize = function(width, height) {
+		// get current grid buffers
+		var currentOverlayGrid = this.overlayGrid,
+		    currentMaskGrid = this.state6Mask;
+			
+		// set width and height
+		this.width = width;
+		this.height = height;
+
+		// set HROT buffers if used
+		if (this.isHROT) {
+			this.HROT.resize(this.width, this.height);
+		}
+
+		// allocate the new buffers
+		this.grid = Array.matrix(Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.grid");
+		this.nextGrid = Array.matrix(Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.nextGrid");
+
+		// 16bit view of grid and double buffer
+		this.grid16 = Array.matrixView(Uint16, this.grid, "Life.grid16");
+		this.nextGrid16 = Array.matrixView(Uint16, this.nextGrid, "Life.nextGrid16");
+
+		// check if the mask is allocated
+		if (currentMaskGrid) {
+			this.state6Mask = Array.matrix(Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Mask");
+			this.state6Alive = Array.matrix(Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Alive");
+			this.state6Cells = Array.matrix(Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Cells");
+		}
+
+		// recompute the number of tile rows and columns
+		this.tileCols = this.width >> this.tilePower;
+		this.tileRows = this.height >> this.tilePower;
+
+		// allocate the tile grids
+		if (currentMaskGrid) {
+			this.state6TileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.state6TileGrid");
+		}
+		this.tileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.tileGrid");
+		this.nextTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid");
+		this.colourTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid");
+		this.colourTileHistoryGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid");
+
+		// blank row for life grid to prevent wrap
+		this.blankRow = this.allocator.allocate(Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow");
+
+		// blank tile row to prevent wrap
+		this.blankTileRow = this.allocator.allocate(Uint16, this.tileCols >> 4, "Life.blankTileRow");
+
+		// blank colour grid row
+		this.blankColourRow = this.allocator.allocate(Uint8, this.width, "Life.blankColourRow");
+
+		// column occupancy array for grid bounding box calculation
+		this.columnOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16");
+
+		// colour grid
+		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
+		this.smallColourGrid2 = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
+		this.smallColourGrid4 = Array.matrixViewWithOffset(this.smallColourGrid2, 1, "Life.smallColourGrid4");
+		this.smallColourGrid8 = Array.matrixViewWithOffset(this.smallColourGrid2, 3, "Life.smallColourGrid8");
+		this.smallColourGrid16 = Array.matrixViewWithOffset(this.smallColourGrid2, 7, "Life.smallColourGrid16");
+		this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
+
+		// check if overlay grid was allocated
+		if (currentOverlayGrid) {
+			this.overlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid");
+			this.smallOverlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid");
+			this.smallOverlayGrid4 = Array.matrixViewWithOffset(this.smallOverlayGrid, 1, "Life.smallColourGrid4");
+			this.smallOverlayGrid8 = Array.matrixViewWithOffset(this.smallOverlayGrid, 3, "Life.smallColourGrid8");
+			this.smallOverlayGrid16 = Array.matrixViewWithOffset(this.smallOverlayGrid, 7, "Life.smallColourGrid16");
+			this.overlayGrid16 = Array.matrixView(Uint16, this.overlayGrid, "Life.overlayGrid16");
+		}
+
+		// create the grid width and height masks
+		this.widthMask = this.width - 1;
+		this.heightMask = this.height - 1;
+
+		// update the snapshots
+		this.snapshotManager.resizeSnapshots(((this.tileCols - 1) >> 4) + 1, this.tileRows, 0);
+	};
+
 	// grow grid
 	Life.prototype.growGrid = function() {
 		// get the current grid size

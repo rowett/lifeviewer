@@ -4217,37 +4217,47 @@
 				// next character
 				this.index = 1;
 
-				// decode based on type
-				switch (pattern.gridType) {
-				case 0:
-					// plane
-					this.decodePlane(pattern, source);
-					break;
-				
-				case 1:
-					// tube/torus
-					this.decodeTorus(pattern, source);
-					break;
-
-				case 2:
-					// klein-bottle
-					this.decodeKlein(pattern, source);
-					break;
-
-				case 3:
-					// cross-surface
-					this.decodeCrossSurface(pattern, source);
-					break;
-
-				case 4:
-					// sphere
-					this.decodeSphere(pattern, source);
-					break;
-				
-				default:
-					// others are invalid
+				// check for twist in other type than klein-bottle
+				if (pattern.gridType !== 2 && source.indexOf("*") !== -1) {
 					pattern.gridWidth = -1;
+				} else {
+					// decode based on type
+					switch (pattern.gridType) {
+					case 0:
+						// plane
+						this.decodePlane(pattern, source);
+						break;
+					
+					case 1:
+						// tube/torus
+						this.decodeTorus(pattern, source);
+						break;
+	
+					case 2:
+						// klein-bottle
+						this.decodeKlein(pattern, source);
+						break;
+	
+					case 3:
+						// cross-surface
+						this.decodeCrossSurface(pattern, source);
+						break;
+	
+					case 4:
+						// sphere
+						this.decodeSphere(pattern, source);
+						break;
+					
+					default:
+						// others are invalid
+						pattern.gridWidth = -1;
+					}
 				}
+			}
+	
+			// check for extra characters after bounded grid
+			if (this.index !== source.length) {
+				pattern.gridWidth = -1;
 			}
 
 			// check if decoded successfully
@@ -4257,7 +4267,7 @@
 			else {
 				// clear grid type
 				pattern.gridType = -1;
-				this.reason = "Invalid bounded grid definition '" + source + "'";
+				this.failureReason = "Invalid bounded grid definition '" + source.toUpperCase() + "'";
 			}
 		}
 
@@ -4443,7 +4453,7 @@
 		}
 
 		// decode the rule
-		if (this.decodeRuleString(pattern, ruleString, allocator) && boundedIndex !== -2) {
+		if (boundedIndex !== -2 && this.decodeRuleString(pattern, ruleString, allocator)) {
 			// mark executable
 			this.executable = true;
 		}

@@ -1175,17 +1175,19 @@
 		snapshot.colourTileGrid = this.colourTileGrids[index];
 
 		// copy the old grids to the center of the new ones
-		while (y < currentHeight) {
-			snapshot.tileGrid[y + yOffset].set(currentTileGrid[y], xOffset);
-			snapshot.colourTileGrid[y + yOffset].set(currentColourTileGrid[y], xOffset);
-			y += 1;
-		}
+		if (offset > 0) {
+			while (y < currentHeight) {
+				snapshot.tileGrid[y + yOffset].set(currentTileGrid[y], xOffset);
+				snapshot.colourTileGrid[y + yOffset].set(currentColourTileGrid[y], xOffset);
+				y += 1;
+			}
 
-		// update the zoom box
-		snapshot.zoomBox.leftX += offset;
-		snapshot.zoomBox.rightX += offset;
-		snapshot.zoomBox.bottomY += offset;
-		snapshot.zoomBox.topY += offset;
+			// update the zoom box
+			snapshot.zoomBox.leftX += offset;
+			snapshot.zoomBox.rightX += offset;
+			snapshot.zoomBox.bottomY += offset;
+			snapshot.zoomBox.topY += offset;
+		}
 	};
 
 	// resize snapshots to fit the new grid

@@ -11,6 +11,9 @@ Build 284
 - added aggregate memory usage information to Help information
 - toolTips can now be two lines long and will try to split at a space, comma or slash
 - when PopUp windows resize the right edge position will stay fixed
+- bounded grid types that do not support twists were not being reported as errors when twists were specified
+- PopUp viewer was not having grid size reset after MAXGRIDSIZE specified
+- default grid size reduced to 512x512 to save memory for pages with multiple Viewers
 
 Build 283
 - added new rule aliases
