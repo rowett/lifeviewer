@@ -2093,20 +2093,30 @@
 		    oc = this.offContext,
 
 		    // tooltip text
-		    toolTip = "",
+			toolTip = "",
+			
+			// extra line of text if too wide
+			extraTip = "",
 
 		    // tooltip position
 		    x = 0,
 		    y = 0,
 
 		    // tooltip width
-		    width = 0,
+			width = 0,
+			extraWidth = 0,
+			targetWidth = 0,
+			currentChar = "",
+			i = 0, j = 0,
+
+			// number of lines of text to draw
+			lines = 1,
 
 		    // font size
 		    fontSize = 18,
 
 		    // border size
-		    borderSize = 4;
+			borderSize = 4;
 
 		// check for active item
 		if (current.activeItem !== -1 || (current.activeItem === -1 && current.mouseOverItem === -1)) {
@@ -2235,22 +2245,58 @@
 					}
 				}
 
+				// check if the width is greater than the window
+				if (width > oc.canvas.width) {
+					// compute the target width
+					targetWidth = (width >> 1) + fontSize + borderSize;
+					if (targetWidth > oc.canvas.width) {
+						targetWidth = oc.canvas.width;
+					}
+					// find the longest string that fits in the target width
+					i = 1;
+					while (oc.measureText(toolTip.substr(0, i)).width < targetWidth) {
+						i += 1;
+					}
+					// see if there is a space, comma or slash nearby
+					j = i - 1;
+					while (j > i - 5) {
+						currentChar = toolTip[j];
+						if (currentChar === " " || currentChar === "," || currentChar === "/") {
+							// split at the character found
+							i = j + 2;
+							j = i - 5;
+						} else {
+							j -= 1;
+						}
+					}
+
+					// split the string
+					extraTip = toolTip.substr(i - 1);
+					toolTip = toolTip.substr(0, i - 1);
+					width = oc.measureText(toolTip).width;
+					extraWidth = oc.measureText(extraTip).width;
+					if (extraWidth > width) {
+						width = extraWidth;
+					}
+					lines = 2;
+				}
+
 				// draw the tooltip box
 				oc.globalAlpha = 0.7;
 				oc.fillStyle = "black";
-				oc.fillRect(((x - borderSize) | 0) - 0.5, ((y - fontSize / 2 - borderSize) | 0) - 0.5, width  + 2 + borderSize * 2, fontSize + borderSize * 2);
+				oc.fillRect(((x - borderSize) | 0) - 0.5, ((y - fontSize / 2 - borderSize) | 0) - 0.5, width + 2 + borderSize * 2, fontSize * lines + borderSize * 2);
 
 				// draw the tooltip border
 				oc.globalAlpha = 1;
 				oc.strokeStyle = "rgb(32,255,255)";
-				oc.strokeRect(((x - borderSize) | 0) - 0.5, ((y - fontSize / 2 - borderSize) | 0) - 0.5, width + 2 + borderSize * 2, fontSize + borderSize * 2);
+				oc.strokeRect(((x - borderSize) | 0) - 0.5, ((y - fontSize / 2 - borderSize) | 0) - 0.5, width + 2 + borderSize * 2, fontSize * lines + borderSize * 2);
 
 				// draw the shadow
 				oc.globalAlpha = 0.7;
 				oc.strokeStyle = "black";
 				oc.beginPath();
-				oc.moveTo((x - borderSize | 0) + 0.5, ((y - fontSize / 2 - borderSize) | 0) + 0.5 + fontSize + borderSize * 2);
-				oc.lineTo((x - borderSize | 0) + 0.5 + width + 2 + borderSize * 2, ((y - fontSize / 2 - borderSize) | 0) + 0.5 + fontSize + borderSize * 2);
+				oc.moveTo((x - borderSize | 0) + 0.5, ((y - fontSize / 2 - borderSize) | 0) + 0.5 + fontSize * lines + borderSize * 2);
+				oc.lineTo((x - borderSize | 0) + 0.5 + width + 2 + borderSize * 2, ((y - fontSize / 2 - borderSize) | 0) + 0.5 + fontSize * lines + borderSize * 2);
 				oc.lineTo((x - borderSize | 0) + 0.5 + width + 2 + borderSize * 2, ((y - fontSize / 2 - borderSize) | 0) + 0.5);
 				oc.stroke();
 
@@ -2258,9 +2304,14 @@
 				oc.globalAlpha = 1;
 				oc.fillStyle = "black";
 				oc.fillText(toolTip, x + 2, y + 2);
-				//oc.fillStyle = "rgb(32,255,255)";
+				if (extraTip !== "") {
+					oc.fillText(extraTip, x + 2, y + fontSize + 2);
+				}
 				oc.fillStyle = "white";
 				oc.fillText(toolTip, x, y);
+				if (extraTip !== "") {
+					oc.fillText(extraTip, x, y + fontSize);
+				}
 			}
 		}
 	};

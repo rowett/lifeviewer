@@ -10415,7 +10415,7 @@
 			}
 
 			// set the tool tip in case the rule name is wider than the label
-			this.ruleLabel.toolTip = "rule " + this.patternRuleName;
+			this.ruleLabel.toolTip = this.patternRuleName;
 			
 			// check for alias name
 			if (this.patternAliasName !== "") {
