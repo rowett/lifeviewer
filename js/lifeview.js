@@ -1067,6 +1067,9 @@
 		// whether drawing
 		this.drawing = false;
 
+		// whether notified that Pan active
+		this.panNotified = false;
+
 		// pen colour for drawing
 		this.penColour = -1;
 	}
@@ -3574,16 +3577,20 @@
 		    dy = 0,
 		    angle = 0,
 		    sinAngle = 0,
-			cosAngle = 0;
+			cosAngle = 0,
+			stillDrawing = me.drawing;
 
 		// check if this is a drag or cancel drag
 		if (dragOn) {
-			if (me.drawing) {
-				if (me.engine.zoom < 1) {
-					me.menuManager.notification.notify("Drawing allowed from Zoom 1", 15, 60, 15, true);
-				} else {
-					me.drawCells(x, y, me.lastDragX, me.lastDragY);
+			if (me.drawing && me.engine.zoom < 1) {
+				stillDrawing = false;
+				if (!me.panNotified) {
+					me.menuManager.notification.notify("Pan active: Zoom in to draw", 15, 120, 15, true);
+					me.panNotified = true;
 				}
+			}
+			if (stillDrawing) {
+				me.drawCells(x, y, me.lastDragX, me.lastDragY);
 			} else {
 				// check if this is the start of a drag
 				if (me.lastDragX !== -1) {
@@ -3653,6 +3660,7 @@
 			// drag finished
 			me.lastDragX = -1;
 			me.lastDragY = -1;
+			me.panNotified = false;
 		}
 	};
 
@@ -9733,6 +9741,10 @@
 
 		// reset history states
 		this.historyStates = ((this.engine.multiNumStates > 2) ? 1 : 63);
+
+		// reset drawing mode
+		this.drawing = false;
+		this.panNotified = false;
 	};
 	
 	// switch off thumbnail view
