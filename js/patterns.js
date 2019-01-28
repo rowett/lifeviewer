@@ -2498,7 +2498,7 @@
 							this.failureReason = "HROT expected 'S' got " + rule[this.index].toUpperCase();
 						} else {
 							// read and save survivals
-							pattern.survivalHROT = allocator.allocate(Uint8, maxCount + 1, "HROT.survivals");
+							pattern.survivalHROT = allocator.allocate(Uint8, maxCount + 2, "HROT.survivals");
 							result = this.decodeHROTRange(rule, pattern.survivalHROT, "S", maxCount);
 						}
 					} else {
@@ -2525,7 +2525,7 @@
 							this.failureReason = "HROT expected 'B' got " + rule[this.index].toUpperCase();
 						} else {
 							// read and save survivals
-							pattern.birthHROT = allocator.allocate(Uint8, maxCount, "HROT.births");
+							pattern.birthHROT = allocator.allocate(Uint8, maxCount + 1, "HROT.births");
 							result = this.decodeHROTRange(rule, pattern.birthHROT, "B", maxCount);
 						}
 					} else {

@@ -472,7 +472,7 @@
 		// icon (list)
 		this.icon = icon;
 
-		// absolute position (top left for rectangle, center for circle)
+		// absolute position top left
 		this.x = x;
 		this.y = y;
 
@@ -483,17 +483,17 @@
 		// position type
 		this.position = position;
 
-		// width and height for rectangle, radius for circle
+		// width and height
 		this.width = width;
 		this.height = height;
 
 		// border thickness (0 for no border)
 		this.border = border;
 
-		// type of menu item (rectangle or circle)
+		// type of menu item
 		this.type = type;
 
-		// menu orientation (for rectangle)
+		// menu orientation
 		if (orientation === Menu.auto) {
 			// select orientation based on width and height
 			if (width >= height) {
@@ -506,6 +506,9 @@
 		else {
 			this.orientation = orientation;
 		}
+
+		// text orientation
+		this.textOrientation = this.orientation;
 
 		// value range represented (order is important)
 		this.lower = lower;
@@ -978,7 +981,7 @@
 			this.context.font = item.font;
 
 			// rotate if the item is vertical
-			if (item.orientation === Menu.vertical) {
+			if (item.textOrientation === Menu.vertical) {
 				this.context.rotate(90 / 180 * Math.PI);
 			}
 
@@ -986,7 +989,7 @@
 			textWidth = this.context.measureText(string).width;
 
 			// check if the text is wider than the control
-			if (item.orientation === Menu.vertical) {
+			if (item.textOrientation === Menu.vertical) {
 				target = item.height;
 			}
 			else {

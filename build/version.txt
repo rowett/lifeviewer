@@ -1,3 +1,8 @@
+Build 285
+- new Stars button to toggle starfield display in bottom right menu
+- new Help topics UI in Help menu
+- fixed HROT canonical S8 bug again
+
 Build 284
 - Esc button to close error display in bottom right menu
 - when specifying a Klein bounded grid without defining the twist edge the default is now vertical (to match Golly)

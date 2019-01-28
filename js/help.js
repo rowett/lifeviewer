@@ -1232,6 +1232,10 @@
 		tabs[1] = 200;
 		tabs[2] = 290;
 		tabs[3] = 530;
+		sections[sectionNum] = view.lineNo;
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Memory usage", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// display aggregate data if more than one LifeViewer
 		if (numViewers > 1) {
@@ -1258,6 +1262,10 @@
 			y = this.renderHelpLine(view, "Frees", frees + "\t" + (totalFreedBytes >> 10) + "M", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "In Use", (allocs - frees) + "\t" + ((totalBytes >> 10) - (totalFreedBytes >> 10)) + "M", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		} else {
+			// dummy empty section to keep section numbers consistent
+			sections[sectionNum] = view.lineNo;
+			sectionNum += 1;
 		}
 
 		// display current LifeViewer data

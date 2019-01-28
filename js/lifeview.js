@@ -150,7 +150,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 284,
+		/** @const {number} */ versionBuild : 285,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -920,6 +920,12 @@
 		// help button
 		this.helpToggle = null;
 
+		// help topics button
+		this.topicsToggle = null;
+
+		// help topics list
+		this.topicsList = null;
+
 		// autofit button
 		this.autoFitToggle = null;
 
@@ -943,6 +949,12 @@
 
 		// close button for graph
 		this.graphCloseButton = null;
+
+		// infobar button
+		this.infoBarButton = null;
+
+		// stars button
+		this.starsButton = null;
 
 		// fps button
 		this.fpsButton = null;
@@ -2628,6 +2640,7 @@
 		this.hexButton.deleted = hide;
 		this.graphButton.deleted = hide;
 		this.infoBarButton.deleted = hide;
+		this.starsButton.deleted = hide;
 
 		// infobar
 		this.infoBarLabelXLeft.deleted = hide || !this.infoBarEnabled;
@@ -2877,6 +2890,16 @@
 
 		// reset died generation
 		me.diedGeneration = -1;
+	};
+
+	// toggle stars display
+	View.prototype.viewStarsToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			me.starsOn = newValue[0];
+		}
+
+		return [me.starsOn];
 	};
 
 	// toggle infobar display
@@ -3271,6 +3294,49 @@
 			this.playList.icon[2] = ViewConstants.iconManager.icon("stepforward");
 			this.playList.toolTip[2] = "next generation";
 		}
+	};
+
+	// help topics list
+	View.prototype.viewTopicsList = function(newValue, change, me) {
+		var result = newValue,
+		    section = 0;
+
+		if (change) {
+			// switch to required topic
+			switch (newValue) {
+			case 0:
+				// keyboard shortcuts
+				section = 1;
+				break;
+			case 1:
+				// script commands
+				section = 7;
+				break;
+			case 2:
+				// information
+				section = 9;
+				break;
+			case 3:
+				// memory details
+				section = 23;
+				break;
+			case 4:
+				// rule aliases
+				section = 26;
+				break;
+			case 5:
+				// colour names
+				section = 33;
+				break;
+			}
+
+			// switch to required topic
+			if (section < me.helpSections.length) {
+				me.displayHelp = me.helpSections[section];
+			}
+		}
+
+		return result;
 	};
 
 	// view play list
@@ -4870,7 +4936,7 @@
 					}
 				} else {
 					// toggle stars
-					me.starsOn = !me.starsOn;
+					me.starsButton.current = me.viewStarsToggle([!me.starsOn], true, me);
 				}
 				break;
 
@@ -5780,6 +5846,16 @@
 		this.helpToggle.icon = [ViewConstants.iconManager.icon("help")];
 		this.helpToggle.toolTip = ["toggle help display"];
 
+		// help topics button
+		this.topicsToggle = this.viewMenu.addListItem(null, Menu.northEast, -90, 0, 40, 40, ["v"], [false], Menu.multi);
+		this.topicsToggle.toolTip = ["toggle help topics"];
+
+		// help topic list
+		this.topicsList = this.viewMenu.addListItem(this.viewTopicsList, Menu.northEast, -205, 50, 160, 300, ["Keys", "Commands", "Information", "Memory", "Aliases", "Colours"], 0, Menu.single);
+		this.topicsList.toolTip = ["", "", "", "", "", ""];
+		this.topicsList.orientation = Menu.vertical;
+		this.topicsList.textOrientation = Menu.horizontal;
+
 		// autofit button
 		this.autoFitToggle = this.viewMenu.addListItem(this.toggleAutoFit, Menu.northWest, 0, 0, 40, 40, [""], [false], Menu.multi);
 		this.autoFitToggle.icon = [ViewConstants.iconManager.icon("autofit")];
@@ -5895,6 +5971,10 @@
 		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.north, 0, 100, 80, 40, ["Info"], [this.infoBarEnabled], Menu.multi);
 		this.infoBarButton.toolTip = ["toggle InfoBar"];
 
+		// stars toggle button
+		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.south, 0, -140, 80, 40, ["Stars"], [this.starsOn], Menu.multi);
+		this.starsButton.toolTip = ["toggle stars display"];
+
 		// close button
 		this.closeButton = this.viewMenu.addButtonItem(this.closePressed, Menu.southEast, -40, -90, 40, 40, "X");
 		this.closeButton.toolTip = "close window";
@@ -5940,10 +6020,16 @@
 		this.playList.toolTip = ["reset", "previous generation", "pause", "play"];
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.graphButton, this.fpsButton, this.infoBarButton], []);
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.graphButton, this.fpsButton, this.infoBarButton, this.starsButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
+
+		// add items to the help toggle menu
+		this.helpToggle.addItemsToToggleMenu([this.topicsToggle], []);
+
+		// add topics list to the help topic toggle
+		this.topicsToggle.addItemsToToggleMenu([this.topicsList], []);
 	};
 
 	// attached the viewer to a canvas element
@@ -10337,6 +10423,9 @@
 
 			// set the InfoBar UI control
 			this.infoBarButton.current = [this.infoBarEnabled];
+
+			// set the Stars UI control
+			this.starsButton.current = [this.starsOn];
 
 			// mark pattern not clipped to bounded grid
 			this.wasClipped = false;
