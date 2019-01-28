@@ -2490,7 +2490,7 @@
 							this.failureReason = "HROT expected 'S' got " + rule[this.index].toUpperCase();
 						} else {
 							// read and save survivals
-							pattern.survivalHROT = allocator.allocate(Uint8, maxCount, "HROT.survivals");
+							pattern.survivalHROT = allocator.allocate(Uint8, maxCount + 1, "HROT.survivals");
 							result = this.decodeHROTRange(rule, pattern.survivalHROT, "S", maxCount);
 						}
 					} else {
