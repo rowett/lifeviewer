@@ -278,7 +278,15 @@
 		    themeName = "",
 		    i = 0,
 		    value = 0,
-		    flag = false,
+			flag = false,
+			
+			// memory aggregation
+			numViewers = Controller.numViewers(),
+			allocs = 0,
+			frees = 0,
+			totalBytes = 0,
+			totalFreedBytes = 0,
+			currentView = null,
 
 		    // get the current theme
 		    theme = view.engine.themes[view.engine.colourTheme],
@@ -915,7 +923,7 @@
 		y = this.renderHelpLine(view, "BoundedGrid", "Plane, Torus, Klein, Cross-surface, Sphere", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "States", "2 state, [R]History, Niemiec, Generations", ctx, x, y, height, helpLine);
 
-		y = this.renderHelpLine(view, "Viewers", Controller.viewers.length, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Viewers", numViewers, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Playing", Controller.viewersPlaying(), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
@@ -1224,9 +1232,38 @@
 		tabs[1] = 200;
 		tabs[2] = 290;
 		tabs[3] = 530;
+
+		// display aggregate data if more than one LifeViewer
+		if (numViewers > 1) {
+			sections[sectionNum] = view.lineNo;
+			sectionNum += 1;
+			y = this.renderHelpLine(view, "", "Memory (all " + numViewers + " LifeViewers):", ctx, x, y, height, helpLine);
+			allocs = 0;
+			frees = 0;
+			totalBytes = 0;
+			totalFreedBytes = 0;
+			// get allocation data for each viewer
+			for (i = 0; i < numViewers; i += 1) {
+				currentView = Controller.getView(i);
+				if (currentView) {
+					// add in Kbytes to prevent integer overflow
+					allocs += currentView.engine.allocator.numAllocs;
+					totalBytes += (currentView.engine.allocator.totalBytes >> 10);
+					frees += currentView.engine.allocator.numFrees;
+					totalFreedBytes += (currentView.engine.allocator.totalFreedBytes >> 10);
+				}
+			}
+			// display aggregate information
+			y = this.renderHelpLine(view, "Allocations", allocs + "\t" + (totalBytes >> 10) + "M", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Frees", frees + "\t" + (totalFreedBytes >> 10) + "M", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "In Use", (allocs - frees) + "\t" + ((totalBytes >> 10) - (totalFreedBytes >> 10)) + "M", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		}
+
+		// display current LifeViewer data
 		sections[sectionNum] = view.lineNo;
 		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Memory:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "Memory (this LifeViewer):", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Allocations", view.engine.allocator.numAllocs + "\t" + (view.engine.allocator.totalBytes >> 20) + "M\t" + view.engine.allocator.totalBytes, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Frees", view.engine.allocator.numFrees + "\t" + (view.engine.allocator.totalFreedBytes >> 20) + "M\t" + view.engine.allocator.totalFreedBytes, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "In Use", (view.engine.allocator.numAllocs - view.engine.allocator.numFrees) + "\t" + ((view.engine.allocator.totalBytes - view.engine.allocator.totalFreedBytes) >> 20) + "M\t" + (view.engine.allocator.totalBytes - view.engine.allocator.totalFreedBytes), ctx, x, y, height, helpLine);

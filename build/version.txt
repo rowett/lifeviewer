@@ -6,6 +6,9 @@ Build 284
 	- set to 0 to disable cell history drawing
 - pattern editor now respects bounded grid
 - new Info button in bottom right menu to toggle InfoBar display
+- bounded grids >=8192 and <=16384 were causing a crash
+- pattern died generation was not working in the PopUp Viewer for the second pattern onwards if not reset
+- added aggregate memory usage information to Help information
 
 Build 283
 - added new rule aliases

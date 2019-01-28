@@ -298,6 +298,22 @@
 		return result;
 	};
 
+	// return the View for the requested viewer
+	Controller.getView = function(which) {
+		var result = null;
+
+		if (which >=0 && which < this.viewers.length) {
+			result = this.viewers[which][1];
+		}
+
+		return result;
+	};
+
+	// return the number of viewers
+	Controller.numViewers = function() {
+		return this.viewers.length;
+	};
+
 	// return number of viewers playing
 	Controller.viewersPlaying = function() {
 		var currentViewer = null,
@@ -2847,6 +2863,9 @@
 
 		// flag just started for first frame measurement
 		me.justStarted = true;
+
+		// reset died generation
+		me.diedGeneration = -1;
 	};
 
 	// toggle infobar display
@@ -10250,6 +10269,23 @@
 				this.tooBig = true;
 				this.executable = false;
 				this.clearPatternData();
+			}
+
+			// check bounded grid size (script command may have increased maximum allowed size)
+			if (pattern.gridType !== -1) {
+				// check for LtL or HROT rules
+				if (pattern.isHROT) {
+					borderSize = pattern.rangeHROT * 6;
+				}
+				if (pattern.isLTL) {
+					borderSize = pattern.rangeLTL * 6;
+				}
+				if (pattern.gridWidth >= this.engine.maxGridSize - borderSize || pattern.gridHeight >= this.engine.maxGridSize - borderSize) {
+					// make invalid
+					this.failureReason = "Bounded grid is too big";
+					this.executable = false;
+					this.engine.boundedGridType = -1;
+				}
 			}
 
 			// set the graph UI control

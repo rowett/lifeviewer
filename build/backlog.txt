@@ -1,5 +1,6 @@
 [DONE] HROT support for von Neumann and Circular neighbourhoods
 Implement faster Ltl/HROT von Neumann algorithm
+Investigate tiled LtL/HROT algorithm
 LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE stuff rather than just clear)
 Investigate Paul's non-totalistic hex notation
 Investigate Brian's BSFKL notation
