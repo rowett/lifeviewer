@@ -17,9 +17,9 @@
 		this.numStars = numStars;
 
 		// list of stars
-		this.x = allocator.allocate(Float32, numStars, "Stars.x"); 
-		this.y = allocator.allocate(Float32, numStars, "Stars.y"); 
-		this.z = allocator.allocate(Float32, numStars, "Stars.z"); 
+		this.x = allocator.allocate(Float32, 0, "Stars.x"); 
+		this.y = allocator.allocate(Float32, 0, "Stars.y"); 
+		this.z = allocator.allocate(Float32, 0, "Stars.z"); 
 
 		// star colour
 		this.red = 255;
@@ -54,6 +54,12 @@
 			this.cos[i] = Math.cos((i / this.degreeParts) * this.degToRad);
 			i += 1;
 		}
+
+		// save the allocator
+		this.allocator = allocator;
+
+		// whether initialized
+		this.initialized = false;
 	}
 
 	// initialise stars
@@ -68,6 +74,11 @@
 
 		    // compute the radius of the starfield
 		    radius2 = (maxX * maxX) + (maxY * maxY);
+
+		// allocate the stars
+		this.x = this.allocator.allocate(Float32, numStars, "Stars.x"); 
+		this.y = this.allocator.allocate(Float32, numStars, "Stars.y"); 
+		this.z = this.allocator.allocate(Float32, numStars, "Stars.z"); 
 
 		// create random stars
 		for (i = 0; i < numStars; i += 1) {
@@ -116,6 +127,11 @@
 		    currentGreen = 0,
 		    currentBlue = 0;
 
+		// check if initialized
+		if (!this.initialized) {
+			this.init(8192, 8192, 1024);
+			this.initialized = true;
+		}
 		// compute black pixel rgb components
 		if (littleEndian) {
 			blackBlue = (blackPixel >> 16) & 0xff;

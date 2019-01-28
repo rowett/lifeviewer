@@ -304,10 +304,12 @@
 		var result = null;
 
 		// get typed block of memory
-		result = this.typedMemory(type, elements, name);
+		if (elements > 0) {
+			result = this.typedMemory(type, elements, name);
+		}
 
 		// check if allocation succeeded
-		if (result) {
+		if (result || elements === 0) {
 			this.saveAllocationInfo(type, elements, name);
 		}
 

@@ -135,9 +135,9 @@
 		this.initBitCounts16();
 
 		// population graph array
-		this.popGraphData = this.allocator.allocate(Uint32, LifeConstants.maxPopSamples, "Life.popGraphData");
-		this.birthGraphData = this.allocator.allocate(Uint32, LifeConstants.maxPopSamples, "Life.birthGraphData");
-		this.deathGraphData = this.allocator.allocate(Uint32, LifeConstants.maxPopSamples, "Life.deathGraphData");
+		this.popGraphData = null;
+		this.birthGraphData = null;
+		this.deathGraphData = null;
 
 		// maximum population value
 		this.maxPopValue = 0;
@@ -564,6 +564,20 @@
 					}
 				}
 			}
+		}
+	};
+
+	// allocate or clear graph data
+	Life.prototype.allocateGraphData = function(allocate) {
+		if (allocate) {
+			this.popGraphData = this.allocator.allocate(Uint32, LifeConstants.maxPopSamples, "Life.popGraphData");
+			this.birthGraphData = this.allocator.allocate(Uint32, LifeConstants.maxPopSamples, "Life.birthGraphData");
+			this.deathGraphData = this.allocator.allocate(Uint32, LifeConstants.maxPopSamples, "Life.deathGraphData");
+		} else {
+			this.popGraphData = this.allocator.allocate(Uint32, 0, "Life.popGraphData");
+			this.birthGraphData = this.allocator.allocate(Uint32, 0, "Life.birthGraphData");
+			this.deathGraphData = this.allocator.allocate(Uint32, 0, "Life.deathGraphData");
+
 		}
 	};
 

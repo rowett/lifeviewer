@@ -3230,7 +3230,9 @@
 		}
 
 		// reset population data for graph
-		me.engine.resetPopulationData();
+		if (!me.graphDisabled) {
+			me.engine.resetPopulationData();
+		}
 
 		// reset history box
 		me.engine.resetHistoryBox();
@@ -6003,7 +6005,6 @@
 
 			// create the starfield
 			this.starField = new Stars(ViewConstants.numStars, this.engine.allocator);
-			this.starField.init(8192, 8192, 1024);
 
 			// set the font alignment
 			this.offContext.textAlign = "left";
@@ -10282,6 +10283,9 @@
 				}
 			}
 
+			// allocate graph data unless graph disabled
+			this.engine.allocateGraphData(!this.graphDisabled);
+
 			// check pattern size (script command may have increased maximum allowed size)
 			if (pattern.width > this.engine.maxGridSize || pattern.height >= this.engine.maxGridSize) {
 				this.failureReason = "Pattern too big (maximum " + this.engine.maxGridSize + "x" + this.engine.maxGridSize + ")";
@@ -10524,7 +10528,9 @@
 		}
 
 		// reset population data
-		this.engine.resetPopulationData();
+		if (!this.graphDisabled) {
+			this.engine.resetPopulationData();
+		}
 
 		if (pattern) {
 			// free the multi-state map

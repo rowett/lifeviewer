@@ -22,8 +22,8 @@
 		// algorithm parameters
 		this.range = 1;
 		this.scount = 2;
-		this.births = allocator.allocate(Uint8, 1, "HROT.births");
-		this.survivals = allocator.allocate(Uint8, 1, "HROT.survivals");
+		this.births = allocator.allocate(Uint8, 0, "HROT.births");
+		this.survivals = allocator.allocate(Uint8, 0, "HROT.survivals");
 		this.type = PatternManager.mooreHROT;
 
 		// neighbour count array (will be resized)
@@ -33,7 +33,7 @@
 		this.widths = allocator.allocate(Uint32, this.range * 2 + 1, "HROT.widths");
 
 		// used row array (will be resized)
-		this.colUsed = allocator.allocate(Uint8, 1, "HROT.colUsed");
+		this.colUsed = allocator.allocate(Uint8, 0, "HROT.colUsed");
 	}
 
 	// resize counts array
