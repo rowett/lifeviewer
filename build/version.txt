@@ -15,7 +15,7 @@ Build 284
 - bounded grid types that do not support twists were not being reported as errors when twists were specified
 - PopUp viewer was not having grid size reset after MAXGRIDSIZE specified
 - default grid size reduced to 512x512 to save memory for pages with multiple Viewers
-- memory for population graph is not allocated if NOGRAPH specified
+- memory for population graph is not allocated if NOGRAPH is specified or if THUMBLAUNCH is specified without GRAPH
 - only allocate memory for Stars on first use
 - pattern editor automatically switches temporarily to pan mode while ZOOM < 1
 - HROT patterns were defaulting S8 to on

@@ -10295,6 +10295,11 @@
 				}
 			}
 
+			// disable graph if using THUMBLAUNCH and graph not displayed (since there's no way to turn it on)
+			if (this.thumbLaunch && !this.popGraph) {
+				this.graphDisabled = true;
+			}
+
 			// allocate graph data unless graph disabled
 			this.engine.allocateGraphData(!this.graphDisabled);
 
