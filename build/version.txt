@@ -10,6 +10,7 @@ Build 284
 - pattern died generation was not working in the PopUp Viewer for the second pattern onwards if not reset
 - added aggregate memory usage information to Help information
 - toolTips can now be two lines long and will try to split at a space, comma or slash
+- when PopUp windows resize the right edge position will stay fixed
 
 Build 283
 - added new rule aliases

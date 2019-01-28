@@ -282,7 +282,10 @@
 		viewers : [],
 
 		// standalone viewer
-		standaloneIndex : -1
+		standaloneIndex : -1,
+
+		// popup window
+		popupWindow : null
 	};
 
 	// return standalone viewer
@@ -831,6 +834,10 @@
 
 		// display height
 		this.displayHeight = 512;
+
+		// whether popup width has changed
+		this.popupWidthChanged = false;
+		this.lastPopupWidth = 640;
 
 		// whether life generation is on
 		this.generationOn = false;
@@ -9787,6 +9794,11 @@
 
 		// resize arrays
 		this.engine.resizeDisplay(this.displayWidth, this.displayHeight);
+		if (this.popupWidthChanged) {
+			Controller.popupWindow.updatePosition(this.lastPopupWidth - this.displayWidth, 0);
+			this.lastPopupWidth = this.displayWidth;
+			this.popupWidthChanged = false;
+		}
 	};
 
 	// switch to thumbnail view
@@ -10250,6 +10262,9 @@
 						}
 					} else {
 						this.displayWidth = ViewConstants.minViewerWidth;
+					}
+					if (this.displayWidth !== this.lastPopupWidth) {
+						this.popupWidthChanged = true;
 					}
 
 					if (this.requestedPopupHeight > -1) {
@@ -10753,9 +10768,6 @@
 		    // get the parent of the canvas
 		    parentItem = canvasItem.parentNode,
 
-		    // popup window
-		    popupWindow = null,
-
 		    // view
 		    newView = null;
 
@@ -10793,11 +10805,11 @@
 
 			// wrap it in a popup window if hidden
 			if (parentItem.style.display === "none") {
-				popupWindow = new PopupWindow(parentItem, newView.menuManager);
+				Controller.popupWindow = new PopupWindow(parentItem, newView.menuManager);
 			}
 
 			// add the view to the list
-			Controller.viewers[Controller.viewers.length] = [canvasItem, newView, popupWindow];
+			Controller.viewers[Controller.viewers.length] = [canvasItem, newView, Controller.popupWindow];
 		}
 
 		// load the pattern without ignore thumbnail
