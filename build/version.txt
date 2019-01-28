@@ -14,6 +14,8 @@ Build 284
 - bounded grid types that do not support twists were not being reported as errors when twists were specified
 - PopUp viewer was not having grid size reset after MAXGRIDSIZE specified
 - default grid size reduced to 512x512 to save memory for pages with multiple Viewers
+- memory for population graph is not allocated if NOGRAPH specified
+- only allocate memory for Stars on first use
 
 Build 283
 - added new rule aliases

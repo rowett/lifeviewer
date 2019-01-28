@@ -4637,9 +4637,11 @@
 		// update population graph if stats are on
 		if (this.counter < LifeConstants.maxPopSamples) {
 			if (statsOn) {
-				this.popGraphData[this.counter] = this.population;
-				this.birthGraphData[this.counter] = this.births;
-				this.deathGraphData[this.counter] = this.deaths;
+				if (this.popGraphData) {
+					this.popGraphData[this.counter] = this.population;
+					this.birthGraphData[this.counter] = this.births;
+					this.deathGraphData[this.counter] = this.deaths;
+				}
 				if (this.population > this.maxPopValue) {
 					this.maxPopValue = this.population;
 				}
@@ -4651,9 +4653,11 @@
 				}
 			}
 			else {
-				this.popGraphData[this.counter] = 0;
-				this.birthGraphData[this.counter] = 0;
-				this.deathGraphData[this.counter] = 0;
+				if (this.popGraphData) {
+					this.popGraphData[this.counter] = 0;
+					this.birthGraphData[this.counter] = 0;
+					this.deathGraphData[this.counter] = 0;
+				}
 			}
 		}
 	};
