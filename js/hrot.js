@@ -368,10 +368,14 @@
 		this.engine.population = population;
 		this.engine.births = births;
 		this.engine.deaths = deaths;
-		zoomBox.leftX = minX;
-		zoomBox.rightX = maxX;
-		zoomBox.bottomY = minY;
-		zoomBox.topY = maxY;
+
+		// don't update bounding box if zero population
+		if (population > 0) {
+			zoomBox.leftX = minX;
+			zoomBox.rightX = maxX;
+			zoomBox.bottomY = minY;
+			zoomBox.topY = maxY;
+		}
 
 		// stop if population zero
 		if (!somethingAlive) {
@@ -823,10 +827,14 @@
 			this.engine.population = population;
 			this.engine.births = births;
 			this.engine.deaths = deaths;
-			this.engine.zoomBox.leftX = minX;
-			this.engine.zoomBox.rightX = maxX;
-			this.engine.zoomBox.bottomY = minY;
-			this.engine.zoomBox.topY = maxY;
+
+			// don't update bounding box if zero population
+			if (population > 0) {
+				this.engine.zoomBox.leftX = minX;
+				this.engine.zoomBox.rightX = maxX;
+				this.engine.zoomBox.bottomY = minY;
+				this.engine.zoomBox.topY = maxY;
+			}
 
 			// stop if population zero
 			if (!somethingAlive) {
@@ -1254,10 +1262,14 @@
 			this.engine.population = population;
 			this.engine.births = births;
 			this.engine.deaths = deaths;
-			this.engine.zoomBox.leftX = minX;
-			this.engine.zoomBox.rightX = maxX;
-			this.engine.zoomBox.bottomY = minY;
-			this.engine.zoomBox.topY = maxY;
+
+			// don't update bounding box if zero population
+			if (population > 0) {
+				this.engine.zoomBox.leftX = minX;
+				this.engine.zoomBox.rightX = maxX;
+				this.engine.zoomBox.bottomY = minY;
+				this.engine.zoomBox.topY = maxY;
+			}
 
 			// stop if population zero
 			if (!somethingAlive) {
