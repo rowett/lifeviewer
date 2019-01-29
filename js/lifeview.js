@@ -66,7 +66,7 @@
 		/** @const {number} */ updateThreshold : 16.7,
 
 		// minimum and maximum grid size 2^n
-		/** @const {number} */ minGridPower : 9,  // 2^10 = 512
+		/** @const {number} */ minGridPower : 9,  // 2^9 = 512
 		/** @const {number} */ maxGridPower : 14,  // 2^14 = 16384
 		/** @const {number} */ defaultGridPower : 13,  // 2^13 = 8192
 
@@ -271,7 +271,15 @@
 
 		// minimum and maximum bold grid line interval (0 means no bold grid lines)
 		/** @const {number} */ minBoldGridInterval : 0,
-		/** @const {number} */ maxBoldGridInterval : 16
+		/** @const {number} */ maxBoldGridInterval : 16,
+
+		// help topics
+		/** @const {number} */ keysTopic : 0,
+		/** @const {number} */ scriptsTopic : 1,
+		/** @const {number} */ informationTopic : 2,
+		/** @const {number} */ memoryTopic : 3,
+		/** @const {number} */ aliasesTopic : 4,
+		/** @const {number} */ coloursTopic : 5
 	},
 
 	// Controller singleton
@@ -769,6 +777,9 @@
 
 		// help information sections
 		this.helpSections = [];
+
+		// help topics
+		this.helpTopics = [];
 
 		// generation number to stop at
 		this.stopGeneration = -1;
@@ -2603,6 +2614,8 @@
 
 	// udpate UI controls if help or errors are displayed
 	View.prototype.updateUIForHelp = function(hide) {
+		var i = 0;
+
 		// top menu buttons
 		this.autoFitToggle.deleted = hide;
 		this.zoomItem.deleted = hide || this.popGraph;
@@ -2641,6 +2654,7 @@
 		this.graphButton.deleted = hide;
 		this.infoBarButton.deleted = hide;
 		this.starsButton.deleted = hide;
+		this.fpsButton.deleted = hide;
 
 		// infobar
 		this.infoBarLabelXLeft.deleted = hide || !this.infoBarEnabled;
@@ -2668,6 +2682,16 @@
 			this.closeButton.icon = null;
 			this.closeButton.preText = "X";
 		}
+
+		// update help topics
+		i = 0;
+		while (i < this.helpTopics.length && this.helpTopics[i] <= this.displayHelp) {
+			i += 1;
+		}
+		if (i < 1) {
+			i = 1;
+		}
+		this.topicsList.current = [i - 1];
 	};
 
 	// update infobar
@@ -3298,42 +3322,13 @@
 
 	// help topics list
 	View.prototype.viewTopicsList = function(newValue, change, me) {
-		var result = newValue,
-		    section = 0;
+		var result = newValue;
 
 		if (change) {
 			// switch to required topic
-			switch (newValue) {
-			case 0:
-				// keyboard shortcuts
-				section = 1;
-				break;
-			case 1:
-				// script commands
-				section = 7;
-				break;
-			case 2:
-				// information
-				section = 9;
-				break;
-			case 3:
-				// memory details
-				section = 23;
-				break;
-			case 4:
-				// rule aliases
-				section = 26;
-				break;
-			case 5:
-				// colour names
-				section = 33;
-				break;
-			}
-
-			// switch to required topic
-			if (section < me.helpSections.length) {
-				me.displayHelp = me.helpSections[section];
-			}
+			me.displayHelp = me.helpTopics[newValue];
+			me.topicsToggle.current = [false];
+			me.menuManager.toggleRequired = true;
 		}
 
 		return result;
@@ -5531,6 +5526,11 @@
 
 					// update the help UI
 					me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+					me.topicsToggle.current = [me.displayHelp];
+					me.topicsList.current = [ViewConstants.keysTopic];
+
+					// mark toggle required
+					me.menuManager.toggleRequired = true;
 				}
 
 				break;
@@ -5560,6 +5560,11 @@
 
 					// update the help UI
 					me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+					me.topicsToggle.current = [me.displayHelp];
+					me.topicsList.current = [ViewConstants.informationTopic];
+
+					// mark toggle required
+					me.menuManager.toggleRequired = true;
 				}
 
 				break;
@@ -5598,11 +5603,10 @@
 					}
 				}
 
-				// close help
-				me.displayHelp = 0;
-
 				// update the help UI
 				me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+				me.topicsToggle.current = [me.displayHelp];
+				me.menuManager.toggleRequired = true;
 
 				break;
 
@@ -5847,11 +5851,11 @@
 		this.helpToggle.toolTip = ["toggle help display"];
 
 		// help topics button
-		this.topicsToggle = this.viewMenu.addListItem(null, Menu.northEast, -90, 0, 40, 40, ["v"], [false], Menu.multi);
+		this.topicsToggle = this.viewMenu.addListItem(null, Menu.northEast, -85, 0, 40, 40, ["v"], [false], Menu.multi);
 		this.topicsToggle.toolTip = ["toggle help topics"];
 
 		// help topic list
-		this.topicsList = this.viewMenu.addListItem(this.viewTopicsList, Menu.northEast, -205, 50, 160, 300, ["Keys", "Commands", "Information", "Memory", "Aliases", "Colours"], 0, Menu.single);
+		this.topicsList = this.viewMenu.addListItem(this.viewTopicsList, Menu.northEast, -160, 50, 160, 240, ["Keys", "Scripts", "Information", "Memory", "Aliases", "Colours"], 0, Menu.single);
 		this.topicsList.toolTip = ["", "", "", "", "", ""];
 		this.topicsList.orientation = Menu.vertical;
 		this.topicsList.textOrientation = Menu.horizontal;
@@ -5980,8 +5984,7 @@
 		this.closeButton.toolTip = "close window";
 		
 		// fps button
-		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.northEast, -40, 50, 40, 40, [""], [this.menuManager.showTiming], Menu.multi);
-		this.fpsButton.icon = [ViewConstants.iconManager.icon("fps")];
+		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.southWest, 80, -140, 80, 40, ["Timing"], [this.menuManager.showTiming], Menu.multi);
 		this.fpsButton.toolTip = ["toggle timing display"];
 
 		// opacity range

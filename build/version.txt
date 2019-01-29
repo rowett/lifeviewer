@@ -2,6 +2,8 @@ Build 285
 - new Stars button to toggle starfield display in bottom right menu
 - new Help topics UI in Help menu
 - fixed HROT canonical S8 bug again
+- FPS button moved and now called "Timing"
+- Help Topics list auto-updates as Help scrolls
 
 Build 284
 - Esc button to close error display in bottom right menu

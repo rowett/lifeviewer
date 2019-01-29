@@ -304,7 +304,10 @@
 
 		    // get section array
 		    sections = view.helpSections,
-		    sectionNum = 0;
+			sectionNum = 0,
+			
+			// get topics array
+			topics = view.helpTopics;
 
 		// set initial line
 		view.lineNo = 1;
@@ -318,6 +321,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// keyboard commands
+		topics[ViewConstants.keysTopic] = view.lineNo;
 		tabs[0] = 124;
 		sections[sectionNum] = view.lineNo;
 		sectionNum += 1;
@@ -502,6 +506,7 @@
 		sectionNum += 1;
 
 		// scripts
+		topics[ViewConstants.scriptsTopic] = view.lineNo;
 		y = this.renderHelpLine(view, "", "Scripts", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "Scripts must be embedded in pattern comments", ctx, x, y, height, helpLine);
@@ -651,6 +656,7 @@
 		sectionNum += 1;
 
 		// information
+		topics[ViewConstants.informationTopic] = view.lineNo;
 		y = this.renderHelpLine(view, "", "Information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
@@ -1234,6 +1240,7 @@
 		tabs[3] = 530;
 		sections[sectionNum] = view.lineNo;
 		sectionNum += 1;
+		topics[ViewConstants.memoryTopic] = view.lineNo;
 		y = this.renderHelpLine(view, "", "Memory usage", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
@@ -1285,6 +1292,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		sections[sectionNum] = view.lineNo;
 		sectionNum += 1;
+		topics[ViewConstants.aliasesTopic] = view.lineNo;
 		y = this.renderHelpLine(view, "", "Aliases", ctx, x, y, height, helpLine);
 
 		// display alias table
@@ -1313,6 +1321,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		sections[sectionNum] = view.lineNo;
 		sectionNum += 1;
+		topics[ViewConstants.coloursTopic] = view.lineNo;
 		y = this.renderHelpLine(view, "", "Colours", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "The following names can be used in place of R G B:", ctx, x, y, height, helpLine);
