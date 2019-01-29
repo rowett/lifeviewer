@@ -10112,12 +10112,6 @@
 
 		// set anything alive flags
 		this.engine.anythingAlive = true;
-		if (this.engine.multiNumStates === -1) {
-			this.engine.generationsAlive = false;
-		} else {
-			this.engine.generationsAlive = true;
-		}
-		this.engine.stoppedGeneration = -1;
 
 		// reset delete pattern radius
 		this.engine.removePatternRadius = ViewConstants.defaultDeleteRadius;

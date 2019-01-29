@@ -8396,7 +8396,37 @@
 		}
 	};
 
-	// compute generations rule next generation (after state 0 and 1) for decay only
+	// compute HROT rule next generation for decay only
+	Life.prototype.nextGenerationHROTDecayOnly = function() {
+		var colourGrid = this.colourGrid,
+		    colourGridRow = null,
+			zoomBox = this.zoomBox,
+			bottomY = zoomBox.bottomY,
+			topY = zoomBox.topY,
+			leftX = zoomBox.leftX,
+			rightX = zoomBox.rightX,
+			y = 0, x = 0, state = 0,
+
+			// minimum dead state number
+			minDeadState = (this.historyStates > 0 ? 1 : 0);
+
+			// process each row
+			for (y = bottomY; y <= topY; y += 1) {
+				// get the colour grid row
+				colourGridRow = colourGrid[y];
+				
+				// process each column
+				for (x = leftX; x <= rightX; x += 1) {
+					state = colourGridRow[x];
+					if (state > minDeadState) {
+						state -= 1;
+						colourGridRow[x] = state;
+					}
+				}
+			}
+	};
+
+	// compute generations rule next generation for decay only
 	Life.prototype.nextGenerationGenerationsDecayOnly = function() {
 		var h = 0, cr = 0,
 		    colourGrid = this.colourGrid,
@@ -8473,10 +8503,8 @@
 									// process the Generations rule
 									if (value > minDeadState) {
 										value -= 1;
+										colourGridRow[cr] = value;
 									}
-
-									// write the colour back
-									colourGridRow[cr] = value;
 									cr += 1;
 								}
 							}
@@ -8508,6 +8536,8 @@
 			if (!this.anythingAlive) {
 				if (!(this.isLTL || this.isHROT)) {
 					this.nextGenerationGenerationsDecayOnly();
+				} else {
+					this.nextGenerationHROTDecayOnly();
 				}
 			}
 		}

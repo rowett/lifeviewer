@@ -210,7 +210,6 @@
 			deaths = 0,
 			state = 0,
 			count = 0,
-			somethingAlive = false,
 			rowAlive = false,
 			colourGrid = this.engine.colourGrid,
 			colourTileHistoryGrid = this.engine.colourTileHistoryGrid,
@@ -245,7 +244,6 @@
 		population = 0;
 		births = 0;
 		deaths = 0;
-		somethingAlive = false;
 		if (maxGeneration === 1) {
 			// 2 state version
 			for (y = bottomY - range; y <= topY + range; y += 1) {
@@ -298,7 +296,6 @@
 					if (y > maxY) {
 						maxY = y;
 					}
-					somethingAlive = true;
 				}
 			}
 		} else {
@@ -360,7 +357,6 @@
 						maxY = y;
 					}
 				}
-				somethingAlive = true;
 			}
 		}
 
@@ -375,11 +371,7 @@
 			zoomBox.rightX = maxX;
 			zoomBox.bottomY = minY;
 			zoomBox.topY = maxY;
-		}
-
-		// stop if population zero
-		if (!somethingAlive) {
-			this.engine.generationsAlive = 0;
+		} else {
 			this.engine.anythingAlive = 0;
 		}
 	};
@@ -416,7 +408,7 @@
 			population = 0, births = 0, deaths = 0,
 			state = 0,
 			xpr = 0, xmrp1 = 0,
-			rowAlive = false, colAlive = false, somethingAlive = false,
+			rowAlive = false, colAlive = false,
 			chunk = 8,  // must be the same as the unrolled loop!
 			aliveStart = LifeConstants.aliveStart,
 			deadMin = LifeConstants.deadMin,
@@ -660,7 +652,6 @@
 				colUsed[leftX] = 1;
 				minY = bottomY;
 				maxY = bottomY;
-				somethingAlive = true;
 				colourTileHistoryGrid[bottomY >> 4][leftX >> 8] = 65535;
 			}
 
@@ -703,7 +694,6 @@
 				}
 			}
 			if (rowAlive) {
-				somethingAlive = true;
 				minY = bottomY;
 				maxY = bottomY;
 			}
@@ -749,7 +739,6 @@
 				}
 			}
 			if (colAlive) {
-				somethingAlive = true;
 				colUsed[leftX] = 1;
 			}
 
@@ -806,7 +795,6 @@
 					if (y > maxY) {
 						maxY = y;
 					}
-					somethingAlive = true;
 				}
 			}
 
@@ -834,11 +822,7 @@
 				this.engine.zoomBox.rightX = maxX;
 				this.engine.zoomBox.bottomY = minY;
 				this.engine.zoomBox.topY = maxY;
-			}
-
-			// stop if population zero
-			if (!somethingAlive) {
-				this.engine.generationsAlive = 0;
+			} else {
 				this.engine.anythingAlive = 0;
 			}
 		} else {
@@ -919,7 +903,7 @@
 			population = 0, births = 0, deaths = 0,
 			state = 0,
 			xpr = 0, xmrp1 = 0,
-			rowAlive = false, colAlive = false, somethingAlive = false,
+			rowAlive = false, colAlive = false,
 
 			// maximum generations state
 			maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
@@ -1075,7 +1059,6 @@
 				maxX = leftX;
 				minY = bottomY;
 				maxY = bottomY;
-				somethingAlive = true;
 				colourTileHistoryGrid[bottomY >> 4][leftX >> 8] = 65535;
 			}
 
@@ -1129,7 +1112,6 @@
 				}
 			}
 			if (rowAlive) {
-				somethingAlive = true;
 				minY = bottomY;
 				maxY = bottomY;
 			}
@@ -1181,7 +1163,6 @@
 				}
 			}
 			if (colAlive) {
-				somethingAlive = true;
 				if (leftX < minX) {
 					minX = leftX;
 				}
@@ -1248,7 +1229,6 @@
 					xmrp1 += 1;
 				}
 				if (rowAlive) {
-					somethingAlive = true;
 					if (y < minY) {
 						minY = y;
 					}
@@ -1269,11 +1249,7 @@
 				this.engine.zoomBox.rightX = maxX;
 				this.engine.zoomBox.bottomY = minY;
 				this.engine.zoomBox.topY = maxY;
-			}
-
-			// stop if population zero
-			if (!somethingAlive) {
-				this.engine.generationsAlive = 0;
+			} else {
 				this.engine.anythingAlive = 0;
 			}
 		} else {
