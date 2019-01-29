@@ -540,6 +540,10 @@
 				if (this.multiNumStates <= 2) {
 					// draw alive or dead
 					if (state) {
+						// adjust population if cell was dead
+						if ((grid[y][x >> 4] & (1 << (~x & 15))) === 0) {
+							this.population += 1;
+						}
 						colourGrid[y][x] = this.aliveStart;
 						colourTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 						colourTileHistoryGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
@@ -548,6 +552,10 @@
 						nextGrid[y][x >> 4] |= (1 << (~x & 15));
 						nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 					} else {
+						// adjust population if cell was alive
+						if ((grid[y][x >> 4] & (1 << (~x & 15))) !== 0) {
+							this.population -= 1;
+						}
 						colourGrid[y][x] = this.unoccupied;
 						colourTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 						colourTileHistoryGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
