@@ -38,9 +38,6 @@
 		// anything alive
 		this.anythingAlive = 0;
 
-		// generations alive
-		this.generationsAlive = 0;
-
 		// bit counts
 		this.manager = manager;
 	}
@@ -981,7 +978,7 @@
 	};
 
 	// save snapshot
-	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, zoomBox, population, births, deaths, counter, width, height, life, isReset, anythingAlive, generationsAlive) {
+	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, zoomBox, population, births, deaths, counter, width, height, life, isReset, anythingAlive) {
 		var snapshot = null,
 		    i = 0,
 		    l = this.resetSnapshots.length,
@@ -1040,7 +1037,6 @@
 
 		// save the alive flags
 		snapshot.anythingAlive = anythingAlive;
-		snapshot.generationsAlive = generationsAlive;
 
 		// save the grid
 		snapshot.saveGridUsingTile(grid, tileGrid, life);

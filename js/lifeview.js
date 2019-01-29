@@ -261,9 +261,6 @@
 		// minimum height to display navigation menu in the Viewer
 		/** @const {number} */ minMenuHeight : 480,
 
-		// number of frames to fade when life stopped (to allow Themes to fade)
-		/** @const {number} */ fadeWhenStoppedDuration : 64,
-
 		// custom colour usage states
 		/** @const {number} */ stateNotUsed : 0,
 		/** @const {number} */ stateUsedCustom : 1,
@@ -434,7 +431,10 @@
 		this.cellX = 0;
 		this.cellY = 0;
 
-		// number of history states (default and maximum is 63 for 2 state patterns and 1 for multi-state patterns)
+		// maximum number of history states (can be less for multi-state patterns)
+		this.maxHistoryStates = 63;
+
+		// number of history states (default and maximum is 63)
 		this.historyStates = 63;
 
 		// whether to hide source element
@@ -479,6 +479,9 @@
 		// random seed
 		this.randomSeed = Date.now().toString();
 		this.randomSeedCustom = false;
+
+		// whether help topics displayed
+		this.showTopics = false;
 
 		// whether labels displayed
 		this.showLabels = true;
@@ -829,9 +832,6 @@
 		// life engine
 		this.engine = null;
 
-		// whether there are cells alive
-		this.anythingAlive = true;
-
 		// elapsed time
 		this.elapsedTime = 0;
 
@@ -930,9 +930,6 @@
 
 		// help button
 		this.helpToggle = null;
-
-		// help topics button
-		this.topicsToggle = null;
 
 		// help topics list
 		this.topicsList = null;
@@ -1203,7 +1200,10 @@
 		    dLeftX = panX - (this.engine.width >> 1),
 		    dRightX = dLeftX + width - 1,
 		    dBottomY = panY - (this.engine.height >> 1),
-		    dTopY = dBottomY + height - 1,
+			dTopY = dBottomY + height - 1,
+			
+			// number of pattern states
+			numStates = this.engine.multiNumStates,
 
 		    // whether pattern is inside bounded grid
 		    inside = true;
@@ -1251,14 +1251,30 @@
 			patternRow = pattern.lifeMap[y];
 			gridRow = grid[(y + panY) & hm];
 
-			// check for multi-state view or Generations or HROT
-			if (this.multiStateView || this.engine.multiNumStates !== -1) {
+			// check for multi-state view
+			if (this.multiStateView) {
 				multiStateRow = pattern.multiStateMap[y];
 				colourGridRow = colourGrid[(y + panY) & hm];
 
 				// copy colour cells
 				for (x = 0; x < copyWidth; x += 1) {
 					colourGridRow[(x + panX) & wm] = multiStateRow[x];
+				}
+			} else {
+				// check for multi-state pattern
+				if (numStates > 2) {
+					multiStateRow = pattern.multiStateMap[y];
+					colourGridRow = colourGrid[(y + panY) & hm];
+
+					// copy colour cells
+					for (x = 0; x < copyWidth; x += 1) {
+						// reverse order for rendering
+						state = multiStateRow[x];
+						if (state > 0) {
+							state = numStates + this.historyStates - state;
+						}
+						colourGridRow[(x + panX) & wm] = state;
+					}
 				}
 			}
 
@@ -1995,7 +2011,6 @@
 		var deltaTime = 0,
 		    currentTime = 0,
 		    currentWaypoint = me.waypointManager.current,
-		    tempGeneration = 0,
 
 		    // whether update needed
 		    updateNeeded = false,
@@ -2254,7 +2269,7 @@
 		deltaTime = 0;
 		if (me.nextStep) {
 			// check if anything is alive
-			if (me.anythingAlive) {
+			if (me.engine.anythingAlive) {
 				// get current time
 				currentTime = performance.now();
 
@@ -2286,7 +2301,7 @@
 					// check theme has history or this is the last generation in the step
 					if (me.engine.themeHistory || ((me.engine.counter === (me.floatCounter | 0)) || bailout)) {
 						// convert life grid to pen colours
-						me.anythingAlive = me.engine.convertToPensTile();
+						me.engine.convertToPensTile();
 					}
 
 					// save elasped time for this generation
@@ -2305,15 +2320,15 @@
 					}
 
 					// check for all cells died
-					if (!me.anythingAlive || (me.engine.multiNumStates === 2 && me.engine.population === 0)) {
+					if (!me.engine.anythingAlive) {
 						bailout = true;
 					}
 				}
 
 				// check if life just stopped
-				if ((!me.anythingAlive) || (me.engine.multiNumStates === 2 && me.engine.population === 0)) {
+				if (!me.engine.anythingAlive) {
 					// set fade interval
-					me.fading = ViewConstants.fadeWhenStoppedDuration;
+					me.fading = this.historyStates + (this.engine.multiNumStates > 0 ? this.engine.multiNumStates : 0);
 
 					// remember the generation that life stopped
 					if (me.diedGeneration === -1) {
@@ -2334,15 +2349,8 @@
 					// decrease fade time
 					me.fading -= 1;
 
-					// save current generation and switch to generation life stopped
-					tempGeneration = me.engine.counter;
-					me.engine.counter = me.diedGeneration;
-
 					// update colour grid
 					me.engine.convertToPensTile();
-
-					// restore counter
-					me.engine.counter = tempGeneration;
 				}
 
 				// increment generation
@@ -2429,7 +2437,7 @@
 		}
 
 		// check if grid buffer needs to grow
-		if (me.engine.counter && me.anythingAlive) {
+		if (me.engine.counter && me.engine.anythingAlive) {
 			borderSize = ViewConstants.maxStepSpeed;
 			if (me.engine.isHROT && ((me.engine.HROT.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
 				borderSize = me.engine.HROT.range * 4 + 1;
@@ -2692,6 +2700,10 @@
 			i = 1;
 		}
 		this.topicsList.current = [i - 1];
+
+		// update help topics controls
+		this.topicsButton.deleted = this.showTopics;
+		this.topicsList.deleted = !this.showTopics;
 	};
 
 	// update infobar
@@ -2843,7 +2855,7 @@
 		if (me.engine.counter === targetGen - 1) {
 			// compute final generation with stats on if required
 			me.engine.nextGeneration(me.statsOn, 0, false, me.graphDisabled);
-			me.anythingAlive = me.engine.convertToPensTile();
+			me.engine.convertToPensTile();
 
 			// switch back to normal mode
 			me.computeHistory = false;
@@ -2907,7 +2919,7 @@
 		me.engine.yOff &= (me.engine.height - 1);
 
 		// mark something alive
-		me.anythingAlive = true;
+		me.engine.anythingAlive = true;
 
 		// flag just started for first frame measurement
 		me.justStarted = true;
@@ -3189,9 +3201,7 @@
 			me.engine.restoreSavedGrid(me.noHistory);
 
 			// mark cells alive
-			me.anythingAlive = true;
 			me.engine.anythingAlive = true;
-			me.engine.generationsAlive = true;
 
 			// reset history box
 			me.engine.resetHistoryBox();
@@ -3274,9 +3284,7 @@
 			me.originCounter = me.floatCounter;
 
 			// mark cells alive
-			me.anythingAlive = true;
 			me.engine.anythingAlive = true;
-			me.engine.generationsAlive = true;
 		}
 
 		// reset population data for graph
@@ -3327,8 +3335,9 @@
 		if (change) {
 			// switch to required topic
 			me.displayHelp = me.helpTopics[newValue];
-			me.topicsToggle.current = [false];
-			me.menuManager.toggleRequired = true;
+
+			// close topics list
+			me.showTopics = false;
 		}
 
 		return result;
@@ -4121,6 +4130,11 @@
 		me.menuManager.toggleRequired = true;
 	};
 
+	// topics button
+	View.prototype.topicsPressed = function(me) {
+		me.showTopics = true;
+	};
+
 	// fit button
 	View.prototype.fitPressed = function(me) {
 		// fit zoom
@@ -4264,7 +4278,7 @@
 			// check if stats just turned on
 			if (me.statsOn) {
 				// see if any cells are alive
-				if (me.anythingAlive) {
+				if (me.engine.anythingAlive) {
 					// if at zero then used save position
 					if (me.engine.counter === 0) {
 						me.engine.population = me.engine.resetSnapshot.population;
@@ -4390,7 +4404,7 @@
 			this.originCounter = targetGen;
 
 			// run to target generation
-			this.anythingAlive = this.engine.runTo(targetGen, this.statsOn, this.graphDisabled);
+			this.engine.runTo(targetGen, this.statsOn, this.graphDisabled);
 
 			// notify waypoint manager of change
 			this.waypointManager.steppedBack(this.elapsedTime);
@@ -5526,10 +5540,7 @@
 
 					// update the help UI
 					me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
-					me.topicsToggle.current = [me.displayHelp];
 					me.topicsList.current = [ViewConstants.keysTopic];
-
-					// mark toggle required
 					me.menuManager.toggleRequired = true;
 				}
 
@@ -5560,10 +5571,7 @@
 
 					// update the help UI
 					me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
-					me.topicsToggle.current = [me.displayHelp];
 					me.topicsList.current = [ViewConstants.informationTopic];
-
-					// mark toggle required
 					me.menuManager.toggleRequired = true;
 				}
 
@@ -5605,7 +5613,6 @@
 
 				// update the help UI
 				me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
-				me.topicsToggle.current = [me.displayHelp];
 				me.menuManager.toggleRequired = true;
 
 				break;
@@ -5851,11 +5858,11 @@
 		this.helpToggle.toolTip = ["toggle help display"];
 
 		// help topics button
-		this.topicsToggle = this.viewMenu.addListItem(null, Menu.northEast, -85, 0, 40, 40, ["v"], [false], Menu.multi);
-		this.topicsToggle.toolTip = ["toggle help topics"];
+		this.topicsButton = this.viewMenu.addButtonItem(this.topicsPressed, Menu.northEast, -40, 50, 40, 40, ["<"]);
+		this.topicsButton.toolTip = ["show help topics"];
 
 		// help topic list
-		this.topicsList = this.viewMenu.addListItem(this.viewTopicsList, Menu.northEast, -160, 50, 160, 240, ["Keys", "Scripts", "Information", "Memory", "Aliases", "Colours"], 0, Menu.single);
+		this.topicsList = this.viewMenu.addListItem(this.viewTopicsList, Menu.northEast, -120, 50, 120, 240, ["Keys", "Scripts", "Info", "Memory", "Aliases", "Colours"], 0, Menu.single);
 		this.topicsList.toolTip = ["", "", "", "", "", ""];
 		this.topicsList.orientation = Menu.vertical;
 		this.topicsList.textOrientation = Menu.horizontal;
@@ -6029,10 +6036,7 @@
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
 
 		// add items to the help toggle menu
-		this.helpToggle.addItemsToToggleMenu([this.topicsToggle], []);
-
-		// add topics list to the help topic toggle
-		this.topicsToggle.addItemsToToggleMenu([this.topicsList], []);
+		this.helpToggle.addItemsToToggleMenu([this.topicsButton, this.topicsList], []);
 	};
 
 	// attached the viewer to a canvas element
@@ -7509,7 +7513,7 @@
 								numberValue = scriptReader.getNextTokenAsNumber() | 0;
 
 								// check it is in range
-								if (numberValue >= 0 && numberValue <= ((this.engine.multiNumStates > 2) ? 1 : 63)) {
+								if (numberValue >= 0 && numberValue <= this.maxHistoryStates) {
 									this.historyStates = numberValue;
 
 									itemValid = true;
@@ -9829,11 +9833,23 @@
 		this.statsOn = false;
 
 		// reset history states
-		this.historyStates = ((this.engine.multiNumStates > 2) ? 1 : 63);
+		if (this.engine.multiNumStates > 2) {
+			if (256 - this.engine.multiNumStates >= 63) {
+				this.maxHistoryStates = 63;
+			} else {
+				this.maxHistoryStates = 256 - this.engine.multiNumStates;
+			}
+		} else {
+			this.maxHistoryStates = 63;
+		}
+		this.historyStates = this.maxHistoryStates;
 
 		// reset drawing mode
 		this.drawing = false;
 		this.panNotified = false;
+
+		// reset help topics visibility
+		this.showTopics = false;
 	};
 	
 	// switch off thumbnail view
@@ -10022,9 +10038,6 @@
 
 			// check if the rule is a History rule
 			this.engine.isLifeHistory = pattern.isHistory;
-
-			// check if multi-state rule should draw history
-			this.engine.drawHistory = pattern.drawHistory;
 
 			// read the number of states (Generations or HROT)
 			this.engine.multiNumStates = pattern.multiNumStates;
@@ -10384,6 +10397,9 @@
 				}
 			}
 
+			// set history states in engine
+			this.engine.historyStates = this.historyStates;
+
 			// disable graph if using THUMBLAUNCH and graph not displayed (since there's no way to turn it on)
 			if (this.thumbLaunch && !this.popGraph) {
 				this.graphDisabled = true;
@@ -10725,7 +10741,7 @@
 		}
 
 		// mark something alive
-		this.anythingAlive = true;
+		this.engine.anythingAlive = true;
 
 		// check whether autostart required
 		if (this.autoStart && !this.autoStartDisabled) {

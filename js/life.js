@@ -150,12 +150,6 @@
 		// whether anything is alive
 		this.anythingAlive = 0;
 
-		// generation when life stopped
-		this.stoppedGeneration = -1;
-
-		// whether generations still decaying
-		this.generationsAlive = 0;
-
 		// bounded grid type
 		this.boundedGridType = -1;
 
@@ -205,7 +199,7 @@
 		this.isLifeHistory = false;
 
 		// whether to draw history for multi-state patterns
-		this.drawHistory = false;
+		this.historyStates = 0;
 
 		// whether pattern is HROT
 		this.isHROT = false;
@@ -600,10 +594,7 @@
 
 		    // bounded grid bottom right
 		    rightX = leftX + this.boundedGridWidth - 1,
-			topY = bottomY + this.boundedGridHeight - 1,
-
-			// draw history offset
-			drawHistoryOffset = (this.drawHistory ? 1 : 0);
+			topY = bottomY + this.boundedGridHeight - 1;
 
 		// check if coordinates are on the grid
 		if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
@@ -614,15 +605,15 @@
 			if (rawRequested || this.multiNumStates > 2) {
 				// check if state is not dead
 				if (this.multiNumStates > 2 && col > 0) {
-					// check for history state
-					if (col === drawHistoryOffset) {
+					// check for history states
+					if (col <= this.historyStates) {
 						result = 0;
 					} else {
 						// check for bounded grid border cell
 						if (this.boundedGridType !== -1 && col === LifeConstants.boundedBorderColour && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
 							result = 0;
 						} else {
-							result = this.multiNumStates + drawHistoryOffset - col;
+							result = this.multiNumStates + this.historyStates - col;
 						}
 					}
 				} else {
@@ -812,7 +803,6 @@
 
 		// restore the alive flags
 		this.anythingAlive = snapshot.anythingAlive;
-		this.generationsAlive = snapshot.generationsAlive;
 	};
 
 	// save snapshot
@@ -852,7 +842,7 @@
 	// save to a specific snapshot
 	Life.prototype.saveToSnapshot = function(isReset, grid, tileGrid) {
 		// create the snapshot
-		this.snapshotManager.saveSnapshot(grid, tileGrid, this.colourGrid, this.colourTileHistoryGrid, this.zoomBox, this.population, this.births, this.deaths, this.counter, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive, this.generationsAlive);
+		this.snapshotManager.saveSnapshot(grid, tileGrid, this.colourGrid, this.colourTileHistoryGrid, this.zoomBox, this.population, this.births, this.deaths, this.counter, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive);
 	};
 
 	// save grid
@@ -1691,8 +1681,7 @@
 
 	// create the colours
 	Life.prototype.createColours = function() {
-		var i, mixWeight, weight, currentComponent, targetComponent, current,
-			drawHistoryOffset = this.drawHistory ? 1 : 0;
+		var i, mixWeight, weight, currentComponent, targetComponent, current;
 
 		// set the weighting between the two colour ranges
 		mixWeight = (this.colourChange - 1) / this.colourChangeSteps;
@@ -1708,39 +1697,51 @@
 			// set generations ramp
 			for (i = 1; i < this.multiNumStates; i += 1) {
 				// compute the weighting between the start and end colours in the range
-				weight = 1 - ((i - 1) / (this.multiNumStates - 2));
+				weight = (i - 1) / (this.multiNumStates - 2);
 
 				// compute the red component of the current and target colour
 				currentComponent = this.aliveColCurrent.endColour.red * weight + this.deadColCurrent.endColour.red * (1 - weight);
 				targetComponent = this.aliveColTarget.endColour.red * weight + this.deadColTarget.endColour.red * (1 - weight);
-				this.redChannel[i + drawHistoryOffset] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+				this.redChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 				// compoute the green component of the current and target colour
 				currentComponent = this.aliveColCurrent.endColour.green * weight + this.deadColCurrent.endColour.green * (1 - weight);
 				targetComponent = this.aliveColTarget.endColour.green * weight + this.deadColTarget.endColour.green * (1 - weight);
-				this.greenChannel[i + drawHistoryOffset] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+				this.greenChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 				// compoute the blue component of the current and target colour
 				currentComponent = this.aliveColCurrent.endColour.blue * weight + this.deadColCurrent.endColour.blue * (1 - weight);
 				targetComponent = this.aliveColTarget.endColour.blue * weight + this.deadColTarget.endColour.blue * (1 - weight);
-				this.blueChannel[i + drawHistoryOffset] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+				this.blueChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 				// override with custom colour if specified
 				if (this.customColours.length >= i) {
 					current = this.customColours[i];
 					if (current !== -1) {
-						this.redChannel[i + drawHistoryOffset] = current >> 16;
-						this.greenChannel[i + drawHistoryOffset] = (current >> 8) & 255; 
-						this.blueChannel[i + drawHistoryOffset] = (current & 255);
+						this.redChannel[i + this.historyStates] = current >> 16;
+						this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
+						this.blueChannel[i + this.historyStates] = (current & 255);
 					}
 				}
 			}
 
-			// create history colour if specified
-			if (this.drawHistory) {
-				this.redChannel[1] = this.deadColTarget.startColour.red;
-				this.greenChannel[1] = this.deadColTarget.startColour.green;
-				this.blueChannel[1] = this.deadColTarget.startColour.blue;
+			// create history colours if specified
+			for (i = 0; i < this.historyStates; i += 1) {
+				weight = 1 - (i / this.historyStates);
+				// compute the red component of the current and target colour
+				currentComponent = this.deadColCurrent.startColour.red * weight + this.deadColCurrent.endColour.red * (1 - weight);
+				targetComponent = this.deadColTarget.startColour.red * weight + this.deadColTarget.endColour.red * (1 - weight);
+				this.redChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+
+				// compoute the green component of the current and target colour
+				currentComponent = this.deadColCurrent.startColour.green * weight + this.deadColCurrent.endColour.green * (1 - weight);
+				targetComponent = this.deadColTarget.startColour.green * weight + this.deadColTarget.endColour.green * (1 - weight);
+				this.greenChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+
+				// compoute the blue component of the current and target colour
+				currentComponent = this.deadColCurrent.startColour.blue * weight + this.deadColCurrent.endColour.blue * (1 - weight);
+				targetComponent = this.deadColTarget.startColour.blue * weight + this.deadColTarget.endColour.blue * (1 - weight);
+				this.blueChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 			}
 
 			// override colour 0 if specified
@@ -1857,48 +1858,17 @@
 		pixelColours = this.pixelColours,
 		gridLineRaw = this.gridLineRaw,
 		gridLineBoldRaw = this.gridLineBoldRaw,
-		i = 0, j = 0,
-		drawHistoryOffset = this.drawHistory ? 1 : 0;
+		i = 0;
 
 		// check for Generations or HROT
 		if (this.multiNumStates > 2) {
-			// create unoccupied colour
-			if (this.drawHistory) {
-				if (this.littleEndian) {
-					pixelColours[0] = (255 << 24) | (blueChannel[0] << 16) | (greenChannel[0] << 8) | redChannel[0];
-				} else {
-					pixelColours[0] = (redChannel[0] << 24) | (greenChannel[0] << 16) | (blueChannel[0] << 8) | 255;
-				}
-			}
-
 			// create state colours
 			if (this.littleEndian) {
-				for (i = 0; i < this.multiNumStates; i += 1) {
-					if (i > 0) {
-						j = this.multiNumStates - i + drawHistoryOffset;
-					}
-					pixelColours[i + drawHistoryOffset] = (255 << 24) | (blueChannel[j] << 16) | (greenChannel[j] << 8) | redChannel[j];
+				for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
+					pixelColours[i] = (255 << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
 				}
 			}
-			else {
-				for (i = 0; i < this.multiNumStates; i += 1) {
-					if (i > 0) {
-						j = this.multiNumStates - i;
-					}
-					pixelColours[i + drawHistoryOffset] = (redChannel[j] << 24) | (greenChannel[j] << 16) | (blueChannel[j] << 8) | 255;
-				}
-			}
-
-			// check for draw history
-			if (this.drawHistory) {
-				if (this.littleEndian) {
-					pixelColours[1] = (255 << 24) | (blueChannel[1] << 16) | (greenChannel[1] << 8) | redChannel[1];
-				} else {
-					pixelColours[1] = (redChannel[1] << 24) | (greenChannel[1] << 16) | (blueChannel[1] << 8) | 255;
-				}
-			}
-		}
-		else {
+		} else {
 			// create pixels from rgb and brightness
 			if (this.littleEndian) {
 				// create dead colours
@@ -1915,8 +1885,7 @@
 				for (i = this.aliveMax + 1; i < 256; i += 1) {
 					pixelColours[i] = (255 << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
 				}
-			}
-			else {
+			} else {
 				// create dead colours
 				for (i = 0; i < this.aliveStart; i += 1) {
 					pixelColours[i] = (redChannel[i] << 24) | (greenChannel[i] << 16) | (blueChannel[i] << 8) | 255;
@@ -1938,14 +1907,13 @@
 		if (this.littleEndian) {
 			this.gridLineColour = (255 << 24) | ((gridLineRaw & 255) << 16) | (((gridLineRaw >> 8) & 255) << 8) | (gridLineRaw >> 16);
 			this.gridLineBoldColour = (255 << 24) | ((gridLineBoldRaw & 255) << 16) | (((gridLineBoldRaw >> 8) & 255) << 8) | (gridLineBoldRaw >> 16);
-		}
-		else {
+		} else {
 			this.gridLineColour = ((gridLineRaw & 255) << 24) | (((gridLineRaw >> 8) & 255) << 16) | ((gridLineRaw >> 16) << 8) | 255;
 			this.gridLineBoldColour = ((gridLineBoldRaw & 255) << 24) | (((gridLineBoldRaw >> 8) & 255) << 16) | ((gridLineBoldRaw >> 16) << 8) | 255;
 		}
 
 		// create bounded grid border colour if specified
-		if (this.boundedGridType !== -1 && this.multiNumStates < (256 - drawHistoryOffset)) {
+		if (this.boundedGridType !== -1 && (this.multiNumStates + this.historyStates < 256)) {
 			if (this.littleEndian) {
 				pixelColours[LifeConstants.boundedBorderColour] = 0xff808080;
 			} else {
@@ -4569,13 +4537,7 @@
 
 		// check for Generations
 		if (this.multiNumStates !== -1 && !this.isHROT) {
-			// now deal with decay states
-			if (this.anythingAlive) {
-				this.nextGenerationGenerations();
-			}
-			else {
-				this.nextGenerationGenerationsDecayOnly();
-			}
+			this.nextGenerationGenerations();
 		}
 
 		// check if state 6 is on
@@ -8279,14 +8241,16 @@
 			tileEndRow = tileRows,
 			
 		    // maximum generations state
-		    maxGenState = this.multiNumStates - (this.drawHistory ? 0 : 1),
+		    maxGenState = this.multiNumStates + this.historyStates - 1,
 
-			// maximum dead state number (0 normally - 1 if drawing history),
-			deadState = (this.drawHistory ? 1 : 0);
+			// maximum dead state number
+			deadState = this.historyStates,
+
+			// minimum dead state number
+			minDeadState = (this.historyStates > 0 ? 1 : 0);
 
 		// clear anything alive
 		this.anythingAlive = 0;
-		this.generationsAlive = 0;
 
 		// select the correct grid
 		if ((this.counter & 1) !== 0) {
@@ -8348,281 +8312,27 @@
 								nextCell = gridRow[leftX];
 
 								// process each cell in the chunk
-								n = 1 << 15;
+								for (n = 1 << 15; n > 0; n >>= 1) {
+									// get next colour cell
+									value = colourGridRow[cr];
 
-								// get next colour cell
-								value = colourGridRow[cr];
-
-								// process the Generations rule
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
+									// process the Generations rule
+									if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
+										value = maxGenState;
+									} else {
+										nextCell &= ~n;
+										if (value > minDeadState) {
+											value -= 1;
+										}
 									}
-								}
-
-								// write the colour back
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
+	
+									// write the colour back
+									colourGridRow[cr] = value;
+									if (value > minDeadState) {
+										tileAlive = 1;
 									}
+									cr += 1;
 								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
-									}
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
-									}
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
-									}
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
-									}
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
-									}
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
-									}
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
-									}
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
-									}
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
-									}
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
-									}
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
-									}
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
-									}
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
-									}
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								n >>= 1;
-
-								// loop unroll
-								value = colourGridRow[cr];
-								if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
-									value = maxGenState;
-									tileAlive |= value;
-								}
-								else {
-									nextCell &= ~n;
-									if (value > deadState) {
-										value -= 1;
-										tileAlive |= value;
-									}
-								}
-								colourGridRow[cr] = value;
 
 								// save the updated state 1 cells to the bitmap
 								gridRow[leftX] = nextCell;
@@ -8633,13 +8343,6 @@
 							if (tileAlive) {
 								// update tile flag
 								nextTiles |= (1 << b);
-
-								// flag generations alive
-								if (tileAlive <= deadState) {
-									this.generationsAlive = 0;
-								} else {
-									this.generationsAlive = tileAlive;
-								}
 							}
 						}
 
@@ -8690,11 +8393,8 @@
 		    tileStartRow = 0,
 			tileEndRow = tileRows,
 
-			// maximum dead state number (0 normally - 1 if drawing history),
-			deadState = (this.drawHistory ? 1 : 0);
-
-		// clear anything alive
-		this.generationsAlive = 0;
+			// minimum dead state number
+			minDeadState = (this.historyStates > 0 ? 1 : 0);
 
 		// check start and end row are in range
 		if (tileStartRow < 0) {
@@ -8741,16 +8441,13 @@
 									value = colourGridRow[cr];
 
 									// process the Generations rule
-									if (value > deadState) {
+									if (value > minDeadState) {
 										value -= 1;
 									}
 
 									// write the colour back
 									colourGridRow[cr] = value;
 									cr += 1;
-
-									// check if generations alive
-									this.generationsAlive |= value;
 								}
 							}
 						}
@@ -8758,8 +8455,7 @@
 						// next tile columns
 						leftX += xSize;
 					}
-				}
-				else {
+				} else {
 					// skip tile set
 					leftX += xSize << 4;
 				}
@@ -8773,43 +8469,16 @@
 
 	// convert life grid region to pens using tiles
 	Life.prototype.convertToPensTile = function() {
-		var result = this.anythingAlive,
-
-		    // current generation number
-		    savedCounter = this.counter;
-
 		// check for generations or HROT rule
 		if (this.multiNumStates === -1) {
-			// check if Life already stopped
-			if (result === 0) {
-				if (this.stoppedGeneration !== -1) {
-					// switch to the generation when life stopped
-					this.counter = this.stoppedGeneration;
-				}
-			}
-
 			// use regular converter
 			this.convertToPensTileRegular();
-
-			// switch back to saved generation
-			this.counter = savedCounter;
-
-			// check if life stopped
-			if (result !== 0 && this.anythingAlive === 0) {
-				// life just stopped so save generation
-				this.stoppedGeneration = this.counter;
+		} else {
+			// check for Generations
+			if (!(this.isLTL || this.isHROT)) {
+				this.nextGenerationGenerations();
 			}
-
-			// return whether anything alive
-			result = this.anythingAlive;
 		}
-		else {
-			// generations or HROT
-			result = this.anythingAlive | this.generationsAlive;
-		}
-
-		// return whether cells alive
-		return result;
 	};
 	
 	// convert life grid region to pens using tiles

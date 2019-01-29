@@ -276,7 +276,8 @@
 		    colourValue = "",
 		    colourName = "",
 		    themeName = "",
-		    i = 0,
+			i = 0,
+			j = 0,
 		    value = 0,
 			flag = false,
 			
@@ -977,18 +978,15 @@
 
 			// check for Generations or HROT rules
 			if (view.engine.multiNumStates > 2) {
-				if (view.engine.drawHistory) {
-					for (i = 2; i < view.engine.multiNumStates + 1; i += 1) {
-						this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + tabs[0], y, height, helpLine);
-						y = this.renderHelpLine(view, "State " +  (i - 1), this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
-					}
-					this.renderColourBox(view, view.engine.redChannel[1], view.engine.greenChannel[1], view.engine.blueChannel[1], ctx, x + tabs[0], y, height, helpLine);
-					y = this.renderHelpLine(view, "History", this.rgbString(view.engine.redChannel[1], view.engine.greenChannel[1], view.engine.blueChannel[1]), ctx, x, y, height, helpLine);
-				} else {
-					for (i = 1; i < view.engine.multiNumStates; i += 1) {
-						this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + tabs[0], y, height, helpLine);
-						y = this.renderHelpLine(view, "State " + i, this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
-					}
+				for (i = (view.HistoryStates > 0 ? 0 : 1); i < view.engine.multiNumStates; i += 1) {
+					j = view.engine.multiNumStates - i + view.historyStates;
+					this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + tabs[0], y, height, helpLine);
+					y = this.renderHelpLine(view, "State " + i, this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+				}
+				for (i = view.historyStates - 1; i >= 0; i -= 1) {
+					j = i + 1;
+					this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + tabs[0], y, height, helpLine);
+					y = this.renderHelpLine(view, "History " + (view.historyStates - i - 1), this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
 				}
 			} else {
 				// normal theme
