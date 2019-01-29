@@ -1007,15 +1007,20 @@
 					y = this.renderHelpLine(view, "AliveRamp", "    (none)", ctx, x, y, height, helpLine);
 				}
 
-				this.renderColourBox(view, theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue, ctx, x + tabs[0], y, height, helpLine);
-				y = this.renderHelpLine(view, "Dead", this.rgbObjectString(theme.deadRange.startColour), ctx, x, y, height, helpLine);
+				// if there are no history states don't draw dead states
+				if (view.historyStates > 0) {
+					this.renderColourBox(view, theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue, ctx, x + tabs[0], y, height, helpLine);
+					y = this.renderHelpLine(view, "Dead", this.rgbObjectString(theme.deadRange.startColour), ctx, x, y, height, helpLine);
 
-				// check if there is a ramp between dead start and end
-				if (theme.deadRange.startColour.red !== theme.deadRange.endColour.red || theme.deadRange.startColour.green !== theme.deadRange.endColour.green || theme.deadRange.startColour.blue !== theme.deadRange.endColour.blue) {
-					this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
-					y = this.renderHelpLine(view, "DeadRamp", this.rgbObjectString(theme.deadRange.endColour), ctx, x, y, height, helpLine);
-				} else {
-					y = this.renderHelpLine(view, "DeadRamp", "    (none)", ctx, x, y, height, helpLine);
+					// check if there is a ramp between dead start and end
+					if (view.historyStates > 1) {
+						if (theme.deadRange.startColour.red !== theme.deadRange.endColour.red || theme.deadRange.startColour.green !== theme.deadRange.endColour.green || theme.deadRange.startColour.blue !== theme.deadRange.endColour.blue) {
+							this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
+							y = this.renderHelpLine(view, "DeadRamp", this.rgbObjectString(theme.deadRange.endColour), ctx, x, y, height, helpLine);
+						} else {
+							y = this.renderHelpLine(view, "DeadRamp", "    (none)", ctx, x, y, height, helpLine);
+						}
+					}
 				}
 			}
 

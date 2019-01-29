@@ -4,6 +4,7 @@ Build 285
 - fixed HROT canonical S8 bug again
 - FPS button moved and now called "Timing"
 - Help Topics list auto-updates as Help scrolls
+- completed HISTORYSTATE implementation
 
 Build 284
 - Esc button to close error display in bottom right menu
