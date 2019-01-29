@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer"content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>HISTORYSTATES 0</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+3o$2bo$bo!
+[[ HISTORYSTATES 0 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>HISTORYSTATES 1</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+3o$2bo$bo!
+[[ HISTORYSTATES 1 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>HISTORYSTATES 10</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+3o$2bo$bo!
+[[ HISTORYSTATES 10 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>No HISTORYSTATES so defaults to 63</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+3o$2bo$bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>Generations: HISTORYSTATES 0</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 16, y = 10, rule = 24/24/10
+9.D5.I$4.A3.EFE$3.BAB2.GFG.HI$2.2ABCF.3H2.H$2AB3D2GH.I2.I$2ABDCEGCH$
+2.3BEDB2FHI$2.A.ADBCFHFH$8.EDGF$8.DCE!
+[[ ZOOM 4 HISTORYSTATES 0 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>Generations: HISTORYSTATES 1</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 16, y = 10, rule = 24/24/10
+9.D5.I$4.A3.EFE$3.BAB2.GFG.HI$2.2ABCF.3H2.H$2AB3D2GH.I2.I$2ABDCEGCH$
+2.3BEDB2FHI$2.A.ADBCFHFH$8.EDGF$8.DCE!
+[[ ZOOM 4 HISTORYSTATES 1 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>Generations: HISTORYSTATES 10</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 16, y = 10, rule = 24/24/10
+9.D5.I$4.A3.EFE$3.BAB2.GFG.HI$2.2ABCF.3H2.H$2AB3D2GH.I2.I$2ABDCEGCH$
+2.3BEDB2FHI$2.A.ADBCFHFH$8.EDGF$8.DCE!
+[[ ZOOM 4 HISTORYSTATES 10 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>Generaionts: No HISTORYSTATES so defaults to 63</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 16, y = 10, rule = 24/24/10
+9.D5.I$4.A3.EFE$3.BAB2.GFG.HI$2.2ABCF.3H2.H$2AB3D2GH.I2.I$2ABDCEGCH$
+2.3BEDB2FHI$2.A.ADBCFHFH$8.EDGF$8.DCE!
+[[ ZOOM 4 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>LtL: HISTORYSTATES 0</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 16, y = 16, rule = R2,C6,M1,S7..9,B5..7,NM
+boooobobbbbooboo$
+oobbobbbboobooob$
+bbbboooobboboboo$
+bbobbbboooboboob$
+oobbbobbbbbboooo$
+boooboboooboobbb$
+bbbbobbbbbbbbboo$
+ooobbboooboooboo$
+boobbbbbobobbbbb$
+bbbobbbbbboooobb$
+oobboooboboboobb$
+ooobbbbbbooobobb$
+boooooooobobboob$
+boboobobbobboooo$
+bobobooboobbobbb$
+oboboooobbbobbbb!
+[[ ZOOM 4 HISTORYSTATES 0 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>LtL: HISTORYSTATES 1</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 16, y = 16, rule = R2,C6,M1,S7..9,B5..7,NM
+boooobobbbbooboo$
+oobbobbbboobooob$
+bbbboooobboboboo$
+bbobbbboooboboob$
+oobbbobbbbbboooo$
+boooboboooboobbb$
+bbbbobbbbbbbbboo$
+ooobbboooboooboo$
+boobbbbbobobbbbb$
+bbbobbbbbboooobb$
+oobboooboboboobb$
+ooobbbbbbooobobb$
+boooooooobobboob$
+boboobobbobboooo$
+bobobooboobbobbb$
+oboboooobbbobbbb!
+[[ ZOOM 4 HISTORYSTATES 1 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>LtL: HISTORYSTATES 10</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 16, y = 16, rule = R2,C6,M1,S7..9,B5..7,NM
+boooobobbbbooboo$
+oobbobbbboobooob$
+bbbboooobboboboo$
+bbobbbboooboboob$
+oobbbobbbbbboooo$
+boooboboooboobbb$
+bbbbobbbbbbbbboo$
+ooobbboooboooboo$
+boobbbbbobobbbbb$
+bbbobbbbbboooobb$
+oobboooboboboobb$
+ooobbbbbbooobobb$
+boooooooobobboob$
+boboobobbobboooo$
+bobobooboobbobbb$
+oboboooobbbobbbb!
+[[ ZOOM 4 HISTORYSTATES 10 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>LtL: No HISTORYSTATES so defaults to 63</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 16, y = 16, rule = R2,C6,M1,S7..9,B5..7,NM
+boooobobbbbooboo$
+oobbobbbboobooob$
+bbbboooobboboboo$
+bbobbbboooboboob$
+oobbbobbbbbboooo$
+boooboboooboobbb$
+bbbbobbbbbbbbboo$
+ooobbboooboooboo$
+boobbbbbobobbbbb$
+bbbobbbbbboooobb$
+oobboooboboboobb$
+ooobbbbbbooobobb$
+boooooooobobboob$
+boboobobbobboooo$
+bobobooboobbobbb$
+oboboooobbbobbbb!
+[[ ZOOM 4 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<br>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>
