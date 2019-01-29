@@ -829,19 +829,37 @@
 			// von Neumann and Circular
 			for (y = bottomY - range; y <= topY + range; y += 1) {
 				countRow = counts[y];
-				for (x = leftX - range; x <= rightX + range; x += 1) {
-					count = 0;
+				x = leftX - range;
+				// for the first cell in the row count the entire neighborhood
+				count = 0;
+				for (j = -range; j <= range; j += 1) {
+					width = widths[j + range];
+					colourRow = colourGrid[y + j];
+					for (i = -width; i <= width; i += 1) {
+						if ((colourRow[x + i]) >= aliveStart) {
+							count += 1;
+						}
+					}
+				}
+				countRow[x] = count;
+				x += 1;
+
+				// for the remaining rows subtract the left and add the right cells
+				while (x <= rightX + range) {
 					for (j = -range; j <= range; j += 1) {
 						width = widths[j + range];
 						colourRow = colourGrid[y + j];
-						for (i = -width; i <= width; i += 1) {
-							if ((colourRow[x + i]) >= aliveStart) {
-								count += 1;
-							}
+						if (colourRow[x - width - 1] >= aliveStart) {
+							count -= 1;
+						}
+						if (colourRow[x + width] >= aliveStart) {
+							count += 1;
 						}
 					}
 					countRow[x] = count;
+					x += 1;
 				}
+
 			}	
 		}
 
@@ -1256,18 +1274,35 @@
 			// von Neumann and Circular
 			for (y = bottomY - range; y <= topY + range; y += 1) {
 				countRow = counts[y];
-				for (x = leftX - range; x <= rightX + range; x += 1) {
-					count = 0;
+				x = leftX - range;
+				// for the first cell in the row count the entire neighborhood
+				count = 0;
+				for (j = -range; j <= range; j += 1) {
+					width = widths[j + range];
+					colourRow = colourGrid[y + j];
+					for (i = -width; i <= width; i += 1) {
+						if ((colourRow[x + i]) === maxGenState) {
+							count += 1;
+						}
+					}
+				}
+				countRow[x] = count;
+				x += 1;
+
+				// for the remaining rows subtract the left and add the right cells
+				while (x <= rightX + range) {
 					for (j = -range; j <= range; j += 1) {
 						width = widths[j + range];
 						colourRow = colourGrid[y + j];
-						for (i = -width; i <= width; i += 1) {
-							if ((colourRow[x + i]) === maxGenState) {
-								count += 1;
-							}
+						if (colourRow[x - width - 1] === maxGenState) {
+							count -= 1;
+						}
+						if (colourRow[x + width] === maxGenState) {
+							count += 1;
 						}
 					}
 					countRow[x] = count;
+					x += 1;
 				}
 			}
 		}

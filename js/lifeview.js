@@ -3009,8 +3009,8 @@
 		me.menuManager.setAutoUpdate(true);
 
 		return [me.menuManager.showExtendedTiming];
-	;
-}
+	};
+
 	// toggle fps display
 	View.prototype.viewFpsToggle = function(newValue, change, me) {
 		// check if changing
