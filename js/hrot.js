@@ -233,10 +233,13 @@
 			colourLookup = this.engine.colourLookup,
 
 			// maximum generations state
-			maxGenState = maxGeneration + (this.engine.drawHistory ? 1 : 0),
+			maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
 
-			// maximum dead state number (0 normal - 1 if drawing history),
-			deadState = (this.engine.drawHistory ? 1 : 0);
+			// maximum dead state number
+			deadState = this.engine.historyStates,
+
+			// minimum dead state number
+			minDeadState = (this.engine.historyStates > 0 ? 1 : 0);
 
 		// compute next generation
 		population = 0;
@@ -314,6 +317,10 @@
 							// new cell is born
 							state = maxGenState;
 							births += 1;
+						} else {
+							if (state > minDeadState) {
+								state -= 1;
+							}
 						}
 					} else if (state === maxGenState) {
 						// this cell is alive
@@ -324,7 +331,9 @@
 						}
 					} else {
 						// this cell will eventually die
-						state -= 1;
+						if (state > minDeadState) {
+							state -= 1;
+						}
 					}
 					colourRow[x] = state;
 					// update bounding box columns
@@ -884,10 +893,8 @@
 			survivalList = this.survivals,
 			r2 = range + range,
 			rp1 = range + 1,
-			scount = this.scount,
 			counts = this.counts,
 			type = this.type,
-			maxGeneration = scount - 1,
 			count = 0,
 			minX = this.engine.width, maxX = 0,
 			minY = this.engine.height, maxY = 0,
@@ -907,10 +914,13 @@
 			rowAlive = false, colAlive = false, somethingAlive = false,
 
 			// maximum generations state
-			maxGenState = maxGeneration + (this.engine.drawHistory ? 1 : 0),
+			maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
 
-			// maximum dead state number (0 normal - 1 if drawing history),
-			deadState = (this.engine.drawHistory ? 1 : 0);
+			// maximum dead state number
+			deadState = this.engine.historyStates,
+
+			// minimum dead state number
+			minDeadState = (this.engine.historyStates > 0 ? 1 : 0);
 
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {
@@ -1029,6 +1039,10 @@
 					// new cell is born
 					state = maxGenState;
 					births += 1;
+				} else {
+					if (state > minDeadState) {
+						state -= 1;
+					}
 				}
 			} else if (state === maxGenState) {
 				// this cell is alive
@@ -1039,7 +1053,9 @@
 				}
 			} else {
 				// this cell will eventually die
-				state -= 1;
+				if (state > minDeadState) {
+					state -= 1;
+				}
 			}
 			// update the cell
 			colourGrid[bottomY][leftX] = state;
@@ -1070,6 +1086,10 @@
 						// new cell is born
 						state = maxGenState;
 						births += 1;
+					} else {
+						if (state > minDeadState) {
+							state -= 1;
+						}
 					}
 				} else if (state === maxGenState) {
 					// this cell is alive
@@ -1080,7 +1100,9 @@
 					}
 				} else {
 					// this cell will eventually die
-					state -= 1;
+					if (state > minDeadState) {
+						state -= 1;
+					}
 				}
 				// update the cell
 				colourRow[x] = state;
@@ -1116,6 +1138,10 @@
 						// new cell is born
 						state = maxGenState;
 						births += 1;
+					} else {
+						if (state > minDeadState) {
+							state -= 1;
+						}
 					}
 				} else if (state === maxGenState) {
 					// this cell is alive
@@ -1126,7 +1152,9 @@
 					}
 				} else {
 					// this cell will eventually die
-					state -= 1;
+					if (state > minDeadState) {
+						state -= 1;
+					}
 				}
 				// update the cell
 				colourGrid[y][leftX] = state;
@@ -1175,6 +1203,10 @@
 							// new cell is born
 							state = maxGenState;
 							births += 1;
+						} else {
+							if (state > minDeadState) {
+								state -= 1;
+							}
 						}
 					} else if (state === maxGenState) {
 						// this cell is alive
@@ -1185,7 +1217,9 @@
 						}
 					} else {
 						// this cell will eventually die
-						state -= 1;
+						if (state > minDeadState) {
+							state -= 1;
+						}
 					}
 					// update the cell
 					colourRow[x] = state;
@@ -1293,5 +1327,3 @@
 	window["HROT"] = HROT;
 }
 ());
-
-

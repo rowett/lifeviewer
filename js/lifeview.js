@@ -1206,7 +1206,10 @@
 			numStates = this.engine.multiNumStates,
 
 		    // whether pattern is inside bounded grid
-		    inside = true;
+			inside = true,
+			
+			// whether pattern is 2-state HROT
+			isTwoStateHROT = (numStates === 2 && this.engine.isHROT);
 
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {
@@ -1279,9 +1282,15 @@
 			}
 
 			// copy 2-state cells
+			if (isTwoStateHROT) {
+				colourGridRow = colourGrid[(y + panY) & hm];
+			}
 			for (x = 0; x < copyWidth; x += 1) {
 				if ((patternRow[x >> 4] & (1 << (~x & 15))) !== 0) {
 					gridRow[((x + panX) >> 4) & wm16] |= 1 << (~(x + panX) & 15);
+					if (isTwoStateHROT) {
+						colourGridRow[(x + panX) & wm] = LifeConstants.aliveStart;
+					}
 				}
 			}
 		}
