@@ -3,6 +3,7 @@ Build 285
 - new Help topics UI in Help menu
 - fixed HROT canonical S8 bug again
 - FPS button moved and now called "Timing"
+- added Details button to bottom right menu to toggle timing details
 - Help Topics list auto-updates as Help scrolls
 - completed HISTORYSTATE implementation
 

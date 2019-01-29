@@ -964,8 +964,11 @@
 		// stars button
 		this.starsButton = null;
 
-		// fps button
+		// timing button
 		this.fpsButton = null;
+
+		// timing details button
+		this.timingDetailButton = null;
 
 		// time label
 		this.timeLabel = null;
@@ -2672,6 +2675,7 @@
 		this.infoBarButton.deleted = hide;
 		this.starsButton.deleted = hide;
 		this.fpsButton.deleted = hide;
+		this.timingDetailButton.deleted = hide;
 
 		// infobar
 		this.infoBarLabelXLeft.deleted = hide || !this.infoBarEnabled;
@@ -2994,6 +2998,19 @@
 		return [me.engine.isHex];
 	};
 
+	// toggle timing detail display
+	View.prototype.viewTimingDetailToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			me.menuManager.showExtendedTiming = newValue[0];
+		}
+
+		// ensure update happens
+		me.menuManager.setAutoUpdate(true);
+
+		return [me.menuManager.showExtendedTiming];
+	;
+}
 	// toggle fps display
 	View.prototype.viewFpsToggle = function(newValue, change, me) {
 		// check if changing
@@ -5992,7 +6009,7 @@
 		this.infoBarButton.toolTip = ["toggle InfoBar"];
 
 		// stars toggle button
-		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.south, 0, -140, 80, 40, ["Stars"], [this.starsOn], Menu.multi);
+		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.southEast, -160, -140, 80, 40, ["Stars"], [this.starsOn], Menu.multi);
 		this.starsButton.toolTip = ["toggle stars display"];
 
 		// close button
@@ -6002,6 +6019,10 @@
 		// fps button
 		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.southWest, 80, -140, 80, 40, ["Timing"], [this.menuManager.showTiming], Menu.multi);
 		this.fpsButton.toolTip = ["toggle timing display"];
+
+		// timing detail button
+		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.south, 0, -140, 80, 40, ["Details"], [this.menuManager.showExtendedTiming], Menu.multi);
+		this.timingDetailButton.toolTip = ["toggle timing details"];
 
 		// opacity range
 		this.opacityItem = this.viewMenu.addRangeItem(this.viewOpacityRange, Menu.north, 0, 0, 212, 40, 0, 1, this.popGraphOpacity, true, "Opacity ", "%", 0);
@@ -6039,7 +6060,7 @@
 		this.playList.toolTip = ["reset", "previous generation", "pause", "play"];
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.graphButton, this.fpsButton, this.infoBarButton, this.starsButton], []);
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -8791,7 +8812,7 @@
 						// extended timing
 						case Keywords.extendedTimingWord:
 							// show timing
-							this.menuManager.showExtendedTiming = true;
+							this.timingDetailButton.current = this.viewTimingDetailToggle([true], true, this);
 							itemValid = true;
 							break;
 
@@ -9736,6 +9757,7 @@
 			this.thumbLaunch = false;
 			this.popGraph = false;
 			this.viewFpsToggle([false], true, this);
+			this.viewTimingDetailToggle([false], true, this);
 			this.viewStats([false], true, this);
 			this.infoBarEnabled = false;
 		}
