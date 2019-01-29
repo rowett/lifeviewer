@@ -973,6 +973,7 @@
 				themeName = String(view.engine.colourTheme);
 			}
 			y = this.renderHelpLine(view, "Name", themeName, ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "History", view.historyStates, ctx, x, y, height, helpLine);
 			this.renderColourBox(view, view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0], ctx, x + tabs[0], y, height, helpLine);
 			y = this.renderHelpLine(view, "Background", this.rgbString(view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0]), ctx, x, y, height, helpLine);
 
@@ -983,10 +984,15 @@
 					this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + tabs[0], y, height, helpLine);
 					y = this.renderHelpLine(view, "State " + i, this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
 				}
-				for (i = view.historyStates - 1; i >= 0; i -= 1) {
-					j = i + 1;
+				if (view.historyStates > 0) {
+					j = 1;
 					this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + tabs[0], y, height, helpLine);
-					y = this.renderHelpLine(view, "History " + (view.historyStates - i - 1), this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, "Dead", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+					if (view.historyStates > 1) {
+						j = view.historyStates;
+						this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + tabs[0], y, height, helpLine);
+						y = this.renderHelpLine(view, "DeadRamp", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+					}
 				}
 			} else {
 				// normal theme

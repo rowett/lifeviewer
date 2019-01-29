@@ -1604,8 +1604,8 @@
 		this.themes[i] = new Theme(new ColourRange(new Colour(0, 0, 96), new Colour(0, 0, 160)), new ColourRange(new Colour(0, 240, 0), new Colour(16, 255, 16)), new Colour(0, 0, 0));
 		i += 1;
 
-		// Multi-state (Generations and HROT) - red to yellow
-		this.themes[i] = new Theme(new ColourRange(new Colour(64, 0, 0), new Colour(255, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0));
+		// Multi-state (Generations and HROT) - yellow to red
+		this.themes[i] = new Theme(new ColourRange(new Colour(64, 0, 0), new Colour(128, 0, 0)), new ColourRange(new Colour(255, 0, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// custom theme
@@ -1700,18 +1700,18 @@
 				weight = (i - 1) / (this.multiNumStates - 2);
 
 				// compute the red component of the current and target colour
-				currentComponent = this.aliveColCurrent.endColour.red * weight + this.deadColCurrent.endColour.red * (1 - weight);
-				targetComponent = this.aliveColTarget.endColour.red * weight + this.deadColTarget.endColour.red * (1 - weight);
+				currentComponent = this.aliveColCurrent.endColour.red * weight + this.aliveColCurrent.startColour.red * (1 - weight);
+				targetComponent = this.aliveColTarget.endColour.red * weight + this.aliveColTarget.startColour.red * (1 - weight);
 				this.redChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 				// compoute the green component of the current and target colour
-				currentComponent = this.aliveColCurrent.endColour.green * weight + this.deadColCurrent.endColour.green * (1 - weight);
-				targetComponent = this.aliveColTarget.endColour.green * weight + this.deadColTarget.endColour.green * (1 - weight);
+				currentComponent = this.aliveColCurrent.endColour.green * weight + this.aliveColCurrent.startColour.green * (1 - weight);
+				targetComponent = this.aliveColTarget.endColour.green * weight + this.aliveColTarget.startColour.green * (1 - weight);
 				this.greenChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 				// compoute the blue component of the current and target colour
-				currentComponent = this.aliveColCurrent.endColour.blue * weight + this.deadColCurrent.endColour.blue * (1 - weight);
-				targetComponent = this.aliveColTarget.endColour.blue * weight + this.deadColTarget.endColour.blue * (1 - weight);
+				currentComponent = this.aliveColCurrent.endColour.blue * weight + this.aliveColCurrent.startColour.blue * (1 - weight);
+				targetComponent = this.aliveColTarget.endColour.blue * weight + this.aliveColTarget.startColour.blue * (1 - weight);
 				this.blueChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 				// override with custom colour if specified
@@ -1727,7 +1727,11 @@
 
 			// create history colours if specified
 			for (i = 0; i < this.historyStates; i += 1) {
-				weight = 1 - (i / this.historyStates);
+				if (this.historyStates > 1) {
+					weight = 1 - (i / (this.historyStates - 1));
+				} else {
+					weight = 1;
+				}
 				// compute the red component of the current and target colour
 				currentComponent = this.deadColCurrent.startColour.red * weight + this.deadColCurrent.endColour.red * (1 - weight);
 				targetComponent = this.deadColTarget.startColour.red * weight + this.deadColTarget.endColour.red * (1 - weight);
@@ -8475,8 +8479,10 @@
 			this.convertToPensTileRegular();
 		} else {
 			// check for Generations
-			if (!(this.isLTL || this.isHROT)) {
-				this.nextGenerationGenerations();
+			if (!this.anythingAlive) {
+				if (!(this.isLTL || this.isHROT)) {
+					this.nextGenerationGenerationsDecayOnly();
+				}
 			}
 		}
 	};
