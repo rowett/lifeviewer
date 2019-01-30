@@ -1,3 +1,7 @@
+Build 286
+- population data is now dynamically allocated to reduce memory footprint
+- Themes can not be changed for patterns with illegal rules
+
 Build 285
 - new Stars button to toggle starfield display in bottom right menu
 - new Help topics UI in Help menu

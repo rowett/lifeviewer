@@ -31,6 +31,9 @@
 		// maximum number of population samples for graph
 		/** @const {number} */ maxPopSamples : 262144,
 
+		// population samples chunk size 2^n
+		/** @const {number} */ popChunkPower : 12,
+
 		// cell value for alive start (for colour Themes)
 		/** @const {number} */ aliveStart : 64,
 
@@ -138,6 +141,9 @@
 		this.popGraphData = null;
 		this.birthGraphData = null;
 		this.deathGraphData = null;
+
+		// population graph entries
+		this.popGraphEntries = 0;
 
 		// maximum population value
 		this.maxPopValue = 0;
@@ -571,14 +577,18 @@
 
 	// allocate or clear graph data
 	Life.prototype.allocateGraphData = function(allocate) {
+		var entries = 1 << LifeConstants.popChunkPower;
+
 		if (allocate) {
-			this.popGraphData = this.allocator.allocate(Uint32, LifeConstants.maxPopSamples, "Life.popGraphData");
-			this.birthGraphData = this.allocator.allocate(Uint32, LifeConstants.maxPopSamples, "Life.birthGraphData");
-			this.deathGraphData = this.allocator.allocate(Uint32, LifeConstants.maxPopSamples, "Life.deathGraphData");
+			this.popGraphData = Array.matrix(Uint32, 1, entries, 0, this.allocator, "Life.popGraphData");
+			this.birthGraphData = Array.matrix(Uint32, 1, entries, 0, this.allocator, "Life.birthGraphData");
+			this.deathGraphData = Array.matrix(Uint32, 1, entries, 0, this.allocator, "Life.deathGraphData");
+			this.popGraphEntries = entries;
 		} else {
-			this.popGraphData = this.allocator.allocate(Uint32, 0, "Life.popGraphData");
-			this.birthGraphData = this.allocator.allocate(Uint32, 0, "Life.birthGraphData");
-			this.deathGraphData = this.allocator.allocate(Uint32, 0, "Life.deathGraphData");
+			this.popGraphData = Array.matrix(Uint32, 0, 0, 0, this.allocator, "Life.popGraphData");
+			this.birthGraphData = Array.matrix(Uint32, 0, 0, 0, this.allocator, "Life.birthGraphData");
+			this.deathGraphData = Array.matrix(Uint32, 0, 0, 0, this.allocator, "Life.deathGraphData");
+			this.popGraphEntries = 0;
 
 		}
 	};
@@ -4629,11 +4639,7 @@
 		// update population graph if stats are on
 		if (this.counter < LifeConstants.maxPopSamples) {
 			if (statsOn) {
-				if (this.popGraphData) {
-					this.popGraphData[this.counter] = this.population;
-					this.birthGraphData[this.counter] = this.births;
-					this.deathGraphData[this.counter] = this.deaths;
-				}
+				this.savePopulationData(this.population, this.births, this.deaths);
 				if (this.population > this.maxPopValue) {
 					this.maxPopValue = this.population;
 				}
@@ -4643,14 +4649,29 @@
 				if (this.deaths > this.maxPopValue) {
 					this.maxPopValue = this.deaths;
 				}
+			} else {
+				this.savePopulationData(0, 0, 0);
 			}
-			else {
-				if (this.popGraphData) {
-					this.popGraphData[this.counter] = 0;
-					this.birthGraphData[this.counter] = 0;
-					this.deathGraphData[this.counter] = 0;
-				}
+		}
+	};
+
+	// save population data
+	Life.prototype.savePopulationData = function(population, births, deaths) {
+		var popChunk = this.counter >> LifeConstants.popChunkPower,
+			popOffset = this.counter & ((1 << LifeConstants.popChunkPower) - 1);
+
+		if (this.popGraphData) {
+			// see if a new chunk needs to be allocated
+			if (this.counter >= this.popGraphEntries) {
+				// allocate new chunk
+				Array.addRow(this.popGraphData, 0, "Life.popGraphData");
+				Array.addRow(this.birthGraphData, 0, "Life.birthGraphData");
+				Array.addRow(this.deathGraphData, 0, "Life.deathGraphData");
+				this.popGraphEntries += (1 << LifeConstants.popChunkPower);
 			}
+			this.popGraphData[popChunk][popOffset] = population;
+			this.birthGraphData[popChunk][popOffset] = births;
+			this.deathGraphData[popChunk][popOffset] = deaths;
 		}
 	};
 
@@ -4658,7 +4679,9 @@
 	Life.prototype.renderGraph = function(ctx, graphCol, displayX, graphHeight, borderX, borderY, borderAxis, graphData, lines) {
 		var i = 0, x = 0, y = 0,
 		    index = 0, next = 0, inc = 1,
-		    minVal = 0, maxVal, nextVal = 0;
+			minVal = 0, maxVal, nextVal = 0,
+			popChunk = 0, popOffset = 0,
+			popMask = (1 << LifeConstants.popChunkPower) - 1;
 
 		// check if increment is needed
 		if (this.counter > displayX) {
@@ -4682,7 +4705,9 @@
 		for (i = 1; i < displayX; i += 1) {
 			// get the next graph data point
 			if (index < LifeConstants.maxPopSamples) {
-				minVal = graphData[index];
+				popChunk = index >> LifeConstants.popChunkPower;
+				popOffset = index & popMask;
+				minVal = graphData[popChunk][popOffset];
 				maxVal = minVal;
 				next = next + inc;
 				index = index + 1;
@@ -4756,124 +4781,134 @@
 		    graphBirthColor = "rgb(" + this.graphBirthColor[0] + "," + this.graphBirthColor[1] + "," + this.graphBirthColor[2] + ")",
 		    graphDeathColor = "rgb(" + this.graphDeathColor[0] + "," + this.graphDeathColor[1] + "," + this.graphDeathColor[2] + ")";
 
-		// check for full screen
-		if (fullScreen || thumbnail) {
-			borderY = 0;
-			graphHeight += 80;
-		}
-		if (thumbnail) {
-			borderAxis = 0;
-			graphWidth = this.displayWidth - borderX;
-		}
-
-		// compute number of samples
-		displayX = graphWidth - borderX - borderAxis;
-
-		// save context
-		ctx.save();
-
-		// draw background
-		ctx.fillStyle = graphBgColor;
-		ctx.globalAlpha = opacity;
-		ctx.fillRect(borderX, borderY, graphWidth + borderAxis, graphHeight);
-		ctx.globalAlpha = 1;
-		if (fullScreen) {
-			graphHeight -= 40;
-		}
-
-		// draw labels
-		if (!thumbnail) {
-			ctx.font = "16px Arial";
-			ctx.textAlign = "center";
-			ctx.fillStyle = "black";
-			for (i = 2; i >= 0; i -= 2) {
-				ctx.save();
-				ctx.translate(this.displayWidth / 2, graphHeight + borderAxis / 2 - 6);
-				ctx.fillText("Generation", i, i);
-				ctx.restore();
-				ctx.save();
-				ctx.translate(borderX + borderAxis / 2 + 6, this.displayHeight / 2);
-				ctx.rotate(-90 * Math.PI / 180);
-				if (this.displayHeight < 320) {
-					ctx.fillText("Pop", i, i);
-				}
-				else {
-					ctx.fillText("Population", i, i);
-				}
-				ctx.restore();
-				ctx.fillStyle = graphAxisColor;
+		// check if data exists
+		if (this.popGraphData) {
+			// check for full screen
+			if (fullScreen || thumbnail) {
+				borderY = 0;
+				graphHeight += 80;
+			}
+			if (thumbnail) {
+				borderAxis = 0;
+				graphWidth = this.displayWidth - borderX;
 			}
 
-			// draw axes values
-			ctx.fillStyle = "black";
-			for (i = 2; i >= 0; i -= 2) {
-				ctx.save();
-				ctx.translate(borderX + borderAxis - borderAxis / 2 + 6, borderY + borderAxis);
-				ctx.rotate(-90 * Math.PI / 180);
-				ctx.fillText(String(this.maxPopValue), i, i);
-				ctx.restore();
-				ctx.save();
-				ctx.translate(borderX + borderAxis - borderAxis / 2 + 6, graphHeight);
-				ctx.rotate(-90 * Math.PI / 180);
-				ctx.fillText("0", i, i);
-				ctx.restore();
-				ctx.save();
-				ctx.translate(borderX + borderAxis, graphHeight + borderAxis / 2 - 6);
-				ctx.fillText("0", i, i);
-				ctx.restore();
-				ctx.save();
-				ctx.translate(graphWidth, graphHeight + borderAxis / 2 - 6);
-				ctx.fillText(String(this.counter > displayX ? this.counter : displayX), i, i);
-				ctx.restore();
-				ctx.fillStyle = graphAxisColor;
+			// compute number of samples
+			displayX = graphWidth - borderX - borderAxis;
+
+			// save context
+			ctx.save();
+
+			// draw background
+			ctx.fillStyle = graphBgColor;
+			ctx.globalAlpha = opacity;
+			ctx.fillRect(borderX, borderY, graphWidth + borderAxis, graphHeight);
+			ctx.globalAlpha = 1;
+			if (fullScreen) {
+				graphHeight -= 40;
 			}
+
+			// draw labels
+			if (!thumbnail) {
+				ctx.font = "16px Arial";
+				ctx.textAlign = "center";
+				ctx.fillStyle = "black";
+				for (i = 2; i >= 0; i -= 2) {
+					ctx.save();
+					ctx.translate(this.displayWidth / 2, graphHeight + borderAxis / 2 - 6);
+					ctx.fillText("Generation", i, i);
+					ctx.restore();
+					ctx.save();
+					ctx.translate(borderX + borderAxis / 2 + 6, this.displayHeight / 2);
+					ctx.rotate(-90 * Math.PI / 180);
+					if (this.displayHeight < 320) {
+						ctx.fillText("Pop", i, i);
+					}
+					else {
+						ctx.fillText("Population", i, i);
+					}
+					ctx.restore();
+					ctx.fillStyle = graphAxisColor;
+				}
+
+				// draw axes values
+				ctx.fillStyle = "black";
+				for (i = 2; i >= 0; i -= 2) {
+					ctx.save();
+					ctx.translate(borderX + borderAxis - borderAxis / 2 + 6, borderY + borderAxis);
+					ctx.rotate(-90 * Math.PI / 180);
+					ctx.fillText(String(this.maxPopValue), i, i);
+					ctx.restore();
+					ctx.save();
+					ctx.translate(borderX + borderAxis - borderAxis / 2 + 6, graphHeight);
+					ctx.rotate(-90 * Math.PI / 180);
+					ctx.fillText("0", i, i);
+					ctx.restore();
+					ctx.save();
+					ctx.translate(borderX + borderAxis, graphHeight + borderAxis / 2 - 6);
+					ctx.fillText("0", i, i);
+					ctx.restore();
+					ctx.save();
+					ctx.translate(graphWidth, graphHeight + borderAxis / 2 - 6);
+					ctx.fillText(String(this.counter > displayX ? this.counter : displayX), i, i);
+					ctx.restore();
+					ctx.fillStyle = graphAxisColor;
+				}
+			}
+
+			// only draw births and deaths if grid is not bounded
+			if (this.boundedGridType === -1) {
+				// draw deaths
+				this.renderGraph(ctx, graphDeathColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.deathGraphData, lines);
+
+				// draw births
+				this.renderGraph(ctx, graphBirthColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.birthGraphData, lines);
+			}
+
+			// draw population
+			this.renderGraph(ctx, graphAliveColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.popGraphData, lines);
+
+			// draw axes
+			ctx.strokeStyle = graphAxisColor;
+			ctx.lineWidth = 1;
+			ctx.beginPath();
+			ctx.moveTo(borderX + borderAxis + 0.5, borderY + borderAxis + 0.5);
+			ctx.lineTo(borderX + borderAxis + 0.5, graphHeight + 0.5);
+			ctx.lineTo(graphWidth + 0.5, graphHeight + 0.5);
+			ctx.lineTo(graphWidth + 0.5, graphHeight + 0.5 + 2);
+			ctx.moveTo(borderX + borderAxis + 0.5, graphHeight + 0.5);
+			ctx.lineTo(borderX + borderAxis + 0.5, graphHeight + 0.5 + 2);
+			ctx.moveTo(borderX + borderAxis + 0.5, graphHeight + 0.5);
+			ctx.lineTo(borderX + borderAxis + 0.5 - 2, graphHeight + 0.5);
+			ctx.moveTo(borderX + borderAxis + 0.5, borderY + borderAxis + 0.5);
+			ctx.lineTo(borderX + borderAxis + 0.5 - 2, borderY + borderAxis + 0.5);
+			ctx.stroke();
+
+			// restore context
+			ctx.restore();
 		}
-
-		// only draw births and deaths if grid is not bounded
-		if (this.boundedGridType === -1) {
-			// draw deaths
-			this.renderGraph(ctx, graphDeathColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.deathGraphData, lines);
-
-			// draw births
-			this.renderGraph(ctx, graphBirthColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.birthGraphData, lines);
-		}
-
-		// draw population
-		this.renderGraph(ctx, graphAliveColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.popGraphData, lines);
-
-		// draw axes
-		ctx.strokeStyle = graphAxisColor;
-		ctx.lineWidth = 1;
-		ctx.beginPath();
-		ctx.moveTo(borderX + borderAxis + 0.5, borderY + borderAxis + 0.5);
-		ctx.lineTo(borderX + borderAxis + 0.5, graphHeight + 0.5);
-		ctx.lineTo(graphWidth + 0.5, graphHeight + 0.5);
-		ctx.lineTo(graphWidth + 0.5, graphHeight + 0.5 + 2);
-		ctx.moveTo(borderX + borderAxis + 0.5, graphHeight + 0.5);
-		ctx.lineTo(borderX + borderAxis + 0.5, graphHeight + 0.5 + 2);
-		ctx.moveTo(borderX + borderAxis + 0.5, graphHeight + 0.5);
-		ctx.lineTo(borderX + borderAxis + 0.5 - 2, graphHeight + 0.5);
-		ctx.moveTo(borderX + borderAxis + 0.5, borderY + borderAxis + 0.5);
-		ctx.lineTo(borderX + borderAxis + 0.5 - 2, borderY + borderAxis + 0.5);
-		ctx.stroke();
-
-		// restore context
-		ctx.restore();
 	};
 
 	// reset population data
 	Life.prototype.resetPopulationData = function() {
-		var i = 0;
+		var popChunk = 0,
+			popOffset = 0,
+			popMask = (1 << LifeConstants.popChunkPower) - 1,
+			i = 0;
 
 		// clear population graph data
-		for (i = 0; i < LifeConstants.maxPopSamples; i += 1) {
-			this.popGraphData[i] = 0;
-			this.birthGraphData[i] = 0;
-			this.deathGraphData[i] = 0;
-		}
+		if (this.popGraphData) {
+			for (i = 0; i < this.popGraphEntries; i += 1) {
+				popChunk = i >> LifeConstants.popChunkPower;
+				popOffset = i & popMask;
+				this.popGraphData[popChunk][popOffset] = 0;
+				this.birthGraphData[popChunk][popOffset] = 0;
+				this.deathGraphData[popChunk][popOffset] = 0;
+			}
 
-		// set initial population
-		this.popGraphData[0] = this.population;
+			// set initial population
+			this.popGraphData[0][0] = this.population;
+		}
 
 		// reset maximum population
 		this.maxPopValue = this.population;

@@ -1,18 +1,24 @@
-[DONE] HROT support for von Neumann and Circular neighbourhoods
-Implement faster Ltl/HROT von Neumann algorithm
 Investigate tiled LtL/HROT algorithm
 LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE stuff rather than just clear)
 Investigate Paul's non-totalistic hex notation
 Investigate Brian's BSFKL notation
 Investigate "Extended" Generations
 Investigate deficient rules
-[DONE] New script keywords to put labels on the display at specific locations triggered by generation and zoom ranges
 Meta world view
+Grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
+User preferences
+[STARTED]Memory footprint reduction
+    - don't allocate sin and cos tables until first use
+    [DONE]Stars allocated on first use
+    [DONE]Default grid size 512x512
+    [DONE]Don't allocate population data if [[ NOGRAPH ]] specified, or if [[ THUMBLAUNCH ]] without [[ GRAPH ]] specified
+    [DONE]Population data is now dynamically allocated
+[STARTED]Implement faster Ltl/HROT von Neumann algorithm
+[STARTED]Pattern Editor
+    [DONE] Basic 2-state editing with no undo
+[DONE]HROT support for von Neumann and Circular neighbourhoods
+[DONE]New script keywords to put labels on the display at specific locations triggered by generation and zoom ranges
 [DONE]multistate rules using just 2 states should use LifeViewer Themes
 [DONE]getState() needs to cope with Bounded Grid and 255 or 256 states (currently bounded grid border showing as 1, should be 0)
 [DONE]multistate rules using > 2 states and < 256 states should have history colour
 [DONE]LABELTRACK DX DY command to allow labels to move over generations
-Grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
-[STARTED]Pattern Editor
-- basic 2-state editing with no undo
-User preferences

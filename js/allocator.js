@@ -317,6 +317,24 @@
 		return result;
 	};
 
+	// allocate typed memory when adding a row to a matrix
+	Allocator.prototype.allocateRow = function(type, elements, name, rows) {
+		var result = null;
+
+		// get typed block of memory
+		if (elements > 0) {
+			result = this.typedMemory(type, elements, name);
+		}
+
+		// check if allocation succeeded
+		if (result || elements === 0) {
+			this.saveAllocationInfo(type, elements * rows, name);
+		}
+
+		// return memory
+		return result;
+	};
+
 	// create an array matrix for a given type
 	Array.matrix = function(type, m, n, initial, allocator, name) {
 		var i = 0,
@@ -331,16 +349,15 @@
 		// @ts-ignore
 		mat.whole = null;
 
-		// check if there is anything to allocate
-		if (m * n !== 0) {
-			// create whole array
-			whole = allocator.allocate(type, m * n, name);
+		// create whole array
+		whole = allocator.allocate(type, m * n, name);
 
-			// save reference to the whole array
-			// @ts-ignore
-			mat.whole = whole;
+		// save reference to the whole array
+		// @ts-ignore
+		mat.whole = whole;
 
-			// create rows
+		// create rows if they are not empty
+		if (n > 0) {
 			while (i < m) {
 				// create views of the rows
 				mat[i] = allocator.typedView(whole, type, n, i * n, name);
@@ -377,7 +394,7 @@
 		    m = source[0].length,
 
 		    // create the new row
-		    row = source.allocator.allocate(source.type, m, name);
+		    row = source.allocator.allocateRow(source.type, m, name, source.length + 1);
 
 		// check whether to fill with an initial value
 		if (initial !== 0) {

@@ -150,7 +150,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 285,
+		/** @const {number} */ versionBuild : 286,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2665,7 +2665,7 @@
 		// navigation menu
 		this.angleItem.deleted = hide || this.engine.isHex;
 		this.depthItem.deleted = hide;
-		this.themeItem.deleted = hide;
+		this.themeItem.deleted = hide || this.multiStateView;
 		this.layersItem.deleted = hide;
 		this.fitButton.deleted = hide;
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
@@ -4593,8 +4593,10 @@
 						// c for default theme
 						case 67:
 							// set default theme
-							value = me.defaultTheme;
-							me.themeItem.current = me.viewThemeRange([value, value], true, me);
+							if (!me.multiStateView) {
+								value = me.defaultTheme;
+								me.themeItem.current = me.viewThemeRange([value, value], true, me);
+							}
 							break;
 					}
 				}

@@ -29,8 +29,8 @@
 		// neighbour count array (will be resized)
 		this.counts = Array.matrix(Uint32, 1, 1, 0, allocator, "HROT.counts");
 
-		// range width array
-		this.widths = allocator.allocate(Uint32, this.range * 2 + 1, "HROT.widths");
+		// range width array (will be resized)
+		this.widths = allocator.allocate(Uint32, 0, "HROT.widths");
 
 		// used row array (will be resized)
 		this.colUsed = allocator.allocate(Uint8, 0, "HROT.colUsed");
@@ -54,7 +54,7 @@
 		// save type and range and allocate widths array
 		this.type = type;
 		this.range = range;
-		this.widths = this.allocator.allocate(Uint32, range * 2 + 1, "HROT.widths");
+		this.widths = this.allocator.allocate(Uint32, width, "HROT.widths");
 
 		// create the widths array based on the neighborhood type
 		switch(type) {
@@ -859,7 +859,6 @@
 					countRow[x] = count;
 					x += 1;
 				}
-
 			}	
 		}
 
