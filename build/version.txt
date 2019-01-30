@@ -9,6 +9,7 @@ Build 285
 - FPS button moved and now called "Timing"
 - added Details button to bottom right menu to toggle timing details
 - Help Topics list auto-updates as Help scrolls
+- pattern editor now updates population
 - completed HISTORYSTATE implementation
 - faster HROT/LTL performance for von Neumann and Circular neighborhoods
 
