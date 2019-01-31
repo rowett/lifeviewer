@@ -6038,7 +6038,7 @@
 
 		// major gridlines toggle button
 		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.northEast, -160, 160, 80, 40, ["Major"], [this.engine.gridLineMajorEnabled], Menu.multi);
-		this.majorButton.toolTip = ["toggle Major GridLines"];
+		this.majorButton.toolTip = ["toggle major grid lines"];
 
 		// stars toggle button
 		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.southEast, -160, -140, 80, 40, ["Stars"], [this.starsOn], Menu.multi);
