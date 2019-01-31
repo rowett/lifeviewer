@@ -969,6 +969,12 @@
 				rightX += range;
 				bottomY -= range;
 				topY += range;
+				if (this.engine.boundedGridType === -1) {
+					leftX -= range;
+					rightX += range;
+					bottomY -= range;
+					topY += range;
+				}
 				this.nrows = topY - bottomY + 1;
 				this.ncols = rightX - leftX + 1;
 				this.ccht = (this.nrows + (this.ncols - 1) / 2) | 0;
@@ -976,19 +982,13 @@
 
 				// calculate cumulative counts in top left corner of colcounts
 				for (i = 0; i < this.ccht; i += 1) {
-					//int* Coffset = colcounts + i * outerwd;
 					countRow = counts[i];
-					//unsigned char* Goffset = outergrid1 + (i + minrow) * outerwd;
 					colourRow = colourGrid[i + bottomY];
 					im1 = i - 1;
 					im2 = im1 - 1;
 					for (j = 0; j <= this.ncols; j += 1) {
-						//int* Cij = Coffset + j;
-						//*Cij = getcount(im1,j-1) + getcount(im1,j+1) - getcount(im2,j);
-						countRow[j] = this.getCount(im1, j - 1) + this.getCount(im1 , j + 1) - this.getCount(im2 , j);
+						countRow[j] = this.getCount(im1, j - 1) + this.getCount(im1, j + 1) - this.getCount(im2, j);
 						if (i < this.nrows) {
-							//unsigned char* Gij = Goffset + j + mincol;
-							//if (*Gij == 1) *Cij += *Gij;
 							if (colourRow[j + leftX] >= aliveStart) {
 								countRow[j] += 1;
 							}
@@ -997,19 +997,18 @@
 				}
 
 				// calculate final neighborhood counts and update the corresponding cells in the grid
-				for (i = 0; i <= this.nrows; i += 1) {
+				for (i = range; i <= this.nrows - range; i += 1) {
 					im1 = i - 1;
 					ipr = i + range;
 					iprm1 = ipr - 1;
 					imrm1 = i - range - 1;
 					imrm2 = imrm1 - 1;
 					ipminrow = i + bottomY;
-					//unsigned char* stateptr = currgrid + ipminrow*outerwd + mincol;
 					colourRow = colourGrid[ipminrow];
 					colourTileRow = colourTileHistoryGrid[ipminrow >> 4];
 					rowAlive = false;
 					liveRowAlive = false;
-					for (j = 0; j <= this.ncols; j += 1) {
+					for (j = range; j <= this.ncols - range; j += 1) {
 						jpr = j + range;
 						jmr = j - range;
 						count = this.getCount(ipr , j)   - this.getCount(im1 , jpr + 1) - this.getCount(im1 , jmr - 1) + this.getCount(imrm2 , j) +
