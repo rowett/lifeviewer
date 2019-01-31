@@ -2715,13 +2715,6 @@
 	MenuManager.prototype.canvasMouseDown = function(me, event) {
 		// check if passing events
 		if (!me.passEvents) {
-			// call focus callback if in thumbnail mode
-			if (me.thumbnail) {
-				if (me.focusCallback) {
-					me.focusCallback(me.caller);
-				}
-			}
-
 			// update cursor position
 			me.updateCursorPosition(me, event);
 

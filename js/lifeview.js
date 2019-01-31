@@ -4146,9 +4146,6 @@
 			me.displayHelp = 0;
 		}
 
-		// resize
-		me.resize();
-
 		// hide navigation
 		me.navToggle.current[0] = false;
 		
@@ -4994,9 +4991,6 @@
 							me.displayHelp = 0;
 						}
 					}
-
-					// resize
-					me.resize();
 				}
 				break;
 
@@ -9919,6 +9913,9 @@
 
 			// display hotkey to shrink
 			this.menuManager.notification.notify("Shrink with hotkey N", 15, 100, 15, true);
+
+			// resize
+			this.resize();
 		}
 	};
 
@@ -9927,7 +9924,6 @@
 		// check if thumbnail mode on
 		if (me.thumbnail) {
 			me.switchOffThumbnail();
-			me.resize();
 		} else {
 			// check for NOGUI
 			if (me.noGUI) {
@@ -9939,6 +9935,12 @@
 	// resize viewer
 	View.prototype.resize = function() {
 		// resize the canvases
+		if (this.popupWidthChanged) {
+			// ensure window right edge does not move on width resize
+			Controller.popupWindow.resizeDx = this.lastPopupWidth - this.displayWidth;
+			this.lastPopupWidth = this.displayWidth;
+			this.popupWidthChanged = false;
+		}
 		this.mainCanvas.width = this.displayWidth;
 		this.mainCanvas.height = this.displayHeight;
 		this.offCanvas.width = this.displayWidth;
@@ -9949,11 +9951,6 @@
 
 		// resize arrays
 		this.engine.resizeDisplay(this.displayWidth, this.displayHeight);
-		if (this.popupWidthChanged) {
-			Controller.popupWindow.updatePosition(this.lastPopupWidth - this.displayWidth, 0);
-			this.lastPopupWidth = this.displayWidth;
-			this.popupWidthChanged = false;
-		}
 	};
 
 	// switch to thumbnail view
@@ -9981,6 +9978,9 @@
 		this.menuManager.thumbnail = true;
 		this.menuManager.thumbnailDivisor = this.thumbnailDivisor;
 		this.thumbnail = true;
+
+		// resize
+		this.resize();
 	};
 
 	// clear pattern data
@@ -10120,7 +10120,11 @@
 		this.popGraph = false;
 		this.popGraphLines = true;
 		this.popGraphOpacity = ViewConstants.defaultOpacity;
-		this.graphDisabled = false;
+		if (!pattern) {
+			this.graphDisabled = true;
+		} else {
+			this.graphDisabled = false;
+		}
 
 		// display life ended and stop notifications
 		this.genNotifications = true;
@@ -10271,7 +10275,6 @@
 		// switch off thumbnail mode if on
 		if (this.thumbnail) {
 			this.switchOffThumbnail();
-			this.resize();
 		}
 		this.thumbnailEverOn = false;
 		this.menuManager.thumbnail = false;
@@ -10281,7 +10284,11 @@
 		this.thumbZoomDefined = false;
 
 		// reset parameters to defaults
-		this.multiStateView = false;
+		if (!pattern) {
+			this.multiStateView = true;
+		} else {
+			this.multiStateView = false;
+		}
 		this.viewOnly = false;
 		this.engine.displayGrid = false;
 
@@ -10430,6 +10437,7 @@
 			// disable graph if using THUMBLAUNCH and graph not displayed (since there's no way to turn it on)
 			if (this.thumbLaunch && !this.popGraph) {
 				this.graphDisabled = true;
+				this.popGraph = false;
 			}
 
 			// allocate graph data unless graph disabled
@@ -10459,19 +10467,6 @@
 					this.engine.boundedGridType = -1;
 				}
 			}
-
-			// set the graph UI control
-			this.graphButton.locked = this.graphDisabled;
-			this.graphButton.current = [this.popGraph];
-
-			// set the hex UI control
-			this.hexButton.current = [this.engine.isHex];
-
-			// set the InfoBar UI control
-			this.infoBarButton.current = [this.infoBarEnabled];
-
-			// set the Stars UI control
-			this.starsButton.current = [this.starsOn];
 
 			// mark pattern not clipped to bounded grid
 			this.wasClipped = false;
@@ -10538,7 +10533,7 @@
 
 			// compute pan X and Y for the pattern on the grid
 			this.computePanXY(pattern.width, pattern.height);
-
+			
 			// populate the state 6 mask
 			if (this.engine.isLifeHistory) {
 				// check if state 6 is used
@@ -10650,6 +10645,10 @@
 
 			// reset snapshot manager
 			this.engine.snapshotManager.reset();
+
+			// disable graph
+			this.graphDisabled = true;
+			this.popGraph = false;
 		} else {
 			// create the colour grid if not multi-state Generations or HROT rule
 			if (this.engine.multiNumStates <= 2) {
@@ -10678,6 +10677,19 @@
 			this.engine.saveGrid(this.noHistory);
 			this.engine.restoreSavedGrid(this.noHistory);
 		}
+
+		// set the graph UI control
+		this.graphButton.locked = this.graphDisabled;
+		this.graphButton.current = [this.popGraph];
+
+		// set the hex UI control
+		this.hexButton.current = [this.engine.isHex];
+
+		// set the InfoBar UI control
+		this.infoBarButton.current = [this.infoBarEnabled];
+
+		// set the Stars UI control
+		this.starsButton.current = [this.starsOn];
 
 		// reset population data
 		if (!this.graphDisabled) {
@@ -10813,10 +10825,10 @@
 			// check for thumbnail view
 			if (this.thumbnail) {
 				this.switchOnThumbnail();
+			} else {
+				// resize the viewer
+				this.resize();
 			}
-
-			// resize the viewer
-			this.resize();
 		}
 
 		// display error notification if failed
@@ -11308,6 +11320,7 @@
 
 		// update the standalone viewer with ignore thumbnail set
 		viewer[1].startViewer(cleanItem, true);
+		viewer[1].resize();
 		
 		// get the popup window
 		popup = viewer[2];

@@ -52,6 +52,9 @@
 		this.offsetLeft = 0;
 		this.offsetTop = 0;
 
+		// x offset when resizing to keep window right edge at a constant position
+		this.resizeDx = 0;
+
 		// register event listeners for element click
 		registerEvent(element, "mousedown", function(event) {me.elementMouseDown(me, event);}, false);
 		registerEvent(document, "mousemove", function(event) {me.elementMouseMove(me, event);}, false);
@@ -71,7 +74,8 @@
 	PopupWindow.prototype.resizeWindow = function(me, event) {
 	    /* eslint-enable no-unused-vars */
 		// check the popup window is on the display
-		me.setWindowPosition(me.left, me.top, me.wrappedElement);
+		me.setWindowPosition(me.left + me.resizeDx, me.top, me.wrappedElement);
+		me.resizeDx = 0;
 	};
 
 	// move element

@@ -1,6 +1,8 @@
 Build 286
 - population data is now dynamically allocated to reduce memory footprint
-- Themes can not be changed for patterns with illegal rules
+- Themes can not be changed for patterns with illegal rules or patterns
+- population graph disabled for patterns with illegal rules or patterns
+- PopUp viewer window right alignment now happens in one step, not two
 
 Build 285
 - new Stars button to toggle starfield display in bottom right menu

@@ -4660,7 +4660,7 @@
 		var popChunk = this.counter >> LifeConstants.popChunkPower,
 			popOffset = this.counter & ((1 << LifeConstants.popChunkPower) - 1);
 
-		if (this.popGraphData) {
+		if (this.popGraphData && this.popGraphData.length > 0) {
 			// see if a new chunk needs to be allocated
 			if (this.counter >= this.popGraphEntries) {
 				// allocate new chunk
@@ -4782,7 +4782,7 @@
 		    graphDeathColor = "rgb(" + this.graphDeathColor[0] + "," + this.graphDeathColor[1] + "," + this.graphDeathColor[2] + ")";
 
 		// check if data exists
-		if (this.popGraphData) {
+		if (this.popGraphData && this.popGraphData.length > 0) {
 			// check for full screen
 			if (fullScreen || thumbnail) {
 				borderY = 0;
@@ -4897,7 +4897,7 @@
 			i = 0;
 
 		// clear population graph data
-		if (this.popGraphData) {
+		if (this.popGraphData && this.popGraphData.length > 0) {
 			for (i = 0; i < this.popGraphEntries; i += 1) {
 				popChunk = i >> LifeConstants.popChunkPower;
 				popOffset = i & popMask;
