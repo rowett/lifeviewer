@@ -2401,7 +2401,7 @@
 		me.stepRange.locked = me.controlsLocked && me.waypointsDefined;
 		me.themeItem.locked = me.controlsLocked && me.waypointsDefined;
 		me.zoomItem.locked = me.controlsLocked;
-		me.angleItem.locked = me.controlsLocked;
+		me.angleItem.locked = me.controlsLocked && me.waypointsDefined;
 		me.layersItem.locked = me.controlsLocked && me.waypointsDefined;
 		me.depthItem.locked = me.controlsLocked && me.waypointsDefined;
 

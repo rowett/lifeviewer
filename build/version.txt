@@ -5,7 +5,8 @@ Build 286
 - PopUp viewer window right alignment now happens in a single step
 - pattern area display was not working in Help information
 - AUTOFIT and HISTORYFIT fit now work with HROT/LtL patterns
-- HistFit button to toggle HISTORYFIT mode
+- new HistFit button to toggle HISTORYFIT mode
+- don't lock ANGLE control when AUTOFIT on
 
 Build 285
 - new Stars button to toggle starfield display in bottom right menu
