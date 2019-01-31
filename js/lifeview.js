@@ -961,6 +961,9 @@
 		// infobar button
 		this.infoBarButton = null;
 
+		// major button
+		this.majorButton = null;
+
 		// history fit button
 		this.historyFitButton = null;
 
@@ -2676,6 +2679,7 @@
 		this.hexButton.deleted = hide;
 		this.graphButton.deleted = hide;
 		this.infoBarButton.deleted = hide;
+		this.majorButton.deleted = hide;
 		this.historyFitButton.deleted = hide;
 		this.starsButton.deleted = hide;
 		this.fpsButton.deleted = hide;
@@ -2963,6 +2967,16 @@
 		}
 
 		return [me.historyFit];
+	};
+
+	// toggle major gridlines display
+	View.prototype.viewMajorToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			me.engine.gridLineMajorEnabled = newValue[0];
+		}
+
+		return [me.engine.gridLineMajorEnabled];
 	};
 
 	// toggle infobar display
@@ -4848,7 +4862,7 @@
 				// check for shift
 				if (event.shiftKey) {
 					// toggle major grid lines
-					me.engine.gridLineMajorEnabled = !me.engine.gridLineMajorEnabled;
+					me.majorButton.current = me.viewMajorToggle([!me.engine.gridLineMajorEnabled], true, me);
 					if (me.engine.gridLineMajor > 0) {
 						me.menuManager.notification.notify("Major Grid Lines " + (me.engine.gridLineMajorEnabled ? "On" : "Off"), 15, 40, 15, true);
 					}
@@ -6019,8 +6033,12 @@
 		this.infoBarButton.toolTip = ["toggle InfoBar"];
 
 		// historyfit toggle button
-		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.north, 0, 160, 80, 40, ["HistFit"], [this.historyFit], Menu.multi);
+		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.northWest, 80, 160, 80, 40, ["HistFit"], [this.historyFit], Menu.multi);
 		this.historyFitButton.toolTip = ["toggle AutoFit History"];
+
+		// major gridlines toggle button
+		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.northEast, -160, 160, 80, 40, ["Major"], [this.engine.gridLineMajorEnabled], Menu.multi);
+		this.majorButton.toolTip = ["toggle Major GridLines"];
 
 		// stars toggle button
 		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.southEast, -160, -140, 80, 40, ["Stars"], [this.starsOn], Menu.multi);
@@ -6074,7 +6092,7 @@
 		this.playList.toolTip = ["reset", "previous generation", "pause", "play"];
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton], []);
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -10711,6 +10729,15 @@
 
 		// set the history fit UI control
 		this.historyFitButton.current = [this.historyFit];
+
+		// set the major gridlines UI control
+		if (this.engine.gridLineMajor === 0) {
+			this.majorButton.current = [false];
+			this.majorButton.locked = true;
+		} else {
+			this.majorButton.current = [this.engine.gridLineMajorEnabled];
+			this.majorButton.locked = false;
+		}
 
 		// reset population data
 		if (!this.graphDisabled) {
