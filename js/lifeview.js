@@ -961,6 +961,9 @@
 		// infobar button
 		this.infoBarButton = null;
 
+		// history fit button
+		this.historyFitButton = null;
+
 		// stars button
 		this.starsButton = null;
 
@@ -2673,6 +2676,7 @@
 		this.hexButton.deleted = hide;
 		this.graphButton.deleted = hide;
 		this.infoBarButton.deleted = hide;
+		this.historyFitButton.deleted = hide;
 		this.starsButton.deleted = hide;
 		this.fpsButton.deleted = hide;
 		this.timingDetailButton.deleted = hide;
@@ -2949,6 +2953,16 @@
 		}
 
 		return [me.starsOn];
+	};
+
+	// toggle history fit mode
+	View.prototype.viewHistoryFitToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			me.historyFit = newValue[0];
+		}
+
+		return [me.historyFit];
 	};
 
 	// toggle infobar display
@@ -5537,7 +5551,7 @@
 				// check for shift key
 				if (event.shiftKey) {
 					// toggle history fit mode
-					me.historyFit = !me.historyFit;
+					me.historyFitButton.current = me.viewHistoryFitToggle([!me.historyFit], true, me);
 					me.menuManager.notification.notify("AutoFit History Mode " + (me.historyFit ? "On" : "Off"), 15, 40, 15, true);
 				} else {
 					// if errors then set script help page
@@ -6004,6 +6018,10 @@
 		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.north, 0, 100, 80, 40, ["Info"], [this.infoBarEnabled], Menu.multi);
 		this.infoBarButton.toolTip = ["toggle InfoBar"];
 
+		// historyfit toggle button
+		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.north, 0, 160, 80, 40, ["HistFit"], [this.historyFit], Menu.multi);
+		this.historyFitButton.toolTip = ["toggle AutoFit History"];
+
 		// stars toggle button
 		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.southEast, -160, -140, 80, 40, ["Stars"], [this.starsOn], Menu.multi);
 		this.starsButton.toolTip = ["toggle stars display"];
@@ -6056,7 +6074,7 @@
 		this.playList.toolTip = ["reset", "previous generation", "pause", "play"];
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton], []);
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -10690,6 +10708,9 @@
 
 		// set the Stars UI control
 		this.starsButton.current = [this.starsOn];
+
+		// set the history fit UI control
+		this.historyFitButton.current = [this.historyFit];
 
 		// reset population data
 		if (!this.graphDisabled) {
