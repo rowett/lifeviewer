@@ -8,6 +8,7 @@ Build 286
 - new HistFit button in bottom right menu to toggle HISTORYFIT mode
 - don't lock ANGLE control when AUTOFIT on
 - new Major button in bottom right menu to toggle major grid lines
+- AutoFit works better at high zooms and step sizes > 1
 
 Build 285
 - new Stars button to toggle starfield display in bottom right menu
@@ -43,7 +44,7 @@ Build 284
 - pattern editor automatically switches temporarily to pan mode while ZOOM < 1
 - HROT patterns were defaulting S8 to on
 - canonical HROT patterns were not validating counts against von Neumann or Circular neighborhoods
-- step back now updates the display after every step
+- update display after every step back
 
 Build 283
 - added new rule aliases

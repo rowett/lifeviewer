@@ -1465,6 +1465,13 @@
 
 		// check for auto fit
 		if (this.autoFit && !immediate) {
+			// reduce the weight at high zooms
+			if (this.engine.zoom > 24) {
+				weight = 3;
+			}
+			if (this.gensPerStep > 1) {
+				weight = 1;
+			}
 			// glide to target zoom
 			this.engine.zoom = (this.engine.zoom * (weight - 1) + fitZoom[0]) / weight;
 			this.engine.xOff = (this.engine.xOff * (weight - 1) + fitZoom[1]) / weight;
