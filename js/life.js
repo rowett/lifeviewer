@@ -530,6 +530,8 @@
 			colourGrid = this.colourGrid,
 			colourTileGrid = this.colourTileGrid,
 			colourTileHistoryGrid = this.colourTileHistoryGrid,
+			zoomBox = this.zoomBox,
+			HROTBox = this.HROTBox,
 
 		    // bounded grid top left
 		    leftX = Math.round((this.width - this.boundedGridWidth) / 2),
@@ -560,6 +562,33 @@
 						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 						nextGrid[y][x >> 4] |= (1 << (~x & 15));
 						nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						// adjust bounding box
+						if (x < zoomBox.leftX) {
+							zoomBox.leftX = x;
+						}
+						if (x > zoomBox.rightX) {
+							zoomBox.rightX = x;
+						}
+						if (y < zoomBox.bottomY) {
+							zoomBox.bottomY = y;
+						}
+						if (y > zoomBox.topY) {
+							zoomBox.topY = y;
+						}
+						if (this.isHROT) {
+							if (x < HROTBox.leftX) {
+								HROTBox.leftX = x;
+							}
+							if (x > HROTBox.rightX) {
+								HROTBox.rightX = x;
+							}
+							if (y < HROTBox.bottomY) {
+								HROTBox.bottomY = y;
+							}
+							if (y > HROTBox.topY) {
+								HROTBox.topY = y;
+							}
+						}
 					} else {
 						// adjust population if cell was alive
 						if ((grid[y][x >> 4] & (1 << (~x & 15))) !== 0) {
