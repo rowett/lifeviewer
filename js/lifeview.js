@@ -5801,13 +5801,13 @@
 		// infobar labels for camera X, Y and ANGLE
 		this.infoBarLabelXLeft = this.viewMenu.addLabelItem(Menu.northWest, 0, 40, 16, 20, "X");
 		this.infoBarLabelXLeft.font = ViewConstants.smallStatsFont;
-		this.infoBarLabelXLeft.orientation = Menu.horizontal;
+		this.infoBarLabelXLeft.textOrientation = Menu.horizontal;
 		this.infoBarLabelYLeft = this.viewMenu.addLabelItem(Menu.northWest, 70, 40, 16, 20, "Y");
 		this.infoBarLabelYLeft.font = ViewConstants.smallStatsFont;
-		this.infoBarLabelYLeft.orientation = Menu.horizontal;
+		this.infoBarLabelYLeft.textOrientation = Menu.horizontal;
 		this.infoBarLabelAngleLeft = this.viewMenu.addLabelItem(Menu.northWest, 140, 40, 16, 20, "A");
 		this.infoBarLabelAngleLeft.font = ViewConstants.smallStatsFont;
-		this.infoBarLabelAngleLeft.orientation = Menu.horizontal;
+		this.infoBarLabelAngleLeft.textOrientation = Menu.horizontal;
 
 		// infobar values for camera X, Y and ANGLE
 		this.infoBarLabelXValue = this.viewMenu.addLabelItem(Menu.northWest, 16, 40, 54, 20, "");
