@@ -1849,6 +1849,9 @@
 		    i = 0,
 		    mainCanvas = mainContext.canvas;
 
+		// whether event processed
+		this.processedEvent = true;
+
 		// whether updates are idle
 		this.idle = true;
 
@@ -2581,6 +2584,9 @@
 
 		// copy to the main drawing canvas
 		me.mainContext.drawImage(oc.canvas, 0, 0);
+
+		// mark that event processed
+		me.processedEvent = true;
 	};
 
 	// set active menu list
@@ -2592,8 +2598,7 @@
 		if (this.currentMenu) {
 			// set the menu to load next update
 			this.loadMenu = activeMenuList;
-		}
-		else {
+		} else {
 			// load the menu now
 			this.loadMenu = null;
 

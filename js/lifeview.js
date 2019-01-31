@@ -4444,39 +4444,44 @@
 		if (this.noHistory) {
 			this.menuManager.notification.notify("Step back disabled", 15, 40, 15, true);
 		} else {
-			// ensure target generation is not negative
-			if (targetGen < 0) {
-				targetGen = 0;
-			}
+			// check if update event process
+			if (this.menuManager.processedEvent) {
+				this.menuManager.processedEvent = false;
 
-			// restore the elapsed time
-			this.elapsedTime = this.elapsedTimes[targetGen];
-			this.floatCounter = targetGen;
-			this.originCounter = targetGen;
+				// ensure target generation is not negative
+				if (targetGen < 0) {
+					targetGen = 0;
+				}
 
-			// run to target generation
-			this.engine.runTo(targetGen, this.statsOn, this.graphDisabled);
-
-			// notify waypoint manager of change
-			this.waypointManager.steppedBack(this.elapsedTime);
-
-			// mark manual change
-			this.manualChange = true;
-
-			// check if the target generation was reached
-			if (targetGen !== this.engine.counter) {
-				// need to compute history
-				this.computeHistory = true;
-
-				// set history target generation
-				this.computeHistoryTarget = targetGen;
-
-				// reset
-				this.engine.restoreSavedGrid(false);
-
-				// compute history
-				this.menuManager.notification.notify("Computing previous generations", 15, 10000, 15, true);
-				this.computeHistoryClear = true;
+				// restore the elapsed time
+				this.elapsedTime = this.elapsedTimes[targetGen];
+				this.floatCounter = targetGen;
+				this.originCounter = targetGen;
+	
+				// run to target generation
+				this.engine.runTo(targetGen, this.statsOn, this.graphDisabled);
+	
+				// notify waypoint manager of change
+				this.waypointManager.steppedBack(this.elapsedTime);
+	
+				// mark manual change
+				this.manualChange = true;
+	
+				// check if the target generation was reached
+				if (targetGen !== this.engine.counter) {
+					// need to compute history
+					this.computeHistory = true;
+	
+					// set history target generation
+					this.computeHistoryTarget = targetGen;
+	
+					// reset
+					this.engine.restoreSavedGrid(false);
+	
+					// compute history
+					this.menuManager.notification.notify("Computing previous generations", 15, 10000, 15, true);
+					this.computeHistoryClear = true;
+				}
 			}
 		}
 	};

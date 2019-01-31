@@ -285,7 +285,7 @@
 					// update bounding box columns
 					if (state > deadMin) {
 						rowAlive = true;
-						colourTileRow[x >> 8] = 65535;
+						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 						if (x < minX) {
 							minX = x;
 						}
@@ -362,7 +362,7 @@
 					// update bounding box columns
 					if (state > 0) {
 						rowAlive = true;
-						colourTileRow[x >> 8] = 65535;
+						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 						if (x < minX) {
 							minX = x;
 						}
@@ -698,7 +698,7 @@
 				colUsed[leftX] |= 1;
 				minY = bottomY;
 				maxY = bottomY;
-				colourTileHistoryGrid[bottomY >> 4][leftX >> 8] = 65535;
+				colourTileHistoryGrid[bottomY >> 4][leftX >> 8] |= (1 << (~(leftX >> 4) & 15));
 				if (state >= aliveStart) {
 					population += 1;
 					colUsed[leftX] |= 2;
@@ -740,7 +740,7 @@
 				if (state > deadMin) {
 					colUsed[x] |= 1;
 					rowAlive = true;
-					colourTileRow[x >> 8] = 65535;
+					colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 					if (state >= aliveStart) {
 						population += 1;
 						colUsed[x] |= 2;
@@ -792,7 +792,7 @@
 						maxY = y;
 					}
 					colAlive = true;
-					colourTileHistoryGrid[y >> 4][leftX >> 8] = 65535;
+					colourTileHistoryGrid[y >> 4][leftX >> 8] |= (1 << (~(leftX >> 4) & 15));
 					if (state >= aliveStart) {
 						population += 1;
 						if (y < minY1) {
@@ -850,7 +850,7 @@
 					colourRow[x] = state;
 					if (state > deadMin) {
 						rowAlive = true;
-						colourTileRow[x >> 8] = 65535;
+						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 						colUsed[x] |= 1;
 						if (state >= aliveStart) {
 							population += 1;
@@ -1169,7 +1169,7 @@
 				maxX = leftX;
 				minY = bottomY;
 				maxY = bottomY;
-				colourTileHistoryGrid[bottomY >> 4][leftX >> 8] = 65535;
+				colourTileHistoryGrid[bottomY >> 4][leftX >> 8] |= (1 << (~(leftX >> 4) & 15));
 				if (state === maxGenState) {
 					population += 1;
 					minX1 = leftX;
@@ -1223,7 +1223,7 @@
 						maxX = x;
 					}
 					rowAlive = true;
-					colourTileRow[x >> 8] = 65535;
+					colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 					if (state === maxGenState) {
 						population += 1;
 						if (x < minX1) {
@@ -1286,7 +1286,7 @@
 						maxY = y;
 					}
 					colAlive = true;
-					colourTileHistoryGrid[y >> 4][leftX >> 8] = 65535;
+					colourTileHistoryGrid[y >> 4][leftX >> 8] |= (1 << (~(leftX >> 4) & 15));
 					if (state === maxGenState) {
 						population += 1;
 						if (y < minY1) {
@@ -1359,7 +1359,7 @@
 					// update the cell
 					colourRow[x] = state;
 					if (state > 0) {
-						colourTileRow[x >> 8] = 65535;
+						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 						if (x < minX) {
 							minX = x;
 						}
