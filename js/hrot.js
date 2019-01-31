@@ -695,13 +695,13 @@
 			state = colourLookup[state + aliveIndex];
 			colourGrid[bottomY][leftX] = state;
 			if (state > deadMin) {
-				colUsed[leftX] = 1;
+				colUsed[leftX] |= 1;
 				minY = bottomY;
 				maxY = bottomY;
 				colourTileHistoryGrid[bottomY >> 4][leftX >> 8] = 65535;
 				if (state >= aliveStart) {
 					population += 1;
-					colUsed[leftX] = 2;
+					colUsed[leftX] |= 2;
 					minY1 = bottomY;
 					maxY1 = bottomY;
 				}
@@ -738,12 +738,12 @@
 				state = colourLookup[state + aliveIndex];
 				colourRow[x] = state;
 				if (state > deadMin) {
-					colUsed[x] = 1;
+					colUsed[x] |= 1;
 					rowAlive = true;
 					colourTileRow[x >> 8] = 65535;
 					if (state >= aliveStart) {
 						population += 1;
-						colUsed[x] = 2;
+						colUsed[x] |= 2;
 						liveRowAlive = true;
 					}
 				}
@@ -806,10 +806,10 @@
 				}
 			}
 			if (colAlive) {
-				colUsed[leftX] = 1;
+				colUsed[leftX] |= 1;
 			}
 			if (liveColAlive) {
-				colUsed[leftX] = 2;
+				colUsed[leftX] |= 2;
 			}
 
 			// compute the rest of the grid
@@ -851,11 +851,11 @@
 					if (state > deadMin) {
 						rowAlive = true;
 						colourTileRow[x >> 8] = 65535;
-						colUsed[x] = 1;
+						colUsed[x] |= 1;
 						if (state >= aliveStart) {
 							population += 1;
 							liveRowAlive = true;
-							colUsed[x] = 2;
+							colUsed[x] |= 2;
 						}
 					}
 					xpr += 1;
@@ -888,7 +888,7 @@
 					if (x > maxX) {
 						maxX = x;
 					}
-					if (colUsed[x] === 2) {
+					if ((colUsed[x] & 2) !== 0) {
 						if (x < minX1) {
 							minX1 = x;
 						}
