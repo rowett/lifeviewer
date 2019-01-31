@@ -26,6 +26,7 @@
 
 		// zoom box
 		this.zoomBox = new BoundingBox(0, 0, 0, 0);
+		this.HROTBox = new BoundingBox(0, 0, 0, 0);
 
 		// statistics
 		this.population = 0;
@@ -978,7 +979,7 @@
 	};
 
 	// save snapshot
-	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, zoomBox, population, births, deaths, counter, width, height, life, isReset, anythingAlive) {
+	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, zoomBox, HROTBox, population, births, deaths, counter, width, height, life, isReset, anythingAlive) {
 		var snapshot = null,
 		    i = 0,
 		    l = this.resetSnapshots.length,
@@ -1049,6 +1050,10 @@
 		snapshot.zoomBox.rightX = zoomBox.rightX;
 		snapshot.zoomBox.bottomY = zoomBox.bottomY;
 		snapshot.zoomBox.topY = zoomBox.topY;
+		snapshot.HROTBox.leftX = HROTBox.leftX;
+		snapshot.HROTBox.rightX = HROTBox.rightX;
+		snapshot.HROTBox.bottomY = HROTBox.bottomY;
+		snapshot.HROTBox.topY = HROTBox.topY;
 
 		// save the population
 		snapshot.population = population;
@@ -1183,6 +1188,10 @@
 			snapshot.zoomBox.rightX += offset;
 			snapshot.zoomBox.bottomY += offset;
 			snapshot.zoomBox.topY += offset;
+			snapshot.HROTBox.leftX += offset;
+			snapshot.HROTBox.rightX += offset;
+			snapshot.HROTBox.bottomY += offset;
+			snapshot.HROTBox.topY += offset;
 		}
 	};
 

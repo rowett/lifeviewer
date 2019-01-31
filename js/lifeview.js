@@ -7536,11 +7536,11 @@
 								isNumeric = true;
 
 								// get the value
-								numberValue = scriptReader.getNextTokenAsNumber();
+								numberValue = scriptReader.getNextTokenAsNumber() | 0;
 
 								// check it is in range
 								if (numberValue >= 0 && numberValue <= this.maxHistoryStates) {
-									this.historyStates = numberValue | 0;
+									this.historyStates = numberValue;
 
 									itemValid = true;
 								}

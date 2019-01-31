@@ -3,6 +3,8 @@ Build 286
 - Themes can not be changed for patterns with illegal rules or patterns
 - population graph disabled for patterns with illegal rules or patterns
 - PopUp viewer window right alignment now happens in one step, not two
+- pattern area display was not working in Help information
+- AUTOFIT and HISTORYFIT fit now work with HROT/LtL patterns
 
 Build 285
 - new Stars button to toggle starfield display in bottom right menu

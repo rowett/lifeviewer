@@ -210,7 +210,7 @@
 		// check if at T=0
 		if (view.engine.counter) {
 			// at T>0 so check if any cells are alive
-			if (view.anythingAlive) {
+			if (view.engine.anythingAlive) {
 				// cells alive so get dimensions from bounding box
 				width = view.engine.zoomBox.rightX - view.engine.zoomBox.leftX + 1;
 				height = view.engine.zoomBox.topY - view.engine.zoomBox.bottomY + 1;

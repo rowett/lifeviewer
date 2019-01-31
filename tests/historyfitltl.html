@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer"content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>AUTOFIT 2-state LtL Circular</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 83, y = 45, rule = R2,C0,M0,S3..6,B5..5,NC
+3o$2o$bo!
+#C [[ AUTOFIT ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>AUTOFIT with HISTORYFIT 2-state LtL Circular</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 83, y = 45, rule = R2,C0,M0,S3..6,B5..5,NC
+3o$2o$bo!
+#C [[ AUTOFIT HISTORYFIT ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>AUTOFIT multi-state LtL von Neumann</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 5, y = 5, rule = R2,C6,M0,S2..3,B3..3,NN
+2.A$5A$.3C$BCDCB$E3.E!
+#C [[ AUTOFIT ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>AUTOFIT with HISTORYFIT multi-state LtL von Neumann</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 5, y = 5, rule = R2,C6,M0,S2..3,B3..3,NN
+2.A$5A$.3C$BCDCB$E3.E!
+#C [[ AUTOFIT HISTORYFIT ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>AUTOFIT 2-state LtL Moore</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 11, y = 12, rule = R5,C0,M1,S34..58,B34..45,NM
+4bo$3b4o$2b7o$b10o$2o4b5o$o6b4o$o6b4o$2o4b5o$b10o$2b7o$3b4o$4bo!
+#C [[ AUTOFIT ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>AUTOFIT with HISTORYFIT 2-state LtL Moore</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 11, y = 12, rule = R5,C0,M1,S34..58,B34..45,NM
+4bo$3b4o$2b7o$b10o$2o4b5o$o6b4o$o6b4o$2o4b5o$b10o$2b7o$3b4o$4bo!
+#C [[ AUTOFIT HISTORYFIT ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>AUTOFIT multi-state LtL Moore</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 8, y = 8, rule = R2,C3,M0,S4..5,B4..4,NM
+6.A$3.B2A.A$3.A.BA$3.A2.A$4.2AB2$B$.B!
+#C [[ AUTOFIT ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>AUTOFIT with HISTORYFIT multi-state LtL Moore</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 8, y = 8, rule = R2,C3,M0,S4..5,B4..4,NM
+6.A$3.B2A.A$3.A.BA$3.A2.A$4.2AB2$B$.B!
+#C [[ AUTOFIT HISTORYFIT ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

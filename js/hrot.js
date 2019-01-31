@@ -211,16 +211,24 @@
 			state = 0,
 			count = 0,
 			rowAlive = false,
+			liveRowAlive = false,
 			colourGrid = this.engine.colourGrid,
 			colourTileHistoryGrid = this.engine.colourTileHistoryGrid,
 			colourRow = null,
 			countRow = null,
 			colourTileRow = null,
+			// bounding box for any cell
 			minX = this.engine.width,
 			maxX = 0,
 			minY = this.engine.height,
 			maxY = 0,
+			// bounding box for alive cells (used for fit zoom)
+			minX1 = minX,
+			maxX1 = maxX,
+			minY1 = minY,
+			maxY1 = maxY,
 			zoomBox = this.engine.zoomBox,
+			HROTBox = this.engine.HROTBox,
 			range = this.range,
 			birthList = this.births,
 			survivalList = this.survivals,
@@ -251,6 +259,7 @@
 				countRow = counts[y];
 				colourTileRow = colourTileHistoryGrid[y >> 4];
 				rowAlive = false;
+				liveRowAlive = false;
 				for (x = leftX - range; x <= rightX + range; x += 1) {
 					state = colourRow[x];
 					count = countRow[x];
@@ -273,9 +282,6 @@
 					}
 					state = colourLookup[state + aliveIndex];
 					colourRow[x] = state;
-					if (state >= aliveStart) {
-						population += 1;
-					}
 					// update bounding box columns
 					if (state > deadMin) {
 						rowAlive = true;
@@ -286,15 +292,34 @@
 						if (x > maxX) {
 							maxX = x;
 						}
+						if (state >= aliveStart) {
+							population += 1;
+							if (x < minX1) {
+								minX1 = x;
+							}
+							if (x > maxX1) {
+								maxX1 = x;
+							}
+							liveRowAlive = true;
+						}
 					}
 				}
 				if (rowAlive) {
-					// if something was alive in the row then update bounding box rows
+					// if there was an alive or history cell in the row then update bounding box rows
 					if (y < minY) {
 						minY = y;
 					}
 					if (y > maxY) {
 						maxY = y;
+					}
+				}
+				if (liveRowAlive) {
+					// if something was alive in the row then update bounding box rows
+					if (y < minY1) {
+						minY1 = y;
+					}
+					if (y > maxY1) {
+						maxY1 = y;
 					}
 				}
 			}
@@ -305,6 +330,7 @@
 				countRow = counts[y];
 				colourTileRow = colourTileHistoryGrid[y >> 4];
 				rowAlive = false;
+				liveRowAlive = false;
 				for (x = leftX - range; x <= rightX + range; x += 1) {
 					state = colourRow[x];
 					count = countRow[x];
@@ -345,16 +371,32 @@
 						}
 						if (state === maxGenState) {
 							population += 1;
+							if (x < minX1) {
+								minX1 = x;
+							}
+							if (x > maxX1) {
+								maxX1 = x;
+							}
+							liveRowAlive = true;
 						}
 					}
 				}
 				if (rowAlive) {
-					// if something was alive in the row then update bounding box rows
+					// if there was an alive or history cell in the row then update bounding box rows
 					if (y < minY) {
 						minY = y;
 					}
 					if (y > maxY) {
 						maxY = y;
+					}
+				}
+				// if something was alive in the row then update bounding box rows
+				if (liveRowAlive) {
+					if (y < minY1) {
+						minY1 = y;
+					}
+					if (y > maxY1) {
+						maxY1 =y;
 					}
 				}
 			}
@@ -371,6 +413,10 @@
 			zoomBox.rightX = maxX;
 			zoomBox.bottomY = minY;
 			zoomBox.topY = maxY;
+			HROTBox.leftX = minX1;
+			HROTBox.rightX = maxX1;
+			HROTBox.bottomY = minY1;
+			HROTBox.topY = maxY1;
 		} else {
 			this.engine.anythingAlive = 0;
 		}
@@ -395,6 +441,8 @@
 			count = 0,
 			minX = this.engine.width, maxX = 0,
 			minY = this.engine.height, maxY = 0,
+			minX1 = minX, maxX1 = maxX,
+			minY1 = minY, maxY1 = maxY,
 			colourGrid = this.engine.colourGrid,
 			colourTileHistoryGrid = this.engine.colourTileHistoryGrid,
 			colourRow = null, countRowYpr = null, countRowYmrp1 = null,
@@ -409,6 +457,7 @@
 			state = 0,
 			xpr = 0, xmrp1 = 0,
 			rowAlive = false, colAlive = false,
+			liveRowAlive = false, liveColAlive = false,
 			chunk = 8,  // must be the same as the unrolled loop!
 			aliveStart = LifeConstants.aliveStart,
 			deadMin = LifeConstants.deadMin,
@@ -645,18 +694,22 @@
 			// update the cell
 			state = colourLookup[state + aliveIndex];
 			colourGrid[bottomY][leftX] = state;
-			if (state >= aliveStart) {
-				population += 1;
-			}
 			if (state > deadMin) {
 				colUsed[leftX] = 1;
 				minY = bottomY;
 				maxY = bottomY;
 				colourTileHistoryGrid[bottomY >> 4][leftX >> 8] = 65535;
+				if (state >= aliveStart) {
+					population += 1;
+					colUsed[leftX] = 2;
+					minY1 = bottomY;
+					maxY1 = bottomY;
+				}
 			}
 
 			// process remainder of bottom row (bottom left cell was done above)
 			rowAlive = false;
+			liveRowAlive = false;
 			countRow = counts[bottomY + range];
 			prevCountRow = counts[bottomY + range];
 			colourRow = colourGrid[bottomY];
@@ -684,22 +737,29 @@
 				// update the cell
 				state = colourLookup[state + aliveIndex];
 				colourRow[x] = state;
-				if (state >= aliveStart) {
-					population += 1;
-				}
 				if (state > deadMin) {
 					colUsed[x] = 1;
 					rowAlive = true;
 					colourTileRow[x >> 8] = 65535;
+					if (state >= aliveStart) {
+						population += 1;
+						colUsed[x] = 2;
+						liveRowAlive = true;
+					}
 				}
 			}
 			if (rowAlive) {
 				minY = bottomY;
 				maxY = bottomY;
 			}
+			if (liveRowAlive) {
+				minY1 = bottomY;
+				maxY1 = bottomY;
+			}
 
 			// process remainder of left column (bottom left cell was done above)
 			colAlive = false;
+			liveColAlive = false;
 			xpr = leftX + range;
 			for (y = bottomY + 1; y <= topY; y += 1) {
 				state = colourGrid[y][leftX];
@@ -724,9 +784,6 @@
 				// update the cell
 				state = colourLookup[state + aliveIndex];
 				colourGrid[y][leftX] = state;
-				if (state >= aliveStart) {
-					population += 1;
-				}
 				if (state > deadMin) {
 					if (y < minY) {
 						minY = y;
@@ -736,10 +793,23 @@
 					}
 					colAlive = true;
 					colourTileHistoryGrid[y >> 4][leftX >> 8] = 65535;
+					if (state >= aliveStart) {
+						population += 1;
+						if (y < minY1) {
+							minY1 = y;
+						}
+						if (y > maxY1) {
+							maxY1 = y;
+						}
+						liveColAlive = true;
+					}
 				}
 			}
 			if (colAlive) {
 				colUsed[leftX] = 1;
+			}
+			if (liveColAlive) {
+				colUsed[leftX] = 2;
 			}
 
 			// compute the rest of the grid
@@ -751,6 +821,7 @@
 				xpr = leftX + 1 + range;
 				xmrp1 = leftX + 1 - rp1;
 				rowAlive = false;
+				liveRowAlive = false;
 				for (x = leftX + 1; x <= rightX; x += 1) {
 					state = colourRow[x];
 					count = countRowYpr[xpr]
@@ -777,13 +848,15 @@
 					// update the cell
 					state = colourLookup[state + aliveIndex];
 					colourRow[x] = state;
-					if (state >= aliveStart) {
-						population += 1;
-					}
 					if (state > deadMin) {
 						rowAlive = true;
 						colourTileRow[x >> 8] = 65535;
 						colUsed[x] = 1;
+						if (state >= aliveStart) {
+							population += 1;
+							liveRowAlive = true;
+							colUsed[x] = 2;
+						}
 					}
 					xpr += 1;
 					xmrp1 += 1;
@@ -796,18 +869,34 @@
 						maxY = y;
 					}
 				}
+				if (liveRowAlive) {
+					if (y < minY1) {
+						minY1 = y;
+					}
+					if (y > maxY1) {
+						maxY1 = y;
+					}
+				}
 			}
 
 			// update min and max column from array
 			for (x = leftX; x <= rightX; x += 1) {
 				if (colUsed[x]) {
-					colUsed[x] = 0;
 					if (x < minX) {
 						minX = x;
 					}
 					if (x > maxX) {
 						maxX = x;
 					}
+					if (colUsed[x] === 2) {
+						if (x < minX1) {
+							minX1 = x;
+						}
+						if (x > maxX1) {
+							maxX1 = x;
+						}
+					}
+					colUsed[x] = 0;
 				}
 			}
 
@@ -822,6 +911,10 @@
 				this.engine.zoomBox.rightX = maxX;
 				this.engine.zoomBox.bottomY = minY;
 				this.engine.zoomBox.topY = maxY;
+				this.engine.HROTBox.leftX = minX1;
+				this.engine.HROTBox.rightX = maxX1;
+				this.engine.HROTBox.bottomY = minY1;
+				this.engine.HROTBox.topY = maxY1;
 			} else {
 				this.engine.anythingAlive = 0;
 			}
@@ -907,6 +1000,8 @@
 			count = 0,
 			minX = this.engine.width, maxX = 0,
 			minY = this.engine.height, maxY = 0,
+			minX1 = minX, maxX1 = maxX,
+			minY1 = minY, maxY1 = maxY,
 			colourGrid = this.engine.colourGrid,
 			colourTileHistoryGrid = this.engine.colourTileHistoryGrid,
 			colourRow = null, countRowYpr = null, countRowYmrp1 = null,
@@ -921,6 +1016,7 @@
 			state = 0,
 			xpr = 0, xmrp1 = 0,
 			rowAlive = false, colAlive = false,
+			liveRowAlive = false, liveColAlive = false,
 
 			// maximum generations state
 			maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
@@ -1068,19 +1164,24 @@
 			}
 			// update the cell
 			colourGrid[bottomY][leftX] = state;
-			if (state === maxGenState) {
-				population += 1;
-			}
 			if (state > 0) {
 				minX = leftX;
 				maxX = leftX;
 				minY = bottomY;
 				maxY = bottomY;
 				colourTileHistoryGrid[bottomY >> 4][leftX >> 8] = 65535;
+				if (state === maxGenState) {
+					population += 1;
+					minX1 = leftX;
+					maxX1 = leftX;
+					minY1 = bottomY;
+					maxY1 = bottomY;
+				}
 			}
 
 			// process remainder of bottom row (bottom left cell was done above)
 			rowAlive = false;
+			liveRowAlive = false;
 			countRow = counts[bottomY + range];
 			prevCountRow = counts[bottomY + range];
 			colourRow = colourGrid[bottomY];
@@ -1114,9 +1215,6 @@
 				}
 				// update the cell
 				colourRow[x] = state;
-				if (state === maxGenState) {
-					population += 1;
-				}
 				if (state > 0) {
 					if (x < minX) {
 						minX = x;
@@ -1126,15 +1224,30 @@
 					}
 					rowAlive = true;
 					colourTileRow[x >> 8] = 65535;
+					if (state === maxGenState) {
+						population += 1;
+						if (x < minX1) {
+							minX1 = x;
+						}
+						if (x > maxX1) {
+							maxX1 = x;
+						}
+						liveRowAlive = true;
+					}
 				}
 			}
 			if (rowAlive) {
 				minY = bottomY;
 				maxY = bottomY;
 			}
+			if (liveRowAlive) {
+				minY1 = bottomY;
+				maxY1 = bottomY;
+			}
 
 			// process remainder of left column (bottom left cell was done above)
 			colAlive = false;
+			liveColAlive = false;
 			xpr = leftX + range;
 			for (y = bottomY + 1; y <= topY; y += 1) {
 				state = colourGrid[y][leftX];
@@ -1165,9 +1278,6 @@
 				}
 				// update the cell
 				colourGrid[y][leftX] = state;
-				if (state === maxGenState) {
-					population += 1;
-				}
 				if (state > 0) {
 					if (y < minY) {
 						minY = y;
@@ -1177,6 +1287,16 @@
 					}
 					colAlive = true;
 					colourTileHistoryGrid[y >> 4][leftX >> 8] = 65535;
+					if (state === maxGenState) {
+						population += 1;
+						if (y < minY1) {
+							minY1 = y;
+						}
+						if (y > maxY1) {
+							maxY1 = y;
+						}
+						liveColAlive = true;
+					}
 				}
 			}
 			if (colAlive) {
@@ -1187,6 +1307,14 @@
 					maxX = leftX;
 				}
 			}
+			if (liveColAlive) {
+				if (leftX < minX1) {
+					minX1 = leftX;
+				}
+				if (leftX > maxX1) {
+					maxX1 = leftX;
+				}
+			}
 
 			// compute the rest of the grid
 			for (y = bottomY + 1; y <= topY; y += 1) {
@@ -1195,6 +1323,7 @@
 				countRowYpr = counts[y + range];
 				countRowYmrp1 = counts[y - rp1];
 				rowAlive = false;
+				liveRowAlive = false;
 				xpr = leftX + 1 + range;
 				xmrp1 = leftX + 1 - rp1;
 				for (x = leftX + 1; x <= rightX; x += 1) {
@@ -1229,9 +1358,6 @@
 					}
 					// update the cell
 					colourRow[x] = state;
-					if (state === maxGenState) {
-						population += 1;
-					}
 					if (state > 0) {
 						colourTileRow[x >> 8] = 65535;
 						if (x < minX) {
@@ -1241,6 +1367,16 @@
 							maxX = x;
 						}
 						rowAlive = true;
+						if (state === maxGenState) {
+							population += 1;
+							liveRowAlive = true;
+							if (x < minX1) {
+								minX1 = x;
+							}
+							if (x > maxX1) {
+								maxX1 = x;
+							}
+						}
 					}
 					xpr += 1;
 					xmrp1 += 1;
@@ -1251,6 +1387,14 @@
 					}
 					if (y > maxY) {
 						maxY = y;
+					}
+				}
+				if (liveRowAlive) {
+					if (y < minY1) {
+						minY1 = y;
+					}
+					if (y > maxY1) {
+						maxY1 = y;
 					}
 				}
 			}
@@ -1266,6 +1410,10 @@
 				this.engine.zoomBox.rightX = maxX;
 				this.engine.zoomBox.bottomY = minY;
 				this.engine.zoomBox.topY = maxY;
+				this.engine.HROTBox.leftX = minX1;
+				this.engine.HROTBox.rightX = maxX1;
+				this.engine.HROTBox.bottomY = minY1;
+				this.engine.HROTBox.topY = maxY1;
 			} else {
 				this.engine.anythingAlive = 0;
 			}
