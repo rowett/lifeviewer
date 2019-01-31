@@ -1,7 +1,7 @@
 Build 286
 - population data is now dynamically allocated to reduce memory footprint
-- Themes can not be changed for patterns with illegal rules or patterns
-- population graph disabled for patterns with illegal rules or patterns
+- Themes can not be changed for patterns with illegal rules or states
+- population graph disabled for patterns with illegal rules or states
 - PopUp viewer window right alignment now happens in a single step
 - pattern area display was not working in Help information
 - AUTOFIT and HISTORYFIT fit now work with HROT/LtL patterns
