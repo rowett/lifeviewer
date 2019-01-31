@@ -9,6 +9,7 @@ Build 286
 - don't lock ANGLE control when AUTOFIT on
 - new Major button in bottom right menu to toggle major grid lines
 - AutoFit works better at high zooms and step sizes > 1
+- improved LtL 2-state von Neumann performance for large range patterns
 
 Build 285
 - new Stars button to toggle starfield display in bottom right menu
