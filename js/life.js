@@ -4614,8 +4614,8 @@
 				// compute HROT next generation
 				this.HROT.nextGenerationHROT();
 			} else {
-				// check if stats are required
-				if (statsOn) {
+				// stats are required if they are on but not for multi-state rules which compute their own stats
+				if (statsOn && this.multiNumStates < 2) {
 					this.nextGenerationTile();
 				} else {
 					this.nextGenerationOnlyTile();
@@ -8335,7 +8335,11 @@
 		    tileGrid = null, tileGridRow = null,
 		    value = 0, th = 0, tw = 0, b = 0, n = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
-		    tiles = 0, nextTiles = 0,
+			tiles = 0, nextTiles = 0,
+			population = 0,
+			births = 0,
+			deaths = 0,
+			lastValue = 0,
 
 		    // whether the tile is alive
 		    tileAlive = 0,
@@ -8431,6 +8435,7 @@
 								for (n = 1 << 15; n > 0; n >>= 1) {
 									// get next colour cell
 									value = colourGridRow[cr];
+									lastValue = value;
 
 									// process the Generations rule
 									if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
@@ -8446,7 +8451,17 @@
 									colourGridRow[cr] = value;
 									if (value > minDeadState) {
 										tileAlive = 1;
+										if (value === maxGenState) {
+											population += 1;
+											if (lastValue !== maxGenState) {
+												births += 1;
+											}
+										}
 									}
+									if (lastValue === maxGenState && value !== maxGenState) {
+										deaths += 1;
+									}
+
 									cr += 1;
 								}
 
@@ -8480,6 +8495,11 @@
 			bottomY += ySize;
 			topY += ySize;
 		}
+
+		// update the population
+		this.population = population;
+		this.births = births;
+		this.deaths = deaths;
 	};
 
 	// compute generations rule next generation for decay only
