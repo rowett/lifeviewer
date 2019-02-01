@@ -5,6 +5,7 @@ Build 287
 - memory details in Help information could be negative
 - reduced memory consumption for 2-state startup
 - rule aliases were not appearing for HROT/LtL rules
+- long rule aliases wrap across two lines in Help information
 
 Build 286
 - population data is now dynamically allocated to reduce memory footprint
