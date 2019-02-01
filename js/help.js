@@ -804,8 +804,10 @@
 				value += 16;
 			}
 		} else {
-			// display short MAP or non-MAP rule on a single line
+			// allow help to wrap short MAP or non-MAP rule
+			view.wrapHelpText = true;
 			y = this.renderHelpLine(view, "Rule", ruleName, ctx, x, y, height, helpLine);
+			view.wrapHelpText = false;
 		}
 
 		// check for alias name
