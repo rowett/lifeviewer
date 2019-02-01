@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Should not crash!</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 24, y = 24, rule = R9,C0,M1,S30..180,B24..45,NN:T400,400
+2b4ob2o3b2obo$3b2o5bobo3bob3ob2o$b7o3bob2ob3ob4o$5b4obob2obobo2bo2bo$
+2bob2o2bo2b3o2bobobo2bo$3b2obo3b2o2bob4ob3o$3o3b4ob2ob2o4b4o$b3o4b4o2b
+ob2obo2b2o$bo4bo2b2o2bobobob3o$bo4b2ob2o3bo5bobo$obobo2b2o3bo2b3ob5o$b
+5o2bobob2o4b2obobo$5b2obo3b3o2bo2b2obo$ob2o2b3ob2o2bo4b2obo$3o2b2ob3ob
+2o4b4obo$5bobobo2bo2b3ob2o$b4o5bo2b3o3bobo$bob2o3bo2bob5obo3bo$bobob2o
+3b2o2b4obobo$3b5ob4ob4obo3bo$3b2ob6o2bobo3bobo$bobo2bob2o2bo2bob2obo2b
+o$b2o3bob4o2bob3obo2bo$2o2b2ob3o2bobobobo3bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>
