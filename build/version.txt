@@ -2,6 +2,8 @@ Build 287
 - new Draw and Pan buttons
 - improved LtL multi-state von Neumann performance for large range patterns
 - Generations population statistcs were wrong
+- memory details in Help information could be negative
+- reduced memory consumption for 2-state startup
 
 Build 286
 - population data is now dynamically allocated to reduce memory footprint

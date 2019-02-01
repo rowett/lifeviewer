@@ -473,7 +473,7 @@
 		this.colourLookup = this.allocator.allocate(Uint8, (this.aliveMax + 1) * 2, "Life.colourLookup");
 
 		// fast lookup for colour reset
-		this.colourReset = this.allocator.allocate(Uint8, 65536 * 16, "Life.colourReset");
+		this.colourReset = this.allocator.allocate(Uint8, 256 * 8, "Life.colourReset");
 
 		// grid line colour in raw format R G B
 		this.gridLineRawDefault = (80 << 16) | (80 << 8) | 80;
@@ -1220,10 +1220,10 @@
 		    colourReset = this.colourReset,
 		    aliveStart = this.aliveStart;
 
-		// create the 16 colours for each of the 16 bit entries
-		for (h = 0; h < 65536; h += 1) {
-			for (b = 0; b < 16; b += 1) {
-				colourReset[(h << 4) + b] = (h & (1 << (15 - b))) ? aliveStart : 0;
+		// create the 8 colours for each of the 8 bit entries
+		for (h = 0; h < 256; h += 1) {
+			for (b = 0; b < 8; b += 1) {
+				colourReset[(h << 3) + b] = (h & (1 << (7 - b))) ? aliveStart : 0;
 			}
 		}
 	};
@@ -1504,8 +1504,9 @@
 			colourRow = colourGrid[y];
 			cr = (leftX << 4);
 			for (x = leftX; x <= rightX; x += 1) {
-				rowOffset = gridRow[x] << 4;
-				colourRow[cr] = colourReset[rowOffset + 0];
+				// get first 8 bits
+				rowOffset = (gridRow[x] >> 8) << 3;
+				colourRow[cr] = colourReset[rowOffset];
 				cr += 1;
 				colourRow[cr] = colourReset[rowOffset + 1];
 				cr += 1;
@@ -1521,21 +1522,23 @@
 				cr += 1;
 				colourRow[cr] = colourReset[rowOffset + 7];
 				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 8];
+				// get second 8 bits
+				rowOffset = (gridRow[x] & 255) << 3;
+				colourRow[cr] = colourReset[rowOffset];
 				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 9];
+				colourRow[cr] = colourReset[rowOffset + 1];
 				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 10];
+				colourRow[cr] = colourReset[rowOffset + 2];
 				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 11];
+				colourRow[cr] = colourReset[rowOffset + 3];
 				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 12];
+				colourRow[cr] = colourReset[rowOffset + 4];
 				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 13];
+				colourRow[cr] = colourReset[rowOffset + 5];
 				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 14];
+				colourRow[cr] = colourReset[rowOffset + 6];
 				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 15];
+				colourRow[cr] = colourReset[rowOffset + 7];
 				cr += 1;
 			}
 		}
