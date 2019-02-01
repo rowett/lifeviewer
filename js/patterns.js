@@ -2433,7 +2433,7 @@
 						pattern.rangeHROT = value;
 						result = true;
 						// compute maximum count value for Moore neighbourhood
-						maxCount = (value * 2 + 1) * (value * 2 + 1) - 1;
+						maxCount = (value * 2 + 1) * (value * 2 + 1);
 					}
 				}
 			}

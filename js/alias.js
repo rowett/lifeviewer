@@ -268,7 +268,7 @@
 
 		// add HROT aliases
 		this.aliases.push(["HROT", ""]);
-		this.aliases.push(["Fredkin R2", "r2b555555saaaaaaz"]);
+		this.aliases.push(["Fredkin R2", "R2,C2,S0,2,4,6,8,10,12,14,16,18,20,22,24,B1,3,5,7,9,11,13,15,17,19,21,23,NM"]);
 		this.aliases.push(["Fredkin R3", "r3b555555555555saaaaaaaaaaaaz"]);
 		this.aliases.push(["Fredkin R4", "r4b55555555555555555555saaaaaaaaaaaaaaaaaaaaz"]);
 		this.aliases.push(["Replicator R2", "r2b555555s555555"]);
