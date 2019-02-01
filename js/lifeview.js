@@ -150,7 +150,7 @@
 		/** @const {string} */ versionName : "LifeViewer Plugin",
 
 		// build version
-		/** @const {number} */ versionBuild : 286,
+		/** @const {number} */ versionBuild : 287,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -166,6 +166,10 @@
 		/** @const {number} */ modeStepBack : 1,
 		/** @const {number} */ modePause : 2,
 		/** @const {number} */ modePlay : 3,
+
+		// draw modes
+		/** @const {number} */ modeDraw : 0,
+		/** @const {number} */ modePan : 1,
 
 		// zoom scale factor for pattern fit zoom
 		/** @const {number} */ zoomScaleFactor : 1.25,
@@ -1000,8 +1004,11 @@
 		// progress bar
 		this.progressBar = null;
 
-		// play list (play/pause buttons)
+		// play list (play/pause/reset/step back buttons)
 		this.playList = null;
+
+		// mode list (draw/pan buttons)
+		this.modeList = null;
 
 		// current steps before next view theme change
 		this.viewSteps = 30;
@@ -2658,6 +2665,7 @@
 		this.stopIndicator.deleted = hide || this.popGraph;
 		this.waypointsIndicator.deleted = hide || this.popGraph;
 		this.loopIndicator.deleted = hide || this.popGraph;
+		this.modeList.deleted = hide;
 
 		// graph controls
 		this.opacityItem.deleted = hide || !this.popGraph;
@@ -3404,6 +3412,28 @@
 		return result;
 	};
 
+	// view mode list
+	View.prototype.viewModeList = function(newValue, change, me) {
+		var result = newValue;
+
+		if (change) {
+			if (me.engine.multiNumStates <= 2) {
+				switch (newValue) {
+					case ViewConstants.modeDraw:
+						me.drawing = true;
+						break;
+					case ViewConstants.modePan:
+						me.drawing = false;
+						break;
+				}
+			} else {
+				result = ViewConstants.modePan;
+			}
+		}
+
+		return result;
+	};
+
 	// view play list
 	View.prototype.viewPlayList = function(newValue, change, me) {
 		var result = newValue,
@@ -3836,7 +3866,7 @@
 			icons = new Image();
 
 			// load the icons from the image file
-			icons.src = "data:image/png;base64,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";
+			icons.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAAoCAIAAADhf9zeAAAABnRSTlMAAAAAAABupgeRAAAQQElEQVR4nO2dfWxT1fvAn3u7Lr3AIG7LSiRqkQ6SrxjjH2JsYzJfgHTDDFEGU4lZTLZMAi3uBVgm/oGZUWHrFIFOf2ZxWZCvqFVh/cM3gmlDDAER3/i2yUoMOMTyNrt27XrP74/b3d2+39vee3vbnk8I2e7ufc45z3Puec7bcy4ABoPBYDAYDAaDyR2LxSLpdYz8SG1TbGv5Kct3BjAY8UEIxV0hCEIGyflKt9RACMlTfNkSwpQm2AFjihYpms707ja/6ZYOBEHEuUZRPKUUMosArAfpIPOdAQxGEpg2Wjr5qVqlfKVbamA9Y4oA7IAxRYt0bXT61jlf6ZYaWM+YQgc7YEwxI0Ubzad1zle6pQbWM6agwWvAmCIncb0wF/iLyle6pYa4PhjrGSOIurq65cuXB4PBjz76KIvHU1a1fFVEoRtbRNkIwxWSS6mL6e1ldMIWR6wNRxnlxKUrFlJs0lFIuvJHj1itVplTTESKbeFybjX/5JNPNm7cyOfOvNtXomatOFrLzz77bN26ddeuXevv79+/f79octEsokkUmG4cYt2fUUiO2eb/iA4hcf9ll3OexRFFz3zk5KviFRk4NlTJ7Nu3LxAIuN3uxsbG7CTIaV8pXsYCfc0PHz48MjLS09PDXvnmm28QQteuXTObzQBgsViOHDlis9l4Csy8BlyIapKT7PQjrr8UV6ZCzK2QbGAwotPZ2Xno0CG9Xm+32+12O9N2lxTM2LewRsBvvPHGli1bNm3a9Nhjj7EX//3335mZGb/f7/P5AOCJJ5549tlnm5ubd+3axUcm301Y2A0nUpQ6UVSJFJUZDCZ3hoeH29raAOCVV17p6Og4fvx4Y2PjwMBAvvMlNzrkLizvCwAkSWo0GrVajWKXLFUqFUnOedKysjLg3XYJ2wVdlC4nC4pVDwoslAKzJCk5zvBjIPUyR8blDxl48cUX+/r6zp49CwD9/f1PPfXU008/PT4+LmceMNmxc+fO/v7+c+fO1dTU9Pb23n///QAQCAQIgiBJsry8HACCwWAoFPL7/TRNsw9u3749lcxswpBKuWkQq+xeCXp/OcpUrE0VmzGMYiF4I2eufv755y+//PKRRx45deqU3+/fsGEDANjt9mXLlsmZjbyjQ24vUZvvXGRDV1fXpUuX9Hr9Sy+99OCDDwLA5OQkANA0PT09DQAEQZSXl5eXl7Nj4ldffbW7u3v37t1JBWYfhoSk2a2qWER3A1L44KxRuJNDRbFhElPiVFVVPfnkk//888+ePXv8fv/LL7+8a9euo0ePirl7FiMxarVao9EsWLCAGeMGg0EAQAhNTU0BwMzMDABEIpFbt24BwLZt25qbm7VabTgcTiot14M4SmE0XPRlLIjS5ZJJjdWtQ2iJ1SBifhSOdWogZpO826pJd3vrkYEBHRqrSPY3LUKp/sQ8q0VIh9xVXO0arEsyPMV9NuNtxYDb7f788899Ph9N07dv337ttdfefvvthx56qK6uLgtpMtpXZIQPf5lKkuxfhlJLwq+//nr+/Pnp6enly5c3NDTcfffdAKDRaB544IE1a9bU1NQAAE3TExMTMBslHAgEmF8TEecgjmIdDReEZ8qRAipjtuNgw/wGPQCoG5o0FleQ3zMVY2ienbg6JDw12UmMJBnZOlChj72kNy9G5kkjAOxIGnlyBADABIAslh3JEon5kxLigAuLnp6ekydP9vX1RSIR5srMzAzz6n3//ffpn8X2VRQ7d+5samoaGBhob2/fsmXLHXfcAQCVlZVbt25taWlZtGgRAKhUKoqiAICcRaVSCUtG6EYGsXY0CBUrSjYSH8xX8WWGf3HEKm/WCWWvYYN1CULasbH4UVrqB6rcSIeQtlVwUkqAGe7rEJorbHQ8inRjrVnEiRbcCFhQJZHhnV2zZs3169dbWlqY/bEMFEX19PSMjo7yl8PYKL19E+9PJYeFNUGq+3mqiM9tOuTmIyqW6Ag4j+9jZ2cnN6yorq7u8uXLadoov99/7Nixvr6+n376KRKJ0DS9bdu2pJLFPws6y1ZSMciW/7wfxFGgZhKabU1Tgxo8M6/bA6Cv6GVf4rimn/3VUOV2MsMLyjY3x8W2erlMZfPpSeTa24DWRWY9gGfSCD7X7DWX5XKbAzyDE/XMiD7qMrVjTKHcVYa4KcpoF0SH0JEpcSJkuApM0ZLOmqB1bPZOSeZF5a/2zzzzjMPh+PTTT5kFQgBQqVTPPfdcR0fHyZMnBQpLYl/LKm9S+x5Zs5W1b1xHh7WvtlXMwwPy1qQYWrVutiV0a2PfUI11bAn78o4JnrV+5513Ojs7Ozo6+vr6mCskSSKEIpHI9PQ0O6URiUTYWQ2KotauXdvW1rZixYpAIHDp0qWbN28mFS7VxxgK3Q1LTd4P4iho6wjJvGF+gx48J/yuoSkHgGl9Fm16xRhabJ6b8lObnXFDDQVh+E8ZAHhO+F2x14fqvbWW2Ol3PWViCuUOxdw81wUBAMoGFK+E9RVOTnfQaVZz/hanQMqWphNjqrKZ5n6WYJFP/pWydevWHT161O/3s1cWLlxoNpv37Nnz/vvvC5Mlhn25M9i87ZuBpeBh/k8zxpVs83Or1mmj5uqXnjI72U6exupebDaxtVFtMi8WWKmqq6u1Wm11dfWGDRv27dsHAFeuXAmFQswh5Gy4EXdfPUEQCxYsqKysVKvVZ8+e3bt378jISFLh+GtImKLG0KTRA7h/CwJM2h0ApnkZXKfLV2uc9AAABNoIb60laLAuNAGAZ9JIeAnCaxwMA4DJptAJ6pXL1TG/z41lmTHl/1nnRrThQaOXILxE/WTME00aPcyVty3nLDEK9AxOEISXILxEWwBAbe5N1ROazVVbAAD05kVi6DlujUMEibz54osvrl69+vXXX7NDpfLy8q6urmXLlr333nuCxSWzr31ggDNnMFc6mew761kJgvAStV6iVofcWU01Z4Cyxc/5RbtxrespgNkSGX0OAACqy6oBAIO1yqwHVhXMyyuwUp06dcrpdAaDwRUrVjQ1Ne3evbuuro6iKJIky8rK2HAj7kIvMwsdCoXC4fDvv//+4YcfphIulQOWP8YOI4iCtg7/zGuaGtQAYLLpENLZTABArRfYojNNnuPt6Iyfy3LbAQBQ9h9F7qn+5X/Jwx2S4An+15Xkclx5hyDAT1q0QSc43RSuQL15cbTdtFEAALXlyfXnuG2JJjwlnp65FUbOmj88PLxy5cq1a9cGAgE29aVLl65ater555/PRqIQ+270rkpyOUv7piRxXMu64fS3iUZUJ/oKp3vJWFO53ThBENH5gGh/ZbZSuSyXCcJLCNtcefjw4UOHDo2Pj09NTVVXV7e3t3d3d1dWVgJA3BlYXMrKyhj3rNGkG2+L74AL3fXKk38lHMRRoGYSku3o/ucYspqFLhhcv80At4/v8tUmeERFoC9bKXeSMq9TPvzww/fdd19HRwdzSjADRVEbN25ctGiR3W7PRmgy+67fsSNf9k3jVrlDYVF0Hmjj9PAIwksQl2fdqq/NwfhgtclcYXMuRmiJqItEo6OjBw4cOH36NE3Td91119KlS5lzr9I7C+Z4LGZfdMp7RMxlobteLjKUJa4y5f4vizwUnL2EZZiZbZub/CR8DoidhY7+rLF2cVbCXCFu353pX5u6optOZ2ekkw8fM2U+4xlMOZ/TNHRr0AMAlA2425Ires3qlI/EEltejTXnNcLoAMXhi62uKUYhpoXR5eHWeSYAgJnfBOs5FTJ/AGD16tV//fXX+fPnuacSrly58p577unq6spWqoLsm3FQywyFGe87DgldYfEIDtVfJgiv0ehrGwx4PACgZl9YkTh48ODp06dVKlUkEpmamuLaNBXhcPjvv/++cuVKmnvEiQMuuHacJ0y5Cnq/UkYIUb9nLilCqxkz/xw+8V92c8qk3VFlMlHrW2HolxkPgB4oG9Kl+HQYZUO6rsGJWstth7nKpK9wormhMzuDlxtxmk+0BZ8ix0ePeN8b8QxU6CEmwwwO00uWHQDzjgAA6Lmhn3Nxoqt2jHhArY8tby5xoi5GgaYqhKrYi57BifhNQ1HUZqfOPHfbrUIIxU7k0UcfbW9v379//59//slepChqdHT0xx9/FLT5mWtfi8WSaF87QFSxsfYd+XGAfZSPfdkY4oz2RQgtBQ/PKWWmVkvnIzRW92KzHsAxaaz3DbkmYfkSmz7aHfnlf2EwqcG00GqYtLjA0Kp12iiA8KAxOnoWAk3TJEnSNM0u5yeF+StJkuPj4wcOHHj33XezKVXGcEyJ9jkLTUiUjOWSkNQKkYeMxRGrvLIlBNFYi7jYX048Bhs9iZC2NTZOIyESRpQwpEQSyyhadWpNfmaQxWJJFrkbF6Zi4IapiBIHXDGW9AAjbrqihSEJ0ptE72xPTw9CyGq1VldXM8uEKpVq9erVFy5cECcB+ewbryLZ27rUJ2FFy5jshmQBhDnWq8bGRofDcf36dcYHM0FHiYTD4XA4jBC6ePGiwZBtW5GqHZRa+0KTEyV7/B/Ml1pkIH1xxCpvRjlFptX0JBZTrILL+cF2kRDtUA5BepOodrEWPHjwYHNz8/z582tqai5cuPDWW2+JIl9O+yaqSN5XMqMDBgBD1Rinixwb7KtpjYkDrsih//z44487HA6/3x+JREKhEE3TcS8sTdOMA56enj537pzRaEwvMJsp6GKdcOaDiJPSoocC57ixS7Fz0aVc3zDZoZya3N7evmnTpvr6+rKysjvvvLO7uzvfORIBeV/JoatExnUIl6++1pfib8Gh+ssiLWR899138+bNu3nz5ubNmwmCoGmaIAh2IzTjgEmSnJ6edrlcH3/8sdPpTC9Q2CasYtpmlQu56yHvB3EkRYHGVWCWMAon3dcHkyFFHnp7e9mfKysrX3jhhc2bN7/++utSpIWRk+PHjzc3N7tcrhs3brCz0OxfI5EISZKhUOjEiRMffPBBRml8HTB2vYkUpU4UVSJFZUYKEj2BDL5BqQxdTTw1omC5ePEi99cbN25s3759YECccz0xecdoNDocjlAoRJIkewIlcELd+GyTBj5T0CXWCgim+HZKK2QuGlc8TOHCfJ4dAL799tuJiYkffvjBZkux2x5TmPzxxx8NDQ0EQUQiEfYzG0yrRZLk/Pnz+QhJ54BxC8gfoW7YSxBKWwPmkncfLHrdQ2IEQmQhJF/pFj2J9VMUPQuSuXfv3nvvvZd75cyZM8ww96uvvjpz5syxY8fefPPNHHOFUSZqdTTWKbGS8B8B47caU4TEeSwRHVh6yXlJV8aNylGU9r1YJNL3yLOQE+ezh4eHW1pacsxGHHm3L+7/YTAYAcTFNckmPF/pJlKAYUhZwq66KUqUFEht0xy/B4zJAvw1JEwxI0Xnnc/8fL7SLTWwnjEFjThHUWIwCkS6qTMi7el6+Uq31MB6lg2peyQlq2rsgDHFidQNaKpxUr7SLTXk0XPJOgYuWAnSgR0wpmjhOioRN0MpNt3SIdE1iqLnRJnYB2MkBTtgTBEiXaOZXnK+0i01ZNMGVjsGg8FgMBhMsfH/hpmDNa1U3NsAAAAASUVORK5CYII=";
 				
 			// save the image
 			ViewConstants.icons = icons;
@@ -3857,10 +3887,11 @@
 		iconManager.add("grid", w, h);
 		iconManager.add("help", w, h);
 		iconManager.add("shrink", w, h);
-		iconManager.add("fps", w, h);
+		iconManager.add("draw", w, h);
 		iconManager.add("hexgrid", w, h);
 		iconManager.add("lines", w, h);
 		iconManager.add("esc", w, h);
+		iconManager.add("pan", w, h);
 
 		// return the icon manager
 		return iconManager;
@@ -5753,8 +5784,11 @@
 
 			// f1 for toggle edit mode
 			case 112:
-				me.drawing = !me.drawing;
-				me.menuManager.notification.notify("Edit Mode " + (me.drawing ? "On" : "Off"), 15, 40, 15, true);
+				if (me.engine.multiNumStates <= 2) {
+					me.drawing = !me.drawing;
+					me.modeList.current = me.viewModeList((me.drawing ? ViewConstants.modeDraw : ViewConstants.modePan), true, me);
+					me.menuManager.notification.notify((me.drawing ? "Draw" : "Pan") + " Mode", 15, 40, 15, true);
+				}
 				break;
 
 			// ignore other keys
@@ -5895,12 +5929,12 @@
 		this.infoBarLabelNValueRight.toolTip = "bounding box north edge velocity";
 
 		// autostart indicator
-		this.autostartIndicator = this.viewMenu.addListItem(null, Menu.northWest, 90, 0, 40, 20, ["START"], [false], Menu.multi);
+		this.autostartIndicator = this.viewMenu.addListItem(null, Menu.northEast, -170, 0, 40, 20, ["START"], [false], Menu.multi);
 		this.autostartIndicator.font = ViewConstants.smallMenuFont;
 		this.autostartIndicator.toolTip = ["autostart indicator"];
 
 		// stop indicator
-		this.stopIndicator = this.viewMenu.addListItem(null, Menu.northWest, 90, 20, 40, 20, ["STOP"], [false], Menu.multi);
+		this.stopIndicator = this.viewMenu.addListItem(null, Menu.northEast, -170, 20, 40, 20, ["STOP"], [false], Menu.multi);
 		this.stopIndicator.font = ViewConstants.smallMenuFont;
 		this.stopIndicator.toolTip = ["stop indicator"];
 
@@ -5913,6 +5947,11 @@
 		this.loopIndicator = this.viewMenu.addListItem(this.toggleLoop, Menu.northEast, -130, 20, 40, 20, ["LOOP"], [false], Menu.multi);
 		this.loopIndicator.font = ViewConstants.smallMenuFont;
 		this.loopIndicator.toolTip = ["toggle loop mode"];
+
+		// mode list
+		this.modeList = this.viewMenu.addListItem(this.viewModeList, Menu.northWest, 90, 0, 80, 40, ["", ""], ViewConstants.modePan, Menu.single);
+		this.modeList.icon = [ViewConstants.iconManager.icon("draw"), ViewConstants.iconManager.icon("pan")];
+		this.modeList.toolTip = ["draw", "pan"];
 
 		// help button
 		this.helpToggle = this.viewMenu.addListItem(this.toggleHelp, Menu.northEast, -40, 0, 40, 40, [""], [false], Menu.multi);
@@ -6012,7 +6051,7 @@
 		this.ruleLabel.font = ViewConstants.statsFont;
 
 		// add the zoom range
-		this.zoomItem = this.viewMenu.addRangeItem(this.viewZoomRange, Menu.north, 0, 0, 212, 40, 0, 1, 0.1, true, "Zoom ", "x", 1);
+		this.zoomItem = this.viewMenu.addRangeItem(this.viewZoomRange, Menu.north, 0, 0, 132, 40, 0, 1, 0.1, true, "Zoom ", "", 1);
 		this.zoomItem.toolTip = "camera zoom";
 
 		// add the layers range
@@ -6069,11 +6108,11 @@
 		this.timingDetailButton.toolTip = ["toggle timing details"];
 
 		// opacity range
-		this.opacityItem = this.viewMenu.addRangeItem(this.viewOpacityRange, Menu.north, 0, 0, 212, 40, 0, 1, this.popGraphOpacity, true, "Opacity ", "%", 0);
+		this.opacityItem = this.viewMenu.addRangeItem(this.viewOpacityRange, Menu.north, 0, 0, 132, 40, 0, 1, this.popGraphOpacity, true, "Opac ", "%", 0);
 		this.opacityItem.toolTip = "graph opacity";
 
 		// points/lines toggle
-		this.linesToggle = this.viewMenu.addListItem(this.toggleLines, Menu.northWest, 90, 0, 40, 40, [""], [false], Menu.multi);
+		this.linesToggle = this.viewMenu.addListItem(this.toggleLines, Menu.northEast, -170, 0, 40, 40, [""], [false], Menu.multi);
 		this.linesToggle.icon = [ViewConstants.iconManager.icon("lines")];
 		this.linesToggle.toolTip = ["toggle graph lines/points"];
 
@@ -10342,6 +10381,7 @@
 
 		// reset menu visibility to defaults
 		this.playList.deleted = false;
+		this.modeList.deleted = false;
 		this.genToggle.deleted = false;
 		this.generationRange.deleted = false;
 		this.stepRange.deleted = false;
@@ -10359,6 +10399,9 @@
 		// turn off help and errors
 		this.displayHelp = 0;
 		this.displayErrors = 0;
+
+		// turn off draw mode
+		this.modeList.current = this.viewModeList(ViewConstants.modePan, true, this);
 
 		// update help UI
 		this.helpToggle.current = this.toggleHelp([this.displayHelp], true, this);

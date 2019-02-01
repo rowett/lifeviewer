@@ -1,3 +1,6 @@
+Build 287
+- new Draw and Pan buttons
+
 Build 286
 - population data is now dynamically allocated to reduce memory footprint
 - Themes can not be changed for patterns with illegal rules or states
