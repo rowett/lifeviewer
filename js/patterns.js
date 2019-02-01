@@ -3265,13 +3265,15 @@
 				valid = false;
 			}
 
-			// add any postfixes
-			this.addNamePostfixes(pattern, base64);
-
 			// if 2 state generations then use standard engine
 			if (pattern.multiNumStates === 2) {
 				pattern.multiNumStates = -1;
 			}
+		}
+
+		if (valid) {
+			// add any postfixes
+			this.addNamePostfixes(pattern, base64);
 		}
 
 		// return whether rule is valid
