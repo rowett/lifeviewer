@@ -254,7 +254,7 @@
 		this.aliases.push(["Bosco's Rule", "R5,C2,M1,S34..58,B34..45,NM"]);
 		this.aliases.push(["Bugs R3", "R3,C2,M1,S14..23,B14..18,NM"]);
 		this.aliases.push(["Bugs R7", "R7,C2,M1,S63..108,B63..84,NM"]);
-		this.aliases.push(["Bugsmovie", "R10,C2,M1,B123..212,B123..170,NM"]);
+		this.aliases.push(["Bugsmovie", "R10,C2,M1,S123..212,B123..170,NM"]);
 		this.aliases.push(["Globe", "R8,C2,M1,S163..223,B74..252,NM"]);
 		//this.aliases.push(["Majority", "R4,C2,M1,S41..81,B41..80,NM"]);
 		this.aliases.push(["Majorly", "R7,C2,M1,S113..225,B113..224,NM"]);

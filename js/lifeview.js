@@ -782,6 +782,9 @@
 		// further tab positions
 		this.tabs = [64, 200, 290, 530, 700];
 
+		// whether to wrap help text
+		this.wrapHelpText = false;
+
 		// help information sections
 		this.helpSections = [];
 

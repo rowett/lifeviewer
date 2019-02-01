@@ -4,6 +4,7 @@ Build 287
 - Generations population statistcs were wrong
 - memory details in Help information could be negative
 - reduced memory consumption for 2-state startup
+- rule aliases were not appearing for HROT/LtL rules
 
 Build 286
 - population data is now dynamically allocated to reduce memory footprint

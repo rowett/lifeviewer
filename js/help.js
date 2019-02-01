@@ -133,7 +133,16 @@
 		    lineNo = view.lineNo,
 
 		    // tab number
-		    tabNo = 0;
+			tabNo = 0,
+
+			// text width in pixels
+			width = 0,
+
+			// rule divider
+			divider = 0,
+
+			// whether text was drawn
+			drewText = false;
 
 		// only render if context exists
 		if (ctx) {
@@ -157,8 +166,29 @@
 						tab = text.indexOf("\t");
 					}
 
-					// draw the line of text
-					ctx.fillText(text, x + view.tabs[tabNo], y);
+					// check if the text will fit in the window
+					drewText = false;
+					if (view.wrapHelpText) {
+						width = ctx.measureText(text).width;
+						if (x + view.tabs[tabNo] + width > ctx.canvas.width) {
+							// check if the text can be split at "s"
+							divider = text.toLowerCase().indexOf("s");
+							if (divider !== -1) {
+								ctx.fillText(text.substr(0, divider), x + view.tabs[tabNo], y);
+								if (lineNo + 1 >= startLine && lineNo + 1 <= (startLine + view.numHelpPerPage)) {
+									y += height;
+									result += height;
+									view.lineNo += 1;
+									ctx.fillText("  " + text.substr(divider), x + view.tabs[tabNo], y);
+								}
+								drewText = true;
+							}
+						}
+					}
+					if (!drewText) {
+						// draw on one line
+						ctx.fillText(text, x + view.tabs[tabNo], y);
+					}
 				} else {
 					ctx.font = ViewConstants.variableFont;
 					ctx.fillText(text, x, y);
@@ -324,6 +354,9 @@
 
 		// set initial line
 		view.lineNo = 1;
+
+		// disable line wrap to start with
+		view.wrapHelpText = false;
 
 		// title
 		tabs[0] = 108;
@@ -1319,6 +1352,7 @@
 		y = this.renderHelpLine(view, "", "Aliases", ctx, x, y, height, helpLine);
 
 		// display alias table
+		view.wrapHelpText = true;
 		tabs[0] = 260;
 		for (i = 0; i < AliasManager.aliases.length; i += 1) {
 			// check for category
@@ -1336,6 +1370,7 @@
 				}
 			}
 		}
+		view.wrapHelpText = false;
 
 		// display colour names
 		tabs[1] = 330;
