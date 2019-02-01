@@ -173,6 +173,13 @@
 						if (x + view.tabs[tabNo] + width > ctx.canvas.width) {
 							// check if the text can be split at "s"
 							divider = text.toLowerCase().indexOf("s");
+							if (divider === -1) {
+								// try slash
+								divider = text.indexOf("/");
+								if (divider !== -1) {
+									divider += 1;
+								}
+							}
 							if (divider !== -1) {
 								ctx.fillText(text.substr(0, divider), x + view.tabs[tabNo], y);
 								if (lineNo + 1 >= startLine && lineNo + 1 <= (startLine + view.numHelpPerPage)) {

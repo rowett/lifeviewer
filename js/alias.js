@@ -49,6 +49,7 @@
 		this.aliases.push(["Electrified Maze", "B45/S12345"]);
 		this.aliases.push(["Eppstein", "B35/S236"]);
 		this.aliases.push(["Flock", "B3/S12"]);
+		this.aliases.push(["Forest of Ls", "B168/S236"]);
 		this.aliases.push(["Fredkin", "B1357/S02468"]);
 		this.aliases.push(["Gems Minor", "B34578/S456"]);
 		this.aliases.push(["Gems", "B3457/S4568"]);
@@ -130,6 +131,7 @@
 		this.aliases.push(["Dominoplex", "B2cen3ek4ejkwz5-ein6an7e8/S12an3-eijq4enrty5e6k"]);
 		this.aliases.push(["Dry15Life", "B34r7/S23-q4et"]);
 		this.aliases.push(["DryGoats", "B2in37/S123a"]);
+		this.aliases.push(["Eatsplosion", "B2n3-ekqy4c5e/S2-cn3-eky4aij5e"]);
 		this.aliases.push(["EightGoats", "B2in3/S123a8"]);
 		this.aliases.push(["Emitters", "B2i3ai4cei5c6c7/S2-ae3acein4-t5-aq6cei7c8"]);
 		this.aliases.push(["FattyLife", "B3-n4nt5qr6i/S23"]);
@@ -235,6 +237,7 @@
 		this.aliases.push(["RainZha", "2/23/8"]);
 		this.aliases.push(["Rake", "3467/2678/6"]);
 		this.aliases.push(["SediMental", "45678/25678/4"]);
+		this.aliases.push(["Sliders", "012-e3-ae4acnqyz5acer6acn78/3j4-eikq5c/3"]);
 		this.aliases.push(["Snake", "03467/25/6"]);
 		this.aliases.push(["SoftFreeze", "13458/38/6"]);
 		this.aliases.push(["Spirals", "2/234/5"]);
