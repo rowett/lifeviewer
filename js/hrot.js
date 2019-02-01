@@ -1191,6 +1191,11 @@
 			xpr = 0, xmrp1 = 0,
 			rowAlive = false, colAlive = false,
 			liveRowAlive = false, liveColAlive = false,
+			im1 = 0, im2 = 0,
+			iprm1 = 0, imrm1 = 0,
+			imrm2 = 0, ipminrow = 0,
+			ipr = 0, jpr = 0,
+			jmr = 0, jpmincol = 0,
 
 			// maximum generations state
 			maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
@@ -1254,6 +1259,13 @@
 				bottomY -= r2;
 				rightX += r2;
 				topY += r2;
+			} else {
+				if (type === PatternManager.vonNeumannHROT && range > this.rangeVN) {
+					leftX -= range;
+					bottomY -= range;
+					rightX += range;
+					topY += range;
+				}
 			}
 		}
 
@@ -1592,38 +1604,174 @@
 				this.engine.anythingAlive = 0;
 			}
 		} else {
-			// von Neumann and Circular
-			for (y = bottomY - range; y <= topY + range; y += 1) {
-				countRow = counts[y];
-				x = leftX - range;
-				// for the first cell in the row count the entire neighborhood
-				count = 0;
-				for (j = -range; j <= range; j += 1) {
-					width = widths[j + range];
-					colourRow = colourGrid[y + j];
-					for (i = -width; i <= width; i += 1) {
-						if ((colourRow[x + i]) === maxGenState) {
-							count += 1;
+			if (type === PatternManager.vonNeumannHROT && range > this.rangeVN) {
+				// set variables to use in getCount
+				leftX -= range;
+				rightX += range;
+				bottomY -= range;
+				topY += range;
+				if (this.engine.boundedGridType === -1) {
+					leftX -= range;
+					rightX += range;
+					bottomY -= range;
+					topY += range;
+				}
+				this.nrows = topY - bottomY + 1;
+				this.ncols = rightX - leftX + 1;
+				this.ccht = (this.nrows + (this.ncols - 1) / 2) | 0;
+				this.halfccwd = (this.ncols / 2) | 0;
+
+				// calculate cumulative counts in top left corner of colcounts
+				for (i = 0; i < this.ccht; i += 1) {
+					countRow = counts[i];
+					colourRow = colourGrid[i + bottomY];
+					im1 = i - 1;
+					im2 = im1 - 1;
+					for (j = 0; j <= this.ncols; j += 1) {
+						countRow[j] = this.getCount(im1, j - 1) + this.getCount(im1, j + 1) - this.getCount(im2, j);
+						if (i < this.nrows) {
+							if (colourRow[j + leftX] === maxGenState) {
+								countRow[j] += 1;
+							}
 						}
 					}
 				}
-				countRow[x] = count;
-				x += 1;
 
-				// for the remaining rows subtract the left and add the right cells
-				while (x <= rightX + range) {
+				// calculate final neighborhood counts and update the corresponding cells in the grid
+				for (i = range; i <= this.nrows - range; i += 1) {
+					im1 = i - 1;
+					ipr = i + range;
+					iprm1 = ipr - 1;
+					imrm1 = i - range - 1;
+					imrm2 = imrm1 - 1;
+					ipminrow = i + bottomY;
+					colourRow = colourGrid[ipminrow];
+					colourTileRow = colourTileHistoryGrid[ipminrow >> 4];
+					rowAlive = false;
+					liveRowAlive = false;
+					for (j = range; j <= this.ncols - range; j += 1) {
+						jpr = j + range;
+						jmr = j - range;
+						count = this.getCount(ipr , j)   - this.getCount(im1 , jpr + 1) - this.getCount(im1 , jmr - 1) + this.getCount(imrm2 , j) +
+								this.getCount(iprm1 , j) - this.getCount(im1 , jpr)     - this.getCount(im1 , jmr)     + this.getCount(imrm1 , j);
+						jpmincol = j + leftX;
+						state = colourRow[jpmincol];
+						if (state <= deadState) {
+							if (birthList[count] === 1) {
+								// new cell is born
+								state = maxGenState;
+								births += 1;
+							} else {
+								if (state > minDeadState) {
+									state -= 1;
+								}
+							}
+						} else if (state === maxGenState) {
+							// this cell is alive
+							if (survivalList[count] === 0) {
+								// cell decays by one state
+								state -= 1;
+								deaths += 1;
+							}
+						} else {
+							// this cell will eventually die
+							if (state > minDeadState) {
+								state -= 1;
+							}
+						}
+						// update the cell
+						colourRow[jpmincol] = state;
+						if (state > 0) {
+							colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
+							if (jpmincol < minX) {
+								minX = jpmincol;
+							}
+							if (jpmincol > maxX) {
+								maxX = jpmincol;
+							}
+							rowAlive = true;
+							if (state === maxGenState) {
+								population += 1;
+								liveRowAlive = true;
+								if (jpmincol < minX1) {
+									minX1 = jpmincol;
+								}
+								if (jpmincol > maxX1) {
+									maxX1 = jpmincol;
+								}
+							}
+						}
+					}
+					if (rowAlive) {
+						if (ipminrow < minY) {
+							minY = ipminrow;
+						}
+						if (ipminrow > maxY) {
+							maxY = ipminrow;
+						}
+					}
+					if (liveRowAlive) {
+						if (ipminrow < minY1) {
+							minY1 = ipminrow;
+						}
+						if (ipminrow > maxY1) {
+							maxY1 = ipminrow;
+						}
+					}
+				}
+
+				// save statistics
+				this.engine.population = population;
+				this.engine.births = births;
+				this.engine.deaths = deaths;
+
+				// don't update bounding box if zero population
+				if (population > 0) {
+					this.engine.zoomBox.leftX = minX;
+					this.engine.zoomBox.rightX = maxX;
+					this.engine.zoomBox.bottomY = minY;
+					this.engine.zoomBox.topY = maxY;
+					this.engine.HROTBox.leftX = minX1;
+					this.engine.HROTBox.rightX = maxX1;
+					this.engine.HROTBox.bottomY = minY1;
+					this.engine.HROTBox.topY = maxY1;
+				} else {
+					this.engine.anythingAlive = 0;
+				}
+			} else {
+				// von Neumann and Circular
+				for (y = bottomY - range; y <= topY + range; y += 1) {
+					countRow = counts[y];
+					x = leftX - range;
+					// for the first cell in the row count the entire neighborhood
+					count = 0;
 					for (j = -range; j <= range; j += 1) {
 						width = widths[j + range];
 						colourRow = colourGrid[y + j];
-						if (colourRow[x - width - 1] === maxGenState) {
-							count -= 1;
-						}
-						if (colourRow[x + width] === maxGenState) {
-							count += 1;
+						for (i = -width; i <= width; i += 1) {
+							if ((colourRow[x + i]) === maxGenState) {
+								count += 1;
+							}
 						}
 					}
 					countRow[x] = count;
 					x += 1;
+	
+					// for the remaining rows subtract the left and add the right cells
+					while (x <= rightX + range) {
+						for (j = -range; j <= range; j += 1) {
+							width = widths[j + range];
+							colourRow = colourGrid[y + j];
+							if (colourRow[x - width - 1] === maxGenState) {
+								count -= 1;
+							}
+							if (colourRow[x + width] === maxGenState) {
+								count += 1;
+							}
+						}
+						countRow[x] = count;
+						x += 1;
+					}
 				}
 			}
 		}
@@ -1645,7 +1793,7 @@
 		}
 
 		// compute next generation from counts if not Moore which was done above
-		if (type !== PatternManager.mooreHROT) {
+		if (type !== PatternManager.mooreHROT && !(type === PatternManager.vonNeumannHROT && range > this.rangeVN)) {
 			this.updateGridFromCountsHROT(leftX, bottomY, rightX, topY);
 		}
 

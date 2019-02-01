@@ -147,7 +147,7 @@
 		/** @const {string} */ screenShotTitle : "LifeViewer Image",
 
 		// name
-		/** @const {string} */ versionName : "LifeViewer Plugin",
+		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
 		/** @const {number} */ versionBuild : 287,
