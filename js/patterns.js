@@ -2575,7 +2575,7 @@
 			// check neighborhood counts for the neighborhood
 			switch(pattern.neighborhoodHROT) {
 				case PatternManager.mooreHROT:
-					maxCount = (value * 2 + 1) * (value * 2 + 1);
+					maxCount = (pattern.rangeHROT * 2 + 1) * (pattern.rangeHROT * 2 + 1);
 					break;
 
 				case PatternManager.vonNeumannHROT:
