@@ -7,15 +7,10 @@ Investigate deficient rules
 Meta world view
 Grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
 User preferences
-[STARTED]Memory footprint reduction
-    - don't allocate sin and cos tables until first use
-    [DONE]Stars allocated on first use
-    [DONE]Default grid size 512x512
-    [DONE]Don't allocate population data if [[ NOGRAPH ]] specified, or if [[ THUMBLAUNCH ]] without [[ GRAPH ]] specified
-    [DONE]Population data is now dynamically allocated
-[STARTED]Implement faster Ltl/HROT von Neumann algorithm
 [STARTED]Pattern Editor
     [DONE] Basic 2-state editing with no undo
+[DONE]Memory footprint reduction
+[DONE]Implement faster Ltl/HROT von Neumann algorithm
 [DONE]HROT support for von Neumann and Circular neighbourhoods
 [DONE]New script keywords to put labels on the display at specific locations triggered by generation and zoom ranges
 [DONE]multistate rules using just 2 states should use LifeViewer Themes

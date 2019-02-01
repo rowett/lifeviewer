@@ -79,6 +79,18 @@
 		return result;
 	};
 
+	// convert bytes to MBytes
+	Help.asMByte = function(bytes) {
+		var result = bytes / (1024 * 1024);
+		if (result < 10) {
+			result = result.toFixed(1);
+		} else {
+			result = result.toFixed(0);
+		}
+
+		return result;
+	};
+
 	// render a colour box on a line of help text
 	Help.renderColourBox = function(view, red, green, blue, ctx, x, y, height, startLine) {
 		// line number
@@ -1290,9 +1302,9 @@
 		sections[sectionNum] = view.lineNo;
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Memory (this LifeViewer):", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Allocations", view.engine.allocator.numAllocs + "\t" + (view.engine.allocator.totalBytes >> 20) + "M\t" + view.engine.allocator.totalBytes, ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Frees", view.engine.allocator.numFrees + "\t" + (view.engine.allocator.totalFreedBytes >> 20) + "M\t" + view.engine.allocator.totalFreedBytes, ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "In Use", (view.engine.allocator.numAllocs - view.engine.allocator.numFrees) + "\t" + ((view.engine.allocator.totalBytes - view.engine.allocator.totalFreedBytes) >> 20) + "M\t" + (view.engine.allocator.totalBytes - view.engine.allocator.totalFreedBytes), ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Allocations", view.engine.allocator.numAllocs + "\t" + this.asMByte(view.engine.allocator.totalBytes) + "M\t" + view.engine.allocator.totalBytes, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Frees", view.engine.allocator.numFrees + "\t" + this.asMByte(view.engine.allocator.totalFreedBytes) + "M\t" + view.engine.allocator.totalFreedBytes, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "In Use", (view.engine.allocator.numAllocs - view.engine.allocator.numFrees) + "\t" + this.asMByte(view.engine.allocator.totalBytes - view.engine.allocator.totalFreedBytes) + "M\t" + (view.engine.allocator.totalBytes - view.engine.allocator.totalFreedBytes), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, this.pad("Bytes", 10), "Type\tElements\tName\tCount", ctx, x, y, height, helpLine);
 		for (i = 0; i < view.engine.allocator.allocations.length; i += 1) {
 			y = this.renderHelpLine(view, this.pad(String(view.engine.allocator.allocations[i].size), 10), view.engine.allocator.allocationInfo(i), ctx, x, y, height, helpLine);

@@ -39,21 +39,12 @@
 		this.degreeParts = 8;
 
 		// table for sin and cos
-		this.sin = allocator.allocate(Float32, this.circleDegrees * this.degreeParts, "Stars.sin");
-		this.cos = allocator.allocate(Float32, this.circleDegrees * this.degreeParts, "Stars.cos");
+		this.sin = allocator.allocate(Float32, 0, "Stars.sin");
+		this.cos = allocator.allocate(Float32, 0, "Stars.cos");
 
 		// conversions
 		this.degToRad = Math.PI / (this.circleDegrees / 2);
 		this.radToDeg = (this.circleDegrees / 2) / Math.PI;
-
-		// populate the sin and cos tables
-		var i = 0;
-
-		while (i < (this.circleDegrees * this.degreeParts)) {
-			this.sin[i] = Math.sin((i / this.degreeParts) * this.degToRad);
-			this.cos[i] = Math.cos((i / this.degreeParts) * this.degToRad);
-			i += 1;
-		}
 
 		// save the allocator
 		this.allocator = allocator;
@@ -95,6 +86,17 @@
 			this.x[i] = curX;
 			this.y[i] = curY;
 			this.z[i] = curZ;
+		}
+
+		// populate the sin and cos tables
+		this.sin = this.allocator.allocate(Float32, this.circleDegrees * this.degreeParts, "Stars.sin");
+		this.cos = this.allocator.allocate(Float32, this.circleDegrees * this.degreeParts, "Stars.cos");
+
+		i = 0;
+		while (i < (this.circleDegrees * this.degreeParts)) {
+			this.sin[i] = Math.sin((i / this.degreeParts) * this.degToRad);
+			this.cos[i] = Math.cos((i / this.degreeParts) * this.degToRad);
+			i += 1;
 		}
 	};
 	
