@@ -150,7 +150,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 287,
+		/** @const {number} */ versionBuild : 288,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1801,7 +1801,7 @@
 
 			// compute the x and y cell coordinate
 			yPos = Math.floor(displayY / this.engine.zoom - engineY + this.engine.originY);
-			xPos = Math.floor((displayX / this.engine.zoom) + (this.engine.isHex ? engineY / 2 : 0) - engineX + this.engine.originX);
+			xPos = Math.floor((displayX / this.engine.zoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
 
 			// draw the cell
 			state = this.engine.getState(xPos + this.panX, yPos + this.panY, this.multiStateView && this.viewOnly);
@@ -1840,7 +1840,7 @@
 
 			// compute the x and y cell coordinate
 			yPos = Math.floor(displayY / this.engine.zoom - engineY + this.engine.originY);
-			xPos = Math.floor((displayX / this.engine.zoom) + (this.engine.isHex ? engineY / 2 : 0) - engineX + this.engine.originX);
+			xPos = Math.floor((displayX / this.engine.zoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
 		}
 
 		// set cell position
@@ -1957,7 +1957,7 @@
 
 			// compute the x and y cell coordinate
 			yPos = Math.floor(displayY / this.engine.zoom - engineY + this.engine.originY);
-			xPos = Math.floor((displayX / this.engine.zoom) + (this.engine.isHex ? engineY / 2 : 0) - engineX + this.engine.originX);
+			xPos = Math.floor((displayX / this.engine.zoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
 
 			// read the state
 			stateDisplay = this.engine.getState(xPos + this.panX, yPos + this.panY, this.multiStateView && this.viewOnly);
@@ -2474,10 +2474,20 @@
 		// check if grid buffer needs to grow
 		if (me.engine.counter && me.engine.anythingAlive) {
 			borderSize = ViewConstants.maxStepSpeed;
-			if (me.engine.isHROT && ((me.engine.HROT.range * 2 + 1) > ViewConstants.maxStepSpeed)) {
+			if (me.engine.isHROT) {
 				borderSize = me.engine.HROT.range * 4 + 1;
-				if (this.engine.boundedGridType !== -1) {
-					borderSize += this.engine.HROT.range * 2;
+				if (me.engine.boundedGridType !== -1) {
+					borderSize += me.engine.HROT.range * 2;
+				}
+				if (me.engine.HROT.type === PatternManager.vonNeumannHROT) {
+					if (me.engine.boundedGridType !== -1) {
+						borderSize += me.engine.boundedGridHeight / 2;
+					} else {
+						borderSize += (me.engine.zoomBox.topY - me.engine.zoomBox.bottomY + 1) / 2;
+					}
+				}
+				if (borderSize < ViewConstants.maxStepSpeed) {
+					borderSize = ViewConstants.maxStepSpeed;
 				}
 			}
 			if (me.engine.checkForGrowth(borderSize)) {
@@ -10595,10 +10605,20 @@
 
 			// check if the grid is smaller than the pattern and/or bounded grid plus the maximum step speed
 			borderSize = ViewConstants.maxStepSpeed;
-			if (this.engine.isHROT && ((this.engine.HROT.range * 4 + 1) > ViewConstants.maxStepSpeed)) {
+			if (this.engine.isHROT) {
 				borderSize = this.engine.HROT.range * 4 + 1;
 				if (this.engine.boundedGridType !== -1) {
 					borderSize += this.engine.HROT.range * 2;
+				}
+				if (this.engine.HROT.type === PatternManager.vonNeumannHROT) {
+					if (this.engine.boundedGridType !== -1) {
+						borderSize += this.engine.boundedGridHeight / 2;
+					} else {
+						borderSize += (this.engine.zoomBox.topY - this.engine.zoomBox.bottomY + 1) / 2;
+					}
+				}
+				if (borderSize < ViewConstants.maxStepSpeed) {
+					borderSize = ViewConstants.maxStepSpeed;
 				}
 			}
 			while (this.engine.width < this.engine.maxGridSize && ((neededWidth + borderSize + Math.abs(this.xOffset) * 2) >= this.engine.width || (neededHeight + borderSize + Math.abs(this.yOffset) * 2) >= this.engine.height)) {
