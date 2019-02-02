@@ -280,7 +280,8 @@
 		/** @const {number} */ informationTopic : 2,
 		/** @const {number} */ memoryTopic : 3,
 		/** @const {number} */ aliasesTopic : 4,
-		/** @const {number} */ coloursTopic : 5
+		/** @const {number} */ themesTopic : 5,
+		/** @const {number} */ coloursTopic : 6
 	},
 
 	// Controller singleton
@@ -2273,10 +2274,7 @@
 				// check if a new theme is available
 				if (currentWaypoint.theme !== me.lastWaypointTheme) {
 					// fade to new theme
-					me.engine.setTheme(currentWaypoint.theme, me.engine.colourChangeSteps);
-					if (me.themeItem) {
-						me.themeItem.current = [currentWaypoint.theme, currentWaypoint.theme];
-					}
+					me.themeItem.current = me.viewThemeRange([me.engine.colourTheme, ""], true, me);
 
 					// save theme
 					me.lastWaypointTheme = currentWaypoint.theme;
@@ -2416,7 +2414,7 @@
 
 		// lock or unlock the controls
 		me.autoFitToggle.locked = me.controlsLocked && me.waypointsDefined;
-		me.fitButton.locked = me.controlsLocked || me.autoFit;
+		me.fitButton.locked = me.controlsLocked || (me.autoFit && me.playList.current !== ViewConstants.modePause);
 		me.generationRange.locked = me.controlsLocked && me.waypointsDefined;
 		me.stepRange.locked = me.controlsLocked && me.waypointsDefined;
 		me.themeItem.locked = me.controlsLocked && me.waypointsDefined;
@@ -3082,7 +3080,7 @@
 
 	// colour theme
 	View.prototype.viewThemeRange = function(newValue, change, me) {
-		var result, newTheme;
+		var newTheme = 0;
 
 		// check if changing
 		if (change) {
@@ -3092,21 +3090,11 @@
 			// check if it has changed
 			if (me.engine.colourTheme !== newTheme) {
 				me.engine.setTheme(newTheme, me.engine.colourChangeSteps);
-				
-				// check for custom theme
-				if (me.customTheme && newTheme === me.engine.numThemes) {
-					me.menuManager.notification.notify("Custom Theme", 15, 40, 15, true);
-				} else {
-					me.menuManager.notification.notify("Theme " + newTheme, 15, 40, 15, true);
-				}
 			}
-			result = newValue[0];
-		} else {
-			result = me.engine.colourTheme;
 		}
 
 		// return value
-		return [result, me.engine.colourTheme];
+		return [newValue[0], me.themeName(me.engine.colourTheme)];
 	};
 
 	// step size
@@ -3193,7 +3181,8 @@
 
 	// reset the camera
 	View.prototype.resetCamera = function(me, fullReset) {
-		var numberValue = 0;
+		var numberValue = 0,
+		    previousSteps = 0;
 
 		// reset zoom
 		me.engine.zoom = me.defaultZoom;
@@ -3219,8 +3208,10 @@
 		// only reset the rest on a hard reset
 		if (fullReset) {
 			// reset theme
-			me.engine.setTheme(me.defaultTheme, 1);
-			me.themeItem.current = [me.defaultTheme, me.defaultTheme];
+			previousSteps = me.engine.colourChangeSteps;
+			me.engine.colourChangeSteps = 1;
+			me.themeItem.current = me.viewThemeRange([me.defaultTheme, ""], true, me);
+			me.engine.colourChangeSteps = previousSteps;
 			if (me.multiStateView) {
 				// prevent colour theme change for multi-state view
 				me.engine.colourChange = 0;
@@ -4098,7 +4089,7 @@
 		// check if theme defined
 		if (poi.themeDefined) {
 			// set the new theme
-			me.themeItem.current = me.viewThemeRange([poi.theme, poi.theme], true, me);
+			me.themeItem.current = me.viewThemeRange([poi.theme, ""], true, me);
 		}
 
 		// notify POI changed
@@ -4252,7 +4243,6 @@
 	View.prototype.toggleGrid = function(newValue, change, me) {
 		if (change) {
 			me.engine.displayGrid = newValue[0];
-			me.menuManager.notification.notify("Grid Lines " + (me.engine.displayGrid ? "On" : "Off"), 15, 40, 15, true);
 		}
 
 		return [me.engine.displayGrid];
@@ -4271,7 +4261,6 @@
 	View.prototype.toggleAutoFit = function(newValue, change, me) {
 		if (change) {
 			me.autoFit = newValue[0];
-			me.menuManager.notification.notify("AutoFit " + (me.autoFit ? "On" : "Off"), 15, 40, 15, true);
 
 			// autofit now if just switched on and playback paused
 			if (me.autoFit && me.playList.current === ViewConstants.modePause) {
@@ -4675,8 +4664,8 @@
 						case 67:
 							// set default theme
 							if (!me.multiStateView) {
-								value = me.defaultTheme;
-								me.themeItem.current = me.viewThemeRange([value, value], true, me);
+								me.themeItem.current = me.viewThemeRange([me.defaultTheme, ""], true, me);
+								me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
 							}
 							break;
 					}
@@ -4926,6 +4915,7 @@
 					// toggle grid
 					me.engine.displayGrid = !me.engine.displayGrid;
 					me.gridToggle.current = me.toggleGrid([me.engine.displayGrid], true, me);
+					me.menuManager.notification.notify("Grid Lines " + (me.engine.displayGrid ? "On" : "Off"), 15, 40, 15, true);
 				}
 				break;
 
@@ -5055,6 +5045,7 @@
 				} else {
 					// toggle stars
 					me.starsButton.current = me.viewStarsToggle([!me.starsOn], true, me);
+					me.menuManager.notification.notify("Stars " + (me.starsOn ? "On" : "Off"), 15, 40, 15, true);
 				}
 				break;
 
@@ -5456,6 +5447,7 @@
 					if (!me.autoFitToggle.locked) {
 						me.autoFit = !me.autoFit;
 						me.autoFitToggle.current = me.toggleAutoFit([me.autoFit], true, me);
+						me.menuManager.notification.notify("AutoFit " + (me.autoFit ? "On" : "Off"), 15, 40, 15, true);
 					}
 				} else {
 					// fit zoom
@@ -5580,7 +5572,7 @@
 							// check for shift key
 							if (event.shiftKey) {
 								// decrement colour theme
-								value = me.themeItem.current[0];
+								value = (me.themeItem.current[0] + 0.5) | 0;
 								value -= 1;
 								if (value < 0) {
 									// check for custom theme
@@ -5592,7 +5584,7 @@
 								}
 							} else {
 								// increment colour theme
-								value = me.themeItem.current[0];
+								value = (me.themeItem.current[0] + 0.5) | 0;
 								value += 1;
 
 								// check for custom theme
@@ -5610,7 +5602,8 @@
 							}
 
 							// set the new theme
-							me.themeItem.current = me.viewThemeRange([value, value], true, me);
+							me.themeItem.current = me.viewThemeRange([value, ""], true, me);
+							me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
 						}
 					}
 				}
@@ -5976,8 +5969,8 @@
 		this.topicsButton.toolTip = ["show help topics"];
 
 		// help topic list
-		this.topicsList = this.viewMenu.addListItem(this.viewTopicsList, Menu.northEast, -120, 50, 120, 240, ["Keys", "Scripts", "Info", "Memory", "Aliases", "Colours"], 0, Menu.single);
-		this.topicsList.toolTip = ["", "", "", "", "", ""];
+		this.topicsList = this.viewMenu.addListItem(this.viewTopicsList, Menu.northEast, -120, 50, 120, 240, ["Keys", "Scripts", "Info", "Memory", "Aliases", "Themes", "Colours"], 0, Menu.single);
+		this.topicsList.toolTip = ["", "", "", "", "", "", ""];
 		this.topicsList.orientation = Menu.vertical;
 		this.topicsList.textOrientation = Menu.horizontal;
 
@@ -6139,7 +6132,7 @@
 		this.navToggle.toolTip = ["toggle navigation menu"];
 
 		// add the colour theme range
-		this.themeItem = this.viewMenu.addRangeItem(this.viewThemeRange, Menu.south, 0, -90, 390, 40, 0, this.engine.numThemes - 1, 1, true, "Theme ", "", 0);
+		this.themeItem = this.viewMenu.addRangeItem(this.viewThemeRange, Menu.south, 0, -90, 390, 40, 0, this.engine.numThemes - 1, 1, true, "", " Theme", -1);
 		this.themeItem.toolTip = "colour theme";
 
 		// add the generation speed range
@@ -6276,6 +6269,49 @@
 
 		// return whether attached successfully
 		return result;
+	};
+
+	// get theme name from a number
+	View.prototype.themeName = function(themeNumber) {
+		var themes = this.engine.themes,
+		    result = "";
+
+		// ensure number is integer
+		themeNumber = themeNumber | 0;
+
+		// check if it is in range
+		if (themeNumber < themes.length) {
+			result = themes[themeNumber].name;
+		}
+
+		return result;
+	};
+
+	// get a theme number from theme name
+	View.prototype.themeFromName = function(themeName) {
+		var found = false,
+			themes = this.engine.themes,
+			i = 0;
+
+			// conver to lower case for search
+			themeName = themeName.toLowerCase();
+
+			// don't include final custom theme in the search
+			while (i < themes.length - 1 && !found) {
+				if (themes[i].name.toLowerCase() === themeName) {
+					found = true;
+				} else {
+					i += 1;
+				}
+			}
+
+			// check if found
+			if (!found) {
+				i = -1;
+			}
+
+			// return theme number or if not found -1
+			return i;
 	};
 
 	// check if a string is a script command
@@ -8869,15 +8905,35 @@
 										itemValid = true;
 									}
 								} else {
-									// check for initial
-									if (peekToken === Keywords.initialWord) {
+									// check for theme name
+									numberValue = this.themeFromName(peekToken);
+									if (numberValue !== -1) {
 										// token valid so eat it
 										peekToken = scriptReader.getNextToken();
 
-										// copy from initial waypoint
-										this.waypointManager.copyInitial(Keywords.themeWord, currentWaypoint, scriptErrors, this.initialTheme);
-										this.initialTheme = true;
+										// check if theme already defined at this waypoint
+										if (currentWaypoint.themeDefined && !this.initialTheme && !suppressErrors.theme) {
+											// raise script error
+											this.raiseThemeError(scriptErrors, numberValue, currentWaypoint.theme);
+										}
+
+										// set theme in waypoint
+										currentWaypoint.theme = numberValue;
+										currentWaypoint.themeDefined = true;
+										this.initialTheme = false;
+										suppressErrors.theme = false;
 										itemValid = true;
+									} else {
+										// check for initial
+										if (peekToken === Keywords.initialWord) {
+											// token valid so eat it
+											peekToken = scriptReader.getNextToken();
+	
+											// copy from initial waypoint
+											this.waypointManager.copyInitial(Keywords.themeWord, currentWaypoint, scriptErrors, this.initialTheme);
+											this.initialTheme = true;
+											itemValid = true;
+										}
 									}
 								}
 							}
@@ -10861,49 +10917,35 @@
 
 		// make this current position the default
 		this.defaultZoom = this.engine.zoom;
-		if (this.zoomItem) {
-			this.zoomItem.current = this.viewZoomRange([this.engine.zoom, this.engine.zoom], false, this);
-		}
+		this.zoomItem.current = this.viewZoomRange([this.engine.zoom, this.engine.zoom], false, this);
 		this.defaultX = this.engine.xOff;
 		this.defaultY = this.engine.yOff;
 
 		// set the default angle
 		this.defaultAngle = this.engine.angle;
-		if (this.angleItem) {
-			this.angleItem.current = [this.defaultAngle, this.defaultAngle];
-		}
+		this.angleItem.current = [this.defaultAngle, this.defaultAngle];
 
 		// set the default theme
 		this.defaultTheme = this.engine.colourTheme;
-		if (this.themeItem) {
-			this.themeItem.current = [this.defaultTheme, this.defaultTheme];
-		}
+		this.themeItem.current = this.viewThemeRange([this.defaultTheme, ""], true, this);
 
 		// set the generation speed
 		this.defaultGPS = this.genSpeed;
 		numberValue = Math.sqrt((this.defaultGPS - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
-		if (this.generationRange) {
-			this.generationRange.current = this.viewGenerationRange([numberValue, numberValue], true, this);
-		}
+		this.generationRange.current = this.viewGenerationRange([numberValue, numberValue], true, this);
 
 		// set the step
 		this.defaultStep = this.gensPerStep;
-		if (this.stepRange) {
-			this.stepRange.current = this.viewStepRange([this.defaultStep, this.defaultStep], true, this);
-		}
+		this.stepRange.current = this.viewStepRange([this.defaultStep, this.defaultStep], true, this);
 
 		// set the layers
 		this.defaultLayers = this.engine.layers;
-		if (this.layersItem) {
-			this.layersItem.current = [this.defaultLayers, this.defaultLayers];
-		}
+		this.layersItem.current = [this.defaultLayers, this.defaultLayers];
 
 		// set the layer depth
 		this.defaultDepth = this.engine.layerDepth;
 		numberValue = Math.sqrt(this.defaultDepth);
-		if (this.depthItem) {
-			this.depthItem.current = this.viewDepthRange([numberValue, numberValue], true, this);
-		}
+		this.depthItem.current = this.viewDepthRange([numberValue, numberValue], true, this);
 
 		// mark something alive
 		this.engine.anythingAlive = true;

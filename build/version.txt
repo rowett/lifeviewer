@@ -1,6 +1,9 @@
 Build 288
 - fixed an issue with HROT/LtL von Neumann patterns not allocating a large enough border to cause grid to grow correctly
 - hex coordinates were wrong
+- colour Themes now have names
+	- the [[ THEME ]] script command can take a theme number or name
+	- the Help Information has a new "Themes" topic that lists the theme definitions
 
 Build 287
 - new Draw and Pan buttons

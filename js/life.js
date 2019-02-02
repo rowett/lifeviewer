@@ -58,7 +58,8 @@
 	/**
 	 * @constructor
 	 */
-	function Theme(deadRange, aliveRange, unoccupied) {
+	function Theme(name, deadRange, aliveRange, unoccupied) {
+		this.name = name;
 		this.aliveRange = aliveRange;
 		this.deadRange = deadRange;
 		this.unoccupied = unoccupied;
@@ -1626,55 +1627,55 @@
 		var i = 0;
 
 		// monochrome
-		this.themes[i] = new Theme(new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("Mono", new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0));
 		i += 1;
 
 		// black to dark blue, cyan to white
-		this.themes[i] = new Theme(new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new ColourRange(new Colour(0, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("Blues", new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new ColourRange(new Colour(0, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0));
 		i += 1;
 
 		// black to red, orange to yellow
-		this.themes[i] = new Theme(new ColourRange(new Colour(32, 0, 0), new Colour(160, 0, 0)), new ColourRange(new Colour(255, 144, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("Fire", new ColourRange(new Colour(32, 0, 0), new Colour(160, 0, 0)), new ColourRange(new Colour(255, 144, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// black to green, cyan to white
-		this.themes[i] = new Theme(new ColourRange(new Colour(0, 24, 0), new Colour(0, 128, 0)), new ColourRange(new Colour(0, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("Posion", new ColourRange(new Colour(0, 24, 0), new Colour(0, 128, 0)), new ColourRange(new Colour(0, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0));
 		i += 1;
 
 		// black to purple, yellow to white
-		this.themes[i] = new Theme(new ColourRange(new Colour(0, 47, 0), new Colour(128, 0, 128)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 255)), new Colour(0, 32, 128));
+		this.themes[i] = new Theme("Yellow", new ColourRange(new Colour(0, 47, 0), new Colour(128, 0, 128)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 255)), new Colour(0, 32, 128));
 		i += 1;
 
 		// grey scale
-		this.themes[i] = new Theme(new ColourRange(new Colour(16, 16, 16), new Colour(104, 104, 104)), new ColourRange(new Colour(176, 176, 176), new Colour(255, 255, 255)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("Grey", new ColourRange(new Colour(16, 16, 16), new Colour(104, 104, 104)), new ColourRange(new Colour(176, 176, 176), new Colour(255, 255, 255)), new Colour(0, 0, 0));
 		i += 1;
 
 		// inverse monochrome
-		this.themes[i] = new Theme(new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(255, 255, 255));
+		this.themes[i] = new Theme("Inverse", new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(255, 255, 255));
 		i += 1;
 
 		// white to cyan, blue to black
-		this.themes[i] = new Theme(new ColourRange(new Colour(240, 240, 240), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 255), new Colour(0, 0, 0)), new Colour(255, 255, 255));
+		this.themes[i] = new Theme("Day", new ColourRange(new Colour(240, 240, 240), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 255), new Colour(0, 0, 0)), new Colour(255, 255, 255));
 		i += 1;
 
 		// occupied vs unoccupied
-		this.themes[i] = new Theme(new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("Occupied", new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new Colour(0, 0, 0));
 		i += 1;
 
 		// unoccupied, dead and alive only
-		this.themes[i] = new Theme(new ColourRange(new Colour(160, 0, 0), new Colour(160, 0, 0)), new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("Red", new ColourRange(new Colour(160, 0, 0), new Colour(160, 0, 0)), new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new Colour(0, 0, 0));
 		i += 1;
 
 		// LifeHistory
-		this.themes[i] = new Theme(new ColourRange(new Colour(0, 0, 96), new Colour(0, 0, 160)), new ColourRange(new Colour(0, 240, 0), new Colour(16, 255, 16)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("LifeHistory", new ColourRange(new Colour(0, 0, 96), new Colour(0, 0, 160)), new ColourRange(new Colour(0, 240, 0), new Colour(16, 255, 16)), new Colour(0, 0, 0));
 		i += 1;
 
 		// Multi-state (Generations and HROT) - yellow to red
-		this.themes[i] = new Theme(new ColourRange(new Colour(64, 0, 0), new Colour(128, 0, 0)), new ColourRange(new Colour(255, 0, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("Generations", new ColourRange(new Colour(64, 0, 0), new Colour(128, 0, 0)), new ColourRange(new Colour(255, 0, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// custom theme
-		this.themes[i] = new Theme(new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("Custom", new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// set current colour theme
