@@ -116,12 +116,14 @@
 		this.aliases.push(["Banks-I", "B3e4ejr5cinqy6-ei78/S012-e3-ajk4-akqw5-ajk6-e78"]);
 		this.aliases.push(["Banks-III", "B2ce3e4jr5cin6-en7c8/S012-ac3-cn4-eikny5-kr67c8"]);
 		this.aliases.push(["Best Friends", "B2ce3aiy/S12aei3r"]);
+		this.aliases.push(["Bgunlife", "B34eny5e/S23-a4iy5e6c"]);
 		this.aliases.push(["Blocks for Days", "B2-ae3-cij4a5aj6e7e8/S01e2ai3ar4ar5air6ae7c8"]);
 		this.aliases.push(["Bubbles", "B3ai4-a/S23"]);
 		this.aliases.push(["Butterfly", "B2i34e6i7c/S2-i36n"]);
 		this.aliases.push(["Buzz", "B2i35-n/S2-ci36k8"]);
 		this.aliases.push(["CB2", "B2ae4i/S1e2in"]);
 		this.aliases.push(["cetlife", "B34cet/S234jkwyz"]);
+		this.aliases.push(["CommonRepl", "B3/S23-ac4eiy6"]);
 		this.aliases.push(["Conway++", "B3/S234c"]);
 		this.aliases.push(["Conway+-1", "B3/S23-inqy4aikqtwz"]);
 		this.aliases.push(["Conway+-2", "B3/S2-ak34aikqtwz5inqy"]);
@@ -174,6 +176,7 @@
 		this.aliases.push(["Salad", "B2i34c/S2-i3"]);
 		this.aliases.push(["Scenery", "B3-cnry4-acery5i/S23-a4-jknqr5y8"]);
 		this.aliases.push(["SharkLife", "B34aeiz/S2-ak34ant6cek"]);
+		this.aliases.push(["signallife", "B3aeijy5e6i/S2-c3-a4iq5k6ck"]);
 		this.aliases.push(["SilverLife", "B367/S2-i34q"]);
 		this.aliases.push(["SlugWorld", "B2e3ai4arw5678/S3-an4ar5i678"]);
 		this.aliases.push(["Snowflakes", "B2ci3ai4c8/S02ae3eijkq4iz5ar6i7e"]);
@@ -258,6 +261,8 @@
 		this.aliases.push(["Bugs R3", "R3,C2,M1,S14..23,B14..18,NM"]);
 		this.aliases.push(["Bugs R7", "R7,C2,M1,S63..108,B63..84,NM"]);
 		this.aliases.push(["Bugsmovie", "R10,C2,M1,S123..212,B123..170,NM"]);
+		this.aliases.push(["Fire rule", "R5,C6,M1,S31..43,B15..25,NM"]);
+		this.aliases.push(["Fire whirl", "R8,C6,S46..91,B65..100,NM"]);
 		this.aliases.push(["Globe", "R8,C2,M1,S163..223,B74..252,NM"]);
 		//this.aliases.push(["Majority", "R4,C2,M1,S41..81,B41..80,NM"]);
 		this.aliases.push(["Majorly", "R7,C2,M1,S113..225,B113..224,NM"]);
