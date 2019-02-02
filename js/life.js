@@ -63,8 +63,20 @@
 		this.aliveRange = aliveRange;
 		this.deadRange = deadRange;
 		this.unoccupied = unoccupied;
+		this.gridDefined = false;
+		this.gridMajor = 0;
+		this.gridColour = null;
+		this.gridMajorColour = null;
 	}
 	
+	// add grid line settings to the theme
+	Theme.prototype.setGridLines = function(gridMajor, gridColour, gridMajorColour) {
+		this.gridDefined = true;
+		this.gridMajor = gridMajor;
+		this.gridColour = (gridColour.red << 16) | (gridColour.green << 8) | (gridColour.blue);
+		this.gridMajorColour = (gridMajorColour.red << 16) | (gridMajorColour.green << 8) | (gridMajorColour.blue);
+	};
+
 	// check if theme has colour history
 	Theme.prototype.hasHistory = function() {
 		var result = true;
@@ -365,8 +377,8 @@
 		this.aliveColTarget = null;
 		this.unoccupiedTarget = null;
 
-		// number of  colour themes
-		this.numThemes = 12;
+		// number of  colour themes (will be computed when themes are added)
+		this.numThemes = -1;
 
 		// 8 bit view of image data required if CanvasPixelArray used
 		this.data8 = null;
@@ -476,9 +488,13 @@
 		// fast lookup for colour reset
 		this.colourReset = this.allocator.allocate(Uint8, 256 * 8, "Life.colourReset");
 
+		// whether custome grid colours used
+		this.customGridColours = false;
+
 		// grid line colour in raw format R G B
 		this.gridLineRawDefault = (80 << 16) | (80 << 8) | 80;
 		this.gridLineRaw = this.gridLineRawDefault;
+		this.definedGridLineRaw = this.gridLineRawDefault;
 
 		// grid line colour
 		this.gridLineColour = -1;
@@ -486,6 +502,7 @@
 		// grid line bold colour in raw format R G B
 		this.gridLineBoldRawDefault = (112 << 16) | (112 << 8) | 112;
 		this.gridLineBoldRaw = this.gridLineBoldRawDefault;
+		this.definedGridLineBoldRaw = this.gridLineBoldRawDefault;
 
 		// grid line bold colour
 		this.gridLineBoldColour = -1;
@@ -497,6 +514,9 @@
 		// grid line major interval and enablement
 		this.gridLineMajor = 10;
 		this.gridLineMajorEnabled = true;
+
+		// user defined grid line major (to restore if theme doesn't define one)
+		this.definedGridLineMajor = 10;
 
 		// column occupancy array for grid bounding box calculation
 		this.columnOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16");
@@ -1639,7 +1659,7 @@
 		i += 1;
 
 		// black to green, cyan to white
-		this.themes[i] = new Theme("Posion", new ColourRange(new Colour(0, 24, 0), new Colour(0, 128, 0)), new ColourRange(new Colour(0, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("Poison", new ColourRange(new Colour(0, 24, 0), new Colour(0, 128, 0)), new ColourRange(new Colour(0, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0));
 		i += 1;
 
 		// black to purple, yellow to white
@@ -1674,9 +1694,32 @@
 		this.themes[i] = new Theme("Generations", new ColourRange(new Colour(64, 0, 0), new Colour(128, 0, 0)), new ColourRange(new Colour(255, 0, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0));
 		i += 1;
 
+		// Golly theme
+		this.themes[i] = new Theme("Golly", new ColourRange(new Colour(48, 48, 48), new Colour(48, 48, 48)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(48, 48, 48));
+		this.themes[i].setGridLines(10, new Colour(80, 80, 80), new Colour(112, 112, 112));
+		i += 1;
+
+		// MCell theme
+		this.themes[i] = new Theme("MCell", new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0));
+		this.themes[i].setGridLines(5, new Colour(64, 0, 0), new Colour(99, 3, 1));
+		i += 1;
+
+		// Catagolue theme
+		this.themes[i] = new Theme("Catagolue", new ColourRange(new Colour(160, 221, 204), new Colour(160, 221, 204)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(192, 255, 238));
+		this.themes[i].setGridLines(0, new Colour(160, 221, 204), new Colour(160, 221, 204));
+		i += 1;
+
+		// Caterer theme
+		this.themes[i] = new Theme("Caterer", new ColourRange(new Colour(54, 57, 62), new Colour(55, 57, 62)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(54, 57, 62));
+		this.themes[i].setGridLines(0, new Colour(0, 0, 0), new Colour(0, 0, 0));
+		i += 1;
+
 		// custom theme
 		this.themes[i] = new Theme("Custom", new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
 		i += 1;
+
+		// save number of themes less one (for the custom theme)
+		this.numThemes = this.themes.length - 1;
 
 		// set current colour theme
 		this.aliveColCurrent = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
@@ -1712,16 +1755,36 @@
 		// check whether new theme has history
 		this.themeHistory = newTheme.hasHistory();
 
-		// check if custom grid colours are used
-		if (this.gridLineRaw === this.gridLineRawDefault || this.gridLineRaw === this.gridLineLightRawDefault) {
-			// pick light or dark grid lines based on theme background
-			if (((this.unoccupiedTarget.red + this.unoccupiedTarget.green + this.unoccupiedTarget.blue) / 3) >= 128) {
-				this.gridLineRaw = this.gridLineLightRawDefault;
-				this.gridLineBoldRaw = this.gridLineLightBoldRawDefault;
+		// check if grid is specified
+		if (newTheme.gridDefined) {
+			// copy from theme
+			this.gridLineMajor = newTheme.gridMajor;
+			// user defined settings would override
+			if (this.customGridColours) {
+				this.gridLineRaw = this.definedGridLineRaw;
+				this.gridLineBoldRaw = this.definedGridLineBoldRaw;
+			} else {
+				// use theme colours
+				this.gridLineRaw  = newTheme.gridColour;
+				this.gridLineBoldRaw = newTheme.gridMajorColour;
 			}
-			else {
-				this.gridLineRaw = this.gridLineRawDefault;
-				this.gridLineBoldRaw = this.gridLineBoldRawDefault;
+		} else {
+			// set to default or whatever the user defined with script commands
+			this.gridLineMajor = this.definedGridLineMajor;
+			// check if custom grid colours were used
+			if (this.customGridColours) {
+				this.gridLineRaw = this.definedGridLineRaw;
+				this.gridLineBoldRaw = this.definedGridLineBoldRaw;
+			} else {
+				// pick light or dark grid lines based on theme background
+				if (((this.unoccupiedTarget.red + this.unoccupiedTarget.green + this.unoccupiedTarget.blue) / 3) >= 128) {
+					this.gridLineRaw = this.gridLineLightRawDefault;
+					this.gridLineBoldRaw = this.gridLineLightBoldRawDefault;
+				}
+				else {
+					this.gridLineRaw = this.gridLineRawDefault;
+					this.gridLineBoldRaw = this.gridLineBoldRawDefault;
+				}
 			}
 		}
 	};

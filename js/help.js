@@ -81,11 +81,12 @@
 
 	// convert bytes to MBytes
 	Help.asMByte = function(bytes) {
-		var result = bytes / (1024 * 1024);
-		if (result < 10) {
-			result = result.toFixed(1);
+		var mb = bytes / (1024 * 1024),
+		    result = "";
+		if (mb < 10) {
+			result = String(mb.toFixed(1));
 		} else {
-			result = result.toFixed(0);
+			result = String(mb.toFixed(0));
 		}
 
 		return result;
@@ -1295,7 +1296,105 @@
 		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
+		// aliases
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		sections[sectionNum] = view.lineNo;
+		sectionNum += 1;
+		topics[ViewConstants.aliasesTopic] = view.lineNo;
+		y = this.renderHelpLine(view, "", "Aliases", ctx, x, y, height, helpLine);
+
+		// display alias table
+		view.wrapHelpText = true;
+		tabs[0] = 260;
+		for (i = 0; i < AliasManager.aliases.length; i += 1) {
+			// check for category
+			if (AliasManager.aliases[i][1] === "") {
+				// render category
+				y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+				sections[sectionNum] = view.lineNo;
+				sectionNum += 1;
+				y = this.renderHelpLine(view, "", AliasManager.aliases[i][0] + " Aliases:", ctx, x, y, height, helpLine);
+			} else {
+				// check for default alias
+				if (AliasManager.aliases[i][0] !== "") {
+					// render non-default alias
+					y = this.renderHelpLine(view, AliasManager.aliases[i][0], AliasManager.aliases[i][1], ctx, x, y, height, helpLine);
+				}
+			}
+		}
+		view.wrapHelpText = false;
+
+		// display theme list
+		tabs[0] = 130;
+		tabs[1] = 200;
+		tabs[2] = 250;
+		tabs[3] = 300;
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		sections[sectionNum] = view.lineNo;
+		sectionNum += 1;
+		topics[ViewConstants.themesTopic] = view.lineNo;
+		y = this.renderHelpLine(view, "", "Themes", ctx, x, y, height, helpLine);
+		// draw each theme except the custom theme
+		for (i = 0; i < view.engine.themes.length - 1; i += 1) {
+			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+			theme = view.engine.themes[i];
+			// draw theme name with a '*' if it is the current theme
+			y = this.renderHelpLine(view, "Name" + (i === view.engine.colourTheme ? "*" : ""), theme.name, ctx, x, y, height, helpLine);
+			// background colour
+			this.renderColourBox(view, theme.unoccupied.red, theme.unoccupied.green, theme.unoccupied.blue, ctx, x + tabs[0], y, height, helpLine);
+			y = this.renderHelpLine(view, "BACKGROUND", this.rgbString(theme.unoccupied.red, theme.unoccupied.green, theme.unoccupied.blue), ctx, x, y, height, helpLine);
+			// alive colour
+			this.renderColourBox(view, theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue, ctx, x + tabs[0], y, height, helpLine);
+			y = this.renderHelpLine(view, "ALIVE", this.rgbString(theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue), ctx, x, y, height, helpLine);
+			// alive ramp if different than alive
+			if (!(theme.aliveRange.startColour.red === theme.aliveRange.endColour.red && theme.aliveRange.startColour.green === theme.aliveRange.endColour.green && theme.aliveRange.startColour.blue === theme.aliveRange.endColour.blue)) {
+				this.renderColourBox(view, theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
+				y = this.renderHelpLine(view, "ALIVERAMP", this.rgbString(theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue), ctx, x, y, height, helpLine);
+			}
+			// dead colour
+			this.renderColourBox(view, theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue, ctx, x + tabs[0], y, height, helpLine);
+			y = this.renderHelpLine(view, "DEAD", this.rgbString(theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue), ctx, x, y, height, helpLine);
+			// dead ramp if different than dead
+			if (!(theme.deadRange.startColour.red === theme.deadRange.endColour.red && theme.deadRange.startColour.green === theme.deadRange.endColour.green && theme.deadRange.startColour.blue === theme.deadRange.endColour.blue)) {
+				this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
+				y = this.renderHelpLine(view, "DEADRAMP", this.rgbString(theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue), ctx, x, y, height, helpLine);
+			}
+			// check if grid lines are customised
+			if (theme.gridDefined) {
+				// grid line colour
+				this.renderColourBox(view, theme.gridColour >> 16, (theme.gridColour >> 8) & 255, theme.gridColour & 255, ctx, x + tabs[0], y, height, helpLine);
+				y = this.renderHelpLine(view, "GRID", this.rgbString(theme.gridColour >> 16, (theme.gridColour >> 8) & 255, theme.gridColour & 255), ctx, x, y, height, helpLine);
+				// major grid line colour
+				this.renderColourBox(view, theme.gridMajorColour >> 16, (theme.gridMajorColour >> 8) & 255, theme.gridMajorColour & 255, ctx, x + tabs[0], y, height, helpLine);
+				y = this.renderHelpLine(view, "GRIDMAJOR", this.rgbString(theme.gridMajorColour >> 16, (theme.gridMajorColour >> 8) & 255, theme.gridMajorColour & 255), ctx, x, y, height, helpLine);
+				// major grid line interval
+				y = this.renderHelpLine(view, "GRIDMAJOR", theme.gridMajor, ctx, x, y, height, helpLine);
+			}
+		}
+
+		// display colour names
+		tabs[0] = 260;
+		tabs[1] = 330;
+		tabs[2] = 380;
+		// hide the colour name from renderColourBox off the display since the name is already drawn
+		tabs[3] = view.displayWidth;
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		sections[sectionNum] = view.lineNo;
+		sectionNum += 1;
+		topics[ViewConstants.coloursTopic] = view.lineNo;
+		y = this.renderHelpLine(view, "", "Colours", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "The following names can be used in place of R G B:", ctx, x, y, height, helpLine);
+		for (i = 0; i < keys.length; i += 1) {
+			namedCol = cmList[keys[i]];
+			this.renderColourBox(view, namedCol[1], namedCol[2], namedCol[3], ctx, x + tabs[0], y, height, helpLine);
+			y = this.renderHelpLine(view, namedCol[0], this.rgbString(namedCol[1], namedCol[2], namedCol[3]), ctx, x, y, height, helpLine);
+		}
+
 		// memory information
+		tabs[0] = 128;
 		tabs[1] = 200;
 		tabs[2] = 290;
 		tabs[3] = 530;
@@ -1348,92 +1447,6 @@
 			y = this.renderHelpLine(view, this.pad(String(view.engine.allocator.allocations[i].size), 10), view.engine.allocator.allocationInfo(i), ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-
-		// aliases
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		sections[sectionNum] = view.lineNo;
-		sectionNum += 1;
-		topics[ViewConstants.aliasesTopic] = view.lineNo;
-		y = this.renderHelpLine(view, "", "Aliases", ctx, x, y, height, helpLine);
-
-		// display alias table
-		view.wrapHelpText = true;
-		tabs[0] = 260;
-		for (i = 0; i < AliasManager.aliases.length; i += 1) {
-			// check for category
-			if (AliasManager.aliases[i][1] === "") {
-				// render category
-				y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-				sections[sectionNum] = view.lineNo;
-				sectionNum += 1;
-				y = this.renderHelpLine(view, "", AliasManager.aliases[i][0] + " Aliases:", ctx, x, y, height, helpLine);
-			} else {
-				// check for default alias
-				if (AliasManager.aliases[i][0] !== "") {
-					// render non-default alias
-					y = this.renderHelpLine(view, AliasManager.aliases[i][0], AliasManager.aliases[i][1], ctx, x, y, height, helpLine);
-				}
-			}
-		}
-		view.wrapHelpText = false;
-
-		// display theme list
-		tabs[0] = 130;
-		tabs[1] = 200;
-		tabs[2] = 250;
-		tabs[3] = 300;
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		sections[sectionNum] = view.lineNo;
-		sectionNum += 1;
-		topics[ViewConstants.themesTopic] = view.lineNo;
-		y = this.renderHelpLine(view, "", "Themes", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		// draw each theme except the custom theme
-		for (i = 0; i < view.engine.themes.length - 1; i += 1) {
-			theme = view.engine.themes[i];
-			// draw theme name with a '*' if it is the current theme
-			y = this.renderHelpLine(view, "Name" + (i === view.engine.colourTheme ? "*" : ""), theme.name, ctx, x, y, height, helpLine);
-			// background colour
-			this.renderColourBox(view, theme.unoccupied.red, theme.unoccupied.green, theme.unoccupied.blue, ctx, x + tabs[0], y, height, helpLine);
-			y = this.renderHelpLine(view, "BACKGROUND", this.rgbString(theme.unoccupied.red, theme.unoccupied.green, theme.unoccupied.blue), ctx, x, y, height, helpLine);
-			// alive colour
-			this.renderColourBox(view, theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue, ctx, x + tabs[0], y, height, helpLine);
-			y = this.renderHelpLine(view, "ALIVE", this.rgbString(theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue), ctx, x, y, height, helpLine);
-			// alive ramp if different than alive
-			if (!(theme.aliveRange.startColour.red === theme.aliveRange.endColour.red && theme.aliveRange.startColour.green === theme.aliveRange.endColour.green && theme.aliveRange.startColour.blue === theme.aliveRange.endColour.blue)) {
-				this.renderColourBox(view, theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
-				y = this.renderHelpLine(view, "ALIVERAMP", this.rgbString(theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue), ctx, x, y, height, helpLine);
-			}
-			// dead colour
-			this.renderColourBox(view, theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue, ctx, x + tabs[0], y, height, helpLine);
-			y = this.renderHelpLine(view, "DEAD", this.rgbString(theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue), ctx, x, y, height, helpLine);
-			// dead ramp if different than dead
-			if (!(theme.deadRange.startColour.red === theme.deadRange.endColour.red && theme.deadRange.startColour.green === theme.deadRange.endColour.green && theme.deadRange.startColour.blue === theme.deadRange.endColour.blue)) {
-				this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
-				y = this.renderHelpLine(view, "DEADRAMP", this.rgbString(theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue), ctx, x, y, height, helpLine);
-			}
-		}
-
-		// display colour names
-		tabs[0] = 260;
-		tabs[1] = 330;
-		tabs[2] = 380;
-		// hide the colour name from renderColourBox off the display since the name is already drawn
-		tabs[3] = view.displayWidth;
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		sections[sectionNum] = view.lineNo;
-		sectionNum += 1;
-		topics[ViewConstants.coloursTopic] = view.lineNo;
-		y = this.renderHelpLine(view, "", "Colours", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "The following names can be used in place of R G B:", ctx, x, y, height, helpLine);
-		for (i = 0; i < keys.length; i += 1) {
-			namedCol = cmList[keys[i]];
-			this.renderColourBox(view, namedCol[1], namedCol[2], namedCol[3], ctx, x + tabs[0], y, height, helpLine);
-			y = this.renderHelpLine(view, namedCol[0], this.rgbString(namedCol[1], namedCol[2], namedCol[3]), ctx, x, y, height, helpLine);
-		}
 
 		// save number of help lines
 		view.numHelpLines = view.lineNo - 1;

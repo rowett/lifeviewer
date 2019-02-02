@@ -278,10 +278,10 @@
 		/** @const {number} */ keysTopic : 0,
 		/** @const {number} */ scriptsTopic : 1,
 		/** @const {number} */ informationTopic : 2,
-		/** @const {number} */ memoryTopic : 3,
-		/** @const {number} */ aliasesTopic : 4,
-		/** @const {number} */ themesTopic : 5,
-		/** @const {number} */ coloursTopic : 6
+		/** @const {number} */ aliasesTopic : 3,
+		/** @const {number} */ themesTopic : 4,
+		/** @const {number} */ coloursTopic : 5,
+		/** @const {number} */ memoryTopic : 6
 	},
 
 	// Controller singleton
@@ -3089,7 +3089,7 @@
 
 			// check if it has changed
 			if (me.engine.colourTheme !== newTheme) {
-				me.engine.setTheme(newTheme, me.engine.colourChangeSteps);
+				me.engine.setTheme(newTheme, me.engine.colourChangeSteps, me);
 				if (me.engine.colourChangeSteps > 1) {
 					me.menuManager.updateCount = me.engine.colourChangeSteps;
 				}
@@ -5972,7 +5972,7 @@
 		this.topicsButton.toolTip = ["show help topics"];
 
 		// help topic list
-		this.topicsList = this.viewMenu.addListItem(this.viewTopicsList, Menu.northEast, -120, 50, 120, 240, ["Keys", "Scripts", "Info", "Memory", "Aliases", "Themes", "Colours"], 0, Menu.single);
+		this.topicsList = this.viewMenu.addListItem(this.viewTopicsList, Menu.northEast, -120, 50, 120, 240, ["Keys", "Scripts", "Info", "Aliases", "Themes", "Colours", "Memory"], 0, Menu.single);
 		this.topicsList.toolTip = ["", "", "", "", "", "", ""];
 		this.topicsList.orientation = Menu.vertical;
 		this.topicsList.textOrientation = Menu.horizontal;
@@ -6241,6 +6241,9 @@
 			
 			// disable fps display
 			this.menuManager.showTiming = false;
+
+			// create colour themes before the menus so the control has the right number of themes
+			this.engine.createColourThemes();
 
 			// create menu
 			this.createMenus();
@@ -6524,18 +6527,20 @@
 			}
 
 			// save the custom colour
-			this.customThemeValue[customThemeElement] = redValue << 16 | greenValue << 8 | blueValue;
+			this.customThemeValue[customThemeElement] = (redValue << 16) | (greenValue << 8) | blueValue;
 
 			// process the colour
 			switch (customThemeElement) {
 			case ViewConstants.customThemeGrid:
 				// copy to grid colour
 				this.customGridColour = this.customThemeValue[customThemeElement];
+				this.engine.customGridColours = true;
 				break;
 
 			case ViewConstants.customThemeGridMajor:
 				// copy to grid major colour
 				this.customGridMajorColour = this.customThemeValue[customThemeElement];
+				this.engine.customGridColours = true;
 				break;
 
 			case ViewConstants.customThemeStars:
@@ -6680,7 +6685,7 @@
 			customTheme.deadRange.endColour.blue = colourValue & 255;
 
 			// set the custom theme
-			this.engine.setTheme(this.engine.numThemes, 1);
+			this.engine.setTheme(this.engine.numThemes, 1, this);
 		}
 	};
 
@@ -7732,6 +7737,7 @@
 								// check it is in range
 								if (numberValue >= ViewConstants.minBoldGridInterval && numberValue <= ViewConstants.maxBoldGridInterval) {
 									this.engine.gridLineMajor = numberValue;
+									this.engine.definedGridLineMajor = numberValue;
 									itemValid = true;
 								}
 							}
@@ -9647,7 +9653,7 @@
 
 			// set theme
 			if (currentWaypoint.themeDefined) {
-				this.engine.setTheme(currentWaypoint.theme, 1);
+				this.engine.setTheme(currentWaypoint.theme, 1, this);
 			}
 
 			// set depth
@@ -9766,11 +9772,13 @@
 			// check if custom grid line colour provided
 			if (this.customGridColour !== -1) {
 				this.engine.gridLineRaw = this.customGridColour;
+				this.engine.definedGridLineRaw = this.customGridColour;
 			}
 
 			// check if custom grid major line colour provided
 			if (this.customGridMajorColour !== -1) {
 				this.engine.gridLineBoldRaw = this.customGridMajorColour;
+				this.engine.definedGridLineBoldRaw = this.customGridMajorColour;
 			}
 
 			// enforce view only for multi-state patterns that aren't LifeHistory
@@ -9940,6 +9948,9 @@
 	View.prototype.resetScriptControls = function() {
 		// reset maximum grid size
 		this.engine.maxGridSize = 1 << ViewConstants.defaultGridPower;
+
+		// reset custom grid colours used
+		this.engine.customGridColours = false;
 
 		// clear default POI
 		this.defaultPOI = -1;
@@ -10352,9 +10363,6 @@
 		// initalised ColourManager
 		ColourManager.init();
 
-		// create the colour themes
-		this.engine.createColourThemes();
-
 		// create the colour index
 		this.engine.createColourIndex();
 
@@ -10364,15 +10372,15 @@
 		// check for LifeHistory
 		if (this.engine.isLifeHistory) {
 			// default to theme 10
-			this.engine.setTheme(10, 1);
+			this.engine.setTheme(10, 1, this);
 		} else {
 			// check for Generations or HROT
 			if (this.engine.multiNumStates > 2) {
 				// multi state uses theme 11
-				this.engine.setTheme(11, 1);
+				this.engine.setTheme(11, 1, this);
 			} else {
 				// default to theme 1
-				this.engine.setTheme(1, 1);
+				this.engine.setTheme(1, 1, this);
 			}
 		}
 
@@ -10480,8 +10488,11 @@
 
 		// reset grid lines
 		this.engine.gridLineRaw = this.engine.gridLineRawDefault;
+		this.engine.definedGridLineRaw = this.engine.gridLineRawDefault;
 		this.engine.gridLineBoldRaw = this.engine.gridLineBoldRawDefault;
+		this.engine.definedGridLineBoldRaw = this.engine.gridLineBoldRawDefault;
 		this.engine.gridLineMajor = 10;
+		this.engine.definedGridLineMajor = 10;
 		this.engine.gridLineMajorEnabled = true;
 		this.customGridMajorColour = -1;
 		this.customGridColour = -1;
