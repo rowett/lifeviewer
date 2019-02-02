@@ -2873,7 +2873,9 @@
 				// schedule update if no update scheduled
 				if (!me.updateScheduled) {
 					me.scheduleNextUpdate(me);
-					me.updateCount = 2;
+					if (me.updateCount < 2) {
+						me.updateCount = 2;
+					}
 				}
 			}
 
@@ -2911,7 +2913,9 @@
 		// schedule update if no update scheduled
 		if (!me.updateScheduled) {
 			me.scheduleNextUpdate(me);
-			me.updateCount = 2;
+			if (me.updateCount < 2) {
+				me.updateCount = 2;
+			}
 		}
 	};
 

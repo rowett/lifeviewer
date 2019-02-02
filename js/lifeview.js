@@ -3090,6 +3090,9 @@
 			// check if it has changed
 			if (me.engine.colourTheme !== newTheme) {
 				me.engine.setTheme(newTheme, me.engine.colourChangeSteps);
+				if (me.engine.colourChangeSteps > 1) {
+					me.menuManager.updateCount = me.engine.colourChangeSteps;
+				}
 			}
 		}
 
