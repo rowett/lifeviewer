@@ -21,7 +21,7 @@
 		//this.aliases.push(["Hexrule b2o", "B2o/S2m34"]);
 
 		// add 2 state totalistic aliases
-		this.aliases.push(["Totalistic Moore", ""]);
+		this.aliases.push(["Outer-Totalistic Moore", ""]);
 		this.aliases.push(["", "B3/S23"]);
 		this.aliases.push(["Conway's Life", "B3/S23"]);
 		this.aliases.push(["2x2", "B36/S125"]);
@@ -99,7 +99,7 @@
 		this.aliases.push(["Walled Cities", "B45678/S2345"]);
 
 		// add hex rules
-		this.aliases.push(["Totalistic Hex", ""]);
+		this.aliases.push(["Outer-Totalistic Hex", ""]);
 		this.aliases.push(["Fredkin Hex", "B135/S0246H"]);
 		this.aliases.push(["Hexagonal Life", "B2/S34H"]);
 		this.aliases.push(["HighHexLife", "B25/S34H"]);
@@ -205,7 +205,7 @@
 		this.aliases.push(["X-rule-pre", "B2cei3ci4jnr5ikn/S12aen3c4einqy5er6aei8"]);
 
 		// add Generations aliases
-		this.aliases.push(["Generations Moore", ""]);
+		this.aliases.push(["Outer-Totalistic Generations Moore", ""]);
 		this.aliases.push(["Banners", "2367/3457/5"]);
 		this.aliases.push(["BelZhab", "23/23/8"]);
 		this.aliases.push(["BelZhab Sediment", "145678/23/8"]);
@@ -240,7 +240,6 @@
 		this.aliases.push(["RainZha", "2/23/8"]);
 		this.aliases.push(["Rake", "3467/2678/6"]);
 		this.aliases.push(["SediMental", "45678/25678/4"]);
-		this.aliases.push(["Sliders", "012-e3-ae4acnqyz5acer6acn78/3j4-eikq5c/3"]);
 		this.aliases.push(["Snake", "03467/25/6"]);
 		this.aliases.push(["SoftFreeze", "13458/38/6"]);
 		this.aliases.push(["Spirals", "2/234/5"]);
@@ -253,6 +252,10 @@
 		this.aliases.push(["Wanderers", "345/34678/5"]);
 		this.aliases.push(["Worms", "3467/25/6"]);
 		this.aliases.push(["Xtasy", "1456/2356/16"]);
+
+		// add isotropic generations aliases
+		this.aliases.push(["Isotropic Non-Totalistic Generations Moore", ""]);
+		this.aliases.push(["Sliders", "012-e3-ae4acnqyz5acer6acn78/3j4-eikq5c/3"]);
 
 		// add LtL 2-state aliases
 		this.aliases.push(["Larger than Life Moore", ""]);
@@ -275,7 +278,7 @@
 		this.aliases.push(["Fire whirl", "R8,C6,M1,S46..91,B65..100,NM"]);
 
 		// add HROT aliases
-		this.aliases.push(["HROT Moore", ""]);
+		this.aliases.push(["Higher-Range Outer-Totalistic Moore", ""]);
 		this.aliases.push(["Fredkin R2", "R2,C2,S0,2,4,6,8,10,12,14,16,18,20,22,24,B1,3,5,7,9,11,13,15,17,19,21,23"]);
 		this.aliases.push(["Fredkin R3", "R3,C2,S0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,B1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47"]);
 		this.aliases.push(["Fredkin R4", "R4,C2,S0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,B1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79"]);
