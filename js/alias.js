@@ -205,7 +205,7 @@
 		this.aliases.push(["X-rule-pre", "B2cei3ci4jnr5ikn/S12aen3c4einqy5er6aei8"]);
 
 		// add Generations aliases
-		this.aliases.push(["Generations", ""]);
+		this.aliases.push(["Generations Moore", ""]);
 		this.aliases.push(["Banners", "2367/3457/5"]);
 		this.aliases.push(["BelZhab", "23/23/8"]);
 		this.aliases.push(["BelZhab Sediment", "145678/23/8"]);
@@ -254,15 +254,13 @@
 		this.aliases.push(["Worms", "3467/25/6"]);
 		this.aliases.push(["Xtasy", "1456/2356/16"]);
 
-		// add LtL aliases
-		this.aliases.push(["Larger than Life", ""]);
+		// add LtL 2-state aliases
+		this.aliases.push(["Larger than Life Moore", ""]);
 		this.aliases.push(["Balloons", "R2,C2,M1,S7..10,B7..11,NM"]);
 		this.aliases.push(["Bosco's Rule", "R5,C2,M1,S34..58,B34..45,NM"]);
 		this.aliases.push(["Bugs R3", "R3,C2,M1,S14..23,B14..18,NM"]);
 		this.aliases.push(["Bugs R7", "R7,C2,M1,S63..108,B63..84,NM"]);
 		this.aliases.push(["Bugsmovie", "R10,C2,M1,S123..212,B123..170,NM"]);
-		this.aliases.push(["Fire rule", "R5,C6,M1,S31..43,B15..25,NM"]);
-		this.aliases.push(["Fire whirl", "R8,C6,S46..91,B65..100,NM"]);
 		this.aliases.push(["Globe", "R8,C2,M1,S163..223,B74..252,NM"]);
 		//this.aliases.push(["Majority", "R4,C2,M1,S41..81,B41..80,NM"]);
 		this.aliases.push(["Majorly", "R7,C2,M1,S113..225,B113..224,NM"]);
@@ -271,8 +269,13 @@
 		this.aliases.push(["Soldier Bugs", "R7,C2,M1,S65..114,B65..95,NM"]);
 		this.aliases.push(["Waffle", "R7,C2,M1,S100..200,B75..170,NM"]);
 
+		// add generations Ltl
+		this.aliases.push(["Generations Larger than Life Moore", ""]);
+		this.aliases.push(["Fire rule", "R5,C6,M1,S31..43,B15..25,NM"]);
+		this.aliases.push(["Fire whirl", "R8,C6,M1,S46..91,B65..100,NM"]);
+
 		// add HROT aliases
-		this.aliases.push(["HROT", ""]);
+		this.aliases.push(["HROT Moore", ""]);
 		this.aliases.push(["Fredkin R2", "R2,C2,S0,2,4,6,8,10,12,14,16,18,20,22,24,B1,3,5,7,9,11,13,15,17,19,21,23"]);
 		this.aliases.push(["Fredkin R3", "R3,C2,S0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,B1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47"]);
 		this.aliases.push(["Fredkin R4", "R4,C2,S0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,B1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79"]);

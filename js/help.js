@@ -154,6 +154,16 @@
 					ctx.font = ViewConstants.fixedFont;
 					ctx.fillText(fixed, x, y);
 
+					// check if the fixed portion was wider than the first tab
+					width = ctx.measureText(fixed).width;
+					if (width > view.tabs[tabNo]) {
+						// move the variable portion onto the next line
+						y += height;
+						result += height;
+						view.lineNo += 1;
+					}
+
+					// draw the variable text
 					ctx.font = ViewConstants.variableFont;
 					while (tab !== -1) {
 						// draw the text up to the tab at the current tab stop
@@ -1386,7 +1396,9 @@
 		topics[ViewConstants.coloursTopic] = view.lineNo;
 		y = this.renderHelpLine(view, "", "Colours", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "The following names can be used in place of R G B:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "The following names can be used in place of R G B", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "for example [[ COLOUR ALIVE Green ]]", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		for (i = 0; i < keys.length; i += 1) {
 			namedCol = cmList[keys[i]];
 			this.renderColourBox(view, namedCol[1], namedCol[2], namedCol[3], ctx, x + tabs[0], y, height, helpLine);
@@ -1398,6 +1410,8 @@
 		tabs[1] = 200;
 		tabs[2] = 290;
 		tabs[3] = 530;
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		sections[sectionNum] = view.lineNo;
 		sectionNum += 1;
 		topics[ViewConstants.memoryTopic] = view.lineNo;

@@ -6,6 +6,7 @@ Build 288
 	- Help Information has a new "Themes" topic that lists the theme definitions
 	- grid lines definition is also included in the Theme
 - added a few new aliases
+- improved Help information text wrapping
 
 Build 287
 - new Draw and Pan buttons

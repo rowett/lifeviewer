@@ -2274,7 +2274,7 @@
 				// check if a new theme is available
 				if (currentWaypoint.theme !== me.lastWaypointTheme) {
 					// fade to new theme
-					me.themeItem.current = me.viewThemeRange([me.engine.colourTheme, ""], true, me);
+					me.themeItem.current = me.viewThemeRange([currentWaypoint.theme, ""], true, me);
 
 					// save theme
 					me.lastWaypointTheme = currentWaypoint.theme;
