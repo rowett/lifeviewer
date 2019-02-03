@@ -1072,14 +1072,14 @@
 
 				// if there are no history states don't draw dead states
 				if (view.historyStates > 0) {
-					this.renderColourBox(view, theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue, ctx, x + tabs[0], y, height, helpLine);
-					y = this.renderHelpLine(view, "Dead", this.rgbObjectString(theme.deadRange.startColour), ctx, x, y, height, helpLine);
+					this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
+					y = this.renderHelpLine(view, "Dead", this.rgbObjectString(theme.deadRange.endColour), ctx, x, y, height, helpLine);
 
 					// check if there is a ramp between dead start and end
 					if (view.historyStates > 1) {
 						if (theme.deadRange.startColour.red !== theme.deadRange.endColour.red || theme.deadRange.startColour.green !== theme.deadRange.endColour.green || theme.deadRange.startColour.blue !== theme.deadRange.endColour.blue) {
-							this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
-							y = this.renderHelpLine(view, "DeadRamp", this.rgbObjectString(theme.deadRange.endColour), ctx, x, y, height, helpLine);
+							this.renderColourBox(view, theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue, ctx, x + tabs[0], y, height, helpLine);
+							y = this.renderHelpLine(view, "DeadRamp", this.rgbObjectString(theme.deadRange.startColour), ctx, x, y, height, helpLine);
 						} else {
 							y = this.renderHelpLine(view, "DeadRamp", "    (none)", ctx, x, y, height, helpLine);
 						}
@@ -1088,7 +1088,7 @@
 			}
 
 			// check for History rules
-			if (view.engine.isLifeHistory) {
+			if (view.engine.isLifeHistory && view.patternStates > 2) {
 				for (i = 3; i <= 6; i += 1) {
 					value = 128 + ViewConstants.stateMap[i];
 					colourValue = this.rgbString(view.engine.redChannel[value], view.engine.greenChannel[value], view.engine.blueChannel[value]);
@@ -1096,7 +1096,6 @@
 					
 					// render the colour box
 					this.renderColourBox(view, view.engine.redChannel[value], view.engine.greenChannel[value], view.engine.blueChannel[value], ctx, x + tabs[0], y, height, helpLine);
-
 					y = this.renderHelpLine(view, colourName, colourValue, ctx, x, y, height, helpLine);
 				}
 			}
@@ -1339,22 +1338,22 @@
 			y = this.renderHelpLine(view, "Name" + (i === view.engine.colourTheme ? "*" : ""), theme.name, ctx, x, y, height, helpLine);
 			// background colour
 			this.renderColourBox(view, theme.unoccupied.red, theme.unoccupied.green, theme.unoccupied.blue, ctx, x + tabs[0], y, height, helpLine);
-			y = this.renderHelpLine(view, "BACKGROUND", this.rgbString(theme.unoccupied.red, theme.unoccupied.green, theme.unoccupied.blue), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "BACKGROUND", this.rgbObjectString(theme.unoccupied), ctx, x, y, height, helpLine);
 			// alive colour
 			this.renderColourBox(view, theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue, ctx, x + tabs[0], y, height, helpLine);
-			y = this.renderHelpLine(view, "ALIVE", this.rgbString(theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "ALIVE", this.rgbObjectString(theme.aliveRange.startColour), ctx, x, y, height, helpLine);
 			// alive ramp if different than alive
 			if (!(theme.aliveRange.startColour.red === theme.aliveRange.endColour.red && theme.aliveRange.startColour.green === theme.aliveRange.endColour.green && theme.aliveRange.startColour.blue === theme.aliveRange.endColour.blue)) {
 				this.renderColourBox(view, theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
-				y = this.renderHelpLine(view, "ALIVERAMP", this.rgbString(theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue), ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "ALIVERAMP", this.rgbObjectString(theme.aliveRange.endColour), ctx, x, y, height, helpLine);
 			}
 			// dead colour
-			this.renderColourBox(view, theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue, ctx, x + tabs[0], y, height, helpLine);
-			y = this.renderHelpLine(view, "DEAD", this.rgbString(theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue), ctx, x, y, height, helpLine);
+			this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
+			y = this.renderHelpLine(view, "DEAD", this.rgbObjectString(theme.deadRange.endColour), ctx, x, y, height, helpLine);
 			// dead ramp if different than dead
 			if (!(theme.deadRange.startColour.red === theme.deadRange.endColour.red && theme.deadRange.startColour.green === theme.deadRange.endColour.green && theme.deadRange.startColour.blue === theme.deadRange.endColour.blue)) {
-				this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
-				y = this.renderHelpLine(view, "DEADRAMP", this.rgbString(theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue), ctx, x, y, height, helpLine);
+				this.renderColourBox(view, theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue, ctx, x + tabs[0], y, height, helpLine);
+				y = this.renderHelpLine(view, "DEADRAMP", this.rgbObjectString(theme.deadRange.startColour), ctx, x, y, height, helpLine);
 			}
 			// check if grid lines are customised
 			if (theme.gridDefined) {
