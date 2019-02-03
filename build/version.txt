@@ -7,6 +7,7 @@ Build 288
 	- grid lines definition is also included in the Theme
 - added a few new aliases
 - improved Help information text wrapping
+- COLOR DEAD is now the cell colour when it first dies and COLOR DEADRAMP is the colour it becomes after staying dead
 
 Build 287
 - new Draw and Pan buttons

@@ -1297,6 +1297,9 @@
 		sectionNum += 1;
 		topics[ViewConstants.aliasesTopic] = view.lineNo;
 		y = this.renderHelpLine(view, "", "Aliases", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "Alias names can be used as rule names in RLE", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "for example 'rule = HighLife'", ctx, x, y, height, helpLine);
 
 		// display alias table
 		view.wrapHelpText = true;
@@ -1330,7 +1333,22 @@
 		sectionNum += 1;
 		topics[ViewConstants.themesTopic] = view.lineNo;
 		y = this.renderHelpLine(view, "", "Themes", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "Themes are used to provide a visual representation of", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "cell history and longevity.", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "Two-state Theme colour components:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "BACKGROUND", "cell never occupied", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "ALIVE", "cell just born", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "ALIVERAMP", "cell alive for several generations", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "DEAD", "cell just died", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "DEADRAMP", "cell dead for several generations", ctx, x, y, height, helpLine);
+
 		// draw each theme except the custom theme
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		sections[sectionNum] = view.lineNo;
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Two-state Themes:", ctx, x, y, height, helpLine);
 		for (i = 0; i < view.engine.themes.length - 1; i += 1) {
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 			theme = view.engine.themes[i];
