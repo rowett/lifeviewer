@@ -1695,7 +1695,7 @@
 		i += 1;
 
 		// grey scale
-		this.themes[i] = new Theme("Grey", new ColourRange(new Colour(16, 16, 16), new Colour(104, 104, 104)), new ColourRange(new Colour(176, 176, 176), new Colour(255, 255, 255)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("Gray", new ColourRange(new Colour(16, 16, 16), new Colour(104, 104, 104)), new ColourRange(new Colour(176, 176, 176), new Colour(255, 255, 255)), new Colour(0, 0, 0));
 		i += 1;
 
 		// inverse monochrome

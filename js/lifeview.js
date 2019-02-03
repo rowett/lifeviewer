@@ -6676,9 +6676,9 @@
 		}
 
 		// set the dead colour
-		customTheme.deadRange.startColour.red = colourValue >> 16;
-		customTheme.deadRange.startColour.green = (colourValue >> 8) & 255;
-		customTheme.deadRange.startColour.blue = colourValue & 255;
+		customTheme.deadRange.endColour.red = colourValue >> 16;
+		customTheme.deadRange.endColour.green = (colourValue >> 8) & 255;
+		customTheme.deadRange.endColour.blue = colourValue & 255;
 
 		// check if the deadramp is specified
 		colourValue = this.customThemeValue[ViewConstants.customThemeDeadRamp];
@@ -6691,9 +6691,9 @@
 		}
 
 		// set the deadramp colour
-		customTheme.deadRange.endColour.red = colourValue >> 16;
-		customTheme.deadRange.endColour.green = (colourValue >> 8) & 255;
-		customTheme.deadRange.endColour.blue = colourValue & 255;
+		customTheme.deadRange.startColour.red = colourValue >> 16;
+		customTheme.deadRange.startColour.green = (colourValue >> 8) & 255;
+		customTheme.deadRange.startColour.blue = colourValue & 255;
 
 		// set the grid lines colours
 		customTheme.setGridLineColours(this.customThemeValue[ViewConstants.customThemeGrid], this.customThemeValue[ViewConstants.customThemeGridMajor]);
