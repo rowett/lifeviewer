@@ -262,15 +262,24 @@
 		this.aliases.push(["Balloons", "R2,C2,M1,S7..10,B7..11,NM"]);
 		this.aliases.push(["Bosco's Rule", "R5,C2,M1,S34..58,B34..45,NM"]);
 		this.aliases.push(["Bugs R3", "R3,C2,M1,S14..23,B14..18,NM"]);
+		this.aliases.push(["Bugs R4", "R4,C2,M1,S23..39,B23..30,NM"]);
+		this.aliases.push(["Bugs R6 variant", "R6,C2,M1,S47..81,B47..71,NM"]);
 		this.aliases.push(["Bugs R7", "R7,C2,M1,S63..108,B63..84,NM"]);
+		this.aliases.push(["Bugs R12", "R12,C2,M1,S175..300,B175..232,NM"]);
+		this.aliases.push(["Bugs R13", "R13,C2,M1,S205..349,B205..271,NM"]);
+		this.aliases.push(["Bugs R15", "R15,C2,M1,S269..461,B270..357,NM"]);
+		this.aliases.push(["Bugs R100 variant", "R100,C2,M1,S11303..19361,B11100..14996,NM"]);
 		this.aliases.push(["Bugsmovie", "R10,C2,M1,S123..212,B123..170,NM"]);
 		this.aliases.push(["Globe", "R8,C2,M1,S163..223,B74..252,NM"]);
 		//this.aliases.push(["Majority", "R4,C2,M1,S41..81,B41..80,NM"]);
 		this.aliases.push(["Majorly", "R7,C2,M1,S113..225,B113..224,NM"]);
 		this.aliases.push(["Rasta Bugs", "R5,C2,M1,S41..59,B32..50,NM"]);
-		this.aliases.push(["Suicidal Bugs", "R5,C2,M1,S37..59,B33..49,NM"]);
+		this.aliases.push(["Smudge", "R2,C2,M1,S7..11,B8..8,NM"]);
+		this.aliases.push(["Stones", "R2,C2,M1,S29..58,B38..61,NM"]);
 		this.aliases.push(["Soldier Bugs", "R7,C2,M1,S65..114,B65..95,NM"]);
+		this.aliases.push(["Suicidal Bugs", "R5,C2,M1,S37..59,B33..49,NM"]);
 		this.aliases.push(["Waffle", "R7,C2,M1,S100..200,B75..170,NM"]);
+		this.aliases.push(["Waving human intestines", "R20,C2,M1,S1..21,B1..5,NM"]);
 
 		// add generations Ltl
 		this.aliases.push(["Generations Larger than Life Moore", ""]);
