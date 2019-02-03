@@ -64,9 +64,19 @@
 		this.deadRange = deadRange;
 		this.unoccupied = unoccupied;
 		this.gridDefined = false;
-		this.gridMajor = 0;
-		this.gridColour = null;
-		this.gridMajorColour = null;
+		this.gridMajor = 10;
+		this.gridColour = 0;
+		this.gridMajorColour = 0;
+
+		// pick light or dark grid lines based on theme background
+		if (((this.unoccupied.red + this.unoccupied.green + this.unoccupied.blue) / 3) >= 128) {
+			this.gridColour = ViewConstants.gridLineLightRawDefault;
+			this.gridMajorColour = ViewConstants.gridLineLightBoldRawDefault;
+		}
+		else {
+			this.gridColour = ViewConstants.gridLineRawDefault;
+			this.gridMajorColour = ViewConstants.gridLineBoldRawDefault;
+		}
 	}
 	
 	// add grid line settings to the theme
@@ -75,6 +85,35 @@
 		this.gridMajor = gridMajor;
 		this.gridColour = (gridColour.red << 16) | (gridColour.green << 8) | (gridColour.blue);
 		this.gridMajorColour = (gridMajorColour.red << 16) | (gridMajorColour.green << 8) | (gridMajorColour.blue);
+	};
+
+	// set custom grid lines colours
+	Theme.prototype.setGridLineColours = function(gridColour, gridMajorColour) {
+		// check if the grid lines colour was specified
+		if (gridColour !== -1) {
+			// yes so set it
+			this.gridColour = gridColour;
+		} else {
+			// no so pick the light or dark default based on the background colour
+			if (((this.unoccupied.red + this.unoccupied.green + this.unoccupied.blue) / 3) >= 128) {
+				this.gridColour = ViewConstants.gridLineLightRawDefault;
+			} else {
+				this.gridColour = ViewConstants.gridLineRawDefault;
+			}
+		}
+
+		// check if the major grid lines colour was specified
+		if (gridMajorColour !== -1) {
+			// yes so set it
+			this.gridMajorColour = gridMajorColour;
+		} else {
+			// no so pick the light or dark default based on the background colour
+			if (((this.unoccupied.red + this.unoccupied.green + this.unoccupied.blue) / 3) >= 128) {
+				this.gridMajorColour = ViewConstants.gridLineLightBoldRawDefault;
+			} else {
+				this.gridMajorColour = ViewConstants.gridLineBoldRawDefault;
+			}
+		}
 	};
 
 	// check if theme has colour history
@@ -488,28 +527,17 @@
 		// fast lookup for colour reset
 		this.colourReset = this.allocator.allocate(Uint8, 256 * 8, "Life.colourReset");
 
-		// whether custome grid colours used
-		this.customGridColours = false;
-
 		// grid line colour in raw format R G B
-		this.gridLineRawDefault = (80 << 16) | (80 << 8) | 80;
-		this.gridLineRaw = this.gridLineRawDefault;
-		this.definedGridLineRaw = this.gridLineRawDefault;
+		this.gridLineRaw = ViewConstants.gridLineRawDefault;
 
 		// grid line colour
 		this.gridLineColour = -1;
 
 		// grid line bold colour in raw format R G B
-		this.gridLineBoldRawDefault = (112 << 16) | (112 << 8) | 112;
-		this.gridLineBoldRaw = this.gridLineBoldRawDefault;
-		this.definedGridLineBoldRaw = this.gridLineBoldRawDefault;
+		this.gridLineBoldRaw = ViewConstants.gridLineBoldRawDefault;
 
 		// grid line bold colour
 		this.gridLineBoldColour = -1;
-
-		// grid line light background default
-		this.gridLineLightBoldRawDefault = (209 << 16) | (209 << 8) | 209;
-		this.gridLineLightRawDefault = (229 << 16) | (229 << 8) | 229;
 
 		// grid line major interval and enablement
 		this.gridLineMajor = 10;
@@ -1755,37 +1783,18 @@
 		// check whether new theme has history
 		this.themeHistory = newTheme.hasHistory();
 
-		// check if grid is specified
-		if (newTheme.gridDefined) {
-			// copy from theme
-			this.gridLineMajor = newTheme.gridMajor;
-			// user defined settings would override
-			if (this.customGridColours) {
-				this.gridLineRaw = this.definedGridLineRaw;
-				this.gridLineBoldRaw = this.definedGridLineBoldRaw;
-			} else {
-				// use theme colours
-				this.gridLineRaw  = newTheme.gridColour;
-				this.gridLineBoldRaw = newTheme.gridMajorColour;
-			}
+		// copy from theme
+		this.gridLineMajor = newTheme.gridMajor;
+		this.gridLineRaw  = newTheme.gridColour;
+		this.gridLineBoldRaw = newTheme.gridMajorColour;
+
+		// create grid line colours
+		if (this.littleEndian) {
+			this.gridLineColour = (255 << 24) | ((this.gridLineRaw & 255) << 16) | (((this.gridLineRaw >> 8) & 255) << 8) | (this.gridLineRaw >> 16);
+			this.gridLineBoldColour = (255 << 24) | ((this.gridLineBoldRaw & 255) << 16) | (((this.gridLineBoldRaw >> 8) & 255) << 8) | (this.gridLineBoldRaw >> 16);
 		} else {
-			// set to default or whatever the user defined with script commands
-			this.gridLineMajor = this.definedGridLineMajor;
-			// check if custom grid colours were used
-			if (this.customGridColours) {
-				this.gridLineRaw = this.definedGridLineRaw;
-				this.gridLineBoldRaw = this.definedGridLineBoldRaw;
-			} else {
-				// pick light or dark grid lines based on theme background
-				if (((this.unoccupiedTarget.red + this.unoccupiedTarget.green + this.unoccupiedTarget.blue) / 3) >= 128) {
-					this.gridLineRaw = this.gridLineLightRawDefault;
-					this.gridLineBoldRaw = this.gridLineLightBoldRawDefault;
-				}
-				else {
-					this.gridLineRaw = this.gridLineRawDefault;
-					this.gridLineBoldRaw = this.gridLineBoldRawDefault;
-				}
-			}
+			this.gridLineColour = ((this.gridLineRaw & 255) << 24) | (((this.gridLineRaw >> 8) & 255) << 16) | ((this.gridLineRaw >> 16) << 8) | 255;
+			this.gridLineBoldColour = ((this.gridLineBoldRaw & 255) << 24) | (((this.gridLineBoldRaw >> 8) & 255) << 16) | ((this.gridLineBoldRaw >> 16) << 8) | 255;
 		}
 	};
 

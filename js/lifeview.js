@@ -35,6 +35,18 @@
 
 	// ViewConstants singleton
 	ViewConstants = {
+		// grid line major light background default
+		/** @const (number) */ gridLineLightBoldRawDefault : (209 << 16) | (209 << 8) | 209,
+
+		// grid line light background default
+		/** @const (number) */ gridLineLightRawDefault : (229 << 16) | (229 << 8) | 229,
+
+		// grid line major dark background default
+		/** @const (number) */ gridLineBoldRawDefault : (112 << 16) | (112 << 8) | 112,
+
+		// grid line dark background default
+		/** @const (number) */ gridLineRawDefault : (80 << 16) | (80 << 8) | 80,
+
 		// one frame in seconds
 		/** @const (number) */ singleFrameSeconds : 16 / 1000,
 
@@ -1065,6 +1077,9 @@
 		this.defaultStep = 1;
 		this.defaultLayers = 1;
 		this.defaultDepth = 0.1;
+
+		// whether a theme was requested
+		this.themeRequested = false;
 
 		// saved camera
 		this.savedAngle = 0;
@@ -6531,16 +6546,16 @@
 
 			// process the colour
 			switch (customThemeElement) {
-			case ViewConstants.customThemeGrid:
+			case ViewConstants.customThecustomTheme:
 				// copy to grid colour
 				this.customGridColour = this.customThemeValue[customThemeElement];
-				this.engine.customGridColours = true;
+				this.customTheme = true;
 				break;
 
 			case ViewConstants.customThemeGridMajor:
 				// copy to grid major colour
 				this.customGridMajorColour = this.customThemeValue[customThemeElement];
-				this.engine.customGridColours = true;
+				this.customTheme = true;
 				break;
 
 			case ViewConstants.customThemeStars:
@@ -6610,83 +6625,78 @@
 		}
 	};
 
-	// validate custom theme
-	View.prototype.validateCustomTheme = function(scriptErrors, whichColour) {
-		var isValid = true,
-		    colourValue = 0,
+	// setup custom theme
+	View.prototype.setupCustomTheme = function() {
+		var colourValue = 0,
 		    customTheme = this.engine.themes[this.engine.numThemes];
 
 		// check for at least alive and dead or background
 		if (this.customThemeValue[ViewConstants.customThemeAlive] === -1) {
-			scriptErrors[scriptErrors.length] = [whichColour + " " + Keywords.themeAliveWord, "missing"];
-			isValid = false;
+			this.customThemeValue[ViewConstants.customThemeAlive] = 0xffffff;
 		}
 		if (this.customThemeValue[ViewConstants.customThemeBackground] === -1 && this.customThemeValue[ViewConstants.customThemeDead] === -1) {
-			scriptErrors[scriptErrors.length] = [whichColour + " " + Keywords.themeDeadWord, "missing"];
-			isValid = false;
+			this.customThemeValue[ViewConstants.customThemeBackground] = 0x000000;
 		}
 
-		if (isValid) {
-			// check if the background was supplied
-			colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
-			if (colourValue === -1) {
-				// use the dead colour
-				colourValue = this.customThemeValue[ViewConstants.customThemeDead];
-			}
+		// check if the background was supplied
+		colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+		if (colourValue === -1) {
+			// use the dead colour
+			colourValue = this.customThemeValue[ViewConstants.customThemeDead];
+		}
 
-			// set the background colour
-			customTheme.unoccupied.red = colourValue >> 16;
-			customTheme.unoccupied.green = (colourValue >> 8) & 255;
-			customTheme.unoccupied.blue = colourValue & 255;
+		// set the background colour
+		customTheme.unoccupied.red = colourValue >> 16;
+		customTheme.unoccupied.green = (colourValue >> 8) & 255;
+		customTheme.unoccupied.blue = colourValue & 255;
 
-			// set the alive colour
+		// set the alive colour
+		colourValue = this.customThemeValue[ViewConstants.customThemeAlive];
+		customTheme.aliveRange.startColour.red = colourValue >> 16;
+		customTheme.aliveRange.startColour.green = (colourValue >> 8) & 255;
+		customTheme.aliveRange.startColour.blue = colourValue & 255;
+
+		// check if the aliveramp is specified
+		colourValue = this.customThemeValue[ViewConstants.customThemeAliveRamp];
+		if (colourValue === -1) {
+			// use the alive colour
 			colourValue = this.customThemeValue[ViewConstants.customThemeAlive];
-			customTheme.aliveRange.startColour.red = colourValue >> 16;
-			customTheme.aliveRange.startColour.green = (colourValue >> 8) & 255;
-			customTheme.aliveRange.startColour.blue = colourValue & 255;
+		}
 
-			// check if the aliveramp is specified
-			colourValue = this.customThemeValue[ViewConstants.customThemeAliveRamp];
-			if (colourValue === -1) {
-				// use the alive colour
-				colourValue = this.customThemeValue[ViewConstants.customThemeAlive];
-			}
+		// set the aliveramp colour
+		customTheme.aliveRange.endColour.red = colourValue >> 16;
+		customTheme.aliveRange.endColour.green = (colourValue >> 8) & 255;
+		customTheme.aliveRange.endColour.blue = colourValue & 255;
 
-			// set the aliveramp colour
-			customTheme.aliveRange.endColour.red = colourValue >> 16;
-			customTheme.aliveRange.endColour.green = (colourValue >> 8) & 255;
-			customTheme.aliveRange.endColour.blue = colourValue & 255;
+		// check if the dead colour was supplied
+		colourValue = this.customThemeValue[ViewConstants.customThemeDead];
+		if (colourValue === -1) {
+			// use the background colour
+			colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+		}
 
-			// check if the dead colour was supplied
+		// set the dead colour
+		customTheme.deadRange.startColour.red = colourValue >> 16;
+		customTheme.deadRange.startColour.green = (colourValue >> 8) & 255;
+		customTheme.deadRange.startColour.blue = colourValue & 255;
+
+		// check if the deadramp is specified
+		colourValue = this.customThemeValue[ViewConstants.customThemeDeadRamp];
+		if (colourValue === -1) {
+			// use the dead colour if specified or the background otherwise
 			colourValue = this.customThemeValue[ViewConstants.customThemeDead];
 			if (colourValue === -1) {
-				// use the background colour
 				colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
 			}
-
-			// set the dead colour
-			customTheme.deadRange.startColour.red = colourValue >> 16;
-			customTheme.deadRange.startColour.green = (colourValue >> 8) & 255;
-			customTheme.deadRange.startColour.blue = colourValue & 255;
-
-			// check if the deadramp is specified
-			colourValue = this.customThemeValue[ViewConstants.customThemeDeadRamp];
-			if (colourValue === -1) {
-				// use the dead colour if specified or the background otherwise
-				colourValue = this.customThemeValue[ViewConstants.customThemeDead];
-				if (colourValue === -1) {
-					colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
-				}
-			}
-
-			// set the deadramp colour
-			customTheme.deadRange.endColour.red = colourValue >> 16;
-			customTheme.deadRange.endColour.green = (colourValue >> 8) & 255;
-			customTheme.deadRange.endColour.blue = colourValue & 255;
-
-			// set the custom theme
-			this.engine.setTheme(this.engine.numThemes, 1, this);
 		}
+
+		// set the deadramp colour
+		customTheme.deadRange.endColour.red = colourValue >> 16;
+		customTheme.deadRange.endColour.green = (colourValue >> 8) & 255;
+		customTheme.deadRange.endColour.blue = colourValue & 255;
+
+		// set the grid lines colours
+		customTheme.setGridLineColours(this.customThemeValue[ViewConstants.customThemeGrid], this.customThemeValue[ViewConstants.customThemeGridMajor]);
 	};
 
 	// validate waypoints
@@ -7737,7 +7747,6 @@
 								// check it is in range
 								if (numberValue >= ViewConstants.minBoldGridInterval && numberValue <= ViewConstants.maxBoldGridInterval) {
 									this.engine.gridLineMajor = numberValue;
-									this.engine.definedGridLineMajor = numberValue;
 									itemValid = true;
 								}
 							}
@@ -9651,11 +9660,6 @@
 				this.engine.angle = currentWaypoint.angle;
 			}
 
-			// set theme
-			if (currentWaypoint.themeDefined) {
-				this.engine.setTheme(currentWaypoint.theme, 1, this);
-			}
-
 			// set depth
 			if (currentWaypoint.depthDefined) {
 				this.engine.layerDepth = (currentWaypoint.depth / ViewConstants.depthScale) + ViewConstants.minDepth;
@@ -9664,6 +9668,12 @@
 			// set layers
 			if (currentWaypoint.layersDefined) {
 				this.engine.layers = currentWaypoint.layers;
+			}
+
+			// set theme
+			if (currentWaypoint.themeDefined) {
+				this.engine.setTheme(currentWaypoint.theme, 1, this);
+				this.themeRequested = true;
 			}
 
 			// set gps
@@ -9765,20 +9775,13 @@
 			
 			// check if custom theme provided
 			if (this.customTheme) {
-				// validate custom theme
-				this.validateCustomTheme(scriptErrors, whichColour);
-			}
+				// setup custom theme
+				this.setupCustomTheme();
 
-			// check if custom grid line colour provided
-			if (this.customGridColour !== -1) {
-				this.engine.gridLineRaw = this.customGridColour;
-				this.engine.definedGridLineRaw = this.customGridColour;
-			}
-
-			// check if custom grid major line colour provided
-			if (this.customGridMajorColour !== -1) {
-				this.engine.gridLineBoldRaw = this.customGridMajorColour;
-				this.engine.definedGridLineBoldRaw = this.customGridMajorColour;
+				// extend range of the Theme UI slider
+				if (this.themeItem) {
+					this.themeItem.upper = this.engine.numThemes;
+				}
 			}
 
 			// enforce view only for multi-state patterns that aren't LifeHistory
@@ -9824,14 +9827,6 @@
 
 			// save number of script errors
 			this.numScriptErrors = scriptErrors.length;
-		}
-
-		// check if custom theme defined
-		if (this.customTheme) {
-			// extend range of the Theme UI slider
-			if (this.themeItem) {
-				this.themeItem.upper = this.engine.numThemes;
-			}
 		}
 
 		// check if window title set
@@ -9949,8 +9944,8 @@
 		// reset maximum grid size
 		this.engine.maxGridSize = 1 << ViewConstants.defaultGridPower;
 
-		// reset custom grid colours used
-		this.engine.customGridColours = false;
+		// clear theme requested
+		this.themeRequested = false;
 
 		// clear default POI
 		this.defaultPOI = -1;
@@ -10369,20 +10364,14 @@
 		// clear the grid
 		this.engine.clearGrids();
 
-		// check for LifeHistory
-		if (this.engine.isLifeHistory) {
-			// default to theme 10
-			this.engine.setTheme(10, 1, this);
-		} else {
-			// check for Generations or HROT
-			if (this.engine.multiNumStates > 2) {
-				// multi state uses theme 11
-				this.engine.setTheme(11, 1, this);
-			} else {
-				// default to theme 1
-				this.engine.setTheme(1, 1, this);
-			}
-		}
+		// reset grid lines
+		this.engine.gridLineRaw = this.engine.gridLineRawDefault;
+		this.engine.gridLineBoldRaw = this.engine.gridLineBoldRawDefault;
+		this.engine.gridLineMajor = 10;
+		this.engine.definedGridLineMajor = 10;
+		this.engine.gridLineMajorEnabled = true;
+		this.customGridMajorColour = -1;
+		this.customGridColour = -1;
 
 		// set the default generation speed
 		this.genSpeed = 60;
@@ -10485,17 +10474,6 @@
 
 		// update help UI
 		this.helpToggle.current = this.toggleHelp([this.displayHelp], true, this);
-
-		// reset grid lines
-		this.engine.gridLineRaw = this.engine.gridLineRawDefault;
-		this.engine.definedGridLineRaw = this.engine.gridLineRawDefault;
-		this.engine.gridLineBoldRaw = this.engine.gridLineBoldRawDefault;
-		this.engine.definedGridLineBoldRaw = this.engine.gridLineBoldRawDefault;
-		this.engine.gridLineMajor = 10;
-		this.engine.definedGridLineMajor = 10;
-		this.engine.gridLineMajorEnabled = true;
-		this.customGridMajorColour = -1;
-		this.customGridColour = -1;
 
 		// reset boundary colour
 		this.customBoundaryColour = [96, 96, 96];
@@ -10777,6 +10755,29 @@
 			// check for alias name
 			if (this.patternAliasName !== "") {
 				this.ruleLabel.toolTip += " alias " + this.patternAliasName;
+			}
+		}
+
+		// check if a theme was requested
+		if (!this.themeRequested) {
+			// if not then check if a custom theme was specified
+			if (this.customTheme) {
+				this.engine.setTheme(this.engine.numThemes, 1, this);
+			} else {
+				// set the theme based on rule type
+				if (this.engine.isLifeHistory) {
+					// default to theme 10
+					this.engine.setTheme(10, 1, this);
+				} else {
+					// check for Generations or HROT
+					if (this.engine.multiNumStates > 2) {
+						// multi state uses theme 11
+						this.engine.setTheme(11, 1, this);
+					} else {
+						// default to theme 1
+						this.engine.setTheme(1, 1, this);
+					}
+				}
 			}
 		}
 

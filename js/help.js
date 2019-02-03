@@ -1130,26 +1130,12 @@
 		y = this.renderHelpLine(view, "Enabled", themeName, ctx, x, y, height, helpLine);
 
 		// display grid line colour
-		themeName = "Line Color";
-		if (view.customGridColour !== -1) {
-			themeName += "*";
-		}
-
-		// display colour box
 		this.renderColourBox(view, view.engine.gridLineRaw >> 16, (view.engine.gridLineRaw >> 8) & 255, view.engine.gridLineRaw & 255, ctx, x + tabs[0], y, height, helpLine);
-
-		y = this.renderHelpLine(view, themeName, this.rgbString(view.engine.gridLineRaw >> 16, (view.engine.gridLineRaw >> 8) & 255, view.engine.gridLineRaw & 255), ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Line Color", this.rgbString(view.engine.gridLineRaw >> 16, (view.engine.gridLineRaw >> 8) & 255, view.engine.gridLineRaw & 255), ctx, x, y, height, helpLine);
 
 		// display grid line major colour
-		themeName = "Major Color";
-		if (view.customGridMajorColour !== -1) {
-			themeName += "*";
-		}
-
-		// display colour box
 		this.renderColourBox(view, view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255, ctx, x + tabs[0], y, height, helpLine);
-
-		y = this.renderHelpLine(view, themeName, this.rgbString(view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255), ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Major Color", this.rgbString(view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255), ctx, x, y, height, helpLine);
 
 		// grid line major interval
 		if (view.engine.gridLineMajor > 0 && view.engine.gridLineMajorEnabled) {
