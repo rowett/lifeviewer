@@ -382,7 +382,7 @@
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", ViewConstants.versionName + " build " + ViewConstants.versionBuild + " by " + ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "A scriptable pattern viewer for cellular automata.", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "A scriptable pattern viewer for cellular automata", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
@@ -1335,7 +1335,7 @@
 		y = this.renderHelpLine(view, "", "Themes", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "Themes are used to provide a visual representation of", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "cell history and longevity.", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "cell history and longevity", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "Two-state Theme colour components:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "BACKGROUND", "cell never occupied", ctx, x, y, height, helpLine);
