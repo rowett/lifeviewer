@@ -6633,23 +6633,42 @@
 	// setup custom theme
 	View.prototype.setupCustomTheme = function() {
 		var colourValue = 0,
-		    customTheme = this.engine.themes[this.engine.numThemes];
+			customTheme = this.engine.themes[this.engine.numThemes],
+			themeValue = this.customThemeValue;
+
+		// check if alive is defined
+		if (themeValue[ViewConstants.customThemeAlive] === -1) {
+			// alive missing so check if dead is defined
+			colourValue = themeValue[ViewConstants.customThemeDead];
+			if (colourValue !== -1) {
+				// set alive to the inverse of dead
+				themeValue[ViewConstants.customThemeAlive] = 0xffffff - colourValue;
+			} else {
+				// check if background is defined
+				colourValue = themeValue[ViewConstants.customThemeBackground];
+				if (colourValue !== -1) {
+					// set alive to the inverse of background
+					themeValue[ViewConstants.customThemeAlive] = 0xffffff - colourValue;
+				} else {
+					// set alive to white
+					themeValue[ViewConstants.customThemeAlive] = 0xffffff;
+				}
+			}
+		}
+
+		// check if one of background or dead are defined
+		if (themeValue[ViewConstants.customThemeBackground] === -1 && themeValue[ViewConstants.customThemeDead] === -1) {
+			// both missing so set background to the inverse of alive
+			themeValue[ViewConstants.customThemeBackground] = 0xffffff - themeValue[ViewConstants.customThemeAlive];
+		}
 
 		// 2-state patterns
 
-		// check for at least alive and dead or background
-		if (this.customThemeValue[ViewConstants.customThemeAlive] === -1) {
-			this.customThemeValue[ViewConstants.customThemeAlive] = 0xffffff;
-		}
-		if (this.customThemeValue[ViewConstants.customThemeBackground] === -1 && this.customThemeValue[ViewConstants.customThemeDead] === -1) {
-			this.customThemeValue[ViewConstants.customThemeBackground] = 0x000000;
-		}
-
 		// check if the background was supplied
-		colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+		colourValue = themeValue[ViewConstants.customThemeBackground];
 		if (colourValue === -1) {
 			// use the dead colour
-			colourValue = this.customThemeValue[ViewConstants.customThemeDead];
+			colourValue = themeValue[ViewConstants.customThemeDead];
 		}
 
 		// set the background colour
@@ -6658,16 +6677,16 @@
 		customTheme.unoccupied.blue = colourValue & 255;
 
 		// set the alive colour
-		colourValue = this.customThemeValue[ViewConstants.customThemeAlive];
+		colourValue = themeValue[ViewConstants.customThemeAlive];
 		customTheme.aliveRange.startColour.red = colourValue >> 16;
 		customTheme.aliveRange.startColour.green = (colourValue >> 8) & 255;
 		customTheme.aliveRange.startColour.blue = colourValue & 255;
 
 		// check if the aliveramp is specified
-		colourValue = this.customThemeValue[ViewConstants.customThemeAliveRamp];
+		colourValue = themeValue[ViewConstants.customThemeAliveRamp];
 		if (colourValue === -1) {
 			// use the alive colour
-			colourValue = this.customThemeValue[ViewConstants.customThemeAlive];
+			colourValue = themeValue[ViewConstants.customThemeAlive];
 		}
 
 		// set the aliveramp colour
@@ -6676,10 +6695,10 @@
 		customTheme.aliveRange.endColour.blue = colourValue & 255;
 
 		// check if the dead colour was supplied
-		colourValue = this.customThemeValue[ViewConstants.customThemeDead];
+		colourValue = themeValue[ViewConstants.customThemeDead];
 		if (colourValue === -1) {
 			// use the background colour
-			colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+			colourValue = themeValue[ViewConstants.customThemeBackground];
 		}
 
 		// set the dead colour
@@ -6688,12 +6707,12 @@
 		customTheme.deadRange.endColour.blue = colourValue & 255;
 
 		// check if the deadramp is specified
-		colourValue = this.customThemeValue[ViewConstants.customThemeDeadRamp];
+		colourValue = themeValue[ViewConstants.customThemeDeadRamp];
 		if (colourValue === -1) {
 			// use the dead colour if specified or the background otherwise
-			colourValue = this.customThemeValue[ViewConstants.customThemeDead];
+			colourValue = themeValue[ViewConstants.customThemeDead];
 			if (colourValue === -1) {
-				colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+				colourValue = themeValue[ViewConstants.customThemeBackground];
 			}
 		}
 
@@ -6704,19 +6723,11 @@
 
 		// multi-state patterns
 
-		// check for at least alive and dead or background
-		if (this.customThemeValue[ViewConstants.customThemeAlive] === -1) {
-			this.customThemeValue[ViewConstants.customThemeAlive] = 0xffffff;
-		}
-		if (this.customThemeValue[ViewConstants.customThemeBackground] === -1 && this.customThemeValue[ViewConstants.customThemeDead] === -1) {
-			this.customThemeValue[ViewConstants.customThemeBackground] = 0x000000;
-		}
-
 		// check if the background was supplied
-		colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+		colourValue = themeValue[ViewConstants.customThemeBackground];
 		if (colourValue === -1) {
 			// use the dead colour
-			colourValue = this.customThemeValue[ViewConstants.customThemeDead];
+			colourValue = themeValue[ViewConstants.customThemeDead];
 		}
 
 		// set the background colour
@@ -6725,16 +6736,16 @@
 		customTheme.unoccupiedGen.blue = colourValue & 255;
 
 		// set the alive colour
-		colourValue = this.customThemeValue[ViewConstants.customThemeAlive];
+		colourValue = themeValue[ViewConstants.customThemeAlive];
 		customTheme.aliveGen.red = colourValue >> 16;
 		customTheme.aliveGen.green = (colourValue >> 8) & 255;
 		customTheme.aliveGen.blue = colourValue & 255;
 
 		// check if the dead colour was supplied
-		colourValue = this.customThemeValue[ViewConstants.customThemeDead];
+		colourValue = themeValue[ViewConstants.customThemeDead];
 		if (colourValue === -1) {
 			// use the background colour
-			colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+			colourValue = themeValue[ViewConstants.customThemeBackground];
 		}
 
 		// set the dead colour
@@ -6743,12 +6754,12 @@
 		customTheme.deadRangeGen.endColour.blue = colourValue & 255;
 
 		// check if the deadramp is specified
-		colourValue = this.customThemeValue[ViewConstants.customThemeDeadRamp];
+		colourValue = themeValue[ViewConstants.customThemeDeadRamp];
 		if (colourValue === -1) {
 			// use the dead colour if specified or the background otherwise
-			colourValue = this.customThemeValue[ViewConstants.customThemeDead];
+			colourValue = themeValue[ViewConstants.customThemeDead];
 			if (colourValue === -1) {
-				colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+				colourValue = themeValue[ViewConstants.customThemeBackground];
 			}
 		}
 
@@ -6758,10 +6769,10 @@
 		customTheme.deadRangeGen.startColour.blue = colourValue & 255;
 
 		// check if the dying colour was supplied
-		colourValue = this.customThemeValue[ViewConstants.customThemeDying];
+		colourValue = themeValue[ViewConstants.customThemeDying];
 		if (colourValue === -1) {
 			// use the background colour
-			colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+			colourValue = themeValue[ViewConstants.customThemeBackground];
 		}
 
 		// set the dying colour
@@ -6770,12 +6781,12 @@
 		customTheme.dyingRangeGen.endColour.blue = colourValue & 255;
 
 		// check if the dyingramp is specified
-		colourValue = this.customThemeValue[ViewConstants.customThemeDyingRamp];
+		colourValue = themeValue[ViewConstants.customThemeDyingRamp];
 		if (colourValue === -1) {
-			// use the dead colour if specified or the background otherwise
-			colourValue = this.customThemeValue[ViewConstants.customThemeDead];
+			// use the dying colour if specified or the background otherwise
+			colourValue = themeValue[ViewConstants.customThemeDying];
 			if (colourValue === -1) {
-				colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+				colourValue = themeValue[ViewConstants.customThemeBackground];
 			}
 		}
 
@@ -6785,7 +6796,7 @@
 		customTheme.dyingRangeGen.startColour.blue = colourValue & 255;
 
 		// set the grid lines colours
-		customTheme.setGridLineColours(this.customThemeValue[ViewConstants.customThemeGrid], this.customThemeValue[ViewConstants.customThemeGridMajor]);
+		customTheme.setGridLineColours(themeValue[ViewConstants.customThemeGrid], themeValue[ViewConstants.customThemeGridMajor]);
 	};
 
 	// validate waypoints

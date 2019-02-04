@@ -1690,9 +1690,12 @@
 	Life.prototype.createColourThemes = function() {
 		var i = 0;
 
+		// parameter order is:  deadRamp, dead, alive, aliveRamp, unoccupied
+		//						alive, dyingRamp, dying, deadRamp, dead, unoccupied
+
 		// monochrome
 		this.themes[i] = new Theme("Mono", new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(128, 128, 128)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
+									new Colour(255, 255, 255), new ColourRange(new Colour(128, 128, 128), new Colour(128, 128, 128)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// black to dark blue, cyan to white
@@ -1702,42 +1705,42 @@
 
 		// black to red, orange to yellow
 		this.themes[i] = new Theme("Fire", new ColourRange(new Colour(32, 0, 0), new Colour(160, 0, 0)), new ColourRange(new Colour(255, 144, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+									new Colour(255, 144, 0), new ColourRange(new Colour(240, 0, 0), new Colour(255, 144, 0)), new ColourRange(new Colour(32, 0, 0), new Colour(160, 0, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// black to green, cyan to white
 		this.themes[i] = new Theme("Poison", new ColourRange(new Colour(0, 24, 0), new Colour(0, 128, 0)), new ColourRange(new Colour(0, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+									new Colour(0, 255, 255), new ColourRange(new Colour(0, 192, 0), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 24, 0), new Colour(0, 128, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// black to purple, yellow to white
 		this.themes[i] = new Theme("Yellow", new ColourRange(new Colour(0, 47, 0), new Colour(128, 0, 128)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 255)), new Colour(0, 32, 128),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+									new Colour(255, 255, 0), new ColourRange(new Colour(192, 64, 64), new Colour(255, 255, 0)), new ColourRange(new Colour(0, 47, 0), new Colour(128, 0, 128)), new Colour(0, 0, 0));
 		i += 1;
 
 		// grey scale
-		this.themes[i] = new Theme("Gray", new ColourRange(new Colour(16, 16, 16), new Colour(104, 104, 104)), new ColourRange(new Colour(176, 176, 176), new Colour(255, 255, 255)), new Colour(0, 0, 0),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("Gray", new ColourRange(new Colour(16, 16, 16), new Colour(104, 104, 104)), new ColourRange(new Colour(176, 176, 176), new Colour(240, 240, 240)), new Colour(0, 0, 0),
+									new Colour(240, 240, 240), new ColourRange(new Colour(160, 160, 160), new Colour(240, 240, 240)), new ColourRange(new Colour(16, 16, 16), new Colour(104, 104, 104)), new Colour(0, 0, 0));
 		i += 1;
 
 		// inverse monochrome
 		this.themes[i] = new Theme("Inverse", new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(255, 255, 255),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+									new Colour(0, 0, 0), new ColourRange(new Colour(128, 128, 128), new Colour(128, 128, 128)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(255, 255, 255));
 		i += 1;
 
 		// white to cyan, blue to black
 		this.themes[i] = new Theme("Day", new ColourRange(new Colour(240, 240, 240), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 255), new Colour(0, 0, 0)), new Colour(255, 255, 255),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+									new Colour(0, 0, 255), new ColourRange(new Colour(0, 255, 255), new Colour(0, 0, 255)), new ColourRange(new Colour(240, 240, 240), new Colour(0, 192, 192)), new Colour(255, 255, 255));
 		i += 1;
 
 		// occupied vs unoccupied
 		this.themes[i] = new Theme("Occupied", new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new Colour(0, 0, 0),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+									new Colour(240, 240, 240), new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new Colour(0, 0, 0));
 		i += 1;
 
 		// unoccupied, dead and alive only
 		this.themes[i] = new Theme("Red", new ColourRange(new Colour(160, 0, 0), new Colour(160, 0, 0)), new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new Colour(0, 0, 0),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+									new Colour(255, 255, 255), new ColourRange(new Colour(160, 160, 160), new Colour(160, 160, 160)), new ColourRange(new Colour(160, 0, 0), new Colour(160, 0, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// LifeHistory
@@ -1752,31 +1755,31 @@
 
 		// Golly theme
 		this.themes[i] = new Theme("Golly", new ColourRange(new Colour(48, 48, 48), new Colour(48, 48, 48)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(48, 48, 48),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+									new Colour(255, 255, 0), new ColourRange(new Colour(255, 0, 0), new Colour(255, 255, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
 		this.themes[i].setGridLines(10, new Colour(80, 80, 80), new Colour(112, 112, 112));
 		i += 1;
 
 		// MCell theme
 		this.themes[i] = new Theme("MCell", new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+									new Colour(255, 255, 0), new ColourRange(new Colour(128, 128, 0), new Colour(128, 128, 128)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
 		this.themes[i].setGridLines(5, new Colour(64, 0, 0), new Colour(99, 3, 1));
 		i += 1;
 
 		// Catagolue theme
 		this.themes[i] = new Theme("Catagolue", new ColourRange(new Colour(160, 221, 204), new Colour(160, 221, 204)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(192, 255, 238),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+									new Colour(0, 0, 0), new ColourRange(new Colour(80, 111, 102), new Colour(80, 111, 102)), new ColourRange(new Colour(160, 221, 204), new Colour(160, 221, 204)), new Colour(192, 255, 238));
 		this.themes[i].setGridLines(0, new Colour(160, 221, 204), new Colour(160, 221, 204));
 		i += 1;
 
 		// Caterer theme
-		this.themes[i] = new Theme("Caterer", new ColourRange(new Colour(54, 57, 62), new Colour(55, 57, 62)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(54, 57, 62),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("Caterer", new ColourRange(new Colour(54, 57, 62), new Colour(54, 57, 62)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(54, 57, 62),
+									new Colour(255, 255, 255), new ColourRange(new Colour(27, 29, 31), new Colour(27, 29, 31)), new ColourRange(new Colour(54, 57, 62), new Colour(54, 57, 62)), new Colour(54, 57, 62));
 		this.themes[i].setGridLines(0, new Colour(0, 0, 0), new Colour(0, 0, 0));
 		i += 1;
 
 		// custom theme
 		this.themes[i] = new Theme("Custom", new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+									new Colour(0, 0, 0), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// save number of themes less one (for the custom theme)
