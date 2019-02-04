@@ -1773,7 +1773,7 @@
 
 		// Catagolue theme
 		this.themes[i] = new Theme("Catagolue", new ColourRange(new Colour(160, 221, 204), new Colour(160, 221, 204)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(192, 255, 238),
-									new Colour(0, 0, 0), new ColourRange(new Colour(80, 111, 102), new Colour(80, 111, 102)), new ColourRange(new Colour(160, 221, 204), new Colour(160, 221, 204)), new Colour(192, 255, 238));
+									new Colour(0, 0, 0), new ColourRange(new Colour(144, 189, 125), new Colour(91, 141, 41)), new ColourRange(new Colour(160, 221, 204), new Colour(160, 221, 204)), new Colour(192, 255, 238));
 		this.themes[i].setGridLines(0, new Colour(160, 221, 204), new Colour(160, 221, 204));
 		i += 1;
 
