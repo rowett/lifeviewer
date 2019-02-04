@@ -13,6 +13,10 @@
 
 	// initialise Alias Manager
 	AliasManager.init = function() {
+		var current = null,
+			check = null,
+			i = 0, j = 0;
+
 		// clear the current list
 		this.aliases = [];
 
@@ -215,9 +219,6 @@
 		this.aliases.push(["Train", "B34t6k8/S2-i35a7e"]);
 		this.aliases.push(["Turro", "B2-a3c/S12-i"]);
 		this.aliases.push(["Twinkles", "B2in34-a/S1e2ekn34ent"]);
-		this.aliases.push(["tDryLife", "B37/S2-i34q"]);
-		this.aliases.push(["tHighLife", "B36/S2-i34q"]);
-		this.aliases.push(["TLife", "B3/S2-i34q"]);
 		this.aliases.push(["Wild Seas", "B2c3-cekq4ikt5i8/S2-in3-acky4aijry5eiky6i"]);
 		this.aliases.push(["X-rule-pre", "B2cei3ci4jnr5ikn/S12aen3c4einqy5er6aei8"]);
 		this.aliases.push(["Ylife", "B2e3ai4ar/S23-a4a"]);
@@ -327,6 +328,22 @@
 		this.aliases.push(["Replicator R2", "R2,C2,S1,3,5,7,9,11,13,15,17,19,21,23,B1,3,5,7,9,11,13,15,17,19,21,23"]);
 		this.aliases.push(["Replicator R3", "R3,C2,S1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,B1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47"]);
 		this.aliases.push(["Replicator R4", "R4,C2,S1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,B1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79"]);
+
+		// mark duplicates
+		this.aliases[0][2] = false;
+		for (i = 1; i < this.aliases.length; i += 1) {
+			// get the next alias rule
+			current = this.aliases[i][1];
+			this.aliases[i][2] = false;
+			for (j = 0; j < i; j += 1) {
+				if (this.aliases[j][1] === current) {
+					// mark as duplicate rule
+					this.aliases[j][2] = true;
+					this.aliases[i][2] = true;
+					j = i;
+				}
+			}
+		}
 	};
 
 	// return rule from alias

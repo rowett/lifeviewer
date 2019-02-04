@@ -355,6 +355,9 @@
 		    value = 0,
 			flag = false,
 			
+			// aliases
+			aliases = AliasManager.aliases,
+
 			// memory aggregation
 			numViewers = Controller.numViewers(),
 			allocs = 0,
@@ -1318,19 +1321,19 @@
 		// display alias table
 		view.wrapHelpText = true;
 		tabs[0] = 260;
-		for (i = 0; i < AliasManager.aliases.length; i += 1) {
+		for (i = 0; i < aliases.length; i += 1) {
 			// check for category
-			if (AliasManager.aliases[i][1] === "") {
+			if (aliases[i][1] === "") {
 				// render category
 				y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 				sections[sectionNum] = view.lineNo;
 				sectionNum += 1;
-				y = this.renderHelpLine(view, "", AliasManager.aliases[i][0] + " Aliases:", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "", aliases[i][0] + " Aliases:", ctx, x, y, height, helpLine);
 			} else {
 				// check for default alias
-				if (AliasManager.aliases[i][0] !== "") {
+				if (aliases[i][0] !== "") {
 					// render non-default alias
-					y = this.renderHelpLine(view, AliasManager.aliases[i][0], AliasManager.aliases[i][1], ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, aliases[i][0] + (aliases[i][2] ? "*" : ""), aliases[i][1], ctx, x, y, height, helpLine);
 				}
 			}
 		}
