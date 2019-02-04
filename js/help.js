@@ -1085,10 +1085,16 @@
 
 			// check for Generations or HROT rules
 			if (view.engine.multiNumStates > 2) {
-				for (i = (view.HistoryStates > 0 ? 0 : 1); i < view.engine.multiNumStates; i += 1) {
-					j = view.engine.multiNumStates - i + view.historyStates;
+				// draw the alive state
+				j = view.engine.multiNumStates + view.historyStates - 1; 
+				this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + tabs[0], y, height, helpLine);
+				y = this.renderHelpLine(view, "Alive", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+
+				// draw dying states
+				for (i = 1; i < view.engine.multiNumStates - 1; i += 1) {
+					j = view.engine.multiNumStates - i + view.historyStates - 1;
 					this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + tabs[0], y, height, helpLine);
-					y = this.renderHelpLine(view, "State " + i, this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, "Dying " + i, this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
 				}
 				if (view.historyStates > 0) {
 					j = view.historyStates;
