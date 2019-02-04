@@ -1,3 +1,16 @@
+Build 289
+- improved handling of custom Theme definitions
+	- for all Themes:
+		- if ALIVE not specified then set it to the inverse of DEAD or the inverse of BACKGROUND or white
+		- if both BACKGROUND and DEAD not specified then set BACKGROUND to the inverse of ALIVE or black
+		- if DEAD not specified then set it to BACKGROUND
+		- if DEADRAMP not specified then set it to DEAD
+	- for 2-state Themes:
+		- if ALIVERAMP not specified then set it to ALIVE
+	- for multi-state Themes:
+		- if DYING not specified then make DYING to step 2 of ALIVE to DYINGRAMP dynamic
+		- if DYINGRAMP not specified then set it to DYING
+
 Build 288
 - fixed an issue with HROT/LtL von Neumann patterns not allocating a large enough border to cause grid to grow correctly
 - hex coordinates were wrong

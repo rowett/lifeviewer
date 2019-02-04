@@ -164,7 +164,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 288,
+		/** @const {number} */ versionBuild : 289,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6771,14 +6771,15 @@
 		// check if the dying colour was supplied
 		colourValue = themeValue[ViewConstants.customThemeDying];
 		if (colourValue === -1) {
-			// use the background colour
-			colourValue = themeValue[ViewConstants.customThemeBackground];
+			// flag it as dynamic
+			customTheme.dyingRangeDynamic = true;
+		} else {
+			// set the dying colour
+			customTheme.dyingRangeDynamic = false;
+			customTheme.dyingRangeGen.endColour.red = colourValue >> 16;
+			customTheme.dyingRangeGen.endColour.green = (colourValue >> 8) & 255;
+			customTheme.dyingRangeGen.endColour.blue = colourValue & 255;
 		}
-
-		// set the dying colour
-		customTheme.dyingRangeGen.endColour.red = colourValue >> 16;
-		customTheme.dyingRangeGen.endColour.green = (colourValue >> 8) & 255;
-		customTheme.dyingRangeGen.endColour.blue = colourValue & 255;
 
 		// check if the dyingramp is specified
 		colourValue = themeValue[ViewConstants.customThemeDyingRamp];
@@ -9893,6 +9894,9 @@
 					this.themeItem.upper = this.engine.numThemes;
 				}
 			}
+
+			// process dynamic themes
+			this.engine.processMultiStateThemes();
 
 			// enforce view only for multi-state patterns that aren't LifeHistory
 			if (numStates > 2 && !(this.engine.isLifeHistory || this.engine.mulitNumStates !== -1)) {

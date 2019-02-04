@@ -75,6 +75,12 @@
 		this.dyingRangeGen = dyingRangeGen;
 		this.deadRangeGen = deadRangeGen;
 		this.unoccupiedGen = unoccupiedGen;
+		this.dyingRangeDynamic = false;
+
+		// check for dynamic dying range
+		if (this.dyingRangeGen.endColour.red === -1) {
+			this.dyingRangeDynamic = true;
+		}
 
 		// pick light or dark grid lines based on theme background
 		if (((this.unoccupied.red + this.unoccupied.green + this.unoccupied.blue) / 3) >= 128) {
@@ -1700,27 +1706,27 @@
 
 		// black to dark blue, cyan to white
 		this.themes[i] = new Theme("Blues", new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new ColourRange(new Colour(0, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0),
-									new Colour(0, 255, 255), new ColourRange(new Colour(0, 0, 255), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 128)), new Colour(0, 0, 0));
+									new Colour(0, 255, 255), new ColourRange(new Colour(0, 0, 255), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 128)), new Colour(0, 0, 0));
 		i += 1;
 
 		// black to red, orange to yellow
 		this.themes[i] = new Theme("Fire", new ColourRange(new Colour(32, 0, 0), new Colour(160, 0, 0)), new ColourRange(new Colour(255, 144, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0),
-									new Colour(255, 144, 0), new ColourRange(new Colour(240, 0, 0), new Colour(255, 144, 0)), new ColourRange(new Colour(32, 0, 0), new Colour(160, 0, 0)), new Colour(0, 0, 0));
+									new Colour(255, 144, 0), new ColourRange(new Colour(240, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(32, 0, 0), new Colour(160, 0, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// black to green, cyan to white
 		this.themes[i] = new Theme("Poison", new ColourRange(new Colour(0, 24, 0), new Colour(0, 128, 0)), new ColourRange(new Colour(0, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0),
-									new Colour(0, 255, 255), new ColourRange(new Colour(0, 192, 0), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 24, 0), new Colour(0, 128, 0)), new Colour(0, 0, 0));
+									new Colour(0, 255, 255), new ColourRange(new Colour(0, 192, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 24, 0), new Colour(0, 128, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// black to purple, yellow to white
 		this.themes[i] = new Theme("Yellow", new ColourRange(new Colour(0, 47, 0), new Colour(128, 0, 128)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 255)), new Colour(0, 32, 128),
-									new Colour(255, 255, 0), new ColourRange(new Colour(192, 64, 64), new Colour(255, 255, 0)), new ColourRange(new Colour(0, 47, 0), new Colour(128, 0, 128)), new Colour(0, 0, 0));
+									new Colour(255, 255, 0), new ColourRange(new Colour(192, 64, 64), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 47, 0), new Colour(128, 0, 128)), new Colour(0, 0, 0));
 		i += 1;
 
 		// grey scale
 		this.themes[i] = new Theme("Gray", new ColourRange(new Colour(16, 16, 16), new Colour(104, 104, 104)), new ColourRange(new Colour(176, 176, 176), new Colour(240, 240, 240)), new Colour(0, 0, 0),
-									new Colour(240, 240, 240), new ColourRange(new Colour(160, 160, 160), new Colour(240, 240, 240)), new ColourRange(new Colour(16, 16, 16), new Colour(104, 104, 104)), new Colour(0, 0, 0));
+									new Colour(240, 240, 240), new ColourRange(new Colour(160, 160, 160), new Colour(-1, -1, -1)), new ColourRange(new Colour(16, 16, 16), new Colour(104, 104, 104)), new Colour(0, 0, 0));
 		i += 1;
 
 		// inverse monochrome
@@ -1730,7 +1736,7 @@
 
 		// white to cyan, blue to black
 		this.themes[i] = new Theme("Day", new ColourRange(new Colour(240, 240, 240), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 255), new Colour(0, 0, 0)), new Colour(255, 255, 255),
-									new Colour(0, 0, 255), new ColourRange(new Colour(0, 255, 255), new Colour(0, 0, 255)), new ColourRange(new Colour(240, 240, 240), new Colour(0, 192, 192)), new Colour(255, 255, 255));
+									new Colour(0, 0, 255), new ColourRange(new Colour(0, 255, 255), new Colour(-1, -1, -1)), new ColourRange(new Colour(240, 240, 240), new Colour(0, 192, 192)), new Colour(255, 255, 255));
 		i += 1;
 
 		// occupied vs unoccupied
@@ -1745,7 +1751,7 @@
 
 		// LifeHistory
 		this.themes[i] = new Theme("LifeHistory", new ColourRange(new Colour(0, 0, 96), new Colour(0, 0, 160)), new ColourRange(new Colour(0, 240, 0), new Colour(16, 255, 16)), new Colour(0, 0, 0),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+									new Colour(16, 255, 16), new ColourRange(new Colour(0, 128, 160), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 96), new Colour(0, 0, 160)), new Colour(0, 0, 0));
 		i += 1;
 
 		// Multi-state (Generations and HROT) - yellow to red
@@ -1873,6 +1879,30 @@
 		}
 	};
 
+	// process multi-state themes
+	Life.prototype.processMultiStateThemes = function() {
+		var i = 0,
+		theme = null,
+		weight = 1;
+
+		// check for dynamic dying state in each theme
+		for (i = 0; i < this.themes.length; i += 1) {
+			theme = this.themes[i];
+			// check if the dying colour was marked as dynamic
+			if (theme.dyingRangeDynamic) {
+				if (this.multiNumStates <= 2) {
+					theme.dyingRangeGen.endColour.set(theme.aliveGen);
+				} else {
+					// convert it from the alive colour and number of states
+					weight = 1 / (this.multiNumStates - 2);
+					theme.dyingRangeGen.endColour.red = (theme.dyingRangeGen.startColour.red * weight + theme.aliveGen.red * (1 - weight)) | 0;
+					theme.dyingRangeGen.endColour.green = (theme.dyingRangeGen.startColour.green * weight + theme.aliveGen.green * (1 - weight)) | 0;
+					theme.dyingRangeGen.endColour.blue = (theme.dyingRangeGen.startColour.blue * weight + theme.aliveGen.blue * (1 - weight)) | 0;
+				}
+			}
+		}
+	};
+
 	// create the colours
 	Life.prototype.createColours = function() {
 		var i, mixWeight, weight, currentComponent, targetComponent, current, deadMin;
@@ -1887,15 +1917,6 @@
 			this.redChannel[i] = this.unoccupiedGenCurrent.red * mixWeight + this.unoccupiedGenTarget.red * (1 - mixWeight);
 			this.greenChannel[i] = this.unoccupiedGenCurrent.green * mixWeight + this.unoccupiedGenTarget.green * (1 - mixWeight);
 			this.blueChannel[i] = this.unoccupiedGenCurrent.blue * mixWeight + this.unoccupiedGenTarget.blue * (1 - mixWeight);
-
-			// check if the dying colour was marked as dynamic
-			if (this.dyingGenColTarget.endColour.red === -1) {
-				// convert it from the alive colour and number of states
-				weight = 1 / (this.multiNumStates - 2);
-				this.dyingGenColTarget.endColour.red = this.dyingGenColTarget.startColour.red * weight + this.aliveGenColTarget.red * (1 - weight);
-				this.dyingGenColTarget.endColour.green = this.dyingGenColTarget.startColour.green * weight + this.aliveGenColTarget.green * (1 - weight);
-				this.dyingGenColTarget.endColour.blue = this.dyingGenColTarget.startColour.blue * weight + this.aliveGenColTarget.blue * (1 - weight);
-			}
 
 			// set generations ramp
 			for (i = 1; i < this.multiNumStates - 1; i += 1) {
