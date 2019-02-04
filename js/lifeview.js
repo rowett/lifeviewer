@@ -108,6 +108,8 @@
 		/** @const {number} */ customThemeGraphDeath : 14,
 		/** @const {number} */ customThemeError : 15,
 		/** @const {number} */ customThemeLabel : 16,
+		/** @const {number} */ customThemeDying : 17,
+		/** @const {number} */ customThemeDyingRamp : 18,
 
 		// state numbers
 		/** @const {number} */ offState : 0,
@@ -746,7 +748,7 @@
 		this.customTheme = false;
 
 		// custom theme value
-		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
 		// custom grid colour
 		this.customGridColour = -1;
@@ -803,6 +805,9 @@
 
 		// help topics
 		this.helpTopics = [];
+
+		// whether initialising help
+		this.initHelp = false;
 
 		// generation number to stop at
 		this.stopGeneration = -1;
@@ -10426,6 +10431,8 @@
 		this.customThemeValue[ViewConstants.customThemeGraphDeath] = -1;
 		this.customThemeValue[ViewConstants.customThemeError] = -1;
 		this.customThemeValue[ViewConstants.customThemeLabel] = -1;
+		this.customThemeValue[ViewConstants.customThemeDying] = -1;
+		this.customThemeValue[ViewConstants.customThemeDyingRamp] = -1;
 		this.customLabelColour = ViewConstants.labelFontColour;
 
 		// switch off thumbnail mode if on
@@ -11084,7 +11091,9 @@
 		this.updateGridIcon();
 
 		// render the help text to set help line positions
-		Help.renderHelpText(this, null, 6, 14, 19, 0);
+		this.initHelp = true;
+		Help.renderHelpText(this, this.offContext, 6, 14, 19, 0);
+		this.initHelp = false;
 
 		// clear manual change flag
 		this.manualChange = false;

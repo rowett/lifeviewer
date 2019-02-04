@@ -143,78 +143,92 @@
 			divider = 0,
 
 			// whether text was drawn
-			drewText = false;
+			drewText = false,
 
-		// only render if context exists
-		if (ctx) {
-			// check if the line is on the page
-			if (lineNo >= startLine && lineNo <= (startLine + view.numHelpPerPage)) {
-				// check if there is fixed text
-				if (fixed.length) {
-					ctx.font = ViewConstants.fixedFont;
-					ctx.fillText(fixed, x, y);
+			// whether text should be drawn (not drawn during initialisation or if line of screen)
+			shouldDraw = !view.initHelp;
 
-					// check if the fixed portion was wider than the first tab
-					width = ctx.measureText(fixed).width;
-					if (width > view.tabs[tabNo]) {
-						// move the variable portion onto the next line
-						y += height;
-						result += height;
-						view.lineNo += 1;
-					}
+		// check if the line is on the page
+		if ((lineNo < startLine || lineNo > (startLine + view.numHelpPerPage)) && shouldDraw) {
+			shouldDraw = false;
+		}
 
-					// draw the variable text
-					ctx.font = ViewConstants.variableFont;
-					while (tab !== -1) {
-						// draw the text up to the tab at the current tab stop
-						ctx.fillText(text.substr(0, tab), x + view.tabs[tabNo], y);
+		// check if there is fixed text
+		if (fixed.length) {
+			ctx.font = ViewConstants.fixedFont;
+			if (shouldDraw) {
+				ctx.fillText(fixed, x, y);
+			}
 
-						// next tab stop
-						tabNo += 1;
+			// check if the fixed portion was wider than the first tab
+			width = ctx.measureText(fixed).width;
+			if (width > view.tabs[tabNo]) {
+				// move the variable portion onto the next line
+				if (shouldDraw) {
+					y += height;
+					result += height;
+				}
+				view.lineNo += 1;
+			}
 
-						// check for next tab
-						text = text.substr(tab + 1);
-						tab = text.indexOf("\t");
-					}
-
-					// check if the text will fit in the window
-					drewText = false;
-					if (view.wrapHelpText) {
-						width = ctx.measureText(text).width;
-						if (x + view.tabs[tabNo] + width > ctx.canvas.width) {
-							// check if the text can be split at "s"
-							divider = text.toLowerCase().indexOf("s");
-							if (divider === -1) {
-								// try slash
-								divider = text.indexOf("/");
-								if (divider !== -1) {
-									divider += 1;
-								}
-							}
-							if (divider !== -1) {
-								ctx.fillText(text.substr(0, divider), x + view.tabs[tabNo], y);
-								if (lineNo + 1 >= startLine && lineNo + 1 <= (startLine + view.numHelpPerPage)) {
-									y += height;
-									result += height;
-									view.lineNo += 1;
-									ctx.fillText("  " + text.substr(divider), x + view.tabs[tabNo], y);
-								}
-								drewText = true;
-							}
-						}
-					}
-					if (!drewText) {
-						// draw on one line
-						ctx.fillText(text, x + view.tabs[tabNo], y);
-					}
-				} else {
-					ctx.font = ViewConstants.variableFont;
-					ctx.fillText(text, x, y);
+			// draw the variable text
+			ctx.font = ViewConstants.variableFont;
+			while (tab !== -1) {
+				// draw the text up to the tab at the current tab stop
+				if (shouldDraw) {
+					ctx.fillText(text.substr(0, tab), x + view.tabs[tabNo], y);
 				}
 
-				// move the y coordinate to the next screen line
-				result += height;
+				// next tab stop
+				tabNo += 1;
+
+				// check for next tab
+				text = text.substr(tab + 1);
+				tab = text.indexOf("\t");
 			}
+
+			// check if the text will fit in the window
+			drewText = false;
+			if (view.wrapHelpText) {
+				width = ctx.measureText(text).width;
+				if (x + view.tabs[tabNo] + width > ctx.canvas.width) {
+					// check if the text can be split at "s"
+					divider = text.toLowerCase().indexOf("s");
+					if (divider === -1) {
+						// try slash
+						divider = text.indexOf("/");
+						if (divider !== -1) {
+							divider += 1;
+						}
+					}
+					if (divider !== -1) {
+						if (shouldDraw) {
+							ctx.fillText(text.substr(0, divider), x + view.tabs[tabNo], y);
+							y += height;
+							result += height;
+							ctx.fillText("  " + text.substr(divider), x + view.tabs[tabNo], y);
+						}
+						view.lineNo += 1;
+						drewText = true;
+					}
+				}
+			}
+			if (!drewText) {
+				// draw on one line
+				if (shouldDraw) {
+					ctx.fillText(text, x + view.tabs[tabNo], y);
+				}
+			}
+		} else {
+			ctx.font = ViewConstants.variableFont;
+			if (shouldDraw) {
+				ctx.fillText(text, x, y);
+			}
+		}
+
+		// move the y coordinate to the next screen line
+		if (shouldDraw) {
+			result += height;
 		}
 
 		// increment line number
@@ -1337,6 +1351,8 @@
 		y = this.renderHelpLine(view, "", "Themes are used to provide a visual representation of", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "cell history and longevity", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		sections[sectionNum] = view.lineNo;
+		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Two-state Theme colour components:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "BACKGROUND", "cell never occupied", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "ALIVE", "cell just born", ctx, x, y, height, helpLine);
@@ -1344,7 +1360,7 @@
 		y = this.renderHelpLine(view, "DEAD", "cell just died", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "DEADRAMP", "cell dead for several generations", ctx, x, y, height, helpLine);
 
-		// draw each theme except the custom theme
+		// draw each 2-state theme except the custom theme
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		sections[sectionNum] = view.lineNo;
 		sectionNum += 1;
@@ -1353,7 +1369,7 @@
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 			theme = view.engine.themes[i];
 			// draw theme name with a '*' if it is the current theme
-			y = this.renderHelpLine(view, "Name" + (i === view.engine.colourTheme ? "*" : ""), theme.name, ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Name" + ((i === view.engine.colourTheme && view.engine.multiNumStates <= 2) ? "*" : ""), theme.name, ctx, x, y, height, helpLine);
 			// background colour
 			this.renderColourBox(view, theme.unoccupied.red, theme.unoccupied.green, theme.unoccupied.blue, ctx, x + tabs[0], y, height, helpLine);
 			y = this.renderHelpLine(view, "BACKGROUND", this.rgbObjectString(theme.unoccupied), ctx, x, y, height, helpLine);
@@ -1383,6 +1399,51 @@
 				y = this.renderHelpLine(view, "GRIDMAJOR", this.rgbString(theme.gridMajorColour >> 16, (theme.gridMajorColour >> 8) & 255, theme.gridMajorColour & 255), ctx, x, y, height, helpLine);
 				// major grid line interval
 				y = this.renderHelpLine(view, "GRIDMAJOR", theme.gridMajor, ctx, x, y, height, helpLine);
+			}
+		}
+
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		sections[sectionNum] = view.lineNo;
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Multi-state Theme colour components:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "BACKGROUND", "cell never occupied", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "ALIVE", "cell alive", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "DYING", "cell just starting dying", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "DYINGRAMP", "cell about to die", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "DEAD", "cell just died", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "DEADRAMP", "cell dead for several generations", ctx, x, y, height, helpLine);
+
+		// draw each multi-state theme except the custom theme
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		sections[sectionNum] = view.lineNo;
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Multi-state Themes:", ctx, x, y, height, helpLine);
+		for (i = 0; i < view.engine.themes.length - 1; i += 1) {
+			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+			theme = view.engine.themes[i];
+			// draw theme name with a '*' if it is the current theme
+			y = this.renderHelpLine(view, "Name" + ((i === view.engine.colourTheme && view.engine.multiNumStates > 2) ? "*" : ""), theme.name, ctx, x, y, height, helpLine);
+			// background colour
+			this.renderColourBox(view, theme.unoccupiedGen.red, theme.unoccupiedGen.green, theme.unoccupiedGen.blue, ctx, x + tabs[0], y, height, helpLine);
+			y = this.renderHelpLine(view, "BACKGROUND", this.rgbObjectString(theme.unoccupiedGen), ctx, x, y, height, helpLine);
+			// alive colour
+			this.renderColourBox(view, theme.aliveGen.red, theme.aliveGen.green, theme.aliveGen.blue, ctx, x + tabs[0], y, height, helpLine);
+			y = this.renderHelpLine(view, "ALIVE", this.rgbObjectString(theme.aliveGen), ctx, x, y, height, helpLine);
+			// dying colour
+			this.renderColourBox(view, theme.dyingRangeGen.endColour.red, theme.dyingRangeGen.endColour.green, theme.dyingRangeGen.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
+			y = this.renderHelpLine(view, "DYING", this.rgbObjectString(theme.dyingRangeGen.endColour), ctx, x, y, height, helpLine);
+			// dead ramp if different than dead
+			if (!(theme.dyingRangeGen.startColour.red === theme.dyingRangeGen.endColour.red && theme.dyingRangeGen.startColour.green === theme.dyingRangeGen.endColour.green && theme.dyingRangeGen.startColour.blue === theme.dyingRangeGen.endColour.blue)) {
+				this.renderColourBox(view, theme.dyingRangeGen.startColour.red, theme.dyingRangeGen.startColour.green, theme.dyingRangeGen.startColour.blue, ctx, x + tabs[0], y, height, helpLine);
+				y = this.renderHelpLine(view, "DYINGRAMP", this.rgbObjectString(theme.dyingRangeGen.startColour), ctx, x, y, height, helpLine);
+			}
+			// dead colour
+			this.renderColourBox(view, theme.deadRangeGen.endColour.red, theme.deadRangeGen.endColour.green, theme.deadRangeGen.endColour.blue, ctx, x + tabs[0], y, height, helpLine);
+			y = this.renderHelpLine(view, "DEAD", this.rgbObjectString(theme.deadRangeGen.endColour), ctx, x, y, height, helpLine);
+			// dead ramp if different than dead
+			if (!(theme.deadRangeGen.startColour.red === theme.deadRangeGen.endColour.red && theme.deadRangeGen.startColour.green === theme.deadRangeGen.endColour.green && theme.deadRangeGen.startColour.blue === theme.deadRangeGen.endColour.blue)) {
+				this.renderColourBox(view, theme.deadRangeGen.startColour.red, theme.deadRangeGen.startColour.green, theme.deadRangeGen.startColour.blue, ctx, x + tabs[0], y, height, helpLine);
+				y = this.renderHelpLine(view, "DEADRAMP", this.rgbObjectString(theme.deadRangeGen.startColour), ctx, x, y, height, helpLine);
 			}
 		}
 

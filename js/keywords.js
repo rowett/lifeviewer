@@ -160,6 +160,8 @@
 		/** @const {string} */ themeAliveRampWord : "ALIVERAMP",
 		/** @const {string} */ themeDeadWord : "DEAD",
 		/** @const {string} */ themeDeadRampWord : "DEADRAMP",
+		/** @const {string} */ themeDyingWord : "DYING",
+		/** @const {string} */ themeDyingRampWord : "DYINGRAMP",
 
 		// boundary
 		/** @const {string} */ boundaryWord : "BOUNDARY",
