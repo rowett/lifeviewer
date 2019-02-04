@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global ViewConstants ColourManager Keywords WaypointConstants DocConfig PatternManager Controller AliasManager */
+	/* global LifeConstants ViewConstants ColourManager Keywords WaypointConstants DocConfig PatternManager Controller AliasManager */
 
 	// Help singleton
 	var Help = {
@@ -1062,11 +1062,11 @@
 					y = this.renderHelpLine(view, "State " + i, this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
 				}
 				if (view.historyStates > 0) {
-					j = 1;
+					j = view.historyStates;
 					this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + tabs[0], y, height, helpLine);
 					y = this.renderHelpLine(view, "Dead", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
 					if (view.historyStates > 1) {
-						j = view.historyStates;
+						j = 1;
 						this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + tabs[0], y, height, helpLine);
 						y = this.renderHelpLine(view, "DeadRamp", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
 					}
@@ -1359,6 +1359,9 @@
 		y = this.renderHelpLine(view, "ALIVERAMP", "cell alive for several generations", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "DEAD", "cell just died", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "DEADRAMP", "cell dead for several generations", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", (LifeConstants.aliveMax - LifeConstants.aliveStart + 1) + " states from ALIVE to ALIVERAMP", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", view.historyStates + " (HISTORYSTATES) states from DEAD to DEADRAMP", ctx, x, y, height, helpLine);
 
 		// draw each 2-state theme except the custom theme
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
@@ -1412,6 +1415,9 @@
 		y = this.renderHelpLine(view, "DYINGRAMP", "cell about to die", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "DEAD", "cell just died", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "DEADRAMP", "cell dead for several generations", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "Rule defines " + (view.engine.multiNumStates < 2 ? "" : String(view.engine.multiNumStates - 1) + " ") + "states from DYING to DYINGRAMP", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", view.historyStates + " (HISTORYSTATES) states from DEAD to DEADRAMP", ctx, x, y, height, helpLine);
 
 		// draw each multi-state theme except the custom theme
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);

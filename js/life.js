@@ -418,11 +418,19 @@
 		this.deadColCurrent = null;
 		this.aliveColCurrent = null;
 		this.unoccupiedCurrent = null;
+		this.aliveGenColCurrent = null;
+		this.dyingGenColCurrent = null;
+		this.deadGenColCurrent = null;
+		this.unoccupiedGenCurrent = null;
 
 		// target colour range
 		this.deadColTarget = null;
 		this.aliveColTarget = null;
 		this.unoccupiedTarget = null;
+		this.aliveGenColTarget = null;
+		this.dyingGenColTarget = null;
+		this.deadGenColTarget = null;
+		this.unoccupiedGenTarget = null;
 
 		// number of  colour themes (will be computed when themes are added)
 		this.numThemes = -1;
@@ -1689,7 +1697,7 @@
 
 		// black to dark blue, cyan to white
 		this.themes[i] = new Theme("Blues", new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new ColourRange(new Colour(0, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+									new Colour(0, 255, 255), new ColourRange(new Colour(0, 0, 255), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 128)), new Colour(0, 0, 0));
 		i += 1;
 
 		// black to red, orange to yellow
@@ -1738,8 +1746,8 @@
 		i += 1;
 
 		// Multi-state (Generations and HROT) - yellow to red
-		this.themes[i] = new Theme("Generations", new ColourRange(new Colour(64, 0, 0), new Colour(128, 0, 0)), new ColourRange(new Colour(255, 0, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0),
-									new Colour(255, 255, 255), new ColourRange(new Colour(-1, -1, -1), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("Generations", new ColourRange(new Colour(64, 0, 0), new Colour(255, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 255)), new Colour(0, 0, 0),
+									new Colour(255, 255, 0), new ColourRange(new Colour(255, 0, 0), new Colour(255, 255, 0)), new ColourRange(new Colour(64, 0, 0), new Colour(128, 0, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// Golly theme
@@ -1775,14 +1783,26 @@
 		this.numThemes = this.themes.length - 1;
 
 		// set current colour theme
+		// 2-state
 		this.aliveColCurrent = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.deadColCurrent = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.unoccupiedCurrent = new Colour(0, 0, 0);
+		// multi-state
+		this.aliveGenColCurrent = new Colour(0, 0, 0);
+		this.dyingGenColCurrent = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
+		this.deadGenColCurrent = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
+		this.unoccupiedGenCurrent = new Colour(0, 0, 0);
 
 		// set target colour theme
+		// 2-state
 		this.aliveColTarget = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.deadColTarget = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.unoccupiedTarget = new Colour(0, 0, 0);
+		// multi-state
+		this.aliveGenColTarget = new Colour(0, 0, 0);
+		this.dyingGenColTarget = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
+		this.deadGenColTarget = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
+		this.unoccupiedGenTarget = new Colour(0, 0, 0);
 	};
 
 	// set the theme
@@ -1796,11 +1816,19 @@
 		this.aliveColCurrent.set(this.aliveColTarget);
 		this.deadColCurrent.set(this.deadColTarget);
 		this.unoccupiedCurrent.set(this.unoccupiedTarget);
+		this.aliveGenColCurrent.set(this.aliveGenColTarget);
+		this.deadGenColCurrent.set(this.deadGenColTarget);
+		this.dyingGenColCurrent.set(this.deadGenColTarget);
+		this.unoccupiedGenCurrent.set(this.unoccupiedGenTarget);
 
 		// set the colour target to the theme
 		this.aliveColTarget.set(newTheme.aliveRange);
 		this.deadColTarget.set(newTheme.deadRange);
 		this.unoccupiedTarget.set(newTheme.unoccupied);
+		this.aliveGenColTarget.set(newTheme.aliveGen);
+		this.deadGenColTarget.set(newTheme.deadRangeGen);
+		this.dyingGenColTarget.set(newTheme.dyingRangeGen);
+		this.unoccupiedGenTarget.set(newTheme.unoccupiedGen);
 
 		// set the change time
 		this.colourChange = switchTime;
@@ -1849,32 +1877,38 @@
 		// set the weighting between the two colour ranges
 		mixWeight = (this.colourChange - 1) / this.colourChangeSteps;
 	
-		// set unoccupied colour
-		i = 0;
-		this.redChannel[i] = this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight);
-		this.greenChannel[i] = this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight);
-		this.blueChannel[i] = this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight);
-
 		// check for Generations or HROT rules
 		if (this.multiNumStates > 2) {
+			// set unoccupied colour
+			i = 0;
+			this.redChannel[i] = this.unoccupiedGenCurrent.red * mixWeight + this.unoccupiedGenTarget.red * (1 - mixWeight);
+			this.greenChannel[i] = this.unoccupiedGenCurrent.green * mixWeight + this.unoccupiedGenTarget.green * (1 - mixWeight);
+			this.blueChannel[i] = this.unoccupiedGenCurrent.blue * mixWeight + this.unoccupiedGenTarget.blue * (1 - mixWeight);
+
+			// set alive colour
+			i = 1;
+			this.redChannel[i] = this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight);
+			this.greenChannel[i] = this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight);
+			this.blueChannel[i] = this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight);
+
 			// set generations ramp
 			for (i = 1; i < this.multiNumStates; i += 1) {
 				// compute the weighting between the start and end colours in the range
 				weight = (i - 1) / (this.multiNumStates - 2);
 
 				// compute the red component of the current and target colour
-				currentComponent = this.aliveColCurrent.endColour.red * weight + this.aliveColCurrent.startColour.red * (1 - weight);
-				targetComponent = this.aliveColTarget.endColour.red * weight + this.aliveColTarget.startColour.red * (1 - weight);
+				currentComponent = this.dyingGenColCurrent.endColour.red * weight + this.dyingGenColCurrent.startColour.red * (1 - weight);
+				targetComponent = this.dyingGenColTarget.endColour.red * weight + this.dyingGenColTarget.startColour.red * (1 - weight);
 				this.redChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 				// compoute the green component of the current and target colour
-				currentComponent = this.aliveColCurrent.endColour.green * weight + this.aliveColCurrent.startColour.green * (1 - weight);
-				targetComponent = this.aliveColTarget.endColour.green * weight + this.aliveColTarget.startColour.green * (1 - weight);
+				currentComponent = this.dyingGenColCurrent.endColour.green * weight + this.dyingGenColCurrent.startColour.green * (1 - weight);
+				targetComponent = this.dyingGenColTarget.endColour.green * weight + this.dyingGenColTarget.startColour.green * (1 - weight);
 				this.greenChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 				// compoute the blue component of the current and target colour
-				currentComponent = this.aliveColCurrent.endColour.blue * weight + this.aliveColCurrent.startColour.blue * (1 - weight);
-				targetComponent = this.aliveColTarget.endColour.blue * weight + this.aliveColTarget.startColour.blue * (1 - weight);
+				currentComponent = this.dyingGenColCurrent.endColour.blue * weight + this.dyingGenColCurrent.startColour.blue * (1 - weight);
+				targetComponent = this.dyingGenColTarget.endColour.blue * weight + this.dyingGenColTarget.startColour.blue * (1 - weight);
 				this.blueChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 				// override with custom colour if specified
@@ -1896,18 +1930,18 @@
 					weight = 1;
 				}
 				// compute the red component of the current and target colour
-				currentComponent = this.deadColCurrent.startColour.red * weight + this.deadColCurrent.endColour.red * (1 - weight);
-				targetComponent = this.deadColTarget.startColour.red * weight + this.deadColTarget.endColour.red * (1 - weight);
+				currentComponent = this.deadGenColCurrent.startColour.red * weight + this.deadGenColCurrent.endColour.red * (1 - weight);
+				targetComponent = this.deadGenColTarget.startColour.red * weight + this.deadGenColTarget.endColour.red * (1 - weight);
 				this.redChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 				// compoute the green component of the current and target colour
-				currentComponent = this.deadColCurrent.startColour.green * weight + this.deadColCurrent.endColour.green * (1 - weight);
-				targetComponent = this.deadColTarget.startColour.green * weight + this.deadColTarget.endColour.green * (1 - weight);
+				currentComponent = this.deadGenColCurrent.startColour.green * weight + this.deadGenColCurrent.endColour.green * (1 - weight);
+				targetComponent = this.deadGenColTarget.startColour.green * weight + this.deadGenColTarget.endColour.green * (1 - weight);
 				this.greenChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 				// compoute the blue component of the current and target colour
-				currentComponent = this.deadColCurrent.startColour.blue * weight + this.deadColCurrent.endColour.blue * (1 - weight);
-				targetComponent = this.deadColTarget.startColour.blue * weight + this.deadColTarget.endColour.blue * (1 - weight);
+				currentComponent = this.deadGenColCurrent.startColour.blue * weight + this.deadGenColCurrent.endColour.blue * (1 - weight);
+				targetComponent = this.deadGenColTarget.startColour.blue * weight + this.deadGenColTarget.endColour.blue * (1 - weight);
 				this.blueChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 			}
 
@@ -1920,8 +1954,13 @@
 					this.blueChannel[0] = (current & 255);
 				}
 			}
-		}
-		else {
+		} else {
+			// set unoccupied colour
+			i = 0;
+			this.redChannel[i] = this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight);
+			this.greenChannel[i] = this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight);
+			this.blueChannel[i] = this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight);
+
 			// set dead colours and start by clearing unused history colours
 			if (this.historyStates === 0) {
 				for (i = 1; i <= this.deadStart; i += 1) {

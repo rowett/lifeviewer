@@ -6635,6 +6635,8 @@
 		var colourValue = 0,
 		    customTheme = this.engine.themes[this.engine.numThemes];
 
+		// 2-state patterns
+
 		// check for at least alive and dead or background
 		if (this.customThemeValue[ViewConstants.customThemeAlive] === -1) {
 			this.customThemeValue[ViewConstants.customThemeAlive] = 0xffffff;
@@ -6699,6 +6701,88 @@
 		customTheme.deadRange.startColour.red = colourValue >> 16;
 		customTheme.deadRange.startColour.green = (colourValue >> 8) & 255;
 		customTheme.deadRange.startColour.blue = colourValue & 255;
+
+		// multi-state patterns
+
+		// check for at least alive and dead or background
+		if (this.customThemeValue[ViewConstants.customThemeAlive] === -1) {
+			this.customThemeValue[ViewConstants.customThemeAlive] = 0xffffff;
+		}
+		if (this.customThemeValue[ViewConstants.customThemeBackground] === -1 && this.customThemeValue[ViewConstants.customThemeDead] === -1) {
+			this.customThemeValue[ViewConstants.customThemeBackground] = 0x000000;
+		}
+
+		// check if the background was supplied
+		colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+		if (colourValue === -1) {
+			// use the dead colour
+			colourValue = this.customThemeValue[ViewConstants.customThemeDead];
+		}
+
+		// set the background colour
+		customTheme.unoccupiedGen.red = colourValue >> 16;
+		customTheme.unoccupiedGen.green = (colourValue >> 8) & 255;
+		customTheme.unoccupiedGen.blue = colourValue & 255;
+
+		// set the alive colour
+		colourValue = this.customThemeValue[ViewConstants.customThemeAlive];
+		customTheme.aliveGen.red = colourValue >> 16;
+		customTheme.aliveGen.green = (colourValue >> 8) & 255;
+		customTheme.aliveGen.blue = colourValue & 255;
+
+		// check if the dead colour was supplied
+		colourValue = this.customThemeValue[ViewConstants.customThemeDead];
+		if (colourValue === -1) {
+			// use the background colour
+			colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+		}
+
+		// set the dead colour
+		customTheme.deadRangeGen.endColour.red = colourValue >> 16;
+		customTheme.deadRangeGen.endColour.green = (colourValue >> 8) & 255;
+		customTheme.deadRangeGen.endColour.blue = colourValue & 255;
+
+		// check if the deadramp is specified
+		colourValue = this.customThemeValue[ViewConstants.customThemeDeadRamp];
+		if (colourValue === -1) {
+			// use the dead colour if specified or the background otherwise
+			colourValue = this.customThemeValue[ViewConstants.customThemeDead];
+			if (colourValue === -1) {
+				colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+			}
+		}
+
+		// set the deadramp colour
+		customTheme.deadRangeGen.startColour.red = colourValue >> 16;
+		customTheme.deadRangeGen.startColour.green = (colourValue >> 8) & 255;
+		customTheme.deadRangeGen.startColour.blue = colourValue & 255;
+
+		// check if the dying colour was supplied
+		colourValue = this.customThemeValue[ViewConstants.customThemeDying];
+		if (colourValue === -1) {
+			// use the background colour
+			colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+		}
+
+		// set the dying colour
+		customTheme.dyingRangeGen.endColour.red = colourValue >> 16;
+		customTheme.dyingRangeGen.endColour.green = (colourValue >> 8) & 255;
+		customTheme.dyingRangeGen.endColour.blue = colourValue & 255;
+
+		// check if the dyingramp is specified
+		colourValue = this.customThemeValue[ViewConstants.customThemeDyingRamp];
+		if (colourValue === -1) {
+			// use the dead colour if specified or the background otherwise
+			colourValue = this.customThemeValue[ViewConstants.customThemeDead];
+			if (colourValue === -1) {
+				colourValue = this.customThemeValue[ViewConstants.customThemeBackground];
+			}
+		}
+
+		// set the dyingramp colour
+		customTheme.dyingRangeGen.startColour.red = colourValue >> 16;
+		customTheme.dyingRangeGen.startColour.green = (colourValue >> 8) & 255;
+		customTheme.dyingRangeGen.startColour.blue = colourValue & 255;
 
 		// set the grid lines colours
 		customTheme.setGridLineColours(this.customThemeValue[ViewConstants.customThemeGrid], this.customThemeValue[ViewConstants.customThemeGridMajor]);
@@ -7841,6 +7925,16 @@
 								// deadramp
 								case Keywords.themeDeadRampWord:
 									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemeDeadRamp, whichColour);
+									break;
+								
+								// dying
+								case Keywords.themeDyingWord:
+									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemeDying, whichColour);
+									break;
+
+								// dyingramp
+								case Keywords.themeDyingRampWord:
+									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemeDyingRamp, whichColour);
 									break;
 								
 								// grid

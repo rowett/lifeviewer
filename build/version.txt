@@ -5,6 +5,8 @@ Build 288
 	- [[ THEME ]] script command can take a theme number or name
 	- Help Information has a new "Themes" topic that lists the theme definitions
 	- grid lines definition is also included in the Theme
+	- there is a 2-state and multi-state version of each Theme
+	- [[ COLOR DYING ]] and [[ COLOR DYINGRAMP ]] set the cell dying colour range for multi-state
 - added a few new aliases
 - improved Help information text wrapping
 - COLOR DEAD is now the cell colour when it first dies and COLOR DEADRAMP is the colour it becomes after staying dead
