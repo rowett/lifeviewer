@@ -1750,12 +1750,12 @@
 
 		// Multi-state (Generations and HROT) - yellow to red
 		this.themes[i] = new Theme("Generations", new ColourRange(new Colour(64, 0, 0), new Colour(255, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 255)), new Colour(0, 0, 0),
-									new Colour(255, 255, 0), new ColourRange(new Colour(255, 0, 0), new Colour(255, 255, 0)), new ColourRange(new Colour(64, 0, 0), new Colour(128, 0, 0)), new Colour(0, 0, 0));
+									new Colour(255, 255, 0), new ColourRange(new Colour(255, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(64, 0, 0), new Colour(128, 0, 0)), new Colour(0, 0, 0));
 		i += 1;
 
 		// Golly theme
 		this.themes[i] = new Theme("Golly", new ColourRange(new Colour(48, 48, 48), new Colour(48, 48, 48)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(48, 48, 48),
-									new Colour(255, 255, 0), new ColourRange(new Colour(255, 0, 0), new Colour(255, 255, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
+									new Colour(255, 255, 0), new ColourRange(new Colour(255, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
 		this.themes[i].setGridLines(10, new Colour(80, 80, 80), new Colour(112, 112, 112));
 		i += 1;
 
@@ -1888,10 +1888,23 @@
 			this.greenChannel[i] = this.unoccupiedGenCurrent.green * mixWeight + this.unoccupiedGenTarget.green * (1 - mixWeight);
 			this.blueChannel[i] = this.unoccupiedGenCurrent.blue * mixWeight + this.unoccupiedGenTarget.blue * (1 - mixWeight);
 
+			// check if the dying colour was marked as dynamic
+			if (this.dyingGenColTarget.endColour.red === -1) {
+				// convert it from the alive colour and number of states
+				weight = 1 / (this.multiNumStates - 2);
+				this.dyingGenColTarget.endColour.red = this.dyingGenColTarget.startColour.red * weight + this.aliveGenColTarget.red * (1 - weight);
+				this.dyingGenColTarget.endColour.green = this.dyingGenColTarget.startColour.green * weight + this.aliveGenColTarget.green * (1 - weight);
+				this.dyingGenColTarget.endColour.blue = this.dyingGenColTarget.startColour.blue * weight + this.aliveGenColTarget.blue * (1 - weight);
+			}
+
 			// set generations ramp
 			for (i = 1; i < this.multiNumStates - 1; i += 1) {
 				// compute the weighting between the start and end colours in the range
-				weight = (i - 1) / (this.multiNumStates - 3);
+				if (this.multiNumStates <= 3) {
+					weight = 0;
+				} else {
+					weight = (i - 1) / (this.multiNumStates - 3);
+				}
 
 				// compute the red component of the current and target colour
 				currentComponent = this.dyingGenColCurrent.endColour.red * weight + this.dyingGenColCurrent.startColour.red * (1 - weight);
