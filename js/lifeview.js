@@ -9940,9 +9940,6 @@
 			this.numScriptErrors = scriptErrors.length;
 		}
 
-		// process dynamic themes
-		this.engine.processMultiStateThemes();
-
 		// check if window title set
 		if (this.windowTitle !== "") {
 			// perform any variable substitutions
@@ -10698,6 +10695,9 @@
 					}
 				}
 			}
+
+			// process dynamic themes
+			this.engine.processMultiStateThemes();
 
 			// set history states in engine
 			this.engine.historyStates = this.historyStates;
