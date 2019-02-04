@@ -9895,9 +9895,6 @@
 				}
 			}
 
-			// process dynamic themes
-			this.engine.processMultiStateThemes();
-
 			// enforce view only for multi-state patterns that aren't LifeHistory
 			if (numStates > 2 && !(this.engine.isLifeHistory || this.engine.mulitNumStates !== -1)) {
 				this.viewOnly = true;
@@ -9942,6 +9939,9 @@
 			// save number of script errors
 			this.numScriptErrors = scriptErrors.length;
 		}
+
+		// process dynamic themes
+		this.engine.processMultiStateThemes();
 
 		// check if window title set
 		if (this.windowTitle !== "") {
