@@ -1885,16 +1885,10 @@
 			this.greenChannel[i] = this.unoccupiedGenCurrent.green * mixWeight + this.unoccupiedGenTarget.green * (1 - mixWeight);
 			this.blueChannel[i] = this.unoccupiedGenCurrent.blue * mixWeight + this.unoccupiedGenTarget.blue * (1 - mixWeight);
 
-			// set alive colour
-			i = 1;
-			this.redChannel[i] = this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight);
-			this.greenChannel[i] = this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight);
-			this.blueChannel[i] = this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight);
-
 			// set generations ramp
-			for (i = 1; i < this.multiNumStates; i += 1) {
+			for (i = 1; i < this.multiNumStates - 1; i += 1) {
 				// compute the weighting between the start and end colours in the range
-				weight = (i - 1) / (this.multiNumStates - 2);
+				weight = (i - 1) / (this.multiNumStates - 3);
 
 				// compute the red component of the current and target colour
 				currentComponent = this.dyingGenColCurrent.endColour.red * weight + this.dyingGenColCurrent.startColour.red * (1 - weight);
@@ -1921,6 +1915,12 @@
 					}
 				}
 			}
+
+			// set alive colour
+			i = this.multiNumStates -1 + this.historyStates;
+			this.redChannel[i] = this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight);
+			this.greenChannel[i] = this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight);
+			this.blueChannel[i] = this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight);
 
 			// create history colours if specified
 			for (i = 0; i < this.historyStates; i += 1) {
