@@ -1721,7 +1721,7 @@
 
 		// black to purple, yellow to white
 		this.themes[i] = new Theme("Yellow", new ColourRange(new Colour(0, 47, 0), new Colour(128, 0, 128)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 255)), new Colour(0, 32, 128),
-									new Colour(255, 255, 0), new ColourRange(new Colour(192, 64, 64), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 47, 0), new Colour(128, 0, 128)), new Colour(0, 0, 0));
+									new Colour(255, 255, 0), new ColourRange(new Colour(192, 64, 64), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 47, 0), new Colour(128, 0, 128)), new Colour(0, 32, 128));
 		i += 1;
 
 		// grey scale
@@ -1761,7 +1761,7 @@
 
 		// Golly theme
 		this.themes[i] = new Theme("Golly", new ColourRange(new Colour(48, 48, 48), new Colour(48, 48, 48)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(48, 48, 48),
-									new Colour(255, 255, 0), new ColourRange(new Colour(255, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
+									new Colour(255, 255, 0), new ColourRange(new Colour(255, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(48, 48, 48), new Colour(48, 48, 48)), new Colour(48, 48, 48));
 		this.themes[i].setGridLines(10, new Colour(80, 80, 80), new Colour(112, 112, 112));
 		i += 1;
 
