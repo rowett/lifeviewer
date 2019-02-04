@@ -25,9 +25,6 @@
 		// snapshot interval
 		/** @const {number} */ snapshotInterval : 50,
 
-		// bounded grid border colour
-		/** @const {number} */ boundedBorderColour : 255,
-
 		// maximum number of population samples for graph
 		/** @const {number} */ maxPopSamples : 262144,
 
@@ -194,6 +191,9 @@
 	function Life(context, displayWidth, displayHeight, gridWidth, gridHeight) {
 		// allocator
 		this.allocator = new Allocator();
+
+		// bounded grid border colour
+		this.boundedBorderColour = 255;
 
 		// custom state colours
 		this.customColours = null;
@@ -730,7 +730,7 @@
 						result = 0;
 					} else {
 						// check for bounded grid border cell
-						if (this.boundedGridType !== -1 && col === LifeConstants.boundedBorderColour && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
+						if (this.boundedGridType !== -1 && col === this.boundedBorderColour && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
 							result = 0;
 						} else {
 							result = this.multiNumStates + this.historyStates - col;
@@ -775,7 +775,7 @@
 
 				} else {
 					// no overlay grid
-					if (col <= this.deadStart || col === LifeConstants.boundedBorderColour) {
+					if (col <= this.deadStart || col === this.boundedBorderColour) {
 						result = 0;
 					} else {
 						result = 1;
@@ -2165,13 +2165,25 @@
 			this.gridLineColour = ((gridLineRaw & 255) << 24) | (((gridLineRaw >> 8) & 255) << 16) | ((gridLineRaw >> 16) << 8) | 255;
 			this.gridLineBoldColour = ((gridLineBoldRaw & 255) << 24) | (((gridLineBoldRaw >> 8) & 255) << 16) | ((gridLineBoldRaw >> 16) << 8) | 255;
 		}
+	};
+
+	// set the bounded grid border cell
+	Life.prototype.setBoundedGridBorderCell = function() {
+		var pixelColours = this.pixelColours;
+
+		// check for bounded grid
+		if (this.boundedGridType !== -1 && (this.multiNumStates + this.historyStates === 256)) {
+			this.boundedBorderColour = 2;
+		} else {
+			this.boundedBorderColour = 255;
+		}
 
 		// create bounded grid border colour if specified
 		if (this.boundedGridType !== -1 && (this.multiNumStates + this.historyStates < 256)) {
 			if (this.littleEndian) {
-				pixelColours[LifeConstants.boundedBorderColour] = 0xff808080;
+				pixelColours[this.boundedBorderColour] = 0xff808080;
 			} else {
-				pixelColours[LifeConstants.boundedBorderColour] = 0x808080ff;
+				pixelColours[this.boundedBorderColour] = 0x808080ff;
 			}
 		}
 	};
@@ -10128,7 +10140,7 @@
 
 		// create bounded grid border if specified
 		if (this.boundedGridType !== -1) {
-			this.drawBoundedGridBorder(LifeConstants.boundedBorderColour);
+			this.drawBoundedGridBorder(this.boundedBorderColour);
 		}
 
 		// create small colour grids if zoomed out

@@ -5817,6 +5817,8 @@
 					me.drawing = !me.drawing;
 					me.modeList.current = me.viewModeList((me.drawing ? ViewConstants.modeDraw : ViewConstants.modePan), true, me);
 					me.menuManager.notification.notify((me.drawing ? "Draw" : "Pan") + " Mode", 15, 40, 15, true);
+				} else {
+					me.menuManager.notification.notify("Drawing not available!", 15, 180, 15, true);
 				}
 				break;
 
@@ -10905,6 +10907,9 @@
 
 		// create the pixel colours from the palette at full brightness
 		this.engine.createPixelColours(1);	
+
+		// set bounded grid border cell
+		this.engine.setBoundedGridBorderCell();
 
 		// set the graph controls
 		this.opacityItem.current = this.viewOpacityRange([this.popGraphOpacity, this.popGraphOpacity], false, this);
