@@ -1827,7 +1827,7 @@
 		this.unoccupiedCurrent.set(this.unoccupiedTarget);
 		this.aliveGenColCurrent.set(this.aliveGenColTarget);
 		this.deadGenColCurrent.set(this.deadGenColTarget);
-		this.dyingGenColCurrent.set(this.deadGenColTarget);
+		this.dyingGenColCurrent.set(this.dyingGenColTarget);
 		this.unoccupiedGenCurrent.set(this.unoccupiedGenTarget);
 
 		// set the colour target to the theme
