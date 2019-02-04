@@ -86,8 +86,7 @@
 		if (((this.unoccupied.red + this.unoccupied.green + this.unoccupied.blue) / 3) >= 128) {
 			this.gridColour = ViewConstants.gridLineLightRawDefault;
 			this.gridMajorColour = ViewConstants.gridLineLightBoldRawDefault;
-		}
-		else {
+		} else {
 			this.gridColour = ViewConstants.gridLineRawDefault;
 			this.gridMajorColour = ViewConstants.gridLineBoldRawDefault;
 		}
@@ -438,7 +437,7 @@
 		this.deadGenColTarget = null;
 		this.unoccupiedGenTarget = null;
 
-		// number of  colour themes (will be computed when themes are added)
+		// number of colour themes (will be computed when themes are added)
 		this.numThemes = -1;
 
 		// 8 bit view of image data required if CanvasPixelArray used
@@ -879,8 +878,7 @@
 			nextGrid = this.grid;
 			tileGrid = this.nextTileGrid;
 			nextTileGrid = this.tileGrid;
-		}
-		else {
+		} else {
 			grid = this.grid;
 			nextGrid = this.nextGrid;
 			tileGrid = this.tileGrid;
@@ -939,8 +937,7 @@
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextGrid;
 			tileGrid = this.nextTileGrid;
-		}
-		else {
+		} else {
 			grid = this.grid;
 			tileGrid = this.tileGrid;
 		}
@@ -1359,8 +1356,7 @@
 		// set the black pixel colour
 		if (this.littleEndian) {
 			pixelColour = 0xff000000;
-		}
-		else {
+		} else {
 			pixelColour = 0x000000ff;
 		}
 
@@ -1380,8 +1376,7 @@
 		if (this.imageData.data.buffer) {
 			// create 32 bit view over the image data buffer
 			this.data32 = new Uint32Array(this.imageData.data.buffer);
-		}
-		else {
+		} else {
 			// buffer not available so create buffer to copy
 			this.data32 = new Uint32Array(this.imageData.data.length >> 2);
 
@@ -1629,8 +1624,7 @@
 		// set the black pixel colour
 		if (this.littleEndian) {
 			pixelColour = 0xff000000;
-		}
-		else {
+		} else {
 			pixelColour = 0x000000ff;
 		}
 
@@ -2101,8 +2095,7 @@
 				redChannel[128 + stateMap[i]] = colourList[i] >> 16;
 				greenChannel[128 + stateMap[i]] = (colourList[i] >> 8) & 255;
 				blueChannel[128 + stateMap[i]] = colourList[i] & 255;
-			}
-			else {
+			} else {
 				// use the custom colour
 				redChannel[128 + stateMap[i]] = customColours[i] >> 16;
 				greenChannel[128 + stateMap[i]] = (customColours[i] >> 8) & 255;
@@ -2284,8 +2277,7 @@
 						ruleArray[i] = 1 - ruleArray[hash33 - i - 1];
 						ruleArray[hash33 - i - 1] = 1 - tmp;
 					}
-				}
-				else {
+				} else {
 					// B0 without Smax needs two rules
 					// odd rule -> reverse(bits)
 					for (i = 0; i < hash33 / 2; i += 1) {
@@ -2322,32 +2314,25 @@
 		// find the left most bit number
 		if ((value & 128) !== 0) {
 			result = 0;
-		}
-		else {
+		} else {
 			if ((value & 64) !== 0) {
 				result = 1;
-			}
-			else {
+			} else {
 				if ((value & 32) !== 0) {
 					result = 2;
-				}
-				else {
+				} else {
 					if ((value & 16) !== 0) {
 						result = 3;
-					}
-					else {
+					} else {
 						if ((value & 8) !== 0) {
 							result = 4;
-						}
-						else {
+						} else {
 							if ((value & 4) !== 0) {
 								result = 5;
-							}
-							else {
+							} else {
 								if ((value & 2) !== 0) { 
 									result = 6;
-								}
-								else {
+								} else {
 									if ((value & 1) !== 0) {
 										result = 7;
 									}
@@ -2370,32 +2355,25 @@
 		// find the right most bit number
 		if ((value & 1) !== 0) {
 			result = 7;
-		}
-		else {
+		} else {
 			if ((value & 2) !== 0) {
 				result = 6;
-			}
-			else {
+			} else {
 				if ((value & 4) !== 0) {
 					result = 5;
-				}
-				else {
+				} else {
 					if ((value & 8) !== 0) {
 						result = 4;
-					}
-					else {
+					} else {
 						if ((value & 16) !== 0) {
 							result = 3;
-						}
-						else {
+						} else {
 							if ((value & 32) !== 0) {
 								result = 2;
-							}
-							else {
+							} else {
 								if ((value & 64) !== 0) {
 									result = 1;
-								}
-								else {
+								} else {
 									if ((value & 128) !== 0) {
 										result = 0;
 									}
@@ -2419,64 +2397,49 @@
 		// find the left most bit number
 		if ((value & 32768) !== 0) {
 			result = 0;
-		}
-		else {
+		} else {
 			if ((value & 16384) !== 0) {
 				result = 1;
-			}
-			else {
+			} else {
 				if ((value & 8192) !== 0) {
 					result = 2;
-				}
-				else {
+				} else {
 					if ((value & 4096) !== 0) {
 						result = 3;
-					}
-					else {
+					} else {
 						if ((value & 2048) !== 0) {
 							result = 4;
-						}
-						else {
+						} else {
 							if ((value & 1024) !== 0) {
 								result = 5;
-							}
-							else {
+							} else {
 								if ((value & 512) !== 0) {
 									result = 6;
-								}
-								else {
+								} else {
 									if ((value & 256) !== 0) {
 										result = 7;
-									}
-									else {
+									} else {
 										if ((value & 128) !== 0) {
 											result = 8;
-										}
-										else {
+										} else {
 											if ((value & 64) !== 0) {
 												result = 9;
-											}
-											else {
+											} else {
 												if ((value & 32) !== 0) {
 													result = 10;
-												}
-												else {
+												} else {
 													if ((value & 16) !== 0) {
 														result = 11;
-													}
-													else {
+													} else {
 														if ((value & 8) !== 0) {
 															result = 12;
-														}
-														else {
+														} else {
 															if ((value & 4) !== 0) {
 																result = 13;
-															}
-															else {
+															} else {
 																if ((value & 2) !== 0) {
 																	result = 14;
-																}
-																else {
+																} else {
 																	if ((value & 1) !== 0) {
 																		result = 15;
 																	}
@@ -2507,60 +2470,46 @@
 		// find the right most bit number
 		if ((value & 1) !== 0) {
 			result = 15;
-		}
-		else {
+		} else {
 			if ((value & 2) !== 0) {
 				result = 14;
-			}
-			else {
+			} else {
 				if ((value & 4) !== 0) {
 					result = 13;
-				}
-				else {
+				} else {
 					if ((value & 8) !== 0) {
 						result = 12;
-					}
-					else {
+					} else {
 						if ((value & 16) !== 0) {
 							result = 11;
-						}
-						else {
+						} else {
 							if ((value & 32) !== 0) {
 								result = 10;
-							}
-							else {
+							} else {
 								if ((value & 64) !== 0) {
 									result = 9;
-								}
-								else {
+								} else {
 									if ((value & 128) !== 0) {
 										result = 8;
-									}
-									else {
+									} else {
 										if ((value & 256) !== 0) {
 											result = 7;
-										}
-										else {
+										} else {
 											if ((value & 512) !== 0) {
 												result = 6;
-											}
-											else {
+											} else {
 												if ((value & 1024) !== 0) {
 													result = 5;
-												}
-												else {
+												} else {
 													if ((value & 2048) !== 0) {
 														result = 4;
-													}
-													else {
+													} else {
 														if ((value & 4096) !== 0) {
 															result = 3;
-														}
-														else {
+														} else {
 															if ((value & 8192) !== 0) {
 																result = 2;
-															}
-															else {
+															} else {
 																if ((value & 16384) !== 0) {
 																	result = 1;
 																}
@@ -2728,16 +2677,14 @@
 			// get the tile row below
 			if (th > 0) {
 				belowNextTileRow = nextTileGrid[th - 1];
-			}
-			else {
+			} else {
 				belowNextTileRow = blankTileRow;
 			}
 
 			// get the tile row above
 			if (th < tileRows - 1) {
 				aboveNextTileRow = nextTileGrid[th + 1];
-			}
-			else {
+			} else {
 				aboveNextTileRow = blankTileRow;
 			}
 
@@ -2864,8 +2811,7 @@
 									if ((neighbours & LifeConstants.leftSet) !== 0) {
 										if (b < 15) {
 											nextTiles |= (1 << (b + 1));
-										}
-										else {
+										} else {
 											// set in previous set
 											if (tw > 0) {
 												nextTileRow[tw - 1] |= 1;
@@ -2877,8 +2823,7 @@
 									if ((neighbours & LifeConstants.rightSet) !== 0) {
 										if (b > 0) {
 											nextTiles |= (1 << (b - 1));
-										}
-										else {
+										} else {
 											// set carry over to go into next set
 											if (tw < tileCols16 - 1) {
 												nextTileRow[tw + 1] |= (1 << 15);
@@ -2902,8 +2847,7 @@
 									if ((neighbours & LifeConstants.bottomLeftSet) !== 0) {
 										if (b < 15) {
 											belowNextTiles |= (1 << (b + 1));
-										}
-										else {
+										} else {
 											if (tw > 0) {
 												belowNextTileRow[tw - 1] |= 1;
 											}
@@ -2914,8 +2858,7 @@
 									if ((neighbours & LifeConstants.bottomRightSet) !== 0) {
 										if (b > 0) {
 											belowNextTiles |= (1 << (b - 1));
-										}
-										else {
+										} else {
 											if (tw < tileCols16 - 1) {
 												belowNextTileRow[tw + 1] |= (1 << 15);
 											}
@@ -2926,8 +2869,7 @@
 									if ((neighbours & LifeConstants.topLeftSet) !== 0) {
 										if (b < 15) {
 											aboveNextTiles |= (1 << (b + 1));
-										}
-										else {
+										} else {
 											if (tw > 0) {
 												aboveNextTileRow[tw - 1] |= 1;
 											}
@@ -2938,8 +2880,7 @@
 									if ((neighbours & LifeConstants.topRightSet) !== 0) {
 										if (b > 0) {
 											aboveNextTiles |= (1 << (b - 1));
-										}
-										else {
+										} else {
 											if (tw < tileCols16 - 1) {
 												aboveNextTileRow[tw + 1] |= (1 << 15);
 											}
@@ -2961,8 +2902,7 @@
 					if (th < tileRows - 1) {
 						aboveNextTileRow[tw] |= aboveNextTiles;
 					}
-				}
-				else {
+				} else {
 					// skip tile set
 					leftX += xSize << 4;
 				}
@@ -3048,16 +2988,14 @@
 			// get the tile row below
 			if (th > 0) {
 				belowNextTileRow = nextTileGrid[th - 1];
-			}
-			else {
+			} else {
 				belowNextTileRow = blankTileRow;
 			}
 
 			// get the tile row above
 			if (th < tileRows - 1) {
 				aboveNextTileRow = nextTileGrid[th + 1];
-			}
-			else {
+			} else {
 				aboveNextTileRow = blankTileRow;
 			}
 
@@ -3385,8 +3323,7 @@
 									if ((neighbours & LifeConstants.leftSet) !== 0) {
 										if (b < 15) {
 											nextTiles |= (1 << (b + 1));
-										}
-										else {
+										} else {
 											// set in previous set
 											if (tw > 0) {
 												nextTileRow[tw - 1] |= 1;
@@ -3398,8 +3335,7 @@
 									if ((neighbours & LifeConstants.rightSet) !== 0) {
 										if (b > 0) {
 											nextTiles |= (1 << (b - 1));
-										}
-										else {
+										} else {
 											// set carry over to go into next set
 											if (tw < tileCols16 - 1) {
 												nextTileRow[tw + 1] |= (1 << 15);
@@ -3423,8 +3359,7 @@
 									if ((neighbours & LifeConstants.bottomLeftSet) !== 0) {
 										if (b < 15) {
 											belowNextTiles |= (1 << (b + 1));
-										}
-										else {
+										} else {
 											if (tw > 0) {
 												belowNextTileRow[tw - 1] |= 1;
 											}
@@ -3435,8 +3370,7 @@
 									if ((neighbours & LifeConstants.bottomRightSet) !== 0) {
 										if (b > 0) {
 											belowNextTiles |= (1 << (b - 1));
-										}
-										else {
+										} else {
 											if (tw < tileCols16 - 1) {
 												belowNextTileRow[tw + 1] |= (1 << 15);
 											}
@@ -3447,8 +3381,7 @@
 									if ((neighbours & LifeConstants.topLeftSet) !== 0) {
 										if (b < 15) {
 											aboveNextTiles |= (1 << (b + 1));
-										}
-										else {
+										} else {
 											if (tw > 0) {
 												aboveNextTileRow[tw - 1] |= 1;
 											}
@@ -3459,8 +3392,7 @@
 									if ((neighbours & LifeConstants.topRightSet) !== 0) {
 										if (b > 0) {
 											aboveNextTiles |= (1 << (b - 1));
-										}
-										else {
+										} else {
 											if (tw < tileCols16 - 1) {
 												aboveNextTileRow[tw + 1] |= (1 << 15);
 											}
@@ -3482,8 +3414,7 @@
 					if (th < tileRows - 1) {
 						aboveNextTileRow[tw] |= aboveNextTiles;
 					}
-				}
-				else {
+				} else {
 					// skip tile set
 					leftX += xSize << 4;
 				}
@@ -3656,8 +3587,7 @@
 					}
 				}
 			}
-		}
-		else {
+		} else {
 			// check each row
 			for (h = 0; h < height; h += 1) {
 				gridRow16 = grid16[h];
@@ -3792,8 +3722,7 @@
 		// shrink the tile grid to the pattern
 		if (this.multiNumStates !== -1) {
 			this.shrinkTileGridGenerations();
-		}
-		else {
+		} else {
 			this.shrinkTileGrid();
 		}
 
@@ -3853,8 +3782,7 @@
 		// determine the buffer for current generation
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextGrid16;
-		}
-		else {
+		} else {
 			grid = this.grid16;
 		}
 
@@ -3873,8 +3801,7 @@
 				remove += bitCounts16[topRow[x]];
 				topRow[x] = 0;
 			}
-		}
-		else {
+		} else {
 			// check for infinite height
 			if (this.boundedGridHeight === 0) {
 				// just clear left and right
@@ -3891,8 +3818,7 @@
 					}
 					gridy[rightWord] &= rightMask;
 				}
-			}
-			else {
+			} else {
 				// clear top and bottom boundary
 				for (x = left16; x <= right16; x += 1) {
 					remove += bitCounts16[bottomRow[x]];
@@ -3941,8 +3867,7 @@
 					bottomRow[x] = 0;
 					topRow[x] = 0;
 				}
-			}
-			else {
+			} else {
 				// check for infinite height
 				if (this.boundedGridHeight === 0) {
 					// just clear left and right
@@ -3950,8 +3875,7 @@
 						grid[y][leftX] = 0;
 						grid[y][rightX] = 0;
 					}
-				}
-				else {
+				} else {
 					// clear top and bottom boundary
 					for (x = leftX; x <= rightX; x += 1) {
 						bottomRow[x] = 0;
@@ -4076,8 +4000,7 @@
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextGrid16;
 			tileGrid = this.nextTileGrid;
-		}
-		else {
+		} else {
 			grid = this.grid16;
 			tileGrid = this.tileGrid;
 		}
@@ -4195,8 +4118,7 @@
 			sourceY = bottomY + ((height - 1 + vertShift + height) % height);
 			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
 				grid[bottomY - 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
-			}
-			else {
+			} else {
 				grid[bottomY - 1][(rightX + 1) >> 4] &= ~(1 << (~(rightX + 1) & 15));
 			}
 
@@ -4205,8 +4127,7 @@
 			sourceY = bottomY + ((height - 1 - vertShift + height) % height);
 			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
 				grid[bottomY - 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
-			}
-			else {
+			} else {
 				grid[bottomY - 1][(leftX - 1) >> 4] &= ~(1 << (~(leftX - 1) & 15));
 			}
 
@@ -4215,8 +4136,7 @@
 			sourceY = bottomY + ((vertShift + height) % height);
 			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
 				grid[topY + 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
-			}
-			else {
+			} else {
 				grid[topY + 1][(rightX + 1) >> 4] &= ~(1 << (~(rightX + 1) & 15));
 			}
 
@@ -4225,8 +4145,7 @@
 			sourceY = bottomY + ((-vertShift + height) % height);
 			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
 				grid[topY + 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
-			}
-			else {
+			} else {
 				grid[topY + 1][(leftX - 1) >> 4] &= ~(1 << (~(leftX - 1) & 15));
 			}
 		}
@@ -4270,8 +4189,7 @@
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextGrid16;
 			tileGrid = this.nextTileGrid;
-		}
-		else {
+		} else {
 			grid = this.grid16;
 			tileGrid = this.tileGrid;
 		}
@@ -4284,8 +4202,7 @@
 			// check for twist
 			if (horizTwist) {
 				destX = rightX - ((i + horizShift + width) % width);
-			}
-			else {
+			} else {
 				destX = leftX + ((i + horizShift + width) % width);
 			}
 
@@ -4307,8 +4224,7 @@
 			// copy bottom row to above top
 			if (horizTwist) {
 				destX = rightX - ((i - horizShift + width) % width);
-			}
-			else {
+			} else {
 				destX = leftX + ((i - horizShift + width) % width);
 			}
 
@@ -4336,8 +4252,7 @@
 			// check for vertical twist
 			if (vertTwist) {
 				destY = topY - ((i - vertShift + height) % height);
-			}
-			else {
+			} else {
 				destY = bottomY + ((i - vertShift + height) % height);
 			}
 
@@ -4359,8 +4274,7 @@
 			// copy right column to left of left
 			if (vertTwist) {
 				destY = topY - ((i + vertShift + height) % height);
-			}
-			else {
+			} else {
 				destY = bottomY + ((i + vertShift + height) % height);
 			}
 
@@ -4383,14 +4297,12 @@
 		// bottom right corner
 		if (horizTwist) {
 			sourceX = rightX - ((-horizShift + width) % width);
-		}
-		else {
+		} else {
 			sourceX = leftX + ((-horizShift + width) % width);
 		}
 		if (vertTwist) {
 			sourceY = topY - ((height - 1 + vertShift + height) % height);
-		}
-		else {
+		} else {
 			sourceY = bottomY + ((height - 1 + vertShift + height) % height);
 		}
 		if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
@@ -4400,14 +4312,12 @@
 		// bottom left corner
 		if (horizTwist) {
 			sourceX = rightX - ((width - 1 - horizShift + width) % width);
-		}
-		else {
+		} else {
 			sourceX = leftX + ((width - 1 - horizShift + width) % width);
 		}
 		if (vertTwist) {
 			sourceY = topY - ((height - 1 + vertShift + height) % height);
-		}
-		else {
+		} else {
 			sourceY = bottomY + ((height - 1 + vertShift + height) % height);
 		}
 		if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
@@ -4417,14 +4327,12 @@
 		// top right corner
 		if (horizTwist) {
 			sourceX = rightX - ((horizShift + width) % width);
-		}
-		else {
+		} else {
 			sourceX = leftX + ((horizShift + width) % width);
 		}
 		if (vertTwist) {
 			sourceY = topY - ((vertShift + height) % height);
-		}
-		else {
+		} else {
 			sourceY = bottomY + ((vertShift + height) % height);
 		}
 		if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
@@ -4434,14 +4342,12 @@
 		// top left corner
 		if (horizTwist) {
 			sourceX = rightX - ((width - 1 + horizShift + width) % width);
-		}
-		else {
+		} else {
 			sourceX = leftX + ((width - 1 + horizShift + width) % width);
 		}
 		if (vertTwist) {
 			sourceY = topY - ((vertShift + height) % height);
-		}
-		else {
+		} else {
 			sourceY = bottomY + ((vertShift + height) % height);
 		}
 		if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
@@ -4473,8 +4379,7 @@
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextGrid16;
 			tileGrid = this.nextTileGrid;
-		}
-		else {
+		} else {
 			grid = this.grid16;
 			tileGrid = this.tileGrid;
 		}
@@ -4596,8 +4501,7 @@
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextGrid16;
 			tileGrid = this.nextTileGrid;
-		}
-		else {
+		} else {
 			grid = this.grid16;
 			tileGrid = this.tileGrid;
 		}
@@ -4922,8 +4826,7 @@
 			ctx.beginPath();
 			y = (graphHeight - graphHeight * (graphData[0] / this.maxPopValue)) | 0;
 			ctx.moveTo(borderX + borderAxis + 0.5, y + borderY + borderAxis + 0.5);
-		}
-		else {
+		} else {
 			ctx.fillStyle = graphCol;
 		}
 
@@ -4951,8 +4854,7 @@
 					next = next + inc;
 				}
 				next = next - 1;
-			}
-			else {
+			} else {
 				minVal = 0;
 				maxVal = 0;
 			}
@@ -4971,16 +4873,13 @@
 						y = (graphHeight - graphHeight * (maxVal / this.maxPopValue)) | 0;
 						ctx.lineTo(x + 0.5, y + borderY + borderAxis + 0.5);
 					}
-
-				}
-				else {
+				} else {
 					// drawing points
 					if (minVal > 0 && maxVal > 0) {
 						// single value so draw point
 						if (minVal === maxVal) {
 							ctx.fillRect(x + 0.5, y + borderY + borderAxis + 0.5, 1, 1);
-						}
-						else {
+						} else {
 							y = (graphHeight - graphHeight * (maxVal / this.maxPopValue)) | 0;
 							ctx.fillRect(x + 0.5, y + borderY + borderAxis + 0.5, 1, 1);
 						}
@@ -5051,8 +4950,7 @@
 					ctx.rotate(-90 * Math.PI / 180);
 					if (this.displayHeight < 320) {
 						ctx.fillText("Pop", i, i);
-					}
-					else {
+					} else {
 						ctx.fillText("Population", i, i);
 					}
 					ctx.restore();
@@ -5197,8 +5095,7 @@
 		// switch buffers each generation
 		if ((this.counter & 1) !== 0) {
 			grid16 = this.nextGrid16;
-		}
-		else {
+		} else {
 			grid16 = this.grid16;
 		}
 
@@ -5230,8 +5127,7 @@
 						// next tile column
 						leftX += xSize;
 					}
-				}
-				else {
+				} else {
 					// skip tile group
 					leftX += xSize << 4;
 				}
@@ -5281,8 +5177,7 @@
 		// switch buffers each generation
 		if ((this.counter & 1) !== 0) {
 			nextGrid16 = this.nextGrid16;
-		}
-		else {
+		} else {
 			nextGrid16 = this.grid16;
 		}
 
@@ -5317,8 +5212,7 @@
 						// next tile column
 						leftX += xSize;
 					}
-				}
-				else {
+				} else {
 					// skip tile group
 					leftX += xSize << 4;
 				}
@@ -5497,8 +5391,7 @@
 		if ((this.counter & 1) !== 0) {
 			// use grid
 			grid16 = this.nextGrid16;
-		}
-		else {
+		} else {
 			// use next grid
 			grid16 = this.grid16;
 		}
@@ -5694,8 +5587,7 @@
 			nextTileGrid = this.tileGrid;
 
 			indexLookup63 = this.indexLookup632;
-		}
-		else {
+		} else {
 			grid = this.grid16;
 			nextGrid = this.nextGrid16;
 			tileGrid = this.tileGrid;
@@ -5741,16 +5633,14 @@
 			// get the tile row below
 			if (th > 0) {
 				belowNextTileRow = nextTileGrid[th - 1];
-			}
-			else {
+			} else {
 				belowNextTileRow = blankTileRow;
 			}
 
 			// get the tile row above
 			if (th < tileRows - 1) {
 				aboveNextTileRow = nextTileGrid[th + 1];
-			}
-			else {
+			} else {
 				aboveNextTileRow = blankTileRow;
 			}
 
@@ -5782,8 +5672,7 @@
 							// deal with bottom row of the grid
 							if (h === 0) {
 								gridRow0 = this.blankRow;
-							}
-							else {
+							} else {
 								gridRow0 = grid[h - 1];
 							}
 
@@ -5885,8 +5774,7 @@
 								// deal with top row
 								if (h === this.height - 1) {
 									gridRow2 = this.blankRow;
-								}
-								else {
+								} else {
 									gridRow2 = grid[h + 1];
 								}
 
@@ -5927,8 +5815,7 @@
 									// top row set
 									neighbours |= LifeConstants.topSet;
 								}
-							}
-							else {
+							} else {
 								// check if at right edge
 								if (leftX >= width16 - 1) {
 									// process right edge tile first row
@@ -6018,8 +5905,7 @@
 									// deal with top row
 									if (h === this.height - 1) {
 										gridRow2 = this.blankRow;
-									}
-									else {
+									} else {
 										gridRow2 = grid[h + 1];
 									}
 
@@ -6060,8 +5946,7 @@
 										// top row set
 										neighbours |= LifeConstants.topSet;
 									}
-								}
-								else {
+								} else {
 									// process normal tile
 									val0 = (gridRow0[leftX - 1] << 17) | (gridRow0[leftX] << 1) | (gridRow0[leftX + 1] >> 15);
 									val1 = (gridRow1[leftX - 1] << 17) | (origValue << 1) | (gridRow1[leftX + 1] >> 15);
@@ -6439,8 +6324,7 @@
 									// deal with top row
 									if (h === this.height - 1) {
 										gridRow2 = this.blankRow;
-									}
-									else {
+									} else {
 										gridRow2 = grid[h + 1];
 									}
 
@@ -6516,8 +6400,7 @@
 									if ((neighbours & LifeConstants.leftSet) !== 0) {
 										if (b < 15) {
 											nextTiles |= (1 << (b + 1));
-										}
-										else {
+										} else {
 											// set in previous set if not at left edge
 											if ((tw > 0) && (leftX > 0)) {
 												nextTileRow[tw - 1] |= 1;
@@ -6529,8 +6412,7 @@
 									if ((neighbours & LifeConstants.rightSet) !== 0) {
 										if (b > 0) {
 											nextTiles |= (1 << (b - 1));
-										}
-										else {
+										} else {
 											// set carry over to go into next set if not at right edge
 											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
 												nextTileRow[tw + 1] |= (1 << 15);
@@ -6554,8 +6436,7 @@
 									if ((neighbours & LifeConstants.bottomLeftSet) !== 0) {
 										if (b < 15) {
 											belowNextTiles |= (1 << (b + 1));
-										}
-										else {
+										} else {
 											if ((tw > 0) && (leftX > 0)) {
 												belowNextTileRow[tw - 1] |= 1;
 											}
@@ -6566,8 +6447,7 @@
 									if ((neighbours & LifeConstants.bottomRightSet) !== 0) {
 										if (b > 0) {
 											belowNextTiles |= (1 << (b - 1));
-										}
-										else {
+										} else {
 											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
 												belowNextTileRow[tw + 1] |= (1 << 15);
 											}
@@ -6578,8 +6458,7 @@
 									if ((neighbours & LifeConstants.topLeftSet) !== 0) {
 										if (b < 15) {
 											aboveNextTiles |= (1 << (b + 1));
-										}
-										else {
+										} else {
 											if ((tw > 0) && (leftX > 0)) {
 												aboveNextTileRow[tw - 1] |= 1;
 											}
@@ -6590,8 +6469,7 @@
 									if ((neighbours & LifeConstants.topRightSet) !== 0) {
 										if (b > 0) {
 											aboveNextTiles |= (1 << (b - 1));
-										}
-										else {
+										} else {
 											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
 												aboveNextTileRow[tw + 1] |= (1 << 15);
 											}
@@ -6613,8 +6491,7 @@
 					if (th < tileRows - 1) {
 						aboveNextTileRow[tw] |= aboveNextTiles;
 					}
-				}
-				else {
+				} else {
 					// skip tile set
 					leftX += xSize << 4;
 				}
@@ -6761,8 +6638,7 @@
 			nextTileGrid = this.tileGrid;
 
 			indexLookup63 = this.indexLookup632;
-		}
-		else {
+		} else {
 			grid = this.grid16;
 			nextGrid = this.nextGrid16;
 			tileGrid = this.tileGrid;
@@ -6808,16 +6684,14 @@
 			// get the tile row below
 			if (th > 0) {
 				belowNextTileRow = nextTileGrid[th - 1];
-			}
-			else {
+			} else {
 				belowNextTileRow = blankTileRow;
 			}
 
 			// get the tile row above
 			if (th < tileRows - 1) {
 				aboveNextTileRow = nextTileGrid[th + 1];
-			}
-			else {
+			} else {
 				aboveNextTileRow = blankTileRow;
 			}
 
@@ -6849,8 +6723,7 @@
 							// deal with bottom row of the grid
 							if (h === 0) {
 								gridRow0 = this.blankRow;
-							}
-							else {
+							} else {
 								gridRow0 = grid[h - 1];
 							}
 
@@ -6967,8 +6840,7 @@
 								// deal with top row
 								if (h === this.height - 1) {
 									gridRow2 = this.blankRow;
-								}
-								else {
+								} else {
 									gridRow2 = grid[h + 1];
 								}
 
@@ -7014,8 +6886,7 @@
 									// top row set
 									neighbours |= LifeConstants.topSet;
 								}
-							}
-							else {
+							} else {
 								// check if at right edge
 								if (leftX >= width16 - 1) {
 									// process right edge tile first row
@@ -7117,8 +6988,7 @@
 									// deal with top row
 									if (h === this.height - 1) {
 										gridRow2 = this.blankRow;
-									}
-									else {
+									} else {
 										gridRow2 = grid[h + 1];
 									}
 
@@ -7164,8 +7034,7 @@
 										// top row set
 										neighbours |= LifeConstants.topSet;
 									}
-								}
-								else {
+								} else {
 									// process normal tile
 									val0 = (gridRow0[leftX - 1] << 17) | (gridRow0[leftX] << 1) | (gridRow0[leftX + 1] >> 15);
 									val1 = (gridRow1[leftX - 1] << 17) | (origValue << 1) | (gridRow1[leftX + 1] >> 15);
@@ -7607,8 +7476,7 @@
 									// deal with top row
 									if (h === this.height - 1) {
 										gridRow2 = this.blankRow;
-									}
-									else {
+									} else {
 										gridRow2 = grid[h + 1];
 									}
 
@@ -7689,8 +7557,7 @@
 									if ((neighbours & LifeConstants.leftSet) !== 0) {
 										if (b < 15) {
 											nextTiles |= (1 << (b + 1));
-										}
-										else {
+										} else {
 											// set in previous set if not at left edge
 											if ((tw > 0) && (leftX > 0)) {
 												nextTileRow[tw - 1] |= 1;
@@ -7702,8 +7569,7 @@
 									if ((neighbours & LifeConstants.rightSet) !== 0) {
 										if (b > 0) {
 											nextTiles |= (1 << (b - 1));
-										}
-										else {
+										} else {
 											// set carry over to go into next set if not at right edge
 											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
 												nextTileRow[tw + 1] |= (1 << 15);
@@ -7727,8 +7593,7 @@
 									if ((neighbours & LifeConstants.bottomLeftSet) !== 0) {
 										if (b < 15) {
 											belowNextTiles |= (1 << (b + 1));
-										}
-										else {
+										} else {
 											if ((tw > 0) && (leftX > 0)) {
 												belowNextTileRow[tw - 1] |= 1;
 											}
@@ -7739,8 +7604,7 @@
 									if ((neighbours & LifeConstants.bottomRightSet) !== 0) {
 										if (b > 0) {
 											belowNextTiles |= (1 << (b - 1));
-										}
-										else {
+										} else {
 											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
 												belowNextTileRow[tw + 1] |= (1 << 15);
 											}
@@ -7751,8 +7615,7 @@
 									if ((neighbours & LifeConstants.topLeftSet) !== 0) {
 										if (b < 15) {
 											aboveNextTiles |= (1 << (b + 1));
-										}
-										else {
+										} else {
 											if ((tw > 0) && (leftX > 0)) {
 												aboveNextTileRow[tw - 1] |= 1;
 											}
@@ -7763,8 +7626,7 @@
 									if ((neighbours & LifeConstants.topRightSet) !== 0) {
 										if (b > 0) {
 											aboveNextTiles |= (1 << (b - 1));
-										}
-										else {
+										} else {
 											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
 												aboveNextTileRow[tw + 1] |= (1 << 15);
 											}
@@ -7786,8 +7648,7 @@
 					if (th < tileRows - 1) {
 						aboveNextTileRow[tw] |= aboveNextTiles;
 					}
-				}
-				else {
+				} else {
 					// skip tile set
 					leftX += xSize << 4;
 				}
@@ -8092,8 +7953,7 @@
 						// next tile columns
 						leftX += xSize;
 					}
-				}
-				else {
+				} else {
 					// skip tile set
 					leftX += xSize << 4;
 				}
@@ -8236,8 +8096,7 @@
 						// next tile columns
 						leftX += xSize;
 					}
-				}
-				else {
+				} else {
 					// skip tile set
 					leftX += xSize << 4;
 				}
@@ -8346,8 +8205,7 @@
 						// next tile columns
 						leftX += xSize;
 					}
-				}
-				else {
+				} else {
 					// skip tile set
 					leftX += xSize << 4;
 				}
@@ -8434,8 +8292,7 @@
 						// next tile columns
 						leftX += xSize;
 					}
-				}
-				else {
+				} else {
 					// skip tile set
 					leftX += xSize << 4;
 				}
@@ -8553,8 +8410,7 @@
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextGrid16;
 			tileGrid = this.nextTileGrid;
-		}
-		else {
+		} else {
 			grid = this.grid16;
 			tileGrid = this.tileGrid;
 		}
@@ -8657,8 +8513,7 @@
 						// next tile columns
 						leftX += xSize;
 					}
-				}
-				else {
+				} else {
 					// skip tile set
 					leftX += xSize << 4;
 				}
@@ -8833,8 +8688,7 @@
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextGrid16;
 			tileGrid = this.nextTileGrid;
-		}
-		else {
+		} else {
 			grid = this.grid16;
 			tileGrid = this.tileGrid;
 		}
@@ -8897,8 +8751,7 @@
 								if ((nextCell & 32768) !== 0) {
 									// if alive just copy
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									// if dead then get value and copy
 									value = colourLookup[colourGridRow[cr]];
 
@@ -8911,8 +8764,7 @@
 								// loop unroll
 								if ((nextCell & 16384) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -8921,8 +8773,7 @@
 
 								if ((nextCell & 8192) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -8931,8 +8782,7 @@
 
 								if ((nextCell & 4096) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -8941,8 +8791,7 @@
 
 								if ((nextCell & 2048) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -8951,8 +8800,7 @@
 
 								if ((nextCell & 1024) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -8961,8 +8809,7 @@
 
 								if ((nextCell & 512) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -8971,8 +8818,7 @@
 
 								if ((nextCell & 256) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -8981,8 +8827,7 @@
 
 								if ((nextCell & 128) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -8991,8 +8836,7 @@
 
 								if ((nextCell & 64) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9001,8 +8845,7 @@
 
 								if ((nextCell & 32) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9011,8 +8854,7 @@
 
 								if ((nextCell & 16) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9021,8 +8863,7 @@
 
 								if ((nextCell & 8) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9031,8 +8872,7 @@
 
 								if ((nextCell & 4) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9041,8 +8881,7 @@
 
 								if ((nextCell & 2) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9051,8 +8890,7 @@
 
 								if ((nextCell & 1) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9070,8 +8908,7 @@
 								tileAlive |= nextCell;
 								if ((nextCell & 32768) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9079,8 +8916,7 @@
 								cr += 1;
 								if ((nextCell & 16384) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9089,8 +8925,7 @@
 
 								if ((nextCell & 8192) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9099,8 +8934,7 @@
 
 								if ((nextCell & 4096) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9109,8 +8943,7 @@
 
 								if ((nextCell & 2048) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9119,8 +8952,7 @@
 
 								if ((nextCell & 1024) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9129,8 +8961,7 @@
 
 								if ((nextCell & 512) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9139,8 +8970,7 @@
 
 								if ((nextCell & 256) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9149,8 +8979,7 @@
 
 								if ((nextCell & 128) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9159,8 +8988,7 @@
 
 								if ((nextCell & 64) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9169,8 +8997,7 @@
 
 								if ((nextCell & 32) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9179,8 +9006,7 @@
 
 								if ((nextCell & 16) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9189,8 +9015,7 @@
 
 								if ((nextCell & 8) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9199,8 +9024,7 @@
 
 								if ((nextCell & 4) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9209,8 +9033,7 @@
 
 								if ((nextCell & 2) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9219,8 +9042,7 @@
 
 								if ((nextCell & 1) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9236,8 +9058,7 @@
 								tileAlive |= nextCell;
 								if ((nextCell & 32768) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9245,8 +9066,7 @@
 								cr += 1;
 								if ((nextCell & 16384) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9255,8 +9075,7 @@
 
 								if ((nextCell & 8192) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9265,8 +9084,7 @@
 
 								if ((nextCell & 4096) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9275,8 +9093,7 @@
 
 								if ((nextCell & 2048) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9285,8 +9102,7 @@
 
 								if ((nextCell & 1024) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9295,8 +9111,7 @@
 
 								if ((nextCell & 512) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9305,8 +9120,7 @@
 
 								if ((nextCell & 256) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9315,8 +9129,7 @@
 
 								if ((nextCell & 128) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9325,8 +9138,7 @@
 
 								if ((nextCell & 64) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9335,8 +9147,7 @@
 
 								if ((nextCell & 32) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9345,8 +9156,7 @@
 
 								if ((nextCell & 16) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9355,8 +9165,7 @@
 
 								if ((nextCell & 8) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9365,8 +9174,7 @@
 
 								if ((nextCell & 4) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9375,8 +9183,7 @@
 
 								if ((nextCell & 2) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9385,8 +9192,7 @@
 
 								if ((nextCell & 1) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9402,8 +9208,7 @@
 								tileAlive |= nextCell;
 								if ((nextCell & 32768) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9411,8 +9216,7 @@
 								cr += 1;
 								if ((nextCell & 16384) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9421,8 +9225,7 @@
 
 								if ((nextCell & 8192) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9431,8 +9234,7 @@
 
 								if ((nextCell & 4096) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9441,8 +9243,7 @@
 
 								if ((nextCell & 2048) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9451,8 +9252,7 @@
 
 								if ((nextCell & 1024) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9461,8 +9261,7 @@
 
 								if ((nextCell & 512) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9471,8 +9270,7 @@
 
 								if ((nextCell & 256) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9481,8 +9279,7 @@
 
 								if ((nextCell & 128) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9491,8 +9288,7 @@
 
 								if ((nextCell & 64) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9501,8 +9297,7 @@
 
 								if ((nextCell & 32) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9511,8 +9306,7 @@
 
 								if ((nextCell & 16) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9521,8 +9315,7 @@
 
 								if ((nextCell & 8) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9531,8 +9324,7 @@
 
 								if ((nextCell & 4) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9541,8 +9333,7 @@
 
 								if ((nextCell & 2) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9551,8 +9342,7 @@
 
 								if ((nextCell & 1) !== 0) {
 									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								}
-								else {
+								} else {
 									value = colourLookup[colourGridRow[cr]];
 									tileAlive |= value > 1;
 								}
@@ -9570,8 +9360,7 @@
 						// next tile columns
 						leftX += xSize;
 					}
-				}
-				else {
+				} else {
 					// skip tile set
 					leftX += xSize << 4;
 				}
@@ -9632,8 +9421,7 @@
 		// select the zoom from the smallest ratio
 		if (zoomX > zoomY) {
 			result = zoomY;
-		}
-		else {
+		} else {
 			result = zoomX;
 		}
 
@@ -9643,8 +9431,7 @@
 		// ensure in range
 		if (result < minZoom) {
 			result = minZoom;
-		}
-		else {
+		} else {
 			if (result > maxZoom) {
 				result = maxZoom;
 			}
@@ -9671,8 +9458,7 @@
 		// compute what percentage the integer zoom is of the actual zoom
 		if (intZoom < testZoom) {
 			percent = intZoom / testZoom;
-		}
-		else {
+		} else {
 			percent = testZoom / intZoom;
 		}
 		
@@ -9680,8 +9466,7 @@
 		if (percent >= ViewConstants.integerZoomThreshold) {
 			if (zoom < 1) {
 				zoom = 1 / intZoom;
-			}
-			else {
+			} else {
 				zoom = intZoom;
 			}
 		}
@@ -9791,8 +9576,7 @@
 			// compute the width and height
 			width = rightX - leftX + 1;
 			height = topY - bottomY + 1;
-		}
-		else {
+		} else {
 			// use pattern width and height
 			width = patternWidth;
 			height = patternHeight;
@@ -9824,8 +9608,7 @@
 		// select the zoom from the smallest ratio
 		if (zoomX > zoomY) {
 			zoom = zoomY;
-		}
-		else {
+		} else {
 			zoom = zoomX;
 		}
 
@@ -9838,8 +9621,7 @@
 		// ensure in range
 		if (zoom < minZoom) {
 			zoom = minZoom;
-		}
-		else {
+		} else {
 			if (zoom > maxZoom) {
 				zoom = maxZoom;
 			}
@@ -10066,8 +9848,7 @@
 					// draw the point
 					data32[startY * w + startX] = colour;
 				}
-			}
-			else {
+			} else {
 				// some or all of the line is off display so use bounds checking
 				// set the first point
 				if (startX >= 0 && startX < w && startY >=0 && startY < h) {
@@ -10160,8 +9941,7 @@
 		// draw twice if major grid lines enabled
 		if (this.gridLineMajor > 0 && this.gridLineMajorEnabled) {
 			loop = 2;
-		}
-		else {
+		} else {
 			loop = 1;
 		}
 
@@ -10189,8 +9969,7 @@
 					// choose whether to use major or minor colour
 					if (gridLineNum % this.gridLineMajor === 0) {
 						drawCol = gridBoldCol;
-					}
-					else {
+					} else {
 						drawCol = gridCol;
 					}
 				}
@@ -10207,14 +9986,12 @@
 						for (y = startY; y < endY; y += zoomStep) {
 							if ((vLineNum & 1) === 0) {
 								this.drawLine(Math.round(x + xOff), Math.round(y), Math.round(x + xOff), Math.round(y + zoomStep - 1), drawCol);
-							}
-							else {
+							} else {
 								this.drawLine(Math.round(x + xOff + zoomStep / 2), Math.round(y), Math.round(x + xOff + zoomStep / 2), Math.round(y + zoomStep - 1), drawCol);
 							}
 							vLineNum += 1;
 						}
-					}
-					else {
+					} else {
 						// draw vertical line
 						this.drawLine(Math.round(x + xOff), bottomY, Math.round(x + xOff), topY - 1, drawCol);
 					}
@@ -10231,8 +10008,7 @@
 					// choose whether to use major or minor colour
 					if (gridLineNum % this.gridLineMajor === 0) {
 						drawCol = gridBoldCol;
-					}
-					else {
+					} else {
 						drawCol = gridCol;
 					}
 				}
@@ -10287,8 +10063,7 @@
 				bottomRow[i] = border;
 				topRow[i] = border;
 			}
-		}
-		else {
+		} else {
 			// check for infinite height
 			if (height === 0) {
 				// draw left and right only
@@ -10296,8 +10071,7 @@
 					colourGrid[i][leftX] = border;
 					colourGrid[i][rightX] = border;
 				}
-			}
-			else {
+			} else {
 				// draw top and bottom
 				for (i = leftX; i <= rightX; i += 1) {
 					bottomRow[i] = border;
@@ -10324,6 +10098,9 @@
 				this.aliveColCurrent.set(this.aliveColTarget);
 				this.deadColCurrent.set(this.deadColTarget);
 				this.unoccupiedCurrent.set(this.unoccupiedTarget);
+				this.aliveGenColCurrent.set(this.aliveGenColTarget);
+				this.dyingGenColCurrent.set(this.dyingGenColTarget);
+				this.unoccupiedGenCurrent.set(this.unoccupiedGenTarget);
 			}
 		}
 
@@ -10332,8 +10109,7 @@
 
 		if (this.camZoom < ViewConstants.minZoom) {
 			this.camZoom = ViewConstants.minZoom;
-		}
-		else {
+		} else {
 			if (this.camZoom > ViewConstants.maxZoom) {
 				this.camZoom = ViewConstants.maxZoom;
 			}
@@ -10346,8 +10122,7 @@
 		if (this.isHex) {
 			// zero angle
 			this.camAngle = 0;
-		}
-		else {
+		} else {
 			this.camAngle = this.angle;
 		}
 
@@ -10365,58 +10140,49 @@
 			if (this.drawOverlay) {
 				// render the grid with the overlay on top
 				this.renderGridOverlayProjection(this.smallOverlayGrid16, this.smallColourGrid16, 15);
-			}
-			else {
+			} else {
 				// render using small colour grid 16x16
 				this.renderGridProjection(this.smallColourGrid16, this.smallColourGrid16, 15);
 			}
-		}
-		else {
+		} else {
 			// check if zoom < 0.25x
 			if (this.camZoom < 0.25) {
 				// check for LifeHistory overlay
 				if (this.drawOverlay) {
 					// render the grid with the overlay on top
 					this.renderGridOverlayProjection(this.smallOverlayGrid8, this.smallColourGrid8, 7);
-				}
-				else {
+				} else {
 					// render using small colour grid 8x8
 					this.renderGridProjection(this.smallColourGrid8, this.smallColourGrid8, 7);
 				}
-			}
-			else {
+			} else {
 				// check if zoom < 0.5x
 				if (this.camZoom < 0.5) {
 					// check for LifeHistory overlay
 					if (this.drawOverlay) {
 						// render the grid with the overlay on top
 						this.renderGridOverlayProjection(this.smallOverlayGrid4, this.smallColourGrid4, 3);
-					}
-					else {
+					} else {
 						// render using small colour grid 4x4
 						this.renderGridProjection(this.smallColourGrid4, this.smallColourGrid4, 3);
 					}
-				}
-				else {
+				} else {
 					// check for zoom < 1x
 					if (this.camZoom < 1) {
 						// check for LifeHistory overlay
 						if (this.drawOverlay) {
 							// render the grid with the overlay on top
 							this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid2, 1);
-						}
-						else {
+						} else {
 							// render using small colour grid 2x2
 							this.renderGridProjection(this.smallColourGrid2, this.smallColourGrid2, 1);
 						}
-					}
-					else {
+					} else {
 						// check for LifeHistory overlay
 						if (this.drawOverlay) {
 							// render the grid with the overlay on top
 							this.renderGridOverlayProjection(this.overlayGrid, this.colourGrid, 0);
-						}
-						else {
+						} else {
 							// render the grid
 							this.renderGridProjection(this.colourGrid, this.colourGrid, 0);
 						}
@@ -10487,8 +10253,7 @@
 		if (this.width < this.maxGridSize) {
 			// use the state 0 colour
 			offGrid = pixelColours[0] | 0;
-		}
-		else {
+		} else {
 			// use grey
 			offGrid = this.boundaryColour | 0;
 		}
@@ -10507,8 +10272,7 @@
 
 					// set the pixel in the buffer
 					data32[idx] = pixelColours[col];
-				}
-				else {
+				} else {
 					// use the off grid colour
 					data32[idx] = offGrid;
 				}
@@ -10522,8 +10286,7 @@
 				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
-				}
-				else {
+				} else {
 					data32[idx] = offGrid;
 				}
 				idx += 1;
@@ -10534,8 +10297,7 @@
 				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
-				}
-				else {
+				} else {
 					data32[idx] = offGrid;
 				}
 				idx += 1;
@@ -10546,8 +10308,7 @@
 				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
-				}
-				else {
+				} else {
 					data32[idx] = offGrid;
 				}
 				idx += 1;
@@ -10558,8 +10319,7 @@
 				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
-				}
-				else {
+				} else {
 					data32[idx] = offGrid;
 				}
 				idx += 1;
@@ -10570,8 +10330,7 @@
 				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
-				}
-				else {
+				} else {
 					data32[idx] = offGrid;
 				}
 				idx += 1;
@@ -10582,8 +10341,7 @@
 				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
-				}
-				else {
+				} else {
 					data32[idx] = offGrid;
 				}
 				idx += 1;
@@ -10594,8 +10352,7 @@
 				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
-				}
-				else {
+				} else {
 					data32[idx] = offGrid;
 				}
 				idx += 1;
@@ -10623,8 +10380,7 @@
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
-			}
-			else {
+			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
 
@@ -10646,26 +10402,22 @@
 				// switch to small grid 16x16
 				colourGrid = this.smallColourGrid16;
 				mask = 15;
-			}
-			else {
+			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
 					colourGrid = this.smallColourGrid8;
 					mask = 7;
-				}
-				else {
+				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
 						colourGrid = this.smallColourGrid4;
 						mask = 3;
-					}
-					else {
+					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
 							colourGrid = this.smallColourGrid2;
 							mask = 1;
-						}
-						else {
+						} else {
 							// switch to full resolution grid
 							colourGrid = this.colourGrid;
 							mask = 0;
@@ -10858,8 +10610,7 @@
 		if (this.width < this.maxGridSize) {
 			// use the state 0 colour
 			offGrid = pixelColours[0] | 0;
-		}
-		else {
+		} else {
 			// use grey
 			offGrid = this.boundaryColour | 0;
 		}
@@ -10889,8 +10640,7 @@
 
 						// set the pixel in the buffer
 						data32[idx] = pixelColours[col];
-					}
-					else {
+					} else {
 						// use the off grid colour
 						data32[idx] = offGrid;
 					}
@@ -10903,8 +10653,7 @@
 					if ((x & wt) === (x & wm)) {
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
-					}
-					else {
+					} else {
 						data32[idx] = offGrid;
 					}
 					idx += 1;
@@ -10914,8 +10663,7 @@
 					if ((x & wt) === (x & wm)) {
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
-					}
-					else {
+					} else {
 						data32[idx] = offGrid;
 					}
 					idx += 1;
@@ -10925,8 +10673,7 @@
 					if ((x & wt) === (x & wm)) {
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
-					}
-					else {
+					} else {
 						data32[idx] = offGrid;
 					}
 					idx += 1;
@@ -10936,8 +10683,7 @@
 					if ((x & wt) === (x & wm)) {
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
-					}
-					else {
+					} else {
 						data32[idx] = offGrid;
 					}
 					idx += 1;
@@ -10947,8 +10693,7 @@
 					if ((x & wt) === (x & wm)) {
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
-					}
-					else {
+					} else {
 						data32[idx] = offGrid;
 					}
 					idx += 1;
@@ -10958,8 +10703,7 @@
 					if ((x & wt) === (x & wm)) {
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
-					}
-					else {
+					} else {
 						data32[idx] = offGrid;
 					}
 					idx += 1;
@@ -10969,15 +10713,13 @@
 					if ((x & wt) === (x & wm)) {
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
-					}
-					else {
+					} else {
 						data32[idx] = offGrid;
 					}
 					idx += 1;
 					x += dyy;
 				}
-			}
-			else {
+			} else {
 				// draw off grid row
 				for (w = 0; w < w8; w += 1) {
 					data32[idx] = offGrid;
@@ -11018,8 +10760,7 @@
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
-			}
-			else {
+			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
 
@@ -11040,26 +10781,22 @@
 				// switch to small grid 16x16
 				colourGrid = this.smallColourGrid16;
 				mask = 15;
-			}
-			else {
+			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
 					colourGrid = this.smallColourGrid8;
 					mask = 7;
-				}
-				else {
+				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
 						colourGrid = this.smallColourGrid4;
 						mask = 3;
-					}
-					else {
+					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
 							colourGrid = this.smallColourGrid2;
 							mask = 1;
-						}
-						else {
+						} else {
 							// switch to full resolution grid
 							colourGrid = this.colourGrid;
 							mask = 0;
@@ -11183,8 +10920,7 @@
 						idx += 1;
 						x += dyy;
 					}
-				}
-				else {
+				} else {
 					// skip blank row
 					idx += (w8 << 3);
 				}
@@ -11335,8 +11071,7 @@
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
-			}
-			else {
+			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
 
@@ -11358,26 +11093,22 @@
 				// switch to small grid 16x16
 				colourGrid = this.smallColourGrid16;
 				mask = 15;
-			}
-			else {
+			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
 					colourGrid = this.smallColourGrid8;
 					mask = 7;
-				}
-				else {
+				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
 						colourGrid = this.smallColourGrid4;
 						mask = 3;
-					}
-					else {
+					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
 							colourGrid = this.smallColourGrid2;
 							mask = 1;
-						}
-						else {
+						} else {
 							// switch to full resolution grid
 							colourGrid = this.colourGrid;
 							mask = 0;
@@ -11628,8 +11359,7 @@
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
-			}
-			else {
+			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
 
@@ -11650,26 +11380,22 @@
 				// switch to small grid 16x16
 				colourGrid = this.smallColourGrid16;
 				mask = 15;
-			}
-			else {
+			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
 					colourGrid = this.smallColourGrid8;
 					mask = 7;
-				}
-				else {
+				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
 						colourGrid = this.smallColourGrid4;
 						mask = 3;
-					}
-					else {
+					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
 							colourGrid = this.smallColourGrid2;
 							mask = 1;
-						}
-						else {
+						} else {
 							// switch to full resolution grid
 							colourGrid = this.colourGrid;
 							mask = 0;
@@ -11861,19 +11587,16 @@
 			if (this.camAngle === 0) {
 				// render with clipping and no rotation
 				this.renderGridProjectionClipNoRotate(bottomGrid, layersGrid, mask);
-			}
-			else {
+			} else {
 				// render with clipping and rotation
 				this.renderGridProjectionClip(bottomGrid, layersGrid, mask);
 			}
-		}
-		else {
+		} else {
 			// check angle
 			if (this.camAngle === 0) {
 				// render with no clipping and no rotation
 				this.renderGridProjectionNoClipNoRotate(bottomGrid, layersGrid, mask);
-			}
-			else {
+			} else {
 				// render with no clipping and rotation
 				this.renderGridProjectionNoClip(bottomGrid, layersGrid, mask);
 			}
@@ -11957,8 +11680,7 @@
 		if (this.width < this.maxGridSize) {
 			// use the state 0 colour
 			offGrid = pixelColours[0] | 0;
-		}
-		else {
+		} else {
 			// use grey
 			offGrid = this.boundaryColour | 0;
 		}
@@ -11983,8 +11705,7 @@
 							over = state3;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						// states 3 and 5
 						if (over === state3 || over === state5) {
 							// if dead cell then use state 4
@@ -11992,16 +11713,14 @@
 								over = state4;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							pixel = pixelColours[col] | 0;
 						}
 					}
 
 					// set the pixel colour
 					data32[idx] = pixel;
-				}
-				else {
+				} else {
 					// use the off grid colour
 					data32[idx] = offGrid;
 				}
@@ -12020,21 +11739,18 @@
 							over = state3;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						if (over === state3 || over === state5) {
 							if (col < aliveStart) {
 								over = state4;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							pixel = pixelColours[col] | 0;
 						}
 					}
 					data32[idx] = pixel;
-				}
-				else {
+				} else {
 					data32[idx] = offGrid;
 				}
 				idx += 1;
@@ -12050,21 +11766,18 @@
 							over = state3;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						if (over === state3 || over === state5) {
 							if (col < aliveStart) {
 								over = state4;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							pixel = pixelColours[col] | 0;
 						}
 					}
 					data32[idx] = pixel;
-				}
-				else {
+				} else {
 					data32[idx] = offGrid;
 				}
 				idx += 1;
@@ -12080,21 +11793,18 @@
 							over = state3;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						if (over === state3 || over === state5) {
 							if (col < aliveStart) {
 								over = state4;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							pixel = pixelColours[col] | 0;
 						}
 					}
 					data32[idx] = pixel;
-				}
-				else {
+				} else {
 					data32[idx] = offGrid;
 				}
 				idx += 1;
@@ -12110,21 +11820,18 @@
 							over = state3;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						if (over === state3 || over === state5) {
 							if (col < aliveStart) {
 								over = state4;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							pixel = pixelColours[col] | 0;
 						}
 					}
 					data32[idx] = pixel;
-				}
-				else {
+				} else {
 					data32[idx] = offGrid;
 				}
 				idx += 1;
@@ -12140,21 +11847,18 @@
 							over = state3;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						if (over === state3 || over === state5) {
 							if (col < aliveStart) {
 								over = state4;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							pixel = pixelColours[col] | 0;
 						}
 					}
 					data32[idx] = pixel;
-				}
-				else {
+				} else {
 					data32[idx] = offGrid;
 				}
 				idx += 1;
@@ -12170,21 +11874,18 @@
 							over = state3;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						if (over === state3 || over === state5) {
 							if (col < aliveStart) {
 								over = state4;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							pixel = pixelColours[col] | 0;
 						}
 					}
 					data32[idx] = pixel;
-				}
-				else {
+				} else {
 					data32[idx] = offGrid;
 				}
 				idx += 1;
@@ -12200,21 +11901,18 @@
 							over = state3;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						if (over === state3 || over === state5) {
 							if (col < aliveStart) {
 								over = state4;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							pixel = pixelColours[col] | 0;
 						}
 					}
 					data32[idx] = pixel;
-				}
-				else {
+				} else {
 					data32[idx] = offGrid;
 				}
 				idx += 1;
@@ -12242,8 +11940,7 @@
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
-			}
-			else {
+			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
 
@@ -12265,26 +11962,22 @@
 				// switch to small grid 16x16
 				colourGrid = this.smallColourGrid16;
 				mask = 15;
-			}
-			else {
+			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
 					colourGrid = this.smallColourGrid8;
 					mask = 7;
-				}
-				else {
+				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
 						colourGrid = this.smallColourGrid4;
 						mask = 3;
-					}
-					else {
+					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
 							colourGrid = this.smallColourGrid2;
 							mask = 1;
-						}
-						else {
+						} else {
 							// switch to full resolution grid
 							colourGrid = this.colourGrid;
 							mask = 0;
@@ -12499,8 +12192,7 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					// states 3 and 5
 					if (over === state3 || over === state5) {
 						// if dead cell then use state 4
@@ -12508,8 +12200,7 @@
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -12530,15 +12221,13 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					if (over === state3 || over === state5) {
 						if (col < aliveStart) {
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -12555,15 +12244,13 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					if (over === state3 || over === state5) {
 						if (col < aliveStart) {
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -12580,15 +12267,13 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					if (over === state3 || over === state5) {
 						if (col < aliveStart) {
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -12605,15 +12290,13 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					if (over === state3 || over === state5) {
 						if (col < aliveStart) {
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -12630,15 +12313,13 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					if (over === state3 || over === state5) {
 						if (col < aliveStart) {
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -12655,15 +12336,13 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					if (over === state3 || over === state5) {
 						if (col < aliveStart) {
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -12680,15 +12359,13 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					if (over === state3 || over === state5) {
 						if (col < aliveStart) {
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -12718,8 +12395,7 @@
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
-			}
-			else {
+			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
 
@@ -12741,26 +12417,22 @@
 				// switch to small grid 16x16
 				colourGrid = this.smallColourGrid16;
 				mask = 15;
-			}
-			else {
+			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
 					colourGrid = this.smallColourGrid8;
 					mask = 7;
-				}
-				else {
+				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
 						colourGrid = this.smallColourGrid4;
 						mask = 3;
-					}
-					else {
+					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
 							colourGrid = this.smallColourGrid2;
 							mask = 1;
-						}
-						else {
+						} else {
 							// switch to full resolution grid
 							colourGrid = this.colourGrid;
 							mask = 0;
@@ -12967,8 +12639,7 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					// states 3 and 5
 					if (over === state3 || over === state5) {
 						// if dead cell then use state 4
@@ -12976,8 +12647,7 @@
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -12997,15 +12667,13 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					if (over === state3 || over === state5) {
 						if (col < aliveStart) {
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -13021,15 +12689,13 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					if (over === state3 || over === state5) {
 						if (col < aliveStart) {
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -13045,15 +12711,13 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					if (over === state3 || over === state5) {
 						if (col < aliveStart) {
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -13069,15 +12733,13 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					if (over === state3 || over === state5) {
 						if (col < aliveStart) {
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -13093,15 +12755,13 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					if (over === state3 || over === state5) {
 						if (col < aliveStart) {
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -13117,15 +12777,13 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					if (over === state3 || over === state5) {
 						if (col < aliveStart) {
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -13141,15 +12799,13 @@
 						over = state3;
 					}
 					pixel = pixelColours[over] | 0;
-				}
-				else {
+				} else {
 					if (over === state3 || over === state5) {
 						if (col < aliveStart) {
 							over = state4;
 						}
 						pixel = pixelColours[over] | 0;
-					}
-					else {
+					} else {
 						pixel = pixelColours[col] | 0;
 					}
 				}
@@ -13177,8 +12833,7 @@
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
-			}
-			else {
+			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
 
@@ -13199,26 +12854,22 @@
 				// switch to small grid 16x16
 				colourGrid = this.smallColourGrid16;
 				mask = 15;
-			}
-			else {
+			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
 					colourGrid = this.smallColourGrid8;
 					mask = 7;
-				}
-				else {
+				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
 						colourGrid = this.smallColourGrid4;
 						mask = 3;
-					}
-					else {
+					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
 							colourGrid = this.smallColourGrid2;
 							mask = 1;
-						}
-						else {
+						} else {
 							// switch to full resolution grid
 							colourGrid = this.colourGrid;
 							mask = 0;
@@ -13408,8 +13059,7 @@
 		if (this.width < this.maxGridSize) {
 			// use the state 0 colour
 			offGrid = pixelColours[0] | 0;
-		}
-		else {
+		} else {
 			// use grey
 			offGrid = this.boundaryColour | 0;
 		}
@@ -13446,8 +13096,7 @@
 								over = state3;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							// states 3 and 5
 							if (over === state3 || over === state5) {
 								// if dead cell then use state 4
@@ -13455,13 +13104,11 @@
 									over = state4;
 								}
 								pixel = pixelColours[over] | 0;
-							}
-							else {
+							} else {
 								pixel = pixelColours[col] | 0;
 							}
 						}
-					}
-					else {
+					} else {
 						pixel = offGrid;
 					}
 
@@ -13481,20 +13128,17 @@
 								over = state3;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							if (over === state3 || over === state5) {
 								if (col < aliveStart) {
 									over = state4;
 								}
 								pixel = pixelColours[over] | 0;
-							}
-							else {
+							} else {
 								pixel = pixelColours[col] | 0;
 							}
 						}
-					}
-					else {
+					} else {
 						pixel = offGrid;
 					}
 					data32[idx] = pixel;
@@ -13510,20 +13154,17 @@
 								over = state3;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							if (over === state3 || over === state5) {
 								if (col < aliveStart) {
 									over = state4;
 								}
 								pixel = pixelColours[over] | 0;
-							}
-							else {
+							} else {
 								pixel = pixelColours[col] | 0;
 							}
 						}
-					}
-					else {
+					} else {
 						pixel = offGrid;
 					}
 					data32[idx] = pixel;
@@ -13539,20 +13180,17 @@
 								over = state3;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							if (over === state3 || over === state5) {
 								if (col < aliveStart) {
 									over = state4;
 								}
 								pixel = pixelColours[over] | 0;
-							}
-							else {
+							} else {
 								pixel = pixelColours[col] | 0;
 							}
 						}
-					}
-					else {
+					} else {
 						pixel = offGrid;
 					}
 					data32[idx] = pixel;
@@ -13568,20 +13206,17 @@
 								over = state3;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							if (over === state3 || over === state5) {
 								if (col < aliveStart) {
 									over = state4;
 								}
 								pixel = pixelColours[over] | 0;
-							}
-							else {
+							} else {
 								pixel = pixelColours[col] | 0;
 							}
 						}
-					}
-					else {
+					} else {
 						pixel = offGrid;
 					}
 					data32[idx] = pixel;
@@ -13597,20 +13232,17 @@
 								over = state3;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							if (over === state3 || over === state5) {
 								if (col < aliveStart) {
 									over = state4;
 								}
 								pixel = pixelColours[over] | 0;
-							}
-							else {
+							} else {
 								pixel = pixelColours[col] | 0;
 							}
 						}
-					}
-					else {
+					} else {
 						pixel = offGrid;
 					}
 					data32[idx] = pixel;
@@ -13626,20 +13258,17 @@
 								over = state3;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							if (over === state3 || over === state5) {
 								if (col < aliveStart) {
 									over = state4;
 								}
 								pixel = pixelColours[over] | 0;
-							}
-							else {
+							} else {
 								pixel = pixelColours[col] | 0;
 							}
 						}
-					}
-					else {
+					} else {
 						pixel = offGrid;
 					}
 					data32[idx] = pixel;
@@ -13655,28 +13284,24 @@
 								over = state3;
 							}
 							pixel = pixelColours[over] | 0;
-						}
-						else {
+						} else {
 							if (over === state3 || over === state5) {
 								if (col < aliveStart) {
 									over = state4;
 								}
 								pixel = pixelColours[over] | 0;
-							}
-							else {
+							} else {
 								pixel = pixelColours[col] | 0;
 							}
 						}
-					}
-					else {
+					} else {
 						pixel = offGrid;
 					}
 					data32[idx] = pixel;
 					idx += 1;
 					x += dyy;
 				}
-			}
-			else {
+			} else {
 				// draw off grid row
 				for (w = 0; w < w8; w += 1) {
 					data32[idx] = offGrid;
@@ -13717,8 +13342,7 @@
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
 				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
-			}
-			else {
+			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
 
@@ -13739,26 +13363,22 @@
 				// switch to small grid 16x16
 				colourGrid = this.smallColourGrid16;
 				mask = 15;
-			}
-			else {
+			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
 					colourGrid = this.smallColourGrid8;
 					mask = 7;
-				}
-				else {
+				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
 						colourGrid = this.smallColourGrid4;
 						mask = 3;
-					}
-					else {
+					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
 							colourGrid = this.smallColourGrid2;
 							mask = 1;
-						}
-						else {
+						} else {
 							// switch to full resolution grid
 							colourGrid = this.colourGrid;
 							mask = 0;
@@ -13883,8 +13503,7 @@
 						idx += 1;
 						x += dyy;
 					}
-				}
-				else {
+				} else {
 					// skip blank row
 					idx += (w8 << 3);
 				}
@@ -13978,19 +13597,16 @@
 			if (this.camAngle === 0) {
 				// render with clipping and no rotation
 				this.renderGridOverlayProjectionClipNoRotate(bottomGrid, layersGrid, mask);
-			}
-			else {
+			} else {
 				// render with clipping
 				this.renderGridOverlayProjectionClip(bottomGrid, layersGrid, mask);
 			}
-		}
-		else {
+		} else {
 			// check angle
 			if (this.camAngle === 0) {
 				// render with no clipping and no rotation
 				this.renderGridOverlayProjectionNoClipNoRotate(bottomGrid, layersGrid, mask);
-			}
-			else {
+			} else {
 				// render with no clipping
 				this.renderGridOverlayProjectionNoClip(bottomGrid, layersGrid, mask);
 			}
