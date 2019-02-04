@@ -1809,7 +1809,7 @@
 	};
 
 	// set the theme
-	Life.prototype.setTheme = function(theme, switchTime) {
+	Life.prototype.setTheme = function(theme, switchTime, view) {
 		var newTheme = this.themes[theme];
 
 		// save the theme
@@ -1852,6 +1852,9 @@
 			this.gridLineColour = ((this.gridLineRaw & 255) << 24) | (((this.gridLineRaw >> 8) & 255) << 16) | ((this.gridLineRaw >> 16) << 8) | 255;
 			this.gridLineBoldColour = ((this.gridLineBoldRaw & 255) << 24) | (((this.gridLineBoldRaw >> 8) & 255) << 16) | ((this.gridLineBoldRaw >> 16) << 8) | 255;
 		}
+
+		// clear help cache
+		view.clearHelpCache();
 	};
 
 	// create the colour index

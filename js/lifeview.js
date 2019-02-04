@@ -806,6 +806,10 @@
 		// help topics
 		this.helpTopics = [];
 
+		// help text width cache
+		this.helpFixedCache = [];
+		this.helpVariableCache = [];
+
 		// whether initialising help
 		this.initHelp = false;
 
@@ -1158,6 +1162,12 @@
 	// set initial value flags
 	View.prototype.setInitialFlags = function() {
 		this.setInitialFlagsTo(true);
+	};
+
+	// clear help width cache
+	View.prototype.clearHelpCache = function() {
+		this.helpFixedCache = [];
+		this.helpVariableCache = [];
 	};
 
 	// capture screenshot and display in screenshot window
@@ -4933,6 +4943,7 @@
 					me.majorButton.current = me.viewMajorToggle([!me.engine.gridLineMajorEnabled], true, me);
 					if (me.engine.gridLineMajor > 0) {
 						me.menuManager.notification.notify("Major Grid Lines " + (me.engine.gridLineMajorEnabled ? "On" : "Off"), 15, 40, 15, true);
+						me.clearHelpCache();
 					}
 				} else {
 					// toggle grid
@@ -11205,6 +11216,7 @@
 		this.updateGridIcon();
 
 		// render the help text to set help line positions
+		this.clearHelpCache();
 		this.initHelp = true;
 		Help.renderHelpText(this, this.offContext, 6, 14, 19, 0);
 		this.initHelp = false;

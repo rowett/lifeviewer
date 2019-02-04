@@ -123,6 +123,30 @@
 		}
 	};
 
+	// measure text line
+	Help.measureText = function(view, ctx, text, item) {
+		// get the width cache
+		var widthCache = (item ? view.helpFixedCache : view.helpVariableCache),
+		    result = 0;
+
+		// set the correct font
+		if (item === 0) {
+			ctx.font = ViewConstants.fixedFont;
+		} else {
+			ctx.font = ViewConstants.variableFont;
+		}
+
+		// check if the width exists in the cache
+		if (widthCache[view.lineNo]) {
+			result = widthCache[view.lineNo];
+		} else {
+			result = ctx.measureText(text).width;
+			widthCache[view.lineNo] = result;
+		}
+
+		return result;
+	};
+
 	// draw a line of help text
 	Help.renderHelpLine = function(view, fixed, text, ctx, x, y, height, startLine) {
 		var result = y,
@@ -155,13 +179,13 @@
 
 		// check if there is fixed text
 		if (fixed.length) {
-			ctx.font = ViewConstants.fixedFont;
 			if (shouldDraw) {
+				ctx.font = ViewConstants.fixedFont;
 				ctx.fillText(fixed, x, y);
 			}
 
 			// check if the fixed portion was wider than the first tab
-			width = ctx.measureText(fixed).width;
+			width = this.measureText(view, ctx, fixed, 0);
 			if (width > view.tabs[tabNo]) {
 				// move the variable portion onto the next line
 				if (shouldDraw) {
@@ -172,7 +196,9 @@
 			}
 
 			// draw the variable text
-			ctx.font = ViewConstants.variableFont;
+			if (shouldDraw) {
+				ctx.font = ViewConstants.variableFont;
+			}
 			while (tab !== -1) {
 				// draw the text up to the tab at the current tab stop
 				if (shouldDraw) {
@@ -190,7 +216,7 @@
 			// check if the text will fit in the window
 			drewText = false;
 			if (view.wrapHelpText) {
-				width = ctx.measureText(text).width;
+				width = this.measureText(view, ctx, text, 1);
 				if (x + view.tabs[tabNo] + width > ctx.canvas.width) {
 					// check if the text can be split at "s"
 					divider = text.toLowerCase().indexOf("s");
