@@ -1779,7 +1779,7 @@
 
 		// Life32 theme
 		this.themes[i] = new Theme("Life32", new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new ColourRange(new Colour(0, 0, 255), new Colour(0, 0, 255)), new Colour(255, 255, 255),
-									new Colour(255, 0, 0), new ColourRange(new Colour(255, 255, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(54, 57, 62), new Colour(54, 57, 62)), new Colour(54, 57, 62));
+									new Colour(0, 0, 255), new ColourRange(new Colour(0, 0, 128), new Colour(-1, -1, -1)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(255, 255, 255));
 		this.themes[i].setGridLines(5, new Colour(192, 192, 192), new Colour(128, 128, 128));
 		i += 1;
 
@@ -2173,6 +2173,16 @@
 		} else {
 			this.gridLineColour = ((gridLineRaw & 255) << 24) | (((gridLineRaw >> 8) & 255) << 16) | ((gridLineRaw >> 16) << 8) | 255;
 			this.gridLineBoldColour = ((gridLineBoldRaw & 255) << 24) | (((gridLineBoldRaw >> 8) & 255) << 16) | ((gridLineBoldRaw >> 16) << 8) | 255;
+		}
+
+		// create bounded grid border colour
+		if (this.boundedGridType !== -1) {
+			i = this.boundedBorderColour;
+			if (this.littleEndian) {
+				pixelColours[i] = (255 << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
+			} else {
+				pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
+			}
 		}
 	};
 
