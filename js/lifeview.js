@@ -164,7 +164,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 289,
+		/** @const {number} */ versionBuild : 290,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -977,6 +977,9 @@
 
 		// close or esc button
 		this.closeButton = null;
+
+		// label toggle button
+		this.labelButton = null;
 
 		// hex toggle button
 		this.hexButton = null;
@@ -2733,6 +2736,7 @@
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
 		this.closeButton.deleted = !(this.isInPopup || this.scriptErrors.length);
 		this.hexButton.deleted = hide;
+		this.labelButton.deleted = hide;
 		this.graphButton.deleted = hide;
 		this.infoBarButton.deleted = hide;
 		this.majorButton.deleted = hide;
@@ -3053,6 +3057,16 @@
 		}
 
 		return [me.popGraph];
+	};
+
+	// toggle labels display
+	View.prototype.viewLabelToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			me.showLabels = newValue[0];
+		}
+
+		return [me.showLabels];
 	};
 
 	// toggle hex display
@@ -4582,6 +4596,50 @@
 		me.mainContext.canvas.focus();
 	};
 
+	// convert a theme colour object to an RGB string or colour name
+	View.prototype.asColourString = function(colourRGB) {
+		var colourList = ColourManager.colourList,
+			keys = Object.keys(colourList),
+			redValue = colourRGB.red,
+			greenValue = colourRGB.green,
+			blueValue = colourRGB.blue,
+		    result = "",
+		    found = false,
+		    triple = null,
+		    i = 0;
+
+		// search the object for a key matching the r, g, b
+		while (i < keys.length && !found) {
+			// get the value at the key
+			triple = colourList[keys[i]];
+
+			// check if it matches the R G B triple
+			if (triple[1] === redValue && triple[2] === greenValue && triple[3] === blueValue) {
+				// mark found and exit loop
+				found = true;
+				i = keys.length;
+			} else {
+				// try next
+				i += 1;
+			}
+		}
+
+		// check if name found
+		if (found) {
+			result = triple[0];
+		} else {
+			result = redValue + " " + greenValue + " " + blueValue;
+		}
+	
+		// return the string
+		return result;
+	};
+
+	// check if two colours are the same
+	View.prototype.areSameColour = function(first, second) {
+		return ((first.red === second.red) && (first.green === second.green) && (first.blue === second.blue));
+	};
+
 	// add the current position to the clipboard as script commands
 	View.prototype.copyPosition = function(me, full) {
 		// comment prefix
@@ -4601,7 +4659,10 @@
 			zoomStr,
 
 			// get the angle
-			angleStr = me.engine.angle | 0;
+			angleStr = me.engine.angle | 0,
+
+			// get the theme
+			theme = me.engine.themes[me.engine.colourTheme];
 
 		// check for non-zero generation
 		if (me.engine.counter !== 0) {
@@ -4631,8 +4692,54 @@
 			// add start word
 			string += commentPrefix + Keywords.scriptStartWord + " ";
 
+			// check for custom theme
+			if (me.customTheme) {
+				if (me.engine.multiNumStates > 2) {
+					// output multi-state theme
+					string += Keywords.colorWord + " " + Keywords.themeBackgroundWord + " " + me.asColourString(theme.unoccupiedGen);
+					string += " " + Keywords.colorWord + " " + Keywords.themeAliveWord + " " + me.asColourString(theme.aliveGen);
+					// do not output DEAD if the same as BACKGROUND
+					if (!(me.areSameColour(theme.deadRangeGen.endColour, theme.unoccupiedGen))) {
+						string += " " + Keywords.colorWord + " " + Keywords.themeDeadWord + " " + me.asColourString(theme.deadRangeGen.endColour);
+					}
+					// do not output DEADRAMP if the same as DEAD
+					if (!(me.areSameColour(theme.deadRangeGen.startColour, theme.deadRangeGen.endColour))) {
+						string += " " + Keywords.colorWord + " " + Keywords.themeDeadRampWord + " " + me.asColourString(theme.deadRangeGen.startColour);
+					}
+					// do not output DYING if dynamic THEME
+					if (!(theme.dyingRangeDynamic)) {
+						string += " " + Keywords.colorWord + " " + Keywords.themeDyingWord + " " + me.asColourString(theme.dyingRangeGen.endColour);
+					}
+					// do not output DYINGRAMP if the same as DYING unless dynamic THEME
+					if (theme.dyingRangeDynamic || !(me.areSameColour(theme.dyingRangeGen.startColour, theme.dyingRangeGen.endColour))) {
+						string += " " + Keywords.colorWord + " " + Keywords.themeDyingRampWord + " " + me.asColourString(theme.dyingRangeGen.startColour);
+					}
+				} else {
+					// output 2-state theme
+					string += Keywords.colorWord + " " + Keywords.themeBackgroundWord + " " + me.asColourString(theme.unoccupied);
+					string += " " + Keywords.colorWord + " " + Keywords.themeAliveWord + " " + me.asColourString(theme.aliveRange.startColour);
+					// do not output ALIVERAMP if the same as ALIVE
+					if (!(me.areSameColour(theme.aliveRange.startColour, theme.aliveRange.endColour))) {
+						string += " " + Keywords.colorWord + " " + Keywords.themeAliveRampWord + " " + me.asColourString(theme.aliveRange.endColour);
+					}
+					// do not output DEAD if the same as BACKGROUND
+					if (!(me.areSameColour(theme.deadRange.endColour, theme.unoccupied))) {
+						string += " " + Keywords.colorWord + " " + Keywords.themeDeadWord + " " + me.asColourString(theme.deadRange.endColour);
+					}
+					// do not output DEADRAMP if the same as DEAD
+					if (!(me.areSameColour(theme.deadRange.startColour, theme.deadRange.endColour))) {
+						string += " " + Keywords.colorWord + " " + Keywords.themeDeadRampWord + " " + me.asColourString(theme.deadRange.startColour);
+					}
+				}
+				string += " " + Keywords.scriptEndWord + "\n" + commentPrefix + Keywords.scriptStartWord + " ";
+			}
 			// add theme
-			string += Keywords.themeWord + " " + me.engine.colourTheme + " "; 
+			string += Keywords.themeWord + " " + theme.name + " "; 
+
+			// add HISTORYSTATES if not default
+			if (me.historyStates !== me.maxHistoryStates) {
+				string += Keywords.historyStatesWord + " " + me.historyStates + " ";
+			}
 
 			// add width and height
 			string += Keywords.widthWord + " " + me.displayWidth + " ";
@@ -5016,7 +5123,10 @@
 			case 76:
 				// check for shift
 				if (event.shiftKey) {
-					me.showLabels = !me.showLabels;
+					if (me.waypointManager.numLabels() > 0) {
+						me.labelButton.current = me.viewLabelToggle([!me.showLabels], true, me);
+						me.menuManager.notification.notify("Labels " + (me.showLabels ? "Off" : "On"), 15, 40, 15, true);
+					}
 				} else {
 					// disable depth in multi-state mode
 					if (!me.multiStateView) {
@@ -6117,6 +6227,10 @@
 		this.hexButton = this.viewMenu.addListItem(this.viewHexToggle, Menu.northWest, 80, 100, 80, 40, ["Hex"], [this.engine.isHex], Menu.multi);
 		this.hexButton.toolTip = ["toggle hex display"];
 
+		// label toggle button
+		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.north, 0, 160, 80, 40, ["Labels"], [this.showLabels], Menu.multi);
+		this.labelButton.toolTip = ["toggle labels"];
+
 		// graph toggle button
 		this.graphButton = this.viewMenu.addListItem(this.viewGraphToggle, Menu.northEast, -160, 100, 80, 40, ["Graph"], [this.popGraph], Menu.multi);
 		this.graphButton.toolTip = ["toggle graph display"];
@@ -6185,7 +6299,7 @@
 		this.playList.toolTip = ["reset", "previous generation", "pause", "play"];
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton], []);
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.labelButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -11001,6 +11115,16 @@
 
 		// set the hex UI control
 		this.hexButton.current = [this.engine.isHex];
+
+		// set the label UI control
+		if (this.waypointManager.numLabels() === 0) {
+			this.labelButton.locked = true;
+			this.showLabels = false;
+		} else {
+			this.labelButton.locked = false;
+			this.showLabels = true;
+		}
+		this.labelButton.current = [this.showLabels];
 
 		// set the InfoBar UI control
 		this.infoBarButton.current = [this.infoBarEnabled];

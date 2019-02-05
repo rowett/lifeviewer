@@ -14,7 +14,6 @@
 	// initialise Alias Manager
 	AliasManager.init = function() {
 		var current = null,
-			check = null,
 			i = 0, j = 0;
 
 		// clear the current list

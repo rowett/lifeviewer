@@ -8,7 +8,7 @@
 	"use strict";
 
 	// define globals
-	/* global littleEndian BoundingBox AliasManager PatternManager Allocator Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager HROT ViewConstants */
+	/* global Keywords littleEndian BoundingBox AliasManager PatternManager Allocator Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager HROT ViewConstants */
 
 	// Life constants
 	/** @const */
@@ -1778,7 +1778,7 @@
 		i += 1;
 
 		// custom theme
-		this.themes[i] = new Theme("Custom", new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0),
+		this.themes[i] = new Theme(Keywords.themeCustomWord, new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0),
 									new Colour(0, 0, 0), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
 		i += 1;
 
