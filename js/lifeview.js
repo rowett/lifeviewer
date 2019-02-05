@@ -450,6 +450,9 @@
 		this.cellX = 0;
 		this.cellY = 0;
 
+		// whether pattern was empty on load
+		this.emptyStart = false;
+
 		// maximum number of history states (can be less for multi-state patterns)
 		this.maxHistoryStates = 63;
 
@@ -2106,7 +2109,10 @@
 			stepsTaken = 0,
 
 			// border for growth
-			borderSize = 0;
+			borderSize = 0,
+
+			// save died generation
+			saveGeneration = 0;
 
 		// unlock controls
 		me.controlsLocked = false;
@@ -2401,7 +2407,7 @@
 						me.diedGeneration = me.engine.counter;
 
 						// notify simulation stopped unless loop defined and enabled
-						if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled)) {
+						if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
 							me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 600, 15, true);
 						}
 					}
@@ -2415,8 +2421,15 @@
 					// decrease fade time
 					me.fading -= 1;
 
+					// remember the current generation and set to died generation
+					saveGeneration = me.engine.counter;
+					me.engine.counter = me.diedGeneration;
+
 					// update colour grid
 					me.engine.convertToPensTile();
+
+					// restore current generation
+					me.engine.counter = saveGeneration;
 				}
 
 				// increment generation
@@ -3526,6 +3539,13 @@
 				if (me.autoStart && !me.autoStartDisabled) {
 					newValue = ViewConstants.modePlay;
 					me.generationOn = true;
+
+					// set flag whether pattern was empty and playback is on
+					if (me.engine.population === 0) {
+						me.emptyStart = true;
+					} else {
+						me.emptyStart = false;
+					}
 				} else {
 					newValue = ViewConstants.modePause;
 					me.generationOn = false;
@@ -3648,6 +3668,13 @@
 					// play
 					me.generationOn = true;
 
+					// set flag whether pattern was empty and playback is on
+					if (me.engine.population === 0) {
+						me.emptyStart = true;
+					} else {
+						me.emptyStart = false;
+					}
+
 					// zoom text
 					me.menuManager.notification.notify("Play", 15, 40, 15, true);
 				}
@@ -3686,6 +3713,13 @@
 				} else {
 					// step
 					me.nextStep = true;
+
+					// set flag whether pattern was empty and playback is on
+					if (me.engine.population === 0) {
+						me.emptyStart = true;
+					} else {
+						me.emptyStart = false;
+					}
 				}
 				break;
 
@@ -3693,6 +3727,7 @@
 				// ignore other modes
 				break;
 			}
+
 			result = newValue;
 
 			// set the pause icon
@@ -11098,6 +11133,12 @@
 
 			// reset population
 			this.engine.resetPopulationBox(this.engine.grid16, this.engine.colourGrid);
+			if (pattern && this.engine.population === 0) {
+				this.emptyStart = true;
+				this.menuManager.notification.notify("Nothing alive!", 15, 300, 15, false);
+			} else {
+				this.emptyStart = false;
+			}
 
 			// set the bounded grid tiles if specified
 			if (this.engine.boundedGridType !== -1) {

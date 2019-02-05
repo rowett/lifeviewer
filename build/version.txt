@@ -2,6 +2,8 @@ Build 290
 - added a Labels button to the bottom right menu to toggle label display
 - added missing Help information for hotkey "K" and Shift "K"
 - copy view to clipboard (hotkey Shift and "K") now uses Theme names and handles custom Themes
+- allow empty patterns
+- remove "Life ended at" message when grid was empty when play started
 
 Build 289
 - improved handling of custom Theme definitions

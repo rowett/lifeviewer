@@ -3575,27 +3575,30 @@
 
 		// check if not saving
 		if (!save) {
+			// ensure pattern is at least one cell big so empty patterns are valid
+			if (width === 0) {
+				// allocate at least one cell for empty patterns
+				width = 1;
+				y = 1;
+			}
+
 			// save width and height
 			pattern.width = width;
 			pattern.height = y;
+			// check if small enough to save
+			if (width > PatternManager.maxWidth || y > PatternManager.maxHeight) {
+				// flag pattern too large
+				pattern.tooBig = true;
+				pattern.invalid = true;
+			} else {
+				// allocate 2d cell array
+				pattern.lifeMap = Array.matrix(Uint16, y, ((width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
 
-			// allocate arrays if non zero
-			if (width > 0 && y > 0) {
-				// check if small enough to save
-				if (width > PatternManager.maxWidth || y > PatternManager.maxHeight) {
-					// flag pattern too large
-					pattern.tooBig = true;
-					pattern.invalid = true;
-				} else {
-					// allocate 2d cell array
-					pattern.lifeMap = Array.matrix(Uint16, y, ((width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
+				// allocate multi-state array
+				pattern.multiStateMap = Array.matrix(Uint8, y, width, 0, allocator, "Pattern.multiStateMap");
 
-					// allocate multi-state array
-					pattern.multiStateMap = Array.matrix(Uint8, y, width, 0, allocator, "Pattern.multiStateMap");
-
-					// set decoder used
-					pattern.patternFormat = "RLE";
-				}
+				// set decoder used
+				pattern.patternFormat = "RLE";
 			}
 		}
 
