@@ -1,4 +1,5 @@
 // LifeViewer plugin
+this.customGridLineMajor = false;
 // written by Chris Rowett
 // "This started small and then kind of got away from me."
 
@@ -8006,6 +8007,7 @@
 								// check it is in range
 								if (numberValue >= ViewConstants.minBoldGridInterval && numberValue <= ViewConstants.maxBoldGridInterval) {
 									this.engine.gridLineMajor = numberValue;
+									this.engine.customGridLineMajor = true;
 									itemValid = true;
 								}
 							}
@@ -10210,6 +10212,9 @@
 
 	// reset any view controls that scripts can overwrite
 	View.prototype.resetScriptControls = function() {
+		// reset custom grid line major
+		this.engine.customGridLineMajor = false;
+
 		// reset maximum grid size
 		this.engine.maxGridSize = 1 << ViewConstants.defaultGridPower;
 

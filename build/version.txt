@@ -4,6 +4,7 @@ Build 290
 - copy view to clipboard (hotkey Shift and "K") now uses Theme names and handles custom Themes
 - allow empty patterns
 - remove "Life ended at" message when grid was empty when play started
+- each Help topic is now in a separate page
 
 Build 289
 - improved handling of custom Theme definitions
