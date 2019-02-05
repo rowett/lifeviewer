@@ -2172,7 +2172,9 @@
 
 	// set the bounded grid border cell
 	Life.prototype.setBoundedGridBorderCell = function() {
-		var pixelColours = this.pixelColours;
+		var redChannel = this.redChannel,
+			greenChannel = this.greenChannel,
+			blueChannel = this.blueChannel;
 
 		// check for bounded grid
 		if (this.boundedGridType !== -1 && (this.multiNumStates + this.historyStates === 256)) {
@@ -2183,11 +2185,9 @@
 
 		// create bounded grid border colour if specified
 		if (this.boundedGridType !== -1 && (this.multiNumStates + this.historyStates < 256)) {
-			if (this.littleEndian) {
-				pixelColours[this.boundedBorderColour] = 0xff808080;
-			} else {
-				pixelColours[this.boundedBorderColour] = 0x808080ff;
-			}
+			redChannel[this.boundedBorderColour] = 0x80;
+			greenChannel[this.boundedBorderColour] = 0x80;
+			blueChannel[this.boundedBorderColour] = 0x80;
 		}
 	};
 
