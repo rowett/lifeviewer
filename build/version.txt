@@ -1,6 +1,6 @@
 Build 290
 - added a Labels button to the bottom right menu to toggle label display
-- adding missing Help information for hotkey "K" and Shift "K"
+- added missing Help information for hotkey "K" and Shift "K"
 - copy view to clipboard (hotkey Shift and "K") now uses Theme names and handles custom Themes
 
 Build 289
