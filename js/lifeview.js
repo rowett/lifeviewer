@@ -795,12 +795,6 @@
 		// number of help lines per page
 		this.numHelpPerPage = 10;
 
-		// script help line
-		this.scriptHelpLine = 1;
-
-		// information help line
-		this.infoHelpLine = 1;
-
 		// further tab positions
 		this.tabs = [64, 200, 290, 530, 700];
 
@@ -813,9 +807,6 @@
 		// help text width cache
 		this.helpFixedCache = [];
 		this.helpVariableCache = [];
-
-		// whether initialising help
-		this.initHelp = false;
 
 		// generation number to stop at
 		this.stopGeneration = -1;
@@ -3461,6 +3452,10 @@
 
 			// close topics list
 			me.showTopics = false;
+
+			// clear help widths cache
+			me.helpFixedCache = [];
+			me.helpVariableCache = [];
 		}
 
 		return result;
@@ -4428,6 +4423,17 @@
 	View.prototype.toggleHelp = function(newValue, change, me) {
 		if (change) {
 			me.displayHelp = newValue[0];
+			if (me.displayHelp) {
+				// show Scripts topic if there are script errors
+				if (me.scriptErrors.length) {
+					me.topicsList.current = me.viewTopicsList(ViewConstants.scriptsTopic, true, me);
+				} else {
+					// show Welcome topic
+					me.topicsList.current = me.viewTopicsList(ViewConstants.welcomeTopic, true, me);
+				}
+			}
+			// switch to Scripts help if errors are display
+
 		}
 
 		return [me.displayHelp];
@@ -5792,8 +5798,7 @@
 						if (me.displayHelp) {
 							me.displayHelp = 0;
 						} else {
-							// open help on script commands topic
-							me.topicsList.current = me.viewTopicsList(ViewConstants.scriptsTopic, true, me);
+							// open help
 							me.displayHelp = 1;
 						}
 					} else {
@@ -5803,8 +5808,7 @@
 						} else {
 							// do not display help if in thumbnail mode
 							if (!me.thumbnail) {
-								// open help on welcome topic and display list
-								me.topicsList.current = me.viewTopicsList(ViewConstants.welcomeTopic, true, me);
+								// open help
 								me.displayHelp = 1;
 							}
 						}
@@ -11372,12 +11376,6 @@
 
 		// update the grid icon for hex/square mode
 		this.updateGridIcon();
-
-		// render the help text to set help line positions
-		this.clearHelpCache();
-		this.initHelp = true;
-		Help.renderHelpText(this, this.offContext, 6, 14, 19, 0);
-		this.initHelp = false;
 
 		// clear manual change flag
 		this.manualChange = false;
