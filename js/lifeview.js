@@ -289,13 +289,14 @@
 		/** @const {number} */ maxBoldGridInterval : 16,
 
 		// help topics
-		/** @const {number} */ keysTopic : 0,
-		/** @const {number} */ scriptsTopic : 1,
-		/** @const {number} */ informationTopic : 2,
-		/** @const {number} */ aliasesTopic : 3,
+		/** @const {number} */ welcomeTopic : 0,
+		/** @const {number} */ keysTopic : 1,
+		/** @const {number} */ scriptsTopic : 2,
+		/** @const {number} */ informationTopic : 3,
 		/** @const {number} */ themesTopic : 4,
 		/** @const {number} */ coloursTopic : 5,
-		/** @const {number} */ memoryTopic : 6
+		/** @const {number} */ aliasesTopic : 6,
+		/** @const {number} */ memoryTopic : 7
 	},
 
 	// Controller singleton
@@ -504,6 +505,9 @@
 
 		// whether help topics displayed
 		this.showTopics = false;
+
+		// current help topic
+		this.helpTopic = ViewConstants.welcomeTopic;
 
 		// whether labels displayed
 		this.showLabels = true;
@@ -805,9 +809,6 @@
 
 		// help information sections
 		this.helpSections = [];
-
-		// help topics
-		this.helpTopics = [];
 
 		// help text width cache
 		this.helpFixedCache = [];
@@ -2711,8 +2712,6 @@
 
 	// udpate UI controls if help or errors are displayed
 	View.prototype.updateUIForHelp = function(hide) {
-		var i = 0;
-
 		// top menu buttons
 		this.autoFitToggle.deleted = hide;
 		this.zoomItem.deleted = hide || this.popGraph;
@@ -2784,16 +2783,6 @@
 			this.closeButton.icon = null;
 			this.closeButton.preText = "X";
 		}
-
-		// update help topics
-		i = 0;
-		while (i < this.helpTopics.length && this.helpTopics[i] <= this.displayHelp) {
-			i += 1;
-		}
-		if (i < 1) {
-			i = 1;
-		}
-		this.topicsList.current = [i - 1];
 
 		// update help topics controls
 		this.topicsButton.deleted = this.showTopics;
@@ -3467,7 +3456,8 @@
 
 		if (change) {
 			// switch to required topic
-			me.displayHelp = me.helpTopics[newValue];
+			me.helpTopic = newValue;
+			me.displayHelp = 1;
 
 			// close topics list
 			me.showTopics = false;
@@ -5802,7 +5792,9 @@
 						if (me.displayHelp) {
 							me.displayHelp = 0;
 						} else {
-							me.displayHelp = me.scriptHelpLine;
+							// open help on script commands topic
+							me.topicsList.current = me.viewTopicsList(ViewConstants.scriptsTopic, true, me);
+							me.displayHelp = 1;
 						}
 					} else {
 						// toggle help
@@ -5811,6 +5803,8 @@
 						} else {
 							// do not display help if in thumbnail mode
 							if (!me.thumbnail) {
+								// open help on welcome topic and display list
+								me.topicsList.current = me.viewTopicsList(ViewConstants.welcomeTopic, true, me);
 								me.displayHelp = 1;
 							}
 						}
@@ -5818,7 +5812,6 @@
 
 					// update the help UI
 					me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
-					me.topicsList.current = [ViewConstants.keysTopic];
 					me.menuManager.toggleRequired = true;
 				}
 
@@ -5833,23 +5826,23 @@
 				} else {
 					// check if help displayed
 					if (me.displayHelp) {
-						// check if on the info line
-						if (me.displayHelp !== me.infoHelpLine) {
-							me.displayHelp = me.infoHelpLine;
-						} else {
+						// check if on the info topic
+						if (me.helpTopic === ViewConstants.informationTopic) {
 							// close help
 							me.displayHelp = 0;
+						} else {
+							// switch to the information topic
+							me.topicsList.current = me.viewTopicsList(ViewConstants.informationTopic, true, me);
 						}
 					} else {
 						// do not display information if in thumbnail mode
 						if (!me.thumbnail) {
-							me.displayHelp = me.infoHelpLine;
+							me.topicsList.current = me.viewTopicsList(ViewConstants.informationTopic, true, me);
 						}
 					}
 
 					// update the help UI
 					me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
-					me.topicsList.current = [ViewConstants.informationTopic];
 					me.menuManager.toggleRequired = true;
 				}
 
@@ -6150,8 +6143,8 @@
 		this.topicsButton.toolTip = ["show help topics"];
 
 		// help topic list
-		this.topicsList = this.viewMenu.addListItem(this.viewTopicsList, Menu.northEast, -120, 50, 120, 240, ["Keys", "Scripts", "Info", "Aliases", "Themes", "Colours", "Memory"], 0, Menu.single);
-		this.topicsList.toolTip = ["", "", "", "", "", "", ""];
+		this.topicsList = this.viewMenu.addListItem(this.viewTopicsList, Menu.northEast, -120, 50, 120, 240, ["Contents", "Keys", "Scripts", "Info", "Themes", "Colours", "Aliases", "Memory"], ViewConstants.welcomeTopic, Menu.single);
+		this.topicsList.toolTip = ["", "", "", "", "", "", "", ""];
 		this.topicsList.orientation = Menu.vertical;
 		this.topicsList.textOrientation = Menu.horizontal;
 
