@@ -4427,13 +4427,12 @@
 				// show Scripts topic if there are script errors
 				if (me.scriptErrors.length) {
 					me.topicsList.current = me.viewTopicsList(ViewConstants.scriptsTopic, true, me);
-				} else {
-					// show Welcome topic
-					me.topicsList.current = me.viewTopicsList(ViewConstants.welcomeTopic, true, me);
 				}
+			} else {
+				// reset to welcome topic on close
+				me.topicsList.current = me.viewTopicsList(ViewConstants.welcomeTopic, true, me);
+				me.displayHelp = 0;
 			}
-			// switch to Scripts help if errors are display
-
 		}
 
 		return [me.displayHelp];
