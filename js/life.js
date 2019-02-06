@@ -1774,7 +1774,7 @@
 
 		// Caterer theme
 		this.themes[i] = new Theme("Caterer", new ColourRange(new Colour(54, 57, 62), new Colour(54, 57, 62)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(54, 57, 62),
-									new Colour(255, 0, 0), new ColourRange(new Colour(255, 255, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(54, 57, 62), new Colour(54, 57, 62)), new Colour(54, 57, 62));
+									new Colour(255, 170, 0), new ColourRange(new Colour(255, 85, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(54, 57, 62), new Colour(54, 57, 62)), new Colour(54, 57, 62));
 		this.themes[i].setGridLines(0, new Colour(0, 0, 0), new Colour(0, 0, 0));
 		i += 1;
 
