@@ -5,6 +5,7 @@ Build 290
 - allow empty patterns
 - remove "Life ended at" message when grid was empty when play started
 - each Help topic is now in a separate page
+- Help topics page now has individual buttons for each topic
 
 Build 289
 - improved handling of custom Theme definitions
