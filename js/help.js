@@ -126,20 +126,21 @@
 	// measure text line
 	Help.measureText = function(view, ctx, text, item) {
 		// get the width cache
-		var widthCache = (item ? view.helpFixedCache : view.helpVariableCache),
+		var widthCache = (item ? view.helpVariableCache : view.helpFixedCache),
 		    result = 0;
-
-		// set the correct font
-		if (item === 0) {
-			ctx.font = ViewConstants.fixedFont;
-		} else {
-			ctx.font = ViewConstants.variableFont;
-		}
 
 		// check if the width exists in the cache
 		if (widthCache[view.lineNo]) {
 			result = widthCache[view.lineNo];
 		} else {
+			// set the correct font
+			if (item === 0) {
+				ctx.font = ViewConstants.fixedFont;
+			} else {
+				ctx.font = ViewConstants.variableFont;
+			}
+
+			// measure the width of the text and cache the result
 			result = ctx.measureText(text).width;
 			widthCache[view.lineNo] = result;
 		}
