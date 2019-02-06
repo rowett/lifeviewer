@@ -596,6 +596,15 @@
 		this.font = owner.defaultFont;
 	}
 
+	// set a new absolute position
+	MenuItem.prototype.setPosition = function(position, x, y) {
+		this.position = position;
+		this.relX = x;
+		this.relY = y;
+		this.x = x;
+		this.y = y;
+	};
+
 	// calculate item position
 	MenuItem.prototype.calculatePosition = function(width, height) {
 		// copy the absolute position from the relative position

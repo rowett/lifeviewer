@@ -1,5 +1,4 @@
 // LifeViewer plugin
-this.customGridLineMajor = false;
 // written by Chris Rowett
 // "This started small and then kind of got away from me."
 
@@ -504,9 +503,6 @@ this.customGridLineMajor = false;
 		this.randomSeed = Date.now().toString();
 		this.randomSeedCustom = false;
 
-		// whether help topics displayed
-		this.showTopics = false;
-
 		// current help topic
 		this.helpTopic = ViewConstants.welcomeTopic;
 
@@ -764,6 +760,9 @@ this.customGridLineMajor = false;
 		// custom grid major colour
 		this.customGridMajorColour = -1;
 
+		// whether custom grid line major defined
+		this.customGridLineMajor = false;
+
 		// custom label colour
 		this.customLabelColour = ViewConstants.labelFontColour;
 
@@ -956,8 +955,14 @@ this.customGridLineMajor = false;
 		// help button
 		this.helpToggle = null;
 
-		// help topics list
-		this.topicsList = null;
+		// help topic buttons
+		this.helpKeysButton = null;
+		this.helpScriptsButton = null;
+		this.helpInfoButton = null;
+		this.helpThemesButton = null;
+		this.helpColoursButton = null;
+		this.helpAliasesButton = null;
+		this.helpMemoryButton = null;
 
 		// autofit button
 		this.autoFitToggle = null;
@@ -2704,6 +2709,8 @@ this.customGridLineMajor = false;
 
 	// udpate UI controls if help or errors are displayed
 	View.prototype.updateUIForHelp = function(hide) {
+		var showTopicButtons = !(this.displayHelp && (this.helpTopic === ViewConstants.welcomeTopic));
+
 		// top menu buttons
 		this.autoFitToggle.deleted = hide;
 		this.zoomItem.deleted = hide || this.popGraph;
@@ -2776,9 +2783,17 @@ this.customGridLineMajor = false;
 			this.closeButton.preText = "X";
 		}
 
-		// update help topics controls
-		this.topicsButton.deleted = this.showTopics;
-		this.topicsList.deleted = !this.showTopics;
+		// help topics
+		this.topicsButton.deleted =  !(this.displayHelp && (this.helpTopic !== ViewConstants.welcomeTopic));
+
+		// help individual topics buttons
+		this.helpKeysButton.deleted = showTopicButtons;
+		this.helpScriptsButton.deleted = showTopicButtons;
+		this.helpInfoButton.deleted = showTopicButtons;
+		this.helpThemesButton.deleted =  showTopicButtons;
+		this.helpColoursButton.deleted =  showTopicButtons;
+		this.helpAliasesButton.deleted =  showTopicButtons;
+		this.helpMemoryButton.deleted =  showTopicButtons;
 	};
 
 	// update infobar
@@ -3442,24 +3457,50 @@ this.customGridLineMajor = false;
 		}
 	};
 
-	// help topics list
-	View.prototype.viewTopicsList = function(newValue, change, me) {
-		var result = newValue;
+	// set help topic
+	View.prototype.setHelpTopic = function(newValue, me) {
+		// switch to required topic
+		me.helpTopic = newValue;
+		me.displayHelp = 1;
 
-		if (change) {
-			// switch to required topic
-			me.helpTopic = newValue;
-			me.displayHelp = 1;
+		// clear help widths cache
+		me.helpFixedCache = [];
+		me.helpVariableCache = [];
+	};
 
-			// close topics list
-			me.showTopics = false;
+	// keys help topic
+	View.prototype.keysTopicPressed = function(me) {
+		me.setHelpTopic(ViewConstants.keysTopic, me);
+	};
 
-			// clear help widths cache
-			me.helpFixedCache = [];
-			me.helpVariableCache = [];
-		}
+	// scripts help topic
+	View.prototype.scriptsTopicPressed = function(me) {
+		me.setHelpTopic(ViewConstants.scriptsTopic, me);
+	};
 
-		return result;
+	// info help topic
+	View.prototype.infoTopicPressed = function(me) {
+		me.setHelpTopic(ViewConstants.informationTopic, me);
+	};
+
+	// themes help topic
+	View.prototype.themesTopicPressed = function(me) {
+		me.setHelpTopic(ViewConstants.themesTopic, me);
+	};
+
+	// colours help topic
+	View.prototype.coloursTopicPressed = function(me) {
+		me.setHelpTopic(ViewConstants.coloursTopic, me);
+	};
+
+	// aliases help topic
+	View.prototype.aliasesTopicPressed = function(me) {
+		me.setHelpTopic(ViewConstants.aliasesTopic, me);
+	};
+
+	// memory help topic
+	View.prototype.memoryTopicPressed = function(me) {
+		me.setHelpTopic(ViewConstants.memoryTopic, me);
 	};
 
 	// view mode list
@@ -4293,7 +4334,8 @@ this.customGridLineMajor = false;
 
 	// topics button
 	View.prototype.topicsPressed = function(me) {
-		me.showTopics = true;
+		// switch to welcome topic
+		me.setHelpTopic(ViewConstants.welcomeTopic, me);
 	};
 
 	// fit button
@@ -4427,11 +4469,11 @@ this.customGridLineMajor = false;
 			if (me.displayHelp) {
 				// show Scripts topic if there are script errors
 				if (me.scriptErrors.length) {
-					me.topicsList.current = me.viewTopicsList(ViewConstants.scriptsTopic, true, me);
+					me.setHelpTopic(ViewConstants.scriptsTopic, me);
 				}
 			} else {
 				// reset to welcome topic on close
-				me.topicsList.current = me.viewTopicsList(ViewConstants.welcomeTopic, true, me);
+				me.setHelpTopic(ViewConstants.welcomeTopic, me);
 				me.displayHelp = 0;
 			}
 		}
@@ -5836,12 +5878,12 @@ this.customGridLineMajor = false;
 							me.displayHelp = 0;
 						} else {
 							// switch to the information topic
-							me.topicsList.current = me.viewTopicsList(ViewConstants.informationTopic, true, me);
+							me.setHelpTopic(ViewConstants.informationTopic, me);
 						}
 					} else {
 						// do not display information if in thumbnail mode
 						if (!me.thumbnail) {
-							me.topicsList.current = me.viewTopicsList(ViewConstants.informationTopic, true, me);
+							me.setHelpTopic(ViewConstants.informationTopic, me);
 						}
 					}
 
@@ -6046,6 +6088,27 @@ this.customGridLineMajor = false;
 		}
 	};
 
+	// update help topic buttons position based on window height
+	View.prototype.updateTopicButtonsPosition = function() {
+		if (this.displayHeight < ViewConstants.minMenuHeight) {
+			this.helpKeysButton.setPosition(Menu.northWest, 10, 50);
+			this.helpScriptsButton.setPosition(Menu.north, 0, 50);
+			this.helpInfoButton.setPosition(Menu.northEast, -160, 50);
+			this.helpThemesButton.setPosition(Menu.northWest, 10, 100);
+			this.helpColoursButton.setPosition(Menu.north, 0, 100);
+			this.helpAliasesButton.setPosition(Menu.northEast, -160, 100);
+			this.helpMemoryButton.setPosition(Menu.north, 0, 150);
+		} else {
+			this.helpKeysButton.setPosition(Menu.north, 0, 50);
+			this.helpScriptsButton.setPosition(Menu.north, 0, 100);
+			this.helpInfoButton.setPosition(Menu.north, 0, 150);
+			this.helpThemesButton.setPosition(Menu.north, 0, 200);
+			this.helpColoursButton.setPosition(Menu.north, 0, 250);
+			this.helpAliasesButton.setPosition(Menu.north, 0, 300);
+			this.helpMemoryButton.setPosition(Menu.north, 0, 350);
+		}
+	};
+
 	// create menus
 	View.prototype.createMenus = function() {
 		// View menu
@@ -6142,15 +6205,31 @@ this.customGridLineMajor = false;
 		this.helpToggle.icon = [ViewConstants.iconManager.icon("help")];
 		this.helpToggle.toolTip = ["toggle help display"];
 
-		// help topics button
+		// help show topics button
 		this.topicsButton = this.viewMenu.addButtonItem(this.topicsPressed, Menu.northEast, -40, 50, 40, 40, ["<"]);
 		this.topicsButton.toolTip = ["show help topics"];
 
-		// help topic list
-		this.topicsList = this.viewMenu.addListItem(this.viewTopicsList, Menu.northEast, -120, 50, 120, 240, ["Contents", "Keys", "Scripts", "Info", "Themes", "Colours", "Aliases", "Memory"], ViewConstants.welcomeTopic, Menu.single);
-		this.topicsList.toolTip = ["", "", "", "", "", "", "", ""];
-		this.topicsList.orientation = Menu.vertical;
-		this.topicsList.textOrientation = Menu.horizontal;
+		// help individual topic buttons
+		this.helpKeysButton = this.viewMenu.addButtonItem(this.keysTopicPressed, Menu.north, 0, 50, 150, 40, ["Keys"]);
+		this.helpKeysButton.toolTip = ["show keyboard shortcuts"];
+
+		this.helpScriptsButton = this.viewMenu.addButtonItem(this.scriptsTopicPressed, Menu.north, 0, 100, 150, 40, ["Scripts"]);
+		this.helpScriptsButton.toolTip = ["show script commands"];
+
+		this.helpInfoButton = this.viewMenu.addButtonItem(this.infoTopicPressed, Menu.north, 0, 150, 150, 40, ["Info"]);
+		this.helpInfoButton.toolTip = ["show pattern and engine information"];
+
+		this.helpThemesButton = this.viewMenu.addButtonItem(this.themesTopicPressed, Menu.north, 0, 200, 150, 40, ["Themes"]);
+		this.helpThemesButton.toolTip = ["show colour Themes"];
+
+		this.helpColoursButton = this.viewMenu.addButtonItem(this.coloursTopicPressed, Menu.north, 0, 250, 150, 40, ["Colours"]);
+		this.helpColoursButton.toolTip = ["show colour names"];
+
+		this.helpAliasesButton = this.viewMenu.addButtonItem(this.aliasesTopicPressed, Menu.north, 0, 300, 150, 40, ["Aliases"]);
+		this.helpAliasesButton.toolTip = ["show rule aliases"];
+
+		this.helpMemoryButton = this.viewMenu.addButtonItem(this.memoryTopicPressed, Menu.north, 0, 350, 150, 40, ["Memory"]);
+		this.helpMemoryButton.toolTip = ["show memory usage"];
 
 		// autofit button
 		this.autoFitToggle = this.viewMenu.addListItem(this.toggleAutoFit, Menu.northWest, 0, 0, 40, 40, [""], [false], Menu.multi);
@@ -6335,9 +6414,6 @@ this.customGridLineMajor = false;
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
-
-		// add items to the help toggle menu
-		this.helpToggle.addItemsToToggleMenu([this.topicsButton, this.topicsList], []);
 	};
 
 	// attached the viewer to a canvas element
@@ -10313,9 +10389,6 @@ this.customGridLineMajor = false;
 		// reset drawing mode
 		this.drawing = false;
 		this.panNotified = false;
-
-		// reset help topics visibility
-		this.showTopics = false;
 	};
 	
 	// switch off thumbnail view
@@ -10858,6 +10931,9 @@ this.customGridLineMajor = false;
 					}
 				}
 			}
+
+			// update help topic button positions based on window height
+			this.updateTopicButtonsPosition();
 
 			// process dynamic themes
 			this.engine.processMultiStateThemes();

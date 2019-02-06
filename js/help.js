@@ -412,7 +412,11 @@
 		view.lineNo = 1;
 		view.tabs[0] = 120;
 		y = topY + height * (view.numHelpPerPage + 2);
-		y = this.renderHelpLineUpDown(view, "Up", " / ", "Down", "scroll help", ctx, x, y, height, 0);
+		if (view.helpTopic !== ViewConstants.welcomeTopic) {
+			y = this.renderHelpLineUpDown(view, "Up", " / ", "Down", "scroll help", ctx, x, y, height, 0);
+		} else {
+			y += height;
+		}
 		if (view.isInPopup) {
 			y = this.renderHelpLine(view, "H", "close help", ctx, x, y, height, 0);
 		} else {
@@ -434,27 +438,12 @@
 		// reset sections
 		view.helpSections = [];
 		
-		// always display topic list
-		view.showTopics = true;
-
 		// title
 		view.tabs[0] = 108;
 		view.helpSections[sectionNum] = view.lineNo;
 		sectionNum += 1;
 
 		y = this.renderHelpLine(view, "", ViewConstants.versionName + " build " + ViewConstants.versionBuild + " by " + ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "A scriptable pattern viewer and editor for", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "cellular automata", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "Please select a topic from the list", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Keys", "keyboard shortcuts", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Scripts", "script commands", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Info", "engine and pattern information", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Themes", "list of colour Themes", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Colours", "list of colour names", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Aliases", "list of rule aliases by category", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Memory", "memory usage", ctx, x, y, height, helpLine);
 	};
 
 	// render keys topic
