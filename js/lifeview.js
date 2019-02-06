@@ -1092,7 +1092,7 @@
 		this.defaultDepth = 0.1;
 
 		// whether a theme was requested
-		this.themeRequested = false;
+		this.themeRequested = -1;
 
 		// saved camera
 		this.savedAngle = 0;
@@ -10019,8 +10019,7 @@
 
 			// set theme
 			if (currentWaypoint.themeDefined) {
-				this.engine.setTheme(currentWaypoint.theme, 1, this);
-				this.themeRequested = true;
+				this.themeRequested = currentWaypoint.theme;
 			}
 
 			// set gps
@@ -10295,7 +10294,7 @@
 		this.engine.maxGridSize = 1 << ViewConstants.defaultGridPower;
 
 		// clear theme requested
-		this.themeRequested = false;
+		this.themeRequested = -1;
 
 		// clear default POI
 		this.defaultPOI = -1;
@@ -11114,7 +11113,10 @@
 		}
 
 		// check if a theme was requested
-		if (!this.themeRequested) {
+		if (this.themeRequested !== -1) {
+			// set the requested theme
+			this.engine.setTheme(this.themeRequested, 1, this);
+		} else {
 			// if not then check if a custom theme was specified
 			if (this.customTheme) {
 				this.engine.setTheme(this.engine.numThemes, 1, this);
