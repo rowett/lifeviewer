@@ -5475,6 +5475,119 @@
 		}
 	};
 
+	// remove multi-state pattern starting at a given cell
+	Life.prototype.removeMSPattern = function(x, y) {
+		var tx = 0,
+		    ty = 0,
+
+			// multi-state grid
+			colourGrid = this.colourGrid,
+			colourRow = null,
+
+		    // number of pages
+		    pages = this.boundaryPages,
+
+		    // current page
+		    page = 0,
+
+		    // boundary cell stack
+		    bx = this.boundaryX[page],
+		    by = this.boundaryY[page],
+		    index = 0,
+
+		    // maximum buffer size
+		    max = LifeConstants.removePatternBufferSize,
+
+		    // page mask
+		    mask = max - 1,
+		    
+		    // start and end of current page
+		    start = 0,
+			end = max,
+			
+			// masks for width and height
+			widthMask = this.widthMask,
+			heightMask = this.heightMask,
+
+		    // boundary cell radius
+			radius = this.removePatternRadius;
+
+		// stack the current cell
+		bx[index] = x;
+		by[index] = y;
+		index += 1;
+
+		// remove the cell
+		colourGrid[y][x] = 0;
+
+		// keep going until all cells processed
+		while (index > 0) {
+			// get the next cell
+			index -= 1;
+
+			// check for previous page
+			if (index < start) {
+				// switch to previous page
+				page -= 1;
+				start -= max;
+				end -= max;
+
+				// get the page array
+				bx = this.boundaryX[page];
+				by = this.boundaryY[page];
+			}
+			x = bx[index & mask];
+			y = by[index & mask];
+
+			// check the surrounding cells
+			ty = y - radius;
+			while (ty <= y + radius) {
+				tx = x - radius;
+				colourRow = colourGrid[ty];
+				while (tx <= x + radius) {
+					// check cell is on grid
+					if (tx === (tx & widthMask) && ty === (ty & heightMask)) {
+						// check if cell set
+						if (colourRow[tx] !== 0) {
+							// remove the cell
+							colourRow[tx] = 0;
+							
+							// stack the cell
+							if (index === end) {
+								// switch to next page
+								page += 1;
+								start += max;
+								end += max;
+
+								// check if page is allocated
+								if (page > pages) {
+									// allocate new page
+									this.boundaryX[page] = this.allocator.allocate(Int32, max, "Life.boundaryX" + page);
+									this.boundaryY[page] = this.allocator.allocate(Int32, max, "Life.boundaryY" + page);
+
+									// save new page
+									pages += 1;
+									this.boundaryPages = pages;
+								}
+
+								// get the page array
+								bx = this.boundaryX[page];
+								by = this.boundaryY[page];
+							}
+
+							// save the cell
+							bx[index & mask] = tx;
+							by[index & mask] = ty;
+							index += 1;
+						}
+					}
+					tx += 1;
+				}
+				ty += 1;
+			}
+		}
+	};
+
 	// remove HROT patterns that touch the boundary
 	Life.prototype.clearHRBoundary = function() {
 		// grid
@@ -5505,7 +5618,7 @@
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= rightX; x += 1) {
 					if (colourRow[x] > 0) {
-						colourRow[x] = 0;
+						this.removeMSPattern(x, y);
 					}
 				}
 			}
@@ -5518,7 +5631,7 @@
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= rightX; x += 1) {
 					if (colourRow[x] > 0) {
-						colourRow[x] = 0;
+						this.removeMSPattern(x, y);
 					}
 				}
 			}
@@ -5531,7 +5644,7 @@
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= range; x += 1) {
 					if (colourRow[x] > 0) {
-						colourRow[x] = 0;
+						this.removeMSPattern(x, y);
 					}
 				}
 			}
@@ -5542,9 +5655,9 @@
 		if ((wd - rightX) <= range) {
 			for (y = bottomY; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
-				for (x = leftX; x <= range; x += 1) {
+				for (x = wd - range; x <= rightX; x += 1) {
 					if (colourRow[x] > 0) {
-						colourRow[x] = 0;
+						this.removeMSPattern(x, y);
 					}
 				}
 			}

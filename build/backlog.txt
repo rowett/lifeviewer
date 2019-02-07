@@ -1,5 +1,4 @@
 Investigate tiled LtL/HROT algorithm
-LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE stuff rather than just clear)
 Investigate Paul's non-totalistic hex notation
 Investigate Brian's BSFKL notation
 Investigate "Extended" Generations
@@ -9,6 +8,7 @@ Grow grid separately horizontally and vertically to allow grid sizes like 16384x
 User preferences
 [STARTED]Pattern Editor
     [DONE] Basic 2-state editing with no undo
+[DONE]LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE stuff rather than just clear)
 [DONE]Memory footprint reduction
 [DONE]Implement faster Ltl/HROT von Neumann algorithm
 [DONE]HROT support for von Neumann and Circular neighbourhoods
