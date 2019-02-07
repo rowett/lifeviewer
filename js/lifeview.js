@@ -279,6 +279,15 @@
 		// minimum height to display navigation menu in the Viewer
 		/** @const {number} */ minMenuHeight : 480,
 
+		// default width for the zoom slider (gets wider if the window is wider than the default)
+		/** @const {number} */ zoomSliderDefaultWidth : 132,
+
+		// maximum width for the zoom slider (gets wider if the window is wider than the default)
+		/** @const {number} */ zoomSliderMaxWidth : 292,
+
+		// width for opacity slider to use full caption
+		/** @const {number} */ opacityNameWidth : 154,
+
 		// custom colour usage states
 		/** @const {number} */ stateNotUsed : 0,
 		/** @const {number} */ stateUsedCustom : 1,
@@ -6314,7 +6323,7 @@
 		this.ruleLabel.font = ViewConstants.statsFont;
 
 		// add the zoom range
-		this.zoomItem = this.viewMenu.addRangeItem(this.viewZoomRange, Menu.north, 0, 0, 132, 40, 0, 1, 0.1, true, "Zoom ", "", 1);
+		this.zoomItem = this.viewMenu.addRangeItem(this.viewZoomRange, Menu.north, 0, 0, ViewConstants.zoomSliderDefaultWidth, 40, 0, 1, 0.1, true, "Zoom ", "", 1);
 		this.zoomItem.toolTip = "camera zoom";
 
 		// add the layers range
@@ -11377,6 +11386,23 @@
 
 			this.stepRange.x = this.stepRangeX;
 			this.stepRange.relX = this.stepRange.x;
+		}
+
+		// resize the zoom and graph opacity sliders
+		if (this.displayWidth > ViewConstants.minViewerWidth) {
+			i = (this.displayWidth - ViewConstants.minViewerWidth) + ViewConstants.zoomSliderDefaultWidth;
+			if (i > ViewConstants.zoomSliderMaxWidth) {
+				i = ViewConstants.zoomSliderMaxWidth;
+			}
+			this.zoomItem.width = i;
+			this.opacityItem.width = i;
+			if (i > ViewConstants.opacityNameWidth) {
+				this.opacityItem.preText = "Opacity ";
+			}
+		} else {
+			this.zoomItem.width = ViewConstants.zoomSliderDefaultWidth;
+			this.opacityItem.width = ViewConstants.zoomSliderDefaultWidth;
+			this.opacityItem.preText = "Opac ";
 		}
 
 		// check whether to resize the canvas
