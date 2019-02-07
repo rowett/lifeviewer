@@ -31,13 +31,16 @@
 		// population samples chunk size 2^n
 		/** @const {number} */ popChunkPower : 12,
 
-		// cell value for alive start (for colour Themes)
+		// cell value for alive start (for 2-state Themes)
 		/** @const {number} */ aliveStart : 64,
 
-		// cell value for alive maximum (for colour Themes)
+		// cell value for alive maximum (for 2-state Themes)
 		/** @const {number} */ aliveMax : 127,
 
-		// cell colour index for cell dead longest
+		// cell colour index for cell just dead (for 2-state Themes)
+		/** @const {number} */ deadStart : 63,
+
+		// cell colour index for cell dead longest (for 2-state Themes)
 		/** @const {number} */ deadMin : 1,
 
 		// bit masks for surrounding tiles
@@ -354,7 +357,7 @@
 		this.aliveMax = LifeConstants.aliveMax;
 
 		// cell colour index for cell just dead
-		this.deadStart = 63;
+		this.deadStart = LifeConstants.deadStart;
 
 		// cell colour index for cell dead longest
 		this.deadMin = LifeConstants.deadMin;
@@ -5509,6 +5512,10 @@
 			widthMask = this.widthMask,
 			heightMask = this.heightMask,
 
+			// alive state
+			alive = (this.multiNumStates > 2 ? 0 : LifeConstants.aliveStart),
+			dead = (this.multiNumStates > 2 ? 0 : LifeConstants.deadStart),
+
 		    // boundary cell radius
 			radius = this.removePatternRadius;
 
@@ -5548,9 +5555,9 @@
 					// check cell is on grid
 					if (tx === (tx & widthMask) && ty === (ty & heightMask)) {
 						// check if cell set
-						if (colourRow[tx] !== 0) {
+						if (colourRow[tx] >= alive) {
 							// remove the cell
-							colourRow[tx] = 0;
+							colourRow[tx] = dead;
 							
 							// stack the cell
 							if (index === end) {
@@ -5608,6 +5615,9 @@
 			// range
 			range = this.HROT.range * 2 + 1,
 
+			// alive and dead states
+			alive = (this.multiNumStates > 2 ? 0 : LifeConstants.aliveStart),
+
 			// counters
 			x = 0,
 			y = 0;
@@ -5617,7 +5627,7 @@
 			for (y = ht - range; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= rightX; x += 1) {
-					if (colourRow[x] > 0) {
+					if (colourRow[x] >= alive) {
 						this.removeMSPattern(x, y);
 					}
 				}
@@ -5630,7 +5640,7 @@
 			for (y = bottomY; y <= range; y += 1) {
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= rightX; x += 1) {
-					if (colourRow[x] > 0) {
+					if (colourRow[x] >= alive) {
 						this.removeMSPattern(x, y);
 					}
 				}
@@ -5643,7 +5653,7 @@
 			for (y = bottomY; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= range; x += 1) {
-					if (colourRow[x] > 0) {
+					if (colourRow[x] >= alive) {
 						this.removeMSPattern(x, y);
 					}
 				}
@@ -5656,7 +5666,7 @@
 			for (y = bottomY; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
 				for (x = wd - range; x <= rightX; x += 1) {
-					if (colourRow[x] > 0) {
+					if (colourRow[x] >= alive) {
 						this.removeMSPattern(x, y);
 					}
 				}
