@@ -6795,7 +6795,7 @@
 
 			// process the colour
 			switch (customThemeElement) {
-			case ViewConstants.customThecustomTheme:
+			case ViewConstants.customThemeGrid:
 				// copy to grid colour
 				this.customGridColour = this.customThemeValue[customThemeElement];
 				this.customTheme = true;
