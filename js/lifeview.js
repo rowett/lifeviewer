@@ -2789,12 +2789,12 @@
 
 		if (this.scriptErrors.length) {
 			this.closeButton.toolTip = "close errors";
-			this.closeButton.icon = ViewConstants.iconManager.icon("esc");
-			this.closeButton.preText = "";
+			this.closeButton.preText = "Esc";
+			this.closeButton.font = "16px Arial";
 		} else {
 			this.closeButton.toolTip = "close window";
-			this.closeButton.icon = null;
 			this.closeButton.preText = "X";
+			this.closeButton.font = "24px Arial";
 		}
 
 		// help topics
@@ -3993,7 +3993,7 @@
 			icons = new Image();
 
 			// load the icons from the image file
-			icons.src = "data:image/png;base64,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";
+			icons.src = "data:image/png;base64,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";
 				
 			// save the image
 			ViewConstants.icons = icons;
@@ -4012,12 +4012,10 @@
 		iconManager.add("autofit", w, h);
 		iconManager.add("fit", w, h);
 		iconManager.add("grid", w, h);
-		iconManager.add("help", w, h);
 		iconManager.add("shrink", w, h);
 		iconManager.add("draw", w, h);
 		iconManager.add("hexgrid", w, h);
 		iconManager.add("lines", w, h);
-		iconManager.add("esc", w, h);
 		iconManager.add("pan", w, h);
 
 		// return the icon manager
@@ -6258,9 +6256,9 @@
 		this.modeList.toolTip = ["draw", "pan"];
 
 		// help button
-		this.helpToggle = this.viewMenu.addListItem(this.toggleHelp, Menu.northEast, -40, 0, 40, 40, [""], [false], Menu.multi);
-		this.helpToggle.icon = [ViewConstants.iconManager.icon("help")];
+		this.helpToggle = this.viewMenu.addListItem(this.toggleHelp, Menu.northEast, -40, 0, 40, 40, ["Help"], [false], Menu.multi);
 		this.helpToggle.toolTip = ["toggle help display"];
+		this.helpToggle.font = "16px Arial";
 
 		// help show topics button
 		this.topicsButton = this.viewMenu.addButtonItem(this.topicsPressed, Menu.northEast, -40, 50, 40, 40, ["<"]);
@@ -6289,9 +6287,10 @@
 		this.helpMemoryButton.toolTip = ["show memory usage"];
 
 		// autofit button
-		this.autoFitToggle = this.viewMenu.addListItem(this.toggleAutoFit, Menu.northWest, 0, 0, 40, 40, [""], [false], Menu.multi);
+		this.autoFitToggle = this.viewMenu.addListItem(this.toggleAutoFit, Menu.northWest, 0, 0, 40, 40, ["Auto"], [false], Menu.multi);
 		this.autoFitToggle.icon = [ViewConstants.iconManager.icon("autofit")];
 		this.autoFitToggle.toolTip = ["toggle autofit"];
+		this.autoFitToggle.font = "16px Arial";
 
 		// fit button
 		this.fitButton = this.viewMenu.addButtonItem(this.fitPressed, Menu.northWest, 45, 0, 40, 40, "");
@@ -6299,9 +6298,10 @@
 		this.fitButton.toolTip = "fit pattern to display";
 
 		// grid toggle
-		this.gridToggle = this.viewMenu.addListItem(this.toggleGrid, Menu.northEast, -85, 0, 40, 40, [""], [false], Menu.multi);
+		this.gridToggle = this.viewMenu.addListItem(this.toggleGrid, Menu.northEast, -85, 0, 40, 40, ["Grid"], [false], Menu.multi);
 		this.gridToggle.icon = [ViewConstants.iconManager.icon("grid")];
 		this.gridToggle.toolTip = ["toggle grid lines"];
+		this.gridToggle.font = "16px Arial";
 
 		// add the progress bar
 		this.progressBar = this.viewMenu.addProgressBarItem(Menu.southWest, 0, -40, 100, 40, 0, 100, 0, false, "", "", 0);
