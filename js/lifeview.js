@@ -6915,6 +6915,14 @@
 				this.engine.graphDeathColor = [redValue, greenValue, blueValue];
 				break;
 
+			// UI customisation doesn't force custom Theme
+			case ViewConstants.customThemeUIFG:
+			case ViewConstants.customThemeUIBG:
+			case ViewConstants.customThemeUIHighlight:
+			case ViewConstants.customThemeUISelect:
+			case ViewConstants.customThemeUILocked:
+				break;
+
 			default:
 				// mark custom theme set
 				this.customTheme = true;
