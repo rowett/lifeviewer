@@ -110,6 +110,11 @@
 		/** @const {number} */ customThemeLabel : 16,
 		/** @const {number} */ customThemeDying : 17,
 		/** @const {number} */ customThemeDyingRamp : 18,
+		/** @const {number} */ customThemeUIFG : 19,
+		/** @const {number} */ customThemeUIBG : 20,
+		/** @const {number} */ customThemeUIHighlight : 21,
+		/** @const {number} */ customThemeUISelect : 22,
+		/** @const {number} */ customThemeUILocked : 23,
 
 		// state numbers
 		/** @const {number} */ offState : 0,
@@ -164,7 +169,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 291,
+		/** @const {number} */ versionBuild : 292,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -761,7 +766,7 @@
 		this.customTheme = false;
 
 		// custom theme value
-		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
 		// custom grid colour
 		this.customGridColour = -1;
@@ -6118,6 +6123,49 @@
 		}
 	};
 
+	// set menu colours
+	View.prototype.setMenuColours = function() {
+		var fgCol = "rgb(32,255,255)",
+			bgCol= "black",
+			highlightCol = "rgb(0,240,32)",
+			selectedCol = "blue",
+			lockedCol = "grey",
+			element;
+
+		// check for custom foreground
+		element = this.customThemeValue[ViewConstants.customThemeUIFG];
+		if (element !== -1) {
+			fgCol = "rgb(" + (element >> 16) + "," + ((element >> 8) & 255) + "," + (element & 255) + ")";
+		}
+
+		// check for custom background
+		element = this.customThemeValue[ViewConstants.customThemeUIBG];
+		if (element !== -1) {
+			bgCol = "rgb(" + (element >> 16) + "," + ((element >> 8) & 255) + "," + (element & 255) + ")";
+		}
+
+		// check for custom highlight
+		element = this.customThemeValue[ViewConstants.customThemeUIHighlight];
+		if (element !== -1) {
+			highlightCol = "rgb(" + (element >> 16) + "," + ((element >> 8) & 255) + "," + (element & 255) + ")";
+		}
+
+		// check for custom select
+		element = this.customThemeValue[ViewConstants.customThemeUISelect];
+		if (element !== -1) {
+			selectedCol = "rgb(" + (element >> 16) + "," + ((element >> 8) & 255) + "," + (element & 255) + ")";
+		}
+
+		// check for custom locked
+		element = this.customThemeValue[ViewConstants.customThemeUILocked];
+		if (element !== -1) {
+			lockedCol = "rgb(" + (element >> 16) + "," + ((element >> 8) & 255) + "," + (element & 255) + ")";
+		}
+
+		// set the menu colours
+		this.viewMenu.setColours(fgCol, bgCol, highlightCol, selectedCol, lockedCol);
+	};
+
 	// create menus
 	View.prototype.createMenus = function() {
 		// View menu
@@ -7563,6 +7611,11 @@
 		this.customThemeValue[ViewConstants.customThemeGraphDeath] = -1;
 		this.customThemeValue[ViewConstants.customThemeError] = -1;
 		this.customThemeValue[ViewConstants.customThemeLabel] = -1;
+		this.customThemeValue[ViewConstants.customThemeUIFG] = -1;
+		this.customThemeValue[ViewConstants.customThemeUIBG] = -1;
+		this.customThemeValue[ViewConstants.customThemeUIHighlight] = -1;
+		this.customThemeValue[ViewConstants.customThemeUISelect] = -1;
+		this.customThemeValue[ViewConstants.customThemeUILocked] = -1;
 
 		// clear custom colours
 		this.customColours = [];
@@ -8252,6 +8305,31 @@
 								// graph death
 								case Keywords.graphDeathColorWord:
 									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemeGraphDeath, whichColour);
+									break;
+
+								// UI foreground
+								case Keywords.uiFGWord:
+									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemeUIFG, whichColour);
+									break;
+
+								// UI background
+								case Keywords.uiBGWord:
+									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemeUIBG, whichColour);
+									break;
+
+								// UI highlight
+								case Keywords.uiHighlightWord:
+									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemeUIHighlight, whichColour);
+									break;
+
+								// UI select
+								case Keywords.uiSelectWord:
+									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemeUISelect, whichColour);
+									break;
+
+								// UI locked
+								case Keywords.uiLockedWord:
+									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemeUILocked, whichColour);
 									break;
 
 								// others are errors
@@ -10783,6 +10861,11 @@
 		this.customThemeValue[ViewConstants.customThemeLabel] = -1;
 		this.customThemeValue[ViewConstants.customThemeDying] = -1;
 		this.customThemeValue[ViewConstants.customThemeDyingRamp] = -1;
+		this.customThemeValue[ViewConstants.customThemeUIFG] = -1;
+		this.customThemeValue[ViewConstants.customThemeUIBG] = -1;
+		this.customThemeValue[ViewConstants.customThemeUIHighlight] = -1;
+		this.customThemeValue[ViewConstants.customThemeUISelect] = -1;
+		this.customThemeValue[ViewConstants.customThemeUILocked] = -1;
 		this.customLabelColour = ViewConstants.labelFontColour;
 
 		// switch off thumbnail mode if on
@@ -10939,6 +11022,9 @@
 					}
 				}
 			}
+
+			// set the menu colours
+			this.setMenuColours();
 
 			// update help topic button positions based on window height
 			this.updateTopicButtonsPosition();

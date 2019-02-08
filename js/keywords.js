@@ -163,6 +163,18 @@
 		/** @const {string} */ themeDyingWord : "DYING",
 		/** @const {string} */ themeDyingRampWord : "DYINGRAMP",
 
+		// custom UI elements
+		/** @const {string} */ uiFGWord : "UIFOREGROUND",
+		/** @const {string} */ uiFGAlphaWord : "UIFOREGROUNDA",
+		/** @const {string} */ uiBGWord : "UIBACKGROUND",
+		/** @const {string} */ uiBGAlphaWord : "UIBACKGROUNDA",
+		/** @const {string} */ uiHighlightWord : "UIHIGHLIGHT",
+		/** @const {string} */ uiHighlightAlphaWord : "UIHIGHTLIGHTA",
+		/** @const {string} */ uiSelectWord : "UISELECT",
+		/** @const {string} */ uiSelectAlphaWord : "UISELECTA",
+		/** @const {string} */ uiLockedWord : "UILOCKED",
+		/** @const {string} */ uiLockedAlphaWord : "UILOCKEDA",
+
 		// boundary
 		/** @const {string} */ boundaryWord : "BOUNDARY",
 

@@ -596,6 +596,15 @@
 		this.font = owner.defaultFont;
 	}
 
+	// set item foreground and background colour
+	MenuItem.prototype.setColours = function(fg, bg, highlight, selected, locked) {
+		this.fgCol = fg;
+		this.bgCol = bg;
+		this.hlCol = highlight;
+		this.selectedCol = selected;
+		this.lockedCol = locked;
+	};
+
 	// set a new absolute position
 	MenuItem.prototype.setPosition = function(position, x, y) {
 		this.position = position;
@@ -810,6 +819,16 @@
 		// icon manager
 		this.iconManager = null;
 	}
+
+	// set menu foreground and background colour
+	MenuList.prototype.setColours = function(fg, bg, highlight, selected, locked) {
+		var i = 0;
+
+		// set the colours in every control
+		for (i = 0; i < this.menuItems.length; i += 1) {
+			this.menuItems[i].setColours(fg, bg, highlight, selected, locked);
+		}
+	};
 
 	// check parent toggle menu state for visibility
 	MenuList.prototype.parentMenu = function(parentItem, cascade) {
@@ -1102,8 +1121,8 @@
 		markerPos = (item.current - item.lower) / (item.upper - item.lower);
 
 		// set the highlight alpha
-		this.context.globalAlpha = this.bgAlpha;
-		this.context.fillStyle = this.fgCol;
+		this.context.globalAlpha = item.bgAlpha;
+		this.context.fillStyle = item.fgCol;
 
 		// scale to the bar item
 		if (item.orientation === Menu.horizontal) {
@@ -1142,7 +1161,7 @@
 
 		// draw the string if non-blank
 		if (itemString !== "") {
-			this.context.globalAlpha = this.fgAlpha;
+			this.context.globalAlpha = item.fgAlpha;
 			this.drawShadowString(itemString, item, false);
 		}
 	};
@@ -1165,8 +1184,8 @@
 
 			// draw the highlight
 			if (highlight) {
-				this.context.fillStyle = this.hlCol;
-				this.context.globalAlpha = this.hlAlpha;
+				this.context.fillStyle = item.hlCol;
+				this.context.globalAlpha = item.hlAlpha;
 
 				this.context.fillRect(item.x + markerPos - highlightSize, item.y, highlightSize, item.height);
 				this.context.fillRect(item.x + markerPos + 1, item.y, highlightSize, item.height);
@@ -1174,12 +1193,12 @@
 
 			// draw the marker
 			if (item.locked || this.locked) {
-				this.context.fillStyle = this.lockedCol;
-				this.context.globalAlpha = this.lockedAlpha;
+				this.context.fillStyle = item.lockedCol;
+				this.context.globalAlpha = item.lockedAlpha;
 			}
 			else {
-				this.context.fillStyle = this.fgCol;
-				this.context.globalAlpha = this.fgAlpha;
+				this.context.fillStyle = item.fgCol;
+				this.context.globalAlpha = item.fgAlpha;
 			}
 			this.context.fillRect(item.x + markerPos, item.y, 1, item.height);
 		}
@@ -1190,8 +1209,8 @@
 
 			// draw the highlight
 			if (highlight) {
-				this.context.fillStyle = this.hlCol;
-				this.context.globalAlpha = this.hlAlpha;
+				this.context.fillStyle = item.hlCol;
+				this.context.globalAlpha = item.hlAlpha;
 
 				this.context.fillRect(item.x, item.y + markerPos - highlightSize, item.width, highlightSize);
 				this.context.fillRect(item.x, item.y + markerPos + 1, item.width, highlightSize);
@@ -1199,12 +1218,12 @@
 
 			// draw the marker
 			if (item.locked || this.locked) {
-				this.context.fillStyle = this.lockedCol;
-				this.context.globalAlpha = this.lockedAlpha;
+				this.context.fillStyle = item.lockedCol;
+				this.context.globalAlpha = item.lockedAlpha;
 			}
 			else {
-				this.context.fillStyle = this.fgCol;
-				this.context.globalAlpha = this.fgAlpha;
+				this.context.fillStyle = item.fgCol;
+				this.context.globalAlpha = item.fgAlpha;
 			}
 			this.context.fillRect(item.x, item.y + markerPos, item.width, 1);
 		}
@@ -1317,8 +1336,8 @@
 		}
 
 		// draw the set item or items
-		this.context.globalAlpha = this.selectedAlpha;
-		this.context.fillStyle = this.selectedCol;
+		this.context.globalAlpha = item.selectedAlpha;
+		this.context.fillStyle = item.selectedCol;
 
 		if (item.upper === Menu.single) {
 			// single so draw set item
@@ -1350,8 +1369,8 @@
 
 		// draw highlight if required
 		if (highlight) {
-			this.context.globalAlpha = this.hlAlpha;
-			this.context.fillStyle = this.hlCol;
+			this.context.globalAlpha = item.hlAlpha;
+			this.context.fillStyle = item.hlCol;
 
 			if (item.orientation === Menu.horizontal) {
 				itemNum = (((this.mouseX - x) / width) * l) | 0;
@@ -1392,8 +1411,8 @@
 		}
 
 		// draw the items
-		this.context.globalAlpha = this.fgAlpha;
-		this.context.fillStyle = this.fgCol;
+		this.context.globalAlpha = item.fgAlpha;
+		this.context.fillStyle = item.fgCol;
 		if (orientation === Menu.horizontal) {
 			// draw each item
 			for (i = 0; i < l; i += 1) {

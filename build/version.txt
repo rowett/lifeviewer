@@ -1,5 +1,19 @@
+Build 292
+- alternating rule support
+	- use a | between two rule names to define even/odd generation rules
+	- e.g. rule = Life|HighLife
+	- does not support B0 rules or LtL/HROT rules
+- first part of UI customization
+	- can now define UI colours using [[ COLOR <item> R G B|<name> ]] where <item> is one of:
+		- UIFOREGROUND for foreground colour
+		- UIBACKGROUND for background colour
+		- UIHIGHLIGHT for colour when mouse is over control
+		- UISELECT for colour when item is selected
+		- UILOCKED for colour when item is locked
+
 Build 291
 - Ltl/HROT patterns now use DELETERANGE when patterns reach the grid boundary
+- Zoom and Opacity sliders are wider when the Viewer is wider
 
 Build 290
 - added a Labels button to the bottom right menu to toggle label display

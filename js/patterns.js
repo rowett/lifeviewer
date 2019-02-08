@@ -125,6 +125,9 @@
 		// 512 bit rule
 		ruleArray : new Uint8Array(512),
 
+		// 512 bit alternate rule
+		ruleAltArray : new Uint8Array(512),
+
 		// swap array
 		swapArray : new Uint16Array(512),
 
@@ -194,7 +197,13 @@
 
 		// specified width and height from RLE pattern
 		specifiedWidth : -1,
-		specifiedHeight : -1
+		specifiedHeight : -1,
+
+		// alternate rule separator
+		altRuleSeparator : "|",
+		
+		// whether alternate rule specified
+		altSpecified : false
 	};
 
 	// Life pattern constructor
@@ -326,6 +335,69 @@
 		// pattern originator
 		this.originator = "";
 	}
+
+	// copy settings from one pattern to another
+	Pattern.prototype.copySettingsFrom = function(source) {
+		this.ruleName = source.ruleName;
+		this.aliasName = source.aliasName;
+		this.isHex = source.isHex;
+		this.wolframRule = source.wolframRule;
+		this.isVonNeumann = source.isVonNeumann;
+		this.isLTL = source.isLTL;
+		this.rangeLTL = source.rangeLTL;
+		this.neighborhoodLTL = source.neighborhoodLTL;
+		this.isHROT = source.isHROT;
+		this.rangeHROT = source.rangeHROT;
+		this.neighborhoodHROT = source.neighborhoodHROT;
+		this.multiNumStates = source.multiNumStates;
+		this.numStates = source.numStates;
+	};
+
+	// reset settings to defaults
+	Pattern.prototype.resetSettings = function() {
+		this.ruleName = "";
+		this.aliasName = "";
+		this.isHex = false;
+		this.wolframRule = -1;
+		this.isVonNeumann = false;
+		this.isLTL = false;
+		this.rangeLTL = -1;
+		this.neighborhoodLTL = -1;
+		this.isHROT = false;
+		this.rangeHROT = -1;
+		this.neighborhoodHROT = -1;
+		this.multiNumStates = -1;
+		this.numStates = 2;
+	};
+
+	// check if one pattern is the same family as another
+	Pattern.prototype.isSameFamilyAs = function(source) {
+		var states = (this.multiNumStates === -1 ? this.numStates : this.multiNumStates),
+			sourceStates = (source.multiNumStates === -1 ? source.numStates : source.multiNumStates);
+
+		// check for rule families
+		if ((this.isLTL !== source.isLTL) || (this.isHROT !== source.isHROT)) {
+			return "Alternate is different rule family";
+		}
+
+		// check for number of states
+		if (states !== sourceStates) {
+			return "Alternate has different number of states";
+		}
+
+		// check for neighborhoods
+		if ((this.isHex !== source.isHex) || (this.isVonNeumann !== source.isVonNeumann) || (this.wolframRule !== source.wolframRule) || (this.neighborhoodLTL !== source.neighborhoodLTL) || (this.neighborhoodHROT !== source.neighborhoodHROT)) {
+			return "Alternate has different neighborhood";
+		}
+
+		// check for range
+		if ((this.rangeLTL !== source.rangeLTL) || (this.rangeHROT !== source.rangeHROT)) {
+			return "Alternate has different range";
+		}
+
+		// all checks passed
+		return "";
+	};
 
 	// decode a Cells pattern
 	PatternManager.decodeCells = function(pattern, source, allocator) {
@@ -1464,7 +1536,7 @@
 	};
 
 	// create the rule map from birth and survival strings
-	PatternManager.createRuleMap = function(birthPart, survivalPart, base64, isHex, isVonNeumann, generationsStates) {
+	PatternManager.createRuleMap = function(birthPart, survivalPart, base64, isHex, isVonNeumann, generationsStates, ruleArray) {
 		var i = 0,
 		    j = 0,
 		    c = 0,
@@ -1474,7 +1546,6 @@
 		    canonicalName = "",
 		    birthName = "",
 		    survivalName = "",
-		    ruleArray = this.ruleArray,
 		    swapArray = this.swapArray,
 		    power2 = 1 << (this.mapNeighbours + 1),
 		    fullchars = (power2 / 6) | 0,
@@ -2808,6 +2879,65 @@
 
 	// decode rule string and return whether valid
 	PatternManager.decodeRuleString = function(pattern, rule, allocator) {
+		// check for alternate rules
+		var altIndex = rule.indexOf(PatternManager.altRuleSeparator),
+			firstPattern = null,
+			result = false;
+
+		// check if the rule has an alternate
+		if (altIndex === -1) {
+			// single rule so decode
+			result = this.decodeRuleStringPart(pattern, rule, allocator, this.ruleArray);
+		} else {
+			// check there is only one separator
+			if (rule.substr(altIndex + 1).indexOf(PatternManager.altRuleSeparator) === -1) {
+				// decode first rule
+				result = this.decodeRuleStringPart(pattern, rule.substr(0, altIndex), allocator, this.ruleAltArray);
+				if (result) {
+					// save the first pattern details
+					firstPattern = new Pattern(pattern.name);
+					firstPattern.copySettingsFrom(pattern);
+
+					// if succeeded then decode alternate rule
+					pattern.resetSettings();
+					result = this.decodeRuleStringPart(pattern, rule.substr(altIndex + 1), allocator, this.ruleArray);
+					if (result) {
+						// check the two rules are from the same family
+						this.failureReason = pattern.isSameFamilyAs(firstPattern);
+						if (this.failureReason === "") {
+							// for now LTL/HROT are not allowed
+							if (this.isLTL || this.isHROT || firstPattern.isLTL || firstPattern.isHROT) {
+								this.failureReason = "Alternate not supported for LtL/HROT";
+								result = false;
+							} else {
+								// check for B0 in either rule
+								if (this.ruleArray[0] || this.ruleAltArray[0]) {
+									this.failureReason = "Alternate not supported with B0";
+									result = false;
+								} else {
+									// add the alternate rule name
+									pattern.ruleName = firstPattern.ruleName + PatternManager.altRuleSeparator + pattern.ruleName;
+									pattern.aliasName = firstPattern.aliasName + PatternManager.altRuleSeparator + pattern.aliasName;
+									// flag that alternate rule specified
+									this.altSpecified = true;
+								}
+							}
+						} else {
+							// rules were incompatible
+							result = false;
+						}
+					}
+				}
+			} else {
+				this.failureReason = "Only one alternate allowed";
+			}
+		}
+
+		return result;
+	};
+
+	// decode rule string and return whether valid
+	PatternManager.decodeRuleStringPart = function(pattern, rule, allocator, ruleArray) {
 		// whether the rule contains a slash
 		var slashIndex = -1,
 
@@ -2863,7 +2993,7 @@
 		    i = 0;
 
 		// zero the first element of the rule array so later B0 checks don't fail
-		this.ruleArray[0] = 0;
+		ruleArray[0] = 0;
 
 		// check if the rule is an alias
 		alias = AliasManager.getRuleFromAlias(rule);
@@ -3260,7 +3390,7 @@
 		// if valid the create the rule
 		if (valid && pattern.wolframRule === -1 && pattern.isLTL === false && pattern.isHROT === false) {
 			// create the canonical name and the rule map
-			pattern.ruleName = this.createRuleMap(birthPart, survivalPart, base64, pattern.isHex, pattern.isVonNeumann, pattern.multiNumStates);
+			pattern.ruleName = this.createRuleMap(birthPart, survivalPart, base64, pattern.isHex, pattern.isVonNeumann, pattern.multiNumStates, ruleArray);
 			if (this.failureReason !== "") {
 				valid = false;
 			}
@@ -4856,6 +4986,9 @@
 		// clear specified width and height
 		this.specifiedWidth = -1;
 		this.specifiedHeight = -1;
+
+		// flag that no alternate rule specified
+		this.altSpecified = false;
 
 		// check for cells format
 		if (source.substr(0, Cells.magic1.length) === Cells.magic1 || source.substr(0, Cells.magic2.length) === Cells.magic2 || source.substr(0, Cells.magic3.length) === Cells.magic3 || source.substr(0, Cells.magic4.length) === Cells.magic4 || source.substr(0, Cells.magic5.length) === Cells.magic5) {

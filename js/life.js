@@ -2300,7 +2300,9 @@
 	Life.prototype.updateLifeRule = function() {
 		var i = 0,
 		    tmp = 0,
-		    ruleArray = PatternManager.ruleArray,
+			ruleArray = PatternManager.ruleArray,
+			ruleAltArray = PatternManager.ruleAltArray,
+			altSpecified = PatternManager.altSpecified,
 		    hash33 = LifeConstants.hash33,
 		    odd = false;
 
@@ -2339,10 +2341,14 @@
 		}
 
 		// copy rules from pattern
-		this.createLifeIndex63(this.indexLookup63, PatternManager.ruleArray);
-		if (!odd) {
-			// duplicate even rule
-			this.indexLookup632.set(this.indexLookup63);
+		this.createLifeIndex63(this.indexLookup63, ruleArray);
+		if (altSpecified) {
+			this.createLifeIndex63(this.indexLookup63, ruleAltArray);
+		} else {
+			if (!odd) {
+				// duplicate even rule
+				this.indexLookup632.set(this.indexLookup63);
+			}
 		}
 	};
 

@@ -3,9 +3,14 @@ Investigate Paul's non-totalistic hex notation
 Investigate Brian's BSFKL notation
 Investigate "Extended" Generations
 Investigate deficient rules
-Meta world view
 Grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
 User preferences
+[STARTED]Investigate alternate rules (one for even, one for odd)
+- use | as a rule separator
+[STARTED]Meta world view
+- extend Controller to provide access to all patterns on a page
+- new script command [[ MULTI ]] to switch to meta world view
+- new UI control somewhere to switch back
 [STARTED]Pattern Editor
     [DONE] Basic 2-state editing with no undo
 [DONE]LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE stuff rather than just clear)
