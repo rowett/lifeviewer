@@ -282,11 +282,11 @@
 		this.BmaxLTL = -1;
 
 		// alternate rule LTL settings
-		this.altMiddle = -1;
-		this.altSmin = -1;
-		this.altSmax = -1;
-		this.altBmin = -1;
-		this.altBmax = -1;
+		this.altMiddleLTL = -1;
+		this.altSminLTL = -1;
+		this.altSmaxLTL = -1;
+		this.altBminLTL = -1;
+		this.altBmaxLTL = -1;
 
 		// LTL neightborhood (0 Moore, 1 von Neumann, 2 circular)
 		this.neighborhoodLTL = -1;
@@ -394,10 +394,10 @@
 
 		// copy settings
 		this.altMiddleLTL = source.middleLTL;
-		this.altSminLTL = source.middleLTL;
-		this.altSmaxLTL = source.middleLTL;
-		this.altBminLTL = source.middleLTL;
-		this.altBmaxLTL = source.middleLTL;
+		this.altSminLTL = source.SminLTL;
+		this.altSmaxLTL = source.SmaxLTL;
+		this.altBminLTL = source.BminLTL;
+		this.altBmaxLTL = source.BmaxLTL;
 	};
 
 	// reset settings to defaults
