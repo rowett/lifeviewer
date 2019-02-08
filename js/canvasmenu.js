@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define global variables
-	/* global registerEvent */
+	/* global registerEvent Uint32Array */
 
 	// TextAlert
 	/**
@@ -367,14 +367,73 @@
 
 		// save the icon image
 		this.iconsImage = iconsImage;
+		this.width = 0;
+		this.height = 0;
+		this.iconCanvas = null;
+		this.iconContext = null;
+		this.convertedImage = null;
 
 		// list of icons
 		this.iconList = [];
+
+		// whether icons need recolouring
+		this.recolour = true;
+
+		// recolour shade
+		this.recolourCol = -1;
+
+		// whether initialised
+		this.init = false;
 	}
 
 	// draw icon
 	IconManager.prototype.draw = function(icon, x, y) {
-		this.context.drawImage(this.iconsImage, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
+		var data = null,
+			data32 = null,
+			i = 0;
+
+		if (!this.init) {
+			this.width = this.iconsImage.width;
+			this.height = this.iconsImage.height;
+
+			// create a context the same size as the image and draw the image onto it
+			this.iconCanvas = document.createElement("canvas");
+			this.iconCanvas.width = this.width;
+			this.iconCanvas.height = this.height;
+			this.iconContext = this.iconCanvas.getContext("2d");
+
+			// create a new image for the converted colours
+			this.convertedImage = new Image();
+		}
+
+		// change the pixel colours if required
+		if (this.recolour) {
+			// get the pixel data
+			this.iconContext.drawImage(this.iconsImage, 0, 0);
+			data = this.iconContext.getImageData(0, 0, this.iconCanvas.width, this.iconCanvas.height);
+			data32 = new Uint32Array(data.data.buffer);
+
+			// change target pixel to new colour
+			for (i = 0; i < data32.length; i += 1) {
+				if (data32[i] === 0xffffffff) {
+					data32[i] = this.recolourCol;
+				}
+			}
+
+			// put back the pixel data
+			this.iconContext.putImageData(data, 0, 0);
+			this.recolour = false;
+			this.init = false;
+		}
+
+		if (!this.init) {
+			// create a new image with the updated colours
+			this.convertedImage.src = this.iconCanvas.toDataURL("image/png");
+			this.init = true;
+		}
+
+		// draw the icon onto the canvas
+		this.context.drawImage(this.convertedImage, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
 	};
 
 	// return number of icons
@@ -1948,7 +2007,7 @@
 		this.bgAlpha = 0.7;
 
 		// default foreground colour
-		this.fgCol = "rgb(32,255,255)";
+		this.fgCol = "white";
 		this.fgAlpha = 1.0;
 
 		// default highlight colour

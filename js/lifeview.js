@@ -219,9 +219,6 @@
 		/** @const {number} */ minStepSpeed : 1,
 		/** @const {number} */ maxStepSpeed : 50,
 
-		// icon manager
-		iconManager : null,
-
 		// font size
 		/** @const {number} */ fontSize : 18,
 
@@ -461,6 +458,9 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// icon manager
+		this.iconManager = null;
+
 		// cell X and Y coordinate
 		this.cellX = 0;
 		this.cellY = 0;
@@ -3462,11 +3462,11 @@
 		// check if playing
 		if (isPlaying) {
 			// set to pause icon
-			this.playList.icon[2] = ViewConstants.iconManager.icon("pause");
+			this.playList.icon[2] = this.iconManager.icon("pause");
 			this.playList.toolTip[2] = "pause";
 		} else {
 			// set to step forward icon
-			this.playList.icon[2] = ViewConstants.iconManager.icon("stepforward");
+			this.playList.icon[2] = this.iconManager.icon("stepforward");
 			this.playList.toolTip[2] = "next generation";
 		}
 	};
@@ -3984,7 +3984,6 @@
 		// load icon file
 		var w = 40,
 		    h = 40,
-		    iconManager = null,
 		    icons = ViewConstants.icons;
 
 		// check if the icons exist
@@ -4000,35 +3999,32 @@
 		}
 
 		// create the icon manager
-		iconManager = new IconManager(icons, context);
+		this.iconManager = new IconManager(icons, context);
 
 		// add the icons
-		iconManager.add("play", w, h);
-		iconManager.add("pause", w, h);
-		iconManager.add("tostart", w, h);
-		iconManager.add("menu", w, h);
-		iconManager.add("stepback", w, h);
-		iconManager.add("stepforward", w, h);
-		iconManager.add("autofit", w, h);
-		iconManager.add("fit", w, h);
-		iconManager.add("grid", w, h);
-		iconManager.add("shrink", w, h);
-		iconManager.add("draw", w, h);
-		iconManager.add("hexgrid", w, h);
-		iconManager.add("lines", w, h);
-		iconManager.add("pan", w, h);
-
-		// return the icon manager
-		return iconManager;
+		this.iconManager.add("play", w, h);
+		this.iconManager.add("pause", w, h);
+		this.iconManager.add("tostart", w, h);
+		this.iconManager.add("menu", w, h);
+		this.iconManager.add("stepback", w, h);
+		this.iconManager.add("stepforward", w, h);
+		this.iconManager.add("autofit", w, h);
+		this.iconManager.add("fit", w, h);
+		this.iconManager.add("grid", w, h);
+		this.iconManager.add("shrink", w, h);
+		this.iconManager.add("draw", w, h);
+		this.iconManager.add("hexgrid", w, h);
+		this.iconManager.add("lines", w, h);
+		this.iconManager.add("pan", w, h);
 	};
 
 	// update grid icon based on hex or square mode
 	View.prototype.updateGridIcon = function() {
 		// check for hex mode
 		if (this.engine.isHex) {
-			this.gridToggle.icon = [ViewConstants.iconManager.icon("hexgrid")];
+			this.gridToggle.icon = [this.iconManager.icon("hexgrid")];
 		} else {
-			this.gridToggle.icon = [ViewConstants.iconManager.icon("grid")];
+			this.gridToggle.icon = [this.iconManager.icon("grid")];
 		}
 	};
 
@@ -6123,7 +6119,7 @@
 
 	// set menu colours
 	View.prototype.setMenuColours = function() {
-		var fgCol = "rgb(32,255,255)",
+		var fgCol = "white",
 			bgCol= "black",
 			highlightCol = "rgb(0,240,32)",
 			selectedCol = "blue",
@@ -6134,6 +6130,21 @@
 		element = this.customThemeValue[ViewConstants.customThemeUIFG];
 		if (element !== -1) {
 			fgCol = "rgb(" + (element >> 16) + "," + ((element >> 8) & 255) + "," + (element & 255) + ")";
+			this.iconManager.recolour = true;
+			if (this.engine.littleEndian) {
+				this.iconManager.recolourCol = (255 << 24) | (element & 255) << 16 | (((element >> 8) & 255) << 8) | (element >> 16);
+			} else {
+				this.iconManager.recolourCol = ((element >> 16) << 24) | (((element >> 8) & 255) << 16) | ((element & 255) << 8) | 255;
+			}
+		} else {
+			// set default menu colour (will colour icons correctly)
+			this.iconManager.recolour = true;
+			element = (255 << 16) | (255 << 8) | 255;
+			if (this.engine.littleEndian) {
+				this.iconManager.recolourCol = (255 << 24) | (element & 255) << 16 | (((element >> 8) & 255) << 8) | (element >> 16);
+			} else {
+				this.iconManager.recolourCol = ((element >> 16) << 24) | (((element >> 8) & 255) << 16) | ((element & 255) << 8) | 255;
+			}
 		}
 
 		// check for custom background
@@ -6252,7 +6263,7 @@
 
 		// mode list
 		this.modeList = this.viewMenu.addListItem(this.viewModeList, Menu.northWest, 90, 0, 80, 40, ["", ""], ViewConstants.modePan, Menu.single);
-		this.modeList.icon = [ViewConstants.iconManager.icon("draw"), ViewConstants.iconManager.icon("pan")];
+		this.modeList.icon = [this.iconManager.icon("draw"), this.iconManager.icon("pan")];
 		this.modeList.toolTip = ["draw", "pan"];
 
 		// help button
@@ -6288,18 +6299,18 @@
 
 		// autofit button
 		this.autoFitToggle = this.viewMenu.addListItem(this.toggleAutoFit, Menu.northWest, 0, 0, 40, 40, ["Auto"], [false], Menu.multi);
-		this.autoFitToggle.icon = [ViewConstants.iconManager.icon("autofit")];
+		this.autoFitToggle.icon = [this.iconManager.icon("autofit")];
 		this.autoFitToggle.toolTip = ["toggle autofit"];
 		this.autoFitToggle.font = "16px Arial";
 
 		// fit button
 		this.fitButton = this.viewMenu.addButtonItem(this.fitPressed, Menu.northWest, 45, 0, 40, 40, "");
-		this.fitButton.icon = ViewConstants.iconManager.icon("fit");
+		this.fitButton.icon = this.iconManager.icon("fit");
 		this.fitButton.toolTip = "fit pattern to display";
 
 		// grid toggle
 		this.gridToggle = this.viewMenu.addListItem(this.toggleGrid, Menu.northEast, -85, 0, 40, 40, ["Grid"], [false], Menu.multi);
-		this.gridToggle.icon = [ViewConstants.iconManager.icon("grid")];
+		this.gridToggle.icon = [this.iconManager.icon("grid")];
 		this.gridToggle.toolTip = ["toggle grid lines"];
 		this.gridToggle.font = "16px Arial";
 
@@ -6388,7 +6399,7 @@
 
 		// shrink button
 		this.shrinkButton = this.viewMenu.addButtonItem(this.shrinkPressed, Menu.southEast, -40, -90, 40, 40, "");
-		this.shrinkButton.icon = ViewConstants.iconManager.icon("shrink");
+		this.shrinkButton.icon = this.iconManager.icon("shrink");
 		this.shrinkButton.toolTip = "shrink to thumbnail";
 
 		// hex/square toggle button
@@ -6437,7 +6448,7 @@
 
 		// points/lines toggle
 		this.linesToggle = this.viewMenu.addListItem(this.toggleLines, Menu.northEast, -170, 0, 40, 40, [""], [false], Menu.multi);
-		this.linesToggle.icon = [ViewConstants.iconManager.icon("lines")];
+		this.linesToggle.icon = [this.iconManager.icon("lines")];
 		this.linesToggle.toolTip = ["toggle graph lines/points"];
 
 		// graph close button
@@ -6446,7 +6457,7 @@
 
 		// add menu toggle button
 		this.navToggle = this.viewMenu.addListItem(null, Menu.southEast, -40, -40, 40, 40, [""], [false], Menu.multi);
-		this.navToggle.icon = [ViewConstants.iconManager.icon("menu")];
+		this.navToggle.icon = [this.iconManager.icon("menu")];
 		this.navToggle.toolTip = ["toggle navigation menu"];
 
 		// add the colour theme range
@@ -6463,7 +6474,7 @@
 
 		// add play and pause list
 		this.playList = this.viewMenu.addListItem(this.viewPlayList, Menu.southEast, -205, -40, 160, 40, ["", "", "", ""], ViewConstants.modePause, Menu.single);
-		this.playList.icon = [ViewConstants.iconManager.icon("tostart"), ViewConstants.iconManager.icon("stepback"), ViewConstants.iconManager.icon("pause"), ViewConstants.iconManager.icon("play")];
+		this.playList.icon = [this.iconManager.icon("tostart"), this.iconManager.icon("stepback"), this.iconManager.icon("pause"), this.iconManager.icon("play")];
 		this.playList.toolTip = ["reset", "previous generation", "pause", "play"];
 
 		// add items to the main toggle menu
@@ -6545,11 +6556,11 @@
 			this.offContext.textAlign = "left";
 			this.offContext.textBaseline = "middle";
 
-			// create the icons
-			ViewConstants.iconManager = this.createIcons(this.offContext);
+			// create the icon manager and icons
+			this.createIcons(this.offContext);
 
 			// create the menu manager
-			this.menuManager = new MenuManager(this.mainContext, this.offContext, "24px Arial", ViewConstants.iconManager, this, this.gotFocus);
+			this.menuManager = new MenuManager(this.mainContext, this.offContext, "24px Arial", this.iconManager, this, this.gotFocus);
 			
 			// disable fps display
 			this.menuManager.showTiming = false;
