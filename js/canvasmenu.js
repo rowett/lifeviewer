@@ -883,6 +883,13 @@
 	MenuList.prototype.setColours = function(fg, bg, highlight, selected, locked) {
 		var i = 0;
 
+		// set colours for new controls
+		this.fgCol = fg;
+		this.bgCol = bg;
+		this.hlCol = highlight;
+		this.selectCol = selected;
+		this.lockedCol = locked;
+
 		// set the colours in every control
 		for (i = 0; i < this.menuItems.length; i += 1) {
 			this.menuItems[i].setColours(fg, bg, highlight, selected, locked);
@@ -2106,6 +2113,20 @@
 		registerEvent(mainCanvas, "touchend", function(event) {me.touchToMouse(me, event);}, false);
 	}
 
+	// set menu foreground and background colour
+	MenuManager.prototype.setColours = function(fg, bg, highlight, selected, locked) {
+		// set colours for new menus
+		this.fgCol = fg;
+		this.bgCol = bg;
+		this.hlCol = highlight;
+		this.selectCol = selected;
+		this.lockedCol = locked;
+
+		// set the colours in the current Menu
+		if (this.currentMenu) {
+			this.currentMenu.setColours(fg, bg, highlight, selected, locked);
+		}
+	};
 	// compute canvas offset
 	MenuManager.prototype.computeCanvasOffset = function() {
 		// get the canvas
@@ -2375,18 +2396,18 @@
 				}
 
 				// draw the tooltip box
-				oc.globalAlpha = 0.7;
-				oc.fillStyle = "black";
+				oc.globalAlpha = this.bgAlpha;
+				oc.fillStyle = this.bgCol;
 				oc.fillRect(((x - borderSize) | 0) - 0.5, ((y - fontSize / 2 - borderSize) | 0) - 0.5, width + 2 + borderSize * 2, fontSize * lines + borderSize * 2);
 
 				// draw the tooltip border
-				oc.globalAlpha = 1;
-				oc.strokeStyle = "rgb(32,255,255)";
+				oc.globalAlpha = this.fgAlpha;
+				oc.strokeStyle = this.fgCol;
 				oc.strokeRect(((x - borderSize) | 0) - 0.5, ((y - fontSize / 2 - borderSize) | 0) - 0.5, width + 2 + borderSize * 2, fontSize * lines + borderSize * 2);
 
 				// draw the shadow
-				oc.globalAlpha = 0.7;
-				oc.strokeStyle = "black";
+				oc.globalAlpha = this.bgAlpha;
+				oc.strokeStyle = this.bgCol;
 				oc.beginPath();
 				oc.moveTo((x - borderSize | 0) + 0.5, ((y - fontSize / 2 - borderSize) | 0) + 0.5 + fontSize * lines + borderSize * 2);
 				oc.lineTo((x - borderSize | 0) + 0.5 + width + 2 + borderSize * 2, ((y - fontSize / 2 - borderSize) | 0) + 0.5 + fontSize * lines + borderSize * 2);
@@ -2395,12 +2416,12 @@
 
 				// draw the tooltip
 				oc.globalAlpha = 1;
-				oc.fillStyle = "black";
+				oc.fillStyle = this.bgCol;
 				oc.fillText(toolTip, x + 2, y + 2);
 				if (extraTip !== "") {
 					oc.fillText(extraTip, x + 2, y + fontSize + 2);
 				}
-				oc.fillStyle = "white";
+				oc.fillStyle = this.fgCol;
 				oc.fillText(toolTip, x, y);
 				if (extraTip !== "") {
 					oc.fillText(extraTip, x, y + fontSize);

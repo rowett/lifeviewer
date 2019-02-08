@@ -6172,7 +6172,7 @@
 		}
 
 		// set the menu colours
-		this.viewMenu.setColours(fgCol, bgCol, highlightCol, selectedCol, lockedCol);
+		this.menuManager.setColours(fgCol, bgCol, highlightCol, selectedCol, lockedCol);
 	};
 
 	// create menus
