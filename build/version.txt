@@ -2,7 +2,7 @@ Build 292
 - alternating rule support
 	- use a | between two rule names to define even/odd generation rules
 	- e.g. rule = Life|HighLife
-	- does not support B0 rules or LtL/HROT rules
+	- does not support B0 rules
 - first part of UI customization
 	- can now define UI colours using [[ COLOR <item> R G B|<name> ]] where <item> is one of:
 		- UIFOREGROUND for foreground colour

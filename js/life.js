@@ -2341,10 +2341,11 @@
 		}
 
 		// copy rules from pattern
-		this.createLifeIndex63(this.indexLookup63, ruleArray);
 		if (altSpecified) {
+			this.createLifeIndex63(this.indexLookup632, ruleArray);
 			this.createLifeIndex63(this.indexLookup63, ruleAltArray);
 		} else {
+			this.createLifeIndex63(this.indexLookup63, ruleArray);
 			if (!odd) {
 				// duplicate even rule
 				this.indexLookup632.set(this.indexLookup63);
