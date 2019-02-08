@@ -292,8 +292,8 @@
 		this.aliases.push(["Bugs R6 variant", "R6,C2,M1,S47..81,B47..71,NM"]);
 		this.aliases.push(["Bugs R7", "R7,C2,M1,S63..108,B63..84,NM"]);
 		this.aliases.push(["Bugs R9", "R9,C2,M1,S101..173,B101..134,NM"]);
-		this.aliases.push(["Bugs R10", "R10,C2,M1,S124..211,B124..164NM"]);
-		this.aliases.push(["Bugs R10 variant", "R10,C2,M1,S124..211,B124..166NM"]);
+		this.aliases.push(["Bugs R10", "R10,C2,M1,S124..211,B124..164,NM"]);
+		this.aliases.push(["Bugs R10 variant", "R10,C2,M1,S124..211,B124..166,NM"]);
 		this.aliases.push(["Bugs R12", "R12,C2,M1,S175..300,B175..232,NM"]);
 		this.aliases.push(["Bugs R13", "R13,C2,M1,S205..349,B205..271,NM"]);
 		this.aliases.push(["Bugs R14", "R14,C2,M1,S236..403,B236..313,NM"]);
