@@ -10688,6 +10688,13 @@
 				this.engine.HROT.survivals = pattern.survivalHROT;
 				this.engine.HROT.scount = pattern.multiNumStates;
 				this.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT);
+				if (PatternManager.altSpecified) {
+					this.engine.HROT.altBirths = pattern.altBirthHROT;
+					this.engine.HROT.altSurvivals = pattern.altSurvivalHROT;
+					this.engine.HROT.altSpecified = true;
+				} else {
+					this.engine.HROT.altSpecified = false;
+				}
 			}
 
 			// check if the neighbourhood is hex

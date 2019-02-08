@@ -219,13 +219,17 @@
 			if (view.wrapHelpText) {
 				width = this.measureText(view, ctx, text, 1);
 				if (x + view.tabs[tabNo] + width > ctx.canvas.width) {
-					// check if the text can be split at "s"
-					divider = text.toLowerCase().indexOf("s");
+					// check if the text can be split at "|"
+					divider = text.toLowerCase().indexOf("|");
 					if (divider === -1) {
-						// try slash
-						divider = text.indexOf("/");
-						if (divider !== -1) {
-							divider += 1;
+						// check if the text can be split at "s"
+						divider = text.toLowerCase().indexOf("s");
+						if (divider === -1) {
+							// try slash
+							divider = text.indexOf("/");
+							if (divider !== -1) {
+								divider += 1;
+							}
 						}
 					}
 					if (divider !== -1) {

@@ -4738,7 +4738,7 @@
 		if (this.anythingAlive) {
 			if (this.isHROT) {
 				// compute HROT next generation
-				this.HROT.nextGenerationHROT();
+				this.HROT.nextGenerationHROT(this.counter);
 			} else {
 				// stats are required if they are on but not for multi-state rules which compute their own stats
 				if (statsOn && this.multiNumStates < 2) {

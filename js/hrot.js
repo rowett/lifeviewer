@@ -24,6 +24,8 @@
 		this.scount = 2;
 		this.births = allocator.allocate(Uint8, 0, "HROT.births");
 		this.survivals = allocator.allocate(Uint8, 0, "HROT.survivals");
+		this.altBirths = allocator.allocate(Uint8, 0, "HROT.altBirths");
+		this.altSurvivals = allocator.allocate(Uint8, 0, "HROT.altSurvivals");
 		this.type = PatternManager.mooreHROT;
 
 		// neighbour count array (will be resized)
@@ -43,6 +45,9 @@
 		this.ncols = 0;
 		this.ccht = 0;
 		this.halfccwd = 0;
+
+		// whether alternate rule defined
+		this.altSpecified = false;
 	}
 
 	// resize counts array
@@ -455,15 +460,15 @@
 	};
 
 	// update the life grid region using HROT for 2 state patterns
-	HROT.prototype.nextGenerationHROT2 = function() {
+	HROT.prototype.nextGenerationHROT2 = function(useAlternate) {
 		var x = 0, y = 0, i = 0, j = 0,
 			leftX = this.engine.zoomBox.leftX,
 			rightX = this.engine.zoomBox.rightX,
 			bottomY = this.engine.zoomBox.bottomY,
 			topY = this.engine.zoomBox.topY,
 			range = this.range,
-			birthList = this.births,
-			survivalList = this.survivals,
+			birthList = useAlternate ? this.altBirths : this.births,
+			survivalList = useAlternate ? this.altSurvivals : this.survivals,
 			r2 = range + range,
 			rp1 = range + 1,
 			scount = this.scount,
@@ -1158,15 +1163,16 @@
 	};
 
 	// update the life grid region using HROT for >2 state patterns
-	HROT.prototype.nextGenerationHROTN = function() {
+	HROT.prototype.nextGenerationHROTN = function(even) {
 		var x = 0, y = 0, i = 0, j = 0,
 			leftX = this.engine.zoomBox.leftX,
 			rightX = this.engine.zoomBox.rightX,
 			bottomY = this.engine.zoomBox.bottomY,
 			topY = this.engine.zoomBox.topY,
 			range = this.range,
-			birthList = this.births,
-			survivalList = this.survivals,
+			// deal with alternate rules
+			birthList = even ? this.births : this.altBirths,
+			survivalList = even ? this.survivals : this.altSurvivals,
 			r2 = range + range,
 			rp1 = range + 1,
 			counts = this.counts,
@@ -1805,13 +1811,21 @@
 	};
 
 	// update the life grid using HROT
-	HROT.prototype.nextGenerationHROT = function() {
+	HROT.prototype.nextGenerationHROT = function(counter) {
+		// whether to use the alternte rule
+		var useAlternate = false;
+
+		// use alternate rule if specified and odd generation
+		if (this.altSpecified && ((counter && 1) === 1)) {
+			useAlternate = true;
+		}
+
 		if (this.scount === 2) {
 			// use 2 state version
-			this.nextGenerationHROT2();
+			this.nextGenerationHROT2(useAlternate);
 		} else {
 			// use >2 state version
-			this.nextGenerationHROTN();
+			this.nextGenerationHROTN(useAlternate);
 		}
 	};
 

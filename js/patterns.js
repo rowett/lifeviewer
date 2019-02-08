@@ -281,6 +281,13 @@
 		// LTL Bmax
 		this.BmaxLTL = -1;
 
+		// alternate rule LTL settings
+		this.altMiddle = -1;
+		this.altSmin = -1;
+		this.altSmax = -1;
+		this.altBmin = -1;
+		this.altBmax = -1;
+
 		// LTL neightborhood (0 Moore, 1 von Neumann, 2 circular)
 		this.neighborhoodLTL = -1;
 
@@ -295,6 +302,10 @@
 
 		// HROT survival array
 		this.survivalHROT = null;
+
+		// alternate rule HROT birth and survival arrays
+		this.altBirthHROT = null;
+		this.altSurvivalHROT = null;
 
 		// HROT neighborhood (0 Moore, 1 von Neumann, 2 circular)
 		this.neighborhoodHROT = -1;
@@ -338,6 +349,7 @@
 
 	// copy settings from one pattern to another
 	Pattern.prototype.copySettingsFrom = function(source) {
+		// copy settings
 		this.ruleName = source.ruleName;
 		this.aliasName = source.aliasName;
 		this.isHex = source.isHex;
@@ -346,11 +358,46 @@
 		this.isLTL = source.isLTL;
 		this.rangeLTL = source.rangeLTL;
 		this.neighborhoodLTL = source.neighborhoodLTL;
+		this.middleLTL = source.middleLTL;
+		this.SminLTL = source.SminLTL;
+		this.SmaxLTL = source.SmaxLTL;
+		this.BminLTL = source.BminLTL;
+		this.BmaxLTL = source.BmaxLTL;
 		this.isHROT = source.isHROT;
 		this.rangeHROT = source.rangeHROT;
 		this.neighborhoodHROT = source.neighborhoodHROT;
 		this.multiNumStates = source.multiNumStates;
 		this.numStates = source.numStates;
+
+		// copy arrays
+		if (source.survivalHROT) {
+			this.survivalHROT = new Uint8Array(source.survivalHROT.length);
+			this.survivalHROT.set(source.survivalHROT);
+		}
+		if (source.birthHROT) {
+			this.birthHROT = new Uint8Array(source.birthHROT.length);
+			this.birthHROT.set(source.birthHROT);
+		}
+	};
+
+	// copy multi-state settings from pattern to alternate on this pattern
+	Pattern.prototype.copyMultiSettingsFrom = function(source, allocator) {
+		// copy arrays
+		if (source.survivalHROT) {
+			this.altSurvivalHROT = allocator.allocate(Uint8, source.survivalHROT.length, "HROT.altSurvivals");
+			this.altSurvivalHROT.set(source.survivalHROT);
+		}
+		if (source.birthHROT) {
+			this.altBirthHROT = allocator.allocate(Uint8, source.birthHROT.length, "HROT.altBirths");
+			this.altBirthHROT.set(source.birthHROT);
+		}
+
+		// copy settings
+		this.altMiddleLTL = source.middleLTL;
+		this.altSminLTL = source.middleLTL;
+		this.altSmaxLTL = source.middleLTL;
+		this.altBminLTL = source.middleLTL;
+		this.altBmaxLTL = source.middleLTL;
 	};
 
 	// reset settings to defaults
@@ -2465,6 +2512,21 @@
 			pattern.birthHROT[i] = 1;
 		}
 
+		// check for alternate rule
+		if (this.altSpecified) {
+			// allocate the alternate survival and birth arrays
+			pattern.altSurvivalHROT = allocator.allocate(Uint8, maxCount + 1, "HROT.altSurvivals");
+			pattern.altBirthHROT = allocator.allocate(Uint8, maxCount, "HROT.altBirths");
+
+			// populate the arrays
+			for (i = pattern.altSminLTL; i <= pattern.altSmaxLTL; i += 1) {
+				pattern.altSurvivalHROT[i] = 1;
+			}
+			for (i = pattern.altBminLTL; i <= pattern.altBmaxLTL; i += 1) {
+				pattern.altBirthHROT[i] = 1;
+			}
+		}
+
 		// mark pattern as HROT
 		pattern.isHROT = true;
 	};
@@ -2905,22 +2967,32 @@
 						// check the two rules are from the same family
 						this.failureReason = pattern.isSameFamilyAs(firstPattern);
 						if (this.failureReason === "") {
-							// for now LTL/HROT are not allowed
-							if (this.isLTL || this.isHROT || firstPattern.isLTL || firstPattern.isHROT) {
-								this.failureReason = "Alternate not supported for LtL/HROT";
+							// check for B0 in either rule
+							if (this.ruleArray[0] || this.ruleAltArray[0]) {
+								this.failureReason = "Alternate not supported with B0";
 								result = false;
 							} else {
-								// check for B0 in either rule
-								if (this.ruleArray[0] || this.ruleAltArray[0]) {
-									this.failureReason = "Alternate not supported with B0";
-									result = false;
-								} else {
-									// add the alternate rule name
-									pattern.ruleName = firstPattern.ruleName + PatternManager.altRuleSeparator + pattern.ruleName;
+								// add the alternate alias names if at least one is set
+								if (pattern.aliasName !== "" || firstPattern.aliasName !== "") {
+									if (pattern.aliasName === "") {
+										pattern.aliasName = pattern.ruleName;
+									}
+									if (firstPattern.aliasName == "") {
+										firstPattern.aliasName = firstPattern.ruleName;
+									}
 									pattern.aliasName = firstPattern.aliasName + PatternManager.altRuleSeparator + pattern.aliasName;
-									// flag that alternate rule specified
-									this.altSpecified = true;
 								}
+
+								// add the alternate rule name
+								pattern.ruleName = firstPattern.ruleName + PatternManager.altRuleSeparator + pattern.ruleName;
+
+								// if HROT them copy arrays across
+								if (pattern.isHROT || pattern.isLTL) {
+									pattern.copyMultiSettingsFrom(firstPattern, allocator);
+								}
+
+								// flag that alternate rule specified
+								this.altSpecified = true;
 							}
 						} else {
 							// rules were incompatible
