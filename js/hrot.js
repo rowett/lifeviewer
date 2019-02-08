@@ -1816,7 +1816,7 @@
 		var useAlternate = false;
 
 		// use alternate rule if specified and odd generation
-		if (this.altSpecified && ((counter && 1) === 1)) {
+		if (this.altSpecified && ((counter & 1) === 1)) {
 			useAlternate = true;
 		}
 
