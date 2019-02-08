@@ -4569,7 +4569,8 @@
 		    historyLength = PatternManager.historyPostfix.length,
 
 		    // rule string
-		    ruleString = "";
+			ruleString = "",
+			temp = "";
 
 		// check if a newline exists
 		if (endIndex === -1) {
@@ -4624,6 +4625,20 @@
 
 			// remove the postfix
 			ruleString = ruleString.substr(0, ruleString.length - historyLength).trim();
+		}
+
+		// check for History when alternate rules defined
+		historyIndex = ruleString.indexOf(this.altRuleSeparator);
+		if (historyIndex !== -1) {
+			// check for History just before separartor
+			if (ruleString.toLowerCase().substr(0, historyIndex).trim().substr(-historyLength) === PatternManager.historyPostfix) {
+				// rule is a history type
+				pattern.isHistory = true;
+			
+				// remove the postfix
+				temp = ruleString.substr(0, historyIndex).trim();
+				ruleString = temp.substr(0, temp.length - historyLength) + ruleString.substr(historyIndex);
+			}
 		}
 
 		// decode the rule
