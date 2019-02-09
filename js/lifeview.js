@@ -3927,14 +3927,14 @@
 
 		// check if this is a drag or cancel drag
 		if (dragOn) {
-			if (me.drawing && me.engine.zoom < 1) {
+			if (me.drawing && me.engine.zoom < 1 && !(me.displayHelp || me.displayErrors)) {
 				stillDrawing = false;
 				if (!me.panNotified) {
 					me.menuManager.notification.notify("Pan active: Zoom in to draw", 15, 120, 15, true);
 					me.panNotified = true;
 				}
 			}
-			if (stillDrawing) {
+			if (stillDrawing && (!(me.displayHelp || me.displayErrors))) {
 				me.drawCells(x, y, me.lastDragX, me.lastDragY);
 			} else {
 				// check if this is the start of a drag

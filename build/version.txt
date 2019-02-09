@@ -10,6 +10,7 @@ Build 292
 		- UIHIGHLIGHT for colour when mouse is over control
 		- UISELECT for colour when item is selected
 		- UILOCKED for colour when item is locked
+- drawing is disabled when viewing errors or help
 
 Build 291
 - Ltl/HROT patterns now use DELETERANGE when patterns reach the grid boundary
