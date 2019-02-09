@@ -461,6 +461,9 @@
 		// icon manager
 		this.iconManager = null;
 
+		// current UI background RGB
+		this.uiBackgroundRGB = 0;
+
 		// cell X and Y coordinate
 		this.cellX = 0;
 		this.cellY = 0;
@@ -2102,9 +2105,6 @@
 		    // whether frame budget exceeded (machine too slow)
 		    tooSlow = false,
 
-		    // colour for performance issue
-		    controlColour = "", 
-
 		    // whether at end of waypoints
 		    waypointsEnded = false,
 
@@ -2620,44 +2620,7 @@
 		}
 
 		// update gps and step control background based on performance
-		// check for STEP skip
-		if ((deltaTime > ViewConstants.updateThreshold) && !manualStepping) {
-			// ramp the green colour up
-			me.perfColGreen += ViewConstants.perfGreenStep;
-			if (me.perfColGreen >= (2 * ViewConstants.perfMaxGreen)) {
-				me.perfColGreen = 0;
-			}
-		} else {
-			// ramp the green colour down
-			if (me.perfColGreen > 0) {
-				me.perfColGreen -= ViewConstants.perfGreenStep;
-			}
-		}
-
-		// check for frame skip
-		if (tooSlow && !manualStepping) {
-			// ramp the red colour up
-			if (me.perfColRed < ViewConstants.perfMaxRed) {
-				me.perfColRed += ViewConstants.perfRedStep;
-			}
-		} else {
-			// ramp the red colour down
-			if (me.perfColRed > ViewConstants.perfMinRed) {
-				me.perfColRed -= ViewConstants.perfRedStep;
-			}
-		}
-
-		// set the background on the generation and step UI controls
-		if (me.perfColGreen < ViewConstants.perfMaxGreen) {
-			controlColour = "rgb(" + me.perfColRed + "," + me.perfColGreen + ",0)";
-		} else {
-			controlColour = "rgb(" + me.perfColRed + "," + (2 * ViewConstants.perfMaxGreen - me.perfColGreen) + ",0)";
-		}
-		me.stepRange.bgCol = controlColour;
-
-		// set the background on the generation UI control using frameskip only
-		controlColour = "rgb(" + me.perfColRed + ",0,0)";
-		me.generationRange.bgCol = controlColour;
+		me.updateControlBackgrounds(deltaTime, tooSlow, manualStepping, me);
 
 		// clear next step flags
 		me.nextStep = false;
@@ -2690,6 +2653,100 @@
 
 		// set the auto update mode
 		me.menuManager.setAutoUpdate(updateNeeded);
+	};
+
+	// update GPS and Step control background based on performance
+	View.prototype.updateControlBackgrounds = function(deltaTime, tooSlow, manualStepping, me) {
+		var red = 0,
+			green = 0,
+			blue = 0,
+			controlColour;
+
+		// check for STEP skip
+		if ((deltaTime > ViewConstants.updateThreshold) && !manualStepping) {
+			// ramp the green colour up
+			me.perfColGreen += ViewConstants.perfGreenStep;
+			if (me.perfColGreen >= (2 * ViewConstants.perfMaxGreen)) {
+				me.perfColGreen = 0;
+			}
+		} else {
+			// ramp the green colour down
+			if (me.perfColGreen > 0) {
+				me.perfColGreen -= ViewConstants.perfGreenStep;
+			}
+		}
+
+		// check for frame skip
+		if (tooSlow && !manualStepping) {
+			// ramp the red colour up
+			if (me.perfColRed < ViewConstants.perfMaxRed) {
+				me.perfColRed += ViewConstants.perfRedStep;
+			}
+		} else {
+			// ramp the red colour down
+			if (me.perfColRed > ViewConstants.perfMinRed) {
+				me.perfColRed -= ViewConstants.perfRedStep;
+			}
+		}
+
+		if (me.perfColGreen >= ViewConstants.perfMaxGreen) {
+			me.perColGreen = (2 * ViewConstants.perfMaxGreen - me.perfColGreen);
+		}
+
+		// blend the red
+		red = me.uiBackgroundRGB >> 16;
+		green = (me.uiBackgroundRGB >> 8) & 255;
+		blue = me.uiBackgroundRGB & 255;
+		if (red >= 128) {
+			if (green >= 64 || blue >= 64) {
+				green -= me.perfColRed;
+				blue -= me.perfColRed;
+				if (green < 0) {
+					green = 0;
+				}
+				if (blue < 0) {
+					blue = 0;
+				}
+			} else {
+				green += me.perfColRed;
+				if (green > 255) {
+					green = 255;
+				}
+			}
+		} else {
+			red += me.perfColRed;
+			if (red > 255) {
+				red = 255;
+			}
+		}
+
+		// set the background on the generation UI control using frameskip only
+		controlColour = "rgb(" + red + "," + green + "," + blue + ")";
+		me.generationRange.bgCol = controlColour;
+
+		// blend the green
+		red = me.uiBackgroundRGB >> 16;
+		green = (me.uiBackgroundRGB >> 8) & 255;
+		blue = me.uiBackgroundRGB & 255;
+		if (green >= 128) {
+			red -= me.perfColRed;
+			if (red < 0) {
+				red = 0;
+			}
+			blue -= me.perfColGreen;
+			if (blue < 0) {
+				blue = 0;
+			}
+		} else {
+			green += me.perfColGreen;
+			if (green > 255) {
+				green = 255;
+			}
+		}
+
+		// set the background on the generation and step UI controls
+		controlColour = "rgb(" + red + "," + green + "," + blue + ")";
+		me.stepRange.bgCol = controlColour;
 	};
 
 	// update origin
@@ -6151,7 +6208,12 @@
 		element = this.customThemeValue[ViewConstants.customThemeUIBG];
 		if (element !== -1) {
 			bgCol = "rgb(" + (element >> 16) + "," + ((element >> 8) & 255) + "," + (element & 255) + ")";
+		} else {
+			// set default black
+			element = 0;
 		}
+		// save the UI background R G B since the performance colouring uses it
+		this.uiBackgroundRGB = element;
 
 		// check for custom highlight
 		element = this.customThemeValue[ViewConstants.customThemeUIHighlight];
