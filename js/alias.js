@@ -26,7 +26,6 @@
 		// add 2 state totalistic aliases
 		this.aliases.push(["Outer-Totalistic Moore", ""]);
 		this.aliases.push(["", "B3/S23"]);
-		this.aliases.push(["Conway's Life", "B3/S23"]);
 		this.aliases.push(["2x2", "B36/S125"]);
 		this.aliases.push(["2x2 2", "B3678/S1258"]);
 		this.aliases.push(["34 Life", "B34/S34"]);
@@ -38,6 +37,8 @@
 		this.aliases.push(["Blinkers", "B345/S2"]);
 		this.aliases.push(["Bugs", "B3567/S15678"]);
 		this.aliases.push(["Coagulations", "B378/S235678"]);
+		this.aliases.push(["Conway's Game of Life", "B3/S23"]);
+		this.aliases.push(["Conway's Life", "B3/S23"]);
 		this.aliases.push(["Coral", "B3/S45678"]);
 		this.aliases.push(["Corrosion of Conformity", "B3/S124"]);
 		this.aliases.push(["Dance", "B34/S35"]);
@@ -45,7 +46,7 @@
 		this.aliases.push(["Day and Night", "B3678/S34678"]);
 		this.aliases.push(["Diamoeba", "B35678/S5678"]);
 		this.aliases.push(["DotLife", "B3/S023"]);
-        this.aliases.push(["DrighLife", "B367/S23"]);
+		this.aliases.push(["DrighLife", "B367/S23"]);
 		this.aliases.push(["DryFlock", "B37/S12"]);
 		this.aliases.push(["DryLife", "B37/S23"]);
 		this.aliases.push(["DryLife without Death", "B37/S012345678"]);
@@ -63,9 +64,9 @@
 		this.aliases.push(["HighFlock", "B36/S12"]);
 		this.aliases.push(["HighLife", "B36/S23"]);
 		this.aliases.push(["HighLife without Death", "B36/S012345678"]);
+		this.aliases.push(["Holstein", "B35678/S4678"]);
 		this.aliases.push(["HoneyFlock", "B38/S128"]);
 		this.aliases.push(["HoneyLife", "B38/S238"]);
-		this.aliases.push(["Holstein", "B35678/S4678"]);
 		this.aliases.push(["Iceballs", "B25678/S5678"]);
 		this.aliases.push(["InverseLife", "B012345678/S34678"]);
 		this.aliases.push(["Invertamaze", "B028/S0124"]);
@@ -176,7 +177,7 @@
 		this.aliases.push(["Kgdm", "B3/S2-c3-en4ceitz"]);
 		this.aliases.push(["klife", "B34n/S23"]);
 		this.aliases.push(["Knyght", "B2e3/S23-jq"]);
-		this.aliases.push(["LambaLife", "B3-k/S2-i3-k4cen"]);
+		this.aliases.push(["LambdaLife", "B3-k/S2-i3-k4cen"]);
 		this.aliases.push(["Linea", "B2-a3-i/S23-a"]);
 		this.aliases.push(["Movero VIII", "B2-a5k6n7c/S12-i3ij4k5j8"]);
 		this.aliases.push(["Movostill", "B2i3acijk6i/S23-a4"]);
@@ -195,7 +196,7 @@
 		this.aliases.push(["Salad", "B2i34c/S2-i3"]);
 		this.aliases.push(["Scenery", "B3-cnry4-acery5i/S23-a4-jknqr5y8"]);
 		this.aliases.push(["SharkLife", "B34aeiz/S2-ak34ant6cek"]);
-		this.aliases.push(["signallife", "B3aeijy5e6i/S2-c3-a4iq5k6ck"]);
+		this.aliases.push(["signalife", "B3aeijy5e6i/S2-c3-a4iq5k6ck"]);
 		this.aliases.push(["SilverLife", "B367/S2-i34q"]);
 		this.aliases.push(["SlugWorld", "B2e3ai4arw5678/S3-an4ar5i678"]);
 		this.aliases.push(["Snowflakes", "B2ci3ai4c8/S02ae3eijkq4iz5ar6i7e"]);
@@ -303,6 +304,7 @@
 		this.aliases.push(["Globe", "R8,C2,M1,S163..223,B74..252,NM"]);
 		//this.aliases.push(["Majority", "R4,C2,M1,S41..81,B41..80,NM"]);
 		this.aliases.push(["Majorly", "R7,C2,M1,S113..225,B113..224,NM"]);
+		this.aliases.push(["Mini Bugs", "R2,C2,M1,S7..10,B7..8,NM"]);
 		this.aliases.push(["Miniature Bugs", "R3,C2,M1,S15..22,B14..25,NM"]);
 		this.aliases.push(["Pigs", "R2,C2,M1,S10..19,B4..4,NM"]);
 		this.aliases.push(["Quadratic Bugs", "R6,C2,M1,S47..81,B47..61,NM"]);

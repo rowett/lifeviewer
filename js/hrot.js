@@ -239,7 +239,7 @@
 	};
 
 	// update the life grid region using computed counts
-	HROT.prototype.updateGridFromCountsHROT = function(leftX, bottomY, rightX, topY) {
+	HROT.prototype.updateGridFromCountsHROT = function(leftX, bottomY, rightX, topY, useAlternate) {
 		var x = 0,
 			y = 0,
 			population = 0,
@@ -267,8 +267,8 @@
 			zoomBox = this.engine.zoomBox,
 			HROTBox = this.engine.HROTBox,
 			range = this.range,
-			birthList = this.births,
-			survivalList = this.survivals,
+			birthList = useAlternate ? this.altBirths : this.births,
+			survivalList = useAlternate ? this.altSurvivals : this.survivals,
 			counts = this.counts,
 			maxGeneration = this.scount - 1,
 			aliveStart = LifeConstants.aliveStart,
@@ -1152,7 +1152,7 @@
 
 		// compute next generation from counts if not Moore which was done above
 		if (type !== PatternManager.mooreHROT && !(type === PatternManager.vonNeumannHROT && range > this.rangeVN)) {
-			this.updateGridFromCountsHROT(leftX, bottomY, rightX, topY);
+			this.updateGridFromCountsHROT(leftX, bottomY, rightX, topY, useAlternate);
 		}
 
 		// check if there is a Torus bounded grid
@@ -1800,7 +1800,7 @@
 
 		// compute next generation from counts if not Moore which was done above
 		if (type !== PatternManager.mooreHROT && !(type === PatternManager.vonNeumannHROT && range > this.rangeVN)) {
-			this.updateGridFromCountsHROT(leftX, bottomY, rightX, topY);
+			this.updateGridFromCountsHROT(leftX, bottomY, rightX, topY, useAlternate);
 		}
 
 		// check if there is a Torus bounded grid
