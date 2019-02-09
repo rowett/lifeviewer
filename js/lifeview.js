@@ -147,8 +147,8 @@
 		// step for green shading
 		/** @const {number} */ perfGreenStep : 20,
 
-		// frame time budget in ms
-		/** @const {number} */ frameBudget : 17,
+		// frame time budget in ms before too slow is triggered
+		/** @const {number} */ frameBudget : 18.5,
 		
 		// frame cap for 60Hz in ms
 		/** @const {number} */ sixtyHz : 1000 / 60,
