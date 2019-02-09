@@ -1163,7 +1163,7 @@
 	};
 
 	// update the life grid region using HROT for >2 state patterns
-	HROT.prototype.nextGenerationHROTN = function(even) {
+	HROT.prototype.nextGenerationHROTN = function(useAlternate) {
 		var x = 0, y = 0, i = 0, j = 0,
 			leftX = this.engine.zoomBox.leftX,
 			rightX = this.engine.zoomBox.rightX,
@@ -1171,8 +1171,8 @@
 			topY = this.engine.zoomBox.topY,
 			range = this.range,
 			// deal with alternate rules
-			birthList = even ? this.births : this.altBirths,
-			survivalList = even ? this.survivals : this.altSurvivals,
+			birthList = useAlternate ? this.births : this.altBirths,
+			survivalList = useAlternate ? this.survivals : this.altSurvivals,
 			r2 = range + range,
 			rp1 = range + 1,
 			counts = this.counts,
