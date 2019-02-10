@@ -1,3 +1,7 @@
+Build 293
+- fixed HROT multi-state pattern runtime
+- fixed Globe alias
+
 Build 292
 - alternating rule support
 	- use a | between two rule names to define even/odd generation rules
@@ -779,7 +783,7 @@ Build 187
 - bounded grids with an odd height were being drawn one line off
 
 Build 186
-- points of interest would get lost if mode switched between Hex and Square
+- points of interest would get lost if mode switched between hex and Square
 - when waypoints are defined the reset state should use the first waypoint theme
 - new script commands [[ LINEAR ALL|X|Y|ZOOM ]] and [[ BEZIER ALL|X|Y|ZOOM ]] that set the camera mode for X, Y and ZOOM or ALL elements at once
 	- the default is bezier motion is used for camera transitions
