@@ -1171,8 +1171,8 @@
 			topY = this.engine.zoomBox.topY,
 			range = this.range,
 			// deal with alternate rules
-			birthList = useAlternate ? this.births : this.altBirths,
-			survivalList = useAlternate ? this.survivals : this.altSurvivals,
+			birthList = useAlternate ? this.altBirths : this.births,
+			survivalList = useAlternate ? this.altSurvivals : this.survivals,
 			r2 = range + range,
 			rp1 = range + 1,
 			counts = this.counts,

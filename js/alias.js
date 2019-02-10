@@ -301,7 +301,7 @@
 		this.aliases.push(["Bugs R15", "R15,C2,M1,S269..461,B270..357,NM"]);
 		this.aliases.push(["Bugs R100 variant", "R100,C2,M1,S11303..19361,B11100..14996,NM"]);
 		this.aliases.push(["Bugsmovie", "R10,C2,M1,S123..212,B123..170,NM"]);
-		this.aliases.push(["Globe", "R8,C2,M1,S163..223,B74..252,NM"]);
+		this.aliases.push(["Globe", "R8,C2,M1,S162..222,B74..252,NM"]);
 		//this.aliases.push(["Majority", "R4,C2,M1,S41..81,B41..80,NM"]);
 		this.aliases.push(["Majorly", "R7,C2,M1,S113..225,B113..224,NM"]);
 		this.aliases.push(["Mini Bugs", "R2,C2,M1,S7..10,B7..8,NM"]);
