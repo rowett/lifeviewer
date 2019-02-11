@@ -2419,6 +2419,9 @@
 					if (me.diedGeneration === -1) {
 						me.diedGeneration = me.engine.counter;
 
+						// clear the bit grids
+						me.engine.clearGrids(true);
+
 						// notify simulation stopped unless loop defined and enabled
 						if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
 							me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 600, 15, true);
@@ -3914,6 +3917,12 @@
 
 			// draw cells
 			this.drawCellLine(startCellX, startCellY, endCellX, endCellY, this.penColour);
+		}
+
+		// if the population is now non-zero then reset anything alive and died generation
+		if (this.engine.population > 0) {
+			this.diedGeneration = -1;
+			this.engine.anythingAlive = true;
 		}
 	};
 
@@ -10896,7 +10905,7 @@
 		ColourManager.init();
 
 		// clear the grid
-		this.engine.clearGrids();
+		this.engine.clearGrids(false);
 
 		// reset grid lines
 		this.engine.gridLineRaw = this.engine.gridLineRawDefault;

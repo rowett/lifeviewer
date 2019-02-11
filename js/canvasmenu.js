@@ -2391,8 +2391,8 @@
 				oc.fillRect(((x - borderSize) | 0) - 0.5, ((y - fontSize / 2 - borderSize) | 0) - 0.5, width + 2 + borderSize * 2, fontSize * lines + borderSize * 2);
 
 				// draw the tooltip border
-				oc.globalAlpha = this.fgAlpha;
-				oc.strokeStyle = this.fgCol;
+				oc.globalAlpha = this.borderAlpha;
+				oc.strokeStyle = this.borderCol;
 				oc.strokeRect(((x - borderSize) | 0) - 0.5, ((y - fontSize / 2 - borderSize) | 0) - 0.5, width + 2 + borderSize * 2, fontSize * lines + borderSize * 2);
 
 				// draw the shadow

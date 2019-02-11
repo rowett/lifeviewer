@@ -2226,8 +2226,8 @@
 		}
 	};
 
-	// clear the life grids
-	Life.prototype.clearGrids = function() {
+	// clear the life grids (or just the bit grids if specified)
+	Life.prototype.clearGrids = function(bitOnly) {
 		var height = this.height,
 		grid = this.grid,
 		nextGrid = this.nextGrid,
@@ -2252,11 +2252,13 @@
 		for (h = 0; h < height; h += 1) {
 			grid[h].set(blankRow);
 			nextGrid[h].set(blankRow);
-			colourGrid[h].set(blankColourRow);
-			smallColourGrid2[h].set(blankColourRow);
-			if (overlayGrid) {
-				overlayGrid[h].set(blankColourRow);
-				smallOverlayGrid[h].set(blankColourRow);
+			if (!bitOnly) {
+				colourGrid[h].set(blankColourRow);
+				smallColourGrid2[h].set(blankColourRow);
+				if (overlayGrid) {
+					overlayGrid[h].set(blankColourRow);
+					smallOverlayGrid[h].set(blankColourRow);
+				}
 			}
 		}
 
@@ -2267,8 +2269,10 @@
 		for (h = 0; h < height; h += 1) {
 			tileGrid[h].set(blankTileRow);
 			nextTileGrid[h].set(blankTileRow);
-			colourTileGrid[h].set(blankTileRow);
-			colourTileHistoryGrid[h].set(blankTileRow);
+			if (!bitOnly) {
+				colourTileGrid[h].set(blankTileRow);
+				colourTileHistoryGrid[h].set(blankTileRow);
+			}
 		}
 
 	};
