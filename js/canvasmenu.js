@@ -664,6 +664,11 @@
 		this.lockedCol = locked;
 	};
 
+	// set border width
+	MenuItem.prototype.setBorder = function(border) {
+		this.border = border;
+	};
+
 	// set a new absolute position
 	MenuItem.prototype.setPosition = function(position, x, y) {
 		this.position = position;
@@ -893,6 +898,19 @@
 		// set the colours in every control
 		for (i = 0; i < this.menuItems.length; i += 1) {
 			this.menuItems[i].setColours(fg, bg, highlight, selected, locked);
+		}
+	};
+
+	// set border width
+	MenuList.prototype.setBorderWidth = function(border) {
+		var i = 0;
+
+		// set width for new controls
+		this.border = border;
+
+		// set width in every control
+		for (i = 0; i < this.menuItems.length; i += 1) {
+			this.menuItems[i].setBorder(border);
 		}
 	};
 
@@ -2113,6 +2131,17 @@
 		registerEvent(mainCanvas, "touchend", function(event) {me.touchToMouse(me, event);}, false);
 	}
 
+	// set menu border width
+	MenuManager.prototype.setBorderWidth = function(border) {
+		// set border for new menus
+		this.border = border;
+
+		// set the border for the current Menu
+		if (this.currentMenu) {
+			this.currentMenu.setBorderWidth(border);
+		}
+	};
+
 	// set menu foreground and background colour
 	MenuManager.prototype.setColours = function(fg, bg, highlight, selected, locked) {
 		// set colours for new menus
@@ -2127,6 +2156,7 @@
 			this.currentMenu.setColours(fg, bg, highlight, selected, locked);
 		}
 	};
+
 	// compute canvas offset
 	MenuManager.prototype.computeCanvasOffset = function() {
 		// get the canvas
