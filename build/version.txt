@@ -1,6 +1,7 @@
 Build 293
 - fixed HROT multi-state pattern runtime
 - fixed Globe alias
+- don't process unneeded history states
 
 Build 292
 - alternating rule support

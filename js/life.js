@@ -272,7 +272,7 @@
 		// whether pattern is LifeHistory
 		this.isLifeHistory = false;
 
-		// whether to draw history for multi-state patterns
+		// how many history states to draw
 		this.historyStates = 0;
 
 		// whether pattern is HROT
@@ -1887,6 +1887,17 @@
 		for (i = 1; i < aliveMax + 1; i += 1) {
 			colourLookup[i] = Math.min(Math.max(i - 1, deadMin), deadStart);
 			colourLookup[i + aliveMax + 1] = Math.max(Math.min(i + 1, aliveMax), aliveStart);
+		}
+
+		// adjust for history states setting
+		if (this.historyStates === 0) {
+			for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
+				colourLookup[i] = 0;
+			}
+		} else {
+			if (this.historyStates < this.deadStart) {
+				colourLookup[this.deadStart - this.historyStates] = 0;
+			}
 		}
 	};
 

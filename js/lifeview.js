@@ -10879,9 +10879,6 @@
 		// initalised ColourManager
 		ColourManager.init();
 
-		// create the colour index
-		this.engine.createColourIndex();
-
 		// clear the grid
 		this.engine.clearGrids();
 
@@ -11294,6 +11291,9 @@
 				this.ruleLabel.toolTip += " alias " + this.patternAliasName;
 			}
 		}
+
+		// create the colour index
+		this.engine.createColourIndex();
 
 		// check if a theme was requested
 		if (this.themeRequested !== -1) {
