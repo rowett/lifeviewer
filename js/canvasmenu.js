@@ -94,21 +94,18 @@
 				// check if immediate clear is required
 				if (immediately) {
 					this.priorityMessage = "";
-				}
-				else {
+				} else {
 					// switch to disappear section
 					this.priorityStart = performance.now() - (this.priorityAppear + this.priorityHold);
 				}
 			}
-		}
-		else {
+		} else {
 			// check normal message
 			if (this.message !== "") {
 				// check if immediate clear is required
 				if (immediately) {
 					this.message = "";
-				}
-				else {
+				} else {
 					// switch to disappear section
 					this.startTime = performance.now() - (this.textAppear + this.textHold);
 				}
@@ -141,8 +138,7 @@
 					// disable animation
 					this.animate = false;
 				}
-			}
-			else {
+			} else {
 				// set normal message
 				this.message = message;
 
@@ -195,17 +191,14 @@
 			if (this.animate) {
 				if (this.priorityIter < 128) {
 					this.context.fillStyle = "rgb(" + (this.priorityIter * 2) + "," + (this.priorityIter * 2) + ",255)";
-				}
-				else {
+				} else {
 					this.context.fillStyle = "rgb(" + ((256 - this.priorityIter) * 2) + "," + ((256 - this.priorityIter) * 2) + ",255)";
 				}
 				this.priorityIter = (this.priorityIter + 4) & 255;
-			}
-			else {
+			} else {
 				this.context.fillStyle = this.priorityColour;
 			}
-		}
-		else {
+		} else {
 			this.context.fillStyle = this.colour;
 		}
 		this.context.fillText(message, -xPos, 0);
@@ -237,8 +230,7 @@
 			fromTop = 0;
 			offset = this.context.canvas.height / 2;
 			this.txtBg = true;
-		}
-		else {
+		} else {
 			this.txtBg = false;
 		}
 
@@ -260,8 +252,7 @@
 					// vertically center the system message
 					fromTop = 0;
 					offset = this.context.canvas.height / 2;
-				}
-				else {
+				} else {
 					// reduce the font size by the thumbnail divisor
 					fontSize = (fontSize / thumbDivisor);
 					lineHeight = (lineHeight / thumbDivisor) | 0;
@@ -287,8 +278,7 @@
 				scaleFactor *= scaleFactor;
 				this.context.globalAlpha = scaleFactor;
 				this.context.scale(scaleFactor, scaleFactor);
-			}
-			else {
+			} else {
 				// check for disappear
 				if (elapsedTime > (appear + hold) && elapsedTime <= (appear + hold + disappear)) {
 					// zoom out and decrease alpha
@@ -303,15 +293,13 @@
 			if (elapsedTime > (appear + hold + disappear)) {
 				// set the clear message flag
 				clearMessage = true;
-			}
-			else {
+			} else {
 				// check if the message contains a newline
 				index = message.indexOf("\\n");
 				if (index === -1) {
 					// draw the text
 					this.draw(message, isPriority);
-				}
-				else {
+				} else {
 					// draw the first line
 					this.draw(message.substr(0, index), isPriority);
 					
@@ -450,8 +438,7 @@
 		while (a < l && !result) {
 			if (i[a].name === name) {
 				result = i[a];
-			}
-			else {
+			} else {
 				a += 1;
 			}
 		}
@@ -557,12 +544,10 @@
 			// select orientation based on width and height
 			if (width >= height) {
 				this.orientation = Menu.horizontal;
-			}
-			else {
+			} else {
 				this.orientation = Menu.vertical;
 			}
-		}
-		else {
+		} else {
 			this.orientation = orientation;
 		}
 
@@ -577,8 +562,7 @@
 		if (type === Menu.range) {
 			// allocate value and display value
 			this.current = [current, current];
-		}
-		else {
+		} else {
 			this.current = current;
 		}
 
@@ -648,6 +632,10 @@
 		this.lockedCol = owner.lockedCol;
 		this.lockedAlpha = owner.lockedAlpha;
 
+		// border colour and alpha
+		this.borderCol = owner.borderCol;
+		this.borderAlpha = owner.borderAlpha;
+
 		// border thickness (or 0 for no border)
 		this.border = owner.border;
 
@@ -656,12 +644,13 @@
 	}
 
 	// set item foreground and background colour
-	MenuItem.prototype.setColours = function(fg, bg, highlight, selected, locked) {
+	MenuItem.prototype.setColours = function(fg, bg, highlight, selected, locked, border) {
 		this.fgCol = fg;
 		this.bgCol = bg;
 		this.hlCol = highlight;
 		this.selectedCol = selected;
 		this.lockedCol = locked;
+		this.borderCol = border;
 	};
 
 	// set border width
@@ -859,6 +848,10 @@
 		this.lockedCol = "";
 		this.lockedAlpha = 0;
 
+		// border colour and alpha
+		this.borderCol = "";
+		this.borderAlpha = 0;
+
 		// border thickness (or 0 for no border)
 		this.border = 0;
 
@@ -885,7 +878,7 @@
 	}
 
 	// set menu foreground and background colour
-	MenuList.prototype.setColours = function(fg, bg, highlight, selected, locked) {
+	MenuList.prototype.setColours = function(fg, bg, highlight, selected, locked, border) {
 		var i = 0;
 
 		// set colours for new controls
@@ -894,10 +887,11 @@
 		this.hlCol = highlight;
 		this.selectCol = selected;
 		this.lockedCol = locked;
+		this.borderCol = border;
 
 		// set the colours in every control
 		for (i = 0; i < this.menuItems.length; i += 1) {
-			this.menuItems[i].setColours(fg, bg, highlight, selected, locked);
+			this.menuItems[i].setColours(fg, bg, highlight, selected, locked, border);
 		}
 	};
 
@@ -921,8 +915,7 @@
 		// start from this toggle menu
 		if (parentItem.type === Menu.list && parentItem.upper === Menu.multi) {
 			result = parentItem.current[0];
-		}
-		else {
+		} else {
 			result = (parentItem.current === parentItem.upper);
 		}
 
@@ -1103,8 +1096,7 @@
 			// check if the text is wider than the control
 			if (item.textOrientation === Menu.vertical) {
 				target = item.height;
-			}
-			else {
+			} else {
 				target = item.width;
 			}
 
@@ -1155,8 +1147,7 @@
 			// draw the text
 			if (item.locked || this.locked) {
 				this.context.fillStyle = item.lockedCol;
-			}
-			else {
+			} else {
 				this.context.fillStyle = item.fgCol;
 			}
 			this.context.fillText(string, -alignPos + 0.5, 0.5);
@@ -1216,8 +1207,7 @@
 
 			// draw the marker
 			this.context.fillRect(item.x + markerPos, item.y, 1, item.height);
-		}
-		else {
+		} else {
 			// vertical marker
 			markerPos *= (item.height - 3);
 			markerPos = (markerPos + 1) | 0;
@@ -1234,8 +1224,7 @@
 			// add the value
 			if (item.fixed !== -1) {
 				itemString += item.current.toFixed(item.fixed);
-			}
-			else {
+			} else {
 				itemString += item.current;
 			}
 
@@ -1279,14 +1268,12 @@
 			if (item.locked || this.locked) {
 				this.context.fillStyle = item.lockedCol;
 				this.context.globalAlpha = item.lockedAlpha;
-			}
-			else {
+			} else {
 				this.context.fillStyle = item.fgCol;
 				this.context.globalAlpha = item.fgAlpha;
 			}
 			this.context.fillRect(item.x + markerPos, item.y, 1, item.height);
-		}
-		else {
+		} else {
 			// vertical marker
 			markerPos *= (item.height - 3);
 			markerPos = (markerPos + 1) | 0;
@@ -1304,8 +1291,7 @@
 			if (item.locked || this.locked) {
 				this.context.fillStyle = item.lockedCol;
 				this.context.globalAlpha = item.lockedAlpha;
-			}
-			else {
+			} else {
 				this.context.fillStyle = item.fgCol;
 				this.context.globalAlpha = item.fgAlpha;
 			}
@@ -1319,8 +1305,7 @@
 		if (item.valueDisplay) {
 			if (item.fixed >= 0) {
 				itemString += item.current[1].toFixed(item.fixed);
-			}
-			else {
+			} else {
 				itemString += item.current[1];
 			}
 		}
@@ -1374,16 +1359,14 @@
 		// check item is in range
 		if (mouseX < item.x) {
 			mouseX = item.x;
-		}
-		else {
+		} else {
 			if (mouseX >= item.x + item.width) {
 				mouseX = item.x + item.width - 1;
 			}
 		}
 		if (mouseY < item.y) {
 			mouseY = item.y;
-		}
-		else {
+		} else {
 			if (mouseY >= item.y + item.height) {
 				mouseY = item.y + item.height - 1;
 			}
@@ -1414,8 +1397,7 @@
 		l = list.length;
 		if (item.orientation === Menu.horizontal) {
 			itemSize = width / l;
-		}
-		else {
+		} else {
 			itemSize = height / l;
 		}
 
@@ -1428,12 +1410,10 @@
 			i =  item.current;
 			if (item.orientation === Menu.horizontal) {
 				this.context.fillRect(x + i * itemSize + 1, y + 1, itemSize - 2, height - 2);
-			}
-			else {
+			} else {
 				this.context.fillRect(x + 1, y + 1 + i * itemSize, width - 2, itemSize - 2);
 			}
-		}
-		else {
+		} else {
 			// multi so draw all set items
 			if (item.orientation === Menu.horizontal) {
 				for (i = 0; i < l; i += 1) {
@@ -1441,8 +1421,7 @@
 						this.context.fillRect(x + i * itemSize + 1, y + 1, itemSize - 2, height - 2);
 					}
 				}
-			}
-			else {
+			} else {
 				for (i = 0; i < l; i += 1) {
 					if (values[i]) {
 						this.context.fillRect(x + 1, y + 1 + i * itemSize, width - 2, itemSize - 2);
@@ -1461,8 +1440,7 @@
 				if (itemNum >= 0 && itemNum < l) {
 					this.context.fillRect(x + itemNum * itemSize + 0.5, y + 0.5, itemSize - 1, height - 1);
 				}
-			}
-			else {
+			} else {
 				itemNum = (((this.mouseY - y) / height) * l) | 0;
 				if (itemNum >= 0 && itemNum < l) {
 					this.context.fillRect(x + 0.5, y + 0.5 + itemNum * itemSize, width - 1, itemSize - 1);
@@ -1471,8 +1449,7 @@
 			
 			// save the highlight item
 			item.highlightItem = itemNum;
-		}
-		else {
+		} else {
 			// mark no highlight item
 			item.highlightItem = -1;
 		}
@@ -1485,8 +1462,7 @@
 					this.iconManager.draw(item.icon[i], item.x + itemSize * i, item.y);
 				}
 			}
-		}
-		else {
+		} else {
 			for (i = 0; i < l; i += 1) {
 				if (item.icon[i]) {
 					this.iconManager.draw(item.icon[i], item.x, item.y + itemSize * i);
@@ -1508,8 +1484,7 @@
 					this.context.restore();
 				}
 			}
-		}
-		else {
+		} else {
 			for (i = 0; i < l; i += 1) {
 				text = list[i];
 				if (text !== "") {
@@ -1530,8 +1505,7 @@
 		if ((itemNum === activeNum || (activeNum === -1 && mouseIsOver)) && (item.type === Menu.button || item.type === Menu.toggle)) {
 			this.context.fillStyle = item.hlCol;
 			this.context.globalAlpha = item.hlAlpha;
-		}
-		else {
+		} else {
 			// use the background colour
 			this.context.fillStyle = item.bgCol;
 			this.context.globalAlpha = item.bgAlpha;
@@ -1561,8 +1535,7 @@
 				this.context.fillStyle = item.bgCol;
 				this.context.globalAlpha = item.bgAlpha;
 				this.context.fillRect(item.x + markerPos, item.y, item.width - markerPos, item.height);
-			}
-			else {
+			} else {
 				// vertical
 				markerPos *= (item.height - 3);
 				markerPos = (markerPos + 1) | 0;
@@ -1604,8 +1577,7 @@
 					if (markerX < item.width) {
 						this.context.fillRect(item.x + markerX, item.y, item.width - markerX, item.height);
 					}
-				}
-				else {
+				} else {
 					// vertical marker
 					markerPos *= (item.height - 3);
 					markerPos = (markerPos + 1) | 0; 
@@ -1622,8 +1594,7 @@
 						this.context.fillRect(item.x, item.y + markerY, item.width, item.height - markerY);
 					}
 				}
-			}
-			else {
+			} else {
 				// no highlight
 				this.context.fillRect(item.x, item.y, item.width, item.height);
 			}
@@ -1650,10 +1621,9 @@
 			if (item.locked || this.locked) {
 				this.context.strokeStyle = item.lockedCol;
 				this.context.globalAlpha = item.lockedAlpha;
-			}
-			else {
-				this.context.strokeStyle = item.fgCol;
-				this.context.globalAlpha = item.fgAlpha;
+			} else {
+				this.context.strokeStyle = item.borderCol;
+				this.context.globalAlpha = item.borderAlpha;
 			}
 
 			// set border width
@@ -1741,23 +1711,20 @@
 					// ensure Y is in range
 					if (mY < item.y) {
 						mY = item.y;
-					}
-					else {
+					} else {
 						if (mY >= item.y + item.height) {
 							mY = item.y + item.height - 1;
 						}
 					}
 					item.current[0] = ((mY - item.y) / (item.height - 1)) * (item.upper - item.lower) + item.lower;
-				}
-				else {
+				} else {
 					// horizontal orientation
 					mX = this.mouseX;
 
 					// ensure X is in range
 					if (mX < item.x) {
 						mX = item.x;
-					}
-					else {
+					} else {
 						if (mX >= item.x + item.width) {
 							mX = item.x + item.width - 1;
 						}
@@ -1793,8 +1760,7 @@
 				// toggle the item value
 				if (item.current === item.upper) {
 					item.current = item.lower;
-				}
-				else {
+				} else {
 					item.current = item.upper;
 				}
 				// execute callback
@@ -1809,8 +1775,7 @@
 				l = item.lower.length;
 				if (item.orientation === Menu.horizontal) {
 					w = (((this.mouseX - item.x) / item.width) * l) | 0;
-				}
-				else {
+				} else {
 					w = (((this.mouseY - item.y) / item.height) * l) | 0;
 				}
 
@@ -1818,12 +1783,10 @@
 				if (item.upper === Menu.single) {
 					if (item.callback) {
 						item.current = item.callback(w, true, item.caller);
-					}
-					else {
+					} else {
 						item.current = w;
 					}
-				}
-				else {
+				} else {
 					// multi select so invert current item
 					item.current[w] = !item.current[w];
 
@@ -1844,8 +1807,7 @@
 			item.lastMouseDown = this.mouseDown;
 			item.lastMouseX = this.mouseX;
 			item.lastMouseY = this.mouseY;
-		}
-		else {
+		} else {
 			// if mouse up then forget state
 			item.lastMouseDown = false;
 			item.lastMouseX = -1;
@@ -2047,6 +2009,10 @@
 		this.lockedCol = "grey";
 		this.lockedAlpha = 1.0;
 
+		// border colour and alpha
+		this.borderCol = "rgb(32,255,255)"
+		this.borderAlpha = 1.0;
+
 		// default border width
 		this.border = 1;
 
@@ -2143,17 +2109,18 @@
 	};
 
 	// set menu foreground and background colour
-	MenuManager.prototype.setColours = function(fg, bg, highlight, selected, locked) {
+	MenuManager.prototype.setColours = function(fg, bg, highlight, selected, locked, border) {
 		// set colours for new menus
 		this.fgCol = fg;
 		this.bgCol = bg;
 		this.hlCol = highlight;
 		this.selectCol = selected;
 		this.lockedCol = locked;
+		this.borderCol = border;
 
 		// set the colours in the current Menu
 		if (this.currentMenu) {
-			this.currentMenu.setColours(fg, bg, highlight, selected, locked);
+			this.currentMenu.setColours(fg, bg, highlight, selected, locked, border);
 		}
 	};
 
@@ -2184,8 +2151,7 @@
 			// subtract the offset of the body
 			this.offsetLeft += document.body.scrollLeft + document.documentElement.scrollLeft;
 			this.offsetTop += document.body.scrollTop + document.documentElement.scrollTop;
-		}
-		else {
+		} else {
 			// run up the parent hierarchy
 			while(itemParent.tagName.toLowerCase() !== "body") {
 				this.offsetLeft -= itemParent.scrollLeft;
@@ -2211,6 +2177,8 @@
 		menuList.selectedAlpha = this.selectedAlpha;
 		menuList.lockedCol = this.lockedCol;
 		menuList.lockedAlpha = this.lockedAlpha;
+		menuList.borderCol = this.borderCol;
+		menuList.borderAlpha = this.borderAlpha;
 		menuList.border = this.border;
 
 		// return new menu
@@ -2281,8 +2249,7 @@
 			if (this.toolTipCounter < this.toolTipDelay) {
 				this.toolTipCounter += 1;
 			}
-		}
-		else {
+		} else {
 			// get the control
 			control = current.menuItems[current.mouseOverItem];
 
@@ -2296,8 +2263,7 @@
 				if (this.toolTipCounter < this.toolTipDelay) {
 					this.toolTipCounter += 1;
 				}
-			}
-			else {
+			} else {
 				// same control so check for delay
 				if (this.toolTipCounter >= 0) {
 					this.toolTipCounter -= 1;
@@ -2307,8 +2273,7 @@
 			// get the tooltip
 			if (this.toolTipMulti !== -1) {
 				toolTip = control.toolTip[this.toolTipMulti];
-			}
-			else {
+			} else {
 				toolTip = control.toolTip;
 			}
 
@@ -2328,8 +2293,7 @@
 						// adjust x position and width
 						controlX += (controlWidth / control.lower.length) * control.highlightItem;
 						controlWidth /= control.lower.length;
-					}
-					else {
+					} else {
 						// adjust y position and width
 						controlY += (controlHeight / control.lower.length) * control.highlightItem;
 						controlHeight /= control.lower.length;
@@ -2352,8 +2316,7 @@
 				// check the tooltip fits
 				if (x < borderSize + 1) {
 					x = borderSize + 1;
-				}
-				else {
+				} else {
 					if (x + width + borderSize > oc.canvas.width) {
 						x = oc.canvas.width - width - borderSize - 1;
 					}
@@ -2369,12 +2332,10 @@
 					// check if the control is on the left or right half
 					if (x > oc.canvas.width / 2) {
 						x = controlX - width - (controlWidth / 2);
-					}
-					else {
+					} else {
 						x = controlX + control.width + (controlWidth / 2);
 					}
-				}
-				else {
+				} else {
 					// ensure minimum control height
 					if (this.minToolTipY !== -1 && (controlHeight < this.minToolTipY)) {
 						controlHeight = this.minToolTipY;
@@ -2383,8 +2344,7 @@
 					// check if the control is in the top or bottom half
 					if (y > oc.canvas.height / 2) {
 						y -= controlHeight;
-					}
-					else {
+					} else {
 						y += controlHeight;
 					}
 				}
@@ -2522,8 +2482,7 @@
 				me.updateCount -= 1;
 			}
 			me.idle = false;
-		}
-		else {
+		} else {
 			// flag no update happened
 			me.idle = true;
 		}
@@ -2604,8 +2563,7 @@
 			// check for extended timing
 			if (me.showExtendedTiming) {
 				oc.fillRect(x, y, 88, 83);
-			}
-			else {
+			} else {
 				oc.fillRect(x, y, 88, 20);
 			}
 
@@ -2619,8 +2577,7 @@
 			if (load < 0.5) {
 				// fade from green to yellow
 				oc.fillStyle = "rgb(" + ((255 * load * 2) | 0) + ",255,0)";
-			}
-			else {
+			} else {
 				// fade from yellow to red
 				oc.fillStyle = "rgb(255," + ((255 * (1 - (load - 0.5) * 2)) | 0) + ",0)";
 			}
@@ -2790,8 +2747,7 @@
 			// check which event mechanism exists
 			if (requestAnimationFrame) {
 				requestAnimationFrame(me.callbackFunction);
-			}
-			else {
+			} else {
 				setTimeout(me.callbackFunction, 16);
 			}
 
@@ -2813,8 +2769,7 @@
 			// fire the event
 			event.target.dispatchEvent(simulatedEvent);
 			event.preventDefault();
-		}
-		else {
+		} else {
 			// only deal with single touch
 			if (event.touches.length === 1) {
 				// map touch events to mouse events
@@ -2927,17 +2882,14 @@
 					if (!me.noCopy) {
 						me.notification.notify("Copy", 15, 3600, 15, true);
 					}
-				}
-				else {
+				} else {
 					if (me.thumbnail) {
 						if (me.thumbLaunch) {
 							me.notification.notify("Launch", 15, 3600, 15, true);
-						}
-						else {
+						} else {
 							me.notification.notify("Expand", 15, 3600, 15, true);
 						}
-					}
-					else {
+					} else {
 						me.notification.notify("Click to control", 15, 3600, 15, true);
 					}
 				}
@@ -3031,8 +2983,7 @@
 		if (event.pageX || event.pageY) {
 			x = event.pageX;
 			y = event.pageY;
-		}
-		else {
+		} else {
 			x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
 			y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
 		}

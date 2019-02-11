@@ -174,6 +174,8 @@
 		/** @const {string} */ uiSelectAlphaWord : "UISELECTA",
 		/** @const {string} */ uiLockedWord : "UILOCKED",
 		/** @const {string} */ uiLockedAlphaWord : "UILOCKEDA",
+		/** @const {string} */ uiBorderWord : "UIBORDER",
+		/** @const {string} */ uiBorderWordAlpha : "UIBORDERA",
 
 		// boundary
 		/** @const {string} */ boundaryWord : "BOUNDARY",

@@ -115,6 +115,7 @@
 		/** @const {number} */ customThemeUIHighlight : 21,
 		/** @const {number} */ customThemeUISelect : 22,
 		/** @const {number} */ customThemeUILocked : 23,
+		/** @const {number} */ customThemeUIBorder : 24,
 
 		// state numbers
 		/** @const {number} */ offState : 0,
@@ -769,7 +770,7 @@
 		this.customTheme = false;
 
 		// custom theme value
-		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
 		// custom grid colour
 		this.customGridColour = -1;
@@ -6181,6 +6182,7 @@
 			highlightCol = "rgb(0,240,32)",
 			selectedCol = "blue",
 			lockedCol = "grey",
+			borderCol = "rgb(32,255,255)",
 			element;
 
 		// check for custom foreground
@@ -6233,8 +6235,14 @@
 			lockedCol = "rgb(" + (element >> 16) + "," + ((element >> 8) & 255) + "," + (element & 255) + ")";
 		}
 
+		// check for custom locked
+		element = this.customThemeValue[ViewConstants.customThemeUIBorder];
+		if (element !== -1) {
+			borderCol = "rgb(" + (element >> 16) + "," + ((element >> 8) & 255) + "," + (element & 255) + ")";
+		}
+
 		// set the menu colours
-		this.menuManager.setColours(fgCol, bgCol, highlightCol, selectedCol, lockedCol);
+		this.menuManager.setColours(fgCol, bgCol, highlightCol, selectedCol, lockedCol, borderCol);
 	};
 
 	// create menus
@@ -6994,6 +7002,7 @@
 			case ViewConstants.customThemeUIHighlight:
 			case ViewConstants.customThemeUISelect:
 			case ViewConstants.customThemeUILocked:
+			case ViewConstants.customThemeUIBorder:
 				break;
 
 			default:
@@ -7697,6 +7706,7 @@
 		this.customThemeValue[ViewConstants.customThemeUIHighlight] = -1;
 		this.customThemeValue[ViewConstants.customThemeUISelect] = -1;
 		this.customThemeValue[ViewConstants.customThemeUILocked] = -1;
+		this.customThemeValue[ViewConstants.customThemeUIBorder] = -1;
 
 		// clear custom colours
 		this.customColours = [];
@@ -8412,6 +8422,12 @@
 								case Keywords.uiLockedWord:
 									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemeUILocked, whichColour);
 									break;
+
+								// UI border
+								case Keywords.uiBorderWord:
+									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemeUIBorder, whichColour);
+									break;
+
 
 								// others are errors
 								default:
@@ -10951,6 +10967,7 @@
 		this.customThemeValue[ViewConstants.customThemeUIHighlight] = -1;
 		this.customThemeValue[ViewConstants.customThemeUISelect] = -1;
 		this.customThemeValue[ViewConstants.customThemeUILocked] = -1;
+		this.customThemeValue[ViewConstants.customThemeUIBorder] = -1;
 		this.customLabelColour = ViewConstants.labelFontColour;
 
 		// switch off thumbnail mode if on

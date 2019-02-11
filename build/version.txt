@@ -3,6 +3,7 @@ Build 293
 - fixed Globe alias
 - don't process unneeded history states
 - reorganised script help
+- can now define UI border colour with [[ COLOR UIBORDER R G B|<name> ]]
 
 Build 292
 - alternating rule support
