@@ -342,6 +342,15 @@
 		this.aliases.push(["Replicator R3", "R3,C2,S1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,B1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47"]);
 		this.aliases.push(["Replicator R4", "R4,C2,S1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,B1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79"]);
 
+		// add Alternating aliases
+		this.sectionNames.push("Alternating");
+		this.aliases.push(["Alternating", ""]);
+		this.aliases.push(["alternlife", "B13/S012345678|B/S15"]);
+		this.aliases.push(["comb625", "B3/S348|B2/S356"]);
+		this.aliases.push(["Fizzler", "B13/S3|B/S345678"]);
+		this.aliases.push(["Jelly", "B3/S135|B2/S5"]);
+		this.aliases.push(["Phoenix", "B24/S|B35/S"]);
+
 		// mark duplicates
 		this.aliases[0][2] = false;
 		for (i = 1; i < this.aliases.length; i += 1) {

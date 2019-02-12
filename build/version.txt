@@ -1,5 +1,6 @@
 Build 294
 - added Help section UI to each topic
+- added alternating rule aliases
 
 Build 293
 - fixed HROT multi-state pattern runtime

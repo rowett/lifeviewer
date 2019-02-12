@@ -2942,9 +2942,24 @@
 	// decode rule string and return whether valid
 	PatternManager.decodeRuleString = function(pattern, rule, allocator) {
 		// check for alternate rules
-		var altIndex = rule.indexOf(PatternManager.altRuleSeparator),
+		var altIndex = -1,
 			firstPattern = null,
+			alias = null,
+			aliasName = "",
 			result = false;
+
+		// check if the rule is an alias
+		alias = AliasManager.getRuleFromAlias(rule);
+		if (alias !== null) {
+			// save the alias name
+			aliasName = rule;
+
+			// get the rule
+			rule = alias;
+		}
+
+		// check if the rule has an alternate
+		altIndex = rule.indexOf(PatternManager.altRuleSeparator);
 
 		// check if the rule has an alternate
 		if (altIndex === -1) {
@@ -2972,15 +2987,19 @@
 								this.failureReason = "Alternate not supported with B0";
 								result = false;
 							} else {
-								// add the alternate alias names if at least one is set
-								if (pattern.aliasName !== "" || firstPattern.aliasName !== "") {
-									if (pattern.aliasName === "") {
-										pattern.aliasName = pattern.ruleName;
+								// add the alternate alias names if at least one is set or the whole rule was an alias
+								if (aliasName !== "") {
+									pattern.aliasName = aliasName;
+								} else {
+									if (pattern.aliasName !== "" || firstPattern.aliasName !== "") {
+										if (pattern.aliasName === "") {
+											pattern.aliasName = pattern.ruleName;
+										}
+										if (firstPattern.aliasName == "") {
+											firstPattern.aliasName = firstPattern.ruleName;
+										}
+										pattern.aliasName = firstPattern.aliasName + PatternManager.altRuleSeparator + pattern.aliasName;
 									}
-									if (firstPattern.aliasName == "") {
-										firstPattern.aliasName = firstPattern.ruleName;
-									}
-									pattern.aliasName = firstPattern.aliasName + PatternManager.altRuleSeparator + pattern.aliasName;
 								}
 
 								// add the alternate rule name
