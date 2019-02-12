@@ -465,6 +465,9 @@
 		// current UI background RGB
 		this.uiBackgroundRGB = 0;
 
+		// whether the section control needs to be updated
+		this.updateSectionControl = true;
+
 		// cell X and Y coordinate
 		this.cellX = 0;
 		this.cellY = 0;
@@ -981,6 +984,9 @@
 		this.helpColoursButton = null;
 		this.helpAliasesButton = null;
 		this.helpMemoryButton = null;
+
+		// help section list
+		this.helpSectionList = null;
 
 		// autofit button
 		this.autoFitToggle = null;
@@ -2784,7 +2790,10 @@
 
 	// udpate UI controls if help or errors are displayed
 	View.prototype.updateUIForHelp = function(hide) {
-		var showTopicButtons = !(this.displayHelp && (this.helpTopic === ViewConstants.welcomeTopic));
+		var showTopicButtons = !(this.displayHelp && (this.helpTopic === ViewConstants.welcomeTopic)),
+			i = 0,
+			captions = [],
+			toolTips = [];
 
 		// top menu buttons
 		this.autoFitToggle.deleted = hide;
@@ -2860,6 +2869,7 @@
 
 		// help topics
 		this.topicsButton.deleted =  !(this.displayHelp && (this.helpTopic !== ViewConstants.welcomeTopic));
+		this.helpSectionList.deleted =  !(this.displayHelp && (this.helpTopic !== ViewConstants.welcomeTopic));
 
 		// help individual topics buttons
 		this.helpKeysButton.deleted = showTopicButtons;
@@ -2869,6 +2879,23 @@
 		this.helpColoursButton.deleted =  showTopicButtons;
 		this.helpAliasesButton.deleted =  showTopicButtons;
 		this.helpMemoryButton.deleted =  showTopicButtons;
+
+		// check if the help section control needs to be updated
+		if (this.updateSectionControl) {
+			this.updateSectionControl = false;
+
+			// build the list of sections and tooltips
+			for (i = 0; i < this.helpSections.length; i += 1) {
+				captions[i] = this.helpSections[i][1];
+				toolTips[i] = "";
+			}
+
+			// update the control
+			this.helpSectionList.lower = captions;
+			this.helpSectionList.toolTip = toolTips;
+			this.helpSectionList.height = this.helpSections.length * 26;
+			this.helpSectionList.current = 0;
+		}
 	};
 
 	// update infobar
@@ -3541,6 +3568,9 @@
 		// clear help widths cache
 		me.helpFixedCache = [];
 		me.helpVariableCache = [];
+
+		// set flag indicating the section control needs to be updated
+		this.updateSectionControl = true;
 	};
 
 	// keys help topic
@@ -3576,6 +3606,17 @@
 	// memory help topic
 	View.prototype.memoryTopicPressed = function(me) {
 		me.setHelpTopic(ViewConstants.memoryTopic, me);
+	};
+
+	// view help section list
+	View.prototype.viewHelpSectionList = function(newValue, change, me) {
+		var result = newValue;
+
+		if (change) {
+			me.displayHelp = me.helpSections[newValue][0];
+		}
+
+		return result;
 	};
 
 	// view mode list
@@ -6345,13 +6386,19 @@
 		this.modeList.icon = [this.iconManager.icon("draw"), this.iconManager.icon("pan")];
 		this.modeList.toolTip = ["draw", "pan"];
 
+		// help section list
+		this.helpSectionList = this.viewMenu.addListItem(this.viewHelpSectionList, Menu.northEast, -80, 100, 80, 60, ["1", "2"], 0, Menu.single);
+		this.helpSectionList.orientation = Menu.vertical;
+		this.helpSectionList.toolTip = ["", ""];
+		this.helpSectionList.font = "14px Arial";
+
 		// help button
 		this.helpToggle = this.viewMenu.addListItem(this.toggleHelp, Menu.northEast, -40, 0, 40, 40, ["Help"], [false], Menu.multi);
 		this.helpToggle.toolTip = ["toggle help display"];
 		this.helpToggle.font = "16px Arial";
 
 		// help show topics button
-		this.topicsButton = this.viewMenu.addButtonItem(this.topicsPressed, Menu.northEast, -40, 50, 40, 40, ["<"]);
+		this.topicsButton = this.viewMenu.addButtonItem(this.topicsPressed, Menu.northEast, -40, 50, 40, 40, ["^"]);
 		this.topicsButton.toolTip = ["show help topics"];
 
 		// help individual topic buttons
@@ -6561,6 +6608,9 @@
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
+
+		// add help items to the toggle
+		this.helpToggle.addItemsToToggleMenu([this.helpSectionList], []);
 	};
 
 	// attached the viewer to a canvas element

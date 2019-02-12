@@ -444,7 +444,7 @@
 		
 		// title
 		view.tabs[0] = 108;
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
 
 		y = this.renderHelpLine(view, "", ViewConstants.versionName + " build " + ViewConstants.versionBuild + " by " + ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
@@ -468,13 +468,13 @@
 		
 		// keyboard commands
 		view.tabs[0] = 124;
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Keyboard commands", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// playback controls
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Playback"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Playback controls:", ctx, x, y, height, helpLine);
 		if (view.multiStateView) {
@@ -519,7 +519,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// camera controls
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Camera"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Camera controls:", ctx, x, y, height, helpLine);
 		// only display navigation menu key if menu is available
@@ -580,7 +580,7 @@
 
 		// view controls, only display if not in multistate mode
 		if (!view.multiStateView) {
-			view.helpSections[sectionNum] = view.lineNo;
+			view.helpSections[sectionNum] = [view.lineNo, "View"];
 			sectionNum += 1;
 			y = this.renderHelpLine(view, "", "View controls:", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Q", "increase number of layers", ctx, x, y, height, helpLine);
@@ -594,7 +594,7 @@
 		}
 
 		// display controls
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Display"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Display controls:", ctx, x, y, height, helpLine);
 		if (!view.multiStateView) {
@@ -631,7 +631,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// help controls
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Help"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Help controls:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Up", "scroll up one line", ctx, x, y, height, helpLine);
@@ -660,7 +660,7 @@
 
 		// script commands
 		view.tabs[0] = 252;
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
 
 		y = this.renderHelpLine(view, "", "Scripts", ctx, x, y, height, helpLine);
@@ -668,7 +668,7 @@
 		y = this.renderHelpLine(view, "", "Scripts must be embedded in pattern comments", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "Commands must be surrounded by whitespace", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Params"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Parameter conventions:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "A|B", "either A or B", ctx, x, y, height, helpLine);
@@ -678,7 +678,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// script commands
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "General"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "General:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.scriptStartWord, "start script section", ctx, x, y, height, helpLine);
@@ -687,7 +687,7 @@
 		y = this.renderHelpLine(view, Keywords.suppressWord, "suppress overwrite warning", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.randomSeedWord + " <string>", "set random seed", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Playback"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Playback:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.autoStartWord + " (" + Keywords.offWord + ")", "start play automatically", ctx, x, y, height, helpLine);
@@ -700,7 +700,7 @@
 		y = this.renderHelpLine(view, Keywords.noHistoryWord, "disable step back", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noReportWord, "disable stop messages", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Camera"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Camera:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.angleWord + " <0..359>", "set camera angle", ctx, x, y, height, helpLine);
@@ -712,10 +712,6 @@
 		y = this.renderHelpLine(view, Keywords.autoFitWord + " (" + Keywords.offWord + ")", "fit pattern to display", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.historyFitWord + " (" + Keywords.offWord + ")", "autofit uses pattern history", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.state1FitWord + " (" + Keywords.offWord + ")", "autofit only uses state 1", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
-		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Camera Tracking:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.trackWord + " X Y", "camera tracking", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " X ", "horizontal speed cells/gen", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " Y ", "vertical speed cells/gen", ctx, x, y, height, helpLine);
@@ -729,7 +725,7 @@
 		y = this.renderHelpLine(view, " X ", "horizontal speed cells/gen", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " Y ", "vertical speed cells/gen", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Waypoints"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Waypoints:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.tWord + " <0..>", "waypoint at generation", ctx, x, y, height, helpLine);
@@ -737,7 +733,7 @@
 		y = this.renderHelpLine(view, Keywords.linearWord + " " + Keywords.allWord + "|" + Keywords.xWord + "|" + Keywords.yWord + "|" + Keywords.zoomWord, "linear motion", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.bezierWord + " " + Keywords.allWord + "|" + Keywords.xWord + "|" + Keywords.yWord + "|" + Keywords.zoomWord, "bezier motion (default)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "POIs"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Points of interest:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.poiWord, "define point of interest", ctx, x, y, height, helpLine);
@@ -749,7 +745,7 @@
 		y = this.renderHelpLine(view, "<command>|ALL " + Keywords.initialWord, "use initial value for POI", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "define message", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Labels"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Labels:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelWord + " X Y ZOOM (" + Keywords.fixedWord + ")", "define label at position", ctx, x, y, height, helpLine);
@@ -762,9 +758,9 @@
 		y = this.renderHelpLine(view, Keywords.labelTargetWord + " X Y D", "label target and distance", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelTrackWord + " DX DY|" + Keywords.fixedWord, "label move per generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Display"];
 		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Window:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "Display:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.widthWord + " <" + ViewConstants.minViewerWidth + ".." + view.maxCodeWidth + ">", "set LifeViewer width", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.heightWord + " <" + ViewConstants.minViewerHeight + ".." + ViewConstants.maxViewerHeight + ">", "set LifeViewer height", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.popupWidthWord + " <" + ViewConstants.minViewerWidth + ".." + view.maxCodeWidth + ">", "set popup width", ctx, x, y, height, helpLine);
@@ -777,10 +773,6 @@
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "A", "rule alias", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "T", "program title", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + Keywords.variablePrefixSymbol, Keywords.variablePrefixSymbol + " symbol", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
-		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Display:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.layersWord + " <" + ViewConstants.minLayers + ".." + ViewConstants.maxLayers + ">", "set number of layers", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.depthWord + " <" + ViewConstants.minDepth.toFixed(1) + ".." + ViewConstants.maxDepth.toFixed(1) + ">", "set layer depth", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.gridWord + " (" + Keywords.offWord + ")", "display grid lines", ctx, x, y, height, helpLine);
@@ -795,7 +787,7 @@
 		y = this.renderHelpLine(view, Keywords.showGenStatsWord, "show generation statistics", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.showInfoBarWord, "show information bar", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Thumb"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Thumbnails:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.thumbnailWord + " (" + Keywords.offWord + ")", "start at 1/" + view.thumbnailDivisor + " size", ctx, x, y, height, helpLine);
@@ -803,7 +795,7 @@
 		y = this.renderHelpLine(view, Keywords.thumbLaunchWord + " (" + Keywords.offWord + ")", "thumbnail launches viewer", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.thumbZoomWord + " <" + Number(-1 / ViewConstants.minZoom).toFixed(1) + ".." + (ViewConstants.maxZoom).toFixed(1) + ">", "set thumbnail zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Graph"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Population Graph:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.graphWord, "display population graph", ctx, x, y, height, helpLine);
@@ -811,7 +803,7 @@
 		y = this.renderHelpLine(view, Keywords.graphPointsWord, "population graph use points", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noGraphWord, "disable population graph", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Colours"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Colours:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.themeWord + " <0.." + (view.engine.numThemes - 1) + ">|<name>", "set theme", ctx, x, y, height, helpLine);
@@ -849,7 +841,7 @@
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.uiBorderWord + " R G B", "set UI border color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colourWord, "same as " + Keywords.colorWord, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Pattern"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Pattern:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.xOffsetWord + " <-" + (view.engine.maxGridSize >> 1) + ".." + (view.engine.maxGridSize >> 1) + ">", "set pattern x offset", ctx, x, y, height, helpLine);
@@ -897,12 +889,13 @@
 
 		// information
 		view.tabs[0] = 128;
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Top"];
+		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// display information
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Display"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Display:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Size", view.displayWidth + " x " + view.displayHeight, ctx, x, y, height, helpLine);
@@ -944,7 +937,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// pattern information
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Pattern"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Pattern:", ctx, x, y, height, helpLine);
 
@@ -1051,7 +1044,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// grid information
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Grid"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Grid:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Size", view.engine.width + " x " + view.engine.height, ctx, x, y, height, helpLine);
@@ -1072,7 +1065,7 @@
 
 		// bounded grid information
 		if (view.engine.boundedGridType !== -1) {
-			view.helpSections[sectionNum] = view.lineNo;
+			view.helpSections[sectionNum] = [view.lineNo, "Bounded"];
 			sectionNum += 1;
 			y = this.renderHelpLine(view, "", "Bounded grid:", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Type", PatternManager.boundedGridName(view.engine.boundedGridType), ctx, x, y, height, helpLine);
@@ -1110,7 +1103,7 @@
 		}
 
 		// autofit
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "AutoFit"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "AutoFit:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Enabled", view.autoFit ? "On" : "Off", ctx, x, y, height, helpLine);
@@ -1118,7 +1111,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// track
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Track"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Track:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Enabled", (view.trackDefined && !view.trackDisabled) ? "On" : "Off", ctx, x, y, height, helpLine);
@@ -1135,7 +1128,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// snapshot information
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Snapshots"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Step back:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Enabled", view.noHistory ? "Off" : "On", ctx, x, y, height, helpLine);
@@ -1157,7 +1150,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// engine information
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Engine"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Engine:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Name", ViewConstants.versionName, ctx, x, y, height, helpLine);
@@ -1181,7 +1174,7 @@
 		view.tabs[2] = 270;
 		view.tabs[3] = 330;
 		if (view.multiStateView) {
-			view.helpSections[sectionNum] = view.lineNo;
+			view.helpSections[sectionNum] = [view.lineNo, "Colours"];
 			sectionNum += 1;
 			y = this.renderHelpLine(view, "", "Set:", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Name", view.colourSetName, ctx, x, y, height, helpLine);
@@ -1206,7 +1199,7 @@
 			}
 		} else {
 			// colour theme information
-			view.helpSections[sectionNum] = view.lineNo;
+			view.helpSections[sectionNum] = [view.lineNo, "Theme"];
 			sectionNum += 1;
 			y = this.renderHelpLine(view, "", "Theme:", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Name", view.engine.themes[view.engine.colourTheme].name, ctx, x, y, height, helpLine);
@@ -1299,7 +1292,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// grid line information
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Grid Lines"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Grid Lines:", ctx, x, y, height, helpLine);
 		itemName = view.engine.displayGrid ? "On" : "Off";
@@ -1326,7 +1319,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// population graph information
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Graph"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Population Graph:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Enabled", view.popGraph ? "On" : "Off", ctx, x, y, height, helpLine);
@@ -1346,15 +1339,15 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// random seed information
-		view.helpSections[sectionNum] = view.lineNo;
-		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Random Seed:", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Custom", view.randomSeedCustom ? "On" : "Off", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Seed", view.randomSeed, ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		//view.helpSections[sectionNum] = [view.lineNo, "Random"];
+		//sectionNum += 1;
+		//y = this.renderHelpLine(view, "", "Random Seed:", ctx, x, y, height, helpLine);
+		//y = this.renderHelpLine(view, "Custom", view.randomSeedCustom ? "On" : "Off", ctx, x, y, height, helpLine);
+		//y = this.renderHelpLine(view, "Seed", view.randomSeed, ctx, x, y, height, helpLine);
+		//y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// starfield information
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Stars"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Stars:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Enabled", view.starsOn ? "On" : "Off", ctx, x, y, height, helpLine);
@@ -1364,7 +1357,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// script information
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Script"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Script:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Commands", view.numScriptCommands, ctx, x, y, height, helpLine);
@@ -1373,7 +1366,7 @@
 		// waypoints
 		if (view.waypointsDefined) {
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-			view.helpSections[sectionNum] = view.lineNo;
+			view.helpSections[sectionNum] = [view.lineNo, "Waypoints"];
 			sectionNum += 1;
 			y = this.renderHelpLine(view, "", "Waypoints:", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Enabled", view.waypointsDisabled ? "Off" : "On", ctx, x, y, height, helpLine);
@@ -1397,7 +1390,7 @@
 		// points of interest
 		if (view.waypointManager.numPOIs()) {
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-			view.helpSections[sectionNum] = view.lineNo;
+			view.helpSections[sectionNum] = [view.lineNo, "POIs"];
 			sectionNum += 1;
 			y = this.renderHelpLine(view, "", "Points of interest:", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Number", view.waypointManager.numPOIs(), ctx, x, y, height, helpLine);
@@ -1468,16 +1461,16 @@
 		view.tabs[1] = 200;
 		view.tabs[2] = 250;
 		view.tabs[3] = 300;
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Themes", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "Themes are used to provide a visual representation of", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "cell history and longevity", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "2-State"];
 		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Two-state Theme colour components:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "Two-state Themes:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "BACKGROUND", "cell never occupied", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "ALIVE", "cell just born", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "ALIVERAMP", "cell alive for several generations", ctx, x, y, height, helpLine);
@@ -1488,10 +1481,6 @@
 		y = this.renderHelpLine(view, "", view.historyStates + " (HISTORYSTATES) states from DEAD to DEADRAMP", ctx, x, y, height, helpLine);
 
 		// draw each 2-state theme except the custom theme
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
-		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Two-state Themes:", ctx, x, y, height, helpLine);
 		for (i = 0; i < view.engine.themes.length - 1; i += 1) {
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 			theme = view.engine.themes[i];
@@ -1530,9 +1519,9 @@
 		}
 
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Multi"];
 		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Multi-state Theme colour components:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "Multi-state Themes:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "BACKGROUND", "cell never occupied", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "ALIVE", "cell alive", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "DYING", "cell just starting dying", ctx, x, y, height, helpLine);
@@ -1544,10 +1533,6 @@
 		y = this.renderHelpLine(view, "", view.historyStates + " (HISTORYSTATES) states from DEAD to DEADRAMP", ctx, x, y, height, helpLine);
 
 		// draw each multi-state theme except the custom theme
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = view.lineNo;
-		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Multi-state Themes:", ctx, x, y, height, helpLine);
 		for (i = 0; i < view.engine.themes.length - 1; i += 1) {
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 			theme = view.engine.themes[i];
@@ -1605,7 +1590,7 @@
 		view.tabs[2] = 380;
 		// hide the colour name from renderColourBox off the display since the name is already drawn
 		view.tabs[3] = view.displayWidth;
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Colours", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
@@ -1627,7 +1612,10 @@
 		    sectionNum = 0,
 
 			// aliases
-			aliases = AliasManager.aliases;
+			aliases = AliasManager.aliases,
+
+			// alias section names
+			sectionNames = AliasManager.sectionNames;
 
 		// set initial line
 		view.lineNo = 1;
@@ -1640,7 +1628,7 @@
 
 		// aliases
 		view.tabs[0] = 260;
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Aliases", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
@@ -1654,7 +1642,7 @@
 			if (aliases[i][1] === "") {
 				// render category
 				y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-				view.helpSections[sectionNum] = view.lineNo;
+				view.helpSections[sectionNum] = [view.lineNo, sectionNames[sectionNum - 1]];
 				sectionNum += 1;
 				y = this.renderHelpLine(view, "", aliases[i][0] + " Aliases:", ctx, x, y, height, helpLine);
 			} else {
@@ -1698,14 +1686,14 @@
 		view.tabs[1] = 200;
 		view.tabs[2] = 290;
 		view.tabs[3] = 530;
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Memory usage", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// display aggregate data if more than one LifeViewer
 		if (numViewers > 1) {
-			view.helpSections[sectionNum] = view.lineNo;
+			view.helpSections[sectionNum] = [view.lineNo, "All"];
 			sectionNum += 1;
 			y = this.renderHelpLine(view, "", "Memory (all " + numViewers + " LifeViewers):", ctx, x, y, height, helpLine);
 			// get allocation data for each viewer
@@ -1727,7 +1715,7 @@
 		} 
 
 		// display current LifeViewer data
-		view.helpSections[sectionNum] = view.lineNo;
+		view.helpSections[sectionNum] = [view.lineNo, "Current"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Memory (this LifeViewer):", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Allocations", view.engine.allocator.numAllocs + "\t" + this.asMByte(view.engine.allocator.totalBytes) + "M\t" + view.engine.allocator.totalBytes, ctx, x, y, height, helpLine);

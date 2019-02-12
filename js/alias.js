@@ -8,7 +8,10 @@
 	// AliasManager singleton
 	var AliasManager = {
 		// list of alias/rule pairs
-		aliases : []
+		aliases : [],
+
+		// list of help section names
+		sectionNames : []
 	};
 
 	// initialise Alias Manager
@@ -16,14 +19,16 @@
 		var current = null,
 			i = 0, j = 0;
 
-		// clear the current list
+		// clear the current lists
 		this.aliases = [];
+		this.sectionNames = [];
 
 		//this.aliases.push(["Hex Life", "B2o3m56/S2-p4oh"]);
 		//this.aliases.push(["22da", "B2o/S2-m"]);
 		//this.aliases.push(["Hexrule b2o", "B2o/S2m34"]);
 
 		// add 2 state totalistic aliases
+		this.sectionNames.push("OT M");
 		this.aliases.push(["Outer-Totalistic Moore", ""]);
 		this.aliases.push(["", "B3/S23"]);
 		this.aliases.push(["2x2", "B36/S125"]);
@@ -111,6 +116,7 @@
 		this.aliases.push(["Walled Cities", "B45678/S2345"]);
 
 		// add hex rules
+		this.sectionNames.push("OT Hex");
 		this.aliases.push(["Outer-Totalistic Hex", ""]);
 		this.aliases.push(["Fredkin Hex", "B135/S0246H"]);
 		this.aliases.push(["Hexagonal Life", "B2/S34H"]);
@@ -118,6 +124,7 @@
 		this.aliases.push(["Replicator Hex", "B135/S135H"]);
 
 		// add 2-state isotropic non-totalistic aliases
+		this.sectionNames.push("NT M");
 		this.aliases.push(["Isotropic Non-Totalistic Moore", ""]);
 		this.aliases.push(["15Life", "B34r/S23-q4et"]);
 		this.aliases.push(["22k", "B2-k/S2-k"]);
@@ -224,6 +231,7 @@
 		this.aliases.push(["Ylife", "B2e3ai4ar/S23-a4a"]);
 
 		// add Generations aliases
+		this.sectionNames.push("OT M G");
 		this.aliases.push(["Outer-Totalistic Generations Moore", ""]);
 		this.aliases.push(["9:43 at Knight", "237/34578/4"]);
 		this.aliases.push(["Banners", "2367/3457/5"]);
@@ -279,11 +287,13 @@
 		this.aliases.push(["Xtasy", "1456/2356/16"]);
 
 		// add isotropic generations aliases
+		this.sectionNames.push("NT M G");
 		this.aliases.push(["Isotropic Non-Totalistic Generations Moore", ""]);
 		this.aliases.push(["Sliders", "012-e3-ae4acnqyz5acer6acn78/3j4-eikq5c/3"]);
 		this.aliases.push(["tGeneC1WC0", "2-i34q/2c34w5c/4"]);
 
 		// add LtL 2-state aliases
+		this.sectionNames.push("LtL M");
 		this.aliases.push(["Larger than Life Moore", ""]);
 		this.aliases.push(["Balloons", "R2,C2,M1,S7..10,B7..11,NM"]);
 		this.aliases.push(["Bosco's Rule", "R5,C2,M1,S34..58,B34..45,NM"]);
@@ -316,12 +326,14 @@
 		this.aliases.push(["Waffle", "R7,C2,M1,S100..200,B75..170,NM"]);
 		this.aliases.push(["Waving human intestines", "R20,C2,M1,S1..21,B1..5,NM"]);
 
-		// add generations Ltl
+		// add generations LtL
+		this.sectionNames.push("LtL M G");
 		this.aliases.push(["Generations Larger than Life Moore", ""]);
 		this.aliases.push(["Fire rule", "R5,C6,M1,S31..43,B15..25,NM"]);
 		this.aliases.push(["Fire whirl", "R8,C6,M1,S46..91,B65..100,NM"]);
 
 		// add HROT aliases
+		this.sectionNames.push("HROT M");
 		this.aliases.push(["Higher-Range Outer-Totalistic Moore", ""]);
 		this.aliases.push(["Fredkin R2", "R2,C2,S0,2,4,6,8,10,12,14,16,18,20,22,24,B1,3,5,7,9,11,13,15,17,19,21,23"]);
 		this.aliases.push(["Fredkin R3", "R3,C2,S0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,B1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47"]);

@@ -1,3 +1,6 @@
+Build 294
+- added Help section UI to each topic
+
 Build 293
 - fixed HROT multi-state pattern runtime
 - fixed Globe alias
