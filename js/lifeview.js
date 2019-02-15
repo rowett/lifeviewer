@@ -6751,11 +6751,12 @@
 		this.playList.toolTip = ["reset", "previous generation", "pause", "play"];
 
 		// add states for editor
-		this.stateList = this.viewMenu.addListItem(this.viewStateList, Menu.north, 0, 40, 280, 40, ["0", "1", "2", "3", "4", "5", "6"], this.drawState, Menu.single);
+		this.stateList = this.viewMenu.addListItem(this.viewStateList, Menu.north, 0, 40, 280, 20, ["0", "1", "2", "3", "4", "5", "6"], this.drawState, Menu.single);
 		this.stateList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
+		this.stateList.font = "14px Arial";
 
 		// add state colours for editor
-		this.stateColsList = this.viewMenu.addListItem(this.viewStateColsList, Menu.north, 0, 80, 280, 20, ["", "", "", "", "", "", ""], [false, false, false, false, false, false, false], Menu.multi);
+		this.stateColsList = this.viewMenu.addListItem(this.viewStateColsList, Menu.north, 0, 60, 280, 20, ["", "", "", "", "", "", ""], [false, false, false, false, false, false, false], Menu.multi);
 		this.stateColsList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
 		this.stateColsList.bgAlpha = 1;
 
