@@ -6,6 +6,7 @@ Build 294
 - always create overlay for LifeHistory patterns since states can be created by the editor
 - added pick state control to editor
 - added toggle states display control to editor
+- LifeHistory patterns can now be edited
 
 Build 293
 - fixed HROT multi-state pattern runtime
