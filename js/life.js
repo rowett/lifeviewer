@@ -604,6 +604,7 @@
 			colourGrid = this.colourGrid,
 			colourTileGrid = this.colourTileGrid,
 			colourTileHistoryGrid = this.colourTileHistoryGrid,
+			overlayGrid = this.overlayGrid,
 			zoomBox = this.zoomBox,
 			HROTBox = this.HROTBox,
 
@@ -624,7 +625,7 @@
 				// check for multi-state rules
 				if (this.multiNumStates <= 2) {
 					// draw alive or dead
-					if (state) {
+					if (state === 1) {
 						// adjust population if cell was dead
 						if ((grid[y][x >> 4] & (1 << (~x & 15))) === 0) {
 							this.population += 1;
@@ -675,6 +676,15 @@
 						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 						nextGrid[y][x >> 4] &= ~(1 << (~x & 15));
 						nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					}
+
+					// check for LifeHistory
+					if (this.isLifeHistory) {
+						if (state === 2) {
+							colourGrid[y][x] = LifeConstants.deadMin;
+						} else {
+							overlayGrid[y][x] = ViewConstants.stateMap[state] + 128;
+						}
 					}
 				}
 			}
@@ -755,7 +765,7 @@
 						if (col >= this.aliveStart) {
 							over = state3;
 						}
-						result = ViewConstants.stateMap[over - 128];
+						result = ViewConstants.stateMap.indexOf(over - 128);
 					} else {
 						// states 3 and 5
 						if (over === state3 || over === state5) {
@@ -763,7 +773,7 @@
 							if (col < this.aliveStart) {
 								over = state4;
 							}
-							result = ViewConstants.stateMap[over - 128];
+							result = ViewConstants.stateMap.indexOf(over - 128);
 						} else {
 							if (col === this.unoccupied) {
 								result = 0;

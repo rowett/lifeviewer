@@ -468,6 +468,15 @@
 		// whether the section control needs to be updated
 		this.updateSectionControl = true;
 
+		// current drawing state
+		this.drawState = 1;
+
+		// whether picking state
+		this.pickMode = false;
+
+		// whether smart drawing is on
+		this.smartDrawing = true;
+
 		// cell X and Y coordinate
 		this.cellX = 0;
 		this.cellY = 0;
@@ -1062,6 +1071,15 @@
 
 		// mode list (draw/pan buttons)
 		this.modeList = null;
+
+		// pick button
+		this.pickToggle = null;
+
+		// states list for drawing
+		this.stateList = null;
+
+		// states colours list for drawing
+		this.stateColsList = null;
 
 		// current steps before next view theme change
 		this.viewSteps = 30;
@@ -2792,6 +2810,7 @@
 	View.prototype.updateUIForHelp = function(hide) {
 		var showTopicButtons = !(this.displayHelp && (this.helpTopic === ViewConstants.welcomeTopic)),
 			i = 0,
+			value = 0,
 			captions = [],
 			toolTips = [];
 
@@ -2896,6 +2915,27 @@
 			this.helpSectionList.height = this.helpSections.length * 26;
 			this.helpSectionList.current = 0;
 		}
+
+		// update menus for drawing
+		this.stateList.deleted = hide || !this.drawing;
+		this.stateColsList.deleted = hide || !this.drawing;
+		for (i = 0; i < this.stateColsList.lower.length; i += 1) {
+			if (i <= 2) {
+				if (i === 0) {
+					value = i;
+				} else if (i === 1) {
+					value = LifeConstants.aliveStart;
+				} else {
+					value = LifeConstants.deadMin;
+				}
+			} else {
+				value = 128 + ViewConstants.stateMap[i];
+			}
+			this.stateColsList.bgColList[i] = "rgb(" + this.engine.redChannel[value] + "," + this.engine.greenChannel[value] + "," + this.engine.blueChannel[value] + ")";
+		}
+
+		// pick
+		this.pickToggle.deleted = hide || !this.drawing;
 	};
 
 	// update infobar
@@ -3628,6 +3668,8 @@
 				switch (newValue) {
 					case ViewConstants.modeDraw:
 						me.drawing = true;
+						// turn off pick mode
+						me.pickToggle.current = me.togglePick([false], true, me);
 						break;
 					case ViewConstants.modePan:
 						me.drawing = false;
@@ -3635,6 +3677,37 @@
 				}
 			} else {
 				result = ViewConstants.modePan;
+			}
+		}
+
+		return result;
+	};
+
+	// drawing states list
+	View.prototype.viewStateList = function(newValue, change, me) {
+		var result = newValue;
+
+		if (change) {
+			me.drawState = newValue;
+			// turn off pick mode
+			me.pickToggle.current = me.togglePick([false], true, me);
+		}
+
+		return result;
+	};
+
+	// drawing states colours list
+	View.prototype.viewStateColsList = function(newValue, change, me) {
+		var result = newValue,
+			i = 0;
+
+		if (change) {
+			while (i < result.length) {
+				if (result[i]) {
+					result[i] = false;
+					me.stateList.current = me.viewStateList(i, true, me);
+				}
+				i += 1;
 			}
 		}
 
@@ -3940,10 +4013,14 @@
 
 		// check if this is the start of drawing
 		if (fromX === -1 && fromY === -1) {
-			// set the pen to the state at the current position
-			this.penColour = this.readCell();
+			// for 2-state (not LifeHistory) set the pen to the state at the current position
 			if (this.engine.multiNumStates <= 2) {
-				this.penColour = 1 - this.penColour;
+				this.penColour = this.readCell();
+				if (this.smartDrawing && (this.penColour === this.drawState)) {
+					this.penColour = 0;
+				} else {
+					this.penColour = this.drawState;
+				}
 			}
 		} else {
 			// draw from the last position to the current position
@@ -3973,21 +4050,11 @@
 		    dy = 0,
 		    angle = 0,
 		    sinAngle = 0,
-			cosAngle = 0,
-			stillDrawing = me.drawing;
+			cosAngle = 0;
 
 		// check if this is a drag or cancel drag
 		if (dragOn) {
-			if (me.drawing && me.engine.zoom < 1 && !(me.displayHelp || me.displayErrors)) {
-				stillDrawing = false;
-				if (!me.panNotified) {
-					me.menuManager.notification.notify("Pan active: Zoom in to draw", 15, 120, 15, true);
-					me.panNotified = true;
-				}
-			}
-			if (stillDrawing && (!(me.displayHelp || me.displayErrors))) {
-				me.drawCells(x, y, me.lastDragX, me.lastDragY);
-			} else {
+			if (me.displayHelp || me.displayErrors) {
 				// check if this is the start of a drag
 				if (me.lastDragX !== -1) {
 					// check if help is displayed
@@ -4047,13 +4114,39 @@
 						}
 					}
 				}
+			} else {
+				if (me.pickMode) {
+					if (me.engine.zoom < 1) {
+						if (!me.panNotified) {
+							me.menuManager.notification.notify("Zoom in to pick", 15, 120, 15, true);
+							me.panNotified = true;
+						}
+					}
+				} else {
+					if (me.drawing) {
+						if (me.engine.zoom < 1) {
+							if (!me.panNotified) {
+								me.menuManager.notification.notify("Zoom in to draw", 15, 120, 15, true);
+								me.panNotified = true;
+							}
+						} else {
+							me.drawCells(x, y, me.lastDragX, me.lastDragY);
+						}
+					}
+				}
 			}
 
 			// save last drag position
 			me.lastDragX = x;
 			me.lastDragY = y;
 		} else {
-			// drag finished
+			// drag finished so check for pick mode
+			if (me.pickMode && me.engine.zoom >= 1) {
+				if (x !== -1) {
+					me.penColour = me.readCell();
+					me.stateList.current = me.viewStateList(me.penColour, true, me);
+				}
+			}
 			me.lastDragX = -1;
 			me.lastDragY = -1;
 			me.panNotified = false;
@@ -4100,7 +4193,7 @@
 			icons = new Image();
 
 			// load the icons from the image file
-			icons.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAjAAAAAoCAIAAABviVfnAAAABnRSTlMAAAAAAABupgeRAAAFKklEQVR4nO2d2a7bIBCGk6oPnEfJG9MLq8iCgAeYjeH/rqojdzZgxmzO6wUAAAAAAIAEn89H9O8nIx3bk2P+19oAAPhJKRV/eb/fCpKt9FqRUtIxQ00RsAUFCYRFIoX1y4+tXn3e73dRKlgqh4TMAJwQhz/WBgAgwpUr5eS3soOVXitO8xeIgoIEwiKXK/tZ0kqvFaf5C+RAQQKRkciVlCxppdeK0/wFQqAggeDw5kp6lrTSa8Vp/oIWKaXpntBscqsOMbpRzLKxfBey4nWkUXTFJLvDtYH/KKfQy4XEZrsTvfqnhL/fb/63xPE/zSOF9AayjfNLLL3wiuXKpT/krhS6db0FXM8/Clk0e04pC3OWE93hUvooR8KdA8GdGArrw0czzhKDYtH9fqK4/4Uo8HnJDtmhz3RelrDElZxFnJgBAlMcLj+wy10RmJvKFHWo/wwxttQ9pDNbq0/ImLjyyJUxIBJ58IZZY58jOdtlGLsYiya8iJooHfrlbcBIUzTB1r6Pdid9Z6/edel12PmdUxxjoQ/VzpMzX2o4uSxx9VqJY7KLLeJ2QJ5WkyJBbzjN7pcz2H2edGAfWx9ZE3nser6lev7TQaeVJW/1gxe31egCNQnwkvdOcn58ORuSIXnMM6v3kELuoxSE93EL77YwEvgn0qLoChIveUVsJ8Zs7x7SsCwO91p6Te4hWQVBk76PVveQHu2JykS6NL8f02Io5elMgn/OhHLM+waYx5k3RIzSiHmyWN8b055mGXWGqJfr+UchfbHS7itDd4fL32lFm0bYCg/3kIYaS6FlW11otF9Z/R4S0UjKY4vRriP2OGyJA5n/5yfS5quxaimPXRHXZMU5adv9pESY/VCeiYFVO7amRzFI3SMDjCqEtEh9yw4vs30kguPthVSOrY0HF65qrStjWOiMEcZCMj0SWwbg46oAACWKtVl91T+nR2GqUfp/repCZ1YwoaITcKmCdOa5/o3YunW2Nv5k7g2n2YjBCs9P6nlPLkv9x0ap/ztj2eMvSLuXIh37JVSMyty0mTY1G2TyPoemOvrfd6RTZu5TJS6X5cYg56GGSJlC4WsiHsIl8cEIUTwEbRqK8Vs7SGTlg56LSjO52wcI+OOkRyKbCaUOnntIQj+nQVEx+vyjkMUJ6Y79u+Ogq3tIO8a2T32mbuKUnfn9mBZDq0NCB8NahWdiEc88znWIRr3gDfJcQZo0YOUs+QqjilgMW1EkHRAdHt3h8ldN0RbUPnJ5jXtIWWwdScZOZfh7SB6GRmu0dugLnN9D2n2vaJTY/jp3zbl5wD91Nty9U5msfP60gZGZPaTdG3IFxtVY9leb9cMzPiciJ/e33fHWo1JjBW9TPHgxlDceDR4rSB7898B6WZIYqMniY/LSoMvtC9ruEIh5g9IfqAUJfatG4SSePq5qUvheVzsY3mUPIMjscOWN5z2k2Hsn68SLjxN3nJgBgoF+5ZneDAktR2d0tiQxEWFsL/N5EnvfW1/PnBNipVeNup+w+Dsk82dfzXv+6YDPNIQBjQQCUmRwxoTel2yi1/x+TIYr9U/IkaiLBeZx9vxeAgBock9P7FO9jnArvTX695AS38dpGEVJ4Pz3kLYGX/sGkZF4qaSsZ1rpteI0f4EQ/D/QB4AT5JY4rlzZ+ZyViV4rTvPXEOkKbR5qFCQQE+lE1np/t9JrhY6/5onSAycEAQUJhOWeuBkPF7jVq09dKlj8rWWiJh0CChIIiFzy6ku20muFmlU+3QcAAABATP4B++iOYYlluJYAAAAASUVORK5CYII=";
+			icons.src = "data:image/png;base64,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";
 				
 			// save the image
 			ViewConstants.icons = icons;
@@ -4124,6 +4217,7 @@
 		this.iconManager.add("hexgrid", w, h);
 		this.iconManager.add("lines", w, h);
 		this.iconManager.add("pan", w, h);
+		this.iconManager.add("pick", w, h);
 	};
 
 	// update grid icon based on hex or square mode
@@ -4481,6 +4575,15 @@
 		}
 
 		return [me.popGraphLines];
+	};
+
+	// pick toggle
+	View.prototype.togglePick = function(newValue, change, me) {
+		if (change) {
+			me.pickMode = newValue[0];
+		}
+
+		return [me.pickMode];
 	};
 
 	// autofit toggle
@@ -6124,12 +6227,18 @@
 
 			// f1 for toggle edit mode
 			case 112:
-				if (me.engine.multiNumStates <= 2) {
-					me.drawing = !me.drawing;
-					me.modeList.current = me.viewModeList((me.drawing ? ViewConstants.modeDraw : ViewConstants.modePan), true, me);
-					me.menuManager.notification.notify((me.drawing ? "Draw" : "Pan") + " Mode", 15, 40, 15, true);
+				// check for shift key
+				if (event.shiftKey) {
+					me.smartDrawing = !me.smartDrawing;
+					me.menuManager.notification.notify("Smart Drawing " + (me.smartDrawing ? "On" : "Off"), 15, 40, 15, true);
 				} else {
-					me.menuManager.notification.notify("Drawing not available!", 15, 180, 15, true);
+					if (me.engine.multiNumStates <= 2) {
+						me.drawing = !me.drawing;
+						me.modeList.current = me.viewModeList((me.drawing ? ViewConstants.modeDraw : ViewConstants.modePan), true, me);
+						me.menuManager.notification.notify((me.drawing ? "Draw" : "Pan") + " Mode", 15, 40, 15, true);
+					} else {
+						me.menuManager.notification.notify("Drawing not available!", 15, 180, 15, true);
+					}
 				}
 				break;
 
@@ -6232,7 +6341,7 @@
 			highlightCol = "rgb(0,240,32)",
 			selectedCol = "blue",
 			lockedCol = "grey",
-			borderCol = "rgb(32,255,255)",
+			borderCol = "white",
 			element;
 
 		// check for custom foreground
@@ -6581,6 +6690,11 @@
 		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -130, 0, 40, 40, "X");
 		this.graphCloseButton.toolTip = "close graph";
 
+		// pick toggle
+		this.pickToggle = this.viewMenu.addListItem(this.togglePick, Menu.northWest, 0, 40, 40, 40, [""], [this.pickMode], Menu.multi);
+		this.pickToggle.icon = [this.iconManager.icon("pick")];
+		this.pickToggle.toolTip = ["pick state"];
+
 		// add menu toggle button
 		this.navToggle = this.viewMenu.addListItem(null, Menu.southEast, -40, -40, 40, 40, [""], [false], Menu.multi);
 		this.navToggle.icon = [this.iconManager.icon("menu")];
@@ -6602,6 +6716,15 @@
 		this.playList = this.viewMenu.addListItem(this.viewPlayList, Menu.southEast, -205, -40, 160, 40, ["", "", "", ""], ViewConstants.modePause, Menu.single);
 		this.playList.icon = [this.iconManager.icon("tostart"), this.iconManager.icon("stepback"), this.iconManager.icon("pause"), this.iconManager.icon("play")];
 		this.playList.toolTip = ["reset", "previous generation", "pause", "play"];
+
+		// add states for editor
+		this.stateList = this.viewMenu.addListItem(this.viewStateList, Menu.north, 0, 40, 280, 40, ["0", "1", "2", "3", "4", "5", "6"], this.drawState, Menu.single);
+		this.stateList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
+
+		// add state colours for editor
+		this.stateColsList = this.viewMenu.addListItem(this.viewStateColsList, Menu.north, 0, 80, 280, 20, ["", "", "", "", "", "", ""], [false, false, false, false, false, false, false], Menu.multi);
+		this.stateColsList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
+		this.stateColsList.bgAlpha = 1;
 
 		// add items to the main toggle menu
 		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.labelButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton], []);
@@ -10631,6 +10754,7 @@
 		// reset drawing mode
 		this.drawing = false;
 		this.panNotified = false;
+		this.drawingState = 1;
 	};
 	
 	// switch off thumbnail view
@@ -10735,6 +10859,40 @@
 
 		// resize
 		this.resize();
+	};
+
+	// setup state list for drawing
+	View.prototype.setupStateList = function() {
+		// reset drawing state
+		this.drawState = 1;
+
+		if (this.engine.isLifeHistory) {
+			// add LifeHistory states for editor
+			this.stateList.lower = ["0", "1", "2", "3", "4", "5", "6"];
+			this.stateList.width = 280;
+			this.stateList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
+			this.stateList.current = this.drawState;
+
+			// add LifeHistory state colours for editor
+			this.stateColsList.lower = ["", "", "", "", "", "", ""];
+			this.stateColsList.width = 280;
+			this.stateColsList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
+			this.stateColsList.bgAlpha = 1;
+			this.stateColsList.current = [false, false, false, false, false, false, false];
+		} else {
+			// add states for editor
+			this.stateList.lower = ["0", "1"];
+			this.stateList.width = 80;
+			this.stateList.toolTip = ["dead", "alive"];
+			this.stateList.current = this.drawState;
+
+			// add state colours for editor
+			this.stateColsList.lower = ["", ""];
+			this.stateColsList.width = 80;
+			this.stateColsList.toolTip = ["dead", "alive"];
+			this.stateColsList.bgAlpha = 1;
+			this.stateColsList.current = [false, false];
+		}
 	};
 
 	// clear pattern data
@@ -10933,16 +11091,9 @@
 
 		// create the overlay
 		if (this.engine.isLifeHistory) {
-			// check if there are states other than 0 or 1 actually used
-			if (PatternManager.stateCount[2] || PatternManager.stateCount[3] || PatternManager.stateCount[4] || PatternManager.stateCount[5] || PatternManager.stateCount[6]) {
-				// create the overlay to render additional states
-				this.engine.createOverlay();
-			}
-
-			// check if state 6 is used
-			if (PatternManager.stateCount[6]) {
-				this.engine.createState6Mask();
-			}
+			// always create the overlay since the editor may introduce any LifeHistory state
+			this.engine.createOverlay();
+			this.engine.createState6Mask();
 		}
 
 		// clear any window title
@@ -11183,6 +11334,9 @@
 					}
 				}
 			}
+
+			// setup the state list for drawing
+			this.setupStateList();
 
 			// set the menu colours
 			this.setMenuColours();

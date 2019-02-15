@@ -497,6 +497,8 @@
 	 * @constructor
 	 */
 	function MenuItem(id, callback, caller, position, x, y, width, height, lower, upper, current, type, orientation, border, valueDisplay, preText, postText, fixed, icon, owner) {
+		var i = 0;
+
 		// id
 		this.id = id;
 
@@ -615,6 +617,14 @@
 		// background colour and alpha
 		this.bgCol = owner.bgCol;
 		this.bgAlpha = owner.bgAlpha;
+
+		// set background colour list
+		if (type === Menu.list) {
+			this.bgColList = [];
+			for (i = 0; i < lower.length; i += 1) {
+				this.bgColList[i] = this.bgCol;
+			}
+		}
 
 		// foreground colour and alpha
 		this.fgCol = owner.fgCol;
@@ -1600,6 +1610,24 @@
 			}
 			break;
 
+		// range
+		case Menu.list:
+			l = item.lower.length;
+			if (item.orientation === Menu.horizontal) {
+				w = item.width / l;
+				for (i = 0; i < l; i += 1) {
+					this.context.fillStyle = item.bgColList[i];
+					this.context.fillRect(item.x + i * w + 1, item.y + 1, w - 2, item.height - 2);
+				}
+			} else {
+				w = item.height / l;
+				for (i = 0; i < l; i += 1) {
+					this.context.fillStyle = item.bgColList[i];
+					this.context.fillRect(item.x + 1, item.y + 1 + i * w, item.width - 2, w - 2);
+				}
+			}
+			break;
+
 		// other types (draw rectangle)
 		default:
 			this.context.fillRect(item.x, item.y, item.width, item.height);
@@ -1640,14 +1668,12 @@
 				l = item.lower.length;
 				if (item.orientation === Menu.horizontal) {
 					w = item.width / l;
-
 					for (i = 0; i < l; i += 1) {
 						this.context.strokeRect(item.x + 0.5 + i * w, item.y + 0.5, w - 1, item.height - 1);
 					}
 				}
 				else {
 					w = item.height / l;
-
 					for (i = 0; i <l; i += 1) {
 						this.context.strokeRect(item.x + 0.5, item.y + 0.5 + i * w, item.width - 1, w - 1);
 					}

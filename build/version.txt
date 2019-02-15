@@ -1,6 +1,10 @@
 Build 294
 - added Help section UI to each topic
 - added alternating rule aliases
+- hokey Shift "F1" to toggle smart drawing
+	- smart drawing automatically deletes cells if you start drawing on a cell whose state is the current drawing state
+- always create overlay for LifeHistory patterns since states can be created by the editor
+- added pick state control to editor UI
 
 Build 293
 - fixed HROT multi-state pattern runtime

@@ -630,6 +630,14 @@
 		y = this.renderHelpLine(view, "Shift K", "copy camera position and view to clipboard", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
+		// edit controls
+		view.helpSections[sectionNum] = [view.lineNo, "Edit"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Edit controls:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "F1", "toggle draw/pan mode", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift F1", "toggle smart drawing", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		// help controls
 		view.helpSections[sectionNum] = [view.lineNo, "Help"];
 		sectionNum += 1;
@@ -1261,7 +1269,7 @@
 			}
 
 			// check for History rules
-			if (view.engine.isLifeHistory && view.patternStates > 2) {
+			if (view.engine.isLifeHistory) {
 				for (i = 3; i <= 6; i += 1) {
 					value = 128 + ViewConstants.stateMap[i];
 					colourValue = this.rgbString(view.engine.redChannel[value], view.engine.greenChannel[value], view.engine.blueChannel[value]);
