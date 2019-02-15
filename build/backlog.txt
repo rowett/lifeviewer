@@ -13,6 +13,13 @@ User preferences
 - new UI control somewhere to switch back
 [STARTED]Pattern Editor
     [DONE] Basic 2-state editing with no undo
+    [IN PROGRESS] LifeHistory support
+    - improved LifeHistory drawing modes
+    - reset to include the overlay grid
+    - convert current pattern to RLE (for Ctrl-C Copy)
+    - undo stack
+    - multi-state support
+    - selections
 [DONE]LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE stuff rather than just clear)
 [DONE]Memory footprint reduction
 [DONE]Implement faster Ltl/HROT von Neumann algorithm
