@@ -625,7 +625,7 @@
 				// check for multi-state rules
 				if (this.multiNumStates <= 2) {
 					// draw alive or dead
-					if (state === 1) {
+					if ((state & 1) === 1) {
 						// adjust population if cell was dead
 						if ((grid[y][x >> 4] & (1 << (~x & 15))) === 0) {
 							this.population += 1;
