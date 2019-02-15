@@ -4072,7 +4072,7 @@
 
 		// check if this is a drag or cancel drag
 		if (dragOn) {
-			if (me.displayHelp || me.displayErrors) {
+			if (me.displayHelp || me.displayErrors || !me.drawing) {
 				// check if this is the start of a drag
 				if (me.lastDragX !== -1) {
 					// check if help is displayed
