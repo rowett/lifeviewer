@@ -170,7 +170,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 294,
+		/** @const {number} */ versionBuild : 295,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3700,15 +3700,23 @@
 
 	// drawing states list
 	View.prototype.viewStateList = function(newValue, change, me) {
-		var result = newValue;
+		var name = "";
 
 		if (change) {
 			me.drawState = newValue;
+			if (me.engine.multiNumStates <= 2) {
+				if (me.engine.isLifeHistory) {
+					name = ViewConstants.stateNames[me.drawState];
+				} else {
+					name = (me.drawState ? "Alive" : "Dead");
+				}
+				me.menuManager.notification.notify("Drawing with state: " + name, 15, 80, 15, true);
+			}
 			// turn off pick mode
 			me.pickToggle.current = me.togglePick([false], true, me);
 		}
 
-		return result;
+		return me.drawState;
 	};
 
 	// drawing states colours list
@@ -4616,6 +4624,9 @@
 	View.prototype.togglePick = function(newValue, change, me) {
 		if (change) {
 			me.pickMode = newValue[0];
+			if (me.pickMode) {
+				me.menuManager.notification.notify("Now click on a cell", 15, 180, 15, true);
+			}
 		}
 
 		return [me.pickMode];
