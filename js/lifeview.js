@@ -4062,8 +4062,13 @@
 		}
 	};
 
-	// view menu background drag
+	// view menu background drag callback
 	View.prototype.viewDrag = function(x, y, dragOn, me) {
+		me.viewDoDrag(x, y, dragOn, me, false);
+	};
+
+	// view menu background drag
+	View.prototype.viewDoDrag = function(x, y, dragOn, me, fromKey) {
 		var dx = 0,
 		    dy = 0,
 		    angle = 0,
@@ -4072,7 +4077,7 @@
 
 		// check if this is a drag or cancel drag
 		if (dragOn) {
-			if (me.displayHelp || me.displayErrors || !me.drawing) {
+			if (me.displayHelp || me.displayErrors || !me.drawing || fromKey) {
 				// check if this is the start of a drag
 				if (me.lastDragX !== -1) {
 					// check if help is displayed
@@ -4159,10 +4164,12 @@
 			me.lastDragY = y;
 		} else {
 			// drag finished so check for pick mode
-			if (me.pickMode && me.engine.zoom >= 1) {
-				if (x !== -1) {
-					me.penColour = me.readCell();
-					me.stateList.current = me.viewStateList(me.penColour, true, me);
+			if (!fromKey) {
+				if (me.pickMode && me.engine.zoom >= 1) {
+					if (x !== -1) {
+						me.penColour = me.readCell();
+						me.stateList.current = me.viewStateList(me.penColour, true, me);
+					}
 				}
 			}
 			me.lastDragX = -1;
@@ -4193,7 +4200,7 @@
 		}
 		this.lastDragX = 0;
 		this.lastDragY = 0;
-		this.viewDrag(dx, dy, true, this);
+		this.viewDoDrag(dx, dy, true, this, true);
 		this.lastDragX = -1;
 		this.lastDragY = -1;
 	};
