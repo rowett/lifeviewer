@@ -477,6 +477,9 @@
 		// blank row for life grid to prevent wrap
 		this.blankRow = this.allocator.allocate(Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow");
 
+		// blank row for 16bit life grid
+		this.blankRow16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16");
+
 		// blank tile row to prevent wrap
 		this.blankTileRow = this.allocator.allocate(Uint16, this.tileCols >> 4, "Life.blankTileRow");
 
@@ -614,7 +617,13 @@
 
 		    // bounded grid bottom right
 		    rightX = leftX + this.boundedGridWidth - 1,
-			topY = bottomY + this.boundedGridHeight - 1;
+			topY = bottomY + this.boundedGridHeight - 1,
+
+			// current cell state
+			current = 0,
+
+			// whether a cell was or became LifeHistory state6
+			result = false;
 
 		// check if coordinates are on the grid
 		if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
@@ -637,7 +646,46 @@
 						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 						nextGrid[y][x >> 4] |= (1 << (~x & 15));
 						nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-						// adjust bounding box
+					} else {
+						// adjust population if cell was alive
+						if ((grid[y][x >> 4] & (1 << (~x & 15))) !== 0) {
+							this.population -= 1;
+						}
+						colourGrid[y][x] = this.unoccupied;
+						colourTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						colourTileHistoryGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						grid[y][x >> 4] &= ~(1 << (~x & 15));
+						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						nextGrid[y][x >> 4] &= ~(1 << (~x & 15));
+						nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					}
+
+					// check for LifeHistory
+					if (this.isLifeHistory) {
+						// check if the cell used to be or has become state 6
+						current = overlayGrid[y][x];
+						if (current > 0) {
+							current = ViewConstants.stateMap.indexOf(current - 128);
+						}
+						if ((state === 6 && current !== 6) || (state !== 6 && current === 6)) {
+							result = true;
+						}
+
+						// update colour grid if history state
+						if (state === 2) {
+							colourGrid[y][x] = LifeConstants.deadMin;
+						} else {
+							// update overlay grid if not
+							if (state === 0) {
+								overlayGrid[y][x] = 0;
+							} else {
+								overlayGrid[y][x] = ViewConstants.stateMap[state] + 128;
+							}
+						}
+					}
+
+					// adjust bounding box
+					if (state > 1) {
 						if (x < zoomBox.leftX) {
 							zoomBox.leftX = x;
 						}
@@ -664,31 +712,13 @@
 								HROTBox.topY = y;
 							}
 						}
-					} else {
-						// adjust population if cell was alive
-						if ((grid[y][x >> 4] & (1 << (~x & 15))) !== 0) {
-							this.population -= 1;
-						}
-						colourGrid[y][x] = this.unoccupied;
-						colourTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-						colourTileHistoryGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-						grid[y][x >> 4] &= ~(1 << (~x & 15));
-						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-						nextGrid[y][x >> 4] &= ~(1 << (~x & 15));
-						nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-					}
-
-					// check for LifeHistory
-					if (this.isLifeHistory) {
-						if (state === 2) {
-							colourGrid[y][x] = LifeConstants.deadMin;
-						} else {
-							overlayGrid[y][x] = ViewConstants.stateMap[state] + 128;
-						}
 					}
 				}
 			}
 		}
+
+		// return whether LifeHistory state 6 changed
+		return result;
 	};
 
 	// allocate or clear graph data
@@ -1041,6 +1071,9 @@
 		// blank row for life grid to prevent wrap
 		this.blankRow = this.allocator.allocate(Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow");
 
+		// blank row for 16 bit life grid
+		this.blankRow16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16");
+
 		// blank tile row to prevent wrap
 		this.blankTileRow = this.allocator.allocate(Uint16, this.tileCols >> 4, "Life.blankTileRow");
 
@@ -1153,6 +1186,9 @@
 
 			// blank row for life grid to prevent wrap
 			this.blankRow = this.allocator.allocate(Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow");
+
+			// blank row for 16 bit life grid
+			this.blankRow16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16");
 
 			// blank tile row to prevent wrap
 			this.blankTileRow = this.allocator.allocate(Uint16, this.tileCols >> 4, "Life.blankTileRow");
@@ -1482,6 +1518,97 @@
 		this.state6Alive = Array.matrix(Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Alive");
 		this.state6Cells = Array.matrix(Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Cells");
 		this.state6TileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.state6TileGrid");
+	};
+
+	// populate the state6 mask from the colour grid
+	Life.prototype.populateState6MaskFromColGrid = function() {
+		var x = 0,
+		    y = 0,
+
+		    // mask rows
+		    maskRow0 = null,
+		    maskRow1 = null,
+		    maskRow2 = null,
+		    cellsRow = null,
+
+		    // width and height masks
+		    wm = this.widthMask,
+		    hm = this.heightMask,
+
+		    // multi-state view
+		    overlayRow = null,
+
+		    // bit offset
+		    offset = 0,
+
+		    // tile grid
+		    tileGrid = this.state6TileGrid,
+		    tileRow0 = null,
+		    tileRow1 = null,
+		    tileRow2 = null,
+
+		    // tile size (2^n)
+			tilePower = this.tilePower,
+			
+			// state 6 value in colour grid
+			state6 = ViewConstants.stateMap[6] + 128;
+
+		// clear current mask and cells
+		for (y = 0; y < this.state6Mask.length; y += 1) {
+			this.state6Mask[y].set(this.blankRow16);
+			this.state6Cells[y].set(this.blankRow16);
+			this.state6Alive[y].set(this.blankRow16);
+		}
+
+		// clear state6 tile grid
+		for (y = 0; y < this.state6TileGrid.length; y += 1) {
+			this.state6TileGrid[y].set(this.blankTileRow);
+		}
+
+		// remove bits from the mask that are state 6 in the pattern
+		for (y = 1; y < this.height - 1; y += 1) {
+			// get the rows
+			overlayRow = this.overlayGrid[y];
+			maskRow0 = this.state6Mask[(y - 1) & hm];
+			maskRow1 = this.state6Mask[y & hm];
+			maskRow2 = this.state6Mask[(y + 1) & hm];
+			cellsRow = this.state6Cells[y & hm];
+			tileRow0 = tileGrid[((y - 1) & hm) >> tilePower];
+			tileRow1 = tileGrid[(y & hm) >> tilePower];
+			tileRow2 = tileGrid[((y + 1) & hm) >> tilePower];
+
+			// check row
+			for (x = 1; x <= this.width - 1; x += 1) {
+				// check for state 6
+				if (overlayRow[x] === state6) {
+					// set the cell position itself
+					offset = x & wm;
+					cellsRow[offset >> 4] |= (1 << (~offset & 15));
+
+					// set the cells around the state 6 cell in the mask
+					maskRow0[offset >> 4] |= (1 << (~offset & 15));
+					maskRow1[offset >> 4] |= (1 << (~offset & 15));
+					maskRow2[offset >> 4] |= (1 << (~offset & 15));
+					tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					offset = (x - 1) & wm;
+					maskRow0[offset >> 4] |= (1 << (~offset & 15));
+					maskRow1[offset >> 4] |= (1 << (~offset & 15));
+					maskRow2[offset >> 4] |= (1 << (~offset & 15));
+					tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					offset = (x + 1) & wm;
+					maskRow0[offset >> 4] |= (1 << (~offset & 15));
+					maskRow1[offset >> 4] |= (1 << (~offset & 15));
+					maskRow2[offset >> 4] |= (1 << (~offset & 15));
+					tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+				}
+			}
+		}
 	};
 
 	// populate the state6 mask

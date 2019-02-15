@@ -1933,7 +1933,7 @@
 
 	// draw a single cell
 	View.prototype.drawCell = function(x, y, colour) {
-		this.engine.setState(x, y, colour);
+		return this.engine.setState(x, y, colour);
 	};
 
 	// draw a line of cells using Bresenham
@@ -1945,7 +1945,10 @@
 		    err = dx - dy,
 		    e2 = 0,
 		    w = this.engine.width,
-		    h = this.engine.height;
+			h = this.engine.height,
+
+			// whether LifeHistory state6 changed
+			result = false;
 
 		// see if the line is on the display
 		if (!((startX < 0 && endX < 0) || (startX >= w && endX >= w) || (startY < 0 && endY < 0) || (startY >= h && endY >= h))) {
@@ -1953,7 +1956,7 @@
 			if (startX >= 0 && startX < w && startY >=0 && startY < h && endX >= 0 && endX < w && endY >= 0 && endY < h) {
 				// line all on display so no bounds checking
 				// set the first point
-				this.drawCell(startX, startY, colour);
+				result |= this.drawCell(startX, startY, colour);
 
 				// loop for each pixel on the line
 				while (!((startX === endX) && (startY === endY))) {
@@ -1969,13 +1972,13 @@
 					}
 
 					// draw the point
-					this.drawCell(startX, startY, colour);
+					result |= this.drawCell(startX, startY, colour);
 				}
 			} else {
 				// some or all of the line is off display so use bounds checking
 				// set the first point
 				if (startX >= 0 && startX < w && startY >=0 && startY < h) {
-					this.drawCell(startX, startY, colour);
+					result |= this.drawCell(startX, startY, colour);
 				}
 
 				// loop for each pixel on the line
@@ -1993,11 +1996,14 @@
 
 					// draw the point
 					if (startX >= 0 && startX < w && startY >=0 && startY < h) {
-						this.drawCell(startX, startY, colour);
+						result |= this.drawCell(startX, startY, colour);
 					}
 				}
 			}
 		}
+
+		// return whether LifeHistory state6 changed
+		return result;
 	};
 
 	// set the x/y position on the UI
@@ -4043,7 +4049,10 @@
 			endCellY = this.cellY;
 
 			// draw cells
-			this.drawCellLine(startCellX, startCellY, endCellX, endCellY, this.penColour);
+			if (this.drawCellLine(startCellX, startCellY, endCellX, endCellY, this.penColour)) {
+				// update state 6 grid if required
+				this.engine.populateState6MaskFromColGrid();
+			}
 		}
 
 		// if the population is now non-zero then reset anything alive and died generation
@@ -11489,7 +11498,6 @@
 			if (this.engine.isLifeHistory) {
 				// check if state 6 is used
 				if (PatternManager.stateCount[6]) {
-					//this.engine.populateState6Mask(pattern, this.xOffset, this.yOffset, this.specifiedWidth, this.specifiedHeight);
 					this.engine.populateState6Mask(pattern, this.panX, this.panY);
 				}
 			}
