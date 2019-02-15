@@ -474,6 +474,9 @@
 		// whether picking state
 		this.pickMode = false;
 
+		// whether to show states
+		this.showStates = false;
+
 		// whether smart drawing is on
 		this.smartDrawing = true;
 
@@ -1074,6 +1077,9 @@
 
 		// pick button
 		this.pickToggle = null;
+
+		// states button
+		this.statesToggle = null;
 
 		// states list for drawing
 		this.stateList = null;
@@ -2917,8 +2923,8 @@
 		}
 
 		// update menus for drawing
-		this.stateList.deleted = hide || !this.drawing;
-		this.stateColsList.deleted = hide || !this.drawing;
+		this.stateList.deleted = hide || !this.drawing || !this.showStates;
+		this.stateColsList.deleted = hide || !this.drawing || !this.showStates;
 		for (i = 0; i < this.stateColsList.lower.length; i += 1) {
 			if (i <= 2) {
 				if (i === 0) {
@@ -2936,6 +2942,9 @@
 
 		// pick
 		this.pickToggle.deleted = hide || !this.drawing;
+
+		// states
+		this.statesToggle.deleted = hide || !this.drawing;
 	};
 
 	// update infobar
@@ -4193,7 +4202,7 @@
 			icons = new Image();
 
 			// load the icons from the image file
-			icons.src = "data:image/png;base64,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";
+			icons.src = "data:image/png;base64,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";
 				
 			// save the image
 			ViewConstants.icons = icons;
@@ -4218,6 +4227,7 @@
 		this.iconManager.add("lines", w, h);
 		this.iconManager.add("pan", w, h);
 		this.iconManager.add("pick", w, h);
+		this.iconManager.add("states", w, h);
 	};
 
 	// update grid icon based on hex or square mode
@@ -4575,6 +4585,15 @@
 		}
 
 		return [me.popGraphLines];
+	};
+
+	// states toggle
+	View.prototype.toggleStates = function(newValue, change, me) {
+		if (change) {
+			me.showStates = newValue[0];
+		}
+
+		return [me.showStates];
 	};
 
 	// pick toggle
@@ -6694,6 +6713,11 @@
 		this.pickToggle = this.viewMenu.addListItem(this.togglePick, Menu.northWest, 0, 40, 40, 40, [""], [this.pickMode], Menu.multi);
 		this.pickToggle.icon = [this.iconManager.icon("pick")];
 		this.pickToggle.toolTip = ["pick state"];
+
+		// states toggle
+		this.statesToggle = this.viewMenu.addListItem(this.toggleStates, Menu.northWest, 45, 40, 40, 40, [""], [this.showStates], Menu.multi);
+		this.statesToggle.icon = [this.iconManager.icon("states")];
+		this.statesToggle.toolTip = ["toggle states"];
 
 		// add menu toggle button
 		this.navToggle = this.viewMenu.addListItem(null, Menu.southEast, -40, -40, 40, 40, [""], [false], Menu.multi);
@@ -10865,6 +10889,7 @@
 	View.prototype.setupStateList = function() {
 		// reset drawing state
 		this.drawState = 1;
+		this.statesToggle.current = [this.toggleStates([true], true, this)];
 
 		if (this.engine.isLifeHistory) {
 			// add LifeHistory states for editor
