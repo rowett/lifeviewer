@@ -4,7 +4,8 @@ Build 294
 - hokey Shift "F1" to toggle smart drawing
 	- smart drawing automatically deletes cells if you start drawing on a cell whose state is the current drawing state
 - always create overlay for LifeHistory patterns since states can be created by the editor
-- added pick state control to editor UI
+- added pick state control to editor
+- added toggle states display control to editor
 
 Build 293
 - fixed HROT multi-state pattern runtime
