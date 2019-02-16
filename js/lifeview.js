@@ -3714,9 +3714,6 @@
 		var name = "";
 
 		if (change) {
-			if (newValue >= me.stateList.lower.length) {
-				newValue = me.stateList.lower.length - 1;
-			}
 			me.drawState = newValue;
 			if (me.engine.multiNumStates <= 2) {
 				if (me.engine.isLifeHistory) {
@@ -3738,6 +3735,11 @@
 				}
 			}
 			me.menuManager.notification.notify("Drawing with state: " + name, 15, 80, 15, true);
+
+			// limit control to 7 states
+			if (newValue >= me.stateList.lower.length) {
+				newValue = me.stateList.lower.length - 1;
+			}
 
 			// turn off pick mode
 			me.pickToggle.current = me.togglePick([false], true, me);
