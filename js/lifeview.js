@@ -130,7 +130,7 @@
 		/** @const {Array<number>} */ stateMap : [0, 6, 2, 5, 3, 4, 1],
 
 		// state names for [R]History
-		/** @const {Array<string>} */ stateNames : ["Off", "On", "History", "Mark1", "MarkOff", "Mark2", "Kill"],
+		/** @const {Array<string>} */ stateNames : ["Dead", "Alive", "History", "Mark1", "MarkOff", "Mark2", "Kill"],
 
 		// display names for [R]History states
 		/** @const {Array<string>} */ stateDisplayNames : ["OFF", "ON", "HISTORY", "MARK1", "MARKOFF", "MARK2", "KILL"],
