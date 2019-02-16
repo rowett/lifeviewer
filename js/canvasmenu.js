@@ -71,6 +71,9 @@
 
 		// default font size
 		this.defaultFontSize = 30;
+
+		// vertical adjust for notifitions
+		this.notificationYOffset = 45;
 	}
 
 	// return whether a notification is displayed
@@ -322,13 +325,13 @@
 	// update notification
 	TextAlert.prototype.update = function() {
 		// update the standard message
-		if (this.updateNotification(this.message, this.textAppear, this.textHold, this.textDisappear, this.startTime, 36, false)) {
+		if (this.updateNotification(this.message, this.textAppear, this.textHold, this.textDisappear, this.startTime, 36 + this.notificationYOffset, false)) {
 			this.message = "";
 		}
 
 		// update the priority message
 		if (!this.menuManager.thumbnail || this.priorityMessage === "Expand" || this.priorityMessage === "Launch") {
-			if (this.updateNotification(this.priorityMessage, this.priorityAppear, this.priorityHold, this.priorityDisappear, this.priorityStart, 0, true)) {
+			if (this.updateNotification(this.priorityMessage, this.priorityAppear, this.priorityHold, this.priorityDisappear, this.priorityStart, this.notificationYOffset, true)) {
 				this.priorityMessage = "";
 			}
 		}
