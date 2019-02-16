@@ -1948,7 +1948,7 @@
 			h = this.engine.height,
 
 			// whether LifeHistory state6 changed
-			result = false;
+			result = 0;
 
 		// see if the line is on the display
 		if (!((startX < 0 && endX < 0) || (startX >= w && endX >= w) || (startY < 0 && endY < 0) || (startY >= h && endY >= h))) {
@@ -2931,19 +2931,34 @@
 		// update menus for drawing
 		this.stateList.deleted = hide || !this.drawing || !this.showStates;
 		this.stateColsList.deleted = hide || !this.drawing || !this.showStates;
-		for (i = 0; i < this.stateColsList.lower.length; i += 1) {
-			if (i <= 2) {
-				if (i === 0) {
-					value = i;
-				} else if (i === 1) {
-					value = LifeConstants.aliveStart;
+		if (this.engine.multiNumStates <= 2) {
+			// 2-state potentially with LifeHistory
+			for (i = 0; i < this.stateColsList.lower.length; i += 1) {
+				if (i <= 2) {
+					// 2 state
+					if (i === 0) {
+						value = i;
+					} else if (i === 1) {
+						value = LifeConstants.aliveStart;
+					} else {
+						value = LifeConstants.deadMin;
+					}
 				} else {
-					value = LifeConstants.deadMin;
+					// LifeHistory state
+					value = 128 + ViewConstants.stateMap[i];
 				}
-			} else {
-				value = 128 + ViewConstants.stateMap[i];
+				this.stateColsList.bgColList[i] = "rgb(" + this.engine.redChannel[value] + "," + this.engine.greenChannel[value] + "," + this.engine.blueChannel[value] + ")";
 			}
-			this.stateColsList.bgColList[i] = "rgb(" + this.engine.redChannel[value] + "," + this.engine.greenChannel[value] + "," + this.engine.blueChannel[value] + ")";
+		} else {
+			// multi-state generations style
+			for (i = 0; i < this.stateColsList.lower.length; i += 1) {
+				if (i === 0) {
+					value = 0;
+				} else {
+					value = this.historyStates + this.engine.multiNumStates - i;
+				}
+				this.stateColsList.bgColList[i] = "rgb(" + this.engine.redChannel[value] + "," + this.engine.greenChannel[value] + "," + this.engine.blueChannel[value] + ")";
+			}
 		}
 
 		// pick
@@ -3679,19 +3694,15 @@
 		var result = newValue;
 
 		if (change) {
-			if (me.engine.multiNumStates <= 2) {
-				switch (newValue) {
-					case ViewConstants.modeDraw:
-						me.drawing = true;
-						// turn off pick mode
-						me.pickToggle.current = me.togglePick([false], true, me);
-						break;
-					case ViewConstants.modePan:
-						me.drawing = false;
-						break;
-				}
-			} else {
-				result = ViewConstants.modePan;
+			switch (newValue) {
+				case ViewConstants.modeDraw:
+					me.drawing = true;
+					// turn off pick mode
+					me.pickToggle.current = me.togglePick([false], true, me);
+					break;
+				case ViewConstants.modePan:
+					me.drawing = false;
+					break;
 			}
 		}
 
@@ -3703,6 +3714,9 @@
 		var name = "";
 
 		if (change) {
+			if (newValue >= me.stateList.lower.length) {
+				newValue = me.stateList.lower.length - 1;
+			}
 			me.drawState = newValue;
 			if (me.engine.multiNumStates <= 2) {
 				if (me.engine.isLifeHistory) {
@@ -3710,13 +3724,26 @@
 				} else {
 					name = (me.drawState ? "Alive" : "Dead");
 				}
-				me.menuManager.notification.notify("Drawing with state: " + name, 15, 80, 15, true);
+			} else {
+				if (newValue === 0) {
+					me.drawState = 0;
+					name = "Dead";
+				} else {
+					me.drawState = me.engine.multiNumStates - newValue;
+					if (newValue == 1) {
+						name = "Alive";
+					} else {
+						name = "Dying " + String(newValue - 1);
+					}
+				}
 			}
+			me.menuManager.notification.notify("Drawing with state: " + name, 15, 80, 15, true);
+
 			// turn off pick mode
 			me.pickToggle.current = me.togglePick([false], true, me);
 		}
 
-		return me.drawState;
+		return newValue;
 	};
 
 	// drawing states colours list
@@ -4032,18 +4059,22 @@
 		var startCellX = 0,
 			startCellY = 0,
 			endCellX = 0,
-			endCellY = 0;
+			endCellY = 0,
+			testState = this.drawState;
 
 		// check if this is the start of drawing
 		if (fromX === -1 && fromY === -1) {
-			// for 2-state (not LifeHistory) set the pen to the state at the current position
-			if (this.engine.multiNumStates <= 2) {
-				this.penColour = this.readCell();
-				if (this.smartDrawing && (this.penColour === this.drawState)) {
-					this.penColour = 0;
-				} else {
-					this.penColour = this.drawState;
-				}
+			this.penColour = this.readCell();
+			// adjust test state if generations style
+			if (this.engine.multiNumStates > 2) {
+				testState = this.engine.multiNumStates - testState;
+			}
+
+			// check for smart drawing
+			if (this.smartDrawing && (this.penColour === testState)) {
+				this.penColour = 0;
+			} else {
+				this.penColour = this.drawState;
 			}
 		} else {
 			// draw from the last position to the current position
@@ -6278,13 +6309,9 @@
 					me.smartDrawing = !me.smartDrawing;
 					me.menuManager.notification.notify("Smart Drawing " + (me.smartDrawing ? "On" : "Off"), 15, 40, 15, true);
 				} else {
-					if (me.engine.multiNumStates <= 2) {
-						me.drawing = !me.drawing;
-						me.modeList.current = me.viewModeList((me.drawing ? ViewConstants.modeDraw : ViewConstants.modePan), true, me);
-						me.menuManager.notification.notify((me.drawing ? "Draw" : "Pan") + " Mode", 15, 40, 15, true);
-					} else {
-						me.menuManager.notification.notify("Drawing not available!", 15, 180, 15, true);
-					}
+					me.drawing = !me.drawing;
+					me.modeList.current = me.viewModeList((me.drawing ? ViewConstants.modeDraw : ViewConstants.modePan), true, me);
+					me.menuManager.notification.notify((me.drawing ? "Draw" : "Pan") + " Mode", 15, 40, 15, true);
 				}
 				break;
 
@@ -10915,6 +10942,11 @@
 
 	// setup state list for drawing
 	View.prototype.setupStateList = function() {
+		var i = 0,
+			states = this.engine.multiNumStates,
+			moreStates = false,
+			message = "";
+
 		// reset drawing state
 		this.drawState = 1;
 		this.statesToggle.current = [this.toggleStates([true], true, this)];
@@ -10933,18 +10965,58 @@
 			this.stateColsList.bgAlpha = 1;
 			this.stateColsList.current = [false, false, false, false, false, false, false];
 		} else {
-			// add states for editor
-			this.stateList.lower = ["0", "1"];
-			this.stateList.width = 80;
-			this.stateList.toolTip = ["dead", "alive"];
-			this.stateList.current = this.drawState;
-
-			// add state colours for editor
-			this.stateColsList.lower = ["", ""];
-			this.stateColsList.width = 80;
-			this.stateColsList.toolTip = ["dead", "alive"];
-			this.stateColsList.bgAlpha = 1;
-			this.stateColsList.current = [false, false];
+			// check for 2 state
+			if (states <= 2) {
+				// add states for editor
+				this.stateList.lower = ["0", "1"];
+				this.stateList.width = 80;
+				this.stateList.toolTip = ["dead", "alive"];
+				this.stateList.current = this.drawState;
+	
+				// add state colours for editor
+				this.stateColsList.lower = ["", ""];
+				this.stateColsList.width = 80;
+				this.stateColsList.toolTip = ["dead", "alive"];
+				this.stateColsList.bgAlpha = 1;
+				this.stateColsList.current = [false, false];
+			} else {
+				this.drawState = this.engine.multiNumStates - 1;
+				if (states > 7) {
+					states = 7;
+					moreStates = true;
+				}
+				this.stateList.lower = [];
+				this.stateList.toolTip = [];
+				this.stateList.width = 40 * states;
+				this.stateList.current = 1;
+				this.stateColsList.lower = [];
+				this.stateColsList.toolTip = [];
+				this.stateColsList.current = [];
+				this.stateColsList.width = 40 * states;
+				this.stateColsList.bgAlpha = 1;
+				for (i = 0; i < states; i += 1) {
+					this.stateList.lower[i] = String[i];
+					if (moreStates && i == states - 1) {
+						message = "more...";
+						this.stateList.lower[i] = "+";
+					} else {
+						if (i === 0) {
+							message = "dead";
+						} else {
+							if (i === 1) {
+								message = "alive";
+							} else {
+								message = "dying " + String(i - 1);
+							}
+						}
+						this.stateList.lower[i] = String(i);
+					}
+					this.stateList.toolTip[i] = message;
+					this.stateColsList.lower[i] = "";
+					this.stateColsList.toolTip[i] = message;
+					this.stateColsList.current[i] = false;
+				}
+			}
 		}
 	};
 

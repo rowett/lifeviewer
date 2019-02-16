@@ -619,11 +619,17 @@
 		    rightX = leftX + this.boundedGridWidth - 1,
 			topY = bottomY + this.boundedGridHeight - 1,
 
+			// multi-state alive cell
+			aliveState = 0,
+
 			// current cell state
 			current = 0,
 
+			// whether cell should be alive in bit grid
+			bitAlive = false,
+
 			// whether a cell was or became LifeHistory state6
-			result = false;
+			result = 0;
 
 		// check if coordinates are on the grid
 		if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
@@ -632,9 +638,17 @@
 				// do nothing
 			} else {
 				// check for multi-state rules
-				if (this.multiNumStates <= 2) {
+				if (!this.isHROT) {
+					if (this.multiNumStates <= 2) {
+						// 2-state
+						bitAlive = ((state & 1) === 1);
+					} else {
+						// generations
+						bitAlive = (state === this.multiNumStates - 1);
+					}
+
 					// draw alive or dead
-					if ((state & 1) === 1) {
+					if (bitAlive) {
 						// adjust population if cell was dead
 						if ((grid[y][x >> 4] & (1 << (~x & 15))) === 0) {
 							this.population += 1;
@@ -668,9 +682,9 @@
 							current = ViewConstants.stateMap.indexOf(current - 128);
 						}
 						if ((state === 6 && current !== 6) || (state !== 6 && current === 6)) {
-							result = true;
+							result = 1;
 						}
-
+	
 						// update colour grid if history state
 						if (state === 2) {
 							colourGrid[y][x] = LifeConstants.deadMin;
@@ -684,33 +698,65 @@
 						}
 					}
 
-					// adjust bounding box
-					if (state > 1) {
-						if (x < zoomBox.leftX) {
-							zoomBox.leftX = x;
+					// check for generations style rule
+					if (this.multiNumStates > 2) {
+						// write the correct state to the colour grid
+						if (state > 0) {
+							state = this.historyStates + state;
 						}
-						if (x > zoomBox.rightX) {
-							zoomBox.rightX = x;
+						colourGrid[y][x] = state;
+					}
+				} else {
+					// update population for HROT
+					current = colourGrid[y][x];
+					if (this.multiNumStates === 2) {
+						aliveState = this.aliveStart;
+						if (state === 1) {
+							state = this.aliveStart;
 						}
-						if (y < zoomBox.bottomY) {
-							zoomBox.bottomY = y;
+						colourGrid[y][x] = state;
+					} else {
+						aliveState = this.multiNumStates - 1 + this.historyStates;
+						if (state > 0) {
+							state = this.historyStates + state;
 						}
-						if (y > zoomBox.topY) {
-							zoomBox.topY = y;
+						colourGrid[y][x] = state;
+					}
+					if (current !== aliveState && state === aliveState) {
+						this.population += 1;
+					} else {
+						if (current === aliveState && state !== aliveState) {
+							this.population -= 1;
 						}
-						if (this.isHROT) {
-							if (x < HROTBox.leftX) {
-								HROTBox.leftX = x;
-							}
-							if (x > HROTBox.rightX) {
-								HROTBox.rightX = x;
-							}
-							if (y < HROTBox.bottomY) {
-								HROTBox.bottomY = y;
-							}
-							if (y > HROTBox.topY) {
-								HROTBox.topY = y;
-							}
+					}
+				}
+
+				// adjust bounding box
+				if (state > 0) {
+					if (x < zoomBox.leftX) {
+						zoomBox.leftX = x;
+					}
+					if (x > zoomBox.rightX) {
+						zoomBox.rightX = x;
+					}
+					if (y < zoomBox.bottomY) {
+						zoomBox.bottomY = y;
+					}
+					if (y > zoomBox.topY) {
+						zoomBox.topY = y;
+					}
+					if (this.isHROT) {
+						if (x < HROTBox.leftX) {
+							HROTBox.leftX = x;
+						}
+						if (x > HROTBox.rightX) {
+							HROTBox.rightX = x;
+						}
+						if (y < HROTBox.bottomY) {
+							HROTBox.bottomY = y;
+						}
+						if (y > HROTBox.topY) {
+							HROTBox.topY = y;
 						}
 					}
 				}
