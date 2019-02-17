@@ -822,6 +822,9 @@
 		// help display line
 		this.displayHelp = 0;
 
+		// whether to show help sections
+		this.showSections = false;
+
 		// number of help lines
 		this.numHelpLines = 100;
 
@@ -987,6 +990,12 @@
 
 		// help button
 		this.helpToggle = null;
+
+		// topics button
+		this.topicsButton = null;
+
+		// sections button
+		this.sectionsButton = null;
 
 		// help topic buttons
 		this.helpKeysButton = null;
@@ -2899,8 +2908,8 @@
 		}
 
 		// help topics
-		this.topicsButton.deleted =  !(this.displayHelp && (this.helpTopic !== ViewConstants.welcomeTopic));
-		this.helpSectionList.deleted =  !(this.displayHelp && (this.helpTopic !== ViewConstants.welcomeTopic));
+		this.topicsButton.deleted = !(this.displayHelp && (this.helpTopic !== ViewConstants.welcomeTopic));
+		this.helpSectionList.deleted = (!(this.displayHelp && (this.helpTopic !== ViewConstants.welcomeTopic))) || !this.showSections;
 
 		// help individual topics buttons
 		this.helpKeysButton.deleted = showTopicButtons;
@@ -2910,6 +2919,9 @@
 		this.helpColoursButton.deleted =  showTopicButtons;
 		this.helpAliasesButton.deleted =  showTopicButtons;
 		this.helpMemoryButton.deleted =  showTopicButtons;
+
+		// help sections
+		this.sectionsButton.deleted = (!(this.displayHelp && (this.helpTopic !== ViewConstants.welcomeTopic))) || this.showSections;
 
 		// check if the help section control needs to be updated
 		if (this.updateSectionControl) {
@@ -2966,6 +2978,22 @@
 
 		// states
 		this.statesToggle.deleted = hide || !this.drawing;
+
+		// update the help sections list
+		if (this.displayHelp > 0) {
+			i = 0;
+			value = -1;
+			while (i < this.helpSections.length && value === -1) {
+				if (this.helpSections[i][0] > this.displayHelp) {
+					value = this.helpSections[i][0];
+				} else {
+					i += 1;
+				}
+			}
+			if (value !== -1) {
+				this.helpSectionList.current = i - 1;
+			}
+		}
 	};
 
 	// update infobar
@@ -3635,6 +3663,9 @@
 		me.helpTopic = newValue;
 		me.displayHelp = 1;
 
+		// show sections
+		me.showSections = true;
+
 		// clear help widths cache
 		me.helpFixedCache = [];
 		me.helpVariableCache = [];
@@ -3684,6 +3715,7 @@
 
 		if (change) {
 			me.displayHelp = me.helpSections[newValue][0];
+			me.showSections = false;
 		}
 
 		return result;
@@ -4608,6 +4640,11 @@
 		// mark toggle required
 		me.menuManager.toggleRequired = true;
 	};
+
+	// sections button
+	View.prototype.sectionsPressed = function(me) {
+		me.showSections = true;
+	}
 
 	// topics button
 	View.prototype.topicsPressed = function(me) {
@@ -6584,6 +6621,10 @@
 		// help show topics button
 		this.topicsButton = this.viewMenu.addButtonItem(this.topicsPressed, Menu.northEast, -40, 50, 40, 40, ["^"]);
 		this.topicsButton.toolTip = ["show help topics"];
+
+		// help sections button
+		this.sectionsButton = this.viewMenu.addButtonItem(this.sectionsPressed, Menu.northEast, -40, 100, 40, 40, ["<"]);
+		this.sectionsButton.toolTip = ["show help sections"];
 
 		// help individual topic buttons
 		this.helpKeysButton = this.viewMenu.addButtonItem(this.keysTopicPressed, Menu.north, 0, 50, 150, 40, ["Keys"]);
