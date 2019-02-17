@@ -1,6 +1,14 @@
+Build 296
+- fixed an issue with label positions being validated against screen coordinates and not cell coordinates
+- fixed an issue with validating against maximum grid size
+- fixed an issue with grid view offset not being correctly reset when grid resized to default
+- multi-state drawing is now not limited to 7 states
+- Help sections are display when topic first displayed and disappear when clicked and then can be reshown with a button
+- Help sections list updates as Help topic scrolls
+
 Buld 295
 - added notifications when using Pick control or chosing a drawing colour
-- added multi-state drawing
+- added multi-state drawing (but colour selection limited to 7 states currently)
 
 Build 294
 - added Help section UI to each topic

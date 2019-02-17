@@ -170,7 +170,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 295,
+		/** @const {number} */ versionBuild : 296,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -8384,7 +8384,7 @@
 								numberValue = scriptReader.getNextTokenAsNumber();
 
 								// check it is in range
-								if (numberValue >= -this.engine.maxGridSize / 2 && numberValue <= this.engine.maxGridSize / 2) {
+								if (numberValue >= 0 && numberValue < this.engine.maxGridSize) {
 									isNumeric = false;
 									x = numberValue;
 
@@ -8396,7 +8396,7 @@
 										numberValue = scriptReader.getNextTokenAsNumber();
 
 										// check it is in range
-										if (numberValue >= -this.engine.maxGridSize / 2 && numberValue <= this.engine.maxGridSize / 2) {
+										if (numberValue >= 0 && numberValue < this.engine.maxGridSize) {
 											isNumeric = false;
 											y = numberValue;
 
@@ -11359,6 +11359,9 @@
 		// set the default zoom
 		this.engine.zoom = 6;
 
+		// reset the grid size
+		this.engine.resetGridSize(this.defaultGridWidth, this.defaultGridHeight);
+
 		// set the default position
 		this.engine.xOff = this.engine.width / 2;
 		this.engine.yOff = this.engine.height / 2;
@@ -11367,6 +11370,8 @@
 		this.defaultZoomUsed = false;
 		this.defaultXUsed = false;
 		this.defaultYUsed = false;
+		this.defaultX = 0;
+		this.defaultY = 0;
 
 		// clear requested width and height
 		this.requestedWidth = -1;
@@ -11584,7 +11589,7 @@
 			this.engine.allocateGraphData(!this.graphDisabled);
 
 			// check pattern size (script command may have increased maximum allowed size)
-			if (pattern.width > this.engine.maxGridSize || pattern.height >= this.engine.maxGridSize) {
+			if (pattern.width > this.engine.maxGridSize || pattern.height > this.engine.maxGridSize) {
 				this.failureReason = "Pattern too big (maximum " + this.engine.maxGridSize + "x" + this.engine.maxGridSize + ")";
 				this.tooBig = true;
 				this.executable = false;
@@ -11635,9 +11640,6 @@
 				this.xOffset += this.posXOffset;
 				this.yOffset += this.posYOffset;
 			}
-
-			// reset the grid size
-			this.engine.resetGridSize(this.defaultGridWidth, this.defaultGridHeight);
 
 			// check if the grid is smaller than the pattern and/or bounded grid plus the maximum step speed
 			borderSize = ViewConstants.maxStepSpeed;
