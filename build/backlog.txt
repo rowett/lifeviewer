@@ -5,21 +5,21 @@ Investigate "Extended" Generations
 Investigate deficient rules
 Grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
 User preferences
-[STARTED]Investigate alternate rules (one for even, one for odd)
-- use | as a rule separator
 [STARTED]Meta world view
 - extend Controller to provide access to all patterns on a page
 - new script command [[ MULTI ]] to switch to meta world view
 - new UI control somewhere to switch back
 [STARTED]Pattern Editor
-    [DONE] Basic 2-state editing with no undo
-    [IN PROGRESS] LifeHistory support
+    [DONE] 2-state editing
+    [DONE]LifeHistory support
+    [DONE]multi-state support
+    [DONE]colour picker
     - improved LifeHistory drawing modes
     - reset to include the overlay grid
     - convert current pattern to RLE (for Ctrl-C Copy)
     - undo stack
-    - multi-state support
     - selections
+[DONE]Alternating rules
 [DONE]LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE stuff rather than just clear)
 [DONE]Memory footprint reduction
 [DONE]Implement faster Ltl/HROT von Neumann algorithm
