@@ -1,6 +1,6 @@
 Buld 295
 - added notifications when using Pick control or chosing a drawing colour
-- added multi-state drawing (but colour selection limited to 7 states currently)
+- added multi-state drawing
 
 Build 294
 - added Help section UI to each topic

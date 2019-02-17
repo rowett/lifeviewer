@@ -1421,10 +1421,12 @@
 		if (item.upper === Menu.single) {
 			// single so draw set item
 			i =  item.current;
-			if (item.orientation === Menu.horizontal) {
-				this.context.fillRect(x + i * itemSize + 1, y + 1, itemSize - 2, height - 2);
-			} else {
-				this.context.fillRect(x + 1, y + 1 + i * itemSize, width - 2, itemSize - 2);
+			if (i >= 0 && i < l) {
+				if (item.orientation === Menu.horizontal) {
+					this.context.fillRect(x + i * itemSize + 1, y + 1, itemSize - 2, height - 2);
+				} else {
+					this.context.fillRect(x + 1, y + 1 + i * itemSize, width - 2, itemSize - 2);
+				}
 			}
 		} else {
 			// multi so draw all set items

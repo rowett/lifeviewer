@@ -468,6 +468,9 @@
 		// whether the section control needs to be updated
 		this.updateSectionControl = true;
 
+		// start state for states list
+		this.startState = 0;
+
 		// current drawing state
 		this.drawState = 1;
 
@@ -994,6 +997,9 @@
 		// topics button
 		this.topicsButton = null;
 
+		// states slider
+		this.statesSlider = null;
+
 		// sections button
 		this.sectionsButton = null;
 
@@ -1459,6 +1465,19 @@
 		}
 
 		return [result, result * 100];
+	};
+
+	// states range
+	View.prototype.viewStatesRange = function(newValue, change, me) {
+		var result = newValue;
+
+		// check if changing
+		if (change) {
+			me.startState = ((me.engine.multiNumStates - 7) * newValue[0]) | 0;
+		}
+		result[1] = me.startState + "-" + (me.startState + 6);
+
+		return result;
 	};
 
 	// zoom range
@@ -2964,10 +2983,10 @@
 		} else {
 			// multi-state generations style
 			for (i = 0; i < this.stateColsList.lower.length; i += 1) {
-				if (i === 0) {
+				if (i + this.startState === 0) {
 					value = 0;
 				} else {
-					value = this.historyStates + this.engine.multiNumStates - i;
+					value = this.historyStates + this.engine.multiNumStates - (i + this.startState);
 				}
 				this.stateColsList.bgColList[i] = "rgb(" + this.engine.redChannel[value] + "," + this.engine.greenChannel[value] + "," + this.engine.blueChannel[value] + ")";
 			}
@@ -2978,6 +2997,14 @@
 
 		// states
 		this.statesToggle.deleted = hide || !this.drawing;
+
+		// states slider
+		this.statesSlider.deleted = hide || !this.drawing || !this.showStates || (this.engine.multiNumStates < 8);
+
+		// update states list from slider
+		if (this.engine.multiNumStates > 7) {
+			this.updateStatesList();
+		}
 
 		// update the help sections list
 		if (this.displayHelp > 0) {
@@ -3743,7 +3770,8 @@
 
 	// drawing states list
 	View.prototype.viewStateList = function(newValue, change, me) {
-		var name = "";
+		var name = "",
+			result = newValue;
 
 		if (change) {
 			me.drawState = newValue;
@@ -3754,6 +3782,7 @@
 					name = (me.drawState ? "Alive" : "Dead");
 				}
 			} else {
+				newValue += me.startState;
 				if (newValue === 0) {
 					me.drawState = 0;
 					name = "Dead";
@@ -3766,18 +3795,13 @@
 					}
 				}
 			}
-			me.menuManager.notification.notify("Drawing with state: " + name, 15, 80, 15, true);
-
-			// limit control to 7 states
-			if (newValue >= me.stateList.lower.length) {
-				newValue = me.stateList.lower.length - 1;
-			}
+			me.menuManager.notification.notify("Drawing with state " + newValue + " (" + name + ")", 15, 80, 15, true);
 
 			// turn off pick mode
 			me.pickToggle.current = me.togglePick([false], true, me);
 		}
 
-		return newValue;
+		return result;
 	};
 
 	// drawing states colours list
@@ -4146,7 +4170,8 @@
 		    dy = 0,
 		    angle = 0,
 		    sinAngle = 0,
-			cosAngle = 0;
+			cosAngle = 0,
+			saveStart = 0;
 
 		// check if this is a drag or cancel drag
 		if (dragOn) {
@@ -4241,7 +4266,12 @@
 				if (me.pickMode && me.engine.zoom >= 1) {
 					if (x !== -1) {
 						me.penColour = me.readCell();
+						// clear start state for pick
+						saveStart = me.startState;
+						me.startState = 0;
 						me.stateList.current = me.viewStateList(me.penColour, true, me);
+						// restore start state
+						me.startState = saveStart;
 					}
 				}
 			}
@@ -6839,14 +6869,18 @@
 		this.playList.toolTip = ["reset", "previous generation", "pause", "play"];
 
 		// add states for editor
-		this.stateList = this.viewMenu.addListItem(this.viewStateList, Menu.north, 0, 40, 280, 20, ["0", "1", "2", "3", "4", "5", "6"], this.drawState, Menu.single);
+		this.stateList = this.viewMenu.addListItem(this.viewStateList, Menu.northEast, -280, 40, 280, 20, ["0", "1", "2", "3", "4", "5", "6"], this.drawState, Menu.single);
 		this.stateList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
 		this.stateList.font = "14px Arial";
 
 		// add state colours for editor
-		this.stateColsList = this.viewMenu.addListItem(this.viewStateColsList, Menu.north, 0, 60, 280, 20, ["", "", "", "", "", "", ""], [false, false, false, false, false, false, false], Menu.multi);
+		this.stateColsList = this.viewMenu.addListItem(this.viewStateColsList, Menu.northEast, -280, 60, 280, 20, ["", "", "", "", "", "", ""], [false, false, false, false, false, false, false], Menu.multi);
 		this.stateColsList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
 		this.stateColsList.bgAlpha = 1;
+
+		// add slider for states
+		this.statesSlider = this.viewMenu.addRangeItem(this.viewStatesRange, Menu.northWest, 90, 40, 85, 40, 0, 1, 0, true, "", "", -1);
+		this.statesSlider.toolTip = "select drawing states range";
 
 		// add items to the main toggle menu
 		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.labelButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton], []);
@@ -6855,7 +6889,7 @@
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
 
 		// add help items to the toggle
-		this.helpToggle.addItemsToToggleMenu([this.helpSectionList], []);
+		this.helpToggle.addItemsToToggleMenu([this.helpSectionList, this.topicsButton, this.sectionsButton], []);
 	};
 
 	// attached the viewer to a canvas element
@@ -10983,15 +11017,58 @@
 		this.resize();
 	};
 
+	// update states list
+	View.prototype.updateStatesList = function() {
+		var states = this.engine.multiNumStates,
+			i = 0,
+			state = 0,
+			message = "";
+
+		// update the states list and colours list
+		if (states > 7) {
+			states = 7;
+		}
+		this.stateList.lower = [];
+		this.stateList.toolTip = [];
+		this.stateList.width = 40 * states;
+		this.stateColsList.lower = [];
+		this.stateColsList.toolTip = [];
+		this.stateColsList.current = [];
+		this.stateColsList.width = 40 * states;
+		this.stateColsList.bgAlpha = 1;
+		for (i = 0; i < 7; i += 1) {
+			state = i + this.startState;
+			this.stateList.lower[i] = String(state);
+			if (state === 0) {
+				message = "dead";
+			} else {
+				if (state === 1) {
+					message = "alive";
+				} else {
+					message = "dying " + String(state - 1);
+				}
+			}
+			this.stateList.toolTip[i] = message;
+			this.stateColsList.lower[i] = "";
+			this.stateColsList.toolTip[i] = message;
+			this.stateColsList.current[i] = false;
+		}
+
+		// update the selected state
+		state = this.drawState;
+		if (state > 0) {
+			state = this.engine.multiNumStates - state;
+		}
+		this.stateList.current = state - this.startState;
+	};
+
 	// setup state list for drawing
 	View.prototype.setupStateList = function() {
-		var i = 0,
-			states = this.engine.multiNumStates,
-			moreStates = false,
-			message = "";
+		var states = this.engine.multiNumStates;
 
 		// reset drawing state
 		this.drawState = 1;
+		this.startState = 0;
 		this.statesToggle.current = [this.toggleStates([true], true, this)];
 
 		if (this.engine.isLifeHistory) {
@@ -11023,44 +11100,23 @@
 				this.stateColsList.bgAlpha = 1;
 				this.stateColsList.current = [false, false];
 			} else {
-				this.drawState = this.engine.multiNumStates - 1;
+				this.drawState = states - 1;
 				if (states > 7) {
 					states = 7;
-					moreStates = true;
 				}
-				this.stateList.lower = [];
-				this.stateList.toolTip = [];
-				this.stateList.width = 40 * states;
-				this.stateList.current = 1;
-				this.stateColsList.lower = [];
-				this.stateColsList.toolTip = [];
-				this.stateColsList.current = [];
-				this.stateColsList.width = 40 * states;
-				this.stateColsList.bgAlpha = 1;
-				for (i = 0; i < states; i += 1) {
-					this.stateList.lower[i] = String[i];
-					if (moreStates && i == states - 1) {
-						message = "more...";
-						this.stateList.lower[i] = "+";
-					} else {
-						if (i === 0) {
-							message = "dead";
-						} else {
-							if (i === 1) {
-								message = "alive";
-							} else {
-								message = "dying " + String(i - 1);
-							}
-						}
-						this.stateList.lower[i] = String(i);
-					}
-					this.stateList.toolTip[i] = message;
-					this.stateColsList.lower[i] = "";
-					this.stateColsList.toolTip[i] = message;
-					this.stateColsList.current[i] = false;
+				this.updateStatesList();
+				this.stateList.width = 280;
+				this.stateColsList.width = 280;
+				this.statesSlider.current = this.viewStatesRange([0, 0], true, this);
+				if (this.engine.multiNumStates >= 100) {
+					this.statesSlider.font = "20px Arial";
+				} else {
+					this.statesSlider.font = "24px Arial";
 				}
 			}
 		}
+		this.stateList.setPosition(Menu.northEast, -this.stateList.width, 40);
+		this.stateColsList.setPosition(Menu.northEast, -this.stateColsList.width, 60);
 	};
 
 	// clear pattern data
