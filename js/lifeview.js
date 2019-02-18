@@ -1201,9 +1201,6 @@
 		// whether drawing
 		this.drawing = false;
 
-		// whether notified that Pan active
-		this.panNotified = false;
-
 		// pen colour for drawing
 		this.penColour = -1;
 	}
@@ -4239,24 +4236,8 @@
 					}
 				}
 			} else {
-				if (me.pickMode) {
-					if (me.engine.zoom < 1) {
-						if (!me.panNotified) {
-							me.menuManager.notification.notify("Zoom in to pick", 15, 120, 15, true);
-							me.panNotified = true;
-						}
-					}
-				} else {
-					if (me.drawing) {
-						if (me.engine.zoom < 1) {
-							if (!me.panNotified) {
-								me.menuManager.notification.notify("Zoom in to draw", 15, 120, 15, true);
-								me.panNotified = true;
-							}
-						} else {
-							me.drawCells(x, y, me.lastDragX, me.lastDragY);
-						}
-					}
+				if (me.drawing) {
+					me.drawCells(x, y, me.lastDragX, me.lastDragY);
 				}
 			}
 
@@ -4266,21 +4247,18 @@
 		} else {
 			// drag finished so check for pick mode
 			if (!fromKey) {
-				if (me.pickMode && me.engine.zoom >= 1) {
-					if (x !== -1) {
-						me.penColour = me.readCell();
-						// clear start state for pick
-						saveStart = me.startState;
-						me.startState = 0;
-						me.stateList.current = me.viewStateList(me.penColour, true, me);
-						// restore start state
-						me.startState = saveStart;
-					}
+				if (me.pickMode && x !== -1) {
+					me.penColour = me.readCell();
+					// clear start state for pick
+					saveStart = me.startState;
+					me.startState = 0;
+					me.stateList.current = me.viewStateList(me.penColour, true, me);
+					// restore start state
+					me.startState = saveStart;
 				}
 			}
 			me.lastDragX = -1;
 			me.lastDragY = -1;
-			me.panNotified = false;
 		}
 	};
 
@@ -10912,7 +10890,6 @@
 
 		// reset drawing mode
 		this.drawing = false;
-		this.panNotified = false;
 		this.drawingState = 1;
 	};
 	
