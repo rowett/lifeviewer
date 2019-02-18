@@ -3017,6 +3017,9 @@
 					i += 1;
 				}
 			}
+			if (i === this.helpSections.length) {
+				value = i;
+			}
 			if (value !== -1) {
 				this.helpSectionList.current = i - 1;
 			}
