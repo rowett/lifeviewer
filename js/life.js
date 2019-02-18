@@ -722,6 +722,8 @@
 						}
 						colourGrid[y][x] = state;
 					}
+					colourTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					colourTileHistoryGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 					if (current !== aliveState && state === aliveState) {
 						this.population += 1;
 					} else {
