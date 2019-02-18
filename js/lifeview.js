@@ -4236,7 +4236,7 @@
 					}
 				}
 			} else {
-				if (me.drawing) {
+				if (me.drawing && x !== -1 && y !== -1 && !me.pickMode) {
 					me.drawCells(x, y, me.lastDragX, me.lastDragY);
 				}
 			}
@@ -4247,7 +4247,7 @@
 		} else {
 			// drag finished so check for pick mode
 			if (!fromKey) {
-				if (me.pickMode && x !== -1) {
+				if (me.pickMode & x !== -1 && y !== -1) {
 					me.penColour = me.readCell();
 					// clear start state for pick
 					saveStart = me.startState;
