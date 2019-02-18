@@ -480,6 +480,9 @@
 		// whether to show states
 		this.showStates = false;
 
+		// maximum number of states to show (based on window width)
+		this.maxDisplayStates = 7;
+
 		// whether smart drawing is on
 		this.smartDrawing = true;
 
@@ -1473,9 +1476,9 @@
 
 		// check if changing
 		if (change) {
-			me.startState = ((me.engine.multiNumStates - 7) * newValue[0]) | 0;
+			me.startState = ((me.engine.multiNumStates - me.maxDisplayStates) * newValue[0]) | 0;
 		}
-		result[1] = me.startState + "-" + (me.startState + 6);
+		result[1] = me.startState + "-" + (me.startState + me.maxDisplayStates - 1);
 
 		return result;
 	};
@@ -3002,7 +3005,7 @@
 		this.statesSlider.deleted = hide || !this.drawing || !this.showStates || (this.engine.multiNumStates < 8);
 
 		// update states list from slider
-		if (this.engine.multiNumStates > 7) {
+		if (this.engine.multiNumStates > this.maxDisplayStates) {
 			this.updateStatesList();
 		}
 
@@ -11025,8 +11028,8 @@
 			message = "";
 
 		// update the states list and colours list
-		if (states > 7) {
-			states = 7;
+		if (states > this.maxDisplayStates) {
+			states = this.maxDisplayStates;
 		}
 		this.stateList.lower = [];
 		this.stateList.toolTip = [];
@@ -11036,7 +11039,7 @@
 		this.stateColsList.current = [];
 		this.stateColsList.width = 40 * states;
 		this.stateColsList.bgAlpha = 1;
-		for (i = 0; i < 7; i += 1) {
+		for (i = 0; i < this.maxDisplayStates; i += 1) {
 			state = i + this.startState;
 			this.stateList.lower[i] = String(state);
 			if (state === 0) {
@@ -11071,6 +11074,9 @@
 		this.startState = 0;
 		this.statesToggle.current = [this.toggleStates([true], true, this)];
 
+		// compute the maximum number of display states based on width
+		this.maxDisplayStates = 7 + (((this.displayWidth - ViewConstants.minViewerWidth) / 40) | 0);
+
 		if (this.engine.isLifeHistory) {
 			// add LifeHistory states for editor
 			this.stateList.lower = ["0", "1", "2", "3", "4", "5", "6"];
@@ -11101,12 +11107,12 @@
 				this.stateColsList.current = [false, false];
 			} else {
 				this.drawState = states - 1;
-				if (states > 7) {
-					states = 7;
+				if (states > this.maxDisplayStates) {
+					states = this.maxDisplayStates;
 				}
 				this.updateStatesList();
-				this.stateList.width = 280;
-				this.stateColsList.width = 280;
+				this.stateList.width = states * 40;
+				this.stateColsList.width = states * 40;
 				this.statesSlider.current = this.viewStatesRange([0, 0], true, this);
 				if (this.engine.multiNumStates >= 100) {
 					this.statesSlider.font = "20px Arial";
