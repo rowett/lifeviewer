@@ -4918,14 +4918,14 @@
 		    found = false;
 
 		while (i >= 0 && !found) {
-			if (me.displayHelp <= me.helpSections[i]) {
+			if (me.displayHelp <= me.helpSections[i][0]) {
 				i = i - 1;
 			} else {
 				found = true;
 			}
 		}
 		if (found) {
-			me.displayHelp = me.helpSections[i];
+			me.displayHelp = me.helpSections[i][0];
 		}
 	};
 
@@ -4936,14 +4936,14 @@
 		    found = false;
 
 		while (i < me.helpSections.length && !found) {
-			if (me.displayHelp >= me.helpSections[i]) {
+			if (me.displayHelp >= me.helpSections[i][0]) {
 				i = i + 1;
 			} else {
 				found = true;
 			}
 		}
 		if (found) {
-			me.displayHelp = me.helpSections[i];
+			me.displayHelp = me.helpSections[i][0];
 		}
 	};
 
