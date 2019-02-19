@@ -3716,6 +3716,9 @@
 				}
 				if (found) {
 					this.zoomBox.leftX = startX;
+					if (this.isHROT && startX > this.HROTBox.leftX) {
+						this.HROTBox.leftX = startX;
+					}
 				} else {
 					startX += 1;
 				}
@@ -3736,6 +3739,9 @@
 				}
 				if (found) {
 					this.zoomBox.rightX = startX;
+					if (this.isHROT && startX < this.HROTBox.rightX) {
+						this.HROTBox.rightX = startX;
+					}
 				} else {
 					startX -= 1;
 				}
@@ -3758,6 +3764,9 @@
 				}
 				if (found) {
 					this.zoomBox.bottomY = startY;
+					if (this.isHROT && startY > this.HROTBox.bottomY) {
+						this.HROTBox.bottomY = startY;
+					}
 				} else {
 					startY += 1;
 				}
@@ -3777,6 +3786,9 @@
 				}
 				if (found) {
 					this.zoomBox.topY = startY;
+					if (this.isHROT && startY < this.HROTBox.topY) {
+						this.HROTBox.topY = startY;
+					}
 				} else {
 					startY -= 1;
 				}
