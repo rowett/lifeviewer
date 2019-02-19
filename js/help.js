@@ -312,18 +312,11 @@
 		    height = 0,
 		    result = "";
 
-		// check if at T=0
-		if (view.engine.counter) {
-			// at T>0 so check if any cells are alive
-			if (view.engine.anythingAlive) {
-				// cells alive so get dimensions from bounding box
-				width = view.engine.zoomBox.rightX - view.engine.zoomBox.leftX + 1;
-				height = view.engine.zoomBox.topY - view.engine.zoomBox.bottomY + 1;
-			}
-		} else {
-			// at T=0 so get dimensions from pattern
-			width = view.patternWidth;
-			height = view.patternHeight;
+		// check if any cells are alive
+		if (view.engine.anythingAlive) {
+			// cells alive so get dimensions from bounding box
+			width = view.engine.zoomBox.rightX - view.engine.zoomBox.leftX + 1;
+			height = view.engine.zoomBox.topY - view.engine.zoomBox.bottomY + 1;
 		}
 
 		// check for bounded grid
@@ -1275,7 +1268,7 @@
 					colourValue = this.rgbString(view.engine.redChannel[value], view.engine.greenChannel[value], view.engine.blueChannel[value]);
 					itemName = ViewConstants.stateNames[i];
 					
-					// render the colour box
+					// render the colour boX
 					this.renderColourBox(view, view.engine.redChannel[value], view.engine.greenChannel[value], view.engine.blueChannel[value], ctx, x + view.tabs[0], y, height, helpLine);
 					y = this.renderHelpLine(view, itemName, colourValue, ctx, x, y, height, helpLine);
 				}

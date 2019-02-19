@@ -761,6 +761,17 @@
 							HROTBox.topY = y;
 						}
 					}
+				} else {
+					// potentially shrink bounding box
+					if (this.population > 0) {
+						// only shrink if the cell was on the boundary of the bounding box
+						if (x === zoomBox.leftX || x === zoomBox.rightX || y === zoomBox.topY || y === zoomBox.bottomY) {
+							// check the cell is inside the bounding box
+							if (x >= zoomBox.leftX && x <= zoomBox.rightX && y >= zoomBox.bottomY && y <= zoomBox.topY) {
+								this.shrinkAfterEdit(x, y);
+							}
+						}
+					}
 				}
 			}
 		}
@@ -3674,6 +3685,102 @@
 		// clear the blank tile row since it may have been written to at top and bottom
 		for (th = 0; th < blankTileRow.length; th += 1) {
 			blankTileRow[th] = 0;
+		}
+	};
+
+	// shrink bounding boxes after edit
+	Life.prototype.shrinkAfterEdit = function(x, y) {
+		var startX = 0,
+			startY = 0,
+			leftX = this.zoomBox.leftX,
+			rightX = this.zoomBox.rightX,
+			topY = this.zoomBox.topY,
+			bottomY = this.zoomBox.bottomY,
+			colourGrid = this.colourGrid,
+			colourRow = null,
+			aliveState = (this.multiNumStates <= 2 ? this.aliveStart : this.historyStates + 1),
+			found = false;
+
+		// check for left edge
+		if (x === leftX) {
+			startX = x;
+			found = false;
+			while (startX <= rightX && !found) {
+				startY = bottomY;
+				while (startY <= topY && !found) {
+					if (colourGrid[startY][startX] >= aliveState) {
+						found = true;
+					} else {
+						startY += 1;
+					}
+				}
+				if (found) {
+					this.zoomBox.leftX = startX;
+				} else {
+					startX += 1;
+				}
+			}
+		} else if (x === rightX) {
+			// right edge
+			startX = x;
+			found = false;
+			while (startX >= leftX && !found) {
+				startY = bottomY;
+				colourRow = colourGrid[startY];
+				while (startY <= topY && !found) {
+					if (colourRow[startX] >= aliveState) {
+						found = true;
+					} else {
+						startY += 1;
+					}
+				}
+				if (found) {
+					this.zoomBox.rightX = startX;
+				} else {
+					startX -= 1;
+				}
+			}
+		}
+
+		// check for bottom edge
+		if (y === bottomY) {
+			startY = y;
+			found = false;
+			while (startY <= topY && !found) {
+				startX = leftX;
+				colourRow = colourGrid[startY];
+				while (startX <= rightX && !found) {
+					if (colourRow[startX] >= aliveState) {
+						found = true;
+					} else {
+						startX += 1;
+					}
+				}
+				if (found) {
+					this.zoomBox.bottomY = startY;
+				} else {
+					startY += 1;
+				}
+			}
+		} else if (y === topY) {
+			// top edge
+			startY = y;
+			found = false;
+			while (startY >= bottomY && !found) {
+				startX = leftX;
+				while (startX <= rightX && !found) {
+					if (colourGrid[startY][startX] >= aliveState) {
+						found = true;
+					} else {
+						startX += 1;
+					}
+				}
+				if (found) {
+					this.zoomBox.topY = startY;
+				} else {
+					startY -= 1;
+				}
+			}
 		}
 	};
 
