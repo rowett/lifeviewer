@@ -598,6 +598,86 @@
 		this.HROT = new HROT(this.allocator, this.width, this.height, this);
 	}
 
+	// convert grid to RLE
+	Life.prototype.asRLE = function(view, me) {
+		var rle = "",
+			zoomBox = me.zoomBox,
+			leftX = zoomBox.leftX,
+			rightX = zoomBox.rightX,
+			topY = zoomBox.topY,
+			bottomY = zoomBox.bottomY,
+			width = rightX - leftX + 1,
+			height = topY - bottomY + 1,
+			x = 0,
+			y = 0,
+			state = 0,
+			last = 0,
+			count = 0,
+			colourGrid = me.colourGrid,
+			colourRow = null,
+			rowCount = 0,
+			lastLength = 0,
+			charsPerRow = 69;
+
+		// output header
+		rle = "x = " + width + ", y = " + height + ", rule = " + view.patternRuleName + "\n";
+		lastLength = rle.length;
+
+		// output pattern
+		y = bottomY;
+		while (y <= topY) {
+			x = leftX;
+			colourRow = colourGrid[y];
+			last = colourRow[x];
+			count = 1;
+			x += 1;
+			while (x <= rightX) {
+				state = colourRow[x];
+				if (state !== last || x === rightX) {
+					// output end of previous row(s)
+					if (state !== last && rowCount > 0) {
+						if (rowCount > 1) {
+							rle += rowCount;
+						}
+						rle += "$";
+						if (rle.length - lastLength >= charsPerRow) {
+							rle += "\n";
+							lastLength = rle.length;
+						}
+						rowCount = 0;
+					}
+					// check if run is alive or dead
+					if (last >= 64) {
+						if (count > 1) {
+							rle += count;
+						}
+						rle += "o";
+					} else if (x !== rightX) {
+						if (count > 1) {
+							rle += count;
+						}
+						rle += "b";
+					}
+					if (rle.length - lastLength >= charsPerRow) {
+						rle += "\n";
+						lastLength = rle.length;
+					}
+					count = 1;
+					last = state;
+				} else {
+					count += 1;
+				}
+				x += 1;
+			}
+			// end of row
+			rowCount += 1;
+			y += 1;
+		}
+		rle += "!\n";
+
+		return rle;
+	};
+
 	// set state
 	Life.prototype.setState = function(x, y, state) {
 		var grid = this.grid16,

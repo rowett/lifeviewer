@@ -1,3 +1,7 @@
+Build 297
+- hotkey Ctrl "C" now copies current pattern as RLE to clipboard
+- hotkey Shift+Ctrl "C" copies original pattern as RLE to clipboard
+
 Build 296
 - multi-state drawing now supports all states
 - Help sections are displayed when topic is first displayed and disappear when clicked

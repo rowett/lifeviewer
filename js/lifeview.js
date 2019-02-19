@@ -170,7 +170,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 296,
+		/** @const {number} */ versionBuild : 297,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5175,10 +5175,16 @@
 		me.copyToClipboard(me, string);
 	};
 
-	// select and copy rle
+	// select and copy reset position rle
 	View.prototype.copyRLE = function(me) {
 		// copy the source pattern to the clipboard
 		me.copyToClipboard(me, cleanPattern(me.element));
+	};
+
+	// select and copy current rle
+	View.prototype.copyCurrentRLE = function(me) {
+		// copy the current pattern to the clipboard
+		me.copyToClipboard(me, me.engine.asRLE(me, me.engine));
 	};
 
 	// process key
@@ -6128,8 +6134,16 @@
 				// check for control-C
 				if (event.ctrlKey) {
 					if (!me.noCopy) {
-						me.copyRLE(me);
-						me.menuManager.notification.notify("Copied to Clipboard", 15, 180, 15, true);
+						// check for shift-C
+						if (event.shiftKey) {
+							// copy reset position to clipboard
+							me.copyRLE(me);
+							me.menuManager.notification.notify("Copied to Clipboard", 15, 180, 15, true);
+						} else {
+							// copy current position to clipboard
+							me.copyCurrentRLE(me);
+							me.menuManager.notification.notify("Copied to Clipboard", 15, 180, 15, true);
+						}
 					}
 				} else {
 					// disable colour themes in multi-state mode
