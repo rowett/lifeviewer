@@ -733,8 +733,11 @@
 					}
 				}
 
-				// adjust bounding box
-				if (state > 0) {
+				// compute the non-dead state based on the rule
+				aliveState = (this.multiNumStates <= 2 ? this.aliveStart : 1);
+
+				// if the state is not dead (or history) then update bounding box
+				if (state >= aliveState) {
 					if (x < zoomBox.leftX) {
 						zoomBox.leftX = x;
 					}
@@ -747,7 +750,8 @@
 					if (y > zoomBox.topY) {
 						zoomBox.topY = y;
 					}
-					if (this.isHROT) {
+					// if the state is alive then update HROT alive bounding box
+					if (this.isHROT && state === this.multiNumStates - 1 + this.historyStates) {
 						if (x < HROTBox.leftX) {
 							HROTBox.leftX = x;
 						}
