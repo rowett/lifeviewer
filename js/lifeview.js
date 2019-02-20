@@ -787,6 +787,9 @@
 		// pattern alias name
 		this.patternAliasName = "";
 
+		// pattern bounded grid definition
+		this.patternBoundedGridDef = "";
+
 		// whether using custom theme
 		this.customTheme = false;
 
@@ -3758,9 +3761,14 @@
 		if (change) {
 			switch (newValue) {
 				case ViewConstants.modeDraw:
-					me.drawing = true;
-					// turn off pick mode
-					me.pickToggle.current = me.togglePick([false], true, me);
+					if (me.viewOnly) {
+						me.menuManager.notification.notify("Drawing not available", 15, 40, 15, true);
+						result = ViewConstants.modePan;
+					} else {
+						me.drawing = true;
+						// turn off pick mode
+						me.pickToggle.current = me.togglePick([false], true, me);
+					}
 					break;
 				case ViewConstants.modePan:
 					me.drawing = false;
@@ -6143,7 +6151,11 @@
 							me.menuManager.notification.notify("Copied to Clipboard", 15, 180, 15, true);
 						} else {
 							// copy current position to clipboard
-							me.copyCurrentRLE(me);
+							if (me.viewOnly) {
+								me.copyRLE(me);
+							} else {
+								me.copyCurrentRLE(me);
+							}
 							me.menuManager.notification.notify("Copied to Clipboard", 15, 180, 15, true);
 						}
 					}
@@ -6378,9 +6390,13 @@
 					me.smartDrawing = !me.smartDrawing;
 					me.menuManager.notification.notify("Smart Drawing " + (me.smartDrawing ? "On" : "Off"), 15, 40, 15, true);
 				} else {
-					me.drawing = !me.drawing;
-					me.modeList.current = me.viewModeList((me.drawing ? ViewConstants.modeDraw : ViewConstants.modePan), true, me);
-					me.menuManager.notification.notify((me.drawing ? "Draw" : "Pan") + " Mode", 15, 40, 15, true);
+					if (me.viewOnly) {
+						me.menuManager.notification.notify("Drawing not available", 15, 40, 15, true);
+					} else {
+						me.drawing = !me.drawing;
+						me.modeList.current = me.viewModeList((me.drawing ? ViewConstants.modeDraw : ViewConstants.modePan), true, me);
+						me.menuManager.notification.notify((me.drawing ? "Draw" : "Pan") + " Mode", 15, 40, 15, true);
+					}
 				}
 				break;
 
@@ -11131,6 +11147,7 @@
 		this.posYOffset = 0;
 		this.patternRuleName = "";
 		this.patternAliasName = "";
+		this.patternBoundedGridDef = "";
 		this.patternName = "";
 		this.patternOriginator = "";
 		this.patternWidth = 0;
@@ -11203,6 +11220,7 @@
 			// read the rule name
 			this.patternRuleName = pattern.ruleName;
 			this.patternAliasName = pattern.aliasName;
+			this.patternBoundedGridDef = pattern.boundedGridDef;
 
 			// read if the pattern is executable
 			this.executable = PatternManager.executable;

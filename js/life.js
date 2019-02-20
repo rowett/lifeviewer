@@ -642,7 +642,16 @@
 		}
 
 		// output header
-		rle = "x = " + width + ", y = " + height + ", rule = " + view.patternRuleName + "\n";
+		rle = "x = " + width + ", y = " + height + ", rule = ";
+		if (view.patternAliasName === "LifeHistory") {
+			rle += view.patternAliasName;
+		} else {
+			rle += view.patternRuleName;
+		}
+		if (view.patternBoundedGridDef !== "") {
+			rle += view.patternBoundedGridDef;
+		}
+		rle += "\n";
 		lastLength = rle.length;
 
 		// output pattern

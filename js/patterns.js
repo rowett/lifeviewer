@@ -245,6 +245,9 @@
 		// alias name
 		this.aliasName = "";
 
+		// bounded grid definition
+		this.boundedGridDef = "";
+
 		// is history rule
 		this.isHistory = false;
 
@@ -5068,7 +5071,8 @@
 	// add a pattern to the list
 	PatternManager.create = function(name, source, allocator) {
 		// create a pattern skeleton
-		var newPattern = new Pattern(name);
+		var newPattern = new Pattern(name),
+			index = 0;
 
 		// flag that last pattern was not too big
 		this.tooBig = false;
@@ -5151,8 +5155,12 @@
 		}
 
 		// remove bounded grid postfix if present
-		if (newPattern.gridType !== -1 && !(newPattern.isLTL || newPattern.isHROT)) {
-			newPattern.ruleName = newPattern.ruleName.substr(0, newPattern.ruleName.lastIndexOf(":"));
+		if (newPattern.gridType !== -1) {
+			index = newPattern.ruleName.lastIndexOf(":");
+			newPattern.boundedGridDef = newPattern.ruleName.substr(index);
+			newPattern.ruleName = newPattern.ruleName.substr(0, index);
+		} else {
+			newPattern.boundedGridDef = "";
 		}
 
 		// check if the new pattern was decoded
