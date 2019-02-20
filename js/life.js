@@ -601,7 +601,7 @@
 	// convert grid to RLE
 	Life.prototype.asRLE = function(view, me) {
 		var rle = "",
-			zoomBox = me.zoomBox,
+			zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
 			leftX = zoomBox.leftX,
 			rightX = zoomBox.rightX,
 			topY = zoomBox.topY,
