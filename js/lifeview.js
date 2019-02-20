@@ -653,6 +653,16 @@
 		// textarea used for RLE copy
 		this.tempInput = null;
 
+		// string containing RLE
+		this.tempRLE = "";
+
+		// amount copied and target
+		this.tempRLEAmount = 0;
+		this.tempRLELength = 0;
+
+		// chunk size in bytes to copy
+		this.tempRLEChunkSize = 32768;
+
 		// history target generation
 		this.computeHistoryTarget = 0;
 
@@ -1797,6 +1807,18 @@
 		// apply zoom
 		newZoom = Math.log(newZoom / ViewConstants.minZoom) / Math.log(ViewConstants.maxZoom / ViewConstants.minZoom);
 		this.zoomItem.current = this.viewZoomRange([newZoom, newZoom], true, this);
+	};
+
+	// update progress bar for copy RLE
+	View.prototype.updateProgressBarCopy = function(me) {
+		// update the progress bar
+		me.progressBar.current = 100 * (me.tempRLEAmount / me.tempRLELength);
+
+		// show the progress bar
+		me.progressBar.deleted = false;
+
+		// clear the bg alpha to show the progress bar
+		me.genToggle.bgAlpha = 0;
 	};
 
 	// update progress bar for history computation
@@ -3151,8 +3173,35 @@
 
 	// view update for copy to clipboard
 	View.prototype.viewAnimateClipboard = function(me) {
-		// draw notification
-		me.menuManager.notification.notify("Control-C to complete copy", 15, 10000, 15, true);
+		var amountToAdd = me.tempRLEChunkSize,
+			amountLeft = me.tempRLELength - me.tempRLEAmount,
+			textArea = null;
+
+		// check if copied
+		if (me.tempRLEAmount < me.tempRLELength) {
+			// copy the next chunk
+			if (amountLeft < amountToAdd) {
+				amountToAdd = amountLeft;
+			}
+			// create a new textarea
+			textArea = document.createElement("textarea");
+			me.hideElement(textArea);
+			// find the nearest newline before the end of the chunk
+			if (amountToAdd !== amountLeft) {
+				while (me.tempRLE[me.tempRLEAmount + amountToAdd] !== "\n") {
+					amountToAdd -= 1;
+				}
+			}
+			textArea.innerHTML = me.tempRLE.substr(me.tempRLEAmount, amountToAdd);
+			me.tempRLEAmount += amountToAdd;
+			me.tempInput.appendChild(textArea);
+		} else {
+			// draw notification
+			me.menuManager.notification.notify("Control-C to complete copy", 15, 10000, 15, true);
+		}
+
+		// update progress bar
+		me.updateProgressBarCopy(me);
 
 		// draw grid
 		me.engine.drawGrid();
@@ -5037,28 +5086,45 @@
 		}
 	};
 
+	// hide a DOM element
+	View.prototype.hideElement = function(element) {
+		element.style.width = "2em";
+		element.style.height = "2em";
+		element.style.padding = 0;
+		element.style.bord3er = "none";
+		element.style.outline = "none";
+		element.style.boxShadow = "none";
+		element.style.background = "transparent";
+		element.style.position = "fixed";
+		element.style.left = "-100px";
+		element.style.top = "0px";
+	};
+
 	// copy string to clipboard
 	View.prototype.copyToClipboard = function(me, contents, twoPhase) {
+		var elementType = (twoPhase ? "div" : "textarea");
+
 		// copy the element contents to a temporary off-screen element
 		// since selection doesn't work on hidden elements
-		me.tempInput = document.createElement("textarea");
-		me.tempInput.style.width = "2em";
-		me.tempInput.style.height = "2em";
-		me.tempInput.style.padding = 0;
-		me.tempInput.style.bord3er = "none";
-		me.tempInput.style.outline = "none";
-		me.tempInput.style.boxShadow = "none";
-		me.tempInput.style.background = "transparent";
-		me.tempInput.style.position = "fixed";
-		me.tempInput.style.left = "-100px";
-		me.tempInput.style.top = "0px";
-		me.tempInput.spellcheck = false;
-		me.tempInput.innerHTML = contents;
+		me.tempInput = document.createElement(elementType);
+		this.hideElement(me.tempInput);
+		me.tempInput.contentEditable = true;
+
+		// setup the contents to copy
+		me.tempRLE = contents;
+		me.tempRLEAmount = 0;
+		me.tempRLELength = contents.length;
+
+		// add the new element to the document
 		document.body.appendChild(me.tempInput);
 
+		// check if processing in a single phase
 		if (!twoPhase) {
+			me.tempInput.innerHTML = contents;
 			me.completeCopyToClipboard(me, twoPhase);
 		} else {
+			me.menuManager.notification.notify("Copying...", 15, 10000, 15, true);
+
 			// set copy mode
 			me.clipboardCopy = true;
 
@@ -5070,9 +5136,10 @@
 	// complete copy to clipboard
 	View.prototype.completeCopyToClipboard = function(me, twoPhase) {
 		// select and copy the temporary elements contents to the clipboard
-		me.tempInput.select();
+		me.tempInput.focus();
 
 		try {
+			document.execCommand("selectAll");
 			document.execCommand("copy");
 		}
 		catch(err) {
@@ -5080,6 +5147,7 @@
 
 		// remove the temporary element
 		document.body.removeChild(me.tempInput);
+		me.tempRLE = "";
 
 		// set focus to the canvas
 		me.mainContext.canvas.focus();
@@ -6216,7 +6284,6 @@
 						if (event.shiftKey) {
 							// copy reset position to clipboard
 							me.copyRLE(me, true);
-							me.menuManager.notification.notify("Copying RLE", 15, 180, 15, true);
 						} else {
 							// copy current position to clipboard
 							if (me.viewOnly) {
@@ -6224,7 +6291,6 @@
 							} else {
 								me.copyCurrentRLE(me);
 							}
-							me.menuManager.notification.notify("Copying RLE", 15, 180, 15, true);
 						}
 					}
 				} else {
@@ -6496,7 +6562,9 @@
 		switch (keyCode) {
 		// c for copy
 		case 67:
-			me.completeCopyToClipboard(me, true);
+			if (me.tempRLEAmount === me.tempRLELength) {
+				me.completeCopyToClipboard(me, true);
+			}
 			break;
 
 		// t for timing display

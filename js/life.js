@@ -672,7 +672,7 @@
 				}
 				if (state !== last) {
 					// output end of previous row(s)
-					if (state !== last && rowCount > 0) {
+					if (state !== last && state !== -1 && rowCount > 0) {
 						if (rowCount > 1) {
 							rle += rowCount;
 						}
