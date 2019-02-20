@@ -3806,7 +3806,7 @@
 					}
 				}
 			}
-			me.menuManager.notification.notify("Drawing with state " + newValue + " (" + name + ")", 15, 80, 15, true);
+			me.menuManager.notification.notify("Drawing with state " + newValue + " (" + name + ")", 15, 120, 15, true);
 
 			// turn off pick mode
 			me.pickToggle.current = me.togglePick([false], true, me);
@@ -6895,7 +6895,7 @@
 		this.stateColsList.bgAlpha = 1;
 
 		// add slider for states
-		this.statesSlider = this.viewMenu.addRangeItem(this.viewStatesRange, Menu.northWest, 90, 40, 85, 40, 0, 1, 0, true, "", "", -1);
+		this.statesSlider = this.viewMenu.addRangeItem(this.viewStatesRange, Menu.northWest, 90, 40, 105, 40, 0, 1, 0, true, "", "", -1);
 		this.statesSlider.toolTip = "select drawing states range";
 
 		// add items to the main toggle menu
@@ -11126,11 +11126,6 @@
 				this.stateList.width = states * 40;
 				this.stateColsList.width = states * 40;
 				this.statesSlider.current = this.viewStatesRange([0, 0], true, this);
-				if (this.engine.multiNumStates >= 100) {
-					this.statesSlider.font = "20px Arial";
-				} else {
-					this.statesSlider.font = "24px Arial";
-				}
 			}
 		}
 		this.stateList.setPosition(Menu.northEast, -this.stateList.width, 40);
