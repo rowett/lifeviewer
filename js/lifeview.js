@@ -11489,6 +11489,9 @@
 		// enable history
 		this.noHistory = false;
 
+		// disable custom theme
+		this.customTheme = false;
+
 		// copy pattern to center
 		if (pattern) {
 			if (PatternManager.extendedFormat || pattern.isHistory) {
