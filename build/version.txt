@@ -1,6 +1,7 @@
 Build 297
 - hotkey Ctrl "C" now copies current pattern as RLE to clipboard
 - hotkey Shift+Ctrl "C" copies original pattern as RLE to clipboard
+- disable editing while in view only mode
 
 Build 296
 - multi-state drawing now supports all states
