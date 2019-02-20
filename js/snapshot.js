@@ -839,9 +839,6 @@
 		// colour buffers
 		this.colourBuffers = [];
 
-		// overlay buffers
-		this.overlayBuffers = [];
-
 		// number of buffers allocated
 		this.numBuffers = 0;
 
@@ -880,10 +877,6 @@
 			// add colour grid buffer
 			result += this.colourBuffers[i].length * this.colourBuffers[i][0].length * 4;
 
-			// add overlay buffer if present
-			if (this.overlayBuffers[i] !== null) {
-				result += this.overlayBuffers[i].length * this.overlayBuffers[i][0].length * 4;
-			}
 			i += 1;
 		}
 	
@@ -987,7 +980,7 @@
 	};
 
 	// save snapshot
-	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, overlayGrid, zoomBox, HROTBox, population, births, deaths, counter, width, height, life, isReset, anythingAlive) {
+	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, zoomBox, HROTBox, population, births, deaths, counter, width, height, life, isReset, anythingAlive) {
 		var snapshot = null,
 		    i = 0,
 		    l = this.resetSnapshots.length,
@@ -1111,7 +1104,6 @@
 			this.colourTileGrids[i] = Array.matrix(Uint16, height, width, 0, this.allocator, "Snapshot.colourTileGrid" + i);
 			this.gridBuffers[i] = Array.matrix(Uint32, 1, this.defaultTiles * 8, 0, this.allocator, "Snapshot.gridBuffer" + i);
 			this.colourBuffers[i] = Array.matrix(Uint32, 1, this.defaultTiles * 64, 0, this.allocator, "Snapshot.colourGridBuffer" + i);
-			this.overlayBuffers[i] = Array.matrix(Uint32, 1, this.defaultTiles * 64, 0, this.allocator, "Snapshot.overlayGridBuffer" + i);
 			this.bufferUsed[i] = true;
 
 			// increment number of buffers allocated
