@@ -5038,7 +5038,7 @@
 	};
 
 	// copy string to clipboard
-	View.prototype.copyToClipboard = function(me, contents) {
+	View.prototype.copyToClipboard = function(me, contents, twoPhase) {
 		// copy the element contents to a temporary off-screen element
 		// since selection doesn't work on hidden elements
 		me.tempInput = document.createElement("textarea");
@@ -5049,19 +5049,26 @@
 		me.tempInput.style.outline = "none";
 		me.tempInput.style.boxShadow = "none";
 		me.tempInput.style.background = "transparent";
+		me.tempInput.style.position = "fixed";
+		me.tempInput.style.left = "-100px";
+		me.tempInput.style.top = "0px";
 		me.tempInput.spellcheck = false;
 		me.tempInput.innerHTML = contents;
 		document.body.appendChild(me.tempInput);
 
-		// set copy mode
-		me.clipboardCopy = true;
+		if (!twoPhase) {
+			me.completeCopyToClipboard(me, twoPhase);
+		} else {
+			// set copy mode
+			me.clipboardCopy = true;
 
-		// disable menu
-		me.viewMenu.locked = true;
+			// disable menu
+			me.viewMenu.locked = true;
+		}
 	};
 
 	// complete copy to clipboard
-	View.prototype.completeCopyToClipboard = function(me) {
+	View.prototype.completeCopyToClipboard = function(me, twoPhase) {
 		// select and copy the temporary elements contents to the clipboard
 		me.tempInput.select();
 
@@ -5077,14 +5084,16 @@
 		// set focus to the canvas
 		me.mainContext.canvas.focus();
 
-		// clear notification
-		me.menuManager.notification.notify("Copy complete", 15, 120, 15, true);
+		if (twoPhase) {
+			// clear notification
+			me.menuManager.notification.notify("Copy complete", 15, 120, 15, true);
 
-		// clear copy mode
-		me.clipboardCopy = false;
+			// clear copy mode
+			me.clipboardCopy = false;
 
-		// unlock menu
-		me.viewMenu.locked = false;
+			// unlock menu
+			me.viewMenu.locked = false;
+		}
 	};
 
 	// convert a theme colour object to an RGB string or colour name
@@ -5241,19 +5250,19 @@
 		}
 
 		// copy to clipboard
-		me.copyToClipboard(me, string);
+		me.copyToClipboard(me, string, false);
 	};
 
 	// select and copy reset position rle
-	View.prototype.copyRLE = function(me) {
+	View.prototype.copyRLE = function(me, twoPhase) {
 		// copy the source pattern to the clipboard
-		me.copyToClipboard(me, cleanPattern(me.element));
+		me.copyToClipboard(me, cleanPattern(me.element), twoPhase);
 	};
 
 	// select and copy current rle
 	View.prototype.copyCurrentRLE = function(me) {
 		// copy the current pattern to the clipboard
-		me.copyToClipboard(me, me.engine.asRLE(me, me.engine));
+		me.copyToClipboard(me, me.engine.asRLE(me, me.engine), true);
 	};
 
 	// process key
@@ -6206,12 +6215,12 @@
 						// check for shift-C
 						if (event.shiftKey) {
 							// copy reset position to clipboard
-							me.copyRLE(me);
+							me.copyRLE(me, true);
 							me.menuManager.notification.notify("Copying RLE", 15, 180, 15, true);
 						} else {
 							// copy current position to clipboard
 							if (me.viewOnly) {
-								me.copyRLE(me);
+								me.copyRLE(me, true);
 							} else {
 								me.copyCurrentRLE(me);
 							}
@@ -6487,7 +6496,7 @@
 		switch (keyCode) {
 		// c for copy
 		case 67:
-			me.completeCopyToClipboard(me);
+			me.completeCopyToClipboard(me, true);
 			break;
 
 		// t for timing display
@@ -11074,7 +11083,9 @@
 		} else {
 			// check for NOGUI
 			if (me.noGUI) {
-				me.copyRLE(me);
+				if (!me.noCopy) {
+					me.copyRLE(me, false);
+				}
 			}
 		}
 	};
