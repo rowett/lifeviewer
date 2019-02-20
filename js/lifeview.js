@@ -170,7 +170,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 297,
+		/** @const {number} */ versionBuild : 298,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",

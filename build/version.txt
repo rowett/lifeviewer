@@ -1,3 +1,7 @@
+Build 298
+- copying LifeHistory RLE needs to use history bounding box
+- switch off custom Theme on new pattern load
+
 Build 297
 - hotkey Ctrl "C" now copies current pattern as RLE to clipboard
 - hotkey Shift+Ctrl "C" copies original pattern as RLE to clipboard
