@@ -23,7 +23,6 @@
 		// buffer for grid tile map and colour tile map save
 		this.gridBuffer = manager.gridBuffers[index];
 		this.colourBuffer = manager.colourBuffers[index];
-		this.overlayBuffer = manager.overlayBuffers[index];
 
 		// zoom box
 		this.zoomBox = new BoundingBox(0, 0, 0, 0);
