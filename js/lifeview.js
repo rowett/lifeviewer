@@ -647,6 +647,12 @@
 		// whether computing history
 		this.computeHistory = false;
 
+		// whether copying RLE
+		this.clipboardCopy = false;
+
+		// textarea used for RLE copy
+		this.tempInput = null;
+
 		// history target generation
 		this.computeHistoryTarget = 0;
 
@@ -3143,6 +3149,28 @@
 		this.elapsedTimes[this.engine.counter] = this.elapsedTime;
 	};
 
+	// view update for copy to clipboard
+	View.prototype.viewAnimateClipboard = function(me) {
+		// draw notification
+		me.menuManager.notification.notify("Control-C to complete copy", 15, 10000, 15, true);
+
+		// draw grid
+		me.engine.drawGrid();
+
+		// display help if requested
+		if (me.displayHelp) {
+			Help.drawHelpText(me);
+		} else {
+			// display script errors if present
+			if (me.scriptErrors.length) {
+				Help.drawErrors(me);
+			}
+		}
+
+		// set the auto update mode
+		me.menuManager.setAutoUpdate(true);
+	};
+
 	// view update for history calculation
 	View.prototype.viewAnimateHistory = function(me) {
 		// target generation
@@ -3221,7 +3249,11 @@
 		if (me.computeHistory) {
 			me.viewAnimateHistory(me);
 		} else {
-			me.viewAnimateNormal(timeSinceLastUpdate, me);
+			if (me.clipboardCopy) {
+				me.viewAnimateClipboard(me);
+			} else {
+				me.viewAnimateNormal(timeSinceLastUpdate, me);
+			}
 		}
 	};
 
@@ -5009,12 +5041,30 @@
 	View.prototype.copyToClipboard = function(me, contents) {
 		// copy the element contents to a temporary off-screen element
 		// since selection doesn't work on hidden elements
-		var tempInput = document.createElement("textarea");
-		tempInput.innerHTML = contents;
-		document.body.appendChild(tempInput);
+		me.tempInput = document.createElement("textarea");
+		me.tempInput.style.width = "2em";
+		me.tempInput.style.height = "2em";
+		me.tempInput.style.padding = 0;
+		me.tempInput.style.bord3er = "none";
+		me.tempInput.style.outline = "none";
+		me.tempInput.style.boxShadow = "none";
+		me.tempInput.style.background = "transparent";
+		me.tempInput.spellcheck = false;
+		me.tempInput.innerHTML = contents;
+		document.body.appendChild(me.tempInput);
 
+		// set copy mode
+		me.clipboardCopy = true;
+
+		// disable menu
+		me.viewMenu.locked = true;
+	};
+
+	// complete copy to clipboard
+	View.prototype.completeCopyToClipboard = function(me) {
 		// select and copy the temporary elements contents to the clipboard
-		tempInput.select();
+		me.tempInput.select();
+
 		try {
 			document.execCommand("copy");
 		}
@@ -5022,10 +5072,19 @@
 		}
 
 		// remove the temporary element
-		document.body.removeChild(tempInput);
+		document.body.removeChild(me.tempInput);
 
 		// set focus to the canvas
 		me.mainContext.canvas.focus();
+
+		// clear notification
+		me.menuManager.notification.notify("Copy complete", 15, 120, 15, true);
+
+		// clear copy mode
+		me.clipboardCopy = false;
+
+		// unlock menu
+		me.viewMenu.locked = false;
 	};
 
 	// convert a theme colour object to an RGB string or colour name
@@ -6148,7 +6207,7 @@
 						if (event.shiftKey) {
 							// copy reset position to clipboard
 							me.copyRLE(me);
-							me.menuManager.notification.notify("Copied to Clipboard", 15, 180, 15, true);
+							me.menuManager.notification.notify("Copying RLE", 15, 180, 15, true);
 						} else {
 							// copy current position to clipboard
 							if (me.viewOnly) {
@@ -6156,7 +6215,7 @@
 							} else {
 								me.copyCurrentRLE(me);
 							}
-							me.menuManager.notification.notify("Copied to Clipboard", 15, 180, 15, true);
+							me.menuManager.notification.notify("Copying RLE", 15, 180, 15, true);
 						}
 					}
 				} else {
@@ -6414,6 +6473,40 @@
 		return processed;
 	};
 
+	// process keys in copy clipboard mode
+	View.prototype.processKeyCopy = function(me, keyCode, event) {
+		// flag event processed
+		var processed = true;
+
+		// check for control-R which would refresh browser
+		if (event.ctrlKey && keyCode === 82) {
+			return true;
+		}
+
+		// determine if the key can be processed
+		switch (keyCode) {
+		// c for copy
+		case 67:
+			me.completeCopyToClipboard(me);
+			break;
+
+		// t for timing display
+		case 84:
+			// toggle fps
+			me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+			break;
+
+		// ignore other keys
+		default:
+			// flag not handled
+			processed = false;
+			break;
+		}
+
+		// return whether key processed
+		return processed;
+	};
+
 	// process keys in history mode
 	View.prototype.processKeyHistory = function(me, keyCode, event) {
 		// flag event processed
@@ -6457,8 +6550,13 @@
 			// process the key in history mode
 			processed = me.processKeyHistory(me, keyCode, event);
 		} else {
-			// process the key
-			processed = me.processKey(me, keyCode, event);
+			// check for clipboard copy
+			if (me.clipboardCopy) {
+				processed = me.processKeyCopy(me, keyCode, event);
+			} else {
+				// process the key
+				processed = me.processKey(me, keyCode, event);
+			}
 		}
 
 		// check if key was handled
@@ -11312,6 +11410,9 @@
 
 		// clear compute history mode
 		this.computeHistory = false;
+
+		// clear copy to clipboard mode
+		this.clipboardCopy = false;
 
 		// unlock menu
 		this.viewMenu.locked = false;

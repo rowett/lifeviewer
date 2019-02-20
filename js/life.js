@@ -130,12 +130,15 @@
 	};
 
 	// check if theme has colour history
-	Theme.prototype.hasHistory = function() {
+	Theme.prototype.hasHistory = function(isLifeHistory) {
 		var result = true;
 
-		// check if the alive start and end colour are the same, the dead start and end colour are the same and the dead and unoccupied colour are the same
-		if ((this.aliveRange.startColour.isSameColour(this.aliveRange.endColour)) && (this.deadRange.startColour.isSameColour(this.deadRange.endColour)) && (this.deadRange.startColour.isSameColour(this.unoccupied))) {
-			result = false;
+		// always return true if the pattern is [R]History since history states are saved in RLE
+		if (!isLifeHistory) {
+			// check if the alive start and end colour are the same, the dead start and end colour are the same and the dead and unoccupied colour are the same
+			if ((this.aliveRange.startColour.isSameColour(this.aliveRange.endColour)) && (this.deadRange.startColour.isSameColour(this.deadRange.endColour)) && (this.deadRange.startColour.isSameColour(this.unoccupied))) {
+				result = false;
+			}
 		}
 
 		return result;
@@ -724,6 +727,7 @@
 			overlayGrid = this.overlayGrid,
 			zoomBox = this.zoomBox,
 			HROTBox = this.HROTBox,
+			historyBox = this.historyBox,
 
 		    // bounded grid top left
 		    leftX = Math.round((this.width - this.boundedGridWidth) / 2),
@@ -860,6 +864,18 @@
 					}
 					if (y > zoomBox.topY) {
 						zoomBox.topY = y;
+					}
+					if (x < historyBox.leftX) {
+						historyBox.leftX = x;
+					}
+					if (x > historyBox.rightX) {
+						historyBox.rightX = x;
+					}
+					if (y < historyBox.bottomY) {
+						historyBox.bottomY = y;
+					}
+					if (y > historyBox.topY) {
+						historyBox.topY = y;
 					}
 					// if the state is alive then update HROT alive bounding box
 					if (this.isHROT && state === this.multiNumStates - 1 + this.historyStates) {
@@ -2158,7 +2174,7 @@
 		this.colourChange = switchTime;
 		
 		// check whether new theme has history
-		this.themeHistory = newTheme.hasHistory();
+		this.themeHistory = newTheme.hasHistory(this.isLifeHistory);
 
 		// copy grid line colours from theme
 		this.gridLineRaw  = newTheme.gridColour;
