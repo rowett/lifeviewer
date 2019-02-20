@@ -613,11 +613,33 @@
 			state = 0,
 			last = 0,
 			count = 0,
-			colourGrid = me.colourGrid,
-			colourRow = null,
 			rowCount = 0,
 			lastLength = 0,
-			charsPerRow = 69;
+			charsPerRow = 69,
+			outputState = [],
+			maxState = 0,
+			asciiA = String("A").charCodeAt(0),
+			asciiP = String("p").charCodeAt(0);
+
+		// populate output states
+		if (this.multiNumStates <= 2 && !this.isLifeHistory) {
+			outputState[0] = "b";
+			outputState[1] = "o";
+		} else {
+			if (this.isLifeHistory) {
+				maxState = 7;
+			} else {
+				maxState = this.multiNumStates;
+			}
+			outputState[0] = ".";
+			for (x = 0; x < maxState - 1; x += 1) {
+				if (x >= 24) {
+					outputState[x + 1] = String.fromCharCode(asciiP + ((x / 24) | 0) - 1) + String.fromCharCode(asciiA + (x % 24));
+				} else {
+					outputState[x + 1] = String.fromCharCode(asciiA + x);
+				}
+			}
+		}
 
 		// output header
 		rle = "x = " + width + ", y = " + height + ", rule = " + view.patternRuleName + "\n";
@@ -627,13 +649,16 @@
 		y = bottomY;
 		while (y <= topY) {
 			x = leftX;
-			colourRow = colourGrid[y];
-			last = colourRow[x];
+			last = this.getState(x, y);
 			count = 1;
 			x += 1;
-			while (x <= rightX) {
-				state = colourRow[x];
-				if (state !== last || x === rightX) {
+			while (x <= rightX + 1) {
+				if (x > rightX) {
+					state = -1;
+				} else {
+					state = this.getState(x, y);
+				}
+				if (state !== last) {
 					// output end of previous row(s)
 					if (state !== last && rowCount > 0) {
 						if (rowCount > 1) {
@@ -647,16 +672,16 @@
 						rowCount = 0;
 					}
 					// check if run is alive or dead
-					if (last >= 64) {
+					if (last > 0) {
 						if (count > 1) {
 							rle += count;
 						}
-						rle += "o";
-					} else if (x !== rightX) {
+						rle += outputState[last];
+					} else if (x <= rightX) {
 						if (count > 1) {
 							rle += count;
 						}
-						rle += "b";
+						rle += outputState[last];
 					}
 					if (rle.length - lastLength >= charsPerRow) {
 						rle += "\n";
@@ -813,11 +838,8 @@
 					}
 				}
 
-				// compute the non-dead state based on the rule
-				aliveState = (this.multiNumStates <= 2 ? this.aliveStart : 1);
-
 				// if the state is not dead (or history) then update bounding box
-				if (state >= aliveState) {
+				if (state > 0) {
 					if (x < zoomBox.leftX) {
 						zoomBox.leftX = x;
 					}

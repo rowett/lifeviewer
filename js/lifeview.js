@@ -4250,14 +4250,16 @@
 		} else {
 			// drag finished so check for pick mode
 			if (!fromKey) {
-				if (me.pickMode & x !== -1 && y !== -1) {
-					me.penColour = me.readCell();
-					// clear start state for pick
-					saveStart = me.startState;
-					me.startState = 0;
-					me.stateList.current = me.viewStateList(me.penColour, true, me);
-					// restore start state
-					me.startState = saveStart;
+				if (me.pickMode === true) {
+					if (x!== -1 && y !== -1) {
+						me.penColour = me.readCell();
+						// clear start state for pick
+						saveStart = me.startState;
+						me.startState = 0;
+						me.stateList.current = me.viewStateList(me.penColour, true, me);
+						// restore start state
+						me.startState = saveStart;
+					}
 				}
 			}
 			me.lastDragX = -1;
