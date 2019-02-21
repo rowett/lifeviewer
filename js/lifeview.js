@@ -35,6 +35,12 @@
 
 	// ViewConstants singleton
 	ViewConstants = {
+		// copy RLE size threshold (bytes) for single pass
+		/** @const (number) */ copySizeThreshold : 65536,
+
+		// copy RLE time threshold (ms) for single pass
+		/** @const (number) */ copyTimeThreshold : 500,
+
 		// grid line major light background default
 		/** @const (number) */ gridLineLightBoldRawDefault : (209 << 16) | (209 << 8) | 209,
 
@@ -649,6 +655,9 @@
 
 		// whether copying RLE
 		this.clipboardCopy = false;
+
+		// copy start time
+		this.copyStartTime = -1,
 
 		// textarea used for RLE copy
 		this.tempInput = null;
@@ -5122,18 +5131,29 @@
 
 	// copy string to clipboard
 	View.prototype.copyToClipboard = function(me, contents, twoPhase) {
-		var elementType = (twoPhase ? "div" : "textarea");
+		var elementType = "textarea",
+			processingTime = 0;
+
+		// setup the contents to copy
+		me.tempRLE = contents;
+		me.tempRLEAmount = 0;
+		me.tempRLELength = contents.length;
+
+		// try the copy in a single pass if small and fast enough
+		if (twoPhase) {
+			processingTime = performance.now() - me.copyStartTime;
+			if (processingTime < ViewConstants.copyTimeThreshold && me.tempRLELength < ViewConstants.copySizeThreshold) {
+				twoPhase = false;
+			} else {
+				elementType = "div";
+			}
+		}
 
 		// copy the element contents to a temporary off-screen element
 		// since selection doesn't work on hidden elements
 		me.tempInput = document.createElement(elementType);
 		this.hideElement(me.tempInput);
 		me.tempInput.contentEditable = true;
-
-		// setup the contents to copy
-		me.tempRLE = contents;
-		me.tempRLEAmount = 0;
-		me.tempRLELength = contents.length;
 
 		// add the new element to the document
 		document.body.appendChild(me.tempInput);
@@ -5172,16 +5192,18 @@
 		// set focus to the canvas
 		me.mainContext.canvas.focus();
 
-		if (twoPhase) {
-			// clear notification
-			me.menuManager.notification.notify("Copy complete", 15, 120, 15, true);
+		// clear notification
+		me.menuManager.notification.notify("Copy complete", 15, 120, 15, true);
 
+		if (twoPhase) {
 			// clear copy mode
 			me.clipboardCopy = false;
 
 			// unlock menu
 			me.viewMenu.locked = false;
 		}
+
+		me.copyStartTime = -1;
 	};
 
 	// convert a theme colour object to an RGB string or colour name
@@ -5344,12 +5366,14 @@
 	// select and copy reset position rle
 	View.prototype.copyRLE = function(me, twoPhase) {
 		// copy the source pattern to the clipboard
+		me.copyStartTime = performance.now();
 		me.copyToClipboard(me, cleanPattern(me.element), twoPhase);
 	};
 
 	// select and copy current rle
 	View.prototype.copyCurrentRLE = function(me) {
 		// copy the current pattern to the clipboard
+		me.copyStartTime = performance.now();
 		me.copyToClipboard(me, me.engine.asRLE(me, me.engine), true);
 	};
 
