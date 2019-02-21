@@ -3226,7 +3226,7 @@
 			}
 		} else {
 			// draw notification
-			me.menuManager.notification.notify("Control-C to complete copy", 15, 10000, 15, true);
+			me.menuManager.notification.notify("Press Enter to complete copy", 15, 10000, 15, true);
 		}
 
 		// update progress bar
@@ -6631,8 +6631,8 @@
 
 		// determine if the key can be processed
 		switch (keyCode) {
-		// c for copy
-		case 67:
+		// return for copy
+		case 13:
 			if (me.tempRLEAmount === me.tempRLELength) {
 				me.completeCopyToClipboard(me, true);
 			}
