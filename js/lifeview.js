@@ -170,7 +170,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 298,
+		/** @const {number} */ versionBuild : 299,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3206,6 +3206,16 @@
 		// draw grid
 		me.engine.drawGrid();
 
+		// draw any labels
+		if (me.showLabels) {
+			me.waypointManager.drawLabels(me);
+		}
+
+		// draw population graph if required
+		if (me.popGraph) {
+			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail);
+		}
+
 		// display help if requested
 		if (me.displayHelp) {
 			Help.drawHelpText(me);
@@ -3247,14 +3257,14 @@
 			}
 
 			// compute the next generation
-			me.engine.nextGeneration(false, 0, noSnapshots, me.graphDisabled);
+			me.engine.nextGeneration(false, noSnapshots, me.graphDisabled);
 			me.engine.convertToPensTile();
 		}
 
 		// check if complete
 		if (me.engine.counter === targetGen - 1) {
 			// compute final generation with stats on if required
-			me.engine.nextGeneration(me.statsOn, 0, false, me.graphDisabled);
+			me.engine.nextGeneration(me.statsOn, false, me.graphDisabled);
 			me.engine.convertToPensTile();
 
 			// switch back to normal mode
@@ -3277,6 +3287,16 @@
 
 		// draw grid
 		me.engine.drawGrid();
+
+		// draw any labels
+		if (me.showLabels) {
+			me.waypointManager.drawLabels(me);
+		}
+
+		// draw population graph if required
+		if (me.popGraph) {
+			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail);
+		}
 
 		// display help if requested
 		if (me.displayHelp) {

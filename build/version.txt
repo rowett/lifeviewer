@@ -1,3 +1,7 @@
+Build 299
+- graph and labels were not rendering during copy RLE or computing previous generations
+- graph was broken when computing previous generations
+
 Build 298
 - copying LifeHistory RLE needs to use history bounding box
 - switch off custom Theme on new pattern load
