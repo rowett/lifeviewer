@@ -41,6 +41,9 @@
 		// copy RLE time threshold (ms) for single pass
 		/** @const (number) */ copyTimeThreshold : 500,
 
+		// copy RLE frames to display before two pass copy to allow notification
+		/** @const (number) */ copyWait: 16,
+
 		// grid line major light background default
 		/** @const (number) */ gridLineLightBoldRawDefault : (209 << 16) | (209 << 8) | 209,
 
@@ -465,6 +468,9 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// running in Edge browser
+		this.isEdge = false;
+
 		// icon manager
 		this.iconManager = null;
 
@@ -671,6 +677,9 @@
 
 		// chunk size in bytes to copy
 		this.tempRLEChunkSize = 32768;
+
+		// frames to display before processing copy to allow notification
+		this.copyFrameWait = 0;
 
 		// history target generation
 		this.computeHistoryTarget = 0;
@@ -3188,22 +3197,33 @@
 
 		// check if copied
 		if (me.tempRLEAmount < me.tempRLELength) {
-			// copy the next chunk
-			if (amountLeft < amountToAdd) {
-				amountToAdd = amountLeft;
-			}
-			// create a new textarea
-			textArea = document.createElement("textarea");
-			me.hideElement(textArea);
-			// find the nearest newline before the end of the chunk
-			if (amountToAdd !== amountLeft) {
-				while (me.tempRLE[me.tempRLEAmount + amountToAdd] !== "\n") {
-					amountToAdd -= 1;
+			// check if wait has expired
+			if (me.copyFrameWait > 0) {
+				me.copyFrameWait -= 1;
+			} else {
+				// if running in Edge then copy in one go
+				if (me.isEdge) {
+					me.tempInput.innerHTML = me.tempRLE;
+					me.tempRLEAmount = me.tempRLELength;
+				} else {
+					// copy the next chunk
+					if (amountLeft < amountToAdd) {
+						amountToAdd = amountLeft;
+					}
+					// create a new textarea
+					textArea = document.createElement("textarea");
+					me.hideElement(textArea);
+					// find the nearest newline before the end of the chunk
+					if (amountToAdd !== amountLeft) {
+						while (me.tempRLE[me.tempRLEAmount + amountToAdd] !== "\n") {
+							amountToAdd -= 1;
+						}
+					}
+					textArea.innerHTML = me.tempRLE.substr(me.tempRLEAmount, amountToAdd);
+					me.tempRLEAmount += amountToAdd;
+					me.tempInput.appendChild(textArea);
 				}
 			}
-			textArea.innerHTML = me.tempRLE.substr(me.tempRLEAmount, amountToAdd);
-			me.tempRLEAmount += amountToAdd;
-			me.tempInput.appendChild(textArea);
 		} else {
 			// draw notification
 			me.menuManager.notification.notify("Control-C to complete copy", 15, 10000, 15, true);
@@ -5141,18 +5161,23 @@
 
 		// try the copy in a single pass if small and fast enough
 		if (twoPhase) {
+			// check for Edge browser
+
 			processingTime = performance.now() - me.copyStartTime;
 			if (processingTime < ViewConstants.copyTimeThreshold && me.tempRLELength < ViewConstants.copySizeThreshold) {
 				twoPhase = false;
 			} else {
-				elementType = "div";
+				// don't use a div if running on Edge since it can't multi-select elements so we have to use one textarea
+				if (!me.isEdge) {
+					elementType = "div";
+				}
 			}
 		}
 
 		// copy the element contents to a temporary off-screen element
 		// since selection doesn't work on hidden elements
 		me.tempInput = document.createElement(elementType);
-		this.hideElement(me.tempInput);
+		me.hideElement(me.tempInput);
 		me.tempInput.contentEditable = true;
 
 		// add the new element to the document
@@ -5163,6 +5188,8 @@
 			me.tempInput.innerHTML = contents;
 			me.completeCopyToClipboard(me, twoPhase);
 		} else {
+			// setup pause to display notification
+			me.copyFrameWait = ViewConstants.copyWait;
 			me.menuManager.notification.notify("Copying...", 15, 10000, 15, true);
 
 			// set copy mode
@@ -11395,6 +11422,13 @@
 			neededHeight = 0,
 			borderSize = 0,
 		    i = 0;
+
+		// check for Edge browser
+		if (window.navigator.userAgent.indexOf("Edge") !== -1) {
+			this.isEdge = true;
+		} else {
+			this.isEdge = false;
+		}
 
 		// clear script error list
 		this.scriptErrors = [];
