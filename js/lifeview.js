@@ -341,7 +341,13 @@
 		popupWindow : null,
 
 		// list of patterns in multiverse mode
-		patterns : []
+		patterns : [],
+
+		// list of pattern names in multiverse mode
+		names : [],
+
+		// list of pattern rules in multiverse mode
+		rules : []
 	};
 
 	// return standalone viewer
@@ -11470,7 +11476,8 @@
 		    neededWidth = 0,
 			neededHeight = 0,
 			borderSize = 0,
-		    i = 0;
+			i = 0,
+			name = "";
 
 		// check for Edge browser
 		if (window.navigator.userAgent.indexOf("Edge") !== -1) {
@@ -12475,7 +12482,11 @@
 
 		// display universe if in multiverse mode
 		if (DocConfig.multi) {
-			this.menuManager.notification.notify("Universe " + (this.universe + 1), 15, 40, 15, true);
+			name = this.patternName;
+			if (name == "") {
+				name = "Universe " + (this.universe + 1);
+			}
+			this.menuManager.notification.notify(name, 15, 120, 15, true);
 		}
 	};
 
@@ -12901,6 +12912,8 @@
 				if (DocConfig.multi) {
 					// add details to Controller
 					Controller.patterns[Controller.patterns.length] = patternString;
+					Controller.names[Controller.names.length] = pattern.name;
+					Controller.rules[Controller.rules.length] = pattern.ruleName;
 				}
 			}
 		}

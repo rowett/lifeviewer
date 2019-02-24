@@ -25,10 +25,11 @@
 	</head>
 	<body>
 		<h1>LifeViewer Plugin Tests</h1>
-		<h2>Bosco</h2>
+		<h2>Multiverse - use Page Up and Page Down to switch universes</h2>
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
 			<textarea rows=10 cols=70>
+#N Bosco
 #C [[ ZOOM 6 ]]
 x = 35, y = 42, rule = R5,C0,M1,S34..58,B34..45,NM
 29bo$27b5o$25b5ob2o$24b5o3b2o$24b4o5bo$23b4o5b3o$24b4o3b3o$24b5ob4o$
@@ -37,9 +38,10 @@ x = 35, y = 42, rule = R5,C0,M1,S34..58,B34..45,NM
 			<br>
 			<canvas width="480" height="480"></canvas>
 		</div>
-		<h2>Butterfly</h2>
+<div style="display:none;">
 		<div class="viewer">
 			<textarea rows=10 cols=70>
+#N Butterfly
 #C [[ TRACKLOOP 31 9/31 0 ZOOM 6 GRID GPS 31 ]]
 x = 25, y = 37, rule = R5,C0,M1,S34..52,B31..45,NM
 18b4o$16b4ob3o$14b5o3b3o$14b3o5b3o$13b3o6b3o$11b3o9b2o$b7o2b3o10b2o$3o
@@ -51,9 +53,9 @@ b7o12b2o$11o13bo$3o2b4o14b2o$3o4b2o2b3o8b2o$3o18b2o$o17bob2o$o16b4o$2o
 			</textarea>
 			<br>
 		</div>
-		<h2>Soldier Bugs</h2>
 		<div class="viewer">
 			<textarea rows=10 cols=70>
+#N Soldier Bugs
 x = 113, y = 113, rule = R7,C0,M1,S65..114,B65..95,NM
 49b4o$47b7o$46b10o$45b12o$45b13o19b2o$44b3o5b6o17b6o$22b3o19b3o5b6o16b
 9o$20b7o17b3o5b6o15b11o$19b9o16b3o5b6o14b3ob9o$18b12o15b3o2b8o14b3o4b
@@ -77,9 +79,9 @@ x = 113, y = 113, rule = R7,C0,M1,S65..114,B65..95,NM
 			</textarea>
 			<br>
 		</div>
-		<h2>von Neumann multi-state</h2>
 		<div class="viewer">
 			<textarea rows=10 cols=70>
+#N von Neumann multi-state
 x = 65, y = 55, rule = R2,C6,M0,S2..3,B3..3,NN
 56.A.A2$56.A.A16$60.AD$30.A.A25.AB2A$58.2ACECA$30.A.A26.A4CA$37.A.A
 20.4A$11.4A$11.ACEB22.A.A$11.2A2E$A.A8.2AE$12.D2E$A.A12$41.ABE.E$41.A
@@ -87,9 +89,9 @@ x = 65, y = 55, rule = R2,C6,M0,S2..3,B3..3,NN
 			</textarea>
 			<br>
 		</div>
-		<h2>Circular</h2>
 		<div class="viewer">
 			<textarea rows=10 cols=70>
+#N Circular
 x = 83, y = 45, rule = R2,C0,M0,S3..6,B5..5,NC
 3o$2o$bo8$2o8b3o7b2o9bo8bo9bo9bobo8bo8bobo$2o8bo9bo9b2o8bobo7b2o9bo8bo
 bo7bobo$21bo10bo7bo10bo9bo9bo8$2o8b3o7b2o8b3o7b3o$obo7bo9bo9bo9bo2bo$b
@@ -98,9 +100,9 @@ o2bo6bo2bo$b2o8b2o7b3o7$b3o7b3o$o3bo5bo3bo$o3bo5bo3bo$b3o6bo3bo$11b3o!
 			</textarea>
 			<br>
 		</div>
-		<h2>Majority</h2>
 		<div class="viewer">
 			<textarea rows=10 cols=70>
+#N Majority
 #C [[ ZOOM 2 ]]
 x = 180, y = 180, rule = R4,C0,M1,S41..81,B41..81,NM:T180,180
 7b6ob7obo2b2obo2bob2o3b3obo2b3o2bobobo3b2o4bo2b2ob6o3bob2o2b4obobo2b2o
@@ -456,9 +458,9 @@ obob2ob3ob2ob3o2bo2bo3b4obob4obo4b3o2b3ob2o2b2o2b3o3bo7bo3bo3b5obo2bob
 			</textarea>
 			<br>
 		</div>
-		<h2>Waffle</h2>
 		<div class="viewer">
 			<textarea rows=10 cols=70>
+#N Waffle
 #C [[ ZOOM 1.33 ]]
 x = 23, y = 23, rule = R7,C0,M1,S100..200,B75..170,NM:T300,300
 7b9o$5b13o$4b15o$3b17o$2b19o$b21o$b21o$23o$23o$23o$23o$23o$23o$23o$23o
@@ -466,9 +468,9 @@ $23o$b21o$b21o$2b19o$3b17o$4b15o$5b13o$7b9o!
 			</textarea>
 			<br>
 		</div>
-		<h2>Bug Collection</h2>
 		<div class="viewer">
 			<textarea rows=10 cols=70>
+#N Bug Collection
 #C [[ ZOOM 1 ]]
 x = 123, y = 131, rule = R5,C0,M1,S34..58,B34..45,NM:T400,400
 11bo3bo78bo4bo$11bo9bo71b3o3bo$9b3o3bo3b3o3b3o53b3o3b3o4bo4b3o$9bobo3b
@@ -501,9 +503,9 @@ o2b2o2b3o2bo3bo8bo10b2o3b5o62b4o2b4o$8bo32b2ob6o63b9o$7bo34b7o65b6o$
 			</textarea>
 			<br>
 		</div>
-		<h2>Globe</h2>
 		<div class="viewer">
 			<textarea rows=10 cols=70>
+#N Globe
 #C [[ ZOOM 2.49 ]]
 x = 50, y = 48, rule = R8,C0,M0,S163..223,B74..252,NM:T160,160
 23b14o$17b14o6b2o$16b6ob6o2b2o6bo$15bob11ob5o6b2o$14b16o3b3o6bo$10b4ob
@@ -526,9 +528,9 @@ ob3o4bobo2b4o$3b2ob21o5bo2b4o$5bob12o3b2o2b10obo$6b6obo3b14o2bo2bo$10b
 			</textarea>
 			<br>
 		</div>
-		<h2>Range 100 Alien Bug</h2>
 		<div class="viewer">
 			<textarea rows=10 cols=70>
+#N Range 100 Alien Bug
 #C [[ ZOOM -2 ]]
 x = 204, y = 203, rule = R100,C0,M1,S10350..15740,B9350..12360,NM:T400,800
 85b34o$79b46o$75b54o$72b60o$69b66o$67b70o$65b74o$63b78o$62b80o$60b84o$
@@ -575,9 +577,9 @@ $18b6o8b46o48b46o8b6o$17b6o8b47o48b47o8b6o$17b5o9b46o50b46o9b5o$17b5o
 			</textarea>
 			<br>
 		</div>
-		<h2>Range 500 Alien Bug</h2>
 		<div class="viewer">
 			<textarea rows=10 cols=70>
+#N Range 500 Alien Bug
 #C [[ ZOOM -5.25 ]]
 x = 1018, y = 1012, rule = R500,C0,M1,S256694..390374,B231893..306545,NM:T2100,2100
 451b116o$431b156o$422b174o$415b188o$410b198o$404b210o$400b218o$395b
@@ -842,9 +844,9 @@ b30o30b232o432b232o30b30o$b30o30b232o432b232o30b30o$b29o31b232o432b
 			</textarea>
 			<br>
 		</div>
-		<h2>Range 100 von Neumann bug</h2>
 		<div class="viewer">
 			<textarea rows=10 cols=70>
+#N Range 100 von Neumann bug
 x = 138, y = 124, rule = R100,C0,M1,S5612..9776,B5612..7585,NN:T400,800
 34b16o38b16o$31b30o16b30o$28b82o$26b86o$25b88o$23b92o$22b94o$20b98o$
 19b100o$18b102o$17b104o$16b106o$15b108o$14b110o$13b112o$12b114o$11b
@@ -868,6 +870,7 @@ $53o32b53o$52o34b52o$50o38b50o$49o40b49o$49o40b49o$b48o40b48o$b47o42b
 			</textarea>
 			<br>
 		</div>
+</div>
 		<br>
 		<p>LifeViewer Plugin by Chris Rowett</p>
 	</body>

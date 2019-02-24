@@ -1184,8 +1184,19 @@
 
 		y = this.renderHelpLine(view, "Viewers", numViewers, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Playing", Controller.viewersPlaying(), ctx, x, y, height, helpLine);
-		value = Controller.patterns.length;
-		y = this.renderHelpLine(view, "Universe", (DocConfig.multi ? "Multi (" + view.universe + " of " + value + ")" : "Single"), ctx, x, y, height, helpLine);
+		if (DocConfig.multi) {
+			value = Controller.patterns.length;
+			y = this.renderHelpLine(view, "Universe", "Multi (" + (view.universe + 1) + " of " + value + ")", ctx, x, y, height, helpLine);
+			// wrap long rule names
+			view.wrapHelpText = true;
+			for (i = 0; i < value; i += 1) {
+				y = this.renderHelpLine(view, (String(i + 1) + ((i === view.universe) ? "*" : "")), Controller.names[i], ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, " ", Controller.rules[i], ctx, x, y, height, helpLine);
+			}
+			view.wrapHelpText = false;
+		} else {
+			y = this.renderHelpLine(view, "Universe", "Single", ctx, x, y, height, helpLine);
+		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// colour set information
