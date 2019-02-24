@@ -664,14 +664,14 @@
 		y = bottomY;
 		while (y <= topY) {
 			x = leftX;
-			last = this.getState(x, y);
+			last = this.getState(x, y, false);
 			count = 1;
 			x += 1;
 			while (x <= rightX + 1) {
 				if (x > rightX) {
 					state = -1;
 				} else {
-					state = this.getState(x, y);
+					state = this.getState(x, y, false);
 				}
 				if (state !== last) {
 					// output end of previous row(s)
