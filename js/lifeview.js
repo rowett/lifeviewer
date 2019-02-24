@@ -29,8 +29,14 @@
 		// whether to limit width to the pattern source element width
 		limitWidth : false,
 
+		// whether in multiverse mode
+		multi : false,
+
 		// div class name containing code block
-		divCodeClassName : "codebox"
+		divCodeClassName : "codebox",
+
+		// patterns (in source RLE)
+		patterns : []
 	},
 
 	// ViewConstants singleton
@@ -179,7 +185,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 299,
+		/** @const {number} */ versionBuild : 300,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -332,7 +338,10 @@
 		standaloneIndex : -1,
 
 		// popup window
-		popupWindow : null
+		popupWindow : null,
+
+		// list of patterns in multiverse mode
+		patterns : []
 	};
 
 	// return standalone viewer
@@ -468,6 +477,9 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// universe number
+		this.universe = 0;
+
 		// running in Edge browser
 		this.isEdge = false;
 
@@ -6533,6 +6545,18 @@
 					if (me.displayErrors) {
 						// move to previous page
 						me.scrollErrorsUp(me, me.numHelpPerPage);
+					} else {
+						// check for multiverse mode
+						if (DocConfig.multi) {
+							// previous universe
+							if (DocConfig.multi) {
+								me.universe -= 1;
+								if (me.universe < 0) {
+									me.universe = Controller.patterns.length - 1;
+								}
+								me.startViewer(Controller.patterns[me.universe], false);
+							}
+						}
 					}
 				}
 				break;
@@ -6554,6 +6578,18 @@
 					if (me.displayErrors) {
 						// move to next page
 						me.scrollErrorsDown(me, me.numHelpPerPage);
+					} else {
+						// check for multiverse mode
+						if (DocConfig.multi) {
+							// next universe
+							if (DocConfig.multi) {
+								me.universe += 1;
+								if (me.universe >= Controller.patterns.length) {
+									me.universe = 0;
+								}
+								me.startViewer(Controller.patterns[me.universe], false);
+							}
+						}
 					}
 				}
 				break;
@@ -6569,6 +6605,12 @@
 					if (me.displayErrors) {
 						// move to top
 						me.displayErrors = 1;
+					} else {
+						// check if multiverse mode is on
+						if (DocConfig.multi) {
+							me.universe = 0;
+							me.startViewer(Controller.patterns[me.universe], false);
+						}
 					}
 				}
 				break;
@@ -6584,6 +6626,12 @@
 					if (me.displayErrors) {
 						// move to bottom
 						me.displayErrors = me.scriptErrors.length - me.numHelpPerPage;
+					} else {
+						// check if multiverse mode is on
+						if (DocConfig.multi) {
+							me.universe = Controller.patterns.length - 1;
+							me.startViewer(Controller.patterns[me.universe], false);
+						}
 					}
 				}
 				break;
@@ -11172,6 +11220,7 @@
 		// reset drawing mode
 		this.drawing = false;
 		this.drawingState = 1;
+		this.engine.dirty = false;
 	};
 	
 	// switch off thumbnail view
@@ -12423,6 +12472,11 @@
 				}
 			}
 		}
+
+		// display universe if in multiverse mode
+		if (DocConfig.multi) {
+			this.menuManager.notification.notify("Universe " + (this.universe + 1), 15, 40, 15, true);
+		}
 	};
 
 	// start a viewer
@@ -12526,6 +12580,11 @@
 						// viewer width is limited to pattern element width
 						case "limit":
 							DocConfig.limitWidth = true;
+							break;
+						
+						// viewer is in multiverse mode
+						case "multi":
+							DocConfig.multi = true;
 							break;
 
 						// otherwise check if it is numeric
@@ -12838,6 +12897,11 @@
 			// check if it created
 			if (pattern.lifeMap) {
 				result = true;
+				// check if in multiverse mode
+				if (DocConfig.multi) {
+					// add details to Controller
+					Controller.patterns[Controller.patterns.length] = patternString;
+				}
 			}
 		}
 		catch(err) {
@@ -12851,19 +12915,6 @@
 		return result;
 	}
 
-	// callback for show in molly anchor
-	function mollyAnchorCallback(event) {
-		launchInMolly(this);
-
-		// stop event propagating
-		if (event.stopPropagation) {
-			event.stopPropagation();
-		}
-		event.preventDefault();
-
-		return false;
-	}
-		
 	// callback for show in viewer anchor
 	function anchorCallback(event) {
 		updateViewer(this);
@@ -12889,12 +12940,7 @@
 		    cleanItem = null,
 		    rleItem = null,
 		    nodeItem = null,
-		    formItem = null,
-		    inputItem = null,
 		    childItem = null,
-
-		    // whether the pattern is valid
-		    isValid = false,
 
 		    // temporary allocator
 		    allocator = new Allocator();
@@ -12920,12 +12966,18 @@
 				}
 
 				// check if typedArrays and Canvas are supported
-				if (typedArrays && canvasItem && canvasItem.getContext) {
-					// check if the text item exists
-					if (textItem) {
-						// remove any html tags from the text item and trim
-						cleanItem = cleanPattern(textItem);
+				if (typedArrays && textItem) {
+					// remove any html tags from the text item and trim
+					cleanItem = cleanPattern(textItem);
 
+					// check for multiverse
+					if (DocConfig.multi) {
+						// check if the text is a pattern and add to Controller if in multiverse mode
+						isPattern(cleanItem, allocator);
+					}
+
+					// check if the canvas exists
+					if (canvasItem && canvasItem.getContext) {
 						// check whether to limit the height of the text item
 						if (DocConfig.patternSourceMaxHeight > -1) {
 							if (textItem.clientHeight > DocConfig.patternSourceMaxHeight) {
@@ -12935,11 +12987,11 @@
 						
 						// initalise viewer not in popup
 						startView(cleanItem, canvasItem, textItem.offsetWidth, false, textItem);
-					}
-				} else {
-					// hide the canvas item
-					if (DocConfig.hide && canvasItem) { 
-						canvasItem.style.display = "none";
+					} else {
+						// hide the canvas item
+						if (DocConfig.hide && canvasItem) { 
+							canvasItem.style.display = "none";
+						}
 					}
 				}
 			} else {
@@ -12958,10 +13010,9 @@
 								// null the anchor so we can tell if it gets created
 								anchorItem = null;
 							
-								// check if the contents is a valid pattern
-								isValid = isPattern(cleanItem, allocator);
-								if (isValid) {
-									// add the anchor tag
+								// check if the contents is a valid pattern (will add to Controller if in multiverse mode)
+								if (isPattern(cleanItem, allocator)) {
+									// add the show in viewer anchor
 									anchorItem = rleItem.getElementsByTagName('a')[0];
 
 									// add a new anchor
@@ -12984,55 +13035,6 @@
 										// add to the parent
 										textItem.parentNode.appendChild(newAnchor);
 									}
-								}
-
-								// check whether the pattern was valid but too big
-								if (PatternManager.tooBig) {
-									isValid = true;
-								}
-
-								// disable Molly for now... TBD
-								isValid = false;
-
-								// check if the pattern is valid but not executable
-								if (isValid && !PatternManager.executable) {
-									// check if the anchor exists
-									if (!anchorItem) {
-										// find the anchor
-										anchorItem = rleItem.getElementsByTagName('a')[0];
-									}
-
-									// add the new anchor
-									newAnchor = document.createElement('a');
-									newAnchor.setAttribute('href', '#');
-									newAnchor.innerHTML = "Show in Molly";
-
-									// set the onclick
-									registerEvent(newAnchor, "click", mollyAnchorCallback, false);
-
-									// create a new divider
-									nodeItem = document.createTextNode(" / ");
-
-									// add to the parent
-									anchorItem.parentNode.appendChild(nodeItem);
-									anchorItem.parentNode.appendChild(newAnchor);
-
-									// create the form
-									formItem = document.createElement('form');
-									formItem.setAttribute('action', 'molly.php');
-									formItem.setAttribute('method', 'post');
-									formItem.setAttribute('target', 'molly');
-									
-									// create the input item
-									inputItem = document.createElement('input');
-									inputItem.setAttribute('type', 'hidden');
-									inputItem.setAttribute('name', 'pattern');
-									
-									// add the input item to the form
-									formItem.appendChild(inputItem);
-
-									// add the form to the parent
-									anchorItem.parentNode.appendChild(formItem);
 								}
 							}
 						}

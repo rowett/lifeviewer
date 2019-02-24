@@ -10,6 +10,8 @@
 
 	// Help singleton
 	var Help = {
+		// shadow x offset
+		shadowX : 0
 	};
 
 	// draw a line of help text with up down greyed based on position
@@ -218,7 +220,8 @@
 			drewText = false;
 			if (view.wrapHelpText) {
 				width = this.measureText(view, ctx, text, 1);
-				if (x + view.tabs[tabNo] + width > ctx.canvas.width) {
+				// remove the shadow offset from x otherwise normal and shadow text wrap differently
+				if (x + view.tabs[tabNo] + width + this.shadowX > ctx.canvas.width) {
 					// check if the text can be split at "|"
 					divider = text.toLowerCase().indexOf("|");
 					if (divider === -1) {
@@ -507,6 +510,18 @@
 				}
 			}
 		}
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
+		// multiverse controls
+		view.helpSections[sectionNum] = [view.lineNo, "Multi"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Multi-Viewer controls:", ctx, x, y, height, helpLine);
+		if (DocConfig.multi) {
+			y = this.renderHelpLine(view, "Page Up", "previous universe", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Page Down", "next universe", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Home", "first universe", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "End", "last universe", ctx, x, y, height, helpLine);
+		}
 		y = this.renderHelpLine(view, "Z", "stop playback in all other LifeViewers", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift Z", "stop playback in all LifeViewers", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
@@ -638,10 +653,10 @@
 		y = this.renderHelpLine(view, "", "Help controls:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Up", "scroll up one line", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Down", "scroll down one line", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "PgUp", "scroll up one page", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "PgDn", "scroll down one page", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Shift PgUp", "scroll up one section", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Shift PgDn", "scroll down one section", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Page Up", "scroll up one page", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Page Down", "scroll down one page", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift Page Up", "scroll up one section", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift Page Down", "scroll down one section", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Home", "go to first help page", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "End", "go to last help page", ctx, x, y, height, helpLine);
 	};
@@ -1169,6 +1184,8 @@
 
 		y = this.renderHelpLine(view, "Viewers", numViewers, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Playing", Controller.viewersPlaying(), ctx, x, y, height, helpLine);
+		value = Controller.patterns.length;
+		y = this.renderHelpLine(view, "Universe", (DocConfig.multi ? "Multi (" + view.universe + " of " + value + ")" : "Single"), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// colour set information
@@ -1746,10 +1763,12 @@
 
 		// draw shadow
 		ctx.fillStyle = ViewConstants.helpShadowColour; 
+		this.shadowX = -2;
 		this.renderHelpText(view, ctx, 6, 14, lineHeight, view.displayHelp | 0);
 
 		// draw text
 		ctx.fillStyle = ViewConstants.helpFontColour;
+		this.shadowX = 0;
 		this.renderHelpText(view, ctx, 4, 12, lineHeight, view.displayHelp | 0);
 	};
 

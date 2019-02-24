@@ -599,6 +599,9 @@
 
 		// HROT engine
 		this.HROT = new HROT(this.allocator, this.width, this.height, this);
+
+		// whether pattern dirty (just edited)
+		this.dirty = false;
 	}
 
 	// convert grid to RLE
@@ -672,7 +675,7 @@
 				}
 				if (state !== last) {
 					// output end of previous row(s)
-					if (state !== last && state !== -1 && rowCount > 0) {
+					if (!(state === -1 && last === 0) && rowCount > 0) {
 						if (rowCount > 1) {
 							rle += rowCount;
 						}
@@ -755,6 +758,9 @@
 			if (this.boundedGridType !== -1 && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
 				// do nothing
 			} else {
+				// mark pattern as dirty
+				this.dirty = true;
+
 				// check for multi-state rules
 				if (!this.isHROT) {
 					if (this.multiNumStates <= 2) {
@@ -5160,6 +5166,14 @@
 		// turn stats on unless graph disabled
 		if (!graphDisabled) {
 			statsOn = true;
+		}
+
+		// save immediately if pattern is dirty so step back will work
+		if (!noHistory) {
+			if (this.dirty) {
+				//this.saveSnapshot(); // TBD !!!
+				this.dirty = false;
+			}
 		}
 
 		// check if snapshot should be saved

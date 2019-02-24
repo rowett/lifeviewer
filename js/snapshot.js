@@ -1131,22 +1131,19 @@
 			while (i < l && !found) {
 				if (this.resetSnapshots[i].counter === counter) {
 					found = true;
-				}
-				else {
+				} else {
 					i += 1;
 				}
 			}
 			if (found) {
 				// return the existing reset snapshot
 				result = this.resetSnapshots[i];
-			}
-			else {
+			} else {
 				// save the reset snapshot
 				result = new Snapshot(this, bufNum);
 				this.resetSnapshots[this.resetSnapshots.length] = result;
 			}
-		}
-		else {
+		} else {
 			// add to the list of snapshots
 			result = new Snapshot(this, bufNum);
 			this.snapshots[this.snapshots.length] = result;
@@ -1200,7 +1197,7 @@
 		var i = 0,
 		    l = this.resetSnapshots.length;
 
-		// grow the reset snapshot
+		// grow the reset snapshots
 		while (i < l) {
 			this.resizeSnapshot(this.resetSnapshots[i], newWidth, newHeight, offset);
 			i += 1;

@@ -1,3 +1,14 @@
+Build 300
+- multiverse mode
+	- new meta keyword "multi" puts the Viewer in multiverse mode
+	- RLE on the page is now added to a list of Universes (patterns) that can by cycled through in a single Viewer
+	- hotkey "PageUp" goes to previous universe
+	- hotkey "PageDown" goes to next universe
+	- hotkey "Home" goes to first universe
+	- hotkey "End" goes to last universe
+- Help text could incorrectly wrap because of shadow
+- Copy pattern failed on full lines
+
 Build 299
 - graph and labels were not rendering during copy RLE or computing previous generations
 - graph was broken when computing previous generations
