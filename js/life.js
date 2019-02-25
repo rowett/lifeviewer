@@ -656,6 +656,14 @@
 			rle += me.beforeTitle;
 		}
 
+		// check for zero population
+		if (this.population === 0) {
+			width = 0;
+			height = 0;
+			// ensure loop is skipped
+			topY = bottomY - 1;
+		}
+
 		// output header
 		rle += "x = " + width + ", y = " + height + ", rule = ";
 		if (view.patternAliasName === "LifeHistory") {

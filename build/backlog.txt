@@ -16,6 +16,7 @@ In progress:
     [DONE]extend Controller to provide access to all patterns on a page
     [DONE]new meta keyword "multi" to switch to multiverse mode
 [STARTED]Pattern Editor
+    - ability to define rule
     - improved LifeHistory drawing modes
     - reset to include the overlay grid
     - grow grid if possible when cell outside current grid drawn

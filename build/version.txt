@@ -2,6 +2,7 @@ Build 301
 - hotkey Ctrl+Alt "C" copies current pattern with comments
 - Life 1.05 decoder now ignores trailing spaces
 - added support for trailing g<states> for Generations rules e.g. B3S23G10
+- copying empty patterns is faster
 
 Build 300
 - multiverse mode
