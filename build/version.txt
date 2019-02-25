@@ -3,6 +3,7 @@ Build 301
 - Life 1.05 decoder now ignores trailing spaces
 - added support for trailing g<states> for Generations rules e.g. B3S23G10
 - copying empty patterns is faster
+- improved RLE generation speed
 
 Build 300
 - multiverse mode
