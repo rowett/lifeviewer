@@ -1,30 +1,39 @@
-Investigate tiled LtL/HROT algorithm
-Investigate Paul's non-totalistic hex notation
-Investigate Brian's BSFKL notation
-Investigate "Extended" Generations
-Investigate deficient rules
-Grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
-User preferences
-[STARTED]Meta world view
-- extend Controller to provide access to all patterns on a page
-- new script command [[ MULTI ]] to switch to meta world view
-- new UI control somewhere to switch back
+Investigate:
+    Paul's non-totalistic hex notation
+    Brian's BSFKL notation
+    "Extended" Generations
+    Deficient rules
+    Half-integer Wolfram rules
+    LtL Margolus rules
+
+Planned:
+    Grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
+    User preferences
+
+In progress:
+[STARTED]Multiverse
+    - new UI controls to select universe
+    [DONE]extend Controller to provide access to all patterns on a page
+    [DONE]new meta keyword "multi" to switch to multiverse mode
 [STARTED]Pattern Editor
-    [DONE] 2-state editing
+    - improved LifeHistory drawing modes
+    - reset to include the overlay grid
+    - grow grid if possible when cell outside current grid drawn
+    - undo stack
+    - selections
+    [DONE]2-state editing
     [DONE]LifeHistory support
     [DONE]multi-state support
     [DONE]colour picker
-    - improved LifeHistory drawing modes
-    - reset to include the overlay grid
-    - convert current pattern to RLE (for Ctrl-C Copy)
-    - undo stack
-    - selections
+    [DONE]convert current pattern to RLE (for Ctrl-C Copy)
+
+Complete:
 [DONE]Alternating rules
-[DONE]LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE stuff rather than just clear)
+[DONE]LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE rather than just clear)
 [DONE]Memory footprint reduction
 [DONE]Implement faster Ltl/HROT von Neumann algorithm
 [DONE]HROT support for von Neumann and Circular neighbourhoods
-[DONE]New script keywords to put labels on the display at specific locations triggered by generation and zoom ranges
+[DONE]New script keywords to put labels on the display at specific locations triggered by generation and/or zoom ranges
 [DONE]multistate rules using just 2 states should use LifeViewer Themes
 [DONE]getState() needs to cope with Bounded Grid and 255 or 256 states (currently bounded grid border showing as 1, should be 0)
 [DONE]multistate rules using > 2 states and < 256 states should have history colour

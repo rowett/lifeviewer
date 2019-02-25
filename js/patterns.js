@@ -3227,6 +3227,50 @@
 				}
 			}
 
+			// if valid then keep decoding
+			if (valid) {
+				// find final g
+				validIndex = rule.lastIndexOf("g");
+				if (validIndex !== -1 && validIndex !== (rule.length - 1)) {
+					// ignore if previous character is slash since this will be handled later
+					if (!(validIndex > 0 && rule[validIndex - 1] === "/")) {
+						// attempt to decode generations states
+						i = validIndex + 1;
+						pattern.multiNumStates = 0;
+	
+						// read generations digits
+						validIndex = 0;
+						while (i < rule.length && validIndex !== -1) {
+							// check each character is a valid digit
+							validIndex = this.decimalDigits.indexOf(rule[i]);
+							if (validIndex !== -1) {
+								// add the digit to the number of generations states
+								pattern.multiNumStates = pattern.multiNumStates * 10 + validIndex;
+								i += 1;
+							}
+						}
+	
+						// check if digits were present
+						if (i === rule.length) {
+							// check if generations states are valid
+							if (pattern.multiNumStates < 2 || pattern.multiNumStates > 256) {
+								// mark as invalid
+								this.failureReason = "Generations number must be 2-256";
+								pattern.multiNumStates = -1;
+								valid = false;
+							} else {
+								// remove postfix from rule
+								rule = rule.substr(0, rule.lastIndexOf("g"));
+								valid = true;
+							}
+						} else {
+							// ignore since wasn't generations postfix
+							pattern.multiNumStates = -1;
+						}
+					}
+				}
+			}
+
 			// if rule still valid then continue decoding
 			if (valid) {
 				valid = false;
