@@ -48,7 +48,7 @@
 		/** @const (number) */ copyTimeThreshold : 500,
 
 		// copy RLE frames to display before two pass copy to allow notification
-		/** @const (number) */ copyWait: 16,
+		/** @const (number) */ copyWait: 17,
 
 		// grid line major light background default
 		/** @const (number) */ gridLineLightBoldRawDefault : (209 << 16) | (209 << 8) | 209,

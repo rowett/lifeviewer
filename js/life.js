@@ -629,10 +629,15 @@
 			outputState = [],
 			maxState = 0,
 			asciiA = String("A").charCodeAt(0),
-			asciiP = String("p").charCodeAt(0);
+			asciiP = String("p").charCodeAt(0),
+			twoState = false,
+			colourGrid = this.colourGrid,
+			colourRow = null,
+			col = 0;
 
 		// populate output states
 		if (me.multiNumStates <= 2 && !me.isLifeHistory) {
+			twoState = true;
 			outputState[0] = "b";
 			outputState[1] = "o";
 		} else {
@@ -681,14 +686,39 @@
 		y = bottomY;
 		while (y <= topY) {
 			x = leftX;
-			last = me.getState(x, y, false);
+			// check for 2 state pattern
+			if (twoState) {
+				// use fast lookup
+				colourRow = colourGrid[y];
+				col = colourRow[x];
+				if (col <= this.deadStart || col === this.boundedBorderColour) {
+					last = 0;
+				} else {
+					last = 1;
+				}
+			} else {
+				// not 2 state so use full lookup
+				last = me.getState(x, y, false);
+			}
 			count = 1;
 			x += 1;
 			while (x <= rightX + 1) {
 				if (x > rightX) {
 					state = -1;
 				} else {
-					state = me.getState(x, y, false);
+					// check for 2 state pattern
+					if (twoState) {
+						// use fast lookup
+						col = colourRow[x];
+						if (col <= this.deadStart || col === this.boundedBorderColour) {
+							state = 0;
+						} else {
+							state = 1;
+						}
+					} else {
+						// not 2 state so use full lookup
+						state = me.getState(x, y, false);
+					}
 				}
 				if (state !== last) {
 					// output end of previous row(s)
@@ -737,6 +767,7 @@
 			rle += me.afterTitle;
 		}
 
+		// return the RLE
 		return rle;
 	};
 
