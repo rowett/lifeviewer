@@ -633,10 +633,17 @@
 		y = this.renderHelpLine(view, "S", "toggle stars", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "O", "open screenshot in separate window", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift O", "open population graph in separate window", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Shift C", "copy original pattern to clipboard", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl C", "copy current pattern to clipboard", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "K", "copy camera position to clipboard", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Shift K", "copy camera position and view to clipboard", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
+		// clipboard controls
+		view.helpSections[sectionNum] = [view.lineNo, "Clipboard"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Clipboard controls:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl+Shift C", "copy original pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl C", "copy current pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl+Alt C", "copy current pattern with comments", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "K", "copy camera position", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift K", "copy camera position and view", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// edit controls

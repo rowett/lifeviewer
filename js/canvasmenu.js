@@ -52,7 +52,7 @@
 		this.colour = "rgb(32,255,255)";
 
 		// colour for priority notifications
-		this.priorityColour = "rgb(32,255,255)";
+		this.priorityColour = "white";
 
 		// iterator for animated priority notification colour
 		this.priorityIter = 0;

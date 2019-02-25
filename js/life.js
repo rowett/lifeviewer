@@ -198,6 +198,10 @@
 		// allocator
 		this.allocator = new Allocator();
 
+		// before and after RLE comments
+		this.beforeTitle = "";
+		this.afterTitle = "";
+
 		// bounded grid border colour
 		this.boundedBorderColour = 255;
 
@@ -605,7 +609,7 @@
 	}
 
 	// convert grid to RLE
-	Life.prototype.asRLE = function(view, me) {
+	Life.prototype.asRLE = function(view, me, addComments) {
 		var rle = "",
 			zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
 			leftX = zoomBox.leftX,
@@ -628,14 +632,14 @@
 			asciiP = String("p").charCodeAt(0);
 
 		// populate output states
-		if (this.multiNumStates <= 2 && !this.isLifeHistory) {
+		if (me.multiNumStates <= 2 && !me.isLifeHistory) {
 			outputState[0] = "b";
 			outputState[1] = "o";
 		} else {
-			if (this.isLifeHistory) {
+			if (me.isLifeHistory) {
 				maxState = 7;
 			} else {
-				maxState = this.multiNumStates;
+				maxState = me.multiNumStates;
 			}
 			outputState[0] = ".";
 			for (x = 0; x < maxState - 1; x += 1) {
@@ -647,8 +651,13 @@
 			}
 		}
 
+		// output comments if requested
+		if (addComments) {
+			rle += me.beforeTitle;
+		}
+
 		// output header
-		rle = "x = " + width + ", y = " + height + ", rule = ";
+		rle += "x = " + width + ", y = " + height + ", rule = ";
 		if (view.patternAliasName === "LifeHistory") {
 			rle += view.patternAliasName;
 		} else {
@@ -664,14 +673,14 @@
 		y = bottomY;
 		while (y <= topY) {
 			x = leftX;
-			last = this.getState(x, y, false);
+			last = me.getState(x, y, false);
 			count = 1;
 			x += 1;
 			while (x <= rightX + 1) {
 				if (x > rightX) {
 					state = -1;
 				} else {
-					state = this.getState(x, y, false);
+					state = me.getState(x, y, false);
 				}
 				if (state !== last) {
 					// output end of previous row(s)
@@ -714,6 +723,11 @@
 			y += 1;
 		}
 		rle += "!\n";
+
+		// add final comments if requested
+		if (addComments) {
+			rle += me.afterTitle;
+		}
 
 		return rle;
 	};

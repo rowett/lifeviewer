@@ -331,6 +331,12 @@
 		// title
 		this.title = "";
 
+		// title before RLE
+		this.beforeTitle = "";
+
+		// title after RLE
+		this.afterTitle = "";
+
 		// pattern source format
 		this.patternFormat = "";
 
@@ -487,6 +493,8 @@
 				// found title
 				case "!":
 					mode = readTitle;
+					// output as RLE comment since that is the canonical format for copy to clipboard
+					pattern.beforeTitle += "#C ";
 					skipBlanks = true;
 					break;
 
@@ -516,16 +524,17 @@
 			// reading title
 			case readTitle:
 				// add to title
-				if (chr !== "\r") {
+				if (chr !== "\r" && chr !== "\n") {
 					// check for skipping blanks
 					if (chr === " ") {
 						if (!skipBlanks) {
 							pattern.title += chr;
+							pattern.beforeTitle += chr;
 						}
-					}
-					else {
+					} else {
 						skipBlanks = false;
 						pattern.title += chr;
+						pattern.beforeTitle += chr;
 					}
 				}
 
@@ -533,6 +542,8 @@
 				if (chr === "\n") {
 					// switch back to header mode
 					mode = headerMode;
+					pattern.beforeTitle += chr;
+					pattern.title += " ";
 				}
 				break;
 
@@ -699,8 +710,7 @@
 				// switch to next item
 				if (item === waiting) {
 					item = xPos;
-				}
-				else {
+				} else {
 					if (item === xPos) {
 						item = yPos;
 					}
@@ -738,8 +748,7 @@
 				// add to the position
 				if (item === xPos) {
 					x = (x * 10) + parseInt(chr, 10);
-				}
-				else {
+				} else {
 					y = (y * 10) + parseInt(chr, 10);
 					sawPosition = true;
 				}
@@ -851,8 +860,7 @@
 		// read each character starting past the magic
 		if (header) {
 			i = Life105.magic.length;
-		}
-		else {
+		} else {
 			i = 0;
 		}
 
@@ -904,6 +912,8 @@
 				case "C":
 				case "D":
 					mode = readTitle;
+					// output as RLE comment since that is the canonical format for copy to clipboard
+					pattern.beforeTitle += "#C ";
 					skipBlanks = true;
 					break;
 
@@ -942,16 +952,17 @@
 			// reading title
 			case readTitle:
 				// add to title
-				if (chr !== "\r") {
+				if (chr !== "\r" && chr !== "\n") {
 					// check for skipping blanks
 					if (chr === " ") {
 						if (!skipBlanks) {
 							pattern.title += chr;
+							pattern.beforeTitle += chr;
 						}
-					}
-					else {
+					} else {
 						skipBlanks = false;
 						pattern.title += chr;
+						pattern.beforeTitle += chr;
 					}
 				}
 
@@ -959,6 +970,8 @@
 				if (chr === "\n") {
 					// switch back to header mode
 					mode = headerMode;
+					pattern.title += " ";
+					pattern.beforeTitle += chr;
 				}
 				break;
 
@@ -966,8 +979,7 @@
 			case readCustomRule:
 				if (chr === "\n") {
 					mode = headerMode;
-				}
-				else {
+				} else {
 					customRule += chr;
 					sawCustom = true;
 				}
@@ -998,8 +1010,7 @@
 					// switch to next item
 					if (item === waiting) {
 						item = xPos;
-					}
-					else {
+					} else {
 						if (item === xPos) {
 							item = yPos;
 						}
@@ -1037,8 +1048,7 @@
 					// add to the position
 					if (item === xPos) {
 						startX = (startX * 10) + parseInt(chr, 10);
-					}
-					else {
+					} else {
 						startY = (startY * 10) + parseInt(chr, 10);
 					}
 					break;
@@ -1078,6 +1088,11 @@
 				case "*":
 				case ".":
 					width += 1;
+					break;
+
+				// ignore spaces
+				case " ":
+				case "\t":
 					break;
 
 				// other characters are invalid
@@ -1150,14 +1165,12 @@
 						// free multi-state map
 						pattern.multiStateMap = null;
 					}
-				}
-				else {
+				} else {
 					// disable multi-state
 					pattern.multiNumStates = -1;
 					pattern.isHistory = false;
 				}
-			}
-			else {
+			} else {
 				// default to Conway's Life
 				this.decodeRuleString(pattern, "", allocator);
 			}
@@ -1292,8 +1305,7 @@
 		// check for homogeneous bits
 		if (value === 0 || value === 8) {
 			this.setTotalistic(ruleArray, value, survival, hexMask);
-		}
-		else {
+		} else {
 			// compute x orbit and n index
 			if (nIndex > 3) {
 				nIndex = 6 - nIndex;
@@ -1422,8 +1434,7 @@
 					}
 				}
 			}
-		}
-		else {
+		} else {
 			// just add the count
 			canonical += String(count);
 		}
@@ -1573,12 +1584,10 @@
 		for (i = 0; i < 512; i += 1) {
 			if ((number & (1 << (i & 7))) !== 0) {
 				ruleArray[i] = 1;
-			}
-			else {
+			} else {
 				if ((i & 16) !== 0) {
 					ruleArray[i] = 1;
-				}
-				else {
+				} else {
 					ruleArray[i] = 0;
 				}
 			}
@@ -1605,8 +1614,7 @@
 		mask = 511;
 		if (isHex) {
 			mask = 254;
-		}
-		else {
+		} else {
 			if (isVonNeumann) {
 				mask = 186;
 			}
@@ -1618,8 +1626,7 @@
 			ruleArray[i] = 0;
 			if (isHex) {
 				swapArray[i] = i;
-			}
-			else {
+			} else {
 				swapArray[i] = (i & 448) >> 6 | i & 56 | (i & 7) << 6;
 			}
 		}
@@ -1673,8 +1680,7 @@
 			if (generationsStates !== -1) {
 				canonicalName += "/" + generationsStates;
 			}
-		}
-		else {
+		} else {
 			// check for neighbourhoods that are totalistic only
 			if (isHex || isVonNeumann) {
 				// set the birth rule
@@ -1682,8 +1688,7 @@
 	
 				// set the survival rule
 				survivalName = this.setTotalisticRuleFromString(ruleArray, survivalPart, true, mask);
-			}
-			else {
+			} else {
 				// set the birth rule
 				birthName = this.setRuleFromString(ruleArray, birthPart, false);
 	
@@ -1694,8 +1699,7 @@
 			// create the canonical name
 			if (generationsStates !== -1) {
 				canonicalName = survivalName + "/" + birthName + "/" + generationsStates;
-			}
-			else {
+			} else {
 				canonicalName = "B" + birthName + "/S" + survivalName;
 			}
 		}
@@ -4112,17 +4116,28 @@
 	};
 
 	// add a line from the source to the title
-	PatternManager.addToTitle = function(pattern, source) {
+	PatternManager.addToTitle = function(pattern, source, afterRLE) {
 		// end of line index
-		var endIndex = source.indexOf("\n");
+		var endIndex = source.indexOf("\n"),
+			text = "";
 
 		// check if a newline exists
 		if (endIndex === -1) {
 			endIndex = source.length;
 		}
 
+		// get the line of text
+		text = source.substring(0, endIndex).trim();
+
 		// add to title
-		pattern.title += source.substring(0, endIndex) + " ";
+		pattern.title += text + " ";
+
+		// add to raw titles
+		if (afterRLE) {
+			pattern.afterTitle += text + "\n";
+		} else {
+			pattern.beforeTitle += "#C " + text + "\n";
+		}
 
 		// return the length added
 		return endIndex + 1;
@@ -4833,6 +4848,8 @@
 		pattern.survivalHROT = null;
 		pattern.rangeHROT = -1;
 		pattern.title = "";
+		pattern.beforeTitle = "";
+		pattern.afterTitle = "";
 		pattern.numStates = 2;
 		pattern.numUsedStates = 0;
 		
@@ -4881,7 +4898,7 @@
 				}
 
 				// add to title
-				index += this.addToTitle(pattern, source.substring(index));
+				index += this.addToTitle(pattern, source.substring(index), false);
 				break;
 
 			// found size and rule definition
@@ -4902,9 +4919,8 @@
 				// check if already decoded
 				if (decoded) {
 					// add to title
-					index += this.addToTitle(pattern, source.substring(index));
-				}
-				else {
+					index += this.addToTitle(pattern, source.substring(index), true);
+				} else {
 					// mark decoded
 					decoded = true;
 

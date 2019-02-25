@@ -185,7 +185,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 300,
+		/** @const {number} */ versionBuild : 301,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5416,10 +5416,10 @@
 	};
 
 	// select and copy current rle
-	View.prototype.copyCurrentRLE = function(me) {
+	View.prototype.copyCurrentRLE = function(me, addComments) {
 		// copy the current pattern to the clipboard
 		me.copyStartTime = performance.now();
-		me.copyToClipboard(me, me.engine.asRLE(me, me.engine), true);
+		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, addComments), true);
 	};
 
 	// process key
@@ -5452,7 +5452,7 @@
 			}
 
 			// check for alt-number
-			if (event.altKey) {
+			if (event.altKey && !event.ctrlKey) {
 				if (keyCode >= 49 && keyCode <= 57) {
 					value = keyCode - 49;
 					if (value >= 0 && value < me.waypointManager.numPOIs()) {
@@ -6374,11 +6374,19 @@
 							// copy reset position to clipboard
 							me.copyRLE(me, true);
 						} else {
-							// copy current position to clipboard
+							// check for view only mode
 							if (me.viewOnly) {
+								// copy reset position to clipboard
 								me.copyRLE(me, true);
 							} else {
-								me.copyCurrentRLE(me);
+								// check for alt/meta key
+								if (event.altKey) {
+									// copy with pattern comments
+									me.copyCurrentRLE(me, true);
+								} else {
+									// copy without pattern comments
+									me.copyCurrentRLE(me, false);
+								}
 							}
 						}
 					}
@@ -11528,6 +11536,10 @@
 			this.patternAliasName = pattern.aliasName;
 			this.patternBoundedGridDef = pattern.boundedGridDef;
 
+			// read the before and after RLE comments
+			this.engine.beforeTitle = pattern.beforeTitle;
+			this.engine.afterTitle = pattern.afterTitle;
+
 			// read if the pattern is executable
 			this.executable = PatternManager.executable;
 
@@ -11834,6 +11846,7 @@
 
 			// read any script in the title
 			if (pattern.title) {
+				// decode any script commands
 				this.readScript(pattern.title, pattern.numStates);
 
 				// initialise random number generator from seed
