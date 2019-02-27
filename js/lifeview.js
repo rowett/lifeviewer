@@ -2026,11 +2026,6 @@
 		this.cellY = yPos + this.panY;
 	};
 
-	// draw a single cell
-	View.prototype.drawCell = function(x, y, colour) {
-		return this.engine.setState(x, y, colour);
-	};
-
 	// draw a line of cells using Bresenham
 	View.prototype.drawCellLine = function(startX, startY, endX, endY, colour) {
 		var dx = Math.abs(endX - startX),
@@ -2039,11 +2034,21 @@
 		    sy = (startY < endY) ? 1 : -1,
 		    err = dx - dy,
 			e2 = 0,
+			width = this.engine.width,
 			// whether LifeHistory state6 changed
 			result = 0;
 
 		// set the first point
-		result |= this.drawCell(startX, startY, colour);
+		result |= this.engine.setState(startX, startY, colour);
+
+		// check for grid growth
+		while (width !== this.engine.width) {
+			startX += width >> 1;
+			startY += width >> 1;
+			endX += width >> 1;
+			endY += width >> 1;
+			width <<= 1;
+		}
 
 		// loop for each pixel on the line
 		while (!((startX === endX) && (startY === endY))) {
@@ -2059,7 +2064,16 @@
 			}
 
 			// draw the point
-			result |= this.drawCell(startX, startY, colour);
+			result |= this.engine.setState(startX, startY, colour);
+
+			// check for grid growth
+			while (width !== this.engine.width) {
+				startX += width >> 1;
+				startY += width >> 1;
+				endX += width >> 1;
+				endY += width >> 1;
+				width <<= 1;
+			}
 		}
 
 		// return whether LifeHistory state6 changed
