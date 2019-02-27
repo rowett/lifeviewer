@@ -5,9 +5,9 @@ Investigate:
     Deficient rules
     Half-integer Wolfram rules
     LtL Margolus rules
+    Grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
 
 Planned:
-    Grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
     User preferences
 
 In progress:
@@ -19,9 +19,9 @@ In progress:
     - ability to define rule
     - improved LifeHistory drawing modes
     - reset to include the overlay grid
-    - grow grid if possible when cell outside current grid drawn
     - undo stack
     - selections
+    [DONE]grow grid if possible when cell outside current grid drawn
     [DONE]2-state editing
     [DONE]LifeHistory support
     [DONE]multi-state support

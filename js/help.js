@@ -1197,8 +1197,9 @@
 			// wrap long rule names
 			view.wrapHelpText = true;
 			for (i = 0; i < value; i += 1) {
-				y = this.renderHelpLine(view, (String(i + 1) + ((i === view.universe) ? "*" : "")), Controller.names[i], ctx, x, y, height, helpLine);
-				y = this.renderHelpLine(view, " ", Controller.rules[i], ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, (String(i + 1) + ((i === view.universe) ? "*" : "")), Controller.patterns[i].name, ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, " ", Controller.patterns[i].rule, ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, " ", Controller.patterns[i].width + " x " + Controller.patterns[i].height, ctx, x, y, height, helpLine);
 			}
 			view.wrapHelpText = false;
 		} else {

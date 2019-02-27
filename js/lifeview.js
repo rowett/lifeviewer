@@ -341,13 +341,7 @@
 		popupWindow : null,
 
 		// list of patterns in multiverse mode
-		patterns : [],
-
-		// list of pattern names in multiverse mode
-		names : [],
-
-		// list of pattern rules in multiverse mode
-		rules : []
+		patterns : []
 	};
 
 	// return standalone viewer
@@ -477,6 +471,18 @@
 		// return number of viewers stopped
 		return result;
 	};
+
+	// PatternInfo object
+	/**
+	 * @constructor
+	 */
+	function PatternInfo(name, pattern, rule, width, height) {
+		this.name = name;
+		this.pattern = pattern;
+		this.rule = rule;
+		this.width = width;
+		this.height = height;
+	}
 
 	// View object
 	/**
@@ -6547,7 +6553,7 @@
 								if (me.universe < 0) {
 									me.universe = Controller.patterns.length - 1;
 								}
-								me.startViewer(Controller.patterns[me.universe], false);
+								me.startViewer(Controller.patterns[me.universe].pattern, false);
 							}
 						}
 					}
@@ -6580,7 +6586,7 @@
 								if (me.universe >= Controller.patterns.length) {
 									me.universe = 0;
 								}
-								me.startViewer(Controller.patterns[me.universe], false);
+								me.startViewer(Controller.patterns[me.universe].pattern, false);
 							}
 						}
 					}
@@ -6602,7 +6608,7 @@
 						// check if multiverse mode is on
 						if (DocConfig.multi) {
 							me.universe = 0;
-							me.startViewer(Controller.patterns[me.universe], false);
+							me.startViewer(Controller.patterns[me.universe].pattern, false);
 						}
 					}
 				}
@@ -6623,7 +6629,7 @@
 						// check if multiverse mode is on
 						if (DocConfig.multi) {
 							me.universe = Controller.patterns.length - 1;
-							me.startViewer(Controller.patterns[me.universe], false);
+							me.startViewer(Controller.patterns[me.universe].pattern, false);
 						}
 					}
 				}
@@ -12903,9 +12909,7 @@
 				// check if in multiverse mode
 				if (DocConfig.multi) {
 					// add details to Controller
-					Controller.patterns[Controller.patterns.length] = patternString;
-					Controller.names[Controller.names.length] = pattern.name;
-					Controller.rules[Controller.rules.length] = pattern.ruleName;
+					Controller.patterns[Controller.patterns.length] = new PatternInfo(pattern.name, patternString, pattern.ruleName + pattern.boundedGridDef, pattern.width, pattern.height);
 				}
 			}
 		}

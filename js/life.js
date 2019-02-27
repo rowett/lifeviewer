@@ -676,9 +676,7 @@
 		} else {
 			rle += view.patternRuleName;
 		}
-		if (view.patternBoundedGridDef !== "") {
-			rle += view.patternBoundedGridDef;
-		}
+		rle += view.patternBoundedGridDef;
 		rle += "\n";
 		lastLength = rle.length;
 
