@@ -4,6 +4,7 @@ Build 301
 - added support for trailing g<states> for Generations rules e.g. B3S23G10
 - copying empty patterns is faster
 - improved RLE generation speed
+- grid automatically grows as needed when drawing
 
 Build 300
 - multiverse mode

@@ -2038,63 +2038,28 @@
 		    sx = (startX < endX) ? 1 : -1,
 		    sy = (startY < endY) ? 1 : -1,
 		    err = dx - dy,
-		    e2 = 0,
-		    w = this.engine.width,
-			h = this.engine.height,
-
+			e2 = 0,
 			// whether LifeHistory state6 changed
 			result = 0;
 
-		// see if the line is on the display
-		if (!((startX < 0 && endX < 0) || (startX >= w && endX >= w) || (startY < 0 && endY < 0) || (startY >= h && endY >= h))) {
-			// see if bounds checking is required
-			if (startX >= 0 && startX < w && startY >=0 && startY < h && endX >= 0 && endX < w && endY >= 0 && endY < h) {
-				// line all on display so no bounds checking
-				// set the first point
-				result |= this.drawCell(startX, startY, colour);
+		// set the first point
+		result |= this.drawCell(startX, startY, colour);
 
-				// loop for each pixel on the line
-				while (!((startX === endX) && (startY === endY))) {
-					// move to next pixel
-					e2 = err + err;
-					if (e2 > -dy) {
-						err -= dy;
-						startX += sx;
-					}
-					if (e2 < dx) {
-						err += dx;
-						startY += sy;
-					}
-
-					// draw the point
-					result |= this.drawCell(startX, startY, colour);
-				}
-			} else {
-				// some or all of the line is off display so use bounds checking
-				// set the first point
-				if (startX >= 0 && startX < w && startY >=0 && startY < h) {
-					result |= this.drawCell(startX, startY, colour);
-				}
-
-				// loop for each pixel on the line
-				while (!((startX === endX) && (startY === endY))) {
-					// move to next pixel
-					e2 = err + err;
-					if (e2 > -dy) {
-						err -= dy;
-						startX += sx;
-					}
-					if (e2 < dx) {
-						err += dx;
-						startY += sy;
-					}
-
-					// draw the point
-					if (startX >= 0 && startX < w && startY >=0 && startY < h) {
-						result |= this.drawCell(startX, startY, colour);
-					}
-				}
+		// loop for each pixel on the line
+		while (!((startX === endX) && (startY === endY))) {
+			// move to next pixel
+			e2 = err + err;
+			if (e2 > -dy) {
+				err -= dy;
+				startX += sx;
 			}
+			if (e2 < dx) {
+				err += dx;
+				startY += sy;
+			}
+
+			// draw the point
+			result |= this.drawCell(startX, startY, colour);
 		}
 
 		// return whether LifeHistory state6 changed

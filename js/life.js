@@ -802,11 +802,39 @@
 			// whether cell should be alive in bit grid
 			bitAlive = false,
 
+			// whether the cell is on the grid
+			onGrid = true,
+
 			// whether a cell was or became LifeHistory state6
 			result = 0;
 
-		// check if coordinates are on the grid
-		if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
+		// check if the cell is on the grid
+		if (!((x === (x & this.widthMask)) && (y === (y & this.heightMask)))) {
+			onGrid = false;
+			// attempt to grow the grid
+			while (this.width < this.maxGridSize && !((x === (x & this.widthMask)) && (y === (y & this.heightMask)))) {
+				this.growGrid();
+				x += this.width >> 2;
+				y += this.height >> 2;
+			}
+			// check if the cell is on the expanded grid
+			if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
+				// cell on expanded grid
+				onGrid = true;
+				// grid has changed so lookup again
+				grid = this.grid16;
+				tileGrid = this.tileGrid;
+				nextGrid = this.nextGrid16;
+				nextTileGrid = this.nextTileGrid;
+				colourGrid = this.colourGrid;
+				colourTileGrid = this.colourTileGrid;
+				colourTileHistoryGrid = this.colourTileHistoryGrid;
+				overlayGrid = this.overlayGrid;
+			}
+		}
+
+		// draw if on the grid
+		if (onGrid) {
 			// if bounded grid defined check the coordinates are within it
 			if (this.boundedGridType !== -1 && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
 				// do nothing
