@@ -1283,7 +1283,7 @@
 	// save to a specific snapshot
 	Life.prototype.saveToSnapshot = function(isReset, grid, tileGrid) {
 		// create the snapshot
-		this.snapshotManager.saveSnapshot(grid, tileGrid, this.colourGrid, this.colourTileHistoryGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive);
+		this.snapshotManager.saveSnapshot(grid, tileGrid, this.colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive);
 	};
 
 	// save grid

@@ -12,7 +12,7 @@
 	/**
 	 * @constructor
 	 */
-	function Snapshot(manager, index) {
+	function Snapshot(manager, index, usingOverlay) {
 		// buffer index number
 		this.index = index;
 
@@ -23,6 +23,11 @@
 		// buffer for grid tile map and colour tile map save
 		this.gridBuffer = manager.gridBuffers[index];
 		this.colourBuffer = manager.colourBuffers[index];
+		if (usingOverlay) {
+			this.overlayBuffer = manager.overlayBuffers[index];
+		} else {
+			this.overlayBuffer = null;
+		}
 
 		// zoom box
 		this.zoomBox = new BoundingBox(0, 0, 0, 0);
@@ -33,7 +38,7 @@
 		this.births = 0;
 		this.deaths = 0;
 
-		// generation // TBD was -1
+		// generation
 		this.counter = 0;
 
 		// anything alive
@@ -838,6 +843,9 @@
 		// colour buffers
 		this.colourBuffers = [];
 
+		// overlay buffers
+		this.overlayBuffers = [];
+
 		// number of buffers allocated
 		this.numBuffers = 0;
 
@@ -875,6 +883,11 @@
 
 			// add colour grid buffer
 			result += this.colourBuffers[i].length * this.colourBuffers[i][0].length * 4;
+
+			// add overlay grid buffer if used
+			if (this.overlayBuffers[i]) {
+				result += this.overlayBuffers[i].length * this.overlayBuffers[i][0].length * 4;
+			}
 
 			i += 1;
 		}
@@ -979,11 +992,12 @@
 	};
 
 	// save snapshot
-	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, zoomBox, HROTBox, population, births, deaths, counter, width, height, life, isReset, anythingAlive) {
+	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, overlayGrid, zoomBox, HROTBox, population, births, deaths, counter, width, height, life, isReset, anythingAlive) {
 		var snapshot = null,
 		    i = 0,
 		    l = this.resetSnapshots.length,
-		    found = false;
+			found = false,
+			usingOverlay = (overlayGrid !== null);
 
 		// check if saving to the reset snapshot
 		if (isReset) {
@@ -1007,7 +1021,7 @@
 			// check whether to create a new snapshot
 			if (this.snapshots.length < this.maxSnapshots) {
 				// create a new snapshot
-				snapshot = this.createSnapshot(width, height, false, counter);
+				snapshot = this.createSnapshot(width, height, false, counter, usingOverlay);
 				this.index += 1;
 			}
 			else {
@@ -1028,7 +1042,7 @@
 					this.snapshots.pop();
 
 					// create a new final element
-					snapshot = this.createSnapshot(width, height, false, counter);
+					snapshot = this.createSnapshot(width, height, false, counter, usingOverlay);
 				}
 
 				// get the snapshot at the index
@@ -1071,7 +1085,7 @@
 	};
 
 	// create or return a buffer
-	SnapshotManager.prototype.getBuffers = function(width, height) {
+	SnapshotManager.prototype.getBuffers = function(width, height, usingOverlay) {
 		var result = 0,
 		    i = 0,
 		    found = false;
@@ -1103,6 +1117,9 @@
 			this.colourTileGrids[i] = Array.matrix(Uint16, height, width, 0, this.allocator, "Snapshot.colourTileGrid" + i);
 			this.gridBuffers[i] = Array.matrix(Uint32, 1, this.defaultTiles * 8, 0, this.allocator, "Snapshot.gridBuffer" + i);
 			this.colourBuffers[i] = Array.matrix(Uint32, 1, this.defaultTiles * 64, 0, this.allocator, "Snapshot.colourGridBuffer" + i);
+			if (usingOverlay) {
+				this.overlayBuffers[i] = Array.matrix(Uint32, 1, this.defaultTiles * 64, 0, this.allocator, "Snapshot.overlayGridBuffer" + i);
+			}
 			this.bufferUsed[i] = true;
 
 			// increment number of buffers allocated
@@ -1115,12 +1132,12 @@
 	};
 
 	// create a snapshot
-	SnapshotManager.prototype.createSnapshot = function(w, h, isReset, counter) {
+	SnapshotManager.prototype.createSnapshot = function(w, h, isReset, counter, usingOverlay) {
 		// lookup or create a buffer
 		var i = 0,
 		    l = this.resetSnapshots.length,
 		    found = false,
-		    bufNum = this.getBuffers(w, h),
+		    bufNum = this.getBuffers(w, h, usingOverlay),
 
 		    // create the new snapshot
 		    result = null;
@@ -1140,12 +1157,12 @@
 				result = this.resetSnapshots[i];
 			} else {
 				// save the reset snapshot
-				result = new Snapshot(this, bufNum);
+				result = new Snapshot(this, bufNum, usingOverlay);
 				this.resetSnapshots[this.resetSnapshots.length] = result;
 			}
 		} else {
 			// add to the list of snapshots
-			result = new Snapshot(this, bufNum);
+			result = new Snapshot(this, bufNum, usingOverlay);
 			this.snapshots[this.snapshots.length] = result;
 		}
 
@@ -1157,7 +1174,7 @@
 	SnapshotManager.prototype.resizeSnapshot = function(snapshot, newWidth, newHeight, offset) {
 		// get current snapshot tile grid and colour tile grid
 		var currentTileGrid = snapshot.tileGrid,
-		    currentColourTileGrid = snapshot.colourTileGrid,
+			currentColourTileGrid = snapshot.colourTileGrid,
 		    currentHeight = snapshot.tileGrid.length,
 		    yOffset = currentHeight >> 1,
 		    xOffset = snapshot.tileGrid[0].length >> 1,

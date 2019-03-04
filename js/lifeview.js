@@ -185,7 +185,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 301,
+		/** @const {number} */ versionBuild : 302,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2506,7 +2506,7 @@
 					}
 
 					// save elasped time for this generation
-					me.saveElapsedTime(timeSinceLastUpdate, me.gensPerStep); // TBD was stepsToTake
+					me.saveElapsedTime(timeSinceLastUpdate, stepsToTake);
 
 					// check for loop
 					if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled) {
@@ -8693,7 +8693,7 @@
 								numberValue = scriptReader.getNextTokenAsNumber();
 
 								// check it is in range
-								if (numberValue >= 0 && numberValue < this.engine.maxGridSize) {
+								if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
 									isNumeric = false;
 									x = numberValue;
 
@@ -8705,7 +8705,7 @@
 										numberValue = scriptReader.getNextTokenAsNumber();
 
 										// check it is in range
-										if (numberValue >= 0 && numberValue < this.engine.maxGridSize) {
+										if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
 											isNumeric = false;
 											y = numberValue;
 
@@ -11481,6 +11481,10 @@
 
 		// clear script error list
 		this.scriptErrors = [];
+
+		// clear any notifications
+		this.menuManager.notification.clear(true, true);
+		this.menuManager.notification.clear(false, true);
 
 		// attempt to create the pattern
 		pattern = PatternManager.create("", patternString, this.engine.allocator);

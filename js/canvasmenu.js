@@ -2579,8 +2579,8 @@
 		// increment index
 		me.timingIndex = (me.timingIndex + 1) % me.numTimings;
 
-		// get the total fps rounded to integer
-		total = Math.round(1000 / frame);
+		// get the total fps
+		total = 1000 / frame;
 
 		// draw the timing statistics if enabled
 		if (me.showTiming) {
@@ -2617,6 +2617,11 @@
 			// convert to one decimal place
 			menu = menu.toFixed(1);
 			work = work.toFixed(1);
+			if (total.toFixed(1).length < 4) {
+				total = total.toFixed(1);
+			} else {
+				total = total | 0;
+			}
 
 			// draw the text shadows
 			oc.globalAlpha = 1;
