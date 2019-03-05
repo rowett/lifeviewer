@@ -877,6 +877,9 @@
 		// mouse over item
 		this.mouseOverItem = -1;
 
+		// wakeup callback when GUI locked
+		this.wakeCallback = null;
+
 		// callback when no item drag
 		this.dragCallback = null;
 
@@ -1863,7 +1866,21 @@
 		this.mouseOverItem = -1;
 
 		// check whether menu is deleted
-		if (!this.deleted) {
+		if (this.deleted) {
+			// check for wakeup
+			if (this.mouseDown) {
+				this.activeItem = -2;
+			} else {
+				if (this.activeItem === -2) {
+					if (this.wakeCallback) {
+						this.wakeCallback(this.mouseX, this.mouseY, this.mouseDown, this.caller);
+					}
+				}
+				if (!this.mouseDown) {
+					this.activeItem = -1;
+				}
+			}
+		} else {
 			// get the current active item
 			activeItem = this.activeItem;
 

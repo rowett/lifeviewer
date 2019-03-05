@@ -347,6 +347,63 @@
 		this.fitZoom = toWaypoint.fitZoom;
 	};
 
+	// Arrow constructor
+	/**
+	 * @constructor
+	 */
+	function Arrow(x1, y1, x2, y2, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
+		// x1 position
+		this.x1 = x1;
+
+		// y1 position
+		this.y1 = y1;
+
+		// x2 position
+		this.x2 = x2;
+
+		// y2 position
+		this.y2 = y2;
+
+		// zoom
+		this.zoom = zoom;
+
+		// colour
+		this.colour = colour;
+
+		// alpha
+		this.alpha = alpha;
+
+		// size
+		this.size = size;
+
+		// start generation
+		this.t1 = t1;
+
+		// end generation
+		this.t2 = t2;
+
+		// fade generations
+		this.tFade = tFade;
+
+		// angle
+		this.angle = angle;
+
+		// angle locked when camera rotated
+		this.angleLocked = angleLocked;
+
+		// position locked when TRACK used
+		this.positionLocked = positionLocked;
+
+		// target location and distance
+		this.tx = tx;
+		this.ty = ty;
+		this.tDistance = tDistance;
+
+		// label movement vector
+		this.dx = dx;
+		this.dy = dy;
+	}
+
 	// Label constructor
 	/**
 	 * @constructor
@@ -415,6 +472,9 @@
 		// list of labels
 		this.labelList = [];
 
+		// list of arrows
+		this.arrowList = [];
+
 		// current position
 		this.current = new Waypoint(this);
 
@@ -433,6 +493,26 @@
 		// whether last waypoint has been reached
 		this.lastReached = false;
 	}
+
+	// create an arrow
+	WaypointManager.prototype.createArrow = function(x1, y1, x2, y2, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
+		return new Arrow(x1, y1, x2, y2, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
+	};
+
+	// clear all arrows
+	WaypointManager.prototype.clearArrows = function() {
+		this.arrowList = [];
+	};
+
+	// add an arrow to the list
+	WaypointManager.prototype.addArrow = function(arrow) {
+		this.arrowList[this.arrowList.length] = arrow;
+	};
+
+	// return number of arrows
+	WaypointManager.prototype.numArrows = function() {
+		return this.arrowList.length;
+	};
 
 	// create a label
 	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {

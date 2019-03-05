@@ -253,6 +253,19 @@
 		// small menu font
 		/** @const {string} */ smallMenuFont : "9px Arial",
 
+		// arrow colour
+		/** @const {string} */ arrowColour : "rgb(240,255,255)",
+
+		// arrow shadow colour
+		/** @const {string} */ arrowShadowColour : "rgb(0,0,0)",
+
+		// arrow line thickness
+		/** @const {number} */ arrowLineThickness : 10,
+
+		// min and max arrow size
+		/** @const {number} */ minArrowSize : 1,
+		/** @const {number} */ maxArrowSize : 64,
+
 		// label font colour
 		/** @const {string} */ labelFontColour : "rgb(240,255,255)",
 
@@ -750,6 +763,9 @@
 		// window title string
 		this.windowTitle = "";
 
+		// flag if performance warning is disabled
+		this.noPerfWarning = false;
+
 		// flag if history is disabled
 		this.noHistory = false;
 
@@ -866,6 +882,9 @@
 		// custom label colour
 		this.customLabelColour = ViewConstants.labelFontColour;
 
+		// custom arrow colour
+		this.customArrowColour = ViewConstants.arrowColour;
+
 		// colour set used
 		this.colourSetName = "";
 		this.colourSetSize = 0;
@@ -925,6 +944,9 @@
 
 		// whether to disable playback
 		this.viewOnly = false;
+
+		// whether to hide GUI while pattern playing
+		this.hideGUI = false;
 
 		// whether to disable GUI
 		this.noGUI = false;
@@ -1117,6 +1139,12 @@
 
 		// stars button
 		this.starsButton = null;
+
+		// previous universe button
+		this.prevUniverseButton = null;
+
+		// next universe button
+		this.nextUniverseButton = null;
 
 		// timing button
 		this.fpsButton = null;
@@ -2739,8 +2767,10 @@
 			me.deathsValue.toolTip = "deaths " + me.engine.deaths;
 		}
 
-		// update gps and step control background based on performance
-		me.updateControlBackgrounds(deltaTime, tooSlow, manualStepping, me);
+		// update gps and step control background based on performance unless disabled
+		if (!me.noPerfWarning) {
+			me.updateControlBackgrounds(deltaTime, tooSlow, manualStepping, me);
+		}
 
 		// clear next step flags
 		me.nextStep = false;
@@ -3074,6 +3104,15 @@
 			}
 			if (value !== -1) {
 				this.helpSectionList.current = i - 1;
+			}
+		}
+
+		// check whether to hide GUI during playback
+		if (this.hideGUI) {
+			if (this.playList.current === ViewConstants.modePlay) {
+				this.viewMenu.deleted = true;
+			} else {
+				this.viewMenu.deleted = false;
 			}
 		}
 	};
@@ -4303,6 +4342,16 @@
 		}
 	};
 
+	// view menu wakeup callback
+	View.prototype.viewWakeUp = function(x, y, dragOn, me) {
+		// on mouse release pause playback so GUI unhides
+		if (me.hideGUI) {
+			if (!dragOn) {
+				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+			}
+		}
+	};
+
 	// view menu background drag callback
 	View.prototype.viewDrag = function(x, y, dragOn, me) {
 		me.viewDoDrag(x, y, dragOn, me, false);
@@ -4764,7 +4813,7 @@
 	View.prototype.graphClosePressed = function(me) {
 		me.popGraph = false;
 		me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
-};
+	};
 
 	// close button
 	/* eslint-disable no-unused-vars */
@@ -4779,6 +4828,24 @@
 			// hide the viewer
 			hideViewer();
 		}
+	};
+
+	// next universe button
+	View.prototype.nextUniversePressed = function(me) {
+		me.universe += 1;
+		if (me.universe >= Controller.patterns.length) {
+			me.universe = 0;
+		}
+		me.startViewer(Controller.patterns[me.universe].pattern, false);
+	};
+
+	// previous universe button
+	View.prototype.prevUniversePressed = function(me) {
+		me.universe -= 1;
+		if (me.universe < 0) {
+			me.universe = Controller.patterns.length - 1;
+		}
+		me.startViewer(Controller.patterns[me.universe].pattern, false);
 	};
 
 	// shrink button
@@ -5397,7 +5464,11 @@
 	View.prototype.copyRLE = function(me, twoPhase) {
 		// copy the source pattern to the clipboard
 		me.copyStartTime = performance.now();
-		me.copyToClipboard(me, cleanPattern(me.element), twoPhase);
+		if (DocConfig.multi) {
+			me.copyToClipboard(me, Controller.patterns[me.universe].pattern, twoPhase);
+		} else {
+			me.copyToClipboard(me, cleanPattern(me.element), twoPhase);
+		}
 	};
 
 	// select and copy current rle
@@ -5429,10 +5500,23 @@
 		} else {
 			// check for control (other than control-C) or meta
 			if ((event.ctrlKey && keyCode !== 67) || event.metaKey) {
-				// handle control-R since it would refresh the browser and Golly uses it for pattern reset
-				if (!(event.ctrlKey && keyCode === 82)) {
-					// clear key code so it is not handled here
-					keyCode = -1;
+				// convert control-arrow keys into PageUp/PageDown/Home/End
+				if (event.ctrlKey && (keyCode >= 37 && keyCode <= 40)) {
+					if (keyCode === 37) {
+						keyCode = 33;
+					} else if (keyCode === 38)  {
+						keyCode = 36;
+					} else if (keyCode === 39)  {
+						keyCode = 34;
+					} else if (keyCode === 40)  {
+						keyCode = 35;
+					}
+				} else {
+					// handle control-R since it would refresh the browser and Golly uses it for pattern reset
+					if (!(event.ctrlKey && keyCode === 82)) {
+						// clear key code so it is not handled here
+						keyCode = -1;
+					}
 				}
 			}
 
@@ -6547,14 +6631,11 @@
 					} else {
 						// check for multiverse mode
 						if (DocConfig.multi) {
-							// previous universe
-							if (DocConfig.multi) {
-								me.universe -= 1;
-								if (me.universe < 0) {
-									me.universe = Controller.patterns.length - 1;
-								}
-								me.startViewer(Controller.patterns[me.universe].pattern, false);
+							me.universe -= 1;
+							if (me.universe < 0) {
+								me.universe = Controller.patterns.length - 1;
 							}
+							me.startViewer(Controller.patterns[me.universe].pattern, false);
 						}
 					}
 				}
@@ -6580,14 +6661,11 @@
 					} else {
 						// check for multiverse mode
 						if (DocConfig.multi) {
-							// next universe
-							if (DocConfig.multi) {
-								me.universe += 1;
-								if (me.universe >= Controller.patterns.length) {
-									me.universe = 0;
-								}
-								me.startViewer(Controller.patterns[me.universe].pattern, false);
+							me.universe += 1;
+							if (me.universe >= Controller.patterns.length) {
+								me.universe = 0;
 							}
+							me.startViewer(Controller.patterns[me.universe].pattern, false);
 						}
 					}
 				}
@@ -6865,6 +6943,9 @@
 		// add callback for background drag
 		this.viewMenu.dragCallback = this.viewDrag;
 
+		// add callback for wakeup when GUI locked
+		this.viewMenu.wakeCallback = this.viewWakeUp;
+
 		// infobar labels for camera X, Y and ANGLE
 		this.infoBarLabelXLeft = this.viewMenu.addLabelItem(Menu.northWest, 0, 40, 16, 20, "X");
 		this.infoBarLabelXLeft.font = ViewConstants.smallStatsFont;
@@ -7132,6 +7213,14 @@
 		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.south, 0, -140, 80, 40, ["Details"], [this.menuManager.showExtendedTiming], Menu.multi);
 		this.timingDetailButton.toolTip = ["toggle timing details"];
 
+		// previous universe button
+		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.southWest, 80, -200, 80, 40, "Prev");
+		this.prevUniverseButton.toolTip = "go to previous universe";
+
+		// next universe button
+		this.nextUniverseButton = this.viewMenu.addButtonItem(this.nextUniversePressed, Menu.southEast, -160, -200, 80, 40, "Next");
+		this.nextUniverseButton.toolTip = "go to next universe";
+
 		// opacity range
 		this.opacityItem = this.viewMenu.addRangeItem(this.viewOpacityRange, Menu.north, 0, 0, 132, 40, 0, 1, this.popGraphOpacity, true, "Opac ", "%", 0);
 		this.opacityItem.toolTip = "graph opacity";
@@ -7192,7 +7281,7 @@
 		this.statesSlider.toolTip = "select drawing states range";
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.labelButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton], []);
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.labelButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -7381,6 +7470,10 @@
 			case Keywords.deleteRangeWord:
 			case Keywords.poiWord:
 			case Keywords.titleWord:
+			case Keywords.arrowWord:
+			case Keywords.arrowAlphaWord:
+			case Keywords.arrowSizeWord:
+			case Keywords.arrowTWord:
 			case Keywords.labelWord:
 			case Keywords.labelAlphaWord:
 			case Keywords.labelSizeWord:
@@ -7390,6 +7483,8 @@
 			case Keywords.labelTrackWord:
 			case Keywords.noHistoryWord:
 			case Keywords.noReportWord:
+			case Keywords.noPerfWarningWord:
+			case Keywords.hideGUIWork:
 			case Keywords.trackWord:
 			case Keywords.hardResetWord:
 			case Keywords.poiResetWord:
@@ -8245,6 +8340,38 @@
 		    // whether points of interest found
 		    poiFound = false,
 
+			// current arrow
+			currentArrow = null,
+
+			// current arrow alpha
+			currentArrowAlpha = 1,
+
+			// current arrow size
+			currentArrowSize = ViewConstants.labelFontSize,
+
+			// current arrow T1 and T2
+			currentArrowT1 = -1,
+			currentArrowT2 = -1,
+
+			// current arrow TFade
+			currentArrowTFade = 0,
+
+			// current arrow angle and locked
+			currentArrowAngle = 0,
+			currentArrowAngleFixed = false,
+
+			// current position locked
+			currentArrowPositionFixed = false,
+
+			// current arrow target and distance
+			currentArrowTX = 0,
+			currentArrowTY = 0,
+			currentArrowTDistance = -1,
+
+			// current arrow movement vector
+			currentArrowDX = 0,
+			currentArrowDY = 0,
+
 			// current label
 			currentLabel = null,
 
@@ -8754,6 +8881,20 @@
 								}
 							}
 
+							break;
+
+						// hide GUI on playback
+						case Keywords.hideGUIWord:
+							this.hideGUI = true;
+
+							itemValid = true;
+							break;
+
+						// no performance warning
+						case Keywords.noPerfWarningWord:
+							this.noPerfWarning = true;
+
+							itemValid = true;
 							break;
 
 						// no history
@@ -11085,7 +11226,7 @@
 		this.menuManager.noGUI = this.noGUI;
 		this.menuManager.noCopy = this.noCopy;
 
-		// silently disable AUTOSTART, GRAPH, THUMB, THUMBLAUNCH, SHOWTIMING, SHOWGENSTATS and SHOWINFOBAR if NOGUI specified
+		// silently disable AUTOSTART, GRAPH, THUMB, THUMBLAUNCH, SHOWTIMING, SHOWGENSTATS, SHOWINFOBAR and HIDEGUI if NOGUI specified
 		if (this.noGUI) {
 			this.autoStart = false;
 			this.thumbnail = false;
@@ -11095,6 +11236,7 @@
 			this.viewTimingDetailToggle([false], true, this);
 			this.viewStats([false], true, this);
 			this.infoBarEnabled = false;
+			this.hideGUI = false;
 		}
 
 		// hide source if requested
@@ -11801,8 +11943,14 @@
 		// reset labels
 		this.waypointManager.clearLabels();
 
+		// disable hide GUI on playback
+		this.hideGUI = false;
+
 		// enable history
 		this.noHistory = false;
+
+		// enable performance warnings
+		this.noPerfWarning = false;
 
 		// disable custom theme
 		this.customTheme = false;
@@ -12489,6 +12637,12 @@
 				name = "Universe " + (this.universe + 1);
 			}
 			this.menuManager.notification.notify(name, 15, 120, 15, true);
+			this.prevUniverseButton.deleted = false;
+			this.nextUniverseButton.deleted = false;
+		} else {
+			this.prevUniverseButton.deleted = true;
+			this.nextUniverseButton.deleted = true;
+
 		}
 	};
 

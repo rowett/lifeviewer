@@ -70,6 +70,12 @@
 		// population graph use points
 		/** @const {string} */ graphPointsWord : "GRAPHPOINTS",
 
+		// disable performance warning
+		/** @const {string} */ noPerfWarningWord : "NOPERFWARNING",
+
+		// hide GUI
+		/** @const {string} */ hideGUIWord : "AUTOHIDEGUI",
+
 		// apply mode to all
 		/** @const {string} */ allWord : "ALL",
 
@@ -114,6 +120,27 @@
 
 		// window title
 		/** @const {string} */ titleWord : "TITLE",
+
+		// arrow
+		/** @const {string} */ arrowWord : "ARROW",
+
+		// arrow alpha
+		/** @const {string} */ arrowAlphaWord : "ARROWALPHA",
+
+		// arrow size
+		/** @const {string} */ arrowSizeWord : "ARROWSIZE",
+
+		// arrow generation range and fade
+		/** @const {string} */ arrowTWord : "ARROWT",
+
+		// arrow angle and fixed 
+		/** @const {string} */ arrowAngleWord : "ARROWANGLE",
+
+		// arrow target 
+		/** @const {string} */ arrowTargetWord : "ARROWTARGET",
+
+		// arrow track
+		/** @const {string} */ arrowTrackWord : "ARROWTRACK",
 
 		// label
 		/** @const {string} */ labelWord : "LABEL",

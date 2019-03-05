@@ -1,5 +1,37 @@
+Build 303
+- new annotation arrows:
+	- new script command [[ ARROW X1 Y1 X2 Y2 ZOOM (FIXED) ]]
+		- draw arrow from X1,Y1 to X2,Y2 at zoom ZOOM
+	- new script command [[ ARROWALPHA 0.0..1.0 ]]
+		- set alpha value for subsequent arrow definitions
+	- new script command [[ ARROWSIZE WIDTH RATIO ]]
+		- set line width and ratio of line length to arrowhead length for subsequent arrow definitions
+	- new script command [[ ARROWT <t1> <t2> <fade> ]]
+		- sets a range of generations from <t1> to <t2> for subsequent arrows to be visible
+		- <fade> specifies generations to fade arrow in/out
+		- use [[ ARROWT ALL ]] to specify all generations
+	- new script command [[ ARROWANGLE <0..359> (FIXED) ]]
+		- sets the arrow angle for subsequent arrow definitions
+		- optional keyword FIXED means arrow will not rotate when camera rotates
+	- new script command [[ COLOR ARROW R G B|<name>]]
+		- set arrow colour for subsequent arrow definitions
+	- new script command [[ ARROWTARGET X Y D|OFF ]]
+		- sets the target point and distance for subsequent arrow definitions
+		- the viewpoint must be within the distance of the target point for the arrow to be displayed
+		- [[ ARROWTARGET OFF ]] turns off the target for subsequent arrow definitions
+	- new script command [[ ARROWTRACK DX DY|FIXED ]]
+		- sets movement vector for subsequent arrow definitions
+		- [[ ARROWTRACK FIXED ]] turns off movement for subsequent arrow definitions
+- new script command "AUTOHIDEGUI" will hide GUI while playing
+	- click while playing to pause and show GUI
+	- hotkeys are still enabled
+- new script command "NOPERFWARNING" removes GPS/STEP shading when performance is slow
+- hotkeys Ctrl-Left, Ctrl-Right, Ctrl-Up and Ctrl-Down can be used for Page Down, Page Up, Home and End
+- bottom right menu now has "Prev" and "Next" buttons to go to previous and next universe when in Multiverse mode
+- copy reset position now works when in Multiverse mode
+
 Build 302
-- labels positions can now be from -MAXGRIDSIZE to 2*MAXGRIDSIZE
+- label positions can now be from -MAXGRIDSIZE to 2*MAXGRIDSIZE
 - fps display < 10 now shows one decimal place
 - clear notifications on pattern load
 - Waypoint animation was incorrect at STEP > 1
