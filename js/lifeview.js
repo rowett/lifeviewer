@@ -5858,11 +5858,11 @@
 				}
 				break;
 
-			// l for decrease depth or toggle loop
+			// l for decrease depth or toggle annotations
 			case 76:
 				// check for shift
 				if (event.shiftKey) {
-					if (me.waypointManager.numLabels() > 0) {
+					if (me.waypointManager.numLabels() > 0 || me.waypointManager.numArrows() > 0) {
 						me.labelButton.current = me.viewLabelToggle([!me.showLabels], true, me);
 						me.menuManager.notification.notify("Labels " + (me.showLabels ? "Off" : "On"), 15, 40, 15, true);
 					}

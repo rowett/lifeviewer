@@ -1,5 +1,6 @@
 Build 304
 - added label and arrow definitions to help information
+- toggle labels was not working if just arrows defined
 
 Build 303
 - new annotation arrows:
