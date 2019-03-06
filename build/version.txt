@@ -4,8 +4,8 @@ Build 303
 		- draw arrow from X1,Y1 to X2,Y2 at zoom ZOOM
 	- new script command [[ ARROWALPHA 0.0..1.0 ]]
 		- set alpha value for subsequent arrow definitions
-	- new script command [[ ARROWSIZE WIDTH RATIO ]]
-		- set line width and ratio of line length to arrowhead length for subsequent arrow definitions
+	- new script command [[ ARROWSIZE <1..> ]]
+		- set line width for subsequent arrow definitions
 	- new script command [[ ARROWT <t1> <t2> <fade> ]]
 		- sets a range of generations from <t1> to <t2> for subsequent arrows to be visible
 		- <fade> specifies generations to fade arrow in/out
