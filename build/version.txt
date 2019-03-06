@@ -2,7 +2,7 @@ Build 303
 - new annotation arrows:
 	- new script command [[ ARROW X1 Y1 X2 Y2 ZOOM (FIXED) ]]
 		- draw arrow from X1,Y1 to X2,Y2 at zoom ZOOM
-	- new script command [[ ARROWALPHA 0.0..1.0 ]]
+	- new script command [[ ARROWALPHA <0.0..1.0> ]]
 		- set alpha value for subsequent arrow definitions
 	- new script command [[ ARROWSIZE <1..> ]]
 		- set line width for subsequent arrow definitions
@@ -22,11 +22,11 @@ Build 303
 	- new script command [[ ARROWTRACK DX DY|FIXED ]]
 		- sets movement vector for subsequent arrow definitions
 		- [[ ARROWTRACK FIXED ]] turns off movement for subsequent arrow definitions
-- new script command "AUTOHIDEGUI" will hide GUI while playing
+- new script command [[ AUTOHIDEGUI ]] will hide GUI while playing
 	- click while playing to pause and show GUI
 	- hotkeys are still enabled
-- new script command "NOPERFWARNING" removes GPS/STEP shading when performance is slow
-- hotkeys Ctrl-Left, Ctrl-Right, Ctrl-Up and Ctrl-Down can be used for Page Down, Page Up, Home and End
+- new script command [[ NOPERFWARNING ]] removes GPS/STEP shading when performance is slow
+- hotkeys Ctrl-Left, Ctrl-Right, Ctrl-Up and Ctrl-Down can be used for Page Up, Page Down, Home and End
 - bottom right menu now has "Prev" and "Next" buttons to go to previous and next universe when in Multiverse mode
 - copy reset position now works when in Multiverse mode
 
