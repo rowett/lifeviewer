@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Arrows</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 9, y = 5, rule = B3/S23
+$bo3b3o$b3o2bo$2bo!
+#C [[ ZOOM 8 ]]
+#C Compass direction arrows
+#C [[ ARROW 0 0 0 5 8 ]]
+#C [[ ARROW 0 0 3.53 3.53 8 ]]
+#C [[ ARROW 0 0 5 0 8 ]]
+#C [[ ARROW 0 0 3.53 -3.53 8 ]]
+#C [[ ARROW 0 0 -5 0 8 ]]
+#C [[ ARROW 0 0 -3.53 3.53 8 ]]
+#C [[ ARROW 0 0 -3.53 -3.53 8 ]]
+#C [[ ARROW 0 0 0 -5 8 ]]
+#C Colours
+#C [[ COLOR ARROW Red ]]
+#C [[ ARROW 6 0 6 7 8 ]]
+#C [[ COLOR ARROW Green ]]
+#C [[ ARROW 6 0 6 -7 8 ]]
+#C [[ COLOR ARROW Blue ]]
+#C [[ ARROW 6 0 13 0 8 ]]
+#C [[ COLOR ARROW Cyan ]]
+#C Sizes
+#C [[ ARROWSIZE 1 ]]
+#C [[ ARROW 0 10 6 10 8 ]]
+#C [[ ARROWSIZE 2 ]]
+#C [[ ARROW 0 12 6 12 8 ]]
+#C [[ ARROWSIZE 3 ]]
+#C [[ ARROW 0 14 6 14 8 ]]
+#C [[ ARROWSIZE 4 ]]
+#C [[ ARROW 0 16 6 16 8 ]]
+#C [[ ARROWSIZE 3 ]]
+#C Angles
+#C [[ ARROWANGLE 30 ]]
+#C [[ ARROW 15 0 24 0 8 ]]
+#C [[ ARROWANGLE 60 ]]
+#C [[ ARROW 15 0 24 0 8 ]]
+#C The yellow arrow has a fixed angle
+#C [[ ARROWANGLE 90 FIXED COLOR ARROW Yellow ]]
+#C [[ ARROW 15 0 24 0 8 ]]
+#C [[ ARROWANGLE 0 COLOR ARROW 240 255 255 ]]
+#C Tracking
+#C [[ ARROWTRACK -0.25 -0.25 ]]
+#C [[ ARROW 43.5 36 39.5 32 8 ]]
+            </textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>
