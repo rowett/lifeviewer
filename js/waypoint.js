@@ -608,6 +608,218 @@
 		this.labelList.sort(function(a, b) { return a.zoom - b.zoom; });
 	};
 
+	// sort arrows into zoom order for depth drawing
+	WaypointManager.prototype.sortArrows = function() {
+		this.arrowList.sort(function(a, b) { return a.zoom - b.zoom; });
+	};
+
+	// draw arrows
+	WaypointManager.prototype.drawArrows = function(view) {
+		var i = 0,
+			current = null,
+			engine = view.engine,
+			context = engine.context,
+			xOff = engine.width / 2 - engine.xOff - engine.originX,
+			yOff = engine.height / 2 - engine.yOff - engine.originY,
+			zoom = engine.zoom * engine.originZ,
+			halfDisplayWidth = engine.displayWidth / 2,
+			halfDisplayHeight = engine.displayHeight / 2,
+			x = 0, y = 0,
+			cx = 0, cy = 0,
+			cx2 = 0, cy2 = 0,
+			minSize = 0, maxSize = 0,
+			currentSize = 0,
+			shadowColour = ViewConstants.arrowShadowColour,
+			linearZoom = 1, alphaValue = 1, timeAlpha = 1, distAlpha = 1,
+			counter = view.engine.counter,
+			inrange = false,
+			radius = 0, theta = 0,
+			shadowOffset = 0,
+			rangeFromTarget = 0,
+			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
+			headSize = 0,
+			headAngle = 0,
+			xLeft = 0, yLeft = 0, xRight = 0, yRight = 0;
+
+		// draw each arrow
+		for (i = 0; i < this.arrowList.length; i += 1) {
+			// get the next arrow
+			current = this.arrowList[i];
+
+			// check if the arrow has a defined generation range
+			inrange = true;
+			if (current.t1 !== -1) {
+				// check if current generation is within the defined range
+				if (counter < current.t1 || counter > current.t2) {
+					inrange = false;
+				}
+			}
+
+			// continue if in generation range
+			if (inrange) {
+				// scale the font based on the zoom
+				currentSize = (current.size * zoom / current.zoom);
+				minSize = current.size / 4;
+				maxSize = current.size * 4;
+				shadowOffset = 1;
+				if (currentSize >= 24) {
+					shadowOffset = 2;
+					if (currentSize >= 48) {
+						shadowOffset = 3;
+					}
+				}
+	
+				// do not draw if too big or too small
+				if (currentSize >= minSize && currentSize <= maxSize) {
+					// convert zoom into a linear range
+					linearZoom = Math.log(currentSize / minSize) / Math.log(maxSize / minSize);
+	
+					// make more transparent if in bottom or top 20% of linear range
+					if (linearZoom <= 0.25) {
+						alphaValue = linearZoom * 4;
+					} else {
+						if (linearZoom >= 0.75) {
+							alphaValue = (1 - linearZoom) * 4;
+						} else {
+							alphaValue = 1;
+						}
+					}
+
+					// if in a generation range then fade if near limits
+					timeAlpha = 1;
+					if (current.t1 !== -1 && current.tFade > 0) {
+						if (counter - current.t1 < current.tFade) {
+							timeAlpha = (counter - current.t1 + 1) / current.tFade;
+						} else {
+							if (current.t2 - counter < current.tFade) {
+								timeAlpha = (current.t2 - counter + 1) / current.tFade;
+							}
+						}
+					}
+
+					// check if the target is set
+					inrange = true;
+					distAlpha = 1;
+					if (current.tDistance !== -1) {
+						rangeFromTarget = Math.sqrt((-(xOff + hexAdjust) - current.tx) * (-(xOff + hexAdjust) - current.tx) + (-yOff - current.ty) * (-yOff - current.ty));
+						if (rangeFromTarget > current.tDistance) {
+							inrange = false;
+						} else {
+							// fade towards the maximum distance
+							if (current.tDistance > 0) {
+								if (rangeFromTarget / current.tDistance > 0.75) {
+									distAlpha = 4 * (1 - (rangeFromTarget / current.tDistance));
+								}
+							}
+						}
+					}
+
+					// set the alpha
+					if (inrange) {
+						context.globalAlpha = alphaValue * current.alpha * timeAlpha * distAlpha;
+
+						// get arrow start position
+						cx = current.x1 + xOff + hexAdjust - (view.patternWidth >> 1) + 0.5;
+						cy = current.y1 + yOff - (view.patternHeight >> 1) + 0.5;
+						
+						// check for fixed position
+						if (!current.positionLocked) {
+							cx += engine.originX;
+							cy += engine.originY;
+						}
+
+						// add movement
+						if (current.t1 !== -1) {
+							cx += current.dx * (view.floatCounter - current.t1);
+							cy += current.dy * (view.floatCounter - current.t1);
+
+						} else {
+							cx += current.dx * view.floatCounter;
+							cy += current.dy * view.floatCounter;
+						}
+	
+						// check for camera rotation
+						if (engine.camAngle !== 0) {
+							// compute radius
+							radius = Math.sqrt((cx * cx) + (cy * cy));
+	
+							// apply angle
+							theta = Math.atan2(cy, cx) * (180 / Math.PI);
+	
+							// add current rotation
+							theta += engine.camAngle;
+	
+							// compute rotated position
+							cx = radius * Math.cos(theta * (Math.PI / 180));
+							cy = radius * Math.sin(theta * (Math.PI / 180));
+						}
+	
+						// draw the arrow
+						y = (cy * zoom) + halfDisplayHeight;
+						x = (cx * zoom) + halfDisplayWidth;
+						cx2 = (current.x2 - current.x1) * zoom;
+						cy2 = (current.y2 - current.y1) * zoom;
+	
+						// compute arrow head size
+						headSize = Math.sqrt((cx2 * cx2) + (cy2 * cy2)) / 5;
+
+						// rotate context for drawing
+						context.save();
+						context.translate(x, y);
+						theta = current.angle;
+						if (!current.angleLocked) {
+							theta += engine.camAngle;
+						}
+						context.rotate(theta / 180 * Math.PI);
+		
+						// set line width
+						context.lineWidth = currentSize;
+
+						// set round line cap
+						context.lineCap = "round";
+
+						// compute the head position
+						headAngle = Math.atan2(cy2, cx2);
+						xLeft = Math.cos(Math.PI * 0.85 + headAngle);
+						yLeft = Math.sin(Math.PI * 0.85 + headAngle);
+						xRight = Math.cos(-Math.PI * 0.85 + headAngle);
+						yRight = Math.sin(-Math.PI * 0.85 + headAngle);
+
+						// draw shadow
+						context.strokeStyle = shadowColour;
+						context.translate(shadowOffset, shadowOffset);
+						context.beginPath();
+						context.moveTo(0, 0);
+						context.lineTo(cx2, cy2);
+						context.moveTo(cx2, cy2);
+						context.lineTo(cx2 + headSize * xLeft, cy2 + headSize * yLeft);
+						context.moveTo(cx2, cy2);
+						context.lineTo(cx2 + headSize * xRight, cy2 + headSize * yRight);
+						context.stroke();
+						context.translate(-shadowOffset, -shadowOffset);
+
+						// draw arrow
+						context.strokeStyle = current.colour;
+						context.beginPath();
+						context.moveTo(0, 0);
+						context.lineTo(cx2, cy2);
+						context.moveTo(cx2, cy2);
+						context.lineTo(cx2 + headSize * xLeft, cy2 + headSize * yLeft);
+						context.moveTo(cx2, cy2);
+						context.lineTo(cx2 + headSize * xRight, cy2 + headSize * yRight);
+						context.stroke();
+	
+						// restore context
+						context.restore();
+					}
+				}
+			}
+		}
+
+		// restore alpha
+		context.globalAlpha = 1;
+	};
+
 	// draw labels
 	WaypointManager.prototype.drawLabels = function(view) {
 		var i = 0,

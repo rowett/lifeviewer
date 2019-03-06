@@ -779,7 +779,7 @@
 		y = this.renderHelpLine(view, Keywords.labelTWord + " <0..> <0..> <0..>", "generation range / fade", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelAngleWord + " <0..359>", "label angle", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix label angle", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.labelTargetWord + " X Y D", "label target and distance", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.labelTargetWord + " X Y D|" + Keywords.offWord, "label target and distance", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelTrackWord + " DX DY|" + Keywords.fixedWord, "label move per generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowWord + " X1 Y1 X2 Y2 ZOOM", "define arrow at position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix position", ctx, x, y, height, helpLine);
@@ -788,7 +788,7 @@
 		y = this.renderHelpLine(view, Keywords.arrowTWord + " <0..> <0..> <0..>", "generation range / fade", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowAngleWord + " <0..359>", "arrow angle", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix arrow angle", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.arrowTargetWord + " X Y D", "arrow target and distance", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.arrowTargetWord + " X Y D|" + Keywords.offWord, "arrow target and distance", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowTrackWord + " DX DY|" + Keywords.fixedWord, "arrow move per generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		view.helpSections[sectionNum] = [view.lineNo, "Display"];

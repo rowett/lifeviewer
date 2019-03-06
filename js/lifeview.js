@@ -131,6 +131,7 @@
 		/** @const {number} */ customThemeUISelect : 22,
 		/** @const {number} */ customThemeUILocked : 23,
 		/** @const {number} */ customThemeUIBorder : 24,
+		/** @const {number} */ customThemeArrow : 25,
 
 		// state numbers
 		/** @const {number} */ offState : 0,
@@ -260,7 +261,7 @@
 		/** @const {string} */ arrowShadowColour : "rgb(0,0,0)",
 
 		// arrow line thickness
-		/** @const {number} */ arrowLineThickness : 10,
+		/** @const {number} */ arrowLineThickness : 2,
 
 		// min and max arrow size
 		/** @const {number} */ minArrowSize : 1,
@@ -868,7 +869,7 @@
 		this.customTheme = false;
 
 		// custom theme value
-		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
 		// custom grid colour
 		this.customGridColour = -1;
@@ -2713,8 +2714,9 @@
 			}
 		}
 
-		// draw any labels
+		// draw any arrows and labels
 		if (me.showLabels) {
+			me.waypointManager.drawArrows(me);
 			me.waypointManager.drawLabels(me);
 		}
 
@@ -3277,8 +3279,9 @@
 		// draw grid
 		me.engine.drawGrid();
 
-		// draw any labels
+		// draw any arrows and labels
 		if (me.showLabels) {
+			me.waypointManager.drawArrows(me);
 			me.waypointManager.drawLabels(me);
 		}
 
@@ -3359,8 +3362,9 @@
 		// draw grid
 		me.engine.drawGrid();
 
-		// draw any labels
+		// draw any arrows and labels
 		if (me.showLabels) {
+			me.waypointManager.drawArrows(me);
 			me.waypointManager.drawLabels(me);
 		}
 
@@ -7657,7 +7661,7 @@
 		// save the colour if it is valid
 		if (!badColour) {
 			// see if the slot is available
-			if ((this.customThemeValue[customThemeElement] !== -1) && (customThemeElement !== ViewConstants.customThemeLabel)) {
+			if ((this.customThemeValue[customThemeElement] !== -1) && (customThemeElement !== ViewConstants.customThemeLabel) && (customThemeElement !== ViewConstants.customThemeArrow)) {
 				scriptErrors[scriptErrors.length] = [whichColour + " " + elementName + " " + redValue + " " + greenValue + " " + blueValue, "overwrites " + (this.customThemeValue[customThemeElement] >> 16) + " " + ((this.customThemeValue[customThemeElement] >> 8) & 255) + " " + (this.customThemeValue[customThemeElement] & 255)];
 			}
 
@@ -7699,6 +7703,11 @@
 			case ViewConstants.customThemeLabel:
 				// save for label
 				this.customLabelColour = "rgb(" + redValue + "," + greenValue + "," + blueValue + ")";
+				break;
+
+			case ViewConstants.customThemeArrow:
+				// save for arrow
+				this.customArrowColour = "rgb(" + redValue + "," + greenValue + "," + blueValue + ")";
 				break;
 
 			case ViewConstants.customThemeBoundary:
@@ -8347,7 +8356,7 @@
 			currentArrowAlpha = 1,
 
 			// current arrow size
-			currentArrowSize = ViewConstants.labelFontSize,
+			currentArrowSize = ViewConstants.arrowLineThickness,
 
 			// current arrow T1 and T2
 			currentArrowT1 = -1,
@@ -8429,6 +8438,7 @@
 
 			// holders
 			x = 0, y = 0, z = 0,
+			x2 = 0, y2 = 0,
 
 		    // loop counter
 		    i = 0,
@@ -8481,6 +8491,7 @@
 		this.customThemeValue[ViewConstants.customThemeUISelect] = -1;
 		this.customThemeValue[ViewConstants.customThemeUILocked] = -1;
 		this.customThemeValue[ViewConstants.customThemeUIBorder] = -1;
+		this.customThemeValue[ViewConstants.customThemeArrow] = -1;
 
 		// clear custom colours
 		this.customColours = [];
@@ -8595,6 +8606,315 @@
 							readingTitle = true;
 
 							itemValid = true;
+							break;
+
+						// arrow size
+						case Keywords.arrowSizeWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= ViewConstants.minArrowSize && numberValue <= ViewConstants.maxArrowSize) {
+									currentArrowSize = numberValue;
+									itemValid = true;
+								}
+							}
+							break;
+
+						// arrow track
+						case Keywords.arrowTrackWord:
+							// get dx
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= ViewConstants.minTrackSpeed && numberValue <= ViewConstants.maxTrackSpeed) {
+									x = numberValue;
+									isNumeric = false;
+
+									// get dy
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+
+										// get the value
+										numberValue = scriptReader.getNextTokenAsNumber();
+
+										// check it is in range
+										if (numberValue >= ViewConstants.minTrackSpeed && numberValue <= ViewConstants.maxTrackSpeed) {
+											currentArrowDX = x;
+											currentArrowDY = numberValue;
+											itemValid = true;
+										}
+									}
+								}
+							} else {
+								// check for FIXED keyword
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken === Keywords.fixedWord) {
+									// consume token
+									peekToken = scriptReader.getNextToken();
+									currentArrowDX = 0;
+									currentArrowDY = 0;
+									itemValid = true;
+								}
+							}
+
+							break;
+
+						// arrow target
+						case Keywords.arrowTargetWord:
+							// get the x position
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= -this.engine.maxGridSize / 2 && numberValue <= this.engine.maxGridSize / 2) {
+									isNumeric = false;
+									x = numberValue;
+
+									// get the y position
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+
+										// get the value
+										numberValue = scriptReader.getNextTokenAsNumber();
+
+										// check it is in range
+										if (numberValue >= -this.engine.maxGridSize / 2 && numberValue <= this.engine.maxGridSize / 2) {
+											isNumeric = false;
+											y = numberValue;
+
+											// get the distance
+											if (scriptReader.nextTokenIsNumeric()) {
+												isNumeric = true;
+
+												// get the value
+												numberValue = scriptReader.getNextTokenAsNumber();
+
+												// check it is in range
+												if (numberValue >= 0 && numberValue <= this.engine.maxGridSize / 2) {
+													currentArrowTX = x;
+													currentArrowTY = y;
+													currentArrowTDistance = numberValue;
+													itemValid = true;
+												}
+											}
+										}
+									}
+								}
+							} else {
+								// check for OFF keyword
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken === Keywords.offWord) {
+									// consume token
+									peekToken = scriptReader.getNextToken();
+									currentArrowTX = 0;
+									currentArrowTY = 0;
+									currentArrowTDistance = -1;
+									itemValid = true;
+								}
+							}
+							break;
+
+						// arrow angle
+						case Keywords.arrowAngleWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the angle value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= 0 && numberValue < 360) {
+									currentArrowAngle = numberValue;
+									currentArrowAngleFixed = false;
+									// check for optional FIXED keyword
+									peekToken = scriptReader.peekAtNextToken();
+									if (peekToken === Keywords.fixedWord) {
+										// consume token
+										peekToken = scriptReader.getNextToken();
+										currentArrowAngleFixed = true;
+									}
+									itemValid = true;
+								}
+							}
+							break;
+
+						// arrow T
+						case Keywords.arrowTWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the T1 value
+								numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+								// check it is in range
+								if (numberValue >= 0) {
+									x = numberValue;
+									if (scriptReader.nextTokenIsNumeric()) {
+										// get the T2 value
+										numberValue = scriptReader.getNextTokenAsNumber() | 0;
+										if (numberValue >= x) {
+											y = numberValue;
+											if (scriptReader.nextTokenIsNumeric()) {
+												// get the Fade value
+												numberValue = scriptReader.getNextTokenAsNumber() | 0;
+												if (numberValue >= 0 && numberValue <= ((y - x) >> 1)) {
+													currentArrowT1 = x;
+													currentArrowT2 = y;
+													currentArrowTFade = numberValue;
+													itemValid = true;
+												} else {
+													itemValid = true;
+													scriptErrors[scriptErrors.length] = [nextToken + " " + x + " " + y + " "+ numberValue, "third argument must from 0 to " + ((y - x) >> 1)];
+												}
+											} else {
+												isNumeric = false;
+											}
+										} else {
+											itemValid = true;
+											scriptErrors[scriptErrors.length] = [nextToken + " " + x + " " + numberValue, "second argument must be >= first"];
+										}
+									} else {
+										isNumeric = false;
+									}
+								}
+							} else {
+								// check for all
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken === Keywords.allWord) {
+									// consume token
+									peekToken = scriptReader.getNextToken();
+									currentArrowT1 = -1;
+									currentArrowT2 = -1;
+									currentArrowTFade = 0;
+									itemValid = true;
+								} else {
+									// fail needing a number
+									isNumeric = false;
+								}
+							}
+							break;
+
+						// arrow alpha
+						case Keywords.arrowAlphaWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= 0 && numberValue <= 1) {
+									currentArrowAlpha = numberValue;
+									itemValid = true;
+								}
+							}
+							break;
+
+						// arrow
+						case Keywords.arrowWord:
+							// get the x position
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
+									isNumeric = false;
+									x = numberValue;
+
+									// get the y position
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+
+										// get the value
+										numberValue = scriptReader.getNextTokenAsNumber();
+
+										// check it is in range
+										if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
+											isNumeric = false;
+											y = numberValue;
+
+											// get the x2 position
+											if (scriptReader.nextTokenIsNumeric()) {
+												isNumeric = true;
+
+												// get the value
+												numberValue = scriptReader.getNextTokenAsNumber();
+
+												// check it is in range
+												if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
+													isNumeric = false;
+													x2 = numberValue;
+
+													// get the y position
+													if (scriptReader.nextTokenIsNumeric()) {
+														isNumeric = true;
+
+														// get the value
+														numberValue = scriptReader.getNextTokenAsNumber();
+
+														// check it is in range
+														if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
+															isNumeric = false;
+															y2 = numberValue;
+
+															// get the zoom
+															if (scriptReader.nextTokenIsNumeric()) {
+																isNumeric = true;
+
+																// get the value
+																numberValue = scriptReader.getNextTokenAsNumber();
+
+																// check it is in range
+																z = -1000;
+																if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
+																	z = numberValue;
+																} else {
+																	// check for negative zoom format
+																	if (numberValue >= ViewConstants.minNegZoom && numberValue <= ViewConstants.maxNegZoom) {
+																		z = -(1 / numberValue);
+																	}
+																}
+																if (z !== -1000) {
+																	// check for optional fixed keyword
+																	peekToken = scriptReader.peekAtNextToken();
+																	currentArrowPositionFixed = false;
+																	if (peekToken === Keywords.fixedWord) {
+																		// consume the token
+																		peekToken = scriptReader.getNextToken();
+																		currentArrowPositionFixed = true;
+																		peekToken = scriptReader.peekAtNextToken();
+																	}
+																	// save the arrow
+																	currentArrow = this.waypointManager.createArrow(x, y, x2, y2, z, this.customArrowColour, currentArrowAlpha, currentArrowSize,
+																		currentArrowT1, currentArrowT2, currentArrowTFade, currentArrowAngle, currentArrowAngleFixed, currentArrowPositionFixed,
+																		currentArrowTX, currentArrowTY, currentArrowTDistance, currentArrowDX, currentArrowDY);
+																	this.waypointManager.addArrow(currentArrow);
+																	itemValid = true;
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+
 							break;
 
 						// label size
@@ -9154,6 +9474,11 @@
 								// label
 								case Keywords.labelWord:
 									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemeLabel, whichColour);
+									break;
+
+								// arrow
+								case Keywords.arrowWord:
+									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemeArrow, whichColour);
 									break;
 
 								// boundary
@@ -11254,8 +11579,9 @@
 			}
 		}
 
-		// sort labels into zoom order
+		// sort labels and arrows into zoom order
 		this.waypointManager.sortLabels();
+		this.waypointManager.sortArrows();
 	};
 
 	// reset any view controls that scripts can overwrite
@@ -11879,7 +12205,9 @@
 		this.customThemeValue[ViewConstants.customThemeUISelect] = -1;
 		this.customThemeValue[ViewConstants.customThemeUILocked] = -1;
 		this.customThemeValue[ViewConstants.customThemeUIBorder] = -1;
+		this.customThemeValue[ViewConstants.customThemeArrow] = -1;
 		this.customLabelColour = ViewConstants.labelFontColour;
+		this.customArrowColour = ViewConstants.arrowColour;
 
 		// switch off thumbnail mode if on
 		if (this.thumbnail) {
@@ -11940,8 +12268,9 @@
 		this.waypointManager.reset();
 		this.waypointsDefined = false;
 
-		// reset labels
+		// reset labels and arrows
 		this.waypointManager.clearLabels();
+		this.waypointManager.clearArrows();
 
 		// disable hide GUI on playback
 		this.hideGUI = false;
@@ -12357,7 +12686,7 @@
 		this.hexButton.current = [this.engine.isHex];
 
 		// set the label UI control
-		if (this.waypointManager.numLabels() === 0) {
+		if (this.waypointManager.numLabels() === 0 && this.waypointManager.numArrows() === 0) {
 			this.labelButton.locked = true;
 			this.showLabels = false;
 		} else {
