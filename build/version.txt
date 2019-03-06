@@ -1,3 +1,6 @@
+Build 304
+- added label and arrow definitions to help information
+
 Build 303
 - new annotation arrows:
 	- new script command [[ ARROW X1 Y1 X2 Y2 ZOOM (FIXED) ]]
