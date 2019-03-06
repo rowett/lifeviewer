@@ -267,6 +267,9 @@
 		/** @const {number} */ minArrowSize : 1,
 		/** @const {number} */ maxArrowSize : 64,
 
+		// arrow head size percentage
+		/** @const {number} */ arrowHeadPercent : 20,
+
 		// label font colour
 		/** @const {string} */ labelFontColour : "rgb(240,255,255)",
 
@@ -8358,6 +8361,9 @@
 			// current arrow size
 			currentArrowSize = ViewConstants.arrowLineThickness,
 
+			// current arrow head percentage
+			currentArrowHeadPercentage = ViewConstants.arrowHeadPercent,
+
 			// current arrow T1 and T2
 			currentArrowT1 = -1,
 			currentArrowT2 = -1,
@@ -8618,8 +8624,24 @@
 
 								// check it is in range
 								if (numberValue >= ViewConstants.minArrowSize && numberValue <= ViewConstants.maxArrowSize) {
-									currentArrowSize = numberValue;
-									itemValid = true;
+									x = numberValue;
+									isNumeric = false;
+
+									// get head percentage
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+
+										// get the value
+										numberValue = scriptReader.getNextTokenAsNumber();
+
+										// check it is in range
+										if (numberValue >= 1 && numberValue <= 100) {
+											currentArrowHeadPercentage = numberValue;
+											currentArrowSize = x;
+											itemValid = true;
+
+										}
+									}
 								}
 							}
 							break;
@@ -8900,8 +8922,8 @@
 																	}
 																	// save the arrow
 																	currentArrow = this.waypointManager.createArrow(x, y, x2, y2, z, this.customArrowColour, currentArrowAlpha, currentArrowSize,
-																		currentArrowT1, currentArrowT2, currentArrowTFade, currentArrowAngle, currentArrowAngleFixed, currentArrowPositionFixed,
-																		currentArrowTX, currentArrowTY, currentArrowTDistance, currentArrowDX, currentArrowDY);
+																		currentArrowHeadPercentage, currentArrowT1, currentArrowT2, currentArrowTFade, currentArrowAngle, currentArrowAngleFixed,
+																		currentArrowPositionFixed, currentArrowTX, currentArrowTY, currentArrowTDistance, currentArrowDX, currentArrowDY);
 																	this.waypointManager.addArrow(currentArrow);
 																	itemValid = true;
 																}

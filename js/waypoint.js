@@ -351,7 +351,7 @@
 	/**
 	 * @constructor
 	 */
-	function Arrow(x1, y1, x2, y2, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
+	function Arrow(x1, y1, x2, y2, zoom, colour, alpha, size, headPercent, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
 		// x1 position
 		this.x1 = x1;
 
@@ -375,6 +375,9 @@
 
 		// size
 		this.size = size;
+
+		// head size as percentage of arrow length
+		this.headPercent = headPercent / 100;
 
 		// start generation
 		this.t1 = t1;
@@ -495,8 +498,8 @@
 	}
 
 	// create an arrow
-	WaypointManager.prototype.createArrow = function(x1, y1, x2, y2, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
-		return new Arrow(x1, y1, x2, y2, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
+	WaypointManager.prototype.createArrow = function(x1, y1, x2, y2, zoom, colour, alpha, size, headPercent, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
+		return new Arrow(x1, y1, x2, y2, zoom, colour, alpha, size, headPercent, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
 	};
 
 	// clear all arrows
@@ -761,7 +764,7 @@
 						cy2 = (current.y2 - current.y1) * zoom;
 	
 						// compute arrow head size
-						headSize = Math.sqrt((cx2 * cx2) + (cy2 * cy2)) / 5;
+						headSize = Math.sqrt((cx2 * cx2) + (cy2 * cy2)) * current.headPercent;
 
 						// rotate context for drawing
 						context.save();
