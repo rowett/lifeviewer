@@ -537,6 +537,65 @@
 		return this.labelList.length;
 	};
 
+	// return given arrow as a text string line 1
+	WaypointManager.prototype.arrowAsText1 = function(number) {
+		var result = "",
+			current = null,
+			posLocked = "";
+
+		if (number >= 0 && number < this.arrowList.length) {
+			current = this.arrowList[number];
+			if (current.positionLocked) {
+				posLocked = "*";
+			}
+			result = "X1" + posLocked + " " + current.x1 + "\tY1" + posLocked + " " + current.y1;
+			result += "\tX2" + posLocked + " " + current.x2 + "\tY2" + posLocked + " " + current.y2;
+		}
+
+		return result;
+	};
+
+	// return given arrow as a text string line 2
+	WaypointManager.prototype.arrowAsText2 = function(number) {
+		var result = "",
+			zoom = 0,
+			current = null,
+			angLocked = "";
+
+		if (number >= 0 && number < this.arrowList.length) {
+			current = this.arrowList[number];
+			zoom = current.zoom;
+			if (zoom >= 0 && zoom < 1) {
+				zoom = -1 / zoom;
+			}
+			if (current.angleLocked) {
+				angLocked = "*";
+			}
+			result = "Z " + zoom.toFixed(1) + "\tA" + angLocked + " " + current.angle.toFixed(1);
+		}
+
+		return result;
+	};
+
+	// return given arrow as a text string line 3
+	WaypointManager.prototype.arrowAsText3 = function(number) {
+		var result = "",
+			current = null;
+
+		if (number >= 0 && number < this.arrowList.length) {
+			current = this.arrowList[number];
+			result = "Alpha " + current.alpha.toFixed(1);
+			if (current.t1 !== -1) {
+				result += "\tT1 " + current.t1 + "\tT2 " + current.t2;
+				if (current.tFade > 0) {
+					result += "\tFade " + current.tFade;
+				}
+			}
+		}
+
+		return result;
+	};
+
 	// return given label as a text string line 1
 	WaypointManager.prototype.labelAsText1 = function(number) {
 		var result = "",
@@ -567,15 +626,10 @@
 	// return given label as a text string line 2
 	WaypointManager.prototype.labelAsText2 = function(number) {
 		var result = "",
-			zoom = 0,
 		    current = null;
 
 		if (number >= 0 && number < this.labelList.length) {
 			current = this.labelList[number];
-			zoom = current.zoom;
-			if (zoom >= 0 && zoom < 1) {
-				zoom = -1 / zoom;
-			}
 			result = "Alpha " + current.alpha.toFixed(1);
 			if (current.t1 !== -1) {
 				result += "\tT1 " + current.t1 + "\tT2 " + current.t2;
@@ -591,15 +645,10 @@
 	// return given label as a text string line 3
 	WaypointManager.prototype.labelAsText3 = function(number) {
 		var result = "",
-			zoom = 0,
 		    current = null;
 
 		if (number >= 0 && number < this.labelList.length) {
 			current = this.labelList[number];
-			zoom = current.zoom;
-			if (zoom >= 0 && zoom < 1) {
-				zoom = -1 / zoom;
-			}
 			result = "Size " + current.size + "\t\"" + current.message + "\"";
 		}
 

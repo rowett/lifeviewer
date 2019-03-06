@@ -1485,6 +1485,30 @@
 				}
 			}
 		}
+
+		// annotations (labels and arrows)
+		if (view.waypointManager.numLabels() || view.waypointManager.numArrows()) {
+			view.tabs[0] = 128;
+			view.tabs[1] = 208;
+			view.tabs[2] = 288;
+			view.tabs[3] = 368;
+			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+			view.helpSections[sectionNum] = [view.lineNo, "Annotations"];
+			sectionNum += 1;
+			y = this.renderHelpLine(view, "", "Annotations:", ctx, x, y, height, helpLine);
+			for (i = 0; i < view.waypointManager.numLabels(); i += 1) {
+				itemName = "Label " + String(i + 1);
+				y = this.renderHelpLine(view, itemName, view.waypointManager.labelAsText1(i), ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, " ", view.waypointManager.labelAsText2(i), ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, " ", view.waypointManager.labelAsText3(i), ctx, x, y, height, helpLine);
+			}
+			for (i = 0; i < view.waypointManager.numArrows(); i += 1) {
+				itemName = "Arrow " + String(i + 1);
+				y = this.renderHelpLine(view, itemName, view.waypointManager.arrowAsText1(i), ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, " ", view.waypointManager.arrowAsText2(i), ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, " ", view.waypointManager.arrowAsText3(i), ctx, x, y, height, helpLine);
+			}
+		}
 	};
 
 	// render themes topic
