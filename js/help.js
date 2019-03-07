@@ -783,7 +783,7 @@
 		y = this.renderHelpLine(view, Keywords.labelTrackWord + " DX DY|" + Keywords.fixedWord, "label move per generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowWord + " X1 Y1 X2 Y2 ZOOM", "define arrow at position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix position", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.arrowSizeWord + " <" + ViewConstants.minArrowSize + ".." + ViewConstants.maxArrowSize + "> <1.0..100.0>", "line width and head %", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.arrowSizeWord + " <" + ViewConstants.minArrowSize + ".." + ViewConstants.maxArrowSize + "> <0.0..1.0>", "line width and head multiple", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowAlphaWord + " <0.0..1.0>", "define arrow alpha", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowTWord + " <0..> <0..> <0..>", "generation range / fade", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowAngleWord + " <0..359>", "arrow angle", ctx, x, y, height, helpLine);

@@ -351,7 +351,7 @@
 	/**
 	 * @constructor
 	 */
-	function Arrow(x1, y1, x2, y2, zoom, colour, alpha, size, headPercent, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
+	function Arrow(x1, y1, x2, y2, zoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
 		// x1 position
 		this.x1 = x1;
 
@@ -376,8 +376,8 @@
 		// size
 		this.size = size;
 
-		// head size as percentage of arrow length
-		this.headPercent = headPercent / 100;
+		// head size as multiple of arrow length
+		this.headMultiple = headMultiple;
 
 		// start generation
 		this.t1 = t1;
@@ -498,8 +498,8 @@
 	}
 
 	// create an arrow
-	WaypointManager.prototype.createArrow = function(x1, y1, x2, y2, zoom, colour, alpha, size, headPercent, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
-		return new Arrow(x1, y1, x2, y2, zoom, colour, alpha, size, headPercent, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
+	WaypointManager.prototype.createArrow = function(x1, y1, x2, y2, zoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
+		return new Arrow(x1, y1, x2, y2, zoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
 	};
 
 	// clear all arrows
@@ -666,7 +666,7 @@
 	};
 
 	// draw arrows
-	WaypointManager.prototype.drawArrows = function(view) {
+	WaypointManager.prototype.drawArrowsLayer = function(view, drawingShadows) {
 		var i = 0,
 			current = null,
 			engine = view.engine,
@@ -681,17 +681,21 @@
 			cx2 = 0, cy2 = 0,
 			minSize = 0, maxSize = 0,
 			currentSize = 0,
-			shadowColour = ViewConstants.arrowShadowColour,
 			linearZoom = 1, alphaValue = 1, timeAlpha = 1, distAlpha = 1,
 			counter = view.engine.counter,
 			inrange = false,
 			radius = 0, theta = 0,
-			shadowOffset = 0,
 			rangeFromTarget = 0,
 			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
 			headSize = 0,
 			headAngle = 0,
+			shadowOffset = 0,
 			xLeft = 0, yLeft = 0, xRight = 0, yRight = 0;
+
+		// use the shadow colour if drawing shadows
+		if (drawingShadows) {
+			context.strokeStyle = ViewConstants.arrowShadowColour;
+		}
 
 		// draw each arrow
 		for (i = 0; i < this.arrowList.length; i += 1) {
@@ -709,15 +713,19 @@
 
 			// continue if in generation range
 			if (inrange) {
-				// scale the font based on the zoom
+				// scale the arrow based on the zoom
 				currentSize = (current.size * zoom / current.zoom);
 				minSize = current.size / 4;
 				maxSize = current.size * 4;
-				shadowOffset = 1;
-				if (currentSize >= 24) {
-					shadowOffset = 2;
-					if (currentSize >= 48) {
-						shadowOffset = 3;
+
+				// adjust the shadow offset if drawing shadows
+				if (drawingShadows) {
+					shadowOffset = 1;
+					if (currentSize >= 24) {
+						shadowOffset = 2;
+						if (currentSize >= 48) {
+							shadowOffset = 3;
+						}
 					}
 				}
 	
@@ -813,7 +821,11 @@
 						cy2 = (current.y2 - current.y1) * zoom;
 	
 						// compute arrow head size
-						headSize = Math.sqrt((cx2 * cx2) + (cy2 * cy2)) * current.headPercent;
+						if (current.headMultiple === 0) {
+							headSize = 0;
+						} else {
+							headSize = Math.sqrt((cx2 * cx2) + (cy2 * cy2)) * current.headMultiple;
+						}
 
 						// rotate context for drawing
 						context.save();
@@ -827,38 +839,36 @@
 						// set line width
 						context.lineWidth = currentSize;
 
+						// set line colour if not drawing shadows
+						if (!drawingShadows) {
+							context.strokeStyle = current.colour;
+						}
+
 						// set round line cap
 						context.lineCap = "round";
 
 						// compute the head position
-						headAngle = Math.atan2(cy2, cx2);
-						xLeft = Math.cos(Math.PI * 0.85 + headAngle);
-						yLeft = Math.sin(Math.PI * 0.85 + headAngle);
-						xRight = Math.cos(-Math.PI * 0.85 + headAngle);
-						yRight = Math.sin(-Math.PI * 0.85 + headAngle);
+						if (headSize > 0) {
+							headAngle = Math.atan2(cy2, cx2);
+							xLeft = Math.cos(Math.PI * 0.85 + headAngle);
+							yLeft = Math.sin(Math.PI * 0.85 + headAngle);
+							xRight = Math.cos(-Math.PI * 0.85 + headAngle);
+							yRight = Math.sin(-Math.PI * 0.85 + headAngle);
+						}
 
-						// draw shadow
-						context.strokeStyle = shadowColour;
-						context.translate(shadowOffset, shadowOffset);
+						// draw arrow layer
+						if (shadowOffset > 0) {
+							context.translate(shadowOffset, shadowOffset);
+						}
 						context.beginPath();
 						context.moveTo(0, 0);
 						context.lineTo(cx2, cy2);
-						context.moveTo(cx2, cy2);
-						context.lineTo(cx2 + headSize * xLeft, cy2 + headSize * yLeft);
-						context.moveTo(cx2, cy2);
-						context.lineTo(cx2 + headSize * xRight, cy2 + headSize * yRight);
-						context.stroke();
-						context.translate(-shadowOffset, -shadowOffset);
-
-						// draw arrow
-						context.strokeStyle = current.colour;
-						context.beginPath();
-						context.moveTo(0, 0);
-						context.lineTo(cx2, cy2);
-						context.moveTo(cx2, cy2);
-						context.lineTo(cx2 + headSize * xLeft, cy2 + headSize * yLeft);
-						context.moveTo(cx2, cy2);
-						context.lineTo(cx2 + headSize * xRight, cy2 + headSize * yRight);
+						if (headSize > 0) {
+							context.moveTo(cx2, cy2);
+							context.lineTo(cx2 + headSize * xLeft, cy2 + headSize * yLeft);
+							context.moveTo(cx2, cy2);
+							context.lineTo(cx2 + headSize * xRight, cy2 + headSize * yRight);
+						}
 						context.stroke();
 	
 						// restore context
@@ -870,6 +880,15 @@
 
 		// restore alpha
 		context.globalAlpha = 1;
+	};
+
+	// draw arrows
+	WaypointManager.prototype.drawArrows = function(view) {
+		// draw shadows
+		this.drawArrowsLayer(view, true);
+
+		// draw arrows
+		this.drawArrowsLayer(view, false);
 	};
 
 	// draw labels

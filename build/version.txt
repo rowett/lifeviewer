@@ -1,3 +1,8 @@
+Build 305
+- arrow head size can now be zero to allow for line drawing
+- arrow head size is now specified as a multiple of arrow length rather than percentage
+	- [[ ARROWSIZE <1..> <0.0..1.0> ]]
+	
 Build 304
 - added label and arrow definitions to help information
 - toggle labels was not working if just arrows defined
