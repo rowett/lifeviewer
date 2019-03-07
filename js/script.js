@@ -77,7 +77,7 @@
 	// check if a string is numeric
 	Script.prototype.isNumeric = function(token) {
 		// check if the token is numeric
-		var result = !Number.isNaN(parseFloat(token)) && Number.isFinite(Number(token));
+		var result = !isNaN(parseFloat(token)) && isFinite(Number(token));
 
 		// return the result
 		return result;

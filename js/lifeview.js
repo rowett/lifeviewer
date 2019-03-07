@@ -13107,7 +13107,7 @@
 						// otherwise check if it is numeric
 						default:
 							value = tokens[i];
-							if (!Number.isNaN(parseFloat(value)) && Number.isFinite(Number(value))) {
+							if (!isNaN(parseFloat(value)) && isFinite(Number(value))) {
 								// set the source element maximum height
 								DocConfig.patternSourceMaxHeight = parseFloat(value) | 0;
 							}
