@@ -1,3 +1,6 @@
+Build 307
+- added more flexibility to rule decoder
+
 Build 306
 - fixes for IE and Edge
 

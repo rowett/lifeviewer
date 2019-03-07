@@ -3428,6 +3428,14 @@
 							}
 						} else {
 							// slash exists so set left and right rule
+							if (bIndex === -1 && sIndex !== -1) {
+								// only S specified
+								bIndex = slashIndex;
+							} else if (bIndex !== -1 && sIndex === -1) {
+								// only B specified
+								sIndex = slashIndex;
+							}
+							// get the birth and survival parts
 							if (bIndex < sIndex) {
 								birthPart = rule.substring(0, slashIndex);
 								survivalPart = rule.substring(slashIndex + 1);
