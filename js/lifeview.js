@@ -5864,7 +5864,7 @@
 				if (event.shiftKey) {
 					if (me.waypointManager.numLabels() > 0 || me.waypointManager.numArrows() > 0) {
 						me.labelButton.current = me.viewLabelToggle([!me.showLabels], true, me);
-						me.menuManager.notification.notify("Labels " + (me.showLabels ? "Off" : "On"), 15, 40, 15, true);
+						me.menuManager.notification.notify("Labels " + (me.showLabels ? "On" : "Off"), 15, 40, 15, true);
 					}
 				} else {
 					// disable depth in multi-state mode
