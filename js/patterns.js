@@ -4000,7 +4000,7 @@
 	};
 
 	// read Position
-	PatternManager.readPosition = function(source) {
+	PatternManager.readPosition = function(source, needEquals) {
 		// find the end of line
 		var newLine = source.indexOf("\n"),
 
@@ -4026,28 +4026,32 @@
 			newLine = source.length;
 		}
 
-		// check for the equals
-		while (i < newLine && !found) {
-			if (source[i] === "=") {
-				found = true;
-			}
-			else {
-				// skip whitespace
-				if (source[i] !== " ") {
+		// check for the equals if required
+		if (needEquals) {
+			while (i < newLine && !found) {
+				if (source[i] === "=") {
 					found = true;
-				}
-				else {
-					// next character
-					i += 1;
+				} else {
+					// skip whitespace
+					if (source[i] !== " ") {
+						found = true;
+					} else {
+						// next character
+						i += 1;
+					}
 				}
 			}
+			if (found && source[i] === "=") {
+				// skip equals sign
+				i += 1;
+			}
+		} else {
+			// no equals needed
+			found = true;
 		}
 
 		// check if found
-		if (found && source[i] === "=") {
-			// skip equals sign
-			i += 1;
-
+		if (found) {
 			// skip any whitespace
 			i = this.skipWhitespace(source, i, newLine);
 
@@ -4142,7 +4146,7 @@
 			exists = source.indexOf(PatternManager.posCommand);
 			if (exists !== -1) {
 				// attempt to read the Position
-				this.readPosition(source.substr(exists + PatternManager.posCommand.length));
+				this.readPosition(source.substr(exists + PatternManager.posCommand.length), true);
 			}
 
 			// check if Gen command exists
@@ -4610,23 +4614,20 @@
 		return valid;
 	};
 
-	// decode specified size from RLE header
-	PatternManager.decodeSpecifiedSize = function(source, length) {
-		var index = 0,
-		    value = 0,
+	// decode a single name=value
+	PatternManager.decodeNameValue = function(name, index, source, length) {
+		var value = 0,
 			valueFound = false,
 			// ASCII 0
 			asciiZero = String("0").charCodeAt(0),
 			// ASCII 9
 			asciiNine = String("9").charCodeAt(0),
-			sourceCode;
+			sourceCode = 0,
+			result = null,
+			isMinus = false;
 
-		// check for specified width and height
-		this.specifiedWidth = -1;
-		this.specifiedHeight = -1;
-
-		// check for x
-		if (source[index] === "x") {
+		// check for name 
+		if (source[index] === name) {
 			index += 1;
 			// skip spaces
 			while (index < length && source[index] === " ") {
@@ -4643,6 +4644,13 @@
 			// decode number
 			value = 0;
 			valueFound = false;
+			// check for minus
+			isMinus = false;
+			if (source[index] === "-") {
+				index += 1;
+				isMinus = true;
+			}
+			// decode digits
 			sourceCode = source[index].charCodeAt(0);
 			while (index < length && (sourceCode >= asciiZero && sourceCode <= asciiNine)) {
 				value = 10 * value + (sourceCode - asciiZero);
@@ -4655,7 +4663,11 @@
 
 			// save the width if found
 			if (valueFound) {
-				this.specifiedWidth = value;
+				if (isMinus) {
+					result = -value;
+				} else {
+					result = value;
+				}
 			}
 
 			// skip whitespace
@@ -4672,43 +4684,45 @@
 			}
 		}
 
+		return [result, index];
+	};
+
+	// decode specified size from RLE header
+	PatternManager.decodeSpecifiedSize = function(source, length) {
+		var result,
+			index = 0;
+
+		// check for specified width and height
+		this.specifiedWidth = -1;
+		this.specifiedHeight = -1;
+
+		// check for x
+		result = this.decodeNameValue("x", index, source, length);
+		index = result[1];
+		if (result[0]) {
+			this.specifiedWidth = result[0];
+		}
+
 		// check for y
-		if (source[index] === "y") {
-			index += 1;
-			// skip spaces
-			while (index < length && source[index] === " ") {
-				index += 1;
-			}
-			// check for = sign
-			if (index < length && source[index] === "=") {
-				index += 1;
-			}
-			// skip spaces
-			while (index < length && source[index] === " ") {
-				index += 1;
-			}
-			// decode number
-			value = 0;
-			valueFound = false;
-			sourceCode = source[index];
-			while (index < length && (sourceCode >= asciiZero && sourceCode <= asciiNine)) {
-				value = 10 * value + (sourceCode - asciiZero);
-				index += 1;
-				valueFound = true;
-				if (index < length) {
-					sourceCode = source[index].charCodeAt(0);
-				}
-			}
+		result = this.decodeNameValue("y", index, source, length);
+		index = result[1];
+		if (result[0]) {
+			this.specifiedHeight = result[0];
+		}
 
-			// save the height if found
-			if (valueFound) {
-				this.specifiedHeight = value;
-			}
+		// check for h
+		result = this.decodeNameValue("h", index, source, length);
+		index = result[1];
+		if (result[0]) {
+			this.posX = result[0];
+			this.posDefined = true;
+		}
 
-			// skip whitespace
-			while (index < length && source[index] === " ") {
-				index += 1;
-			}
+		// check for v
+		result = this.decodeNameValue("v", index, source, length);
+		index = result[1];
+		if (result[0]) {
+			this.posY = result[0];
 		}
 	};
 
@@ -4941,6 +4955,12 @@
 					case "C":
 						// check for eXtended command
 						this.checkExtendedCommand(source.substring(index));
+						break;
+
+					case "P":
+					case "R":
+						// check for position
+						this.readPosition(source.substring(index), false);
 						break;
 
 					case "\n":

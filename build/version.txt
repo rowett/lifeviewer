@@ -1,5 +1,32 @@
 Build 307
-- added more flexibility to rule decoder
+- added more flexibility to rule decoder for B/S style rules
+- added support for #P|#R x,y in RLE to set pattern top left position
+- added support for "h = nnn, v = nnn" in rule header
+- new annotation polygons and polylines:
+	- new script command [[ POLYLINE X1 Y1 X2 Y2 .. Xn Yn ZOOM ]]
+		- draw polyline from X1, Y1, to X2, Y2, to Xn, Yn at zoom ZOOM
+	- new script command [[ POLYGON X1 Y1 X2 Y2 .. Xn Yn ZOOM ]]
+		- draw filled polygon from X1, Y1, to X2, Y2, to Xn, Yn at zoom ZOOM
+	- new script command [[ POLYALPHA <0.0..1.0> ]]
+		- set alpha value for subsequent polygon/polyline definitions
+	- new script command [[ POLYSIZE <1..> <1.0..100.0> ]]
+		- set line width and head size percentage for subsequent polygon/polyline definitions
+	- new script command [[ POLYT <t1> <t2> <fade> ]]
+		- sets a range of generations from <t1> to <t2> for subsequent polygons/polylines to be visible
+		- <fade> specifies generations to fade polygon/polyline in/out
+		- use [[ POLYT ALL ]] to specify all generations
+	- new script command [[ POLYANGLE <0..359> (FIXED) ]]
+		- sets the arrow angle for subsequent polygon/polyline definitions
+		- optional keyword FIXED means polygon/polyline will not rotate when camera rotates
+	- new script command [[ COLOR POLY R G B|<name>]]
+		- set colour for subsequent polygon/polyline definitions
+	- new script command [[ POLYTARGET X Y D|OFF ]]
+		- sets the target point and distance for subsequent polygon/polyline definitions
+		- the viewpoint must be within the distance of the target point for the polygon/polyline to be displayed
+		- [[ POLYTARGET OFF ]] turns off the target for subsequent polygon/polyline definitions
+	- new script command [[ POLYTRACK DX DY|FIXED ]]
+		- sets movement vector for subsequent polygon/polyline definitions
+		- [[ POLYTRACK FIXED ]] turns off movement for subsequent polygon/polyline definitions
 
 Build 306
 - fixes for IE and Edge

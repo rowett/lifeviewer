@@ -6,6 +6,7 @@ Investigate:
     Half-integer Wolfram rules
     LtL Margolus rules
     Grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
+    #CXRLE Pos limits
 
 Planned:
     User preferences
