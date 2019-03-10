@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Polygons</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 9, y = 5, rule = B3/S23
+$bo3b3o$b3o2bo$2bo!
+#C [[ ZOOM 8 ]]
+#C Polylines
+#C White square
+#C [[ COLOR POLY White ]]
+#C [[ POLYLINE 0 0 0 4 4 4 4 0 0 0 8 ]]
+#C Green triangle with thin lines
+#C [[ COLOR POLY Green ]]
+#C [[ POLYSIZE 1 ]]
+#C [[ POLYLINE 5 0 9 0 7 4 5 0 8 ]]
+#C Red semi-transparent rhombus
+#C [[ COLOR POLY Red ]]
+#C [[ POLYSIZE 2 ]]
+#C [[ POLYALPHA 0.5 ]]
+#C [[ POLYLINE 10 0 14 0 16 4 12 4 10 0 8 ]]
+#C [[ POLYALPHA 1 ]]
+#C Blue rotated square with thick lines
+#C [[ POLYSIZE 4 ]]
+#C [[ COLOR POLY Blue ]]
+#C [[ POLYANGLE 45 ]]
+#C [[ POLYLINE 15 0 19 0 19 4 15 4 15 0 8 ]]
+#C [[ POLYSIZE 2 ]]
+#C Yellow rotated square with fixed angle and transparency
+#C [[ COLOR POLY Yellow ]]
+#C [[ POLYANGLE 30 FIXED ]]
+#C [[ POLYALPHA 0.5 ]]
+#C [[ POLYLINE 20 0 24 0 24 4 20 4 20 0 8 ]]
+#C [[ POLYANGLE 0 POLYALPHA 1 ]]
+#C Tracking magenta triangle
+#C [[ COLOR POLY Magenta ]]
+#C [[ POLYTRACK -0.25 -0.25 ]]
+#C [[ POLYLINE 20 20 24 20 22 24 20 20 9 ]]
+#C [[ POLYTRACK FIXED ]]
+#C Filled polygons
+#C [[ COLOR POLY White ]]
+#C [[ POLYFILL 0 10 0 14 4 14 4 10 0 10 8 ]]
+#C [[ COLOR POLY Green ]]
+#C [[ POLYFILL 5 10 9 10 7 14 5 10 8 ]]
+#C [[ COLOR POLY Red ]]
+#C [[ POLYALPHA 0.5 ]]
+#C [[ POLYFILL 10 10 14 10 16 14 12 14 10 10 8 ]]
+#C [[ POLYALPHA 1 ]]
+#C [[ COLOR POLY Blue ]]
+#C [[ POLYANGLE 45 ]]
+#C [[ POLYFILL 15 10 19 10 19 14 15 14 15 10 8 ]]
+#C [[ COLOR POLY Yellow ]]
+#C [[ POLYANGLE 30 FIXED ]]
+#C [[ POLYALPHA 0.5 ]]
+#C [[ POLYFILL 20 10 24 10 24 14 20 14 20 10 8 ]]
+#C [[ POLYANGLE 0 POLYALPHA 1 ]]
+#C [[ COLOR POLY Magenta ]]
+#C [[ POLYTRACK -0.25 -0.25 ]]
+#C [[ POLYFILL 25 20 29 20 27 24 25 20 9 ]]
+#C [[ POLYTRACK FIXED ]]
+            </textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

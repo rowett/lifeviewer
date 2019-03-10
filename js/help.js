@@ -623,8 +623,8 @@
 		if (view.engine.gridLineMajor > 0) {
 			y = this.renderHelpLine(view, "Shift X", "toggle major grid lines", ctx, x, y, height, helpLine);
 		}
-		if (view.waypointManager.numLabels() || view.waypointManager.numArrows()) {
-			y = this.renderHelpLine(view, "Shift L", "toggle label display", ctx, x, y, height, helpLine);
+		if (view.waypointManager.numAnnotations() > 0) {
+			y = this.renderHelpLine(view, "Shift L", "toggle annotation display", ctx, x, y, height, helpLine);
 		}
 		// check if thumbnail ever on
 		if (view.thumbnailEverOn) {
@@ -778,18 +778,28 @@
 		y = this.renderHelpLine(view, Keywords.labelAlphaWord + " <0.0..1.0>", "define label font alpha", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelTWord + " <0..> <0..> <0..>", "generation range / fade", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelAngleWord + " <0..359>", "label angle", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix label angle", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix angle", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelTargetWord + " X Y D|" + Keywords.offWord, "label target and distance", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelTrackWord + " DX DY|" + Keywords.fixedWord, "label move per generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowWord + " X1 Y1 X2 Y2 ZOOM", "define arrow at position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix position", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.arrowSizeWord + " <" + ViewConstants.minArrowSize + ".." + ViewConstants.maxArrowSize + "> <0.0..1.0>", "line width and head multiple", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.arrowSizeWord + " <" + ViewConstants.minLineSize + ".." + ViewConstants.maxLineSize + "> <0.0..1.0>", "line width and head multiple", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowAlphaWord + " <0.0..1.0>", "define arrow alpha", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowTWord + " <0..> <0..> <0..>", "generation range / fade", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowAngleWord + " <0..359>", "arrow angle", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix arrow angle", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix angle", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowTargetWord + " X Y D|" + Keywords.offWord, "arrow target and distance", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowTrackWord + " DX DY|" + Keywords.fixedWord, "arrow move per generation", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.polyLineWord + " X1 Y1 X2 Y2 .. ZOOM", "define outline polygon", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix position", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.polyFillWord + " X1 Y1 X2 Y2 .. ZOOM", "define filled polygon", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix position", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.polySizeWord + " <" + ViewConstants.minLineSize + ".." + ViewConstants.maxLineSize + ">", "line width", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.polyAlphaWord + " <0.0..1.0>", "define polygon alpha", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.polyTWord + " <0..> <0..> <0..>", "generation range / fade", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.polyAngleWord + " <0..359>", "polygon angle", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix angle", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.polyTargetWord + " X Y D|" + Keywords.offWord, "polygon target and distance", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		view.helpSections[sectionNum] = [view.lineNo, "Display"];
 		sectionNum += 1;
@@ -869,6 +879,7 @@
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.graphDeathColorWord + " R G B", "set graph death color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.labelWord + " R G B", "set label text color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.arrowWord + " R G B", "set arrow line color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.polyWord + " R G B", "set polygon color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.uiFGWord + " R G B", "set UI foreground color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.uiBGWord + " R G B", "set UI background color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.uiHighlightWord + " R G B", "set UI highlight text color", ctx, x, y, height, helpLine);
@@ -1486,8 +1497,8 @@
 			}
 		}
 
-		// annotations (labels and arrows)
-		if (view.waypointManager.numLabels() || view.waypointManager.numArrows()) {
+		// annotations
+		if (view.waypointManager.numAnnotations() > 0) {
 			view.tabs[0] = 128;
 			view.tabs[1] = 208;
 			view.tabs[2] = 288;
@@ -1507,6 +1518,12 @@
 				y = this.renderHelpLine(view, itemName, view.waypointManager.arrowAsText1(i), ctx, x, y, height, helpLine);
 				y = this.renderHelpLine(view, " ", view.waypointManager.arrowAsText2(i), ctx, x, y, height, helpLine);
 				y = this.renderHelpLine(view, " ", view.waypointManager.arrowAsText3(i), ctx, x, y, height, helpLine);
+			}
+			for (i = 0; i < view.waypointManager.numPolygons(); i += 1) {
+				itemName = "Polygon " + String(i + 1);
+				y = this.renderHelpLine(view, itemName, view.waypointManager.polyAsText1(i), ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, " ", view.waypointManager.polyAsText2(i), ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, " ", view.waypointManager.polyAsText3(i), ctx, x, y, height, helpLine);
 			}
 		}
 	};

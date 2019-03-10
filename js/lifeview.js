@@ -132,6 +132,7 @@
 		/** @const {number} */ customThemeUILocked : 23,
 		/** @const {number} */ customThemeUIBorder : 24,
 		/** @const {number} */ customThemeArrow : 25,
+		/** @const {number} */ customThemePoly : 26,
 
 		// state numbers
 		/** @const {number} */ offState : 0,
@@ -260,12 +261,18 @@
 		// arrow shadow colour
 		/** @const {string} */ arrowShadowColour : "rgb(0,0,0)",
 
-		// arrow line thickness
-		/** @const {number} */ arrowLineThickness : 2,
+		// polygon colour
+		/** @const {string} */ polyColour : "rgb(240,255,255)",
 
-		// min and max arrow line width
-		/** @const {number} */ minArrowSize : 1,
-		/** @const {number} */ maxArrowSize : 64,
+		// polygon shadow colour
+		/** @const {string} */ polyShadowColour : "rgb(0,0,0)",
+
+		// annotation line thickness
+		/** @const {number} */ annotationLineThickness : 2,
+
+		// min and max line width
+		/** @const {number} */ minLineSize : 1,
+		/** @const {number} */ maxLineSize : 64,
 
 		// arrow head size multiple
 		/** @const {number} */ arrowHeadMultiple : 0.2,
@@ -872,7 +879,7 @@
 		this.customTheme = false;
 
 		// custom theme value
-		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
 		// custom grid colour
 		this.customGridColour = -1;
@@ -888,6 +895,9 @@
 
 		// custom arrow colour
 		this.customArrowColour = ViewConstants.arrowColour;
+
+		// custom polygon colour
+		this.customPolygonColour = ViewConstants.polyColour;
 
 		// colour set used
 		this.colourSetName = "";
@@ -2719,8 +2729,7 @@
 
 		// draw any arrows and labels
 		if (me.showLabels) {
-			me.waypointManager.drawArrows(me);
-			me.waypointManager.drawLabels(me);
+			me.waypointManager.drawAnnotations(me);
 		}
 
 		// draw population graph if required
@@ -3284,8 +3293,7 @@
 
 		// draw any arrows and labels
 		if (me.showLabels) {
-			me.waypointManager.drawArrows(me);
-			me.waypointManager.drawLabels(me);
+			me.waypointManager.drawAnnotations(me);
 		}
 
 		// draw population graph if required
@@ -3367,8 +3375,7 @@
 
 		// draw any arrows and labels
 		if (me.showLabels) {
-			me.waypointManager.drawArrows(me);
-			me.waypointManager.drawLabels(me);
+			me.waypointManager.drawAnnotations(me);
 		}
 
 		// draw population graph if required
@@ -5862,9 +5869,9 @@
 			case 76:
 				// check for shift
 				if (event.shiftKey) {
-					if (me.waypointManager.numLabels() > 0 || me.waypointManager.numArrows() > 0) {
+					if (me.waypointManager.numAnnotations() > 0) {
 						me.labelButton.current = me.viewLabelToggle([!me.showLabels], true, me);
-						me.menuManager.notification.notify("Labels " + (me.showLabels ? "On" : "Off"), 15, 40, 15, true);
+						me.menuManager.notification.notify("Annotations " + (me.showLabels ? "On" : "Off"), 15, 40, 15, true);
 					}
 				} else {
 					// disable depth in multi-state mode
@@ -7477,10 +7484,21 @@
 			case Keywords.deleteRangeWord:
 			case Keywords.poiWord:
 			case Keywords.titleWord:
+			case Keywords.polyLineWord:
+			case Keywords.polyFillWord:
+			case Keywords.polyAlphaWord:
+			case Keywords.polySizeWord:
+			case Keywords.polyTWord:
+			case Keywords.polyAngleWord:
+			case Keywords.polyTargetWord:
+			case Keywords.polyTrackWord:
 			case Keywords.arrowWord:
 			case Keywords.arrowAlphaWord:
 			case Keywords.arrowSizeWord:
 			case Keywords.arrowTWord:
+			case Keywords.arrowAngleWord:
+			case Keywords.arrowTargetWord:
+			case Keywords.arrowTrackWord:
 			case Keywords.labelWord:
 			case Keywords.labelAlphaWord:
 			case Keywords.labelSizeWord:
@@ -7664,7 +7682,7 @@
 		// save the colour if it is valid
 		if (!badColour) {
 			// see if the slot is available
-			if ((this.customThemeValue[customThemeElement] !== -1) && (customThemeElement !== ViewConstants.customThemeLabel) && (customThemeElement !== ViewConstants.customThemeArrow)) {
+			if ((this.customThemeValue[customThemeElement] !== -1) && (customThemeElement !== ViewConstants.customThemeLabel) && (customThemeElement !== ViewConstants.customThemeArrow) && (customThemeElement !== ViewConstants.customThemePoly)) {
 				scriptErrors[scriptErrors.length] = [whichColour + " " + elementName + " " + redValue + " " + greenValue + " " + blueValue, "overwrites " + (this.customThemeValue[customThemeElement] >> 16) + " " + ((this.customThemeValue[customThemeElement] >> 8) & 255) + " " + (this.customThemeValue[customThemeElement] & 255)];
 			}
 
@@ -7711,6 +7729,11 @@
 			case ViewConstants.customThemeArrow:
 				// save for arrow
 				this.customArrowColour = "rgb(" + redValue + "," + greenValue + "," + blueValue + ")";
+				break;
+
+			case ViewConstants.customThemePoly:
+				// save for polygon
+				this.customPolygonColour = "rgb(" + redValue + "," + greenValue + "," + blueValue + ")";
 				break;
 
 			case ViewConstants.customThemeBoundary:
@@ -8352,6 +8375,38 @@
 		    // whether points of interest found
 		    poiFound = false,
 
+			// current polygon
+			currentPolygon = null,
+
+			// current polygon alpha
+			currentPolygonAlpha = 1,
+
+			// current polygon size
+			currentPolygonSize = ViewConstants.annotationLineThickness,
+
+			// current polygon T1 and T2
+			currentPolygonT1 = -1,
+			currentPolygonT2 = -1,
+
+			// current polygon TFade
+			currentPolygonTFade = 0,
+
+			// current polygon angle and locked
+			currentPolygonAngle = 0,
+			currentPolygonAngleFixed = false,
+
+			// current position locked
+			currentPolygonPositionFixed = false,
+
+			// current polygon target and distance
+			currentPolygonTX = 0,
+			currentPolygonTY = 0,
+			currentPolygonTDistance = -1,
+
+			// current polygon movement vector
+			currentPolygonDX = 0,
+			currentPolygonDY = 0,
+
 			// current arrow
 			currentArrow = null,
 
@@ -8359,7 +8414,7 @@
 			currentArrowAlpha = 1,
 
 			// current arrow size
-			currentArrowSize = ViewConstants.arrowLineThickness,
+			currentArrowSize = ViewConstants.annotationLineThickness,
 
 			// current arrow head percentage
 			currentArrowHeadMultiple = ViewConstants.arrowHeadMultiple,
@@ -8445,6 +8500,7 @@
 			// holders
 			x = 0, y = 0, z = 0,
 			x2 = 0, y2 = 0,
+			coords = [],
 
 		    // loop counter
 		    i = 0,
@@ -8498,6 +8554,7 @@
 		this.customThemeValue[ViewConstants.customThemeUILocked] = -1;
 		this.customThemeValue[ViewConstants.customThemeUIBorder] = -1;
 		this.customThemeValue[ViewConstants.customThemeArrow] = -1;
+		this.customThemeValue[ViewConstants.customThemePoly] = -1;
 
 		// clear custom colours
 		this.customColours = [];
@@ -8614,6 +8671,291 @@
 							itemValid = true;
 							break;
 
+						// polygon size
+						case Keywords.polySizeWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= ViewConstants.minLineSize && numberValue <= ViewConstants.maxLineSize) {
+									currentPolygonSize = numberValue;
+									itemValid = true;
+								}
+							}
+							break;
+
+						// polygon track
+						case Keywords.polyTrackWord:
+							// get dx
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= ViewConstants.minTrackSpeed && numberValue <= ViewConstants.maxTrackSpeed) {
+									x = numberValue;
+									isNumeric = false;
+
+									// get dy
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+
+										// get the value
+										numberValue = scriptReader.getNextTokenAsNumber();
+
+										// check it is in range
+										if (numberValue >= ViewConstants.minTrackSpeed && numberValue <= ViewConstants.maxTrackSpeed) {
+											currentPolygonDX = x;
+											currentPolygonDY = numberValue;
+											itemValid = true;
+										}
+									}
+								}
+							} else {
+								// check for FIXED keyword
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken === Keywords.fixedWord) {
+									// consume token
+									peekToken = scriptReader.getNextToken();
+									currentPolygonDX = 0;
+									currentPolygonDY = 0;
+									itemValid = true;
+								}
+							}
+
+							break;
+
+						// polygon target
+						case Keywords.polyTargetWord:
+							// get the x position
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= -this.engine.maxGridSize / 2 && numberValue <= this.engine.maxGridSize / 2) {
+									isNumeric = false;
+									x = numberValue;
+
+									// get the y position
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+
+										// get the value
+										numberValue = scriptReader.getNextTokenAsNumber();
+
+										// check it is in range
+										if (numberValue >= -this.engine.maxGridSize / 2 && numberValue <= this.engine.maxGridSize / 2) {
+											isNumeric = false;
+											y = numberValue;
+
+											// get the distance
+											if (scriptReader.nextTokenIsNumeric()) {
+												isNumeric = true;
+
+												// get the value
+												numberValue = scriptReader.getNextTokenAsNumber();
+
+												// check it is in range
+												if (numberValue >= 0 && numberValue <= this.engine.maxGridSize / 2) {
+													currentPolygonTX = x;
+													currentPolygonTY = y;
+													currentPolygonTDistance = numberValue;
+													itemValid = true;
+												}
+											}
+										}
+									}
+								}
+							} else {
+								// check for OFF keyword
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken === Keywords.offWord) {
+									// consume token
+									peekToken = scriptReader.getNextToken();
+									currentPolygonTX = 0;
+									currentPolygonTY = 0;
+									currentPolygonTDistance = -1;
+									itemValid = true;
+								}
+							}
+							break;
+
+						// polygon angle
+						case Keywords.polyAngleWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the angle value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= 0 && numberValue < 360) {
+									currentPolygonAngle = numberValue;
+									currentPolygonAngleFixed = false;
+									// check for optional FIXED keyword
+									peekToken = scriptReader.peekAtNextToken();
+									if (peekToken === Keywords.fixedWord) {
+										// consume token
+										peekToken = scriptReader.getNextToken();
+										currentPolygonAngleFixed = true;
+									}
+									itemValid = true;
+								}
+							}
+							break;
+
+						// polygon T
+						case Keywords.polyTWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the T1 value
+								numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+								// check it is in range
+								if (numberValue >= 0) {
+									x = numberValue;
+									if (scriptReader.nextTokenIsNumeric()) {
+										// get the T2 value
+										numberValue = scriptReader.getNextTokenAsNumber() | 0;
+										if (numberValue >= x) {
+											y = numberValue;
+											if (scriptReader.nextTokenIsNumeric()) {
+												// get the Fade value
+												numberValue = scriptReader.getNextTokenAsNumber() | 0;
+												if (numberValue >= 0 && numberValue <= ((y - x) >> 1)) {
+													currentPolygonT1 = x;
+													currentPolygonT2 = y;
+													currentPolygonTFade = numberValue;
+													itemValid = true;
+												} else {
+													itemValid = true;
+													scriptErrors[scriptErrors.length] = [nextToken + " " + x + " " + y + " "+ numberValue, "third argument must from 0 to " + ((y - x) >> 1)];
+												}
+											} else {
+												isNumeric = false;
+											}
+										} else {
+											itemValid = true;
+											scriptErrors[scriptErrors.length] = [nextToken + " " + x + " " + numberValue, "second argument must be >= first"];
+										}
+									} else {
+										isNumeric = false;
+									}
+								}
+							} else {
+								// check for all
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken === Keywords.allWord) {
+									// consume token
+									peekToken = scriptReader.getNextToken();
+									currentPolygonT1 = -1;
+									currentPolygonT2 = -1;
+									currentPolygonTFade = 0;
+									itemValid = true;
+								} else {
+									// fail needing a number
+									isNumeric = false;
+								}
+							}
+							break;
+
+						// polygon alpha
+						case Keywords.polyAlphaWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= 0 && numberValue <= 1) {
+									currentPolygonAlpha = numberValue;
+									itemValid = true;
+								}
+							}
+							break;
+
+						// polyline and polyfill
+						case Keywords.polyLineWord:
+						case Keywords.polyFillWord:
+							coords = [];
+							itemValid = true;
+							z = -1000;
+
+							// get the coordinates
+							while (itemValid && scriptReader.nextTokenIsNumeric()) {
+								// get the x value
+								x = scriptReader.getNextTokenAsNumber();
+
+								// check for y value
+								if (scriptReader.nextTokenIsNumeric()) {
+									y = scriptReader.getNextTokenAsNumber();
+
+									// check x and y are in range
+									if (x >= -this.engine.maxGridSize && x < (2 * this.engine.maxGridSize) && y >= -this.engine.maxGridSize && y < (2 * this.engine.maxGridSize)) {
+										coords[coords.length] = x;
+										coords[coords.length] = y;
+									} else {
+										scriptErrors[scriptErrors.length] = [nextToken + " " + x + " " + y, "coordinate out of range"];
+										z = 0;
+										itemValid = false;
+									}
+								} else {
+									// assume x was zoom
+									if (x >= ViewConstants.minZoom && x <= ViewConstants.maxZoom) {
+										z = x;
+									} else if (x >= ViewConstants.minNegZoom && x <= ViewConstants.maxNegZoom) {
+										z = -(1 / x);
+									} else {
+										scriptErrors[scriptErrors.length] = [nextToken + " " + x, "zoom out of range"];
+										z = 0;
+										itemValid = false;
+									}
+								}
+							}
+
+							// check that zoom was specified
+							if (z === -1000) {
+								scriptErrors[scriptErrors.length] = [nextToken, "missing zoom value"];
+							}
+							
+							// check at least two coordinate pairs were specified
+							if (coords.length < 4) {
+								scriptErrors[scriptErrors.length] = [nextToken, "requires at least 2 coordinate pairs"];
+								itemValid = false;
+							}
+
+							if (itemValid) {
+								// check for optional fixed keyword
+								peekToken = scriptReader.peekAtNextToken();
+								currentPolygonPositionFixed = false;
+								if (peekToken === Keywords.fixedWord) {
+									// consume the token
+									peekToken = scriptReader.getNextToken();
+									currentPolygonPositionFixed = true;
+									peekToken = scriptReader.peekAtNextToken();
+								}
+								// save the polygon
+								currentPolygon = this.waypointManager.createPolygon(coords, (nextToken === Keywords.polyFillWord), z, this.customPolygonColour, currentPolygonAlpha,
+									currentPolygonSize, currentPolygonT1, currentPolygonT2, currentPolygonTFade, currentPolygonAngle, currentPolygonAngleFixed,
+									currentPolygonPositionFixed, currentPolygonTX, currentPolygonTY, currentPolygonTDistance, currentPolygonDX, currentPolygonDY);
+								this.waypointManager.addPolygon(currentPolygon);
+							} else {
+								// errors have already been reported
+								itemValid = true;
+							}
+
+							break;
+
 						// arrow size
 						case Keywords.arrowSizeWord:
 							if (scriptReader.nextTokenIsNumeric()) {
@@ -8623,7 +8965,7 @@
 								numberValue = scriptReader.getNextTokenAsNumber();
 
 								// check it is in range
-								if (numberValue >= ViewConstants.minArrowSize && numberValue <= ViewConstants.maxArrowSize) {
+								if (numberValue >= ViewConstants.minLineSize && numberValue <= ViewConstants.maxLineSize) {
 									x = numberValue;
 									isNumeric = false;
 
@@ -9500,6 +9842,11 @@
 								// arrow
 								case Keywords.arrowWord:
 									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemeArrow, whichColour);
+									break;
+
+								// polygon
+								case Keywords.polyWord:
+									this.readCustomThemeElement(scriptReader, scriptErrors, ViewConstants.customThemePoly, whichColour);
 									break;
 
 								// boundary
@@ -11600,9 +11947,8 @@
 			}
 		}
 
-		// sort labels and arrows into zoom order
-		this.waypointManager.sortLabels();
-		this.waypointManager.sortArrows();
+		// sort annotations into zoom order
+		this.waypointManager.sortAnnotations();
 	};
 
 	// reset any view controls that scripts can overwrite
@@ -12227,8 +12573,10 @@
 		this.customThemeValue[ViewConstants.customThemeUILocked] = -1;
 		this.customThemeValue[ViewConstants.customThemeUIBorder] = -1;
 		this.customThemeValue[ViewConstants.customThemeArrow] = -1;
+		this.customThemeValue[ViewConstants.customThemePoly] = -1;
 		this.customLabelColour = ViewConstants.labelFontColour;
 		this.customArrowColour = ViewConstants.arrowColour;
+		this.customPolygonColour = ViewConstants.polyColour;
 
 		// switch off thumbnail mode if on
 		if (this.thumbnail) {
@@ -12289,9 +12637,8 @@
 		this.waypointManager.reset();
 		this.waypointsDefined = false;
 
-		// reset labels and arrows
-		this.waypointManager.clearLabels();
-		this.waypointManager.clearArrows();
+		// reset annotations
+		this.waypointManager.clearAnnotations();
 
 		// disable hide GUI on playback
 		this.hideGUI = false;
@@ -12707,7 +13054,7 @@
 		this.hexButton.current = [this.engine.isHex];
 
 		// set the label UI control
-		if (this.waypointManager.numLabels() === 0 && this.waypointManager.numArrows() === 0) {
+		if (this.waypointManager.numAnnotations() === 0) {
 			this.labelButton.locked = true;
 			this.showLabels = false;
 		} else {

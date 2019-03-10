@@ -347,6 +347,57 @@
 		this.fitZoom = toWaypoint.fitZoom;
 	};
 
+	// Polygon constructor
+	/**
+	 * @constructor
+	 */
+	function Polygon(coords, isFilled, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
+		// coordinates
+		this.coords = coords;
+
+		// whether filled
+		this.isFilled = isFilled;
+
+		// zoom
+		this.zoom = zoom;
+
+		// colour
+		this.colour = colour;
+
+		// alpha
+		this.alpha = alpha;
+
+		// size
+		this.size = size;
+
+		// start generation
+		this.t1 = t1;
+
+		// end generation
+		this.t2 = t2;
+
+		// fade generations
+		this.tFade = tFade;
+
+		// angle
+		this.angle = angle;
+
+		// angle locked when camera rotated
+		this.angleLocked = angleLocked;
+
+		// position locked when TRACK used
+		this.positionLocked = positionLocked;
+
+		// target location and distance
+		this.tx = tx;
+		this.ty = ty;
+		this.tDistance = tDistance;
+
+		// label movement vector
+		this.dx = dx;
+		this.dy = dy;
+	}
+
 	// Arrow constructor
 	/**
 	 * @constructor
@@ -478,6 +529,9 @@
 		// list of arrows
 		this.arrowList = [];
 
+		// list of polygons
+		this.polyList = [];
+
 		// current position
 		this.current = new Waypoint(this);
 
@@ -496,6 +550,26 @@
 		// whether last waypoint has been reached
 		this.lastReached = false;
 	}
+
+	// create a polygon
+	WaypointManager.prototype.createPolygon = function(coords, isFilled, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
+		return new Polygon(coords, isFilled, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
+	};
+
+	// clear all polygons
+	WaypointManager.prototype.clearPolygons = function() {
+		this.polyList = [];
+	};
+
+	// add a polygon to the list
+	WaypointManager.prototype.addPolygon = function(polygon) {
+		this.polyList[this.polyList.length] = polygon;
+	};
+
+	// return number of polygons
+	WaypointManager.prototype.numPolygons = function() {
+		return this.polyList.length;
+	};
 
 	// create an arrow
 	WaypointManager.prototype.createArrow = function(x1, y1, x2, y2, zoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
@@ -535,6 +609,81 @@
 	// return number of labels
 	WaypointManager.prototype.numLabels = function() {
 		return this.labelList.length;
+	};
+
+	// return number of annoations
+	WaypointManager.prototype.numAnnotations = function() {
+		return this.numLabels() + this.numArrows() + this.numPolygons();
+	};
+
+	// reset all annotations
+	WaypointManager.prototype.clearAnnotations = function() {
+		this.clearLabels();
+		this.clearArrows();
+		this.clearPolygons();
+	};
+
+	// return given polygon as a text string line 1
+	WaypointManager.prototype.polyAsText1 = function(number) {
+		var result = "",
+			current = null,
+			posLocked = "";
+
+		if (number >= 0 && number < this.polyList.length) {
+			current = this.polyList[number];
+			if (current.positionLocked) {
+				posLocked = "*";
+			}
+			if (current.isFilled) {
+				result = "FILL\t";
+			} else {
+				result = "LINE\t";
+			}
+			result += "X1" + posLocked + " " + current.coords[0] + "\tY1" + posLocked + " " + current.coords[1];
+		}
+
+		return result;
+	};
+
+	// return given polygon as a text string line 2
+	WaypointManager.prototype.polyAsText2 = function(number) {
+		var result = "",
+			zoom = 0,
+			current = null,
+			angLocked = "";
+
+		if (number >= 0 && number < this.polyList.length) {
+			current = this.polyList[number];
+			zoom = current.zoom;
+			if (zoom >= 0 && zoom < 1) {
+				zoom = -1 / zoom;
+			}
+			if (current.angleLocked) {
+				angLocked = "*";
+			}
+			result = "Z " + zoom.toFixed(1) + "\tA" + angLocked + " " + current.angle.toFixed(1);
+		}
+
+		return result;
+	};
+
+	// return given poly as a text string line 3
+	WaypointManager.prototype.polyAsText3 = function(number) {
+		var result = "",
+			current = null;
+
+		if (number >= 0 && number < this.polyList.length) {
+			current = this.polyList[number];
+			result = "Alpha " + current.alpha.toFixed(1);
+			if (current.t1 !== -1) {
+				result += "\tT1 " + current.t1 + "\tT2 " + current.t2;
+				if (current.tFade > 0) {
+					result += "\tFade " + current.tFade;
+				}
+			}
+		}
+
+		return result;
 	};
 
 	// return given arrow as a text string line 1
@@ -663,6 +812,18 @@
 	// sort arrows into zoom order for depth drawing
 	WaypointManager.prototype.sortArrows = function() {
 		this.arrowList.sort(function(a, b) { return a.zoom - b.zoom; });
+	};
+
+	// sort polygons into zoom order for depth drawing
+	WaypointManager.prototype.sortPolygons = function() {
+		this.polyList.sort(function(a, b) { return a.zoom - b.zoom; });
+	};
+
+	// sort annotations into zoom order for depth drawing
+	WaypointManager.prototype.sortAnnotations = function() {
+		this.sortLabels();
+		this.sortArrows();
+		this.sortPolygons();
 	};
 
 	// draw arrows
@@ -891,6 +1052,229 @@
 		this.drawArrowsLayer(view, false);
 	};
 
+	// draw polygons
+	WaypointManager.prototype.drawPolygonsLayer = function(view, drawingShadows) {
+		var i = 0,
+			current = null,
+			engine = view.engine,
+			context = engine.context,
+			xOff = engine.width / 2 - engine.xOff - engine.originX,
+			yOff = engine.height / 2 - engine.yOff - engine.originY,
+			zoom = engine.zoom * engine.originZ,
+			halfDisplayWidth = engine.displayWidth / 2,
+			halfDisplayHeight = engine.displayHeight / 2,
+			x = 0, y = 0,
+			cx = 0, cy = 0,
+			cx2 = 0, cy2 = 0,
+			minSize = 0, maxSize = 0,
+			currentSize = 0,
+			linearZoom = 1, alphaValue = 1, timeAlpha = 1, distAlpha = 1,
+			counter = view.engine.counter,
+			inrange = false,
+			radius = 0, theta = 0,
+			rangeFromTarget = 0,
+			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
+			shadowOffset = 0,
+			coords = [], length = 0,
+			coord = 0;
+
+		// use the shadow colour if drawing shadows
+		if (drawingShadows) {
+			context.strokeStyle = ViewConstants.polyShadowColour;
+			context.fillStyle = ViewConstants.polyShadowColour;
+		}
+
+		// draw each polygon
+		for (i = 0; i < this.polyList.length; i += 1) {
+			// get the next polygon
+			current = this.polyList[i];
+			coords = current.coords;
+			length = coords.length;
+
+			// check if the polygon has a defined generation range
+			inrange = true;
+			if (current.t1 !== -1) {
+				// check if current generation is within the defined range
+				if (counter < current.t1 || counter > current.t2) {
+					inrange = false;
+				}
+			}
+
+			// continue if in generation range
+			if (inrange) {
+				// scale the polygon based on the zoom
+				currentSize = (current.size * zoom / current.zoom);
+				minSize = current.size / 4;
+				maxSize = current.size * 4;
+
+				// adjust the shadow offset if drawing shadows
+				if (drawingShadows) {
+					shadowOffset = 1;
+					if (currentSize >= 24) {
+						shadowOffset = 2;
+						if (currentSize >= 48) {
+							shadowOffset = 3;
+						}
+					}
+				}
+	
+				// do not draw if too big or too small
+				if (currentSize >= minSize && currentSize <= maxSize) {
+					// convert zoom into a linear range
+					linearZoom = Math.log(currentSize / minSize) / Math.log(maxSize / minSize);
+	
+					// make more transparent if in bottom or top 20% of linear range
+					if (linearZoom <= 0.25) {
+						alphaValue = linearZoom * 4;
+					} else {
+						if (linearZoom >= 0.75) {
+							alphaValue = (1 - linearZoom) * 4;
+						} else {
+							alphaValue = 1;
+						}
+					}
+
+					// if in a generation range then fade if near limits
+					timeAlpha = 1;
+					if (current.t1 !== -1 && current.tFade > 0) {
+						if (counter - current.t1 < current.tFade) {
+							timeAlpha = (counter - current.t1 + 1) / current.tFade;
+						} else {
+							if (current.t2 - counter < current.tFade) {
+								timeAlpha = (current.t2 - counter + 1) / current.tFade;
+							}
+						}
+					}
+
+					// check if the target is set
+					inrange = true;
+					distAlpha = 1;
+					if (current.tDistance !== -1) {
+						rangeFromTarget = Math.sqrt((-(xOff + hexAdjust) - current.tx) * (-(xOff + hexAdjust) - current.tx) + (-yOff - current.ty) * (-yOff - current.ty));
+						if (rangeFromTarget > current.tDistance) {
+							inrange = false;
+						} else {
+							// fade towards the maximum distance
+							if (current.tDistance > 0) {
+								if (rangeFromTarget / current.tDistance > 0.75) {
+									distAlpha = 4 * (1 - (rangeFromTarget / current.tDistance));
+								}
+							}
+						}
+					}
+
+					// set the alpha
+					if (inrange) {
+						context.globalAlpha = alphaValue * current.alpha * timeAlpha * distAlpha;
+
+						// get polygon start position
+						coord = 0;
+						cx = coords[coord] + xOff + hexAdjust - (view.patternWidth >> 1) + 0.5;
+						cy = coords[coord + 1] + yOff - (view.patternHeight >> 1) + 0.5;
+						coord += 2;
+						
+						// check for fixed position
+						if (!current.positionLocked) {
+							cx += engine.originX;
+							cy += engine.originY;
+						}
+
+						// add movement
+						if (current.t1 !== -1) {
+							cx += current.dx * (view.floatCounter - current.t1);
+							cy += current.dy * (view.floatCounter - current.t1);
+
+						} else {
+							cx += current.dx * view.floatCounter;
+							cy += current.dy * view.floatCounter;
+						}
+	
+						// check for camera rotation
+						if (engine.camAngle !== 0) {
+							// compute radius
+							radius = Math.sqrt((cx * cx) + (cy * cy));
+	
+							// apply angle
+							theta = Math.atan2(cy, cx) * (180 / Math.PI);
+	
+							// add current rotation
+							theta += engine.camAngle;
+	
+							// compute rotated position
+							cx = radius * Math.cos(theta * (Math.PI / 180));
+							cy = radius * Math.sin(theta * (Math.PI / 180));
+						}
+	
+						// draw the polygon
+						y = (cy * zoom) + halfDisplayHeight;
+						x = (cx * zoom) + halfDisplayWidth;
+						cx2 = (coords[coord] - coords[0]) * zoom;
+						cy2 = (coords[coord + 1] - coords[1]) * zoom;
+						coord += 2;
+	
+						// rotate context for drawing
+						context.save();
+						context.translate(x, y);
+						theta = current.angle;
+						if (!current.angleLocked) {
+							theta += engine.camAngle;
+						}
+						context.rotate(theta / 180 * Math.PI);
+		
+						// set line width
+						context.lineWidth = currentSize;
+
+						// set line colour if not drawing shadows
+						if (!drawingShadows) {
+							if (current.isFilled) {
+								context.fillStyle = current.colour;
+							} else {
+								context.strokeStyle = current.colour;
+							}
+						}
+
+						// set round line cap
+						context.lineCap = "round";
+
+						// draw polygon layer
+						if (shadowOffset > 0) {
+							context.translate(shadowOffset, shadowOffset);
+						}
+						context.beginPath();
+						context.moveTo(0, 0);
+						context.lineTo(cx2, cy2);
+						while (coord < length) {
+							cx2 = (coords[coord] - coords[0]) * zoom;
+							cy2 = (coords[coord + 1] - coords[1]) * zoom;
+							coord += 2;
+							context.lineTo(cx2, cy2);
+						}
+						if (current.isFilled) {
+							context.fill();
+						} else {
+							context.stroke();
+						}
+	
+						// restore context
+						context.restore();
+					}
+				}
+			}
+		}
+
+		// restore alpha
+		context.globalAlpha = 1;
+	};
+
+	// draw polygons
+	WaypointManager.prototype.drawPolygons = function(view) {
+		// draw shadows
+		this.drawPolygonsLayer(view, true);
+
+		// draw arrows
+		this.drawPolygonsLayer(view, false);
+	};
+
 	// draw labels
 	WaypointManager.prototype.drawLabels = function(view) {
 		var i = 0,
@@ -1090,6 +1474,13 @@
 
 		// restore alpha
 		context.globalAlpha = 1;
+	};
+
+	// draw annotations
+	WaypointManager.prototype.drawAnnotations = function(view) {
+		this.drawPolygons(view);
+		this.drawArrows(view);
+		this.drawLabels(view);
 	};
 
 	// process step back

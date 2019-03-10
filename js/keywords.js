@@ -121,6 +121,33 @@
 		// window title
 		/** @const {string} */ titleWord : "TITLE",
 
+		// polygon colour attribute name
+		/** @const {string} */ polyWord : "POLY",
+
+		// filled polygon
+		/** @const {string} */ polyFillWord : "POLYFILL",
+
+		// outline polygon
+		/** @const {string} */ polyLineWord : "POLYLINE",
+
+		// polygon alpha
+		/** @const {string} */ polyAlphaWord : "POLYALPHA",
+
+		// polygon size
+		/** @const {string} */ polySizeWord : "POLYSIZE",
+
+		// polygon generation range and fade
+		/** @const {string} */ polyTWord : "POLYT",
+
+		// polygon angle and fixed 
+		/** @const {string} */ polyAngleWord : "POLYANGLE",
+
+		// polygon target 
+		/** @const {string} */ polyTargetWord : "POLYTARGET",
+
+		// polygon track
+		/** @const {string} */ polyTrackWord : "POLYTRACK",
+
 		// arrow
 		/** @const {string} */ arrowWord : "ARROW",
 
