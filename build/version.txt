@@ -10,7 +10,7 @@ Build 307
 	- new script command [[ POLYALPHA <0.0..1.0> ]]
 		- set alpha value for subsequent polygon definitions
 	- new script command [[ POLYSIZE <1..> ]]
-		- set line width subsequent polygon definitions
+		- set line width for subsequent polygon definitions
 	- new script command [[ POLYT <t1> <t2> <fade> ]]
 		- sets a range of generations from <t1> to <t2> for subsequent polygons to be visible
 		- <fade> specifies generations to fade polygon in/out
