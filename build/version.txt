@@ -1,3 +1,6 @@
+Build 308
+- ensure copied RLE comments end with newline
+
 Build 307
 - added more flexibility to rule decoder for B/S style rules
 - added support for #P|#R x,y in RLE to set pattern top left position
