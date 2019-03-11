@@ -12834,24 +12834,32 @@
 			}
 
 			// add CXRLE Pos if defined
+			i = this.engine.maxGridSize / 2 - borderSize;
 			if (this.posDefined) {
-				i = this.engine.maxGridSize / 2 - borderSize;
 				if (this.posXOffset < -i) {
 					this.posXOffset = -i;
-				} else {
-					if (this.posXOffset >= i) {
-						this.posXOffset = i - 1;
-					}
+				} else if (this.posXOffset >= i) {
+					this.posXOffset = i - 1;
 				}
 				if (this.posYOffset < -i) {
 					this.posYOffset = -i;
-				} else {
-					if (this.posYOffset >= i) {
-						this.posYOffset = i - 1;
-					}
+				} else if (this.posYOffset >= i) {
+					this.posYOffset = i - 1;
 				}
 				this.xOffset += this.posXOffset;
 				this.yOffset += this.posYOffset;
+			}
+
+			// ensure offset in range
+			if (this.xOffset < -i) {
+				this.xOffset = -i;
+			} else if (this.xOffset >= i) {
+				this.xOffset = i - 1;
+			}
+			if (this.yOffset < -i) {
+				this.yOffset = -i;
+			} else if (this.yOffset >= i) {
+				this.yOffset = i - 1;
 			}
 
 			// grow the grid if the pattern is too big to fit

@@ -32,7 +32,7 @@ Complete:
 [DONE]Memory footprint reduction
 [DONE]Implement faster Ltl/HROT von Neumann algorithm
 [DONE]HROT support for von Neumann and Circular neighbourhoods
-[DONE]New script keywords to put labels on the display at specific locations triggered by generation and/or zoom ranges
+[DONE]New script keywords to put annotations (labels, arrows or polygons) on the display at specific locations triggered by generation and/or zoom ranges
 [DONE]multistate rules using just 2 states should use LifeViewer Themes
 [DONE]getState() needs to cope with Bounded Grid and 255 or 256 states (currently bounded grid border showing as 1, should be 0)
 [DONE]multistate rules using > 2 states and < 256 states should have history colour
