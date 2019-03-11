@@ -1,5 +1,6 @@
 Build 308
 - ensure copied RLE comments end with newline
+- comments found after RLE now get copied after RLE
 
 Build 307
 - added more flexibility to rule decoder for B/S style rules

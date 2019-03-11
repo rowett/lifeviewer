@@ -4172,7 +4172,7 @@
 	};
 
 	// add a line from the source to the title
-	PatternManager.addToTitle = function(pattern, source, afterRLE) {
+	PatternManager.addToTitle = function(pattern, prefix, source, afterRLE) {
 		// end of line index
 		var endIndex = source.indexOf("\n"),
 			text = "";
@@ -4190,9 +4190,9 @@
 
 		// add to raw titles
 		if (afterRLE) {
-			pattern.afterTitle += text + "\n";
+			pattern.afterTitle += prefix + text + "\n";
 		} else {
-			pattern.beforeTitle += "#C " + text + "\n";
+			pattern.beforeTitle += prefix + text + "\n";
 		}
 
 		// return the length added
@@ -4970,7 +4970,9 @@
 				}
 
 				// add to title
-				index += this.addToTitle(pattern, source.substring(index), false);
+				if (current !== "\n") {
+					index += this.addToTitle(pattern, "#" + current + " ", source.substring(index), decoded);
+				}
 				break;
 
 			// found size and rule definition
@@ -4991,7 +4993,7 @@
 				// check if already decoded
 				if (decoded) {
 					// add to title
-					index += this.addToTitle(pattern, source.substring(index), true);
+					index += this.addToTitle(pattern, "", source.substring(index), true);
 				} else {
 					// mark decoded
 					decoded = true;
