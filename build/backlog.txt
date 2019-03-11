@@ -6,16 +6,11 @@ Investigate:
     Half-integer Wolfram rules
     LtL Margolus rules
     Grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
-    #CXRLE Pos limits
 
 Planned:
     User preferences
 
 In progress:
-[STARTED]Multiverse
-    - new UI controls to select universe
-    [DONE]extend Controller to provide access to all patterns on a page
-    [DONE]new meta keyword "multi" to switch to multiverse mode
 [STARTED]Pattern Editor
     - ability to define rule
     - improved LifeHistory drawing modes
@@ -30,6 +25,8 @@ In progress:
     [DONE]convert current pattern to RLE (for Ctrl-C Copy)
 
 Complete:
+[DONE]#CXRLE Pos limits
+[DONE]Multiverse
 [DONE]Alternating rules
 [DONE]LtL, HROT and Generations fix patterns hitting boundary (use DELETERANGE rather than just clear)
 [DONE]Memory footprint reduction

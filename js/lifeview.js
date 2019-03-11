@@ -12814,12 +12814,6 @@
 				neededHeight = pattern.height;
 			}
 
-			// add CXRLE Pos if defined
-			if (this.posDefined) {
-				this.xOffset += this.posXOffset;
-				this.yOffset += this.posYOffset;
-			}
-
 			// check if the grid is smaller than the pattern and/or bounded grid plus the maximum step speed
 			borderSize = ViewConstants.maxStepSpeed;
 			if (this.engine.isHROT) {
@@ -12838,6 +12832,29 @@
 					borderSize = ViewConstants.maxStepSpeed;
 				}
 			}
+
+			// add CXRLE Pos if defined
+			if (this.posDefined) {
+				i = this.engine.maxGridSize / 2 - borderSize;
+				if (this.posXOffset < -i) {
+					this.posXOffset = -i;
+				} else {
+					if (this.posXOffset >= i) {
+						this.posXOffset = i - 1;
+					}
+				}
+				if (this.posYOffset < -i) {
+					this.posYOffset = -i;
+				} else {
+					if (this.posYOffset >= i) {
+						this.posYOffset = i - 1;
+					}
+				}
+				this.xOffset += this.posXOffset;
+				this.yOffset += this.posYOffset;
+			}
+
+			// grow the grid if the pattern is too big to fit
 			while (this.engine.width < this.engine.maxGridSize && ((neededWidth + borderSize + Math.abs(this.xOffset) * 2) >= this.engine.width || (neededHeight + borderSize + Math.abs(this.yOffset) * 2) >= this.engine.height)) {
 				// grow the grid
 				this.engine.growGrid();
