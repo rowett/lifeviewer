@@ -1005,8 +1005,9 @@
 							context.strokeStyle = current.colour;
 						}
 
-						// set round line cap
+						// set round line cap and join
 						context.lineCap = "round";
+						context.lineJoin = "round";
 
 						// compute the head position
 						if (headSize > 0) {
@@ -1233,8 +1234,9 @@
 							}
 						}
 
-						// set round line cap
+						// set round line cap and join
 						context.lineCap = "round";
+						context.lineJoin = "round";
 
 						// draw polygon layer
 						if (shadowOffset > 0) {
