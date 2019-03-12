@@ -4182,8 +4182,13 @@
 			endIndex = source.length;
 		}
 
+		// check if first character was space
+		if (source[0] === " ") {
+			prefix += " ";
+		}
+
 		// get the line of text
-		text = source.substring(0, endIndex).trim();
+		text += source.substring(0, endIndex).trim();
 
 		// add to title
 		pattern.title += text + " ";
@@ -4970,8 +4975,10 @@
 				}
 
 				// add to title
-				if (current !== "\n") {
-					index += this.addToTitle(pattern, "#" + current + " ", source.substring(index), decoded);
+				if (current === "\n") {
+					index += this.addToTitle(pattern, "#", source.substring(index), decoded);
+				} else {
+					index += this.addToTitle(pattern, "#" + current, source.substring(index), decoded);
 				}
 				break;
 
