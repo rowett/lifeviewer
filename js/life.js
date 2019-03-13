@@ -643,7 +643,28 @@
 			xa4 = 0, ya4 = 0,
 			xa5 = 0, ya5 = 0,
 			coords = this.hexCells,
-			colours = this.hexColours;
+			colours = this.hexColours,
+			leftX = zoomBox.leftX,
+			rightX = zoomBox.rightX,
+			bottomY = zoomBox.bottomY,
+			topY = zoomBox.topY;
+
+		// use bounded grid if defined
+		if (this.boundedGridType !== -1) {
+		    // bounded grid top left
+		    leftX = Math.round((this.width - this.boundedGridWidth) / 2);
+		    bottomY = Math.round((this.height - this.boundedGridHeight) / 2);
+
+		    // bounded grid bottom right
+		    rightX = leftX + this.boundedGridWidth - 1;
+			topY = bottomY + this.boundedGridHeight - 1;
+
+			// expand to include bounded grid cells
+			leftX -= 1;
+			rightX += 1;
+			bottomY -= 1;
+			topY += 1;
+		}
 
 		// create hexagon coordinates
 		k = pi3 / 2;
@@ -666,10 +687,10 @@
 		this.context.lineJoin = "round";
 		j = 0;
 		k = 0;
-		for (y = zoomBox.bottomY; y <= zoomBox.topY; y += 1) {
+		for (y = bottomY; y <= topY; y += 1) {
 			colourRow = colourGrid[y];
 			cy = y - h2;
-			for (x = zoomBox.leftX; x <= zoomBox.rightX; x += 1) {
+			for (x = leftX; x <= rightX; x += 1) {
 				state = colourRow[x];
 				if (state > 0) {
 					colours[j] = state;
@@ -11030,6 +11051,7 @@
 			if (this.displayGrid && this.canDisplayGrid()) {
 				this.drawGridLines();
 			}
+			this.createPixelColours(1);
 		} else {
 			// create small colour grids if zoomed out
 			this.createSmallColourGrids();
