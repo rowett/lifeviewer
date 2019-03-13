@@ -648,8 +648,8 @@
 		// create hexagon coordinates
 		k = pi3 / 2;
 		for (j = 0; j <= 5; j += 1) {
-			xa[j] = Math.cos(k) * 0.57735 * 1.02;
-			ya[j] = Math.sin(k) * 0.57735 * 1.19;
+			xa[j] = Math.cos(k) * 0.57735 * 0.98;
+			ya[j] = Math.sin(k) * 0.57735 * 1.14;
 			xa[j] += ya[j] / 2;
 			k += pi3;
 		}
