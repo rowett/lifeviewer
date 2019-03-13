@@ -8,11 +8,14 @@
 	"use strict";
 
 	// define globals
-	/* global Keywords littleEndian BoundingBox AliasManager PatternManager Allocator Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager HROT ViewConstants */
+	/* global Keywords littleEndian BoundingBox AliasManager PatternManager Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager HROT ViewConstants */
 
 	// Life constants
 	/** @const */
 	var LifeConstants = {
+		// hex cell coordinate buffer size
+		/** @const {number} */ hexCellBufferSize : 8192,
+
 		// remove pattern cell buffer (must be power of 2)
 		/** @const {number} */ removePatternBufferSize : 4096,
 
@@ -607,9 +610,169 @@
 		// HROT engine
 		this.HROT = new HROT(this.allocator, this.width, this.height, this);
 
+		// hex cell coordinates
+		this.hexCells = this.allocator.allocate(Float32, 12 * LifeConstants.hexCellBufferSize, "Life.hexCells");
+
+		// hex cell colours
+		this.hexColours = this.allocator.allocate(Uint8, LifeConstants.hexCellBufferSize, "Life.hexColours");
+
+		// number of hex cells
+		this.numHexCells = 0;
+
 		// whether pattern dirty (just edited)
 		this.dirty = false;
 	}
+
+	// draw hexagons 
+	Life.prototype.drawHexagons = function() {
+		// save the current polygon list
+		var colourGrid = this.colourGrid,
+			colourRow = null,
+			zoomBox = this.historyBox,
+			x = 0, y = 0, j = 0, k = 0,
+			cx = 0, cy = 0,
+			w2 = this.width / 2 - 0.25,
+			h2 = this.height / 2,
+			pi3 = Math.PI / 3,
+			xa = [], ya = [],
+			state = 0,
+			xa0 = 0, ya0 = 0,
+			xa1 = 0, ya1 = 0,
+			xa2 = 0, ya2 = 0,
+			xa3 = 0, ya3 = 0,
+			xa4 = 0, ya4 = 0,
+			xa5 = 0, ya5 = 0,
+			coords = this.hexCells,
+			colours = this.hexColours;
+
+		// create hexagon coordinates
+		k = pi3 / 2;
+		for (j = 0; j <= 5; j += 1) {
+			xa[j] = Math.cos(k) * 0.57735 * 1.02;
+			ya[j] = Math.sin(k) * 0.57735 * 1.19;
+			xa[j] += ya[j] / 2;
+			k += pi3;
+		}
+		xa0 = xa[0], ya0 = ya[0];
+		xa1 = xa[1], ya1 = ya[1];
+		xa2 = xa[2], ya2 = ya[2];
+		xa3 = xa[3], ya3 = ya[3];
+		xa4 = xa[4], ya4 = ya[4];
+		xa5 = xa[5], ya5 = ya[5];
+
+		// create hexagons from live cells
+		this.context.lineWidth = 1;
+		this.context.lineCap = "round";
+		this.context.lineJoin = "round";
+		j = 0;
+		k = 0;
+		for (y = zoomBox.bottomY; y <= zoomBox.topY; y += 1) {
+			colourRow = colourGrid[y];
+			cy = y - h2;
+			for (x = zoomBox.leftX; x <= zoomBox.rightX; x += 1) {
+				state = colourRow[x];
+				if (state > 0) {
+					colours[j] = state;
+					cx = x - w2;
+					coords[k] = xa0 + cx;
+					coords[k + 1] = ya0 + cy;
+					coords[k + 2] = xa1 + cx;
+					coords[k + 3] = ya1 + cy;
+					coords[k + 4] = xa2 + cx;
+					coords[k + 5] = ya2 + cy;
+					coords[k + 6] = xa3 + cx;
+					coords[k + 7] = ya3 + cy;
+					coords[k + 8] = xa4 + cx;
+					coords[k + 9] = ya4 + cy;
+					coords[k + 10] = xa5 + cx;
+					coords[k + 11] = ya5 + cy;
+					k += 12;
+					j += 1;
+				}
+				// check if buffer is full
+				if (j === LifeConstants.hexCellBufferSize) {
+					// draw and clear buffer
+					this.numHexCells = j;
+					this.drawHexCells();
+					j = 0;
+					k = 0;
+				}
+			}
+		}
+		this.numHexCells = j;
+		if (j > 0) {
+			this.drawHexCells();
+		}
+	};
+
+	// draw hex cells
+	Life.prototype.drawHexCells = function() {
+		var i = 0,
+			context = this.context,
+			xOff = this.width / 2 - this.xOff - this.originX,
+			yOff = this.height / 2 - this.yOff - this.originY,
+			zoom = this.zoom * this.originZ,
+			halfDisplayWidth = this.displayWidth / 2,
+			halfDisplayHeight = this.displayHeight / 2,
+			x = 0, y = 0,
+			cx = 0, cy = 0,
+			cx2 = 0, cy2 = 0,
+			hexAdjust = this.isHex ? -(this.height >> 2) : 0,
+			coord = 0, cx0 = 0, cy0 = 0,
+			target = 0,
+			state = 0, lastState = -1,
+			coords = this.hexCells,
+			hexCells = this.numHexCells,
+			colours = this.hexColours;
+
+		// adjust for hex
+		xOff += yOff / 2;
+		xOff = xOff + hexAdjust + 0.5;
+		yOff = yOff + 0.5;
+
+		// draw each hexagon
+		coord = 0;
+		target = 12;
+		context.beginPath();
+		for (i = 0; i < hexCells; i += 1) {
+			// get hexagon start position
+			cx0 = coords[coord];
+			cy0 = coords[coord + 1];
+			cy = cy0 + yOff;
+			cx = cx0 + xOff - cy / 2;
+			coord += 2;
+
+			// draw the hexagon
+			y = (cy * zoom) + halfDisplayHeight;
+			x = (cx * zoom) + halfDisplayWidth;
+			cy2 = (coords[coord + 1] - cy0) * zoom;
+			cx2 = (coords[coord] - cx0) * zoom - cy2 / 2;
+			coord += 2;
+	
+			// set line colour
+			state = colours[i];
+			if (state !== lastState) {
+				lastState = state;
+				if (i > 0) {
+					context.fill();
+					context.beginPath();
+				}
+				context.fillStyle = this.cellColourStrings[state];
+			}
+
+			// draw hexagon
+			context.moveTo(x, y);
+			context.lineTo(cx2 + x, cy2 + y);
+			while (coord < target) {
+				cy2 = (coords[coord + 1] - cy0) * zoom;
+				cx2 = (coords[coord] - cx0) * zoom - cy2 / 2;
+				coord += 2;
+				context.lineTo(cx2 + x, cy2 + y);
+			}
+			target += 12;
+		}
+		context.fill();
+	};
 
 	// convert grid to RLE
 	Life.prototype.asRLE = function(view, me, addComments) {
@@ -10810,6 +10973,10 @@
 
 	// project the life grid onto the canvas
 	Life.prototype.renderGrid = function() {
+		var colour0 = this.pixelColours[0],
+			data32 = this.data32,
+			i = 0, l = 0;
+
 		// check if colour is changing
 		if (this.colourChange) {
 			this.createColours();
@@ -10852,60 +11019,73 @@
 			this.drawBoundedGridBorder(this.boundedBorderColour);
 		}
 
-		// create small colour grids if zoomed out
-		this.createSmallColourGrids();
-
-		// check if zoom < 0.125x
-		if (this.camZoom < 0.125) {
-			// check for LifeHistory overlay
-			if (this.drawOverlay) {
-				// render the grid with the overlay on top
-				this.renderGridOverlayProjection(this.smallOverlayGrid16, this.smallColourGrid16, 15);
-			} else {
-				// render using small colour grid 16x16
-				this.renderGridProjection(this.smallColourGrid16, this.smallColourGrid16, 15);
+		if (this.isHex && this.camZoom >= 4) {
+			// clear grid
+			i = 0;
+			l = data32.length;
+			while (i < l) {
+				data32[i] = colour0;
+				i += 1;
+			}
+			if (this.displayGrid && this.canDisplayGrid()) {
+				this.drawGridLines();
 			}
 		} else {
-			// check if zoom < 0.25x
-			if (this.camZoom < 0.25) {
+			// create small colour grids if zoomed out
+			this.createSmallColourGrids();
+
+			// check if zoom < 0.125x
+			if (this.camZoom < 0.125) {
 				// check for LifeHistory overlay
 				if (this.drawOverlay) {
 					// render the grid with the overlay on top
-					this.renderGridOverlayProjection(this.smallOverlayGrid8, this.smallColourGrid8, 7);
+					this.renderGridOverlayProjection(this.smallOverlayGrid16, this.smallColourGrid16, 15);
 				} else {
-					// render using small colour grid 8x8
-					this.renderGridProjection(this.smallColourGrid8, this.smallColourGrid8, 7);
+					// render using small colour grid 16x16
+					this.renderGridProjection(this.smallColourGrid16, this.smallColourGrid16, 15);
 				}
 			} else {
-				// check if zoom < 0.5x
-				if (this.camZoom < 0.5) {
+				// check if zoom < 0.25x
+				if (this.camZoom < 0.25) {
 					// check for LifeHistory overlay
 					if (this.drawOverlay) {
 						// render the grid with the overlay on top
-						this.renderGridOverlayProjection(this.smallOverlayGrid4, this.smallColourGrid4, 3);
+						this.renderGridOverlayProjection(this.smallOverlayGrid8, this.smallColourGrid8, 7);
 					} else {
-						// render using small colour grid 4x4
-						this.renderGridProjection(this.smallColourGrid4, this.smallColourGrid4, 3);
+						// render using small colour grid 8x8
+						this.renderGridProjection(this.smallColourGrid8, this.smallColourGrid8, 7);
 					}
 				} else {
-					// check for zoom < 1x
-					if (this.camZoom < 1) {
+					// check if zoom < 0.5x
+					if (this.camZoom < 0.5) {
 						// check for LifeHistory overlay
 						if (this.drawOverlay) {
 							// render the grid with the overlay on top
-							this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid2, 1);
+							this.renderGridOverlayProjection(this.smallOverlayGrid4, this.smallColourGrid4, 3);
 						} else {
-							// render using small colour grid 2x2
-							this.renderGridProjection(this.smallColourGrid2, this.smallColourGrid2, 1);
+							// render using small colour grid 4x4
+							this.renderGridProjection(this.smallColourGrid4, this.smallColourGrid4, 3);
 						}
 					} else {
-						// check for LifeHistory overlay
-						if (this.drawOverlay) {
-							// render the grid with the overlay on top
-							this.renderGridOverlayProjection(this.overlayGrid, this.colourGrid, 0);
+						// check for zoom < 1x
+						if (this.camZoom < 1) {
+							// check for LifeHistory overlay
+							if (this.drawOverlay) {
+								// render the grid with the overlay on top
+								this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid2, 1);
+							} else {
+								// render using small colour grid 2x2
+								this.renderGridProjection(this.smallColourGrid2, this.smallColourGrid2, 1);
+							}
 						} else {
-							// render the grid
-							this.renderGridProjection(this.colourGrid, this.colourGrid, 0);
+							// check for LifeHistory overlay
+							if (this.drawOverlay) {
+								// render the grid with the overlay on top
+								this.renderGridOverlayProjection(this.overlayGrid, this.colourGrid, 0);
+							} else {
+								// render the grid
+								this.renderGridProjection(this.colourGrid, this.colourGrid, 0);
+							}
 						}
 					}
 				}
