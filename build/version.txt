@@ -3,6 +3,7 @@ Build 310
 - hotkey Alt+"/" to toggle hexagonal/square cells for hex display
 - new script command [[ SQUARECELLS ]] to set square cells for hex display
 - new script command [[ HEXCELLS ]] to set hexagonal cells for hex display (the default)
+- new bottom right menu button "Hexagon" to toggle hexagonal/square cells
 
 Build 309
 - annotation positions were not correct in hex display mode
