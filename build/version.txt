@@ -1,3 +1,9 @@
+Build 310
+- make hexagons more regular shaped
+- hotkey Alt+"/" to toggle hexagonal/square cells for hex display
+- new script command [[ SQUARECELLS ]] to set square cells for hex display
+- new script command [[ HEXCELLS ]] to set hexagonal cells for hex display (the default)
+
 Build 309
 - annotation positions were not correct in hex display mode
 - in hex display mode cells are now drawn as hexagons at zoom >= 4

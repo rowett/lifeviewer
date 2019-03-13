@@ -91,6 +91,12 @@
 		// square display
 		/** @const {string} */ squareDisplayWord : "SQUAREDISPLAY",
 
+		// hexagonal cells
+		/** @const {string} */ hexCellsWord : "HEXCELLS",
+
+		// square cells
+		/** @const {string} */ squareCellsWord : "SQUARECELLS",
+
 		// integer zoom
 		/** @const {string} */ integerZoomWord : "INTEGERZOOM",
 

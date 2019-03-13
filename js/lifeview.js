@@ -187,7 +187,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 309,
+		/** @const {number} */ versionBuild : 310,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1135,6 +1135,9 @@
 
 		// hex toggle button
 		this.hexButton = null;
+
+		// hex cell toggle button
+		this.hexCellButton = null;
 
 		// graph toggle button
 		this.graphButton = null;
@@ -2667,7 +2670,7 @@
 
 		// draw grid
 		me.engine.drawGrid();
-		if (me.engine.isHex && me.engine.zoom >= 4) {
+		if (me.engine.useHexagons && me.engine.isHex && me.engine.zoom >= 4) {
 			me.engine.drawHexagons();
 		}
 
@@ -2989,6 +2992,7 @@
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
 		this.closeButton.deleted = !(this.isInPopup || this.scriptErrors.length);
 		this.hexButton.deleted = hide;
+		this.hexCellButton.deleted = hide;
 		this.labelButton.deleted = hide;
 		this.graphButton.deleted = hide;
 		this.infoBarButton.deleted = hide;
@@ -3498,6 +3502,17 @@
 		}
 
 		return [me.showLabels];
+	};
+
+	// toggle hexagonal cells
+	View.prototype.viewHexCellToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			// toggle cell shape
+			me.engine.useHexagons = newValue[0];
+		}
+
+		return [me.engine.useHexagons];
 	};
 
 	// toggle hex display
@@ -5557,6 +5572,11 @@
 								me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
 							}
 							break;
+						case 191:
+							// switch between hexagonal and square cells for hex display
+							me.hexCellButton.current = me.viewHexCellToggle([!me.engine.useHexagons], true, me);
+							me.menuManager.notification.notify("Hex display uses " + (me.engine.useHexagons ? "Hexagons" : "Squares"), 15, 40, 15, true);
+							break;
 					}
 				}
 
@@ -7194,8 +7214,12 @@
 		this.hexButton = this.viewMenu.addListItem(this.viewHexToggle, Menu.northWest, 80, 100, 80, 40, ["Hex"], [this.engine.isHex], Menu.multi);
 		this.hexButton.toolTip = ["toggle hex display"];
 
+		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.north, 0, 100, 80, 40, ["Hexagon"], [this.engine.useHexagons], Menu.multi);
+		this.hexCellButton.toolTip = ["toggle hexagonal cells"];
+		this.hexCellButton.font = "18px Arial";
+
 		// label toggle button
-		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.north, 0, 160, 80, 40, ["Labels"], [this.showLabels], Menu.multi);
+		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.north, 0, 220, 80, 40, ["Labels"], [this.showLabels], Menu.multi);
 		this.labelButton.toolTip = ["toggle labels"];
 
 		// graph toggle button
@@ -7203,7 +7227,7 @@
 		this.graphButton.toolTip = ["toggle graph display"];
 
 		// infobar toggle button
-		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.north, 0, 100, 80, 40, ["Info"], [this.infoBarEnabled], Menu.multi);
+		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.north, 0, 160, 80, 40, ["Info"], [this.infoBarEnabled], Menu.multi);
 		this.infoBarButton.toolTip = ["toggle InfoBar"];
 
 		// historyfit toggle button
@@ -7298,7 +7322,7 @@
 		this.statesSlider.toolTip = "select drawing states range";
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.labelButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.hexCellButton, this.labelButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -7483,6 +7507,8 @@
 			case Keywords.bezierWord:
 			case Keywords.hexDisplayWord:
 			case Keywords.squareDisplayWord:
+			case Keywords.hexCellsWord:
+			case Keywords.squareCellsWord:
 			case Keywords.randomSeedWord:
 			case Keywords.deleteRangeWord:
 			case Keywords.poiWord:
@@ -11070,6 +11096,20 @@
 							itemValid = true;
 							break;
 
+						// hex cells
+						case Keywords.hexCellsWord:
+							// set hexagonal cells
+							this.engine.useHexagons = true;
+							itemValid = true;
+							break;
+
+						// square cells
+						case Keywords.squareCellsWord:
+							// set square cells
+							this.engine.useHexagons = false;
+							itemValid = true;
+							break;
+
 						// square display
 						case Keywords.squareDisplayWord:
 							// set square display mode
@@ -12392,6 +12432,9 @@
 				}
 			}
 
+			// use hexagons for hex dispaly
+			this.engine.useHexagons = true;
+
 			// check if the neighbourhood is hex
 			this.engine.isHex = pattern.isHex;
 			this.engine.patternDisplayMode = pattern.isHex;
@@ -13080,6 +13123,9 @@
 
 		// set the hex UI control
 		this.hexButton.current = [this.engine.isHex];
+
+		// set the hex cell UI control
+		this.hexCellButton.current = [this.engine.useHexagons];
 
 		// set the label UI control
 		if (this.waypointManager.numAnnotations() === 0) {

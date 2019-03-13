@@ -273,6 +273,9 @@
 		// whether neighbourhood is hex
 		this.isHex = false;
 
+		// whether to draw cells as hexagons in hex display mode
+		this.useHexagons = true;
+
 		// pattern neighbourhood
 		this.patternDisplayMode = false;
 
@@ -634,6 +637,8 @@
 			w2 = this.width / 2 - 0.25,
 			h2 = this.height / 2,
 			pi3 = Math.PI / 3,
+			yEdge = 0.5 / Math.cos(pi3 / 2), 
+			xEdge = (Math.sqrt(3) / 4) / Math.cos(pi3 / 2),
 			xa = [], ya = [],
 			state = 0,
 			xa0 = 0, ya0 = 0,
@@ -669,17 +674,23 @@
 		// create hexagon coordinates
 		k = pi3 / 2;
 		for (j = 0; j <= 5; j += 1) {
-			xa[j] = Math.cos(k) * 0.57735 * 0.98;
-			ya[j] = Math.sin(k) * 0.57735 * 1.14;
+			xa[j] = Math.cos(k) * xEdge;
+			ya[j] = Math.sin(k) * yEdge;
 			xa[j] += ya[j] / 2;
 			k += pi3;
 		}
-		xa0 = xa[0], ya0 = ya[0];
-		xa1 = xa[1], ya1 = ya[1];
-		xa2 = xa[2], ya2 = ya[2];
-		xa3 = xa[3], ya3 = ya[3];
-		xa4 = xa[4], ya4 = ya[4];
-		xa5 = xa[5], ya5 = ya[5];
+		xa0 = xa[0];
+		ya0 = ya[0];
+		xa1 = xa[1];
+		ya1 = ya[1];
+		xa2 = xa[2];
+		ya2 = ya[2];
+		xa3 = xa[3];
+		ya3 = ya[3];
+		xa4 = xa[4];
+		ya4 = ya[4];
+		xa5 = xa[5];
+		ya5 = ya[5];
 
 		// create hexagons from live cells
 		this.context.lineWidth = 1;
@@ -11040,7 +11051,7 @@
 			this.drawBoundedGridBorder(this.boundedBorderColour);
 		}
 
-		if (this.isHex && this.camZoom >= 4) {
+		if (this.useHexagons && this.isHex && this.camZoom >= 4) {
 			// clear grid
 			i = 0;
 			l = data32.length;
