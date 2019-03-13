@@ -3002,7 +3002,7 @@
 										if (pattern.aliasName === "") {
 											pattern.aliasName = pattern.ruleName;
 										}
-										if (firstPattern.aliasName == "") {
+										if (firstPattern.aliasName === "") {
 											firstPattern.aliasName = firstPattern.ruleName;
 										}
 										pattern.aliasName = firstPattern.aliasName + PatternManager.altRuleSeparator + pattern.aliasName;

@@ -198,6 +198,9 @@
 		// allocator
 		this.allocator = new Allocator();
 
+		// cell colour strings
+		this.cellColourStrings = [];
+
 		// before and after RLE comments
 		this.beforeTitle = "";
 		this.afterTitle = "";
@@ -2552,6 +2555,7 @@
 		pixelColours = this.pixelColours,
 		gridLineRaw = this.gridLineRaw,
 		gridLineBoldRaw = this.gridLineBoldRaw,
+		colourStrings = this.cellColourStrings,
 		i = 0;
 
 		// check for Generations or HROT
@@ -2560,6 +2564,7 @@
 			if (this.littleEndian) {
 				for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
 					pixelColours[i] = (255 << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
+					colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
 				}
 			}
 		} else {
@@ -2568,31 +2573,37 @@
 				// create dead colours
 				for (i = 0; i < this.aliveStart; i += 1) {
 					pixelColours[i] = (255 << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
+					colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
 				}
 
 				// create alive colours
 				for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
 					pixelColours[i] = (255 << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+					colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
 				}
 
 				// create remaining multi-state colours
 				for (i = this.aliveMax + 1; i < 256; i += 1) {
 					pixelColours[i] = (255 << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+					colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
 				}
 			} else {
 				// create dead colours
 				for (i = 0; i < this.aliveStart; i += 1) {
 					pixelColours[i] = (redChannel[i] << 24) | (greenChannel[i] << 16) | (blueChannel[i] << 8) | 255;
+					colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
 				}
 
 				// create alive colours
 				for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
 					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
+					colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
 				}
 
 				// create remaining multi-state colours
 				for (i = this.aliveMax + 1; i < 256; i += 1) {
 					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
+					colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
 				}
 			}
 		}
@@ -2614,6 +2625,7 @@
 			} else {
 				pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
 			}
+			colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
 		}
 	};
 

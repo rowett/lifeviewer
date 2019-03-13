@@ -2251,6 +2251,56 @@
 		}
 	};
 
+	// create hex polygons
+	View.prototype.createCellPolygons = function(me) {
+		// save the current polygon list
+		var saveList = me.waypointManager.polyList,
+			hexList = [],
+			coords = [],
+			colourGrid = me.engine.colourGrid,
+			colourRow = null,
+			zoomBox = me.engine.zoomBox,
+			x = 0, y = 0, j = 0, k = 0,
+			cx = 0, cy = 0,
+			w2 = me.engine.width / 2 - 4.25,
+			h2 = me.engine.height / 2 - 2,
+			pi3 = Math.PI / 3,
+			xa = [], ya = [],
+			state = 0,
+			cellColourStrings = me.engine.cellColourStrings;
+
+		// do nothing if not in hex display and zoom >= 4
+		if (me.engine.isHex && me.engine.zoom >= 4) {
+			// create hexagon coordinates
+			k = pi3 / 2;
+			for (j = 0; j <= 5; j += 1) {
+				xa[j] = Math.cos(k) * 0.57735;
+				ya[j] = Math.sin(k) * 0.57735 * 1.16;
+				xa[j] += ya[j] / 2;
+				k += pi3;
+			}
+	
+			// create hexagons from live cells
+			j = 0;
+			for (y = zoomBox.bottomY; y <= zoomBox.topY; y += 1) {
+				colourRow = colourGrid[y];
+				cy = y - h2;
+				for (x = zoomBox.leftX; x <= zoomBox.rightX; x += 1) {
+					state = colourRow[x];
+					if (state > 1) {
+						cx = x - w2;
+						coords = [xa[0] + cx, ya[0] + cy, xa[1] + cx, ya[1] + cy, xa[2] + cx, ya[2] + cy, xa[3] + cx, ya[3] + cy, xa[4] + cx, ya[4] + cy, xa[5] + cx, ya[5] + cy];
+						hexList[j] = me.waypointManager.createPolygon(coords, true, me.engine.zoom, cellColourStrings[state], 1, 1, -1, -1, -1, 0, false, false, -1, -1, -1, 0, 0);
+						j += 1;
+					}
+				}
+			}
+			me.waypointManager.polyList = hexList;
+			me.waypointManager.drawPolygons(me);
+			me.waypointManager.polyList = saveList;
+		}
+	};
+
 	// update view mode for normal processing
 	View.prototype.viewAnimateNormal = function(timeSinceLastUpdate, me) {
 		// get the current time and mouse wheel
@@ -2728,6 +2778,7 @@
 		}
 
 		// draw any arrows and labels
+		this.createCellPolygons(me);
 		if (me.showLabels) {
 			me.waypointManager.drawAnnotations(me);
 		}
@@ -3985,7 +4036,7 @@
 					name = "Dead";
 				} else {
 					me.drawState = me.engine.multiNumStates - newValue;
-					if (newValue == 1) {
+					if (newValue === 1) {
 						name = "Alive";
 					} else {
 						name = "Dying " + String(newValue - 1);
@@ -13355,7 +13406,7 @@
 		// display universe if in multiverse mode
 		if (DocConfig.multi) {
 			name = this.patternName;
-			if (name == "") {
+			if (name === "") {
 				name = "Universe " + (this.universe + 1);
 			}
 			this.menuManager.notification.notify(name, 15, 120, 15, true);

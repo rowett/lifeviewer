@@ -1,3 +1,7 @@
+Build 309
+- annotation positions were not correct in hex display mode
+- in hex display mode cells are now drawn as hexagons at zoom >= 4
+
 Build 308
 - ensure copied RLE comments end with newline
 - comments found after RLE now get copied after RLE

@@ -853,6 +853,11 @@
 			shadowOffset = 0,
 			xLeft = 0, yLeft = 0, xRight = 0, yRight = 0;
 
+		// adjust for hex
+		if (engine.isHex) {
+			xOff += yOff / 2;
+		}
+
 		// use the shadow colour if drawing shadows
 		if (drawingShadows) {
 			context.strokeStyle = ViewConstants.arrowShadowColour;
@@ -940,8 +945,8 @@
 						context.globalAlpha = alphaValue * current.alpha * timeAlpha * distAlpha;
 
 						// get arrow start position
-						cx = current.x1 + xOff + hexAdjust - (view.patternWidth >> 1) + 0.5;
 						cy = current.y1 + yOff - (view.patternHeight >> 1) + 0.5;
+						cx = current.x1 + xOff + hexAdjust - (view.patternWidth >> 1) + 0.5;
 						
 						// check for fixed position
 						if (!current.positionLocked) {
@@ -974,12 +979,20 @@
 							cx = radius * Math.cos(theta * (Math.PI / 180));
 							cy = radius * Math.sin(theta * (Math.PI / 180));
 						}
+
+						// adjust for hex
+						if (engine.isHex) {
+							cx -= cy / 2;
+						}
 	
 						// draw the arrow
 						y = (cy * zoom) + halfDisplayHeight;
 						x = (cx * zoom) + halfDisplayWidth;
 						cx2 = (current.x2 - current.x1) * zoom;
 						cy2 = (current.y2 - current.y1) * zoom;
+						if (engine.isHex) {
+							cx2 -= cy2 / 2;
+						}
 	
 						// compute arrow head size
 						if (current.headMultiple === 0) {
@@ -1083,6 +1096,11 @@
 		if (drawingShadows) {
 			context.strokeStyle = ViewConstants.polyShadowColour;
 			context.fillStyle = ViewConstants.polyShadowColour;
+		}
+
+		// adjust for hex
+		if (engine.isHex) {
+			xOff += yOff / 2;
 		}
 
 		// draw each polygon
@@ -1205,12 +1223,20 @@
 							cx = radius * Math.cos(theta * (Math.PI / 180));
 							cy = radius * Math.sin(theta * (Math.PI / 180));
 						}
+
+						// adjust for hex
+						if (engine.isHex) {
+							cx -= cy / 2;
+						}
 	
 						// draw the polygon
 						y = (cy * zoom) + halfDisplayHeight;
 						x = (cx * zoom) + halfDisplayWidth;
 						cx2 = (coords[coord] - coords[0]) * zoom;
 						cy2 = (coords[coord + 1] - coords[1]) * zoom;
+						if (engine.isHex) {
+							cx2 -= cy2 / 2;
+						}
 						coord += 2;
 	
 						// rotate context for drawing
@@ -1248,6 +1274,9 @@
 						while (coord < length) {
 							cx2 = (coords[coord] - coords[0]) * zoom;
 							cy2 = (coords[coord + 1] - coords[1]) * zoom;
+							if (engine.isHex) {
+								cx2 -= cy2 / 2;
+							}
 							coord += 2;
 							context.lineTo(cx2, cy2);
 						}
@@ -1303,6 +1332,11 @@
 			shadowOffset = 0,
 			rangeFromTarget = 0,
 			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0;
+
+		// adjust for hex
+		if (engine.isHex) {
+			xOff += yOff / 2;
+		}
 
 		// draw each label
 		for (i = 0; i < this.labelList.length; i += 1) {
@@ -1417,6 +1451,11 @@
 							cy = radius * Math.sin(theta * (Math.PI / 180));
 						}
 	
+						// adjust for hex
+						if (engine.isHex) {
+							cx -= cy / 2;
+						}
+
 						// draw each line of the label
 						message = current.message;
 						index = message.indexOf("\\n");
