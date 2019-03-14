@@ -659,7 +659,8 @@
 			xOff = this.width / 2 - this.xOff - this.originX + 0.5 -(this.height >> 2) + yOff / 2,
 			zoom = this.zoom * this.originZ,
 			displayY = 0, displayX = 0,
-			xOffset = 0;
+			xOffset = 0,
+			linearZoom = 1;
 
 		// use bounded grid if defined
 		if (this.boundedGridType !== -1) {
@@ -738,7 +739,7 @@
 						if (j === LifeConstants.hexCellBufferSize) {
 							// draw and clear buffer
 							this.numHexCells = j;
-							this.drawHexCells();
+							this.drawHexCells(true);
 							j = 0;
 							k = 0;
 						}
@@ -750,12 +751,87 @@
 		// draw any remaining cells
 		this.numHexCells = j;
 		if (j > 0) {
-			this.drawHexCells();
+			this.drawHexCells(true);
+			j = 0;
+			k = 0;
+		}
+
+		// draw grid if enabled
+		if (this.displayGrid) {
+			// set grid line colour
+			this.context.strokeStyle = "rgb(" + (this.gridLineRaw & 255) + "," + ((this.gridLineRaw >> 8) & 255) + "," + (this.gridLineRaw >> 16) + ")";
+			linearZoom = Math.log(zoom / 4) / Math.log(ViewConstants.maxZoom / 4);
+			this.context.lineWidth = linearZoom * 2 + 1;
+
+			j = 1.15;
+			xa0 *= j;
+			ya0 *= j;
+			xa1 *= j;
+			ya1 *= j;
+			xa2 *= j;
+			ya2 *= j;
+			xa3 *= j;
+			ya3 *= j;
+			xa4 *= j;
+			ya4 *= j;
+			xa5 *= j;
+			ya5 *= j;
+			j = 0;
+
+			// create cell coordinates for window
+			bottomY = (((0 - halfDisplayHeight) / zoom) - yOff + h2) | 0;
+			topY = (((this.displayHeight - halfDisplayHeight) / zoom) - yOff + h2) | 0;
+
+			for (y = bottomY; y <= topY; y += 1) {
+				// clip y to window
+				displayY = ((y + yOff - h2) * zoom) + halfDisplayHeight;
+				if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+					colourRow = colourGrid[y];
+					cy = y - h2;
+					xOffset = xOff - w2 - ((cy + yOff) / 2);
+					leftX = (((0 - halfDisplayWidth) / zoom) - xOffset - zoom) | 0;
+					rightX = (((this.displayWidth - halfDisplayWidth) / zoom) - xOffset + zoom) | 0;
+					for (x = leftX; x <= rightX; x += 1) {
+						displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
+						if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
+							cx = x - w2;
+							coords[k] = xa0 + cx;
+							coords[k + 1] = ya0 + cy;
+							coords[k + 2] = xa1 + cx;
+							coords[k + 3] = ya1 + cy;
+							coords[k + 4] = xa2 + cx;
+							coords[k + 5] = ya2 + cy;
+							coords[k + 6] = xa3 + cx;
+							coords[k + 7] = ya3 + cy;
+							coords[k + 8] = xa4 + cx;
+							coords[k + 9] = ya4 + cy;
+							coords[k + 10] = xa5 + cx;
+							coords[k + 11] = ya5 + cy;
+							k += 12;
+							j += 1;
+						}
+						// check if buffer is full
+						if (j === LifeConstants.hexCellBufferSize) {
+							// draw and clear buffer
+							this.numHexCells = j;
+							this.drawHexCells(false);
+							j = 0;
+							k = 0;
+						}
+					}
+				}
+			}
+
+			// draw any remaining cells
+			this.numHexCells = j;
+			if (j > 0) {
+				this.drawHexCells(false);
+			}
 		}
 	};
 
 	// draw hex cells
-	Life.prototype.drawHexCells = function() {
+	Life.prototype.drawHexCells = function(filled) {
 		var i = 0,
 			context = this.context,
 			xOff = this.width / 2 - this.xOff - this.originX,
@@ -803,10 +879,16 @@
 			if (state !== lastState) {
 				lastState = state;
 				if (i > 0) {
-					context.fill();
+					if (filled) {
+						context.fill();
+					} else {
+						context.stroke();
+					}
 					context.beginPath();
 				}
-				context.fillStyle = this.cellColourStrings[state];
+				if (filled) {
+					context.fillStyle = this.cellColourStrings[state];
+				}
 			}
 
 			// draw hexagon
@@ -819,8 +901,15 @@
 				context.lineTo(cx2 + x, cy2 + y);
 			}
 			target += 12;
+			if (!filled) {
+				context.lineTo(x, y);
+			}
 		}
-		context.fill();
+		if (filled) {
+			context.fill();
+		} else {
+			context.stroke();
+		}
 	};
 
 	// convert grid to RLE
