@@ -3389,6 +3389,32 @@
 
 								// remove the generations part
 								rule = rule.substr(0, generationsIndex);
+
+								// check for Hex rules
+								hexIndex = rule.lastIndexOf(PatternManager.hexPostfix);
+								if ((hexIndex !== -1) && (hexIndex === rule.length - hexLength)) {
+									// rule is a hex type
+									pattern.isHex = true;
+
+									// remove the postfix
+									rule = rule.substr(0, rule.length - hexLength);
+
+									// update the valid rule letters to hex digits
+									validRuleLetters = this.hexDigits;
+								}
+
+								// check for Von Neumann rules
+								vonNeumannIndex = rule.lastIndexOf(PatternManager.vonNeumannPostfix);
+								if ((vonNeumannIndex !== -1) && (vonNeumannIndex === rule.length - vonNeumannLength)) {
+									// rule is a vonNeumann type
+									pattern.isVonNeumann = true;
+
+									// remove the postfix
+									rule = rule.substr(0, rule.length - vonNeumannLength);
+
+									// update the valid rule letters to vonNeumann digits
+									validRuleLetters = this.vonNeumannDigits;
+								}
 							}
 						}
 
