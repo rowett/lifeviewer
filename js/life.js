@@ -766,7 +766,7 @@
 			x = 0, y = 0,
 			cx = 0, cy = 0,
 			cx2 = 0, cy2 = 0,
-			hexAdjust = this.isHex ? -(this.height >> 2) : 0,
+			hexAdjust = -(this.height >> 2),
 			coord = 0, cx0 = 0, cy0 = 0,
 			target = 0,
 			state = 0, lastState = -1,

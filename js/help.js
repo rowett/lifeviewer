@@ -980,6 +980,12 @@
 			itemName = "Square";
 		}
 		y = this.renderHelpLine(view, "Mode", itemName, ctx, x, y, height, helpLine);
+		if (view.engine.useHexagons) {
+			itemName = "Hexagonal";
+		} else {
+			itemName = "Square";
+		}
+		y = this.renderHelpLine(view, "Cells", itemName, ctx, x, y, height, helpLine);
 		if (view.thumbnailEverOn) {
 			y = this.renderHelpLine(view, "Thumbnail", "1/" + view.thumbnailDivisor, ctx, x, y, height, helpLine);
 		}
