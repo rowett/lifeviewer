@@ -1,4 +1,4 @@
-Build 310
+Build 311
 - drawing hexagonal cells is a bit faster
 - added hexagonal grid lines
 - hex or von Neumann rule letter can be before Generations postfix e.g.: B23/S1H/G3
