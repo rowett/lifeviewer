@@ -652,7 +652,10 @@
 			leftX = zoomBox.leftX,
 			rightX = zoomBox.rightX,
 			bottomY = zoomBox.bottomY,
-			topY = zoomBox.topY;
+			topY = zoomBox.topY,
+			yOff = this.height / 2 - this.yOff - this.originY + 0.5,
+			zoom = this.zoom * this.originZ,
+			displayY = 0;
 
 		// use bounded grid if defined
 		if (this.boundedGridType !== -1) {
@@ -699,38 +702,43 @@
 		j = 0;
 		k = 0;
 		for (y = bottomY; y <= topY; y += 1) {
-			colourRow = colourGrid[y];
-			cy = y - h2;
-			for (x = leftX; x <= rightX; x += 1) {
-				state = colourRow[x];
-				if (state > 0) {
-					colours[j] = state;
-					cx = x - w2;
-					coords[k] = xa0 + cx;
-					coords[k + 1] = ya0 + cy;
-					coords[k + 2] = xa1 + cx;
-					coords[k + 3] = ya1 + cy;
-					coords[k + 4] = xa2 + cx;
-					coords[k + 5] = ya2 + cy;
-					coords[k + 6] = xa3 + cx;
-					coords[k + 7] = ya3 + cy;
-					coords[k + 8] = xa4 + cx;
-					coords[k + 9] = ya4 + cy;
-					coords[k + 10] = xa5 + cx;
-					coords[k + 11] = ya5 + cy;
-					k += 12;
-					j += 1;
-				}
-				// check if buffer is full
-				if (j === LifeConstants.hexCellBufferSize) {
-					// draw and clear buffer
-					this.numHexCells = j;
-					this.drawHexCells();
-					j = 0;
-					k = 0;
+			// clip y to window
+			displayY = ((y + yOff - h2) * zoom) + this.displayHeight / 2;
+			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+				colourRow = colourGrid[y];
+				cy = y - h2;
+				for (x = leftX; x <= rightX; x += 1) {
+					state = colourRow[x];
+					if (state > 0) {
+						colours[j] = state;
+						cx = x - w2;
+						coords[k] = xa0 + cx;
+						coords[k + 1] = ya0 + cy;
+						coords[k + 2] = xa1 + cx;
+						coords[k + 3] = ya1 + cy;
+						coords[k + 4] = xa2 + cx;
+						coords[k + 5] = ya2 + cy;
+						coords[k + 6] = xa3 + cx;
+						coords[k + 7] = ya3 + cy;
+						coords[k + 8] = xa4 + cx;
+						coords[k + 9] = ya4 + cy;
+						coords[k + 10] = xa5 + cx;
+						coords[k + 11] = ya5 + cy;
+						k += 12;
+						j += 1;
+					}
+					// check if buffer is full
+					if (j === LifeConstants.hexCellBufferSize) {
+						// draw and clear buffer
+						this.numHexCells = j;
+						this.drawHexCells();
+						j = 0;
+						k = 0;
+					}
 				}
 			}
 		}
+		// draw any remaining cells
 		this.numHexCells = j;
 		if (j > 0) {
 			this.drawHexCells();
@@ -2751,6 +2759,7 @@
 		gridLineRaw = this.gridLineRaw,
 		gridLineBoldRaw = this.gridLineBoldRaw,
 		colourStrings = this.cellColourStrings,
+		needStrings = this.isHex && this.useHexagons,
 		i = 0;
 
 		// check for Generations or HROT
@@ -2759,7 +2768,9 @@
 			if (this.littleEndian) {
 				for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
 					pixelColours[i] = (255 << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
-					colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					if (needStrings) {
+						colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					}
 				}
 			}
 		} else {
@@ -2768,37 +2779,49 @@
 				// create dead colours
 				for (i = 0; i < this.aliveStart; i += 1) {
 					pixelColours[i] = (255 << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
-					colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					if (needStrings) {
+						colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					}
 				}
 
 				// create alive colours
 				for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
 					pixelColours[i] = (255 << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
-					colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					if (this.isHex) {
+						colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					}
 				}
 
 				// create remaining multi-state colours
 				for (i = this.aliveMax + 1; i < 256; i += 1) {
 					pixelColours[i] = (255 << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
-					colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					if (needStrings) {
+						colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					}
 				}
 			} else {
 				// create dead colours
 				for (i = 0; i < this.aliveStart; i += 1) {
 					pixelColours[i] = (redChannel[i] << 24) | (greenChannel[i] << 16) | (blueChannel[i] << 8) | 255;
-					colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					if (needStrings) {
+						colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					}
 				}
 
 				// create alive colours
 				for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
 					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
-					colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					if (needStrings) {
+						colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					}
 				}
 
 				// create remaining multi-state colours
 				for (i = this.aliveMax + 1; i < 256; i += 1) {
 					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
-					colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					if (needStrings) {
+						colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					}
 				}
 			}
 		}
@@ -2816,11 +2839,13 @@
 		if (this.boundedGridType !== -1) {
 			i = this.boundedBorderColour;
 			if (this.littleEndian) {
-				pixelColours[i] = (255 << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
+				pixelColours[i] = (255 << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
 			} else {
 				pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
 			}
-			colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+			if (needStrings) {
+				colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+			}
 		}
 	};
 
@@ -11051,6 +11076,7 @@
 			this.drawBoundedGridBorder(this.boundedBorderColour);
 		}
 
+		// check if drawing grid with polygons
 		if (this.useHexagons && this.isHex && this.camZoom >= 4) {
 			// clear grid
 			i = 0;
@@ -11059,9 +11085,7 @@
 				data32[i] = colour0;
 				i += 1;
 			}
-			if (this.displayGrid && this.canDisplayGrid()) {
-				this.drawGridLines();
-			}
+			// create pixel colours
 			this.createPixelColours(1);
 		} else {
 			// create small colour grids if zoomed out

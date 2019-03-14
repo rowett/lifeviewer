@@ -824,6 +824,8 @@
 		y = this.renderHelpLine(view, Keywords.starfieldWord + " (" + Keywords.offWord + ")", "display stars", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.hexDisplayWord, "force hex display", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.squareDisplayWord, "force square display", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.hexCellsWord, "hexagonal cells for hex", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.squareCellsWord, "square cells for hex", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noGUIWord, "disable menus and hotkeys", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.hideGUIWord, "hide menus during playback", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.showTimingWord, "show timing information", ctx, x, y, height, helpLine);
