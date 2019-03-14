@@ -632,6 +632,8 @@
 		var colourGrid = this.colourGrid,
 			colourRow = null,
 			zoomBox = this.historyBox,
+			halfDisplayWidth = this.displayWidth / 2,
+			halfDisplayHeight = this.displayHeight / 2,
 			x = 0, y = 0, j = 0, k = 0,
 			cx = 0, cy = 0,
 			w2 = this.width / 2 - 0.25,
@@ -654,8 +656,10 @@
 			bottomY = zoomBox.bottomY,
 			topY = zoomBox.topY,
 			yOff = this.height / 2 - this.yOff - this.originY + 0.5,
+			xOff = this.width / 2 - this.xOff - this.originX + 0.5 -(this.height >> 2) + yOff / 2,
 			zoom = this.zoom * this.originZ,
-			displayY = 0;
+			displayY = 0, displayX = 0,
+			xOffset = 0;
 
 		// use bounded grid if defined
 		if (this.boundedGridType !== -1) {
@@ -703,41 +707,46 @@
 		k = 0;
 		for (y = bottomY; y <= topY; y += 1) {
 			// clip y to window
-			displayY = ((y + yOff - h2) * zoom) + this.displayHeight / 2;
+			displayY = ((y + yOff - h2) * zoom) + halfDisplayHeight;
 			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
 				colourRow = colourGrid[y];
 				cy = y - h2;
+				xOffset = xOff - w2 - ((cy + yOff) / 2);
 				for (x = leftX; x <= rightX; x += 1) {
-					state = colourRow[x];
-					if (state > 0) {
-						colours[j] = state;
-						cx = x - w2;
-						coords[k] = xa0 + cx;
-						coords[k + 1] = ya0 + cy;
-						coords[k + 2] = xa1 + cx;
-						coords[k + 3] = ya1 + cy;
-						coords[k + 4] = xa2 + cx;
-						coords[k + 5] = ya2 + cy;
-						coords[k + 6] = xa3 + cx;
-						coords[k + 7] = ya3 + cy;
-						coords[k + 8] = xa4 + cx;
-						coords[k + 9] = ya4 + cy;
-						coords[k + 10] = xa5 + cx;
-						coords[k + 11] = ya5 + cy;
-						k += 12;
-						j += 1;
-					}
-					// check if buffer is full
-					if (j === LifeConstants.hexCellBufferSize) {
-						// draw and clear buffer
-						this.numHexCells = j;
-						this.drawHexCells();
-						j = 0;
-						k = 0;
+					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
+					if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
+						state = colourRow[x];
+						if (state > 0) {
+							colours[j] = state;
+							cx = x - w2;
+							coords[k] = xa0 + cx;
+							coords[k + 1] = ya0 + cy;
+							coords[k + 2] = xa1 + cx;
+							coords[k + 3] = ya1 + cy;
+							coords[k + 4] = xa2 + cx;
+							coords[k + 5] = ya2 + cy;
+							coords[k + 6] = xa3 + cx;
+							coords[k + 7] = ya3 + cy;
+							coords[k + 8] = xa4 + cx;
+							coords[k + 9] = ya4 + cy;
+							coords[k + 10] = xa5 + cx;
+							coords[k + 11] = ya5 + cy;
+							k += 12;
+							j += 1;
+						}
+						// check if buffer is full
+						if (j === LifeConstants.hexCellBufferSize) {
+							// draw and clear buffer
+							this.numHexCells = j;
+							this.drawHexCells();
+							j = 0;
+							k = 0;
+						}
 					}
 				}
 			}
 		}
+
 		// draw any remaining cells
 		this.numHexCells = j;
 		if (j > 0) {
