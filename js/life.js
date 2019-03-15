@@ -14,7 +14,7 @@
 	/** @const */
 	var LifeConstants = {
 		// hex cell coordinate buffer size
-		/** @const {number} */ hexCellBufferSize : 8192,
+		/** @const {number} */ hexCellBufferSize : 4096,
 
 		// remove pattern cell buffer (must be power of 2)
 		/** @const {number} */ removePatternBufferSize : 4096,
@@ -617,7 +617,7 @@
 		this.hexCells = this.allocator.allocate(Float32, 12 * LifeConstants.hexCellBufferSize, "Life.hexCells");
 
 		// hex cell colours
-		this.hexColours = this.allocator.allocate(Uint8, LifeConstants.hexCellBufferSize, "Life.hexColours");
+		this.hexColours = this.allocator.allocate(Uint32, LifeConstants.hexCellBufferSize, "Life.hexColours");
 
 		// number of hex cells
 		this.numHexCells = 0;
@@ -628,7 +628,6 @@
 
 	// draw hexagons 
 	Life.prototype.drawHexagons = function() {
-		// save the current polygon list
 		var colourGrid = this.colourGrid,
 			colourRow = null,
 			zoomBox = this.historyBox,
@@ -718,7 +717,8 @@
 					if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
 						state = colourRow[x];
 						if (state > 0) {
-							colours[j] = state;
+							// encode coordinate index into the colour state so it can be sorted later
+							colours[j] = (state << 16) + k;
 							cx = x - w2;
 							coords[k] = xa0 + cx;
 							coords[k + 1] = ya0 + cy;
@@ -761,7 +761,7 @@
 			// set grid line colour
 			this.context.strokeStyle = "rgb(" + (this.gridLineRaw & 255) + "," + ((this.gridLineRaw >> 8) & 255) + "," + (this.gridLineRaw >> 16) + ")";
 			linearZoom = Math.log(zoom / 4) / Math.log(ViewConstants.maxZoom / 4);
-			this.context.lineWidth = linearZoom * 2 + 1;
+			this.context.lineWidth = (linearZoom + 1.5) | 0;
 
 			j = 1.15;
 			xa0 *= j;
@@ -855,11 +855,34 @@
 		xOff = xOff + hexAdjust + 0.5;
 		yOff = yOff + 0.5;
 
+		// if hexagons are filled then sort by colour
+		// check for sort function since IE doesn't have it
+		if (filled && colours.sort) {
+			// ensure unused buffer is at end
+			state = (LifeConstants.hexCellBufferSize << 16) + 256;
+			for (i = hexCells; i < LifeConstants.hexCellBufferSize; i += 1) {
+				colours[i] = state;
+			}
+			colours.sort();
+		}
+
 		// draw each hexagon
-		coord = 0;
-		target = 12;
 		context.beginPath();
+		if (!filled) {
+			coord = 0;
+			target = 12;
+			state = 0;
+			lastState = 0;
+		}
 		for (i = 0; i < hexCells; i += 1) {
+			// get next hexagon offset
+			if (filled) {
+				state = colours[i];
+				coord = state & 65535;
+				target = coord + 12;
+				state = state >> 16;
+			}
+
 			// get hexagon start position
 			cx0 = coords[coord];
 			cy0 = coords[coord + 1];
@@ -875,7 +898,6 @@
 			coord += 2;
 	
 			// set line colour
-			state = colours[i];
 			if (state !== lastState) {
 				lastState = state;
 				if (i > 0) {
@@ -2860,6 +2882,8 @@
 		needStrings = this.isHex && this.useHexagons,
 		i = 0;
 
+				colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+
 		// check for Generations or HROT
 		if (this.multiNumStates > 2) {
 			// create state colours
@@ -2867,7 +2891,7 @@
 				for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
 					pixelColours[i] = (255 << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
 					if (needStrings) {
-						colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
 				}
 			}
@@ -2878,15 +2902,15 @@
 				for (i = 0; i < this.aliveStart; i += 1) {
 					pixelColours[i] = (255 << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
 					if (needStrings) {
-						colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
 				}
 
 				// create alive colours
 				for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
 					pixelColours[i] = (255 << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
-					if (this.isHex) {
-						colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+					if (needStrings) {
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
 				}
 
@@ -2894,7 +2918,7 @@
 				for (i = this.aliveMax + 1; i < 256; i += 1) {
 					pixelColours[i] = (255 << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
 					if (needStrings) {
-						colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
 				}
 			} else {
@@ -2902,7 +2926,7 @@
 				for (i = 0; i < this.aliveStart; i += 1) {
 					pixelColours[i] = (redChannel[i] << 24) | (greenChannel[i] << 16) | (blueChannel[i] << 8) | 255;
 					if (needStrings) {
-						colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
 				}
 
@@ -2910,7 +2934,7 @@
 				for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
 					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
 					if (needStrings) {
-						colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
 				}
 
@@ -2918,7 +2942,7 @@
 				for (i = this.aliveMax + 1; i < 256; i += 1) {
 					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
 					if (needStrings) {
-						colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
 				}
 			}
@@ -2942,7 +2966,7 @@
 				pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
 			}
 			if (needStrings) {
-				colourStrings[i] = "rgb(" + redChannel[i] + "," + greenChannel[i] + "," + blueChannel[i] + ")";
+				colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 			}
 		}
 	};

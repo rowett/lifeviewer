@@ -5302,14 +5302,16 @@
 		}
 
 		// add terminating newline to comments if required
-		if (newPattern.beforeTitle !== "") {
-			if (newPattern.beforeTitle[newPattern.beforeTitle.length - 1] !== "\n") {
-				newPattern.beforeTitle += "\n";
+		if (newPattern) {
+			if (newPattern.beforeTitle !== "") {
+				if (newPattern.beforeTitle[newPattern.beforeTitle.length - 1] !== "\n") {
+					newPattern.beforeTitle += "\n";
+				}
 			}
-		}
-		if (newPattern.afterTitle !== "") {
-			if (newPattern.afterTitle[newPattern.afterTitle.length - 1] !== "\n") {
-				newPattern.afterTitle += "\n";
+			if (newPattern.afterTitle !== "") {
+				if (newPattern.afterTitle[newPattern.afterTitle.length - 1] !== "\n") {
+					newPattern.afterTitle += "\n";
+				}
 			}
 		}
 

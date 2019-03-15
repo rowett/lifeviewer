@@ -1,3 +1,10 @@
+Build 312
+- ensure hexagonal grid lines are integer thickness (for speed)
+- fixed an issue with pattern comments on invalid patterns causing a crash
+- fixed an issue with pattern specified width and height not being ignored
+- improved hexagon cell drawing speed
+- grid icon now has hexagonal grid when selected
+
 Build 311
 - drawing hexagonal cells is a bit faster
 - added hexagonal grid lines

@@ -187,7 +187,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 311,
+		/** @const {number} */ versionBuild : 312,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1778,10 +1778,10 @@
 	View.prototype.computePanXY = function(width, height) {
 		// check specified width and height
 		if (this.specifiedWidth !== -1) {
-			width = this.specifiedWidth;
+			//width = this.specifiedWidth;
 		}
 		if (this.specifiedHeight !== -1) {
-			height = this.specifiedHeight;
+			//height = this.specifiedHeight;
 		}
 
 		// check for bounded grid with CXRLE Pos
@@ -3510,6 +3510,7 @@
 		if (change) {
 			// toggle cell shape
 			me.engine.useHexagons = newValue[0];
+			me.updateGridIcon();
 		}
 
 		return [me.engine.useHexagons];
@@ -4529,7 +4530,7 @@
 			icons = new Image();
 
 			// load the icons from the image file
-			icons.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAAoCAIAAADhf9zeAAAABnRSTlMAAAAAAABupgeRAAAFyklEQVR4nO2dW5LkKAxFnR2z4FpK7Zj5cDfhsNMgQG/u+arIcEmIh67BYB8HAAAAAAAAYJ2fnx/R33dGum5R5/vwn3UBAOCnlHL75fP5KFi28mtFKUWnGGqOANAEAgzSIpGy23Jr61efz+dzk0YWpZSwmQDUQz7+WBcAABFObZCz/5YNrfxasVu8ADACAQZpkdOGtipY+bVit3gB4AICDDIjoQ0UVbDya8Vu8QLAAgQYJIdXG+iqYOXXit3iBW+UUvxsUzhxWKST1y5uNQBGN7awbIS5GlmJOlPWOOukhsO14ahr5+aXC4nNQU786p9a+f39rX9LbM/W3PJNbyDbej7E0guvWa5cysWtL3koEonyDyu/N7iu7xpZLPacUxbmSk4Mh8tp145EOBuCM6kU1oePZj1LDIrF8NuJ4voLQ1kXiieUJ9fpL0E7LLQrpnVIoiSu7CzipBggMbfDTht2ubMG5uaFN91tX6Nft90ieYD6DHjP3tkmZZ24ishVYUAm6uANsyYpQ0n01OxKlNQx9iIOdNmTKK07isO4siaIN25NEDr20e6kH+zZu06/Dju/c27b7uhDVXRQd9vR1ZiaeRPWzjLMNUoljm0stojbBLSbBmeC3nCa3a9msOs8eMM+tj6yJvLYeb3QoHabxN6YfxXlbjLsTS95cd5xocGAl/rss+rB4WxIpkQ0z1CMe2vi1XdB79BxnYvTOiEChAYDFp6L/CH6PzsSA+pWk8oV221KSrwUC1zXHO1zwI3/bxtd4c2vyTlgq0rQhNhRWOqZYmd9CIVm4hmw+fnUN4ZSvM4N1tcJQ63zdgHM65m3ihitEfPkTSCl5f/pnWikoTVVXFmu6ZRjDkqQE365ru8aaZuVDl8Zejhc8U47ClrDVng4BzzUWAot+9aFRvuV1feAiYWkXLZY288a6w5b6YF8tbniq3Hx1T7LNYfE5whL8EVptRTP7ohrMuqcEnYt+lbhX6OgXJMDq3Z8m/7moEhucbq6kPYyxE10Aj1WkHoXNCYrbSQqx9uEQ47QhQcnTnL3iavCsNCegSkvPj9hf/ll++tkXL7YwccYAABKXPO18l3U1zQdfbnuRvl3rPlEZxY04UJafa8/Om9cKQHe81xdIEK3TujC78y14TQbMZnQfuU5r60y3L5slOe/W61IRVffQ0KAo0uvTvklXIzaDNpMQYsNKvU5paY7+u8RacjqdSrMFbKHMZhjSYNzE1agsLtQznKxuLAl0G6FEw+VNg2l8KEDJGIyO5k7ehSC7qRWIpvZpo4c6ntwnQNmX9Onuxi9vmtkcYElVvOfNAJ0dQ44Yt22ee55ntgFbX4+9Y2h1U6hLbVvQjuRrM3r+VlFo1HwVvKcAK8XQFR920FRbmXo13TKQaFjZZxRRywFW3EkXSE6dMPhilfNUQieMXJFjXPA1eyzJhk7leH3gD0MjbfR2oDFI+XHEMw/A47+rHeU3PE6D8158YB/njk6eqfysM9I2XvJsvJcmXkGHDRUFhifprDfsq1vbvR5F7lzf4uOtx5Vy5OjU3mIYihvrBc4k/oeowIcN05e1mVYIjEVi4+LSYMuFxe03SYQ88Zif/i68rxu1haqAIcOUgiFndL6uNLg9L3uGWD6kD2ASmZHP28kUN+DIsDRI5Qmnww70WB0PCAB+lVErnKbQ3pPWgKcI0IdRmVYQuQY28tcg9n73vr6/JwRK79qPPuJxFGQts2vfbXuUcqUrzcnX1PmiQSAyk2xGAWsbdnEr/n51ApXfpywI3EfcMO8nj3fhwEAwF+u6Zh9Kt8wbuX3if454ML3skNGUxI4/x4wCAS+hgQyIzFpoKzPW/m1Yrd4AWCB813QALhCbsnu1IbG61FN/FqxW7yGSN+RoKqVgQCDnEgn7rf5mZVfK3TihTAcUMeMQIBBWq5CxbgZyq1ffZ7SyBLv0yY0GKQEAgwSIpes25at/FqhViqf4QMAAAAAgHj8Dy7JYyBhass3AAAAAElFTkSuQmCC";
+			icons.src = "data:image/png;base64,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";
 				
 			// save the image
 			ViewConstants.icons = icons;
@@ -4555,13 +4556,18 @@
 		this.iconManager.add("pan", w, h);
 		this.iconManager.add("pick", w, h);
 		this.iconManager.add("states", w, h);
+		this.iconManager.add("hexagongrid", w, h);
 	};
 
 	// update grid icon based on hex or square mode
 	View.prototype.updateGridIcon = function() {
 		// check for hex mode
 		if (this.engine.isHex) {
-			this.gridToggle.icon = [this.iconManager.icon("hexgrid")];
+			if (this.engine.useHexagons) {
+				this.gridToggle.icon = [this.iconManager.icon("hexagongrid")];
+			} else {
+				this.gridToggle.icon = [this.iconManager.icon("hexgrid")];
+			}
 		} else {
 			this.gridToggle.icon = [this.iconManager.icon("grid")];
 		}
