@@ -1,5 +1,6 @@
 Build 313
 - created annotations topic in help
+- only allocate hex buffers on first use
 
 Build 312
 - ensure hexagonal grid lines are integer thickness (for speed)

@@ -187,7 +187,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 312,
+		/** @const {number} */ versionBuild : 313,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6909,14 +6909,14 @@
 				this.helpMemoryButton.setPosition(Menu.north, 0, 150);
 			}
 		} else {
-			this.helpKeysButton.setPosition(Menu.north, 0, 50);
-			this.helpScriptsButton.setPosition(Menu.north, 0, 100);
-			this.helpInfoButton.setPosition(Menu.north, 0, 150);
-			this.helpThemesButton.setPosition(Menu.north, 0, 200);
-			this.helpColoursButton.setPosition(Menu.north, 0, 250);
-			this.helpAliasesButton.setPosition(Menu.north, 0, 300);
-			this.helpMemoryButton.setPosition(Menu.north, 0, 350);
-			this.helpAnnotationsButton.setPosition(Menu.north, 0, 400);
+			this.helpKeysButton.setPosition(Menu.north, 0, 40);
+			this.helpScriptsButton.setPosition(Menu.north, 0, 90);
+			this.helpInfoButton.setPosition(Menu.north, 0, 140);
+			this.helpThemesButton.setPosition(Menu.north, 0, 190);
+			this.helpColoursButton.setPosition(Menu.north, 0, 240);
+			this.helpAliasesButton.setPosition(Menu.north, 0, 290);
+			this.helpMemoryButton.setPosition(Menu.north, 0, 340);
+			this.helpAnnotationsButton.setPosition(Menu.north, 0, 390);
 		}
 	};
 

@@ -16,6 +16,9 @@
 		// hex cell coordinate buffer size
 		/** @const {number} */ hexCellBufferSize : 4096,
 
+		// hex cell bits for buffer (must be hexCellBufferSize * 16 bits big)
+		/** @const {number} */ hexCellBufferBits : 16,
+
 		// remove pattern cell buffer (must be power of 2)
 		/** @const {number} */ removePatternBufferSize : 4096,
 
@@ -614,10 +617,10 @@
 		this.HROT = new HROT(this.allocator, this.width, this.height, this);
 
 		// hex cell coordinates
-		this.hexCells = this.allocator.allocate(Float32, 12 * LifeConstants.hexCellBufferSize, "Life.hexCells");
+		this.hexCells = this.allocator.allocate(Float32, 1, "Life.hexCells");
 
 		// hex cell colours
-		this.hexColours = this.allocator.allocate(Uint32, LifeConstants.hexCellBufferSize, "Life.hexColours");
+		this.hexColours = this.allocator.allocate(Uint32, 1, "Life.hexColours");
 
 		// number of hex cells
 		this.numHexCells = 0;
@@ -661,6 +664,14 @@
 			xOffset = 0,
 			linearZoom = 1;
 
+		// check if buffers have been allocated
+		if (colours.length !== LifeConstants.hexCellBufferSize) {
+			this.hexCells = this.allocator.allocate(Float32, 12 * LifeConstants.hexCellBufferSize, "Life.hexCells");
+			this.hexColours = this.allocator.allocate(Uint32, LifeConstants.hexCellBufferSize, "Life.hexColours");
+			coords = this.hexCells;
+			colours = this.hexColours;
+		}
+		k
 		// use bounded grid if defined
 		if (this.boundedGridType !== -1) {
 		    // bounded grid top left
@@ -718,7 +729,7 @@
 						state = colourRow[x];
 						if (state > 0) {
 							// encode coordinate index into the colour state so it can be sorted later
-							colours[j] = (state << 16) + k;
+							colours[j] = (state << LifeConstants.hexCellBufferBits) + k;
 							cx = x - w2;
 							coords[k] = xa0 + cx;
 							coords[k + 1] = ya0 + cy;
@@ -779,8 +790,8 @@
 			j = 0;
 
 			// create cell coordinates for window
-			bottomY = (((0 - halfDisplayHeight) / zoom) - yOff + h2) | 0;
-			topY = (((this.displayHeight - halfDisplayHeight) / zoom) - yOff + h2) | 0;
+			bottomY = ((-halfDisplayHeight / zoom) - yOff + h2) | 0;
+			topY = ((halfDisplayHeight / zoom) - yOff + h2) | 0;
 
 			for (y = bottomY; y <= topY; y += 1) {
 				// clip y to window
@@ -789,8 +800,8 @@
 					colourRow = colourGrid[y];
 					cy = y - h2;
 					xOffset = xOff - w2 - ((cy + yOff) / 2);
-					leftX = (((0 - halfDisplayWidth) / zoom) - xOffset - zoom) | 0;
-					rightX = (((this.displayWidth - halfDisplayWidth) / zoom) - xOffset + zoom) | 0;
+					leftX = ((-halfDisplayWidth / zoom) - xOffset - zoom) | 0;
+					rightX = ((halfDisplayWidth / zoom) - xOffset + zoom) | 0;
 					for (x = leftX; x <= rightX; x += 1) {
 						displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
 						if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
@@ -848,7 +859,8 @@
 			state = 0, lastState = -1,
 			coords = this.hexCells,
 			hexCells = this.numHexCells,
-			colours = this.hexColours;
+			colours = this.hexColours,
+			mask = (1 << LifeConstants.hexCellBufferBits) - 1;
 
 		// adjust for hex
 		xOff += yOff / 2;
@@ -859,7 +871,7 @@
 		// check for sort function since IE doesn't have it
 		if (filled && colours.sort) {
 			// ensure unused buffer is at end
-			state = (LifeConstants.hexCellBufferSize << 16) + 256;
+			state = (LifeConstants.hexCellBufferSize << LifeConstants.hexCellBufferBits) + 256;
 			for (i = hexCells; i < LifeConstants.hexCellBufferSize; i += 1) {
 				colours[i] = state;
 			}
@@ -878,9 +890,9 @@
 			// get next hexagon offset
 			if (filled) {
 				state = colours[i];
-				coord = state & 65535;
+				coord = state & mask;
 				target = coord + 12;
-				state = state >> 16;
+				state = state >> LifeConstants.hexCellBufferBits;
 			}
 
 			// get hexagon start position
