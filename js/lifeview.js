@@ -347,7 +347,8 @@
 		/** @const {number} */ themesTopic : 4,
 		/** @const {number} */ coloursTopic : 5,
 		/** @const {number} */ aliasesTopic : 6,
-		/** @const {number} */ memoryTopic : 7
+		/** @const {number} */ memoryTopic : 7,
+		/** @const {number} */ annotationTopic : 8
 	},
 
 	// Controller singleton
@@ -1111,6 +1112,7 @@
 		this.helpColoursButton = null;
 		this.helpAliasesButton = null;
 		this.helpMemoryButton = null;
+		this.helpAnnoationsButton = null;
 
 		// help section list
 		this.helpSectionList = null;
@@ -3041,6 +3043,7 @@
 		this.helpColoursButton.deleted =  showTopicButtons;
 		this.helpAliasesButton.deleted =  showTopicButtons;
 		this.helpMemoryButton.deleted =  showTopicButtons;
+		this.helpAnnotationsButton.deleted = showTopicButtons || (this.waypointManager.numAnnotations() === 0);
 
 		// help sections
 		this.sectionsButton.deleted = (!(this.displayHelp && (this.helpTopic !== ViewConstants.welcomeTopic))) || this.showSections;
@@ -3945,6 +3948,11 @@
 	// memory help topic
 	View.prototype.memoryTopicPressed = function(me) {
 		me.setHelpTopic(ViewConstants.memoryTopic, me);
+	};
+
+	// annotations help topic
+	View.prototype.annotationsTopicPressed = function(me) {
+		me.setHelpTopic(ViewConstants.annotationsTopic, me);
 	};
 
 	// view help section list
@@ -6894,7 +6902,12 @@
 			this.helpThemesButton.setPosition(Menu.northWest, 10, 100);
 			this.helpColoursButton.setPosition(Menu.north, 0, 100);
 			this.helpAliasesButton.setPosition(Menu.northEast, -160, 100);
-			this.helpMemoryButton.setPosition(Menu.north, 0, 150);
+			if (this.waypointManager.numAnnotations() > 0) {
+				this.helpMemoryButton.setPosition(Menu.northWest, 10, 150);
+				this.helpAnnotationsButton.setPosition(Menu.northEast, -160, 150);
+			} else {
+				this.helpMemoryButton.setPosition(Menu.north, 0, 150);
+			}
 		} else {
 			this.helpKeysButton.setPosition(Menu.north, 0, 50);
 			this.helpScriptsButton.setPosition(Menu.north, 0, 100);
@@ -6903,6 +6916,7 @@
 			this.helpColoursButton.setPosition(Menu.north, 0, 250);
 			this.helpAliasesButton.setPosition(Menu.north, 0, 300);
 			this.helpMemoryButton.setPosition(Menu.north, 0, 350);
+			this.helpAnnotationsButton.setPosition(Menu.north, 0, 400);
 		}
 	};
 
@@ -7110,6 +7124,9 @@
 
 		this.helpMemoryButton = this.viewMenu.addButtonItem(this.memoryTopicPressed, Menu.north, 0, 350, 150, 40, ["Memory"]);
 		this.helpMemoryButton.toolTip = ["show memory usage"];
+
+		this.helpAnnotationsButton = this.viewMenu.addButtonItem(this.annotationsTopicPressed, Menu.north, 0, 350, 150, 40, ["Annotations"]);
+		this.helpAnnotationsButton.toolTip = ["show annotations"];
 
 		// autofit button
 		this.autoFitToggle = this.viewMenu.addListItem(this.toggleAutoFit, Menu.northWest, 0, 0, 40, 40, ["Auto"], [false], Menu.multi);

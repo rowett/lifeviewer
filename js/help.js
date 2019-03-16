@@ -367,6 +367,18 @@
 		return result + string;
 	};
 
+	// convert rgb(rrr,ggg,bbb) to [r, g, b]
+	Help.colourFromRGBString = function(colour) {
+		var red = 0, green = 0, blue = 0,
+			index1 = colour.indexOf(","),
+			index2 = colour.lastIndexOf(",");
+
+		red = colour.substring(4, index1);
+		green = colour.substring(index1 + 1, index2);
+		blue = colour.substring(index2 + 1, colour.length - 1);
+		return [red, green, blue];
+	};
+
 	// render help text page
 	Help.renderHelpText = function(view, ctx, x, y, height, helpLine) {
 		var endLine = 0,
@@ -396,6 +408,9 @@
 				break;
 			case ViewConstants.memoryTopic:
 				this.renderMemoryTopic(view, ctx, x, y, height, helpLine);
+				break;
+			case ViewConstants.annotationsTopic:
+				this.renderAnnotationsTopic(view, ctx, x, y, height, helpLine);
 				break;
 		}
 
@@ -444,6 +459,74 @@
 		sectionNum += 1;
 
 		y = this.renderHelpLine(view, "", ViewConstants.versionName + " build " + ViewConstants.versionBuild + " by " + ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
+	};
+
+	// render annotations topic
+	Help.renderAnnotationsTopic = function(view, ctx, x, y, height, helpLine) {
+		var i = 0, itemName = "", colour = [],
+
+			// section number
+			sectionNum = 0;
+
+		// set initial line
+		view.lineNo = 1;
+
+		// disable line wrap to start with
+		view.wrapHelpText = false;
+
+		// reset sections
+		view.helpSections = [];
+		
+		// annotations 
+		view.helpSections[sectionNum] = [view.lineNo, "Top"];
+		sectionNum += 1;
+		view.tabs[0] = 128;
+		view.tabs[1] = 208;
+		view.tabs[2] = 288;
+		view.tabs[3] = 368;
+		y = this.renderHelpLine(view, "", "Annotations", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		view.helpSections[sectionNum] = [view.lineNo, "Labels"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Labels:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Number", view.waypointManager.numLabels(), ctx, x, y, height, helpLine);
+		for (i = 0; i < view.waypointManager.numLabels(); i += 1) {
+			itemName = "Label " + String(i + 1);
+			y = this.renderHelpLine(view, itemName, view.waypointManager.labelAsText1(i), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, " ", view.waypointManager.labelAsText2(i), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, " ", view.waypointManager.labelAsText3(i), ctx, x, y, height, helpLine);
+			colour = this.colourFromRGBString(view.waypointManager.labelColour(i));
+			this.renderColourBox(view, colour[0], colour[1], colour[2], ctx, x + view.tabs[0], y, height, helpLine);
+			y = this.renderHelpLine(view, "Colour", this.rgbString(colour[0], colour[1], colour[2]), ctx, x, y, height, helpLine);
+		}
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		view.helpSections[sectionNum] = [view.lineNo, "Arrows"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Arrows:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Number", view.waypointManager.numArrows(), ctx, x, y, height, helpLine);
+		for (i = 0; i < view.waypointManager.numArrows(); i += 1) {
+			itemName = "Arrow " + String(i + 1);
+			y = this.renderHelpLine(view, itemName, view.waypointManager.arrowAsText1(i), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, " ", view.waypointManager.arrowAsText2(i), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, " ", view.waypointManager.arrowAsText3(i), ctx, x, y, height, helpLine);
+			colour = this.colourFromRGBString(view.waypointManager.arrowColour(i));
+			this.renderColourBox(view, colour[0], colour[1], colour[2], ctx, x + view.tabs[0], y, height, helpLine);
+			y = this.renderHelpLine(view, "Colour", this.rgbString(colour[0], colour[1], colour[2]), ctx, x, y, height, helpLine);
+		}
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		view.helpSections[sectionNum] = [view.lineNo, "Polygons"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Polygons:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Number", view.waypointManager.numPolygons(), ctx, x, y, height, helpLine);
+		for (i = 0; i < view.waypointManager.numPolygons(); i += 1) {
+			itemName = "Polygon " + String(i + 1);
+			y = this.renderHelpLine(view, itemName, view.waypointManager.polyAsText1(i), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, " ", view.waypointManager.polyAsText2(i), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, " ", view.waypointManager.polyAsText3(i), ctx, x, y, height, helpLine);
+			colour = this.colourFromRGBString(view.waypointManager.polygonColour(i));
+			this.renderColourBox(view, colour[0], colour[1], colour[2], ctx, x + view.tabs[0], y, height, helpLine);
+			y = this.renderHelpLine(view, "Colour", this.rgbString(colour[0], colour[1], colour[2]), ctx, x, y, height, helpLine);
+		}
 	};
 
 	// render keys topic
@@ -1262,7 +1345,6 @@
 
 					// render the colour box
 					this.renderColourBox(view, colourList[i] >> 16, (colourList[i] >> 8) & 255, colourList[i] & 255, ctx, x + view.tabs[0], y, height, helpLine);
-
 					y = this.renderHelpLine(view, itemName, colourValue, ctx, x, y, height, helpLine);
 				}
 			}
@@ -1502,36 +1584,6 @@
 					y = this.renderHelpLine(view, (flag ? " " : itemName), (flag ? "  " : "") + itemDetails, ctx, x, y, height, helpLine);
 					flag = true;
 				}
-			}
-		}
-
-		// annotations
-		if (view.waypointManager.numAnnotations() > 0) {
-			view.tabs[0] = 128;
-			view.tabs[1] = 208;
-			view.tabs[2] = 288;
-			view.tabs[3] = 368;
-			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-			view.helpSections[sectionNum] = [view.lineNo, "Annotations"];
-			sectionNum += 1;
-			y = this.renderHelpLine(view, "", "Annotations:", ctx, x, y, height, helpLine);
-			for (i = 0; i < view.waypointManager.numLabels(); i += 1) {
-				itemName = "Label " + String(i + 1);
-				y = this.renderHelpLine(view, itemName, view.waypointManager.labelAsText1(i), ctx, x, y, height, helpLine);
-				y = this.renderHelpLine(view, " ", view.waypointManager.labelAsText2(i), ctx, x, y, height, helpLine);
-				y = this.renderHelpLine(view, " ", view.waypointManager.labelAsText3(i), ctx, x, y, height, helpLine);
-			}
-			for (i = 0; i < view.waypointManager.numArrows(); i += 1) {
-				itemName = "Arrow " + String(i + 1);
-				y = this.renderHelpLine(view, itemName, view.waypointManager.arrowAsText1(i), ctx, x, y, height, helpLine);
-				y = this.renderHelpLine(view, " ", view.waypointManager.arrowAsText2(i), ctx, x, y, height, helpLine);
-				y = this.renderHelpLine(view, " ", view.waypointManager.arrowAsText3(i), ctx, x, y, height, helpLine);
-			}
-			for (i = 0; i < view.waypointManager.numPolygons(); i += 1) {
-				itemName = "Polygon " + String(i + 1);
-				y = this.renderHelpLine(view, itemName, view.waypointManager.polyAsText1(i), ctx, x, y, height, helpLine);
-				y = this.renderHelpLine(view, " ", view.waypointManager.polyAsText2(i), ctx, x, y, height, helpLine);
-				y = this.renderHelpLine(view, " ", view.waypointManager.polyAsText3(i), ctx, x, y, height, helpLine);
 			}
 		}
 	};

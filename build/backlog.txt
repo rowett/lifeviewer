@@ -11,6 +11,7 @@ Planned:
     User preferences
 
 In progress:
+    don't allocate hexagon memory until first use
 [STARTED]Pattern Editor
     - ability to define rule
     - improved LifeHistory drawing modes

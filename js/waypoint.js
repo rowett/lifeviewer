@@ -686,6 +686,17 @@
 		return result;
 	};
 
+	// return polygon colour
+	WaypointManager.prototype.polygonColour = function(number) {
+		var result = "";
+
+		if (number >= 0 && number < this.polyList.length) {
+			result = this.polyList[number].colour;
+		}
+
+		return result;
+	};
+
 	// return given arrow as a text string line 1
 	WaypointManager.prototype.arrowAsText1 = function(number) {
 		var result = "",
@@ -745,6 +756,17 @@
 		return result;
 	};
 
+	// return arrow colour
+	WaypointManager.prototype.arrowColour = function(number) {
+		var result = "";
+
+		if (number >= 0 && number < this.arrowList.length) {
+			result = this.arrowList[number].colour;
+		}
+
+		return result;
+	};
+
 	// return given label as a text string line 1
 	WaypointManager.prototype.labelAsText1 = function(number) {
 		var result = "",
@@ -799,6 +821,17 @@
 		if (number >= 0 && number < this.labelList.length) {
 			current = this.labelList[number];
 			result = "Size " + current.size + "\t\"" + current.message + "\"";
+		}
+
+		return result;
+	};
+
+	// return label colour
+	WaypointManager.prototype.labelColour = function(number) {
+		var result = "";
+
+		if (number >= 0 && number < this.labelList.length) {
+			result = this.labelList[number].colour;
 		}
 
 		return result;
