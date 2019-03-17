@@ -1,5 +1,4 @@
 Investigate:
-    Paul's non-totalistic hex notation
     Brian's BSFKL notation
     "Extended" Generations
     Deficient rules
@@ -25,6 +24,7 @@ In progress:
     [DONE]convert current pattern to RLE (for Ctrl-C Copy)
 
 Complete:
+[DONE]Paul's non-totalistic hex notation
 [DONE]#CXRLE Pos limits
 [DONE]Multiverse
 [DONE]Alternating rules

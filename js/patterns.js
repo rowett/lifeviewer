@@ -88,6 +88,9 @@
 		// decimal digits
 		decimalDigits : "0123456789",
 
+		// valid hex rule characters
+		validHexRuleLetters : "0123456omp-",
+
 		// hex digits
 		hexDigits : "0123456",
 
@@ -97,8 +100,17 @@
 		// rule letters
 		ruleLetters : ["ce", "ceaikn", "ceaiknjqry", "ceaiknjqrytwz"],
 
+		// rule hex letters
+		ruleHexLetters : "omp",
+
+		// rule hex neighborhoods
+		ruleHexNeighbourhoods : [[[6, 36, 160, 192, 72, 10], [132, 96, 136, 66, 12, 34], [68, 40, 130, 68, 40, 130]], [[38, 164, 224, 200, 74, 14], [44, 162, 196, 104, 138, 70, 100, 168, 194, 76, 42, 134], [140, 98, 140, 98, 140, 98]], [[166, 228, 232, 202, 78, 46], [172, 226, 204, 106, 142, 102], [108, 170, 198, 108, 170, 198]]],
+
 		// valid letters per digit
 		validLettersPerDigit : ["", "ce", "ceaikn", "ceaiknjqry", "ceaiknjqrytwz", "ceaiknjqry", "ceaikn", "ce", ""],
+
+		// valid hex letters per digit
+		validHexLettersPerDigit : ["", "", "omp", "omp", "omp", "", ""],
 
 		// maximum number of letters for each neighbour count
 		maxLetters : [0, 2, 6, 10, 13, 10, 6, 2, 0],
@@ -1292,6 +1304,37 @@
 		}
 	};
 
+	// set symmetrical hex neighbourhood
+	PatternManager.setHexSymmetrical = function(ruleArray, value, survival, character, normal, hexMask) {
+		// default values
+		var settings = [],
+			i = 0,
+			x = 0,
+			survivalOffset = (survival ? 0x10 : 0),
+
+		    // letter index
+		    letterIndex = null;
+
+		// check for homogeneous bits
+		if (value < 2 || value > 4) {
+			this.setTotalistic(ruleArray, value, survival, hexMask);
+		} else {
+			// check letter is valid
+			letterIndex = this.ruleHexLetters.indexOf(character);
+			if (letterIndex !== -1) {
+				// lookup the neighbourhood
+				settings = this.ruleHexNeighbourhoods[value - 2][letterIndex];
+				for (i = 0; i < settings.length; i += 1) {
+					x = settings[i] + survivalOffset;
+					ruleArray[x] = normal;
+					ruleArray[x + 256] = normal;
+					ruleArray[x + 1] = normal;
+					ruleArray[x + 257] = normal;
+				}
+			}
+		}
+	};
+
 	// set symmetrical neighbourhood
 	PatternManager.setSymmetrical = function(ruleArray, value, survival, character, normal, hexMask) {
 		// default values
@@ -1377,6 +1420,71 @@
 		return r;
 	};
 
+	// add canonical hex letter representation
+	PatternManager.addHexLetters = function(count, lettersArray) {
+		var canonical = "",
+		    bits = 0,
+		    negative = 0,
+		    setbits = 0,
+		    maxbits = 0,
+		    j = 0;
+
+		// check if letters are defined for this neighbour count
+		if (lettersArray[count]) {
+			// check whether normal or inverted letters defined
+			bits = lettersArray[count];
+
+			// check for negative
+			if ((bits & (1 << this.negativeBit)) !== 0) {
+				negative = 1;
+				bits = bits & ~(1 << this.negativeBit);
+			}
+
+			// compute the number of bits set
+			setbits = this.bitCount(bits);
+
+			// get the maximum number of allowed letters at this neighbour count
+			if (count < 2 || count > 4) {
+				maxbits = 0;
+			} else {
+				maxbits = 3;
+			}
+
+			// if maximum letters minus number used is greater than number used then invert
+			if (setbits + negative > (maxbits >> 1)) {
+				// invert maximum letters for this count
+				bits = ~bits & ((1 << maxbits) - 1);
+				if (bits) {
+					negative = 1 - negative;
+				}
+			}
+
+			// add if not negative and bits defined
+			if (!(negative && !bits)) {
+				// add the count
+				canonical += String(count);
+
+				// add the minus if required
+				if (negative) {
+					canonical += "-";
+				}
+
+				// add defined letters
+				for (j = 0; j < maxbits; j += 1) {
+					if ((bits & (1 << j)) !== 0) {
+						canonical += this.ruleHexLetters[j];
+					}
+				}
+			}
+		} else {
+			// just add the count
+			canonical += String(count);
+		}
+
+		// return the canonical string
+		return canonical;
+	};
+
 	// add canonical letter representation
 	PatternManager.addLetters = function(count, lettersArray) {
 		var canonical = "",
@@ -1440,6 +1548,139 @@
 		}
 
 		// return the canonical string
+		return canonical;
+	};
+
+	// set birth or survival hex rule from a string
+	PatternManager.setHexRuleFromString = function(ruleArray, rule, survival) {
+		// current and next characters
+		var current = null,
+		    next = null,
+
+		    // length
+		    length = rule.length,
+
+		    // whether character meaning normal or inverted
+			normal = 1,
+
+			// used to check for normal and inverted
+			check = 0,
+
+		    // ASCII 0
+		    asciiZero = String("0").charCodeAt(0),
+
+		    // letter index
+		    letterIndex = 0,
+
+		    // hex neighbourhood mask
+		    mask = 254,
+
+		    // used bit array
+		    used = 0,
+		    alreadyUsed = false,
+
+		    // letters bit array
+		    lettersArray = [],
+
+		    // canonical string
+		    canonical = "",
+
+		    // counters
+		    i = 0;
+
+		// add a character for lookahead
+		rule += " ";
+
+		// clear letters arrays
+		for (i = 0; i < 7; i += 1) {
+			lettersArray[i] = 0;
+		}
+
+		// process each character
+		for (i = 0; i < length; i += 1) {
+			// get the next character as a number
+			current = rule.charCodeAt(i) - asciiZero;
+
+			// check if it is a digit
+			if (current >= 0 && current <= 8) {
+				// set canonical
+				alreadyUsed = ((used & (1 << current)) !== 0);
+				used |= 1 << current;
+
+				// determine what follows the digit
+				next = rule[i + 1];
+
+				// check if it is a letter
+				letterIndex = this.validHexLettersPerDigit[current].indexOf(next);
+				if (letterIndex === -1 && !alreadyUsed) {
+					// not a letter so set totalistic
+					this.setTotalistic(ruleArray, current, survival, mask);
+				}
+
+				// check if non-totalistic
+				normal = 1;
+				if (next === "-") {
+					// invert following character meanings
+					normal = 0;
+					i += 1;
+					next = rule[i + 1];
+					letterIndex = this.validHexLettersPerDigit[current].indexOf(next);
+				}
+
+				// if the next character is not a valid letter report an error if it is not a digit or space
+				if (letterIndex === -1 && !((next >= "0" && next <= "9") || next === " ")) {
+					this.failureReason = (survival ? "S" : "B") + current + next + " not valid";
+					i = length;
+				}
+
+				// check for minus and non-minus use of this digit
+				if (alreadyUsed) {
+					check = 0;
+					if ((lettersArray[current] & 1 << this.negativeBit) === 0) {
+						check = 1;
+					}
+					if (check !== normal) {
+						this.failureReason = (survival ? "S" : "B") + current + " can not have minus and non-minus";
+						letterIndex = -1;
+						i = length;
+					}
+				}
+
+				// process non-totalistic characters
+				while (letterIndex !== -1) {
+					// check if the letter has already been used
+					if ((lettersArray[current] & (1 << letterIndex)) !== 0) {
+						this.failureReason = "duplicate " + current + this.validHexLettersPerDigit[current][letterIndex];
+						letterIndex = -1;
+						i = length;
+					} else {
+						// set symmetrical
+						this.setHexSymmetrical(ruleArray, current, survival, next, normal, mask);
+
+						// update the letter bits
+						lettersArray[current] |= 1 << letterIndex;
+
+						if (!normal) {
+							// set the negative bit
+							lettersArray[current] |= 1 << this.negativeBit;
+						}
+						i += 1;
+						next = rule[i + 1];
+						letterIndex = this.validHexLettersPerDigit[current].indexOf(next);
+					}
+				}
+			} else {
+				// character found without digit prefix
+				this.failureReason = "missing digit prefix";
+			}
+		}
+
+		// build the canonical representation
+		for (i = 0; i < 7; i += 1) {
+			if ((used & 1 << i) !== 0) {
+				canonical += this.addHexLetters(i, lettersArray);
+			}
+		}
 		return canonical;
 	};
 
@@ -1682,18 +1923,26 @@
 			}
 		} else {
 			// check for neighbourhoods that are totalistic only
-			if (isHex || isVonNeumann) {
-				// set the birth rule
+			if (isVonNeumann) {
+				// set the von Neumann birth rule
 				birthName = this.setTotalisticRuleFromString(ruleArray, birthPart, false, mask);
 	
-				// set the survival rule
+				// set the von Neumann survival rule
 				survivalName = this.setTotalisticRuleFromString(ruleArray, survivalPart, true, mask);
 			} else {
-				// set the birth rule
-				birthName = this.setRuleFromString(ruleArray, birthPart, false);
-	
-				// set the survival rule
-				survivalName = this.setRuleFromString(ruleArray, survivalPart, true);
+				if (isHex) {
+					// set the hex birth rule
+					birthName = this.setHexRuleFromString(ruleArray, birthPart, false);
+
+					// set the hex survival rule
+					survivalName = this.setHexRuleFromString(ruleArray, survivalPart, true);
+				} else {
+					// set the Moore birth rule
+					birthName = this.setRuleFromString(ruleArray, birthPart, false);
+		
+					// set the Moore survival rule
+					survivalName = this.setRuleFromString(ruleArray, survivalPart, true);
+				}
 			}
 	
 			// create the canonical name
@@ -3349,7 +3598,7 @@
 							rule = rule.substr(0, rule.length - hexLength);
 
 							// update the valid rule letters to hex digits
-							validRuleLetters = this.hexDigits;
+							validRuleLetters = this.validHexRuleLetters;
 						}
 
 						// check for Von Neumann rules
@@ -3400,7 +3649,7 @@
 									rule = rule.substr(0, rule.length - hexLength);
 
 									// update the valid rule letters to hex digits
-									validRuleLetters = this.hexDigits;
+									validRuleLetters = this.validHexRuleLetters;
 								}
 
 								// check for Von Neumann rules

@@ -1,4 +1,5 @@
 Build 313
+- added Paul Callahan's isotropic non-totalistic hex rule format
 - created annotations topic in help
 - only allocate hex buffers on first use
 
