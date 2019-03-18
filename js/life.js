@@ -671,7 +671,7 @@
 			coords = this.hexCells;
 			colours = this.hexColours;
 		}
-		k
+
 		// use bounded grid if defined
 		if (this.boundedGridType !== -1) {
 		    // bounded grid top left
@@ -770,7 +770,7 @@
 		// draw grid if enabled
 		if (this.displayGrid) {
 			// set grid line colour
-			this.context.strokeStyle = "rgb(" + (this.gridLineRaw & 255) + "," + ((this.gridLineRaw >> 8) & 255) + "," + (this.gridLineRaw >> 16) + ")";
+			this.context.strokeStyle = "rgb(" + (this.gridLineRaw >> 16) + "," + ((this.gridLineRaw >> 8) & 255) + "," + (this.gridLineRaw & 255) + ")";
 			linearZoom = Math.log(zoom / 4) / Math.log(ViewConstants.maxZoom / 4);
 			this.context.lineWidth = (linearZoom + 1.5) | 0;
 
@@ -2613,8 +2613,8 @@
 			this.gridLineColour = (255 << 24) | ((this.gridLineRaw & 255) << 16) | (((this.gridLineRaw >> 8) & 255) << 8) | (this.gridLineRaw >> 16);
 			this.gridLineBoldColour = (255 << 24) | ((this.gridLineBoldRaw & 255) << 16) | (((this.gridLineBoldRaw >> 8) & 255) << 8) | (this.gridLineBoldRaw >> 16);
 		} else {
-			this.gridLineColour = ((this.gridLineRaw & 255) << 24) | (((this.gridLineRaw >> 8) & 255) << 16) | ((this.gridLineRaw >> 16) << 8) | 255;
-			this.gridLineBoldColour = ((this.gridLineBoldRaw & 255) << 24) | (((this.gridLineBoldRaw >> 8) & 255) << 16) | ((this.gridLineBoldRaw >> 16) << 8) | 255;
+			this.gridLineColour = ((this.gridLineRaw >> 16) << 24) | (((this.gridLineRaw >> 8) & 255) << 16) | ((this.gridLineRaw & 255) << 8) | 255;
+			this.gridLineBoldColour = ((this.gridLineBoldRaw >> 16) << 24) | (((this.gridLineBoldRaw >> 8) & 255) << 16) | ((this.gridLineBoldRaw & 255) << 8) | 255;
 		}
 
 		// clear help cache
@@ -2965,8 +2965,8 @@
 			this.gridLineColour = (255 << 24) | ((gridLineRaw & 255) << 16) | (((gridLineRaw >> 8) & 255) << 8) | (gridLineRaw >> 16);
 			this.gridLineBoldColour = (255 << 24) | ((gridLineBoldRaw & 255) << 16) | (((gridLineBoldRaw >> 8) & 255) << 8) | (gridLineBoldRaw >> 16);
 		} else {
-			this.gridLineColour = ((gridLineRaw & 255) << 24) | (((gridLineRaw >> 8) & 255) << 16) | ((gridLineRaw >> 16) << 8) | 255;
-			this.gridLineBoldColour = ((gridLineBoldRaw & 255) << 24) | (((gridLineBoldRaw >> 8) & 255) << 16) | ((gridLineBoldRaw >> 16) << 8) | 255;
+			this.gridLineColour = ((gridLineRaw >> 16) << 24) | (((gridLineRaw >> 8) & 255) << 16) | ((gridLineRaw & 255) << 8) | 255;
+			this.gridLineBoldColour = ((gridLineBoldRaw >> 16) << 24) | (((gridLineBoldRaw >> 8) & 255) << 16) | ((gridLineBoldRaw & 255) << 8) | 255;
 		}
 
 		// create bounded grid border colour

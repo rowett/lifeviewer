@@ -1,3 +1,7 @@
+Build 314
+- fixed hexagonal grid colours
+- addded isotropic non-totalistic hexagonal aliases
+
 Build 313
 - added Paul Callahan's isotropic non-totalistic hex rule format
 - created annotations topic in help

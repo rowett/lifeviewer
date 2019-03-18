@@ -23,10 +23,6 @@
 		this.aliases = [];
 		this.sectionNames = [];
 
-		//this.aliases.push(["Hex Life", "B2o3m56/S2-p4oh"]);
-		//this.aliases.push(["22da", "B2o/S2-m"]);
-		//this.aliases.push(["Hexrule b2o", "B2o/S2m34"]);
-
 		// add 2 state totalistic aliases
 		this.sectionNames.push("OT M");
 		this.aliases.push(["Outer-Totalistic Moore", ""]);
@@ -229,6 +225,12 @@
 		this.aliases.push(["Wild Seas", "B2c3-cekq4ikt5i8/S2-in3-acky4aijry5eiky6i"]);
 		this.aliases.push(["X-rule-pre", "B2cei3ci4jnr5ikn/S12aen3c4einqy5er6aei8"]);
 		this.aliases.push(["Ylife", "B2e3ai4ar/S23-a4a"]);
+
+		// add 2-state isotropic non-totalistic aliases
+		this.sectionNames.push("NT H");
+		this.aliases.push(["Hex Life", "B2o3m56/S2-p4oh"]);
+		this.aliases.push(["22da", "B2o/S2-mh"]);
+		this.aliases.push(["Hexrule b2o", "B2o/S2m34h"]);
 
 		// add Generations aliases
 		this.sectionNames.push("OT M G");

@@ -187,7 +187,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 313,
+		/** @const {number} */ versionBuild : 314,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -348,7 +348,7 @@
 		/** @const {number} */ coloursTopic : 5,
 		/** @const {number} */ aliasesTopic : 6,
 		/** @const {number} */ memoryTopic : 7,
-		/** @const {number} */ annotationTopic : 8
+		/** @const {number} */ annotationsTopic : 8
 	},
 
 	// Controller singleton
@@ -1779,12 +1779,12 @@
 	// copy pattern pan X and Y
 	View.prototype.computePanXY = function(width, height) {
 		// check specified width and height
-		if (this.specifiedWidth !== -1) {
+		//if (this.specifiedWidth !== -1) {
 			//width = this.specifiedWidth;
-		}
-		if (this.specifiedHeight !== -1) {
+		//}
+		//if (this.specifiedHeight !== -1) {
 			//height = this.specifiedHeight;
-		}
+		//}
 
 		// check for bounded grid with CXRLE Pos
 		if (this.engine.boundedGridType !== -1 && this.posDefined) {
