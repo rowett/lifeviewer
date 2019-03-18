@@ -227,10 +227,11 @@
 		this.aliases.push(["Ylife", "B2e3ai4ar/S23-a4a"]);
 
 		// add 2-state isotropic non-totalistic aliases
-		this.sectionNames.push("NT H");
-		this.aliases.push(["Hex Life", "B2o3m56/S2-p4oh"]);
-		this.aliases.push(["22da", "B2o/S2-mh"]);
-		this.aliases.push(["Hexrule b2o", "B2o/S2m34h"]);
+		this.sectionNames.push("NT Hex");
+		this.aliases.push(["Isotropic Non-Totalistic Hex", ""]);
+		this.aliases.push(["Hex Life", "B2o3m56/S2-p4oH"]);
+		this.aliases.push(["22da", "B2o/S2-mH"]);
+		this.aliases.push(["Hexrule b2o", "B2o/S2m34H"]);
 
 		// add Generations aliases
 		this.sectionNames.push("OT M G");
