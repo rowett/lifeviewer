@@ -25,111 +25,111 @@
 	// cells decoder
 	var Cells = {
 		// magic header
-		magic1 : "!",
-		magic2 : "O",
-		magic3 : ".",
-		magic4 : "*",
-		magic5 : "o"
+		/** @const {string} */ magic1 : "!",
+		/** @const {string} */ magic2 : "O",
+		/** @const {string} */ magic3 : ".",
+		/** @const {string} */ magic4 : "*",
+		/** @const {string} */ magic5 : "o"
 	},
 
 	// Life 1.05 decoder
 	Life105 = {
 		// magic header
-		magic : "#Life 1.05"
+		/** @const {string} */ magic : "#Life 1.05"
 	},
 
 	// Life 1.06 decoder
 	Life106 = {
 		// magic header
-		magic : "#Life 1.06"
+		/** @const {string} */ magic : "#Life 1.06"
 	},
 
 	// pattern manager singleton
 	PatternManager = {
 		// base64 digits
-		base64Characters : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+		/** @const {string} */ base64Characters : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
 
 		// hex digits
-		hexCharacters : "0123456789abcdef",
+		/** @const {string} */ hexCharacters : "0123456789abcdef",
 
 		// number of base64 characters in 512bit (Moore) map string
-		map512Length : 86,
+		/** @const {number} */ map512Length : 86,
 
 		// number of base64 characters in 128bit (hexagonal) map string
-		map128Length : 22,
+		/** @const {number} */ map128Length : 22,
 
 		// number of base64 characters in 32bit (von Neumann) map string
-		map32Length : 6,
+		/** @const {number} */ map32Length : 6,
 
 		// number of neighbours for MAP rule
 		mapNeighbours : 8,
 
 		// extended command prefix
-		extendedPrefix : "XRLE",
+		/** @const {string} */ extendedPrefix : "XRLE",
 
 		// pos command
-		posCommand : "Pos",
+		/** @const {string} */ posCommand : "Pos",
 
 		// gen command
-		genCommand : "Gen",
+		/** @const {string} */ genCommand : "Gen",
 
 		// decode failure reason
 		failureReason : "",
 
 		// bounded grid prefix
-		boundedGridPrefix : ":",
+		/** @const {string} */ boundedGridPrefix : ":",
 
 		// valid bounded grid types
-		boundedGridTypes : "ptkcs",
+		/** @const {string} */ boundedGridTypes : "ptkcs",
 
 		// vadlid rule characters (digits must come first)
-		validRuleLetters : "012345678ceaiknjqrytwz-",
+		/** @const {string} */ validRuleLetters : "012345678ceaiknjqrytwz-",
 
 		// decimal digits
-		decimalDigits : "0123456789",
+		/** @const {string} */ decimalDigits : "0123456789",
 
 		// valid hex rule characters
-		validHexRuleLetters : "0123456omp-",
+		/** @const {string} */ validHexRuleLetters : "0123456omp-",
 
 		// hex digits
-		hexDigits : "0123456",
+		/** @const {string} */ hexDigits : "0123456",
 
 		// von neumann digits
-		vonNeumannDigits : "01234",
+		/** @const {string} */ vonNeumannDigits : "01234",
 
 		// rule letters
-		ruleLetters : ["ce", "ceaikn", "ceaiknjqry", "ceaiknjqrytwz"],
+		/** @const {Array<string>} */ ruleLetters : ["ce", "ceaikn", "ceaiknjqry", "ceaiknjqrytwz"],
 
 		// rule hex letters
-		ruleHexLetters : "omp",
+		/** @const {string} */ ruleHexLetters : "omp",
 
 		// rule hex neighborhoods
-		ruleHexNeighbourhoods : [[[6, 36, 160, 192, 72, 10], [132, 96, 136, 66, 12, 34], [68, 40, 130]], [[38, 164, 224, 200, 74, 14], [44, 162, 196, 104, 138, 70, 100, 168, 194, 76, 42, 134], [140, 98]], [[166, 228, 232, 202, 78, 46], [172, 226, 204, 106, 142, 102], [108, 170, 198]]],
+		/** @const {Array<Array<number>>} */ ruleHexNeighbourhoods : [[[6, 36, 160, 192, 72, 10], [132, 96, 136, 66, 12, 34], [68, 40, 130]], [[38, 164, 224, 200, 74, 14], [44, 162, 196, 104, 138, 70, 100, 168, 194, 76, 42, 134], [140, 98]], [[166, 228, 232, 202, 78, 46], [172, 226, 204, 106, 142, 102], [108, 170, 198]]],
 
 		// valid letters per digit
-		validLettersPerDigit : ["", "ce", "ceaikn", "ceaiknjqry", "ceaiknjqrytwz", "ceaiknjqry", "ceaikn", "ce", ""],
+		/** @const {Array<string>} */ validLettersPerDigit : ["", "ce", "ceaikn", "ceaiknjqry", "ceaiknjqrytwz", "ceaiknjqry", "ceaikn", "ce", ""],
 
 		// valid hex letters per digit
-		validHexLettersPerDigit : ["", "", "omp", "omp", "omp", "", ""],
+		/** @const {Array<string>} */ validHexLettersPerDigit : ["", "", "omp", "omp", "omp", "", ""],
 
 		// maximum number of letters for each neighbour count
-		maxLetters : [0, 2, 6, 10, 13, 10, 6, 2, 0],
+		/** @const {Array<number>} */ maxLetters : [0, 2, 6, 10, 13, 10, 6, 2, 0],
 
 		// order of letters for canonical format
-		orderLetters: [[0], [0, 1], [2, 0, 1, 3, 4, 5], [2, 0, 1, 3, 6, 4, 5, 7, 8, 9] , [2, 0, 1, 3, 6, 4, 5, 7, 8, 10, 11, 9, 12], [2, 0, 1, 3, 6, 4, 5, 7, 8, 9], [2, 0, 1, 3, 4, 5], [0, 1], [0]],
+		/** @const {Array<Array<number>>} */ orderLetters: [[0], [0, 1], [2, 0, 1, 3, 4, 5], [2, 0, 1, 3, 6, 4, 5, 7, 8, 9] , [2, 0, 1, 3, 6, 4, 5, 7, 8, 10, 11, 9, 12], [2, 0, 1, 3, 6, 4, 5, 7, 8, 9], [2, 0, 1, 3, 4, 5], [0, 1], [0]],
 
 		// rule neighbourhoods
-		ruleNeighbourhoods : [[1, 2], [5, 10, 3, 40, 33, 68], [69, 42, 11, 7, 98, 13, 14, 70, 41, 97], [325, 170, 15, 45, 99, 71, 106, 102, 43, 101, 105, 78, 108]],
+		/** @const {Array<Array<number>>} */ ruleNeighbourhoods : [[1, 2], [5, 10, 3, 40, 33, 68], [69, 42, 11, 7, 98, 13, 14, 70, 41, 97], [325, 170, 15, 45, 99, 71, 106, 102, 43, 101, 105, 78, 108]],
 
 		// negative bit in letters bitmask
-		negativeBit : 13,
+		/** @const {number} */ negativeBit : 13,
 
 		// maximum width and height of patterns
-		maxWidth : 16384,
-		maxHeight : 16384,
+		/** @const {number} */ maxWidth : 16384,
+		/** @const {number} */ maxHeight : 16384,
 
 		// maxmimum states
-		maxStates : 256,
+		/** @const {number} */ maxStates : 256,
 
 		// state count
 		stateCount : new Uint32Array(256),
@@ -150,13 +150,13 @@
 		extendedFormat : false,
 
 		// lower case name of [R]History postfix
-		historyPostfix : "history",
+		/** @const {string} */ historyPostfix : "history",
 
 		// lower case name of Hex postfix
-		hexPostfix : "h",
+		/** @const {string} */ hexPostfix : "h",
 
 		// lower case name of Von-Neumann postfix
-		vonNeumannPostfix : "v",
+		/** @const {string} */ vonNeumannPostfix : "v",
 
 		// flag if last pattern was too big
 		tooBig : false,
@@ -174,45 +174,45 @@
 		index : 0,
 
 		// LTL min and max range
-		minRangeLTL : 1,
-		maxRangeLTL : 500,
+		/** @const {number} */ minRangeLTL : 1,
+		/** @const {number} */ maxRangeLTL : 500,
 
 		// LTL min and max states
-		minStatesLTL : 0,
-		maxStatesLTL : 255,
+		/** @const {number} */ minStatesLTL : 0,
+		/** @const {number} */ maxStatesLTL : 255,
 
 		// LTL min and max middle value
-		minMiddleLTL : 0,
-		maxMiddleLTL : 1,
+		/** @const {number} */ minMiddleLTL : 0,
+		/** @const {number} */ maxMiddleLTL : 1,
 
 		// LTL neighborhoods
-		mooreLTL: 0,
-		vonNeumannLTL : 1,
-		circularLTL : 2,
+		/** @const {number} */ mooreLTL: 0,
+		/** @const {number} */ vonNeumannLTL : 1,
+		/** @const {number} */ circularLTL : 2,
 
 		// HROT min and max range
-		minRangeHROT: 1,
-		maxRangeHROT: 500,
+		/** @const {number} */ minRangeHROT: 1,
+		/** @const {number} */ maxRangeHROT: 500,
 
 		// HROT min and max states
-		minStatesHROT : 0,
-		maxStatesHROT : 255,
+		/** @const {number} */ minStatesHROT : 0,
+		/** @const {number} */ maxStatesHROT : 255,
 
 		// max state seen
 		maxSurvivalHROT : 0,
 		maxBirthHROT : 0,
 
 		// HROT neighborhoods
-		mooreHROT : 0,
-		vonNeumannHROT : 1,
-		circularHROT : 2,
+		/** @const {number} */ mooreHROT : 0,
+		/** @const {number} */ vonNeumannHROT : 1,
+		/** @const {number} */ circularHROT : 2,
 
 		// specified width and height from RLE pattern
 		specifiedWidth : -1,
 		specifiedHeight : -1,
 
 		// alternate rule separator
-		altRuleSeparator : "|",
+		/** @const {string} */altRuleSeparator : "|",
 		
 		// whether alternate rule specified
 		altSpecified : false
@@ -366,6 +366,18 @@
 
 		// pattern originator
 		this.originator = "";
+
+		// rule table name
+		this.ruleTableName = "";
+
+		// rule tree states
+		this.ruleTreeNumStates = -1;
+
+		// rule tree neighbours
+		this.ruleTreeNeighbors = -1;
+
+		// rule tree nodes
+		this.ruleTreeNodes = -1;
 	}
 
 	// copy settings from one pattern to another
@@ -5440,6 +5452,102 @@
 		}
 	};
 
+	// decode rule tree
+	PatternManager.decodeTree = function(pattern, index) {
+		var string = pattern.afterTitle,
+			endIndex = string.indexOf("\n", index),
+			length = string.length,
+			startIndex = 0,
+			settingsFound = 0,
+			valid = false;
+
+		if (endIndex !== -1) {
+			while (settingsFound !== 7 && endIndex < length) {
+				// get the next line
+				startIndex = endIndex + 1;
+				endIndex = string.indexOf("\n", startIndex);
+				if (endIndex === -1) {
+					endIndex = length;
+				}
+
+				// ignore comment lines
+				if (string[startIndex] !== "#") {
+					// check for one of the settings
+					if (string.substr(startIndex, 11) === "num_states=") {
+						settingsFound |= 1;
+					} else if (string.substr(startIndex, 14) === "num_neighbors=") {
+						settingsFound |= 2;
+					} else if (string.substr(startIndex, 10) === "num_nodes=") {
+						settingsFound |= 4;
+					}
+
+					// check for node
+					if (string[startIndex] >= "0" && string[startIndex] <= "9") {
+						// check settings were specified
+						if (settingsFound !== 7) {
+							endIndex = length;
+						} else {
+							// validate node
+						}
+					}
+				}
+			}
+		}
+
+		return valid;
+	};
+
+	// decode rule table
+	PatternManager.decodeRuleTable = function(pattern) {
+		var ruleIndex = 0,
+			tableIndex = 0,
+			treeIndex = 0,
+			colourIndex = 0,
+			endIndex = 0,
+			string = pattern.afterTitle,
+			length = string.length,
+			valid = false;
+
+		ruleIndex = string.indexOf("@RULE ");
+		if (ruleIndex !== -1) {
+			// get the rule name
+			endIndex = string.indexOf("\n", ruleIndex);
+			if (endIndex === -1) {
+				endIndex = length;
+			}
+			pattern.ruleTableName = string.substring(ruleIndex + 6, endIndex).trim();
+
+			// search for a table or tree
+			tableIndex = string.indexOf("@TABLE", endIndex);
+			treeIndex = string.indexOf("@TREE", endIndex);
+
+			// check if both were present
+			if (tableIndex !== -1 && treeIndex !== -1) {
+				// pick the first one
+				if (tableIndex < treeIndex) {
+					treeIndex = -1;
+				} else {
+					tableIndex = -1;
+				}
+			}
+
+			// decode whichever was specified
+			if (tableIndex !== -1) {
+				valid = this.decodeTable(pattern, tableIndex);
+			} else if (treeIndex !== -1) {
+				valid = this.decodeTree(pattern, treeIndex);
+			}
+
+			// if valid then search for colours
+			if (valid) {
+				colourIndex = string.indexOf("@COLORS", endIndex);
+				if (colourIndex !== -1) {
+					valid = this.decodeColours(pattern, colourIndex);
+				}
+			}
+		}
+	};
+
 	// add a pattern to the list
 	PatternManager.create = function(name, source, allocator) {
 		// create a pattern skeleton
@@ -5561,6 +5669,9 @@
 				if (newPattern.afterTitle[newPattern.afterTitle.length - 1] !== "\n") {
 					newPattern.afterTitle += "\n";
 				}
+
+				// check if the after comments contain a rule definition
+				this.decodeRuleTable(newPattern);
 			}
 		}
 

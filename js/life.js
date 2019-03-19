@@ -674,19 +674,25 @@
 
 		// use bounded grid if defined
 		if (this.boundedGridType !== -1) {
-		    // bounded grid top left
-		    leftX = Math.round((this.width - this.boundedGridWidth) / 2);
-		    bottomY = Math.round((this.height - this.boundedGridHeight) / 2);
+			if (this.boundedGridWidth !== 0) {
+				// set width to included bounded grid cells
+				leftX = Math.round((this.width - this.boundedGridWidth) / 2) - 1;
+				rightX = leftX + this.boundedGridWidth - 1 + 2;
+			} else {
+				// infinite width so set to grid width
+				leftX = 0;
+				rightX = this.width - 1;
+			}
 
-		    // bounded grid bottom right
-		    rightX = leftX + this.boundedGridWidth - 1;
-			topY = bottomY + this.boundedGridHeight - 1;
-
-			// expand to include bounded grid cells
-			leftX -= 1;
-			rightX += 1;
-			bottomY -= 1;
-			topY += 1;
+			if (this.boundedGridHeight !== 0) {
+				// set height to included bounded grid cells
+				bottomY = Math.round((this.height - this.boundedGridHeight) / 2) - 1;
+				topY = bottomY + this.boundedGridHeight - 1 + 2;
+			} else {
+				// infinite height to set to grid height
+				bottomY = 0;
+				topY = this.height - 1;
+			}
 		}
 
 		// create hexagon coordinates
@@ -814,11 +820,7 @@
 							coords[k + 5] = ya2 + cy;
 							coords[k + 6] = xa3 + cx;
 							coords[k + 7] = ya3 + cy;
-							coords[k + 8] = xa4 + cx;
-							coords[k + 9] = ya4 + cy;
-							coords[k + 10] = xa5 + cx;
-							coords[k + 11] = ya5 + cy;
-							k += 12;
+							k += 8;
 							j += 1;
 						}
 						// check if buffer is full
@@ -855,7 +857,7 @@
 			cx2 = 0, cy2 = 0,
 			hexAdjust = -(this.height >> 2),
 			coord = 0, cx0 = 0, cy0 = 0,
-			target = 0,
+			target = 0, batch = 12,
 			state = 0, lastState = -1,
 			coords = this.hexCells,
 			hexCells = this.numHexCells,
@@ -881,8 +883,10 @@
 		// draw each hexagon
 		context.beginPath();
 		if (!filled) {
+			// if drawing the grid then only three line segments are needed
 			coord = 0;
-			target = 12;
+			batch = 8;
+			target = batch;
 			state = 0;
 			lastState = 0;
 		}
@@ -891,7 +895,7 @@
 			if (filled) {
 				state = colours[i];
 				coord = state & mask;
-				target = coord + 12;
+				target = coord + batch;
 				state = state >> LifeConstants.hexCellBufferBits;
 			}
 
@@ -934,10 +938,7 @@
 				coord += 2;
 				context.lineTo(cx2 + x, cy2 + y);
 			}
-			target += 12;
-			if (!filled) {
-				context.lineTo(x, y);
-			}
+			target += batch;
 		}
 		if (filled) {
 			context.fill();
@@ -1143,6 +1144,18 @@
 
 			// whether a cell was or became LifeHistory state6
 			result = 0;
+
+		// check for bounded grid cylinders
+		if (this.boundedGridType !== -1) {
+			if (this.boundedGridWidth === 0) {
+				leftX = 0;
+				rightX = this.width - 1;
+			}
+			if (this.boundedGridHeight === 0) {
+				bottomY = 0;
+				topY = this.height - 1;
+			}
+		}
 
 		// check if the cell is on the grid
 		if (!((x === (x & this.widthMask)) && (y === (y & this.heightMask)))) {
@@ -1386,6 +1399,18 @@
 					if (col <= this.historyStates) {
 						result = 0;
 					} else {
+						// check for bounded grid cylinders
+						if (this.boundedGridType !== -1) {
+							if (this.boundedGridWidth === 0) {
+								leftX = 0;
+								rightX = this.width - 1;
+							}
+							if (this.boundedGridHeight === 0) {
+								bottomY = 0;
+								topY = this.height - 1;
+							}
+						}
+
 						// check for bounded grid border cell
 						if (this.boundedGridType !== -1 && col === this.boundedBorderColour && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
 							result = 0;

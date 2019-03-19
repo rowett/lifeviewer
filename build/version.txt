@@ -1,3 +1,8 @@
+Build 315
+- could not edit patterns which had cylindrical bounded grids
+- hex patterns would not display cylindrical bounded grid borders when using hexagons
+- improved hexagonal grid lines drawing speed
+
 Build 314
 - fixed hexagonal grid colours
 - addded isotropic non-totalistic hexagonal aliases
