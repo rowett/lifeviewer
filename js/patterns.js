@@ -212,10 +212,25 @@
 		specifiedHeight : -1,
 
 		// alternate rule separator
-		/** @const {string} */altRuleSeparator : "|",
+		/** @const {string} */ altRuleSeparator : "|",
 		
 		// whether alternate rule specified
-		altSpecified : false
+		altSpecified : false,
+
+		// rule table rule section including trailing space
+		/** @const {string} */ ruleTableRuleName : "@RULE ",
+
+		// rule table tree section
+		/** @const {string} */ ruleTableTreeName : "@TREE",
+
+		// rule table table section
+		/** @const {string} */ ruleTableTableName : "@TABLE",
+
+		// tule table colours section
+		/** @const {string} */ ruleTableColoursName : "@COLORS",
+
+		// rule table icons section
+		/** @const {string} */ ruleTableIconsName : "@ICONS"
 	};
 
 	// Life pattern constructor
@@ -5452,7 +5467,28 @@
 		}
 	};
 
-	// decode rule tree
+	// decode rule table icons TBD
+	PatternManager.decodeIcons = function(pattern, index) {
+		var valid = false;
+
+		return valid;
+	};
+
+	// decode rule table colours TBD
+	PatternManager.decodeColours = function(pattern, index) {
+		var valid = false;
+
+		return valid;
+	};
+
+	// decode rule table table TBD
+	PatternManager.decodeTable = function(pattern, index) {
+		var valid = false;
+
+		return valid;
+	};
+
+	// decode rule table tree
 	PatternManager.decodeTree = function(pattern, index) {
 		var string = pattern.afterTitle,
 			endIndex = string.indexOf("\n", index),
@@ -5503,23 +5539,24 @@
 			tableIndex = 0,
 			treeIndex = 0,
 			colourIndex = 0,
+			iconIndex = 0,
 			endIndex = 0,
 			string = pattern.afterTitle,
 			length = string.length,
 			valid = false;
 
-		ruleIndex = string.indexOf("@RULE ");
+		ruleIndex = string.indexOf(PatternManager.ruleTableRuleName);
 		if (ruleIndex !== -1) {
 			// get the rule name
 			endIndex = string.indexOf("\n", ruleIndex);
 			if (endIndex === -1) {
 				endIndex = length;
 			}
-			pattern.ruleTableName = string.substring(ruleIndex + 6, endIndex).trim();
+			pattern.ruleTableName = string.substring(ruleIndex + PatternManager.ruleTableRuleName.length, endIndex).trim();
 
 			// search for a table or tree
-			tableIndex = string.indexOf("@TABLE", endIndex);
-			treeIndex = string.indexOf("@TREE", endIndex);
+			tableIndex = string.indexOf(PatternManager.ruleTableTableName, endIndex);
+			treeIndex = string.indexOf(PatternManager.ruleTableTreeName, endIndex);
 
 			// check if both were present
 			if (tableIndex !== -1 && treeIndex !== -1) {
@@ -5540,9 +5577,16 @@
 
 			// if valid then search for colours
 			if (valid) {
-				colourIndex = string.indexOf("@COLORS", endIndex);
+				colourIndex = string.indexOf(PatternManager.ruleTableColoursName, endIndex);
 				if (colourIndex !== -1) {
 					valid = this.decodeColours(pattern, colourIndex);
+				}
+				// if valid then search for icons
+				if (valid) {
+					iconIndex = string.indexOf(PatternManager.ruleTableIconsName, endIndex);
+					if (iconIndex !== -1) {
+						valid = this.decodeIcons(pattern, iconIndex);
+					}
 				}
 			}
 		}
