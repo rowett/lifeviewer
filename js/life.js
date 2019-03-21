@@ -136,7 +136,8 @@
 	};
 
 	// check if theme has colour history
-	Theme.prototype.hasHistory = function(isLifeHistory) {
+	/** @return {boolean} */
+	Theme.prototype.hasHistory = function(/** boolean */ isLifeHistory) {
 		var result = true;
 
 		// always return true if the pattern is [R]History since history states are saved in RLE
@@ -168,6 +169,7 @@
 	};
 
 	// is same colour function
+	/** @return {boolean} */
 	Colour.prototype.isSameColour = function(compareColour) {
 		var result = false;
 
@@ -200,19 +202,19 @@
 	/**
 	 * @constructor
 	 */
-	function Life(context, displayWidth, displayHeight, gridWidth, gridHeight) {
+	function Life(context, /** number */ displayWidth, /** number */ displayHeight, /** number */ gridWidth, /** number */ gridHeight) {
 		// allocator
 		this.allocator = new Allocator();
 
 		// cell colour strings
-		this.cellColourStrings = [];
+		/** Array<string> */ this.cellColourStrings = [];
 
 		// before and after RLE comments
-		this.beforeTitle = "";
-		this.afterTitle = "";
+		/** string */ this.beforeTitle = "";
+		/** string */ this.afterTitle = "";
 
 		// bounded grid border colour
-		this.boundedBorderColour = 255;
+		/** number */ this.boundedBorderColour = 255;
 
 		// custom state colours
 		this.customColours = null;
@@ -227,36 +229,36 @@
 		this.deathGraphData = null;
 
 		// population graph entries
-		this.popGraphEntries = 0;
+		/** number */ this.popGraphEntries = 0;
 
 		// maximum population value
-		this.maxPopValue = 0;
+		/** number */ this.maxPopValue = 0;
 
 		// x, y and z origin
-		this.originX = 0;
-		this.originY = 0;
-		this.originZ = 1;
+		/** number */ this.originX = 0;
+		/** number */ this.originY = 0;
+		/** number */ this.originZ = 1;
 
 		// whether anything is alive
-		this.anythingAlive = 0;
+		/** number */ this.anythingAlive = 0;
 
 		// bounded grid type
-		this.boundedGridType = -1;
+		/** number */ this.boundedGridType = -1;
 
 		// bounded grid size
-		this.boundedGridWidth = -1;
-		this.boundedGridHeight = -1;
+		/** number */ this.boundedGridWidth = -1;
+		/** number */ this.boundedGridHeight = -1;
 
 		// bounded grid shifts
-		this.boundedGridHorizontalShift = 0;
-		this.boundedGridVerticalShift = 0;
+		/** number */ this.boundedGridHorizontalShift = 0;
+		/** number */ this.boundedGridVerticalShift = 0;
 
 		// bounded grid twists
-		this.boundedGridHorizontalTwist = false;
-		this.boundedGridVerticalTwist = false;
+		/** number */ this.boundedGridHorizontalTwist = false;
+		/** number */ this.boundedGridVerticalTwist = false;
 
 		// remove pattern radius
-		this.removePatternRadius = ViewConstants.defaultDeleteRadius;
+		/** number*/ this.removePatternRadius = ViewConstants.defaultDeleteRadius;
 
 		// stack for boundary pattern clear
 		this.boundaryX = [];
@@ -265,40 +267,40 @@
 		this.boundaryY[0] = this.allocator.allocate(Int32, LifeConstants.removePatternBufferSize, "Life.boundaryY0");
 
 		// number of boundary pages
-		this.boundaryPages = 0;
+		/** number */ this.boundaryPages = 0;
 
 		// boundary colour
-		this.boundaryColour = 0xffffffff;
+		/** number */ this.boundaryColour = 0xffffffff;
 
 		// whether rule is Wolfram
-		this.wolframRule = -1;
+		/** number */ this.wolframRule = -1;
 
 		// whether neighbourhood is hex
-		this.isHex = false;
+		/** boolean */ this.isHex = false;
 
 		// whether to draw cells as hexagons in hex display mode
-		this.useHexagons = true;
+		/** boolean */ this.useHexagons = true;
 
-		// pattern neighbourhood
-		this.patternDisplayMode = false;
+		// whether to display square or hex grid
+		/** boolean */ this.patternDisplayMode = false;
 
-		// whether nieghbourhood is Von Neumann
-		this.isVonNeumann = false;
+		// whether neighbourhood is Von Neumann
+		/** boolean */ this.isVonNeumann = false;
 
 		// number of states for multi-state rules (Generations or HROT)
-		this.multiNumStates = -1;
+		/** number */ this.multiNumStates = -1;
 
 		// whether pattern is LifeHistory
-		this.isLifeHistory = false;
+		/** boolean */ this.isLifeHistory = false;
 
 		// how many history states to draw
-		this.historyStates = 0;
+		/** number */ this.historyStates = 0;
 
 		// whether pattern is HROT
-		this.isHROT = false;
+		/** boolean */ this.isHROT = false;
 
 		// whether to draw overlay
-		this.drawOverlay = false;
+		/** boolean */ this.drawOverlay = false;
 
 		// create the snapshot manager
 		this.snapshotManager = new SnapshotManager(this.allocator, this.bitCounts16);
@@ -307,10 +309,10 @@
 		this.nextSnapshotTarget = LifeConstants.snapshotInterval;
 
 		// whether current theme has history
-		this.themeHistory = false;
+		/** boolean */ this.themeHistory = false;
 
 		// whether to display grid lines
-		this.displayGrid = false;
+		/** boolean */ this.displayGrid = false;
 
 		// zoom bounding box
 		this.zoomBox = null;
@@ -328,115 +330,115 @@
 		this.trackBox = null;
 
 		// program title
-		this.title = "LifeViewer";
+		/** @const {string} */ this.title = "LifeViewer";
 
 		// width of life grid in pixels
-		this.width = gridWidth;
+		/** number */ this.width = gridWidth;
 
 		// height of life grid in pixels
-		this.height = gridHeight;
+		/** number */ this.height = gridHeight;
 
 		// number of pixels per tile (2^n)
-		this.tilePower = 4;
+		/** @const {number} */ this.tilePower = 4;
 
 		// tile width in bytes
-		this.tileX = (1 << this.tilePower) >> 3;
+		/** @const {number} */ this.tileX = (1 << this.tilePower) >> 3;
 
 		// tile height in pixels
-		this.tileY = 1 << this.tilePower;
+		/** @const {number} */ this.tileY = 1 << this.tilePower;
 
 		// number of tile columns
-		this.tileCols = this.width >> this.tilePower;
+		/** number */ this.tileCols = this.width >> this.tilePower;
 
 		// number of tile rows
-		this.tileRows = this.height >> this.tilePower;
+		/** number */ this.tileRows = this.height >> this.tilePower;
 
 		// snapshot for reset
 		this.resetSnapshot = this.snapshotManager.createSnapshot(((this.tileCols - 1) >> 4) + 1, this.tileRows, true, 0);
 
 		// display width
-		this.displayWidth = displayWidth;
+		/** number */ this.displayWidth = displayWidth;
 		
 		// display height
-		this.displayHeight = displayHeight;
+		/** number */ this.displayHeight = displayHeight;
 
 		// population of grid
-		this.population = 0;
+		/** number */ this.population = 0;
 
 		// births in last generation
-		this.births = 0;
+		/** number */ this.births = 0;
 
 		// deaths in last generation
-		this.deaths = 0;
+		/** number */ this.deaths = 0;
 
 		// cell colour index for new cell
-		this.aliveStart = LifeConstants.aliveStart;
+		/** @const {number} */ this.aliveStart = LifeConstants.aliveStart;
 
 		// cell colour index for cell alive longest
-		this.aliveMax = LifeConstants.aliveMax;
+		/** @const {number} */ this.aliveMax = LifeConstants.aliveMax;
 
 		// cell colour index for cell just dead
-		this.deadStart = LifeConstants.deadStart;
+		/** @const {number} */ this.deadStart = LifeConstants.deadStart;
 
 		// cell colour index for cell dead longest
-		this.deadMin = LifeConstants.deadMin;
+		/** @const {number} */ this.deadMin = LifeConstants.deadMin;
 
 		// cell colour index for cell never occupied
-		this.unoccupied = 0;
+		/** @const {number} */ this.unoccupied = 0;
 		
 		// last update time
-		this.lastUpdate = 0;
+		/** number */ this.lastUpdate = 0;
 
 		// first update time
-		this.firstUpdate = 0;
+		/** number */ this.firstUpdate = 0;
 
 		// number of layers to draw
-		this.layers = 1;
+		/** number */ this.layers = 1;
 
 		// flag if depth shading on
-		this.depthOn = true;
+		/** boolean */ this.depthOn = true;
 
 		// flag if layers on
-		this.layersOn = true;
+		/** boolean */ this.layersOn = true;
 
 		// colour theme number
-		this.colourTheme = 1;
+		/** number */ this.colourTheme = 1;
 
 		// colour change
-		this.colourChange = 1;
-		this.colourChangeSteps = 30;
+		/** number */ this.colourChange = 1;
+		/** number */ this.colourChangeSteps = 30;
 
 		// survival rule
-		this.survival = (1 << 2) | (1 << 3);
+		/** number */ this.survival = (1 << 2) | (1 << 3);
 
 		// birth rule
-		this.birth = (1 << 3);
+		/** number */ this.birth = (1 << 3);
 
 		// number of generations
-		this.counter = 0;
+		/** number */ this.counter = 0;
 
 		// angle of rotation
-		this.angle = 0;
+		/** number */ this.angle = 0;
 
 		// zoom factor
-		this.zoom = 6;
+		/** number */ this.zoom = 6;
 		
 		// x and y pan
-		this.xOff = 0;
-		this.yOff = 0;
+		/** number */ this.xOff = 0;
+		/** number */ this.yOff = 0;
 
 		// layer depth
-		this.layerDepth = 0.1;
+		/** number */ this.layerDepth = 0.1;
 
 		// current camera settings
-		this.camAngle = 0;
-		this.camZoom = 1;
-		this.camXOff = 0;
-		this.camYOff = 0;
-		this.camLayerDepth = 0.1;
+		/** number */ this.camAngle = 0;
+		/** number */ this.camZoom = 1;
+		/** number */ this.camXOff = 0;
+		/** number */ this.camYOff = 0;
+		/** number */ this.camLayerDepth = 0.1;
 
 		// endian flag
-		this.littleEndian = littleEndian;
+		/** @const {boolean} */ this.littleEndian = littleEndian;
 
 		// list of themes
 		this.themes = [];
@@ -460,7 +462,7 @@
 		this.unoccupiedGenTarget = null;
 
 		// number of colour themes (will be computed when themes are added)
-		this.numThemes = -1;
+		/** number */ this.numThemes = -1;
 
 		// 8 bit view of image data required if CanvasPixelArray used
 		this.data8 = null;
@@ -475,8 +477,8 @@
 		this.context = context;
 
 		// bit masks for width and height
-		this.widthMask = 0;
-		this.heightMask = 0;
+		/** number */ this.widthMask = 0;
+		/** number */ this.heightMask = 0;
 
 		// life tile grid and double buffer
 		this.tileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.tileGrid");
@@ -557,8 +559,8 @@
 
 
 		// 512 bit density all/odd generations
-		this.density = 0;
-		this.densityOdd = 0;
+		/** number */ this.density = 0;
+		/** number */ this.densityOdd = 0;
 
 		// hash lookup for custom maps
 		this.indexLookup33 = this.allocator.allocate(Uint8, LifeConstants.hash33, "Life.indexLookup33");
@@ -577,44 +579,44 @@
 		this.gridLineRaw = ViewConstants.gridLineRawDefault;
 
 		// grid line colour
-		this.gridLineColour = -1;
+		/** number */ this.gridLineColour = -1;
 
 		// grid line bold colour in raw format R G B
-		this.gridLineBoldRaw = ViewConstants.gridLineBoldRawDefault;
+		/** number */ this.gridLineBoldRaw = ViewConstants.gridLineBoldRawDefault;
 
 		// grid line bold colour
-		this.gridLineBoldColour = -1;
+		/** number */ this.gridLineBoldColour = -1;
 
 		// grid line major interval and enablement
-		this.gridLineMajor = 10;
-		this.gridLineMajorEnabled = true;
-		this.customGridLineMajor = false;
+		/** number */ this.gridLineMajor = 10;
+		/** boolean */ this.gridLineMajorEnabled = true;
+		/** boolean */ this.customGridLineMajor = false;
 
 		// user defined grid line major (to restore if theme doesn't define one)
-		this.definedGridLineMajor = 10;
+		/** number */ this.definedGridLineMajor = 10;
 
 		// column occupancy array for grid bounding box calculation
 		this.columnOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16");
 
 		// current maximum grid size
-		this.maxGridSize = 8192;
+		/** number */ this.maxGridSize = 8192;
 
 		// graph default colours
-		this.graphBgDefColor = [0, 0, 48];
-		this.graphAxisDefColor = [255, 255, 255];
-		this.graphAliveDefColor = [255, 255, 255];
-		this.graphBirthDefColor = [0, 255, 0];
-		this.graphDeathDefColor = [255, 0, 0];
+		/** Array<number> */ this.graphBgDefColor = [0, 0, 48];
+		/** Array<number> */ this.graphAxisDefColor = [255, 255, 255];
+		/** Array<number> */ this.graphAliveDefColor = [255, 255, 255];
+		/** Array<number> */ this.graphBirthDefColor = [0, 255, 0];
+		/** Array<number> */ this.graphDeathDefColor = [255, 0, 0];
 
 		// graph current colours
-		this.graphBgColor = [0, 0, 48];
-		this.graphAxisColor = [255, 255, 255];
-		this.graphAliveColor = [255, 255, 255];
-		this.graphBirthColor = [0, 255, 0];
-		this.graphDeathColor = [255, 0, 0];
+		/** Array<number> */ this.graphBgColor = [0, 0, 48];
+		/** Array<number> */ this.graphAxisColor = [255, 255, 255];
+		/** Array<number> */ this.graphAliveColor = [255, 255, 255];
+		/** Array<number> */ this.graphBirthColor = [0, 255, 0];
+		/** Array<number> */ this.graphDeathColor = [255, 0, 0];
 
 		// HROT engine
-		this.HROT = new HROT(this.allocator, this.width, this.height, this);
+		this.HROT = new HROT(this.allocator, this);
 
 		// hex cell coordinates
 		this.hexCells = this.allocator.allocate(Float32, 1, "Life.hexCells");
@@ -623,10 +625,10 @@
 		this.hexColours = this.allocator.allocate(Uint32, 1, "Life.hexColours");
 
 		// number of hex cells
-		this.numHexCells = 0;
+		/** number */ this.numHexCells = 0;
 
 		// whether pattern dirty (just edited)
-		this.dirty = false;
+		/** boolean */ this.dirty = false;
 	}
 
 	// draw hexagons 
@@ -634,35 +636,47 @@
 		var colourGrid = this.colourGrid,
 			colourRow = null,
 			zoomBox = this.historyBox,
-			halfDisplayWidth = this.displayWidth / 2,
-			halfDisplayHeight = this.displayHeight / 2,
-			x = 0, y = 0, j = 0, k = 0,
-			cx = 0, cy = 0,
-			w2 = this.width / 2 - 0.25,
-			h2 = this.height / 2,
-			pi3 = Math.PI / 3,
-			yEdge = 0.5 / Math.cos(pi3 / 2), 
-			xEdge = (Math.sqrt(3) / 4) / Math.cos(pi3 / 2),
-			xa = [], ya = [],
-			state = 0,
-			xa0 = 0, ya0 = 0,
-			xa1 = 0, ya1 = 0,
-			xa2 = 0, ya2 = 0,
-			xa3 = 0, ya3 = 0,
-			xa4 = 0, ya4 = 0,
-			xa5 = 0, ya5 = 0,
-			coords = this.hexCells,
-			colours = this.hexColours,
-			leftX = zoomBox.leftX,
-			rightX = zoomBox.rightX,
-			bottomY = zoomBox.bottomY,
-			topY = zoomBox.topY,
-			yOff = this.height / 2 - this.yOff - this.originY + 0.5,
-			xOff = this.width / 2 - this.xOff - this.originX + 0.5 -(this.height >> 2) + yOff / 2,
-			zoom = this.zoom * this.originZ,
-			displayY = 0, displayX = 0,
-			xOffset = 0,
-			linearZoom = 1;
+			/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
+			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
+			/** number */ x = 0,
+			/** number */ y = 0,
+			/** number */ j = 0,
+			/** number */ k = 0,
+			/** number */ cx = 0,
+			/** number */ cy = 0,
+			/** @const {number} */ w2 = this.width / 2 - 0.25,
+			/** @const {number} */ h2 = this.height / 2,
+			/** @const {number} */ pi3 = Math.PI / 3,
+			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2), 
+			/** @const {number} */ xEdge = (Math.sqrt(3) / 4) / Math.cos(pi3 / 2),
+			/** @const {Array<number>} */ xa = [],
+			/** @const {Array<number>} */ ya = [],
+			/** number */ state = 0,
+			/** number */ xa0 = 0,
+			/** number */ ya0 = 0,
+			/** number */ xa1 = 0,
+			/** number */ ya1 = 0,
+			/** number */ xa2 = 0,
+			/** number */ ya2 = 0,
+			/** number */ xa3 = 0,
+			/** number */ ya3 = 0,
+			/** number */ xa4 = 0,
+			/** number */ ya4 = 0,
+			/** number */ xa5 = 0,
+			/** number */ ya5 = 0,
+			/** Array<number> */ coords = this.hexCells,
+			/** Array<number> */ colours = this.hexColours,
+			/** number */ leftX = zoomBox.leftX,
+			/** number */ rightX = zoomBox.rightX,
+			/** number */ bottomY = zoomBox.bottomY,
+			/** number */ topY = zoomBox.topY,
+			/** number */ yOff = this.height / 2 - this.yOff - this.originY + 0.5,
+			/** number */ xOff = this.width / 2 - this.xOff - this.originX + 0.5 -(this.height >> 2) + yOff / 2,
+			/** number */ zoom = this.zoom * this.originZ,
+			/** number */ displayY = 0,
+			/** number */ displayX = 0,
+			/** number */ xOffset = 0,
+			/** number */ linearZoom = 1;
 
 		// check if buffers have been allocated
 		if (colours.length !== LifeConstants.hexCellBufferSize) {
@@ -844,25 +858,32 @@
 	};
 
 	// draw hex cells
-	Life.prototype.drawHexCells = function(filled) {
-		var i = 0,
+	Life.prototype.drawHexCells = function(/** boolean */ filled) {
+		var /** number */ i = 0,
 			context = this.context,
-			xOff = this.width / 2 - this.xOff - this.originX,
-			yOff = this.height / 2 - this.yOff - this.originY,
-			zoom = this.zoom * this.originZ,
-			halfDisplayWidth = this.displayWidth / 2,
-			halfDisplayHeight = this.displayHeight / 2,
-			x = 0, y = 0,
-			cx = 0, cy = 0,
-			cx2 = 0, cy2 = 0,
-			hexAdjust = -(this.height >> 2),
-			coord = 0, cx0 = 0, cy0 = 0,
-			target = 0, batch = 12,
-			state = 0, lastState = -1,
-			coords = this.hexCells,
-			hexCells = this.numHexCells,
-			colours = this.hexColours,
-			mask = (1 << LifeConstants.hexCellBufferBits) - 1;
+			/** number */ xOff = this.width / 2 - this.xOff - this.originX,
+			/** number */ yOff = this.height / 2 - this.yOff - this.originY,
+			/** @const {number} */ zoom = this.zoom * this.originZ,
+			/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
+			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
+			/** number */ x = 0,
+			/** number */ y = 0,
+			/** number */ cx = 0,
+			/** number */ cy = 0,
+			/** number */ cx2 = 0,
+			/** number */ cy2 = 0,
+			/** @const {number} */ hexAdjust = -(this.height >> 2),
+			/** number */ coord = 0,
+			/** number */ cx0 = 0,
+			/** number */ cy0 = 0,
+			/** number */ target = 0,
+			/** number */ batch = 12,
+			/** number */ state = 0,
+			/** number */ lastState = -1,
+			/** Array<number> */ coords = this.hexCells,
+			/** @const {number} */ hexCells = this.numHexCells,
+			/** Array<number> */ colours = this.hexColours,
+			/** @const {number} */ mask = (1 << LifeConstants.hexCellBufferBits) - 1;
 
 		// adjust for hex
 		xOff += yOff / 2;
@@ -948,31 +969,32 @@
 	};
 
 	// convert grid to RLE
-	Life.prototype.asRLE = function(view, me, addComments) {
-		var rle = "",
+	/** @return {string} */
+	Life.prototype.asRLE = function(view, me, /** boolean */ addComments) {
+		var /** string */ rle = "",
 			zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
-			leftX = zoomBox.leftX,
-			rightX = zoomBox.rightX,
-			topY = zoomBox.topY,
-			bottomY = zoomBox.bottomY,
-			width = rightX - leftX + 1,
-			height = topY - bottomY + 1,
-			x = 0,
-			y = 0,
-			state = 0,
-			last = 0,
-			count = 0,
-			rowCount = 0,
-			lastLength = 0,
-			charsPerRow = 69,
-			outputState = [],
-			maxState = 0,
-			asciiA = String("A").charCodeAt(0),
-			asciiP = String("p").charCodeAt(0),
-			twoState = false,
+			/** number */ leftX = zoomBox.leftX,
+			/** number */ rightX = zoomBox.rightX,
+			/** number */ topY = zoomBox.topY,
+			/** number */ bottomY = zoomBox.bottomY,
+			/** number */ width = rightX - leftX + 1,
+			/** number */ height = topY - bottomY + 1,
+			/** number */ x = 0,
+			/** number */ y = 0,
+			/** number */ state = 0,
+			/** number */ last = 0,
+			/** number */ count = 0,
+			/** number */ rowCount = 0,
+			/** number */ lastLength = 0,
+			/** @const {number} */ charsPerRow = 69,
+			/** @const {Array<string>} */ outputState = [],
+			/** number */ maxState = 0,
+			/** @const {number} */ asciiA = String("A").charCodeAt(0),
+			/** @const {number} */ asciiP = String("p").charCodeAt(0),
+			/** boolean */ twoState = false,
 			colourGrid = this.colourGrid,
 			colourRow = null,
-			col = 0;
+			/** number */ col = 0;
 
 		// populate output states
 		if (me.multiNumStates <= 2 && !me.isLifeHistory) {
@@ -1109,7 +1131,8 @@
 	};
 
 	// set state
-	Life.prototype.setState = function(x, y, state) {
+	/** @result {number} */
+	Life.prototype.setState = function(/** number */ x, /** number */ y, /** number */ state) {
 		var grid = this.grid16,
 			tileGrid = this.tileGrid,
 			nextGrid = this.nextGrid16,
@@ -1123,27 +1146,27 @@
 			historyBox = this.historyBox,
 
 		    // bounded grid top left
-		    leftX = Math.round((this.width - this.boundedGridWidth) / 2),
-		    bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
+		    /** number */ leftX = Math.round((this.width - this.boundedGridWidth) / 2),
+		    /** number */ bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
 
 		    // bounded grid bottom right
-		    rightX = leftX + this.boundedGridWidth - 1,
-			topY = bottomY + this.boundedGridHeight - 1,
+		    /** number */ rightX = leftX + this.boundedGridWidth - 1,
+			/** number */ topY = bottomY + this.boundedGridHeight - 1,
 
 			// multi-state alive cell
-			aliveState = 0,
+			/** number */ aliveState = 0,
 
 			// current cell state
-			current = 0,
+			/** number */ current = 0,
 
 			// whether cell should be alive in bit grid
-			bitAlive = false,
+			/** boolean */ bitAlive = false,
 
 			// whether the cell is on the grid
-			onGrid = true,
+			/** boolean */ onGrid = true,
 
 			// whether a cell was or became LifeHistory state6
-			result = 0;
+			/** number */ result = 0;
 
 		// check for bounded grid cylinders
 		if (this.boundedGridType !== -1) {
@@ -1229,7 +1252,7 @@
 					}
 
 					// check for LifeHistory
-					if (this.isLifeHistory) {
+					if (this.isLifeHistory && overlayGrid) {
 						// check if the cell used to be or has become state 6
 						current = overlayGrid[y][x];
 						if (current > 0) {
@@ -1348,8 +1371,8 @@
 	};
 
 	// allocate or clear graph data
-	Life.prototype.allocateGraphData = function(allocate) {
-		var entries = 1 << LifeConstants.popChunkPower;
+	Life.prototype.allocateGraphData = function(/** boolean */ allocate) {
+		var /** @const {number} */ entries = 1 << LifeConstants.popChunkPower;
 
 		if (allocate) {
 			this.popGraphData = Array.matrix(Uint32, 1, entries, 0, this.allocator, "Life.popGraphData");
@@ -1361,30 +1384,30 @@
 			this.birthGraphData = Array.matrix(Uint32, 0, 0, 0, this.allocator, "Life.birthGraphData");
 			this.deathGraphData = Array.matrix(Uint32, 0, 0, 0, this.allocator, "Life.deathGraphData");
 			this.popGraphEntries = 0;
-
 		}
 	};
 
 	// get state
-	Life.prototype.getState = function(x, y, rawRequested) {
+	/** @result {number} */
+	Life.prototype.getState = function(/** number */ x, /** number */ y, /** boolean */ rawRequested) {
 		// result
-		var result = 0,
-		    col = 0,
-		    over = 0,
+		var /** number */ result = 0,
+		    /** number */ col = 0,
+		    /** number */ over = 0,
 
 		    // get states 3, 4, 5 and 6
-		    state3 = ViewConstants.stateMap[3] + 128,
-		    state4 = ViewConstants.stateMap[4] + 128,
-		    state5 = ViewConstants.stateMap[5] + 128,
-			state6 = ViewConstants.stateMap[6] + 128,
+		    /** @const {number} */ state3 = ViewConstants.stateMap[3] + 128,
+		    /** @const {number} */ state4 = ViewConstants.stateMap[4] + 128,
+		    /** @const {number} */ state5 = ViewConstants.stateMap[5] + 128,
+			/** @const {number} */ state6 = ViewConstants.stateMap[6] + 128,
 			
 		    // bounded grid top left
-		    leftX = Math.round((this.width - this.boundedGridWidth) / 2),
-		    bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
+		    /** number */ leftX = Math.round((this.width - this.boundedGridWidth) / 2),
+		    /** number */ bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
 
 		    // bounded grid bottom right
-		    rightX = leftX + this.boundedGridWidth - 1,
-			topY = bottomY + this.boundedGridHeight - 1;
+		    /** number */ rightX = leftX + this.boundedGridWidth - 1,
+			/** number */ topY = bottomY + this.boundedGridHeight - 1;
 
 		// check if coordinates are on the grid
 		if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
@@ -1471,17 +1494,18 @@
 	};
 
 	// count tiles in a grid
+	/** @return {number} */
 	Life.prototype.tileCount = function(tile) {
 		var tileRow = null,
-		    y = 0,
-		    x = 0,
-		    tileGroup = 0,
-		    l = tile.length,
-		    w = tile[0].length,
+		    /** number */ y = 0,
+		    /** number */ x = 0,
+		    /** number */ tileGroup = 0,
+		    /** @const {number} */ l = tile.length,
+		    /** @const {number} */ w = tile[0].length,
 		    bitCounts16 = this.bitCounts16,
 
 		    // zero count
-		    result = 0;
+		    /** number */ result = 0;
 
 		// count tiles used
 		for (y = 0; y < l; y += 1) {
@@ -6624,7 +6648,7 @@
 		    gridRow2 = null,
 		    h = 0, b = 0,
 		    val0 = 0, val1 = 0, val2 = 0, output = 0, th = 0, tw = 0,
-	       	    grid = null, nextGrid = null,
+			grid = null, nextGrid = null,
 		    tileGrid = null, nextTileGrid = null,
 		    tileRow = null, nextTileRow = null,
 		    belowNextTileRow = null, aboveNextTileRow = null,

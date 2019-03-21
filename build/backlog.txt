@@ -1,4 +1,5 @@
 Investigate:
+    Rule Table rules
     Brian's BSFKL notation
     "Extended" Generations
     Deficient rules

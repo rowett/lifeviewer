@@ -1,3 +1,6 @@
+Build 316
+- fixed single phase Copy on Firefox
+
 Build 315
 - could not edit patterns which had cylindrical bounded grids
 - hex patterns would not display cylindrical bounded grid borders when using hexagons

@@ -187,7 +187,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 315,
+		/** @const {number} */ versionBuild : 316,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -716,6 +716,9 @@
 
 		// textarea used for RLE copy
 		this.tempInput = null;
+
+		// div used for RLE copy
+		this.tempDiv = null;
 
 		// string containing RLE
 		this.tempRLE = "";
@@ -5292,12 +5295,18 @@
 
 		// copy the element contents to a temporary off-screen element
 		// since selection doesn't work on hidden elements
+		me.tempDiv = document.createElement("div");
+		me.tempDiv.contentEditable = true;
+		me.hideElement(me.tempDiv);
 		me.tempInput = document.createElement(elementType);
 		me.hideElement(me.tempInput);
 		me.tempInput.contentEditable = true;
 
-		// add the new element to the document
-		document.body.appendChild(me.tempInput);
+		// add the the textarea to the div
+		me.tempDiv.appendChild(me.tempInput);
+
+		// add the new div to the document
+		document.body.appendChild(me.tempDiv);
 
 		// check if processing in a single phase
 		if (!twoPhase) {
@@ -5319,7 +5328,11 @@
 	// complete copy to clipboard
 	View.prototype.completeCopyToClipboard = function(me, twoPhase) {
 		// select and copy the temporary elements contents to the clipboard
-		me.tempInput.focus();
+		if (!me.isEdge) {
+			me.tempDiv.focus();
+		} else {
+			me.tempInput.focus();
+		}
 
 		try {
 			document.execCommand("selectAll");
@@ -5329,7 +5342,7 @@
 		}
 
 		// remove the temporary element
-		document.body.removeChild(me.tempInput);
+		document.body.removeChild(me.tempDiv);
 		me.tempRLE = "";
 
 		// set focus to the canvas

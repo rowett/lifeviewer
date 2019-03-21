@@ -16,8 +16,7 @@
 	function registerEvent(element, event, handler, capture) {
 		if (element.addEventListener) {
 			element.addEventListener(event, handler, capture);
-		}
-		else {
+		} else {
 			element.attachEvent("on" + event, handler);
 		}
 	}
@@ -74,8 +73,7 @@
 	data8 = new Uint8Array(data32.buffer);
 	if (data8[0] === 0x34) {
 		window["littleEndian"] = true;
-	}
-	else {
+	} else {
 		window["littleEndian"] = false;
 	}
 	
