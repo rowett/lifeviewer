@@ -1,5 +1,6 @@
 Build 316
 - fixed single phase Copy on Firefox
+- fixed step back after pattern dies
 
 Build 315
 - could not edit patterns which had cylindrical bounded grids

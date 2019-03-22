@@ -5208,6 +5208,8 @@
 
 	// run to given generation (used to step back)
 	View.prototype.runTo = function(targetGen) {
+		var fading = this.historyStates + (this.engine.multiNumStates > 0 ? this.engine.multiNumStates : 0);
+
 		// check whether history enabled
 		if (this.noHistory) {
 			this.menuManager.notification.notify("Step back disabled", 15, 40, 15, true);
@@ -5226,8 +5228,13 @@
 				this.floatCounter = targetGen;
 				this.originCounter = targetGen;
 	
-				// run to target generation
-				this.engine.runTo(targetGen, this.statsOn, this.graphDisabled);
+				// don't actually step back if pattern is dead at the requested generation
+				if (this.diedGeneration !== -1 && targetGen > this.diedGeneration + fading) {
+					this.engine.counter = targetGen;
+				} else {
+					// run to target generation
+					this.engine.runTo(targetGen, this.statsOn, this.graphDisabled);
+				}
 	
 				// notify waypoint manager of change
 				this.waypointManager.steppedBack(this.elapsedTime);

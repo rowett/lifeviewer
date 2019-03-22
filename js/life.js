@@ -13,6 +13,20 @@
 	// Life constants
 	/** @const */
 	var LifeConstants = {
+		// NW glider
+		/** @const {Array<Array<number>>} */ gliderNW :	[[[1, 1, 0],
+														  [1, 0, 1],
+														  [1, 0, 0]],
+														 [[0, 1, 1],
+														  [1, 1, 0],
+														  [0, 0, 1]],
+														 [[1, 1, 1],
+														  [1, 0, 0],
+														  [0, 1, 0]],
+														 [[0, 1, 0],
+														  [1, 1, 0],
+														  [1, 0, 1]]],
+		
 		// hex cell coordinate buffer size
 		/** @const {number} */ hexCellBufferSize : 4096,
 
@@ -205,6 +219,12 @@
 	function Life(context, /** number */ displayWidth, /** number */ displayHeight, /** number */ gridWidth, /** number */ gridHeight) {
 		// allocator
 		this.allocator = new Allocator();
+
+		// flag whether to clear escaping gliders
+		/** boolean */ this.clearGliders = false;
+
+		// gliders as 5x3 integers (blank cell left and right)
+		/** @const {Array<number>} */ this.gliderInteger = [];
 
 		// cell colour strings
 		/** Array<string> */ this.cellColourStrings = [];
@@ -1532,8 +1552,7 @@
 	Life.prototype.runTo = function(targetGen, statsOn, graphDisabled) {
 		// get the latest snapshot
 		var numSnapshots = this.snapshotManager.snapshots.length,
-		    snapshot = this.snapshotManager.snapshotBefore(targetGen),
-		    result = true;
+		    snapshot = this.snapshotManager.snapshotBefore(targetGen);
 
 		// check if a snapshot was deleted
 		if (numSnapshots !== this.snapshotManager.snapshots.length) {
@@ -1548,20 +1567,18 @@
 
 			// play from the snapshot counter to just before the target with stats off (for speed)
 			while (this.counter < targetGen - 1) {
+				this.anythingAlive = 1;
 				this.nextGeneration(false, true, graphDisabled);
 				this.convertToPensTile();
 			}
 
 			// compute the final generation with stats on if required
 			if (this.counter < targetGen) {
+				this.anythingAlive = 1;
 				this.nextGeneration(statsOn, true, graphDisabled);
+				this.convertToPensTile();
 			}
-
-			result = this.convertToPensTile();
 		}
-
-		// return whether any cells are alive
-		return result;
 	};
 
 	// restore snapshot
@@ -2430,6 +2447,9 @@
 		} else {
 			pixelColour = 0x000000ff;
 		}
+
+		// make glider integers
+		this.makeGliderIntegers();
 
 		// disable overlay
 		this.drawOverlay = false;
@@ -4888,6 +4908,119 @@
 		}
 	};
 
+	// make glider integers out of the four phases of NW glider
+	Life.prototype.makeGliderIntegers = function() {
+		var /** number */ p = 0,
+			/** @const {Array<Array<Array<number>>>} */ gliderNW = LifeConstants.gliderNW,
+			/** @const {Array<number>} */ gliderInteger = this.gliderInteger,
+			/** @const {Array<Array<number>>} */ phase = null,
+			/** @const {Array<number>} */ row0 = null,
+			/** @const {Array<number>} */ row1 = null,
+			/** @const {Array<number>} */ row2 = null;
+
+		// make integers
+		for (p = 0; p <= 3; p += 1) {
+			phase = gliderNW[p];
+			row0 = phase[0];
+			row1 = phase[1];
+			row2 = phase[2];
+			// NW glider
+			gliderInteger[p] = (row0[0] << 3) | (row0[1] << 2) | (row0[2] << 1) |
+								(row1[0] << 8) | (row1[1] << 7) | (row1[2] << 6) |
+								(row2[0] << 13) | (row2[1] << 12) | (row2[2] << 11);
+			// NE glider
+			gliderInteger[p + 4] = (row0[2] << 3) | (row0[1] << 2) | (row0[0] << 1) |
+								(row1[2] << 8) | (row1[1] << 7) | (row1[0] << 6) |
+								(row2[2] << 13) | (row2[1] << 12) | (row2[0] << 11);
+			// SW glider
+			gliderInteger[11 - p] = gliderInteger[p]; 
+			// SE glider
+			gliderInteger[15 - p] = gliderInteger[p + 4];
+		}
+	};
+
+	// find NE glider
+	/** @return {boolean} */
+	Life.prototype.findAndDeleteNE = function(/** number */ x, /** number */ y) {
+		var /** boolean */ found = false;
+
+		return found;
+	};
+
+	// find NW glider
+	/** @return {boolean} */
+	Life.prototype.findAndDeleteNW = function(/** number */ x, /** number */ y) {
+		var /** boolean */ found = false;
+
+		return found;
+	};
+
+	// find SE glider
+	/** @return {boolean} */
+	Life.prototype.findAndDeleteSE = function(/** number */ x, /** number */ y) {
+		var /** boolean */ found = false;
+
+		return found;
+	};
+
+	// find SW glider
+	/** @return {boolean} */
+	Life.prototype.findAndDeleteSW = function(/** number */ x, /** number */ y) {
+		var /** boolean */ found = false;
+
+		return found;
+	};
+
+	// clear escaping gliders
+	Life.prototype.clearEscapingGliders = function() {
+		var /** number */ x = 0,
+			/** number */ y = 0,
+			/** @const {number} */ leftX = this.zoomBox.leftX,
+			/** @const {number} */ rightX = this.zoomBox.leftX,
+			/** @const {number} */ bottomY = this.zoomBox.leftX,
+			/** @const {number} */ topY = this.zoomBox.leftX,
+			colourGrid = this.colourGrid,
+			topRow = colourGrid[topY],
+			bottomRow = colourGrid[bottomY],
+			aliveStart = this.aliveStart,
+			currentRow = null;
+
+		// ignore bounded grids
+		if (this.boundedGridType === -1) {
+			// check top and bottom rows
+			for (x = leftX; x <= rightX; x += 1) {
+				if (topRow(x) >= aliveStart) {
+					// NW and NE glider
+					if (!this.findAndDeleteNW(x, y)) {
+						this.findAndDelteNE(x, y);
+					}
+				}
+				if (bottomRow(x) >= aliveStart) {
+					// SW and SE glider
+					if (!this.findAndDeleteSW(x, y)) {
+						this.findAndDelteSE(x, y);
+					}
+				}
+			}
+			// check left and right columns
+			for (y = bottomY; y <= topY; y += 1) {
+				currentRow = colourGrid[y];
+				if (currentRow(leftX) >= aliveStart) {
+					// NW and SW glider
+					if (!this.findAndDeleteNW(x, y)) {
+						this.findAndDelteSW(x, y);
+					}
+				}
+				if (currentRow(rightX) >= aliveStart) {
+					// NE and SE glider
+					if (!this.findAndDelteNE(x, y)) {
+						this.findAndDeleteSW(x, y);
+					}
+				}
+			}
+		}
+	};
+
 	// set bounded grid tiles
 	Life.prototype.setBoundedTiles = function() {
 		// counters
@@ -5714,6 +5847,11 @@
 		// check for Generations
 		if (this.multiNumStates !== -1 && !this.isHROT) {
 			this.nextGenerationGenerations();
+		}
+
+		// clear ecaping gliders if enabled
+		if (this.clearGliders) {
+			this.clearEscapingGliders();
 		}
 
 		// check if state 6 is on
