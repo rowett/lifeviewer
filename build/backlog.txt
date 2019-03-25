@@ -1,5 +1,4 @@
 Investigate:
-    Rule Table rules
     Brian's BSFKL notation
     "Extended" Generations
     Deficient rules
@@ -9,8 +8,21 @@ Investigate:
 
 Planned:
     User preferences
+    Grey out individual items in a UI multi-select
 
 In progress:
+[STARTED]Triangular neighbourhood
+    - build triangular lookup array
+    - build next generation function
+    - triangle renderer
+    [DONE]decode triangular neighbourhood rules
+[STARTED]Delete boundary gliders
+    - seach boundaries for gliders and remove them
+    [DONE]create glider lookup for the 4 phases of NE, NW, SE and SW orientations
+[STARTED]Rule Table rules
+    - search after RLE terminating ! character for rule table sections
+    - decode @TABLE, @TREE, @COLORS and @ICONS
+    - implement rule table algorithm
 [STARTED]Pattern Editor
     - ability to define rule
     - improved LifeHistory drawing modes

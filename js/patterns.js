@@ -88,6 +88,9 @@
 		// decimal digits
 		/** @const {string} */ decimalDigits : "0123456789",
 
+		// valid triangular rule characters
+		/** @const {string} */ validTriangularRuleLetters : "0123456789abc",
+
 		// valid hex rule characters
 		/** @const {string} */ validHexRuleLetters : "0123456omp-",
 
@@ -151,6 +154,9 @@
 
 		// lower case name of [R]History postfix
 		/** @const {string} */ historyPostfix : "history",
+
+		// lower case name of triangular postfix
+		/** @const {string} */ triangularPostfix : "t",
 
 		// lower case name of Hex postfix
 		/** @const {string} */ hexPostfix : "h",
@@ -284,6 +290,9 @@
 		// is hex rule
 		this.isHex = false;
 
+		// is triangular rule
+		this.isTriangular = false;
+
 		// is Wolfram rule
 		this.wolframRule = -1;
 
@@ -401,6 +410,7 @@
 		this.ruleName = source.ruleName;
 		this.aliasName = source.aliasName;
 		this.isHex = source.isHex;
+		this.isTriangular = source.isTriangular;
 		this.wolframRule = source.wolframRule;
 		this.isVonNeumann = source.isVonNeumann;
 		this.isLTL = source.isLTL;
@@ -453,6 +463,7 @@
 		this.ruleName = "";
 		this.aliasName = "";
 		this.isHex = false;
+		this.isTriangular = false;
 		this.wolframRule = -1;
 		this.isVonNeumann = false;
 		this.isLTL = false;
@@ -481,7 +492,7 @@
 		}
 
 		// check for neighborhoods
-		if ((this.isHex !== source.isHex) || (this.isVonNeumann !== source.isVonNeumann) || (this.wolframRule !== source.wolframRule) || (this.neighborhoodLTL !== source.neighborhoodLTL) || (this.neighborhoodHROT !== source.neighborhoodHROT)) {
+		if ((this.isHex !== source.isHex) || (this.isTriangular !== source.isTriangular) || (this.isVonNeumann !== source.isVonNeumann) || (this.wolframRule !== source.wolframRule) || (this.neighborhoodLTL !== source.neighborhoodLTL) || (this.neighborhoodHROT !== source.neighborhoodHROT)) {
 			return "Alternate has different neighborhood";
 		}
 
@@ -1862,8 +1873,54 @@
 		}
 	};
 
+	// create a triangular map from birth and survival strings
+	PatternManager.createTriangularRuleMap = function(birthPart, survivalPart, generationsStates) {
+		var canonicalName = "",
+			letters = this.validTriangularRuleLetters,
+			i = 0,
+			j = 0,
+			birthMask = 0,
+			survivalMask = 0,
+			birthName = "",
+			survivalName = "";
+
+		// find out which birth letters are specified
+		for (i = 0; i < birthPart.length; i += 1) {
+			j = letters.indexOf(birthPart[i]);
+			birthMask |= (1 << j);
+		}
+		// add birth letters in order to canonical rule name
+		for (i = 0; i < letters.length; i += 1) {
+			if ((birthMask & (1 << i)) !== 0) {
+				birthName += letters[i];
+			}
+		}
+
+		// find out which survival letters are specified
+		for (i = 0; i < survivalPart.length; i += 1) {
+			j = letters.indexOf(survivalPart[i]);
+			survivalMask |= (1 << j);
+		}
+
+		// add survival letters in order to canonical rule name
+		for (i = 0; i < letters.length; i += 1) {
+			if ((survivalMask & (1 << i)) !== 0) {
+				survivalName += letters[i];
+			}
+		}
+
+		// create canonical rule name
+		if (generationsStates !== -1) {
+			canonicalName = survivalName + "/" + birthName + "/" + generationsStates;
+		} else {
+			canonicalName = "B" + birthName + "/S" + survivalName;
+		}
+
+		return canonicalName;
+	};
+
 	// create the rule map from birth and survival strings
-	PatternManager.createRuleMap = function(birthPart, survivalPart, base64, isHex, isVonNeumann, generationsStates, ruleArray) {
+	PatternManager.createRuleMap = function(birthPart, survivalPart, base64, isHex, isTriangular, isVonNeumann, generationsStates, ruleArray) {
 		var i = 0,
 		    j = 0,
 		    c = 0,
@@ -1878,105 +1935,110 @@
 		    fullchars = (power2 / 6) | 0,
 		    tempArray = new Uint8Array(512);
 
-		// create the masks
-		mask = 511;
-		if (isHex) {
-			mask = 254;
+		// check for triangular rules
+		if (isTriangular) {
+			canonicalName = this.createTriangularRuleMap(birthPart, survivalPart, generationsStates);
 		} else {
-			if (isVonNeumann) {
-				mask = 186;
-			}
-		}
-
-		// clear the rule array
-		for (i = 0; i < 512; i += 1) {
-			tempArray[i] = 0;
-			ruleArray[i] = 0;
+			// create the masks
+			mask = 511;
 			if (isHex) {
-				swapArray[i] = i;
+				mask = 254;
 			} else {
-				swapArray[i] = (i & 448) >> 6 | i & 56 | (i & 7) << 6;
+				if (isVonNeumann) {
+					mask = 186;
+				}
 			}
-		}
-
-		// check for base64 map rules
-		if (base64 !== "") {
-			// create the canonical name
-			canonicalName = "MAP";
-
-			// decode the base64 string
-			for (i = 0; i < fullchars; i += 1) {
-				canonicalName += base64[i];
+	
+			// clear the rule array
+			for (i = 0; i < 512; i += 1) {
+				tempArray[i] = 0;
+				ruleArray[i] = 0;
+				if (isHex) {
+					swapArray[i] = i;
+				} else {
+					swapArray[i] = (i & 448) >> 6 | i & 56 | (i & 7) << 6;
+				}
+			}
+	
+			// check for base64 map rules
+			if (base64 !== "") {
+				// create the canonical name
+				canonicalName = "MAP";
+	
+				// decode the base64 string
+				for (i = 0; i < fullchars; i += 1) {
+					canonicalName += base64[i];
+					c = PatternManager.base64Characters.indexOf(base64[i]);
+					tempArray[j] = c >> 5;
+					j += 1;
+					tempArray[j] = (c >> 4) & 1;
+					j += 1;
+					tempArray[j] = (c >> 3) & 1;
+					j += 1;
+					tempArray[j] = (c >> 2) & 1;
+					j += 1;
+					tempArray[j] = (c >> 1) & 1;
+					j += 1;
+					tempArray[j] = c & 1;
+					j += 1;
+				}
+	
+				// decode final character
 				c = PatternManager.base64Characters.indexOf(base64[i]);
 				tempArray[j] = c >> 5;
 				j += 1;
 				tempArray[j] = (c >> 4) & 1;
-				j += 1;
-				tempArray[j] = (c >> 3) & 1;
-				j += 1;
-				tempArray[j] = (c >> 2) & 1;
-				j += 1;
-				tempArray[j] = (c >> 1) & 1;
-				j += 1;
-				tempArray[j] = c & 1;
-				j += 1;
-			}
-
-			// decode final character
-			c = PatternManager.base64Characters.indexOf(base64[i]);
-			tempArray[j] = c >> 5;
-			j += 1;
-			tempArray[j] = (c >> 4) & 1;
-			canonicalName += PatternManager.base64Characters[c & ((1 << 5) | (1 << 4))];
-
-			// copy into array using the neighbourhood mask
-			for (i = 0; i < 512; i += 1) {
-				k = 0;
-				m = PatternManager.mapNeighbours;
-				for (j = 8; j >= 0; j -= 1) {
-					if ((mask & (1 << j)) !== 0) {
-						if ((i & (1 << j)) !== 0) {
-							k |= (1 << m);
+				canonicalName += PatternManager.base64Characters[c & ((1 << 5) | (1 << 4))];
+	
+				// copy into array using the neighbourhood mask
+				for (i = 0; i < 512; i += 1) {
+					k = 0;
+					m = PatternManager.mapNeighbours;
+					for (j = 8; j >= 0; j -= 1) {
+						if ((mask & (1 << j)) !== 0) {
+							if ((i & (1 << j)) !== 0) {
+								k |= (1 << m);
+							}
+							m -= 1;
 						}
-						m -= 1;
+					}
+					ruleArray[swapArray[i]] = tempArray[k];
+				}
+	
+				// check for generation states
+				if (generationsStates !== -1) {
+					canonicalName += "/" + generationsStates;
+				}
+			} else {
+				// check for neighbourhoods that are totalistic only
+				if (isVonNeumann) {
+					// set the von Neumann birth rule
+					birthName = this.setTotalisticRuleFromString(ruleArray, birthPart, false, mask);
+		
+					// set the von Neumann survival rule
+					survivalName = this.setTotalisticRuleFromString(ruleArray, survivalPart, true, mask);
+				} else {
+					if (isHex) {
+						// set the hex birth rule
+						birthName = this.setHexRuleFromString(ruleArray, birthPart, false);
+	
+						// set the hex survival rule
+						survivalName = this.setHexRuleFromString(ruleArray, survivalPart, true);
+					} else {
+						// set the Moore birth rule
+						birthName = this.setRuleFromString(ruleArray, birthPart, false);
+			
+						// set the Moore survival rule
+						survivalName = this.setRuleFromString(ruleArray, survivalPart, true);
 					}
 				}
-				ruleArray[swapArray[i]] = tempArray[k];
-			}
-
-			// check for generation states
-			if (generationsStates !== -1) {
-				canonicalName += "/" + generationsStates;
-			}
-		} else {
-			// check for neighbourhoods that are totalistic only
-			if (isVonNeumann) {
-				// set the von Neumann birth rule
-				birthName = this.setTotalisticRuleFromString(ruleArray, birthPart, false, mask);
-	
-				// set the von Neumann survival rule
-				survivalName = this.setTotalisticRuleFromString(ruleArray, survivalPart, true, mask);
-			} else {
-				if (isHex) {
-					// set the hex birth rule
-					birthName = this.setHexRuleFromString(ruleArray, birthPart, false);
-
-					// set the hex survival rule
-					survivalName = this.setHexRuleFromString(ruleArray, survivalPart, true);
-				} else {
-					// set the Moore birth rule
-					birthName = this.setRuleFromString(ruleArray, birthPart, false);
 		
-					// set the Moore survival rule
-					survivalName = this.setRuleFromString(ruleArray, survivalPart, true);
+				// create the canonical name
+				if (generationsStates !== -1) {
+					canonicalName = survivalName + "/" + birthName + "/" + generationsStates;
+				} else {
+					canonicalName = "B" + birthName + "/S" + survivalName;
 				}
-			}
-	
-			// create the canonical name
-			if (generationsStates !== -1) {
-				canonicalName = survivalName + "/" + birthName + "/" + generationsStates;
-			} else {
-				canonicalName = "B" + birthName + "/S" + survivalName;
 			}
 		}
 
@@ -2123,6 +2185,10 @@
 			} else {
 				if (pattern.isVonNeumann) {
 					pattern.ruleName += "V";
+				} else {
+					if (pattern.isTriangular) {
+						pattern.ruleName += "T";
+					}
 				}
 			}
 
@@ -3354,6 +3420,12 @@
 		    // hex postfix length
 		    hexLength = PatternManager.hexPostfix.length,
 
+			// triangular index
+			triangularIndex = -1,
+
+			// triangular postfix length
+			triangularLength = PatternManager.triangularPostfix.length,
+
 		    // von neumann index
 		    vonNeumannIndex = -1,
 
@@ -3615,6 +3687,19 @@
 						// decode Wolframe rule
 						valid = this.decodeWolfram(pattern, rule);
 					} else {
+						// check for triangular rules
+						triangularIndex = rule.lastIndexOf(PatternManager.triangularPostfix);
+						if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularLength)) {
+							// rule is a triangular type
+							pattern.isTriangular = true;
+
+							// remove the postfix
+							rule = rule.substr(0, rule.length - triangularLength);
+
+							// update the valid rule letters to triangular letters
+							validRuleLetters = this.validTriangularRuleLetters;
+						}
+
 						// check for Hex rules
 						hexIndex = rule.lastIndexOf(PatternManager.hexPostfix);
 						if ((hexIndex !== -1) && (hexIndex === rule.length - hexLength)) {
@@ -3665,6 +3750,19 @@
 
 								// remove the generations part
 								rule = rule.substr(0, generationsIndex);
+
+								// check for triangular rules
+								triangularIndex = rule.lastIndexOf(PatternManager.triangularPostfix);
+								if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularLength)) {
+									// rule is a triangular type
+									pattern.isTriangular = true;
+
+									// remove the postfix
+									rule = rule.substr(0, rule.length - triangularLength);
+
+									// update the valid rule letters to triangular letters
+									validRuleLetters = this.validTriangularRuleLetters;
+								}
 
 								// check for Hex rules
 								hexIndex = rule.lastIndexOf(PatternManager.hexPostfix);
@@ -3842,7 +3940,7 @@
 		// if valid the create the rule
 		if (valid && pattern.wolframRule === -1 && pattern.isLTL === false && pattern.isHROT === false) {
 			// create the canonical name and the rule map
-			pattern.ruleName = this.createRuleMap(birthPart, survivalPart, base64, pattern.isHex, pattern.isVonNeumann, pattern.multiNumStates, ruleArray);
+			pattern.ruleName = this.createRuleMap(birthPart, survivalPart, base64, pattern.isHex, pattern.isTriangular, pattern.isVonNeumann, pattern.multiNumStates, ruleArray);
 			if (this.failureReason !== "") {
 				valid = false;
 			}

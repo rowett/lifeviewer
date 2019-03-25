@@ -295,6 +295,9 @@
 		// whether rule is Wolfram
 		/** number */ this.wolframRule = -1;
 
+		// whether neighbourhood is triangular
+		/** boolean */ this.isTriangular = false;
+
 		// whether neighbourhood is hex
 		/** boolean */ this.isHex = false;
 
