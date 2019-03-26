@@ -27,11 +27,11 @@
 														  [1, 1, 0],
 														  [1, 0, 1]]],
 		
-		// hex cell coordinate buffer size
-		/** @const {number} */ hexCellBufferSize : 4096,
+		// hex and triangle cell coordinate buffer size
+		/** @const {number} */ hexTriangleCellBufferSize : 4096,
 
-		// hex cell bits for buffer (must be hexCellBufferSize * 16 bits big)
-		/** @const {number} */ hexCellBufferBits : 16,
+		// hex cell bits for buffer (must be hexTriangleCellBufferSize * 16 bits big)
+		/** @const {number} */ hexTriangleCellBufferBits : 16,
 
 		// remove pattern cell buffer (must be power of 2)
 		/** @const {number} */ removePatternBufferSize : 4096,
@@ -641,18 +641,292 @@
 		// HROT engine
 		this.HROT = new HROT(this.allocator, this);
 
-		// hex cell coordinates
-		this.hexCells = this.allocator.allocate(Float32, 1, "Life.hexCells");
+		// hex or triangle cell coordinates
+		this.hexTriangleCells = this.allocator.allocate(Float32, 1, "Life.hexTriangleCells");
 
-		// hex cell colours
-		this.hexColours = this.allocator.allocate(Uint32, 1, "Life.hexColours");
+		// hex or triangle cell colours
+		this.hexTriangleColours = this.allocator.allocate(Uint32, 1, "Life.hexTriangleColours");
 
-		// number of hex cells
-		/** number */ this.numHexCells = 0;
+		// number of hex or triangle cells
+		/** number */ this.numHexTriangleCells = 0;
 
 		// whether pattern dirty (just edited)
 		/** boolean */ this.dirty = false;
 	}
+
+	// draw triangles 
+	Life.prototype.drawTriangles = function() {
+		var colourGrid = this.colourGrid,
+			colourRow = null,
+			zoomBox = this.historyBox,
+			/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
+			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
+			/** number */ x = 0,
+			/** number */ y = 0,
+			/** number */ j = 0,
+			/** number */ k = 0,
+			/** number */ cx = 0,
+			/** number */ cy = 0,
+			/** @const {number} */ w2 = this.width / 2 - 0.25,
+			/** @const {number} */ h2 = this.height / 2,
+			/** number */ state = 0,
+			/** Array<number> */ coords = this.hexTriangleCells,
+			/** Array<number> */ colours = this.hexTriangleColours,
+			/** number */ leftX = zoomBox.leftX,
+			/** number */ rightX = zoomBox.rightX,
+			/** number */ bottomY = zoomBox.bottomY,
+			/** number */ topY = zoomBox.topY,
+			/** number */ yOff = this.height / 2 - this.yOff - this.originY + 0.5,
+			/** number */ xOff = this.width / 2 - this.xOff - this.originX + 0.5,
+			/** number */ zoom = this.zoom * this.originZ,
+			/** number */ displayY = 0,
+			/** number */ displayX = 0,
+			/** number */ xOffset = 0,
+			/** number */ linearZoom = 1,
+			/** number */ oddEven = 0;
+
+		// check if buffers have been allocated
+		if (colours.length !== LifeConstants.hexTriangleCellBufferSize) {
+			this.hexTriangleCells = this.allocator.allocate(Float32, 12 * LifeConstants.hexTriangleCellBufferSize, "Life.hexTriangleCells");
+			this.hexTriangleColours = this.allocator.allocate(Uint32, LifeConstants.hexTriangleCellBufferSize, "Life.hexTriangleColours");
+			coords = this.hexTriangleCells;
+			colours = this.hexTriangleColours;
+		}
+
+		// use bounded grid if defined
+		if (this.boundedGridType !== -1) {
+			if (this.boundedGridWidth !== 0) {
+				// set width to included bounded grid cells
+				leftX = Math.round((this.width - this.boundedGridWidth) / 2) - 1;
+				rightX = leftX + this.boundedGridWidth - 1 + 2;
+			} else {
+				// infinite width so set to grid width
+				leftX = 0;
+				rightX = this.width - 1;
+			}
+
+			if (this.boundedGridHeight !== 0) {
+				// set height to included bounded grid cells
+				bottomY = Math.round((this.height - this.boundedGridHeight) / 2) - 1;
+				topY = bottomY + this.boundedGridHeight - 1 + 2;
+			} else {
+				// infinite height to set to grid height
+				bottomY = 0;
+				topY = this.height - 1;
+			}
+		}
+
+		// create triangles from live cells
+		this.context.lineWidth = 1;
+		this.context.lineCap = "round";
+		this.context.lineJoin = "round";
+		j = 0;
+		k = 0;
+		for (y = bottomY; y <= topY; y += 1) {
+			// clip y to window
+			displayY = ((y + yOff - h2) * zoom) + halfDisplayHeight;
+			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+				colourRow = colourGrid[y];
+				cy = y - h2;
+				xOffset = xOff - w2;
+				for (x = leftX; x <= rightX; x += 1) {
+					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
+					if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
+						state = colourRow[x];
+						if (state > 0) {
+							// encode coordinate index into the colour state so it can be sorted later
+							colours[j] = (state << LifeConstants.hexTriangleCellBufferBits) + k;
+							cx = x - w2;
+							oddEven = ((x + y) & 1);
+							coords[k] = cx - 1;
+							coords[k + 1] = cy + oddEven;
+							coords[k + 2] = cx + 1;
+							coords[k + 3] = cy + oddEven;
+							coords[k + 4] = cx;
+							coords[k + 5] = cy + 1 - oddEven;
+							k += 6;
+							j += 1;
+						}
+						// check if buffer is full
+						if (j === LifeConstants.hexTriangleCellBufferSize) {
+							// draw and clear buffer
+							this.numHexTriangleCells = j;
+							this.drawTriangleCells(true);
+							j = 0;
+							k = 0;
+						}
+					}
+				}
+			}
+		}
+
+		// draw any remaining cells
+		this.numHexTriangleCells = j;
+		if (j > 0) {
+			this.drawTriangleCells(true);
+			j = 0;
+			k = 0;
+		}
+
+		// draw grid if enabled
+		if (this.displayGrid) {
+			// set grid line colour
+			this.context.strokeStyle = "rgb(" + (this.gridLineRaw >> 16) + "," + ((this.gridLineRaw >> 8) & 255) + "," + (this.gridLineRaw & 255) + ")";
+			linearZoom = Math.log(zoom / 4) / Math.log(ViewConstants.maxZoom / 4);
+			this.context.lineWidth = (linearZoom + 1.5) | 0;
+
+			// create cell coordinates for window
+			bottomY = ((-halfDisplayHeight / zoom) - yOff + h2) | 0;
+			topY = ((halfDisplayHeight / zoom) - yOff + h2) | 0;
+
+			j = 0;
+			for (y = bottomY; y <= topY; y += 1) {
+				// clip y to window
+				displayY = ((y + yOff - h2) * zoom) + halfDisplayHeight;
+				if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+					colourRow = colourGrid[y];
+					cy = y - h2;
+					xOffset = xOff - w2;
+					leftX = ((-halfDisplayWidth / zoom) - xOffset - zoom) | 0;
+					rightX = ((halfDisplayWidth / zoom) - xOffset + zoom) | 0;
+					for (x = leftX; x <= rightX; x += 1) {
+						displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
+						if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
+							cx = x - w2;
+							oddEven = ((x + y) & 1);
+							coords[k] = cx - 1;
+							coords[k + 1] = cy + oddEven;
+							coords[k + 2] = cx + 1;
+							coords[k + 3] = cy + oddEven;
+							coords[k + 4] = cx;
+							coords[k + 5] = cy + 1 - oddEven;
+							k += 6;
+							j += 1;
+						}
+						// check if buffer is full
+						if (j === LifeConstants.hexTriangleCellBufferSize) {
+							// draw and clear buffer
+							this.numHexTriangleCells = j;
+							this.drawTriangleCells(false);
+							j = 0;
+							k = 0;
+						}
+					}
+				}
+			}
+
+			// draw any remaining cells
+			this.numHexTriangleCells = j;
+			if (j > 0) {
+				this.drawTriangleCells(false);
+			}
+		}
+	};
+
+	// draw triangle cells
+	Life.prototype.drawTriangleCells = function(/** boolean */ filled) {
+		var /** number */ i = 0,
+			context = this.context,
+			/** number */ xOff = this.width / 2 - this.xOff - this.originX,
+			/** number */ yOff = this.height / 2 - this.yOff - this.originY,
+			/** @const {number} */ zoom = this.zoom * this.originZ,
+			/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
+			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
+			/** number */ x = 0,
+			/** number */ y = 0,
+			/** number */ cx = 0,
+			/** number */ cy = 0,
+			/** number */ cx2 = 0,
+			/** number */ cy2 = 0,
+			/** number */ coord = 0,
+			/** number */ cx0 = 0,
+			/** number */ cy0 = 0,
+			/** number */ target = 0,
+			/** number */ batch = 6,
+			/** number */ state = 0,
+			/** number */ lastState = -1,
+			/** Array<number> */ coords = this.hexTriangleCells,
+			/** @const {number} */ hexTriangleCells = this.numHexTriangleCells,
+			/** Array<number> */ colours = this.hexTriangleColours,
+			/** @const {number} */ mask = (1 << LifeConstants.hexTriangleCellBufferBits) - 1;
+
+		// if triangles are filled then sort by colour
+		// check for sort function since IE doesn't have it
+		if (filled && colours.sort) {
+			// ensure unused buffer is at end
+			state = (LifeConstants.hexTriangleCellBufferSize << LifeConstants.hexTriangleCellBufferBits) + 256;
+			for (i = hexTriangleCells; i < LifeConstants.hexTriangleCellBufferSize; i += 1) {
+				colours[i] = state;
+			}
+			colours.sort();
+		}
+
+		// draw each triangle
+		context.beginPath();
+		if (!filled) {
+			// if drawing the grid then only three line segments are needed
+			coord = 0;
+			batch = 6;
+			target = batch;
+			state = 0;
+			lastState = 0;
+		}
+		for (i = 0; i < hexTriangleCells; i += 1) {
+			// get next triangle offset
+			if (filled) {
+				state = colours[i];
+				coord = state & mask;
+				target = coord + batch;
+				state = state >> LifeConstants.hexTriangleCellBufferBits;
+			}
+
+			// get triangle start position
+			cx0 = coords[coord];
+			cy0 = coords[coord + 1];
+			cy = cy0 + yOff;
+			cx = cx0 + xOff;
+			coord += 2;
+
+			// draw the triangle
+			y = (cy * zoom) + halfDisplayHeight;
+			x = (cx * zoom) + halfDisplayWidth;
+			cy2 = (coords[coord + 1] - cy0) * zoom;
+			cx2 = (coords[coord] - cx0) * zoom;
+			coord += 2;
+	
+			// set line colour
+			if (state !== lastState) {
+				lastState = state;
+				if (i > 0) {
+					if (filled) {
+						context.fill();
+					} else {
+						context.stroke();
+					}
+					context.beginPath();
+				}
+				if (filled) {
+					context.fillStyle = this.cellColourStrings[state];
+				}
+			}
+
+			// draw triangle
+			context.moveTo(x, y);
+			context.lineTo(cx2 + x, cy2 + y);
+			while (coord < target) {
+				cy2 = (coords[coord + 1] - cy0) * zoom;
+				cx2 = (coords[coord] - cx0) * zoom;
+				coord += 2;
+				context.lineTo(cx2 + x, cy2 + y);
+			}
+			target += batch;
+		}
+		if (filled) {
+			context.fill();
+		} else {
+			context.stroke();
+		}
+	};
 
 	// draw hexagons 
 	Life.prototype.drawHexagons = function() {
@@ -687,8 +961,8 @@
 			/** number */ ya4 = 0,
 			/** number */ xa5 = 0,
 			/** number */ ya5 = 0,
-			/** Array<number> */ coords = this.hexCells,
-			/** Array<number> */ colours = this.hexColours,
+			/** Array<number> */ coords = this.hexTriangleCells,
+			/** Array<number> */ colours = this.hexTriangleColours,
 			/** number */ leftX = zoomBox.leftX,
 			/** number */ rightX = zoomBox.rightX,
 			/** number */ bottomY = zoomBox.bottomY,
@@ -702,11 +976,11 @@
 			/** number */ linearZoom = 1;
 
 		// check if buffers have been allocated
-		if (colours.length !== LifeConstants.hexCellBufferSize) {
-			this.hexCells = this.allocator.allocate(Float32, 12 * LifeConstants.hexCellBufferSize, "Life.hexCells");
-			this.hexColours = this.allocator.allocate(Uint32, LifeConstants.hexCellBufferSize, "Life.hexColours");
-			coords = this.hexCells;
-			colours = this.hexColours;
+		if (colours.length !== LifeConstants.hexTriangleCellBufferSize) {
+			this.hexTriangleCells = this.allocator.allocate(Float32, 12 * LifeConstants.hexTriangleCellBufferSize, "Life.hexTriangleCells");
+			this.hexTriangleColours = this.allocator.allocate(Uint32, LifeConstants.hexTriangleCellBufferSize, "Life.hexTriangleColours");
+			coords = this.hexTriangleCells;
+			colours = this.hexTriangleColours;
 		}
 
 		// use bounded grid if defined
@@ -772,7 +1046,7 @@
 						state = colourRow[x];
 						if (state > 0) {
 							// encode coordinate index into the colour state so it can be sorted later
-							colours[j] = (state << LifeConstants.hexCellBufferBits) + k;
+							colours[j] = (state << LifeConstants.hexTriangleCellBufferBits) + k;
 							cx = x - w2;
 							coords[k] = xa0 + cx;
 							coords[k + 1] = ya0 + cy;
@@ -790,9 +1064,9 @@
 							j += 1;
 						}
 						// check if buffer is full
-						if (j === LifeConstants.hexCellBufferSize) {
+						if (j === LifeConstants.hexTriangleCellBufferSize) {
 							// draw and clear buffer
-							this.numHexCells = j;
+							this.numHexTriangleCells = j;
 							this.drawHexCells(true);
 							j = 0;
 							k = 0;
@@ -803,7 +1077,7 @@
 		}
 
 		// draw any remaining cells
-		this.numHexCells = j;
+		this.numHexTriangleCells = j;
 		if (j > 0) {
 			this.drawHexCells(true);
 			j = 0;
@@ -861,9 +1135,9 @@
 							j += 1;
 						}
 						// check if buffer is full
-						if (j === LifeConstants.hexCellBufferSize) {
+						if (j === LifeConstants.hexTriangleCellBufferSize) {
 							// draw and clear buffer
-							this.numHexCells = j;
+							this.numHexTriangleCells = j;
 							this.drawHexCells(false);
 							j = 0;
 							k = 0;
@@ -873,7 +1147,7 @@
 			}
 
 			// draw any remaining cells
-			this.numHexCells = j;
+			this.numHexTriangleCells = j;
 			if (j > 0) {
 				this.drawHexCells(false);
 			}
@@ -903,10 +1177,10 @@
 			/** number */ batch = 12,
 			/** number */ state = 0,
 			/** number */ lastState = -1,
-			/** Array<number> */ coords = this.hexCells,
-			/** @const {number} */ hexCells = this.numHexCells,
-			/** Array<number> */ colours = this.hexColours,
-			/** @const {number} */ mask = (1 << LifeConstants.hexCellBufferBits) - 1;
+			/** Array<number> */ coords = this.hexTriangleCells,
+			/** @const {number} */ hexTriangleCells = this.numHexTriangleCells,
+			/** Array<number> */ colours = this.hexTriangleColours,
+			/** @const {number} */ mask = (1 << LifeConstants.hexTriangleCellBufferBits) - 1;
 
 		// adjust for hex
 		xOff += yOff / 2;
@@ -917,8 +1191,8 @@
 		// check for sort function since IE doesn't have it
 		if (filled && colours.sort) {
 			// ensure unused buffer is at end
-			state = (LifeConstants.hexCellBufferSize << LifeConstants.hexCellBufferBits) + 256;
-			for (i = hexCells; i < LifeConstants.hexCellBufferSize; i += 1) {
+			state = (LifeConstants.hexTriangleCellBufferSize << LifeConstants.hexTriangleCellBufferBits) + 256;
+			for (i = hexTriangleCells; i < LifeConstants.hexTriangleCellBufferSize; i += 1) {
 				colours[i] = state;
 			}
 			colours.sort();
@@ -934,13 +1208,13 @@
 			state = 0;
 			lastState = 0;
 		}
-		for (i = 0; i < hexCells; i += 1) {
+		for (i = 0; i < hexTriangleCells; i += 1) {
 			// get next hexagon offset
 			if (filled) {
 				state = colours[i];
 				coord = state & mask;
 				target = coord + batch;
-				state = state >> LifeConstants.hexCellBufferBits;
+				state = state >> LifeConstants.hexTriangleCellBufferBits;
 			}
 
 			// get hexagon start position
@@ -2963,7 +3237,7 @@
 		gridLineRaw = this.gridLineRaw,
 		gridLineBoldRaw = this.gridLineBoldRaw,
 		colourStrings = this.cellColourStrings,
-		needStrings = this.isHex && this.useHexagons,
+		needStrings = (this.isHex && this.useHexagons) || this.isTriangular,
 		i = 0;
 
 				colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
@@ -11388,7 +11662,7 @@
 		this.camLayerDepth = (this.layerDepth / 2) + 1;
 
 		// check for hex
-		if (this.isHex) {
+		if (this.isHex || this.isTriangular) {
 			// zero angle
 			this.camAngle = 0;
 		} else {
@@ -11401,7 +11675,7 @@
 		}
 
 		// check if drawing grid with polygons
-		if (this.useHexagons && this.isHex && this.camZoom >= 4) {
+		if (this.camZoom >= 4 && ((this.useHexagons && this.isHex) || this.isTriangular)) {
 			// clear grid
 			i = 0;
 			l = data32.length;

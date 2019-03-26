@@ -2675,8 +2675,14 @@
 
 		// draw grid
 		me.engine.drawGrid();
+
+		// check if hexagons or triangles should be drawn
 		if (me.engine.useHexagons && me.engine.isHex && me.engine.zoom >= 4) {
 			me.engine.drawHexagons();
+		} else {
+			if (me.engine.isTriangular && me.engine.zoom >= 4) {
+				me.engine.drawTriangles();
+			}
 		}
 
 		// capture screenshot if scheduled
@@ -2989,7 +2995,7 @@
 		this.ruleLabel.deleted = hide;
 
 		// navigation menu
-		this.angleItem.deleted = hide || this.engine.isHex;
+		this.angleItem.deleted = hide || this.engine.isHex || this.engine.isTriangular;
 		this.depthItem.deleted = hide;
 		this.themeItem.deleted = hide || this.multiStateView;
 		this.layersItem.deleted = hide;
