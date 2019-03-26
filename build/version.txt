@@ -1,3 +1,9 @@
+Build 317
+- support for triangular neighbourhood
+	- rules with a postfix "T" have 12-cell triangular neighbourhood
+	- neighbourhood digits are "0123456789ABC" where A, B and C represent 10, 11 and 12 respectively
+	- generations rules are supported
+
 Build 316
 - fixed single phase Copy on Firefox
 - fixed step back after pattern dies

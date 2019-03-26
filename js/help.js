@@ -1058,15 +1058,23 @@
 		}
 		y = this.renderHelpLine(view, "Type", itemName, ctx, x, y, height, helpLine);
 		if (view.engine.isHex) {
-			itemName = "Hex";
-		} else {
-			itemName = "Square";
-		}
-		y = this.renderHelpLine(view, "Mode", itemName, ctx, x, y, height, helpLine);
-		if (view.engine.useHexagons) {
 			itemName = "Hexagonal";
 		} else {
-			itemName = "Square";
+			if (view.engine.isTriangular) {
+				itemName = "Triangular"
+			} else {
+				itemName = "Square";
+			}
+		}
+		y = this.renderHelpLine(view, "Mode", itemName, ctx, x, y, height, helpLine);
+		if (view.engine.isHex && view.engine.useHexagons) {
+			itemName = "Hexagonal";
+		} else {
+			if (view.engine.isTriangular) {
+				itemName = "Triangular";
+			} else {
+				itemName = "Square";
+			}
 		}
 		y = this.renderHelpLine(view, "Cells", itemName, ctx, x, y, height, helpLine);
 		if (view.thumbnailEverOn) {

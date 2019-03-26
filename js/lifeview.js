@@ -12369,6 +12369,7 @@
 		this.patternFormat = "(none)";
 		this.engine.isLifeHistory = false;
 		this.engine.isHex = false;
+		this.engine.isTriangular = false;
 		this.engine.isVonNeumann = false;
 		this.engine.wolframRule = -1;
 		this.engine.patternDisplayMode = false;
@@ -12481,6 +12482,9 @@
 			// check if the neighbourhood is hex
 			this.engine.isHex = pattern.isHex;
 			this.engine.patternDisplayMode = pattern.isHex;
+
+			// check if the neighbourhood is triangular
+			this.engine.isTriangular = pattern.isTriangular;
 
 			// check if the neighbourhood is Von Neumann
 			this.engine.isVonNeumann = pattern.isVonNeumann;

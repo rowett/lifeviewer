@@ -137,6 +137,12 @@
 		// state count
 		stateCount : new Uint32Array(256),
 
+		// 8192 bit triangular rule
+		ruleTriangularArray : new Uint8Array(8192),
+
+		// 8192 bit triangular alternate rule
+		ruleAltTriangularArray : new Uint8Array(8192),
+
 		// 512 bit rule
 		ruleArray : new Uint8Array(512),
 
@@ -1270,6 +1276,52 @@
 			}
 		}
 	};
+	
+	// set triangular totalistic neighbourhood
+	PatternManager.setTriangularTotalistic = function(ruleTriangularArray, value, survival) {
+		// mask
+		var mask = 0,
+
+		    // neighbours
+		    neighbours = 0,
+		    neighbourhood = 0,
+
+		    // counters
+		    i = 0,
+		    j = 0;
+
+		// compute the mask
+		if (survival) {
+			mask = 4;
+		}
+
+		// neighbourhood is:
+		// -- e1 e1 e1 --         o1 o1 o1 o1 o1
+		// e2 e2 EC e2 e2   and   o2 o2 OC o2 o2
+		// e3 e3 e3 e3 e3         -- o3 o3 o3 -
+
+		// bit order is:
+		// e3 e3 e3 e3 e3 e1 e1 e1 e2 e2 EC e2 e2
+		// and:
+		// o1 o1 o1 o1 o1 o3 o3 o3 o2 o2 OC o2 o2
+		// which keeps survival bit in the same location for odd/even
+
+		// fill the array based on the value and birth or survival
+		for (i = 0; i < 8192; i += 8) {
+			for (j = 0; j < 4; j += 1) {
+				neighbours = 0;
+				neighbourhood = (i + j);
+
+				while (neighbourhood > 0) {
+					neighbours += (neighbourhood & 1);
+					neighbourhood >>= 1;
+				}
+				if (value === neighbours) {
+					ruleTriangularArray[i + j + mask] = 1;
+				}
+			}
+		}
+	};
 
 	// set totalistic neighbourhood
 	PatternManager.setTotalistic = function(ruleArray, value, survival, hexMask) {
@@ -1874,7 +1926,7 @@
 	};
 
 	// create a triangular map from birth and survival strings
-	PatternManager.createTriangularRuleMap = function(birthPart, survivalPart, generationsStates) {
+	PatternManager.createTriangularRuleMap = function(birthPart, survivalPart, generationsStates, ruleTriangularArray) {
 		var canonicalName = "",
 			letters = this.validTriangularRuleLetters,
 			i = 0,
@@ -1893,6 +1945,7 @@
 		for (i = 0; i < letters.length; i += 1) {
 			if ((birthMask & (1 << i)) !== 0) {
 				birthName += letters[i];
+				this.setTriangularTotalistic(ruleTriangularArray, i, false);
 			}
 		}
 
@@ -1906,6 +1959,7 @@
 		for (i = 0; i < letters.length; i += 1) {
 			if ((survivalMask & (1 << i)) !== 0) {
 				survivalName += letters[i];
+				this.setTriangularTotalistic(ruleTriangularArray, i, true);
 			}
 		}
 
@@ -1920,7 +1974,7 @@
 	};
 
 	// create the rule map from birth and survival strings
-	PatternManager.createRuleMap = function(birthPart, survivalPart, base64, isHex, isTriangular, isVonNeumann, generationsStates, ruleArray) {
+	PatternManager.createRuleMap = function(birthPart, survivalPart, base64, isHex, isTriangular, isVonNeumann, generationsStates, ruleArray, ruleTriangularArray) {
 		var i = 0,
 		    j = 0,
 		    c = 0,
@@ -1937,7 +1991,11 @@
 
 		// check for triangular rules
 		if (isTriangular) {
-			canonicalName = this.createTriangularRuleMap(birthPart, survivalPart, generationsStates);
+			// clear the rule array
+			for (i = 0; i < 8192; i += 1) {
+				ruleTriangularArray[i] = 0;
+			}
+			canonicalName = this.createTriangularRuleMap(birthPart, survivalPart, generationsStates, ruleTriangularArray);
 		} else {
 			// create the masks
 			mask = 511;
@@ -3313,12 +3371,12 @@
 		// check if the rule has an alternate
 		if (altIndex === -1) {
 			// single rule so decode
-			result = this.decodeRuleStringPart(pattern, rule, allocator, this.ruleArray);
+			result = this.decodeRuleStringPart(pattern, rule, allocator, this.ruleArray, this.ruleTriangularArray);
 		} else {
 			// check there is only one separator
 			if (rule.substr(altIndex + 1).indexOf(PatternManager.altRuleSeparator) === -1) {
 				// decode first rule
-				result = this.decodeRuleStringPart(pattern, rule.substr(0, altIndex), allocator, this.ruleAltArray);
+				result = this.decodeRuleStringPart(pattern, rule.substr(0, altIndex), allocator, this.ruleAltArray, this.ruleAltTriangularArray);
 				if (result) {
 					// save the first pattern details
 					firstPattern = new Pattern(pattern.name);
@@ -3326,13 +3384,13 @@
 
 					// if succeeded then decode alternate rule
 					pattern.resetSettings();
-					result = this.decodeRuleStringPart(pattern, rule.substr(altIndex + 1), allocator, this.ruleArray);
+					result = this.decodeRuleStringPart(pattern, rule.substr(altIndex + 1), allocator, this.ruleArray, this.ruleTriangularArray);
 					if (result) {
 						// check the two rules are from the same family
 						this.failureReason = pattern.isSameFamilyAs(firstPattern);
 						if (this.failureReason === "") {
 							// check for B0 in either rule
-							if (this.ruleArray[0] || this.ruleAltArray[0]) {
+							if ((!pattern.isTriangular && (this.ruleArray[0] || this.ruleAltArray[0])) || (pattern.isTriangular && (this.ruleTriangularArray[0] || this.ruleAltTriangularArray[0]))) {
 								this.failureReason = "Alternate not supported with B0";
 								result = false;
 							} else {
@@ -3377,7 +3435,7 @@
 	};
 
 	// decode rule string and return whether valid
-	PatternManager.decodeRuleStringPart = function(pattern, rule, allocator, ruleArray) {
+	PatternManager.decodeRuleStringPart = function(pattern, rule, allocator, ruleArray, ruleTriangularArray) {
 		// whether the rule contains a slash
 		var slashIndex = -1,
 
@@ -3940,7 +3998,7 @@
 		// if valid the create the rule
 		if (valid && pattern.wolframRule === -1 && pattern.isLTL === false && pattern.isHROT === false) {
 			// create the canonical name and the rule map
-			pattern.ruleName = this.createRuleMap(birthPart, survivalPart, base64, pattern.isHex, pattern.isTriangular, pattern.isVonNeumann, pattern.multiNumStates, ruleArray);
+			pattern.ruleName = this.createRuleMap(birthPart, survivalPart, base64, pattern.isHex, pattern.isTriangular, pattern.isVonNeumann, pattern.multiNumStates, ruleArray, ruleTriangularArray);
 			if (this.failureReason !== "") {
 				valid = false;
 			}
