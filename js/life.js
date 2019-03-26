@@ -1579,8 +1579,8 @@
 			if (this.counter < targetGen) {
 				this.anythingAlive = 1;
 				this.nextGeneration(statsOn, true, graphDisabled);
-				this.convertToPensTile();
 			}
+			this.convertToPensTile();
 		}
 	};
 
