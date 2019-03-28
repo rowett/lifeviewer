@@ -41,6 +41,9 @@
 
 	// ViewConstants singleton
 	ViewConstants = {
+		// sqare root of 3 used for triangular grid
+		/** @const {number} */ sqrt3 : Math.sqrt(3),
+
 		// copy RLE size threshold (bytes) for single pass
 		/** @const (number) */ copySizeThreshold : 65536,
 
@@ -2019,6 +2022,10 @@
 			// rotation
 			theta = 0, radius = 0,
 
+			// x and y zoom
+			xZoom = this.engine.zoom,
+			yZoom = this.engine.zoom * ((this.engine.isTriangular && xZoom >= 4) ? ViewConstants.sqrt3 : 1),
+
 			// cell state
 			state = -1;
 
@@ -2034,8 +2041,8 @@
 			}
 
 			// compute the x and y cell coordinate
-			yPos = Math.floor(displayY / this.engine.zoom - engineY + this.engine.originY);
-			xPos = Math.floor((displayX / this.engine.zoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
+			yPos = Math.floor(displayY / xZoom - engineY + this.engine.originY);
+			xPos = Math.floor((displayX / yZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
 
 			// draw the cell
 			state = this.engine.getState(xPos + this.panX, yPos + this.panY, this.multiStateView && this.viewOnly);
@@ -2058,6 +2065,10 @@
 		    // cell position
 		    yPos = 0, xPos = 0,
 		    
+			// x and y zoom
+			xZoom = this.engine.zoom,
+			yZoom = this.engine.zoom * ((this.engine.isTriangular && xZoom >= 4) ? ViewConstants.sqrt3 : 1),
+
 			// rotation
 			theta = 0, radius = 0;
 
@@ -2073,8 +2084,8 @@
 			}
 
 			// compute the x and y cell coordinate
-			yPos = Math.floor(displayY / this.engine.zoom - engineY + this.engine.originY);
-			xPos = Math.floor((displayX / this.engine.zoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
+			yPos = Math.floor(displayY / yZoom - engineY + this.engine.originY);
+			xPos = Math.floor((displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
 		}
 
 		// set cell position
@@ -2146,6 +2157,10 @@
 		    engineY = this.panY - this.engine.yOff,
 		    engineX = this.panX - this.engine.xOff - (this.engine.isHex ? this.engine.yOff / 2 : 0),
 
+			// x and y zoom
+			xZoom = this.engine.zoom,
+			yZoom = this.engine.zoom * ((this.engine.isTriangular && xZoom >= 4) ? ViewConstants.sqrt3 : 1),
+
 		    // cell position
 		    yPos = 0, xPos = 0,
 		    
@@ -2175,8 +2190,8 @@
 			}
 
 			// compute the x and y cell coordinate
-			yPos = Math.floor(displayY / this.engine.zoom - engineY + this.engine.originY);
-			xPos = Math.floor((displayX / this.engine.zoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
+			yPos = Math.floor(displayY / yZoom - engineY + this.engine.originY);
+			xPos = Math.floor((displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
 
 			// read the state
 			stateDisplay = this.engine.getState(xPos + this.panX, yPos + this.panY, this.multiStateView && this.viewOnly);
@@ -4453,10 +4468,10 @@
 						} else {
 							// compute the movement
 							dx = (me.lastDragX - x) / me.engine.camZoom;
-							dy = (me.lastDragY - y) / me.engine.camZoom;
+							dy = ((me.lastDragY - y) / me.engine.camZoom) / (me.engine.isTriangular ? ViewConstants.sqrt3 : 1);
 	
 							// check for hex
-							if (me.engine.isHex) {
+							if (me.engine.isHex || me.engine.isTriangular) {
 								angle = 0;
 							} else {
 								angle = -me.engine.angle;
@@ -4547,7 +4562,7 @@
 			icons = new Image();
 
 			// load the icons from the image file
-			icons.src = "data:image/png;base64,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";
+			icons.src = "data:image/png;base64,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";
 				
 			// save the image
 			ViewConstants.icons = icons;
@@ -4574,6 +4589,7 @@
 		this.iconManager.add("pick", w, h);
 		this.iconManager.add("states", w, h);
 		this.iconManager.add("hexagongrid", w, h);
+		this.iconManager.add("trianglegrid", w, h);
 	};
 
 	// update grid icon based on hex or square mode
@@ -4586,7 +4602,12 @@
 				this.gridToggle.icon = [this.iconManager.icon("hexgrid")];
 			}
 		} else {
-			this.gridToggle.icon = [this.iconManager.icon("grid")];
+			// check for triangular mode
+			if (this.engine.isTriangular) {
+				this.gridToggle.icon = [this.iconManager.icon("trianglegrid")];
+			} else {
+				this.gridToggle.icon = [this.iconManager.icon("grid")];
+			}
 		}
 	};
 
