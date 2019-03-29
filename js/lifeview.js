@@ -2041,8 +2041,8 @@
 			}
 
 			// compute the x and y cell coordinate
-			yPos = Math.floor(displayY / xZoom - engineY + this.engine.originY);
-			xPos = Math.floor((displayX / yZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
+			yPos = Math.floor(displayY / yZoom - engineY + this.engine.originY);
+			xPos = Math.floor((displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
 
 			// draw the cell
 			state = this.engine.getState(xPos + this.panX, yPos + this.panY, this.multiStateView && this.viewOnly);
@@ -4468,7 +4468,7 @@
 						} else {
 							// compute the movement
 							dx = (me.lastDragX - x) / me.engine.camZoom;
-							dy = ((me.lastDragY - y) / me.engine.camZoom) / (me.engine.isTriangular ? ViewConstants.sqrt3 : 1);
+							dy = ((me.lastDragY - y) / me.engine.camZoom) / ((me.engine.isTriangular && me.engine.camZoom >= 4) ? ViewConstants.sqrt3 : 1);
 	
 							// check for hex
 							if (me.engine.isHex || me.engine.isTriangular) {
@@ -5635,8 +5635,10 @@
 							break;
 						case 191:
 							// switch between hexagonal and square cells for hex display
-							me.hexCellButton.current = me.viewHexCellToggle([!me.engine.useHexagons], true, me);
-							me.menuManager.notification.notify("Hex display uses " + (me.engine.useHexagons ? "Hexagons" : "Squares"), 15, 40, 15, true);
+							if (!me.engine.isTriangular) {
+								me.hexCellButton.current = me.viewHexCellToggle([!me.engine.useHexagons], true, me);
+								me.menuManager.notification.notify("Hex display uses " + (me.engine.useHexagons ? "Hexagons" : "Squares"), 15, 40, 15, true);
+							}
 							break;
 					}
 				}
@@ -5650,19 +5652,22 @@
 			// '/' for toggle hex
 			case 191:
 			case 111: // num /
-				// check for shift key
-				if (event.shiftKey) {
-					// check if the pattern mode is currently used
-					if (me.engine.patternDisplayMode !== me.engine.isHex) {
-						me.hexButton.current = me.viewHexToggle([me.engine.patternDisplayMode], true, me);
+				// ignore if triangular grid
+				if (!me.engine.isTriangular) {
+					// check for shift key
+					if (event.shiftKey) {
+						// check if the pattern mode is currently used
+						if (me.engine.patternDisplayMode !== me.engine.isHex) {
+							me.hexButton.current = me.viewHexToggle([me.engine.patternDisplayMode], true, me);
+						}
+					} else {
+						// toggle hex mode
+						me.hexButton.current = me.viewHexToggle([!me.engine.isHex], true, me);
 					}
-				} else {
-					// toggle hex mode
-					me.hexButton.current = me.viewHexToggle([!me.engine.isHex], true, me);
+	
+					// display notification
+					me.menuManager.notification.notify("Hex Display " + (me.engine.isHex ? "On" : "Off"), 15, 40, 15, true);
 				}
-
-				// display notification
-				me.menuManager.notification.notify("Hex Display " + (me.engine.isHex ? "On" : "Off"), 15, 40, 15, true);
 				break;
 
 			// b for back one step
@@ -13195,11 +13200,13 @@
 		this.graphButton.locked = this.graphDisabled;
 		this.graphButton.current = [this.popGraph];
 
-		// set the hex UI control
+		// set the hex UI control and lock if triangular grid
 		this.hexButton.current = [this.engine.isHex];
+		this.hexButton.locked = this.engine.isTriangular;
 
-		// set the hex cell UI control
+		// set the hex cell UI control and lock if triangular grid
 		this.hexCellButton.current = [this.engine.useHexagons];
+		this.hexCellButton.locked = this.engine.isTriangular;
 
 		// set the label UI control
 		if (this.waypointManager.numAnnotations() === 0) {

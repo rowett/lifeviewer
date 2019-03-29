@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Triangular format</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 8, y = 6, rule = B456/S34T
+o3bo$o4bo$2o4bo$bo5bo$bo5bo$2b2ob2o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Triangular test with GRID</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ GRID ]]
+x = 8, y = 6, rule = B456/S34T
+o3bo$o4bo$2o4bo$bo5bo$bo5bo$2b2ob2o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Triangular test History</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 8, y = 6, rule = B456/S34THistory
+o3bo$o4bo$2o4bo$bo5bo$bo5bo$2b2ob2o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>Triangular Generations test</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 8, y = 6, rule = B34/S34/10T
+o3bo$o4bo$2o4bo$bo5bo$bo5bo$2b2ob2o!
+[[ ZOOM 4 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>
