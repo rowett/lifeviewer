@@ -3471,7 +3471,7 @@
 					}
 					odd = true;
 					if (this.isTriangular) {
-						this.createTriangularIndex(this.indexLookupTriangular2, ruleArray);
+						this.createTriangularIndex(this.indexLookupTri2, ruleArray);
 					} else {
 						this.createLifeIndex63(this.indexLookup632, ruleArray);
 					}
@@ -5209,12 +5209,12 @@
 	// make glider integers out of the four phases of NW glider
 	Life.prototype.makeGliderIntegers = function() {
 		var /** number */ p = 0,
-			/** @const {Array<Array<Array<number>>>} */ gliderNW = LifeConstants.gliderNW,
+			/** @const {Array<Array<number>>} */ gliderNW = LifeConstants.gliderNW,
 			/** @const {Array<number>} */ gliderInteger = this.gliderInteger,
-			/** @const {Array<Array<number>>} */ phase = null,
-			/** @const {Array<number>} */ row0 = null,
-			/** @const {Array<number>} */ row1 = null,
-			/** @const {Array<number>} */ row2 = null;
+			/** Array<Array<number>> */ phase = null,
+			/** Array<number> */ row0 = null,
+			/** Array<number> */ row1 = null,
+			/** Array<number> */ row2 = null;
 
 		// make integers
 		for (p = 0; p <= 3; p += 1) {
@@ -5290,13 +5290,13 @@
 				if (topRow(x) >= aliveStart) {
 					// NW and NE glider
 					if (!this.findAndDeleteNW(x, y)) {
-						this.findAndDelteNE(x, y);
+						this.findAndDeleteNE(x, y);
 					}
 				}
 				if (bottomRow(x) >= aliveStart) {
 					// SW and SE glider
 					if (!this.findAndDeleteSW(x, y)) {
-						this.findAndDelteSE(x, y);
+						this.findAndDeleteSE(x, y);
 					}
 				}
 			}
@@ -5306,12 +5306,12 @@
 				if (currentRow(leftX) >= aliveStart) {
 					// NW and SW glider
 					if (!this.findAndDeleteNW(x, y)) {
-						this.findAndDelteSW(x, y);
+						this.findAndDeleteSW(x, y);
 					}
 				}
 				if (currentRow(rightX) >= aliveStart) {
 					// NE and SE glider
-					if (!this.findAndDelteNE(x, y)) {
+					if (!this.findAndDeleteNE(x, y)) {
 						this.findAndDeleteSW(x, y);
 					}
 				}
