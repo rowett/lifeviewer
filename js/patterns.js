@@ -89,7 +89,7 @@
 		/** @const {string} */ decimalDigits : "0123456789",
 
 		// valid triangular rule characters
-		/** @const {string} */ validTriangularRuleLetters : "0123456789abc",
+		/** @const {string} */ validTriangularRuleLetters : "0123456789xyz",
 
 		// valid hex rule characters
 		/** @const {string} */ validHexRuleLetters : "0123456omp-",
@@ -5522,6 +5522,21 @@
 			if (pattern.gridType === 0 || pattern.gridType === 1) {
 				if (pattern.gridWidth === 0 || pattern.gridHeight === 0) {
 					this.failureReason = "LtL bounded grid must be finite";
+					this.executable = false;
+					pattern.gridType = -1;
+				}
+			}
+		}
+		
+		// triangular rules can only have even width bounded grids
+		if (pattern.isTriangular && pattern.gridType !== -1) {
+			if ((pattern.gridWidth & 1) !== 0) {
+				this.failureReason = "Bounded grid width must be even";
+				this.executable = false;
+				pattern.gridType = -1;
+			} else {
+				if ((pattern.gridHeight & 1) !== 0) {
+					this.failureReason = "Bounded grid height must be even";
 					this.executable = false;
 					pattern.gridType = -1;
 				}

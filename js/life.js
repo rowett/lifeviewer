@@ -340,6 +340,9 @@
 		// whether to display grid lines
 		/** boolean */ this.displayGrid = false;
 
+		// whether cells have borders
+		/** boolean */ this.cellBorders = false;
+
 		// zoom bounding box
 		this.zoomBox = null;
 
@@ -773,7 +776,7 @@
 		}
 
 		// draw grid if enabled
-		if (this.displayGrid) {
+		if (this.displayGrid || this.cellBorders) {
 			// set grid line colour
 			this.context.strokeStyle = "rgb(" + (this.gridLineRaw >> 16) + "," + ((this.gridLineRaw >> 8) & 255) + "," + (this.gridLineRaw & 255) + ")";
 			linearZoom = Math.log(zoom / 4) / Math.log(ViewConstants.maxZoom / 4);
@@ -1078,7 +1081,7 @@
 		}
 
 		// draw grid if enabled
-		if (this.displayGrid) {
+		if (this.displayGrid || this.cellBorders) {
 			// set grid line colour
 			this.context.strokeStyle = "rgb(" + (this.gridLineRaw >> 16) + "," + ((this.gridLineRaw >> 8) & 255) + "," + (this.gridLineRaw & 255) + ")";
 			linearZoom = Math.log(zoom / 4) / Math.log(ViewConstants.maxZoom / 4);
@@ -1520,6 +1523,7 @@
 						if ((grid[y][x >> 4] & (1 << (~x & 15))) === 0) {
 							this.population += 1;
 						}
+						// set cell
 						colourGrid[y][x] = this.aliveStart;
 						colourTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 						colourTileHistoryGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
@@ -1527,18 +1531,73 @@
 						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 						nextGrid[y][x >> 4] |= (1 << (~x & 15));
 						nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						// check left boundary
+						if ((x > 0) && ((x & 15) === 0)) {
+							x -= 1;
+							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+							nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+							x += 1;
+						} else {
+							// check right boundary
+							if ((x < this.width - 1) && ((x & 15) === 15)) {
+								x += 1;
+								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+								nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+								x -= 1;
+							}
+						}
+						// check bottom boundary
+						if ((y > 0) && ((y & 15) === 0)) {
+							y -= 1;
+							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+							nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+							if ((x > 0) && ((x & 15) === 0)) {
+								x -= 1;
+								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+								nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+								x += 1;
+							} else {
+								if ((x < this.width - 1) && ((x & 15) === 15)) {
+									x += 1;
+									tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+									nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+									x -= 1;
+								}
+							}
+							y += 1;
+						} else {
+							// check top boundary
+							if ((y < this.height - 1) && ((y & 15) === 15)) {
+								y += 1;
+								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+								nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+								if ((x > 0) && ((x & 15) === 0)) {
+									x -= 1;
+									tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+									nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+									x += 1;
+								} else {
+									if ((x < this.width - 1) && ((x & 15) === 15)) {
+										x += 1;
+										tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+										nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+										x -= 1;
+									}
+								}
+								y -= 1;
+							}
+						}
 					} else {
 						// adjust population if cell was alive
 						if ((grid[y][x >> 4] & (1 << (~x & 15))) !== 0) {
 							this.population -= 1;
 						}
+						// clear cell
 						colourGrid[y][x] = this.unoccupied;
 						colourTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 						colourTileHistoryGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 						grid[y][x >> 4] &= ~(1 << (~x & 15));
-						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 						nextGrid[y][x >> 4] &= ~(1 << (~x & 15));
-						nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 					}
 
 					// check for LifeHistory
@@ -5416,6 +5475,9 @@
 		    horizShift = this.boundedGridHorizontalShift,
 		    vertShift = this.boundedGridVerticalShift,
 
+			// flag if extra horizontal cell is needed for triangular grid
+			needExtra = (this.isTriangular && leftX > 0 && rightX < this.width - 1),
+
 		    // counters
 		    sourceX = 0,
 		    sourceY = 0,
@@ -5517,6 +5579,30 @@
 					}
 				}
 
+				// for triangular grids we have to copy two cells
+				if (needExtra) {
+					leftX += 1;
+					rightX += 1;
+					// check if cell set
+					if ((grid[sourceY][leftX >> 4] & (1 << (~leftX & 15))) !== 0) {
+						// copy cell to right of right edge
+						grid[destY][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+
+						// set tile grid
+						tileGrid[destY >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+						colourTileGrid[destY >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+
+						// check for tile boundary
+						if (((rightX + 1) & 15) === 0) {
+							tileGrid[destY >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+							colourTileGrid[destY >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+						}
+					}
+					// restore columns
+					leftX -= 1;
+					rightX -= 1;
+				}
+
 				// copy right column to left of left
 				destY = bottomY + ((i + vertShift + height) % height);
 
@@ -5534,6 +5620,30 @@
 						tileGrid[destY >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
 						colourTileGrid[destY >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
 					}
+				}
+
+				// for triangular grids we have to copy two cells
+				if (needExtra) {
+					leftX -= 1;
+					rightX -= 1;
+					// check if cell set
+					if ((grid[sourceY][rightX >> 4] & (1 << (~rightX & 15))) !== 0) {
+						// copy cell to left of left edge
+						grid[destY][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+	
+						// set tile grid
+						tileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+						colourTileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+	
+						// check for tile boundary
+						if (((leftX - 1) & 15) === 15) {
+							tileGrid[destY >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+							colourTileGrid[destY >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+						}
+					}
+					// restore columns
+					leftX += 1;
+					rightX += 1;
 				}
 			}
 		}
@@ -6021,32 +6131,22 @@
 
 	// post-process bounded grid
 	Life.prototype.postProcessBoundedGrid = function() {
+		var i = 1,
+			limit = 1;
+
 		// determine grid type
-		switch (this.boundedGridType) {
-		case 0:
-			// plane so clear around boundary
-			this.clearBoundary(1);
-			break;
-		case 1:
-			// torus so clear cells around torus boundary
-			this.clearBoundary(1);
-			this.clearBoundary(2);
-			break;
-		case 2:
-			// klein bottle so clear cells around boundary
-			this.clearBoundary(1);
-			this.clearBoundary(2);
-			break;
-		case 3:
-			// cross-surface so clear cells around boundary
-			this.clearBoundary(1);
-			this.clearBoundary(2);
-			break;
-		case 4:
-			// sphere so clear cells around sphere boundary
-			this.clearBoundary(1);
-			this.clearBoundary(2);
-			break;
+		if (this.boundedGridType !== 0) {
+			limit = 2;
+		}
+		
+		// check for triangular grid
+		if (this.isTriangular) {
+			limit += 1;
+		}
+
+		// clear boundaries
+		for (i = 1; i <= limit + 1; i += 1) {
+			this.clearBoundary(i);
 		}
 	};
 
@@ -12647,16 +12747,25 @@
 			targetCol = gridCol,
 			startX = 0, startY = 0, endX = 0, endY = 0,
 			leftX = 0, rightX = w, bottomY = 0, topY = h,
+			drawMajor = (this.gridLineMajor > 0 && this.gridLineMajorEnabled),
 
 		    // compute single cell offset
 		    yOff = (((this.height / 2 - (this.yOff + this.originY)) * zoomStep) + (h / 2)) % zoomStep,
 		    xOff = (((this.width / 2 - (this.xOff + this.originX)) * zoomStep) + (w / 2)) % zoomStep;
 
 		// draw twice if major grid lines enabled
-		if (this.gridLineMajor > 0 && this.gridLineMajorEnabled) {
-			loop = 2;
+		if (this.displayGrid) {
+			if (drawMajor) {
+				loop = 2;
+			} else {
+				loop = 1;
+			}
 		} else {
+			// draw cell borders
 			loop = 1;
+			drawMajor = false;
+			gridCol = this.pixelColours[0];
+			drawCol = gridCol;
 		}
 
 		// start drawing the grid line colour
@@ -12679,7 +12788,7 @@
 			// draw vertical lines
 			for (x = startX; x <= endX; x += zoomStep) {
 				// check if major gridlines are enabled
-				if (this.gridLineMajor > 0 && this.gridLineMajorEnabled) {
+				if (drawMajor) {
 					// choose whether to use major or minor colour
 					if (gridLineNum % this.gridLineMajor === 0) {
 						drawCol = gridBoldCol;
@@ -12718,7 +12827,7 @@
 			// draw horizontal lines
 			for (y = startY; y < endY; y += zoomStep) {
 				// check if major gridlines are enabled
-				if (this.gridLineMajor > 0 && this.gridLineMajorEnabled) {
+				if (drawMajor) {
 					// choose whether to use major or minor colour
 					if (gridLineNum % this.gridLineMajor === 0) {
 						drawCol = gridBoldCol;
@@ -13098,7 +13207,7 @@
 		}
 
 		// draw grid lines if enabled
-		if (this.displayGrid && this.canDisplayGrid()) {
+		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
 			this.drawGridLines();
 		}
 
@@ -13478,7 +13587,7 @@
 		}
 
 		// draw grid lines if enabled
-		if (this.displayGrid && this.canDisplayGrid()) {
+		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
 			this.drawGridLines();
 		}
 
@@ -13789,7 +13898,7 @@
 		}
 
 		// draw grid lines if enabled
-		if (this.displayGrid && this.canDisplayGrid()) {
+		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
 			this.drawGridLines();
 		}
 
@@ -14077,7 +14186,7 @@
 		}
 
 		// draw grid lines if enabled
-		if (this.displayGrid && this.canDisplayGrid()) {
+		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
 			this.drawGridLines();
 		}
 
@@ -14658,7 +14767,7 @@
 		}
 
 		// draw grid lines if enabled
-		if (this.displayGrid && this.canDisplayGrid()) {
+		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
 			this.drawGridLines();
 		}
 
@@ -15113,7 +15222,7 @@
 		}
 
 		// draw grid lines if enabled
-		if (this.displayGrid && this.canDisplayGrid()) {
+		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
 			this.drawGridLines();
 		}
 
@@ -15551,7 +15660,7 @@
 		}
 
 		// draw grid lines if enabled
-		if (this.displayGrid && this.canDisplayGrid()) {
+		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
 			this.drawGridLines();
 		}
 
@@ -16060,7 +16169,7 @@
 		}
 
 		// draw grid lines if enabled
-		if (this.displayGrid && this.canDisplayGrid()) {
+		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
 			this.drawGridLines();
 		}
 

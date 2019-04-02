@@ -5,22 +5,34 @@ Investigate:
     Half-integer Wolfram rules
     LtL Margolus rules
     Grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
+    User preferences
 
 Planned:
-    User preferences
     Grey out individual items in a UI multi-select
+    Optional border around square, hexagonal or triangular cells
+    - square should be achieved by drawing grid lines in background colour
+    - need to figure out why hexagons and triangles have gaps between them
+    - script command [[ CELLBORDER ]]
+    - UI button in bottom right menu "Border"
+    Menu items coordinates should be reflected based on compass position
+    Bottom right menu items should be relative to middle column so they cluster on wide windows
 
 In progress:
 [STARTED]Triangular neighbourhood
-    - build triangular lookup array
-    - build next generation function
-    - triangle renderer
+    [DONE]build triangular lookup array
+    [DONE]build next generation function
+    [DONE]triangle renderer
     [DONE]decode triangular neighbourhood rules
+    - need to optimize triangular grid using lines across width and height of window
+    - optimize triangular algo for two cell lookup
+    - Triangular grid Copy RLE needs to add blank column when left boundary is odd
+    - Triangular von Neumann rules (just edges)
+    - Triangular B0 rules
 [STARTED]Delete boundary gliders
     - seach boundaries for gliders and remove them
     [DONE]create glider lookup for the 4 phases of NE, NW, SE and SW orientations
 [STARTED]Rule Table rules
-    - search after RLE terminating ! character for rule table sections
+    [DONE]search after RLE terminating ! character for rule table sections
     - decode @TABLE, @TREE, @COLORS and @ICONS
     - implement rule table algorithm
 [STARTED]Pattern Editor
@@ -37,6 +49,7 @@ In progress:
     [DONE]convert current pattern to RLE (for Ctrl-C Copy)
 
 Complete:
+[DONE]setState should check for tile boundaries and set adjacent tiles
 [DONE]Paul's non-totalistic hex notation
 [DONE]#CXRLE Pos limits
 [DONE]Multiverse

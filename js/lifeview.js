@@ -190,7 +190,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 317,
+		/** @const {number} */ versionBuild : 318,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1146,6 +1146,9 @@
 
 		// hex cell toggle button
 		this.hexCellButton = null;
+
+		// cell borders toggle button
+		this.bordersButton = null;
 
 		// graph toggle button
 		this.graphButton = null;
@@ -3019,6 +3022,7 @@
 		this.closeButton.deleted = !(this.isInPopup || this.scriptErrors.length);
 		this.hexButton.deleted = hide;
 		this.hexCellButton.deleted = hide;
+		this.bordersButton.deleted = hide;
 		this.labelButton.deleted = hide;
 		this.graphButton.deleted = hide;
 		this.infoBarButton.deleted = hide;
@@ -3529,6 +3533,17 @@
 		}
 
 		return [me.showLabels];
+	};
+
+	// toggle cell borders
+	View.prototype.viewBordersToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			// toggle cell borders
+			me.engine.cellBorders = newValue[0];
+		}
+
+		return [me.engine.cellBorders];
 	};
 
 	// toggle hexagonal cells
@@ -5633,6 +5648,10 @@
 								me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
 							}
 							break;
+						case 88:
+							// toggle cell borders
+							me.bordersButton.current = me.viewBordersToggle([!me.engine.cellBorders], true, me);
+							break;
 						case 191:
 							// switch between hexagonal and square cells for hex display
 							if (!me.engine.isTriangular) {
@@ -7293,12 +7312,17 @@
 		this.hexCellButton.toolTip = ["toggle hexagonal cells"];
 		this.hexCellButton.font = "18px Arial";
 
+		// cell borders toggle button
+		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.northEast, -160, 100, 80, 40, ["Borders"], [this.engine.cellBorders], Menu.multi);
+		this.bordersButton.toolTip = ["toggle cell borders"];
+		this.bordersButton.font = "18px Arial";
+
 		// label toggle button
-		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.north, 0, 220, 80, 40, ["Labels"], [this.showLabels], Menu.multi);
+		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.northWest, 80, 220, 80, 40, ["Labels"], [this.showLabels], Menu.multi);
 		this.labelButton.toolTip = ["toggle labels"];
 
 		// graph toggle button
-		this.graphButton = this.viewMenu.addListItem(this.viewGraphToggle, Menu.northEast, -160, 100, 80, 40, ["Graph"], [this.popGraph], Menu.multi);
+		this.graphButton = this.viewMenu.addListItem(this.viewGraphToggle, Menu.northEast, -160, 220, 80, 40, ["Graph"], [this.popGraph], Menu.multi);
 		this.graphButton.toolTip = ["toggle graph display"];
 
 		// infobar toggle button
@@ -7397,7 +7421,7 @@
 		this.statesSlider.toolTip = "select drawing states range";
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.hexCellButton, this.labelButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.hexCellButton, this.bordersButton, this.labelButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -11187,22 +11211,26 @@
 
 						// square display
 						case Keywords.squareDisplayWord:
-							// set square display mode
-							this.engine.isHex = false;
+							if (!this.engine.isTriangular) {
+								// set square display mode
+								this.engine.isHex = false;
 
-							// update angle control
-							this.angleItem.deleted = this.engine.isHex;
-							
+								// update angle control
+								this.angleItem.deleted = this.engine.isHex;
+							}
+								
 							itemValid = true;
 							break;
 
 						// hex display
 						case Keywords.hexDisplayWord:
-							// set hex display mode
-							this.engine.isHex = true;
+							if (!this.engine.isTriangular) {
+								// set hex display mode
+								this.engine.isHex = true;
 
-							// update angle control
-							this.angleItem.deleted = this.engine.isHex;
+								// update angle control
+								this.angleItem.deleted = this.engine.isHex;
+							}
 
 							itemValid = true;
 							break;
@@ -12722,6 +12750,7 @@
 		}
 		this.viewOnly = false;
 		this.engine.displayGrid = false;
+		this.engine.cellBorders = false;
 
 		// reset menu visibility to defaults
 		this.playList.deleted = false;
