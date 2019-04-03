@@ -8,24 +8,27 @@ Investigate:
     User preferences
 
 Planned:
-    Grey out individual items in a UI multi-select
-    Optional border around square, hexagonal or triangular cells
-    - square should be achieved by drawing grid lines in background colour
-    - need to figure out why hexagons and triangles have gaps between them
-    - script command [[ CELLBORDER ]]
-    - UI button in bottom right menu "Border"
+    Grey out individual items in a UI list control
     Menu items coordinates should be reflected based on compass position
     Bottom right menu items should be relative to middle column so they cluster on wide windows
 
 In progress:
+[STARTED]add type information for closure compiler
+[STARTED]Optional border around square, hexagonal or triangular cells
+    [DONE]square should be achieved by drawing grid lines in background colour
+    [DONE]need to figure out why triangles have gaps
+    [DONE]script command [[ CELLBORDER ]]
+    [DONE]UI button in bottom right menu "Border"
+    - need to figure out why hexagons have gaps
 [STARTED]Triangular neighbourhood
     [DONE]build triangular lookup array
     [DONE]build next generation function
     [DONE]triangle renderer
     [DONE]decode triangular neighbourhood rules
-    - need to optimize triangular grid using lines across width and height of window
+    [DONE]triangle and square bounded grids
+    - need to optimize triangular grid lines using lines across width and height of window
     - optimize triangular algo for two cell lookup
-    - Triangular grid Copy RLE needs to add blank column when left boundary is odd
+    - Triangular grid Copy RLE needs to cope with odd/even cells
     - Triangular von Neumann rules (just edges)
     - Triangular B0 rules
 [STARTED]Delete boundary gliders
@@ -39,7 +42,7 @@ In progress:
     - ability to define rule
     - improved LifeHistory drawing modes
     - reset to include the overlay grid
-    - undo stack
+    - undo stack / step back
     - selections
     [DONE]grow grid if possible when cell outside current grid drawn
     [DONE]2-state editing

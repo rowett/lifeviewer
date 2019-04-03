@@ -12,28 +12,28 @@
 	// LifeViewer document configuration
 	var DocConfig = {
 		// meta tag name
-		tagName : "LifeViewer",
+		/** @const {string} */ tagName : "LifeViewer",
 
 		// div class name
-		divClassName : "rle",
+		/** @const {string} */ divClassName : "rle",
 
 		// pattern source element name
-		patternSourceName : "code",
+		/** @const {string} */ patternSourceName : "code",
 
 		// maximum height of pattern source element
-		patternSourceMaxHeight : 37,
+		/** @const {number} */ patternSourceMaxHeight : 37,
 
 		// whether to hide canvas if no support
-		hide : true,
+		/** @type {boolean} */ hide : true,
 
 		// whether to limit width to the pattern source element width
-		limitWidth : false,
+		/** @type {boolean} */ limitWidth : false,
 
 		// whether in multiverse mode
-		multi : false,
+		/** @type {boolean} */ multi : false,
 
 		// div class name containing code block
-		divCodeClassName : "codebox",
+		/** @const {string} */ divCodeClassName : "codebox",
 
 		// patterns (in source RLE)
 		patterns : []
@@ -363,7 +363,7 @@
 		viewers : [],
 
 		// standalone viewer
-		standaloneIndex : -1,
+		/** @type {number} */ standaloneIndex : -1,
 
 		// popup window
 		popupWindow : null,
@@ -518,204 +518,204 @@
 	 */
 	function View(element) {
 		// universe number
-		this.universe = 0;
+		/** @type {number} */ this.universe = 0;
 
 		// running in Edge browser
-		this.isEdge = false;
+		/** @type {boolean} */ this.isEdge = false;
 
 		// icon manager
 		this.iconManager = null;
 
 		// current UI background RGB
-		this.uiBackgroundRGB = 0;
+		/** @type {number} */ this.uiBackgroundRGB = 0;
 
 		// whether the section control needs to be updated
-		this.updateSectionControl = true;
+		/** @type {boolean} */ this.updateSectionControl = true;
 
 		// start state for states list
-		this.startState = 0;
+		/** @type {number} */ this.startState = 0;
 
 		// current drawing state
-		this.drawState = 1;
+		/** @type {number} */ this.drawState = 1;
 
 		// whether picking state
-		this.pickMode = false;
+		/** @type {boolean} */ this.pickMode = false;
 
 		// whether to show states
-		this.showStates = false;
+		/** @type {boolean} */ this.showStates = false;
 
 		// maximum number of states to show (based on window width)
-		this.maxDisplayStates = 7;
+		/** @type {number} */ this.maxDisplayStates = 7;
 
 		// whether smart drawing is on
-		this.smartDrawing = true;
+		/** @type {boolean} */ this.smartDrawing = true;
 
 		// cell X and Y coordinate
-		this.cellX = 0;
-		this.cellY = 0;
+		/** @type {number} */ this.cellX = 0;
+		/** @type {number} */ this.cellY = 0;
 
 		// whether pattern was empty on load
-		this.emptyStart = false;
+		/** @type {boolean} */ this.emptyStart = false;
 
 		// maximum number of history states (can be less for multi-state patterns)
-		this.maxHistoryStates = 63;
+		/** @type {number} */ this.maxHistoryStates = 63;
 
 		// number of history states (default and maximum is 63)
-		this.historyStates = 63;
+		/** @type {number} */ this.historyStates = 63;
 
 		// whether to hide source element
-		this.noSource = false;
+		/** @type {boolean} */ this.noSource = false;
 
 		// initial value flags
-		this.initialX = false;
-		this.initialY = false;
-		this.initialZ = false;
-		this.initialAngle = false;
-		this.initialDepth = false;
-		this.initialLayers = false;
-		this.initialTheme = false;
-		this.initialStep = false;
-		this.initialGps = false;
-		this.initialStop = false;
-		this.initialLoop = false;
+		/** @type {boolean} */ this.initialX = false;
+		/** @type {boolean} */ this.initialY = false;
+		/** @type {boolean} */ this.initialZ = false;
+		/** @type {boolean} */ this.initialAngle = false;
+		/** @type {boolean} */ this.initialDepth = false;
+		/** @type {boolean} */ this.initialLayers = false;
+		/** @type {boolean} */ this.initialTheme = false;
+		/** @type {boolean} */ this.initialStep = false;
+		/** @type {boolean} */ this.initialGps = false;
+		/** @type {boolean} */ this.initialStop = false;
+		/** @type {boolean} */ this.initialLoop = false;
 
 		// floating point counter
-		this.floatCounter = 0;
+		/** @type {number} */ this.floatCounter = 0;
 
 		// floating point counter for origin
-		this.originCounter = 0;
+		/** @type {number} */ this.originCounter = 0;
 
 		// elapsed time at each generation
 		this.elapsedTimes = null;
 
 		// x and y offset of pattern
-		this.panX = 0;
-		this.panY = 0;
+		/** @type {number} */ this.panX = 0;
+		/** @type {number} */ this.panY = 0;
 
 		// whether pattern was clipped to bounded grid
-		this.wasClipped = false;
+		/** @type {boolean} */ this.wasClipped = false;
 
 		// specified pattern width and height from RLE header
-		this.specifiedWidth = -1;
-		this.specifiedHeight = -1;
+		/** @type {number} */ this.specifiedWidth = -1;
+		/** @type {number} */ this.specifiedHeight = -1;
 
 		// default POI
-		this.defaultPOI = -1;
+		/** @type {number} */ this.defaultPOI = -1;
 
 		// random seed
 		this.randomSeed = Date.now().toString();
-		this.randomSeedCustom = false;
+		/** @type {boolean} */ this.randomSeedCustom = false;
 
 		// current help topic
-		this.helpTopic = ViewConstants.welcomeTopic;
+		/** @type {number} */ this.helpTopic = ViewConstants.welcomeTopic;
 
 		// whether labels displayed
-		this.showLabels = true;
+		/** @type {boolean} */ this.showLabels = true;
 
 		// whether population graph displayed
-		this.popGraph = false;
+		/** @type {boolean} */ this.popGraph = false;
 
 		// whether population graph uses lines or points
-		this.popGraphLines = true;
+		/** @type {boolean} */ this.popGraphLines = true;
 
 		// graph opacity
-		this.popGraphOpacity = ViewConstants.defaultOpacity;
+		/** @type {number} */ this.popGraphOpacity = ViewConstants.defaultOpacity;
 
 		// whether graph disable
-		this.graphDisabled = false;
+		/** @type {boolean} */ this.graphDisabled = false;
 
 		// whether integer zoom enforced
-		this.integerZoom = false;
+		/** @type {boolean} */ this.integerZoom = false;
 
 		// save the document element containing the rle
 		this.element = element;
 
 		// whether infobar displayed
-		this.infoBarEnabled = false;
+		/** @type {boolean} */ this.infoBarEnabled = false;
 
 		// current box speed
-		this.currentTrackSpeedN = 0;
-		this.currentTrackSpeedS = 0;
-		this.currentTrackSpeedE = 0;
-		this.currentTrackSpeedW = 0;
+		/** @type {number} */ this.currentTrackSpeedN = 0;
+		/** @type {number} */ this.currentTrackSpeedS = 0;
+		/** @type {number} */ this.currentTrackSpeedE = 0;
+		/** @type {number} */ this.currentTrackSpeedW = 0;
 
 		// track box speeds
-		this.trackBoxN = 0;
-		this.trackBoxS = 0;
-		this.trackBoxE = 0;
-		this.trackBoxW = 0;
+		/** @type {number} */ this.trackBoxN = 0;
+		/** @type {number} */ this.trackBoxS = 0;
+		/** @type {number} */ this.trackBoxE = 0;
+		/** @type {number} */ this.trackBoxW = 0;
 
 		// whether track box defined
-		this.trackBoxDefined = false;
+		/** @type {boolean} */ this.trackBoxDefined = false;
 
 		// whether track defined
-		this.trackDefined = false;
+		/** @type {boolean} */ this.trackDefined = false;
 
 		// whether trackloop defined
-		this.trackLoopDefined = false;
+		/** @type {boolean} */ this.trackLoopDefined = false;
 
 		// whether track disabled
-		this.trackDisabled = false;
+		/** @type {boolean} */ this.trackDisabled = false;
 
 		// whether to display generation notifications
-		this.genNotifications = true;
+		/** @type {boolean} */ this.genNotifications = true;
 
 		// whether to display generation as relative or absolute
-		this.genRelative = false;
+		/** @type {boolean} */ this.genRelative = false;
 
 		// generation offset from CXRLE Gen command
-		this.genOffset = 0;
-		this.genDefined = false;
+		/** @type {number} */ this.genOffset = 0;
+		/** @type {boolean} */ this.genDefined = false;
 
 		// x and y offset from CXRLE Pos command
-		this.posXOffset = 0;
-		this.posYOffset = 0;
-		this.posDefined = false;
+		/** @type {number} */ this.posXOffset = 0;
+		/** @type {number} */ this.posYOffset = 0;
+		/** @type {boolean} */ this.posDefined = false;
 
 		// failure reason
-		this.failureReason = "";
+		/** @type{string} */ this.failureReason = "";
 
 		// x offset
-		this.xOffset = 0;
-		this.yOffset = 0;
+		/** @type {number} */ this.xOffset = 0;
+		/** @type {number} */ this.yOffset = 0;
 
 		// current POI number
-		this.currentPOI = -1;
+		/** @type {number} */ this.currentPOI = -1;
 
 		// start point for POI
-		this.startXPOI = -1;
-		this.startYPOI = -1;
-		this.startZoomPOI = -1;
-		this.startAnglePOI = -1;
-		this.startDepthPOI = -1;
-		this.startLayersPOI = -1;
+		/** @type {number} */ this.startXPOI = -1;
+		/** @type {number} */ this.startYPOI = -1;
+		/** @type {number} */ this.startZoomPOI = -1;
+		/** @type {number} */ this.startAnglePOI = -1;
+		/** @type {number} */ this.startDepthPOI = -1;
+		/** @type {number} */ this.startLayersPOI = -1;
 
 		// destination point for POI
-		this.endXPOI = -1;
-		this.endYPOI = -1;
-		this.endZoomPOI = -1;
-		this.endAnglePOI = -1;
-		this.endDepthPOI = -1;
-		this.endLayersPOI = -1;
+		/** @type {number} */ this.endXPOI = -1;
+		/** @type {number} */ this.endYPOI = -1;
+		/** @type {number} */ this.endZoomPOI = -1;
+		/** @type {number} */ this.endAnglePOI = -1;
+		/** @type {number} */ this.endDepthPOI = -1;
+		/** @type {number} */ this.endLayersPOI = -1;
 
 		// whether depth and layers are used at the POI
-		this.depthPOIused = false;
-		this.layersPOIused = false;
+		/** @type {boolean} */ this.depthPOIused = false;
+		/** @type {boolean} */ this.layersPOIused = false;
 
 		// steps for POI transition
-		this.stepsPOI = -1;
+		/** @type {number} */ this.stepsPOI = -1;
 
 		// target steps for POI transition
-		this.targetPOI = -1;
+		/** @type {number} */ this.targetPOI = -1;
 
 		// whether computing history
-		this.computeHistory = false;
+		/** @type {boolean} */ this.computeHistory = false;
 
 		// whether copying RLE
-		this.clipboardCopy = false;
+		/** @type {boolean} */ this.clipboardCopy = false;
 
 		// copy start time
-		this.copyStartTime = -1,
+		/** @type {number} */ this.copyStartTime = -1;
 
 		// textarea used for RLE copy
 		this.tempInput = null;
@@ -724,44 +724,44 @@
 		this.tempDiv = null;
 
 		// string containing RLE
-		this.tempRLE = "";
+		/** @type{string} */ this.tempRLE = "";
 
 		// amount copied and target
-		this.tempRLEAmount = 0;
-		this.tempRLELength = 0;
+		/** @type {number} */ this.tempRLEAmount = 0;
+		/** @type {number} */ this.tempRLELength = 0;
 
 		// chunk size in bytes to copy
-		this.tempRLEChunkSize = 32768;
+		/** @type {number} */ this.tempRLEChunkSize = 32768;
 
 		// frames to display before processing copy to allow notification
-		this.copyFrameWait = 0;
+		/** @type {number} */ this.copyFrameWait = 0;
 
 		// history target generation
-		this.computeHistoryTarget = 0;
+		/** @type {number} */ this.computeHistoryTarget = 0;
 
 		// when compute history finishes clear notification
-		this.computeHistoryClear = true;
+		/** @type {boolean} */ this.computeHistoryClear = true;
 
 		// whether autofit is on
-		this.autoFit = false;
+		/** @type {boolean} */ this.autoFit = false;
 
 		// whether autofit is defined
-		this.autoFitDefined = false;
+		/** @type {boolean} */ this.autoFitDefined = false;
 
 		// delta between target auto fit zoom and current zoom
-		this.autoFitDelta = 0;
+		/** @type {number} */ this.autoFitDelta = 0;
 
 		// threshold for auto fit delta to be small enough not to matter
-		this.autoFitThreshold = 0.01;
+		/** @type {number} */ this.autoFitThreshold = 0.01;
 
 		// weight for auto fit average (target is one part in n)
-		this.autoFitWeight = 6;
+		/** @type {number} */ this.autoFitWeight = 6;
 
 		// whether autofit is in history fit mode
-		this.historyFit = false;
+		/** @type {boolean} */ this.historyFit = false;
 
 		// whether autofit only uses state 1
-		this.state1Fit = false;
+		/** @type {boolean} */ this.state1Fit = false;
 
 		// custom text message colour
 		this.customTextColour = null;
@@ -779,123 +779,123 @@
 		this.titleElement = null;
 
 		// window title string
-		this.windowTitle = "";
+		/** @type{string} */ this.windowTitle = "";
 
 		// flag if performance warning is disabled
-		this.noPerfWarning = false;
+		/** @type {boolean} */ this.noPerfWarning = false;
 
 		// flag if history is disabled
-		this.noHistory = false;
+		/** @type {boolean} */ this.noHistory = false;
 
 		// flag if pattern is executable
-		this.executable = false;
+		/** @type {boolean} */ this.executable = false;
 
 		// flag if stars are used
-		this.starsOn = false;
+		/** @type {boolean} */ this.starsOn = false;
 
 		// create and initialise stars
 		this.starField = null;
 
 		// whether viewer is in popup window
-		this.isInPopup = false;
+		/** @type {boolean} */ this.isInPopup = false;
 
 		// line number for error and script drawing
-		this.lineNo = 1;
+		/** @type {number} */ this.lineNo = 1;
 
 		// performance colour red component
-		this.perfColRed = 0;
+		/** @type {number} */ this.perfColRed = 0;
 
 		// performance colour green component
-		this.perfColGreen = 0;
+		/** @type {number} */ this.perfColGreen = 0;
 
 		// whether just started
-		this.justStarted = false;
+		/** @type {boolean} */ this.justStarted = false;
 
 		// whether controls are locked (during waypoint playback)
-		this.controlsLocked = false;
+		/** @type {boolean} */ this.controlsLocked = false;
 
 		// waypoint manager
 		this.waypointManager = new WaypointManager();
 
 		// last waypoint message
-		this.lastWaypointMessage = "";
+		/** @type{string} */ this.lastWaypointMessage = "";
 
 		// last waypoint theme
-		this.lastWaypointTheme = -1;
+		/** @type {number} */ this.lastWaypointTheme = -1;
 
 		// whether waypoint defined
-		this.waypointsDefined = false;
+		/** @type {boolean} */ this.waypointsDefined = false;
 
 		// whether a manual change happened
-		this.manualChange = false;
+		/** @type {boolean} */ this.manualChange = false;
 
 		// generations per step
-		this.gensPerStep = 1;
+		/** @type {number} */ this.gensPerStep = 1;
 
 		// number of script commands and errors
-		this.numScriptCommands = 0;
-		this.numScriptErrors = 0;
+		/** @type {number} */ this.numScriptCommands = 0;
+		/** @type {number} */ this.numScriptErrors = 0;
 
 		// number of frames when fading after stop
-		this.fading = 0;
+		/** @type {number} */ this.fading = 0;
 
 		// maximum width due to code element
-		this.maxCodeWidth = ViewConstants.maxViewerWidth;
+		/** @type {number} */ this.maxCodeWidth = ViewConstants.maxViewerWidth;
 
 		// generation that life died
-		this.diedGeneration = -1;
+		/** @type {number} */ this.diedGeneration = -1;
 
 		// requested viewer width and height
-		this.requestedWidth = -1;
-		this.requestedHeight = -1;
+		/** @type {number} */ this.requestedWidth = -1;
+		/** @type {number} */ this.requestedHeight = -1;
 
 		// requested popup viewer width and height
-		this.requestedPopupWidth = -1;
-		this.requestedPopupHeight = -1;
+		/** @type {number} */ this.requestedPopupWidth = -1;
+		/** @type {number} */ this.requestedPopupHeight = -1;
 
 		// pattern name and originator
-		this.patternName = "";
-		this.patternOriginator = "";
+		/** @type{string} */ this.patternName = "";
+		/** @type{string} */ this.patternOriginator = "";
 
 		// pattern width and height
-		this.patternWidth = 0;
-		this.patternHeight = 0;
+		/** @type {number} */ this.patternWidth = 0;
+		/** @type {number} */ this.patternHeight = 0;
 
 		// number of pattern states
-		this.patternStates = 0;
+		/** @type {number} */ this.patternStates = 0;
 
 		// number of used pattern states
-		this.patternUsedStates = 0;
+		/** @type {number} */ this.patternUsedStates = 0;
 
 		// number of cells in each state
 		this.patternStateCount = null;
 
 		// pattern format
-		this.patternFormat = "";
+		/** @type{string} */ this.patternFormat = "";
 
 		// pattern rule name
-		this.patternRuleName = "";
+		/** @type{string} */ this.patternRuleName = "";
 
 		// pattern alias name
-		this.patternAliasName = "";
+		/** @type{string} */ this.patternAliasName = "";
 
 		// pattern bounded grid definition
-		this.patternBoundedGridDef = "";
+		/** @type{string} */ this.patternBoundedGridDef = "";
 
 		// whether using custom theme
-		this.customTheme = false;
+		/** @type {boolean} */ this.customTheme = false;
 
 		// custom theme value
 		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
 		// custom grid colour
-		this.customGridColour = -1;
+		/** @type {number} */ this.customGridColour = -1;
 
 		// custom grid major colour
-		this.customGridMajorColour = -1;
+		/** @type {number} */ this.customGridMajorColour = -1;
 
 		// whether custom grid line major defined
-		this.customGridLineMajor = false;
+		/** @type {boolean} */ this.customGridLineMajor = false;
 
 		// custom label colour
 		this.customLabelColour = ViewConstants.labelFontColour;
@@ -907,12 +907,12 @@
 		this.customPolygonColour = ViewConstants.polyColour;
 
 		// colour set used
-		this.colourSetName = "";
-		this.colourSetSize = 0;
+		/** @type{string} */ this.colourSetName = "";
+		/** @type {number} */ this.colourSetSize = 0;
 		this.colourList = [];
 
 		// whether all colours are custom
-		this.allCustom = false;
+		/** @type {boolean} */ this.allCustom = false;
 
 		// custom colour set
 		this.customColours = [];
@@ -924,25 +924,25 @@
 		this.scriptErrors = [];
 
 		// error display line
-		this.displayErrors = 1;
+		/** @type {number} */ this.displayErrors = 1;
 
 		// help display line
-		this.displayHelp = 0;
+		/** @type {number} */ this.displayHelp = 0;
 
 		// whether to show help sections
-		this.showSections = false;
+		/** @type {boolean} */ this.showSections = false;
 
 		// number of help lines
-		this.numHelpLines = 100;
+		/** @type {number} */ this.numHelpLines = 100;
 
 		// number of help lines per page
-		this.numHelpPerPage = 10;
+		/** @type {number} */ this.numHelpPerPage = 10;
 
 		// further tab positions
-		this.tabs = [64, 200, 290, 530, 700];
+		/** Array<number> */ this.tabs = [64, 200, 290, 530, 700];
 
 		// whether to wrap help text
-		this.wrapHelpText = false;
+		/** @type {boolean} */ this.wrapHelpText = false;
 
 		// help information sections
 		this.helpSections = [];
@@ -952,86 +952,86 @@
 		this.helpVariableCache = [];
 
 		// generation number to stop at
-		this.stopGeneration = -1;
+		/** @type {number} */ this.stopGeneration = -1;
 
 		// generation number to loop from
-		this.loopGeneration = -1;
+		/** @type {number} */ this.loopGeneration = -1;
 
 		// flag if loop temporary disabled
-		this.loopDisabled = false;
+		/** @type {boolean} */ this.loopDisabled = false;
 
 		// flag if waypoints disabled
-		this.waypointsDisabled = false;
+		/** @type {boolean} */ this.waypointsDisabled = false;
 
 		// whether to disable playback
-		this.viewOnly = false;
+		/** @type {boolean} */ this.viewOnly = false;
 
 		// whether to hide GUI while pattern playing
-		this.hideGUI = false;
+		/** @type {boolean} */ this.hideGUI = false;
 
 		// whether to disable GUI
-		this.noGUI = false;
+		/** @type {boolean} */ this.noGUI = false;
 
 		// whether NOGUI defined
-		this.noGUIDefined = false;
+		/** @type {boolean} */ this.noGUIDefined = false;
 
 		// whether to hide pattern source
-		this.hideSource = false;
+		/** @type {boolean} */ this.hideSource = false;
 
 		// whether to disable pattern copy
-		this.noCopy = false;
+		/** @type {boolean} */ this.noCopy = false;
 
 		// whether multi-state view used
-		this.multiStateView = false;
+		/** @type {boolean} */ this.multiStateView = false;
 
 		// whether to autostart
-		this.autoStart = false;
-		this.autoStartDisabled = false;
+		/** @type {boolean} */ this.autoStart = false;
+		/** @type {boolean} */ this.autoStartDisabled = false;
 
 		// whether reset is always hard
-		this.hardReset = false;
+		/** @type {boolean} */ this.hardReset = false;
 
 		// whether to perform strict script command validation
-		this.strict = false;
+		/** @type {boolean} */ this.strict = false;
 
 		// moveable menu items original position
-		this.playListX = -1;
-		this.generationRangeX = -1;
-		this.stepRangeX = -1;
+		/** @type {number} */ this.playListX = -1;
+		/** @type {number} */ this.generationRangeX = -1;
+		/** @type {number} */ this.stepRangeX = -1;
 
 		// life engine
 		this.engine = null;
 
 		// elapsed time
-		this.elapsedTime = 0;
+		/** @type {number} */ this.elapsedTime = 0;
 
 		// default grid width
-		this.defaultGridWidth = 512;
+		/** @type {number} */ this.defaultGridWidth = 512;
 
 		// default grid height
-		this.defaultGridHeight = 512;
+		/** @type {number} */ this.defaultGridHeight = 512;
 
 		// display width
-		this.displayWidth = 640;
+		/** @type {number} */ this.displayWidth = 640;
 
 		// display height
-		this.displayHeight = 512;
+		/** @type {number} */ this.displayHeight = 512;
 
 		// whether popup width has changed
-		this.popupWidthChanged = false;
-		this.lastPopupWidth = 640;
+		/** @type {boolean} */ this.popupWidthChanged = false;
+		/** @type {number} */ this.lastPopupWidth = 640;
 
 		// whether life generation is on
-		this.generationOn = false;
+		/** @type {boolean} */ this.generationOn = false;
 
 		// whether to generate next step
-		this.nextStep = false;
+		/** @type {boolean} */ this.nextStep = false;
 
 		// whether step is single generation
-		this.singleStep = false;
+		/** @type {boolean} */ this.singleStep = false;
 
 		// whether stats displayed
-		this.statsOn = false;
+		/** @type {boolean} */ this.statsOn = false;
 
 		// generation range item
 		this.generationRange = null;
@@ -1223,14 +1223,14 @@
 		this.stateColsList = null;
 
 		// current steps before next view theme change
-		this.viewSteps = 30;
+		/** @type {number} */ this.viewSteps = 30;
 
 		// last drag position
-		this.lastDragX = -1;
-		this.lastDragY = -1;
+		/** @type {number} */ this.lastDragX = -1;
+		/** @type {number} */ this.lastDragY = -1;
 
 		// mouse wheel delta
-		this.wheelDelta = 0;
+		/** @type {number} */ this.wheelDelta = 0;
 
 		// rule label
 		this.ruleLabel = null;
@@ -1248,7 +1248,7 @@
 		this.offContext = null;
 
 		// generation speed
-		this.genSpeed = 60;
+		/** @type {number} */ this.genSpeed = 60;
 
 		// menu manager
 		this.menuManager = null;
@@ -1257,69 +1257,69 @@
 		this.viewMenu = null;
 
 		// target position
-		this.targetX = 0;
-		this.targetY = 0;
+		/** @type {number} */ this.targetX = 0;
+		/** @type {number} */ this.targetY = 0;
 
 		// target zoom
-		this.targetZoom = 0;
+		/** @type {number} */ this.targetZoom = 0;
 
 		// default camera
-		this.defaultAngle = 0;
-		this.defaultX = 0;
-		this.defaultY = 0;
-		this.defaultZoom = 1;
-		this.defaultTheme = 1;
-		this.defaultGPS = 60;
-		this.defaultStep = 1;
-		this.defaultLayers = 1;
-		this.defaultDepth = 0.1;
+		/** @type {number} */ this.defaultAngle = 0;
+		/** @type {number} */ this.defaultX = 0;
+		/** @type {number} */ this.defaultY = 0;
+		/** @type {number} */ this.defaultZoom = 1;
+		/** @type {number} */ this.defaultTheme = 1;
+		/** @type {number} */ this.defaultGPS = 60;
+		/** @type {number} */ this.defaultStep = 1;
+		/** @type {number} */ this.defaultLayers = 1;
+		/** @type {number} */ this.defaultDepth = 0.1;
 
 		// whether a theme was requested
-		this.themeRequested = -1;
+		/** @type {number} */ this.themeRequested = -1;
 
 		// saved camera
-		this.savedAngle = 0;
-		this.savedX = 0;
-		this.savedY = 0;
-		this.savedZoom = 1;
+		/** @type {number} */ this.savedAngle = 0;
+		/** @type {number} */ this.savedX = 0;
+		/** @type {number} */ this.savedY = 0;
+		/** @type {number} */ this.savedZoom = 1;
 
 		// flags if default used
-		this.defaultZoomUsed = false;
-		this.defaultXUsed = false;
-		this.defaultYUsed = false;
+		/** @type {boolean} */ this.defaultZoomUsed = false;
+		/** @type {boolean} */ this.defaultXUsed = false;
+		/** @type {boolean} */ this.defaultYUsed = false;
 
 		// flag if thumbnail mode on
-		this.thumbnail = false;
+		/** @type {boolean} */ this.thumbnail = false;
 
 		// flag if thumbnail was ever on
-		this.thumbnailEverOn = false;
+		/** @type {boolean} */ this.thumbnailEverOn = false;
 
 		// thumbnail divisor
-		this.thumbnailDivisor = ViewConstants.defaultThumbSize;
+		/** @type {number} */ this.thumbnailDivisor = ViewConstants.defaultThumbSize;
 
 		// original width, height and zoom to set when thumbnail clicked
-		this.thumbOrigWidth = 0;
-		this.thumbOrigHeight = 0;
-		this.thumbOrigZoom = 0;
+		/** @type {number} */ this.thumbOrigWidth = 0;
+		/** @type {number} */ this.thumbOrigHeight = 0;
+		/** @type {number} */ this.thumbOrigZoom = 0;
 
 		// help text position
-		this.thumbOrigHelpPosition = 0;
+		/** @type {number} */ this.thumbOrigHelpPosition = 0;
 
 		// whether clicking on thumbnail launches popup viewer
-		this.thumbLaunch = false;
+		/** @type {boolean} */ this.thumbLaunch = false;
 
 		// whether thumbnail zoom defined
-		this.thumbZoomDefined = false;
-		this.thumbZoomValue = 0;
+		/** @type {boolean} */ this.thumbZoomDefined = false;
+		/** @type {number} */ this.thumbZoomValue = 0;
 
 		// screenshot scheduled
-		this.screenShotScheduled = 0;
+		/** @type {number} */ this.screenShotScheduled = 0;
 
 		// whether drawing
-		this.drawing = false;
+		/** @type {boolean} */ this.drawing = false;
 
 		// pen colour for drawing
-		this.penColour = -1;
+		/** @type {number} */ this.penColour = -1;
 	}
 
 	// set initial value flags to a value
@@ -7608,6 +7608,7 @@
 			case Keywords.squareDisplayWord:
 			case Keywords.hexCellsWord:
 			case Keywords.squareCellsWord:
+			case Keywords.bordersWord:
 			case Keywords.randomSeedWord:
 			case Keywords.deleteRangeWord:
 			case Keywords.poiWord:
@@ -11231,6 +11232,13 @@
 								// update angle control
 								this.angleItem.deleted = this.engine.isHex;
 							}
+
+							itemValid = true;
+							break;
+
+						// cell borders
+						case Keywords.bordersWord:
+							this.engine.cellBorders = true;
 
 							itemValid = true;
 							break;

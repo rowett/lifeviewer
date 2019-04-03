@@ -97,6 +97,9 @@
 		// square cells
 		/** @const {string} */ squareCellsWord : "SQUARECELLS",
 
+		// draw cell borders
+		/** @const {string} */ bordersWord : "CELLBORDERS",
+
 		// integer zoom
 		/** @const {string} */ integerZoomWord : "INTEGERZOOM",
 

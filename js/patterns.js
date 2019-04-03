@@ -5642,6 +5642,9 @@
 	PatternManager.decodeIcons = function(pattern, index) {
 		var valid = false;
 
+		if (index > 0) {
+			valid = true;
+		}
 		return valid;
 	};
 
@@ -5649,6 +5652,9 @@
 	PatternManager.decodeColours = function(pattern, index) {
 		var valid = false;
 
+		if (index > 0) {
+			valid = true;
+		}
 		return valid;
 	};
 
@@ -5656,6 +5662,9 @@
 	PatternManager.decodeTable = function(pattern, index) {
 		var valid = false;
 
+		if (index > 0) {
+			valid = true;
+		}
 		return valid;
 	};
 

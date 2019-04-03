@@ -5,7 +5,8 @@ Build 318
 - changed triangular neighbourhood digits to "0123456789XYZ" where X, Y and Z represent 10, 11 and 12 respectively
 - cells can now have a border
 	- "Border" button in bottom-right menu
-	- hotkey Alt and "X"
+	- hotkey Alt and "X" to toggle setting
+	- new script command [[ CELLBORDERS ]] to turn cell borders on
 
 Build 317
 - support for triangular neighbourhood
