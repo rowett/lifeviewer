@@ -939,7 +939,7 @@
 		/** @type {number} */ this.numHelpPerPage = 10;
 
 		// further tab positions
-		/** Array<number> */ this.tabs = [64, 200, 290, 530, 700];
+		/** @type {Array<number>} */ this.tabs = [64, 200, 290, 530, 700];
 
 		// whether to wrap help text
 		/** @type {boolean} */ this.wrapHelpText = false;

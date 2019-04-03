@@ -14,18 +14,18 @@
 	/** @const */
 	var LifeConstants = {
 		// NW glider
-		/** @const {Array<Array<number>>} */ gliderNW :	[[[1, 1, 0],
-														  [1, 0, 1],
-														  [1, 0, 0]],
-														 [[0, 1, 1],
-														  [1, 1, 0],
-														  [0, 0, 1]],
-														 [[1, 1, 1],
-														  [1, 0, 0],
-														  [0, 1, 0]],
-														 [[0, 1, 0],
-														  [1, 1, 0],
-														  [1, 0, 1]]],
+		/** @const {Array<Array<Array<number>>>} */ gliderNW :	[[[1, 1, 0],
+																  [1, 0, 1],
+																  [1, 0, 0]],
+																  [[0, 1, 1],
+																  [1, 1, 0],
+																  [0, 0, 1]],
+																  [[1, 1, 1],
+																  [1, 0, 0],
+																  [0, 1, 0]],
+																  [[0, 1, 0],
+																  [1, 1, 0],
+																  [1, 0, 1]]],
 		
 		// hex and triangle cell coordinate buffer size
 		/** @const {number} */ coordBufferSize : 4096,
@@ -230,7 +230,7 @@
 		/** @const {Array<number>} */ this.gliderInteger = [];
 
 		// cell colour strings
-		/** Array<string> */ this.cellColourStrings = [];
+		/** @type {Array<string>} */ this.cellColourStrings = [];
 
 		// before and after RLE comments
 		/** @type {string} */ this.beforeTitle = "";
@@ -632,18 +632,18 @@
 		/** @type {number} */ this.maxGridSize = 8192;
 
 		// graph default colours
-		/** Array<number> */ this.graphBgDefColor = [0, 0, 48];
-		/** Array<number> */ this.graphAxisDefColor = [255, 255, 255];
-		/** Array<number> */ this.graphAliveDefColor = [255, 255, 255];
-		/** Array<number> */ this.graphBirthDefColor = [0, 255, 0];
-		/** Array<number> */ this.graphDeathDefColor = [255, 0, 0];
+		/** @type {Array<number>} */ this.graphBgDefColor = [0, 0, 48];
+		/** @type {Array<number>} */ this.graphAxisDefColor = [255, 255, 255];
+		/** @type {Array<number>} */ this.graphAliveDefColor = [255, 255, 255];
+		/** @type {Array<number>} */ this.graphBirthDefColor = [0, 255, 0];
+		/** @type {Array<number>} */ this.graphDeathDefColor = [255, 0, 0];
 
 		// graph current colours
-		/** Array<number> */ this.graphBgColor = [0, 0, 48];
-		/** Array<number> */ this.graphAxisColor = [255, 255, 255];
-		/** Array<number> */ this.graphAliveColor = [255, 255, 255];
-		/** Array<number> */ this.graphBirthColor = [0, 255, 0];
-		/** Array<number> */ this.graphDeathColor = [255, 0, 0];
+		/** @type {Array<number>} */ this.graphBgColor = [0, 0, 48];
+		/** @type {Array<number>} */ this.graphAxisColor = [255, 255, 255];
+		/** @type {Array<number>} */ this.graphAliveColor = [255, 255, 255];
+		/** @type {Array<number>} */ this.graphBirthColor = [0, 255, 0];
+		/** @type {Array<number>} */ this.graphDeathColor = [255, 0, 0];
 
 		// HROT engine
 		this.HROT = new HROT(this.allocator, this);
@@ -677,8 +677,8 @@
 			/** @const {number} */ w2 = this.width / 2 - 0.25,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @type {number} */ state = 0,
-			/** Array<number> */ coords = this.coords,
-			/** Array<number> */ colours = this.cellColours,
+			/** @type {Array<number>} */ coords = this.coords,
+			/** @type {Array<number>} */ colours = this.cellColours,
 			/** @type {number} */ leftX = zoomBox.leftX,
 			/** @type {number} */ rightX = zoomBox.rightX,
 			/** @type {number} */ bottomY = zoomBox.bottomY,
@@ -864,9 +864,9 @@
 			/** @type {number} */ cy0 = 0,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ lastState = -1,
-			/** Array<number> */ coords = this.coords,
+			/** @type {Array<number>} */ coords = this.coords,
 			/** @const {number} */ numCoords = this.numCells,
-			/** Array<number> */ colours = this.cellColours,
+			/** @type {Array<number>} */ colours = this.cellColours,
 			/** @const {number} */ mask = (1 << LifeConstants.coordBufferBits) - 1;
 
 		// if triangles are filled then sort by colour
@@ -991,8 +991,8 @@
 			/** @type {number} */ ya4 = 0,
 			/** @type {number} */ xa5 = 0,
 			/** @type {number} */ ya5 = 0,
-			/** Array<number> */ coords = this.coords,
-			/** Array<number> */ colours = this.cellColours,
+			/** @type {Array<number>} */ coords = this.coords,
+			/** @type {Array<number>} */ colours = this.cellColours,
 			/** @type {number} */ leftX = zoomBox.leftX,
 			/** @type {number} */ rightX = zoomBox.rightX,
 			/** @type {number} */ bottomY = zoomBox.bottomY,
@@ -1207,9 +1207,9 @@
 			/** @type {number} */ batch = 12,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ lastState = -1,
-			/** Array<number> */ coords = this.coords,
+			/** @type {Array<number>} */ coords = this.coords,
 			/** @const {number} */ numCoords = this.numCells,
-			/** Array<number> */ colours = this.cellColours,
+			/** @type {Array<number>} */ colours = this.cellColours,
 			/** @const {number} */ mask = (1 << LifeConstants.coordBufferBits) - 1;
 
 		// adjust for hex
@@ -5310,12 +5310,12 @@
 	// make glider integers out of the four phases of NW glider
 	Life.prototype.makeGliderIntegers = function() {
 		var /** @type {number} */ p = 0,
-			/** @const {Array<Array<number>>} */ gliderNW = LifeConstants.gliderNW,
+			/** @const {Array<Array<Array<number>>>} */ gliderNW = LifeConstants.gliderNW,
 			/** @const {Array<number>} */ gliderInteger = this.gliderInteger,
-			/** Array<Array<number>> */ phase = null,
-			/** Array<number> */ row0 = null,
-			/** Array<number> */ row1 = null,
-			/** Array<number> */ row2 = null;
+			/** @type {Array<Array<number>>} */ phase = null,
+			/** @type {Array<number>} */ row0 = null,
+			/** @type {Array<number>} */ row1 = null,
+			/** @type {Array<number>} */ row2 = null;
 
 		// make integers
 		for (p = 0; p <= 3; p += 1) {

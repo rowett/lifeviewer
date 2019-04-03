@@ -62,7 +62,7 @@
 		/** @const {number} */ map32Length : 6,
 
 		// number of neighbours for MAP rule
-		mapNeighbours : 8,
+		/** @type {number} */ mapNeighbours : 8,
 
 		// extended command prefix
 		/** @const {string} */ extendedPrefix : "XRLE",
@@ -74,7 +74,7 @@
 		/** @const {string} */ genCommand : "Gen",
 
 		// decode failure reason
-		failureReason : "",
+		/** @type {string} */ failureReason : "",
 
 		// bounded grid prefix
 		/** @const {string} */ boundedGridPrefix : ":",
@@ -153,10 +153,10 @@
 		swapArray : new Uint16Array(512),
 
 		// whether pattern is executable
-		executable : false,
+		/** @type {boolean} */ executable : false,
 
 		// whether pattern in extended RLE format
-		extendedFormat : false,
+		/** @type {boolean} */ extendedFormat : false,
 
 		// lower case name of [R]History postfix
 		/** @const {string} */ historyPostfix : "history",
@@ -171,19 +171,19 @@
 		/** @const {string} */ vonNeumannPostfix : "v",
 
 		// flag if last pattern was too big
-		tooBig : false,
+		/** @type {boolean} */ tooBig : false,
 
 		// generation number
-		generation : 0,
-		genDefined : false,
+		/** @type {number} */ generation : 0,
+		/** @type {boolean} */ genDefined : false,
 
 		// position x and y
-		posX : 0,
-		posY : 0,
-		posDefined : false,
+		/** @type {number} */ posX : 0,
+		/** @type {number} */ posY : 0,
+		/** @type {boolean} */ posDefined : false,
 
 		// index in string
-		index : 0,
+		/** @type {number} */ index : 0,
 
 		// LTL min and max range
 		/** @const {number} */ minRangeLTL : 1,
@@ -211,8 +211,8 @@
 		/** @const {number} */ maxStatesHROT : 255,
 
 		// max state seen
-		maxSurvivalHROT : 0,
-		maxBirthHROT : 0,
+		/** @type {number} */ maxSurvivalHROT : 0,
+		/** @type {number} */ maxBirthHROT : 0,
 
 		// HROT neighborhoods
 		/** @const {number} */ mooreHROT : 0,
@@ -220,14 +220,14 @@
 		/** @const {number} */ circularHROT : 2,
 
 		// specified width and height from RLE pattern
-		specifiedWidth : -1,
-		specifiedHeight : -1,
+		/** @type {number} */ specifiedWidth : -1,
+		/** @type {number} */ specifiedHeight : -1,
 
 		// alternate rule separator
 		/** @const {string} */ altRuleSeparator : "|",
 		
 		// whether alternate rule specified
-		altSpecified : false,
+		/** @type {boolean} */ altSpecified : false,
 
 		// rule table rule section including trailing space
 		/** @const {string} */ ruleTableRuleName : "@RULE ",
@@ -238,7 +238,7 @@
 		// rule table table section
 		/** @const {string} */ ruleTableTableName : "@TABLE",
 
-		// tule table colours section
+		// rule table colours section
 		/** @const {string} */ ruleTableColoursName : "@COLORS",
 
 		// rule table icons section
@@ -255,92 +255,92 @@
 		if (i !== -1) {
 			name = name.substr(0, i);
 		}
-		this.name = name;
+		/** @type {string} */ this.name = name;
 
 		// bounded grid type found
-		this.gridType = -1;
+		/** @type {number} */ this.gridType = -1;
 
 		// grid width
-		this.gridWidth = -1;
+		/** @type {number} */ this.gridWidth = -1;
 
 		// grid height
-		this.gridHeight = -1;
+		/** @type {number} */ this.gridHeight = -1;
 
 		// grid horizontal shift
-		this.gridHorizontalShift = 0;
+		/** @type {number} */ this.gridHorizontalShift = 0;
 
 		// grid vertical shift
-		this.gridVerticalShift = 0;
+		/** @type {number} */ this.gridVerticalShift = 0;
 
 		// grid horizontal twist
-		this.gridHorizontalTwist = false;
+		/** @type {boolean} */ this.gridHorizontalTwist = false;
 
 		// grid vertical twist
-		this.gridVerticalTwist = false;
+		/** @type {boolean} */ this.gridVerticalTwist = false;
 
 		// rule name
-		this.ruleName = "";
+		/** @type {string} */ this.ruleName = "";
 
 		// alias name
-		this.aliasName = "";
+		/** @type {string} */ this.aliasName = "";
 
 		// bounded grid definition
-		this.boundedGridDef = "";
+		/** @type {string} */ this.boundedGridDef = "";
 
 		// is history rule
-		this.isHistory = false;
+		/** @type {boolean} */ this.isHistory = false;
 
 		// contains Niemiec extended states
-		this.isNiemiec = false;
+		/** @type {boolean} */ this.isNiemiec = false;
 
 		// is hex rule
-		this.isHex = false;
+		/** @type {boolean} */ this.isHex = false;
 
 		// is triangular rule
-		this.isTriangular = false;
+		/** @type {boolean} */ this.isTriangular = false;
 
 		// is Wolfram rule
-		this.wolframRule = -1;
+		/** @type {number} */ this.wolframRule = -1;
 
 		// is von neumann rule
-		this.isVonNeumann = false;
+		/** @type {boolean} */ this.isVonNeumann = false;
 
 		// is LTL rule
-		this.isLTL = false;
+		/** @type {boolean} */ this.isLTL = false;
 
 		// LTL range
-		this.rangeLTL = -1;
+		/** @type {number} */ this.rangeLTL = -1;
 
 		// LTL middle included
-		this.middleLTL = 1;
+		/** @type {number} */ this.middleLTL = 1;
 
 		// LTL Smin
-		this.SminLTL = -1;
+		/** @type {number} */ this.SminLTL = -1;
 
 		// LTL Smax
-		this.SmaxLTL = -1;
+		/** @type {number} */ this.SmaxLTL = -1;
 
 		// LTL Bmin
-		this.BminLTL = -1;
+		/** @type {number} */ this.BminLTL = -1;
 
 		// LTL Bmax
-		this.BmaxLTL = -1;
+		/** @type {number} */ this.BmaxLTL = -1;
 
 		// alternate rule LTL settings
-		this.altMiddleLTL = -1;
-		this.altSminLTL = -1;
-		this.altSmaxLTL = -1;
-		this.altBminLTL = -1;
-		this.altBmaxLTL = -1;
-
+		/** @type {number} */ this.altMiddleLTL = -1;
+		/** @type {number} */ this.altSminLTL = -1;
+		/** @type {number} */ this.altSmaxLTL = -1;
+		/** @type {number} */ this.altBminLTL = -1;
+		/** @type {number} */ this.altBmaxLTL = -1;
+ 
 		// LTL neightborhood (0 Moore, 1 von Neumann, 2 circular)
-		this.neighborhoodLTL = -1;
+		/** @type {number} */ this.neighborhoodLTL = -1;
 
 		// is HROT rule
-		this.isHROT = false;
+		/** @type {boolean} */ this.isHROT = false;
 
 		// HROT range
-		this.rangeHROT = -1;
+		/** @type {number} */ this.rangeHROT = -1;
 
 		// HROT birth array
 		this.birthHROT = null;
@@ -353,16 +353,16 @@
 		this.altSurvivalHROT = null;
 
 		// HROT neighborhood (0 Moore, 1 von Neumann, 2 circular)
-		this.neighborhoodHROT = -1;
+		/** @type {number} */ this.neighborhoodHROT = -1;
 
 		// states for generations, LTL or HROT
-		this.multiNumStates = -1;
+		/** @type {number} */ this.multiNumStates = -1;
 
 		// width of grid
-		this.width = 0;
+		/** @type {number} */ this.width = 0;
 
 		// height of grid
-		this.height = 0;
+		/** @type {number} */ this.height = 0;
 
 		// life bitmap
 		this.lifeMap = null;
@@ -371,43 +371,43 @@
 		this.multiStateMap = null;
 
 		// title
-		this.title = "";
+		/** @type {string} */ this.title = "";
 
 		// title before RLE
-		this.beforeTitle = "";
+		/** @type {string} */ this.beforeTitle = "";
 
 		// title after RLE
-		this.afterTitle = "";
+		/** @type {string} */ this.afterTitle = "";
 
 		// pattern source format
-		this.patternFormat = "";
+		/** @type {string} */ this.patternFormat = "";
 
 		// number of states
-		this.numStates = 2;
+		/** @type {number} */ this.numStates = 2;
 
 		// number of used states
-		this.numUsedStates = 0;
+		/** @type {number} */ this.numUsedStates = 0;
 
 		// pattern too big flag
-		this.tooBig = false;
+		/** @type {boolean} */ this.tooBig = false;
 
 		// pattern invalid flag
-		this.invalid = false;
+		/** @type {boolean} */ this.invalid = false;
 
 		// pattern originator
-		this.originator = "";
+		/** @type {string} */ this.originator = "";
 
 		// rule table name
-		this.ruleTableName = "";
+		/** @type {string} */ this.ruleTableName = "";
 
 		// rule tree states
-		this.ruleTreeNumStates = -1;
+		/** @type {number} */ this.ruleTreeNumStates = -1;
 
 		// rule tree neighbours
-		this.ruleTreeNeighbors = -1;
+		/** @type {number} */ this.ruleTreeNeighbors = -1;
 
 		// rule tree nodes
-		this.ruleTreeNodes = -1;
+		/** @type {number} */ this.ruleTreeNodes = -1;
 	}
 
 	// copy settings from one pattern to another
