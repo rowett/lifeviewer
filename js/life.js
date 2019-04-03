@@ -689,8 +689,8 @@
 			/** number */ displayY = 0,
 			/** number */ displayX = 0,
 			/** number */ xOffset = 0,
-			/** number */ linearZoom = 1,
-			/** number */ oddEven = 0;
+			/** number */ oddEven = 0,
+			/** boolean */ drawFilledCellBorders = !this.displayGrid && !this.cellBorders;
 
 		// check if buffers have been allocated
 		if (colours.length !== LifeConstants.coordBufferSize) {
@@ -756,9 +756,17 @@
 						}
 						// check if buffer is full
 						if (j === LifeConstants.coordBufferSize) {
-							// draw and clear buffer
+							// draw buffer
 							this.numCells = j;
-							this.drawTriangleCells(true);
+							this.drawTriangleCells(true, drawFilledCellBorders);
+
+							// draw cell borders if enabled and grid lines disabled
+							if (this.cellBorders && !this.displayGrid) {
+								this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0];
+								this.drawTriangleCells(false, false);
+							}
+
+							// clear buffer
 							j = 0;
 							k = 0;
 						}
@@ -770,17 +778,24 @@
 		// draw any remaining cells
 		this.numCells = j;
 		if (j > 0) {
-			this.drawTriangleCells(true);
+			// draw buffer
+			this.drawTriangleCells(true, drawFilledCellBorders);
+
+			// draw cell borders if enabled and grid lines disabled
+			if (this.cellBorders && !this.displayGrid) {
+				this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0];
+				this.drawTriangleCells(false, false);
+			}
+
+			// clear buffer
 			j = 0;
 			k = 0;
 		}
 
 		// draw grid if enabled
-		if (this.displayGrid || this.cellBorders) {
+		if (this.displayGrid) {
 			// set grid line colour
 			this.context.strokeStyle = "rgb(" + (this.gridLineRaw >> 16) + "," + ((this.gridLineRaw >> 8) & 255) + "," + (this.gridLineRaw & 255) + ")";
-			linearZoom = Math.log(zoom / 4) / Math.log(ViewConstants.maxZoom / 4);
-			this.context.lineWidth = (linearZoom + 1.5) | 0;
 
 			// create cell coordinates for window
 			bottomY = ((-halfDisplayHeight / zoom) - yOff + h2) | 0;
@@ -831,7 +846,7 @@
 	};
 
 	// draw triangle cells
-	Life.prototype.drawTriangleCells = function(/** boolean */ filled) {
+	Life.prototype.drawTriangleCells = function(/** boolean */ filled, /** boolean */ borderWhenFilled) {
 		var /** number */ i = 0,
 			context = this.context,
 			/** number */ xOff = this.width / 2 - this.xOff - this.originX,
@@ -897,27 +912,46 @@
 			if (state !== lastState) {
 				lastState = state;
 				if (i > 0) {
+					// draw the batch of cells at the current colour
 					if (filled) {
+						// draw border if required
+						if (borderWhenFilled) {
+							context.stroke();
+						}
+						// fill the cells if required
 						context.fill();
 					} else {
 						context.stroke();
 					}
+					// start a new batch
 					context.beginPath();
 				}
 				if (filled) {
+					// set the new cell colours
 					context.fillStyle = this.cellColourStrings[state];
+					if (borderWhenFilled) {
+						context.strokeStyle = this.cellColourStrings[state];
+					}
 				}
 			}
 
 			// draw triangle
-			context.moveTo(x, y);
-			context.lineTo(cx2 + x, cy2 + y);
+			context.moveTo(x | 0, y | 0);
+			context.lineTo((cx2 + x) | 0, (cy2 + y) | 0);
+			context.lineTo((cx2 + x) | 0, y | 0);
 			cy2 = (coords[coord + 1] - cy0) * yzoom;
 			cx2 = (coords[coord] - cx0) * xzoom;
+			context.lineTo((cx2 + x) | 0, (cy2 + y) | 0);
 			coord += 2;
-			context.lineTo(cx2 + x, cy2 + y);
 		}
+
+		// draw the final batch of cells
 		if (filled) {
+			// draw cell borders if required
+			if (borderWhenFilled) {
+				context.stroke();
+			}
+			// fill cells
 			context.fill();
 		} else {
 			context.stroke();
@@ -3291,8 +3325,6 @@
 		colourStrings = this.cellColourStrings,
 		needStrings = (this.isHex && this.useHexagons) || this.isTriangular,
 		i = 0;
-
-				colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 
 		// check for Generations or HROT
 		if (this.multiNumStates > 2) {
