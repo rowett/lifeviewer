@@ -1,8 +1,14 @@
 Build 318
-- triangular rules now ignore HEXDISPLAY script command
 - drawing cells wasn't correctly updating tile map
+- triangular rules now ignore HEXDISPLAY script command
 - check bounded grid width and height are even for triangular rules
-- changed triangular neighbourhood digits to "0123456789XYZ" where X, Y and Z represent 10, 11 and 12 respectively
+- triangular rules now support three neighbourhoods:
+	- Triangular (postfix "T") with 12 neighbours (touching triangle edges and vertices)
+		- neighbourhood digits are "0123456789XYZ" where X, Y and Z represent 10, 11 and 12 respectively
+	- Triangular Edges (postfix "TE") with 3 neighbours (touching triangle edges)
+		- neighbourhood digits are "0123"
+	- Triangular Vertices (postfix "TV") with 9 neighbours (touching triangle vertices)
+		- neighbourhood digits are "0123456789"
 - cells can now have a border
 	- "Border" button in bottom-right menu
 	- hotkey Alt and "X" to toggle setting

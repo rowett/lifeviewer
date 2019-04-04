@@ -89,7 +89,22 @@
 		/** @const {string} */ decimalDigits : "0123456789",
 
 		// valid triangular rule characters
-		/** @const {string} */ validTriangularRuleLetters : "0123456789xyz",
+		/** @const {string} */ validTriangularRuleLetters: "0123456789xyz",
+
+		// valid triangular Edges rule characters
+		/** @const {string} */ validTriangularEdgesRuleLetters : "0123",
+
+		// valid triangular Vertices rule characters
+		/** @const {string} */ validTriangularVerticesRuleLetters : "0123456789",
+
+		// triangular mask
+		/** @const {number} */ triangularMask : 8191,
+
+		// triangular Edges mask
+		/** @const {number} */ triangularEdgesMask : 1038,
+
+		// triangular Vertices mask
+		/** @const {number} */ triangularVerticesMask : 7157,
 
 		// valid hex rule characters
 		/** @const {string} */ validHexRuleLetters : "0123456omp-",
@@ -161,8 +176,14 @@
 		// lower case name of [R]History postfix
 		/** @const {string} */ historyPostfix : "history",
 
-		// lower case name of triangular postfix
+		// lower case name of Triangular postfix
 		/** @const {string} */ triangularPostfix : "t",
+
+		// lower case name of Triangular Edges postfix
+		/** @const {string} */ triangularEdgesPostfix : "te",
+
+		// lower case name of Triangular Vertices postfix
+		/** @const {string} */ triangularVerticesPostfix : "tv",
 
 		// lower case name of Hex postfix
 		/** @const {string} */ hexPostfix : "h",
@@ -223,6 +244,11 @@
 		/** @type {number} */ specifiedWidth : -1,
 		/** @type {number} */ specifiedHeight : -1,
 
+		// triangular neighbourhoods
+		/** @const {number} */ triangularAll : 0,
+		/** @const {number} */ triangularEdges : 1,
+		/** @const {number} */ triangularVertices : 2,
+	
 		// alternate rule separator
 		/** @const {string} */ altRuleSeparator : "|",
 		
@@ -298,6 +324,9 @@
 
 		// is triangular rule
 		/** @type {boolean} */ this.isTriangular = false;
+
+		// triangular neighbourhood (0 - full, 1 - edges, 2 - vertices)
+		/** @type {number} */ this.triangularNeighbourhood = PatternManager.triangularAll;
 
 		// is Wolfram rule
 		/** @type {number} */ this.wolframRule = -1;
@@ -417,6 +446,7 @@
 		this.aliasName = source.aliasName;
 		this.isHex = source.isHex;
 		this.isTriangular = source.isTriangular;
+		this.triangularNeighbourhood = source.triangularNeighbourhood;
 		this.wolframRule = source.wolframRule;
 		this.isVonNeumann = source.isVonNeumann;
 		this.isLTL = source.isLTL;
@@ -470,6 +500,7 @@
 		this.aliasName = "";
 		this.isHex = false;
 		this.isTriangular = false;
+		this.triangularNeighbourhood = PatternManager.triangularAll;
 		this.wolframRule = -1;
 		this.isVonNeumann = false;
 		this.isLTL = false;
@@ -498,7 +529,7 @@
 		}
 
 		// check for neighborhoods
-		if ((this.isHex !== source.isHex) || (this.isTriangular !== source.isTriangular) || (this.isVonNeumann !== source.isVonNeumann) || (this.wolframRule !== source.wolframRule) || (this.neighborhoodLTL !== source.neighborhoodLTL) || (this.neighborhoodHROT !== source.neighborhoodHROT)) {
+		if ((this.isHex !== source.isHex) || (this.isTriangular !== source.isTriangular) || (this.triangularNeighbourhood !== source.triangularNeighbourhood) || (this.isVonNeumann !== source.isVonNeumann) || (this.wolframRule !== source.wolframRule) || (this.neighborhoodLTL !== source.neighborhoodLTL) || (this.neighborhoodHROT !== source.neighborhoodHROT)) {
 			return "Alternate has different neighborhood";
 		}
 
@@ -1278,27 +1309,40 @@
 	};
 	
 	// set triangular totalistic neighbourhood
-	PatternManager.setTriangularTotalistic = function(ruleTriangularArray, value, survival) {
+	PatternManager.setTriangularTotalistic = function(ruleTriangularArray, value, survival, ruleMask) {
 		// mask
-		var mask = 0,
+		var /** @type {number} */ mask = 0,
 
 		    // neighbours
-		    neighbours = 0,
-		    neighbourhood = 0,
+		    /** @type {number} */ neighbours = 0,
+		    /** @type {number} */ neighbourhood = 0,
 
 		    // counters
-		    i = 0,
-		    j = 0;
+		    /** @type {number} */ i = 0,
+		    /** @type {number} */ j = 0;
 
 		// compute the mask
 		if (survival) {
 			mask = 4;
 		}
 
-		// neighbourhood is:
+		// Triangular neighbourhood is:
 		// -- e1 e1 e1 --         o1 o1 o1 o1 o1
 		// e2 e2 EC e2 e2   and   o2 o2 OC o2 o2
 		// e3 e3 e3 e3 e3         -- o3 o3 o3 -
+		// Mask is: 8191 = b1111111111111
+
+		// Triangular Vertices neighbourhood is:
+		// -- e1 e1 e1 --         o1 o1 -- o1 o1
+		// e2 -- EC -- e2   and   o2 -- OC -- o2
+		// e3 e3 -- e3 e3         -- o3 o3 o3 -
+		// Mask is: 7157 = b1101111110101
+
+		// Triangular Edges neighbourhood is:
+		// -- -- -- -- --         -- -- o1 -- --
+		// -- e2 EC e2 --         -- o2 OC o2 --
+		// -- -- e3 -- --         -- -- -- -- --
+		// Mask is: 1038 = b0010000001110
 
 		// bit order is:
 		// e3 e3 e3 e3 e3 e1 e1 e1 e2 e2 EC e2 e2
@@ -1310,12 +1354,15 @@
 		for (i = 0; i < 8192; i += 8) {
 			for (j = 0; j < 4; j += 1) {
 				neighbours = 0;
-				neighbourhood = (i + j);
+				neighbourhood = (i + j) & ruleMask;
 
+				// count set bits in neighbourhood
 				while (neighbourhood > 0) {
 					neighbours += (neighbourhood & 1);
 					neighbourhood >>= 1;
 				}
+
+				// check if neighbours matches the suppled birth or survival count
 				if (value === neighbours) {
 					ruleTriangularArray[i + j + mask] = 1;
 				}
@@ -1926,7 +1973,7 @@
 	};
 
 	// create a triangular map from birth and survival strings
-	PatternManager.createTriangularRuleMap = function(birthPart, survivalPart, generationsStates, ruleTriangularArray) {
+	PatternManager.createTriangularRuleMap = function(birthPart, survivalPart, generationsStates, ruleTriangularArray, triangularNeighbourhood) {
 		var canonicalName = "",
 			letters = this.validTriangularRuleLetters,
 			i = 0,
@@ -1934,7 +1981,19 @@
 			birthMask = 0,
 			survivalMask = 0,
 			birthName = "",
-			survivalName = "";
+			survivalName = "",
+			ruleMask = this.triangularMask;
+
+		// check which triangular neighbourhood is specified
+		if (triangularNeighbourhood === PatternManager.triangularEdges) {
+			letters = this.validTriangularEdgesRuleLetters;
+			ruleMask = this.triangularEdgesMask;
+		} else {
+			if (triangularNeighbourhood === PatternManager.triangularVertices) {
+				letters = this.validTriangularVerticesRuleLetters;
+				ruleMask = this.triangularVerticesMask;
+			}
+		}
 
 		// find out which birth letters are specified
 		for (i = 0; i < birthPart.length; i += 1) {
@@ -1945,7 +2004,7 @@
 		for (i = 0; i < letters.length; i += 1) {
 			if ((birthMask & (1 << i)) !== 0) {
 				birthName += letters[i];
-				this.setTriangularTotalistic(ruleTriangularArray, i, false);
+				this.setTriangularTotalistic(ruleTriangularArray, i, false, ruleMask);
 			}
 		}
 
@@ -1959,7 +2018,7 @@
 		for (i = 0; i < letters.length; i += 1) {
 			if ((survivalMask & (1 << i)) !== 0) {
 				survivalName += letters[i];
-				this.setTriangularTotalistic(ruleTriangularArray, i, true);
+				this.setTriangularTotalistic(ruleTriangularArray, i, true, ruleMask);
 			}
 		}
 
@@ -1974,7 +2033,7 @@
 	};
 
 	// create the rule map from birth and survival strings
-	PatternManager.createRuleMap = function(birthPart, survivalPart, base64, isHex, isTriangular, isVonNeumann, generationsStates, ruleArray, ruleTriangularArray) {
+	PatternManager.createRuleMap = function(birthPart, survivalPart, base64, isHex, isTriangular, triangularNeighbourhood, isVonNeumann, generationsStates, ruleArray, ruleTriangularArray) {
 		var i = 0,
 		    j = 0,
 		    c = 0,
@@ -1995,7 +2054,7 @@
 			for (i = 0; i < 8192; i += 1) {
 				ruleTriangularArray[i] = 0;
 			}
-			canonicalName = this.createTriangularRuleMap(birthPart, survivalPart, generationsStates, ruleTriangularArray);
+			canonicalName = this.createTriangularRuleMap(birthPart, survivalPart, generationsStates, ruleTriangularArray, triangularNeighbourhood);
 		} else {
 			// create the masks
 			mask = 511;
@@ -2246,6 +2305,13 @@
 				} else {
 					if (pattern.isTriangular) {
 						pattern.ruleName += "T";
+						if (pattern.triangularNeighbourhood === PatternManager.triangularEdges) {
+							pattern.ruleName += "E";
+						} else {
+							if (pattern.triangularNeighbourhood === PatternManager.triangularVertices) {
+								pattern.ruleName += "V";
+							}
+						}
 					}
 				}
 			}
@@ -3484,6 +3550,12 @@
 			// triangular postfix length
 			triangularLength = PatternManager.triangularPostfix.length,
 
+			// triangular Edges postfix length
+			triangularEdgesLength = PatternManager.triangularEdgesPostfix.length,
+
+			// triangular Vertices postfix length
+			triangularVerticesLength = PatternManager.triangularVerticesPostfix.length,
+
 		    // von neumann index
 		    vonNeumannIndex = -1,
 
@@ -3750,12 +3822,41 @@
 						if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularLength)) {
 							// rule is a triangular type
 							pattern.isTriangular = true;
+							pattern.triangularNeighbourhood = PatternManager.triangularAll;
 
 							// remove the postfix
 							rule = rule.substr(0, rule.length - triangularLength);
 
 							// update the valid rule letters to triangular letters
 							validRuleLetters = this.validTriangularRuleLetters;
+						}
+
+						// check for triangular Edges rules
+						triangularIndex = rule.lastIndexOf(PatternManager.triangularEdgesPostfix);
+						if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularEdgesLength)) {
+							// rule is a triangular type
+							pattern.isTriangular = true;
+							pattern.triangularNeighbourhood = PatternManager.triangularEdges;
+
+							// remove the postfix
+							rule = rule.substr(0, rule.length - triangularEdgesLength);
+
+							// update the valid rule letters to triangular letters
+							validRuleLetters = this.validTriangularEdgesRuleLetters;
+						}
+
+						// check for triangular Vertices rules
+						triangularIndex = rule.lastIndexOf(PatternManager.triangularVerticesPostfix);
+						if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularVerticesLength)) {
+							// rule is a triangular type
+							pattern.isTriangular = true;
+							pattern.triangularNeighbourhood = PatternManager.triangularVertices;
+
+							// remove the postfix
+							rule = rule.substr(0, rule.length - triangularVerticesLength);
+
+							// update the valid rule letters to triangular letters
+							validRuleLetters = this.validTriangularVerticesRuleLetters;
 						}
 
 						// check for Hex rules
@@ -3814,12 +3915,41 @@
 								if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularLength)) {
 									// rule is a triangular type
 									pattern.isTriangular = true;
+									pattern.triangularNeighbourhood = PatternManager.triangularAll;
 
 									// remove the postfix
 									rule = rule.substr(0, rule.length - triangularLength);
 
 									// update the valid rule letters to triangular letters
 									validRuleLetters = this.validTriangularRuleLetters;
+								}
+
+								// check for triangular Edges rules
+								triangularIndex = rule.lastIndexOf(PatternManager.triangularEdgesPostfix);
+								if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularEdgesLength)) {
+									// rule is a triangular type
+									pattern.isTriangular = true;
+									pattern.triangularNeighbourhood = PatternManager.triangularEdges;
+
+									// remove the postfix
+									rule = rule.substr(0, rule.length - triangularEdgesLength);
+
+									// update the valid rule letters to triangular letters
+									validRuleLetters = this.validTriangularEdgesRuleLetters;
+								}
+
+								// check for triangular Vertices rules
+								triangularIndex = rule.lastIndexOf(PatternManager.triangularVerticesPostfix);
+								if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularVerticesLength)) {
+									// rule is a triangular type
+									pattern.isTriangular = true;
+									pattern.triangularNeighbourhood = PatternManager.triangularVertices;
+
+									// remove the postfix
+									rule = rule.substr(0, rule.length - triangularVerticesLength);
+
+									// update the valid rule letters to triangular letters
+									validRuleLetters = this.validTriangularVerticesRuleLetters;
 								}
 
 								// check for Hex rules
@@ -3998,7 +4128,7 @@
 		// if valid the create the rule
 		if (valid && pattern.wolframRule === -1 && pattern.isLTL === false && pattern.isHROT === false) {
 			// create the canonical name and the rule map
-			pattern.ruleName = this.createRuleMap(birthPart, survivalPart, base64, pattern.isHex, pattern.isTriangular, pattern.isVonNeumann, pattern.multiNumStates, ruleArray, ruleTriangularArray);
+			pattern.ruleName = this.createRuleMap(birthPart, survivalPart, base64, pattern.isHex, pattern.isTriangular, pattern.triangularNeighbourhood, pattern.isVonNeumann, pattern.multiNumStates, ruleArray, ruleTriangularArray);
 			if (this.failureReason !== "") {
 				valid = false;
 			}
