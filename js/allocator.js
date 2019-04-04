@@ -48,7 +48,7 @@
 	// name as string for the given type
 	/** @type function(number) : string */
 	Type.typeName = function(type) {
-		var /** string */ typeName = "";
+		var /** @type {string} */ typeName = "";
 
 		// check type
 		if ((type & AllocBits.floatMask) !== 0) {
@@ -80,7 +80,7 @@
 	/**
 	 * @constructor
 	 */
-	function AllocationInfo(/** number */ type, /** number */ elements, /** string */ name) {
+	function AllocationInfo(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name) {
 		// save information
 		this.type = type;
 		this.name = name;

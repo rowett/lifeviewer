@@ -20,13 +20,13 @@
 		this.engine = engine;
 
 		// algorithm parameters
-		/** number */ this.range = 1;
-		/** number */ this.scount = 2;
+		/** @type {number} */ this.range = 1;
+		/** @type {number} */ this.scount = 2;
 		this.births = allocator.allocate(Uint8, 0, "HROT.births");
 		this.survivals = allocator.allocate(Uint8, 0, "HROT.survivals");
 		this.altBirths = allocator.allocate(Uint8, 0, "HROT.altBirths");
 		this.altSurvivals = allocator.allocate(Uint8, 0, "HROT.altSurvivals");
-		/** number */ this.type = PatternManager.mooreHROT;
+		/** @type {number} */ this.type = PatternManager.mooreHROT;
 
 		// neighbour count array (will be resized)
 		this.counts = Array.matrix(Uint32, 1, 1, 0, allocator, "HROT.counts");
@@ -41,29 +41,29 @@
 		/** @const {number} */ this.rangeVN = 6;
 
 		// fast von Neumann algorithm parameters
-		/** number */ this.nrows = 0;
-		/** number */ this.ncols = 0;
-		/** number */ this.ccht = 0;
-		/** number */ this.halfccwd = 0;
+		/** @type {number} */ this.nrows = 0;
+		/** @type {number} */ this.ncols = 0;
+		/** @type {number} */ this.ccht = 0;
+		/** @type {number} */ this.halfccwd = 0;
 
 		// whether alternate rule defined
-		/** boolean */ this.altSpecified = false;
+		/** @type {boolean} */ this.altSpecified = false;
 	}
 
 	// resize counts array
-	HROT.prototype.resize = function(/** number */ width, /** number */ height) {
+	HROT.prototype.resize = function(/** @type {number} */ width, /** @type {number} */ height) {
 		// resize counts array
 		this.counts = Array.matrix(Uint32, height, width, 0, this.allocator, "HROT.counts");
 		this.colUsed = this.allocator.allocate(Uint8, width, "HROT.colUsed");
 	};
 
 	// set type and range
-	HROT.prototype.setTypeAndRange = function(/** number */ type, /** number */ range) {
+	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range) {
 		// compute widest width
 		var /** @const {number} */ width = range * 2 + 1,
 			/** @const {number} */ r2 = range * range + range,
-			/** number */ i = 0,
-			/** number */ w = 0;
+			/** @type {number} */ i = 0,
+			/** @type {number} */ w = 0;
 
 		// save type and range and allocate widths array
 		this.type = type;
@@ -103,7 +103,7 @@
 
 	// get the count for von Neumann
 	/** @return {number} */
-	HROT.prototype.getCount = function(/** number */ i, /** number */ j) {
+	HROT.prototype.getCount = function(/** @type {number} */ i, /** @type {number} */ j) {
 		if (i < 0 || i + j < 0 || j - i >= this.ncols) {
 			return 0;
 		}
@@ -126,13 +126,13 @@
 	};
 
 	// wrap the grid for HROT torus
-	HROT.prototype.wrapTorusHROT = function(/** number */ lx, /** number */ by, /** number */ rx, /** number */ ty) {
+	HROT.prototype.wrapTorusHROT = function(/** @type {number} */ lx, /** @type {number} */ by, /** @type {number} */ rx, /** @type {number} */ ty) {
 		var colourGrid = this.engine.colourGrid,
 			sourceRow = null,
 			destRow = null,
 			/** @const {number} */ range = this.range,
-			/** number */ x = 0,
-			/** number */ y = 0;
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0;
 
 		// copy the bottom rows to the top border
 		for (y = 0; y < range; y += 1) {
@@ -186,12 +186,12 @@
 	};
 
 	// clear the outside the bounded grid
-	HROT.prototype.clearHROTOutside = function(/** number */ lx, /** number */ by, /** number */ rx, /** number */ ty) {
+	HROT.prototype.clearHROTOutside = function(/** @type {number} */ lx, /** @type {number} */ by, /** @type {number} */ rx, /** @type {number} */ ty) {
 		var colourGrid = this.engine.colourGrid,
 			destRow = null,
 			/** @const {number} */ range = this.range,
-			/** number */ x = 0,
-			/** number */ y = 0;
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0;
 
 		// clear the top border
 		for (y = 0; y < range; y += 1) {
@@ -240,31 +240,31 @@
 	};
 
 	// update the life grid region using computed counts
-	HROT.prototype.updateGridFromCountsHROT = function(/** number */ leftX, /** number */ bottomY, /** number */ rightX, /** number */ topY, /** boolean */ useAlternate) {
-		var /** number */ x = 0,
-			/** number */ y = 0,
-			/** number */ population = 0,
-			/** number */ births = 0,
-			/** number */ deaths = 0,
-			/** number */ state = 0,
-			/** number */ count = 0,
-			/** boolean */ rowAlive = false,
-			/** boolean */ liveRowAlive = false,
+	HROT.prototype.updateGridFromCountsHROT = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {boolean} */ useAlternate) {
+		var /** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ population = 0,
+			/** @type {number} */ births = 0,
+			/** @type {number} */ deaths = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ count = 0,
+			/** @type {boolean} */ rowAlive = false,
+			/** @type {boolean} */ liveRowAlive = false,
 			colourGrid = this.engine.colourGrid,
 			colourTileHistoryGrid = this.engine.colourTileHistoryGrid,
 			colourRow = null,
 			countRow = null,
 			colourTileRow = null,
 			// bounding box for any cell
-			/** number */ minX = this.engine.width,
-			/** number */ maxX = 0,
-			/** number */ minY = this.engine.height,
-			/** number */ maxY = 0,
+			/** @type {number} */ minX = this.engine.width,
+			/** @type {number} */ maxX = 0,
+			/** @type {number} */ minY = this.engine.height,
+			/** @type {number} */ maxY = 0,
 			// bounding box for alive cells (used for fit zoom)
-			/** number */ minX1 = minX,
-			/** number */ maxX1 = maxX,
-			/** number */ minY1 = minY,
-			/** number */ maxY1 = maxY,
+			/** @type {number} */ minX1 = minX,
+			/** @type {number} */ maxX1 = maxX,
+			/** @type {number} */ minY1 = minY,
+			/** @type {number} */ maxY1 = maxY,
 			zoomBox = this.engine.zoomBox,
 			HROTBox = this.engine.HROTBox,
 			/** @const {number} */ range = this.range,
@@ -274,7 +274,7 @@
 			/** @const {number} */ maxGeneration = this.scount - 1,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @const {number} */ deadMin = LifeConstants.deadMin,
-			/** number */ aliveIndex = 0,
+			/** @type {number} */ aliveIndex = 0,
 			colourLookup = this.engine.colourLookup,
 
 			// maximum generations state
@@ -461,15 +461,15 @@
 	};
 
 	// update the life grid region using HROT for 2 state patterns
-	HROT.prototype.nextGenerationHROT2 = function(/** boolean */useAlternate) {
-		var /** number */ x = 0,
-			/** number */ y = 0,
-			/** number */ i = 0,
-			/** number */ j = 0,
-			/** number */ leftX = this.engine.zoomBox.leftX,
-			/** number */ rightX = this.engine.zoomBox.rightX,
-			/** number */ bottomY = this.engine.zoomBox.bottomY,
-			/** number */ topY = this.engine.zoomBox.topY,
+	HROT.prototype.nextGenerationHROT2 = function(/** @type {boolean} */useAlternate) {
+		var /** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ leftX = this.engine.zoomBox.leftX,
+			/** @type {number} */ rightX = this.engine.zoomBox.rightX,
+			/** @type {number} */ bottomY = this.engine.zoomBox.bottomY,
+			/** @type {number} */ topY = this.engine.zoomBox.topY,
 			/** @const {number} */ range = this.range,
 			/** @const {Array<number>} */ birthList = useAlternate ? this.altBirths : this.births,
 			/** @const {Array<number>} */ survivalList = useAlternate ? this.altSurvivals : this.survivals,
@@ -479,54 +479,54 @@
 			counts = this.counts,
 			/** @const {number} */ type = this.type,
 			/** @const {number} */ maxGeneration = scount - 1,
-			/** number */ count = 0,
-			/** number */ minX = this.engine.width,
-			/** number */ maxX = 0,
-			/** number */ minY = this.engine.height,
-			/** number */ maxY = 0,
-			/** number */ minX1 = minX,
-			/** number */ maxX1 = maxX,
-			/** number */ minY1 = minY,
-			/** number */ maxY1 = maxY,
+			/** @type {number} */ count = 0,
+			/** @type {number} */ minX = this.engine.width,
+			/** @type {number} */ maxX = 0,
+			/** @type {number} */ minY = this.engine.height,
+			/** @type {number} */ maxY = 0,
+			/** @type {number} */ minX1 = minX,
+			/** @type {number} */ maxX1 = maxX,
+			/** @type {number} */ minY1 = minY,
+			/** @type {number} */ maxY1 = maxY,
 			colourGrid = this.engine.colourGrid,
 			colourTileHistoryGrid = this.engine.colourTileHistoryGrid,
 			colourRow = null, countRowYpr = null, countRowYmrp1 = null,
 			colourTileRow = null,
 			countRow = null, prevCountRow = null,
 			widths = this.widths,
-			/** number */ width = 0,
+			/** @type {number} */ width = 0,
 			/** @const {number} */ bgWidth = this.engine.boundedGridWidth,
 			/** @const {number} */ bgHeight = this.engine.boundedGridHeight,
-			/** number */ gridLeftX = 0,
-			/** number */ gridRightX = 0,
-			/** number */ gridBottomY = 0,
-			/** number */ gridTopY = 0,
-			/** number */ population = 0,
-			/** number */ births = 0,
-			/** number */ deaths = 0,
-			/** number */ state = 0,
-			/** number */ xpr = 0,
-			/** number */ xmrp1 = 0,
-			/** boolean */ rowAlive = false,
-			/** boolean */ colAlive = false,
-			/** boolean */ liveRowAlive = false,
-			/** boolean */ liveColAlive = false,
+			/** @type {number} */ gridLeftX = 0,
+			/** @type {number} */ gridRightX = 0,
+			/** @type {number} */ gridBottomY = 0,
+			/** @type {number} */ gridTopY = 0,
+			/** @type {number} */ population = 0,
+			/** @type {number} */ births = 0,
+			/** @type {number} */ deaths = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ xpr = 0,
+			/** @type {number} */ xmrp1 = 0,
+			/** @type {boolean} */ rowAlive = false,
+			/** @type {boolean} */ colAlive = false,
+			/** @type {boolean} */ liveRowAlive = false,
+			/** @type {boolean} */ liveColAlive = false,
 			/** @const {number} */ chunk = 8,  // must be the same as the unrolled loop!
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @const {number} */ deadMin = LifeConstants.deadMin,
-			/** number */ aliveIndex = 0,
+			/** @type {number} */ aliveIndex = 0,
 			colourLookup = this.engine.colourLookup,
 			colUsed = this.colUsed,
-			/** number */ im1 = 0,
-			/** number */ im2 = 0,
-			/** number */ iprm1 = 0,
-			/** number */ imrm1 = 0,
-			/** number */ imrm2 = 0,
-			/** number */ ipminrow = 0,
-			/** number */ ipr = 0,
-			/** number */ jpr = 0,
-			/** number */ jmr = 0,
-			/** number */ jpmincol = 0;
+			/** @type {number} */ im1 = 0,
+			/** @type {number} */ im2 = 0,
+			/** @type {number} */ iprm1 = 0,
+			/** @type {number} */ imrm1 = 0,
+			/** @type {number} */ imrm2 = 0,
+			/** @type {number} */ ipminrow = 0,
+			/** @type {number} */ ipr = 0,
+			/** @type {number} */ jpr = 0,
+			/** @type {number} */ jmr = 0,
+			/** @type {number} */ jpmincol = 0;
 
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {
@@ -1184,16 +1184,16 @@
 	};
 
 	// update the life grid region using HROT for >2 state patterns
-	HROT.prototype.nextGenerationHROTN = function(/** boolean */ useAlternate) {
-		var /** number */ x = 0,
-			/** number */ y = 0,
-			/** number */ i = 0,
-			/** number */ j = 0,
-			/** number */ leftX = this.engine.zoomBox.leftX,
-			/** number */ rightX = this.engine.zoomBox.rightX,
-			/** number */ bottomY = this.engine.zoomBox.bottomY,
-			/** number */ topY = this.engine.zoomBox.topY,
-			/** number */ range = this.range,
+	HROT.prototype.nextGenerationHROTN = function(/** @type {boolean} */ useAlternate) {
+		var /** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ leftX = this.engine.zoomBox.leftX,
+			/** @type {number} */ rightX = this.engine.zoomBox.rightX,
+			/** @type {number} */ bottomY = this.engine.zoomBox.bottomY,
+			/** @type {number} */ topY = this.engine.zoomBox.topY,
+			/** @type {number} */ range = this.range,
 			// deal with alternate rules
 			/** Array<number> */ birthList = useAlternate ? this.altBirths : this.births,
 			/** Array<number> */ survivalList = useAlternate ? this.altSurvivals : this.survivals,
@@ -1201,48 +1201,48 @@
 			/** @const {number} */ rp1 = range + 1,
 			counts = this.counts,
 			/** @const {number} */ type = this.type,
-			/** number */ count = 0,
-			/** number */ minX = this.engine.width,
-			/** number */ maxX = 0,
-			/** number */ minY = this.engine.height,
-			/** number */ maxY = 0,
-			/** number */ minX1 = minX,
-			/** number */ maxX1 = maxX,
-			/** number */ minY1 = minY,
-			/** number */ maxY1 = maxY,
+			/** @type {number} */ count = 0,
+			/** @type {number} */ minX = this.engine.width,
+			/** @type {number} */ maxX = 0,
+			/** @type {number} */ minY = this.engine.height,
+			/** @type {number} */ maxY = 0,
+			/** @type {number} */ minX1 = minX,
+			/** @type {number} */ maxX1 = maxX,
+			/** @type {number} */ minY1 = minY,
+			/** @type {number} */ maxY1 = maxY,
 			colourGrid = this.engine.colourGrid,
 			colourTileHistoryGrid = this.engine.colourTileHistoryGrid,
 			colourRow = null, countRowYpr = null, countRowYmrp1 = null,
 			colourTileRow = null,
 			countRow = null, prevCountRow = null,
 			widths = this.widths,
-			/** number */ width = 0,
+			/** @type {number} */ width = 0,
 			/** @const {number} */ bgWidth = this.engine.boundedGridWidth,
 			/** @const {number} */ bgHeight = this.engine.boundedGridHeight,
-			/** number */ gridLeftX = 0,
-			/** number */ gridRightX = 0,
-			/** number */ gridBottomY = 0,
-			/** number */ gridTopY = 0,
-			/** number */ population = 0,
-			/** number */ births = 0,
-			/** number */ deaths = 0,
-			/** number */ state = 0,
-			/** number */ xpr = 0,
-			/** number */ xmrp1 = 0,
-			/** boolean */ rowAlive = false,
-			/** boolean */ colAlive = false,
-			/** boolean */ liveRowAlive = false,
-			/** boolean */ liveColAlive = false,
-			/** number */ im1 = 0,
-			/** number */ im2 = 0,
-			/** number */ iprm1 = 0,
-			/** number */ imrm1 = 0,
-			/** number */ imrm2 = 0,
-			/** number */ ipminrow = 0,
-			/** number */ ipr = 0,
-			/** number */ jpr = 0,
-			/** number */ jmr = 0,
-			/** number */ jpmincol = 0,
+			/** @type {number} */ gridLeftX = 0,
+			/** @type {number} */ gridRightX = 0,
+			/** @type {number} */ gridBottomY = 0,
+			/** @type {number} */ gridTopY = 0,
+			/** @type {number} */ population = 0,
+			/** @type {number} */ births = 0,
+			/** @type {number} */ deaths = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ xpr = 0,
+			/** @type {number} */ xmrp1 = 0,
+			/** @type {boolean} */ rowAlive = false,
+			/** @type {boolean} */ colAlive = false,
+			/** @type {boolean} */ liveRowAlive = false,
+			/** @type {boolean} */ liveColAlive = false,
+			/** @type {number} */ im1 = 0,
+			/** @type {number} */ im2 = 0,
+			/** @type {number} */ iprm1 = 0,
+			/** @type {number} */ imrm1 = 0,
+			/** @type {number} */ imrm2 = 0,
+			/** @type {number} */ ipminrow = 0,
+			/** @type {number} */ ipr = 0,
+			/** @type {number} */ jpr = 0,
+			/** @type {number} */ jmr = 0,
+			/** @type {number} */ jpmincol = 0,
 
 			// maximum generations state
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
@@ -1852,9 +1852,9 @@
 	};
 
 	// update the life grid using HROT
-	HROT.prototype.nextGenerationHROT = function(/** number */ counter) {
+	HROT.prototype.nextGenerationHROT = function(/** @type {number} */ counter) {
 		// whether to use the alternte rule
-		var /** boolean */ useAlternate = false;
+		var /** @type {boolean} */ useAlternate = false;
 
 		// use alternate rule if specified and odd generation
 		if (this.altSpecified && ((counter & 1) === 1)) {
