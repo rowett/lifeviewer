@@ -219,7 +219,7 @@
 	/**
 	 * @constructor
 	 */
-	function Life(context, /** @type {number} */ displayWidth, /** number */ displayHeight, /** number */ gridWidth, /** number */ gridHeight) {
+	function Life(context, /** @type {number} */ displayWidth, /** @type {number} */ displayHeight, /** @type {number} */ gridWidth, /** @type {number} */ gridHeight) {
 		// allocator
 		this.allocator = new Allocator();
 
@@ -846,7 +846,7 @@
 	};
 
 	// draw triangle cells
-	Life.prototype.drawTriangleCells = function(/** @type {boolean} */ filled, /** boolean */ borderWhenFilled) {
+	Life.prototype.drawTriangleCells = function(/** @type {boolean} */ filled, /** @type {boolean} */ borderWhenFilled) {
 		var /** @type {number} */ i = 0,
 			context = this.context,
 			/** @type {number} */ xOff = this.width / 2 - this.xOff - this.originX,
@@ -918,7 +918,7 @@
 						if (borderWhenFilled) {
 							context.stroke();
 						}
-						// fill the cells if required
+						// fill the cells
 						context.fill();
 					} else {
 						context.stroke();
@@ -974,8 +974,8 @@
 			/** @const {number} */ w2 = this.width / 2 - 0.25,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @const {number} */ pi3 = Math.PI / 3,
-			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2), 
-			/** @const {number} */ xEdge = (Math.sqrt(3) / 4) / Math.cos(pi3 / 2),
+			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2) * 1.16, 
+			/** @const {number} */ xEdge = (Math.sqrt(3) / 4) / Math.cos(pi3 / 2) * 1.16,
 			/** @const {Array<number>} */ xa = [],
 			/** @const {Array<number>} */ ya = [],
 			/** @type {number} */ state = 0,
@@ -1003,7 +1003,7 @@
 			/** @type {number} */ displayY = 0,
 			/** @type {number} */ displayX = 0,
 			/** @type {number} */ xOffset = 0,
-			/** @type {number} */ linearZoom = 1;
+			/** @type {boolean} */ drawFilledCellBorders = !this.displayGrid && !this.cellBorders;
 
 		// check if buffers have been allocated
 		if (colours.length !== LifeConstants.coordBufferSize) {
@@ -1095,9 +1095,17 @@
 						}
 						// check if buffer is full
 						if (j === LifeConstants.coordBufferSize) {
-							// draw and clear buffer
+							// draw buffer
 							this.numCells = j;
-							this.drawHexCells(true);
+							this.drawHexCells(true, drawFilledCellBorders, false);
+
+							// draw cell borders if enabled and grid lines disabled
+							if (this.cellBorders && !this.displayGrid) {
+								this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0];
+								this.drawHexCells(false, false, false);
+							}
+
+							// clear buffer
 							j = 0;
 							k = 0;
 						}
@@ -1109,31 +1117,25 @@
 		// draw any remaining cells
 		this.numCells = j;
 		if (j > 0) {
-			this.drawHexCells(true);
+			// draw buffer
+			this.drawHexCells(true, drawFilledCellBorders, false);
+
+			// draw cell borders if enabled and grid lines disabled
+			if (this.cellBorders && !this.displayGrid) {
+				this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0];
+				this.drawHexCells(false, false, false);
+			}
+
+			// clear buffer
 			j = 0;
 			k = 0;
 		}
 
 		// draw grid if enabled
-		if (this.displayGrid || this.cellBorders) {
+		if (this.displayGrid) {
 			// set grid line colour
 			this.context.strokeStyle = "rgb(" + (this.gridLineRaw >> 16) + "," + ((this.gridLineRaw >> 8) & 255) + "," + (this.gridLineRaw & 255) + ")";
-			linearZoom = Math.log(zoom / 4) / Math.log(ViewConstants.maxZoom / 4);
-			this.context.lineWidth = (linearZoom + 1.5) | 0;
-
-			j = 1.15;
-			xa0 *= j;
-			ya0 *= j;
-			xa1 *= j;
-			ya1 *= j;
-			xa2 *= j;
-			ya2 *= j;
-			xa3 *= j;
-			ya3 *= j;
-			xa4 *= j;
-			ya4 *= j;
-			xa5 *= j;
-			ya5 *= j;
+			this.context.lineWidth = 1;
 			j = 0;
 
 			// create cell coordinates for window
@@ -1168,7 +1170,7 @@
 						if (j === LifeConstants.coordBufferSize) {
 							// draw and clear buffer
 							this.numCells = j;
-							this.drawHexCells(false);
+							this.drawHexCells(false, false, true);
 							j = 0;
 							k = 0;
 						}
@@ -1179,13 +1181,13 @@
 			// draw any remaining cells
 			this.numCells = j;
 			if (j > 0) {
-				this.drawHexCells(false);
+				this.drawHexCells(false, false, true);
 			}
 		}
 	};
 
 	// draw hex cells
-	Life.prototype.drawHexCells = function(/** @type {boolean} */ filled) {
+	Life.prototype.drawHexCells = function(/** @type {boolean} */ filled, /** @type {boolean} */ borderWhenFilled, /** @type {boolean} */ gridLines) {
 		var /** @type {number} */ i = 0,
 			context = this.context,
 			/** @type {number} */ xOff = this.width / 2 - this.xOff - this.originX,
@@ -1232,9 +1234,13 @@
 		context.beginPath();
 		if (!filled) {
 			// if drawing the grid then only three line segments are needed
-			coord = 0;
-			batch = 8;
+			if (gridLines) {
+				batch = 8;
+			} else {
+				batch = 12;
+			}
 			target = batch;
+			coord = 0;
 			state = 0;
 			lastState = 0;
 		}
@@ -1266,29 +1272,44 @@
 				lastState = state;
 				if (i > 0) {
 					if (filled) {
+						// draw border if required
+						if (borderWhenFilled) {
+							context.stroke();
+						}
+						// fill the cells
 						context.fill();
 					} else {
 						context.stroke();
 					}
+					// start a new batch
 					context.beginPath();
 				}
 				if (filled) {
+					// set the new cell colours
 					context.fillStyle = this.cellColourStrings[state];
+					if (borderWhenFilled) {
+						context.strokeStyle = this.cellColourStrings[state];
+					}
 				}
 			}
 
 			// draw hexagon
-			context.moveTo(x, y);
-			context.lineTo(cx2 + x, cy2 + y);
+			context.moveTo(x | 0, y | 0);
+			context.lineTo((cx2 + x) | 0, (cy2 + y) | 0);
 			while (coord < target) {
 				cy2 = (coords[coord + 1] - cy0) * zoom;
 				cx2 = (coords[coord] - cx0) * zoom - cy2 / 2;
 				coord += 2;
-				context.lineTo(cx2 + x, cy2 + y);
+				context.lineTo((cx2 + x) | 0, (cy2 + y) | 0);
 			}
 			target += batch;
 		}
 		if (filled) {
+			// draw cell borders if required
+			if (borderWhenFilled) {
+				context.stroke();
+			}
+			// fill cells
 			context.fill();
 		} else {
 			context.stroke();
@@ -1459,7 +1480,7 @@
 
 	// set state
 	/** @result {number} */
-	Life.prototype.setState = function(/** @type {number} */ x, /** number */ y, /** number */ state) {
+	Life.prototype.setState = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state) {
 		var grid = this.grid16,
 			tileGrid = this.tileGrid,
 			nextGrid = this.nextGrid16,
@@ -1782,7 +1803,7 @@
 
 	// get state
 	/** @result {number} */
-	Life.prototype.getState = function(/** @type {number} */ x, /** number */ y, /** @type {boolean} */ rawRequested) {
+	Life.prototype.getState = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
 		// result
 		var /** @type {number} */ result = 0,
 		    /** @type {number} */ col = 0,
@@ -5340,7 +5361,7 @@
 
 	// find NE glider
 	/** @return {boolean} */
-	Life.prototype.findAndDeleteNE = function(/** @type {number} */ x, /** number */ y) {
+	Life.prototype.findAndDeleteNE = function(/** @type {number} */ x, /** @type {number} */ y) {
 		var /** @type {boolean} */ found = false;
 
 		if (x > y) {
@@ -5351,7 +5372,7 @@
 
 	// find NW glider
 	/** @return {boolean} */
-	Life.prototype.findAndDeleteNW = function(/** @type {number} */ x, /** number */ y) {
+	Life.prototype.findAndDeleteNW = function(/** @type {number} */ x, /** @type {number} */ y) {
 		var /** @type {boolean} */ found = false;
 
 		if (x > y) {
@@ -5362,7 +5383,7 @@
 
 	// find SE glider
 	/** @return {boolean} */
-	Life.prototype.findAndDeleteSE = function(/** @type {number} */ x, /** number */ y) {
+	Life.prototype.findAndDeleteSE = function(/** @type {number} */ x, /** @type {number} */ y) {
 		var /** @type {boolean} */ found = false;
 
 		if (x > y) {
@@ -5373,7 +5394,7 @@
 
 	// find SW glider
 	/** @return {boolean} */
-	Life.prototype.findAndDeleteSW = function(/** @type {number} */ x, /** number */ y) {
+	Life.prototype.findAndDeleteSW = function(/** @type {number} */ x, /** @type {number} */ y) {
 		var /** @type {boolean} */ found = false;
 
 		if (x > y) {
