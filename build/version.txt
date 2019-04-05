@@ -1,3 +1,7 @@
+Build 319
+- added B0 support for triangular rules
+- improved triangular cell alignment
+
 Build 318
 - drawing cells wasn't correctly updating tile map
 - triangular rules now ignore HEXDISPLAY script command

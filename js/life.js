@@ -724,9 +724,9 @@
 		}
 
 		// create triangles from live cells
-		this.context.lineWidth = 1;
-		this.context.lineCap = "round";
-		this.context.lineJoin = "round";
+		this.context.lineWidth = 1.5;
+		this.context.lineCap = "none";
+		this.context.lineJoin = "none";
 		j = 0;
 		k = 0;
 		for (y = bottomY; y <= topY; y += 1) {
@@ -796,6 +796,7 @@
 		if (this.displayGrid) {
 			// set grid line colour
 			this.context.strokeStyle = "rgb(" + (this.gridLineRaw >> 16) + "," + ((this.gridLineRaw >> 8) & 255) + "," + (this.gridLineRaw & 255) + ")";
+			this.context.lineWidth = 1;
 
 			// create cell coordinates for window
 			bottomY = ((-halfDisplayHeight / zoom) - yOff + h2) | 0;
@@ -3573,63 +3574,53 @@
 
 		// check for Wolfram
 		if (this.wolframRule === -1) {
-			// check for B0
-			if (ruleArray[0]) {
-				// check for Smax
-				if (ruleArray[hashSize - 1]) {
-					// B0 with Smax: rule -> NOT(reverse(bits))
-					for (i = 0; i < hashSize / 2; i += 1) {
-						tmp = ruleArray[i];
-						ruleArray[i] = 1 - ruleArray[hashSize - i - 1];
-						ruleArray[hashSize - i - 1] = 1 - tmp;
-					}
-				} else {
-					// B0 without Smax needs two rules
-					// odd rule -> reverse(bits)
-					for (i = 0; i < hashSize / 2; i += 1) {
-						tmp = ruleArray[i];
-						ruleArray[i] = ruleArray[hashSize - i - 1];
-						ruleArray[hashSize - i - 1] = tmp;
-					}
-					odd = true;
-					if (this.isTriangular) {
-						this.createTriangularIndex(this.indexLookupTri2, ruleArray);
-					} else {
-						this.createLifeIndex63(this.indexLookup632, ruleArray);
-					}
-
-					// even rule -> NOT(bits)
-					for (i = 0; i < hashSize / 2; i += 1) {
-						tmp = ruleArray[i];
-						// need to reverse then invert due to even rule above
-						ruleArray[i] = 1 - ruleArray[hashSize - i - 1];
-						ruleArray[hashSize - i - 1] = 1 - tmp;
-					}
-				}
-			}
-		}
-
-		// copy rules from pattern
-		if (altSpecified) {
+			// check for Triangular
 			if (this.isTriangular) {
+				// create lookup arrays
 				this.createTriangularIndex(this.indexLookupTri2, ruleArray);
 				this.createTriangularIndex(this.indexLookupTri1, ruleAltArray);
 			} else {
-				this.createLifeIndex63(this.indexLookup632, ruleArray);
-				this.createLifeIndex63(this.indexLookup63, ruleAltArray);
-			}
-		} else {
-			if (this.isTriangular) {
-				this.createTriangularIndex(this.indexLookupTri1, ruleArray);
-				if (!odd) {
-					// duplicate even rule
-					this.indexLookupTri2.set(this.indexLookupTri1);
+				// check for B0
+				if (ruleArray[0]) {
+					// check for Smax
+					if (ruleArray[hashSize - 1]) {
+						// B0 with Smax: rule -> NOT(reverse(bits))
+						for (i = 0; i < hashSize / 2; i += 1) {
+							tmp = ruleArray[i];
+							ruleArray[i] = 1 - ruleArray[hashSize - i - 1];
+							ruleArray[hashSize - i - 1] = 1 - tmp;
+						}
+					} else {
+						// B0 without Smax needs two rules
+						// odd rule -> reverse(bits)
+						for (i = 0; i < hashSize / 2; i += 1) {
+							tmp = ruleArray[i];
+							ruleArray[i] = ruleArray[hashSize - i - 1];
+							ruleArray[hashSize - i - 1] = tmp;
+						}
+						odd = true;
+						this.createLifeIndex63(this.indexLookup632, ruleArray);
+
+						// even rule -> NOT(bits)
+						for (i = 0; i < hashSize / 2; i += 1) {
+							tmp = ruleArray[i];
+							// need to reverse then invert due to even rule above
+							ruleArray[i] = 1 - ruleArray[hashSize - i - 1];
+							ruleArray[hashSize - i - 1] = 1 - tmp;
+						}
+					}
 				}
-			} else {
-				this.createLifeIndex63(this.indexLookup63, ruleArray);
-				if (!odd) {
-					// duplicate even rule
-					this.indexLookup632.set(this.indexLookup63);
+
+				// copy rules from pattern
+				if (altSpecified) {
+					this.createLifeIndex63(this.indexLookup632, ruleArray);
+					this.createLifeIndex63(this.indexLookup63, ruleAltArray);
+				} else {
+					this.createLifeIndex63(this.indexLookup63, ruleArray);
+					if (!odd) {
+						// duplicate even rule
+						this.indexLookup632.set(this.indexLookup63);
+					}
 				}
 			}
 		}

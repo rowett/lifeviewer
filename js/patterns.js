@@ -283,6 +283,12 @@
 		}
 		/** @type {string} */ this.name = name;
 
+		// birth mask for triangular rules
+		/** @type {number} */ this.birthTriMask = 0;
+
+		// survival mask for triangular rules
+		/** @type {number} */ this.survivalTriMask = 0;
+
 		// bounded grid type found
 		/** @type {number} */ this.gridType = -1;
 
@@ -446,6 +452,8 @@
 		this.aliasName = source.aliasName;
 		this.isHex = source.isHex;
 		this.isTriangular = source.isTriangular;
+		this.birthTriMask = source.birthTriMask;
+		this.survivalTriMask = source.survivalTriMask;
 		this.triangularNeighbourhood = source.triangularNeighbourhood;
 		this.wolframRule = source.wolframRule;
 		this.isVonNeumann = source.isVonNeumann;
@@ -500,6 +508,8 @@
 		this.aliasName = "";
 		this.isHex = false;
 		this.isTriangular = false;
+		this.birthTriMask = 0;
+		this.survivalTriMask = 0;
 		this.triangularNeighbourhood = PatternManager.triangularAll;
 		this.wolframRule = -1;
 		this.isVonNeumann = false;
@@ -1972,53 +1982,139 @@
 		}
 	};
 
+	// create triangular map
+	PatternManager.createTriMap = function(pattern, ruleTriangularArray, secondTriangularArray) {
+		var i = 0,
+			digits = 12,
+			ruleMask = PatternManager.triangularMask,
+			bMask = pattern.birthTriMask,
+			sMask = pattern.survivalTriMask;
+
+		// check neighbourhood
+		if (pattern.triangularNeighbourhood === PatternManager.triangularEdges) {
+			digits = 3;
+			ruleMask = PatternManager.triangularEdgesMask;
+		} else {
+			if (pattern.triangularNeighbourhood === PatternManager.triangularVertices) {
+				digits = 8;
+				ruleMask = PatternManager.triangularVerticesMask;
+			}
+		}
+
+		// check for B0
+		if ((bMask & 1) !== 0) {
+			// check for Smax
+			if ((sMask & (1 << digits)) !== 0) {
+				// B0 with Smax so invert neighbour counts
+				bMask = ~bMask;
+				sMask = ~sMask;
+
+				// B becomes S(max-x)
+				for (i = 0; i <= digits; i += 1) {
+					if (sMask & (1 << (digits - i))) {
+						this.setTriangularTotalistic(ruleTriangularArray, i, false, ruleMask);
+					}
+				}
+				// S becomes B(max-x)
+				for (i = 0; i <= digits; i += 1) {
+					if (bMask & (1 << (digits - i))) {
+						this.setTriangularTotalistic(ruleTriangularArray, i, true, ruleMask);
+					}
+				}
+
+				// copy to second array
+				secondTriangularArray.set(ruleTriangularArray);
+			} else {
+				// B0 without Smax so for even generations invert neighbour counts
+				for (i = 0; i <= digits; i += 1) {
+					if ((~bMask) & (1 << i)) {
+						this.setTriangularTotalistic(secondTriangularArray, i, false, ruleMask);
+					}
+				}
+				for (i = 0; i <= digits; i += 1) {
+					if ((~sMask) & (1 << i)) {
+						this.setTriangularTotalistic(secondTriangularArray, i, true, ruleMask);
+					}
+				}
+
+				// for odd generations B becomes S(max-x)
+				for (i = 0; i <= digits; i += 1) {
+					if (sMask & (1 << (digits - i))) {
+						this.setTriangularTotalistic(ruleTriangularArray, i, false, ruleMask);
+					}
+				}
+				// S becomes B(max-x)
+				for (i = 0; i <= digits; i += 1) {
+					if (bMask & (1 << (digits - i))) {
+						this.setTriangularTotalistic(ruleTriangularArray, i, true, ruleMask);
+					}
+				}
+			}
+		} else {
+			// add birth digits
+			for (i = 0; i <= digits; i += 1) {
+				if ((bMask & (1 << i)) !== 0) {
+					this.setTriangularTotalistic(ruleTriangularArray, i, false, ruleMask);
+				}
+			}
+	
+			// add survival digits
+			for (i = 0; i <= digits; i += 1) {
+				if ((sMask & (1 << i)) !== 0) {
+					this.setTriangularTotalistic(ruleTriangularArray, i, true, ruleMask);
+				}
+			}
+
+			// copy to second array if specified
+			if (secondTriangularArray) {
+				secondTriangularArray.set(ruleTriangularArray);
+			}
+		}
+	};
+
 	// create a triangular map from birth and survival strings
-	PatternManager.createTriangularRuleMap = function(birthPart, survivalPart, generationsStates, ruleTriangularArray, triangularNeighbourhood) {
+	PatternManager.createTriangularRuleMap = function(pattern, birthPart, survivalPart, generationsStates, ruleTriangularArray, triangularNeighbourhood) {
 		var canonicalName = "",
 			letters = this.validTriangularRuleLetters,
 			i = 0,
 			j = 0,
-			birthMask = 0,
-			survivalMask = 0,
 			birthName = "",
-			survivalName = "",
-			ruleMask = this.triangularMask;
+			survivalName = "";
 
 		// check which triangular neighbourhood is specified
 		if (triangularNeighbourhood === PatternManager.triangularEdges) {
 			letters = this.validTriangularEdgesRuleLetters;
-			ruleMask = this.triangularEdgesMask;
 		} else {
 			if (triangularNeighbourhood === PatternManager.triangularVertices) {
 				letters = this.validTriangularVerticesRuleLetters;
-				ruleMask = this.triangularVerticesMask;
 			}
 		}
 
 		// find out which birth letters are specified
+		pattern.birthTriMask = 0;
 		for (i = 0; i < birthPart.length; i += 1) {
 			j = letters.indexOf(birthPart[i]);
-			birthMask |= (1 << j);
-		}
-		// add birth letters in order to canonical rule name
-		for (i = 0; i < letters.length; i += 1) {
-			if ((birthMask & (1 << i)) !== 0) {
-				birthName += letters[i];
-				this.setTriangularTotalistic(ruleTriangularArray, i, false, ruleMask);
-			}
+			pattern.birthTriMask |= (1 << j);
 		}
 
 		// find out which survival letters are specified
+		pattern.survivalTriMask = 0;
 		for (i = 0; i < survivalPart.length; i += 1) {
 			j = letters.indexOf(survivalPart[i]);
-			survivalMask |= (1 << j);
+			pattern.survivalTriMask |= (1 << j);
+		}
+
+		// add birth letters in order to canonical rule name
+		for (i = 0; i < letters.length; i += 1) {
+			if ((pattern.birthTriMask & (1 << i)) !== 0) {
+				birthName += letters[i];
+			}
 		}
 
 		// add survival letters in order to canonical rule name
 		for (i = 0; i < letters.length; i += 1) {
-			if ((survivalMask & (1 << i)) !== 0) {
+			if ((pattern.survivalTriMask & (1 << i)) !== 0) {
 				survivalName += letters[i];
-				this.setTriangularTotalistic(ruleTriangularArray, i, true, ruleMask);
 			}
 		}
 
@@ -2033,7 +2129,7 @@
 	};
 
 	// create the rule map from birth and survival strings
-	PatternManager.createRuleMap = function(birthPart, survivalPart, base64, isHex, isTriangular, triangularNeighbourhood, isVonNeumann, generationsStates, ruleArray, ruleTriangularArray) {
+	PatternManager.createRuleMap = function(pattern, birthPart, survivalPart, base64, isHex, isTriangular, triangularNeighbourhood, isVonNeumann, generationsStates, ruleArray, ruleTriangularArray) {
 		var i = 0,
 		    j = 0,
 		    c = 0,
@@ -2054,7 +2150,7 @@
 			for (i = 0; i < 8192; i += 1) {
 				ruleTriangularArray[i] = 0;
 			}
-			canonicalName = this.createTriangularRuleMap(birthPart, survivalPart, generationsStates, ruleTriangularArray, triangularNeighbourhood);
+			canonicalName = this.createTriangularRuleMap(pattern, birthPart, survivalPart, generationsStates, ruleTriangularArray, triangularNeighbourhood);
 		} else {
 			// create the masks
 			mask = 511;
@@ -3438,6 +3534,12 @@
 		if (altIndex === -1) {
 			// single rule so decode
 			result = this.decodeRuleStringPart(pattern, rule, allocator, this.ruleArray, this.ruleTriangularArray);
+			if (result) {
+				// check for triangular rule
+				if (pattern.isTriangular) {
+					this.createTriMap(pattern, this.ruleTriangularArray, this.ruleAltTriangularArray);
+				}
+			}
 		} else {
 			// check there is only one separator
 			if (rule.substr(altIndex + 1).indexOf(PatternManager.altRuleSeparator) === -1) {
@@ -3456,10 +3558,15 @@
 						this.failureReason = pattern.isSameFamilyAs(firstPattern);
 						if (this.failureReason === "") {
 							// check for B0 in either rule
-							if ((!pattern.isTriangular && (this.ruleArray[0] || this.ruleAltArray[0])) || (pattern.isTriangular && (this.ruleTriangularArray[0] || this.ruleAltTriangularArray[0]))) {
+							if ((!pattern.isTriangular && (this.ruleArray[0] || this.ruleAltArray[0])) || (pattern.isTriangular && ((pattern.birthTriMask & 1) !== 0) || ((firstPattern.birthTriMask & 1) !== 0))) {
 								this.failureReason = "Alternate not supported with B0";
 								result = false;
 							} else {
+								// create rule map for triangular rule
+								if (pattern.isTriangular) {
+									this.createTriMap(firstPattern, this.ruleAltTriangularArray, null);
+									this.createTriMap(pattern, this.ruleTriangularArray, null);
+								}
 								// add the alternate alias names if at least one is set or the whole rule was an alias
 								if (aliasName !== "") {
 									pattern.aliasName = aliasName;
@@ -4128,7 +4235,7 @@
 		// if valid the create the rule
 		if (valid && pattern.wolframRule === -1 && pattern.isLTL === false && pattern.isHROT === false) {
 			// create the canonical name and the rule map
-			pattern.ruleName = this.createRuleMap(birthPart, survivalPart, base64, pattern.isHex, pattern.isTriangular, pattern.triangularNeighbourhood, pattern.isVonNeumann, pattern.multiNumStates, ruleArray, ruleTriangularArray);
+			pattern.ruleName = this.createRuleMap(pattern, birthPart, survivalPart, base64, pattern.isHex, pattern.isTriangular, pattern.triangularNeighbourhood, pattern.isVonNeumann, pattern.multiNumStates, ruleArray, ruleTriangularArray);
 			if (this.failureReason !== "") {
 				valid = false;
 			}

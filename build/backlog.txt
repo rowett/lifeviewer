@@ -16,16 +16,16 @@ Planned:
 In progress:
 [STARTED]add type information for closure compiler
 [STARTED]Triangular neighbourhood
+    - square bounded grids
+    - need to optimize triangular grid lines using lines across width and height of window
+    - optimize triangular algo for two cell lookup
+    - Triangular grid Copy RLE needs to cope with odd/even cells
     [DONE]build triangular lookup array
     [DONE]build next generation function
     [DONE]triangle renderer
     [DONE]decode triangular neighbourhood rules
     [DONE]support Triangular, Triangular Edges and Triangular Vertices neighbourhoods
-    - square bounded grids
-    - need to optimize triangular grid lines using lines across width and height of window
-    - optimize triangular algo for two cell lookup
-    - Triangular grid Copy RLE needs to cope with odd/even cells
-    - Triangular B0 rules
+    [DONE] Triangular B0 rules
 [STARTED]Delete boundary gliders
     - seach boundaries for gliders and remove them
     [DONE]create glider lookup for the 4 phases of NE, NW, SE and SW orientations
