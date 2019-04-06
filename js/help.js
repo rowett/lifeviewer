@@ -706,6 +706,7 @@
 		if (view.engine.gridLineMajor > 0) {
 			y = this.renderHelpLine(view, "Shift X", "toggle major grid lines", ctx, x, y, height, helpLine);
 		}
+		y = this.renderHelpLine(view, "Alt X", "toggle cell borders", ctx, x, y, height, helpLine);
 		if (view.waypointManager.numAnnotations() > 0) {
 			y = this.renderHelpLine(view, "Shift L", "toggle annotation display", ctx, x, y, height, helpLine);
 		}
