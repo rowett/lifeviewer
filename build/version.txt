@@ -1,3 +1,7 @@
+Build 320
+- further improvements to triangular cell alignment
+- triangular patterns will be padded with a blank row and/or column on copy to ensure even/odd alignment
+
 Build 319
 - added B0 support for triangular rules
 - improved triangular cell alignment

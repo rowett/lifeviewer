@@ -19,7 +19,7 @@ In progress:
     - square bounded grids
     - need to optimize triangular grid lines using lines across width and height of window
     - optimize triangular algo for two cell lookup
-    - Triangular grid Copy RLE needs to cope with odd/even cells
+    [DONE]Triangular grid Copy RLE needs to cope with odd/even cells
     [DONE]build triangular lookup array
     [DONE]build next generation function
     [DONE]triangle renderer
@@ -30,9 +30,9 @@ In progress:
     - seach boundaries for gliders and remove them
     [DONE]create glider lookup for the 4 phases of NE, NW, SE and SW orientations
 [STARTED]Rule Table rules
-    [DONE]search after RLE terminating ! character for rule table sections
     - decode @TABLE, @TREE, @COLORS and @ICONS
     - implement rule table algorithm
+    [DONE]search after RLE terminating ! character for rule table sections
 [STARTED]Pattern Editor
     - ability to define rule
     - improved LifeHistory drawing modes

@@ -190,7 +190,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 319,
+		/** @const {number} */ versionBuild : 320,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1480,6 +1480,16 @@
 				} else {
 					panY = Math.round(this.engine.height / 2);
 				}
+			}
+		}
+
+		// triangular patterns must be on even cell boundaries
+		if (pattern.isTriangular) {
+			if ((panX & 1) !== 0) {
+				panX += 1;
+			}
+			if ((panY & 1) !== 0) {
+				panY += 1;
 			}
 		}
 

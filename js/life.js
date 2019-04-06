@@ -724,7 +724,7 @@
 		}
 
 		// create triangles from live cells
-		this.context.lineWidth = 1.5;
+		this.context.lineWidth = 1.6;
 		this.context.lineCap = "none";
 		this.context.lineJoin = "none";
 		j = 0;
@@ -1344,6 +1344,18 @@
 			colourGrid = this.colourGrid,
 			colourRow = null,
 			/** @type {number} */ col = 0;
+
+		// check for triangular rules
+		if (me.isTriangular) {
+			if (leftX > 0 && ((leftX & 1) !== 0)) {
+				leftX -= 1;
+				width += 1;
+			}
+			if ((bottomY > 0) && ((bottomY & 1) !== 0)) {
+				bottomY -= 1;
+				height += 1;
+			}
+		}
 
 		// populate output states
 		if (me.multiNumStates <= 2 && !me.isLifeHistory) {
