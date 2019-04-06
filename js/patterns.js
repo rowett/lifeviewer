@@ -177,13 +177,13 @@
 		/** @const {string} */ historyPostfix : "history",
 
 		// lower case name of Triangular postfix
-		/** @const {string} */ triangularPostfix : "t",
+		/** @const {string} */ triangularPostfix : "l",
 
 		// lower case name of Triangular Edges postfix
-		/** @const {string} */ triangularEdgesPostfix : "te",
+		/** @const {string} */ triangularEdgesPostfix : "le",
 
 		// lower case name of Triangular Vertices postfix
-		/** @const {string} */ triangularVerticesPostfix : "tv",
+		/** @const {string} */ triangularVerticesPostfix : "lv",
 
 		// lower case name of Hex postfix
 		/** @const {string} */ hexPostfix : "h",
@@ -2400,13 +2400,16 @@
 					pattern.ruleName += "V";
 				} else {
 					if (pattern.isTriangular) {
-						pattern.ruleName += "T";
-						if (pattern.triangularNeighbourhood === PatternManager.triangularEdges) {
-							pattern.ruleName += "E";
-						} else {
-							if (pattern.triangularNeighbourhood === PatternManager.triangularVertices) {
-								pattern.ruleName += "V";
-							}
+						switch (pattern.triangularNeighbourhood) {
+						case PatternManager.triangularAll:
+							pattern.ruleName += PatternManager.triangularPostfix.toUpperCase();
+							break;
+						case PatternManager.triangularEdges:
+							pattern.ruleName += PatternManager.triangularEdgesPostfix.toUpperCase();
+							break;
+						case PatternManager.triangularVertices:
+							pattern.ruleName += PatternManager.triangularVerticesPostfix.toUpperCase();
+							break;
 						}
 					}
 				}
