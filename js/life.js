@@ -725,8 +725,8 @@
 
 		// create triangles from live cells
 		this.context.lineWidth = 1.6;
-		this.context.lineCap = "none";
-		this.context.lineJoin = "none";
+		this.context.lineCap = "butt";
+		this.context.lineJoin = "bevel";
 		j = 0;
 		k = 0;
 		for (y = bottomY; y <= topY; y += 1) {
@@ -762,7 +762,7 @@
 
 							// draw cell borders if enabled and grid lines disabled
 							if (this.cellBorders && !this.displayGrid) {
-								this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0];
+								this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0] + ")";
 								this.drawTriangleCells(false, false);
 							}
 
@@ -783,7 +783,7 @@
 
 			// draw cell borders if enabled and grid lines disabled
 			if (this.cellBorders && !this.displayGrid) {
-				this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0];
+				this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0] + ")";
 				this.drawTriangleCells(false, false);
 			}
 
@@ -1102,7 +1102,7 @@
 
 							// draw cell borders if enabled and grid lines disabled
 							if (this.cellBorders && !this.displayGrid) {
-								this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0];
+								this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0] + ")";
 								this.drawHexCells(false, false, false);
 							}
 
@@ -1123,7 +1123,7 @@
 
 			// draw cell borders if enabled and grid lines disabled
 			if (this.cellBorders && !this.displayGrid) {
-				this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0];
+				this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0] + ")";
 				this.drawHexCells(false, false, false);
 			}
 
@@ -1295,13 +1295,13 @@
 			}
 
 			// draw hexagon
-			context.moveTo(x | 0, y | 0);
-			context.lineTo((cx2 + x) | 0, (cy2 + y) | 0);
+			context.moveTo(x, y);
+			context.lineTo((cx2 + x), (cy2 + y));
 			while (coord < target) {
 				cy2 = (coords[coord + 1] - cy0) * zoom;
 				cx2 = (coords[coord] - cx0) * zoom - cy2 / 2;
 				coord += 2;
-				context.lineTo((cx2 + x) | 0, (cy2 + y) | 0);
+				context.lineTo((cx2 + x), (cy2 + y));
 			}
 			target += batch;
 		}

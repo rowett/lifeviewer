@@ -1,3 +1,7 @@
+Build 322
+- improved hexagonal cell drawing
+- fix for LV neighbourhood
+
 Build 321
 - changed neighbourhood postfixes from T, TE, TV to L, LE, LV
 

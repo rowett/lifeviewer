@@ -1996,7 +1996,7 @@
 			ruleMask = PatternManager.triangularEdgesMask;
 		} else {
 			if (pattern.triangularNeighbourhood === PatternManager.triangularVertices) {
-				digits = 8;
+				digits = 9;
 				ruleMask = PatternManager.triangularVerticesMask;
 			}
 		}
