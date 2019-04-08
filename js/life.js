@@ -301,6 +301,9 @@
 		// whether neighbourhood is triangular
 		/** @type {boolean} */ this.isTriangular = false;
 
+		// triangular neighbourhood
+		/** @type {number} */ this.triangularNeighbourhood = PatternManager.triangularAll;
+
 		// whether neighbourhood is hex
 		/** @type {boolean} */ this.isHex = false;
 

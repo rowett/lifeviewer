@@ -1160,10 +1160,19 @@
 						itemName += " range " + view.engine.HROT.range;
 					}
 				} else {
-					if (view.engine.isVonNeumann) {
-						itemName = "von Neumann";
+					if (view.engine.isTriangular) {
+						itemName = "Triangular";
+						if (view.engine.triangularNeighbourhood === PatternManager.triangularEdges) {
+							itemName += " Edges";
+						} else if (view.engine.triangularNeighbourhood === PatternManager.triangularVertices) {
+							itemName += " Vertices";
+						}
 					} else {
-						itemName = "Moore";
+						if (view.engine.isVonNeumann) {
+							itemName = "von Neumann";
+						} else {
+							itemName = "Moore";
+						}
 					}
 				}
 			}

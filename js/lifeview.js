@@ -190,7 +190,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 322,
+		/** @const {number} */ versionBuild : 323,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -12448,6 +12448,7 @@
 		this.engine.isLifeHistory = false;
 		this.engine.isHex = false;
 		this.engine.isTriangular = false;
+		this.engine.triangularNeighbourhood = PatternManager.triangularAll;
 		this.engine.birthTriMask = 0;
 		this.engine.survivalTriMask = 0;
 		this.engine.isVonNeumann = false;
@@ -12565,6 +12566,7 @@
 
 			// check if the neighbourhood is triangular
 			this.engine.isTriangular = pattern.isTriangular;
+			this.engine.triangularNeighbourhood = pattern.triangularNeighbourhood;
 			this.engine.birthTriMask = pattern.birthTriMask;
 			this.engine.survivalTriMask = pattern.survivalTriMask;
 

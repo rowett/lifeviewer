@@ -1,3 +1,6 @@
+Build 323
+- updated Neighbourhood in Help information with triangular neighbourhood
+
 Build 322
 - improved hexagonal cell drawing
 - fix for LV neighbourhood
