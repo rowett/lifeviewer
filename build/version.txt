@@ -1,5 +1,8 @@
 Build 323
 - updated Neighbourhood in Help information with triangular neighbourhood
+- canonical alias names are used
+- fixed Wolfram rules
+- drawing on a triangular grid is now more accurate
 
 Build 322
 - improved hexagonal cell drawing

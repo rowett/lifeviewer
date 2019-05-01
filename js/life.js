@@ -42,8 +42,11 @@
 		// size of 6x3 hash lookup array
 		/** @const {number} */ hash63 : 262144,
 
-		// size of triangular hash lookup array
+		// size of 13bit triangular single cell hash lookup array
 		/** @const {number} */ hashTriangular : 8192,
+
+		// size of 17bit triangular double cell hash lookup array (includes odd/even bit)
+		/** @const {number} */ hashTriDouble : 131072,
 
 		// snapshot interval
 		/** @const {number} */ snapshotInterval : 50,
@@ -599,8 +602,8 @@
 		this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
 
 		// triangular lookup
-		this.indexLookupTri1 = this.allocator.allocate(Uint8, LifeConstants.hashTriangular, "Life.indexLookupTri1");
-		this.indexLookupTri2 = this.allocator.allocate(Uint8, LifeConstants.hashTriangular, "Life.indexLookupTri2");
+		this.indexLookupTri1 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri1");
+		this.indexLookupTri2 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri2");
 
 		// colour lookup for next generation
 		this.colourLookup = this.allocator.allocate(Uint8, (this.aliveMax + 1) * 2, "Life.colourLookup");
@@ -3534,7 +3537,7 @@
 
 	// create the triangular life index
 	Life.prototype.createTriangularIndex = function(indexLookupTriangular, ruleArray) {
-		var n = LifeConstants.hashTriangular,
+		var n = LifeConstants.hashTriDouble,
 			i = 0;
 
 		// create each hash entry
@@ -3587,14 +3590,14 @@
 		    hashSize = (this.isTriangular ? LifeConstants.hashTriangular : LifeConstants.hash33),
 		    odd = false;
 
-		// check for Wolfram
-		if (this.wolframRule === -1) {
-			// check for Triangular
-			if (this.isTriangular) {
-				// create lookup arrays
-				this.createTriangularIndex(this.indexLookupTri2, ruleArray);
-				this.createTriangularIndex(this.indexLookupTri1, ruleAltArray);
-			} else {
+		// check for Triangular
+		if (this.isTriangular) {
+			// create lookup arrays
+			this.createTriangularIndex(this.indexLookupTri2, ruleArray);
+			this.createTriangularIndex(this.indexLookupTri1, ruleAltArray);
+		} else {
+			// check for Wolfram
+			if (this.wolframRule === -1) {
 				// check for B0
 				if (ruleArray[0]) {
 					// check for Smax
@@ -3625,17 +3628,17 @@
 						}
 					}
 				}
+			}
 
-				// copy rules from pattern
-				if (altSpecified) {
-					this.createLifeIndex63(this.indexLookup632, ruleArray);
-					this.createLifeIndex63(this.indexLookup63, ruleAltArray);
-				} else {
-					this.createLifeIndex63(this.indexLookup63, ruleArray);
-					if (!odd) {
-						// duplicate even rule
-						this.indexLookup632.set(this.indexLookup63);
-					}
+			// copy rules from pattern
+			if (altSpecified) {
+				this.createLifeIndex63(this.indexLookup632, ruleArray);
+				this.createLifeIndex63(this.indexLookup63, ruleAltArray);
+			} else {
+				this.createLifeIndex63(this.indexLookup63, ruleArray);
+				if (!odd) {
+					// duplicate even rule
+					this.indexLookup632.set(this.indexLookup63);
 				}
 			}
 		}

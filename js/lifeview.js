@@ -2057,6 +2057,15 @@
 			yPos = Math.floor(displayY / yZoom - engineY + this.engine.originY);
 			xPos = Math.floor((displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
 
+			// adjust for triangular grid
+			if (this.engine.isTriangular) {
+				if (((xPos + this.panX + yPos + this.panY) & 1) === 0) {
+					// triangle pointing down
+				} else {
+					// triangle pointing up
+				}
+			}
+
 			// draw the cell
 			state = this.engine.getState(xPos + this.panX, yPos + this.panY, this.multiStateView && this.viewOnly);
 		}
@@ -2076,7 +2085,8 @@
 		    engineX = this.panX - this.engine.xOff - (this.engine.isHex ? this.engine.yOff / 2 : 0),
 
 		    // cell position
-		    yPos = 0, xPos = 0,
+			yPos = 0, xPos = 0,
+			yFrac = 0, xFrac = 0,
 		    
 			// x and y zoom
 			xZoom = this.engine.zoom,
@@ -2097,10 +2107,34 @@
 			}
 
 			// compute the x and y cell coordinate
-			yPos = Math.floor(displayY / yZoom - engineY + this.engine.originY);
-			xPos = Math.floor((displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
+			//yPos = Math.floor(displayY / yZoom - engineY + this.engine.originY);
+			//xPos = Math.floor((displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
+			yPos = displayY / yZoom - engineY + this.engine.originY;
+			xPos = (displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX;
+			if (this.engine.isTriangular) {
+				xPos -= (0.2 * (this.engine.zoom / 32));
+			}
+			xFrac = xPos - Math.floor(xPos);
+			yFrac = yPos - Math.floor(yPos);
+			xPos -= xFrac;
+			yPos -= yFrac;
 		}
 
+		// adjust for triangular grid
+		if (this.engine.isTriangular) {
+			if (((xPos + this.panX + yPos + this.panY) & 1) === 0) {
+				// triangle pointing down
+				if (xFrac + yFrac > 1) {
+					xPos += 1;
+				}
+			} else {
+				// triangle pointing up
+				if ((1 - xFrac) + yFrac < 1) {
+					xPos += 1;
+				}
+			}
+		}
+		
 		// set cell position
 		this.cellX = xPos + this.panX;
 		this.cellY = yPos + this.panY;

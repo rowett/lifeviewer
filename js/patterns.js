@@ -3523,8 +3523,8 @@
 		// check if the rule is an alias
 		alias = AliasManager.getRuleFromAlias(rule);
 		if (alias !== null) {
-			// save the alias name
-			aliasName = rule;
+			// get the canonical form of the alias
+			aliasName = AliasManager.getAliasFromRule(alias);
 
 			// get the rule
 			rule = alias;
