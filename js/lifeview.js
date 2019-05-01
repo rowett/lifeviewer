@@ -2031,6 +2031,7 @@
 
 		    // cell position
 		    yPos = 0, xPos = 0,
+			yFrac = 0, xFrac = 0,
 		    
 			// rotation
 			theta = 0, radius = 0,
@@ -2054,15 +2055,28 @@
 			}
 
 			// compute the x and y cell coordinate
-			yPos = Math.floor(displayY / yZoom - engineY + this.engine.originY);
-			xPos = Math.floor((displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
+			yPos = displayY / yZoom - engineY + this.engine.originY;
+			xPos = (displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX;
+			if (this.engine.isTriangular) {
+				xPos -= (0.2 * (this.engine.zoom / 32));
+			}
+			xFrac = xPos - Math.floor(xPos);
+			yFrac = yPos - Math.floor(yPos);
+			xPos -= xFrac;
+			yPos -= yFrac;
 
 			// adjust for triangular grid
 			if (this.engine.isTriangular) {
 				if (((xPos + this.panX + yPos + this.panY) & 1) === 0) {
 					// triangle pointing down
+					if (xFrac + yFrac > 1) {
+						xPos += 1;
+					}
 				} else {
 					// triangle pointing up
+					if ((1 - xFrac) + yFrac < 1) {
+						xPos += 1;
+					}
 				}
 			}
 
@@ -2107,8 +2121,6 @@
 			}
 
 			// compute the x and y cell coordinate
-			//yPos = Math.floor(displayY / yZoom - engineY + this.engine.originY);
-			//xPos = Math.floor((displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
 			yPos = displayY / yZoom - engineY + this.engine.originY;
 			xPos = (displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX;
 			if (this.engine.isTriangular) {
@@ -2210,6 +2222,7 @@
 
 		    // cell position
 		    yPos = 0, xPos = 0,
+			yFrac = 0, xFrac = 0,
 		    
 		    // display strings
 		    xDisplay = "",
@@ -2237,8 +2250,30 @@
 			}
 
 			// compute the x and y cell coordinate
-			yPos = Math.floor(displayY / yZoom - engineY + this.engine.originY);
-			xPos = Math.floor((displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX);
+			yPos = displayY / yZoom - engineY + this.engine.originY;
+			xPos = (displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX;
+			if (this.engine.isTriangular) {
+				xPos -= (0.2 * (this.engine.zoom / 32));
+			}
+			xFrac = xPos - Math.floor(xPos);
+			yFrac = yPos - Math.floor(yPos);
+			xPos -= xFrac;
+			yPos -= yFrac;
+
+			// adjust for triangular grid
+			if (this.engine.isTriangular) {
+				if (((xPos + this.panX + yPos + this.panY) & 1) === 0) {
+					// triangle pointing down
+					if (xFrac + yFrac > 1) {
+						xPos += 1;
+					}
+				} else {
+					// triangle pointing up
+					if ((1 - xFrac) + yFrac < 1) {
+						xPos += 1;
+					}
+				}
+			}
 
 			// read the state
 			stateDisplay = this.engine.getState(xPos + this.panX, yPos + this.panY, this.multiStateView && this.viewOnly);
