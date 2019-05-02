@@ -1,6 +1,6 @@
 # LifeViewer
 
-This is LifeViewer, a scriptable pattern viewer for Life-like cellular automata.
+This is LifeViewer, a scriptable pattern editor and viewer for Life-like cellular automata.
 Designed to be easy to embed in your own web site.
 
 Currently used on:
@@ -25,7 +25,7 @@ LifeViewer simulates and animates cellular automata in the web browser.
 LifeViewer features:
 * Smooth non-integer zoom and rotation.
 * Colour themes with cell history and longevity.
-* Square and hex grid displays.
+* Square, hexagonal and triangular grid displays.
 * Pseudo 3D layers and stars.
 * Multiple ways to automatically track patterns as they evolve.
 * Script language that allows many features to be customized including Waypoint animations and POIs.
@@ -40,7 +40,7 @@ Pattern formats|RLE, Life 1.06, Life 1.05, Cells
 Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP, Larger than Life, HROT, Alternate
 Bounded Grid|Plane, Torus, Klein, Cross-Surface, Sphere
 States|2 state, [R]History, Niemiec, Generations, Larger than Life
-Neighbourhoods|Moore, Hex, Von Neumann, 1D, Circular
+Neighbourhoods|Moore, Von Neumann, 1D, Hexagonal, Triangular, Circular
 
 ## How do I use it?
 * [Build](#how-do-i-build-it) the plugin file **lv-plugin.js**.
@@ -126,10 +126,10 @@ canvasmenu|UI library
 colours|default colour sets for common rules and colour names
 compatibility|some cross-browser compatibility functions
 help|help information
+hrot|LtL/HROT algorithm
 keywords|script command keywords
 life|algorithms to compute the next generation
 lifeview|main program
-hrot|LtL/HROT algorithm
 patterns|pattern reader and decoder
 random|pseudo-random number generator
 script|functions to read script commands
