@@ -3,6 +3,8 @@ Build 323
 - canonical alias names are used
 - fixed Wolfram rules
 - drawing on a triangular grid is now more accurate
+- fixed an issue with Triangular B0 rules
+- AutoFit now works better on bounded grids with an infinite dimension
 
 Build 322
 - improved hexagonal cell drawing

@@ -12518,8 +12518,6 @@
 		this.engine.isHex = false;
 		this.engine.isTriangular = false;
 		this.engine.triangularNeighbourhood = PatternManager.triangularAll;
-		this.engine.birthTriMask = 0;
-		this.engine.survivalTriMask = 0;
 		this.engine.isVonNeumann = false;
 		this.engine.wolframRule = -1;
 		this.engine.patternDisplayMode = false;
@@ -12636,8 +12634,6 @@
 			// check if the neighbourhood is triangular
 			this.engine.isTriangular = pattern.isTriangular;
 			this.engine.triangularNeighbourhood = pattern.triangularNeighbourhood;
-			this.engine.birthTriMask = pattern.birthTriMask;
-			this.engine.survivalTriMask = pattern.survivalTriMask;
 
 			// check if the neighbourhood is Von Neumann
 			this.engine.isVonNeumann = pattern.isVonNeumann;

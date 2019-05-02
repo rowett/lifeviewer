@@ -3537,7 +3537,7 @@
 
 	// create the triangular life index
 	Life.prototype.createTriangularIndex = function(indexLookupTriangular, ruleArray) {
-		var n = LifeConstants.hashTriDouble,
+		var n = LifeConstants.hashTriangular,  // TBD will be Double when 2-cell lookup implemented
 			i = 0;
 
 		// create each hash entry
@@ -12455,17 +12455,21 @@
 		if (this.boundedGridType !== -1) {
 			width = this.boundedGridWidth;
 			height = this.boundedGridHeight;
-			if ((this.width / 2 - width / 2) < leftX) {
-				leftX = this.width / 2 - width / 2;
+			if (width > 0) {
+				if ((this.width / 2 - width / 2) < leftX) {
+					leftX = this.width / 2 - width / 2;
+				}
+				if ((this.width / 2 + width / 2) > rightX) {
+					rightX = this.width / 2 + width / 2;
+				}
 			}
-			if ((this.width / 2 + width / 2) > rightX) {
-				rightX = this.width / 2 + width / 2;
-			}
-			if ((this.height / 2 - height / 2) <  bottomY) {
-				bottomY = this.height / 2 - height / 2;
-			}
-			if ((this.height / 2 + height / 2) > topY) {
-				topY = this.height / 2 + height / 2;
+			if (height > 0) {
+				if ((this.height / 2 - height / 2) <  bottomY) {
+					bottomY = this.height / 2 - height / 2;
+				}
+				if ((this.height / 2 + height / 2) > topY) {
+					topY = this.height / 2 + height / 2;
+				}
 			}
 		}
 

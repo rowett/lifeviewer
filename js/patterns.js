@@ -2001,6 +2001,16 @@
 			}
 		}
 
+		// clear arrays
+		for (i = 0; i < 8192; i += 1) {
+			ruleTriangularArray[i] = 0;
+		}
+		if (secondTriangularArray) {
+			for (i = 0; i < 8192; i += 1) {
+				secondTriangularArray[i] = 0;
+			}
+		}
+
 		// check for B0
 		if ((bMask & 1) !== 0) {
 			// check for Smax
@@ -2146,10 +2156,6 @@
 
 		// check for triangular rules
 		if (isTriangular) {
-			// clear the rule array
-			for (i = 0; i < 8192; i += 1) {
-				ruleTriangularArray[i] = 0;
-			}
 			canonicalName = this.createTriangularRuleMap(pattern, birthPart, survivalPart, generationsStates, ruleTriangularArray, triangularNeighbourhood);
 		} else {
 			// create the masks
