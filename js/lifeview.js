@@ -226,7 +226,7 @@
 
 		// minimum and maximum zoom
 		/** @const {number} */ minZoom : 0.0625,
-		/** @const {number} */ maxZoom : 32,
+		/** @const {number} */ maxZoom : 64,
 		
 		// minimum and maximum negative zoom
 		/** @const {number} */ minNegZoom : -16,
