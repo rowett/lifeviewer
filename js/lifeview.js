@@ -6240,8 +6240,14 @@
 			// 3 for 3200% zoom
 			case 51:
 			case 99: // num 3
-				// zoom to 3200%
-				me.changeZoom(me, 32, false);
+				// check for shift
+				if (event.shiftKey) {
+					// zoom to 6400%
+					me.changeZoom(me, 64, false);
+				} else {
+					// zoom to 3200%
+					me.changeZoom(me, 32, false);
+				}
 				break;
 
 			// 4 for 400% zoom

@@ -1,6 +1,7 @@
 Build 324
 - custom colours for Generations rules were in reverse order
 - increased maximum zoom to 64x
+- hotkey Shift and "3" sets 64x zoom
 
 Build 323
 - updated Neighbourhood in Help information with triangular neighbourhood

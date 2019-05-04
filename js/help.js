@@ -649,6 +649,7 @@
 		y = this.renderHelpLine(view, "8", "8x zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "6", "16x zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "3", "32x zoom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift 3", "64x zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift 1", "integer zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift 2", "-2x zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift 4", "-4x zoom", ctx, x, y, height, helpLine);
