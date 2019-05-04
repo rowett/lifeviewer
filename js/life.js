@@ -3198,7 +3198,11 @@
 
 				// override with custom colour if specified
 				if (this.customColours.length >= i) {
-					current = this.customColours[i];
+					if (!this.isHROT) {
+						current = this.customColours[this.multiNumStates - i];
+					} else {
+						current = this.customColours[i];
+					}
 					if (current !== -1) {
 						this.redChannel[i + this.historyStates] = current >> 16;
 						this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
@@ -3208,10 +3212,24 @@
 			}
 
 			// set alive colour
-			i = this.multiNumStates -1 + this.historyStates;
-			this.redChannel[i] = this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight);
-			this.greenChannel[i] = this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight);
-			this.blueChannel[i] = this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight);
+			i = this.multiNumStates - 1;
+			this.redChannel[i + this.historyStates] = this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight);
+			this.greenChannel[i + this.historyStates] = this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight);
+			this.blueChannel[i + this.historyStates] = this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight);
+
+			// override with custom colour if specified
+			if (this.customColours.length >= i) {
+				if (!this.isHROT) {
+					current = this.customColours[this.multiNumStates - i];
+				} else {
+					current = this.customColours[i];
+				}
+				if (current !== -1) {
+					this.redChannel[i + this.historyStates] = current >> 16;
+					this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
+					this.blueChannel[i + this.historyStates] = (current & 255);
+				}
+			}
 
 			// create history colours if specified
 			for (i = 0; i < this.historyStates; i += 1) {

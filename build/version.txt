@@ -1,3 +1,6 @@
+Build 324
+- custom colours for Generations rules were in reverse order
+
 Build 323
 - updated Neighbourhood in Help information with triangular neighbourhood
 - canonical alias names are used

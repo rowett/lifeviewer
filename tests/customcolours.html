@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Custom Generations Colours</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ COLOR 1 White COLOR 2 Green COLOR 3 Yellow COLOR 4 Cyan COLOR 5 Blue ]]
+#C [[ COLOR 6 Purple COLOR 7 Gray COLOR 8 Red COLOR 9 Orange ]]
+#C [[ LABELSIZE 12 LABELALPHA 1 COLOR LABEL White ]]
+#C [[ POI X -150 Y -20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 15 14 24 "Here's where it all starts\n-- one cell, in Stage E\n(shown in purple)" ]]
+#C [[ POI X -120 Y -20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 45 14 24 "Cell moves to Stage F (blue)\n-- ready to start constructing children, SE first" ]]
+#C [[ POI X -90 Y -20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 75 14 24 "Cell remains in Stage F (blue)\n-- child #1 constructed in SE\n(yellow cell, Stage A)" ]]
+#C [[ POI X -60 Y -20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 105 14 24 "Cell remains in Stage F (blue)\n-- child #2 constructed in NE\n(yellow cell, Stage A)" ]]
+#C [[ POI X -30 Y -20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 135 14 24 "Cell remains in Stage F (blue)\n-- child #3 constructed in NW\n(yellow cell, Stage A)" ]]
+#C [[ POI X 0 Y -20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 165 14 24 "Cell remains in Stage F (blue)\n-- child #4 constructed in SW\n(yellow cell, Stage A)" ]]
+#C [[ POI X 30 Y -20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 195 14 24 "Cell moves to Stage G (cyan)\n-- central parent cell sends its own state to each neighbor" ]]
+#C [[ POI X 60 Y -20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 225 14 24 "Cell moves to Stage H (temporarily yellow)\nThe cycle is complete. The original central cell self-destructs.\nThe state signals from the center cell are collected and stored in registers\nin each neighbor/child cell, which have all now moved to Stage B (orange)" ]]
+#C [[ POI X 90 Y -20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 255 14 24 "The central cell is gone now -- green is the background state, completely empty.\nThe four child cells move to Stage C (red)\nIn each cell, the collected values in four registers, one for each neighbor,\nare used to calculate the future state of the cell." ]]
+#C [[ POI X 120 Y -20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 285 14 24 "The four child cells move to Stage D (gray)\nIf the cell's calculated state is 0, the cell self-destructs immediately.\nIn this particular case, all four child cells survive (this is what always happens\nin the first half-cycle when emulating a Moore-neighborhood rule)" ]]
+#C [[ POI X 150 Y -20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 315 14 24 "The four child cells move to Stage E (purple)\nThe construction/signal/collect/decide cycle begins again.\n\nThis cycle happens *twice* in each 2^36 0E0P metacell cycle." ]]
+#C [[ POI X -150 Y 20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 15 54 24 "The cycle restarts.\nNow there are four cells, all in Stage E\n(shown in purple)" ]]
+#C [[ POI X -120 Y 20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 45 54 24 "The four cells move to Stage F (blue)\n-- ready to start constructing children, SE first" ]]
+#C [[ POI X -90 Y 20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 75 54 24 "The four cells remain in Stage F (blue)\n-- four children constructed in SE\n(yellow cells, Stage A)" ]]
+#C [[ POI X -60 Y 20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 105 54 24 "The four cells remain in Stage F (blue)\n-- two more children constructed in NE\n(yellow cells, Stage A)" ]]
+#C [[ POI X -30 Y 20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 135 54 24 "The four cells remain in Stage F (blue)\n-- two more children constructed in NW\n(yellow cells, Stage A)" ]]
+#C [[ POI X 0 Y 20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 165 54 24 "The four cells remain in Stage F (blue)\n-- one more child constructed in SW\n(yellow cells, Stage A)" ]]
+#C [[ POI X 30 Y 20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 195 54 24 "Cells move to Stage G (cyan)\n-- each parent cell sends its own state to each neighbor" ]]
+#C [[ POI X 60 Y 20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 225 54 24 "Cells move to Stage H (temporarily yellow)\nThe cycle is complete. The parent cells self-destruct, as always.\nThe state signals from the parent cell are collected and stored in registers\nin the neighbor cells, which have all now moved to Stage B (orange)" ]]
+#C [[ POI X 90 Y 20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 255 54 24 "The parent cells are gone now -- back to the green background state, completely empty.\nThe nine child cells move to Stage C (red)\nIn each cell, the collected values in four registers, one for each neighbor,\nare used to calculate the future state of the cell." ]]
+#C [[ POI X 120 Y 20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 285 54 24 "The nine child cells move to Stage D (gray)\nIf a child cell's calculated state is 0, the cell self-destructs immediately.\nIn this particular case, where the rule being simulated is S0,\nonly one of the nine child cells survive." ]]
+#C [[ POI X 150 Y 20 Z 32 POITRANS 0 ]]
+#C [[ LABEL 315 54 24 "The one remaining cell moves to Stage E (purple).\nEmpty background locations are shown in green." ]]
+#C [[ WIDTH 656 VIEWONLY ]]
+x = 331, y = 62, rule = //11
+331I$I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I29.I29.I29.I29.I
+29.I29.I29.I29.I29.I29.I29.I$I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.
+I29.I$I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I29.I29.I29.I29.I
+29.I29.I29.I29.I29.I29.I29.I$I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.
+I29.I$I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I12.I.I.I12.I12.I
+.I.I12.I12.I.I.I12.I12.I.I.I12.I12.I.I.I12.I12.I.I.I12.I12.I.I.I12.I
+12.I.I.I12.I12.I.I.I12.I12.I.I.I12.I12.I.I.I12.I$I13.I.I13.I13.I.I13.
+I13.I.I13.I13.I.A13.I13.A.A13.I13.A.A13.I13.A.A13.I13.B.B13.I13.C.C
+13.I13.D.D13.I13.E.E13.I$I12.I.E.I12.I12.I.F.I12.I12.I.F.I12.I12.I.F.
+I12.I12.I.F.I12.I12.I.F.I12.I12.I.G.I12.I12.I.H.I12.I12.I.I.I12.I12.I
+.I.I12.I12.I.I.I12.I$I13.I.I13.I13.I.I13.I13.I.A13.I13.I.A13.I13.I.A
+13.I13.A.A13.I13.A.A13.I13.B.B13.I13.C.C13.I13.D.D13.I13.E.E13.I$I12.
+I.I.I12.I12.I.I.I12.I12.I.I.I12.I12.I.I.I12.I12.I.I.I12.I12.I.I.I12.I
+12.I.I.I12.I12.I.I.I12.I12.I.I.I12.I12.I.I.I12.I12.I.I.I12.I$I29.I29.
+I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I29.I29.I29.I29.I29.I29.I29.I
+29.I29.I29.I29.I$I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I29.I
+29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I29.I29.I29.I29.I29.I29.I29.
+I29.I29.I29.I29.I$I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I29.I
+29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I29.I29.I29.I29.I29.I29.I29.
+I29.I29.I29.I29.I$331I19$331I$I29.I29.I29.I29.I29.I29.I29.I29.I29.I
+29.I29.I$I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I29.I29.I29.I
+29.I29.I29.I29.I29.I29.I29.I29.I$I29.I29.I29.I29.I29.I29.I29.I29.I29.
+I29.I29.I$I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I29.I29.I29.I
+29.I29.I29.I29.I29.I29.I29.I29.I$I29.I29.I29.I29.I29.I29.I29.I29.I29.
+I29.I29.I$I12.I.I.I12.I12.I.I.I12.I12.I.I.I12.I12.I.A.A12.I12.A.A.A
+12.I12.A.A.A12.I12.A.A.A12.I12.B.B.B12.I12.C.C.C12.I12.H.H.H12.I12.I.
+I.I12.I$I13.E.E13.I13.F.F13.I13.F.F13.I13.F.F13.I13.F.F13.I13.F.F13.I
+13.G.G13.I13.H.H13.I13.I.I13.I13.I.I13.I13.I.I13.I$I12.I.I.I12.I12.I.
+I.I12.I12.I.A.A12.I12.I.A.A12.I12.A.A.A12.I12.A.A.A12.I12.A.A.A12.I
+12.B.B.B12.I12.C.C.C12.I12.H.D.H12.I12.I.E.I12.I$I13.E.E13.I13.F.F13.
+I13.F.F13.I13.F.F13.I13.F.F13.I13.F.F13.I13.G.G13.I13.H.H13.I13.I.I
+13.I13.I.I13.I13.I.I13.I$I12.I.I.I12.I12.I.I.I12.I12.I.A.A12.I12.I.A.
+A12.I12.I.A.A12.I12.A.A.A12.I12.A.A.A12.I12.B.B.B12.I12.C.C.C12.I12.H
+.H.H12.I12.I.I.I12.I$I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I
+29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I29.I29.I29.I29.I29.I29.
+I29.I29.I29.I29.I29.I$I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I
+29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I29.I29.I29.I29.I29.I29.
+I29.I29.I29.I29.I29.I$I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$I
+29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I29.I$331I!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>
