@@ -298,6 +298,9 @@
 		// boundary colour
 		/** @type {number} */ this.boundaryColour = 0xffffffff;
 
+		// whether rule is _none_
+		/** @type {boolean} */ this.isNone = false;
+
 		// whether rule is Wolfram
 		/** @type {number} */ this.wolframRule = -1;
 
@@ -3186,12 +3189,12 @@
 				targetComponent = this.dyingGenColTarget.endColour.red * weight + this.dyingGenColTarget.startColour.red * (1 - weight);
 				this.redChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
-				// compoute the green component of the current and target colour
+				// compute the green component of the current and target colour
 				currentComponent = this.dyingGenColCurrent.endColour.green * weight + this.dyingGenColCurrent.startColour.green * (1 - weight);
 				targetComponent = this.dyingGenColTarget.endColour.green * weight + this.dyingGenColTarget.startColour.green * (1 - weight);
 				this.greenChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
-				// compoute the blue component of the current and target colour
+				// compute the blue component of the current and target colour
 				currentComponent = this.dyingGenColCurrent.endColour.blue * weight + this.dyingGenColCurrent.startColour.blue * (1 - weight);
 				targetComponent = this.dyingGenColTarget.endColour.blue * weight + this.dyingGenColTarget.startColour.blue * (1 - weight);
 				this.blueChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
@@ -3243,12 +3246,12 @@
 				targetComponent = this.deadGenColTarget.startColour.red * weight + this.deadGenColTarget.endColour.red * (1 - weight);
 				this.redChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
-				// compoute the green component of the current and target colour
+				// compute the green component of the current and target colour
 				currentComponent = this.deadGenColCurrent.startColour.green * weight + this.deadGenColCurrent.endColour.green * (1 - weight);
 				targetComponent = this.deadGenColTarget.startColour.green * weight + this.deadGenColTarget.endColour.green * (1 - weight);
 				this.greenChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
-				// compoute the blue component of the current and target colour
+				// compute the blue component of the current and target colour
 				currentComponent = this.deadGenColCurrent.startColour.blue * weight + this.deadGenColCurrent.endColour.blue * (1 - weight);
 				targetComponent = this.deadGenColTarget.startColour.blue * weight + this.deadGenColTarget.endColour.blue * (1 - weight);
 				this.blueChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
@@ -3297,12 +3300,12 @@
 					targetComponent = this.deadColTarget.startColour.red * weight + this.deadColTarget.endColour.red * (1 - weight);
 					this.redChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 	
-					// compoute the green component of the current and target colour
+					// compute the green component of the current and target colour
 					currentComponent = this.deadColCurrent.startColour.green * weight + this.deadColCurrent.endColour.green * (1 - weight);
 					targetComponent = this.deadColTarget.startColour.green * weight + this.deadColTarget.endColour.green * (1 - weight);
 					this.greenChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 	
-					// compoute the blue component of the current and target colour
+					// compute the blue component of the current and target colour
 					currentComponent = this.deadColCurrent.startColour.blue * weight + this.deadColCurrent.endColour.blue * (1 - weight);
 					targetComponent = this.deadColTarget.startColour.blue * weight + this.deadColTarget.endColour.blue * (1 - weight);
 					this.blueChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
@@ -3319,12 +3322,12 @@
 				targetComponent = this.aliveColTarget.startColour.red * weight + this.aliveColTarget.endColour.red * (1 - weight);
 				this.redChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
-				// compoute the green component of the current and target colour
+				// compute the green component of the current and target colour
 				currentComponent = this.aliveColCurrent.startColour.green * weight + this.aliveColCurrent.endColour.green * (1 - weight);
 				targetComponent = this.aliveColTarget.startColour.green * weight + this.aliveColTarget.endColour.green * (1 - weight);
 				this.greenChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
-				// compoute the blue component of the current and target colour
+				// compute the blue component of the current and target colour
 				currentComponent = this.aliveColCurrent.startColour.blue * weight + this.aliveColCurrent.endColour.blue * (1 - weight);
 				targetComponent = this.aliveColTarget.startColour.blue * weight + this.aliveColTarget.endColour.blue * (1 - weight);
 				this.blueChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
@@ -6283,8 +6286,19 @@
 		this.setBoundedTiles();
 	};
 
-	// compute the next generation with or without statistics
+	// compute the next generation unless rule is none
 	Life.prototype.nextGeneration = function(statsOn, noHistory, graphDisabled) {
+		// do nothing if rule is none
+		if (!this.isNone) {
+			this.processNextGen(statsOn, noHistory, graphDisabled);
+		} else {
+			this.anythingAlive = 1;
+			this.counter += 1;
+		}
+	};
+
+	// compute the next generation with or without statistics
+	Life.prototype.processNextGen = function(statsOn, noHistory, graphDisabled) {
 		var performSave = false,
 		    zoomBox = this.zoomBox,
 			historyBox = this.historyBox,
@@ -11551,13 +11565,16 @@
 
 	// convert life grid region to pens using tiles
 	Life.prototype.convertToPensTile = function() {
-		// check for generations or HROT rule
-		if (this.multiNumStates === -1) {
-			// use regular converter
-			this.convertToPensTileRegular();
-		} else {
-			if (!this.anythingAlive) {
-				this.generationsDecayOnly();
+		// ignore if rule is none
+		if (!this.isNone) {
+			// check for generations or HROT rule
+			if (this.multiNumStates === -1) {
+				// use regular converter
+				this.convertToPensTileRegular();
+			} else {
+				if (!this.anythingAlive) {
+					this.generationsDecayOnly();
+				}
 			}
 		}
 	};

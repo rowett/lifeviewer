@@ -190,7 +190,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 324,
+		/** @const {number} */ versionBuild : 325,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -12520,6 +12520,7 @@
 		this.patternStates = 0;
 		this.patternUsedStates = 0;
 		this.patternFormat = "(none)";
+		this.engine.isNone = false;
 		this.engine.isLifeHistory = false;
 		this.engine.isHex = false;
 		this.engine.isTriangular = false;
@@ -12629,6 +12630,9 @@
 					this.engine.HROT.altSpecified = false;
 				}
 			}
+
+			// check if the rule is _none_
+			this.engine.isNone = pattern.isNone;
 
 			// use hexagons for hex dispaly
 			this.engine.useHexagons = true;
@@ -13305,7 +13309,9 @@
 			this.engine.resetPopulationBox(this.engine.grid16, this.engine.colourGrid);
 			if (pattern && this.engine.population === 0) {
 				this.emptyStart = true;
-				this.menuManager.notification.notify("Nothing alive!", 15, 300, 15, false);
+				if (!this.engine.isNone) {
+					this.menuManager.notification.notify("Nothing alive!", 15, 300, 15, false);
+				}
 			} else {
 				this.emptyStart = false;
 			}

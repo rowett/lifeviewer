@@ -46,6 +46,9 @@
 
 	// pattern manager singleton
 	PatternManager = {
+		// _none_ rule (must be lower case)
+		/** @const {string} */ noneRuleName : "none",
+
 		// base64 digits
 		/** @const {string} */ base64Characters : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
 
@@ -319,6 +322,9 @@
 		// bounded grid definition
 		/** @type {string} */ this.boundedGridDef = "";
 
+		// is _none_ rule
+		/** @type {boolean} */ this.isNone = false;
+
 		// is history rule
 		/** @type {boolean} */ this.isHistory = false;
 
@@ -449,6 +455,7 @@
 	Pattern.prototype.copySettingsFrom = function(source) {
 		// copy settings
 		this.ruleName = source.ruleName;
+		this.isNone = source.isNone;
 		this.aliasName = source.aliasName;
 		this.isHex = source.isHex;
 		this.isTriangular = source.isTriangular;
@@ -506,6 +513,7 @@
 	Pattern.prototype.resetSettings = function() {
 		this.ruleName = "";
 		this.aliasName = "";
+		this.isNone = false;
 		this.isHex = false;
 		this.isTriangular = false;
 		this.birthTriMask = 0;
@@ -546,6 +554,11 @@
 		// check for range
 		if ((this.rangeLTL !== source.rangeLTL) || (this.rangeHROT !== source.rangeHROT)) {
 			return "Alternate has different range";
+		}
+
+		// check for "none" rules
+		if (this.isNone || source.isNone) {
+			return "Alternate can not use none";
 		}
 
 		// all checks passed
@@ -2154,109 +2167,114 @@
 		    fullchars = (power2 / 6) | 0,
 		    tempArray = new Uint8Array(512);
 
-		// check for triangular rules
-		if (isTriangular) {
-			canonicalName = this.createTriangularRuleMap(pattern, birthPart, survivalPart, generationsStates, ruleTriangularArray, triangularNeighbourhood);
+		// check for _none_ rule
+		if (pattern.isNone) {
+			canonicalName = PatternManager.noneRuleName;
 		} else {
-			// create the masks
-			mask = 511;
-			if (isHex) {
-				mask = 254;
+			// check for triangular rules
+			if (isTriangular) {
+				canonicalName = this.createTriangularRuleMap(pattern, birthPart, survivalPart, generationsStates, ruleTriangularArray, triangularNeighbourhood);
 			} else {
-				if (isVonNeumann) {
-					mask = 186;
-				}
-			}
-	
-			// clear the rule array
-			for (i = 0; i < 512; i += 1) {
-				tempArray[i] = 0;
-				ruleArray[i] = 0;
+				// create the masks
+				mask = 511;
 				if (isHex) {
-					swapArray[i] = i;
+					mask = 254;
 				} else {
-					swapArray[i] = (i & 448) >> 6 | i & 56 | (i & 7) << 6;
+					if (isVonNeumann) {
+						mask = 186;
+					}
 				}
-			}
-	
-			// check for base64 map rules
-			if (base64 !== "") {
-				// create the canonical name
-				canonicalName = "MAP";
-	
-				// decode the base64 string
-				for (i = 0; i < fullchars; i += 1) {
-					canonicalName += base64[i];
+		
+				// clear the rule array
+				for (i = 0; i < 512; i += 1) {
+					tempArray[i] = 0;
+					ruleArray[i] = 0;
+					if (isHex) {
+						swapArray[i] = i;
+					} else {
+						swapArray[i] = (i & 448) >> 6 | i & 56 | (i & 7) << 6;
+					}
+				}
+		
+				// check for base64 map rules
+				if (base64 !== "") {
+					// create the canonical name
+					canonicalName = "MAP";
+		
+					// decode the base64 string
+					for (i = 0; i < fullchars; i += 1) {
+						canonicalName += base64[i];
+						c = PatternManager.base64Characters.indexOf(base64[i]);
+						tempArray[j] = c >> 5;
+						j += 1;
+						tempArray[j] = (c >> 4) & 1;
+						j += 1;
+						tempArray[j] = (c >> 3) & 1;
+						j += 1;
+						tempArray[j] = (c >> 2) & 1;
+						j += 1;
+						tempArray[j] = (c >> 1) & 1;
+						j += 1;
+						tempArray[j] = c & 1;
+						j += 1;
+					}
+		
+					// decode final character
 					c = PatternManager.base64Characters.indexOf(base64[i]);
 					tempArray[j] = c >> 5;
 					j += 1;
 					tempArray[j] = (c >> 4) & 1;
-					j += 1;
-					tempArray[j] = (c >> 3) & 1;
-					j += 1;
-					tempArray[j] = (c >> 2) & 1;
-					j += 1;
-					tempArray[j] = (c >> 1) & 1;
-					j += 1;
-					tempArray[j] = c & 1;
-					j += 1;
-				}
-	
-				// decode final character
-				c = PatternManager.base64Characters.indexOf(base64[i]);
-				tempArray[j] = c >> 5;
-				j += 1;
-				tempArray[j] = (c >> 4) & 1;
-				canonicalName += PatternManager.base64Characters[c & ((1 << 5) | (1 << 4))];
-	
-				// copy into array using the neighbourhood mask
-				for (i = 0; i < 512; i += 1) {
-					k = 0;
-					m = PatternManager.mapNeighbours;
-					for (j = 8; j >= 0; j -= 1) {
-						if ((mask & (1 << j)) !== 0) {
-							if ((i & (1 << j)) !== 0) {
-								k |= (1 << m);
+					canonicalName += PatternManager.base64Characters[c & ((1 << 5) | (1 << 4))];
+		
+					// copy into array using the neighbourhood mask
+					for (i = 0; i < 512; i += 1) {
+						k = 0;
+						m = PatternManager.mapNeighbours;
+						for (j = 8; j >= 0; j -= 1) {
+							if ((mask & (1 << j)) !== 0) {
+								if ((i & (1 << j)) !== 0) {
+									k |= (1 << m);
+								}
+								m -= 1;
 							}
-							m -= 1;
+						}
+						ruleArray[swapArray[i]] = tempArray[k];
+					}
+		
+					// check for generation states
+					if (generationsStates !== -1) {
+						canonicalName += "/" + generationsStates;
+					}
+				} else {
+					// check for neighbourhoods that are totalistic only
+					if (isVonNeumann) {
+						// set the von Neumann birth rule
+						birthName = this.setTotalisticRuleFromString(ruleArray, birthPart, false, mask);
+			
+						// set the von Neumann survival rule
+						survivalName = this.setTotalisticRuleFromString(ruleArray, survivalPart, true, mask);
+					} else {
+						if (isHex) {
+							// set the hex birth rule
+							birthName = this.setHexRuleFromString(ruleArray, birthPart, false);
+		
+							// set the hex survival rule
+							survivalName = this.setHexRuleFromString(ruleArray, survivalPart, true);
+						} else {
+							// set the Moore birth rule
+							birthName = this.setRuleFromString(ruleArray, birthPart, false);
+				
+							// set the Moore survival rule
+							survivalName = this.setRuleFromString(ruleArray, survivalPart, true);
 						}
 					}
-					ruleArray[swapArray[i]] = tempArray[k];
-				}
-	
-				// check for generation states
-				if (generationsStates !== -1) {
-					canonicalName += "/" + generationsStates;
-				}
-			} else {
-				// check for neighbourhoods that are totalistic only
-				if (isVonNeumann) {
-					// set the von Neumann birth rule
-					birthName = this.setTotalisticRuleFromString(ruleArray, birthPart, false, mask);
-		
-					// set the von Neumann survival rule
-					survivalName = this.setTotalisticRuleFromString(ruleArray, survivalPart, true, mask);
-				} else {
-					if (isHex) {
-						// set the hex birth rule
-						birthName = this.setHexRuleFromString(ruleArray, birthPart, false);
-	
-						// set the hex survival rule
-						survivalName = this.setHexRuleFromString(ruleArray, survivalPart, true);
-					} else {
-						// set the Moore birth rule
-						birthName = this.setRuleFromString(ruleArray, birthPart, false);
 			
-						// set the Moore survival rule
-						survivalName = this.setRuleFromString(ruleArray, survivalPart, true);
+					// create the canonical name
+					if (generationsStates !== -1) {
+						canonicalName = survivalName + "/" + birthName + "/" + generationsStates;
+					} else {
+						canonicalName = "B" + birthName + "/S" + survivalName;
 					}
-				}
-		
-				// create the canonical name
-				if (generationsStates !== -1) {
-					canonicalName = survivalName + "/" + birthName + "/" + generationsStates;
-				} else {
-					canonicalName = "B" + birthName + "/S" + survivalName;
 				}
 			}
 		}
@@ -4096,142 +4114,150 @@
 							}
 						}
 
-						// check if the rule contains a B and/or S
-						bIndex = rule.indexOf("b");
-						sIndex = rule.indexOf("s");
+						// check for "_none_" rule
+						if (rule === PatternManager.noneRuleName) {
+							// mark rule as none and allow all states
+							pattern.isNone = true;
+							pattern.multiNumStates = 256;
+							valid = true;
+						} else {
+							// check if the rule contains a B and/or S
+							bIndex = rule.indexOf("b");
+							sIndex = rule.indexOf("s");
 
-						// check if there was a slash to divide birth from survival
-						if (slashIndex === -1) {
-							// no slash so B or S must exist and one must be at the start of the string
-							if (bIndex === 0 || sIndex === 0) {
-								// check if birth exists
-								if (sIndex === -1) {
-									birthPart = rule;
-									survivalPart = "";
-								} else {
-									// check if only survival exists
-									if (bIndex === -1) {
-										survivalPart = rule;
-										birthPart = "";
+							// check if there was a slash to divide birth from survival
+							if (slashIndex === -1) {
+								// no slash so B or S must exist and one must be at the start of the string
+								if (bIndex === 0 || sIndex === 0) {
+									// check if birth exists
+									if (sIndex === -1) {
+										birthPart = rule;
+										survivalPart = "";
 									} else {
-										// both exist so determine whether B or S is first
-										if ((bIndex < sIndex) && sIndex !== -1) {
-											// cut the string using S
-											birthPart = rule.substring(bIndex + 1, sIndex);
-											survivalPart = rule.substring(sIndex + 1);
+										// check if only survival exists
+										if (bIndex === -1) {
+											survivalPart = rule;
+											birthPart = "";
 										} else {
-											// cut the rule using B
-											survivalPart = rule.substring(sIndex + 1, bIndex);
-											birthPart = rule.substring(bIndex + 1);
+											// both exist so determine whether B or S is first
+											if ((bIndex < sIndex) && sIndex !== -1) {
+												// cut the string using S
+												birthPart = rule.substring(bIndex + 1, sIndex);
+												survivalPart = rule.substring(sIndex + 1);
+											} else {
+												// cut the rule using B
+												survivalPart = rule.substring(sIndex + 1, bIndex);
+												birthPart = rule.substring(bIndex + 1);
+											}
 										}
 									}
+								} else {
+									// invalid rule name
+									this.failureReason = "Unsupported rule name";
 								}
 							} else {
-								// invalid rule name
-								this.failureReason = "Unsupported rule name";
-							}
-						} else {
-							// slash exists so set left and right rule
-							if (bIndex === -1 && sIndex !== -1) {
-								// only S specified
-								bIndex = slashIndex;
-							} else if (bIndex !== -1 && sIndex === -1) {
-								// only B specified
-								sIndex = slashIndex;
-							}
-							// get the birth and survival parts
-							if (bIndex < sIndex) {
-								birthPart = rule.substring(0, slashIndex);
-								survivalPart = rule.substring(slashIndex + 1);
-							} else {
-								birthPart = rule.substring(slashIndex + 1);
-								survivalPart = rule.substring(0, slashIndex);
-							}
-						}
-
-						// remove "b" or "s" if present
-						if (bIndex !== -1 && birthPart) {
-							if (birthPart[0] === "b") {
-								birthPart = birthPart.substring(1);
-							}
-						}
-						if (sIndex !== -1 && survivalPart) {
-							if (survivalPart[0] === "s") {
-								survivalPart = survivalPart.substring(1);
-							}
-						}
-
-						// if generations then check it is valid
-						if (generationsPart !== null) {
-							i = 0;
-							// check generations has not already been specified
-							if (pattern.multiNumStates !== -1) {
-								this.failureReason = "Generations defined twice";
-								birthPart = null;
-							} else {
-								pattern.multiNumStates = 0;
-
-								// check for and ignore G or C so "23/3/2", "B3/S23/G2" and "B3/S23/C2" are all supported
-								if (i < generationsPart.length && (generationsPart[i].toLowerCase() === "g" || generationsPart[i].toLowerCase() === "c")) {
-									i += 1;
+								// slash exists so set left and right rule
+								if (bIndex === -1 && sIndex !== -1) {
+									// only S specified
+									bIndex = slashIndex;
+								} else if (bIndex !== -1 && sIndex === -1) {
+									// only B specified
+									sIndex = slashIndex;
 								}
+								// get the birth and survival parts
+								if (bIndex < sIndex) {
+									birthPart = rule.substring(0, slashIndex);
+									survivalPart = rule.substring(slashIndex + 1);
+								} else {
+									birthPart = rule.substring(slashIndex + 1);
+									survivalPart = rule.substring(0, slashIndex);
+								}
+							}
 	
-								// read generations digits
-								validIndex = 0;
-								while (i < generationsPart.length && validIndex !== -1) {
-									// check each character is a valid digit
-									validIndex = this.decimalDigits.indexOf(generationsPart[i]);
-									if (validIndex !== -1) {
-										// add the digit to the number of generations states
-										pattern.multiNumStates = pattern.multiNumStates * 10 + validIndex;
-									} else {
+							// remove "b" or "s" if present
+							if (bIndex !== -1 && birthPart) {
+								if (birthPart[0] === "b") {
+									birthPart = birthPart.substring(1);
+								}
+							}
+							if (sIndex !== -1 && survivalPart) {
+								if (survivalPart[0] === "s") {
+									survivalPart = survivalPart.substring(1);
+								}
+							}
+	
+							// if generations then check it is valid
+							if (generationsPart !== null) {
+								i = 0;
+								// check generations has not already been specified
+								if (pattern.multiNumStates !== -1) {
+									this.failureReason = "Generations defined twice";
+									birthPart = null;
+								} else {
+									pattern.multiNumStates = 0;
+	
+									// check for and ignore G or C so "23/3/2", "B3/S23/G2" and "B3/S23/C2" are all supported
+									if (i < generationsPart.length && (generationsPart[i].toLowerCase() === "g" || generationsPart[i].toLowerCase() === "c")) {
+										i += 1;
+									}
+		
+									// read generations digits
+									validIndex = 0;
+									while (i < generationsPart.length && validIndex !== -1) {
+										// check each character is a valid digit
+										validIndex = this.decimalDigits.indexOf(generationsPart[i]);
+										if (validIndex !== -1) {
+											// add the digit to the number of generations states
+											pattern.multiNumStates = pattern.multiNumStates * 10 + validIndex;
+										} else {
+											// mark as invalid
+											this.failureReason = "Illegal character in generations number";
+											pattern.multiNumStates = -1;
+											birthPart = null;
+										}
+										i += 1;
+									}
+	
+									// check if generations states are valid
+									if (pattern.multiNumStates !== -1 && (pattern.multiNumStates < 2 || pattern.multiNumStates > 256)) {
 										// mark as invalid
-										this.failureReason = "Illegal character in generations number";
+										this.failureReason = "Generations number must be 2-256";
 										pattern.multiNumStates = -1;
 										birthPart = null;
 									}
-									i += 1;
-								}
-
-								// check if generations states are valid
-								if (pattern.multiNumStates !== -1 && (pattern.multiNumStates < 2 || pattern.multiNumStates > 256)) {
-									// mark as invalid
-									this.failureReason = "Generations number must be 2-256";
-									pattern.multiNumStates = -1;
-									birthPart = null;
 								}
 							}
-						}
-
-						// check if rule split correctly
-						if (birthPart !== null && survivalPart !== null) {
-							// mark as potentially valid
-							valid = true;
-
-							// check the birth part is valid
-							i = 0;
-							while (i < birthPart.length) {
-								validIndex = validRuleLetters.indexOf(birthPart[i]);
-								if (validIndex === -1) {
-									this.failureReason = "Illegal character in birth specification";
-									valid = false;
-									i = birthPart.length;
-								} else {
-									i += 1;
-								}
-							}
-
-							// check the survival part is valid
-							if (valid) {
+	
+							// check if rule split correctly
+							if (birthPart !== null && survivalPart !== null) {
+								// mark as potentially valid
+								valid = true;
+	
+								// check the birth part is valid
 								i = 0;
-								while (i < survivalPart.length) {
-									validIndex = validRuleLetters.indexOf(survivalPart[i]);
+								while (i < birthPart.length) {
+									validIndex = validRuleLetters.indexOf(birthPart[i]);
 									if (validIndex === -1) {
-										this.failureReason = "Illegal character in survival specification";
+										this.failureReason = "Illegal character in birth specification";
 										valid = false;
-										i = survivalPart.length;
+										i = birthPart.length;
 									} else {
 										i += 1;
+									}
+								}
+	
+								// check the survival part is valid
+								if (valid) {
+									i = 0;
+									while (i < survivalPart.length) {
+										validIndex = validRuleLetters.indexOf(survivalPart[i]);
+										if (validIndex === -1) {
+											this.failureReason = "Illegal character in survival specification";
+											valid = false;
+											i = survivalPart.length;
+										} else {
+											i += 1;
+										}
 									}
 								}
 							}
@@ -5598,6 +5624,7 @@
 		    i = 0;
 
 		// reset the pattern
+		pattern.isNone = false;
 		pattern.gridType = -1;
 		pattern.width = 0;
 		pattern.height = 0;

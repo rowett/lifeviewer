@@ -1,3 +1,8 @@
+Build 325
+- added empty rule "none" which does not change cells each generation
+	- can be postfixed with neighbourhood and/or bounded grid
+	- default colours are generations ramp
+
 Build 324
 - custom colours for Generations rules were in reverse order
 - increased maximum zoom to 64x
