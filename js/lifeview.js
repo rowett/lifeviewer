@@ -190,7 +190,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 326,
+		/** @const {number} */ versionBuild : 327,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -11819,14 +11819,61 @@
 				this.waypointManager.add(currentWaypoint);
 
 				// set the current waypoint to be the first one
+				currentWaypoint = this.waypointManager.firstWaypoint();
 				if (waypointsFound) {
-					currentWaypoint = this.waypointManager.firstWaypoint();
 					this.waypointsDefined = true;
 				} else {
 					// check for initial POI defined
 					if (this.defaultPOI !== -1) {
-						currentWaypoint = this.waypointManager.poiList[this.defaultPOI];
+						// set current as default POI
 						this.currentPOI = this.defaultPOI;
+
+						// merge initial POI into current waypoint
+						tempWaypoint = this.waypointManager.poiList[this.defaultPOI];
+						if (tempWaypoint.xDefined) {
+							currentWaypoint.xDefined = tempWaypoint.xDefined;
+							currentWaypoint.x = tempWaypoint.x;
+						}
+						if (tempWaypoint.yDefined) {
+							currentWaypoint.yDefined = tempWaypoint.yDefined;
+							currentWaypoint.y = tempWaypoint.y;
+						}
+						if (tempWaypoint.zoomDefined) {
+							currentWaypoint.zoomDefined = tempWaypoint.zoomDefined;
+							currentWaypoint.zoom = tempWaypoint.zoom;
+						}
+						if (tempWaypoint.angleDefined) {
+							currentWaypoint.angleDefined = tempWaypoint.angleDefined;
+							currentWaypoint.angle = tempWaypoint.angle;
+						}
+						if (tempWaypoint.depthDefined) {
+							currentWaypoint.depthDefined = tempWaypoint.depthDefined;
+							currentWaypoint.depth = tempWaypoint.depth;
+						}
+						if (tempWaypoint.layersDefined) {
+							currentWaypoint.layersDefined = tempWaypoint.layersDefined;
+							currentWaypoint.layers = tempWaypoint.layers;
+						}
+						if (tempWaypoint.themeDefined) {
+							currentWaypoint.themeDefined = tempWaypoint.themeDefined;
+							currentWaypoint.theme = tempWaypoint.theme;
+						}
+						if (tempWaypoint.gpsDefined) {
+							currentWaypoint.gpsDefined = tempWaypoint.gpsDefined;
+							currentWaypoint.gps = tempWaypoint.gps;
+						}
+						if (tempWaypoint.stepDefined) {
+							currentWaypoint.stepDefined = tempWaypoint.stepDefined;
+							currentWaypoint.step = tempWaypoint.step;
+						}
+						if (tempWaypoint.stopDefined) {
+							currentWaypoint.stopDefined = tempWaypoint.stopDefined;
+							currentWaypoint.stop = tempWaypoint.stop;
+						}
+						if (tempWaypoint.loopDefined) {
+							currentWaypoint.loopDefined = tempWaypoint.loopDefined;
+							currentWaypoint.loop = tempWaypoint.loop;
+						}
 					}
 				}
 

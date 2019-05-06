@@ -1,3 +1,6 @@
+Build 327
+- global camera and view settings were being ingored when POIs defined
+
 Build 326
 - "none" rule default colour set is now Golly's default
 - disable History for "none" rules
