@@ -1,5 +1,6 @@
 Build 327
 - global camera and view settings were being ingored when POIs defined
+- disabled Themes for "none" rule
 
 Build 326
 - "none" rule default colour set is now Golly's default

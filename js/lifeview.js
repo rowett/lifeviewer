@@ -3094,7 +3094,7 @@
 		// navigation menu
 		this.angleItem.deleted = hide || this.engine.isHex || this.engine.isTriangular;
 		this.depthItem.deleted = hide;
-		this.themeItem.deleted = hide || this.multiStateView;
+		this.themeItem.deleted = hide || this.multiStateView || this.engine.isNone;
 		this.layersItem.deleted = hide;
 		this.fitButton.deleted = hide;
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
@@ -5724,7 +5724,9 @@
 							// set default theme
 							if (!me.multiStateView) {
 								me.themeItem.current = me.viewThemeRange([me.defaultTheme, ""], true, me);
-								me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
+								if (!me.engine.isNone) {
+									me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
+								}
 							}
 							break;
 						case 88:
@@ -6704,7 +6706,9 @@
 
 							// set the new theme
 							me.themeItem.current = me.viewThemeRange([value, ""], true, me);
-							me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
+							if (!me.engine.isNone) {
+								me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
+							}
 						}
 					}
 				}
