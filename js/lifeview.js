@@ -190,7 +190,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 325,
+		/** @const {number} */ versionBuild : 326,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -12907,24 +12907,29 @@
 
 		// copy pattern to center
 		if (pattern) {
-			if (PatternManager.extendedFormat || pattern.isHistory) {
-				// get the colour list for the pattern based on rule name
-				if (pattern.isHistory) {
-					this.colourList = ColourManager.colourSet("LifeHistory");
-
-					// set the history colour to the Theme 10 dead colour
-					this.colourList[2] = 0 << 16 | 0 << 8 | 96;
-				} else {
-					this.colourList = ColourManager.colourSet(pattern.ruleName);
-				}
-
-				// check if a colour list was found
-				if (this.colourList.length) {
-					this.colourSetName = pattern.ruleName;
-				} else {
-					// load the default set
-					this.colourList = ColourManager.defaultSet();
-					this.colourSetName = "(default)";
+			if (pattern.isNone) {
+				this.colourList = ColourManager.defaultSet();
+				this.colourSetName = "(default)";
+			} else {
+				if (PatternManager.extendedFormat || pattern.isHistory) {
+					// get the colour list for the pattern based on rule name
+					if (pattern.isHistory) {
+						this.colourList = ColourManager.colourSet("LifeHistory");
+	
+						// set the history colour to the Theme 10 dead colour
+						this.colourList[2] = 0 << 16 | 0 << 8 | 96;
+					} else {
+						this.colourList = ColourManager.colourSet(pattern.ruleName);
+					}
+	
+					// check if a colour list was found
+					if (this.colourList.length) {
+						this.colourSetName = pattern.ruleName;
+					} else {
+						// load the default set
+						this.colourList = ColourManager.defaultSet();
+						this.colourSetName = "(default)";
+					}
 				}
 			}
 
@@ -13237,7 +13242,11 @@
 		this.engine.customColours = this.customColours;
 
 		// create the colour palette
-		this.engine.createColours();
+		if (this.engine.isNone) {
+			this.engine.createMultiStateColours(this.colourList, this.customColours);
+		} else {
+			this.engine.createColours();
+		}
 
 		// create the pixel colours from the palette at full brightness
 		this.engine.createPixelColours(1);	
@@ -13281,7 +13290,7 @@
 			this.colourSetSize = this.colourList.length;
 
 			// create multi state colours
-			this.engine.createMultiStateColours(this.colourList);
+			this.engine.createMultiStateColours(this.colourList, this.customColours);
 
 			// reset snapshot manager
 			this.engine.snapshotManager.reset();

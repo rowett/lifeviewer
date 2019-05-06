@@ -3336,16 +3336,23 @@
 	};
 
 	// create multi-state pixel colours
-	Life.prototype.createMultiStateColours = function(colourList) {
+	Life.prototype.createMultiStateColours = function(colourList, customColours) {
 		var redChannel = this.redChannel,
 		greenChannel = this.greenChannel,
 		blueChannel = this.blueChannel,
 		i = 0,
-		stateColour = 0;
+		stateColour = 0,
+		numCustom = customColours.length;
 
 		// create multi-state pixel colours
 		for (i = 0; i < colourList.length; i += 1) {
-			stateColour = colourList[i];
+			// check if a custom colour is defined
+			if ((i >= numCustom) || (customColours[i] === -1)) {
+				// use the library colour
+				stateColour = colourList[i];
+			} else {
+				stateColour = customColours[i];
+			}
 			redChannel[i] = stateColour >> 16;
 			greenChannel[i] = (stateColour >> 8) & 255;
 			blueChannel[i] = stateColour & 255;

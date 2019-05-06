@@ -1,3 +1,7 @@
+Build 326
+- "none" rule default colour set is now Golly's default
+- disable History for "none" rules
+
 Build 325
 - added empty rule "none" which does not change cells each generation
 	- can be postfixed with neighbourhood and/or bounded grid

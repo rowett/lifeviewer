@@ -5841,6 +5841,13 @@
 			}
 		}
 
+		// check for "none" and [R]History
+		if (pattern.isNone && pattern.isHistory) {
+			this.failureReason = "[R]History not valid with none rule";
+			pattern.isHistory = false;
+			this.executable = false;
+		}
+
 		// check for generations and [R]History
 		if (pattern.multiNumStates !== -1 && pattern.isHistory && !(pattern.isLTL || pattern.isHROT)) {
 			this.failureReason = "[R]History not valid with Generations";
