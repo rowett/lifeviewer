@@ -1785,10 +1785,10 @@
 
 			// get the coordinates
 			if (poi.xDefined) {
-				text += " X " + poi.x;
+				text += " X " + -poi.x;
 			}
 			if (poi.yDefined) {
-				text += " Y " + poi.y;
+				text += " Y " + -poi.y;
 			}
 
 			// get the zoom and angle
