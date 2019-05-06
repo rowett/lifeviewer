@@ -4732,7 +4732,7 @@
 	// update camera during POI transition
 	View.prototype.updateCameraPOI = function() {
 		// compute linear completion
-		var linearComplete = this.stepsPOI / this.targetPOI,
+		var linearComplete = (this.targetPOI === 0 ? 0 : this.stepsPOI / this.targetPOI),
 
 		    // compute bezier completion
 		    bezierComplete = this.waypointManager.bezierX(linearComplete, 0, 0, 1, 1),
@@ -4781,7 +4781,7 @@
 
 			// ensure target reached exactly
 			this.engine.zoom = this.endZoomPOI;
-			this.engine.angle = endAngle;
+			this.engine.angle = endAngle % 360;
 			this.engine.xOff = this.engine.width / 2 - this.endXPOI;
 			this.engine.yOff = this.engine.height / 2 - this.endYPOI;
 
