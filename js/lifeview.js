@@ -1515,9 +1515,9 @@
 
 					// copy colour cells
 					for (x = 0; x < copyWidth; x += 1) {
-						// reverse order for rendering
+						// reverse order for rendering unless "none" rule is used
 						state = multiStateRow[x];
-						if (state > 0) {
+						if (state > 0 && !this.engine.isNone) {
 							state = numStates + this.historyStates - state;
 						}
 						colourGridRow[(x + panX) & wm] = state;
@@ -4092,7 +4092,7 @@
 		if (change) {
 			switch (newValue) {
 				case ViewConstants.modeDraw:
-					if (me.viewOnly) {
+					if (me.viewOnly || me.engine.isNone) {
 						me.menuManager.notification.notify("Drawing not available", 15, 40, 15, true);
 						result = ViewConstants.modePan;
 					} else {

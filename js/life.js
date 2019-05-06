@@ -1853,7 +1853,7 @@
 			// check if raw data requested or Generations or HROT rule used
 			if (rawRequested || this.multiNumStates > 2) {
 				// check if state is not dead
-				if (this.multiNumStates > 2 && col > 0) {
+				if (this.multiNumStates > 2 && col > 0 && !this.isNone) {
 					// check for history states
 					if (col <= this.historyStates) {
 						result = 0;
@@ -3166,38 +3166,61 @@
 
 		// set the weighting between the two colour ranges
 		mixWeight = (this.colourChange - 1) / this.colourChangeSteps;
-	
-		// check for Generations or HROT rules
-		if (this.multiNumStates > 2) {
-			// set unoccupied colour
-			i = 0;
-			this.redChannel[i] = this.unoccupiedGenCurrent.red * mixWeight + this.unoccupiedGenTarget.red * (1 - mixWeight);
-			this.greenChannel[i] = this.unoccupiedGenCurrent.green * mixWeight + this.unoccupiedGenTarget.green * (1 - mixWeight);
-			this.blueChannel[i] = this.unoccupiedGenCurrent.blue * mixWeight + this.unoccupiedGenTarget.blue * (1 - mixWeight);
 
-			// set generations ramp
-			for (i = 1; i < this.multiNumStates - 1; i += 1) {
-				// compute the weighting between the start and end colours in the range
-				if (this.multiNumStates <= 3) {
-					weight = 0;
-				} else {
-					weight = (i - 1) / (this.multiNumStates - 3);
+		// do nothing for "none" rule since colours are fixed
+		if (!this.isNone) {
+			// check for Generations or HROT rules
+			if (this.multiNumStates > 2) {
+				// set unoccupied colour
+				i = 0;
+				this.redChannel[i] = this.unoccupiedGenCurrent.red * mixWeight + this.unoccupiedGenTarget.red * (1 - mixWeight);
+				this.greenChannel[i] = this.unoccupiedGenCurrent.green * mixWeight + this.unoccupiedGenTarget.green * (1 - mixWeight);
+				this.blueChannel[i] = this.unoccupiedGenCurrent.blue * mixWeight + this.unoccupiedGenTarget.blue * (1 - mixWeight);
+
+				// set generations ramp
+				for (i = 1; i < this.multiNumStates - 1; i += 1) {
+					// compute the weighting between the start and end colours in the range
+					if (this.multiNumStates <= 3) {
+						weight = 0;
+					} else {
+						weight = (i - 1) / (this.multiNumStates - 3);
+					}
+
+					// compute the red component of the current and target colour
+					currentComponent = this.dyingGenColCurrent.endColour.red * weight + this.dyingGenColCurrent.startColour.red * (1 - weight);
+					targetComponent = this.dyingGenColTarget.endColour.red * weight + this.dyingGenColTarget.startColour.red * (1 - weight);
+					this.redChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+
+					// compute the green component of the current and target colour
+					currentComponent = this.dyingGenColCurrent.endColour.green * weight + this.dyingGenColCurrent.startColour.green * (1 - weight);
+					targetComponent = this.dyingGenColTarget.endColour.green * weight + this.dyingGenColTarget.startColour.green * (1 - weight);
+					this.greenChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+
+					// compute the blue component of the current and target colour
+					currentComponent = this.dyingGenColCurrent.endColour.blue * weight + this.dyingGenColCurrent.startColour.blue * (1 - weight);
+					targetComponent = this.dyingGenColTarget.endColour.blue * weight + this.dyingGenColTarget.startColour.blue * (1 - weight);
+					this.blueChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+
+					// override with custom colour if specified
+					if (this.customColours.length >= i) {
+						if (!this.isHROT) {
+							current = this.customColours[this.multiNumStates - i];
+						} else {
+							current = this.customColours[i];
+						}
+						if (current !== -1) {
+							this.redChannel[i + this.historyStates] = current >> 16;
+							this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
+							this.blueChannel[i + this.historyStates] = (current & 255);
+						}
+					}
 				}
 
-				// compute the red component of the current and target colour
-				currentComponent = this.dyingGenColCurrent.endColour.red * weight + this.dyingGenColCurrent.startColour.red * (1 - weight);
-				targetComponent = this.dyingGenColTarget.endColour.red * weight + this.dyingGenColTarget.startColour.red * (1 - weight);
-				this.redChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-
-				// compute the green component of the current and target colour
-				currentComponent = this.dyingGenColCurrent.endColour.green * weight + this.dyingGenColCurrent.startColour.green * (1 - weight);
-				targetComponent = this.dyingGenColTarget.endColour.green * weight + this.dyingGenColTarget.startColour.green * (1 - weight);
-				this.greenChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-
-				// compute the blue component of the current and target colour
-				currentComponent = this.dyingGenColCurrent.endColour.blue * weight + this.dyingGenColCurrent.startColour.blue * (1 - weight);
-				targetComponent = this.dyingGenColTarget.endColour.blue * weight + this.dyingGenColTarget.startColour.blue * (1 - weight);
-				this.blueChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+				// set alive colour
+				i = this.multiNumStates - 1;
+				this.redChannel[i + this.historyStates] = this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight);
+				this.greenChannel[i + this.historyStates] = this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight);
+				this.blueChannel[i + this.historyStates] = this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight);
 
 				// override with custom colour if specified
 				if (this.customColours.length >= i) {
@@ -3212,125 +3235,105 @@
 						this.blueChannel[i + this.historyStates] = (current & 255);
 					}
 				}
-			}
 
-			// set alive colour
-			i = this.multiNumStates - 1;
-			this.redChannel[i + this.historyStates] = this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight);
-			this.greenChannel[i + this.historyStates] = this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight);
-			this.blueChannel[i + this.historyStates] = this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight);
+				// create history colours if specified
+				for (i = 0; i < this.historyStates; i += 1) {
+					if (this.historyStates > 1) {
+						weight = 1 - (i / (this.historyStates - 1));
+					} else {
+						weight = 1;
+					}
+					// compute the red component of the current and target colour
+					currentComponent = this.deadGenColCurrent.startColour.red * weight + this.deadGenColCurrent.endColour.red * (1 - weight);
+					targetComponent = this.deadGenColTarget.startColour.red * weight + this.deadGenColTarget.endColour.red * (1 - weight);
+					this.redChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
-			// override with custom colour if specified
-			if (this.customColours.length >= i) {
-				if (!this.isHROT) {
-					current = this.customColours[this.multiNumStates - i];
-				} else {
-					current = this.customColours[i];
+					// compute the green component of the current and target colour
+					currentComponent = this.deadGenColCurrent.startColour.green * weight + this.deadGenColCurrent.endColour.green * (1 - weight);
+					targetComponent = this.deadGenColTarget.startColour.green * weight + this.deadGenColTarget.endColour.green * (1 - weight);
+					this.greenChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+
+					// compute the blue component of the current and target colour
+					currentComponent = this.deadGenColCurrent.startColour.blue * weight + this.deadGenColCurrent.endColour.blue * (1 - weight);
+					targetComponent = this.deadGenColTarget.startColour.blue * weight + this.deadGenColTarget.endColour.blue * (1 - weight);
+					this.blueChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 				}
-				if (current !== -1) {
-					this.redChannel[i + this.historyStates] = current >> 16;
-					this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
-					this.blueChannel[i + this.historyStates] = (current & 255);
-				}
-			}
 
-			// create history colours if specified
-			for (i = 0; i < this.historyStates; i += 1) {
-				if (this.historyStates > 1) {
-					weight = 1 - (i / (this.historyStates - 1));
-				} else {
-					weight = 1;
-				}
-				// compute the red component of the current and target colour
-				currentComponent = this.deadGenColCurrent.startColour.red * weight + this.deadGenColCurrent.endColour.red * (1 - weight);
-				targetComponent = this.deadGenColTarget.startColour.red * weight + this.deadGenColTarget.endColour.red * (1 - weight);
-				this.redChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-
-				// compute the green component of the current and target colour
-				currentComponent = this.deadGenColCurrent.startColour.green * weight + this.deadGenColCurrent.endColour.green * (1 - weight);
-				targetComponent = this.deadGenColTarget.startColour.green * weight + this.deadGenColTarget.endColour.green * (1 - weight);
-				this.greenChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-
-				// compute the blue component of the current and target colour
-				currentComponent = this.deadGenColCurrent.startColour.blue * weight + this.deadGenColCurrent.endColour.blue * (1 - weight);
-				targetComponent = this.deadGenColTarget.startColour.blue * weight + this.deadGenColTarget.endColour.blue * (1 - weight);
-				this.blueChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-			}
-
-			// override colour 0 if specified
-			if (this.customColours.length > 0) {
-				current = this.customColours[0];
-				if (current !== -1) {
-					this.redChannel[0] = current >> 16;
-					this.greenChannel[0] = (current >> 8) & 255; 
-					this.blueChannel[0] = (current & 255);
-				}
-			}
-		} else {
-			// set unoccupied colour
-			i = 0;
-			this.redChannel[i] = this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight);
-			this.greenChannel[i] = this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight);
-			this.blueChannel[i] = this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight);
-
-			// set dead colours and start by clearing unused history colours
-			if (this.historyStates === 0) {
-				for (i = 1; i <= this.deadStart; i += 1) {
-					this.redChannel[i] = this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight);
-					this.greenChannel[i] = this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight);
-					this.blueChannel[i] = this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight);
+				// override colour 0 if specified
+				if (this.customColours.length > 0) {
+					current = this.customColours[0];
+					if (current !== -1) {
+						this.redChannel[0] = current >> 16;
+						this.greenChannel[0] = (current >> 8) & 255; 
+						this.blueChannel[0] = (current & 255);
+					}
 				}
 			} else {
-				deadMin = this.deadStart - this.historyStates + 1;
-				for (i = 1; i < deadMin; i += 1) {
-					this.redChannel[i] = this.deadColCurrent.startColour.red * mixWeight + this.deadColTarget.startColour.red * (1 - mixWeight);
-					this.greenChannel[i] = this.deadColCurrent.startColour.green * mixWeight + this.deadColTarget.startColour.green * (1 - mixWeight);
-					this.blueChannel[i] = this.deadColCurrent.startColour.blue * mixWeight + this.deadColTarget.startColour.blue * (1 - mixWeight);
-				}
-				for (i = deadMin; i <= this.deadStart; i += 1) {
-					// compute the weighting between the start and end colours in the range
-					if (this.deadStart === deadMin) {
-						weight = 1;
-					} else {
-						weight = 1 - ((i - deadMin) / (this.deadStart - deadMin));
+				// set unoccupied colour
+				i = 0;
+				this.redChannel[i] = this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight);
+				this.greenChannel[i] = this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight);
+				this.blueChannel[i] = this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight);
+
+				// set dead colours and start by clearing unused history colours
+				if (this.historyStates === 0) {
+					for (i = 1; i <= this.deadStart; i += 1) {
+						this.redChannel[i] = this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight);
+						this.greenChannel[i] = this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight);
+						this.blueChannel[i] = this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight);
 					}
-	
+				} else {
+					deadMin = this.deadStart - this.historyStates + 1;
+					for (i = 1; i < deadMin; i += 1) {
+						this.redChannel[i] = this.deadColCurrent.startColour.red * mixWeight + this.deadColTarget.startColour.red * (1 - mixWeight);
+						this.greenChannel[i] = this.deadColCurrent.startColour.green * mixWeight + this.deadColTarget.startColour.green * (1 - mixWeight);
+						this.blueChannel[i] = this.deadColCurrent.startColour.blue * mixWeight + this.deadColTarget.startColour.blue * (1 - mixWeight);
+					}
+					for (i = deadMin; i <= this.deadStart; i += 1) {
+						// compute the weighting between the start and end colours in the range
+						if (this.deadStart === deadMin) {
+							weight = 1;
+						} else {
+							weight = 1 - ((i - deadMin) / (this.deadStart - deadMin));
+						}
+		
+						// compute the red component of the current and target colour
+						currentComponent = this.deadColCurrent.startColour.red * weight + this.deadColCurrent.endColour.red * (1 - weight);
+						targetComponent = this.deadColTarget.startColour.red * weight + this.deadColTarget.endColour.red * (1 - weight);
+						this.redChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+		
+						// compute the green component of the current and target colour
+						currentComponent = this.deadColCurrent.startColour.green * weight + this.deadColCurrent.endColour.green * (1 - weight);
+						targetComponent = this.deadColTarget.startColour.green * weight + this.deadColTarget.endColour.green * (1 - weight);
+						this.greenChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+		
+						// compute the blue component of the current and target colour
+						currentComponent = this.deadColCurrent.startColour.blue * weight + this.deadColCurrent.endColour.blue * (1 - weight);
+						targetComponent = this.deadColTarget.startColour.blue * weight + this.deadColTarget.endColour.blue * (1 - weight);
+						this.blueChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+					}
+				}
+
+				// set alive colours
+				for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
+					// compute the weighting between the start and end colours in the range
+					weight = 1 - ((i - this.aliveStart) / (this.aliveMax - this.aliveStart));
+
 					// compute the red component of the current and target colour
-					currentComponent = this.deadColCurrent.startColour.red * weight + this.deadColCurrent.endColour.red * (1 - weight);
-					targetComponent = this.deadColTarget.startColour.red * weight + this.deadColTarget.endColour.red * (1 - weight);
+					currentComponent = this.aliveColCurrent.startColour.red * weight + this.aliveColCurrent.endColour.red * (1 - weight);
+					targetComponent = this.aliveColTarget.startColour.red * weight + this.aliveColTarget.endColour.red * (1 - weight);
 					this.redChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-	
+
 					// compute the green component of the current and target colour
-					currentComponent = this.deadColCurrent.startColour.green * weight + this.deadColCurrent.endColour.green * (1 - weight);
-					targetComponent = this.deadColTarget.startColour.green * weight + this.deadColTarget.endColour.green * (1 - weight);
+					currentComponent = this.aliveColCurrent.startColour.green * weight + this.aliveColCurrent.endColour.green * (1 - weight);
+					targetComponent = this.aliveColTarget.startColour.green * weight + this.aliveColTarget.endColour.green * (1 - weight);
 					this.greenChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-	
+
 					// compute the blue component of the current and target colour
-					currentComponent = this.deadColCurrent.startColour.blue * weight + this.deadColCurrent.endColour.blue * (1 - weight);
-					targetComponent = this.deadColTarget.startColour.blue * weight + this.deadColTarget.endColour.blue * (1 - weight);
+					currentComponent = this.aliveColCurrent.startColour.blue * weight + this.aliveColCurrent.endColour.blue * (1 - weight);
+					targetComponent = this.aliveColTarget.startColour.blue * weight + this.aliveColTarget.endColour.blue * (1 - weight);
 					this.blueChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 				}
-			}
-
-			// set alive colours
-			for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
-				// compute the weighting between the start and end colours in the range
-				weight = 1 - ((i - this.aliveStart) / (this.aliveMax - this.aliveStart));
-
-				// compute the red component of the current and target colour
-				currentComponent = this.aliveColCurrent.startColour.red * weight + this.aliveColCurrent.endColour.red * (1 - weight);
-				targetComponent = this.aliveColTarget.startColour.red * weight + this.aliveColTarget.endColour.red * (1 - weight);
-				this.redChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-
-				// compute the green component of the current and target colour
-				currentComponent = this.aliveColCurrent.startColour.green * weight + this.aliveColCurrent.endColour.green * (1 - weight);
-				targetComponent = this.aliveColTarget.startColour.green * weight + this.aliveColTarget.endColour.green * (1 - weight);
-				this.greenChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-
-				// compute the blue component of the current and target colour
-				currentComponent = this.aliveColCurrent.startColour.blue * weight + this.aliveColCurrent.endColour.blue * (1 - weight);
-				targetComponent = this.aliveColTarget.startColour.blue * weight + this.aliveColTarget.endColour.blue * (1 - weight);
-				this.blueChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 			}
 		}
 	};

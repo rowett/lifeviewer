@@ -1377,59 +1377,67 @@
 			this.renderColourBox(view, view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0], ctx, x + view.tabs[0], y, height, helpLine);
 			y = this.renderHelpLine(view, "Background", this.rgbString(view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0]), ctx, x, y, height, helpLine);
 
-			// check for Generations or HROT rules
-			if (view.engine.multiNumStates > 2) {
-				// draw the alive state
-				j = view.engine.multiNumStates + view.historyStates - 1; 
-				this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + view.tabs[0], y, height, helpLine);
-				y = this.renderHelpLine(view, "Alive", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
-
-				// draw dying states
-				for (i = 1; i < view.engine.multiNumStates - 1; i += 1) {
-					j = view.engine.multiNumStates - i + view.historyStates - 1;
-					this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + view.tabs[0], y, height, helpLine);
-					y = this.renderHelpLine(view, "Dying " + i, this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
-				}
-				if (view.historyStates > 0) {
-					j = view.historyStates;
-					this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + view.tabs[0], y, height, helpLine);
-					y = this.renderHelpLine(view, "Dead", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
-					if (view.historyStates > 1) {
-						j = 1;
-						this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + view.tabs[0], y, height, helpLine);
-						y = this.renderHelpLine(view, "DeadRamp", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
-					}
+			// check for none rule
+			if (view.engine.isNone) {
+				for (i = 1; i < view.engine.multiNumStates; i += 1) {
+					this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + view.tabs[0], y, height, helpLine);
+					y = this.renderHelpLine(view, "State " + i, this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
 				}
 			} else {
-				// normal theme
-				this.renderColourBox(view, theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue, ctx, x + view.tabs[0], y, height, helpLine);
-				y = this.renderHelpLine(view, "Alive", this.rgbObjectString(theme.aliveRange.startColour), ctx, x, y, height, helpLine);
-
-				// check if there is a ramp between alive start and end
-				if (theme.aliveRange.startColour.red !== theme.aliveRange.endColour.red || theme.aliveRange.startColour.green !== theme.aliveRange.endColour.green || theme.aliveRange.startColour.blue !== theme.aliveRange.endColour.blue) {
-					this.renderColourBox(view, theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue, ctx, x + view.tabs[0], y, height, helpLine);
-					y = this.renderHelpLine(view, "AliveRamp", this.rgbObjectString(theme.aliveRange.endColour), ctx, x, y, height, helpLine);
+				// check for Generations or HROT rules
+				if (view.engine.multiNumStates > 2) {
+					// draw the alive state
+					j = view.engine.multiNumStates + view.historyStates - 1; 
+					this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + view.tabs[0], y, height, helpLine);
+					y = this.renderHelpLine(view, "Alive", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+	
+					// draw dying states
+					for (i = 1; i < view.engine.multiNumStates - 1; i += 1) {
+						j = view.engine.multiNumStates - i + view.historyStates - 1;
+						this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + view.tabs[0], y, height, helpLine);
+						y = this.renderHelpLine(view, "Dying " + i, this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+					}
+					if (view.historyStates > 0) {
+						j = view.historyStates;
+						this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + view.tabs[0], y, height, helpLine);
+						y = this.renderHelpLine(view, "Dead", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+						if (view.historyStates > 1) {
+							j = 1;
+							this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + view.tabs[0], y, height, helpLine);
+							y = this.renderHelpLine(view, "DeadRamp", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+						}
+					}
 				} else {
-					y = this.renderHelpLine(view, "AliveRamp", "    (none)", ctx, x, y, height, helpLine);
-				}
-
-				// if there are no history states don't draw dead states
-				if (view.historyStates > 0) {
-					this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + view.tabs[0], y, height, helpLine);
-					y = this.renderHelpLine(view, "Dead", this.rgbObjectString(theme.deadRange.endColour), ctx, x, y, height, helpLine);
-
-					// check if there is a ramp between dead start and end
-					if (view.historyStates > 1) {
-						if (theme.deadRange.startColour.red !== theme.deadRange.endColour.red || theme.deadRange.startColour.green !== theme.deadRange.endColour.green || theme.deadRange.startColour.blue !== theme.deadRange.endColour.blue) {
-							this.renderColourBox(view, theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue, ctx, x + view.tabs[0], y, height, helpLine);
-							y = this.renderHelpLine(view, "DeadRamp", this.rgbObjectString(theme.deadRange.startColour), ctx, x, y, height, helpLine);
-						} else {
-							y = this.renderHelpLine(view, "DeadRamp", "    (none)", ctx, x, y, height, helpLine);
+					// normal theme
+					this.renderColourBox(view, theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue, ctx, x + view.tabs[0], y, height, helpLine);
+					y = this.renderHelpLine(view, "Alive", this.rgbObjectString(theme.aliveRange.startColour), ctx, x, y, height, helpLine);
+	
+					// check if there is a ramp between alive start and end
+					if (theme.aliveRange.startColour.red !== theme.aliveRange.endColour.red || theme.aliveRange.startColour.green !== theme.aliveRange.endColour.green || theme.aliveRange.startColour.blue !== theme.aliveRange.endColour.blue) {
+						this.renderColourBox(view, theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue, ctx, x + view.tabs[0], y, height, helpLine);
+						y = this.renderHelpLine(view, "AliveRamp", this.rgbObjectString(theme.aliveRange.endColour), ctx, x, y, height, helpLine);
+					} else {
+						y = this.renderHelpLine(view, "AliveRamp", "    (none)", ctx, x, y, height, helpLine);
+					}
+	
+					// if there are no history states don't draw dead states
+					if (view.historyStates > 0) {
+						this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + view.tabs[0], y, height, helpLine);
+						y = this.renderHelpLine(view, "Dead", this.rgbObjectString(theme.deadRange.endColour), ctx, x, y, height, helpLine);
+	
+						// check if there is a ramp between dead start and end
+						if (view.historyStates > 1) {
+							if (theme.deadRange.startColour.red !== theme.deadRange.endColour.red || theme.deadRange.startColour.green !== theme.deadRange.endColour.green || theme.deadRange.startColour.blue !== theme.deadRange.endColour.blue) {
+								this.renderColourBox(view, theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue, ctx, x + view.tabs[0], y, height, helpLine);
+								y = this.renderHelpLine(view, "DeadRamp", this.rgbObjectString(theme.deadRange.startColour), ctx, x, y, height, helpLine);
+							} else {
+								y = this.renderHelpLine(view, "DeadRamp", "    (none)", ctx, x, y, height, helpLine);
+							}
 						}
 					}
 				}
 			}
-
+	
 			// check for History rules
 			if (view.engine.isLifeHistory) {
 				for (i = 3; i <= 6; i += 1) {
