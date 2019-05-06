@@ -1,6 +1,7 @@
 Build 326
 - "none" rule default colour set is now Golly's default
 - disable History for "none" rules
+- Help information had incorrect sign for POI X and Y
 
 Build 325
 - added empty rule "none" which does not change cells each generation
