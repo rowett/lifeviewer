@@ -190,7 +190,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 327,
+		/** @const {number} */ versionBuild : 328,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -907,7 +907,7 @@
 		this.customPolygonColour = ViewConstants.polyColour;
 
 		// colour set used
-		/** @type{string} */ this.colourSetName = "";
+		/** @type {string} */ this.colourSetName = "";
 		/** @type {number} */ this.colourSetSize = 0;
 		this.colourList = [];
 
@@ -990,9 +990,6 @@
 
 		// whether reset is always hard
 		/** @type {boolean} */ this.hardReset = false;
-
-		// whether to perform strict script command validation
-		/** @type {boolean} */ this.strict = false;
 
 		// moveable menu items original position
 		/** @type {number} */ this.playListX = -1;
@@ -7755,7 +7752,6 @@
 			case Keywords.pauseWord:
 			case Keywords.gridWord:
 			case Keywords.gridMajorWord:
-			case Keywords.strictWord:
 			case Keywords.suppressWord:
 			case Keywords.colorWord:
 			case Keywords.colourWord:
@@ -8578,7 +8574,6 @@
 
 		    // custom colour information
 		    colNum = 0,
-		    colValue = 0,
 
 		    // which colour keyword used (for error reporting)
 		    whichColour = "",
@@ -9944,7 +9939,7 @@
 								colNum = scriptReader.getNextTokenAsNumber() | 0;
 
 								// check it is an allowed state colour index
-								if (colNum < 0 || colNum >= 255) {
+								if (colNum < 0 || colNum > 255) {
 									// invalid state
 									scriptErrors[scriptErrors.length] = [nextToken + " " + colNum, "STATE out of range"];
 									badColour = true;
@@ -10175,12 +10170,6 @@
 						// no RLE copy
 						case Keywords.noCopyWord:
 							this.noCopy = true;
-							itemValid = true;
-							break;
-
-						// strict validation
-						case Keywords.strictWord:
-							this.strict = true;
 							itemValid = true;
 							break;
 
@@ -12033,21 +12022,6 @@
 				for (i = 0; i < numStates; i += 1) {
 					if (PatternManager.stateCount[i]) {
 						if (this.customColours[i] === -1) {
-							// get the default colour
-							colValue = this.colourList[i];
-
-							// raise an error if in strict validation mode
-							if (this.strict) {
-								if (this.engine.isLifeHistory) {
-									scriptErrors[scriptErrors.length] = [whichColour + " " + ViewConstants.stateDisplayNames[i], "definition missing (used " + (colValue >> 16) + " " + ((colValue >> 8) & 255) + " " + (colValue & 255) + ")"];
-								} else {
-									scriptErrors[scriptErrors.length] = [whichColour + " " + i, "definition missing (used " + (colValue >> 16) + " " + ((colValue >> 8) & 255) + " " + (colValue & 255) +  ")"];
-								}
-							}
-
-							// set to default colour
-							this.customColours[i] = colValue;
-
 							// mark not all custom colours used
 							this.allCustom = false;
 

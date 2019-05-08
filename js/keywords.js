@@ -300,9 +300,6 @@
 		/** @const {string} */ colorWord : "COLOR",
 		/** @const {string} */ colourWord : "COLOUR",
 
-		// strict
-		/** @const {string} */ strictWord : "STRICT",
-
 		// view only
 		/** @const {string} */ viewOnlyWord : "VIEWONLY",
 

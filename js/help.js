@@ -792,7 +792,6 @@
 		y = this.renderHelpLine(view, "", "General:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.scriptStartWord, "start script section", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.scriptEndWord, "end script section", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.strictWord, "enable strict validation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.suppressWord, "suppress overwrite warning", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.randomSeedWord + " <string>", "set random seed", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);

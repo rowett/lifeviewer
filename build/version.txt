@@ -1,3 +1,7 @@
+Build 328
+- custom colour could not be applied to state 255
+- deprecated [[ STRICT ]] validation command
+
 Build 327
 - global camera and view settings were being ingored when POIs defined
 - disabled Themes for "none" rule
