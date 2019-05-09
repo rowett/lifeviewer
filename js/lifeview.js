@@ -238,7 +238,7 @@
 
 		// minimum and maximum steps
 		/** @const {number} */ minStepSpeed : 1,
-		/** @const {number} */ maxStepSpeed : 50,
+		/** @const {number} */ maxStepSpeed : 64,
 
 		// font size
 		/** @const {number} */ fontSize : 18,
@@ -8537,7 +8537,7 @@
 	// read script
 	View.prototype.readScript = function(scriptString, numStates) {
 		// create a script from the string
-		var scriptReader = new Script(scriptString),
+		var scriptReader = new Script(scriptString, false),
 
 		    // reading title
 		    readingTitle = false,
@@ -8773,7 +8773,7 @@
 		this.customColours = [];
 
 		// look for a start script token
-		if (scriptReader.findToken(Keywords.scriptStartWord)) {
+		if (scriptReader.findToken(Keywords.scriptStartWord, -1) !== -1) {
 			// reset custom colours
 			for (i = 0; i < 256; i += 1) {
 				this.customColours[i] = -1;
@@ -10141,7 +10141,7 @@
 						// end script token
 						case Keywords.scriptEndWord:
 							// search for next start token
-							scriptReader.findToken(Keywords.scriptStartWord);
+							scriptReader.findToken(Keywords.scriptStartWord, -1);
 							itemValid = true;
 
 							// do not count in command count

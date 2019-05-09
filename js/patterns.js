@@ -7,7 +7,7 @@
 	"use strict";
 
 	// define globals
-	/* global Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants */
+	/* global Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script */
 
 	// Life 1.05 section
 	/**
@@ -259,10 +259,19 @@
 		/** @type {boolean} */ altSpecified : false,
 
 		// rule table rule section including trailing space
-		/** @const {string} */ ruleTableRuleName : "@RULE ",
+		/** @const {string} */ ruleTableRuleName : "@RULE",
 
 		// rule table tree section
 		/** @const {string} */ ruleTableTreeName : "@TREE",
+
+		// tree section states setting
+		/** @const {string} */ ruleTreeStates : "num_states",
+
+		// tree section neighbours setting
+		/** @const {string} */ ruleTreeNeighbours : "num_neighbors",
+
+		// tree section nodes setting
+		/** @const {string} */ ruleTreeNodes : "num_nodes",
 
 		// rule table table section
 		/** @const {string} */ ruleTableTableName : "@TABLE",
@@ -4649,8 +4658,7 @@
 		while (i < endIndex && !found) {
 			if (source[i] === " ") {
 				i += 1;
-			}
-			else {
+			} else {
 				found = true;
 			}
 		}
@@ -4686,13 +4694,11 @@
 		while (i < newLine && !found) {
 			if (source[i] === "=") {
 				found = true;
-			}
-			else {
+			} else {
 				// skip whitespace
 				if (source[i] !== " ") {
 					found = true;
-				}
-				else {
+				} else {
 					// next character
 					i += 1;
 				}
@@ -4717,8 +4723,7 @@
 				if (digit !== -1) {
 					generation = (generation * 10) + digit;
 					i += 1;
-				}
-				else {
+				} else {
 					found = true;
 				}
 			}
@@ -4802,8 +4807,7 @@
 					if (digit !== -1) {
 						posX = (posX * 10) + digit;
 						i += 1;
-					}
-					else {
+					} else {
 						found = true;
 					}
 				}
@@ -4814,8 +4818,7 @@
 				// save the x position 
 				if (negX) {
 					this.posX = -posX;
-				}
-				else {
+				} else {
 					this.posX = posX;
 				}
 
@@ -4846,8 +4849,7 @@
 								if (digit !== -1) {
 									posY = (posY * 10) + digit;
 									i += 1;
-								}
-								else {
+								} else {
 									found = true;
 								}
 							}
@@ -4855,8 +4857,7 @@
 							// save the y position
 							if (negY) {
 								this.posY = -posY;
-							}
-							else {
+							} else {
 								this.posY = posY;
 							}
 						}
@@ -5005,8 +5006,7 @@
 				if (shiftWidth === -1) {
 					// flag invalid
 					width = -1;
-				}
-				else {
+				} else {
 					// set shift width
 					if (chr === "-") {
 						shiftWidth = -shiftWidth;
@@ -5022,8 +5022,7 @@
 				height = this.readValueFromString(source);
 				if (height === -1) {
 					width = -1;
-				}
-				else {
+				} else {
 					// check for shift
 					chr = source[this.index];
 					if (chr === "-" || chr === "+") {
@@ -5035,8 +5034,7 @@
 						if (shiftHeight === -1) {
 							// flag invalid
 							width = -1;
-						}
-						else {
+						} else {
 							// set shift height
 							if (chr === "-") {
 								shiftHeight = -shiftHeight;
@@ -5044,8 +5042,7 @@
 						}
 					}
 				}
-			}
-			else {
+			} else {
 				// comma missing so make height the same as width
 				height = width;
 			}
@@ -5115,8 +5112,7 @@
 				if (shiftWidth === -1) {
 					// flag invalid
 					width = -1;
-				}
-				else {
+				} else {
 					// set shift width
 					if (chr === "-") {
 						shiftWidth = -shiftWidth;
@@ -5136,8 +5132,7 @@
 				height = this.readValueFromString(source);
 				if (height === -1) {
 					width = -1;
-				}
-				else {
+				} else {
 					// check for twist
 					chr = source[this.index];
 					if (chr === "*") {
@@ -5158,8 +5153,7 @@
 						if (shiftHeight === -1) {
 							// flag invalid
 							width = -1;
-						}
-						else {
+						} else {
 							// set shift height
 							if (chr === "-") {
 								shiftHeight = -shiftHeight;
@@ -5167,8 +5161,7 @@
 						}
 					}
 				}
-			}
-			else {
+			} else {
 				// comma missing so make height the same as width
 				height = width;
 			}
@@ -5227,8 +5220,7 @@
 				if (height === -1) {
 					width = -1;
 				}
-			}
-			else {
+			} else {
 				// comma missing so make height the same as width
 				height = width;
 			}
@@ -5258,8 +5250,7 @@
 				if (height === -1) {
 					width = -1;
 				}
-			}
-			else {
+			} else {
 				// comma missing so make height the same as width
 				height = width;
 			}
@@ -5337,8 +5328,7 @@
 			// check if decoded successfully
 			if (pattern.gridWidth !== -1) {
 				valid = true;
-			}
-			else {
+			} else {
 				// clear grid type
 				pattern.gridType = -1;
 				this.failureReason = "Invalid bounded grid definition '" + source.toUpperCase() + "'";
@@ -5496,13 +5486,11 @@
 			if (needPrefix) {
 				// default to Conway's Life
 				ruleString = "";
-			}
-			else {
+			} else {
 				// get rule
 				ruleString = source.substring(1, endIndex).trim();
 			}
-		}
-		else {
+		} else {
 			// remove 'rule ='
 			ruleString = source.substring(ruleIndex + 4, endIndex).trim();
 			if (ruleString[0] === "=") {
@@ -5520,8 +5508,7 @@
 			if (!this.decodeBoundedGrid(pattern, ruleString.substring(boundedIndex + 1))) {
 				// mark bounded index as invalid
 				boundedIndex = -2;
-			}
-			else {
+			} else {
 				// remove the bounded grid definition
 				ruleString = ruleString.substr(0, boundedIndex).trim();
 			}
@@ -5555,8 +5542,7 @@
 		if (boundedIndex !== -2 && this.decodeRuleString(pattern, ruleString, allocator)) {
 			// mark executable
 			this.executable = true;
-		}
-		else {
+		} else {
 			// could not decode so mark as extended format for display
 			this.extendedFormat = true;
 		}
@@ -5752,8 +5738,7 @@
 			if (this.decodeRuleString(pattern, "", allocator)) {
 				// mark executable
 				this.executable = true;
-			}
-			else {
+			} else {
 				// could not decode so mark as extended format for display
 				this.extendedFormat = true;
 			}
@@ -5883,16 +5868,14 @@
 					this.failureReason = "Illegal state in pattern for Niemiec";
 					this.executable = false;
 				}
-			}
-			else {
+			} else {
 				// check for [R]History
 				if (pattern.isHistory) {
 					if (pattern.numStates > 7) {
 						this.failureReason = "Illegal state in pattern for [R]History";
 						this.executable = false;
 					}
-				}
-				else {
+				} else {
 					// check for Generations
 					if (pattern.multiNumStates !== -1) {
 						if (pattern.numStates > pattern.multiNumStates) {
@@ -5919,75 +5902,145 @@
 	};
 
 	// decode rule table icons TBD
-	PatternManager.decodeIcons = function(pattern, index) {
+	PatternManager.decodeIcons = function(pattern, reader) {
 		var valid = false;
 
-		if (index > 0) {
-			valid = true;
-		}
 		return valid;
 	};
 
 	// decode rule table colours TBD
-	PatternManager.decodeColours = function(pattern, index) {
+	PatternManager.decodeColours = function(pattern, reader) {
 		var valid = false;
 
-		if (index > 0) {
-			valid = true;
-		}
 		return valid;
 	};
 
 	// decode rule table table TBD
-	PatternManager.decodeTable = function(pattern, index) {
+	PatternManager.decodeTable = function(pattern, reader) {
 		var valid = false;
 
-		if (index > 0) {
-			valid = true;
-		}
 		return valid;
 	};
 
 	// decode rule table tree
-	PatternManager.decodeTree = function(pattern, index) {
-		var string = pattern.afterTitle,
-			endIndex = string.indexOf("\n", index),
-			length = string.length,
-			startIndex = 0,
-			settingsFound = 0,
-			valid = false;
+	PatternManager.decodeTree = function(pattern, reader) {
+		var nextToken = "",
+			states = -1,
+			neighbours = -1,
+			nodes = -1,
+			valid = false,
+			dat = [],
+			datb = [],
+			noff = [],
+			nodelev = [],
+			lev = 1000,
+			vcnt = 0,
+			v = 0;
 
-		if (endIndex !== -1) {
-			while (settingsFound !== 7 && endIndex < length) {
-				// get the next line
-				startIndex = endIndex + 1;
-				endIndex = string.indexOf("\n", startIndex);
-				if (endIndex === -1) {
-					endIndex = length;
-				}
-
-				// ignore comment lines
-				if (string[startIndex] !== "#") {
-					// check for one of the settings
-					if (string.substr(startIndex, 11) === "num_states=") {
-						settingsFound |= 1;
-					} else if (string.substr(startIndex, 14) === "num_neighbors=") {
-						settingsFound |= 2;
-					} else if (string.substr(startIndex, 10) === "num_nodes=") {
-						settingsFound |= 4;
+		// read states setting
+		nextToken = reader.getNextTokenSkipNewline();
+		if (nextToken === PatternManager.ruleTreeStates) {
+			if (reader.getNextToken() === "=") {
+				if (reader.nextTokenIsNumeric()) {
+					states = reader.getNextTokenAsNumber();
+					if (states >= 2 && states <= 256) {
+						valid = true;
 					}
+				}
+			}
+		}
 
-					// check for node
-					if (string[startIndex] >= "0" && string[startIndex] <= "9") {
-						// check settings were specified
-						if (settingsFound !== 7) {
-							endIndex = length;
-						} else {
-							// validate node
+		// read neighbours setting
+		if (valid) {
+			nextToken = reader.getNextTokenSkipNewline();
+			if (nextToken === PatternManager.ruleTreeNeighbours) {
+				if (reader.getNextToken() === "=") {
+					if (reader.nextTokenIsNumeric()) {
+						neighbours = reader.getNextTokenAsNumber();
+						if (neighbours === 4 || neighbours === 8) {
+							valid = true;
 						}
 					}
 				}
 			}
+		}
+
+		// read nodes setting
+		if (valid) {
+			nextToken = reader.getNextTokenSkipNewline();
+			if (nextToken === PatternManager.ruleTreeNodes) {
+				if (reader.getNextToken() === "=") {
+					if (reader.nextTokenIsNumeric()) {
+						nodes = reader.getNextTokenAsNumber();
+						if (nodes >= neighbours && nodes <= 100000000) {
+							valid = true;
+						}
+					}
+				}
+			}
+		}
+
+		// read each line
+		nextToken = reader.getNextTokenSkipNewline();
+		while (valid && nextToken !== "") {
+			// skip newlines
+			while (reader.isNewline(nextToken)) {
+				nextToken = reader.getNextToken();
+			}
+			if (reader.isNumeric(nextToken)) {
+				lev = reader.asNumber(nextToken);
+				vcnt = 0;
+				if (lev === 1) {
+					noff[noff.length] = datb.length;
+				} else {
+					noff[noff.length] = dat.length;
+				}
+				nodelev[nodelev.length] = lev;
+
+				// read the line of values
+				nextToken = reader.getNextToken();
+				while (valid && !reader.isNewline(nextToken)) {
+					if (reader.isNumeric(nextToken)) {
+						v = reader.asNumber(nextToken);
+						if (lev === 1) {
+							if (v < 0 || v >= states) {
+								valid = false;
+							} else {
+								datb[datb.length] = v;
+							}
+						} else {
+							if (v < 0 || v > noff.length) {
+								valid = false;
+							} else {
+								if (nodelev[v] !== lev - 1) {
+									valid = false;
+								} else {
+									dat[dat.length] = noff[v];
+								}
+							}
+						}
+						vcnt += 1;
+						nextToken = reader.getNextToken();
+					} else {
+						valid = false;
+					}
+				}
+				if (vcnt !== states) {
+					valid = false;
+				}
+			} else {
+				if (nextToken !== "") {
+					valid = false;
+				}
+			}
+		}
+
+		if ((dat.length + datb.length) !== (nodes * states)) {
+			valid = false;
+		}
+
+		if (lev !== neighbours + 1) {
+			valid = false;
 		}
 
 		return valid;
@@ -5995,57 +6048,44 @@
 
 	// decode rule table
 	PatternManager.decodeRuleTable = function(pattern) {
-		var ruleIndex = 0,
-			tableIndex = 0,
-			treeIndex = 0,
-			colourIndex = 0,
-			iconIndex = 0,
-			endIndex = 0,
-			string = pattern.afterTitle,
-			length = string.length,
-			valid = false;
+		var valid = false,
+			tableIndex = -1,
+			treeIndex = -1,
+			colourIndex = -1,
+			iconIndex = -1,
+			// tokenize string keeping newlines as tokens
+			reader = new Script(pattern.afterTitle, true);
 
-		ruleIndex = string.indexOf(PatternManager.ruleTableRuleName);
-		if (ruleIndex !== -1) {
+		// check if rule table rule exists
+		if (reader.findToken(PatternManager.ruleTableRuleName, -1) !== -1) {
 			// get the rule name
-			endIndex = string.indexOf("\n", ruleIndex);
-			if (endIndex === -1) {
-				endIndex = length;
-			}
-			pattern.ruleTableName = string.substring(ruleIndex + PatternManager.ruleTableRuleName.length, endIndex).trim();
+			if (!reader.nextIsNewline()) {
+				pattern.ruleTableName = reader.getNextToken();
 
-			// search for a table or tree
-			tableIndex = string.indexOf(PatternManager.ruleTableTableName, endIndex);
-			treeIndex = string.indexOf(PatternManager.ruleTableTreeName, endIndex);
-
-			// check if both were present
-			if (tableIndex !== -1 && treeIndex !== -1) {
-				// pick the first one
-				if (tableIndex < treeIndex) {
-					treeIndex = -1;
+				// search for a table from current position
+				tableIndex = reader.findToken(PatternManager.ruleTableTableName, -1);
+				if (tableIndex !== -1) {
+					valid = this.decodeTable(pattern, reader);
 				} else {
-					tableIndex = -1;
+					// search for a tree from the current position
+					treeIndex = reader.findToken(PatternManager.ruleTableTreeName, -1);
+					if (treeIndex !== -1) {
+						valid = this.decodeTree(pattern, reader);
+					}
 				}
-			}
 
-			// decode whichever was specified
-			if (tableIndex !== -1) {
-				valid = this.decodeTable(pattern, tableIndex);
-			} else if (treeIndex !== -1) {
-				valid = this.decodeTree(pattern, treeIndex);
-			}
-
-			// if valid then search for colours
-			if (valid) {
-				colourIndex = string.indexOf(PatternManager.ruleTableColoursName, endIndex);
-				if (colourIndex !== -1) {
-					valid = this.decodeColours(pattern, colourIndex);
-				}
-				// if valid then search for icons
+				// if valid then search for colours
 				if (valid) {
-					iconIndex = string.indexOf(PatternManager.ruleTableIconsName, endIndex);
-					if (iconIndex !== -1) {
-						valid = this.decodeIcons(pattern, iconIndex);
+					colourIndex = reader.findToken(PatternManager.ruleTableColoursName, -1);
+					if (colourIndex !== -1) {
+						valid = this.decodeColours(pattern, reader);
+					}
+					// if valid then search for icons
+					if (valid) {
+						iconIndex = reader.findToken(PatternManager.ruleTableIconsName, -1);
+						if (iconIndex !== -1) {
+							valid = this.decodeIcons(pattern, reader);
+						}
 					}
 				}
 			}
@@ -6099,15 +6139,13 @@
 			if (source.substr(0, Life105.magic.length) === Life105.magic) {
 				// decode Life 1.05 format
 				this.decode105(newPattern, source, true, allocator);
-			}
-			else {
+			} else {
 				// check for Life 1.06 format
 				if (source.substr(0, Life106.magic.length) === Life106.magic) {
 					// decode Life 1.06 format
 					this.decode106(newPattern, source, allocator);
 					this.executable = true;
-				}
-				else {
+				} else {
 					// assume RLE format
 					if (source[0] === "#" || source[0] === "x") {
 						this.decodeRLE(newPattern, source, allocator);
@@ -6122,8 +6160,7 @@
 							newPattern.numStates = 2;
 							newPattern.numUsedStates = 0;
 						}
-					}
-					else {
+					} else {
 						// assume RLE no header
 						this.decodeRLE(newPattern, source, allocator);
 					}

@@ -9,9 +9,21 @@
 	/**
 	 * @constructor
 	 */
-	function Script(source) {
+	function Script(source, tokenizeNewline) {
+		// newline token
+		/** @const {string} */ this.newlineToken = " _NEWLINE_ ";
+
+		// trimmed newline token
+		/** @const {string} */ this.trimNewlineToken = this.newlineToken.trim();
+
 		// replace html substitutions
 		this.source = source.replace(/&amp;/gi, "&");
+
+		// tokinze newlines if requested
+		if (tokenizeNewline) {
+			this.source = this.source.replace(/\=/gm, " = ");
+			this.source = this.source.replace(/\n/gm, this.newlineToken);
+		}
 
 		// split the source into tokens
 		this.tokens = this.source.match(/\S+/g);
@@ -19,6 +31,33 @@
 		// current token index
 		this.current = 0;
 	}
+
+	// check whether next token is newline
+	Script.prototype.nextIsNewline = function() {
+		var result = false; 
+
+		// check if there are more tokens
+		if (this.tokens) {
+			if (this.current < this.tokens.length) {
+				if (this.tokens[this.current] === this.trimNewlineToken) {
+					result = true;
+				}
+			}
+		}
+
+		return result;
+	};
+
+	// check whether give token is newline
+	Script.prototype.isNewline = function(token) {
+		var result = false;
+		
+		if (token === this.trimNewlineToken) {
+			result = true;
+		}
+
+		return result;
+	};
 
 	// get next token from source
 	Script.prototype.getNextToken = function() {
@@ -38,6 +77,19 @@
 		return result;
 	};
 
+	// get next token skipping newlines
+	Script.prototype.getNextTokenSkipNewline = function() {
+		var result = "";
+
+		// check if there are more tokens
+		result = this.getNextToken();
+		while (result === this.trimNewlineToken) {
+			result = this.getNextToken();
+		}
+
+		return result;
+	};
+
 	// get next token but don't advance
 	Script.prototype.peekAtNextToken = function() {
 		var result = "";
@@ -53,24 +105,39 @@
 		return result;
 	};
 
-	// search for a specific token
-	Script.prototype.findToken = function(token) {
-		var result = false;
+	// search for a specific token and return token index
+	// don't update position if token not found
+	Script.prototype.findToken = function(token, from) {
+		var result = -1,
+			current = this.current;
 
-		// check if there are more tokens
-		if (this.tokens) {
-			while (this.current < this.tokens.length && !result) {
-				if (this.tokens[this.current] === token) {
-					// token found
-					result = true;
-				}
-
-				// move to next token
-				this.current += 1;
+		// if from supplied then set current position
+		if (from !== -1) {
+			// check it is in range
+			if (from >= 0 && from < this.tokens.length) {
+				current = from;
 			}
 		}
 
-		// return whether the token was found
+		// check if there are more tokens
+		if (this.tokens) {
+			while (current < this.tokens.length && result === -1) {
+				if (this.tokens[current] === token) {
+					// token found
+					result = current;
+				}
+
+				// move to next token
+				current += 1;
+			}
+		}
+
+		// if the token was found then eat it
+		if (result !== -1) {
+			this.current = current;
+		}
+		
+		// return the token index
 		return result;
 	};
 
