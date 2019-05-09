@@ -454,10 +454,22 @@
 		/** @type {number} */ this.ruleTreeNumStates = -1;
 
 		// rule tree neighbours
-		/** @type {number} */ this.ruleTreeNeighbors = -1;
+		/** @type {number} */ this.ruleTreeNeighbours = -1;
 
 		// rule tree nodes
 		/** @type {number} */ this.ruleTreeNodes = -1;
+
+		// rule tree nodes
+		/** @type {number} */ this.ruleTreeNodes = -1;
+
+		// rule tree base
+		/** @type {number} */ this.ruleTreeBase = -1;
+
+		// rule tree b array
+		this.ruleTreeB = null;
+
+		// rule tree a array
+		this.ruleTreeA = null;
 	}
 
 	// copy settings from one pattern to another
@@ -5935,7 +5947,8 @@
 			nodelev = [],
 			lev = 1000,
 			vcnt = 0,
-			v = 0;
+			v = 0,
+			i = 0;
 
 		// read states setting
 		nextToken = reader.getNextTokenSkipNewline();
@@ -6041,6 +6054,39 @@
 
 		if (lev !== neighbours + 1) {
 			valid = false;
+		}
+
+		// if valid then check if requested rule is this rule
+		if (valid) {
+			if (pattern.ruleName === pattern.ruleTableName) {
+				// save rule information
+				pattern.ruleTreeNeighbours = neighbours;
+				pattern.ruleTreeStates = states;
+				pattern.ruleTreeNodes = nodes;
+				pattern.ruleTreeBase = noff[noff.length - 1];
+				pattern.ruleTreeA = new Uint32Array(dat.length);
+				pattern.ruleTreeB = new Uint32Array(datb.length);
+				for (i = 0; i < dat.length; i += 1) {
+					pattern.ruleTreeA[i] = dat[i];
+				}
+				for (i = 0; i < datb.length; i += 1) {
+					pattern.ruleTreeB[i] = datb[i];
+				}
+
+				// mark pattern as valid
+				this.failureReason = "";
+				this.executable = true;
+			} else {
+				// mark rule as invalid since the pattern hasn't requested it
+				valid = false;
+			}
+		}
+
+		if (!valid) {
+			// clear results
+			pattern.ruleTreeA = null;
+			pattern.ruleTreeB = null;
+			pattern.base = -1;
 		}
 
 		return valid;

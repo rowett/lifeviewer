@@ -12060,7 +12060,7 @@
 			}
 
 			// enforce view only for multi-state patterns that aren't LifeHistory
-			if (numStates > 2 && !(this.engine.isLifeHistory || this.engine.mulitNumStates !== -1)) {
+			if (numStates > 2 && !(this.engine.isLifeHistory || this.engine.multiNumStates !== -1)) {
 				this.viewOnly = true;
 			}
 

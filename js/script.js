@@ -9,7 +9,10 @@
 	/**
 	 * @constructor
 	 */
-	function Script(source, tokenizeNewline) {
+	function Script(/** @type {string} */ source, /** @const {boolean} */ tokenizeNewline) {
+		var tokens = [],
+			i = 0;
+
 		// newline token
 		/** @const {string} */ this.newlineToken = " _NEWLINE_ ";
 
@@ -17,16 +20,36 @@
 		/** @const {string} */ this.trimNewlineToken = this.newlineToken.trim();
 
 		// replace html substitutions
-		this.source = source.replace(/&amp;/gi, "&");
+		source = source.replace(/&amp;/gi, "&");
 
 		// tokinze newlines if requested
 		if (tokenizeNewline) {
-			this.source = this.source.replace(/\=/gm, " = ");
-			this.source = this.source.replace(/\n/gm, this.newlineToken);
+			source = source.replace(/\=/gm, " = ");
+			source = source.replace(/\n/gm, this.newlineToken);
 		}
 
 		// split the source into tokens
-		this.tokens = this.source.match(/\S+/g);
+		tokens = source.match(/\S+/g);
+
+		// copy tokens
+		this.tokens = [];
+		for (i = 0; i < tokens.length; i += 1) {
+			if (tokenizeNewline) {
+				if (tokens[i][0] === "#") {
+					// ignore whole line
+					i += 1;
+					while (i < tokens.length && tokens[i] !== this.trimNewlineToken) {
+						i += 1;
+					}
+					if (i < tokens.length) {
+						i += 1;
+					}
+				}
+			}
+			if (i < tokens.length) {
+				this.tokens[this.tokens.length] = tokens[i];
+			}
+		}
 
 		// current token index
 		this.current = 0;
