@@ -451,13 +451,10 @@
 		/** @type {string} */ this.ruleTableName = "";
 
 		// rule tree states
-		/** @type {number} */ this.ruleTreeNumStates = -1;
+		/** @type {number} */ this.ruleTreeStates = -1;
 
 		// rule tree neighbours
 		/** @type {number} */ this.ruleTreeNeighbours = -1;
-
-		// rule tree nodes
-		/** @type {number} */ this.ruleTreeNodes = -1;
 
 		// rule tree nodes
 		/** @type {number} */ this.ruleTreeNodes = -1;
