@@ -265,6 +265,13 @@
 		return result;
 	};
 
+	// eat all tokens
+	Script.prototype.eatAllTokens = function() {
+		if (this.tokens) {
+			this.current = this.tokens.length;
+		}
+	};
+
 	window["Script"] = Script;
 }
 ());

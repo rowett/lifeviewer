@@ -5912,14 +5912,14 @@
 
 	// decode rule table icons TBD
 	PatternManager.decodeIcons = function(pattern, reader) {
-		var valid = false;
+		var valid = true;
 
 		return valid;
 	};
 
 	// decode rule table colours TBD
 	PatternManager.decodeColours = function(pattern, reader) {
-		var valid = false;
+		var valid = true;
 
 		return valid;
 	};
@@ -6039,8 +6039,10 @@
 					valid = false;
 				}
 			} else {
-				if (nextToken !== "") {
+				if (!(nextToken === "" || nextToken === PatternManager.ruleTableColoursName || nextToken === PatternManager.ruleTableIconsName)) {
 					valid = false;
+				} else {
+					nextToken = "";
 				}
 			}
 		}
@@ -6079,13 +6081,6 @@
 			}
 		}
 
-		if (!valid) {
-			// clear results
-			pattern.ruleTreeA = null;
-			pattern.ruleTreeB = null;
-			pattern.base = -1;
-		}
-
 		return valid;
 	};
 
@@ -6117,15 +6112,15 @@
 					}
 				}
 
-				// if valid then search for colours
+				// if valid then search for colours from start position since sections could be in any order
 				if (valid) {
-					colourIndex = reader.findToken(PatternManager.ruleTableColoursName, -1);
+					colourIndex = reader.findToken(PatternManager.ruleTableColoursName, 0);
 					if (colourIndex !== -1) {
 						valid = this.decodeColours(pattern, reader);
 					}
-					// if valid then search for icons
+					// if valid then search for icons from start position
 					if (valid) {
-						iconIndex = reader.findToken(PatternManager.ruleTableIconsName, -1);
+						iconIndex = reader.findToken(PatternManager.ruleTableIconsName, 0);
 						if (iconIndex !== -1) {
 							valid = this.decodeIcons(pattern, reader);
 						}

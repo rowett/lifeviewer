@@ -190,7 +190,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 328,
+		/** @const {number} */ versionBuild : 329,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -10141,7 +10141,10 @@
 						// end script token
 						case Keywords.scriptEndWord:
 							// search for next start token
-							scriptReader.findToken(Keywords.scriptStartWord, -1);
+							if (scriptReader.findToken(Keywords.scriptStartWord, -1) === -1) {
+								// if not found then finish
+								scriptReader.eatAllTokens();
+							}
 							itemValid = true;
 
 							// do not count in command count
