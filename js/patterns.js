@@ -6252,6 +6252,14 @@
 				// check if the after comments contain a rule definition
 				this.decodeRuleTable(newPattern);
 			}
+
+			// if triangular or hex and invalid then switch to square
+			if (this.failureReason !== "" && (newPattern.isHex || newPattern.isTriangular)) {
+				if (newPattern.ruleName.match(/[0-9]/) === null) {
+					newPattern.isHex = false;
+					newPattern.isTriangular = false;
+				}
+			}
 		}
 
 		// return the pattern

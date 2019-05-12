@@ -1,3 +1,7 @@
+Build 329
+- fixed script reader
+- improved rule name validation
+
 Build 328
 - custom colour could not be applied to state 255
 - deprecated [[ STRICT ]] validation command
