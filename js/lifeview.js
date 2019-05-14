@@ -1351,8 +1351,8 @@
 
 		for (i = 0; i < this.rleList.length; i += 1) {
 			if (this.rleList[i][0] === this.engine.counter) {
-				xOff = (gridWidth >> 1) - this.rleList[i][1] - 1;
-				yOff = (gridWidth >> 1) - this.rleList[i][2] - 1;
+				xOff = (gridWidth >> 1) + this.rleList[i][1] - 1;
+				yOff = (gridWidth >> 1) + this.rleList[i][2] - 1;
 				pattern = this.rleList[i][3];
 				for (y = 0; y < pattern.height; y += 1) {
 					rleRow = pattern.multiStateMap[y];
