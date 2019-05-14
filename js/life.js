@@ -1965,7 +1965,7 @@
 	};
 
 	// run to given generation (used to step back)
-	Life.prototype.runTo = function(targetGen, statsOn, graphDisabled) {
+	Life.prototype.runTo = function(targetGen, statsOn, graphDisabled, view) {
 		// get the latest snapshot
 		var numSnapshots = this.snapshotManager.snapshots.length,
 		    snapshot = this.snapshotManager.snapshotBefore(targetGen);
@@ -1985,6 +1985,7 @@
 			while (this.counter < targetGen - 1) {
 				this.anythingAlive = 1;
 				this.nextGeneration(false, true, graphDisabled);
+				view.pasteRLEList();
 				this.convertToPensTile();
 			}
 
@@ -1992,6 +1993,7 @@
 			if (this.counter < targetGen) {
 				this.anythingAlive = 1;
 				this.nextGeneration(statsOn, true, graphDisabled);
+				view.pasteRLEList();
 			}
 			this.convertToPensTile();
 		}

@@ -5421,7 +5421,7 @@
 					this.engine.counter = targetGen;
 				} else {
 					// run to target generation
-					this.engine.runTo(targetGen, this.statsOn, this.graphDisabled);
+					this.engine.runTo(targetGen, this.statsOn, this.graphDisabled, this);
 				}
 	
 				// notify waypoint manager of change
