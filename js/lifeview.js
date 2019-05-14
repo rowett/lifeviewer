@@ -9872,7 +9872,7 @@
 										numberValue = scriptReader.getNextTokenAsNumber();
 
 										// check it is in range
-										if (numberValue >= 0 && numberValue < this.engine.maxGridSize) {
+										if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
 											isNumeric = false;
 											x = numberValue;
 
@@ -9884,7 +9884,7 @@
 												numberValue = scriptReader.getNextTokenAsNumber();
 
 												// check it is in range
-												if (numberValue >= 0 && numberValue < this.engine.maxGridSize) {
+												if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
 													isNumeric = false;
 													y = numberValue;
 
