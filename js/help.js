@@ -983,6 +983,7 @@
 		y = this.renderHelpLine(view, Keywords.noCopyWord, "disable pattern source copy", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noSourceWord, "hide pattern source", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.maxGridSizeWord + " <" + ViewConstants.minGridPower + ".." + ViewConstants.maxGridPower + ">", "set maximum grid size 2^n", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.rleWord + " T X Y rle", "when T paste rle at X Y", ctx, x, y, height, helpLine);
 	};
 
 	// render information topic

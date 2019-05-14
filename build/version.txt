@@ -1,3 +1,6 @@
+Build 330
+- added new script command [[ RLE T X Y rle ]] which pastes the given rle at position X, Y at generation T
+
 Build 329
 - fixed script reader
 - improved rule name validation
@@ -9,7 +12,7 @@ Build 328
 - first part of @RULE and @TREE decoder
 
 Build 327
-- global camera and view settings were being ingored when POIs defined
+- global camera and view settings were being ignored when POIs defined
 - disabled Themes for "none" rule
 
 Build 326

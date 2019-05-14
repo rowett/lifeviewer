@@ -170,6 +170,7 @@
 		// copy stars
 		this.stars = fromWaypoint.stars;
 
+		// copy grid
 		this.grid = fromWaypoint.grid;
 	};
 

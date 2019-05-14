@@ -7,7 +7,7 @@
 	"use strict";
 
 	// define globals
-	/* global Allocator PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager Script Uint32Array myRand PopupWindow typedArrays Float32 */
+	/* global Allocator Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager Script Uint32Array myRand PopupWindow typedArrays Float32 */
 
 	// LifeViewer document configuration
 	var DocConfig = {
@@ -41,7 +41,7 @@
 
 	// ViewConstants singleton
 	ViewConstants = {
-		// sqare root of 3 used for triangular grid
+		// square root of 3 used for triangular grid
 		/** @const {number} */ sqrt3 : Math.sqrt(3),
 
 		// copy RLE size threshold (bytes) for single pass
@@ -190,7 +190,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 329,
+		/** @const {number} */ versionBuild : 330,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -517,6 +517,9 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// list of rle snippets
+		this.rleList = [];
+
 		// universe number
 		/** @type {number} */ this.universe = 0;
 
@@ -1318,6 +1321,58 @@
 		// pen colour for drawing
 		/** @type {number} */ this.penColour = -1;
 	}
+
+	// add rle to rle snippets
+	View.prototype.addRLE = function(gen, x, y, rle) {
+		// attempt to decode the rle
+		var pattern = new Pattern("rle" + this.rleList.length),
+			result = false;
+
+		if (PatternManager.decodeRLEString(pattern, rle, false, this.engine.allocator) !== -1) {
+			if (PatternManager.decodeRLEString(pattern, rle, true, this.engine.allocator) !== -1) {
+				this.rleList[this.rleList.length] = [gen, x, y, pattern];
+				result = true;
+			}
+		}
+
+		return result;
+	};
+
+	// paste rle list to grid
+	View.prototype.pasteRLEList = function() {
+		var i = 0,
+			y = 0,
+			x = 0,
+			xOff = 0,
+			yOff = 0,
+			pattern = null,
+			rleRow = null,
+			gridWidth = this.engine.width;
+
+		for (i = 0; i < this.rleList.length; i += 1) {
+			if (this.rleList[i][0] === this.engine.counter) {
+				xOff = (gridWidth >> 1) - this.rleList[i][1] - 1;
+				yOff = (gridWidth >> 1) - this.rleList[i][2] - 1;
+				pattern = this.rleList[i][3];
+				for (y = 0; y < pattern.height; y += 1) {
+					rleRow = pattern.multiStateMap[y];
+					for (x = 0; x < pattern.width; x += 1) {
+						if (rleRow[x] !== 0) {
+							// set the cell
+							this.engine.setState(xOff + x, yOff + y, rleRow[x]);
+	
+							// check for growth
+							if (gridWidth !== this.engine.width) {
+								xOff += gridWidth >> 1;
+								yOff += gridWidth >> 1;
+								gridWidth <<= 1;
+							}
+						}
+					}
+				}
+			}
+		}
+	};
 
 	// set initial value flags to a value
 	View.prototype.setInitialFlagsTo = function(value) {
@@ -2641,6 +2696,10 @@
 						// just compute next generation
 						me.engine.nextGeneration(false, me.noHistory, me.graphDisabled);
 					}
+
+					// paste any RLE snippets
+					me.pasteRLEList();
+
 					stepsTaken += 1;
 
 					// check theme has history or this is the last generation in the step
@@ -3457,6 +3516,10 @@
 
 			// compute the next generation
 			me.engine.nextGeneration(false, noSnapshots, me.graphDisabled);
+
+			// paste any RLE snippets
+			me.pasteRLEList();
+
 			me.engine.convertToPensTile();
 		}
 
@@ -3464,6 +3527,10 @@
 		if (me.engine.counter === targetGen - 1) {
 			// compute final generation with stats on if required
 			me.engine.nextGeneration(me.statsOn, false, me.graphDisabled);
+
+			// paste any RLE snippets
+			me.pasteRLEList();
+
 			me.engine.convertToPensTile();
 
 			// switch back to normal mode
@@ -5229,6 +5296,9 @@
 
 							// compute next generation
 							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled);
+
+							// paste any RLE snippets
+							me.pasteRLEList();
 						}
 					}
 				} else {
@@ -7783,6 +7853,7 @@
 			case Keywords.heightWord:
 			case Keywords.popupWidthWord:
 			case Keywords.popupHeightWord:
+			case Keywords.rleWord:
 				result = true;
 				break;
 			default:
@@ -9769,6 +9840,57 @@
 														itemValid = true;
 													} else {
 														isNumeric = false;
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+
+							break;
+
+						// rle
+						case Keywords.rleWord:
+							// get the generation
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= 0) {
+									isNumeric = false;
+									z = numberValue;
+
+									// get the x position
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+
+										// get the value
+										numberValue = scriptReader.getNextTokenAsNumber();
+
+										// check it is in range
+										if (numberValue >= 0 && numberValue < this.engine.maxGridSize) {
+											isNumeric = false;
+											x = numberValue;
+
+											// get the y position
+											if (scriptReader.nextTokenIsNumeric()) {
+												isNumeric = true;
+
+												// get the value
+												numberValue = scriptReader.getNextTokenAsNumber();
+
+												// check it is in range
+												if (numberValue >= 0 && numberValue < this.engine.maxGridSize) {
+													isNumeric = false;
+													y = numberValue;
+
+													// get the rle
+													if (this.addRLE(z, x, y, scriptReader.getNextToken())) {
+														itemValid = true;
 													}
 												}
 											}
@@ -12586,6 +12708,9 @@
 
 		// clear script error list
 		this.scriptErrors = [];
+
+		// clear rle snippets
+		this.rleList = [];
 
 		// clear any notifications
 		this.menuManager.notification.clear(true, true);

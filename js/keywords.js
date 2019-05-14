@@ -369,6 +369,9 @@
 		// thumbnail zoom
 		/** @const {string} */ thumbZoomWord : "THUMBZOOM",
 
+		// rle 
+		/** @const {string} */ rleWord : "RLE",
+
 		// variable prefix
 		/** @const {string} */ variablePrefixSymbol : "#"
 	};
