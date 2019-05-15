@@ -372,6 +372,16 @@
 		// rle 
 		/** @const {string} */ rleWord : "RLE",
 
+		// rle mode
+		/** @const {string} */ rleModeWord : "RLEMODE",
+
+		// rle modes
+		/** @const {string} */ rleModeOrWord : "OR",
+		/** @const {string} */ rleModeCopyWord : "COPY",
+		/** @const {string} */ rleModeNotWord : "NOT",
+		/** @const {string} */ rleModeXorWord : "XOR",
+		/** @const {string} */ rleModeAndWord : "AND",
+
 		// variable prefix
 		/** @const {string} */ variablePrefixSymbol : "#"
 	};

@@ -41,6 +41,13 @@
 
 	// ViewConstants singleton
 	ViewConstants = {
+		// rle paste modes
+		/** @const{number} */ rleModeOr : 0,
+		/** @const{number} */ rleModeCopy : 1,
+		/** @const{number} */ rleModeXor : 2,
+		/** @const{number} */ rleModeAnd : 3,
+		/** @const{number} */ rleModeNot : 4,
+
 		// square root of 3 used for triangular grid
 		/** @const {number} */ sqrt3 : Math.sqrt(3),
 
@@ -519,6 +526,9 @@
 	function View(element) {
 		// list of rle snippets
 		this.rleList = [];
+
+		// rle paste mode
+		this.rleMode = ViewConstants.rleModeOr;
 
 		// universe number
 		/** @type {number} */ this.universe = 0;
@@ -1323,14 +1333,14 @@
 	}
 
 	// add rle to rle snippets
-	View.prototype.addRLE = function(gen, x, y, rle) {
+	View.prototype.addRLE = function(gen, mode, x, y, rle) {
 		// attempt to decode the rle
 		var pattern = new Pattern("rle" + this.rleList.length),
 			result = false;
 
 		if (PatternManager.decodeRLEString(pattern, rle, false, this.engine.allocator) !== -1) {
 			if (PatternManager.decodeRLEString(pattern, rle, true, this.engine.allocator) !== -1) {
-				this.rleList[this.rleList.length] = [gen, x, y, pattern];
+				this.rleList[this.rleList.length] = {gen: gen, mode:mode, x:x, y:y, pattern:pattern};
 				result = true;
 			}
 		}
@@ -1345,22 +1355,42 @@
 			x = 0,
 			xOff = 0,
 			yOff = 0,
+			state = 0,
+			mode = ViewConstants.rleModeOr,
 			pattern = null,
 			rleRow = null,
 			gridWidth = this.engine.width;
 
 		for (i = 0; i < this.rleList.length; i += 1) {
-			if (this.rleList[i][0] === this.engine.counter) {
-				xOff = (gridWidth >> 1) + this.rleList[i][1] - 1;
-				yOff = (gridWidth >> 1) + this.rleList[i][2] - 1;
-				pattern = this.rleList[i][3];
+			if (this.rleList[i].gen === this.engine.counter) {
+				mode = this.rleList[i].mode;
+				xOff = (gridWidth >> 1) + this.rleList[i].x - (this.patternWidth >> 1);
+				yOff = (gridWidth >> 1) + this.rleList[i].y - (this.patternHeight >> 1);
+				pattern = this.rleList[i].pattern;
 				for (y = 0; y < pattern.height; y += 1) {
 					rleRow = pattern.multiStateMap[y];
-					for (x = 0; x < pattern.width; x += 1) {
-						if (rleRow[x] !== 0) {
+					// determine paste mode
+					switch (mode) {
+					case ViewConstants.rleModeOr:
+						for (x = 0; x < pattern.width; x += 1) {
+							if (rleRow[x] !== 0) {
+								// set the cell
+								this.engine.setState(xOff + x, yOff + y, rleRow[x]);
+		
+								// check for growth
+								if (gridWidth !== this.engine.width) {
+									xOff += gridWidth >> 1;
+									yOff += gridWidth >> 1;
+									gridWidth <<= 1;
+								}
+							}
+						}
+						break;
+					case ViewConstants.rleModeCopy:
+						for (x = 0; x < pattern.width; x += 1) {
 							// set the cell
 							this.engine.setState(xOff + x, yOff + y, rleRow[x]);
-	
+		
 							// check for growth
 							if (gridWidth !== this.engine.width) {
 								xOff += gridWidth >> 1;
@@ -1368,6 +1398,50 @@
 								gridWidth <<= 1;
 							}
 						}
+						break;
+					case ViewConstants.rleModeXor:
+						for (x = 0; x < pattern.width; x += 1) {
+							state = this.engine.getState(xOff + x, yOff + y, false);
+							// set the cell
+							this.engine.setState(xOff + x, yOff + y, rleRow[x] ^ state);
+		
+							// check for growth
+							if (gridWidth !== this.engine.width) {
+								xOff += gridWidth >> 1;
+								yOff += gridWidth >> 1;
+								gridWidth <<= 1;
+							}
+						}
+						break;
+					case ViewConstants.rleModeAnd:
+						for (x = 0; x < pattern.width; x += 1) {
+							state = this.engine.getState(xOff + x, yOff + y, false);
+							// set the cell
+							this.engine.setState(xOff + x, yOff + y, rleRow[x] & state);
+		
+							// check for growth
+							if (gridWidth !== this.engine.width) {
+								xOff += gridWidth >> 1;
+								yOff += gridWidth >> 1;
+								gridWidth <<= 1;
+							}
+						}
+						break;
+					case ViewConstants.rleModeNot:
+						for (x = 0; x < pattern.width; x += 1) {
+							if (rleRow[x] === 0) {
+								// set the cell
+								this.engine.setState(xOff + x, yOff + y, 1);
+		
+								// check for growth
+								if (gridWidth !== this.engine.width) {
+									xOff += gridWidth >> 1;
+									yOff += gridWidth >> 1;
+									gridWidth <<= 1;
+								}
+							}
+						}
+						break;
 					}
 				}
 			}
@@ -7857,6 +7931,12 @@
 			case Keywords.popupWidthWord:
 			case Keywords.popupHeightWord:
 			case Keywords.rleWord:
+			case Keywords.rleModeWord:
+			case Keywords.rleModeOrWord:
+			case Keywords.rleModeCopyWord:
+			case Keywords.rleModeXorWord:
+			case Keywords.rleModeAndWord:
+			case Keywords.rleModeNotWord:
 				result = true;
 				break;
 			default:
@@ -9892,7 +9972,7 @@
 													y = numberValue;
 
 													// get the rle
-													if (this.addRLE(z, x, y, scriptReader.getNextToken())) {
+													if (this.addRLE(z, this.rleMode, x, y, scriptReader.getNextToken())) {
 														itemValid = true;
 													}
 												}
@@ -9902,6 +9982,36 @@
 								}
 							}
 
+							break;
+
+						// set rle paste mode
+						case Keywords.rleModeWord:
+							itemValid = true;
+							isNumeric = false;
+							type = "paste mode";
+							peekToken = scriptReader.peekAtNextToken();
+							switch (peekToken) {
+							case Keywords.rleModeOrWord:
+								this.rleMode = ViewConstants.rleModeOr;
+								break;
+							case Keywords.rleModeCopyWord:
+								this.rleMode = ViewConstants.rleModeCopy;
+								break;
+							case Keywords.rleModeXorWord:
+								this.rleMode = ViewConstants.rleModeXor;
+								break;
+							case Keywords.rleModeAndWord:
+								this.rleMode = ViewConstants.rleModeAnd;
+								break;
+							case Keywords.rleModeNotWord:
+								this.rleMode = ViewConstants.rleModeNot;
+								break;
+							default:
+								itemValid = false;
+							}
+							if (itemValid) {
+								scriptReader.getNextToken();
+							}
 							break;
 
 						// hide GUI on playback
@@ -12341,9 +12451,6 @@
 
 		// sort annotations into zoom order
 		this.waypointManager.sortAnnotations();
-
-		// draw any initial RLE snippets
-		this.pasteRLEList();
 	};
 
 	// reset any view controls that scripts can overwrite
@@ -12717,6 +12824,7 @@
 
 		// clear rle snippets
 		this.rleList = [];
+		this.rleMode = ViewConstants.rleModeOr;
 
 		// clear any notifications
 		this.menuManager.notification.clear(true, true);
@@ -13423,12 +13531,6 @@
 		// update grid UI
 		this.gridToggle.current = [this.engine.displayGrid];
 
-		// compute bounding box
-		this.engine.resetBoxes(this.state1Fit);
-
-		// reset history box
-		this.engine.resetHistoryBox();
-
 		// reset generation
 		this.engine.counter = 0;
 		this.floatCounter = 0;
@@ -13472,6 +13574,15 @@
 					this.engine.copyState2(pattern, this.panX, this.panY);
 				}
 			}
+
+			// draw any rle snippets
+			this.pasteRLEList();
+
+			// compute bounding box
+			this.engine.resetBoxes(this.state1Fit);
+
+			// reset history box
+			this.engine.resetHistoryBox();
 
 			// reset population
 			this.engine.resetPopulationBox(this.engine.grid16, this.engine.colourGrid);
