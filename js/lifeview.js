@@ -4035,6 +4035,9 @@
 			me.floatCounter = me.engine.counter;
 			me.originCounter = me.floatCounter;
 
+			// draw any initial RLE snippets
+			me.pasteRLEList();
+
 			// mark cells alive
 			me.engine.anythingAlive = true;
 		}
@@ -12338,6 +12341,9 @@
 
 		// sort annotations into zoom order
 		this.waypointManager.sortAnnotations();
+
+		// draw any initial RLE snippets
+		this.pasteRLEList();
 	};
 
 	// reset any view controls that scripts can overwrite
