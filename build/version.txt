@@ -1,3 +1,6 @@
+Build 331
+- added new script command [[ RLEMODE (OR|COPY|XOR|AND|NOT) ]] to set rle paste mode
+
 Build 330
 - added new script command [[ RLE T X Y rle ]] which pastes the given rle at position X, Y at generation T
 
