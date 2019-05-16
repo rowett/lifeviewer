@@ -1,3 +1,6 @@
+Build 332
+- Generations rules were fading an extra step when all cells died
+
 Build 331
 - added new script command [[ RLEMODE (OR|COPY|XOR|AND|NOT) ]] to set rle paste mode
 

@@ -3565,7 +3565,6 @@
 				colourTileHistoryGrid[h].set(blankTileRow);
 			}
 		}
-
 	};
 
 	// create the triangular life index

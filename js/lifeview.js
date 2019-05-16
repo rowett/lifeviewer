@@ -197,7 +197,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 331,
+		/** @const {number} */ versionBuild : 332,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2778,8 +2778,10 @@
 
 					// check theme has history or this is the last generation in the step
 					if (me.engine.themeHistory || ((me.engine.counter === (me.floatCounter | 0)) || bailout)) {
-						// convert life grid to pen colours
-						me.engine.convertToPensTile();
+						// convert life grid to pen colours unless Generations just died (since this will start fading dead cells)
+						if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
+							me.engine.convertToPensTile();
+						}
 					}
 
 					// save elasped time for this generation
@@ -2806,7 +2808,7 @@
 				// check if life just stopped
 				if (!me.engine.anythingAlive) {
 					// set fade interval
-					me.fading = this.historyStates + (this.engine.multiNumStates > 0 ? this.engine.multiNumStates : 0);
+					me.fading = me.historyStates + (me.engine.multiNumStates > 0 ? me.engine.multiNumStates : 0);
 
 					// remember the generation that life stopped
 					if (me.diedGeneration === -1) {
