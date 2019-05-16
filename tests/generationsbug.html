@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Generations all cells die</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 35, y = 8, rule = //6
+3.2A6.B$.5A3.5B2.2C.2C2.D2.2D2.2E.2E$6A3.4B3.2C.C3.4D3.5E$7A3.3B4.3C
+4.3D4.3E$.6A3.4B3.4C3.4D2.5E$.5A3.5B2.2C.2C2.5D2.2E.2E$2.2A6.2B13.D$
+25.D!
+            </textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>HROT Generations all cells die</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 35, y = 8, rule = R2,C6,S,B,NN
+3.2A6.B$.5A3.5B2.2C.2C2.D2.2D2.2E.2E$6A3.4B3.2C.C3.4D3.5E$7A3.3B4.3C
+4.3D4.3E$.6A3.4B3.4C3.4D2.5E$.5A3.5B2.2C.2C2.5D2.2E.2E$2.2A6.2B13.D$
+25.D!
+            </textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>
