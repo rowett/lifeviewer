@@ -1,3 +1,7 @@
+Build 333
+- fixed a bug where an invalid pattern could cause a crash on the PopUp Viewer if the previous valid pattern had been [R]History
+- fixed a bug where T=0 could not show entire pattern on the PopUpViewer if previous pattern had smaller bounding box
+
 Build 332
 - Generations rules were fading an extra step when all cells died
 

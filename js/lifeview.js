@@ -13174,6 +13174,9 @@
 		// disable custom theme
 		this.customTheme = false;
 
+		// flag not drawing overlay
+		this.engine.drawOverlay = false;
+
 		// copy pattern to center
 		if (pattern) {
 			if (pattern.isNone) {
@@ -13562,11 +13565,6 @@
 			this.graphDisabled = true;
 			this.popGraph = false;
 		} else {
-			// create the colour grid if not multi-state Generations or HROT rule
-			if (this.engine.multiNumStates <= 2) {
-				this.engine.resetColourGridBox(this.engine.grid16);
-			}
-
 			// check if this is a LifeHistory pattern
 			if (this.engine.isLifeHistory) {
 				// check if there are state 2 cells
@@ -13585,6 +13583,11 @@
 
 			// reset history box
 			this.engine.resetHistoryBox();
+
+			// reset the colour grid if not multi-state Generations or HROT rule
+			if (this.engine.multiNumStates <= 2) {
+				this.engine.resetColourGridBox(this.engine.grid16);
+			}
 
 			// reset population
 			this.engine.resetPopulationBox(this.engine.grid16, this.engine.colourGrid);
