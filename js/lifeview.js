@@ -42,11 +42,11 @@
 	// ViewConstants singleton
 	ViewConstants = {
 		// rle paste modes
-		/** @const{number} */ rleModeOr : 0,
-		/** @const{number} */ rleModeCopy : 1,
-		/** @const{number} */ rleModeXor : 2,
-		/** @const{number} */ rleModeAnd : 3,
-		/** @const{number} */ rleModeNot : 4,
+		/** @const{number} */ pasteModeOr : 0,
+		/** @const{number} */ pasteModeCopy : 1,
+		/** @const{number} */ pasteModeXor : 2,
+		/** @const{number} */ pasteModeAnd : 3,
+		/** @const{number} */ pasteModeNot : 4,
 
 		// square root of 3 used for triangular grid
 		/** @const {number} */ sqrt3 : Math.sqrt(3),
@@ -524,11 +524,14 @@
 	 * @constructor
 	 */
 	function View(element) {
-		// list of rle snippets
+		// list of named rle snippets
 		this.rleList = [];
 
+		// list of pastes to perform
+		this.pasteList = [];
+
 		// rle paste mode
-		this.rleMode = ViewConstants.rleModeOr;
+		this.pasteMode = ViewConstants.pasteModeOr;
 
 		// universe number
 		/** @type {number} */ this.universe = 0;
@@ -1332,15 +1335,59 @@
 		/** @type {number} */ this.penColour = -1;
 	}
 
-	// add rle to rle snippets
-	View.prototype.addRLE = function(gen, mode, x, y, rle) {
+	// add rle to named list
+	View.prototype.addNamedRLE = function(scriptErrors, name, rle) {
 		// attempt to decode the rle
-		var pattern = new Pattern("rle" + this.rleList.length),
-			result = false;
+		var pattern = new Pattern("namedrle" + this.rleList.length),
+			i = 0,
+			found = false;
+		
+		// check the name does not already exist
+		i = 0;
+		while (!found && i < this.rleList.length) {
+			if (name === this.rleList[i].name) {
+				found = true;
+			} else {
+				i += 1;
+			}
+		}
 
+		if (found) {
+			scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "name already defined"];
+		} else {
+			// check the RLE is valid
+			if (PatternManager.decodeRLEString(pattern, rle, false, this.engine.allocator) !== -1) {
+				if (PatternManager.decodeRLEString(pattern, rle, true, this.engine.allocator) !== -1) {
+					// add to the named list
+					this.rleList[this.rleList.length] = {name: name, rle: rle};
+				}
+			} else {
+				scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "invalid RLE"];
+			}
+		}
+	};
+
+	// add rle to paste list
+	View.prototype.addRLE = function(gen, mode, x, y, rle) {
+		var pattern = new Pattern("rle" + this.pasteList.length),
+			result = false,
+			i = 0,
+			found = false;
+
+		// check if the rle is a name
+		while (i < this.rleList.length && !found) {
+			if (this.rleList[0].name === rle) {
+				found = true;
+				rle = this.rleList[0].rle;
+			} else {
+				i += 1;
+			}
+		}
+
+		// attempt to decode the rle
 		if (PatternManager.decodeRLEString(pattern, rle, false, this.engine.allocator) !== -1) {
 			if (PatternManager.decodeRLEString(pattern, rle, true, this.engine.allocator) !== -1) {
-				this.rleList[this.rleList.length] = {gen: gen, mode:mode, x:x, y:y, pattern:pattern};
+				this.pasteList[this.pasteList.length] = {gen: gen, mode: mode, x: x, y: y, pattern: pattern};
 				result = true;
 			}
 		}
@@ -1356,22 +1403,22 @@
 			xOff = 0,
 			yOff = 0,
 			state = 0,
-			mode = ViewConstants.rleModeOr,
+			mode = ViewConstants.pasteModeOr,
 			pattern = null,
 			rleRow = null,
 			gridWidth = this.engine.width;
 
-		for (i = 0; i < this.rleList.length; i += 1) {
-			if (this.rleList[i].gen === this.engine.counter) {
-				mode = this.rleList[i].mode;
-				xOff = (gridWidth >> 1) + this.rleList[i].x - (this.patternWidth >> 1);
-				yOff = (gridWidth >> 1) + this.rleList[i].y - (this.patternHeight >> 1);
-				pattern = this.rleList[i].pattern;
+		for (i = 0; i < this.pasteList.length; i += 1) {
+			if (this.pasteList[i].gen === this.engine.counter) {
+				mode = this.pasteList[i].mode;
+				xOff = (gridWidth >> 1) + this.pasteList[i].x - (this.patternWidth >> 1);
+				yOff = (gridWidth >> 1) + this.pasteList[i].y - (this.patternHeight >> 1);
+				pattern = this.pasteList[i].pattern;
 				for (y = 0; y < pattern.height; y += 1) {
 					rleRow = pattern.multiStateMap[y];
 					// determine paste mode
 					switch (mode) {
-					case ViewConstants.rleModeOr:
+					case ViewConstants.pasteModeOr:
 						for (x = 0; x < pattern.width; x += 1) {
 							if (rleRow[x] !== 0) {
 								// set the cell
@@ -1386,7 +1433,7 @@
 							}
 						}
 						break;
-					case ViewConstants.rleModeCopy:
+					case ViewConstants.pasteModeCopy:
 						for (x = 0; x < pattern.width; x += 1) {
 							// set the cell
 							this.engine.setState(xOff + x, yOff + y, rleRow[x]);
@@ -1399,7 +1446,7 @@
 							}
 						}
 						break;
-					case ViewConstants.rleModeXor:
+					case ViewConstants.pasteModeXor:
 						for (x = 0; x < pattern.width; x += 1) {
 							state = this.engine.getState(xOff + x, yOff + y, false);
 							// set the cell
@@ -1413,7 +1460,7 @@
 							}
 						}
 						break;
-					case ViewConstants.rleModeAnd:
+					case ViewConstants.pasteModeAnd:
 						for (x = 0; x < pattern.width; x += 1) {
 							state = this.engine.getState(xOff + x, yOff + y, false);
 							// set the cell
@@ -1427,7 +1474,7 @@
 							}
 						}
 						break;
-					case ViewConstants.rleModeNot:
+					case ViewConstants.pasteModeNot:
 						for (x = 0; x < pattern.width; x += 1) {
 							if (rleRow[x] === 0) {
 								// set the cell
@@ -7933,12 +7980,13 @@
 			case Keywords.popupWidthWord:
 			case Keywords.popupHeightWord:
 			case Keywords.rleWord:
-			case Keywords.rleModeWord:
-			case Keywords.rleModeOrWord:
-			case Keywords.rleModeCopyWord:
-			case Keywords.rleModeXorWord:
-			case Keywords.rleModeAndWord:
-			case Keywords.rleModeNotWord:
+			case Keywords.pasteWord:
+			case Keywords.pasteModeWord:
+			case Keywords.pasteModeOrWord:
+			case Keywords.pasteModeCopyWord:
+			case Keywords.pasteModeXorWord:
+			case Keywords.pasteModeAndWord:
+			case Keywords.pasteModeNotWord:
 				result = true;
 				break;
 			default:
@@ -9935,8 +9983,23 @@
 
 							break;
 
-						// rle
+						// name rle
 						case Keywords.rleWord:
+							// get the name
+							itemValid = false;
+							peekToken = scriptReader.getNextToken();
+							if (peekToken !== "") {
+								// associate the name with the snippet
+								this.addNamedRLE(scriptErrors, peekToken, scriptReader.getNextToken());
+
+								// errors are handled in the above function
+								itemValid = true;
+							}
+
+							break;
+
+						// paste
+						case Keywords.pasteWord:
 							// get the generation
 							if (scriptReader.nextTokenIsNumeric()) {
 								isNumeric = true;
@@ -9974,7 +10037,7 @@
 													y = numberValue;
 
 													// get the rle
-													if (this.addRLE(z, this.rleMode, x, y, scriptReader.getNextToken())) {
+													if (this.addRLE(z, this.pasteMode, x, y, scriptReader.getNextToken())) {
 														itemValid = true;
 													}
 												}
@@ -9987,26 +10050,26 @@
 							break;
 
 						// set rle paste mode
-						case Keywords.rleModeWord:
+						case Keywords.pasteModeWord:
 							itemValid = true;
 							isNumeric = false;
 							type = "paste mode";
 							peekToken = scriptReader.peekAtNextToken();
 							switch (peekToken) {
-							case Keywords.rleModeOrWord:
-								this.rleMode = ViewConstants.rleModeOr;
+							case Keywords.pasteModeOrWord:
+								this.pasteMode = ViewConstants.pasteModeOr;
 								break;
-							case Keywords.rleModeCopyWord:
-								this.rleMode = ViewConstants.rleModeCopy;
+							case Keywords.pasteModeCopyWord:
+								this.pasteMode = ViewConstants.pasteModeCopy;
 								break;
-							case Keywords.rleModeXorWord:
-								this.rleMode = ViewConstants.rleModeXor;
+							case Keywords.pasteModeXorWord:
+								this.pasteMode = ViewConstants.pasteModeXor;
 								break;
-							case Keywords.rleModeAndWord:
-								this.rleMode = ViewConstants.rleModeAnd;
+							case Keywords.pasteModeAndWord:
+								this.pasteMode = ViewConstants.pasteModeAnd;
 								break;
-							case Keywords.rleModeNotWord:
-								this.rleMode = ViewConstants.rleModeNot;
+							case Keywords.pasteModeNotWord:
+								this.pasteMode = ViewConstants.pasteModeNot;
 								break;
 							default:
 								itemValid = false;
@@ -12826,7 +12889,10 @@
 
 		// clear rle snippets
 		this.rleList = [];
-		this.rleMode = ViewConstants.rleModeOr;
+
+		// clear paste list
+		this.pasteList = [];
+		this.pasteMode = ViewConstants.pasteModeOr;
 
 		// clear any notifications
 		this.menuManager.notification.clear(true, true);

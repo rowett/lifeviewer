@@ -372,15 +372,18 @@
 		// rle 
 		/** @const {string} */ rleWord : "RLE",
 
-		// rle mode
-		/** @const {string} */ rleModeWord : "RLEMODE",
+		// paste
+		/** @const {string} */ pasteWord : "PASTE",
 
-		// rle modes
-		/** @const {string} */ rleModeOrWord : "OR",
-		/** @const {string} */ rleModeCopyWord : "COPY",
-		/** @const {string} */ rleModeNotWord : "NOT",
-		/** @const {string} */ rleModeXorWord : "XOR",
-		/** @const {string} */ rleModeAndWord : "AND",
+		// paste mode
+		/** @const {string} */ pasteModeWord : "PASTEMODE",
+
+		// paste modes
+		/** @const {string} */ pasteModeOrWord : "OR",
+		/** @const {string} */ pasteModeCopyWord : "COPY",
+		/** @const {string} */ pasteModeNotWord : "NOT",
+		/** @const {string} */ pasteModeXorWord : "XOR",
+		/** @const {string} */ pasteModeAndWord : "AND",
 
 		// variable prefix
 		/** @const {string} */ variablePrefixSymbol : "#"

@@ -1662,7 +1662,7 @@
 									x -= (cx + 1);
 									tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 									nextTileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-									x += (cx - 1);
+									x += (cx + 1);
 								} else {
 									if ((x < this.width - 1) && (cx >= rightTarget)) {
 										x += (16 - cx);

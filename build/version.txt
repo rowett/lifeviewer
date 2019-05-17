@@ -1,6 +1,10 @@
 Build 333
 - fixed a bug where an invalid pattern could cause a crash on the PopUp Viewer if the previous valid pattern had been [R]History
 - fixed a bug where T=0 could not show entire pattern on the PopUpViewer if previous pattern had smaller bounding box
+- fixed a bug where drawing LifeHistory state 5 would be incorrect on one corner of 16x16 tile boundaries
+- [[ RLE ]] and [[ RLEMODE ]] are now called [[ PASTE ]] and [[ PASTEMODE ]]
+- new script command [[ RLE name rle ]] defines a named snippet of RLE
+- [[ PASTE ]] command can take name or rle as argument
 
 Build 332
 - Generations rules were fading an extra step when all cells died
