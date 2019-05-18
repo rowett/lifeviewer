@@ -13722,13 +13722,9 @@
 				// check if there are state 2 cells
 				if (PatternManager.stateCount[2]) {
 					// copy state 2 to the colour grid
-					//this.engine.copyState2(pattern, this.xOffset, this.yOffset, this.specifiedWidth, this.specifiedHeight);
 					this.engine.copyState2(pattern, this.panX, this.panY);
 				}
 			}
-
-			// draw any rle snippets
-			this.pasteRLEList();
 
 			// compute bounding box
 			this.engine.resetBoxes(this.state1Fit);
@@ -13739,6 +13735,18 @@
 			// reset the colour grid if not multi-state Generations or HROT rule
 			if (this.engine.multiNumStates <= 2) {
 				this.engine.resetColourGridBox(this.engine.grid16);
+			}
+
+			// draw any rle snippets after colour grid conversion (for paste blending modes)
+			this.pasteRLEList();
+
+			// reset boxes again if RLE was pasted
+			if (this.pasteList.length > 0) {
+				this.engine.resetBoxes(this.state1Fit);
+				this.engine.resetHistoryBox();
+				if (this.engine.multiNumStates <= 2) {
+					this.engine.resetColourGridBox(this.engine.grid16);
+				}
 			}
 
 			// reset population
