@@ -984,8 +984,9 @@
 		y = this.renderHelpLine(view, Keywords.noSourceWord, "hide pattern source", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.maxGridSizeWord + " <" + ViewConstants.minGridPower + ".." + ViewConstants.maxGridPower + ">", "set maximum grid size 2^n", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.rleWord + " name rle", "create a name for the rle", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.pasteWord + " T X Y (name|rle)", "when T paste rle at X Y", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.pasteModeWord + " (" + Keywords.pasteModeOrWord + "|" + Keywords.pasteModeCopyWord + "|" + Keywords.pasteModeXorWord + "|" + Keywords.pasteModeAndWord + "|" + Keywords.pasteModeNotWord + ")", "set the paste mode", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.pasteWord + " X Y name|rle", "paste rle at X Y", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.pasteTWord + " (EVERY) <1..> (<1..>)", "set paste generation", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.pasteModeWord + " " + Keywords.pasteModeOrWord + "|" + Keywords.pasteModeCopyWord + "|" + Keywords.pasteModeXorWord + "|" + Keywords.pasteModeAndWord + "|" + Keywords.pasteModeNotWord, "set the paste mode", ctx, x, y, height, helpLine);
 	};
 
 	// render information topic

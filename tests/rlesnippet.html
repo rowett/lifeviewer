@@ -31,12 +31,33 @@
 			<textarea rows=10 cols=70>
 x = 3, y = 3, rule = B3/S23History
 o$obo$oo!
-#C Initial extra glider at T=0
-[[ PASTE 0 -5 -5 o$obo$oo! ]]
+#C Initial extra glider at T=0 (the default generation)
+[[ PASTE -5 -5 o$obo$oo! ]]
 #C Create a glider as a named snippet
 [[ RLE glider o$obo$oo! ]]
 #C Glider appears at T=16 and two more at T=32
-[[ PASTE 16 0 0 glider PASTE 32 0 0 glider PASTE 32 10 0 glider ]]
+[[ PASTET 16 ]]
+[[ PASTE 0 0 glider ]]
+[[ PASTET 32 PASTE 0 0 glider PASTE 10 0 glider ]]
+[[ ZOOM 8 ]]
+            </textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>PASTET</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 3, y = 3, rule = B3/S23History
+!
+#C Paste a glider every 16 generations
+[[ RLE glider o$obo$oo! ]]
+[[ PASTET EVERY 16 ]]
+[[ PASTE -5 -5 glider ]]
+#C Paste a glider every 24 generations starting at gen 64
+[[ PASTET EVERY 24 64 ]]
+[[ PASTE 10 0 glider ]]
+[[ ZOOM 8 ]]
             </textarea>
 			<br>
 			<canvas width="480" height="480"></canvas>
@@ -55,35 +76,35 @@ x = 3, y = 3, rule = B3/S23
 #C Paste in each mode on dead cells
 [[ PASTEMODE OR ]]
 [[ LABEL 1 0 16 "OR" ]]
-[[ PASTE 0 0 0 glider ]]
+[[ PASTE 0 0 glider ]]
 [[ PASTEMODE COPY ]]
 [[ LABEL 6 0 16 "Copy" ]]
-[[ PASTE 0 5 0 glider ]]
+[[ PASTE 5 0 glider ]]
 [[ PASTEMODE XOR ]]
 [[ LABEL 11 0 16 "XOR" ]]
-[[ PASTE 0 10 0 glider ]]
+[[ PASTE 10 0 glider ]]
 [[ PASTEMODE NOT ]]
 [[ LABEL 16 0 16 "NOT" ]]
-[[ PASTE 0 15 0 glider ]]
+[[ PASTE 15 0 glider ]]
 [[ PASTEMODE AND ]]
 [[ LABEL 21 0 16 "AND" ]]
-[[ PASTE 0 20 0 glider ]]
+[[ PASTE 20 0 glider ]]
 #C Paste in each mode on alive cells
 [[ PASTEMODE OR ]]
 [[ LABEL 1 4 16 "OR" ]]
-[[ PASTE 0 0 4 glider ]]
+[[ PASTE 0 4 glider ]]
 [[ PASTEMODE COPY ]]
 [[ LABEL 6 4 16 "Copy" ]]
-[[ PASTE 0 5 4 glider ]]
+[[ PASTE 5 4 glider ]]
 [[ PASTEMODE XOR ]]
 [[ LABEL 11 4 16 "XOR" ]]
-[[ PASTE 0 10 4 glider ]]
+[[ PASTE 10 4 glider ]]
 [[ PASTEMODE NOT ]]
 [[ LABEL 16 4 16 "NOT" ]]
-[[ PASTE 0 15 4 glider ]]
+[[ PASTE 15 4 glider ]]
 [[ PASTEMODE AND ]]
 [[ LABEL 21 4 16 "AND" ]]
-[[ PASTE 0 20 4 glider ]]
+[[ PASTE 20 4 glider ]]
             </textarea>
 			<br>
 			<canvas width="480" height="480"></canvas>

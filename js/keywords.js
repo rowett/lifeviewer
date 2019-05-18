@@ -375,6 +375,12 @@
 		// paste
 		/** @const {string} */ pasteWord : "PASTE",
 
+		// paste T
+		/** @const {string} */ pasteTWord : "PASTET",
+
+		/** every for paste T */
+		/** @const {string} */ everyWord : "EVERY",
+
 		// paste mode
 		/** @const {string} */ pasteModeWord : "PASTEMODE",
 

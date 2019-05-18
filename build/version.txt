@@ -1,3 +1,11 @@
+Build 334
+- new script command [[ PASTET ]]
+	- defines the paste generation for subsequent [[ PASTE ]] commands
+	- [[ PASTET gen ]] pastes once on the specified gen
+	- [[ PASTET EVERY interval (start) ]] pastes every interval generations starting at start (or 0 if not defined)
+	- [[ PASTE ]] command no longer has the T parameter
+- adjusted snapshot interval to new maximum STEP size
+
 Build 333
 - fixed a bug where an invalid pattern could cause a crash on the PopUp Viewer if the previous valid pattern had been [R]History
 - fixed a bug where T=0 could not show entire pattern on the PopUpViewer if previous pattern had smaller bounding box

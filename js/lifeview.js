@@ -197,7 +197,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 332,
+		/** @const {number} */ versionBuild : 334,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -532,6 +532,15 @@
 
 		// rle paste mode
 		this.pasteMode = ViewConstants.pasteModeOr;
+
+		// rle paste generation
+		this.pasteGen = 0;
+
+		// rle paste modulus
+		this.pasteEvery = 0;
+
+		// whether there is a paste every snippet
+		this.isPasteEvery = false;
 
 		// universe number
 		/** @type {number} */ this.universe = 0;
@@ -1356,6 +1365,7 @@
 			scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "name already defined"];
 		} else {
 			// check the RLE is valid
+			rle += " ";
 			if (PatternManager.decodeRLEString(pattern, rle, false, this.engine.allocator) !== -1) {
 				if (PatternManager.decodeRLEString(pattern, rle, true, this.engine.allocator) !== -1) {
 					// add to the named list
@@ -1368,7 +1378,7 @@
 	};
 
 	// add rle to paste list
-	View.prototype.addRLE = function(gen, mode, x, y, rle) {
+	View.prototype.addRLE = function(gen, every, mode, x, y, rle) {
 		var pattern = new Pattern("rle" + this.pasteList.length),
 			result = false,
 			i = 0,
@@ -1385,9 +1395,13 @@
 		}
 
 		// attempt to decode the rle
+		rle += " ";
 		if (PatternManager.decodeRLEString(pattern, rle, false, this.engine.allocator) !== -1) {
 			if (PatternManager.decodeRLEString(pattern, rle, true, this.engine.allocator) !== -1) {
-				this.pasteList[this.pasteList.length] = {gen: gen, mode: mode, x: x, y: y, pattern: pattern};
+				this.pasteList[this.pasteList.length] = {gen: gen, every: every, mode: mode, x: x, y: y, pattern: pattern};
+				if (every > 0) {
+					this.isPasteEvery = true;
+				}
 				result = true;
 			}
 		}
@@ -1402,18 +1416,22 @@
 			x = 0,
 			xOff = 0,
 			yOff = 0,
-			state = 0,
+			paste = null,
+			counter = this.engine.counter,
 			mode = ViewConstants.pasteModeOr,
 			pattern = null,
 			rleRow = null,
+			state = 0,
 			gridWidth = this.engine.width;
 
+		// check each pattern to see which need to be drawn this generation
 		for (i = 0; i < this.pasteList.length; i += 1) {
-			if (this.pasteList[i].gen === this.engine.counter) {
-				mode = this.pasteList[i].mode;
-				xOff = (gridWidth >> 1) + this.pasteList[i].x - (this.patternWidth >> 1);
-				yOff = (gridWidth >> 1) + this.pasteList[i].y - (this.patternHeight >> 1);
-				pattern = this.pasteList[i].pattern;
+			paste = this.pasteList[i];
+			if ((paste.every !==0 && counter >= paste.gen && (((counter - paste.gen) % paste.every) === 0)) || (paste.every === 0 && paste.gen === counter)) {
+				mode = paste.mode;
+				xOff = (gridWidth >> 1) + paste.x - (this.patternWidth >> 1);
+				yOff = (gridWidth >> 1) + paste.y - (this.patternHeight >> 1);
+				pattern = paste.pattern;
 				for (y = 0; y < pattern.height; y += 1) {
 					rleRow = pattern.multiStateMap[y];
 					// determine paste mode
@@ -1492,6 +1510,12 @@
 					}
 				}
 			}
+		}
+
+		// if paste every is defined then always flag there are alive cells
+		// since cells will appear in the future
+		if (this.isPasteEvery) {
+			this.engine.anythingAlive = true;
 		}
 	};
 
@@ -2828,6 +2852,12 @@
 						// convert life grid to pen colours unless Generations just died (since this will start fading dead cells)
 						if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
 							me.engine.convertToPensTile();
+
+							// if paste every is defined then always flag there are alive cells
+							// since cells will appear in the future
+							if (me.isPasteEvery) {
+								me.engine.anythingAlive = 1;
+							}
 						}
 					}
 
@@ -3644,6 +3674,12 @@
 			me.pasteRLEList();
 
 			me.engine.convertToPensTile();
+
+			// if paste every is defined then always flag there are alive cells
+			// since cells will appear in the future
+			if (me.isPasteEvery) {
+				me.engine.anythingAlive = 1;
+			}
 		}
 
 		// check if complete
@@ -3655,6 +3691,12 @@
 			me.pasteRLEList();
 
 			me.engine.convertToPensTile();
+
+			// if paste every is defined then always flag there are alive cells
+			// since cells will appear in the future
+			if (me.isPasteEvery) {
+				me.engine.anythingAlive = 1;
+			}
 
 			// switch back to normal mode
 			me.computeHistory = false;
@@ -7981,6 +8023,8 @@
 			case Keywords.popupHeightWord:
 			case Keywords.rleWord:
 			case Keywords.pasteWord:
+			case Keywords.everyWord:
+			case Keywords.pasteTWord:
 			case Keywords.pasteModeWord:
 			case Keywords.pasteModeOrWord:
 			case Keywords.pasteModeCopyWord:
@@ -10000,7 +10044,7 @@
 
 						// paste
 						case Keywords.pasteWord:
-							// get the generation
+							// get the x position
 							if (scriptReader.nextTokenIsNumeric()) {
 								isNumeric = true;
 
@@ -10008,11 +10052,11 @@
 								numberValue = scriptReader.getNextTokenAsNumber();
 
 								// check it is in range
-								if (numberValue >= 0) {
+								if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
 									isNumeric = false;
-									z = numberValue;
+									x = numberValue;
 
-									// get the x position
+									// get the y position
 									if (scriptReader.nextTokenIsNumeric()) {
 										isNumeric = true;
 
@@ -10022,25 +10066,64 @@
 										// check it is in range
 										if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
 											isNumeric = false;
-											x = numberValue;
+											y = numberValue;
 
-											// get the y position
+											// get the rle
+											if (this.addRLE(this.pasteGen, this.pasteEvery, this.pasteMode, x, y, scriptReader.getNextToken())) {
+												itemValid = true;
+											}
+										}
+									}
+								}
+							}
+
+							break;
+
+						// set rle paste generation
+						case Keywords.pasteTWord:
+							// get the paste generation
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= 0) {
+									this.pasteGen = numberValue;
+									this.pasteEvery = 0;
+									itemValid = true;
+								}
+							} else {
+								// check for every keyword
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken === Keywords.everyWord) {
+									// consume token
+									peekToken = scriptReader.getNextToken();
+
+									// check for value
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+
+										// get the value
+										numberValue = scriptReader.getNextTokenAsNumber();
+
+										// check it is in range
+										if (numberValue >= 1) {
+											this.pasteEvery = numberValue;
+											this.pasteGen = 0;
+
+											// check for optional start gen
 											if (scriptReader.nextTokenIsNumeric()) {
-												isNumeric = true;
-
-												// get the value
 												numberValue = scriptReader.getNextTokenAsNumber();
 
 												// check it is in range
-												if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
-													isNumeric = false;
-													y = numberValue;
-
-													// get the rle
-													if (this.addRLE(z, this.pasteMode, x, y, scriptReader.getNextToken())) {
-														itemValid = true;
-													}
+												if (numberValue >= 0) {
+													this.pasteGen = numberValue;
+													itemValid = true;
 												}
+											} else {
+												itemValid = true;
 											}
 										}
 									}
@@ -12893,6 +12976,9 @@
 		// clear paste list
 		this.pasteList = [];
 		this.pasteMode = ViewConstants.pasteModeOr;
+		this.pasteGen = 0;
+		this.pasteEvery = 0;
+		this.isPasteEvery = false;
 
 		// clear any notifications
 		this.menuManager.notification.clear(true, true);
@@ -13657,7 +13743,7 @@
 
 			// reset population
 			this.engine.resetPopulationBox(this.engine.grid16, this.engine.colourGrid);
-			if (pattern && this.engine.population === 0) {
+			if (pattern && this.engine.population === 0 && !this.isPasteEvery) {
 				this.emptyStart = true;
 				if (!this.engine.isNone) {
 					this.menuManager.notification.notify("Nothing alive!", 15, 300, 15, false);

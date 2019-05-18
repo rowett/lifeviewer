@@ -49,7 +49,7 @@
 		/** @const {number} */ hashTriDouble : 131072,
 
 		// snapshot interval
-		/** @const {number} */ snapshotInterval : 50,
+		/** @const {number} */ snapshotInterval : 64,
 
 		// maximum number of population samples for graph
 		/** @const {number} */ maxPopSamples : 262144,
@@ -1980,6 +1980,7 @@
 		if (snapshot) {
 			// restore the snapshot
 			this.restoreSnapshot(snapshot);
+			view.pasteRLEList();
 
 			// play from the snapshot counter to just before the target with stats off (for speed)
 			while (this.counter < targetGen - 1) {
@@ -1994,8 +1995,13 @@
 				this.anythingAlive = 1;
 				this.nextGeneration(statsOn, true, graphDisabled);
 				view.pasteRLEList();
+				this.convertToPensTile();
 			}
-			this.convertToPensTile();
+			// if paste every is defined then always flag there are alive cells
+			// since cells will appear in the future
+			if (view.isPasteEvery) {
+				this.anythingAlive = 1;
+			}
 		}
 	};
 
