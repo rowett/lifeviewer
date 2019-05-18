@@ -2842,16 +2842,14 @@
 						me.engine.nextGeneration(false, me.noHistory, me.graphDisabled);
 					}
 
-					// paste any RLE snippets
-					me.pasteRLEList();
-
 					stepsTaken += 1;
 
 					// check theme has history or this is the last generation in the step
-					if (me.engine.themeHistory || ((me.engine.counter === (me.floatCounter | 0)) || bailout)) {
+					if (me.engine.themeHistory || me.pasteList.length > 0 || ((me.engine.counter === (me.floatCounter | 0)) || bailout)) {
 						// convert life grid to pen colours unless Generations just died (since this will start fading dead cells)
 						if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
 							me.engine.convertToPensTile();
+							me.pasteRLEList();
 
 							// if paste every is defined then always flag there are alive cells
 							// since cells will appear in the future
@@ -3669,11 +3667,10 @@
 
 			// compute the next generation
 			me.engine.nextGeneration(false, noSnapshots, me.graphDisabled);
+			me.engine.convertToPensTile();
 
 			// paste any RLE snippets
 			me.pasteRLEList();
-
-			me.engine.convertToPensTile();
 
 			// if paste every is defined then always flag there are alive cells
 			// since cells will appear in the future
@@ -3686,11 +3683,10 @@
 		if (me.engine.counter === targetGen - 1) {
 			// compute final generation with stats on if required
 			me.engine.nextGeneration(me.statsOn, false, me.graphDisabled);
+			me.engine.convertToPensTile();
 
 			// paste any RLE snippets
 			me.pasteRLEList();
-
-			me.engine.convertToPensTile();
 
 			// if paste every is defined then always flag there are alive cells
 			// since cells will appear in the future

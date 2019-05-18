@@ -48,7 +48,7 @@ o$obo$oo!
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
 			<textarea rows=10 cols=70>
-x = 3, y = 3, rule = B3/S23History
+x = 3, y = 3, rule = B3/S23
 !
 #C Paste a glider every 16 generations
 [[ RLE glider o$obo$oo! ]]
@@ -57,6 +57,10 @@ x = 3, y = 3, rule = B3/S23History
 #C Paste a glider every 24 generations starting at gen 64
 [[ PASTET EVERY 24 64 ]]
 [[ PASTE 10 0 glider ]]
+#C Paste a glider in XOR mode every 24 generations to kill the second glider stream
+[[ PASTEMODE XOR ]]
+[[ PASTET EVERY 24 136 ]]
+[[ PASTE -8 18 glider ]]
 [[ ZOOM 8 ]]
             </textarea>
 			<br>

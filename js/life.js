@@ -1986,16 +1986,16 @@
 			while (this.counter < targetGen - 1) {
 				this.anythingAlive = 1;
 				this.nextGeneration(false, true, graphDisabled);
-				view.pasteRLEList();
 				this.convertToPensTile();
+				view.pasteRLEList();
 			}
 
 			// compute the final generation with stats on if required
 			if (this.counter < targetGen) {
 				this.anythingAlive = 1;
 				this.nextGeneration(statsOn, true, graphDisabled);
-				view.pasteRLEList();
 				this.convertToPensTile();
+				view.pasteRLEList();
 			}
 			// if paste every is defined then always flag there are alive cells
 			// since cells will appear in the future
