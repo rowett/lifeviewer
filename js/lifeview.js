@@ -569,6 +569,12 @@
 		// whether there is evolution to do
 		this.isEvolution = false;
 
+		// paste snippets bounding box
+		this.pasteLeftX = 0;
+		this.pasteRightX = 0;
+		this.pasteBottomY = 0;
+		this.pasteTopY = 0;
+
 		// universe number
 		/** @type {number} */ this.universe = 0;
 
@@ -1448,6 +1454,32 @@
 		return result;
 	};
 
+	// compute needed width to include paste snippets for grid sizing
+	View.prototype.computeNeededWidth = function(neededWidth) {
+		var pasteLeft = (this.pasteLeftX < 0 ? -this.pasteLeftX : this.pasteLeftX),
+			pasteRight = (this.pasteRightX < 0 ? -this.pasteRightX : this.pasteRightX),
+			pasteMax = (pasteLeft < pasteRight ? pasteRight : pasteLeft) * 2;
+			
+		if (neededWidth < pasteMax) {
+			neededWidth = pasteMax;
+		}
+		
+		return neededWidth;
+	};
+
+	// compute needed height to include paste snippets for grid sizing
+	View.prototype.computeNeededHeight = function(neededHeight) {
+		var pasteBottom = (this.pasteBottomY < 0 ? -this.pasteBottomY : this.pasteBottomY),
+			pasteTop = (this.pasteTopY < 0 ? -this.pasteTopY : this.pasteTopY),
+			pasteMax = (pasteBottom < pasteTop ? pasteTop : pasteBottom) * 2;
+			
+		if (neededHeight < pasteMax) {
+			neededHeight = pasteMax;
+		}
+		
+		return neededHeight;
+	};
+
 	// add rle to named list
 	View.prototype.addNamedRLE = function(scriptErrors, name, rle, x, y, transform) {
 		// attempt to decode the rle
@@ -1570,6 +1602,20 @@
 				i += 3;
 			}
 
+			// update bounding box for all paste clips
+			if (x < this.pasteLeftX) {
+				this.pasteLeftX = x;
+			}
+			if (x > this.pasteRightX) {
+				this.pasteRightX = x;
+			}
+			if (y < this.pasteBottomY) {
+				this.pasteBottomY = y;
+			}
+			if (y > this.pasteTopY) {
+				this.pasteTopY = y;
+			}
+
 			// allocate an array for the rle
 			stateMap = Array.matrix(Uint8, topY - bottomY + 1, rightX - leftX + 1, 0, this.engine.allocator, "View.rle" + this.pasteList.length);
 
@@ -1630,13 +1676,6 @@
 				while (i < cells.length) {
 					// cells list only contains non-zero cells
 					this.engine.setState(xOff + cells[i] - item.leftX, yOff + cells[i + 1] - item.bottomY, cells[i + 2]);
-	
-					// check for growth
-					while (gridWidth !== this.engine.width) {
-						xOff += gridWidth >> 1;
-						yOff += gridWidth >> 1;
-						gridWidth <<= 1;
-					}
 					i += 3;
 				}
 
@@ -1644,9 +1683,14 @@
 				this.engine.counter = 0;
 				while (gens > 0) {
 					// compute next generation with no stats, history and graph disabled
-					this.engine.nextGeneration(false, true, false);
+					this.engine.nextGeneration(false, true, true);
 					this.engine.convertToPensTile();
 					gens -= 1;
+				}
+				if ((this.engine.counter & 1) !== 0) {
+					this.engine.resetColourGridBox(this.engine.nextGrid16);
+				} else {
+					this.engine.resetColourGridBox(this.engine.grid16);
 				}
 
 				// replace the pattern with the evolved pattern
@@ -1656,7 +1700,7 @@
 				minY = ViewConstants.bigInteger;
 				for (y = zoomBox.bottomY; y <= zoomBox.topY; y += 1) {
 					for (x = zoomBox.leftX; x <= zoomBox.rightX; x += 1) {
-						state = this.engine.getState(x, y);
+						state = this.engine.getState(x, y, false);
 						if (state !== 0) {
 							cells[i] = x - xOff + item.leftX;
 							cells[i + 1] = y - yOff + item.bottomY;
@@ -1690,7 +1734,7 @@
 				}
 
 				// clear grids
-				this.engine.clearGrids(false);
+				this.engine.clearGrids(true);
 			}
 		}
 	};
@@ -1728,13 +1772,6 @@
 					while (i < cells.length) {
 						// cells list only contains non-zero cells
 						this.engine.setState(xOff + cells[i], yOff + cells[i + 1], cells[i + 2]);
-	
-						// check for growth
-						while (gridWidth !== this.engine.width) {
-							xOff += gridWidth >> 1;
-							yOff += gridWidth >> 1;
-							gridWidth <<= 1;
-						}
 						i += 3;
 					}
 					break;
@@ -1744,17 +1781,8 @@
 					for (y = 0; y < stateMap.length; y += 1) {
 						stateRow = stateMap[y];
 						for (x = 0; x < stateRow.length; x += 1) {
-							state = stateRow[x];
-
 							// set the cell
-							this.engine.setState(xOff + x, yOff + y, state);
-	
-							// check for growth
-							while (gridWidth !== this.engine.width) {
-								xOff += gridWidth >> 1;
-								yOff += gridWidth >> 1;
-								gridWidth <<= 1;
-							}
+							this.engine.setState(xOff + x, yOff + y, stateRow[x]);
 						}
 					}
 					break;
@@ -1765,13 +1793,6 @@
 						state = this.engine.getState(xOff + x, yOff + y, false);
 						// set the cell
 						this.engine.setState(xOff + x, yOff + y, cells[i + 2] ^ state);
-	
-						// check for growth
-						while (gridWidth !== this.engine.width) {
-							xOff += gridWidth >> 1;
-							yOff += gridWidth >> 1;
-							gridWidth <<= 1;
-						}
 						i += 3;
 					}
 					break;
@@ -1784,13 +1805,6 @@
 							state = this.engine.getState(xOff + x, yOff + y, false);
 							// set the cell
 							this.engine.setState(xOff + x, yOff + y, stateRow[x] & state);
-	
-							// check for growth
-							while (gridWidth !== this.engine.width) {
-								xOff += gridWidth >> 1;
-								yOff += gridWidth >> 1;
-								gridWidth <<= 1;
-							}
 						}
 					}
 					break;
@@ -1803,13 +1817,6 @@
 							if (stateRow[x] === 0) {
 								// set the cell
 								this.engine.setState(xOff + x, yOff + y, 1);
-	
-								// check for growth
-								while (gridWidth !== this.engine.width) {
-									xOff += gridWidth >> 1;
-									yOff += gridWidth >> 1;
-									gridWidth <<= 1;
-								}
 							}
 						}
 						i += 3;
@@ -13390,6 +13397,10 @@
 		this.pasteEvery = 0;
 		this.isPasteEvery = false;
 		this.isEvolution = false;
+		this.pasteLeftX = ViewConstants.bigInteger;
+		this.pasteRightX = -ViewConstants.bigInteger;
+		this.pasteBottomY = ViewConstants.bigInteger;
+		this.pasteTopY = -ViewConstants.bigInteger;
 
 		// clear any notifications
 		this.menuManager.notification.clear(true, true);
@@ -13905,6 +13916,12 @@
 				// use pattern
 				neededWidth = pattern.width;
 				neededHeight = pattern.height;
+
+				// add any paste clips
+				if (this.pasteList.length > 0) {
+					neededWidth = this.computeNeededWidth(neededWidth);
+					neededHeight = this.computeNeededHeight(neededHeight);
+				}
 			}
 
 			// check if the grid is smaller than the pattern and/or bounded grid plus the maximum step speed
@@ -14022,13 +14039,13 @@
 				this.engine.drawOverlay = false;
 			}
 
+			// update the life rule
+			this.engine.updateLifeRule();
+
 			// process any rle snippet evolution
 			if (this.isEvolution) {
 				this.processEvolution();
 			}
-
-			// update the life rule
-			this.engine.updateLifeRule();
 
 			// copy pattern to center of grid
 			this.copyPatternTo(pattern);
