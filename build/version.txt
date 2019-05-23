@@ -14,6 +14,7 @@ Build 335
 		- SWAPXYFLIP
 		- RCW
 		- RCCW
+- state at cursor position label widens for grids > 9999x9999
 
 Build 334
 - new script command [[ PASTET ]]

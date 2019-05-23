@@ -566,6 +566,9 @@
 		// whether there is a paste every snippet
 		this.isPasteEvery = false;
 
+		// whether there is evolution to do
+		this.isEvolution = false;
+
 		// universe number
 		/** @type {number} */ this.universe = 0;
 
@@ -1429,11 +1432,15 @@
 				while (i < j && result >= 0) {
 					next = name.charCodeAt(i) - asciiZero;
 					if (next < 0 || next > 9) {
-					result = -1;
+						result = -1;
 					} else {
 						result = result * 10 + next; 
 						i += 1;
 					}
+				}
+				// mark for evolution processing if evolution found
+				if (result > 0) {
+					this.isEvolution = true;
 				}
 			}
 		}
@@ -1445,33 +1452,34 @@
 	View.prototype.addNamedRLE = function(scriptErrors, name, rle, x, y, transform) {
 		// attempt to decode the rle
 		var i= 0,
-			evolution = 0,
 			found = false,
 			cells = [];
 		
-		// check the name does not already exist
-		i = 0;
-		while (!found && i < this.rleList.length) {
-			if (name === this.rleList[i].name) {
-				found = true;
-			} else {
-				i += 1;
-			}
-		}
-
-		if (found) {
-			scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "name already defined"];
+		// check the name does not include an evolution
+		if (name.indexOf("[") !== -1) {
+			scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "name can not contain ["];
 		} else {
-			// check the RLE is valid
-			cells = this.rleToCellList(rle, x, y, transform);
-			if (cells[0] !== "error") {
-				// check for evolution
-				evolution = this.getEvolution(name);
-
-				// add to the named list
-				this.rleList[this.rleList.length] = {name: name, cells: cells, evolution: evolution};
+			// check the name does not already exist
+			i = 0;
+			while (!found && i < this.rleList.length) {
+				if (name === this.rleList[i].name) {
+					found = true;
+				} else {
+					i += 1;
+					}
+			}
+	
+			if (found) {
+				scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "name already defined"];
 			} else {
-				scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "invalid RLE"];
+				// check the RLE is valid
+				cells = this.rleToCellList(rle, x, y, transform);
+				if (cells[0] !== "error") {
+					// add to the named list
+					this.rleList[this.rleList.length] = {name: name, cells: cells}
+				} else {
+					scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "invalid RLE"];
+				}
 			}
 		}
 	};
@@ -1492,11 +1500,23 @@
 			rightX = -ViewConstants.bigInteger,
 			bottomY = ViewConstants.bigInteger,
 			topY = -ViewConstants.bigInteger,
+			evolveIndex = rle.indexOf("["),
+			namePrefix = rle,
+			evolution = 0,
 			stateMap = null;
+
+		// check for evolution
+		if (evolveIndex !== -1) {
+			// remove the evolution postfix
+			namePrefix = rle.substr(0, evolveIndex);
+
+			// get the number of evolution generations
+			evolution = this.getEvolution(rle);
+		}
 
 		// check if the rle is a name
 		while (i < this.rleList.length && !found) {
-			if (this.rleList[i].name === rle) {
+			if (this.rleList[i].name === namePrefix) {
 				found = true;
 				// make a copy of the cell list
 				cells = this.rleList[i].cells.slice();
@@ -1523,6 +1543,11 @@
 			}
 		}
 
+		// check if evolution was valid
+		if (evolution === -1) {
+			found = false;
+		}
+
 		// save entry if valid
 		if (found) {
 			// compute the bounding box for the cell list
@@ -1544,6 +1569,7 @@
 				}
 				i += 3;
 			}
+
 			// allocate an array for the rle
 			stateMap = Array.matrix(Uint8, topY - bottomY + 1, rightX - leftX + 1, 0, this.engine.allocator, "View.rle" + this.pasteList.length);
 
@@ -1557,13 +1583,116 @@
 			}
 
 			// create the paste entry
-			this.pasteList[this.pasteList.length] = {gen: gen, every: every, mode: mode, cells: cells, map: stateMap, leftX: leftX, bottomY: bottomY};
+			this.pasteList[this.pasteList.length] = {gen: gen, every: every, mode: mode, cells: cells, map: stateMap, leftX: leftX, bottomY: bottomY, width: rightX - leftX + 1, height: topY - bottomY + 1, evolution: evolution};
 			if (every > 0) {
 				this.isPasteEvery = true;
 			}
 		}
 
 		return found;
+	};
+
+	// process rle snippet evolution
+	View.prototype.processEvolution = function() {
+		var i = 0,
+			j = 0,
+			x = 0,
+			y = 0,
+			item = null,
+			state = 0,
+			gens = 0,
+			gridWidth = this.engine.width,
+			xOff = 0,
+			yOff = 0,
+			minX = 0,
+			minY = 0,
+			zoomBox = this.engine.zoomBox,
+			cells = [];
+
+		// evolve rle snippets
+		for (j = 0; j < this.pasteList.length; j += 1) {
+			item = this.pasteList[j];
+			gens = item.evolution;
+			if (gens > 0) {
+				// get the cell list
+				cells = item.cells;
+				xOff = (gridWidth >> 1) - (item.width >> 1);
+				yOff = (gridWidth >> 1) - (item.height >> 1);
+				i = 0;
+
+				// setup the bounding box to the snippet extent
+				zoomBox.leftX = xOff;
+				zoomBox.rightX = xOff + item.width - 1;
+				zoomBox.bottomY = yOff;
+				zoomBox.topY = yOff + item.height - 1;
+
+				// put the cells from the cell list onto the grid
+				while (i < cells.length) {
+					// cells list only contains non-zero cells
+					this.engine.setState(xOff + cells[i] - item.leftX, yOff + cells[i + 1] - item.bottomY, cells[i + 2]);
+	
+					// check for growth
+					while (gridWidth !== this.engine.width) {
+						xOff += gridWidth >> 1;
+						yOff += gridWidth >> 1;
+						gridWidth <<= 1;
+					}
+					i += 3;
+				}
+
+				// now run the required number of generations
+				this.engine.counter = 0;
+				while (gens > 0) {
+					// compute next generation with no stats, history and graph disabled
+					this.engine.nextGeneration(false, true, false);
+					this.engine.convertToPensTile();
+					gens -= 1;
+				}
+
+				// replace the pattern with the evolved pattern
+				cells = [];
+				i = 0;
+				minX = ViewConstants.bigInteger;
+				minY = ViewConstants.bigInteger;
+				for (y = zoomBox.bottomY; y <= zoomBox.topY; y += 1) {
+					for (x = zoomBox.leftX; x <= zoomBox.rightX; x += 1) {
+						state = this.engine.getState(x, y);
+						if (state !== 0) {
+							cells[i] = x - xOff + item.leftX;
+							cells[i + 1] = y - yOff + item.bottomY;
+							cells[i + 2] = state;
+							if (cells[i] < minX) {
+								minX = cells[i];
+							}
+							if (cells[i + 1] < minY) {
+								minY = cells[i + 1];
+							}
+							i += 3;
+						}
+					}
+				}
+				item.cells = cells.slice();			
+
+				// allocate an array for the rle
+				item.width = zoomBox.rightX - zoomBox.leftX + 1;
+				item.height = zoomBox.topY - zoomBox.bottomY + 1;
+				item.bottomY = minY;
+				item.leftX = minX;
+				item.map = Array.matrix(Uint8, item.height, item.width, 0, this.engine.allocator, "View.rle" + j);
+
+				// populate the array from the cell list
+				i = 0;
+				while (i < cells.length) {
+					x = cells[i];
+					y = cells[i + 1];
+					item.map[y - item.bottomY][x - item.leftX] = cells[i + 2];
+					i += 3;
+				}
+
+				// clear grids
+				this.engine.clearGrids(false);
+			}
+		}
 	};
 
 	// paste rle list to grid
@@ -1597,17 +1726,14 @@
 				switch (mode) {
 				case ViewConstants.pasteModeOr:
 					while (i < cells.length) {
-						state = cells[i + 2];
-						if (state !== 0) {
-							// set the cell
-							this.engine.setState(xOff + cells[i], yOff + cells[i + 1], state);
+						// cells list only contains non-zero cells
+						this.engine.setState(xOff + cells[i], yOff + cells[i + 1], cells[i + 2]);
 	
-							// check for growth
-							while (gridWidth !== this.engine.width) {
-								xOff += gridWidth >> 1;
-								yOff += gridWidth >> 1;
-								gridWidth <<= 1;
-							}
+						// check for growth
+						while (gridWidth !== this.engine.width) {
+							xOff += gridWidth >> 1;
+							yOff += gridWidth >> 1;
+							gridWidth <<= 1;
 						}
 						i += 3;
 					}
@@ -2599,6 +2725,9 @@
 		    yDisplay = "",
 			stateDisplay = "",
 			
+			// display limit
+			displayLimit = this.engine.maxGridSize > 9999 ? 99999 : 9999,
+
 			// rotation
 			theta = 0, radius = 0;
 
@@ -2657,13 +2786,13 @@
 			}
 
 			// check the size of the coordinates
-			if (xPos < -9999 || xPos > 9999) {
-				xDisplay = (Number(xPos / 10000).toFixed(1)) + "K";
+			if (xPos < -displayLimit || xPos > displayLimit) {
+				xDisplay = (Number(xPos / 1000).toFixed(1)) + "K";
 			} else {
 				xDisplay = String(xPos);
 			}
-			if (yPos < -9999 || yPos > 9999) {
-				yDisplay = (Number(yPos / 10000).toFixed(1)) + "K";
+			if (yPos < -displayLimit || yPos > displayLimit) {
+				yDisplay = (Number(yPos / 1000).toFixed(1)) + "K";
 			} else {
 				yDisplay = String(yPos);
 			}
@@ -7725,7 +7854,7 @@
 		this.elapsedTimeLabel.toolTip = "elapsed time";
 
 		// add the cursor position labels
-		this.xyLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -70, 140, 30, "");
+		this.xyLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -70, 166, 30, "");
 		this.xyLabel.textAlign = Menu.left;
 		this.xyLabel.font = ViewConstants.statsFont;
 		this.xyLabel.toolTip = "cell state at cursor position";
@@ -13260,6 +13389,7 @@
 		this.pasteGen = 0;
 		this.pasteEvery = 0;
 		this.isPasteEvery = false;
+		this.isEvolution = false;
 
 		// clear any notifications
 		this.menuManager.notification.clear(true, true);
@@ -13892,11 +14022,16 @@
 				this.engine.drawOverlay = false;
 			}
 
-			// copy pattern to center of grid
-			this.copyPatternTo(pattern);
+			// process any rle snippet evolution
+			if (this.isEvolution) {
+				this.processEvolution();
+			}
 
 			// update the life rule
 			this.engine.updateLifeRule();
+
+			// copy pattern to center of grid
+			this.copyPatternTo(pattern);
 
 			// update rule label
 			if (this.patternAliasName !== "") {
@@ -14049,6 +14184,13 @@
 			// save state for reset
 			this.engine.saveGrid(this.noHistory);
 			this.engine.restoreSavedGrid(this.noHistory);
+		}
+
+		// set the xy label UI width based on max grid size
+		if (this.engine.maxGridSize > 9999) {
+			this.xyLabel.width = 166;
+		} else {
+			this.xyLabel.width = 140;
 		}
 
 		// set the graph UI control
