@@ -391,6 +391,16 @@
 		/** @const {string} */ pasteModeXorWord : "XOR",
 		/** @const {string} */ pasteModeAndWord : "AND",
 
+		// tranformation types
+		/** @const {string} */ transTypeIdentity : "IDENTITY",
+		/** @const {string} */ transTypeFlip : "FLIP",
+		/** @const {string} */ transTypeFlipX : "FLIPX",
+		/** @const {string} */ transTypeFlipY : "FLIPY",
+		/** @const {string} */ transTypeSwapXY : "SWAPXY",
+		/** @const {string} */ transTypeSwapXYFlip : "SWAPXYFLIP",
+		/** @const {string} */ transTypeRotateCW : "RCW",
+		/** @const {string} */ transTypeRotateCCW : "RCCW",
+
 		// variable prefix
 		/** @const {string} */ variablePrefixSymbol : "#"
 	};

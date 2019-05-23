@@ -1,3 +1,20 @@
+Build 335
+- [[ PASTE ]] now works with Generations rules
+- paste commands now support optional transformations:
+	- [[ PASTE rle|name X Y (TRANS) ]]
+		- paste the rle or named rle at X, Y with optional transformation TRANS
+	- [[ RLE name rle (X Y (TRANS)) ]]
+		- create named rle at optional X, Y with optional transformation TRANS
+	- TRANS is one of:
+		- IDENTITY
+		- FLIP
+		- FLIPX
+		- FLIPY
+		- SWAPXY
+		- SWAPXYFLIP
+		- RCW
+		- RCCW
+
 Build 334
 - new script command [[ PASTET ]]
 	- defines the paste generation for subsequent [[ PASTE ]] commands

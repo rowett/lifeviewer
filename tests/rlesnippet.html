@@ -32,14 +32,38 @@
 x = 3, y = 3, rule = B3/S23History
 o$obo$oo!
 #C Initial extra glider at T=0 (the default generation)
-[[ PASTE -5 -5 o$obo$oo! ]]
+[[ PASTE o$obo$oo! -5 -5 ]]
 #C Create a glider as a named snippet
 [[ RLE glider o$obo$oo! ]]
 #C Glider appears at T=16 and two more at T=32
 [[ PASTET 16 ]]
-[[ PASTE 0 0 glider ]]
-[[ PASTET 32 PASTE 0 0 glider PASTE 10 0 glider ]]
+[[ PASTE glider 0 0 ]]
+[[ PASTET 32 PASTE glider 0 0 PASTE glider 10 0 ]]
 [[ ZOOM 8 ]]
+            </textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<h2>PASTET</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = B3/S23
+!
+#C Define glider pattern
+[[ RLE glider o$obo$oo! ]]
+#C Paste a glider every 24 generations starting at gen 64
+[[ PASTET EVERY 24 64 ]]
+[[ PASTE glider 10 0 ]]
+[[ LABEL 10 -8 8 "Gliders start here\nat T=64" ]]
+[[ ARROW 10 -4.5 10 -0.5 8 ]]
+#C Paste a glider in XOR mode every 24 generations to kill the glider stream
+[[ PASTEMODE XOR ]]
+[[ PASTET EVERY 24 136 ]]
+[[ PASTE glider -8 18  ]]
+[[ LABEL -8 26 8 "Gliders stop here" ]]
+[[ ARROW -8 24 -7.5 20 8 ]]
+[[ ZOOM 8 Y 9 ]]
             </textarea>
 			<br>
 			<canvas width="480" height="480"></canvas>
@@ -53,14 +77,14 @@ x = 3, y = 3, rule = B3/S23
 #C Paste a glider every 16 generations
 [[ RLE glider o$obo$oo! ]]
 [[ PASTET EVERY 16 ]]
-[[ PASTE -5 -5 glider ]]
+[[ PASTE glider -5 -5 ]]
 #C Paste a glider every 24 generations starting at gen 64
 [[ PASTET EVERY 24 64 ]]
-[[ PASTE 10 0 glider ]]
+[[ PASTE glider 10 0 ]]
 #C Paste a glider in XOR mode every 24 generations to kill the second glider stream
 [[ PASTEMODE XOR ]]
 [[ PASTET EVERY 24 136 ]]
-[[ PASTE -8 18 glider ]]
+[[ PASTE glider -8 18 ]]
 [[ ZOOM 8 ]]
             </textarea>
 			<br>
@@ -80,35 +104,35 @@ x = 3, y = 3, rule = B3/S23
 #C Paste in each mode on dead cells
 [[ PASTEMODE OR ]]
 [[ LABEL 1 0 16 "OR" ]]
-[[ PASTE 0 0 glider ]]
+[[ PASTE glider 0 0 ]]
 [[ PASTEMODE COPY ]]
 [[ LABEL 6 0 16 "Copy" ]]
-[[ PASTE 5 0 glider ]]
+[[ PASTE glider 5 0 ]]
 [[ PASTEMODE XOR ]]
 [[ LABEL 11 0 16 "XOR" ]]
-[[ PASTE 10 0 glider ]]
+[[ PASTE glider 10 0 ]]
 [[ PASTEMODE NOT ]]
 [[ LABEL 16 0 16 "NOT" ]]
-[[ PASTE 15 0 glider ]]
+[[ PASTE glider 15 0 ]]
 [[ PASTEMODE AND ]]
 [[ LABEL 21 0 16 "AND" ]]
-[[ PASTE 20 0 glider ]]
+[[ PASTE glider 20 0 ]]
 #C Paste in each mode on alive cells
 [[ PASTEMODE OR ]]
 [[ LABEL 1 4 16 "OR" ]]
-[[ PASTE 0 4 glider ]]
+[[ PASTE glider 0 4 ]]
 [[ PASTEMODE COPY ]]
 [[ LABEL 6 4 16 "Copy" ]]
-[[ PASTE 5 4 glider ]]
+[[ PASTE glider 5 4 ]]
 [[ PASTEMODE XOR ]]
 [[ LABEL 11 4 16 "XOR" ]]
-[[ PASTE 10 4 glider ]]
+[[ PASTE glider 10 4 ]]
 [[ PASTEMODE NOT ]]
 [[ LABEL 16 4 16 "NOT" ]]
-[[ PASTE 15 4 glider ]]
+[[ PASTE glider 15 4 ]]
 [[ PASTEMODE AND ]]
 [[ LABEL 21 4 16 "AND" ]]
-[[ PASTE 20 4 glider ]]
+[[ PASTE glider 20 4 ]]
             </textarea>
 			<br>
 			<canvas width="480" height="480"></canvas>

@@ -7,7 +7,7 @@
 	"use strict";
 
 	// define globals
-	/* global Allocator Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager Script Uint32Array myRand PopupWindow typedArrays Float32 */
+	/* global Allocator Uint8 Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager Script Uint32Array myRand PopupWindow typedArrays Float32 */
 
 	// LifeViewer document configuration
 	var DocConfig = {
@@ -41,12 +41,25 @@
 
 	// ViewConstants singleton
 	ViewConstants = {
+		// a large integer used for min/max calculations on the grid
+		/** @const {number} */ bigInteger : 100000000,
+
+		// rle affine transformations
+		/** @const {number} */ transIdentity : 0,
+		/** @const {number} */ transFlip : 1,
+		/** @const {number} */ transFlipX : 2,
+		/** @const {number} */ transFlipY : 3,
+		/** @const {number} */ transSwapXY : 4,
+		/** @const {number} */ transSwapXYFlip : 5,
+		/** @const {number} */ transRotateCW : 6,
+		/** @const {number} */ transRotateCCW : 7,
+
 		// rle paste modes
-		/** @const{number} */ pasteModeOr : 0,
-		/** @const{number} */ pasteModeCopy : 1,
-		/** @const{number} */ pasteModeXor : 2,
-		/** @const{number} */ pasteModeAnd : 3,
-		/** @const{number} */ pasteModeNot : 4,
+		/** @const {number} */ pasteModeOr : 0,
+		/** @const {number} */ pasteModeCopy : 1,
+		/** @const {number} */ pasteModeXor : 2,
+		/** @const {number} */ pasteModeAnd : 3,
+		/** @const {number} */ pasteModeNot : 4,
 
 		// square root of 3 used for triangular grid
 		/** @const {number} */ sqrt3 : Math.sqrt(3),
@@ -197,7 +210,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 334,
+		/** @const {number} */ versionBuild : 335,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -524,6 +537,17 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// list of transformations
+		this.transforms = [];
+		this.transforms[ViewConstants.transIdentity] = [1, 0, 0, 1];
+		this.transforms[ViewConstants.transFlip] = [-1, 0, 0, -1];
+		this.transforms[ViewConstants.transFlipX] = [-1, 0, 0, 1];
+		this.transforms[ViewConstants.transFlipY] = [1, 0, 0, -1];
+		this.transforms[ViewConstants.transSwapXY] = [0, 1, 1, 0];
+		this.transforms[ViewConstants.transSwapXYFlip] = [0, -1, -1, 0];
+		this.transforms[ViewConstants.transRotateCW] = [0, -1, 1, 0];
+		this.transforms[ViewConstants.transRotateCCW] = [0, 1, -1, 0];
+
 		// list of named rle snippets
 		this.rleList = [];
 
@@ -1344,12 +1368,86 @@
 		/** @type {number} */ this.penColour = -1;
 	}
 
-	// add rle to named list
-	View.prototype.addNamedRLE = function(scriptErrors, name, rle) {
-		// attempt to decode the rle
-		var pattern = new Pattern("namedrle" + this.rleList.length),
+	// convert rle to cell list
+	View.prototype.rleToCellList = function(rle, x, y, transform) {
+		var cells = [],
 			i = 0,
-			found = false;
+			j = 0,
+			state = 0,
+			states = this.engine.multiNumStates,
+			trans = this.transforms[transform],
+			axx = trans[0],
+			axy = trans[1],
+			ayx = trans[2],
+			ayy = trans[3],
+			pattern = new Pattern("rleToCellList"),
+			patternRow = null,
+			invertForGenerations = (states > 2 && !this.engine.isNone);
+
+		// check the RLE is valid
+		rle += " ";
+		if (PatternManager.decodeRLEString(pattern, rle, false, this.engine.allocator) !== -1) {
+			if (PatternManager.decodeRLEString(pattern, rle, true, this.engine.allocator) !== -1) {
+				// convert to cell list
+				for (j = 0; j < pattern.height; j += 1) {
+					patternRow = pattern.multiStateMap[j];
+					for (i = 0; i < pattern.width; i += 1) {
+						state = patternRow[i];
+						if (state > 0) {
+							// invert state if Generations
+							if (invertForGenerations) {
+								state = states - state;
+							}
+							// create (x, y, state) entry in cells array
+							cells[cells.length] = x + i * axx + j * axy;
+							cells[cells.length] = y + i * ayx + j * ayy;
+							cells[cells.length] = state;
+						}
+					}
+				}
+			}
+		} else {
+			cells[0] = "error";
+		}
+
+		// return the cell list
+		return cells;
+	};
+
+	// get evolution count from name
+	View.prototype.getEvolution = function(name) {
+		var result = 0,
+			i = name.indexOf("["),
+			j = name.indexOf("]"),
+		    asciiZero = String("0").charCodeAt(0),
+			next = 0;
+
+		// check if there is a trailing number in []
+		if (i !== -1) {
+			if (j !== -1 && i < j && j === name.length - 1) {
+				i += 1;
+				while (i < j && result >= 0) {
+					next = name.charCodeAt(i) - asciiZero;
+					if (next < 0 || next > 9) {
+					result = -1;
+					} else {
+						result = result * 10 + next; 
+						i += 1;
+					}
+				}
+			}
+		}
+
+		return result;
+	};
+
+	// add rle to named list
+	View.prototype.addNamedRLE = function(scriptErrors, name, rle, x, y, transform) {
+		// attempt to decode the rle
+		var i= 0,
+			evolution = 0,
+			found = false,
+			cells = [];
 		
 		// check the name does not already exist
 		i = 0;
@@ -1365,12 +1463,13 @@
 			scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "name already defined"];
 		} else {
 			// check the RLE is valid
-			rle += " ";
-			if (PatternManager.decodeRLEString(pattern, rle, false, this.engine.allocator) !== -1) {
-				if (PatternManager.decodeRLEString(pattern, rle, true, this.engine.allocator) !== -1) {
-					// add to the named list
-					this.rleList[this.rleList.length] = {name: name, rle: rle};
-				}
+			cells = this.rleToCellList(rle, x, y, transform);
+			if (cells[0] !== "error") {
+				// check for evolution
+				evolution = this.getEvolution(name);
+
+				// add to the named list
+				this.rleList[this.rleList.length] = {name: name, cells: cells, evolution: evolution};
 			} else {
 				scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "invalid RLE"];
 			}
@@ -1378,40 +1477,99 @@
 	};
 
 	// add rle to paste list
-	View.prototype.addRLE = function(gen, every, mode, x, y, rle) {
-		var pattern = new Pattern("rle" + this.pasteList.length),
-			result = false,
-			i = 0,
-			found = false;
+	View.prototype.addRLE = function(gen, every, mode, rle, x, y, transform) {
+		var i = 0,
+			found = false,
+			cells = [],
+			cellx = 0,
+			celly = 0,
+			trans = this.transforms[transform],
+			axx = trans[0],
+			axy = trans[1],
+			ayx = trans[2],
+			ayy = trans[3],
+			leftX = ViewConstants.bigInteger,
+			rightX = -ViewConstants.bigInteger,
+			bottomY = ViewConstants.bigInteger,
+			topY = -ViewConstants.bigInteger,
+			stateMap = null;
 
 		// check if the rle is a name
 		while (i < this.rleList.length && !found) {
-			if (this.rleList[0].name === rle) {
+			if (this.rleList[i].name === rle) {
 				found = true;
-				rle = this.rleList[0].rle;
+				// make a copy of the cell list
+				cells = this.rleList[i].cells.slice();
 			} else {
 				i += 1;
 			}
 		}
 
-		// attempt to decode the rle
-		rle += " ";
-		if (PatternManager.decodeRLEString(pattern, rle, false, this.engine.allocator) !== -1) {
-			if (PatternManager.decodeRLEString(pattern, rle, true, this.engine.allocator) !== -1) {
-				this.pasteList[this.pasteList.length] = {gen: gen, every: every, mode: mode, x: x, y: y, pattern: pattern};
-				if (every > 0) {
-					this.isPasteEvery = true;
-				}
-				result = true;
+		// if found then apply the x, y offset and transformation to the cell list
+		if (found) {
+			i = 0;
+			while (i < cells.length) {
+				cellx = cells[i];
+				celly = cells[i + 1];
+				cells[i] = x + cellx * axx + celly * axy;
+				cells[i + 1] = y + cellx * ayx + celly * ayy;
+				i += 3;
+			}
+		} else {
+			// if not found then attempt to decode the rle
+			cells = this.rleToCellList(rle, x, y, transform);
+			if (cells[0] !== "error") {
+				found = true;
 			}
 		}
 
-		return result;
+		// save entry if valid
+		if (found) {
+			// compute the bounding box for the cell list
+			i = 0;
+			while (i < cells.length) {
+				x = cells[i];
+				y = cells[i + 1];
+				if (x < leftX) {
+					leftX = x;
+				}
+				if (x > rightX) {
+					rightX = x;
+				}
+				if (y < bottomY) {
+					bottomY = y;
+				}
+				if (y > topY) {
+					topY = y;
+				}
+				i += 3;
+			}
+			// allocate an array for the rle
+			stateMap = Array.matrix(Uint8, topY - bottomY + 1, rightX - leftX + 1, 0, this.engine.allocator, "View.rle" + this.pasteList.length);
+
+			// populate the array from the cell list
+			i = 0;
+			while (i < cells.length) {
+				x = cells[i];
+				y = cells[i + 1];
+				stateMap[y - bottomY][x - leftX] = cells[i + 2];
+				i += 3;
+			}
+
+			// create the paste entry
+			this.pasteList[this.pasteList.length] = {gen: gen, every: every, mode: mode, cells: cells, map: stateMap, leftX: leftX, bottomY: bottomY};
+			if (every > 0) {
+				this.isPasteEvery = true;
+			}
+		}
+
+		return found;
 	};
 
 	// paste rle list to grid
 	View.prototype.pasteRLEList = function() {
 		var i = 0,
+			j = 0,
 			y = 0,
 			x = 0,
 			xOff = 0,
@@ -1419,95 +1577,118 @@
 			paste = null,
 			counter = this.engine.counter,
 			mode = ViewConstants.pasteModeOr,
-			pattern = null,
-			rleRow = null,
+			cells = null,
 			state = 0,
-			gridWidth = this.engine.width;
+			gridWidth = this.engine.width,
+			stateMap = null,
+			stateRow = null;
 
 		// check each pattern to see which need to be drawn this generation
-		for (i = 0; i < this.pasteList.length; i += 1) {
-			paste = this.pasteList[i];
+		for (j = 0; j < this.pasteList.length; j += 1) {
+			paste = this.pasteList[j];
 			if ((paste.every !==0 && counter >= paste.gen && (((counter - paste.gen) % paste.every) === 0)) || (paste.every === 0 && paste.gen === counter)) {
 				mode = paste.mode;
-				xOff = (gridWidth >> 1) + paste.x - (this.patternWidth >> 1);
-				yOff = (gridWidth >> 1) + paste.y - (this.patternHeight >> 1);
-				pattern = paste.pattern;
-				for (y = 0; y < pattern.height; y += 1) {
-					rleRow = pattern.multiStateMap[y];
-					// determine paste mode
-					switch (mode) {
-					case ViewConstants.pasteModeOr:
-						for (x = 0; x < pattern.width; x += 1) {
-							if (rleRow[x] !== 0) {
-								// set the cell
-								this.engine.setState(xOff + x, yOff + y, rleRow[x]);
-		
-								// check for growth
-								if (gridWidth !== this.engine.width) {
-									xOff += gridWidth >> 1;
-									yOff += gridWidth >> 1;
-									gridWidth <<= 1;
-								}
-							}
-						}
-						break;
-					case ViewConstants.pasteModeCopy:
-						for (x = 0; x < pattern.width; x += 1) {
+				xOff = (gridWidth >> 1) - (this.patternWidth >> 1);
+				yOff = (gridWidth >> 1) - (this.patternHeight >> 1);
+				cells = paste.cells;
+				stateMap = paste.map;
+				i = 0;
+				// determine paste mode
+				switch (mode) {
+				case ViewConstants.pasteModeOr:
+					while (i < cells.length) {
+						state = cells[i + 2];
+						if (state !== 0) {
 							// set the cell
-							this.engine.setState(xOff + x, yOff + y, rleRow[x]);
-		
+							this.engine.setState(xOff + cells[i], yOff + cells[i + 1], state);
+	
 							// check for growth
-							if (gridWidth !== this.engine.width) {
+							while (gridWidth !== this.engine.width) {
 								xOff += gridWidth >> 1;
 								yOff += gridWidth >> 1;
 								gridWidth <<= 1;
 							}
 						}
-						break;
-					case ViewConstants.pasteModeXor:
-						for (x = 0; x < pattern.width; x += 1) {
+						i += 3;
+					}
+					break;
+				case ViewConstants.pasteModeCopy:
+					xOff += paste.leftX;
+					yOff += paste.bottomY;
+					for (y = 0; y < stateMap.length; y += 1) {
+						stateRow = stateMap[y];
+						for (x = 0; x < stateRow.length; x += 1) {
+							state = stateRow[x];
+
+							// set the cell
+							this.engine.setState(xOff + x, yOff + y, state);
+	
+							// check for growth
+							while (gridWidth !== this.engine.width) {
+								xOff += gridWidth >> 1;
+								yOff += gridWidth >> 1;
+								gridWidth <<= 1;
+							}
+						}
+					}
+					break;
+				case ViewConstants.pasteModeXor:
+					while (i < cells.length) {
+						x = cells[i];
+						y = cells[i + 1];
+						state = this.engine.getState(xOff + x, yOff + y, false);
+						// set the cell
+						this.engine.setState(xOff + x, yOff + y, cells[i + 2] ^ state);
+	
+						// check for growth
+						while (gridWidth !== this.engine.width) {
+							xOff += gridWidth >> 1;
+							yOff += gridWidth >> 1;
+							gridWidth <<= 1;
+						}
+						i += 3;
+					}
+					break;
+				case ViewConstants.pasteModeAnd:
+					xOff += paste.leftX;
+					yOff += paste.bottomY;
+					for (y = 0; y < stateMap.length; y += 1) {
+						stateRow = stateMap[y];
+						for (x = 0; x < stateRow.length; x += 1) {
 							state = this.engine.getState(xOff + x, yOff + y, false);
 							// set the cell
-							this.engine.setState(xOff + x, yOff + y, rleRow[x] ^ state);
-		
+							this.engine.setState(xOff + x, yOff + y, stateRow[x] & state);
+	
 							// check for growth
-							if (gridWidth !== this.engine.width) {
+							while (gridWidth !== this.engine.width) {
 								xOff += gridWidth >> 1;
 								yOff += gridWidth >> 1;
 								gridWidth <<= 1;
 							}
 						}
-						break;
-					case ViewConstants.pasteModeAnd:
-						for (x = 0; x < pattern.width; x += 1) {
-							state = this.engine.getState(xOff + x, yOff + y, false);
-							// set the cell
-							this.engine.setState(xOff + x, yOff + y, rleRow[x] & state);
-		
-							// check for growth
-							if (gridWidth !== this.engine.width) {
-								xOff += gridWidth >> 1;
-								yOff += gridWidth >> 1;
-								gridWidth <<= 1;
-							}
-						}
-						break;
-					case ViewConstants.pasteModeNot:
-						for (x = 0; x < pattern.width; x += 1) {
-							if (rleRow[x] === 0) {
+					}
+					break;
+				case ViewConstants.pasteModeNot:
+					xOff += paste.leftX;
+					yOff += paste.bottomY;
+					for (y = 0; y < stateMap.length; y += 1) {
+						stateRow = stateMap[y];
+						for (x = 0; x < stateRow.length; x += 1) {
+							if (stateRow[x] === 0) {
 								// set the cell
 								this.engine.setState(xOff + x, yOff + y, 1);
-		
+	
 								// check for growth
-								if (gridWidth !== this.engine.width) {
+								while (gridWidth !== this.engine.width) {
 									xOff += gridWidth >> 1;
 									yOff += gridWidth >> 1;
 									gridWidth <<= 1;
 								}
 							}
 						}
-						break;
+						i += 3;
 					}
+					break;
 				}
 			}
 		}
@@ -1994,14 +2175,6 @@
 	
 	// copy pattern pan X and Y
 	View.prototype.computePanXY = function(width, height) {
-		// check specified width and height
-		//if (this.specifiedWidth !== -1) {
-			//width = this.specifiedWidth;
-		//}
-		//if (this.specifiedHeight !== -1) {
-			//height = this.specifiedHeight;
-		//}
-
 		// check for bounded grid with CXRLE Pos
 		if (this.engine.boundedGridType !== -1 && this.posDefined) {
 			this.panX = (this.engine.width >> 1) + this.xOffset;
@@ -8790,7 +8963,13 @@
 		    nextToken = "",
 
 		    // lookahead token
-		    peekToken = "",
+			peekToken = "",
+			
+			// string value
+			stringToken = "",
+
+			// transformation value
+			transToken = "",
 
 		    // whether reading string
 		    readingString = false,
@@ -10029,43 +10208,149 @@
 							itemValid = false;
 							peekToken = scriptReader.getNextToken();
 							if (peekToken !== "") {
-								// associate the name with the snippet
-								this.addNamedRLE(scriptErrors, peekToken, scriptReader.getNextToken());
+								// check the rle exists
+								stringToken = scriptReader.peekAtNextToken();
+								if (stringToken !== "") {
+									scriptReader.getNextToken();
 
-								// errors are handled in the above function
-								itemValid = true;
+									// check for optional x and y
+									x = 0;
+									y = 0;
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+										x = scriptReader.getNextTokenAsNumber();
+									}
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+										y = scriptReader.getNextTokenAsNumber();
+									}
+
+									// check for optional transformation
+									z = -1;
+									transToken = scriptReader.peekAtNextToken();
+									if (transToken !== "") {
+										switch (transToken) {
+										case Keywords.transTypeIdentity:
+											z = ViewConstants.transIdentity;
+											break;
+										case Keywords.transTypeFlip:
+											z = ViewConstants.transFlip;
+											break;
+										case Keywords.transTypeFlipX:
+											z = ViewConstants.transFlipX;
+											break;
+										case Keywords.transTypeFlipY:
+											z = ViewConstants.transFlipY;
+											break;
+										case Keywords.transTypeSwapXY:
+											z = ViewConstants.transSwapXY;
+											break;
+										case Keywords.transTypeSwapXYFlip:
+											z = ViewConstants.transSwapXYFlip;
+											break;
+										case Keywords.transTypeRotateCW:
+											z = ViewConstants.transRotateCW;
+											break;
+										case Keywords.transTypeRotateCCW:
+											z = ViewConstants.transRotateCCW;
+											break;
+										}
+										// eat token if it was valid
+										if (z !== -1) {
+											scriptReader.getNextToken();
+										}
+									}
+									// default to identity if not defined
+									if (z === -1) {
+										z = ViewConstants.transIdentity;
+									}
+
+									// associate the name with the snippet
+									this.addNamedRLE(scriptErrors, peekToken, stringToken, x, y, z);
+
+									// errors are handled in the above function
+									itemValid = true;
+								}
 							}
 
 							break;
 
 						// paste
 						case Keywords.pasteWord:
-							// get the x position
-							if (scriptReader.nextTokenIsNumeric()) {
-								isNumeric = true;
+							// get the rle
+							stringToken = scriptReader.peekAtNextToken();
+							if (stringToken !== "") {
+								scriptReader.getNextToken();
 
-								// get the value
-								numberValue = scriptReader.getNextTokenAsNumber();
+								// get the x position
+								if (scriptReader.nextTokenIsNumeric()) {
+									isNumeric = true;
 
-								// check it is in range
-								if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
-									isNumeric = false;
-									x = numberValue;
+									// get the value
+									numberValue = scriptReader.getNextTokenAsNumber();
 
-									// get the y position
-									if (scriptReader.nextTokenIsNumeric()) {
-										isNumeric = true;
+									// check it is in range
+									if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
+										isNumeric = false;
+										x = numberValue;
 
-										// get the value
-										numberValue = scriptReader.getNextTokenAsNumber();
+										// get the y position
+										if (scriptReader.nextTokenIsNumeric()) {
+											isNumeric = true;
 
-										// check it is in range
-										if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
-											isNumeric = false;
-											y = numberValue;
+											// get the value
+											numberValue = scriptReader.getNextTokenAsNumber();
 
-											// get the rle
-											if (this.addRLE(this.pasteGen, this.pasteEvery, this.pasteMode, x, y, scriptReader.getNextToken())) {
+											// check it is in range
+											if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
+												isNumeric = false;
+												y = numberValue;
+
+												// check for optional transformation
+												z = -1;
+												transToken = scriptReader.peekAtNextToken();
+												if (transToken !== "") {
+													switch (transToken) {
+													case Keywords.transTypeIdentity:
+														z = ViewConstants.transIdentity;
+														break;
+													case Keywords.transTypeFlip:
+														z = ViewConstants.transFlip;
+														break;
+													case Keywords.transTypeFlipX:
+														z = ViewConstants.transFlipX;
+														break;
+													case Keywords.transTypeFlipY:
+														z = ViewConstants.transFlipY;
+														break;
+													case Keywords.transTypeSwapXY:
+														z = ViewConstants.transSwapXY;
+														break;
+													case Keywords.transTypeSwapXYFlip:
+														z = ViewConstants.transSwapXYFlip;
+														break;
+													case Keywords.transTypeRotateCW:
+														z = ViewConstants.transRotateCW;
+														break;
+													case Keywords.transTypeRotateCCW:
+														z = ViewConstants.transRotateCCW;
+														break;
+													}
+													// eat token if it was valid
+													if (z !== -1) {
+														scriptReader.getNextToken();
+													}
+												}
+												// default to identity if not defined
+												if (z === -1) {
+													z = ViewConstants.transIdentity;
+												}
+
+												if (!this.addRLE(this.pasteGen, this.pasteEvery, this.pasteMode, stringToken, x, y, z)) {
+													scriptErrors[scriptErrors.length] = [Keywords.pasteWord + " " + stringToken, "invalid name or rle"];
+												}
+	
+												// errors handled above
 												itemValid = true;
 											}
 										}
