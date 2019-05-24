@@ -210,7 +210,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 335,
+		/** @const {number} */ versionBuild : 336,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1498,7 +1498,7 @@
 					found = true;
 				} else {
 					i += 1;
-					}
+				}
 			}
 	
 			if (found) {
@@ -1653,6 +1653,7 @@
 			minX = 0,
 			minY = 0,
 			zoomBox = this.engine.zoomBox,
+			states = this.engine.multiNumStates,
 			cells = [];
 
 		// evolve rle snippets
@@ -1684,7 +1685,9 @@
 				while (gens > 0) {
 					// compute next generation with no stats, history and graph disabled
 					this.engine.nextGeneration(false, true, true);
-					this.engine.convertToPensTile();
+					if (states !== -1) {
+						this.engine.convertToPensTile();
+					}
 					gens -= 1;
 				}
 				if ((this.engine.counter & 1) !== 0) {
@@ -4504,9 +4507,6 @@
 			me.engine.restoreSavedGrid(me.noHistory);
 			me.floatCounter = me.engine.counter;
 			me.originCounter = me.floatCounter;
-
-			// draw any initial RLE snippets
-			me.pasteRLEList();
 
 			// mark cells alive
 			me.engine.anythingAlive = true;

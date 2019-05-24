@@ -1,3 +1,6 @@
+Build 336
+- paste mode XOR was not working on reset or step back
+
 Build 335
 - [[ PASTE ]] now works with Generations rules
 - paste commands now support optional transformations:

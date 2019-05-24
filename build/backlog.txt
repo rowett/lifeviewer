@@ -31,8 +31,9 @@ In progress:
     - seach boundaries for gliders and remove them
     [DONE]create glider lookup for the 4 phases of NE, NW, SE and SW orientations
 [STARTED]Rule Table rules
-    - decode @TABLE, @TREE, @COLORS and @ICONS
-    - implement rule table algorithm
+    - decode @TABLE, @COLORS and @ICONS
+    - implement rule table and rule tree algorithms
+    [DONE]decode @TREE
     [DONE]search after RLE terminating ! character for rule table sections
 [STARTED]Pattern Editor
     - ability to define rule

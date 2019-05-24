@@ -1980,7 +1980,6 @@
 		if (snapshot) {
 			// restore the snapshot
 			this.restoreSnapshot(snapshot);
-			view.pasteRLEList();
 
 			// play from the snapshot counter to just before the target with stats off (for speed)
 			while (this.counter < targetGen - 1) {
