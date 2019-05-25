@@ -244,6 +244,9 @@
 		// display scale for depth
 		/** @const {number} */ depthScale : 10,
 
+		// maximum default zoom if autofit or zoom not specified
+		/** @const {number} */ maxDefaultZoom : 32,
+
 		// minimum and maximum zoom
 		/** @const {number} */ minZoom : 0.0625,
 		/** @const {number} */ maxZoom : 64,
@@ -559,6 +562,9 @@
 
 		// rle paste generation
 		this.pasteGen = 0;
+
+		// rle delta list
+		this.pasteDelta = [];
 
 		// rle paste modulus
 		this.pasteEvery = 0;
@@ -1517,7 +1523,7 @@
 	};
 
 	// add rle to paste list
-	View.prototype.addRLE = function(gen, every, mode, rle, x, y, transform) {
+	View.prototype.addRLE = function(gen, deltaList, every, mode, rle, x, y, transform) {
 		var i = 0,
 			found = false,
 			cells = [],
@@ -1535,6 +1541,7 @@
 			evolveIndex = rle.indexOf("["),
 			namePrefix = rle,
 			evolution = 0,
+			genList = [],
 			stateMap = null;
 
 		// check for evolution
@@ -1628,8 +1635,16 @@
 				i += 3;
 			}
 
+			// copy start generation into the list
+			genList[0] = gen;
+
+			// if delta list supplied then convert to absolute values
+			for (i = 0; i < deltaList.length; i += 1) {
+				genList[genList.length] = genList[genList.length - 1] + deltaList[i];
+			}
+
 			// create the paste entry
-			this.pasteList[this.pasteList.length] = {gen: gen, every: every, mode: mode, cells: cells, map: stateMap, leftX: leftX, bottomY: bottomY, width: rightX - leftX + 1, height: topY - bottomY + 1, evolution: evolution};
+			this.pasteList[this.pasteList.length] = {genList: genList, every: every, mode: mode, cells: cells, map: stateMap, leftX: leftX, bottomY: bottomY, width: rightX - leftX + 1, height: topY - bottomY + 1, evolution: evolution};
 			if (every > 0) {
 				this.isPasteEvery = true;
 			}
@@ -1756,13 +1771,28 @@
 			cells = null,
 			state = 0,
 			gridWidth = this.engine.width,
+			needsPaste = false,
 			stateMap = null,
 			stateRow = null;
 
 		// check each pattern to see which need to be drawn this generation
 		for (j = 0; j < this.pasteList.length; j += 1) {
 			paste = this.pasteList[j];
-			if ((paste.every !==0 && counter >= paste.gen && (((counter - paste.gen) % paste.every) === 0)) || (paste.every === 0 && paste.gen === counter)) {
+			needsPaste = false;
+			// check if this pattern needs pasting
+			if (paste.every !==0 && counter >= paste.gen && (((counter - paste.gen) % paste.every) === 0)) {
+				needsPaste = true;
+			} else {
+				i = 0;
+				while (i < paste.genList.length && !needsPaste) {
+					if (counter === paste.genList[i]) {
+						needsPaste = true;
+					} else {
+						i += 1;
+					}
+				}
+			}
+			if (needsPaste) {
 				mode = paste.mode;
 				xOff = (gridWidth >> 1) - (this.patternWidth >> 1);
 				yOff = (gridWidth >> 1) - (this.patternHeight >> 1);
@@ -10418,80 +10448,68 @@
 							if (stringToken !== "") {
 								scriptReader.getNextToken();
 
+								// check for optional position
+								x = 0;
+								y = 0;
+
 								// get the x position
 								if (scriptReader.nextTokenIsNumeric()) {
 									isNumeric = true;
+									x = scriptReader.getNextTokenAsNumber();
+								}
 
-									// get the value
-									numberValue = scriptReader.getNextTokenAsNumber();
+								// get the y position
+								if (scriptReader.nextTokenIsNumeric()) {
+									isNumeric = true;
+									y = scriptReader.getNextTokenAsNumber();
+								}
 
-									// check it is in range
-									if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
-										isNumeric = false;
-										x = numberValue;
-
-										// get the y position
-										if (scriptReader.nextTokenIsNumeric()) {
-											isNumeric = true;
-
-											// get the value
-											numberValue = scriptReader.getNextTokenAsNumber();
-
-											// check it is in range
-											if (numberValue >= -this.engine.maxGridSize && numberValue < (2 * this.engine.maxGridSize)) {
-												isNumeric = false;
-												y = numberValue;
-
-												// check for optional transformation
-												z = -1;
-												transToken = scriptReader.peekAtNextToken();
-												if (transToken !== "") {
-													switch (transToken) {
-													case Keywords.transTypeIdentity:
-														z = ViewConstants.transIdentity;
-														break;
-													case Keywords.transTypeFlip:
-														z = ViewConstants.transFlip;
-														break;
-													case Keywords.transTypeFlipX:
-														z = ViewConstants.transFlipX;
-														break;
-													case Keywords.transTypeFlipY:
-														z = ViewConstants.transFlipY;
-														break;
-													case Keywords.transTypeSwapXY:
-														z = ViewConstants.transSwapXY;
-														break;
-													case Keywords.transTypeSwapXYFlip:
-														z = ViewConstants.transSwapXYFlip;
-														break;
-													case Keywords.transTypeRotateCW:
-														z = ViewConstants.transRotateCW;
-														break;
-													case Keywords.transTypeRotateCCW:
-														z = ViewConstants.transRotateCCW;
-														break;
-													}
-													// eat token if it was valid
-													if (z !== -1) {
-														scriptReader.getNextToken();
-													}
-												}
-												// default to identity if not defined
-												if (z === -1) {
-													z = ViewConstants.transIdentity;
-												}
-
-												if (!this.addRLE(this.pasteGen, this.pasteEvery, this.pasteMode, stringToken, x, y, z)) {
-													scriptErrors[scriptErrors.length] = [Keywords.pasteWord + " " + stringToken, "invalid name or rle"];
-												}
-	
-												// errors handled above
-												itemValid = true;
-											}
-										}
+								// check for optional transformation
+								z = -1;
+								transToken = scriptReader.peekAtNextToken();
+								if (transToken !== "") {
+									switch (transToken) {
+									case Keywords.transTypeIdentity:
+										z = ViewConstants.transIdentity;
+										break;
+									case Keywords.transTypeFlip:
+										z = ViewConstants.transFlip;
+										break;
+									case Keywords.transTypeFlipX:
+										z = ViewConstants.transFlipX;
+										break;
+									case Keywords.transTypeFlipY:
+										z = ViewConstants.transFlipY;
+										break;
+									case Keywords.transTypeSwapXY:
+										z = ViewConstants.transSwapXY;
+										break;
+									case Keywords.transTypeSwapXYFlip:
+										z = ViewConstants.transSwapXYFlip;
+										break;
+									case Keywords.transTypeRotateCW:
+										z = ViewConstants.transRotateCW;
+										break;
+									case Keywords.transTypeRotateCCW:
+										z = ViewConstants.transRotateCCW;
+										break;
+									}
+									// eat token if it was valid
+									if (z !== -1) {
+										scriptReader.getNextToken();
 									}
 								}
+								// default to identity if not defined
+								if (z === -1) {
+									z = ViewConstants.transIdentity;
+								}
+
+								if (!this.addRLE(this.pasteGen, this.pasteDelta, this.pasteEvery, this.pasteMode, stringToken, x, y, z)) {
+									scriptErrors[scriptErrors.length] = [Keywords.pasteWord + " " + stringToken, "invalid name or rle"];
+								}
+	
+								// errors handled above
+								itemValid = true;
 							}
 
 							break;
@@ -10509,6 +10527,13 @@
 								if (numberValue >= 0) {
 									this.pasteGen = numberValue;
 									this.pasteEvery = 0;
+									this.pasteDelta = [];
+
+									// check for delta list
+									while(scriptReader.nextTokenIsNumeric()) {
+										numberValue = scriptReader.getNextTokenAsNumber();
+										this.pasteDelta[this.pasteDelta.length] = numberValue;
+									}
 									itemValid = true;
 								}
 							} else {
@@ -13394,6 +13419,7 @@
 		this.pasteList = [];
 		this.pasteMode = ViewConstants.pasteModeOr;
 		this.pasteGen = 0;
+		this.pasteDelta = [];
 		this.pasteEvery = 0;
 		this.isPasteEvery = false;
 		this.isEvolution = false;
@@ -14272,6 +14298,13 @@
 		// override the default zoom if specified
 		if (this.defaultZoomUsed) {
 			this.engine.zoom = numberValue;
+		} else {
+			// enforce default maximum if zoom or autofit not specified
+			if (!this.autoFit) {
+				if (this.engine.zoom > ViewConstants.maxDefaultZoom) {
+					this.engine.zoom = ViewConstants.maxDefaultZoom;
+				}
+			}
 		}
 
 		// override the default position if specified

@@ -984,7 +984,7 @@
 		y = this.renderHelpLine(view, Keywords.noSourceWord, "hide pattern source", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.maxGridSizeWord + " <" + ViewConstants.minGridPower + ".." + ViewConstants.maxGridPower + ">", "set maximum grid size 2^n", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.rleWord + " name rle", "create a named rle", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " (X Y (TRANS))", "... X Y and transformation", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (X Y) (TRANS)", "... X Y and transformation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.transTypeIdentity, "identity", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.transTypeFlip, "flip", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.transTypeFlipX, "flip X", ctx, x, y, height, helpLine);
@@ -993,11 +993,12 @@
 		y = this.renderHelpLine(view, " " + Keywords.transTypeSwapXYFlip, "swap X and Y and flip", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.transTypeRotateCW, "rotate clockwise", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.transTypeRotateCCW, "rotate counter-clockwise", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.pasteWord + " name|rle X Y", "paste rle at X Y", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.pasteWord + " name|rle (X Y)", "paste rle at optional X Y", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (TRANS)", "... optional transformation", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.pasteTWord + " <1..>", "set paste generation", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.pasteTWord + " <0..>", "set paste generation", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (<1..>)*", "... optional delta list", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteTWord + " " + Keywords.everyWord + " <1..>", "set paste interval", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " (<1..>)", "... optional start generation", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (<0..>)", "... optional start generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteModeWord + " " + Keywords.pasteModeOrWord + "|" + Keywords.pasteModeCopyWord + "|" + Keywords.pasteModeXorWord + "|" + Keywords.pasteModeAndWord + "|" + Keywords.pasteModeNotWord, "set the paste mode", ctx, x, y, height, helpLine);
 	};
 

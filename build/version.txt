@@ -1,5 +1,7 @@
 Build 336
 - paste mode XOR was not working on reset or step back
+- max default zoom if AUTOFIT or ZOOM not specified is now 32x
+- [[ PASTE ]] X Y location is now optional at defaults to 0, 0
 
 Build 335
 - [[ PASTE ]] now works with Generations rules
