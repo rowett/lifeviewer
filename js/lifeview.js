@@ -9305,6 +9305,9 @@
 		    // loop counter
 		    i = 0,
 
+			// dummy pattern for RLE decoding
+			pattern = new Pattern("decode"),
+
 		    // suppress errors flags
 		    suppressErrors = {
 			x : false,
@@ -10378,6 +10381,17 @@
 									// consume token
 									scriptReader.getNextToken();
 
+									// concatenate subequent tokens that are valid RLE
+									transToken = scriptReader.peekAtNextToken();
+									while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && PatternManager.decodeRLEString(pattern, transToken, false, this.engine.allocator) !== -1) {
+										// consume token
+										scriptReader.getNextToken();
+										// add to rle
+										stringToken += transToken;
+										// look at next token
+										transToken = scriptReader.peekAtNextToken();
+									}
+
 									// check for optional x and y
 									x = 0;
 									y = 0;
@@ -10446,6 +10460,17 @@
 							stringToken = scriptReader.peekAtNextToken();
 							if (stringToken !== "") {
 								scriptReader.getNextToken();
+
+								// concatenate subequent tokens that are valid RLE
+								transToken = scriptReader.peekAtNextToken();
+								while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && PatternManager.decodeRLEString(pattern, transToken, false, this.engine.allocator) !== -1) {
+									// consume token
+									scriptReader.getNextToken();
+									// add to rle
+									stringToken += transToken;
+									// look at next token
+									transToken = scriptReader.peekAtNextToken();
+								}
 
 								// check for optional position
 								x = 0;

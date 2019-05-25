@@ -1,6 +1,7 @@
 Build 337
 - improved paste evolution performance
 - don't block F5 from refreshing browser when mouse over LifeViewer window
+- rle for [[ PASTE ]] and [[ RLE ]] commands can now span multiple lines
 
 Build 336
 - paste mode XOR was not working on reset or step back
