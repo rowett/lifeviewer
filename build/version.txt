@@ -1,7 +1,15 @@
+Build 337
+- improved paste evolution performance
+- don't block F5 from refreshing browser when mouse over LifeViewer window
+
 Build 336
 - paste mode XOR was not working on reset or step back
-- max default zoom if AUTOFIT or ZOOM not specified is now 32x
-- [[ PASTE ]] X Y location is now optional at defaults to 0, 0
+- max initial default zoom if AUTOFIT or ZOOM not specified is now 32x
+- [[ PASTE ]] X Y location is now optional and defaults to 0, 0
+	- syntax is now [[ PASTE rle|name (X Y) (TRANS) ]]
+- [[ RLE ]] syntax is now [[ RLE name (X Y) (TRANS) ]]
+- [[ PASTET ]] now supports a list of deltas after the initial generation
+	- syntax is now [[ PASTET <0..> (<1..>) ]] or [[ PASTET EVERY <1..> (<0..>) ]]
 
 Build 335
 - [[ PASTE ]] now works with Generations rules

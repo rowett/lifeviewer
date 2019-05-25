@@ -1,6 +1,7 @@
 // LifeViewer plugin
 // written by Chris Rowett
-// "This started small and then kind of got away from me."
+// "What's the best way to learn Javascript?"
+// "I know, I'll implement Conway's Game of Life."
 
 (function() {
 	// use strict mode
@@ -210,7 +211,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 336,
+		/** @const {number} */ versionBuild : 337,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1668,7 +1669,6 @@
 			minX = 0,
 			minY = 0,
 			zoomBox = this.engine.zoomBox,
-			states = this.engine.multiNumStates,
 			cells = [];
 
 		// evolve rle snippets
@@ -1700,15 +1700,8 @@
 				while (gens > 0) {
 					// compute next generation with no stats, history and graph disabled
 					this.engine.nextGeneration(false, true, true);
-					if (states !== -1) {
-						this.engine.convertToPensTile();
-					}
+					this.engine.convertToPensTile();
 					gens -= 1;
-				}
-				if ((this.engine.counter & 1) !== 0) {
-					this.engine.resetColourGridBox(this.engine.nextGrid16);
-				} else {
-					this.engine.resetColourGridBox(this.engine.grid16);
 				}
 
 				// replace the pattern with the evolved pattern
@@ -1752,8 +1745,13 @@
 				}
 
 				// clear grids
-				this.engine.clearGrids(true);
+				this.engine.clearGrids(false);
 			}
+		}
+
+		// clear grid if anything evolve
+		if (this.isEvolution) {
+			this.engine.clearGrids(false);
 		}
 	};
 
@@ -7513,8 +7511,8 @@
 
 			// ignore other keys
 			default:
-				// flag not handled
-				if (keyCode === -1) {
+				// flag key not handled if specified or f5 for refresh
+				if (keyCode === -1 || keyCode === 116) {
 					processed = false;
 				}
 				break;
@@ -10377,6 +10375,7 @@
 								// check the rle exists
 								stringToken = scriptReader.peekAtNextToken();
 								if (stringToken !== "") {
+									// consume token
 									scriptReader.getNextToken();
 
 									// check for optional x and y
@@ -13922,6 +13921,18 @@
 				}
 			}
 
+			// update the life rule
+			this.engine.updateLifeRule();
+
+			// process any rle snippet evolution
+			if (this.isEvolution) {
+				// create the colour index
+				this.engine.createColourIndex();
+
+				// process evolution
+				this.processEvolution();
+			}
+
 			// mark pattern not clipped to bounded grid
 			this.wasClipped = false;
 
@@ -14063,14 +14074,6 @@
 				this.engine.drawOverlay = true;
 			} else {
 				this.engine.drawOverlay = false;
-			}
-
-			// update the life rule
-			this.engine.updateLifeRule();
-
-			// process any rle snippet evolution
-			if (this.isEvolution) {
-				this.processEvolution();
 			}
 
 			// copy pattern to center of grid

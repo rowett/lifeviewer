@@ -3525,25 +3525,25 @@
 	// clear the life grids (or just the bit grids if specified)
 	Life.prototype.clearGrids = function(bitOnly) {
 		var height = this.height,
-		grid = this.grid,
-		nextGrid = this.nextGrid,
-		colourGrid = this.colourGrid,
-		smallColourGrid2 = this.smallColourGrid2,
-		overlayGrid = this.overlayGrid,
-		smallOverlayGrid = this.smallOverlayGrid,
-		tileGrid = this.tileGrid,
-		colourTileGrid = this.colourTileGrid,
-		colourTileHistoryGrid = this.colourTileHistoryGrid,
-		nextTileGrid = this.nextTileGrid,
+			grid = this.grid,
+			nextGrid = this.nextGrid,
+			colourGrid = this.colourGrid,
+			smallColourGrid2 = this.smallColourGrid2,
+			overlayGrid = this.overlayGrid,
+			smallOverlayGrid = this.smallOverlayGrid,
+			tileGrid = this.tileGrid,
+			colourTileGrid = this.colourTileGrid,
+			colourTileHistoryGrid = this.colourTileHistoryGrid,
+			nextTileGrid = this.nextTileGrid,
 
-		// blank rows
-		blankRow = this.blankRow,
-		blankTileRow = this.blankTileRow,
-		blankColourRow = this.blankColourRow,
-
-		// loop counter
-		h = 0;
-
+			// blank rows
+			blankRow = this.blankRow,
+			blankTileRow = this.blankTileRow,
+			blankColourRow = this.blankColourRow,
+	
+			// loop counter
+			h = 0;
+	
 		// clear each cell
 		for (h = 0; h < height; h += 1) {
 			grid[h].set(blankRow);
