@@ -25,6 +25,22 @@
 	</head>
 	<body>
 		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Multi-line RLE</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+#C [[ RLE pattern
+#C 3obo$
+#C b2o!
+#C PASTE pattern 10 10 ]]
+x = 3, y = 3, rule = Life
+3o$
+o$
+bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
 		<h2>PASTE at generation</h2>
 		<div class="viewer">
 			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
