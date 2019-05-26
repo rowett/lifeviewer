@@ -6,3 +6,4 @@ launch.json
 debug.log
 settings.json
 images/triangular*.png
+.vscode/ipch/*

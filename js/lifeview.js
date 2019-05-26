@@ -1669,7 +1669,8 @@
 			minX = 0,
 			minY = 0,
 			zoomBox = this.engine.zoomBox,
-			cells = [];
+			cells = [],
+			isSimple2State = this.engine.multiNumStates <= 2 && !this.engine.isHROT && !this.engine.isLifeHistory && this.engine.boundedGridType === -1;
 
 		// evolve rle snippets
 		for (j = 0; j < this.pasteList.length; j += 1) {
@@ -1689,14 +1690,19 @@
 				zoomBox.topY = yOff + item.height - 1;
 
 				// put the cells from the cell list onto the grid
-				while (i < cells.length) {
-					// cells list only contains non-zero cells
-					this.engine.setState(xOff + cells[i] - item.leftX, yOff + cells[i + 1] - item.bottomY, cells[i + 2]);
-					i += 3;
+				this.engine.counter = 0;
+				if (!isSimple2State) {
+					// can use batch set
+					this.engine.setStateList(cells, xOff - item.leftX, yOff - item.bottomY);
+				} else {
+					while (i < cells.length) {
+						// cells list only contains non-zero cells
+						this.engine.setState(xOff + cells[i] - item.leftX, yOff + cells[i + 1] - item.bottomY, cells[i + 2]);
+						i += 3;
+					}
 				}
 
 				// now run the required number of generations
-				this.engine.counter = 0;
 				while (gens > 0) {
 					// compute next generation with no stats, history and graph disabled
 					this.engine.nextGeneration(false, true, true);
@@ -1749,7 +1755,7 @@
 			}
 		}
 
-		// clear grid if anything evolve
+		// clear grid if anything evolved
 		if (this.isEvolution) {
 			this.engine.clearGrids(false);
 		}
@@ -1771,7 +1777,8 @@
 			gridWidth = this.engine.width,
 			needsPaste = false,
 			stateMap = null,
-			stateRow = null;
+			stateRow = null,
+			isSimple2State = this.engine.multiNumStates <= 2 && !this.engine.isHROT && !this.engine.isLifeHistory && this.engine.boundedGridType === -1;
 
 		// check each pattern to see which need to be drawn this generation
 		for (j = 0; j < this.pasteList.length; j += 1) {
@@ -1800,10 +1807,14 @@
 				// determine paste mode
 				switch (mode) {
 				case ViewConstants.pasteModeOr:
-					while (i < cells.length) {
-						// cells list only contains non-zero cells
-						this.engine.setState(xOff + cells[i], yOff + cells[i + 1], cells[i + 2]);
-						i += 3;
+					if (!isSimple2State) {
+						this.engine.setStateList(cells, xOff, yOff);
+					} else {
+						while (i < cells.length) {
+							// cells list only contains non-zero cells
+							this.engine.setState(xOff + cells[i], yOff + cells[i + 1], cells[i + 2]);
+							i += 3;
+						}
 					}
 					break;
 				case ViewConstants.pasteModeCopy:
