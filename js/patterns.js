@@ -4617,6 +4617,7 @@
 			if (width > PatternManager.maxWidth || y > PatternManager.maxHeight) {
 				// flag pattern too large
 				pattern.tooBig = true;
+				pattern.patternFormat = "RLE";
 			} else {
 				// allocate 2d cell array
 				pattern.lifeMap = Array.matrix(Uint16, y, ((width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
