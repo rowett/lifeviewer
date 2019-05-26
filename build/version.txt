@@ -1,3 +1,7 @@
+Build 338
+- performance improvement to setting cells
+- patterns that are too big for LifeViewer but have [[ PASTE ]] commands will ignore the pattern and just run the pastes
+
 Build 337
 - improved paste evolution performance
 - don't block F5 from refreshing browser when mouse over LifeViewer window

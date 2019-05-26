@@ -211,7 +211,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 337,
+		/** @const {number} */ versionBuild : 338,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13908,6 +13908,11 @@
 				}
 			}
 
+			// if pattern is too big and has no paste commands then generate error
+			if (pattern.tooBig && this.pasteList.length === 0) {
+				this.executable = false;
+			}
+
 			// setup the state list for drawing
 			this.setupStateList();
 
@@ -14252,7 +14257,11 @@
 			if (pattern && this.engine.population === 0 && !this.isPasteEvery) {
 				this.emptyStart = true;
 				if (!this.engine.isNone) {
-					this.menuManager.notification.notify("Nothing alive!", 15, 300, 15, false);
+					if (pattern.tooBig) {
+						this.menuManager.notification.notify("Pattern too big!", 15, ViewConstants.errorDuration, 15, false);
+					} else {
+						this.menuManager.notification.notify("Nothing alive!", 15, 300, 15, false);
+					}
 				}
 			} else {
 				this.emptyStart = false;

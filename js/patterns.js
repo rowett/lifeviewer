@@ -4617,7 +4617,6 @@
 			if (width > PatternManager.maxWidth || y > PatternManager.maxHeight) {
 				// flag pattern too large
 				pattern.tooBig = true;
-				pattern.invalid = true;
 			} else {
 				// allocate 2d cell array
 				pattern.lifeMap = Array.matrix(Uint16, y, ((width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
@@ -5616,7 +5615,8 @@
 			border = 4,
 
 		    // counters
-		    i = 0;
+			i = 0,
+			j = 0;
 
 		// reset the pattern
 		pattern.isNone = false;
@@ -5732,9 +5732,16 @@
 					decoded = true;
 
 					// start of bitmap so attempt to size the pattern
-					if (this.decodeRLEString(pattern, source.substring(index), false, allocator) !== -1) {
-						// decode the bitmap
-						index += this.decodeRLEString(pattern, source.substring(index), true, allocator);
+					j = this.decodeRLEString(pattern, source.substring(index), false, allocator);
+					if (j !== -1) {
+						// looks valid so check if pattern is too big
+						if (pattern.tooBig) {
+							// pattern too big so skip to process any after comments
+							index += j;
+						} else {
+							// pattern is good so decode the bitmap
+							index += this.decodeRLEString(pattern, source.substring(index), true, allocator);
+						}
 					}
 				}
 				break;
@@ -6210,7 +6217,12 @@
 		if (newPattern.tooBig) {
 			this.failureReason = "Pattern too big (maximum " + this.maxWidth + "x" + this.maxHeight + ")";
 			this.tooBig = true;
-			this.executable = false;
+
+			// create a dummy empty pattern since there may be paste snippets
+			newPattern.invalid = false;
+			newPattern.width = 1;
+			newPattern.height = 1;
+			newPattern.lifeMap = Array.matrix(Uint16, newPattern.height, ((newPattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
 		}
 
 		// remove bounded grid postfix if present
@@ -6223,16 +6235,14 @@
 		}
 
 		// check if the new pattern was decoded
-		if (newPattern.lifeMap === null) {
-			if (!newPattern.tooBig && this.failureReason === "") {
-				this.failureReason = "Invalid pattern";
-			}
+		if (newPattern.lifeMap === null && this.failureReason === "") {
+			this.failureReason = "Invalid pattern";
 			newPattern = null;
 			this.executable = false;
 		}
 
 		// check if the RLE was valid
-		if (newPattern && newPattern.invalid) {
+		if (newPattern && newPattern.invalid && !newPattern.tooBig) {
 			newPattern = null;
 			this.executable = false;
 		}
