@@ -1,3 +1,9 @@
+Build 340
+- [[ PASTET EVERY ]] now has optional end generation (as well as optional start generation)
+	- [[ PASTET EVERY interval (start (end)) ]]
+	- if specified then "end" must be at least "interval" + "start"
+- display actual STEP size if specified size can not be achieved
+
 Build 339
 - new script command [[ KILLGLIDERS ]] will delete escaping boundary gliders
 - better PASTE information in "Help" -> "Info" -> "Pattern"

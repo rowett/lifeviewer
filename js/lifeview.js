@@ -42,6 +42,9 @@
 
 	// ViewConstants singleton
 	ViewConstants = {
+		// number of step samples for average
+		/** @const {number} */ numStepSamples : 5,
+
 		// a large integer used for min/max calculations on the grid
 		/** @const {number} */ bigInteger : 100000000,
 
@@ -211,7 +214,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 339,
+		/** @const {number} */ versionBuild : 340,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -541,6 +544,10 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// step samples
+		this.stepSamples = [];
+		this.stepIndex = 0;
+
 		// list of transformations
 		this.transforms = [];
 		this.transforms[ViewConstants.transIdentity] = [1, 0, 0, 1];
@@ -563,6 +570,9 @@
 
 		// rle paste generation
 		this.pasteGen = 0;
+
+		// rle paste end generation for every mode
+		this.pasteEnd = -1;
 
 		// rle delta list
 		this.pasteDelta = [];
@@ -1104,6 +1114,9 @@
 		// speed step range item
 		this.stepRange = null;
 
+		// actual step
+		this.stepLabel = null;
+
 		// navigation menu toggle
 		this.navToggle = null;
 
@@ -1527,7 +1540,7 @@
 	};
 
 	// add rle to paste list
-	View.prototype.addRLE = function(gen, deltaList, every, mode, rle, x, y, transform) {
+	View.prototype.addRLE = function(gen, end, deltaList, every, mode, rle, x, y, transform) {
 		var i = 0,
 			found = false,
 			cells = [],
@@ -1648,7 +1661,7 @@
 			}
 
 			// create the paste entry
-			this.pasteList[this.pasteList.length] = {genList: genList, every: every, mode: mode, cells: cells, map: stateMap, leftX: leftX, bottomY: bottomY, width: rightX - leftX + 1, height: topY - bottomY + 1, evolution: evolution};
+			this.pasteList[this.pasteList.length] = {genList: genList, end: end, every: every, mode: mode, cells: cells, map: stateMap, leftX: leftX, bottomY: bottomY, width: rightX - leftX + 1, height: topY - bottomY + 1, evolution: evolution};
 			if (every > 0) {
 				this.isPasteEvery = true;
 			}
@@ -1792,7 +1805,10 @@
 			needsPaste = false;
 			// check if this pattern needs pasting
 			if (paste.every !==0 && counter >= paste.genList[0] && (((counter - paste.genList[0]) % paste.every) === 0)) {
-				needsPaste = true;
+				// check for end generation
+				if (!(paste.end !== -1 && counter > paste.end)) {
+					needsPaste = true;
+				}
 			} else {
 				i = 0;
 				while (i < paste.genList.length && !needsPaste) {
@@ -2757,6 +2773,38 @@
 		return result;
 	};
 
+	// update step label
+	View.prototype.updateStepLabel = function(stepsTaken) {
+		var i = 0,
+			total = 0;
+
+		// add the sample to the array
+		this.stepSamples[this.stepIndex] = stepsTaken;
+		this.stepIndex += 1;
+		if (this.stepIndex >= ViewConstants.numStepSamples) {
+			this.stepIndex = 0;
+		}
+
+		// compute the average
+		for (i = 0; i < this.stepSamples.length; i += 1) {
+			total += this.stepSamples[i];
+		}
+		total /= this.stepSamples.length;
+
+		// update the label
+		this.stepLabel.preText = String(Math.round(total));
+		this.stepLabel.deleted = false;
+	};
+
+	// clear step samples
+	View.prototype.clearStepSamples = function() {
+		if (this.stepSamples.length > 0) {
+			this.stepSamples = [];
+			this.stepIndex = 0;
+		}
+		this.stepLabel.deleted = true;
+	};
+
 	// set the x/y position on the UI
 	View.prototype.setXYPosition = function() {
 		// position relative to display width and height
@@ -3258,7 +3306,17 @@
 
 				// remove steps not taken from target counter
 				me.floatCounter -= (stepsToTake - stepsTaken);
+
+				// if not enough steps taken then display actual number
+				if (stepsTaken < stepsToTake) {
+					me.updateStepLabel(stepsTaken);
+				} else {
+					me.clearStepSamples();
+				}
 			} else {
+				// clear step samples
+				me.clearStepSamples();
+
 				// check if still fading
 				if (me.fading) {
 					// decrease fade time
@@ -3299,6 +3357,9 @@
 					me.menuManager.notification.notify("STOP reached - Play to continue ", 15, 180, 15, true);
 				}
 			}
+		} else {
+			// clear step samples
+			me.clearStepSamples();
 		}
 
 		// lock or unlock the controls
@@ -8075,6 +8136,11 @@
 		this.stepRange = this.viewMenu.addRangeItem(this.viewStepRange, Menu.southEast, -290, -40, 80, 40, ViewConstants.minStepSpeed, ViewConstants.maxStepSpeed, 1, true, "x", "", 0);
 		this.stepRange.toolTip = "generations per step";
 
+		// add the actual step label
+		this.stepLabel = this.viewMenu.addLabelItem(Menu.southEast, -290, -60, 80, 20, 0);
+		this.stepLabel.font = ViewConstants.statsFont;
+		this.stepLabel.deleted = true;
+
 		// add play and pause list
 		this.playList = this.viewMenu.addListItem(this.viewPlayList, Menu.southEast, -205, -40, 160, 40, ["", "", "", ""], ViewConstants.modePause, Menu.single);
 		this.playList.icon = [this.iconManager.icon("tostart"), this.iconManager.icon("stepback"), this.iconManager.icon("pause"), this.iconManager.icon("play")];
@@ -10552,7 +10618,7 @@
 									z = ViewConstants.transIdentity;
 								}
 
-								if (!this.addRLE(this.pasteGen, this.pasteDelta, this.pasteEvery, this.pasteMode, stringToken, x, y, z)) {
+								if (!this.addRLE(this.pasteGen, this.pasteEnd, this.pasteDelta, this.pasteEvery, this.pasteMode, stringToken, x, y, z)) {
 									scriptErrors[scriptErrors.length] = [Keywords.pasteWord + " " + stringToken, "invalid name or rle"];
 								}
 	
@@ -10575,6 +10641,7 @@
 								if (numberValue >= 0) {
 									this.pasteGen = numberValue;
 									this.pasteEvery = 0;
+									this.pasteEnd = -1;
 									this.pasteDelta = [];
 
 									// check for delta list
@@ -10602,6 +10669,7 @@
 										if (numberValue >= 1) {
 											this.pasteEvery = numberValue;
 											this.pasteGen = 0;
+											this.pasteEnd = -1;
 
 											// check for optional start gen
 											if (scriptReader.nextTokenIsNumeric()) {
@@ -10610,7 +10678,19 @@
 												// check it is in range
 												if (numberValue >= 0) {
 													this.pasteGen = numberValue;
-													itemValid = true;
+
+													// check for optional end gen
+													if (scriptReader.nextTokenIsNumeric()) {
+														numberValue = scriptReader.getNextTokenAsNumber();
+	
+														// check it is in range
+														if (numberValue >= this.pasteGen + this.pasteEvery) {
+															this.pasteEnd = numberValue;
+															itemValid = true;
+														}
+													} else {
+														itemValid = true;
+													}
 												}
 											} else {
 												itemValid = true;
@@ -13470,6 +13550,7 @@
 		this.pasteList = [];
 		this.pasteMode = ViewConstants.pasteModeOr;
 		this.pasteGen = 0;
+		this.pasteEnd = -1;
 		this.pasteDelta = [];
 		this.pasteEvery = 0;
 		this.isPasteEvery = false;
