@@ -14,24 +14,24 @@
 	/** @const */
 	var LifeConstants = {
 		// NW glider (top left cell must be set for detection)
-		/** @const {<Array<Array<number>>} */ gliderNW : [[1, 1, 1],
-														  [1, 0, 0],
-														  [0, 1, 0]],
+		/** @const {Array<Array<number>>} */ gliderNW : [[1, 1, 1],
+														 [1, 0, 0],
+														 [0, 1, 0]],
 
 		// NE glider (top left cell must be set for detection)
-		/** @const {<Array<Array<number>>} */ gliderNE : [[1, 1, 1],
-														  [0, 0, 1],
-														  [0, 1, 0]],
+		/** @const {Array<Array<number>>} */ gliderNE : [[1, 1, 1],
+														 [0, 0, 1],
+														 [0, 1, 0]],
 		
 		// SW glider (top middle cell only must be set for detection)
-		/** @const {<Array<Array<number>>} */ gliderSW : [[0, 1, 0],
-														  [1, 0, 0],
-														  [1, 1, 1]],
+		/** @const {Array<Array<number>>} */ gliderSW : [[0, 1, 0],
+														 [1, 0, 0],
+														 [1, 1, 1]],
 
 		// SE glider (top middle cell only must be set for detection)
-		/** @const {<Array<Array<number>>} */ gliderSE : [[0, 1, 0],
-														  [0, 0, 1],
-														  [1, 1, 1]],
+		/** @const {Array<Array<number>>} */ gliderSE : [[0, 1, 0],
+														 [0, 0, 1],
+														 [1, 1, 1]],
 		
 		// hex and triangle cell coordinate buffer size
 		/** @const {number} */ coordBufferSize : 4096,
