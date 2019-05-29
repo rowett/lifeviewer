@@ -1,3 +1,8 @@
+Build 339
+- new script command [[ KILLGLIDERS ]] will delete escaping boundary gliders
+- better PASTE information in "Help" -> "Info" -> "Pattern"
+- fixed [[ PASTET EVERY ]]
+
 Build 338
 - performance improvement to setting cells
 - patterns that are too big for LifeViewer but have [[ PASTE ]] commands will ignore the pattern and just run the pastes

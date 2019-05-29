@@ -570,7 +570,6 @@
 				y = this.renderHelpLine(view, "Esc", "pause if playing", ctx, x, y, height, helpLine);
 			}
 			y = this.renderHelpLine(view, "R", "reset to generation 0", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Shift R", "reset all LifeViewers to generation 0", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "-", "decrease generation speed", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "+", "increase generation speed", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Shift -", "minimum generation speed", ctx, x, y, height, helpLine);
@@ -605,6 +604,7 @@
 			y = this.renderHelpLine(view, "Home", "first universe", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "End", "last universe", ctx, x, y, height, helpLine);
 		}
+		y = this.renderHelpLine(view, "Shift R", "reset all LifeViewers to generation 0", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Z", "stop playback in all other LifeViewers", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift Z", "stop playback in all LifeViewers", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
@@ -1000,6 +1000,7 @@
 		y = this.renderHelpLine(view, Keywords.pasteTWord + " " + Keywords.everyWord + " <1..>", "set paste interval", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (<0..>)", "... optional start generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteModeWord + " " + Keywords.pasteModeOrWord + "|" + Keywords.pasteModeCopyWord + "|" + Keywords.pasteModeXorWord + "|" + Keywords.pasteModeAndWord + "|" + Keywords.pasteModeNotWord, "set the paste mode", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.killGlidersWord, "suppress escaping gliders", ctx, x, y, height, helpLine);
 	};
 
 	// render information topic
@@ -1117,9 +1118,10 @@
 		if (view.specifiedWidth !== -1 && view.specifiedHeight !== -1) {
 			y = this.renderHelpLine(view, "Specified", view.specifiedWidth + " x " + view.specifiedHeight, ctx, x, y, height, helpLine);
 		}
-		if (view.pasteList.length > 1) {
+		if (view.pasteList.length > 0) {
 			y = this.renderHelpLine(view, "Pastes", view.pasteList.length, ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Paste Size", (view.pasteRightX - view.pasteLeftX + 1) + " x " + (view.pasteTopY - view.pasteBottomY + 1) + " (" + view.pasteLeftX + ", " + view.pasteBottomY + ") to (" + view.pasteRightX + ", " + view.pasteTopY + ")", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Paste Size", (view.pasteRightX - view.pasteLeftX + 1) + " x " + (view.pasteTopY - view.pasteBottomY + 1) + " from (" + view.pasteLeftX + ", " + view.pasteBottomY + ") to (" + view.pasteRightX + ", " + view.pasteTopY + ")", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Paste Max T", view.maxPasteGen + (view.isPasteEvery ? (" + " + Keywords.everyWord) : ""), ctx, x, y, height, helpLine);
 		}
 
 		y = this.renderHelpLine(view, "Offset", "X " + view.xOffset + "  Y " + view.yOffset, ctx, x, y, height, helpLine);

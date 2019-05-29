@@ -27,9 +27,6 @@ In progress:
     [DONE]decode triangular neighbourhood rules
     [DONE]support Triangular, Triangular Edges and Triangular Vertices neighbourhoods
     [DONE]B0 rules
-[STARTED]Delete boundary gliders
-    - seach boundaries for gliders and remove them
-    [DONE]create glider lookup for the 4 phases of NE, NW, SE and SW orientations
 [STARTED]Rule Table rules
     - decode @TABLE, @COLORS and @ICONS
     - implement rule table and rule tree algorithms
@@ -49,6 +46,7 @@ In progress:
     [DONE]convert current pattern to RLE (for Ctrl-C Copy)
 
 Complete:
+[DONE]Delete boundary gliders
 [DONE]Optional border around square, hexagonal or triangular cells
 [DONE]setState should check for tile boundaries and set adjacent tiles
 [DONE]Paul's non-totalistic hex notation

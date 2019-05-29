@@ -369,6 +369,9 @@
 		// thumbnail zoom
 		/** @const {string} */ thumbZoomWord : "THUMBZOOM",
 
+		// suppress escaping gliders 
+		/** @const {string} */ killGlidersWord : "KILLGLIDERS",
+
 		// rle 
 		/** @const {string} */ rleWord : "RLE",
 

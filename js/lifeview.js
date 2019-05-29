@@ -211,7 +211,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 338,
+		/** @const {number} */ versionBuild : 339,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -572,6 +572,9 @@
 
 		// whether there is a paste every snippet
 		this.isPasteEvery = false;
+
+		// maximum paste generation (exlcuding paste every snippets)
+		this.maxPasteGen = 0;
 
 		// whether there is evolution to do
 		this.isEvolution = false;
@@ -1649,6 +1652,9 @@
 			if (every > 0) {
 				this.isPasteEvery = true;
 			}
+			if (genList[genList.length - 1] > this.maxPasteGen) {
+				this.maxPasteGen = genList[genList.length - 1];
+			}
 		}
 
 		return found;
@@ -1785,7 +1791,7 @@
 			paste = this.pasteList[j];
 			needsPaste = false;
 			// check if this pattern needs pasting
-			if (paste.every !==0 && counter >= paste.gen && (((counter - paste.gen) % paste.every) === 0)) {
+			if (paste.every !==0 && counter >= paste.genList[0] && (((counter - paste.genList[0]) % paste.every) === 0)) {
 				needsPaste = true;
 			} else {
 				i = 0;
@@ -1870,7 +1876,7 @@
 
 		// if paste every is defined then always flag there are alive cells
 		// since cells will appear in the future
-		if (this.isPasteEvery) {
+		if (this.isPasteEvery || counter <= this.maxPasteGen) {
 			this.engine.anythingAlive = true;
 		}
 	};
@@ -3204,7 +3210,7 @@
 
 							// if paste every is defined then always flag there are alive cells
 							// since cells will appear in the future
-							if (me.isPasteEvery) {
+							if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
 								me.engine.anythingAlive = 1;
 							}
 						}
@@ -4025,7 +4031,7 @@
 
 			// if paste every is defined then always flag there are alive cells
 			// since cells will appear in the future
-			if (me.isPasteEvery) {
+			if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
 				me.engine.anythingAlive = 1;
 			}
 		}
@@ -4041,7 +4047,7 @@
 
 			// if paste every is defined then always flag there are alive cells
 			// since cells will appear in the future
-			if (me.isPasteEvery) {
+			if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
 				me.engine.anythingAlive = 1;
 			}
 
@@ -8365,6 +8371,7 @@
 			case Keywords.heightWord:
 			case Keywords.popupWidthWord:
 			case Keywords.popupHeightWord:
+			case Keywords.killGlidersWord:
 			case Keywords.rleWord:
 			case Keywords.pasteWord:
 			case Keywords.everyWord:
@@ -10378,6 +10385,12 @@
 								}
 							}
 
+							break;
+
+						// suppress escaping gliders
+						case Keywords.killGlidersWord:
+							this.engine.clearGliders = true;
+							itemValid = true;
 							break;
 
 						// name rle
@@ -13182,6 +13195,9 @@
 		this.drawing = false;
 		this.drawingState = 1;
 		this.engine.dirty = false;
+
+		// reset suppress escaping gliders
+		this.engine.clearGliders = false;
 	};
 	
 	// switch off thumbnail view
@@ -13457,6 +13473,7 @@
 		this.pasteDelta = [];
 		this.pasteEvery = 0;
 		this.isPasteEvery = false;
+		this.maxPasteGen = 0;
 		this.isEvolution = false;
 		this.pasteLeftX = ViewConstants.bigInteger;
 		this.pasteRightX = -ViewConstants.bigInteger;
@@ -14793,30 +14810,6 @@
 		return result;
 	}
 
-	// launch the pattern in Molly
-	function launchInMolly(element) {
-		// get the parent node
-		var parentItem = findDiv(element),
-
-		    // the the element containing the pattern
-		    textItem = parentItem.getElementsByTagName(DocConfig.patternSourceName)[0],
-
-		    // get the pattern contents
-		    cleanItem = cleanPattern(textItem),
-
-		    // get the form
-		    formItem = parentItem.getElementsByTagName("form")[0],
-
-		    // get the input item in the form
-		    inputItem = formItem.getElementsByTagName("input")[0];
-
-		// copy the pattern into the input item in the form
-		inputItem.value = cleanItem;
-
-		// submit the form
-		formItem.submit();
-	}
-
 	// update the inline viewer
 	function updateMe(element) {
 		// get the parent node
@@ -15169,6 +15162,5 @@
 	window['updateViewer'] = updateViewer;
 	window['updateMe'] = updateMe;
 	window['hideViewer'] = hideViewer;
-	window['launchInMolly'] = launchInMolly;
 }
 ());
