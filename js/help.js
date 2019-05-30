@@ -985,7 +985,7 @@
 		y = this.renderHelpLine(view, Keywords.noCopyWord, "disable pattern source copy", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noSourceWord, "hide pattern source", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.maxGridSizeWord + " <" + ViewConstants.minGridPower + ".." + ViewConstants.maxGridPower + ">", "set maximum grid size 2^n", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.recipeWord + " name X Y (<0..>)+", "create a named recipe", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.recipeWord + " name X Y (<1..>)+", "create a named recipe", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.rleWord + " name rle", "create a named rle", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (X Y) (TRANS)", "... X Y and transformation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.transTypeIdentity, "identity", ctx, x, y, height, helpLine);
