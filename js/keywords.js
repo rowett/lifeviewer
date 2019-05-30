@@ -372,6 +372,9 @@
 		// suppress escaping gliders 
 		/** @const {string} */ killGlidersWord : "KILLGLIDERS",
 
+		// recipe 
+		/** @const {string} */ recipeWord : "RECIPE",
+
 		// rle 
 		/** @const {string} */ rleWord : "RLE",
 

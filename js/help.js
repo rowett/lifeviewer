@@ -782,6 +782,8 @@
 		y = this.renderHelpLine(view, "", "Parameter conventions:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "A|B", "either A or B", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "(A)", "A is optional", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "A*", "zero or more A", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "A+", "one or more A", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "<1..3>", "integer range", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "<1.0..3.0>", "decimal range", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
@@ -983,6 +985,7 @@
 		y = this.renderHelpLine(view, Keywords.noCopyWord, "disable pattern source copy", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noSourceWord, "hide pattern source", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.maxGridSizeWord + " <" + ViewConstants.minGridPower + ".." + ViewConstants.maxGridPower + ">", "set maximum grid size 2^n", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.recipeWord + " name X Y (<0..>)+", "create a named recipe", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.rleWord + " name rle", "create a named rle", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (X Y) (TRANS)", "... X Y and transformation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.transTypeIdentity, "identity", ctx, x, y, height, helpLine);
@@ -996,7 +999,7 @@
 		y = this.renderHelpLine(view, Keywords.pasteWord + " name|rle (X Y)", "paste rle at optional X Y", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (TRANS)", "... optional transformation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteTWord + " <0..>", "set paste generation", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " (<1..>)*", "... optional delta list", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "(recipe|<1..>+)*", "... optional delta list", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteTWord + " " + Keywords.everyWord + " <1..>", "set paste interval", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (<0..> (<1..>))", "... optional start and end", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteModeWord + " " + Keywords.pasteModeOrWord + "|" + Keywords.pasteModeCopyWord + "|" + Keywords.pasteModeXorWord + "|" + Keywords.pasteModeAndWord + "|" + Keywords.pasteModeNotWord, "set the paste mode", ctx, x, y, height, helpLine);
@@ -1122,6 +1125,12 @@
 			y = this.renderHelpLine(view, "Pastes", view.pasteList.length, ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Paste Size", (view.pasteRightX - view.pasteLeftX + 1) + " x " + (view.pasteTopY - view.pasteBottomY + 1) + " from (" + view.pasteLeftX + ", " + view.pasteBottomY + ") to (" + view.pasteRightX + ", " + view.pasteTopY + ")", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Paste Max T", view.maxPasteGen + (view.isPasteEvery ? (" + " + Keywords.everyWord) : ""), ctx, x, y, height, helpLine);
+		}
+		if (view.rleList.length > 0) {
+			y = this.renderHelpLine(view, "RLEs", view.rleList.length, ctx, x, y, height, helpLine);
+		}
+		if (view.recipeList.length > 0) {
+			y = this.renderHelpLine(view, "Recipes", view.recipeList.length, ctx, x, y, height, helpLine);
 		}
 
 		y = this.renderHelpLine(view, "Offset", "X " + view.xOffset + "  Y " + view.yOffset, ctx, x, y, height, helpLine);

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Named recipes</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = B3/S23
+b!
+[[ X 15 Y 15 Z 4 STEP 64 STOP 5653 ]]
+[[ RECIPE elbow-to-hand 109 91 93 90 132 115 127 91 90 91 95 90 114 162 233 159 90 155 126 93 118 90 91 90 ]]
+[[ RECIPE channel-blocking-eater 109 91 94 91 90 95 91 90 111 91 91 145 91 141 90 91 91 97 90 116 90 91 90 90 90 97 ]]
+[[ RLE block 2o$2o! ]]
+[[ RLE glider 2o$obo$o! ]]
+[[ PASTE block ]]
+#C the "256" is the dividing line between the two recipes -- could be reduced to 90
+[[ PASTET 0 elbow-to-hand 256 channel-blocking-eater 13 ]]
+[[ PASTE glider 54 50 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

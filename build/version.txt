@@ -3,6 +3,10 @@ Build 340
 	- [[ PASTET EVERY interval (start (end)) ]]
 	- if specified then "end" must be at least "interval" + "start"
 - display actual STEP size if specified size can not be achieved
+- new script command [[ RECIPE ]] creates a named list to be used by [[ PASTET ]] command
+	- syntax is [[ RECIPE name <1..>* ]]
+	- [[ PASTET <0..> (name|<1..>*)* ]]
+- [[ RLE ]] and [[ RECIPE ]] names can not be script command names
 
 Build 339
 - new script command [[ KILLGLIDERS ]] will delete escaping boundary gliders

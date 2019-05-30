@@ -559,6 +559,12 @@
 		this.transforms[ViewConstants.transRotateCW] = [0, -1, 1, 0];
 		this.transforms[ViewConstants.transRotateCCW] = [0, 1, -1, 0];
 
+		// list of named recipes
+		this.recipeList = [];
+
+		// recipe delta list
+		this.recipeDelta = [];
+
 		// list of named rle snippets
 		this.rleList = [];
 
@@ -1503,6 +1509,78 @@
 		return neededHeight;
 	};
 
+	// add existing recipe to delta array
+	View.prototype.addRecipe = function(name, deltaList) {
+		var i = 0,
+			found = false,
+			deltas = null;
+
+		// lookup the recipe
+		i =  0;
+		while (!found && i < this.recipeList.length) {
+			if (name === this.recipeList[i].name) {
+				found = true;
+			} else {
+				i += 1;
+			}
+		}
+
+		// check if found
+		if (found) {
+			// copy deltas from recipe to end of list
+			deltas = this.recipeList[i].deltas;
+			for (i = 0; i < deltas.length; i += 1) {
+				deltaList[deltaList.length] = deltas[i];
+			}
+		}
+
+		// return whether found
+		return found;
+	};
+
+	// add recipe to named list
+	View.prototype.addNamedRecipe = function(scriptErrors, name, deltaList) {
+		var i = 0,
+			found = false,
+			deltas = [];
+
+		// check the name is not a reserved word
+		if (this.isScriptCommand(name)) {
+			scriptErrors[scriptErrors.length] = [Keywords.recipeWord + " " + name, "name is reserved word"];
+		} else {
+			// check the name does not already exist
+			i =  0;
+			while (!found && i < this.recipeList.length) {
+				if (name === this.recipeList[i].name) {
+					found = true;
+				} else {
+					i += 1;
+				}
+			}
+			if (found) {
+				scriptErrors[scriptErrors.length] = [Keywords.recipeWord + " " + name, "name already defined"];
+			} else {
+				// check each delta is > 0
+				found = false;
+				i = 0;
+				while (!found && i < deltaList.length) {
+					if (deltaList[i] < 1) {
+						found = true;
+					} else {
+						i += 1;
+					}
+				}
+				if (found) {
+					scriptErrors[scriptErrors.length] = [Keywords.recipeWord + " " + name + " " + deltaList[i], "invalid delta"];
+				} else {
+					// add to name list
+					deltas = deltaList.slice();
+					this.recipeList[this.recipeList.length] = {name: name, deltas: deltas};
+				}
+			}
+		}
+	};
+
 	// add rle to named list
 	View.prototype.addNamedRLE = function(scriptErrors, name, rle, x, y, transform) {
 		// attempt to decode the rle
@@ -1510,30 +1588,34 @@
 			found = false,
 			cells = [];
 		
-		// check the name does not include an evolution
-		if (name.indexOf("[") !== -1) {
-			scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "name can not contain ["];
+		// check the name is not a reserved word
+		if (this.isScriptCommand(name)) {
+			scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "name is reserved word"];
 		} else {
-			// check the name does not already exist
-			i = 0;
-			while (!found && i < this.rleList.length) {
-				if (name === this.rleList[i].name) {
-					found = true;
-				} else {
-					i += 1;
-				}
-			}
-	
-			if (found) {
-				scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "name already defined"];
+			// check the name does not include an evolution
+			if (name.indexOf("[") !== -1) {
+				scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "name can not contain ["];
 			} else {
-				// check the RLE is valid
-				cells = this.rleToCellList(rle, x, y, transform);
-				if (cells[0] !== "error") {
-					// add to the named list
-					this.rleList[this.rleList.length] = {name: name, cells: cells}
+				// check the name does not already exist
+				i = 0;
+				while (!found && i < this.rleList.length) {
+					if (name === this.rleList[i].name) {
+						found = true;
+					} else {
+						i += 1;
+					}
+				}
+				if (found) {
+					scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "name already defined"];
 				} else {
-					scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "invalid RLE"];
+					// check the RLE is valid
+					cells = this.rleToCellList(rle, x, y, transform);
+					if (cells[0] !== "error") {
+						// add to the named list
+						this.rleList[this.rleList.length] = {name: name, cells: cells}
+					} else {
+						scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "invalid RLE"];
+					}
 				}
 			}
 		}
@@ -2798,10 +2880,12 @@
 
 	// clear step samples
 	View.prototype.clearStepSamples = function() {
-		if (this.stepSamples.length > 0) {
-			this.stepSamples = [];
-			this.stepIndex = 0;
+		var i = 0;
+
+		for (i = 0; i < this.stepSamples.length; i += 1) {
+			this.stepSamples[i] = 0;
 		}
+		this.stepIndex = 0;
 		this.stepLabel.deleted = true;
 	};
 
@@ -3308,7 +3392,7 @@
 				me.floatCounter -= (stepsToTake - stepsTaken);
 
 				// if not enough steps taken then display actual number
-				if (stepsTaken < stepsToTake) {
+				if ((stepsTaken < stepsToTake) && (me.engine.counter !== me.stopGeneration)) {
 					me.updateStepLabel(stepsTaken);
 				} else {
 					me.clearStepSamples();
@@ -8438,6 +8522,7 @@
 			case Keywords.popupWidthWord:
 			case Keywords.popupHeightWord:
 			case Keywords.killGlidersWord:
+			case Keywords.recipeWord:
 			case Keywords.rleWord:
 			case Keywords.pasteWord:
 			case Keywords.everyWord:
@@ -9203,6 +9288,9 @@
 	View.prototype.readScript = function(scriptString, numStates) {
 		// create a script from the string
 		var scriptReader = new Script(scriptString, false),
+
+			// reading tokens
+			readingTokens = false,
 
 		    // reading title
 		    readingTitle = false,
@@ -10459,6 +10547,32 @@
 							itemValid = true;
 							break;
 
+						// name recipe
+						case Keywords.recipeWord:
+							// get the name
+							itemValid = false;
+							peekToken = scriptReader.getNextToken();
+							if (peekToken !== "") {
+								// read delta list
+								this.recipeDelta = [];
+
+								// check for delta list
+								while(scriptReader.nextTokenIsNumeric()) {
+									numberValue = scriptReader.getNextTokenAsNumber();
+									this.recipeDelta[this.recipeDelta.length] = numberValue;
+								}
+
+								// attemp to add recipe
+								this.addNamedRecipe(scriptErrors, peekToken, this.recipeDelta);
+
+								// clear list
+								this.recipeDelta = [];
+
+								// errors are handled in the above function
+								itemValid = true;
+							}
+							break;
+
 						// name rle
 						case Keywords.rleWord:
 							// get the name
@@ -10645,9 +10759,22 @@
 									this.pasteDelta = [];
 
 									// check for delta list
-									while(scriptReader.nextTokenIsNumeric()) {
-										numberValue = scriptReader.getNextTokenAsNumber();
-										this.pasteDelta[this.pasteDelta.length] = numberValue;
+									readingTokens = true;
+									while (readingTokens) {
+										// if token is numeric then add it to list
+										if (scriptReader.nextTokenIsNumeric()) {
+											numberValue = scriptReader.getNextTokenAsNumber();
+											this.pasteDelta[this.pasteDelta.length] = numberValue;
+										} else {
+											// check if the token is a recipe name
+											peekToken = scriptReader.peekAtNextToken();
+											if (this.addRecipe(peekToken, this.pasteDelta)) {
+												// consume token
+												scriptReader.getNextToken();
+											} else {
+												readingTokens = false;
+											}
+										}
 									}
 									itemValid = true;
 								}
@@ -13539,6 +13666,10 @@
 		} else {
 			this.isEdge = false;
 		}
+
+		// clear recipe list
+		this.recipeList = [];
+		this.recipeDelta = [];
 
 		// clear script error list
 		this.scriptErrors = [];
