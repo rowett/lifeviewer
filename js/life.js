@@ -1667,7 +1667,7 @@
 
 	// set state
 	/** @result {number} */
-	Life.prototype.setState = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state) {
+	Life.prototype.setState = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
 		var grid = this.grid16,
 			tileGrid = this.tileGrid,
 			colourGrid = this.colourGrid,
@@ -1843,7 +1843,11 @@
 							this.population -= 1;
 						}
 						// clear cell
-						colourGrid[y][x] = this.unoccupied;
+						if (deadZero) {
+							colourGrid[y][x] = this.unoccupied;
+						} else {
+							colourGrid[y][x] = this.deadStart;
+						}
 						colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
 						colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
 						grid[y][x >> 4] &= ~cellAsBit;
@@ -5603,7 +5607,7 @@
 				gliderRow = glider[yc];
 				for (xc = 0; xc < gliderRow.length; xc += 1) {
 					if (gliderRow[xc] === 1) {
-						this.setState(x + xc, y + yc, 0);
+						this.setState(x + xc, y + yc, 0, false);
 					}
 				}
 			}

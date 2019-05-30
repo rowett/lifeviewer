@@ -214,7 +214,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 340,
+		/** @const {number} */ versionBuild : 341,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1798,7 +1798,7 @@
 				} else {
 					while (i < cells.length) {
 						// cells list only contains non-zero cells
-						this.engine.setState(xOff + cells[i] - item.leftX, yOff + cells[i + 1] - item.bottomY, cells[i + 2]);
+						this.engine.setState(xOff + cells[i] - item.leftX, yOff + cells[i + 1] - item.bottomY, cells[i + 2], true);
 						i += 3;
 					}
 				}
@@ -1916,7 +1916,7 @@
 					} else {
 						while (i < cells.length) {
 							// cells list only contains non-zero cells
-							this.engine.setState(xOff + cells[i], yOff + cells[i + 1], cells[i + 2]);
+							this.engine.setState(xOff + cells[i], yOff + cells[i + 1], cells[i + 2], true);
 							i += 3;
 						}
 					}
@@ -1928,7 +1928,7 @@
 						stateRow = stateMap[y];
 						for (x = 0; x < stateRow.length; x += 1) {
 							// set the cell
-							this.engine.setState(xOff + x, yOff + y, stateRow[x]);
+							this.engine.setState(xOff + x, yOff + y, stateRow[x], true);
 						}
 					}
 					break;
@@ -1938,7 +1938,7 @@
 						y = cells[i + 1];
 						state = this.engine.getState(xOff + x, yOff + y, false);
 						// set the cell
-						this.engine.setState(xOff + x, yOff + y, cells[i + 2] ^ state);
+						this.engine.setState(xOff + x, yOff + y, cells[i + 2] ^ state, false);
 						i += 3;
 					}
 					break;
@@ -1950,7 +1950,7 @@
 						for (x = 0; x < stateRow.length; x += 1) {
 							state = this.engine.getState(xOff + x, yOff + y, false);
 							// set the cell
-							this.engine.setState(xOff + x, yOff + y, stateRow[x] & state);
+							this.engine.setState(xOff + x, yOff + y, stateRow[x] & state, false);
 						}
 					}
 					break;
@@ -1962,7 +1962,7 @@
 						for (x = 0; x < stateRow.length; x += 1) {
 							if (stateRow[x] === 0) {
 								// set the cell
-								this.engine.setState(xOff + x, yOff + y, 1);
+								this.engine.setState(xOff + x, yOff + y, 1, true);
 							}
 						}
 						i += 3;
@@ -2814,7 +2814,7 @@
 			result = 0;
 
 		// set the first point
-		result |= this.engine.setState(startX, startY, colour);
+		result |= this.engine.setState(startX, startY, colour, true);
 
 		// check for grid growth
 		while (width !== this.engine.width) {
@@ -2839,7 +2839,7 @@
 			}
 
 			// draw the point
-			result |= this.engine.setState(startX, startY, colour);
+			result |= this.engine.setState(startX, startY, colour, true);
 
 			// check for grid growth
 			while (width !== this.engine.width) {

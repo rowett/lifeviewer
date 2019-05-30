@@ -1,3 +1,6 @@
+Build 341
+- [[ KILLGLIDERS ]] will fade dead gliders
+
 Build 340
 - [[ PASTET EVERY ]] now has optional end generation (as well as optional start generation)
 	- [[ PASTET EVERY interval (start (end)) ]]
