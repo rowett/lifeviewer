@@ -1,5 +1,6 @@
 Build 341
-- [[ KILLGLIDERS ]] will fade dead gliders
+- [[ KILLGLIDERS ]] now fades dead gliders
+- hotkey Ctrl "S" now saves pattern to source document node
 
 Build 340
 - [[ PASTET EVERY ]] now has optional end generation (as well as optional start generation)

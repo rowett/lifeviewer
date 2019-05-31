@@ -6377,6 +6377,11 @@
 		me.copyToClipboard(me, string, false);
 	};
 
+	// save the current rle to the source document node
+	View.prototype.saveCurrentRLE = function(me) {
+		me.element.innerHTML = me.engine.asRLE(me, me.engine, true);
+	};
+
 	// select and copy reset position rle
 	View.prototype.copyRLE = function(me, twoPhase) {
 		// copy the source pattern to the clipboard
@@ -6415,8 +6420,8 @@
 				}
 			}
 		} else {
-			// check for control (other than control-C) or meta
-			if ((event.ctrlKey && keyCode !== 67) || event.metaKey) {
+			// check for control (other than control-C or control-S) or meta
+			if ((event.ctrlKey && (!(keyCode === 67 || keyCode === 83))) || event.metaKey) {
 				// convert control-arrow keys into PageUp/PageDown/Home/End
 				if (event.ctrlKey && (keyCode >= 37 && keyCode <= 40)) {
 					if (keyCode === 37) {
@@ -6841,20 +6846,26 @@
 				}
 				break;
 
-			// s for toggle starfield, shift s for toggle state1 autofit
+			// s for toggle starfield, shift s for toggle state1 autofit, control-s for save
 			case 83:
-				// check for shift key
-				if (event.shiftKey) {
-					// only enabled for [R]History
-					if (me.engine.isLifeHistory) {
-						// toggle state 1 fit mode
-						me.state1Fit = !me.state1Fit;
-						me.menuManager.notification.notify("AutoFit State 1 Mode " + (me.state1Fit ? "On" : "Off"), 15, 40, 15, true);
-					}
+				// check for ctrl key
+				if (event.ctrlKey) {
+					// save current pattern to source document node
+					me.saveCurrentRLE(me);
 				} else {
-					// toggle stars
-					me.starsButton.current = me.viewStarsToggle([!me.starsOn], true, me);
-					me.menuManager.notification.notify("Stars " + (me.starsOn ? "On" : "Off"), 15, 40, 15, true);
+					// check for shift key
+					if (event.shiftKey) {
+						// only enabled for [R]History
+						if (me.engine.isLifeHistory) {
+							// toggle state 1 fit mode
+							me.state1Fit = !me.state1Fit;
+							me.menuManager.notification.notify("AutoFit State 1 Mode " + (me.state1Fit ? "On" : "Off"), 15, 40, 15, true);
+						}
+					} else {
+						// toggle stars
+						me.starsButton.current = me.viewStarsToggle([!me.starsOn], true, me);
+						me.menuManager.notification.notify("Stars " + (me.starsOn ? "On" : "Off"), 15, 40, 15, true);
+					}
 				}
 				break;
 
