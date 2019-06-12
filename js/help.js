@@ -708,9 +708,14 @@
 			y = this.renderHelpLine(view, "Shift X", "toggle major grid lines", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "Alt X", "toggle cell borders", ctx, x, y, height, helpLine);
+		if (view.engine.isLifeHistory) {
+			y = this.renderHelpLine(view, "Alt H", "[R]History display on", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Alt J", "[R]History display off", ctx, x, y, height, helpLine);
+		}
 		if (view.waypointManager.numAnnotations() > 0) {
 			y = this.renderHelpLine(view, "Shift L", "toggle annotation display", ctx, x, y, height, helpLine);
 		}
+		y = this.renderHelpLine(view, "Alt K", "toggle kill escaping gliders", ctx, x, y, height, helpLine);
 		// check if thumbnail ever on
 		if (view.thumbnailEverOn) {
 			y = this.renderHelpLine(view, "N", "toggle thumbnail view", ctx, x, y, height, helpLine);

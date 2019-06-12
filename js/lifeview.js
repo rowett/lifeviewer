@@ -214,7 +214,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 342,
+		/** @const {number} */ versionBuild : 343,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6464,10 +6464,34 @@
 								}
 							}
 							break;
+						// h for [R]History on
+						case 72:
+							if (me.engine.isLifeHistory) {
+								me.engine.displayLifeHistory = true;
+								me.engine.drawOverlay = true;
+								me.menuManager.notification.notify("[R]History Display " + (me.engine.displayLifeHistory ? "On" : "Off"), 15, 40, 15, true);
+							}
+							break;
+						// j for [R]History off
+						case 74:
+							if (me.engine.isLifeHistory) {
+								me.engine.displayLifeHistory = false;
+								me.engine.drawOverlay = false;
+								me.menuManager.notification.notify("[R]History Display " + (me.engine.displayLifeHistory ? "On" : "Off"), 15, 40, 15, true);
+							}
+							break;
+						// k for toggle kill gliders
+						case 75:
+							// toggle kill gliders
+							me.engine.clearGliders = !me.engine.clearGliders;
+							me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
+							break;
+						// x for cell borders
 						case 88:
 							// toggle cell borders
 							me.bordersButton.current = me.viewBordersToggle([!me.engine.cellBorders], true, me);
 							break;
+						// slash for toggle hex/offset square grid
 						case 191:
 							// switch between hexagonal and square cells for hex display
 							if (!me.engine.isTriangular) {
@@ -13645,6 +13669,7 @@
 		this.patternFormat = "(none)";
 		this.engine.isNone = false;
 		this.engine.isLifeHistory = false;
+		this.engine.displayLifeHistory = false;
 		this.engine.isHex = false;
 		this.engine.isTriangular = false;
 		this.engine.triangularNeighbourhood = PatternManager.triangularAll;
@@ -13756,6 +13781,7 @@
 
 			// check if the rule is a History rule
 			this.engine.isLifeHistory = pattern.isHistory;
+			this.engine.displayLifeHistory = pattern.isHistory;
 
 			// read the number of states (Generations or HROT)
 			this.engine.multiNumStates = pattern.multiNumStates;

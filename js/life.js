@@ -334,8 +334,11 @@
 		// number of states for multi-state rules (Generations or HROT)
 		/** @type {number} */ this.multiNumStates = -1;
 
-		// whether pattern is LifeHistory
+		// whether pattern is [R]History
 		/** @type {boolean} */ this.isLifeHistory = false;
+
+		// whether to display [R]History states
+		/** @type {boolean} */ this.dispalyLifeHistory = false;
 
 		// how many history states to draw
 		/** @type {number} */ this.historyStates = 0;
@@ -1376,12 +1379,12 @@
 		}
 
 		// populate output states
-		if (me.multiNumStates <= 2 && !me.isLifeHistory) {
+		if (me.multiNumStates <= 2 && !me.displayLifeHistory) {
 			twoState = true;
 			outputState[0] = "b";
 			outputState[1] = "o";
 		} else {
-			if (me.isLifeHistory) {
+			if (me.displayLifeHistory) {
 				maxState = 7;
 			} else {
 				maxState = me.multiNumStates;
@@ -1412,9 +1415,19 @@
 		// output header
 		rle += "x = " + width + ", y = " + height + ", rule = ";
 		if (view.patternAliasName === "LifeHistory") {
-			rle += view.patternAliasName;
+			// if [R]History but history is not displayed then remove History from rule name
+			if (!me.displayLifeHistory) {
+				rle += "Life";
+			} else {
+				rle += view.patternAliasName;
+			}
 		} else {
-			rle += view.patternRuleName;
+			// if [R]History rule but history is not displayed then remove History from rule name
+			if (me.isLifeHistory && !me.displayLifeHistory) {
+				rle += view.patternRuleName.substr(0, view.patternRuleName.length - 7);
+			} else {
+				rle += view.patternRuleName;
+			}
 		}
 		rle += view.patternBoundedGridDef;
 		rle += "\n";
