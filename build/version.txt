@@ -8,6 +8,7 @@ Build 343
 - hotkey Alt "K" toggles deleting escaping gliders
 - new "Kill" button in navigation menu to toggle deleting escaping gliders
 - number of deleted gliders is shown in "Help" -> "Info" -> "Grid"
+- editor now works with step back
 
 Build 342
 - hotkey Ctrl "S" now saves pattern to source document node

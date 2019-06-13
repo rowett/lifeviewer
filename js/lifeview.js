@@ -6765,6 +6765,9 @@
 						if (me.engine.counter > 0) {
 							// run from start to previous generation
 							me.runTo(me.engine.counter - 1);
+
+							// adjust undo stack pointer
+							me.setUndoGen(me.engine.counter);
 						}
 					} else {
 						// pause
@@ -6803,6 +6806,9 @@
 							if (me.engine.counter > 0) {
 								// run from start to previous step
 								me.runTo(me.engine.counter - me.gensPerStep);
+
+								// adjust undo stack pointer
+								me.setUndoGen(me.engine.counter - me.gensPerStep + 1);
 							}
 						} else {
 							// step forward

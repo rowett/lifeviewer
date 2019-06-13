@@ -744,6 +744,7 @@
 		y = this.renderHelpLine(view, "Shift F1", "toggle smart drawing", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl Z", "undo edit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl+Shift Z", "redo edit", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl S", "save pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// help controls
