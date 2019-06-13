@@ -680,9 +680,6 @@
 
 		// number of hex or triangle cells
 		/** @type {number} */ this.numCells = 0;
-
-		// whether pattern dirty (just edited)
-		/** @type {boolean} */ this.dirty = false;
 	}
 
 	// draw triangles 
@@ -1774,9 +1771,6 @@
 					grid = this.nextGrid16;
 					tileGrid = this.nextTileGrid;
 				}
-
-				// mark pattern as dirty
-				this.dirty = true;
 
 				// get the cell as a bit mask and tile mask
 				cellAsBit = 1 << (~x & 15);
@@ -6507,14 +6501,6 @@
 		// turn stats on unless graph disabled
 		if (!graphDisabled) {
 			statsOn = true;
-		}
-
-		// save immediately if pattern is dirty so step back will work
-		if (!noHistory) {
-			if (this.dirty) {
-				//this.saveSnapshot(); // TBD !!!
-				this.dirty = false;
-			}
 		}
 
 		// check if snapshot should be saved

@@ -1430,22 +1430,24 @@
 		// get current state
 		var state = this.engine.getState(x, y, false),
 			i = this.currentEdit.length,
-			newEdit = true;
+			newEdit = true,
+			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
+			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1);
 
 		// check if this is a duplicate change
-		if (i > 0 && this.currentEdit[i - 3] === x && this.currentEdit[i - 2] === y && this.currentEdit[i - 1] === colour) {
+		if (i > 0 && (this.currentEdit[i - 3] === x - xOff) && (this.currentEdit[i - 2] === y - yOff) && this.currentEdit[i - 1] === colour) {
 			newEdit = false;
 		}
 
 		// only update records if this is not a duplicate change
 		if (newEdit) {
-			this.currentEdit[i] = x;
-			this.currentEdit[i + 1] = y;
+			this.currentEdit[i] = x - xOff;
+			this.currentEdit[i + 1] = y - yOff;
 			this.currentEdit[i + 2] = colour;
 	
 			// update undo record
-			this.currentUndo[i] = x;
-			this.currentUndo[i + 1] = y;
+			this.currentUndo[i] = x - xOff;
+			this.currentUndo[i + 1] = y - yOff;
 			this.currentUndo[i + 2] = state;
 		}
 
@@ -1458,7 +1460,9 @@
 		var cells = record.cells,
 			i = 0,
 			target = cells.length,
-			di = 3;
+			di = 3,
+			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
+			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1);
 
 		// check for reverse order
 		if (reverse) {
@@ -1468,7 +1472,7 @@
 		}
 
 		while (i !== target) {
-			this.engine.setState(cells[i], cells[i + 1], cells[i + 2], true);
+			this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2], true);
 			i += di;
 		}
 	};
@@ -1563,9 +1567,7 @@
 			this.pasteRaw(record, true);
 
 			// decrement stack using saved value since a record may have been added above
-			if (current > 1) {
-				this.editNum = current - 1;
-			}
+			this.editNum = current - 1;
 		} else {
 			if (counter > 0) {
 				this.reset(this);
@@ -1575,8 +1577,13 @@
 
 	// redo edit
 	View.prototype.redo = function() {
+		var counter = this.engine.counter;
+
 		if (this.editNum < this.numEdits) {
-			if (this.editList[this.editNum].gen > this.engine.counter) {
+			if (this.editList[this.editNum].gen === counter && this.editList[this.editNum].cells.length === 0) {
+				this.editNum += 1;
+			}
+			if (this.editList[this.editNum].gen > counter) {
 				this.runTo(this.editList[this.editNum].gen);
 			} else {
 				// paste cells in forward order
@@ -5327,6 +5334,7 @@
 				} else {
 					// step
 					me.nextStep = true;
+					me.afterEdit();
 
 					// set flag whether pattern was empty and playback is on
 					if (me.engine.population === 0) {
@@ -13684,7 +13692,6 @@
 		// reset drawing mode
 		this.drawing = false;
 		this.drawingState = 1;
-		this.engine.dirty = false;
 
 		// reset suppress escaping gliders
 		this.engine.clearGliders = false;
