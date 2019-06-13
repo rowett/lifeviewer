@@ -36,8 +36,8 @@ In progress:
     - ability to define rule
     - improved LifeHistory drawing modes
     - reset to include the overlay grid
-    - undo stack / step back
     - selections
+    [DONE]undo stack / step back
     [DONE]grow grid if possible when cell outside current grid drawn
     [DONE]2-state editing
     [DONE]LifeHistory support

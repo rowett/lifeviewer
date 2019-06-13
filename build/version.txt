@@ -1,9 +1,13 @@
 Build 343
+- hotkey Ctrl "Z" for undo edit
+- hotkey Ctrl+Shift "Z" for redo edit
 - hotkey Alt "J" disables [R]History display and Alt "H" enables it
 	- only works for [R]History rules
 	- this is only a display toggle: state 6 processing still happens
-	- copy RLE to clipboard will honour current settings
+	- however: copy RLE to clipboard will honour current settings
 - hotkey Alt "K" toggles deleting escaping gliders
+- new "Kill" button in navigation menu to toggle deleting escaping gliders
+- number of deleted gliders is shown in "Help" -> "Info" -> "Grid"
 
 Build 342
 - hotkey Ctrl "S" now saves pattern to source document node

@@ -742,6 +742,8 @@
 		y = this.renderHelpLine(view, "", "Edit controls:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F1", "toggle draw/pan mode", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift F1", "toggle smart drawing", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl Z", "undo edit", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl+Shift F1", "redo edit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// help controls
@@ -1255,6 +1257,9 @@
 		y = this.renderHelpLine(view, "Tile Size", (view.engine.tileX << 3) + " x " + view.engine.tileY, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Generation", view.engine.counter, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "DeleteRange", view.engine.removePatternRadius, ctx, x, y, height, helpLine);
+		if (view.engine.clearGliders) {
+			y = this.renderHelpLine(view, "KillGliders", view.engine.numClearedGliders, ctx, x, y, height, helpLine);
+		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// bounded grid information

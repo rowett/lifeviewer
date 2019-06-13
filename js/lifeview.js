@@ -1,7 +1,5 @@
 // LifeViewer plugin
 // written by Chris Rowett
-// "What's the best way to learn Javascript?"
-// "I know, I'll implement Conway's Game of Life."
 
 (function() {
 	// use strict mode
@@ -544,6 +542,24 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// edit list for undo/redo
+		this.editList = [];
+
+		// undo records for undo/redo
+		this.undoList = [];
+
+		// edit number for undo/redo
+		this.editNum = 0;
+
+		// number of edits for undo/redo
+		this.numEdits = 0;
+
+		// current edit
+		this.currentEdit = [];
+
+		// current undo record
+		this.currentUndo = [];
+
 		// step samples
 		this.stepSamples = [];
 		this.stepIndex = 0;
@@ -1225,6 +1241,9 @@
 		// label toggle button
 		this.labelButton = null;
 
+		// kill gliders toggle button
+		this.killButton = null;
+
 		// hex toggle button
 		this.hexButton = null;
 
@@ -1405,6 +1424,167 @@
 		// pen colour for drawing
 		/** @type {number} */ this.penColour = -1;
 	}
+
+	// draw cell and create undo/redo
+	View.prototype.setStateWithUndo = function(x, y, colour, deadZero) {
+		// get current state
+		var state = this.engine.getState(x, y, false),
+			i = this.currentEdit.length,
+			newEdit = true;
+
+		// check if this is a duplicate change
+		if (i > 0 && this.currentEdit[i - 3] === x && this.currentEdit[i - 2] === y && this.currentEdit[i - 1] === colour) {
+			newEdit = false;
+		}
+
+		// only update records if this is not a duplicate change
+		if (newEdit) {
+			this.currentEdit[i] = x;
+			this.currentEdit[i + 1] = y;
+			this.currentEdit[i + 2] = colour;
+	
+			// update undo record
+			this.currentUndo[i] = x;
+			this.currentUndo[i + 1] = y;
+			this.currentUndo[i + 2] = state;
+		}
+
+		// set the state
+		this.engine.setState(x, y, colour, deadZero);
+	};
+
+	// paste raw cells for undo/redo
+	View.prototype.pasteRaw = function(record, reverse) {
+		var cells = record.cells,
+			i = 0,
+			target = cells.length,
+			di = 3;
+
+		// check for reverse order
+		if (reverse) {
+			di = -di;
+			i = target + di;
+			target = di;
+		}
+
+		while (i !== target) {
+			this.engine.setState(cells[i], cells[i + 1], cells[i + 2], true);
+			i += di;
+		}
+	};
+
+	// set undo stack pointer to given generation (used with step back)
+	View.prototype.setUndoGen = function(gen) {
+		var i = this.editNum - 1,
+			found = false;
+
+		// search for undo records at or before specified generation
+		while (i > 0 && !found) {
+			if (this.editList[i].gen <= gen) {
+				found = true;
+			} else {
+				i -= 1;
+			}
+		}
+
+		if (found) {
+			this.editNum = i + 1;
+		}
+	};
+
+	// after edit
+	View.prototype.afterEdit = function() {
+		var wasChange = true,
+			counter = this.engine.counter;
+
+		// check for duplicate
+		if (this.editNum > 0) {
+			if (counter === this.editList[this.editNum - 1].gen && this.currentEdit.length === 0) {
+				wasChange = false;
+			} else {
+				wasChange = true;
+			}
+		}
+
+		// check if there was a change
+		if (wasChange) {
+			// if this is the first record at this generation then insert a generation record
+			if (this.editNum > 0 && this.editList[this.editNum - 1].gen !== counter && this.currentEdit.length !== 0) {
+				this.editList[this.editNum] = {gen: counter, cells: []};
+				this.undoList[this.editNum] = {gen: counter, cells: []}; 
+				this.editNum += 1;
+			}
+			// create new edit and undo record
+			this.editList[this.editNum] = {gen: counter, cells: this.currentEdit.slice()};
+			this.undoList[this.editNum] = {gen: counter, cells: this.currentUndo.slice()};
+			this.editNum += 1;
+			this.numEdits = this.editNum;
+	
+			// clear current edit and undo records
+			this.currentEdit = [];
+			this.currentUndo = [];
+		}
+	};
+
+	// undo edit
+	View.prototype.undo = function() {
+		var gen = 0,
+			counter = this.engine.counter,
+			current = this.editNum,
+			record = null;
+
+		// check for top of the stack
+		if (current === this.numEdits) {
+			this.afterEdit();
+			current = this.editNum;
+		}
+
+		// check for undo records
+		if (current > 0) {
+			// pop the top record
+			record = this.undoList[current - 1];
+			gen = record.gen;
+			if (record.cells.length === 0) {
+				if (current > 1) {
+					gen = this.undoList[current - 2].gen;
+				}
+			}
+
+			// if it is for an earlier generation then go there
+			if (gen < counter) {
+				if (gen === 0) {
+					this.reset(this);
+				} else {
+					this.runTo(gen);
+				}
+			}
+
+			// paste cells in reverse order
+			this.pasteRaw(record, true);
+
+			// decrement stack using saved value since a record may have been added above
+			if (current > 1) {
+				this.editNum = current - 1;
+			}
+		} else {
+			if (counter > 0) {
+				this.reset(this);
+			}
+		}
+	};
+
+	// redo edit
+	View.prototype.redo = function() {
+		if (this.editNum < this.numEdits) {
+			if (this.editList[this.editNum].gen > this.engine.counter) {
+				this.runTo(this.editList[this.editNum].gen);
+			} else {
+				// paste cells in forward order
+				this.pasteRaw(this.editList[this.editNum], true);
+			}
+			this.editNum += 1;
+		}
+	};
 
 	// convert rle to cell list
 	View.prototype.rleToCellList = function(rle, x, y, transform) {
@@ -1976,6 +2156,22 @@
 		// since cells will appear in the future
 		if (this.isPasteEvery || counter <= this.maxPasteGen) {
 			this.engine.anythingAlive = true;
+		}
+
+		// paste any edits
+		this.pasteEdits();
+	};
+
+	// paste edits
+	View.prototype.pasteEdits = function() {
+		var i = 0,
+			counter = this.engine.counter;
+
+		// paste any undo/redo edit records
+		for (i = 0; i < this.editNum; i += 1) {
+			if (this.editList[i].gen === counter) {
+				this.pasteRaw(this.editList[i]);
+			}
 		}
 	};
 
@@ -2814,7 +3010,7 @@
 			result = 0;
 
 		// set the first point
-		result |= this.engine.setState(startX, startY, colour, true);
+		result |= this.setStateWithUndo(startX, startY, colour, true);
 
 		// check for grid growth
 		while (width !== this.engine.width) {
@@ -2839,7 +3035,7 @@
 			}
 
 			// draw the point
-			result |= this.engine.setState(startX, startY, colour, true);
+			result |= this.setStateWithUndo(startX, startY, colour, true);
 
 			// check for grid growth
 			while (width !== this.engine.width) {
@@ -3812,6 +4008,7 @@
 		this.hexCellButton.deleted = hide;
 		this.bordersButton.deleted = hide;
 		this.labelButton.deleted = hide;
+		this.killButton.deleted = hide;
 		this.graphButton.deleted = hide;
 		this.infoBarButton.deleted = hide;
 		this.majorButton.deleted = hide;
@@ -4331,6 +4528,16 @@
 		return [me.popGraph];
 	};
 
+	// toggle kill gliders
+	View.prototype.viewKillToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			me.engine.clearGliders = newValue[0];
+		}
+
+		return [me.engine.clearGliders];
+	};
+
 	// toggle labels display
 	View.prototype.viewLabelToggle = function(newValue, change, me) {
 		// check if changing
@@ -4727,6 +4934,12 @@
 
 		// reset died generation
 		me.diedGeneration = -1;
+
+		// reset cleared glider count
+		me.engine.numClearedGliders = 0;
+
+		// draw any undo/redo edit records
+		me.pasteEdits();
 	};
 
 	// set the pause icon to pause or step forward based on play mode
@@ -4947,6 +5160,10 @@
 				// reset
 				me.reset(me);
 
+				// reset undo/redo list
+				this.editNum = 0;
+				this.numEdits = 0;
+
 				// build reset message
 				message = "Reset";
 
@@ -5060,6 +5277,7 @@
 				if (me.playList.current !== ViewConstants.modePlay) {
 					// play
 					me.generationOn = true;
+					me.afterEdit();
 
 					// set flag whether pattern was empty and playback is on
 					if (me.engine.population === 0) {
@@ -5080,6 +5298,9 @@
 					if (me.engine.counter > 0) {
 						// run from start to previous generation
 						me.runTo(me.engine.counter - me.gensPerStep);
+
+						// adjust undo stack pointer
+						me.setUndoGen(me.engine.counter - me.gensPerStep + 1);
 					}
 				} else {
 					// pause
@@ -5335,6 +5556,11 @@
 						me.stateList.current = me.viewStateList(me.penColour, true, me);
 						// restore start state
 						me.startState = saveStart;
+					}
+				} else {
+					// end of edit
+					if (me.currentEdit.length > 0) {
+						me.afterEdit();
 					}
 				}
 			}
@@ -6420,8 +6646,8 @@
 				}
 			}
 		} else {
-			// check for control (other than control-C or control-S) or meta
-			if ((event.ctrlKey && (!(keyCode === 67 || keyCode === 83))) || event.metaKey) {
+			// check for control (other than control-C, control-S or control-Z) or meta
+			if ((event.ctrlKey && (!(keyCode === 67 || keyCode === 83 || keyCode === 90))) || event.metaKey) {
 				// convert control-arrow keys into PageUp/PageDown/Home/End
 				if (event.ctrlKey && (keyCode >= 37 && keyCode <= 40)) {
 					if (keyCode === 37) {
@@ -6581,6 +6807,7 @@
 						} else {
 							// step forward
 							me.nextStep = true;
+							me.afterEdit();
 						}
 					}
 				}
@@ -6598,6 +6825,7 @@
 						// next generation
 						me.nextStep = true;
 						me.singleStep = true;
+						me.afterEdit();
 					}
 				}
 				break;
@@ -6709,28 +6937,37 @@
 
 			// z for stop other viewers
 			case 90:
-				// check for shift
-				if (event.shiftKey) {
-					// stop all viewers
-					value = Controller.stopAllViewers();
-					if (value === 0) {
-						me.menuManager.notification.notify("No LifeViewers playing", 15, 100, 15, true);
+				// check for control
+				if (event.ctrlKey) {
+					// check for shift
+					if (event.shiftKey) {
+						// redo edit
+						me.redo();
 					} else {
-						if (value > 1) {
-							me.menuManager.notification.notify("Paused all LifeViewers", 15, 100, 15, true);
-						}
+						// undo edit
+						me.undo();
 					}
-				}
-				else{
-					// stop other viewers
-					value = Controller.stopOtherViewers(me);
-					if (value === 0) {
-						me.menuManager.notification.notify("No other LifeViewers playing", 15, 100, 15, true);
-					} else {
-						if (value > 1) {
-							me.menuManager.notification.notify("Paused " + value + " other LifeViewers", 15, 100, 15, true);
+				} else {
+					// check for shift
+					if (event.shiftKey) {
+						// stop all viewers
+						value = Controller.stopAllViewers();
+						if (value === 0) {
+							me.menuManager.notification.notify("No LifeViewers playing", 15, 100, 15, true);
 						} else {
-							me.menuManager.notification.notify("Paused " + value + " other LifeViewer", 15, 100, 15, true);
+							if (value > 1) {
+								me.menuManager.notification.notify("Paused all LifeViewers", 15, 100, 15, true);
+							}
+						}
+					} else {
+						// stop other viewers
+						value = Controller.stopOtherViewers(me);
+						if (value > 0) {
+							if (value > 1) {
+								me.menuManager.notification.notify("Paused " + value + " other LifeViewers", 15, 100, 15, true);
+							} else {
+								me.menuManager.notification.notify("Paused " + value + " other LifeViewer", 15, 100, 15, true);
+							}
 						}
 					}
 				}
@@ -8176,6 +8413,10 @@
 		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.northWest, 80, 220, 80, 40, ["Labels"], [this.showLabels], Menu.multi);
 		this.labelButton.toolTip = ["toggle labels"];
 
+		// kill gliders toggle button
+		this.killButton = this.viewMenu.addListItem(this.viewKillToggle, Menu.north, 0, 220, 80, 40, ["Kill"], [this.engine.clearGliders], Menu.multi);
+		this.killButton.toolTip = ["kill escaping gliders"];
+
 		// graph toggle button
 		this.graphButton = this.viewMenu.addListItem(this.viewGraphToggle, Menu.northEast, -160, 220, 80, 40, ["Graph"], [this.popGraph], Menu.multi);
 		this.graphButton.toolTip = ["toggle graph display"];
@@ -8281,7 +8522,7 @@
 		this.statesSlider.toolTip = "select drawing states range";
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.hexCellButton, this.bordersButton, this.labelButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -13441,6 +13682,7 @@
 
 		// reset suppress escaping gliders
 		this.engine.clearGliders = false;
+		this.engine.numClearedGliders = 0;
 	};
 	
 	// switch off thumbnail view
@@ -14554,6 +14796,9 @@
 		// set the graph UI control
 		this.graphButton.locked = this.graphDisabled;
 		this.graphButton.current = [this.popGraph];
+
+		// set the kill gliders UI control
+		this.killButton.current = [this.engine.clearGliders];
 
 		// set the hex UI control and lock if triangular grid
 		this.hexButton.current = [this.engine.isHex];

@@ -235,6 +235,9 @@
 		// flag whether to clear escaping gliders
 		/** @type {boolean} */ this.clearGliders = false;
 
+		// count of escaping gliders cleared
+		/** @type {number} */ this.numClearedGliders = 0;
+
 		// gliders in 7x7 cell array
 		/** @type {Array<Array<number>>} */ this.gliderNW7x7 = [];
 		/** @type {Array<Array<number>>} */ this.gliderNE7x7 = [];
@@ -2159,6 +2162,7 @@
 		if (snapshot) {
 			// restore the snapshot
 			this.restoreSnapshot(snapshot);
+			view.pasteEdits();
 
 			// play from the snapshot counter to just before the target with stats off (for speed)
 			while (this.counter < targetGen - 1) {
@@ -5616,6 +5620,7 @@
 
 		// if found then delete the cells
 		if (found) {
+			this.numClearedGliders += 1;
 			for (yc = 0; yc < glider.length; yc += 1) {
 				gliderRow = glider[yc];
 				for (xc = 0; xc < gliderRow.length; xc += 1) {
