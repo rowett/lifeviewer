@@ -2170,7 +2170,7 @@
 		// paste any undo/redo edit records
 		for (i = 0; i < this.editNum; i += 1) {
 			if (this.editList[i].gen === counter) {
-				this.pasteRaw(this.editList[i]);
+				this.pasteRaw(this.editList[i], false);
 			}
 		}
 	};
