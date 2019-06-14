@@ -212,7 +212,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 343,
+		/** @const {number} */ versionBuild : 344,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13968,6 +13968,14 @@
 
 		// clear rle snippets
 		this.rleList = [];
+
+		// clear undo/reset
+		this.editList = [];
+		this.undoList = [];
+		this.currentEdit = [];
+		this.currentUndo = [];
+		this.editNum = 0;
+		this.numEdits = 0;
 
 		// clear paste list
 		this.pasteList = [];

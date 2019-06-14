@@ -1,3 +1,6 @@
+Build 344
+- fixed undo/redo records persisting across patterns
+
 Build 343
 - hotkey Ctrl "Z" for undo edit
 - hotkey Ctrl+Shift "Z" for redo edit
