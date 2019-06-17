@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global ScriptParser Allocator Uint8 Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager Uint32Array myRand PopupWindow typedArrays Float32 */
+	/* global Allocator Uint8 Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager ScriptParser Uint32Array myRand PopupWindow typedArrays Float32 */
 
 	// LifeViewer document configuration
 	var DocConfig = {
@@ -1244,6 +1244,12 @@
 		// kill gliders toggle button
 		this.killButton = null;
 
+		// previous POI button
+		this.prevPOIButton = null;
+
+		// next POI button
+		this.nextPOIButton = null;
+
 		// hex toggle button
 		this.hexButton = null;
 
@@ -1279,6 +1285,9 @@
 
 		// timing button
 		this.fpsButton = null;
+
+		// [R]History display button
+		this.rHistoryButton = null;
 
 		// timing details button
 		this.timingDetailButton = null;
@@ -4023,6 +4032,11 @@
 		this.starsButton.deleted = hide;
 		this.fpsButton.deleted = hide;
 		this.timingDetailButton.deleted = hide;
+		this.rHistoryButton.deleted = hide;
+
+		// POI controls
+		this.nextPOIButton.deleted = hide || (this.waypointManager.numPOIs() === 0);
+		this.prevPOIButton.deleted = hide || (this.waypointManager.numPOIs() === 0);
 
 		// infobar
 		this.infoBarLabelXLeft.deleted = hide || !this.infoBarEnabled;
@@ -4603,6 +4617,17 @@
 		}
 
 		return [me.engine.isHex];
+	};
+
+	// toggle [R]History display
+	View.prototype.viewRHistoryToggle = function(newValue, change, me) {
+		// check if chaning
+		if (change) {
+			me.engine.displayLifeHistory = newValue[0];
+			me.engine.drawOverlay = newValue[0];
+		}
+
+		return [me.engine.displayLifeHistory];
 	};
 
 	// toggle timing detail display
@@ -5959,6 +5984,30 @@
 			// hide the viewer
 			hideViewer();
 		}
+	};
+
+	// previous POI button
+	View.prototype.prevPOIPressed = function(me) {
+		// go to previous POI
+		me.currentPOI -= 1;
+		if (me.currentPOI < 0) {
+			me.currentPOI = me.waypointManager.numPOIs() - 1;
+		}
+
+		// set camera
+		me.setCameraFromPOI(me, me.currentPOI);
+	};
+
+	// next POI button
+	View.prototype.nextPOIPressed = function(me) {
+		// go to next POI
+		me.currentPOI += 1;
+		if (me.currentPOI >= me.waypointManager.numPOIs()) {
+			me.currentPOI = 0;
+		}
+
+		// set camera
+		me.setCameraFromPOI(me, me.currentPOI);
 	};
 
 	// next universe button
@@ -7474,23 +7523,10 @@
 						// check for shift key
 						if (event.shiftKey) {
 							// go to previous POI
-							me.currentPOI -= 1;
-							if (me.currentPOI < 0) {
-								me.currentPOI = me.waypointManager.numPOIs() - 1;
-							}
-
-							// set camera
-							me.setCameraFromPOI(me, me.currentPOI);
+							me.prevPOIPressed(me);
 						} else {
-
-							// got to next POI
-							me.currentPOI += 1;
-							if (me.currentPOI >= me.waypointManager.numPOIs()) {
-								me.currentPOI = 0;
-							}
-
-							// set camera
-							me.setCameraFromPOI(me, me.currentPOI);
+							// go to next POI
+							me.nextPOIPressed(me);
 						}
 					}
 				} else {
@@ -8440,8 +8476,9 @@
 		this.infoBarButton.toolTip = ["toggle InfoBar"];
 
 		// historyfit toggle button
-		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.northWest, 80, 160, 80, 40, ["HistFit"], [this.historyFit], Menu.multi);
+		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.northWest, 80, 160, 80, 40, ["HistoryFit"], [this.historyFit], Menu.multi);
 		this.historyFitButton.toolTip = ["toggle AutoFit History"];
+		this.historyFitButton.font = "16px Arial";
 
 		// major gridlines toggle button
 		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.northEast, -160, 160, 80, 40, ["Major"], [this.engine.gridLineMajorEnabled], Menu.multi);
@@ -8463,6 +8500,11 @@
 		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.south, 0, -140, 80, 40, ["Details"], [this.menuManager.showExtendedTiming], Menu.multi);
 		this.timingDetailButton.toolTip = ["toggle timing details"];
 
+		// [R]History display toggle
+		this.rHistoryButton = this.viewMenu.addListItem(this.viewRHistoryToggle, Menu.south, 0, -200, 80, 40, ["[R]History"], [this.engine.displayLifeHistory], Menu.multi);
+		this.rHistoryButton.toolTip = ["toggle [R]History display"];
+		this.rHistoryButton.font = "16px Arial";
+
 		// previous universe button
 		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.southWest, 80, -200, 80, 40, "Prev");
 		this.prevUniverseButton.toolTip = "go to previous universe";
@@ -8470,6 +8512,14 @@
 		// next universe button
 		this.nextUniverseButton = this.viewMenu.addButtonItem(this.nextUniversePressed, Menu.southEast, -160, -200, 80, 40, "Next");
 		this.nextUniverseButton.toolTip = "go to next universe";
+
+		// previous POI button
+		this.prevPOIButton = this.viewMenu.addButtonItem(this.prevPOIPressed, Menu.west, 10, 0, 40, 40, "<");
+		this.prevPOIButton.toolTip = "go to previous POI";
+
+		// next POI button
+		this.nextPOIButton = this.viewMenu.addButtonItem(this.nextPOIPressed, Menu.east, -50, 0, 40, 40, ">");
+		this.nextPOIButton.toolTip = "go to next POI";
 
 		// opacity range
 		this.opacityItem = this.viewMenu.addRangeItem(this.viewOpacityRange, Menu.north, 0, 0, 132, 40, 0, 1, this.popGraphOpacity, true, "Opac ", "%", 0);
@@ -8536,7 +8586,7 @@
 		this.statesSlider.toolTip = "select drawing states range";
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -10028,6 +10078,10 @@
 			this.xyLabel.width = 140;
 		}
 
+		// set the [R]History toggle UI control
+		this.rHistoryButton.locked = !this.engine.isLifeHistory;
+		this.rHistoryButton.current = [this.engine.displayLifeHistory];
+
 		// set the graph UI control
 		this.graphButton.locked = this.graphDisabled;
 		this.graphButton.current = [this.popGraph];
@@ -10061,6 +10115,15 @@
 
 		// set the history fit UI control
 		this.historyFitButton.current = [this.historyFit];
+
+		// set the POI control
+		if (this.waypointManager.numPOIs()) {
+			this.prevPOIButton.deleted = false;
+			this.nextPOIButton.deleted = false;
+		} else{
+			this.prevPOIButton.deleted = true;
+			this.nextPOIButton.deleted = true;
+		}
 
 		// set the major gridlines UI control
 		if (this.engine.gridLineMajor === 0) {

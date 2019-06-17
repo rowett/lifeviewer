@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/parser.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>POI buttons</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+#C [[ COLOR 1 Yellow COLOR 2 Orange COLOR 3 Pink COLOR 4 Gray COLOR 5 Purple ]]
+#C [[ COLOR 6 Blue COLOR 7 Cyan COLOR 8 Red COLOR 9 Green ]]
+#C [[ LABELSIZE 12 LABELALPHA 1 LABELANGLE 315 COLOR LABEL White ]]
+#C [[ GRID ANGLE 45 HEIGHT 600 THEME MCell GRIDMAJOR 0 WIDTH 640 ]]
+#C [[ POI X -108 Y 92 Z 32 POITRANS 0 ]] Point of interest #1
+#C [[ LABEL 11 211 16 "Here's where it all starts\n-- five metacells forming a glider, in Stage E\n(shown in purple)" ]]
+#C [[ POI X -88 Y 72 Z 32 POITRANS 0 ]] POI #2
+#C [[ LABEL 31 191 16 "Metacells move to Stage F (blue).\n-- ready to start constructing children, SE first" ]]
+#C [[ POI X -68 Y 52 Z 32 POITRANS 0 ]] POI #3
+#C [[ LABEL 51 171 16 "Metacells remain in Stage F (blue).\nChildren constructed SE of each metacell\n(yellow cells, Stage A)" ]]
+#C [[ POI X -48 Y 32 Z 32 POITRANS 0 ]] POI #4
+#C [[ LABEL 71 151 16 "Metacells remain in Stage F (blue).\nChildren constructed NE of each metacell\n(yellow cells, Stage A)" ]]
+#C [[ POI X -28 Y 12 Z 32 POITRANS 0 ]] POI #5
+#C [[ LABEL 91 131 16 "Metacells remain in Stage F (blue).\nChildren constructed NW of each metacell\n(yellow cells, Stage A)" ]]
+#C [[ POI X -8 Y -8 Z 32 POITRANS 0 ]] POI #6
+#C [[ LABEL 111 111 16 "Metacells remain in Stage F (blue).\nChildren constructed SW of each metacell\n(yellow cells, Stage A)" ]]
+#C [[ POI X 12 Y -28 Z 32 POITRANS 0 ]] POI #7
+#C [[ LABEL 130 90 16 "Original metacells move to Stage G (cyan).\nParent metacells send their own states\nto each immediate neighbor. All receiving neighbors\nare recently constructed child metacells." ]]
+#C [[ POI X 32 Y -48 Z 32 POITRANS 0 ]] POI #8
+#C [[ LABEL 150 70 16 "Metacells move to Stage H (red)\nThe cycle is complete. The original metacells self-destruct.\nState signals from the original metacells are collected and\nstored in registers in each neighboring child cell,\nwhich have all now moved to Stage B (orange)" ]]
+#C [[ POI X 52 Y -68 Z 32 POITRANS 0 ]] POI #9
+#C [[ LABEL 170 50 16 "Original metacells are gone now\n(green is the background state, completely empty).\nThe four child metacells move to Stage C (pink)\nIn each metacell, the collected state values from each\nneighbor are used to calculate the future state of the cell." ]]
+#C [[ POI X 72 Y -88 Z 32 POITRANS 0 ]] POI #10
+#C [[ LABEL 190 30 16 "The child metacells move to Stage D (gray)\nIf a child metacell's new calculated state is 0, it\nself-destructs. Here all 13 child metacells survive.\nThis is what always happens in the first\nhalf-cycle, when a Moore-neighborhood rule\nis being emulated." ]]
+#C [[ POI X 92 Y -108 Z 32 POITRANS 0 ]] POI #11
+#C [[ LABEL 211 11 16 "The thirteen child metacells move to Stage E (purple)\nThe construction/signal/collect/decide cycle begins again.\nThis cycle happens twice in each 2^36 0E0P metacell cycle." ]]
+#C [[ POI X -88 Y 112 Z 32 POITRANS 0 ]] POI #12
+#C [[ LABEL 30 230 16 "The cycle restarts.\nNow there are thirteen metacells, all in Stage E\n(shown in purple)" ]]
+#C [[ POI X -68 Y 92 Z 32 POITRANS 0 ]] POI #13
+#C [[ LABEL 50 210 16 "The thirteen metacells move to Stage F (blue)\n-- ready to start constructing children, SE first" ]]
+#C [[ POI X -48 Y 72 Z 32 POITRANS 0 ]] POI #14
+#C [[ LABEL 70 190 16 "The thirteen metacells remain in Stage F (blue).\nThirteen children are constructed in the SE\n(yellow metacells, Stage A)" ]]
+#C [[ POI X -28 Y 52 Z 32 POITRANS 0 ]] POI #15
+#C [[ LABEL 90 170 16 "The thirteen metacells remain in Stage F (blue).\nFour more children are constructed in the NE\n(yellow metacells, Stage A)" ]]
+#C [[ POI X -8 Y 32 Z 32 POITRANS 0 ]] POI #16
+#C [[ LABEL 110 150 16 "The thirteen metacells remain in Stage F (blue).\nFour more children are constructed in the NW\n(yellow metacells, Stage A)" ]]
+#C [[ POI X 12 Y 12 Z 32 POITRANS 0 ]] POI #17
+#C [[ LABEL 130 130 16 "The thirteen metacells remain in Stage F (blue).\nOne more child is constructed in the SW\n(yellow metacell, Stage A)" ]]
+#C [[ POI X 32 Y -8 Z 32 POITRANS 0 ]] POI #18
+#C [[ LABEL 150 110 16 "Metacells move to Stage G (cyan).\nEach parent metacell sends its own state to each neighbor." ]]
+#C [[ POI X 52 Y -28 Z 32 POITRANS 0 ]] POI #19
+#C [[ LABEL 170 90 16 "Parent metacells move to Stage H (red).\nChild metacells move to stage B (orange).\nThe parent metacells self-destruct, as always.\nState signals from the parent cell are stored in registers\nin the new child cells." ]]
+#C [[ POI X 72 Y -48 Z 32 POITRANS 0 ]] POI #20
+#C [[ LABEL 190 70 16 "The thirteen parent metacells are gone now -- back to the\ngreen background state, completely empty.\nThe twenty-two child metacells move to Stage C (pink)\nIn each metacell, the collected neighbor states\nare used to calculate the future state of the metacell." ]]
+#C [[ POI X 92 Y -68 Z 32 POITRANS 0 ]] POI #21
+#C [[ LABEL 210 50 16 "The twenty-two child metacells move to Stage D (gray)\nIf a child metacell's calculated state is 0, it self-destructs.\nIn this case, where a B3/S23 glider is being emulated,\nonly five of the twenty-two child metacells survive." ]]
+#C [[ POI X 112 Y -88 Z 32 POITRANS 0 ]] POI #22
+#C [[ LABEL 230 30 16 "The five remaining metacells move to Stage E (purple).\nEmpty background locations are shown in green." ]]
+#C [[ POI INITIAL X 132 Y -108 Z 32 POITRANS 0 ]] POI #23 (initial position, because of INITIAL keyword)
+#C [[ LABEL 245 6 16 "Press 'J' to move forward through 0E0P stages,\nor 'Shift+J' to move backwards." ]]
+x = 233, y = 233, rule = none
+206.I$205.3I$204.5I$203.7I$202.3IEIE3I$201.3IEIEIE3I$200.5IEIEIE3I$
+201.5IEIE3I$202.3IEIE3I$203.3IE3I$204.5I$205.3I$206.I8$186.I39.I$185.
+3I37.3I$184.5I35.5I$183.7I33.7I$182.3IDID3I31.9I$181.3IDIDID3I29.6IE
+4I$180.5IDIDID3I27.8IE4I$181.5IDID3I29.4IEIE4I$182.3IDID3I31.6IE2I$
+183.3ID3I33.7I$184.5I35.5I$185.3I37.3I$186.I39.I8$166.I39.I$165.3I37.
+3I$164.5I35.5I$163.7I33.2IHIH2I$162.3ICIC3I31.2IHIHIH2I$161.3ICICIC3I
+29.2IHIHIDIH2I$160.5ICICIC3I27.4IHIHIDIH2I$161.5ICIC3I29.4IDIDIH2I$
+162.3ICIC3I31.2IHIHID2I$163.3IC3I33.2IHIH2I$164.5I35.2IH2I$165.3I37.
+3I$166.I39.I8$146.I39.I$145.3I37.3I$144.5I35.5I$143.7I33.2ICIC2I$142.
+3IBIB3I31.2ICICIC2I$141.3IBHBHB3I29.2ICICICIC2I$140.5IBIBHB3I27.4ICIC
+ICIC2I$141.5IBHB3I29.4ICICIC2I$142.3IBHB3I31.2ICICIC2I$143.3IB3I33.2I
+CIC2I$144.5I35.2IC2I$145.3I37.3I$146.I39.I8$126.I39.I$125.3I37.3I$
+124.5I35.5I$123.7I33.2IBIB2I$122.3IAIA3I31.2IBHBHB2I$121.3IAGAGA3I29.
+2IBHBHBHB2I$120.5IAIAGA3I27.4IBHBHBHB2I$121.5IAGA3I29.4IBHBHB2I$122.
+3IAGA3I31.2IBHBHB2I$123.3IA3I33.2IBHB2I$124.5I35.2IB2I$125.3I37.3I$
+126.I39.I8$106.I39.I$105.3I37.3I$104.5I35.5I$103.7I33.2IAIA2I$102.3IA
+IA3I31.2IAGAGA2I$101.3IAFAFA3I29.2IAGAGAGA2I$100.5IAIAFA3I27.4IAGAGAG
+A2I$101.5IAFA3I29.4IAGAGA2I$102.3IAFA3I31.2IAGAGA2I$103.3IA3I33.2IAGA
+2I$104.5I35.2IA2I$105.3I37.3I$106.I39.I8$86.I39.I$85.3I37.3I$84.5I35.
+5I$83.7I33.2IAIA2I$82.3IAIA3I31.2IAFAFA2I$81.3IAFAFA3I29.2IAFAFAFA2I$
+80.7IAFA3I27.4IAFAFAFA2I$81.5IAFA3I29.4IAFAFA2I$82.3IAFA3I31.2IAFAFA
+2I$83.7I33.2IAFA2I$84.5I35.2IA2I$85.3I37.3I$86.I39.I8$66.I39.I$65.3I
+37.3I$64.5I35.5I$63.7I33.2IAIA2I$62.3IAIA3I31.2IAFAFA2I$61.4IFAFA3I
+29.2IAFAFAFA2I$60.7IAFA3I27.4IAFAFAFA2I$61.5IAFA3I29.4IAFAFA2I$62.4IF
+A3I31.2IAFAFA2I$63.7I33.2IAFA2I$64.5I35.5I$65.3I37.3I$66.I39.I8$46.I
+39.I$45.3I37.3I$44.5I35.5I$43.7I33.2IAIA2I$42.9I31.2IAFAFA2I$41.4IFAF
+A3I29.3IFAFAFA2I$40.8IFA3I27.5IFAFAFA2I$41.6IFA3I29.4IAFAFA2I$42.4IFA
+3I31.3IFAFA2I$43.7I33.3IFA2I$44.5I35.5I$45.3I37.3I$46.I39.I8$26.I39.I
+$25.3I37.3I$24.5I35.5I$23.7I33.7I$22.9I31.3IFAFA2I$21.4IFIF4I29.3IFAF
+AFA2I$20.8IF4I27.5IFAFAFA2I$21.6IF4I29.5IFAFA2I$22.4IF4I31.3IFAFA2I$
+23.7I33.3IFA2I$24.5I35.5I$25.3I37.3I$26.I39.I8$6.I39.I$5.3I37.3I$4.5I
+35.5I$3.7I33.7I$2.9I31.3IFIF3I$.4IEIE4I29.3IFIFIF3I$8IE4I27.5IFIFIF3I
+$.6IE4I29.5IFIF3I$2.4IE4I31.3IFIF3I$3.7I33.3IF3I$4.5I35.5I$5.3I37.3I$
+6.I39.I8$26.I$25.3I$24.5I$23.7I$22.3IEIE3I$21.3IEIEIE3I$20.5IEIEIE3I$
+21.5IEIE3I$22.3IEIE3I$23.3IE3I$24.5I$25.3I$26.I!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

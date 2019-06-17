@@ -1,5 +1,7 @@
 Build 345
 - state 6 regression in editor
+- new "[R]History" button in navigation menu to toggle [R]History display
+- new previous and next POI button on main screen if POIs defined
 
 Build 344
 - fixed undo/redo records persisting across patterns
