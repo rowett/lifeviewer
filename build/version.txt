@@ -1,3 +1,6 @@
+Build 345
+- state 6 regression in editor
+
 Build 344
 - fixed undo/redo records persisting across patterns
 

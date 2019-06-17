@@ -30,6 +30,7 @@ LifeViewer features:
 * Multiple ways to automatically track patterns as they evolve.
 * Script language that allows many features to be customized including Waypoint animations and POIs.
 * Support for multiple embedded LifeViewers and/or a single popup LifeViewer.
+* Simple editor with undo/redo.
 
 
 LifeViewer supports several different pattern formats, rules and neighbourhoods, as well as bounded grids.
@@ -39,7 +40,7 @@ Topic|Supported
 Pattern formats|RLE, Life 1.06, Life 1.05, Cells
 Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP, Larger than Life, HROT, Alternate
 Bounded Grid|Plane, Torus, Klein, Cross-Surface, Sphere
-States|2 state, [R]History, Niemiec, Generations, Larger than Life
+States|2 state, [R]History, Niemiec, Generations
 Neighbourhoods|Moore, Von Neumann, 1D, Hexagonal, Triangular, Circular
 
 ## How do I use it?
@@ -130,9 +131,10 @@ hrot|LtL/HROT algorithm
 keywords|script command keywords
 life|algorithms to compute the next generation
 lifeview|main program
+parser|script command parser
 patterns|pattern reader and decoder
 random|pseudo-random number generator
-script|functions to read script commands
+script|converts input into token stream
 snapshot|snapshot manager for going back to earlier generations
 stars|starfield
 waypoint|waypoint, POI and label management
