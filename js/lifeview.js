@@ -5193,8 +5193,10 @@
 				me.reset(me);
 
 				// reset undo/redo list
-				this.editNum = 0;
-				this.numEdits = 0;
+				me.editNum = 0;
+				me.numEdits = 0;
+				me.currentEdit = [];
+				me.currentUndo = [];
 
 				// build reset message
 				message = "Reset";
