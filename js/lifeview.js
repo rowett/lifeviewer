@@ -4013,6 +4013,7 @@
 		this.waypointsIndicator.deleted = hide || this.popGraph;
 		this.loopIndicator.deleted = hide || this.popGraph;
 		this.modeList.deleted = hide;
+		this.copyRLEButton.deleted = hide;
 
 		// graph controls
 		this.opacityItem.deleted = hide || !this.popGraph;
