@@ -1603,7 +1603,7 @@
 		if (!me.noHistory) {
 			if (me.editNum < me.numEdits) {
 				if (me.editList[me.editNum].gen === counter && me.editList[me.editNum].cells.length === 0) {
-						me.editNum += 1;
+					me.editNum += 1;
 				}
 				if (me.editList[me.editNum].gen > counter) {
 					me.runTo(me.editList[me.editNum].gen);
@@ -4001,7 +4001,7 @@
 
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
-		this.undoButton.locked = (this.editNum === 0 || (this.editNum === 1 && this.numEdits > 0 && this.editList[0].gen === 0 && this.editList[0].cells.length === 0));
+		this.undoButton.locked = (this.editNum === 0 || (this.editNum === 1 && this.numEdits > 1 && this.editList[0].gen === 0 && this.editList[0].cells.length === 0 && this.engine.counter === 0));
 
 		// top menu buttons
 		this.autoFitToggle.deleted = hide;

@@ -4,6 +4,7 @@ Build 347
 - new settings icon
 - added "Copy" button to copy current pattern as RLE to clipboard
 - increased minimum width by 80 pixels
+- locked UI controls were allowing clicks through to the background
 
 Build 346
 - fixed a bug where the playback controls were disappearing after reset
