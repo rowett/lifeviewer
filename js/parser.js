@@ -4240,7 +4240,7 @@
 								// get the value
 								numberValue = scriptReader.getNextTokenAsNumber() | 0;
 
-								// save the requested height if not in popup
+								// save the requested width if not in popup
 								if (!view.isInPopup) {
 									if (view.requestedWidth !== -1 && !suppressErrors.width) {
 										scriptErrors[scriptErrors.length] = [Keywords.widthWord + " " + numberValue, "overwrites " + view.requestedWidth];
@@ -4713,10 +4713,18 @@
 		var lower = 0;
 		var sizeError = false;
 		if (view.requestedWidth !== -1) {
+			// handle legacy minimum widths
 			lower = ViewConstants.minViewerWidth;
+			if (view.requestedWidth >= ViewConstants.minLegacyWidth && view.requestedWidth < lower) {
+				view.requestedWidth = lower;
+			}
+
+			// check for NOGUI
 			if (view.noGUI) {
 				lower = ViewConstants.minNoGUIWidth;
 			}
+
+			// validate width
 			if (view.requestedWidth < lower || view.requestedWidth > view.maxCodeWidth) {
 				scriptErrors[scriptErrors.length] = [Keywords.widthWord + " " + view.requestedWidth, "argument out of range"];
 				sizeError = true;
@@ -4738,6 +4746,10 @@
 		// check if popup width and/or height were specified
 		if (view.isInPopup) {
 			if (view.requestedPopupWidth !== -1) {
+				// handle legacy minimum widths
+				if (view.requestedPopupWidth >= ViewConstants.minLegacyWidth && view.requestedWidth < ViewConstants.minViewerWidth) {
+					view.requestedPopupWidth = ViewConstants.minViewerWidth;
+				}
 				if (view.requestedPopupWidth < ViewConstants.minViewerWidth || view.requestedPopupWidth > view.maxCodeWidth) {
 					scriptErrors[scriptErrors.length] = [Keywords.popupWidthWord + " " + view.requestedPopupWidth, "argument out of range"];
 					view.requestedPopupWidth = -1;

@@ -337,6 +337,7 @@
 		// minimum and maximum width of the Viewer
 		/** @const {number} */ minNoGUIWidth: 64,
 		/** @const {number} */ minNoGUIHeight: 64,
+		/** @const {number} */ minLegacyWidth : 480,
 		/** @const {number} */ minViewerWidth : 560,
 		/** @const {number} */ maxViewerWidth : 2048,
 
@@ -1145,6 +1146,9 @@
 
 		// redo button
 		this.redoButton = null;
+
+		// copy rle button
+		this.copyRLEButton = null;
 
 		// navigation menu toggle
 		this.navToggle = null;
@@ -5090,6 +5094,14 @@
 						me.pickToggle.current = me.togglePick([false], true, me);
 					}
 					break;
+				case ViewConstants.modeSelect:
+					// not implemented yet
+					if (me.drawing) {
+						result = ViewConstants.modeDraw;
+					} else {
+						result = ViewConstants.modePan;
+					}
+					break;
 				case ViewConstants.modePan:
 					me.drawing = false;
 					break;
@@ -5995,6 +6007,11 @@
 	// undo button
 	View.prototype.undoPressed = function(me) {
 		me.undo(me);
+	};
+
+	// copy RLE button
+	View.prototype.copyRLEPressed = function(me) {
+		me.copyCurrentRLE(me, true);
 	};
 
 	// redo button
@@ -8310,22 +8327,22 @@
 		this.infoBarLabelNValueRight.toolTip = "bounding box north edge velocity";
 
 		// autostart indicator
-		this.autostartIndicator = this.viewMenu.addListItem(null, Menu.northEast, -170, 0, 40, 20, ["START"], [false], Menu.multi);
+		this.autostartIndicator = this.viewMenu.addListItem(null, Menu.northEast, -210, 0, 38, 20, ["START"], [false], Menu.multi);
 		this.autostartIndicator.font = ViewConstants.smallMenuFont;
 		this.autostartIndicator.toolTip = ["autostart indicator"];
 
 		// stop indicator
-		this.stopIndicator = this.viewMenu.addListItem(null, Menu.northEast, -170, 20, 40, 20, ["STOP"], [false], Menu.multi);
+		this.stopIndicator = this.viewMenu.addListItem(null, Menu.northEast, -210, 20, 38, 20, ["STOP"], [false], Menu.multi);
 		this.stopIndicator.font = ViewConstants.smallMenuFont;
 		this.stopIndicator.toolTip = ["stop indicator"];
 
 		// waypoints indicator
-		this.waypointsIndicator = this.viewMenu.addListItem(this.toggleWP, Menu.northEast, -130, 0, 40, 20, ["WAYPT"], [false], Menu.multi);
+		this.waypointsIndicator = this.viewMenu.addListItem(this.toggleWP, Menu.northEast, -172, 0, 38, 20, ["WAYPT"], [false], Menu.multi);
 		this.waypointsIndicator.font = ViewConstants.smallMenuFont;
 		this.waypointsIndicator.toolTip = ["toggle waypoint mode"];
 
 		// loop indicator
-		this.loopIndicator = this.viewMenu.addListItem(this.toggleLoop, Menu.northEast, -130, 20, 40, 20, ["LOOP"], [false], Menu.multi);
+		this.loopIndicator = this.viewMenu.addListItem(this.toggleLoop, Menu.northEast, -172, 20, 38, 20, ["LOOP"], [false], Menu.multi);
 		this.loopIndicator.font = ViewConstants.smallMenuFont;
 		this.loopIndicator.toolTip = ["toggle loop mode"];
 
@@ -8599,7 +8616,7 @@
 		this.stepRange.toolTip = "generations per step";
 
 		// add the actual step label
-		this.stepLabel = this.viewMenu.addLabelItem(Menu.southEast, -375, -60, 75, 20, 0);
+		this.stepLabel = this.viewMenu.addLabelItem(Menu.southEast, -285, -60, 75, 20, 0);
 		this.stepLabel.font = ViewConstants.statsFont;
 		this.stepLabel.deleted = true;
 
@@ -8612,6 +8629,11 @@
 		this.redoButton = this.viewMenu.addButtonItem(this.redoPressed, Menu.southEast, -410, -40, 40, 40, "");
 		this.redoButton.icon = this.iconManager.icon("redo");
 		this.redoButton.toolTip = "redo";
+
+		// add the copy RLE button
+		this.copyRLEButton = this.viewMenu.addButtonItem(this.copyRLEPressed, Menu.northEast, -130, 0, 40, 40, "Copy");
+		this.copyRLEButton.toolTip = "copy pattern to clipboard";
+		this.copyRLEButton.font = "14px Arial";
 
 		// add play and pause list
 		this.playList = this.viewMenu.addListItem(this.viewPlayList, Menu.southEast, -205, -40, 160, 40, ["", "", "", ""], ViewConstants.modePause, Menu.single);
