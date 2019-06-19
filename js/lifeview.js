@@ -1511,32 +1511,35 @@
 		var wasChange = true,
 			counter = this.engine.counter;
 
-		// check for duplicate
-		if (this.editNum > 0) {
-			if (counter === this.editList[this.editNum - 1].gen && this.currentEdit.length === 0) {
-				wasChange = false;
-			} else {
-				wasChange = true;
+		// do nothing if step back disabled
+		if (!this.noHistory) {
+			// check for duplicate
+			if (this.editNum > 0) {
+				if (counter === this.editList[this.editNum - 1].gen && this.currentEdit.length === 0) {
+					wasChange = false;
+				} else {
+					wasChange = true;
+				}
 			}
-		}
-
-		// check if there was a change
-		if (wasChange) {
-			// if this is the first record at this generation then insert a generation record
-			if (this.editNum > 0 && this.editList[this.editNum - 1].gen !== counter && this.currentEdit.length !== 0) {
-				this.editList[this.editNum] = {gen: counter, cells: []};
-				this.undoList[this.editNum] = {gen: counter, cells: []}; 
-				this.editNum += 1;
-			}
-			// create new edit and undo record
-			this.editList[this.editNum] = {gen: counter, cells: this.currentEdit.slice()};
-			this.undoList[this.editNum] = {gen: counter, cells: this.currentUndo.slice()};
-			this.editNum += 1;
-			this.numEdits = this.editNum;
 	
-			// clear current edit and undo records
-			this.currentEdit = [];
-			this.currentUndo = [];
+			// check if there was a change
+			if (wasChange) {
+				// if this is the first record at this generation then insert a generation record
+				if (this.editNum > 0 && this.editList[this.editNum - 1].gen !== counter && this.currentEdit.length !== 0) {
+					this.editList[this.editNum] = {gen: counter, cells: []};
+					this.undoList[this.editNum] = {gen: counter, cells: []}; 
+					this.editNum += 1;
+				}
+				// create new edit and undo record
+				this.editList[this.editNum] = {gen: counter, cells: this.currentEdit.slice()};
+				this.undoList[this.editNum] = {gen: counter, cells: this.currentUndo.slice()};
+				this.editNum += 1;
+				this.numEdits = this.editNum;
+		
+				// clear current edit and undo records
+				this.currentEdit = [];
+				this.currentUndo = [];
+			}
 		}
 	};
 
@@ -1547,40 +1550,43 @@
 			current = me.editNum,
 			record = null;
 
-		// check for top of the stack
-		if (current === me.numEdits && current > 0) {
-			me.afterEdit();
-			current = me.editNum;
-		}
-
-		// check for undo records
-		if (current > 0) {
-			// pop the top record
-			record = me.undoList[current - 1];
-			gen = record.gen;
-			if (record.cells.length === 0) {
-				if (current > 1) {
-					gen = me.undoList[current - 2].gen;
-				}
+		// do nothing if step back disabled
+		if (!me.noHistory) {
+			// check for top of the stack
+			if (current === me.numEdits && current > 0) {
+				me.afterEdit();
+				current = me.editNum;
 			}
-
-			// if it is for an earlier generation then go there
-			if (gen < counter) {
-				if (gen === 0) {
+	
+			// check for undo records
+			if (current > 0) {
+				// pop the top record
+				record = me.undoList[current - 1];
+				gen = record.gen;
+				if (record.cells.length === 0) {
+					if (current > 1) {
+						gen = me.undoList[current - 2].gen;
+					}
+				}
+	
+				// if it is for an earlier generation then go there
+				if (gen < counter) {
+					if (gen === 0) {
+						me.reset(me);
+					} else {
+						me.runTo(gen);
+					}
+				}
+	
+				// paste cells in reverse order
+				me.pasteRaw(record, true);
+	
+				// decrement stack using saved value since a record may have been added above
+				me.editNum = current - 1;
+			} else {
+				if (counter > 0) {
 					me.reset(me);
-				} else {
-					me.runTo(gen);
 				}
-			}
-
-			// paste cells in reverse order
-			me.pasteRaw(record, true);
-
-			// decrement stack using saved value since a record may have been added above
-			me.editNum = current - 1;
-		} else {
-			if (counter > 0) {
-				me.reset(me);
 			}
 		}
 	};
@@ -1589,17 +1595,20 @@
 	View.prototype.redo = function(me) {
 		var counter = me.engine.counter;
 
-		if (me.editNum < me.numEdits) {
-			if (me.editList[me.editNum].gen === counter && me.editList[me.editNum].cells.length === 0) {
+		// do nothing if step back disabled
+		if (!me.noHistory) {
+			if (me.editNum < me.numEdits) {
+				if (me.editList[me.editNum].gen === counter && me.editList[me.editNum].cells.length === 0) {
+						me.editNum += 1;
+				}
+				if (me.editList[me.editNum].gen > counter) {
+					me.runTo(me.editList[me.editNum].gen);
+				} else {
+					// paste cells in forward order
+					me.pasteRaw(me.editList[me.editNum], true);
+				}
 				me.editNum += 1;
 			}
-			if (me.editList[me.editNum].gen > counter) {
-				me.runTo(me.editList[me.editNum].gen);
-			} else {
-				// paste cells in forward order
-				me.pasteRaw(me.editList[me.editNum], true);
-			}
-			me.editNum += 1;
 		}
 	};
 
