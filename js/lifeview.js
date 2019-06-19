@@ -212,7 +212,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 345,
+		/** @const {number} */ versionBuild : 347,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -231,7 +231,8 @@
 
 		// draw modes
 		/** @const {number} */ modeDraw : 0,
-		/** @const {number} */ modePan : 1,
+		/** @const {number} */ modeSelect : 1,
+		/** @const {number} */ modePan : 2,
 
 		// zoom scale factor for pattern fit zoom
 		/** @const {number} */ zoomScaleFactor : 1.25,
@@ -336,7 +337,7 @@
 		// minimum and maximum width of the Viewer
 		/** @const {number} */ minNoGUIWidth: 64,
 		/** @const {number} */ minNoGUIHeight: 64,
-		/** @const {number} */ minViewerWidth : 480,
+		/** @const {number} */ minViewerWidth : 560,
 		/** @const {number} */ maxViewerWidth : 2048,
 
 		// extra gui height for top and bottom row of controls (used during AutoFit)
@@ -1139,6 +1140,12 @@
 		// actual step
 		this.stepLabel = null;
 
+		// undo button
+		this.undoButton = null;
+
+		// redo button
+		this.redoButton = null;
+
 		// navigation menu toggle
 		this.navToggle = null;
 
@@ -1439,17 +1446,11 @@
 		// get current state
 		var state = this.engine.getState(x, y, false),
 			i = this.currentEdit.length,
-			newEdit = true,
 			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
 			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1);
 
-		// check if this is a duplicate change
-		if (i > 0 && (this.currentEdit[i - 3] === x - xOff) && (this.currentEdit[i - 2] === y - yOff) && this.currentEdit[i - 1] === colour) {
-			newEdit = false;
-		}
-
-		// only update records if this is not a duplicate change
-		if (newEdit) {
+		// only add undo/redo records if the new state is different than the current state
+		if (colour !== state) {
 			this.currentEdit[i] = x - xOff;
 			this.currentEdit[i + 1] = y - yOff;
 			this.currentEdit[i + 2] = colour;
@@ -1492,7 +1493,7 @@
 			found = false;
 
 		// search for undo records at or before specified generation
-		while (i > 0 && !found) {
+		while (i >= 0 && !found) {
 			if (this.editList[i].gen <= gen) {
 				found = true;
 			} else {
@@ -1540,65 +1541,65 @@
 	};
 
 	// undo edit
-	View.prototype.undo = function() {
+	View.prototype.undo = function(me) {
 		var gen = 0,
-			counter = this.engine.counter,
-			current = this.editNum,
+			counter = me.engine.counter,
+			current = me.editNum,
 			record = null;
 
 		// check for top of the stack
-		if (current === this.numEdits) {
-			this.afterEdit();
-			current = this.editNum;
+		if (current === me.numEdits && current > 0) {
+			me.afterEdit();
+			current = me.editNum;
 		}
 
 		// check for undo records
 		if (current > 0) {
 			// pop the top record
-			record = this.undoList[current - 1];
+			record = me.undoList[current - 1];
 			gen = record.gen;
 			if (record.cells.length === 0) {
 				if (current > 1) {
-					gen = this.undoList[current - 2].gen;
+					gen = me.undoList[current - 2].gen;
 				}
 			}
 
 			// if it is for an earlier generation then go there
 			if (gen < counter) {
 				if (gen === 0) {
-					this.reset(this);
+					me.reset(me);
 				} else {
-					this.runTo(gen);
+					me.runTo(gen);
 				}
 			}
 
 			// paste cells in reverse order
-			this.pasteRaw(record, true);
+			me.pasteRaw(record, true);
 
 			// decrement stack using saved value since a record may have been added above
-			this.editNum = current - 1;
+			me.editNum = current - 1;
 		} else {
 			if (counter > 0) {
-				this.reset(this);
+				me.reset(me);
 			}
 		}
 	};
 
 	// redo edit
-	View.prototype.redo = function() {
-		var counter = this.engine.counter;
+	View.prototype.redo = function(me) {
+		var counter = me.engine.counter;
 
-		if (this.editNum < this.numEdits) {
-			if (this.editList[this.editNum].gen === counter && this.editList[this.editNum].cells.length === 0) {
-				this.editNum += 1;
+		if (me.editNum < me.numEdits) {
+			if (me.editList[me.editNum].gen === counter && me.editList[me.editNum].cells.length === 0) {
+				me.editNum += 1;
 			}
-			if (this.editList[this.editNum].gen > counter) {
-				this.runTo(this.editList[this.editNum].gen);
+			if (me.editList[me.editNum].gen > counter) {
+				me.runTo(me.editList[me.editNum].gen);
 			} else {
 				// paste cells in forward order
-				this.pasteRaw(this.editList[this.editNum], true);
+				me.pasteRaw(me.editList[me.editNum], true);
 			}
-			this.editNum += 1;
+			me.editNum += 1;
 		}
 	};
 
@@ -3202,7 +3203,7 @@
 		}
 
 		// set visibility based on stats toggle and whether paused
-		if (this.statsOn || (this.playList.current === ViewConstants.modePause && this.viewMenu.mouseX !== -1)) {
+		if (this.statsOn || (!this.generationOn && this.viewMenu.mouseX !== -1)) {
 			// check if help or errors displayed or no pattern loaded
 			if (this.displayHelp || this.displayErrors || this.patternWidth === 0) {
 				// hide the coordinates
@@ -3310,7 +3311,7 @@
 		me.gensPerStep = me.stepRange.current[0];
 
 		// update elapsed time if not paused
-		if (me.playList.current !== ViewConstants.modePause) {
+		if (me.generationOn) {
 			// check if actual interval is greater than frame budget
 			if (timeSinceLastUpdate > ViewConstants.frameBudget) {
 				// flag machine too slow
@@ -3353,7 +3354,7 @@
 		me.updateOrigin();
 
 		// check if waypoints are defined and enabled
-		if (me.waypointsDefined && !me.waypointsDisabled && me.playList.current !== ViewConstants.modePause) {
+		if (me.waypointsDefined && !me.waypointsDisabled && me.generationOn) {
 			// check if a manual change happened
 			if (me.manualChange && !me.waypointManager.atLast(me.elapsedTime + timeSinceLastUpdate)) {
 				// clear flag
@@ -3405,7 +3406,7 @@
 				}
 			} else {
 				// check whether paused
-				if (me.playList.current !== ViewConstants.modePause) {
+				if (me.generationOn) {
 					// lock controls if playing
 					me.controlsLocked = true;
 				}
@@ -3500,7 +3501,7 @@
 			}
 		} else {
 			// if autofit and waypoints not defined then lock the UI controls
-			if (me.autoFit && me.playList.current !== ViewConstants.modePause) {
+			if (me.autoFit && me.generationOn) {
 				me.controlsLocked = true;
 			}
 		}
@@ -3660,7 +3661,7 @@
 
 		// lock or unlock the controls
 		me.autoFitToggle.locked = me.controlsLocked && me.waypointsDefined;
-		me.fitButton.locked = me.controlsLocked || (me.autoFit && me.playList.current !== ViewConstants.modePause);
+		me.fitButton.locked = me.controlsLocked || (me.autoFit && me.generationOn);
 		me.generationRange.locked = me.controlsLocked && me.waypointsDefined;
 		me.stepRange.locked = me.controlsLocked && me.waypointsDefined;
 		me.themeItem.locked = me.controlsLocked && me.waypointsDefined;
@@ -3679,7 +3680,7 @@
 		}
 
 		// check for autofit
-		if (me.autoFit && (me.playList.current !== ViewConstants.modePause || me.waypointsDefined)) {
+		if (me.autoFit && (me.generationOn || me.waypointsDefined)) {
 			me.fitZoomDisplay(false, false);
 		}
 
@@ -3984,6 +3985,10 @@
 			value = 0,
 			captions = [],
 			toolTips = [];
+
+		// undo and redo buttons
+		this.redoButton.locked = (this.editNum === this.numEdits);
+		this.undoButton.locked = (this.editNum === 0 || (this.editNum === 1 && this.numEdits > 0 && this.editList[0].gen === 0 && this.editList[0].cells.length === 0));
 
 		// top menu buttons
 		this.autoFitToggle.deleted = hide;
@@ -4970,6 +4975,9 @@
 		// reset cleared glider count
 		me.engine.numClearedGliders = 0;
 
+		// reset undo/redo to generation 0
+		me.setUndoGen(me.engine.counter);
+
 		// draw any undo/redo edit records
 		me.pasteEdits();
 	};
@@ -4979,12 +4987,12 @@
 		// check if playing
 		if (isPlaying) {
 			// set to pause icon
-			this.playList.icon[2] = this.iconManager.icon("pause");
-			this.playList.toolTip[2] = "pause";
+			this.playList.icon[ViewConstants.modePlay] = this.iconManager.icon("pause");
+			this.playList.toolTip[ViewConstants.modePlay] = "pause";
 		} else {
-			// set to step forward icon
-			this.playList.icon[2] = this.iconManager.icon("stepforward");
-			this.playList.toolTip[2] = "next generation";
+			// set to play icon
+			this.playList.icon[ViewConstants.modePlay] = this.iconManager.icon("play");
+			this.playList.toolTip[ViewConstants.modePlay] = "play";
 		}
 	};
 
@@ -5190,11 +5198,10 @@
 				}
 
 				// reset
+				me.afterEdit();
 				me.reset(me);
 
 				// reset undo/redo list
-				me.editNum = 0;
-				me.numEdits = 0;
 				me.currentEdit = [];
 				me.currentUndo = [];
 
@@ -5308,7 +5315,7 @@
 
 			case ViewConstants.modePlay:
 				// play
-				if (me.playList.current !== ViewConstants.modePlay) {
+				if (!me.generationOn) {
 					// play
 					me.generationOn = true;
 					me.afterEdit();
@@ -5322,6 +5329,14 @@
 
 					// zoom text
 					me.menuManager.notification.notify("Play", 15, 40, 15, true);
+				} else {
+					// pause
+					me.generationOn = false;
+
+					// zoom text unless STOP and generation notifications disabled
+					if (!(me.engine.counter === me.stopGeneration && !me.genNotifications)) {
+						me.menuManager.notification.notify("Pause", 15, 40, 15, true);
+					}
 				}
 				break;
 
@@ -5344,8 +5359,6 @@
 					me.menuManager.notification.notify("Pause", 15, 40, 15, true);
 				}
 
-				// switch to pause after this
-				newValue = ViewConstants.modePause;
 				break;
 
 			case ViewConstants.modePause:
@@ -5644,7 +5657,7 @@
 			icons = new Image();
 
 			// load the icons from the image file
-			icons.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAtAAAAAoCAIAAABYa1qWAAAABnRSTlMAAAAAAABupgeRAAAHbklEQVR4nO2dWbKtKBBFtaIGfIbijK0P4xIUSL8zE3Cvr/fEmx1dHkQ8DkIIIYQQQghp5ff7iV7/MtKxZcw/yFPpcdVLXw/uydwAKf03o56QRbnvO7hynqeCZCu9Vtz3rWOGmiJCTLiu6/f7Xdeldr0v3x0pPZhwkI2RmKLy6YWtXn3O8wxSAUhmICFzAxgHAiROSp50Ib6OKj2O458uUwmZnWculJOfGv2t9FrxNX8J2ZLXdRF4KRMOsi1yc2F+FrTSa8XX/CVkV54nL0KlBxMOsjcSc2HNLGil14qv+UvITugsbxCyJ8HkB5wL85Kt9MaYvDFx3zfEZZQcIazeUpk5Jj4TVt+EJgXM8JZKcPN4aXxn8geE1c+L1o14kI17vpARr3f6TfbExLmD2iBZlBPoRSGxmXESvfpvUfo/WSRen9F8Jae+gmzjfIgNL1ixqLEURdCWZjApxl8GUPt3/I9Xk+Cl79x/VN2N406Aur8oZNDsPqUQ+iyvdAeltChHwp0PwjMhahjvPppxlugUg+7nBwr/CsDWAfOExkkIVqsaVqXvWFVS68TWen9RyKDBfX+FotX4om1Fg0eEFxVB3PkmTDgqGWzPqyccI2JfQxdcMezOqaFmiYFFp10pnPQVUHsOxy2z0L00SzTcVqZy6t7oERWZCjegSb/WOzm7drEv12klLiGQO+krKL2uq+3gL6YdD7u25gn92nVATBFUwdK+tzYnfWef1vXonbDxT06Qq9V3VdFOXazHpfsUEPcWq9xJX3Fpz0mjX047UKOSxO+qwRqZdsD9Ws6xE/UVp9n83AjmFthd2vEpxntWxzjmHrUIbYCFy9wVyLbQvOSY/nM4VnkYhgLu74lmxJjJq3Jy88hyPP3FfzeKbUwB0SDXCP9gWpkCcrTG607VTOnowV9f6Kjb+7iEd0sYSeZnp4dWI0isMQSxVe6zRXdq/M1sNXXuoO55SM3ZctcDRE8XDUpz53DkrYyBNN+U3pTw1vuLQvw/tAqCJnkf/Z+A+RsG1RUV9albjo7p0Px8iBRNU5rQGnus5Yii6mKeN8A8ztgQAaVVjpPB8xfpdCfWXikkM9e47T6Qexwm53DUGIAtzZFP0Cpztw5axULMiP/Qyn1l6t1B+dutaNEIWzHDa7FNlaVQs6km1NqupGObul5pZM1tg9GOI1bsttId2Zc5oitzsy8fco+P9NkbxbMx8i+tQEoPiW+prD4rqNnf0UWxHXjRalrU7KPuyIfBOl0IK+9Syxt7cP9tyZRWIa2lifv/C1crroM+Tx/ixQDp6wHdu0FrSg+5j7dtP1wOIhGcJplL187SxpOHqWaFqYyBkOkjt/rDlBjss6G8wP0qVwKdnRz8WiwhRAl/flLOGl+npeJctRb337EiDzq/+jpUSGcb/sVtKncPpBKO8Rc1iShL187Sxn8Zv+I0K3GzxOKVeN3CpR3521qJ/9xqxZHZBhDRhymuFJ9wrJ5q6NgvoaJV5qLVtKjZxKGwzyBWV399RTJphL/UgXJ5hj74hSUrfUQfrBzYhGP1VMNHwZfsIV499NkA90uU5Qz2qamv8Tqdn9Pi1+frzKRvhgTFRYunLWETLNu47ZdtSJ+9kT+TQ2d540CdwwGs45TelIrW+4tC4j+0CoUaGQedO5A418ipMWYbAmfjWaHGZfPzIVI0rd4DdzIGYp9/jE9O5nGOQ9TqBTbIfRnMuAGi2UbeqbPiszv19zimOodD9L9JEq9ehpQFNdKqCGLYiCLpgOhQdAflr5qiJYh9RHnNczic2DiSwEalGWc5L7pJ9dYMEI01F1fB8OyNvAESpUmk202rXtT9RSF95kmHRYG8Oyh/i3I2i2qe2E2U40w4nNg4nsBGZZhwvF7RJ9Wjiz29W1fNxdVRaFeos7yaSnu+FrvfynY9NctllcA7yWC9wJ/yovhye1ud2VqUs2ePRjWDF03jxrjBO+3bsOXKfp5eqLQt4WC9PoynHRID8W3xsWlp2OTWhXX3ESrHjcH2kFrgYTPrI7+GEd82XnpdV23CwUqNAa52zMNUOcf2rS52cHuXZ4BBhqM/bjDbGCS/SnH8pQvY0vJrsRu/ngdhv/hM4s4kZpDNYLtaET+9eDZt7DfwKqP2KqxPLuFgjdbTGiuJwAJlmtc73ACrbTdzbvcBgt0V2CczsznRNaS9jzb5CFumGlZnbzzofELFsU+1EeIItrOM726plGyi1/x8CAdqlbtDTpyUwOck8zgDmxOZCvNzODL2jJTWHsJByNL40w98eSAj3EpvjP5rsTfu8GygKAmkY5u6Pm1AyDjSZ2/kz+SQO3hDP00nRBs3NAuN0Sn5VnpjlBMOrOPSYRyECQeRwKpdBaUjx3IUD+3g5+nJtsgtQef35FvpteJr/hryulsFiLV/xBjRnaRH38FfhMyP9APv1FxopdcKHX+5d+GYYCs32Rid3aNMOMi2+BMzcPPmtHr1iVMBiL+xTOYchGAZfPLSUXow4SBbIjc55SVb6bVCzao53SdkXV6/Gft6HVVKCCGEEKLBfwV0RB7MVN6yAAAAAElFTkSuQmCC";
+			icons.src = "data:image/png;base64,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";
 				
 			// save the image
 			ViewConstants.icons = icons;
@@ -5672,6 +5685,9 @@
 		this.iconManager.add("states", w, h);
 		this.iconManager.add("hexagongrid", w, h);
 		this.iconManager.add("trianglegrid", w, h);
+		this.iconManager.add("select", w, h);
+		this.iconManager.add("undo", w, h);
+		this.iconManager.add("redo", w, h);
 	};
 
 	// update grid icon based on hex or square mode
@@ -5862,7 +5878,7 @@
 		} else {
 			if (poi.modeAtPOI === WaypointConstants.stop) {
 				// check if already paused
-				if (me.playList.current !== ViewConstants.modePause) {
+				if (me.generationOn) {
 					me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 				}
 			}
@@ -5967,6 +5983,16 @@
 		}
 	};
 
+	// undo button
+	View.prototype.undoPressed = function(me) {
+		me.undo(me);
+	};
+
+	// redo button
+	View.prototype.redoPressed = function(me) {
+		me.redo(me);
+	};
+
 	// graph close button
 	View.prototype.graphClosePressed = function(me) {
 		me.popGraph = false;
@@ -6064,7 +6090,7 @@
 		me.fitZoomDisplay(true, true);
 
 		// flag manual change made if paused
-		if (me.playList.current === ViewConstants.modePause) {
+		if (!me.generationOn) {
 			me.manualChange = true;
 		}
 	};
@@ -6114,7 +6140,7 @@
 			me.autoFit = newValue[0];
 
 			// autofit now if just switched on and playback paused
-			if (me.autoFit && me.playList.current === ViewConstants.modePause) {
+			if (me.autoFit && !me.generationOn) {
 				me.fitZoomDisplay(true, true);
 			}
 		}
@@ -6819,7 +6845,7 @@
 				// do not move if in view only mode
 				if (!me.viewOnly) {
 					// check if paused
-					if (me.playList.current === ViewConstants.modePause) {
+					if (!me.generationOn) {
 						// check if at start
 						if (me.engine.counter > 0) {
 							// run from start to previous generation
@@ -7007,10 +7033,10 @@
 					// check for shift
 					if (event.shiftKey) {
 						// redo edit
-						me.redo();
+						me.redo(me);
 					} else {
 						// undo edit
-						me.undo();
+						me.undo(me);
 					}
 				} else {
 					// check for shift
@@ -7231,7 +7257,7 @@
 						me.menuManager.notification.notify("Restored camera position", 15, 100, 15, true);
 
 						// flag manual change made if paused
-						if (me.playList.current === ViewConstants.modePause) {
+						if (!me.generationOn) {
 							me.manualChange = true;
 						}
 					}
@@ -7596,7 +7622,7 @@
 						me.menuManager.notification.notify("Fit Zoom", 15, 80, 15, true);
 
 						// flag manual change made if paused
-						if (me.playList.current === ViewConstants.modePause) {
+						if (!me.generationOn) {
 							me.manualChange = true;
 						}
 					}
@@ -8295,9 +8321,9 @@
 		this.loopIndicator.toolTip = ["toggle loop mode"];
 
 		// mode list
-		this.modeList = this.viewMenu.addListItem(this.viewModeList, Menu.northWest, 90, 0, 80, 40, ["", ""], ViewConstants.modePan, Menu.single);
-		this.modeList.icon = [this.iconManager.icon("draw"), this.iconManager.icon("pan")];
-		this.modeList.toolTip = ["draw", "pan"];
+		this.modeList = this.viewMenu.addListItem(this.viewModeList, Menu.northWest, 90, 0, 120, 40, ["", "", ""], ViewConstants.modePan, Menu.single);
+		this.modeList.icon = [this.iconManager.icon("draw"), this.iconManager.icon("select"), this.iconManager.icon("pan")];
+		this.modeList.toolTip = ["draw", "select", "pan"];
 
 		// help section list
 		this.helpSectionList = this.viewMenu.addListItem(this.viewHelpSectionList, Menu.northEast, -80, 100, 80, 60, ["1", "2"], 0, Menu.single);
@@ -8549,29 +8575,39 @@
 		// add menu toggle button
 		this.navToggle = this.viewMenu.addListItem(null, Menu.southEast, -40, -40, 40, 40, [""], [false], Menu.multi);
 		this.navToggle.icon = [this.iconManager.icon("menu")];
-		this.navToggle.toolTip = ["toggle navigation menu"];
+		this.navToggle.toolTip = ["toggle settings menu"];
 
 		// add the colour theme range
 		this.themeItem = this.viewMenu.addRangeItem(this.viewThemeRange, Menu.south, 0, -90, 390, 40, 0, this.engine.numThemes - 1, 1, true, "", " Theme", -1);
 		this.themeItem.toolTip = "colour theme";
 
 		// add the generation speed range
-		this.generationRange = this.viewMenu.addRangeItem(this.viewGenerationRange, Menu.southEast, -375, -40, 80, 40, 0, 1, 0, true, "", "", -1);
+		this.generationRange = this.viewMenu.addRangeItem(this.viewGenerationRange, Menu.southEast, -365, -40, 75, 40, 0, 1, 0, true, "", "", -1);
 		this.generationRange.toolTip = "steps per second";
 
 		// add the speed step range
-		this.stepRange = this.viewMenu.addRangeItem(this.viewStepRange, Menu.southEast, -290, -40, 80, 40, ViewConstants.minStepSpeed, ViewConstants.maxStepSpeed, 1, true, "x", "", 0);
+		this.stepRange = this.viewMenu.addRangeItem(this.viewStepRange, Menu.southEast, -285, -40, 75, 40, ViewConstants.minStepSpeed, ViewConstants.maxStepSpeed, 1, true, "x", "", 0);
 		this.stepRange.toolTip = "generations per step";
 
 		// add the actual step label
-		this.stepLabel = this.viewMenu.addLabelItem(Menu.southEast, -290, -60, 80, 20, 0);
+		this.stepLabel = this.viewMenu.addLabelItem(Menu.southEast, -375, -60, 75, 20, 0);
 		this.stepLabel.font = ViewConstants.statsFont;
 		this.stepLabel.deleted = true;
 
+		// add the undo button
+		this.undoButton = this.viewMenu.addButtonItem(this.undoPressed, Menu.southEast, -455, -40, 40, 40, "");
+		this.undoButton.icon = this.iconManager.icon("undo");
+		this.undoButton.toolTip = "undo";
+
+		// add the redo button
+		this.redoButton = this.viewMenu.addButtonItem(this.redoPressed, Menu.southEast, -410, -40, 40, 40, "");
+		this.redoButton.icon = this.iconManager.icon("redo");
+		this.redoButton.toolTip = "redo";
+
 		// add play and pause list
 		this.playList = this.viewMenu.addListItem(this.viewPlayList, Menu.southEast, -205, -40, 160, 40, ["", "", "", ""], ViewConstants.modePause, Menu.single);
-		this.playList.icon = [this.iconManager.icon("tostart"), this.iconManager.icon("stepback"), this.iconManager.icon("pause"), this.iconManager.icon("play")];
-		this.playList.toolTip = ["reset", "previous generation", "pause", "play"];
+		this.playList.icon = [this.iconManager.icon("tostart"), this.iconManager.icon("stepback"), this.iconManager.icon("stepforward"), this.iconManager.icon("play")];
+		this.playList.toolTip = ["reset", "previous generation", "next generation", "play"];
 
 		// add states for editor
 		this.stateList = this.viewMenu.addListItem(this.viewStateList, Menu.northEast, -280, 40, 280, 20, ["0", "1", "2", "3", "4", "5", "6"], this.drawState, Menu.single);

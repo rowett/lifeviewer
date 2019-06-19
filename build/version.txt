@@ -1,3 +1,12 @@
+Build 347
+- increased minimum width by 80 pixels
+- added "Undo" and "Redo" buttons to main menu
+- improved how Reset works with Undo/Redo
+- new settings icon
+
+Build 346
+- fixed a bug where the playback controls were disappearing after reset
+
 Build 345
 - state 6 regression in editor
 - new "[R]History" button in navigation menu to toggle [R]History display

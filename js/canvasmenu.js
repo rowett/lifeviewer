@@ -1855,7 +1855,8 @@
 		    mouseIsOver = false,
 		    activeItem = this.activeItem,
 		    i = 0,
-		    result = false,
+			result = false,
+			currentLocked = false,
 		    canvasWidth = this.context.canvas.width,
 		    canvasHeight = this.context.canvas.height;
 		
@@ -1896,8 +1897,16 @@
 					// update item position
 					currentItem.calculatePosition(canvasWidth, canvasHeight);
 
-					// check if the mouse is over the item and the item is not locked
-					mouseIsOver = currentItem.mouseIsOver(this.mouseX, this.mouseY) && !(currentItem.locked || this.locked);
+					// check if the mouse is over the item
+					mouseIsOver = false;
+					if (currentItem.mouseIsOver(this.mouseX, this.mouseY)) {
+						// check if the item is locked
+						if (currentItem.locked || this.locked) {
+							currentLocked = true;
+						} else {
+							mouseIsOver = true;
+						}
+					}
 				
 					// update the mouse over item
 					if (mouseIsOver && !this.mouseDown) {
@@ -1934,7 +1943,7 @@
 			}
 
 			// check for mouse down on background
-			if (this.mouseDown && activeItem === -1) {
+			if (this.mouseDown && activeItem === -1 && !currentLocked) {
 				activeItem = -2;
 			}
 

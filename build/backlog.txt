@@ -37,6 +37,18 @@ In progress:
     - improved LifeHistory drawing modes
     - reset to include the overlay grid
     - selections
+        - square selection
+        - within 1-cell selection
+        - name selection
+        - copy library or named snippet to buffer
+        - copy selection to buffer
+        - cut selection to buffer
+        - flip X buffer
+        - flip Y buffer
+        - rotate CW buffer
+        - rotate CCW buffer
+        - copy buffer to current position
+        - copy buffer to original position
     [DONE]undo stack / step back
     [DONE]grow grid if possible when cell outside current grid drawn
     [DONE]2-state editing
