@@ -212,7 +212,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 347,
+		/** @const {number} */ versionBuild : 348,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -10913,97 +10913,102 @@
 		    childItem = null,
 
 		    // temporary allocator
-		    allocator = new Allocator();
+			allocator = new Allocator();
 
 		// read settings
 		readSettingsFromMeta();
 
-		// search for rle divs
-		for (b = 0; b < a.length; b += 1) {
-			// get the next div
-			rleItem = a[b];
+		// prevent script loading twice
+		if (!window["_LifeViewer"]) {
+			window["_LifeViewer"] = true;
 
-			// check if it is rle class
-			if (rleItem.className === DocConfig.divClassName) {
-				// find the child textarea and canvas
-				textItem = rleItem.getElementsByTagName(DocConfig.patternSourceName)[0];
-				canvasItem = rleItem.getElementsByTagName('canvas')[0];
-
-				// check if the text item contains a child text item
-				childItem = textItem.getElementsByTagName(DocConfig.patternSourceName)[0];
-				if (childItem) {
-					textItem = childItem;
-				}
-
-				// check if typedArrays and Canvas are supported
-				if (typedArrays && textItem) {
-					// remove any html tags from the text item and trim
-					cleanItem = cleanPattern(textItem);
-
-					// check for multiverse
-					if (DocConfig.multi) {
-						// check if the text is a pattern and add to Controller if in multiverse mode
-						isPattern(cleanItem, allocator);
+			// search for rle divs
+			for (b = 0; b < a.length; b += 1) {
+				// get the next div
+				rleItem = a[b];
+	
+				// check if it is rle class
+				if (rleItem.className === DocConfig.divClassName) {
+					// find the child textarea and canvas
+					textItem = rleItem.getElementsByTagName(DocConfig.patternSourceName)[0];
+					canvasItem = rleItem.getElementsByTagName('canvas')[0];
+	
+					// check if the text item contains a child text item
+					childItem = textItem.getElementsByTagName(DocConfig.patternSourceName)[0];
+					if (childItem) {
+						textItem = childItem;
 					}
-
-					// check if the canvas exists
-					if (canvasItem && canvasItem.getContext) {
-						// check whether to limit the height of the text item
-						if (DocConfig.patternSourceMaxHeight > -1) {
-							if (textItem.clientHeight > DocConfig.patternSourceMaxHeight) {
-								textItem.style.height = DocConfig.patternSourceMaxHeight + "px";
+	
+					// check if typedArrays and Canvas are supported
+					if (typedArrays && textItem) {
+						// remove any html tags from the text item and trim
+						cleanItem = cleanPattern(textItem);
+	
+						// check for multiverse
+						if (DocConfig.multi) {
+							// check if the text is a pattern and add to Controller if in multiverse mode
+							isPattern(cleanItem, allocator);
+						}
+	
+						// check if the canvas exists
+						if (canvasItem && canvasItem.getContext) {
+							// check whether to limit the height of the text item
+							if (DocConfig.patternSourceMaxHeight > -1) {
+								if (textItem.clientHeight > DocConfig.patternSourceMaxHeight) {
+									textItem.style.height = DocConfig.patternSourceMaxHeight + "px";
+								}
+							}
+							
+							// initalise viewer not in popup
+							startView(cleanItem, canvasItem, textItem.offsetWidth, false, textItem);
+						} else {
+							// hide the canvas item
+							if (DocConfig.hide && canvasItem) { 
+								canvasItem.style.display = "none";
 							}
 						}
-						
-						// initalise viewer not in popup
-						startView(cleanItem, canvasItem, textItem.offsetWidth, false, textItem);
-					} else {
-						// hide the canvas item
-						if (DocConfig.hide && canvasItem) { 
-							canvasItem.style.display = "none";
-						}
 					}
-				}
-			} else {
-				// check if typedArrays are supported
-				if (typedArrays) {
-					// check if it is a div containing a codebox (that isn't in an rle div)
-					if (rleItem.className === DocConfig.divCodeClassName) {
-						// check if the parent is rle
-						if (rleItem.parentNode.className !== DocConfig.divClassName) {
-							// find the child code block
-							textItem = rleItem.getElementsByTagName(DocConfig.patternSourceName)[0];
-							if (textItem) {
-								// remove any html tags from the text item and trim
-								cleanItem = cleanPattern(textItem);
-							
-								// null the anchor so we can tell if it gets created
-								anchorItem = null;
-							
-								// check if the contents is a valid pattern (will add to Controller if in multiverse mode)
-								if (isPattern(cleanItem, allocator)) {
-									// add the show in viewer anchor
-									anchorItem = rleItem.getElementsByTagName('a')[0];
-
-									// add a new anchor
-									newAnchor = document.createElement('a');
-									newAnchor.setAttribute('href', "#");
-									newAnchor.innerHTML = "Show in Viewer";
-
-									// set the onclick
-									registerEvent(newAnchor, "click", anchorCallback, false);
-
-									// check if there was an anchor
-									if (anchorItem) {
-										// create a text divider
-										nodeItem = document.createTextNode(" / ");
-
-										// add to the parent
-										anchorItem.parentNode.appendChild(nodeItem);
-										anchorItem.parentNode.appendChild(newAnchor);
-									} else {
-										// add to the parent
-										textItem.parentNode.appendChild(newAnchor);
+				} else {
+					// check if typedArrays are supported
+					if (typedArrays) {
+						// check if it is a div containing a codebox (that isn't in an rle div)
+						if (rleItem.className === DocConfig.divCodeClassName) {
+							// check if the parent is rle
+							if (rleItem.parentNode.className !== DocConfig.divClassName) {
+								// find the child code block
+								textItem = rleItem.getElementsByTagName(DocConfig.patternSourceName)[0];
+								if (textItem) {
+									// remove any html tags from the text item and trim
+									cleanItem = cleanPattern(textItem);
+								
+									// null the anchor so we can tell if it gets created
+									anchorItem = null;
+								
+									// check if the contents is a valid pattern (will add to Controller if in multiverse mode)
+									if (isPattern(cleanItem, allocator)) {
+										// add the show in viewer anchor
+										anchorItem = rleItem.getElementsByTagName('a')[0];
+	
+										// add a new anchor
+										newAnchor = document.createElement('a');
+										newAnchor.setAttribute('href', "#");
+										newAnchor.innerHTML = "Show in Viewer";
+	
+										// set the onclick
+										registerEvent(newAnchor, "click", anchorCallback, false);
+	
+										// check if there was an anchor
+										if (anchorItem) {
+											// create a text divider
+											nodeItem = document.createTextNode(" / ");
+	
+											// add to the parent
+											anchorItem.parentNode.appendChild(nodeItem);
+											anchorItem.parentNode.appendChild(newAnchor);
+										} else {
+											// add to the parent
+											textItem.parentNode.appendChild(newAnchor);
+										}
 									}
 								}
 							}

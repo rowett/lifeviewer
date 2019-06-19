@@ -1,3 +1,6 @@
+Build 348
+- handle LifeViewer being loaded more than once in a web page
+
 Build 347
 - added "Undo" and "Redo" buttons to main menu
 - improved how Reset works with Undo/Redo
