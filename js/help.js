@@ -615,7 +615,7 @@
 		y = this.renderHelpLine(view, "", "Camera controls:", ctx, x, y, height, helpLine);
 		// only display navigation menu key if menu is available
 		if ((view.displayHeight >= ViewConstants.minMenuHeight) || ((view.thumbnail && view.thumbOrigHeight) >= ViewConstants.minMenuHeight)) {
-			y = this.renderHelpLine(view, "M", "toggle navigation menu", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "M", "toggle settings menu", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "V", "restore saved camera position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift V", "save current camera position", ctx, x, y, height, helpLine);

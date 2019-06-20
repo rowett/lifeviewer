@@ -511,6 +511,9 @@
 		// item in a multi-select that is highlighted
 		this.highlightItem = -1;
 
+		// whether multi-select highlight item is locked
+		this.highlightLocked = false;
+
 		// whether deleted
 		this.deleted = false;
 
@@ -604,6 +607,14 @@
 
 		// whether locked
 		this.locked = false;
+
+		// whether individual list items are locked
+		this.itemLocked = [];
+		if (this.type === Menu.list) {
+			for (i = 0; i < lower.length; i += 1) {
+				this.itemLocked[i] = false;
+			}
+		}
 
 		// toggle menu parents
 		this.toggleMenuParents = [];
@@ -891,6 +902,18 @@
 
 		// icon manager
 		this.iconManager = null;
+
+		// cursor style for controls
+		this.cursorControls = "auto";
+
+		// cursor style for background
+		this.cursorBackground = "auto";
+
+		// current cursor style
+		this.cursorCurrent = "auto";
+
+		// current set cursor style
+		this.cursorSet = "auto";
 	}
 
 	// set menu foreground and background colour
@@ -1449,6 +1472,7 @@
 		}
 
 		// draw highlight if required
+		item.highlightLocked = false;
 		if (highlight) {
 			this.context.globalAlpha = item.hlAlpha;
 			this.context.fillStyle = item.hlCol;
@@ -1456,12 +1480,20 @@
 			if (item.orientation === Menu.horizontal) {
 				itemNum = (((this.mouseX - x) / width) * l) | 0;
 				if (itemNum >= 0 && itemNum < l) {
-					this.context.fillRect(x + itemNum * itemSize + 0.5, y + 0.5, itemSize - 1, height - 1);
+					if (!item.itemLocked[itemNum]) {
+						this.context.fillRect(x + itemNum * itemSize + 0.5, y + 0.5, itemSize - 1, height - 1);
+					} else {
+						item.highlightLocked = true;
+					}
 				}
 			} else {
 				itemNum = (((this.mouseY - y) / height) * l) | 0;
 				if (itemNum >= 0 && itemNum < l) {
-					this.context.fillRect(x + 0.5, y + 0.5 + itemNum * itemSize, width - 1, itemSize - 1);
+					if (!item.itemLocked[itemNum]) {
+						this.context.fillRect(x + 0.5, y + 0.5 + itemNum * itemSize, width - 1, itemSize - 1);
+					} else {
+						item.highlightLocked = true;
+					}
 				}
 			}
 			
@@ -1677,12 +1709,26 @@
 				if (item.orientation === Menu.horizontal) {
 					w = item.width / l;
 					for (i = 0; i < l; i += 1) {
+						if (item.locked || item.itemLocked[i]) {
+							this.context.strokeStyle = item.lockedCol;
+							this.context.globalAlpha = item.lockedAlpha;
+						} else {
+							this.context.strokeStyle = item.borderCol;
+							this.context.globalAlpha = item.borderAlpha;
+						}
 						this.context.strokeRect(item.x + 0.5 + i * w, item.y + 0.5, w - 1, item.height - 1);
 					}
 				}
 				else {
 					w = item.height / l;
 					for (i = 0; i <l; i += 1) {
+						if (item.locked || item.itemLocked[i]) {
+							this.context.strokeStyle = item.lockedCol;
+							this.context.globalAlpha = item.lockedAlpha;
+						} else {
+							this.context.strokeStyle = item.borderCol;
+							this.context.globalAlpha = item.borderAlpha;
+						}
 						this.context.strokeRect(item.x + 0.5, item.y + 0.5 + i * w, item.width - 1, w - 1);
 					}
 				}
@@ -1815,17 +1861,21 @@
 
 				// check whether single select or multi
 				if (item.upper === Menu.single) {
-					if (item.callback) {
-						item.current = item.callback(w, true, item.caller);
-					} else {
-						item.current = w;
+					if (!item.itemLocked[w]) {
+						if (item.callback) {
+							item.current = item.callback(w, true, item.caller);
+						} else {
+							item.current = w;
+						}
 					}
 				} else {
 					// multi select so invert current item
-					item.current[w] = !item.current[w];
+					if (!item.itemLocked[w]) {
+						item.current[w] = !item.current[w];
 
-					if (item.callback) {
-						item.callback(item.current, true, item.caller);
+						if (item.callback) {
+							item.callback(item.current, true, item.caller);
+						}
 					}
 				}
 				break;
@@ -1849,6 +1899,11 @@
 		}
 	};
 
+	// set background cursor style
+	MenuList.prototype.setBackgroundCursor = function(cursor) {
+		this.cursorBackground = cursor;
+	};
+
 	// draw menu items on the given context and return whether to toggle menus
 	MenuList.prototype.drawMenu = function() {
 		var currentItem = null,
@@ -1858,7 +1913,8 @@
 			result = false,
 			currentLocked = false,
 		    canvasWidth = this.context.canvas.width,
-		    canvasHeight = this.context.canvas.height;
+			canvasHeight = this.context.canvas.height,
+			mouseOverGlobalItem = -1;
 		
 		// flag no need to toggle menus
 		result = false;
@@ -1900,6 +1956,9 @@
 					// check if the mouse is over the item
 					mouseIsOver = false;
 					if (currentItem.mouseIsOver(this.mouseX, this.mouseY)) {
+						// mouse is over a control (used to set mouse pointer)
+						mouseOverGlobalItem = i;
+
 						// check if the item is locked
 						if (currentItem.locked || this.locked) {
 							currentLocked = true;
@@ -1965,6 +2024,22 @@
 
 			// reset global alpha
 			this.context.globalAlpha = 1;
+		}
+
+		// update mouse pointer
+		if (mouseOverGlobalItem >= 0) {
+			// check what type of control the mouse is over
+			if (this.menuItems[mouseOverGlobalItem].type === Menu.range) {
+				if (this.menuItems[mouseOverGlobalItem].orientation === Menu.auto || this.menuItems[mouseOverGlobalItem].orientation === Menu.horizontal) {
+					this.cursorCurrent = "ew-resize";
+				} else {
+					this.cursorCurrent = "ns-resize";
+				}
+			} else {
+				this.cursorCurrent = this.cursorControls;
+			}
+		} else {
+			this.cursorCurrent = this.cursorBackground;
 		}
 
 		// return flag for toggle menus
@@ -2335,7 +2410,7 @@
 			}
 
 			// check if there is a tooltip and delay expired
-			if (toolTip !== "" && this.toolTipCounter === -1) {
+			if (toolTip !== "" && this.toolTipCounter === -1 && !control.highlightLocked) {
 				this.toolTipLastActive = -1;
 				// get the control width, height and location
 				controlX = control.x;
@@ -2663,7 +2738,6 @@
 			messageWidth = oc.measureText(message).width;
 			oc.fillText(message, x + 8 + 76 - messageWidth, y + 12);
 
-
 			// draw extended timing if enabled
 			if (me.showExtendedTiming) {
 				// draw labels
@@ -2741,6 +2815,13 @@
 
 		// copy to the main drawing canvas
 		me.mainContext.drawImage(oc.canvas, 0, 0);
+
+		// update the cursor if it has changed
+		if (me.currentMenu.cursorCurrent !== me.currentMenu.cursorSet) {
+			me.currentMenu.cursorSet = me.currentMenu.cursorCurrent;
+			// set the cursor style
+			me.mainContext.canvas.style.cursor = me.currentMenu.cursorSet;
+		}
 
 		// mark that event processed
 		me.processedEvent = true;

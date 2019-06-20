@@ -5,6 +5,8 @@ Build 348
 - hotkey F4 select mode
 - hotkey F5 pan mode
 - undo and redo buttons were not being hidden for viewonly patterns
+- mouse cursor changes based on action
+- UI list control can now lock indidivual items
 
 Build 347
 - added "Undo" and "Redo" buttons to main menu

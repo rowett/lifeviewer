@@ -5087,8 +5087,7 @@
 			switch (newValue) {
 				case ViewConstants.modeDraw:
 					if (me.viewOnly || me.engine.isNone) {
-						me.menuManager.notification.notify("Drawing not available", 15, 40, 15, true);
-						result = ViewConstants.modePan;
+						result = me.modeList.current;
 					} else {
 						me.drawing = true;
 						// turn off pick mode
@@ -5097,16 +5096,25 @@
 					break;
 				case ViewConstants.modeSelect:
 					// not implemented yet
-					if (me.drawing) {
-						result = ViewConstants.modeDraw;
-					} else {
-						result = ViewConstants.modePan;
-					}
+					result = me.modeList.current;
 					break;
 				case ViewConstants.modePan:
 					me.drawing = false;
 					break;
 			}
+		}
+
+		// set the background cursor
+		switch (result) {
+			case ViewConstants.modeDraw:
+				me.viewMenu.setBackgroundCursor("auto");
+				break;
+			case ViewConstants.modePan:
+				me.viewMenu.setBackgroundCursor("grab");
+				break;
+			case ViewConstants.modeSelect:
+				me.viewMenu.setBackgroundCursor("crosshair");
+				break;
 		}
 
 		return result;
@@ -10087,6 +10095,17 @@
 
 		// reset elapsed time
 		this.elapsedTime = 0;
+
+		// setup mode UI
+		this.modeList.itemLocked = [false, false, false];
+
+		// check whether to disable drawing
+		if (this.viewOnly || this.engine.isNone) {
+			this.modeList.itemLocked[0] = true;
+		}
+
+		// disable select until implemented !!! TBD
+		this.modeList.itemLocked[1] = true;
 
 		// if standard view mode then reset colour grid and population
 		if (this.multiStateView) {
