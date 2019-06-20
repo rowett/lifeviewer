@@ -8049,9 +8049,32 @@
 				}
 				break;
 
+			// f2 for draw mode
+			case 113:
+				me.modeList.current = me.viewModeList(ViewConstants.modeDraw, true, me);
+				break;
+
+			// f3 for pick mode
+			case 114:
+				me.modeList.current = me.viewModeList(ViewConstants.modeDraw, true, me);
+				if (!me.pickMode) {
+					me.pickToggle.current = me.togglePick([true], true, me);
+				}
+				break;
+
+			// f4 for select mode
+			case 115:
+				me.modeList.current = me.viewModeList(ViewConstants.modeSelect, true, me);
+				break;
+
+			// f5 for pan mode
+			case 116:
+				me.modeList.current = me.viewModeList(ViewConstants.modePan, true, me);
+				break;
+
 			// ignore other keys
 			default:
-				// flag key not handled if specified or f5 for refresh
+				// flag key not handled if specified or f5 (browser refresh) if not implemented above
 				if (keyCode === -1 || keyCode === 116) {
 					processed = false;
 				}
@@ -9631,6 +9654,8 @@
 		this.themeItem.deleted = false;
 		this.viewMenu.deleted = false;
 		this.progressBar.deleted = false;
+		this.undoButton.deleted = false;
+		this.redoButton.deleted = false;
 
 		// reset menu toggles to off
 		this.navToggle.current = [false];
@@ -10393,6 +10418,10 @@
 
 			// delete the step range
 			this.stepRange.deleted = true;
+
+			// delete the undo and redo buttons
+			this.undoButton.deleted = true;
+			this.redoButton.deleted = true;
 
 			// delete layers and depth if multi-state view on
 			if (this.multiStateView) {

@@ -742,6 +742,10 @@
 		y = this.renderHelpLine(view, "", "Edit controls:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F1", "toggle draw/pan mode", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift F1", "toggle smart drawing", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "F2", "draw mode", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "F3", "pick mode", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "F4", "select mode", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "F5", "pan mode", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl Z", "undo edit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl+Shift Z", "redo edit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl S", "save pattern", ctx, x, y, height, helpLine);

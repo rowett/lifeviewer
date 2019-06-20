@@ -1,5 +1,10 @@
 Build 348
 - handle LifeViewer being loaded more than once in a web page
+- hotkey F2 draw mode
+- hotkey F3 pick mode
+- hotkey F4 select mode
+- hotkey F5 pan mode
+- undo and redo buttons were not being hidden for viewonly patterns
 
 Build 347
 - added "Undo" and "Redo" buttons to main menu
