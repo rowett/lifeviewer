@@ -363,6 +363,7 @@
 		this.iconCanvas = null;
 		this.iconContext = null;
 		this.convertedImage = null;
+		this.greyedOutImage = null;
 
 		// list of icons
 		this.iconList = [];
@@ -373,12 +374,15 @@
 		// recolour shade
 		this.recolourCol = -1;
 
+		// greyed out shade
+		this.greyedOutCol = 0;
+
 		// whether initialised
 		this.init = false;
 	}
 
 	// draw icon
-	IconManager.prototype.draw = function(icon, x, y) {
+	IconManager.prototype.draw = function(icon, x, y, locked) {
 		var data = null,
 			data32 = null,
 			i = 0;
@@ -395,10 +399,31 @@
 
 			// create a new image for the converted colours
 			this.convertedImage = new Image();
+
+			// create a new image for the greyed out icons
+			this.greyedOutImage = new Image();
 		}
 
 		// change the pixel colours if required
 		if (this.recolour) {
+			// get the pixel data
+			this.iconContext.drawImage(this.iconsImage, 0, 0);
+			data = this.iconContext.getImageData(0, 0, this.iconCanvas.width, this.iconCanvas.height);
+			data32 = new Uint32Array(data.data.buffer);
+
+			// change target pixel to new colour
+			for (i = 0; i < data32.length; i += 1) {
+				if (data32[i] === 0xffffffff) {
+					data32[i] = this.greyedOutCol;
+				}
+			}
+
+			// put back the pixel data
+			this.iconContext.putImageData(data, 0, 0);
+
+			// create the greyed out icons
+			this.greyedOutImage.src = this.iconCanvas.toDataURL("image/png");
+
 			// get the pixel data
 			this.iconContext.drawImage(this.iconsImage, 0, 0);
 			data = this.iconContext.getImageData(0, 0, this.iconCanvas.width, this.iconCanvas.height);
@@ -424,7 +449,11 @@
 		}
 
 		// draw the icon onto the canvas
-		this.context.drawImage(this.convertedImage, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
+		if (locked) {
+			this.context.drawImage(this.greyedOutImage, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
+		} else {
+			this.context.drawImage(this.convertedImage, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
+		}
 	};
 
 	// return number of icons
@@ -1509,13 +1538,13 @@
 		if (item.orientation === Menu.horizontal) {
 			for (i = 0; i < l; i += 1) {
 				if (item.icon[i]) {
-					this.iconManager.draw(item.icon[i], item.x + itemSize * i, item.y);
+					this.iconManager.draw(item.icon[i], item.x + itemSize * i, item.y, item.locked || item.itemLocked[i]);
 				}
 			}
 		} else {
 			for (i = 0; i < l; i += 1) {
 				if (item.icon[i]) {
-					this.iconManager.draw(item.icon[i], item.x, item.y + itemSize * i);
+					this.iconManager.draw(item.icon[i], item.x, item.y + itemSize * i, item.locked || item.itemLocked[i]);
 				}
 			}
 		}
@@ -1679,7 +1708,7 @@
 			if (item.icon) {
 				// draw the icon
 				this.context.globalAlpha = item.fgAlpha;
-				this.iconManager.draw(item.icon, item.x, item.y);
+				this.iconManager.draw(item.icon, item.x, item.y, item.locked);
 			}
 		}
 

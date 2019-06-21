@@ -1,10 +1,17 @@
+Build 349
+- pause playback while drawing
+- settings menu buttons are larger and cluster better
+- changed "Step back" to "Undo/Redo" in "Help"->"Info"
+- icons now grey out (not just the text)
+- Pick mode was not being cancelled when another mode selected
+
 Build 348
 - handle LifeViewer being loaded more than once in a web page
 - hotkey F2 draw mode
 - hotkey F3 pick mode
 - hotkey F4 select mode
 - hotkey F5 pan mode
-- undo and redo buttons were not being hidden for viewonly patterns
+- undo and redo buttons were not being hidden for VIEWONLY patterns
 - mouse cursor changes based on action
 - UI list control can now lock indidivual items
 

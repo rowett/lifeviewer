@@ -8,10 +8,7 @@ Investigate:
     user preferences
 
 Planned:
-    grey out individual items in a UI list control
     menu items coordinates should be reflected based on compass position
-    bottom right menu items should be relative to middle column so they cluster on wide windows
-    pause playback during drawing
 
 In progress:
 [STARTED]add type information for closure compiler
@@ -74,3 +71,6 @@ Complete:
 [DONE]getState() needs to cope with Bounded Grid and 255 or 256 states (currently bounded grid border showing as 1, should be 0)
 [DONE]multistate rules using > 2 states and < 256 states should have history colour
 [DONE]LABELTRACK DX DY command to allow labels to move over generations
+[DONE]grey out individual items in a UI list control
+[DONE]pause playback during drawing
+[DONE]bottom right menu items should be relative to middle column so they cluster on wide windows

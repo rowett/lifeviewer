@@ -212,7 +212,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 348,
+		/** @const {number} */ versionBuild : 349,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5096,10 +5096,13 @@
 					break;
 				case ViewConstants.modeSelect:
 					// not implemented yet
+					me.drawing = false;
+					me.pickMode = false;
 					result = me.modeList.current;
 					break;
 				case ViewConstants.modePan:
 					me.drawing = false;
+					me.pickMode = false;
 					break;
 			}
 		}
@@ -5615,7 +5618,10 @@
 				}
 			} else {
 				if (me.drawing && x !== -1 && y !== -1 && !me.pickMode) {
+					// draw cells
 					me.drawCells(x, y, me.lastDragX, me.lastDragY);
+					// suspend playback
+					me.generationOn = false;
 				}
 			}
 
@@ -5639,6 +5645,10 @@
 					// end of edit
 					if (me.currentEdit.length > 0) {
 						me.afterEdit();
+					}
+					// resume playback if required
+					if (me.playList.current === ViewConstants.modePlay) {
+						me.generationOn = true;
 					}
 				}
 			}
@@ -8277,9 +8287,16 @@
 		element = this.customThemeValue[ViewConstants.customThemeUILocked];
 		if (element !== -1) {
 			lockedCol = "rgb(" + (element >> 16) + "," + ((element >> 8) & 255) + "," + (element & 255) + ")";
+		} else {
+			element = (128 << 16) | (128 << 8) | 128;
+		}
+		if (this.engine.littleEndian) {
+			this.iconManager.greyedOutCol = (255 << 24) | (element & 255) << 16 | (((element >> 8) & 255) << 8) | (element >> 16);
+		} else {
+			this.iconManager.greyedOutCol = ((element >> 16) << 24) | (((element >> 8) & 255) << 16) | ((element & 255) << 8) | 255;
 		}
 
-		// check for custom locked
+		// check for custom border
 		element = this.customThemeValue[ViewConstants.customThemeUIBorder];
 		if (element !== -1) {
 			borderCol = "rgb(" + (element >> 16) + "," + ((element >> 8) & 255) + "," + (element & 255) + ")";
@@ -8533,72 +8550,68 @@
 		this.shrinkButton.toolTip = "shrink to thumbnail";
 
 		// hex/square toggle button
-		this.hexButton = this.viewMenu.addListItem(this.viewHexToggle, Menu.northWest, 80, 100, 80, 40, ["Hex"], [this.engine.isHex], Menu.multi);
+		this.hexButton = this.viewMenu.addListItem(this.viewHexToggle, Menu.north, -135, 100, 120, 40, ["Hex"], [this.engine.isHex], Menu.multi);
 		this.hexButton.toolTip = ["toggle hex display"];
 
-		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.north, 0, 100, 80, 40, ["Hexagon"], [this.engine.useHexagons], Menu.multi);
+		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.north, 0, 100, 120, 40, ["Hexagon"], [this.engine.useHexagons], Menu.multi);
 		this.hexCellButton.toolTip = ["toggle hexagonal cells"];
-		this.hexCellButton.font = "18px Arial";
 
 		// cell borders toggle button
-		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.northEast, -160, 100, 80, 40, ["Borders"], [this.engine.cellBorders], Menu.multi);
+		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.north, 135, 100, 120, 40, ["Borders"], [this.engine.cellBorders], Menu.multi);
 		this.bordersButton.toolTip = ["toggle cell borders"];
-		this.bordersButton.font = "18px Arial";
 
 		// label toggle button
-		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.northWest, 80, 220, 80, 40, ["Labels"], [this.showLabels], Menu.multi);
+		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.north, -135, 220, 120, 40, ["Labels"], [this.showLabels], Menu.multi);
 		this.labelButton.toolTip = ["toggle labels"];
 
 		// kill gliders toggle button
-		this.killButton = this.viewMenu.addListItem(this.viewKillToggle, Menu.north, 0, 220, 80, 40, ["Kill"], [this.engine.clearGliders], Menu.multi);
+		this.killButton = this.viewMenu.addListItem(this.viewKillToggle, Menu.north, 0, 220, 120, 40, ["Kill"], [this.engine.clearGliders], Menu.multi);
 		this.killButton.toolTip = ["kill escaping gliders"];
 
 		// graph toggle button
-		this.graphButton = this.viewMenu.addListItem(this.viewGraphToggle, Menu.northEast, -160, 220, 80, 40, ["Graph"], [this.popGraph], Menu.multi);
+		this.graphButton = this.viewMenu.addListItem(this.viewGraphToggle, Menu.north, 135, 220, 120, 40, ["Graph"], [this.popGraph], Menu.multi);
 		this.graphButton.toolTip = ["toggle graph display"];
 
 		// infobar toggle button
-		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.north, 0, 160, 80, 40, ["Info"], [this.infoBarEnabled], Menu.multi);
+		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.north, 0, 160, 120, 40, ["Info"], [this.infoBarEnabled], Menu.multi);
 		this.infoBarButton.toolTip = ["toggle InfoBar"];
 
 		// historyfit toggle button
-		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.northWest, 80, 160, 80, 40, ["HistoryFit"], [this.historyFit], Menu.multi);
+		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.north, -135, 160, 120, 40, ["HistoryFit"], [this.historyFit], Menu.multi);
 		this.historyFitButton.toolTip = ["toggle AutoFit History"];
-		this.historyFitButton.font = "16px Arial";
 
 		// major gridlines toggle button
-		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.northEast, -160, 160, 80, 40, ["Major"], [this.engine.gridLineMajorEnabled], Menu.multi);
+		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.north, 135, 160, 120, 40, ["Major"], [this.engine.gridLineMajorEnabled], Menu.multi);
 		this.majorButton.toolTip = ["toggle major grid lines"];
 
 		// stars toggle button
-		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.southEast, -160, -140, 80, 40, ["Stars"], [this.starsOn], Menu.multi);
+		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.south, 135, -140, 120, 40, ["Stars"], [this.starsOn], Menu.multi);
 		this.starsButton.toolTip = ["toggle stars display"];
+
+		// fps button
+		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.south, -135, -140, 120, 40, ["Timing"], [this.menuManager.showTiming], Menu.multi);
+		this.fpsButton.toolTip = ["toggle timing display"];
+
+		// timing detail button
+		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.south, 0, -140, 120, 40, ["Details"], [this.menuManager.showExtendedTiming], Menu.multi);
+		this.timingDetailButton.toolTip = ["toggle timing details"];
+
+		// [R]History display toggle
+		this.rHistoryButton = this.viewMenu.addListItem(this.viewRHistoryToggle, Menu.south, 0, -200, 120, 40, ["[R]History"], [this.engine.displayLifeHistory], Menu.multi);
+		this.rHistoryButton.toolTip = ["toggle [R]History display"];
+
+		// previous universe button
+		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -200, 120, 40, "Prev");
+		this.prevUniverseButton.toolTip = "go to previous universe";
+
+		// next universe button
+		this.nextUniverseButton = this.viewMenu.addButtonItem(this.nextUniversePressed, Menu.south, 135, -200, 120, 40, "Next");
+		this.nextUniverseButton.toolTip = "go to next universe";
 
 		// close button
 		this.closeButton = this.viewMenu.addButtonItem(this.closePressed, Menu.southEast, -40, -90, 40, 40, "X");
 		this.closeButton.toolTip = "close window";
 		
-		// fps button
-		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.southWest, 80, -140, 80, 40, ["Timing"], [this.menuManager.showTiming], Menu.multi);
-		this.fpsButton.toolTip = ["toggle timing display"];
-
-		// timing detail button
-		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.south, 0, -140, 80, 40, ["Details"], [this.menuManager.showExtendedTiming], Menu.multi);
-		this.timingDetailButton.toolTip = ["toggle timing details"];
-
-		// [R]History display toggle
-		this.rHistoryButton = this.viewMenu.addListItem(this.viewRHistoryToggle, Menu.south, 0, -200, 80, 40, ["[R]History"], [this.engine.displayLifeHistory], Menu.multi);
-		this.rHistoryButton.toolTip = ["toggle [R]History display"];
-		this.rHistoryButton.font = "16px Arial";
-
-		// previous universe button
-		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.southWest, 80, -200, 80, 40, "Prev");
-		this.prevUniverseButton.toolTip = "go to previous universe";
-
-		// next universe button
-		this.nextUniverseButton = this.viewMenu.addButtonItem(this.nextUniversePressed, Menu.southEast, -160, -200, 80, 40, "Next");
-		this.nextUniverseButton.toolTip = "go to next universe";
-
 		// previous POI button
 		this.prevPOIButton = this.viewMenu.addButtonItem(this.prevPOIPressed, Menu.west, 10, 0, 40, 40, "<");
 		this.prevPOIButton.toolTip = "go to previous POI";

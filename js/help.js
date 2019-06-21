@@ -1332,9 +1332,9 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// snapshot information
-		view.helpSections[sectionNum] = [view.lineNo, "Snapshots"];
+		view.helpSections[sectionNum] = [view.lineNo, "Undo/Redo"];
 		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Step back:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "Undo/Redo:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Enabled", view.noHistory ? "Off" : "On", ctx, x, y, height, helpLine);
 		if (!view.noHistory) {
 			y = this.renderHelpLine(view, "Snapshots", view.engine.snapshotManager.usedBuffers() + "/" + view.engine.snapshotManager.buffers(), ctx, x, y, height, helpLine);
@@ -1349,7 +1349,8 @@
 			}
 			y = this.renderHelpLine(view, "Buffer", (view.engine.snapshotManager.bufferSize() >> 10) + "K", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Next Gen", view.engine.nextSnapshotTarget, ctx, x, y, height, helpLine);
-
+			y = this.renderHelpLine(view, "Undo", view.editNum, ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Redo", view.numEdits - view.editNum, ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
