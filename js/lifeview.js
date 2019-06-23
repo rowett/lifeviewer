@@ -212,7 +212,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 349,
+		/** @const {number} */ versionBuild : 350,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -356,9 +356,6 @@
 
 		// maximum width for the zoom slider (gets wider if the window is wider than the default)
 		/** @const {number} */ zoomSliderMaxWidth : 292,
-
-		// width for opacity slider to use full caption
-		/** @const {number} */ opacityNameWidth : 154,
 
 		// custom colour usage states
 		/** @const {number} */ stateNotUsed : 0,
@@ -1120,6 +1117,12 @@
 		/** @type {boolean} */ this.popupWidthChanged = false;
 		/** @type {number} */ this.lastPopupWidth = 640;
 
+		// whether pause while drawing is on
+		/** @type {boolean} */ this.pauseWhileDrawing = true;
+
+		// whether drawing has paused playback
+		/** @type {boolean} */ this.playbackDrawPause = false;
+
 		// whether life generation is on
 		/** @type {boolean} */ this.generationOn = false;
 
@@ -1335,6 +1338,9 @@
 
 		// pick button
 		this.pickToggle = null;
+
+		// pause while drawing button
+		this.pausePlaybackToggle = null;
 
 		// states button
 		this.statesToggle = null;
@@ -4005,13 +4011,13 @@
 
 		// top menu buttons
 		this.autoFitToggle.deleted = hide;
-		this.zoomItem.deleted = hide || this.popGraph;
+		this.zoomItem.deleted = hide;
 		this.fitButton.deleted = hide;
 		this.gridToggle.deleted = hide;
-		this.autostartIndicator.deleted = hide || this.popGraph;
-		this.stopIndicator.deleted = hide || this.popGraph;
-		this.waypointsIndicator.deleted = hide || this.popGraph;
-		this.loopIndicator.deleted = hide || this.popGraph;
+		this.autostartIndicator.deleted = hide;
+		this.stopIndicator.deleted = hide;
+		this.waypointsIndicator.deleted = hide;
+		this.loopIndicator.deleted = hide;
 		this.modeList.deleted = hide;
 		this.copyRLEButton.deleted = hide;
 
@@ -4153,6 +4159,9 @@
 
 		// pick
 		this.pickToggle.deleted = hide || !this.drawing;
+
+		// pause while drawing
+		this.pausePlaybackToggle.deleted = hide || !this.drawing;
 
 		// states
 		this.statesToggle.deleted = hide || !this.drawing;
@@ -5086,6 +5095,7 @@
 		if (change) {
 			switch (newValue) {
 				case ViewConstants.modeDraw:
+					me.playbackDrawPause = false;
 					if (me.viewOnly || me.engine.isNone) {
 						result = me.modeList.current;
 					} else {
@@ -5204,6 +5214,9 @@
 		    autoFitChange = 0;
 
 		if (change) {
+			// disable playback draw pause
+			me.playbackDrawPause = false;
+
 			// change play setting
 			switch (newValue) {
 			case ViewConstants.modeReset:
@@ -5621,7 +5634,10 @@
 					// draw cells
 					me.drawCells(x, y, me.lastDragX, me.lastDragY);
 					// suspend playback
-					me.generationOn = false;
+					if (me.generationOn && me.pauseWhileDrawing) {
+						me.generationOn = false;
+						me.playbackDrawPause = true;
+					}
 				}
 			}
 
@@ -5647,8 +5663,9 @@
 						me.afterEdit();
 					}
 					// resume playback if required
-					if (me.playList.current === ViewConstants.modePlay) {
+					if (me.playbackDrawPause) {
 						me.generationOn = true;
+						me.playbackDrawPause = false;
 					}
 				}
 			}
@@ -5697,7 +5714,7 @@
 			icons = new Image();
 
 			// load the icons from the image file
-			icons.src = "data:image/png;base64,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";
+			icons.src = "data:image/png;base64,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";
 				
 			// save the image
 			ViewConstants.icons = icons;
@@ -5728,6 +5745,7 @@
 		this.iconManager.add("select", w, h);
 		this.iconManager.add("undo", w, h);
 		this.iconManager.add("redo", w, h);
+		this.iconManager.add("drawpause", w, h);
 	};
 
 	// update grid icon based on hex or square mode
@@ -6156,6 +6174,14 @@
 		}
 
 		return [me.popGraphLines];
+	};
+
+	// pause while drawing toggle
+	View.prototype.togglePausePlayback = function(newValue, change, me) {
+		if (change) {
+			me.pauseWhileDrawing = newValue[0];
+		}
+		return [me.pauseWhileDrawing];
 	};
 
 	// states toggle
@@ -8621,16 +8647,16 @@
 		this.nextPOIButton.toolTip = "go to next POI";
 
 		// opacity range
-		this.opacityItem = this.viewMenu.addRangeItem(this.viewOpacityRange, Menu.north, 0, 0, 132, 40, 0, 1, this.popGraphOpacity, true, "Opac ", "%", 0);
+		this.opacityItem = this.viewMenu.addRangeItem(this.viewOpacityRange, Menu.north, 0, 40, 172, 40, 0, 1, this.popGraphOpacity, true, "Opacity ", "%", 0);
 		this.opacityItem.toolTip = "graph opacity";
 
 		// points/lines toggle
-		this.linesToggle = this.viewMenu.addListItem(this.toggleLines, Menu.northEast, -170, 0, 40, 40, [""], [false], Menu.multi);
+		this.linesToggle = this.viewMenu.addListItem(this.toggleLines, Menu.northEast, -85, 40, 40, 40, [""], [false], Menu.multi);
 		this.linesToggle.icon = [this.iconManager.icon("lines")];
 		this.linesToggle.toolTip = ["toggle graph lines/points"];
 
 		// graph close button
-		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -130, 0, 40, 40, "X");
+		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -40, 40, 40, 40, "X");
 		this.graphCloseButton.toolTip = "close graph";
 
 		// pick toggle
@@ -8642,6 +8668,11 @@
 		this.statesToggle = this.viewMenu.addListItem(this.toggleStates, Menu.northWest, 45, 40, 40, 40, [""], [this.showStates], Menu.multi);
 		this.statesToggle.icon = [this.iconManager.icon("states")];
 		this.statesToggle.toolTip = ["toggle states"];
+
+		// pause playback while drawing toggle
+		this.pausePlaybackToggle = this.viewMenu.addListItem(this.togglePausePlayback, Menu.northWest, 90, 40, 40, 40, [""], [this.pauseWhileDrawing], Menu.multi);
+		this.pausePlaybackToggle.icon = [this.iconManager.icon("drawpause")];
+		this.pausePlaybackToggle.toolTip = ["toggle pause playback while drawing"];
 
 		// add menu toggle button
 		this.navToggle = this.viewMenu.addListItem(null, Menu.southEast, -40, -40, 40, 40, [""], [false], Menu.multi);
@@ -8696,7 +8727,7 @@
 		this.stateColsList.bgAlpha = 1;
 
 		// add slider for states
-		this.statesSlider = this.viewMenu.addRangeItem(this.viewStatesRange, Menu.northWest, 90, 40, 105, 40, 0, 1, 0, true, "", "", -1);
+		this.statesSlider = this.viewMenu.addRangeItem(this.viewStatesRange, Menu.northWest, 135, 40, 105, 40, 0, 1, 0, true, "", "", -1);
 		this.statesSlider.toolTip = "select drawing states range";
 
 		// add items to the main toggle menu
@@ -9336,6 +9367,9 @@
 		} else {
 			this.isEdge = false;
 		}
+
+		// clear playback draw pause
+		this.playbackDrawPause = false;
 
 		// clear recipe list
 		this.recipeList = [];
@@ -10383,21 +10417,15 @@
 			this.stepRange.relX = this.stepRange.x;
 		}
 
-		// resize the zoom and graph opacity sliders
+		// resize the zoom slider
 		if (this.displayWidth > ViewConstants.minViewerWidth) {
 			i = (this.displayWidth - ViewConstants.minViewerWidth) + ViewConstants.zoomSliderDefaultWidth;
 			if (i > ViewConstants.zoomSliderMaxWidth) {
 				i = ViewConstants.zoomSliderMaxWidth;
 			}
 			this.zoomItem.width = i;
-			this.opacityItem.width = i;
-			if (i > ViewConstants.opacityNameWidth) {
-				this.opacityItem.preText = "Opacity ";
-			}
 		} else {
 			this.zoomItem.width = ViewConstants.zoomSliderDefaultWidth;
-			this.opacityItem.width = ViewConstants.zoomSliderDefaultWidth;
-			this.opacityItem.preText = "Opac ";
 		}
 
 		// check whether to resize the canvas

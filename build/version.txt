@@ -1,3 +1,9 @@
+Build 350
+- moved graph controls below top row
+- fixed playback pause during editing
+- new toggle button to control whether playback is paused during drawing
+- improved toggle states icon
+
 Build 349
 - pause playback while drawing
 - settings menu buttons are larger and cluster better
