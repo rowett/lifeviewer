@@ -63,6 +63,10 @@
 		/** @const {number} */ pasteModeAnd : 3,
 		/** @const {number} */ pasteModeNot : 4,
 
+		// select types
+		/** @const {number} */ selectTypeRectangle : 0,
+		/** @const {number} */ selectTypeConnected : 1,
+
 		// square root of 3 used for triangular grid
 		/** @const {number} */ sqrt3 : Math.sqrt(3),
 
@@ -541,6 +545,12 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// select type
+		this.selectType = ViewConstants.selectTypeRectangle;
+
+		// paste mode for paste tool
+		this.pasteModeForUI = ViewConstants.pasteModeOr;
+
 		// edit list for undo/redo
 		this.editList = [];
 
@@ -1243,6 +1253,9 @@
 		// grid toggle
 		this.gridToggle = null;
 
+		// library button
+		this.libraryButton = null;
+
 		// fit button
 		this.fitButton = null;
 
@@ -1333,8 +1346,38 @@
 		// play list (play/pause/reset/step back buttons)
 		this.playList = null;
 
-		// mode list (draw/pan buttons)
+		// mode list (draw/select/pan buttons)
 		this.modeList = null;
+
+		// paste mode list (or/copy/xor/and)
+		this.pasteModeList = null;
+
+		// select type list (rectangle, connected, library)
+		this.selectTypeList = null;
+
+		// random button
+		this.randomButton = null;
+
+		// cut button
+		this.cutButton = null;
+
+		// copy button
+		this.copyButton = null;
+
+		// paste button
+		this.pasteButton = null;
+
+		// flip X button
+		this.flipXButton = null;
+
+		// flip Y button
+		this.flipYButton = null;
+
+		// rotate CW button
+		this.rotateCWButton = null;
+
+		// rotate CCW button
+		this.rotateCCWButton = null;
 
 		// pick button
 		this.pickToggle = null;
@@ -1443,6 +1486,9 @@
 
 		// screenshot scheduled
 		/** @type {number} */ this.screenShotScheduled = 0;
+
+		// whether selecting
+		/** @type {boolean} */ this.selecting = false;
 
 		// whether drawing
 		/** @type {boolean} */ this.drawing = false;
@@ -3788,7 +3834,7 @@
 		}
 
 		// draw population graph if required
-		if (me.popGraph) {
+		if (me.popGraph && !(me.drawing || me.selecting)) {
 			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail);
 		}
 
@@ -4022,9 +4068,9 @@
 		this.copyRLEButton.deleted = hide;
 
 		// graph controls
-		this.opacityItem.deleted = hide || !this.popGraph;
-		this.graphCloseButton.deleted = hide || !this.popGraph;
-		this.linesToggle.deleted = hide || !this.popGraph;
+		this.opacityItem.deleted = hide || !this.popGraph || this.drawing || this.selecting;
+		this.graphCloseButton.deleted = hide || !this.popGraph || this.drawing || this.selecting;
+		this.linesToggle.deleted = hide || !this.popGraph || this.drawing || this.selecting;
 
 		// generation statistics
 		this.timeLabel.deleted = hide;
@@ -4124,7 +4170,20 @@
 			this.helpSectionList.current = 0;
 		}
 
-		// update menus for drawing
+		// select tools
+		this.selectTypeList.deleted = hide || !this.selecting;
+		this.libraryButton.deleted = hide || !this.selecting;
+		this.pasteModeList.deleted = hide || !this.selecting;
+		this.copyButton.deleted = hide || !this.selecting;
+		this.cutButton.deleted = hide || !this.selecting;
+		this.pasteButton.deleted = hide || !this.selecting;
+		this.flipXButton.deleted = hide || !this.selecting;
+		this.flipYButton.deleted = hide || !this.selecting;
+		this.rotateCWButton.deleted = hide || !this.selecting;
+		this.rotateCCWButton.deleted = hide || !this.selecting;
+		this.randomButton.deleted = hide || !this.selecting;
+
+		// drawing tools
 		this.stateList.deleted = hide || !this.drawing || !this.showStates;
 		this.stateColsList.deleted = hide || !this.drawing || !this.showStates;
 		if (this.engine.multiNumStates <= 2) {
@@ -5102,17 +5161,19 @@
 						me.drawing = true;
 						// turn off pick mode
 						me.pickToggle.current = me.togglePick([false], true, me);
+						me.selecting = false;
 					}
 					break;
 				case ViewConstants.modeSelect:
 					// not implemented yet
 					me.drawing = false;
-					me.pickMode = false;
-					result = me.modeList.current;
+					me.pickToggle.current = me.togglePick([false], true, me);
+					me.selecting = true;
 					break;
 				case ViewConstants.modePan:
 					me.drawing = false;
-					me.pickMode = false;
+					me.selecting = false;
+					me.pickToggle.current = me.togglePick([false], true, me);
 					break;
 			}
 		}
@@ -5131,6 +5192,24 @@
 		}
 
 		return result;
+	};
+
+	// paste mode
+	View.prototype.viewPasteModeList = function(newValue, change, me) {
+		if (change) {
+			me.pasteMode = newValue;
+		}
+
+		return me.pasteMode;
+	};
+
+	// select mode
+	View.prototype.viewSelectTypeList = function(newValue, change, me) {
+		if (change) {
+			me.selectType = newValue;
+		}
+
+		return me.selectType;
 	};
 
 	// drawing states list
@@ -5602,35 +5681,37 @@
 								}
 							}
 						} else {
-							// compute the movement
-							dx = (me.lastDragX - x) / me.engine.camZoom;
-							dy = ((me.lastDragY - y) / me.engine.camZoom) / ((me.engine.isTriangular && me.engine.camZoom >= 4) ? ViewConstants.sqrt3 : 1);
-	
-							// check for hex
-							if (me.engine.isHex || me.engine.isTriangular) {
-								angle = 0;
-							} else {
-								angle = -me.engine.angle;
-							}
-	
-							// only update position if controls not locked
-							if (!me.controlsLocked) {
-								// compute x and y
-								sinAngle = Math.sin(angle / 180 * Math.PI);
-								cosAngle = Math.cos(angle / 180 * Math.PI);
-	
-								// set manual change happened
-								me.manualChange = true;
-	
-								// update position
-								me.engine.xOff += dx * cosAngle + dy * (-sinAngle);
-								me.engine.yOff += dx * sinAngle + dy * cosAngle;
+							if (!me.selecting) {
+								// compute the movement
+								dx = (me.lastDragX - x) / me.engine.camZoom;
+								dy = ((me.lastDragY - y) / me.engine.camZoom) / ((me.engine.isTriangular && me.engine.camZoom >= 4) ? ViewConstants.sqrt3 : 1);
+		
+								// check for hex
+								if (me.engine.isHex || me.engine.isTriangular) {
+									angle = 0;
+								} else {
+									angle = -me.engine.angle;
+								}
+		
+								// only update position if controls not locked
+								if (!me.controlsLocked) {
+									// compute x and y
+									sinAngle = Math.sin(angle / 180 * Math.PI);
+									cosAngle = Math.cos(angle / 180 * Math.PI);
+		
+									// set manual change happened
+									me.manualChange = true;
+		
+									// update position
+									me.engine.xOff += dx * cosAngle + dy * (-sinAngle);
+									me.engine.yOff += dx * sinAngle + dy * cosAngle;
+								}
 							}
 						}
 					}
 				}
 			} else {
-				if (me.drawing && x !== -1 && y !== -1 && !me.pickMode) {
+				if (me.drawing && x !== -1 && y !== -1 && !me.pickMode && !me.selecting) {
 					// draw cells
 					me.drawCells(x, y, me.lastDragX, me.lastDragY);
 					// suspend playback
@@ -5658,14 +5739,17 @@
 						me.startState = saveStart;
 					}
 				} else {
-					// end of edit
-					if (me.currentEdit.length > 0) {
-						me.afterEdit();
-					}
-					// resume playback if required
-					if (me.playbackDrawPause) {
-						me.generationOn = true;
-						me.playbackDrawPause = false;
+					// check for secting
+					if (!me.selecting) {
+						// end of edit
+						if (me.currentEdit.length > 0) {
+							me.afterEdit();
+						}
+						// resume playback if required
+						if (me.playbackDrawPause) {
+							me.generationOn = true;
+							me.playbackDrawPause = false;
+						}
 					}
 				}
 			}
@@ -5714,7 +5798,7 @@
 			icons = new Image();
 
 			// load the icons from the image file
-			icons.src = "data:image/png;base64,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";
+			icons.src = "data:image/png;base64,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";
 				
 			// save the image
 			ViewConstants.icons = icons;
@@ -5746,6 +5830,17 @@
 		this.iconManager.add("undo", w, h);
 		this.iconManager.add("redo", w, h);
 		this.iconManager.add("drawpause", w, h);
+		this.iconManager.add("selectrectangle", w, h);
+		this.iconManager.add("selectconnected", w, h);
+		this.iconManager.add("selectlibrary", w, h);
+		this.iconManager.add("cut", w, h);
+		this.iconManager.add("copy", w, h);
+		this.iconManager.add("paste", w, h);
+		this.iconManager.add("flipx", w, h);
+		this.iconManager.add("flipy", w, h);
+		this.iconManager.add("rotatecw", w, h);
+		this.iconManager.add("rotateccw", w, h);
+		this.iconManager.add("random", w, h);
 	};
 
 	// update grid icon based on hex or square mode
@@ -6147,6 +6242,42 @@
 		me.setHelpTopic(ViewConstants.welcomeTopic, me);
 	};
 
+	// library pressed
+	View.prototype.libraryPressed = function(me) {
+	};
+
+	// cut pressed
+	View.prototype.cutPressed = function(me) {
+	};
+
+	// copy pressed
+	View.prototype.copyPressed = function(me) {
+	};
+
+	// paste pressed
+	View.prototype.pastePressed = function(me) {
+	};
+
+	// random pressed
+	View.prototype.randomPressed = function(me) {
+	};
+
+	// flip X pressed
+	View.prototype.flipXPressed = function(me) {
+	};
+
+	// flip Y pressed
+	View.prototype.flipYPressed = function(me) {
+	};
+
+	// rotate CW pressed
+	View.prototype.rotateCWPressed = function(me) {
+	};
+
+	// rotate CCW pressed
+	View.prototype.rotateCCWPressed = function(me) {
+	};
+
 	// fit button
 	View.prototype.fitPressed = function(me) {
 		// fit zoom
@@ -6199,6 +6330,8 @@
 			me.pickMode = newValue[0];
 			if (me.pickMode) {
 				me.menuManager.notification.notify("Now click on a cell", 15, 180, 15, true);
+			} else {
+				me.menuManager.notification.clear(true, false);
 			}
 		}
 
@@ -8108,7 +8241,9 @@
 
 			// f4 for select mode
 			case 115:
-				me.modeList.current = me.viewModeList(ViewConstants.modeSelect, true, me);
+				if (!me.modeList.itemLocked[ViewConstants.modeSelect]) {
+					me.modeList.current = me.viewModeList(ViewConstants.modeSelect, true, me);
+				}
 				break;
 
 			// f5 for pan mode
@@ -8647,30 +8782,30 @@
 		this.nextPOIButton.toolTip = "go to next POI";
 
 		// opacity range
-		this.opacityItem = this.viewMenu.addRangeItem(this.viewOpacityRange, Menu.north, 0, 40, 172, 40, 0, 1, this.popGraphOpacity, true, "Opacity ", "%", 0);
+		this.opacityItem = this.viewMenu.addRangeItem(this.viewOpacityRange, Menu.north, 0, 45, 172, 40, 0, 1, this.popGraphOpacity, true, "Opacity ", "%", 0);
 		this.opacityItem.toolTip = "graph opacity";
 
 		// points/lines toggle
-		this.linesToggle = this.viewMenu.addListItem(this.toggleLines, Menu.northEast, -85, 40, 40, 40, [""], [false], Menu.multi);
+		this.linesToggle = this.viewMenu.addListItem(this.toggleLines, Menu.northEast, -85, 45, 40, 40, [""], [false], Menu.multi);
 		this.linesToggle.icon = [this.iconManager.icon("lines")];
 		this.linesToggle.toolTip = ["toggle graph lines/points"];
 
 		// graph close button
-		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -40, 40, 40, 40, "X");
+		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -40, 45, 40, 40, "X");
 		this.graphCloseButton.toolTip = "close graph";
 
 		// pick toggle
-		this.pickToggle = this.viewMenu.addListItem(this.togglePick, Menu.northWest, 0, 40, 40, 40, [""], [this.pickMode], Menu.multi);
+		this.pickToggle = this.viewMenu.addListItem(this.togglePick, Menu.northWest, 0, 45, 40, 40, [""], [this.pickMode], Menu.multi);
 		this.pickToggle.icon = [this.iconManager.icon("pick")];
 		this.pickToggle.toolTip = ["pick state"];
 
 		// states toggle
-		this.statesToggle = this.viewMenu.addListItem(this.toggleStates, Menu.northWest, 45, 40, 40, 40, [""], [this.showStates], Menu.multi);
+		this.statesToggle = this.viewMenu.addListItem(this.toggleStates, Menu.northWest, 45, 45, 40, 40, [""], [this.showStates], Menu.multi);
 		this.statesToggle.icon = [this.iconManager.icon("states")];
 		this.statesToggle.toolTip = ["toggle states"];
 
 		// pause playback while drawing toggle
-		this.pausePlaybackToggle = this.viewMenu.addListItem(this.togglePausePlayback, Menu.northWest, 90, 40, 40, 40, [""], [this.pauseWhileDrawing], Menu.multi);
+		this.pausePlaybackToggle = this.viewMenu.addListItem(this.togglePausePlayback, Menu.northWest, 90, 45, 40, 40, [""], [this.pauseWhileDrawing], Menu.multi);
 		this.pausePlaybackToggle.icon = [this.iconManager.icon("drawpause")];
 		this.pausePlaybackToggle.toolTip = ["toggle pause playback while drawing"];
 
@@ -8717,18 +8852,74 @@
 		this.playList.toolTip = ["reset", "previous generation", "next generation", "play"];
 
 		// add states for editor
-		this.stateList = this.viewMenu.addListItem(this.viewStateList, Menu.northEast, -280, 40, 280, 20, ["0", "1", "2", "3", "4", "5", "6"], this.drawState, Menu.single);
+		this.stateList = this.viewMenu.addListItem(this.viewStateList, Menu.northEast, -280, 45, 280, 20, ["0", "1", "2", "3", "4", "5", "6"], this.drawState, Menu.single);
 		this.stateList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
 		this.stateList.font = "14px Arial";
 
 		// add state colours for editor
-		this.stateColsList = this.viewMenu.addListItem(this.viewStateColsList, Menu.northEast, -280, 60, 280, 20, ["", "", "", "", "", "", ""], [false, false, false, false, false, false, false], Menu.multi);
+		this.stateColsList = this.viewMenu.addListItem(this.viewStateColsList, Menu.northEast, -280, 65, 280, 20, ["", "", "", "", "", "", ""], [false, false, false, false, false, false, false], Menu.multi);
 		this.stateColsList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
 		this.stateColsList.bgAlpha = 1;
 
 		// add slider for states
-		this.statesSlider = this.viewMenu.addRangeItem(this.viewStatesRange, Menu.northWest, 135, 40, 105, 40, 0, 1, 0, true, "", "", -1);
+		this.statesSlider = this.viewMenu.addRangeItem(this.viewStatesRange, Menu.northWest, 135, 45, 105, 40, 0, 1, 0, true, "", "", -1);
 		this.statesSlider.toolTip = "select drawing states range";
+
+		// select type list
+		this.selectTypeList = this.viewMenu.addListItem(this.viewSelectTypeList, Menu.northWest, 0, 45, 80, 40, ["", ""], this.selectType, Menu.single);
+		this.selectTypeList.icon = [this.iconManager.icon("selectrectangle"), this.iconManager.icon("selectconnected")];
+		this.selectTypeList.toolTip = ["rectange", "connected"];
+
+		// library button
+		this.libraryButton = this.viewMenu.addButtonItem(this.libraryPressed, Menu.northWest, 85, 45, 40, 40, "");
+		this.libraryButton.icon = this.iconManager.icon("selectlibrary");
+		this.libraryButton.toolTip = "library";
+
+		// paste mode list
+		this.pasteModeList = this.viewMenu.addListItem(this.viewPasteModeList, Menu.northEast, -40, 45, 40, 160, ["Or", "Cpy", "Xor", "And"], this.pasteModeForUI, Menu.single);
+		this.pasteModeList.textOrientation = Menu.horizontal;
+		this.pasteModeList.toolTip = ["OR mode", "Copy mode", "XOR mode", "AND mode"];
+		this.pasteModeList.font = "16px Arial";
+
+		// add the cut button
+		this.cutButton = this.viewMenu.addButtonItem(this.cutPressed, Menu.northWest, 130, 45, 40, 40, "");
+		this.cutButton.icon = this.iconManager.icon("cut");
+		this.cutButton.toolTip = "cut";
+
+		// add the copy button
+		this.copyButton = this.viewMenu.addButtonItem(this.copyPressed, Menu.northWest, 175, 45, 40, 40, "");
+		this.copyButton.icon = this.iconManager.icon("copy");
+		this.copyButton.toolTip = "copy";
+
+		// add the paste button
+		this.pasteButton = this.viewMenu.addButtonItem(this.pastePressed, Menu.northWest, 220, 45, 40, 40, "");
+		this.pasteButton.icon = this.iconManager.icon("paste");
+		this.pasteButton.toolTip = "paste";
+
+		// add the random button
+		this.randomButton = this.viewMenu.addButtonItem(this.randomPressed, Menu.northEast, -265, 45, 40, 40, "");
+		this.randomButton.icon = this.iconManager.icon("random");
+		this.randomButton.toolTip = "random fill";
+
+		// add the flip X button
+		this.flipXButton = this.viewMenu.addButtonItem(this.flipXPressed, Menu.northEast, -220, 45, 40, 40, "");
+		this.flipXButton.icon = this.iconManager.icon("flipx");
+		this.flipXButton.toolTip = "flip X";
+
+		// add the flip Y button
+		this.flipYButton = this.viewMenu.addButtonItem(this.flipYPressed, Menu.northEast, -175, 45, 40, 40, "");
+		this.flipYButton.icon = this.iconManager.icon("flipy");
+		this.flipYButton.toolTip = "flip Y";
+
+		// add the rotate clockwise button
+		this.rotateCWButton = this.viewMenu.addButtonItem(this.rotateCWPressed, Menu.northEast, -130, 45, 40, 40, "");
+		this.rotateCWButton.icon = this.iconManager.icon("rotatecw");
+		this.rotateCWButton.toolTip = "rotate clockwise";
+
+		// add the rotate counter-clockwise button
+		this.rotateCCWButton = this.viewMenu.addButtonItem(this.rotateCCWPressed, Menu.northEast, -85, 45, 40, 40, "");
+		this.rotateCCWButton.icon = this.iconManager.icon("rotateccw");
+		this.rotateCCWButton.toolTip = "rotate counter-clockwise";
 
 		// add items to the main toggle menu
 		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
@@ -9309,8 +9500,8 @@
 				this.statesSlider.current = this.viewStatesRange([0, 0], true, this);
 			}
 		}
-		this.stateList.setPosition(Menu.northEast, -this.stateList.width, 40);
-		this.stateColsList.setPosition(Menu.northEast, -this.stateColsList.width, 60);
+		this.stateList.setPosition(Menu.northEast, -this.stateList.width, 45);
+		this.stateColsList.setPosition(Menu.northEast, -this.stateColsList.width, 65);
 	};
 
 	// clear pattern data
@@ -9367,6 +9558,12 @@
 		} else {
 			this.isEdge = false;
 		}
+
+		// set default select type
+		this.selectTypeList.current = this.viewSelectTypeList(ViewConstants.selectTypeRectangle, true, this);
+
+		// set default paste mode for UI
+		this.pasteModeList.current = this.viewPasteModeList(ViewConstants.pasteModeOr, true, this);
 
 		// clear playback draw pause
 		this.playbackDrawPause = false;
@@ -10152,7 +10349,7 @@
 		}
 
 		// disable select until implemented !!! TBD
-		this.modeList.itemLocked[1] = true;
+		this.modeList.itemLocked[ViewConstants.modeSelect] = true;
 
 		// if standard view mode then reset colour grid and population
 		if (this.multiStateView) {
