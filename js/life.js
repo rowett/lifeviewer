@@ -2144,40 +2144,45 @@
 	Life.prototype.runTo = function(targetGen, statsOn, graphDisabled, view) {
 		// get the latest snapshot
 		var numSnapshots = this.snapshotManager.snapshots.length,
-		    snapshot = this.snapshotManager.snapshotBefore(targetGen);
+			snapshot = null;
+			
+		// if generation is earlier than current go from previous snapshot
+		if (targetGen < this.counter) {
+			snapshot = this.snapshotManager.snapshotBefore(targetGen);
 
-		// check if a snapshot was deleted
-		if (numSnapshots !== this.snapshotManager.snapshots.length) {
-			// reduce snapshot target
-			this.nextSnapshotTarget -= LifeConstants.snapshotInterval;
+			// check if a snapshot was deleted
+			if (numSnapshots !== this.snapshotManager.snapshots.length) {
+				// reduce snapshot target
+				this.nextSnapshotTarget -= LifeConstants.snapshotInterval;
+			}
 		}
-
+	
 		// check if the snapshot exists
 		if (snapshot) {
 			// restore the snapshot
 			this.restoreSnapshot(snapshot);
 			view.pasteEdits();
+		}
 
-			// play from the snapshot counter to just before the target with stats off (for speed)
-			while (this.counter < targetGen - 1) {
-				this.anythingAlive = 1;
-				this.nextGeneration(false, true, graphDisabled);
-				this.convertToPensTile();
-				view.pasteRLEList();
-			}
+		// play from the snapshot counter to just before the target with stats off (for speed)
+		while (this.counter < targetGen - 1) {
+			this.anythingAlive = 1;
+			this.nextGeneration(false, true, graphDisabled);
+			this.convertToPensTile();
+			view.pasteRLEList();
+		}
 
-			// compute the final generation with stats on if required
-			if (this.counter < targetGen) {
-				this.anythingAlive = 1;
-				this.nextGeneration(statsOn, true, graphDisabled);
-				this.convertToPensTile();
-				view.pasteRLEList();
-			}
-			// if paste every is defined then always flag there are alive cells
-			// since cells will appear in the future
-			if (view.isPasteEvery) {
-				this.anythingAlive = 1;
-			}
+		// compute the final generation with stats on if required
+		if (this.counter < targetGen) {
+			this.anythingAlive = 1;
+			this.nextGeneration(statsOn, true, graphDisabled);
+			this.convertToPensTile();
+			view.pasteRLEList();
+		}
+		// if paste every is defined then always flag there are alive cells
+		// since cells will appear in the future
+		if (view.isPasteEvery) {
+			this.anythingAlive = 1;
 		}
 	};
 

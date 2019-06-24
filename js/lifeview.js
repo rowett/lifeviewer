@@ -216,7 +216,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 350,
+		/** @const {number} */ versionBuild : 351,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -649,6 +649,9 @@
 
 		// whether picking state
 		/** @type {boolean} */ this.pickMode = false;
+
+		// whether just picked (for notification)
+		/** @type {boolean} */ this.justPicked = false;
 
 		// whether to show states
 		/** @type {boolean} */ this.showStates = false;
@@ -1590,12 +1593,14 @@
 				this.editList[this.editNum] = {gen: counter, cells: this.currentEdit.slice()};
 				this.undoList[this.editNum] = {gen: counter, cells: this.currentUndo.slice()};
 				this.editNum += 1;
-				this.numEdits = this.editNum;
 		
 				// clear current edit and undo records
 				this.currentEdit = [];
 				this.currentUndo = [];
 			}
+
+			// this is now the latest edit
+			this.numEdits = this.editNum;
 		}
 	};
 
@@ -1608,6 +1613,11 @@
 
 		// do nothing if step back disabled
 		if (!me.noHistory) {
+			// stop playback
+			if (this.generationOn) {
+				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+			}
+
 			// check for top of the stack
 			if (current === me.numEdits && current > 0) {
 				me.afterEdit();
@@ -1653,6 +1663,7 @@
 
 		// do nothing if step back disabled
 		if (!me.noHistory) {
+			// check for redo records
 			if (me.editNum < me.numEdits) {
 				if (me.editList[me.editNum].gen === counter && me.editList[me.editNum].cells.length === 0) {
 					me.editNum += 1;
@@ -5457,6 +5468,7 @@
 				} else {
 					// pause
 					me.generationOn = false;
+					me.afterEdit();
 
 					// zoom text unless STOP and generation notifications disabled
 					if (!(me.engine.counter === me.stopGeneration && !me.genNotifications)) {
@@ -5479,6 +5491,7 @@
 				} else {
 					// pause
 					me.generationOn = false;
+					me.afterEdit();
 
 					// zoom text
 					me.menuManager.notification.notify("Pause", 15, 40, 15, true);
@@ -5491,6 +5504,7 @@
 				if (me.generationOn) {
 					// pause
 					me.generationOn = false;
+					me.afterEdit();
 
 					// zoom text unless STOP and generation notifications disabled
 					if (!(me.engine.counter === me.stopGeneration && !me.genNotifications)) {
@@ -5730,6 +5744,7 @@
 			if (!fromKey) {
 				if (me.pickMode === true) {
 					if (x!== -1 && y !== -1) {
+						me.justPicked = true;
 						me.penColour = me.readCell();
 						// clear start state for pick
 						saveStart = me.startState;
@@ -6331,7 +6346,10 @@
 			if (me.pickMode) {
 				me.menuManager.notification.notify("Now click on a cell", 15, 180, 15, true);
 			} else {
-				me.menuManager.notification.clear(true, false);
+				if (!me.justPicked) {
+					me.menuManager.notification.clear(true, false);
+				}
+				me.justPicked = false;
 			}
 		}
 

@@ -1,8 +1,16 @@
+Build 351
+- redo no longer goes back to previous snapshot
+- picked cell colour notification wasn't displaying
+- stop playback on undo
+- fix step back with undo
+
 Build 350
 - moved graph controls below top row
 - fixed playback pause during editing
 - new toggle button to control whether playback is paused during drawing
 - improved toggle states icon
+- graph hidden if drawing or selecting
+- added select mode UI controls
 
 Build 349
 - pause playback while drawing
