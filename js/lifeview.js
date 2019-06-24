@@ -1562,6 +1562,53 @@
 
 		if (found) {
 			this.editNum = i + 1;
+			this.updateUndoToolTips();
+		}
+	};
+
+	// update undo/redo tooltips
+	View.prototype.updateUndoToolTips = function() {
+		var edit = this.editNum,
+			num = this.numEdits,
+			list = this.editList,
+			gen = 0,
+			tooltip = "";
+
+		// update undo tooltip
+		if (edit > 0) {
+			tooltip = "undo ";
+			if (list[edit - 1].cells.length === 0) {
+				gen = list[edit - 1].gen;
+				if (edit > 1) {
+					gen = list[edit - 2].gen;
+				}
+				if (this.engine.counter - gen > 1) {
+					tooltip += "play";
+				} else {
+					tooltip += "step";
+				}
+				tooltip += " from " + gen;
+			} else {
+				tooltip += "edit";
+			}
+			this.undoButton.toolTip = tooltip;
+		}
+
+		// update redo tooltip
+		if (edit < num) {
+			tooltip = "redo ";
+			if (list[edit].cells.length === 0) {
+				gen = list[edit].gen;
+				if (gen - this.engine.counter > 1) {
+					tooltip += "play";
+				} else {
+					tooltip += "step";
+				}
+				tooltip += " to " + gen;
+			} else {
+				tooltip += "edit";
+			}
+			this.redoButton.toolTip = tooltip;
 		}
 	};
 
@@ -1583,12 +1630,6 @@
 	
 			// check if there was a change
 			if (wasChange) {
-				// if this is the first record at this generation then insert a generation record
-				if (this.editNum > 0 && this.editList[this.editNum - 1].gen !== counter && this.currentEdit.length !== 0) {
-					this.editList[this.editNum] = {gen: counter, cells: []};
-					this.undoList[this.editNum] = {gen: counter, cells: []}; 
-					this.editNum += 1;
-				}
 				// create new edit and undo record
 				this.editList[this.editNum] = {gen: counter, cells: this.currentEdit.slice()};
 				this.undoList[this.editNum] = {gen: counter, cells: this.currentUndo.slice()};
@@ -1601,6 +1642,9 @@
 
 			// this is now the latest edit
 			this.numEdits = this.editNum;
+
+			// update tooltips
+			this.updateUndoToolTips();
 		}
 	};
 
@@ -1616,14 +1660,11 @@
 			// stop playback
 			if (this.generationOn) {
 				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
-			}
 
-			// check for top of the stack
-			if (current === me.numEdits && current > 0) {
-				me.afterEdit();
+				// stopping playback will have added an undo record
 				current = me.editNum;
 			}
-	
+
 			// check for undo records
 			if (current > 0) {
 				// pop the top record
@@ -1654,6 +1695,9 @@
 					me.reset(me);
 				}
 			}
+
+			// update tooltips
+			this.updateUndoToolTips();
 		}
 	};
 
@@ -1676,6 +1720,9 @@
 				}
 				me.editNum += 1;
 			}
+
+			// update tooltips
+			this.updateUndoToolTips();
 		}
 	};
 
@@ -3733,6 +3780,11 @@
 		} else {
 			// clear step samples
 			me.clearStepSamples();
+		}
+
+		// check for single step
+		if (me.nextStep && !me.generationOn) {
+			me.afterEdit();
 		}
 
 		// lock or unlock the controls

@@ -3,6 +3,7 @@ Build 351
 - picked cell colour notification wasn't displaying
 - stop playback on undo
 - fix step back with undo
+- added undo/redo detail to button tooltips
 
 Build 350
 - moved graph controls below top row
