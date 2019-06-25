@@ -128,6 +128,7 @@ colours|default colour sets for common rules and colour names
 compatibility|some cross-browser compatibility functions
 help|help information
 hrot|LtL/HROT algorithm
+keys|keyboard processing
 keywords|script command keywords
 life|algorithms to compute the next generation
 lifeview|main program

@@ -1,6 +1,7 @@
 Build 352
 - do not draw when clicking to get window focus
 - remove unneeded extra undo step
+- added Smart Drawing button to Draw menu
 
 Build 351
 - redo no longer goes back to previous snapshot
