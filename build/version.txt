@@ -2,6 +2,7 @@ Build 352
 - do not draw when clicking to get window focus
 - remove unneeded extra undo step
 - added Smart Drawing button to Draw menu
+- increased maximum number of LtL and HROT states to 256
 
 Build 351
 - redo no longer goes back to previous snapshot

@@ -215,7 +215,7 @@
 
 		// LTL min and max states
 		/** @const {number} */ minStatesLTL : 0,
-		/** @const {number} */ maxStatesLTL : 255,
+		/** @const {number} */ maxStatesLTL : 256,
 
 		// LTL min and max middle value
 		/** @const {number} */ minMiddleLTL : 0,
@@ -232,7 +232,7 @@
 
 		// HROT min and max states
 		/** @const {number} */ minStatesHROT : 0,
-		/** @const {number} */ maxStatesHROT : 255,
+		/** @const {number} */ maxStatesHROT : 256,
 
 		// max state seen
 		/** @type {number} */ maxSurvivalHROT : 0,

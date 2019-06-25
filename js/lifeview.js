@@ -7533,7 +7533,7 @@
 		this.stateColsList.bgAlpha = 1;
 
 		// add slider for states
-		this.statesSlider = this.viewMenu.addRangeItem(this.viewStatesRange, Menu.northWest, 135, 45, 105, 40, 0, 1, 0, true, "", "", -1);
+		this.statesSlider = this.viewMenu.addRangeItem(this.viewStatesRange, Menu.northWest, 180, 45, 100, 40, 0, 1, 0, true, "", "", -1);
 		this.statesSlider.toolTip = "select drawing states range";
 
 		// select type list
