@@ -1,3 +1,6 @@
+Build 353
+- hide Draw, Graph and Select menus when Settings open
+
 Build 352
 - do not draw when clicking to get window focus
 - remove unneeded extra undo step

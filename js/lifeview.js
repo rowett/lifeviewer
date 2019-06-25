@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global Allocator Uint8 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager ScriptParser Uint32Array myRand PopupWindow typedArrays Float32 */
+	/* global BoundingBox Allocator Uint8 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager ScriptParser Uint32Array myRand PopupWindow typedArrays Float32 */
 
 	// LifeViewer document configuration
 	var DocConfig = {
@@ -216,7 +216,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 352,
+		/** @const {number} */ versionBuild : 353,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -545,6 +545,19 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// selection box
+		this.selectionBox = new BoundingBox();
+
+		// selection start X and Y screen location (used to detect click to clear selection)
+		/** @type {number} */ this.selectStartX = 0;
+		/** @type {number} */ this.selectStartY = 0;
+
+		// whether there is a selection
+		/** @type {boolean} */ this.isSelection = false;
+
+		// where a selection is happening
+		/** @type {boolean} */ this.drawingSelection = false;
+
 		// select type
 		this.selectType = ViewConstants.selectTypeRectangle;
 
@@ -555,10 +568,10 @@
 		this.editList = [];
 
 		// edit number for undo/redo
-		this.editNum = 0;
+		/** @type {number} */ this.editNum = 0;
 
 		// number of edits for undo/redo
-		this.numEdits = 0;
+		/** @type {number} */ this.numEdits = 0;
 
 		// current edit
 		this.currentEdit = [];
@@ -568,18 +581,18 @@
 
 		// step samples
 		this.stepSamples = [];
-		this.stepIndex = 0;
+		/** @type {number} */ this.stepIndex = 0;
 
 		// list of transformations
 		this.transforms = [];
-		this.transforms[ViewConstants.transIdentity] = [1, 0, 0, 1];
-		this.transforms[ViewConstants.transFlip] = [-1, 0, 0, -1];
-		this.transforms[ViewConstants.transFlipX] = [-1, 0, 0, 1];
-		this.transforms[ViewConstants.transFlipY] = [1, 0, 0, -1];
-		this.transforms[ViewConstants.transSwapXY] = [0, 1, 1, 0];
-		this.transforms[ViewConstants.transSwapXYFlip] = [0, -1, -1, 0];
-		this.transforms[ViewConstants.transRotateCW] = [0, -1, 1, 0];
-		this.transforms[ViewConstants.transRotateCCW] = [0, 1, -1, 0];
+		/** @const {Array<number>} */ this.transforms[ViewConstants.transIdentity] = [1, 0, 0, 1];
+		/** @const {Array<number>} */ this.transforms[ViewConstants.transFlip] = [-1, 0, 0, -1];
+		/** @const {Array<number>} */ this.transforms[ViewConstants.transFlipX] = [-1, 0, 0, 1];
+		/** @const {Array<number>} */ this.transforms[ViewConstants.transFlipY] = [1, 0, 0, -1];
+		/** @const {Array<number>} */ this.transforms[ViewConstants.transSwapXY] = [0, 1, 1, 0];
+		/** @const {Array<number>} */ this.transforms[ViewConstants.transSwapXYFlip] = [0, -1, -1, 0];
+		/** @const {Array<number>} */ this.transforms[ViewConstants.transRotateCW] = [0, -1, 1, 0];
+		/** @const {Array<number>} */ this.transforms[ViewConstants.transRotateCCW] = [0, 1, -1, 0];
 
 		// list of named recipes
 		this.recipeList = [];
@@ -597,31 +610,31 @@
 		this.pasteMode = ViewConstants.pasteModeOr;
 
 		// rle paste generation
-		this.pasteGen = 0;
+		/** @type {number} */ this.pasteGen = 0;
 
 		// rle paste end generation for every mode
-		this.pasteEnd = -1;
+		/** @type {number} */ this.pasteEnd = -1;
 
 		// rle delta list
 		this.pasteDelta = [];
 
 		// rle paste modulus
-		this.pasteEvery = 0;
+		/** @type {number} */ this.pasteEvery = 0;
 
 		// whether there is a paste every snippet
-		this.isPasteEvery = false;
+		/** @type {boolean} */ this.isPasteEvery = false;
 
 		// maximum paste generation (exlcuding paste every snippets)
-		this.maxPasteGen = 0;
+		/** @type {number} */ this.maxPasteGen = 0;
 
 		// whether there is evolution to do
-		this.isEvolution = false;
+		/** @type {boolean} */ this.isEvolution = false;
 
 		// paste snippets bounding box
-		this.pasteLeftX = 0;
-		this.pasteRightX = 0;
-		this.pasteBottomY = 0;
-		this.pasteTopY = 0;
+		/** @type {number} */ this.pasteLeftX = 0;
+		/** @type {number} */ this.pasteRightX = 0;
+		/** @type {number} */ this.pasteBottomY = 0;
+		/** @type {number} */ this.pasteTopY = 0;
 
 		// universe number
 		/** @type {number} */ this.universe = 0;
@@ -4110,7 +4123,9 @@
 			i = 0,
 			value = 0,
 			captions = [],
-			toolTips = [];
+			toolTips = [],
+			settingsMenuOpen = this.navToggle.current[0],
+			shown = false;
 
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
@@ -4129,22 +4144,25 @@
 		this.copyRLEButton.deleted = hide;
 
 		// graph controls
-		this.opacityItem.deleted = hide || !this.popGraph || this.drawing || this.selecting;
-		this.graphCloseButton.deleted = hide || !this.popGraph || this.drawing || this.selecting;
-		this.linesToggle.deleted = hide || !this.popGraph || this.drawing || this.selecting;
+		shown = hide || !this.popGraph || this.drawing || this.selecting || settingsMenuOpen;
+		this.opacityItem.deleted = shown;
+		this.graphCloseButton.deleted = shown;
+		this.linesToggle.deleted = shown;
 
 		// generation statistics
 		this.timeLabel.deleted = hide;
 		this.elapsedTimeLabel.deleted = hide;
 		this.popLabel.deleted = hide;
 		this.popValue.deleted = hide;
-		this.birthsLabel.deleted = hide || this.infinitelyBounded();
-		this.birthsValue.deleted = hide || this.infinitelyBounded();
-		this.deathsLabel.deleted = hide || this.finitelyBounded() || this.infinitelyBounded();
-		this.deathsValue.deleted = hide || this.finitelyBounded() || this.infinitelyBounded();
+		shown = hide || this.infinitelyBounded();
+		this.birthsLabel.deleted = shown;
+		this.birthsValue.deleted = shown;
+		shown |= this.finitelyBounded();
+		this.deathsLabel.deleted = shown;
+		this.deathsValue.deleted = shown;
 		this.ruleLabel.deleted = hide;
 
-		// navigation menu
+		// settings menu
 		this.angleItem.deleted = hide || this.engine.isHex || this.engine.isTriangular;
 		this.depthItem.deleted = hide;
 		this.themeItem.deleted = hide || this.multiStateView || this.engine.isNone;
@@ -4167,25 +4185,27 @@
 		this.rHistoryButton.deleted = hide;
 
 		// POI controls
-		this.nextPOIButton.deleted = hide || (this.waypointManager.numPOIs() === 0);
-		this.prevPOIButton.deleted = hide || (this.waypointManager.numPOIs() === 0);
+		shown = hide || (this.waypointManager.numPOIs() === 0);
+		this.nextPOIButton.deleted = shown;
+		this.prevPOIButton.deleted = shown;
 
 		// infobar
-		this.infoBarLabelXLeft.deleted = hide || !this.infoBarEnabled;
-		this.infoBarLabelXValue.deleted = hide || !this.infoBarEnabled;
-		this.infoBarLabelYLeft.deleted = hide || !this.infoBarEnabled;
-		this.infoBarLabelYValue.deleted = hide || !this.infoBarEnabled;
-		this.infoBarLabelAngleLeft.deleted = hide || !this.infoBarEnabled;
-		this.infoBarLabelAngleValue.deleted = hide || !this.infoBarEnabled;
-		this.infoBarLabelCenter.deleted = hide || !this.infoBarEnabled;
-		this.infoBarLabelERight.deleted = hide || !this.infoBarEnabled;
-		this.infoBarLabelSRight.deleted = hide || !this.infoBarEnabled;
-		this.infoBarLabelWRight.deleted = hide || !this.infoBarEnabled;
-		this.infoBarLabelNRight.deleted = hide || !this.infoBarEnabled;
-		this.infoBarLabelEValueRight.deleted = hide || !this.infoBarEnabled;
-		this.infoBarLabelSValueRight.deleted = hide || !this.infoBarEnabled;
-		this.infoBarLabelWValueRight.deleted = hide || !this.infoBarEnabled;
-		this.infoBarLabelNValueRight.deleted = hide || !this.infoBarEnabled;
+		shown = hide || !this.infoBarEnabled || this.drawing || this.selecting || this.popGraph;
+		this.infoBarLabelXLeft.deleted = shown;
+		this.infoBarLabelXValue.deleted = shown;
+		this.infoBarLabelYLeft.deleted = shown;
+		this.infoBarLabelYValue.deleted = shown;
+		this.infoBarLabelAngleLeft.deleted = shown;
+		this.infoBarLabelAngleValue.deleted = shown;
+		this.infoBarLabelCenter.deleted = shown;
+		this.infoBarLabelERight.deleted = shown;
+		this.infoBarLabelSRight.deleted = shown;
+		this.infoBarLabelWRight.deleted = shown;
+		this.infoBarLabelNRight.deleted = shown;
+		this.infoBarLabelEValueRight.deleted = shown;
+		this.infoBarLabelSValueRight.deleted = shown;
+		this.infoBarLabelWValueRight.deleted = shown;
+		this.infoBarLabelNValueRight.deleted = shown;
 
 		if (this.scriptErrors.length) {
 			this.closeButton.toolTip = "close errors";
@@ -4232,21 +4252,31 @@
 		}
 
 		// select tools
-		this.selectTypeList.deleted = hide || !this.selecting;
-		this.libraryButton.deleted = hide || !this.selecting;
-		this.pasteModeList.deleted = hide || !this.selecting;
-		this.copyButton.deleted = hide || !this.selecting;
-		this.cutButton.deleted = hide || !this.selecting;
-		this.pasteButton.deleted = hide || !this.selecting;
-		this.flipXButton.deleted = hide || !this.selecting;
-		this.flipYButton.deleted = hide || !this.selecting;
-		this.rotateCWButton.deleted = hide || !this.selecting;
-		this.rotateCCWButton.deleted = hide || !this.selecting;
-		this.randomButton.deleted = hide || !this.selecting;
+		shown = hide || !this.selecting || settingsMenuOpen;
+		this.selectTypeList.deleted = shown;
+		this.libraryButton.deleted = shown;
+		this.pasteModeList.deleted = shown;
+		this.copyButton.deleted = shown;
+		this.cutButton.deleted = shown;
+		this.pasteButton.deleted = shown;
+		this.flipXButton.deleted = shown;
+		this.flipYButton.deleted = shown;
+		this.rotateCWButton.deleted = shown;
+		this.rotateCCWButton.deleted = shown;
+		this.randomButton.deleted = shown;
+
+		// lock select tools
+		shown = !this.isSelection;
+		this.randomButton.locked = shown;
+		this.flipXButton.locked = shown;
+		this.flipYButton.locked = shown;
+		this.rotateCWButton.locked = shown;
+		this.rotateCCWButton.locked = shown;
 
 		// drawing tools
-		this.stateList.deleted = hide || !this.drawing || !this.showStates;
-		this.stateColsList.deleted = hide || !this.drawing || !this.showStates;
+		shown = hide || !this.drawing || !this.showStates || settingsMenuOpen;
+		this.stateList.deleted = shown;
+		this.stateColsList.deleted = shown;
 		if (this.engine.multiNumStates <= 2) {
 			// 2-state potentially with LifeHistory
 			for (i = 0; i < this.stateColsList.lower.length; i += 1) {
@@ -4277,20 +4307,11 @@
 			}
 		}
 
-		// pick
-		this.pickToggle.deleted = hide || !this.drawing;
-
-		// pause while drawing
-		this.pausePlaybackToggle.deleted = hide || !this.drawing;
-
-		// smart drawing
-		this.smartToggle.deleted = hide || !this.drawing;
-
-		// states
-		this.statesToggle.deleted = hide || !this.drawing;
-
-		// states slider
-		this.statesSlider.deleted = hide || !this.drawing || !this.showStates || (this.engine.multiNumStates < 8);
+		this.pickToggle.deleted = shown;
+		this.pausePlaybackToggle.deleted = shown;
+		this.smartToggle.deleted = shown;
+		this.statesToggle.deleted = shown;
+		this.statesSlider.deleted = hide || !this.drawing || !this.showStates || (this.engine.multiNumStates < 8) || settingsMenuOpen;
 
 		// update states list from slider
 		if (this.engine.multiNumStates > this.maxDisplayStates) {
@@ -5218,6 +5239,7 @@
 		if (change) {
 			switch (newValue) {
 				case ViewConstants.modeDraw:
+					// drawing
 					me.playbackDrawPause = false;
 					if (me.viewOnly || me.engine.isNone) {
 						result = me.modeList.current;
@@ -5229,12 +5251,13 @@
 					}
 					break;
 				case ViewConstants.modeSelect:
-					// not implemented yet
+					// selecting
 					me.drawing = false;
 					me.pickToggle.current = me.togglePick([false], true, me);
 					me.selecting = true;
 					break;
 				case ViewConstants.modePan:
+					// panning
 					me.drawing = false;
 					me.selecting = false;
 					me.pickToggle.current = me.togglePick([false], true, me);
@@ -5704,88 +5727,189 @@
 		me.viewDoDrag(x, y, dragOn, me, false);
 	};
 
+	// drag help
+	View.prototype.dragHelp = function(me, y) {
+		// compute the movement
+		var dy = (me.lastDragY - y) / ViewConstants.fontSize;
+
+		// scroll help text
+		if (me.lastDragY !== -1) {
+			if (dy > 0) {
+				me.scrollHelpDown(me, dy);
+			} else {
+				if (dy < 0) {
+					me.scrollHelpUp(me, -dy);
+				}
+			}
+		}
+	};
+
+	// drag errors
+	View.prototype.dragErrors = function(me, y) {
+		// compute the movement
+		var dy = (me.lastDragY - y) / ViewConstants.fontSize;
+
+		// scroll errors
+		if (me.lastDragY !== -1) {
+			if (dy > 0) {
+				me.scrollErrorsDown(me, dy);
+			} else {
+				if (dy < 0) {
+					me.scrollErrorsUp(me, -dy);
+				}
+			}
+		}
+	};
+
+	// drag grid (pan)
+	View.prototype.dragPan = function(me, x, y) {
+		// compute the movement
+		var dx = (me.lastDragX - x) / me.engine.camZoom,
+			dy = ((me.lastDragY - y) / me.engine.camZoom) / ((me.engine.isTriangular && me.engine.camZoom >= 4) ? ViewConstants.sqrt3 : 1),
+			angle = 0,
+			sinAngle = 0,
+			cosAngle = 0;
+
+		// pan grid
+		if (me.lastDragY !== -1) {
+			// check for hex
+			if (me.engine.isHex || me.engine.isTriangular) {
+				angle = 0;
+			} else {
+				angle = -me.engine.angle;
+			}
+	
+			// only update position if controls not locked
+			if (!me.controlsLocked) {
+				// compute x and y
+				sinAngle = Math.sin(angle / 180 * Math.PI);
+				cosAngle = Math.cos(angle / 180 * Math.PI);
+	
+				// set manual change happened
+				me.manualChange = true;
+	
+				// update position
+				me.engine.xOff += dx * cosAngle + dy * (-sinAngle);
+				me.engine.yOff += dx * sinAngle + dy * cosAngle;
+			}
+		}
+	};
+
+	// drag draw
+	View.prototype.dragDraw = function(me, x, y) {
+		// draw
+		if (me.lastDragY !== -1) {
+			// check if on window (and window has focus - to prevent drawing when clicking to gain focus)
+			if (x !== -1 && y !== -1 && me.menuManager.hasFocus && !me.pickMode) {
+				// draw cells
+				me.drawCells(x, y, me.lastDragX, me.lastDragY);
+				// suspend playback
+				if (me.generationOn && me.pauseWhileDrawing) {
+					me.generationOn = false;
+					me.playbackDrawPause = true;
+				}
+			}
+		}
+	};
+
+	// drag select
+	View.prototype.dragSelect = function(me, x, y) {
+		var box = me.selectionBox;
+
+		if (x !== -1 && y !== -1) {
+			// convert display coordinates to cell location
+			this.updateCellLocation(x, y);
+
+			// check if this is the start of a drag
+			if (me.lastDragY === -1) {
+				// save screen location so a click can be detected
+				// if button released without mouse moving
+				me.selectStartX = x;
+				me.selectStartY = y;
+			} else {
+				// check if there is a selection being drawn
+				if (!me.drawingSelection) {
+					// create a selection
+					me.drawingSelection = true;
+					box.leftX = this.cellX;
+					box.rightX = this.cellY;
+					box.bottomY = this.cellX;
+					box.topY = this.cellY;
+				} else {
+					// extend selection
+					box.rightX = this.cellX;
+					box.topY = this.cellY;
+				}
+			}
+		}
+	};
+
+	// drag ended for select
+	View.prototype.dragEndSelect = function(me, x, y) {
+		me.drawingSelection = false;
+
+		// check if a selection was made
+		if (x !== me.selectStartX || y !== me.selectStartY) {
+			me.isSelection = true;
+		} else {
+			me.isSelection = false;
+		}
+	};
+
+	// drag ended for pick
+	View.prototype.dragEndPick = function(me, x, y) {
+		var saveStart = me.startState;
+
+		// check if on window
+		if (x!== -1 && y !== -1) {
+			me.justPicked = true;
+			me.penColour = me.readCell();
+			// highlight state in state list UI (clear start state first, set, then restore)
+			me.startState = 0;
+			me.stateList.current = me.viewStateList(me.penColour, true, me);
+			me.startState = saveStart;
+		}
+	};
+
+	// drag ended for draw
+	View.prototype.dragEndDraw = function(me) {
+		// end of edit
+		if (me.currentEdit.length > 0) {
+			me.afterEdit();
+		}
+		// resume playback if required
+		if (me.playbackDrawPause) {
+			me.generationOn = true;
+			me.playbackDrawPause = false;
+		}
+	};
+
 	// view menu background drag
 	View.prototype.viewDoDrag = function(x, y, dragOn, me, fromKey) {
-		var dx = 0,
-		    dy = 0,
-		    angle = 0,
-		    sinAngle = 0,
-			cosAngle = 0,
-			saveStart = 0;
-
 		// check if this is a drag or cancel drag
 		if (dragOn) {
-			if (me.displayHelp || me.displayErrors || !me.drawing || fromKey) {
-				// check if this is the start of a drag
-				if (me.lastDragX !== -1) {
-					// check if help is displayed
-					if (me.displayHelp) {
-						// compute the movement
-						dy = (me.lastDragY - y);
-						dy /= ViewConstants.fontSize;
-	
-						// scroll help text
-						if (dy > 0) {
-							me.scrollHelpDown(me, dy);
-						} else {
-							if (dy < 0) {
-								me.scrollHelpUp(me, -dy);
-							}
-						}
-					} else {
-						// check if errors are displayed
-						if (me.displayErrors) {
-							// compute the movement
-							dy = (me.lastDragY - y);
-							dy /= ViewConstants.fontSize;
-	
-							// scroll errors
-							if (dy > 0) {
-								me.scrollErrorsDown(me, dy);
-							} else {
-								if (dy < 0) {
-									me.scrollErrorsUp(me, -dy);
-								}
-							}
-						} else {
-							if (!me.selecting) {
-								// compute the movement
-								dx = (me.lastDragX - x) / me.engine.camZoom;
-								dy = ((me.lastDragY - y) / me.engine.camZoom) / ((me.engine.isTriangular && me.engine.camZoom >= 4) ? ViewConstants.sqrt3 : 1);
-		
-								// check for hex
-								if (me.engine.isHex || me.engine.isTriangular) {
-									angle = 0;
-								} else {
-									angle = -me.engine.angle;
-								}
-		
-								// only update position if controls not locked
-								if (!me.controlsLocked) {
-									// compute x and y
-									sinAngle = Math.sin(angle / 180 * Math.PI);
-									cosAngle = Math.cos(angle / 180 * Math.PI);
-		
-									// set manual change happened
-									me.manualChange = true;
-		
-									// update position
-									me.engine.xOff += dx * cosAngle + dy * (-sinAngle);
-									me.engine.yOff += dx * sinAngle + dy * cosAngle;
-								}
-							}
-						}
-					}
-				}
+			// check if help is displayed
+			if (me.displayHelp) {
+				me.dragHelp(me, y);
 			} else {
-				// check if drawing (and window has focus - to prevent drawing when clicking to gain focus)
-				if (me.drawing && x !== -1 && y !== -1 && !me.pickMode && !me.selecting && me.menuManager.hasFocus) {
-					// draw cells
-					me.drawCells(x, y, me.lastDragX, me.lastDragY);
-					// suspend playback
-					if (me.generationOn && me.pauseWhileDrawing) {
-						me.generationOn = false;
-						me.playbackDrawPause = true;
+				// check if errors are displayed
+				if (me.displayErrors) {
+					me.dragErrors(me, y);
+				} else {
+					// check if panning
+					if (!(me.drawing || me.selecting) || fromKey) {
+						me.dragPan(me, x, y);
+					} else {
+						// check if drawing
+						if (me.drawing || fromKey) {
+							// drawing
+							me.dragDraw(me, x, y);
+						} else {
+							if (me.selecting) {
+								// selecting
+								me.dragSelect(me, x, y);
+							}
+						}
 					}
 				}
 			}
@@ -5794,34 +5918,23 @@
 			me.lastDragX = x;
 			me.lastDragY = y;
 		} else {
-			// drag finished so check for pick mode
-			if (!fromKey) {
-				if (me.pickMode === true) {
-					if (x!== -1 && y !== -1) {
-						me.justPicked = true;
-						me.penColour = me.readCell();
-						// clear start state for pick
-						saveStart = me.startState;
-						me.startState = 0;
-						me.stateList.current = me.viewStateList(me.penColour, true, me);
-						// restore start state
-						me.startState = saveStart;
-					}
+			// drag finished so check for drawing
+			if (me.drawing) {
+				// see if pick mode was active
+				if (me.pickMode) {
+					me.dragEndPick(me, x, y);
 				} else {
-					// check for secting
-					if (!me.selecting) {
-						// end of edit
-						if (me.currentEdit.length > 0) {
-							me.afterEdit();
-						}
-						// resume playback if required
-						if (me.playbackDrawPause) {
-							me.generationOn = true;
-							me.playbackDrawPause = false;
-						}
-					}
+					// end of drawing
+					me.dragEndDraw(me);
+				}
+			} else {
+				if (me.selecting) {
+					// end of selecting
+					me.dragEndSelect(me, x, y);
 				}
 			}
+
+			// clear last drag position
 			me.lastDragX = -1;
 			me.lastDragY = -1;
 		}
@@ -9018,11 +9131,8 @@
 
 		// check whether to disable drawing
 		if (this.viewOnly || this.engine.isNone) {
-			this.modeList.itemLocked[0] = true;
+			this.modeList.itemLocked[ViewConstants.modeDraw] = true;
 		}
-
-		// disable select until implemented !!! TBD
-		this.modeList.itemLocked[ViewConstants.modeSelect] = true;
 
 		// if standard view mode then reset colour grid and population
 		if (this.multiStateView) {
