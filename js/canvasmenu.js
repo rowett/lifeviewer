@@ -2006,7 +2006,7 @@
 						if (currentItem.type !== Menu.label) {
 							activeItem = i;
 							if (this.clickHappened) {
-								currentItem.lastMouseDown = i;
+								currentItem.lastMouseDown = true;
 							}
 						}
 					}

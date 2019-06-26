@@ -5901,14 +5901,17 @@
 
 	// drag ended for draw
 	View.prototype.dragEndDraw = function(me) {
-		// end of edit
-		if (me.currentEdit.length > 0) {
-			me.afterEdit();
-		}
 		// resume playback if required
 		if (me.playbackDrawPause) {
 			me.generationOn = true;
 			me.playbackDrawPause = false;
+
+			// set the auto update mode
+			me.menuManager.setAutoUpdate(true);
+		}
+		// end of edit
+		if (me.currentEdit.length > 0) {
+			me.afterEdit();
 		}
 	};
 
@@ -5929,7 +5932,7 @@
 						me.dragPan(me, x, y);
 					} else {
 						// check if drawing
-						if (me.drawing || fromKey) {
+						if (me.drawing) {
 							// drawing
 							me.dragDraw(me, x, y);
 						} else {
