@@ -1,3 +1,11 @@
+Build 355
+- selections now support:
+	- flip X
+	- flip Y
+	- rotate clockwise
+	- rotate counter-clockwise
+	- random fill with user defined density from 0% to 100%
+
 Build 354
 - fixed selecting drawing state
 - disable starting playback while mid-draw

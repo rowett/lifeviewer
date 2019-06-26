@@ -216,7 +216,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 354,
+		/** @const {number} */ versionBuild : 355,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -545,6 +545,9 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// random density for fill
+		this.randomDensity = 0.5;
+
 		// selection box
 		this.selectionBox = new BoundingBox();
 
@@ -1374,6 +1377,9 @@
 		// random button
 		this.randomButton = null;
 
+		// random density slider
+		this.randomItem = null;
+
 		// cut button
 		this.cutButton = null;
 
@@ -1604,7 +1610,11 @@
 				}
 				tooltip += " from " + gen;
 			} else {
-				tooltip += "edit";
+				if (list[edit - 1].action === "") {
+					tooltip += "edit";
+				} else {
+					tooltip += list[edit - 1].action;
+				}
 			}
 			this.undoButton.toolTip = tooltip;
 		}
@@ -1621,14 +1631,18 @@
 				}
 				tooltip += " to " + gen;
 			} else {
-				tooltip += "edit";
+				if (list[edit].action === "") {
+					tooltip += "edit";
+				} else {
+					tooltip += list[edit].action;
+				}
 			}
 			this.redoButton.toolTip = tooltip;
 		}
 	};
 
 	// after edit
-	View.prototype.afterEdit = function() {
+	View.prototype.afterEdit = function(comment) {
 		var wasChange = true,
 			counter = this.engine.counter;
 
@@ -1646,7 +1660,7 @@
 			// check if there was a change
 			if (wasChange) {
 				// create new edit and undo record
-				this.editList[this.editNum] = {gen: counter, redoCells: this.currentEdit.slice(), undoCells: this.currentUndo.slice()};
+				this.editList[this.editNum] = {gen: counter, redoCells: this.currentEdit.slice(), undoCells: this.currentUndo.slice(), action: comment};
 				this.editNum += 1;
 		
 				// clear current edit and undo records
@@ -2599,6 +2613,16 @@
 		}
 
 		return [result, result * 100];
+	};
+
+	// random density range
+	View.prototype.viewRandomRange = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			me.randomDensity = newValue[0];
+		}
+
+		return [me.randomDensity, me.randomDensity * 100];
 	};
 
 	// states range
@@ -3816,7 +3840,7 @@
 
 		// check for single step
 		if (me.nextStep && !me.generationOn) {
-			me.afterEdit();
+			me.afterEdit("");
 		}
 
 		// lock or unlock the controls
@@ -4290,6 +4314,7 @@
 		this.rotateCWButton.deleted = shown;
 		this.rotateCCWButton.deleted = shown;
 		this.randomButton.deleted = shown;
+		this.randomItem.deleted = shown;
 
 		// lock select tools
 		shown = !this.isSelection;
@@ -5438,7 +5463,7 @@
 				}
 
 				// reset
-				me.afterEdit();
+				me.afterEdit("");
 				me.reset(me);
 
 				// reset undo/redo list
@@ -5558,7 +5583,7 @@
 				if (!me.generationOn) {
 					// play
 					me.generationOn = true;
-					me.afterEdit();
+					me.afterEdit("");
 
 					// set flag whether pattern was empty and playback is on
 					if (me.engine.population === 0) {
@@ -5572,7 +5597,7 @@
 				} else {
 					// pause
 					me.generationOn = false;
-					me.afterEdit();
+					me.afterEdit("");
 
 					// zoom text unless STOP and generation notifications disabled
 					if (!(me.engine.counter === me.stopGeneration && !me.genNotifications)) {
@@ -5595,7 +5620,7 @@
 				} else {
 					// pause
 					me.generationOn = false;
-					me.afterEdit();
+					me.afterEdit("");
 
 					// zoom text
 					me.menuManager.notification.notify("Pause", 15, 40, 15, true);
@@ -5608,7 +5633,7 @@
 				if (me.generationOn) {
 					// pause
 					me.generationOn = false;
-					me.afterEdit();
+					me.afterEdit("");
 
 					// zoom text unless STOP and generation notifications disabled
 					if (!(me.engine.counter === me.stopGeneration && !me.genNotifications)) {
@@ -5617,7 +5642,7 @@
 				} else {
 					// step
 					me.nextStep = true;
-					me.afterEdit();
+					me.afterEdit("");
 
 					// set flag whether pattern was empty and playback is on
 					if (me.engine.population === 0) {
@@ -5910,7 +5935,7 @@
 		}
 		// end of edit
 		if (me.currentEdit.length > 0) {
-			me.afterEdit();
+			me.afterEdit("");
 		}
 	};
 
@@ -6473,22 +6498,244 @@
 
 	// random pressed
 	View.prototype.randomPressed = function(me) {
+		var box = me.selectionBox,
+			x1 = box.leftX,
+			x2 = box.rightX,
+			y1 = box.bottomY,
+			y2 = box.topY,
+			x = 0,
+			y = 0,
+			state = 0,
+			swap = 0;
+
+		// check for selection
+		if (me.isSelection) {
+			if (x1 > x2) {
+				swap = x2;
+				x2 = x1;
+				x1 = swap;
+			}
+			if (y1 > y2) {
+				swap = y2;
+				y2 = y1;
+				y1 = swap;
+			}
+
+			// draw random cells
+			for (y = y1; y <= y2; y += 1) {
+				for (x = x1; x <= x2; x += 1) {
+					if (me.randomDensity > 0 && (myRand.random() <= me.randomDensity)) {
+						state = 1;
+					} else {
+						state = 0;
+					}
+					me.setStateWithUndo(x, y, state, true);
+				}
+			}
+
+			// save edit
+			me.afterEdit("random");
+		}
 	};
 
 	// flip X pressed
 	View.prototype.flipXPressed = function(me) {
+		var box = me.selectionBox,
+			x1 = box.leftX,
+			x2 = box.rightX,
+			y1 = box.bottomY,
+			y2 = box.topY,
+			x = 0,
+			y = 0,
+			swap = 0,
+			row = [];
+
+		// check for selection
+		if (me.isSelection) {
+			if (x1 > x2) {
+				swap = x2;
+				x2 = x1;
+				x1 = swap;
+			}
+			if (y1 > y2) {
+				swap = y2;
+				y2 = y1;
+				y1 = swap;
+			}
+
+			// flip each row
+			for (y = y1; y <= y2; y += 1) {
+				// read the row
+				for (x = x1; x <= x2; x += 1) {
+					row[x - x1] = me.engine.getState(x, y, false);
+				}
+				// write the row back in reverse order
+				for (x = x1; x <= x2; x += 1) {
+					me.setStateWithUndo(x, y, row[x2 - x], true);
+				}
+			}
+
+			// save edit
+			me.afterEdit("flip horizontally");
+		}
 	};
 
 	// flip Y pressed
 	View.prototype.flipYPressed = function(me) {
+		var box = me.selectionBox,
+			x1 = box.leftX,
+			x2 = box.rightX,
+			y1 = box.bottomY,
+			y2 = box.topY,
+			x = 0,
+			y = 0,
+			swap = 0,
+			column = [];
+
+		// check for selection
+		if (me.isSelection) {
+			if (x1 > x2) {
+				swap = x2;
+				x2 = x1;
+				x1 = swap;
+			}
+			if (y1 > y2) {
+				swap = y2;
+				y2 = y1;
+				y1 = swap;
+			}
+
+			// flip each column
+			for (x = x1; x <= x2; x += 1) {
+				// read the column
+				for (y = y1; y <= y2; y += 1) {
+					column[y - y1] = me.engine.getState(x, y, false);
+				}
+				// write the column back in reverse order
+				for (y = y1; y <= y2; y += 1) {
+					me.setStateWithUndo(x, y, column[y2 - y], true);
+				}
+			}
+
+			// save edit
+			me.afterEdit("flip vertically");
+		}
+	};
+
+	// rotate selection
+	View.prototype.rotateSelection = function(me, transform, comment) {
+		var box = me.selectionBox,
+			x1 = box.leftX,
+			x2 = box.rightX,
+			y1 = box.bottomY,
+			y2 = box.topY,
+			x = 0,
+			y = 0,
+			swap = 0,
+			cells = [],
+			trans = me.transforms[transform],
+			axx = trans[0],
+			axy = trans[1],
+			ayx = trans[2],
+			ayy = trans[3],
+			state = 0,
+			tx = 0,
+			ty = 0,
+			i = 0,
+			cx = 0,
+			cy = 0;
+
+		// check for selection
+		if (me.isSelection) {
+			if (x1 > x2) {
+				swap = x2;
+				x2 = x1;
+				x1 = swap;
+			}
+			if (y1 > y2) {
+				swap = y2;
+				y2 = y1;
+				y1 = swap;
+			}
+
+			// compute center of rotation
+			cx = x1 + ((x2 - x1 + 1) >> 1);
+			cy = y1 + ((y2 - y1 + 1) >> 1);
+
+			// read each cell in the selection and rotate coordinates
+			for (y = y1; y <= y2; y += 1) {
+				for (x = x1; x <= x2; x += 1) {
+					tx = (x - cx) * axx + (y - cy) * axy + cx;
+					ty = (x - cx) * ayx + (y - cy) * ayy + cy;
+					state = me.engine.getState(x, y, false);
+					cells[i] = {x: tx, y: ty, state: state};
+					i += 1;
+				}
+			}
+
+			// write the cells to their new positions
+			i = 0;
+			while (i < cells.length) {
+				x = cells[i].x;
+				y = cells[i].y;
+				state = cells[i].state;
+				if (me.engine.getState(x, y, false) !== state) {
+					me.setStateWithUndo(x, y, state, true);
+				}
+				i += 1;
+			}
+
+			// transform selection
+			box.leftX = (x1 - cx) * axx + (y1 - cy) * axy + cx;
+			box.bottomY = (x1 - cx) * ayx + (y1 - cy) * ayy + cy;
+			box.rightX = (x2 - cx) * axx + (y2 - cy) * axy + cx;
+			box.topY = (x2 - cx) * ayx + (y2 - cy) * ayy + cy;
+			if (box.leftX > box.rightX) {
+				swap = box.leftX;
+				box.leftX = box.rightX;
+				box.rightX = swap;
+			}
+			if (box.bottomY > box.topY) {
+				swap = box.bottomY;
+				box.bottomY = box.topY;
+				box.topY = swap;
+			}
+
+			// clear any overlap
+			for (x = x1; x < box.leftX; x += 1) {
+				for (y = y1; y <= y2; y += 1) {
+					me.setStateWithUndo(x, y, 0, true);
+				}
+			}
+			for (x = box.rightX + 1; x <= x2; x += 1) {
+				for (y = y1; y <= y2; y += 1) {
+					me.setStateWithUndo(x, y, 0, true);
+				}
+			}
+			for (y = y1; y < box.bottomY; y += 1) {
+				for (x = x1; x <= x2; x += 1) {
+					me.setStateWithUndo(x, y, 0, true);
+				}
+			}
+			for (y = box.topY + 1; y <= y2; y += 1) {
+				for (x = x1; x <= x2; x += 1) {
+					me.setStateWithUndo(x, y, 0, true);
+				}
+			}
+
+			// save edit
+			me.afterEdit(comment);
+		}
 	};
 
 	// rotate CW pressed
 	View.prototype.rotateCWPressed = function(me) {
+		me.rotateSelection(me, ViewConstants.transRotateCW, "rotate clockwisej");
 	};
 
 	// rotate CCW pressed
 	View.prototype.rotateCCWPressed = function(me) {
+		me.rotateSelection(me, ViewConstants.transRotateCCW, "rotate counter-clockwise");
 	};
 
 	// fit button
@@ -7696,7 +7943,7 @@
 		this.libraryButton.toolTip = "library";
 
 		// paste mode list
-		this.pasteModeList = this.viewMenu.addListItem(this.viewPasteModeList, Menu.northEast, -40, 45, 40, 160, ["Or", "Cpy", "Xor", "And"], this.pasteModeForUI, Menu.single);
+		this.pasteModeList = this.viewMenu.addListItem(this.viewPasteModeList, Menu.northEast, -40, 150, 40, 160, ["Or", "Cpy", "Xor", "And"], this.pasteModeForUI, Menu.single);
 		this.pasteModeList.textOrientation = Menu.horizontal;
 		this.pasteModeList.toolTip = ["OR mode", "Copy mode", "XOR mode", "AND mode"];
 		this.pasteModeList.font = "16px Arial";
@@ -7716,30 +7963,34 @@
 		this.pasteButton.icon = this.iconManager.icon("paste");
 		this.pasteButton.toolTip = "paste";
 
-		// add the random button
-		this.randomButton = this.viewMenu.addButtonItem(this.randomPressed, Menu.northEast, -265, 45, 40, 40, "");
-		this.randomButton.icon = this.iconManager.icon("random");
-		this.randomButton.toolTip = "random fill";
-
 		// add the flip X button
-		this.flipXButton = this.viewMenu.addButtonItem(this.flipXPressed, Menu.northEast, -220, 45, 40, 40, "");
+		this.flipXButton = this.viewMenu.addButtonItem(this.flipXPressed, Menu.northEast, -265, 45, 40, 40, "");
 		this.flipXButton.icon = this.iconManager.icon("flipx");
-		this.flipXButton.toolTip = "flip X";
+		this.flipXButton.toolTip = "flip horizontally";
 
 		// add the flip Y button
-		this.flipYButton = this.viewMenu.addButtonItem(this.flipYPressed, Menu.northEast, -175, 45, 40, 40, "");
+		this.flipYButton = this.viewMenu.addButtonItem(this.flipYPressed, Menu.northEast, -220, 45, 40, 40, "");
 		this.flipYButton.icon = this.iconManager.icon("flipy");
-		this.flipYButton.toolTip = "flip Y";
+		this.flipYButton.toolTip = "flip vertically";
 
 		// add the rotate clockwise button
-		this.rotateCWButton = this.viewMenu.addButtonItem(this.rotateCWPressed, Menu.northEast, -130, 45, 40, 40, "");
+		this.rotateCWButton = this.viewMenu.addButtonItem(this.rotateCWPressed, Menu.northEast, -175, 45, 40, 40, "");
 		this.rotateCWButton.icon = this.iconManager.icon("rotatecw");
 		this.rotateCWButton.toolTip = "rotate clockwise";
 
 		// add the rotate counter-clockwise button
-		this.rotateCCWButton = this.viewMenu.addButtonItem(this.rotateCCWPressed, Menu.northEast, -85, 45, 40, 40, "");
+		this.rotateCCWButton = this.viewMenu.addButtonItem(this.rotateCCWPressed, Menu.northEast, -130, 45, 40, 40, "");
 		this.rotateCCWButton.icon = this.iconManager.icon("rotateccw");
 		this.rotateCCWButton.toolTip = "rotate counter-clockwise";
+
+		// add the random button
+		this.randomButton = this.viewMenu.addButtonItem(this.randomPressed, Menu.northEast, -85, 45, 40, 40, "");
+		this.randomButton.icon = this.iconManager.icon("random");
+		this.randomButton.toolTip = "random fill";
+
+		// add the random density slider
+		this.randomItem = this.viewMenu.addRangeItem(this.viewRandomRange, Menu.northEast, -40, 45, 40, 100, 0, 1, this.randomDensity, true, "", "%", 0);
+		this.randomItem.toolTip = "random density";
 
 		// add items to the main toggle menu
 		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
@@ -8739,6 +8990,9 @@
 		// turn off draw mode
 		this.modeList.current = this.viewModeList(ViewConstants.modePan, true, this);
 
+		// set random density to 50%
+		this.randomItem.current = this.viewRandomRange([0.5, 0.5], true, this);
+
 		// update help UI
 		this.helpToggle.current = this.toggleHelp([this.displayHelp], true, this);
 
@@ -9171,7 +9425,7 @@
 		}
 
 		// disable select mode until implemented TBD !!!
-		this.modeList.itemLocked[ViewConstants.modeSelect] = true;
+		//this.modeList.itemLocked[ViewConstants.modeSelect] = true;
 
 		// if standard view mode then reset colour grid and population
 		if (this.multiStateView) {
