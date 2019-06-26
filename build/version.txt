@@ -1,3 +1,7 @@
+Build 354
+- fixed selecting drawing state
+- disable starting playback while mid-draw
+
 Build 353
 - hide Draw, Graph and Select menus when Settings open
 - selection size display (width x height)

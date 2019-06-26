@@ -216,7 +216,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 353,
+		/** @const {number} */ versionBuild : 354,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5352,10 +5352,12 @@
 					}
 				}
 			}
-			me.menuManager.notification.notify("Drawing with state " + newValue + " (" + name + ")", 15, 120, 15, true);
 
 			// turn off pick mode
 			me.pickToggle.current = me.togglePick([false], true, me);
+
+			// notify after switching mode since switching clears notifications
+			me.menuManager.notification.notify("Drawing with state " + newValue + " (" + name + ")", 15, 120, 15, true);
 		}
 
 		return result;
@@ -5823,17 +5825,14 @@
 
 	// drag draw
 	View.prototype.dragDraw = function(me, x, y) {
-		// draw
-		if (me.lastDragY !== -1) {
-			// check if on window (and window has focus - to prevent drawing when clicking to gain focus)
-			if (x !== -1 && y !== -1 && me.menuManager.hasFocus && !me.pickMode) {
-				// draw cells
-				me.drawCells(x, y, me.lastDragX, me.lastDragY);
-				// suspend playback
-				if (me.generationOn && me.pauseWhileDrawing) {
-					me.generationOn = false;
-					me.playbackDrawPause = true;
-				}
+		// check if on window (and window has focus - to prevent drawing when clicking to gain focus)
+		if (x !== -1 && y !== -1 && me.menuManager.hasFocus && !me.pickMode) {
+			// draw cells
+			me.drawCells(x, y, me.lastDragX, me.lastDragY);
+			// suspend playback
+			if (me.generationOn && me.pauseWhileDrawing) {
+				me.generationOn = false;
+				me.playbackDrawPause = true;
 			}
 		}
 	};

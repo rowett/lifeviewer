@@ -236,8 +236,11 @@
 						// switch to pause
 						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 					} else {
-						// switch to play
-						me.playList.current = me.viewPlayList(ViewConstants.modePlay, true, me);
+						// check for drawing and mouse down
+						if (!(me.drawing && me.menuManager.mouseDown)) {
+							// switch to play
+							me.playList.current = me.viewPlayList(ViewConstants.modePlay, true, me);
+						}
 					}
 				}
 				break;
