@@ -1341,6 +1341,9 @@
 		// xy label
 		this.xyLabel = null;
 
+		// selection size label
+		this.selSizeLabel = null;
+
 		// population label and value
 		this.popLabel = null;
 		this.popValue = null;
@@ -3350,6 +3353,24 @@
 			// hide the coordinates
 			this.xyLabel.enabled = false;
 		}
+
+		// draw selection size
+		if (this.isSelection || this.drawingSelection) {
+			this.selSizeLabel.enabled = true;
+			if (this.selectionBox.rightX > this.selectionBox.leftX) {
+				xPos = this.selectionBox.rightX - this.selectionBox.leftX + 1;
+			} else {
+				xPos = this.selectionBox.leftX - this.selectionBox.rightX + 1;
+			}
+			if (this.selectionBox.topY > this.selectionBox.bottomY) {
+				yPos = this.selectionBox.topY - this.selectionBox.bottomY + 1;
+			} else {
+				yPos = this.selectionBox.bottomY - this.selectionBox.topY + 1;
+			}
+			this.selSizeLabel.preText = xPos + " x " + yPos; 
+		} else {
+			this.selSizeLabel.enabled = false;
+		}
 	};
 
 	// process mouse wheel
@@ -3864,6 +3885,11 @@
 			me.screenShotScheduled = 0;
 		}
 
+		// check whether to draw selection
+		if (me.isSelection) {
+			me.engine.drawSelection(me.selectionBox);
+		}
+
 		// check if grid buffer needs to grow
 		if (me.engine.counter && me.engine.anythingAlive) {
 			borderSize = ViewConstants.maxStepSpeed;
@@ -4157,7 +4183,7 @@
 		shown = hide || this.infinitelyBounded();
 		this.birthsLabel.deleted = shown;
 		this.birthsValue.deleted = shown;
-		shown |= this.finitelyBounded();
+		shown = shown || this.finitelyBounded();
 		this.deathsLabel.deleted = shown;
 		this.deathsValue.deleted = shown;
 		this.ruleLabel.deleted = hide;
@@ -5826,15 +5852,18 @@
 				// if button released without mouse moving
 				me.selectStartX = x;
 				me.selectStartY = y;
+				me.isSelection = false;
 			} else {
 				// check if there is a selection being drawn
 				if (!me.drawingSelection) {
-					// create a selection
-					me.drawingSelection = true;
-					box.leftX = this.cellX;
-					box.rightX = this.cellY;
-					box.bottomY = this.cellX;
-					box.topY = this.cellY;
+					if (x !== me.selectStartX || y !== me.selectStartY) {
+						// create a selection
+						me.drawingSelection = true;
+						box.leftX = this.cellX;
+						box.rightX = this.cellX;
+						box.bottomY = this.cellY;
+						box.topY = this.cellY;
+					}
 				} else {
 					// extend selection
 					box.rightX = this.cellX;
@@ -5845,12 +5874,11 @@
 	};
 
 	// drag ended for select
-	View.prototype.dragEndSelect = function(me, x, y) {
-		me.drawingSelection = false;
-
+	View.prototype.dragEndSelect = function(me) {
 		// check if a selection was made
-		if (x !== me.selectStartX || y !== me.selectStartY) {
+		if (me.drawingSelection) {
 			me.isSelection = true;
+			me.drawingSelection = false;
 		} else {
 			me.isSelection = false;
 		}
@@ -5930,7 +5958,7 @@
 			} else {
 				if (me.selecting) {
 					// end of selecting
-					me.dragEndSelect(me, x, y);
+					me.dragEndSelect(me);
 				}
 			}
 
@@ -7415,6 +7443,12 @@
 		this.elapsedTimeLabel.textAlign = Menu.right;
 		this.elapsedTimeLabel.font = ViewConstants.statsFont;
 		this.elapsedTimeLabel.toolTip = "elapsed time";
+
+		// add the selection size label
+		this.selSizeLabel = this.viewMenu.addLabelItem(Menu.southWest, 166, -70, 130, 30, "");
+		this.selSizeLabel.textAlign = Menu.left;
+		this.selSizeLabel.font = ViewConstants.statsFont;
+		this.selSizeLabel.toolTip = "selection size";
 
 		// add the cursor position labels
 		this.xyLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -70, 166, 30, "");
@@ -9218,6 +9252,9 @@
 		} else {
 			this.xyLabel.width = 140;
 		}
+		// set the selection size label just to the right of the xy label
+		this.selSizeLabel.x = this.xyLabel.width;
+		this.selSizeLabel.relX = this.xyLabel.width;
 
 		// set the [R]History toggle UI control
 		this.rHistoryButton.locked = !this.engine.isLifeHistory;

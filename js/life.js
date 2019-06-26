@@ -682,6 +682,12 @@
 		/** @type {number} */ this.numCells = 0;
 	}
 
+	// draw selection
+	Life.prototype.drawSelection = function() {
+		// TBD !!!
+
+	};
+
 	// draw triangles 
 	Life.prototype.drawTriangles = function() {
 		var colourGrid = this.colourGrid,

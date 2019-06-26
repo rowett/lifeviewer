@@ -30,7 +30,8 @@ LifeViewer features:
 * Multiple ways to automatically track patterns as they evolve.
 * Script language that allows many features to be customized including Waypoint animations and POIs.
 * Support for multiple embedded LifeViewers and/or a single popup LifeViewer.
-* Simple editor with undo/redo.
+* Ability to step back to earlier generations.
+* Editor with unlimitied undo/redo.
 
 
 LifeViewer supports several different pattern formats, rules and neighbourhoods, as well as bounded grids.
