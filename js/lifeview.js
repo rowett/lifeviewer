@@ -9171,6 +9171,9 @@
 			this.modeList.itemLocked[ViewConstants.modeDraw] = true;
 		}
 
+		// disable select mode until implemented TBD !!!
+		this.modeList.itemLocked[ViewConstants.modeSelect] = true;
+
 		// if standard view mode then reset colour grid and population
 		if (this.multiStateView) {
 			// check if the pattern loaded

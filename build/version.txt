@@ -1,7 +1,7 @@
 Build 353
 - hide Draw, Graph and Select menus when Settings open
-- selection size is displayed (width x height)
-- sometimes finish drag events were not being delivered
+- selection size display (width x height)
+- sometimes playback wasn't resuming after auto-paused during drawing
 
 Build 352
 - do not draw when clicking to get window focus
