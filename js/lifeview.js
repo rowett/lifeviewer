@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global BoundingBox Allocator Uint8 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager ScriptParser Uint32Array myRand PopupWindow typedArrays Float32 */
+	/* global BoundingBox Allocator Uint8 Int16 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager ScriptParser Uint32Array myRand PopupWindow typedArrays Float32 */
 
 	// LifeViewer document configuration
 	var DocConfig = {
@@ -1549,21 +1549,27 @@
 	// paste raw cells for undo/redo
 	View.prototype.pasteRaw = function(cells, reverse) {
 		var i = 0,
-			target = cells.length,
+			target = 0,
 			di = 3,
 			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
 			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1);
 
-		// check for reverse order
-		if (reverse) {
-			di = -di;
-			i = target + di;
-			target = di;
-		}
+		// check for cells
+		if (cells) {
+			// get the number of cells
+			target = cells.length;
 
-		while (i !== target) {
-			this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2], true);
-			i += di;
+			// check for reverse order
+			if (reverse) {
+				di = -di;
+				i = target + di;
+				target = di;
+			}
+	
+			while (i !== target) {
+				this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2], true);
+				i += di;
+			}
 		}
 	};
 
@@ -1598,7 +1604,7 @@
 		// update undo tooltip
 		if (edit > 0) {
 			tooltip = "undo ";
-			if (list[edit - 1].undoCells.length === 0) {
+			if (list[edit - 1].undoCells === null) {
 				gen = list[edit - 1].gen;
 				if (edit > 1) {
 					gen = list[edit - 2].gen;
@@ -1622,7 +1628,7 @@
 		// update redo tooltip
 		if (edit < num) {
 			tooltip = "redo ";
-			if (list[edit].redoCells.length === 0) {
+			if (list[edit].redoCells === null) {
 				gen = list[edit].gen;
 				if (gen - this.engine.counter > 1) {
 					tooltip += "play";
@@ -1644,7 +1650,9 @@
 	// after edit
 	View.prototype.afterEdit = function(comment) {
 		var wasChange = true,
-			counter = this.engine.counter;
+			counter = this.engine.counter,
+			redoCells = null,
+			undoCells = null;
 
 		// do nothing if step back disabled
 		if (!this.noHistory) {
@@ -1659,13 +1667,21 @@
 	
 			// check if there was a change
 			if (wasChange) {
+				// allocate memory for redo and undo cells and populate
+				if (this.currentEdit.length > 0) {
+					redoCells = this.engine.allocator.allocate(Int16, this.currentEdit.length, "View.redoCells" + this.editNum);
+					undoCells = this.engine.allocator.allocate(Int16, this.currentUndo.length, "View.undoCells" + this.editNum);
+					redoCells.set(this.currentEdit);
+					undoCells.set(this.currentUndo);
+
+					// clear current edit and undo records
+					this.currentEdit = [];
+					this.currentUndo = [];
+				}
+
 				// create new edit and undo record
-				this.editList[this.editNum] = {gen: counter, redoCells: this.currentEdit.slice(), undoCells: this.currentUndo.slice(), action: comment};
+				this.editList[this.editNum] = {gen: counter, redoCells: redoCells, undoCells: undoCells, action: comment};
 				this.editNum += 1;
-		
-				// clear current edit and undo records
-				this.currentEdit = [];
-				this.currentUndo = [];
 			}
 
 			// this is now the latest edit
@@ -1698,7 +1714,7 @@
 				// pop the top record
 				record = me.editList[current - 1];
 				gen = record.gen;
-				if (record.undoCells.length === 0) {
+				if (record.undoCells === null) {
 					if (current > 1) {
 						gen = me.editList[current - 2].gen;
 					}
@@ -1737,7 +1753,7 @@
 		if (!me.noHistory) {
 			// check for redo records
 			if (me.editNum < me.numEdits) {
-				if (me.editList[me.editNum].gen === counter && me.editList[me.editNum].redoCells.length === 0) {
+				if (me.editList[me.editNum].gen === counter && me.editList[me.editNum].redoCells === null) {
 					me.editNum += 1;
 				}
 				// if it is for a later generation then go there
@@ -4180,7 +4196,7 @@
 
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
-		this.undoButton.locked = (this.editNum === 0 || (this.editNum === 1 && this.numEdits > 1 && this.editList[0].gen === 0 && this.editList[0].redoCells.length === 0 && this.engine.counter === 0));
+		this.undoButton.locked = (this.editNum === 0 || (this.editNum === 1 && this.numEdits > 1 && this.editList[0].gen === 0 && this.editList[0].redoCells === null && this.engine.counter === 0));
 
 		// top menu buttons
 		this.autoFitToggle.deleted = hide;
@@ -8743,6 +8759,10 @@
 		} else {
 			this.isEdge = false;
 		}
+
+		// clear any selection
+		this.isSelection = false;
+		this.drawingSelection = false;
 
 		// set default select type
 		this.selectTypeList.current = this.viewSelectTypeList(ViewConstants.selectTypeRectangle, true, this);
