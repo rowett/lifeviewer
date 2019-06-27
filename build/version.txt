@@ -5,6 +5,8 @@ Build 355
 	- rotate clockwise
 	- rotate counter-clockwise
 	- random fill with user defined density from 0% to 100%
+- opening help will close settings and vice versa
+- fixed an issue with redo and snapshots
 
 Build 354
 - fixed selecting drawing state

@@ -966,7 +966,7 @@
 			result = this.snapshots[this.index];
 
 			// check if the snapshot is before the required generation
-			if (result.counter > generation) {
+			while (result && result.counter > generation) {
 				result = null;
 
 				// check if this is the only snapshot

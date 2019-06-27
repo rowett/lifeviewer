@@ -37,6 +37,11 @@ In progress:
         - square selection
         - within 1-cell selection
         - name selection
+        - flip X selection
+        - flip Y selection
+        - rotate CW selection
+        - rotate CCW selection
+        - random fill selection
         - copy library or named snippet to buffer
         - copy selection to buffer
         - cut selection to buffer

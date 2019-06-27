@@ -1740,8 +1740,9 @@
 				if (me.editList[me.editNum].gen === counter && me.editList[me.editNum].redoCells.length === 0) {
 					me.editNum += 1;
 				}
+				// if it is for a later generation then go there
 				if (me.editList[me.editNum].gen > counter) {
-					me.runTo(me.editList[me.editNum].gen);
+					me.runForwardTo(me.editList[me.editNum].gen);
 				} else {
 					// paste cells in forward order
 					me.pasteRaw(me.editList[me.editNum].redoCells, true);
@@ -5864,7 +5865,20 @@
 
 	// drag select
 	View.prototype.dragSelect = function(me, x, y) {
-		var box = me.selectionBox;
+			// selection box
+		var box = me.selectionBox,
+
+			// offset to middle of grid
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+
+		    // bounded grid top left
+		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2),
+		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2),
+
+		    // bounded grid bottom right
+		    /** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
+			/** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1;
 
 		if (x !== -1 && y !== -1) {
 			// convert display coordinates to cell location
@@ -5883,15 +5897,50 @@
 					if (x !== me.selectStartX || y !== me.selectStartY) {
 						// create a selection
 						me.drawingSelection = true;
-						box.leftX = this.cellX;
-						box.rightX = this.cellX;
-						box.bottomY = this.cellY;
-						box.topY = this.cellY;
+						box.leftX = me.cellX - xOff;
+						box.rightX = box.leftX;
+						box.bottomY = me.cellY - yOff;
+						box.topY = box.bottomY;
 					}
 				} else {
 					// extend selection
-					box.rightX = this.cellX;
-					box.topY = this.cellY;
+					box.rightX = me.cellX - xOff;
+					box.topY = me.cellY - yOff;
+				}
+
+				// clip to bounded grid if specified
+				if (me.drawingSelection && me.engine.boundedGridType !== -1) {
+					// adjust for mid-grid
+					leftX -= xOff;
+					rightX -= xOff;
+					bottomY -= yOff;
+					topY -= yOff;
+
+					// test against grid boundaries
+					if (box.leftX < leftX) {
+						box.leftX = leftX;
+					}
+					if (box.leftX > rightX) {
+						box.rightX = rightX;
+					}
+					if (box.rightX < leftX) {
+						box.rightX = leftX;
+					}
+					if (box.rightX > rightX) {
+						box.rightX = rightX;
+					}
+					if (box.bottomY < bottomY) {
+						box.bottomY = bottomY;
+					}
+					if (box.bottomY > topY) {
+						box.bottomY = topY;
+					}
+					if (box.topY < bottomY) {
+						box.topY = bottomY;
+					}
+					if (box.topY > topY) {
+						box.topY = topY;
+					}
 				}
 			}
 		}
@@ -6506,7 +6555,9 @@
 			x = 0,
 			y = 0,
 			state = 0,
-			swap = 0;
+			swap = 0,
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
 
 		// check for selection
 		if (me.isSelection) {
@@ -6529,7 +6580,7 @@
 					} else {
 						state = 0;
 					}
-					me.setStateWithUndo(x, y, state, true);
+					me.setStateWithUndo(x + xOff, y + yOff, state, true);
 				}
 			}
 
@@ -6548,7 +6599,9 @@
 			x = 0,
 			y = 0,
 			swap = 0,
-			row = [];
+			row = [],
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
 
 		// check for selection
 		if (me.isSelection) {
@@ -6567,11 +6620,11 @@
 			for (y = y1; y <= y2; y += 1) {
 				// read the row
 				for (x = x1; x <= x2; x += 1) {
-					row[x - x1] = me.engine.getState(x, y, false);
+					row[x - x1] = me.engine.getState(x + xOff, y + yOff, false);
 				}
 				// write the row back in reverse order
 				for (x = x1; x <= x2; x += 1) {
-					me.setStateWithUndo(x, y, row[x2 - x], true);
+					me.setStateWithUndo(x + xOff, y + yOff, row[x2 - x], true);
 				}
 			}
 
@@ -6590,7 +6643,9 @@
 			x = 0,
 			y = 0,
 			swap = 0,
-			column = [];
+			column = [],
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
 
 		// check for selection
 		if (me.isSelection) {
@@ -6609,11 +6664,11 @@
 			for (x = x1; x <= x2; x += 1) {
 				// read the column
 				for (y = y1; y <= y2; y += 1) {
-					column[y - y1] = me.engine.getState(x, y, false);
+					column[y - y1] = me.engine.getState(x + xOff, y + yOff, false);
 				}
 				// write the column back in reverse order
 				for (y = y1; y <= y2; y += 1) {
-					me.setStateWithUndo(x, y, column[y2 - y], true);
+					me.setStateWithUndo(x + xOff, y + yOff, column[y2 - y], true);
 				}
 			}
 
@@ -6643,7 +6698,13 @@
 			ty = 0,
 			i = 0,
 			cx = 0,
-			cy = 0;
+			cy = 0,
+			w = 0,
+			h = 0,
+			ox = 0,
+			oy = 0,
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
 
 		// check for selection
 		if (me.isSelection) {
@@ -6658,16 +6719,29 @@
 				y1 = swap;
 			}
 
+			// compute width and height of selection
+			w = (x2 - x1 + 1);
+			h = (y2 - y1 + 1);
+
 			// compute center of rotation
-			cx = x1 + ((x2 - x1 + 1) >> 1);
-			cy = y1 + ((y2 - y1 + 1) >> 1);
+			cx = x1 + (w >> 1);
+			cy = y1 + (h >> 1);
+
+			// handle even width or height selections
+			if (transform === ViewConstants.transRotateCW) {
+				// clockwise rotation
+				ox = 1 - (h & 1);
+			} else {
+				// counter-clockwise rotation
+				oy = 1 - (h & 1);
+			}
 
 			// read each cell in the selection and rotate coordinates
 			for (y = y1; y <= y2; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
 					tx = (x - cx) * axx + (y - cy) * axy + cx;
 					ty = (x - cx) * ayx + (y - cy) * ayy + cy;
-					state = me.engine.getState(x, y, false);
+					state = me.engine.getState(x + xOff, y + yOff, false);
 					cells[i] = {x: tx, y: ty, state: state};
 					i += 1;
 				}
@@ -6676,20 +6750,20 @@
 			// write the cells to their new positions
 			i = 0;
 			while (i < cells.length) {
-				x = cells[i].x;
-				y = cells[i].y;
+				x = cells[i].x - ox;
+				y = cells[i].y - oy;
 				state = cells[i].state;
-				if (me.engine.getState(x, y, false) !== state) {
-					me.setStateWithUndo(x, y, state, true);
+				if (me.engine.getState(x + xOff, y + yOff, false) !== state) {
+					me.setStateWithUndo(x + xOff, y + yOff, state, true);
 				}
 				i += 1;
 			}
 
 			// transform selection
-			box.leftX = (x1 - cx) * axx + (y1 - cy) * axy + cx;
-			box.bottomY = (x1 - cx) * ayx + (y1 - cy) * ayy + cy;
-			box.rightX = (x2 - cx) * axx + (y2 - cy) * axy + cx;
-			box.topY = (x2 - cx) * ayx + (y2 - cy) * ayy + cy;
+			box.leftX = (x1 - cx) * axx + (y1 - cy) * axy + cx - ox;
+			box.bottomY = (x1 - cx) * ayx + (y1 - cy) * ayy + cy - oy;
+			box.rightX = (x2 - cx) * axx + (y2 - cy) * axy + cx - ox;
+			box.topY = (x2 - cx) * ayx + (y2 - cy) * ayy + cy - oy;
 			if (box.leftX > box.rightX) {
 				swap = box.leftX;
 				box.leftX = box.rightX;
@@ -6701,25 +6775,25 @@
 				box.topY = swap;
 			}
 
-			// clear any overlap
+			// clear outside intersection between new selection and old
 			for (x = x1; x < box.leftX; x += 1) {
 				for (y = y1; y <= y2; y += 1) {
-					me.setStateWithUndo(x, y, 0, true);
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 				}
 			}
 			for (x = box.rightX + 1; x <= x2; x += 1) {
 				for (y = y1; y <= y2; y += 1) {
-					me.setStateWithUndo(x, y, 0, true);
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 				}
 			}
 			for (y = y1; y < box.bottomY; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
-					me.setStateWithUndo(x, y, 0, true);
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 				}
 			}
 			for (y = box.topY + 1; y <= y2; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
-					me.setStateWithUndo(x, y, 0, true);
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 				}
 			}
 
@@ -6773,6 +6847,18 @@
 			me.pauseWhileDrawing = newValue[0];
 		}
 		return [me.pauseWhileDrawing];
+	};
+
+	// settings menu toggle
+	View.prototype.toggleSettings = function(newValue, change, me) {
+		if (change) {
+			// close help if settings opened
+			if (me.displayHelp !== 0 && newValue[0]) {
+				me.displayHelp = 0;
+				me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+			}
+		}
+		return newValue;
 	};
 
 	// smart drawing toggle
@@ -6914,6 +7000,10 @@
 				if (me.scriptErrors.length) {
 					me.setHelpTopic(ViewConstants.scriptsTopic, me);
 				}
+				// close settings menu if open
+				if (me.navToggle.current[0]) {
+					me.navToggle.current = me.toggleSettings([false], true, me);
+				}
 			} else {
 				// reset to welcome topic on close
 				me.setHelpTopic(ViewConstants.welcomeTopic, me);
@@ -7042,6 +7132,30 @@
 		if (found) {
 			me.displayHelp = me.helpSections[i][0];
 		}
+	};
+
+	// run forward to a given generation (used by redo)
+	View.prototype.runForwardTo = function(targetGen) {
+		// compute each generation up to just before the target with stats off (for speed)
+		while (this.engine.counter < targetGen - 1) {
+			this.engine.anythingAlive = 1;
+			this.engine.nextGeneration(false, false, this.graphDisabled);
+			this.engine.convertToPensTile();
+			this.pasteRLEList();
+		}
+
+		// compute the final generation with stats on if required
+		if (this.engine.counter < targetGen) {
+			this.engine.anythingAlive = 1;
+			this.engine.nextGeneration(this.statsOn, false, this.graphDisabled);
+			this.engine.convertToPensTile();
+			this.pasteRLEList();
+		}
+
+		// restore the elapsed time
+		this.elapsedTime = this.elapsedTimes[targetGen];
+		this.floatCounter = targetGen;
+		this.originCounter = targetGen;
 	};
 
 	// run to given generation (used to step back)
@@ -7877,7 +7991,7 @@
 		this.smartToggle.toolTip = ["toggle smart drawing"];
 
 		// add menu toggle button
-		this.navToggle = this.viewMenu.addListItem(null, Menu.southEast, -40, -40, 40, 40, [""], [false], Menu.multi);
+		this.navToggle = this.viewMenu.addListItem(this.toggleSettings, Menu.southEast, -40, -40, 40, 40, [""], [false], Menu.multi);
 		this.navToggle.icon = [this.iconManager.icon("menu")];
 		this.navToggle.toolTip = ["toggle settings menu"];
 

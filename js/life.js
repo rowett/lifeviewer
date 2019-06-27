@@ -2159,7 +2159,7 @@
 			// check if a snapshot was deleted
 			if (numSnapshots !== this.snapshotManager.snapshots.length) {
 				// reduce snapshot target
-				this.nextSnapshotTarget -= LifeConstants.snapshotInterval;
+				this.nextSnapshotTarget -= (LifeConstants.snapshotInterval * (numSnapshots - this.snapshotManager.snapshots.length));
 			}
 		}
 	
