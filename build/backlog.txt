@@ -31,8 +31,7 @@ In progress:
     [DONE]search after RLE terminating ! character for rule table sections
 [STARTED]Pattern Editor
     - !!! shrink pattern after major edit (rotate CW etc)
-    - !!! use Uint16 arrays for undo/redo records
-    - !!! consolidate undo/redo record into one array [undo/redo state, x, y]
+    - !!! selection size needs to be in undo/redo records
     - ability to define rule
     - improved LifeHistory drawing modes
     - reset to include the overlay grid
@@ -40,11 +39,12 @@ In progress:
         - square selection
         - within 1-cell selection
         - name selection
-        - flip X selection
-        - flip Y selection
-        - rotate CW selection
-        - rotate CCW selection
-        - random fill selection
+        [DONE]flip X selection
+        [DONE]flip Y selection
+        [DONE]rotate CW selection
+        [DONE]rotate CCW selection
+        [DONE]set random fill percentage
+        [DONE]random fill selection
         - copy library or named snippet to buffer
         - copy selection to buffer
         - cut selection to buffer

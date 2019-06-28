@@ -40,6 +40,9 @@
 
 	// ViewConstants singleton
 	ViewConstants = {
+		// chunk to add to undo/redo buffer
+		/** @const {number} */ editChunk : 1024,
+
 		// number of step samples for average
 		/** @const {number} */ numStepSamples : 5,
 
@@ -577,7 +580,10 @@
 		/** @type {number} */ this.numEdits = 0;
 
 		// current edit
-		this.currentEdit = [];
+		this.currentEdit = null;
+
+		// current edit index
+		this.currentEditIndex = 0;
 
 		// step samples
 		this.stepSamples = [];
@@ -1523,16 +1529,27 @@
 	View.prototype.setStateWithUndo = function(x, y, colour, deadZero) {
 		// get current state
 		var state = this.engine.getState(x, y, false),
-			i = this.currentEdit.length,
+			i = this.currentEditIndex,
+			length = this.currentEdit ? this.currentEdit.length : 0,
 			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
-			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1);
+			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1),
+			newBuffer = null;
 
 		// only add undo/redo records and draw if the new state is different than the current state
 		if (colour !== state) {
+			// check if the edit buffer needs to grow
+			if (i >= length) {
+				newBuffer = this.engine.allocator.allocate(Int16, length + ViewConstants.editChunk * 3, "View.currentEdit");
+				if (length > 0) {
+					newBuffer.set(this.currentEdit.slice(0, length));
+				}
+				this.currentEdit = newBuffer;
+			}
 			this.currentEdit[i] = x - xOff;
 			this.currentEdit[i + 1] = y - yOff;
 			// write both the new state and original state into one 16 bit integer
 			this.currentEdit[i + 2] = (colour << 8) | state;
+			this.currentEditIndex += 3;
 	
 			// set the state
 			return this.engine.setState(x, y, colour, deadZero);
@@ -1658,7 +1675,7 @@
 		if (!this.noHistory) {
 			// check for duplicate
 			if (this.editNum > 0) {
-				if (counter === this.editList[this.editNum - 1].gen && this.currentEdit.length === 0) {
+				if (counter === this.editList[this.editNum - 1].gen && this.currentEditIndex === 0) {
 					wasChange = false;
 				} else {
 					wasChange = true;
@@ -1668,12 +1685,12 @@
 			// check if there was a change
 			if (wasChange) {
 				// allocate memory for redo and undo cells and populate
-				if (this.currentEdit.length > 0) {
-					editCells = this.engine.allocator.allocate(Int16, this.currentEdit.length, "View.editCells" + this.editNum);
-					editCells.set(this.currentEdit);
+				if (this.currentEditIndex > 0) {
+					editCells = this.engine.allocator.allocate(Int16, this.currentEditIndex, "View.editCells" + this.editNum);
+					editCells.set(this.currentEdit.slice(0, this.currentEditIndex));
 
 					// clear current edit
-					this.currentEdit = [];
+					this.currentEditIndex = 0;
 				}
 
 				// create new edit and undo record
@@ -5481,8 +5498,7 @@
 				me.reset(me);
 
 				// reset undo/redo list
-				me.currentEdit = [];
-				me.currentUndo = [];
+				me.currentEditIndex = 0;
 
 				// build reset message
 				message = "Reset";
@@ -5996,7 +6012,7 @@
 			me.menuManager.setAutoUpdate(true);
 		}
 		// end of edit
-		if (me.currentEdit.length > 0) {
+		if (me.currentEditIndex > 0) {
 			me.afterEdit("");
 		}
 	};
@@ -6598,7 +6614,7 @@
 			}
 
 			// save edit
-			me.afterEdit("random");
+			me.afterEdit("random " + ((me.randomDensity * 100).toFixed(0)) + "%");
 		}
 	};
 
@@ -8791,8 +8807,8 @@
 
 		// clear undo/reset
 		this.editList = [];
-		this.currentEdit = [];
-		this.currentUndo = [];
+		this.currentEdit = null;
+		this.currentEditIndex = 0;
 		this.editNum = 0;
 		this.numEdits = 0;
 
