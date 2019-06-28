@@ -1971,14 +1971,14 @@
 					}
 				} else {
 					// potentially shrink bounding box
-					if (this.population > 0) {
+					if (this.population > 0) {  // TBD !!!
 						// only shrink if the cell was on the boundary of the bounding box
-						if (x === zoomBox.leftX || x === zoomBox.rightX || y === zoomBox.topY || y === zoomBox.bottomY) {
+						//if (x === zoomBox.leftX || x === zoomBox.rightX || y === zoomBox.topY || y === zoomBox.bottomY) {
 							// check the cell is inside the bounding box
-							if (x >= zoomBox.leftX && x <= zoomBox.rightX && y >= zoomBox.bottomY && y <= zoomBox.topY) {
-								this.shrinkAfterEdit(x, y);
-							}
-						}
+							//if (x >= zoomBox.leftX && x <= zoomBox.rightX && y >= zoomBox.bottomY && y <= zoomBox.topY) {
+								//this.shrinkAfterEdit(x, y);
+							//}
+						//}
 					}
 				}
 			}

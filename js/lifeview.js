@@ -579,9 +579,6 @@
 		// current edit
 		this.currentEdit = [];
 
-		// current undo record
-		this.currentUndo = [];
-
 		// step samples
 		this.stepSamples = [];
 		/** @type {number} */ this.stepIndex = 0;
@@ -1530,20 +1527,16 @@
 			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
 			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1);
 
-		// only add undo/redo records if the new state is different than the current state
+		// only add undo/redo records and draw if the new state is different than the current state
 		if (colour !== state) {
 			this.currentEdit[i] = x - xOff;
 			this.currentEdit[i + 1] = y - yOff;
-			this.currentEdit[i + 2] = colour;
+			// write both the new state and original state into one 16 bit integer
+			this.currentEdit[i + 2] = (colour << 8) | state;
 	
-			// update undo record
-			this.currentUndo[i] = x - xOff;
-			this.currentUndo[i + 1] = y - yOff;
-			this.currentUndo[i + 2] = state;
+			// set the state
+			return this.engine.setState(x, y, colour, deadZero);
 		}
-
-		// set the state
-		return this.engine.setState(x, y, colour, deadZero);
 	};
 
 	// paste raw cells for undo/redo
@@ -1566,9 +1559,17 @@
 				target = di;
 			}
 	
-			while (i !== target) {
-				this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2], true);
-				i += di;
+			// determine whether undo or redo
+			if (reverse) {
+				while (i !== target) {
+					this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2] & 255, true);
+					i += di;
+				}
+			} else {
+				while (i !== target) {
+					this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2] >> 8, true);
+					i += di;
+				}
 			}
 		}
 	};
@@ -1604,7 +1605,7 @@
 		// update undo tooltip
 		if (edit > 0) {
 			tooltip = "undo ";
-			if (list[edit - 1].undoCells === null) {
+			if (list[edit - 1].editCells === null) {
 				gen = list[edit - 1].gen;
 				if (edit > 1) {
 					gen = list[edit - 2].gen;
@@ -1628,7 +1629,7 @@
 		// update redo tooltip
 		if (edit < num) {
 			tooltip = "redo ";
-			if (list[edit].redoCells === null) {
+			if (list[edit].editCells === null) {
 				gen = list[edit].gen;
 				if (gen - this.engine.counter > 1) {
 					tooltip += "play";
@@ -1651,8 +1652,7 @@
 	View.prototype.afterEdit = function(comment) {
 		var wasChange = true,
 			counter = this.engine.counter,
-			redoCells = null,
-			undoCells = null;
+			editCells = null;
 
 		// do nothing if step back disabled
 		if (!this.noHistory) {
@@ -1669,26 +1669,23 @@
 			if (wasChange) {
 				// allocate memory for redo and undo cells and populate
 				if (this.currentEdit.length > 0) {
-					redoCells = this.engine.allocator.allocate(Int16, this.currentEdit.length, "View.redoCells" + this.editNum);
-					undoCells = this.engine.allocator.allocate(Int16, this.currentUndo.length, "View.undoCells" + this.editNum);
-					redoCells.set(this.currentEdit);
-					undoCells.set(this.currentUndo);
+					editCells = this.engine.allocator.allocate(Int16, this.currentEdit.length, "View.editCells" + this.editNum);
+					editCells.set(this.currentEdit);
 
-					// clear current edit and undo records
+					// clear current edit
 					this.currentEdit = [];
-					this.currentUndo = [];
 				}
 
 				// create new edit and undo record
-				this.editList[this.editNum] = {gen: counter, redoCells: redoCells, undoCells: undoCells, action: comment};
+				this.editList[this.editNum] = {gen: counter, editCells: editCells, action: comment};
 				this.editNum += 1;
+
+				// this is now the latest edit
+				this.numEdits = this.editNum;
+
+				// update tooltips
+				this.updateUndoToolTips();
 			}
-
-			// this is now the latest edit
-			this.numEdits = this.editNum;
-
-			// update tooltips
-			this.updateUndoToolTips();
 		}
 	};
 
@@ -1714,7 +1711,7 @@
 				// pop the top record
 				record = me.editList[current - 1];
 				gen = record.gen;
-				if (record.undoCells === null) {
+				if (record.editCells === null) {
 					if (current > 1) {
 						gen = me.editList[current - 2].gen;
 					}
@@ -1730,7 +1727,7 @@
 				}
 	
 				// paste cells in reverse order
-				me.pasteRaw(record.undoCells, true);
+				me.pasteRaw(record.editCells, true);
 	
 				// decrement stack using saved value since a record may have been added above
 				me.editNum = current - 1;
@@ -1753,7 +1750,7 @@
 		if (!me.noHistory) {
 			// check for redo records
 			if (me.editNum < me.numEdits) {
-				if (me.editList[me.editNum].gen === counter && me.editList[me.editNum].redoCells === null) {
+				if (me.editList[me.editNum].gen === counter && me.editList[me.editNum].editCells === null) {
 					me.editNum += 1;
 				}
 				// if it is for a later generation then go there
@@ -1761,7 +1758,7 @@
 					me.runForwardTo(me.editList[me.editNum].gen);
 				} else {
 					// paste cells in forward order
-					me.pasteRaw(me.editList[me.editNum].redoCells, true);
+					me.pasteRaw(me.editList[me.editNum].editCells, false);
 				}
 				me.editNum += 1;
 			}
@@ -2355,7 +2352,7 @@
 		// paste any undo/redo edit records
 		for (i = 0; i < this.editNum; i += 1) {
 			if (this.editList[i].gen === counter) {
-				this.pasteRaw(this.editList[i].redoCells, false);
+				this.pasteRaw(this.editList[i].editCells, false);
 			}
 		}
 	};
@@ -4196,7 +4193,7 @@
 
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
-		this.undoButton.locked = (this.editNum === 0 || (this.editNum === 1 && this.numEdits > 1 && this.editList[0].gen === 0 && this.editList[0].redoCells === null && this.engine.counter === 0));
+		this.undoButton.locked = (this.editNum === 0 || (this.editNum === 1 && this.numEdits > 1 && this.editList[0].gen === 0 && this.editList[0].editCells === null && this.engine.counter === 0));
 
 		// top menu buttons
 		this.autoFitToggle.deleted = hide;
@@ -6615,7 +6612,7 @@
 			x = 0,
 			y = 0,
 			swap = 0,
-			row = [],
+			row = null,
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
 
@@ -6631,6 +6628,9 @@
 				y2 = y1;
 				y1 = swap;
 			}
+
+			// allocate the row
+			row = me.engine.allocator.allocate(Uint8, (x2 - x1 + 1), "View.flipRow");
 
 			// flip each row
 			for (y = y1; y <= y2; y += 1) {
@@ -6659,7 +6659,7 @@
 			x = 0,
 			y = 0,
 			swap = 0,
-			column = [],
+			column = null,
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
 
@@ -6675,6 +6675,9 @@
 				y2 = y1;
 				y1 = swap;
 			}
+
+			// allocate the row
+			column = me.engine.allocator.allocate(Uint8, (y2 - y1 + 1), "View.flipColumn");
 
 			// flip each column
 			for (x = x1; x <= x2; x += 1) {
@@ -6703,7 +6706,7 @@
 			x = 0,
 			y = 0,
 			swap = 0,
-			cells = [],
+			cells = null,
 			trans = me.transforms[transform],
 			axx = trans[0],
 			axy = trans[1],
@@ -6752,27 +6755,30 @@
 				oy = 1 - (h & 1);
 			}
 
+			// allocate the cells
+			cells = me.engine.allocator.allocate(Int16, 3 * (x2 - x1 + 1) * (y2 - y1 + 1), "View.rotateCells");
+
 			// read each cell in the selection and rotate coordinates
 			for (y = y1; y <= y2; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
 					tx = (x - cx) * axx + (y - cy) * axy + cx;
 					ty = (x - cx) * ayx + (y - cy) * ayy + cy;
 					state = me.engine.getState(x + xOff, y + yOff, false);
-					cells[i] = {x: tx, y: ty, state: state};
-					i += 1;
+					cells[i] = tx;
+					cells[i + 1] = ty;
+					cells[i + 2] = state;
+					i += 3;
 				}
 			}
 
 			// write the cells to their new positions
 			i = 0;
 			while (i < cells.length) {
-				x = cells[i].x - ox;
-				y = cells[i].y - oy;
-				state = cells[i].state;
-				if (me.engine.getState(x + xOff, y + yOff, false) !== state) {
-					me.setStateWithUndo(x + xOff, y + yOff, state, true);
-				}
-				i += 1;
+				x = cells[i] - ox;
+				y = cells[i + 1] - oy;
+				state = cells[i + 2];
+				me.setStateWithUndo(x + xOff, y + yOff, state, true);
+				i += 3;
 			}
 
 			// transform selection
@@ -6820,7 +6826,7 @@
 
 	// rotate CW pressed
 	View.prototype.rotateCWPressed = function(me) {
-		me.rotateSelection(me, ViewConstants.transRotateCW, "rotate clockwisej");
+		me.rotateSelection(me, ViewConstants.transRotateCW, "rotate clockwise");
 	};
 
 	// rotate CCW pressed
