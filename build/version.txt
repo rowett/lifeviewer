@@ -1,12 +1,15 @@
 Build 355
 - selections now support:
+	- selecting a rectangle of cells (no-selection box visible yet)
 	- flip X
 	- flip Y
 	- rotate clockwise
 	- rotate counter-clockwise
 	- random fill with user defined density from 0% to 100%
+	- clear cells in selection
 - opening help will close settings and vice versa
 - fixed an issue with redo and snapshots
+- fixed draw buttons being hidden with states toggle
 
 Build 354
 - fixed selecting drawing state

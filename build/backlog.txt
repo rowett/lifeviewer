@@ -45,6 +45,7 @@ In progress:
         [DONE]rotate CCW selection
         [DONE]set random fill percentage
         [DONE]random fill selection
+        [DONE]clear cells in selection
         - copy library or named snippet to buffer
         - copy selection to buffer
         - cut selection to buffer
