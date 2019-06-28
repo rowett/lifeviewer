@@ -232,6 +232,9 @@
 		// allocator
 		this.allocator = new Allocator();
 
+		// flag whether shrink after edit needed
+		/** @type {boolean} */ this.shrinkNeeded = false;
+
 		// flag whether to clear escaping gliders
 		/** @type {boolean} */ this.clearGliders = false;
 
@@ -1686,7 +1689,7 @@
 
 	// set state
 	/** @result {number} */
-	Life.prototype.setState = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
+	Life.prototype.setState = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero, /** @type {boolean} */ shrinkImmediate) {
 		var grid = this.grid16,
 			tileGrid = this.tileGrid,
 			colourGrid = this.colourGrid,
@@ -1971,14 +1974,19 @@
 					}
 				} else {
 					// potentially shrink bounding box
-					if (this.population > 0) {  // TBD !!!
+					if (this.population > 0) {
 						// only shrink if the cell was on the boundary of the bounding box
-						//if (x === zoomBox.leftX || x === zoomBox.rightX || y === zoomBox.topY || y === zoomBox.bottomY) {
+						if (x === zoomBox.leftX || x === zoomBox.rightX || y === zoomBox.topY || y === zoomBox.bottomY) {
 							// check the cell is inside the bounding box
-							//if (x >= zoomBox.leftX && x <= zoomBox.rightX && y >= zoomBox.bottomY && y <= zoomBox.topY) {
-								//this.shrinkAfterEdit(x, y);
-							//}
-						//}
+							if (x >= zoomBox.leftX && x <= zoomBox.rightX && y >= zoomBox.bottomY && y <= zoomBox.topY) {
+								if (shrinkImmediate) {
+									this.shrinkAfterEdit(x, y);
+								} else {
+									// mark shrink needed
+									this.shrinkNeeded = true;
+								}
+							}
+						}
 					}
 				}
 			}
@@ -4213,7 +4221,7 @@
 		    output = 0, th = 0, tw = 0,
 
 		    // grid
-	       	    grid = this.grid16,
+			grid = this.grid16,
 		    gridRow = null,
 
 		    // source tile grid (from next tile grid template)
@@ -5133,6 +5141,14 @@
 		}
 	};
 
+	// shrink grid (after major edit)
+	Life.prototype.doShrink = function(state1Fit) {
+		if (this.shrinkNeeded) {
+			this.shrinkNeeded = false;
+			this.resetBoxes(state1Fit);
+		}
+	};
+
 	// create bounding box from current state
 	Life.prototype.resetBoxes = function(state1Fit) {
 		var w = 0,
@@ -5207,6 +5223,17 @@
 
 		    // right tile group column
 		    rightX = 0;
+
+		// determine the buffer for current generation
+		if ((this.counter & 1) !== 0) {
+			grid16 = this.nextGrid16;
+			tileGrid = this.nextTileGrid;
+			nextTileGrid = this.tileGrid;
+		} else {
+			grid16 = this.grid16;
+			tileGrid = this.tileGrid;
+			nextTileGrid = this.nextTileGrid;
+		}
 
 		// check for LifeHistory pattern
 		if (overlayGrid && !state1Fit) {
@@ -5630,7 +5657,7 @@
 				gliderRow = glider[yc];
 				for (xc = 0; xc < gliderRow.length; xc += 1) {
 					if (gliderRow[xc] === 1) {
-						this.setState(x + xc, y + yc, 0, false);
+						this.setState(x + xc, y + yc, 0, false, true);
 					}
 				}
 			}

@@ -41,7 +41,7 @@
 	// ViewConstants singleton
 	ViewConstants = {
 		// chunk to add to undo/redo buffer
-		/** @const {number} */ editChunk : 1024,
+		/** @const {number} */ editChunk : 16384,
 
 		// number of step samples for average
 		/** @const {number} */ numStepSamples : 5,
@@ -1526,7 +1526,7 @@
 	}
 
 	// draw cell and create undo/redo
-	View.prototype.setStateWithUndo = function(x, y, colour, deadZero) {
+	View.prototype.setStateWithUndo = function(x, y, colour, deadZero, shrinkImmediate, sizeHint) {
 		// get current state
 		var state = this.engine.getState(x, y, false),
 			i = this.currentEditIndex,
@@ -1537,6 +1537,17 @@
 
 		// only add undo/redo records and draw if the new state is different than the current state
 		if (colour !== state) {
+			// if size hint is bigger than current buffer then grow to the hint
+			sizeHint = (sizeHint | 0) * 3;
+			if (sizeHint > length) {
+				newBuffer = this.engine.allocator.allocate(Int16, sizeHint, "View.currentEdit");
+				if (length > 0) {
+					newBuffer.set(this.currentEdit.slice(0, length));
+				}
+				this.currentEdit = newBuffer;
+				length = sizeHint;
+			}
+
 			// check if the edit buffer needs to grow
 			if (i >= length) {
 				newBuffer = this.engine.allocator.allocate(Int16, length + ViewConstants.editChunk * 3, "View.currentEdit");
@@ -1552,7 +1563,7 @@
 			this.currentEditIndex += 3;
 	
 			// set the state
-			return this.engine.setState(x, y, colour, deadZero);
+			return this.engine.setState(x, y, colour, deadZero, shrinkImmediate);
 		}
 	};
 
@@ -1579,12 +1590,12 @@
 			// determine whether undo or redo
 			if (reverse) {
 				while (i !== target) {
-					this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2] & 255, true);
+					this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2] & 255, true, false);
 					i += di;
 				}
 			} else {
 				while (i !== target) {
-					this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2] >> 8, true);
+					this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2] >> 8, true, false);
 					i += di;
 				}
 			}
@@ -1594,6 +1605,8 @@
 	// set undo stack pointer to given generation (used with step back)
 	View.prototype.setUndoGen = function(gen) {
 		var i = this.editNum - 1,
+			record = null,
+			selBox = this.selectionBox,
 			found = false;
 
 		// search for undo records at or before specified generation
@@ -1607,6 +1620,18 @@
 
 		if (found) {
 			this.editNum = i + 1;
+			record = this.editList[this.editNum];
+			// restore selection if present
+			if (record.selection) {
+				selBox.leftX = record.selection.leftX;
+				selBox.bottomY = record.selection.bottomY;
+				selBox.rightX = record.selection.rightX;
+				selBox.topY = record.selection.topY;
+				this.isSelection = true;
+			} else {
+				this.isSelection = false;
+			}
+
 			this.updateUndoToolTips();
 		}
 	};
@@ -1669,7 +1694,9 @@
 	View.prototype.afterEdit = function(comment) {
 		var wasChange = true,
 			counter = this.engine.counter,
-			editCells = null;
+			editCells = null,
+			box = null,
+			selBox = this.selectionBox;
 
 		// do nothing if step back disabled
 		if (!this.noHistory) {
@@ -1693,8 +1720,13 @@
 					this.currentEditIndex = 0;
 				}
 
+				// check if there is a selection
+				if (this.isSelection) {
+					box = new BoundingBox(selBox.leftX, selBox.bottomY, selBox.rightX, selBox.topY);
+				}
+
 				// create new edit and undo record
-				this.editList[this.editNum] = {gen: counter, editCells: editCells, action: comment};
+				this.editList[this.editNum] = {gen: counter, editCells: editCells, action: comment, selection: box};
 				this.editNum += 1;
 
 				// this is now the latest edit
@@ -1711,7 +1743,8 @@
 		var gen = 0,
 			counter = me.engine.counter,
 			current = me.editNum,
-			record = null;
+			record = null,
+			selBox = me.selectionBox;
 
 		// do nothing if step back disabled
 		if (!me.noHistory) {
@@ -1746,6 +1779,17 @@
 				// paste cells in reverse order
 				me.pasteRaw(record.editCells, true);
 	
+				// restore selection if present
+				if (record.selection) {
+					selBox.leftX = record.selection.leftX;
+					selBox.bottomY = record.selection.bottomY;
+					selBox.rightX = record.selection.rightX;
+					selBox.topY = record.selection.topY;
+					me.isSelection = true;
+				} else {
+					me.isSelection = false;
+				}
+
 				// decrement stack using saved value since a record may have been added above
 				me.editNum = current - 1;
 			} else {
@@ -1761,22 +1805,38 @@
 
 	// redo edit
 	View.prototype.redo = function(me) {
-		var counter = me.engine.counter;
+		var counter = me.engine.counter,
+			record = null,
+			selBox = me.selectionBox;
 
 		// do nothing if step back disabled
 		if (!me.noHistory) {
 			// check for redo records
 			if (me.editNum < me.numEdits) {
-				if (me.editList[me.editNum].gen === counter && me.editList[me.editNum].editCells === null) {
+				record = me.editList[me.editNum];
+				if (record.gen === counter && record.editCells === null) {
 					me.editNum += 1;
 				}
 				// if it is for a later generation then go there
-				if (me.editList[me.editNum].gen > counter) {
-					me.runForwardTo(me.editList[me.editNum].gen);
+				if (record.gen > counter) {
+					me.runForwardTo(record.gen);
 				} else {
 					// paste cells in forward order
-					me.pasteRaw(me.editList[me.editNum].editCells, false);
+					me.pasteRaw(record.editCells, false);
 				}
+
+				// restore selection if present
+				if (record.selection) {
+					selBox.leftX = record.selection.leftX;
+					selBox.bottomY = record.selection.bottomY;
+					selBox.rightX = record.selection.rightX;
+					selBox.topY = record.selection.topY;
+					me.isSelection = true;
+				} else {
+					me.isSelection = false;
+				}
+
+				// next record
 				me.editNum += 1;
 			}
 
@@ -2177,7 +2237,7 @@
 				} else {
 					while (i < cells.length) {
 						// cells list only contains non-zero cells
-						this.engine.setState(xOff + cells[i] - item.leftX, yOff + cells[i + 1] - item.bottomY, cells[i + 2], true);
+						this.engine.setState(xOff + cells[i] - item.leftX, yOff + cells[i + 1] - item.bottomY, cells[i + 2], true, false);
 						i += 3;
 					}
 				}
@@ -2295,7 +2355,7 @@
 					} else {
 						while (i < cells.length) {
 							// cells list only contains non-zero cells
-							this.engine.setState(xOff + cells[i], yOff + cells[i + 1], cells[i + 2], true);
+							this.engine.setState(xOff + cells[i], yOff + cells[i + 1], cells[i + 2], true, true);
 							i += 3;
 						}
 					}
@@ -2307,7 +2367,7 @@
 						stateRow = stateMap[y];
 						for (x = 0; x < stateRow.length; x += 1) {
 							// set the cell
-							this.engine.setState(xOff + x, yOff + y, stateRow[x], true);
+							this.engine.setState(xOff + x, yOff + y, stateRow[x], true, true);
 						}
 					}
 					break;
@@ -2317,7 +2377,7 @@
 						y = cells[i + 1];
 						state = this.engine.getState(xOff + x, yOff + y, false);
 						// set the cell
-						this.engine.setState(xOff + x, yOff + y, cells[i + 2] ^ state, false);
+						this.engine.setState(xOff + x, yOff + y, cells[i + 2] ^ state, false, true);
 						i += 3;
 					}
 					break;
@@ -2329,7 +2389,7 @@
 						for (x = 0; x < stateRow.length; x += 1) {
 							state = this.engine.getState(xOff + x, yOff + y, false);
 							// set the cell
-							this.engine.setState(xOff + x, yOff + y, stateRow[x] & state, false);
+							this.engine.setState(xOff + x, yOff + y, stateRow[x] & state, false, true);
 						}
 					}
 					break;
@@ -2341,7 +2401,7 @@
 						for (x = 0; x < stateRow.length; x += 1) {
 							if (stateRow[x] === 0) {
 								// set the cell
-								this.engine.setState(xOff + x, yOff + y, 1, true);
+								this.engine.setState(xOff + x, yOff + y, 1, true, true);
 							}
 						}
 						i += 3;
@@ -3219,7 +3279,7 @@
 			result = 0;
 
 		// set the first point
-		result |= this.setStateWithUndo(startX, startY, colour, true);
+		result |= this.setStateWithUndo(startX, startY, colour, true, true, 0);
 
 		// check for grid growth
 		while (width !== this.engine.width) {
@@ -3244,7 +3304,7 @@
 			}
 
 			// draw the point
-			result |= this.setStateWithUndo(startX, startY, colour, true);
+			result |= this.setStateWithUndo(startX, startY, colour, true, true, 0);
 
 			// check for grid growth
 			while (width !== this.engine.width) {
@@ -6564,6 +6624,48 @@
 
 	// cut pressed
 	View.prototype.cutPressed = function(me) {
+		var box = me.selectionBox,
+			x1 = box.leftX,
+			x2 = box.rightX,
+			y1 = box.bottomY,
+			y2 = box.topY,
+			x = 0,
+			y = 0,
+			state = 0,
+			swap = 0,
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+			sizeHint;
+
+		// check for selection
+		if (me.isSelection) {
+			if (x1 > x2) {
+				swap = x2;
+				x2 = x1;
+				x1 = swap;
+			}
+			if (y1 > y2) {
+				swap = y2;
+				y2 = y1;
+				y1 = swap;
+			}
+
+			// compute potential size of edit buffer
+			sizeHint = (y2 - y1 + 1) * (x2 - x1 + 1);
+
+			// clear set cells
+			for (y = y1; y <= y2; y += 1) {
+				for (x = x1; x <= x2; x += 1) {
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true, false, sizeHint);
+				}
+			}
+
+			// check if shrink needed
+			me.engine.doShrink(me.state1Fit);
+
+			// save edit
+			me.afterEdit("cut");
+		}
 	};
 
 	// copy pressed
@@ -6586,7 +6688,8 @@
 			state = 0,
 			swap = 0,
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+			sizeHint;
 
 		// check for selection
 		if (me.isSelection) {
@@ -6601,6 +6704,9 @@
 				y1 = swap;
 			}
 
+			// compute potential size of edit buffer
+			sizeHint = me.randomDensity * (y2 - y1 + 1) * (x2 - x1 + 1);
+
 			// draw random cells
 			for (y = y1; y <= y2; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
@@ -6609,9 +6715,12 @@
 					} else {
 						state = 0;
 					}
-					me.setStateWithUndo(x + xOff, y + yOff, state, true);
+					me.setStateWithUndo(x + xOff, y + yOff, state, true, false, sizeHint);
 				}
 			}
+
+			// check if shrink needed
+			me.engine.doShrink(me.state1Fit);
 
 			// save edit
 			me.afterEdit("random " + ((me.randomDensity * 100).toFixed(0)) + "%");
@@ -6656,9 +6765,12 @@
 				}
 				// write the row back in reverse order
 				for (x = x1; x <= x2; x += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, row[x2 - x], true);
+					me.setStateWithUndo(x + xOff, y + yOff, row[x2 - x], true, false, 0);
 				}
 			}
+
+			// check if shrink needed
+			me.engine.doShrink(me.state1Fit);
 
 			// save edit
 			me.afterEdit("flip horizontally");
@@ -6703,9 +6815,12 @@
 				}
 				// write the column back in reverse order
 				for (y = y1; y <= y2; y += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, column[y2 - y], true);
+					me.setStateWithUndo(x + xOff, y + yOff, column[y2 - y], true, false, 0);
 				}
 			}
+
+			// check if shrink needed
+			me.engine.doShrink(me.state1Fit);
 
 			// save edit
 			me.afterEdit("flip vertically");
@@ -6793,7 +6908,7 @@
 				x = cells[i] - ox;
 				y = cells[i + 1] - oy;
 				state = cells[i + 2];
-				me.setStateWithUndo(x + xOff, y + yOff, state, true);
+				me.setStateWithUndo(x + xOff, y + yOff, state, true, false, 0);
 				i += 3;
 			}
 
@@ -6816,24 +6931,27 @@
 			// clear outside intersection between new selection and old
 			for (x = x1; x < box.leftX; x += 1) {
 				for (y = y1; y <= y2; y += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true, false, 0);
 				}
 			}
 			for (x = box.rightX + 1; x <= x2; x += 1) {
 				for (y = y1; y <= y2; y += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true, false, 0);
 				}
 			}
 			for (y = y1; y < box.bottomY; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true, false, 0);
 				}
 			}
 			for (y = box.topY + 1; y <= y2; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true, false, 0);
 				}
 			}
+
+			// check if shrink needed
+			me.engine.doShrink(me.state1Fit);
 
 			// save edit
 			me.afterEdit(comment);
@@ -8142,7 +8260,7 @@
 
 		// add the random density slider
 		this.randomItem = this.viewMenu.addRangeItem(this.viewRandomRange, Menu.northEast, -40, 45, 40, 100, 0, 1, this.randomDensity, true, "", "%", 0);
-		this.randomItem.toolTip = "random density";
+		this.randomItem.toolTip = "random fill density";
 
 		// add items to the main toggle menu
 		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
@@ -8811,6 +8929,7 @@
 		this.currentEditIndex = 0;
 		this.editNum = 0;
 		this.numEdits = 0;
+		this.engine.shrinkNeeded = false;
 
 		// clear paste list
 		this.pasteList = [];
