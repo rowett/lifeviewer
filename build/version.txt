@@ -2,6 +2,7 @@ Build 356
 - Draw mode was incorrectly showing a minimum of 7 states for Generations patterns
 - Select mode Random fill was only using 2 states for Generations patterns
 - selection and cancel selection are now undo/redo points
+- selection rotation is now consistent
 
 Build 355
 - selections now support:

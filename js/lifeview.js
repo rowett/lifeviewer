@@ -1531,7 +1531,7 @@
 	}
 
 	// draw cell and create undo/redo
-	View.prototype.setStateWithUndo = function(x, y, colour, deadZero, shrinkImmediate, sizeHint) {
+	View.prototype.setStateWithUndo = function(x, y, colour, deadZero, sizeHint) {
 		// get current state
 		var state = this.engine.getState(x, y, false),
 			i = this.currentEditIndex,
@@ -1577,7 +1577,7 @@
 			this.currentEditIndex += 3;
 	
 			// set the state
-			return this.engine.setState(x, y, colour, deadZero, shrinkImmediate);
+			return this.engine.setState(x, y, colour, deadZero);
 		}
 	};
 
@@ -1604,12 +1604,12 @@
 			// determine whether undo or redo
 			if (reverse) {
 				while (i !== target) {
-					this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2] & 255, true, false);
+					this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2] & 255, true);
 					i += di;
 				}
 			} else {
 				while (i !== target) {
-					this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2] >> 8, true, false);
+					this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2] >> 8, true);
 					i += di;
 				}
 			}
@@ -1860,6 +1860,9 @@
 
 			// update tooltips
 			this.updateUndoToolTips();
+
+			// check if shrink needed
+			this.engine.doShrink(this.state1Fit);
 		}
 	};
 
@@ -1902,6 +1905,9 @@
 
 			// update tooltips
 			this.updateUndoToolTips();
+
+			// check if shrink needed
+			this.engine.doShrink(this.state1Fit);
 		}
 	};
 
@@ -2297,7 +2303,7 @@
 				} else {
 					while (i < cells.length) {
 						// cells list only contains non-zero cells
-						this.engine.setState(xOff + cells[i] - item.leftX, yOff + cells[i + 1] - item.bottomY, cells[i + 2], true, false);
+						this.engine.setState(xOff + cells[i] - item.leftX, yOff + cells[i + 1] - item.bottomY, cells[i + 2], true);
 						i += 3;
 					}
 				}
@@ -2415,7 +2421,7 @@
 					} else {
 						while (i < cells.length) {
 							// cells list only contains non-zero cells
-							this.engine.setState(xOff + cells[i], yOff + cells[i + 1], cells[i + 2], true, true);
+							this.engine.setState(xOff + cells[i], yOff + cells[i + 1], cells[i + 2], true);
 							i += 3;
 						}
 					}
@@ -2427,7 +2433,7 @@
 						stateRow = stateMap[y];
 						for (x = 0; x < stateRow.length; x += 1) {
 							// set the cell
-							this.engine.setState(xOff + x, yOff + y, stateRow[x], true, true);
+							this.engine.setState(xOff + x, yOff + y, stateRow[x], true);
 						}
 					}
 					break;
@@ -2437,7 +2443,7 @@
 						y = cells[i + 1];
 						state = this.engine.getState(xOff + x, yOff + y, false);
 						// set the cell
-						this.engine.setState(xOff + x, yOff + y, cells[i + 2] ^ state, false, true);
+						this.engine.setState(xOff + x, yOff + y, cells[i + 2] ^ state, false);
 						i += 3;
 					}
 					break;
@@ -2449,7 +2455,7 @@
 						for (x = 0; x < stateRow.length; x += 1) {
 							state = this.engine.getState(xOff + x, yOff + y, false);
 							// set the cell
-							this.engine.setState(xOff + x, yOff + y, stateRow[x] & state, false, true);
+							this.engine.setState(xOff + x, yOff + y, stateRow[x] & state, false);
 						}
 					}
 					break;
@@ -2461,7 +2467,7 @@
 						for (x = 0; x < stateRow.length; x += 1) {
 							if (stateRow[x] === 0) {
 								// set the cell
-								this.engine.setState(xOff + x, yOff + y, 1, true, true);
+								this.engine.setState(xOff + x, yOff + y, 1, true);
 							}
 						}
 						i += 3;
@@ -2492,6 +2498,9 @@
 				this.pasteRaw(this.editList[i].editCells, false);
 			}
 		}
+
+		// check if shrink needed
+		this.engine.doShrink(this.state1Fit);
 	};
 
 	// set initial value flags to a value
@@ -3339,7 +3348,7 @@
 			result = 0;
 
 		// set the first point
-		result |= this.setStateWithUndo(startX, startY, colour, true, true, 0);
+		result |= this.setStateWithUndo(startX, startY, colour, true, 0);
 
 		// check for grid growth
 		while (width !== this.engine.width) {
@@ -3364,7 +3373,7 @@
 			}
 
 			// draw the point
-			result |= this.setStateWithUndo(startX, startY, colour, true, true, 0);
+			result |= this.setStateWithUndo(startX, startY, colour, true, 0);
 
 			// check for grid growth
 			while (width !== this.engine.width) {
@@ -6145,6 +6154,9 @@
 		}
 		// end of edit
 		if (me.currentEditIndex > 0) {
+			// check if shrink needed
+			me.engine.doShrink(me.state1Fit);
+
 			me.afterEdit("");
 		}
 	};
@@ -6729,7 +6741,7 @@
 				for (x = x1; x <= x2; x += 1) {
 					state = me.engine.getState(x + xOff, y + yOff, false);
 					if (state !== 0) {
-						me.setStateWithUndo(x + xOff, y + yOff, 0, true, false, sizeHint);
+						me.setStateWithUndo(x + xOff, y + yOff, 0, true, sizeHint);
 					}
 				}
 			}
@@ -6817,7 +6829,7 @@
 			// clear set cells
 			for (y = y1; y <= y2; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true, false, sizeHint);
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true, sizeHint);
 				}
 			}
 
@@ -6886,7 +6898,7 @@
 					} else {
 						state = 0;
 					}
-					me.setStateWithUndo(x + xOff, y + yOff, state, true, false, sizeHint);
+					me.setStateWithUndo(x + xOff, y + yOff, state, true, sizeHint);
 				}
 			}
 
@@ -6945,7 +6957,7 @@
 				}
 				// write the row back in reverse order
 				for (x = x1; x <= x2; x += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, row[x2 - x], true, false, 0);
+					me.setStateWithUndo(x + xOff, y + yOff, row[x2 - x], true, 0);
 				}
 			}
 
@@ -7004,7 +7016,7 @@
 				}
 				// write the column back in reverse order
 				for (y = y1; y <= y2; y += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, column[y2 - y], true, false, 0);
+					me.setStateWithUndo(x + xOff, y + yOff, column[y2 - y], true, 0);
 				}
 			}
 
@@ -7017,7 +7029,7 @@
 	};
 
 	// rotate selection
-	View.prototype.rotateSelection = function(me, transform, comment) {
+	View.prototype.rotateSelection = function(me, clockwise, comment) {
 		var box = me.selectionBox,
 			x1 = box.leftX,
 			x2 = box.rightX,
@@ -7027,22 +7039,21 @@
 			y = 0,
 			swap = 0,
 			cells = null,
-			trans = me.transforms[transform],
-			axx = trans[0],
-			axy = trans[1],
-			ayx = trans[2],
-			ayy = trans[3],
 			state = 0,
-			tx = 0,
-			ty = 0,
 			i = 0,
 			cx = 0,
 			cy = 0,
 			w = 0,
 			h = 0,
-			ox = 0,
-			oy = 0,
-			state = 0,
+			newLeftX = 0,
+			newBottomY = 0,
+			newRightX = 0,
+			newTopY = 0,
+			newXInc = 0,
+			newYInc = 0,
+			firstNewY = 0,
+			newX = 0,
+			newY = 0,
 			states = me.engine.multiNumStates,
 			invertForGenerations = (states > 2 && !me.engine.isNone),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
@@ -7066,16 +7077,26 @@
 			h = (y2 - y1 + 1);
 
 			// compute center of rotation
-			cx = x1 + (w >> 1);
-			cy = y1 + (h >> 1);
+			cx = x1 + ((w - 1) >> 1);
+			cy = y1 + ((h - 1) >> 1);
 
-			// handle even width or height selections
-			if (transform === ViewConstants.transRotateCW) {
-				// clockwise rotation
-				ox = 1 - (h & 1);
+			// compute new x and y
+			newLeftX = cx + y1 - cy;
+			newBottomY = cy + x1 - cx;
+			newRightX = cx + y2 - cy;
+			newTopY = cy + x2 - cx;
+
+			// adjust for direction of rotation
+			if (clockwise) {
+				firstNewY = newBottomY;
+				newX = newRightX;
+				newYInc = 1;
+				newXInc = -1;
 			} else {
-				// counter-clockwise rotation
-				oy = 1 - (h & 1);
+				firstNewY = newTopY;
+				newX = newLeftX;
+				newYInc = -1;
+				newXInc = 1;
 			}
 
 			// allocate the cells
@@ -7083,37 +7104,38 @@
 
 			// read each cell in the selection and rotate coordinates
 			for (y = y1; y <= y2; y += 1) {
+				newY = firstNewY;
 				for (x = x1; x <= x2; x += 1) {
-					tx = (x - cx) * axx + (y - cy) * axy + cx;
-					ty = (x - cx) * ayx + (y - cy) * ayy + cy;
 					state = me.engine.getState(x + xOff, y + yOff, false);
 					if (invertForGenerations) {
 						if (state > 0) {
 							state = states - state;
 						}
 					}
-					cells[i] = tx;
-					cells[i + 1] = ty;
+					cells[i] = newX;
+					cells[i + 1] = newY;
 					cells[i + 2] = state;
 					i += 3;
+					newY += newYInc;
 				}
+				newX += newXInc;
 			}
 
 			// write the cells to their new positions
 			i = 0;
 			while (i < cells.length) {
-				x = cells[i] - ox;
-				y = cells[i + 1] - oy;
+				x = cells[i];
+				y = cells[i + 1];
 				state = cells[i + 2];
-				me.setStateWithUndo(x + xOff, y + yOff, state, true, false, 0);
+				me.setStateWithUndo(x + xOff, y + yOff, state, true, 0);
 				i += 3;
 			}
 
 			// transform selection
-			box.leftX = (x1 - cx) * axx + (y1 - cy) * axy + cx - ox;
-			box.bottomY = (x1 - cx) * ayx + (y1 - cy) * ayy + cy - oy;
-			box.rightX = (x2 - cx) * axx + (y2 - cy) * axy + cx - ox;
-			box.topY = (x2 - cx) * ayx + (y2 - cy) * ayy + cy - oy;
+			box.leftX = newLeftX;
+			box.bottomY = newBottomY;
+			box.rightX = newRightX;
+			box.topY = newTopY;
 			if (box.leftX > box.rightX) {
 				swap = box.leftX;
 				box.leftX = box.rightX;
@@ -7128,22 +7150,22 @@
 			// clear outside intersection between new selection and old
 			for (x = x1; x < box.leftX; x += 1) {
 				for (y = y1; y <= y2; y += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true, false, 0);
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
 				}
 			}
 			for (x = box.rightX + 1; x <= x2; x += 1) {
 				for (y = y1; y <= y2; y += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true, false, 0);
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
 				}
 			}
 			for (y = y1; y < box.bottomY; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true, false, 0);
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
 				}
 			}
 			for (y = box.topY + 1; y <= y2; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true, false, 0);
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
 				}
 			}
 
@@ -7157,12 +7179,12 @@
 
 	// rotate CW pressed
 	View.prototype.rotateCWPressed = function(me) {
-		me.rotateSelection(me, ViewConstants.transRotateCW, "rotate clockwise");
+		me.rotateSelection(me, true, "rotate clockwise");
 	};
 
 	// rotate CCW pressed
 	View.prototype.rotateCCWPressed = function(me) {
-		me.rotateSelection(me, ViewConstants.transRotateCCW, "rotate counter-clockwise");
+		me.rotateSelection(me, false, "rotate counter-clockwise");
 	};
 
 	// fit button

@@ -30,8 +30,6 @@ In progress:
     [DONE]decode @TREE
     [DONE]search after RLE terminating ! character for rule table sections
 [STARTED]Pattern Editor
-    - !!! shrink pattern after major edit (rotate CW etc)
-    - !!! selection size needs to be in undo/redo records
     - ability to define rule
     - improved LifeHistory drawing modes
     - reset to include the overlay grid
