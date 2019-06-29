@@ -1660,18 +1660,21 @@
 			num = this.numEdits,
 			list = this.editList,
 			gen = 0,
+			record = null,
 			tooltip = "";
 
 		// update undo tooltip
 		if (edit > 1) {
 			tooltip = "undo ";
-			if (list[edit - 1].editCells === null) {
-				gen = list[edit - 1].gen;
+			record = list[edit - 1];
+			if (record.editCells === null) {
+				gen = record.gen;
 				if (edit > 1) {
+					//record = list[edit - 2];
 					gen = list[edit - 2].gen;
 				}
 				if (this.engine.counter === gen) {
-					tooltip += list[edit - 1].action;
+					tooltip += record.action;
 				} else {
 					if (this.engine.counter - gen > 1) {
 						tooltip += "play";
@@ -1681,10 +1684,10 @@
 					tooltip += " from " + gen;
 				}
 			} else {
-				if (list[edit - 1].action === "") {
+				if (record.action === "") {
 					tooltip += "edit";
 				} else {
-					tooltip += list[edit - 1].action;
+					tooltip += record.action;
 				}
 			}
 			this.undoButton.toolTip = tooltip;
@@ -1693,10 +1696,11 @@
 		// update redo tooltip
 		if (edit < num) {
 			tooltip = "redo ";
-			if (list[edit].editCells === null) {
-				gen = list[edit].gen;
+			record = list[edit];
+			if (record.editCells === null) {
+				gen = record.gen;
 				if (gen === this.engine.counter) {
-					tooltip += list[edit].action;
+					tooltip += record.action;
 				} else {
 					if (gen - this.engine.counter > 1) {
 						tooltip += "play";
@@ -1706,10 +1710,10 @@
 					tooltip += " to " + gen;
 				}
 			} else {
-				if (list[edit].action === "") {
+				if (record.action === "") {
 					tooltip += "edit";
 				} else {
-					tooltip += list[edit].action;
+					tooltip += record.action;
 				}
 			}
 			this.redoButton.toolTip = tooltip;
@@ -1717,8 +1721,9 @@
 	};
 
 	// compare two selections and return true if they are the same
-	View.prototype.compareSelections = function(first, second) {
-		var result = false;
+	View.prototype.compareSelections = function(first) {
+		var result = false,
+			second = this.isSelection ? this.selectionBox : null;
 
 		// check if they are both blank
 		if (first === null && second === null) {
@@ -1755,7 +1760,7 @@
 				record = this.editList[this.editNum - 1];
 				if (counter === record.gen && this.currentEditIndex === 0) {
 					// compare selection
-					if (this.compareSelections(record.selection, selBox)) {
+					if (this.compareSelections(record.selection)) {
 						wasChange = false;
 					}
 				}
@@ -1796,7 +1801,8 @@
 			counter = me.engine.counter,
 			current = me.editNum,
 			record = null,
-			selBox = me.selectionBox;
+			selBox = me.selectionBox,
+			selection = null;
 
 		// do nothing if step back disabled
 		if (!me.noHistory) {
@@ -1813,10 +1819,11 @@
 				// pop the top record
 				record = me.editList[current - 1];
 				gen = record.gen;
+				selection = record.selection;
 				if (record.editCells === null) {
 					if (current > 1) {
-						record = me.editList[current - 2];
-						gen = record.gen;
+						gen = me.editList[current - 2].gen;
+						selection = me.editList[current - 2].selection;
 					}
 				}
 	
@@ -1827,17 +1834,17 @@
 					} else {
 						me.runTo(gen);
 					}
+				} else {
+					// paste cells in reverse order
+					me.pasteRaw(record.editCells, true);
 				}
 	
-				// paste cells in reverse order
-				me.pasteRaw(record.editCells, true);
-	
 				// restore selection if present
-				if (record.selection) {
-					selBox.leftX = record.selection.leftX;
-					selBox.bottomY = record.selection.bottomY;
-					selBox.rightX = record.selection.rightX;
-					selBox.topY = record.selection.topY;
+				if (selection) {
+					selBox.leftX = selection.leftX;
+					selBox.bottomY = selection.bottomY;
+					selBox.rightX = selection.rightX;
+					selBox.topY = selection.topY;
 					me.isSelection = true;
 				} else {
 					me.isSelection = false;
@@ -6086,13 +6093,28 @@
 
 	// drag ended for select
 	View.prototype.dragEndSelect = function(me) {
+		var selBox = me.selectionBox,
+			width = 0,
+			height = 0;
+
 		// check if a selection was made
 		if (me.drawingSelection) {
 			me.isSelection = true;
 			me.drawingSelection = false;
-			me.afterEdit("selection");
+			if (selBox.rightX < selBox.leftX) {
+				width = selBox.leftX - selBox.rightX + 1;
+			} else {
+				width = selBox.rightX - selBox.leftX + 1;
+			}
+			if (selBox.topY < selBox.bottomY) {
+				height = selBox.bottomY - selBox.topY + 1;
+			} else {
+				height = selBox.topY - selBox.bottomY + 1;
+			}
+			me.afterEdit("selection (" + width + " x " + height + ")");
 		} else {
 			me.isSelection = false;
+			me.afterEdit("cancel selection");
 		}
 	};
 
@@ -6725,7 +6747,9 @@
 		var selBox = me.selectionBox,
 			zoomBox = me.engine.zoomBox,
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+			width = 0,
+			height = 0;
 
 		// set the selection box to the current pattern bounding box
 		if (me.engine.population > 0) {
@@ -6734,10 +6758,21 @@
 			selBox.rightX = zoomBox.rightX - xOff;
 			selBox.topY = zoomBox.topY - yOff;
 			me.isSelection = true;
+			if (selBox.rightX < selBox.leftX) {
+				width = selBox.leftX - selBox.rightX + 1;
+			} else {
+				width = selBox.rightX - selBox.leftX + 1;
+			}
+			if (selBox.topY < selBox.bottomY) {
+				height = selBox.bottomY - selBox.topY + 1;
+			} else {
+				height = selBox.topY - selBox.bottomY + 1;
+			}
+			me.afterEdit("select all (" + width + " x " + height + ")");
 		} else {
 			me.isSelection = false;
+			me.afterEdit("cancel selection");
 		}
-		me.afterEdit("selection");
 	};
 
 
@@ -6831,6 +6866,11 @@
 				y1 = swap;
 			}
 
+			// check for 2 state patterns
+			if (numStates === -1) {
+				numStates = 2;
+			}
+
 			// compute potential size of edit buffer
 			sizeHint = me.randomDensity * (y2 - y1 + 1) * (x2 - x1 + 1);
 
@@ -6838,7 +6878,11 @@
 			for (y = y1; y <= y2; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
 					if (me.randomDensity > 0 && (me.randGen.random() <= me.randomDensity)) {
-						state = ((me.randGen.random() * (numStates - 1)) | 0) + 1;
+						if (numStates === 2) {
+							state = 1;
+						} else {
+							state = ((me.randGen.random() * (numStates - 1)) | 0) + 1;
+						}
 					} else {
 						state = 0;
 					}
