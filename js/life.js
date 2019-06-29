@@ -2180,17 +2180,43 @@
 
 		// play from the snapshot counter to just before the target with stats off (for speed)
 		while (this.counter < targetGen - 1) {
-			this.anythingAlive = 1;
-			this.nextGeneration(false, true, graphDisabled);
-			this.convertToPensTile();
+			if (this.anythingAlive) {
+				this.nextGeneration(false, true, graphDisabled);
+				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
+					this.convertToPensTile();
+				}
+				// check for just died for 2 state patterns
+				if (this.anythingAlive === 0 && this.multiNumStates <= 2) {
+					// clear the other buffer
+					this.anythingAlive = 1;
+					this.nextGeneration(false, false, this.graphDisabled);
+					this.counter -= 1;
+				}
+			} else {
+				this.counter += 1;
+				this.convertToPensTile();
+			}
 			view.pasteRLEList();
 		}
 
 		// compute the final generation with stats on if required
 		if (this.counter < targetGen) {
-			this.anythingAlive = 1;
-			this.nextGeneration(statsOn, true, graphDisabled);
-			this.convertToPensTile();
+			if (this.anythingAlive) {
+				this.nextGeneration(statsOn, true, graphDisabled);
+				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
+					this.convertToPensTile();
+				}
+				// check for just died for 2 state patterns
+				if (this.anythingAlive === 0 && this.multiNumStates <= 2) {
+					// clear the other buffer
+					this.anythingAlive = 1;
+					this.nextGeneration(false, false, this.graphDisabled);
+					this.counter -= 1;
+				}
+			} else {
+				this.counter += 1;
+				this.convertToPensTile();
+			}
 			view.pasteRLEList();
 		}
 		// if paste every is defined then always flag there are alive cells

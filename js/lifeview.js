@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global BoundingBox Allocator Uint8 Int16 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager ScriptParser Uint32Array myRand PopupWindow typedArrays Float32 */
+	/* global Random BoundingBox Allocator Uint8 Int16 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager ScriptParser Uint32Array myRand PopupWindow typedArrays Float32 */
 
 	// LifeViewer document configuration
 	var DocConfig = {
@@ -215,7 +215,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 355,
+		/** @const {number} */ versionBuild : 356,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -544,6 +544,12 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// random number generator
+		this.randGen = new Random();
+
+		// initialise random seed
+		this.randGen.init(Date.now().toString());
+
 		// random density for fill
 		this.randomDensity = 0.5;
 
@@ -1532,7 +1538,16 @@
 			length = this.currentEdit ? this.currentEdit.length : 0,
 			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
 			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1),
-			newBuffer = null;
+			newBuffer = null,
+			states = this.engine.multiNumStates,
+			invertForGenerations = (states > 2 && !this.engine.isNone);
+
+		// handle generations
+		if (invertForGenerations) {
+			if (state > 0) {
+				state = states - state;
+			}
+		}
 
 		// only add undo/redo records and draw if the new state is different than the current state
 		if (colour !== state) {
@@ -1619,7 +1634,11 @@
 
 		if (found) {
 			this.editNum = i + 1;
-			record = this.editList[this.editNum];
+			if (this.editNum >= this.numEdits) {
+				record = this.editList[this.editNum - 1];
+			} else {
+				record = this.editList[this.editNum];
+			}
 			// restore selection if present
 			if (record.selection) {
 				selBox.leftX = record.selection.leftX;
@@ -1644,19 +1663,23 @@
 			tooltip = "";
 
 		// update undo tooltip
-		if (edit > 0) {
+		if (edit > 1) {
 			tooltip = "undo ";
 			if (list[edit - 1].editCells === null) {
 				gen = list[edit - 1].gen;
 				if (edit > 1) {
 					gen = list[edit - 2].gen;
 				}
-				if (this.engine.counter - gen > 1) {
-					tooltip += "play";
+				if (this.engine.counter === gen) {
+					tooltip += list[edit - 1].action;
 				} else {
-					tooltip += "step";
+					if (this.engine.counter - gen > 1) {
+						tooltip += "play";
+					} else {
+						tooltip += "step";
+					}
+					tooltip += " from " + gen;
 				}
-				tooltip += " from " + gen;
 			} else {
 				if (list[edit - 1].action === "") {
 					tooltip += "edit";
@@ -1672,12 +1695,16 @@
 			tooltip = "redo ";
 			if (list[edit].editCells === null) {
 				gen = list[edit].gen;
-				if (gen - this.engine.counter > 1) {
-					tooltip += "play";
+				if (gen === this.engine.counter) {
+					tooltip += list[edit].action;
 				} else {
-					tooltip += "step";
+					if (gen - this.engine.counter > 1) {
+						tooltip += "play";
+					} else {
+						tooltip += "step";
+					}
+					tooltip += " to " + gen;
 				}
-				tooltip += " to " + gen;
 			} else {
 				if (list[edit].action === "") {
 					tooltip += "edit";
@@ -1689,22 +1716,48 @@
 		}
 	};
 
+	// compare two selections and return true if they are the same
+	View.prototype.compareSelections = function(first, second) {
+		var result = false;
+
+		// check if they are both blank
+		if (first === null && second === null) {
+			result = true;
+		} else {
+			// check if only one is blank
+			if ((first === null && second !== null) || (first !== null && second === null)) {
+				result = false;
+			} else {
+				// check if the selections are the same bounding box
+				if (first.leftX === second.leftX && first.bottomY === second.bottomY && first.rightX === second.rightX && first.topY === second.topY) {
+					result = true;
+				} else {
+					result = false;
+				}
+			}
+		}
+		return result;
+	};
+
 	// after edit
 	View.prototype.afterEdit = function(comment) {
 		var wasChange = true,
 			counter = this.engine.counter,
 			editCells = null,
 			box = null,
-			selBox = this.selectionBox;
+			selBox = this.selectionBox,
+			record = null;
 
 		// do nothing if step back disabled
 		if (!this.noHistory) {
 			// check for duplicate
 			if (this.editNum > 0) {
-				if (counter === this.editList[this.editNum - 1].gen && this.currentEditIndex === 0) {
-					wasChange = false;
-				} else {
-					wasChange = true;
+				record = this.editList[this.editNum - 1];
+				if (counter === record.gen && this.currentEditIndex === 0) {
+					// compare selection
+					if (this.compareSelections(record.selection, selBox)) {
+						wasChange = false;
+					}
 				}
 			}
 	
@@ -1762,7 +1815,8 @@
 				gen = record.gen;
 				if (record.editCells === null) {
 					if (current > 1) {
-						gen = me.editList[current - 2].gen;
+						record = me.editList[current - 2];
+						gen = record.gen;
 					}
 				}
 	
@@ -1813,7 +1867,7 @@
 			// check for redo records
 			if (me.editNum < me.numEdits) {
 				record = me.editList[me.editNum];
-				if (record.gen === counter && record.editCells === null) {
+				if (record.gen === counter && record.editCells === null && record.action === "") {
 					me.editNum += 1;
 				}
 				// if it is for a later generation then go there
@@ -4269,7 +4323,7 @@
 
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
-		this.undoButton.locked = (this.editNum === 0 || (this.editNum === 1 && this.numEdits > 1 && this.editList[0].gen === 0 && this.editList[0].editCells === null && this.engine.counter === 0));
+		this.undoButton.locked = (this.editNum <= 1 || this.undoButton.toolTip === "undo ");
 
 		// top menu buttons
 		this.autoFitToggle.deleted = hide;
@@ -4452,7 +4506,7 @@
 			}
 		}
 
-		shown = hide || !this.drawing || settingsMenuOpen;;
+		shown = hide || !this.drawing || settingsMenuOpen;
 		this.pickToggle.deleted = shown;
 		this.pausePlaybackToggle.deleted = shown;
 		this.smartToggle.deleted = shown;
@@ -6036,6 +6090,7 @@
 		if (me.drawingSelection) {
 			me.isSelection = true;
 			me.drawingSelection = false;
+			me.afterEdit("selection");
 		} else {
 			me.isSelection = false;
 		}
@@ -6626,7 +6681,7 @@
 			swap = 0,
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
-			sizeHint;
+			sizeHint = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -6682,6 +6737,7 @@
 		} else {
 			me.isSelection = false;
 		}
+		me.afterEdit("selection");
 	};
 
 
@@ -6759,7 +6815,8 @@
 			swap = 0,
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
-			sizeHint;
+			sizeHint = 0,
+			numStates = me.engine.multiNumStates;
 
 		// check for selection
 		if (me.isSelection) {
@@ -6780,8 +6837,8 @@
 			// draw random cells
 			for (y = y1; y <= y2; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
-					if (me.randomDensity > 0 && (myRand.random() <= me.randomDensity)) {
-						state = 1;
+					if (me.randomDensity > 0 && (me.randGen.random() <= me.randomDensity)) {
+						state = ((me.randGen.random() * (numStates - 1)) | 0) + 1;
 					} else {
 						state = 0;
 					}
@@ -7364,17 +7421,43 @@
 	View.prototype.runForwardTo = function(targetGen) {
 		// compute each generation up to just before the target with stats off (for speed)
 		while (this.engine.counter < targetGen - 1) {
-			this.engine.anythingAlive = 1;
-			this.engine.nextGeneration(false, false, this.graphDisabled);
-			this.engine.convertToPensTile();
+			if (this.engine.anythingAlive) {
+				this.engine.nextGeneration(false, false, this.graphDisabled);
+				if (!(this.engine.anythingAlive === 0 && this.engine.multiNumStates > 2)) {
+					this.engine.convertToPensTile();
+				}
+				// check for just died for 2 state patterns
+				if (this.engine.anythingAlive === 0 && this.engine.multiNumStates <= 2) {
+					// clear the other buffer
+					this.engine.anythingAlive = 1;
+					this.engine.nextGeneration(false, false, this.graphDisabled);
+					this.engine.counter -= 1;
+				}
+			} else {
+				this.engine.counter += 1;
+				this.engine.convertToPensTile();
+			}
 			this.pasteRLEList();
 		}
 
 		// compute the final generation with stats on if required
 		if (this.engine.counter < targetGen) {
-			this.engine.anythingAlive = 1;
-			this.engine.nextGeneration(this.statsOn, false, this.graphDisabled);
-			this.engine.convertToPensTile();
+			if (this.engine.anythingAlive) {
+				this.engine.nextGeneration(this.statsOn, false, this.graphDisabled);
+				if (!(this.engine.anythingAlive === 0 && this.engine.multiNumStates > 2)) {
+					this.engine.convertToPensTile();
+				}
+				// check for just died for 2 state patterns
+				if (this.engine.anythingAlive === 0 && this.engine.multiNumStates <= 2) {
+					// clear the other buffer
+					this.engine.anythingAlive = 1;
+					this.engine.nextGeneration(false, false, this.graphDisabled);
+					this.engine.counter -= 1;
+				}
+			} else {
+				this.engine.counter += 1;
+				this.engine.convertToPensTile();
+			}
 			this.pasteRLEList();
 		}
 
@@ -8844,7 +8927,7 @@
 		this.stateColsList.current = [];
 		this.stateColsList.width = 40 * states;
 		this.stateColsList.bgAlpha = 1;
-		for (i = 0; i < this.maxDisplayStates; i += 1) {
+		for (i = 0; i < states; i += 1) {
 			state = i + this.startState;
 			this.stateList.lower[i] = String(state);
 			if (state === 0) {
@@ -10191,6 +10274,10 @@
 			this.nextUniverseButton.deleted = true;
 
 		}
+
+
+		// save initial undo state
+		this.afterEdit("");
 	};
 
 	// start a viewer

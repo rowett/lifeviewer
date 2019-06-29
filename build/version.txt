@@ -1,3 +1,7 @@
+Build 356
+- Draw mode was incorrectly showing a minimum of 7 states for Generations patterns
+- Select mode Random fill was only using 2 states for Generations patterns
+
 Build 355
 - selections now support:
 	- selecting a rectangle of cells (no-selection box visible yet)
