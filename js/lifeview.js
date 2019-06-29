@@ -6909,6 +6909,9 @@
 			y = 0,
 			swap = 0,
 			row = null,
+			state = 0,
+			states = me.engine.multiNumStates,
+			invertForGenerations = (states > 2 && !me.engine.isNone),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
 
@@ -6932,7 +6935,13 @@
 			for (y = y1; y <= y2; y += 1) {
 				// read the row
 				for (x = x1; x <= x2; x += 1) {
-					row[x - x1] = me.engine.getState(x + xOff, y + yOff, false);
+					state = me.engine.getState(x + xOff, y + yOff, false);
+					if (invertForGenerations) {
+						if (state > 0) {
+							state = states - state;
+						}
+					}
+					row[x - x1] = state;
 				}
 				// write the row back in reverse order
 				for (x = x1; x <= x2; x += 1) {
@@ -6959,6 +6968,9 @@
 			y = 0,
 			swap = 0,
 			column = null,
+			state = 0,
+			states = me.engine.multiNumStates,
+			invertForGenerations = (states > 2 && !me.engine.isNone),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
 
@@ -6982,7 +6994,13 @@
 			for (x = x1; x <= x2; x += 1) {
 				// read the column
 				for (y = y1; y <= y2; y += 1) {
-					column[y - y1] = me.engine.getState(x + xOff, y + yOff, false);
+					state = me.engine.getState(x + xOff, y + yOff, false);
+					if (invertForGenerations) {
+						if (state > 0) {
+							state = states - state;
+						}
+					}
+					column[y - y1] = state;
 				}
 				// write the column back in reverse order
 				for (y = y1; y <= y2; y += 1) {
@@ -7024,6 +7042,9 @@
 			h = 0,
 			ox = 0,
 			oy = 0,
+			state = 0,
+			states = me.engine.multiNumStates,
+			invertForGenerations = (states > 2 && !me.engine.isNone),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
 
@@ -7066,6 +7087,11 @@
 					tx = (x - cx) * axx + (y - cy) * axy + cx;
 					ty = (x - cx) * ayx + (y - cy) * ayy + cy;
 					state = me.engine.getState(x + xOff, y + yOff, false);
+					if (invertForGenerations) {
+						if (state > 0) {
+							state = states - state;
+						}
+					}
 					cells[i] = tx;
 					cells[i + 1] = ty;
 					cells[i + 2] = state;
