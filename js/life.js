@@ -5622,7 +5622,7 @@
 			}
 
 			// check if shrink needed
-			this.engine.doShrink(true);
+			this.doShrink(true);
 		}
 	};
 
