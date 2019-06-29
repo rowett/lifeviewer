@@ -5565,7 +5565,7 @@
 				gliderRow = glider[yc];
 				for (xc = 0; xc < gliderRow.length; xc += 1) {
 					if (gliderRow[xc] === 1) {
-						this.setState(x + xc, y + yc, 0, false, true);
+						this.setState(x + xc, y + yc, 0, false);
 					}
 				}
 			}
@@ -5620,6 +5620,9 @@
 					}
 				}
 			}
+
+			// check if shrink needed
+			this.engine.doShrink(true);
 		}
 	};
 
