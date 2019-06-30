@@ -1,3 +1,7 @@
+Build 357
+- grow grid if required when selecting
+- fix a rendering issue after some selection actions
+
 Build 356
 - Draw mode was incorrectly always showing a minimum of 7 states for Generations patterns
 - Select mode Random fill was only using 2 states for Generations patterns

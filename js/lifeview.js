@@ -215,7 +215,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 356,
+		/** @const {number} */ versionBuild : 357,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -544,6 +544,12 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// selection box
+		this.selectionBox = new BoundingBox();
+	
+		// middle coordinate selection box
+		this.middleBox = new BoundingBox;
+
 		// random number generator
 		this.randGen = new Random();
 
@@ -552,9 +558,6 @@
 
 		// random density for fill
 		this.randomDensity = 0.5;
-
-		// selection box
-		this.selectionBox = new BoundingBox();
 
 		// selection start X and Y screen location (used to detect click to clear selection)
 		/** @type {number} */ this.selectStartX = 0;
@@ -1862,7 +1865,7 @@
 			this.updateUndoToolTips();
 
 			// check if shrink needed
-			this.engine.doShrink(this.state1Fit);
+			this.engine.doShrink();
 		}
 	};
 
@@ -1907,7 +1910,7 @@
 			this.updateUndoToolTips();
 
 			// check if shrink needed
-			this.engine.doShrink(this.state1Fit);
+			this.engine.doShrink();
 		}
 	};
 
@@ -2500,7 +2503,7 @@
 		}
 
 		// check if shrink needed
-		this.engine.doShrink(this.state1Fit);
+		this.engine.doShrink();
 	};
 
 	// set initial value flags to a value
@@ -3100,6 +3103,64 @@
 		this.zoomItem.current = this.viewZoomRange([newZoom, newZoom], true, this);
 	};
 
+	// check if grid needs to grow
+	View.prototype.checkGridSize = function(me, box) {
+		var borderSize = ViewConstants.maxStepSpeed; 
+
+		// compute border based on algorithm
+		if (me.engine.isHROT) {
+			borderSize = me.engine.HROT.range * 4 + 1;
+			if (me.engine.boundedGridType !== -1) {
+				borderSize += me.engine.HROT.range * 2;
+			}
+			if (me.engine.HROT.type === PatternManager.vonNeumannHROT) {
+				if (me.engine.boundedGridType !== -1) {
+					borderSize += me.engine.boundedGridHeight / 2;
+				} else {
+					borderSize += (me.engine.zoomBox.topY - me.engine.zoomBox.bottomY + 1) / 2;
+				}
+			}
+			if (borderSize < ViewConstants.maxStepSpeed) {
+				borderSize = ViewConstants.maxStepSpeed;
+			}
+		}
+
+		// check if the bounding box is now bigger than the required grid size
+		if (me.engine.checkForGrowth(box, borderSize)) {
+			// update the default x and y
+			me.defaultX += me.engine.width >> 2;
+			me.defaultY += me.engine.height >> 2;
+			me.savedX += me.engine.width >> 2;
+			me.savedY += me.engine.height >> 2;
+
+			// check for hex mode
+			if (me.engine.isHex) {
+				me.defaultX -= me.engine.height >> 3;
+				me.savedX -= me.engine.height >> 3;
+			}
+
+			// update pan position
+			me.panX += me.engine.width >> 2;
+			me.panY += me.engine.height >> 2;
+		}
+	};
+
+	// check if the selection needs the grid to grow
+	View.prototype.checkSelectionSize = function(me) {
+		// convert selection box to middle coordinates
+		var selBox = me.selectionBox,
+			midBox = me.middleBox,
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+
+		midBox.leftX = selBox.leftX + xOff,
+		midBox.bottomY = selBox.bottomY + yOff,
+		midBox.rightX = selBox.rightX + xOff,
+		midBox.topY = selBox.topY + yOff;
+
+		me.checkGridSize(me, midBox);
+	};
+
 	// update progress bar for copy RLE
 	View.prototype.updateProgressBarCopy = function(me) {
 		// update the progress bar
@@ -3622,9 +3683,6 @@
 			// many many steps taken
 			stepsTaken = 0,
 
-			// border for growth
-			borderSize = 0,
-
 			// save died generation
 			saveGeneration = 0;
 
@@ -4076,40 +4134,7 @@
 
 		// check if grid buffer needs to grow
 		if (me.engine.counter && me.engine.anythingAlive) {
-			borderSize = ViewConstants.maxStepSpeed;
-			if (me.engine.isHROT) {
-				borderSize = me.engine.HROT.range * 4 + 1;
-				if (me.engine.boundedGridType !== -1) {
-					borderSize += me.engine.HROT.range * 2;
-				}
-				if (me.engine.HROT.type === PatternManager.vonNeumannHROT) {
-					if (me.engine.boundedGridType !== -1) {
-						borderSize += me.engine.boundedGridHeight / 2;
-					} else {
-						borderSize += (me.engine.zoomBox.topY - me.engine.zoomBox.bottomY + 1) / 2;
-					}
-				}
-				if (borderSize < ViewConstants.maxStepSpeed) {
-					borderSize = ViewConstants.maxStepSpeed;
-				}
-			}
-			if (me.engine.checkForGrowth(borderSize)) {
-				// update the default x and y
-				me.defaultX += me.engine.width >> 2;
-				me.defaultY += me.engine.height >> 2;
-				me.savedX += me.engine.width >> 2;
-				me.savedY += me.engine.height >> 2;
-
-				// check for hex mode
-				if (me.engine.isHex) {
-					me.defaultX -= me.engine.height >> 3;
-					me.savedX -= me.engine.height >> 3;
-				}
-
-				// update pan position
-				me.panX += me.engine.width >> 2;
-				me.panY += me.engine.height >> 2;
-			}
+			me.checkGridSize(me, me.engine.zoomBox);
 		}
 
 		// draw any arrows and labels
@@ -6062,6 +6087,11 @@
 					box.topY = me.cellY - yOff;
 				}
 
+				// check grid for growth
+				if (me.drawingSelection) {
+					me.checkSelectionSize(me);
+				}
+
 				// clip to bounded grid if specified
 				if (me.drawingSelection && me.engine.boundedGridType !== -1) {
 					// adjust for mid-grid
@@ -6155,7 +6185,7 @@
 		// end of edit
 		if (me.currentEditIndex > 0) {
 			// check if shrink needed
-			me.engine.doShrink(me.state1Fit);
+			me.engine.doShrink();
 
 			me.afterEdit("");
 		}
@@ -6747,7 +6777,7 @@
 			}
 
 			// check if shrink needed
-			me.engine.doShrink(me.state1Fit);
+			me.engine.doShrink();
 
 			// save edit
 			me.afterEdit("clear cells in selection");
@@ -6834,7 +6864,7 @@
 			}
 
 			// check if shrink needed
-			me.engine.doShrink(me.state1Fit);
+			me.engine.doShrink();
 
 			// save edit
 			me.afterEdit("cut");
@@ -6903,7 +6933,7 @@
 			}
 
 			// check if shrink needed
-			me.engine.doShrink(me.state1Fit);
+			me.engine.doShrink();
 
 			// save edit
 			me.afterEdit("random " + ((me.randomDensity * 100).toFixed(0)) + "%");
@@ -6962,7 +6992,7 @@
 			}
 
 			// check if shrink needed
-			me.engine.doShrink(me.state1Fit);
+			me.engine.doShrink();
 
 			// save edit
 			me.afterEdit("flip horizontally");
@@ -7021,7 +7051,7 @@
 			}
 
 			// check if shrink needed
-			me.engine.doShrink(me.state1Fit);
+			me.engine.doShrink();
 
 			// save edit
 			me.afterEdit("flip vertically");
@@ -7121,16 +7151,6 @@
 				newX += newXInc;
 			}
 
-			// write the cells to their new positions
-			i = 0;
-			while (i < cells.length) {
-				x = cells[i];
-				y = cells[i + 1];
-				state = cells[i + 2];
-				me.setStateWithUndo(x + xOff, y + yOff, state, true, 0);
-				i += 3;
-			}
-
 			// transform selection
 			box.leftX = newLeftX;
 			box.bottomY = newBottomY;
@@ -7145,6 +7165,23 @@
 				swap = box.bottomY;
 				box.bottomY = box.topY;
 				box.topY = swap;
+			}
+
+			// check if rotation has grown the grid
+			me.checkSelectionSize(me);
+
+			// recompute offsets in case grid changed
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1);
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+
+			// write the cells to their new positions
+			i = 0;
+			while (i < cells.length) {
+				x = cells[i];
+				y = cells[i + 1];
+				state = cells[i + 2];
+				me.setStateWithUndo(x + xOff, y + yOff, state, true, 0);
+				i += 3;
 			}
 
 			// clear outside intersection between new selection and old
@@ -7170,7 +7207,7 @@
 			}
 
 			// check if shrink needed
-			me.engine.doShrink(me.state1Fit);
+			me.engine.doShrink();
 
 			// save edit
 			me.afterEdit(comment);
@@ -8504,7 +8541,7 @@
 		this.rotateCCWButton.toolTip = "rotate counter-clockwise";
 
 		// add the clear selection button
-		this.clearSelectionButton = this.viewMenu.addButtonItem(this.clearSelectionPressed, Menu.northEast, -40, 315, 40, 40, "X");
+		this.clearSelectionButton = this.viewMenu.addButtonItem(this.clearSelectionPressed, Menu.northEast, -40, 315, 40, 40, "x");
 		this.clearSelectionButton.icon = this.iconManager.icon("select");
 		this.clearSelectionButton.toolTip = "clear cells in selection";
 

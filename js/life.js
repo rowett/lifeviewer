@@ -2608,12 +2608,9 @@
 	};
 
 	// check if the grid buffer needs to grow
-	Life.prototype.checkForGrowth = function(maxStep) {
-		// get the grid box
-		var zoomBox = this.zoomBox,
-
-		    // get the current grid width and height
-		    width = this.width,
+	Life.prototype.checkForGrowth = function(box, maxStep) {
+	    // get the current grid width and height
+		var width = this.width,
 		    height = this.height,
 
 		    // whether the buffer grew
@@ -2622,7 +2619,7 @@
 		// check if already at maximum size
 		if (width < this.maxGridSize && this.anythingAlive) {
 			// check bounding box
-			if (zoomBox.leftX <= maxStep || zoomBox.bottomY <= maxStep || zoomBox.rightX >= (width - maxStep) || zoomBox.topY >= (height - maxStep)) {
+			if (box.leftX <= maxStep || box.bottomY <= maxStep || box.rightX >= (width - maxStep) || box.topY >= (height - maxStep)) {
 				// grow the grid
 				this.growGrid();
 				result = true;
@@ -5050,10 +5047,272 @@
 	};
 
 	// shrink grid (after major edit)
-	Life.prototype.doShrink = function(state1Fit) {
+	Life.prototype.doShrink = function() {
+		var w = 0,
+		    h = 0,
+		    input = 0,
+
+		    // width in 16bit chunks
+		    w16 = this.width >> 4,
+
+		    // width and height
+		    height = this.height,
+		    width = this.width,
+
+		    // life grid
+		    grid16 = this.grid16,
+		    gridRow16 = null,
+
+		    // overlay colour grid
+		    overlayGrid = this.overlayGrid,
+		    overlayRow = null,
+
+		    // colour grid
+		    colourGrid = this.colourGrid,
+		    colourGridRow = null,
+
+		    // bounding boxes
+			zoomBox = this.zoomBox,
+			HROTBox = this.HROTBox,
+		    initialBox = this.initialBox,
+
+		    // new box extent
+		    newBottomY = this.height,
+		    newTopY = -1,
+		    newLeftX = this.width,
+		    newRightX = -1,
+
+		    // new overlay extent
+		    overlayBottomY = this.height,
+		    overlayTopY = -1,
+		    overlayLeftX = this.width,
+		    overlayRightX = -1,
+
+		    // flag if something in the row was alive
+		    rowAlive = 0,
+
+		    // flags if something in the column was alive
+		    columnOccupied16 = this.columnOccupied16,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile grids
+		    tileGrid = this.tileGrid,
+		    tileRow = null,
+		    nextTileGrid = this.nextTileGrid,
+
+		    // colour tile grids
+		    colourTileGrid = this.colourTileGrid,
+		    colourTileHistoryGrid = this.colourTileHistoryGrid,
+
+		    // blank tile row
+		    blankTileRow = this.blankTileRow,
+
+		    // bottom tile row
+		    bottomY = 0,
+
+		    // top tile row
+		    topY = 0,
+
+		    // left tile group column
+		    leftX = 0,
+
+		    // right tile group column
+			rightX = 0;
+
 		if (this.shrinkNeeded) {
 			this.shrinkNeeded = false;
-			this.resetBoxes(state1Fit);
+
+			// determine the buffer for current generation
+			if ((this.counter & 1) !== 0) {
+				grid16 = this.nextGrid16;
+				tileGrid = this.nextTileGrid;
+				nextTileGrid = this.tileGrid;
+			} else {
+				grid16 = this.grid16;
+				tileGrid = this.tileGrid;
+				nextTileGrid = this.nextTileGrid;
+			}
+
+			// check for LifeHistory pattern
+			if (overlayGrid) {
+				// use the overlay grid to set the bounding box (to cope with non-excecutable states)
+				for (h = 0; h < height; h += 1) {
+					overlayRow = overlayGrid[h];
+
+					// flag nothing in the row
+					rowAlive = 0;
+
+					// check each column
+					for (w = 0; w < width; w += 1) {
+						input = overlayRow[w];
+						rowAlive |= input;
+
+						if (input) {
+							if (w < overlayLeftX) {
+								overlayLeftX = w;
+							}
+							if (w > overlayRightX) {
+								overlayRightX = w;
+							}
+						}
+					}
+
+					// check if the row was alive
+					if (rowAlive) {
+						if (h < overlayBottomY) {
+							overlayBottomY = h;
+						}
+						if (h > overlayTopY) {
+							overlayTopY = h;
+						}
+					}
+				}
+			}
+
+			// use the pattern grid to set the bounding box
+			// clear column occupied flags
+			for (h = 0; h < columnOccupied16.length; h += 1) {
+				columnOccupied16[h] = 0;
+			}
+
+			// check for Generations or HROT
+			if (this.multiNumStates !== -1) {
+				// check each row
+				for (h = 0; h < height; h += 1) {
+					colourGridRow = colourGrid[h];
+
+					// flag nothing in the row
+					rowAlive = 0;
+
+					// check each column
+					for (w = 0; w < width; w += 1) {
+						input = colourGridRow[w];
+						rowAlive |= input;
+
+						if (input) {
+							if (w < newLeftX) {
+								newLeftX = w;
+							}
+							if (w > newRightX) {
+								newRightX = w;
+							}
+						}
+					}
+
+					// check if the row was alive
+					if (rowAlive) {
+						if (h < newBottomY) {
+							newBottomY = h;
+						}
+						if (h > newTopY) {
+							newTopY = h;
+						}
+					}
+				}
+			} else {
+				// check each row
+				for (h = 0; h < height; h += 1) {
+					gridRow16 = grid16[h];
+
+					// flag nothing alive in the row
+					rowAlive = 0;
+
+					// check each column
+					for (w = 0; w < w16; w += 1) {
+						// update row alive flag
+						input = gridRow16[w];
+						rowAlive |= input;
+
+						// update the column alive flag
+						columnOccupied16[w] |= input;
+					}
+
+					// check if the row was alive
+					if (rowAlive) {
+						if (h < newBottomY) {
+							newBottomY = h;
+						}
+						if (h > newTopY) {
+							newTopY = h;
+						}
+					}
+				}
+
+				// check the width of the box
+				for (w = 0; w < w16; w += 1) {
+					if (columnOccupied16[w]) {
+						if (w < newLeftX) {
+							newLeftX = w;
+						}
+						if (w > newRightX) {
+							newRightX = w;
+						}
+					}
+				}
+
+				// convert new width to pixels
+				newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
+				newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
+			}
+
+			// ensure the box is not blank
+			if (newTopY < 0 || newBottomY >= height || newLeftX >= width || newRightX < 0) {
+				// set the box to the middle
+				newTopY = height >> 1;
+				newBottomY = newTopY;
+				newLeftX = width >> 1;
+				newRightX = newLeftX;
+			}
+
+			// merge with overlay if required
+			if (overlayGrid) {
+				if (overlayTopY < newTopY) {
+					newTopY = overlayTopY;
+				}
+				if (overlayBottomY > newBottomY) {
+					newBottomY = overlayBottomY;
+				}
+				if (overlayLeftX < newLeftX) {
+					newLeftX = overlayLeftX;
+				}
+				if (overlayRightX > newRightX) {
+					newRightX = overlayRightX;
+				}
+			}
+
+			// clip to display
+			if (newTopY > this.height - 1) {
+				newTopY = this.height - 1;
+			}
+			if (newBottomY < 0) {
+				newBottomY = 0;
+			}
+			if (newLeftX < 0) {
+				newLeftX = 0;
+			}
+			if (newRightX > this.width - 1) {
+				newRightX = this.width - 1;
+			}
+
+			// save new grid box
+			zoomBox.topY = newTopY;
+			zoomBox.bottomY = newBottomY;
+			zoomBox.leftX = newLeftX;
+			zoomBox.rightX = newRightX;
+
+			// copy to HROT alive state box
+			HROTBox.topY = newTopY;
+			HROTBox.bottomY = newBottomY;
+			HROTBox.leftX = newLeftX;
+			HROTBox.rightX = newRightX;
+
+			// copy to the original box (for LifeHistory)
+			initialBox.topY = newTopY;
+			initialBox.bottomY = newBottomY;
+			initialBox.leftX = newLeftX;
+			initialBox.rightX = newRightX;
 		}
 	};
 
@@ -5372,8 +5631,10 @@
 			initialBox.rightX = zoomBox.rightX;
 		}
 
-		// copy to tile grid to the next tile grid and to the colour tile grids
+		// copy tile grid to the next tile grid
 		Array.copy(tileGrid, nextTileGrid);
+
+		// copy to the colour grids
 		Array.copy(tileGrid, colourTileGrid);
 		Array.copy(tileGrid, colourTileHistoryGrid);
 	};
@@ -5622,7 +5883,7 @@
 			}
 
 			// check if shrink needed
-			this.doShrink(true);
+			this.doShrink();
 		}
 	};
 
