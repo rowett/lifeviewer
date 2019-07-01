@@ -1,6 +1,7 @@
 Build 357
 - grow grid if required when selecting
 - fix a rendering issue after some selection actions
+- fixed an issue with bounding box after deleting cells
 - don't rotate selection if result doesn't fit on the grid
 - hotkey Ctrl "A" for select all
 - hotkey Ctrl "K" for remove selection
