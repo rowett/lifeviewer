@@ -17,6 +17,7 @@ Build 357
 - hotkey Alt "B" for toggle cell borders (moved from hotkey Alt "X")
 - hotkey Shift "F2" for toggle smart drawing (moved from hotkey Shift "F1")
 - fixed Help text wrapping
+- added invert selection button
 
 Build 356
 - Draw mode was incorrectly always showing a minimum of 7 states for Generations patterns
