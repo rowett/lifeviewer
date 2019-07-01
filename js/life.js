@@ -5092,34 +5092,7 @@
 		    rowAlive = 0,
 
 		    // flags if something in the column was alive
-		    columnOccupied16 = this.columnOccupied16,
-
-		    // tile rows
-		    tileRows = this.tileRows,
-
-		    // tile grids
-		    tileGrid = this.tileGrid,
-		    tileRow = null,
-		    nextTileGrid = this.nextTileGrid,
-
-		    // colour tile grids
-		    colourTileGrid = this.colourTileGrid,
-		    colourTileHistoryGrid = this.colourTileHistoryGrid,
-
-		    // blank tile row
-		    blankTileRow = this.blankTileRow,
-
-		    // bottom tile row
-		    bottomY = 0,
-
-		    // top tile row
-		    topY = 0,
-
-		    // left tile group column
-		    leftX = 0,
-
-		    // right tile group column
-			rightX = 0;
+			columnOccupied16 = this.columnOccupied16;
 
 		if (this.shrinkNeeded) {
 			this.shrinkNeeded = false;
@@ -5127,12 +5100,8 @@
 			// determine the buffer for current generation
 			if ((this.counter & 1) !== 0) {
 				grid16 = this.nextGrid16;
-				tileGrid = this.nextTileGrid;
-				nextTileGrid = this.tileGrid;
 			} else {
 				grid16 = this.grid16;
-				tileGrid = this.tileGrid;
-				nextTileGrid = this.nextTileGrid;
 			}
 
 			// check for LifeHistory pattern
