@@ -748,6 +748,7 @@
 		y = this.renderHelpLine(view, "F4", "select mode", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F5", "pan mode", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl A", "select all", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl I", "invert selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl K", "remove selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl S", "save pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl V", "paste", ctx, x, y, height, helpLine);

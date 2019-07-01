@@ -1,5 +1,9 @@
 Build 358
 - added selection box display
+- hotkey Ctrl "I" for invert selection
+- don't rotate selection if result doesn't fit in bounded grid
+- fix dragging selection in bounded grid
+- population count could be incorrect at generation 0 if stats off while editing
 
 Build 357
 - grow grid if required when selecting

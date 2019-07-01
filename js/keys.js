@@ -1268,33 +1268,38 @@
 
 			// i for display information
 			case 73:
-				// check for shift key
-				if (event.shiftKey) {
-					// toggle infobar
-					me.infoBarButton.current = me.viewInfoBarToggle([!me.infoBarEnabled], true, me);
+				// check for ctrl key
+				if (event.ctrlKey) {
+					me.invertSelectionPressed(me);
 				} else {
-					// check if help displayed
-					if (me.displayHelp) {
-						// check if on the info topic
-						if (me.helpTopic === ViewConstants.informationTopic) {
-							// close help
-							me.displayHelp = 0;
-						} else {
-							// switch to the information topic
-							me.setHelpTopic(ViewConstants.informationTopic, me);
-						}
+					// check for shift key
+					if (event.shiftKey) {
+						// toggle infobar
+						me.infoBarButton.current = me.viewInfoBarToggle([!me.infoBarEnabled], true, me);
 					} else {
-						// do not display information if in thumbnail mode
-						if (!me.thumbnail) {
-							me.setHelpTopic(ViewConstants.informationTopic, me);
+						// check if help displayed
+						if (me.displayHelp) {
+							// check if on the info topic
+							if (me.helpTopic === ViewConstants.informationTopic) {
+								// close help
+								me.displayHelp = 0;
+							} else {
+								// switch to the information topic
+								me.setHelpTopic(ViewConstants.informationTopic, me);
+							}
+						} else {
+							// do not display information if in thumbnail mode
+							if (!me.thumbnail) {
+								me.setHelpTopic(ViewConstants.informationTopic, me);
+							}
 						}
+	
+						// update the help UI
+						me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+						me.menuManager.toggleRequired = true;
 					}
-
-					// update the help UI
-					me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
-					me.menuManager.toggleRequired = true;
 				}
-
+	
 				break;
 
 			// Esc to close help and clear error messages or pause playback

@@ -215,7 +215,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 357,
+		/** @const {number} */ versionBuild : 358,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6093,6 +6093,9 @@
 			// selection box
 		var box = me.selectionBox,
 
+			// flag if off the grid
+			offGrid = false,
+
 			// offset to middle of grid
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
@@ -6120,12 +6123,21 @@
 				// check if there is a selection being drawn
 				if (!me.drawingSelection) {
 					if (x !== me.selectStartX || y !== me.selectStartY) {
-						// create a selection
-						me.drawingSelection = true;
-						box.leftX = me.cellX - xOff;
-						box.rightX = box.leftX;
-						box.bottomY = me.cellY - yOff;
-						box.topY = box.bottomY;
+						offGrid = false;
+						// check if the cell is inside any bounded grid
+						if (me.engine.boundedGridType !== -1) {
+							if (me.cellX < leftX || me.cellX > rightX || me.cellY < bottomY || me.cellY > topY) {
+								offGrid = true;
+							}
+						}
+						if (!offGrid) {
+							// create a selection
+							me.drawingSelection = true;
+							box.leftX = me.cellX - xOff;
+							box.rightX = box.leftX;
+							box.bottomY = me.cellY - yOff;
+							box.topY = box.bottomY;
+						}
 					}
 				} else {
 					// extend selection
@@ -6136,6 +6148,8 @@
 				// check grid for growth
 				if (me.drawingSelection) {
 					me.checkSelectionSize(me);
+					xOff = (me.engine.width >> 1) - (me.patternWidth >> 1);
+					yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
 				}
 
 				// clip to bounded grid if specified
@@ -6147,29 +6161,35 @@
 					topY -= yOff;
 
 					// test against grid boundaries
-					if (box.leftX < leftX) {
-						box.leftX = leftX;
+					if (box.leftX < box.rightX) {
+						if (box.leftX < leftX) {
+							box.leftX = leftX;
+						}
+						if (box.rightX > rightX) {
+							box.rightX = rightX;
+						}
+					} else {
+						if (box.rightX < leftX) {
+							box.rightX = leftX;
+						}
+						if (box.leftX > rightX) {
+							box.leftX = rightX;
+						}
 					}
-					if (box.leftX > rightX) {
-						box.rightX = rightX;
-					}
-					if (box.rightX < leftX) {
-						box.rightX = leftX;
-					}
-					if (box.rightX > rightX) {
-						box.rightX = rightX;
-					}
-					if (box.bottomY < bottomY) {
-						box.bottomY = bottomY;
-					}
-					if (box.bottomY > topY) {
-						box.bottomY = topY;
-					}
-					if (box.topY < bottomY) {
-						box.topY = bottomY;
-					}
-					if (box.topY > topY) {
-						box.topY = topY;
+					if (box.bottomY < box.topY) {
+						if (box.bottomY < bottomY) {
+							box.bottomY = bottomY;
+						}
+						if (box.topY > topY) {
+							box.topY = topY;
+						}
+					} else {
+						if (box.topY < bottomY) {
+							box.topY = bottomY;
+						}
+						if (box.bottomY > topY) {
+							box.bottomY = topY;
+						}
 					}
 				}
 			}
@@ -7140,9 +7160,14 @@
 			saveRightX = 0,
 			saveTopY = 0,
 			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !me.engine.isNone),
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+			/** @type {boolean} */ rotateFits = true,
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !me.engine.isNone),
+		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2),
+		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2),
+		    /** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
+			/** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1,
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
 
 		// check for selection
 		if (me.isSelection) {
@@ -7191,9 +7216,22 @@
 				box.topY = swap;
 			}
 
-			// check if rotation has grown the grid and was clipped
-			if (me.checkSelectionSize(me)) {
-				me.menuManager.notification.notify("Rotation does not fit on grid", 15, 180, 15, true);
+			// check if rotation fits in bounded grid if specified
+			if (me.engine.boundedGridType !== -1) {
+				if (box.leftX + xOff < leftX || box.rightX + xOff > rightX || box.bottomY + yOff < bottomY || box.topY + yOff > topY) {
+					me.menuManager.notification.notify("Rotation does not fit in bounded grid", 15, 180, 15, true);
+					rotateFits = false;
+				}
+			} else {
+				// check if rotation has grown the grid and was clipped
+				if (me.checkSelectionSize(me)) {
+					me.menuManager.notification.notify("Rotation does not fit on grid", 15, 180, 15, true);
+					rotateFits = false;
+				}
+			}
+
+			// if rotation does not fit then restore original selection box
+			if (!rotateFits) {
 				box.leftX = saveLeftX;
 				box.bottomY = saveBottomY;
 				box.rightX = saveRightX;
@@ -7559,12 +7597,8 @@
 			if (me.statsOn) {
 				// see if any cells are alive
 				if (me.engine.anythingAlive) {
-					// if at zero then used save position
-					if (me.engine.counter === 0) {
-						me.engine.population = me.engine.resetSnapshot.population;
-						me.engine.births = me.engine.resetSnapshot.births;
-						me.engine.deaths = me.engine.resetSnapshot.deaths;
-					} else {
+					// if at zero then population will be current
+					if (me.engine.counter > 0) {
 						// check for Generations or HROT rule
 						if (me.engine.multiNumStates === -1) {
 							// go to previous generation
