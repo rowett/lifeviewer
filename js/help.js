@@ -157,9 +157,6 @@
 		    // tab index in text
 		    tab = String(text).indexOf("\t"),
 
-		    // line number
-		    lineNo = view.lineNo,
-
 		    // tab number
 			tabNo = 0,
 
@@ -173,12 +170,7 @@
 			drewText = false,
 
 			// whether text should be drawn
-			shouldDraw = true;
-
-		// check if the line is on the page
-		if ((lineNo < startLine || lineNo > (startLine + view.numHelpPerPage)) && shouldDraw) {
-			shouldDraw = false;
-		}
+			shouldDraw = (view.lineNo >= startLine && view.lineNo <= (startLine + view.numHelpPerPage));
 
 		// check if there is fixed text
 		if (fixed.length) {
@@ -196,6 +188,7 @@
 					result += height;
 				}
 				view.lineNo += 1;
+				shouldDraw = (view.lineNo >= startLine && view.lineNo <= (startLine + view.numHelpPerPage));
 			}
 
 			// draw the variable text
@@ -240,9 +233,12 @@
 							ctx.fillText(text.substr(0, divider), x + view.tabs[tabNo], y);
 							y += height;
 							result += height;
-							ctx.fillText("  " + text.substr(divider), x + view.tabs[tabNo], y);
 						}
 						view.lineNo += 1;
+						shouldDraw = (view.lineNo >= startLine && view.lineNo <= (startLine + view.numHelpPerPage));
+						if (shouldDraw) {
+							ctx.fillText("  " + text.substr(divider), x + view.tabs[tabNo], y);
+						}
 						drewText = true;
 					}
 				}
@@ -545,6 +541,9 @@
 		// reset sections
 		view.helpSections = [];
 		
+		// enable line wrap
+		view.wrapHelpText = true;
+		
 		// keyboard commands
 		view.tabs[0] = 124;
 		view.helpSections[sectionNum] = [view.lineNo, "Top"];
@@ -562,6 +561,7 @@
 			y = this.renderHelpLine(view, "Enter", "toggle play / pause", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Space", "pause / next generation", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "B", "pause / previous generation", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Backspace", "pause / previous generation", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Tab", "pause / next step", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Shift Tab", "pause / previous step", ctx, x, y, height, helpLine);
 			if (view.isInPopup) {
@@ -703,11 +703,11 @@
 		y = this.renderHelpLine(view, "Shift T", "toggle extended timing information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "I", "toggle pattern and engine information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift I", "toggle information bar", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt B", "toggle cell borders", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "X", "toggle grid lines", ctx, x, y, height, helpLine);
 		if (view.engine.gridLineMajor > 0) {
 			y = this.renderHelpLine(view, "Shift X", "toggle major grid lines", ctx, x, y, height, helpLine);
 		}
-		y = this.renderHelpLine(view, "Alt X", "toggle cell borders", ctx, x, y, height, helpLine);
 		if (view.engine.isLifeHistory) {
 			y = this.renderHelpLine(view, "Alt H", "[R]History display on", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Alt J", "[R]History display off", ctx, x, y, height, helpLine);
@@ -741,14 +741,25 @@
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Edit controls:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F1", "toggle draw/pan mode", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Shift F1", "toggle smart drawing", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F2", "draw mode", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift F2", "toggle smart drawing", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F3", "pick mode", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F4", "select mode", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F5", "pan mode", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl A", "select all", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl K", "remove selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl S", "save pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl V", "paste", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl X", "cut", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl Y", "redo edit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl Z", "undo edit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl+Shift Z", "redo edit", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl S", "save pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl 5", "random fill", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Del", "clear selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, ">", "rotate selection clockwise", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "<", "rotate selection counter-clockwise", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt X", "flip selection horizontally", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt Y", "flip selection vertically", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// help controls

@@ -3147,6 +3147,8 @@
 
 	// check if the selection needs the grid to grow
 	View.prototype.checkSelectionSize = function(me) {
+		var clipped = false;
+
 		// convert selection box to middle coordinates
 		var selBox = me.selectionBox,
 			midBox = me.middleBox,
@@ -3159,6 +3161,45 @@
 		midBox.topY = selBox.topY + yOff;
 
 		me.checkGridSize(me, midBox);
+
+		// clip the selection to the grid
+		xOff = (me.engine.width >> 1) - (me.patternWidth >> 1);
+		yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+		if (selBox.leftX + xOff < 0) {
+			selBox.leftX = -xOff;
+			clipped = true;
+		}
+		if (selBox.leftX + xOff >= me.engine.width) {
+			selBox.leftX = me.engine.width - 1 - xOff;
+			clipped = true;
+		}
+		if (selBox.rightX + xOff < 0) {
+			selBox.rightX = -xOff;
+			clipped = true;
+		}
+		if (selBox.rightX + xOff >= me.engine.width) {
+			selBox.rightX = me.engine.width - 1 - xOff;
+			clipped = true;
+		}
+		if (selBox.bottomY + yOff < 0) {
+			selBox.bottomY = -yOff;
+			clipped = true;
+		}
+		if (selBox.bottomY + yOff >= me.engine.height) {
+			selBox.bottomY = me.engine.height - 1 - yOff;
+			clipped = true;
+		}
+		if (selBox.topY + yOff < 0) {
+			selBox.topY = -yOff;
+			clipped = true;
+		}
+		if (selBox.topY + yOff >= me.engine.height) {
+			selBox.topY = me.engine.height - 1 - yOff;
+			clipped = true;
+		}
+
+		// return whether the selection was clipped
+		return clipped;
 	};
 
 	// update progress bar for copy RLE
@@ -6130,6 +6171,13 @@
 		}
 	};
 
+	// remove selection
+	View.prototype.removeSelection = function(me) {
+		me.isSelection = false;
+		me.afterEdit("cancel selection");
+		me.drawingSelection = false;
+	};
+
 	// drag ended for select
 	View.prototype.dragEndSelect = function(me) {
 		var selBox = me.selectionBox,
@@ -6152,8 +6200,7 @@
 			}
 			me.afterEdit("selection (" + width + " x " + height + ")");
 		} else {
-			me.isSelection = false;
-			me.afterEdit("cancel selection");
+			me.removeSelection(me);
 		}
 	};
 
@@ -6812,8 +6859,7 @@
 			}
 			me.afterEdit("select all (" + width + " x " + height + ")");
 		} else {
-			me.isSelection = false;
-			me.afterEdit("cancel selection");
+			me.removeSelection(me);
 		}
 	};
 
@@ -7084,6 +7130,10 @@
 			firstNewY = 0,
 			newX = 0,
 			newY = 0,
+			saveLeftX = 0,
+			saveBottomY = 0,
+			saveRightX = 0,
+			saveTopY = 0,
 			states = me.engine.multiNumStates,
 			invertForGenerations = (states > 2 && !me.engine.isNone),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
@@ -7116,42 +7166,11 @@
 			newRightX = cx + y2 - cy;
 			newTopY = cy + x2 - cx;
 
-			// adjust for direction of rotation
-			if (clockwise) {
-				firstNewY = newBottomY;
-				newX = newRightX;
-				newYInc = 1;
-				newXInc = -1;
-			} else {
-				firstNewY = newTopY;
-				newX = newLeftX;
-				newYInc = -1;
-				newXInc = 1;
-			}
-
-			// allocate the cells
-			cells = me.engine.allocator.allocate(Int16, 3 * (x2 - x1 + 1) * (y2 - y1 + 1), "View.rotateCells");
-
-			// read each cell in the selection and rotate coordinates
-			for (y = y1; y <= y2; y += 1) {
-				newY = firstNewY;
-				for (x = x1; x <= x2; x += 1) {
-					state = me.engine.getState(x + xOff, y + yOff, false);
-					if (invertForGenerations) {
-						if (state > 0) {
-							state = states - state;
-						}
-					}
-					cells[i] = newX;
-					cells[i + 1] = newY;
-					cells[i + 2] = state;
-					i += 3;
-					newY += newYInc;
-				}
-				newX += newXInc;
-			}
-
 			// transform selection
+			saveLeftX = box.leftX;
+			saveBottomY = box.bottomY;
+			saveRightX = box.rightX;
+			saveTopY = box.topY;
 			box.leftX = newLeftX;
 			box.bottomY = newBottomY;
 			box.rightX = newRightX;
@@ -7167,50 +7186,91 @@
 				box.topY = swap;
 			}
 
-			// check if rotation has grown the grid
-			me.checkSelectionSize(me);
+			// check if rotation has grown the grid and was clipped
+			if (me.checkSelectionSize(me)) {
+				me.menuManager.notification.notify("Rotation does not fit on grid", 15, 180, 15, true);
+				box.leftX = saveLeftX;
+				box.bottomY = saveBottomY;
+				box.rightX = saveRightX;
+				box.topY = saveTopY;
+			} else {
+				// adjust for direction of rotation
+				if (clockwise) {
+					firstNewY = newBottomY;
+					newX = newRightX;
+					newYInc = 1;
+					newXInc = -1;
+				} else {
+					firstNewY = newTopY;
+					newX = newLeftX;
+					newYInc = -1;
+					newXInc = 1;
+				}
 
-			// recompute offsets in case grid changed
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1);
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+				// allocate the cells
+				cells = me.engine.allocator.allocate(Int16, 3 * (x2 - x1 + 1) * (y2 - y1 + 1), "View.rotateCells");
 
-			// write the cells to their new positions
-			i = 0;
-			while (i < cells.length) {
-				x = cells[i];
-				y = cells[i + 1];
-				state = cells[i + 2];
-				me.setStateWithUndo(x + xOff, y + yOff, state, true, 0);
-				i += 3;
-			}
-
-			// clear outside intersection between new selection and old
-			for (x = x1; x < box.leftX; x += 1) {
+				// read each cell in the selection and rotate coordinates
 				for (y = y1; y <= y2; y += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
+					newY = firstNewY;
+					for (x = x1; x <= x2; x += 1) {
+						state = me.engine.getState(x + xOff, y + yOff, false);
+						if (invertForGenerations) {
+							if (state > 0) {
+								state = states - state;
+							}
+						}
+						cells[i] = newX;
+						cells[i + 1] = newY;
+						cells[i + 2] = state;
+						i += 3;
+						newY += newYInc;
+					}
+					newX += newXInc;
 				}
-			}
-			for (x = box.rightX + 1; x <= x2; x += 1) {
-				for (y = y1; y <= y2; y += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
-				}
-			}
-			for (y = y1; y < box.bottomY; y += 1) {
-				for (x = x1; x <= x2; x += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
-				}
-			}
-			for (y = box.topY + 1; y <= y2; y += 1) {
-				for (x = x1; x <= x2; x += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
-				}
-			}
 
-			// check if shrink needed
-			me.engine.doShrink();
-
-			// save edit
-			me.afterEdit(comment);
+				// recompute offsets in case grid changed
+				xOff = (me.engine.width >> 1) - (me.patternWidth >> 1);
+				yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+	
+				// write the cells to their new positions
+				i = 0;
+				while (i < cells.length) {
+					x = cells[i];
+					y = cells[i + 1];
+					state = cells[i + 2];
+					me.setStateWithUndo(x + xOff, y + yOff, state, true, 0);
+					i += 3;
+				}
+	
+				// clear outside intersection between new selection and old
+				for (x = x1; x < box.leftX; x += 1) {
+					for (y = y1; y <= y2; y += 1) {
+						me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
+					}
+				}
+				for (x = box.rightX + 1; x <= x2; x += 1) {
+					for (y = y1; y <= y2; y += 1) {
+						me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
+					}
+				}
+				for (y = y1; y < box.bottomY; y += 1) {
+					for (x = x1; x <= x2; x += 1) {
+						me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
+					}
+				}
+				for (y = box.topY + 1; y <= y2; y += 1) {
+					for (x = x1; x <= x2; x += 1) {
+						me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
+					}
+				}
+	
+				// check if shrink needed
+				me.engine.doShrink();
+	
+				// save edit
+				me.afterEdit(comment);
+			}
 		}
 	};
 

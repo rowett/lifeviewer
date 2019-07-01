@@ -1,6 +1,22 @@
 Build 357
 - grow grid if required when selecting
 - fix a rendering issue after some selection actions
+- don't rotate selection if result doesn't fit on the grid
+- hotkey Ctrl "A" for select all
+- hotkey Ctrl "K" for remove selection
+- hotkey "Del" for clear selection
+- hotkey Ctrl "5" for random fill
+- hotkey ">" rotates selection or camera clockwise 90 degrees
+- hotkey "<" rotates selection or camera counter-clockwise 90 degrees
+- hotkey Ctrl "Y" for redo (also hotkey Ctrl+Shift "Z")
+- hotkey Ctrl "X" for cut
+- hotkey Ctrl "V" for paste
+- hotkey "Backspace" for back one step (also hotkey "B")
+- hotkey Alt "Y" for flip Y
+- hotkey Alt "X" for flip X
+- hotkey Alt "B" for toggle cell borders (moved from hotkey Alt "X")
+- hotkey Shift "F2" for toggle smart drawing (moved from hotkey Shift "F1")
+- fixed Help text wrapping
 
 Build 356
 - Draw mode was incorrectly always showing a minimum of 7 states for Generations patterns

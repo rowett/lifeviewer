@@ -97,25 +97,16 @@
 				}
 			}
 		} else {
-			// check for control (other than control-C, control-S or control-Z) or meta
-			if ((event.ctrlKey && (!(keyCode === 67 || keyCode === 83 || keyCode === 90))) || event.metaKey) {
-				// convert control-arrow keys into PageUp/PageDown/Home/End
-				if (event.ctrlKey && (keyCode >= 37 && keyCode <= 40)) {
-					if (keyCode === 37) {
-						keyCode = 33;
-					} else if (keyCode === 38)  {
-						keyCode = 36;
-					} else if (keyCode === 39)  {
-						keyCode = 34;
-					} else if (keyCode === 40)  {
-						keyCode = 35;
-					}
-				} else {
-					// handle control-R since it would refresh the browser and Golly uses it for pattern reset
-					if (!(event.ctrlKey && keyCode === 82)) {
-						// clear key code so it is not handled here
-						keyCode = -1;
-					}
+			// convert control-arrow keys into PageUp/PageDown/Home/End
+			if (event.ctrlKey && (keyCode >= 37 && keyCode <= 40)) {
+				if (keyCode === 37) {
+					keyCode = 33;
+				} else if (keyCode === 38)  {
+					keyCode = 36;
+				} else if (keyCode === 39)  {
+					keyCode = 34;
+				} else if (keyCode === 40)  {
+					keyCode = 35;
 				}
 			}
 
@@ -131,51 +122,61 @@
 					}
 				} else {
 					switch (keyCode) {
-						// c for default theme
-						case 67:
-							// set default theme
-							if (!me.multiStateView) {
-								me.themeItem.current = me.viewThemeRange([me.defaultTheme, ""], true, me);
-								if (!me.engine.isNone) {
-									me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
-								}
+					// b for cell borders
+					case 66:
+						// toggle cell borders
+						me.bordersButton.current = me.viewBordersToggle([!me.engine.cellBorders], true, me);
+						break;
+					// c for default theme
+					case 67:
+						// set default theme
+						if (!me.multiStateView) {
+							me.themeItem.current = me.viewThemeRange([me.defaultTheme, ""], true, me);
+							if (!me.engine.isNone) {
+								me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
 							}
-							break;
-						// h for [R]History on
-						case 72:
-							if (me.engine.isLifeHistory) {
-								me.engine.displayLifeHistory = true;
-								me.engine.drawOverlay = true;
-								me.menuManager.notification.notify("[R]History Display " + (me.engine.displayLifeHistory ? "On" : "Off"), 15, 40, 15, true);
-							}
-							break;
-						// j for [R]History off
-						case 74:
-							if (me.engine.isLifeHistory) {
-								me.engine.displayLifeHistory = false;
-								me.engine.drawOverlay = false;
-								me.menuManager.notification.notify("[R]History Display " + (me.engine.displayLifeHistory ? "On" : "Off"), 15, 40, 15, true);
-							}
-							break;
-						// k for toggle kill gliders
-						case 75:
-							// toggle kill gliders
-							me.engine.clearGliders = !me.engine.clearGliders;
-							me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
-							break;
-						// x for cell borders
-						case 88:
-							// toggle cell borders
-							me.bordersButton.current = me.viewBordersToggle([!me.engine.cellBorders], true, me);
-							break;
-						// slash for toggle hex/offset square grid
-						case 191:
-							// switch between hexagonal and square cells for hex display
-							if (!me.engine.isTriangular) {
-								me.hexCellButton.current = me.viewHexCellToggle([!me.engine.useHexagons], true, me);
-								me.menuManager.notification.notify("Hex display uses " + (me.engine.useHexagons ? "Hexagons" : "Squares"), 15, 40, 15, true);
-							}
-							break;
+						}
+						break;
+					// h for [R]History on
+					case 72:
+						if (me.engine.isLifeHistory) {
+							me.engine.displayLifeHistory = true;
+							me.engine.drawOverlay = true;
+							me.menuManager.notification.notify("[R]History Display " + (me.engine.displayLifeHistory ? "On" : "Off"), 15, 40, 15, true);
+						}
+						break;
+					// j for [R]History off
+					case 74:
+						if (me.engine.isLifeHistory) {
+							me.engine.displayLifeHistory = false;
+							me.engine.drawOverlay = false;
+							me.menuManager.notification.notify("[R]History Display " + (me.engine.displayLifeHistory ? "On" : "Off"), 15, 40, 15, true);
+						}
+						break;
+					// k for toggle kill gliders
+					case 75:
+						// toggle kill gliders
+						me.engine.clearGliders = !me.engine.clearGliders;
+						me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
+						break;
+					// x for flip X
+					case 88:
+						// flip selection horizontally
+						me.flipXPressed(me);
+						break;
+					// y for flip Y
+					case 89:
+						// flip selection vertically
+						me.flipYPressed(me);
+						break;
+					// slash for toggle hex/offset square grid
+					case 191:
+						// switch between hexagonal and square cells for hex display
+						if (!me.engine.isTriangular) {
+							me.hexCellButton.current = me.viewHexCellToggle([!me.engine.useHexagons], true, me);
+							me.menuManager.notification.notify("Hex display uses " + (me.engine.useHexagons ? "Hexagons" : "Squares"), 15, 40, 15, true);
+						}
+						break;
 					}
 				}
 
@@ -203,6 +204,27 @@
 	
 					// display notification
 					me.menuManager.notification.notify("Hex Display " + (me.engine.isHex ? "On" : "Off"), 15, 40, 15, true);
+				}
+				break;
+
+			// backspace for back one step
+			case 8:
+				// do not move if in view only mode
+				if (!me.viewOnly) {
+					// check if paused
+					if (!me.generationOn) {
+						// check if at start
+						if (me.engine.counter > 0) {
+							// run from start to previous generation
+							me.runTo(me.engine.counter - 1);
+
+							// adjust undo stack pointer
+							me.setUndoGen(me.engine.counter);
+						}
+					} else {
+						// pause
+						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+					}
 				}
 				break;
 
@@ -437,54 +459,68 @@
 
 			// x for toggle grid lines
 			case 88:
-				// check for shift
-				if (event.shiftKey) {
-					// toggle major grid lines
-					me.majorButton.current = me.viewMajorToggle([!me.engine.gridLineMajorEnabled], true, me);
-					if (me.engine.gridLineMajor > 0) {
-						me.menuManager.notification.notify("Major Grid Lines " + (me.engine.gridLineMajorEnabled ? "On" : "Off"), 15, 40, 15, true);
-						me.clearHelpCache();
-					}
+				if (event.ctrlKey) {
+					me.cutPressed(me);
 				} else {
-					// toggle grid
-					me.engine.displayGrid = !me.engine.displayGrid;
-					me.gridToggle.current = me.toggleGrid([me.engine.displayGrid], true, me);
-					me.menuManager.notification.notify("Grid Lines " + (me.engine.displayGrid ? "On" : "Off"), 15, 40, 15, true);
+					// check for shift
+					if (event.shiftKey) {
+						// toggle major grid lines
+						me.majorButton.current = me.viewMajorToggle([!me.engine.gridLineMajorEnabled], true, me);
+						if (me.engine.gridLineMajor > 0) {
+							me.menuManager.notification.notify("Major Grid Lines " + (me.engine.gridLineMajorEnabled ? "On" : "Off"), 15, 40, 15, true);
+							me.clearHelpCache();
+						}
+					} else {
+						// toggle grid
+						me.engine.displayGrid = !me.engine.displayGrid;
+						me.gridToggle.current = me.toggleGrid([me.engine.displayGrid], true, me);
+						me.menuManager.notification.notify("Grid Lines " + (me.engine.displayGrid ? "On" : "Off"), 15, 40, 15, true);
+					}
 				}
 				break;
 
 			// y for toggle graph
 			case 89:
-				// check if graph disabled
-				if (me.graphDisabled) {
-					me.menuManager.notification.notify("Graph Disabled", 15, 40, 15, true);
+				if (event.ctrlKey) {
+					me.redo(me);
 				} else {
-					// check for shift
-					if (event.shiftKey) {
-						// toggle lines
-						me.popGraphLines = !me.popGraphLines;
-						me.linesToggle.current = me.toggleLines([me.popGraphLines], true, me);
-						me.menuManager.notification.notify("Graph " + (me.popGraphLines ? "Lines" : "Points"), 15, 40, 15, true);
+					// check if graph disabled
+					if (me.graphDisabled) {
+						me.menuManager.notification.notify("Graph Disabled", 15, 40, 15, true);
 					} else {
-						// toggle population graph
-						me.popGraph = !me.popGraph;
-						me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
-						me.menuManager.notification.notify("Population Graph " + (me.popGraph ? "On" : "Off"), 15, 40, 15, true);
+						// check for shift
+						if (event.shiftKey) {
+							// toggle lines
+							me.popGraphLines = !me.popGraphLines;
+							me.linesToggle.current = me.toggleLines([me.popGraphLines], true, me);
+							me.menuManager.notification.notify("Graph " + (me.popGraphLines ? "Lines" : "Points"), 15, 40, 15, true);
+						} else {
+							// toggle population graph
+							me.popGraph = !me.popGraph;
+							me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
+							me.menuManager.notification.notify("Population Graph " + (me.popGraph ? "On" : "Off"), 15, 40, 15, true);
+						}
 					}
 				}
 				break;
 
 			// k for copy position to clipboard
 			case 75:
-				// check for shift
-				if (event.shiftKey) {
-					// copy view
-					me.copyPosition(me, true);
-					me.menuManager.notification.notify("Copied view to clipboard", 15, 180, 15, true);
+				// check for ctrl
+				if (event.ctrlKey) {
+					// remove selection
+					me.removeSelection(me);
 				} else {
-					// copy position
-					me.copyPosition(me, false);
-					me.menuManager.notification.notify("Copied position to clipboard", 15, 180, 15, true);
+					// check for shift
+					if (event.shiftKey) {
+						// copy view
+						me.copyPosition(me, true);
+						me.menuManager.notification.notify("Copied view to clipboard", 15, 180, 15, true);
+					} else {
+						// copy position
+						me.copyPosition(me, false);
+						me.menuManager.notification.notify("Copied position to clipboard", 15, 180, 15, true);
+					}
 				}
 				break;
 
@@ -548,11 +584,16 @@
 
 			// a for decrease layers
 			case 65:
-				// disable layers in multi-state mode
-				if (!me.multiStateView) {
-					if (!me.layersItem.locked) {
-						if (me.layersItem.current[0] > ViewConstants.minLayers) {
-							me.layersItem.current = me.viewLayersRange([me.engine.layers - 1, me.layersItem.current[1]], true, me);
+				// check for ctrl key
+				if (event.ctrlKey) {
+					me.selectAllPressed(me);
+				} else {
+					// disable layers in multi-state mode
+					if (!me.multiStateView) {
+						if (!me.layersItem.locked) {
+							if (me.layersItem.current[0] > ViewConstants.minLayers) {
+								me.layersItem.current = me.viewLayersRange([me.engine.layers - 1, me.layersItem.current[1]], true, me);
+							}
 						}
 					}
 				}
@@ -615,21 +656,25 @@
 
 			// v for reset view
 			case 86:
-				// check for shift key
-				if (event.shiftKey) {
-					// save current camera position
-					me.saveCamera(me);
-					me.menuManager.notification.notify("Saved camera position", 15, 100, 15, true);
+				if (event.ctrlKey) {
+					me.pastePressed(me);
 				} else {
-					// check if controls are disabled
-					if (!me.controlsLocked) {
-						// reset camera
-						me.resetSavedCamera(me);
-						me.menuManager.notification.notify("Restored camera position", 15, 100, 15, true);
-
-						// flag manual change made if paused
-						if (!me.generationOn) {
-							me.manualChange = true;
+					// check for shift key
+					if (event.shiftKey) {
+						// save current camera position
+						me.saveCamera(me);
+						me.menuManager.notification.notify("Saved camera position", 15, 100, 15, true);
+					} else {
+						// check if controls are disabled
+						if (!me.controlsLocked) {
+							// reset camera
+							me.resetSavedCamera(me);
+							me.menuManager.notification.notify("Restored camera position", 15, 100, 15, true);
+	
+							// flag manual change made if paused
+							if (!me.generationOn) {
+								me.manualChange = true;
+							}
 						}
 					}
 				}
@@ -668,10 +713,15 @@
 			// 5 for reset angle
 			case 53:
 			case 101: // num 5
-				// zero angle
-				if (!me.angleItem.locked) {
-					me.engine.angle = 0;
-					me.angleItem.current = [me.engine.angle, me.engine.angle];
+				// check for ctrl
+				if (event.ctrlKey) {
+					me.randomPressed(me);
+				} else {
+					// zero angle
+					if (!me.angleItem.locked) {
+						me.engine.angle = 0;
+						me.angleItem.current = [me.engine.angle, me.engine.angle];
+					}
 				}
 				break;
 
@@ -865,52 +915,65 @@
 
 			// , for rotate anticlockwise
 			case 188:
-				if (!me.angleItem.locked) {
-					// get the current value
-					value = me.angleItem.current[0];
+				if (event.shiftKey && me.isSelection) {
+					me.rotateCCWPressed(me);
+				} else {
+					if (!me.angleItem.locked) {
+						// get the current value
+						value = me.angleItem.current[0];
+	
+						// check for shift key
+						if (event.shiftKey) {
+							// decrease by a quarter
+							value -= 90;
+						} else {
+							// decrease by a degree
+							value -= 1;
+						}
+	
+						// wrap if required
+						if (value < 0) {
+							value += 360;
+						}
 
-					// check for shift key
-					if (event.shiftKey) {
-						// decrease by a quarter
-						value -= 90;
-					} else {
-						// decrease by a degree
-						value -= 1;
+						// update UI
+						me.angleItem.current = me.viewAngleRange([value, value], true, me);
 					}
-
-					// wrap if required
-					if (value < 0) {
-						value += 360;
-					}
-
-					// update UI
-					me.angleItem.current = me.viewAngleRange([value, value], true, me);
 				}
 				break;
 
 			// . for rotate clockwise
 			case 190:
-				if (!me.angleItem.locked) {
-					// get the current value
-					value = me.angleItem.current[0];
-
-					// check for shift key
-					if (event.shiftKey) {
-						// increase by a quarter
-						value += 90;
-					} else {
-						// increase by a degree
-						value += 1;
+				if (event.shiftKey && me.isSelection) {
+					me.rotateCWPressed(me);
+				} else {
+					if (!me.angleItem.locked) {
+						// get the current value
+						value = me.angleItem.current[0];
+	
+						// check for shift key
+						if (event.shiftKey) {
+							// increase by a quarter
+							value += 90;
+						} else {
+							// increase by a degree
+							value += 1;
+						}
+	
+						// wrap if required
+						if (value >= 360) {
+							value -= 360;
+						}
+	
+						// update UI
+						me.angleItem.current = me.viewAngleRange([value, value], true, me);
 					}
-
-					// wrap if required
-					if (value >= 360) {
-						value -= 360;
-					}
-
-					// update UI
-					me.angleItem.current = me.viewAngleRange([value, value], true, me);
 				}
+				break;
+
+			// Del to clear selection
+			case 46:
+				me.clearSelectionPressed(me);
 				break;
 
 			// j for jump to POI
@@ -1378,22 +1441,22 @@
 
 			// f1 for toggle edit mode
 			case 112:
-				// check for shift key
-				if (event.shiftKey) {
-					me.smartToggle.current = me.toggleSmart([!me.smartDrawing], true, me);
-					me.menuManager.notification.notify("Smart Drawing " + (me.smartDrawing ? "On" : "Off"), 15, 40, 15, true);
-				} else {
-					if (!me.viewOnly) {
-						me.drawing = !me.drawing;
-						me.modeList.current = me.viewModeList((me.drawing ? ViewConstants.modeDraw : ViewConstants.modePan), true, me);
-						me.menuManager.notification.notify((me.drawing ? "Draw" : "Pan") + " Mode", 15, 40, 15, true);
-					}
+				if (!me.viewOnly) {
+					me.drawing = !me.drawing;
+					me.modeList.current = me.viewModeList((me.drawing ? ViewConstants.modeDraw : ViewConstants.modePan), true, me);
+					me.menuManager.notification.notify((me.drawing ? "Draw" : "Pan") + " Mode", 15, 40, 15, true);
 				}
 				break;
 
 			// f2 for draw mode
 			case 113:
-				me.modeList.current = me.viewModeList(ViewConstants.modeDraw, true, me);
+				// check for shift key
+				if (event.shiftKey) {
+					me.smartToggle.current = me.toggleSmart([!me.smartDrawing], true, me);
+					me.menuManager.notification.notify("Smart Drawing " + (me.smartDrawing ? "On" : "Off"), 15, 40, 15, true);
+				} else {
+					me.modeList.current = me.viewModeList(ViewConstants.modeDraw, true, me);
+				}
 				break;
 
 			// f3 for pick mode
