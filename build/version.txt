@@ -1,3 +1,6 @@
+Build 358
+- added selection box display
+
 Build 357
 - grow grid if required when selecting
 - fix a rendering issue after some selection actions

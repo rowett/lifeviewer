@@ -685,12 +685,6 @@
 		/** @type {number} */ this.numCells = 0;
 	}
 
-	// draw selection
-	Life.prototype.drawSelection = function() {
-		// TBD !!!
-
-	};
-
 	// draw triangles 
 	Life.prototype.drawTriangles = function() {
 		var colourGrid = this.colourGrid,
@@ -13216,6 +13210,58 @@
 				this.drawBresenhamLine(startX, startY, endX, endY, colour);
 			}
 		}
+	};
+
+	// draw selection box
+	Life.prototype.drawSelection = function(view) {
+		var selBox = view.selectionBox,
+			ctx = this.context,
+			xZoom = this.zoom,
+			yZoom = this.zoom * ((this.isTriangular && xZoom >= 4) ? ViewConstants.sqrt3 : 1),
+			x1 = selBox.leftX,
+			y1 = selBox.bottomY,
+			x2 = selBox.rightX,
+			y2 = selBox.topY,
+			xOff = (this.width >> 1) - (view.patternWidth >> 1),
+			yOff = (this.height >> 1) - (view.patternHeight >> 1),
+			swap = 0,
+			xHexOffset = 0,
+			xHexAdjust = 0,
+		    engineY = view.panY - this.yOff,
+			engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0);
+
+		// order selection box coordinates
+		if (x1 > x2) {
+			swap = x1;
+			x1 = x2;
+			x2 = swap;
+		}
+		if (y1 > y2) {
+			swap = y1;
+			y1 = y2;
+			y2 = swap;
+		}
+
+		// compute hex horizontal pixel offset
+		xHexOffset = (this.isHex ? ((y2 - y1 + 1) / 2) * xZoom : 0);
+		xHexAdjust = (this.isHex ? (xZoom / 2) : 0);
+
+		// convert cell coordinates to screen coordinates
+		y1 = yZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
+		x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
+		y2 = yZoom * (y2 + 1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
+		x2 = xZoom * (x2 + 1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y2) / 2 : 0);
+
+		// draw a translucent rectangle
+		ctx.fillStyle = "rgb(0,255,0)";
+		ctx.globalAlpha = 0.5;
+		ctx.beginPath();
+		ctx.moveTo(x1, y1);
+		ctx.lineTo(x2 + xHexOffset + xHexAdjust, y1);
+		ctx.lineTo(x2 + xHexAdjust, y2);
+		ctx.lineTo(x1 - xHexOffset, y2);
+		ctx.fill();
+		ctx.globalAlpha = 1;
 	};
 
 	// draw grid lines

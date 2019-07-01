@@ -699,6 +699,7 @@
 		}
 		y = this.renderHelpLine(view, "/", "toggle hex view", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift /", "pattern default view", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt /", "toggle hexagons for hex display", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "T", "toggle timing information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift T", "toggle extended timing information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "I", "toggle pattern and engine information", ctx, x, y, height, helpLine);

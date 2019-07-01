@@ -4172,8 +4172,8 @@
 		}
 
 		// check whether to draw selection
-		if (me.isSelection) {
-			me.engine.drawSelection(me.selectionBox);
+		if (me.isSelection || me.drawingSelection) {
+			me.engine.drawSelection(me);
 		}
 
 		// check if grid buffer needs to grow
