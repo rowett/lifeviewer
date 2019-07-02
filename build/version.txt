@@ -7,6 +7,7 @@ Build 359
 - hotkey "Esc" clears paste
 - hotkey Alt "N" prompts for rule and then creates a new empty pattern
 - hotkey Alt "R" prompts for new rule for the current pattern
+- new Paste Position slider defines where to paste relative to the mouse
 
 Build 358
 - added selection box display

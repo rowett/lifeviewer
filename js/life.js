@@ -13251,6 +13251,25 @@
 			mouseCellY = view.cellY - yOff;
 
 			// draw paste rectangle
+			switch ((view.pastePosition + 0.5) | 0) {
+			case ViewConstants.pastePositionNW:
+				// nothing to do
+				break;
+			case ViewConstants.pastePositionNE:
+				mouseCellX -= width - 1;
+				break;
+			case ViewConstants.pastePositionMiddle:
+				mouseCellX -= width >> 1;
+				mouseCellY -= height >> 1;
+				break;
+			case ViewConstants.pastePositionSW:
+				mouseCellX -= width - 1;
+				mouseCellY -= height - 1;
+				break;
+			case ViewConstants.pastePositionSE:
+				mouseCellY -= height - 1;
+				break;
+			}
 			x1 = mouseCellX;
 			y1 = mouseCellY;
 			x2 = mouseCellX + width;
@@ -13267,9 +13286,9 @@
 			ctx.globalAlpha = 0.5;
 			ctx.beginPath();
 			ctx.moveTo(x1, y1);
-			ctx.lineTo(x2 + xHexOffset + xHexAdjust, y1);
-			ctx.lineTo(x2 + xHexAdjust, y2);
-			ctx.lineTo(x1 - xHexOffset, y2);
+			ctx.lineTo(x2 + xHexOffset + xHexAdjust + 1, y1);
+			ctx.lineTo(x2 + xHexAdjust + 1, y2 + 1);
+			ctx.lineTo(x1 - xHexOffset, y2 + 1);
 			ctx.fill();
 
 			// now draw each set cell
@@ -13345,9 +13364,9 @@
 		ctx.globalAlpha = 0.5;
 		ctx.beginPath();
 		ctx.moveTo(x1, y1);
-		ctx.lineTo(x2 + xHexOffset + xHexAdjust, y1);
-		ctx.lineTo(x2 + xHexAdjust, y2);
-		ctx.lineTo(x1 - xHexOffset, y2);
+		ctx.lineTo(x2 + xHexOffset + xHexAdjust + 1, y1);
+		ctx.lineTo(x2 + xHexAdjust + 1, y2 + 1);
+		ctx.lineTo(x1 - xHexOffset, y2 + 1);
 		ctx.fill();
 		ctx.globalAlpha = 1;
 	};

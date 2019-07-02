@@ -40,6 +40,16 @@
 
 	// ViewConstants singleton
 	ViewConstants = {
+		// paste positions
+		/** @const {number} */ pastePositionNW : 0,
+		/** @const {number} */ pastePositionNE : 1,
+		/** @const {number} */ pastePositionMiddle : 2,
+		/** @const {number} */ pastePositionSE : 3,
+		/** @const {number} */ pastePositionSW : 4,
+
+		// paste position text
+		/** @const Array{string} */ pastePositionNames : ["Top Left", "Top Right", "Middle", "Bottom Left", "Bottom Right"],
+
 		// chunk to add to undo/redo buffer
 		/** @const {number} */ editChunk : 16384,
 
@@ -547,6 +557,9 @@
 		// paste width and height
 		this.pasteWidth = 0;
 		this.pasteHeight = 0;
+
+		// paste position
+		this.pastePosition = ViewConstants.pastePositionNW;
 
 		// whether there is something in the buffer to paste
 		this.canPaste = false;
@@ -1403,6 +1416,9 @@
 
 		// random density slider
 		this.randomItem = null;
+
+		// paste position slider
+		this.pastePositionItem = null;
 
 		// cut button
 		this.cutButton = null;
@@ -2790,6 +2806,16 @@
 		}
 
 		return [result, result * 100];
+	};
+
+	// paste position range
+	View.prototype.viewPastePositionRange = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			me.pastePosition = newValue[0];
+		}
+
+		return [me.pastePosition, ViewConstants.pastePositionNames[(me.pastePosition + 0.5) | 0]];
 	};
 
 	// random density range
@@ -4563,6 +4589,7 @@
 		this.invertSelectionButton.deleted = shown;
 		this.randomButton.deleted = shown;
 		this.randomItem.deleted = shown;
+		this.pastePositionItem.deleted = shown;
 
 		// lock select tools
 		shown = !(this.isSelection || this.isPasting);
@@ -6115,6 +6142,13 @@
 
 	// drag select
 	View.prototype.dragSelect = function(me, x, y) {
+		if (!me.isPasting) {
+			me.doDragSelect(me, x, y);
+		}
+	};
+
+	// process drag for selection
+	View.prototype.doDragSelect = function(me, x, y) {
 			// selection box
 		var box = me.selectionBox,
 
@@ -6230,6 +6264,16 @@
 
 	// drag ended for select
 	View.prototype.dragEndSelect = function(me) {
+		if (me.isPasting) {
+			// perform paste
+			me.performPaste(me);
+		} else {
+			me.doDragEndSelect(me);
+		}
+	};
+
+	// process drag end for selection
+	View.prototype.doDragEndSelect = function(me) {
 		var selBox = me.selectionBox,
 			width = 0,
 			height = 0;
@@ -7139,6 +7183,14 @@
 		}
 	};
 
+	// perform paste
+	View.prototype.performPaste = function(me) {
+		me.isPasting = false;
+
+		// clear notification
+		me.menuManager.notification.clear(true, false);
+	};
+
 	// paste pressed
 	View.prototype.pastePressed = function(me) {
 		me.isPasting = true;
@@ -7147,6 +7199,8 @@
 		if (me.modeList.current !== ViewConstants.modeSelect) {
 			me.modeList.current = me.viewModeList(ViewConstants.modeSelect, true, me);
 		}
+
+		me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
 	};
 
 	// random paste
@@ -7426,7 +7480,6 @@
 					newBuffer[x * h + (h - y - 1)] = me.pasteBuffer[y * w + x];
 				} else {
 					newBuffer[(w - x - 1) * h + y] = me.pasteBuffer[y * w + x];
-					console.debug(x, y, y, w - x - 1);
 				}
 			}
 		}
@@ -9022,7 +9075,7 @@
 
 		// paste mode list
 		this.pasteModeList = this.viewMenu.addListItem(this.viewPasteModeList, Menu.northEast, -160, 45, 160, 40, ["AND", "CPY", "OR", "XOR"], this.pasteModeForUI, Menu.single);
-		this.pasteModeList.toolTip = ["AND mode", "COPY mode", "OR mode", "XOR mode"];
+		this.pasteModeList.toolTip = ["paste mode", "paste mode", "paste mode", "paste mode"];
 		this.pasteModeList.font = "16px Arial";
 
 		// add the cut button
@@ -9041,43 +9094,48 @@
 		this.pasteButton.toolTip = "paste";
 
 		// add the flip X button
-		this.flipXButton = this.viewMenu.addButtonItem(this.flipXPressed, Menu.northEast, -40, 135, 40, 40, "");
+		this.flipXButton = this.viewMenu.addButtonItem(this.flipXPressed, Menu.northEast, -40, 240, 40, 40, "");
 		this.flipXButton.icon = this.iconManager.icon("flipx");
 		this.flipXButton.toolTip = "flip horizontally";
 
 		// add the flip Y button
-		this.flipYButton = this.viewMenu.addButtonItem(this.flipYPressed, Menu.northEast, -40, 180, 40, 40, "");
+		this.flipYButton = this.viewMenu.addButtonItem(this.flipYPressed, Menu.northEast, -40, 285, 40, 40, "");
 		this.flipYButton.icon = this.iconManager.icon("flipy");
 		this.flipYButton.toolTip = "flip vertically";
 
 		// add the rotate clockwise button
-		this.rotateCWButton = this.viewMenu.addButtonItem(this.rotateCWPressed, Menu.northEast, -40, 225, 40, 40, "");
+		this.rotateCWButton = this.viewMenu.addButtonItem(this.rotateCWPressed, Menu.northEast, -40, 330, 40, 40, "");
 		this.rotateCWButton.icon = this.iconManager.icon("rotatecw");
 		this.rotateCWButton.toolTip = "rotate clockwise";
 
 		// add the rotate counter-clockwise button
-		this.rotateCCWButton = this.viewMenu.addButtonItem(this.rotateCCWPressed, Menu.northEast, -40, 270, 40, 40, "");
+		this.rotateCCWButton = this.viewMenu.addButtonItem(this.rotateCCWPressed, Menu.northEast, -40, 375, 40, 40, "");
 		this.rotateCCWButton.icon = this.iconManager.icon("rotateccw");
 		this.rotateCCWButton.toolTip = "rotate counter-clockwise";
 
 		// add the clear selection button
-		this.clearSelectionButton = this.viewMenu.addButtonItem(this.clearSelectionPressed, Menu.northEast, -40, 315, 40, 40, "x");
+		this.clearSelectionButton = this.viewMenu.addButtonItem(this.clearSelectionPressed, Menu.northEast, -40, 420, 40, 40, "x");
 		this.clearSelectionButton.icon = this.iconManager.icon("select");
 		this.clearSelectionButton.toolTip = "clear cells in selection";
 
 		// add the invert selection button
-		this.invertSelectionButton = this.viewMenu.addButtonItem(this.invertSelectionPressed, Menu.northEast, -40, 360, 40, 40, "");
+		this.invertSelectionButton = this.viewMenu.addButtonItem(this.invertSelectionPressed, Menu.northEast, -40, 465, 40, 40, "");
 		this.invertSelectionButton.icon = this.iconManager.icon("invertselection");
 		this.invertSelectionButton.toolTip = "invert cells in selection";
 
 		// add the random button
-		this.randomButton = this.viewMenu.addButtonItem(this.randomPressed, Menu.northEast, -40, 90, 40, 40, "");
+		this.randomButton = this.viewMenu.addButtonItem(this.randomPressed, Menu.northEast, -40, 195, 40, 40, "");
 		this.randomButton.icon = this.iconManager.icon("random");
 		this.randomButton.toolTip = "random fill";
 
 		// add the random density slider
-		this.randomItem = this.viewMenu.addRangeItem(this.viewRandomRange, Menu.northEast, -265, 45, 100, 40, 1, 100, this.randomDensity, true, "", "%", 0);
+		this.randomItem = this.viewMenu.addRangeItem(this.viewRandomRange, Menu.northEast, -40, 90, 40, 100, 100, 1, this.randomDensity, true, "", "%", 0);
 		this.randomItem.toolTip = "random fill density";
+
+		// add the paste position slider
+		this.pastePositionItem = this.viewMenu.addRangeItem(this.viewPastePositionRange, Menu.northEast, -265, 45, 100, 40, 0, 4, this.pastePosition, true, "", "", -1);
+		this.pastePositionItem.toolTip = "paste position";
+		this.pastePositionItem.font = "16px Arial";
 
 		// add items to the main toggle menu
 		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
@@ -10088,6 +10146,9 @@
 
 		// set random density to 50%
 		this.randomItem.current = this.viewRandomRange([50, 50], true, this);
+
+		// set paste position to top left
+		this.pastePositionItem.current = this.viewPastePositionRange([ViewConstants.pastePositionNW, ViewConstants.pastePositionNW], true, this);
 
 		// update help UI
 		this.helpToggle.current = this.toggleHelp([this.displayHelp], true, this);
