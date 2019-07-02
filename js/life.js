@@ -13212,6 +13212,94 @@
 		}
 	};
 
+	// draw paste box
+	Life.prototype.drawPaste = function(view) {
+		var width = view.pasteWidth,
+			height = view.pasteHeight,
+			x = 0,
+			y = 0,
+			i = 0,
+			x1 = 0,
+			y1 = 0,
+			x2 = 0,
+			y2 = 0,
+			state = 0,
+			mouseCellX = 0,
+			mouseCellY = 0,
+			mouseX = 0,
+			mouseY = 0,
+			ctx = this.context,
+			xZoom = this.zoom,
+			yZoom = this.zoom * ((this.isTriangular && xZoom >= 4) ? ViewConstants.sqrt3 : 1),
+			xOff = (this.width >> 1) - (view.patternWidth >> 1),
+			yOff = (this.height >> 1) - (view.patternHeight >> 1),
+			xHexOffset = 0,
+			xHexAdjust = 0,
+		    engineY = view.panY - this.yOff,
+			engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0);
+
+		// compute hex horizontal pixel offset
+		xHexOffset = (this.isHex ? (height / 2) * xZoom : 0);
+		xHexAdjust = (this.isHex ? (xZoom / 2) : 0);
+
+		// get mouse cell
+		mouseX = view.menuManager.mouseLastX;
+		mouseY = view.menuManager.mouseLastY;
+		if (mouseX !== -1) {
+			view.updateCellLocation(mouseX, mouseY);
+			mouseCellX = view.cellX - xOff;
+			mouseCellY = view.cellY - yOff;
+
+			// draw paste rectangle
+			x1 = mouseCellX;
+			y1 = mouseCellY;
+			x2 = mouseCellX + width;
+			y2 = mouseCellY + height;
+	
+			// convert cell coordinates to screen coordinates
+			y1 = yZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
+			x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
+			y2 = yZoom * (y2 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
+			x2 = xZoom * (x2 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y2) / 2 : 0);
+	
+			// draw a translucent rectangle
+			ctx.fillStyle = "rgb(255,0,0)";
+			ctx.globalAlpha = 0.5;
+			ctx.beginPath();
+			ctx.moveTo(x1, y1);
+			ctx.lineTo(x2 + xHexOffset + xHexAdjust, y1);
+			ctx.lineTo(x2 + xHexAdjust, y2);
+			ctx.lineTo(x1 - xHexOffset, y2);
+			ctx.fill();
+
+			// now draw each set cell
+			ctx.fillStyle = "rgb(255, 128, 0)";
+			ctx.beginPath();
+			i = 0;
+			for (y = 0; y < height; y += 1) {
+				for (x = 0; x < width; x += 1) {
+					state = view.pasteBuffer[i];
+					i += 1;
+					if (state) {
+						// convert cell coordinates to screen coordinates
+						y1 = yZoom * (mouseCellY + y - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
+						x1 = xZoom * (mouseCellX + x - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
+						y2 = y1 + yZoom;
+						x2 = x1 + xZoom;
+						// don't draw cell if off window
+						if (!((x1 < 0 && x2 < 0) || (x1 >= view.displayWidth && x2 >= view.displayWidth) || (y1 < 0 && y2 < 0) || (y1 >= view.displayHeight && y2 >= view.displayHeight))) {
+							ctx.moveTo(x1, y1);
+							ctx.lineTo(x2, y1);
+							ctx.lineTo(x2, y2);
+							ctx.lineTo(x1, y2);
+						}
+					}
+				}
+			}
+			ctx.fill();
+		}
+	};
+
 	// draw selection box
 	Life.prototype.drawSelection = function(view) {
 		var selBox = view.selectionBox,

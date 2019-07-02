@@ -159,6 +159,16 @@
 						me.engine.clearGliders = !me.engine.clearGliders;
 						me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
 						break;
+					// n for new pattern
+					case 78:
+						// new pattern
+						me.newPattern(me);
+						break;
+					// r for change rule
+					case 82:
+						// change rule
+						me.changeRule(me);
+						break;
 					// x for flip X
 					case 88:
 						// flip selection horizontally
@@ -915,7 +925,7 @@
 
 			// , for rotate anticlockwise
 			case 188:
-				if (event.shiftKey && me.isSelection) {
+				if (event.shiftKey && (me.isSelection || me.isPasting)) {
 					me.rotateCCWPressed(me);
 				} else {
 					if (!me.angleItem.locked) {
@@ -944,7 +954,7 @@
 
 			// . for rotate clockwise
 			case 190:
-				if (event.shiftKey && me.isSelection) {
+				if (event.shiftKey && (me.isSelection || me.isPasting)) {
 					me.rotateCWPressed(me);
 				} else {
 					if (!me.angleItem.locked) {
@@ -1161,24 +1171,29 @@
 			case 67:
 				// check for control-C
 				if (event.ctrlKey) {
-					if (!me.noCopy) {
-						// check for shift-C
-						if (event.shiftKey) {
-							// copy reset position to clipboard
-							me.copyRLE(me, true);
-						} else {
-							// check for view only mode
-							if (me.viewOnly) {
+					// check for selection
+					if (me.isSelection) {
+						me.copyPressed(me);
+					} else {
+						if (!me.noCopy) {
+							// check for shift-C
+							if (event.shiftKey) {
 								// copy reset position to clipboard
 								me.copyRLE(me, true);
 							} else {
-								// check for alt/meta key
-								if (event.altKey) {
-									// copy with pattern comments
-									me.copyCurrentRLE(me, true);
+								// check for view only mode
+								if (me.viewOnly) {
+									// copy reset position to clipboard
+									me.copyRLE(me, true);
 								} else {
-									// copy without pattern comments
-									me.copyCurrentRLE(me, false);
+									// check for alt/meta key
+									if (event.altKey) {
+										// copy with pattern comments
+										me.copyCurrentRLE(me, true);
+									} else {
+										// copy without pattern comments
+										me.copyCurrentRLE(me, false);
+									}
 								}
 							}
 						}
@@ -1312,8 +1327,13 @@
 						me.scriptErrors = [];
 						me.displayErrors = 0;
 					} else {
-						// close the popup Viewer
-						hideViewer();
+						// check if pasting
+						if (me.isPasting) {
+							me.isPasting = false;
+						} else {
+							// close the popup Viewer
+							hideViewer();
+						}
 					}
 				} else {
 					// check if help displayed
@@ -1327,10 +1347,15 @@
 							me.scriptErrors = [];
 							me.displayErrors = 0;
 						} else {
-							// check if playing
-							if (me.generationOn) {
-								// switch to pause
-								me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+							// check if pasting
+							if (me.isPasting) {
+								me.isPasting = false;
+							} else {
+								// check if playing
+								if (me.generationOn) {
+									// switch to pause
+									me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+								}
 							}
 						}
 					}

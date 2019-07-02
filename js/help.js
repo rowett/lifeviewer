@@ -726,6 +726,14 @@
 		y = this.renderHelpLine(view, "Shift O", "open population graph in separate window", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
+		// pattern controls
+		view.helpSections[sectionNum] = [view.lineNo, "Pattern"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Pattern controls:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt N", "new pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt R", "change rule", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		// clipboard controls
 		view.helpSections[sectionNum] = [view.lineNo, "Clipboard"];
 		sectionNum += 1;
@@ -762,6 +770,7 @@
 		y = this.renderHelpLine(view, "<", "rotate selection counter-clockwise", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt X", "flip selection horizontally", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt Y", "flip selection vertically", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Esc", "hide paste box", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// help controls

@@ -215,7 +215,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 358,
+		/** @const {number} */ versionBuild : 359,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -544,6 +544,19 @@
 	 * @constructor
 	 */
 	function View(element) {
+		// paste width and height
+		this.pasteWidth = 0;
+		this.pasteHeight = 0;
+
+		// whether there is something in the buffer to paste
+		this.canPaste = false;
+
+		// buffer cells
+		this.pasteBuffer = null;
+
+		// whether paste is happening
+		this.isPasting = false;
+
 		// selection box
 		this.selectionBox = new BoundingBox();
 	
@@ -1549,10 +1562,8 @@
 			invertForGenerations = (states > 2 && !this.engine.isNone);
 
 		// handle generations
-		if (invertForGenerations) {
-			if (state > 0) {
-				state = states - state;
-			}
+		if (state > 0 && invertForGenerations) {
+			state = states - state;
 		}
 
 		// only add undo/redo records and draw if the new state is different than the current state
@@ -4176,6 +4187,11 @@
 			me.engine.drawSelection(me);
 		}
 
+		// check whether to draw paste
+		if (me.isPasting) {
+			me.engine.drawPaste(me);
+		}
+
 		// check if grid buffer needs to grow
 		if (me.engine.counter && me.engine.anythingAlive) {
 			me.checkGridSize(me, me.engine.zoomBox);
@@ -4549,7 +4565,7 @@
 		this.randomItem.deleted = shown;
 
 		// lock select tools
-		shown = !this.isSelection;
+		shown = !(this.isSelection || this.isPasting);
 		this.randomButton.locked = shown;
 		this.flipXButton.locked = shown;
 		this.flipYButton.locked = shown;
@@ -4557,7 +4573,13 @@
 		this.rotateCCWButton.locked = shown;
 		this.invertSelectionButton.locked = shown;
 		this.clearSelectionButton.locked = shown;
+		shown = !this.isSelection;
 		this.cutButton.locked = shown;
+		this.copyButton.locked = shown;
+
+		// lock paste tools
+		shown = !this.canPaste || this.isPasting;
+		this.pasteButton.locked = shown;
 
 		// drawing tools
 		shown = hide || !this.drawing || !this.showStates || settingsMenuOpen;
@@ -5536,6 +5558,8 @@
 						me.pickToggle.current = me.togglePick([false], true, me);
 						me.selecting = false;
 					}
+					// turn off pasting
+					me.isPasting = false;
 					break;
 				case ViewConstants.modeSelect:
 					// selecting
@@ -5548,6 +5572,7 @@
 					me.drawing = false;
 					me.selecting = false;
 					me.pickToggle.current = me.togglePick([false], true, me);
+					me.isPasting = false;
 					break;
 			}
 		}
@@ -6405,6 +6430,77 @@
 		this.iconManager.add("smart", w, h);
 	};
 
+	// check if a rule is valid
+	View.prototype.ruleIsValid = function(ruleName) {
+		var result = false,
+			patternText = "x = 1, y = 1, rule = ",
+			pattern = null;
+
+		// check if the rule name is blank
+		if (ruleName === "") {
+			// default to Conway's Life
+			ruleName = "Life";
+		}
+		patternText += ruleName + "\nb!";
+
+		// attempt to build a pattern from the string
+		try {
+			// create a pattern
+			pattern = PatternManager.create("", patternText, this.engine.allocator);
+		}
+		catch(err) {
+			pattern = null;
+		}
+
+		// check if pattern was valid
+		if (pattern && pattern.lifeMap) {
+			result = true;
+			pattern = null;
+		}
+
+		return result;
+	};
+
+	// change rule
+	View.prototype.changeRule = function(me) {
+		var patternText = "",
+			result = prompt("Change rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName));
+
+		// check if the prompt was confirmed
+		if (result !== null) {
+			if (me.ruleIsValid(result)) {
+				if (result === "") {
+					result = "Life";
+				}
+				me.patternRuleName = result;
+				me.patternAliasName = "";
+				patternText = me.engine.asRLE(me, me.engine, true);
+				me.startViewer(patternText, false);
+			} else {
+				me.menuManager.notification.notify("Invalid rule", 15, 180, 15, true);
+			}
+		}
+	};
+
+	// new pattern
+	View.prototype.newPattern = function(me) {
+		var patternText = "x = 1, y = 1, rule = ",
+			result = prompt("Start new pattern with rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName));
+
+		// check if the prompt was confirmed
+		if (result !== null) {
+			if (me.ruleIsValid(result)) {
+				if (result === "") {
+					result = "Life";
+				}
+				patternText += result + "\nb!";
+				me.startViewer(patternText, false);
+			} else {
+				me.menuManager.notification.notify("Invalid rule", 15, 180, 15, true);
+			}
+		}
+	};
+
 	// update grid icon based on hex or square mode
 	View.prototype.updateGridIcon = function() {
 		// check for hex mode
@@ -6804,8 +6900,18 @@
 		me.setHelpTopic(ViewConstants.welcomeTopic, me);
 	};
 
-	// clear selection button pressed
-	View.prototype.clearSelectionPressed = function(me) {
+	// clear paste
+	View.prototype.clearPaste = function(me) {
+		var i = 0;
+
+		while (i < me.pasteBuffer.length) {
+			me.pasteBuffer[i] = 0;
+			i += 1;
+		}
+	};
+
+	// clear selection
+	View.prototype.clearSelection = function(me) {
 		var box = me.selectionBox,
 			x1 = box.leftX,
 			x2 = box.rightX,
@@ -6856,6 +6962,15 @@
 		}
 	};
 
+	// clear selection pressed
+	View.prototype.clearSelectionPressed = function(me) {
+		if (me.isPasting) {
+			me.clearPaste(me);
+		} else {
+			me.clearSelection(me);
+		}
+	};
+
 	// select all pressed
 	View.prototype.selectAllPressed = function(me) {
 		var selBox = me.selectionBox,
@@ -6888,7 +7003,6 @@
 		}
 	};
 
-
 	// select connected pressed
 	View.prototype.selectConnectedPressed = function(me) {
 	};
@@ -6906,10 +7020,16 @@
 			y2 = box.topY,
 			x = 0,
 			y = 0,
+			i = 0,
 			swap = 0,
+			state = 0,
+			states = me.engine.multiNumStates,
+			invertForGenerations = (states > 2 && !me.engine.isNone),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
-			sizeHint;
+			width = 0,
+			height = 0,
+			sizeHint = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -6924,18 +7044,36 @@
 				y1 = swap;
 			}
 
-			// compute potential size of edit buffer
-			sizeHint = (y2 - y1 + 1) * (x2 - x1 + 1);
+			// compute width and height of selection
+			width = (x2 - x1 + 1);
+			height = (y2 - y1 + 1);
 
-			// clear set cells
+			// compute potential size of edit buffer
+			sizeHint = width * height;
+
+			// allocate the buffer
+			me.pasteBuffer = me.engine.allocator.allocate(Uint8, width * height, "View.pasteBuffer");
+
+			// copy selection to buffer and clear set cells
+			i = 0;
 			for (y = y1; y <= y2; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
+					state = me.engine.getState(x + xOff, y + yOff, false);
+					if (state > 0 && invertForGenerations) {
+						state = states - state;
+					}
+					me.pasteBuffer[i] = state;
 					me.setStateWithUndo(x + xOff, y + yOff, 0, true, sizeHint);
 				}
 			}
+			me.pasteWidth = width;
+			me.pasteHeight = height;
 
 			// check if shrink needed
 			me.engine.doShrink();
+
+			// mark that a paste can happen
+			me.canPaste = true;
 
 			// save edit
 			me.afterEdit("cut");
@@ -6944,14 +7082,101 @@
 
 	// copy pressed
 	View.prototype.copyPressed = function(me) {
+		var selBox = me.selectionBox,
+			x1 = selBox.leftX,
+			y1 = selBox.bottomY,
+			x2 = selBox.rightX,
+			y2 = selBox.topY,
+			swap = 0,
+			x = 0,
+			y = 0,
+			i = 0,
+			width = 0,
+			height = 0,
+			state = 0,
+			states = me.engine.multiNumStates,
+			invertForGenerations = (states > 2 && !me.engine.isNone),
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+
+		if (me.isSelection) {
+			// order selection 
+			if (x1 > x2) {
+				swap = x1;
+				x1 = x2;
+				x2 = swap;
+			}
+			if (y1 > y2) {
+				swap = y1;
+				y1 = y2;
+				y2 = swap;
+			}
+
+			// compute width and height of selection
+			width = (x2 - x1 + 1);
+			height = (y2 - y1 + 1);
+
+			// allocate the buffer
+			me.pasteBuffer = me.engine.allocator.allocate(Uint8, width * height, "View.pasteBuffer");
+
+			// copy selection to buffer
+			i = 0;
+			for (y = y1; y <= y2; y += 1) {
+				for (x = x1; x <= x2; x += 1) {
+					state = me.engine.getState(x + xOff, y + yOff, false);
+					if (state > 0 && invertForGenerations) {
+						state = states - state;
+					}
+					me.pasteBuffer[i] = state;
+					i += 1;
+				}
+			}
+			me.pasteWidth = width;
+			me.pasteHeight = height;
+
+			// mark that a paste can happen
+			me.canPaste = true;
+		}
 	};
 
 	// paste pressed
 	View.prototype.pastePressed = function(me) {
+		me.isPasting = true;
+
+		// switch to select mode
+		if (me.modeList.current !== ViewConstants.modeSelect) {
+			me.modeList.current = me.viewModeList(ViewConstants.modeSelect, true, me);
+		}
 	};
 
-	// random pressed
-	View.prototype.randomPressed = function(me) {
+	// random paste
+	View.prototype.randomPaste = function(me) {
+		var i = 0,
+			state = 0,
+			numStates = me.engine.multiNumStates;
+
+		// check for 2 state patterns
+		if (numStates === -1) {
+			numStates = 2;
+		}
+
+		// randomize cells
+		for (i = 0; i < me.pasteBuffer.length; i += 1) {
+			if (me.randGen.random() * 100 <= me.randomDensity) {
+				if (numStates === 2) {
+					state = 1;
+				} else {
+					state = ((me.randGen.random() * (numStates - 1)) | 0) + 1;
+				}
+			} else {
+				state = 0;
+			}
+			me.pasteBuffer[i] = state;
+		}
+	};
+
+	// random selection
+	View.prototype.randomSelection = function(me) {
 		var box = me.selectionBox,
 			x1 = box.leftX,
 			x2 = box.rightX,
@@ -7011,8 +7236,41 @@
 		}
 	};
 
-	// flip X pressed
-	View.prototype.flipXPressed = function(me) {
+	// random pressed
+	View.prototype.randomPressed = function(me) {
+		if (me.isPasting) {
+			me.randomPaste(me);
+		} else {
+			me.randomSelection(me);
+		}
+	};
+
+	// flip X paste
+	View.prototype.flipXPaste = function(me) {
+		var w = me.pasteWidth,
+			h = me.pasteHeight,
+			w2 = w >> 1,
+			x = 0,
+			y = 0,
+			i = 0,
+			swap = 0;
+
+		// flip each row
+		i = 0;
+		for (y = 0; y < h; y += 1) {
+			// flip the row
+			for (x = 0; x <= w2; x += 1) {
+				swap = me.pasteBuffer[i + x];
+				me.pasteBuffer[i + x] = me.pasteBuffer[i + w - x - 1];
+				me.pasteBuffer[i + w - x - 1] = swap;
+			}
+			// skip next half
+			i += w;
+		}
+	};
+
+	// flip X selection
+	View.prototype.flipXSelection = function(me) {
 		var box = me.selectionBox,
 			x1 = box.leftX,
 			x2 = box.rightX,
@@ -7070,8 +7328,32 @@
 		}
 	};
 
-	// flip Y pressed
-	View.prototype.flipYPressed = function(me) {
+	// flip Y paste
+	View.prototype.flipYPaste = function(me) {
+		var w = me.pasteWidth,
+			h = me.pasteHeight,
+			h2 = h >> 1,
+			x = 0,
+			y = 0,
+			i = 0,
+			swap = 0;
+
+		// flip each column
+		i = 0;
+		for (x = 0; x < w; x += 1) {
+			// flip the row
+			for (y = 0; y <= h2; y += 1) {
+				swap = me.pasteBuffer[i + y * w];
+				me.pasteBuffer[i + y * w] = me.pasteBuffer[i + (h - y - 1) * w];
+				me.pasteBuffer[i + (h - y - 1) * w] = swap;
+			}
+			// skip next half
+			i += 1;
+		}
+	};
+
+	// flip Y selection
+	View.prototype.flipYSelection = function(me) {
 		var box = me.selectionBox,
 			x1 = box.leftX,
 			x2 = box.rightX,
@@ -7127,6 +7409,32 @@
 			// save edit
 			me.afterEdit("flip vertically");
 		}
+	};
+
+	// rotate paste
+	View.prototype.rotatePaste = function(me, clockwise) {
+		var w = me.pasteWidth,
+			h = me.pasteHeight,
+			x = 0,
+			y = 0,
+			newBuffer = me.engine.allocator.allocate(Uint8, w * h, "View.pasteBuffer");
+
+		// rotate cells into new buffer
+		for (y = 0; y < h; y += 1) {
+			for (x = 0; x < w; x += 1) {
+				if (clockwise) {
+					newBuffer[x * h + (h - y - 1)] = me.pasteBuffer[y * w + x];
+				} else {
+					newBuffer[(w - x - 1) * h + y] = me.pasteBuffer[y * w + x];
+					console.debug(x, y, y, w - x - 1);
+				}
+			}
+		}
+
+		// save the new paste buffer
+		me.pasteBuffer = newBuffer;
+		me.pasteWidth = h;
+		me.pasteHeight = w;
 	};
 
 	// rotate selection
@@ -7317,18 +7625,63 @@
 		}
 	};
 
+	// flip X pressed
+	View.prototype.flipXPressed = function(me) {
+		if (me.isPasting) {
+			me.flipXPaste(me);
+		} else {
+			me.flipXSelection(me);
+		}
+	};
+
+	// flip Y pressed
+	View.prototype.flipYPressed = function(me) {
+		if (me.isPasting) {
+			me.flipYPaste(me);
+		} else {
+			me.flipYSelection(me);
+		}
+	}
+
 	// rotate CW pressed
 	View.prototype.rotateCWPressed = function(me) {
-		me.rotateSelection(me, true, "rotate clockwise");
+		if (me.isPasting) {
+			me.rotatePaste(me, true);
+		} else {
+			me.rotateSelection(me, true, "rotate clockwise");
+		}
 	};
 
 	// rotate CCW pressed
 	View.prototype.rotateCCWPressed = function(me) {
-		me.rotateSelection(me, false, "rotate counter-clockwise");
+		if (me.isPasting) {
+			me.rotatePaste(me, false);
+		} else {
+			me.rotateSelection(me, false, "rotate counter-clockwise");
+		}
 	};
 
-	// invert selection pressed
-	View.prototype.invertSelectionPressed = function(me) {
+	// invert paste
+	View.prototype.invertPaste = function(me) {
+		var i = 0,
+			state = 0,
+			numStates = me.engine.multiNumStates;
+
+		// check for 2 state patterns
+		if (numStates === -1) {
+			numStates = 2;
+		}
+
+		// invert cells in paste:
+		while (i < me.pasteBuffer.length) {
+			state = me.pasteBuffer[i];
+			me.pasteBuffer[i] = numStates - state - 1;
+			i += 1;
+		}
+	};
+
+	// invert selection
+	View.prototype.invertSelection = function(me) {
 		var box = me.selectionBox,
 			x1 = box.leftX,
 			x2 = box.rightX,
@@ -7383,6 +7736,15 @@
 
 			// save edit
 			me.afterEdit("invert cells in selection");
+		}
+	};
+
+	// invert selection pressed
+	View.prototype.invertSelectionPressed = function(me) {
+		if (me.isPasting) {
+			me.invertPaste(me);
+		} else {
+			me.invertSelection(me);
 		}
 	};
 
@@ -9359,6 +9721,13 @@
 		this.isSelection = false;
 		this.drawingSelection = false;
 
+		// clear any paste
+		this.canPaste = false;
+		this.pasteBuffer = null;
+		this.isPasting = false;
+		this.pasteWidth = 0;
+		this.pasteHeight = 0;
+
 		// set default paste mode for UI
 		this.pasteModeList.current = this.viewPasteModeList(ViewConstants.pasteModeOr, true, this);
 
@@ -9714,7 +10083,7 @@
 		this.displayHelp = 0;
 		this.displayErrors = 0;
 
-		// turn off draw mode
+		// start in pan mode
 		this.modeList.current = this.viewModeList(ViewConstants.modePan, true, this);
 
 		// set random density to 50%
@@ -10151,9 +10520,7 @@
 			this.modeList.itemLocked[ViewConstants.modeDraw] = true;
 		}
 
-		// disable select mode until implemented TBD !!!
-		this.copyButton.locked = true;
-		this.pasteButton.locked = true;
+		// disable select mode features until implemented TBD !!!
 		this.selectConnectedButton.locked = true;
 		this.libraryButton.locked = true;
 
@@ -10218,7 +10585,7 @@
 					if (pattern.tooBig) {
 						this.menuManager.notification.notify("Pattern too big!", 15, ViewConstants.errorDuration, 15, false);
 					} else {
-						this.menuManager.notification.notify("Nothing alive!", 15, 300, 15, false);
+						this.menuManager.notification.notify("New pattern", 15, 300, 15, false);
 					}
 				}
 			} else {

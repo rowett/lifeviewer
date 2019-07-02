@@ -1,3 +1,13 @@
+Build 359
+- Select mode Copy button copies to internal clipboard unless there is no selection in which case to external clipboard
+	- main menu Copy button always copies entire pattern to external clipboard (regardless of selection)
+- Cut button copies to internal clipboard
+- Paste button displays paste cells
+- when paste cells displayed flip X, flip Y, rotate CW, rotate CCW, random fill, clear and invert work on the paste cells
+- hotkey "Esc" clears paste
+- hotkey Alt "N" prompts for rule and then creates a new empty pattern
+- hotkey Alt "R" prompts for new rule for the current pattern
+
 Build 358
 - added selection box display
 - hotkey Ctrl "I" for invert selection
