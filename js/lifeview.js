@@ -3166,7 +3166,7 @@
 		}
 
 		// check if the bounding box is now bigger than the required grid size
-		if (me.engine.checkForGrowth(box, borderSize)) {
+		while (me.engine.checkForGrowth(box, borderSize)) {
 			// update the default x and y
 			me.defaultX += me.engine.width >> 2;
 			me.defaultY += me.engine.height >> 2;
@@ -3182,6 +3182,12 @@
 			// update pan position
 			me.panX += me.engine.width >> 2;
 			me.panY += me.engine.height >> 2;
+
+			// update the box position
+			box.leftX += me.engine.width >> 2;
+			box.rightX += me.engine.width >> 2;
+			box.bottomY += me.engine.height >> 2;
+			box.topY += me.engine.height >> 2;
 		}
 	};
 
@@ -7212,6 +7218,8 @@
 			current = 0,
 			buffer = me.pasteBuffer,
 			sizeHint = width * height,
+			midBox = me.middleBox,
+			origWidth = me.engine.width,
 			// get the paste position
 			cellX = me.cellX,
 			cellY = me.cellY;
@@ -7235,6 +7243,20 @@
 		case ViewConstants.pastePositionSE:
 			cellY -= height - 1;
 			break;
+		}
+
+		// check if the grid needs growing
+		midBox.leftX = cellX;
+		midBox.bottomY = cellY;
+		midBox.rightX = cellX + width;
+		midBox.topY = cellY + height;
+		me.checkGridSize(me, midBox);
+
+		// adjust paste position if grid grew
+		while (origWidth !== me.engine.width) {
+			cellX += origWidth >> 1;
+			cellY += origWidth >> 1;
+			origWidth <<= 1;
 		}
 
 		// check the paste mode
