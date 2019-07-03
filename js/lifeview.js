@@ -1565,6 +1565,14 @@
 		/** @type {number} */ this.penColour = -1;
 	}
 
+	// open last saved or original pattern
+	View.prototype.loadPattern = function(me) {
+		var result = window.confirm("Open last saved pattern?");
+		if (result) {
+			updateMe(me.element);
+		}
+	};
+
 	// draw cell and create undo/redo
 	View.prototype.setStateWithUndo = function(x, y, colour, deadZero, sizeHint) {
 		// get current state
@@ -6531,7 +6539,7 @@
 	// change rule
 	View.prototype.changeRule = function(me) {
 		var patternText = "",
-			result = prompt("Change rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName));
+			result = window.prompt("Change rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName));
 
 		// check if the prompt was confirmed
 		if (result !== null) {
@@ -6552,7 +6560,7 @@
 	// new pattern
 	View.prototype.newPattern = function(me) {
 		var patternText = "x = 1, y = 1, rule = ",
-			result = prompt("Start new pattern with rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName));
+			result = window.prompt("Start new pattern with rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName));
 
 		// check if the prompt was confirmed
 		if (result !== null) {

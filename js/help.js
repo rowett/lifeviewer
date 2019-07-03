@@ -732,6 +732,8 @@
 		y = this.renderHelpLine(view, "", "Pattern controls:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt N", "new pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt R", "change rule", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl O", "open original or last saved pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl S", "save pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// clipboard controls
@@ -758,7 +760,6 @@
 		y = this.renderHelpLine(view, "Ctrl A", "select all", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl I", "invert selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl K", "remove selection", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl S", "save pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl V", "paste", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl X", "cut", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl Y", "redo edit", ctx, x, y, height, helpLine);

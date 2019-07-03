@@ -1085,13 +1085,18 @@
 
 			// o for new screenshot
 			case 79:
-				// check for shift key
-				if (event.shiftKey) {
-					// capture graph
-					me.screenShotScheduled = 2;
+				// check for ctrl key
+				if (event.ctrlKey) {
+					me.loadPattern(me);
 				} else {
-					// capture life
-					me.screenShotScheduled = 1;
+					// check for shift key
+					if (event.shiftKey) {
+						// capture graph
+						me.screenShotScheduled = 2;
+					} else {
+						// capture life
+						me.screenShotScheduled = 1;
+					}
 				}
 				break;
 

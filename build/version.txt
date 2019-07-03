@@ -11,6 +11,7 @@ Build 359
 - new Paste Position slider defines where to paste relative to the mouse
 - lock Hexagon toggle if not in hex display mode
 - hotkey Ctrl+Shift "5" for 2-state only random fill
+- hotkey Ctrl "O" to load original or last saved pattern
 
 Build 358
 - added selection box display
