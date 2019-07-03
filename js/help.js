@@ -770,7 +770,8 @@
 		y = this.renderHelpLine(view, "<", "rotate selection counter-clockwise", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt X", "flip selection horizontally", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt Y", "flip selection vertically", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Esc", "hide paste box", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Esc", "hide paste", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Enter", "perform paste", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// help controls

@@ -261,17 +261,21 @@
 
 			// return for play/pause
 			case 13:
-				// do not play if view only mode
-				if (!me.viewOnly) {
-					// check if not playing
-					if (me.playList.current === ViewConstants.modePlay) {
-						// switch to pause
-						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
-					} else {
-						// check for drawing and mouse down
-						if (!(me.drawing && me.menuManager.mouseDown)) {
-							// switch to play
-							me.playList.current = me.viewPlayList(ViewConstants.modePlay, true, me);
+				if (me.isPasting) {
+					me.performPaste(me);
+				} else {
+					// do not play if view only mode
+					if (!me.viewOnly) {
+						// check if not playing
+						if (me.playList.current === ViewConstants.modePlay) {
+							// switch to pause
+							me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+						} else {
+							// check for drawing and mouse down
+							if (!(me.drawing && me.menuManager.mouseDown)) {
+								// switch to play
+								me.playList.current = me.viewPlayList(ViewConstants.modePlay, true, me);
+							}
 						}
 					}
 				}

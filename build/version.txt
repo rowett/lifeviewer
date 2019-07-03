@@ -2,13 +2,13 @@ Build 359
 - Select mode Copy button copies to internal clipboard unless there is no selection in which case to external clipboard
 	- main menu Copy button always copies entire pattern to external clipboard (regardless of selection)
 - Cut button copies to internal clipboard
-- Paste button displays paste cells
+- Paste button displays paste cells which can be dragged to required position and then click to paste
 - when paste cells displayed flip X, flip Y, rotate CW, rotate CCW, random fill, clear and invert work on the paste cells
-- hotkey "Esc" clears paste
+- hotkey "Esc" clears paste if paste displayed
+- hotkey "Enter" performs paste if paste displayed
 - hotkey Alt "N" prompts for rule and then creates a new empty pattern
 - hotkey Alt "R" prompts for new rule for the current pattern
 - new Paste Position slider defines where to paste relative to the mouse
-- new Paste capability
 - lock Hexagon toggle if not in hex display mode
 
 Build 358
