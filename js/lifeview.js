@@ -4505,6 +4505,9 @@
 		this.timingDetailButton.deleted = hide;
 		this.rHistoryButton.deleted = hide;
 
+		// lock hex cell button if not in hex mode
+		this.hexCellButton.locked = !this.engine.isHex;
+
 		// POI controls
 		shown = hide || (this.waypointManager.numPOIs() === 0);
 		this.nextPOIButton.deleted = shown;
@@ -6128,8 +6131,7 @@
 
 	// drag draw
 	View.prototype.dragDraw = function(me, x, y) {
-		// check if on window (and window has focus - to prevent drawing when clicking to gain focus)
-		if (x !== -1 && y !== -1 && me.menuManager.hasFocus && !me.pickMode) {
+		if (!me.pickMode) {
 			// draw cells
 			me.drawCells(x, y, me.lastDragX, me.lastDragY);
 			// suspend playback
@@ -6334,57 +6336,72 @@
 
 	// view menu background drag
 	View.prototype.viewDoDrag = function(x, y, dragOn, me, fromKey) {
-		// check if this is a drag or cancel drag
-		if (dragOn) {
-			// check if help is displayed
-			if (me.displayHelp) {
-				me.dragHelp(me, y);
-			} else {
-				// check if errors are displayed
-				if (me.displayErrors) {
-					me.dragErrors(me, y);
+		// check if on window (and window has focus - to prevent drawing when clicking to gain focus)
+		if (x !== -1 && y !== -1 && me.menuManager.hasFocus) {
+			// check if this is a drag or cancel drag
+			if (dragOn) {
+				// check if help is displayed
+				if (me.displayHelp) {
+					me.dragHelp(me, y);
 				} else {
-					// check if panning
-					if (!(me.drawing || me.selecting) || fromKey) {
-						me.dragPan(me, x, y);
+					// check if errors are displayed
+					if (me.displayErrors) {
+						me.dragErrors(me, y);
 					} else {
-						// check if drawing
-						if (me.drawing) {
-							// drawing
-							me.dragDraw(me, x, y);
+						// check if panning
+						if (!(me.drawing || me.selecting) || fromKey) {
+							me.dragPan(me, x, y);
 						} else {
-							if (me.selecting) {
-								// selecting
-								me.dragSelect(me, x, y);
+							// check if drawing
+							if (me.drawing) {
+								// drawing
+								me.dragDraw(me, x, y);
+							} else {
+								if (me.selecting) {
+									// selecting
+									me.dragSelect(me, x, y);
+								}
 							}
 						}
 					}
 				}
-			}
 
-			// save last drag position
-			me.lastDragX = x;
-			me.lastDragY = y;
-		} else {
-			// drag finished so check for drawing
-			if (me.drawing) {
-				// see if pick mode was active
-				if (me.pickMode) {
-					me.dragEndPick(me, x, y);
-				} else {
-					// end of drawing
-					me.dragEndDraw(me);
-				}
+				// save last drag position
+				me.lastDragX = x;
+				me.lastDragY = y;
 			} else {
-				if (me.selecting) {
-					// end of selecting
-					me.dragEndSelect(me);
+				// check if just got focus
+				if (me.lastDragX !== -1) {
+					// drag finished so check for drawing
+					if (me.drawing) {
+						// see if pick mode was active
+						if (me.pickMode) {
+							me.dragEndPick(me, x, y);
+						} else {
+							// end of drawing
+							me.dragEndDraw(me);
+						}
+					} else {
+						if (me.selecting) {
+							// end of selecting
+							me.dragEndSelect(me);
+						}
+					}
+
+					// clear last drag position
+					me.lastDragX = -1;
+					me.lastDragY = -1;
+				} else {
+					// just got focus
+					if (me.pickMode) {
+						me.menuManager.notification.notify("Now click on a cell", 15, 180, 15, true);
+					} else {
+						if (me.isPasting) {
+							me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
+						}
+					}
 				}
 			}
-
-			// clear last drag position
-			me.lastDragX = -1;
-			me.lastDragY = -1;
 		}
 	};
 
@@ -7108,6 +7125,7 @@
 					}
 					me.pasteBuffer[i] = state;
 					me.setStateWithUndo(x + xOff, y + yOff, 0, true, sizeHint);
+					i += 1;
 				}
 			}
 			me.pasteWidth = width;
@@ -7185,10 +7203,96 @@
 
 	// perform paste
 	View.prototype.performPaste = function(me) {
+		var i = 0,
+			x = 0,
+			y = 0,
+			width = me.pasteWidth,
+			height = me.pasteHeight,
+			state = 0,
+			current = 0,
+			buffer = me.pasteBuffer,
+			sizeHint = width * height,
+			// get the paste position
+			cellX = me.cellX,
+			cellY = me.cellY;
+
+		// adjust paste position based on position mode
+		switch ((me.pastePosition + 0.5) | 0) {
+		case ViewConstants.pastePositionNW:
+			// nothing to do
+			break;
+		case ViewConstants.pastePositionNE:
+			cellX -= width - 1;
+			break;
+		case ViewConstants.pastePositionMiddle:
+			cellX -= width >> 1;
+			cellY -= height >> 1;
+			break;
+		case ViewConstants.pastePositionSW:
+			cellX -= width - 1;
+			cellY -= height - 1;
+			break;
+		case ViewConstants.pastePositionSE:
+			cellY -= height - 1;
+			break;
+		}
+
+		// check the paste mode
+		switch (me.pasteMode) {
+		case ViewConstants.pasteModeOr:
+			i = 0;
+			for (y = 0; y < height; y += 1) {
+				for (x = 0; x < width; x += 1) {
+					state = buffer[i];
+					if (state > 0) {
+						me.setStateWithUndo(cellX + x, cellY + y, state, true, sizeHint);
+					}
+					i += 1;
+				}
+			}
+			break;
+		case ViewConstants.pasteModeCopy:
+			i = 0;
+			for (y = 0; y < height; y += 1) {
+				for (x = 0; x < width; x += 1) {
+					state = buffer[i];
+					me.setStateWithUndo(cellX + x, cellY + y, state, true, sizeHint);
+					i += 1;
+				}
+			}
+			break;
+		case ViewConstants.pasteModeXor:
+			i = 0;
+			for (y = 0; y < height; y += 1) {
+				for (x = 0; x < width; x += 1) {
+					state = buffer[i];
+					current = this.engine.getState(cellX + x, cellY + y, false);
+					me.setStateWithUndo(cellX + x, cellY + y, current ^ state, true, sizeHint);
+					i += 1;
+				}
+			}
+			break;
+		case ViewConstants.pasteModeAnd:
+			i = 0;
+			for (y = 0; y < height; y += 1) {
+				for (x = 0; x < width; x += 1) {
+					state = buffer[i];
+					current = this.engine.getState(cellX + x, cellY + y, false);
+					me.setStateWithUndo(cellX + x, cellY + y, current & state, true, sizeHint);
+					i += 1;
+				}
+			}
+		}
+
+		// 
+		// paste finished
 		me.isPasting = false;
 
 		// clear notification
 		me.menuManager.notification.clear(true, false);
+
+		// save edit
+		me.afterEdit("paste");
 	};
 
 	// paste pressed

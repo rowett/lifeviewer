@@ -8,6 +8,8 @@ Build 359
 - hotkey Alt "N" prompts for rule and then creates a new empty pattern
 - hotkey Alt "R" prompts for new rule for the current pattern
 - new Paste Position slider defines where to paste relative to the mouse
+- new Paste capability
+- lock Hexagon toggle if not in hex display mode
 
 Build 358
 - added selection box display
