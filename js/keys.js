@@ -729,7 +729,13 @@
 			case 101: // num 5
 				// check for ctrl
 				if (event.ctrlKey) {
-					me.randomPressed(me);
+					if (event.shiftKey) {
+						// random fill 2 state
+						me.randomFill(me, true);
+					} else {
+						// random fill multi state
+						me.randomFill(me, false);
+					}
 				} else {
 					// zero angle
 					if (!me.angleItem.locked) {

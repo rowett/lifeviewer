@@ -7330,7 +7330,7 @@
 	};
 
 	// random paste
-	View.prototype.randomPaste = function(me) {
+	View.prototype.randomPaste = function(me, twoStateOnly) {
 		var i = 0,
 			state = 0,
 			numStates = me.engine.multiNumStates;
@@ -7343,8 +7343,8 @@
 		// randomize cells
 		for (i = 0; i < me.pasteBuffer.length; i += 1) {
 			if (me.randGen.random() * 100 <= me.randomDensity) {
-				if (numStates === 2) {
-					state = 1;
+				if (numStates === 2 || twoStateOnly) {
+					state = numStates - 1;
 				} else {
 					state = ((me.randGen.random() * (numStates - 1)) | 0) + 1;
 				}
@@ -7356,7 +7356,7 @@
 	};
 
 	// random selection
-	View.prototype.randomSelection = function(me) {
+	View.prototype.randomSelection = function(me, twoStateOnly) {
 		var box = me.selectionBox,
 			x1 = box.leftX,
 			x2 = box.rightX,
@@ -7396,8 +7396,8 @@
 			for (y = y1; y <= y2; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
 					if (me.randGen.random() * 100 <= me.randomDensity) {
-						if (numStates === 2) {
-							state = 1;
+						if (numStates === 2 || twoStateOnly) {
+							state = numStates - 1;
 						} else {
 							state = ((me.randGen.random() * (numStates - 1)) | 0) + 1;
 						}
@@ -7416,13 +7416,18 @@
 		}
 	};
 
+	// random fill
+	View.prototype.randomFill = function(me, twoStateOnly) {
+		if (me.isPasting) {
+			me.randomPaste(me, twoStateOnly);
+		} else {
+			me.randomSelection(me, twoStateOnly);
+		}
+	}
+
 	// random pressed
 	View.prototype.randomPressed = function(me) {
-		if (me.isPasting) {
-			me.randomPaste(me);
-		} else {
-			me.randomSelection(me);
-		}
+		me.randomFill(false);
 	};
 
 	// flip X paste

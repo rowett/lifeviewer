@@ -10,6 +10,7 @@ Build 359
 - hotkey Alt "R" prompts for new rule for the current pattern
 - new Paste Position slider defines where to paste relative to the mouse
 - lock Hexagon toggle if not in hex display mode
+- hotkey Ctrl+Shift "5" for 2-state only random fill
 
 Build 358
 - added selection box display

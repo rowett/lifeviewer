@@ -765,6 +765,7 @@
 		y = this.renderHelpLine(view, "Ctrl Z", "undo edit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl+Shift Z", "redo edit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl 5", "random fill", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl+Shift 5", "random fill 2 state", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Del", "clear selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, ">", "rotate selection clockwise", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "<", "rotate selection counter-clockwise", ctx, x, y, height, helpLine);
