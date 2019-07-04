@@ -9,6 +9,9 @@ Investigate:
 
 Planned:
     menu items coordinates should be reflected based on compass position
+    undo/redo bug when drawing during playback
+    fit grid with hex patterns
+    consolidate help->keys edit/clipboard section
 
 In progress:
 [STARTED]add type information for closure compiler
@@ -34,8 +37,9 @@ In progress:
     - improved LifeHistory drawing modes
     - reset to include the overlay grid
     - selections
-        - square selection
-        - within 1-cell selection
+        [DONE]10 clipboards
+        [DONE]square selection
+        [DONE]auto-shrink selection on/off
         - name selection
         [DONE]flip X selection
         [DONE]flip Y selection
@@ -43,15 +47,21 @@ In progress:
         [DONE]rotate CCW selection
         [DONE]set random fill percentage
         [DONE]random fill selection
+        [DONE]random 2-state fill selection
         [DONE]clear cells in selection
+        [DONE]invert cells in selection
         - copy library or named snippet to buffer
-        - copy selection to buffer
-        - cut selection to buffer
-        - flip X buffer
-        - flip Y buffer
-        - rotate CW buffer
-        - rotate CCW buffer
-        - copy buffer to current position
+        [DONE]copy selection to buffer
+        [DONE]cut selection to buffer
+        [DONE]flip X buffer
+        [DONE]flip Y buffer
+        [DONE]rotate CW buffer
+        [DONE]rotate CCW buffer
+        [DONE]random fill buffer
+        [DONE]random 2-state fill buffer
+        [DONE]clear cells in selection
+        [DONE]invert cells in selection
+        [DONE]copy buffer to current position
         - copy buffer to original position
     [DONE]undo stack / step back
     [DONE]grow grid if possible when cell outside current grid drawn
