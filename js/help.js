@@ -745,6 +745,7 @@
 		y = this.renderHelpLine(view, "Ctrl+Alt C", "copy current pattern with comments", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "K", "copy camera position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift K", "copy camera position and view", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt S", "toggle sync cut and copy with external clipboard", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// edit controls

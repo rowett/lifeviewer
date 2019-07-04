@@ -10491,7 +10491,7 @@
 		this.libraryToggle.current = [false];
 
 		// default copy sync
-		this.copySyncToggle.current = this.viewCopySyncList(this.copySyncExternal, true, this);
+		this.copySyncToggle.current = this.viewCopySyncList([this.copySyncExternal], true, this);
 
 		// start in pan mode
 		this.modeList.current = this.viewModeList(ViewConstants.modePan, true, this);

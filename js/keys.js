@@ -193,6 +193,12 @@
 						// change rule
 						me.changeRule(me);
 						break;
+					// s for toggle sync
+					case 83:
+						// toggle external clipboard sync
+						me.copySyncToggle.current = me.viewCopySyncList([!me.copySyncExternal], true, me);
+						me.menuManager.notification.notify("Sync Clipboard " + (me.copySyncExternal ? "On" : "Off"), 15, 40, 15, true);
+						break;
 					// x for flip X
 					case 88:
 						// flip selection horizontally
