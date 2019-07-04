@@ -7162,8 +7162,31 @@
 	};
 
 	// cut pressed
-	View.prototype.cutPressed = function(me) {
-		// copy to the standard clipboard
+	View.prototype.cutPressed = function(me, shift, alt) {
+		// check for sync
+		if (!me.noCopy && me.copySyncExternal) {
+			if (shift) {
+				// copy reset position to external clipboard
+				me.copyRLE(me, true);
+			} else {
+				// check for view only mode
+				if (me.viewOnly) {
+					// copy reset position to clipboard
+					me.copyRLE(me, true);
+				} else {
+					// check for alt/meta key
+					if (alt) {
+						// copy with pattern comments
+						me.copyCurrentRLE(me, true);
+					} else {
+						// copy without pattern comments
+						me.copyCurrentRLE(me, false);
+					}
+				}
+			}
+		}
+
+		// cut to the standard clipboard
 		me.cutSelection(me, me.currentPasteBuffer);
 	}
 
@@ -7245,9 +7268,6 @@
 
 	// copy pressed
 	View.prototype.copyPressed = function(me, shift, alt) {
-		// copy to the standard clipboard
-		me.copySelection(me, me.currentPasteBuffer);
-
 		// check for sync
 		if (!me.noCopy && me.copySyncExternal) {
 			if (shift) {
@@ -7270,6 +7290,9 @@
 				}
 			}
 		}
+
+		// copy to the standard clipboard
+		me.copySelection(me, me.currentPasteBuffer);
 	};
 
 	// copy selection

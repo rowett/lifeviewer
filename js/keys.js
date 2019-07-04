@@ -498,7 +498,7 @@
 			// x for toggle grid lines
 			case 88:
 				if (event.ctrlKey) {
-					me.cutPressed(me);
+					me.cutPressed(me, event.shiftKey, event.altKey);
 				} else {
 					// check for shift
 					if (event.shiftKey) {
