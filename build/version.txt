@@ -1,3 +1,8 @@
+Build 361
+- auto-shrink feature will automatically shrink selections to alive cells
+	- toggle button in Selection menu
+	- hotkey Alt "A"
+
 Build 360
 - [R]History state 2 was being ignored on pattern load
 - some patterns were failing when the grid grows

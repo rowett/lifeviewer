@@ -146,6 +146,12 @@
 					}
 				} else {
 					switch (keyCode) {
+					// a for auto-shrink
+					case 65:
+						// toggle auto-shrink selection
+						me.autoShrinkToggle.current = me.viewAutoShrinkList([!me.autoShrink], true, me);
+						me.menuManager.notification.notify("Auto-Shrink Selection " + (me.autoShrink ? "On" : "Off"), 15, 40, 15, true);
+						break;
 					// b for cell borders
 					case 66:
 						// toggle cell borders

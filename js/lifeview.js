@@ -225,7 +225,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 360,
+		/** @const {number} */ versionBuild : 361,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -912,6 +912,9 @@
 		// when compute history finishes clear notification
 		/** @type {boolean} */ this.computeHistoryClear = true;
 
+		// whether auto-shrink is on
+		/** @type {boolean} */ this.autoShrink = false;
+
 		// whether autofit is on
 		/** @type {boolean} */ this.autoFit = false;
 
@@ -1326,8 +1329,8 @@
 		// clear selection button
 		this.clearSelectionButton = null;
 
-		// select connected button
-		this.selectConnectedButton = null;
+		// auto-shrink toggle
+		this.autoShrinkToggle = null;
 
 		// fit button
 		this.fitButton = null;
@@ -4641,7 +4644,7 @@
 		// select tools
 		shown = hide || !this.selecting || settingsMenuOpen;
 		this.selectAllButton.deleted = shown;
-		this.selectConnectedButton.deleted = shown;
+		this.autoShrinkToggle.deleted = shown;
 		this.libraryToggle.deleted = shown;
 		this.clipboardList.deleted = shown;
 		this.pastePositionItem.deleted = shown;
@@ -5643,6 +5646,15 @@
 		return result;
 	};
 
+	// auto-shrink selection
+	View.prototype.viewAutoShrinkList = function(newValue, change, me) {
+		if (change) {
+			me.autoShrink = newValue[0];
+		}
+
+		return [me.autoShrink];
+	};
+
 	// copy sync with external clipboard
 	View.prototype.viewCopySyncList = function(newValue, change, me) {
 		if (change) {
@@ -6372,6 +6384,94 @@
 		}
 	};
 
+	// auto shrink a selection
+	View.prototype.autoShrinkSelection = function(me) {
+		var selBox = me.selectionBox,
+			zoomBox = me.engine.zoomBox,
+			leftX = selBox.leftX,
+			bottomY = selBox.bottomY,
+			rightX = selBox.rightX,
+			topY = selBox.topY,
+			swap = 0,
+			minX = 0,
+			maxX = 0,
+			minY = 0,
+			maxY = 0,
+			x = 0,
+			y = 0,
+			state = 0,
+			population = 0,
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+
+		// order bottom left to top right
+		if (leftX > rightX) {
+			swap = leftX;
+			leftX = rightX;
+			rightX = swap;
+		}
+		if (bottomY > topY) {
+			swap = bottomY;
+			bottomY = topY;
+			topY = swap;
+		}
+
+		// clip to pattern
+		if (leftX < zoomBox.leftX - xOff) {
+			leftX = zoomBox.leftX - xOff;
+		}
+		if (bottomY < zoomBox.bottomY - yOff) {
+			bottomY = zoomBox.bottomY - yOff;
+		}
+		if (rightX > zoomBox.rightX - xOff) {
+			rightX = zoomBox.rightX - xOff;
+		}
+		if (topY > zoomBox.topY - yOff) {
+			topY= zoomBox.topY - yOff;
+		}
+
+		// find min max for X and Y
+		minX = rightX + 1;
+		maxX = leftX - 1;
+		minY = topY + 1;
+		maxY = bottomY - 1;
+
+		// look for alive cells
+		for (y = bottomY; y <= topY; y += 1) {
+			for (x = leftX; x <= rightX; x += 1) {
+				state = me.engine.getState(x + xOff, y + yOff, false);
+				if (state > 0) {
+					// update min and max if alive cell found
+					if (y < minY) {
+						minY = y;
+					}
+					if (y > maxY) {
+						maxY = y;
+					}
+					if (x < minX) {
+						minX = x;
+					}
+					if (x > maxX) {
+						maxX = x;
+					}
+					// update population
+					population += 1;
+				}
+			}
+		}
+		
+		// save section box if there were live cells
+		if (population > 0) {
+			selBox.leftX = minX;
+			selBox.bottomY = minY;
+			selBox.rightX = maxX;
+			selBox.topY = maxY;
+		} else {
+			// no selection
+			me.isSelection = false;
+		}
+	};
+
 	// process drag end for selection
 	View.prototype.doDragEndSelect = function(me) {
 		var selBox = me.selectionBox,
@@ -6382,17 +6482,27 @@
 		if (me.drawingSelection) {
 			me.isSelection = true;
 			me.drawingSelection = false;
-			if (selBox.rightX < selBox.leftX) {
-				width = selBox.leftX - selBox.rightX + 1;
-			} else {
-				width = selBox.rightX - selBox.leftX + 1;
+			// check if auto-shrink is on
+			if (me.autoShrink) {
+				me.autoShrinkSelection(me);
 			}
-			if (selBox.topY < selBox.bottomY) {
-				height = selBox.bottomY - selBox.topY + 1;
+			// check if there is still a selection
+			if (me.isSelection) {
+				// get the width and height of the selection
+				if (selBox.rightX < selBox.leftX) {
+					width = selBox.leftX - selBox.rightX + 1;
+				} else {
+					width = selBox.rightX - selBox.leftX + 1;
+				}
+				if (selBox.topY < selBox.bottomY) {
+					height = selBox.bottomY - selBox.topY + 1;
+				} else {
+					height = selBox.topY - selBox.bottomY + 1;
+				}
+				me.afterEdit("selection (" + width + " x " + height + ")");
 			} else {
-				height = selBox.topY - selBox.bottomY + 1;
+				me.removeSelection(me);
 			}
-			me.afterEdit("selection (" + width + " x " + height + ")");
 		} else {
 			me.removeSelection(me);
 		}
@@ -6543,7 +6653,7 @@
 			icons = new Image();
 
 			// load the icons from the image file
-			icons.src = "data:image/png;base64,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";
+			icons.src = "data:image/png;base64,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";
 				
 			// save the image
 			ViewConstants.icons = icons;
@@ -6576,7 +6686,7 @@
 		this.iconManager.add("redo", w, h);
 		this.iconManager.add("drawpause", w, h);
 		this.iconManager.add("invertselection", w, h);
-		this.iconManager.add("selectconnected", w, h);
+		this.iconManager.add("autoshrink", w, h);
 		this.iconManager.add("selectlibrary", w, h);
 		this.iconManager.add("cut", w, h);
 		this.iconManager.add("copy", w, h);
@@ -7155,10 +7265,6 @@
 		} else {
 			me.removeSelection(me);
 		}
-	};
-
-	// select connected pressed
-	View.prototype.selectConnectedPressed = function(me) {
 	};
 
 	// cut pressed
@@ -9362,7 +9468,7 @@
 		// add the copy sync toggle
 		this.copySyncToggle = this.viewMenu.addListItem(this.viewCopySyncList, Menu.northEast, -130, 0, 40, 40, ["Sync"], [this.copySyncExternal], Menu.multi);
 		this.copySyncToggle.toolTip = ["sync cut and copy with external clipboard"];
-		this.copySyncToggle.font = "14px Arial";
+		this.copySyncToggle.font = "15px Arial";
 
 		// add play and pause list
 		this.playList = this.viewMenu.addListItem(this.viewPlayList, Menu.southEast, -205, -40, 160, 40, ["", "", "", ""], ViewConstants.modePause, Menu.single);
@@ -9389,10 +9495,11 @@
 		this.selectAllButton.toolTip = "select all cells";
 		this.selectAllButton.font = "16px Arial";
 
-		// select connected button
-		this.selectConnectedButton = this.viewMenu.addButtonItem(this.selectConnectedPressed, Menu.northWest, 45, 45, 40, 40, "");
-		this.selectConnectedButton.icon = this.iconManager.icon("selectconnected");
-		this.selectConnectedButton.toolTip = "select connected cells";
+		// auto-shrink toggle
+		this.autoShrinkToggle = this.viewMenu.addListItem(this.viewAutoShrinkList, Menu.northWest, 45, 45, 40, 40, ["Auto"], [this.autoShrink], Menu.multi);
+		this.autoShrinkToggle.icon = [this.iconManager.icon("autoshrink")];
+		this.autoShrinkToggle.toolTip = ["toggle auto shrink selection"];
+		this.autoShrinkToggle.font = "16px Arial";
 
 		// library button
 		this.libraryToggle = this.viewMenu.addListItem(null, Menu.northWest, 90, 45, 40, 40, [""], [false], Menu.multi);
@@ -10116,6 +10223,9 @@
 		// disable copy sync
 		this.copySyncExternal = false;
 
+		// disable auto-shrink
+		this.autoShrink = false;
+
 		// clear any selection
 		this.isSelection = false;
 		this.drawingSelection = false;
@@ -10489,6 +10599,9 @@
 
 		// hide library
 		this.libraryToggle.current = [false];
+
+		// default auto-shrink
+		this.autoShrinkToggle.current = this.viewAutoShrinkList([this.autoShrink], true, this);
 
 		// default copy sync
 		this.copySyncToggle.current = this.viewCopySyncList([this.copySyncExternal], true, this);
@@ -10935,9 +11048,6 @@
 		if (this.viewOnly || this.engine.isNone) {
 			this.modeList.itemLocked[ViewConstants.modeDraw] = true;
 		}
-
-		// disable select mode features until implemented TBD !!!
-		this.selectConnectedButton.locked = true;
 
 		// if standard view mode then reset colour grid and population
 		if (this.multiStateView) {
