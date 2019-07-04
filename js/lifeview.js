@@ -3548,6 +3548,7 @@
 		    err = dx - dy,
 			e2 = 0,
 			width = this.engine.width,
+			height = this.engine.height,
 			// whether LifeHistory state6 changed
 			result = 0;
 
@@ -3556,11 +3557,31 @@
 
 		// check for grid growth
 		while (width !== this.engine.width) {
-			startX += width >> 1;
-			startY += width >> 1;
-			endX += width >> 1;
-			endY += width >> 1;
+			// double width and height
 			width <<= 1;
+			height <<= 1;
+
+			// adjust drawing cell position
+			startX += width >> 2;
+			startY += width >> 2;
+			endX += width >> 2;
+			endY += width >> 2;
+
+			// update the default x and y
+			this.defaultX += width >> 2;
+			this.defaultY += height >> 2;
+			this.savedX += width >> 2;
+			this.savedY += height >> 2;
+
+			// check for hex mode
+			if (this.engine.isHex) {
+				this.defaultX -= height >> 3;
+				this.savedX -= height >> 3;
+			}
+
+			// update pan position
+			this.panX += width >> 2;
+			this.panY += height >> 2;
 		}
 
 		// loop for each pixel on the line
@@ -3581,11 +3602,31 @@
 
 			// check for grid growth
 			while (width !== this.engine.width) {
-				startX += width >> 1;
-				startY += width >> 1;
-				endX += width >> 1;
-				endY += width >> 1;
+				// double width and height
 				width <<= 1;
+				height <<= 1;
+
+				// adjust drawing cell position
+				startX += width >> 2;
+				startY += width >> 2;
+				endX += width >> 2;
+				endY += width >> 2;
+
+				// update the default x and y
+				this.defaultX += width >> 2;
+				this.defaultY += height >> 2;
+				this.savedX += width >> 2;
+				this.savedY += height >> 2;
+
+				// check for hex mode
+				if (this.engine.isHex) {
+					this.defaultX -= height >> 3;
+					this.savedX -= height >> 3;
+				}
+
+				// update pan position
+				this.panX += width >> 2;
+				this.panY += height >> 2;
 			}
 		}
 

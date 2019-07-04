@@ -2,6 +2,7 @@ Build 361
 - auto-shrink feature will automatically shrink selections to alive cells
 	- toggle button in Selection menu
 	- hotkey Alt "A"
+- fixed bug when growing grid during drawing
 
 Build 360
 - [R]History state 2 was being ignored on pattern load
