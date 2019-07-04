@@ -556,6 +556,9 @@
 	function View(element) {
 		var i = 0;
 
+		// whether to sync copy with external clipboard
+		/** @type {boolean} */ this.copySyncExternal = false;
+
 		// paste buffers
 		this.pasteBuffers = [];
 		for (i = 0; i < 10; i += 1) {
@@ -563,23 +566,23 @@
 		}
 
 		// current paste buffer
-		this.currentPasteBuffer = 0;
+		/** @type {number} */ this.currentPasteBuffer = 0;
 
 		// current paste width and height
-		this.pasteWidth = 0;
-		this.pasteHeight = 0;
+		/** @type {number} */ this.pasteWidth = 0;
+		/** @type {number} */ this.pasteHeight = 0;
 
 		// paste position
 		this.pastePosition = ViewConstants.pastePositionNW;
 
 		// whether there is something in the buffer to paste
-		this.canPaste = false;
+		/** @type {boolean} */ this.canPaste = false;
 
 		// current paste buffer cells
 		this.pasteBuffer = null;
 
 		// whether paste is happening
-		this.isPasting = false;
+		/** @type {boolean} */ this.isPasting = false;
 
 		// selection box
 		this.selectionBox = new BoundingBox();
@@ -594,7 +597,7 @@
 		this.randGen.init(Date.now().toString());
 
 		// random density percentage for fill
-		this.randomDensity = 50;
+		/** @type {number} */ this.randomDensity = 50;
 
 		// selection start X and Y screen location (used to detect click to clear selection)
 		/** @type {number} */ this.selectStartX = 0;
@@ -607,7 +610,7 @@
 		/** @type {boolean} */ this.drawingSelection = false;
 
 		// paste mode for paste tool
-		this.pasteModeForUI = ViewConstants.pasteModeOr;
+		/** @type {number} */ this.pasteModeForUI = ViewConstants.pasteModeOr;
 
 		// edit list for undo/redo
 		this.editList = [];
@@ -622,7 +625,7 @@
 		this.currentEdit = null;
 
 		// current edit index
-		this.currentEditIndex = 0;
+		/** @type {number} */ this.currentEditIndex = 0;
 
 		// step samples
 		this.stepSamples = [];
@@ -1218,8 +1221,8 @@
 		// redo button
 		this.redoButton = null;
 
-		// copy rle button
-		this.copyRLEButton = null;
+		// copy sync toggle
+		this.copySyncToggle = null;
 
 		// navigation menu toggle
 		this.navToggle = null;
@@ -1311,8 +1314,11 @@
 		// grid toggle
 		this.gridToggle = null;
 
-		// library button
-		this.libraryButton = null;
+		// library toggle
+		this.libraryToggle = null;
+
+		// clipboard list
+		this.clipboardList = null;
 
 		// select all button
 		this.selectAllButton = null;
@@ -1578,6 +1584,29 @@
 		// pen colour for drawing
 		/** @type {number} */ this.penColour = -1;
 	}
+
+	// create clipboard tooltips
+	View.prototype.createClipboardTooltips = function() {
+		var i = 0,
+			buffer = this.pasteBuffers,
+			current = this.currentPasteBuffer,
+			tip = "",
+			tips = [];
+
+		for (i = 0; i < 10; i += 1) {
+			if (i === current) {
+				tip = "current ";
+			} else {
+				tip = "activate ";
+			}
+			tip += "clipboard"
+			if (buffer[i] !== null) {
+				tip += " (" + buffer[i].width + " x " + buffer[i].height + ")";
+			}
+			tips[i] = tip;
+		}
+		this.clipboardList.toolTip = tips;
+	};
 
 	// open last saved or original pattern
 	View.prototype.loadPattern = function(me) {
@@ -1878,8 +1907,10 @@
 				if (record.editCells === null) {
 					if (current > 1) {
 						gen = me.editList[current - 2].gen;
-						selection = me.editList[current - 2].selection;
 					}
+				}
+				if (current > 1) {
+					selection = me.editList[current - 2].selection;
 				}
 	
 				// if it is for an earlier generation then go there
@@ -4494,7 +4525,7 @@
 		this.waypointsIndicator.deleted = hide;
 		this.loopIndicator.deleted = hide;
 		this.modeList.deleted = hide;
-		this.copyRLEButton.deleted = hide;
+		this.copySyncToggle.deleted = hide;
 
 		// graph controls
 		shown = hide || !this.popGraph || this.drawing || this.selecting || settingsMenuOpen;
@@ -4611,7 +4642,8 @@
 		shown = hide || !this.selecting || settingsMenuOpen;
 		this.selectAllButton.deleted = shown;
 		this.selectConnectedButton.deleted = shown;
-		this.libraryButton.deleted = shown;
+		this.libraryToggle.deleted = shown;
+		this.clipboardList.deleted = shown;
 		this.pastePositionItem.deleted = shown;
 		this.pasteModeList.deleted = shown;
 		this.copyButton.deleted = shown;
@@ -4636,6 +4668,7 @@
 		shown = !(this.isSelection || this.isPasting);
 		this.randomButton.locked = shown;
 		this.random2Button.locked = shown;
+		this.randomItem.locked = shown;
 		this.flipXButton.locked = shown;
 		this.flipYButton.locked = shown;
 		this.rotateCWButton.locked = shown;
@@ -5610,6 +5643,15 @@
 		return result;
 	};
 
+	// copy sync with external clipboard
+	View.prototype.viewCopySyncList = function(newValue, change, me) {
+		if (change) {
+			me.copySyncExternal = newValue[0];
+		}
+
+		return [me.copySyncExternal];
+	};
+
 	// view mode list
 	View.prototype.viewModeList = function(newValue, change, me) {
 		var result = newValue;
@@ -5660,6 +5702,23 @@
 		}
 
 		return result;
+	};
+
+	// active clipboard
+	View.prototype.viewClipboardList = function(newValue, change, me) {
+		if (change) {
+			// set active clipboard
+			me.currentPasteBuffer = newValue;
+
+			// update tooltips
+			me.createClipboardTooltips();
+
+			// close library
+			me.libraryToggle.current = [false];
+			me.menuManager.toggleRequired = true;
+		}
+
+		return me.currentPasteBuffer;
 	};
 
 	// paste mode
@@ -6899,11 +6958,6 @@
 		me.undo(me);
 	};
 
-	// copy RLE button
-	View.prototype.copyRLEPressed = function(me) {
-		me.copyCurrentRLE(me, true);
-	};
-
 	// redo button
 	View.prototype.redoPressed = function(me) {
 		me.redo(me);
@@ -7107,10 +7161,6 @@
 	View.prototype.selectConnectedPressed = function(me) {
 	};
 
-	// library pressed
-	View.prototype.libraryPressed = function(me) {
-	};
-
 	// cut pressed
 	View.prototype.cutPressed = function(me) {
 		// copy to the standard clipboard
@@ -7180,6 +7230,7 @@
 			me.pasteBuffer = buffer;
 			me.pasteWidth = width;
 			me.pasteHeight = height;
+			me.createClipboardTooltips();
 
 			// check if shrink needed
 			me.engine.doShrink();
@@ -7193,9 +7244,32 @@
 	};
 
 	// copy pressed
-	View.prototype.copyPressed = function(me) {
+	View.prototype.copyPressed = function(me, shift, alt) {
 		// copy to the standard clipboard
 		me.copySelection(me, me.currentPasteBuffer);
+
+		// check for sync
+		if (!me.noCopy && me.copySyncExternal) {
+			if (shift) {
+				// copy reset position to external clipboard
+				me.copyRLE(me, true);
+			} else {
+				// check for view only mode
+				if (me.viewOnly) {
+					// copy reset position to clipboard
+					me.copyRLE(me, true);
+				} else {
+					// check for alt/meta key
+					if (alt) {
+						// copy with pattern comments
+						me.copyCurrentRLE(me, true);
+					} else {
+						// copy without pattern comments
+						me.copyCurrentRLE(me, false);
+					}
+				}
+			}
+		}
 	};
 
 	// copy selection
@@ -7256,10 +7330,17 @@
 			me.pasteBuffer = buffer;
 			me.pasteWidth = width;
 			me.pasteHeight = height;
+			me.createClipboardTooltips();
 
 			// mark that a paste can happen
 			me.canPaste = true;
 		}
+	};
+
+	// cancel paste
+	View.prototype.cancelPaste = function(me) {
+		me.isPasting = false;
+		me.menuManager.notification.clear(true, false);
 	};
 
 	// perform paste
@@ -7374,24 +7455,30 @@
 
 	// paste pressed
 	View.prototype.pastePressed = function(me) {
-		me.pasteSelection(me, me.currentPasteBuffer);
+		if (me.pasteBuffers[me.currentPasteBuffer] !== null) {
+			me.pasteSelection(me, me.currentPasteBuffer);
+			me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
+		}
 	};
 
 	// paste selection
 	View.prototype.pasteSelection = function(me, number) {
 		// get the required paste
-		if (number >= 0 && number < me.pasteBuffers.length && me.pasteBuffers[number] !== null) {
-			me.isPasting = true;
-			me.pasteBuffer = me.pasteBuffers[number].buffer;
-			me.pasteWidth = me.pasteBuffers[number].width;
-			me.pasteHeight = me.pasteBuffers[number].height;
-	
-			// switch to select mode
-			if (me.modeList.current !== ViewConstants.modeSelect) {
-				me.modeList.current = me.viewModeList(ViewConstants.modeSelect, true, me);
+		if (number >= 0 && number < me.pasteBuffers.length) {
+			if (me.pasteBuffers[number] !== null) {
+				me.isPasting = true;
+				me.pasteBuffer = me.pasteBuffers[number].buffer;
+				me.pasteWidth = me.pasteBuffers[number].width;
+				me.pasteHeight = me.pasteBuffers[number].height;
+		
+				// switch to select mode
+				if (me.modeList.current !== ViewConstants.modeSelect) {
+					me.modeList.current = me.viewModeList(ViewConstants.modeSelect, true, me);
+				}
+			} else {
+				me.isPasting = false;
+				me.menuManager.notification.notify("Clipboard empty", 15, 180, 15, true);
 			}
-
-			me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
 		}
 	};
 
@@ -8521,7 +8608,7 @@
 		me.mainContext.canvas.focus();
 
 		// clear notification
-		me.menuManager.notification.notify("Copy complete", 15, 120, 15, true);
+		me.menuManager.notification.notify("Copied to external clipboard", 15, 180, 15, true);
 
 		if (twoPhase) {
 			// clear copy mode
@@ -8749,14 +8836,14 @@
 	// update selection controls position based on window height
 	View.prototype.updateSelectionControlsPosition = function() {
 		if (this.engine.multiNumStates <= 2) {
-			this.randomButton.setPosition(Menu.southEast, -40, -130);
-			this.randomButton.toolTip = "random fill";
-			this.randomItem.setPosition(Menu.southEast, -145, -130);
-		} else {
 			this.randomButton.setPosition(Menu.southEast, -85, -130);
-			this.randomButton.toolTip = "random multi-state fill";
-			this.random2Button.setPosition(Menu.southEast, -40, -130);
+			this.randomButton.toolTip = "random fill";
 			this.randomItem.setPosition(Menu.southEast, -190, -130);
+		} else {
+			this.randomButton.setPosition(Menu.southEast, -130, -130);
+			this.randomButton.toolTip = "random multi-state fill";
+			this.random2Button.setPosition(Menu.southEast, -85, -130);
+			this.randomItem.setPosition(Menu.southEast, -235, -130);
 		}
 	};
 
@@ -9249,10 +9336,10 @@
 		this.redoButton.icon = this.iconManager.icon("redo");
 		this.redoButton.toolTip = "redo";
 
-		// add the copy RLE button
-		this.copyRLEButton = this.viewMenu.addButtonItem(this.copyRLEPressed, Menu.northEast, -130, 0, 40, 40, "Copy");
-		this.copyRLEButton.toolTip = "copy pattern to clipboard";
-		this.copyRLEButton.font = "14px Arial";
+		// add the copy sync toggle
+		this.copySyncToggle = this.viewMenu.addListItem(this.viewCopySyncList, Menu.northEast, -130, 0, 40, 40, ["Sync"], [this.copySyncExternal], Menu.multi);
+		this.copySyncToggle.toolTip = ["sync cut and copy with external clipboard"];
+		this.copySyncToggle.font = "14px Arial";
 
 		// add play and pause list
 		this.playList = this.viewMenu.addListItem(this.viewPlayList, Menu.southEast, -205, -40, 160, 40, ["", "", "", ""], ViewConstants.modePause, Menu.single);
@@ -9285,9 +9372,13 @@
 		this.selectConnectedButton.toolTip = "select connected cells";
 
 		// library button
-		this.libraryButton = this.viewMenu.addButtonItem(this.libraryPressed, Menu.northWest, 90, 45, 40, 40, "");
-		this.libraryButton.icon = this.iconManager.icon("selectlibrary");
-		this.libraryButton.toolTip = "library";
+		this.libraryToggle = this.viewMenu.addListItem(null, Menu.northWest, 90, 45, 40, 40, [""], [false], Menu.multi);
+		this.libraryToggle.icon = [this.iconManager.icon("selectlibrary")];
+		this.libraryToggle.toolTip = ["clipboard library"];
+
+		// clipboard list
+		this.clipboardList = this.viewMenu.addListItem(this.viewClipboardList, Menu.north, 0, 90, 400, 40, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], this.currentPasteBuffer, Menu.single);
+		this.createClipboardTooltips();
 
 		// paste mode list
 		this.pasteModeList = this.viewMenu.addListItem(this.viewPasteModeList, Menu.northEast, -160, 45, 160, 40, ["AND", "CPY", "OR", "XOR"], this.pasteModeForUI, Menu.single);
@@ -9310,53 +9401,56 @@
 		this.pasteButton.toolTip = "paste";
 
 		// add the flip X button
-		this.flipXButton = this.viewMenu.addButtonItem(this.flipXPressed, Menu.southEast, -265, -85, 40, 40, "");
+		this.flipXButton = this.viewMenu.addButtonItem(this.flipXPressed, Menu.southEast, -220, -85, 40, 40, "");
 		this.flipXButton.icon = this.iconManager.icon("flipx");
 		this.flipXButton.toolTip = "flip horizontally";
 
 		// add the flip Y button
-		this.flipYButton = this.viewMenu.addButtonItem(this.flipYPressed, Menu.southEast, -220, -85, 40, 40, "");
+		this.flipYButton = this.viewMenu.addButtonItem(this.flipYPressed, Menu.southEast, -175, -85, 40, 40, "");
 		this.flipYButton.icon = this.iconManager.icon("flipy");
 		this.flipYButton.toolTip = "flip vertically";
 
 		// add the rotate clockwise button
-		this.rotateCWButton = this.viewMenu.addButtonItem(this.rotateCWPressed, Menu.southEast, -175, -85, 40, 40, "");
+		this.rotateCWButton = this.viewMenu.addButtonItem(this.rotateCWPressed, Menu.southEast, -130, -85, 40, 40, "");
 		this.rotateCWButton.icon = this.iconManager.icon("rotatecw");
 		this.rotateCWButton.toolTip = "rotate clockwise";
 
 		// add the rotate counter-clockwise button
-		this.rotateCCWButton = this.viewMenu.addButtonItem(this.rotateCCWPressed, Menu.southEast, -130, -85, 40, 40, "");
+		this.rotateCCWButton = this.viewMenu.addButtonItem(this.rotateCCWPressed, Menu.southEast, -85, -85, 40, 40, "");
 		this.rotateCCWButton.icon = this.iconManager.icon("rotateccw");
 		this.rotateCCWButton.toolTip = "rotate counter-clockwise";
 
 		// add the clear selection button
-		this.clearSelectionButton = this.viewMenu.addButtonItem(this.clearSelectionPressed, Menu.southEast, -85, -85, 40, 40, "x");
+		this.clearSelectionButton = this.viewMenu.addButtonItem(this.clearSelectionPressed, Menu.southEast, -40, -85, 40, 40, "x");
 		this.clearSelectionButton.icon = this.iconManager.icon("select");
 		this.clearSelectionButton.toolTip = "clear cells in selection";
 
 		// add the invert selection button
-		this.invertSelectionButton = this.viewMenu.addButtonItem(this.invertSelectionPressed, Menu.southEast, -40, -85, 40, 40, "");
+		this.invertSelectionButton = this.viewMenu.addButtonItem(this.invertSelectionPressed, Menu.southEast, -40, -130, 40, 40, "");
 		this.invertSelectionButton.icon = this.iconManager.icon("invertselection");
 		this.invertSelectionButton.toolTip = "invert cells in selection";
 
 		// add the random button
-		this.randomButton = this.viewMenu.addButtonItem(this.randomPressed, Menu.southEast, -40, -130, 40, 40, "");
+		this.randomButton = this.viewMenu.addButtonItem(this.randomPressed, Menu.southEast, -85, -130, 40, 40, "");
 		this.randomButton.icon = this.iconManager.icon("random");
 		this.randomButton.toolTip = "random fill";
 
 		// add the random 2-state button
-		this.random2Button = this.viewMenu.addButtonItem(this.random2Pressed, Menu.southEast, -85, -130, 40, 40, "2");
+		this.random2Button = this.viewMenu.addButtonItem(this.random2Pressed, Menu.southEast, -130, -130, 40, 40, "2");
 		this.random2Button.icon = this.iconManager.icon("random");
 		this.random2Button.toolTip = "random 2-state fill";
 
 		// add the random density slider
-		this.randomItem = this.viewMenu.addRangeItem(this.viewRandomRange, Menu.southEast, -190, -130, 100, 40, 1, 100, this.randomDensity, true, "", "%", 0);
+		this.randomItem = this.viewMenu.addRangeItem(this.viewRandomRange, Menu.southEast, -235, -130, 100, 40, 1, 100, this.randomDensity, true, "", "%", 0);
 		this.randomItem.toolTip = "random fill density";
 
 		// add the paste position slider
 		this.pastePositionItem = this.viewMenu.addRangeItem(this.viewPastePositionRange, Menu.northEast, -265, 45, 100, 40, 0, 4, this.pastePosition, true, "", "", -1);
 		this.pastePositionItem.toolTip = "paste position";
 		this.pastePositionItem.font = "16px Arial";
+
+		// add items to the library toggle
+		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
 
 		// add items to the main toggle menu
 		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
@@ -9996,6 +10090,9 @@
 			this.isEdge = false;
 		}
 
+		// disable copy sync
+		this.copySyncExternal = false;
+
 		// clear any selection
 		this.isSelection = false;
 		this.drawingSelection = false;
@@ -10366,6 +10463,12 @@
 		// turn off help and errors
 		this.displayHelp = 0;
 		this.displayErrors = 0;
+
+		// hide library
+		this.libraryToggle.current = [false];
+
+		// default copy sync
+		this.copySyncToggle.current = this.viewCopySyncList(this.copySyncExternal, true, this);
 
 		// start in pan mode
 		this.modeList.current = this.viewModeList(ViewConstants.modePan, true, this);
@@ -10812,7 +10915,6 @@
 
 		// disable select mode features until implemented TBD !!!
 		this.selectConnectedButton.locked = true;
-		this.libraryButton.locked = true;
 
 		// if standard view mode then reset colour grid and population
 		if (this.multiStateView) {

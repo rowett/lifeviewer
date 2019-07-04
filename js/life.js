@@ -1367,7 +1367,20 @@
 			/** @type {boolean} */ twoState = false,
 			colourGrid = this.colourGrid,
 			colourRow = null,
-			/** @type {number} */ col = 0;
+			/** @type {number} */ col = 0,
+			/** @type {number} */ xOff = (me.width >> 1) - (view.patternWidth >> 1),
+			/** @type {number} */ yOff = (me.height >> 1) - (view.patternHeight >> 1),
+			selBox = view.selectionBox;
+
+		// check for selection
+		if (view.isSelection) {
+			leftX = selBox.leftX + xOff;
+			bottomY = selBox.bottomY + yOff;
+			rightX = selBox.rightX + xOff;
+			topY = selBox.topY + yOff;
+			width = rightX - leftX + 1;
+			height = topY - bottomY + 1;
+		}
 
 		// check for triangular rules
 		if (me.isTriangular) {

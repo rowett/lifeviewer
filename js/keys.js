@@ -118,14 +118,18 @@
 					if ((me.selecting || me.waypointManager.numPOIs() === 0) && !me.noHistory) {
 						// if clipboard already selected then paste
 						if (me.currentPasteBuffer === value) {
-							me.pastePressed(me);
+							if (me.isPasting) {
+								me.pasteSelection(me);
+							} else {
+								me.pastePressed(me);
+							}
 						} else {
 							// switch to required buffer
-							me.currentPasteBuffer = value;
+							me.clipboardList.current = me.viewClipboardList(value, true, me);
 
 							// if already pasting then update paste
 							if (me.isPasting) {
-								me.pastePressed(me);
+								me.pasteSelection(me, value);
 							} else {
 								me.menuManager.notification.notify("Clipboard " + value + " active", 15, 80, 15, true);
 							}
@@ -1206,33 +1210,7 @@
 			case 67:
 				// check for control-C
 				if (event.ctrlKey) {
-					// check for selection
-					if (me.isSelection) {
-						me.copyPressed(me);
-					} else {
-						if (!me.noCopy) {
-							// check for shift-C
-							if (event.shiftKey) {
-								// copy reset position to clipboard
-								me.copyRLE(me, true);
-							} else {
-								// check for view only mode
-								if (me.viewOnly) {
-									// copy reset position to clipboard
-									me.copyRLE(me, true);
-								} else {
-									// check for alt/meta key
-									if (event.altKey) {
-										// copy with pattern comments
-										me.copyCurrentRLE(me, true);
-									} else {
-										// copy without pattern comments
-										me.copyCurrentRLE(me, false);
-									}
-								}
-							}
-						}
-					}
+					me.copyPressed(me, event.shiftKey, event.altKey);
 				} else {
 					// disable colour themes in multi-state mode
 					if (!me.multiStateView) {
@@ -1364,7 +1342,7 @@
 					} else {
 						// check if pasting
 						if (me.isPasting) {
-							me.isPasting = false;
+							me.cancelPaste(me);
 						} else {
 							// close the popup Viewer
 							hideViewer();
@@ -1384,7 +1362,7 @@
 						} else {
 							// check if pasting
 							if (me.isPasting) {
-								me.isPasting = false;
+								me.cancelPaste(me);
 							} else {
 								// check if playing
 								if (me.generationOn) {

@@ -6,6 +6,8 @@ Build 360
 	- using hotkey when specified clipboard already selected triggers paste
 - prevent selection controls from going off bottom of window
 - added 2-state random fill button when multi-state pattern loaded
+- fixed an issue with selection box and undo
+- replaced main Copy button with Sync toggle which if set synchronises cut and copy actions with external clipboard
 
 Build 359
 - Select mode Copy button copies to internal clipboard unless there is no selection in which case to external clipboard
