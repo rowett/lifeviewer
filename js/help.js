@@ -765,8 +765,12 @@
 		y = this.renderHelpLine(view, "Ctrl Y", "redo edit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl Z", "undo edit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl+Shift Z", "redo edit", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl 5", "random fill", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Shift 5", "random fill 2 state", ctx, x, y, height, helpLine);
+		if (view.engine.multiNumStates > 2) {
+			y = this.renderHelpLine(view, "Ctrl 5", "multi-state random fill", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Ctrl+Shift 5", "2-state random fill", ctx, x, y, height, helpLine);
+		} else {
+			y = this.renderHelpLine(view, "Ctrl 5", "random fill", ctx, x, y, height, helpLine);
+		}
 		y = this.renderHelpLine(view, "Del", "clear selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, ">", "rotate selection clockwise", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "<", "rotate selection counter-clockwise", ctx, x, y, height, helpLine);
@@ -774,6 +778,9 @@
 		y = this.renderHelpLine(view, "Alt Y", "flip selection vertically", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Esc", "hide paste", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Enter", "perform paste", ctx, x, y, height, helpLine);
+		for (i = 0; i < 10; i += 1) {
+			y = this.renderHelpLine(view, "Alt " + i, "make clipboard " + i + " active", ctx, x, y, height, helpLine);
+		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// help controls
@@ -1363,19 +1370,15 @@
 		y = this.renderHelpLine(view, "Enabled", view.noHistory ? "Off" : "On", ctx, x, y, height, helpLine);
 		if (!view.noHistory) {
 			y = this.renderHelpLine(view, "Snapshots", view.engine.snapshotManager.usedBuffers() + "/" + view.engine.snapshotManager.buffers(), ctx, x, y, height, helpLine);
-			i = 0;
-			value = view.engine.snapshotManager.numResetPoints();
-			if (value > 0) {
-				y = this.renderHelpLine(view, "Reset Gens", value, ctx, x, y, height, helpLine);
-				while (i < value) {
-					y = this.renderHelpLine(view, String(i), (view.engine.snapshotManager.resetSnapshots[i].counter), ctx, x, y, height, helpLine);
-					i += 1;
-				}
-			}
 			y = this.renderHelpLine(view, "Buffer", (view.engine.snapshotManager.bufferSize() >> 10) + "K", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Next Gen", view.engine.nextSnapshotTarget, ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Undo", view.editNum, ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Redo", view.numEdits - view.editNum, ctx, x, y, height, helpLine);
+			for (i = 0; i <= 9; i += 1) {
+				if (view.pasteBuffers[i] !== null) {
+					y = this.renderHelpLine(view, "Clip " + i + (i === view.currentPasteBuffer ? "*" : ""), view.pasteBuffers[i].width + " x " + view.pasteBuffers[i].height, ctx, x, y, height, helpLine);
+				}
+			}
 		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 

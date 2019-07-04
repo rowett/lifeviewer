@@ -1,3 +1,12 @@
+Build 360
+- [R]History state 2 was being ignored on pattern load
+- some patterns were failing when the grid grows
+- hotkeys Alt "0" to Alt "9" makes one of 10 clipboards the active one
+	- paste rectangle will update if visible to new clipboard contents
+	- using hotkey when specified clipboard already selected triggers paste
+- prevent selection controls from going off bottom of window
+- added 2-state random fill button when multi-state pattern loaded
+
 Build 359
 - Select mode Copy button copies to internal clipboard unless there is no selection in which case to external clipboard
 	- main menu Copy button always copies entire pattern to external clipboard (regardless of selection)

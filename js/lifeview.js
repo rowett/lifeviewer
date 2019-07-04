@@ -225,7 +225,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 359,
+		/** @const {number} */ versionBuild : 360,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -554,7 +554,18 @@
 	 * @constructor
 	 */
 	function View(element) {
-		// paste width and height
+		var i = 0;
+
+		// paste buffers
+		this.pasteBuffers = [];
+		for (i = 0; i < 10; i += 1) {
+			this.pasteBuffers[i] = null;
+		}
+
+		// current paste buffer
+		this.currentPasteBuffer = 0;
+
+		// current paste width and height
 		this.pasteWidth = 0;
 		this.pasteHeight = 0;
 
@@ -564,7 +575,7 @@
 		// whether there is something in the buffer to paste
 		this.canPaste = false;
 
-		// buffer cells
+		// current paste buffer cells
 		this.pasteBuffer = null;
 
 		// whether paste is happening
@@ -1413,6 +1424,9 @@
 
 		// random button
 		this.randomButton = null;
+
+		// random 2-state button
+		this.random2Button = null;
 
 		// random density slider
 		this.randomItem = null;
@@ -4234,7 +4248,11 @@
 
 		// check if grid buffer needs to grow
 		if (me.engine.counter && me.engine.anythingAlive) {
-			me.checkGridSize(me, me.engine.zoomBox);
+			me.middleBox.leftX = me.engine.zoomBox.leftX;
+			me.middleBox.bottomY = me.engine.zoomBox.bottomY;
+			me.middleBox.rightX = me.engine.zoomBox.rightX;
+			me.middleBox.topY = me.engine.zoomBox.topY;
+			me.checkGridSize(me, me.middleBox);
 		}
 
 		// draw any arrows and labels
@@ -4592,25 +4610,32 @@
 		// select tools
 		shown = hide || !this.selecting || settingsMenuOpen;
 		this.selectAllButton.deleted = shown;
-		this.clearSelectionButton.deleted = shown;
 		this.selectConnectedButton.deleted = shown;
 		this.libraryButton.deleted = shown;
+		this.pastePositionItem.deleted = shown;
 		this.pasteModeList.deleted = shown;
 		this.copyButton.deleted = shown;
 		this.cutButton.deleted = shown;
 		this.pasteButton.deleted = shown;
+
+		// selection action tools
+		shown = hide || !this.selecting || settingsMenuOpen;
 		this.flipXButton.deleted = shown;
 		this.flipYButton.deleted = shown;
 		this.rotateCWButton.deleted = shown;
 		this.rotateCCWButton.deleted = shown;
 		this.invertSelectionButton.deleted = shown;
+		this.clearSelectionButton.deleted = shown;
 		this.randomButton.deleted = shown;
 		this.randomItem.deleted = shown;
-		this.pastePositionItem.deleted = shown;
+		shown = hide || !this.selecting || settingsMenuOpen || this.engine.multiNumStates < 2;
+		this.random2Button.deleted = shown;
+
 
 		// lock select tools
 		shown = !(this.isSelection || this.isPasting);
 		this.randomButton.locked = shown;
+		this.random2Button.locked = shown;
 		this.flipXButton.locked = shown;
 		this.flipYButton.locked = shown;
 		this.rotateCWButton.locked = shown;
@@ -4622,7 +4647,7 @@
 		this.copyButton.locked = shown;
 
 		// lock paste tools
-		shown = !this.canPaste || this.isPasting;
+		shown = !this.canPaste || this.isPasting || this.pasteBuffers[this.currentPasteBuffer] === null;
 		this.pasteButton.locked = shown;
 
 		// drawing tools
@@ -7088,6 +7113,12 @@
 
 	// cut pressed
 	View.prototype.cutPressed = function(me) {
+		// copy to the standard clipboard
+		me.cutSelection(me, me.currentPasteBuffer);
+	}
+
+	// cut selection
+	View.prototype.cutSelection = function(me, number) {
 		var box = me.selectionBox,
 			x1 = box.leftX,
 			x2 = box.rightX,
@@ -7102,6 +7133,7 @@
 			invertForGenerations = (states > 2 && !me.engine.isNone),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+			buffer = null,
 			width = 0,
 			height = 0,
 			sizeHint = 0;
@@ -7127,7 +7159,7 @@
 			sizeHint = width * height;
 
 			// allocate the buffer
-			me.pasteBuffer = me.engine.allocator.allocate(Uint8, width * height, "View.pasteBuffer");
+			buffer = me.engine.allocator.allocate(Uint8, width * height, "View.pasteBuffer" + number);
 
 			// copy selection to buffer and clear set cells
 			i = 0;
@@ -7137,11 +7169,15 @@
 					if (state > 0 && invertForGenerations) {
 						state = states - state;
 					}
-					me.pasteBuffer[i] = state;
+					buffer[i] = state;
 					me.setStateWithUndo(x + xOff, y + yOff, 0, true, sizeHint);
 					i += 1;
 				}
 			}
+
+			// copy to required buffer
+			me.pasteBuffers[number] = {buffer: buffer, width: width, height: height};
+			me.pasteBuffer = buffer;
 			me.pasteWidth = width;
 			me.pasteHeight = height;
 
@@ -7158,6 +7194,12 @@
 
 	// copy pressed
 	View.prototype.copyPressed = function(me) {
+		// copy to the standard clipboard
+		me.copySelection(me, me.currentPasteBuffer);
+	};
+
+	// copy selection
+	View.prototype.copySelection = function(me, number) {
 		var selBox = me.selectionBox,
 			x1 = selBox.leftX,
 			y1 = selBox.bottomY,
@@ -7173,7 +7215,8 @@
 			states = me.engine.multiNumStates,
 			invertForGenerations = (states > 2 && !me.engine.isNone),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+			buffer = null;
 
 		if (me.isSelection) {
 			// order selection 
@@ -7193,7 +7236,7 @@
 			height = (y2 - y1 + 1);
 
 			// allocate the buffer
-			me.pasteBuffer = me.engine.allocator.allocate(Uint8, width * height, "View.pasteBuffer");
+			buffer = me.engine.allocator.allocate(Uint8, width * height, "View.pasteBuffer" + number);
 
 			// copy selection to buffer
 			i = 0;
@@ -7203,10 +7246,14 @@
 					if (state > 0 && invertForGenerations) {
 						state = states - state;
 					}
-					me.pasteBuffer[i] = state;
+					buffer[i] = state;
 					i += 1;
 				}
 			}
+
+			// copy to required buffer
+			me.pasteBuffers[number] = {buffer: buffer, width: width, height: height};
+			me.pasteBuffer = buffer;
 			me.pasteWidth = width;
 			me.pasteHeight = height;
 
@@ -7327,14 +7374,25 @@
 
 	// paste pressed
 	View.prototype.pastePressed = function(me) {
-		me.isPasting = true;
+		me.pasteSelection(me, me.currentPasteBuffer);
+	};
 
-		// switch to select mode
-		if (me.modeList.current !== ViewConstants.modeSelect) {
-			me.modeList.current = me.viewModeList(ViewConstants.modeSelect, true, me);
+	// paste selection
+	View.prototype.pasteSelection = function(me, number) {
+		// get the required paste
+		if (number >= 0 && number < me.pasteBuffers.length && me.pasteBuffers[number] !== null) {
+			me.isPasting = true;
+			me.pasteBuffer = me.pasteBuffers[number].buffer;
+			me.pasteWidth = me.pasteBuffers[number].width;
+			me.pasteHeight = me.pasteBuffers[number].height;
+	
+			// switch to select mode
+			if (me.modeList.current !== ViewConstants.modeSelect) {
+				me.modeList.current = me.viewModeList(ViewConstants.modeSelect, true, me);
+			}
+
+			me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
 		}
-
-		me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
 	};
 
 	// random paste
@@ -7435,7 +7493,12 @@
 
 	// random pressed
 	View.prototype.randomPressed = function(me) {
-		me.randomFill(false);
+		me.randomFill(me, false);
+	};
+
+	// random 2-state pressed
+	View.prototype.random2Pressed = function(me) {
+		me.randomFill(me, true);
 	};
 
 	// flip X paste
@@ -8683,6 +8746,20 @@
 		}
 	};
 
+	// update selection controls position based on window height
+	View.prototype.updateSelectionControlsPosition = function() {
+		if (this.engine.multiNumStates <= 2) {
+			this.randomButton.setPosition(Menu.southEast, -40, -130);
+			this.randomButton.toolTip = "random fill";
+			this.randomItem.setPosition(Menu.southEast, -145, -130);
+		} else {
+			this.randomButton.setPosition(Menu.southEast, -85, -130);
+			this.randomButton.toolTip = "random multi-state fill";
+			this.random2Button.setPosition(Menu.southEast, -40, -130);
+			this.randomItem.setPosition(Menu.southEast, -190, -130);
+		}
+	};
+
 	// update help topic buttons position based on window height
 	View.prototype.updateTopicButtonsPosition = function() {
 		if (this.displayHeight < ViewConstants.minMenuHeight) {
@@ -9233,42 +9310,47 @@
 		this.pasteButton.toolTip = "paste";
 
 		// add the flip X button
-		this.flipXButton = this.viewMenu.addButtonItem(this.flipXPressed, Menu.northEast, -40, 240, 40, 40, "");
+		this.flipXButton = this.viewMenu.addButtonItem(this.flipXPressed, Menu.southEast, -265, -85, 40, 40, "");
 		this.flipXButton.icon = this.iconManager.icon("flipx");
 		this.flipXButton.toolTip = "flip horizontally";
 
 		// add the flip Y button
-		this.flipYButton = this.viewMenu.addButtonItem(this.flipYPressed, Menu.northEast, -40, 285, 40, 40, "");
+		this.flipYButton = this.viewMenu.addButtonItem(this.flipYPressed, Menu.southEast, -220, -85, 40, 40, "");
 		this.flipYButton.icon = this.iconManager.icon("flipy");
 		this.flipYButton.toolTip = "flip vertically";
 
 		// add the rotate clockwise button
-		this.rotateCWButton = this.viewMenu.addButtonItem(this.rotateCWPressed, Menu.northEast, -40, 330, 40, 40, "");
+		this.rotateCWButton = this.viewMenu.addButtonItem(this.rotateCWPressed, Menu.southEast, -175, -85, 40, 40, "");
 		this.rotateCWButton.icon = this.iconManager.icon("rotatecw");
 		this.rotateCWButton.toolTip = "rotate clockwise";
 
 		// add the rotate counter-clockwise button
-		this.rotateCCWButton = this.viewMenu.addButtonItem(this.rotateCCWPressed, Menu.northEast, -40, 375, 40, 40, "");
+		this.rotateCCWButton = this.viewMenu.addButtonItem(this.rotateCCWPressed, Menu.southEast, -130, -85, 40, 40, "");
 		this.rotateCCWButton.icon = this.iconManager.icon("rotateccw");
 		this.rotateCCWButton.toolTip = "rotate counter-clockwise";
 
 		// add the clear selection button
-		this.clearSelectionButton = this.viewMenu.addButtonItem(this.clearSelectionPressed, Menu.northEast, -40, 420, 40, 40, "x");
+		this.clearSelectionButton = this.viewMenu.addButtonItem(this.clearSelectionPressed, Menu.southEast, -85, -85, 40, 40, "x");
 		this.clearSelectionButton.icon = this.iconManager.icon("select");
 		this.clearSelectionButton.toolTip = "clear cells in selection";
 
 		// add the invert selection button
-		this.invertSelectionButton = this.viewMenu.addButtonItem(this.invertSelectionPressed, Menu.northEast, -40, 465, 40, 40, "");
+		this.invertSelectionButton = this.viewMenu.addButtonItem(this.invertSelectionPressed, Menu.southEast, -40, -85, 40, 40, "");
 		this.invertSelectionButton.icon = this.iconManager.icon("invertselection");
 		this.invertSelectionButton.toolTip = "invert cells in selection";
 
 		// add the random button
-		this.randomButton = this.viewMenu.addButtonItem(this.randomPressed, Menu.northEast, -40, 195, 40, 40, "");
+		this.randomButton = this.viewMenu.addButtonItem(this.randomPressed, Menu.southEast, -40, -130, 40, 40, "");
 		this.randomButton.icon = this.iconManager.icon("random");
 		this.randomButton.toolTip = "random fill";
 
+		// add the random 2-state button
+		this.random2Button = this.viewMenu.addButtonItem(this.random2Pressed, Menu.southEast, -85, -130, 40, 40, "2");
+		this.random2Button.icon = this.iconManager.icon("random");
+		this.random2Button.toolTip = "random 2-state fill";
+
 		// add the random density slider
-		this.randomItem = this.viewMenu.addRangeItem(this.viewRandomRange, Menu.northEast, -40, 90, 40, 100, 100, 1, this.randomDensity, true, "", "%", 0);
+		this.randomItem = this.viewMenu.addRangeItem(this.viewRandomRange, Menu.southEast, -190, -130, 100, 40, 1, 100, this.randomDensity, true, "", "%", 0);
 		this.randomItem.toolTip = "random fill density";
 
 		// add the paste position slider
@@ -9919,6 +10001,11 @@
 		this.drawingSelection = false;
 
 		// clear any paste
+		this.pasteBuffers = [];
+		for (i = 0; i < 10; i += 1) {
+			this.pasteBuffers[i] = null;
+		}
+		this.currentPasteBuffer = 0;
 		this.canPaste = false;
 		this.pasteBuffer = null;
 		this.isPasting = false;
@@ -10432,6 +10519,9 @@
 			// update help topic button positions based on window height
 			this.updateTopicButtonsPosition();
 
+			// update selection controls position based on window height
+			this.updateSelectionControlsPosition();
+
 			// process dynamic themes
 			this.engine.processMultiStateThemes();
 
@@ -10745,15 +10835,6 @@
 			this.graphDisabled = true;
 			this.popGraph = false;
 		} else {
-			// check if this is a LifeHistory pattern
-			if (this.engine.isLifeHistory) {
-				// check if there are state 2 cells
-				if (PatternManager.stateCount[2]) {
-					// copy state 2 to the colour grid
-					this.engine.copyState2(pattern, this.panX, this.panY);
-				}
-			}
-
 			// compute bounding box
 			this.engine.resetBoxes(this.state1Fit);
 
@@ -10763,6 +10844,15 @@
 			// reset the colour grid if not multi-state Generations or HROT rule
 			if (this.engine.multiNumStates <= 2) {
 				this.engine.resetColourGridBox(this.engine.grid16);
+			}
+
+			// check if this is a LifeHistory pattern
+			if (this.engine.isLifeHistory) {
+				// check if there are state 2 cells
+				if (PatternManager.stateCount[2]) {
+					// copy state 2 to the colour grid
+					this.engine.copyState2(pattern, this.panX, this.panY);
+				}
 			}
 
 			// draw any rle snippets after colour grid conversion (for paste blending modes)

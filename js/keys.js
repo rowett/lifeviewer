@@ -112,13 +112,33 @@
 
 			// check for alt-number
 			if (event.altKey && !event.ctrlKey) {
-				if (keyCode >= 49 && keyCode <= 57) {
-					value = keyCode - 49;
-					if (value >= 0 && value < me.waypointManager.numPOIs()) {
-						me.currentPOI = value;
+				if (keyCode >= 48 && keyCode <= 57) {
+					value = keyCode - 48;
+					// if selecting or no POIs then choose clipboard
+					if ((me.selecting || me.waypointManager.numPOIs() === 0) && !me.noHistory) {
+						// if clipboard already selected then paste
+						if (me.currentPasteBuffer === value) {
+							me.pastePressed(me);
+						} else {
+							// switch to required buffer
+							me.currentPasteBuffer = value;
 
-						// set camera
-						me.setCameraFromPOI(me, me.currentPOI);
+							// if already pasting then update paste
+							if (me.isPasting) {
+								me.pastePressed(me);
+							} else {
+								me.menuManager.notification.notify("Clipboard " + value + " active", 15, 80, 15, true);
+							}
+						}
+					} else {
+						// POIs only use 1 to 9
+						value -= 1;
+						if (value >= 0 && value < me.waypointManager.numPOIs()) {
+							me.currentPOI = value;
+	
+							// set camera
+							me.setCameraFromPOI(me, me.currentPOI);
+						}
 					}
 				} else {
 					switch (keyCode) {
