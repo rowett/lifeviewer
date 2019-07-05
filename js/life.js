@@ -13249,7 +13249,12 @@
 			xHexOffset = 0,
 			xHexAdjust = 0,
 		    engineY = view.panY - this.yOff,
-			engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0);
+			engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0),
+			coords = [0, 0],
+			drawX1 = 0, drawY1 = 0,
+			drawX2 = 0, drawY2 = 0,
+			drawX3 = 0, drawY3 = 0,
+			drawX4 = 0, drawY4 = 0;
 
 		// compute hex horizontal pixel offset
 		xHexOffset = (this.isHex ? (height / 2) * xZoom : 0);
@@ -13298,10 +13303,14 @@
 			ctx.fillStyle = "rgb(255,0,0)";
 			ctx.globalAlpha = 0.5;
 			ctx.beginPath();
-			ctx.moveTo(x1, y1);
-			ctx.lineTo(x2 + xHexOffset + xHexAdjust + 1, y1);
-			ctx.lineTo(x2 + xHexAdjust + 1, y2 + 1);
-			ctx.lineTo(x1 - xHexOffset, y2 + 1);
+			this.rotateCoords(x1, y1, coords);
+			ctx.moveTo(coords[0], coords[1]);
+			this.rotateCoords(x2 + xHexOffset + xHexAdjust + 1, y1, coords);
+			ctx.lineTo(coords[0], coords[1]);
+			this.rotateCoords(x2 + xHexAdjust + 1, y2 + 1, coords);
+			ctx.lineTo(coords[0], coords[1]);
+			this.rotateCoords(x1 - xHexOffset, y2 + 1, coords);
+			ctx.lineTo(coords[0], coords[1]);
 			ctx.fill();
 
 			// now draw each set cell if zoom is high enough
@@ -13319,12 +13328,38 @@
 							x1 = xZoom * (mouseCellX + x - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
 							y2 = y1 + yZoom;
 							x2 = x1 + xZoom;
-							// don't draw cell if off window
-							if (!((x1 < 0 && x2 < 0) || (x1 >= view.displayWidth && x2 >= view.displayWidth) || (y1 < 0 && y2 < 0) || (y1 >= view.displayHeight && y2 >= view.displayHeight))) {
-								ctx.moveTo(x1, y1);
-								ctx.lineTo(x2, y1);
-								ctx.lineTo(x2, y2);
-								ctx.lineTo(x1, y2);
+							// check for rotation
+							if (this.camAngle !== 0) {
+								this.rotateCoords(x1, y1, coords);
+								drawX1 = coords[0];
+								drawY1 = coords[1];
+								this.rotateCoords(x2, y1, coords);
+								drawX2 = coords[0];
+								drawY2 = coords[1];
+								this.rotateCoords(x2, y2, coords);
+								drawX3 = coords[0];
+								drawY3 = coords[1];
+								this.rotateCoords(x1, y2, coords);
+								drawX4 = coords[0];
+								drawY4 = coords[1];
+								// don't draw cell if off window
+								if (!((drawX1 < 0 && drawX2 < 0 && drawX3 < 0 && drawX4 < 0) ||
+									(drawX1 >= view.displayWidth && drawX2 >= view.displayWidth && drawX3 >= view.displayWidth && drawX4 >= view.displayWidth) ||
+									(drawY1 < 0 && drawY2 < 0 && drawY3 < 0 && drawY4 < 0) ||
+									(drawY1 >= view.displayHeight && drawY2 >= view.displayHeight && drawY3 >= view.displayHeight && drawY4 >= view.displayHeight))) {
+									ctx.moveTo(drawX1, drawY1);
+									ctx.lineTo(drawX2, drawY2);
+									ctx.lineTo(drawX3, drawY3);
+									ctx.lineTo(drawX4, drawY4);
+								}
+							} else {
+								// don't draw cell if off window
+								if (!((x1 < 0 && x2 < 0) || (x1 >= view.displayWidth && x2 >= view.displayWidth) || (y1 < 0 && y2 < 0) || (y1 >= view.displayHeight && y2 >= view.displayHeight))) {
+									ctx.moveTo(x1, y1);
+									ctx.lineTo(x2, y1);
+									ctx.lineTo(x2, y2);
+									ctx.lineTo(x1, y2);
+								}
 							}
 						}
 					}
@@ -13332,6 +13367,30 @@
 				ctx.fill();
 			}
 		}
+	};
+
+	// get rotated coordinates
+	Life.prototype.rotateCoords = function(x, y, result) {
+		var radius = 0,
+			theta = 0,
+			halfDisplayWidth = this.displayWidth / 2,
+			halfDisplayHeight = this.displayHeight / 2;
+
+		// check for rotation
+		if (this.camAngle !== 0) {
+			x -= halfDisplayWidth;
+			y -= halfDisplayHeight;
+			radius = Math.sqrt((x * x) + (y * y));
+			theta = Math.atan2(y, x) * (180 / Math.PI);
+			theta += this.camAngle;
+			// grow radius
+			x = Math.round(radius * Math.cos(theta * (Math.PI / 180)) + halfDisplayWidth);
+			y = Math.round(radius * Math.sin(theta * (Math.PI / 180)) + halfDisplayHeight);
+		}
+
+		// save result
+		result[0] = x;
+		result[1] = y;
 	};
 
 	// draw selection box
@@ -13350,7 +13409,8 @@
 			xHexOffset = 0,
 			xHexAdjust = 0,
 		    engineY = view.panY - this.yOff,
-			engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0);
+			engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0),
+			coords = [0, 0];
 
 		// order selection box coordinates
 		if (x1 > x2) {
@@ -13378,10 +13438,14 @@
 		ctx.fillStyle = "rgb(0,255,0)";
 		ctx.globalAlpha = 0.5;
 		ctx.beginPath();
-		ctx.moveTo(x1, y1);
-		ctx.lineTo(x2 + xHexOffset + xHexAdjust + 1, y1);
-		ctx.lineTo(x2 + xHexAdjust + 1, y2 + 1);
-		ctx.lineTo(x1 - xHexOffset, y2 + 1);
+		this.rotateCoords(x1, y1, coords);
+		ctx.moveTo(coords[0], coords[1]);
+		this.rotateCoords(x2 + xHexOffset + xHexAdjust + 1, y1, coords);
+		ctx.lineTo(coords[0], coords[1]);
+		this.rotateCoords(x2 + xHexAdjust + 1, y2 + 1, coords);
+		ctx.lineTo(coords[0], coords[1]);
+		this.rotateCoords(x1 - xHexOffset, y2 + 1, coords);
+		ctx.lineTo(coords[0], coords[1]);
 		ctx.fill();
 		ctx.globalAlpha = 1;
 	};
