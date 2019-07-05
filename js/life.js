@@ -13304,31 +13304,33 @@
 			ctx.lineTo(x1 - xHexOffset, y2 + 1);
 			ctx.fill();
 
-			// now draw each set cell
-			ctx.fillStyle = "rgb(255, 128, 0)";
-			ctx.beginPath();
-			i = 0;
-			for (y = 0; y < height; y += 1) {
-				for (x = 0; x < width; x += 1) {
-					state = view.pasteBuffer[i];
-					i += 1;
-					if (state) {
-						// convert cell coordinates to screen coordinates
-						y1 = yZoom * (mouseCellY + y - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-						x1 = xZoom * (mouseCellX + x - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
-						y2 = y1 + yZoom;
-						x2 = x1 + xZoom;
-						// don't draw cell if off window
-						if (!((x1 < 0 && x2 < 0) || (x1 >= view.displayWidth && x2 >= view.displayWidth) || (y1 < 0 && y2 < 0) || (y1 >= view.displayHeight && y2 >= view.displayHeight))) {
-							ctx.moveTo(x1, y1);
-							ctx.lineTo(x2, y1);
-							ctx.lineTo(x2, y2);
-							ctx.lineTo(x1, y2);
+			// now draw each set cell if zoom is high enough
+			if (this.zoom >= 1) {
+				ctx.fillStyle = "rgb(255, 128, 0)";
+				ctx.beginPath();
+				i = 0;
+				for (y = 0; y < height; y += 1) {
+					for (x = 0; x < width; x += 1) {
+						state = view.pasteBuffer[i];
+						i += 1;
+						if (state) {
+							// convert cell coordinates to screen coordinates
+							y1 = yZoom * (mouseCellY + y - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
+							x1 = xZoom * (mouseCellX + x - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
+							y2 = y1 + yZoom;
+							x2 = x1 + xZoom;
+							// don't draw cell if off window
+							if (!((x1 < 0 && x2 < 0) || (x1 >= view.displayWidth && x2 >= view.displayWidth) || (y1 < 0 && y2 < 0) || (y1 >= view.displayHeight && y2 >= view.displayHeight))) {
+								ctx.moveTo(x1, y1);
+								ctx.lineTo(x2, y1);
+								ctx.lineTo(x2, y2);
+								ctx.lineTo(x1, y2);
+							}
 						}
 					}
 				}
+				ctx.fill();
 			}
-			ctx.fill();
 		}
 	};
 

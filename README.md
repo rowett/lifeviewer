@@ -31,7 +31,7 @@ LifeViewer features:
 * Script language that allows many features to be customized including Waypoint animations and POIs.
 * Support for multiple embedded LifeViewers and/or a single popup LifeViewer.
 * Ability to step back to earlier generations.
-* Editor with unlimitied undo/redo.
+* Editor with unlimitied undo/redo and multiple clipboards.
 
 
 LifeViewer supports several different pattern formats, rules and neighbourhoods, as well as bounded grids.

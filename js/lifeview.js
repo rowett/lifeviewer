@@ -6454,7 +6454,7 @@
 	View.prototype.dragEndSelect = function(me) {
 		if (me.isPasting) {
 			// perform paste at the mouse position
-			me.performPaste(me, me.cellX, me.cellY);
+			me.performPaste(me, me.cellX, me.cellY, true);
 		} else {
 			me.doDragEndSelect(me);
 		}
@@ -6542,9 +6542,6 @@
 			selBox.bottomY = minY;
 			selBox.rightX = maxX;
 			selBox.topY = maxY;
-		} else {
-			// no selection
-			me.isSelection = false;
 		}
 	};
 
@@ -7559,7 +7556,7 @@
 	};
 
 	// perform paste
-	View.prototype.performPaste = function(me, cellX, cellY) {
+	View.prototype.performPaste = function(me, cellX, cellY, saveEdit) {
 		var i = 0,
 			x = 0,
 			y = 0,
@@ -7662,7 +7659,9 @@
 		me.menuManager.notification.clear(true, false);
 
 		// save edit
-		me.afterEdit("paste");
+		if (saveEdit) {
+			me.afterEdit("paste");
+		}
 	};
 
 	// process paste
@@ -7676,7 +7675,10 @@
 			rightX = selBox.rightX,
 			topY = selBox.topY,
 			width = 0,
-			height = 0;
+			height = 0,
+			savedLocation = 0,
+			x = 0,
+			y = 0;
 
 		// check for copy buffer
 		if (me.pasteBuffers[me.currentPasteBuffer] !== null) {
@@ -7702,7 +7704,19 @@
 					if (me.pasteWidth > width || me.pasteHeight > height) {
 						me.menuManager.notification.notify("Paste does not fit in selection", 15, 180, 15, true);
 					} else {
-						me.performPaste(me, leftX + xOff, bottomY + yOff);
+						// paste top left to always fit in selection box
+						savedLocation = me.pastePosition;
+						me.pastePosition = ViewConstants.pastePositionNW;
+						for (y = bottomY; y <= bottomY + height - me.pasteHeight; y += me.pasteHeight) {
+							for (x = leftX ; x <= leftX + width - me.pasteWidth; x += me.pasteWidth) {
+								me.performPaste(me, x + xOff, y + yOff, false);
+							}
+						}
+						me.pastePosition = savedLocation;
+						if (me.autoShrink) {
+							me.autoShrinkSelection(me);
+						}
+						me.afterEdit("paste to selection");
 					}
 				} else {
 					me.menuManager.notification.notify("Paste to Selection needs a selection", 15, 180, 15, true);
@@ -7713,6 +7727,11 @@
 				me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
 			}
 		}
+	};
+
+	// paste from enter eky
+	View.prototype.pasteFromEnter = function(me) {
+		me.performPaste(me, me.cellX, me.cellY, true);
 	};
 
 	// paste pressed

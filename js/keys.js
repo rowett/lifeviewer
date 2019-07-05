@@ -306,7 +306,7 @@
 			// return for play/pause
 			case 13:
 				if (me.isPasting) {
-					me.performPaste(me);
+					me.pasteFromEnter(me);
 				} else {
 					// do not play if view only mode
 					if (!me.viewOnly) {

@@ -2,6 +2,9 @@ Build 362
 - hotkey Shift "L" to cycle paste location
 - hotkey Shift "M" to cycle paste mode
 - hotkey Alt "L" to toggle annotation display (was previously hotkey Shift "L")
+- don't draw individual paste cells if zoom < 1 (just the paste rectangle)
+- Paste to Selection will tile the paste if the selection is bigger than the paste
+- auto-shrink no longer removes empty selections so they can be used for Paste Selection
 
 Build 361
 - auto-shrink feature will automatically shrink selections to alive cells
