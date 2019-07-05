@@ -739,13 +739,16 @@
 		// clipboard controls
 		view.helpSections[sectionNum] = [view.lineNo, "Clipboard"];
 		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Clipboard controls:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "External clipboard controls:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt S", "toggle sync cut and copy with external clipboard", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl+Shift C", "copy original pattern", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl C", "copy current pattern", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Alt C", "copy current pattern with comments", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl C", "copy current selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl+Alt C", "copy current selection with comments", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl+Shift X", "copy original pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl X", "copy current selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl+Alt X", "copy current selection with comments", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "K", "copy camera position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift K", "copy camera position and view", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt S", "toggle sync cut and copy with external clipboard", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// edit controls
@@ -760,9 +763,11 @@
 		y = this.renderHelpLine(view, "F5", "pan mode", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl A", "select all", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt A", "toggle auto-shrink selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl C", "copy", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl I", "invert selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl K", "remove selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl V", "paste", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl+Shift V", "paste to selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl X", "cut", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl Y", "redo edit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl Z", "undo edit", ctx, x, y, height, helpLine);

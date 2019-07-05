@@ -5691,6 +5691,9 @@
 	View.prototype.viewAutoShrinkList = function(newValue, change, me) {
 		if (change) {
 			me.autoShrink = newValue[0];
+			if (me.autoShrink) {
+				me.autoShrinkSelection(me);
+			}
 		}
 
 		return [me.autoShrink];
@@ -6282,13 +6285,27 @@
 
 	// drag draw
 	View.prototype.dragDraw = function(me, x, y) {
+		var wasPlaying = me.generationOn,
+			savedIndex = me.currentEditIndex;
+
 		if (!me.pickMode) {
-			// draw cells
-			me.drawCells(x, y, me.lastDragX, me.lastDragY);
 			// suspend playback
 			if (me.generationOn && me.pauseWhileDrawing) {
 				me.generationOn = false;
 				me.playbackDrawPause = true;
+			}
+			// if playback was on then save undo record
+			if (wasPlaying) {
+				// just save generation
+				me.currentEditIndex = 0;
+				me.afterEdit("");
+				me.currentEditIndex = savedIndex;
+			}
+			// draw cells
+			me.drawCells(x, y, me.lastDragX, me.lastDragY);
+			// if playback was on then save undo record
+			if (wasPlaying) {
+				me.afterEdit("");
 			}
 		}
 	};
@@ -6418,8 +6435,8 @@
 	// drag ended for select
 	View.prototype.dragEndSelect = function(me) {
 		if (me.isPasting) {
-			// perform paste
-			me.performPaste(me);
+			// perform paste at the mouse position
+			me.performPaste(me, me.cellX, me.cellY);
 		} else {
 			me.doDragEndSelect(me);
 		}
@@ -7308,8 +7325,8 @@
 		}
 	};
 
-	// cut pressed
-	View.prototype.cutPressed = function(me, shift, alt) {
+	// process cut
+	View.prototype.processCut = function(me, shift, alt) {
 		// check for sync
 		if (!me.noCopy && me.copySyncExternal) {
 			if (shift) {
@@ -7336,6 +7353,11 @@
 		// cut to the standard clipboard
 		me.cutSelection(me, me.currentPasteBuffer);
 	}
+
+	// cut pressed
+	View.prototype.cutPressed = function(me) {
+		me.processCut(me, false, false);
+	};
 
 	// cut selection
 	View.prototype.cutSelection = function(me, number) {
@@ -7413,8 +7435,8 @@
 		}
 	};
 
-	// copy pressed
-	View.prototype.copyPressed = function(me, shift, alt) {
+	// process copy
+	View.prototype.processCopy = function(me, shift, alt) {
 		// check for sync
 		if (!me.noCopy && me.copySyncExternal) {
 			if (shift) {
@@ -7440,6 +7462,11 @@
 
 		// copy to the standard clipboard
 		me.copySelection(me, me.currentPasteBuffer);
+	};
+
+	// copy pressed
+	View.prototype.copyPressed = function(me) {
+		me.processCopy(me, false, false);
 	};
 
 	// copy selection
@@ -7514,7 +7541,7 @@
 	};
 
 	// perform paste
-	View.prototype.performPaste = function(me) {
+	View.prototype.performPaste = function(me, cellX, cellY) {
 		var i = 0,
 			x = 0,
 			y = 0,
@@ -7525,10 +7552,7 @@
 			buffer = me.pasteBuffer,
 			sizeHint = width * height,
 			midBox = me.middleBox,
-			origWidth = me.engine.width,
-			// get the paste position
-			cellX = me.cellX,
-			cellY = me.cellY;
+			origWidth = me.engine.width;
 
 		// adjust paste position based on position mode
 		switch ((me.pastePosition + 0.5) | 0) {
@@ -7623,12 +7647,59 @@
 		me.afterEdit("paste");
 	};
 
+	// process paste
+	View.prototype.processPaste = function(me, shift) {
+		var xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+			selBox = me.selectionBox,
+			save = 0,
+			leftX = selBox.leftX,
+			bottomY = selBox.bottomY,
+			rightX = selBox.rightX,
+			topY = selBox.topY,
+			width = 0,
+			height = 0;
+
+		// check for copy buffer
+		if (me.pasteBuffers[me.currentPasteBuffer] !== null) {
+			// check for paste to selection
+			if (shift) {
+				// check for a selection
+				if (me.isSelection) {
+					// order selection
+					if (leftX > rightX) {
+						save = leftX;
+						leftX = rightX;
+						rightX = save;
+					}
+					if (bottomY > topY) {
+						save = bottomY;
+						bottomY = topY;
+						topY = save;
+					}
+					width = rightX - leftX + 1;
+					height = topY - bottomY + 1;
+
+					// check the paste fits in the selection box
+					if (me.pasteWidth > width || me.pasteHeight > height) {
+						me.menuManager.notification.notify("Paste does not fit in selection", 15, 180, 15, true);
+					} else {
+						me.performPaste(me, leftX + xOff, bottomY + yOff);
+					}
+				} else {
+					me.menuManager.notification.notify("Paste to Selection needs a selection", 15, 180, 15, true);
+				}
+
+			} else {
+				me.pasteSelection(me, me.currentPasteBuffer);
+				me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
+			}
+		}
+	};
+
 	// paste pressed
 	View.prototype.pastePressed = function(me) {
-		if (me.pasteBuffers[me.currentPasteBuffer] !== null) {
-			me.pasteSelection(me, me.currentPasteBuffer);
-			me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
-		}
+		me.processPaste(me, false);
 	};
 
 	// paste selection

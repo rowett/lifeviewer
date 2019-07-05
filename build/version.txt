@@ -3,6 +3,8 @@ Build 361
 	- toggle button in Selection menu
 	- hotkey Alt "A"
 - fixed bug when growing grid during drawing
+- fixed bug with undo/redo while drawing during playback
+- hotkey Ctrl+Shift "V" pastes to selection
 
 Build 360
 - [R]History state 2 was being ignored on pattern load

@@ -510,7 +510,7 @@
 			// x for toggle grid lines
 			case 88:
 				if (event.ctrlKey) {
-					me.cutPressed(me, event.shiftKey, event.altKey);
+					me.processCut(me, event.shiftKey, event.altKey);
 				} else {
 					// check for shift
 					if (event.shiftKey) {
@@ -707,7 +707,7 @@
 			// v for reset view
 			case 86:
 				if (event.ctrlKey) {
-					me.pastePressed(me);
+					me.processPaste(me, event.shiftKey);
 				} else {
 					// check for shift key
 					if (event.shiftKey) {
@@ -1222,7 +1222,7 @@
 			case 67:
 				// check for control-C
 				if (event.ctrlKey) {
-					me.copyPressed(me, event.shiftKey, event.altKey);
+					me.processCopy(me, event.shiftKey, event.altKey);
 				} else {
 					// disable colour themes in multi-state mode
 					if (!me.multiStateView) {

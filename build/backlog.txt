@@ -9,9 +9,7 @@ Investigate:
 
 Planned:
     menu items coordinates should be reflected based on compass position
-    undo/redo bug when drawing during playback
     fit grid with hex patterns
-    consolidate help->keys edit/clipboard section
 
 In progress:
 [STARTED]add type information for closure compiler
@@ -62,7 +60,7 @@ In progress:
         [DONE]clear cells in selection
         [DONE]invert cells in selection
         [DONE]copy buffer to current position
-        - copy buffer to original position
+        [DONE]copy buffer to selection
     [DONE]undo stack / step back
     [DONE]grow grid if possible when cell outside current grid drawn
     [DONE]2-state editing
