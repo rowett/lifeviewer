@@ -225,7 +225,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 361,
+		/** @const {number} */ versionBuild : 362,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2872,6 +2872,15 @@
 		}
 
 		return [me.pastePosition, ViewConstants.pastePositionNames[(me.pastePosition + 0.5) | 0]];
+	};
+
+	// cycle paste location
+	View.prototype.cyclePasteLocation = function(me) {
+		me.pastePosition = ((me.pastePosition + 0.5) | 0) + 1;
+		if (me.pastePosition > 4) {
+			me.pastePosition = 0;
+		}
+		me.pastePositionItem.current = me.viewPastePositionRange([me.pastePosition, me.pastePosition], true, me);
 	};
 
 	// random density range
@@ -5784,6 +5793,15 @@
 		}
 
 		return me.pasteMode;
+	};
+
+	// cycle paste mode
+	View.prototype.cyclePasteMode = function(me) {
+		me.pasteMode += 1;
+		if (me.pasteMode > 3) {
+			me.pasteMode = 0;
+		}
+		me.pasteModeList.current = me.viewPasteModeList(me.pasteMode, true, me);
 	};
 
 	// drawing states list
@@ -9688,7 +9706,7 @@
 
 		// add the paste position slider
 		this.pastePositionItem = this.viewMenu.addRangeItem(this.viewPastePositionRange, Menu.northEast, -265, 45, 100, 40, 0, 4, this.pastePosition, true, "", "", -1);
-		this.pastePositionItem.toolTip = "paste position";
+		this.pastePositionItem.toolTip = "paste location";
 		this.pastePositionItem.font = "16px Arial";
 
 		// add items to the library toggle

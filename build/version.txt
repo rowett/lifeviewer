@@ -1,3 +1,8 @@
+Build 362
+- hotkey Shift "L" to cycle paste location
+- hotkey Shift "M" to cycle paste mode
+- hotkey Alt "L" to toggle annotation display (was previously hotkey Shift "L")
+
 Build 361
 - auto-shrink feature will automatically shrink selections to alive cells
 	- toggle button in Selection menu

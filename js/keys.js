@@ -189,6 +189,14 @@
 						me.engine.clearGliders = !me.engine.clearGliders;
 						me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
 						break;
+					// l for toggle annotations
+					case 76:
+						// toggle annotations
+						if (me.waypointManager.numAnnotations() > 0) {
+							me.labelButton.current = me.viewLabelToggle([!me.showLabels], true, me);
+							me.menuManager.notification.notify("Annotations " + (me.showLabels ? "On" : "Off"), 15, 40, 15, true);
+						}
+						break;
 					// n for new pattern
 					case 78:
 						// new pattern
@@ -598,14 +606,11 @@
 				}
 				break;
 
-			// l for decrease depth or toggle annotations
+			// l for decrease depth or cycle paste location
 			case 76:
 				// check for shift
 				if (event.shiftKey) {
-					if (me.waypointManager.numAnnotations() > 0) {
-						me.labelButton.current = me.viewLabelToggle([!me.showLabels], true, me);
-						me.menuManager.notification.notify("Annotations " + (me.showLabels ? "On" : "Off"), 15, 40, 15, true);
-					}
+					me.cyclePasteLocation(me);
 				} else {
 					// disable depth in multi-state mode
 					if (!me.multiStateView) {
@@ -1207,14 +1212,18 @@
 				}
 				break;
 
-			// m for menu
+			// m for menu or cycle paste mode
 			case 77:
-				if (me.navToggle && !me.navToggle.deleted) {
-					// toggle navigation menu
-					me.navToggle.current[0] = !me.navToggle.current[0];
-
-					// mark toggle required
-					me.menuManager.toggleRequired = true;
+				if (event.shiftKey) {
+					me.cyclePasteMode(me);
+				} else {
+					if (me.navToggle && !me.navToggle.deleted) {
+						// toggle navigation menu
+						me.navToggle.current[0] = !me.navToggle.current[0];
+	
+						// mark toggle required
+						me.menuManager.toggleRequired = true;
+					}
 				}
 				break;
 
