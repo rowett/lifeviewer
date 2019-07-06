@@ -1,5 +1,14 @@
 Build 363
 - selection and paste boxes now work with camera rotation
+- hotkey Ctrl "Space" to advance paste generation
+	- select required cells (green box)
+	- cut selection with Ctrl "X"
+	- advance paste generation one or more times with Ctrl "Space"
+	- yellow bounding box will show location of advanced paste
+		- Ctrl+Shift "V" pastes evolved position (yellow box)
+		- left click or Enter pastes to mouse position (red box)
+		- Esc cancels paste
+		- Ctrl "Z" then Ctrl "X" to start paste again
 
 Build 362
 - hotkey Shift "L" to cycle paste location

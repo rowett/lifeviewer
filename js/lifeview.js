@@ -565,6 +565,9 @@
 			this.pasteBuffers[i] = null;
 		}
 
+		// whether evolving paste
+		/** @type {boolean} */ this.evolvingPaste = false;
+
 		// current paste buffer
 		/** @type {number} */ this.currentPasteBuffer = 0;
 
@@ -583,6 +586,9 @@
 
 		// whether paste is happening
 		/** @type {boolean} */ this.isPasting = false;
+
+		// evolve paste selection box
+		this.evolveBox = new BoundingBox();
 
 		// selection box
 		this.selectionBox = new BoundingBox();
@@ -1757,7 +1763,6 @@
 			if (record.editCells === null) {
 				gen = record.gen;
 				if (edit > 1) {
-					//record = list[edit - 2];
 					gen = list[edit - 2].gen;
 				}
 				if (this.engine.counter === gen) {
@@ -4321,7 +4326,7 @@
 		}
 
 		// check whether to draw selection
-		if (me.isSelection || me.drawingSelection) {
+		if (me.isSelection || me.drawingSelection || me.evolvingPaste) {
 			me.engine.drawSelection(me);
 		}
 
@@ -5736,6 +5741,7 @@
 					}
 					// turn off pasting
 					me.isPasting = false;
+					me.evolvingPaste = false;
 					break;
 				case ViewConstants.modeSelect:
 					// selecting
@@ -5749,6 +5755,7 @@
 					me.selecting = false;
 					me.pickToggle.current = me.togglePick([false], true, me);
 					me.isPasting = false;
+					me.evolvingPaste = false;
 					break;
 			}
 		}
@@ -7444,6 +7451,7 @@
 
 			// mark that a paste can happen
 			me.canPaste = true;
+			me.evolvingPaste = false;
 
 			// save edit
 			me.afterEdit("cut");
@@ -7546,6 +7554,7 @@
 
 			// mark that a paste can happen
 			me.canPaste = true;
+			me.evolvingPaste = false;
 		}
 	};
 
@@ -7553,6 +7562,139 @@
 	View.prototype.cancelPaste = function(me) {
 		me.isPasting = false;
 		me.menuManager.notification.clear(true, false);
+		me.evolvingPaste = false;
+	};
+
+	// evolve pressed
+	View.prototype.evolvePressed = function(me) {
+		// check if pasting
+		if (me.isPasting) {
+			me.evolvePaste(me);
+		} else {
+			me.menuManager.notification.notify("Advance Paste needs a paste", 15, 180, 15, true);
+		}
+	};
+
+	// evolve paste
+	View.prototype.evolvePaste = function(me) {
+		var i = 0,
+			x = 0,
+			y = 0,
+			width = me.pasteWidth,
+			height = me.pasteHeight,
+			state = 0,
+			buffer = me.pasteBuffer,
+			xOff = 0,
+			yOff = 0,
+			selBox = me.selectionBox,
+			zoomBox = me.engine.zoomBox,
+			evolveBox = me.evolveBox,
+			// save current grid
+		    currentGrid = me.engine.grid,
+		    currentNextGrid = me.engine.nextGrid,
+			currentColourGrid = me.engine.colourGrid,
+		    currentTileGrid = me.engine.tileGrid,
+		    currentNextTileGrid = me.engine.nextTileGrid,
+		    currentColourTileGrid = me.engine.colourTileGrid,
+			currentColourTileHistoryGrid = me.engine.colourTileHistoryGrid,
+			currentWidth = me.engine.width,
+			currentHeight = me.engine.height,
+			currentGrid16 = me.engine.grid16,
+			currentNextGrid16 = me.engine.nextGrid16,
+			currentBlankRow = me.engine.blankRow,
+			currentBlankRow16 = me.engine.blankRow16,
+			currentBlankTileRow = me.engine.blankTileRow,
+			currentBlankColourRow = me.engine.blankColourRow,
+			currentTileRows = me.engine.tileRows,
+			currentTileCols = me.engine.tileCols,
+			currentWidthMask = me.engine.widthMask,
+			currentHeightMask = me.engine.heightMask,
+			currentCounter = me.engine.counter,
+			currentZoomBox = new BoundingBox();
+
+		// save bounding box
+		currentZoomBox.leftX = zoomBox.leftX;
+		currentZoomBox.bottomY = zoomBox.bottomY;
+		currentZoomBox.rightX = zoomBox.rightX;
+		currentZoomBox.topY = zoomBox.topY;
+		
+		// allocate new grid
+		me.engine.allocateGrid(1024, 1024);
+
+		// copy paste to center of grid
+		xOff = (me.engine.width >> 1) - (width >> 1);
+		yOff = (me.engine.height >> 1) - (height >> 1);
+		i = 0;
+		for (y = 0; y < height; y += 1) {
+			for (x = 0; x < width; x += 1) {
+				state = buffer[i];
+				if (state > 0) {
+					me.engine.setState(x + xOff, y + yOff, state, false);
+				}
+				i += 1;
+			}
+		}
+
+		// compute next generation
+		me.engine.nextGeneration(false, true, true);
+		me.engine.convertToPensTile();
+
+		// set new paste buffer
+		me.pasteWidth = zoomBox.rightX - zoomBox.leftX + 1;
+		me.pasteHeight = zoomBox.topY - zoomBox.bottomY + 1;
+		me.pasteBuffer = me.engine.allocator.allocate(Uint8, me.pasteWidth * me.pasteHeight, "View.pasteBuffer");
+
+		// copy cells in
+		i = 0;
+		for (y = zoomBox.bottomY; y <= zoomBox.topY; y += 1) {
+			for (x = zoomBox.leftX; x <= zoomBox.rightX; x += 1) {
+				me.pasteBuffer[i] = me.engine.getState(x, y, false);
+				i += 1;
+			}
+		}
+
+		// update selection
+		if (!me.evolvingPaste) {
+			evolveBox.leftX = selBox.leftX + zoomBox.leftX - xOff;
+			evolveBox.bottomY = selBox.bottomY + zoomBox.bottomY - xOff;
+			evolveBox.rightX = evolveBox.leftX + me.pasteWidth - 1;
+			evolveBox.topY = evolveBox.bottomY + me.pasteHeight - 1;
+		} else {
+			evolveBox.leftX += zoomBox.leftX - xOff;
+			evolveBox.bottomY += zoomBox.bottomY - yOff;
+			evolveBox.rightX = evolveBox.leftX + me.pasteWidth - 1;
+			evolveBox.topY = evolveBox.bottomY + me.pasteHeight - 1;
+		}
+
+		// mark paste is evolving
+		me.evolvingPaste = true;
+
+		// restore grid
+		me.engine.grid = currentGrid;
+		me.engine.nextGrid = currentNextGrid;
+		me.engine.colourGrid = currentColourGrid;
+		me.engine.tileGrid = currentTileGrid;
+		me.engine.nextTileGrid = currentNextTileGrid;
+		me.engine.colourTileGrid = currentColourTileGrid;
+		me.engine.colourTileHistoryGrid = currentColourTileHistoryGrid;
+		me.engine.width = currentWidth;
+		me.engine.height = currentHeight;
+		me.engine.grid16 = currentGrid16;
+		me.engine.nextGrid16 = currentNextGrid16;
+		me.engine.zoomBox.leftX = currentZoomBox.leftX;
+		me.engine.blankRow = currentBlankRow,
+		me.engine.blankRow16 = currentBlankRow16;
+		me.engine.blankTileRow = currentBlankTileRow;
+		me.engine.blankColourRow = currentBlankColourRow;
+		me.engine.tileRows = currentTileRows,
+		me.engine.tileCols = currentTileCols,
+		me.engine.widthMask = currentWidthMask,
+		me.engine.heightMask = currentHeightMask,
+		me.engine.counter = currentCounter,
+		zoomBox.leftX = currentZoomBox.leftX;
+		zoomBox.bottomY = currentZoomBox.bottomY;
+		zoomBox.rightX = currentZoomBox.rightX;
+		zoomBox.topY = currentZoomBox.topY;
 	};
 
 	// perform paste
@@ -7651,9 +7793,9 @@
 			}
 		}
 
-		// 
 		// paste finished
 		me.isPasting = false;
+		me.evolvingPaste = false;
 
 		// clear notification
 		me.menuManager.notification.clear(true, false);
@@ -7669,6 +7811,7 @@
 		var xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
 			selBox = me.selectionBox,
+			evolveBox = me.evolveBox,
 			save = 0,
 			leftX = selBox.leftX,
 			bottomY = selBox.bottomY,
@@ -7686,6 +7829,13 @@
 			if (shift) {
 				// check for a selection
 				if (me.isSelection) {
+					// check if paste has evolved
+					if (me.evolvingPaste) {
+						leftX = evolveBox.leftX;
+						bottomY = evolveBox.bottomY;
+						rightX = evolveBox.rightX;
+						topY = evolveBox.topY;
+					}
 					// order selection
 					if (leftX > rightX) {
 						save = leftX;
@@ -7717,13 +7867,14 @@
 							me.autoShrinkSelection(me);
 						}
 						me.afterEdit("paste to selection");
+						me.evolvingPaste = false;
 					}
 				} else {
 					me.menuManager.notification.notify("Paste to Selection needs a selection", 15, 180, 15, true);
 				}
-
 			} else {
 				me.pasteSelection(me, me.currentPasteBuffer);
+				me.evolvingPaste = false;
 				me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
 			}
 		}
@@ -7745,6 +7896,7 @@
 		if (number >= 0 && number < me.pasteBuffers.length) {
 			if (me.pasteBuffers[number] !== null) {
 				me.isPasting = true;
+				me.evolvingPaste = false;
 				me.pasteBuffer = me.pasteBuffers[number].buffer;
 				me.pasteWidth = me.pasteBuffers[number].width;
 				me.pasteHeight = me.pasteBuffers[number].height;
@@ -7755,6 +7907,7 @@
 				}
 			} else {
 				me.isPasting = false;
+				me.evolvingPaste = false;
 				me.menuManager.notification.notify("Clipboard empty", 15, 180, 15, true);
 			}
 		}
@@ -10390,6 +10543,7 @@
 		this.isPasting = false;
 		this.pasteWidth = 0;
 		this.pasteHeight = 0;
+		this.evolvingPaste = false;
 
 		// set default paste mode for UI
 		this.pasteModeList.current = this.viewPasteModeList(ViewConstants.pasteModeOr, true, this);

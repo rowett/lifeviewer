@@ -362,10 +362,15 @@
 						// pause
 						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 					} else {
-						// next generation
-						me.nextStep = true;
-						me.singleStep = true;
-						me.afterEdit();
+						// check for ctrl
+						if (event.ctrlKey) {
+							me.evolvePressed(me);
+						} else {
+							// next generation
+							me.nextStep = true;
+							me.singleStep = true;
+							me.afterEdit();
+						}
 					}
 				}
 				break;
