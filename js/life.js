@@ -13232,10 +13232,11 @@
 			x = 0,
 			y = 0,
 			i = 0,
-			x1 = 0,
-			y1 = 0,
-			x2 = 0,
-			y2 = 0,
+			x1 = 0, y1 = 0,
+			x1d1 = 0, y1d1 = 0,
+			x1d1d2 = 0, y1d1d2 = 0,
+			x1d2 = 0, y1d2 = 0,
+			x2 = 0, y2 = 0,
 			state = 0,
 			mouseCellX = 0,
 			mouseCellY = 0,
@@ -13251,10 +13252,8 @@
 		    engineY = view.panY - this.yOff,
 			engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0),
 			coords = [0, 0],
-			drawX1 = 0, drawY1 = 0,
-			drawX2 = 0, drawY2 = 0,
-			drawX3 = 0, drawY3 = 0,
-			drawX4 = 0, drawY4 = 0;
+			dx1 = 0, dx2 = 0,
+			dy1 = 0, dy2 = 0;
 
 		// compute hex horizontal pixel offset
 		xHexOffset = (this.isHex ? (height / 2) * xZoom : 0);
@@ -13315,54 +13314,68 @@
 
 			// now draw each set cell if zoom is high enough
 			if (this.zoom >= 1) {
+				// compute deltas in horizontal and vertical direction based on rotation
+				if (this.camAngle > 0) {
+					dx1 = Math.cos(this.camAngle / 180 * Math.PI) * this.camZoom;
+					dy1 = Math.sin(this.camAngle / 180 * Math.PI) * this.camZoom;
+					dx2 = Math.cos((this.camAngle + 90) / 180 * Math.PI) * this.camZoom;
+					dy2 = Math.sin((this.camAngle + 90) / 180 * Math.PI) * this.camZoom;
+				} else {
+					dx1 = this.camZoom;
+					dy1 = 0;
+					dx2 = dy1;
+					dy2 = dx1;
+				}
+
+				// compute starting coordinates
+				y1 = yZoom * (mouseCellY + y - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
+				x1 = xZoom * (mouseCellX + x - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
+				if (this.camAngle !== 0) {
+					this.rotateCoords(x1, y1, coords);
+					x1 = coords[0];
+					y1 = coords[1];
+				}
+				x2 = x1;
+				y2 = y1;
+
+				// draw cells
 				ctx.fillStyle = "rgb(255, 128, 0)";
 				ctx.beginPath();
 				i = 0;
 				for (y = 0; y < height; y += 1) {
+					x1 = x2;
 					for (x = 0; x < width; x += 1) {
 						state = view.pasteBuffer[i];
 						i += 1;
 						if (state) {
-							// convert cell coordinates to screen coordinates
-							y1 = yZoom * (mouseCellY + y - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-							x1 = xZoom * (mouseCellX + x - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
-							y2 = y1 + yZoom;
-							x2 = x1 + xZoom;
-							// check for rotation
-							if (this.camAngle !== 0) {
-								this.rotateCoords(x1, y1, coords);
-								drawX1 = coords[0];
-								drawY1 = coords[1];
-								this.rotateCoords(x2, y1, coords);
-								drawX2 = coords[0];
-								drawY2 = coords[1];
-								this.rotateCoords(x2, y2, coords);
-								drawX3 = coords[0];
-								drawY3 = coords[1];
-								this.rotateCoords(x1, y2, coords);
-								drawX4 = coords[0];
-								drawY4 = coords[1];
-								// don't draw cell if off window
-								if (!((drawX1 < 0 && drawX2 < 0 && drawX3 < 0 && drawX4 < 0) ||
-									(drawX1 >= view.displayWidth && drawX2 >= view.displayWidth && drawX3 >= view.displayWidth && drawX4 >= view.displayWidth) ||
-									(drawY1 < 0 && drawY2 < 0 && drawY3 < 0 && drawY4 < 0) ||
-									(drawY1 >= view.displayHeight && drawY2 >= view.displayHeight && drawY3 >= view.displayHeight && drawY4 >= view.displayHeight))) {
-									ctx.moveTo(drawX1, drawY1);
-									ctx.lineTo(drawX2, drawY2);
-									ctx.lineTo(drawX3, drawY3);
-									ctx.lineTo(drawX4, drawY4);
-								}
-							} else {
-								// don't draw cell if off window
-								if (!((x1 < 0 && x2 < 0) || (x1 >= view.displayWidth && x2 >= view.displayWidth) || (y1 < 0 && y2 < 0) || (y1 >= view.displayHeight && y2 >= view.displayHeight))) {
-									ctx.moveTo(x1, y1);
-									ctx.lineTo(x2, y1);
-									ctx.lineTo(x2, y2);
-									ctx.lineTo(x1, y2);
-								}
+							// compute cell coordinates
+							x1d1 = x1 + dx1;
+							y1d1 = y1 + dy1;
+							x1d1d2 = x1d1 + dx2;
+							y1d1d2 = y1d1 + dy2;
+							x1d2 = x1d1d2 - dx1;
+							y1d2 = y1d1d2 - dy1;
+
+							// don't draw cell if off window
+							if (!((x1 < 0 && x1d1 < 0 && x1d1d2 < 0 && x1d2 < 0) ||
+								(x1 >= view.displayWidth && x1d1 >= view.displayWidth && x1d1d2 >= view.displayWidth && x1d2 >= view.displayWidth) ||
+								(y1 < 0 && y1d1 < 0 && y1d1d2 < 0 && y1d2 < 0) ||
+								(y1 >= view.displayHeight && y1d1 >= view.displayHeight && y1d1d2 >= view.displayHeight && y1d2 >= view.displayHeight))) {
+								// draw cell
+								ctx.moveTo(x1, y1);
+								ctx.lineTo(x1d1, y1d1);
+								ctx.lineTo(x1d1d2, y1d1d2);
+								ctx.lineTo(x1d2, y1d2);
 							}
 						}
+						// next column
+						x1 += dx1;
+						y1 += dy1;
 					}
+					// next row
+					x2 += dx2;
+					y2 += dy2;
+					y1 = y2;
 				}
 				ctx.fill();
 			}
