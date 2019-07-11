@@ -1,3 +1,6 @@
+Build 365
+- selections now respect [[ VIEWONLY ]]
+
 Build 364
 - there are now four additional standard paste locations: Top, Left, Right, bottom
 - Ctrl-C with no selection copies entire pattern to external clipboard

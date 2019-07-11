@@ -232,7 +232,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 364,
+		/** @const {number} */ versionBuild : 365,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2900,11 +2900,13 @@
 
 	// cycle paste location
 	View.prototype.cyclePasteLocation = function(me) {
-		me.pastePosition = ((me.pastePosition + 0.5) | 0) + 1;
-		if (me.pastePosition >= ViewConstants.numPastePositions) {
-			me.pastePosition = 0;
+		if (!me.viewOnly) {
+			me.pastePosition = ((me.pastePosition + 0.5) | 0) + 1;
+			if (me.pastePosition >= ViewConstants.numPastePositions) {
+				me.pastePosition = 0;
+			}
+			me.pastePositionItem.current = me.viewPastePositionRange([me.pastePosition, me.pastePosition], true, me);
 		}
-		me.pastePositionItem.current = me.viewPastePositionRange([me.pastePosition, me.pastePosition], true, me);
 	};
 
 	// random density range
@@ -4733,9 +4735,17 @@
 		shown = hide || !this.selecting || settingsMenuOpen || this.engine.multiNumStates < 2;
 		this.random2Button.deleted = shown;
 
+		// lock select tools in VIEWONLY
+		shown = this.viewOnly;
+		this.pastePositionItem.locked = shown;
+		this.pasteModeList.locked = shown;
 
 		// lock select tools
-		shown = !(this.isSelection || this.isPasting);
+		shown = !this.isSelection;
+		this.copyButton.locked = shown;
+
+		// lock select tools for VIEWONLY
+		shown = !(this.isSelection || this.isPasting) || this.viewOnly;
 		this.randomButton.locked = shown;
 		this.random2Button.locked = shown;
 		this.randomItem.locked = shown;
@@ -4745,12 +4755,11 @@
 		this.rotateCCWButton.locked = shown;
 		this.invertSelectionButton.locked = shown;
 		this.clearSelectionButton.locked = shown;
-		shown = !this.isSelection;
+		shown = !this.isSelection || this.viewOnly;
 		this.cutButton.locked = shown;
-		this.copyButton.locked = shown;
 
 		// lock paste tools
-		shown = !this.canPaste || this.isPasting || this.pasteBuffers[this.currentPasteBuffer] === null;
+		shown = !this.canPaste || this.isPasting || this.pasteBuffers[this.currentPasteBuffer] === null || this.viewOnly;
 		this.pasteButton.locked = shown;
 
 		// drawing tools
@@ -5818,11 +5827,13 @@
 
 	// cycle paste mode
 	View.prototype.cyclePasteMode = function(me) {
-		me.pasteMode += 1;
-		if (me.pasteMode > 3) {
-			me.pasteMode = 0;
+		if (!me.viewOnly) {
+			me.pasteMode += 1;
+			if (me.pasteMode > 3) {
+				me.pasteMode = 0;
+			}
+			me.pasteModeList.current = me.viewPasteModeList(me.pasteMode, true, me);
 		}
-		me.pasteModeList.current = me.viewPasteModeList(me.pasteMode, true, me);
 	};
 
 	// drawing states list
@@ -7286,52 +7297,56 @@
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
 			sizeHint = 0;
 
-		// check for selection
-		if (me.isSelection) {
-			if (x1 > x2) {
-				swap = x2;
-				x2 = x1;
-				x1 = swap;
-			}
-			if (y1 > y2) {
-				swap = y2;
-				y2 = y1;
-				y1 = swap;
-			}
-
-			// compute potential size of edit buffer
-			sizeHint = (y2 - y1 + 1) * (x2 - x1 + 1);
-			if (sizeHint > me.engine.population) {
-				sizeHint = me.engine.population;
-			}
-
-			// clear cells in selection
-			for (y = y1; y <= y2; y += 1) {
-				for (x = x1; x <= x2; x += 1) {
-					state = me.engine.getState(x + xOff, y + yOff, false);
-					if (state !== 0) {
-						me.setStateWithUndo(x + xOff, y + yOff, 0, true, sizeHint);
+		if (!me.viewOnly) {
+			// check for selection
+			if (me.isSelection) {
+				if (x1 > x2) {
+					swap = x2;
+					x2 = x1;
+					x1 = swap;
+				}
+				if (y1 > y2) {
+					swap = y2;
+					y2 = y1;
+					y1 = swap;
+				}
+	
+				// compute potential size of edit buffer
+				sizeHint = (y2 - y1 + 1) * (x2 - x1 + 1);
+				if (sizeHint > me.engine.population) {
+					sizeHint = me.engine.population;
+				}
+	
+				// clear cells in selection
+				for (y = y1; y <= y2; y += 1) {
+					for (x = x1; x <= x2; x += 1) {
+						state = me.engine.getState(x + xOff, y + yOff, false);
+						if (state !== 0) {
+							me.setStateWithUndo(x + xOff, y + yOff, 0, true, sizeHint);
+						}
 					}
 				}
+	
+				// check if shrink needed
+				me.engine.doShrink();
+	
+				// mark nothing happened since selection
+				me.afterSelectAction = false;
+	
+				// save edit
+				me.afterEdit("clear cells in selection");
 			}
-
-			// check if shrink needed
-			me.engine.doShrink();
-
-			// mark nothing happened since selection
-			me.afterSelectAction = false;
-
-			// save edit
-			me.afterEdit("clear cells in selection");
 		}
 	};
 
 	// clear selection pressed
 	View.prototype.clearSelectionPressed = function(me) {
-		if (me.isPasting) {
-			me.clearPaste(me);
-		} else {
-			me.clearSelection(me);
+		if (!me.viewOnly) {
+			if (me.isPasting) {
+				me.clearPaste(me);
+			} else {
+				me.clearSelection(me);
+			}
 		}
 	};
 
@@ -7370,31 +7385,33 @@
 
 	// process cut
 	View.prototype.processCut = function(me, shift, alt) {
-		// check for sync
-		if (!me.noCopy && me.copySyncExternal) {
-			if (shift) {
-				// copy reset position to external clipboard
-				me.copyRLE(me, true);
-			} else {
-				// check for view only mode
-				if (me.viewOnly) {
-					// copy reset position to clipboard
+		if (!me.viewOnly) {
+			// check for sync
+			if (!me.noCopy && me.copySyncExternal) {
+				if (shift) {
+					// copy reset position to external clipboard
 					me.copyRLE(me, true);
 				} else {
-					// check for alt/meta key
-					if (alt) {
-						// copy with pattern comments
-						me.copyCurrentRLE(me, true);
+					// check for view only mode
+					if (me.viewOnly) {
+						// copy reset position to clipboard
+						me.copyRLE(me, true);
 					} else {
-						// copy without pattern comments
-						me.copyCurrentRLE(me, false);
+						// check for alt/meta key
+						if (alt) {
+							// copy with pattern comments
+							me.copyCurrentRLE(me, true);
+						} else {
+							// copy without pattern comments
+							me.copyCurrentRLE(me, false);
+						}
 					}
 				}
 			}
+	
+			// cut to the current clipboard
+			me.cutSelection(me, me.currentPasteBuffer);
 		}
-
-		// cut to the current clipboard
-		me.cutSelection(me, me.currentPasteBuffer);
 	}
 
 	// cut pressed
@@ -7895,59 +7912,61 @@
 			x = 0,
 			y = 0;
 
-		// check for copy buffer
-		if (me.pasteBuffers[me.currentPasteBuffer] !== null) {
-			// check for paste to selection
-			if (shift) {
-				// check for a selection
-				if (me.isSelection) {
-					// check if paste has evolved
-					if (me.evolvingPaste) {
-						leftX = evolveBox.leftX;
-						bottomY = evolveBox.bottomY;
-						rightX = evolveBox.rightX;
-						topY = evolveBox.topY;
-					}
-					// order selection
-					if (leftX > rightX) {
-						save = leftX;
-						leftX = rightX;
-						rightX = save;
-					}
-					if (bottomY > topY) {
-						save = bottomY;
-						bottomY = topY;
-						topY = save;
-					}
-					width = rightX - leftX + 1;
-					height = topY - bottomY + 1;
-
-					// check the paste fits in the selection box
-					if (me.pasteWidth > width || me.pasteHeight > height) {
-						me.menuManager.notification.notify("Paste does not fit in selection", 15, 180, 15, true);
-					} else {
-						// paste top left to always fit in selection box
-						savedLocation = me.pastePosition;
-						me.pastePosition = ViewConstants.pastePositionNW;
-						for (y = bottomY; y <= bottomY + height - me.pasteHeight; y += me.pasteHeight) {
-							for (x = leftX ; x <= leftX + width - me.pasteWidth; x += me.pasteWidth) {
-								me.performPaste(me, x + xOff, y + yOff, false);
+		if (!me.viewOnly) {
+			// check for copy buffer
+			if (me.pasteBuffers[me.currentPasteBuffer] !== null) {
+				// check for paste to selection
+				if (shift) {
+					// check for a selection
+					if (me.isSelection) {
+						// check if paste has evolved
+						if (me.evolvingPaste) {
+							leftX = evolveBox.leftX;
+							bottomY = evolveBox.bottomY;
+							rightX = evolveBox.rightX;
+							topY = evolveBox.topY;
+						}
+						// order selection
+						if (leftX > rightX) {
+							save = leftX;
+							leftX = rightX;
+							rightX = save;
+						}
+						if (bottomY > topY) {
+							save = bottomY;
+							bottomY = topY;
+							topY = save;
+						}
+						width = rightX - leftX + 1;
+						height = topY - bottomY + 1;
+	
+						// check the paste fits in the selection box
+						if (me.pasteWidth > width || me.pasteHeight > height) {
+							me.menuManager.notification.notify("Paste does not fit in selection", 15, 180, 15, true);
+						} else {
+							// paste top left to always fit in selection box
+							savedLocation = me.pastePosition;
+							me.pastePosition = ViewConstants.pastePositionNW;
+							for (y = bottomY; y <= bottomY + height - me.pasteHeight; y += me.pasteHeight) {
+								for (x = leftX ; x <= leftX + width - me.pasteWidth; x += me.pasteWidth) {
+									me.performPaste(me, x + xOff, y + yOff, false);
+								}
 							}
+							me.pastePosition = savedLocation;
+							if (me.autoShrink) {
+								me.autoShrinkSelection(me);
+							}
+							me.afterEdit("paste to selection");
+							me.evolvingPaste = false;
 						}
-						me.pastePosition = savedLocation;
-						if (me.autoShrink) {
-							me.autoShrinkSelection(me);
-						}
-						me.afterEdit("paste to selection");
-						me.evolvingPaste = false;
+					} else {
+						me.menuManager.notification.notify("Paste to Selection needs a selection", 15, 180, 15, true);
 					}
 				} else {
-					me.menuManager.notification.notify("Paste to Selection needs a selection", 15, 180, 15, true);
+					me.pasteSelection(me, me.currentPasteBuffer);
+					me.evolvingPaste = false;
+					me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
 				}
-			} else {
-				me.pasteSelection(me, me.currentPasteBuffer);
-				me.evolvingPaste = false;
-				me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
 			}
 		}
 	};
@@ -8078,16 +8097,20 @@
 
 	// random fill
 	View.prototype.randomFill = function(me, twoStateOnly) {
-		if (me.isPasting) {
-			me.randomPaste(me, twoStateOnly);
-		} else {
-			me.randomSelection(me, twoStateOnly);
+		if (!me.viewOnly) {
+			if (me.isPasting) {
+				me.randomPaste(me, twoStateOnly);
+			} else {
+				me.randomSelection(me, twoStateOnly);
+			}
 		}
 	}
 
 	// random pressed
 	View.prototype.randomPressed = function(me) {
-		me.randomFill(me, false);
+		if (!me.viewOnly) {
+			me.randomFill(me, false);
+		}
 	};
 
 	// random 2-state pressed
@@ -8476,37 +8499,45 @@
 
 	// flip X pressed
 	View.prototype.flipXPressed = function(me) {
-		if (me.isPasting) {
-			me.flipXPaste(me);
-		} else {
-			me.flipXSelection(me);
+		if (!me.viewOnly) {
+			if (me.isPasting) {
+				me.flipXPaste(me);
+			} else {
+				me.flipXSelection(me);
+			}
 		}
 	};
 
 	// flip Y pressed
 	View.prototype.flipYPressed = function(me) {
-		if (me.isPasting) {
-			me.flipYPaste(me);
-		} else {
-			me.flipYSelection(me);
+		if (!me.viewOnly) {
+			if (me.isPasting) {
+				me.flipYPaste(me);
+			} else {
+				me.flipYSelection(me);
+			}
 		}
 	}
 
 	// rotate CW pressed
 	View.prototype.rotateCWPressed = function(me) {
-		if (me.isPasting) {
-			me.rotatePaste(me, true);
-		} else {
-			me.rotateSelection(me, true, "rotate clockwise");
+		if (!me.viewOnly) {
+			if (me.isPasting) {
+				me.rotatePaste(me, true);
+			} else {
+				me.rotateSelection(me, true, "rotate clockwise");
+			}
 		}
 	};
 
 	// rotate CCW pressed
 	View.prototype.rotateCCWPressed = function(me) {
-		if (me.isPasting) {
-			me.rotatePaste(me, false);
-		} else {
-			me.rotateSelection(me, false, "rotate counter-clockwise");
+		if (!me.viewOnly) {
+			if (me.isPasting) {
+				me.rotatePaste(me, false);
+			} else {
+				me.rotateSelection(me, false, "rotate counter-clockwise");
+			}
 		}
 	};
 
@@ -8516,16 +8547,18 @@
 			state = 0,
 			numStates = me.engine.multiNumStates;
 
-		// check for 2 state patterns
-		if (numStates === -1) {
-			numStates = 2;
-		}
-
-		// invert cells in paste:
-		while (i < me.pasteBuffer.length) {
-			state = me.pasteBuffer[i];
-			me.pasteBuffer[i] = numStates - state - 1;
-			i += 1;
+		if (!me.viewOnly) {
+			// check for 2 state patterns
+			if (numStates === -1) {
+				numStates = 2;
+			}
+	
+			// invert cells in paste:
+			while (i < me.pasteBuffer.length) {
+				state = me.pasteBuffer[i];
+				me.pasteBuffer[i] = numStates - state - 1;
+				i += 1;
+			}
 		}
 	};
 
@@ -8545,55 +8578,59 @@
 			sizeHint = 0,
 			numStates = me.engine.multiNumStates;
 
-		// check for selection
-		if (me.isSelection) {
-			if (x1 > x2) {
-				swap = x2;
-				x2 = x1;
-				x1 = swap;
-			}
-			if (y1 > y2) {
-				swap = y2;
-				y2 = y1;
-				y1 = swap;
-			}
-
-			// compute potential size of edit buffer
-			sizeHint = (y2 - y1 + 1) * (x2 - x1 + 1);
-			if (sizeHint > me.engine.population) {
-				sizeHint = me.engine.population;
-			}
-
-			// check for 2 state patterns
-			if (numStates === -1) {
-				numStates = 2;
-			}
-
-			// invert cells in selection
-			for (y = y1; y <= y2; y += 1) {
-				for (x = x1; x <= x2; x += 1) {
-					state = me.engine.getState(x + xOff, y + yOff, false);
-					if (numStates > 2 && state > 0) {
-						state = numStates - state;
-					}
-					me.setStateWithUndo(x + xOff, y + yOff, numStates - state - 1, true, sizeHint);
+		if (!me.viewOnly) {
+			// check for selection
+			if (me.isSelection) {
+				if (x1 > x2) {
+					swap = x2;
+					x2 = x1;
+					x1 = swap;
 				}
+				if (y1 > y2) {
+					swap = y2;
+					y2 = y1;
+					y1 = swap;
+				}
+	
+				// compute potential size of edit buffer
+				sizeHint = (y2 - y1 + 1) * (x2 - x1 + 1);
+				if (sizeHint > me.engine.population) {
+					sizeHint = me.engine.population;
+				}
+	
+				// check for 2 state patterns
+				if (numStates === -1) {
+					numStates = 2;
+				}
+	
+				// invert cells in selection
+				for (y = y1; y <= y2; y += 1) {
+					for (x = x1; x <= x2; x += 1) {
+						state = me.engine.getState(x + xOff, y + yOff, false);
+						if (numStates > 2 && state > 0) {
+							state = numStates - state;
+						}
+						me.setStateWithUndo(x + xOff, y + yOff, numStates - state - 1, true, sizeHint);
+					}
+				}
+	
+				// check if shrink needed
+				me.engine.doShrink();
+	
+				// save edit
+				me.afterEdit("invert cells in selection");
 			}
-
-			// check if shrink needed
-			me.engine.doShrink();
-
-			// save edit
-			me.afterEdit("invert cells in selection");
 		}
 	};
 
 	// invert selection pressed
 	View.prototype.invertSelectionPressed = function(me) {
-		if (me.isPasting) {
-			me.invertPaste(me);
-		} else {
-			me.invertSelection(me);
+		if (!me.viewOnly) {
+			if (me.isPasting) {
+				me.invertPaste(me);
+			} else {
+				me.invertSelection(me);
+			}
 		}
 	};
 

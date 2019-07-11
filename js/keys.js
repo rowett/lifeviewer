@@ -1530,9 +1530,11 @@
 
 			// f3 for pick mode
 			case 114:
-				me.modeList.current = me.viewModeList(ViewConstants.modeDraw, true, me);
-				if (!me.pickMode) {
-					me.pickToggle.current = me.togglePick([true], true, me);
+				if (!me.viewOnly) {
+					me.modeList.current = me.viewModeList(ViewConstants.modeDraw, true, me);
+					if (!me.pickMode) {
+						me.pickToggle.current = me.togglePick([true], true, me);
+					}
 				}
 				break;
 
