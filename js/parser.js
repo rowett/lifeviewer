@@ -1,4 +1,4 @@
-// LifeViewer Sript Parser
+// LifeViewer Script Parser
 // written by Chris Rowett
 
 (function() {

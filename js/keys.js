@@ -1,4 +1,4 @@
-// LifeViewer BoundingBox
+// LifeViewer Keyboard Handling
 // written by Chris Rowett
 
 (function() {
@@ -305,7 +305,7 @@
 
 			// return for play/pause
 			case 13:
-				if (me.isPasting) {
+				if (me.isPasting || me.evolvingPaste) {
 					me.pasteFromEnter(me);
 				} else {
 					// do not play if view only mode
@@ -363,8 +363,8 @@
 						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 					} else {
 						// check for ctrl
-						if (event.ctrlKey) {
-							me.evolvePressed(me);
+						if (event.ctrlKey || event.shiftKey) {
+							me.evolvePressed(me, event.ctrlKey, event.shiftKey);
 						} else {
 							// next generation
 							me.nextStep = true;
@@ -1367,7 +1367,7 @@
 						me.displayErrors = 0;
 					} else {
 						// check if pasting
-						if (me.isPasting) {
+						if (me.isPasting || me.evolvingPaste) {
 							me.cancelPaste(me);
 						} else {
 							// close the popup Viewer
@@ -1387,7 +1387,7 @@
 							me.displayErrors = 0;
 						} else {
 							// check if pasting
-							if (me.isPasting) {
+							if (me.isPasting || me.evolvingPaste) {
 								me.cancelPaste(me);
 							} else {
 								// check if playing

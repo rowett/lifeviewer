@@ -42,13 +42,20 @@
 	ViewConstants = {
 		// paste positions
 		/** @const {number} */ pastePositionNW : 0,
-		/** @const {number} */ pastePositionNE : 1,
-		/** @const {number} */ pastePositionMiddle : 2,
-		/** @const {number} */ pastePositionSE : 3,
-		/** @const {number} */ pastePositionSW : 4,
+		/** @const {number} */ pastePositionN : 1,
+		/** @const {number} */ pastePositionNE : 2,
+		/** @const {number} */ pastePositionE : 3,
+		/** @const {number} */ pastePositionSE : 4,
+		/** @const {number} */ pastePositionS : 5,
+		/** @const {number} */ pastePositionSW : 6,
+		/** @const {number} */ pastePositionW : 7,
+		/** @const {number} */ pastePositionMiddle : 8,
+
+		// number of paste positions
+		/** @const {number} */ numPastePositions : 9,
 
 		// paste position text
-		/** @const Array{string} */ pastePositionNames : ["Top Left", "Top Right", "Middle", "Bottom Left", "Bottom Right"],
+		/** @const Array{string} */ pastePositionNames : ["Top Left", "Top", "Top Right", "Right", "Bottom Right", "Bottom", "Bottom Left", "Left", "Middle"],
 
 		// chunk to add to undo/redo buffer
 		/** @const {number} */ editChunk : 16384,
@@ -559,6 +566,9 @@
 		// whether to sync copy with external clipboard
 		/** @type {boolean} */ this.copySyncExternal = false;
 
+		// whether notified about sync
+		/** @type {boolean} */ this.syncNotified = false;
+
 		// paste buffers
 		this.pasteBuffers = [];
 		for (i = 0; i < 10; i += 1) {
@@ -580,6 +590,9 @@
 
 		// whether there is something in the buffer to paste
 		/** @type {boolean} */ this.canPaste = false;
+
+		// whether there has been an action since selection made
+		/** @type {boolean} */ this.afterSelectAction = false;
 
 		// current paste buffer cells
 		this.pasteBuffer = null;
@@ -1739,8 +1752,10 @@
 				selBox.rightX = record.selection.rightX;
 				selBox.topY = record.selection.topY;
 				this.isSelection = true;
+				this.afterSelectAction = false;
 			} else {
 				this.isSelection = false;
+				this.afterSelectAction = false;
 			}
 
 			this.updateUndoToolTips();
@@ -1940,8 +1955,10 @@
 					selBox.rightX = selection.rightX;
 					selBox.topY = selection.topY;
 					me.isSelection = true;
+					me.afterSelectAction = false;
 				} else {
 					me.isSelection = false;
+					me.afterSelectAction = false;
 				}
 
 				// decrement stack using saved value since a record may have been added above
@@ -1989,8 +2006,10 @@
 					selBox.rightX = record.selection.rightX;
 					selBox.topY = record.selection.topY;
 					me.isSelection = true;
+					me.afterSelectAction = false;
 				} else {
 					me.isSelection = false;
+					me.afterSelectAction = false;
 				}
 
 				// next record
@@ -2882,7 +2901,7 @@
 	// cycle paste location
 	View.prototype.cyclePasteLocation = function(me) {
 		me.pastePosition = ((me.pastePosition + 0.5) | 0) + 1;
-		if (me.pastePosition > 4) {
+		if (me.pastePosition >= ViewConstants.numPastePositions) {
 			me.pastePosition = 0;
 		}
 		me.pastePositionItem.current = me.viewPastePositionRange([me.pastePosition, me.pastePosition], true, me);
@@ -4325,15 +4344,8 @@
 			me.screenShotScheduled = 0;
 		}
 
-		// check whether to draw selection
-		if (me.isSelection || me.drawingSelection || me.evolvingPaste) {
-			me.engine.drawSelection(me);
-		}
-
-		// check whether to draw paste
-		if (me.isPasting) {
-			me.engine.drawPaste(me);
-		}
+		// draw any selections
+		me.engine.drawSelections(me);
 
 		// check if grid buffer needs to grow
 		if (me.engine.counter && me.engine.anythingAlive) {
@@ -5717,6 +5729,9 @@
 	View.prototype.viewCopySyncList = function(newValue, change, me) {
 		if (change) {
 			me.copySyncExternal = newValue[0];
+			if (me.copySyncExternal) {
+				me.syncNotified = true;
+			}
 		}
 
 		return [me.copySyncExternal];
@@ -5740,8 +5755,7 @@
 						me.selecting = false;
 					}
 					// turn off pasting
-					me.isPasting = false;
-					me.evolvingPaste = false;
+					me.cancelPaste(me);
 					break;
 				case ViewConstants.modeSelect:
 					// selecting
@@ -5754,8 +5768,8 @@
 					me.drawing = false;
 					me.selecting = false;
 					me.pickToggle.current = me.togglePick([false], true, me);
-					me.isPasting = false;
-					me.evolvingPaste = false;
+					// turn off pasting
+					me.cancelPaste(me);
 					break;
 			}
 		}
@@ -6373,6 +6387,7 @@
 				me.selectStartX = x;
 				me.selectStartY = y;
 				me.isSelection = false;
+				me.afterSelectAction = false;
 			} else {
 				// check if there is a selection being drawn
 				if (!me.drawingSelection) {
@@ -6453,6 +6468,7 @@
 	// remove selection
 	View.prototype.removeSelection = function(me) {
 		me.isSelection = false;
+		me.afterSelectAction = false;
 		me.afterEdit("cancel selection");
 		me.drawingSelection = false;
 	};
@@ -6562,6 +6578,7 @@
 		if (me.drawingSelection) {
 			me.isSelection = true;
 			me.drawingSelection = false;
+			me.afterSelectAction = false;
 			// check if auto-shrink is on
 			if (me.autoShrink) {
 				me.autoShrinkSelection(me);
@@ -7301,6 +7318,9 @@
 			// check if shrink needed
 			me.engine.doShrink();
 
+			// mark nothing happened since selection
+			me.afterSelectAction = false;
+
 			// save edit
 			me.afterEdit("clear cells in selection");
 		}
@@ -7331,6 +7351,7 @@
 			selBox.rightX = zoomBox.rightX - xOff;
 			selBox.topY = zoomBox.topY - yOff;
 			me.isSelection = true;
+			me.afterSelectAction = false;
 			if (selBox.rightX < selBox.leftX) {
 				width = selBox.leftX - selBox.rightX + 1;
 			} else {
@@ -7372,7 +7393,7 @@
 			}
 		}
 
-		// cut to the standard clipboard
+		// cut to the current clipboard
 		me.cutSelection(me, me.currentPasteBuffer);
 	}
 
@@ -7452,6 +7473,7 @@
 			// mark that a paste can happen
 			me.canPaste = true;
 			me.evolvingPaste = false;
+			me.afterSelectAction = true;
 
 			// save edit
 			me.afterEdit("cut");
@@ -7461,7 +7483,7 @@
 	// process copy
 	View.prototype.processCopy = function(me, shift, alt) {
 		// check for sync
-		if (!me.noCopy && me.copySyncExternal) {
+		if (!me.noCopy && (me.copySyncExternal || !me.isSelection)) {
 			if (shift) {
 				// copy reset position to external clipboard
 				me.copyRLE(me, true);
@@ -7484,7 +7506,13 @@
 		}
 
 		// copy to the standard clipboard
-		me.copySelection(me, me.currentPasteBuffer);
+		if (me.isSelection) {
+			me.copySelection(me, me.currentPasteBuffer);
+			if (!me.syncNotified) {
+				me.syncNotified = true;
+				me.menuManager.notification.notify("For external clipboard enable Sync", 15, 180, 15, true);
+			}
+		}
 	};
 
 	// copy pressed
@@ -7555,6 +7583,7 @@
 			// mark that a paste can happen
 			me.canPaste = true;
 			me.evolvingPaste = false;
+			me.afterSelectAction = true;
 		}
 	};
 
@@ -7562,16 +7591,45 @@
 	View.prototype.cancelPaste = function(me) {
 		me.isPasting = false;
 		me.menuManager.notification.clear(true, false);
+		if (me.evolvingPaste) {
+			me.undo(me);
+		}
 		me.evolvingPaste = false;
 	};
 
 	// evolve pressed
-	View.prototype.evolvePressed = function(me) {
-		// check if pasting
-		if (me.isPasting) {
-			me.evolvePaste(me);
+	View.prototype.evolvePressed = function(me, ctrl, shift) {
+		// check for evolve outside
+		if (shift) {
+			if (me.isSelection) {
+				me.cutSelection(me, me.currentPasteBuffer);
+				me.engine.nextGeneration(true, me.noHistory, me.graphDisabled);
+				me.engine.convertToPensTile();
+				me.afterEdit("");
+				me.processPaste(me, true);
+			} else {
+				me.menuManager.notification.notify("Advance Outside needs a selection", 15, 180, 15, true);
+			}
 		} else {
-			me.menuManager.notification.notify("Advance Paste needs a paste", 15, 180, 15, true);
+			// check if already evolving
+			if (me.evolvingPaste) {
+				me.evolvePaste(me);
+			} else {
+				// check if there is a selection
+				if (me.isSelection) {
+					// check if there has been an action since selection
+					if (!me.afterSelectAction) {
+						me.cutPressed(me);
+					}
+		
+					// check whether there is something to paste
+					if (me.canPaste) {
+						me.evolvePaste(me);
+					}
+				} else {
+					me.menuManager.notification.notify("Advance Selection needs a selection", 15, 180, 15, true);
+				}
+			}
 		}
 	};
 
@@ -7716,15 +7774,29 @@
 		case ViewConstants.pastePositionNW:
 			// nothing to do
 			break;
+		case ViewConstants.pastePositionN:
+			cellX -= width >> 1;
+			break;
 		case ViewConstants.pastePositionNE:
 			cellX -= width - 1;
+			break;
+		case ViewConstants.pastePositionW:
+			cellY -= height >> 1;
 			break;
 		case ViewConstants.pastePositionMiddle:
 			cellX -= width >> 1;
 			cellY -= height >> 1;
 			break;
+		case ViewConstants.pastePositionE:
+			cellX -= width - 1;
+			cellY -= height >> 1;
+			break;
 		case ViewConstants.pastePositionSW:
 			cellX -= width - 1;
+			cellY -= height - 1;
+			break;
+		case ViewConstants.pastePositionS:
+			cellX -= width >> 1;
 			cellY -= height - 1;
 			break;
 		case ViewConstants.pastePositionSE:
@@ -7880,9 +7952,13 @@
 		}
 	};
 
-	// paste from enter eky
+	// paste from enter key
 	View.prototype.pasteFromEnter = function(me) {
-		me.performPaste(me, me.cellX, me.cellY, true);
+		if (me.evolvingPaste) {
+			me.processPaste(me, true);
+		} else {
+			me.performPaste(me, me.cellX, me.cellY, true);
+		}
 	};
 
 	// paste pressed
@@ -9877,7 +9953,7 @@
 		this.randomItem.toolTip = "random fill density";
 
 		// add the paste position slider
-		this.pastePositionItem = this.viewMenu.addRangeItem(this.viewPastePositionRange, Menu.northEast, -265, 45, 100, 40, 0, 4, this.pastePosition, true, "", "", -1);
+		this.pastePositionItem = this.viewMenu.addRangeItem(this.viewPastePositionRange, Menu.northEast, -265, 45, 100, 40, 0, ViewConstants.numPastePositions - 1, this.pastePosition, true, "", "", -1);
 		this.pastePositionItem.toolTip = "paste location";
 		this.pastePositionItem.font = "16px Arial";
 
@@ -10544,6 +10620,7 @@
 		this.pasteWidth = 0;
 		this.pasteHeight = 0;
 		this.evolvingPaste = false;
+		this.afterSelectAction = false;
 
 		// set default paste mode for UI
 		this.pasteModeList.current = this.viewPasteModeList(ViewConstants.pasteModeOr, true, this);
@@ -10908,6 +10985,7 @@
 
 		// default copy sync
 		this.copySyncToggle.current = this.viewCopySyncList([this.copySyncExternal], true, this);
+		this.syncNotified = false;
 
 		// start in pan mode
 		this.modeList.current = this.viewModeList(ViewConstants.modePan, true, this);

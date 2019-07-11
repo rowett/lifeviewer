@@ -13273,7 +13273,7 @@
 	};
 
 	// draw paste box
-	Life.prototype.drawPaste = function(view) {
+	Life.prototype.drawPasteWithCells = function(view, mouseCellX, mouseCellY, position, colour) {
 		var width = view.pasteWidth,
 			height = view.pasteHeight,
 			x = 0,
@@ -13285,10 +13285,6 @@
 			x1d2 = 0, y1d2 = 0,
 			x2 = 0, y2 = 0,
 			state = 0,
-			mouseCellX = 0,
-			mouseCellY = 0,
-			mouseX = 0,
-			mouseY = 0,
 			ctx = this.context,
 			xZoom = this.zoom,
 			yZoom = this.zoom * ((this.isTriangular && xZoom >= 4) ? ViewConstants.sqrt3 : 1),
@@ -13306,126 +13302,131 @@
 		xHexOffset = (this.isHex ? (height / 2) * xZoom : 0);
 		xHexAdjust = (this.isHex ? (xZoom / 2) : 0);
 
-		// get mouse cell
-		mouseX = view.menuManager.mouseLastX;
-		mouseY = view.menuManager.mouseLastY;
-		if (mouseX !== -1) {
-			view.updateCellLocation(mouseX, mouseY);
-			mouseCellX = view.cellX - xOff;
-			mouseCellY = view.cellY - yOff;
+		// draw paste rectangle
+		switch (position) {
+		case ViewConstants.pastePositionNW:
+			// nothing to do
+			break;
+		case ViewConstants.pastePositionN:
+			mouseCellX -= width >> 1;
+			break;
+		case ViewConstants.pastePositionNE:
+			mouseCellX -= width - 1;
+			break;
+		case ViewConstants.pastePositionW:
+			mouseCellY -= height >> 1;
+			break;
+		case ViewConstants.pastePositionMiddle:
+			mouseCellX -= width >> 1;
+			mouseCellY -= height >> 1;
+			break;
+		case ViewConstants.pastePositionE:
+			mouseCellX -= width - 1;
+			mouseCellY -= height >> 1;
+			break;
+		case ViewConstants.pastePositionSW:
+			mouseCellY -= height - 1;
+			break;
+		case ViewConstants.pastePositionS:
+			mouseCellX -= width >> 1;
+			mouseCellY -= height - 1;
+			break;
+		case ViewConstants.pastePositionSE:
+			mouseCellX -= width - 1;
+			mouseCellY -= height - 1;
+			break;
+		}
+		x1 = mouseCellX;
+		y1 = mouseCellY;
+		x2 = mouseCellX + width;
+		y2 = mouseCellY + height;
 
-			// draw paste rectangle
-			switch ((view.pastePosition + 0.5) | 0) {
-			case ViewConstants.pastePositionNW:
-				// nothing to do
-				break;
-			case ViewConstants.pastePositionNE:
-				mouseCellX -= width - 1;
-				break;
-			case ViewConstants.pastePositionMiddle:
-				mouseCellX -= width >> 1;
-				mouseCellY -= height >> 1;
-				break;
-			case ViewConstants.pastePositionSW:
-				mouseCellX -= width - 1;
-				mouseCellY -= height - 1;
-				break;
-			case ViewConstants.pastePositionSE:
-				mouseCellY -= height - 1;
-				break;
+		// convert cell coordinates to screen coordinates
+		y1 = yZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
+		x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
+		y2 = yZoom * (y2 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
+		x2 = xZoom * (x2 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y2) / 2 : 0);
+
+		// draw a translucent rectangle
+		ctx.fillStyle = colour;
+		ctx.globalAlpha = 0.5;
+		ctx.beginPath();
+		this.rotateCoords(x1, y1, coords);
+		ctx.moveTo(coords[0], coords[1]);
+		this.rotateCoords(x2 + xHexOffset + xHexAdjust + 1, y1, coords);
+		ctx.lineTo(coords[0], coords[1]);
+		this.rotateCoords(x2 + xHexAdjust + 1, y2 + 1, coords);
+		ctx.lineTo(coords[0], coords[1]);
+		this.rotateCoords(x1 - xHexOffset, y2 + 1, coords);
+		ctx.lineTo(coords[0], coords[1]);
+		ctx.fill();
+
+		// now draw each set cell if zoom is high enough
+		if (this.zoom >= 1) {
+			// compute deltas in horizontal and vertical direction based on rotation
+			if (this.camAngle > 0) {
+				dx1 = Math.cos(this.camAngle / 180 * Math.PI) * this.camZoom;
+				dy1 = Math.sin(this.camAngle / 180 * Math.PI) * this.camZoom;
+				dx2 = Math.cos((this.camAngle + 90) / 180 * Math.PI) * this.camZoom;
+				dy2 = Math.sin((this.camAngle + 90) / 180 * Math.PI) * this.camZoom;
+			} else {
+				dx1 = this.camZoom;
+				dy1 = 0;
+				dx2 = dy1;
+				dy2 = dx1;
 			}
-			x1 = mouseCellX;
-			y1 = mouseCellY;
-			x2 = mouseCellX + width;
-			y2 = mouseCellY + height;
-	
-			// convert cell coordinates to screen coordinates
-			y1 = yZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-			x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
-			y2 = yZoom * (y2 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-			x2 = xZoom * (x2 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y2) / 2 : 0);
-	
-			// draw a translucent rectangle
-			ctx.fillStyle = "rgb(255,0,0)";
-			ctx.globalAlpha = 0.5;
+
+			// compute starting coordinates
+			y1 = yZoom * (mouseCellY + y - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
+			x1 = xZoom * (mouseCellX + x - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
+			if (this.camAngle !== 0) {
+				this.rotateCoords(x1, y1, coords);
+				x1 = coords[0];
+				y1 = coords[1];
+			}
+			x2 = x1;
+			y2 = y1;
+
+			// draw cells
+			ctx.fillStyle = "rgb(255, 128, 0)";
 			ctx.beginPath();
-			this.rotateCoords(x1, y1, coords);
-			ctx.moveTo(coords[0], coords[1]);
-			this.rotateCoords(x2 + xHexOffset + xHexAdjust + 1, y1, coords);
-			ctx.lineTo(coords[0], coords[1]);
-			this.rotateCoords(x2 + xHexAdjust + 1, y2 + 1, coords);
-			ctx.lineTo(coords[0], coords[1]);
-			this.rotateCoords(x1 - xHexOffset, y2 + 1, coords);
-			ctx.lineTo(coords[0], coords[1]);
-			ctx.fill();
+			i = 0;
+			for (y = 0; y < height; y += 1) {
+				x1 = x2;
+				for (x = 0; x < width; x += 1) {
+					state = view.pasteBuffer[i];
+					i += 1;
+					if (state) {
+						// compute cell coordinates
+						x1d1 = x1 + dx1;
+						y1d1 = y1 + dy1;
+						x1d1d2 = x1d1 + dx2;
+						y1d1d2 = y1d1 + dy2;
+						x1d2 = x1d1d2 - dx1;
+						y1d2 = y1d1d2 - dy1;
 
-			// now draw each set cell if zoom is high enough
-			if (this.zoom >= 1) {
-				// compute deltas in horizontal and vertical direction based on rotation
-				if (this.camAngle > 0) {
-					dx1 = Math.cos(this.camAngle / 180 * Math.PI) * this.camZoom;
-					dy1 = Math.sin(this.camAngle / 180 * Math.PI) * this.camZoom;
-					dx2 = Math.cos((this.camAngle + 90) / 180 * Math.PI) * this.camZoom;
-					dy2 = Math.sin((this.camAngle + 90) / 180 * Math.PI) * this.camZoom;
-				} else {
-					dx1 = this.camZoom;
-					dy1 = 0;
-					dx2 = dy1;
-					dy2 = dx1;
-				}
-
-				// compute starting coordinates
-				y1 = yZoom * (mouseCellY + y - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-				x1 = xZoom * (mouseCellX + x - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
-				if (this.camAngle !== 0) {
-					this.rotateCoords(x1, y1, coords);
-					x1 = coords[0];
-					y1 = coords[1];
-				}
-				x2 = x1;
-				y2 = y1;
-
-				// draw cells
-				ctx.fillStyle = "rgb(255, 128, 0)";
-				ctx.beginPath();
-				i = 0;
-				for (y = 0; y < height; y += 1) {
-					x1 = x2;
-					for (x = 0; x < width; x += 1) {
-						state = view.pasteBuffer[i];
-						i += 1;
-						if (state) {
-							// compute cell coordinates
-							x1d1 = x1 + dx1;
-							y1d1 = y1 + dy1;
-							x1d1d2 = x1d1 + dx2;
-							y1d1d2 = y1d1 + dy2;
-							x1d2 = x1d1d2 - dx1;
-							y1d2 = y1d1d2 - dy1;
-
-							// don't draw cell if off window
-							if (!((x1 < 0 && x1d1 < 0 && x1d1d2 < 0 && x1d2 < 0) ||
-								(x1 >= view.displayWidth && x1d1 >= view.displayWidth && x1d1d2 >= view.displayWidth && x1d2 >= view.displayWidth) ||
-								(y1 < 0 && y1d1 < 0 && y1d1d2 < 0 && y1d2 < 0) ||
-								(y1 >= view.displayHeight && y1d1 >= view.displayHeight && y1d1d2 >= view.displayHeight && y1d2 >= view.displayHeight))) {
-								// draw cell
-								ctx.moveTo(x1, y1);
-								ctx.lineTo(x1d1, y1d1);
-								ctx.lineTo(x1d1d2, y1d1d2);
-								ctx.lineTo(x1d2, y1d2);
-							}
+						// don't draw cell if off window
+						if (!((x1 < 0 && x1d1 < 0 && x1d1d2 < 0 && x1d2 < 0) ||
+							(x1 >= view.displayWidth && x1d1 >= view.displayWidth && x1d1d2 >= view.displayWidth && x1d2 >= view.displayWidth) ||
+							(y1 < 0 && y1d1 < 0 && y1d1d2 < 0 && y1d2 < 0) ||
+							(y1 >= view.displayHeight && y1d1 >= view.displayHeight && y1d1d2 >= view.displayHeight && y1d2 >= view.displayHeight))) {
+							// draw cell
+							ctx.moveTo(x1, y1);
+							ctx.lineTo(x1d1, y1d1);
+							ctx.lineTo(x1d1d2, y1d1d2);
+							ctx.lineTo(x1d2, y1d2);
 						}
-						// next column
-						x1 += dx1;
-						y1 += dy1;
 					}
-					// next row
-					x2 += dx2;
-					y2 += dy2;
-					y1 = y2;
+					// next column
+					x1 += dx1;
+					y1 += dy1;
 				}
-				ctx.fill();
+				// next row
+				x2 += dx2;
+				y2 += dy2;
+				y1 = y2;
 			}
+			ctx.fill();
 		}
 	};
 
@@ -13454,12 +13455,26 @@
 	};
 
 	// draw selection
-	Life.prototype.drawSelection = function(view) {
+	Life.prototype.drawSelections = function(view) {
+		var position = (view.pastePosition + 0.5) | 0,
+			mouseX = view.menuManager.mouseLastX,
+			mouseY = view.menuManager.mouseLastY,
+			xOff = (this.width >> 1) - (view.patternWidth >> 1),
+			yOff = (this.height >> 1) - (view.patternHeight >> 1);
+
 		if (view.isSelection || view.drawingSelection) {
 			this.drawBox(view, view.selectionBox, "rgb(0,255,0)");
 		}
 		if (view.evolvingPaste) {
-			this.drawBox(view, view.evolveBox, "rgb(255,255,0)");
+			this.drawPasteWithCells(view, view.evolveBox.leftX, view.evolveBox.bottomY, ViewConstants.pastePositionNW, "rgb(255,255,0)");
+		}
+		if (view.isPasting) {
+			mouseX = view.menuManager.mouseLastX;
+			mouseY = view.menuManager.mouseLastY;
+			if (mouseX !== -1) {
+				view.updateCellLocation(mouseX, mouseY);
+				this.drawPasteWithCells(view, view.cellX - xOff, view.cellY - yOff, position, "rgb(255,0,0)");
+			}
 		}
 	};
 
