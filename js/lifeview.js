@@ -1851,10 +1851,29 @@
 		return result;
 	};
 
+	// add edit record discarding duplicates
+	View.prototype.addEdit = function(counter, editCells, comment, box) {
+		var isDuplicate = false,
+			record = null;
+
+		// check for duplicate
+		if (this.editNum > 0) {
+			record = this.editList[this.editNum - 1];
+			if (record.gen === counter && editCells === null) {
+				isDuplicate = true;
+			}
+		}
+
+		// add record if not a duplicate
+		if (!isDuplicate) {
+			this.editList[this.editNum] = {gen: counter, editCells: editCells, action: comment, selection: box};
+			this.editNum += 1;
+		}
+	};
+
 	// after edit
 	View.prototype.afterEdit = function(comment) {
-		var wasChange = true,
-			counter = this.engine.counter,
+		var counter = this.engine.counter,
 			editCells = null,
 			box = null,
 			selBox = this.selectionBox,
@@ -1862,43 +1881,41 @@
 
 		// do nothing if step back disabled
 		if (!this.noHistory) {
-			// check for duplicate
-			if (this.editNum > 0) {
-				record = this.editList[this.editNum - 1];
-				if (counter === record.gen && this.currentEditIndex === 0) {
-					// compare selection
-					if (this.compareSelections(record.selection)) {
-						wasChange = false;
+			// check if running
+			if (this.generationOn) {
+				if (record) {
+					// copy selection box from previous record
+					if (record.selection) {
+						box = new BoundingBox(record.selection.leftX, record.selection.bottomY, record.selection.rightX, record.selection.topY);
 					}
 				}
+				// add record at generation
+				this.addEdit(counter, editCells, "", box);
+				box = null;
 			}
-	
-			// check if there was a change
-			if (wasChange) {
-				// allocate memory for redo and undo cells and populate
-				if (this.currentEditIndex > 0) {
-					editCells = this.engine.allocator.allocate(Int16, this.currentEditIndex, "View.editCells" + this.editNum);
-					editCells.set(this.currentEdit.slice(0, this.currentEditIndex));
 
-					// clear current edit
-					this.currentEditIndex = 0;
-				}
-
-				// check if there is a selection
-				if (this.isSelection) {
-					box = new BoundingBox(selBox.leftX, selBox.bottomY, selBox.rightX, selBox.topY);
-				}
-
-				// create new edit and undo record
-				this.editList[this.editNum] = {gen: counter, editCells: editCells, action: comment, selection: box};
-				this.editNum += 1;
-
-				// this is now the latest edit
-				this.numEdits = this.editNum;
-
-				// update tooltips
-				this.updateUndoToolTips();
+			// check if there is a selection
+			if (this.isSelection) {
+				box = new BoundingBox(selBox.leftX, selBox.bottomY, selBox.rightX, selBox.topY);
 			}
+
+			// allocate memory for redo and undo cells and populate
+			if (this.currentEditIndex > 0) {
+				editCells = this.engine.allocator.allocate(Int16, this.currentEditIndex, "View.editCells" + this.editNum);
+				editCells.set(this.currentEdit.slice(0, this.currentEditIndex));
+
+				// clear current edit
+				this.currentEditIndex = 0;
+			}
+
+			// create new edit and undo record
+			this.addEdit(counter, editCells, comment, box);
+
+			// this is now the latest edit
+			this.numEdits = this.editNum;
+
+			// update tooltips
+			this.updateUndoToolTips();
 		}
 	};
 
