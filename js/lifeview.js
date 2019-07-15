@@ -232,7 +232,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 365,
+		/** @const {number} */ versionBuild : 366,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1860,7 +1860,9 @@
 		if (this.editNum > 0) {
 			record = this.editList[this.editNum - 1];
 			if (record.gen === counter && editCells === null) {
-				isDuplicate = true;
+				if (this.compareSelections(record.selection)) {
+					isDuplicate = true;
+				}
 			}
 		}
 
@@ -1883,6 +1885,9 @@
 		if (!this.noHistory) {
 			// check if running
 			if (this.generationOn) {
+				if (this.editNum > 0) {
+					record = this.editList[this.editNum - 1];
+				}
 				if (record) {
 					// copy selection box from previous record
 					if (record.selection) {

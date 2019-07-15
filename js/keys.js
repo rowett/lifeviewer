@@ -347,7 +347,7 @@
 						} else {
 							// step forward
 							me.nextStep = true;
-							me.afterEdit();
+							me.afterEdit("");
 						}
 					}
 				}
@@ -369,7 +369,7 @@
 							// next generation
 							me.nextStep = true;
 							me.singleStep = true;
-							me.afterEdit();
+							me.afterEdit("");
 						}
 					}
 				}
