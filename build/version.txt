@@ -1,5 +1,6 @@
 Build 366
 - create and clear selection were missing from undo/redo
+- improved selection and paste boxes for offset-square grid
 
 Build 365
 - selections now respect [[ VIEWONLY ]]

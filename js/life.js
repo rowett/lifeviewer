@@ -13290,17 +13290,11 @@
 			yZoom = this.zoom * ((this.isTriangular && xZoom >= 4) ? ViewConstants.sqrt3 : 1),
 			xOff = (this.width >> 1) - (view.patternWidth >> 1),
 			yOff = (this.height >> 1) - (view.patternHeight >> 1),
-			xHexOffset = 0,
-			xHexAdjust = 0,
 		    engineY = view.panY - this.yOff,
 			engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0),
 			coords = [0, 0],
 			dx1 = 0, dx2 = 0,
 			dy1 = 0, dy2 = 0;
-
-		// compute hex horizontal pixel offset
-		xHexOffset = (this.isHex ? (height / 2) * xZoom : 0);
-		xHexAdjust = (this.isHex ? (xZoom / 2) : 0);
 
 		// draw paste rectangle
 		switch (position) {
@@ -13351,14 +13345,25 @@
 		ctx.fillStyle = colour;
 		ctx.globalAlpha = 0.5;
 		ctx.beginPath();
-		this.rotateCoords(x1, y1, coords);
-		ctx.moveTo(coords[0], coords[1]);
-		this.rotateCoords(x2 + xHexOffset + xHexAdjust + 1, y1, coords);
-		ctx.lineTo(coords[0], coords[1]);
-		this.rotateCoords(x2 + xHexAdjust + 1, y2 + 1, coords);
-		ctx.lineTo(coords[0], coords[1]);
-		this.rotateCoords(x1 - xHexOffset, y2 + 1, coords);
-		ctx.lineTo(coords[0], coords[1]);
+		if (!this.isHex) {
+			this.rotateCoords(x1, y1, coords);
+			ctx.moveTo(coords[0], coords[1]);
+			this.rotateCoords(x2 + 1, y1, coords);
+			ctx.lineTo(coords[0], coords[1]);
+			this.rotateCoords(x2 + 1, y2 + 1, coords);
+			ctx.lineTo(coords[0], coords[1]);
+			this.rotateCoords(x1, y2 + 1, coords);
+			ctx.lineTo(coords[0], coords[1]);
+		} else {
+			for (i = 0; i < height; i += 1) {
+				ctx.moveTo(x1, y1);
+				ctx.lineTo(x1 + width * xZoom + 1, y1);
+				ctx.lineTo(x1 + width * xZoom + 1, y1 + yZoom + 1);
+				ctx.lineTo(x1, y1 + yZoom + 1);
+				x1 -= yZoom / 2;
+				y1 += yZoom;
+			}
+		}
 		ctx.fill();
 
 		// now draw each set cell if zoom is high enough
@@ -13425,6 +13430,9 @@
 				x2 += dx2;
 				y2 += dy2;
 				y1 = y2;
+				if (this.isHex) {
+					x2 -= dy2 / 2;
+				}
 			}
 			ctx.fill();
 		}
@@ -13487,14 +13495,15 @@
 			y1 = box.bottomY,
 			x2 = box.rightX,
 			y2 = box.topY,
+			width = 0,
+			height = 0,
 			xOff = (this.width >> 1) - (view.patternWidth >> 1),
 			yOff = (this.height >> 1) - (view.patternHeight >> 1),
 			swap = 0,
-			xHexOffset = 0,
-			xHexAdjust = 0,
 		    engineY = view.panY - this.yOff,
 			engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0),
-			coords = [0, 0];
+			coords = [0, 0],
+			i = 0;
 
 		// order selection box coordinates
 		if (x1 > x2) {
@@ -13507,10 +13516,8 @@
 			y1 = y2;
 			y2 = swap;
 		}
-
-		// compute hex horizontal pixel offset
-		xHexOffset = (this.isHex ? ((y2 - y1 + 1) / 2) * xZoom : 0);
-		xHexAdjust = (this.isHex ? (xZoom / 2) : 0);
+		width = x2 - x1 + 1;
+		height = y2 - y1 + 1;
 
 		// convert cell coordinates to screen coordinates
 		y1 = yZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
@@ -13522,15 +13529,28 @@
 		ctx.fillStyle = colour;
 		ctx.globalAlpha = 0.5;
 		ctx.beginPath();
-		this.rotateCoords(x1, y1, coords);
-		ctx.moveTo(coords[0], coords[1]);
-		this.rotateCoords(x2 + xHexOffset + xHexAdjust + 1, y1, coords);
-		ctx.lineTo(coords[0], coords[1]);
-		this.rotateCoords(x2 + xHexAdjust + 1, y2 + 1, coords);
-		ctx.lineTo(coords[0], coords[1]);
-		this.rotateCoords(x1 - xHexOffset, y2 + 1, coords);
-		ctx.lineTo(coords[0], coords[1]);
-		ctx.fill();
+		if (!this.isHex) {
+			this.rotateCoords(x1, y1, coords);
+			ctx.moveTo(coords[0], coords[1]);
+			this.rotateCoords(x2 + 1, y1, coords);
+			ctx.lineTo(coords[0], coords[1]);
+			this.rotateCoords(x2 + 1, y2 + 1, coords);
+			ctx.lineTo(coords[0], coords[1]);
+			this.rotateCoords(x1, y2 + 1, coords);
+			ctx.lineTo(coords[0], coords[1]);
+			ctx.fill();
+		} else {
+			width *= xZoom;
+			for (i = 0; i < height; i += 1) {
+				ctx.moveTo(x1, y1);
+				ctx.lineTo(x1 + width + 1, y1);
+				ctx.lineTo(x1 + width + 1, y1 + yZoom + 1);
+				ctx.lineTo(x1, y1 + yZoom + 1);
+				x1 -= yZoom / 2;
+				y1 += yZoom;
+			}
+			ctx.fill();
+		}
 		ctx.globalAlpha = 1;
 	};
 

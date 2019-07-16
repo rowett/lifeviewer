@@ -35,6 +35,8 @@ In progress:
     - improved LifeHistory drawing modes
     - reset to include the overlay grid
     - selections
+        - accurate hex selection
+        - accurate triangular selection
         [DONE]10 clipboards
         [DONE]square selection
         [DONE]auto-shrink selection on/off
