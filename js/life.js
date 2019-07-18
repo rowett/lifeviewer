@@ -1014,8 +1014,22 @@
 			/** @type {number} */ ya5 = 0,
 			/** @type {Array<number>} */ coords = this.coords,
 			/** @type {Array<number>} */ colours = this.cellColours,
+			/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
+			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
+			/** @type {number} */ xOff1 = this.width / 2 - this.xOff - this.originX,
+			/** @type {number} */ yOff1 = this.height / 2 - this.yOff - this.originY,
+			/** @const {number} */ hexAdjust = -(this.height >> 2),
+			/** @type {number} */ displayX = 0,
+			/** @type {number} */ displayY = 0,
+			/** @type {number} */ zoom = this.camZoom,
 			/** @type {number} */ swap = 0;
 
+		// adjust for hex
+		xOff1 += yOff1 / 2;
+		xOff1 = xOff1 + hexAdjust + 0.5;
+		yOff1 = yOff1 + 0.5;
+
+		// order coordinates
 		if (leftX > rightX) {
 			swap = rightX;
 			rightX = leftX;
@@ -1068,39 +1082,47 @@
 		k = 0;
 		for (y = bottomY; y <= topY; y += 1) {
 			cy = y - h2;
-			for (x = leftX; x <= rightX; x += 1) {
-				if (cells[m] > 0) {
-					// encode coordinate index into the colour state so it can be sorted later
-					colours[j] = (state << LifeConstants.coordBufferBits) + k;
-					cx = x - w2;
-					coords[k] = xa0 + cx;
-					coords[k + 1] = ya0 + cy;
-					coords[k + 2] = xa1 + cx;
-					coords[k + 3] = ya1 + cy;
-					coords[k + 4] = xa2 + cx;
-					coords[k + 5] = ya2 + cy;
-					coords[k + 6] = xa3 + cx;
-					coords[k + 7] = ya3 + cy;
-					coords[k + 8] = xa4 + cx;
-					coords[k + 9] = ya4 + cy;
-					coords[k + 10] = xa5 + cx;
-					coords[k + 11] = ya5 + cy;
-					k += 12;
-					j += 1;
-	
-					// check if buffer is full
-					if (j === LifeConstants.coordBufferSize) {
-						// draw buffer
-						this.numCells = j;
-						this.drawHexCells(true, false, false, true);
-		
-						// clear buffer
-						j = 0;
-						k = 0;
+			displayY = (cy + yOff1) * zoom + halfDisplayHeight;
+			// clip to display
+			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+				for (x = leftX; x <= rightX; x += 1) {
+					if (cells[m] > 0) {
+						cx = x - w2;
+						displayX = (cx + xOff1 - (cy + yOff1) / 2) * zoom + halfDisplayWidth;
+						// clip to display
+						if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
+							// encode coordinate index into the colour state so it can be sorted later
+							colours[j] = (state << LifeConstants.coordBufferBits) + k;
+							coords[k] = xa0 + cx;
+							coords[k + 1] = ya0 + cy;
+							coords[k + 2] = xa1 + cx;
+							coords[k + 3] = ya1 + cy;
+							coords[k + 4] = xa2 + cx;
+							coords[k + 5] = ya2 + cy;
+							coords[k + 6] = xa3 + cx;
+							coords[k + 7] = ya3 + cy;
+							coords[k + 8] = xa4 + cx;
+							coords[k + 9] = ya4 + cy;
+							coords[k + 10] = xa5 + cx;
+							coords[k + 11] = ya5 + cy;
+							k += 12;
+							j += 1;
+			
+							// check if buffer is full
+							if (j === LifeConstants.coordBufferSize) {
+								// draw buffer
+								this.numCells = j;
+								this.drawHexCells(true, false, false, true);
+			
+								// clear buffer
+								j = 0;
+								k = 0;
+							}
+						}
 					}
+					// next cell
+					m += 1;
 				}
-				// next cell
-				m += 1;
 			}
 		}
 
@@ -1146,8 +1168,22 @@
 			/** @type {number} */ ya5 = 0,
 			/** @type {Array<number>} */ coords = this.coords,
 			/** @type {Array<number>} */ colours = this.cellColours,
+			/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
+			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
+			/** @type {number} */ xOff1 = this.width / 2 - this.xOff - this.originX,
+			/** @type {number} */ yOff1 = this.height / 2 - this.yOff - this.originY,
+			/** @const {number} */ hexAdjust = -(this.height >> 2),
+			/** @type {number} */ displayX = 0,
+			/** @type {number} */ displayY = 0,
+			/** @type {number} */ zoom = this.camZoom,
 			/** @type {number} */ swap = 0;
 
+		// adjust for hex
+		xOff1 += yOff1 / 2;
+		xOff1 = xOff1 + hexAdjust + 0.5;
+		yOff1 = yOff1 + 0.5;
+
+		// order coordinates
 		if (leftX > rightX) {
 			swap = rightX;
 			rightX = leftX;
@@ -1200,34 +1236,42 @@
 		k = 0;
 		for (y = bottomY; y <= topY; y += 1) {
 			cy = y - h2;
-			for (x = leftX; x <= rightX; x += 1) {
-				// encode coordinate index into the colour state so it can be sorted later
-				colours[j] = (state << LifeConstants.coordBufferBits) + k;
-				cx = x - w2;
-				coords[k] = xa0 + cx;
-				coords[k + 1] = ya0 + cy;
-				coords[k + 2] = xa1 + cx;
-				coords[k + 3] = ya1 + cy;
-				coords[k + 4] = xa2 + cx;
-				coords[k + 5] = ya2 + cy;
-				coords[k + 6] = xa3 + cx;
-				coords[k + 7] = ya3 + cy;
-				coords[k + 8] = xa4 + cx;
-				coords[k + 9] = ya4 + cy;
-				coords[k + 10] = xa5 + cx;
-				coords[k + 11] = ya5 + cy;
-				k += 12;
-				j += 1;
-
-				// check if buffer is full
-				if (j === LifeConstants.coordBufferSize) {
-					// draw buffer
-					this.numCells = j;
-					this.drawHexCells(true, false, false, true);
-	
-					// clear buffer
-					j = 0;
-					k = 0;
+			displayY = (cy + yOff1) * zoom + halfDisplayHeight;
+			// clip to display
+			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+				for (x = leftX; x <= rightX; x += 1) {
+					cx = x - w2;
+					displayX = (cx + xOff1 - (cy + yOff1) / 2) * zoom + halfDisplayWidth;
+					// clip to display
+					if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
+						// encode coordinate index into the colour state so it can be sorted later
+						colours[j] = (state << LifeConstants.coordBufferBits) + k;
+						coords[k] = xa0 + cx;
+						coords[k + 1] = ya0 + cy;
+						coords[k + 2] = xa1 + cx;
+						coords[k + 3] = ya1 + cy;
+						coords[k + 4] = xa2 + cx;
+						coords[k + 5] = ya2 + cy;
+						coords[k + 6] = xa3 + cx;
+						coords[k + 7] = ya3 + cy;
+						coords[k + 8] = xa4 + cx;
+						coords[k + 9] = ya4 + cy;
+						coords[k + 10] = xa5 + cx;
+						coords[k + 11] = ya5 + cy;
+						k += 12;
+						j += 1;
+		
+						// check if buffer is full
+						if (j === LifeConstants.coordBufferSize) {
+							// draw buffer
+							this.numCells = j;
+							this.drawHexCells(true, false, false, true);
+			
+							// clear buffer
+							j = 0;
+							k = 0;
+						}
+					}
 				}
 			}
 		}
