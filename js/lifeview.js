@@ -8154,7 +8154,7 @@
 		i = 0;
 		for (y = 0; y < h; y += 1) {
 			// flip the row
-			for (x = 0; x <= w2; x += 1) {
+			for (x = 0; x < w2; x += 1) {
 				swap = me.pasteBuffer[i + x];
 				me.pasteBuffer[i + x] = me.pasteBuffer[i + w - x - 1];
 				me.pasteBuffer[i + w - x - 1] = swap;
@@ -8237,7 +8237,7 @@
 		i = 0;
 		for (x = 0; x < w; x += 1) {
 			// flip the row
-			for (y = 0; y <= h2; y += 1) {
+			for (y = 0; y < h2; y += 1) {
 				swap = me.pasteBuffer[i + y * w];
 				me.pasteBuffer[i + y * w] = me.pasteBuffer[i + (h - y - 1) * w];
 				me.pasteBuffer[i + (h - y - 1) * w] = swap;

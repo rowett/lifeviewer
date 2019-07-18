@@ -1,6 +1,7 @@
 Build 366
 - create and clear selection were missing from undo/redo
-- improved selection and paste boxes for offset-square grid
+- improved selection and paste boxes for offset-square grid and hexagonal grid
+- horizontal and vertical flip were not working for paste
 
 Build 365
 - selections now respect [[ VIEWONLY ]]

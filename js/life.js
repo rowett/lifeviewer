@@ -877,7 +877,7 @@
 			/** @type {number} */ xOff = this.width / 2 - this.xOff - this.originX,
 			/** @type {number} */ yOff = this.height / 2 - this.yOff - this.originY,
 			/** @const {number} */ xzoom = this.zoom * this.originZ,
-			/** @const {number} */ yzoom = this.zoom * this.originZ * Math.sqrt(3),
+			/** @const {number} */ yzoom = this.zoom * this.originZ * ViewConstants.sqrt3,
 			/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
 			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
 			/** @type {number} */ x = 0,
@@ -983,6 +983,267 @@
 		}
 	};
 
+	// draw hex cells in selection
+	Life.prototype.drawHexCellsInSelection = function(leftX, bottomY, rightX, topY, xOff, yOff, cells) {
+		var /** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ k = 0,
+			/** @type {number} */ m = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @const {number} */ w2 = this.width / 2 - 0.25,
+			/** @const {number} */ h2 = this.height / 2,
+			/** @const {number} */ pi3 = Math.PI / 3,
+			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2) * 1.16, 
+			/** @const {number} */ xEdge = (ViewConstants.sqrt3 / 4) / Math.cos(pi3 / 2) * 1.16,
+			/** @const {Array<number>} */ xa = [],
+			/** @const {Array<number>} */ ya = [],
+			/** @type {number} */ state = 0,
+			/** @type {number} */ xa0 = 0,
+			/** @type {number} */ ya0 = 0,
+			/** @type {number} */ xa1 = 0,
+			/** @type {number} */ ya1 = 0,
+			/** @type {number} */ xa2 = 0,
+			/** @type {number} */ ya2 = 0,
+			/** @type {number} */ xa3 = 0,
+			/** @type {number} */ ya3 = 0,
+			/** @type {number} */ xa4 = 0,
+			/** @type {number} */ ya4 = 0,
+			/** @type {number} */ xa5 = 0,
+			/** @type {number} */ ya5 = 0,
+			/** @type {Array<number>} */ coords = this.coords,
+			/** @type {Array<number>} */ colours = this.cellColours,
+			/** @type {number} */ swap = 0;
+
+		if (leftX > rightX) {
+			swap = rightX;
+			rightX = leftX;
+			leftX = swap;
+		}
+		if (bottomY > topY) {
+			swap = topY;
+			topY = bottomY;
+			bottomY = swap;
+		}
+		leftX += xOff;
+		rightX += xOff;
+		bottomY += yOff;
+		topY += yOff;
+
+		// check if buffers have been allocated
+		if (colours.length !== LifeConstants.coordBufferSize) {
+			this.coords = this.allocator.allocate(Float32, 12 * LifeConstants.coordBufferSize, "Life.coords");
+			this.cellColours = this.allocator.allocate(Uint32, LifeConstants.coordBufferSize, "Life.cellColours");
+			coords = this.coords;
+			colours = this.cellColours;
+		}
+
+		// create hexagon coordinates
+		k = pi3 / 2;
+		for (j = 0; j <= 5; j += 1) {
+			xa[j] = Math.cos(k) * xEdge;
+			ya[j] = Math.sin(k) * yEdge;
+			xa[j] += ya[j] / 2;
+			k += pi3;
+		}
+		xa0 = xa[0];
+		ya0 = ya[0];
+		xa1 = xa[1];
+		ya1 = ya[1];
+		xa2 = xa[2];
+		ya2 = ya[2];
+		xa3 = xa[3];
+		ya3 = ya[3];
+		xa4 = xa[4];
+		ya4 = ya[4];
+		xa5 = xa[5];
+		ya5 = ya[5];
+
+		// create hexagons from selection box
+		this.context.lineWidth = 1;
+		this.context.lineCap = "round";
+		this.context.lineJoin = "round";
+		j = 0;
+		k = 0;
+		for (y = bottomY; y <= topY; y += 1) {
+			cy = y - h2;
+			for (x = leftX; x <= rightX; x += 1) {
+				if (cells[m] > 0) {
+					// encode coordinate index into the colour state so it can be sorted later
+					colours[j] = (state << LifeConstants.coordBufferBits) + k;
+					cx = x - w2;
+					coords[k] = xa0 + cx;
+					coords[k + 1] = ya0 + cy;
+					coords[k + 2] = xa1 + cx;
+					coords[k + 3] = ya1 + cy;
+					coords[k + 4] = xa2 + cx;
+					coords[k + 5] = ya2 + cy;
+					coords[k + 6] = xa3 + cx;
+					coords[k + 7] = ya3 + cy;
+					coords[k + 8] = xa4 + cx;
+					coords[k + 9] = ya4 + cy;
+					coords[k + 10] = xa5 + cx;
+					coords[k + 11] = ya5 + cy;
+					k += 12;
+					j += 1;
+	
+					// check if buffer is full
+					if (j === LifeConstants.coordBufferSize) {
+						// draw buffer
+						this.numCells = j;
+						this.drawHexCells(true, false, false, true);
+		
+						// clear buffer
+						j = 0;
+						k = 0;
+					}
+				}
+				// next cell
+				m += 1;
+			}
+		}
+
+		// draw any remaining cells
+		this.numCells = j;
+		if (j > 0) {
+			// draw buffer
+			this.drawHexCells(true, false, false, true);
+
+			// clear buffer
+			j = 0;
+			k = 0;
+		}
+	};
+
+	// draw hex selection
+	Life.prototype.drawHexSelection = function(leftX, bottomY, rightX, topY, xOff, yOff) {
+		var /** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ k = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @const {number} */ w2 = this.width / 2 - 0.25,
+			/** @const {number} */ h2 = this.height / 2,
+			/** @const {number} */ pi3 = Math.PI / 3,
+			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2) * 1.16, 
+			/** @const {number} */ xEdge = (ViewConstants.sqrt3 / 4) / Math.cos(pi3 / 2) * 1.16,
+			/** @const {Array<number>} */ xa = [],
+			/** @const {Array<number>} */ ya = [],
+			/** @type {number} */ state = 0,
+			/** @type {number} */ xa0 = 0,
+			/** @type {number} */ ya0 = 0,
+			/** @type {number} */ xa1 = 0,
+			/** @type {number} */ ya1 = 0,
+			/** @type {number} */ xa2 = 0,
+			/** @type {number} */ ya2 = 0,
+			/** @type {number} */ xa3 = 0,
+			/** @type {number} */ ya3 = 0,
+			/** @type {number} */ xa4 = 0,
+			/** @type {number} */ ya4 = 0,
+			/** @type {number} */ xa5 = 0,
+			/** @type {number} */ ya5 = 0,
+			/** @type {Array<number>} */ coords = this.coords,
+			/** @type {Array<number>} */ colours = this.cellColours,
+			/** @type {number} */ swap = 0;
+
+		if (leftX > rightX) {
+			swap = rightX;
+			rightX = leftX;
+			leftX = swap;
+		}
+		if (bottomY > topY) {
+			swap = topY;
+			topY = bottomY;
+			bottomY = swap;
+		}
+		leftX += xOff;
+		rightX += xOff;
+		bottomY += yOff;
+		topY += yOff;
+
+		// check if buffers have been allocated
+		if (colours.length !== LifeConstants.coordBufferSize) {
+			this.coords = this.allocator.allocate(Float32, 12 * LifeConstants.coordBufferSize, "Life.coords");
+			this.cellColours = this.allocator.allocate(Uint32, LifeConstants.coordBufferSize, "Life.cellColours");
+			coords = this.coords;
+			colours = this.cellColours;
+		}
+
+		// create hexagon coordinates
+		k = pi3 / 2;
+		for (j = 0; j <= 5; j += 1) {
+			xa[j] = Math.cos(k) * xEdge;
+			ya[j] = Math.sin(k) * yEdge;
+			xa[j] += ya[j] / 2;
+			k += pi3;
+		}
+		xa0 = xa[0];
+		ya0 = ya[0];
+		xa1 = xa[1];
+		ya1 = ya[1];
+		xa2 = xa[2];
+		ya2 = ya[2];
+		xa3 = xa[3];
+		ya3 = ya[3];
+		xa4 = xa[4];
+		ya4 = ya[4];
+		xa5 = xa[5];
+		ya5 = ya[5];
+
+		// create hexagons from selection box
+		this.context.lineWidth = 1;
+		this.context.lineCap = "round";
+		this.context.lineJoin = "round";
+		j = 0;
+		k = 0;
+		for (y = bottomY; y <= topY; y += 1) {
+			cy = y - h2;
+			for (x = leftX; x <= rightX; x += 1) {
+				// encode coordinate index into the colour state so it can be sorted later
+				colours[j] = (state << LifeConstants.coordBufferBits) + k;
+				cx = x - w2;
+				coords[k] = xa0 + cx;
+				coords[k + 1] = ya0 + cy;
+				coords[k + 2] = xa1 + cx;
+				coords[k + 3] = ya1 + cy;
+				coords[k + 4] = xa2 + cx;
+				coords[k + 5] = ya2 + cy;
+				coords[k + 6] = xa3 + cx;
+				coords[k + 7] = ya3 + cy;
+				coords[k + 8] = xa4 + cx;
+				coords[k + 9] = ya4 + cy;
+				coords[k + 10] = xa5 + cx;
+				coords[k + 11] = ya5 + cy;
+				k += 12;
+				j += 1;
+
+				// check if buffer is full
+				if (j === LifeConstants.coordBufferSize) {
+					// draw buffer
+					this.numCells = j;
+					this.drawHexCells(true, false, false, true);
+	
+					// clear buffer
+					j = 0;
+					k = 0;
+				}
+			}
+		}
+
+		// draw any remaining cells
+		this.numCells = j;
+		if (j > 0) {
+			// draw buffer
+			this.drawHexCells(true, false, false, true);
+
+			// clear buffer
+			j = 0;
+			k = 0;
+		}
+	};
+
 	// draw hexagons 
 	Life.prototype.drawHexagons = function() {
 		var colourGrid = this.colourGrid,
@@ -1000,7 +1261,7 @@
 			/** @const {number} */ h2 = this.height / 2,
 			/** @const {number} */ pi3 = Math.PI / 3,
 			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2) * 1.16, 
-			/** @const {number} */ xEdge = (Math.sqrt(3) / 4) / Math.cos(pi3 / 2) * 1.16,
+			/** @const {number} */ xEdge = (ViewConstants.sqrt3 / 4) / Math.cos(pi3 / 2) * 1.16,
 			/** @const {Array<number>} */ xa = [],
 			/** @const {Array<number>} */ ya = [],
 			/** @type {number} */ state = 0,
@@ -1122,12 +1383,12 @@
 						if (j === LifeConstants.coordBufferSize) {
 							// draw buffer
 							this.numCells = j;
-							this.drawHexCells(true, drawFilledCellBorders, false);
+							this.drawHexCells(true, drawFilledCellBorders, false, false);
 
 							// draw cell borders if enabled and grid lines disabled
 							if (this.cellBorders && !this.displayGrid) {
 								this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0] + ")";
-								this.drawHexCells(false, false, false);
+								this.drawHexCells(false, false, false, false);
 							}
 
 							// clear buffer
@@ -1143,12 +1404,12 @@
 		this.numCells = j;
 		if (j > 0) {
 			// draw buffer
-			this.drawHexCells(true, drawFilledCellBorders, false);
+			this.drawHexCells(true, drawFilledCellBorders, false, false);
 
 			// draw cell borders if enabled and grid lines disabled
 			if (this.cellBorders && !this.displayGrid) {
 				this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0] + ")";
-				this.drawHexCells(false, false, false);
+				this.drawHexCells(false, false, false, false);
 			}
 
 			// clear buffer
@@ -1195,7 +1456,7 @@
 						if (j === LifeConstants.coordBufferSize) {
 							// draw and clear buffer
 							this.numCells = j;
-							this.drawHexCells(false, false, true);
+							this.drawHexCells(false, false, true, false);
 							j = 0;
 							k = 0;
 						}
@@ -1206,13 +1467,13 @@
 			// draw any remaining cells
 			this.numCells = j;
 			if (j > 0) {
-				this.drawHexCells(false, false, true);
+				this.drawHexCells(false, false, true, false);
 			}
 		}
 	};
 
 	// draw hex cells
-	Life.prototype.drawHexCells = function(/** @type {boolean} */ filled, /** @type {boolean} */ borderWhenFilled, /** @type {boolean} */ gridLines) {
+	Life.prototype.drawHexCells = function(/** @type {boolean} */ filled, /** @type {boolean} */ borderWhenFilled, /** @type {boolean} */ gridLines, /** @type {boolean} */ drawingSelection) {
 		var /** @type {number} */ i = 0,
 			context = this.context,
 			/** @type {number} */ xOff = this.width / 2 - this.xOff - this.originX,
@@ -1246,7 +1507,7 @@
 
 		// if hexagons are filled then sort by colour
 		// check for sort function since IE doesn't have it
-		if (filled && colours.sort) {
+		if (filled && !drawingSelection && colours.sort) {
 			// ensure unused buffer is at end
 			state = (LifeConstants.coordBufferSize << LifeConstants.coordBufferBits) + 256;
 			for (i = numCoords; i < LifeConstants.coordBufferSize; i += 1) {
@@ -1310,10 +1571,12 @@
 					context.beginPath();
 				}
 				if (filled) {
-					// set the new cell colours
-					context.fillStyle = this.cellColourStrings[state];
-					if (borderWhenFilled) {
-						context.strokeStyle = this.cellColourStrings[state];
+					// set the new cell colours unless drawing selection box
+					if (!drawingSelection) {
+						context.fillStyle = this.cellColourStrings[state];
+						if (borderWhenFilled) {
+							context.strokeStyle = this.cellColourStrings[state];
+						}
 					}
 				}
 			}
@@ -13344,8 +13607,8 @@
 		// draw a translucent rectangle
 		ctx.fillStyle = colour;
 		ctx.globalAlpha = 0.5;
-		ctx.beginPath();
 		if (!this.isHex) {
+			ctx.beginPath();
 			this.rotateCoords(x1, y1, coords);
 			ctx.moveTo(coords[0], coords[1]);
 			this.rotateCoords(x2 + 1, y1, coords);
@@ -13354,17 +13617,23 @@
 			ctx.lineTo(coords[0], coords[1]);
 			this.rotateCoords(x1, y2 + 1, coords);
 			ctx.lineTo(coords[0], coords[1]);
+			ctx.fill();
 		} else {
-			for (i = 0; i < height; i += 1) {
-				ctx.moveTo(x1, y1);
-				ctx.lineTo(x1 + width * xZoom + 1, y1);
-				ctx.lineTo(x1 + width * xZoom + 1, y1 + yZoom + 1);
-				ctx.lineTo(x1, y1 + yZoom + 1);
-				x1 -= yZoom / 2;
-				y1 += yZoom;
+			if (this.useHexagons && this.zoom >= 4) {
+				this.drawHexSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff);
+			} else {
+				ctx.beginPath();
+				for (i = 0; i < height; i += 1) {
+					ctx.moveTo(x1, y1);
+					ctx.lineTo(x1 + width * xZoom + 1, y1);
+					ctx.lineTo(x1 + width * xZoom + 1, y1 + yZoom + 1);
+					ctx.lineTo(x1, y1 + yZoom + 1);
+					x1 -= yZoom / 2;
+					y1 += yZoom;
+				}
+				ctx.fill();
 			}
 		}
-		ctx.fill();
 
 		// now draw each set cell if zoom is high enough
 		if (this.zoom >= 1) {
@@ -13394,47 +13663,51 @@
 
 			// draw cells
 			ctx.fillStyle = "rgb(255, 128, 0)";
-			ctx.beginPath();
-			i = 0;
-			for (y = 0; y < height; y += 1) {
-				x1 = x2;
-				for (x = 0; x < width; x += 1) {
-					state = view.pasteBuffer[i];
-					i += 1;
-					if (state) {
-						// compute cell coordinates
-						x1d1 = x1 + dx1;
-						y1d1 = y1 + dy1;
-						x1d1d2 = x1d1 + dx2;
-						y1d1d2 = y1d1 + dy2;
-						x1d2 = x1d1d2 - dx1;
-						y1d2 = y1d1d2 - dy1;
-
-						// don't draw cell if off window
-						if (!((x1 < 0 && x1d1 < 0 && x1d1d2 < 0 && x1d2 < 0) ||
-							(x1 >= view.displayWidth && x1d1 >= view.displayWidth && x1d1d2 >= view.displayWidth && x1d2 >= view.displayWidth) ||
-							(y1 < 0 && y1d1 < 0 && y1d1d2 < 0 && y1d2 < 0) ||
-							(y1 >= view.displayHeight && y1d1 >= view.displayHeight && y1d1d2 >= view.displayHeight && y1d2 >= view.displayHeight))) {
-							// draw cell
-							ctx.moveTo(x1, y1);
-							ctx.lineTo(x1d1, y1d1);
-							ctx.lineTo(x1d1d2, y1d1d2);
-							ctx.lineTo(x1d2, y1d2);
+			if (this.useHexagons && this.zoom >= 4) {
+				this.drawHexCellsInSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff, view.pasteBuffer);
+			} else {
+				ctx.beginPath();
+				i = 0;
+				for (y = 0; y < height; y += 1) {
+					x1 = x2;
+					for (x = 0; x < width; x += 1) {
+						state = view.pasteBuffer[i];
+						i += 1;
+						if (state) {
+							// compute cell coordinates
+							x1d1 = x1 + dx1;
+							y1d1 = y1 + dy1;
+							x1d1d2 = x1d1 + dx2;
+							y1d1d2 = y1d1 + dy2;
+							x1d2 = x1d1d2 - dx1;
+							y1d2 = y1d1d2 - dy1;
+	
+							// don't draw cell if off window
+							if (!((x1 < 0 && x1d1 < 0 && x1d1d2 < 0 && x1d2 < 0) ||
+								(x1 >= view.displayWidth && x1d1 >= view.displayWidth && x1d1d2 >= view.displayWidth && x1d2 >= view.displayWidth) ||
+								(y1 < 0 && y1d1 < 0 && y1d1d2 < 0 && y1d2 < 0) ||
+								(y1 >= view.displayHeight && y1d1 >= view.displayHeight && y1d1d2 >= view.displayHeight && y1d2 >= view.displayHeight))) {
+								// draw cell
+								ctx.moveTo(x1, y1);
+								ctx.lineTo(x1d1, y1d1);
+								ctx.lineTo(x1d1d2, y1d1d2);
+								ctx.lineTo(x1d2, y1d2);
+							}
 						}
+						// next column
+						x1 += dx1;
+						y1 += dy1;
 					}
-					// next column
-					x1 += dx1;
-					y1 += dy1;
+					// next row
+					x2 += dx2;
+					y2 += dy2;
+					y1 = y2;
+					if (this.isHex) {
+						x2 -= dy2 / 2;
+					}
 				}
-				// next row
-				x2 += dx2;
-				y2 += dy2;
-				y1 = y2;
-				if (this.isHex) {
-					x2 -= dy2 / 2;
-				}
+				ctx.fill();
 			}
-			ctx.fill();
 		}
 	};
 
@@ -13503,7 +13776,8 @@
 		    engineY = view.panY - this.yOff,
 			engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0),
 			coords = [0, 0],
-			i = 0;
+			i = 0,
+			selBox = view.selectionBox;
 
 		// order selection box coordinates
 		if (x1 > x2) {
@@ -13528,8 +13802,8 @@
 		// draw a translucent rectangle
 		ctx.fillStyle = colour;
 		ctx.globalAlpha = 0.5;
-		ctx.beginPath();
 		if (!this.isHex) {
+			ctx.beginPath();
 			this.rotateCoords(x1, y1, coords);
 			ctx.moveTo(coords[0], coords[1]);
 			this.rotateCoords(x2 + 1, y1, coords);
@@ -13540,16 +13814,22 @@
 			ctx.lineTo(coords[0], coords[1]);
 			ctx.fill();
 		} else {
-			width *= xZoom;
-			for (i = 0; i < height; i += 1) {
-				ctx.moveTo(x1, y1);
-				ctx.lineTo(x1 + width + 1, y1);
-				ctx.lineTo(x1 + width + 1, y1 + yZoom + 1);
-				ctx.lineTo(x1, y1 + yZoom + 1);
-				x1 -= yZoom / 2;
-				y1 += yZoom;
+			// check for hexagons (rather than offset squares)
+			if (this.useHexagons && this.zoom >= 4) {
+				this.drawHexSelection(selBox.leftX, selBox.bottomY, selBox.rightX, selBox.topY, xOff, yOff);
+			} else {
+				ctx.beginPath();
+				width *= xZoom;
+				for (i = 0; i < height; i += 1) {
+					ctx.moveTo(x1, y1);
+					ctx.lineTo(x1 + width + 1, y1);
+					ctx.lineTo(x1 + width + 1, y1 + yZoom + 1);
+					ctx.lineTo(x1, y1 + yZoom + 1);
+					x1 -= yZoom / 2;
+					y1 += yZoom;
+				}
+				ctx.fill();
 			}
-			ctx.fill();
 		}
 		ctx.globalAlpha = 1;
 	};
