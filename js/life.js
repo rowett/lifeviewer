@@ -685,6 +685,220 @@
 		/** @type {number} */ this.numCells = 0;
 	}
 
+	// draw triangle cells in selection
+	Life.prototype.drawTriangleCellsInSelection = function(leftX, bottomY, rightX, topY, xOff, yOff, cells) {
+		var /** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
+			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ k = 0,
+			/** @type {number} */ m = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @const {number} */ w2 = this.width / 2 - 0.25,
+			/** @const {number} */ h2 = this.height / 2,
+			/** @type {number} */ state = 0,
+			/** @type {Array<number>} */ coords = this.coords,
+			/** @type {Array<number>} */ colours = this.cellColours,
+			/** @type {number} */ yOff1 = this.height / 2 - this.yOff - this.originY + 0.5,
+			/** @type {number} */ xOff1 = this.width / 2 - this.xOff - this.originX + 0.5,
+			/** @type {number} */ zoom = this.zoom * this.originZ,
+			/** @type {number} */ displayY = 0,
+			/** @type {number} */ displayX = 0,
+			/** @type {number} */ xOffset = 0,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ oddEven = 0;
+
+		// order coordinates
+		if (leftX > rightX) {
+			swap = rightX;
+			rightX = leftX;
+			leftX = swap;
+		}
+		if (bottomY > topY) {
+			swap = topY;
+			topY = bottomY;
+			bottomY = swap;
+		}
+		leftX += xOff;
+		rightX += xOff;
+		bottomY += yOff;
+		topY += yOff;
+
+		// check if buffers have been allocated
+		if (colours.length !== LifeConstants.coordBufferSize) {
+			this.coords = this.allocator.allocate(Float32, 12 * LifeConstants.coordBufferSize, "Life.coords");
+			this.cellColours = this.allocator.allocate(Uint32, LifeConstants.coordBufferSize, "Life.cellColours");
+			coords = this.coords;
+			colours = this.cellColours;
+		}
+
+		// create triangles
+		this.context.lineWidth = 1.6;
+		this.context.lineCap = "butt";
+		this.context.lineJoin = "bevel";
+		j = 0;
+		k = 0;
+		for (y = bottomY; y <= topY; y += 1) {
+			// clip y to window
+			displayY = (((y - h2) + yOff1) * zoom) + halfDisplayHeight;
+			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+				cy = (y - h2);
+				xOffset = xOff1 - w2;
+				for (x = leftX; x <= rightX; x += 1) {
+					if (cells[m] > 0) {
+						displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
+						if (displayX >= -zoom && displayX < this.displayWidth + zoom * 2) {
+							// encode coordinate index into the colour state so it can be sorted later
+							colours[j] = (state << LifeConstants.coordBufferBits) + k;
+							cx = x - w2;
+							oddEven = ((x + y) & 1);
+							coords[k] = cx - 1;
+							coords[k + 1] = cy + oddEven;
+							coords[k + 2] = cx + 1;
+							coords[k + 3] = cy + oddEven;
+							coords[k + 4] = cx;
+							coords[k + 5] = cy + 1 - oddEven;
+							k += 6;
+							j += 1;
+	
+							// check if buffer is full
+							if (j === LifeConstants.coordBufferSize) {
+								// draw buffer
+								this.numCells = j;
+								this.drawTriangleCells(true, false, true);
+	
+								// clear buffer
+								j = 0;
+								k = 0;
+							}
+						}
+					}
+					// next cell
+					m += 1;
+				}
+			} else {
+				// next row
+				m += (rightX - leftX + 1);
+			}
+		}
+
+		// draw any remaining cells
+		this.numCells = j;
+		if (j > 0) {
+			// draw buffer
+			this.drawTriangleCells(true, false, true);
+
+			// clear buffer
+			j = 0;
+			k = 0;
+		}
+	};
+
+	// draw triangle selection
+	Life.prototype.drawTriangleSelection = function(leftX, bottomY, rightX, topY, xOff, yOff) {
+		var /** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
+			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ k = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @const {number} */ w2 = this.width / 2 - 0.25,
+			/** @const {number} */ h2 = this.height / 2,
+			/** @type {number} */ state = 0,
+			/** @type {Array<number>} */ coords = this.coords,
+			/** @type {Array<number>} */ colours = this.cellColours,
+			/** @type {number} */ yOff1 = this.height / 2 - this.yOff - this.originY + 0.5,
+			/** @type {number} */ xOff1 = this.width / 2 - this.xOff - this.originX + 0.5,
+			/** @type {number} */ zoom = this.zoom * this.originZ,
+			/** @type {number} */ displayY = 0,
+			/** @type {number} */ displayX = 0,
+			/** @type {number} */ xOffset = 0,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ oddEven = 0;
+
+		// order coordinates
+		if (leftX > rightX) {
+			swap = rightX;
+			rightX = leftX;
+			leftX = swap;
+		}
+		if (bottomY > topY) {
+			swap = topY;
+			topY = bottomY;
+			bottomY = swap;
+		}
+		leftX += xOff;
+		rightX += xOff;
+		bottomY += yOff;
+		topY += yOff;
+
+		// check if buffers have been allocated
+		if (colours.length !== LifeConstants.coordBufferSize) {
+			this.coords = this.allocator.allocate(Float32, 12 * LifeConstants.coordBufferSize, "Life.coords");
+			this.cellColours = this.allocator.allocate(Uint32, LifeConstants.coordBufferSize, "Life.cellColours");
+			coords = this.coords;
+			colours = this.cellColours;
+		}
+
+		// create triangles
+		this.context.lineWidth = 1.6;
+		this.context.lineCap = "butt";
+		this.context.lineJoin = "bevel";
+		j = 0;
+		k = 0;
+		for (y = bottomY; y <= topY; y += 1) {
+			// clip y to window
+			displayY = (((y - h2) + yOff1) * zoom) + halfDisplayHeight;
+			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+				cy = (y - h2);
+				xOffset = xOff1 - w2;
+				for (x = leftX; x <= rightX; x += 1) {
+					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
+					if (displayX >= -zoom && displayX < this.displayWidth + zoom * 2) {
+						// encode coordinate index into the colour state so it can be sorted later
+						colours[j] = (state << LifeConstants.coordBufferBits) + k;
+						cx = x - w2;
+						oddEven = ((x + y) & 1);
+						coords[k] = cx - 1;
+						coords[k + 1] = cy + oddEven;
+						coords[k + 2] = cx + 1;
+						coords[k + 3] = cy + oddEven;
+						coords[k + 4] = cx;
+						coords[k + 5] = cy + 1 - oddEven;
+						k += 6;
+						j += 1;
+
+						// check if buffer is full
+						if (j === LifeConstants.coordBufferSize) {
+							// draw buffer
+							this.numCells = j;
+							this.drawTriangleCells(true, false, true);
+
+							// clear buffer
+							j = 0;
+							k = 0;
+						}
+					}
+				}
+			}
+		}
+
+		// draw any remaining cells
+		this.numCells = j;
+		if (j > 0) {
+			// draw buffer
+			this.drawTriangleCells(true, false, true);
+
+			// clear buffer
+			j = 0;
+			k = 0;
+		}
+	};
+
 	// draw triangles 
 	Life.prototype.drawTriangles = function() {
 		var colourGrid = this.colourGrid,
@@ -782,12 +996,12 @@
 						if (j === LifeConstants.coordBufferSize) {
 							// draw buffer
 							this.numCells = j;
-							this.drawTriangleCells(true, drawFilledCellBorders);
+							this.drawTriangleCells(true, drawFilledCellBorders, false);
 
 							// draw cell borders if enabled and grid lines disabled
 							if (this.cellBorders && !this.displayGrid) {
 								this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0] + ")";
-								this.drawTriangleCells(false, false);
+								this.drawTriangleCells(false, false, false);
 							}
 
 							// clear buffer
@@ -803,12 +1017,12 @@
 		this.numCells = j;
 		if (j > 0) {
 			// draw buffer
-			this.drawTriangleCells(true, drawFilledCellBorders);
+			this.drawTriangleCells(true, drawFilledCellBorders, false);
 
 			// draw cell borders if enabled and grid lines disabled
 			if (this.cellBorders && !this.displayGrid) {
 				this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0] + ")";
-				this.drawTriangleCells(false, false);
+				this.drawTriangleCells(false, false, false);
 			}
 
 			// clear buffer
@@ -854,7 +1068,7 @@
 						if (j === LifeConstants.coordBufferSize) {
 							// draw and clear buffer
 							this.numCells = j;
-							this.drawTriangleCells(false, false);
+							this.drawTriangleCells(false, false, false);
 							j = 0;
 							k = 0;
 						}
@@ -865,13 +1079,13 @@
 			// draw any remaining cells
 			this.numCells = j;
 			if (j > 0) {
-				this.drawTriangleCells(false, false);
+				this.drawTriangleCells(false, false, false);
 			}
 		}
 	};
 
 	// draw triangle cells
-	Life.prototype.drawTriangleCells = function(/** @type {boolean} */ filled, /** @type {boolean} */ borderWhenFilled) {
+	Life.prototype.drawTriangleCells = function(/** @type {boolean} */ filled, /** @type {boolean} */ borderWhenFilled, /** @type {boolean} */ drawingSelection) {
 		var /** @type {number} */ i = 0,
 			context = this.context,
 			/** @type {number} */ xOff = this.width / 2 - this.xOff - this.originX,
@@ -896,7 +1110,7 @@
 
 		// if triangles are filled then sort by colour
 		// check for sort function since IE doesn't have it
-		if (filled && colours.sort) {
+		if (filled && !drawingSelection && colours.sort) {
 			// ensure unused buffer is at end
 			state = (LifeConstants.coordBufferSize << LifeConstants.coordBufferBits) + 256;
 			for (i = numCoords; i < LifeConstants.coordBufferSize; i += 1) {
@@ -953,9 +1167,11 @@
 				}
 				if (filled) {
 					// set the new cell colours
-					context.fillStyle = this.cellColourStrings[state];
-					if (borderWhenFilled) {
-						context.strokeStyle = this.cellColourStrings[state];
+					if (!drawingSelection) {
+						context.fillStyle = this.cellColourStrings[state];
+						if (borderWhenFilled) {
+							context.strokeStyle = this.cellColourStrings[state];
+						}
 					}
 				}
 			}
@@ -1123,6 +1339,9 @@
 					// next cell
 					m += 1;
 				}
+			} else {
+				// next row
+				m += (rightX - leftX + 1);
 			}
 		}
 
@@ -13648,20 +13867,24 @@
 		y2 = yZoom * (y2 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 		x2 = xZoom * (x2 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y2) / 2 : 0);
 
-		// draw a translucent rectangle
+		// draw a translucent box
 		ctx.fillStyle = colour;
 		ctx.globalAlpha = 0.5;
 		if (!this.isHex) {
-			ctx.beginPath();
-			this.rotateCoords(x1, y1, coords);
-			ctx.moveTo(coords[0], coords[1]);
-			this.rotateCoords(x2 + 1, y1, coords);
-			ctx.lineTo(coords[0], coords[1]);
-			this.rotateCoords(x2 + 1, y2 + 1, coords);
-			ctx.lineTo(coords[0], coords[1]);
-			this.rotateCoords(x1, y2 + 1, coords);
-			ctx.lineTo(coords[0], coords[1]);
-			ctx.fill();
+			if (this.isTriangular && this.zoom >= 4) {
+				this.drawTriangleSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff);
+			} else {
+				ctx.beginPath();
+				this.rotateCoords(x1, y1, coords);
+				ctx.moveTo(coords[0], coords[1]);
+				this.rotateCoords(x2 + 1, y1, coords);
+				ctx.lineTo(coords[0], coords[1]);
+				this.rotateCoords(x2 + 1, y2 + 1, coords);
+				ctx.lineTo(coords[0], coords[1]);
+				this.rotateCoords(x1, y2 + 1, coords);
+				ctx.lineTo(coords[0], coords[1]);
+				ctx.fill();
+			}
 		} else {
 			if (this.useHexagons && this.zoom >= 4) {
 				this.drawHexSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff);
@@ -13707,54 +13930,58 @@
 
 			// draw cells
 			ctx.fillStyle = "rgb(255, 128, 0)";
-			if (this.useHexagons && this.zoom >= 4) {
+			if (this.isHex && this.useHexagons && this.zoom >= 4) {
 				this.drawHexCellsInSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff, view.pasteBuffer);
 			} else {
-				ctx.beginPath();
-				i = 0;
-				for (y = 0; y < height; y += 1) {
-					x1 = x2;
-					for (x = 0; x < width; x += 1) {
-						state = view.pasteBuffer[i];
-						i += 1;
-						if (state) {
-							// compute cell coordinates
-							x1d1 = x1 + dx1;
-							y1d1 = y1 + dy1;
-							x1d1d2 = x1d1 + dx2;
-							y1d1d2 = y1d1 + dy2;
-							x1d2 = x1d1d2 - dx1;
-							y1d2 = y1d1d2 - dy1;
-	
-							// don't draw cell if off window
-							if (!((x1 < 0 && x1d1 < 0 && x1d1d2 < 0 && x1d2 < 0) ||
-								(x1 >= view.displayWidth && x1d1 >= view.displayWidth && x1d1d2 >= view.displayWidth && x1d2 >= view.displayWidth) ||
-								(y1 < 0 && y1d1 < 0 && y1d1d2 < 0 && y1d2 < 0) ||
-								(y1 >= view.displayHeight && y1d1 >= view.displayHeight && y1d1d2 >= view.displayHeight && y1d2 >= view.displayHeight))) {
-								// draw cell
-								ctx.moveTo(x1, y1);
-								ctx.lineTo(x1d1, y1d1);
-								ctx.lineTo(x1d1d2, y1d1d2);
-								ctx.lineTo(x1d2, y1d2);
+				if (this.isTriangular && this.zoom >= 4) {
+					this.drawTriangleCellsInSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff, view.pasteBuffer);
+				} else {
+					ctx.beginPath();
+					i = 0;
+					for (y = 0; y < height; y += 1) {
+						x1 = x2;
+						for (x = 0; x < width; x += 1) {
+							state = view.pasteBuffer[i];
+							i += 1;
+							if (state) {
+								// compute cell coordinates
+								x1d1 = x1 + dx1;
+								y1d1 = y1 + dy1;
+								x1d1d2 = x1d1 + dx2;
+								y1d1d2 = y1d1 + dy2;
+								x1d2 = x1d1d2 - dx1;
+								y1d2 = y1d1d2 - dy1;
+		
+								// don't draw cell if off window
+								if (!((x1 < 0 && x1d1 < 0 && x1d1d2 < 0 && x1d2 < 0) ||
+									(x1 >= view.displayWidth && x1d1 >= view.displayWidth && x1d1d2 >= view.displayWidth && x1d2 >= view.displayWidth) ||
+									(y1 < 0 && y1d1 < 0 && y1d1d2 < 0 && y1d2 < 0) ||
+									(y1 >= view.displayHeight && y1d1 >= view.displayHeight && y1d1d2 >= view.displayHeight && y1d2 >= view.displayHeight))) {
+									// draw cell
+									ctx.moveTo(x1, y1);
+									ctx.lineTo(x1d1, y1d1);
+									ctx.lineTo(x1d1d2, y1d1d2);
+									ctx.lineTo(x1d2, y1d2);
+								}
 							}
+							// next column
+							x1 += dx1;
+							y1 += dy1;
 						}
-						// next column
-						x1 += dx1;
-						y1 += dy1;
+						// next row
+						x2 += dx2;
+						y2 += dy2;
+						y1 = y2;
+						if (this.isHex) {
+							x2 -= dy2 / 2;
+						}
 					}
-					// next row
-					x2 += dx2;
-					y2 += dy2;
-					y1 = y2;
-					if (this.isHex) {
-						x2 -= dy2 / 2;
-					}
+					ctx.fill();
 				}
-				ctx.fill();
 			}
 		}
 	};
-
+	
 	// get rotated coordinates
 	Life.prototype.rotateCoords = function(x, y, result) {
 		var radius = 0,
@@ -13843,20 +14070,24 @@
 		y2 = yZoom * (y2 + 1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 		x2 = xZoom * (x2 + 1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y2) / 2 : 0);
 
-		// draw a translucent rectangle
+		// draw a translucent box
 		ctx.fillStyle = colour;
 		ctx.globalAlpha = 0.5;
 		if (!this.isHex) {
-			ctx.beginPath();
-			this.rotateCoords(x1, y1, coords);
-			ctx.moveTo(coords[0], coords[1]);
-			this.rotateCoords(x2 + 1, y1, coords);
-			ctx.lineTo(coords[0], coords[1]);
-			this.rotateCoords(x2 + 1, y2 + 1, coords);
-			ctx.lineTo(coords[0], coords[1]);
-			this.rotateCoords(x1, y2 + 1, coords);
-			ctx.lineTo(coords[0], coords[1]);
-			ctx.fill();
+			if (this.isTriangular && this.zoom >= 4) {
+				this.drawTriangleSelection(selBox.leftX, selBox.bottomY, selBox.rightX, selBox.topY, xOff, yOff);
+			} else {
+				ctx.beginPath();
+				this.rotateCoords(x1, y1, coords);
+				ctx.moveTo(coords[0], coords[1]);
+				this.rotateCoords(x2 + 1, y1, coords);
+				ctx.lineTo(coords[0], coords[1]);
+				this.rotateCoords(x2 + 1, y2 + 1, coords);
+				ctx.lineTo(coords[0], coords[1]);
+				this.rotateCoords(x1, y2 + 1, coords);
+				ctx.lineTo(coords[0], coords[1]);
+				ctx.fill();
+			}
 		} else {
 			// check for hexagons (rather than offset squares)
 			if (this.useHexagons && this.zoom >= 4) {

@@ -1,5 +1,7 @@
 Build 367
 - improved performance for hexagonal grid selection display
+- improved selection and paste boxes for triangular grid
+- paste bottom left and bottom right positions were the wrong way round
 
 Build 366
 - create and clear selection were missing from undo/redo

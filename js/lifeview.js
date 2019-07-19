@@ -7831,7 +7831,6 @@
 			cellY -= height >> 1;
 			break;
 		case ViewConstants.pastePositionSW:
-			cellX -= width - 1;
 			cellY -= height - 1;
 			break;
 		case ViewConstants.pastePositionS:
@@ -7839,6 +7838,7 @@
 			cellY -= height - 1;
 			break;
 		case ViewConstants.pastePositionSE:
+			cellX -= width - 1;
 			cellY -= height - 1;
 			break;
 		}
