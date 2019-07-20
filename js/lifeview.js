@@ -232,7 +232,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 367,
+		/** @const {number} */ versionBuild : 368,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1931,7 +1931,9 @@
 			current = me.editNum,
 			record = null,
 			selBox = me.selectionBox,
-			selection = null;
+			selection = null,
+			steps = 1,
+			multiStep = false;
 
 		// do nothing if step back disabled
 		if (!me.noHistory) {
@@ -1945,46 +1947,60 @@
 
 			// check for undo records
 			if (current > 0) {
-				// pop the top record
-				record = me.editList[current - 1];
-				gen = record.gen;
-				selection = record.selection;
-				if (record.editCells === null) {
+				while (steps > 0) {
+					// pop the top record
+					record = me.editList[current - 1];
+					gen = record.gen;
+					selection = record.selection;
+	
+					// check for multi-step
+					if (!multiStep && record.action === "advance outside") {
+						multiStep = true;
+						steps = 3;
+					}
+	
+					if (record.editCells === null) {
+						if (current > 1) {
+							gen = me.editList[current - 2].gen;
+						}
+					}
 					if (current > 1) {
-						gen = me.editList[current - 2].gen;
+						selection = me.editList[current - 2].selection;
 					}
-				}
-				if (current > 1) {
-					selection = me.editList[current - 2].selection;
-				}
-	
-				// if it is for an earlier generation then go there
-				if (gen < counter) {
-					if (gen === 0) {
-						me.reset(me);
+		
+					// if it is for an earlier generation then go there
+					if (gen < counter) {
+						if (gen === 0) {
+							me.reset(me);
+						} else {
+							me.runTo(gen);
+						}
+						counter = me.engine.counter;
 					} else {
-						me.runTo(gen);
+						// paste cells in reverse order
+						me.pasteRaw(record.editCells, true);
 					}
-				} else {
-					// paste cells in reverse order
-					me.pasteRaw(record.editCells, true);
-				}
+		
+					// restore selection if present
+					if (selection) {
+						selBox.leftX = selection.leftX;
+						selBox.bottomY = selection.bottomY;
+						selBox.rightX = selection.rightX;
+						selBox.topY = selection.topY;
+						me.isSelection = true;
+						me.afterSelectAction = false;
+					} else {
+						me.isSelection = false;
+						me.afterSelectAction = false;
+					}
 	
-				// restore selection if present
-				if (selection) {
-					selBox.leftX = selection.leftX;
-					selBox.bottomY = selection.bottomY;
-					selBox.rightX = selection.rightX;
-					selBox.topY = selection.topY;
-					me.isSelection = true;
-					me.afterSelectAction = false;
-				} else {
-					me.isSelection = false;
-					me.afterSelectAction = false;
-				}
+					// decrement stack using saved value since a record may have been added above
+					current -= 1;
+					me.editNum = current;
 
-				// decrement stack using saved value since a record may have been added above
-				me.editNum = current - 1;
+					// next step
+					steps -= 1;
+				}
 			} else {
 				if (counter > 0) {
 					me.reset(me);
@@ -2003,19 +2019,29 @@
 	View.prototype.redo = function(me) {
 		var counter = me.engine.counter,
 			record = null,
-			selBox = me.selectionBox;
+			selBox = me.selectionBox,
+			steps = 1,
+			multiStep = false;
 
 		// do nothing if step back disabled
 		if (!me.noHistory) {
 			// check for redo records
-			if (me.editNum < me.numEdits) {
+			while (steps > 0 && me.editNum < me.numEdits) {
 				record = me.editList[me.editNum];
+
+				// check for multi-step
+				if (!multiStep && record.action === "advance outside") {
+					multiStep = true;
+					steps = 3;
+				}
+
 				if (record.gen === counter && record.editCells === null && record.action === "") {
 					me.editNum += 1;
 				}
 				// if it is for a later generation then go there
 				if (record.gen > counter) {
 					me.runForwardTo(record.gen);
+					counter = me.engine.counter;
 				} else {
 					// paste cells in forward order
 					me.pasteRaw(record.editCells, false);
@@ -2036,6 +2062,7 @@
 
 				// next record
 				me.editNum += 1;
+				steps -= 1;
 			}
 
 			// update tooltips
@@ -7432,7 +7459,7 @@
 			}
 	
 			// cut to the current clipboard
-			me.cutSelection(me, me.currentPasteBuffer);
+			me.cutSelection(me, me.currentPasteBuffer, false);
 		}
 	}
 
@@ -7442,7 +7469,7 @@
 	};
 
 	// cut selection
-	View.prototype.cutSelection = function(me, number) {
+	View.prototype.cutSelection = function(me, number, evolveStep) {
 		var box = me.selectionBox,
 			x1 = box.leftX,
 			x2 = box.rightX,
@@ -7515,7 +7542,11 @@
 			me.afterSelectAction = true;
 
 			// save edit
-			me.afterEdit("cut");
+			if (evolveStep) {
+				me.afterEdit("advance outside");
+			} else {
+				me.afterEdit("cut");
+			}
 		}
 	};
 
@@ -7638,14 +7669,24 @@
 
 	// evolve pressed
 	View.prototype.evolvePressed = function(me, ctrl, shift) {
+		// save paste mode
+		var savedMode = this.pasteMode;
+
 		// check for evolve outside
 		if (shift) {
 			if (me.isSelection) {
-				me.cutSelection(me, me.currentPasteBuffer);
+				// process cut but mark advance outside
+				me.cutSelection(me, me.currentPasteBuffer, true);
+
+				// step
 				me.engine.nextGeneration(true, me.noHistory, me.graphDisabled);
 				me.engine.convertToPensTile();
 				me.afterEdit("");
-				me.processPaste(me, true);
+
+				// process paste but mark advance outside
+				this.pasteMode = ViewConstants.pasteModeCopy;
+				me.processPaste(me, true, true);
+				this.pasteMode = savedMode;
 			} else {
 				me.menuManager.notification.notify("Advance Outside needs a selection", 15, 180, 15, true);
 			}
@@ -7918,7 +7959,7 @@
 	};
 
 	// process paste
-	View.prototype.processPaste = function(me, shift) {
+	View.prototype.processPaste = function(me, shift, evolveStep) {
 		var xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
 			selBox = me.selectionBox,
@@ -7978,7 +8019,11 @@
 							if (me.autoShrink) {
 								me.autoShrinkSelection(me);
 							}
-							me.afterEdit("paste to selection");
+							if (evolveStep) {
+								me.afterEdit("advance outside");
+							} else {
+								me.afterEdit("paste to selection");
+							}
 							me.evolvingPaste = false;
 						}
 					} else {
@@ -7996,7 +8041,7 @@
 	// paste from enter key
 	View.prototype.pasteFromEnter = function(me) {
 		if (me.evolvingPaste) {
-			me.processPaste(me, true);
+			me.processPaste(me, true, false);
 		} else {
 			me.performPaste(me, me.cellX, me.cellY, true);
 		}
@@ -8004,7 +8049,7 @@
 
 	// paste pressed
 	View.prototype.pastePressed = function(me) {
-		me.processPaste(me, false);
+		me.processPaste(me, false, false);
 	};
 
 	// paste selection
