@@ -1732,6 +1732,10 @@
 		// search for undo records at or before specified generation
 		while (i >= 0 && !found) {
 			if (this.editList[i].gen <= gen) {
+				// check for multi-step
+				if (this.editList[i].action === "advance outside") {
+					i -= 1;
+				}
 				found = true;
 			} else {
 				i -= 1;
@@ -1859,7 +1863,7 @@
 		// check for duplicate
 		if (this.editNum > 0) {
 			record = this.editList[this.editNum - 1];
-			if (record.gen === counter && editCells === null) {
+			if (record.gen === counter && editCells === null && comment === "") {
 				if (this.compareSelections(record.selection)) {
 					isDuplicate = true;
 				}
@@ -6145,11 +6149,11 @@
 				if (!me.generationOn) {
 					// check if at start
 					if (me.engine.counter > 0) {
+						// adjust undo stack pointer
+						me.setUndoGen(me.engine.counter - me.gensPerStep);
+
 						// run from start to previous generation
 						me.runTo(me.engine.counter - me.gensPerStep);
-
-						// adjust undo stack pointer
-						me.setUndoGen(me.engine.counter - me.gensPerStep + 1);
 					}
 				} else {
 					// pause
