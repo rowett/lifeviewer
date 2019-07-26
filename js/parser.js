@@ -4747,7 +4747,7 @@
 		if (view.isInPopup) {
 			if (view.requestedPopupWidth !== -1) {
 				// handle legacy minimum widths
-				if (view.requestedPopupWidth >= ViewConstants.minLegacyWidth && view.requestedWidth < ViewConstants.minViewerWidth) {
+				if (view.requestedPopupWidth >= ViewConstants.minLegacyWidth && view.requestedPopupWidth < ViewConstants.minViewerWidth) {
 					view.requestedPopupWidth = ViewConstants.minViewerWidth;
 				}
 				if (view.requestedPopupWidth < ViewConstants.minViewerWidth || view.requestedPopupWidth > view.maxCodeWidth) {

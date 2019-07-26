@@ -1,6 +1,7 @@
 Build 368
 - Advance Outside now works in a single step with Undo/Redo
 - Advance Outside now always uses Copy paste mode
+- fixed POPUPWIDTH validation
 
 Build 367
 - improved performance for hexagonal grid selection display
