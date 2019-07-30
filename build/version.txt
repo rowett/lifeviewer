@@ -1,3 +1,8 @@
+Build 369
+- Performance improvement for cell history and longevity
+- Performance improvement when ZOOM < 1
+- THEMEs without history (Mono, Inverse, Golly, MCell, Caterer and Life32) and PASTE commands now have improved performance at STEP sizes > 1 
+
 Build 368
 - Advance Outside now works in a single step with Undo/Redo
 - Advance Outside now always uses Copy paste mode
