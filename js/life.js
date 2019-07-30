@@ -11648,174 +11648,101 @@
 								cr = (leftX << 3);
 									
 								// get the maximum of 4 pixels
-								smallValue = 0;
-
 								// first two pixels in first row
 								value = colourGridRow[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = value & 255;
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 
 								// next two pixels in next row
 								value = colourGridRow1[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								smallColourGridRow[cr + cr] = smallValue;
 								cr += 1;
 
 								// loop unroll
-								smallValue = 0;
 								value = colourGridRow[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = value & 255;
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = colourGridRow1[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								smallColourGridRow[cr + cr] = smallValue;
 								cr += 1;
 
 								// loop unroll
-								smallValue = 0;
 								value = colourGridRow[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = value & 255;
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = colourGridRow1[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								smallColourGridRow[cr + cr] = smallValue;
 								cr += 1;
 
 								// loop unroll
-								smallValue = 0;
 								value = colourGridRow[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = value & 255;
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = colourGridRow1[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								smallColourGridRow[cr + cr] = smallValue;
 								cr += 1;
 
 								// loop unroll
-								smallValue = 0;
 								value = colourGridRow[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = value & 255;
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = colourGridRow1[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								smallColourGridRow[cr + cr] = smallValue;
 								cr += 1;
 
 								// loop unroll
-								smallValue = 0;
 								value = colourGridRow[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = value & 255;
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = colourGridRow1[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								smallColourGridRow[cr + cr] = smallValue;
 								cr += 1;
 
 								// loop unroll
-								smallValue = 0;
 								value = colourGridRow[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = value & 255;
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = colourGridRow1[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								smallColourGridRow[cr + cr] = smallValue;
 								cr += 1;
 
 								// loop unroll
-								smallValue = 0;
 								value = colourGridRow[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = value & 255;
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = colourGridRow1[cr];
-								if ((value & 255) > smallValue) {
-									smallValue = value & 255;
-								}
+								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								smallColourGridRow[cr + cr] = smallValue;
 							}
 						}
@@ -12532,7 +12459,6 @@
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileGrid = this.colourTileGrid,
 		    colourLookup = this.colourLookup,
-		    aliveIndex = this.aliveMax + 1,
 		    grid = null, gridRow = null, 
 		    tileGrid = null, tileGridRow = null,
 		    value = 0, th = 0, tw = 0, b = 0,
@@ -12625,610 +12551,92 @@
 								tileAlive |= nextCell;
 
 								// lookup next colour
-								if ((nextCell & 32768) !== 0) {
-									// if alive just copy
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									// if dead then get value and copy
-									value = colourLookup[colourGridRow[cr]];
-
-									// tile is alive if dead cell has ever been occupied
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 32768) >> 8)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								// loop unroll
-								if ((nextCell & 16384) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 16384) >> 7)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								if ((nextCell & 8192) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 8192) >> 6)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								if ((nextCell & 4096) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 4096) >> 5)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								if ((nextCell & 2048) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 2048) >> 4)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								if ((nextCell & 1024) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 1024) >> 3)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								if ((nextCell & 512) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 512) >> 2)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								if ((nextCell & 256) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 256) >> 1)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								if ((nextCell & 128) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + (nextCell & 128)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								if ((nextCell & 64) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 64) << 1)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								if ((nextCell & 32) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 32) << 2)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								if ((nextCell & 16) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 16) << 3)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								if ((nextCell & 8) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 8) << 4)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								if ((nextCell & 4) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 4) << 5)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								if ((nextCell & 2) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 2) << 6)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
 								cr += 1;
 
-								if ((nextCell & 1) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
+								value = colourLookup[colourGridRow[cr] + ((nextCell & 1) << 7)];
+								tileAlive |= value;
 								colourGridRow[cr] = value;
+								// cr += 1   - no need for final increment it will be reset next row
 
 								// next row
 								h += 1;
-
-								// loop unroll
-								gridRow = grid[h];
-								colourGridRow = colourGrid[h];
-								cr = (leftX << 4);
-								nextCell = gridRow[leftX];
-								this.anythingAlive |= nextCell;
-								tileAlive |= nextCell;
-								if ((nextCell & 32768) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								if ((nextCell & 16384) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 8192) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 4096) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 2048) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 1024) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 512) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 256) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 128) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 64) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 32) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 16) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 8) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 4) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 2) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 1) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								h += 1;
-
-								// loop unroll
-								gridRow = grid[h];
-								colourGridRow = colourGrid[h];
-								cr = (leftX << 4);
-								nextCell = gridRow[leftX];
-								this.anythingAlive |= nextCell;
-								tileAlive |= nextCell;
-								if ((nextCell & 32768) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								if ((nextCell & 16384) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 8192) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 4096) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 2048) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 1024) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 512) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 256) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 128) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 64) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 32) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 16) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 8) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 4) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 2) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 1) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								h += 1;
-
-								// loop unroll
-								gridRow = grid[h];
-								colourGridRow = colourGrid[h];
-								cr = (leftX << 4);
-								nextCell = gridRow[leftX];
-								this.anythingAlive |= nextCell;
-								tileAlive |= nextCell;
-								if ((nextCell & 32768) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-								if ((nextCell & 16384) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 8192) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 4096) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 2048) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 1024) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 512) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 256) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 128) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 64) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 32) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 16) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 8) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 4) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 2) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								if ((nextCell & 1) !== 0) {
-									value = colourLookup[colourGridRow[cr] + aliveIndex];
-								} else {
-									value = colourLookup[colourGridRow[cr]];
-									tileAlive |= value > 1;
-								}
-								colourGridRow[cr] = value;
-								h += 1;
 							}
 
-							// check if the tile was alive
-							if (tileAlive) {
+							// check if the tile was alive (has any cells not completely faded)
+							if (tileAlive > 1) {
 								// update tile flag
 								nextTiles |= (1 << b);
 							}

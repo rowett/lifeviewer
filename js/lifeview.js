@@ -2533,6 +2533,46 @@
 		}
 	};
 
+	// check if the given patten will paste this generation
+	View.prototype.pasteThisGen = function(paste) {
+		var needsPaste = false,
+			i = 0,
+			counter = this.engine.counter;
+
+		// check if this pattern needs pasting
+		if (paste.every !==0 && counter >= paste.genList[0] && (((counter - paste.genList[0]) % paste.every) === 0)) {
+			// check for end generation
+			if (!(paste.end !== -1 && counter > paste.end)) {
+				needsPaste = true;
+			}
+		} else {
+			i = 0;
+			while (i < paste.genList.length && !needsPaste) {
+				if (counter === paste.genList[i]) {
+					needsPaste = true;
+				} else {
+					i += 1;
+				}
+			}
+		}
+
+		return needsPaste;
+	};
+
+	// check if any pattern will paste this generation
+	View.prototype.anyPasteThisGen = function() {
+		var needsPaste = false,
+			i = 0,
+			length = this.pasteList.length;
+
+		while (i < length && !needsPaste) {
+			needsPaste = this.pasteThisGen(this.pasteList[i]);
+			i += 1;
+		}
+
+		return needsPaste;
+	};
+
 	// paste rle list to grid
 	View.prototype.pasteRLEList = function() {
 		var i = 0,
@@ -2547,7 +2587,6 @@
 			cells = null,
 			state = 0,
 			gridWidth = this.engine.width,
-			needsPaste = false,
 			stateMap = null,
 			stateRow = null,
 			isSimple2State = this.engine.multiNumStates <= 2 && !this.engine.isHROT && !this.engine.isLifeHistory && this.engine.boundedGridType === -1;
@@ -2555,24 +2594,7 @@
 		// check each pattern to see which need to be drawn this generation
 		for (j = 0; j < this.pasteList.length; j += 1) {
 			paste = this.pasteList[j];
-			needsPaste = false;
-			// check if this pattern needs pasting
-			if (paste.every !==0 && counter >= paste.genList[0] && (((counter - paste.genList[0]) % paste.every) === 0)) {
-				// check for end generation
-				if (!(paste.end !== -1 && counter > paste.end)) {
-					needsPaste = true;
-				}
-			} else {
-				i = 0;
-				while (i < paste.genList.length && !needsPaste) {
-					if (counter === paste.genList[i]) {
-						needsPaste = true;
-					} else {
-						i += 1;
-					}
-				}
-			}
-			if (needsPaste) {
+			if (this.pasteThisGen(paste)) {
 				mode = paste.mode;
 				xOff = (gridWidth >> 1) - (this.patternWidth >> 1);
 				yOff = (gridWidth >> 1) - (this.patternHeight >> 1);
@@ -4216,7 +4238,7 @@
 					stepsTaken += 1;
 
 					// check theme has history or this is the last generation in the step
-					if (me.engine.themeHistory || me.pasteList.length > 0 || ((me.engine.counter === (me.floatCounter | 0)) || bailout)) {
+					if (me.engine.themeHistory || me.anyPasteThisGen() || ((me.engine.counter === (me.floatCounter | 0)) || bailout)) {
 						// convert life grid to pen colours unless Generations just died (since this will start fading dead cells)
 						if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
 							me.engine.convertToPensTile();
