@@ -2712,7 +2712,7 @@
 				if (this.anythingAlive === 0 && this.multiNumStates <= 2) {
 					// clear the other buffer
 					this.anythingAlive = 1;
-					this.nextGeneration(false, false, this.graphDisabled);
+					this.nextGeneration(false, false, graphDisabled);
 					this.counter -= 1;
 				}
 			} else {
@@ -2733,7 +2733,7 @@
 				if (this.anythingAlive === 0 && this.multiNumStates <= 2) {
 					// clear the other buffer
 					this.anythingAlive = 1;
-					this.nextGeneration(false, false, this.graphDisabled);
+					this.nextGeneration(false, false, graphDisabled);
 					this.counter -= 1;
 				}
 			} else {
@@ -11824,68 +11824,44 @@
 								// get the maximum of 4 pixels
 								smallValue = smallColourGridRow[cr];
 								value = smallColourGridRow[cr + 2];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = smallColourGridRow1[cr];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = smallColourGridRow1[cr + 2];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								destRow[cr] = smallValue;
 								cr += 4;
 
 								// loop unroll
 								smallValue = smallColourGridRow[cr];
 								value = smallColourGridRow[cr + 2];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = smallColourGridRow1[cr];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = smallColourGridRow1[cr + 2];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								destRow[cr] = smallValue;
 								cr += 4;
 
 								// loop unroll
 								smallValue = smallColourGridRow[cr];
 								value = smallColourGridRow[cr + 2];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = smallColourGridRow1[cr];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = smallColourGridRow1[cr + 2];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								destRow[cr] = smallValue;
 								cr += 4;
 
 								// loop unroll
 								smallValue = smallColourGridRow[cr];
 								value = smallColourGridRow[cr + 2];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = smallColourGridRow1[cr];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = smallColourGridRow1[cr + 2];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								destRow[cr] = smallValue;
 							}
 						}
@@ -11967,34 +11943,22 @@
 								// get the maximum of 4 pixels
 								smallValue = smallColourGridRow[cr];
 								value = smallColourGridRow[cr + 4];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = smallColourGridRow1[cr];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = smallColourGridRow1[cr + 4];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								destRow[cr] = smallValue;
 								cr += 8;
 
 								// loop unroll
 								smallValue= smallColourGridRow[cr];
 								value = smallColourGridRow[cr + 4];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = smallColourGridRow1[cr];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								value = smallColourGridRow1[cr + 4];
-								if (value > smallValue) {
-									smallValue = value;
-								}
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								destRow[cr] = smallValue;
 							}
 						}
@@ -12072,17 +12036,11 @@
 							// get the maximum of 4 pixels
 							smallValue = smallColourGridRow[cr];
 							value = smallColourGridRow[cr + 8];
-							if (value > smallValue) {
-								smallValue = value;
-							}
+							smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 							value = smallColourGridRow1[cr];
-							if (value > smallValue) {
-								smallValue = value;
-							}
+							smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 							value = smallColourGridRow1[cr + 8];
-							if (value > smallValue) {
-								smallValue = value;
-							}
+							smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 							destRow[cr] = smallValue;
 						}
 

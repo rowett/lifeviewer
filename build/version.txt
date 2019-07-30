@@ -1,6 +1,9 @@
+Build 370
+- performance improvement when ZOOM < -2
+
 Build 369
-- Performance improvement for cell history and longevity
-- Performance improvement when ZOOM < 1
+- performance improvement for cell history and longevity
+- performance improvement when ZOOM < 1
 - THEMEs without history (Mono, Inverse, Golly, MCell, Caterer and Life32) and PASTE commands now have improved performance at STEP sizes > 1 
 
 Build 368
