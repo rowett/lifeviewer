@@ -1527,7 +1527,7 @@
 		this.offCanvas = null;
 
 		// offboard context
-		this.offContext = null;
+		/** @type {CanvasRenderingContext2D} */ this.offContext = null;
 
 		// generation speed
 		/** @type {number} */ this.genSpeed = 60;
@@ -10143,9 +10143,10 @@
 			}
 
 			// get the 2d drawing context
-			this.mainContext = this.mainCanvas.getContext("2d", {alpha: false});
+			this.mainContext = this.mainCanvas.getContext("2d", {alpha: false, desynchronzied: true});
 			this.mainContext.globalAlpha = 1;
 			this.mainContext.fillStyle = "black";
+			this.mainContext.imageSmoothingEnabled = false;
 			this.mainContext.fillRect(0, 0, this.mainCanvas.width, this.mainCanvas.height);
 
 			// create the offboard canvas
@@ -10153,6 +10154,7 @@
 			this.offCanvas.width = this.mainCanvas.width;
 			this.offCanvas.height = this.mainCanvas.height;
 			this.offContext = this.offCanvas.getContext("2d", {alpha: false});
+			this.offContext.imageSmoothingEnabled = false;
 
 			// set the width and height from the canvas
 			this.displayWidth = this.mainCanvas.width;
