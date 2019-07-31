@@ -922,6 +922,9 @@
 		// chunk size in bytes to copy
 		/** @type {number} */ this.tempRLEChunkSize = 32768;
 
+		// whether copy complete message displayed
+		/** @type {boolean} */ this.copyCompleteDisplayed = false;
+
 		// frames to display before processing copy to allow notification
 		/** @type {number} */ this.copyFrameWait = 0;
 
@@ -5065,7 +5068,10 @@
 			}
 		} else {
 			// draw notification
-			me.menuManager.notification.notify("Press Enter to complete copy", 15, 10000, 15, true);
+			if (!me.copyCompleteDisplayed) {
+				me.menuManager.notification.notify("Press Enter to complete copy", 15, 10000, 15, true);
+				me.copyCompleteDisplayed = true;
+			}
 		}
 
 		// update progress bar
@@ -9217,6 +9223,7 @@
 
 			// set copy mode
 			me.clipboardCopy = true;
+			me.copyCompleteDisplayed = false;
 
 			// disable menu
 			me.viewMenu.locked = true;
@@ -10528,6 +10535,9 @@
 				}
 			}
 		}
+
+		// mark copy complete message not displayed
+		me.copyCompleteDisplayed = false;
 	};
 
 	// resize viewer

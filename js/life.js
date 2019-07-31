@@ -12510,7 +12510,6 @@
 
 								// determine if anything is alive on the grid
 								this.anythingAlive |= nextCell;
-								tileAlive |= nextCell;
 
 								// lookup next colour
 								value = colourLookup[colourGridRow[cr] + ((nextCell & 32768) >> 8)];

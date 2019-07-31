@@ -871,7 +871,7 @@
 							me.popGraphOpacity = 0;
 						}
 					}
-					this.opacityItem.current = this.viewOpacityRange([me.popGraphOpacity, me.popGraphOpacity], false, me);
+					me.opacityItem.current = me.viewOpacityRange([me.popGraphOpacity, me.popGraphOpacity], false, me);
 				}
 				break;
 
@@ -900,7 +900,7 @@
 							me.popGraphOpacity = 1;
 						}
 					}
-					this.opacityItem.current = this.viewOpacityRange([me.popGraphOpacity, me.popGraphOpacity], false, me);
+					me.opacityItem.current = me.viewOpacityRange([me.popGraphOpacity, me.popGraphOpacity], false, me);
 				}
 				break;
 

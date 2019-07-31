@@ -1538,13 +1538,13 @@
 		if (item.orientation === Menu.horizontal) {
 			for (i = 0; i < l; i += 1) {
 				if (item.icon[i]) {
-					this.iconManager.draw(item.icon[i], item.x + itemSize * i, item.y, item.locked || item.itemLocked[i]);
+					this.iconManager.draw(item.icon[i], item.x + itemSize * i, item.y, this.locked || item.locked || item.itemLocked[i]);
 				}
 			}
 		} else {
 			for (i = 0; i < l; i += 1) {
 				if (item.icon[i]) {
-					this.iconManager.draw(item.icon[i], item.x, item.y + itemSize * i, item.locked || item.itemLocked[i]);
+					this.iconManager.draw(item.icon[i], item.x, item.y + itemSize * i, this.locked || item.locked || item.itemLocked[i]);
 				}
 			}
 		}
@@ -1708,7 +1708,7 @@
 			if (item.icon) {
 				// draw the icon
 				this.context.globalAlpha = item.fgAlpha;
-				this.iconManager.draw(item.icon, item.x, item.y, item.locked);
+				this.iconManager.draw(item.icon, item.x, item.y, this.locked || item.locked);
 			}
 		}
 
@@ -1738,7 +1738,7 @@
 				if (item.orientation === Menu.horizontal) {
 					w = item.width / l;
 					for (i = 0; i < l; i += 1) {
-						if (item.locked || item.itemLocked[i]) {
+						if (this.locked || item.locked || item.itemLocked[i]) {
 							this.context.strokeStyle = item.lockedCol;
 							this.context.globalAlpha = item.lockedAlpha;
 						} else {
@@ -1751,7 +1751,7 @@
 				else {
 					w = item.height / l;
 					for (i = 0; i <l; i += 1) {
-						if (item.locked || item.itemLocked[i]) {
+						if (this.locked || item.locked || item.itemLocked[i]) {
 							this.context.strokeStyle = item.lockedCol;
 							this.context.globalAlpha = item.lockedAlpha;
 						} else {
@@ -2711,6 +2711,9 @@
 
 		// get the total fps
 		total = 1000 / frame;
+		if (total > 60) {
+			total = 60;
+		}
 
 		// draw the timing statistics if enabled
 		if (me.showTiming) {
