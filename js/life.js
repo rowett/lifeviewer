@@ -673,6 +673,7 @@
 		/** @type {Array<number>} */ this.graphDeathColor = [255, 0, 0];
 
 		// HROT engine
+		// @ts-ignore
 		this.HROT = new HROT(this.allocator, this);
 
 		// hex or triangle cell coordinates
@@ -3645,15 +3646,17 @@
 	// create 7x7 glider
 	Life.prototype.create7x7Glider = function(glider3x3) {
 		var result = [],
+			row = null,
 			i = 0,
 			j = 0;
 
 		// create the empty 7x7 matrix
 		for (j = 0; j < 7; j += 1) {
-			result[j] = [];
+			row = [];
 			for (i = 0; i < 7; i += 1) {
-				result[j][i] = 0;
+				row[i] = 0;
 			}
+			result[j] = row;
 		}
 
 		// fill the middle 3x3 from the glider
@@ -5116,6 +5119,7 @@
 
 	// shrink the tile grid to the pattern
 	Life.prototype.shrinkTileGridGenerations = function() {
+		// @ts-ignore
 		var h = 0, b = 0,
 		    output = 0, th = 0, tw = 0,
 

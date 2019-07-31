@@ -2216,6 +2216,7 @@
 			deltas = [];
 
 		// check the name is not a reserved word
+		// @ts-ignore
 		if (ScriptParser.isScriptCommand(name)) {
 			scriptErrors[scriptErrors.length] = [Keywords.recipeWord + " " + name, "name is reserved word"];
 		} else {
@@ -2260,6 +2261,7 @@
 			cells = [];
 		
 		// check the name is not a reserved word
+		// @ts-ignore
 		if (ScriptParser.isScriptCommand(name)) {
 			scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "name is reserved word"];
 		} else {
@@ -9449,13 +9451,16 @@
 		// ignore keys in compute history mode
 		if (me.computeHistory) {
 			// process the key in history mode
+			// @ts-ignore
 			processed = KeyProcessor.processKeyHistory(me, keyCode, event);
 		} else {
 			// check for clipboard copy
 			if (me.clipboardCopy) {
+				// @ts-ignore
 				processed = KeyProcessor.processKeyCopy(me, keyCode, event);
 			} else {
 				// process the key
+				// @ts-ignore
 				processed = KeyProcessor.processKey(me, keyCode, event);
 			}
 		}
@@ -10357,6 +10362,7 @@
 
 	// read script
 	View.prototype.readScript = function(scriptString, numStates) {
+		// @ts-ignore
 		ScriptParser.parseScript(this, scriptString, numStates);
 	};
 

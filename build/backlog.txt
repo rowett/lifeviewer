@@ -35,8 +35,8 @@ In progress:
     - improved LifeHistory drawing modes
     - reset to include the overlay grid
     - selections
-        - accurate hex selection
-        - accurate triangular selection
+        [DONE]accurate hex selection
+        [DONE]accurate triangular selection
         [DONE]10 clipboards
         [DONE]square selection
         [DONE]auto-shrink selection on/off
@@ -63,6 +63,8 @@ In progress:
         [DONE]invert cells in selection
         [DONE]copy buffer to current position
         [DONE]copy buffer to selection
+        [DONE]advance outside selection
+        - advance selection
     [DONE]undo stack / step back
     [DONE]grow grid if possible when cell outside current grid drawn
     [DONE]2-state editing
