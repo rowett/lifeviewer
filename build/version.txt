@@ -2,6 +2,7 @@ Build 370
 - performance improvement when ZOOM < -2
 - not all menu items were being drawn locked when menu locked
 - performance improvement for THEMEs without history and STEP size 1
+- performance improvement for THEMEs without history when ZOOM < 1
 
 Build 369
 - performance improvement for cell history and longevity

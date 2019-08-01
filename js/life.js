@@ -11594,6 +11594,129 @@
 		this.deaths = deaths;
 	};
 
+	// create 2x2 colour grid with no history for 0.5 <= zoom < 1
+	Life.prototype.create2x2ColourGridNoHistory16 = function(colourGrid, smallColourGrid2) {
+		var cr = 0, h = 0,
+		    colourGridRow = null,
+		    colourGridRow1 = null,
+		    smallColourGridRow = null,
+		    colourTileHistoryGrid = this.colourTileHistoryGrid,
+		    colourTileHistoryRow = null,
+		    value = 0, th = 0, tw = 0, b = 0,
+		    bottomY = 0, topY = 0, leftX = 0,
+		    tiles = 0,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (in 16bit chunks)
+		    xSize = this.tileX >> 1,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+		    tileCols16 = this.tileCols >> 4;
+
+		// set the initial tile row
+		bottomY = 0;
+		topY = bottomY + ySize;
+
+		// scan each row of tiles
+		for (th = 0; th < tileRows; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			colourTileHistoryRow = colourTileHistoryGrid[th];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = colourTileHistoryRow[tw];
+
+				// check if any are occupied
+				if (tiles) {
+					// compute next colour for each tile in the set
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << b)) !== 0) {
+							// update the small colour grid
+							for (h = bottomY; h < topY; h += 2) {
+								// get the next two rows
+								colourGridRow = colourGrid[h];
+								colourGridRow1 = colourGrid[h + 1];
+
+								smallColourGridRow = smallColourGrid2[h];
+								cr = (leftX << 3);
+									
+								// get the maximum of 4 pixels
+								// first two pixels in first row
+								value = colourGridRow[cr];
+
+								// next two pixels in next row
+								value |= colourGridRow1[cr];
+								smallColourGridRow[cr + cr] = value | (value >> 8);
+								cr += 1;
+
+								// loop unroll
+								value = colourGridRow[cr];
+								value |= colourGridRow1[cr];
+								smallColourGridRow[cr + cr] = value | (value >> 8);
+								cr += 1;
+
+								// loop unroll
+								value = colourGridRow[cr];
+								value |= colourGridRow1[cr];
+								smallColourGridRow[cr + cr] = value | (value >> 8);
+								cr += 1;
+
+								// loop unroll
+								value = colourGridRow[cr];
+								value |= colourGridRow1[cr];
+								smallColourGridRow[cr + cr] = value | (value >> 8);
+								cr += 1;
+
+								// loop unroll
+								value = colourGridRow[cr];
+								value |= colourGridRow1[cr];
+								smallColourGridRow[cr + cr] = value | (value >> 8);
+								cr += 1;
+
+								// loop unroll
+								value = colourGridRow[cr];
+								value |= colourGridRow1[cr];
+								smallColourGridRow[cr + cr] = value | (value >> 8);
+								cr += 1;
+
+								// loop unroll
+								value = colourGridRow[cr];
+								value |= colourGridRow1[cr];
+								smallColourGridRow[cr + cr] = value | (value >> 8);
+								cr += 1;
+
+								// loop unroll
+								value = colourGridRow[cr];
+								value |= colourGridRow1[cr];
+								smallColourGridRow[cr + cr] = value | (value >> 8);
+							}
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+			}
+			
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+	};
+
 	// create 2x2 colour grid for 0.5 <= zoom < 1
 	Life.prototype.create2x2ColourGrid16 = function(colourGrid, smallColourGrid2) {
 		var cr = 0, h = 0,
@@ -11748,6 +11871,96 @@
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 								smallColourGridRow[cr + cr] = smallValue;
+							}
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+			}
+			
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+	};
+
+	// create 4x4 colour grid with no history for 0.25 <= zoom < 0.5
+	Life.prototype.create4x4ColourGridNoHistory = function(smallColourGrid2, smallColourGrid4) {
+		var h = 0,
+		    cr = 0,
+		    smallColourGridRow = null,
+		    smallColourGridRow1 = null,
+		    destRow = null,
+		    colourTileHistoryGrid = this.colourTileHistoryGrid,
+		    colourTileHistoryRow = null,
+		    th = 0, tw = 0, b = 0,
+		    bottomY = 0, topY = 0, leftX = 0,
+		    tiles = 0,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (in 16bit chunks)
+		    xSize = this.tileX >> 1,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+		    tileCols16 = this.tileCols >> 4;
+
+		// set the initial tile row
+		bottomY = 0;
+		topY = bottomY + ySize;
+
+		// scan each row of tiles
+		for (th = 0; th < tileRows; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			colourTileHistoryRow = colourTileHistoryGrid[th];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = colourTileHistoryRow[tw];
+
+				// check if any are occupied
+				if (tiles) {
+					// compute next colour for each tile in the set
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << b)) !== 0) {
+							// update the small colour grid
+							for (h = bottomY; h < topY; h += 4) {
+								// get destination row
+								destRow = smallColourGrid4[h];
+
+								// get the next two rows
+								smallColourGridRow = smallColourGrid2[h];
+								smallColourGridRow1 = smallColourGrid2[h + 2];
+								cr = (leftX << 4);
+									
+								// get the maximum of 4 pixels
+								destRow[cr] = smallColourGridRow[cr] | smallColourGridRow[cr + 2] | smallColourGridRow1[cr] | smallColourGridRow1[cr + 2];
+								cr += 4;
+
+								// loop unroll
+								destRow[cr] = smallColourGridRow[cr] | smallColourGridRow[cr + 2] | smallColourGridRow1[cr] | smallColourGridRow1[cr + 2];
+								cr += 4;
+
+								// loop unroll
+								destRow[cr] = smallColourGridRow[cr] | smallColourGridRow[cr + 2] | smallColourGridRow1[cr] | smallColourGridRow1[cr + 2];
+								cr += 4;
+
+								// loop unroll
+								destRow[cr] = smallColourGridRow[cr] | smallColourGridRow[cr + 2] | smallColourGridRow1[cr] | smallColourGridRow1[cr + 2];
 							}
 						}
 
@@ -12067,12 +12280,20 @@
 		// check if zoomed out
 		if (this.camZoom < 1) {
 			// create 2x2 colour grid
-			this.create2x2ColourGrid16(this.colourGrid16, this.smallColourGrid2);
+			if (this.themeHistory) {
+				this.create2x2ColourGrid16(this.colourGrid16, this.smallColourGrid2);
+			} else {
+				this.create2x2ColourGridNoHistory16(this.colourGrid16, this.smallColourGrid2);
+			}
 
 			// check if zoomed out further
 			if (this.camZoom < 0.5) {
 				// create 4x4 colour grid
-				this.create4x4ColourGrid(this.smallColourGrid2, this.smallColourGrid4);
+				if (this.themeHistory) {
+					this.create4x4ColourGrid(this.smallColourGrid2, this.smallColourGrid4);
+				} else {
+					this.create4x4ColourGridNoHistory(this.smallColourGrid2, this.smallColourGrid4);
+				}
 
 				// check if zoomed out further
 				if (this.camZoom < 0.25) {
