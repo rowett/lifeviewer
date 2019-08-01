@@ -10155,7 +10155,7 @@
 			}
 
 			// get the 2d drawing context
-			this.mainContext = this.mainCanvas.getContext("2d", {alpha: false, desynchronzied: true});
+			this.mainContext = this.mainCanvas.getContext("2d", {alpha: false});
 			this.mainContext.globalAlpha = 1;
 			this.mainContext.fillStyle = "black";
 			this.mainContext.imageSmoothingEnabled = false;

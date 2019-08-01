@@ -12398,8 +12398,13 @@
 		if (!this.isNone) {
 			// check for generations or HROT rule
 			if (this.multiNumStates === -1) {
-				// use regular converter
-				this.convertToPensTileRegular();
+				// check for theme history
+				if (this.themeHistory) {
+					// use regular converter
+					this.convertToPensTileRegular();
+				} else {
+					this.convertToPensTileNoHistory();
+				}
 			} else {
 				if (!this.anythingAlive) {
 					this.generationsDecayOnly();
@@ -12412,6 +12417,200 @@
 		}
 	};
 	
+	// convert life grid region to pens using tiles but without history
+	Life.prototype.convertToPensTileNoHistory = function() {
+		var h = 0, cr = 0, nextCell = 0,
+		    colourGrid = this.colourGrid,
+		    colourGridRow = null, colourTileRow = null,
+		    colourTileHistoryRow = null,
+		    colourTileHistoryGrid = this.colourTileHistoryGrid,
+		    colourTileGrid = this.colourTileGrid,
+		    grid = null, gridRow = null, 
+		    tileGrid = null, tileGridRow = null,
+		    value = 0, th = 0, tw = 0, b = 0,
+		    bottomY = 0, topY = 0, leftX = 0,
+		    tiles = 0, nextTiles = 0,
+
+		    // whether the tile is alive
+		    tileAlive = 0,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (in 16bit chunks)
+		    xSize = this.tileX >> 1,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+		    tileCols16 = this.tileCols >> 4,
+
+		    // starting and ending tile row
+		    tileStartRow = 0,
+		    tileEndRow = tileRows;
+
+		// clear anything alive
+		this.anythingAlive = 0;
+
+		// select the correct grid
+		if ((this.counter & 1) !== 0) {
+			grid = this.nextGrid16;
+			tileGrid = this.nextTileGrid;
+		} else {
+			grid = this.grid16;
+			tileGrid = this.tileGrid;
+		}
+
+		// check start and end row are in range
+		if (tileStartRow < 0) {
+			tileStartRow = 0;
+		}
+		if (tileEndRow > tileRows) {
+			tileEndRow = tileRows;
+		}
+
+		// set the initial tile row
+		bottomY = tileStartRow << this.tilePower;
+		topY = bottomY + ySize;
+
+		// scan each row of tiles
+		for (th = tileStartRow; th < tileEndRow; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			tileGridRow = tileGrid[th];
+			colourTileRow = colourTileGrid[th];
+			colourTileHistoryRow = colourTileHistoryGrid[th];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = tileGridRow[tw] | colourTileRow[tw];
+				nextTiles = 0;
+
+				// check if any are occupied
+				if (tiles) {
+					// compute next colour for each tile in the set
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << b)) !== 0) {
+							// flag nothing alive in the tile
+							tileAlive = 0;
+
+							// process each row
+							h = bottomY;
+							while (h < topY) {
+								// get the grid and colour grid row
+								gridRow = grid[h];
+								colourGridRow = colourGrid[h];
+
+								// get correct starting colour index
+								cr = (leftX << 4);
+
+								// process each 16bit chunk (16 cells) along the row
+								nextCell = gridRow[leftX];
+
+								// determine if anything is alive on the grid
+								this.anythingAlive |= nextCell;
+								tileAlive |= nextCell;
+
+								// lookup next colour
+								value = (nextCell & 32768) >> 9;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = (nextCell & 16384) >> 8;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = (nextCell & 8192) >> 7;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = (nextCell & 4096) >> 6;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = (nextCell & 2048) >> 5;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = (nextCell & 1024) >> 4;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = (nextCell & 512) >> 3;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = (nextCell & 256) >> 2;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = (nextCell & 128) >> 1;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = nextCell & 64;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = (nextCell & 32) << 1;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = (nextCell & 16) << 2;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = (nextCell & 8) << 3;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = (nextCell & 4) << 4;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = (nextCell & 2) << 5;
+								colourGridRow[cr] = value;
+								cr += 1;
+
+								value = (nextCell & 1) << 6;
+								colourGridRow[cr] = value;
+								// cr += 1   - no need for final increment it will be reset next row
+
+								// next row
+								h += 1;
+							}
+
+							// check if the tile was alive (has any cells not completely faded)
+							if (tileAlive) {
+								// update tile flag
+								nextTiles |= (1 << b);
+							}
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+
+				// save the tile group
+				colourTileRow[tw] = nextTiles;
+				colourTileHistoryRow[tw] |= nextTiles;
+			}
+
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+	};
+
 	// convert life grid region to pens using tiles
 	Life.prototype.convertToPensTileRegular = function() {
 		var h = 0, cr = 0, nextCell = 0,
