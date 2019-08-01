@@ -3886,7 +3886,8 @@
 
 	// set the theme
 	Life.prototype.setTheme = function(theme, switchTime, view) {
-		var newTheme = this.themes[theme];
+		var newTheme = this.themes[theme],
+			currentHistory = this.themeHistory;
 
 		// save the theme
 		this.colourTheme = theme;
@@ -3914,6 +3915,15 @@
 		
 		// check whether new theme has history
 		this.themeHistory = newTheme.hasHistory(this.isLifeHistory);
+		
+		// check if history was just switched off
+		if (currentHistory && !this.themeHistory) {
+			if ((this.counter & 1) === 0) {
+				this.resetColourGridBox(this.nextGrid16);
+			} else {
+				this.resetColourGridBox(this.grid16);
+			}
+		}
 
 		// copy grid line colours from theme
 		this.gridLineRaw  = newTheme.gridColour;

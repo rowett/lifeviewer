@@ -3,6 +3,7 @@ Build 370
 - not all menu items were being drawn locked when menu locked
 - performance improvement for THEMEs without history and STEP size 1
 - performance improvement for THEMEs without history when ZOOM < 1
+- switching to a THEME without history clears history cells
 
 Build 369
 - performance improvement for cell history and longevity
