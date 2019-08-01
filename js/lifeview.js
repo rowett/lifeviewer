@@ -4174,7 +4174,7 @@
 						me.menuManager.notification.clear(false, false);
 					} else {
 						// draw new message
-						me.menuManager.notification.notify(currentWaypoint.textMessage, 15, 1000, 15, false);
+						me.menuManager.notification.notify(currentWaypoint.textMessage, 15, 2000, 15, false);
 					}
 
 					// save message
