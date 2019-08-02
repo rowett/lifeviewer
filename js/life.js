@@ -12813,14 +12813,14 @@
 	// convert life grid region to pens using tiles but without history
 	Life.prototype.convertToPensTileNoHistory = function() {
 		var h = 0, cr = 0, nextCell = 0,
-		    colourGrid = this.colourGrid,
+		    colourGrid16 = this.colourGrid16,
 		    colourGridRow = null, colourTileRow = null,
 		    colourTileHistoryRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileGrid = this.colourTileGrid,
 		    grid = null, gridRow = null, 
 		    tileGrid = null, tileGridRow = null,
-		    value = 0, th = 0, tw = 0, b = 0,
+		    th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
 		    tiles = 0, nextTiles = 0,
 
@@ -12897,10 +12897,10 @@
 							while (h < topY) {
 								// get the grid and colour grid row
 								gridRow = grid[h];
-								colourGridRow = colourGrid[h];
+								colourGridRow = colourGrid16[h];
 
 								// get correct starting colour index
-								cr = (leftX << 4);
+								cr = (leftX << 3);
 
 								// process each 16bit chunk (16 cells) along the row
 								nextCell = gridRow[leftX];
@@ -12910,68 +12910,21 @@
 								tileAlive |= nextCell;
 
 								// lookup next colour
-								value = (nextCell & 32768) >> 9;
-								colourGridRow[cr] = value;
+								colourGridRow[cr] = ((nextCell & 32768) >> 9) | (nextCell & 16384);
 								cr += 1;
-
-								value = (nextCell & 16384) >> 8;
-								colourGridRow[cr] = value;
+								colourGridRow[cr] = ((nextCell & 8192) >> 7) | ((nextCell & 4096) << 2);
 								cr += 1;
-
-								value = (nextCell & 8192) >> 7;
-								colourGridRow[cr] = value;
+								colourGridRow[cr] = ((nextCell & 2048) >> 5) | ((nextCell & 1024) << 4);
 								cr += 1;
-
-								value = (nextCell & 4096) >> 6;
-								colourGridRow[cr] = value;
+								colourGridRow[cr] = ((nextCell & 512) >> 3) | ((nextCell & 256) << 6);
 								cr += 1;
-
-								value = (nextCell & 2048) >> 5;
-								colourGridRow[cr] = value;
+								colourGridRow[cr] = ((nextCell & 128) >> 1) | ((nextCell & 64) << 8);
 								cr += 1;
-
-								value = (nextCell & 1024) >> 4;
-								colourGridRow[cr] = value;
+								colourGridRow[cr] = ((nextCell & 32) << 1) | ((nextCell & 16) << 10);
 								cr += 1;
-
-								value = (nextCell & 512) >> 3;
-								colourGridRow[cr] = value;
+								colourGridRow[cr] = ((nextCell & 8) << 3) | ((nextCell & 4) << 12);
 								cr += 1;
-
-								value = (nextCell & 256) >> 2;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = (nextCell & 128) >> 1;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = nextCell & 64;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = (nextCell & 32) << 1;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = (nextCell & 16) << 2;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = (nextCell & 8) << 3;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = (nextCell & 4) << 4;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = (nextCell & 2) << 5;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = (nextCell & 1) << 6;
-								colourGridRow[cr] = value;
+								colourGridRow[cr] = ((nextCell & 2) << 5) | ((nextCell & 1) << 14);
 								// cr += 1   - no need for final increment it will be reset next row
 
 								// next row
