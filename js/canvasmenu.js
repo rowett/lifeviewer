@@ -2249,8 +2249,8 @@
 		this.timeIntervals = [];
 
 		// running total for load
-		this.loadLoadTotal = 0;
-		this.loadFrameTotal = 0;
+		this.loadTotal = 0;
+		this.loadCount = 0;
 
 		// register event listeners for canvas click
 		registerEvent(mainCanvas, "mousedown", function(event) {me.canvasMouseDown(me, event);}, false);
@@ -2268,20 +2268,20 @@
 	// reset time intervals
 	MenuManager.prototype.resetTimeIntervals = function() {
 		this.timeIntervals = [];
-		this.loadLoadTotal = 0;
-		this.loadFrameTotal = 0;
+		this.loadTotal = 0;
+		this.loadCount = 0;
 	};
 
 	// add time interval
 	MenuManager.prototype.addTimeInterval = function() {
 		var interval = 0;
 
-		if (this.loadLoadTotal > 0) {
-			interval = this.loadFrameTotal / this.loadLoadTotal;
+		if (this.loadCount > 0) {
+			interval = this.loadTotal / this.loadCount;
 		}
 		this.timeIntervals[this.timeIntervals.length] = interval;
-		this.loadLoadTotal = 0;
-		this.loadFrameTotal = 0;
+		this.loadTotal = 0;
+		this.loadCount = 0;
 	};
 
 	// get time interval
@@ -2752,13 +2752,9 @@
 			total = 60;
 		}
 
-		// update running load count
-		load = (newWork + newMenu) / 16.666666;
-		if (load > 1) {
-			load = 1;
-		}
-		this.loadFrameTotal += (1000 / newFrame);
-		this.loadLoadTotal += load;
+		// update total time
+		this.loadTotal += (1000 / (newWork + newMenu));
+		this.loadCount += 1;
 
 		// draw the timing statistics if enabled
 		if (me.showTiming) {
