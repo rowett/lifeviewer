@@ -29,6 +29,9 @@
 		// save the manager
 		this.manager = manager;
 
+		// whether to save interval time
+		this.intervalTime = false;
+
 		// whether waypoint is POI
 		this.isPOI = false;
 
@@ -122,6 +125,9 @@
 
 	// set a waypoint to the same as another waypoint
 	Waypoint.prototype.set = function(fromWaypoint) {
+		// copy interval time
+		this.intervalTime = fromWaypoint.intervalTime;
+
 		// copy POI information
 		this.isPOI = fromWaypoint.isPOI;
 		this.resetAtPOI = fromWaypoint.resetAtPOI;
@@ -198,8 +204,7 @@
 				scriptErrors[scriptErrors.length] = [Keywords.poiPlayWord, "overwrites " + this.actionName()];
 			}
 			this.modeAtPOI = WaypointConstants.play;
-		}
-		else {
+		} else {
 			scriptErrors[scriptErrors.length] = [Keywords.poiPlayWord, "only valid at POI"];
 		}
 	};
@@ -211,8 +216,7 @@
 				scriptErrors[scriptErrors.length] = [Keywords.poiStopWord, "overwrites " + this.actionName()];
 			}
 			this.modeAtPOI = WaypointConstants.stop;
-		}
-		else {
+		} else {
 			scriptErrors[scriptErrors.length] = [Keywords.poiStopWord, "only valid at POI"];
 		}
 	};
@@ -224,8 +228,7 @@
 				scriptErrors[scriptErrors.length] = [Keywords.poiResetWord, "already defined"];
 			}
 			this.resetAtPOI = true;
-		}
-		else {
+		} else {
 			scriptErrors[scriptErrors.length] = [Keywords.poiResetWord, "only valid at POI"];
 		}
 	};
@@ -237,8 +240,7 @@
 				scriptErrors[scriptErrors.length] = [Keywords.poiTransWord + " " + speed, "overwrites " + this.poiTransitionSpeed];
 			}
 			this.poiTransitionSpeed = speed;
-		}
-		else {
+		} else {
 			scriptErrors[scriptErrors.length] = [Keywords.poiTransWord, "only valid at POI"];
 		}
 	};
@@ -281,22 +283,19 @@
 		// check whether to use linear or bezier for x, y and zoom
 		if (toWaypoint.xLinear || toWaypoint.fitZoom) {
 			percentXComplete = percentLinearComplete;
-		}
-		else {
+		} else {
 			percentXComplete = percentBezierComplete;
 		}
 
 		if (toWaypoint.yLinear || toWaypoint.fitZoom) {
 			percentYComplete = percentLinearComplete;
-		}
-		else {
+		} else {
 			percentYComplete = percentBezierComplete;
 		}
 
 		if (toWaypoint.zLinear || toWaypoint.fitZoom) {
 			percentZComplete = percentLinearComplete;
-		}
-		else {
+		} else {
 			percentZComplete = percentBezierComplete;
 		}
 
@@ -310,8 +309,7 @@
 		// check if angle wrap around needed (e.g. 350 degrees to 10 degrees)
 		if (endAngle - startAngle > 180) {
 			startAngle += 360;
-		}
-		else {
+		} else {
 			if (endAngle - startAngle < -180) {
 				endAngle += 360;
 			}
@@ -346,6 +344,9 @@
 
 		// set fit zoom
 		this.fitZoom = toWaypoint.fitZoom;
+
+		// set interval time
+		this.intervalTime = toWaypoint.intervalTime;
 	};
 
 	// Polygon constructor
@@ -1643,8 +1644,7 @@
 		if (generation > waypoint.targetGen) {
 			// return the time to waypoint plus time at final gps to the generation
 			result = waypoint.targetTime + (generation - waypoint.targetGen) * 1000 / (waypoint.gps * waypoint.step);
-		}
-		else {
+		} else {
 			// check if there is a previous waypoint
 			if (index > 0) {
 				// get the previous waypoint
@@ -1652,8 +1652,7 @@
 
 				// return the time to the previous waypoint plus time at current gps to the generation
 				result = previous.targetTime + (generation - previous.targetGen) * 1000 / (waypoint.gps * waypoint.step);
-			}
-			else {
+			} else {
 				// return the time at current gps to the generation
 				result = generation * 1000 / (waypoint.gps * waypoint.step);
 			}
@@ -1733,8 +1732,7 @@
 		if (waypoint.isPOI) {
 			// add the waypoint to the end of the POI list
 			this.poiList[this.poiList.length] = waypoint;
-		}
-		else {
+		} else {
 			// add the waypoint to the end of the waypoint list
 			this.waypointList[this.waypointList.length] = waypoint;
 		}
@@ -1764,8 +1762,7 @@
 		if (i === (i | 0)) {
 			// return integer version
 			result = String(i | 0);
-		}
-		else {
+		} else {
 			// return fixed point version
 			result = String(i.toFixed(places));
 		}
@@ -1824,8 +1821,7 @@
 			// add mode if defined
 			if (poi.modeAtPOI === WaypointConstants.play) {
 				text += " POIPLAY";
-			}
-			else {
+			} else {
 				if (poi.modeAtPOI === WaypointConstants.stop)  {
 					text += " POISTOP";
 				}
@@ -1895,8 +1891,7 @@
 			// add mode if defined
 			if (poi.modeAtPOI === WaypointConstants.play) {
 				text += " POIPLAY";
-			}
-			else {
+			} else {
 				if (poi.modeAtPOI === WaypointConstants.stop)  {
 					text += " POISTOP";
 				}
@@ -2009,16 +2004,14 @@
 				// check if generation target or pause
 				if (requested.targetGen === previous.targetGen) {
 					text = "P " + this.shortNumber(((requested.targetTime - previous.targetTime) | 0) / 1000, 1);
-				}
-				else {
+				} else {
 					text = "T " + requested.targetGen;
 				}
 
 				// output changes
 				if (requested.fitZoom) {
 					text += " F";
-				}
-				else {
+				} else {
 					if (requested.x !== previous.x) {
 						text += " X " + -requested.x;
 					}
@@ -2051,8 +2044,7 @@
 				if (requested.textMessage !== "") {
 					text += " " + stringDelimiter + requested.textMessage + stringDelimiter;
 				}
-			}
-			else {
+			} else {
 				// create the text from the single waypoint
 				text = "T " + requested.targetGen + " X " + -requested.x + " Y " + -requested.y + " Z " + this.shortNumber(requested.zoom, 1) + " A " + requested.angle + " L " + requested.layers + " D " + this.shortNumber(requested.depth, 1) + " C "  + requested.theme + " G " + requested.gps + " S " + requested.step;
 			}
@@ -2063,10 +2055,11 @@
 	};
 
 	// update the current position and return whether waypoints ended
-	WaypointManager.prototype.update = function(elapsedTime, generation) {
+	WaypointManager.prototype.update = function(view, elapsedTime, generation) {
 		var length = this.waypointList.length,
 		    found = false,
-		    i = this.tempIndex,
+			i = this.tempIndex,
+			origI = i,
 		    current = null,
 
 		    // set waypoints not ended
@@ -2079,16 +2072,14 @@
 			if (elapsedTime >= this.tempEnd.targetTime) {
 				this.usingTemp = false;
 			}
-		}
-		else {
+		} else {
 			// find the last waypoint below the elapsed time
 			while (i < length && !found) {
 				current = this.waypointList[i];
 				if (current.targetTime >= elapsedTime || !current.processed) {
 					// result is previous waypoint
 					found = true;
-				}
-				else {
+				} else {
 					// check next waypoint
 					i += 1;
 				}
@@ -2105,8 +2096,7 @@
 					result = true;
 				}
 				this.lastReached = true;
-			}
-			else {
+			} else {
 				// mark waypoint as processed unless it is the last one
 				this.waypointList[i].processed = true;
 
@@ -2122,8 +2112,7 @@
 					
 					// interpolate between waypoints
 					this.current.interpolate(this.waypointList[i - 1], this.waypointList[i], elapsedTime);
-				}
-				else {
+				} else {
 					// at first waypoint
 					i = 0;
 
@@ -2134,6 +2123,15 @@
 
 			// save current index
 			this.tempIndex = i;
+		}
+
+		// check if the waypoint changed
+		if (this.tempIndex !== origI) {
+			// check if saving interval time
+			if (this.current.intervalTime) {
+				// add the inteval time to the list
+				view.menuManager.addTimeInterval();
+			}
 		}
 
 		// return flag indicating whether waypoints ended
@@ -2152,8 +2150,7 @@
 			if (waypointList[i].targetGen >= generation) {
 				// found the waypoint
 				found = true;
-			}
-			else {
+			} else {
 				// check next waypoint
 				i += 1;
 			}
@@ -2180,8 +2177,7 @@
 		// check there is an initial waypoint
 		if (this.numWaypoints() === 0) {
 			scriptErrors[scriptErrors.length] = [what + " " + Keywords.initialWord, "no initial waypoint defined"];
-		}
-		else {
+		} else {
 			// check which value to copy
 			switch (what) {
 			case Keywords.xWord:
@@ -2388,8 +2384,7 @@
 			// target generation
 			if (!current.targetGenDefined) {
 				current.targetGen = previous.targetGen;
-			}
-			else {
+			} else {
 				// check it is later than the previous
 				if (current.targetGen <= previous.targetGen) {
 					scriptErrors[scriptErrors.length] = [Keywords.tWord + " " + current.targetGen, "target generation must be later than previous (" + previous.targetGen + ")"];
@@ -2400,8 +2395,7 @@
 			if (current.targetTimeDefined) {
 				// for time mode just add the previous
 				current.targetTime = (current.targetTime * 1000) + previous.targetTime;
-			}
-			else {
+			} else {
 				// for generation mode compute the time for this one and add previous
 				current.targetTime = previous.targetTime + (current.targetGen - previous.targetGen) * 1000 / (current.gps * current.step);
 			}

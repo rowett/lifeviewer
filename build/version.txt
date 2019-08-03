@@ -1,3 +1,8 @@
+Build 371
+- performance improvement for THEMEs without history
+- new script command [[ TIME ]] to trigger load timing at a waypoint
+- waypoint messages can now use #0 to #9 to display timing results
+
 Build 370
 - performance improvement when ZOOM < -2
 - not all menu items were being drawn locked when menu locked

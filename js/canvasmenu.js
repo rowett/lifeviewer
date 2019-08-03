@@ -2245,6 +2245,13 @@
 		this.offsetLeft = 0;
 		this.offsetTop = 0;
 
+		// time interval list
+		this.timeIntervals = [];
+
+		// running total for load
+		this.loadLoadTotal = 0;
+		this.loadFrameTotal = 0;
+
 		// register event listeners for canvas click
 		registerEvent(mainCanvas, "mousedown", function(event) {me.canvasMouseDown(me, event);}, false);
 		registerEvent(mainCanvas, "mousemove", function(event) {me.canvasMouseMove(me, event);}, false);
@@ -2257,6 +2264,36 @@
 		registerEvent(mainCanvas, "touchmove", function(event) {me.touchToMouse(me, event);}, false);
 		registerEvent(mainCanvas, "touchend", function(event) {me.touchToMouse(me, event);}, false);
 	}
+
+	// reset time intervals
+	MenuManager.prototype.resetTimeIntervals = function() {
+		this.timeIntervals = [];
+		this.loadLoadTotal = 0;
+		this.loadFrameTotal = 0;
+	};
+
+	// add time interval
+	MenuManager.prototype.addTimeInterval = function() {
+		var interval = 0;
+
+		if (this.loadLoadTotal > 0) {
+			interval = this.loadFrameTotal / this.loadLoadTotal;
+		}
+		this.timeIntervals[this.timeIntervals.length] = interval;
+		this.loadLoadTotal = 0;
+		this.loadFrameTotal = 0;
+	};
+
+	// get time interval
+	MenuManager.prototype.getTimeInterval = function(which) {
+		var result = -1;
+
+		if (which >= 0 && which < this.timeIntervals.length) {
+			result = this.timeIntervals[which];
+		}
+
+		return result;
+	};
 
 	// set menu border width
 	MenuManager.prototype.setBorderWidth = function(border) {
@@ -2715,6 +2752,14 @@
 			total = 60;
 		}
 
+		// update running load count
+		load = (newWork + newMenu) / 16.666666;
+		if (load > 1) {
+			load = 1;
+		}
+		this.loadFrameTotal += (1000 / newFrame);
+		this.loadLoadTotal += load;
+
 		// draw the timing statistics if enabled
 		if (me.showTiming) {
 			// set the menu font
@@ -2731,8 +2776,8 @@
 				oc.fillRect(x, y, 88, 20);
 			}
 
-			// compute load
-			load = (work + menu) / 16.6666;
+			// compute weighted load
+			load = (work + menu) / 16.666666;
 			if (load > 1) {
 				load = 1;
 			}

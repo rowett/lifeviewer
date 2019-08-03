@@ -17,6 +17,9 @@
 		/** @const {string} */ scriptEndWord : "]]",
 
 		// suppress
+		/** @const {string} */ timeIntervalWord : "TIME",
+
+		// suppress
 		/** @const {string} */ suppressWord : "SUPPRESS",
 
 		// POI t

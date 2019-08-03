@@ -232,7 +232,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 370,
+		/** @const {number} */ versionBuild : 371,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4078,7 +4078,7 @@
 			}
 
 			// update based on elapsed time
-			waypointsEnded = me.waypointManager.update(me.elapsedTime + timeSinceLastUpdate, me.engine.counter);
+			waypointsEnded = me.waypointManager.update(me, me.elapsedTime + timeSinceLastUpdate, me.engine.counter);
 
 			// check if waypoints ended
 			if (waypointsEnded) {
@@ -4174,7 +4174,8 @@
 						me.menuManager.notification.clear(false, false);
 					} else {
 						// draw new message
-						me.menuManager.notification.notify(currentWaypoint.textMessage, 15, 2000, 15, false);
+						// @ts-ignore
+						me.menuManager.notification.notify(ScriptParser.substituteVariables(this, currentWaypoint.textMessage), 15, 7200, 15, false);
 					}
 
 					// save message
@@ -6152,6 +6153,11 @@
 					// play
 					me.generationOn = true;
 					me.afterEdit("");
+
+					// measure start time
+					if (me.engine.counter === 0) {
+						me.menuManager.resetTimeIntervals();
+					}
 
 					// set flag whether pattern was empty and playback is on
 					if (me.engine.population === 0) {
@@ -10745,6 +10751,9 @@
 		} else {
 			this.isEdge = false;
 		}
+
+		// clear time intervals
+		this.menuManager.resetTimeIntervals();
 
 		// disable copy sync
 		this.copySyncExternal = false;

@@ -672,6 +672,20 @@
 		}
 	};
 
+	// output a time interval as a string
+	ScriptParser.timeInterval = function(view, value) {
+		var result = Keywords.variablePrefixSymbol + String(value),
+			interval = view.menuManager.getTimeInterval(value);
+
+		// check if there was an interval
+		if (interval !== -1) {
+			// format result
+			result = interval.toFixed(0);
+		}
+
+		return result;
+	};
+
 	// substitute variables in string
 	ScriptParser.substituteVariables = function(view, string) {
 		var result = "",
@@ -729,6 +743,56 @@
 						case "T":
 							// add the program name
 							result += ViewConstants.externalViewerTitle;
+							break;
+
+						case "0":
+							// add the interval time
+							result += this.timeInterval(view, 0);
+							break;
+
+						case "1":
+							// add the interval time
+							result += this.timeInterval(view, 1);
+							break;
+
+						case "2":
+							// add the interval time
+							result += this.timeInterval(view, 2);
+							break;
+
+						case "3":
+							// add the interval time
+							result += this.timeInterval(view, 3);
+							break;
+
+						case "4":
+							// add the interval time
+							result += this.timeInterval(view, 4);
+							break;
+
+						case "5":
+							// add the interval time
+							result += this.timeInterval(view, 5);
+							break;
+
+						case "6":
+							// add the interval time
+							result += this.timeInterval(view, 6);
+							break;
+
+						case "7":
+							// add the interval time
+							result += this.timeInterval(view, 7);
+							break;
+
+						case "8":
+							// add the interval time
+							result += this.timeInterval(view, 8);
+							break;
+
+						case "9":
+							// add the interval time
+							result += this.timeInterval(view, 9);
 							break;
 
 						case Keywords.variablePrefixSymbol:
@@ -2332,6 +2396,14 @@
 								}
 							}
 
+							break;
+
+						// mark time since last interval
+						case Keywords.timeIntervalWord:
+							// add to the waypoint
+							currentWaypoint.intervalTime = true;
+
+							itemValid = true;
 							break;
 
 						// set rle paste mode

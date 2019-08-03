@@ -24,7 +24,7 @@
 
 		// tokinze newlines if requested
 		if (tokenizeNewline) {
-			source = source.replace(/\=/gm, " = ");
+			source = source.replace(/[=]/gm, " = ");
 			source = source.replace(/\n/gm, this.newlineToken);
 		}
 
