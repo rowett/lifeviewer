@@ -1691,7 +1691,7 @@
 		temp.targetTime = elapsedTime - 1000;
 
 		// get the current position
-		this.update(elapsedTime, generation);
+		this.update(null, elapsedTime, generation);
 
 		// set the temporary end waypoint as the current position
 		this.tempEnd.set(this.current);
@@ -2128,7 +2128,7 @@
 		// check if the waypoint changed
 		if (this.tempIndex !== origI) {
 			// check if saving interval time
-			if (this.current.intervalTime) {
+			if (this.current.intervalTime && view) {
 				// add the inteval time to the list
 				view.menuManager.addTimeInterval();
 			}
