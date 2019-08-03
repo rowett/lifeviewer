@@ -1,7 +1,7 @@
 Build 371
 - performance improvement for THEMEs without history
 - new script command [[ TIME ]] to trigger timing at a waypoint
-- waypoint messages can now use #0 to #9 to display timing results as average frames per second
+- waypoint messages can now use string substitutions #0 to #9 to display timing results as average frames per second
 
 Build 370
 - performance improvement when ZOOM < -2
