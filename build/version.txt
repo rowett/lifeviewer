@@ -1,3 +1,7 @@
+Build 372
+- performance improvement for ZOOM < -2
+- performance improvement for THEMEs without history and ZOOM < -2
+
 Build 371
 - performance improvement for THEMEs without history
 - new script command [[ TIME ]] to trigger timing at a waypoint

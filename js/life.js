@@ -567,15 +567,13 @@
 		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
 
 		// small colour grid used for zooms < 1
-		this.smallColourGrid2 = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
-
-		// views of small colour grid for zooms < 1
-		this.smallColourGrid4 = Array.matrixViewWithOffset(this.smallColourGrid2, 1, "Life.smallColourGrid4");
-		this.smallColourGrid8 = Array.matrixViewWithOffset(this.smallColourGrid2, 3, "Life.smallColourGrid8");
-		this.smallColourGrid16 = Array.matrixViewWithOffset(this.smallColourGrid2, 7, "Life.smallColourGrid16");
+		this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
 
 		// 16bit view of colour grid
 		this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
+
+		// 32bit view of colour grid
+		this.colourGrid32 = Array.matrixView(Uint32, this.colourGrid, "Life.colourGrid32");
 
 		// overlay grid for LifeHistory
 		this.overlayGrid = null;
@@ -583,11 +581,6 @@
 		// overlay colour grid used for zooms < 1
 		this.smallOverlayGrid = null;
 		
-		// views of small overlay colour grid used for zooms < 1
-		this.smallOverlayGrid4 = null;
-		this.smallOverlayGrid8 = null;
-		this.smallOverlayGrid16 = null;
-
 		// 16bit view of overlay grid
 		this.overlayGrid16 = null;
 
@@ -2782,7 +2775,7 @@
 		for (i = 0; i < length; i += 1) {
 			grid[i].set(blankRow);
 			this.colourGrid[i].set(blankColourRow);
-			this.smallColourGrid2[i].set(blankColourRow);
+			this.smallColourGrid[i].set(blankColourRow);
 		}
 
 		// clear the next grid
@@ -2933,19 +2926,14 @@
 
 		// colour grid
 		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
-		this.smallColourGrid2 = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
-		this.smallColourGrid4 = Array.matrixViewWithOffset(this.smallColourGrid2, 1, "Life.smallColourGrid4");
-		this.smallColourGrid8 = Array.matrixViewWithOffset(this.smallColourGrid2, 3, "Life.smallColourGrid8");
-		this.smallColourGrid16 = Array.matrixViewWithOffset(this.smallColourGrid2, 7, "Life.smallColourGrid16");
+		this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
 		this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
+		this.colourGrid32 = Array.matrixView(Uint32, this.colourGrid, "Life.colourGrid32");
 
 		// check if overlay grid was allocated
 		if (currentOverlayGrid) {
 			this.overlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid");
 			this.smallOverlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid");
-			this.smallOverlayGrid4 = Array.matrixViewWithOffset(this.smallOverlayGrid, 1, "Life.smallColourGrid4");
-			this.smallOverlayGrid8 = Array.matrixViewWithOffset(this.smallOverlayGrid, 3, "Life.smallColourGrid8");
-			this.smallOverlayGrid16 = Array.matrixViewWithOffset(this.smallOverlayGrid, 7, "Life.smallColourGrid16");
 			this.overlayGrid16 = Array.matrixView(Uint16, this.overlayGrid, "Life.overlayGrid16");
 		}
 
@@ -3013,7 +3001,7 @@
 		    currentGrid = this.grid,
 		    currentNextGrid = this.nextGrid,
 		    currentColourGrid = this.colourGrid,
-		    currentSmallColourGrid = this.smallColourGrid2,
+		    currentSmallColourGrid = this.smallColourGrid,
 		    currentOverlayGrid = this.overlayGrid,
 		    currentSmallOverlayGrid = this.smallOverlayGrid,
 		    currentMaskGrid = this.state6Mask,
@@ -3096,19 +3084,14 @@
 
 			// colour grid
 			this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
-			this.smallColourGrid2 = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
-			this.smallColourGrid4 = Array.matrixViewWithOffset(this.smallColourGrid2, 1, "Life.smallColourGrid4");
-			this.smallColourGrid8 = Array.matrixViewWithOffset(this.smallColourGrid2, 3, "Life.smallColourGrid8");
-			this.smallColourGrid16 = Array.matrixViewWithOffset(this.smallColourGrid2, 7, "Life.smallColourGrid16");
+			this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
 			this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
+			this.colourGrid32 = Array.matrixView(Uint32, this.colourGrid, "Life.colourGrid32");
 
 			// check if overlay grid was allocated
 			if (currentOverlayGrid) {
 				this.overlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid");
 				this.smallOverlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid");
-				this.smallOverlayGrid4 = Array.matrixViewWithOffset(this.smallOverlayGrid, 1, "Life.smallColourGrid4");
-				this.smallOverlayGrid8 = Array.matrixViewWithOffset(this.smallOverlayGrid, 3, "Life.smallColourGrid8");
-				this.smallOverlayGrid16 = Array.matrixViewWithOffset(this.smallOverlayGrid, 7, "Life.smallColourGrid16");
 				this.overlayGrid16 = Array.matrixView(Uint16, this.overlayGrid, "Life.overlayGrid16");
 			}
 
@@ -3121,7 +3104,7 @@
 				this.grid[y + yOffset].set(currentGrid[y], xOffset >> 3);
 				this.nextGrid[y + yOffset].set(currentNextGrid[y], xOffset >> 3);
 				this.colourGrid[y + yOffset].set(currentColourGrid[y], xOffset);
-				this.smallColourGrid2[y + yOffset].set(currentSmallColourGrid[y], xOffset);
+				this.smallColourGrid[y + yOffset].set(currentSmallColourGrid[y], xOffset);
 
 				// check if overlay grid was allocated
 				if (currentOverlayGrid && currentSmallOverlayGrid) {
@@ -4362,7 +4345,7 @@
 			grid = this.grid,
 			nextGrid = this.nextGrid,
 			colourGrid = this.colourGrid,
-			smallColourGrid2 = this.smallColourGrid2,
+			smallColourGrid = this.smallColourGrid,
 			overlayGrid = this.overlayGrid,
 			smallOverlayGrid = this.smallOverlayGrid,
 			tileGrid = this.tileGrid,
@@ -4384,7 +4367,7 @@
 			nextGrid[h].set(blankRow);
 			if (!bitOnly) {
 				colourGrid[h].set(blankColourRow);
-				smallColourGrid2[h].set(blankColourRow);
+				smallColourGrid[h].set(blankColourRow);
 				if (overlayGrid) {
 					overlayGrid[h].set(blankColourRow);
 					smallOverlayGrid[h].set(blankColourRow);
@@ -11605,11 +11588,11 @@
 	};
 
 	// create 2x2 colour grid with no history for 0.5 <= zoom < 1
-	Life.prototype.create2x2ColourGridNoHistory16 = function(colourGrid, smallColourGrid2) {
+	Life.prototype.create2x2ColourGridNoHistory16 = function(colourGrid, smallColourGrid) {
 		var cr = 0, h = 0,
-		    colourGridRow = null,
-		    colourGridRow1 = null,
-		    smallColourGridRow = null,
+		    sourceRow = null,
+		    sourceRow1 = null,
+		    destRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileHistoryRow = null,
 		    value = 0, th = 0, tw = 0, b = 0,
@@ -11653,62 +11636,63 @@
 						if ((tiles & (1 << b)) !== 0) {
 							// update the small colour grid
 							for (h = bottomY; h < topY; h += 2) {
-								// get the next two rows
-								colourGridRow = colourGrid[h];
-								colourGridRow1 = colourGrid[h + 1];
+								// get destination row
+								destRow = smallColourGrid[h];
 
-								smallColourGridRow = smallColourGrid2[h];
+								// get the next two rows
+								sourceRow = colourGrid[h];
+								sourceRow1 = colourGrid[h + 1];
 								cr = (leftX << 3);
 									
-								// get the maximum of 4 pixels
-								// first two pixels in first row
-								value = colourGridRow[cr];
+								// find any set cells in each 2x2 block
+								// first two cells in first row
+								value = sourceRow[cr];
 
-								// next two pixels in next row
-								value |= colourGridRow1[cr];
-								smallColourGridRow[cr + cr] = value | (value >> 8);
+								// next two cells in next row
+								value |= sourceRow1[cr];
+								destRow[cr + cr] = value | (value >> 8);
 								cr += 1;
 
 								// loop unroll
-								value = colourGridRow[cr];
-								value |= colourGridRow1[cr];
-								smallColourGridRow[cr + cr] = value | (value >> 8);
+								value = sourceRow[cr];
+								value |= sourceRow1[cr];
+								destRow[cr + cr] = value | (value >> 8);
 								cr += 1;
 
 								// loop unroll
-								value = colourGridRow[cr];
-								value |= colourGridRow1[cr];
-								smallColourGridRow[cr + cr] = value | (value >> 8);
+								value = sourceRow[cr];
+								value |= sourceRow1[cr];
+								destRow[cr + cr] = value | (value >> 8);
 								cr += 1;
 
 								// loop unroll
-								value = colourGridRow[cr];
-								value |= colourGridRow1[cr];
-								smallColourGridRow[cr + cr] = value | (value >> 8);
+								value = sourceRow[cr];
+								value |= sourceRow1[cr];
+								destRow[cr + cr] = value | (value >> 8);
 								cr += 1;
 
 								// loop unroll
-								value = colourGridRow[cr];
-								value |= colourGridRow1[cr];
-								smallColourGridRow[cr + cr] = value | (value >> 8);
+								value = sourceRow[cr];
+								value |= sourceRow1[cr];
+								destRow[cr + cr] = value | (value >> 8);
 								cr += 1;
 
 								// loop unroll
-								value = colourGridRow[cr];
-								value |= colourGridRow1[cr];
-								smallColourGridRow[cr + cr] = value | (value >> 8);
+								value = sourceRow[cr];
+								value |= sourceRow1[cr];
+								destRow[cr + cr] = value | (value >> 8);
 								cr += 1;
 
 								// loop unroll
-								value = colourGridRow[cr];
-								value |= colourGridRow1[cr];
-								smallColourGridRow[cr + cr] = value | (value >> 8);
+								value = sourceRow[cr];
+								value |= sourceRow1[cr];
+								destRow[cr + cr] = value | (value >> 8);
 								cr += 1;
 
 								// loop unroll
-								value = colourGridRow[cr];
-								value |= colourGridRow1[cr];
-								smallColourGridRow[cr + cr] = value | (value >> 8);
+								value = sourceRow[cr];
+								value |= sourceRow1[cr];
+								destRow[cr + cr] = value | (value >> 8);
 							}
 						}
 
@@ -11728,11 +11712,11 @@
 	};
 
 	// create 2x2 colour grid for 0.5 <= zoom < 1
-	Life.prototype.create2x2ColourGrid16 = function(colourGrid, smallColourGrid2) {
+	Life.prototype.create2x2ColourGrid16 = function(colourGrid, smallColourGrid) {
 		var cr = 0, h = 0,
-		    colourGridRow = null,
-		    colourGridRow1 = null,
-		    smallColourGridRow = null,
+		    sourceRow = null,
+		    sourceRow1 = null,
+		    destRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileHistoryRow = null,
 		    value = 0, th = 0, tw = 0, b = 0,
@@ -11777,110 +11761,111 @@
 						if ((tiles & (1 << b)) !== 0) {
 							// update the small colour grid
 							for (h = bottomY; h < topY; h += 2) {
-								// get the next two rows
-								colourGridRow = colourGrid[h];
-								colourGridRow1 = colourGrid[h + 1];
+								// get destination row
+								destRow = smallColourGrid[h];
 
-								smallColourGridRow = smallColourGrid2[h];
+								// get the next two rows
+								sourceRow = colourGrid[h];
+								sourceRow1 = colourGrid[h + 1];
 								cr = (leftX << 3);
 									
 								// get the maximum of 4 pixels
 								// first two pixels in first row
-								value = colourGridRow[cr];
+								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
 
 								// next two pixels in next row
-								value = colourGridRow1[cr];
+								value = sourceRow1[cr];
 								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								smallColourGridRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue;
 								cr += 1;
 
 								// loop unroll
-								value = colourGridRow[cr];
+								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = colourGridRow1[cr];
+								value = sourceRow1[cr];
 								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								smallColourGridRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue;
 								cr += 1;
 
 								// loop unroll
-								value = colourGridRow[cr];
+								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = colourGridRow1[cr];
+								value = sourceRow1[cr];
 								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								smallColourGridRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue;
 								cr += 1;
 
 								// loop unroll
-								value = colourGridRow[cr];
+								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = colourGridRow1[cr];
+								value = sourceRow1[cr];
 								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								smallColourGridRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue;
 								cr += 1;
 
 								// loop unroll
-								value = colourGridRow[cr];
+								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = colourGridRow1[cr];
+								value = sourceRow1[cr];
 								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								smallColourGridRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue;
 								cr += 1;
 
 								// loop unroll
-								value = colourGridRow[cr];
+								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = colourGridRow1[cr];
+								value = sourceRow1[cr];
 								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								smallColourGridRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue;
 								cr += 1;
 
 								// loop unroll
-								value = colourGridRow[cr];
+								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = colourGridRow1[cr];
+								value = sourceRow1[cr];
 								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								smallColourGridRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue;
 								cr += 1;
 
 								// loop unroll
-								value = colourGridRow[cr];
+								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = colourGridRow1[cr];
+								value = sourceRow1[cr];
 								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
 								value >>= 8;
 								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								smallColourGridRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue;
 							}
 						}
 
@@ -11900,17 +11885,21 @@
 	};
 
 	// create 4x4 colour grid with no history for 0.25 <= zoom < 0.5
-	Life.prototype.create4x4ColourGridNoHistory = function(smallColourGrid2, smallColourGrid4) {
+	Life.prototype.create4x4ColourGridNoHistory32 = function(colourGrid, smallColourGrid) {
 		var h = 0,
-		    cr = 0,
-		    smallColourGridRow = null,
-		    smallColourGridRow1 = null,
+			cr = 0,
+			dr = 0,
+		    sourceRow = null,
+		    sourceRow1 = null,
+		    sourceRow2 = null,
+		    sourceRow3 = null,
 		    destRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileHistoryRow = null,
 		    th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
-		    tiles = 0,
+			tiles = 0,
+			value = 0,
 
 		    // set tile height
 		    ySize = this.tileY,
@@ -11950,27 +11939,37 @@
 							// update the small colour grid
 							for (h = bottomY; h < topY; h += 4) {
 								// get destination row
-								destRow = smallColourGrid4[h];
+								destRow = smallColourGrid[h];
 
-								// get the next two rows
-								smallColourGridRow = smallColourGrid2[h];
-								smallColourGridRow1 = smallColourGrid2[h + 2];
-								cr = (leftX << 4);
+								// get the next four rows
+								sourceRow = colourGrid[h];
+								sourceRow1 = colourGrid[h + 1];
+								sourceRow2 = colourGrid[h + 2];
+								sourceRow3 = colourGrid[h + 3];
+								cr = (leftX << 2);
+								dr = (leftX << 4);
 									
-								// get the maximum of 4 pixels
-								destRow[cr] = smallColourGridRow[cr] | smallColourGridRow[cr + 2] | smallColourGridRow1[cr] | smallColourGridRow1[cr + 2];
-								cr += 4;
+								// find any set cells in each 4x4 block
+								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
+								destRow[dr] = (value > 0) << 6;
+								cr += 1;
+								dr += 4;
 
 								// loop unroll
-								destRow[cr] = smallColourGridRow[cr] | smallColourGridRow[cr + 2] | smallColourGridRow1[cr] | smallColourGridRow1[cr + 2];
-								cr += 4;
+								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
+								destRow[dr] = (value > 0) << 6;
+								cr += 1;
+								dr += 4;
 
 								// loop unroll
-								destRow[cr] = smallColourGridRow[cr] | smallColourGridRow[cr + 2] | smallColourGridRow1[cr] | smallColourGridRow1[cr + 2];
-								cr += 4;
+								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
+								destRow[dr] = (value > 0) << 6;
+								cr += 1;
+								dr += 4;
 
 								// loop unroll
-								destRow[cr] = smallColourGridRow[cr] | smallColourGridRow[cr + 2] | smallColourGridRow1[cr] | smallColourGridRow1[cr + 2];
+								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
+								destRow[dr] = (value > 0) << 6;
 							}
 						}
 
@@ -11990,11 +11989,14 @@
 	};
 
 	// create 4x4 colour grid for 0.25 <= zoom < 0.5
-	Life.prototype.create4x4ColourGrid = function(smallColourGrid2, smallColourGrid4) {
+	Life.prototype.create4x4ColourGrid = function(colourGrid, smallColourGrid) {
 		var h = 0,
-		    cr = 0,
-		    smallColourGridRow = null,
-		    smallColourGridRow1 = null,
+			cr = 0,
+			i = 0,
+		    sourceRow = null,
+		    sourceRow1 = null,
+		    sourceRow2 = null,
+		    sourceRow3 = null,
 		    destRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileHistoryRow = null,
@@ -12041,55 +12043,51 @@
 							// update the small colour grid
 							for (h = bottomY; h < topY; h += 4) {
 								// get destination row
-								destRow = smallColourGrid4[h];
+								destRow = smallColourGrid[h];
 
-								// get the next two rows
-								smallColourGridRow = smallColourGrid2[h];
-								smallColourGridRow1 = smallColourGrid2[h + 2];
+								// get the next four rows
+								sourceRow = colourGrid[h];
+								sourceRow1 = colourGrid[h + 1];
+								sourceRow2 = colourGrid[h + 2];
+								sourceRow3 = colourGrid[h + 3];
 								cr = (leftX << 4);
 									
-								// get the maximum of 4 pixels
-								smallValue = smallColourGridRow[cr];
-								value = smallColourGridRow[cr + 2];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = smallColourGridRow1[cr];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = smallColourGridRow1[cr + 2];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								destRow[cr] = smallValue;
-								cr += 4;
-
-								// loop unroll
-								smallValue = smallColourGridRow[cr];
-								value = smallColourGridRow[cr + 2];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = smallColourGridRow1[cr];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = smallColourGridRow1[cr + 2];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								destRow[cr] = smallValue;
-								cr += 4;
-
-								// loop unroll
-								smallValue = smallColourGridRow[cr];
-								value = smallColourGridRow[cr + 2];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = smallColourGridRow1[cr];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = smallColourGridRow1[cr + 2];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								destRow[cr] = smallValue;
-								cr += 4;
-
-								// loop unroll
-								smallValue = smallColourGridRow[cr];
-								value = smallColourGridRow[cr + 2];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = smallColourGridRow1[cr];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = smallColourGridRow1[cr + 2];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								destRow[cr] = smallValue;
+								// get the maximum of each 4x4 block
+								for (i = 0; i < 4; i += 1) {
+									smallValue = sourceRow[cr];
+									value = sourceRow[cr + 1];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow[cr + 2];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow[cr + 3];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow1[cr];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow1[cr + 1];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow1[cr + 2];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow1[cr + 3];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow2[cr];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow2[cr + 1];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow2[cr + 2];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow2[cr + 3];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow3[cr];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow3[cr + 1];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow3[cr + 2];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow3[cr + 3];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									destRow[cr] = smallValue;
+									cr += 4;
+								}
 							}
 						}
 
@@ -12109,17 +12107,25 @@
 	};
 
 	// create 8x8 colour grid with no history for 0.125 <= zoom < 0.25
-	Life.prototype.create8x8ColourGridNoHistory = function(smallColourGrid4, smallColourGrid8) {
+	Life.prototype.create8x8ColourGridNoHistory32 = function(colourGrid, smallColourGrid) {
 		var h = 0,
-		    cr = 0,
-		    smallColourGridRow = null,
-		    smallColourGridRow1 = null,
+			cr = 0,
+			dr = 0,
+		    sourceRow = null,
+		    sourceRow1 = null,
+		    sourceRow2 = null,
+		    sourceRow3 = null,
+		    sourceRow4 = null,
+		    sourceRow5 = null,
+		    sourceRow6 = null,
+		    sourceRow7 = null,
 		    destRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileHistoryRow = null,
 		    th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
-		    tiles = 0,
+			tiles = 0,
+			value = 0,
 
 		    // set tile height
 		    ySize = this.tileY,
@@ -12159,19 +12165,43 @@
 							// update the small colour grid
 							for (h = bottomY; h < topY; h += 8) {
 								// get destination row
-								destRow = smallColourGrid8[h];
+								destRow = smallColourGrid[h];
 
-								// get the next two rows
-								smallColourGridRow = smallColourGrid4[h];
-								smallColourGridRow1 = smallColourGrid4[h + 4];
-								cr = (leftX << 4);
+								// get the next 8 rows
+								sourceRow = colourGrid[h];
+								sourceRow1 = colourGrid[h + 1];
+								sourceRow2 = colourGrid[h + 2];
+								sourceRow3 = colourGrid[h + 3];
+								sourceRow4 = colourGrid[h + 4];
+								sourceRow5 = colourGrid[h + 5];
+								sourceRow6 = colourGrid[h + 6];
+								sourceRow7 = colourGrid[h + 7];
+								cr = (leftX << 2);
+								dr = (leftX << 4);
 									
-								// get the maximum of 4 pixels
-								destRow[cr] = smallColourGridRow[cr] | smallColourGridRow[cr + 4] | smallColourGridRow1[cr] | smallColourGridRow1[cr + 4];
-								cr += 8;
+								// find any set cells in each 8x8 block
+								value = sourceRow[cr] | sourceRow[cr + 1];
+								value |= sourceRow1[cr] | sourceRow1[cr + 1];
+								value |= sourceRow2[cr] | sourceRow2[cr + 1];
+								value |= sourceRow3[cr] | sourceRow3[cr + 1];
+								value |= sourceRow4[cr] | sourceRow4[cr + 1];
+								value |= sourceRow5[cr] | sourceRow5[cr + 1];
+								value |= sourceRow6[cr] | sourceRow6[cr + 1];
+								value |= sourceRow7[cr] | sourceRow7[cr + 1];
+								destRow[dr] = (value > 0) << 6;
+								cr += 2;
+								dr += 8;
 
 								// loop unroll
-								destRow[cr] = smallColourGridRow[cr] | smallColourGridRow[cr + 4] | smallColourGridRow1[cr] | smallColourGridRow1[cr + 4];
+								value = sourceRow[cr] | sourceRow[cr + 1];
+								value |= sourceRow1[cr] | sourceRow1[cr + 1];
+								value |= sourceRow2[cr] | sourceRow2[cr + 1];
+								value |= sourceRow3[cr] | sourceRow3[cr + 1];
+								value |= sourceRow4[cr] | sourceRow4[cr + 1];
+								value |= sourceRow5[cr] | sourceRow5[cr + 1];
+								value |= sourceRow6[cr] | sourceRow6[cr + 1];
+								value |= sourceRow7[cr] | sourceRow7[cr + 1];
+								destRow[dr] = (value > 0) << 6;
 							}
 						}
 
@@ -12191,11 +12221,18 @@
 	};
 
 	// create 8x8 colour grid for 0.125 <= zoom < 0.25
-	Life.prototype.create8x8ColourGrid = function(smallColourGrid4, smallColourGrid8) {
+	Life.prototype.create8x8ColourGrid = function(colourGrid, smallColourGrid) {
 		var h = 0,
-		    cr = 0,
-		    smallColourGridRow = null,
-		    smallColourGridRow1 = null,
+			cr = 0,
+			i = 0,
+		    sourceRow = null,
+		    sourceRow1 = null,
+		    sourceRow2 = null,
+		    sourceRow3 = null,
+		    sourceRow4 = null,
+		    sourceRow5 = null,
+		    sourceRow6 = null,
+		    sourceRow7 = null,
 		    destRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileHistoryRow = null,
@@ -12242,33 +12279,151 @@
 							// update the small colour grid
 							for (h = bottomY; h < topY; h += 8) {
 								// get destination row
-								destRow = smallColourGrid8[h];
+								destRow = smallColourGrid[h];
 
-								// get the next two rows
-								smallColourGridRow = smallColourGrid4[h];
-								smallColourGridRow1 = smallColourGrid4[h + 4];
+								// get the next 8 rows
+								sourceRow = colourGrid[h];
+								sourceRow1 = colourGrid[h + 1];
+								sourceRow2 = colourGrid[h + 2];
+								sourceRow3 = colourGrid[h + 3];
+								sourceRow4 = colourGrid[h + 4];
+								sourceRow5 = colourGrid[h + 5];
+								sourceRow6 = colourGrid[h + 6];
+								sourceRow7 = colourGrid[h + 7];
 								cr = (leftX << 4);
 									
-								// get the maximum of 4 pixels
-								smallValue = smallColourGridRow[cr];
-								value = smallColourGridRow[cr + 4];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = smallColourGridRow1[cr];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = smallColourGridRow1[cr + 4];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								destRow[cr] = smallValue;
-								cr += 8;
-
-								// loop unroll
-								smallValue= smallColourGridRow[cr];
-								value = smallColourGridRow[cr + 4];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = smallColourGridRow1[cr];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = smallColourGridRow1[cr + 4];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								destRow[cr] = smallValue;
+								// get the maximum of each 8x8 block
+								for (i = 0; i < 2; i += 1) {
+									smallValue = sourceRow[cr];
+									value = sourceRow[cr + 1];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow[cr + 2];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow[cr + 3];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow[cr + 4];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow[cr + 5];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow[cr + 6];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow[cr + 7];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow1[cr];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow1[cr + 1];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow1[cr + 2];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow1[cr + 3];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow1[cr + 4];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow1[cr + 5];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow1[cr + 6];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow1[cr + 7];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow2[cr];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow2[cr + 1];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow2[cr + 2];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow2[cr + 3];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow2[cr + 4];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow2[cr + 5];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow2[cr + 6];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow2[cr + 7];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow3[cr];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow3[cr + 1];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow3[cr + 2];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow3[cr + 3];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow3[cr + 4];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow3[cr + 5];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow3[cr + 6];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow3[cr + 7];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow4[cr];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow4[cr + 1];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow4[cr + 2];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow4[cr + 3];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow4[cr + 4];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow4[cr + 5];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow4[cr + 6];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow4[cr + 7];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow5[cr];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow5[cr + 1];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow5[cr + 2];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow5[cr + 3];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow5[cr + 4];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow5[cr + 5];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow5[cr + 6];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow5[cr + 7];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow6[cr];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow6[cr + 1];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow6[cr + 2];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow6[cr + 3];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow6[cr + 4];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow6[cr + 5];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow6[cr + 6];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow6[cr + 7];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow7[cr];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow7[cr + 1];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow7[cr + 2];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow7[cr + 3];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow7[cr + 4];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow7[cr + 5];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow7[cr + 6];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow7[cr + 7];
+									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									destRow[cr] = smallValue;
+									cr += 8;
+								}
 							}
 						}
 
@@ -12288,16 +12443,32 @@
 	};
 
 	// create 16x16 colour grid with no history for 0.0625 <= zoom < 0.125
-	Life.prototype.create16x16ColourGridNoHistory = function(smallColourGrid8, smallColourGrid16) {
+	Life.prototype.create16x16ColourGridNoHistory32 = function(colourGrid, smallColourGrid) {
 		var cr = 0,
-		    smallColourGridRow = null,
-		    smallColourGridRow1 = null,
+			dr = 0,
+		    sourceRow = null,
+		    sourceRow1 = null,
+		    sourceRow2 = null,
+		    sourceRow3 = null,
+		    sourceRow4 = null,
+		    sourceRow5 = null,
+		    sourceRow6 = null,
+		    sourceRow7 = null,
+		    sourceRow8 = null,
+		    sourceRow9 = null,
+		    sourceRow10 = null,
+		    sourceRow11 = null,
+		    sourceRow12 = null,
+		    sourceRow13 = null,
+		    sourceRow14 = null,
+		    sourceRow15 = null,
 		    destRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileHistoryRow = null,
 		    th = 0, tw = 0, b = 0,
 		    bottomY = 0, leftX = 0,
-		    tiles = 0,
+			tiles = 0,
+			value = 0,
 
 		    // set tile height
 		    ySize = this.tileY,
@@ -12334,15 +12505,50 @@
 						// check if this tile is occupied
 						if ((tiles & (1 << b)) !== 0) {
 							// get the destination row
-							destRow = smallColourGrid16[bottomY];
+							destRow = smallColourGrid[bottomY]
 
-							// get the next two rows
-							smallColourGridRow = smallColourGrid8[bottomY];
-							smallColourGridRow1 = smallColourGrid8[bottomY + 8];
-							cr = (leftX << 4);
+							// get the next 16 rows
+							sourceRow = colourGrid[bottomY];
+							sourceRow1 = colourGrid[bottomY + 1];
+							sourceRow2 = colourGrid[bottomY + 2];
+							sourceRow3 = colourGrid[bottomY + 3];
+							sourceRow4 = colourGrid[bottomY + 4];
+							sourceRow5 = colourGrid[bottomY + 5];
+							sourceRow6 = colourGrid[bottomY + 6];
+							sourceRow7 = colourGrid[bottomY + 7];
+							sourceRow8 = colourGrid[bottomY + 8];
+							sourceRow9 = colourGrid[bottomY + 9];
+							sourceRow10 = colourGrid[bottomY + 10];
+							sourceRow11 = colourGrid[bottomY + 11];
+							sourceRow12 = colourGrid[bottomY + 12];
+							sourceRow13 = colourGrid[bottomY + 13];
+							sourceRow14 = colourGrid[bottomY + 14];
+							sourceRow15 = colourGrid[bottomY + 15];
+							cr = (leftX << 2);
+							dr = (leftX << 4);
+
+							// find any set cells in the 16x16 block
+							value = sourceRow[cr] | sourceRow[cr + 1] | sourceRow[cr + 2] | sourceRow[cr + 3];
+							value |= sourceRow1[cr] | sourceRow1[cr + 1] | sourceRow1[cr + 2] | sourceRow1[cr + 3];
+							value |= sourceRow2[cr] | sourceRow2[cr + 1] | sourceRow2[cr + 2] | sourceRow2[cr + 3];
+							value |= sourceRow3[cr] | sourceRow3[cr + 1] | sourceRow3[cr + 2] | sourceRow3[cr + 3];
+							value |= sourceRow4[cr] | sourceRow4[cr + 1] | sourceRow4[cr + 2] | sourceRow4[cr + 3];
+							value |= sourceRow5[cr] | sourceRow5[cr + 1] | sourceRow5[cr + 2] | sourceRow5[cr + 3];
+							value |= sourceRow6[cr] | sourceRow6[cr + 1] | sourceRow6[cr + 2] | sourceRow6[cr + 3];
+							value |= sourceRow7[cr] | sourceRow7[cr + 1] | sourceRow7[cr + 2] | sourceRow7[cr + 3];
+							if (value === 0) {
+								value |= sourceRow8[cr] | sourceRow8[cr + 1] | sourceRow8[cr + 2] | sourceRow8[cr + 3];
+								value |= sourceRow9[cr] | sourceRow9[cr + 1] | sourceRow9[cr + 2] | sourceRow9[cr + 3];
+								value |= sourceRow10[cr] | sourceRow10[cr + 1] | sourceRow10[cr + 2] | sourceRow10[cr + 3];
+								value |= sourceRow11[cr] | sourceRow11[cr + 1] | sourceRow11[cr + 2] | sourceRow11[cr + 3];
+								value |= sourceRow12[cr] | sourceRow12[cr + 1] | sourceRow12[cr + 2] | sourceRow12[cr + 3];
+								value |= sourceRow13[cr] | sourceRow13[cr + 1] | sourceRow13[cr + 2] | sourceRow13[cr + 3];
+								value |= sourceRow14[cr] | sourceRow14[cr + 1] | sourceRow14[cr + 2] | sourceRow14[cr + 3];
+								value |= sourceRow15[cr] | sourceRow15[cr + 1] | sourceRow15[cr + 2] | sourceRow15[cr + 3];
+							}
 									
-							// get the maximum of 4 pixels
-							destRow[cr] = smallColourGridRow[cr] | smallColourGridRow[cr + 8] | smallColourGridRow1[cr] | smallColourGridRow1[cr + 8];
+							// output the cell
+							destRow[dr] = (value > 0) << 6;
 						}
 
 						// next tile columns
@@ -12360,15 +12566,15 @@
 	};
 
 	// create 16x16 colour grid for 0.0625 <= zoom < 0.125
-	Life.prototype.create16x16ColourGrid = function(smallColourGrid8, smallColourGrid16) {
+	Life.prototype.create16x16ColourGrid = function(colourGrid, smallColourGrid) {
 		var cr = 0,
-		    smallColourGridRow = null,
-		    smallColourGridRow1 = null,
+			dr = 0,
+		    sourceRow = null,
 		    destRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileHistoryRow = null,
-		    value = 0, th = 0, tw = 0, b = 0,
-		    bottomY = 0, leftX = 0,
+		    value = 0, th = 0, tw = 0, b = 0, h = 0,
+		    bottomY = 0, leftX = 0, topY = 0,
 		    tiles = 0,
 		    smallValue = 0,
 
@@ -12386,6 +12592,7 @@
 
 		// set the initial tile row
 		bottomY = 0;
+		topY = bottomY + ySize;
 
 		// scan each row of tiles
 		for (th = 0; th < tileRows; th += 1) {
@@ -12406,23 +12613,52 @@
 					for (b = 15; b >= 0; b -= 1) {
 						// check if this tile is occupied
 						if ((tiles & (1 << b)) !== 0) {
-							// get the destination row
-							destRow = smallColourGrid16[bottomY];
+							// update the small colour grid
+							smallValue = 0;
+							for (h = bottomY; h < topY; h += 1) {
+								// get the next row
+								sourceRow = colourGrid[h];
+								cr = (leftX << 4);
 
-							// get the next two rows
-							smallColourGridRow = smallColourGrid8[bottomY];
-							smallColourGridRow1 = smallColourGrid8[bottomY + 8];
-							cr = (leftX << 4);
-									
-							// get the maximum of 4 pixels
-							smallValue = smallColourGridRow[cr];
-							value = smallColourGridRow[cr + 8];
-							smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-							value = smallColourGridRow1[cr];
-							smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-							value = smallColourGridRow1[cr + 8];
-							smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-							destRow[cr] = smallValue;
+								// get the maximum of 16 cells
+								value = sourceRow[cr];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 1];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 2];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 3];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 4];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 5];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 6];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 7];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 8];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 9];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 10];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 11];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 12];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 13];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 14];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								value = sourceRow[cr + 15];
+								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+							}
+
+							// get the destination row
+							destRow = smallColourGrid[bottomY];
+							dr = (leftX << 4);
+							destRow[dr] = smallValue;
 						}
 
 						// next tile columns
@@ -12436,45 +12672,46 @@
 			
 			// next tile row
 			bottomY += ySize;
+			topY += ySize;
 		}
 	};
 
 	// create the small colour grids based on zoom level
 	Life.prototype.createSmallColourGrids = function() {
-		// check if zoomed out
-		if (this.camZoom < 1) {
+		// check if 0.5 <= zoom < 1
+		if (this.camZoom >= 0.5 && this.camZoom < 1) {
 			// create 2x2 colour grid
 			if (this.themeHistory) {
-				this.create2x2ColourGrid16(this.colourGrid16, this.smallColourGrid2);
+				this.create2x2ColourGrid16(this.colourGrid16, this.smallColourGrid);
 			} else {
-				this.create2x2ColourGridNoHistory16(this.colourGrid16, this.smallColourGrid2);
+				this.create2x2ColourGridNoHistory16(this.colourGrid16, this.smallColourGrid);
 			}
-
-			// check if zoomed out further
-			if (this.camZoom < 0.5) {
+		} else {
+			// check if 0.25 <= zoom < 0.5
+			if (this.camZoom >= 0.25 && this.camZoom < 0.5) {
 				// create 4x4 colour grid
 				if (this.themeHistory) {
-					this.create4x4ColourGrid(this.smallColourGrid2, this.smallColourGrid4);
+					this.create4x4ColourGrid(this.colourGrid, this.smallColourGrid);
 				} else {
-					this.create4x4ColourGridNoHistory(this.smallColourGrid2, this.smallColourGrid4);
+					this.create4x4ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
 				}
-
-				// check if zoomed out further
-				if (this.camZoom < 0.25) {
+			} else {
+				// check if 0.125 <= zoom < 0.25
+				if (this.camZoom >= 0.125 && this.camZoom < 0.25) {
 					// create 8x8 colour grid
 					if (this.themeHistory) {
-						this.create8x8ColourGrid(this.smallColourGrid4, this.smallColourGrid8);
+						this.create8x8ColourGrid(this.colourGrid, this.smallColourGrid);
 					} else {
-						this.create8x8ColourGridNoHistory(this.smallColourGrid4, this.smallColourGrid8);
+						this.create8x8ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
 					}
-
-					// check if zoomed out further
+				} else {
+					// check if zoom < 0.125
 					if (this.camZoom < 0.125) {
 						// create 16x16 colour grid
 						if (this.themeHistory) {
-							this.create16x16ColourGrid(this.smallColourGrid8, this.smallColourGrid16);
+							this.create16x16ColourGrid(this.colourGrid, this.smallColourGrid);
 						} else {
-							this.create16x16ColourGridNoHistory(this.smallColourGrid8, this.smallColourGrid16);
+							this.create16x16ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
 						}
 					}
 				}
@@ -12483,25 +12720,25 @@
 
 		// check for overlay
 		if (this.drawOverlay) {
-			// check if zoomed out
-			if (this.camZoom < 1) {
+			// check if 0.5 <= zoom < 1
+			if (this.camZoom >= 0.5 && this.camZoom < 1) {
 				// create 2x2 colour grid
 				this.create2x2ColourGrid16(this.overlayGrid16, this.smallOverlayGrid);
-
-				// check if zoomed out further
-				if (this.camZoom < 0.5) {
+			} else {
+				// check if 0.25 <= zoom < 0.5
+				if (this.camZoom >= 0.25 && this.camZoom < 0.5) {
 					// create 4x4 colour grid
-					this.create4x4ColourGrid(this.smallOverlayGrid, this.smallOverlayGrid4);
-
-					// check if zoomed out further
-					if (this.camZoom < 0.25) {
+					this.create4x4ColourGrid(this.overlayGrid, this.smallOverlayGrid);
+				} else {
+					// check if 0.125 <= zoom < 0.25
+					if (this.camZoom >= 0.125 && this.camZoom < 0.25) {
 						// create 8x8 colour grid
-						this.create8x8ColourGrid(this.smallOverlayGrid4, this.smallOverlayGrid8);
-
-						// check if zoomed out further
+						this.create8x8ColourGrid(this.overlayGrid, this.smallOverlayGrid);
+					} else {
+						// check if zoom < 0.125
 						if (this.camZoom < 0.125) {
 							// create 16x16 colour grid
-							this.create16x16ColourGrid(this.smallOverlayGrid8, this.smallOverlayGrid16);
+							this.create16x16ColourGrid(this.overlayGrid, this.smallOverlayGrid);
 						}
 					}
 				}
@@ -14270,10 +14507,10 @@
 				// check for LifeHistory overlay
 				if (this.drawOverlay) {
 					// render the grid with the overlay on top
-					this.renderGridOverlayProjection(this.smallOverlayGrid16, this.smallColourGrid16, 15);
+					this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 15);
 				} else {
 					// render using small colour grid 16x16
-					this.renderGridProjection(this.smallColourGrid16, this.smallColourGrid16, 15);
+					this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 15);
 				}
 			} else {
 				// check if zoom < 0.25x
@@ -14281,10 +14518,10 @@
 					// check for LifeHistory overlay
 					if (this.drawOverlay) {
 						// render the grid with the overlay on top
-						this.renderGridOverlayProjection(this.smallOverlayGrid8, this.smallColourGrid8, 7);
+						this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 7);
 					} else {
 						// render using small colour grid 8x8
-						this.renderGridProjection(this.smallColourGrid8, this.smallColourGrid8, 7);
+						this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 7);
 					}
 				} else {
 					// check if zoom < 0.5x
@@ -14292,10 +14529,10 @@
 						// check for LifeHistory overlay
 						if (this.drawOverlay) {
 							// render the grid with the overlay on top
-							this.renderGridOverlayProjection(this.smallOverlayGrid4, this.smallColourGrid4, 3);
+							this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 3);
 						} else {
 							// render using small colour grid 4x4
-							this.renderGridProjection(this.smallColourGrid4, this.smallColourGrid4, 3);
+							this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 3);
 						}
 					} else {
 						// check for zoom < 1x
@@ -14303,10 +14540,10 @@
 							// check for LifeHistory overlay
 							if (this.drawOverlay) {
 								// render the grid with the overlay on top
-								this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid2, 1);
+								this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 1);
 							} else {
 								// render using small colour grid 2x2
-								this.renderGridProjection(this.smallColourGrid2, this.smallColourGrid2, 1);
+								this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 1);
 							}
 						} else {
 							// check for LifeHistory overlay
@@ -14532,26 +14769,21 @@
 			// check whether to switch to colour grid based on ZOOM >= 1
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
-				colourGrid = this.smallColourGrid16;
 				mask = 15;
 			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
-					colourGrid = this.smallColourGrid8;
 					mask = 7;
 				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
-						colourGrid = this.smallColourGrid4;
 						mask = 3;
 					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
-							colourGrid = this.smallColourGrid2;
 							mask = 1;
 						} else {
 							// switch to full resolution grid
-							colourGrid = this.colourGrid;
 							mask = 0;
 						}
 					}
@@ -14911,26 +15143,21 @@
 			// check whether to switch to colour grid based on ZOOM >= 1
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
-				colourGrid = this.smallColourGrid16;
 				mask = 15;
 			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
-					colourGrid = this.smallColourGrid8;
 					mask = 7;
 				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
-						colourGrid = this.smallColourGrid4;
 						mask = 3;
 					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
-							colourGrid = this.smallColourGrid2;
 							mask = 1;
 						} else {
 							// switch to full resolution grid
-							colourGrid = this.colourGrid;
 							mask = 0;
 						}
 					}
@@ -15223,26 +15450,21 @@
 			// check whether to switch to colour grid based on ZOOM >= 1
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
-				colourGrid = this.smallColourGrid16;
 				mask = 15;
 			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
-					colourGrid = this.smallColourGrid8;
 					mask = 7;
 				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
-						colourGrid = this.smallColourGrid4;
 						mask = 3;
 					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
-							colourGrid = this.smallColourGrid2;
 							mask = 1;
 						} else {
 							// switch to full resolution grid
-							colourGrid = this.colourGrid;
 							mask = 0;
 						}
 					}
@@ -15510,26 +15732,21 @@
 			// check whether to switch to colour grid based on ZOOM >= 1
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
-				colourGrid = this.smallColourGrid16;
 				mask = 15;
 			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
-					colourGrid = this.smallColourGrid8;
 					mask = 7;
 				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
-						colourGrid = this.smallColourGrid4;
 						mask = 3;
 					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
-							colourGrid = this.smallColourGrid2;
 							mask = 1;
 						} else {
 							// switch to full resolution grid
-							colourGrid = this.colourGrid;
 							mask = 0;
 						}
 					}
@@ -16092,26 +16309,21 @@
 			// check whether to switch to colour grid based on ZOOM >= 1
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
-				colourGrid = this.smallColourGrid16;
 				mask = 15;
 			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
-					colourGrid = this.smallColourGrid8;
 					mask = 7;
 				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
-						colourGrid = this.smallColourGrid4;
 						mask = 3;
 					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
-							colourGrid = this.smallColourGrid2;
 							mask = 1;
 						} else {
 							// switch to full resolution grid
-							colourGrid = this.colourGrid;
 							mask = 0;
 						}
 					}
@@ -16547,26 +16759,21 @@
 			// check whether to switch to colour grid based on ZOOM >= 1
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
-				colourGrid = this.smallColourGrid16;
 				mask = 15;
 			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
-					colourGrid = this.smallColourGrid8;
 					mask = 7;
 				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
-						colourGrid = this.smallColourGrid4;
 						mask = 3;
 					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
-							colourGrid = this.smallColourGrid2;
 							mask = 1;
 						} else {
 							// switch to full resolution grid
-							colourGrid = this.colourGrid;
 							mask = 0;
 						}
 					}
@@ -16984,26 +17191,21 @@
 			// check whether to switch to colour grid based on ZOOM >= 1
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
-				colourGrid = this.smallColourGrid16;
 				mask = 15;
 			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
-					colourGrid = this.smallColourGrid8;
 					mask = 7;
 				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
-						colourGrid = this.smallColourGrid4;
 						mask = 3;
 					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
-							colourGrid = this.smallColourGrid2;
 							mask = 1;
 						} else {
 							// switch to full resolution grid
-							colourGrid = this.colourGrid;
 							mask = 0;
 						}
 					}
@@ -17493,26 +17695,21 @@
 			// check whether to switch to colour grid based on ZOOM >= 1
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
-				colourGrid = this.smallColourGrid16;
 				mask = 15;
 			} else {
 				if (layerZoom < 0.25) {
 					// switch to small grid 8x8
-					colourGrid = this.smallColourGrid8;
 					mask = 7;
 				} else {
 					if (layerZoom < 0.5) {
 						// switch to small grid 4x4
-						colourGrid = this.smallColourGrid4;
 						mask = 3;
 					} else {
 						if (layerZoom < 1) {
 							// switch to small grid 2x2
-							colourGrid = this.smallColourGrid2;
 							mask = 1;
 						} else {
 							// switch to full resolution grid
-							colourGrid = this.colourGrid;
 							mask = 0;
 						}
 					}
