@@ -5613,6 +5613,11 @@
 		var hardReset = false,
 		    looping = false;
 
+		// reset time intervals
+		if (me.engine.counter === 0) {
+			me.menuManager.resetTimeIntervals();
+		}
+
 		// check for hard reset
 		if (me.elapsedTime === 0 || me.hardReset) {
 			hardReset = true;
@@ -6153,11 +6158,6 @@
 					// play
 					me.generationOn = true;
 					me.afterEdit("");
-
-					// measure start time
-					if (me.engine.counter === 0) {
-						me.menuManager.resetTimeIntervals();
-					}
 
 					// set flag whether pattern was empty and playback is on
 					if (me.engine.population === 0) {

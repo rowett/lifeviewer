@@ -12055,41 +12055,53 @@
 									
 								// get the maximum of each 4x4 block
 								for (i = 0; i < 4; i += 1) {
+									smallValue = 0;
+
 									value = sourceRow[cr];
-									smallValue = value & 255;
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow1[cr];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow2[cr];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow3[cr];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									destRow[dr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
+
+									destRow[dr] = smallValue;
 									cr += 1;
 									dr += 4;
 								}
@@ -12189,10 +12201,12 @@
 								value |= sourceRow1[cr] | sourceRow1[cr + 1];
 								value |= sourceRow2[cr] | sourceRow2[cr + 1];
 								value |= sourceRow3[cr] | sourceRow3[cr + 1];
-								value |= sourceRow4[cr] | sourceRow4[cr + 1];
-								value |= sourceRow5[cr] | sourceRow5[cr + 1];
-								value |= sourceRow6[cr] | sourceRow6[cr + 1];
-								value |= sourceRow7[cr] | sourceRow7[cr + 1];
+								if (value === 0) {
+									value |= sourceRow4[cr] | sourceRow4[cr + 1];
+									value |= sourceRow5[cr] | sourceRow5[cr + 1];
+									value |= sourceRow6[cr] | sourceRow6[cr + 1];
+									value |= sourceRow7[cr] | sourceRow7[cr + 1];
+								}
 								destRow[dr] = (value > 0) << 6;
 								cr += 2;
 								dr += 8;
@@ -12202,10 +12216,12 @@
 								value |= sourceRow1[cr] | sourceRow1[cr + 1];
 								value |= sourceRow2[cr] | sourceRow2[cr + 1];
 								value |= sourceRow3[cr] | sourceRow3[cr + 1];
-								value |= sourceRow4[cr] | sourceRow4[cr + 1];
-								value |= sourceRow5[cr] | sourceRow5[cr + 1];
-								value |= sourceRow6[cr] | sourceRow6[cr + 1];
-								value |= sourceRow7[cr] | sourceRow7[cr + 1];
+								if (value === 0) {
+									value |= sourceRow4[cr] | sourceRow4[cr + 1];
+									value |= sourceRow5[cr] | sourceRow5[cr + 1];
+									value |= sourceRow6[cr] | sourceRow6[cr + 1];
+									value |= sourceRow7[cr] | sourceRow7[cr + 1];
+								}
 								destRow[dr] = (value > 0) << 6;
 							}
 						}
@@ -12301,168 +12317,184 @@
 									
 								// get the maximum of each 8x8 block
 								for (i = 0; i < 2; i += 1) {
+									smallValue = 0;
 									value = sourceRow[cr];
-									smallValue = value & 255;
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow[cr + 1];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow1[cr];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-
-									value = sourceRow[cr + 1];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-
-									value = sourceRow1[cr];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow1[cr + 1];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow2[cr];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow2[cr + 1];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow3[cr];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow3[cr + 1];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow4[cr];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow4[cr + 1];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow5[cr];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow5[cr + 1];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow6[cr];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow6[cr + 1];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow7[cr];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
 									value = sourceRow7[cr + 1];
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-									value >>= 8;
-									destRow[dr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									if (value) {
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+										value >>= 8;
+										smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									}
 
+									destRow[dr] = smallValue;
 									cr += 2;
 									dr += 8;
 								}
@@ -12574,19 +12606,23 @@
 							value |= sourceRow1[cr] | sourceRow1[cr + 1] | sourceRow1[cr + 2] | sourceRow1[cr + 3];
 							value |= sourceRow2[cr] | sourceRow2[cr + 1] | sourceRow2[cr + 2] | sourceRow2[cr + 3];
 							value |= sourceRow3[cr] | sourceRow3[cr + 1] | sourceRow3[cr + 2] | sourceRow3[cr + 3];
-							value |= sourceRow4[cr] | sourceRow4[cr + 1] | sourceRow4[cr + 2] | sourceRow4[cr + 3];
-							value |= sourceRow5[cr] | sourceRow5[cr + 1] | sourceRow5[cr + 2] | sourceRow5[cr + 3];
-							value |= sourceRow6[cr] | sourceRow6[cr + 1] | sourceRow6[cr + 2] | sourceRow6[cr + 3];
-							value |= sourceRow7[cr] | sourceRow7[cr + 1] | sourceRow7[cr + 2] | sourceRow7[cr + 3];
 							if (value === 0) {
-								value |= sourceRow8[cr] | sourceRow8[cr + 1] | sourceRow8[cr + 2] | sourceRow8[cr + 3];
-								value |= sourceRow9[cr] | sourceRow9[cr + 1] | sourceRow9[cr + 2] | sourceRow9[cr + 3];
-								value |= sourceRow10[cr] | sourceRow10[cr + 1] | sourceRow10[cr + 2] | sourceRow10[cr + 3];
-								value |= sourceRow11[cr] | sourceRow11[cr + 1] | sourceRow11[cr + 2] | sourceRow11[cr + 3];
-								value |= sourceRow12[cr] | sourceRow12[cr + 1] | sourceRow12[cr + 2] | sourceRow12[cr + 3];
-								value |= sourceRow13[cr] | sourceRow13[cr + 1] | sourceRow13[cr + 2] | sourceRow13[cr + 3];
-								value |= sourceRow14[cr] | sourceRow14[cr + 1] | sourceRow14[cr + 2] | sourceRow14[cr + 3];
-								value |= sourceRow15[cr] | sourceRow15[cr + 1] | sourceRow15[cr + 2] | sourceRow15[cr + 3];
+								value |= sourceRow4[cr] | sourceRow4[cr + 1] | sourceRow4[cr + 2] | sourceRow4[cr + 3];
+								value |= sourceRow5[cr] | sourceRow5[cr + 1] | sourceRow5[cr + 2] | sourceRow5[cr + 3];
+								value |= sourceRow6[cr] | sourceRow6[cr + 1] | sourceRow6[cr + 2] | sourceRow6[cr + 3];
+								value |= sourceRow7[cr] | sourceRow7[cr + 1] | sourceRow7[cr + 2] | sourceRow7[cr + 3];
+								if (value === 0) {
+									value |= sourceRow8[cr] | sourceRow8[cr + 1] | sourceRow8[cr + 2] | sourceRow8[cr + 3];
+									value |= sourceRow9[cr] | sourceRow9[cr + 1] | sourceRow9[cr + 2] | sourceRow9[cr + 3];
+									value |= sourceRow10[cr] | sourceRow10[cr + 1] | sourceRow10[cr + 2] | sourceRow10[cr + 3];
+									value |= sourceRow11[cr] | sourceRow11[cr + 1] | sourceRow11[cr + 2] | sourceRow11[cr + 3];
+									if (value === 0) {
+										value |= sourceRow12[cr] | sourceRow12[cr + 1] | sourceRow12[cr + 2] | sourceRow12[cr + 3];
+										value |= sourceRow13[cr] | sourceRow13[cr + 1] | sourceRow13[cr + 2] | sourceRow13[cr + 3];
+										value |= sourceRow14[cr] | sourceRow14[cr + 1] | sourceRow14[cr + 2] | sourceRow14[cr + 3];
+										value |= sourceRow15[cr] | sourceRow15[cr + 1] | sourceRow15[cr + 2] | sourceRow15[cr + 3];
+									}
+								}
 							}
 									
 							// output the cell
@@ -12664,40 +12700,48 @@
 
 								// get the maximum of 16 cells
 								value = sourceRow[cr];
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								if (value) {
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								}
 
 								value = sourceRow[cr + 1];
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								if (value) {
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								}
 
 								value = sourceRow[cr + 2];
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								if (value) {
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								}
 
 								value = sourceRow[cr + 3];
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								if (value) {
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								}
 							}
 
 							// get the destination row
