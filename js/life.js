@@ -584,6 +584,9 @@
 		// 16bit view of overlay grid
 		this.overlayGrid16 = null;
 
+		// 32bit view of overlay grid
+		this.overlayGrid32 = null;
+
 		// colour tile grid
 		this.colourTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid");
 
@@ -2935,6 +2938,7 @@
 			this.overlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid");
 			this.smallOverlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid");
 			this.overlayGrid16 = Array.matrixView(Uint16, this.overlayGrid, "Life.overlayGrid16");
+			this.overlayGrid32 = Array.matrixView(Uint32, this.overlayGrid, "Life.overlayGrid32");
 		}
 
 		// create the grid width and height masks
@@ -3093,6 +3097,7 @@
 				this.overlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid");
 				this.smallOverlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid");
 				this.overlayGrid16 = Array.matrixView(Uint16, this.overlayGrid, "Life.overlayGrid16");
+				this.overlayGrid32 = Array.matrixView(Uint32, this.overlayGrid, "Life.overlayGrid32");
 			}
 
 			// create the grid width and height masks
@@ -3366,6 +3371,7 @@
 		this.overlayGrid = null;
 		this.smallOverlayGrid = null;
 		this.overlayGrid16 = null;
+		this.overlayGrid32 = null;
 	};
 
 	// create the overlay
@@ -3376,6 +3382,7 @@
 		this.smallOverlayGrid8 = Array.matrixViewWithOffset(this.smallOverlayGrid, 3, "Life.smallOverlayGrid8");
 		this.smallOverlayGrid16 = Array.matrixViewWithOffset(this.smallOverlayGrid, 7, "Life.smallOverlayGrid16");
 		this.overlayGrid16 = Array.matrixView(Uint16, this.overlayGrid, "Life.overlayGrid16");
+		this.overlayGrid32 = Array.matrixView(Uint32, this.overlayGrid, "Life.overlayGrid32");
 	};
 
 	// free the state6 mask
@@ -11774,98 +11781,90 @@
 								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 
 								// next two pixels in next row
 								value = sourceRow1[cr];
-								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								destRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								cr += 1;
 
 								// loop unroll
 								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value = sourceRow1[cr];
-								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								destRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								cr += 1;
 
 								// loop unroll
 								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value = sourceRow1[cr];
-								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								destRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								cr += 1;
 
 								// loop unroll
 								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value = sourceRow1[cr];
-								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								destRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								cr += 1;
 
 								// loop unroll
 								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value = sourceRow1[cr];
-								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								destRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								cr += 1;
 
 								// loop unroll
 								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value = sourceRow1[cr];
-								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								destRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								cr += 1;
 
 								// loop unroll
 								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value = sourceRow1[cr];
-								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								destRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								cr += 1;
 
 								// loop unroll
 								value = sourceRow[cr];
 								smallValue = value & 255;
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value = sourceRow1[cr];
-								smallValue = (value & 255) ^ (((value & 255) ^ smallValue) & -((value & 255) < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 								value >>= 8;
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								destRow[cr + cr] = smallValue;
+								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 							}
 						}
 
@@ -11989,9 +11988,10 @@
 	};
 
 	// create 4x4 colour grid for 0.25 <= zoom < 0.5
-	Life.prototype.create4x4ColourGrid = function(colourGrid, smallColourGrid) {
+	Life.prototype.create4x4ColourGrid32 = function(colourGrid, smallColourGrid) {
 		var h = 0,
 			cr = 0,
+			dr = 0,
 			i = 0,
 		    sourceRow = null,
 		    sourceRow1 = null,
@@ -12050,43 +12050,48 @@
 								sourceRow1 = colourGrid[h + 1];
 								sourceRow2 = colourGrid[h + 2];
 								sourceRow3 = colourGrid[h + 3];
-								cr = (leftX << 4);
+								cr = (leftX << 2);
+								dr = (leftX << 4);
 									
 								// get the maximum of each 4x4 block
 								for (i = 0; i < 4; i += 1) {
-									smallValue = sourceRow[cr];
-									value = sourceRow[cr + 1];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow[cr + 2];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow[cr + 3];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									value = sourceRow[cr];
+									smallValue = value & 255;
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow1[cr];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow1[cr + 1];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow1[cr + 2];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow1[cr + 3];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow2[cr];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow2[cr + 1];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow2[cr + 2];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow2[cr + 3];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow3[cr];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow3[cr + 1];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow3[cr + 2];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow3[cr + 3];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									destRow[cr] = smallValue;
-									cr += 4;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									destRow[dr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									cr += 1;
+									dr += 4;
 								}
 							}
 						}
@@ -12221,9 +12226,10 @@
 	};
 
 	// create 8x8 colour grid for 0.125 <= zoom < 0.25
-	Life.prototype.create8x8ColourGrid = function(colourGrid, smallColourGrid) {
+	Life.prototype.create8x8ColourGrid32 = function(colourGrid, smallColourGrid) {
 		var h = 0,
 			cr = 0,
+			dr = 0,
 			i = 0,
 		    sourceRow = null,
 		    sourceRow1 = null,
@@ -12290,139 +12296,175 @@
 								sourceRow5 = colourGrid[h + 5];
 								sourceRow6 = colourGrid[h + 6];
 								sourceRow7 = colourGrid[h + 7];
-								cr = (leftX << 4);
+								cr = (leftX << 2);
+								dr = (leftX << 4);
 									
 								// get the maximum of each 8x8 block
 								for (i = 0; i < 2; i += 1) {
-									smallValue = sourceRow[cr];
+									value = sourceRow[cr];
+									smallValue = value & 255;
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow[cr + 1];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow[cr + 2];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow[cr + 3];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow[cr + 4];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow[cr + 5];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow[cr + 6];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow[cr + 7];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow1[cr];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
+									value = sourceRow[cr + 1];
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
+									value = sourceRow1[cr];
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow1[cr + 1];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow1[cr + 2];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow1[cr + 3];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow1[cr + 4];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow1[cr + 5];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow1[cr + 6];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow1[cr + 7];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow2[cr];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow2[cr + 1];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow2[cr + 2];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow2[cr + 3];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow2[cr + 4];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow2[cr + 5];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow2[cr + 6];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow2[cr + 7];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow3[cr];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow3[cr + 1];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow3[cr + 2];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow3[cr + 3];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow3[cr + 4];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow3[cr + 5];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow3[cr + 6];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow3[cr + 7];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow4[cr];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow4[cr + 1];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow4[cr + 2];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow4[cr + 3];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow4[cr + 4];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow4[cr + 5];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow4[cr + 6];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow4[cr + 7];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow5[cr];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow5[cr + 1];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow5[cr + 2];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow5[cr + 3];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow5[cr + 4];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow5[cr + 5];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow5[cr + 6];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow5[cr + 7];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow6[cr];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow6[cr + 1];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow6[cr + 2];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow6[cr + 3];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow6[cr + 4];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow6[cr + 5];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow6[cr + 6];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow6[cr + 7];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow7[cr];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 									value = sourceRow7[cr + 1];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow7[cr + 2];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow7[cr + 3];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow7[cr + 4];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow7[cr + 5];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow7[cr + 6];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									value = sourceRow7[cr + 7];
-									smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-									destRow[cr] = smallValue;
-									cr += 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									destRow[dr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
+									cr += 2;
+									dr += 8;
 								}
 							}
 						}
@@ -12566,7 +12608,7 @@
 	};
 
 	// create 16x16 colour grid for 0.0625 <= zoom < 0.125
-	Life.prototype.create16x16ColourGrid = function(colourGrid, smallColourGrid) {
+	Life.prototype.create16x16ColourGrid32 = function(colourGrid, smallColourGrid) {
 		var cr = 0,
 			dr = 0,
 		    sourceRow = null,
@@ -12618,41 +12660,44 @@
 							for (h = bottomY; h < topY; h += 1) {
 								// get the next row
 								sourceRow = colourGrid[h];
-								cr = (leftX << 4);
+								cr = (leftX << 2);
 
 								// get the maximum of 16 cells
 								value = sourceRow[cr];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								value >>= 8;
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								value >>= 8;
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								value >>= 8;
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 								value = sourceRow[cr + 1];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								value >>= 8;
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								value >>= 8;
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								value >>= 8;
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 								value = sourceRow[cr + 2];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								value >>= 8;
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								value >>= 8;
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								value >>= 8;
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+
 								value = sourceRow[cr + 3];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = sourceRow[cr + 4];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = sourceRow[cr + 5];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = sourceRow[cr + 6];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = sourceRow[cr + 7];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = sourceRow[cr + 8];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = sourceRow[cr + 9];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = sourceRow[cr + 10];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = sourceRow[cr + 11];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = sourceRow[cr + 12];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = sourceRow[cr + 13];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = sourceRow[cr + 14];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
-								value = sourceRow[cr + 15];
-								smallValue = value ^ ((value ^ smallValue) & -(value < smallValue));
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								value >>= 8;
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								value >>= 8;
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								value >>= 8;
+								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
 							}
 
 							// get the destination row
@@ -12691,7 +12736,7 @@
 			if (this.camZoom >= 0.25 && this.camZoom < 0.5) {
 				// create 4x4 colour grid
 				if (this.themeHistory) {
-					this.create4x4ColourGrid(this.colourGrid, this.smallColourGrid);
+					this.create4x4ColourGrid32(this.colourGrid32, this.smallColourGrid);
 				} else {
 					this.create4x4ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
 				}
@@ -12700,7 +12745,7 @@
 				if (this.camZoom >= 0.125 && this.camZoom < 0.25) {
 					// create 8x8 colour grid
 					if (this.themeHistory) {
-						this.create8x8ColourGrid(this.colourGrid, this.smallColourGrid);
+						this.create8x8ColourGrid32(this.colourGrid32, this.smallColourGrid);
 					} else {
 						this.create8x8ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
 					}
@@ -12709,7 +12754,7 @@
 					if (this.camZoom < 0.125) {
 						// create 16x16 colour grid
 						if (this.themeHistory) {
-							this.create16x16ColourGrid(this.colourGrid, this.smallColourGrid);
+							this.create16x16ColourGrid32(this.colourGrid32, this.smallColourGrid);
 						} else {
 							this.create16x16ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
 						}
@@ -12728,17 +12773,17 @@
 				// check if 0.25 <= zoom < 0.5
 				if (this.camZoom >= 0.25 && this.camZoom < 0.5) {
 					// create 4x4 colour grid
-					this.create4x4ColourGrid(this.overlayGrid, this.smallOverlayGrid);
+					this.create4x4ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
 				} else {
 					// check if 0.125 <= zoom < 0.25
 					if (this.camZoom >= 0.125 && this.camZoom < 0.25) {
 						// create 8x8 colour grid
-						this.create8x8ColourGrid(this.overlayGrid, this.smallOverlayGrid);
+						this.create8x8ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
 					} else {
 						// check if zoom < 0.125
 						if (this.camZoom < 0.125) {
 							// create 16x16 colour grid
-							this.create16x16ColourGrid(this.overlayGrid, this.smallOverlayGrid);
+							this.create16x16ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
 						}
 					}
 				}

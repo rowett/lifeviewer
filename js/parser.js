@@ -680,7 +680,7 @@
 		// check if there was an interval
 		if (interval !== -1) {
 			// format result
-			result = interval.toFixed(0);
+			result = interval.toFixed(1);
 		}
 
 		return result;
