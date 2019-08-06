@@ -623,7 +623,7 @@
 		this.indexLookupTri2 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri2");
 
 		// colour lookup for next generation
-		this.colourLookup = this.allocator.allocate(Uint8, (this.aliveMax + 1) * 2, "Life.colourLookup");
+		this.colourLookup = this.allocator.allocate(Uint16, ((this.aliveMax + 1) * 2) << 8, "Life.colourLookup");
 
 		// fast lookup for colour reset
 		this.colourReset = this.allocator.allocate(Uint8, 256 * 8, "Life.colourReset");
@@ -3939,31 +3939,38 @@
 
 	// create the colour index
 	Life.prototype.createColourIndex = function() {
-		var colourLookup, aliveMax, aliveStart, deadMin, deadStart, i;
-		colourLookup = this.colourLookup;
-		aliveMax = this.aliveMax;
-		aliveStart = this.aliveStart;
-		deadMin = this.deadMin;
-		deadStart = this.deadStart;
+		var colourLookup = this.colourLookup,
+			aliveMax = this.aliveMax,
+			aliveStart = this.aliveStart,
+			deadMin = this.deadMin,
+			deadStart = this.deadStart,
+			i = 0,
+			byteIndex = new Uint8Array(256);
 
+		// create byte lookup
 		// first pixel 
-		colourLookup[0] = 0;
-		colourLookup[aliveMax + 1] = aliveStart;
+		byteIndex[0] = 0;
+		byteIndex[aliveMax + 1] = aliveStart;
 
 		for (i = 1; i < aliveMax + 1; i += 1) {
-			colourLookup[i] = Math.min(Math.max(i - 1, deadMin), deadStart);
-			colourLookup[i + aliveMax + 1] = Math.max(Math.min(i + 1, aliveMax), aliveStart);
+			byteIndex[i] = Math.min(Math.max(i - 1, deadMin), deadStart);
+			byteIndex[i + aliveMax + 1] = Math.max(Math.min(i + 1, aliveMax), aliveStart);
 		}
 
 		// adjust for history states setting
 		if (this.historyStates === 0) {
 			for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
-				colourLookup[i] = 0;
+				byteIndex[i] = 0;
 			}
 		} else {
 			if (this.historyStates < this.deadStart) {
-				colourLookup[this.deadStart - this.historyStates] = 0;
+				byteIndex[this.deadStart - this.historyStates] = 0;
 			}
+		}
+
+		// use byte lookup to create 16bit lookup
+		for (i = 0; i < 65536; i += 1) {
+			colourLookup[i] = (byteIndex[i >> 8] << 8) | byteIndex[i & 255];
 		}
 	};
 
@@ -11950,24 +11957,28 @@
 									
 								// find any set cells in each 4x4 block
 								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
+								// @ts-ignore
 								destRow[dr] = (value > 0) << 6;
 								cr += 1;
 								dr += 4;
 
 								// loop unroll
 								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
+								// @ts-ignore
 								destRow[dr] = (value > 0) << 6;
 								cr += 1;
 								dr += 4;
 
 								// loop unroll
 								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
+								// @ts-ignore
 								destRow[dr] = (value > 0) << 6;
 								cr += 1;
 								dr += 4;
 
 								// loop unroll
 								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
+								// @ts-ignore
 								destRow[dr] = (value > 0) << 6;
 							}
 						}
@@ -12207,6 +12218,7 @@
 									value |= sourceRow6[cr] | sourceRow6[cr + 1];
 									value |= sourceRow7[cr] | sourceRow7[cr + 1];
 								}
+								// @ts-ignore
 								destRow[dr] = (value > 0) << 6;
 								cr += 2;
 								dr += 8;
@@ -12222,6 +12234,7 @@
 									value |= sourceRow6[cr] | sourceRow6[cr + 1];
 									value |= sourceRow7[cr] | sourceRow7[cr + 1];
 								}
+								// @ts-ignore
 								destRow[dr] = (value > 0) << 6;
 							}
 						}
@@ -12626,6 +12639,7 @@
 							}
 									
 							// output the cell
+							// @ts-ignore
 							destRow[dr] = (value > 0) << 6;
 						}
 
@@ -13120,7 +13134,12 @@
 				// check for theme history
 				if (this.themeHistory) {
 					// use regular converter
-					this.convertToPensTileRegular();
+					//var i = 0, t = performance.now();
+					//for (i = 0; i < 10; i += 1) {
+						this.convertToPensTileRegular();
+					//}
+					//t = performance.now() - t;
+					//console.debug(t.toFixed(1));
 				} else {
 					this.convertToPensTileNoHistory();
 				}
@@ -13286,15 +13305,16 @@
 	// convert life grid region to pens using tiles
 	Life.prototype.convertToPensTileRegular = function() {
 		var h = 0, cr = 0, nextCell = 0,
-		    colourGrid = this.colourGrid,
-		    colourGridRow = null, colourTileRow = null,
+			colourGrid16 = this.colourGrid16,
+			value16 = 0,
+			colourGridRow16 = null, colourTileRow = null,
 		    colourTileHistoryRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileGrid = this.colourTileGrid,
 		    colourLookup = this.colourLookup,
 		    grid = null, gridRow = null, 
 		    tileGrid = null, tileGridRow = null,
-		    value = 0, th = 0, tw = 0, b = 0,
+		    th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
 		    tiles = 0, nextTiles = 0,
 
@@ -13371,10 +13391,10 @@
 							while (h < topY) {
 								// get the grid and colour grid row
 								gridRow = grid[h];
-								colourGridRow = colourGrid[h];
+								colourGridRow16 = colourGrid16[h];
 
 								// get correct starting colour index
-								cr = (leftX << 4);
+								cr = (leftX << 3);
 
 								// process each 16bit chunk (16 cells) along the row
 								nextCell = gridRow[leftX];
@@ -13383,92 +13403,52 @@
 								this.anythingAlive |= nextCell;
 
 								// lookup next colour
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 32768) >> 8)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 32768) >> 8) | ((nextCell & 16384) << 1)];
+								tileAlive |= value16;
+								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 16384) >> 7)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 8192) >> 6) | ((nextCell & 4096) << 3)];
+								tileAlive |= value16;
+								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 8192) >> 6)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 2048) >> 4) | ((nextCell & 1024) << 5)];
+								tileAlive |= value16;
+								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 4096) >> 5)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 512) >> 2) | ((nextCell & 256) << 7)];
+								tileAlive |= value16;
+								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 2048) >> 4)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
+								value16 = colourLookup[colourGridRow16[cr] | (nextCell & 128) | ((nextCell & 64) << 9)];
+								tileAlive |= value16;
+								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 1024) >> 3)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 32) << 2) | ((nextCell & 16) << 11)];
+								tileAlive |= value16;
+								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 512) >> 2)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 8) << 4) | ((nextCell & 4) << 13)];
+								tileAlive |= value16;
+								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 256) >> 1)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = colourLookup[colourGridRow[cr] + (nextCell & 128)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 64) << 1)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 32) << 2)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 16) << 3)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 8) << 4)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 4) << 5)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 2) << 6)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
-								cr += 1;
-
-								value = colourLookup[colourGridRow[cr] + ((nextCell & 1) << 7)];
-								tileAlive |= value;
-								colourGridRow[cr] = value;
-								// cr += 1   - no need for final increment it will be reset next row
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 2) << 6) | ((nextCell & 1) << 15)];
+								tileAlive |= value16;
+								colourGridRow16[cr] = value16;
+								// cr += 1 - no need for final increments they will be reset next row
 
 								// next row
 								h += 1;
 							}
 
 							// check if the tile was alive (has any cells not completely faded)
-							if (tileAlive > 1) {
+							if (((tileAlive & 255) > 1) || ((tileAlive >> 8) > 1)) {
 								// update tile flag
 								nextTiles |= (1 << b);
 							}

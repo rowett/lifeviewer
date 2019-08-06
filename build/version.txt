@@ -1,6 +1,9 @@
+Build 373
+- performance improvement for THEMEs with history
+
 Build 372
-- performance improvement for ZOOM < -2
-- performance improvement for THEMEs without history and ZOOM < -2
+- performance improvement for ZOOM < 1
+- performance improvement for THEMEs without history and ZOOM < 1
 - [[ TIME ]] output now has one decimal place
 
 Build 371
