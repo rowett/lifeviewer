@@ -232,7 +232,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 373,
+		/** @const {number} */ versionBuild : 374,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",

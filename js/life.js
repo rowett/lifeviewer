@@ -9577,8 +9577,8 @@
 								output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 								// add three sets of 4 bits
-								output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-								output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+								output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+								output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 								output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 								// save output 16bits
@@ -9624,8 +9624,8 @@
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 									// add three sets of 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 									// save output 16bits
@@ -9668,8 +9668,8 @@
 								output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 								// get next 4 bits
-								output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-								output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+								output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+								output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 								output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 								// save output 16bits
@@ -9700,16 +9700,16 @@
 								// check if at right edge
 								if (leftX >= width16 - 1) {
 									// process right edge tile first row
-									val0 = (gridRow0[leftX - 1] << 17) | (gridRow0[leftX] << 1);
-									val1 = (gridRow1[leftX - 1] << 17) | (origValue << 1);
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1);
+									val0 = ((gridRow0[leftX - 1] & 1) << 17) | (gridRow0[leftX] << 1);
+									val1 = ((gridRow1[leftX - 1] & 1) << 17) | (origValue << 1);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1);
 
 									// get first 4 bits
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 									// add three sets of 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 									// save output 16bits
@@ -9749,14 +9749,14 @@
 										// read three rows
 										val0 = val1;
 										val1 = val2;
-										val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1);
+										val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1);
 
 										// get first 4 bits
 										output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 										// add three sets of 4 bits
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 										// save output 16bits
@@ -9793,14 +9793,14 @@
 									// read three rows
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1);
 
 									// get first 4 bits
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 									// get next 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 									// save output 16bits
@@ -9829,16 +9829,16 @@
 									}
 								} else {
 									// process normal tile
-									val0 = (gridRow0[leftX - 1] << 17) | (gridRow0[leftX] << 1) | (gridRow0[leftX + 1] >> 15);
-									val1 = (gridRow1[leftX - 1] << 17) | (origValue << 1) | (gridRow1[leftX + 1] >> 15);
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val0 = ((gridRow0[leftX - 1] & 1) << 17) | (gridRow0[leftX] << 1) | (gridRow0[leftX + 1] >> 15);
+									val1 = ((gridRow1[leftX - 1] & 1) << 17) | (origValue << 1) | (gridRow1[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 
 									// get first 4 bits
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
 
 									// add three sets of 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 									// save output 16bits
@@ -9883,14 +9883,14 @@
 									// read three rows
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 
 									// get first 4 bits
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
 
 									// get next 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 									// save output 16bits
@@ -9918,10 +9918,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									if (output) {
@@ -9940,10 +9940,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									if (output) {
@@ -9962,10 +9962,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									if (output) {
@@ -9984,10 +9984,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									if (output) {
@@ -10006,10 +10006,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									if (output) {
@@ -10028,10 +10028,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									if (output) {
@@ -10050,10 +10050,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									if (output) {
@@ -10072,10 +10072,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									if (output) {
@@ -10094,10 +10094,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									if (output) {
@@ -10116,10 +10116,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									if (output) {
@@ -10138,10 +10138,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									if (output) {
@@ -10160,10 +10160,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									if (output) {
@@ -10182,10 +10182,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									if (output) {
@@ -10212,14 +10212,14 @@
 									// read three rows
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 
 									// get first 4 bits
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
 
 									// get next 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 									// save output 16bits
@@ -10631,8 +10631,8 @@
 								output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 								// add three sets of 4 bits
-								output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-								output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+								output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+								output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 								output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 								// save output 16bits
@@ -10684,8 +10684,8 @@
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 									// add three sets of 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 									// save output 16bits
@@ -10734,8 +10734,8 @@
 								output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 								// get next 4 bits
-								output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-								output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+								output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+								output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 								output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 								// save output 16bits
@@ -10771,16 +10771,16 @@
 								// check if at right edge
 								if (leftX >= width16 - 1) {
 									// process right edge tile first row
-									val0 = (gridRow0[leftX - 1] << 17) | (gridRow0[leftX] << 1);
-									val1 = (gridRow1[leftX - 1] << 17) | (origValue << 1);
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1);
+									val0 = ((gridRow0[leftX - 1] & 1) << 17) | (gridRow0[leftX] << 1);
+									val1 = ((gridRow1[leftX - 1] & 1) << 17) | (origValue << 1);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1);
 
 									// get first 4 bits
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 									// add three sets of 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 									// save output 16bits
@@ -10826,14 +10826,14 @@
 										// read three rows
 										val0 = val1;
 										val1 = val2;
-										val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1);
+										val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1);
 
 										// get first 4 bits
 										output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 										// add three sets of 4 bits
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 										// save output 16bits
@@ -10876,14 +10876,14 @@
 									// read three rows
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1);
 
 									// get first 4 bits
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 									// get next 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 									// save output 16bits
@@ -10917,16 +10917,16 @@
 									}
 								} else {
 									// process normal tile
-									val0 = (gridRow0[leftX - 1] << 17) | (gridRow0[leftX] << 1) | (gridRow0[leftX + 1] >> 15);
-									val1 = (gridRow1[leftX - 1] << 17) | (origValue << 1) | (gridRow1[leftX + 1] >> 15);
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val0 = ((gridRow0[leftX - 1] & 1) << 17) | (gridRow0[leftX] << 1) | (gridRow0[leftX + 1] >> 15);
+									val1 = ((gridRow1[leftX - 1] & 1) << 17) | (origValue << 1) | (gridRow1[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 
 									// get first 4 bits
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 									// add three sets of 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 									// save output 16bits
@@ -10977,14 +10977,14 @@
 									// read three rows
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 
 									// get first 4 bits
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 									// get next 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 									// save output 16bits
@@ -11018,10 +11018,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									population += bitCounts16[output];
@@ -11044,10 +11044,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									population += bitCounts16[output];
@@ -11070,10 +11070,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									population += bitCounts16[output];
@@ -11096,10 +11096,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									population += bitCounts16[output];
@@ -11122,10 +11122,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									population += bitCounts16[output];
@@ -11148,10 +11148,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									population += bitCounts16[output];
@@ -11174,10 +11174,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									population += bitCounts16[output];
@@ -11200,10 +11200,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									population += bitCounts16[output];
@@ -11226,10 +11226,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									population += bitCounts16[output];
@@ -11252,10 +11252,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									population += bitCounts16[output];
@@ -11278,10 +11278,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									population += bitCounts16[output];
@@ -11304,10 +11304,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									population += bitCounts16[output];
@@ -11330,10 +11330,10 @@
 									gridRow2 = grid[h + 1];
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 									nextGrid[h][leftX] = output;
 									population += bitCounts16[output];
@@ -11364,14 +11364,14 @@
 									// read three rows
 									val0 = val1;
 									val1 = val2;
-									val2 = (gridRow2[leftX - 1] << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
 
 									// get first 4 bits
 									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
 									// get next 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 8) & 63) << 6 | ((val2 >> 8) & 63) << 12] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 >> 4) & 63) << 6 | ((val2 >> 4) & 63) << 12] << 4;
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
 									// save output 16bits
@@ -13134,12 +13134,7 @@
 				// check for theme history
 				if (this.themeHistory) {
 					// use regular converter
-					//var i = 0, t = performance.now();
-					//for (i = 0; i < 10; i += 1) {
-						this.convertToPensTileRegular();
-					//}
-					//t = performance.now() - t;
-					//console.debug(t.toFixed(1));
+					this.convertToPensTileRegular();
 				} else {
 					this.convertToPensTileNoHistory();
 				}
@@ -15658,7 +15653,7 @@
 		    brightInc = 0,
 		   
 		    // index of pixel colour
-		    col = 0 | 0,
+		    col = 0,
 
 		    // create the width and height masks
 		    wm = this.widthMask & ~mask,
@@ -15711,7 +15706,7 @@
 			// process the row
 			for (w = 0; w < w8; w += 1) {
 				// lookup the colour
-				col = colourGridRow[x & wm] | 0;
+				col = colourGridRow[x & wm];
 
 				// set the pixel in the buffer
 				data32[idx] = pixelColours[col];
@@ -15721,43 +15716,43 @@
 				x += dyy;
 
 				// loop unroll
-				col = colourGridRow[x & wm] | 0;
+				col = colourGridRow[x & wm];
 				data32[idx] = pixelColours[col];
 				idx += 1;
 				x += dyy;
 
 				// loop unroll
-				col = colourGridRow[x & wm] | 0;
+				col = colourGridRow[x & wm];
 				data32[idx] = pixelColours[col];
 				idx += 1;
 				x += dyy;
 
 				// loop unroll
-				col = colourGridRow[x & wm] | 0;
+				col = colourGridRow[x & wm];
 				data32[idx] = pixelColours[col];
 				idx += 1;
 				x += dyy;
 
 				// loop unroll
-				col = colourGridRow[x & wm] | 0;
+				col = colourGridRow[x & wm];
 				data32[idx] = pixelColours[col];
 				idx += 1;
 				x += dyy;
 
 				// loop unroll
-				col = colourGridRow[x & wm] | 0;
+				col = colourGridRow[x & wm];
 				data32[idx] = pixelColours[col];
 				idx += 1;
 				x += dyy;
 
 				// loop unroll
-				col = colourGridRow[x & wm] | 0;
+				col = colourGridRow[x & wm];
 				data32[idx] = pixelColours[col];
 				idx += 1;
 				x += dyy;
 
 				// loop unroll
-				col = colourGridRow[x & wm] | 0;
+				col = colourGridRow[x & wm];
 				data32[idx] = pixelColours[col];
 				idx += 1;
 				x += dyy;

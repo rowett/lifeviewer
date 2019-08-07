@@ -1,3 +1,6 @@
+Build 374
+- performance improvement for next generation calculation (except LtL/HROT)
+
 Build 373
 - performance improvement for THEMEs with history
 
