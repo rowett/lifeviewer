@@ -651,6 +651,9 @@
 		// column occupancy array for grid bounding box calculation
 		this.columnOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16");
 
+		// row occupancy array for grid bounding box calculation
+		this.rowOccupied16 = this.allocator.allocate(Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16");
+
 		// current maximum grid size
 		/** @type {number} */ this.maxGridSize = 8192;
 
@@ -2927,6 +2930,9 @@
 		// column occupancy array for grid bounding box calculation
 		this.columnOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16");
 
+		// row occupancy array for grid bounding box calculation
+		this.rowOccupied16 = this.allocator.allocate(Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16");
+
 		// colour grid
 		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
 		this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
@@ -2987,6 +2993,9 @@
 
 		// column occupancy array for grid bounding box calculation
 		this.columnOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16");
+
+		// row occupancy array for grid bounding box calculation
+		this.rowOccupied16 = this.allocator.allocate(Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16");
 
 		// colour grid
 		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
@@ -3085,6 +3094,9 @@
 
 			// column occupancy array for grid bounding box calculation
 			this.columnOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16");
+
+			// row occupancy array for grid bounding box calculation
+			this.rowOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.rowOccupied16");
 
 			// colour grid
 			this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
@@ -9411,14 +9423,19 @@
 		    belowNextTileRow = null, aboveNextTileRow = null,
 		    tiles = 0, nextTiles = 0,
 		    belowNextTiles = 0, aboveNextTiles = 0,
-		    bottomY = 0, topY = 0, leftX = 0,
+			bottomY = 0, topY = 0, leftX = 0,
 
 		    // which cells were set in source
 		    origValue = 0,
 
 		    // column occupied
 		    columnOccupied16 = this.columnOccupied16,
-		    colOccupied = 0,
+			colOccupied = 0,
+			
+			// row occupied
+			rowOccupied16 = this.rowOccupied16,
+			rowOccupied = 0,
+			rowIndex = 0,
 
 		    // height of grid
 		    height = this.height,
@@ -9480,6 +9497,11 @@
 		// clear column occupied flags
 		for (th = 0; th < columnOccupied16.length; th += 1) {
 			columnOccupied16[th] = 0;
+		}
+
+		// clear row occupied flags
+		for (th = 0; th < rowOccupied16.length; th += 1) {
+			rowOccupied16[th] = 0;
 		}
 
 		// check start and end row are in range
@@ -9544,11 +9566,15 @@
 							// mark no cells in this column
 							colOccupied = 0;
 
+							// mark no cells in the tile rows
+							rowOccupied = 0;
+
 							// clear the edge flags
 							neighbours = 0;
 
 							// process the bottom row of the tile
 							h = bottomY;
+							rowIndex = 32768;
 
 							// deal with bottom row of the grid
 							if (h === 0) {
@@ -9572,42 +9598,38 @@
 								val0 = (gridRow0[leftX] << 1) | (gridRow0[leftX + 1] >> 15);
 								val1 = (origValue << 1) | (gridRow1[leftX + 1] >> 15);
 								val2 = (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+								output = val0 | val1 | val2;
+								if (output) {
+									// get first 4 bits
+									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
-								// get first 4 bits
-								output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
+									// add three sets of 4 bits
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
-								// add three sets of 4 bits
-								output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-								output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-								output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+									// check if any cells are set
+									if (output) {
+										// update row and column occupied flags
+										colOccupied |= output;
+										rowOccupied |= rowIndex;
+	
+										// check for right column now set
+										if ((output & 1) !== 0) {
+											neighbours |= LifeConstants.bottomRightSet;
+											}
+	
+										// bottom row set
+										neighbours |= LifeConstants.bottomSet;
+									}
+								}
 
 								// save output 16bits
 								nextGrid[h][leftX] = output;
-
-								// check if any cells are set
-								if (output) {
-									// update column occupied flag
-									colOccupied |= output;
-
-									// update min and max row
-									if (h < newBottomY) {
-										newBottomY = h;
-									}
-									if (h > newTopY) {
-										newTopY = h;
-									}
-
-									// check for right column now set
-									if ((output & 1) !== 0) {
-										neighbours |= LifeConstants.bottomRightSet;
-									}
-
-									// bottom row set
-									neighbours |= LifeConstants.bottomSet;
-								}
 								
 								// process left edge tile middle rows
 								h += 1;
+								rowIndex >>= 1;
 								while (h < topY - 1) {
 									// get original value for next row
 									origValue |= gridRow2[leftX];
@@ -9619,34 +9641,30 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = val0 | val1 | val2;
+									if (output) {
+										// get first 4 bits
+										output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
-									// get first 4 bits
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-
-									// add three sets of 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										// add three sets of 4 bits
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+	
+										// check if any cells are set
+										if (output) {
+											// update row and column occupied flags
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
+										}
+									}
 
 									// save output 16bits
 									nextGrid[h][leftX] = output;
 
-									// check if any cells are set
-									if (output) {
-										// update column occupied flag
-										colOccupied |= output;
-
-										// update min and max row
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
-										}
-									}
-
 									// next row
 									h += 1;
+									rowIndex >>= 1;
 								}
 
 								// process left edge last row
@@ -9663,39 +9681,34 @@
 								val0 = val1;
 								val1 = val2;
 								val2 = (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+								output = val0 | val1 | val2;
+								if (output) {
+									// get first 4 bits
+									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
-								// get first 4 bits
-								output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
+									// get next 4 bits
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
-								// get next 4 bits
-								output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-								output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-								output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+									// check if any cells are set
+									if (output) {
+										// update row and column occupied flags
+										colOccupied |= output;
+										rowOccupied |= rowIndex;
+	
+										// check for right column now set
+										if ((output & 1) !== 0) {
+											neighbours |= LifeConstants.topRightSet;
+										}
+	
+										// top row set
+										neighbours |= LifeConstants.topSet;
+									}
+								}
 
 								// save output 16bits
 								nextGrid[h][leftX] = output;
-
-								// check if any cells are set
-								if (output) {
-									// update column occupied flag
-									colOccupied |= output;
-
-									// update min and max row
-									if (h < newBottomY) {
-										newBottomY = h;
-									}
-									if (h > newTopY) {
-										newTopY = h;
-									}
-
-									// check for right column now set
-									if ((output & 1) !== 0) {
-										neighbours |= LifeConstants.topRightSet;
-									}
-
-									// top row set
-									neighbours |= LifeConstants.topSet;
-								}
 							} else {
 								// check if at right edge
 								if (leftX >= width16 - 1) {
@@ -9703,42 +9716,38 @@
 									val0 = ((gridRow0[leftX - 1] & 1) << 17) | (gridRow0[leftX] << 1);
 									val1 = ((gridRow1[leftX - 1] & 1) << 17) | (origValue << 1);
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1);
+									output = val0 | val1 | val2;
+									if (output) {
+										// get first 4 bits
+										output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
-									// get first 4 bits
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
+										// add three sets of 4 bits
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
-									// add three sets of 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										// check if any cells are set
+										if (output) {
+											// update row and column occupied flags
+													colOccupied |= output;
+											rowOccupied |= rowIndex;
+	
+											// check for left column now set
+											if ((output & 32768) !== 0) {
+												neighbours |= LifeConstants.bottomLeftSet;
+											}
+	
+											// bottom row set
+											neighbours |= LifeConstants.bottomSet;
+										}
+									}
 
 									// save output 16bits
 									nextGrid[h][leftX] = output;
 
-									// check if any cells are set
-									if (output) {
-										// update column occupied flag
-										colOccupied |= output;
-
-										// update min and max row
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
-										}
-
-										// check for left column now set
-										if ((output & 32768) !== 0) {
-											neighbours |= LifeConstants.bottomLeftSet;
-										}
-
-										// bottom row set
-										neighbours |= LifeConstants.bottomSet;
-									}
-
 									// process left edge tile middle rows
 									h += 1;
+									rowIndex >>= 1;
 									while (h < topY - 1) {
 										// get original value for next row
 										origValue |= gridRow2[leftX];
@@ -9750,34 +9759,30 @@
 										val0 = val1;
 										val1 = val2;
 										val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1);
+										output = val0 | val1 | val2;
+										if (output) {
+											// get first 4 bits
+											output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
-										// get first 4 bits
-										output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
-
-										// add three sets of 4 bits
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+											// add three sets of 4 bits
+											output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+											output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+											output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+	
+											// check if any cells are set
+											if (output) {
+												// update row and column occupied flags
+												colOccupied |= output;
+												rowOccupied |= rowIndex;
+											}
+										}
 
 										// save output 16bits
 										nextGrid[h][leftX] = output;
 
-										// check if any cells are set
-										if (output) {
-											// update column occupied flag
-											colOccupied |= output;
-
-											// update min and max row
-											if (h < newBottomY) {
-												newBottomY = h;
-											}
-											if (h > newTopY) {
-												newTopY = h;
-											}
-										}
-
 										// next row
 										h += 1;
+										rowIndex >>= 1;
 									}
 
 									// process left edge last row
@@ -9794,85 +9799,76 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1);
+									output = val0 | val1 | val2;
+									if (output) {
+										// get first 4 bits
+										output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
 
-									// get first 4 bits
-									output = indexLookup63[((val0 >> 12) & 63) | ((val1 >> 12) & 63) << 6 | ((val2 >> 12) & 63) << 12] << 12;
+										// get next 4 bits
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
-									// get next 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										// check if any cells are set
+										if (output) {
+											// update row and column occupied flags
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
+	
+											// check for left column now set
+											if ((output & 32768) !== 0) {
+													neighbours |= LifeConstants.topLeftSet;
+											}
+	
+											// top row set
+											neighbours |= LifeConstants.topSet;
+										}
+									}
 
 									// save output 16bits
 									nextGrid[h][leftX] = output;
-
-									// check if any cells are set
-									if (output) {
-										// update column occupied flag
-										colOccupied |= output;
-
-										// update min and max row
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
-										}
-
-										// check for left column now set
-										if ((output & 32768) !== 0) {
-											neighbours |= LifeConstants.topLeftSet;
-										}
-
-										// top row set
-										neighbours |= LifeConstants.topSet;
-									}
 								} else {
 									// process normal tile
 									val0 = ((gridRow0[leftX - 1] & 1) << 17) | (gridRow0[leftX] << 1) | (gridRow0[leftX + 1] >> 15);
 									val1 = ((gridRow1[leftX - 1] & 1) << 17) | (origValue << 1) | (gridRow1[leftX + 1] >> 15);
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = val0 | val1 | val2;
+									if (output) {
+										// get first 4 bits
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+	
+										// add three sets of 4 bits
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
-									// get first 4 bits
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-
-									// add three sets of 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										// check if any cells are set
+										if (output) {
+											// update row and column occupied flags
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
+	
+											// check for left column now set
+											if ((output & 32768) !== 0) {
+												neighbours |= LifeConstants.bottomLeftSet;
+											}
+	
+											// check for right column now set
+											if ((output & 1) !== 0) {
+												neighbours |= LifeConstants.bottomRightSet;
+											}
+	
+											// bottom row set
+											neighbours |= LifeConstants.bottomSet;
+										}
+									}
 
 									// save output 16bits
 									nextGrid[h][leftX] = output;
 
-									// check if any cells are set
-									if (output) {
-										// update column occupied flag
-										colOccupied |= output;
-
-										// update min and max row
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
-										}
-
-										// check for left column now set
-										if ((output & 32768) !== 0) {
-											neighbours |= LifeConstants.bottomLeftSet;
-										}
-
-										// check for right column now set
-										if ((output & 1) !== 0) {
-											neighbours |= LifeConstants.bottomRightSet;
-										}
-
-										// bottom row set
-										neighbours |= LifeConstants.bottomSet;
-									}
-
 									// process middle rows of the tile
 									h += 1;
+									rowIndex >>= 1;
 
 									// get original value for next row
 									origValue |= gridRow2[leftX];
@@ -9884,34 +9880,30 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = val0 | val1 | val2;
+									if (output) {
+										// get first 4 bits
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+	
+										// get next 4 bits
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
-									// get first 4 bits
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-
-									// get next 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										// check if any cells are set
+										if (output) {
+											// update row and column occupied flags
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
+										}
+									}
 
 									// save output 16bits
 									nextGrid[h][leftX] = output;
 
-									// check if any cells are set
-									if (output) {
-										// update column occupied flag
-										colOccupied |= output;
-
-										// update min and max row
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
-										}
-									}
-
 									// next row
 									h += 1;
+									rowIndex >>= 1;
 
 									// loop unroll
 									origValue |= gridRow2[leftX];
@@ -9919,21 +9911,20 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-									nextGrid[h][leftX] = output;
+									output = val0 | val1 | val2;
 									if (output) {
-										colOccupied |= output;
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										if (output) {
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
 										}
 									}
+									nextGrid[h][leftX] = output;
 									h += 1;
+									rowIndex >>= 1;
 
 									// loop unroll
 									origValue |= gridRow2[leftX];
@@ -9941,21 +9932,20 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-									nextGrid[h][leftX] = output;
+									output = val0 | val1 | val2;
 									if (output) {
-										colOccupied |= output;
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										if (output) {
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
 										}
 									}
+									nextGrid[h][leftX] = output;
 									h += 1;
+									rowIndex >>= 1;
 
 									// loop unroll
 									origValue |= gridRow2[leftX];
@@ -9963,21 +9953,20 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-									nextGrid[h][leftX] = output;
+									output = val0 | val1 | val2;
 									if (output) {
-										colOccupied |= output;
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										if (output) {
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
 										}
 									}
+									nextGrid[h][leftX] = output;
 									h += 1;
+									rowIndex >>= 1;
 
 									// loop unroll
 									origValue |= gridRow2[leftX];
@@ -9985,21 +9974,20 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-									nextGrid[h][leftX] = output;
+									output = val0 | val1 | val2;
 									if (output) {
-										colOccupied |= output;
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										if (output) {
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
 										}
 									}
+									nextGrid[h][leftX] = output;
 									h += 1;
+									rowIndex >>= 1;
 
 									// loop unroll
 									origValue |= gridRow2[leftX];
@@ -10007,21 +9995,20 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-									nextGrid[h][leftX] = output;
+									output = val0 | val1 | val2;
 									if (output) {
-										colOccupied |= output;
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										if (output) {
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
 										}
 									}
+									nextGrid[h][leftX] = output;
 									h += 1;
+									rowIndex >>= 1;
 
 									// loop unroll
 									origValue |= gridRow2[leftX];
@@ -10029,21 +10016,20 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-									nextGrid[h][leftX] = output;
+									output = val0 | val1 | val2;
 									if (output) {
-										colOccupied |= output;
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										if (output) {
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
 										}
 									}
+									nextGrid[h][leftX] = output;
 									h += 1;
+									rowIndex >>= 1;
 
 									// loop unroll
 									origValue |= gridRow2[leftX];
@@ -10051,21 +10037,20 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-									nextGrid[h][leftX] = output;
+									output = val0 | val1 | val2;
 									if (output) {
-										colOccupied |= output;
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										if (output) {
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
 										}
 									}
+									nextGrid[h][leftX] = output;
 									h += 1;
+									rowIndex >>= 1;
 
 									// loop unroll
 									origValue |= gridRow2[leftX];
@@ -10073,21 +10058,20 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-									nextGrid[h][leftX] = output;
+									output = val0 | val1 | val2;
 									if (output) {
-										colOccupied |= output;
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										if (output) {
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
 										}
 									}
+									nextGrid[h][leftX] = output;
 									h += 1;
+									rowIndex >>= 1;
 
 									// loop unroll
 									origValue |= gridRow2[leftX];
@@ -10095,21 +10079,20 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-									nextGrid[h][leftX] = output;
+									output = val0 | val1 | val2;
 									if (output) {
-										colOccupied |= output;
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										if (output) {
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
 										}
 									}
+									nextGrid[h][leftX] = output;
 									h += 1;
+									rowIndex >>= 1;
 
 									// loop unroll
 									origValue |= gridRow2[leftX];
@@ -10117,21 +10100,20 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-									nextGrid[h][leftX] = output;
+									output = val0 | val1 | val2;
 									if (output) {
-										colOccupied |= output;
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										if (output) {
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
 										}
 									}
+									nextGrid[h][leftX] = output;
 									h += 1;
+									rowIndex >>= 1;
 
 									// loop unroll
 									origValue |= gridRow2[leftX];
@@ -10139,21 +10121,20 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-									nextGrid[h][leftX] = output;
+									output = val0 | val1 | val2;
 									if (output) {
-										colOccupied |= output;
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										if (output) {
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
 										}
 									}
+									nextGrid[h][leftX] = output;
 									h += 1;
+									rowIndex >>= 1;
 
 									// loop unroll
 									origValue |= gridRow2[leftX];
@@ -10161,21 +10142,20 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-									nextGrid[h][leftX] = output;
+									output = val0 | val1 | val2;
 									if (output) {
-										colOccupied |= output;
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										if (output) {
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
 										}
 									}
+									nextGrid[h][leftX] = output;
 									h += 1;
+									rowIndex >>= 1;
 
 									// loop unroll
 									origValue |= gridRow2[leftX];
@@ -10183,21 +10163,20 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-									nextGrid[h][leftX] = output;
+									output = val0 | val1 | val2;
 									if (output) {
-										colOccupied |= output;
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										if (output) {
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
 										}
 									}
+									nextGrid[h][leftX] = output;
 									h += 1;
+									rowIndex >>= 1;
 
 									// get original value
 									origValue |= gridRow2[leftX];
@@ -10213,44 +10192,39 @@
 									val0 = val1;
 									val1 = val2;
 									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
+									output = val0 | val1 | val2;
+									if (output) {
+										// get first 4 bits
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
 
-									// get first 4 bits
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 >> 12) << 12] << 12;
+										// get next 4 bits
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
 
-									// get next 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+										// check if any cells are set
+										if (output) {
+											// update row and column occupied flag
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
+	
+											// check for left column now set
+											if ((output & 32768) !== 0) {
+												neighbours |= LifeConstants.topLeftSet;
+											}
+	
+											// check for right column now set
+											if ((output & 1) !== 0) {
+												neighbours |= LifeConstants.topRightSet;
+											}
+	
+											// top row set
+											neighbours |= LifeConstants.topSet;
+										}
+									}
 
 									// save output 16bits
 									nextGrid[h][leftX] = output;
-
-									// check if any cells are set
-									if (output) {
-										// update column occupied flag
-										colOccupied |= output;
-
-										// update min and max row
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h > newTopY) {
-											newTopY = h;
-										}
-
-										// check for left column now set
-										if ((output & 32768) !== 0) {
-											neighbours |= LifeConstants.topLeftSet;
-										}
-
-										// check for right column now set
-										if ((output & 1) !== 0) {
-											neighbours |= LifeConstants.topRightSet;
-										}
-
-										// top row set
-										neighbours |= LifeConstants.topSet;
-									}
 								}
 							}
 
@@ -10358,6 +10332,9 @@
 									}
 								}
 							}
+
+							// save the row occupied falgs
+							rowOccupied16[th] |= rowOccupied;
 						}
 
 						// next tile columns
@@ -10395,9 +10372,24 @@
 			}
 		}
 
+		for (th = 0; th < rowOccupied16.length; th += 1) {
+			if (rowOccupied16[th]) {
+				if (th < newBottomY) {
+					newBottomY = th;
+				}
+				if (th > newTopY) {
+					newTopY = th;
+				}
+			}
+		}
+
 		// convert new width to pixels
 		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
 		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
+
+		// convert new height to pixels
+		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
+		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
 	
 		// ensure the box is not blank
 		if (newTopY < 0) {
