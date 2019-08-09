@@ -1660,30 +1660,33 @@
 
 		// only add undo/redo records and draw if the new state is different than the current state
 		if (colour !== state) {
-			// if size hint is bigger than current buffer then grow to the hint
-			sizeHint = (sizeHint | 0) * 3;
-			if (sizeHint > length) {
-				newBuffer = this.engine.allocator.allocate(Int16, sizeHint, "View.currentEdit");
-				if (length > 0) {
-					newBuffer.set(this.currentEdit.slice(0, length));
+			// check for undo/redo
+			if (!this.noHistory) {
+				// if size hint is bigger than current buffer then grow to the hint
+				sizeHint = (sizeHint | 0) * 3;
+				if (sizeHint > length) {
+					newBuffer = this.engine.allocator.allocate(Int16, sizeHint, "View.currentEdit");
+					if (length > 0) {
+						newBuffer.set(this.currentEdit.slice(0, length));
+					}
+					this.currentEdit = newBuffer;
+					length = sizeHint;
 				}
-				this.currentEdit = newBuffer;
-				length = sizeHint;
-			}
-
-			// check if the edit buffer needs to grow
-			if (i >= length) {
-				newBuffer = this.engine.allocator.allocate(Int16, length + ViewConstants.editChunk * 3, "View.currentEdit");
-				if (length > 0) {
-					newBuffer.set(this.currentEdit.slice(0, length));
+	
+				// check if the edit buffer needs to grow
+				if (i >= length) {
+					newBuffer = this.engine.allocator.allocate(Int16, length + ViewConstants.editChunk * 3, "View.currentEdit");
+					if (length > 0) {
+						newBuffer.set(this.currentEdit.slice(0, length));
+					}
+					this.currentEdit = newBuffer;
 				}
-				this.currentEdit = newBuffer;
+				this.currentEdit[i] = x - xOff;
+				this.currentEdit[i + 1] = y - yOff;
+				// write both the new state and original state into one 16 bit integer
+				this.currentEdit[i + 2] = (colour << 8) | state;
+				this.currentEditIndex += 3;
 			}
-			this.currentEdit[i] = x - xOff;
-			this.currentEdit[i + 1] = y - yOff;
-			// write both the new state and original state into one 16 bit integer
-			this.currentEdit[i + 2] = (colour << 8) | state;
-			this.currentEditIndex += 3;
 	
 			// set the state
 			return this.engine.setState(x, y, colour, deadZero);
@@ -8176,7 +8179,7 @@
 			}
 
 			// compute potential size of edit buffer
-			sizeHint = me.randomDensity / 100 * (y2 - y1 + 1) * (x2 - x1 + 1);
+			sizeHint = (y2 - y1 + 1) * (x2 - x1 + 1);
 
 			// draw random cells
 			for (y = y1; y <= y2; y += 1) {

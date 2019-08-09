@@ -1,5 +1,7 @@
 Build 374
 - performance improvement for next generation calculation (except LtL/HROT)
+- population statistics were incorrect if stats were off and pattern had bounded grid
+- improved allocation speed for random grid
 
 Build 373
 - performance improvement for THEMEs with history

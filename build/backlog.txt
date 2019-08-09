@@ -10,6 +10,7 @@ Investigate:
 Planned:
     menu items coordinates should be reflected based on compass position
     fit grid with hex patterns
+    fix random grid failing when pattern is up to boundaries
 
 In progress:
 [STARTED]add type information for closure compiler
