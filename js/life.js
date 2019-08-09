@@ -9655,8 +9655,10 @@
 								nextGrid[h][leftX] = output;
 
 								// update statistics
-								births += bitCounts16[output & ~origValue];
-								deaths += bitCounts16[origValue & ~output];
+								if (output | origValue) {
+									births += bitCounts16[output & ~origValue];
+									deaths += bitCounts16[origValue & ~output];
+								}
 								
 								// process left edge tile middle rows
 								h += 1;
@@ -9698,8 +9700,10 @@
 									nextGrid[h][leftX] = output;
 
 									// update statistics
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 									
 									// next row
 									h += 1;
@@ -9754,8 +9758,10 @@
 								nextGrid[h][leftX] = output;
 
 								// update statistics
-								births += bitCounts16[output & ~origValue];
-								deaths += bitCounts16[origValue & ~output];
+								if (output | origValue) {
+									births += bitCounts16[output & ~origValue];
+									deaths += bitCounts16[origValue & ~output];
+								}
 							} else {
 								// check if at right edge
 								if (leftX >= width16 - 1) {
@@ -9796,8 +9802,10 @@
 									nextGrid[h][leftX] = output;
 
 									// update statistics
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 
 									// process left edge tile middle rows
 									h += 1;
@@ -9839,8 +9847,10 @@
 										nextGrid[h][leftX] = output;
 
 										// update statistics
-										births += bitCounts16[output & ~origValue];
-										deaths += bitCounts16[origValue & ~output];
+										if (output | origValue) {
+											births += bitCounts16[output & ~origValue];
+											deaths += bitCounts16[origValue & ~output];
+										}
 
 										// next row
 										h += 1;
@@ -9895,8 +9905,10 @@
 									nextGrid[h][leftX] = output;
 
 									// update statistics
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 								} else {
 									// process normal tile
 									val0 = ((gridRow0[leftX - 1] & 1) << 17) | (gridRow0[leftX] << 1) | (gridRow0[leftX + 1] >> 15);
@@ -9940,8 +9952,10 @@
 									nextGrid[h][leftX] = output;
 
 									// update statistics
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 
 									// process middle rows of the tile
 									h += 1;
@@ -9983,8 +9997,10 @@
 									nextGrid[h][leftX] = output;
 
 									// update statistics
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 
 									// next row
 									h += 1;
@@ -10010,8 +10026,10 @@
 										}
 									}
 									nextGrid[h][leftX] = output;
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 									h += 1;
 									rowIndex >>= 1;
 
@@ -10035,8 +10053,10 @@
 										}
 									}
 									nextGrid[h][leftX] = output;
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 									h += 1;
 									rowIndex >>= 1;
 
@@ -10060,8 +10080,10 @@
 										}
 									}
 									nextGrid[h][leftX] = output;
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 									h += 1;
 									rowIndex >>= 1;
 
@@ -10085,8 +10107,10 @@
 										}
 									}
 									nextGrid[h][leftX] = output;
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 									h += 1;
 									rowIndex >>= 1;
 
@@ -10110,8 +10134,10 @@
 										}
 									}
 									nextGrid[h][leftX] = output;
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 									h += 1;
 									rowIndex >>= 1;
 
@@ -10135,8 +10161,10 @@
 										}
 									}
 									nextGrid[h][leftX] = output;
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 									h += 1;
 									rowIndex >>= 1;
 
@@ -10160,8 +10188,10 @@
 										}
 									}
 									nextGrid[h][leftX] = output;
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 									h += 1;
 									rowIndex >>= 1;
 
@@ -10185,8 +10215,10 @@
 										}
 									}
 									nextGrid[h][leftX] = output;
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 									h += 1;
 									rowIndex >>= 1;
 
@@ -10210,8 +10242,10 @@
 										}
 									}
 									nextGrid[h][leftX] = output;
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 									h += 1;
 									rowIndex >>= 1;
 
@@ -10235,8 +10269,10 @@
 										}
 									}
 									nextGrid[h][leftX] = output;
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 									h += 1;
 									rowIndex >>= 1;
 
@@ -10260,8 +10296,10 @@
 										}
 									}
 									nextGrid[h][leftX] = output;
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 									h += 1;
 									rowIndex >>= 1;
 
@@ -10285,8 +10323,10 @@
 										}
 									}
 									nextGrid[h][leftX] = output;
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 									h += 1;
 									rowIndex >>= 1;
 
@@ -10310,8 +10350,10 @@
 										}
 									}
 									nextGrid[h][leftX] = output;
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 									h += 1;
 									rowIndex >>= 1;
 
@@ -10368,8 +10410,10 @@
 									nextGrid[h][leftX] = output;
 
 									// update statistics
-									births += bitCounts16[output & ~origValue];
-									deaths += bitCounts16[origValue & ~output];
+									if (output | origValue) {
+										births += bitCounts16[output & ~origValue];
+										deaths += bitCounts16[origValue & ~output];
+									}
 								}
 							}
 
