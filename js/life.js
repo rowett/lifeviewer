@@ -9645,6 +9645,9 @@
 
 										// bottom row set
 										neighbours |= LifeConstants.bottomSet;
+
+										// update population
+										population += bitCounts16[output];
 									}
 								}
 
@@ -9652,7 +9655,6 @@
 								nextGrid[h][leftX] = output;
 
 								// update statistics
-								population += bitCounts16[output];
 								births += bitCounts16[output & ~origValue];
 								deaths += bitCounts16[origValue & ~output];
 								
@@ -9686,6 +9688,9 @@
 											// update row and column occupied flags
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+
+											// update population
+											population += bitCounts16[output];
 										}
 									}
 
@@ -9693,7 +9698,6 @@
 									nextGrid[h][leftX] = output;
 
 									// update statistics
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 									
@@ -9733,6 +9737,9 @@
 										colOccupied |= output;
 										rowOccupied |= rowIndex;
 
+										// update population
+										population += bitCounts16[output];
+
 										// check for right column now set
 										if ((output & 1) !== 0) {
 											neighbours |= LifeConstants.topRightSet;
@@ -9747,7 +9754,6 @@
 								nextGrid[h][leftX] = output;
 
 								// update statistics
-								population += bitCounts16[output];
 								births += bitCounts16[output & ~origValue];
 								deaths += bitCounts16[origValue & ~output];
 							} else {
@@ -9770,8 +9776,11 @@
 										// check if any cells are set
 										if (output) {
 											// update row and column occupied flags
-													colOccupied |= output;
+											colOccupied |= output;
 											rowOccupied |= rowIndex;
+
+											// update population
+											population += bitCounts16[output];
 
 											// check for left column now set
 											if ((output & 32768) !== 0) {
@@ -9787,7 +9796,6 @@
 									nextGrid[h][leftX] = output;
 
 									// update statistics
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 
@@ -9821,6 +9829,9 @@
 												// update row and column occupied flags
 												colOccupied |= output;
 												rowOccupied |= rowIndex;
+
+												// update population
+												population += bitCounts16[output];
 											}
 										}
 
@@ -9828,7 +9839,6 @@
 										nextGrid[h][leftX] = output;
 
 										// update statistics
-										population += bitCounts16[output];
 										births += bitCounts16[output & ~origValue];
 										deaths += bitCounts16[origValue & ~output];
 
@@ -9868,6 +9878,9 @@
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
 
+											// update population
+											population += bitCounts16[output];
+
 											// check for left column now set
 											if ((output & 32768) !== 0) {
 													neighbours |= LifeConstants.topLeftSet;
@@ -9882,7 +9895,6 @@
 									nextGrid[h][leftX] = output;
 
 									// update statistics
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 								} else {
@@ -9906,6 +9918,9 @@
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
 	
+											// update population
+											population += bitCounts16[output];
+
 											// check for left column now set
 											if ((output & 32768) !== 0) {
 												neighbours |= LifeConstants.bottomLeftSet;
@@ -9925,7 +9940,6 @@
 									nextGrid[h][leftX] = output;
 
 									// update statistics
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 
@@ -9959,6 +9973,9 @@
 											// update row and column occupied flags
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+
+											// update population
+											population += bitCounts16[output];
 										}
 									}
 
@@ -9966,7 +9983,6 @@
 									nextGrid[h][leftX] = output;
 
 									// update statistics
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 
@@ -9990,10 +10006,10 @@
 										if (output) {
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+											population += bitCounts16[output];
 										}
 									}
 									nextGrid[h][leftX] = output;
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 									h += 1;
@@ -10015,10 +10031,10 @@
 										if (output) {
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+											population += bitCounts16[output];
 										}
 									}
 									nextGrid[h][leftX] = output;
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 									h += 1;
@@ -10040,10 +10056,10 @@
 										if (output) {
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+											population += bitCounts16[output];
 										}
 									}
 									nextGrid[h][leftX] = output;
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 									h += 1;
@@ -10065,10 +10081,10 @@
 										if (output) {
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+											population += bitCounts16[output];
 										}
 									}
 									nextGrid[h][leftX] = output;
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 									h += 1;
@@ -10090,10 +10106,10 @@
 										if (output) {
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+											population += bitCounts16[output];
 										}
 									}
 									nextGrid[h][leftX] = output;
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 									h += 1;
@@ -10115,10 +10131,10 @@
 										if (output) {
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+											population += bitCounts16[output];
 										}
 									}
 									nextGrid[h][leftX] = output;
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 									h += 1;
@@ -10140,10 +10156,10 @@
 										if (output) {
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+											population += bitCounts16[output];
 										}
 									}
 									nextGrid[h][leftX] = output;
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 									h += 1;
@@ -10165,10 +10181,10 @@
 										if (output) {
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+											population += bitCounts16[output];
 										}
 									}
 									nextGrid[h][leftX] = output;
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 									h += 1;
@@ -10190,10 +10206,10 @@
 										if (output) {
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+											population += bitCounts16[output];
 										}
 									}
 									nextGrid[h][leftX] = output;
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 									h += 1;
@@ -10215,10 +10231,10 @@
 										if (output) {
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+											population += bitCounts16[output];
 										}
 									}
 									nextGrid[h][leftX] = output;
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 									h += 1;
@@ -10240,10 +10256,10 @@
 										if (output) {
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+											population += bitCounts16[output];
 										}
 									}
 									nextGrid[h][leftX] = output;
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 									h += 1;
@@ -10265,10 +10281,10 @@
 										if (output) {
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+											population += bitCounts16[output];
 										}
 									}
 									nextGrid[h][leftX] = output;
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 									h += 1;
@@ -10290,10 +10306,10 @@
 										if (output) {
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
+											population += bitCounts16[output];
 										}
 									}
 									nextGrid[h][leftX] = output;
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 									h += 1;
@@ -10330,6 +10346,9 @@
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
 
+											// update population
+											population += bitCounts16[output];
+
 											// check for left column now set
 											if ((output & 32768) !== 0) {
 												neighbours |= LifeConstants.topLeftSet;
@@ -10349,7 +10368,6 @@
 									nextGrid[h][leftX] = output;
 
 									// update statistics
-									population += bitCounts16[output];
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 								}
