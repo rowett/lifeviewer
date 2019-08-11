@@ -1,6 +1,7 @@
 Build 375
 - increased maximum viewer size to 4096x4096
 - improved rendering to window speed
+- fixed B0 rules
 
 Build 374
 - performance improvement for next generation calculation (except LtL/HROT)

@@ -9419,7 +9419,7 @@
 
 	// update the life grid region using tiles
 	Life.prototype.nextGenerationTile = function() {
-		var indexLookup63 = null,
+		var indexLookup63 = this.indexLookup63,
 		    gridRow0 = null,
 		    gridRow1 = null,
 		    gridRow2 = null,
@@ -9488,9 +9488,6 @@
 		    // flags for edges of tile occupied
 		    neighbours = 0;
 
-		// get lookup buffer
-		indexLookup63 = this.indexLookup63;
-
 		// switch buffers each generation
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextGrid16;
@@ -9498,10 +9495,8 @@
 			tileGrid = this.nextTileGrid;
 			nextTileGrid = this.tileGrid;
 
-			if (this.altSpecified) {
-				// get alternate lookup buffer if specified
-				indexLookup63 = this.indexLookup632;
-			}
+			// get alternate lookup buffer if specified
+			indexLookup63 = this.indexLookup632;
 		} else {
 			grid = this.grid16;
 			nextGrid = this.nextGrid16;
@@ -10629,7 +10624,7 @@
 
 	// update the life grid region using tiles (no stats)
 	Life.prototype.nextGenerationOnlyTile = function() {
-		var indexLookup63 = null,
+		var indexLookup63 = this.indexLookup63,
 		    gridRow0 = null,
 		    gridRow1 = null,
 		    gridRow2 = null,
@@ -10691,9 +10686,6 @@
 		    // flags for edges of tile occupied
 		    neighbours = 0;
 
-		// get lookup buffer
-		indexLookup63 = this.indexLookup63;
-
 		// switch buffers each generation
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextGrid16;
@@ -10701,10 +10693,8 @@
 			tileGrid = this.nextTileGrid;
 			nextTileGrid = this.tileGrid;
 
-			if (this.altSpecified) {
-				// get alternate lookup buffer if specified
-				indexLookup63 = this.indexLookup632;
-			}
+			// get alternate lookup buffer if specified
+			indexLookup63 = this.indexLookup632;
 		} else {
 			grid = this.grid16;
 			nextGrid = this.nextGrid16;
