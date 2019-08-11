@@ -359,14 +359,14 @@
 		/** @const {number} */ minNoGUIHeight: 64,
 		/** @const {number} */ minLegacyWidth : 480,
 		/** @const {number} */ minViewerWidth : 560,
-		/** @const {number} */ maxViewerWidth : 2048,
+		/** @const {number} */ maxViewerWidth : 4096,
 
 		// extra gui height for top and bottom row of controls (used during AutoFit)
 		/** @const {number} */ guiExtraHeight : 80,
 
 		// minimum and maximum height of the Viewer
 		/** @const {number} */ minViewerHeight : 240,
-		/** @const {number} */ maxViewerHeight : 2048,
+		/** @const {number} */ maxViewerHeight : 4096,
 
 		// minimum height to display navigation menu in the Viewer
 		/** @const {number} */ minMenuHeight : 480,
@@ -1525,12 +1525,6 @@
 
 		// main context
 		this.mainContext = null;
-
-		// offboard canvas
-		this.offCanvas = null;
-
-		// offboard context
-		/** @type {CanvasRenderingContext2D} */ this.offContext = null;
 
 		// generation speed
 		/** @type {number} */ this.genSpeed = 60;
@@ -10163,27 +10157,24 @@
 				this.mainCanvas.height = viewerHeight;
 			}
 
-			// get the 2d drawing context
+			// setup the 2d drawing context
 			this.mainContext = this.mainCanvas.getContext("2d", {alpha: false});
 			this.mainContext.globalAlpha = 1;
 			this.mainContext.fillStyle = "black";
 			this.mainContext.imageSmoothingEnabled = false;
 			this.mainContext.fillRect(0, 0, this.mainCanvas.width, this.mainCanvas.height);
 
-			// create the offboard canvas
-			this.offCanvas = document.createElement("canvas");
-			this.offCanvas.width = this.mainCanvas.width;
-			this.offCanvas.height = this.mainCanvas.height;
-			this.offContext = this.offCanvas.getContext("2d", {alpha: false});
-			this.offContext.imageSmoothingEnabled = false;
+			// set the font alignment
+			this.mainContext.textAlign = "left";
+			this.mainContext.textBaseline = "middle";
 
 			// set the width and height from the canvas
 			this.displayWidth = this.mainCanvas.width;
 			this.displayHeight = this.mainCanvas.height;
 
 			// initialise life engine
-			this.engine = new Life(this.offContext, this.displayWidth, this.displayHeight, this.defaultGridWidth, this.defaultGridHeight);
-			this.engine.initEngine(this.offContext, this.displayWidth, this.displayHeight);
+			this.engine = new Life(this.mainContext, this.displayWidth, this.displayHeight, this.defaultGridWidth, this.defaultGridHeight);
+			this.engine.initEngine(this.mainContext, this.displayWidth, this.displayHeight);
 
 			// create the elapsed times buffer
 			this.elapsedTimes = this.engine.allocator.allocate(Float32, ViewConstants.numElapsedTimes, "View.elapsedTimes");
@@ -10191,15 +10182,12 @@
 			// create the starfield
 			this.starField = new Stars(ViewConstants.numStars, this.engine.allocator);
 
-			// set the font alignment
-			this.offContext.textAlign = "left";
-			this.offContext.textBaseline = "middle";
 
 			// create the icon manager and icons
-			this.createIcons(this.offContext);
+			this.createIcons(this.mainContext);
 
 			// create the menu manager
-			this.menuManager = new MenuManager(this.mainContext, this.offContext, "24px Arial", this.iconManager, this, this.gotFocus);
+			this.menuManager = new MenuManager(this.mainCanvas, this.mainContext, "24px Arial", this.iconManager, this, this.gotFocus);
 			
 			// disable fps display
 			this.menuManager.showTiming = false;
@@ -10340,7 +10328,7 @@
 		var result = message,
 
 		    // rendering context
-		    ctx = this.offContext,
+		    ctx = this.mainContext,
 
 		    // width of title bar
 		    titleWidth = 420,
@@ -10560,11 +10548,9 @@
 		}
 		this.mainCanvas.width = this.displayWidth;
 		this.mainCanvas.height = this.displayHeight;
-		this.offCanvas.width = this.displayWidth;
-		this.offCanvas.height = this.displayHeight;
 
 		// set text alignment
-		this.offContext.textBaseline = "middle";
+		this.mainContext.textBaseline = "middle";
 
 		// resize arrays
 		this.engine.resizeDisplay(this.displayWidth, this.displayHeight);

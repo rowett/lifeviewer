@@ -392,7 +392,7 @@
 			this.height = this.iconsImage.height;
 
 			// create a context the same size as the image and draw the image onto it
-			this.iconCanvas = document.createElement("canvas");
+			this.iconCanvas = document.createElement("canvas");	// TBD offscreencanvas?
 			this.iconCanvas.width = this.width;
 			this.iconCanvas.height = this.height;
 			this.iconContext = this.iconCanvas.getContext("2d");
@@ -2079,10 +2079,9 @@
 	/**
 	 * @constructor
 	 */
-	function MenuManager(mainContext, offContext, defaultFont, iconManager, caller, gotFocus) {
+	function MenuManager(mainCanvas, mainContext, defaultFont, iconManager, caller, gotFocus) {
 		var me = this,
-		    i = 0,
-		    mainCanvas = mainContext.canvas;
+		    i = 0;
 
 		// whether event processed
 		this.processedEvent = true;
@@ -2183,11 +2182,11 @@
 		// icon manager
 		this.iconManager = iconManager;
 
+		// main drawing canvas
+		this.mainCanvas = mainCanvas;
+
 		// main drawing context
 		this.mainContext = mainContext;
-
-		// offboard drawing context
-		this.offContext = offContext;
 
 		// mouse status
 		this.mouseDown = false;
@@ -2230,7 +2229,7 @@
 		this.toggleRequired = false;
 
 		// notification
-		this.notification = new TextAlert(25, 100, 25, offContext, this);
+		this.notification = new TextAlert(25, 100, 25, mainContext, this);
 
 		// last mouse up time
 		this.lastMouseUp = performance.now();
@@ -2325,7 +2324,7 @@
 	// compute canvas offset
 	MenuManager.prototype.computeCanvasOffset = function() {
 		// get the canvas
-		var mainCanvas = this.mainContext.canvas,
+		var mainCanvas = this.mainCanvas,
 		    
 		    // get the item parent
 		    itemParent = mainCanvas.offsetParent;
@@ -2362,7 +2361,7 @@
 	// create menu
 	MenuManager.prototype.createMenu = function(callback, activate, caller) {
 		// create menu object
-		var menuList = new MenuList(callback, activate, caller, this.offContext, this.defaultFont);
+		var menuList = new MenuList(callback, activate, caller, this.mainContext, this.defaultFont);
 
 		// set default style
 		menuList.fgCol = this.fgCol;
@@ -2400,7 +2399,7 @@
 		    controlY = 0,
 
 		    // get the drawing context
-		    oc = this.offContext,
+		    oc = this.mainContext,
 
 		    // tooltip text
 			toolTip = "",
@@ -2626,7 +2625,7 @@
 		    load = 1,
 
 		    // get the drawing context
-		    oc = me.offContext,
+		    oc = me.mainContext,
 
 		    // text message
 		    message = "",
@@ -2886,14 +2885,11 @@
 			oc.globalAlpha = 1;
 		}
 
-		// copy to the main drawing canvas
-		me.mainContext.drawImage(oc.canvas, 0, 0);
-
 		// update the cursor if it has changed
 		if (me.currentMenu.cursorCurrent !== me.currentMenu.cursorSet) {
 			me.currentMenu.cursorSet = me.currentMenu.cursorCurrent;
 			// set the cursor style
-			me.mainContext.canvas.style.cursor = me.currentMenu.cursorSet;
+			me.mainCanvas.style.cursor = me.currentMenu.cursorSet;
 		}
 
 		// mark that event processed
@@ -2915,7 +2911,7 @@
 
 			// initialise the menu
 			this.currentMenu = activeMenuList;
-			this.offContext.font = this.defaultFont;
+			this.mainContext.font = this.defaultFont;
 			this.currentMenu.init();
 
 			// call the activate callback if defined
@@ -2937,7 +2933,7 @@
 			currentMenu = this.currentMenu;
 
 			// set the menu font
-			this.offContext.font = this.defaultFont;
+			this.mainContext.font = this.defaultFont;
 
 			// set the mouse position
 			currentMenu.mouseX = this.mouseLastX;
@@ -3067,7 +3063,7 @@
 			// check if the canvas has focus
 			if (!me.hasFocus) {
 				// set focus on canvas element
-				me.mainContext.canvas.focus();
+				me.mainCanvas.focus();
 				me.hasFocus = true;
 
 				// clear click to focus notification
@@ -3163,7 +3159,7 @@
 				}
 
 				// remove focus
-				me.mainContext.canvas.blur();
+				me.mainCanvas.blur();
 				me.hasFocus = false;
 
 				// mark mouse not down

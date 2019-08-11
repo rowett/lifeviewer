@@ -9532,10 +9532,8 @@
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		if (nextTileGrid[0].fill) {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				nextTileGrid[th].fill(0);
-			}
+		if (nextTileGrid.whole.fill) {
+			nextTileGrid.whole.fill(0);
 		} else {
 			for (th = 0; th < nextTileGrid.length; th += 1) {
 				tileRow = nextTileGrid[th];
@@ -10737,10 +10735,8 @@
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		if (nextTileGrid[0].fill) {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				nextTileGrid[th].fill(0);
-			}
+		if (nextTileGrid.whole.fill) {
+			nextTileGrid.whole.fill(0);
 		} else {
 			for (th = 0; th < nextTileGrid.length; th += 1) {
 				tileRow = nextTileGrid[th];
@@ -18073,7 +18069,7 @@
 		// check if copy required
 		if (!this.imageData.data.buffer) {
 			s = this.imageData.data;
-		       	t = this.data8;
+			t = this.data8;
 
 			// get buffer length
 			l = t.length;
