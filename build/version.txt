@@ -1,3 +1,7 @@
+Build 375
+- increased maximum viewer size to 4096x4096
+- improved rendering to window speed
+
 Build 374
 - performance improvement for next generation calculation (except LtL/HROT)
 - population statistics were incorrect if stats were off and pattern had bounded grid

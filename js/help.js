@@ -1996,7 +1996,7 @@
 
 	// draw help text
 	Help.drawHelpText = function(view) {
-		var ctx = view.offContext,
+		var ctx = view.mainContext,
 		    lineHeight = 19;
 
 		// compute the number of lines that will fit on the page
@@ -2163,7 +2163,7 @@
 
 	// draw script errors
 	Help.drawErrors = function(view) {
-		var ctx = view.offContext,
+		var ctx = view.mainContext,
 
 		    // text line height in pixels
 		    lineHeight = 19,
