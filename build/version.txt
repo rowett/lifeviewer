@@ -1,5 +1,6 @@
 Build 377
 - custom colours were reporting false errors
+- fixed issue with LtL/HROT 2 state patterns and THEMEs with no history
 
 Build 376
 - added endian information and platform capabilities to "Help" -> "Info" -> "Engine"

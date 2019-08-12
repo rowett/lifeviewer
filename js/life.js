@@ -3955,7 +3955,7 @@
 		this.themeHistory = newTheme.hasHistory(this.isLifeHistory);
 		
 		// check if history was just switched off
-		if (currentHistory && !this.themeHistory) {
+		if (currentHistory && !this.themeHistory && !this.isHROT) {
 			if ((this.counter & 1) === 0) {
 				this.resetColourGridBox(this.nextGrid16);
 			} else {
