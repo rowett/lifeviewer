@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global LifeConstants ViewConstants ColourManager Keywords WaypointConstants DocConfig PatternManager Controller AliasManager */
+	/* global LifeConstants ViewConstants ColourManager Keywords WaypointConstants DocConfig PatternManager Controller AliasManager littleEndian arrayFill copyWithin */
 
 	// Help singleton
 	var Help = {
@@ -1426,6 +1426,11 @@
 		} else {
 			y = this.renderHelpLine(view, "Universe", "Single", ctx, x, y, height, helpLine);
 		}
+		y = this.renderHelpLine(view, "Endian", (littleEndian ? "Little": "Big"), ctx, x, y, height, helpLine);
+		// @ts-ignore
+		y = this.renderHelpLine(view, "ArrayFill", (arrayFill ? "Yes": "No"), ctx, x, y, height, helpLine);
+		// @ts-ignore
+		y = this.renderHelpLine(view, "CopyWithin", (copyWithin ? "Yes": "No"), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// colour set information

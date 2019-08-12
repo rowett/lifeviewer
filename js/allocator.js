@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global Uint8Array Uint16Array Uint32Array Int8Array Int16Array Int32Array Float32Array Float64Array */
+	/* global Uint8Array Uint16Array Uint32Array Int8Array Int16Array Int32Array Float32Array Float64Array arrayFill */
 
 	// allocation bits
 	var AllocBits = {
@@ -367,7 +367,8 @@
 			// check whether to fill with an initial value
 			if (initial !== 0) {
 				// fill the array with the initial value
-				if (whole.fill) {
+				// @ts-ignore
+				if (arrayFill) {
 					// use fill if available
 					whole.fill(initial);
 				}
@@ -399,7 +400,8 @@
 		// check whether to fill with an initial value
 		if (initial !== 0) {
 			// fill the array with initial value
-			if (row.fill) {
+			// @ts-ignore
+			if (arrayFill) {
 				// use fill if available
 				row.fill(initial);
 			}

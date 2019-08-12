@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global ColourManager Script ViewConstants Pattern Keywords PatternManager WaypointConstants DocConfig */
+	/* global ColourManager Script ViewConstants Pattern Keywords PatternManager WaypointConstants DocConfig arrayFill */
 
 	// singleton
 	var ScriptParser = {
@@ -1106,8 +1106,13 @@
 		// look for a start script token
 		if (scriptReader.findToken(Keywords.scriptStartWord, -1) !== -1) {
 			// reset custom colours
-			for (i = 0; i < 256; i += 1) {
-				view.customColours[i] = -1;
+			// @ts-ignore
+			if (arrayFill) {
+				view.customColours.fill(-1);
+			} else {
+				for (i = 0; i < view.customColours.length; i += 1) {
+					view.customColours[i] = -1;
+				}
 			}
 
 			nextToken = scriptReader.getNextToken();

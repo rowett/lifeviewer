@@ -1,3 +1,7 @@
+Build 376
+- added endian information and platform capabilities to Help->Info->engine
+- several performance improvements
+
 Build 375
 - increased maximum viewer size to 4096x4096
 - improved rendering to window speed

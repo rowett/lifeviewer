@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global Uint8 Uint32 PatternManager LifeConstants */
+	/* global Uint8 Uint32 PatternManager LifeConstants arrayFill copyWithin */
 
 	// HROT object
 	/**
@@ -138,27 +138,31 @@
 		for (y = 0; y < range; y += 1) {
 			sourceRow = colourGrid[by + y];
 			destRow = colourGrid[ty + y + 1];
-			for (x = lx; x <= rx; x += 1) {
-				destRow[x] = sourceRow[x];
-			}
+			destRow.set(sourceRow.slice(lx, rx + 1), lx);
 		}
 
 		// copy the top rows to the bottom border
 		for (y = 0; y < range; y += 1) {
 			sourceRow = colourGrid[ty - y];
 			destRow = colourGrid[by - y - 1];
-				for (x = lx; x <= rx; x += 1) {
-				destRow[x] = sourceRow[x];
-			}
+			destRow.set(sourceRow.slice(lx, rx + 1), lx);
 		}
 
 		// copy the left columns to the right border
 		// and the right columns to the left border
-		for (y = by; y <= ty; y += 1) {
-			sourceRow = colourGrid[y];
-			for (x = 0; x < range; x += 1) {
-				sourceRow[rx + x + 1] = sourceRow[lx + x];
-				sourceRow[lx - x - 1] = sourceRow[rx - x];
+		// @ts-ignore
+		if (copyWithin) {
+			for (y = by; y <= ty; y += 1) {
+				sourceRow = colourGrid[y];
+				sourceRow.copyWithin(rx + 1, lx, lx + range + 1);
+				sourceRow.copyWithin(lx - range - 1, rx - range, rx + 1);
+			}
+		} else {
+			for (y = by; y <= ty; y += 1) {
+				for (x = 0; x < range; x += 1) {
+					sourceRow[rx + x + 1] = sourceRow[lx + x];
+					sourceRow[lx - x - 1] = sourceRow[rx - x];
+				}
 			}
 		}
 
@@ -167,10 +171,8 @@
 		for (y = 0; y < range; y += 1) {
 			sourceRow = colourGrid[by + y];
 			destRow = colourGrid[ty + y + 1];
-			for (x = 0; x < range; x += 1) {
-				destRow[x + rx + 1] = sourceRow[x + lx];
-				destRow[lx - x - 1] = sourceRow[rx - x];
-			}
+			destRow.set(sourceRow.slice(lx, lx + range + 1), rx + 1);
+			destRow.set(sourceRow.slice(rx - range, rx + 1), lx - range - 1);
 		}
 
 		// copy top left cells to bottom right border
@@ -178,10 +180,8 @@
 		for (y = 0; y < range; y += 1) {
 			sourceRow = colourGrid[ty - y];
 			destRow = colourGrid[by - y - 1];
-			for (x = 0; x < range; x += 1) {
-				destRow[x + rx + 1] = sourceRow[x + lx];
-				destRow[lx - x - 1] = sourceRow[rx - x];
-			}
+			destRow.set(sourceRow.slice(lx, lx + range + 1), rx + 1);
+			destRow.set(sourceRow.slice(rx - range, rx + 1), lx - range - 1);
 		}
 	};
 
@@ -194,47 +194,88 @@
 			/** @type {number} */ y = 0;
 
 		// clear the top border
-		for (y = 0; y < range; y += 1) {
-			destRow = colourGrid[ty + y + 1];
-			for (x = lx; x <= rx; x += 1) {
-				destRow[x] = 0;
+		// @ts-ignore
+		if (arrayFill) {
+			for (y = 0; y < range; y += 1) {
+				colourGrid[ty + y + 1].fill(0, lx, rx + 1);
+			}
+		} else {
+			for (y = 0; y < range; y += 1) {
+				destRow = colourGrid[ty + y + 1];
+				for (x = lx; x <= rx; x += 1) {
+					destRow[x] = 0;
+				}
 			}
 		}
 
 		// copy the bottom border
-		for (y = 0; y < range; y += 1) {
-			destRow = colourGrid[by - y - 1];
-			for (x = lx; x <= rx; x += 1) {
-				destRow[x] = 0;
+		// @ts-ignore
+		if (arrayFill) {
+			for (y = 0; y < range; y += 1) {
+				colourGrid[by - y - 1].fill(0, lx, rx + 1);
+			}
+		} else {
+			for (y = 0; y < range; y += 1) {
+				destRow = colourGrid[by - y - 1];
+				for (x = lx; x <= rx; x += 1) {
+					destRow[x] = 0;
+				}
 			}
 		}
 
 		// clear the left and right columns
-		for (y = by; y <= ty; y += 1) {
-			destRow = colourGrid[y];
-			for (x = 0; x < range; x += 1) {
-				destRow[rx + x + 1] = 0;
-				destRow[lx - x - 1] = 0;
+		// @ts-ignore
+		if (arrayFill) {
+			for (y = by; y <= ty; y += 1) {
+				destRow = colourGrid[y];
+				destRow.fill(0, rx + 1, rx + range + 2);
+				destRow.fill(0, lx - range - 1, lx);
+			}
+		} else {
+			for (y = by; y <= ty; y += 1) {
+				destRow = colourGrid[y];
+				for (x = 0; x < range; x += 1) {
+					destRow[rx + x + 1] = 0;
+					destRow[lx - x - 1] = 0;
+				}
 			}
 		}
 
 		// clear top right border
 		// and top left border
-		for (y = 0; y < range; y += 1) {
-			destRow = colourGrid[ty + y + 1];
-			for (x = 0; x < range; x += 1) {
-				destRow[x + rx + 1] = 0;
-				destRow[lx - x - 1] = 0;
+		// @ts-ignore
+		if (arrayFill) {
+			for (y = 0; y < range; y += 1) {
+				destRow = colourGrid[ty + y + 1];
+				destRow.fill(0, rx + 1, rx + range + 2);
+				destRow.fill(0, lx - range - 1, lx);
+			}
+		} else {
+			for (y = 0; y < range; y += 1) {
+				destRow = colourGrid[ty + y + 1];
+				for (x = 0; x < range; x += 1) {
+					destRow[x + rx + 1] = 0;
+					destRow[lx - x - 1] = 0;
+				}
 			}
 		}
 
 		// clear bottom right border
 		// and bottom left border
-		for (y = 0; y < range; y += 1) {
-			destRow = colourGrid[by - y - 1];
-			for (x = 0; x < range; x += 1) {
-				destRow[x + rx + 1] = 0;
-				destRow[lx - x - 1] = 0;
+		// @ts-ignore
+		if (arrayFill) {
+			for (y = 0; y < range; y += 1) {
+				destRow = colourGrid[by - y - 1];
+				destRow.fill(0, rx + 1, rx + range + 2);
+				destRow.fill(0, lx - range - 1, lx);
+			}
+		} else {
+			for (y = 0; y < range; y += 1) {
+				destRow = colourGrid[by - y - 1];
+				for (x = 0; x < range; x += 1) {
+					destRow[x + rx + 1] = 0;
+					destRow[lx - x - 1] = 0;
+				}
 			}
 		}
 	};
@@ -607,62 +648,76 @@
 			topY += r2;
 
 			// put zeros in top 2*range rows
-			for (y = bottomY; y < bottomY + r2; y += 1) {
-				countRow = counts[y];
-				x = leftX;
-				while (x + chunk <= rightX) {
-					// unrolled loop must match chunk value
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
+			// @ts-ignore
+			if (arrayFill) {
+				for (y = bottomY; y < bottomY + r2; y += 1) {
+					counts[y].fill(0, leftX, rightX + 1);
 				}
-				while (x <= rightX) {
-					countRow[x] = 0;
-					x += 1;
+			} else {
+				for (y = bottomY; y < bottomY + r2; y += 1) {
+					countRow = counts[y];
+					x = leftX;
+					while (x + chunk <= rightX) {
+						// unrolled loop must match chunk value
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+					}
+					while (x <= rightX) {
+						countRow[x] = 0;
+						x += 1;
+					}
 				}
 			}
 
 			// put zeros in left 2*range columns
-			for (y = bottomY + r2; y <= topY; y += 1) {
-				countRow = counts[y];
-				x = leftX;
-				while (x + chunk <= leftX + r2) {
-					// unrolled loop must match chunk value
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
-					countRow[x] = 0;
-					x += 1;
+			// @ts-ignore
+			if (arrayFill) {
+				for (y = bottomY + r2; y <= topY; y += 1) {
+					counts[y].fill(0, leftX, leftX + r2 + 1);
 				}
-				while (x <= leftX + r2) {
-					countRow[x] = 0;
-					x += 1;
+			} else {
+				for (y = bottomY + r2; y <= topY; y += 1) {
+					countRow = counts[y];
+					x = leftX;
+					while (x + chunk <= leftX + r2) {
+						// unrolled loop must match chunk value
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+						countRow[x] = 0;
+						x += 1;
+					}
+					while (x <= leftX + r2) {
+						countRow[x] = 0;
+						x += 1;
+					}
 				}
 			}
 
@@ -1325,17 +1380,31 @@
 			topY += r2;
 
 			// put zeros in top 2*range rows
-			for (y = bottomY; y < bottomY + r2; y += 1) {
-				countRow = counts[y];
-				for (x = leftX; x <= rightX; x += 1) {
-					countRow[x] = 0;
+			// @ts-ignore
+			if (arrayFill) {
+				for (y = bottomY; y < bottomY + r2; y += 1) {
+					counts[y].fill(0, leftX, rightX + 1);
+				}
+			} else {
+				for (y = bottomY; y < bottomY + r2; y += 1) {
+					countRow = counts[y];
+					for (x = leftX; x <= rightX; x += 1) {
+						countRow[x] = 0;
+					}
 				}
 			}
 
-			// put zeros in left 2*range columns
-			for (x = leftX; x < leftX + r2; x += 1) {
+			// @ts-ignore
+			if (arrayFill) {
 				for (y = bottomY + r2; y <= topY; y += 1) {
-					counts[y][x] = 0;
+					counts[y].fill(0, leftX, leftX + r2);
+				}
+			} else {
+				for (y = bottomY + r2; y <= topY; y += 1) {
+					countRow = counts[y];
+					for (x = leftX; x < leftX + r2; x += 1) {
+						countRow[x] = 0;
+					}
 				}
 			}
 

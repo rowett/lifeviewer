@@ -77,6 +77,20 @@
 		window["littleEndian"] = false;
 	}
 	
+	// set fill flag
+	if (data32.fill) {
+		window["arrayFill"] = true;
+	} else {
+		window["arrayFill"] = false;
+	}
+
+	// set copy within flag
+	if (data32.copyWithin) {
+		window["copyWithin"] = true;
+	} else {
+		window["copyWithin"] = false;
+	}
+
 	// global interface
 	window["registerEvent"] = registerEvent;
 }

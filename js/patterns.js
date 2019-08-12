@@ -7,7 +7,7 @@
 	"use strict";
 
 	// define globals
-	/* global Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script */
+	/* global Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script arrayFill */
 
 	// Life 1.05 section
 	/**
@@ -2033,12 +2033,22 @@
 		}
 
 		// clear arrays
-		for (i = 0; i < 8192; i += 1) {
-			ruleTriangularArray[i] = 0;
+		// @ts-ignore
+		if (arrayFill) {
+			ruleTriangularArray.fill(0);
+		} else {
+			for (i = 0; i < ruleTriangularArray.length; i += 1) {
+				ruleTriangularArray[i] = 0;
+			}
 		}
 		if (secondTriangularArray) {
-			for (i = 0; i < 8192; i += 1) {
-				secondTriangularArray[i] = 0;
+			// @ts-ignore
+			if (arrayFill) {
+				secondTriangularArray.fill(0);
+			} else {
+				for (i = 0; i < secondTriangularArray.length; i += 1) {
+					secondTriangularArray[i] = 0;
+				}
 			}
 		}
 
@@ -2204,9 +2214,19 @@
 				}
 		
 				// clear the rule array
-				for (i = 0; i < 512; i += 1) {
-					tempArray[i] = 0;
-					ruleArray[i] = 0;
+				// @ts-ignore
+				if (arrayFill) {
+					tempArray.fill(0);
+					ruleArray.fill(0);
+				} else {
+					for (i = 0; i < tempArray.length; i += 1) {
+						tempArray[i] = 0;
+						ruleArray[i] = 0;
+					}
+				}
+
+				// create swap array for hex
+				for (i = 0; i < tempArray.length; i += 1) {
 					if (isHex) {
 						swapArray[i] = i;
 					} else {
@@ -5610,7 +5630,6 @@
 
 		    // state used flags and counts
 		    stateCount = this.stateCount,
-			maxStates = PatternManager.maxStates,
 			
 			// border for bounded grid
 			border = 4,
@@ -5652,8 +5671,13 @@
 		pattern.numUsedStates = 0;
 		
 		// clear the state used counts
-		for (i = 0; i < maxStates; i += 1) {
-			stateCount[i] = 0;
+		// @ts-ignore
+		if (arrayFill) {
+			stateCount.fill(0);
+		} else {
+			for (i = 0; i < stateCount.length; i += 1) {
+				stateCount[i] = 0;
+			}
 		}
 
 		// add one to the string for lookahead
