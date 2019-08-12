@@ -1,6 +1,8 @@
 Build 376
-- added endian information and platform capabilities to Help->Info->engine
+- added endian information and platform capabilities to "Help" -> "Info" -> "Engine"
 - several performance improvements
+- disable Major button for hexagonal or triangular grids
+- custom Theme major grid line setting was being applied to all themes
 
 Build 375
 - increased maximum viewer size to 4096x4096

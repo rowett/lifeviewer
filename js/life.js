@@ -646,7 +646,6 @@
 		// grid line major interval and enablement
 		/** @type {number} */ this.gridLineMajor = 10;
 		/** @type {boolean} */ this.gridLineMajorEnabled = true;
-		/** @type {boolean} */ this.customGridLineMajor = false;
 
 		// user defined grid line major (to restore if theme doesn't define one)
 		/** @type {number} */ this.definedGridLineMajor = 10;
@@ -3968,10 +3967,8 @@
 		this.gridLineRaw  = newTheme.gridColour;
 		this.gridLineBoldRaw = newTheme.gridMajorColour;
 
-		// copy grid line major interval from theme unless specified with a script command
-		if (!this.customGridLineMajor) {
-			this.gridLineMajor = newTheme.gridMajor;
-		}
+		// copy grid line major interval from theme
+		this.gridLineMajor = newTheme.gridMajor;
 
 		// create grid line colours
 		if (this.littleEndian) {

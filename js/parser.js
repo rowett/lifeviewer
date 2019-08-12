@@ -358,6 +358,9 @@
 			customTheme = view.engine.themes[view.engine.numThemes],
 			themeValue = view.customThemeValue;
 
+		// set grid major if defined
+		customTheme.gridMajor = view.engine.gridLineMajor;
+
 		// check if alive is defined
 		if (themeValue[ViewConstants.customThemeAlive] === -1) {
 			// alive missing so check if dead is defined
@@ -2582,7 +2585,6 @@
 								// check it is in range
 								if (numberValue >= ViewConstants.minBoldGridInterval && numberValue <= ViewConstants.maxBoldGridInterval) {
 									view.engine.gridLineMajor = numberValue;
-									view.engine.customGridLineMajor = true;
 									itemValid = true;
 								}
 							}

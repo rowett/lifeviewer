@@ -1089,9 +1089,6 @@
 		// custom grid major colour
 		/** @type {number} */ this.customGridMajorColour = -1;
 
-		// whether custom grid line major defined
-		/** @type {boolean} */ this.customGridLineMajor = false;
-
 		// custom label colour
 		this.customLabelColour = ViewConstants.labelFontColour;
 
@@ -4711,12 +4708,15 @@
 		this.killButton.deleted = hide;
 		this.graphButton.deleted = hide;
 		this.infoBarButton.deleted = hide;
-		this.majorButton.deleted = hide;
+		this.majorButton.deleted = hide
 		this.historyFitButton.deleted = hide;
 		this.starsButton.deleted = hide;
 		this.fpsButton.deleted = hide;
 		this.timingDetailButton.deleted = hide;
 		this.rHistoryButton.deleted = hide;
+
+		// lock major button if hex or triangular grid
+		this.majorButton.locked = (this.engine.isHex && this.engine.useHexagons) || this.engine.isTriangular;
 
 		// lock hex cell button if not in hex mode
 		this.hexCellButton.locked = !this.engine.isHex;
@@ -10372,9 +10372,6 @@
 
 	// reset any view controls that scripts can overwrite
 	View.prototype.resetScriptControls = function() {
-		// reset custom grid line major
-		this.engine.customGridLineMajor = false;
-
 		// reset maximum grid size
 		this.engine.maxGridSize = 1 << ViewConstants.defaultGridPower;
 
