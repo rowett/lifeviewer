@@ -12970,7 +12970,7 @@
 		// check if 0.5 <= zoom < 1
 		if (this.camZoom >= 0.5 && this.camZoom < 1) {
 			// create 2x2 colour grid
-			if (this.themeHistory || this.isLTL || this.isHROT) {
+			if (this.themeHistory || this.isHROT) {
 				this.create2x2ColourGrid16(this.colourGrid16, this.smallColourGrid);
 			} else {
 				this.create2x2ColourGridNoHistory16(this.colourGrid16, this.smallColourGrid);
@@ -12979,7 +12979,7 @@
 			// check if 0.25 <= zoom < 0.5
 			if (this.camZoom >= 0.25 && this.camZoom < 0.5) {
 				// create 4x4 colour grid
-				if (this.themeHistory || this.isLTL || this.isHROT) {
+				if (this.themeHistory || this.isHROT) {
 					this.create4x4ColourGrid32(this.colourGrid32, this.smallColourGrid);
 				} else {
 					this.create4x4ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
@@ -12988,7 +12988,7 @@
 				// check if 0.125 <= zoom < 0.25
 				if (this.camZoom >= 0.125 && this.camZoom < 0.25) {
 					// create 8x8 colour grid
-					if (this.themeHistory || this.isLTL || this.isHROT) {
+					if (this.themeHistory || this.isHROT) {
 						this.create8x8ColourGrid32(this.colourGrid32, this.smallColourGrid);
 					} else {
 						this.create8x8ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
@@ -12997,7 +12997,7 @@
 					// check if zoom < 0.125
 					if (this.camZoom < 0.125) {
 						// create 16x16 colour grid
-						if (this.themeHistory || this.isLTL || this.isHROT) {
+						if (this.themeHistory || this.isHROT) {
 							this.create16x16ColourGrid32(this.colourGrid32, this.smallColourGrid);
 						} else {
 							this.create16x16ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
