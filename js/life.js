@@ -4086,7 +4086,7 @@
 					this.blueChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 
 					// override with custom colour if specified
-					if (this.customColours.length >= i) {
+					if (this.customColours && this.customColours.length >= i) {
 						if (!this.isHROT) {
 							current = this.customColours[this.multiNumStates - i];
 						} else {
@@ -4107,7 +4107,7 @@
 				this.blueChannel[i + this.historyStates] = this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight);
 
 				// override with custom colour if specified
-				if (this.customColours.length >= i) {
+				if (this.customColours && this.customColours.length >= i) {
 					if (!this.isHROT) {
 						current = this.customColours[this.multiNumStates - i];
 					} else {
@@ -4144,7 +4144,7 @@
 				}
 
 				// override colour 0 if specified
-				if (this.customColours.length > 0) {
+				if (this.customColours && this.customColours.length > 0) {
 					current = this.customColours[0];
 					if (current !== -1) {
 						this.redChannel[0] = current >> 16;
@@ -4229,12 +4229,12 @@
 		blueChannel = this.blueChannel,
 		i = 0,
 		stateColour = 0,
-		numCustom = customColours.length;
+		numCustom = (customColours ? customColours.length : 0);
 
 		// create multi-state pixel colours
 		for (i = 0; i < colourList.length; i += 1) {
 			// check if a custom colour is defined
-			if ((i >= numCustom) || (customColours[i] === -1)) {
+			if ((i >= numCustom) || (customColours && customColours[i] === -1)) {
 				// use the library colour
 				stateColour = colourList[i];
 			} else {
@@ -4259,13 +4259,13 @@
 		    stateMap = ViewConstants.stateMap,
 
 		    // get number of custom colours
-		    numCustom = customColours.length,
+		    numCustom = (customColours ? customColours.length : 0),
 		    i = 0;
 
 		// create default colours
 		for (i = 0; i < colourList.length; i += 1) {
 			// check if a custom colour is defined
-			if ((i >= numCustom) || (customColours[i] === -1)) {
+			if ((i >= numCustom) || (customColours && customColours[i] === -1)) {
 				// use the library colour
 				redChannel[128 + stateMap[i]] = colourList[i] >> 16;
 				greenChannel[128 + stateMap[i]] = (colourList[i] >> 8) & 255;

@@ -232,7 +232,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 376,
+		/** @const {number} */ versionBuild : 377,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1107,7 +1107,7 @@
 		/** @type {boolean} */ this.allCustom = false;
 
 		// custom colour set
-		this.customColours = [];
+		this.customColours = null;
 
 		// whether custom colour used
 		this.customColourUsed = [];
@@ -10410,7 +10410,7 @@
 		this.infoBarEnabled = false;
 
 		// reset custom colours 
-		this.customColours = [];
+		this.customColours = null;
 		this.customTextColour = null;
 		this.customErrorColour = null;
 		this.errorsFontColour = ViewConstants.errorsFontColour;
@@ -11459,7 +11459,7 @@
 			}
 
 			// set states used if no custom colours used
-			if (this.customColours.length === 0) {
+			if (this.customColours === null) {
 				for (i = 0; i < this.colourList.length; i += 1) {
 					if (PatternManager.stateCount[i]) {
 						this.customColourUsed[i] = ViewConstants.stateUsedDefault;
@@ -11578,7 +11578,7 @@
 			// check if the pattern loaded
 			if (pattern) {
 				// check if a custom colour set was defined
-				if (this.customColours.length > 0) {
+				if (this.customColours) {
 					this.colourList = this.customColours;
 				}
 			}

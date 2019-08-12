@@ -1,3 +1,6 @@
+Build 377
+- custom colours were reporting false errors
+
 Build 376
 - added endian information and platform capabilities to "Help" -> "Info" -> "Engine"
 - several performance improvements

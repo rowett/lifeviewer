@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global ColourManager Script ViewConstants Pattern Keywords PatternManager WaypointConstants DocConfig arrayFill */
+	/* global Int32 ColourManager Script ViewConstants Pattern Keywords PatternManager WaypointConstants DocConfig arrayFill */
 
 	// singleton
 	var ScriptParser = {
@@ -1104,7 +1104,7 @@
 		view.customThemeValue[ViewConstants.customThemePoly] = -1;
 
 		// clear custom colours
-		view.customColours = [];
+		view.customColours = view.engine.allocator.allocate(Int32, 256, "View.customColours");
 
 		// look for a start script token
 		if (scriptReader.findToken(Keywords.scriptStartWord, -1) !== -1) {
