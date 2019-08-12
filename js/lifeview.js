@@ -4810,7 +4810,7 @@
 		this.clearSelectionButton.deleted = shown;
 		this.randomButton.deleted = shown;
 		this.randomItem.deleted = shown;
-		shown = hide || !this.selecting || settingsMenuOpen || this.engine.multiNumStates < 2;
+		shown = hide || !this.selecting || settingsMenuOpen || this.engine.multiNumStates <= 2;
 		this.random2Button.deleted = shown;
 
 		// lock select tools in VIEWONLY
