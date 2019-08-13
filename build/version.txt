@@ -1,3 +1,19 @@
+Build 378
+- updated out of date test
+- fixed problem with colours for Generations patterns
+- switching from a history THEME to a non-history THEME sometimes stepped back a generation
+- added Grid colour description to "Help" -> "Themes"
+- live cells drawn after all cells died would then not generate
+- you can no longer switch between square grid and hexagonal or offset square grid
+	- removed script commands [[ SQUAREDISPLAY ]] and [[ HEXDISPLAY ]]
+	- removed hotkeys Alt-/ and Shift-/
+	- removed Hex toggle button from Settings menu
+	- hotkey / now toggles between hexagonal and offset square grid for hexagonal rules
+- new Settings toggle button AutoHide
+	- automatically hides UI during pattern playback
+- Angle control now greys out when unavailable
+- Theme control now greys out when unavailable
+
 Build 377
 - custom colours were reporting false errors
 - fixed issue with LtL/HROT 2 state patterns and THEMEs with no history

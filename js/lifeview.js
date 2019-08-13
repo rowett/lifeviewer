@@ -232,7 +232,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 377,
+		/** @const {number} */ versionBuild : 378,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1372,8 +1372,8 @@
 		// next POI button
 		this.nextPOIButton = null;
 
-		// hex toggle button
-		this.hexButton = null;
+		// autohide toggle button
+		this.autoHideButton = null;
 
 		// hex cell toggle button
 		this.hexCellButton = null;
@@ -4356,13 +4356,13 @@
 		}
 
 		// lock or unlock the controls
+		me.angleItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular;
 		me.autoFitToggle.locked = me.controlsLocked && me.waypointsDefined;
 		me.fitButton.locked = me.controlsLocked || (me.autoFit && me.generationOn);
 		me.generationRange.locked = me.controlsLocked && me.waypointsDefined;
 		me.stepRange.locked = me.controlsLocked && me.waypointsDefined;
 		me.themeItem.locked = me.controlsLocked && me.waypointsDefined;
 		me.zoomItem.locked = me.controlsLocked;
-		me.angleItem.locked = me.controlsLocked && me.waypointsDefined;
 		me.layersItem.locked = me.controlsLocked && me.waypointsDefined;
 		me.depthItem.locked = me.controlsLocked && me.waypointsDefined;
 
@@ -4694,14 +4694,13 @@
 		this.ruleLabel.deleted = hide;
 
 		// settings menu
-		this.angleItem.deleted = hide || this.engine.isHex || this.engine.isTriangular;
 		this.depthItem.deleted = hide;
-		this.themeItem.deleted = hide || this.multiStateView || this.engine.isNone;
+		this.themeItem.deleted = hide;
 		this.layersItem.deleted = hide;
 		this.fitButton.deleted = hide;
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
 		this.closeButton.deleted = !(this.isInPopup || this.scriptErrors.length);
-		this.hexButton.deleted = hide;
+		this.autoHideButton.deleted = hide;
 		this.hexCellButton.deleted = hide;
 		this.bordersButton.deleted = hide;
 		this.labelButton.deleted = hide;
@@ -4714,6 +4713,9 @@
 		this.fpsButton.deleted = hide;
 		this.timingDetailButton.deleted = hide;
 		this.rHistoryButton.deleted = hide;
+
+		// lock theme slider if mode doesn't support themes
+		this.themeItem.locked =  this.multiStateView || this.engine.isNone;
 
 		// lock major button if hex or triangular grid
 		this.majorButton.locked = (this.engine.isHex && this.engine.useHexagons) || this.engine.isTriangular;
@@ -4907,7 +4909,7 @@
 
 		// check whether to hide GUI during playback
 		if (this.hideGUI) {
-			if (this.playList.current === ViewConstants.modePlay) {
+			if (this.generationOn) {
 				this.viewMenu.deleted = true;
 			} else {
 				this.viewMenu.deleted = false;
@@ -5323,6 +5325,16 @@
 		return [me.engine.cellBorders];
 	};
 
+	// toggle auto hide gui
+	View.prototype.viewAutoHideToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			// toggle auto hide
+			me.hideGUI = !me.hideGUI;
+		}
+		return [me.hideGUI];
+	};
+
 	// toggle hexagonal cells
 	View.prototype.viewHexCellToggle = function(newValue, change, me) {
 		// check if changing
@@ -5333,33 +5345,6 @@
 		}
 
 		return [me.engine.useHexagons];
-	};
-
-	// toggle hex display
-	View.prototype.viewHexToggle = function(newValue, change, me) {
-		// check if changing
-		if (change) {
-			me.engine.isHex = newValue[0];
-			// toggle hex mode
-			if (!me.engine.isHex) {
-				// update x offset
-				me.engine.xOff += me.engine.yOff / 2;
-				me.defaultX += me.engine.yOff / 2;
-				me.savedX += me.engine.yOff / 2;
-			} else {
-				// update x offset
-				me.engine.xOff -= me.engine.yOff / 2;
-				me.defaultX -= me.engine.yOff / 2;
-				me.savedX -= me.engine.yOff / 2;
-			}
-			// update grid icon
-			me.updateGridIcon();
-
-			// update angle control
-			me.angleItem.deleted = me.engine.isHex;
-		}
-
-		return [me.engine.isHex];
 	};
 
 	// toggle [R]History display
@@ -9852,10 +9837,11 @@
 		this.shrinkButton.icon = this.iconManager.icon("shrink");
 		this.shrinkButton.toolTip = "shrink to thumbnail";
 
-		// hex/square toggle button
-		this.hexButton = this.viewMenu.addListItem(this.viewHexToggle, Menu.north, -135, 100, 120, 40, ["Hex"], [this.engine.isHex], Menu.multi);
-		this.hexButton.toolTip = ["toggle hex display"];
+		// autohide toggle button
+		this.autoHideButton = this.viewMenu.addListItem(this.viewAutoHideToggle, Menu.north, -135, 100, 120, 40, ["AutoHide"], [this.hideGUI], Menu.multi);
+		this.autoHideButton.toolTip = ["toggle hide UI on playback"]; 
 
+		// hex/square cell toggle button
 		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.north, 0, 100, 120, 40, ["Hexagon"], [this.engine.useHexagons], Menu.multi);
 		this.hexCellButton.toolTip = ["toggle hexagonal cells"];
 
@@ -10106,8 +10092,7 @@
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.hexButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
-
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.autoHideButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []); 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
 
@@ -10935,9 +10920,6 @@
 		// display generation as absolute
 		this.genRelative = false;
 
-		// update angle control
-		this.angleItem.deleted = this.engine.isHex;
-
 		// read any failure reason
 		this.failureReason = PatternManager.failureReason;
 
@@ -11672,9 +11654,8 @@
 		// set the kill gliders UI control
 		this.killButton.current = [this.engine.clearGliders];
 
-		// set the hex UI control and lock if triangular grid
-		this.hexButton.current = [this.engine.isHex];
-		this.hexButton.locked = this.engine.isTriangular;
+		// set the autohide UI control
+		this.autoHideButton.current = [this.hideGUI];
 
 		// set the hex cell UI control and lock if triangular grid
 		this.hexCellButton.current = [this.engine.useHexagons];

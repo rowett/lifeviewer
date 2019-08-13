@@ -223,14 +223,6 @@
 						// flip selection vertically
 						me.flipYPressed(me);
 						break;
-					// slash for toggle hex/offset square grid
-					case 191:
-						// switch between hexagonal and square cells for hex display
-						if (!me.engine.isTriangular) {
-							me.hexCellButton.current = me.viewHexCellToggle([!me.engine.useHexagons], true, me);
-							me.menuManager.notification.notify("Hex display uses " + (me.engine.useHexagons ? "Hexagons" : "Squares"), 15, 40, 15, true);
-						}
-						break;
 					}
 				}
 
@@ -243,21 +235,10 @@
 			// '/' for toggle hex
 			case 191:
 			case 111: // num /
-				// ignore if triangular grid
-				if (!me.engine.isTriangular) {
-					// check for shift key
-					if (event.shiftKey) {
-						// check if the pattern mode is currently used
-						if (me.engine.patternDisplayMode !== me.engine.isHex) {
-							me.hexButton.current = me.viewHexToggle([me.engine.patternDisplayMode], true, me);
-						}
-					} else {
-						// toggle hex mode
-						me.hexButton.current = me.viewHexToggle([!me.engine.isHex], true, me);
-					}
-	
-					// display notification
-					me.menuManager.notification.notify("Hex Display " + (me.engine.isHex ? "On" : "Off"), 15, 40, 15, true);
+				// switch between hexagonal and square cells for hex display
+				if (me.engine.isHex) {
+					me.hexCellButton.current = me.viewHexCellToggle([!me.engine.useHexagons], true, me);
+					me.menuManager.notification.notify("Hex display uses " + (me.engine.useHexagons ? "Hexagons" : "Squares"), 15, 40, 15, true);
 				}
 				break;
 

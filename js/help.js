@@ -697,9 +697,7 @@
 			y = this.renderHelpLine(view, "7", "decrease graph opacity", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "9", "increase graph opacity", ctx, x, y, height, helpLine);
 		}
-		y = this.renderHelpLine(view, "/", "toggle hex view", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Shift /", "pattern default view", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt /", "toggle hexagons for hex display", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "/", "toggle hexagons for hex view", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "T", "toggle timing information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift T", "toggle extended timing information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "I", "toggle pattern and engine information", ctx, x, y, height, helpLine);
@@ -964,8 +962,6 @@
 		y = this.renderHelpLine(view, Keywords.gridMajorWord + " <0..16>", "set major grid line interval", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.historyStatesWord + " <0.." + ((view.engine.multiNumStates > 2) ? 1 : 63) + ">", "number of history states", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.starfieldWord + " (" + Keywords.offWord + ")", "display stars", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.hexDisplayWord, "force hex display", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.squareDisplayWord, "force square display", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.hexCellsWord, "hexagonal cells for hex", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.squareCellsWord, "square cells for hex", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noGUIWord, "disable menus and hotkeys", ctx, x, y, height, helpLine);
@@ -1737,7 +1733,13 @@
 		y = this.renderHelpLine(view, "", "Themes", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "Themes are used to provide a visual representation of", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "cell history and longevity", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "cell history and longevity and also define grid colours", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		view.helpSections[sectionNum] = [view.lineNo, "Grid"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Grid:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "GRID", "grid line colour", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "GRIDMAJOR", "major grid line colour and interval", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		view.helpSections[sectionNum] = [view.lineNo, "2-State"];
 		sectionNum += 1;

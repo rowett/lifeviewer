@@ -27,8 +27,6 @@
 			case Keywords.noSourceWord:
 			case Keywords.linearWord:
 			case Keywords.bezierWord:
-			case Keywords.hexDisplayWord:
-			case Keywords.squareDisplayWord:
 			case Keywords.hexCellsWord:
 			case Keywords.squareCellsWord:
 			case Keywords.bordersWord:
@@ -61,7 +59,7 @@
 			case Keywords.noHistoryWord:
 			case Keywords.noReportWord:
 			case Keywords.noPerfWarningWord:
-			case Keywords.hideGUIWork:
+			case Keywords.hideGUIWord:
 			case Keywords.trackWord:
 			case Keywords.hardResetWord:
 			case Keywords.poiResetWord:
@@ -1104,11 +1102,13 @@
 		view.customThemeValue[ViewConstants.customThemePoly] = -1;
 
 		// clear custom colours
-		view.customColours = view.engine.allocator.allocate(Int32, 256, "View.customColours");
+		view.customColours = null;
 
 		// look for a start script token
 		if (scriptReader.findToken(Keywords.scriptStartWord, -1) !== -1) {
 			// reset custom colours
+			view.customColours = view.engine.allocator.allocate(Int32, 256, "View.customColours");
+
 			// @ts-ignore
 			if (arrayFill) {
 				view.customColours.fill(-1);
@@ -3955,32 +3955,6 @@
 							itemValid = true;
 							break;
 
-						// square display
-						case Keywords.squareDisplayWord:
-							if (!view.engine.isTriangular) {
-								// set square display mode
-								view.engine.isHex = false;
-
-								// update angle control
-								view.angleItem.deleted = view.engine.isHex;
-							}
-								
-							itemValid = true;
-							break;
-
-						// hex display
-						case Keywords.hexDisplayWord:
-							if (!view.engine.isTriangular) {
-								// set hex display mode
-								view.engine.isHex = true;
-
-								// update angle control
-								view.angleItem.deleted = view.engine.isHex;
-							}
-
-							itemValid = true;
-							break;
-
 						// cell borders
 						case Keywords.bordersWord:
 							view.engine.cellBorders = true;
@@ -4712,7 +4686,7 @@
 				}
 			} else {
 				// clear custom colours
-				view.customColours  = [];
+				view.customColours = null;
 			}
 			
 			// check if custom theme provided

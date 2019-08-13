@@ -2337,6 +2337,9 @@
 
 					// draw alive or dead
 					if (bitAlive) {
+						// mark a cell is alive
+						this.anythingAlive = 1;
+
 						// adjust population if cell was dead
 						if ((grid[y][x >> 4] & cellAsBit) === 0) {
 							this.population += 1;
@@ -3624,7 +3627,7 @@
 		    leftX = zoomBox.leftX >> 4,
 		    rightX = zoomBox.rightX >> 4,
 		    topY = zoomBox.topY,
-		    bottomY = zoomBox.bottomY;
+			bottomY = zoomBox.bottomY;
 
 		// set the colour grid from the grid
 		for (y = bottomY; y <= topY; y += 1) {
@@ -3956,11 +3959,7 @@
 		
 		// check if history was just switched off
 		if (currentHistory && !this.themeHistory && !this.isHROT) {
-			if ((this.counter & 1) === 0) {
-				this.resetColourGridBox(this.nextGrid16);
-			} else {
-				this.resetColourGridBox(this.grid16);
-			}
+			this.clearHistoryCells();
 		}
 
 		// copy grid line colours from theme
@@ -13336,6 +13335,101 @@
 		}
 	};
 	
+	// remove history cells from colour grid
+	Life.prototype.clearHistoryCells = function() {
+		var h = 0, cr = 0,
+		    colourGrid16 = this.colourGrid16,
+		    colourGridRow = null,
+		    colourTileHistoryRow = null,
+		    colourTileHistoryGrid = this.colourTileHistoryGrid,
+		    th = 0, tw = 0, b = 0,
+		    bottomY = 0, topY = 0, leftX = 0,
+		    tiles = 0,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (in 16bit chunks)
+		    xSize = this.tileX >> 1,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+			tileCols16 = this.tileCols >> 4,
+			
+			// alive mask for two cells
+			aliveMask16 = (64 << 8) | 64;
+
+		// initialize for first tile
+		topY = ySize;
+
+		// scan each row of tiles
+		for (th = 0; th < tileRows; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			colourTileHistoryRow = colourTileHistoryGrid[th];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = colourTileHistoryRow[tw];
+
+				// check if any are occupied
+				if (tiles) {
+					// compute next colour for each tile in the set
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << b)) !== 0) {
+							// process each row
+							h = bottomY;
+							while (h < topY) {
+								// get the grid and colour grid row
+								colourGridRow = colourGrid16[h];
+
+								// get correct starting colour index
+								cr = (leftX << 3);
+
+								// mask out all but the two alive cells
+								colourGridRow[cr] &= aliveMask16;
+								cr += 1;
+								colourGridRow[cr] &= aliveMask16;
+								cr += 1;
+								colourGridRow[cr] &= aliveMask16;
+								cr += 1;
+								colourGridRow[cr] &= aliveMask16;
+								cr += 1;
+								colourGridRow[cr] &= aliveMask16;
+								cr += 1;
+								colourGridRow[cr] &= aliveMask16;
+								cr += 1;
+								colourGridRow[cr] &= aliveMask16;
+								cr += 1;
+								colourGridRow[cr] &= aliveMask16;
+								// cr += 1   - no need for final increment it will be reset next row
+
+								// next row
+								h += 1;
+							}
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+			}
+
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+	};
+
 	// convert life grid region to pens using tiles but without history
 	Life.prototype.convertToPensTileNoHistory = function() {
 		var h = 0, cr = 0, nextCell = 0,
