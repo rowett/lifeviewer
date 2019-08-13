@@ -3958,7 +3958,7 @@
 		this.themeHistory = newTheme.hasHistory(this.isLifeHistory);
 		
 		// check if history was just switched off
-		if (currentHistory && !this.themeHistory && !this.isHROT) {
+		if (currentHistory && !this.themeHistory && !this.isHROT && this.multiNumStates <= 2) {
 			this.clearHistoryCells();
 		}
 
