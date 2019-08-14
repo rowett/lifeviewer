@@ -461,7 +461,7 @@
 		/** @type {boolean} */ this.layersOn = true;
 
 		// colour theme number
-		/** @type {number} */ this.colourTheme = 1;
+		/** @type {number} */ this.colourTheme = -1;
 
 		// colour change
 		/** @type {number} */ this.colourChange = 1;

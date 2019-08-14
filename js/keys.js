@@ -115,7 +115,7 @@
 				if (keyCode >= 48 && keyCode <= 57) {
 					value = keyCode - 48;
 					// if selecting or no POIs then choose clipboard
-					if ((me.selecting || me.waypointManager.numPOIs() === 0) && !me.noHistory) {
+					if (me.selecting || me.waypointManager.numPOIs() === 0) {
 						// if clipboard already selected then paste
 						if (me.currentPasteBuffer === value) {
 							if (me.isPasting) {
@@ -161,8 +161,8 @@
 					case 67:
 						// set default theme
 						if (!me.multiStateView) {
-							me.themeItem.current = me.viewThemeRange([me.defaultTheme, ""], true, me);
-							if (!me.engine.isNone) {
+							me.setNewTheme(me.defaultTheme, me.engine.colourChangeSteps, me);
+							if (!me.engine.isNone && !me.showThemeSelection) {
 								me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
 							}
 						}
@@ -1221,12 +1221,11 @@
 				} else {
 					// disable colour themes in multi-state mode
 					if (!me.multiStateView) {
-						if (me.themeItem && !me.themeItem.locked) {
+						if (me.themeButton && !me.themeButton.locked) {
 							// check for shift key
 							if (event.shiftKey) {
 								// decrement colour theme
-								value = (me.themeItem.current[0] + 0.5) | 0;
-								value -= 1;
+								value = me.engine.colourTheme - 1;
 								if (value < 0) {
 									// check for custom theme
 									if (me.customTheme) {
@@ -1237,8 +1236,7 @@
 								}
 							} else {
 								// increment colour theme
-								value = (me.themeItem.current[0] + 0.5) | 0;
-								value += 1;
+								value = me.engine.colourTheme + 1;
 
 								// check for custom theme
 								if (me.customTheme) {
@@ -1255,8 +1253,8 @@
 							}
 
 							// set the new theme
-							me.themeItem.current = me.viewThemeRange([value, ""], true, me);
-							if (!me.engine.isNone) {
+							me.setNewTheme(value, me.engine.colourChangeSteps, me);
+							if (!me.engine.isNone && !me.showThemeSelection) {
 								me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
 							}
 						}

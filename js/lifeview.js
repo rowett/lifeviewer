@@ -40,6 +40,10 @@
 
 	// ViewConstants singleton
 	ViewConstants = {
+		// theme selection button positions and order
+		/** @const {Array<number>} */ themeX : [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3],
+		/** @const {Array<number>} */ themeOrder : [1, 10, 11, 17, 2, 3, 4, 5, 7, 12, 13, 14, 15, 16, 0, 6, 8, 9],
+
 		// paste positions
 		/** @const {number} */ pastePositionNW : 0,
 		/** @const {number} */ pastePositionN : 1,
@@ -55,7 +59,7 @@
 		/** @const {number} */ numPastePositions : 9,
 
 		// paste position text
-		/** @const Array{string} */ pastePositionNames : ["Top Left", "Top", "Top Right", "Right", "Bottom Right", "Bottom", "Bottom Left", "Left", "Middle"],
+		/** @const {Array<string>} */ pastePositionNames : ["Top Left", "Top", "Top Right", "Right", "Bottom Right", "Bottom", "Bottom Left", "Left", "Middle"],
 
 		// chunk to add to undo/redo buffer
 		/** @const {number} */ editChunk : 16384,
@@ -232,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 378,
+		/** @const {number} */ versionBuild : 379,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -562,6 +566,9 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// whether displaying theme selection buttons
+		/** @type {boolean} */ this.showThemeSelection = false;
 
 		// whether to sync copy with external clipboard
 		/** @type {boolean} */ this.copySyncExternal = false;
@@ -1249,8 +1256,17 @@
 		// navigation menu toggle
 		this.navToggle = null;
 
-		// theme item
-		this.themeItem = null;
+		// theme button
+		this.themeButton = null;
+
+		// theme selections
+		this.themeSelections = [];
+
+		// theme labels
+		this.themeDefaultLabel = null;
+		this.themeClassicLabel = null;
+		this.themeProgramLabel = null;
+		this.themeDebugLabel = null;
 
 		// angle item
 		this.angleItem = null;
@@ -4179,7 +4195,7 @@
 				// check if a new theme is available
 				if (currentWaypoint.theme !== me.lastWaypointTheme) {
 					// fade to new theme
-					me.themeItem.current = me.viewThemeRange([currentWaypoint.theme, ""], true, me);
+					me.setNewTheme(currentWaypoint.theme, me.engine.colourChangeSteps, me);
 
 					// save theme
 					me.lastWaypointTheme = currentWaypoint.theme;
@@ -4361,7 +4377,7 @@
 		me.fitButton.locked = me.controlsLocked || (me.autoFit && me.generationOn);
 		me.generationRange.locked = me.controlsLocked && me.waypointsDefined;
 		me.stepRange.locked = me.controlsLocked && me.waypointsDefined;
-		me.themeItem.locked = me.controlsLocked && me.waypointsDefined;
+		me.themeButton.locked = me.controlsLocked && me.waypointsDefined;
 		me.zoomItem.locked = me.controlsLocked;
 		me.layersItem.locked = me.controlsLocked && me.waypointsDefined;
 		me.depthItem.locked = me.controlsLocked && me.waypointsDefined;
@@ -4658,6 +4674,19 @@
 			settingsMenuOpen = this.navToggle.current[0],
 			shown = false;
 
+		// theme selection buttons
+		shown = hide || !this.showThemeSelection;
+		for (i = 0; i <= this.engine.numThemes; i += 1) {
+			this.themeSelections[i].deleted = shown;
+		}
+		this.themeDefaultLabel.deleted = shown;
+		this.themeClassicLabel.deleted = shown;
+		this.themeProgramLabel.deleted = shown;
+		this.themeDebugLabel.deleted = shown;
+
+		// disable custom theme if not specified
+		this.themeSelections[3].locked = !this.customTheme;
+
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
 		this.undoButton.locked = (this.editNum <= 1 || this.undoButton.toolTip === "undo ");
@@ -4693,29 +4722,35 @@
 		this.deathsValue.deleted = shown;
 		this.ruleLabel.deleted = hide;
 
-		// settings menu
-		this.depthItem.deleted = hide;
-		this.themeItem.deleted = hide;
-		this.layersItem.deleted = hide;
 		this.fitButton.deleted = hide;
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
 		this.closeButton.deleted = !(this.isInPopup || this.scriptErrors.length);
-		this.autoHideButton.deleted = hide;
-		this.hexCellButton.deleted = hide;
-		this.bordersButton.deleted = hide;
-		this.labelButton.deleted = hide;
-		this.killButton.deleted = hide;
-		this.graphButton.deleted = hide;
-		this.infoBarButton.deleted = hide;
-		this.majorButton.deleted = hide
-		this.historyFitButton.deleted = hide;
-		this.starsButton.deleted = hide;
-		this.fpsButton.deleted = hide;
-		this.timingDetailButton.deleted = hide;
-		this.rHistoryButton.deleted = hide;
 
-		// lock theme slider if mode doesn't support themes
-		this.themeItem.locked =  this.multiStateView || this.engine.isNone;
+		// settings menu
+		shown = hide || this.showThemeSelection;
+		this.depthItem.deleted = shown;
+		this.themeButton.deleted = shown;
+		this.angleItem.deleted = shown;
+		this.layersItem.deleted = shown;
+		this.autoHideButton.deleted = shown;
+		this.hexCellButton.deleted = shown;
+		this.bordersButton.deleted = shown;
+		this.labelButton.deleted = shown;
+		this.killButton.deleted = shown;
+		this.graphButton.deleted = shown;
+		this.infoBarButton.deleted = shown;
+		this.majorButton.deleted = shown
+		this.historyFitButton.deleted = shown;
+		this.starsButton.deleted = shown;
+		this.fpsButton.deleted = shown;
+		this.timingDetailButton.deleted = shown;
+		this.rHistoryButton.deleted = shown;
+
+		// lock kill button if not 2-state moore
+		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || this.engine.isHROT || this.engine.isTriangular || this.engine.isVonNeumann;
+
+		// lock theme button if mode doesn't support themes
+		this.themeButton.locked =  this.multiStateView || this.engine.isNone;
 
 		// lock major button if hex or triangular grid
 		this.majorButton.locked = (this.engine.isHex && this.engine.useHexagons) || this.engine.isTriangular;
@@ -4724,7 +4759,7 @@
 		this.hexCellButton.locked = !this.engine.isHex;
 
 		// POI controls
-		shown = hide || (this.waypointManager.numPOIs() === 0);
+		shown = hide || (this.waypointManager.numPOIs() === 0) || settingsMenuOpen;
 		this.nextPOIButton.deleted = shown;
 		this.prevPOIButton.deleted = shown;
 
@@ -5385,25 +5420,25 @@
 	};
 
 	// colour theme
-	View.prototype.viewThemeRange = function(newValue, change, me) {
-		var newTheme = 0;
+	View.prototype.setNewTheme = function(newTheme, steps, me) {
+		var i = 0;
 
-		// check if changing
-		if (change) {
-			// set the theme
-			newTheme = (newValue[0] + 0.5) | 0;
+		// check if it has changed
+		if (me.engine.colourTheme !== newTheme) {
+			me.engine.setTheme(newTheme, steps, me);
+			if (me.engine.colourChangeSteps > 1) {
+				me.menuManager.updateCount = me.engine.colourChangeSteps;
+			}
 
-			// check if it has changed
-			if (me.engine.colourTheme !== newTheme) {
-				me.engine.setTheme(newTheme, me.engine.colourChangeSteps, me);
-				if (me.engine.colourChangeSteps > 1) {
-					me.menuManager.updateCount = me.engine.colourChangeSteps;
+			// clear theme selection buttons apart from this one
+			for (i = 0; i <= this.engine.numThemes; i += 1) {
+				if (newTheme !== ViewConstants.themeOrder[i]) {
+					this.themeSelections[i].current = [false];
+				} else {
+					this.themeSelections[i].current = [true];
 				}
 			}
 		}
-
-		// return value
-		return [newValue[0], me.themeName(me.engine.colourTheme)];
 	};
 
 	// step size
@@ -5490,8 +5525,7 @@
 
 	// reset the camera
 	View.prototype.resetCamera = function(me, fullReset) {
-		var numberValue = 0,
-		    previousSteps = 0;
+		var numberValue = 0;
 
 		// reset zoom
 		me.engine.zoom = me.defaultZoom;
@@ -5517,10 +5551,7 @@
 		// only reset the rest on a hard reset
 		if (fullReset) {
 			// reset theme
-			previousSteps = me.engine.colourChangeSteps;
-			me.engine.colourChangeSteps = 1;
-			me.themeItem.current = me.viewThemeRange([me.defaultTheme, ""], true, me);
-			me.engine.colourChangeSteps = previousSteps;
+			me.setNewTheme(me.defaultTheme, 1, me);
 			if (me.multiStateView) {
 				// prevent colour theme change for multi-state view
 				me.engine.colourChange = 0;
@@ -7146,7 +7177,7 @@
 		// check if theme defined
 		if (poi.themeDefined) {
 			// set the new theme
-			me.themeItem.current = me.viewThemeRange([poi.theme, ""], true, me);
+			me.setNewTheme(poi.theme, me.engine.colourChangeSteps, me);
 		}
 
 		// notify POI changed
@@ -7250,6 +7281,101 @@
 	// redo button
 	View.prototype.redoPressed = function(me) {
 		me.redo(me);
+	};
+
+	// theme button
+	View.prototype.themePressed = function(me) {
+		me.showThemeSelection = true;
+	};
+
+	// theme selection toggle
+	View.prototype.setThemeFromCallback = function(theme, newValue, change) {
+		if (change) {
+			if (newValue[0]) {
+				// change immediately
+				this.setNewTheme(ViewConstants.themeOrder[theme], 1, this);
+
+				// close settings menu
+				if (this.navToggle.current[0]) {
+					this.navToggle.current = this.toggleSettings([false], true, this);
+				}
+			}
+		}
+
+		return newValue;
+	};
+
+	// theme selection toggles
+	View.prototype.toggleTheme0 = function(newValue, change, me) {
+		return me.setThemeFromCallback(0, newValue, change);
+	};
+
+	View.prototype.toggleTheme1 = function(newValue, change, me) {
+		return me.setThemeFromCallback(1, newValue, change);
+	};
+
+	View.prototype.toggleTheme2 = function(newValue, change, me) {
+		return me.setThemeFromCallback(2, newValue, change);
+	};
+
+	View.prototype.toggleTheme3 = function(newValue, change, me) {
+		return me.setThemeFromCallback(3, newValue, change);
+	};
+
+	View.prototype.toggleTheme4 = function(newValue, change, me) {
+		return me.setThemeFromCallback(4, newValue, change);
+	};
+
+	View.prototype.toggleTheme5 = function(newValue, change, me) {
+		return me.setThemeFromCallback(5, newValue, change);
+	};
+
+	View.prototype.toggleTheme6 = function(newValue, change, me) {
+		return me.setThemeFromCallback(6, newValue, change);
+	};
+
+	View.prototype.toggleTheme7 = function(newValue, change, me) {
+		return me.setThemeFromCallback(7, newValue, change);
+	};
+
+	View.prototype.toggleTheme8 = function(newValue, change, me) {
+		return me.setThemeFromCallback(8, newValue, change);
+	};
+
+	View.prototype.toggleTheme9 = function(newValue, change, me) {
+		return me.setThemeFromCallback(9, newValue, change);
+	};
+
+	View.prototype.toggleTheme10 = function(newValue, change, me) {
+		return me.setThemeFromCallback(10, newValue, change);
+	};
+
+	View.prototype.toggleTheme11 = function(newValue, change, me) {
+		return me.setThemeFromCallback(11, newValue, change);
+	};
+
+	View.prototype.toggleTheme12 = function(newValue, change, me) {
+		return me.setThemeFromCallback(12, newValue, change);
+	};
+
+	View.prototype.toggleTheme13 = function(newValue, change, me) {
+		return me.setThemeFromCallback(13, newValue, change);
+	};
+
+	View.prototype.toggleTheme14 = function(newValue, change, me) {
+		return me.setThemeFromCallback(14, newValue, change);
+	};
+
+	View.prototype.toggleTheme15 = function(newValue, change, me) {
+		return me.setThemeFromCallback(15, newValue, change);
+	};
+
+	View.prototype.toggleTheme16 = function(newValue, change, me) {
+		return me.setThemeFromCallback(16, newValue, change);
+	};
+
+	View.prototype.toggleTheme17 = function(newValue, change, me) {
+		return me.setThemeFromCallback(17, newValue, change);
 	};
 
 	// graph close button
@@ -8768,6 +8894,10 @@
 				me.displayHelp = 0;
 				me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
 			}
+			// close theme selection buttons if settings closed
+			if (!newValue[0]) {
+				me.showThemeSelection = false;
+			}
 		}
 		return newValue;
 	};
@@ -9590,6 +9720,8 @@
 
 	// create menus
 	View.prototype.createMenus = function() {
+		var i = 0, j = 0, x = 0, y = 0, lastX = 0;
+
 		// View menu
 
 		// create the view menu
@@ -9947,9 +10079,51 @@
 		this.navToggle.icon = [this.iconManager.icon("menu")];
 		this.navToggle.toolTip = ["toggle settings menu"];
 
-		// add the colour theme range
-		this.themeItem = this.viewMenu.addRangeItem(this.viewThemeRange, Menu.south, 0, -90, 390, 40, 0, this.engine.numThemes - 1, 1, true, "", " Theme", -1);
-		this.themeItem.toolTip = "colour theme";
+		// add the colour theme button
+		this.themeButton = this.viewMenu.addButtonItem(this.themePressed, Menu.south, 0, -90, 120, 40, "Theme");
+		this.themeButton.toolTip = "choose colour theme";
+
+		// add the theme selections
+		lastX = -1;
+		for (i = 0; i <= this.engine.numThemes; i += 1) {
+			j = ViewConstants.themeOrder[i];
+			x = ViewConstants.themeX[i];
+			if (x !== lastX) {
+				y = 120;
+				lastX = x;
+			} else {
+				y += 60;
+			}
+			this.themeSelections[i] = this.viewMenu.addListItem(null, Menu.north, x * 140 - 210, y, 120, 40, [this.themeName(j)], [false], Menu.multi);
+			this.themeSelections[i].toolTip = ["select " + this.themeName(j) + " theme"];
+			this.themeSelections[i].font = "20px Arial";
+		}
+
+		// set callbacks
+		this.themeSelections[0].callback = this.toggleTheme0;
+		this.themeSelections[1].callback = this.toggleTheme1;
+		this.themeSelections[2].callback = this.toggleTheme2;
+		this.themeSelections[3].callback = this.toggleTheme3;
+		this.themeSelections[4].callback = this.toggleTheme4;
+		this.themeSelections[5].callback = this.toggleTheme5;
+		this.themeSelections[6].callback = this.toggleTheme6;
+		this.themeSelections[7].callback = this.toggleTheme7;
+		this.themeSelections[8].callback = this.toggleTheme8;
+		this.themeSelections[9].callback = this.toggleTheme9;
+		this.themeSelections[10].callback = this.toggleTheme10;
+		this.themeSelections[11].callback = this.toggleTheme11;
+		this.themeSelections[12].callback = this.toggleTheme12;
+		this.themeSelections[13].callback = this.toggleTheme13;
+		this.themeSelections[14].callback = this.toggleTheme14;
+		this.themeSelections[15].callback = this.toggleTheme15;
+		this.themeSelections[16].callback = this.toggleTheme16;
+		this.themeSelections[17].callback = this.toggleTheme17;
+
+		// add the theme category labels
+		this.themeDefaultLabel = this.viewMenu.addLabelItem(Menu.north, -210, 60, 120, 40, "Default");
+		this.themeClassicLabel = this.viewMenu.addLabelItem(Menu.north, -70, 60, 120, 40, "Classic");
+		this.themeProgramLabel = this.viewMenu.addLabelItem(Menu.north, 70, 60, 120, 40, "Program");
+		this.themeDebugLabel = this.viewMenu.addLabelItem(Menu.north, 210, 60, 120, 40, "Debug");
 
 		// add the generation speed range
 		this.generationRange = this.viewMenu.addRangeItem(this.viewGenerationRange, Menu.southEast, -365, -40, 75, 40, 0, 1, 0, true, "", "", -1);
@@ -10092,7 +10266,8 @@
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeItem, this.shrinkButton, this.closeButton, this.autoHideButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []); 
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeButton, this.shrinkButton, this.closeButton, this.autoHideButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []); 
+
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
 
@@ -10723,6 +10898,9 @@
 			this.isEdge = false;
 		}
 
+		// hide theme selection buttons
+		this.showThemeSelection = false;
+
 		// clear time intervals
 		this.menuManager.resetTimeIntervals();
 
@@ -11088,7 +11266,7 @@
 		this.navToggle.deleted = false;
 		this.layersItem.deleted = false;
 		this.depthItem.deleted = false;
-		this.themeItem.deleted = false;
+		this.themeButton.deleted = false;
 		this.viewMenu.deleted = false;
 		this.progressBar.deleted = false;
 		this.undoButton.deleted = false;
@@ -11487,24 +11665,24 @@
 		// check if a theme was requested
 		if (this.themeRequested !== -1) {
 			// set the requested theme
-			this.engine.setTheme(this.themeRequested, 1, this);
+			this.setNewTheme(this.themeRequested, 1, this);
 		} else {
 			// if not then check if a custom theme was specified
 			if (this.customTheme) {
-				this.engine.setTheme(this.engine.numThemes, 1, this);
+				this.setNewTheme(this.engine.numThemes, 1, this);
 			} else {
 				// set the theme based on rule type
 				if (this.engine.isLifeHistory) {
 					// default to theme 10
-					this.engine.setTheme(10, 1, this);
+					this.setNewTheme(10, 1, this);
 				} else {
 					// check for Generations or HROT
 					if (this.engine.multiNumStates > 2) {
 						// multi state uses theme 11
-						this.engine.setTheme(11, 1, this);
+						this.setNewTheme(11, 1, this);
 					} else {
 						// default to theme 1
-						this.engine.setTheme(1, 1, this);
+						this.setNewTheme(1, 1, this);
 					}
 				}
 			}
@@ -11759,7 +11937,7 @@
 
 		// set the default theme
 		this.defaultTheme = this.engine.colourTheme;
-		this.themeItem.current = this.viewThemeRange([this.defaultTheme, ""], true, this);
+		this.setNewTheme(this.defaultTheme, this.engine.colourChangeSteps, this);
 
 		// set the generation speed
 		this.defaultGPS = this.genSpeed;
@@ -11890,7 +12068,7 @@
 			if (this.multiStateView) {
 				this.layersItem.deleted = true;
 				this.depthItem.deleted = true;
-				this.themeItem.deleted = true;
+				this.themeButton.deleted = true;
 
 				// reset layers to 1
 				this.engine.layers = 1;
