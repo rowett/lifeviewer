@@ -1010,6 +1010,8 @@
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.themeAliveRampWord + " R G B", "set theme alive ramp", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.themeDeadWord + " R G B", "set theme dead color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.themeDeadRampWord + " R G B", "set theme dead ramp", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.themeDyingWord + " R G B", "set theme dying color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.themeDyingRampWord + " R G B", "set theme dying ramp", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.boundaryWord + " R G B", "set boundary color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " <0.." + String(view.patternStates - 1) + "> R G B", "set state color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.offColorWord + " R G B", "set [R]History state color " + ViewConstants.offState, ctx, x, y, height, helpLine);
