@@ -2,6 +2,7 @@ Build 380
 - hotkey Alt+"T" to toggle playback throttling
 - [R]History COLOR commands were being ignored
 - hexagons and triangles were ignoring [R]History colours
+- updated MCell multi-state Theme
 
 Build 379
 - hide POI prev/next buttons when Settings menu is displayed

@@ -3896,7 +3896,7 @@
 
 		// MCell theme
 		this.themes[i] = new Theme("MCell", new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0),
-									new Colour(255, 255, 0), new ColourRange(new Colour(128, 128, 0), new Colour(128, 128, 128)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
+									new Colour(255, 255, 0), new ColourRange(new Colour(0, 255, 0), new Colour(255, 255, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
 		this.themes[i].setGridLines(5, new Colour(64, 0, 0), new Colour(99, 3, 1));
 		i += 1;
 
