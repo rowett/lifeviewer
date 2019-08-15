@@ -2029,6 +2029,11 @@
 
 			// check if shrink needed
 			this.engine.doShrink();
+
+			// update state 6 grid
+			if (this.engine.isLifeHistory) {
+				this.engine.populateState6MaskFromColGrid();
+			}
 		}
 	};
 
@@ -2087,6 +2092,11 @@
 
 			// check if shrink needed
 			this.engine.doShrink();
+
+			// update state 6 grid
+			if (this.engine.isLifeHistory) {
+				this.engine.populateState6MaskFromColGrid();
+			}
 		}
 	};
 
@@ -6067,6 +6077,8 @@
 					}
 				}
 				if (numCleared > 0) {
+					// update state 6 grid
+					this.engine.populateState6MaskFromColGrid();
 					me.afterEdit("clear [R]History cells");
 				}
 			} else {
@@ -7625,6 +7637,8 @@
 							state = me.engine.getState(x + xOff, y + yOff, false);
 							if (state > 1) {
 								me.setStateWithUndo(x + xOff, y + yOff, state & 1, true, sizeHint);
+								// update state 6 grid
+								this.engine.populateState6MaskFromColGrid();
 							}
 						}
 					}
