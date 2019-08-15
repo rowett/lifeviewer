@@ -2617,18 +2617,15 @@
 								switch(peekToken) {
 								// [R]History color states
 								case Keywords.offColorWord:
-									peekToken = scriptReader.getNextToken();
-									this.decodeRGB(view, scriptReader, scriptErrors, ViewConstants.offState, nextToken, false, peekToken);
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeBackground, whichColour);
 									break;
 
 								case Keywords.onColorWord:
-									peekToken = scriptReader.getNextToken();
-									this.decodeRGB(view, scriptReader, scriptErrors, ViewConstants.onState, nextToken, false, peekToken);
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeAlive, whichColour);
 									break;
 
 								case Keywords.historyColorWord:
-									peekToken = scriptReader.getNextToken();
-									this.decodeRGB(view, scriptReader, scriptErrors, ViewConstants.historyState, nextToken, false, peekToken);
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDead, whichColour);
 									break;
 
 								case Keywords.mark1ColorWord:

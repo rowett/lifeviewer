@@ -905,6 +905,8 @@
 	Life.prototype.drawTriangles = function() {
 		var colourGrid = this.colourGrid,
 			colourRow = null,
+			overlayGrid = this.overlayGrid,
+			overlayRow = null,
 			zoomBox = this.historyBox,
 			/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
 			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
@@ -974,12 +976,22 @@
 			displayY = (((y - h2) + yOff) * zoom) + halfDisplayHeight;
 			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
 				colourRow = colourGrid[y];
+				if (overlayGrid) {
+					overlayRow = overlayGrid[y];
+				}
 				cy = (y - h2);
 				xOffset = xOff - w2;
 				for (x = leftX; x <= rightX; x += 1) {
 					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
 					if (displayX >= -zoom && displayX < this.displayWidth + zoom * 2) {
-						state = colourRow[x];
+						if (overlayRow) {
+							state = overlayRow[x];
+							if (state === 0) {
+								state = colourRow[x];
+							}
+						} else {
+							state = colourRow[x];
+						}
 						if (state > 0) {
 							// encode coordinate index into the colour state so it can be sorted later
 							colours[j] = (state << LifeConstants.coordBufferBits) + k;
@@ -1513,6 +1525,8 @@
 	Life.prototype.drawHexagons = function() {
 		var colourGrid = this.colourGrid,
 			colourRow = null,
+			overlayGrid = this.overlayGrid,
+			overlayRow = null,
 			zoomBox = this.historyBox,
 			/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
 			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
@@ -1619,12 +1633,22 @@
 			displayY = ((y + yOff - h2) * zoom) + halfDisplayHeight;
 			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
 				colourRow = colourGrid[y];
+				if (overlayGrid) {
+					overlayRow = overlayGrid[y];
+				}
 				cy = y - h2;
 				xOffset = xOff - w2 - ((cy + yOff) / 2);
 				for (x = leftX; x <= rightX; x += 1) {
 					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
 					if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
-						state = colourRow[x];
+						if (overlayRow) {
+							state = overlayRow[x];
+							if (state === 0) {
+								state = colourRow[x];
+							}
+						} else {
+							state = colourRow[x];
+						}
 						if (state > 0) {
 							// encode coordinate index into the colour state so it can be sorted later
 							colours[j] = (state << LifeConstants.coordBufferBits) + k;
@@ -4227,17 +4251,17 @@
 		greenChannel = this.greenChannel,
 		blueChannel = this.blueChannel,
 		i = 0,
-		stateColour = 0,
-		numCustom = (customColours ? customColours.length : 0);
+		stateColour = 0;
 
 		// create multi-state pixel colours
 		for (i = 0; i < colourList.length; i += 1) {
 			// check if a custom colour is defined
-			if ((i >= numCustom) || (customColours && customColours[i] === -1)) {
+			if (customColours && customColours[i] !== -1) {
+				// use the custom colour
+				stateColour = customColours[i];
+			} else {
 				// use the library colour
 				stateColour = colourList[i];
-			} else {
-				stateColour = customColours[i];
 			}
 			redChannel[i] = stateColour >> 16;
 			greenChannel[i] = (stateColour >> 8) & 255;
@@ -4256,24 +4280,21 @@
 
 		    // look up the [R]History state translation map
 		    stateMap = ViewConstants.stateMap,
-
-		    // get number of custom colours
-		    numCustom = (customColours ? customColours.length : 0),
 		    i = 0;
 
 		// create default colours
 		for (i = 0; i < colourList.length; i += 1) {
 			// check if a custom colour is defined
-			if ((i >= numCustom) || (customColours && customColours[i] === -1)) {
-				// use the library colour
-				redChannel[128 + stateMap[i]] = colourList[i] >> 16;
-				greenChannel[128 + stateMap[i]] = (colourList[i] >> 8) & 255;
-				blueChannel[128 + stateMap[i]] = colourList[i] & 255;
-			} else {
+			if (customColours && customColours[i] !== -1) {
 				// use the custom colour
 				redChannel[128 + stateMap[i]] = customColours[i] >> 16;
 				greenChannel[128 + stateMap[i]] = (customColours[i] >> 8) & 255;
 				blueChannel[128 + stateMap[i]] = customColours[i] & 255;
+			} else {
+				// use the library colour
+				redChannel[128 + stateMap[i]] = colourList[i] >> 16;
+				greenChannel[128 + stateMap[i]] = (colourList[i] >> 8) & 255;
+				blueChannel[128 + stateMap[i]] = colourList[i] & 255;
 			}
 		}
 	};

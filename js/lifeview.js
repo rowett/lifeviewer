@@ -567,6 +567,9 @@
 	function View(element) {
 		var i = 0;
 
+		// whether multiple steps can bail out early due to performance
+		/** @type {boolean} */ this.canBailOut = true;
+
 		// whether displaying theme selection buttons
 		/** @type {boolean} */ this.showThemeSelection = false;
 
@@ -4248,8 +4251,14 @@
 
 					// check for stop or delta time being too large or single step (ignore time for manual stepping)
 					if (me.engine.counter === me.stopGeneration - 1 || ((deltaTime > ViewConstants.updateThreshold) && !manualStepping)) {
-						// bail out of loop
-						bailout = true;
+
+						// if at stop generation then actually bailout
+						if (me.engine.counter === me.stopGeneration - 1) {
+							bailout = true;
+						} else {
+							// if lagging then bailout if enabled
+							bailout = me.canBailOut;
+						}
 					}
 
 					// check if stats are on and this is the last generation in the step
@@ -7546,6 +7555,11 @@
 			me.universe = Controller.patterns.length - 1;
 		}
 		me.startViewer(Controller.patterns[me.universe].pattern, false);
+	};
+
+	// toggle bailout
+	View.prototype.toggleBailOut = function(me) {
+		me.canBailOut = !me.canBailOut;
 	};
 
 	// shrink button
@@ -11036,6 +11050,9 @@
 			this.isEdge = false;
 		}
 
+		// mark bailout possible
+		this.canBailOut = true;
+
 		// hide theme selection buttons
 		this.showThemeSelection = false;
 
@@ -11507,7 +11524,11 @@
 			// read any script in the title
 			if (pattern.title) {
 				// decode any script commands
-				this.readScript(pattern.title, pattern.numStates);
+				numberValue = pattern.numStates;
+				if (this.engine.isLifeHistory) {
+					numberValue = 7;
+				}
+				this.readScript(pattern.title, numberValue);
 
 				// initialise random number generator from seed
 				myRand.init(this.randomSeed);

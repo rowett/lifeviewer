@@ -1,3 +1,8 @@
+Build 380
+- hotkey Alt+"T" to toggle playback throttling
+- [R]History COLOR commands were being ignored
+- hexagons and triangles were ignoring [R]History colours
+
 Build 379
 - hide POI prev/next buttons when Settings menu is displayed
 - grey out Kill button unless rule is 2-state Moore

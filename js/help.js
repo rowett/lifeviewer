@@ -579,6 +579,7 @@
 			y = this.renderHelpLine(view, "Shift D", "minimum step size", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Shift E", "maximum step size", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "0", "reset step and speed", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Alt T", "toggle throttling", ctx, x, y, height, helpLine);
 			if (view.waypointsDefined) {
 				if (view.loopGeneration !== -1) {
 					y = this.renderHelpLine(view, "W", "toggle waypoint playback and loop", ctx, x, y, height, helpLine);

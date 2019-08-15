@@ -218,6 +218,11 @@
 						me.copySyncToggle.current = me.viewCopySyncList([!me.copySyncExternal], true, me);
 						me.menuManager.notification.notify("Sync Clipboard " + (me.copySyncExternal ? "On" : "Off"), 15, 40, 15, true);
 						break;
+					// t for toggle throttling
+					case 84:
+						me.toggleBailOut(me);
+						me.menuManager.notification.notify("Throttling " + (me.canBailOut ? "On" : "Off"), 15, 40, 15, true);
+						break;
 					// x for flip X
 					case 88:
 						// flip selection horizontally
