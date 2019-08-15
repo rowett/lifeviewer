@@ -5883,6 +5883,10 @@
 					me.cancelPaste(me);
 					break;
 			}
+
+			// clear help widths cache
+			me.helpFixedCache = [];
+			me.helpVariableCache = [];
 		}
 
 		// set the background cursor
@@ -5938,31 +5942,44 @@
 		}
 	};
 
+	// get state name
+	View.prototype.getStateName = function(state) {
+		var name = "";
+
+		if (this.engine.multiNumStates <= 2) {
+			if (this.engine.isLifeHistory) {
+				name = ViewConstants.stateNames[state];
+			} else {
+				name = (state ? "Alive" : "Dead");
+			}
+		} else {
+			if (state === 0) {
+				name = "Dead";
+			} else {
+				if (state === 1) {
+					name = "Alive";
+				} else {
+					name = "Dying " + String(state - 1);
+				}
+			}
+		}
+
+		return name;
+	};
+
 	// drawing states list
 	View.prototype.viewStateList = function(newValue, change, me) {
-		var name = "",
-			result = newValue;
+		var result = newValue;
 
 		if (change) {
-			me.drawState = newValue;
 			if (me.engine.multiNumStates <= 2) {
-				if (me.engine.isLifeHistory) {
-					name = ViewConstants.stateNames[me.drawState];
-				} else {
-					name = (me.drawState ? "Alive" : "Dead");
-				}
+				me.drawState = newValue;
 			} else {
 				newValue += me.startState;
 				if (newValue === 0) {
 					me.drawState = 0;
-					name = "Dead";
 				} else {
 					me.drawState = me.engine.multiNumStates - newValue;
-					if (newValue === 1) {
-						name = "Alive";
-					} else {
-						name = "Dying " + String(newValue - 1);
-					}
 				}
 			}
 
@@ -5970,10 +5987,27 @@
 			me.pickToggle.current = me.togglePick([false], true, me);
 
 			// notify after switching mode since switching clears notifications
-			me.menuManager.notification.notify("Drawing with state " + newValue + " (" + name + ")", 15, 120, 15, true);
+			me.menuManager.notification.notify("Drawing with state " + newValue + " (" + me.getStateName(newValue) + ")", 15, 120, 15, true);
 		}
 
 		return result;
+	};
+
+	// switch to state from keyboard shortcut
+	View.prototype.switchToState = function(state) {
+		var numStates = this.engine.multiNumStates;
+		if (numStates === -1) {
+			numStates = 2;
+		}
+		if (this.engine.isLifeHistory) {
+			numStates = 7;
+		}
+
+		// check the requested state is valid
+		if (state < numStates) {
+			// switch the pen to the current state
+			this.stateList.current = this.viewStateList(state, true, this);
+		}
 	};
 
 	// drawing states colours list
@@ -5992,6 +6026,67 @@
 		}
 
 		return result;
+	};
+
+	// clear cells of the current pen colours
+	View.prototype.clearCells = function(me, shift) {
+		var x = 0,
+			y = 0,
+			state = 0,
+			current = me.drawState,
+			historyBox = me.engine.historyBox,
+			leftX = historyBox.leftX,
+			rightX = historyBox.rightX,
+			bottomY = historyBox.bottomY,
+			topY = historyBox.topY,
+			numCleared = 0,
+			clearValue = 0,
+			sizeHint = (rightX - leftX + 1) * (topY - bottomY + 1);
+			
+		// delete any cell of the current pen colour
+		if (current > 0) {
+			// adjust current state if generations style
+			if (me.engine.multiNumStates > 2) {
+				current = me.engine.multiNumStates - current;
+			}
+			// adjust for LifeHistory
+			if (me.engine.isLifeHistory && current > 1) {
+				clearValue = current & 1;
+			}
+
+			// check for LifeHistory clear
+			if (me.engine.isLifeHistory && shift) {
+				// clear all LifeHistory states
+				for (y = historyBox.bottomY; y <= historyBox.topY; y += 1) {
+					for (x = historyBox.leftX; x <= historyBox.rightX; x += 1) {
+						state = me.engine.getState(x, y, false);
+						if (state > 1) {
+							me.setStateWithUndo(x, y, state & 1, true, sizeHint);
+							numCleared += 1;
+						}
+					}
+				}
+				if (numCleared > 0) {
+					me.afterEdit("clear [R]History cells");
+				}
+			} else {
+				// clear all cells that match the current drawing state
+				for (y = historyBox.bottomY; y <= historyBox.topY; y += 1) {
+					for (x = historyBox.leftX; x <= historyBox.rightX; x += 1) {
+						state = me.engine.getState(x, y, false);
+						if (state === current) {
+							me.setStateWithUndo(x, y, clearValue, true, sizeHint);
+							numCleared += 1;
+						}
+					}
+				}
+				if (numCleared > 0) {
+					me.afterEdit("clear state " + current + " cells");
+				}
+			}
+		}
+
+		return numCleared;
 	};
 
 	// view play list
@@ -7470,17 +7565,26 @@
 	};
 
 	// clear paste
-	View.prototype.clearPaste = function(me) {
+	View.prototype.clearPaste = function(me, shift) {
 		var i = 0;
 
-		while (i < me.pasteBuffer.length) {
-			me.pasteBuffer[i] = 0;
-			i += 1;
+		if (me.engine.isLifeHistory && shift) {
+			while (i < me.pasteBuffer.length) {
+				if (me.pasteBuffer[i] > 1) {
+					me.pasteBuffer[i] &= 1;
+				}
+				i += 1;
+			}
+		} else {
+			while (i < me.pasteBuffer.length) {
+				me.pasteBuffer[i] = 0;
+				i += 1;
+			}
 		}
 	};
 
 	// clear selection
-	View.prototype.clearSelection = function(me) {
+	View.prototype.clearSelection = function(me, shift) {
 		var box = me.selectionBox,
 			x1 = box.leftX,
 			x2 = box.rightX,
@@ -7515,11 +7619,22 @@
 				}
 	
 				// clear cells in selection
-				for (y = y1; y <= y2; y += 1) {
-					for (x = x1; x <= x2; x += 1) {
-						state = me.engine.getState(x + xOff, y + yOff, false);
-						if (state !== 0) {
-							me.setStateWithUndo(x + xOff, y + yOff, 0, true, sizeHint);
+				if (me.engine.isLifeHistory && shift) {
+					for (y = y1; y <= y2; y += 1) {
+						for (x = x1; x <= x2; x += 1) {
+							state = me.engine.getState(x + xOff, y + yOff, false);
+							if (state > 1) {
+								me.setStateWithUndo(x + xOff, y + yOff, state & 1, true, sizeHint);
+							}
+						}
+					}
+				} else {
+					for (y = y1; y <= y2; y += 1) {
+						for (x = x1; x <= x2; x += 1) {
+							state = me.engine.getState(x + xOff, y + yOff, false);
+							if (state !== 0) {
+								me.setStateWithUndo(x + xOff, y + yOff, 0, true, sizeHint);
+							}
 						}
 					}
 				}
@@ -7531,20 +7646,29 @@
 				me.afterSelectAction = false;
 	
 				// save edit
-				me.afterEdit("clear cells in selection");
+				if (me.engine.isLifeHistory && shift) {
+					me.afterEdit("clear [R]History cells in selection");
+				} else {
+					me.afterEdit("clear cells in selection");
+				}
+			}
+		}
+	};
+
+	// clear selection
+	View.prototype.doClearSelection = function(me, shift) {
+		if (!me.viewOnly) {
+			if (me.isPasting) {
+				me.clearPaste(me, shift);
+			} else {
+				me.clearSelection(me, shift);
 			}
 		}
 	};
 
 	// clear selection pressed
 	View.prototype.clearSelectionPressed = function(me) {
-		if (!me.viewOnly) {
-			if (me.isPasting) {
-				me.clearPaste(me);
-			} else {
-				me.clearSelection(me);
-			}
-		}
+		me.doClearSelection(me, false);
 	};
 
 	// select all pressed
@@ -10901,6 +11025,9 @@
 		// hide theme selection buttons
 		this.showThemeSelection = false;
 
+		// ensure theme is set
+		this.engine.colourTheme = -1;
+
 		// clear time intervals
 		this.menuManager.resetTimeIntervals();
 
@@ -11156,8 +11283,8 @@
 		this.engine.clearGrids(false);
 
 		// reset grid lines
-		this.engine.gridLineRaw = this.engine.gridLineRawDefault;
-		this.engine.gridLineBoldRaw = this.engine.gridLineBoldRawDefault;
+		this.engine.gridLineRaw = ViewConstants.gridLineRawDefault;
+		this.engine.gridLineBoldRaw = ViewConstants.gridLineBoldRawDefault;
 		this.engine.gridLineMajor = 10;
 		this.engine.definedGridLineMajor = 10;
 		this.engine.gridLineMajorEnabled = true;

@@ -23,6 +23,8 @@
 
 	// implement cross-browser performance now
 	if (!window.performance) {
+
+		/** @suppress {checkTypes} */
 		// @ts-ignore
 		window.performance = {};
 	}
@@ -49,6 +51,8 @@
 	// implement cross-browser typed arrays
 	if (!window.Uint8Array) {
 		window["typedArrays"] = false;
+
+		/** @suppress {checkTypes} */
 		window.Uint8Array = Array;
 	}
 	else {
@@ -56,14 +60,20 @@
 	}
 
 	if (!window.Uint8ClampedArray) {
+
+		/** @suppress {checkTypes} */
 		window.Uint8ClampedArray = window.Uint8Array;
 	}
 
 	if (!window.Uint16Array) {
+
+		/** @suppress {checkTypes} */
 		window.Uint16Array = Array;
 	}
 
 	if (!window.Uint32Array) {
+
+		/** @suppress {checkTypes} */
 		window.Uint32Array = Array;
 	}
 

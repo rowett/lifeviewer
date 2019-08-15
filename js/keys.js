@@ -114,34 +114,39 @@
 			if (event.altKey && !event.ctrlKey) {
 				if (keyCode >= 48 && keyCode <= 57) {
 					value = keyCode - 48;
-					// if selecting or no POIs then choose clipboard
-					if (me.selecting || me.waypointManager.numPOIs() === 0) {
-						// if clipboard already selected then paste
-						if (me.currentPasteBuffer === value) {
-							if (me.isPasting) {
-								me.pasteSelection(me);
+					// if drawing then switch to state
+					if (me.drawing) {
+						me.switchToState(value);
+					} else {
+						// if selecting or no POIs then choose clipboard
+						if (me.selecting || me.waypointManager.numPOIs() === 0) {
+							// if clipboard already selected then paste
+							if (me.currentPasteBuffer === value) {
+								if (me.isPasting) {
+									me.pasteSelection(me);
+								} else {
+									me.pastePressed(me);
+								}
 							} else {
-								me.pastePressed(me);
+								// switch to required buffer
+								me.clipboardList.current = me.viewClipboardList(value, true, me);
+	
+								// if already pasting then update paste
+								if (me.isPasting) {
+									me.pasteSelection(me, value);
+								} else {
+									me.menuManager.notification.notify("Clipboard " + value + " active", 15, 80, 15, true);
+								}
 							}
 						} else {
-							// switch to required buffer
-							me.clipboardList.current = me.viewClipboardList(value, true, me);
-
-							// if already pasting then update paste
-							if (me.isPasting) {
-								me.pasteSelection(me, value);
-							} else {
-								me.menuManager.notification.notify("Clipboard " + value + " active", 15, 80, 15, true);
+							// POIs only use 1 to 9
+							value -= 1;
+							if (value >= 0 && value < me.waypointManager.numPOIs()) {
+								me.currentPOI = value;
+		
+								// set camera
+								me.setCameraFromPOI(me, me.currentPOI);
 							}
-						}
-					} else {
-						// POIs only use 1 to 9
-						value -= 1;
-						if (value >= 0 && value < me.waypointManager.numPOIs()) {
-							me.currentPOI = value;
-	
-							// set camera
-							me.setCameraFromPOI(me, me.currentPOI);
 						}
 					}
 				} else {
@@ -1018,9 +1023,33 @@
 				}
 				break;
 
-			// Del to clear selection
+			// Del to clear cells or selection
 			case 46:
-				me.clearSelectionPressed(me);
+				if (me.isSelection) {
+					me.doClearSelection(me, event.shiftKey);
+				} else {
+					if (me.drawing) {
+						value = me.clearCells(me, event.shiftKey);
+						if (value > 0) {
+							if (event.shiftKey) {
+								me.menuManager.notification.notify("Cleared all [R]History cells", 15, 120, 15, true);
+							} else {
+								value = me.drawState;
+								if (me.engine.multiNumStates > 2) {
+									value = me.engine.multiNumStates - value;
+								}
+								me.menuManager.notification.notify("Cleared all " + me.getStateName(value) + " cells", 15, 120, 15, true);
+							}
+						}
+					} else {
+						if (event.shiftKey) {
+							value = me.clearCells(me, event.shiftKey);
+							if (value) {
+								me.menuManager.notification.notify("Cleared all [R]History cells", 15, 120, 15, true);
+							}
+						}
+					}
+				}
 				break;
 
 			// j for jump to POI

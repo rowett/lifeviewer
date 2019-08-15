@@ -2,6 +2,9 @@ Build 379
 - hide POI prev/next buttons when Settings menu is displayed
 - grey out Kill button unless rule is 2-state Moore
 - replaced Theme slider with a Theme button that opens a page of buttons to select the required theme
+- hotkeys Alt+"0" to Alt+"9" select drawing states when in Draw mode
+- hotkey "Del" clears all cells of the current drawing state when in Draw mode
+- hotkey Shift+"Del" clears [R]History cells
 
 Build 378
 - updated out of date test
