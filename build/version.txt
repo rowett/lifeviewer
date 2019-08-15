@@ -5,6 +5,7 @@ Build 379
 - hotkeys Alt+"0" to Alt+"9" select drawing states when in Draw mode
 - hotkey "Del" clears all cells of the current drawing state when in Draw mode
 - hotkey Shift+"Del" clears [R]History cells
+- ensure PopUp Viewer is right aligned
 
 Build 378
 - updated out of date test

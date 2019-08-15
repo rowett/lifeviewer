@@ -11554,9 +11554,6 @@
 					} else {
 						this.displayWidth = ViewConstants.minViewerWidth;
 					}
-					if (this.displayWidth !== this.lastPopupWidth) {
-						this.popupWidthChanged = true;
-					}
 
 					if (this.requestedPopupHeight > -1) {
 						if (this.requestedPopupHeight !== this.displayHeight) {
@@ -11566,6 +11563,13 @@
 					} else {
 						this.displayHeight = ViewConstants.minMenuHeight + 80;
 					}
+				}
+			}
+
+			// check if popup width has changed
+			if (this.isInPopup) {
+				if (this.displayWidth !== this.lastPopupWidth) {
+					this.popupWidthChanged = true;
 				}
 			}
 
