@@ -1031,12 +1031,12 @@
 			// Del to clear cells or selection
 			case 46:
 				if (me.isSelection) {
-					me.doClearSelection(me, event.shiftKey);
+					me.doClearSelection(me, event.ctrlKey);
 				} else {
 					if (me.drawing) {
-						value = me.clearCells(me, event.shiftKey);
+						value = me.clearCells(me, event.ctrlKey);
 						if (value > 0) {
-							if (event.shiftKey) {
+							if (event.ctrlKey) {
 								me.menuManager.notification.notify("Cleared all [R]History cells", 15, 120, 15, true);
 							} else {
 								value = me.drawState;
@@ -1047,8 +1047,8 @@
 							}
 						}
 					} else {
-						if (event.shiftKey) {
-							value = me.clearCells(me, event.shiftKey);
+						if (event.ctrlKey) {
+							value = me.clearCells(me, event.ctrlKey);
 							if (value) {
 								me.menuManager.notification.notify("Cleared all [R]History cells", 15, 120, 15, true);
 							}

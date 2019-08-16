@@ -2476,14 +2476,14 @@
 					}
 				}
 			}
+		}
 
-			// see if there is an alias name for this rule
-			aliasName = AliasManager.getAliasFromRule(pattern.ruleName);
+		// see if there is an alias name for this rule
+		aliasName = AliasManager.getAliasFromRule(pattern.ruleName);
 
-			// check for History
-			if (pattern.isHistory) {
-				pattern.ruleName += "History";
-			}
+		// check for History
+		if (pattern.isHistory) {
+			pattern.ruleName += "History";
 		}
 
 		// check for bounded grid

@@ -6048,7 +6048,7 @@
 	};
 
 	// clear cells of the current pen colours
-	View.prototype.clearCells = function(me, shift) {
+	View.prototype.clearCells = function(me, ctrl) {
 		var x = 0,
 			y = 0,
 			state = 0,
@@ -6074,7 +6074,7 @@
 			}
 
 			// check for LifeHistory clear
-			if (me.engine.isLifeHistory && shift) {
+			if (me.engine.isLifeHistory && ctrl) {
 				// clear all LifeHistory states
 				for (y = historyBox.bottomY; y <= historyBox.topY; y += 1) {
 					for (x = historyBox.leftX; x <= historyBox.rightX; x += 1) {
@@ -7610,7 +7610,7 @@
 	};
 
 	// clear selection
-	View.prototype.clearSelection = function(me, shift) {
+	View.prototype.clearSelection = function(me, ctrl) {
 		var box = me.selectionBox,
 			x1 = box.leftX,
 			x2 = box.rightX,
@@ -7645,7 +7645,7 @@
 				}
 	
 				// clear cells in selection
-				if (me.engine.isLifeHistory && shift) {
+				if (me.engine.isLifeHistory && ctrl) {
 					for (y = y1; y <= y2; y += 1) {
 						for (x = x1; x <= x2; x += 1) {
 							state = me.engine.getState(x + xOff, y + yOff, false);
@@ -7674,7 +7674,7 @@
 				me.afterSelectAction = false;
 	
 				// save edit
-				if (me.engine.isLifeHistory && shift) {
+				if (me.engine.isLifeHistory && ctrl) {
 					me.afterEdit("clear [R]History cells in selection");
 				} else {
 					me.afterEdit("clear cells in selection");
@@ -7684,12 +7684,12 @@
 	};
 
 	// clear selection
-	View.prototype.doClearSelection = function(me, shift) {
+	View.prototype.doClearSelection = function(me, ctrl) {
 		if (!me.viewOnly) {
 			if (me.isPasting) {
-				me.clearPaste(me, shift);
+				me.clearPaste(me, ctrl);
 			} else {
-				me.clearSelection(me, shift);
+				me.clearSelection(me, ctrl);
 			}
 		}
 	};

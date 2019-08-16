@@ -1,6 +1,7 @@
 Build 381
 - enable Kill button for 2-state Moore range 1 HROT/LtL patterns
 - fixed [R]History display for hexagons and triangles
+- hotkey for clear [R]History cells is now Ctrl+"Del"
 
 Build 380
 - hotkey Alt+"T" to toggle playback throttling

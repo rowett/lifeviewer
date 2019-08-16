@@ -784,7 +784,7 @@
 		}
 		y = this.renderHelpLine(view, "Del", "clear selection", ctx, x, y, height, helpLine);
 		if (view.engine.isLifeHistory) {
-			y = this.renderHelpLine(view, "Shift Del", "clear [R]History cells", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Ctrl Del", "clear [R]History cells", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, ">", "rotate selection clockwise", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "<", "rotate selection counter-clockwise", ctx, x, y, height, helpLine);
