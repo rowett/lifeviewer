@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 381,
+		/** @const {number} */ versionBuild : 382,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1261,6 +1261,9 @@
 
 		// theme button
 		this.themeButton = null;
+
+		// throttle toggle
+		this.throttleToggle = null;
 
 		// theme selections
 		this.themeSelections = [];
@@ -2696,7 +2699,7 @@
 		// if paste every is defined then always flag there are alive cells
 		// since cells will appear in the future
 		if (this.isPasteEvery || counter <= this.maxPasteGen) {
-			this.engine.anythingAlive = true;
+			this.engine.anythingAlive = 1;
 		}
 
 		// paste any edits
@@ -4749,6 +4752,7 @@
 		shown = hide || this.showThemeSelection;
 		this.depthItem.deleted = shown;
 		this.themeButton.deleted = shown;
+		this.throttleToggle.deleted = shown;
 		this.angleItem.deleted = shown;
 		this.layersItem.deleted = shown;
 		this.autoHideButton.deleted = shown;
@@ -5289,7 +5293,7 @@
 		me.engine.yOff &= (me.engine.height - 1);
 
 		// mark something alive
-		me.engine.anythingAlive = true;
+		me.engine.anythingAlive = 1;
 
 		// flag just started for first frame measurement
 		me.justStarted = true;
@@ -5633,7 +5637,7 @@
 			me.engine.restoreSavedGrid(me.noHistory);
 
 			// mark cells alive
-			me.engine.anythingAlive = true;
+			me.engine.anythingAlive = 1;
 
 			// reset history box
 			me.engine.resetHistoryBox();
@@ -5721,7 +5725,7 @@
 			me.originCounter = me.floatCounter;
 
 			// mark cells alive
-			me.engine.anythingAlive = true;
+			me.engine.anythingAlive = 1;
 		}
 
 		// reset population data for graph
@@ -5906,6 +5910,12 @@
 			// clear help widths cache
 			me.helpFixedCache = [];
 			me.helpVariableCache = [];
+
+			// close settings if open
+			if (me.navToggle.current[0]) {
+				me.navToggle.current = me.toggleSettings([false], true, me);
+				me.menuManager.toggleRequired = true;
+			}
 		}
 
 		// set the background cursor
@@ -6464,7 +6474,7 @@
 		// if the population is now non-zero then reset anything alive and died generation
 		if (this.engine.population > 0) {
 			this.diedGeneration = -1;
-			this.engine.anythingAlive = true;
+			this.engine.anythingAlive = 1;
 		}
 	};
 
@@ -7408,7 +7418,7 @@
 	View.prototype.setThemeFromCallback = function(theme, newValue, change) {
 		if (change) {
 			if (newValue[0]) {
-				// change immediately
+				// change quickly
 				this.setNewTheme(ViewConstants.themeOrder[theme], 1, this);
 
 				// close settings menu
@@ -7555,11 +7565,6 @@
 			me.universe = Controller.patterns.length - 1;
 		}
 		me.startViewer(Controller.patterns[me.universe].pattern, false);
-	};
-
-	// toggle bailout
-	View.prototype.toggleBailOut = function(me) {
-		me.canBailOut = !me.canBailOut;
 	};
 
 	// shrink button
@@ -9038,6 +9043,15 @@
 		return [me.pauseWhileDrawing];
 	};
 
+	// throttle toggle
+	View.prototype.toggleThrottle = function(newValue, change, me) {
+		if (change) {
+			me.canBailOut = newValue[0];
+		}
+
+		return [me.canBailOut];
+	};
+
 	// settings menu toggle
 	View.prototype.toggleSettings = function(newValue, change, me) {
 		if (change) {
@@ -10232,8 +10246,12 @@
 		this.navToggle.toolTip = ["toggle settings menu"];
 
 		// add the colour theme button
-		this.themeButton = this.viewMenu.addButtonItem(this.themePressed, Menu.south, 0, -90, 120, 40, "Theme");
+		this.themeButton = this.viewMenu.addButtonItem(this.themePressed, Menu.south, -65, -90, 120, 40, "Theme");
 		this.themeButton.toolTip = "choose colour theme";
+
+		// add the throttle toggle button
+		this.throttleToggle = this.viewMenu.addListItem(this.toggleThrottle, Menu.south, 65, -90, 120, 40, ["Throttle"], [this.canBailOut], Menu.multi);
+		this.throttleToggle.toolTip = ["toggle playback throttling"];
 
 		// add the theme selections
 		lastX = -1;
@@ -10418,7 +10436,7 @@
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeButton, this.shrinkButton, this.closeButton, this.autoHideButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []); 
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeButton, this.throttleToggle, this.shrinkButton, this.closeButton, this.autoHideButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []); 
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -11051,7 +11069,7 @@
 		}
 
 		// mark bailout possible
-		this.canBailOut = true;
+		this.throttleToggle.current = this.toggleThrottle([true], true, this);
 
 		// hide theme selection buttons
 		this.showThemeSelection = false;
@@ -11260,7 +11278,7 @@
 		this.failureReason = PatternManager.failureReason;
 
 		// set anything alive flags
-		this.engine.anythingAlive = true;
+		this.engine.anythingAlive = 1;
 
 		// reset delete pattern radius
 		this.engine.removePatternRadius = ViewConstants.defaultDeleteRadius;
@@ -11425,6 +11443,7 @@
 		this.layersItem.deleted = false;
 		this.depthItem.deleted = false;
 		this.themeButton.deleted = false;
+		this.throttleToggle.deleted = false;
 		this.viewMenu.deleted = false;
 		this.progressBar.deleted = false;
 		this.undoButton.deleted = false;
@@ -12124,7 +12143,7 @@
 		this.depthItem.current = this.viewDepthRange([numberValue, numberValue], true, this);
 
 		// mark something alive
-		this.engine.anythingAlive = true;
+		this.engine.anythingAlive = 1;
 
 		// check whether autostart required
 		if (this.autoStart && !this.autoStartDisabled) {

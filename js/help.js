@@ -1142,6 +1142,8 @@
 		} else {
 			if (view.engine.isLifeHistory) {
 				itemName = "History Player";
+			} else {
+				itemName = "Player";
 			}
 		}
 		y = this.renderHelpLine(view, "Type", itemName, ctx, x, y, height, helpLine);

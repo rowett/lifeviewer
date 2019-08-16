@@ -1,7 +1,14 @@
+Build 382
+- added Throttle button to Settings menu
+- fixed an issue with HROT/LtL patterns not correctly shrinking bounding box
+- close Settings menu when switching mode
+- added new aliases
+
 Build 381
 - enable Kill button for 2-state Moore range 1 HROT/LtL patterns
 - fixed [R]History display for hexagons and triangles
 - hotkey for clear [R]History cells is now Ctrl+"Del"
+- added some non-isotropic aliases
 
 Build 380
 - hotkey Alt+"T" to toggle playback throttling

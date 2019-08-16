@@ -220,7 +220,7 @@
 						break;
 					// t for toggle throttling
 					case 84:
-						me.toggleBailOut(me);
+						me.throttleToggle.current = me.toggleThrottle([!me.canBailOut], true, me);
 						me.menuManager.notification.notify("Throttling " + (me.canBailOut ? "On" : "Off"), 15, 40, 15, true);
 						break;
 					// x for flip X

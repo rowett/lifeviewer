@@ -2512,12 +2512,14 @@
 						aliveState = this.aliveStart;
 						if (state === 1) {
 							state = this.aliveStart;
+							this.anythingAlive = 1;
 						}
 						colourGrid[y][x] = state;
 					} else {
 						aliveState = this.multiNumStates - 1 + this.historyStates;
 						if (state > 0) {
 							state = this.historyStates + state;
+							this.anythingAlive = 1;
 						}
 						colourGrid[y][x] = state;
 					}
