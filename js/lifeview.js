@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 379,
+		/** @const {number} */ versionBuild : 381,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4766,7 +4766,7 @@
 		this.rHistoryButton.deleted = shown;
 
 		// lock kill button if not 2-state moore
-		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || this.engine.isHROT || this.engine.isTriangular || this.engine.isVonNeumann;
+		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || (this.engine.isHROT && !(this.engine.HROT.range === 1 && this.engine.HROT.type === PatternManager.mooreHROT && this.engine.HROT.scount === 2)) || this.engine.isTriangular || this.engine.isVonNeumann;
 
 		// lock theme button if mode doesn't support themes
 		this.themeButton.locked =  this.multiStateView || this.engine.isNone;

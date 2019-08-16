@@ -919,6 +919,12 @@
 			/** @const {number} */ w2 = this.width / 2 - 0.25,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @type {number} */ state = 0,
+			/** @type {number} */ overState = 0,
+			/** @type {number} */ state3 = ViewConstants.stateMap[3] + 128,
+			/** @type {number} */ state4 = ViewConstants.stateMap[4] + 128,
+			/** @type {number} */ state5 = ViewConstants.stateMap[5] + 128,
+			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128,
+			/** @type {number} */ aliveStart = this.aliveStart,
 			/** @type {Array<number>} */ coords = this.coords,
 			/** @type {Array<number>} */ colours = this.cellColours,
 			/** @type {number} */ leftX = zoomBox.leftX,
@@ -984,13 +990,24 @@
 				for (x = leftX; x <= rightX; x += 1) {
 					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
 					if (displayX >= -zoom && displayX < this.displayWidth + zoom * 2) {
+						state = colourRow[x];
 						if (overlayRow) {
-							state = overlayRow[x];
-							if (state === 0) {
-								state = colourRow[x];
+							overState = overlayRow[x];
+							if (overState === state4 || overState === state6) {
+								if (state > aliveStart) {
+									state = state3;
+								} else {
+									state = overState;
+								}
+							} else {
+								if (overState === state3 || overState === state5) {
+									if (state < aliveStart) {
+										state = state4;
+									} else {
+										state = overState;
+									}
+								}
 							}
-						} else {
-							state = colourRow[x];
 						}
 						if (state > 0) {
 							// encode coordinate index into the colour state so it can be sorted later
@@ -1544,6 +1561,12 @@
 			/** @const {Array<number>} */ xa = [],
 			/** @const {Array<number>} */ ya = [],
 			/** @type {number} */ state = 0,
+			/** @type {number} */ overState = 0,
+			/** @type {number} */ state3 = ViewConstants.stateMap[3] + 128,
+			/** @type {number} */ state4 = ViewConstants.stateMap[4] + 128,
+			/** @type {number} */ state5 = ViewConstants.stateMap[5] + 128,
+			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128,
+			/** @type {number} */ aliveStart = this.aliveStart,
 			/** @type {number} */ xa0 = 0,
 			/** @type {number} */ ya0 = 0,
 			/** @type {number} */ xa1 = 0,
@@ -1641,13 +1664,24 @@
 				for (x = leftX; x <= rightX; x += 1) {
 					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
 					if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
+						state = colourRow[x];
 						if (overlayRow) {
-							state = overlayRow[x];
-							if (state === 0) {
-								state = colourRow[x];
+							overState = overlayRow[x];
+							if (overState === state4 || overState === state6) {
+								if (state > aliveStart) {
+									state = state3;
+								} else {
+									state = overState;
+								}
+							} else {
+								if (overState === state3 || overState === state5) {
+									if (state < aliveStart) {
+										state = state4;
+									} else {
+										state = overState;
+									}
+								}
 							}
-						} else {
-							state = colourRow[x];
 						}
 						if (state > 0) {
 							// encode coordinate index into the colour state so it can be sorted later
