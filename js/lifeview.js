@@ -3395,8 +3395,8 @@
 		// convert selection box to middle coordinates
 		var selBox = me.selectionBox,
 			midBox = me.middleBox,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
 		midBox.leftX = selBox.leftX + xOff,
 		midBox.bottomY = selBox.bottomY + yOff,
@@ -6604,8 +6604,8 @@
 			offGrid = false,
 
 			// offset to middle of grid
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 
 		    // bounded grid top left
 		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2),
@@ -6656,8 +6656,8 @@
 				// check grid for growth
 				if (me.drawingSelection) {
 					me.checkSelectionSize(me);
-					xOff = (me.engine.width >> 1) - (me.patternWidth >> 1);
-					yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+					xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
+					yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 				}
 
 				// clip to bounded grid if specified
@@ -6739,8 +6739,8 @@
 			y = 0,
 			state = 0,
 			population = 0,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
 		// order bottom left to top right
 		if (leftX > rightX) {
@@ -7625,8 +7625,8 @@
 			y = 0,
 			state = 0,
 			swap = 0,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			sizeHint = 0;
 
 		if (!me.viewOnly) {
@@ -7708,8 +7708,8 @@
 	View.prototype.selectAllPressed = function(me) {
 		var selBox = me.selectionBox,
 			zoomBox = me.engine.zoomBox,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			width = 0,
 			height = 0;
 
@@ -7787,8 +7787,8 @@
 			state = 0,
 			states = me.engine.multiNumStates,
 			invertForGenerations = (states > 2 && !me.engine.isNone),
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			buffer = null,
 			width = 0,
 			height = 0,
@@ -7911,8 +7911,8 @@
 			state = 0,
 			states = me.engine.multiNumStates,
 			invertForGenerations = (states > 2 && !me.engine.isNone),
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			buffer = null;
 
 		if (me.isSelection) {
@@ -8036,6 +8036,7 @@
 		    currentGrid = me.engine.grid,
 		    currentNextGrid = me.engine.nextGrid,
 			currentColourGrid = me.engine.colourGrid,
+			currentColourGrid16 = me.engine.colourGrid16,
 		    currentTileGrid = me.engine.tileGrid,
 		    currentNextTileGrid = me.engine.nextTileGrid,
 		    currentColourTileGrid = me.engine.colourTileGrid,
@@ -8065,8 +8066,8 @@
 		me.engine.allocateGrid(1024, 1024);
 
 		// copy paste to center of grid
-		xOff = (me.engine.width >> 1) - (width >> 1);
-		yOff = (me.engine.height >> 1) - (height >> 1);
+		xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+		yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 		i = 0;
 		for (y = 0; y < height; y += 1) {
 			for (x = 0; x < width; x += 1) {
@@ -8116,6 +8117,7 @@
 		me.engine.grid = currentGrid;
 		me.engine.nextGrid = currentNextGrid;
 		me.engine.colourGrid = currentColourGrid;
+		me.engine.colourGrid16 = currentColourGrid16;
 		me.engine.tileGrid = currentTileGrid;
 		me.engine.nextTileGrid = currentNextTileGrid;
 		me.engine.colourTileGrid = currentColourTileGrid;
@@ -8265,8 +8267,8 @@
 
 	// process paste
 	View.prototype.processPaste = function(me, shift, evolveStep) {
-		var xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+		var xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			selBox = me.selectionBox,
 			evolveBox = me.evolveBox,
 			save = 0,
@@ -8417,8 +8419,8 @@
 			y = 0,
 			state = 0,
 			swap = 0,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			sizeHint = 0,
 			numStates = me.engine.multiNumStates;
 
@@ -8528,8 +8530,8 @@
 			state = 0,
 			states = me.engine.multiNumStates,
 			invertForGenerations = (states > 2 && !me.engine.isNone),
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
 		// check for selection
 		if (me.isSelection) {
@@ -8611,8 +8613,8 @@
 			state = 0,
 			states = me.engine.multiNumStates,
 			invertForGenerations = (states > 2 && !me.engine.isNone),
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
 		// check for selection
 		if (me.isSelection) {
@@ -8718,8 +8720,8 @@
 		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2),
 		    /** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
 			/** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1,
-			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
 		// check for selection
 		if (me.isSelection) {
@@ -8825,8 +8827,8 @@
 				}
 
 				// recompute offsets in case grid changed
-				xOff = (me.engine.width >> 1) - (me.patternWidth >> 1);
-				yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+				xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
+				yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 	
 				// write the cells to their new positions
 				i = 0;
@@ -8945,8 +8947,8 @@
 			y = 0,
 			state = 0,
 			swap = 0,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1),
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			sizeHint = 0,
 			numStates = me.engine.multiNumStates;
 

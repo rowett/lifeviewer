@@ -3077,6 +3077,7 @@
 
 		// colour grid
 		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
+		this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
 
 		// create the grid width and height masks
 		this.widthMask = this.width - 1;
@@ -14568,8 +14569,8 @@
 		var position = (view.pastePosition + 0.5) | 0,
 			mouseX = view.menuManager.mouseLastX,
 			mouseY = view.menuManager.mouseLastY,
-			xOff = (this.width >> 1) - (view.patternWidth >> 1),
-			yOff = (this.height >> 1) - (view.patternHeight >> 1);
+			xOff = (this.width >> 1) - (view.patternWidth >> 1) + (view.xOffset << 1),
+			yOff = (this.height >> 1) - (view.patternHeight >> 1) + (view.yOffset << 1);
 
 		if (view.isSelection || view.drawingSelection) {
 			this.drawBox(view, view.selectionBox, "rgb(0,255,0)");

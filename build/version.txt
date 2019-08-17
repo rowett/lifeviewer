@@ -1,3 +1,7 @@
+Build 383
+- selections now work with [[ XOFFSET ]] and [[ YOFFSET ]]
+- added non-isotropic alias
+
 Build 382
 - added Throttle button to Settings menu
 - fixed an issue with HROT/LtL patterns not correctly shrinking bounding box
