@@ -1,6 +1,9 @@
 Build 383
 - selections now work with [[ XOFFSET ]] and [[ YOFFSET ]]
-- added non-isotropic alias
+- added more new aliases
+- performance warning toggle
+	- hotkey Shift+"W" to toggle
+	- new button PerfWarn in Settings menu
 
 Build 382
 - added Throttle button to Settings menu

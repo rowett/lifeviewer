@@ -176,6 +176,7 @@
 		this.aliases.push(["FattyLife", "B3-n4nt5qr6i/S23"]);
 		this.aliases.push(["FishLife", "B3-ekqr4nt5r6i/S02-c3"]);
 		this.aliases.push(["FlashLife", "B2kn3-n4e/S23"]);
+		this.aliases.push(["Flowflakes", "B2-ac3acei4ey6n8/S02-n3-nqy4cekyz5ei6k7e"]);
 		this.aliases.push(["Flying Life", "B3-k5r/S236n7e"]);
 		this.aliases.push(["FogLife", "B35eq7/S2-i34q"]);
 		this.aliases.push(["GlideLife", "B34ek5ak/S2-c34z"]);
@@ -184,6 +185,7 @@
 		this.aliases.push(["Goat Flock", "B2in3/S123a"]);
 		this.aliases.push(["Goats", "B2in3/S123a"]);
 		this.aliases.push(["Goldilocks I", "B2ek3cei4acjr5c8/S02ack3kn4aen"]);
+		this.aliases.push(["Growflakes", "B2-ac3acei4ey6n8/S02-n3-nqy4cekyz5ei6k"]);
 		this.aliases.push(["guntlife", "B35j6a/S2-i34q"]);
 		this.aliases.push(["Half as Interesting", "B2ce3i/S23"]);
 		this.aliases.push(["hassl8life", "B34k5e7c/S23-a4iyz"]);
@@ -222,6 +224,7 @@
 		this.aliases.push(["Particles", "B2ce3i/S1c2cek"]);
 		this.aliases.push(["Pedestrian Goats", "B2in38/S123a"]);
 		this.aliases.push(["Pentadecathlife", "B34e5y6cn8/S234c5e"]);
+		this.aliases.push(["Photics I", "B2ae4c678/S01e4aeqrtw5678"]);
 		this.aliases.push(["Pi-plicator", "B3-ckq/S2-c34ci"]);
 		this.aliases.push(["PiLife", "B37e/S23"]);
 		this.aliases.push(["plasma1", "B012-in3-cky4ar5cjnr6ae/S05aijnr6n"]);
@@ -233,6 +236,7 @@
 		this.aliases.push(["quadraticlife", "B34j/S23"]);
 		this.aliases.push(["Quasilinear Collisions", "B2-ak3-jnqr/S15678"]);
 		this.aliases.push(["Rakelife", "B3aij/S2-i3ajnr4arz56-a7e"]);
+		this.aliases.push(["Rainflakes", "B2-ac3aei4ey5n6n8/S02-n3aceir4ceyz5e6k"]);
 		this.aliases.push(["reptlife", "B36-k/S2-i34q"]);
 		this.aliases.push(["Rule X3VI", "B2c3aei4ajnr5acn/S2-ci3-ck4in5jkq6c7c"]);
 		this.aliases.push(["RustyLife", "B34-ai/S24-air5-a"]);

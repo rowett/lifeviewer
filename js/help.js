@@ -695,10 +695,13 @@
 		if (!view.multiStateView) {
 			y = this.renderHelpLine(view, "G", "toggle generation statistics", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Shift G", "toggle generation display mode", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Y", "toggle population graph", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Shift Y", "toggle graph lines", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "7", "decrease graph opacity", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "9", "increase graph opacity", ctx, x, y, height, helpLine);
+			if (!view.graphDisabled) {
+				y = this.renderHelpLine(view, "Y", "toggle population graph", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "Shift Y", "toggle graph lines", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "7", "decrease graph opacity", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "9", "increase graph opacity", ctx, x, y, height, helpLine);
+			}
+			y = this.renderHelpLine(view, "Shift W", "toggle performance warning", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "/", "toggle hexagons for hex view", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "T", "toggle timing information", ctx, x, y, height, helpLine);

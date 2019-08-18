@@ -368,68 +368,73 @@
 
 			// w for toggle waypoint/track/loop mode
 			case 87:
-				// check if waypoints defined
-				if (me.waypointsDefined) {
-					// toggle waypoint mode
-					me.waypointsDisabled = !me.waypointsDisabled;
-
-					// check if loop defined
-					if (me.loopGeneration !== -1) {
-						// set loop mode to waypoint mode
-						me.loopDisabled = me.waypointsDisabled;
-
-						// display notification
-						me.menuManager.notification.notify("Loop and Waypoints " + (me.waypointsDisabled ? "Off" : "On"), 15, 40, 15, true);
-					} else {
-						// display notification
-						me.menuManager.notification.notify("Waypoints " + (me.waypointsDisabled ? "Off" : "On"), 15, 40, 15, true);
-					}
-
-					// check if waypoints have just been enabled
-					if (!me.waypointsDisabled) {
-						// check if at the last waypoint
-						if (!me.waypointManager.atLast(me.elapsedTime)) {
-							// find the closest waypoint to now
-							me.waypointManager.findClosestWaypoint(me.engine.counter);
-
-							// set the elapsed time
-							me.elapsedTime = me.waypointManager.elapsedTimeTo(me.engine.counter);
-
-							// create a temporary waypoint
-							me.elapsedTime = me.waypointManager.createTemporaryPosition(me.engine.width / 2 - me.engine.xOff, me.engine.height / 2 - me.engine.yOff, me.engine.zoom, me.engine.angle, me.engine.layers, me.engine.layerDepth * ViewConstants.depthScale, me.engine.colourTheme, me.genSpeed, me.gensPerStep, me.engine.counter, me.elapsedTime);
-
-							// clear manual change flag
-							me.manualChange = false;
-						}
-					} else {
-						// waypoints just disabled so remove any waypoint message
-						me.menuManager.notification.clear(false, false);
-					}
+				if (event.shiftKey) {
+					me.showLagToggle.current = me.toggleShowLag([!me.perfWarning], true, me);
+					me.menuManager.notification.notify("Performance Warning " + (me.perfWarning ? "On" : "Off"), 15, 40, 15, true);
 				} else {
-					// check if track defined
-					if (me.trackDefined) {
-						// toggle track mode
-						me.trackDisabled = !me.trackDisabled;
+					// check if waypoints defined
+					if (me.waypointsDefined) {
+						// toggle waypoint mode
+						me.waypointsDisabled = !me.waypointsDisabled;
 
 						// check if loop defined
 						if (me.loopGeneration !== -1) {
 							// set loop mode to waypoint mode
-							me.loopDisabled = me.trackDisabled;
+							me.loopDisabled = me.waypointsDisabled;
 
 							// display notification
-							me.menuManager.notification.notify("Loop and Track " + (me.trackDisabled ? "Off" : "On"), 15, 40, 15, true);
+							me.menuManager.notification.notify("Loop and Waypoints " + (me.waypointsDisabled ? "Off" : "On"), 15, 40, 15, true);
 						} else {
 							// display notification
-							me.menuManager.notification.notify("Track " + (me.trackDisabled ? "Off" : "On"), 15, 40, 15, true);
+							me.menuManager.notification.notify("Waypoints " + (me.waypointsDisabled ? "Off" : "On"), 15, 40, 15, true);
 						}
 
-						// if track just disabled then add origin to position
-						me.adjustOrigin(me.trackDisabled);
+						// check if waypoints have just been enabled
+						if (!me.waypointsDisabled) {
+							// check if at the last waypoint
+							if (!me.waypointManager.atLast(me.elapsedTime)) {
+								// find the closest waypoint to now
+								me.waypointManager.findClosestWaypoint(me.engine.counter);
+	
+								// set the elapsed time
+								me.elapsedTime = me.waypointManager.elapsedTimeTo(me.engine.counter);
+	
+								// create a temporary waypoint
+								me.elapsedTime = me.waypointManager.createTemporaryPosition(me.engine.width / 2 - me.engine.xOff, me.engine.height / 2 - me.engine.yOff, me.engine.zoom, me.engine.angle, me.engine.layers, me.engine.layerDepth * ViewConstants.depthScale, me.engine.colourTheme, me.genSpeed, me.gensPerStep, me.engine.counter, me.elapsedTime);
+	
+								// clear manual change flag
+								me.manualChange = false;
+							}
+						} else {
+							// waypoints just disabled so remove any waypoint message
+							me.menuManager.notification.clear(false, false);
+						}
 					} else {
-						// check if loop defined
-						if (me.loopGeneration !== -1) {
-							me.loopDisabled = !me.loopDisabled;
-							me.menuManager.notification.notify("Loop " + (me.loopDisabled ? "Off" : "On"), 15, 40, 15, true);
+						// check if track defined
+						if (me.trackDefined) {
+							// toggle track mode
+							me.trackDisabled = !me.trackDisabled;
+	
+							// check if loop defined
+							if (me.loopGeneration !== -1) {
+								// set loop mode to waypoint mode
+								me.loopDisabled = me.trackDisabled;
+	
+								// display notification
+								me.menuManager.notification.notify("Loop and Track " + (me.trackDisabled ? "Off" : "On"), 15, 40, 15, true);
+							} else {
+								// display notification
+								me.menuManager.notification.notify("Track " + (me.trackDisabled ? "Off" : "On"), 15, 40, 15, true);
+							}
+	
+							// if track just disabled then add origin to position
+							me.adjustOrigin(me.trackDisabled);
+						} else {
+							// check if loop defined
+							if (me.loopGeneration !== -1) {
+								me.loopDisabled = !me.loopDisabled;
+								me.menuManager.notification.notify("Loop " + (me.loopDisabled ? "Off" : "On"), 15, 40, 15, true);
+							}
 						}
 					}
 				}

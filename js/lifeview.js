@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 382,
+		/** @const {number} */ versionBuild : 383,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -657,7 +657,7 @@
 		/** @type {number} */ this.currentEditIndex = 0;
 
 		// step samples
-		this.stepSamples = [];
+		/** @type {Array<number>} */ this.stepSamples = [];
 		/** @type {number} */ this.stepIndex = 0;
 
 		// list of transformations
@@ -986,8 +986,8 @@
 		// window title string
 		/** @type{string} */ this.windowTitle = "";
 
-		// flag if performance warning is disabled
-		/** @type {boolean} */ this.noPerfWarning = false;
+		// flag if performance warning is enabled
+		/** @type {boolean} */ this.perfWarning = true;
 
 		// flag if history is disabled
 		/** @type {boolean} */ this.noHistory = false;
@@ -1264,6 +1264,9 @@
 
 		// throttle toggle
 		this.throttleToggle = null;
+
+		// show lag toggle
+		this.showLagToggle = null;
 
 		// theme selections
 		this.themeSelections = [];
@@ -4334,7 +4337,7 @@
 				me.floatCounter -= (stepsToTake - stepsTaken);
 
 				// if not enough steps taken then display actual number
-				if ((stepsTaken < stepsToTake) && (me.engine.counter !== me.stopGeneration)) {
+				if ((stepsTaken < stepsToTake) && (me.engine.counter !== me.stopGeneration) && me.perfWarning) {
 					me.updateStepLabel(stepsTaken);
 				} else {
 					me.clearStepSamples();
@@ -4525,9 +4528,12 @@
 			me.deathsValue.toolTip = "deaths " + me.engine.deaths;
 		}
 
-		// update gps and step control background based on performance unless disabled
-		if (!me.noPerfWarning) {
+		// update gps and step control background based on performance if enabled
+		if (me.perfWarning) {
 			me.updateControlBackgrounds(deltaTime, tooSlow, manualStepping, me);
+		} else {
+			me.generationRange.bgCol = me.fitButton.bgCol;
+			me.stepRange.bgCol = me.fitButton.bgCol;
 		}
 
 		// clear next step flags
@@ -4753,6 +4759,7 @@
 		this.depthItem.deleted = shown;
 		this.themeButton.deleted = shown;
 		this.throttleToggle.deleted = shown;
+		this.showLagToggle.deleted = shown;
 		this.angleItem.deleted = shown;
 		this.layersItem.deleted = shown;
 		this.autoHideButton.deleted = shown;
@@ -9045,6 +9052,15 @@
 		return [me.pauseWhileDrawing];
 	};
 
+	// show lag toggle
+	View.prototype.toggleShowLag = function(newValue, change, me) {
+		if (change) {
+			me.perfWarning = newValue[0];
+		}
+
+		return [me.perfWarning];
+	};
+
 	// throttle toggle
 	View.prototype.toggleThrottle = function(newValue, change, me) {
 		if (change) {
@@ -10248,12 +10264,16 @@
 		this.navToggle.toolTip = ["toggle settings menu"];
 
 		// add the colour theme button
-		this.themeButton = this.viewMenu.addButtonItem(this.themePressed, Menu.south, -65, -90, 120, 40, "Theme");
+		this.themeButton = this.viewMenu.addButtonItem(this.themePressed, Menu.south, 135, -90, 120, 40, "Theme");
 		this.themeButton.toolTip = "choose colour theme";
 
 		// add the throttle toggle button
-		this.throttleToggle = this.viewMenu.addListItem(this.toggleThrottle, Menu.south, 65, -90, 120, 40, ["Throttle"], [this.canBailOut], Menu.multi);
+		this.throttleToggle = this.viewMenu.addListItem(this.toggleThrottle, Menu.south, -135, -90, 120, 40, ["Throttle"], [this.canBailOut], Menu.multi);
 		this.throttleToggle.toolTip = ["toggle playback throttling"];
+
+		// add the show lag toggle button
+		this.showLagToggle = this.viewMenu.addListItem(this.toggleShowLag, Menu.south, 0, -90, 120, 40, ["PerfWarn"], [this.perfWarning], Menu.multi);
+		this.showLagToggle.toolTip = ["toggle performance warning display"];
 
 		// add the theme selections
 		lastX = -1;
@@ -10438,7 +10458,7 @@
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeButton, this.throttleToggle, this.shrinkButton, this.closeButton, this.autoHideButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []); 
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.themeButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.closeButton, this.autoHideButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []); 
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -11446,6 +11466,7 @@
 		this.depthItem.deleted = false;
 		this.themeButton.deleted = false;
 		this.throttleToggle.deleted = false;
+		this.showLagToggle.deleted = false;
 		this.viewMenu.deleted = false;
 		this.progressBar.deleted = false;
 		this.undoButton.deleted = false;
@@ -11503,7 +11524,7 @@
 		this.noHistory = false;
 
 		// enable performance warnings
-		this.noPerfWarning = false;
+		this.perfWarning = true;
 
 		// disable custom theme
 		this.customTheme = false;
@@ -11845,6 +11866,9 @@
 				this.ruleLabel.toolTip += " alias " + this.patternAliasName;
 			}
 		}
+
+		// update performance warning
+		this.showLagToggle.current = this.toggleShowLag([this.perfWarning], true, this);
 
 		// create the colour index
 		this.engine.createColourIndex();

@@ -2453,7 +2453,7 @@
 
 						// no performance warning
 						case Keywords.noPerfWarningWord:
-							view.noPerfWarning = true;
+							view.perfWarning = false;
 
 							itemValid = true;
 							break;
