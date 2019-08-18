@@ -61,8 +61,8 @@
 		// paste position text
 		/** @const {Array<string>} */ pastePositionNames : ["Top Left", "Top", "Top Right", "Right", "Bottom Right", "Bottom", "Bottom Left", "Left", "Middle"],
 
-		// chunk to add to undo/redo buffer
-		/** @const {number} */ editChunk : 16384,
+		// chunk to add to undo/redo buffer 2^n
+		/** @const {number} */ editChunkPower : 15,
 
 		// number of step samples for average
 		/** @const {number} */ numStepSamples : 5,
@@ -651,7 +651,7 @@
 		/** @type {number} */ this.numEdits = 0;
 
 		// current edit
-		this.currentEdit = null;
+		this.currentEdit = [];
 
 		// current edit index
 		/** @type {number} */ this.currentEditIndex = 0;
@@ -1657,17 +1657,39 @@
 		}
 	};
 
+	// allocate new chunk for undo/redo buffer
+	View.prototype.allocateChunk = function() {
+		var chunkSize = 1 << ViewConstants.editChunkPower,
+			chunk = this.currentEditIndex >> ViewConstants.editChunkPower;
+			
+		// check if a new buffer is needed
+		if (chunk === this.currentEdit.length) {
+			this.currentEdit[chunk] = this.engine.allocator.allocate(Int16, chunkSize, "View.currentEdit" + chunk);
+		}
+
+		// return the chunk
+		return this.currentEdit[chunk];
+	};
+
 	// draw cell and create undo/redo
-	View.prototype.setStateWithUndo = function(x, y, colour, deadZero, sizeHint) {
+	View.prototype.setStateWithUndo = function(x, y, colour, deadZero) {
 		// get current state
 		var state = this.engine.getState(x, y, false),
 			i = this.currentEditIndex,
-			length = this.currentEdit ? this.currentEdit.length : 0,
+			j = 0,
+			chunkPower = ViewConstants.editChunkPower,
+			chunk = i >> chunkPower,
+			chunkSize = 1 << chunkPower,
+			chunkMask = chunkSize - 1,
+			currentEdit = this.currentEdit,
+			currentChunk = null,
 			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
 			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1),
-			newBuffer = null,
 			states = this.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !this.engine.isNone);
+			invertForGenerations = (states > 2 && !this.engine.isNone),
+			newRecord = 0,
+			addedToRun = false,
+			runCount = 0;
 
 		// handle generations
 		if (state > 0 && invertForGenerations) {
@@ -1678,30 +1700,93 @@
 		if (colour !== state) {
 			// check for undo/redo
 			if (!this.noHistory) {
-				// if size hint is bigger than current buffer then grow to the hint
-				sizeHint = (sizeHint | 0) * 3;
-				if (sizeHint > length) {
-					newBuffer = this.engine.allocator.allocate(Int16, sizeHint, "View.currentEdit");
-					if (length > 0) {
-						newBuffer.set(this.currentEdit.slice(0, length));
-					}
-					this.currentEdit = newBuffer;
-					length = sizeHint;
-				}
-	
 				// check if the edit buffer needs to grow
-				if (i >= length) {
-					newBuffer = this.engine.allocator.allocate(Int16, length + ViewConstants.editChunk * 3, "View.currentEdit");
-					if (length > 0) {
-						newBuffer.set(this.currentEdit.slice(0, length));
-					}
-					this.currentEdit = newBuffer;
+				if (chunk >= currentEdit.length) {
+					currentChunk = this.allocateChunk();
 				}
-				this.currentEdit[i] = x - xOff;
-				this.currentEdit[i + 1] = y - yOff;
+
+				// get the current chunk and offset within the chunk
+				currentChunk = currentEdit[chunk];
+				i &= chunkMask;
+
 				// write both the new state and original state into one 16 bit integer
-				this.currentEdit[i + 2] = (colour << 8) | state;
-				this.currentEditIndex += 3;
+				newRecord = (colour << 8) | state;
+
+				// check if the new cell is adjacent to the previous one and the same states
+				if (i > 0) {
+					// check if previous record is part of a run
+					if (i >= 4) {
+						runCount = currentChunk[i - 1];
+						if (runCount >= 16384) {
+							runCount -= 16384;
+							// check if this is just to the right of previous
+							if ((currentChunk[i - 3] === newRecord) && (currentChunk[i - 2] === y - yOff) && (currentChunk[i - 4] === (x - xOff) - runCount - 2)) {
+								// increment run count
+								currentChunk[i - 1] += 1;
+								addedToRun = true;
+							}
+						} else {
+							if ((currentChunk[i - 2] === newRecord) && (currentChunk[i - 1] === y - yOff) && (currentChunk[i - 3] === (x - xOff) - 1)) {
+								// start a new run
+								currentChunk[i] = 16384;
+								i += 1;
+								this.currentEditIndex += 1;
+								if (i === chunkSize) {
+									this.allocateChunk();
+								}
+								addedToRun = true;
+							}
+						}
+					} else {
+						// need to check for previous chunk
+						j = this.currentEditIndex;
+						runCount = currentEdit[(j - 1) >> chunkPower][(j - 1) & chunkMask];
+						if (runCount >= 16384) {
+							runCount -= 16384;
+							// check if this is just to the right of previous
+							if ((currentChunk[(j - 3) >> chunkPower][(j - 3) & chunkMask] === newRecord) && (currentChunk[(j - 2) >> chunkPower][(j - 2) & chunkMask] === y - yOff) && (currentChunk[(j - 4) >> chunkPower][(j - 4) & chunkMask] === (x - xOff) - runCount - 2)) {
+								// increment run count
+								currentChunk[(j - 1) >> chunkPower][(j - 1) & chunkMask] += 1;
+								addedToRun = true;
+							}
+						} else {
+							if ((currentEdit[(j - 2) >> chunkPower][(j - 2) & chunkMask] === newRecord) && (currentEdit[(j - 1) >> chunkPower][(j - 1) & chunkMask] === y - yOff) && (currentEdit[(j - 3) >> chunkPower][(j - 3) & chunkMask] === (x - xOff) - 1)) {
+								// start a new run
+								currentChunk[i] = 16384;
+								i += 1;
+								this.currentEditIndex += 1;
+								if (i === chunkSize) {
+									currentChunk = this.allocateChunk();
+								}
+								addedToRun = true;
+							}
+						}
+
+					}
+				}
+				if (!addedToRun) {
+					currentChunk[i] = x - xOff;
+					i += 1;
+					this.currentEditIndex += 1;
+					if (i === chunkSize) {
+						currentChunk = this.allocateChunk();
+						i = 0;
+					}
+					currentChunk[i] = (colour << 8) | state;
+					i += 1;
+					this.currentEditIndex += 1;
+					if (i === chunkSize) {
+						currentChunk = this.allocateChunk();
+						i = 0;
+					}
+					currentChunk[i] = y - yOff;
+					i += 1;
+					this.currentEditIndex += 1;
+					if (i === chunkSize) {
+						currentChunk = this.allocateChunk();
+						i = 0;
+					}
+				}
 			}
 	
 			// set the state
@@ -1712,33 +1797,64 @@
 	// paste raw cells for undo/redo
 	View.prototype.pasteRaw = function(cells, reverse) {
 		var i = 0,
-			target = 0,
-			di = 3,
+			x = 0,
+			y = 0,
 			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
-			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1);
+			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1),
+			runCount = 0,
+			state = 0;
 
 		// check for cells
 		if (cells) {
-			// get the number of cells
-			target = cells.length;
-
-			// check for reverse order
-			if (reverse) {
-				di = -di;
-				i = target + di;
-				target = di;
-			}
-	
 			// determine whether undo or redo
 			if (reverse) {
-				while (i !== target) {
-					this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2] & 255, true);
-					i += di;
+				i = cells.length;
+				while (i > 0) {
+					// check for run
+					runCount = cells[i - 1];
+					if (runCount >= 16384) {
+						i -= 1;
+					}
+					i -= 3;
+					x = cells[i] + xOff;
+					state = cells[i + 1] & 255;
+					y = cells[i + 2] + yOff;
+
+					// draw the first cell
+					this.engine.setState(x, y, state, true);
+					if (runCount >= 16384) {
+						runCount -= 16384;
+
+						// draw the run
+						while (runCount >= 0) {
+							x += 1;
+							this.engine.setState(x, y, state, true);
+							runCount -= 1;
+						}
+					}
 				}
 			} else {
-				while (i !== target) {
-					this.engine.setState(cells[i] + xOff, cells[i + 1] + yOff, cells[i + 2] >> 8, true);
-					i += di;
+				while (i < cells.length) {
+					// draw first cell
+					x = cells[i] + xOff;
+					state = cells[i + 1] >> 8;
+					y = cells[i + 2] + yOff;
+					this.engine.setState(x, y, state, true);
+					i += 3;
+
+					// check for run
+					runCount = cells[i];
+					if (runCount >= 16384) {
+						i += 1;
+						runCount -= 16384;
+
+						// draw the run
+						while (runCount >= 0) {
+							x += 1;
+							this.engine.setState(x, y, state, true);
+							runCount -= 1;
+						}
+					}
 				}
 			}
 		}
@@ -1905,7 +2021,13 @@
 			editCells = null,
 			box = null,
 			selBox = this.selectionBox,
-			record = null;
+			record = null,
+			i = 0,
+			j = 0,
+			chunkPower = ViewConstants.editChunkPower,
+			chunkSize = 1 << chunkPower,
+			chunkMask = chunkSize - 1,
+			finalChunk = this.currentEditIndex >> chunkPower;
 
 		// do nothing if step back disabled
 		if (!this.noHistory) {
@@ -1933,7 +2055,16 @@
 			// allocate memory for redo and undo cells and populate
 			if (this.currentEditIndex > 0) {
 				editCells = this.engine.allocator.allocate(Int16, this.currentEditIndex, "View.editCells" + this.editNum);
-				editCells.set(this.currentEdit.slice(0, this.currentEditIndex));
+				i = 0;
+				j = 0;
+				while (i < finalChunk) {
+					editCells.set(this.currentEdit[i].slice(), j);
+					i += 1;
+					j += chunkSize;
+				}
+				if (this.currentEditIndex & chunkMask) {
+					editCells.set(this.currentEdit[i].slice(0, this.currentEditIndex & chunkMask), j);
+				}
 
 				// clear current edit
 				this.currentEditIndex = 0;
@@ -3697,7 +3828,7 @@
 			result = 0;
 
 		// set the first point
-		result |= this.setStateWithUndo(startX, startY, colour, true, 0);
+		result |= this.setStateWithUndo(startX, startY, colour, true);
 
 		// check for grid growth
 		while (width !== this.engine.width) {
@@ -3742,7 +3873,7 @@
 			}
 
 			// draw the point
-			result |= this.setStateWithUndo(startX, startY, colour, true, 0);
+			result |= this.setStateWithUndo(startX, startY, colour, true);
 
 			// check for grid growth
 			while (width !== this.engine.width) {
@@ -6071,13 +6202,8 @@
 			state = 0,
 			current = me.drawState,
 			historyBox = me.engine.historyBox,
-			leftX = historyBox.leftX,
-			rightX = historyBox.rightX,
-			bottomY = historyBox.bottomY,
-			topY = historyBox.topY,
 			numCleared = 0,
-			clearValue = 0,
-			sizeHint = (rightX - leftX + 1) * (topY - bottomY + 1);
+			clearValue = 0;
 			
 		// delete any cell of the current pen colour
 		if (current > 0) {
@@ -6097,7 +6223,7 @@
 					for (x = historyBox.leftX; x <= historyBox.rightX; x += 1) {
 						state = me.engine.getState(x, y, false);
 						if (state > 1) {
-							me.setStateWithUndo(x, y, state & 1, true, sizeHint);
+							me.setStateWithUndo(x, y, state & 1, true);
 							numCleared += 1;
 						}
 					}
@@ -6113,7 +6239,7 @@
 					for (x = historyBox.leftX; x <= historyBox.rightX; x += 1) {
 						state = me.engine.getState(x, y, false);
 						if (state === current) {
-							me.setStateWithUndo(x, y, clearValue, true, sizeHint);
+							me.setStateWithUndo(x, y, clearValue, true);
 							numCleared += 1;
 						}
 					}
@@ -7633,8 +7759,7 @@
 			state = 0,
 			swap = 0,
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			sizeHint = 0;
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
 		if (!me.viewOnly) {
 			// check for selection
@@ -7650,19 +7775,13 @@
 					y1 = swap;
 				}
 	
-				// compute potential size of edit buffer
-				sizeHint = (y2 - y1 + 1) * (x2 - x1 + 1);
-				if (sizeHint > me.engine.population) {
-					sizeHint = me.engine.population;
-				}
-	
 				// clear cells in selection
 				if (me.engine.isLifeHistory && ctrl) {
 					for (y = y1; y <= y2; y += 1) {
 						for (x = x1; x <= x2; x += 1) {
 							state = me.engine.getState(x + xOff, y + yOff, false);
 							if (state > 1) {
-								me.setStateWithUndo(x + xOff, y + yOff, state & 1, true, sizeHint);
+								me.setStateWithUndo(x + xOff, y + yOff, state & 1, true);
 								// update state 6 grid
 								this.engine.populateState6MaskFromColGrid();
 							}
@@ -7673,7 +7792,7 @@
 						for (x = x1; x <= x2; x += 1) {
 							state = me.engine.getState(x + xOff, y + yOff, false);
 							if (state !== 0) {
-								me.setStateWithUndo(x + xOff, y + yOff, 0, true, sizeHint);
+								me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 							}
 						}
 					}
@@ -7798,8 +7917,7 @@
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			buffer = null,
 			width = 0,
-			height = 0,
-			sizeHint = 0;
+			height = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -7818,9 +7936,6 @@
 			width = (x2 - x1 + 1);
 			height = (y2 - y1 + 1);
 
-			// compute potential size of edit buffer
-			sizeHint = width * height;
-
 			// allocate the buffer
 			buffer = me.engine.allocator.allocate(Uint8, width * height, "View.pasteBuffer" + number);
 
@@ -7833,7 +7948,7 @@
 						state = states - state;
 					}
 					buffer[i] = state;
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true, sizeHint);
+					me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 					i += 1;
 				}
 			}
@@ -8159,7 +8274,6 @@
 			state = 0,
 			current = 0,
 			buffer = me.pasteBuffer,
-			sizeHint = width * height,
 			midBox = me.middleBox,
 			origWidth = me.engine.width;
 
@@ -8220,7 +8334,7 @@
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
 					if (state > 0) {
-						me.setStateWithUndo(cellX + x, cellY + y, state, true, sizeHint);
+						me.setStateWithUndo(cellX + x, cellY + y, state, true);
 					}
 					i += 1;
 				}
@@ -8231,7 +8345,7 @@
 			for (y = 0; y < height; y += 1) {
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
-					me.setStateWithUndo(cellX + x, cellY + y, state, true, sizeHint);
+					me.setStateWithUndo(cellX + x, cellY + y, state, true);
 					i += 1;
 				}
 			}
@@ -8242,7 +8356,7 @@
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
 					current = this.engine.getState(cellX + x, cellY + y, false);
-					me.setStateWithUndo(cellX + x, cellY + y, current ^ state, true, sizeHint);
+					me.setStateWithUndo(cellX + x, cellY + y, current ^ state, true);
 					i += 1;
 				}
 			}
@@ -8253,7 +8367,7 @@
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
 					current = this.engine.getState(cellX + x, cellY + y, false);
-					me.setStateWithUndo(cellX + x, cellY + y, current & state, true, sizeHint);
+					me.setStateWithUndo(cellX + x, cellY + y, current & state, true);
 					i += 1;
 				}
 			}
@@ -8428,7 +8542,6 @@
 			swap = 0,
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			sizeHint = 0,
 			numStates = me.engine.multiNumStates;
 
 		// check for selection
@@ -8449,9 +8562,6 @@
 				numStates = 2;
 			}
 
-			// compute potential size of edit buffer
-			sizeHint = (y2 - y1 + 1) * (x2 - x1 + 1);
-
 			// draw random cells
 			for (y = y1; y <= y2; y += 1) {
 				for (x = x1; x <= x2; x += 1) {
@@ -8464,7 +8574,7 @@
 					} else {
 						state = 0;
 					}
-					me.setStateWithUndo(x + xOff, y + yOff, state, true, sizeHint);
+					me.setStateWithUndo(x + xOff, y + yOff, state, true);
 				}
 			}
 
@@ -8570,7 +8680,7 @@
 				}
 				// write the row back in reverse order
 				for (x = x1; x <= x2; x += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, row[x2 - x], true, 0);
+					me.setStateWithUndo(x + xOff, y + yOff, row[x2 - x], true);
 				}
 			}
 
@@ -8653,7 +8763,7 @@
 				}
 				// write the column back in reverse order
 				for (y = y1; y <= y2; y += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, column[y2 - y], true, 0);
+					me.setStateWithUndo(x + xOff, y + yOff, column[y2 - y], true);
 				}
 			}
 
@@ -8843,29 +8953,29 @@
 					x = cells[i];
 					y = cells[i + 1];
 					state = cells[i + 2];
-					me.setStateWithUndo(x + xOff, y + yOff, state, true, 0);
+					me.setStateWithUndo(x + xOff, y + yOff, state, true);
 					i += 3;
 				}
 	
 				// clear outside intersection between new selection and old
 				for (x = x1; x < box.leftX; x += 1) {
 					for (y = y1; y <= y2; y += 1) {
-						me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
+						me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 					}
 				}
 				for (x = box.rightX + 1; x <= x2; x += 1) {
 					for (y = y1; y <= y2; y += 1) {
-						me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
+						me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 					}
 				}
 				for (y = y1; y < box.bottomY; y += 1) {
 					for (x = x1; x <= x2; x += 1) {
-						me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
+						me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 					}
 				}
 				for (y = box.topY + 1; y <= y2; y += 1) {
 					for (x = x1; x <= x2; x += 1) {
-						me.setStateWithUndo(x + xOff, y + yOff, 0, true, 0);
+						me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 					}
 				}
 	
@@ -8956,7 +9066,6 @@
 			swap = 0,
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			sizeHint = 0,
 			numStates = me.engine.multiNumStates;
 
 		if (!me.viewOnly) {
@@ -8973,12 +9082,6 @@
 					y1 = swap;
 				}
 	
-				// compute potential size of edit buffer
-				sizeHint = (y2 - y1 + 1) * (x2 - x1 + 1);
-				if (sizeHint > me.engine.population) {
-					sizeHint = me.engine.population;
-				}
-	
 				// check for 2 state patterns
 				if (numStates === -1) {
 					numStates = 2;
@@ -8991,7 +9094,7 @@
 						if (numStates > 2 && state > 0) {
 							state = numStates - state;
 						}
-						me.setStateWithUndo(x + xOff, y + yOff, numStates - state - 1, true, sizeHint);
+						me.setStateWithUndo(x + xOff, y + yOff, numStates - state - 1, true);
 					}
 				}
 	
@@ -11144,7 +11247,7 @@
 
 		// clear undo/reset
 		this.editList = [];
-		this.currentEdit = null;
+		this.currentEdit = [];
 		this.currentEditIndex = 0;
 		this.editNum = 0;
 		this.numEdits = 0;

@@ -4,6 +4,8 @@ Build 383
 - performance warning toggle
 	- hotkey Shift+"W" to toggle
 	- new button PerfWarn in Settings menu
+- undo/redo now use less memory
+- LtL M0 rules will now match M1 aliases
 
 Build 382
 - added Throttle button to Settings menu

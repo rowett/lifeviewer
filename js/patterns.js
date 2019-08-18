@@ -2451,7 +2451,8 @@
 
 	// add postfixes to canonical rule name
 	PatternManager.addNamePostfixes = function(pattern, base64) {
-		var aliasName = null;
+		var aliasName = null,
+			nameLtL = "";
 
 		// add the neighbourhood
 		if (base64 === "") {
@@ -2480,6 +2481,23 @@
 
 		// see if there is an alias name for this rule
 		aliasName = AliasManager.getAliasFromRule(pattern.ruleName);
+		if (aliasName === null) {
+			// try alternate M1 form for M0 LtL rules
+			if (pattern.isLTL && pattern.middleLTL === 0) {
+				// build the rule string
+				nameLtL = "R" + pattern.rangeLTL + ",C" + pattern.multiNumStates + ",M1,S" + pattern.SminLTL + ".." + pattern.SmaxLTL + ",B" + pattern.BminLTL + ".." + pattern.BmaxLTL + ",N";
+				if (pattern.neighborhoodLTL === this.mooreLTL) {
+					nameLtL += "M";
+				} else if (pattern.neighborhoodLTL === this.vonNeumannLTL) {
+					nameLtL += "N";
+				} else {
+					nameLtL += "C";
+				}
+
+				// lookup alias
+				aliasName = AliasManager.getAliasFromRule(nameLtL);
+			}
+		}
 
 		// check for History
 		if (pattern.isHistory) {
