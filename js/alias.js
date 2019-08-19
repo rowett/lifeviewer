@@ -365,7 +365,7 @@
 		this.aliases.push(["Bosco Analogue", "R5,C2,M1,S34..53,B31..42,NM"]);
 		this.aliases.push(["Bugs R3", "R3,C2,M1,S14..23,B14..18,NM"]);
 		this.aliases.push(["Bugs R4", "R4,C2,M1,S23..39,B23..30,NM"]);
-		this.aliases.push(["Bugs R6", "R6,C2,M1,S47..81,b47..63,NM"]);
+		this.aliases.push(["Bugs R6", "R6,C2,M1,S47..81,B47..63,NM"]);
 		this.aliases.push(["Bugs R6 variant", "R6,C2,M1,S47..81,B47..71,NM"]);
 		this.aliases.push(["Bugs R7", "R7,C2,M1,S63..108,B63..84,NM"]);
 		this.aliases.push(["Bugs R9", "R9,C2,M1,S101..173,B101..134,NM"]);

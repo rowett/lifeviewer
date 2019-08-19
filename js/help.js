@@ -776,7 +776,8 @@
 		y = this.renderHelpLine(view, "Ctrl Y", "redo edit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl Z", "undo edit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl+Shift Z", "redo edit", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl Space", "advance paste generation", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl Space", "advance selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift Space", "advance outside", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift L", "cycle paste location", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift M", "cycle paste mode", ctx, x, y, height, helpLine);
 		if (view.engine.multiNumStates > 2) {
