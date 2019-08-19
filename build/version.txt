@@ -1,3 +1,6 @@
+Build 385
+- hotkey Shift+"A" shrinks selection
+
 Build 384
 - clear outside selection
 	- new button in Select mode

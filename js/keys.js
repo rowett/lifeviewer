@@ -640,15 +640,21 @@
 
 			// a for decrease layers
 			case 65:
-				// check for ctrl key
-				if (event.ctrlKey) {
-					me.selectAllPressed(me);
+				if (event.shiftKey) {
+					if (me.isSelection) {
+						me.autoShrinkSelection(me);
+					}
 				} else {
-					// disable layers in multi-state mode
-					if (!me.multiStateView) {
-						if (!me.layersItem.locked) {
-							if (me.layersItem.current[0] > ViewConstants.minLayers) {
-								me.layersItem.current = me.viewLayersRange([me.engine.layers - 1, me.layersItem.current[1]], true, me);
+					// check for ctrl key
+					if (event.ctrlKey) {
+						me.selectAllPressed(me);
+					} else {
+						// disable layers in multi-state mode
+						if (!me.multiStateView) {
+							if (!me.layersItem.locked) {
+								if (me.layersItem.current[0] > ViewConstants.minLayers) {
+									me.layersItem.current = me.viewLayersRange([me.engine.layers - 1, me.layersItem.current[1]], true, me);
+								}
 							}
 						}
 					}
