@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 383,
+		/** @const {number} */ versionBuild : 384,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1372,6 +1372,12 @@
 
 		// clear selection button
 		this.clearSelectionButton = null;
+
+		// clear outside button
+		this.clearOutsideButton = null;
+
+		// clear [R]History button
+		this.clearRHistoryButton = null;
 
 		// auto-shrink toggle
 		this.autoShrinkToggle = null;
@@ -5006,6 +5012,8 @@
 		this.rotateCCWButton.deleted = shown;
 		this.invertSelectionButton.deleted = shown;
 		this.clearSelectionButton.deleted = shown;
+		this.clearOutsideButton.deleted = shown;
+		this.clearRHistoryButton.deleted = shown || !this.engine.isLifeHistory;
 		this.randomButton.deleted = shown;
 		this.randomItem.deleted = shown;
 		shown = hide || !this.selecting || settingsMenuOpen || this.engine.multiNumStates <= 2;
@@ -5031,6 +5039,8 @@
 		this.rotateCCWButton.locked = shown;
 		this.invertSelectionButton.locked = shown;
 		this.clearSelectionButton.locked = shown;
+		this.clearOutsideButton.locked = shown;
+		this.clearRHistoryButton.locked = shown;
 		shown = !this.isSelection || this.viewOnly;
 		this.cutButton.locked = shown;
 
@@ -7122,7 +7132,7 @@
 			icons = new Image();
 
 			// load the icons from the image file
-			icons.src = "data:image/png;base64,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";
+			icons.src = "data:image/png;base64,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";
 				
 			// save the image
 			ViewConstants.icons = icons;
@@ -7150,7 +7160,7 @@
 		this.iconManager.add("states", w, h);
 		this.iconManager.add("hexagongrid", w, h);
 		this.iconManager.add("trianglegrid", w, h);
-		this.iconManager.add("select", w, h);
+		this.iconManager.add("inside", w, h);
 		this.iconManager.add("undo", w, h);
 		this.iconManager.add("redo", w, h);
 		this.iconManager.add("drawpause", w, h);
@@ -7166,6 +7176,8 @@
 		this.iconManager.add("rotateccw", w, h);
 		this.iconManager.add("random", w, h);
 		this.iconManager.add("smart", w, h);
+		this.iconManager.add("outside", w, h);
+		this.iconManager.add("select", w, h);
 	};
 
 	// check if a rule is valid
@@ -7747,6 +7759,62 @@
 		}
 	};
 
+	// clear outside
+	View.prototype.clearOutside = function(me) {
+		var box = me.selectionBox,
+			x1 = box.leftX,
+			x2 = box.rightX,
+			y1 = box.bottomY,
+			y2 = box.topY,
+			zoomBox = me.engine.zoomBox,
+			leftX = zoomBox.leftX,
+			rightX = zoomBox.rightX,
+			bottomY = zoomBox.bottomY,
+			topY = zoomBox.topY,
+			x = 0,
+			y = 0,
+			state = 0,
+			swap = 0,
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+
+		if (!me.viewOnly) {
+			// check for selection
+			if (me.isSelection) {
+				if (x1 > x2) {
+					swap = x2;
+					x2 = x1;
+					x1 = swap;
+				}
+				if (y1 > y2) {
+					swap = y2;
+					y2 = y1;
+					y1 = swap;
+				}
+				x1 += xOff;
+				x2 += xOff;
+				y1 += yOff;
+				y2 += yOff;
+	
+				// clear cells outside selection
+				for (y = bottomY; y <= topY; y += 1) {
+					for (x = leftX; x <= rightX; x += 1) {
+						// check if cell is outside selection box
+						if (!(y >= y1 && y <= y2 && x >= x1 && x <= x2)) {
+							state = me.engine.getState(x, y, false);
+							if (state !== 0) {
+								me.setStateWithUndo(x, y, 0, true);
+							}
+						}
+					}
+				}
+
+				// save edit
+				me.afterEdit("clear cells outside selection");
+			}
+		}
+	};
+
 	// clear selection
 	View.prototype.clearSelection = function(me, ctrl) {
 		var box = me.selectionBox,
@@ -7828,6 +7896,16 @@
 	// clear selection pressed
 	View.prototype.clearSelectionPressed = function(me) {
 		me.doClearSelection(me, false);
+	};
+
+	// clear outside pressed
+	View.prototype.clearOutsidePressed = function(me) {
+		me.clearOutside(me);
+	};
+
+	// clear [R]History pressed
+	View.prototype.clearRHistoryPressed = function(me) {
+		me.doClearSelection(me, true);
 	};
 
 	// select all pressed
@@ -9889,15 +9967,24 @@
 
 	// update selection controls position based on window height
 	View.prototype.updateSelectionControlsPosition = function() {
-		if (this.engine.multiNumStates <= 2) {
-			this.randomButton.setPosition(Menu.southEast, -85, -130);
-			this.randomButton.toolTip = "random fill";
-			this.randomItem.setPosition(Menu.southEast, -190, -130);
-		} else {
+		if (this.engine.isLifeHistory) {
+			this.invertSelectionButton.setPosition(Menu.southEast, -85, -130);
 			this.randomButton.setPosition(Menu.southEast, -130, -130);
-			this.randomButton.toolTip = "random multi-state fill";
-			this.random2Button.setPosition(Menu.southEast, -85, -130);
+			this.randomButton.toolTip = "random fill";
 			this.randomItem.setPosition(Menu.southEast, -235, -130);
+		} else {
+			if (this.engine.multiNumStates <= 2) {
+				this.invertSelectionButton.setPosition(Menu.southEast, -40, -130);
+				this.randomButton.setPosition(Menu.southEast, -85, -130);
+				this.randomButton.toolTip = "random fill";
+				this.randomItem.setPosition(Menu.southEast, -190, -130);
+			} else {
+				this.invertSelectionButton.setPosition(Menu.southEast, -40, -130);
+				this.randomButton.setPosition(Menu.southEast, -130, -130);
+				this.randomButton.toolTip = "random multi-state fill";
+				this.random2Button.setPosition(Menu.southEast, -85, -130);
+				this.randomItem.setPosition(Menu.southEast, -235, -130);
+			}
 		}
 	};
 
@@ -10509,47 +10596,58 @@
 		this.pasteButton.toolTip = "paste";
 
 		// add the flip X button
-		this.flipXButton = this.viewMenu.addButtonItem(this.flipXPressed, Menu.southEast, -220, -85, 40, 40, "");
+		this.flipXButton = this.viewMenu.addButtonItem(this.flipXPressed, Menu.southEast, -265, -85, 40, 40, "");
 		this.flipXButton.icon = this.iconManager.icon("flipx");
 		this.flipXButton.toolTip = "flip horizontally";
 
 		// add the flip Y button
-		this.flipYButton = this.viewMenu.addButtonItem(this.flipYPressed, Menu.southEast, -175, -85, 40, 40, "");
+		this.flipYButton = this.viewMenu.addButtonItem(this.flipYPressed, Menu.southEast, -220, -85, 40, 40, "");
 		this.flipYButton.icon = this.iconManager.icon("flipy");
 		this.flipYButton.toolTip = "flip vertically";
 
 		// add the rotate clockwise button
-		this.rotateCWButton = this.viewMenu.addButtonItem(this.rotateCWPressed, Menu.southEast, -130, -85, 40, 40, "");
+		this.rotateCWButton = this.viewMenu.addButtonItem(this.rotateCWPressed, Menu.southEast, -175, -85, 40, 40, "");
 		this.rotateCWButton.icon = this.iconManager.icon("rotatecw");
 		this.rotateCWButton.toolTip = "rotate clockwise";
 
 		// add the rotate counter-clockwise button
-		this.rotateCCWButton = this.viewMenu.addButtonItem(this.rotateCCWPressed, Menu.southEast, -85, -85, 40, 40, "");
+		this.rotateCCWButton = this.viewMenu.addButtonItem(this.rotateCCWPressed, Menu.southEast, -130, -85, 40, 40, "");
 		this.rotateCCWButton.icon = this.iconManager.icon("rotateccw");
 		this.rotateCCWButton.toolTip = "rotate counter-clockwise";
 
 		// add the clear selection button
-		this.clearSelectionButton = this.viewMenu.addButtonItem(this.clearSelectionPressed, Menu.southEast, -40, -85, 40, 40, "x");
-		this.clearSelectionButton.icon = this.iconManager.icon("select");
+		this.clearSelectionButton = this.viewMenu.addButtonItem(this.clearSelectionPressed, Menu.southEast, -85, -85, 40, 40, "");
+		this.clearSelectionButton.icon = this.iconManager.icon("inside");
 		this.clearSelectionButton.toolTip = "clear cells in selection";
 
+		// add the clear outside button
+		this.clearOutsideButton = this.viewMenu.addButtonItem(this.clearOutsidePressed, Menu.southEast, -40, -85, 40, 40, "");
+		this.clearOutsideButton.icon = this.iconManager.icon("outside");
+		this.clearOutsideButton.toolTip = "clear cells outside selection";
+
+		// add the clear [R]History button
+		this.clearRHistoryButton = this.viewMenu.addButtonItem(this.clearRHistoryPressed, Menu.southEast, -40, -130, 40, 40, "R");
+		this.clearRHistoryButton.icon = this.iconManager.icon("select");
+		this.clearRHistoryButton.toolTip = "clear [R]History cells";
+		this.clearRHistoryButton.font = "16px Arial";
+
 		// add the invert selection button
-		this.invertSelectionButton = this.viewMenu.addButtonItem(this.invertSelectionPressed, Menu.southEast, -40, -130, 40, 40, "");
+		this.invertSelectionButton = this.viewMenu.addButtonItem(this.invertSelectionPressed, Menu.southEast, -85, -130, 40, 40, "");
 		this.invertSelectionButton.icon = this.iconManager.icon("invertselection");
 		this.invertSelectionButton.toolTip = "invert cells in selection";
 
 		// add the random button
-		this.randomButton = this.viewMenu.addButtonItem(this.randomPressed, Menu.southEast, -85, -130, 40, 40, "");
+		this.randomButton = this.viewMenu.addButtonItem(this.randomPressed, Menu.southEast, -130, -130, 40, 40, "");
 		this.randomButton.icon = this.iconManager.icon("random");
 		this.randomButton.toolTip = "random fill";
 
 		// add the random 2-state button
-		this.random2Button = this.viewMenu.addButtonItem(this.random2Pressed, Menu.southEast, -130, -130, 40, 40, "2");
+		this.random2Button = this.viewMenu.addButtonItem(this.random2Pressed, Menu.southEast, -175, -130, 40, 40, "2");
 		this.random2Button.icon = this.iconManager.icon("random");
 		this.random2Button.toolTip = "random 2-state fill";
 
 		// add the random density slider
-		this.randomItem = this.viewMenu.addRangeItem(this.viewRandomRange, Menu.southEast, -235, -130, 100, 40, 1, 100, this.randomDensity, true, "", "%", 0);
+		this.randomItem = this.viewMenu.addRangeItem(this.viewRandomRange, Menu.southEast, -275, -130, 100, 40, 1, 100, this.randomDensity, true, "", "%", 0);
 		this.randomItem.toolTip = "random fill density";
 
 		// add the paste position slider

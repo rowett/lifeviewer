@@ -1036,7 +1036,11 @@
 			// Del to clear cells or selection
 			case 46:
 				if (me.isSelection) {
-					me.doClearSelection(me, event.ctrlKey);
+					if (event.shiftKey) {
+						me.clearOutside(me);
+					} else {
+						me.doClearSelection(me, event.ctrlKey);
+					}
 				} else {
 					if (me.drawing) {
 						value = me.clearCells(me, event.ctrlKey);

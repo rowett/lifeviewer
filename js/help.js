@@ -786,6 +786,7 @@
 			y = this.renderHelpLine(view, "Ctrl 5", "random fill", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "Del", "clear selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift Del", "clear outside selection", ctx, x, y, height, helpLine);
 		if (view.engine.isLifeHistory) {
 			y = this.renderHelpLine(view, "Ctrl Del", "clear [R]History cells", ctx, x, y, height, helpLine);
 		}

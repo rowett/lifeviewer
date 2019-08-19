@@ -1,3 +1,10 @@
+Build 384
+- clear outside selection
+	- new button in Select mode
+	- hotkey Shift+"Del"
+- clear [R]History cells
+	- new button in Select mode
+
 Build 383
 - selections now work with [[ XOFFSET ]] and [[ YOFFSET ]]
 - added more new aliases
