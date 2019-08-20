@@ -6266,6 +6266,10 @@
 				}
 			}
 			if (numReplaced > 0) {
+				// check for state 6
+				if (this.engine.isLifeHistory && replace === 6 || current === 6) {
+						this.engine.populateState6MaskFromColGrid();
+				}
 				this.afterEdit("replace states");
 			}
 		} else {
@@ -6342,6 +6346,10 @@
 					}
 				}
 				if (numCleared > 0) {
+					if (me.engine.isLifeHistory && current === 6) {
+						// update state 6 grid
+						this.engine.populateState6MaskFromColGrid();
+					}
 					me.afterEdit("clear state " + current + " cells");
 				}
 			}
