@@ -114,39 +114,34 @@
 			if (event.altKey && !event.ctrlKey) {
 				if (keyCode >= 48 && keyCode <= 57) {
 					value = keyCode - 48;
-					// if drawing then switch to state
-					if (me.drawing) {
-						me.switchToState(value);
-					} else {
-						// if selecting or no POIs then choose clipboard
-						if (me.selecting || me.waypointManager.numPOIs() === 0) {
-							// if clipboard already selected then paste
-							if (me.currentPasteBuffer === value) {
-								if (me.isPasting) {
-									me.pasteSelection(me);
-								} else {
-									me.pastePressed(me);
-								}
+					// if selecting or no POIs then choose clipboard
+					if (me.selecting || me.waypointManager.numPOIs() === 0) {
+						// if clipboard already selected then paste
+						if (me.currentPasteBuffer === value) {
+							if (me.isPasting) {
+								me.pasteSelection(me);
 							} else {
-								// switch to required buffer
-								me.clipboardList.current = me.viewClipboardList(value, true, me);
-	
-								// if already pasting then update paste
-								if (me.isPasting) {
-									me.pasteSelection(me, value);
-								} else {
-									me.menuManager.notification.notify("Clipboard " + value + " active", 15, 80, 15, true);
-								}
+								me.pastePressed(me);
 							}
 						} else {
-							// POIs only use 1 to 9
-							value -= 1;
-							if (value >= 0 && value < me.waypointManager.numPOIs()) {
-								me.currentPOI = value;
-		
-								// set camera
-								me.setCameraFromPOI(me, me.currentPOI);
+							// switch to required buffer
+							me.clipboardList.current = me.viewClipboardList(value, true, me);
+
+							// if already pasting then update paste
+							if (me.isPasting) {
+								me.pasteSelection(me, value);
+							} else {
+								me.menuManager.notification.notify("Clipboard " + value + " active", 15, 80, 15, true);
 							}
+						}
+					} else {
+						// POIs only use 1 to 9
+						value -= 1;
+						if (value >= 0 && value < me.waypointManager.numPOIs()) {
+							me.currentPOI = value;
+	
+							// set camera
+							me.setCameraFromPOI(me, me.currentPOI);
 						}
 					}
 				} else {
@@ -157,11 +152,13 @@
 						me.autoShrinkToggle.current = me.viewAutoShrinkList([!me.autoShrink], true, me);
 						me.menuManager.notification.notify("Auto-Shrink Selection " + (me.autoShrink ? "On" : "Off"), 15, 40, 15, true);
 						break;
+
 					// b for cell borders
 					case 66:
 						// toggle cell borders
 						me.bordersButton.current = me.viewBordersToggle([!me.engine.cellBorders], true, me);
 						break;
+
 					// c for default theme
 					case 67:
 						// set default theme
@@ -172,6 +169,14 @@
 							}
 						}
 						break;
+
+					// g for toggle kill gliders
+					case 71:
+						// toggle kill gliders
+						me.engine.clearGliders = !me.engine.clearGliders;
+						me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
+						break;
+
 					// h for [R]History on
 					case 72:
 						if (me.engine.isLifeHistory) {
@@ -180,6 +185,7 @@
 							me.menuManager.notification.notify("[R]History Display " + (me.engine.displayLifeHistory ? "On" : "Off"), 15, 40, 15, true);
 						}
 						break;
+
 					// j for [R]History off
 					case 74:
 						if (me.engine.isLifeHistory) {
@@ -188,12 +194,18 @@
 							me.menuManager.notification.notify("[R]History Display " + (me.engine.displayLifeHistory ? "On" : "Off"), 15, 40, 15, true);
 						}
 						break;
-					// k for toggle kill gliders
+
+					// k for replace selected cell state with drawing state
 					case 75:
-						// toggle kill gliders
-						me.engine.clearGliders = !me.engine.clearGliders;
-						me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
+						// switch to draw mode
+						if (me.modeList.current !== ViewConstants.modeDraw) {
+							me.modeList.current = me.viewModeList(ViewConstants.modeDraw, true, me);
+						}
+						// enable pick replace
+						me.pickReplace = true;
+						me.pickToggle.current = me.togglePick([true], true, me);
 						break;
+
 					// l for toggle annotations
 					case 76:
 						// toggle annotations
@@ -202,32 +214,38 @@
 							me.menuManager.notification.notify("Annotations " + (me.showLabels ? "On" : "Off"), 15, 40, 15, true);
 						}
 						break;
+
 					// n for new pattern
 					case 78:
 						// new pattern
 						me.newPattern(me);
 						break;
+
 					// r for change rule
 					case 82:
 						// change rule
 						me.changeRule(me);
 						break;
+
 					// s for toggle sync
 					case 83:
 						// toggle external clipboard sync
 						me.copySyncToggle.current = me.viewCopySyncList([!me.copySyncExternal], true, me);
 						me.menuManager.notification.notify("Sync Clipboard " + (me.copySyncExternal ? "On" : "Off"), 15, 40, 15, true);
 						break;
+
 					// t for toggle throttling
 					case 84:
 						me.throttleToggle.current = me.toggleThrottle([!me.canBailOut], true, me);
 						me.menuManager.notification.notify("Throttling " + (me.canBailOut ? "On" : "Off"), 15, 40, 15, true);
 						break;
+
 					// x for flip X
 					case 88:
 						// flip selection horizontally
 						me.flipXPressed(me);
 						break;
+
 					// y for flip Y
 					case 89:
 						// flip selection vertically
@@ -567,8 +585,17 @@
 			case 75:
 				// check for ctrl
 				if (event.ctrlKey) {
-					// remove selection
-					me.removeSelection(me);
+					if (event.altKey) {
+						me.clearCells(me, false);
+						value = me.drawState;
+						if (me.engine.multiNumStates > 2) {
+							value = me.engine.multiNumStates - value;
+						}
+						me.menuManager.notification.notify("Cleared all " + me.getStateName(value) + " cells", 15, 120, 15, true);
+					} else {
+						// remove selection
+						me.removeSelection(me);
+					}
 				} else {
 					// check for shift
 					if (event.shiftKey) {
@@ -775,20 +802,23 @@
 			// 5 for reset angle
 			case 53:
 			case 101: // num 5
-				// check for ctrl
 				if (event.ctrlKey) {
 					if (event.shiftKey) {
 						// random fill 2 state
 						me.randomFill(me, true);
 					} else {
-						// random fill multi state
-						me.randomFill(me, false);
+						me.switchToState(5);
 					}
 				} else {
-					// zero angle
-					if (!me.angleItem.locked) {
-						me.engine.angle = 0;
-						me.angleItem.current = [me.engine.angle, me.engine.angle];
+					if (event.shiftKey) {
+						// random fill
+						me.randomFill(me, false);
+					} else {
+						// zero angle
+						if (!me.angleItem.locked) {
+							me.engine.angle = 0;
+							me.angleItem.current = [me.engine.angle, me.engine.angle];
+						}
 					}
 				}
 				break;
@@ -796,125 +826,161 @@
 			// 1 for 100% zoom
 			case 49:
 			case 97: // num 1
-				// check for shift
-				if (event.shiftKey) {
-					// set zoom to nearest integer
-					me.changeZoom(me, me.engine.zoom * me.engine.originZ, true);
-
-					// display notification
-					me.menuManager.notification.notify("Integer Zoom", 15, 40, 15, true);
+				if (event.ctrlKey) {
+					me.switchToState(1);
 				} else {
-					// change zoom to 100%
-					me.changeZoom(me, 1, false);
+					// check for shift
+					if (event.shiftKey) {
+						// set zoom to nearest integer
+						me.changeZoom(me, me.engine.zoom * me.engine.originZ, true);
+	
+						// display notification
+						me.menuManager.notification.notify("Integer Zoom", 15, 40, 15, true);
+					} else {
+						// change zoom to 100%
+						me.changeZoom(me, 1, false);
+					}
 				}
 				break;
 
 			// 2 for 200% zoom
 			case 50:
 			case 98: // num 2
-				// check for shift
-				if (event.shiftKey) {
-					// zoom to -2x
-					me.changeZoom(me, 0.5, false);
+				if (event.ctrlKey) {
+					me.switchToState(2);
 				} else {
-					// zoom to 200%
-					me.changeZoom(me, 2, false);
+					// check for shift
+					if (event.shiftKey) {
+						// zoom to -2x
+						me.changeZoom(me, 0.5, false);
+					} else {
+						// zoom to 200%
+						me.changeZoom(me, 2, false);
+					}
 				}
 				break;
 
 			// 3 for 3200% zoom
 			case 51:
 			case 99: // num 3
-				// check for shift
-				if (event.shiftKey) {
-					// zoom to 6400%
-					me.changeZoom(me, 64, false);
+				if (event.ctrlKey) {
+					me.switchToState(3);
 				} else {
-					// zoom to 3200%
-					me.changeZoom(me, 32, false);
+					// check for shift
+					if (event.shiftKey) {
+						// zoom to 6400%
+						me.changeZoom(me, 64, false);
+					} else {
+						// zoom to 3200%
+						me.changeZoom(me, 32, false);
+					}
 				}
 				break;
 
 			// 4 for 400% zoom
 			case 52:
 			case 100: // num 4
-				// check for shift
-				if (event.shiftKey) {
-					// zoom to -4x
-					me.changeZoom(me, 0.25, false);
+				if (event.ctrlKey) {
+					me.switchToState(4);
 				} else {
-					// zoom to 400%
-					me.changeZoom(me, 4, false);
+					// check for shift
+					if (event.shiftKey) {
+						// zoom to -4x
+						me.changeZoom(me, 0.25, false);
+					} else {
+						// zoom to 400%
+						me.changeZoom(me, 4, false);
+					}
 				}
 				break;
 
 			// 6 for 1600% zoom
 			case 54:
 			case 102: // num 6
-				// check for shift
-				if (event.shiftKey) {
-					// zoom to -16x
-					me.changeZoom(me, 0.0625, false);
+				if (event.ctrlKey) {
+					me.switchToState(6);
 				} else {
-					// zoom to 1600%
-					me.changeZoom(me, 16, false);
+					// check for shift
+					if (event.shiftKey) {
+						// zoom to -16x
+						me.changeZoom(me, 0.0625, false);
+					} else {
+						// zoom to 1600%
+						me.changeZoom(me, 16, false);
+					}
 				}
 				break;
 
 			// 7 for decrease graph opacity
 			case 55:
-				// check if graph disabled
-				if (me.graphDisabled) {
-					me.menuManager.notification.notify("Graph Disabled", 15, 40, 15, true);
+				if (event.ctrlKey) {
+					me.switchToState(7);
 				} else {
-					if (me.popGraphOpacity > 0) {
-						me.popGraphOpacity -= 0.05;
-						if (me.popGraphOpacity < 0) {
-							me.popGraphOpacity = 0;
+					// check if graph disabled
+					if (me.graphDisabled) {
+						me.menuManager.notification.notify("Graph Disabled", 15, 40, 15, true);
+					} else {
+						if (me.popGraphOpacity > 0) {
+							me.popGraphOpacity -= 0.05;
+							if (me.popGraphOpacity < 0) {
+								me.popGraphOpacity = 0;
+							}
 						}
+						me.opacityItem.current = me.viewOpacityRange([me.popGraphOpacity, me.popGraphOpacity], false, me);
 					}
-					me.opacityItem.current = me.viewOpacityRange([me.popGraphOpacity, me.popGraphOpacity], false, me);
 				}
 				break;
 
 			// 8 for 800% zoom
 			case 56:
 			case 104: // num 8
-				// check for shift
-				if (event.shiftKey) {
-					// zoom to -8x
-					me.changeZoom(me, 0.125, false);
+				if (event.ctrlKey) {
+					me.switchToState(8);
 				} else {
-					// zoom to 800%
-					me.changeZoom(me, 8, false);
+					// check for shift
+					if (event.shiftKey) {
+						// zoom to -8x
+						me.changeZoom(me, 0.125, false);
+					} else {
+						// zoom to 800%
+						me.changeZoom(me, 8, false);
+					}
 				}
 				break;
 
 			// 9 for increase graph opacity
 			case 57:
-				// check if graph disabled
-				if (me.graphDisabled) {
-					me.menuManager.notification.notify("Graph Disabled", 15, 40, 15, true);
+				if (event.ctrlKey) {
+					me.switchToState(9);
 				} else {
-					if (me.popGraphOpacity < 1) {
-						me.popGraphOpacity += 0.05;
-						if (me.popGraphOpacity > 1) {
-							me.popGraphOpacity = 1;
+					// check if graph disabled
+					if (me.graphDisabled) {
+						me.menuManager.notification.notify("Graph Disabled", 15, 40, 15, true);
+					} else {
+						if (me.popGraphOpacity < 1) {
+							me.popGraphOpacity += 0.05;
+							if (me.popGraphOpacity > 1) {
+								me.popGraphOpacity = 1;
+							}
 						}
+						me.opacityItem.current = me.viewOpacityRange([me.popGraphOpacity, me.popGraphOpacity], false, me);
 					}
-					me.opacityItem.current = me.viewOpacityRange([me.popGraphOpacity, me.popGraphOpacity], false, me);
 				}
 				break;
 
 			// 0 for reset speed
 			case 48:
 			case 96: // num 0
-				// reset gps
-				me.gensPerStep = 1;
-				me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
-
-				// reset 
-				me.generationRange.current = me.viewGenerationRange([1, me.generationRange.current[1]], true, me);
+				if (event.ctrlKey) {
+					me.switchToState(0);
+				} else {
+					// reset gps
+					me.gensPerStep = 1;
+					me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
+	
+					// reset 
+					me.generationRange.current = me.viewGenerationRange([1, me.generationRange.current[1]], true, me);
+				}
 				break;
 
 			// - for slower
@@ -1048,25 +1114,10 @@
 						me.doClearSelection(me, event.ctrlKey);
 					}
 				} else {
-					if (me.drawing) {
+					if (event.ctrlKey) {
 						value = me.clearCells(me, event.ctrlKey);
-						if (value > 0) {
-							if (event.ctrlKey) {
-								me.menuManager.notification.notify("Cleared all [R]History cells", 15, 120, 15, true);
-							} else {
-								value = me.drawState;
-								if (me.engine.multiNumStates > 2) {
-									value = me.engine.multiNumStates - value;
-								}
-								me.menuManager.notification.notify("Cleared all " + me.getStateName(value) + " cells", 15, 120, 15, true);
-							}
-						}
-					} else {
-						if (event.ctrlKey) {
-							value = me.clearCells(me, event.ctrlKey);
-							if (value) {
-								me.menuManager.notification.notify("Cleared all [R]History cells", 15, 120, 15, true);
-							}
+						if (value) {
+							me.menuManager.notification.notify("Cleared all [R]History cells", 15, 120, 15, true);
 						}
 					}
 				}

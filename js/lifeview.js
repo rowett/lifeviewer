@@ -734,6 +734,9 @@
 		// current drawing state
 		/** @type {number} */ this.drawState = 1;
 
+		// whether picking replace
+		/** @type {boolean} */ this.pickReplace = false;
+
 		// whether picking state
 		/** @type {boolean} */ this.pickMode = false;
 
@@ -6205,6 +6208,73 @@
 		return result;
 	};
 
+	// replace cells with the current pen colours
+	View.prototype.replaceCells = function(replace) {
+		var x = 0,
+			y = 0,
+			state = 0,
+			numReplaced = 0,
+			current = this.drawState,
+			historyBox = this.engine.historyBox,
+			selBox = this.selectionBox,
+			leftX = historyBox.leftX,
+			rightX = historyBox.rightX,
+			bottomY = historyBox.bottomY,
+			topY = historyBox.topY,
+			swap = 0,
+			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1) + (this.xOffset << 1),
+			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1);
+			
+		// adjust current state if generations style
+		if (this.engine.multiNumStates > 2) {
+			if (replace > 0) {
+				replace = this.engine.multiNumStates - replace;
+			}
+		}
+
+		// check for selection
+		if (this.isSelection) {
+			leftX = selBox.leftX + xOff;
+			rightX = selBox.rightX + xOff;
+			if (leftX > rightX) {
+				swap = rightX;
+				rightX = leftX;
+				leftX = swap;
+			}
+			bottomY = selBox.bottomY + yOff;
+			topY = selBox.topY + yOff;
+			if (bottomY > topY) {
+				swap = topY;
+				topY = bottomY;
+				bottomY = swap;
+			}
+		}
+
+		// check if the pen and replace colour are the same
+		if (current !== replace) {
+			// clear all cells that match the current drawing state
+			for (y = bottomY; y <= topY; y += 1) {
+				for (x = leftX; x <= rightX; x += 1) {
+					state = this.engine.getState(x, y, false);
+					if (this.engine.multiNumStates > 2 && state > 0) {
+						state = this.engine.multiNumStates - state;
+					}
+					if (state === replace) {
+						this.setStateWithUndo(x, y, current, true);
+						numReplaced += 1;
+					}
+				}
+			}
+			if (numReplaced > 0) {
+				this.afterEdit("replace states");
+			}
+		} else {
+			this.menuManager.notification.notify("Cell and drawing state are the same", 15, 120, 15, true);
+		}
+
+		return numReplaced;
+	};
+
 	// clear cells of the current pen colours
 	View.prototype.clearCells = function(me, ctrl) {
 		var x = 0,
@@ -6989,16 +7059,26 @@
 
 	// drag ended for pick
 	View.prototype.dragEndPick = function(me, x, y) {
-		var saveStart = me.startState;
+		var saveStart = me.startState,
+			state = 0;
 
 		// check if on window
 		if (x!== -1 && y !== -1) {
 			me.justPicked = true;
-			me.penColour = me.readCell();
-			// highlight state in state list UI (clear start state first, set, then restore)
-			me.startState = 0;
-			me.stateList.current = me.viewStateList(me.penColour, true, me);
-			me.startState = saveStart;
+			state = me.readCell();
+			if (me.pickReplace) {
+				me.replaceCells(state);
+				// turn off pick
+				me.pickReplace = false;
+				me.pickToggle.current = me.togglePick([false], true, me);
+			} else {
+				// set pen colour
+				me.penColour = state;
+				// highlight state in state list UI (clear start state first, set, then restore)
+				me.startState = 0;
+				me.stateList.current = me.viewStateList(me.penColour, true, me);
+				me.startState = saveStart;
+			}
 		}
 	};
 
@@ -7741,10 +7821,10 @@
 	};
 
 	// clear paste
-	View.prototype.clearPaste = function(me, shift) {
+	View.prototype.clearPaste = function(me, ctrl) {
 		var i = 0;
 
-		if (me.engine.isLifeHistory && shift) {
+		if (me.engine.isLifeHistory && ctrl) {
 			while (i < me.pasteBuffer.length) {
 				if (me.pasteBuffer[i] > 1) {
 					me.pasteBuffer[i] &= 1;
@@ -7843,19 +7923,20 @@
 					y1 = swap;
 				}
 	
-				// clear cells in selection
 				if (me.engine.isLifeHistory && ctrl) {
+					// clear [R]History states in selection
 					for (y = y1; y <= y2; y += 1) {
 						for (x = x1; x <= x2; x += 1) {
 							state = me.engine.getState(x + xOff, y + yOff, false);
 							if (state > 1) {
 								me.setStateWithUndo(x + xOff, y + yOff, state & 1, true);
-								// update state 6 grid
-								this.engine.populateState6MaskFromColGrid();
 							}
 						}
 					}
+					// update state 6 grid
+					this.engine.populateState6MaskFromColGrid();
 				} else {
+					// clear cells in selection
 					for (y = y1; y <= y2; y += 1) {
 						for (x = x1; x <= x2; x += 1) {
 							state = me.engine.getState(x + xOff, y + yOff, false);
@@ -9290,12 +9371,17 @@
 		if (change) {
 			me.pickMode = newValue[0];
 			if (me.pickMode) {
-				me.menuManager.notification.notify("Now click on a cell", 15, 180, 15, true);
+				if (me.pickReplace) {
+					me.menuManager.notification.notify("Replace: Now click on a cell", 15, 180, 15, true);
+				} else {
+					me.menuManager.notification.notify("Pick: Now click on a cell", 15, 180, 15, true);
+				}
 			} else {
 				if (!me.justPicked) {
 					me.menuManager.notification.clear(true, false);
 				}
 				me.justPicked = false;
+				me.pickReplace = false;
 			}
 		}
 

@@ -720,7 +720,7 @@
 		if (view.waypointManager.numAnnotations() > 0) {
 			y = this.renderHelpLine(view, "Shift L", "toggle annotation display", ctx, x, y, height, helpLine);
 		}
-		y = this.renderHelpLine(view, "Alt K", "toggle kill escaping gliders", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt G", "toggle kill escaping gliders", ctx, x, y, height, helpLine);
 		// check if thumbnail ever on
 		if (view.thumbnailEverOn) {
 			y = this.renderHelpLine(view, "N", "toggle thumbnail view", ctx, x, y, height, helpLine);
@@ -782,12 +782,14 @@
 		y = this.renderHelpLine(view, "Shift L", "cycle paste location", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift M", "cycle paste mode", ctx, x, y, height, helpLine);
 		if (view.engine.multiNumStates > 2) {
-			y = this.renderHelpLine(view, "Ctrl 5", "multi-state random fill", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Shift 5", "multi-state random fill", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Ctrl+Shift 5", "2-state random fill", ctx, x, y, height, helpLine);
 		} else {
-			y = this.renderHelpLine(view, "Ctrl 5", "random fill", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Shift 5", "random fill", ctx, x, y, height, helpLine);
 		}
-		y = this.renderHelpLine(view, "Del", "clear selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt K", "pick cell state to replace with drawing state", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl+Alt K", "clear current drawing state cells", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Del", "clear cells in selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift Del", "clear outside selection", ctx, x, y, height, helpLine);
 		if (view.engine.isLifeHistory) {
 			y = this.renderHelpLine(view, "Ctrl Del", "clear [R]History cells", ctx, x, y, height, helpLine);
@@ -798,14 +800,19 @@
 		y = this.renderHelpLine(view, "Alt Y", "flip selection vertically", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Esc", "hide paste", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Enter", "perform paste", ctx, x, y, height, helpLine);
-		if (view.drawing) {
-			for (i = 0; i < (view.engine.multiNumStates == -1 ? 2 : view.engine.multiNumStates); i += 1) {
-				y = this.renderHelpLine(view, "Alt " + i, "select state " + i + " for drawing", ctx, x, y, height, helpLine);
-			}
+		if (view.engine.isLifeHistory) {
+			value = 7;
 		} else {
-			for (i = 0; i < 10; i += 1) {
-				y = this.renderHelpLine(view, "Alt " + i, "make clipboard " + i + " active", ctx, x, y, height, helpLine);
+			value = view.engine.multiNumStates === -1 ? 2 : view.engine.multiNumStates;
+			if (value > 10) {
+				value = 10;
 			}
+		}
+		for (i = 0; i < value; i += 1) {
+			y = this.renderHelpLine(view, "Ctrl " + i, "select state " + i + " for drawing", ctx, x, y, height, helpLine);
+		}
+		for (i = 0; i < 10; i += 1) {
+			y = this.renderHelpLine(view, "Alt " + i, "make clipboard " + i + " active", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
@@ -1314,9 +1321,9 @@
 		y = this.renderHelpLine(view, "Maximum", view.engine.maxGridSize + " x " + view.engine.maxGridSize, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Area", this.areaString(view), ctx, x, y, height, helpLine);
 		if ((view.engine.counter & 1) !== 0) {
-			y = this.renderHelpLine(view, "Tiles", (view.engine.tileCount(view.engine.nextTileGrid) + " / " + view.engine.tileCount(view.engine.colourTileHistoryGrid)), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Tiles", (view.engine.tileCount(view.engine.nextTileGrid) + " / " + view.engine.tileCount(view.engine.colourTileGrid) + " / " + view.engine.tileCount(view.engine.colourTileHistoryGrid)), ctx, x, y, height, helpLine);
 		} else {
-			y = this.renderHelpLine(view, "Tiles", (view.engine.tileCount(view.engine.tileGrid) + " / " + view.engine.tileCount(view.engine.colourTileHistoryGrid)), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Tiles", (view.engine.tileCount(view.engine.tileGrid) + " / " + view.engine.tileCount(view.engine.colourTileGrid) + " / " + view.engine.tileCount(view.engine.colourTileHistoryGrid)), ctx, x, y, height, helpLine);
 		}
 		if (view.engine.state6TileGrid) {
 			y = this.renderHelpLine(view, "State6", view.engine.tileCount(view.engine.state6TileGrid), ctx, x, y, height, helpLine);
