@@ -146,6 +146,11 @@
 					}
 				} else {
 					switch (keyCode) {
+					// Del for clear marked [R]History cells
+					case 46:
+						me.clearCells(me, true, true);
+						me.menuManager.notification.notify("Cleared [R]History marked cells", 15, 120, 15, true);
+						break;
 					// a for auto-shrink
 					case 65:
 						// toggle auto-shrink selection
@@ -586,12 +591,12 @@
 				// check for ctrl
 				if (event.ctrlKey) {
 					if (event.altKey) {
-						me.clearCells(me, false);
+						me.clearCells(me, false, false);
 						value = me.drawState;
 						if (me.engine.multiNumStates > 2) {
 							value = me.engine.multiNumStates - value;
 						}
-						me.menuManager.notification.notify("Cleared all " + me.getStateName(value) + " cells", 15, 120, 15, true);
+						me.menuManager.notification.notify("Cleared " + me.getStateName(value) + " cells", 15, 120, 15, true);
 					} else {
 						// remove selection
 						me.removeSelection(me);
@@ -1115,9 +1120,9 @@
 					}
 				} else {
 					if (event.ctrlKey) {
-						value = me.clearCells(me, event.ctrlKey);
+						value = me.clearCells(me, event.ctrlKey, false);
 						if (value) {
-							me.menuManager.notification.notify("Cleared all [R]History cells", 15, 120, 15, true);
+							me.menuManager.notification.notify("Cleared [R]History cells", 15, 120, 15, true);
 						}
 					}
 				}
@@ -1449,8 +1454,13 @@
 						if (me.isPasting || me.evolvingPaste) {
 							me.cancelPaste(me);
 						} else {
-							// close the popup Viewer
-							hideViewer();
+							// check for pick mode
+							if (me.pickMode) {
+								me.pickToggle.current = me.togglePick([false], true, me);
+							} else {
+								// close the popup Viewer
+								hideViewer();
+							}
 						}
 					}
 				} else {
@@ -1469,10 +1479,14 @@
 							if (me.isPasting || me.evolvingPaste) {
 								me.cancelPaste(me);
 							} else {
-								// check if playing
-								if (me.generationOn) {
-									// switch to pause
-									me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+								if (me.pickMode) {
+									me.pickToggle.current = me.togglePick([false], true, me);
+								} else {
+									// check if playing
+									if (me.generationOn) {
+										// switch to pause
+										me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+									}
 								}
 							}
 						}

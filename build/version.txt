@@ -1,3 +1,7 @@
+Build 386
+- hotkey Alt+"Del" to clear [R]History marked cells
+- hotkey "Esc" will cancel a Pick or Replace
+
 Build 385
 - hotkey Shift+"A" shrinks selection
 - toggle kill escaping gliders is now on hotkey Alt+"G"

@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 385,
+		/** @const {number} */ versionBuild : 386,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6276,7 +6276,7 @@
 	};
 
 	// clear cells of the current pen colours
-	View.prototype.clearCells = function(me, ctrl) {
+	View.prototype.clearCells = function(me, ctrl, markedOnly) {
 		var x = 0,
 			y = 0,
 			state = 0,
@@ -6298,20 +6298,37 @@
 
 			// check for LifeHistory clear
 			if (me.engine.isLifeHistory && ctrl) {
-				// clear all LifeHistory states
-				for (y = historyBox.bottomY; y <= historyBox.topY; y += 1) {
-					for (x = historyBox.leftX; x <= historyBox.rightX; x += 1) {
-						state = me.engine.getState(x, y, false);
-						if (state > 1) {
-							me.setStateWithUndo(x, y, state & 1, true);
-							numCleared += 1;
+				// check for marked only
+				if (markedOnly) {
+					// clear marked states only
+					for (y = historyBox.bottomY; y <= historyBox.topY; y += 1) {
+						for (x = historyBox.leftX; x <= historyBox.rightX; x += 1) {
+							state = me.engine.getState(x, y, false);
+							if (state >= 3 && state <= 5) {
+								me.setStateWithUndo(x, y, state & 1, true);
+								numCleared += 1;
+							}
 						}
 					}
-				}
-				if (numCleared > 0) {
-					// update state 6 grid
-					this.engine.populateState6MaskFromColGrid();
-					me.afterEdit("clear [R]History cells");
+					if (numCleared > 0) {
+						me.afterEdit("clear [R]History marked cells");
+					}
+				} else {
+					// clear all LifeHistory states
+					for (y = historyBox.bottomY; y <= historyBox.topY; y += 1) {
+						for (x = historyBox.leftX; x <= historyBox.rightX; x += 1) {
+							state = me.engine.getState(x, y, false);
+							if (state > 1) {
+								me.setStateWithUndo(x, y, state & 1, true);
+								numCleared += 1;
+							}
+						}
+					}
+					if (numCleared > 0) {
+						// update state 6 grid
+						this.engine.populateState6MaskFromColGrid();
+						me.afterEdit("clear [R]History cells");
+					}
 				}
 			} else {
 				// clear all cells that match the current drawing state
