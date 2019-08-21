@@ -232,8 +232,11 @@
 		// allocator
 		this.allocator = new Allocator();
 
+		// last small grid zoom
+		/** @type {number} */ this.lastSmallGridZoom = -1;
+
 		// flag whether alternate rules specified
-		/** @tpye {boolean} */ this.altSpecified = false;
+		/** @type {boolean} */ this.altSpecified = false;
 
 		// flag whether shrink after edit needed
 		/** @type {boolean} */ this.shrinkNeeded = false;
@@ -13029,43 +13032,73 @@
 		}
 	};
 
+	// convert actual zoom into a zoom level
+	Life.prototype.zoomLevel = function() {
+		var result = 1,
+			camZoom = this.camZoom;
+
+		if (camZoom >= 0.5 && camZoom < 1) {
+			result = 2;
+		} else {
+			if (camZoom >= 0.25 && camZoom < 0.5) {
+				result = 4;
+			} else {
+				if (camZoom >= 0.125 && camZoom < 0.25) {
+					result = 8;
+				} else {
+					if (camZoom < 0.125) {
+						result = 16;
+					}
+				}
+			}
+		}
+
+		return result;
+	};
+
 	// create the small colour grids based on zoom level
 	Life.prototype.createSmallColourGrids = function() {
+		var camZoom = this.camZoom;
+
 		// check if 0.5 <= zoom < 1
-		if (this.camZoom >= 0.5 && this.camZoom < 1) {
+		if (camZoom >= 0.5 && camZoom < 1) {
 			// create 2x2 colour grid
 			if (this.themeHistory || this.isHROT) {
 				this.create2x2ColourGrid16(this.colourGrid16, this.smallColourGrid);
 			} else {
 				this.create2x2ColourGridNoHistory16(this.colourGrid16, this.smallColourGrid);
 			}
+			this.lastSmallGridZoom = 2;
 		} else {
 			// check if 0.25 <= zoom < 0.5
-			if (this.camZoom >= 0.25 && this.camZoom < 0.5) {
+			if (camZoom >= 0.25 && camZoom < 0.5) {
 				// create 4x4 colour grid
 				if (this.themeHistory || this.isHROT) {
 					this.create4x4ColourGrid32(this.colourGrid32, this.smallColourGrid);
 				} else {
 					this.create4x4ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
 				}
+				this.lastSmallGridZoom = 4;
 			} else {
 				// check if 0.125 <= zoom < 0.25
-				if (this.camZoom >= 0.125 && this.camZoom < 0.25) {
+				if (camZoom >= 0.125 && camZoom < 0.25) {
 					// create 8x8 colour grid
 					if (this.themeHistory || this.isHROT) {
 						this.create8x8ColourGrid32(this.colourGrid32, this.smallColourGrid);
 					} else {
 						this.create8x8ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
 					}
+					this.lastSmallGridZoom = 8;
 				} else {
 					// check if zoom < 0.125
-					if (this.camZoom < 0.125) {
+					if (camZoom < 0.125) {
 						// create 16x16 colour grid
 						if (this.themeHistory || this.isHROT) {
 							this.create16x16ColourGrid32(this.colourGrid32, this.smallColourGrid);
 						} else {
 							this.create16x16ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
 						}
+						this.lastSmallGridZoom = 16;
 					}
 				}
 			}
@@ -13074,22 +13107,22 @@
 		// check for overlay
 		if (this.drawOverlay) {
 			// check if 0.5 <= zoom < 1
-			if (this.camZoom >= 0.5 && this.camZoom < 1) {
+			if (camZoom >= 0.5 && camZoom < 1) {
 				// create 2x2 colour grid
 				this.create2x2ColourGrid16(this.overlayGrid16, this.smallOverlayGrid);
 			} else {
 				// check if 0.25 <= zoom < 0.5
-				if (this.camZoom >= 0.25 && this.camZoom < 0.5) {
+				if (camZoom >= 0.25 && camZoom < 0.5) {
 					// create 4x4 colour grid
 					this.create4x4ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
 				} else {
 					// check if 0.125 <= zoom < 0.25
-					if (this.camZoom >= 0.125 && this.camZoom < 0.25) {
+					if (camZoom >= 0.125 && camZoom < 0.25) {
 						// create 8x8 colour grid
 						this.create8x8ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
 					} else {
 						// check if zoom < 0.125
-						if (this.camZoom < 0.125) {
+						if (camZoom < 0.125) {
 							// create 16x16 colour grid
 							this.create16x16ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
 						}
@@ -14913,7 +14946,17 @@
 			this.createPixelColours(1);
 		} else {
 			// create small colour grids if zoomed out
-			this.createSmallColourGrids();
+			if (this.camZoom < 1) {
+				if (!(this.themeHistory || this.isHROT)) {
+					// clear the small colour grid if there is no theme history and the zoom level has changed
+					if (this.lastSmallGridZoom !== this.zoomLevel()) {
+						this.smallColourGrid.whole.fill(0);
+					}
+				}
+				this.createSmallColourGrids();
+			} else {
+				this.lastSmallGridZoom = 1;
+			}
 
 			// check if zoom < 0.125x
 			if (this.camZoom < 0.125) {

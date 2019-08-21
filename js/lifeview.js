@@ -4344,7 +4344,7 @@
 					} else {
 						// draw new message
 						// @ts-ignore
-						me.menuManager.notification.notify(ScriptParser.substituteVariables(this, currentWaypoint.textMessage), 15, 7200, 15, false);
+						me.menuManager.notification.notify(ScriptParser.substituteVariables(this, currentWaypoint.textMessage), 15, 21600, 15, false);
 					}
 
 					// save message
@@ -9484,6 +9484,12 @@
 				// check for waypoints
 				if (me.waypointsDefined) {
 					me.waypointsDisabled = !newValue[0];
+
+					// clear any waypoint message if waypoints just disabled
+					if (me.waypointsDisabled) {
+						me.menuManager.notification.clear(false, false);
+						me.lastWaypointMessage = "";
+					}
 
 					// check for loop
 					if (me.loopGeneration !== -1) {

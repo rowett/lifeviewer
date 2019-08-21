@@ -1,6 +1,8 @@
 Build 387
 - added another alias
 - Generations rules now have brightness shading when using layers
+- hotkey Shift+"P" to toggle LOOP (when defined) wasn't working
+- performance improvement for THEMEs without history
 
 Build 386
 - hotkey Alt+"Del" to clear [R]History marked cells
