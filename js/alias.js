@@ -225,6 +225,7 @@
 		this.aliases.push(["Pedestrian Goats", "B2in38/S123a"]);
 		this.aliases.push(["Pentadecathlife", "B34e5y6cn8/S234c5e"]);
 		this.aliases.push(["Photics I", "B2ae4c678/S01e4aeqrtw5678"]);
+		this.aliases.push(["Photics II", "B2ae4cw5y6i/S01e2i4q"]);
 		this.aliases.push(["Pi-plicator", "B3-ckq/S2-c34ci"]);
 		this.aliases.push(["PiLife", "B37e/S23"]);
 		this.aliases.push(["plasma1", "B012-in3-cky4ar5cjnr6ae/S05aijnr6n"]);

@@ -1,3 +1,7 @@
+Build 387
+- added another alias
+- Generations rules now have brightness shading when using layers
+
 Build 386
 - hotkey Alt+"Del" to clear [R]History marked cells
 - hotkey "Esc" will cancel a Pick or Replace

@@ -4353,7 +4353,14 @@
 			// create state colours
 			if (this.littleEndian) {
 				for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
-					pixelColours[i] = (255 << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
+					pixelColours[i] = (255 << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+					if (needStrings) {
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+					}
+				}
+			} else {
+				for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
+					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
 					if (needStrings) {
 						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
@@ -13502,9 +13509,6 @@
 		    bottomY = 0, topY = 0, leftX = 0,
 		    tiles = 0, nextTiles = 0,
 
-		    // whether the tile is alive
-		    tileAlive = 0,
-
 		    // set tile height
 		    ySize = this.tileY,
 
@@ -13558,8 +13562,8 @@
 			// scan each set of tiles
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
-				tiles = tileGridRow[tw] | colourTileRow[tw];
-				nextTiles = 0;
+				tiles = tileGridRow[tw];
+				nextTiles = tiles;
 
 				// check if any are occupied
 				if (tiles) {
@@ -13567,9 +13571,6 @@
 					for (b = 15; b >= 0; b -= 1) {
 						// check if this tile is occupied
 						if ((tiles & (1 << b)) !== 0) {
-							// flag nothing alive in the tile
-							tileAlive = 0;
-
 							// process each row
 							h = bottomY;
 							while (h < topY) {
@@ -13585,7 +13586,6 @@
 
 								// determine if anything is alive on the grid
 								this.anythingAlive |= nextCell;
-								tileAlive |= nextCell;
 
 								// lookup next colour
 								colourGridRow[cr] = ((nextCell & 32768) >> 9) | (nextCell & 16384);
@@ -13608,12 +13608,6 @@
 								// next row
 								h += 1;
 							}
-
-							// check if the tile was alive (has any cells not completely faded)
-							if (tileAlive) {
-								// update tile flag
-								nextTiles |= (1 << b);
-							}
 						}
 
 						// next tile columns
@@ -13626,7 +13620,7 @@
 
 				// save the tile group
 				colourTileRow[tw] = nextTiles;
-				colourTileHistoryRow[tw] |= nextTiles;
+				colourTileHistoryRow[tw] = nextTiles;
 			}
 
 			// next tile row
@@ -16154,7 +16148,6 @@
 			// update layer zoom
 			layerZoom *= this.camLayerDepth;
 
-			// check whether to switch to colour grid based on ZOOM >= 1
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
 				mask = 15;
