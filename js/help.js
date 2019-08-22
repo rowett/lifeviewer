@@ -592,6 +592,12 @@
 					y = this.renderHelpLine(view, "W", "toggle loop", ctx, x, y, height, helpLine);
 				}
 			}
+			if (view.autoStart) {
+				y = this.renderHelpLine(view, "Alt O", "toggle autostart", ctx, x, y, height, helpLine);
+			}
+			if (view.stopGeneration !== -1) {
+				y = this.renderHelpLine(view, "Alt P", "toggle stop", ctx, x, y, height, helpLine);
+			}
 		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 

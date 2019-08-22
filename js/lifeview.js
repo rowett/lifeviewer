@@ -1159,10 +1159,13 @@
 		// generation number to stop at
 		/** @type {number} */ this.stopGeneration = -1;
 
+		// flag if stop temporarily disabled
+		/** @type {boolean} */ this.stopDisabled = false;
+
 		// generation number to loop from
 		/** @type {number} */ this.loopGeneration = -1;
 
-		// flag if loop temporary disabled
+		// flag if loop temporarily disabled
 		/** @type {boolean} */ this.loopDisabled = false;
 
 		// flag if waypoints disabled
@@ -2900,7 +2903,7 @@
 	// capture screenshot and display in screenshot window
 	View.prototype.captureScreenShot = function(me) {
 		// capture screenshot
-		var dataURL = me.offCanvas.toDataURL("image/png"),
+		var dataURL = me.mainCanvas.toDataURL("image/png"),
 		    shotWindow = null,
 		    imageElement = null;
 
@@ -4396,10 +4399,10 @@
 					deltaTime = performance.now() - currentTime;
 
 					// check for stop or delta time being too large or single step (ignore time for manual stepping)
-					if (me.engine.counter === me.stopGeneration - 1 || ((deltaTime > ViewConstants.updateThreshold) && !manualStepping)) {
+					if ((me.engine.counter === me.stopGeneration - 1 && !me.stopDisabled) || ((deltaTime > ViewConstants.updateThreshold) && !manualStepping)) {
 
 						// if at stop generation then actually bailout
-						if (me.engine.counter === me.stopGeneration - 1) {
+						if (me.engine.counter === me.stopGeneration - 1 && !me.stopDisabled) {
 							bailout = true;
 						} else {
 							// if lagging then bailout if enabled
@@ -4442,6 +4445,12 @@
 						me.elapsedTime = 0;
 						me.reset(me);
 
+						// check if autostart defined but disabled
+						if (me.autoStart && me.autoStartDisabled) {
+							me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+							me.menuManager.notification.notify("LOOP reached - Play to continue ", 15, 180, 15, true);
+						}
+
 						// lock controls if waypoints ended
 						if (waypointsEnded) {
 							me.controlsLocked = true;
@@ -4477,7 +4486,7 @@
 				me.floatCounter -= (stepsToTake - stepsTaken);
 
 				// if not enough steps taken then display actual number
-				if ((stepsTaken < stepsToTake) && (me.engine.counter !== me.stopGeneration) && me.perfWarning) {
+				if ((stepsTaken < stepsToTake) && ((me.engine.counter !== me.stopGeneration) || me.stopDisabled) && me.perfWarning) {
 					me.updateStepLabel(stepsTaken);
 				} else {
 					me.clearStepSamples();
@@ -4519,7 +4528,7 @@
 			}
 
 			// check for stop
-			if (me.engine.counter === me.stopGeneration) {
+			if (me.engine.counter === me.stopGeneration && !me.stopDisabled) {
 				// stop
 				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 				if (me.genNotifications) {
@@ -5219,7 +5228,7 @@
 		this.loopIndicator.toolTip = ["loop at " + this.loopGeneration];
 
 		// stop
-		this.stopIndicator.current = [this.stopGeneration !== -1];
+		this.stopIndicator.current = [!this.stopDisabled && this.stopGeneration !== -1];
 		this.stopIndicator.locked = (this.stopGeneration === -1);
 		this.stopIndicator.toolTip = ["stop at " + this.stopGeneration];
 	};
@@ -5828,6 +5837,9 @@
 			if (me.loopGeneration !== -1) {
 				me.loopDisabled = true;
 			}
+			if (me.stopGeneration !== -1) {
+				me.stopDisabled = true;
+			}
 			if (me.autoFitDefined) {
 				me.autoFit = false;
 			}
@@ -5866,6 +5878,11 @@
 
 			// enable looping
 			me.loopDisabled = false;
+
+			// enable stop
+			if (!looping) {
+				me.stopDisabled = false;
+			}
 		}
 
 		// check for simple view
@@ -6361,16 +6378,21 @@
 	// view play list
 	View.prototype.viewPlayList = function(newValue, change, me) {
 		var result = newValue,
+			stopMode = me.stopDisabled,
 		    loopMode = me.loopDisabled,
 		    waypointMode = me.waypointsDisabled,
 		    autoStartMode = me.autoStartDisabled,
 		    autoFitMode = me.autoFit,
 		    trackMode = me.trackDisabled,
 		    message = null,
-		    duration = 40,
+			duration = 40,
+			numChanged = 0,
 
 		    // whether loop switched on or off
 		    loopChange = 0,
+
+		    // whether stop switched on or off
+		    stopChange = 0,
 
 		    // whether waypoints switched on or off
 		    waypointsChange = 0,
@@ -6434,6 +6456,16 @@
 					loopChange = -1;
 				}
 
+				// check for stop on
+				if (!me.stopDisabled && stopMode && me.stopGeneration !== -1) {
+					stopChange = 1;
+				}
+
+				// check for stop off
+				if (me.stopDisabled && !stopMode && me.stopGeneration !== -1) {
+					stopChange = -1;
+				}
+
 				// check for autofit on
 				if (!autoFitMode && me.autoFit) {
 					autoFitChange = 1;
@@ -6475,43 +6507,74 @@
 				}
 
 				// check if a mode changed
-				if (loopChange !== 0 || waypointsChange !== 0 || trackChange !== 0 || autoStartChange !== 0 || autoFitChange !== 0) {
+				if (loopChange !== 0 || stopChange !== 0 || waypointsChange !== 0 || trackChange !== 0 || autoStartChange !== 0 || autoFitChange !== 0) {
 					// build the notification
 					message = "";
 
 					// check for loop change
 					if (loopChange !== 0) {
+						numChanged += 1;
 						message += "Loop";
 					}
 
-					// check for waypoints, track or autofit change
-					if (waypointsChange !== 0 || trackChange !== 0 || autoFitChange !== 0) {
-						// determine the separator
-						if (loopChange !== 0) {
-							if (autoStartChange !== 0) {
+					// check for stop change
+					if (stopChange !== 0) {
+						if (numChanged > 0) {
+							if (Math.abs(waypointsChange) + Math.abs(trackChange) + Math.abs(autoStartChange) + Math.abs(autoFitChange) > 0) {
 								message += ", ";
 							} else {
 								message += " and ";
 							}
 						}
-						if (waypointsChange !== 0) {
-							message += "Waypoints";
-						} else {
-							if (trackChange !== 0) {
-								message += "Track";
+						numChanged += 1;
+						message += "Stop";
+					}
+
+					// check for waypoints change
+					if (waypointsChange !== 0) {
+						if (numChanged > 0) {
+							if (Math.abs(trackChange) + Math.abs(autoStartChange) + Math.abs(autoFitChange) > 0) {
+								message += ", ";
 							} else {
-								message += "AutoFit";
+								message += " and ";
 							}
 						}
+						numChanged += 1;
+						message += "Waypoints";
+					}
+
+					// check for track change
+					if (trackChange !== 0) {
+						if (numChanged > 0) {
+							if (Math.abs(autoStartChange) + Math.abs(autoFitChange) > 0) {
+								message += ", ";
+							} else {
+								message += " and ";
+							}
+						}
+						numChanged += 1;
+						message += "Track";
 					}
 
 					// check for autostart change
 					if (autoStartChange !== 0) {
-						// determine the separator
-						if (loopChange !== 0 || waypointsChange !== 0 || trackChange !== 0 || autoFitChange !== 0) {
+						if (numChanged > 0) {
+							if (autoFitChange !== 0) {
+								message += ", ";
+							} else {
+								message += " and ";
+							}
+						}
+						numChanged += 1;
+						message += "AutoStart";
+					}
+
+					// check for autofit change
+					if (autoFitChange !== 0) {
+						if (numChanged > 0) {
 							message += " and ";
 						}
-						message += "AutoStart";
+						message += "AutoFit";
 					}
 
 					// check for on or off
@@ -6551,7 +6614,7 @@
 					me.afterEdit("");
 
 					// zoom text unless STOP and generation notifications disabled
-					if (!(me.engine.counter === me.stopGeneration && !me.genNotifications)) {
+					if (!(me.engine.counter === me.stopGeneration && !me.stopDisabled && !me.genNotifications)) {
 						me.menuManager.notification.notify("Pause", 15, 40, 15, true);
 					}
 				}
@@ -6587,7 +6650,7 @@
 					me.afterEdit("");
 
 					// zoom text unless STOP and generation notifications disabled
-					if (!(me.engine.counter === me.stopGeneration && !me.genNotifications)) {
+					if (!(me.engine.counter === me.stopGeneration && !me.stopDisabled && !me.genNotifications)) {
 						me.menuManager.notification.notify("Pause", 15, 40, 15, true);
 					}
 				} else {
@@ -9459,6 +9522,28 @@
 		return [me.loopDisabled];
 	};
 
+	// autostart indicator toggle
+	View.prototype.toggleAutostart = function(newValue, change, me) {
+		if (change) {
+			if (me.autoStart) {
+				me.autoStartDisabled = !newValue[0];
+			}
+		}
+
+		return [me.autoStartDisabled];
+	};
+
+	// stop indicator toggle
+	View.prototype.toggleStop = function(newValue, change, me) {
+		if (change) {
+			if (me.stopGeneneration !== -1) {
+				me.stopDisabled = !newValue[0];
+			}
+		}
+
+		return [me.stopDisabled];
+	};
+
 	// waypoint/track indictor toggle
 	View.prototype.toggleWP = function(newValue, change, me) {
 		var result = [false];
@@ -10281,12 +10366,12 @@
 		this.infoBarLabelNValueRight.toolTip = "bounding box north edge velocity";
 
 		// autostart indicator
-		this.autostartIndicator = this.viewMenu.addListItem(null, Menu.northEast, -210, 0, 38, 20, ["START"], [false], Menu.multi);
+		this.autostartIndicator = this.viewMenu.addListItem(this.toggleAutostart, Menu.northEast, -210, 0, 38, 20, ["START"], [false], Menu.multi);
 		this.autostartIndicator.font = ViewConstants.smallMenuFont;
 		this.autostartIndicator.toolTip = ["autostart indicator"];
 
 		// stop indicator
-		this.stopIndicator = this.viewMenu.addListItem(null, Menu.northEast, -210, 20, 38, 20, ["STOP"], [false], Menu.multi);
+		this.stopIndicator = this.viewMenu.addListItem(this.toggleStop, Menu.northEast, -210, 20, 38, 20, ["STOP"], [false], Menu.multi);
 		this.stopIndicator.font = ViewConstants.smallMenuFont;
 		this.stopIndicator.toolTip = ["stop indicator"];
 
@@ -11101,6 +11186,7 @@
 
 		// clear stop mode
 		this.stopGeneration = -1;
+		this.stopDisabled = false;
 
 		// clear loop mode
 		this.loopGeneration = -1;

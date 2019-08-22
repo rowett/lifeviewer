@@ -226,6 +226,26 @@
 						me.newPattern(me);
 						break;
 
+					// o for toggle autostart
+					case 79:
+						// toggle autostart
+						if (me.autoStart) {
+							me.autoStartDisabled = !me.autoStartDisabled;
+							me.autostartIndicator.current = [me.autoStartDisabled];
+							me.menuManager.notification.notify("AutoStart " + (me.autoStartDisabled ? "Off" : "On"), 15, 40, 15, true);
+						}
+						break;
+
+					// o for toggle stop
+					case 80:
+						// toggle stop
+						if (me.stopGeneration !== -1) {
+							me.stopDisabled = !me.stopDisabled;
+							me.stopIndicator.current = [me.stopDisabled];
+							me.menuManager.notification.notify("Stop " + (me.stopDisabled ? "Off" : "On"), 15, 40, 15, true);
+						}
+						break;
+
 					// r for change rule
 					case 82:
 						// change rule
