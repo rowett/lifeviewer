@@ -621,12 +621,12 @@
 		/** @type {number} */ this.densityOdd = 0;
 
 		// hash lookup for life generation (algorithm 6x3)
-		this.indexLookup63 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup63");
-		this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
+		this.indexLookup63 = null;
+		this.indexLookup632 = null;
 
 		// triangular lookup
-		this.indexLookupTri1 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri1");
-		this.indexLookupTri2 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri2");
+		this.indexLookupTri1 = null;
+		this.indexLookupTri2 = null;
 
 		// colour lookup for next generation
 		this.colourLookup = this.allocator.allocate(Uint16, ((this.aliveMax + 1) * 2) << 8, "Life.colourLookup");
@@ -4594,17 +4594,48 @@
 			ruleAltArray = (this.isTriangular ? PatternManager.ruleAltTriangularArray : PatternManager.ruleAltArray),
 			altSpecified = PatternManager.altSpecified,
 		    hashSize = (this.isTriangular ? LifeConstants.hashTriangular : LifeConstants.hash33),
-		    odd = false;
+			odd = false,
+			match = true;
 
 		// save flag
 		this.altSpecified = altSpecified;
 
+		// check if alternates are duplicates
+		if (this.altSpecified) {
+			// compare rule arrays
+			i = 0;
+			match = true;
+			while (i < ruleArray.length && match) {
+				if (ruleArray[i] !== ruleAltArray[i]) {
+					match = false;
+				} else {
+					i += 1;
+				}
+			}
+
+			// if identical then disable alternate rule
+			if (match) {
+				this.altSpecified = false;
+			}
+		}
+
+		// clear rule buffers
+		this.indexLookup63 = null;
+		this.indexLookup632 = null;
+		this.indexLookupTri1 = null;
+		this.indexLookupTri2 = null;
+
 		// check for Triangular
 		if (this.isTriangular) {
 			// create lookup arrays
+			this.indexLookupTri1 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri1");
+			this.indexLookupTri2 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri2");
 			this.createTriangularIndex(this.indexLookupTri2, ruleArray);
 			this.createTriangularIndex(this.indexLookupTri1, ruleAltArray);
 		} else {
+			// create the first lookup array
+			this.indexLookup63 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup63");
+
 			// check for Wolfram
 			if (this.wolframRule === -1) {
 				// check for B0
@@ -4626,6 +4657,7 @@
 							ruleArray[hashSize - i - 1] = tmp;
 						}
 						odd = true;
+						this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
 						this.createLifeIndex63(this.indexLookup632, ruleArray);
 
 						// even rule -> NOT(bits)
@@ -4640,101 +4672,18 @@
 			}
 
 			// copy rules from pattern
-			if (altSpecified) {
+			if (this.altSpecified) {
+				this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
 				this.createLifeIndex63(this.indexLookup632, ruleArray);
 				this.createLifeIndex63(this.indexLookup63, ruleAltArray);
 			} else {
 				this.createLifeIndex63(this.indexLookup63, ruleArray);
-				if (!odd) {
-					// duplicate even rule
-					this.indexLookup632.set(this.indexLookup63);
+				if (odd) {
+					this.altSpecified = true;
 				}
 			}
 		}
 	};
-
-	// get the offset from the left most bit
-	Life.prototype.leftBitOffset = function(value) {
-		var result = 0;
-
-		// find the left most bit number
-		if ((value & 128) !== 0) {
-			result = 0;
-		} else {
-			if ((value & 64) !== 0) {
-				result = 1;
-			} else {
-				if ((value & 32) !== 0) {
-					result = 2;
-				} else {
-					if ((value & 16) !== 0) {
-						result = 3;
-					} else {
-						if ((value & 8) !== 0) {
-							result = 4;
-						} else {
-							if ((value & 4) !== 0) {
-								result = 5;
-							} else {
-								if ((value & 2) !== 0) { 
-									result = 6;
-								} else {
-									if ((value & 1) !== 0) {
-										result = 7;
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		// return the bit number
-		return result;
-	};
-
-	// get the offset from the right most bit
-	Life.prototype.rightBitOffset = function(value) {
-		var result = 0;
-
-		// find the right most bit number
-		if ((value & 1) !== 0) {
-			result = 7;
-		} else {
-			if ((value & 2) !== 0) {
-				result = 6;
-			} else {
-				if ((value & 4) !== 0) {
-					result = 5;
-				} else {
-					if ((value & 8) !== 0) {
-						result = 4;
-					} else {
-						if ((value & 16) !== 0) {
-							result = 3;
-						} else {
-							if ((value & 32) !== 0) {
-								result = 2;
-							} else {
-								if ((value & 64) !== 0) {
-									result = 1;
-								} else {
-									if ((value & 128) !== 0) {
-										result = 0;
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		// return the bit number
-		return result;
-	};
-
 
 	// get the offset from the left most bit
 	Life.prototype.leftBitOffset16 = function(value) {
@@ -9696,7 +9645,9 @@
 			nextTileGrid = this.tileGrid;
 
 			// get alternate lookup buffer if specified
-			indexLookup63 = this.indexLookup632;
+			if (this.altSpecified) {
+				indexLookup63 = this.indexLookup632;
+			}
 		} else {
 			grid = this.grid16;
 			nextGrid = this.nextGrid16;
@@ -10898,7 +10849,9 @@
 			nextTileGrid = this.tileGrid;
 
 			// get alternate lookup buffer if specified
-			indexLookup63 = this.indexLookup632;
+			if (this.altSpecified) {
+				indexLookup63 = this.indexLookup632;
+			}
 		} else {
 			grid = this.grid16;
 			nextGrid = this.nextGrid16;

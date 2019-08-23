@@ -1,10 +1,17 @@
+Build 388
+- clicking on a Theme that is already active just closes Theme selection
+- reduced memory used by rules
+- improved Settings menu
+	- settings are now grouped into topics
+	- new Rule button that prompts for a new rule
+
 Build 387
 - added another alias
 - Generations rules now have brightness shading when using layers
 - hotkey Shift+"P" to toggle LOOP (when defined) wasn't working
 - performance improvement for THEMEs without history
 - START indicator now toggles AutoStart if defined
-	- hotkey Alt+"T" to toggle
+	- hotkey Alt+"O" to toggle
 	- if START disabled when LOOP defined then playback stops when Loop happens at T=0
 - STOP indicator now toggles Stop if defined
 	- hotkey Alt+"P" to toggle
