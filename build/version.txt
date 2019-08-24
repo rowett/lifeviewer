@@ -1,9 +1,14 @@
+Build 389
+- lock Layers and Depth controls if hex or triangular grid
+- added Wolfram aliases
+- improved multi-state pattern layers
+
 Build 388
-- clicking on a Theme that is already active just closes Theme selection
-- reduced memory used by rules
 - improved Settings menu
 	- settings are now grouped into topics
 	- new Rule button that prompts for a new rule
+- clicking on a Theme that is already active just closes Theme selection
+- reduced memory used by rules
 
 Build 387
 - added another alias

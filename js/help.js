@@ -1943,6 +1943,8 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "Alias names can be used as rule names in RLE", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "for example 'rule = HighLife'", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "* denotes duplicate rule and should be omitted", ctx, x, y, height, helpLine);
 
 		// display alias table
 		view.wrapHelpText = true;

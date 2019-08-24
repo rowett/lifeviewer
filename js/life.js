@@ -15157,7 +15157,15 @@
 			// compute the transparent target
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
-				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				if (this.historyStates === 0) {
+					transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				} else {
+					if (i < layerTarget / 2) {
+						transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+					} else {
+						transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+					}
+				}
 			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
@@ -15538,7 +15546,15 @@
 			// compute the transparent target
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
-				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				if (this.historyStates === 0) {
+					transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				} else {
+					if (i < layerTarget / 2) {
+						transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+					} else {
+						transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+					}
+				}
 			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
@@ -15844,7 +15860,15 @@
 			// compute the transparent target
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
-				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				if (this.historyStates === 0) {
+					transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				} else {
+					if (i < layerTarget / 2) {
+						transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+					} else {
+						transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+					}
+				}
 			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
@@ -16127,7 +16151,15 @@
 			// compute the transparent target
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
-				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				if (this.historyStates === 0) {
+					transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				} else {
+					if (i < layerTarget / 2) {
+						transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+					} else {
+						transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+					}
+				}
 			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
@@ -16702,7 +16734,15 @@
 			// compute the transparent target
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
-				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				if (this.historyStates === 0) {
+					transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				} else {
+					if (i < layerTarget / 2) {
+						transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+					} else {
+						transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+					}
+				}
 			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
@@ -17152,7 +17192,15 @@
 			// compute the transparent target
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
-				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				if (this.historyStates === 0) {
+					transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				} else {
+					if (i < layerTarget / 2) {
+						transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+					} else {
+						transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+					}
+				}
 			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
@@ -17585,7 +17633,15 @@
 			// compute the transparent target
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
-				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				if (this.historyStates === 0) {
+					transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				} else {
+					if (i < layerTarget / 2) {
+						transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+					} else {
+						transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+					}
+				}
 			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}
@@ -18095,7 +18151,15 @@
 			// compute the transparent target
 			if (this.multiNumStates > 2) {
 				// use number of generations states as maximum
-				transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				if (this.historyStates === 0) {
+					transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				} else {
+					if (i < layerTarget / 2) {
+						transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+					} else {
+						transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+					}
+				}
 			} else {
 				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
 			}

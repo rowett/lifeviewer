@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 388,
+		/** @const {number} */ versionBuild : 389,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1368,7 +1368,7 @@
 		this.helpColoursButton = null;
 		this.helpAliasesButton = null;
 		this.helpMemoryButton = null;
-		this.helpAnnoationsButton = null;
+		this.helpAnnotationsButton = null;
 
 		// help section list
 		this.helpSectionList = null;
@@ -4580,8 +4580,8 @@
 		me.stepRange.locked = me.controlsLocked && me.waypointsDefined;
 		me.themeButton.locked = me.controlsLocked && me.waypointsDefined;
 		me.zoomItem.locked = me.controlsLocked;
-		me.layersItem.locked = me.controlsLocked && me.waypointsDefined;
-		me.depthItem.locked = me.controlsLocked && me.waypointsDefined;
+		me.layersItem.locked = (me.controlsLocked && me.waypointsDefined) || (me.engine.isHex && me.engine.useHexagons) || me.engine.isTriangular;
+		me.depthItem.locked = (me.controlsLocked && me.waypointsDefined) || (me.engine.isHex && me.engine.useHexagons) || me.engine.isTriangular; 
 
 		// check if the mouse wheel scrolled
 		if (me.wheelDelta) {
@@ -10270,6 +10270,8 @@
 
 	// update help topic buttons position based on window height
 	View.prototype.updateTopicButtonsPosition = function() {
+		var y = 0;
+
 		if (this.displayHeight < ViewConstants.minMenuHeight) {
 			this.helpKeysButton.setPosition(Menu.northWest, 10, 50);
 			this.helpScriptsButton.setPosition(Menu.north, 0, 50);
@@ -10284,14 +10286,19 @@
 				this.helpMemoryButton.setPosition(Menu.north, 0, 150);
 			}
 		} else {
-			this.helpKeysButton.setPosition(Menu.north, 0, 40);
-			this.helpScriptsButton.setPosition(Menu.north, 0, 90);
-			this.helpInfoButton.setPosition(Menu.north, 0, 140);
-			this.helpThemesButton.setPosition(Menu.north, 0, 190);
-			this.helpColoursButton.setPosition(Menu.north, 0, 240);
-			this.helpAliasesButton.setPosition(Menu.north, 0, 290);
-			this.helpMemoryButton.setPosition(Menu.north, 0, 340);
-			this.helpAnnotationsButton.setPosition(Menu.north, 0, 390);
+			if (this.waypointManager.numAnnotations() > 0) {
+				y = -175;
+			} else {
+				y = -150;
+			}
+			this.helpKeysButton.setPosition(Menu.middle, 0, y);
+			this.helpScriptsButton.setPosition(Menu.middle, 0, y + 50);
+			this.helpInfoButton.setPosition(Menu.middle, 0, y + 100);
+			this.helpThemesButton.setPosition(Menu.middle, 0, y + 150);
+			this.helpColoursButton.setPosition(Menu.middle, 0, y + 200);
+			this.helpAliasesButton.setPosition(Menu.middle, 0, y + 250);
+			this.helpMemoryButton.setPosition(Menu.middle, 0, y + 300);
+			this.helpAnnotationsButton.setPosition(Menu.middle, 0, y + 350);
 		}
 	};
 
@@ -10680,11 +10687,11 @@
 		this.infoBarButton.toolTip = ["toggle InfoBar"];
 
 		// previous universe button
-		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -200, 120, 40, "Prev");
+		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -90, 120, 40, "Prev");
 		this.prevUniverseButton.toolTip = "go to previous universe";
 
 		// next universe button
-		this.nextUniverseButton = this.viewMenu.addButtonItem(this.nextUniversePressed, Menu.south, 135, -200, 120, 40, "Next");
+		this.nextUniverseButton = this.viewMenu.addButtonItem(this.nextUniversePressed, Menu.south, 135, -90, 120, 40, "Next");
 		this.nextUniverseButton.toolTip = "go to next universe";
 
 		// close button
