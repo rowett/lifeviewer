@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/parser.js"></script>
+		<script src="../js/keys.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Normal width</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 15, y = 8, rule = B3-y5cr/S234w6n
+3b2o2b2o3b2o$3b2o2b2o3b2o4$2o2b2o$2obo2bo2b2o2b2o$4b2o3b2o2b2o!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<h2>Wider than normal width</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 15, y = 8, rule = B3-y5cr/S234w6n
+3b2o2b2o3b2o$3b2o2b2o3b2o4$2o2b2o$2obo2bo2b2o2b2o$4b2o3b2o2b2o!
+[[ POPUPWIDTH 1300 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<h2>Copperhead TRACKLOOP</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+b2o2b2o$3b2o$3b2o$obo2bobo$o6bo2$o6bo$b2o2b2o$2b4o2$3b2o$3b2o!
+#C [[ GRID GRIDMAJOR 0 THEME 6 GPS 5 ]]
+#C [[ TRACKLOOP 10 0 -1/10 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<h2>Copperhead TRACKLOOP with GRIDMAJOR</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+b2o2b2o$3b2o$3b2o$obo2bobo$o6bo2$o6bo$b2o2b2o$2b4o2$3b2o$3b2o!
+#C [[ GRID GRIDMAJOR 5 THEME 6 GPS 5 ]]
+#C [[ TRACKLOOP 10 0 -1/10 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<h2>Copperhead TRACK</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+b2o2b2o$3b2o$3b2o$obo2bobo$o6bo2$o6bo$b2o2b2o$2b4o2$3b2o$3b2o!
+#C [[ GRID GRIDMAJOR 0 THEME 6 GPS 5 ]]
+#C [[ TRACK 0 -1/10 COLOR STARS Black ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>TRACKBOX c/4 at the front, c/12 at the back</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+#C growing spaceship based on tubstretcher --
+#C c/4 at the front, c/12 at the back.
+#C Jason Summers, 30 June 1999
+x = 161, y = 176, rule = B3/S23
+116b3o2$120b2o$122bo10b3o$116b4obo11bo$116b5o2$133bo2bo$116bobo14bob2o
+$116bobo14bo2bo$117bo15bobo5b2o$116bobo14b3o5b2o$117b2o$117bo3$113bobo
+15b3o$104bob3o4bobo13b2ob2o$102b2obo4bo5bo11bobob2o15b2o$104b2o4bo2bo
+2bo11b2o19b2o$110bo2bo2bo11b2o$109bo4bo$105bo2bo16b2o$106b2o17b2o$87b
+3o49b3o$86bo3bo47bo3bo$86bo3bo27bo19bo3bo$86bo3bo13bo12bobo18bo3bo$
+104bo12bobo$87b2ob2o12bo13bo20b2ob2o$88bo2bo48bo2bo$89bobo14bo34bobo$
+90b2o13bobo34b2o$87bo3bo14bo32bo3bo$86bobobobo45bobobobo$87bo51bo5$
+133bo$133bo7bo$133bo5b3o9b2o$132b2o3bobo11b2o$138bo2bo$92b2o43bo2b2o$
+92b2o3$83bo$82b3o74b2o$81b2o2bo73b2o$80b2o2b2o$81b2o17b2o$82b5o13b2o$
+86b2o$84bo2bo53b2o3b2o$85b2o12b2o38b4o3bobo$99b2o37bo2bo2bo3bo$132bo5b
+o4bo3b2o$120bo10b3o5bo3bo$108b2o9b3o7b6o9bo$83b3o22b2o8bo13b2o$83bobo
+33b2ob2o5bob2o$83bo36b3ob2o4b2o$83bo2bo20b2o13b4o$83bo3bo19b2o$86b2o$
+83b2o3bo$65b3o15b3obo28b2o$64bo14b2o6bo28b2o$63bo4b2o9b3o$62bo3bo10bob
+3o11bo$62bo2bo4bo4b2o15bob2o19b2o$37b2o15bo7bo3bo3bo4b2o14bo6bo7bo8b2o
+$25b3o9bobo13b3o7b2obob3o19b4o4bo6b3o$25bo2b3o6bo9bo18bo23b2o2bo3bo$
+26bobo16b2obo4b3o11b4o18b2o5b2o7b3o$31bo4b2o2bo3b2o2bo5b2ob2o10b2o11bo
+b2o3bo16b2ob2o$29bo6b2o2bob2o2bo9bo25bo25bo$31bob2obo3b5o39b2o55bo$40b
+2o41b3o55bobo$32bo2b6o29bo12bobo55b2o$33b7o30bo12bobo$35b3o16bo15bo13b
+o21bo$53bobo49bobo$38bo15bo17bo33bo$37bobo31bobo$38bobo12b2o17bo32b2o$
+39bobo10bobo49bobo$40bobo$41bobo8b3obobo45b3obobo$42bobo11b3o49b3o$43b
+obo10b2o50b2o$44bobo$45bobo48b5o7bo$46bobo45b2o5b2o4bobo$47bobo44bo7bo
+4bo9b2o$48bobo43b2o7bo3bo2bo6b2o$49bobo44b2o6bo3b3o$50bobo5b2o39bo$40b
+obo8bobo4b2o39bo4bo$26bobo7bo2bo2bo9bobo45b2obo$25b2ob2o5bobob2obo10bo
+bo$26bob2o6bo17bobo$30bo11b3o10bobo67b2o$29bo13b2o11bobo66b2o$29bo12b
+2o7b2o4bobo$51b2o5bobo5b2o$59bobo4b2o47bo3bo$60bobo50bo2bob3o$23b3o35b
+obo52bobobo$22bo3bo35bobo22bo26bo10bo$21bo4bo36bobo20b3o24b2o10bobo$
+20bo3bo39bobo18b2ob2o14b2o8bobo3bo4b2o$20bo2bob3o31b2o4bobo18b3o9b2o4b
+2o8bobo$20bo7bo30b2o5bobo5b2o11bo10b2o5b2o$22bo3bobo38bobo4b2o11bobo$
+22bo3bob2o38bobo16b4o8bob2o$24b3ob2o3b3o33bobo18bo7b2obo$38bo31bobo28b
+2o$37bobo31bobo12b2ob2o8bo$38bo33bobo10bo5bo$67b2o4bobo10bo3bo$24b2o
+41b2o5bobo5b2o3bo$24b2o49bobo4b2o$23bo52bobo$77bobo$21b3o54bobo$3bo17b
+3o55bobo$2b3o17b2o56bobo$b2ob2o23b2o44b2o4bobo$2o3bo7b5ob2o11b3o40b2o
+5bobo$bobobobo5bo5b2o8bob2o2bo47bobo$2b2obo2bo4b2o5bo8bob4o30bo7bo10bo
+bo$5b2obo7bobo45b3o5bobo10bobo$6b2o9b2ob2o41b2ob4o2bo2bo10bobo$19bo44b
+3o2bo17bobo$28b2o35bo2b2o2bo15bobo$26b3o40b2obobo14bobo$25b3o45bo16bob
+o9bo$24bobo64bobo7bo$23bo2bo65bobo6b3o$24bo2bo19b3o43bobo$24bo22bobo
+44bobo12bo$28bo17bo3bo44bobo11bobo$28bo17bo3bo45bobo10b2o$25b3o18bo19b
+2o2bo26bobo$8b2o36bo4b2o13b2ob2obo25bobo$8b2o36bo6bo45bobo$47bo5bo15b
+3o20b2o6bobo$47b2o20bobo19bobo7bobo$49bo3bo39bo8bobo$40bobo7bobo12b2o
+36bo$26bobo7bo2bo2bo22b3o$25b2ob2o5bobob2obo24bo$16b2o8bob2o6bo10b3o$
+16b2o12bo11b3obo3bo$29bo13b2o2bo2bo$29bo12b2o5b2o3$61bo2bo$63b4o$24b2o
+34bo$24b2o35b2o2b2o$48b2o$48b2o11b2o$60b2o$61b2o2bo5$56b2o$56b2o!
+#C [[ TRACKBOX -1/12 -1/12 -1/4 -1/4 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>TRACKBOX Paul Schick's c/2 and 6c/13 blinker</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 22, y = 19, rule = B3/S23
+12b2o$8b4ob2o$8b6o$9b4o$18b2o$17b4o$17b2ob2o$10bo2bo5b2o$bo8bo3bo$2o7b
+o4b2o$bo8bo3bo$10bo2bo5b2o$17b2ob2o$17b4o$18b2o$9b4o$8b6o$8b4ob2o$12b
+2o!
+#C [[ TRACKBOX 1/2 0 6/13 0 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<h2>TRACKLOOP Glider slow GPS</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 3, y = 3, rule = Life
+3o$o$bo!
+#C [[ TRACKLOOP 4 -1/4 -1/4 GRID GRIDMAJOR 0 GPS 1 ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<h2>TRACK this!</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+#C [[ TRACKBOX 0 0 -1/12 -1/12 ]]
+#C [[ THEME 4 STARS STOP 3430 ]]
+x = 51, y = 34, rule = B3/S23
+32bo$30b2ob2o$32bo$47b2o$46bo2bo$33b2o11b2ob2o$32bo2bo11bo$31b2o3bo10b
+3o$31bo4bo$31bo3bo$32bo2bo$33bo3$21bo7bo14b2o$20b3o5bobo12bob2o$19b2ob
+4o2bo2bo10b2o$20b3o2bo18bo$21bo2b2o2bo$25b2obobo$29bo10b2o$40b2o2$3o$
+4bo28bo$4b2o13bo12bobo$4bo2bo11bo12bobo$5bobo11bo13bo$5bo$4b2o15bo$3bo
+bo14bobo$5b2o14bo$2b2o$4bo!
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<h2>TRACK with Waypoints</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">Show in Viewer</a><br>
+			<textarea rows=10 cols=70>
+x = 3, y = 3, rule = Life
+3o$o$bo!
+#C [[ TRACKLOOP 4 -1/4 -1/4 GRID GRIDMAJOR 0 GPS 1 ]]
+#C [[ T 100 X -25 Y -25 LINEAR ALL ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas> 
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>
