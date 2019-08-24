@@ -2,6 +2,7 @@ Build 389
 - lock Layers and Depth controls if hex or triangular grid
 - added Wolfram aliases
 - improved multi-state pattern layers
+- LifeViewer window close button now works on mobile
 
 Build 388
 - improved Settings menu
