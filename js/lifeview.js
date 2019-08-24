@@ -6620,7 +6620,7 @@
 					}
 
 					// check for on or off
-					if (loopChange > 0 || waypointsChange > 0 || trackChange > 0 || autoStartChange > 0 || autoFitChange > 0) {
+					if (stopChange > 0 || loopChange > 0 || waypointsChange > 0 || trackChange > 0 || autoStartChange > 0 || autoFitChange > 0) {
 						message += " On";
 					} else {
 						message += " Off";
