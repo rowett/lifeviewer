@@ -13185,6 +13185,7 @@
 
 			// set the onclick
 			registerEvent(anchorItem, "click", hideCallback, false);
+			registerEvent(anchorItem, "touchend", hideCallback, false);
 
 			// create enclosing div and set style
 			divItem = document.createElement("div");
