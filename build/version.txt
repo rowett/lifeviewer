@@ -1,3 +1,6 @@
+Build 391
+- dim screen when Settings menu displayed
+
 Build 390
 - fixed a graphical glitch for THEMEs with no history at STEP > 1
 - corrected and ordered Wolfram aliases

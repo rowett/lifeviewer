@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 390,
+		/** @const {number} */ versionBuild : 391,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4741,6 +4741,13 @@
 		// hide the UI controls if help or errors are displayed
 		me.updateUIForHelp(me.displayHelp || me.scriptErrors.length);
 
+		// dim display if settings displayed
+		if (me.navToggle.current[0]) {
+			me.mainContext.globalAlpha = 0.5;
+			me.mainContext.fillStyle = "black";
+			me.mainContext.fillRect(0, 0, me.mainCanvas.width, me.mainCanvas.height);
+			me.mainContext.globalAlpha = 1;
+		}
 		// set the auto update mode
 		me.menuManager.setAutoUpdate(updateNeeded);
 	};
