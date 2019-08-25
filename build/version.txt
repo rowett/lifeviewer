@@ -1,3 +1,8 @@
+Build 390
+- fixed a graphical glitch for THEMEs with no history at STEP > 1
+- corrected and ordered Wolfram aliases
+- disable drawing, selecting and panning while settings displayed
+
 Build 389
 - lock Layers and Depth controls if hex or triangular grid
 - added Wolfram aliases

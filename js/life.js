@@ -232,9 +232,6 @@
 		// allocator
 		this.allocator = new Allocator();
 
-		// last small grid zoom
-		/** @type {number} */ this.lastSmallGridZoom = -1;
-
 		// flag whether alternate rules specified
 		/** @type {boolean} */ this.altSpecified = false;
 
@@ -12985,30 +12982,6 @@
 		}
 	};
 
-	// convert actual zoom into a zoom level
-	Life.prototype.zoomLevel = function() {
-		var result = 1,
-			camZoom = this.camZoom;
-
-		if (camZoom >= 0.5 && camZoom < 1) {
-			result = 2;
-		} else {
-			if (camZoom >= 0.25 && camZoom < 0.5) {
-				result = 4;
-			} else {
-				if (camZoom >= 0.125 && camZoom < 0.25) {
-					result = 8;
-				} else {
-					if (camZoom < 0.125) {
-						result = 16;
-					}
-				}
-			}
-		}
-
-		return result;
-	};
-
 	// create the small colour grids based on zoom level
 	Life.prototype.createSmallColourGrids = function() {
 		var camZoom = this.camZoom;
@@ -13021,7 +12994,6 @@
 			} else {
 				this.create2x2ColourGridNoHistory16(this.colourGrid16, this.smallColourGrid);
 			}
-			this.lastSmallGridZoom = 2;
 		} else {
 			// check if 0.25 <= zoom < 0.5
 			if (camZoom >= 0.25 && camZoom < 0.5) {
@@ -13031,7 +13003,6 @@
 				} else {
 					this.create4x4ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
 				}
-				this.lastSmallGridZoom = 4;
 			} else {
 				// check if 0.125 <= zoom < 0.25
 				if (camZoom >= 0.125 && camZoom < 0.25) {
@@ -13041,7 +13012,6 @@
 					} else {
 						this.create8x8ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
 					}
-					this.lastSmallGridZoom = 8;
 				} else {
 					// check if zoom < 0.125
 					if (camZoom < 0.125) {
@@ -13051,7 +13021,6 @@
 						} else {
 							this.create16x16ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
 						}
-						this.lastSmallGridZoom = 16;
 					}
 				}
 			}
@@ -13495,6 +13464,9 @@
 		    bottomY = 0, topY = 0, leftX = 0,
 		    tiles = 0, nextTiles = 0,
 
+			// whether the tile is alive
+			tileAlive = 0,
+
 		    // set tile height
 		    ySize = this.tileY,
 
@@ -13548,8 +13520,8 @@
 			// scan each set of tiles
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
-				tiles = tileGridRow[tw];
-				nextTiles = tiles;
+				tiles = tileGridRow[tw] | colourTileHistoryRow[tw];
+				nextTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -13557,6 +13529,9 @@
 					for (b = 15; b >= 0; b -= 1) {
 						// check if this tile is occupied
 						if ((tiles & (1 << b)) !== 0) {
+							// flag nothing alive in the tile
+							tileAlive = 0;
+
 							// process each row
 							h = bottomY;
 							while (h < topY) {
@@ -13572,6 +13547,7 @@
 
 								// determine if anything is alive on the grid
 								this.anythingAlive |= nextCell;
+								tileAlive |= nextCell;
 
 								// lookup next colour
 								colourGridRow[cr] = ((nextCell & 32768) >> 9) | (nextCell & 16384);
@@ -13594,6 +13570,12 @@
 								// next row
 								h += 1;
 							}
+
+							// check if the tile was alive
+							if (tileAlive) {
+								// update tile flag
+								nextTiles |= (1 << b);
+							}
 						}
 
 						// next tile columns
@@ -13606,7 +13588,7 @@
 
 				// save the tile group
 				colourTileRow[tw] = nextTiles;
-				colourTileHistoryRow[tw] = nextTiles;
+				colourTileHistoryRow[tw] |= nextTiles;
 			}
 
 			// next tile row
@@ -14900,15 +14882,7 @@
 		} else {
 			// create small colour grids if zoomed out
 			if (this.camZoom < 1) {
-				if (!(this.themeHistory || this.isHROT)) {
-					// clear the small colour grid if there is no theme history and the zoom level has changed
-					if (this.lastSmallGridZoom !== this.zoomLevel()) {
-						this.smallColourGrid.whole.fill(0);
-					}
-				}
 				this.createSmallColourGrids();
-			} else {
-				this.lastSmallGridZoom = 1;
 			}
 
 			// check if zoom < 0.125x

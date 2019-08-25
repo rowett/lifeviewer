@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 389,
+		/** @const {number} */ versionBuild : 390,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -7237,26 +7237,29 @@
 		if (x !== -1 && y !== -1 && me.menuManager.hasFocus) {
 			// check if this is a drag or cancel drag
 			if (dragOn) {
-				// check if help is displayed
-				if (me.displayHelp) {
-					me.dragHelp(me, y);
-				} else {
-					// check if errors are displayed
-					if (me.displayErrors) {
-						me.dragErrors(me, y);
+				// ignore if settings displayed
+				if (!me.navToggle.current[0]) {
+					// check if help or settings displayed
+					if (me.displayHelp) {
+						me.dragHelp(me, y);
 					} else {
-						// check if panning
-						if (!(me.drawing || me.selecting) || fromKey) {
-							me.dragPan(me, x, y);
+						// check if errors are displayed
+						if (me.displayErrors) {
+							me.dragErrors(me, y);
 						} else {
-							// check if drawing
-							if (me.drawing) {
-								// drawing
-								me.dragDraw(me, x, y);
+								// check if panning
+							if (!(me.drawing || me.selecting) || fromKey) {
+								me.dragPan(me, x, y);
 							} else {
-								if (me.selecting) {
-									// selecting
-									me.dragSelect(me, x, y);
+								// check if drawing
+								if (me.drawing) {
+									// drawing
+									me.dragDraw(me, x, y);
+								} else {
+									if (me.selecting) {
+										// selecting
+										me.dragSelect(me, x, y);
+									}
 								}
 							}
 						}
@@ -7269,32 +7272,37 @@
 			} else {
 				// check if just got focus
 				if (me.lastDragX !== -1) {
-					// drag finished so check for drawing
-					if (me.drawing) {
-						// see if pick mode was active
-						if (me.pickMode) {
-							me.dragEndPick(me, x, y);
+					// ignore if help or settings displayed
+					if (!(me.displayHelp || me.navToggle.current[0])) {
+						// drag finished so check for drawing
+						if (me.drawing) {
+							// see if pick mode was active
+							if (me.pickMode) {
+								me.dragEndPick(me, x, y);
+							} else {
+								// end of drawing
+								me.dragEndDraw(me);
+							}
 						} else {
-							// end of drawing
-							me.dragEndDraw(me);
+							if (me.selecting) {
+								// end of selecting
+								me.dragEndSelect(me);
+							}
 						}
-					} else {
-						if (me.selecting) {
-							// end of selecting
-							me.dragEndSelect(me);
-						}
+	
+						// clear last drag position
+						me.lastDragX = -1;
+						me.lastDragY = -1;
 					}
-
-					// clear last drag position
-					me.lastDragX = -1;
-					me.lastDragY = -1;
 				} else {
 					// just got focus
-					if (me.pickMode) {
-						me.menuManager.notification.notify("Now click on a cell", 15, 180, 15, true);
-					} else {
-						if (me.isPasting) {
-							me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
+					if (!(me.displayHelp || me.navToggle.current[0])) {
+						if (me.pickMode) {
+							me.menuManager.notification.notify("Now click on a cell", 15, 180, 15, true);
+						} else {
+							if (me.isPasting) {
+								me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
+							}
 						}
 					}
 				}

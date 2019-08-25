@@ -27,16 +27,16 @@
 		this.sectionNames.push("1D");
 		this.aliases.push(["Wolfram", ""]);
 		this.aliases.push(["Brownian motion", "W54"]);
-		this.aliases.push(["Wolfram 110", "W110"]);
 		this.aliases.push(["Fishing-net", "W110"]);
-		this.aliases.push(["Wolfram 22", "W22"]);
 		this.aliases.push(["Heavy triangles", "W22"]);
 		this.aliases.push(["Linear A", "W90"]);
 		this.aliases.push(["Linear B", "W150"]);
 		this.aliases.push(["Pascal's Triangle", "W18"]);
-		this.aliases.push(["Wolfram 30", "W30"]);
 		this.aliases.push(["Randomizer 1", "W30"]);
-		this.aliases.push(["Randomizer 2", "45"]);
+		this.aliases.push(["Randomizer 2", "W45"]);
+		this.aliases.push(["Wolfram 22", "W22"]);
+		this.aliases.push(["Wolfram 30", "W30"]);
+		this.aliases.push(["Wolfram 110", "W110"]);
 
 		// add 2 state totalistic aliases
 		this.sectionNames.push("OT M");
