@@ -13207,6 +13207,7 @@
 			divItem.style.display = "none";
 			divItem.style.position = "fixed";
 			divItem.style.border = "1px solid rgb(128,128,128)";
+			divItem.style.zIndex = "1";
 
 			// put it top right
 			divItem.style.left = "2048px";

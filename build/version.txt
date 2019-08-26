@@ -1,5 +1,6 @@
 Build 391
 - dim screen when Settings menu displayed
+- ensure LifeViewer window appears above other page elements
 
 Build 390
 - fixed a graphical glitch for THEMEs with no history at STEP > 1
