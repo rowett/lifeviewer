@@ -1,6 +1,10 @@
+Build 392
+- fixed an issue where rotate selection was incorrect when grid grew
+- performance improvement for editing tasks for 2-state Life-like and [R]History patterns
+
 Build 391
 - dim screen when Settings menu displayed
-- ensure LifeViewer window appears above other page elements
+- ensure window appears above other page elements
 
 Build 390
 - fixed a graphical glitch for THEMEs with no history at STEP > 1

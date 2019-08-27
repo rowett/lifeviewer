@@ -1,3 +1,4 @@
+/* eslint-disable no-proto */
 // Life
 // written by Chris Rowett
 
@@ -8,7 +9,7 @@
 	"use strict";
 
 	// define globals
-	/* global Keywords littleEndian BoundingBox AliasManager PatternManager Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager HROT ViewConstants arrayFill */
+	/* global Reflect Keywords littleEndian BoundingBox AliasManager PatternManager Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager HROT ViewConstants arrayFill */
 
 	// Life constants
 	/** @const */
@@ -2285,9 +2286,411 @@
 		}
 	};
 
-	// set state
+	// overridden by specific function below
+	Life.prototype.setState = null;
+	
+	// get state (2 state patterns without bounded grid or [R]History)
 	/** @result {number} */
-	Life.prototype.setState = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
+	Life.prototype.setState2 = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
+		var grid = this.grid16,
+			tileGrid = this.tileGrid,
+			colourGrid = this.colourGrid,
+			colourTileGrid = this.colourTileGrid,
+			colourTileHistoryGrid = this.colourTileHistoryGrid,
+			zoomBox = this.zoomBox,
+			historyBox = this.historyBox,
+			cellAsBit = 0,
+			cellAsTileBit = 0,
+
+			// whether cell should be alive in bit grid
+			/** @type {boolean} */ bitAlive = false,
+
+			// whether the cell is on the grid
+			/** @type {boolean} */ onGrid = true,
+
+			// whether a cell was or became LifeHistory state6
+			/** @type {number} */ result = 0,
+
+			// left target for next tile
+			/** @type {number} */ leftTarget = (this.isTriangular ? 1 : 0),
+
+			// right target to next tile
+			/** @type {number} */ rightTarget = (this.isTriangular ? 14 : 15),
+
+			// x coordinate for boundary check
+			/** @type {number} */ cx = 0;
+
+		// check if the cell is on the grid
+		if (!((x === (x & this.widthMask)) && (y === (y & this.heightMask)))) {
+			onGrid = false;
+			// attempt to grow the grid
+			while (this.width < this.maxGridSize && !((x === (x & this.widthMask)) && (y === (y & this.heightMask)))) {
+				this.growGrid();
+				x += this.width >> 2;
+				y += this.height >> 2;
+			}
+			// check if the cell is on the expanded grid
+			if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
+				// cell on expanded grid
+				onGrid = true;
+				// grid has changed so lookup again
+				grid = this.grid16;
+				tileGrid = this.tileGrid;
+				colourGrid = this.colourGrid;
+				colourTileGrid = this.colourTileGrid;
+				colourTileHistoryGrid = this.colourTileHistoryGrid;
+			}
+		}
+
+		// draw if on the grid
+		if (onGrid) {
+			// get correct grid for current generation
+			if ((this.counter & 1) !== 0) {
+				grid = this.nextGrid16;
+				tileGrid = this.nextTileGrid;
+			}
+
+			// get the cell as a bit mask and tile mask
+			cellAsBit = 1 << (~x & 15);
+			cellAsTileBit = 1 << (~(x >> 4) & 15);
+			bitAlive = ((state & 1) === 1);
+
+			// draw alive or dead
+			if (bitAlive) {
+				// mark a cell is alive
+				this.anythingAlive = 1;
+
+				// adjust population if cell was dead
+				if ((grid[y][x >> 4] & cellAsBit) === 0) {
+					this.population += 1;
+				}
+				// set cell
+				colourGrid[y][x] = this.aliveStart;
+				colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+				colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
+				grid[y][x >> 4] |= cellAsBit;
+				tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+				// check left boundary
+				cx = x & 15;
+				if ((x > 0) && (cx <= leftTarget)) {
+					x -= (cx + 1);
+					tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					x += (cx + 1);
+				} else {
+					// check right boundary
+					if ((x < this.width - 1) && (cx >= rightTarget)) {
+						x += (16 - cx);
+						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						x -= (16 - cx);
+					}
+				}
+				// check bottom boundary
+				if ((y > 0) && ((y & 15) === 0)) {
+					y -= 1;
+					tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					if ((x > 0) && (cx <= leftTarget)) {
+						x -= (cx + 1);
+						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						x += (cx + 1);
+					} else {
+						if ((x < this.width - 1) && (cx >= rightTarget)) {
+							x += (16 - cx);
+							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+							x -= (16 - cx);
+						}
+					}
+					y += 1;
+				} else {
+					// check top boundary
+					if ((y < this.height - 1) && ((y & 15) === 15)) {
+						y += 1;
+						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						if ((x > 0) && (cx <= leftTarget)) {
+							x -= (cx + 1);
+							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+							x += (cx + 1);
+						} else {
+							if ((x < this.width - 1) && (cx >= rightTarget)) {
+								x += (16 - cx);
+								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+								x -= (16 - cx);
+							}
+						}
+						y -= 1;
+					}
+				}
+			} else {
+				// adjust population if cell was alive
+				if ((grid[y][x >> 4] & cellAsBit) !== 0) {
+					this.population -= 1;
+				}
+				// clear cell
+				if (deadZero) {
+					colourGrid[y][x] = this.unoccupied;
+				} else {
+					colourGrid[y][x] = this.deadStart;
+				}
+				colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+				colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
+				grid[y][x >> 4] &= ~cellAsBit;
+			}
+
+			// if the state is not dead (or history) then update bounding box
+			if (state > 0) {
+				if (x < zoomBox.leftX) {
+					zoomBox.leftX = x;
+				}
+				if (x > zoomBox.rightX) {
+					zoomBox.rightX = x;
+				}
+				if (y < zoomBox.bottomY) {
+					zoomBox.bottomY = y;
+				}
+				if (y > zoomBox.topY) {
+					zoomBox.topY = y;
+				}
+				if (x < historyBox.leftX) {
+					historyBox.leftX = x;
+				}
+				if (x > historyBox.rightX) {
+					historyBox.rightX = x;
+				}
+				if (y < historyBox.bottomY) {
+					historyBox.bottomY = y;
+				}
+				if (y > historyBox.topY) {
+					historyBox.topY = y;
+				}
+
+				// only shrink if the cell was on the boundary of the bounding box
+				if (x === zoomBox.leftX || x === zoomBox.rightX || y === zoomBox.topY || y === zoomBox.bottomY) {
+					// mark shrink needed
+					this.shrinkNeeded = true;
+				}
+			}
+		}
+
+		// return whether LifeHistory state 6 changed
+		return result;
+	};
+
+	// get state (2 state [R]History patterns without bounded grid)
+	/** @result {number} */
+	Life.prototype.setState2History = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
+		var grid = this.grid16,
+			tileGrid = this.tileGrid,
+			colourGrid = this.colourGrid,
+			colourTileGrid = this.colourTileGrid,
+			colourTileHistoryGrid = this.colourTileHistoryGrid,
+			overlayGrid = this.overlayGrid,
+			zoomBox = this.zoomBox,
+			historyBox = this.historyBox,
+			cellAsBit = 0,
+			cellAsTileBit = 0,
+
+			// current cell state
+			/** @type {number} */ current = 0,
+
+			// whether cell should be alive in bit grid
+			/** @type {boolean} */ bitAlive = false,
+
+			// whether the cell is on the grid
+			/** @type {boolean} */ onGrid = true,
+
+			// whether a cell was or became LifeHistory state6
+			/** @type {number} */ result = 0,
+
+			// left target for next tile
+			/** @type {number} */ leftTarget = (this.isTriangular ? 1 : 0),
+
+			// right target to next tile
+			/** @type {number} */ rightTarget = (this.isTriangular ? 14 : 15),
+
+			// x coordinate for boundary check
+			/** @type {number} */ cx = 0;
+
+		// check if the cell is on the grid
+		if (!((x === (x & this.widthMask)) && (y === (y & this.heightMask)))) {
+			onGrid = false;
+			// attempt to grow the grid
+			while (this.width < this.maxGridSize && !((x === (x & this.widthMask)) && (y === (y & this.heightMask)))) {
+				this.growGrid();
+				x += this.width >> 2;
+				y += this.height >> 2;
+			}
+			// check if the cell is on the expanded grid
+			if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
+				// cell on expanded grid
+				onGrid = true;
+				// grid has changed so lookup again
+				grid = this.grid16;
+				tileGrid = this.tileGrid;
+				colourGrid = this.colourGrid;
+				colourTileGrid = this.colourTileGrid;
+				colourTileHistoryGrid = this.colourTileHistoryGrid;
+				overlayGrid = this.overlayGrid;
+			}
+		}
+
+		// draw if on the grid
+		if (onGrid) {
+			// get correct grid for current generation
+			if ((this.counter & 1) !== 0) {
+				grid = this.nextGrid16;
+				tileGrid = this.nextTileGrid;
+			}
+
+			// get the cell as a bit mask and tile mask
+			cellAsBit = 1 << (~x & 15);
+			cellAsTileBit = 1 << (~(x >> 4) & 15);
+			bitAlive = ((state & 1) === 1);
+
+			// draw alive or dead
+			if (bitAlive) {
+				// mark a cell is alive
+				this.anythingAlive = 1;
+
+				// adjust population if cell was dead
+				if ((grid[y][x >> 4] & cellAsBit) === 0) {
+					this.population += 1;
+				}
+				// set cell
+				colourGrid[y][x] = this.aliveStart;
+				colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+				colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
+				grid[y][x >> 4] |= cellAsBit;
+				tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+				// check left boundary
+				cx = x & 15;
+				if ((x > 0) && (cx <= leftTarget)) {
+					x -= (cx + 1);
+					tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					x += (cx + 1);
+				} else {
+					// check right boundary
+					if ((x < this.width - 1) && (cx >= rightTarget)) {
+						x += (16 - cx);
+						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						x -= (16 - cx);
+					}
+				}
+				// check bottom boundary
+				if ((y > 0) && ((y & 15) === 0)) {
+					y -= 1;
+					tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					if ((x > 0) && (cx <= leftTarget)) {
+						x -= (cx + 1);
+						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						x += (cx + 1);
+					} else {
+						if ((x < this.width - 1) && (cx >= rightTarget)) {
+							x += (16 - cx);
+							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+							x -= (16 - cx);
+						}
+					}
+					y += 1;
+				} else {
+					// check top boundary
+					if ((y < this.height - 1) && ((y & 15) === 15)) {
+						y += 1;
+						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						if ((x > 0) && (cx <= leftTarget)) {
+							x -= (cx + 1);
+							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+							x += (cx + 1);
+						} else {
+							if ((x < this.width - 1) && (cx >= rightTarget)) {
+								x += (16 - cx);
+								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+								x -= (16 - cx);
+							}
+						}
+						y -= 1;
+					}
+				}
+			} else {
+				// adjust population if cell was alive
+				if ((grid[y][x >> 4] & cellAsBit) !== 0) {
+					this.population -= 1;
+				}
+				// clear cell
+				if (deadZero) {
+					colourGrid[y][x] = this.unoccupied;
+				} else {
+					colourGrid[y][x] = this.deadStart;
+				}
+				colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+				colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
+				grid[y][x >> 4] &= ~cellAsBit;
+			}
+
+			// check for LifeHistory
+			if (overlayGrid) {
+				// check if the cell used to be or has become state 6
+				current = overlayGrid[y][x];
+				if (current > 0) {
+					current = ViewConstants.stateMap.indexOf(current - 128);
+				}
+				if ((state === 6 && current !== 6) || (state !== 6 && current === 6)) {
+					result = 1;
+				}
+
+				// update colour grid if history state
+				if (state === 2) {
+					colourGrid[y][x] = LifeConstants.deadMin;
+				} else {
+					// update overlay grid if not
+					if (state === 0) {
+						overlayGrid[y][x] = 0;
+					} else {
+						overlayGrid[y][x] = ViewConstants.stateMap[state] + 128;
+					}
+				}
+			}
+
+			// if the state is not dead (or history) then update bounding box
+			if (state > 0) {
+				if (x < zoomBox.leftX) {
+					zoomBox.leftX = x;
+				}
+				if (x > zoomBox.rightX) {
+					zoomBox.rightX = x;
+				}
+				if (y < zoomBox.bottomY) {
+					zoomBox.bottomY = y;
+				}
+				if (y > zoomBox.topY) {
+					zoomBox.topY = y;
+				}
+				if (x < historyBox.leftX) {
+					historyBox.leftX = x;
+				}
+				if (x > historyBox.rightX) {
+					historyBox.rightX = x;
+				}
+				if (y < historyBox.bottomY) {
+					historyBox.bottomY = y;
+				}
+				if (y > historyBox.topY) {
+					historyBox.topY = y;
+				}
+
+				// only shrink if the cell was on the boundary of the bounding box
+				if (x === zoomBox.leftX || x === zoomBox.rightX || y === zoomBox.topY || y === zoomBox.bottomY) {
+					// mark shrink needed
+					this.shrinkNeeded = true;
+				}
+			}
+		}
+
+		// return whether LifeHistory state 6 changed
+		return result;
+	};
+
+	// get state (any pattern)
+	/** @result {number} */
+	Life.prototype.setStateAny = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
 		var grid = this.grid16,
 			tileGrid = this.tileGrid,
 			colourGrid = this.colourGrid,
@@ -2589,6 +2992,34 @@
 		return result;
 	};
 
+	// setup dynamic calls for performance
+	Life.prototype.setupDynamicCalls = function() {
+		var proto = null;
+		
+		// @ts-ignore
+		if (Reflect.getPrototypeOf) {
+			// @ts-ignore
+			proto = Reflect.getPrototypeOf(this);
+		} else {
+			// @ts-ignore
+			proto = this.__proto__;
+		}
+
+		// pick optimized get and set cell calls based on pattern type and bounded grid
+		if (this.multiNumStates == -1 && this.boundedGridType === -1 && !this.isNone) {
+			if (this.isLifeHistory) {
+				proto.getState = proto.getState2History;
+				proto.setState = proto.setState2History;
+			} else {
+				proto.getState = proto.getState2;
+				proto.setState = proto.setState2;
+			}
+		} else {
+			proto.getState = proto.getStateAny;
+			proto.setState = proto.setStateAny;
+		}
+	};
+
 	// allocate or clear graph data
 	Life.prototype.allocateGraphData = function(/** @type {boolean} */ allocate) {
 		var /** @const {number} */ entries = 1 << LifeConstants.popChunkPower;
@@ -2606,9 +3037,108 @@
 		}
 	};
 
-	// get state
+	// overridden by specific function below
+	Life.prototype.getState = null;
+
+	// get state (2 state patterns without bounded grid or [R]History)
 	/** @result {number} */
-	Life.prototype.getState = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
+	Life.prototype.getState2 = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
+		// result
+		var /** @type {number} */ result = 0,
+		    /** @type {number} */ col = 0;
+
+		// check if coordinates are on the grid
+		if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
+			// get the colour grid result
+			col = this.colourGrid[y][x];
+			if (rawRequested) {
+				result = col;
+			} else {
+				if (col <= this.deadStart) {
+					result = 0;
+				} else {
+					result = 1;
+				}
+			}
+		}
+
+		// return the result
+		return result;
+	};
+
+	// get state (2 state [R]History patterns without bounded grid)
+	/** @result {number} */
+	Life.prototype.getState2History = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
+		// result
+		var /** @type {number} */ result = 0,
+		    /** @type {number} */ col = 0,
+		    /** @type {number} */ over = 0,
+
+		    // get states 3, 4, 5 and 6
+		    /** @const {number} */ state3 = ViewConstants.stateMap[3] + 128,
+		    /** @const {number} */ state4 = ViewConstants.stateMap[4] + 128,
+		    /** @const {number} */ state5 = ViewConstants.stateMap[5] + 128,
+			/** @const {number} */ state6 = ViewConstants.stateMap[6] + 128;
+			
+		// check if coordinates are on the grid
+		if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
+			// get the colour grid result
+			col = this.colourGrid[y][x];
+
+			// check if raw data requested
+			if (rawRequested) {
+				result = col;
+			} else {
+				// check for the overlay grid
+				if (this.overlayGrid) {
+					// get the overlay colour
+					over = this.overlayGrid[y][x];
+
+					// states 4 and 6
+					if (over === state4 || over === state6) {
+						// if alive cell then use state 3
+						if (col >= this.aliveStart) {
+							over = state3;
+						}
+						result = ViewConstants.stateMap.indexOf(over - 128);
+					} else {
+						// states 3 and 5
+						if (over === state3 || over === state5) {
+							// if dead cell then use state 4
+							if (col < this.aliveStart) {
+								over = state4;
+							}
+							result = ViewConstants.stateMap.indexOf(over - 128);
+						} else {
+							if (col === this.unoccupied) {
+								result = 0;
+							} else {
+								if (col <= this.deadStart) {
+									result = 2;
+								} else {
+									result = 1;
+								}
+							}
+						}
+					}
+				} else {
+					// no overlay grid
+					if (col <= this.deadStart) {
+						result = 0;
+					} else {
+						result = 1;
+					}
+				}
+			}
+		}
+
+		// return the result
+		return result;
+	};
+
+	// get state (any pattern)
+	/** @result {number} */
+	Life.prototype.getStateAny = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
 		// result
 		var /** @type {number} */ result = 0,
 		    /** @type {number} */ col = 0,
@@ -2696,7 +3226,6 @@
 							}
 						}
 					}
-
 				} else {
 					// no overlay grid
 					if (col <= this.deadStart || col === this.boundedBorderColour) {

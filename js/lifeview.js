@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 391,
+		/** @const {number} */ versionBuild : 392,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -9238,6 +9238,10 @@
 				if (me.checkSelectionSize(me)) {
 					me.menuManager.notification.notify("Rotation does not fit on grid", 15, 180, 15, true);
 					rotateFits = false;
+				} else {
+					// recompute offset in case grid grew
+					xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
+					yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 				}
 			}
 
@@ -9437,7 +9441,7 @@
 						me.setStateWithUndo(x + xOff, y + yOff, numStates - state - 1, true);
 					}
 				}
-	
+
 				// check if shrink needed
 				me.engine.doShrink();
 	
@@ -11812,6 +11816,9 @@
 		} else {
 			this.clearPatternData();
 		}
+
+		// setup dynamic calls in the engine for performance
+		this.engine.setupDynamicCalls();
 
 		// show labels
 		this.showLabels = true;
