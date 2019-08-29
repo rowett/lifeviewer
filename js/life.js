@@ -49,6 +49,9 @@
 		// size of 6x3 hash lookup array
 		/** @const {number} */ hash63 : 262144,
 
+		// size of Margolus lookup array
+		/** @const {number} */ hashMargolus : 65536,
+
 		// size of 13bit triangular single cell hash lookup array
 		/** @const {number} */ hashTriangular : 8192,
 
@@ -319,6 +322,9 @@
 
 		// whether rule is _none_
 		/** @type {boolean} */ this.isNone = false;
+
+		// whether rule is Margolus
+		/** @type {boolean} */ this.isMargolus = false;
 
 		// whether rule is Wolfram
 		/** @type {number} */ this.wolframRule = -1;
@@ -625,6 +631,10 @@
 		// triangular lookup
 		this.indexLookupTri1 = null;
 		this.indexLookupTri2 = null;
+
+		// Margolus lookup
+		this.margolusLookup1 = null;
+		this.margolusLookup2 = null;
 
 		// colour lookup for next generation
 		this.colourLookup = this.allocator.allocate(Uint16, ((this.aliveMax + 1) * 2) << 8, "Life.colourLookup");
@@ -5112,6 +5122,56 @@
 		return result;
 	};
 			
+	// create Margolus index
+	Life.prototype.createMargolusIndex = function(index, ruleArray) {
+		var i = 0,
+			j = 0,
+			row0 = 0,
+			row1 = 0,
+			value = 0,
+			mask = 0,
+			shift = 0,
+			lookup = 0,
+			dest0 = 0,
+			dest1 = 0;
+
+		// index holds four 2x2 blocks
+		// 00 00  01 01  02 02  03 03
+		// 00 00  01 01  02 02  03 03
+		for (i = 0; i < 65536; i += 1) {
+			row0 = i >> 8;
+			row1 = i & 255;
+			mask = 192;
+			shift = 6;
+			dest0 = 0;
+			dest1 = 0;
+			for (j = 0; j < 4; j += 1) {
+				// compute the lookup value
+				if (shift === 0) {
+					value = ((row0 & mask) << 2) | (row1 & mask);
+				} else {
+					value = ((row0 & mask) >> (shift - 2)) | ((row1 & mask) >> shift);
+				}
+
+				// get the mapping
+				lookup = ruleArray[value];
+
+				// update the destination rows
+				dest0 <<= 2;
+				dest1 <<= 2;
+				dest0 |= (lookup >> 2) & 3;
+				dest1 |= lookup & 3;
+
+				// next 2x2 item
+				mask >>= 2;
+				shift -= 2;
+			}
+
+			// update the index
+			index[i] = (dest0 << 8) | dest1;
+		}
+	};
+
 	// update the Life rule
 	Life.prototype.updateLifeRule = function() {
 		var i = 0,
@@ -5121,17 +5181,23 @@
 			altSpecified = PatternManager.altSpecified,
 		    hashSize = (this.isTriangular ? LifeConstants.hashTriangular : LifeConstants.hash33),
 			odd = false,
-			match = true;
+			match = true,
+			length = ruleArray.length;
 
 		// save flag
 		this.altSpecified = altSpecified;
 
 		// check if alternates are duplicates
 		if (this.altSpecified) {
+			// Margolus only uses first 16 entries
+			if (this.isMargolus) {
+				length = 16;
+			}
+
 			// compare rule arrays
 			i = 0;
 			match = true;
-			while (i < ruleArray.length && match) {
+			while (i < length && match) {
 				if (ruleArray[i] !== ruleAltArray[i]) {
 					match = false;
 				} else {
@@ -5150,62 +5216,81 @@
 		this.indexLookup632 = null;
 		this.indexLookupTri1 = null;
 		this.indexLookupTri2 = null;
+		this.margolusLookup1 = null;
+		this.margolusLookup2 = null;
 
-		// check for Triangular
-		if (this.isTriangular) {
-			// create lookup arrays
-			this.indexLookupTri1 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri1");
-			this.indexLookupTri2 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri2");
-			this.createTriangularIndex(this.indexLookupTri2, ruleArray);
-			this.createTriangularIndex(this.indexLookupTri1, ruleAltArray);
+		// check for Margolus
+		if (this.isMargolus) {
+			// create lookup array
+			this.margolusLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusLookup1");
+			if (altSpecified) {
+				this.margolusLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusLookup2");
+				this.createMargolusIndex(this.margolusLookup2, ruleArray);
+				this.createMargolusIndex(this.margolusLookup1, ruleAltArray);
+			} else {
+				this.createMargolusIndex(this.margolusLookup1, ruleArray);
+			}
 		} else {
-			// create the first lookup array
-			this.indexLookup63 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup63");
-
-			// check for Wolfram
-			if (this.wolframRule === -1) {
-				// check for B0
-				if (ruleArray[0]) {
-					// check for Smax
-					if (ruleArray[hashSize - 1]) {
-						// B0 with Smax: rule -> NOT(reverse(bits))
-						for (i = 0; i < hashSize / 2; i += 1) {
-							tmp = ruleArray[i];
-							ruleArray[i] = 1 - ruleArray[hashSize - i - 1];
-							ruleArray[hashSize - i - 1] = 1 - tmp;
-						}
-					} else {
-						// B0 without Smax needs two rules
-						// odd rule -> reverse(bits)
-						for (i = 0; i < hashSize / 2; i += 1) {
-							tmp = ruleArray[i];
-							ruleArray[i] = ruleArray[hashSize - i - 1];
-							ruleArray[hashSize - i - 1] = tmp;
-						}
-						odd = true;
-						this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
-						this.createLifeIndex63(this.indexLookup632, ruleArray);
-
-						// even rule -> NOT(bits)
-						for (i = 0; i < hashSize / 2; i += 1) {
-							tmp = ruleArray[i];
-							// need to reverse then invert due to even rule above
-							ruleArray[i] = 1 - ruleArray[hashSize - i - 1];
-							ruleArray[hashSize - i - 1] = 1 - tmp;
+			// check for Triangular
+			if (this.isTriangular) {
+				// create lookup arrays
+				this.indexLookupTri1 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri1");
+				if (altSpecified) {
+					this.indexLookupTri2 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri2");
+					this.createTriangularIndex(this.indexLookupTri2, ruleArray);
+					this.createTriangularIndex(this.indexLookupTri1, ruleAltArray);
+				} else {
+					this.createTriangularIndex(this.indexLookupTri1, ruleArray);
+				}
+			} else {
+				// create the first lookup array
+				this.indexLookup63 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup63");
+	
+				// check for Wolfram
+				if (this.wolframRule === -1) {
+					// check for B0
+					if (ruleArray[0]) {
+						// check for Smax
+						if (ruleArray[hashSize - 1]) {
+							// B0 with Smax: rule -> NOT(reverse(bits))
+							for (i = 0; i < hashSize / 2; i += 1) {
+								tmp = ruleArray[i];
+								ruleArray[i] = 1 - ruleArray[hashSize - i - 1];
+								ruleArray[hashSize - i - 1] = 1 - tmp;
+							}
+						} else {
+							// B0 without Smax needs two rules
+							// odd rule -> reverse(bits)
+							for (i = 0; i < hashSize / 2; i += 1) {
+								tmp = ruleArray[i];
+								ruleArray[i] = ruleArray[hashSize - i - 1];
+								ruleArray[hashSize - i - 1] = tmp;
+							}
+							odd = true;
+							this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
+							this.createLifeIndex63(this.indexLookup632, ruleArray);
+	
+							// even rule -> NOT(bits)
+							for (i = 0; i < hashSize / 2; i += 1) {
+								tmp = ruleArray[i];
+								// need to reverse then invert due to even rule above
+								ruleArray[i] = 1 - ruleArray[hashSize - i - 1];
+								ruleArray[hashSize - i - 1] = 1 - tmp;
+							}
 						}
 					}
 				}
-			}
 
-			// copy rules from pattern
-			if (this.altSpecified) {
-				this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
-				this.createLifeIndex63(this.indexLookup632, ruleArray);
-				this.createLifeIndex63(this.indexLookup63, ruleAltArray);
-			} else {
-				this.createLifeIndex63(this.indexLookup63, ruleArray);
-				if (odd) {
-					this.altSpecified = true;
+				// copy rules from pattern
+				if (this.altSpecified) {
+					this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
+					this.createLifeIndex63(this.indexLookup632, ruleArray);
+					this.createLifeIndex63(this.indexLookup63, ruleAltArray);
+				} else {
+					this.createLifeIndex63(this.indexLookup63, ruleArray);
+					if (odd) {
+						this.altSpecified = true;
+					}
 				}
 			}
 		}
@@ -7969,16 +8054,25 @@
 			} else {
 				// stats are required if they are on but not for multi-state rules which compute their own stats
 				if (statsOn && this.multiNumStates < 2) {
-					if (this.isTriangular) {
-						this.nextGenerationTriTile();
+					if (this.isMargolus) {
+						//this.nextGenerationMargolusTile(); TBD
+						this.nextGenerationOnlyMargolusTile();
 					} else {
-						this.nextGenerationTile();
+						if (this.isTriangular) {
+							this.nextGenerationTriTile();
+						} else {
+							this.nextGenerationTile();
+						}
 					}
 				} else {
-					if (this.isTriangular) {
-						this.nextGenerationOnlyTriTile();
+					if (this.isMargolus) {
+						this.nextGenerationOnlyMargolusTile();
 					} else {
-						this.nextGenerationOnlyTile();
+						if (this.isTriangular) {
+							this.nextGenerationOnlyTriTile();
+						} else {
+							this.nextGenerationOnlyTile();
+						}
 					}
 				}
 			}
@@ -8918,7 +9012,7 @@
 	
 	// update the life grid region using tiles for triangular grid
 	Life.prototype.nextGenerationTriTile = function() {
-		var indexLookup = null,
+		var indexLookup = this.indexLookupTri1,
 		    gridRow0 = null,
 		    gridRow1 = null,
 		    gridRow2 = null,
@@ -9000,14 +9094,15 @@
 			tileGrid = this.nextTileGrid;
 			nextTileGrid = this.tileGrid;
 
-			indexLookup = this.indexLookupTri2;
+			// get alternate lookup buffer if specified
+			if (this.altSpecified) {
+				indexLookup = this.indexLookupTri2;
+			}
 		} else {
 			grid = this.grid16;
 			nextGrid = this.nextGrid16;
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
-
-			indexLookup = this.indexLookupTri1;
 		}
 
 		// clear column occupied flags
@@ -9521,9 +9616,404 @@
 		this.deaths = deaths;
 	};
 
+	// update the life grid region using tiles for Margolus grid (no stats)
+	Life.prototype.nextGenerationOnlyMargolusTile = function() {
+		var indexLookup = this.margolusLookup1,
+		    h = 0, b = 0,
+			val0 = 0, val1 = 0, output = 0, th = 0, tw = 0,
+			output0 = 0, output1 = 0,
+			grid = null, nextGrid = null,
+		    tileGrid = null, nextTileGrid = null,
+		    tileRow = null, nextTileRow = null,
+		    belowNextTileRow = null, aboveNextTileRow = null,
+		    tiles = 0, nextTiles = 0,
+		    belowNextTiles = 0, aboveNextTiles = 0,
+		    bottomY = 0, topY = 0, leftX = 0,
+
+		    // which cells were set in source
+		    origValue = 0,
+
+		    // column occupied
+		    columnOccupied16 = this.columnOccupied16,
+		    colOccupied = 0,
+
+		    // height of grid
+		    height = this.height,
+
+		    // width of grid
+		    width = this.width,
+
+		    // width of grid in 16 bit chunks
+		    width16 = width >> 4,
+
+		    // get the bounding box
+		    zoomBox = this.zoomBox,
+
+		    // new box extent
+		    newBottomY = height,
+		    newTopY = -1,
+		    newLeftX = width,
+		    newRightX = -1,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (in 16 bit chunks)
+		    xSize = this.tileX >> 1,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+		    tileCols16 = this.tileCols >> 4,
+
+		    // blank tile row for top and bottom
+		    blankTileRow = this.blankTileRow,
+
+		    // flags for edges of tile occupied
+		    neighbours = 0;
+
+		// switch buffers each generation
+		if ((this.counter & 1) !== 0) {
+			grid = this.nextGrid16;
+			nextGrid = this.grid16;
+			tileGrid = this.nextTileGrid;
+			nextTileGrid = this.tileGrid;
+			if (this.altSpecified) {
+				indexLookup = this.margolusLookup2;
+			}
+		} else {
+			grid = this.grid16;
+			nextGrid = this.nextGrid16;
+			tileGrid = this.tileGrid;
+			nextTileGrid = this.nextTileGrid;
+		}
+
+		// clear column occupied flags
+		// @ts-ignore
+		if (arrayFill) {
+			columnOccupied16.fill(0);
+		} else {
+			for (th = 0; th < columnOccupied16.length; th += 1) {
+				columnOccupied16[th] = 0;
+			}
+		}
+
+		// set the initial tile row
+		bottomY = this.counter & 1;
+		topY = bottomY + ySize;
+
+		// clear the next tile grid
+		// @ts-ignore
+		if (arrayFill) {
+			nextTileGrid.whole.fill(0);
+		} else {
+			for (th = 0; th < nextTileGrid.length; th += 1) {
+				tileRow = nextTileGrid[th];
+				for (tw = 0; tw < tileRow.length; tw += 1) {
+					tileRow[tw] = 0;
+				}
+			}
+		}
+
+		// scan each row of tiles
+		for (th = 0; th < tileGrid.length; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row
+			tileRow = tileGrid[th];
+			nextTileRow = nextTileGrid[th];
+
+			// get the tile row below
+			if (th > 0) {
+				belowNextTileRow = nextTileGrid[th - 1];
+			} else {
+				belowNextTileRow = blankTileRow;
+			}
+
+			// get the tile row above
+			if (th < tileRows - 1) {
+				aboveNextTileRow = nextTileGrid[th + 1];
+			} else {
+				aboveNextTileRow = blankTileRow;
+			}
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = tileRow[tw];
+
+				// check if any are occupied
+				if (tiles) {
+					// get the destination (with any set because of edges)
+					nextTiles = nextTileRow[tw];
+					belowNextTiles = belowNextTileRow[tw];
+					aboveNextTiles = aboveNextTileRow[tw];
+
+					// compute next generation for each set tile
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile needs computing
+						if ((tiles & (1 << b)) !== 0) {
+							// mark no cells in this column
+							colOccupied = 0;
+
+							// clear the edge flags
+							neighbours = 0;
+
+							// process each row of the tile
+							h = bottomY;
+							origValue = 0;
+							while (h < topY) {
+								if ((this.counter & 1) !== 0) {
+									// get original value for next two rows
+									val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
+									val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+									origValue |= (val0 | val1);
+	
+									// get output
+									output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+									output0 = output & 65280;
+									output1 = (output & 255) << 8;
+									output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+									output0 |= (output >> 8);
+									output1 |= (output & 255);
+	
+									// save output 16bits
+									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+									nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
+									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+									nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+								} else {
+									// get original value for next two rows
+									val0 = grid[h][leftX];
+									val1 = grid[h + 1][leftX];
+									origValue |= (val0 | val1);
+	
+									// get output
+									output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+									output0 = output & 65280;
+									output1 = (output & 255) << 8;
+									output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+									output0 |= (output >> 8);
+									output1 |= (output & 255);
+	
+									// save output 16bits
+									nextGrid[h][leftX] = output0;
+									nextGrid[h + 1][leftX] = output1;
+								}
+
+								// check if any cells are set
+								if (output0 | output1) {
+									// update column occupied flag
+									colOccupied |= (output0 | output1);
+	
+									// update min and max row
+									if (h < newBottomY) {
+										newBottomY = h;
+									}
+									if (h > newTopY) {
+										newTopY = h;
+									}
+								}
+
+								// next row
+								h += 2;
+							}
+
+							// check which columns contained cells
+							if (colOccupied) {
+								// check for left column set
+								if ((colOccupied & 32768) !== 0) {
+									neighbours |= LifeConstants.leftSet;
+								}
+
+								// check for right column set
+								if ((colOccupied & 1) !== 0) {
+									neighbours |= LifeConstants.rightSet;
+								}
+							}
+
+							// save the column occupied cells
+							columnOccupied16[leftX] |= colOccupied;
+
+							// check if the source or output were alive
+							if (colOccupied || origValue) {
+								// update 
+								nextTiles |= (1 << b);
+
+								// check for neighbours
+								if (neighbours) {
+									// check whether left edge occupied
+									if ((neighbours & LifeConstants.leftSet) !== 0) {
+										if (b < 15) {
+											nextTiles |= (1 << (b + 1));
+										} else {
+											// set in previous set if not at left edge
+											if ((tw > 0) && (leftX > 0)) {
+												nextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether right edge occupied
+									if ((neighbours & LifeConstants.rightSet) !== 0) {
+										if (b > 0) {
+											nextTiles |= (1 << (b - 1));
+										} else {
+											// set carry over to go into next set if not at right edge
+											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
+												nextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+
+									// check whether bottom edge occupied
+									if ((neighbours & LifeConstants.bottomSet) !== 0) {
+										// set in lower tile set
+										belowNextTiles |= (1 << b);
+									}
+
+									// check whether top edge occupied
+									if ((neighbours & LifeConstants.topSet) !== 0) {
+										// set in upper tile set
+										aboveNextTiles |= (1 << b);
+									}
+
+									// check whether bottom left occupied
+									if ((neighbours & LifeConstants.bottomLeftSet) !== 0) {
+										if (b < 15) {
+											belowNextTiles |= (1 << (b + 1));
+										} else {
+											if ((tw > 0) && (leftX > 0)) {
+												belowNextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether bottom right occupied
+									if ((neighbours & LifeConstants.bottomRightSet) !== 0) {
+										if (b > 0) {
+											belowNextTiles |= (1 << (b - 1));
+										} else {
+											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
+												belowNextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+
+									// check whether top left occupied
+									if ((neighbours & LifeConstants.topLeftSet) !== 0) {
+										if (b < 15) {
+											aboveNextTiles |= (1 << (b + 1));
+										} else {
+											if ((tw > 0) && (leftX > 0)) {
+												aboveNextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether top right occupied
+									if ((neighbours & LifeConstants.topRightSet) !== 0) {
+										if (b > 0) {
+											aboveNextTiles |= (1 << (b - 1));
+										} else {
+											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
+												aboveNextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+								}
+							}
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+
+					// save the tile groups
+					nextTileRow[tw] |= nextTiles;
+					if (th > 0) {
+						belowNextTileRow[tw] |= belowNextTiles;
+					}
+					if (th < tileRows - 1) {
+						aboveNextTileRow[tw] |= aboveNextTiles;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+			}
+
+			// next tile rows
+			bottomY += ySize;
+			topY += ySize;
+		}
+
+		// update bounding box
+		for (tw = 0; tw < width16; tw += 1) {
+			if (columnOccupied16[tw]) {
+				if (tw < newLeftX) {
+					newLeftX = tw;
+				}
+				if (tw > newRightX) {
+					newRightX = tw;
+				}
+			}
+		}
+
+		// convert new width to pixels
+		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
+		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
+	
+		// ensure the box is not blank
+		if (newTopY < 0) {
+			newTopY = height - 1;
+		}
+		if (newBottomY >= height) {
+			newBottomY = 0;
+		}
+		if (newLeftX >= width) {
+			newLeftX = 0;
+		}
+		if (newRightX < 0) {
+			newRightX = width - 1;
+		}
+
+		// clip to the screen
+		if (newTopY > height - 1) {
+			newTopY = height - 1;
+		}
+		if (newBottomY < 0) {
+			newBottomY = 0;
+		}
+		if (newLeftX < 0) {
+			newLeftX = 0;
+		}
+		if (newRightX > width - 1) {
+			newRightX = width - 1;
+		}
+
+		// save to zoom box
+		zoomBox.topY = newTopY;
+		zoomBox.bottomY = newBottomY;
+		zoomBox.leftX = newLeftX;
+		zoomBox.rightX = newRightX;
+
+		// clear the blank tile row since it may have been written to at top and bottom
+		// @ts-ignore
+		if (arrayFill) {
+			blankTileRow.fill(0);
+		} else {
+			for (th = 0; th < blankTileRow.length; th += 1) {
+				blankTileRow[th] = 0;
+			}
+		}
+	};
+
 	// update the life grid region using tiles for triangular grid (no stats)
 	Life.prototype.nextGenerationOnlyTriTile = function() {
-		var indexLookup = null,
+		var indexLookup = this.indexLookupTri1,
 		    gridRow0 = null,
 		    gridRow1 = null,
 		    gridRow2 = null,
@@ -9595,15 +10085,14 @@
 			nextGrid = this.grid16;
 			tileGrid = this.nextTileGrid;
 			nextTileGrid = this.tileGrid;
-
-			indexLookup = this.indexLookupTri2;
+			if (this.altSpecified) {
+				indexLookup = this.indexLookupTri2;
+			}
 		} else {
 			grid = this.grid16;
 			nextGrid = this.nextGrid16;
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
-
-			indexLookup = this.indexLookupTri1;
 		}
 
 		// clear column occupied flags

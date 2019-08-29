@@ -38,6 +38,14 @@
 		this.aliases.push(["Wolfram 30", "W30"]);
 		this.aliases.push(["Wolfram 110", "W110"]);
 
+		// add Margolus aliases
+		this.sectionNames.push("Margolus");
+		this.aliases.push(["Margolus", ""]);
+		this.aliases.push(["BBM", "M0,8,4,3,2,5,9,7,1,6,10,11,12,13,14,15"]);
+		this.aliases.push(["BounceGas", "M0,8,4,3,2,5,9,14,1,6,10,13,12,11,7,15"]);
+		this.aliases.push(["BounceGasII", "M0,8,4,12,2,10,9,7,1,6,5,11,3,13,14,15"]);
+		this.aliases.push(["Critters", "M15,14,13,3,11,5,6,1,7,9,10,2,12,4,8,0"]);
+
 		// add 2 state totalistic aliases
 		this.sectionNames.push("OT M");
 		this.aliases.push(["Outer-Totalistic Moore", ""]);

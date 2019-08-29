@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 392,
+		/** @const {number} */ versionBuild : 393,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -11582,6 +11582,7 @@
 		this.patternUsedStates = 0;
 		this.patternFormat = "(none)";
 		this.engine.isNone = false;
+		this.engine.isMargolus = false;
 		this.engine.isLifeHistory = false;
 		this.engine.displayLifeHistory = false;
 		this.engine.isHex = false;
@@ -11780,6 +11781,9 @@
 
 			// check if the rule is _none_
 			this.engine.isNone = pattern.isNone;
+
+			// check if the rule is Margolus
+			this.engine.isMargolus = pattern.isMargolus;
 
 			// use hexagons for hex dispaly
 			this.engine.useHexagons = true;

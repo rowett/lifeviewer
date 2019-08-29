@@ -1,3 +1,6 @@
+Build 393
+- added support for Margolus rules
+
 Build 392
 - fixed an issue where rotate selection was incorrect when grid grew
 - performance improvement for editing tasks for 2-state Life-like and [R]History patterns

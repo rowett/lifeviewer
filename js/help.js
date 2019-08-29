@@ -1263,36 +1263,40 @@
 		}
 
 		// display neighbourhood
-		if (view.engine.wolframRule !== -1) {
-			itemName = "1D";
+		if (view.engine.isMargolus) {
+			itemName = "Margolus";
 		} else {
-			if (view.engine.patternDisplayMode) {
-				itemName = "Hex";
+			if (view.engine.wolframRule !== -1) {
+				itemName = "1D";
 			} else {
-				if (view.engine.isHROT) {
-					if (view.engine.HROT.type === PatternManager.mooreHROT) {
-						itemName = "Moore";
-					} else if (view.engine.HROT.type === PatternManager.vonNeumannHROT) {
-						itemName = "von Neumann";
-					} else {
-						itemName = "Circular";
-					}
-					if (view.engine.HROT.range > 1) {
-						itemName += " range " + view.engine.HROT.range;
-					}
+				if (view.engine.patternDisplayMode) {
+					itemName = "Hex";
 				} else {
-					if (view.engine.isTriangular) {
-						itemName = "Triangular";
-						if (view.engine.triangularNeighbourhood === PatternManager.triangularEdges) {
-							itemName += " Edges";
-						} else if (view.engine.triangularNeighbourhood === PatternManager.triangularVertices) {
-							itemName += " Vertices";
-						}
-					} else {
-						if (view.engine.isVonNeumann) {
+					if (view.engine.isHROT) {
+						if (view.engine.HROT.type === PatternManager.mooreHROT) {
+							itemName = "Moore";
+						} else if (view.engine.HROT.type === PatternManager.vonNeumannHROT) {
 							itemName = "von Neumann";
 						} else {
-							itemName = "Moore";
+							itemName = "Circular";
+						}
+						if (view.engine.HROT.range > 1) {
+							itemName += " range " + view.engine.HROT.range;
+						}
+					} else {
+						if (view.engine.isTriangular) {
+							itemName = "Triangular";
+							if (view.engine.triangularNeighbourhood === PatternManager.triangularEdges) {
+								itemName += " Edges";
+							} else if (view.engine.triangularNeighbourhood === PatternManager.triangularVertices) {
+								itemName += " Vertices";
+							}
+						} else {
+							if (view.engine.isVonNeumann) {
+								itemName = "von Neumann";
+							} else {
+								itemName = "Moore";
+							}
 						}
 					}
 				}
@@ -1435,7 +1439,7 @@
 		y = this.renderHelpLine(view, "Author", ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Decoders", "RLE, Life 1.06, Life 1.05, Cells", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "N'hoods", "Moore, Hex, von Neumann, Circular, 1D", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Rules", "Wolfram, Totalistic, Generations,", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Rules", "Wolfram, Totalistic, Generations, Margolus,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Isotropic Non-Totalistic (Hensel, Callahan),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Alternating, MAP, Larger than Life (LtL),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Higher-range outer-totalistic (HROT)", ctx, x, y, height, helpLine);
