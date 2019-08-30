@@ -1996,6 +1996,18 @@
 			}
 		}
 
+		// check for Margolus rules
+		if (me.isMargolus) {
+			if (leftX > 2 && ((leftX & 3) !== 0)) {
+				width += (leftX & 3);
+				leftX -= (leftX & 3);
+			}
+			if ((bottomY > 2) && ((bottomY & 3) !== 0)) {
+				height += (bottomY & 3);
+				bottomY -= (bottomY & 3);
+			}
+		}
+
 		// populate output states
 		if (me.multiNumStates <= 2 && !me.displayLifeHistory) {
 			twoState = true;
@@ -9864,33 +9876,35 @@
 								// save output 16bits
 								nextGrid[h][leftX] = output0;
 								nextGrid[h + 1][leftX] = output1;
-							}
 
-							// check if any cells are set
-							if (output0 | output1) {
-								// update column occupied flag
-								colOccupied |= (output0 | output1);
+								// check if any cells are set
+								if (output0 | output1) {
+									// update column occupied flag
+									colOccupied |= (output0 | output1);
 
-								// update min and max row
-								if (h < newBottomY) {
-									newBottomY = h;
+									// update min and max row
+									if (h < newBottomY) {
+										newBottomY = h;
+									}
+									if (h > newTopY) {
+										newTopY = h;
+									}
+
+									// check for left column now set
+									if (output0) {
+										if ((output0 & 32768) !== 0) {
+											neighbours |= LifeConstants.bottomLeftSet;
+										}
+	
+										// check for right column now set
+										if ((output0 & 1) !== 0) {
+											neighbours |= LifeConstants.bottomRightSet;
+										}
+	
+										// bottom row set
+										neighbours |= LifeConstants.bottomSet;
+									}
 								}
-								if (h > newTopY) {
-									newTopY = h;
-								}
-
-								// check for left column now set (need two cells)
-								if ((output & 49152) !== 0) {
-									neighbours |= LifeConstants.bottomLeftSet;
-								}
-
-								// check for right column now set (need two cells)
-								if ((output & 3) !== 0) {
-									neighbours |= LifeConstants.bottomRightSet;
-								}
-
-								// bottom row set
-								neighbours |= LifeConstants.bottomSet;
 							}
 
 							// process middle rows of the tile
@@ -9932,19 +9946,19 @@
 									// save output 16bits
 									nextGrid[h][leftX] = output0;
 									nextGrid[h + 1][leftX] = output1;
-								}
 
-								// check if any cells are set
-								if (output0 | output1) {
-									// update column occupied flag
-									colOccupied |= (output0 | output1);
-	
-									// update min and max row
-									if (h < newBottomY) {
-										newBottomY = h;
-									}
-									if (h > newTopY) {
-										newTopY = h;
+									// check if any cells are set
+									if (output0 | output1) {
+										// update column occupied flag
+										colOccupied |= (output0 | output1);
+		
+										// update min and max row
+										if (h < newBottomY) {
+											newBottomY = h;
+										}
+										if (h > newTopY) {
+											newTopY = h;
+										}
 									}
 								}
 
@@ -9989,44 +10003,47 @@
 								// save output 16bits
 								nextGrid[h][leftX] = output0;
 								nextGrid[h + 1][leftX] = output1;
+
+								// check if any cells are set
+								if (output0 | output1) {
+									// update column occupied flag
+									colOccupied |= (output0 | output1);
+
+									// update min and max row
+									if (h < newBottomY) {
+										newBottomY = h;
+									}
+									if (h > newTopY) {
+										newTopY = h;
+									}
+
+									// check for left column now set
+									if (output1) {
+										if ((output1 & 32768) !== 0) {
+											neighbours |= LifeConstants.topLeftSet;
+										}
+
+										// check for right column now set
+										if ((output & 1) !== 0) {
+											neighbours |= LifeConstants.topRightSet;
+										}
+
+										// top row set
+										neighbours |= LifeConstants.topSet;
+									}
+								}
 							}
 
-							// check if any cells are set
-							if (output0 | output1) {
-								// update column occupied flag
-								colOccupied |= (output0 | output1);
-
-								// update min and max row
-								if (h < newBottomY) {
-									newBottomY = h;
-								}
-								if (h > newTopY) {
-									newTopY = h;
-								}
-
-								// check for left column now set
-								if ((output & 49152) !== 0) {
-									neighbours |= LifeConstants.topLeftSet;
-								}
-
-								// check for right column now set
-								if ((output & 3) !== 0) {
-									neighbours |= LifeConstants.topRightSet;
-								}
-
-								// top row set
-								neighbours |= LifeConstants.topSet;
-							}
 
 							// check which columns contained cells
 							if (colOccupied) {
-								// check for left column set (need two cells)
-								if ((colOccupied & 49152) !== 0) {
+								// check for left column set
+								if ((colOccupied & 32768) !== 0) {
 									neighbours |= LifeConstants.leftSet;
 								}
 
-								// check for right column set (need two cells)
-								if ((colOccupied & 3) !== 0) {
+								// check for right column set
+								if ((colOccupied & 1) !== 0) {
 									neighbours |= LifeConstants.rightSet;
 								}
 							}
