@@ -5223,6 +5223,70 @@
 		if (this.isMargolus) {
 			// create lookup array
 			this.margolusLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusLookup1");
+			//  check for V0 = 15 and V15 = 0
+			if (ruleArray[0] === 15 && ruleArray[15] === 0) {
+				this.altSpecified = true;
+				altSpecified = true;
+				for (i = 0; i < 16; i += 1) {
+					tmp = ruleArray[i];
+					ruleArray[i] = 15 - tmp;
+					if (i === tmp) {
+						ruleAltArray[i] = ruleArray[i];
+					} else {
+						switch (ruleArray[i]) {
+							case 0:
+								ruleAltArray[i] = 0;
+								break;
+							case 15:
+								ruleAltArray[i] = 15;
+								break;
+							case 1:
+								ruleAltArray[i] = 8;
+								break;
+							case 8:
+								ruleAltArray[i] = 1;
+								break;
+							case 2:
+								ruleAltArray[i] = 4;
+								break;
+							case 4:
+								ruleAltArray[i] = 2;
+								break;
+							case 3:
+								ruleAltArray[i] = 5;
+								break;
+							case 5:
+								ruleAltArray[i] = 3;
+								break;
+							case 6:
+								ruleAltArray[i] = 9;
+								break;
+							case 9:
+								ruleAltArray[i] = 6;
+								break;
+							case 7:
+								ruleAltArray[i] = 14;
+								break;
+							case 14:
+								ruleAltArray[i] = 7;
+								break;
+							case 10:
+								ruleAltArray[i] = 12;
+								break;
+							case 12:
+								ruleAltArray[i] = 10;
+								break;
+							case 11:
+								ruleAltArray[i] = 13;
+								break;
+							case 13:
+								ruleAltArray[i] = 11;
+								break;
+						}
+					}
+				}
+			}
+
 			if (altSpecified) {
 				this.margolusLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusLookup2");
 				this.createMargolusIndex(this.margolusLookup2, ruleArray);
@@ -9761,10 +9825,77 @@
 							// clear the edge flags
 							neighbours = 0;
 
-							// process each row of the tile
+							// process bottom row
 							h = bottomY;
 							origValue = 0;
-							while (h < topY) {
+							if ((this.counter & 1) !== 0) {
+								// get original value for next two rows
+								val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
+								val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+								origValue |= (val0 | val1);
+
+								// get output
+								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+								output0 = output & 65280;
+								output1 = (output & 255) << 8;
+								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+								output0 |= (output >> 8);
+								output1 |= (output & 255);
+
+								// save output 16bits
+								nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+								nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
+								nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+								nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+							} else {
+								// get original value for next two rows
+								val0 = grid[h][leftX];
+								val1 = grid[h + 1][leftX];
+								origValue |= (val0 | val1);
+
+								// get output
+								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+								output0 = output & 65280;
+								output1 = (output & 255) << 8;
+								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+								output0 |= (output >> 8);
+								output1 |= (output & 255);
+
+								// save output 16bits
+								nextGrid[h][leftX] = output0;
+								nextGrid[h + 1][leftX] = output1;
+							}
+
+							// check if any cells are set
+							if (output0 | output1) {
+								// update column occupied flag
+								colOccupied |= (output0 | output1);
+
+								// update min and max row
+								if (h < newBottomY) {
+									newBottomY = h;
+								}
+								if (h > newTopY) {
+									newTopY = h;
+								}
+
+								// check for left column now set (need two cells)
+								if ((output & 49152) !== 0) {
+									neighbours |= LifeConstants.bottomLeftSet;
+								}
+
+								// check for right column now set (need two cells)
+								if ((output & 3) !== 0) {
+									neighbours |= LifeConstants.bottomRightSet;
+								}
+
+								// bottom row set
+								neighbours |= LifeConstants.bottomSet;
+							}
+
+							// process middle rows of the tile
+							h += 2;
+							while (h < topY - 2) {
 								if ((this.counter & 1) !== 0) {
 									// get original value for next two rows
 									val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
@@ -9821,15 +9952,81 @@
 								h += 2;
 							}
 
+							// process top row
+							if ((this.counter & 1) !== 0) {
+								// get original value for next two rows
+								val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
+								val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+								origValue |= (val0 | val1);
+
+								// get output
+								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+								output0 = output & 65280;
+								output1 = (output & 255) << 8;
+								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+								output0 |= (output >> 8);
+								output1 |= (output & 255);
+
+								// save output 16bits
+								nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+								nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
+								nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+								nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+							} else {
+								// get original value for next two rows
+								val0 = grid[h][leftX];
+								val1 = grid[h + 1][leftX];
+								origValue |= (val0 | val1);
+
+								// get output
+								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+								output0 = output & 65280;
+								output1 = (output & 255) << 8;
+								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+								output0 |= (output >> 8);
+								output1 |= (output & 255);
+
+								// save output 16bits
+								nextGrid[h][leftX] = output0;
+								nextGrid[h + 1][leftX] = output1;
+							}
+
+							// check if any cells are set
+							if (output0 | output1) {
+								// update column occupied flag
+								colOccupied |= (output0 | output1);
+
+								// update min and max row
+								if (h < newBottomY) {
+									newBottomY = h;
+								}
+								if (h > newTopY) {
+									newTopY = h;
+								}
+
+								// check for left column now set
+								if ((output & 49152) !== 0) {
+									neighbours |= LifeConstants.topLeftSet;
+								}
+
+								// check for right column now set
+								if ((output & 3) !== 0) {
+									neighbours |= LifeConstants.topRightSet;
+								}
+
+								// top row set
+								neighbours |= LifeConstants.topSet;
+							}
+
 							// check which columns contained cells
 							if (colOccupied) {
-								// check for left column set
-								if ((colOccupied & 32768) !== 0) {
+								// check for left column set (need two cells)
+								if ((colOccupied & 49152) !== 0) {
 									neighbours |= LifeConstants.leftSet;
 								}
 
-								// check for right column set
-								if ((colOccupied & 1) !== 0) {
+								// check for right column set (need two cells)
+								if ((colOccupied & 3) !== 0) {
 									neighbours |= LifeConstants.rightSet;
 								}
 							}

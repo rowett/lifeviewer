@@ -3056,8 +3056,8 @@
 			}
 		}
 
-		// triangular patterns must be on even cell boundaries
-		if (pattern.isTriangular) {
+		// triangular and Margolus patterns must be on even cell boundaries
+		if (pattern.isTriangular || pattern.isMargolus) {
 			if ((panX & 1) !== 0) {
 				panX += 1;
 			}
