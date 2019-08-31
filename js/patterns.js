@@ -5971,6 +5971,19 @@
 			}
 		}
 
+		// Margolus rules only allow first value to be either 0, or 15 if the last value is 0
+		if (pattern.isMargolus) {
+			if (this.ruleArray[0] === 15 && this.ruleArray[15] !== 0) {
+				this.failureReason = "Margolus last value must be 0 when first is 15";
+				this.executable = false;
+			} else {
+				if (this.ruleArray[0] !== 0 && this.ruleArray[0] !== 15) {
+					this.failureReason = "Margolus first value must be 0 or 15";
+					this.executable = false;
+				}
+			}
+		}
+
 		// check whether HROT bounded grid type is valid
 		if (pattern.isHROT) {
 			if (pattern.gridType > 1) {
@@ -6028,6 +6041,27 @@
 			this.failureReason = "[R]History not valid with HROT";
 			pattern.isHistory = false;
 			this.executable = false;
+		}
+
+		// check for Margolus and [R]History
+		if (pattern.isMargolus && pattern.isHistory) {
+			this.failureReason = "[R]History not valid with Margolus";
+			pattern.isHistory = false;
+			this.executable = false;
+		}
+
+		// check for Margolus and bounded grid
+		if (pattern.isMargolus && pattern.gridType !== -1) {
+			if (pattern.gridHeight !== -1 && ((pattern.gridHeight & 1) !== 0)) {
+				this.failureReason = "Bounded grid height must be even";
+				pattern.gridType = -1;
+				this.executable = false;
+			}
+			if (pattern.gridWidth !== -1 && ((pattern.gridWidth & 1) !== 0)) {
+				this.failureReason = "Bounded grid width must be even";
+				pattern.gridType = -1;
+				this.executable = false;
+			}
 		}
 
 		// check for illegal state numbers

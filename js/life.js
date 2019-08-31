@@ -8131,8 +8131,7 @@
 				// stats are required if they are on but not for multi-state rules which compute their own stats
 				if (statsOn && this.multiNumStates < 2) {
 					if (this.isMargolus) {
-						//this.nextGenerationMargolusTile(); TBD
-						this.nextGenerationOnlyMargolusTile();
+						this.nextGenerationMargolusTile();
 					} else {
 						if (this.isTriangular) {
 							this.nextGenerationTriTile();
@@ -9624,6 +9623,678 @@
 			// next tile rows
 			bottomY += ySize;
 			topY += ySize;
+		}
+
+		// update bounding box
+		for (tw = 0; tw < width16; tw += 1) {
+			if (columnOccupied16[tw]) {
+				if (tw < newLeftX) {
+					newLeftX = tw;
+				}
+				if (tw > newRightX) {
+					newRightX = tw;
+				}
+			}
+		}
+
+		// convert new width to pixels
+		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
+		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
+	
+		// ensure the box is not blank
+		if (newTopY < 0) {
+			newTopY = height - 1;
+		}
+		if (newBottomY >= height) {
+			newBottomY = 0;
+		}
+		if (newLeftX >= width) {
+			newLeftX = 0;
+		}
+		if (newRightX < 0) {
+			newRightX = width - 1;
+		}
+
+		// clip to the screen
+		if (newTopY > height - 1) {
+			newTopY = height - 1;
+		}
+		if (newBottomY < 0) {
+			newBottomY = 0;
+		}
+		if (newLeftX < 0) {
+			newLeftX = 0;
+		}
+		if (newRightX > width - 1) {
+			newRightX = width - 1;
+		}
+
+		// save to zoom box
+		zoomBox.topY = newTopY;
+		zoomBox.bottomY = newBottomY;
+		zoomBox.leftX = newLeftX;
+		zoomBox.rightX = newRightX;
+
+		// clear the blank tile row since it may have been written to at top and bottom
+		// @ts-ignore
+		if (arrayFill) {
+			blankTileRow.fill(0);
+		} else {
+			for (th = 0; th < blankTileRow.length; th += 1) {
+				blankTileRow[th] = 0;
+			}
+		}
+
+		// save statistics
+		this.population = population;
+		this.births = births;
+		this.deaths = deaths;
+	};
+
+	// update the life grid region using tiles for Margolus grid
+	Life.prototype.nextGenerationMargolusTile = function() {
+		var indexLookup = this.margolusLookup1,
+		    h = 0, b = 0,
+			val0 = 0, val1 = 0, output = 0, th = 0, tw = 0,
+			output0 = 0, output1 = 0,
+			grid = null, nextGrid = null,
+		    tileGrid = null, nextTileGrid = null,
+		    tileRow = null, nextTileRow = null,
+		    belowNextTileRow = null, aboveNextTileRow = null,
+		    tiles = 0, nextTiles = 0,
+		    belowNextTiles = 0, aboveNextTiles = 0,
+		    bottomY = 0, topY = 0, leftX = 0,
+
+		    // which cells were set in source
+		    origValue = 0,
+
+		    // column occupied
+		    columnOccupied16 = this.columnOccupied16,
+		    colOccupied = 0,
+
+		    // height of grid
+		    height = this.height,
+
+		    // width of grid
+		    width = this.width,
+
+		    // width of grid in 16 bit chunks
+		    width16 = width >> 4,
+
+		    // get the bounding box
+		    zoomBox = this.zoomBox,
+
+		    // new box extent
+		    newBottomY = height,
+		    newTopY = -1,
+		    newLeftX = width,
+		    newRightX = -1,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (in 16 bit chunks)
+		    xSize = this.tileX >> 1,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+		    tileCols16 = this.tileCols >> 4,
+
+		    // blank tile row for top and bottom
+		    blankTileRow = this.blankTileRow,
+
+		    // flags for edges of tile occupied
+			neighbours = 0,
+
+		    // bit counts for population
+		    bitCounts16 = this.bitCounts16,
+
+		    // population statistics
+		    population = 0, births = 0, deaths = 0;
+
+		// switch buffers each generation
+		if ((this.counter & 1) !== 0) {
+			grid = this.nextGrid16;
+			nextGrid = this.grid16;
+			tileGrid = this.nextTileGrid;
+			nextTileGrid = this.tileGrid;
+			if (this.altSpecified) {
+				indexLookup = this.margolusLookup2;
+			}
+		} else {
+			grid = this.grid16;
+			nextGrid = this.nextGrid16;
+			tileGrid = this.tileGrid;
+			nextTileGrid = this.nextTileGrid;
+		}
+
+		// clear column occupied flags
+		// @ts-ignore
+		if (arrayFill) {
+			columnOccupied16.fill(0);
+		} else {
+			for (th = 0; th < columnOccupied16.length; th += 1) {
+				columnOccupied16[th] = 0;
+			}
+		}
+
+		// set the initial tile row
+		bottomY = this.counter & 1;
+		topY = bottomY + ySize;
+
+		// clear the next tile grid
+		// @ts-ignore
+		if (arrayFill) {
+			nextTileGrid.whole.fill(0);
+		} else {
+			for (th = 0; th < nextTileGrid.length; th += 1) {
+				tileRow = nextTileGrid[th];
+				for (tw = 0; tw < tileRow.length; tw += 1) {
+					tileRow[tw] = 0;
+				}
+			}
+		}
+
+		// scan each row of tiles
+		for (th = 0; th < tileGrid.length; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row
+			tileRow = tileGrid[th];
+			nextTileRow = nextTileGrid[th];
+
+			// get the tile row below
+			if (th > 0) {
+				belowNextTileRow = nextTileGrid[th - 1];
+			} else {
+				belowNextTileRow = blankTileRow;
+			}
+
+			// get the tile row above
+			if (th < tileRows - 1) {
+				aboveNextTileRow = nextTileGrid[th + 1];
+			} else {
+				aboveNextTileRow = blankTileRow;
+			}
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = tileRow[tw];
+
+				// prevent right hand tile from being processed
+				if (tw === tileCols16 -1) {
+					tiles &= 65534;
+				}
+
+				// check if any are occupied
+				if (tiles) {
+					// get the destination (with any set because of edges)
+					nextTiles = nextTileRow[tw];
+					belowNextTiles = belowNextTileRow[tw];
+					aboveNextTiles = aboveNextTileRow[tw];
+
+					// compute next generation for each set tile
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile needs computing
+						if ((tiles & (1 << b)) !== 0) {
+							// mark no cells in this column
+							colOccupied = 0;
+
+							// clear the edge flags
+							neighbours = 0;
+
+							// check for even/odd phase
+							if ((this.counter & 1) === 0) {
+								// even phase
+								// process bottom row
+								h = bottomY;
+								origValue = 0;
+
+								// get original value for next two rows
+								val0 = grid[h][leftX];
+								val1 = grid[h + 1][leftX];
+								origValue |= (val0 | val1);
+
+								// get output
+								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+								output0 = output & 65280;
+								output1 = (output & 255) << 8;
+								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+								output0 |= (output >> 8);
+								output1 |= (output & 255);
+
+								// save output 16bits
+								nextGrid[h][leftX] = output0;
+								nextGrid[h + 1][leftX] = output1;
+
+								// update statistics
+								population += bitCounts16[output0];
+								births += bitCounts16[output0 & ~val0];
+								deaths += bitCounts16[val0 & ~output0];
+								population += bitCounts16[output1];
+								births += bitCounts16[output1 & ~val1];
+								deaths += bitCounts16[val1 & ~output1];
+	
+								// check if any cells are set
+								output = output0 | output1;
+								if (output) {
+									// update column occupied flag
+									colOccupied |= output;
+
+									// update min and max row
+									if (h < newBottomY) {
+										newBottomY = h;
+									}
+									if (h > newTopY) {
+										newTopY = h;
+									}
+
+									// check for left column now set
+									if (output) {
+										if ((output & 49152) !== 0) {
+											neighbours |= LifeConstants.bottomLeftSet;
+										}
+	
+										// check for right column now set
+										if ((output & 3) !== 0) {
+											neighbours |= LifeConstants.bottomRightSet;
+										}
+	
+										// bottom row set
+										neighbours |= LifeConstants.bottomSet;
+									}
+								}
+
+								// process middle rows of the tile
+								h += 2;
+								while (h < topY - 2) {
+									// get original value for next two rows
+									val0 = grid[h][leftX];
+									val1 = grid[h + 1][leftX];
+									origValue |= (val0 | val1);
+	
+									// get output
+									output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+									output0 = output & 65280;
+									output1 = (output & 255) << 8;
+									output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+									output0 |= (output >> 8);
+									output1 |= (output & 255);
+	
+									// save output 16bits
+									nextGrid[h][leftX] = output0;
+									nextGrid[h + 1][leftX] = output1;
+	
+									// update statistics
+									population += bitCounts16[output0];
+									births += bitCounts16[output0 & ~val0];
+									deaths += bitCounts16[val0 & ~output0];
+									population += bitCounts16[output1];
+									births += bitCounts16[output1 & ~val1];
+									deaths += bitCounts16[val1 & ~output1];
+
+									// check if any cells are set
+									output = output0 | output1;
+									if (output) {
+										// update column occupied flag
+										colOccupied |= output;
+		
+										// update min and max row
+										if (h < newBottomY) {
+											newBottomY = h;
+										}
+										if (h > newTopY) {
+											newTopY = h;
+										}
+									}
+	
+									// next row
+									h += 2;
+								}
+	
+								// process top row
+								val0 = grid[h][leftX];
+								val1 = grid[h + 1][leftX];
+								origValue |= (val0 | val1);
+	
+								// get output
+								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+								output0 = output & 65280;
+								output1 = (output & 255) << 8;
+								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+								output0 |= (output >> 8);
+								output1 |= (output & 255);
+	
+								// save output 16bits
+								nextGrid[h][leftX] = output0;
+								nextGrid[h + 1][leftX] = output1;
+	
+								// update statistics
+								population += bitCounts16[output0];
+								births += bitCounts16[output0 & ~val0];
+								deaths += bitCounts16[val0 & ~output0];
+								population += bitCounts16[output1];
+								births += bitCounts16[output1 & ~val1];
+								deaths += bitCounts16[val1 & ~output1];
+
+								// check if any cells are set
+								output = output0 | output1;
+								if (output) {
+									// update column occupied flag
+									colOccupied |= output;
+	
+									// update min and max row
+									if (h < newBottomY) {
+										newBottomY = h;
+									}
+									if (h > newTopY) {
+										newTopY = h;
+									}
+	
+									// check for left column now set
+									if (output) {
+										if ((output & 49152) !== 0) {
+											neighbours |= LifeConstants.topLeftSet;
+										}
+	
+										// check for right column now set
+										if ((output & 3) !== 0) {
+											neighbours |= LifeConstants.topRightSet;
+										}
+	
+										// top row set
+										neighbours |= LifeConstants.topSet;
+									}
+								}
+
+								// check which columns contained cells
+								if (colOccupied) {
+									// check for right column set in this tile or left column set in right hand tile
+									if ((colOccupied & 49152) !== 0) {
+										neighbours |= LifeConstants.leftSet;
+									}
+									if ((colOccupied & 3) !== 0) {
+										neighbours |= LifeConstants.rightSet;
+									}
+								}
+							} else {
+								// odd phase
+								// process bottom row
+								h = bottomY;
+								origValue = 0;
+
+								// get original value for next two rows
+								val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
+								val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+								origValue |= (val0 | val1);
+
+								// get output
+								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+								output0 = output & 65280;
+								output1 = (output & 255) << 8;
+								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+								output0 |= (output >> 8);
+								output1 |= (output & 255);
+
+								// save output 16bits
+								nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+								nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
+								nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+								nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+
+								// update statistics
+								population += bitCounts16[output0];
+								births += bitCounts16[output0 & ~val0];
+								deaths += bitCounts16[val0 & ~output0];
+								population += bitCounts16[output1];
+								births += bitCounts16[output1 & ~val1];
+								deaths += bitCounts16[val1 & ~output1];
+								
+								// check if any cells are set
+								if (output0 | output1) {
+									// update column occupied flag
+									colOccupied |= (output0 | output1);
+
+									// update min and max row
+									if (h < newBottomY) {
+										newBottomY = h;
+									}
+									if (h > newTopY) {
+										newTopY = h;
+									}
+
+									// there is no neighbour below since this is the odd phase
+								}
+
+								// process middle rows of the tile
+								h += 2;
+								while (h < topY - 2) {
+									// get original value for next two rows
+									val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
+									val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+									origValue |= (val0 | val1);
+	
+									// get output
+									output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+									output0 = output & 65280;
+									output1 = (output & 255) << 8;
+									output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+									output0 |= (output >> 8);
+									output1 |= (output & 255);
+	
+									// save output 16bits
+									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+									nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
+									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+									nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+
+									// update statistics
+									population += bitCounts16[output0];
+									births += bitCounts16[output0 & ~val0];
+									deaths += bitCounts16[val0 & ~output0];
+									population += bitCounts16[output1];
+									births += bitCounts16[output1 & ~val1];
+									deaths += bitCounts16[val1 & ~output1];
+									
+									// check if any cells are set
+									if (output0 | output1) {
+										// update column occupied flag
+										colOccupied |= (output0 | output1);
+		
+										// update min and max row
+										if (h < newBottomY) {
+											newBottomY = h;
+										}
+										if (h > newTopY) {
+											newTopY = h;
+										}
+									}
+	
+									// next row
+									h += 2;
+								}
+
+								// process top row
+								val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
+								val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+								origValue |= (val0 | val1);
+
+								// get output
+								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+								output0 = output & 65280;
+								output1 = (output & 255) << 8;
+								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+								output0 |= (output >> 8);
+								output1 |= (output & 255);
+
+								// save output 16bits
+								nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+								nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
+								nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+								nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+
+								// update statistics
+								population += bitCounts16[output0];
+								births += bitCounts16[output0 & ~val0];
+								deaths += bitCounts16[val0 & ~output0];
+								population += bitCounts16[output1];
+								births += bitCounts16[output1 & ~val1];
+								deaths += bitCounts16[val1 & ~output1];
+								
+								// check if any cells are set
+								if (output0 | output1) {
+									// update column occupied flag
+									colOccupied |= (output0 | output1);
+	
+									// update min and max row
+									if (h < newBottomY) {
+										newBottomY = h;
+									}
+									if (h > newTopY) {
+										newTopY = h;
+									}
+	
+									// check for right column set in this tile or left column set in right hand tile
+									if (output0 | output1) {
+										if (((output0 | output1) & 3) !== 0) {
+											neighbours |= LifeConstants.topRightSet;
+										}
+	
+										// top row set
+										neighbours |= LifeConstants.topSet;
+									}
+								}
+
+								// check which columns contained cells
+								if (colOccupied) {
+									// check for right column set in this tile or left column set in right hand tile
+									if ((colOccupied & 3) !== 0) {
+										neighbours |= LifeConstants.rightSet;
+									}
+								}
+							}
+
+							// save the column occupied cells
+							columnOccupied16[leftX] |= colOccupied;
+
+							// check if the source or output were alive
+							if (colOccupied || origValue) {
+								// update 
+								nextTiles |= (1 << b);
+
+								// check for neighbours
+								if (neighbours) {
+									// check whether left edge occupied
+									if ((neighbours & LifeConstants.leftSet) !== 0) {
+										if (b < 15) {
+											nextTiles |= (1 << (b + 1));
+										} else {
+											// set in previous set if not at left edge
+											if ((tw > 0) && (leftX > 0)) {
+												nextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether right edge occupied
+									if ((neighbours & LifeConstants.rightSet) !== 0) {
+										if (b > 0) {
+											nextTiles |= (1 << (b - 1));
+										} else {
+											// set carry over to go into next set if not at right edge
+											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
+												nextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+
+									// check whether bottom edge occupied
+									if ((neighbours & LifeConstants.bottomSet) !== 0) {
+										// set in lower tile set
+										belowNextTiles |= (1 << b);
+									}
+
+									// check whether top edge occupied
+									if ((neighbours & LifeConstants.topSet) !== 0) {
+										// set in upper tile set
+										aboveNextTiles |= (1 << b);
+									}
+
+									// check whether bottom left occupied
+									if ((neighbours & LifeConstants.bottomLeftSet) !== 0) {
+										if (b < 15) {
+											belowNextTiles |= (1 << (b + 1));
+										} else {
+											if ((tw > 0) && (leftX > 0)) {
+												belowNextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether bottom right occupied
+									if ((neighbours & LifeConstants.bottomRightSet) !== 0) {
+										if (b > 0) {
+											belowNextTiles |= (1 << (b - 1));
+										} else {
+											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
+												belowNextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+
+									// check whether top left occupied
+									if ((neighbours & LifeConstants.topLeftSet) !== 0) {
+										if (b < 15) {
+											aboveNextTiles |= (1 << (b + 1));
+										} else {
+											if ((tw > 0) && (leftX > 0)) {
+												aboveNextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether top right occupied
+									if ((neighbours & LifeConstants.topRightSet) !== 0) {
+										if (b > 0) {
+											aboveNextTiles |= (1 << (b - 1));
+										} else {
+											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
+												aboveNextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+								}
+							}
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+
+					// save the tile groups
+					nextTileRow[tw] |= nextTiles;
+					if (th > 0) {
+						belowNextTileRow[tw] |= belowNextTiles;
+					}
+					if (th < tileRows - 1) {
+						aboveNextTileRow[tw] |= aboveNextTiles;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+			}
+
+			// next tile rows
+			bottomY += ySize;
+			topY += ySize;
+			if (topY >= height) {
+				topY = height - 1;
+			}
 		}
 
 		// update bounding box

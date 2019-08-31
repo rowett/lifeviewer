@@ -1,6 +1,12 @@
 Build 393
 - added support for Margolus rules
-
+	- rule format is Mn0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n13,n14,n15
+		- where n0 to n15 are integers from 0 to 15
+	- also supports MS,Dn0;n1;n2;n3;n4;n5;n6;n7;n8;n9;n10;n11;n12;n13;n14;n15
+	- bounded grids and alternate rules are allowed
+	- rules where n0 = 15 and n15 = 0 are replaced with equivalent rules that don't strobe
+	- rules where n0 is not zero apart from the case above are not allowed
+	
 Build 392
 - fixed an issue where rotate selection was incorrect when grid grew
 - performance improvement for editing tasks for 2-state Life-like and [R]History patterns
