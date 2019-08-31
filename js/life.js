@@ -5151,8 +5151,8 @@
 		// 00 00  01 01  02 02  03 03
 		// 00 00  01 01  02 02  03 03
 		for (i = 0; i < 65536; i += 1) {
-			row0 = i >> 8;
-			row1 = i & 255;
+			row1 = i >> 8;
+			row0 = i & 255;
 			mask = 192;
 			shift = 6;
 			dest0 = 0;
@@ -5166,7 +5166,9 @@
 				}
 
 				// get the mapping
+				value = ((value & 8) >> 1) | ((value & 4) << 1) | ((value & 2) >> 1) | ((value & 1) << 1);
 				lookup = ruleArray[value];
+				lookup = ((lookup & 8) >> 1) | ((lookup & 4) << 1) | ((lookup & 2) >> 1) | ((lookup & 1) << 1);
 
 				// update the destination rows
 				dest0 <<= 2;
@@ -5180,7 +5182,7 @@
 			}
 
 			// update the index
-			index[i] = (dest0 << 8) | dest1;
+			index[i] = (dest1 << 8) | dest0;
 		}
 	};
 
@@ -9760,14 +9762,14 @@
 			nextGrid = this.grid16;
 			tileGrid = this.nextTileGrid;
 			nextTileGrid = this.tileGrid;
-			if (this.altSpecified) {
-				indexLookup = this.margolusLookup2;
-			}
 		} else {
 			grid = this.grid16;
 			nextGrid = this.nextGrid16;
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
+			if (this.altSpecified) {
+				indexLookup = this.margolusLookup2;
+			}
 		}
 
 		// clear column occupied flags
@@ -9781,7 +9783,7 @@
 		}
 
 		// set the initial tile row
-		bottomY = this.counter & 1;
+		bottomY = 1 - (this.counter & 1);
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
@@ -9848,7 +9850,7 @@
 							neighbours = 0;
 
 							// check for even/odd phase
-							if ((this.counter & 1) === 0) {
+							if ((this.counter & 1) !== 0) {
 								// even phase
 								// process bottom row
 								h = bottomY;
@@ -10426,14 +10428,14 @@
 			nextGrid = this.grid16;
 			tileGrid = this.nextTileGrid;
 			nextTileGrid = this.tileGrid;
-			if (this.altSpecified) {
-				indexLookup = this.margolusLookup2;
-			}
 		} else {
 			grid = this.grid16;
 			nextGrid = this.nextGrid16;
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
+			if (this.altSpecified) {
+				indexLookup = this.margolusLookup2;
+			}
 		}
 
 		// clear column occupied flags
@@ -10447,7 +10449,7 @@
 		}
 
 		// set the initial tile row
-		bottomY = this.counter & 1;
+		bottomY = 1 - (this.counter & 1);
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
@@ -10514,7 +10516,7 @@
 							neighbours = 0;
 
 							// check for even/odd phase
-							if ((this.counter & 1) === 0) {
+							if ((this.counter & 1) !== 0) {
 								// even phase
 								// process bottom row
 								h = bottomY;
