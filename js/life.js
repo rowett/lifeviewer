@@ -1998,13 +1998,13 @@
 
 		// check for Margolus rules
 		if (me.isMargolus) {
-			if (leftX > 2 && ((leftX & 3) !== 0)) {
-				width += (leftX & 3);
-				leftX -= (leftX & 3);
+			if (leftX > 0 && ((leftX & 1) === 0)) {
+				leftX -= 1;
+				width += 1;
 			}
-			if ((bottomY > 2) && ((bottomY & 3) !== 0)) {
-				height += (bottomY & 3);
-				bottomY -= (bottomY & 3);
+			if ((bottomY > 0) && ((bottomY & 1) === 0)) {
+				bottomY -= 1;
+				height += 1;
 			}
 		}
 
