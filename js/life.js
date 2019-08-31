@@ -9820,6 +9820,11 @@
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
 
+				// prevent right hand tile from being processed
+				if (tw === tileCols16 -1) {
+					tiles &= 65534;
+				}
+
 				// check if any are occupied
 				if (tiles) {
 					// get the destination (with any set because of edges)
@@ -9837,29 +9842,13 @@
 							// clear the edge flags
 							neighbours = 0;
 
-							// process bottom row
-							h = bottomY;
-							origValue = 0;
-							if ((this.counter & 1) !== 0) {
-								// get original value for next two rows
-								val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
-								val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
-								origValue |= (val0 | val1);
+							// check for even/odd phase
+							if ((this.counter & 1) === 0) {
+								// even phase
+								// process bottom row
+								h = bottomY;
+								origValue = 0;
 
-								// get output
-								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
-								output0 = output & 65280;
-								output1 = (output & 255) << 8;
-								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
-								output0 |= (output >> 8);
-								output1 |= (output & 255);
-
-								// save output 16bits
-								nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
-								nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
-								nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
-								nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
-							} else {
 								// get original value for next two rows
 								val0 = grid[h][leftX];
 								val1 = grid[h + 1][leftX];
@@ -9878,6 +9867,157 @@
 								nextGrid[h + 1][leftX] = output1;
 
 								// check if any cells are set
+								output = output0 | output1;
+								if (output) {
+									// update column occupied flag
+									colOccupied |= output;
+
+									// update min and max row
+									if (h < newBottomY) {
+										newBottomY = h;
+									}
+									if (h > newTopY) {
+										newTopY = h;
+									}
+
+									// check for left column now set
+									if (output) {
+										if ((output & 49152) !== 0) {
+											neighbours |= LifeConstants.bottomLeftSet;
+										}
+	
+										// check for right column now set
+										if ((output & 3) !== 0) {
+											neighbours |= LifeConstants.bottomRightSet;
+										}
+	
+										// bottom row set
+										neighbours |= LifeConstants.bottomSet;
+									}
+								}
+
+								// process middle rows of the tile
+								h += 2;
+								while (h < topY - 2) {
+									// get original value for next two rows
+									val0 = grid[h][leftX];
+									val1 = grid[h + 1][leftX];
+									origValue |= (val0 | val1);
+	
+									// get output
+									output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+									output0 = output & 65280;
+									output1 = (output & 255) << 8;
+									output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+									output0 |= (output >> 8);
+									output1 |= (output & 255);
+	
+									// save output 16bits
+									nextGrid[h][leftX] = output0;
+									nextGrid[h + 1][leftX] = output1;
+	
+									// check if any cells are set
+									output = output0 | output1;
+									if (output) {
+										// update column occupied flag
+										colOccupied |= output;
+		
+										// update min and max row
+										if (h < newBottomY) {
+											newBottomY = h;
+										}
+										if (h > newTopY) {
+											newTopY = h;
+										}
+									}
+	
+									// next row
+									h += 2;
+								}
+	
+								// process top row
+								val0 = grid[h][leftX];
+								val1 = grid[h + 1][leftX];
+								origValue |= (val0 | val1);
+	
+								// get output
+								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+								output0 = output & 65280;
+								output1 = (output & 255) << 8;
+								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+								output0 |= (output >> 8);
+								output1 |= (output & 255);
+	
+								// save output 16bits
+								nextGrid[h][leftX] = output0;
+								nextGrid[h + 1][leftX] = output1;
+	
+								// check if any cells are set
+								output = output0 | output1;
+								if (output) {
+									// update column occupied flag
+									colOccupied |= output;
+	
+									// update min and max row
+									if (h < newBottomY) {
+										newBottomY = h;
+									}
+									if (h > newTopY) {
+										newTopY = h;
+									}
+	
+									// check for left column now set
+									if (output) {
+										if ((output & 49152) !== 0) {
+											neighbours |= LifeConstants.topLeftSet;
+										}
+	
+										// check for right column now set
+										if ((output & 3) !== 0) {
+											neighbours |= LifeConstants.topRightSet;
+										}
+	
+										// top row set
+										neighbours |= LifeConstants.topSet;
+									}
+								}
+
+								// check which columns contained cells
+								if (colOccupied) {
+									// check for right column set in this tile or left column set in right hand tile
+									if ((colOccupied & 49152) !== 0) {
+										neighbours |= LifeConstants.leftSet;
+									}
+									if ((colOccupied & 3) !== 0) {
+										neighbours |= LifeConstants.rightSet;
+									}
+								}
+							} else {
+								// odd phase
+								// process bottom row
+								h = bottomY;
+								origValue = 0;
+
+								// get original value for next two rows
+								val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
+								val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+								origValue |= (val0 | val1);
+
+								// get output
+								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
+								output0 = output & 65280;
+								output1 = (output & 255) << 8;
+								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
+								output0 |= (output >> 8);
+								output1 |= (output & 255);
+
+								// save output 16bits
+								nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+								nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
+								nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+								nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+
+								// check if any cells are set
 								if (output0 | output1) {
 									// update column occupied flag
 									colOccupied |= (output0 | output1);
@@ -9890,27 +10030,12 @@
 										newTopY = h;
 									}
 
-									// check for left column now set
-									if (output0) {
-										if ((output0 & 32768) !== 0) {
-											neighbours |= LifeConstants.bottomLeftSet;
-										}
-	
-										// check for right column now set
-										if ((output0 & 1) !== 0) {
-											neighbours |= LifeConstants.bottomRightSet;
-										}
-	
-										// bottom row set
-										neighbours |= LifeConstants.bottomSet;
-									}
+									// there is no neighbour below since this is the odd phase
 								}
-							}
 
-							// process middle rows of the tile
-							h += 2;
-							while (h < topY - 2) {
-								if ((this.counter & 1) !== 0) {
+								// process middle rows of the tile
+								h += 2;
+								while (h < topY - 2) {
 									// get original value for next two rows
 									val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
 									val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
@@ -9929,23 +10054,6 @@
 									nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
 									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
 									nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
-								} else {
-									// get original value for next two rows
-									val0 = grid[h][leftX];
-									val1 = grid[h + 1][leftX];
-									origValue |= (val0 | val1);
-	
-									// get output
-									output = indexLookup[(val0 & 65280) | (val1 >> 8)];
-									output0 = output & 65280;
-									output1 = (output & 255) << 8;
-									output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
-									output0 |= (output >> 8);
-									output1 |= (output & 255);
-	
-									// save output 16bits
-									nextGrid[h][leftX] = output0;
-									nextGrid[h + 1][leftX] = output1;
 
 									// check if any cells are set
 									if (output0 | output1) {
@@ -9960,15 +10068,12 @@
 											newTopY = h;
 										}
 									}
+	
+									// next row
+									h += 2;
 								}
 
-								// next row
-								h += 2;
-							}
-
-							// process top row
-							if ((this.counter & 1) !== 0) {
-								// get original value for next two rows
+								// process top row
 								val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
 								val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
 								origValue |= (val0 | val1);
@@ -9986,29 +10091,12 @@
 								nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
 								nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
 								nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
-							} else {
-								// get original value for next two rows
-								val0 = grid[h][leftX];
-								val1 = grid[h + 1][leftX];
-								origValue |= (val0 | val1);
-
-								// get output
-								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
-								output0 = output & 65280;
-								output1 = (output & 255) << 8;
-								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
-								output0 |= (output >> 8);
-								output1 |= (output & 255);
-
-								// save output 16bits
-								nextGrid[h][leftX] = output0;
-								nextGrid[h + 1][leftX] = output1;
 
 								// check if any cells are set
 								if (output0 | output1) {
 									// update column occupied flag
 									colOccupied |= (output0 | output1);
-
+	
 									// update min and max row
 									if (h < newBottomY) {
 										newBottomY = h;
@@ -10016,35 +10104,24 @@
 									if (h > newTopY) {
 										newTopY = h;
 									}
-
-									// check for left column now set
-									if (output1) {
-										if ((output1 & 32768) !== 0) {
-											neighbours |= LifeConstants.topLeftSet;
-										}
-
-										// check for right column now set
-										if ((output & 1) !== 0) {
+	
+									// check for right column set in this tile or left column set in right hand tile
+									if (output0 | output1) {
+										if (((output0 | output1) & 3) !== 0) {
 											neighbours |= LifeConstants.topRightSet;
 										}
-
+	
 										// top row set
 										neighbours |= LifeConstants.topSet;
 									}
 								}
-							}
 
-
-							// check which columns contained cells
-							if (colOccupied) {
-								// check for left column set
-								if ((colOccupied & 32768) !== 0) {
-									neighbours |= LifeConstants.leftSet;
-								}
-
-								// check for right column set
-								if ((colOccupied & 1) !== 0) {
-									neighbours |= LifeConstants.rightSet;
+								// check which columns contained cells
+								if (colOccupied) {
+									// check for right column set in this tile or left column set in right hand tile
+									if ((colOccupied & 3) !== 0) {
+										neighbours |= LifeConstants.rightSet;
+									}
 								}
 							}
 
@@ -10162,6 +10239,9 @@
 			// next tile rows
 			bottomY += ySize;
 			topY += ySize;
+			if (topY >= height) {
+				topY = height - 1;
+			}
 		}
 
 		// update bounding box
