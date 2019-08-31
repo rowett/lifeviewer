@@ -2585,6 +2585,7 @@
 								// check it is in range
 								if (numberValue >= ViewConstants.minBoldGridInterval && numberValue <= ViewConstants.maxBoldGridInterval) {
 									view.engine.gridLineMajor = numberValue;
+									view.customTheme = true;
 									itemValid = true;
 								}
 							}

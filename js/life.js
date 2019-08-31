@@ -9891,8 +9891,8 @@
 									if (h < newBottomY) {
 										newBottomY = h;
 									}
-									if (h > newTopY) {
-										newTopY = h;
+									if (h + 1 > newTopY) {
+										newTopY = h + 1;
 									}
 
 									// check for left column now set
@@ -9949,8 +9949,8 @@
 										if (h < newBottomY) {
 											newBottomY = h;
 										}
-										if (h > newTopY) {
-											newTopY = h;
+										if (h + 1 > newTopY) {
+											newTopY = h + 1;
 										}
 									}
 	
@@ -9993,8 +9993,8 @@
 									if (h < newBottomY) {
 										newBottomY = h;
 									}
-									if (h > newTopY) {
-										newTopY = h;
+									if (h + 1 > newTopY) {
+										newTopY = h + 1;
 									}
 	
 									// check for left column now set
@@ -10022,6 +10022,9 @@
 									if ((colOccupied & 3) !== 0) {
 										neighbours |= LifeConstants.rightSet;
 									}
+
+									// save the column occupied cells
+									columnOccupied16[leftX] |= colOccupied;
 								}
 							} else {
 								// odd phase
@@ -10065,8 +10068,8 @@
 									if (h < newBottomY) {
 										newBottomY = h;
 									}
-									if (h > newTopY) {
-										newTopY = h;
+									if (h + 1 > newTopY) {
+										newTopY = h + 1;
 									}
 
 									// there is no neighbour below since this is the odd phase
@@ -10111,8 +10114,8 @@
 										if (h < newBottomY) {
 											newBottomY = h;
 										}
-										if (h > newTopY) {
-											newTopY = h;
+										if (h + 1 > newTopY) {
+											newTopY = h + 1;
 										}
 									}
 	
@@ -10156,8 +10159,8 @@
 									if (h < newBottomY) {
 										newBottomY = h;
 									}
-									if (h > newTopY) {
-										newTopY = h;
+									if (h + 1 > newTopY) {
+										newTopY = h + 1;
 									}
 	
 									// check for right column set in this tile or left column set in right hand tile
@@ -10177,11 +10180,12 @@
 									if ((colOccupied & 3) !== 0) {
 										neighbours |= LifeConstants.rightSet;
 									}
+
+									// save the column occupied cells
+									columnOccupied16[leftX] |= colOccupied >> 1;
+									columnOccupied16[leftX + 1] |= ((colOccupied & 1) << 15);
 								}
 							}
-
-							// save the column occupied cells
-							columnOccupied16[leftX] |= colOccupied;
 
 							// check if the source or output were alive
 							if (colOccupied || origValue) {
@@ -10549,8 +10553,8 @@
 									if (h < newBottomY) {
 										newBottomY = h;
 									}
-									if (h > newTopY) {
-										newTopY = h;
+									if (h + 1 > newTopY) {
+										newTopY = h + 1;
 									}
 
 									// check for left column now set
@@ -10599,8 +10603,8 @@
 										if (h < newBottomY) {
 											newBottomY = h;
 										}
-										if (h > newTopY) {
-											newTopY = h;
+										if (h + 1 > newTopY) {
+											newTopY = h + 1;
 										}
 									}
 	
@@ -10635,8 +10639,8 @@
 									if (h < newBottomY) {
 										newBottomY = h;
 									}
-									if (h > newTopY) {
-										newTopY = h;
+									if (h + 1 > newTopY) {
+										newTopY = h + 1;
 									}
 	
 									// check for left column now set
@@ -10664,6 +10668,9 @@
 									if ((colOccupied & 3) !== 0) {
 										neighbours |= LifeConstants.rightSet;
 									}
+
+									// save the column occupied cells
+									columnOccupied16[leftX] |= colOccupied;
 								}
 							} else {
 								// odd phase
@@ -10699,8 +10706,8 @@
 									if (h < newBottomY) {
 										newBottomY = h;
 									}
-									if (h > newTopY) {
-										newTopY = h;
+									if (h + 1 > newTopY) {
+										newTopY = h + 1;
 									}
 
 									// there is no neighbour below since this is the odd phase
@@ -10737,8 +10744,8 @@
 										if (h < newBottomY) {
 											newBottomY = h;
 										}
-										if (h > newTopY) {
-											newTopY = h;
+										if (h + 1 > newTopY) {
+											newTopY = h + 1;
 										}
 									}
 	
@@ -10774,8 +10781,8 @@
 									if (h < newBottomY) {
 										newBottomY = h;
 									}
-									if (h > newTopY) {
-										newTopY = h;
+									if (h + 1 > newTopY) {
+										newTopY = h + 1;
 									}
 	
 									// check for right column set in this tile or left column set in right hand tile
@@ -10795,11 +10802,12 @@
 									if ((colOccupied & 3) !== 0) {
 										neighbours |= LifeConstants.rightSet;
 									}
+
+									// save the column occupied cells
+									columnOccupied16[leftX] |= colOccupied >> 1;
+									columnOccupied16[leftX + 1] |= ((colOccupied & 1) << 15);
 								}
 							}
-
-							// save the column occupied cells
-							columnOccupied16[leftX] |= colOccupied;
 
 							// check if the source or output were alive
 							if (colOccupied || origValue) {

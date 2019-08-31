@@ -6,6 +6,7 @@ Build 393
 	- bounded grids and alternate rules are allowed
 	- rules where n0 = 15 and n15 = 0 are replaced with equivalent rules that don't strobe
 	- rules where n0 is not zero apart from the case above are not allowed
+- using [[ GRIDMAJOR ]] creates a custom Theme
 	
 Build 392
 - fixed an issue where rotate selection was incorrect when grid grew
