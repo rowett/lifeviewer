@@ -41,8 +41,8 @@
 	// ViewConstants singleton
 	ViewConstants = {
 		// theme selection button positions and order
-		/** @const {Array<number>} */ themeX : [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3],
-		/** @const {Array<number>} */ themeOrder : [1, 10, 11, 17, 2, 3, 4, 5, 7, 12, 13, 14, 15, 16, 0, 6, 8, 9],
+		/** @const {Array<number>} */ themeX : [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3],
+		/** @const {Array<number>} */ themeOrder : [1, 10, 11, 17, 18, 2, 3, 4, 5, 7, 12, 13, 14, 15, 16, 0, 6, 8, 9],
 
 		// paste positions
 		/** @const {number} */ pastePositionNW : 0,
@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 393,
+		/** @const {number} */ versionBuild : 394,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4906,7 +4906,11 @@
 		this.themeDebugLabel.deleted = shown;
 
 		// disable custom theme if not specified
-		this.themeSelections[3].locked = !this.customTheme;
+		for (i = 0; i < ViewConstants.themeOrder.length; i += 1) {
+			if (ViewConstants.themeOrder[i] === this.engine.numThemes) {
+				this.themeSelections[i].locked = !this.customTheme;
+			}
+		}
 
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
@@ -7920,6 +7924,10 @@
 		return me.setThemeFromCallback(17, newValue, change);
 	};
 
+	View.prototype.toggleTheme18 = function(newValue, change, me) {
+		return me.setThemeFromCallback(18, newValue, change);
+	};
+
 	// graph close button
 	View.prototype.graphClosePressed = function(me) {
 		me.popGraph = false;
@@ -10836,6 +10844,7 @@
 		this.themeSelections[15].callback = this.toggleTheme15;
 		this.themeSelections[16].callback = this.toggleTheme16;
 		this.themeSelections[17].callback = this.toggleTheme17;
+		this.themeSelections[18].callback = this.toggleTheme18;
 
 		// add the theme category labels
 		this.themeDefaultLabel = this.viewMenu.addLabelItem(Menu.north, -210, 60, 120, 40, "Default");
@@ -12454,8 +12463,13 @@
 						// multi state uses theme 11
 						this.setNewTheme(11, 1, this);
 					} else {
-						// default to theme 1
-						this.setNewTheme(1, 1, this);
+						// check for Margolus
+						if (this.engine.isMargolus) {
+							this.setNewTheme(17, 1, this);
+						} else {
+							// default to theme 1
+							this.setNewTheme(1, 1, this);
+						}
 					}
 				}
 			}
@@ -12914,7 +12928,6 @@
 			this.nextUniverseButton.deleted = true;
 
 		}
-
 
 		// save initial undo state
 		this.afterEdit("");

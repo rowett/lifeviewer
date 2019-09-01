@@ -46,6 +46,7 @@
 		this.aliases.push(["BounceGasII", "M0,8,4,12,2,10,9,7,1,6,5,11,3,13,14,15"]);
 		this.aliases.push(["Critters", "M15,14,13,3,11,5,6,1,7,9,10,2,12,4,8,0"]);
 		this.aliases.push(["HPP_Gas", "M0,8,4,12,2,10,9,14,1,6,5,13,3,11,7,15"]);
+		this.aliases.push(["MargSingRot", "M0,2,8,3,1,5,6,7,4,9,10,11,12,13,14,15"]);
 		this.aliases.push(["Rotations", "M0,2,8,12,1,10,9,11,4,6,5,14,3,7,13,15"]);
 		this.aliases.push(["RotationsII", "M0,2,8,12,1,10,9,13,4,6,5,7,3,14,11,15"]);
 		this.aliases.push(["RotationsIII", "M0,4,1,10,8,3,9,11,2,6,12,14,5,7,13,15"]);

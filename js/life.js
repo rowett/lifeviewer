@@ -3334,6 +3334,7 @@
 					// clear the other buffer
 					this.anythingAlive = 1;
 					this.nextGeneration(false, false, graphDisabled);
+					this.anythingAlive = 0;
 					this.counter -= 1;
 				}
 			} else {
@@ -3355,6 +3356,7 @@
 					// clear the other buffer
 					this.anythingAlive = 1;
 					this.nextGeneration(false, false, graphDisabled);
+					this.anythingAlive = 0;
 					this.counter -= 1;
 				}
 			} else {
@@ -4350,16 +4352,16 @@
 		this.zoomBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
 
 		// initial bounding box for HROT alive cells
-		this.HROTBox = new BoundingBox(0, 0, this.width -1, this.height - 1);
+		this.HROTBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
 	
 		// initial bounding box for LifeHistory
-		this.initialBox = new BoundingBox(0, 0, this.width -1, this.height - 1);
+		this.initialBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
 
 		// bounding box for history autofit
 		this.historyBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
 
 		// bounding box for track box
-		this.trackBox = new BoundingBox(0, 0, this.width -1, this.height - 1);
+		this.trackBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
 
 		// save drawing context
 		this.context = context;
@@ -4504,6 +4506,12 @@
 		this.themes[i] = new Theme("Life32", new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new ColourRange(new Colour(0, 0, 128), new Colour(0, 0, 128)), new Colour(255, 255, 255),
 									new Colour(0, 0, 128), new ColourRange(new Colour(0, 0, 64), new Colour(-1, -1, -1)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(255, 255, 255));
 		this.themes[i].setGridLines(5, new Colour(192, 192, 192), new Colour(128, 128, 128));
+		i += 1;
+
+		// Margolus theme
+		this.themes[i] = new Theme("Margolus", new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 128)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 255)), new Colour(0, 0, 0),
+									new Colour(255, 255, 0), new ColourRange(new Colour(64, 64, 128), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 128)), new Colour(0, 0, 0));
+		this.themes[i].setGridLines(2, new Colour(32, 32, 255), new Colour(32, 32, 192));
 		i += 1;
 
 		// custom theme
@@ -7311,7 +7319,7 @@
 			rightX = (this.width >> this.tilePower) - 1;
 		}
 		if (topY >= (this.height >> this.tilePower)) {
-			topY = (this.height >> this.tilePower) -1;
+			topY = (this.height >> this.tilePower) - 1;
 		}
 
 		// set the top and bottom row of the bounded grid in the tile map
@@ -9828,7 +9836,7 @@
 				tiles = tileRow[tw];
 
 				// prevent right hand tile from being processed
-				if (tw === tileCols16 -1) {
+				if (tw === tileCols16 - 1) {
 					tiles &= 65534;
 				}
 
@@ -9854,12 +9862,11 @@
 								// even phase
 								// process bottom row
 								h = bottomY;
-								origValue = 0;
 
 								// get original value for next two rows
 								val0 = grid[h][leftX];
 								val1 = grid[h + 1][leftX];
-								origValue |= (val0 | val1);
+								origValue = (val0 | val1);
 
 								// get output
 								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
@@ -9896,19 +9903,17 @@
 									}
 
 									// check for left column now set
-									if (output) {
-										if ((output & 49152) !== 0) {
-											neighbours |= LifeConstants.bottomLeftSet;
-										}
-	
-										// check for right column now set
-										if ((output & 3) !== 0) {
-											neighbours |= LifeConstants.bottomRightSet;
-										}
-	
-										// bottom row set
-										neighbours |= LifeConstants.bottomSet;
+									if ((output & 49152) !== 0) {
+										neighbours |= LifeConstants.bottomLeftSet;
 									}
+	
+									// check for right column now set
+									if ((output & 3) !== 0) {
+										neighbours |= LifeConstants.bottomRightSet;
+									}
+	
+									// bottom row set
+									neighbours |= LifeConstants.bottomSet;
 								}
 
 								// process middle rows of the tile
@@ -10030,12 +10035,11 @@
 								// odd phase
 								// process bottom row
 								h = bottomY;
-								origValue = 0;
 
 								// get original value for next two rows
 								val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
 								val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
-								origValue |= (val0 | val1);
+								origValue = (val0 | val1);
 
 								// get output
 								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
@@ -10060,9 +10064,10 @@
 								deaths += bitCounts16[val1 & ~output1];
 								
 								// check if any cells are set
-								if (output0 | output1) {
+								output = output0 | output1;
+								if (output) {
 									// update column occupied flag
-									colOccupied |= (output0 | output1);
+									colOccupied |= output;
 
 									// update min and max row
 									if (h < newBottomY) {
@@ -10106,9 +10111,10 @@
 									deaths += bitCounts16[val1 & ~output1];
 									
 									// check if any cells are set
-									if (output0 | output1) {
+									output = output0 | output1;
+									if (output) {
 										// update column occupied flag
-										colOccupied |= (output0 | output1);
+										colOccupied |= output;
 		
 										// update min and max row
 										if (h < newBottomY) {
@@ -10151,9 +10157,10 @@
 								deaths += bitCounts16[val1 & ~output1];
 								
 								// check if any cells are set
-								if (output0 | output1) {
+								output = output0 | output1;
+								if (output) {
 									// update column occupied flag
-									colOccupied |= (output0 | output1);
+									colOccupied |= output;
 	
 									// update min and max row
 									if (h < newBottomY) {
@@ -10164,14 +10171,12 @@
 									}
 	
 									// check for right column set in this tile or left column set in right hand tile
-									if (output0 | output1) {
-										if (((output0 | output1) & 3) !== 0) {
-											neighbours |= LifeConstants.topRightSet;
-										}
-	
-										// top row set
-										neighbours |= LifeConstants.topSet;
+									if ((output & 3) !== 0) {
+										neighbours |= LifeConstants.topRightSet;
 									}
+	
+									// top row set
+									neighbours |= LifeConstants.topSet;
 								}
 
 								// check which columns contained cells
@@ -10191,6 +10196,11 @@
 							if (colOccupied || origValue) {
 								// update 
 								nextTiles |= (1 << b);
+
+								// if original had right most cell set this is actually the left cell of the tile to the right
+								if ((origValue & 1) !== 0) {
+									neighbours |= LifeConstants.rightSet;
+								}
 
 								// check for neighbours
 								if (neighbours) {
@@ -10498,7 +10508,7 @@
 				tiles = tileRow[tw];
 
 				// prevent right hand tile from being processed
-				if (tw === tileCols16 -1) {
+				if (tw === tileCols16 - 1) {
 					tiles &= 65534;
 				}
 
@@ -10813,6 +10823,11 @@
 							if (colOccupied || origValue) {
 								// update 
 								nextTiles |= (1 << b);
+
+								// if original had right most cell set this is actually the left cell of the tile to the right
+								if ((origValue & 1) !== 0) {
+									neighbours |= LifeConstants.rightSet;
+								}
 
 								// check for neighbours
 								if (neighbours) {
@@ -16639,6 +16654,7 @@
 			startX = 0, startY = 0, endX = 0, endY = 0,
 			leftX = 0, rightX = w, bottomY = 0, topY = h,
 			drawMajor = (this.gridLineMajor > 0 && this.gridLineMajorEnabled),
+			odd = (this.counter & 1),
 
 		    // compute single cell offset
 		    yOff = (((this.height / 2 - (this.yOff + this.originY)) * zoomStep) + (h / 2)) % zoomStep,
@@ -16662,6 +16678,11 @@
 		// start drawing the grid line colour
 		targetCol = gridCol;
 
+		// for Margolus alternate major/minor grid lines for odd/even generations
+		if (!this.isMargolus || this.gridLineMajor !== 2) {
+			odd = 0;
+		}
+
 		while (loop) {
 			// compute major grid line vertical offset
 			gridLineNum = -(w / 2 / zoomStep) - (this.width / 2 - this.xOff - this.originX) | 0;
@@ -16681,7 +16702,7 @@
 				// check if major gridlines are enabled
 				if (drawMajor) {
 					// choose whether to use major or minor colour
-					if (gridLineNum % this.gridLineMajor === 0) {
+					if ((gridLineNum + odd) % this.gridLineMajor === 0) {
 						drawCol = gridBoldCol;
 					} else {
 						drawCol = gridCol;
@@ -16720,7 +16741,7 @@
 				// check if major gridlines are enabled
 				if (drawMajor) {
 					// choose whether to use major or minor colour
-					if (gridLineNum % this.gridLineMajor === 0) {
+					if ((gridLineNum + odd) % this.gridLineMajor === 0) {
 						drawCol = gridBoldCol;
 					} else {
 						drawCol = gridCol;
