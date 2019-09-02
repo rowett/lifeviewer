@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 394,
+		/** @const {number} */ versionBuild : 395,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1406,8 +1406,8 @@
 		// shrink button
 		this.shrinkButton = null;
 
-		// close or esc button
-		this.closeButton = null;
+		// esc button
+		this.escButton = null;
 
 		// label toggle button
 		this.labelButton = null;
@@ -4949,7 +4949,7 @@
 
 		this.fitButton.deleted = hide;
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
-		this.closeButton.deleted = !(this.isInPopup || this.scriptErrors.length);
+		this.escButton.deleted = !this.scriptErrors.length;
 
 		// settings menu
 		shown = hide || this.showThemeSelection;
@@ -5022,16 +5022,6 @@
 		this.infoBarLabelSValueRight.deleted = shown;
 		this.infoBarLabelWValueRight.deleted = shown;
 		this.infoBarLabelNValueRight.deleted = shown;
-
-		if (this.scriptErrors.length) {
-			this.closeButton.toolTip = "close errors";
-			this.closeButton.preText = "Esc";
-			this.closeButton.font = "16px Arial";
-		} else {
-			this.closeButton.toolTip = "close window";
-			this.closeButton.preText = "X";
-			this.closeButton.font = "24px Arial";
-		}
 
 		// help topics
 		this.topicsButton.deleted = !(this.displayHelp && (this.helpTopic !== ViewConstants.welcomeTopic));
@@ -5570,6 +5560,12 @@
 		// check if changing
 		if (change) {
 			me.popGraph = newValue[0];
+			// if just switched on then switch to pan mode
+			if (me.popGraph) {
+				if (me.modeList.current !== ViewConstants.modePan) {
+					me.modeList.current = me.viewModeList(ViewConstants.modePan, true, me);
+				}
+			}
 		}
 
 		return [me.popGraph];
@@ -7310,11 +7306,11 @@
 								me.dragEndSelect(me);
 							}
 						}
-	
-						// clear last drag position
-						me.lastDragX = -1;
-						me.lastDragY = -1;
 					}
+
+					// clear last drag position
+					me.lastDragX = -1;
+					me.lastDragY = -1;
 				} else {
 					// just got focus
 					if (!(me.displayHelp || me.navToggle.current[0])) {
@@ -7934,18 +7930,13 @@
 		me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
 	};
 
-	// close button
-	/* eslint-disable no-unused-vars */
-	View.prototype.closePressed = function(me) {
+	// esc button
+	View.prototype.escPressed = function(me) {
 		// check if errors displayed
 		if (me.scriptErrors.length) {
 			// clear errors
 			me.scriptErrors = [];
 			me.displayErrors = 0;
-		} else {
-			/* eslint-enable no-unused-vars */
-			// hide the viewer
-			hideViewer();
 		}
 	};
 
@@ -10227,6 +10218,7 @@
 	// save the current rle to the source document node
 	View.prototype.saveCurrentRLE = function(me) {
 		me.element.innerHTML = me.engine.asRLE(me, me.engine, true);
+		me.element.value = me.element.innerHTML;
 	};
 
 	// select and copy reset position rle
@@ -10731,9 +10723,10 @@
 		this.nextUniverseButton = this.viewMenu.addButtonItem(this.nextUniversePressed, Menu.south, 135, -90, 120, 40, "Next");
 		this.nextUniverseButton.toolTip = "go to next universe";
 
-		// close button
-		this.closeButton = this.viewMenu.addButtonItem(this.closePressed, Menu.southEast, -40, -90, 40, 40, "X");
-		this.closeButton.toolTip = "close window";
+		// esc button
+		this.escButton = this.viewMenu.addButtonItem(this.escPressed, Menu.southEast, -40, -90, 40, 40, "Esc");
+		this.escButton.toolTip = "close errors";
+		this.escButton.font = "16px Arial";
 		
 		// previous POI button
 		this.prevPOIButton = this.viewMenu.addButtonItem(this.prevPOIPressed, Menu.west, 10, 0, 40, 40, "<");
@@ -11004,7 +10997,7 @@
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.backButton, this.themeButton, this.ruleButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.closeButton, this.autoHideButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []); 
+		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.backButton, this.themeButton, this.ruleButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);

@@ -1,3 +1,9 @@
+Build 395
+- removed close UI button from PopUp Viewer now window close button works
+- switch to Pan mode when Population Graph is turned on (since it's not visible in Draw or Select mode)
+- improved touch event handling
+- fixed scrolling help list on mobile devices
+
 Build 394
 - added new Margolus THEME
 - added new Margolus alias

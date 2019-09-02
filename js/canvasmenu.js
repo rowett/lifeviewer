@@ -623,10 +623,8 @@
 		this.lastMouseY = -1;
 
 		// last touch coordinates
-		this.lastScreenX = -1;
-		this.lastScreenY = -1;
-		this.lastClientX = -1;
-		this.lastClientY = -1;
+		this.lastTouchX = -1;
+		this.lastTouchY = -1;
 
 		// text alignment
 		this.textAlign = Menu.center;
@@ -847,7 +845,10 @@
 	/**
 	 * @constructor
 	 */
-	function MenuList(callback, activate, caller, context, defaultFont) {
+	function MenuList(manager, callback, activate, caller, context, defaultFont) {
+		// manager
+		this.manager = manager;
+
 		// context
 		this.context = context;
 
@@ -1577,11 +1578,17 @@
 	};
 
 	// draw menu item
-	MenuList.prototype.drawItem = function(item, mouseIsOver, itemNum, activeNum) {
-		var markerPos, highlight, highlightSize, markerX, markerY, mX, mY, i, l, w;
+	MenuList.prototype.drawItem = function(item, mouseIsOver, itemNum, activeNum, touch) {
+		var markerPos, highlight, highlightSize, markerX, markerY, mX, mY, i, l, w,
+			canHighlight = true;
+
+		// highlight disabled if touch events just caused a click
+		if (mouseIsOver && !this.mouseDown && touch) {
+			canHighlight = false;
+		}
 
 		// button and toggle types use the highlight colour as the background if active or no active item and mouse over
-		if ((itemNum === activeNum || (activeNum === -1 && mouseIsOver)) && (item.type === Menu.button || item.type === Menu.toggle)) {
+		if (canHighlight && (itemNum === activeNum || (activeNum === -1 && mouseIsOver)) && (item.type === Menu.button || item.type === Menu.toggle)) {
 			this.context.fillStyle = item.hlCol;
 			this.context.globalAlpha = item.hlAlpha;
 		} else {
@@ -1784,7 +1791,7 @@
 
 		// range
 		case Menu.range:
-			this.drawRangeValue(item, (itemNum === activeNum) || (activeNum === -1 && mouseIsOver));
+			this.drawRangeValue(item, canHighlight && ((itemNum === activeNum) || (activeNum === -1 && mouseIsOver)));
 			break;
 
 		// toggle
@@ -1799,7 +1806,7 @@
 
 		// list
 		case Menu.list:
-			this.drawListValue(item, (itemNum === activeNum) || (activeNum === -1 && mouseIsOver));
+			this.drawListValue(item, canHighlight && ((itemNum === activeNum) || (activeNum === -1 && mouseIsOver)));
 			break;
 
 		// ignore others
@@ -2019,7 +2026,7 @@
 
 					// draw the item
 					if (currentItem.enabled) {
-						this.drawItem(currentItem, mouseIsOver, i, activeItem);
+						this.drawItem(currentItem, mouseIsOver, i, activeItem, this.manager.eventWasTouch);
 					}
 				}
 			}
@@ -2193,6 +2200,9 @@
 		this.mouseLastX = -1;
 		this.mouseLastY = -1;
 
+		// whether last event was touch
+		this.eventWasTouch = false;
+
 		// active menu list
 		this.currentMenu = null;
 
@@ -2259,9 +2269,10 @@
 		registerEvent(mainCanvas, "mouseout", function(event) {me.canvasMouseOut(me, event);}, false);
 
 		// register event listeners for touch
-		registerEvent(mainCanvas, "touchstart", function(event) {me.touchToMouse(me, event);}, false);
-		registerEvent(mainCanvas, "touchmove", function(event) {me.touchToMouse(me, event);}, false);
-		registerEvent(mainCanvas, "touchend", function(event) {me.touchToMouse(me, event);}, false);
+		registerEvent(mainCanvas, "touchstart", function(event) {me.touchHandler(me, event);}, false);
+		registerEvent(mainCanvas, "touchmove", function(event) {me.touchHandler(me, event);}, false);
+		registerEvent(mainCanvas, "touchend", function(event) {me.touchHandler(me, event);}, false);
+		registerEvent(mainCanvas, "touchcancel", function(event) {me.touchHandler(me, event);}, false);
 	}
 
 	// reset time intervals
@@ -2361,7 +2372,7 @@
 	// create menu
 	MenuManager.prototype.createMenu = function(callback, activate, caller) {
 		// create menu object
-		var menuList = new MenuList(callback, activate, caller, this.mainContext, this.defaultFont);
+		var menuList = new MenuList(this, callback, activate, caller, this.mainContext, this.defaultFont);
 
 		// set default style
 		menuList.fgCol = this.fgCol;
@@ -2968,118 +2979,202 @@
 		}
 	};
 
-	// touch end event
-	MenuManager.prototype.touchToMouse = function(me, event) {
-		var touch = null, simulatedEvent, type = "";
+	// touch event handler
+	MenuManager.prototype.touchHandler = function(me, event) {
+		var x = 0, y = 0;
 
-		// deal with touchend
-		if (event.type === "touchend") {
-			type = "mouseup";
-			simulatedEvent = document.createEvent("MouseEvent");
-			simulatedEvent.initMouseEvent(type, true, true, window, 1, me.lastScreenX, me.lastScreenY, me.lastClientX, me.lastClientY, false, false, false, false, 0, null);
-
-			// fire the event
-			event.target.dispatchEvent(simulatedEvent);
-			event.preventDefault();
-		} else {
-			// only deal with single touch
-			if (event.touches.length === 1) {
-				// map touch events to mouse events
-				switch (event.type) {
-				// map touchstart to mousedown
-				case "touchstart":
-					type = "mousedown";
-					break;
-
-				// map touchmove to mousemove
-				case "touchmove":
-					type = "mousemove";
-					break;
-
-				// ignore others
-				default:
-					break;
-				}
+		// get event position
+		if (event.touches.length > 0) {
+			if (event.touches[0].pageX || event.touches[0].pageY) {
+				x = event.touches[0].pageX;
+				y = event.touches[0].pageY;
+			} else {
+				x = event.touches[0].clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+				y = event.touches[0].clientY + document.body.scrollTop + document.documentElement.scrollTop;
 			}
-			// check we got a supported event
-			if (type !== "") {
-				// build a mouse event
-				touch = event.changedTouches[0];
-				simulatedEvent = document.createEvent("MouseEvent");
-				simulatedEvent.initMouseEvent(type, true, true, window, 1, touch.screenX, touch.screenY, touch.clientX, touch.clientY, false, false, false, false, 0, null);
+			me.lastTouchX = x;
+			me.lastTouchY = y;
+		} else {
+			x = me.lastTouchX;
+			y = me.lastTouchY;
+		}
+	
+		// determine which event was received
+		me.lastEventType = event.type;
+		switch (event.type) {
+		case "touchend":
+			me.performUp(me, x, y);
+			break;
+		case "touchstart":
+			me.performDown(me, x, y);
+			break;
+		case "touchmove":
+			me.performMove(me, x, y);
+			break;
+		case "touchcancel":
+			me.performOut(me);
+			break;
+		}
+	
+		// mark last event as a touch event
+		me.eventWasTouch = true;
 
-				// fire the event
-				touch.target.dispatchEvent(simulatedEvent);
-				event.preventDefault();
+		// stop event propagating
+		if (event.stopPropagation) {
+			event.stopPropagation();
+		}
+		event.preventDefault();
+	};
 
-				// save the last position
-				me.lastScreenX = touch.screenX;
-				me.lastScreenY = touch.screenY;
-				me.lastClientX = touch.clientX;
-				me.lastClientY = touch.clientY;
+	// perform mouse/touch down event
+	MenuManager.prototype.performDown = function(me, x, y) {
+		// update cursor position
+		me.updateCursorPosition(me, x, y);
+	
+		// mark mouse down
+		me.mouseDown = true;
+	
+		// mark that no update has happened since this mouse down
+		me.updateSinceMouseDown = false;
+	};
+
+	// perform mouse/touch up event
+	MenuManager.prototype.performUp = function(me, x, y) {
+		// remember current mouse up time
+		me.lastMouseUp = performance.now();
+
+		// update cursor position
+		me.updateCursorPosition(me, x, y);
+
+		// mark mouse not down
+		me.mouseDown = false;
+
+		// if no update was processed since last mouse down then a click happened
+		if (!me.updateSinceMouseDown) {
+			me.clickHappened = true;
+		}
+
+		// check if the canvas has focus
+		if (!me.hasFocus) {
+			// set focus on canvas element
+			me.mainCanvas.focus();
+			me.hasFocus = true;
+
+			// clear click to focus notification
+			me.notification.clear(true, false);
+
+			// call focus callback if registered
+			if (me.focusCallback) {
+				me.focusCallback(me.caller);
+			}
+		}
+	};
+
+	// perform mouse/touch move event
+	MenuManager.prototype.performMove = function(me, x, y) {
+		// check if this has focus
+		me.checkFocusAndNotify(me);
+
+		// update cursor position
+		me.updateCursorPosition(me, x, y);
+	};
+
+	// perform mouse/touch over event
+	MenuManager.prototype.performOver = function(me) {
+		// check if this has focus
+		me.checkFocusAndNotify(me);
+	};
+
+	// perform mouse/touch out event
+	MenuManager.prototype.performOut = function(me) {
+		// check if enough time has past since last mouse up
+		var timeSinceUp = performance.now() - me.lastMouseUp;
+		
+		// check if enough time has past since last mouse up
+		if (timeSinceUp > 1) {
+			// check if window has focus
+			if (!me.hasFocus) {
+				me.notification.clear(true, false);
+			}
+
+			// remove focus
+			me.mainCanvas.blur();
+			me.hasFocus = false;
+
+			// mark mouse not down
+			me.mouseDown = false;
+			
+			// clear mouse coordinates
+			me.mouseLastX = -1;
+			me.mouseLastY = -1;
+
+			// clear click to interact flag
+			me.clickToInteract = false;
+
+			// schedule update if no update scheduled
+			if (!me.updateScheduled) {
+				me.scheduleNextUpdate(me);
+				if (me.updateCount < 2) {
+					me.updateCount = 2;
+				}
 			}
 		}
 	};
 
 	// mouse down event
 	MenuManager.prototype.canvasMouseDown = function(me, event) {
+		var x = 0, y = 0;
+
 		// check if passing events
 		if (!me.passEvents) {
-			// update cursor position
-			me.updateCursorPosition(me, event);
-
-			// mark mouse down
-			me.mouseDown = true;
-
-			// mark that no update has happened since this mouse down
-			me.updateSinceMouseDown = false;
+			// get event position
+			if (event.pageX || event.pageY) {
+				x = event.pageX;
+				y = event.pageY;
+			} else {
+				x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+				y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+			}
+			
+			// perform down event
+			me.performDown(me, x, y);
 
 			// stop event propagating
 			if (event.stopPropagation) {
 				event.stopPropagation();
 			}
 			event.preventDefault();
+			me.eventWasTouch = false;
 		}
 	};
 
 	// mouse up event
 	MenuManager.prototype.canvasMouseUp = function(me, event) {
+		var x = 0, y = 0;
+
 		// remember current mouse up time
 		me.lastMouseUp = performance.now();
 
 		// check if passing events
 		if (!me.passEvents) {
-			// update cursor position
-			me.updateCursorPosition(me, event);
-
-			// mark mouse not down
-			me.mouseDown = false;
-
-			// if no update was processed since last mouse down then a click happened
-			if (!me.updateSinceMouseDown) {
-				me.clickHappened = true;
+			// get event position
+			if (event.pageX || event.pageY) {
+				x = event.pageX;
+				y = event.pageY;
+			} else {
+				x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+				y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
 			}
 
-			// check if the canvas has focus
-			if (!me.hasFocus) {
-				// set focus on canvas element
-				me.mainCanvas.focus();
-				me.hasFocus = true;
-
-				// clear click to focus notification
-				me.notification.clear(true, false);
-
-				// call focus callback if registered
-				if (me.focusCallback) {
-					me.focusCallback(me.caller);
-				}
-			}
+			// perform up event
+			me.performUp(me, x, y);
 
 			// stop event propagating
 			if (event.stopPropagation) {
 				event.stopPropagation();
 			}
 			event.preventDefault();
+			me.eventWasTouch = false;
 		}
 	};
 
@@ -3113,19 +3208,28 @@
 
 	// mouse move event
 	MenuManager.prototype.canvasMouseMove = function(me, event) {
+		var x = 0, y = 0;
+
 		// check if passing events
 		if (!me.passEvents) {
-			// check if this has focus
-			me.checkFocusAndNotify(me);
+			// get event position
+			if (event.pageX || event.pageY) {
+				x = event.pageX;
+				y = event.pageY;
+			} else {
+				x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+				y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+			}
 
-			// update cursor position
-			me.updateCursorPosition(me, event);
+			// perform move event
+			me.performMove(me, x, y);
 
 			// stop event propagating
 			if (event.stopPropagation) {
 				event.stopPropagation();
 			}
 			event.preventDefault();
+			me.eventWasTouch = false;
 		}
 	};
 
@@ -3133,73 +3237,36 @@
 	MenuManager.prototype.canvasMouseOver = function(me, event) {
 		// check if passing events
 		if (!me.passEvents) {
-			// check if this has focus
-			me.checkFocusAndNotify(me);
+			// perform over event
+			me.performOver(me);
 
 			// stop event propagating
 			if (event.stopPropagation) {
 				event.stopPropagation();
 			}
 			event.preventDefault();
+			me.eventWasTouch = false;
 		}
 	};
 
 	// mouse out event
 	MenuManager.prototype.canvasMouseOut = function(me, event) {
-		// check if enough time has past since last mouse up
-		var timeSinceUp = performance.now() - me.lastMouseUp;
-		
 		// check if passing events
 		if (!me.passEvents) {
-			// check if enough time has past since last mouse up
-			if (timeSinceUp > 1) {
-				// check if window has focus
-				if (!me.hasFocus) {
-					me.notification.clear(true, false);
-				}
-
-				// remove focus
-				me.mainCanvas.blur();
-				me.hasFocus = false;
-
-				// mark mouse not down
-				me.mouseDown = false;
-				
-				// clear mouse coordinates
-				me.mouseLastX = -1;
-				me.mouseLastY = -1;
-
-				// clear click to interact flag
-				me.clickToInteract = false;
-
-				// schedule update if no update scheduled
-				if (!me.updateScheduled) {
-					me.scheduleNextUpdate(me);
-					if (me.updateCount < 2) {
-						me.updateCount = 2;
-					}
-				}
-			}
+			// perform out event
+			me.performOut(me);
 
 			// stop event propagating
 			if (event.stopPropagation) {
 				event.stopPropagation();
 			}
 			event.preventDefault();
+			me.eventWasTouch = false;
 		}
 	};
 
 	// get cursor position over canvas
-	MenuManager.prototype.updateCursorPosition = function(me, event) {
-		var x, y;
-		if (event.pageX || event.pageY) {
-			x = event.pageX;
-			y = event.pageY;
-		} else {
-			x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-			y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-		}
-
+	MenuManager.prototype.updateCursorPosition = function(me, x, y) {
 		// compute the canvas offset
 		me.computeCanvasOffset();
 
