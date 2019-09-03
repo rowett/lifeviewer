@@ -10699,7 +10699,7 @@
 
 								// top right!
 								if ((origValue & 1) !== 0) {
-									neighbours != LifeConstants.topRightSet;
+									neighbours |= LifeConstants.topRightSet;
 								}
 							} else {
 								// odd phase

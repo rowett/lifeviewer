@@ -622,10 +622,6 @@
 		this.lastMouseX = -1;
 		this.lastMouseY = -1;
 
-		// last touch coordinates
-		this.lastTouchX = -1;
-		this.lastTouchY = -1;
-
 		// text alignment
 		this.textAlign = Menu.center;
 
@@ -2203,6 +2199,9 @@
 		// whether last event was touch
 		this.eventWasTouch = false;
 
+		// current touch id
+		this.currentTouchId = -1;
+
 		// active menu list
 		this.currentMenu = null;
 
@@ -2979,40 +2978,66 @@
 		}
 	};
 
+	// find touch change by identified
+	MenuManager.prototype.findChangeById = function(changes, id) {
+		var change = null,
+			i = 0;
+
+		// search the change list for the change with the specified id
+		while (change === null && i < changes.length) {
+			if (changes[i].identifier === id) {
+				change = changes[i];
+			} else {
+				i += 1;
+			}
+		}
+
+		return change;
+	};
+
 	// touch event handler
 	MenuManager.prototype.touchHandler = function(me, event) {
-		var x = 0, y = 0;
-
-		// get event position
-		if (event.touches.length > 0) {
-			if (event.touches[0].pageX || event.touches[0].pageY) {
-				x = event.touches[0].pageX;
-				y = event.touches[0].pageY;
-			} else {
-				x = event.touches[0].clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-				y = event.touches[0].clientY + document.body.scrollTop + document.documentElement.scrollTop;
-			}
-			me.lastTouchX = x;
-			me.lastTouchY = y;
-		} else {
-			x = me.lastTouchX;
-			y = me.lastTouchY;
-		}
-	
+		var changes = event.changedTouches,
+			thisChange = null;
+			
 		// determine which event was received
-		me.lastEventType = event.type;
 		switch (event.type) {
-		case "touchend":
-			me.performUp(me, x, y);
-			break;
+		// touch start
 		case "touchstart":
-			me.performDown(me, x, y);
+			// check if processing a touch
+			if (me.currentTouchId === -1) {
+				thisChange = changes[0];
+				me.currentTouchId = thisChange.identifier;
+				me.performDown(me, thisChange.pageX, thisChange.pageY);
+			}
 			break;
+
+		// touch end
+		case "touchend":
+			// find the change record for the current touch
+			thisChange = me.findChangeById(changes, me.currentTouchId);
+			if (thisChange !== null) {
+				me.performUp(me, thisChange.pageX, thisChange.pageY);
+				me.currentTouchId = -1;
+			}
+			break;
+
+		// touch move
 		case "touchmove":
-			me.performMove(me, x, y);
+			// find the change record for the current touch
+			thisChange = me.findChangeById(changes, me.currentTouchId);
+			if (thisChange !== null) {
+				me.performMove(me, thisChange.pageX, thisChange.pageY);
+			}
 			break;
+
+		// touch cancel
 		case "touchcancel":
-			me.performOut(me);
+			// find the change record for the current touch
+			thisChange = me.findChangeById(changes, me.currentTouchId);
+			if (thisChange !== null) {
+				me.performOut(me);
+			}
 			break;
 		}
 	
@@ -3023,7 +3048,9 @@
 		if (event.stopPropagation) {
 			event.stopPropagation();
 		}
-		event.preventDefault();
+		if (event.cancelable) {
+			event.preventDefault();
+		}
 	};
 
 	// perform mouse/touch down event
