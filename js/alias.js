@@ -216,6 +216,7 @@
 		this.aliases.push(["GlideLife", "B34ek5ak/S2-c34z"]);
 		this.aliases.push(["GliderGlut", "B2k3aijn4ak5y6k/S2ae3ajnr4aiw"]);
 		this.aliases.push(["GliderRROLife", "B2e3einy4ak5ijq7c/S1c2-ai3-ceky4ejny5ceqr6ak"]);
+		this.aliases.push(["Glimmering Garden", "B3-jknr4ity5ijk6i8/S23-a4city6c7c"]);
 		this.aliases.push(["Goat Flock", "B2in3/S123a"]);
 		this.aliases.push(["Goats", "B2in3/S123a"]);
 		this.aliases.push(["Goldilocks I", "B2ek3cei4acjr5c8/S02ack3kn4aen"]);

@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 395,
+		/** @const {number} */ versionBuild : 396,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4949,16 +4949,20 @@
 
 		this.fitButton.deleted = hide;
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
-		this.escButton.deleted = !this.scriptErrors.length;
+		this.escButton.deleted = !(this.isInPopup || this.scriptErrors.length);
+
+		if (this.showDisplaySettings || this.showInfoSettings || this.showRuleSettings || this.showPlaybackSettings || this.showThemeSelection) {
+			this.backButton.preText = "Back";
+		} else {
+			this.backButton.preText = "Close";
+		}
 
 		// settings menu
+		this.backButton.deleted = hide;
 		shown = hide || this.showThemeSelection;
 		this.depthItem.deleted = shown;
 		this.angleItem.deleted = shown;
 		this.layersItem.deleted = shown;
-		// back button
-		shown = hide || !(this.showThemeSelection || this.showDisplaySettings || this.showInfoSettings || this.showPlaybackSettings || this.showRuleSettings);
-		this.backButton.deleted = shown;
 		// setting category buttons
 		shown = hide || this.showThemeSelection || this.showDisplaySettings || this.showInfoSettings || this.showPlaybackSettings || this.showRuleSettings;
 		this.themeButton.deleted = shown;
@@ -5022,6 +5026,19 @@
 		this.infoBarLabelSValueRight.deleted = shown;
 		this.infoBarLabelWValueRight.deleted = shown;
 		this.infoBarLabelNValueRight.deleted = shown;
+
+		// adjust esc button if popup
+		if (this.scriptErrors.length) {
+			this.escButton.toolTip = "close errors";
+			this.escButton.preText = "Esc";
+			this.escButton.font = "16px Arial";
+			this.escButton.bgCol = this.autoFitToggle.bgCol;
+		} else {
+			this.escButton.toolTip = "close window";
+			this.escButton.preText = "X";
+			this.escButton.font = "24px Arial";
+			this.escButton.bgCol = "red";
+		}
 
 		// help topics
 		this.topicsButton.deleted = !(this.displayHelp && (this.helpTopic !== ViewConstants.welcomeTopic));
@@ -7791,12 +7808,18 @@
 
 	// back button
 	View.prototype.backPressed = function(me) {
-		// clear settings section
-		me.showDisplaySettings = false;
-		me.showInfoSettings = false;
-		me.showRuleSettings = false;
-		me.showPlaybackSettings = false;
-		me.showThemeSelection = false;
+		// check if any settings are displayed
+		if (me.showDisplaySettings || me.showInfoSettings || me.showRuleSettings || me.showPlaybackSettings || me.showThemeSelection) {
+			// clear settings section
+			me.showDisplaySettings = false;
+			me.showInfoSettings = false;
+			me.showRuleSettings = false;
+			me.showPlaybackSettings = false;
+			me.showThemeSelection = false;
+		} else {
+			// close settings
+			me.navToggle.current = [false];
+		}
 	};
 
 	// display settings button
@@ -7937,6 +7960,9 @@
 			// clear errors
 			me.scriptErrors = [];
 			me.displayErrors = 0;
+		} else {
+			// hide the viewer
+			hideViewer();
 		}
 	};
 

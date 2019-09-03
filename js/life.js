@@ -3019,10 +3019,14 @@
 		var proto = null;
 		
 		// @ts-ignore
-		if (Reflect.getPrototypeOf) {
+		if (window.Reflect) {
 			// @ts-ignore
-			proto = Reflect.getPrototypeOf(this);
-		} else {
+			if (window.Reflect.getPrototypeOf) {
+				// @ts-ignore
+				proto = Reflect.getPrototypeOf(this);
+			}
+		}
+		if (proto === null) {
 			// @ts-ignore
 			proto = this.__proto__;
 		}
@@ -4586,8 +4590,13 @@
 		this.gridLineRaw  = newTheme.gridColour;
 		this.gridLineBoldRaw = newTheme.gridMajorColour;
 
-		// copy grid line major interval from theme
-		this.gridLineMajor = newTheme.gridMajor;
+		// if the Theme is not custom and the pattern is Margolus then set grid major to 2
+		if (theme !== this.numThemes && this.isMargolus) {
+			this.gridLineMajor = 2;
+		} else {
+			// copy grid line major interval from theme
+			this.gridLineMajor = newTheme.gridMajor;
+		}
 
 		// create grid line colours
 		if (this.littleEndian) {
@@ -10031,6 +10040,11 @@
 									// save the column occupied cells
 									columnOccupied16[leftX] |= colOccupied;
 								}
+
+								// top right!
+								if ((origValue & 1) !== 0) {
+									neighbours |= LifeConstants.topRightSet;
+								}
 							} else {
 								// odd phase
 								// process bottom row
@@ -10190,17 +10204,17 @@
 									columnOccupied16[leftX] |= colOccupied >> 1;
 									columnOccupied16[leftX + 1] |= ((colOccupied & 1) << 15);
 								}
+
+								// if original had right most cell set this is actually the left cell of the tile to the right
+								if ((origValue & 1) !== 0) {
+									neighbours |= LifeConstants.rightSet;
+								}
 							}
 
 							// check if the source or output were alive
 							if (colOccupied || origValue) {
 								// update 
 								nextTiles |= (1 << b);
-
-								// if original had right most cell set this is actually the left cell of the tile to the right
-								if ((origValue & 1) !== 0) {
-									neighbours |= LifeConstants.rightSet;
-								}
 
 								// check for neighbours
 								if (neighbours) {
@@ -10682,6 +10696,11 @@
 									// save the column occupied cells
 									columnOccupied16[leftX] |= colOccupied;
 								}
+
+								// top right!
+								if ((origValue & 1) !== 0) {
+									neighbours != LifeConstants.topRightSet;
+								}
 							} else {
 								// odd phase
 								// process bottom row
@@ -10817,17 +10836,17 @@
 									columnOccupied16[leftX] |= colOccupied >> 1;
 									columnOccupied16[leftX + 1] |= ((colOccupied & 1) << 15);
 								}
+
+								// if original had right most cell set this is actually the left cell of the tile to the right
+								if ((origValue & 1) !== 0) {
+									neighbours |= LifeConstants.rightSet;
+								}
 							}
 
 							// check if the source or output were alive
 							if (colOccupied || origValue) {
 								// update 
 								nextTiles |= (1 << b);
-
-								// if original had right most cell set this is actually the left cell of the tile to the right
-								if ((origValue & 1) !== 0) {
-									neighbours |= LifeConstants.rightSet;
-								}
 
 								// check for neighbours
 								if (neighbours) {

@@ -1,3 +1,10 @@
+Build 396
+- the PopUp Viewer Close button is back and now has a red background
+- Margolus patterns now use GRIDMAJOR 2 for all Themes except Custom
+- LifeViewer was broken on IE
+- added a new alias
+- fixed Margolus even generation tile issue
+
 Build 395
 - removed close UI button from PopUp Viewer now window close button works
 - switch to Pan mode when Population Graph is turned on (since it's not visible in Draw or Select mode)
