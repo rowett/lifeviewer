@@ -12439,7 +12439,9 @@
 			}
 
 			// copy pattern to center of grid
-			this.copyPatternTo(pattern);
+			if (!pattern.tooBig) {
+				this.copyPatternTo(pattern);
+			}
 
 			// update rule label
 			if (this.patternAliasName !== "") {

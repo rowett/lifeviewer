@@ -1833,7 +1833,7 @@
 				while (letterIndex !== -1) {
 					// check if the letter has already been used
 					if ((lettersArray[current] & (1 << letterIndex)) !== 0) {
-						this.failureReason = "duplicate " + current + this.validHexLettersPerDigit[current][letterIndex];
+						this.failureReason = "Duplicate " + current + this.validHexLettersPerDigit[current][letterIndex];
 						letterIndex = -1;
 						i = length;
 					} else {
@@ -1854,7 +1854,7 @@
 				}
 			} else {
 				// character found without digit prefix
-				this.failureReason = "missing digit prefix";
+				this.failureReason = "Missing digit prefix";
 			}
 		}
 
@@ -1966,7 +1966,7 @@
 				while (letterIndex !== -1) {
 					// check if the letter has already been used
 					if ((lettersArray[current] & (1 << letterIndex)) !== 0) {
-						this.failureReason = "duplicate " + current + this.validLettersPerDigit[current][letterIndex];
+						this.failureReason = "Duplicate " + current + this.validLettersPerDigit[current][letterIndex];
 						letterIndex = -1;
 						i = length;
 					} else {
@@ -1987,7 +1987,7 @@
 				}
 			} else {
 				// character found without digit prefix
-				this.failureReason = "missing digit prefix";
+				this.failureReason = "Missing digit prefix";
 			}
 		}
 
@@ -3749,7 +3749,7 @@
 					} else {
 						if (nextChar === "," || nextChar === ";") {
 							if (item > 15) {
-								this.failureReason = "value must be from 0 to 15";
+								this.failureReason = "Value must be from 0 to 15";
 								valid = false;
 							} else {
 								ruleArray[itemIndex] = item;
@@ -3757,7 +3757,7 @@
 								item = -1;
 							}
 						} else {
-							this.failureReason = "illegal character found";
+							this.failureReason = "Illegal character found";
 							valid = false;
 						}
 					}
@@ -3768,20 +3768,20 @@
 			if (valid) {
 				if (item === -1) {
 					if (itemIndex === 16) {
-						this.failureReason = "extra characters found after rule";
+						this.failureReason = "Extra characters found after rule";
 					} else {
-						this.failureReason = "need 16 values";
+						this.failureReason = "Need 16 values";
 					}
 					valid = false;
 				} else {
 					if (item > 15) {
-						this.failureReason = "value must be from 0 to 15";
+						this.failureReason = "Value must be from 0 to 15";
 						valid = false;
 					} else {
 						ruleArray[itemIndex] = item;
 						itemIndex += 1;
 						if (itemIndex !== 16) {
-							this.failureReason = "need 16 values";
+							this.failureReason = "Need 16 values";
 							valid = false;
 						}
 					}

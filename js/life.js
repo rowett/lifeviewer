@@ -10041,9 +10041,10 @@
 									columnOccupied16[leftX] |= colOccupied;
 								}
 
-								// top right!
-								if ((origValue & 1) !== 0) {
+								// if there were new cells or original cells then ensure right and top right get processed next generation
+								if (colOccupied || origValue) {
 									neighbours |= LifeConstants.topRightSet;
+									neighbours |= LifeConstants.rightSet;
 								}
 							} else {
 								// odd phase
@@ -10192,6 +10193,13 @@
 									// top row set
 									neighbours |= LifeConstants.topSet;
 								}
+								
+								if (val0 | val1) {
+									if (((val0 | val1) & 3) !== 0) {
+										neighbours |= LifeConstants.topRightSet;
+									}
+									neighbours |= LifeConstants.topSet;
+								}
 
 								// check which columns contained cells
 								if (colOccupied) {
@@ -10205,12 +10213,12 @@
 									columnOccupied16[leftX + 1] |= ((colOccupied & 1) << 15);
 								}
 
-								// if original had right most cell set this is actually the left cell of the tile to the right
-								if ((origValue & 1) !== 0) {
+								if ((origValue & 3) !== 0) {
 									neighbours |= LifeConstants.rightSet;
 								}
 							}
 
+				
 							// check if the source or output were alive
 							if (colOccupied || origValue) {
 								// update 
@@ -10698,9 +10706,9 @@
 								}
 
 								// top right!
-								if ((origValue & 1) !== 0) {
-									neighbours |= LifeConstants.topRightSet;
-								}
+								//if ((origValue & 1) !== 0) {
+								//	neighbours |= LifeConstants.topRightSet;
+								//}
 							} else {
 								// odd phase
 								// process bottom row

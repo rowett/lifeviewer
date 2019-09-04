@@ -1,5 +1,6 @@
 Build 397
-- new touch event handler
+- fixed capitalisation on error messages
+- fixed crash on attempting to load patterns that are too big
 
 Build 396
 - the PopUp Viewer Close button is back and now has a red background
