@@ -1,3 +1,6 @@
+Build 398
+- sometimes touch events were deferring UI clicks
+
 Build 397
 - fixed capitalisation on error messages
 - fixed crash on attempting to load patterns that are too big

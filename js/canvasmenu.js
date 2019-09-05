@@ -2681,7 +2681,7 @@
 			me.lastUpdate = newWork - (1000 / 60);
 		}
 
-		// schedule the next update if auto update on or notification is display
+		// schedule the next update if auto update on or notification is displayed
 		if (me.autoUpdate || me.notification.displayed() || me.updateCount || (me.toolTipDelay !== me.toolTipCounter && me.toolTipCounter !== -1)) {
 			me.scheduleNextUpdate(me);
 
@@ -3019,6 +3019,11 @@
 			if (thisChange !== null) {
 				me.performUp(me, thisChange.pageX, thisChange.pageY);
 				me.currentTouchId = -1;
+
+				// ensure update happens
+				if (me.updateCount < 2) {
+					me.updateCount = 2;
+				}
 			}
 			break;
 
