@@ -1,3 +1,10 @@
+Build 400
+- Settings menu buttons are now more descriptive
+- new Settings menu Display setting: Auto Grid
+	- turns on grid lines when switching to Draw and Select modes
+	- turns off grid lines when switching to Pan mode
+	- hotkey Ctrl+"G" to toggle
+
 Build 399
 - Settings menu now has Pattern section
 	- Rule (hotkey Alt+"R") prompts for a new rule

@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 399,
+		/** @const {number} */ versionBuild : 400,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1189,6 +1189,9 @@
 		// whether to hide GUI while pattern playing
 		/** @type {boolean} */ this.hideGUI = false;
 
+		// whether to hide grid while pattern playing
+		/** @type {boolean} */ this.autoGrid = false;
+
 		// whether to disable GUI
 		/** @type {boolean} */ this.noGUI = false;
 
@@ -1426,6 +1429,9 @@
 
 		// autohide toggle button
 		this.autoHideButton = null;
+
+		// autogrid toggle button
+		this.autoGridButton = null;
 
 		// hex cell toggle button
 		this.hexCellButton = null;
@@ -5001,6 +5007,7 @@
 		this.starsButton.deleted = shown;
 		this.labelButton.deleted = shown;
 		this.rHistoryButton.deleted = shown;
+		this.autoGridButton.deleted = shown;
 		// playback category
 		shown = hide || !this.showPlaybackSettings;
 		this.historyFitButton.deleted = shown;
@@ -5656,12 +5663,22 @@
 		return [me.engine.cellBorders];
 	};
 
+	// toggle auto hide grid
+	View.prototype.viewAutoGridToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			// toggle auto hide
+			me.autoGrid = newValue[0];
+		}
+		return [me.autoGrid];
+	};
+
 	// toggle auto hide gui
 	View.prototype.viewAutoHideToggle = function(newValue, change, me) {
 		// check if changing
 		if (change) {
 			// toggle auto hide
-			me.hideGUI = !me.hideGUI;
+			me.hideGUI = newValue[0];
 		}
 		return [me.hideGUI];
 	};
@@ -6171,20 +6188,36 @@
 					}
 					// turn off pasting
 					me.cancelPaste(me);
+				
+					// check for autogrid
+					if (me.autoGrid) {
+						me.gridToggle.current = me.toggleGrid([true], true, me);
+					}
 					break;
 				case ViewConstants.modeSelect:
 					// selecting
 					me.drawing = false;
 					me.pickToggle.current = me.togglePick([false], true, me);
 					me.selecting = true;
+
+					// check for autogrid
+					if (me.autoGrid) {
+						me.gridToggle.current = me.toggleGrid([true], true, me);
+					}
 					break;
 				case ViewConstants.modePan:
 					// panning
 					me.drawing = false;
 					me.selecting = false;
 					me.pickToggle.current = me.togglePick([false], true, me);
+
 					// turn off pasting
 					me.cancelPaste(me);
+
+					// check for autogrid
+					if (me.autoGrid) {
+						me.gridToggle.current = me.toggleGrid([false], true, me);
+					}
 					break;
 			}
 
@@ -10742,71 +10775,75 @@
 		this.themeSectionLabel = this.viewMenu.addLabelItem(Menu.north, 0, 100, 120, 40, "");
 
 		// hex/square cell toggle button
-		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -80, -50, 120, 40, ["Hexagon"], [this.engine.useHexagons], Menu.multi);
+		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -100, -75, 180, 40, ["Hexagons"], [this.engine.useHexagons], Menu.multi);
 		this.hexCellButton.toolTip = ["toggle hexagonal cells"];
 
 		// cell borders toggle button
-		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 80, -50, 120, 40, ["Borders"], [this.engine.cellBorders], Menu.multi);
+		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 100, -75, 180, 40, ["Cell Borders"], [this.engine.cellBorders], Menu.multi);
 		this.bordersButton.toolTip = ["toggle cell borders"];
 
 		// major gridlines toggle button
-		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -80, 0, 120, 40, ["Major"], [this.engine.gridLineMajorEnabled], Menu.multi);
+		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -100, -25, 180, 40, ["Major Gridlines"], [this.engine.gridLineMajorEnabled], Menu.multi);
 		this.majorButton.toolTip = ["toggle major grid lines"];
 
 		// stars toggle button
-		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.middle, 80, 0, 120, 40, ["Stars"], [this.starsOn], Menu.multi);
+		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.middle, 100, -25, 180, 40, ["Starfield"], [this.starsOn], Menu.multi);
 		this.starsButton.toolTip = ["toggle stars display"];
 
 		// label toggle button
-		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -80, 50, 120, 40, ["Labels"], [this.showLabels], Menu.multi);
-		this.labelButton.toolTip = ["toggle labels"];
+		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -100, 25, 180, 40, ["Annotations"], [this.showLabels], Menu.multi);
+		this.labelButton.toolTip = ["toggle annotations"];
 
 		// [R]History display toggle
-		this.rHistoryButton = this.viewMenu.addListItem(this.viewRHistoryToggle, Menu.middle, 80, 50, 120, 40, ["[R]History"], [this.engine.displayLifeHistory], Menu.multi);
+		this.rHistoryButton = this.viewMenu.addListItem(this.viewRHistoryToggle, Menu.middle, 100, 25, 180, 40, ["[R]History"], [this.engine.displayLifeHistory], Menu.multi);
 		this.rHistoryButton.toolTip = ["toggle [R]History display"];
 
+		// autogrid toggle button
+		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, 0, 75, 180, 40, ["Auto Grid Lines"], [this.autoGrid], Menu.multi);
+		this.autoGridButton.toolTip = ["automatically turn on grid lines for Draw and Select and off for Pan"]; 
+
 		// historyfit toggle button
-		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.middle, -80, -50, 120, 40, ["HistoryFit"], [this.historyFit], Menu.multi);
+		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.middle, -100, -50, 180, 40, ["AutoFit History"], [this.historyFit], Menu.multi);
 		this.historyFitButton.toolTip = ["toggle AutoFit History"];
 
 		// add the throttle toggle button
-		this.throttleToggle = this.viewMenu.addListItem(this.toggleThrottle, Menu.middle, 80, -50, 120, 40, ["Throttle"], [this.canBailOut], Menu.multi);
+		this.throttleToggle = this.viewMenu.addListItem(this.toggleThrottle, Menu.middle, 100, -50, 180, 40, ["Throttle"], [this.canBailOut], Menu.multi);
 		this.throttleToggle.toolTip = ["toggle playback throttling"];
 
 		// add the show lag toggle button
-		this.showLagToggle = this.viewMenu.addListItem(this.toggleShowLag, Menu.middle, -80, 0, 120, 40, ["PerfWarn"], [this.perfWarning], Menu.multi);
+		this.showLagToggle = this.viewMenu.addListItem(this.toggleShowLag, Menu.middle, -100, 0, 180, 40, ["Perf. Warning"], [this.perfWarning], Menu.multi);
 		this.showLagToggle.toolTip = ["toggle performance warning display"];
 
 		// kill gliders toggle button
-		this.killButton = this.viewMenu.addListItem(this.viewKillToggle, Menu.middle, 80, 0, 120, 40, ["Kill"], [this.engine.clearGliders], Menu.multi);
+		this.killButton = this.viewMenu.addListItem(this.viewKillToggle, Menu.middle, 100, 0, 180, 40, ["Kill Gliders"], [this.engine.clearGliders], Menu.multi);
 		this.killButton.toolTip = ["toggle kill escaping gliders"];
 
 		// autohide toggle button
-		this.autoHideButton = this.viewMenu.addListItem(this.viewAutoHideToggle, Menu.middle, 0, 50, 120, 40, ["AutoHide"], [this.hideGUI], Menu.multi);
+		this.autoHideButton = this.viewMenu.addListItem(this.viewAutoHideToggle, Menu.middle, 0, 50, 180, 40, ["AutoHide UI"], [this.hideGUI], Menu.multi);
 		this.autoHideButton.toolTip = ["toggle hide UI on playback"]; 
 
 		// rule button
-		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, 0, -50, 150, 40, "Rule");
+		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, 0, -50, 180, 40, "Change Rule");
 		this.ruleButton.toolTip = "change rule";
 
 		// load button
-		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, 0, 0, 150, 40, "Load");
+		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, 0, 0, 180, 40, "Load Pattern");
 		this.loadButton.toolTip = "load last saved pattern";
 
 		// save button
-		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 0, 50, 150, 40, "Save");
+		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 0, 50, 180, 40, "Save Pattern");
 		this.saveButton.toolTip = "save pattern";
 
 		// fps button
-		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -50, 120, 40, ["Timing"], [this.menuManager.showTiming], Menu.multi);
+		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -50, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
 		this.fpsButton.toolTip = ["toggle timing display"];
 
 		// timing detail button
-		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 0, 0, 120, 40, ["Details"], [this.menuManager.showExtendedTiming], Menu.multi);
+		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 0, 0, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
 		this.timingDetailButton.toolTip = ["toggle timing details"];
 
 		// infobar toggle button
-		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, 0, 50, 120, 40, ["InfoBar"], [this.infoBarEnabled], Menu.multi);
+		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, 0, 50, 180, 40, ["Display Info Bar"], [this.infoBarEnabled], Menu.multi);
 		this.infoBarButton.toolTip = ["toggle InfoBar"];
 
 		// previous universe button
@@ -11091,7 +11128,7 @@
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.backButton, this.themeButton, this.patternButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
+		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.backButton, this.themeButton, this.patternButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.autoGridButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -12710,6 +12747,9 @@
 
 		// set the autohide UI control
 		this.autoHideButton.current = [this.hideGUI];
+
+		// set the autogrid UI control
+		this.autoGridButton.current = [this.autoGrid];
 
 		// set the hex cell UI control and lock if triangular grid
 		this.hexCellButton.current = [this.engine.useHexagons];

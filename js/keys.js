@@ -1134,20 +1134,27 @@
 
 			// g for generation statistics
 			case 71:
-				// do not display if view only mode
-				if (!me.viewOnly) {
-					// check for shift
-					if (event.shiftKey) {
-						// toggle relative mode if defined
-						if (me.genDefined) {
-							me.genRelative = !me.genRelative;
-						}
-					} else {
-						// toggle statistics
-						me.viewStats([!me.statsOn], true, me);
-						if (me.genToggle) {
-							me.genToggle.current = [me.statsOn];
-							me.menuManager.toggleRequired = true;
+				if (event.ctrlKey) {
+					// toggle autogrid mode
+					me.autoGrid = !me.autoGrid;
+					me.autoGridButton.current = me.viewAutoGridToggle([me.autoGrid], true, me);
+					me.menuManager.notification.notify("Auto Grid Lines " + (me.autoGrid ? "On" : "Off"), 15, 40, 15, true);
+				} else {
+					// do not display if view only mode
+					if (!me.viewOnly) {
+						// check for shift
+						if (event.shiftKey) {
+							// toggle relative mode if defined
+							if (me.genDefined) {
+								me.genRelative = !me.genRelative;
+							}
+						} else {
+							// toggle statistics
+							me.viewStats([!me.statsOn], true, me);
+							if (me.genToggle) {
+								me.genToggle.current = [me.statsOn];
+								me.menuManager.toggleRequired = true;
+							}
 						}
 					}
 				}

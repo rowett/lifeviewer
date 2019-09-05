@@ -719,6 +719,7 @@
 		if (view.engine.gridLineMajor > 0) {
 			y = this.renderHelpLine(view, "Shift X", "toggle major grid lines", ctx, x, y, height, helpLine);
 		}
+		y = this.renderHelpLine(view, "Ctrl G", "toggle auto grid lines", ctx, x, y, height, helpLine);
 		if (view.engine.isLifeHistory) {
 			y = this.renderHelpLine(view, "Alt H", "[R]History display on", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Alt J", "[R]History display off", ctx, x, y, height, helpLine);
