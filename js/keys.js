@@ -672,7 +672,7 @@
 				if (event.ctrlKey) {
 					// save current pattern to source document node
 					me.saveCurrentRLE(me);
-					me.menuManager.notification.notify("Saved", 15, 40, 15, true);
+					me.menuManager.notification.notify("Saved", 15, 120, 15, true);
 				} else {
 					// check for shift key
 					if (event.shiftKey) {

@@ -1,5 +1,11 @@
+Build 399
+- Settings menu now has Pattern section
+	- Rule (hotkey Alt+"R") prompts for a new rule
+	- Save (hotkey Ctrl+"S") saves the current pattern as RLE to the source document node
+	- Load (hotkey Ctrt+"O") loads the last saved pattern from the source document node
+
 Build 398
-- sometimes touch events were deferring UI clicks
+- fixed an issue where sometimes touch events were deferring clicks
 
 Build 397
 - fixed capitalisation on error messages

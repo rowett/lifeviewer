@@ -236,7 +236,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 398,
+		/** @const {number} */ versionBuild : 399,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -582,8 +582,8 @@
 		// whether displaying display settings
 		/** @type {boolean} */ this.showDisplaySettings = false;
 
-		// whether displaying rule settings
-		/** @type {boolean} */ this.showRuleSettings = false;
+		// whether displaying pattern settings
+		/** @type {boolean} */ this.showPatternSettings = false;
 
 		// whether to sync copy with external clipboard
 		/** @type {boolean} */ this.copySyncExternal = false;
@@ -1295,6 +1295,9 @@
 		this.themeProgramLabel = null;
 		this.themeDebugLabel = null;
 
+		// theme section label
+		this.themeSectionLabel = null;
+
 		// angle item
 		this.angleItem = null;
 
@@ -1442,11 +1445,20 @@
 		// info button
 		this.infoButton = null;
 
+		// rule button
+		this.ruleButton = null;
+
+		// save button
+		this.saveButton = null;
+
+		// load button
+		this.loadButton = null;
+
 		// back button
 		this.backButton = null;
 
-		// rule button
-		this.ruleButton = null;
+		// pattern button
+		this.patternButton = null;
 
 		// display button
 		this.displayButton = null;
@@ -4951,7 +4963,7 @@
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
 		this.escButton.deleted = !(this.isInPopup || this.scriptErrors.length);
 
-		if (this.showDisplaySettings || this.showInfoSettings || this.showRuleSettings || this.showPlaybackSettings || this.showThemeSelection) {
+		if (this.showDisplaySettings || this.showInfoSettings || this.showPatternSettings || this.showPlaybackSettings || this.showThemeSelection) {
 			this.backButton.preText = "Back";
 		} else {
 			this.backButton.preText = "Close";
@@ -4964,13 +4976,18 @@
 		this.angleItem.deleted = shown;
 		this.layersItem.deleted = shown;
 		// setting category buttons
-		shown = hide || this.showThemeSelection || this.showDisplaySettings || this.showInfoSettings || this.showPlaybackSettings || this.showRuleSettings;
+		shown = hide || this.showThemeSelection || this.showDisplaySettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings;
+		this.patternButton.deleted = shown;
 		this.themeButton.deleted = shown;
-		this.ruleButton.deleted = shown;
 		this.infoButton.deleted = shown;
 		this.displayButton.deleted = shown;
 		this.playbackButton.deleted = shown;
 		this.graphButton.deleted = shown;
+		// pattern category
+		shown = hide || !this.showPatternSettings;
+		this.ruleButton.deleted = shown;
+		this.saveButton.deleted = shown;
+		this.loadButton.deleted = shown;
 		// info category
 		shown = hide || !this.showInfoSettings;
 		this.fpsButton.deleted = shown;
@@ -4991,6 +5008,26 @@
 		this.showLagToggle.deleted = shown;
 		this.killButton.deleted = shown;
 		this.autoHideButton.deleted = shown;
+
+		// set theme section label text
+		this.themeSectionLabel.deleted = hide || !(this.showDisplaySettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings);
+		if (this.showDisplaySettings) {
+			this.themeSectionLabel.preText = "Display";
+		} else {
+			if (this.showInfoSettings) {
+				this.themeSectionLabel.preText = "Info";
+			} else {
+				if (this.showPlaybackSettings) {
+					this.themeSectionLabel.preText = "Playback";
+				} else {
+					if (this.showPatternSettings) {
+						this.themeSectionLabel.preText = "Pattern";
+					} else {
+						this.themeSectionLabel.preText = "";
+					}
+				}
+			}
+		}
 
 		// lock kill button if not 2-state moore
 		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || (this.engine.isHROT && !(this.engine.HROT.range === 1 && this.engine.HROT.type === PatternManager.mooreHROT && this.engine.HROT.scount === 2)) || this.engine.isTriangular || this.engine.isVonNeumann;
@@ -7809,17 +7846,22 @@
 	// back button
 	View.prototype.backPressed = function(me) {
 		// check if any settings are displayed
-		if (me.showDisplaySettings || me.showInfoSettings || me.showRuleSettings || me.showPlaybackSettings || me.showThemeSelection) {
+		if (me.showDisplaySettings || me.showInfoSettings || me.showPatternSettings || me.showPlaybackSettings || me.showThemeSelection) {
 			// clear settings section
 			me.showDisplaySettings = false;
 			me.showInfoSettings = false;
-			me.showRuleSettings = false;
+			me.showPatternSettings = false;
 			me.showPlaybackSettings = false;
 			me.showThemeSelection = false;
 		} else {
 			// close settings
 			me.navToggle.current = [false];
 		}
+	};
+
+	// pattern settings button
+	View.prototype.patternPressed = function(me) {
+		me.showPatternSettings = true;
 	};
 
 	// display settings button
@@ -7837,7 +7879,18 @@
 		me.showInfoSettings = true;
 	};
 
-	// rule settings button
+	// save button
+	View.prototype.savePressed = function(me) {
+		me.saveCurrentRLE(me);
+		me.menuManager.notification.notify("Saved", 15, 120, 15, true);
+	};
+
+	// load button
+	View.prototype.loadPressed = function(me) {
+		me.loadPattern(me);
+	};
+
+	// rule button
 	View.prototype.rulePressed = function(me) {
 		me.changeRule(me);
 	};
@@ -10685,49 +10738,64 @@
 		this.shrinkButton.icon = this.iconManager.icon("shrink");
 		this.shrinkButton.toolTip = "shrink to thumbnail";
 
+		// theme section label
+		this.themeSectionLabel = this.viewMenu.addLabelItem(Menu.north, 0, 100, 120, 40, "");
+
 		// hex/square cell toggle button
-		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, 0, -125, 120, 40, ["Hexagon"], [this.engine.useHexagons], Menu.multi);
+		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -80, -50, 120, 40, ["Hexagon"], [this.engine.useHexagons], Menu.multi);
 		this.hexCellButton.toolTip = ["toggle hexagonal cells"];
 
 		// cell borders toggle button
-		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 0, -75, 120, 40, ["Borders"], [this.engine.cellBorders], Menu.multi);
+		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 80, -50, 120, 40, ["Borders"], [this.engine.cellBorders], Menu.multi);
 		this.bordersButton.toolTip = ["toggle cell borders"];
 
 		// major gridlines toggle button
-		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, 0, -25, 120, 40, ["Major"], [this.engine.gridLineMajorEnabled], Menu.multi);
+		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -80, 0, 120, 40, ["Major"], [this.engine.gridLineMajorEnabled], Menu.multi);
 		this.majorButton.toolTip = ["toggle major grid lines"];
 
 		// stars toggle button
-		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.middle, 0, 25, 120, 40, ["Stars"], [this.starsOn], Menu.multi);
+		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.middle, 80, 0, 120, 40, ["Stars"], [this.starsOn], Menu.multi);
 		this.starsButton.toolTip = ["toggle stars display"];
 
 		// label toggle button
-		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, 0, 75, 120, 40, ["Labels"], [this.showLabels], Menu.multi);
+		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -80, 50, 120, 40, ["Labels"], [this.showLabels], Menu.multi);
 		this.labelButton.toolTip = ["toggle labels"];
 
 		// [R]History display toggle
-		this.rHistoryButton = this.viewMenu.addListItem(this.viewRHistoryToggle, Menu.middle, 0, 125, 120, 40, ["[R]History"], [this.engine.displayLifeHistory], Menu.multi);
+		this.rHistoryButton = this.viewMenu.addListItem(this.viewRHistoryToggle, Menu.middle, 80, 50, 120, 40, ["[R]History"], [this.engine.displayLifeHistory], Menu.multi);
 		this.rHistoryButton.toolTip = ["toggle [R]History display"];
 
 		// historyfit toggle button
-		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.middle, 0, -100, 120, 40, ["HistoryFit"], [this.historyFit], Menu.multi);
+		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.middle, -80, -50, 120, 40, ["HistoryFit"], [this.historyFit], Menu.multi);
 		this.historyFitButton.toolTip = ["toggle AutoFit History"];
 
 		// add the throttle toggle button
-		this.throttleToggle = this.viewMenu.addListItem(this.toggleThrottle, Menu.middle, 0, -50, 120, 40, ["Throttle"], [this.canBailOut], Menu.multi);
+		this.throttleToggle = this.viewMenu.addListItem(this.toggleThrottle, Menu.middle, 80, -50, 120, 40, ["Throttle"], [this.canBailOut], Menu.multi);
 		this.throttleToggle.toolTip = ["toggle playback throttling"];
 
 		// add the show lag toggle button
-		this.showLagToggle = this.viewMenu.addListItem(this.toggleShowLag, Menu.middle, 0, 0, 120, 40, ["PerfWarn"], [this.perfWarning], Menu.multi);
+		this.showLagToggle = this.viewMenu.addListItem(this.toggleShowLag, Menu.middle, -80, 0, 120, 40, ["PerfWarn"], [this.perfWarning], Menu.multi);
 		this.showLagToggle.toolTip = ["toggle performance warning display"];
 
 		// kill gliders toggle button
-		this.killButton = this.viewMenu.addListItem(this.viewKillToggle, Menu.middle, 0, 50, 120, 40, ["Kill"], [this.engine.clearGliders], Menu.multi);
+		this.killButton = this.viewMenu.addListItem(this.viewKillToggle, Menu.middle, 80, 0, 120, 40, ["Kill"], [this.engine.clearGliders], Menu.multi);
 		this.killButton.toolTip = ["toggle kill escaping gliders"];
 
 		// autohide toggle button
-		this.autoHideButton = this.viewMenu.addListItem(this.viewAutoHideToggle, Menu.middle, 0, 100, 120, 40, ["AutoHide"], [this.hideGUI], Menu.multi);
+		this.autoHideButton = this.viewMenu.addListItem(this.viewAutoHideToggle, Menu.middle, 0, 50, 120, 40, ["AutoHide"], [this.hideGUI], Menu.multi);
 		this.autoHideButton.toolTip = ["toggle hide UI on playback"]; 
+
+		// rule button
+		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, 0, -50, 150, 40, "Rule");
+		this.ruleButton.toolTip = "change rule";
+
+		// load button
+		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, 0, 0, 150, 40, "Load");
+		this.loadButton.toolTip = "load last saved pattern";
+
+		// save button
+		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 0, 50, 150, 40, "Save");
+		this.saveButton.toolTip = "save pattern";
 
 		// fps button
 		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -50, 120, 40, ["Timing"], [this.menuManager.showTiming], Menu.multi);
@@ -10800,9 +10868,9 @@
 		this.navToggle.icon = [this.iconManager.icon("menu")];
 		this.navToggle.toolTip = ["toggle settings menu"];
 
-		// add the rule button
-		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, 0, -125, 150, 40, "Rule");
-		this.ruleButton.toolTip = "choose rule";
+		// add the pattern button
+		this.patternButton = this.viewMenu.addButtonItem(this.patternPressed, Menu.middle, 0, -125, 150, 40, "Pattern");
+		this.patternButton.toolTip = "pattern settings";
 
 		// add the back button
 		this.backButton = this.viewMenu.addButtonItem(this.backPressed, Menu.south, 0, -100, 120, 40, "Back");
@@ -11023,7 +11091,7 @@
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.layersItem, this.depthItem, this.angleItem, this.backButton, this.themeButton, this.ruleButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
+		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.backButton, this.themeButton, this.patternButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -11673,7 +11741,7 @@
 		this.showPlaybackSettings = false;
 
 		// hide rule settings
-		this.showRuleSettings = false;
+		this.showPatternSettings = false;
 
 		// ensure theme is set
 		this.engine.colourTheme = -1;
@@ -12056,7 +12124,7 @@
 		this.progressBar.deleted = false;
 		this.undoButton.deleted = false;
 		this.redoButton.deleted = false;
-		this.ruleButton.deleted = false;
+		this.patternButton.deleted = false;
 		this.infoButton.deleted = false;
 		this.playbackButton.deleted = false;
 		this.displayButton.deleted = false;
@@ -12896,6 +12964,13 @@
 			}
 		} else {
 			this.reasonLabel.deleted = true;
+		}
+
+		// adjust close/back button to fit
+		if (this.displayHeight < 540) {
+			this.backButton.setPosition(Menu.south, 0, -85);
+		} else {
+			this.backButton.setPosition(Menu.south, -0, -100);
 		}
 
 		// update the grid icon for hex/square mode
