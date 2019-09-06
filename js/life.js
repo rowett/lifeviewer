@@ -10217,7 +10217,6 @@
 									neighbours |= LifeConstants.rightSet;
 								}
 							}
-
 				
 							// check if the source or output were alive
 							if (colOccupied || origValue) {
@@ -10705,10 +10704,11 @@
 									columnOccupied16[leftX] |= colOccupied;
 								}
 
-								// top right!
-								//if ((origValue & 1) !== 0) {
-								//	neighbours |= LifeConstants.topRightSet;
-								//}
+								// if there were new cells or original cells then ensure right and top right get processed next generation
+								if (colOccupied || origValue) {
+									neighbours |= LifeConstants.topRightSet;
+									neighbours |= LifeConstants.rightSet;
+								}
 							} else {
 								// odd phase
 								// process bottom row
@@ -10735,9 +10735,10 @@
 								nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
 
 								// check if any cells are set
-								if (output0 | output1) {
+								output = output0 | output1;
+								if (output) {
 									// update column occupied flag
-									colOccupied |= (output0 | output1);
+									colOccupied |= output;
 
 									// update min and max row
 									if (h < newBottomY) {
@@ -10773,9 +10774,10 @@
 									nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
 
 									// check if any cells are set
-									if (output0 | output1) {
+									output = output0 | output1;
+									if (output) {
 										// update column occupied flag
-										colOccupied |= (output0 | output1);
+										colOccupied |= output;
 		
 										// update min and max row
 										if (h < newBottomY) {
@@ -10810,9 +10812,10 @@
 								nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
 
 								// check if any cells are set
-								if (output0 | output1) {
+								output = output0 | output1;
+								if (output) {
 									// update column occupied flag
-									colOccupied |= (output0 | output1);
+									colOccupied |= output;
 	
 									// update min and max row
 									if (h < newBottomY) {
@@ -10823,14 +10826,19 @@
 									}
 	
 									// check for right column set in this tile or left column set in right hand tile
-									if (output0 | output1) {
-										if (((output0 | output1) & 3) !== 0) {
+									if ((output & 3) !== 0) {
 											neighbours |= LifeConstants.topRightSet;
-										}
-	
-										// top row set
-										neighbours |= LifeConstants.topSet;
 									}
+	
+									// top row set
+									neighbours |= LifeConstants.topSet;
+								}
+
+								if (val0 | val1) {
+									if (((val0 | val1) & 3) !== 0) {
+										neighbours |= LifeConstants.topRightSet;
+									}
+									neighbours |= LifeConstants.topSet;
 								}
 
 								// check which columns contained cells
