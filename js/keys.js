@@ -1146,7 +1146,8 @@
 						if (event.shiftKey) {
 							// toggle relative mode if defined
 							if (me.genDefined) {
-								me.genRelative = !me.genRelative;
+								me.relativeToggle.current = me.viewRelativeToggle([!me.genRelative], true, me);
+								me.menuManager.notification.notify("Generation display " + (me.genRelative ? "Relative" : "Absolute"), 15, 40, 15, true);
 							}
 						} else {
 							// toggle statistics

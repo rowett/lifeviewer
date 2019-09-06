@@ -1,9 +1,12 @@
 Build 400
 - Settings menu buttons are now more descriptive
-- new Settings menu Display setting: Auto Grid
+- new Settings menu Display setting: Auto Grid (hotkey Ctrl+"G")
 	- turns on grid lines when switching to Draw and Select modes
 	- turns off grid lines when switching to Pan mode
-	- hotkey Ctrl+"G" to toggle
+- new Settings menu Pattern action: New Pattern (hotkey Alt+"N")
+	- creates a new empty pattern
+- new Settings menu Info setting: Relative Gen (hotkey Shift+"G")
+	- when #CXRLE Gen is defined toggles the generation display between Absolute and Relative
 
 Build 399
 - Settings menu now has Pattern section

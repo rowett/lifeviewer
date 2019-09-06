@@ -1316,6 +1316,9 @@
 		// generation button
 		this.genToggle = null;
 
+		// relative generation toggle
+		this.relativeToggle = null;
+
 		// reason label
 		this.reasonLabel = null;
 
@@ -1453,6 +1456,9 @@
 
 		// rule button
 		this.ruleButton = null;
+
+		// new button
+		this.newButton = null;
 
 		// save button
 		this.saveButton = null;
@@ -4993,12 +4999,15 @@
 		shown = hide || !this.showPatternSettings;
 		this.ruleButton.deleted = shown;
 		this.saveButton.deleted = shown;
+		this.newButton.deleted = shown;
 		this.loadButton.deleted = shown;
 		// info category
 		shown = hide || !this.showInfoSettings;
 		this.fpsButton.deleted = shown;
 		this.timingDetailButton.deleted = shown;
 		this.infoBarButton.deleted = shown;
+		this.relativeToggle.deleted = shown;
+		this.relativeToggle.locked = !this.genDefined;
 		// display categoy
 		shown = hide || !this.showDisplaySettings;
 		this.hexCellButton.deleted = shown;
@@ -7557,7 +7566,7 @@
 	// new pattern
 	View.prototype.newPattern = function(me) {
 		var patternText = "x = 1, y = 1, rule = ",
-			result = window.prompt("Start new pattern with rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName));
+			result = window.prompt("Create new pattern with rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName));
 
 		// check if the prompt was confirmed
 		if (result !== null) {
@@ -7910,6 +7919,11 @@
 	// info settings button
 	View.prototype.infoPressed = function(me) {
 		me.showInfoSettings = true;
+	};
+
+	// new button
+	View.prototype.newPressed = function(me) {
+		me.newPattern(me);
 	};
 
 	// save button
@@ -9840,6 +9854,15 @@
 		return [me.displayHelp];
 	};
 	
+	// relative/absolute generation display toggle
+	View.prototype.viewRelativeToggle = function(newValue, change, me) {
+		if (change) {
+			me.genRelative = newValue[0];
+		}
+
+		return [me.genRelative];
+	};
+
 	// stats toggle
 	View.prototype.viewStats = function(newValue, change, me) {
 		if (change) {
@@ -10823,28 +10846,36 @@
 		this.autoHideButton.toolTip = ["toggle hide UI on playback"]; 
 
 		// rule button
-		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, 0, -50, 180, 40, "Change Rule");
+		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, 0, -75, 180, 40, "Change Rule");
 		this.ruleButton.toolTip = "change rule";
 
+		// new button
+		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 0, -25, 180, 40, "New Pattern");
+		this.newButton.toolTip = "new pattern";
+
 		// load button
-		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, 0, 0, 180, 40, "Load Pattern");
+		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, 0, 25, 180, 40, "Load Pattern");
 		this.loadButton.toolTip = "load last saved pattern";
 
 		// save button
-		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 0, 50, 180, 40, "Save Pattern");
+		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 0, 75, 180, 40, "Save Pattern");
 		this.saveButton.toolTip = "save pattern";
 
 		// fps button
-		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -50, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
+		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -75, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
 		this.fpsButton.toolTip = ["toggle timing display"];
 
 		// timing detail button
-		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 0, 0, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
+		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 0, -25, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
 		this.timingDetailButton.toolTip = ["toggle timing details"];
 
 		// infobar toggle button
-		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, 0, 50, 180, 40, ["Display Info Bar"], [this.infoBarEnabled], Menu.multi);
-		this.infoBarButton.toolTip = ["toggle InfoBar"];
+		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, 0, 25, 180, 40, ["Display Info Bar"], [this.infoBarEnabled], Menu.multi);
+		this.infoBarButton.toolTip = ["toggle Information Bar"];
+
+		// relative toggle button
+		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, 0, 75, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
+		this.relativeToggle.toolTip = ["toggle absolute/relative generation display"];
 
 		// previous universe button
 		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -90, 120, 40, "Prev");
@@ -12765,8 +12796,11 @@
 		}
 		this.labelButton.current = [this.showLabels];
 
-		// set the InfoBar UI control
+		// set the Information Bar UI control
 		this.infoBarButton.current = [this.infoBarEnabled];
+		
+		// set the relative generation display UI control
+		this.relativeToggle.current = [this.genRelative];
 
 		// set the Stars UI control
 		this.starsButton.current = [this.starsOn];
