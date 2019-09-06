@@ -215,7 +215,9 @@
 
 				// fire the event
 				touch.target.dispatchEvent(simulatedEvent);
-				event.preventDefault();
+				if (event.cancelable) {
+					event.preventDefault();
+				}
 
 				// save the last position
 				me.lastScreenX = touch.screenX;

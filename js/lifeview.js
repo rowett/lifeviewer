@@ -567,6 +567,9 @@
 	function View(element) {
 		var i = 0;
 
+		// device pixel ratio
+		/** @type {number} */ this.devicePixelRatio = (window.devicePixelRatio ? window.devicePixelRatio : 1);
+
 		// whether multiple steps can bail out early due to performance
 		/** @type {boolean} */ this.canBailOut = true;
 
@@ -5084,12 +5087,12 @@
 		if (this.scriptErrors.length) {
 			this.escButton.toolTip = "close errors";
 			this.escButton.preText = "Esc";
-			this.escButton.font = "16px Arial";
+			this.escButton.setFont("16px Arial");
 			this.escButton.bgCol = this.autoFitToggle.bgCol;
 		} else {
 			this.escButton.toolTip = "close window";
 			this.escButton.preText = "X";
-			this.escButton.font = "24px Arial";
+			this.escButton.setFont("24px Arial");
 			this.escButton.bgCol = "red";
 		}
 
@@ -5123,7 +5126,7 @@
 			// update the control
 			this.helpSectionList.lower = captions;
 			this.helpSectionList.toolTip = toolTips;
-			this.helpSectionList.height = this.helpSections.length * 26;
+			this.helpSectionList.setHeight(this.helpSections.length * 26);
 			this.helpSectionList.current = 0;
 		}
 
@@ -5222,7 +5225,7 @@
 		this.pausePlaybackToggle.deleted = shown;
 		this.smartToggle.deleted = shown;
 		this.statesToggle.deleted = shown;
-		this.statesSlider.deleted = hide || !this.drawing || !this.showStates || (this.engine.multiNumStates < 8) || settingsMenuOpen;
+		this.statesSlider.deleted = hide || !this.drawing || !this.showStates || (this.engine.multiNumStates <= this.maxDisplayStates) || settingsMenuOpen;
 
 		// update states list from slider
 		if (this.engine.multiNumStates > this.maxDisplayStates) {
@@ -6347,16 +6350,33 @@
 
 	// switch to state from keyboard shortcut
 	View.prototype.switchToState = function(state) {
-		var numStates = this.engine.multiNumStates;
+		var numStates = this.engine.multiNumStates,
+			maxDisplayStates = this.maxDisplayStates;
+
 		if (numStates === -1) {
 			numStates = 2;
+			maxDisplayStates = 2;
 		}
 		if (this.engine.isLifeHistory) {
 			numStates = 7;
+			maxDisplayStates = 7;
 		}
 
 		// check the requested state is valid
 		if (state < numStates) {
+			// scroll the state list to make the selected state visible
+			if (state >= maxDisplayStates) {
+				this.startState = state - maxDisplayStates + 1;
+				state = maxDisplayStates - 1;
+			} else {
+				if (state >= this.startState) {
+					state -= this.startState;
+				} else {
+					this.startState = state;
+					state = 0;
+				}
+			}
+
 			// switch the pen to the current state
 			this.stateList.current = this.viewStateList(state, true, this);
 		}
@@ -10560,26 +10580,26 @@
 
 		// infobar labels for camera X, Y and ANGLE
 		this.infoBarLabelXLeft = this.viewMenu.addLabelItem(Menu.northWest, 0, 40, 16, 20, "X");
-		this.infoBarLabelXLeft.font = ViewConstants.smallStatsFont;
+		this.infoBarLabelXLeft.setFont(ViewConstants.smallStatsFont);
 		this.infoBarLabelXLeft.textOrientation = Menu.horizontal;
 		this.infoBarLabelYLeft = this.viewMenu.addLabelItem(Menu.northWest, 70, 40, 16, 20, "Y");
-		this.infoBarLabelYLeft.font = ViewConstants.smallStatsFont;
+		this.infoBarLabelYLeft.setFont(ViewConstants.smallStatsFont);
 		this.infoBarLabelYLeft.textOrientation = Menu.horizontal;
 		this.infoBarLabelAngleLeft = this.viewMenu.addLabelItem(Menu.northWest, 140, 40, 16, 20, "A");
-		this.infoBarLabelAngleLeft.font = ViewConstants.smallStatsFont;
+		this.infoBarLabelAngleLeft.setFont(ViewConstants.smallStatsFont);
 		this.infoBarLabelAngleLeft.textOrientation = Menu.horizontal;
 
 		// infobar values for camera X, Y and ANGLE
 		this.infoBarLabelXValue = this.viewMenu.addLabelItem(Menu.northWest, 16, 40, 54, 20, "");
-		this.infoBarLabelXValue.font = ViewConstants.smallStatsFont;
+		this.infoBarLabelXValue.setFont(ViewConstants.smallStatsFont);
 		this.infoBarLabelXValue.textAlign = Menu.right;
 		this.infoBarLabelXValue.toolTip = "camera X position";
 		this.infoBarLabelYValue = this.viewMenu.addLabelItem(Menu.northWest, 86, 40, 54, 20, "");
-		this.infoBarLabelYValue.font = ViewConstants.smallStatsFont;
+		this.infoBarLabelYValue.setFont(ViewConstants.smallStatsFont);
 		this.infoBarLabelYValue.textAlign = Menu.right;
 		this.infoBarLabelYValue.toolTip = "camera Y position";
 		this.infoBarLabelAngleValue = this.viewMenu.addLabelItem(Menu.northWest, 156, 40, 40, 20, "");
-		this.infoBarLabelAngleValue.font = ViewConstants.smallStatsFont;
+		this.infoBarLabelAngleValue.setFont(ViewConstants.smallStatsFont);
 		this.infoBarLabelAngleValue.textAlign = Menu.right;
 		this.infoBarLabelAngleValue.toolTip = "camera angle";
 
@@ -10588,50 +10608,50 @@
 
 		// infobar labels for trackbox E, S, W and N speeds
 		this.infoBarLabelERight = this.viewMenu.addLabelItem(Menu.northEast, -280, 40, 20, 20, "E");
-		this.infoBarLabelERight.font = ViewConstants.smallStatsFont;
+		this.infoBarLabelERight.setFont(ViewConstants.smallStatsFont);
 		this.infoBarLabelSRight = this.viewMenu.addLabelItem(Menu.northEast, -210, 40, 20, 20, "S");
-		this.infoBarLabelSRight.font = ViewConstants.smallStatsFont;
+		this.infoBarLabelSRight.setFont(ViewConstants.smallStatsFont);
 		this.infoBarLabelWRight = this.viewMenu.addLabelItem(Menu.northEast, -140, 40, 20, 20, "W");
-		this.infoBarLabelWRight.font = ViewConstants.smallStatsFont;
+		this.infoBarLabelWRight.setFont(ViewConstants.smallStatsFont);
 		this.infoBarLabelNRight = this.viewMenu.addLabelItem(Menu.northEast, -70, 40, 20, 20, "N");
-		this.infoBarLabelNRight.font = ViewConstants.smallStatsFont;
+		this.infoBarLabelNRight.setFont(ViewConstants.smallStatsFont);
 
 		// infobar values for trackbox E, S, W and N speeds
 		this.infoBarLabelEValueRight = this.viewMenu.addLabelItem(Menu.northEast, -260, 40, 50, 20, "");
-		this.infoBarLabelEValueRight.font = ViewConstants.smallStatsFont;
+		this.infoBarLabelEValueRight.setFont(ViewConstants.smallStatsFont);
 		this.infoBarLabelEValueRight.textAlign = Menu.right;
 		this.infoBarLabelEValueRight.toolTip = "bounding box east edge velocity";
 		this.infoBarLabelSValueRight = this.viewMenu.addLabelItem(Menu.northEast, -190, 40, 50, 20, "");
-		this.infoBarLabelSValueRight.font = ViewConstants.smallStatsFont;
+		this.infoBarLabelSValueRight.setFont(ViewConstants.smallStatsFont);
 		this.infoBarLabelSValueRight.textAlign = Menu.right;
 		this.infoBarLabelSValueRight.toolTip = "bounding box south edge velocity";
 		this.infoBarLabelWValueRight = this.viewMenu.addLabelItem(Menu.northEast, -120, 40, 50, 20, "");
-		this.infoBarLabelWValueRight.font = ViewConstants.smallStatsFont;
+		this.infoBarLabelWValueRight.setFont(ViewConstants.smallStatsFont);
 		this.infoBarLabelWValueRight.textAlign = Menu.right;
 		this.infoBarLabelWValueRight.toolTip = "bounding box west edge velocity";
 		this.infoBarLabelNValueRight = this.viewMenu.addLabelItem(Menu.northEast, -50, 40, 50, 20, "");
-		this.infoBarLabelNValueRight.font = ViewConstants.smallStatsFont;
+		this.infoBarLabelNValueRight.setFont(ViewConstants.smallStatsFont);
 		this.infoBarLabelNValueRight.textAlign = Menu.right;
 		this.infoBarLabelNValueRight.toolTip = "bounding box north edge velocity";
 
 		// autostart indicator
 		this.autostartIndicator = this.viewMenu.addListItem(this.toggleAutostart, Menu.northEast, -210, 0, 38, 20, ["START"], [false], Menu.multi);
-		this.autostartIndicator.font = ViewConstants.smallMenuFont;
+		this.autostartIndicator.setFont(ViewConstants.smallMenuFont);
 		this.autostartIndicator.toolTip = ["autostart indicator"];
 
 		// stop indicator
 		this.stopIndicator = this.viewMenu.addListItem(this.toggleStop, Menu.northEast, -210, 20, 38, 20, ["STOP"], [false], Menu.multi);
-		this.stopIndicator.font = ViewConstants.smallMenuFont;
+		this.stopIndicator.setFont(ViewConstants.smallMenuFont);
 		this.stopIndicator.toolTip = ["stop indicator"];
 
 		// waypoints indicator
 		this.waypointsIndicator = this.viewMenu.addListItem(this.toggleWP, Menu.northEast, -172, 0, 38, 20, ["WAYPT"], [false], Menu.multi);
-		this.waypointsIndicator.font = ViewConstants.smallMenuFont;
+		this.waypointsIndicator.setFont(ViewConstants.smallMenuFont);
 		this.waypointsIndicator.toolTip = ["toggle waypoint mode"];
 
 		// loop indicator
 		this.loopIndicator = this.viewMenu.addListItem(this.toggleLoop, Menu.northEast, -172, 20, 38, 20, ["LOOP"], [false], Menu.multi);
-		this.loopIndicator.font = ViewConstants.smallMenuFont;
+		this.loopIndicator.setFont(ViewConstants.smallMenuFont);
 		this.loopIndicator.toolTip = ["toggle loop mode"];
 
 		// mode list
@@ -10643,12 +10663,12 @@
 		this.helpSectionList = this.viewMenu.addListItem(this.viewHelpSectionList, Menu.northEast, -80, 100, 80, 60, ["1", "2"], 0, Menu.single);
 		this.helpSectionList.orientation = Menu.vertical;
 		this.helpSectionList.toolTip = ["", ""];
-		this.helpSectionList.font = "14px Arial";
+		this.helpSectionList.setFont("14px Arial");
 
 		// help button
 		this.helpToggle = this.viewMenu.addListItem(this.toggleHelp, Menu.northEast, -40, 0, 40, 40, ["Help"], [false], Menu.multi);
 		this.helpToggle.toolTip = ["toggle help display"];
-		this.helpToggle.font = "16px Arial";
+		this.helpToggle.setFont("16px Arial");
 
 		// help show topics button
 		this.topicsButton = this.viewMenu.addButtonItem(this.topicsPressed, Menu.northEast, -40, 50, 40, 40, ["^"]);
@@ -10687,7 +10707,7 @@
 		this.autoFitToggle = this.viewMenu.addListItem(this.toggleAutoFit, Menu.northWest, 0, 0, 40, 40, ["Auto"], [false], Menu.multi);
 		this.autoFitToggle.icon = [this.iconManager.icon("autofit")];
 		this.autoFitToggle.toolTip = ["toggle autofit"];
-		this.autoFitToggle.font = "16px Arial";
+		this.autoFitToggle.setFont("16px Arial");
 
 		// fit button
 		this.fitButton = this.viewMenu.addButtonItem(this.fitPressed, Menu.northWest, 45, 0, 40, 40, "");
@@ -10698,7 +10718,7 @@
 		this.gridToggle = this.viewMenu.addListItem(this.toggleGrid, Menu.northEast, -85, 0, 40, 40, ["Grid"], [false], Menu.multi);
 		this.gridToggle.icon = [this.iconManager.icon("grid")];
 		this.gridToggle.toolTip = ["toggle grid lines"];
-		this.gridToggle.font = "16px Arial";
+		this.gridToggle.setFont("16px Arial");
 
 		// add the progress bar
 		this.progressBar = this.viewMenu.addProgressBarItem(Menu.southWest, 0, -40, 100, 40, 0, 100, 0, false, "", "", 0);
@@ -10707,24 +10727,24 @@
 		// add the elapsed time label
 		this.timeLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -100, 70, 30, "Time");
 		this.timeLabel.textAlign = Menu.left;
-		this.timeLabel.font = ViewConstants.statsFont;
+		this.timeLabel.setFont(ViewConstants.statsFont);
 		this.timeLabel.toolTip = "elapsed time";
 
 		this.elapsedTimeLabel = this.viewMenu.addLabelItem(Menu.southWest, 70, -100, 70, 30, "");
 		this.elapsedTimeLabel.textAlign = Menu.right;
-		this.elapsedTimeLabel.font = ViewConstants.statsFont;
+		this.elapsedTimeLabel.setFont(ViewConstants.statsFont);
 		this.elapsedTimeLabel.toolTip = "elapsed time";
 
 		// add the selection size label
 		this.selSizeLabel = this.viewMenu.addLabelItem(Menu.southWest, 166, -70, 130, 30, "");
 		this.selSizeLabel.textAlign = Menu.left;
-		this.selSizeLabel.font = ViewConstants.statsFont;
+		this.selSizeLabel.setFont(ViewConstants.statsFont);
 		this.selSizeLabel.toolTip = "selection size";
 
 		// add the cursor position labels
 		this.xyLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -70, 166, 30, "");
 		this.xyLabel.textAlign = Menu.left;
-		this.xyLabel.font = ViewConstants.statsFont;
+		this.xyLabel.setFont(ViewConstants.statsFont);
 		this.xyLabel.toolTip = "cell state at cursor position";
 
 		// add the generation label
@@ -10739,39 +10759,39 @@
 		// add the population label and value
 		this.popLabel = this.viewMenu.addLabelItem(Menu.southEast, -140, -130, 70, 30, "Alive");
 		this.popLabel.textAlign = Menu.left;
-		this.popLabel.font = ViewConstants.statsFont;
+		this.popLabel.setFont(ViewConstants.statsFont);
 		this.popLabel.toolTip = "current population";
 
 		this.popValue = this.viewMenu.addLabelItem(Menu.southEast, -70, -130, 70, 30, "");
 		this.popValue.textAlign = Menu.right;
-		this.popValue.font = ViewConstants.statsFont;
+		this.popValue.setFont(ViewConstants.statsFont);
 		this.popValue.toolTip = "alive";
 
 		// add the births label and value
 		this.birthsLabel = this.viewMenu.addLabelItem(Menu.southEast, -140, -100, 70, 30, "Births");
 		this.birthsLabel.textAlign = Menu.left;
-		this.birthsLabel.font = ViewConstants.statsFont;
+		this.birthsLabel.setFont(ViewConstants.statsFont);
 		this.birthsLabel.toolTip = "cells born this generation";
 
 		this.birthsValue = this.viewMenu.addLabelItem(Menu.southEast, -70, -100, 70, 30, "");
 		this.birthsValue.textAlign = Menu.right;
-		this.birthsValue.font = ViewConstants.statsFont;
+		this.birthsValue.setFont(ViewConstants.statsFont);
 		this.birthsValue.toolTip = "births";
 
 		// add the deaths label and value
 		this.deathsLabel = this.viewMenu.addLabelItem(Menu.southEast, -140, -70, 70, 30, "Deaths");
 		this.deathsLabel.textAlign = Menu.left;
-		this.deathsLabel.font = ViewConstants.statsFont;
+		this.deathsLabel.setFont(ViewConstants.statsFont);
 		this.deathsLabel.toolTip = "cells died this generation";
 
 		this.deathsValue = this.viewMenu.addLabelItem(Menu.southEast, -70, -70, 70, 30, "");
 		this.deathsValue.textAlign = Menu.right;
-		this.deathsValue.font = ViewConstants.statsFont;
+		this.deathsValue.setFont(ViewConstants.statsFont);
 		this.deathsValue.toolTip = "deaths";
 
 		// add the rule label
 		this.ruleLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -130, 140, 30, this.patternRuleName);
-		this.ruleLabel.font = ViewConstants.statsFont;
+		this.ruleLabel.setFont(ViewConstants.statsFont);
 
 		// add the zoom range
 		this.zoomItem = this.viewMenu.addRangeItem(this.viewZoomRange, Menu.north, 0, 0, ViewConstants.zoomSliderDefaultWidth, 40, 0, 1, 0.1, true, "Zoom ", "", 1);
@@ -10888,7 +10908,7 @@
 		// esc button
 		this.escButton = this.viewMenu.addButtonItem(this.escPressed, Menu.southEast, -40, -90, 40, 40, "Esc");
 		this.escButton.toolTip = "close errors";
-		this.escButton.font = "16px Arial";
+		this.escButton.setFont("16px Arial");
 		
 		// previous POI button
 		this.prevPOIButton = this.viewMenu.addButtonItem(this.prevPOIPressed, Menu.west, 10, 0, 40, 40, "<");
@@ -10977,7 +10997,7 @@
 			}
 			this.themeSelections[i] = this.viewMenu.addListItem(null, Menu.north, x * 140 - 210, y, 120, 40, [this.themeName(j)], [false], Menu.multi);
 			this.themeSelections[i].toolTip = ["select " + this.themeName(j) + " theme"];
-			this.themeSelections[i].font = "20px Arial";
+			this.themeSelections[i].setFont("20px Arial");
 		}
 
 		// set callbacks
@@ -11017,7 +11037,7 @@
 
 		// add the actual step label
 		this.stepLabel = this.viewMenu.addLabelItem(Menu.southEast, -285, -60, 75, 20, 0);
-		this.stepLabel.font = ViewConstants.statsFont;
+		this.stepLabel.setFont(ViewConstants.statsFont);
 		this.stepLabel.deleted = true;
 
 		// add the undo button
@@ -11033,7 +11053,7 @@
 		// add the copy sync toggle
 		this.copySyncToggle = this.viewMenu.addListItem(this.viewCopySyncList, Menu.northEast, -130, 0, 40, 40, ["Sync"], [this.copySyncExternal], Menu.multi);
 		this.copySyncToggle.toolTip = ["sync cut and copy with external clipboard"];
-		this.copySyncToggle.font = "15px Arial";
+		this.copySyncToggle.setFont("15px Arial");
 
 		// add play and pause list
 		this.playList = this.viewMenu.addListItem(this.viewPlayList, Menu.southEast, -205, -40, 160, 40, ["", "", "", ""], ViewConstants.modePause, Menu.single);
@@ -11043,7 +11063,7 @@
 		// add states for editor
 		this.stateList = this.viewMenu.addListItem(this.viewStateList, Menu.northEast, -280, 45, 280, 20, ["0", "1", "2", "3", "4", "5", "6"], this.drawState, Menu.single);
 		this.stateList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
-		this.stateList.font = "14px Arial";
+		this.stateList.setFont("14px Arial");
 
 		// add state colours for editor
 		this.stateColsList = this.viewMenu.addListItem(this.viewStateColsList, Menu.northEast, -280, 65, 280, 20, ["", "", "", "", "", "", ""], [false, false, false, false, false, false, false], Menu.multi);
@@ -11058,13 +11078,13 @@
 		this.selectAllButton = this.viewMenu.addButtonItem(this.selectAllPressed, Menu.northWest, 0, 45, 40, 40, "All");
 		this.selectAllButton.icon = this.iconManager.icon("select");
 		this.selectAllButton.toolTip = "select all cells";
-		this.selectAllButton.font = "16px Arial";
+		this.selectAllButton.setFont("16px Arial");
 
 		// auto-shrink toggle
 		this.autoShrinkToggle = this.viewMenu.addListItem(this.viewAutoShrinkList, Menu.northWest, 45, 45, 40, 40, ["Auto"], [this.autoShrink], Menu.multi);
 		this.autoShrinkToggle.icon = [this.iconManager.icon("autoshrink")];
 		this.autoShrinkToggle.toolTip = ["toggle auto shrink selection"];
-		this.autoShrinkToggle.font = "16px Arial";
+		this.autoShrinkToggle.setFont("16px Arial");
 
 		// library button
 		this.libraryToggle = this.viewMenu.addListItem(null, Menu.northWest, 90, 45, 40, 40, [""], [false], Menu.multi);
@@ -11078,7 +11098,7 @@
 		// paste mode list
 		this.pasteModeList = this.viewMenu.addListItem(this.viewPasteModeList, Menu.northEast, -160, 45, 160, 40, ["AND", "CPY", "OR", "XOR"], this.pasteModeForUI, Menu.single);
 		this.pasteModeList.toolTip = ["paste mode", "paste mode", "paste mode", "paste mode"];
-		this.pasteModeList.font = "16px Arial";
+		this.pasteModeList.setFont("16px Arial");
 
 		// add the cut button
 		this.cutButton = this.viewMenu.addButtonItem(this.cutPressed, Menu.northWest, 135, 45, 40, 40, "");
@@ -11129,7 +11149,7 @@
 		this.clearRHistoryButton = this.viewMenu.addButtonItem(this.clearRHistoryPressed, Menu.southEast, -40, -130, 40, 40, "R");
 		this.clearRHistoryButton.icon = this.iconManager.icon("select");
 		this.clearRHistoryButton.toolTip = "clear [R]History cells";
-		this.clearRHistoryButton.font = "16px Arial";
+		this.clearRHistoryButton.setFont("16px Arial");
 
 		// add the invert selection button
 		this.invertSelectionButton = this.viewMenu.addButtonItem(this.invertSelectionPressed, Menu.southEast, -85, -130, 40, 40, "");
@@ -11153,7 +11173,7 @@
 		// add the paste position slider
 		this.pastePositionItem = this.viewMenu.addRangeItem(this.viewPastePositionRange, Menu.northEast, -265, 45, 100, 40, 0, ViewConstants.numPastePositions - 1, this.pastePosition, true, "", "", -1);
 		this.pastePositionItem.toolTip = "paste location";
-		this.pastePositionItem.font = "16px Arial";
+		this.pastePositionItem.setFont("16px Arial");
 
 		// add items to the library toggle
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
@@ -11252,9 +11272,9 @@
 			this.createMenus();
 
 			// save position of moveable menu items
-			this.playListX = this.playList.x;
-			this.generationRangeX = this.generationRange.x;
-			this.stepRangeX = this.stepRange.x;
+			this.playListX = this.playList.relX;
+			this.generationRangeX = this.generationRange.relX;
+			this.stepRangeX = this.stepRange.relX;
 
 			// register mouse wheel event
 			registerEvent(this.mainCanvas, "DOMMouseScroll", function(event) {me.wheel(me, event);}, false);
@@ -11650,11 +11670,11 @@
 		}
 		this.stateList.lower = [];
 		this.stateList.toolTip = [];
-		this.stateList.width = 40 * states;
+		this.stateList.setWidth(40 * states);
 		this.stateColsList.lower = [];
 		this.stateColsList.toolTip = [];
 		this.stateColsList.current = [];
-		this.stateColsList.width = 40 * states;
+		this.stateColsList.setWidth(40 * states);
 		this.stateColsList.bgAlpha = 1;
 		for (i = 0; i < states; i += 1) {
 			state = i + this.startState;
@@ -11684,7 +11704,8 @@
 
 	// setup state list for drawing
 	View.prototype.setupStateList = function() {
-		var states = this.engine.multiNumStates;
+		var states = this.engine.multiNumStates,
+			xScale = this.viewMenu.xScale;
 
 		// reset drawing state
 		this.drawState = 1;
@@ -11692,18 +11713,21 @@
 		this.statesToggle.current = [this.toggleStates([true], true, this)];
 
 		// compute the maximum number of display states based on width
-		this.maxDisplayStates = 7 + (((this.displayWidth - ViewConstants.minViewerWidth) / 40) | 0);
+		this.maxDisplayStates = 7 + (((this.displayWidth / xScale - ViewConstants.minViewerWidth) / (40 * xScale)) | 0);
+		if (this.maxDisplayStates > states) {
+			this.maxDisplayStates = states;
+		}
 
 		if (this.engine.isLifeHistory) {
 			// add LifeHistory states for editor
 			this.stateList.lower = ["0", "1", "2", "3", "4", "5", "6"];
-			this.stateList.width = 280;
+			this.stateList.setWidth(280);
 			this.stateList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
 			this.stateList.current = this.drawState;
 
 			// add LifeHistory state colours for editor
 			this.stateColsList.lower = ["", "", "", "", "", "", ""];
-			this.stateColsList.width = 280;
+			this.stateColsList.setWidth(280);
 			this.stateColsList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
 			this.stateColsList.bgAlpha = 1;
 			this.stateColsList.current = [false, false, false, false, false, false, false];
@@ -11712,29 +11736,26 @@
 			if (states <= 2) {
 				// add states for editor
 				this.stateList.lower = ["0", "1"];
-				this.stateList.width = 80;
+				this.stateList.setWidth(80);
 				this.stateList.toolTip = ["dead", "alive"];
 				this.stateList.current = this.drawState;
 	
 				// add state colours for editor
 				this.stateColsList.lower = ["", ""];
-				this.stateColsList.width = 80;
+				this.stateColsList.setWidth(80);
 				this.stateColsList.toolTip = ["dead", "alive"];
 				this.stateColsList.bgAlpha = 1;
 				this.stateColsList.current = [false, false];
 			} else {
 				this.drawState = states - 1;
-				if (states > this.maxDisplayStates) {
-					states = this.maxDisplayStates;
-				}
 				this.updateStatesList();
-				this.stateList.width = states * 40;
-				this.stateColsList.width = states * 40;
+				this.stateList.setWidth(this.maxDisplayStates * 40);
+				this.stateColsList.setWidth(this.maxDisplayStates * 40);
 				this.statesSlider.current = this.viewStatesRange([0, 0], true, this);
 			}
 		}
-		this.stateList.setPosition(Menu.northEast, -this.stateList.width, 45);
-		this.stateColsList.setPosition(Menu.northEast, -this.stateColsList.width, 65);
+		this.stateList.setPosition(Menu.northEast, -this.stateList.relWidth, 45);
+		this.stateColsList.setPosition(Menu.northEast, -this.stateColsList.relWidth, 65);
 	};
 
 	// clear pattern data
@@ -12341,7 +12362,10 @@
 							resizeRequired = true;
 						}
 					} else {
-						this.displayWidth = ViewConstants.minViewerWidth;
+						this.displayWidth = (ViewConstants.minViewerWidth * this.devicePixelRatio) & ~7;
+						if (this.displayWidth > window.innerWidth - 64) {
+							this.displayWidth = (window.innerWidth - 64) & ~7;
+						}
 					}
 
 					if (this.requestedPopupHeight > -1) {
@@ -12350,13 +12374,18 @@
 							resizeRequired = true;
 						}
 					} else {
-						this.displayHeight = ViewConstants.minMenuHeight + 80;
+						this.displayHeight = (ViewConstants.minMenuHeight + 80) * this.devicePixelRatio;
+						if (this.displayHeight > (window.innerHeight - 64)) {
+							this.displayHeight = (window.innerHeight - 64);
+						}
 					}
 				}
 			}
 
 			// check if popup width has changed
 			if (this.isInPopup) {
+				this.viewMenu.resizeControls(this.displayWidth / ViewConstants.minViewerWidth);
+				this.iconManager.setScale(this.displayWidth / ViewConstants.minViewerWidth);
 				if (this.displayWidth !== this.lastPopupWidth) {
 					this.popupWidthChanged = true;
 				}
@@ -12762,8 +12791,7 @@
 			this.xyLabel.width = 140;
 		}
 		// set the selection size label just to the right of the xy label
-		this.selSizeLabel.x = this.xyLabel.width;
-		this.selSizeLabel.relX = this.xyLabel.width;
+		this.selSizeLabel.setX(this.xyLabel.relWidth);
 
 		// set the [R]History toggle UI control
 		this.rHistoryButton.locked = !this.engine.isLifeHistory;
@@ -12928,35 +12956,25 @@
 			this.navToggle.deleted = true;
 
 			// move gps, step and play controls right
-			this.playList.x = this.playListX + 45;
-			this.playList.relX = this.playList.x;
-
-			this.generationRange.x = this.generationRangeX + 45;
-			this.generationRange.relX = this.generationRange.x;
-
-			this.stepRange.x = this.stepRangeX + 45;
-			this.stepRange.relX = this.stepRange.x;
+			this.playList.setX(this.playListX + 45);
+			this.generationRange.setX(this.generationRangeX + 45);
+			this.stepRange.setX(this.stepRangeX + 45);
 		} else {
 			// reset gps and play control position
-			this.playList.x = this.playListX;
-			this.playList.relX = this.playList.x;
-
-			this.generationRange.x = this.generationRangeX;
-			this.generationRange.relX = this.generationRange.x;
-
-			this.stepRange.x = this.stepRangeX;
-			this.stepRange.relX = this.stepRange.x;
+			this.playList.setX(this.playListX);
+			this.generationRange.setX(this.generationRangeX);
+			this.stepRange.setX(this.stepRangeX);
 		}
 
 		// resize the zoom slider
-		if (this.displayWidth > ViewConstants.minViewerWidth) {
+		if (this.displayWidth > ViewConstants.minViewerWidth && !this.isInPopup) {
 			i = (this.displayWidth - ViewConstants.minViewerWidth) + ViewConstants.zoomSliderDefaultWidth;
 			if (i > ViewConstants.zoomSliderMaxWidth) {
 				i = ViewConstants.zoomSliderMaxWidth;
 			}
-			this.zoomItem.width = i;
+			this.zoomItem.setWidth(i);
 		} else {
-			this.zoomItem.width = ViewConstants.zoomSliderDefaultWidth;
+			this.zoomItem.setWidth(ViewConstants.zoomSliderDefaultWidth);
 		}
 
 		// check whether to resize the canvas
@@ -13355,7 +13373,19 @@
 		    innerDivItem = null,
 		    windowTitleItem = null,
 		    centerDivItem = null,
-		    hiddenItem = null;
+			hiddenItem = null,
+
+			// device pixel ratio
+			devicePixelRatio = 1,
+			itemHeight = 28,
+			itemFontSize = 18;
+
+		// setup device pixel ratio
+		if (window.devicePixelRatio) {
+			devicePixelRatio = window.devicePixelRatio;
+			itemHeight = (itemHeight * devicePixelRatio) | 0;
+			itemFontSize = (itemFontSize * devicePixelRatio) | 0;
+		}
 
 		// check if the standalone viewer exists
 		if (viewer) {
@@ -13378,8 +13408,8 @@
 			anchorItem.style.color = "#FFFFFF";
 			anchorItem.style.backgroundColor = "#C75050";
 			anchorItem.style.cssFloat = "right";
-			anchorItem.style.height = "28px";
-			anchorItem.style.fontSize = "18px";
+			anchorItem.style.height = itemHeight + "px";
+			anchorItem.style.fontSize = itemFontSize + "px";
 
 			// add a hidden anchor to center the text
 			hiddenItem = document.createElement('a');
@@ -13388,16 +13418,16 @@
 			hiddenItem.style.fontFamily = "Lucida Grande,Verdana,Helvetica,Arial,sans-serif";
 			hiddenItem.style.visibility = "hidden";
 			hiddenItem.style.cssFloat = "left";
-			hiddenItem.style.height = "28px";
-			hiddenItem.style.fontSize = "18px";
+			hiddenItem.style.height = itemHeight + "px";
+			hiddenItem.style.fontSize = itemFontSize + "px";
 
 			// create the center div with the window title text
 			centerDivItem = document.createElement("div");
 			centerDivItem.style.textAlign = "center";
 			centerDivItem.style.color = "rgb(83,100,130)";
 			centerDivItem.style.fontFamily = "Arial, Verdana, Helvetica, sans-serif";
-			centerDivItem.style.fontSize = "18px";
-			centerDivItem.style.height = "28px";
+			centerDivItem.style.fontSize = itemFontSize + "px";
+			centerDivItem.style.height = itemHeight + "px";
 			windowTitleItem = document.createTextNode("LifeViewer");
 			centerDivItem.style.cursor = "default";
 			centerDivItem.appendChild(windowTitleItem);
@@ -13426,8 +13456,8 @@
 			innerDivItem = document.createElement("div");
 			innerDivItem.className = DocConfig.divCodeClassName;
 			innerDivItem.style.backgroundColor = "#FFFFFF";
-			innerDivItem.style.height = "28px";
-			innerDivItem.style.lineHeight = "28px";
+			innerDivItem.style.height = itemHeight + "px";
+			innerDivItem.style.lineHeight = itemHeight + "px";
 
 			// add the title, anchor and canvas to the div
 			innerDivItem.appendChild(hiddenItem);

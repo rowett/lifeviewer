@@ -7,6 +7,9 @@ Build 400
 	- creates a new empty pattern
 - new Settings menu Info setting: Relative Gen (hotkey Shift+"G")
 	- when #CXRLE Gen is defined toggles the generation display between Absolute and Relative
+- State Slider now hidden for Generations patterns when states fit on display
+- selecting a drawing state with hotkeys Ctrl+"0" to Ctrl+"9" now scrolls state selection UI to show new state
+- PopUp Viewer scales on high DPI devices
 
 Build 399
 - Settings menu now has Pattern section

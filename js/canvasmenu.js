@@ -74,6 +74,9 @@
 
 		// vertical adjust for notifitions
 		this.notificationYOffset = 45;
+
+		// scale
+		this.scale = 1;
 	}
 
 	// return whether a notification is displayed
@@ -269,7 +272,7 @@
 			}
 
 			// set the font size
-			this.context.font = fontSize + "px Arial";
+			this.context.font = ((fontSize * this.scale) | 0) + "px Arial";
 
 			// scale based on appear or disappear
 			this.context.translate(this.context.canvas.width / 2 - 1, fromTop + offset);
@@ -379,7 +382,15 @@
 
 		// whether initialised
 		this.init = false;
+
+		// scale
+		this.scale = 1;
 	}
+
+	// set scale
+	IconManager.prototype.setScale = function(scale) {
+		this.scale = scale;
+	};
 
 	// draw icon
 	IconManager.prototype.draw = function(icon, x, y, locked) {
@@ -449,10 +460,20 @@
 		}
 
 		// draw the icon onto the canvas
+		if (this.scale !== 1) {
+			this.context.save();
+			this.context.translate(x, y);
+			this.context.scale(this.scale, this.scale);
+			x = 0;
+			y = 0;
+		}
 		if (locked) {
 			this.context.drawImage(this.greyedOutImage, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
 		} else {
 			this.context.drawImage(this.convertedImage, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
+		}
+		if (this.scale !== 1) {
+			this.context.restore();
 		}
 	};
 
@@ -534,6 +555,9 @@
 		// id
 		this.id = id;
 
+		// owning menu
+		this.owner = owner;
+
 		// tool tip
 		this.toolTip = "";
 
@@ -569,6 +593,10 @@
 		// width and height
 		this.width = width;
 		this.height = height;
+
+		// relative width and height
+		this.relWidth = width;
+		this.relHeight = height;
 
 		// border thickness (0 for no border)
 		this.border = border;
@@ -686,9 +714,16 @@
 		// border thickness (or 0 for no border)
 		this.border = owner.border;
 
-		// set the font from the parent
-		this.font = owner.defaultFont;
+		// decompose the font into size and family
+		this.fontSize = parseInt(owner.defaultFont.substr(0, owner.defaultFont.indexOf("px")), 10);
+		this.fontFamily = owner.defaultFont.substr(owner.defaultFont.indexOf("px") + 3);
 	}
+
+	// set font
+	MenuItem.prototype.setFont = function(font) {
+		this.fontSize = parseInt(font.substr(0, font.indexOf("px")), 10);
+		this.fontFamily = font.substr(font.indexOf("px") + 3);
+	};
 
 	// set item foreground and background colour
 	MenuItem.prototype.setColours = function(fg, bg, highlight, selected, locked, border) {
@@ -705,72 +740,99 @@
 		this.border = border;
 	};
 
+	// set a new width
+	MenuItem.prototype.setWidth = function(width) {
+		this.relWidth = width;
+	};
+
+	// set a new height
+	MenuItem.prototype.setHeight = function(height) {
+		this.relHeight = height;
+	};
+
+	// set a new X coordinate
+	MenuItem.prototype.setX = function(x) {
+		this.relX = x;
+	};
+
+	// set a new Y coordinate
+	MenuItem.prototype.setY = function(y) {
+		this.relY = y;
+	};
+
 	// set a new absolute position
 	MenuItem.prototype.setPosition = function(position, x, y) {
 		this.position = position;
 		this.relX = x;
 		this.relY = y;
-		this.x = x;
-		this.y = y;
 	};
 
 	// calculate item position
 	MenuItem.prototype.calculatePosition = function(width, height) {
+		var xScale = this.owner.xScale,
+			yScale = this.owner.yScale,
+			relXS = this.relX * xScale,
+			relYS = this.relY * yScale,
+			relWidthS = this.relWidth * xScale,
+			relHeightS = this.relHeight * yScale;
+
 		// copy the absolute position from the relative position
-		this.x = this.relX;
-		this.y = this.relY;
+		this.x = relXS;
+		this.y = relYS;
+		this.width = relWidthS;
+		this.height = relHeightS;
 
 		// override x or y based on position type
 		switch (this.position) {
 		// north (top of display)
 		case Menu.north:
 			// center x
-			this.x = ((width - this.width) >> 1) + this.relX;
+			this.x = ((width - relWidthS) >> 1) + relXS;
 			break;
 
 		// north east (top right of display)
 		case Menu.northEast:
 			// make x relative to right of display
-			this.x = width + this.relX;
+			this.x = width + relXS;
 			break;
 
 		// east (right of display)
 		case Menu.east:
 			// center y
-			this.y = ((height - this.height) >> 1) + this.relY;
+			this.y = ((height - relHeightS) >> 1) + relYS;
 
 			// make x relative to right of display
-			this.x = width + this.relX;
+			this.x = width + relXS;
 			break;
 
 		// south east (bottom right of display)
 		case Menu.southEast:
 			// make x relative to right of display
-			this.x = width + this.relX;
+			this.x = width + relXS;
 
 			// make y relative to bottom of display
-			this.y = height + this.relY;
+			this.y = height + relYS;
 			break;
 
 		// south (bottom of display)
 		case Menu.south:
 			// center x
-			this.x = ((width - this.width) >> 1) + this.relX;
+			this.x = ((width - relWidthS) >> 1) + relXS;
 
 			// make y relative to bottom of display
-			this.y = height + this.relY;
+			this.y = height + relYS;
 			break;
 
-		// south wast (bottom left of display)
+		// south west (bottom left of display)
 		case Menu.southWest:
 			// make y relative to bottom of display
-			this.y = height + this.relY;
+			this.y = height + relYS;
 			break;
 
 		// west (left of display)
 		case Menu.west:
 			// center y
-			this.y = ((height - this.height) >> 1) + this.relY;
+			this.y = ((height - relHeightS) >> 1) + relYS;
 			break;
 
 		// north west (top left of display)
@@ -781,8 +843,8 @@
 		// middle
 		case Menu.middle:
 			// make x and y relative to middle of display
-			this.x = ((width - this.width) >> 1) + this.relX;
-			this.y = ((height - this.height) >> 1) + this.relY;
+			this.x = ((width - relWidthS) >> 1) + relXS;
+			this.y = ((height - relHeightS) >> 1) + relYS;
 			break;
 
 		// ignore others
@@ -847,6 +909,10 @@
 
 		// context
 		this.context = context;
+
+		// x and y scale
+		this.xScale = 1;
+		this.yScale = 1;
 
 		// default font
 		this.defaultFont = defaultFont;
@@ -941,6 +1007,13 @@
 		// current set cursor style
 		this.cursorSet = "auto";
 	}
+
+	// resize controls
+	MenuList.prototype.resizeControls = function(scale) {
+		this.xScale = scale;
+		this.yScale = scale;
+		this.manager.notification.scale = scale;
+	};
 
 	// set menu foreground and background colour
 	MenuList.prototype.setColours = function(fg, bg, highlight, selected, locked, border) {
@@ -1148,7 +1221,7 @@
 			this.context.translate(item.x + item.width / 2, item.y + item.height / 2);
 
 			// set the font
-			this.context.font = item.font;
+			this.context.font = ((item.fontSize * this.xScale) | 0) + "px " + item.fontFamily;
 
 			// rotate if the item is vertical
 			if (item.textOrientation === Menu.vertical) {
@@ -2397,6 +2470,9 @@
 		// get current menu
 		var current = this.currentMenu,
 
+			// x scale
+			xScale = current.xScale,
+
 		    // control
 		    control = null,
 
@@ -2508,7 +2584,7 @@
 				}
 
 				// set the font
-				oc.font = fontSize + "px Arial";
+				oc.font = ((fontSize * xScale) | 0) + "px Arial";
 
 				// measure the tooltip width
 				width = oc.measureText(toolTip).width;
