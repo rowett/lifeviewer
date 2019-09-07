@@ -6106,21 +6106,21 @@
 	};
 
 	// decode rule table icons TBD
-	PatternManager.decodeIcons = function(pattern, reader) {
+	PatternManager.decodeIcons = function() {
 		var valid = true;
 
 		return valid;
 	};
 
 	// decode rule table colours TBD
-	PatternManager.decodeColours = function(pattern, reader) {
+	PatternManager.decodeColours = function() {
 		var valid = true;
 
 		return valid;
 	};
 
 	// decode rule table table TBD
-	PatternManager.decodeTable = function(pattern, reader) {
+	PatternManager.decodeTable = function() {
 		var valid = false;
 
 		return valid;
@@ -6298,7 +6298,7 @@
 				// search for a table from current position
 				tableIndex = reader.findToken(PatternManager.ruleTableTableName, -1);
 				if (tableIndex !== -1) {
-					valid = this.decodeTable(pattern, reader);
+					valid = this.decodeTable();
 				} else {
 					// search for a tree from the current position
 					treeIndex = reader.findToken(PatternManager.ruleTableTreeName, -1);
@@ -6311,13 +6311,13 @@
 				if (valid) {
 					colourIndex = reader.findToken(PatternManager.ruleTableColoursName, 0);
 					if (colourIndex !== -1) {
-						valid = this.decodeColours(pattern, reader);
+						valid = this.decodeColours();
 					}
 					// if valid then search for icons from start position
 					if (valid) {
 						iconIndex = reader.findToken(PatternManager.ruleTableIconsName, 0);
 						if (iconIndex !== -1) {
-							valid = this.decodeIcons(pattern, reader);
+							valid = this.decodeIcons();
 						}
 					}
 				}

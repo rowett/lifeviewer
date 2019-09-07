@@ -1,5 +1,7 @@
 Build 401
 - ignore trailing # for string substitutions
+- fixed rendering with layers
+- improved handling when plugin included multiple times
 
 Build 400
 - Settings menu buttons are now more descriptive

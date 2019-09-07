@@ -354,7 +354,7 @@
 		/** @type {boolean} */ this.isLifeHistory = false;
 
 		// whether to display [R]History states
-		/** @type {boolean} */ this.dispalyLifeHistory = false;
+		/** @type {boolean} */ this.displayLifeHistory = false;
 
 		// how many history states to draw
 		/** @type {number} */ this.historyStates = 0;
@@ -420,7 +420,7 @@
 		/** @type {number} */ this.tileRows = this.height >> this.tilePower;
 
 		// snapshot for reset
-		this.resetSnapshot = this.snapshotManager.createSnapshot(((this.tileCols - 1) >> 4) + 1, this.tileRows, true, 0);
+		this.resetSnapshot = this.snapshotManager.createSnapshot(((this.tileCols - 1) >> 4) + 1, this.tileRows, true, 0, false);  // TBD 5th paramter is usingoverlay
 
 		// display width
 		/** @type {number} */ this.displayWidth = displayWidth;
@@ -17019,6 +17019,9 @@
 		    wt = ~mask,
 		    ht = ~mask,
 
+			// last mask
+			lastMask = mask,
+
 		    // pixel when off-grid
 		    offGrid = 0 | 0,
 
@@ -17207,6 +17210,7 @@
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch to colour grid based on ZOOM >= 1
+			lastMask = mask;
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
 				mask = 15;
@@ -17228,6 +17232,12 @@
 						}
 					}
 				}
+			}
+
+			// check if mask changed
+			if (mask !== lastMask) {
+				// switch to full resolution colour grid
+				colourGrid = this.colourGrid;
 			}
 
 			// create the width and height masks
@@ -17376,6 +17386,9 @@
 		    // create the comparison masks for clipping
 		    wt = ~mask,
 		    ht = ~mask,
+
+			// last mask
+			lastMask = mask,
 
 		    // pixel when off-grid
 		    offGrid = 0 | 0,
@@ -17595,6 +17608,7 @@
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch to colour grid based on ZOOM >= 1
+			lastMask = mask;
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
 				mask = 15;
@@ -17616,6 +17630,12 @@
 						}
 					}
 				}
+			}
+
+			// check if mask changed
+			if (mask !== lastMask) {
+				// switch to full resolution colour grid
+				colourGrid = this.colourGrid;
 			}
 
 			// create the width and height masks
@@ -17767,6 +17787,9 @@
 		    wm = this.widthMask & ~mask,
 		    hm = this.heightMask & ~mask,
 
+			// last mask
+			lastMask = mask,
+
 		    // start with bottom grid
 		    colourGrid = bottomGrid,
 
@@ -17910,6 +17933,7 @@
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch to colour grid based on ZOOM >= 1
+			lastMask = mask;
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
 				mask = 15;
@@ -17927,10 +17951,17 @@
 							mask = 1;
 						} else {
 							// switch to full resolution grid
+							colourGrid = this.colourGrid;
 							mask = 0;
 						}
 					}
 				}
+			}
+
+			// check if mask changed
+			if (mask !== lastMask) {
+				// switch to full resolution colour grid
+				colourGrid = this.colourGrid;
 			}
 
 			// create the width and height masks
@@ -18056,6 +18087,9 @@
 		    // create the width and height masks
 		    wm = this.widthMask & ~mask,
 		    hm = this.heightMask & ~mask,
+
+			// last mask
+			lastMask = mask,
 
 		    // start with bottom grid
 		    colourGrid = bottomGrid,
@@ -18199,6 +18233,8 @@
 			// update layer zoom
 			layerZoom *= this.camLayerDepth;
 
+			// check whether to switch to colour grid based on ZOOM >= 1
+			lastMask = mask;
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
 				mask = 15;
@@ -18220,6 +18256,12 @@
 						}
 					}
 				}
+			}
+
+			// check if mask changed
+			if (mask !== lastMask) {
+				// switch to full resolution colour grid
+				colourGrid = this.colourGrid;
 			}
 
 			// create the width and height masks
@@ -18457,6 +18499,9 @@
 		    // create the width and height masks
 		    wm = this.widthMask & ~mask,
 		    hm = this.heightMask & ~mask,
+
+			// last mask
+			lastMask = mask,
 
 		    // create the comparison masks for clipping
 		    wt = ~mask,
@@ -18784,6 +18829,7 @@
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch to colour grid based on ZOOM >= 1
+			lastMask = mask;
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
 				mask = 15;
@@ -18801,10 +18847,17 @@
 							mask = 1;
 						} else {
 							// switch to full resolution grid
+							colourGrid = this.colourGrid;
 							mask = 0;
 						}
 					}
 				}
+			}
+
+			// check if mask changed
+			if (mask !== lastMask) {
+				// switch to full resolution colour grid
+				colourGrid = this.colourGrid;
 			}
 
 			// create the width and height masks
@@ -18964,7 +19017,10 @@
 
 		    // create the width and height masks
 		    wm = this.widthMask & ~mask,
-		    hm = this.heightMask & ~mask,
+			hm = this.heightMask & ~mask,
+			
+			// last mask
+			lastMask = mask,
 
 		    // start with bottom grid
 		    colourGrid = layersGrid,
@@ -19242,6 +19298,7 @@
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch to colour grid based on ZOOM >= 1
+			lastMask = mask;
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
 				mask = 15;
@@ -19259,10 +19316,17 @@
 							mask = 1;
 						} else {
 							// switch to full resolution grid
+							colourGrid = this.colourGrid;
 							mask = 0;
 						}
 					}
 				}
+			}
+
+			// check if mask changed
+			if (mask !== lastMask) {
+				// switch to full resolution colour grid
+				colourGrid = this.colourGrid;
 			}
 
 			// create the width and height masks
@@ -19402,6 +19466,9 @@
 		    // create the width and height masks
 		    wm = this.widthMask & ~mask,
 		    hm = this.heightMask & ~mask,
+
+			// last mask
+			lastMask = mask,
 
 		    // start with bottom grid
 		    colourGrid = layersGrid,
@@ -19682,6 +19749,7 @@
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch to colour grid based on ZOOM >= 1
+			lastMask = mask;
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
 				mask = 15;
@@ -19699,10 +19767,17 @@
 							mask = 1;
 						} else {
 							// switch to full resolution grid
+							colourGrid = this.colourGrid;
 							mask = 0;
 						}
 					}
 				}
+			}
+
+			// check if mask changed
+			if (mask !== lastMask) {
+				// switch to full resolution colour grid
+				colourGrid = this.colourGrid;
 			}
 
 			// create the width and height masks
@@ -19845,6 +19920,9 @@
 		    // create the width and height masks
 		    wm = this.widthMask & ~mask,
 		    hm = this.heightMask & ~mask,
+
+			// last mask
+			lastMask = mask,
 
 		    // create the comparison masks for clipping
 		    wt = ~mask,
@@ -20200,6 +20278,7 @@
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch to colour grid based on ZOOM >= 1
+			lastMask = mask;
 			if (layerZoom < 0.125) {
 				// switch to small grid 16x16
 				mask = 15;
@@ -20217,10 +20296,17 @@
 							mask = 1;
 						} else {
 							// switch to full resolution grid
+							colourGrid = this.colourGrid;
 							mask = 0;
 						}
 					}
 				}
+			}
+
+			// check if mask changed
+			if (mask !== lastMask) {
+				// switch to full resolution colour grid
+				colourGrid = this.colourGrid;
 			}
 
 			// create the width and height masks
