@@ -810,6 +810,7 @@
 					// find the next variable
 					varIndex = string.indexOf(Keywords.variablePrefixSymbol);
 				} else {
+					string = string.substr(varIndex + 1);
 					varIndex = -1;
 				}
 			}

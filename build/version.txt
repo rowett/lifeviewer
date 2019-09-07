@@ -1,3 +1,6 @@
+Build 401
+- ignore trailing # for string substitutions
+
 Build 400
 - Settings menu buttons are now more descriptive
 - new Settings menu Display setting: Auto Grid (hotkey Ctrl+"G")
