@@ -2053,7 +2053,13 @@
 	// draw help text
 	Help.drawHelpText = function(view) {
 		var ctx = view.mainContext,
-		    lineHeight = 19 * view.viewMenu.yScale;
+
+			// scale
+			xScale = view.viewMenu.xScale,
+			yScale = view.viewMenu.yScale,
+
+			// line height
+		    lineHeight = 19 * yScale;
 
 		// compute the number of lines that will fit on the page
 		view.numHelpPerPage = ((view.displayHeight / lineHeight) | 0) - 6;
@@ -2067,12 +2073,12 @@
 		// draw shadow
 		ctx.fillStyle = ViewConstants.helpShadowColour; 
 		this.shadowX = -2;
-		this.renderHelpText(view, ctx, 6, 14, lineHeight, view.displayHelp | 0);
+		this.renderHelpText(view, ctx, 6 * xScale, 14 * yScale, lineHeight, view.displayHelp | 0);
 
 		// draw text
 		ctx.fillStyle = ViewConstants.helpFontColour;
 		this.shadowX = 0;
-		this.renderHelpText(view, ctx, 4, 12, lineHeight, view.displayHelp | 0);
+		this.renderHelpText(view, ctx, 4 * xScale, 12 * yScale, lineHeight, view.displayHelp | 0);
 	};
 
 	// render error with up down greyed based on position
@@ -2221,8 +2227,12 @@
 	Help.drawErrors = function(view) {
 		var ctx = view.mainContext,
 
+			// scale
+			xScale = view.viewMenu.xScale,
+			yScale = view.viewMenu.yScale,
+
 		    // text line height in pixels
-		    lineHeight = 19 * view.viewMenu.yScale,
+		    lineHeight = 19 * yScale,
 
 		    // number of footer lines
 		    footerLines = 7;
@@ -2243,11 +2253,11 @@
 
 		// draw shadow
 		ctx.fillStyle = ViewConstants.helpShadowColour;
-		this.renderErrors(view, ctx, 6, 14, lineHeight, view.displayErrors | 0);
+		this.renderErrors(view, ctx, 6 * xScale, 14 * yScale, lineHeight, view.displayErrors | 0);
 
 		// draw text
 		ctx.fillStyle = view.errorsFontColour;
-		this.renderErrors(view, ctx, 4, 12, lineHeight, view.displayErrors | 0);
+		this.renderErrors(view, ctx, 4 * xScale, 12 * yScale, lineHeight, view.displayErrors | 0);
 	};
 
 	window['Help'] = Help;

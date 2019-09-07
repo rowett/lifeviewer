@@ -11823,6 +11823,7 @@
 			neededHeight = 0,
 			borderSize = 0,
 			i = 0,
+			scale = 0,
 			name = "";
 
 		// check for Edge browser
@@ -12380,10 +12381,7 @@
 							resizeRequired = true;
 						}
 					} else {
-						this.displayWidth = (ViewConstants.minViewerWidth * this.devicePixelRatio) & ~7;
-						if (this.displayWidth > window.innerWidth - 64) {
-							this.displayWidth = (window.innerWidth - 64) & ~7;
-						}
+						this.displayWidth = ViewConstants.minViewerWidth;
 					}
 
 					if (this.requestedPopupHeight > -1) {
@@ -12392,7 +12390,7 @@
 							resizeRequired = true;
 						}
 					} else {
-						this.displayHeight = (ViewConstants.minMenuHeight + 80) * this.devicePixelRatio;
+						this.displayHeight = ViewConstants.minMenuHeight + 80;
 						if (this.displayHeight > (window.innerHeight - 64)) {
 							this.displayHeight = (window.innerHeight - 64);
 						}
@@ -12402,14 +12400,45 @@
 
 			// check if popup width has changed
 			if (this.isInPopup) {
+				// scale width and height
+				this.displayWidth *= this.devicePixelRatio;
+				this.displayHeight *= this.devicePixelRatio;
+
+				// ensure width fits on window
+				if (this.displayWidth > (window.innerWidth - 64)) {
+					// scale y by the change in x
+					this.displayHeight *= (window.innerWidth - 64) / this.displayWidth;
+
+					// fit width on window
+					this.displayWidth = window.innerWidth - 64;
+				}
+
+				// ensure height fits on window
+				if (this.displayHeight > (window.innerHeight - 64)) {
+					// scale x by change in y
+					this.displayWidth *= (window.innerHeight - 64) / this.displayHeight;
+
+					// fit height on window
+					this.displayHeight = window.innerHeight - 64;
+				}
+
+				// ensure width is a multiple of 8
+				this.displayWidth &= ~7;
+
+				// compute the scaling factor
+				scale = this.displayWidth / ViewConstants.minViewerWidth;
+				if ((this.displayHeight / (ViewConstants.minMenuHeight + 80)) < scale) {
+					scale = this.displayHeight / (ViewConstants.minMenuHeight + 80);
+				}
+
 				// resize the menu controls
-				this.viewMenu.resizeControls(this.displayWidth / ViewConstants.minViewerWidth);
+				this.viewMenu.resizeControls(scale);
 
 				// resize the icons
-				this.iconManager.setScale(this.displayWidth / ViewConstants.minViewerWidth);
+				this.iconManager.setScale(scale);
 
 				// resize the help fonts
-				this.helpFontSize = (18 * this.viewMenu.yScale) | 0;
+				this.helpFontSize = (18 * scale) | 0;
 				this.helpFixedFont = this.helpFontSize + "px " + ViewConstants.fixedFontFamily;
 				this.helpVariableFont = this.helpFontSize + "px " + ViewConstants.variableFontFamily;
 
