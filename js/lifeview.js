@@ -1,4 +1,4 @@
-// LifeViewer plugin
+// LfeViewer plugin
 // written by Chris Rowett
 
 (function() {
@@ -290,14 +290,11 @@
 		/** @const {number} */ minStepSpeed : 1,
 		/** @const {number} */ maxStepSpeed : 64,
 
-		// font size
-		/** @const {number} */ fontSize : 18,
-
 		// fixed font
-		/** @const {string} */ fixedFont : "18px Courier",
+		/** @const {string} */ fixedFontFamily : "Courier",
 
 		// variable font
-		/** @const {string} */ variableFont : "18px Arial",
+		/** @const {string} */ variableFontFamily : "Arial",
 
 		// stats font
 		/** @const {string} */ statsFont : "18px Arial",
@@ -566,6 +563,15 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// help font size
+		/** @type {number} */ this.helpFontSize = 18;
+
+		// help fixed font
+		/** @type {string} */ this.helpFixedFont = "18px " + ViewConstants.fixedFontFamily;
+
+		// help variable font
+		/** @type {string} */ this.helpVariableFont = "18px " + ViewConstants.variableFontFamily;
 
 		// device pixel ratio
 		/** @type {number} */ this.devicePixelRatio = (window.devicePixelRatio ? window.devicePixelRatio : 1);
@@ -12384,8 +12390,18 @@
 
 			// check if popup width has changed
 			if (this.isInPopup) {
+				// resize the menu controls
 				this.viewMenu.resizeControls(this.displayWidth / ViewConstants.minViewerWidth);
+
+				// resize the icons
 				this.iconManager.setScale(this.displayWidth / ViewConstants.minViewerWidth);
+
+				// resize the help fonts
+				this.helpFontSize = (18 * this.viewMenu.yScale) | 0;
+				this.helpFixedFont = this.helpFontSize + "px " + ViewConstants.fixedFontFamily;
+				this.helpVariableFont = this.helpFontSize + "px " + ViewConstants.variableFontFamily;
+
+				// check if popup width has changed
 				if (this.displayWidth !== this.lastPopupWidth) {
 					this.popupWidthChanged = true;
 				}

@@ -22,7 +22,10 @@
 		    drawingShadow = false,
 
 		    // line number
-		    lineNo = view.lineNo;
+			lineNo = view.lineNo,
+			
+			// scale
+			xScale = view.viewMenu.xScale;
 
 		// only render if context exists
 		if (ctx) {
@@ -34,7 +37,7 @@
 			// check if the line is on the page
 			if (lineNo >= startLine && lineNo <= (startLine + view.numHelpPerPage)) {
 				// output up
-				ctx.font = ViewConstants.fixedFont;
+				ctx.font = view.helpFixedFont;
 
 				// set colour based on whether help can scroll up
 				if (!drawingShadow) {
@@ -66,8 +69,8 @@
 				if (!drawingShadow) {
 					ctx.fillStyle = ViewConstants.helpFontColour;
 				}
-				ctx.font = ViewConstants.variableFont;
-				ctx.fillText(text, x + view.tabs[0], y);
+				ctx.font = view.helpVariableFont;
+				ctx.fillText(text, x + (view.tabs[0] * xScale), y);
 
 				// move the y coordinate to the next screen line
 				result += height;
@@ -137,9 +140,9 @@
 		} else {
 			// set the correct font
 			if (item === 0) {
-				ctx.font = ViewConstants.fixedFont;
+				ctx.font = view.helpFixedFont;
 			} else {
-				ctx.font = ViewConstants.variableFont;
+				ctx.font = view.helpVariableFont;
 			}
 
 			// measure the width of the text and cache the result
@@ -170,18 +173,21 @@
 			drewText = false,
 
 			// whether text should be drawn
-			shouldDraw = (view.lineNo >= startLine && view.lineNo <= (startLine + view.numHelpPerPage));
+			shouldDraw = (view.lineNo >= startLine && view.lineNo <= (startLine + view.numHelpPerPage)),
+
+			// scale
+			xScale = view.viewMenu.xScale;
 
 		// check if there is fixed text
 		if (fixed.length) {
 			if (shouldDraw) {
-				ctx.font = ViewConstants.fixedFont;
+				ctx.font = view.helpFixedFont;
 				ctx.fillText(fixed, x, y);
 			}
 
 			// check if the fixed portion was wider than the first tab
 			width = this.measureText(view, ctx, fixed, 0);
-			if (width > view.tabs[tabNo]) {
+			if (width > (view.tabs[tabNo] * xScale)) {
 				// move the variable portion onto the next line
 				if (shouldDraw) {
 					y += height;
@@ -193,12 +199,12 @@
 
 			// draw the variable text
 			if (shouldDraw) {
-				ctx.font = ViewConstants.variableFont;
+				ctx.font = view.helpVariableFont;
 			}
 			while (tab !== -1) {
 				// draw the text up to the tab at the current tab stop
 				if (shouldDraw) {
-					ctx.fillText(text.substr(0, tab), x + view.tabs[tabNo], y);
+					ctx.fillText(text.substr(0, tab), x + (view.tabs[tabNo] * xScale), y);
 				}
 
 				// next tab stop
@@ -214,7 +220,7 @@
 			if (view.wrapHelpText) {
 				width = this.measureText(view, ctx, text, 1);
 				// remove the shadow offset from x otherwise normal and shadow text wrap differently
-				if (x + view.tabs[tabNo] + width + this.shadowX > ctx.canvas.width) {
+				if (x + (view.tabs[tabNo] * xScale) + width + this.shadowX > ctx.canvas.width) {
 					// check if the text can be split at "|"
 					divider = text.toLowerCase().indexOf("|");
 					if (divider === -1) {
@@ -230,14 +236,14 @@
 					}
 					if (divider !== -1) {
 						if (shouldDraw) {
-							ctx.fillText(text.substr(0, divider), x + view.tabs[tabNo], y);
+							ctx.fillText(text.substr(0, divider), x + (view.tabs[tabNo] * xScale), y);
 							y += height;
 							result += height;
 						}
 						view.lineNo += 1;
 						shouldDraw = (view.lineNo >= startLine && view.lineNo <= (startLine + view.numHelpPerPage));
 						if (shouldDraw) {
-							ctx.fillText("  " + text.substr(divider), x + view.tabs[tabNo], y);
+							ctx.fillText("  " + text.substr(divider), x + (view.tabs[tabNo] * xScale), y);
 						}
 						drewText = true;
 					}
@@ -246,11 +252,11 @@
 			if (!drewText) {
 				// draw on one line
 				if (shouldDraw) {
-					ctx.fillText(text, x + view.tabs[tabNo], y);
+					ctx.fillText(text, x + (view.tabs[tabNo] * xScale), y);
 				}
 			}
 		} else {
-			ctx.font = ViewConstants.variableFont;
+			ctx.font = view.helpVariableFont;
 			if (shouldDraw) {
 				ctx.fillText(text, x, y);
 			}
@@ -2047,7 +2053,7 @@
 	// draw help text
 	Help.drawHelpText = function(view) {
 		var ctx = view.mainContext,
-		    lineHeight = 19;
+		    lineHeight = 19 * view.viewMenu.yScale;
 
 		// compute the number of lines that will fit on the page
 		view.numHelpPerPage = ((view.displayHeight / lineHeight) | 0) - 6;
@@ -2090,7 +2096,7 @@
 		// check if the line on the page
 		if (lineNo >= startLine && lineNo <= (startLine + view.numHelpPerPage)) {
 			// output up
-			ctx.font = ViewConstants.fixedFont;
+			ctx.font = view.helpFixedFont;
 
 			// set colour based on whether errors can scroll up
 			if (!drawingShadow) {
@@ -2127,7 +2133,7 @@
 			if (!drawingShadow) {
 				ctx.fillStyle = view.errorsFontColour;
 			}
-			ctx.font = ViewConstants.variableFont;
+			ctx.font = view.helpVariableFont;
 			ctx.fillText(error, x + width, y);
 
 			// move the y coordinate to the next screen line
@@ -2152,7 +2158,7 @@
 		if (lineNo >= startLine && lineNo <= (startLine + view.numHelpPerPage)) {
 			// draw command if supplied
 			if (command.length) {
-				ctx.font = ViewConstants.fixedFont;
+				ctx.font = view.helpFixedFont;
 				ctx.fillText(command, x, y);
 				width = ctx.measureText(command + " ").width;
 			}
@@ -2163,7 +2169,7 @@
 			}
 
 			// draw error message
-			ctx.font = ViewConstants.variableFont;
+			ctx.font = view.helpVariableFont;
 			ctx.fillText(error, x + width, y);
 
 			// move the y coordinate to the next screen line
@@ -2188,7 +2194,7 @@
 
 		// draw the title
 		view.tabs[0] = 0;
-		ctx.font = ViewConstants.variableFont;
+		ctx.font = view.helpVariableFont;
 		y = this.renderErrorLine(view, "", ViewConstants.scriptErrorTitle, ctx, x, y, height, errorLine);
 
 		// draw each error
@@ -2216,7 +2222,7 @@
 		var ctx = view.mainContext,
 
 		    // text line height in pixels
-		    lineHeight = 19,
+		    lineHeight = 19 * view.viewMenu.yScale,
 
 		    // number of footer lines
 		    footerLines = 7;

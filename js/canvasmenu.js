@@ -2721,7 +2721,11 @@
 
 		    // timing display position
 		    x = oc.canvas.width - 86,
-		    y = 90;
+			y = 90,
+			
+			// display scale
+			xScale = 1,
+			yScale = 1;
 
 		// move fps display if in thumbnail mode
 		if (me.thumbnail) {
@@ -2749,6 +2753,16 @@
 				me.currentMenu.activateCallback(me.currentMenu.caller);
 			}
 		}
+
+		// scale information display
+		if (me.currentMenu) {
+			xScale = me.currentMenu.xScale;
+			yScale = me.currentMenu.yScale;
+		}
+
+		// update timing display position
+		x = oc.canvas.width - 86 * xScale;
+		y *= yScale;
 
 		// time menu draw and callback work
 		newWork = performance.now();
@@ -2844,7 +2858,7 @@
 		// draw the timing statistics if enabled
 		if (me.showTiming) {
 			// set the menu font
-			oc.font = "12px Arial";
+			oc.font = ((12 * xScale) | 0) + "px Arial";
 
 			// draw the shaded rectangle
 			oc.globalAlpha = 0.7;
@@ -2852,9 +2866,9 @@
 
 			// check for extended timing
 			if (me.showExtendedTiming) {
-				oc.fillRect(x, y, 88, 83);
+				oc.fillRect(x, y, ((88 * xScale) | 0), ((83 * yScale) | 0));
 			} else {
-				oc.fillRect(x, y, 88, 20);
+				oc.fillRect(x, y, ((88 * xScale) | 0), ((20 * yScale) | 0));
 			}
 
 			// compute weighted load
@@ -2871,7 +2885,7 @@
 				// fade from yellow to red
 				oc.fillStyle = "rgb(255," + ((255 * (1 - (load - 0.5) * 2)) | 0) + ",0)";
 			}
-			oc.fillRect(x, y, (88 * load) | 0, 20);
+			oc.fillRect(x, y, ((88 * load * xScale) | 0), ((20 * yScale) | 0));
 
 			// convert to one decimal place
 			menu = menu.toFixed(1);
@@ -2889,40 +2903,40 @@
 			// draw fps
 			message = total + "fps";
 			messageWidth = oc.measureText(message).width;
-			oc.fillText(message, x + 8 + 28 - messageWidth, y + 12);
+			oc.fillText(message, x + ((8 + 28) * xScale) - messageWidth, y + (12 * yScale));
 
 			// draw load%
 			message = ((100 * load) | 0) + "%";
 			messageWidth = oc.measureText(message).width;
-			oc.fillText(message, x + 8 + 76 - messageWidth, y + 12);
+			oc.fillText(message, x + ((8 + 76) * xScale) - messageWidth, y + (12 * yScale));
 
 			// draw extended timing if enabled
 			if (me.showExtendedTiming) {
 				// draw labels
-				oc.fillText("menu", x + 6, y + 28);
-				oc.fillText("work", x + 6, y + 44);
-				oc.fillText("update", x + 6, y + 60);
-				oc.fillText("focus", x + 6, y + 76);
+				oc.fillText("menu", x + (6 * xScale), y + (28 * yScale));
+				oc.fillText("work", x + (6 * xScale), y + (44 * yScale));
+				oc.fillText("update", x + (6 * xScale), y + (60 * yScale));
+				oc.fillText("focus", x + (6 * xScale), y + (76 * yScale));
 
 				// draw menu ms
 				message = menu + "ms";
 				messageWidth = oc.measureText(message).width;
-				oc.fillText(message, x + 8 + 76 - messageWidth, y + 28);
+				oc.fillText(message, x + ((8 + 76) * xScale) - messageWidth, y + (28 * yScale));
 
 				// draw work ms
 				message = work + "ms";
 				messageWidth = oc.measureText(message).width;
-				oc.fillText(message, x + 8 + 76 - messageWidth, y + 44);
+				oc.fillText(message, x + ((8 + 76) * xScale) - messageWidth, y + (44 * yScale));
 
 				// draw autoupdate
 				message = (me.autoUpdate ? "on" : "off");
 				messageWidth = oc.measureText(message).width;
-				oc.fillText(message, x + 8 + 76 - messageWidth, y + 60);
+				oc.fillText(message, x + ((8 + 76) * xScale) - messageWidth, y + (60 * yScale));
 
 				// draw focus
 				message = (me.hasFocus ? "on" : "off");
 				messageWidth = oc.measureText(message).width;
-				oc.fillText(message, x + 8 + 76 - messageWidth, y + 76);
+				oc.fillText(message, x + ((8 + 76) * xScale) - messageWidth, y + (76 * yScale));
 			}
 
 			// draw the text
@@ -2931,40 +2945,40 @@
 			// draw fps
 			message = total + "fps";
 			messageWidth = oc.measureText(message).width;
-			oc.fillText(message, x + 6 + 28 - messageWidth, y + 10);
+			oc.fillText(message, x + ((6 + 28) * xScale) - messageWidth, y + (10 * yScale));
 
 			// draw load%
 			message = ((100 * load) | 0) + "%";
 			messageWidth = oc.measureText(message).width;
-			oc.fillText(message, x + 6 + 76 - messageWidth, y + 10);
+			oc.fillText(message, x + ((6 + 76) * xScale) - messageWidth, y + (10 * yScale));
 
 			// draw extended timing if enabled
 			if (me.showExtendedTiming) {
 				// draw labels
-				oc.fillText("menu", x + 4, y + 26);
-				oc.fillText("work", x + 4, y + 42);
-				oc.fillText("update", x + 4, y + 58);
-				oc.fillText("focus", x + 4, y + 74);
+				oc.fillText("menu", x + (4 * xScale), y + (26 * yScale));
+				oc.fillText("work", x + (4 * xScale), y + (42 * yScale));
+				oc.fillText("update", x + (4 * xScale), y + (58 * yScale));
+				oc.fillText("focus", x + (4 * xScale), y + (74 * yScale));
 
 				// draw menu ms
 				message = menu + "ms";
 				messageWidth = oc.measureText(message).width;
-				oc.fillText(message, x + 6 + 76 - messageWidth, y + 26);
+				oc.fillText(message, x + ((6 + 76) * xScale) - messageWidth, y + (26 * yScale));
 
 				// draw work ms
 				message = work + "ms";
 				messageWidth = oc.measureText(message).width;
-				oc.fillText(message, x + 6 + 76 - messageWidth, y + 42);
+				oc.fillText(message, x + ((6 + 76) * xScale) - messageWidth, y + (42 * yScale));
 
 				// draw autoupdate
 				message = (me.autoUpdate ? "on" : "off");
 				messageWidth = oc.measureText(message).width;
-				oc.fillText(message, x + 6 + 76 - messageWidth, y + 58);
+				oc.fillText(message, x + ((6 + 76) * xScale) - messageWidth, y + (58 * yScale));
 
 				// draw focus
 				message = (me.hasFocus ? "on" : "off");
 				messageWidth = oc.measureText(message).width;
-				oc.fillText(message, x + 6 + 76 - messageWidth, y + 74);
+				oc.fillText(message, x + ((6 + 76) * xScale) - messageWidth, y + (74 * yScale));
 			}
 
 			// reset alpha
