@@ -6978,7 +6978,7 @@
 	// drag help
 	View.prototype.dragHelp = function(me, y) {
 		// compute the movement
-		var dy = (me.lastDragY - y) / ViewConstants.fontSize;
+		var dy = (me.lastDragY - y) / me.helpFontSize;
 
 		// scroll help text
 		if (me.lastDragY !== -1) {
@@ -6995,7 +6995,7 @@
 	// drag errors
 	View.prototype.dragErrors = function(me, y) {
 		// compute the movement
-		var dy = (me.lastDragY - y) / ViewConstants.fontSize;
+		var dy = (me.lastDragY - y) / me.helpFontSize;
 
 		// scroll errors
 		if (me.lastDragY !== -1) {
@@ -11419,10 +11419,22 @@
 		    pxWidth = 0,
 
 		    // index
-		    i = length;
+			i = length,
+			
+			// device pixel ratio
+			devicePixelRatio = 1,
+
+			// font size
+			itemFontSize = 18;
+
+		// setup device pixel ratio
+		if (window.devicePixelRatio) {
+			devicePixelRatio = window.devicePixelRatio;
+			itemFontSize = (itemFontSize * devicePixelRatio) | 0;
+		}
 
 		// set the variable font
-		ctx.font = ViewConstants.variableFont;
+		ctx.font = itemFontSize + "px " + ViewConstants.variableFontFamily;
 
 		// check if the message fits
 		pxWidth = ctx.measureText(message).width;
