@@ -1,3 +1,7 @@
+Build 402
+- fix title bar sizing for PopUp Viewer
+- handle conflicting accesskey attributes
+
 Build 401
 - ignore trailing # for string substitutions
 - fixed rendering with layers

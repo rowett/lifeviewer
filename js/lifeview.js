@@ -1,4 +1,4 @@
-// LfeViewer plugin
+// LifeViewer plugin
 // written by Chris Rowett
 
 (function() {
@@ -40,6 +40,9 @@
 
 	// ViewConstants singleton
 	ViewConstants = {
+		// alt keys that LifeViewer uses (any accesskey attributes that match these will be disabled)
+		/** @const {string} */ altKeys : "0123456789rtyopasghjklxcbn",
+
 		// theme selection button positions and order
 		/** @const {Array<number>} */ themeX : [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3],
 		/** @const {Array<number>} */ themeOrder : [1, 10, 11, 17, 18, 2, 3, 4, 5, 7, 12, 13, 14, 15, 16, 0, 6, 8, 9],
@@ -236,7 +239,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 401,
+		/** @const {number} */ versionBuild : 402,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -563,6 +566,12 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// PopUp Viewer title bar elements (for resize)
+		this.anchorItem = null;
+		this.innerDivItem = null;
+		this.centerDivItem = null;
+		this.hiddenItem = null;
 
 		// help font size
 		/** @type {number} */ this.helpFontSize = 18;
@@ -13418,7 +13427,8 @@
 		    cleanItem = cleanPattern(textItem),
 
 		    // get the standalone viewer
-		    viewer = Controller.standaloneViewer(),
+			viewer = Controller.standaloneViewer(),
+			view = null,
 
 		    // popup window
 		    popup = null,
@@ -13426,29 +13436,22 @@
 		    // elements
 		    canvasItem = null,
 		    divItem = null,
+		    windowTitleItem = null,
 		    anchorItem = null,
 		    innerDivItem = null,
-		    windowTitleItem = null,
 		    centerDivItem = null,
 			hiddenItem = null,
 
-			// device pixel ratio
-			devicePixelRatio = 1,
+			// element sizes for scaling
 			itemHeight = 28,
 			itemFontSize = 18;
-
-		// setup device pixel ratio
-		if (window.devicePixelRatio) {
-			devicePixelRatio = window.devicePixelRatio;
-			itemHeight = (itemHeight * devicePixelRatio) | 0;
-			itemFontSize = (itemFontSize * devicePixelRatio) | 0;
-		}
 
 		// check if the standalone viewer exists
 		if (viewer) {
 			// reset it
-			viewer[1].element = textItem;
-			viewer[1].viewStart(viewer[1]);
+			view = viewer[1];
+			view.element = textItem;
+			view.viewStart(view);
 		} else {
 			// create canvas and set width and height
 			canvasItem = document.createElement("canvas");
@@ -13530,9 +13533,14 @@
 			startView(cleanItem, canvasItem, ViewConstants.minViewerWidth, true, textItem);
 			Controller.standaloneIndex = Controller.viewers.length - 1;
 			viewer = Controller.standaloneViewer();
+			view = viewer[1];
 
 			// save the window title element
-			viewer[1].titleElement = windowTitleItem;
+			view.titleElement = windowTitleItem;
+			view.anchorItem = anchorItem;
+			view.hiddenItem = hiddenItem;
+			view.centerDivItem = centerDivItem;
+			view.innerDivItem = innerDivItem;
 		}
 
 		// find the parent of the Viewer
@@ -13545,17 +13553,17 @@
 		}
 
 		// set the standalone viewer size
-		viewer[1].displayWidth = ViewConstants.minViewerWidth;
-		viewer[1].displayHeight = ViewConstants.minMenuHeight + 80;
-		viewer[1].resize();
+		view.displayWidth = ViewConstants.minViewerWidth;
+		view.displayHeight = ViewConstants.minMenuHeight + 80;
+		view.resize();
 
 		// hide any notifications immediately
-		viewer[1].menuManager.notification.clear(true, true);
-		viewer[1].menuManager.notification.clear(false, true);
+		view.menuManager.notification.clear(true, true);
+		view.menuManager.notification.clear(false, true);
 
 		// update the standalone viewer with ignore thumbnail set
-		viewer[1].startViewer(cleanItem, true);
-		viewer[1].resize();
+		view.startViewer(cleanItem, true);
+		view.resize();
 		
 		// get the popup window
 		popup = viewer[2];
@@ -13566,9 +13574,23 @@
 		// ensure popup is within the browser window
 		popup.resizeWindow(popup, null);
 
+		// scale the elements
+		if (view.viewMenu.yScale !== 1) {
+			itemHeight = (itemHeight * view.viewMenu.yScale) | 0;
+			itemFontSize = (itemFontSize * view.viewMenu.yScale) | 0;
+			view.anchorItem.style.height = itemHeight + "px";
+			view.anchorItem.style.fontSize = itemFontSize + "px";
+			view.hiddenItem.style.height = itemHeight + "px";
+			view.hiddenItem.style.fontSize = itemFontSize + "px";
+			view.centerDivItem.style.height = itemHeight + "px";
+			view.centerDivItem.style.fontSize = itemFontSize + "px";
+			view.innerDivItem.style.height = itemHeight + "px";
+			view.innerDivItem.style.lineHeight = itemHeight + "px";
+		}
+
 		// give focus to the popup window
-		viewer[1].mainContext.canvas.focus();
-		viewer[1].menuManager.hasFocus = true;
+		view.mainContext.canvas.focus();
+		view.menuManager.hasFocus = true;
 
 		return false;
 	}
@@ -13620,8 +13642,9 @@
 	// start all viewers in the document
 	function startAllViewers() {
 		// find all viewers in the document (should be enclosed in <div class="rle">)
-		var a = document.getElementsByTagName('div'),
-		    b = 0,
+		var a = document.getElementsByTagName("div"),
+			b = 0,
+			c = null,
 		    textItem = null,
 		    anchorItem = null,
 		    newAnchor = null,
@@ -13646,7 +13669,7 @@
 			if (rleItem.className === DocConfig.divClassName) {
 				// find the child textarea and canvas
 				textItem = rleItem.getElementsByTagName(DocConfig.patternSourceName)[0];
-				canvasItem = rleItem.getElementsByTagName('canvas')[0];
+				canvasItem = rleItem.getElementsByTagName("canvas")[0];
 
 				// check if the text item contains a child text item
 				childItem = textItem.getElementsByTagName(DocConfig.patternSourceName)[0];
@@ -13702,11 +13725,11 @@
 								// check if the contents is a valid pattern (will add to Controller if in multiverse mode)
 								if (isPattern(cleanItem, allocator)) {
 									// add the show in viewer anchor
-									anchorItem = rleItem.getElementsByTagName('a')[0];
+									anchorItem = rleItem.getElementsByTagName("a")[0];
 
 									// add a new anchor
-									newAnchor = document.createElement('a');
-									newAnchor.setAttribute('href', "#");
+									newAnchor = document.createElement("a");
+									newAnchor.setAttribute("href", "#");
 									newAnchor.innerHTML = "Show in Viewer";
 
 									// set the onclick
@@ -13727,6 +13750,23 @@
 								}
 							}
 						}
+					}
+				}
+			}
+		}
+
+		// check if any viewers were found
+		if (Controller.viewers.length > 0) {
+			// remove accesskey elements that conflict with LifeViewer
+			c = document.getElementsByTagName("a");
+
+			for (b = 0; b < c.length; b += 1) {
+				// get the next anchor
+				anchorItem = c[b];
+				if (anchorItem.accessKey !== "") {
+					// check if it conflicts
+					if (ViewConstants.altKeys.indexOf(anchorItem.accessKey) !== -1) {
+						anchorItem.accessKey = "";
 					}
 				}
 			}

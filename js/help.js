@@ -1175,6 +1175,11 @@
 				itemName = "Player";
 			}
 		}
+		if (view.isInPopup) {
+			itemName += " (PopUp)";
+		} else {
+			itemName += " (InLine)";
+		}
 		y = this.renderHelpLine(view, "Type", itemName, ctx, x, y, height, helpLine);
 		if (view.engine.isHex) {
 			itemName = "Hexagonal";
