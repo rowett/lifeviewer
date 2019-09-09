@@ -5240,6 +5240,15 @@
 			if (match) {
 				this.altSpecified = false;
 			}
+
+			// if alt specified then swap
+			if (this.altSpecified && this.isMargolus) {
+				for (i = 0; i < length; i += 1) {
+					tmp = ruleArray[i];
+					ruleArray[i] = ruleAltArray[i];
+					ruleAltArray[i] = tmp;
+				}
+			}
 		}
 
 		// clear rule buffers

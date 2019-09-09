@@ -239,7 +239,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 402,
+		/** @const {number} */ versionBuild : 403,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2604,7 +2604,7 @@
 		}
 
 		// save entry if valid
-		if (found) {
+		if (found && cells.length > 0) {
 			// compute the bounding box for the cell list
 			i = 0;
 			while (i < cells.length) {
@@ -4794,7 +4794,7 @@
 		me.updateUIForHelp(me.displayHelp || me.scriptErrors.length);
 
 		// dim display if settings displayed
-		if (me.navToggle.current[0]) {
+		if (me.navToggle.current[0] && !(me.hideGUI && me.generationOn)) {
 			me.mainContext.globalAlpha = 0.5;
 			me.mainContext.fillStyle = "black";
 			me.mainContext.fillRect(0, 0, me.mainCanvas.width, me.mainCanvas.height);
@@ -13652,7 +13652,10 @@
 		    cleanItem = null,
 		    rleItem = null,
 		    nodeItem = null,
-		    childItem = null,
+			childItem = null,
+			
+			// whether added a show in viewer link
+			addedLink = false,
 
 		    // temporary allocator
 			allocator = new Allocator();
@@ -13731,6 +13734,7 @@
 									newAnchor = document.createElement("a");
 									newAnchor.setAttribute("href", "#");
 									newAnchor.innerHTML = "Show in Viewer";
+									addedLink = true;
 
 									// set the onclick
 									registerEvent(newAnchor, "click", anchorCallback, false);
@@ -13756,7 +13760,7 @@
 		}
 
 		// check if any viewers were found
-		if (Controller.viewers.length > 0) {
+		if (Controller.viewers.length > 0 || addedLink) {
 			// remove accesskey elements that conflict with LifeViewer
 			c = document.getElementsByTagName("a");
 

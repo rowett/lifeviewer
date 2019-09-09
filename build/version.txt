@@ -1,3 +1,7 @@
+Build 403
+- do not dim display if settings menu open and UI is hidden because of Auto Hide UI
+- Margolus alternate rules were the wrong way round
+
 Build 402
 - fix title bar sizing for PopUp Viewer
 - handle conflicting accesskey attributes
