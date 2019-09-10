@@ -10560,14 +10560,32 @@
 		    blankTileRow = this.blankTileRow,
 
 		    // flags for edges of tile occupied
-		    neighbours = 0;
+			neighbours = 0,
+			
+			// counter for even/odd
+			counter = this.counter & 1;
+
+		// check for change in playback direction
+		if (this.reversePending) {
+			this.reverseMargolus = !this.reverseMargolus;
+			this.reversePending = false;
+		}
 
 		// switch buffers each generation
-		if ((this.counter & 1) !== 0) {
+		if (counter !== 0) {
 			grid = this.nextGrid16;
 			nextGrid = this.grid16;
 			tileGrid = this.nextTileGrid;
 			nextTileGrid = this.tileGrid;
+
+			// check for reverse playback
+			if (this.reverseMargolus) {
+				if (this.altSpecified) {
+					indexLookup = this.margolusReverseLookup1;
+				} else {
+					indexLookup = this.margolusReverseLookup1;
+				}
+			}
 		} else {
 			grid = this.grid16;
 			nextGrid = this.nextGrid16;
@@ -10576,6 +10594,20 @@
 			if (this.altSpecified) {
 				indexLookup = this.margolusLookup2;
 			}
+
+			// check for reverse playback
+			if (this.reverseMargolus) {
+				if (this.altSpecified) {
+					indexLookup = this.margolusReverseLookup2;
+				} else {
+					indexLookup = this.margolusReverseLookup1;
+				}
+			}
+		}
+
+		// invert odd/even for reverse playback
+		if (this.reverseMargolus) {
+			counter = 1 - counter;
 		}
 
 		// clear column occupied flags
@@ -10589,7 +10621,7 @@
 		}
 
 		// set the initial tile row
-		bottomY = 1 - (this.counter & 1);
+		bottomY = 1 - counter;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
@@ -10656,7 +10688,7 @@
 							neighbours = 0;
 
 							// check for even/odd phase
-							if ((this.counter & 1) !== 0) {
+							if (counter !== 0) {
 								// even phase
 								// process bottom row
 								h = bottomY;
