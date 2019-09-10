@@ -573,6 +573,9 @@
 			y = this.renderHelpLine(view, "Backspace", "pause / previous generation", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Tab", "pause / next step", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Shift Tab", "pause / previous step", ctx, x, y, height, helpLine);
+			if (view.engine.isMargolus) {
+				y = this.renderHelpLine(view, "U", "toggle playback direction", ctx, x, y, height, helpLine);
+			}
 			if (view.isInPopup) {
 				y = this.renderHelpLine(view, "Esc", "close LifeViewer", ctx, x, y, height, helpLine);
 			} else {
@@ -744,6 +747,7 @@
 		y = this.renderHelpLine(view, "S", "toggle stars", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "O", "open screenshot in separate window", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift O", "open population graph in separate window", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift U", "toggle UI", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// pattern controls

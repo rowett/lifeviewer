@@ -2584,7 +2584,8 @@
 				}
 
 				// set the font
-				oc.font = ((fontSize * xScale) | 0) + "px Arial";
+				fontSize *= xScale;
+				oc.font = (fontSize | 0) + "px Arial";
 
 				// measure the tooltip width
 				width = oc.measureText(toolTip).width;
@@ -2644,11 +2645,11 @@
 					while (oc.measureText(toolTip.substr(0, i)).width < targetWidth) {
 						i += 1;
 					}
-					// see if there is a space, comma or slash nearby
+					// see if there is a space, comma, slash or pipe nearby
 					j = i - 1;
 					while (j > i - 5) {
 						currentChar = toolTip[j];
-						if (currentChar === " " || currentChar === "," || currentChar === "/") {
+						if (currentChar === " " || currentChar === "," || currentChar === "/" || currentChar === "|") {
 							// split at the character found
 							i = j + 2;
 							j = i - 5;

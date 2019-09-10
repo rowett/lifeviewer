@@ -1,3 +1,9 @@
+Build 404
+- tooltips will now split at | to improve alternating rule display
+- tooltips now scale with window
+- reverse playback for non-alternate Margolus rules (hotkey "U" to toggle direction)
+- toggle UI is now on hotkey Shift+"U"
+
 Build 403
 - do not dim display if settings menu open and UI is hidden because of Auto Hide UI
 - Margolus alternate rules were the wrong way round

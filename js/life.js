@@ -236,6 +236,12 @@
 		// allocator
 		this.allocator = new Allocator();
 
+		// flag for reverse Margolus playback
+		/** @type {boolean} */ this.reverseMargolus = false;
+
+		// flag for reverse pending
+		/** @type {boolean} */ this.reversePending = false;
+
 		// flag whether alternate rules specified
 		/** @type {boolean} */ this.altSpecified = false;
 
@@ -635,6 +641,10 @@
 		// Margolus lookup
 		this.margolusLookup1 = null;
 		this.margolusLookup2 = null;
+
+		// Margolus reverse lookup
+		this.margolusReverseLookup1 = null;
+		this.margolusReverseLookup2 = null;
 
 		// colour lookup for next generation
 		this.colourLookup = this.allocator.allocate(Uint16, ((this.aliveMax + 1) * 2) << 8, "Life.colourLookup");
@@ -5203,6 +5213,42 @@
 		}
 	};
 
+	// check whether a margolus rule can reverse and if so reverse it
+	Life.prototype.canReverse = function(rule) {
+		var i = 0,
+			states = 0,
+			bit = 0,
+			value = 0,
+			result = true,
+			temp = new Uint8Array(16);
+
+		// make sure there are no duplicate transitions
+		i = 0;
+		while (result && i < 16) {
+			bit = 1 << rule[i];
+			if ((states & bit) !== 0) {
+				result = false;
+			} else {
+				states |= bit;
+				i += 1;
+			}
+		}
+
+		// check if reversible
+		if (result) {
+			// reverse rule
+			for (i = 0; i < 16; i += 1) {
+				value = rule[i];
+				temp[value] = i;
+			}
+
+			// copy to original rule
+			rule.set(temp);
+		}
+
+		return result;
+	};
+
 	// update the Life rule
 	Life.prototype.updateLifeRule = function() {
 		var i = 0,
@@ -5258,6 +5304,8 @@
 		this.indexLookupTri2 = null;
 		this.margolusLookup1 = null;
 		this.margolusLookup2 = null;
+		this.margolusReverseLookup1 = null;
+		this.margolusReverseLookup2 = null;
 
 		// check for Margolus
 		if (this.isMargolus) {
@@ -5331,8 +5379,24 @@
 				this.margolusLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusLookup2");
 				this.createMargolusIndex(this.margolusLookup2, ruleArray);
 				this.createMargolusIndex(this.margolusLookup1, ruleAltArray);
+
+				// check for reverse
+				if (this.canReverse(ruleArray)) {
+					this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
+					this.createMargolusIndex(this.margolusReverseLookup2, ruleArray);
+				}
+				if (this.canReverse(ruleAltArray)) {
+					this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
+					this.createMargolusIndex(this.margolusReverseLookup1, ruleArray);
+				}
 			} else {
 				this.createMargolusIndex(this.margolusLookup1, ruleArray);
+
+				// check for reverse
+				if (this.canReverse(ruleArray)) {
+					this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
+					this.createMargolusIndex(this.margolusReverseLookup1, ruleArray);
+				}
 			}
 		} else {
 			// check for Triangular
@@ -9780,14 +9844,32 @@
 		    bitCounts16 = this.bitCounts16,
 
 		    // population statistics
-		    population = 0, births = 0, deaths = 0;
+			population = 0, births = 0, deaths = 0,
+			
+			// counter for even/odd
+			counter = this.counter & 1;
+
+		// check for change in playback direction
+		if (this.reversePending) {
+			this.reverseMargolus = !this.reverseMargolus;
+			this.reversePending = false;
+		}
 
 		// switch buffers each generation
-		if ((this.counter & 1) !== 0) {
+		if (counter !== 0) {
 			grid = this.nextGrid16;
 			nextGrid = this.grid16;
 			tileGrid = this.nextTileGrid;
 			nextTileGrid = this.tileGrid;
+
+			// check for reverse playback
+			if (this.reverseMargolus) {
+				if (this.altSpecified) {
+					indexLookup = this.margolusReverseLookup1;
+				} else {
+					indexLookup = this.margolusReverseLookup1;
+				}
+			}
 		} else {
 			grid = this.grid16;
 			nextGrid = this.nextGrid16;
@@ -9796,6 +9878,20 @@
 			if (this.altSpecified) {
 				indexLookup = this.margolusLookup2;
 			}
+
+			// check for reverse playback
+			if (this.reverseMargolus) {
+				if (this.altSpecified) {
+					indexLookup = this.margolusReverseLookup2;
+				} else {
+					indexLookup = this.margolusReverseLookup1;
+				}
+			}
+		}
+
+		// invert odd/even for reverse playback
+		if (this.reverseMargolus) {
+			counter = 1 - counter;
 		}
 
 		// clear column occupied flags
@@ -9809,7 +9905,7 @@
 		}
 
 		// set the initial tile row
-		bottomY = 1 - (this.counter & 1);
+		bottomY = 1 - counter;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
@@ -9876,7 +9972,7 @@
 							neighbours = 0;
 
 							// check for even/odd phase
-							if ((this.counter & 1) !== 0) {
+							if (counter !== 0) {
 								// even phase
 								// process bottom row
 								h = bottomY;

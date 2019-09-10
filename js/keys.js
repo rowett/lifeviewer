@@ -89,8 +89,8 @@
 		if (me.noGUI) {
 			// gui disabled so check if NOGUI was defined
 			if (!me.noGUIDefined) {
-				// user disabled the GUI so check for toggle key 'u'
-				if (keyCode === 85) {
+				// user disabled the GUI so check for toggle key shift and 'u'
+				if (keyCode === 85 && event.shiftKey) {
 					me.noGUI = !me.noGUI;
 					me.viewMenu.deleted = me.noGUI;
 					me.menuManager.noGUI = me.noGUI;
@@ -1122,13 +1122,26 @@
 				}
 				break;
 				
-			// u for UI
+			// u for UI or reverse playback for Margolus
 			case 85:
-				// ignore if NOGUI defined
-				if (!me.noGUIDefined) {
-					me.noGUI = !me.noGUI;
-					me.viewMenu.deleted = me.noGUI;
-					me.menuManager.noGUI = me.noGUI;
+				if (event.shiftKey) {
+					// ignore if NOGUI defined
+					if (!me.noGUIDefined) {
+						me.noGUI = !me.noGUI;
+						me.viewMenu.deleted = me.noGUI;
+						me.menuManager.noGUI = me.noGUI;
+					}
+				} else {
+					// check for Margolus
+					if (me.engine.isMargolus) {
+						// check rule is reversible
+						if (me.engine.margolusReverseLookup1) {
+							// mark reverse pending
+							me.engine.reversePending = true;
+							// note test is inverted since change hasn't happened yet
+							me.menuManager.notification.notify("Playback " + (me.engine.reverseMargolus ? "Forward" : "Reverse"), 15, 40, 15, true);
+						}
+					}
 				}
 				break;
 

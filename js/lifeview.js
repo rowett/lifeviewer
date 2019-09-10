@@ -239,7 +239,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 403,
+		/** @const {number} */ versionBuild : 404,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2335,7 +2335,8 @@
 			ayy = trans[3],
 			pattern = new Pattern("rleToCellList"),
 			patternRow = null,
-			invertForGenerations = (states > 2 && !this.engine.isNone);
+			invertForGenerations = (states > 2 && !this.engine.isNone),
+			anyAlive = false; 
 
 		// check the RLE is valid
 		rle += " ";
@@ -2347,6 +2348,8 @@
 					for (i = 0; i < pattern.width; i += 1) {
 						state = patternRow[i];
 						if (state > 0) {
+							// mark at least one cell alive
+							anyAlive = true;
 							// invert state if Generations
 							if (invertForGenerations) {
 								state = states - state;
@@ -2355,6 +2358,17 @@
 							cells[cells.length] = x + i * axx + j * axy;
 							cells[cells.length] = y + i * ayx + j * ayy;
 							cells[cells.length] = state;
+						}
+					}
+				}
+				// check if any cells were alive
+				if (!anyAlive) {
+					for (j = 0; j < pattern.height; j += 1) {
+						for (i = 0; i < pattern.width; i += 1) {
+							// create (x, y, state) entry in cells array
+							cells[cells.length] = x + i * axx + j * axy;
+							cells[cells.length] = y + i * ayx + j * ayy;
+							cells[cells.length] = 0;
 						}
 					}
 				}
@@ -5982,6 +5996,10 @@
 				looping = true;
 			}
 		}
+
+		// clear reverse playback
+		me.engine.reverseMargolus = false;
+		me.engine.reversePending = false;
 
 		// if not looping and soft reset then disable waypoints, track and looping if defined
 		if (!looping && !hardReset) {
@@ -11932,6 +11950,10 @@
 		// clear any notifications
 		this.menuManager.notification.clear(true, true);
 		this.menuManager.notification.clear(false, true);
+
+		// clear reverse Margolus playback
+		this.engine.reverseMargolus = false;
+		this.engine.reversePending = false;
 
 		// attempt to create the pattern
 		pattern = PatternManager.create("", patternString, this.engine.allocator);
