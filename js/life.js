@@ -3312,6 +3312,52 @@
 		return result;
 	};
 
+	// check for reverse playback
+	Life.prototype.checkReverse = function(view, gen) {
+		var i = 0,
+			editList = view.editList,
+			l = editList.length,
+			record = null,
+			found = false;
+
+		// do nothing if not Margolus rule
+		if (this.isMargolus) {
+			// see if there is a reverse playback record at the given generation
+			this.reversePending = false;
+			this.reverseMargolus = false;
+			i = 0;
+			while (!found && i < l) {
+				// get next record
+				record = editList[i];
+
+				// check if it is before target generation
+				if (record.gen < gen) {
+					// check if it is a reverse playback record
+					if (record.action === "reverse playback") {
+						this.reverseMargolus = !this.reverseMargolus;
+					}
+					// next record
+					i += 1;
+				} else {
+					// check if it is after taget generation
+					if (record.gen > gen) {
+						// bail out since generation passed
+						found = true;
+					} else {
+						// at target generation
+						if (record.action === "reverse playback") {
+							this.reversePending = true;
+							found = true;
+						} else {
+							// next record
+							i += 1;
+						}
+					}
+				}
+			}
+		}
+	};
+
 	// run to given generation (used to step back)
 	Life.prototype.runTo = function(targetGen, statsOn, graphDisabled, view) {
 		// get the latest snapshot
@@ -3339,6 +3385,8 @@
 		// play from the snapshot counter to just before the target with stats off (for speed)
 		while (this.counter < targetGen - 1) {
 			if (this.anythingAlive) {
+				// check for reverse direction
+				this.checkReverse(view, this.counter);
 				this.nextGeneration(false, true, graphDisabled);
 				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
 					this.convertToPensTile();
@@ -3347,6 +3395,7 @@
 				if (this.anythingAlive === 0 && this.multiNumStates <= 2) {
 					// clear the other buffer
 					this.anythingAlive = 1;
+					this.checkReverse(view, this.counter);
 					this.nextGeneration(false, false, graphDisabled);
 					this.anythingAlive = 0;
 					this.counter -= 1;
@@ -3361,6 +3410,7 @@
 		// compute the final generation with stats on if required
 		if (this.counter < targetGen) {
 			if (this.anythingAlive) {
+				this.checkReverse(view, this.counter);
 				this.nextGeneration(statsOn, true, graphDisabled);
 				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
 					this.convertToPensTile();
@@ -3369,6 +3419,7 @@
 				if (this.anythingAlive === 0 && this.multiNumStates <= 2) {
 					// clear the other buffer
 					this.anythingAlive = 1;
+					this.checkReverse(view, this.counter);
 					this.nextGeneration(false, false, graphDisabled);
 					this.anythingAlive = 0;
 					this.counter -= 1;

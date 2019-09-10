@@ -2232,6 +2232,11 @@
 						me.afterSelectAction = false;
 					}
 	
+					// check for reverse playback
+					if (record.action === "reverse playback") {
+						me.engine.reversePending = true;
+					}
+
 					// decrement stack using saved value since a record may have been added above
 					current -= 1;
 					me.editNum = current;
@@ -2301,6 +2306,11 @@
 				} else {
 					me.isSelection = false;
 					me.afterSelectAction = false;
+				}
+
+				// check for reverse playback
+				if (record.action === "reverse playback") {
+					me.engine.reversePending = true;
 				}
 
 				// next record
@@ -4501,6 +4511,11 @@
 							// if lagging then bailout if enabled
 							bailout = me.canBailOut;
 						}
+					}
+
+					// check for reverse playback switch
+					if (me.engine.reversePending) {
+						me.afterEdit("reverse playback");
 					}
 
 					// check if stats are on and this is the last generation in the step

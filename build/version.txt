@@ -3,6 +3,7 @@ Build 404
 - tooltips now scale with window
 - reverse playback for non-alternate Margolus rules (hotkey "U" to toggle direction)
 - toggle UI is now on hotkey Shift+"U"
+- close Help and Errors when UI switched off
 
 Build 403
 - do not dim display if settings menu open and UI is hidden because of Auto Hide UI

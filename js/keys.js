@@ -1130,16 +1130,28 @@
 						me.noGUI = !me.noGUI;
 						me.viewMenu.deleted = me.noGUI;
 						me.menuManager.noGUI = me.noGUI;
+						// close help if open
+						if (me.noGUI) {
+							me.displayHelp = 0;
+							me.displayErrors = 0;
+						}
 					}
 				} else {
 					// check for Margolus
 					if (me.engine.isMargolus) {
 						// check rule is reversible
 						if (me.engine.margolusReverseLookup1) {
-							// mark reverse pending
-							me.engine.reversePending = true;
-							// note test is inverted since change hasn't happened yet
-							me.menuManager.notification.notify("Playback " + (me.engine.reverseMargolus ? "Forward" : "Reverse"), 15, 40, 15, true);
+							// check if reverse is pending
+							if (me.engine.reversePending) {
+								// cancel change
+								me.engine.reversePending = false;
+								me.menuManager.notification.notify("Playback " + (me.engine.reverseMargolus ? "Reverse" : "Forward"), 15, 40, 15, true);
+							} else {
+								// mark reverse pending
+								me.engine.reversePending = true;
+								// note test is inverted since change hasn't happened yet
+								me.menuManager.notification.notify("Playback " + (me.engine.reverseMargolus ? "Forward" : "Reverse"), 15, 40, 15, true);
+							}
 						}
 					}
 				}
