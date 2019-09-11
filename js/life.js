@@ -5307,62 +5307,12 @@
 
 		// create two alternate arrays
 		for (i = 0; i < 16; i += 1) {
+			ruleAltArray[i] = ruleArray[15 - i];
+		}
+
+		for (i = 0; i < 16; i += 1) {
 			tmp = ruleArray[i];
 			ruleArray[i] = 15 - tmp;
-			if (i === tmp) {
-				ruleAltArray[i] = ruleArray[i];
-			} else {
-				switch (ruleArray[i]) {
-					case 0:
-						ruleAltArray[i] = 0;
-						break;
-					case 15:
-						ruleAltArray[i] = 15;
-						break;
-					case 1:
-						ruleAltArray[i] = 8;
-						break;
-					case 8:
-						ruleAltArray[i] = 1;
-						break;
-					case 2:
-						ruleAltArray[i] = 4;
-						break;
-					case 4:
-						ruleAltArray[i] = 2;
-						break;
-					case 3:
-						ruleAltArray[i] = 5;
-						break;
-					case 5:
-						ruleAltArray[i] = 3;
-						break;
-					case 6:
-						ruleAltArray[i] = 9;
-						break;
-					case 9:
-						ruleAltArray[i] = 6;
-						break;
-					case 7:
-						ruleAltArray[i] = 14;
-						break;
-					case 14:
-						ruleAltArray[i] = 7;
-						break;
-					case 10:
-						ruleAltArray[i] = 12;
-						break;
-					case 12:
-						ruleAltArray[i] = 10;
-						break;
-					case 11:
-						ruleAltArray[i] = 13;
-						break;
-					case 13:
-						ruleAltArray[i] = 11;
-						break;
-				}
-			}
 		}
 	};
 

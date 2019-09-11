@@ -52,10 +52,10 @@
 		this.aliases.push(["RotationsIII", "M0,4,1,10,8,3,9,11,2,6,12,14,5,7,13,15"]);
 		this.aliases.push(["RotationsIV", "M0,4,1,12,8,10,6,14,2,9,5,13,3,11,7,15"]);
 		this.aliases.push(["Sand", "M0,4,8,12,4,12,12,13,8,12,12,14,12,13,14,15"]);
-		this.aliases.push(["StringThing", "M0,1,2,12,4,10,9,7,8, 6,5,11,3,13,14,15"]);
+		this.aliases.push(["StringThing", "M0,1,2,12,4,10,9,7,8,6,5,11,3,13,14,15"]);
 		this.aliases.push(["StringThingII", "M0,1,2,12,4,10,6,7,8,9,5,11,3,13,14,15"]);
-		this.aliases.push(["SwapOnDiag", "M0,8,4,12,2,10,6,14, 1,9,5,13,3,11,7,15"]);
-		this.aliases.push(["Tron", "M15,1,2,3,4,5,6,7,8, 9,10,11,12,13,14,0"]);
+		this.aliases.push(["SwapOnDiag", "M0,8,4,12,2,10,6,14,1,9,5,13,3,11,7,15"]);
+		this.aliases.push(["Tron", "M15,1,2,3,4,5,6,7,8,9,10,11,12,13,14,0"]);
 
 		// add 2 state totalistic aliases
 		this.sectionNames.push("OT M");
