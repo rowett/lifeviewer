@@ -1,3 +1,7 @@
+Build 405
+- fixed alternate Margolus rules
+- fixed a few Margolus aliases
+
 Build 404
 - tooltips will now split at | to improve alternating rule display
 - tooltips now scale with window
