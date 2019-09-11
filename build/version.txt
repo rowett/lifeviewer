@@ -1,7 +1,8 @@
 Build 404
 - tooltips will now split at | to improve alternating rule display
 - tooltips now scale with window
-- reverse playback for non-alternate Margolus rules (hotkey "U" to toggle direction)
+- graph axes now scale with window
+- reverse playback for Margolus rules (hotkey "U" to toggle direction)
 - toggle UI is now on hotkey Shift+"U"
 - close Help and Errors when UI switched off
 

@@ -4703,7 +4703,7 @@
 			// check for grid capture
 			if (me.screenShotScheduled === 2) {
 				// draw graph at full opacity
-				me.engine.drawPopGraph(me.popGraphLines, 1, true, me.thumbnail);
+				me.engine.drawPopGraph(me.popGraphLines, 1, true, me.thumbnail, me);
 			}
 
 			// capture screen shot
@@ -4738,7 +4738,7 @@
 
 		// draw population graph if required
 		if (me.popGraph && !(me.drawing || me.selecting)) {
-			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail);
+			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail, me);
 		}
 
 		// display help if requested
@@ -5475,7 +5475,7 @@
 
 		// draw population graph if required
 		if (me.popGraph) {
-			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail);
+			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail, me);
 		}
 
 		// display help if requested
@@ -5575,7 +5575,7 @@
 
 		// draw population graph if required
 		if (me.popGraph) {
-			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail);
+			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail, me);
 		}
 
 		// display help if requested

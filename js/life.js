@@ -5300,6 +5300,72 @@
 		return result;
 	};
 
+	// create non-strobing Margolus alternate rules
+	Life.prototype.createNonStrobingAlternates = function(ruleArray, ruleAltArray) {
+		var i = 0,
+			tmp = 0;
+
+		// create two alternate arrays
+		for (i = 0; i < 16; i += 1) {
+			tmp = ruleArray[i];
+			ruleArray[i] = 15 - tmp;
+			if (i === tmp) {
+				ruleAltArray[i] = ruleArray[i];
+			} else {
+				switch (ruleArray[i]) {
+					case 0:
+						ruleAltArray[i] = 0;
+						break;
+					case 15:
+						ruleAltArray[i] = 15;
+						break;
+					case 1:
+						ruleAltArray[i] = 8;
+						break;
+					case 8:
+						ruleAltArray[i] = 1;
+						break;
+					case 2:
+						ruleAltArray[i] = 4;
+						break;
+					case 4:
+						ruleAltArray[i] = 2;
+						break;
+					case 3:
+						ruleAltArray[i] = 5;
+						break;
+					case 5:
+						ruleAltArray[i] = 3;
+						break;
+					case 6:
+						ruleAltArray[i] = 9;
+						break;
+					case 9:
+						ruleAltArray[i] = 6;
+						break;
+					case 7:
+						ruleAltArray[i] = 14;
+						break;
+					case 14:
+						ruleAltArray[i] = 7;
+						break;
+					case 10:
+						ruleAltArray[i] = 12;
+						break;
+					case 12:
+						ruleAltArray[i] = 10;
+						break;
+					case 11:
+						ruleAltArray[i] = 13;
+						break;
+					case 13:
+						ruleAltArray[i] = 11;
+						break;
+				}
+			}
+		}
+	};
+
 	// update the Life rule
 	Life.prototype.updateLifeRule = function() {
 		var i = 0,
@@ -5310,6 +5376,7 @@
 		    hashSize = (this.isTriangular ? LifeConstants.hashTriangular : LifeConstants.hash33),
 			odd = false,
 			match = true,
+			savedArray = null,
 			length = ruleArray.length;
 
 		// save flag
@@ -5366,64 +5433,15 @@
 			if (ruleArray[0] === 15 && ruleArray[15] === 0) {
 				this.altSpecified = true;
 				altSpecified = true;
+
+				// save the original array
+				savedArray = new Uint8Array(16);
 				for (i = 0; i < 16; i += 1) {
-					tmp = ruleArray[i];
-					ruleArray[i] = 15 - tmp;
-					if (i === tmp) {
-						ruleAltArray[i] = ruleArray[i];
-					} else {
-						switch (ruleArray[i]) {
-							case 0:
-								ruleAltArray[i] = 0;
-								break;
-							case 15:
-								ruleAltArray[i] = 15;
-								break;
-							case 1:
-								ruleAltArray[i] = 8;
-								break;
-							case 8:
-								ruleAltArray[i] = 1;
-								break;
-							case 2:
-								ruleAltArray[i] = 4;
-								break;
-							case 4:
-								ruleAltArray[i] = 2;
-								break;
-							case 3:
-								ruleAltArray[i] = 5;
-								break;
-							case 5:
-								ruleAltArray[i] = 3;
-								break;
-							case 6:
-								ruleAltArray[i] = 9;
-								break;
-							case 9:
-								ruleAltArray[i] = 6;
-								break;
-							case 7:
-								ruleAltArray[i] = 14;
-								break;
-							case 14:
-								ruleAltArray[i] = 7;
-								break;
-							case 10:
-								ruleAltArray[i] = 12;
-								break;
-							case 12:
-								ruleAltArray[i] = 10;
-								break;
-							case 11:
-								ruleAltArray[i] = 13;
-								break;
-							case 13:
-								ruleAltArray[i] = 11;
-								break;
-						}
-					}
+					savedArray[i] = ruleArray[i];
 				}
+
+				// create non-strobing alternate rules
+				this.createNonStrobingAlternates(ruleArray, ruleAltArray);
 			}
 
 			if (altSpecified) {
@@ -5431,14 +5449,13 @@
 				this.createMargolusIndex(this.margolusLookup2, ruleArray);
 				this.createMargolusIndex(this.margolusLookup1, ruleAltArray);
 
-				// check for reverse
-				if (this.canReverse(ruleArray)) {
-					this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
-					this.createMargolusIndex(this.margolusReverseLookup2, ruleArray);
-				}
-				if (this.canReverse(ruleAltArray)) {
+				// check for reverse V0=15/V15=0
+				if (savedArray && this.canReverse(savedArray)) {
 					this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
-					this.createMargolusIndex(this.margolusReverseLookup1, ruleArray);
+					this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
+					this.createNonStrobingAlternates(savedArray, ruleAltArray);
+					this.createMargolusIndex(this.margolusReverseLookup1, ruleAltArray);
+					this.createMargolusIndex(this.margolusReverseLookup2, savedArray);
 				}
 			} else {
 				this.createMargolusIndex(this.margolusLookup1, ruleArray);
@@ -8486,14 +8503,16 @@
 	};
 
 	// draw population data
-	Life.prototype.drawPopGraph = function(lines, opacity, fullScreen, thumbnail) {
+	Life.prototype.drawPopGraph = function(lines, opacity, fullScreen, thumbnail, view) {
 		var ctx = this.context,
-		    borderX = 0, borderY = 40,
-		    borderAxis = 40,
+			xScale = view.viewMenu.xScale,
+			yScale = view.viewMenu.yScale,
+		    borderX = 0, borderY = 40 * yScale,
+		    borderAxis = 40 * xScale,
 		    graphWidth = this.displayWidth - borderX - borderAxis,
 		    graphHeight = this.displayHeight - borderY - borderAxis,
 		    displayX = 0,
-		    i = 0,
+			i = 0,
 		    graphBgColor = "rgb(" + this.graphBgColor[0] + "," + this.graphBgColor[1] + "," + this.graphBgColor[2] + ")",
 		    graphAxisColor = "rgb(" + this.graphAxisColor[0] + "," + this.graphAxisColor[1] + "," + this.graphAxisColor[2] + ")",
 		    graphAliveColor = "rgb(" + this.graphAliveColor[0] + "," + this.graphAliveColor[1] + "," + this.graphAliveColor[2] + ")",
@@ -8505,7 +8524,7 @@
 			// check for full screen
 			if (fullScreen || thumbnail) {
 				borderY = 0;
-				graphHeight += 80;
+				graphHeight += borderY * 2;
 			}
 			if (thumbnail) {
 				borderAxis = 0;
@@ -8524,12 +8543,12 @@
 			ctx.fillRect(borderX, borderY, graphWidth + borderAxis, graphHeight);
 			ctx.globalAlpha = 1;
 			if (fullScreen) {
-				graphHeight -= 40;
+				graphHeight -= borderY;
 			}
 
 			// draw labels
 			if (!thumbnail) {
-				ctx.font = "16px Arial";
+				ctx.font = ((16 * xScale) | 0) + "px Arial";
 				ctx.textAlign = "center";
 				ctx.fillStyle = "black";
 				for (i = 2; i >= 0; i -= 2) {
@@ -8568,7 +8587,7 @@
 					ctx.restore();
 					ctx.save();
 					ctx.translate(graphWidth, graphHeight + borderAxis / 2 - 6);
-					ctx.fillText(String(this.counter > displayX ? this.counter : displayX), i, i);
+					ctx.fillText(String(this.counter > displayX ? this.counter : (displayX | 0)), i, i);
 					ctx.restore();
 					ctx.fillStyle = graphAxisColor;
 				}
