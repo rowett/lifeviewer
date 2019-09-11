@@ -1365,6 +1365,13 @@
 		}
 		y = this.renderHelpLine(view, "Tile Size", (view.engine.tileX << 3) + " x " + view.engine.tileY, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Generation", view.engine.counter, ctx, x, y, height, helpLine);
+		if (view.engine.isMargolus && view.engine.margolusReverseLookup1) {
+			flag = view.engine.reverseMargolus;
+			if (view.engine.reversePending) {
+				flag = !flag;
+			}
+			y = this.renderHelpLine(view, "Direction", (flag ? "Reverse" : "Forward"), ctx, x, y, height, helpLine);
+		}
 		y = this.renderHelpLine(view, "DeleteRange", view.engine.removePatternRadius, ctx, x, y, height, helpLine);
 		if (view.engine.clearGliders) {
 			y = this.renderHelpLine(view, "KillGliders", view.engine.numClearedGliders, ctx, x, y, height, helpLine);

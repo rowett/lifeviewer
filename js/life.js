@@ -5265,7 +5265,7 @@
 	};
 
 	// check whether a margolus rule can reverse and if so reverse it
-	Life.prototype.canReverse = function(rule) {
+	Life.prototype.canReverse = function(rule, copy) {
 		var i = 0,
 			states = 0,
 			bit = 0,
@@ -5294,7 +5294,9 @@
 			}
 
 			// copy to original rule
-			rule.set(temp);
+			if (copy) {
+				rule.set(temp);
+			}
 		}
 
 		return result;
@@ -5302,8 +5304,7 @@
 
 	// create non-strobing Margolus alternate rules
 	Life.prototype.createNonStrobingAlternates = function(ruleArray, ruleAltArray) {
-		var i = 0,
-			tmp = 0;
+		var i = 0;
 
 		// create two alternate arrays
 		for (i = 0; i < 16; i += 1) {
@@ -5311,8 +5312,7 @@
 		}
 
 		for (i = 0; i < 16; i += 1) {
-			tmp = ruleArray[i];
-			ruleArray[i] = 15 - tmp;
+			ruleArray[i] = 15 - ruleArray[i];
 		}
 	};
 
@@ -5400,18 +5400,28 @@
 				this.createMargolusIndex(this.margolusLookup1, ruleAltArray);
 
 				// check for reverse V0=15/V15=0
-				if (savedArray && this.canReverse(savedArray)) {
+				if (savedArray && this.canReverse(savedArray, true)) {
 					this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
 					this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
 					this.createNonStrobingAlternates(savedArray, ruleAltArray);
 					this.createMargolusIndex(this.margolusReverseLookup1, ruleAltArray);
 					this.createMargolusIndex(this.margolusReverseLookup2, savedArray);
+				} else {
+					// check for alternate
+					if (this.canReverse(ruleArray, false) && this.canReverse(ruleAltArray, false)) {
+						this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
+						this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
+						this.canReverse(ruleAltArray, true);
+						this.createMargolusIndex(this.margolusReverseLookup1, ruleAltArray);
+						this.canReverse(ruleArray, true);
+						this.createMargolusIndex(this.margolusReverseLookup2, ruleArray);
+					}
 				}
 			} else {
 				this.createMargolusIndex(this.margolusLookup1, ruleArray);
 
 				// check for reverse
-				if (this.canReverse(ruleArray)) {
+				if (this.canReverse(ruleArray, true)) {
 					this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
 					this.createMargolusIndex(this.margolusReverseLookup1, ruleArray);
 				}

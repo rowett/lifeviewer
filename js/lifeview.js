@@ -239,7 +239,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 405,
+		/** @const {number} */ versionBuild : 406,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",

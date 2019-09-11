@@ -1,3 +1,6 @@
+Build 406
+- allow reverse playback for reversible alternate Margolus rules
+
 Build 405
 - fixed alternate Margolus rules
 - fixed a few Margolus aliases
