@@ -372,6 +372,9 @@
 		// thumbnail zoom
 		/** @const {string} */ thumbZoomWord : "THUMBZOOM",
 
+		// no throttle
+		/** @const {string} */ noThrottleWord : "NOTHROTTLE",
+
 		// suppress escaping gliders 
 		/** @const {string} */ killGlidersWord : "KILLGLIDERS",
 

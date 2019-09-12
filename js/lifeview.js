@@ -12904,6 +12904,12 @@
 		this.graphButton.locked = this.graphDisabled;
 		this.graphButton.current = [this.popGraph];
 
+		// set the performance warning UI control
+		this.showLagToggle.current = [this.perfWarning];
+
+		// set the throttle UI control
+		this.throttleToggle.current = [this.canBailOut];
+
 		// set the kill gliders UI control
 		this.killButton.current = [this.engine.clearGliders];
 

@@ -907,6 +907,8 @@
 		y = this.renderHelpLine(view, Keywords.viewOnlyWord, "disable playback", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noHistoryWord, "disable step back", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noReportWord, "disable stop messages", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.noPerfWarningWord, "disable performance warning", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.noThrottleWord, "disable playback throttling", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		view.helpSections[sectionNum] = [view.lineNo, "Camera"];
 		sectionNum += 1;
@@ -1016,7 +1018,6 @@
 		y = this.renderHelpLine(view, Keywords.extendedTimingWord, "extended timing information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.showGenStatsWord, "show generation statistics", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.showInfoBarWord, "show information bar", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.noPerfWarningWord, "hide performance warning", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		view.helpSections[sectionNum] = [view.lineNo, "Thumb"];
 		sectionNum += 1;

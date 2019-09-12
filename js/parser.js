@@ -18,6 +18,7 @@
 
 		// check if the token is a script command
 		switch (tokenString) {
+			case Keywords.noThrottleWord:
 			case Keywords.textColorWord:
 			case Keywords.errorColorWord:
 			case Keywords.showGenStatsWord:
@@ -2823,6 +2824,12 @@
 						// hide source
 						case Keywords.noSourceWord:
 							view.noSource = true;
+							itemValid = true;
+							break;
+
+						// no playback throttle
+						case Keywords.noThrottleWord:
+							view.canBailOut = false;
 							itemValid = true;
 							break;
 

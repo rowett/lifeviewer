@@ -9830,6 +9830,9 @@
 		    // which cells were set in source
 		    origValue = 0,
 
+			// whether on right tile column
+			rightTile = false,
+
 		    // column occupied
 		    columnOccupied16 = this.columnOccupied16,
 		    colOccupied = 0,
@@ -9979,11 +9982,6 @@
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
 
-				// prevent right hand tile from being processed
-				if (tw === tileCols16 - 1) {
-					tiles &= 65534;
-				}
-
 				// check if any are occupied
 				if (tiles) {
 					// get the destination (with any set because of edges)
@@ -9993,6 +9991,13 @@
 
 					// compute next generation for each set tile
 					for (b = 15; b >= 0; b -= 1) {
+						// check if on right tile
+						if (b === 0 && tw === tileCols16 - 1) {
+							rightTile = true;
+						} else {
+							rightTile = false;
+						}
+
 						// check if this tile needs computing
 						if ((tiles & (1 << b)) !== 0) {
 							// mark no cells in this column
@@ -10186,9 +10191,16 @@
 								// process bottom row
 								h = bottomY;
 
-								// get original value for next two rows
-								val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
-								val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+								// check for right hand tile
+								if (rightTile) {
+									// get original value for next two rows
+									val0 = (grid[h][leftX] << 1) & 65535;
+									val1 = (grid[h + 1][leftX] << 1) & 65535;
+								} else {
+									// get original value for next two rows
+									val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
+									val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+								}
 								origValue = (val0 | val1);
 
 								// get output
@@ -10200,10 +10212,15 @@
 								output1 |= (output & 255);
 
 								// save output 16bits
-								nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
-								nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
-								nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
-								nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+								if (rightTile) {
+									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+								} else {
+									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+									nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
+									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+									nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+								}
 
 								// update statistics
 								population += bitCounts16[output0];
@@ -10234,8 +10251,13 @@
 								h += 2;
 								while (h < topY - 2) {
 									// get original value for next two rows
-									val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
-									val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+									if (rightTile) {
+										val0 = (grid[h][leftX] << 1) & 65535;
+										val1 = (grid[h + 1][leftX] << 1)  & 65535;
+									} else {
+										val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
+										val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+									}
 									origValue |= (val0 | val1);
 	
 									// get output
@@ -10247,10 +10269,15 @@
 									output1 |= (output & 255);
 	
 									// save output 16bits
-									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
-									nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
-									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
-									nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+									if (rightTile) {
+										nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+										nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+									} else {
+										nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+										nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
+										nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+										nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+									}
 
 									// update statistics
 									population += bitCounts16[output0];
@@ -10280,8 +10307,13 @@
 								}
 
 								// process top row
-								val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
-								val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+								if (rightTile) {
+									val0 = (grid[h][leftX] << 1) & 65535;
+									val1 = (grid[h + 1][leftX] << 1) & 65535;
+								} else {
+									val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
+									val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+								}
 								origValue |= (val0 | val1);
 
 								// get output
@@ -10293,10 +10325,15 @@
 								output1 |= (output & 255);
 
 								// save output 16bits
-								nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
-								nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
-								nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
-								nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+								if (rightTile) {
+									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+								} else {
+									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+									nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
+									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+									nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+								}
 
 								// update statistics
 								population += bitCounts16[output0];
@@ -10552,6 +10589,9 @@
 		    // which cells were set in source
 		    origValue = 0,
 
+			// whether on right tile column
+			rightTile = false,
+
 		    // column occupied
 		    columnOccupied16 = this.columnOccupied16,
 		    colOccupied = 0,
@@ -10695,11 +10735,6 @@
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
 
-				// prevent right hand tile from being processed
-				if (tw === tileCols16 - 1) {
-					tiles &= 65534;
-				}
-
 				// check if any are occupied
 				if (tiles) {
 					// get the destination (with any set because of edges)
@@ -10709,6 +10744,13 @@
 
 					// compute next generation for each set tile
 					for (b = 15; b >= 0; b -= 1) {
+						// check if on right tile
+						if (b === 0 && tw === tileCols16 - 1) {
+							rightTile = true;
+						} else {
+							rightTile = false;
+						}
+
 						// check if this tile needs computing
 						if ((tiles & (1 << b)) !== 0) {
 							// mark no cells in this column
@@ -10882,9 +10924,16 @@
 								h = bottomY;
 								origValue = 0;
 
-								// get original value for next two rows
-								val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
-								val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+								// check for right hand tile
+								if (rightTile) {
+									// get original value for next two rows
+									val0 = (grid[h][leftX] << 1) & 65535;
+									val1 = (grid[h + 1][leftX] << 1) & 65535;
+								} else {
+									// get original value for next two rows
+									val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
+									val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+								}
 								origValue |= (val0 | val1);
 
 								// get output
@@ -10896,10 +10945,15 @@
 								output1 |= (output & 255);
 
 								// save output 16bits
-								nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
-								nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
-								nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
-								nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+								if (rightTile) {
+									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+								} else {
+									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+									nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
+									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+									nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+								}
 
 								// check if any cells are set
 								output = output0 | output1;
@@ -10922,8 +10976,13 @@
 								h += 2;
 								while (h < topY - 2) {
 									// get original value for next two rows
-									val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
-									val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+									if (rightTile) {
+										val0 = (grid[h][leftX] << 1) & 65535;
+										val1 = (grid[h + 1][leftX] << 1)  & 65535;
+									} else {
+										val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
+										val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+									}
 									origValue |= (val0 | val1);
 	
 									// get output
@@ -10935,10 +10994,15 @@
 									output1 |= (output & 255);
 	
 									// save output 16bits
-									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
-									nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
-									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
-									nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+									if (rightTile) {
+										nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+										nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+									} else {
+										nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+										nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
+										nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+										nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+									}
 
 									// check if any cells are set
 									output = output0 | output1;
@@ -10960,8 +11024,13 @@
 								}
 
 								// process top row
-								val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
-								val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+								if (rightTile) {
+									val0 = (grid[h][leftX] << 1) & 65535;
+									val1 = (grid[h + 1][leftX] << 1) & 65535;
+								} else {
+									val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
+									val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
+								}
 								origValue |= (val0 | val1);
 
 								// get output
@@ -10973,10 +11042,15 @@
 								output1 |= (output & 255);
 
 								// save output 16bits
-								nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
-								nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
-								nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
-								nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+								if (rightTile) {
+									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+								} else {
+									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
+									nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
+									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
+									nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
+								}
 
 								// check if any cells are set
 								output = output0 | output1;

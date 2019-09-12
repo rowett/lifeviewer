@@ -1,5 +1,7 @@
 Build 406
 - allow reverse playback for reversible alternate Margolus rules
+- new script command [[ NOTHROTTLE ]] will disable playback throttling
+- Margolus rules can now use right hand tile column on the grid
 
 Build 405
 - fixed alternate Margolus rules
@@ -35,6 +37,7 @@ Build 400
 - new Settings menu Pattern action: New Pattern (hotkey Alt+"N")
 	- creates a new empty pattern
 - new Settings menu Info setting: Relative Gen (hotkey Shift+"G")
+
 	- when #CXRLE Gen is defined toggles the generation display between Absolute and Relative
 - State Slider now hidden for Generations patterns when states fit on display
 - selecting a drawing state with hotkeys Ctrl+"0" to Ctrl+"9" now scrolls state selection UI to show new state
