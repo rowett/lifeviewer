@@ -38,8 +38,9 @@
 		this.births = 0;
 		this.deaths = 0;
 
-		// generation
+		// generation and Margolus generation
 		this.counter = 0;
+		this.counterMargolus = 0;
 
 		// anything alive
 		this.anythingAlive = 0;
@@ -992,7 +993,7 @@
 	};
 
 	// save snapshot
-	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, overlayGrid, zoomBox, HROTBox, population, births, deaths, counter, width, height, life, isReset, anythingAlive) {
+	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, overlayGrid, zoomBox, HROTBox, population, births, deaths, counter, counterMargolus, width, height, life, isReset, anythingAlive) {
 		var snapshot = null,
 		    i = 0,
 		    l = this.resetSnapshots.length,
@@ -1076,6 +1077,7 @@
 		
 		// save the generation
 		snapshot.counter = counter;
+		snapshot.counterMargolus = counterMargolus;
 	};
 
 	// free a buffer

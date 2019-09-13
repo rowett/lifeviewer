@@ -1,3 +1,8 @@
+Build 407
+- [[ PASTET EVERY ]] now works with Margolus reverse playback when Margolus generation >= 0
+- Margolus generation number is now in Help->Info->Grid
+- fixed an issue where RLE PASTEs weren't happening on step back
+
 Build 406
 - allow reverse playback for reversible alternate Margolus rules
 - new script command [[ NOTHROTTLE ]] will disable playback throttling

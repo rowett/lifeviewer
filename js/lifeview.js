@@ -239,7 +239,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 406,
+		/** @const {number} */ versionBuild : 407,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2808,6 +2808,11 @@
 		var needsPaste = false,
 			i = 0,
 			counter = this.engine.counter;
+
+		// for Margolus rules use Margolus generation
+		if (this.engine.isMargolus) {
+			counter = this.engine.counterMargolus;
+		}
 
 		// check if this pattern needs pasting
 		if (paste.every !==0 && counter >= paste.genList[0] && (((counter - paste.genList[0]) % paste.every) === 0)) {
@@ -5610,6 +5615,7 @@
 	View.prototype.viewStart = function(me) {
 		// zero life counter
 		me.engine.counter = 0;
+		me.engine.counterMargolus = 0;
 		me.floatCounter = 0;
 		me.originCounter = 0;
 
@@ -12795,6 +12801,7 @@
 
 		// reset generation
 		this.engine.counter = 0;
+		this.engine.counterMargolus = 0;
 		this.floatCounter = 0;
 		this.originCounter = 0;
 

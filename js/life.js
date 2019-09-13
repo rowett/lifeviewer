@@ -486,6 +486,9 @@
 		// birth rule
 		/** @type {number} */ this.birth = (1 << 3);
 
+		// Margolus generation number (decreases with reverse playback)
+		/** @type {number} */ this.counterMargolus = 0;
+
 		// number of generations
 		/** @type {number} */ this.counter = 0;
 
@@ -3379,7 +3382,7 @@
 		if (snapshot) {
 			// restore the snapshot
 			this.restoreSnapshot(snapshot);
-			view.pasteEdits();
+			view.pasteRLEList();
 		}
 
 		// play from the snapshot counter to just before the target with stats off (for speed)
@@ -3450,6 +3453,7 @@
 
 		// restore the counter
 		this.counter = snapshot.counter;
+		this.counterMargolus = snapshot.counterMargolus;
 
 		// check which buffer to copy to
 		if ((this.counter & 1) !== 0) {
@@ -3551,7 +3555,7 @@
 	// save to a specific snapshot
 	Life.prototype.saveToSnapshot = function(isReset, grid, tileGrid) {
 		// create the snapshot
-		this.snapshotManager.saveSnapshot(grid, tileGrid, this.colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive);
+		this.snapshotManager.saveSnapshot(grid, tileGrid, this.colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, this.counterMargolus, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive);
 	};
 
 	// save grid
@@ -8275,6 +8279,15 @@
 
 		// increment generation count
 		this.counter += 1;
+
+		// adjust Margolus generation based on playback direction
+		if (this.isMargolus) {
+			if (this.reverseMargolus) {
+				this.counterMargolus -= 1;
+			} else {
+				this.counterMargolus += 1;
+			}
+		}
 
 		// check for Generations
 		if (this.multiNumStates !== -1 && !this.isHROT) {
