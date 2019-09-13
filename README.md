@@ -27,10 +27,12 @@ LifeViewer features:
 * Colour themes with cell history and longevity.
 * Square, hexagonal and triangular grid displays.
 * Pseudo 3D layers and stars.
-* Multiple ways to automatically track patterns as they evolve.
-* Script language that allows many features to be customized including Waypoint animations and POIs.
+* Multiple ways to automatically track patterns with the camera as they evolve.
+* Script language that allows many features to be customized including Waypoint animations.
 * Support for multiple embedded LifeViewers and/or a single popup LifeViewer.
-* Ability to step back to earlier generations.
+* Ability to step back to earlier generations for all patterns and reverse playback for reversible Margolus patterns.
+* Pattern annotation with Labels, Arrows, Lines and Polygons.
+* Programatically pasting cells onto the grid at defined intervals (for example: glider injection).
 * Editor with unlimitied undo/redo and multiple clipboards.
 
 

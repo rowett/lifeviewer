@@ -1,3 +1,7 @@
+Build 408
+- added new Reverse direction button to toggle playback direction for reversible Margolus rules
+- improved Population Graph vertical fit
+
 Build 407
 - [[ PASTET EVERY ]] now works with Margolus reverse playback when Margolus generation >= 0
 - Margolus generation number is now in Help->Info->Grid

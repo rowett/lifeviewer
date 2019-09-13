@@ -8480,7 +8480,7 @@
 		var ctx = this.context,
 			xScale = view.viewMenu.xScale,
 			yScale = view.viewMenu.yScale,
-		    borderX = 0, borderY = 40 * yScale,
+		    borderX = 0, borderY = 48 * yScale,
 		    borderAxis = 40 * xScale,
 		    graphWidth = this.displayWidth - borderX - borderAxis,
 		    graphHeight = this.displayHeight - borderY - borderAxis,
@@ -8526,11 +8526,11 @@
 				ctx.fillStyle = "black";
 				for (i = 2; i >= 0; i -= 2) {
 					ctx.save();
-					ctx.translate(this.displayWidth / 2, graphHeight + borderAxis / 2 - 6);
+					ctx.translate(this.displayWidth / 2, graphHeight + borderAxis / 2 - ((6 * xScale) | 0));
 					ctx.fillText("Generation", i, i);
 					ctx.restore();
 					ctx.save();
-					ctx.translate(borderX + borderAxis / 2 + 6, this.displayHeight / 2);
+					ctx.translate(borderX + borderAxis / 2 + ((6 * xScale) | 0), this.displayHeight / 2);
 					ctx.rotate(-90 * Math.PI / 180);
 					if (this.displayHeight < 320) {
 						ctx.fillText("Pop", i, i);
@@ -8545,21 +8545,21 @@
 				ctx.fillStyle = "black";
 				for (i = 2; i >= 0; i -= 2) {
 					ctx.save();
-					ctx.translate(borderX + borderAxis - borderAxis / 2 + 6, borderY + borderAxis);
+					ctx.translate(borderX + borderAxis - borderAxis / 2 + ((6 * xScale) | 0), borderY + borderAxis);
 					ctx.rotate(-90 * Math.PI / 180);
 					ctx.fillText(String(this.maxPopValue), i, i);
 					ctx.restore();
 					ctx.save();
-					ctx.translate(borderX + borderAxis - borderAxis / 2 + 6, graphHeight);
+					ctx.translate(borderX + borderAxis - borderAxis / 2 + ((6 * xScale) | 0), graphHeight);
 					ctx.rotate(-90 * Math.PI / 180);
 					ctx.fillText("0", i, i);
 					ctx.restore();
 					ctx.save();
-					ctx.translate(borderX + borderAxis, graphHeight + borderAxis / 2 - 6);
+					ctx.translate(borderX + borderAxis, graphHeight + borderAxis / 2 - ((6 * xScale) | 0));
 					ctx.fillText("0", i, i);
 					ctx.restore();
 					ctx.save();
-					ctx.translate(graphWidth, graphHeight + borderAxis / 2 - 6);
+					ctx.translate(graphWidth, graphHeight + borderAxis / 2 - ((6 * xScale) | 0));
 					ctx.fillText(String(this.counter > displayX ? this.counter : (displayX | 0)), i, i);
 					ctx.restore();
 					ctx.fillStyle = graphAxisColor;

@@ -83,7 +83,7 @@
 		var processed = true,
 
 		    // value for changes
-		    value = 0;
+			value = 0;
 
 		// check if gui enabled
 		if (me.noGUI) {
@@ -347,7 +347,7 @@
 						// check if not playing
 						if (me.playList.current === ViewConstants.modePlay) {
 							// switch to pause
-							me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+							me.playList.current = me.viewPlayList(ViewConstants.modePlay, true, me);
 						} else {
 							// check for drawing and mouse down
 							if (!(me.drawing && me.menuManager.mouseDown)) {
@@ -1141,17 +1141,7 @@
 					if (me.engine.isMargolus) {
 						// check rule is reversible
 						if (me.engine.margolusReverseLookup1) {
-							// check if reverse is pending
-							if (me.engine.reversePending) {
-								// cancel change
-								me.engine.reversePending = false;
-								me.menuManager.notification.notify("Playback " + (me.engine.reverseMargolus ? "Reverse" : "Forward"), 15, 40, 15, true);
-							} else {
-								// mark reverse pending
-								me.engine.reversePending = true;
-								// note test is inverted since change hasn't happened yet
-								me.menuManager.notification.notify("Playback " + (me.engine.reverseMargolus ? "Forward" : "Reverse"), 15, 40, 15, true);
-							}
+							me.directionPressed(me);
 						}
 					}
 				}
