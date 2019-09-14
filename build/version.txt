@@ -1,3 +1,7 @@
+Build 409
+- lock Direction button during waypoint playback
+- reset playback direction to forward during waypoint playback
+
 Build 408
 - added new Reverse direction button to toggle playback direction for reversible Margolus rules
 - improved Population Graph vertical fit

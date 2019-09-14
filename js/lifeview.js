@@ -239,7 +239,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 408,
+		/** @const {number} */ versionBuild : 409,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4671,6 +4671,7 @@
 		me.zoomItem.locked = me.controlsLocked;
 		me.layersItem.locked = (me.controlsLocked && me.waypointsDefined) || (me.engine.isHex && me.engine.useHexagons) || me.engine.isTriangular;
 		me.depthItem.locked = (me.controlsLocked && me.waypointsDefined) || (me.engine.isHex && me.engine.useHexagons) || me.engine.isTriangular; 
+		me.directionButton.locked = me.controlsLocked;
 
 		// check if the mouse wheel scrolled
 		if (me.wheelDelta) {
@@ -6852,6 +6853,13 @@
 			case ViewConstants.modePlay:
 				// play
 				if (!me.generationOn) {
+					// set playback to forward if waypoints on and not disabled
+					if (me.waypointsDefined && !me.waypointsDisabled) {
+						if (me.engine.isMargolus && (me.engine.reverseMargolus || (!me.engine.reverseMargolus && me.engine.reversePending))) {
+							me.directionPressed(me);
+						}
+					}
+
 					// play
 					me.generationOn = true;
 					me.afterEdit("");
