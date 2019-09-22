@@ -3511,7 +3511,16 @@
 
 	// shorten a number to M or K
 	View.prototype.shortenNumber = function(value) {
-		var result = value + String();
+		var pos = value,
+			result = "";
+
+		// get absolute value
+		if (value < 0) { 
+			value = -value;
+		}
+
+		// get default result
+		result = value + String();
 
 		// check for huge number
 		if (value >= 1000000000) {
@@ -3536,6 +3545,11 @@
 					}
 				}
 			}
+		}
+
+		// adjust if negative
+		if (pos < 0) {
+			result = "-" + result;
 		}
 
 		// return the result as a string
@@ -4245,18 +4259,24 @@
 
 	// update generation counter label
 	View.prototype.updateGenerationLabel = function(me) {
-		var counter = me.engine.counter;
+		var counter = me.engine.counter,
+			separator = " ";
 
 		// use Margolus counter for Margolus rules
 		if (me.engine.isMargolus) {
 			counter = me.engine.counterMargolus;
 		}
 
+		// check for negative
+		if (counter < 0) {
+			separator = "";
+		}
+
 		// check for relative display
 		if (me.genRelative) {
 			me.genToggle.lower[0] = "+ " + me.shortenNumber(counter);
 		} else {
-			me.genToggle.lower[0] = "T " + me.shortenNumber(counter + me.genOffset);
+			me.genToggle.lower[0] = "T" + separator + me.shortenNumber(counter + me.genOffset);
 		}
 
 		// check for Margolus
