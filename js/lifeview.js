@@ -4282,6 +4282,8 @@
 		// check for Margolus
 		if (me.engine.isMargolus) {
 			me.genValueLabel.preText = me.shortenNumber(me.engine.counter);
+			me.genValueLabel.toolTip = "absolute generation " + me.engine.counter;
+			me.genLabel.toolTip = "absolute generation " + me.engine.counter;
 		}
 	};
 
@@ -10890,13 +10892,13 @@
 		this.genLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -130, 70, 30, "Gen");
 		this.genLabel.textAlign = Menu.left;
 		this.genLabel.setFont(ViewConstants.statsFont);
-		this.genLabel.toolTip = "generation";
+		this.genLabel.toolTip = "absolute generation";
 
 		// add the generation value label (only used for Margolus rules)
 		this.genValueLabel = this.viewMenu.addLabelItem(Menu.southWest, 70, -130, 70, 30, "");
 		this.genValueLabel.textAlign = Menu.right;
 		this.genValueLabel.setFont(ViewConstants.statsFont);
-		this.genValueLabel.toolTip = "generation";
+		this.genValueLabel.toolTip = "absolute generation";
 
 		// add the elapsed time label
 		this.timeLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -100, 70, 30, "Time");
