@@ -1,6 +1,11 @@
 Build 409
 - lock Direction button during waypoint playback
 - reset playback direction to forward during waypoint playback
+- thumbnail launch was only working the first time on touch devices
+- added some new aliases
+- Margolus patterns now show Margolus generation
+	- absolute generation is shown in Generation Statistics (toggle with bottom left button or hotkey "G")
+	- absolute generation is needed for Waypoint, Annotation, Stop and Loop commands
 
 Build 408
 - added new Reverse direction button to toggle playback direction for reversible Margolus rules

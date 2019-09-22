@@ -1523,6 +1523,12 @@
 		// timing details button
 		this.timingDetailButton = null;
 
+		// generation label
+		this.genLabel = null;
+
+		// generation value label
+		this.genValueLabel = null;
+
 		// time label
 		this.timeLabel = null;
 
@@ -4237,6 +4243,28 @@
 		}
 	};
 
+	// update generation counter label
+	View.prototype.updateGenerationLabel = function(me) {
+		var counter = me.engine.counter;
+
+		// use Margolus counter for Margolus rules
+		if (me.engine.isMargolus) {
+			counter = me.engine.counterMargolus;
+		}
+
+		// check for relative display
+		if (me.genRelative) {
+			me.genToggle.lower[0] = "+ " + me.shortenNumber(counter);
+		} else {
+			me.genToggle.lower[0] = "T " + me.shortenNumber(counter + me.genOffset);
+		}
+
+		// check for Margolus
+		if (me.engine.isMargolus) {
+			me.genValueLabel.preText = me.shortenNumber(me.engine.counter);
+		}
+	};
+
 	// update view mode for normal processing
 	View.prototype.viewAnimateNormal = function(timeSinceLastUpdate, me) {
 		// get the current time and mouse wheel
@@ -4761,11 +4789,7 @@
 		}
 
 		// update generation counter label
-		if (me.genRelative) {
-			me.genToggle.lower[0] = "+ " + me.shortenNumber(me.engine.counter);
-		} else {
-			me.genToggle.lower[0] = "T " + me.shortenNumber(me.engine.counter + me.genOffset);
-		}
+		me.updateGenerationLabel(me);
 
 		// convert the displayed time into minutes and seconds
 		me.elapsedTimeLabel.preText = me.asTime(me.elapsedTime);
@@ -5021,6 +5045,8 @@
 		}
 
 		// generation statistics
+		this.genLabel.deleted = hide || !this.engine.isMargolus;
+		this.genValueLabel.deleted = hide || !this.engine.isMargolus;
 		this.timeLabel.deleted = hide;
 		this.elapsedTimeLabel.deleted = hide;
 		this.popLabel.deleted = hide;
@@ -10840,6 +10866,18 @@
 		this.progressBar = this.viewMenu.addProgressBarItem(Menu.southWest, 0, -40, 100, 40, 0, 100, 0, false, "", "", 0);
 		this.progressBar.locked = true;
 
+		// add the generation label (only used for Margolus rules)
+		this.genLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -130, 70, 30, "Gen");
+		this.genLabel.textAlign = Menu.left;
+		this.genLabel.setFont(ViewConstants.statsFont);
+		this.genLabel.toolTip = "generation";
+
+		// add the generation value label (only used for Margolus rules)
+		this.genValueLabel = this.viewMenu.addLabelItem(Menu.southWest, 70, -130, 70, 30, "");
+		this.genValueLabel.textAlign = Menu.right;
+		this.genValueLabel.setFont(ViewConstants.statsFont);
+		this.genValueLabel.toolTip = "generation";
+
 		// add the elapsed time label
 		this.timeLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -100, 70, 30, "Time");
 		this.timeLabel.textAlign = Menu.left;
@@ -11303,7 +11341,7 @@
 		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.backButton, this.themeButton, this.patternButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.autoGridButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
 
 		// add statistics items to the toggle
-		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
+		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.genLabel, this.genValueLabel, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
 
 		// add help items to the toggle
 		this.helpToggle.addItemsToToggleMenu([this.helpSectionList, this.topicsButton, this.sectionsButton], []);
@@ -11689,6 +11727,9 @@
 		if (this.thumbLaunch) {
 			// launch the standalone viewer
 			updateViewer(this.element);
+
+			// mark this canvas as not having focus so future taps launch thumbnails
+			this.menuManager.hasFocus = false;
 		} else {
 			// switch to full size
 			this.displayWidth = this.thumbOrigWidth;
@@ -13252,7 +13293,14 @@
 		if (this.displayHeight < 540) {
 			this.backButton.setPosition(Menu.south, 0, -85);
 		} else {
-			this.backButton.setPosition(Menu.south, -0, -100);
+			this.backButton.setPosition(Menu.south, 0, -100);
+		}
+
+		// adjust rule label for Margolus rules (since generation is displayed below)
+		if (this.engine.isMargolus) {
+			this.ruleLabel.setPosition(Menu.southWest, 0, -160);
+		} else {
+			this.ruleLabel.setPosition(Menu.southWest, 0, -130);
 		}
 
 		// update the grid icon for hex/square mode

@@ -113,6 +113,7 @@
 		this.aliases.push(["Life without Death", "B3/S012345678"]);
 		this.aliases.push(["Life", "B3/S23"]);
 		this.aliases.push(["Live Free or Die", "B2/S0"]);
+		this.aliases.push(["Logarithmic replicator rule", "B36/S245"]);
 		this.aliases.push(["LongLife", "B345/S5"]);
 		this.aliases.push(["Long Life", "B345/S5"]);
 		this.aliases.push(["LowDeath without death", "B368/S012345678"]);
@@ -204,6 +205,7 @@
 		this.aliases.push(["Eatsplosion", "B2n3-ekqy4c5e/S2-cn3-eky4aij5e"]);
 		this.aliases.push(["Eatsplosion IV", "B2n3-q4aqz6n8/S2-in3-q4iz7c8"]);
 		this.aliases.push(["EightGoats", "B2in3/S123a8"]);
+		this.aliases.push(["Einstein", "B2ein3cijn4cnrwy5cnq6e/S1c2-ai3acny4anqy5c6ek8b2ein3cijn4cnrwy5cnq6es1c2-ai3acny4anqy5c6ek8"]);
 		this.aliases.push(["Emitters", "B2i3ai4cei5c6c7/S2-ae3acein4-t5-aq6cei7c8"]);
 		this.aliases.push(["Extension", "B2cei3-ijnr4-a6i/S12-cn"]);
 		this.aliases.push(["fakePiShipLife", "B3-ck4e5k6i/S2-in35i6c8"]);
@@ -217,6 +219,7 @@
 		this.aliases.push(["GliderGlut", "B2k3aijn4ak5y6k/S2ae3ajnr4aiw"]);
 		this.aliases.push(["GliderRROLife", "B2e3einy4ak5ijq7c/S1c2-ai3-ceky4ejny5ceqr6ak"]);
 		this.aliases.push(["Glimmering Garden", "B3-jknr4ity5ijk6i8/S23-a4city6c7c"]);
+		this.aliases.push(["GMO snowflakes", "B34c6n/S2-n3-ck4cijqtwy5y6n"]);
 		this.aliases.push(["Goat Flock", "B2in3/S123a"]);
 		this.aliases.push(["Goats", "B2in3/S123a"]);
 		this.aliases.push(["Goldilocks I", "B2ek3cei4acjr5c8/S02ack3kn4aen"]);
