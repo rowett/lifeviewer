@@ -1,3 +1,6 @@
+Build 410
+- Paste commands now allow blank cells in COPY mode
+
 Build 409
 - lock Direction button during waypoint playback
 - reset playback direction to forward during waypoint playback

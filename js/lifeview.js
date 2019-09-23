@@ -239,7 +239,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 409,
+		/** @const {number} */ versionBuild : 410,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2354,8 +2354,7 @@
 			ayy = trans[3],
 			pattern = new Pattern("rleToCellList"),
 			patternRow = null,
-			invertForGenerations = (states > 2 && !this.engine.isNone),
-			anyAlive = false; 
+			invertForGenerations = (states > 2 && !this.engine.isNone);
 
 		// check the RLE is valid
 		rle += " ";
@@ -2366,29 +2365,14 @@
 					patternRow = pattern.multiStateMap[j];
 					for (i = 0; i < pattern.width; i += 1) {
 						state = patternRow[i];
-						if (state > 0) {
-							// mark at least one cell alive
-							anyAlive = true;
-							// invert state if Generations
-							if (invertForGenerations) {
-								state = states - state;
-							}
-							// create (x, y, state) entry in cells array
-							cells[cells.length] = x + i * axx + j * axy;
-							cells[cells.length] = y + i * ayx + j * ayy;
-							cells[cells.length] = state;
+						// invert state if Generations
+						if (invertForGenerations && state > 0) {
+							state = states - state;
 						}
-					}
-				}
-				// check if any cells were alive
-				if (!anyAlive) {
-					for (j = 0; j < pattern.height; j += 1) {
-						for (i = 0; i < pattern.width; i += 1) {
-							// create (x, y, state) entry in cells array
-							cells[cells.length] = x + i * axx + j * axy;
-							cells[cells.length] = y + i * ayx + j * ayy;
-							cells[cells.length] = 0;
-						}
+						// create (x, y, state) entry in cells array
+						cells[cells.length] = x + i * axx + j * axy;
+						cells[cells.length] = y + i * ayx + j * ayy;
+						cells[cells.length] = state;
 					}
 				}
 			}
@@ -2892,8 +2876,10 @@
 						this.engine.setStateList(cells, xOff, yOff);
 					} else {
 						while (i < cells.length) {
-							// cells list only contains non-zero cells
-							this.engine.setState(xOff + cells[i], yOff + cells[i + 1], cells[i + 2], true);
+							state = cells[i + 2];
+							if (state > 0) {
+								this.engine.setState(xOff + cells[i], yOff + cells[i + 1], cells[i + 2], true);
+							}
 							i += 3;
 						}
 					}
