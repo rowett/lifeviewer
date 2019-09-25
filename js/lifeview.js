@@ -239,7 +239,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 410,
+		/** @const {number} */ versionBuild : 411,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6922,13 +6922,26 @@
 			case ViewConstants.modeStepBack:
 				// step back
 				if (!me.generationOn) {
-					// check if at start
-					if (me.engine.counter > 0) {
-						// adjust undo stack pointer
-						me.setUndoGen(me.engine.counter - me.gensPerStep);
-
-						// run from start to previous generation
-						me.runTo(me.engine.counter - me.gensPerStep);
+					// check for reversible Margolus rules
+					if (me.engine.isMargolus && me.engine.margolusReverseLookup1 !== null) {
+						// change direction
+						me.engine.reversePending = !me.engine.reversePending;
+						if (me.engine.reversePending) {
+							me.afterEdit("reverse playback");
+						}
+						me.afterEdit("");
+						me.engine.nextGeneration(true, me.noHistory, me.graphDisabled);
+						me.engine.convertToPensTile();
+						me.engine.reversePending = true;
+					} else {
+						// check if at start
+						if (me.engine.counter > 0) {
+							// adjust undo stack pointer
+							me.setUndoGen(me.engine.counter - me.gensPerStep);
+	
+							// run from start to previous generation
+							me.runTo(me.engine.counter - me.gensPerStep);
+						}
 					}
 				} else {
 					// pause
@@ -10787,12 +10800,12 @@
 		// autostart indicator
 		this.autostartIndicator = this.viewMenu.addListItem(this.toggleAutostart, Menu.northEast, -210, 0, 38, 20, ["START"], [false], Menu.multi);
 		this.autostartIndicator.setFont(ViewConstants.smallMenuFont);
-		this.autostartIndicator.toolTip = ["autostart indicator"];
+		this.autostartIndicator.toolTip = ["autostart"];
 
 		// stop indicator
 		this.stopIndicator = this.viewMenu.addListItem(this.toggleStop, Menu.northEast, -210, 20, 38, 20, ["STOP"], [false], Menu.multi);
 		this.stopIndicator.setFont(ViewConstants.smallMenuFont);
-		this.stopIndicator.toolTip = ["stop indicator"];
+		this.stopIndicator.toolTip = ["stop"];
 
 		// waypoints indicator
 		this.waypointsIndicator = this.viewMenu.addListItem(this.toggleWP, Menu.northEast, -172, 0, 38, 20, ["WAYPT"], [false], Menu.multi);

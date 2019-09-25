@@ -1,3 +1,7 @@
+Build 411
+- added a few non-totalistic aliases
+- improved how Step Back works with reversible Margolus rules
+
 Build 410
 - Paste commands now allow blank cells in COPY mode
 

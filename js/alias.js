@@ -215,6 +215,7 @@
 		this.aliases.push(["Flowflakes", "B2-ac3acei4ey6n8/S02-n3-nqy4cekyz5ei6k7e"]);
 		this.aliases.push(["Flying Life", "B3-k5r/S236n7e"]);
 		this.aliases.push(["FogLife", "B35eq7/S2-i34q"]);
+		this.aliases.push(["Gentle relative", "B2cen3ek4jkw5-aein6a7e/S12an3-eijq4enrty5e6k"]);
 		this.aliases.push(["GlideLife", "B34ek5ak/S2-c34z"]);
 		this.aliases.push(["GliderGlut", "B2k3aijn4ak5y6k/S2ae3ajnr4aiw"]);
 		this.aliases.push(["GliderRROLife", "B2e3einy4ak5ijq7c/S1c2-ai3-ceky4ejny5ceqr6ak"]);
@@ -248,6 +249,7 @@
 		this.aliases.push(["LifeWithoutGliders", "B35n/S23"]);
 		this.aliases.push(["Linea", "B2-a3-i/S23-a"]);
 		this.aliases.push(["LoafLife", "B2n3-q/S23"]);
+		this.aliases.push(["Migrating Bookends", "B2ein3inry/S12-n3ce"]);
 		this.aliases.push(["Mooselife", "B34kz5e7c/S23-a4ityz5k"]);
 		this.aliases.push(["Movero VIII", "B2-a5k6n7c/S12-i3ij4k5j8"]);
 		this.aliases.push(["MoveIt", "B368/S23cy45-j6n"]);
@@ -316,6 +318,8 @@
 		this.aliases.push(["Train", "B34t6k8/S2-i35a7e"]);
 		this.aliases.push(["Trilobites", "B3aijn4w5nq/S2ae3aijr4irz5y"]);
 		this.aliases.push(["Turro", "B2-a3c/S12-i"]);
+		this.aliases.push(["Two-dots rule 1", "B2ei3ci4aerw5acky6i8/S012-an3eiknq4qrty5aeik6ik8"]);
+		this.aliases.push(["Two-dots rule 2", "B2-ak3aen4cenrtw5iq6e/S02ac3aenqy4ejqtwy5ak6acn7"]);
 		this.aliases.push(["Twinkles", "B2in34-a/S1e2ekn34ent"]);
 		this.aliases.push(["Virus_v2", "B3-nqr6/S235"]);
 		this.aliases.push(["Wartlife", "B3aijnq6n/S2-cn3-ceky4i"]);

@@ -299,20 +299,7 @@
 			case 8:
 				// do not move if in view only mode
 				if (!me.viewOnly) {
-					// check if paused
-					if (!me.generationOn) {
-						// check if at start
-						if (me.engine.counter > 0) {
-							// run from start to previous generation
-							me.runTo(me.engine.counter - 1);
-
-							// adjust undo stack pointer
-							me.setUndoGen(me.engine.counter);
-						}
-					} else {
-						// pause
-						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
-					}
+					me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
 				}
 				break;
 
@@ -320,20 +307,7 @@
 			case 66:
 				// do not move if in view only mode
 				if (!me.viewOnly) {
-					// check if paused
-					if (!me.generationOn) {
-						// check if at start
-						if (me.engine.counter > 0) {
-							// adjust undo stack pointer
-							me.setUndoGen(me.engine.counter - 1);
-
-							// run from start to previous generation
-							me.runTo(me.engine.counter - 1);
-						}
-					} else {
-						// pause
-						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
-					}
+					me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
 				}
 				break;
 
