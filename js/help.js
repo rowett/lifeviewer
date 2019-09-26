@@ -727,11 +727,14 @@
 		y = this.renderHelpLine(view, "I", "toggle pattern and engine information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift I", "toggle information bar", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt B", "toggle cell borders", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "X", "toggle grid lines", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "X", "toggle gridlines", ctx, x, y, height, helpLine);
 		if (view.engine.gridLineMajor > 0) {
-			y = this.renderHelpLine(view, "Shift X", "toggle major grid lines", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Shift X", "toggle major gridlines", ctx, x, y, height, helpLine);
 		}
-		y = this.renderHelpLine(view, "Ctrl G", "toggle auto grid lines", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl G", "toggle auto gridlines", ctx, x, y, height, helpLine);
+		if (view.engine.isMargolus) {
+			y = this.renderHelpLine(view, "Alt D", "toggle alternating gridlines", ctx, x, y, height, helpLine);
+		}
 		if (view.engine.isLifeHistory) {
 			y = this.renderHelpLine(view, "Alt H", "[R]History display on", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Alt J", "[R]History display off", ctx, x, y, height, helpLine);
@@ -1006,7 +1009,7 @@
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + Keywords.variablePrefixSymbol, Keywords.variablePrefixSymbol + " symbol", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.layersWord + " <" + ViewConstants.minLayers + ".." + ViewConstants.maxLayers + ">", "set number of layers", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.depthWord + " <" + ViewConstants.minDepth.toFixed(1) + ".." + ViewConstants.maxDepth.toFixed(1) + ">", "set layer depth", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.gridWord + " (" + Keywords.offWord + ")", "display grid lines", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.gridWord + " (" + Keywords.offWord + ")", "display gridlines", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.gridMajorWord + " <0..16>", "set major grid line interval", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.historyStatesWord + " <0.." + ((view.engine.multiNumStates > 2) ? 1 : 63) + ">", "number of history states", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.starfieldWord + " (" + Keywords.offWord + ")", "display stars", ctx, x, y, height, helpLine);
@@ -1634,9 +1637,9 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// grid line information
-		view.helpSections[sectionNum] = [view.lineNo, "Grid Lines"];
+		view.helpSections[sectionNum] = [view.lineNo, "Gridlines"];
 		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Grid Lines:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "Gridlines:", ctx, x, y, height, helpLine);
 		itemName = view.engine.displayGrid ? "On" : "Off";
 		if (view.engine.displayGrid && !view.engine.canDisplayGrid()) {
 			itemName += " (Hidden)";

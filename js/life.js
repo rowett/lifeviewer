@@ -236,6 +236,9 @@
 		// allocator
 		this.allocator = new Allocator();
 
+		// flag for alternating Margolus grid lines
+		/** @type {boolean} */ this.altGrid = false;
+
 		// flag for reverse Margolus playback
 		/** @type {boolean} */ this.reverseMargolus = false;
 
@@ -16968,7 +16971,7 @@
 		targetCol = gridCol;
 
 		// for Margolus alternate major/minor grid lines for odd/even generations
-		if (!this.isMargolus || this.gridLineMajor !== 2) {
+		if (!this.isMargolus || this.gridLineMajor !== 2 || !this.altGrid) {
 			odd = 0;
 		}
 

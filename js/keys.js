@@ -175,6 +175,14 @@
 						}
 						break;
 
+					// d for toggle alternating grid
+					case 68:
+						if (me.engine.isMargolus) {
+							me.altGridButton.current = me.viewAltGridToggle([!me.engine.altGrid], true, me);
+							me.menuManager.notification.notify("Alternating Gridlines " + (me.engine.altGrid ? "On" : "Off"), 15, 40, 15, true);
+						}
+						break;
+
 					// g for toggle kill gliders
 					case 71:
 						// toggle kill gliders

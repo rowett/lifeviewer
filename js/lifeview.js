@@ -239,7 +239,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 412,
+		/** @const {number} */ versionBuild : 413,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1456,6 +1456,9 @@
 
 		// autogrid toggle button
 		this.autoGridButton = null;
+
+		// alternating gridlines toggle button
+		this.altGridButton = null;
 
 		// hex cell toggle button
 		this.hexCellButton = null;
@@ -5110,6 +5113,7 @@
 		this.labelButton.deleted = shown;
 		this.rHistoryButton.deleted = shown;
 		this.autoGridButton.deleted = shown;
+		this.altGridButton.deleted = shown;
 		// playback category
 		shown = hide || !this.showPlaybackSettings;
 		this.historyFitButton.deleted = shown;
@@ -5774,6 +5778,16 @@
 			me.autoGrid = newValue[0];
 		}
 		return [me.autoGrid];
+	};
+
+	// toggle Margolus alternating grid lines
+	View.prototype.viewAltGridToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			// toggle auto hide
+			me.engine.altGrid = newValue[0];
+		}
+		return [me.engine.altGrid];
 	};
 
 	// toggle auto hide gui
@@ -7701,7 +7715,8 @@
 	// change rule
 	View.prototype.changeRule = function(me) {
 		var patternText = "",
-			result = window.prompt("Change rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName));
+			index = -1,
+			result = window.prompt("Change rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef);
 
 		// check if the prompt was confirmed
 		if (result !== null) {
@@ -7709,7 +7724,15 @@
 				if (result === "") {
 					result = "Life";
 				}
-				me.patternRuleName = result;
+				// check for bounded grid
+				index = result.indexOf(":");
+				if (index !== -1) {
+					me.patternRuleName = result.substr(0, index);
+					me.patternBoundedGridDef = result.substr(index);
+				} else {
+					me.patternRuleName = result;
+					me.patternBoundedGridDef = "";
+				}
 				me.patternAliasName = "";
 				patternText = me.engine.asRLE(me, me.engine, true);
 				me.startViewer(patternText, false);
@@ -7722,7 +7745,7 @@
 	// new pattern
 	View.prototype.newPattern = function(me) {
 		var patternText = "x = 1, y = 1, rule = ",
-			result = window.prompt("Create new pattern with rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName));
+			result = window.prompt("Create new pattern with rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef);
 
 		// check if the prompt was confirmed
 		if (result !== null) {
@@ -10874,7 +10897,7 @@
 		// grid toggle
 		this.gridToggle = this.viewMenu.addListItem(this.toggleGrid, Menu.northEast, -85, 0, 40, 40, ["Grid"], [false], Menu.multi);
 		this.gridToggle.icon = [this.iconManager.icon("grid")];
-		this.gridToggle.toolTip = ["toggle grid lines"];
+		this.gridToggle.toolTip = ["toggle gridlines"];
 		this.gridToggle.setFont("16px Arial");
 
 		// add the progress bar
@@ -10995,12 +11018,12 @@
 		this.bordersButton.toolTip = ["toggle cell borders"];
 
 		// major gridlines toggle button
-		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -100, -25, 180, 40, ["Major Gridlines"], [this.engine.gridLineMajorEnabled], Menu.multi);
-		this.majorButton.toolTip = ["toggle major grid lines"];
+		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -100, -25, 180, 40, ["Major GridLines"], [this.engine.gridLineMajorEnabled], Menu.multi);
+		this.majorButton.toolTip = ["toggle major gridlines"];
 
 		// stars toggle button
 		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.middle, 100, -25, 180, 40, ["Starfield"], [this.starsOn], Menu.multi);
-		this.starsButton.toolTip = ["toggle stars display"];
+		this.starsButton.toolTip = ["toggle starfield display"];
 
 		// label toggle button
 		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -100, 25, 180, 40, ["Annotations"], [this.showLabels], Menu.multi);
@@ -11011,9 +11034,14 @@
 		this.rHistoryButton.toolTip = ["toggle [R]History display"];
 
 		// autogrid toggle button
-		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, 0, 75, 180, 40, ["Auto Grid Lines"], [this.autoGrid], Menu.multi);
-		this.autoGridButton.toolTip = ["automatically turn on grid lines for Draw and Select and off for Pan"]; 
+		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, -100, 75, 180, 40, ["Auto GridLines"], [this.autoGrid], Menu.multi);
+		this.autoGridButton.toolTip = ["automatically turn on gridlines for Draw and Select and off for Pan"]; 
 
+		// alt grid toggle button
+		this.altGridButton = this.viewMenu.addListItem(this.viewAltGridToggle, Menu.middle, 100, 75, 180, 40, ["Alt GridLines"], [this.engine.altGrid], Menu.multi);
+		this.altGridButton.toolTip = ["toggle alternating gridlines"]; 
+
+		// historyfit toggle button
 		// historyfit toggle button
 		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.middle, -100, -50, 180, 40, ["AutoFit History"], [this.historyFit], Menu.multi);
 		this.historyFitButton.toolTip = ["toggle AutoFit History"];
@@ -11353,7 +11381,7 @@
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.backButton, this.themeButton, this.patternButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.autoGridButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
+		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.backButton, this.themeButton, this.patternButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.autoGridButton, this.altGridButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.genLabel, this.genValueLabel, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -13048,6 +13076,10 @@
 
 		// set the autogrid UI control
 		this.autoGridButton.current = [this.autoGrid];
+
+		// set the alternating grid UI control
+		this.altGridButton.current = [this.engine.altGrid];
+		this.altGridButton.locked = !this.engine.isMargolus;
 
 		// set the hex cell UI control and lock if triangular grid
 		this.hexCellButton.current = [this.engine.useHexagons];

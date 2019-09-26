@@ -1,5 +1,9 @@
+Build 413
+- new button Settings->Display->Alt Gridlines to toggle Margolus alternating odd/even gridlines (hotkey Alt+"D")
+- Change Rule and New Pattern now support Bounded Grid suffix
+
 Build 412
-- improved mouse wheel zoom
+- fixed mouse wheel zoom so it works better with "Smooth scrolling" features
 
 Build 411
 - added a few non-totalistic aliases
