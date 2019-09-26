@@ -239,7 +239,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 411,
+		/** @const {number} */ versionBuild : 412,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4216,27 +4216,24 @@
 			if (this.displayHelp > 0) {
 				// scroll the help text
 				if (mouseZoom > 0) {
-					this.scrollHelpUp(this, 3);
+					this.scrollHelpUp(this, (mouseZoom / 125) * 3);
 				} else {
-					this.scrollHelpDown(this, 3);
+					this.scrollHelpDown(this, (-mouseZoom / 125) * 3);
 				}
 			} else {
 				if (this.displayErrors > 0) {
 					// scroll the error list
 					if (mouseZoom > 0) {
-						this.scrollErrorsUp(this, 3);
+						this.scrollErrorsUp(this, (mouseZoom / 125) * 3);
 					} else {
-						this.scrollErrorsDown(this, 3);
+						this.scrollErrorsDown(this, (-mouseZoom / 125) * 3);
 					}
 				} else {
 					// update the zoom if controls not locked
 					if (!this.controlsLocked) {
 						zoomValue = this.zoomItem.current[0];
-						if (mouseZoom < 0) {
-							this.adjustZoomPosition(zoomValue, -0.05);
-						} else {
-							this.adjustZoomPosition(zoomValue, 0.05);
-						}
+						mouseZoom = (mouseZoom / 125) * 0.05;
+						this.adjustZoomPosition(zoomValue, mouseZoom);
 					}
 				}
 			}
@@ -7766,12 +7763,9 @@
 		if (me.menuManager.hasFocus) {
 			// update wheel position if not computing history
 			if (!me.computeHistory) {
-				if (event.wheelDelta) {
-					me.wheelDelta = event.wheelDelta / 120;
-				} else {
-					if (event.detail) {
-						me.wheelDelta = -event.detail / 3;
-					}
+				me.wheelDelta = -event.deltaY;
+				if (event.deltaMode === 1) {
+					me.wheelDelta *= 45;
 				}
 
 				// ensure update happens
@@ -11457,8 +11451,8 @@
 			this.stepRangeX = this.stepRange.relX;
 
 			// register mouse wheel event
-			registerEvent(this.mainCanvas, "DOMMouseScroll", function(event) {me.wheel(me, event);}, false);
-			registerEvent(this.mainCanvas, "mousewheel", function(event) {me.wheel(me,event);}, false);
+			//registerEvent(this.mainCanvas, "DOMMouseScroll", function(event) {me.wheel(me, event);}, false);
+			registerEvent(this.mainCanvas, "wheel", function(event) {me.wheel(me,event);}, false);
 
 			// enable notifications
 			this.menuManager.notification.enabled = true;

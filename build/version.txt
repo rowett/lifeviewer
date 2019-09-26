@@ -1,3 +1,6 @@
+Build 412
+- improved mouse wheel zoom
+
 Build 411
 - added a few non-totalistic aliases
 - improved how Step Back works with reversible Margolus rules
