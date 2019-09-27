@@ -1,5 +1,6 @@
 @echo off
 @rem Closure Compiler for LifeViewer
 
-"C:\Program Files\Java\jre1.8.0_171\bin\java.exe" -jar compiler.jar --jscomp_off=checkVars --compilation_level ADVANCED_OPTIMIZATIONS --js=../js/compatibility.js --js=../js/allocator.js --js=../js/alias.js --js=../js/canvasmenu.js --js=../js/patterns.js --js=../js/colours.js --js=../js/box.js --js=../js/snapshot.js --js=../js/hrot.js --js=../js/life.js --js=../js/script.js --js=../js/waypoint.js --js=../js/window.js --js=../js/random.js --js=../js/stars.js --js=../js/parser.js --js=../js/lifeview.js --js=../js/help.js --js=../js/keywords.js --js=../js/keys.js --js_output_file=lv-plugin.js
+copy /b start.js+..\js\compatibility.js+..\js\allocator.js+..\js\alias.js+..\js\canvasmenu.js+..\js\patterns.js+..\js\colours.js+..\js\box.js+..\js\snapshot.js+..\js\hrot.js+..\js\life.js+..\js\script.js+..\js\waypoint.js+..\js\window.js+..\js\random.js+..\js\stars.js+..\js\parser.js+..\js\lifeview.js+..\js\help.js+..\js\keywords.js+..\js\keys.js+end.js all.js
+"C:\Program Files\Java\jre1.8.0_171\bin\java.exe" -jar compiler.jar --jscomp_off=checkVars --compilation_level ADVANCED_OPTIMIZATIONS --js=all.js --js_output_file=lv-plugin.js
  

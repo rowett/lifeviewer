@@ -1123,6 +1123,9 @@
 		// whether using custom theme
 		/** @type {boolean} */ this.customTheme = false;
 
+		// whether using custom gridmajor
+		/** @type {boolean} */ this.customGridMajor = false;
+
 		// custom theme value
 		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
@@ -5776,6 +5779,14 @@
 		if (change) {
 			// toggle auto hide
 			me.autoGrid = newValue[0];
+			
+			// check if just switched on and grid is off
+			if (me.autoGrid && !me.engine.displayGrid) {
+				// if in Draw or Select mode then turn on grid
+				if (me.drawing || me.selecting) {
+					me.gridToggle.current = me.toggleGrid([true], true, me);
+				}
+			}
 		}
 		return [me.autoGrid];
 	};
@@ -11975,6 +11986,51 @@
 		this.stateColsList.setPosition(Menu.northEast, -this.stateColsList.relWidth, 65);
 	};
 
+	// setup colour theme
+	View.prototype.setColourTheme = function(themeRequested) {
+		var customIndex = this.engine.numThemes;
+
+		// check if a theme was requested
+		if (themeRequested === -1) {
+			// if not then check if a custom theme was specified
+			if (this.customTheme) {
+				themeRequested = customIndex;
+			} else {
+				// set the theme based on rule type
+				if (this.engine.isLifeHistory) {
+					// default to theme 10
+					themeRequested = 10;
+				} else {
+					// check for Generations or HROT
+					if (this.engine.multiNumStates > 2) {
+						// multi state uses theme 11
+						themeRequested = 11;
+					} else {
+						// check for Margolus
+						if (this.engine.isMargolus) {
+							themeRequested = 17;
+						} else {
+							// default to theme 1
+							themeRequested = 1;
+						}
+					}
+				}
+			}
+		}
+
+		// check for custom gridmajor interval
+		if (this.customGridMajor && themeRequested !== customIndex) {
+			// copy the requested theme to the custom theme
+			this.engine.themes[customIndex].set(this.engine.themes[themeRequested]);
+			themeRequested = customIndex;
+			this.engine.themes[customIndex].gridMajor = this.engine.gridLineMajor;
+			this.customTheme = true;
+		}
+
+		// set the theme
+		this.setNewTheme(themeRequested, 1, this);
+	};
+
 	// clear pattern data
 	View.prototype.clearPatternData = function() {
 		// clear pattern data
@@ -12497,6 +12553,7 @@
 
 		// disable custom theme
 		this.customTheme = false;
+		this.customGridMajor = false;
 
 		// flag not drawing overlay
 		this.engine.drawOverlay = false;
@@ -12890,36 +12947,8 @@
 		// create the colour index
 		this.engine.createColourIndex();
 
-		// check if a theme was requested
-		if (this.themeRequested !== -1) {
-			// set the requested theme
-			this.setNewTheme(this.themeRequested, 1, this);
-		} else {
-			// if not then check if a custom theme was specified
-			if (this.customTheme) {
-				this.setNewTheme(this.engine.numThemes, 1, this);
-			} else {
-				// set the theme based on rule type
-				if (this.engine.isLifeHistory) {
-					// default to theme 10
-					this.setNewTheme(10, 1, this);
-				} else {
-					// check for Generations or HROT
-					if (this.engine.multiNumStates > 2) {
-						// multi state uses theme 11
-						this.setNewTheme(11, 1, this);
-					} else {
-						// check for Margolus
-						if (this.engine.isMargolus) {
-							this.setNewTheme(17, 1, this);
-						} else {
-							// default to theme 1
-							this.setNewTheme(1, 1, this);
-						}
-					}
-				}
-			}
-		}
+		// setup the colour theme
+		this.setColourTheme(this.themeRequested);
 
 		// copy custom colours to engine
 		this.engine.customColours = this.customColours;

@@ -128,6 +128,25 @@
 		}
 	}
 	
+	// copy theme
+	Theme.prototype.set = function(source) {
+		this.gridDefined = source.gridDefined;
+		this.gridMajor = source.gridMajor;
+		this.gridColour = source.gridColour;
+		this.gridMajorColour = source.gridMajorColour;
+
+		this.unoccupied = source.unoccupied;
+		this.aliveRange = source.aliveRange;
+		this.deadRange = source.deadRange;
+
+		this.aliveGen = source.aliveGen;
+		this.dyingRangeGen = source.dyningRangeGen;
+		this.deadRangeGen = source.deadRangeGen;
+		this.unoccupiedGen = source.unoccupiedGen;
+		this.dyingRangeGen = source.dyingRangeGen;
+		this.dyingRangeDynamic = source.dyingRangeDynamic;
+	};
+
 	// add grid line settings to the theme
 	Theme.prototype.setGridLines = function(gridMajor, gridColour, gridMajorColour) {
 		this.gridDefined = true;

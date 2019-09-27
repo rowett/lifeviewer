@@ -10,9 +10,6 @@ Investigate:
 Planned:
     menu items coordinates should be reflected based on compass position
     fit grid with hex patterns
-    fix random grid failing when pattern is up to boundaries
-    fix GRIDMAJOR being overridden by THEME definition at Waypoint 0
-    add grid toggle button for Margolus dynamic grid lines
 
 In progress:
 [STARTED]add type information for closure compiler

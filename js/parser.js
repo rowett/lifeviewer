@@ -1076,6 +1076,7 @@
 		view.numScriptErrors = 0;
 
 		// reset custom theme
+		view.customGridMajor = false;
 		view.customTheme = false;
 		view.customThemeValue[ViewConstants.customThemeBackground] = -1;
 		view.customThemeValue[ViewConstants.customThemeAlive] = -1;
@@ -2587,7 +2588,7 @@
 								// check it is in range
 								if (numberValue >= ViewConstants.minBoldGridInterval && numberValue <= ViewConstants.maxBoldGridInterval) {
 									view.engine.gridLineMajor = numberValue;
-									view.customTheme = true;
+									view.customGridMajor = true;
 									itemValid = true;
 								}
 							}
