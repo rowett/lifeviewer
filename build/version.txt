@@ -1,8 +1,18 @@
+Build 414
+- Margolus enhancements
+	- made gridline colours more distinct
+	- Step Forward and Step Back controls are reversed during reverse playback 
+	- Step Back for Margolus patterns now respects generations-per-step setting
+	- hotkeys Tab and Shift+Tab step forward and back generations-per-step setting
+	- hotkeys Space and "b" step forward and back one generation
+	- [[ PASTE EVERY ]] is disabled when current generation is less than maximum generation reached
+		- maximum generation reached is zeroed on Reset
+
 Build 413
-- new button Settings->Display->Alt Gridlines to toggle Margolus alternating odd/even gridlines (hotkey Alt+"D")
+- new button Settings->Display->Alt GridLines to toggle Margolus alternating odd/even gridlines (hotkey Alt+"D")
 - Change Rule and New Pattern now support Bounded Grid suffix
 - if in Draw or Select mode when Auto GridLines is enabled then turn on GridLines
-- setting [[ GRIDMAJOR ]] with no other Theme settings creates a Custom Theme based on the default or specified Theme with the specified GRIDMAJOR setting
+- setting [[ GRIDMAJOR ]] with no other custom Theme settings creates a Custom Theme based on the default or specified Theme with the specified grid major interval
 
 Build 412
 - fixed mouse wheel zoom so it works better with "Smooth scrolling" features

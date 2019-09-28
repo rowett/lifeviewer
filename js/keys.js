@@ -284,6 +284,12 @@
 						// flip selection vertically
 						me.flipYPressed(me);
 						break;
+
+					// z for randomize
+					case 90:
+						// randomize rule and pattern
+						me.randomPattern(me);
+						break;
 					}
 				}
 
@@ -315,7 +321,15 @@
 			case 66:
 				// do not move if in view only mode
 				if (!me.viewOnly) {
+					if (me.engine.isMargolus) {
+						// for Margolus patterns step back key should always step one generation
+						value = me.gensPerStep;
+						me.gensPerStep = 1;
+					}
 					me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
+					if (me.engine.isMargolus) {
+						me.gensPerStep = value;
+					}
 				}
 				break;
 
@@ -354,11 +368,16 @@
 						if (event.shiftKey) {
 							// step back if not at start
 							if (me.engine.counter > 0) {
-								// run from start to previous step
-								me.runTo(me.engine.counter - me.gensPerStep);
-
-								// adjust undo stack pointer
-								me.setUndoGen(me.engine.counter - me.gensPerStep + 1);
+								// check for reversible Margolus patterns
+								if (me.engine.isMargolus && me.engine.margolusReverseLookup1 !== null) {
+									me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
+								} else {
+									// run from start to previous step
+									me.runTo(me.engine.counter - me.gensPerStep);
+	
+									// adjust undo stack pointer
+									me.setUndoGen(me.engine.counter - me.gensPerStep + 1);
+								}
 							}
 						} else {
 							// step forward

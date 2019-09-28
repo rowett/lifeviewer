@@ -239,7 +239,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 413,
+		/** @const {number} */ versionBuild : 414,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1492,6 +1492,9 @@
 
 		// load button
 		this.loadButton = null;
+
+		// randomize button
+		this.randomizeButton = null;
 
 		// back button
 		this.backButton = null;
@@ -2806,30 +2809,39 @@
 	View.prototype.pasteThisGen = function(paste) {
 		var needsPaste = false,
 			i = 0,
-			counter = this.engine.counter;
+			counter = this.engine.counter,
+			finished = false;
 
 		// for Margolus rules use Margolus generation
 		if (this.engine.isMargolus) {
 			counter = this.engine.counterMargolus;
 		}
 
-		// check if this pattern needs pasting
-		if (paste.every !==0 && counter >= paste.genList[0] && (((counter - paste.genList[0]) % paste.every) === 0)) {
-			// check for end generation
-			if (!(paste.end !== -1 && counter > paste.end)) {
-				needsPaste = true;
-			}
-		} else {
-			i = 0;
-			while (i < paste.genList.length && !needsPaste) {
-				if (counter === paste.genList[i]) {
+		// do not paste repeating patterns for reversible Margolus rules until maximum Margolus generation reached
+		if (paste.every !== 0 && this.engine.isMargolus && this.engine.margolusReverseLookup1 !== null && counter < this.engine.maxMargolusGen) {
+			needsPaste = false;
+			finished = true;
+		}
+
+		if (!finished) {
+			// check if this pattern needs pasting
+			if (paste.every !==0 && counter >= paste.genList[0] && (((counter - paste.genList[0]) % paste.every) === 0)) {
+				// check for end generation
+				if (!(paste.end !== -1 && counter > paste.end)) {
 					needsPaste = true;
-				} else {
-					i += 1;
+				}
+			} else {
+				i = 0;
+				while (i < paste.genList.length && !needsPaste) {
+					if (counter === paste.genList[i]) {
+						needsPaste = true;
+					} else {
+						i += 1;
+					}
 				}
 			}
 		}
-
+	
 		return needsPaste;
 	};
 
@@ -5100,6 +5112,7 @@
 		this.saveButton.deleted = shown;
 		this.newButton.deleted = shown;
 		this.loadButton.deleted = shown;
+		this.randomizeButton.deleted = shown;
 		// info category
 		shown = hide || !this.showInfoSettings;
 		this.fpsButton.deleted = shown;
@@ -5664,6 +5677,7 @@
 		// zero life counter
 		me.engine.counter = 0;
 		me.engine.counterMargolus = 0;
+		me.engine.maxMargolusGen = 0;
 		me.floatCounter = 0;
 		me.originCounter = 0;
 
@@ -6087,6 +6101,7 @@
 		// clear reverse playback
 		me.engine.reverseMargolus = false;
 		me.engine.reversePending = false;
+		me.engine.maxMargolusGen = 0;
 
 		// if not looping and soft reset then disable waypoints, track and looping if defined
 		if (!looping && !hardReset) {
@@ -6198,7 +6213,11 @@
 	View.prototype.setPauseIcon = function(isPlaying) {
 		var reverse = this.engine.reverseMargolus,
 			toolTip = "",
-			iconName = "";
+			iconName = "",
+			backIconName = "",
+			backToolTip = "",
+			forwardIconName = "",
+			forwardToolTip = "";
 
 		// check if playing
 		if (isPlaying) {
@@ -6221,8 +6240,34 @@
 			} else {
 				iconName = "play";
 			}
-
 		}
+
+		// check for Margolus reverse direction
+		if (this.engine.isMargolus) {
+			reverse = this.engine.reverseMargolus;
+			if (this.engine.reversePending) {
+				reverse = !reverse;
+			}
+			if (reverse) {
+				forwardIconName = "stepback";
+				backIconName = "stepforward";
+				forwardToolTip = "step back";
+				backToolTip = "step forward";
+			} else {
+				forwardIconName = "stepforward";
+				backIconName = "stepback";
+				forwardToolTip = "step forward";
+				backToolTip = "step back";
+			}
+
+			// set the step back and forward icons and tooltips
+			this.playList.icon[ViewConstants.modePause] = this.iconManager.icon(forwardIconName);
+			this.playList.toolTip[ViewConstants.modePause] = forwardToolTip;
+			this.playList.icon[ViewConstants.modeStepBack] = this.iconManager.icon(backIconName);
+			this.playList.toolTip[ViewConstants.modeStepBack] = backToolTip;
+		}
+
+		// set the play icon and tooltip
 		this.playList.icon[ViewConstants.modePlay] = this.iconManager.icon(iconName);
 		this.playList.toolTip[ViewConstants.modePlay] = toolTip;
 	};
@@ -6698,7 +6743,8 @@
 		    autoStartMode = me.autoStartDisabled,
 		    autoFitMode = me.autoFit,
 		    trackMode = me.trackDisabled,
-		    message = null,
+			i = 0,
+			message = null,
 			duration = 40,
 			numChanged = 0,
 
@@ -6952,8 +6998,10 @@
 							me.afterEdit("reverse playback");
 						}
 						me.afterEdit("");
-						me.engine.nextGeneration(true, me.noHistory, me.graphDisabled);
-						me.engine.convertToPensTile();
+						for (i = 0; i < me.gensPerStep; i += 1) {
+							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled);
+							me.engine.convertToPensTile();
+						}
 						me.engine.reversePending = true;
 					} else {
 						// check if at start
@@ -7753,6 +7801,60 @@
 		}
 	};
 
+	// randomize rule and pattern
+	View.prototype.randomPattern = function(me) {
+		var patternText = "x = 128, y = 128, rule = ",
+			rleText = "",
+			result = null,
+			y = 0,
+			x = 0,
+			state = 0,
+			lastState = 0,
+			count = 0;
+
+		// create random pattern
+		for (y = 0; y < 128; y += 1) {
+			lastState = (myRand.random() < 0.5 ? 0 : 1);
+			count = 1;
+			for (x = 1; x < 128; x += 1) {
+				state = (myRand.random(0) < 0.5 ? 0 : 1);
+				if (state !== lastState) {
+					if (count > 1) {
+						rleText += count;
+					}
+					rleText += (lastState ? "o" : "b");
+					count = 0;
+					lastState = state;
+				}
+				count += 1;
+			}
+			if (state !== 0) {
+				if (count > 1) {
+					rleText += count;
+				}
+				rleText += "o";
+			}
+			if (y < 127) {
+				rleText += "$\n";
+			}
+		}
+		rleText += "!\n";
+
+		// create the pattern
+		patternText += (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef + "\n";
+		patternText += rleText;
+
+		// check whether prompt required
+		if (me.undoButton.locked) {
+			result = true;
+		} else {
+			result = window.confirm("Create new random pattern with random rule?");
+		}
+		if (result) {
+			me.startViewer(patternText, false);
+		}
+	};
+
 	// new pattern
 	View.prototype.newPattern = function(me) {
 		var patternText = "x = 1, y = 1, rule = ",
@@ -8111,6 +8213,11 @@
 	// new button
 	View.prototype.newPressed = function(me) {
 		me.newPattern(me);
+	};
+
+	// randomize button
+	View.prototype.randomizePressed = function(me) {
+		me.randomPattern(me);
 	};
 
 	// save button
@@ -11074,20 +11181,24 @@
 		this.autoHideButton.toolTip = ["toggle hide UI on playback"]; 
 
 		// rule button
-		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, 0, -75, 180, 40, "Change Rule");
+		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, 0, -100, 180, 40, "Change Rule");
 		this.ruleButton.toolTip = "change rule";
 
 		// new button
-		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 0, -25, 180, 40, "New Pattern");
+		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 0, -50, 180, 40, "New Pattern");
 		this.newButton.toolTip = "new pattern";
 
 		// load button
-		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, 0, 25, 180, 40, "Load Pattern");
+		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, 0, 0, 180, 40, "Load Pattern");
 		this.loadButton.toolTip = "load last saved pattern";
 
 		// save button
-		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 0, 75, 180, 40, "Save Pattern");
+		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 0, 50, 180, 40, "Save Pattern");
 		this.saveButton.toolTip = "save pattern";
+
+		// randomize button
+		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, 0, 100, 180, 40, "Randomize");
+		this.randomizeButton.toolTip = "randomize pattern and rule";
 
 		// fps button
 		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -75, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
@@ -12982,6 +13093,7 @@
 		// reset generation
 		this.engine.counter = 0;
 		this.engine.counterMargolus = 0;
+		this.engine.maxMargolusGen = 0;
 		this.floatCounter = 0;
 		this.originCounter = 0;
 

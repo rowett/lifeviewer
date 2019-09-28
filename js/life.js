@@ -511,6 +511,9 @@
 		// Margolus generation number (decreases with reverse playback)
 		/** @type {number} */ this.counterMargolus = 0;
 
+		// maximum Margolus generation number
+		/** @type {number} */ this.maxMargolusGen = 0;
+
 		// number of generations
 		/** @type {number} */ this.counter = 0;
 
@@ -3476,6 +3479,7 @@
 		// restore the counter
 		this.counter = snapshot.counter;
 		this.counterMargolus = snapshot.counterMargolus;
+		this.maxMargolusGen = snapshot.maxMargolusGen;
 
 		// check which buffer to copy to
 		if ((this.counter & 1) !== 0) {
@@ -3577,7 +3581,7 @@
 	// save to a specific snapshot
 	Life.prototype.saveToSnapshot = function(isReset, grid, tileGrid) {
 		// create the snapshot
-		this.snapshotManager.saveSnapshot(grid, tileGrid, this.colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, this.counterMargolus, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive);
+		this.snapshotManager.saveSnapshot(grid, tileGrid, this.colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, this.counterMargolus, this.maxMargolusGen, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive);
 	};
 
 	// save grid
@@ -4602,7 +4606,7 @@
 		// Margolus theme
 		this.themes[i] = new Theme("Margolus", new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 128)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 255)), new Colour(0, 0, 0),
 									new Colour(255, 255, 0), new ColourRange(new Colour(64, 64, 128), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 128)), new Colour(0, 0, 0));
-		this.themes[i].setGridLines(2, new Colour(32, 32, 255), new Colour(32, 32, 192));
+		this.themes[i].setGridLines(2, new Colour(32, 32, 255), new Colour(64, 64, 128));
 		i += 1;
 
 		// custom theme
@@ -8308,6 +8312,10 @@
 				this.counterMargolus -= 1;
 			} else {
 				this.counterMargolus += 1;
+			}
+			// update maximum Margolus generation reached (used for PASTE EVERY)
+			if (this.counterMargolus > this.maxMargolusGen) {
+				this.maxMargolusGen = this.counterMargolus;
 			}
 		}
 
