@@ -761,6 +761,7 @@
 		y = this.renderHelpLine(view, "Alt R", "change rule", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl O", "open original or last saved pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl S", "save pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt Z", "randomize pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// clipboard controls
