@@ -1,3 +1,8 @@
+Build 415
+- new button Settings->Pattern->Randomize (hotkey Alt+"Z") which creates a random 64x64 pattern with a random rule
+	- the rule is based on the current rule family
+	- the rule will have the same number of states and neighbourhood as the original rule
+
 Build 414
 - Margolus enhancements
 	- made gridline colours more distinct

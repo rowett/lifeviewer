@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global Random BoundingBox Allocator Uint8 Int16 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager ScriptParser Uint32Array myRand PopupWindow typedArrays Float32 */
+	/* global Random BoundingBox Allocator AliasManager Uint8 Int16 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager ScriptParser Uint32Array myRand PopupWindow typedArrays Float32 */
 
 	// LifeViewer document configuration
 	var DocConfig = {
@@ -42,6 +42,9 @@
 	ViewConstants = {
 		// alt keys that LifeViewer uses (any accesskey attributes that match these will be disabled)
 		/** @const {string} */ altKeys : "0123456789rtyopasghjklxcbn",
+
+		// random pattern dimension
+		/** @const {number} */ randomDimension : 64,
 
 		// theme selection button positions and order
 		/** @const {Array<number>} */ themeX : [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3],
@@ -239,7 +242,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 414,
+		/** @const {number} */ versionBuild : 415,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -566,6 +569,9 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// whether rule was LtL (before it got converted to HROT)
+		/** @type {boolean} */ this.wasLtL = false;
 
 		// PopUp Viewer title bar elements (for resize)
 		this.anchorItem = null;
@@ -7801,28 +7807,306 @@
 		}
 	};
 
+	// create random HROT rule name
+	View.prototype.createRandomHROT = function() {
+		var result = "",
+			neighbours = 0,
+			range = this.engine.HROT.range,
+			neighbourhood = "",
+			value = 0,
+			r2 = 0,
+			width = 0,
+			i = 0;
+
+		// set the range
+		result = "R" + range  + ",";
+
+		// set the number of states
+		result += "C" + this.engine.HROT.scount + ",";
+
+		// set the neighbourhood and compute max neighbour count
+		switch (this.engine.HROT.type) {
+		case PatternManager.mooreHROT:
+			neighbourhood = "";
+			neighbours = (range * 2 + 1) * (range * 2 + 1);
+			break;
+		case PatternManager.vonNeumannHROT:
+			neighbourhood = "N";
+			neighbours = 2 * range * (range + 1) + 1;
+			break;
+		case PatternManager.circularHROT:
+			neighbourhood = "C";
+			neighbours = 0;
+			r2 = range * range + range;
+			for (i = -range; i <= range; i += 1) {
+				width = 0;
+				while ((width + 1) * (width + 1) + (i * i) <= r2) {
+					width += 1;
+				}
+				neighbours += 2 * width + 1;
+			}
+			break;
+		}
+
+		// add random survival range
+		value = (myRand.random() * neighbours) | 0;
+		result += "S" + String(value);
+		value = ((myRand.random() * (neighbours - value)) | 0) + value;
+		if (value > 0) {
+			result += "-" + String(value);
+		}
+
+		// add random birth range excluding B0
+		value = ((myRand.random() * (neighbours - 1)) | 0) + 1;
+		result += ",B" + String(value);
+		value = ((myRand.random() * (neighbours - value)) | 0) + value;
+		if (value > 0) {
+			result += "-" + String(value);
+		}
+
+		// add the neighbourhood
+		if (neighbourhood !== "") {
+			result += ",N" + neighbourhood;
+		}
+
+		return result;
+	};
+	// create random LtL rule name
+	View.prototype.createRandomLTL = function() {
+		var result = "",
+			neighbours = 0,
+			range = this.engine.HROT.range,
+			neighbourhood = "",
+			value = 0,
+			r2 = 0,
+			width = 0,
+			i = 0;
+
+		// set the range
+		result = "R" + range  + ",";
+
+		// set the number of states
+		result += "C" + this.engine.HROT.scount + ",";
+
+		// set the middle
+		result += "M1,";
+
+		// set the neighbourhood and compute max neighbour count
+		switch (this.engine.HROT.type) {
+		case PatternManager.mooreHROT:
+			neighbourhood = "M";
+			neighbours = (range * 2 + 1) * (range * 2 + 1);
+			break;
+		case PatternManager.vonNeumannHROT:
+			neighbourhood = "N";
+			neighbours = 2 * range * (range + 1) + 1;
+			break;
+		case PatternManager.circularHROT:
+			neighbourhood = "C";
+			neighbours = 0;
+			r2 = range * range + range;
+			for (i = -range; i <= range; i += 1) {
+				width = 0;
+				while ((width + 1) * (width + 1) + (i * i) <= r2) {
+					width += 1;
+				}
+				neighbours += 2 * width + 1;
+			}
+			break;
+		}
+
+		// add random survival range
+		value = (myRand.random() * neighbours) | 0;
+		result += "S" + String(value);
+		value = ((myRand.random() * (neighbours - value)) | 0) + value;
+		if (value > 0) {
+			result += ".." + String(value);
+		}
+
+		// add random birth range excluding B0
+		value = ((myRand.random() * (neighbours - 1)) | 0) + 1;
+		result += ",B" + String(value);
+		value = ((myRand.random() * (neighbours - value)) | 0) + value;
+		if (value > 0) {
+			result += ".." + String(value);
+		}
+
+		// add the neighbourhood
+		result += ",N" + neighbourhood;
+
+		return result;
+	};
+
+	// create random Wolframe rule name
+	View.prototype.createRandomWolfram = function() {
+		var result = "W",
+			value = 0;
+
+		// pick an even number from 0 to 254
+		value = ((myRand.random() * 127) | 0) * 2;
+		result += String(value);
+
+		return result;
+	};
+
+	// create random LifeLife rule name
+	View.prototype.createRandomLifeLike = function() {
+		var result = "B",
+			i = 0,
+			neighbours = 8,
+			postfix = "";
+
+		// get neighbourhood
+		if (this.engine.isHex) {
+			neighbours = 6;
+			postfix = PatternManager.hexPostfix;
+		} else{
+			if (this.engine.isTriangular) {
+				switch (this.engine.triangularNeighbourhood) {
+				case PatternManager.triangularEdges:
+					neighbours = 3;
+					postfix = PatternManager.triangularEdgesPostfix;
+					break;
+				case PatternManager.triangularVertices:
+					neighbours = 9;
+					postfix = PatternManager.triangularVerticesPostfix;
+					break;
+				case PatternManager.triangularAll:
+					neighbours = 12;
+					postfix = PatternManager.triangularPostfix;
+					break;
+				}
+			} else {
+				if (this.engine.isVonNeumann) {
+					neighbours = 4;
+					postfix = PatternManager.vonNeumannPostfix;
+				}
+			}
+		}
+		
+		// lower chance to add B0 (not for Generations)
+		if (this.engine.multiNumStates <= 2 && (myRand.random() < 0.25)) {
+			result += "0";
+		}
+
+		// add remaining random birth conditions
+		for (i = 1; i <= neighbours; i += 1) {
+			if (myRand.random() < 0.5) {
+				result += String(i);
+			}
+		}
+
+		// add random survival conditions
+		result += "/S";
+		for (i = 0; i <= neighbours; i += 1) {
+			if (myRand.random() < 0.5) {
+				result += String(i);
+			}
+		}
+
+		// if current pattern is multistate then keep the number of states
+		if (this.engine.multiNumStates > 2) {
+			result += "/" + this.engine.multiNumStates;
+		}
+
+		// add neighbourhood postfix
+		result += postfix.toUpperCase();
+
+		// return the rule name
+		return result;
+
+	};
+
+	// create random Margolus rule name
+	View.prototype.createRandomMargolus = function() {
+		var result = "M",
+			i = 0,
+			value = 0,
+			first15 = false;
+
+		// first must be 0 or 15
+		value = (myRand.random() * 2) | 0;
+		if (value !== 0) {
+			first15 = true;
+			value = 15;
+		}
+		result += String(value) + ",";
+
+		// create 14 random entries
+		for (i = 1; i < 15; i += 1) {
+			value = (myRand.random() * 16) | 0;
+			result += String(value) + ",";
+		}
+
+		// create last entry which must be 0 if first was 15
+		if (first15) {
+			value = 0;
+		} else {
+			value = (myRand.random() * 16) | 0;
+		}
+		result += String(value);
+
+		// return the rule name
+		return result;
+	};
+
 	// randomize rule and pattern
 	View.prototype.randomPattern = function(me) {
-		var patternText = "x = 128, y = 128, rule = ",
+		var patternText = "",
 			rleText = "",
 			result = null,
 			y = 0,
 			x = 0,
 			state = 0,
 			lastState = 0,
-			count = 0;
+			count = 0,
+			asciiA = String("A").charCodeAt(0),
+			asciiP = String("p").charCodeAt(0),
+			outputState = [],
+			aliasName = null,
+			maxState = 0,
+			rows = ViewConstants.randomDimension;
+
+		// initialize random generator
+		myRand.init(Date.now().toString());
+
+		// populate output states
+		if (me.engine.multiNumStates <= 2 && !me.engine.displayLifeHistory) {
+			outputState[0] = "b";
+			outputState[1] = "o";
+			maxState = 2;
+		} else {
+			if (me.engine.displayLifeHistory) {
+				maxState = 2;
+			} else {
+				maxState = me.engine.multiNumStates;
+			}
+			outputState[0] = ".";
+			for (x = 0; x < maxState - 1; x += 1) {
+				if (x >= 24) {
+					outputState[x + 1] = String.fromCharCode(asciiP + ((x / 24) | 0) - 1) + String.fromCharCode(asciiA + (x % 24));
+				} else {
+					outputState[x + 1] = String.fromCharCode(asciiA + x);
+				}
+			}
+		}
+
+		// only create 1 row for Wolfram patterns
+		if (me.engine.wolframRule !== -1) {
+			rows = 1;
+		}
 
 		// create random pattern
-		for (y = 0; y < 128; y += 1) {
-			lastState = (myRand.random() < 0.5 ? 0 : 1);
+		for (y = 0; y < rows; y += 1) {
+			lastState = (myRand.random() * maxState) | 0;
 			count = 1;
-			for (x = 1; x < 128; x += 1) {
-				state = (myRand.random(0) < 0.5 ? 0 : 1);
+			for (x = 1; x < ViewConstants.randomDimension; x += 1) {
+				state = (myRand.random(0) * maxState) | 0;
 				if (state !== lastState) {
 					if (count > 1) {
 						rleText += count;
 					}
-					rleText += (lastState ? "o" : "b");
+					rleText += outputState[lastState];
 					count = 0;
 					lastState = state;
 				}
@@ -7832,27 +8116,60 @@
 				if (count > 1) {
 					rleText += count;
 				}
-				rleText += "o";
+				rleText += outputState[state];
 			}
-			if (y < 127) {
+			if (y < ViewConstants.randomDimension - 1) {
 				rleText += "$\n";
 			}
 		}
 		rleText += "!\n";
 
+		// create random rule
+		if (me.engine.isMargolus) {
+			me.patternRuleName = me.createRandomMargolus();
+		} else {
+			if (me.engine.isHROT) {
+				if (me.wasLtL) {
+					me.patternRuleName = me.createRandomLTL();
+				} else {
+					me.patternRuleName = me.createRandomHROT();
+				}
+			} else {
+				if (me.engine.wolframRule !== -1) {
+					me.patternRuleName = me.createRandomWolfram();
+				} else {
+					me.patternRuleName = me.createRandomLifeLike();
+				}
+			}
+		}
+
+		// check if there is an alias for the generated pattern name
+		aliasName = AliasManager.getAliasFromRule(me.patternRuleName);
+		if (aliasName !== null) {
+			me.patternAliasName = aliasName;
+		} else {
+			me.patternAliasName = "";
+		}
+
 		// create the pattern
+		patternText = me.engine.beforeTitle;
+		patternText += "x = " + ViewConstants.randomDimension + ", y = " + ViewConstants.randomDimension + ", rule = ";
 		patternText += (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef + "\n";
 		patternText += rleText;
+		patternText += me.engine.afterTitle;
 
 		// check whether prompt required
 		if (me.undoButton.locked) {
 			result = true;
 		} else {
-			result = window.confirm("Create new random pattern with random rule?");
+			result = window.confirm("Create new random pattern?");
 		}
 		if (result) {
 			me.startViewer(patternText, false);
 		}
+
+		// save the new pattern
+		me.saveCurrentRLE(me);
 	};
 
 	// new pattern
@@ -12294,6 +12611,9 @@
 		this.engine.reverseMargolus = false;
 		this.engine.reversePending = false;
 
+		// clear was LtL
+		this.wasLtL = false;
+
 		// attempt to create the pattern
 		pattern = PatternManager.create("", patternString, this.engine.allocator);
 		if (pattern) {
@@ -12361,6 +12681,9 @@
 				} else {
 					this.engine.HROT.altSpecified = false;
 				}
+
+				// check if pattern was LtL
+				this.wasLtL = pattern.isLTL;
 			}
 
 			// check if the rule is _none_
