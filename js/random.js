@@ -58,6 +58,5 @@
 
 	// create global interface
 	window["Random"] = Random;
-	window["myRand"] = new Random();
 }
 ());

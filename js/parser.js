@@ -32,6 +32,10 @@
 			case Keywords.squareCellsWord:
 			case Keywords.bordersWord:
 			case Keywords.randomSeedWord:
+			case Keywords.randomWidthWord:
+			case Keywords.randomHeightWord:
+			case Keywords.randomFillWord:
+			case Keywords.randomReversibleWord:
 			case Keywords.deleteRangeWord:
 			case Keywords.poiWord:
 			case Keywords.titleWord:
@@ -3966,6 +3970,63 @@
 						case Keywords.bordersWord:
 							view.engine.cellBorders = true;
 
+							itemValid = true;
+							break;
+
+						// random width
+						case Keywords.randomWidthWord:
+							// get the width
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+								// check it is in range
+								if (numberValue >= ViewConstants.minRandomWidth && numberValue <= ViewConstants.maxRandomWidth) {
+									view.randomWidth = numberValue;
+									itemValid = true;
+								}
+							}
+							break;
+
+						// random height
+						case Keywords.randomHeightWord:
+							// get the width
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+								// check it is in range
+								if (numberValue >= ViewConstants.minRandomHeight && numberValue <= ViewConstants.maxRandomHeight) {
+									view.randomHeight = numberValue;
+									itemValid = true;
+								}
+							}
+							break;
+
+						// random fill percentage
+						case Keywords.randomFillWord:
+							// get the fill percentage
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+								// check it is in range
+								if (numberValue >= ViewConstants.minRandomFill && numberValue <= ViewConstants.maxRandomFill) {
+									view.randomFillPercentage = numberValue;
+									itemValid = true;
+								}
+							}
+							break;
+
+						// random reversible Margolus rule word
+						case Keywords.randomReversibleWord:
+							view.randomReversible = true;
 							itemValid = true;
 							break;
 

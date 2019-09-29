@@ -1139,12 +1139,10 @@
 					}
 				} else {
 					// check for Margolus
-					if (!me.controlsLocked) {
-						if (me.engine.isMargolus) {
-							// check rule is reversible
-							if (me.engine.margolusReverseLookup1) {
-								me.directionPressed(me);
-							}
+					if (me.engine.isMargolus) {
+						// check rule is reversible
+						if (me.engine.margolusReverseLookup1) {
+							me.directionPressed(me);
 						}
 					}
 				}

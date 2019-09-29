@@ -897,7 +897,6 @@
 		y = this.renderHelpLine(view, Keywords.scriptStartWord, "start script section", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.scriptEndWord, "end script section", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.suppressWord, "suppress overwrite warning", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.randomSeedWord + " <string>", "set random seed", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		view.helpSections[sectionNum] = [view.lineNo, "Playback"];
 		sectionNum += 1;
@@ -1109,6 +1108,17 @@
 		y = this.renderHelpLine(view, " (<0..> (<1..>))", "... optional start and end", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteModeWord + " " + Keywords.pasteModeOrWord + "|" + Keywords.pasteModeCopyWord + "|" + Keywords.pasteModeXorWord + "|" + Keywords.pasteModeAndWord + "|" + Keywords.pasteModeNotWord, "set the paste mode", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.killGlidersWord, "suppress escaping gliders", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		view.helpSections[sectionNum] = [view.lineNo, "Randomize"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Randomize:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.randomSeedWord + " <string>", "set random seed", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.randomWidthWord + " <" + ViewConstants.minRandomWidth + ".." + ViewConstants.maxRandomWidth + ">", "set random pattern width", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.randomHeightWord + " <" + ViewConstants.minRandomHeight + ".." + ViewConstants.maxRandomHeight + ">", "set random pattern height", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.randomFillWord + " <" + ViewConstants.minRandomFill + ".." + ViewConstants.maxRandomFill + ">", "set random pattern fill percentage", ctx, x, y, height, helpLine);
+		if (view.engine.isMargolus) {
+			y = this.renderHelpLine(view, Keywords.randomReversibleWord, "only generate reversible rules", ctx, x, y, height, helpLine);
+		}
 	};
 
 	// render information topic
@@ -1684,13 +1694,19 @@
 		y = this.renderHelpLine(view, "Death Color", this.rgbString(view.engine.graphDeathColor[0], view.engine.graphDeathColor[1], view.engine.graphDeathColor[2]), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
-		// random seed information
-		//view.helpSections[sectionNum] = [view.lineNo, "Random"];
-		//sectionNum += 1;
-		//y = this.renderHelpLine(view, "", "Random Seed:", ctx, x, y, height, helpLine);
-		//y = this.renderHelpLine(view, "Custom", view.randomSeedCustom ? "On" : "Off", ctx, x, y, height, helpLine);
-		//y = this.renderHelpLine(view, "Seed", view.randomSeed, ctx, x, y, height, helpLine);
-		//y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		// random parameter information
+		view.helpSections[sectionNum] = [view.lineNo, "Randomize"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Randomize:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Custom Seed", view.randomSeedCustom ? "On" : "Off", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Seed", view.randomSeed, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Width", view.randomWidth, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Height", view.randomHeight, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Fill%", view.randomFillPercentage, ctx, x, y, height, helpLine);
+		if (view.engine.isMargolus) {
+			y = this.renderHelpLine(view, "Reversible", (view.randomReversible ? "Only" : "Any"), ctx, x, y, height, helpLine);
+		}
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// starfield information
 		view.helpSections[sectionNum] = [view.lineNo, "Stars"];

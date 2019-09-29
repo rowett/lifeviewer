@@ -107,7 +107,15 @@
 		/** @const {string} */ integerZoomWord : "INTEGERZOOM",
 
 		// random seed
-		/** @const {string} */ randomSeedWord : "RANDOMSEED",
+		/** @const {string} */ randomSeedWord : "RANDSEED",
+
+		// random pattern parameters
+		/** @const {string} */ randomWidthWord : "RANDWIDTH",
+		/** @const {string} */ randomHeightWord : "RANDHEIGHT",
+		/** @const {string} */ randomFillWord : "RANDFILL",
+
+		// random rule paramters
+		/** @const {string} */ randomReversibleWord : "RANDREVERSIBLE",
 
 		// boundary deletion radius
 		/** @const {string} */ deleteRangeWord : "DELETERANGE",

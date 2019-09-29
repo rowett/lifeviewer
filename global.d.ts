@@ -64,7 +64,7 @@ declare var LTL;
 declare var PatternManager, Pattern;
 
 // random.js
-declare var Random, myRand;
+declare var Random;
 
 // script.js
 declare var Script;

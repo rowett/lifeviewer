@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global Random BoundingBox Allocator AliasManager Uint8 Int16 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager ScriptParser Uint32Array myRand PopupWindow typedArrays Float32 */
+	/* global Random BoundingBox Allocator AliasManager Uint8 Int16 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager ScriptParser Uint32Array PopupWindow typedArrays Float32 */
 
 	// LifeViewer document configuration
 	var DocConfig = {
@@ -43,8 +43,16 @@
 		// alt keys that LifeViewer uses (any accesskey attributes that match these will be disabled)
 		/** @const {string} */ altKeys : "0123456789rtyopasghjklxcbn",
 
-		// random pattern dimension
+		// default random pattern dimension
 		/** @const {number} */ randomDimension : 64,
+
+		// min and max random width, height and fill percentage
+		/** @const {number} */ minRandomWidth : 1,
+		/** @const {number} */ maxRandomWidth : 1024,
+		/** @const {number} */ minRandomHeight : 1,
+		/** @const {number} */ maxRandomHeight : 1024,
+		/** @const {number} */ minRandomFill : 1,
+		/** @const {number} */ maxRandomFill : 100,
 
 		// theme selection button positions and order
 		/** @const {Array<number>} */ themeX : [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3],
@@ -242,7 +250,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 415,
+		/** @const {number} */ versionBuild : 416,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -569,6 +577,14 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// random pattern width, height and fill percentage
+		/** @type {number} */ this.randomWidth = ViewConstants.randomDimension;
+		/** @type {number} */ this.randomHeight = ViewConstants.randomDimension;
+		/** @type {number} */ this.randomFillPercentage = 50;
+
+		// random rule whether to only generate reversible Margolus rules
+		/** @type {boolean} */ this.randomReversible = false;
 
 		// whether rule was LtL (before it got converted to HROT)
 		/** @type {boolean} */ this.wasLtL = false;
@@ -4728,7 +4744,6 @@
 		me.zoomItem.locked = me.controlsLocked;
 		me.layersItem.locked = (me.controlsLocked && me.waypointsDefined) || (me.engine.isHex && me.engine.useHexagons) || me.engine.isTriangular;
 		me.depthItem.locked = (me.controlsLocked && me.waypointsDefined) || (me.engine.isHex && me.engine.useHexagons) || me.engine.isTriangular; 
-		me.directionButton.locked = me.controlsLocked;
 
 		// check if the mouse wheel scrolled
 		if (me.wheelDelta) {
@@ -7849,17 +7864,17 @@
 		}
 
 		// add random survival range
-		value = (myRand.random() * neighbours) | 0;
+		value = (this.randGen.random() * neighbours) | 0;
 		result += "S" + String(value);
-		value = ((myRand.random() * (neighbours - value)) | 0) + value;
+		value = ((this.randGen.random() * (neighbours - value)) | 0) + value;
 		if (value > 0) {
 			result += "-" + String(value);
 		}
 
 		// add random birth range excluding B0
-		value = ((myRand.random() * (neighbours - 1)) | 0) + 1;
+		value = ((this.randGen.random() * (neighbours - 1)) | 0) + 1;
 		result += ",B" + String(value);
-		value = ((myRand.random() * (neighbours - value)) | 0) + value;
+		value = ((this.randGen.random() * (neighbours - value)) | 0) + value;
 		if (value > 0) {
 			result += "-" + String(value);
 		}
@@ -7916,17 +7931,17 @@
 		}
 
 		// add random survival range
-		value = (myRand.random() * neighbours) | 0;
+		value = (this.randGen.random() * neighbours) | 0;
 		result += "S" + String(value);
-		value = ((myRand.random() * (neighbours - value)) | 0) + value;
+		value = ((this.randGen.random() * (neighbours - value)) | 0) + value;
 		if (value > 0) {
 			result += ".." + String(value);
 		}
 
 		// add random birth range excluding B0
-		value = ((myRand.random() * (neighbours - 1)) | 0) + 1;
+		value = ((this.randGen.random() * (neighbours - 1)) | 0) + 1;
 		result += ",B" + String(value);
-		value = ((myRand.random() * (neighbours - value)) | 0) + value;
+		value = ((this.randGen.random() * (neighbours - value)) | 0) + value;
 		if (value > 0) {
 			result += ".." + String(value);
 		}
@@ -7943,7 +7958,7 @@
 			value = 0;
 
 		// pick an even number from 0 to 254
-		value = ((myRand.random() * 127) | 0) * 2;
+		value = ((this.randGen.random() * 127) | 0) * 2;
 		result += String(value);
 
 		return result;
@@ -7985,13 +8000,13 @@
 		}
 		
 		// lower chance to add B0 (not for Generations)
-		if (this.engine.multiNumStates <= 2 && (myRand.random() < 0.25)) {
+		if (this.engine.multiNumStates <= 2 && (this.randGen.random() < 0.25)) {
 			result += "0";
 		}
 
 		// add remaining random birth conditions
 		for (i = 1; i <= neighbours; i += 1) {
-			if (myRand.random() < 0.5) {
+			if (this.randGen.random() < 0.5) {
 				result += String(i);
 			}
 		}
@@ -7999,7 +8014,7 @@
 		// add random survival conditions
 		result += "/S";
 		for (i = 0; i <= neighbours; i += 1) {
-			if (myRand.random() < 0.5) {
+			if (this.randGen.random() < 0.5) {
 				result += String(i);
 			}
 		}
@@ -8022,29 +8037,77 @@
 		var result = "M",
 			i = 0,
 			value = 0,
-			first15 = false;
+			bit = 0,
+			first15 = false,
+			used = 0;
 
-		// first must be 0 or 15
-		value = (myRand.random() * 2) | 0;
-		if (value !== 0) {
-			first15 = true;
-			value = 15;
-		}
-		result += String(value) + ",";
+		// check for reversible rules
+		if (this.randomReversible) {
+			// first must be 0 or 15
+			i = 16;
+			value = (this.randGen.random() * 16) | 0;
+			if (value == 15) {
+				first15 = true;
 
-		// create 14 random entries
-		for (i = 1; i < 15; i += 1) {
-			value = (myRand.random() * 16) | 0;
-			result += String(value) + ",";
-		}
+				// mark 15 and 0 used
+				used |= (1 << 15);
+				used |= 1;
+				i -= 1;
+			} else {
+				// first must be 0
+				value = 0;
+				used |= 1;
+			}
+			result += String(value);
+			i -= 1;
 
-		// create last entry which must be 0 if first was 15
-		if (first15) {
-			value = 0;
+			// create remaining entries
+			while (used !== 65535) {
+				// pick next entry
+				value = (this.randGen.random() * i) | 0;
+
+				// find which entry it was
+				bit = 0;
+				while (value >= 0) {
+					if ((used & (1 << bit)) === 0) {
+						value -= 1;
+					}
+					bit += 1;
+				}
+				result += "," + String(bit - 1);
+				used |= (1 << (bit - 1));
+				i -= 1;
+			}
+
+			// add final 0 if first was 15
+			if (first15) {
+				result += ",0";
+			}
 		} else {
-			value = (myRand.random() * 16) | 0;
+			// first must be 0 or 15
+			value = (this.randGen.random() * 16) | 0;
+			if (value === 15) {
+				first15 = true;
+			} else {
+				// first must be zero
+				value = 0;
+			}
+			result += String(value) + ",";
+
+			// create 14 random entries
+			for (i = 1; i < 15; i += 1) {
+				value = (this.randGen.random() * 16) | 0;
+				result += String(value) + ",";
+			}
+
+			// create last entry which must be 0 if first was 15
+			if (first15) {
+				value = 0;
+			} else {
+				value = (this.randGen.random() * 16) | 0;
+			}
+			result += String(value);
 		}
-		result += String(value);
 
 		// return the rule name
 		return result;
@@ -8065,10 +8128,9 @@
 			outputState = [],
 			aliasName = null,
 			maxState = 0,
-			rows = ViewConstants.randomDimension;
-
-		// initialize random generator
-		myRand.init(Date.now().toString());
+			rows = me.randomHeight,
+			columns = me.randomWidth,
+			fill = me.randomFillPercentage / 100;
 
 		// populate output states
 		if (me.engine.multiNumStates <= 2 && !me.engine.displayLifeHistory) {
@@ -8098,10 +8160,19 @@
 
 		// create random pattern
 		for (y = 0; y < rows; y += 1) {
-			lastState = (myRand.random() * maxState) | 0;
+			// check for live cell
+			if (this.randGen.random() <= fill) {
+				lastState = ((this.randGen.random() * (maxState - 1)) | 0) + 1;
+			} else {
+				lastState = 0;
+			}
 			count = 1;
-			for (x = 1; x < ViewConstants.randomDimension; x += 1) {
-				state = (myRand.random(0) * maxState) | 0;
+			for (x = 1; x < columns; x += 1) {
+				if (this.randGen.random() <= fill) {
+					state = ((this.randGen.random() * (maxState - 1)) | 0) + 1;
+				} else {
+					state = 0;
+				}
 				if (state !== lastState) {
 					if (count > 1) {
 						rleText += count;
@@ -8118,7 +8189,7 @@
 				}
 				rleText += outputState[state];
 			}
-			if (y < ViewConstants.randomDimension - 1) {
+			if (y < rows - 1) {
 				rleText += "$\n";
 			}
 		}
@@ -12991,6 +13062,12 @@
 		// flag not drawing overlay
 		this.engine.drawOverlay = false;
 
+		// default random parameters
+		this.randomWidth = ViewConstants.randomDimension;
+		this.randomHeight = ViewConstants.randomDimension;
+		this.randomFillPercentage = 50;
+		this.randomReversible = false;
+
 		// copy pattern to center
 		if (pattern) {
 			if (pattern.isNone) {
@@ -13022,6 +13099,9 @@
 			// reset controls a script can overwrite
 			this.resetScriptControls();
 
+			// set random seed
+			this.randomSeed = Date.now().toString();
+
 			// read any script in the title
 			if (pattern.title) {
 				// decode any script commands
@@ -13030,9 +13110,6 @@
 					numberValue = 7;
 				}
 				this.readScript(pattern.title, numberValue);
-
-				// initialise random number generator from seed
-				myRand.init(this.randomSeed);
 
 				// set errors to display if any found
 				if (this.scriptErrors.length) {
@@ -13090,6 +13167,9 @@
 					}
 				}
 			}
+
+			// initialise random number generator from seed
+			this.randGen.init(this.randomSeed);
 
 			// check if popup width has changed
 			if (this.isInPopup) {
