@@ -8166,10 +8166,9 @@
 		}
 		if (result) {
 			me.startViewer(patternText, false);
+			// save the new pattern
+			me.saveCurrentRLE(me);
 		}
-
-		// save the new pattern
-		me.saveCurrentRLE(me);
 	};
 
 	// new pattern
