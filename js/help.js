@@ -1394,8 +1394,11 @@
 		}
 		y = this.renderHelpLine(view, "Tile Size", (view.engine.tileX << 3) + " x " + view.engine.tileY, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Generation", view.engine.counter, ctx, x, y, height, helpLine);
+		if (view.genOffset !== 0) {
+			y = this.renderHelpLine(view, "AbsoluteGen", view.engine.counter + view.genOffset, ctx, x, y, height, helpLine);
+		}
 		if (view.engine.isMargolus) {
-			y = this.renderHelpLine(view, "MargolusGen", view.engine.counterMargolus, ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "MargolusGen", view.engine.counterMargolus + view.genOffset, ctx, x, y, height, helpLine);
 		}
 		if (view.engine.isMargolus && view.engine.margolusReverseLookup1) {
 			flag = view.engine.reverseMargolus;
@@ -1725,9 +1728,18 @@
 				// TBD
 			} else {
 				if (view.engine.wolframRule === -1) {
-					y = this.renderHelpLine(view, "ChanceALL" + (view.randomChanceAll === -1 ? "*" : ""), (view.randomChanceAll === -1 ? "50%" : view.randomChanceAll + "%"), ctx, x, y, height, helpLine);
-					y = this.renderHelpLine(view, "ChanceB" + (view.randomChanceB === -1 ? "*" : ""), (view.randomChanceB === -1 ? "50%" : view.randomChanceB + "%"), ctx, x, y, height, helpLine);
-					y = this.renderHelpLine(view, "ChanceS" + (view.randomChanceS === -1 ? "*" : ""), (view.randomChanceS === -1 ? "50%" : view.randomChanceS + "%"), ctx, x, y, height, helpLine);
+					if (view.randomChanceB === -1 && view.randomChanceS === -1) {
+						y = this.renderHelpLine(view, "ChanceALL" + (view.randomChanceAll === -1 ? "*" : ""), (view.randomChanceAll === -1 ? "50%" : view.randomChanceAll + "%"), ctx, x, y, height, helpLine);
+					} else {
+						y = this.renderHelpLine(view, "ChanceB" + (view.randomChanceB === -1 ? "*" : ""), (view.randomChanceB === -1 ? "50%" : view.randomChanceB + "%"), ctx, x, y, height, helpLine);
+						y = this.renderHelpLine(view, "ChanceS" + (view.randomChanceS === -1 ? "*" : ""), (view.randomChanceS === -1 ? "50%" : view.randomChanceS + "%"), ctx, x, y, height, helpLine);
+					}
+					for (i = 0; i < view.randomChanceBN.length; i += 2) {
+						y = this.renderHelpLine(view, "ChanceB" + view.randomChanceBN[i], view.randomChanceBN[i + 1] + "%", ctx, x, y, height, helpLine);
+					}
+					for (i = 0; i < view.randomChanceSN.length; i += 2) {
+						y = this.renderHelpLine(view, "ChanceS" + view.randomChanceSN[i], view.randomChanceSN[i + 1] + "%", ctx, x, y, height, helpLine);
+					}
 				}
 			}
 		}

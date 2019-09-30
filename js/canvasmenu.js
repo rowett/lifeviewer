@@ -2504,6 +2504,9 @@
 			currentChar = "",
 			i = 0, j = 0,
 
+			// height for tooltip box
+			height = 0,
+
 			// number of lines of text to draw
 			lines = 1,
 
@@ -2511,7 +2514,10 @@
 		    fontSize = 18,
 
 		    // border size
-			borderSize = 4;
+			borderSize = 4,
+
+			// whether the tooltip contains a newline
+			newLine = -1;
 
 		// check for active item
 		if (current.activeItem !== -1 || (current.activeItem === -1 && current.mouseOverItem === -1)) {
@@ -2560,6 +2566,9 @@
 				toolTip = control.toolTip;
 			}
 
+			// check for newline
+			newLine = toolTip.indexOf("\n");
+
 			// check if there is a tooltip and delay expired
 			if (toolTip !== "" && this.toolTipCounter === -1 && !control.highlightLocked) {
 				this.toolTipLastActive = -1;
@@ -2586,6 +2595,7 @@
 				// set the font
 				fontSize *= xScale;
 				oc.font = (fontSize | 0) + "px Arial";
+				borderSize *= xScale;
 
 				// measure the tooltip width
 				width = oc.measureText(toolTip).width;
@@ -2667,24 +2677,43 @@
 						width = extraWidth;
 					}
 					lines = 2;
+				} else {
+					// check for newline
+					if (newLine !== -1) {
+						extraTip = toolTip.substr(newLine + 1);
+						extraWidth = oc.measureText(extraTip).width;
+						toolTip = toolTip.substr(0, newLine);
+						width = oc.measureText(toolTip).width;
+						if (extraWidth > width) {
+							width = extraWidth;
+						}
+						lines = 2;
+					}
+				}
+
+				// if drawing two lines and in the bottom half start one line up
+				height = fontSize * lines + borderSize * 2;
+				if (lines === 2 && (y > oc.canvas.height / 2)) {
+					y -= (fontSize + borderSize);
+					height += borderSize;
 				}
 
 				// draw the tooltip box
 				oc.globalAlpha = this.bgAlpha;
 				oc.fillStyle = this.bgCol;
-				oc.fillRect(((x - borderSize) | 0) - 0.5, ((y - fontSize / 2 - borderSize) | 0) - 0.5, width + 2 + borderSize * 2, fontSize * lines + borderSize * 2);
+				oc.fillRect(((x - borderSize) | 0) - 0.5, ((y - fontSize / 2 - borderSize) | 0) - 0.5, width + 2 + borderSize * 2, height);
 
 				// draw the tooltip border
 				oc.globalAlpha = this.borderAlpha;
 				oc.strokeStyle = this.borderCol;
-				oc.strokeRect(((x - borderSize) | 0) - 0.5, ((y - fontSize / 2 - borderSize) | 0) - 0.5, width + 2 + borderSize * 2, fontSize * lines + borderSize * 2);
+				oc.strokeRect(((x - borderSize) | 0) - 0.5, ((y - fontSize / 2 - borderSize) | 0) - 0.5, width + 2 + borderSize * 2, height);
 
 				// draw the shadow
 				oc.globalAlpha = this.bgAlpha;
 				oc.strokeStyle = this.bgCol;
 				oc.beginPath();
-				oc.moveTo((x - borderSize | 0) + 0.5, ((y - fontSize / 2 - borderSize) | 0) + 0.5 + fontSize * lines + borderSize * 2);
-				oc.lineTo((x - borderSize | 0) + 0.5 + width + 2 + borderSize * 2, ((y - fontSize / 2 - borderSize) | 0) + 0.5 + fontSize * lines + borderSize * 2);
+				oc.moveTo((x - borderSize | 0) + 0.5, ((y - fontSize / 2 - borderSize) | 0) + 0.5 + height);
+				oc.lineTo((x - borderSize | 0) + 0.5 + width + 2 + borderSize * 2, ((y - fontSize / 2 - borderSize) | 0) + 0.5 + height);
 				oc.lineTo((x - borderSize | 0) + 0.5 + width + 2 + borderSize * 2, ((y - fontSize / 2 - borderSize) | 0) + 0.5);
 				oc.stroke();
 
@@ -2693,12 +2722,12 @@
 				oc.fillStyle = this.bgCol;
 				oc.fillText(toolTip, x + 2, y + 2);
 				if (extraTip !== "") {
-					oc.fillText(extraTip, x + 2, y + fontSize + 2);
+					oc.fillText(extraTip, x + 2, y + fontSize + borderSize + 2);
 				}
 				oc.fillStyle = this.fgCol;
 				oc.fillText(toolTip, x, y);
 				if (extraTip !== "") {
-					oc.fillText(extraTip, x, y + fontSize);
+					oc.fillText(extraTip, x, y + fontSize + borderSize);
 				}
 			}
 		}

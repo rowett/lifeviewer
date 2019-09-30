@@ -250,7 +250,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 416,
+		/** @const {number} */ versionBuild : 417,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4300,16 +4300,19 @@
 			counter = me.engine.counterMargolus;
 		}
 
-		// check for negative
-		if (counter < 0) {
-			separator = "";
-		}
-
 		// check for relative display
 		if (me.genRelative) {
-			me.genToggle.lower[0] = "+ " + me.shortenNumber(counter);
+			if (counter < 0) {
+				separator = "";
+			}
+			me.genToggle.lower[0] = "+" + separator + me.shortenNumber(counter);
+			me.genToggle.toolTip = ["toggle generation statistics\ngeneration +" + counter];
 		} else {
+			if (counter + me.genOffset < 0) {
+				separator = "";
+			}
 			me.genToggle.lower[0] = "T" + separator + me.shortenNumber(counter + me.genOffset);
+			me.genToggle.toolTip = ["toggle generation statistics\ngeneration " + (counter + me.genOffset)];
 		}
 
 		// check for Margolus
@@ -11567,7 +11570,7 @@
 
 		// add the generation label
 		this.genToggle = this.viewMenu.addListItem(this.viewStats, Menu.southWest, 0, -40, 100, 40, [""], [this.statsOn], Menu.multi);
-		this.genToggle.toolTip = ["toggle generation statistics"];
+		this.genToggle.toolTip = ["toggle generation statistics\ngeneration " + (this.engine.counter + this.genOffset)];
 
 		// add the failure reason label but delete it so it's initially hidden
 		this.reasonLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -40, this.displayWidth - 40, 40, "");
