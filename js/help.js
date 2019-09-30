@@ -1118,6 +1118,20 @@
 		y = this.renderHelpLine(view, Keywords.randomFillWord + " <" + ViewConstants.minRandomFill + ".." + ViewConstants.maxRandomFill + ">", "set random pattern fill percentage", ctx, x, y, height, helpLine);
 		if (view.engine.isMargolus) {
 			y = this.renderHelpLine(view, Keywords.randomReversibleWord, "only generate reversible rules", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, Keywords.randomSwapWord, "only generate fixed population rules", ctx, x, y, height, helpLine);
+		} else {
+			if (view.engine.isHROT) {
+				// TBD
+			} else {
+				if (view.engine.wolframRule === -1) {
+					y = this.renderHelpLine(view, Keywords.randomChanceWord + " <item> <0..100>", "set percentage change for <item>", ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view,  " " + Keywords.allWord, "all conditions", ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view,  " " + Keywords.randomBWord, "all birth conditions", ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view,  " " + Keywords.randomSWord, "all survival conditions", ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view,  " " + Keywords.randomBWord + "<0..n>", "specified birth condition", ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view,  " " + Keywords.randomSWord + "<0..n>", "specified survival condition", ctx, x, y, height, helpLine);
+				}
+			}
 		}
 	};
 
@@ -1702,9 +1716,20 @@
 		y = this.renderHelpLine(view, "Seed", view.randomSeed, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Width", view.randomWidth, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Height", view.randomHeight, ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Fill%", view.randomFillPercentage, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Fill", view.randomFillPercentage + "%", ctx, x, y, height, helpLine);
 		if (view.engine.isMargolus) {
 			y = this.renderHelpLine(view, "Reversible", (view.randomReversible ? "Only" : "Any"), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "FixedPop", (view.randomSwap ? "Yes" : "No"), ctx, x, y, height, helpLine);
+		} else {
+			if (view.engine.isHROT) {
+				// TBD
+			} else {
+				if (view.engine.wolframRule === -1) {
+					y = this.renderHelpLine(view, "ChanceALL" + (view.randomChanceAll === -1 ? "*" : ""), (view.randomChanceAll === -1 ? "50%" : view.randomChanceAll + "%"), ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, "ChanceB" + (view.randomChanceB === -1 ? "*" : ""), (view.randomChanceB === -1 ? "50%" : view.randomChanceB + "%"), ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, "ChanceS" + (view.randomChanceS === -1 ? "*" : ""), (view.randomChanceS === -1 ? "50%" : view.randomChanceS + "%"), ctx, x, y, height, helpLine);
+				}
+			}
 		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 

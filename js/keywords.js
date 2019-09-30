@@ -114,8 +114,14 @@
 		/** @const {string} */ randomHeightWord : "RANDHEIGHT",
 		/** @const {string} */ randomFillWord : "RANDFILL",
 
-		// random rule paramters
+		// random rule paramters (Margolus)
 		/** @const {string} */ randomReversibleWord : "RANDREVERSIBLE",
+		/** @const {string} */ randomSwapWord : "RANDFIXEDPOP",
+
+		// random rule paramters (Life-Like)
+		/** @const {string} */ randomChanceWord : "RANDCHANCE",
+		/** @const {string} */ randomBWord : "B",
+		/** @const {string} */ randomSWord : "S",
 
 		// boundary deletion radius
 		/** @const {string} */ deleteRangeWord : "DELETERANGE",

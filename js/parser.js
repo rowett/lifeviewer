@@ -10,6 +10,8 @@
 
 	// singleton
 	var ScriptParser = {
+		BSnType : "",
+		BSnValue : 0
 	};
 
 	// check if a string is a script command
@@ -36,6 +38,10 @@
 			case Keywords.randomHeightWord:
 			case Keywords.randomFillWord:
 			case Keywords.randomReversibleWord:
+			case Keywords.randomSwapWord:
+			case Keywords.randomChanceWord:
+			case Keywords.randomBWord:
+			case Keywords.randomSWord:
 			case Keywords.deleteRangeWord:
 			case Keywords.poiWord:
 			case Keywords.titleWord:
@@ -858,6 +864,47 @@
 		}
 
 		return result;
+	};
+
+	// check BNs in valid
+	ScriptParser.validBSn = function(token) {
+		var firstChar = token.substr(0, 1),
+			remainder = token.substr(1),
+			result = false,
+			i = 0;
+
+		if (firstChar === "B" || firstChar === "S") {
+			this.BSnType = firstChar;
+			i = 0;
+			result = true;
+			while (result && (i < remainder.length)) {
+				if (remainder[i] >= "0" && remainder[i] <= "9") {
+					i += 1;
+				} else {
+					result = false;
+				}
+			}
+			if (result) {
+				this.BSnValue = Number(remainder);
+			}
+		}
+
+		return result;
+	};
+
+	// save BSn entry
+	ScriptParser.saveBSn = function(view, value) {
+		var i = 0;
+
+		if (this.BSnType === "B") {
+			i = view.randomChanceBN.length;
+			view.randomChanceBN[i] = this.BSnValue;
+			view.randomChanceBN[i + 1] = value;
+		} else {
+			i = view.randomChanceSN.length;
+			view.randomChanceSN[i] = this.BSnValue;
+			view.randomChanceSN[i + 1] = value;
+		}
 	};
 
 	// parse script commands
@@ -4028,6 +4075,93 @@
 						case Keywords.randomReversibleWord:
 							view.randomReversible = true;
 							itemValid = true;
+							break;
+
+						// random swap Margolus rule word
+						case Keywords.randomSwapWord:
+							view.randomSwap = true;
+							itemValid = true;
+							break;
+
+						// random chance Life-Like rule word
+						case Keywords.randomChanceWord:
+							// check the argument
+							peekToken = scriptReader.peekAtNextToken();
+							switch(peekToken) {
+							// all
+							case Keywords.allWord:
+								peekToken = scriptReader.getNextToken();
+								// get random percentage
+								if (scriptReader.nextTokenIsNumeric()) {
+									isNumeric = true;
+
+									// get the value
+									numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+									// check it is in range
+									if (numberValue >= 0 && numberValue <= 100) {
+										view.randomChanceAll = numberValue;
+										itemValid = true;
+									}
+								}
+								break;
+
+							// b
+							case Keywords.randomBWord:
+								peekToken = scriptReader.getNextToken();
+								// get random percentage
+								if (scriptReader.nextTokenIsNumeric()) {
+									isNumeric = true;
+
+									// get the value
+									numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+									// check it is in range
+									if (numberValue >= 0 && numberValue <= 100) {
+										view.randomChanceB = numberValue;
+										itemValid = true;
+									}
+								}
+								break;
+
+							// s
+							case Keywords.randomSWord:
+								peekToken = scriptReader.getNextToken();
+								// get random percentage
+								if (scriptReader.nextTokenIsNumeric()) {
+									isNumeric = true;
+
+									// get the value
+									numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+									// check it is in range
+									if (numberValue >= 0 && numberValue <= 100) {
+										view.randomChanceS = numberValue;
+										itemValid = true;
+									}
+								}
+								break;
+
+							// handle Bn and Sn
+							default:
+								if (this.validBSn(peekToken)) {
+									peekToken = scriptReader.getNextToken();
+									// get random percentage
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+
+										// get the value
+										numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+										// check it is in range
+										if (numberValue >= 0 && numberValue <= 100) {
+											this.saveBSn(view, numberValue);
+											itemValid = true;
+										}
+									}
+								}
+								break;
+							}
 							break;
 
 						// random seed

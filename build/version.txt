@@ -1,3 +1,23 @@
+Build 416
+- new script commands to customize the Randomize random pattern generator
+	- [[ RANDSEED <string> ]] sets the random seed (so you can have the same random pattern each time)
+	- [[ RANDWIDTH <1..1024> ]] sets the width of the randomly generated pattern (default is 64)
+	- [[ RANDHEIGHT <1..1024> ]] sets the height of the randomly generated pattern (default is 64)
+		- this is fixed at 1 for Wolfram patterns
+	- [[ RANDFILL <1..100> ]] sets the random fill percentage for the pattern
+- new script commands to customize the Randomzie random rule generator
+	- Life-like rules:
+		- [[ RANDCHANCE <item> <0..100> ]] - set percentage chance of <item> being generated
+		- <item> can be:
+			- ALL - all items (default 50 except for B0 has default 25)
+			- B - all birth conditions
+			- S - all survival conditions
+			- B<n> - specific birth condition
+			- S<n> - specific survival condition
+	- Margolus patterns:
+		- [[ RANDREVERSIBLE ]] generate a reversible rule
+		- [[ RANDFIXEDPOP ]] generate a fixed population rule
+
 Build 415
 - new button Settings->Pattern->Randomize (hotkey Alt+"Z") which creates a random 64x64 pattern with a random rule
 	- the rule is based on the current rule family

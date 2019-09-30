@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global Random BoundingBox Allocator AliasManager Uint8 Int16 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager ScriptParser Uint32Array PopupWindow typedArrays Float32 */
+	/* global Uint8Array Random BoundingBox Allocator AliasManager Uint8 Int16 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager ScriptParser Uint32Array PopupWindow typedArrays Float32 */
 
 	// LifeViewer document configuration
 	var DocConfig = {
@@ -585,6 +585,16 @@
 
 		// random rule whether to only generate reversible Margolus rules
 		/** @type {boolean} */ this.randomReversible = false;
+
+		// random rule whether to only generate fixed population Margolus rules
+		/** @type {boolean} */ this.randomSwap = false;
+
+		// random chance for Life-Like rules
+		/** @type {number} */ this.randomChanceAll = -1;
+		/** @type {number} */ this.randomChanceB = -1;
+		/** @type {number} */ this.randomChanceS = -1;
+		/** @type {Array<number>} */ this.randomChanceBN = [];
+		/** @type {Array<number>} */ this.randomChanceSN = [];
 
 		// whether rule was LtL (before it got converted to HROT)
 		/** @type {boolean} */ this.wasLtL = false;
@@ -7968,8 +7978,12 @@
 	View.prototype.createRandomLifeLike = function() {
 		var result = "B",
 			i = 0,
+			valueB = 0,
+			valueS = 0,
 			neighbours = 8,
-			postfix = "";
+			postfix = "",
+			birthChance = null,
+			survivalChance = null;
 
 		// get neighbourhood
 		if (this.engine.isHex) {
@@ -7999,22 +8013,65 @@
 			}
 		}
 		
-		// lower chance to add B0 (not for Generations)
-		if (this.engine.multiNumStates <= 2 && (this.randGen.random() < 0.25)) {
+		// compute the chance of creating each condition
+		birthChance = new Uint8Array(neighbours + 1);
+		survivalChance = new Uint8Array(neighbours + 1);
+
+		// check if ALL is defined
+		valueB = 50;
+		valueS = 50;
+		if (this.randomChanceAll !== -1) {
+			valueB = this.randomChanceAll;
+			valueS = this.randomChanceAll;
+		}
+
+		// check if B or S are set
+		if (this.randomChanceB !== -1) {
+			valueB = this.randomChanceB;
+		}
+		if (this.randomChanceS !== -1) {
+			valueS = this.randomChanceS;
+		}
+
+		// populate chance arrays
+		for (i = 0; i <= neighbours; i += 1) {
+			birthChance[i] = valueB;
+			survivalChance[i] = valueS;
+		}
+
+		// default B0 to 25% if ALL or B not specified
+		if (this.randomChanceAll === -1 && this.randomChanceB === -1) {
+			birthChance[0] = 25;
+		}
+
+		// now add any specific B or S values
+		for (i = 0; i < this.randomChanceBN.length; i += 2) {
+			birthChance[this.randomChanceBN[i]] = this.randomChanceBN[i + 1];
+		}
+		for (i = 0; i < this.randomChanceSN.length; i += 2) {
+			survivalChance[this.randomChanceSN[i]] = this.randomChanceSN[i + 1];
+		}
+
+		// skip B0 for generations
+		if (this.engine.multiNumStates > 2) {
 			result += "0";
+			i = 1;
+		} else {
+			i = 0;
 		}
 
 		// add remaining random birth conditions
-		for (i = 1; i <= neighbours; i += 1) {
-			if (this.randGen.random() < 0.5) {
+		while (i <= neighbours) {
+			if ((this.randGen.random() * 100) <= birthChance[i]) {
 				result += String(i);
 			}
+			i += 1;
 		}
 
 		// add random survival conditions
 		result += "/S";
 		for (i = 0; i <= neighbours; i += 1) {
-			if (this.randGen.random() < 0.5) {
+			if ((this.randGen.random() * 100) <= survivalChance[i]) {
 				result += String(i);
 			}
 		}
@@ -8036,79 +8093,143 @@
 	View.prototype.createRandomMargolus = function() {
 		var result = "M",
 			i = 0,
+			j = 0,
 			value = 0,
 			bit = 0,
 			first15 = false,
-			used = 0;
+			used = 0,
+			swap = 0,
+			entries = null,
+			candidates = null,
+			aliveCounts = null,
+			swapCandidates = [],
+			bitCounts = this.engine.bitCounts16;
 
-		// check for reversible rules
-		if (this.randomReversible) {
-			// first must be 0 or 15
-			i = 16;
-			value = (this.randGen.random() * 16) | 0;
-			if (value == 15) {
-				first15 = true;
-
-				// mark 15 and 0 used
-				used |= (1 << 15);
-				used |= 1;
-				i -= 1;
-			} else {
-				// first must be 0
-				value = 0;
-				used |= 1;
+		// check for swap rules
+		if (this.randomSwap) {
+			// populate the rule array 
+			entries = new Uint8Array(16);
+			aliveCounts = new Uint8Array(16);
+			for (i = 0; i < 16; i += 1) {
+				entries[i] = i;
+				aliveCounts[i] = bitCounts[i];
 			}
-			result += String(value);
-			i -= 1;
 
-			// create remaining entries
-			while (used !== 65535) {
-				// pick next entry
-				value = (this.randGen.random() * i) | 0;
-
-				// find which entry it was
-				bit = 0;
-				while (value >= 0) {
-					if ((used & (1 << bit)) === 0) {
-						value -= 1;
+			// allocate the swap candidates array
+			for (i = 0; i < 16; i += 1) {
+				// get how many bits are alive at this value
+				bit = bitCounts[i];
+				value = 0;
+				// count how many candidates there are at each value
+				for (j = 0; j < 16; j += 1) {
+					if (bit === bitCounts[j]) {
+						value += 1;
 					}
-					bit += 1;
 				}
-				result += "," + String(bit - 1);
-				used |= (1 << (bit - 1));
-				i -= 1;
+
+				// allocate array for swap candidates
+				candidates = new Uint8Array(value);
+
+				// populate the swap candidates array
+				value = 0;
+				for (j = 0; j < 16; j += 1) {
+					if (bit === bitCounts[j]) {
+						candidates[value] = j;
+						value += 1;
+					}
+				}
+				swapCandidates[i] = candidates;
 			}
 
-			// add final 0 if first was 15
-			if (first15) {
-				result += ",0";
+			// now perform swaps ignoring the first entry
+			for (i = 1; i < 16; i += 1) {
+				// 50% chance of a swap
+				if (this.randGen.random() <= 0.5) {
+					// pick a swap target
+					candidates = swapCandidates[i];
+					value = (this.randGen.random() * candidates.length) | 0;
+					value = candidates[value];
+					swap = entries[i];
+					entries[i] = entries[value];
+					entries[value] = swap;
+				}
 			}
+
+			// create the rule string
+			for (i = 0; i < 15; i += 1) {
+				result += entries[i] + ",";
+			}
+			result += entries[i];
 		} else {
-			// first must be 0 or 15
-			value = (this.randGen.random() * 16) | 0;
-			if (value === 15) {
-				first15 = true;
-			} else {
-				// first must be zero
-				value = 0;
-			}
-			result += String(value) + ",";
-
-			// create 14 random entries
-			for (i = 1; i < 15; i += 1) {
+			// check for reversible rules
+			if (this.randomReversible) {
+				// first must be 0 or 15
+				i = 16;
 				value = (this.randGen.random() * 16) | 0;
+				if (value == 15) {
+					first15 = true;
+	
+					// mark 15 and 0 used
+					used |= (1 << 15);
+					used |= 1;
+					i -= 1;
+				} else {
+					// first must be 0
+					value = 0;
+					used |= 1;
+				}
+				result += String(value);
+				i -= 1;
+	
+				// create remaining entries
+				while (used !== 65535) {
+					// pick next entry
+					value = (this.randGen.random() * i) | 0;
+	
+					// find which entry it was
+					bit = 0;
+					while (value >= 0) {
+						if ((used & (1 << bit)) === 0) {
+							value -= 1;
+						}
+						bit += 1;
+					}
+					result += "," + String(bit - 1);
+					used |= (1 << (bit - 1));
+					i -= 1;
+				}
+	
+				// add final 0 if first was 15
+				if (first15) {
+					result += ",0";
+				}
+			} else {
+				// first must be 0 or 15
+				value = (this.randGen.random() * 16) | 0;
+				if (value === 15) {
+					first15 = true;
+				} else {
+					// first must be zero
+					value = 0;
+				}
 				result += String(value) + ",";
+	
+				// create 14 random entries
+				for (i = 1; i < 15; i += 1) {
+					value = (this.randGen.random() * 16) | 0;
+					result += String(value) + ",";
+				}
+	
+				// create last entry which must be 0 if first was 15
+				if (first15) {
+					value = 0;
+				} else {
+					value = (this.randGen.random() * 16) | 0;
+				}
+				result += String(value);
 			}
-
-			// create last entry which must be 0 if first was 15
-			if (first15) {
-				value = 0;
-			} else {
-				value = (this.randGen.random() * 16) | 0;
-			}
-			result += String(value);
 		}
-
+	
 		// return the rule name
 		return result;
 	};
@@ -13067,6 +13188,12 @@
 		this.randomHeight = ViewConstants.randomDimension;
 		this.randomFillPercentage = 50;
 		this.randomReversible = false;
+		this.randomSwap = false;
+		this.randomChanceAll = -1;
+		this.randomChanceB = -1;
+		this.randomChanceS = -1;
+		this.randomChanceBN = [];
+		this.randomChanceSN = [];
 
 		// copy pattern to center
 		if (pattern) {
