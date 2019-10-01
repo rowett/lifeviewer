@@ -16,6 +16,14 @@
 		this.topY = topY;
 	}
 
+	// copy box from another
+	BoundingBox.prototype.set = function(source) {
+		this.leftX = source.leftX;
+		this.bottomY = source.bottomY;
+		this.rightX = source.rightX;
+		this.topY = source.topY;
+	};
+
 	window["BoundingBox"] = BoundingBox;
 }
 ());

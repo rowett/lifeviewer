@@ -1729,16 +1729,26 @@
 			} else {
 				if (view.engine.wolframRule === -1) {
 					if (view.randomChanceB === -1 && view.randomChanceS === -1) {
-						y = this.renderHelpLine(view, "ChanceALL" + (view.randomChanceAll === -1 ? "*" : ""), (view.randomChanceAll === -1 ? "50%" : view.randomChanceAll + "%"), ctx, x, y, height, helpLine);
+						y = this.renderHelpLine(view, "Chance ALL" + (view.randomChanceAll === -1 ? "*" : ""), (view.randomChanceAll === -1 ? "50%" : view.randomChanceAll + "%"), ctx, x, y, height, helpLine);
+						// check for default B0
+						flag = false;
+						for (i = 0; i < view.randomChanceBN.length; i += 2) {
+							if (view.randomChanceBN[i] === 0) {
+								flag = true;
+							}
+						}
+						if (!flag) {
+							y = this.renderHelpLine(view, "Chance B0*", "25%" , ctx, x, y, height, helpLine);
+						}
 					} else {
-						y = this.renderHelpLine(view, "ChanceB" + (view.randomChanceB === -1 ? "*" : ""), (view.randomChanceB === -1 ? "50%" : view.randomChanceB + "%"), ctx, x, y, height, helpLine);
-						y = this.renderHelpLine(view, "ChanceS" + (view.randomChanceS === -1 ? "*" : ""), (view.randomChanceS === -1 ? "50%" : view.randomChanceS + "%"), ctx, x, y, height, helpLine);
+						y = this.renderHelpLine(view, "Chance B" + (view.randomChanceB === -1 ? "*" : ""), (view.randomChanceB === -1 ? "50%" : view.randomChanceB + "%"), ctx, x, y, height, helpLine);
+						y = this.renderHelpLine(view, "Chance S" + (view.randomChanceS === -1 ? "*" : ""), (view.randomChanceS === -1 ? "50%" : view.randomChanceS + "%"), ctx, x, y, height, helpLine);
 					}
 					for (i = 0; i < view.randomChanceBN.length; i += 2) {
-						y = this.renderHelpLine(view, "ChanceB" + view.randomChanceBN[i], view.randomChanceBN[i + 1] + "%", ctx, x, y, height, helpLine);
+						y = this.renderHelpLine(view, "Chance B" + view.randomChanceBN[i], view.randomChanceBN[i + 1] + "%", ctx, x, y, height, helpLine);
 					}
 					for (i = 0; i < view.randomChanceSN.length; i += 2) {
-						y = this.renderHelpLine(view, "ChanceS" + view.randomChanceSN[i], view.randomChanceSN[i + 1] + "%", ctx, x, y, height, helpLine);
+						y = this.renderHelpLine(view, "Chance S" + view.randomChanceSN[i], view.randomChanceSN[i + 1] + "%", ctx, x, y, height, helpLine);
 					}
 				}
 			}

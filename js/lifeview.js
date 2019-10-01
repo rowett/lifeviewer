@@ -4352,7 +4352,11 @@
 			stepsTaken = 0,
 
 			// save died generation
-			saveGeneration = 0;
+			saveGeneration = 0,
+
+			// saved bounding box
+			zoomBox = me.engine.zoomBox,
+			saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY);
 
 		// unlock controls
 		me.controlsLocked = false;
@@ -4613,6 +4617,7 @@
 					}
 
 					// check if stats are on and this is the last generation in the step
+					saveBox.set(zoomBox);
 					if (me.statsOn && ((me.engine.counter === (me.floatCounter | 0) - 1) || bailout)) {
 						// compute next generation with stats
 						me.engine.nextGeneration(true, me.noHistory, me.graphDisabled);
@@ -4636,6 +4641,11 @@
 								me.engine.anythingAlive = 1;
 							}
 						}
+					}
+
+					// if nothing alive now then restore last bounding box
+					if (me.engine.anythingAlive === 0) {
+						zoomBox.set(saveBox);
 					}
 
 					// save elasped time for this generation
@@ -8049,10 +8059,14 @@
 
 		// now add any specific B or S values
 		for (i = 0; i < this.randomChanceBN.length; i += 2) {
-			birthChance[this.randomChanceBN[i]] = this.randomChanceBN[i + 1];
+			if (this.randomChanceBN[i] <= neighbours) {
+				birthChance[this.randomChanceBN[i]] = this.randomChanceBN[i + 1];
+			}
 		}
 		for (i = 0; i < this.randomChanceSN.length; i += 2) {
-			survivalChance[this.randomChanceSN[i]] = this.randomChanceSN[i + 1];
+			if (this.randomChanceSN[i] <= neighbours) {
+				survivalChance[this.randomChanceSN[i]] = this.randomChanceSN[i + 1];
+			}
 		}
 
 		// skip B0 for generations
@@ -8336,6 +8350,11 @@
 					me.patternRuleName = me.createRandomLifeLike();
 				}
 			}
+		}
+
+		// check for [R]History
+		if (me.engine.isLifeHistory) {
+			me.patternRuleName += "History";
 		}
 
 		// check if there is an alias for the generated pattern name
@@ -12709,6 +12728,10 @@
 		} else {
 			this.isEdge = false;
 		}
+
+		// flag not empty start
+		this.emptyStart = false;
+		this.diedGeneration = -1;
 
 		// mark bailout possible
 		this.throttleToggle.current = this.toggleThrottle([true], true, this);
