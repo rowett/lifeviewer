@@ -1,10 +1,13 @@
+Build 418
+- add generation to T menu
+
 Build 417
 - T button tooltip now shows generation
 - Life ended notification wasn't always triggering correctly
 - keep camera position when Life ends
 - Randomize was discarding [R]History postfix
 - ignore out of range [[ RANDCHANCE ]] specific birth or survival conditions
-- Randomize was generating B0 for Generations patterns
+- Randomize was generating B0 for Generations rules
 
 Build 416
 - new script commands to customize the Randomize random pattern generator

@@ -250,7 +250,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 417,
+		/** @const {number} */ versionBuild : 418,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3568,11 +3568,11 @@
 			} else {
 				// check for tens of millions
 				if (value >= 10000000) {
-					result = Number(value / 1000000).toFixed(1) + "M";
+					result = (Math.floor(Number(value / 100000)) / 10).toFixed(1) + "M";
 				} else {
 					// check for millions
 					if (value >= 1000000) {
-						result = Number(value / 1000000).toFixed(2) + "M";
+						result = (Math.floor(Number(value / 10000)) / 100).toFixed(2) + "M";
 					} else {
 						// check for one hundred thousand
 						if (value >= 100000) {
@@ -4317,10 +4317,28 @@
 
 		// check for Margolus
 		if (me.engine.isMargolus) {
-			me.genValueLabel.preText = me.shortenNumber(me.engine.counter);
+			me.genValueLabel.preText = me.engine.counter;
 			me.genValueLabel.toolTip = "absolute generation " + me.engine.counter;
-			me.genLabel.toolTip = "absolute generation " + me.engine.counter;
+		} else {
+			if (!me.genRelative) {
+				counter += me.genOffset;
+				if (counter >= 1000000000) {
+					me.genValueLabel.preText = "1B+";
+				} else {
+					me.genValueLabel.preText = counter;
+				}
+				me.genValueLabel.toolTip = "absolute generation " + counter;
+			} else {
+				if (counter >= 1000000000) {
+					me.genValueLabel.preText = "1B+";
+				} else {
+					me.genValueLabel.preText = counter;
+				}
+				me.genValueLabel.preText = counter;
+				me.genValueLabel.toolTip = "generation " + counter;
+			}
 		}
+		me.genLabel.toolTip = me.genValueLabel.toolTip;
 	};
 
 	// update view mode for normal processing
@@ -5112,8 +5130,8 @@
 		}
 
 		// generation statistics
-		this.genLabel.deleted = hide || !this.engine.isMargolus;
-		this.genValueLabel.deleted = hide || !this.engine.isMargolus;
+		this.genLabel.deleted = hide;
+		this.genValueLabel.deleted = hide;
 		this.timeLabel.deleted = hide;
 		this.elapsedTimeLabel.deleted = hide;
 		this.popLabel.deleted = hide;
@@ -11552,16 +11570,16 @@
 		this.progressBar.locked = true;
 
 		// add the generation label (only used for Margolus rules)
-		this.genLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -130, 70, 30, "Gen");
+		this.genLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -130, 42, 30, "Gen");
 		this.genLabel.textAlign = Menu.left;
 		this.genLabel.setFont(ViewConstants.statsFont);
-		this.genLabel.toolTip = "absolute generation";
+		this.genLabel.toolTip = "generation";
 
 		// add the generation value label (only used for Margolus rules)
-		this.genValueLabel = this.viewMenu.addLabelItem(Menu.southWest, 70, -130, 70, 30, "");
+		this.genValueLabel = this.viewMenu.addLabelItem(Menu.southWest, 42, -130, 98, 30, "");
 		this.genValueLabel.textAlign = Menu.right;
 		this.genValueLabel.setFont(ViewConstants.statsFont);
-		this.genValueLabel.toolTip = "absolute generation";
+		this.genValueLabel.toolTip = "generation";
 
 		// add the elapsed time label
 		this.timeLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -100, 70, 30, "Time");
@@ -11629,7 +11647,7 @@
 		this.deathsValue.toolTip = "deaths";
 
 		// add the rule label
-		this.ruleLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -130, 140, 30, this.patternRuleName);
+		this.ruleLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -160, 140, 30, this.patternRuleName);
 		this.ruleLabel.setFont(ViewConstants.statsFont);
 
 		// add the zoom range
@@ -14036,13 +14054,6 @@
 			this.backButton.setPosition(Menu.south, 0, -85);
 		} else {
 			this.backButton.setPosition(Menu.south, 0, -100);
-		}
-
-		// adjust rule label for Margolus rules (since generation is displayed below)
-		if (this.engine.isMargolus) {
-			this.ruleLabel.setPosition(Menu.southWest, 0, -160);
-		} else {
-			this.ruleLabel.setPosition(Menu.southWest, 0, -130);
 		}
 
 		// update the grid icon for hex/square mode
