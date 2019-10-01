@@ -4,6 +4,7 @@ Build 417
 - keep camera position when Life ends
 - Randomize was discarding [R]History postfix
 - ignore out of range [[ RANDCHANCE ]] specific birth or survival conditions
+- Randomize was generating B0 for Generations patterns
 
 Build 416
 - new script commands to customize the Randomize random pattern generator

@@ -4692,8 +4692,8 @@
 							}
 						}
 
-						// update 2d map if normal, LifeHistory odd states, Generations state 1
-						if ((!pattern.isHistory && pattern.multiNumStates === -1) || (pattern.isHistory && (stateNum & 1)) || (pattern.multiNumStates !== -1 && stateNum === 1)) {
+						// update 2d map if normal state 1, LifeHistory odd states, Generations state 1
+						if ((!pattern.isHistory && pattern.multiNumStates === -1 && stateNum === 1) || (pattern.isHistory && (stateNum & 1)) || (pattern.multiNumStates !== -1 && stateNum === 1)) {
 							pattern.lifeMap[y][x >> 4] |= 1 << (~x & 15);
 						}
 

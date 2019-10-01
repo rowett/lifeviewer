@@ -3538,7 +3538,7 @@
 		}
 
 		// check for view only and multi-state pattern
-		if ((this.viewOnly || !this.engine.isLifeHistory) && PatternManager.extendedFormat) {
+		if ((this.viewOnly || !this.engine.isLifeHistory) && PatternManager.extendedFormat && this.engine.multiNumStates !== -1) {
 			// center multi-state pattern on display
 			this.multiStateView = true;
 			this.viewOnly = true;
@@ -8071,7 +8071,6 @@
 
 		// skip B0 for generations
 		if (this.engine.multiNumStates > 2) {
-			result += "0";
 			i = 1;
 		} else {
 			i = 0;
