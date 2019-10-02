@@ -1,4 +1,5 @@
 Build 418
+- fixed LifeViewer title bar on new forum
 - add generation to T menu
 
 Build 417

@@ -14443,6 +14443,8 @@
 			innerDivItem.style.backgroundColor = "#FFFFFF";
 			innerDivItem.style.height = itemHeight + "px";
 			innerDivItem.style.lineHeight = itemHeight + "px";
+			innerDivItem.style.margin = "0px";
+			innerDivItem.style.border = "0px";
 
 			// add the title, anchor and canvas to the div
 			innerDivItem.appendChild(hiddenItem);
