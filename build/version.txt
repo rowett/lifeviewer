@@ -1,3 +1,7 @@
+Build 419
+- fix window scale on high DPI devices on forum
+- fix title bar on new Wiki
+
 Build 418
 - fixed LifeViewer title bar on new forum
 - add generation to T menu

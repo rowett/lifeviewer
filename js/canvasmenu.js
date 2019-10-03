@@ -2159,6 +2159,9 @@
 		var me = this,
 		    i = 0;
 
+		// window zoom
+		this.windowZoom = 1;
+
 		// whether event processed
 		this.processedEvent = true;
 
@@ -3422,6 +3425,9 @@
 		// compute the canvas offset
 		me.computeCanvasOffset();
 
+		x /= me.windowZoom;
+		y /= me.windowZoom;
+	
 		// make the position relative to the canvas
 		x -= me.offsetLeft;
 		y -= me.offsetTop;

@@ -250,7 +250,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 418,
+		/** @const {number} */ versionBuild : 419,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -578,6 +578,9 @@
 	function View(element) {
 		var i = 0;
 
+		// window zoom for high DPI devices
+		/** @type {number} */ this.windowZoom = 1;
+
 		// random pattern width, height and fill percentage
 		/** @type {number} */ this.randomWidth = ViewConstants.randomDimension;
 		/** @type {number} */ this.randomHeight = ViewConstants.randomDimension;
@@ -604,6 +607,7 @@
 		this.innerDivItem = null;
 		this.centerDivItem = null;
 		this.hiddenItem = null;
+		this.divItem = null;
 
 		// help font size
 		/** @type {number} */ this.helpFontSize = 18;
@@ -13373,6 +13377,18 @@
 				if ((this.displayHeight / (ViewConstants.minMenuHeight + 80)) < scale) {
 					scale = this.displayHeight / (ViewConstants.minMenuHeight + 80);
 				}
+				if (scale < 1) {
+					scale = 1;
+					this.windowZoom = 0.5;
+					this.displayWidth *= 2;
+					this.displayHeight *= 2;
+				} else {
+					this.windowZoom = 1;
+				}
+
+				// update menu manager zoom
+				this.menuManager.windowZoom = this.windowZoom;
+				Controller.popupWindow.windowZoom = this.windowZoom;
 
 				// resize the menu controls
 				this.viewMenu.resizeControls(scale);
@@ -14454,7 +14470,8 @@
 			divItem.appendChild(canvasItem);
 
 			// add to the document
-			parentItem.appendChild(divItem);
+			//parentItem.appendChild(divItem);
+			document.body.appendChild(divItem);
 
 			// start the viewer in a popup
 			startView(cleanItem, canvasItem, ViewConstants.minViewerWidth, true, textItem);
@@ -14468,6 +14485,7 @@
 			view.hiddenItem = hiddenItem;
 			view.centerDivItem = centerDivItem;
 			view.innerDivItem = innerDivItem;
+			view.divItem = divItem;
 		}
 
 		// find the parent of the Viewer
@@ -14490,6 +14508,7 @@
 
 		// update the standalone viewer with ignore thumbnail set
 		view.startViewer(cleanItem, true);
+		view.divItem.style.zoom = view.windowZoom;
 		view.resize();
 		
 		// get the popup window

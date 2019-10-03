@@ -15,6 +15,9 @@
 	function PopupWindow(element, menuManager) {
 		var me = this;
 
+		// window zoom
+		this.windowZoom = 1;
+
 		// wrapped element
 		this.wrappedElement = element;
 
@@ -98,12 +101,12 @@
 	// set window position
 	PopupWindow.prototype.setWindowPosition = function(x, y, element) {
 		// get the width and height of the element
-		var width = element.clientWidth,
-		    height = element.clientHeight,
+		var width = element.clientWidth * this.windowZoom,
+		    height = element.clientHeight * this.windowZoom,
 
 		    // get the maximum x and y position
-		    maxX = window.innerWidth - width,
-		    maxY = window.innerHeight - height;
+		    maxX = (window.innerWidth - width) / this.windowZoom,
+		    maxY = (window.innerHeight - height) / this.windowZoom;
 
 		// check for scrollbar
 		if (window.innerHeight < document.getElementsByTagName("body")[0].clientHeight) {
@@ -161,8 +164,7 @@
 			// subtract the offset of the body
 			this.offsetLeft += document.body.scrollLeft + document.documentElement.scrollLeft;
 			this.offsetTop += document.body.scrollTop + document.documentElement.scrollTop;
-		}
-		else {
+		} else {
 			// run up the parent hierarchy
 			while (itemParent.tagName.toLowerCase() !== "body") {
 				this.offsetLeft -= itemParent.scrollLeft;
@@ -185,8 +187,7 @@
 			// fire the event
 			event.target.dispatchEvent(simulatedEvent);
 			event.preventDefault();
-		}
-		else {
+		} else {
 			// only deal with single touch
 			if (event.touches.length === 1) {
 				// map touch events to mouse events
@@ -301,14 +302,17 @@
 		if (event.pageX || event.pageY) {
 			x = event.pageX;
 			y = event.pageY;
-		}
-		else {
+		} else {
 			x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
 			y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
 		}
 
 		// compute the element offset
 		me.computeElementOffset();
+
+		// adjust for zoom
+		x /= me.windowZoom;
+		y /= me.windowZoom;
 
 		// make the position relative to the element
 		x -= me.offsetLeft;
