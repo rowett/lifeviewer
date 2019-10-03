@@ -1,3 +1,6 @@
+Build 420
+- more accurate window scale for PopUp Viewer
+
 Build 419
 - fix window scale on high DPI devices on forum
 - fix title bar on new Wiki

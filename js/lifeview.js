@@ -250,7 +250,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 419,
+		/** @const {number} */ versionBuild : 420,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13378,10 +13378,14 @@
 					scale = this.displayHeight / (ViewConstants.minMenuHeight + 80);
 				}
 				if (scale < 1) {
-					scale = 1;
-					this.windowZoom = 0.5;
-					this.displayWidth *= 2;
-					this.displayHeight *= 2;
+					this.windowZoom = scale;
+					this.displayWidth /= scale;
+					this.displayWidth &= ~7;
+					if (this.displayWidth / ViewConstants.minViewerWidth) {
+						this.displayWidth = ViewConstants.minViewerWidth;
+					}
+					this.displayHeight /= scale;
+					this.displayHeight |= 0;
 				} else {
 					this.windowZoom = 1;
 				}
@@ -14442,7 +14446,7 @@
 			divItem.style.display = "none";
 			divItem.style.position = "fixed";
 			divItem.style.border = "1px solid rgb(128,128,128)";
-			divItem.style.zIndex = "1";
+			divItem.style.zIndex = "101";
 
 			// put it top right
 			divItem.style.left = "2048px";

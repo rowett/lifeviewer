@@ -13,7 +13,11 @@
 	 * @constructor
 	 */
 	function PopupWindow(element, menuManager) {
-		var me = this;
+		var me = this,
+			title = element.getElementsByTagName("div")[0];
+
+		// current touch id
+		this.currentTouchId = -1;
 
 		// window zoom
 		this.windowZoom = 1;
@@ -59,18 +63,81 @@
 		this.resizeDx = 0;
 
 		// register event listeners for element click
-		registerEvent(element, "mousedown", function(event) {me.elementMouseDown(me, event);}, false);
+		registerEvent(title, "mousedown", function(event) {me.elementMouseDown(me, event);}, false);
 		registerEvent(document, "mousemove", function(event) {me.elementMouseMove(me, event);}, false);
 		registerEvent(document, "mouseup", function(event) {me.elementMouseUp(me, event);}, false);
 
 		// register event listeners for touch
-		registerEvent(element, "touchstart", function(event) {me.touchToMouse(me, event);}, false);
-		registerEvent(element, "touchmove", function(event) {me.touchToMouse(me, event);}, false);
-		registerEvent(element, "touchend", function(event) {me.touchToMouse(me, event);}, false);
+		registerEvent(title, "touchstart", function(event) {me.touchHandler(me, event);}, false);
+		registerEvent(title, "touchmove", function(event) {me.touchHandler(me, event);}, false);
+		registerEvent(title, "touchend", function(event) {me.touchHandler(me, event);}, false);
 
 		// register event listener for window resize
 		registerEvent(window, "resize", function(event) {me.resizeWindow(me, event);}, false);
 	}
+
+	// find touch change by identified
+	PopupWindow.prototype.findChangeById = function(changes, id) {
+		var change = null,
+			i = 0;
+
+		// search the change list for the change with the specified id
+		while (change === null && i < changes.length) {
+			if (changes[i].identifier === id) {
+				change = changes[i];
+			} else {
+				i += 1;
+			}
+		}
+
+		return change;
+	};
+
+	// touch event handler
+	PopupWindow.prototype.touchHandler = function(me, event) {
+		var changes = event.changedTouches,
+			thisChange = null;
+			
+		// determine which event was received
+		switch (event.type) {
+		// touch start
+		case "touchstart":
+			// check if processing a touch
+			if (me.currentTouchId === -1) {
+				thisChange = changes[0];
+				me.currentTouchId = thisChange.identifier;
+				me.performDown(me, thisChange.pageX, thisChange.pageY);
+			}
+			break;
+
+		// touch end
+		case "touchend":
+			// find the change record for the current touch
+			thisChange = me.findChangeById(changes, me.currentTouchId);
+			if (thisChange !== null) {
+				me.performUp(me, thisChange.pageX, thisChange.pageY);
+				me.currentTouchId = -1;
+			}
+			break;
+
+		// touch move
+		case "touchmove":
+			// find the change record for the current touch
+			thisChange = me.findChangeById(changes, me.currentTouchId);
+			if (thisChange !== null) {
+				me.performMove(me, thisChange.pageX, thisChange.pageY);
+			}
+			break;
+		}
+	
+		// stop event propagating
+		if (event.stopPropagation) {
+			event.stopPropagation();
+		}
+		if (event.cancelable) {
+			event.preventDefault();
+		}
+	};
 
 	// resize window
 	/* eslint-disable no-unused-vars */
@@ -91,8 +158,8 @@
 		    y = this.top;
 
 		// add the offset
-		x += dx;
-		y += dy;
+		x += dx / this.windowZoom;
+		y += dy / this.windowZoom;
 		
 		// set the window position
 		this.setWindowPosition(x, y, element);
@@ -174,71 +241,57 @@
 		}
 	};
 
-	// touch end event
-	PopupWindow.prototype.touchToMouse = function(me, event) {
-		var touch = null, simulatedEvent, type = "";
-
-		// deal with touchend
-		if (event.type === "touchend") {
-			type = "mouseup";
-			simulatedEvent = document.createEvent("MouseEvent");
-			simulatedEvent.initMouseEvent(type, true, true, window, 1, me.lastScreenX, me.lastScreenY, me.lastClientX, me.lastClientY, false, false, false, false, 0, null);
-
-			// fire the event
-			event.target.dispatchEvent(simulatedEvent);
-			event.preventDefault();
-		} else {
-			// only deal with single touch
-			if (event.touches.length === 1) {
-				// map touch events to mouse events
-				switch (event.type) {
-				// map touchstart to mousedown
-				case "touchstart":
-					type = "mousedown";
-					break;
-
-				// map touchmove to mousemove
-				case "touchmove":
-					type = "mousemove";
-					break;
-
-				// ignore others
-				default:
-					break;
-				}
-			}
-			// check we got a supported event
-			if (type !== "") {
-				// build a mouse event
-				touch = event.changedTouches[0];
-				simulatedEvent = document.createEvent("MouseEvent");
-				simulatedEvent.initMouseEvent(type, true, true, window, 1, touch.screenX, touch.screenY, touch.clientX, touch.clientY, false, false, false, false, 0, null);
-
-				// fire the event
-				touch.target.dispatchEvent(simulatedEvent);
-				if (event.cancelable) {
-					event.preventDefault();
-				}
-
-				// save the last position
-				me.lastScreenX = touch.screenX;
-				me.lastScreenY = touch.screenY;
-				me.lastClientX = touch.clientX;
-				me.lastClientY = touch.clientY;
-			}
-		}
-	};
-
-	// mouse down event
-	PopupWindow.prototype.elementMouseDown = function(me, event) {
+	// touch start event
+	PopupWindow.prototype.performDown = function(me, x, y) {
 		// update cursor position
-		me.updateCursorPosition(me, event);
+		me.updateCursorPosition(me, x, y);
 
 		// mark mouse down
 		me.mouseDown = true;
 
 		// tell embedded canvas to pass up mouse events
 		me.menuManager.passEvents = true;
+	};
+
+	// perform mouse/touch up event
+	PopupWindow.prototype.performUp = function(me, x, y) {
+		// update cursor position
+		me.updateCursorPosition(me, x, y);
+
+		// mark mouse not down
+		me.mouseDown = false;
+
+		// tell embedded canvas to catch mouse events
+		me.menuManager.passEvents = false;
+	};
+
+	// perform mouse/touch move event
+	PopupWindow.prototype.performMove = function(me, x, y) {
+		// check if mouse down (and so dragging)
+		if (me.mouseDown) {
+			me.updatePosition(x - me.mouseLastX, y - me.mouseLastY);
+		}
+
+		// save position
+		me.mouseLastX = x;
+		me.mouseLastY = y;
+	};
+
+	// mouse down event
+	PopupWindow.prototype.elementMouseDown = function(me, event) {
+		var x = 0, y = 0;
+
+		// get event position
+		if (event.pageX || event.pageY) {
+			x = event.pageX;
+			y = event.pageY;
+		} else {
+			x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+			y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+		}
+
+		// perform down event
+		me.performDown(me, x, y);
 
 		// stop event propagating
 		if (event.stopPropagation) {
@@ -249,16 +302,21 @@
 
 	// mouse up event
 	PopupWindow.prototype.elementMouseUp = function(me, event) {
+		var x = 0, y = 0;
+
 		// ignore if popup not displayed
 		if (me.displayed && me.mouseDown) {
+			// get event position
+			if (event.pageX || event.pageY) {
+				x = event.pageX;
+				y = event.pageY;
+			} else {
+				x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+				y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+			}
+
 			// update cursor position
-			me.updateCursorPosition(me, event);
-
-			// mark mouse not down
-			me.mouseDown = false;
-
-			// tell embedded canvas to catch mouse events
-			me.menuManager.passEvents = false;
+			me.performUp(me, x, y);
 
 			// stop event propagating
 			if (event.stopPropagation) {
@@ -270,23 +328,21 @@
 
 	// mouse move event
 	PopupWindow.prototype.elementMouseMove = function(me, event) {
+		var x = 0, y = 0;
+
 		// ignore if popup not displayed
 		if (me.displayed && me.mouseDown) {
-			// get last x and y
-			var lastX = me.mouseLastX,
-			    lastY = me.mouseLastY;
+			// get event position
+			if (event.pageX || event.pageY) {
+				x = event.pageX;
+				y = event.pageY;
+			} else {
+				x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+				y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+			}
 
 			// update cursor position
-			me.updateCursorPosition(me, event);
-
-			// check if mouse down (and so dragging)
-			if (me.mouseDown) {
-				me.updatePosition(me.mouseLastX - lastX, me.mouseLastY - lastY);
-			}
-			
-			// put original position back
-			me.mouseLastX = lastX;
-			me.mouseLastY = lastY;
+			me.performMove(me, x, y);
 
 			// stop event propagating
 			if (event.stopPropagation) {
@@ -297,30 +353,10 @@
 	};
 
 	// get cursor position over element
-	PopupWindow.prototype.updateCursorPosition = function(me, event) {
-		var x, y;
-		if (event.pageX || event.pageY) {
-			x = event.pageX;
-			y = event.pageY;
-		} else {
-			x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-			y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-		}
-
-		// compute the element offset
-		me.computeElementOffset();
-
-		// adjust for zoom
-		x /= me.windowZoom;
-		y /= me.windowZoom;
-
-		// make the position relative to the element
-		x -= me.offsetLeft;
-		y -= me.offsetTop;
-
+	PopupWindow.prototype.updateCursorPosition = function(me, x, y) {
 		// update position
-		me.mouseLastX = (x - 1) | 0;
-		me.mouseLastY = (y - 1) | 0;
+		me.mouseLastX = x | 0;
+		me.mouseLastY = y | 0;
 	};
 
 	// create the global interface
