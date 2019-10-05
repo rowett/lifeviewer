@@ -398,82 +398,85 @@
 			data32 = null,
 			i = 0;
 
-		if (!this.init) {
-			this.width = this.iconsImage.width;
-			this.height = this.iconsImage.height;
+		// check if image load
+		if (this.iconsImage.width > 0) {
+			if (!this.init) {
+				this.width = this.iconsImage.width;
+				this.height = this.iconsImage.height;
 
-			// create a context the same size as the image and draw the image onto it
-			this.iconCanvas = document.createElement("canvas");	// TBD offscreencanvas?
-			this.iconCanvas.width = this.width;
-			this.iconCanvas.height = this.height;
-			this.iconContext = this.iconCanvas.getContext("2d");
-
-			// create a new image for the converted colours
-			this.convertedImage = new Image();
-
-			// create a new image for the greyed out icons
-			this.greyedOutImage = new Image();
-		}
-
-		// change the pixel colours if required
-		if (this.recolour) {
-			// get the pixel data
-			this.iconContext.drawImage(this.iconsImage, 0, 0);
-			data = this.iconContext.getImageData(0, 0, this.iconCanvas.width, this.iconCanvas.height);
-			data32 = new Uint32Array(data.data.buffer);
-
-			// change target pixel to new colour
-			for (i = 0; i < data32.length; i += 1) {
-				if (data32[i] === 0xffffffff) {
-					data32[i] = this.greyedOutCol;
+				// create a context the same size as the image and draw the image onto it
+				this.iconCanvas = document.createElement("canvas");	// TBD offscreencanvas?
+				this.iconCanvas.width = this.width;
+				this.iconCanvas.height = this.height;
+				this.iconContext = this.iconCanvas.getContext("2d");
+	
+				// create a new image for the converted colours
+				this.convertedImage = new Image();
+	
+				// create a new image for the greyed out icons
+				this.greyedOutImage = new Image();
+			}
+	
+			// change the pixel colours if required
+			if (this.recolour) {
+				// get the pixel data
+				this.iconContext.drawImage(this.iconsImage, 0, 0);
+				data = this.iconContext.getImageData(0, 0, this.iconCanvas.width, this.iconCanvas.height);
+				data32 = new Uint32Array(data.data.buffer);
+	
+				// change target pixel to new colour
+				for (i = 0; i < data32.length; i += 1) {
+					if (data32[i] === 0xffffffff) {
+						data32[i] = this.greyedOutCol;
+					}
 				}
+	
+				// put back the pixel data
+				this.iconContext.putImageData(data, 0, 0);
+	
+				// create the greyed out icons
+				this.greyedOutImage.src = this.iconCanvas.toDataURL("image/png");
+	
+				// get the pixel data
+				this.iconContext.drawImage(this.iconsImage, 0, 0);
+				data = this.iconContext.getImageData(0, 0, this.iconCanvas.width, this.iconCanvas.height);
+				data32 = new Uint32Array(data.data.buffer);
+	
+				// change target pixel to new colour
+				for (i = 0; i < data32.length; i += 1) {
+					if (data32[i] === 0xffffffff) {
+						data32[i] = this.recolourCol;
+					}
+				}
+	
+				// put back the pixel data
+				this.iconContext.putImageData(data, 0, 0);
+				this.recolour = false;
+				this.init = false;
 			}
 
-			// put back the pixel data
-			this.iconContext.putImageData(data, 0, 0);
-
-			// create the greyed out icons
-			this.greyedOutImage.src = this.iconCanvas.toDataURL("image/png");
-
-			// get the pixel data
-			this.iconContext.drawImage(this.iconsImage, 0, 0);
-			data = this.iconContext.getImageData(0, 0, this.iconCanvas.width, this.iconCanvas.height);
-			data32 = new Uint32Array(data.data.buffer);
-
-			// change target pixel to new colour
-			for (i = 0; i < data32.length; i += 1) {
-				if (data32[i] === 0xffffffff) {
-					data32[i] = this.recolourCol;
-				}
+			if (!this.init) {
+				// create a new image with the updated colours
+				this.convertedImage.src = this.iconCanvas.toDataURL("image/png");
+				this.init = true;
 			}
 
-			// put back the pixel data
-			this.iconContext.putImageData(data, 0, 0);
-			this.recolour = false;
-			this.init = false;
-		}
-
-		if (!this.init) {
-			// create a new image with the updated colours
-			this.convertedImage.src = this.iconCanvas.toDataURL("image/png");
-			this.init = true;
-		}
-
-		// draw the icon onto the canvas
-		if (this.scale !== 1) {
-			this.context.save();
-			this.context.translate(x, y);
-			this.context.scale(this.scale, this.scale);
-			x = 0;
-			y = 0;
-		}
-		if (locked) {
-			this.context.drawImage(this.greyedOutImage, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
-		} else {
-			this.context.drawImage(this.convertedImage, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
-		}
-		if (this.scale !== 1) {
-			this.context.restore();
+			// draw the icon onto the canvas
+			if (this.scale !== 1) {
+				this.context.save();
+				this.context.translate(x, y);
+				this.context.scale(this.scale, this.scale);
+				x = 0;
+				y = 0;
+			}
+			if (locked) {
+				this.context.drawImage(this.greyedOutImage, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
+			} else {
+				this.context.drawImage(this.convertedImage, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
+			}
+			if (this.scale !== 1) {
+				this.context.restore();
+			}
 		}
 	};
 
@@ -2432,8 +2435,8 @@
 		// check if the parent is fixed
 		if (itemParent.style.position === "fixed") {
 			// subtract the offset of the body
-			this.offsetLeft += document.body.scrollLeft + document.documentElement.scrollLeft;
-			this.offsetTop += document.body.scrollTop + document.documentElement.scrollTop;
+			this.offsetLeft += (document.body.scrollLeft + document.documentElement.scrollLeft) / this.windowZoom;
+			this.offsetTop += (document.body.scrollTop + document.documentElement.scrollTop) / this.windowZoom;
 		} else {
 			// run up the parent hierarchy
 			while(itemParent.tagName.toLowerCase() !== "body") {

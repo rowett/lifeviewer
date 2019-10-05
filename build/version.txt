@@ -1,3 +1,11 @@
+Build 422
+- improve window scaling for PopUp Viewer
+- fixed PopUp Viewer controls not responding when browser scrolled
+
+Build 421
+- fix image loading issue on Firefox
+- fix button scale
+
 Build 420
 - more accurate window scale for PopUp Viewer
 

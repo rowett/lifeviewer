@@ -250,7 +250,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 420,
+		/** @const {number} */ versionBuild : 422,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -12693,6 +12693,75 @@
 		this.setNewTheme(themeRequested, 1, this);
 	};
 
+	// scale popup window
+	View.prototype.scalePopup = function() {
+		var scale = 1,
+			windowWidth = window.innerWidth,
+			windowHeight = window.innerHeight,
+			displayWidth = this.displayWidth,
+			displayHeight = this.displayHeight + 80;
+			
+		// scale width and height
+		displayWidth *= this.devicePixelRatio;
+		displayHeight *= this.devicePixelRatio;
+
+		// assume window will fit and scale controls
+		scale = this.devicePixelRatio;
+		this.windowZoom = 1;
+
+		// check window fits on display
+		if (displayWidth > windowWidth || displayHeight > windowHeight) {
+			// find the maximum x or y scaling factor for the window to fit
+			scale = displayWidth / windowWidth;
+			if (displayHeight / windowHeight > scale) {
+				scale = displayHeight / windowHeight;
+			}
+
+			// apply the scaling factor
+			displayWidth /= scale;
+			displayHeight = this.displayHeight * this.devicePixelRatio / scale;
+
+			// do not resize controls
+			scale = 1;
+
+			// check if the window size is above minimum
+			if (displayWidth < ViewConstants.minViewerWidth || displayHeight < ViewConstants.minViewerHeight) {
+				scale = displayWidth / ViewConstants.minViewerWidth;
+				if  (displayHeight / ViewConstants.minViewerHeight < scale) {
+					scale = displayHeight / ViewConstants.minViewerHeight;
+				}
+				displayWidth /= scale;
+				displayHeight /= scale;
+				this.windowZoom = scale;
+				scale = 1;
+			}
+		}
+
+		// ensure width is a multiple of 8 and height is an integer
+		this.displayWidth = displayWidth & ~7;
+		this.displayHeight = displayHeight | 0;
+
+		// update menu manager zoom
+		this.menuManager.windowZoom = this.windowZoom;
+		Controller.popupWindow.windowZoom = this.windowZoom;
+
+		// resize the menu controls
+		this.viewMenu.resizeControls(scale);
+
+		// resize the icons
+		this.iconManager.setScale(scale);
+
+		// resize the help fonts
+		this.helpFontSize = (18 * scale) | 0;
+		this.helpFixedFont = this.helpFontSize + "px " + ViewConstants.fixedFontFamily;
+		this.helpVariableFont = this.helpFontSize + "px " + ViewConstants.variableFontFamily;
+
+		// check if popup width has changed
+		if (this.displayWidth !== this.lastPopupWidth) {
+			this.popupWidthChanged = true;
+		}
+	};
+
 	// clear pattern data
 	View.prototype.clearPatternData = function() {
 		// clear pattern data
@@ -12740,7 +12809,6 @@
 			neededHeight = 0,
 			borderSize = 0,
 			i = 0,
-			scale = 0,
 			name = "";
 
 		// check for Edge browser
@@ -13333,11 +13401,6 @@
 							this.displayHeight = this.requestedPopupHeight;
 							resizeRequired = true;
 						}
-					} else {
-						this.displayHeight = ViewConstants.minMenuHeight + 80;
-						if (this.displayHeight > (window.innerHeight - 64)) {
-							this.displayHeight = (window.innerHeight - 64);
-						}
 					}
 				}
 			}
@@ -13347,68 +13410,7 @@
 
 			// check if popup width has changed
 			if (this.isInPopup) {
-				// scale width and height
-				this.displayWidth *= this.devicePixelRatio;
-				this.displayHeight *= this.devicePixelRatio;
-
-				// ensure width fits on window
-				if (this.displayWidth > (window.innerWidth - 64)) {
-					// scale y by the change in x
-					this.displayHeight *= (window.innerWidth - 64) / this.displayWidth;
-
-					// fit width on window
-					this.displayWidth = window.innerWidth - 64;
-				}
-
-				// ensure height fits on window
-				if (this.displayHeight > (window.innerHeight - 64)) {
-					// scale x by change in y
-					this.displayWidth *= (window.innerHeight - 64) / this.displayHeight;
-
-					// fit height on window
-					this.displayHeight = window.innerHeight - 64;
-				}
-
-				// ensure width is a multiple of 8
-				this.displayWidth &= ~7;
-
-				// compute the scaling factor
-				scale = this.displayWidth / ViewConstants.minViewerWidth;
-				if ((this.displayHeight / (ViewConstants.minMenuHeight + 80)) < scale) {
-					scale = this.displayHeight / (ViewConstants.minMenuHeight + 80);
-				}
-				if (scale < 1) {
-					this.windowZoom = scale;
-					this.displayWidth /= scale;
-					this.displayWidth &= ~7;
-					if (this.displayWidth / ViewConstants.minViewerWidth) {
-						this.displayWidth = ViewConstants.minViewerWidth;
-					}
-					this.displayHeight /= scale;
-					this.displayHeight |= 0;
-				} else {
-					this.windowZoom = 1;
-				}
-
-				// update menu manager zoom
-				this.menuManager.windowZoom = this.windowZoom;
-				Controller.popupWindow.windowZoom = this.windowZoom;
-
-				// resize the menu controls
-				this.viewMenu.resizeControls(scale);
-
-				// resize the icons
-				this.iconManager.setScale(scale);
-
-				// resize the help fonts
-				this.helpFontSize = (18 * scale) | 0;
-				this.helpFixedFont = this.helpFontSize + "px " + ViewConstants.fixedFontFamily;
-				this.helpVariableFont = this.helpFontSize + "px " + ViewConstants.variableFontFamily;
-
-				// check if popup width has changed
-				if (this.displayWidth !== this.lastPopupWidth) {
-					this.popupWidthChanged = true;
-				}
+				this.scalePopup();
 			}
 
 			// if pattern is too big and has no paste commands then generate error
