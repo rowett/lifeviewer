@@ -12721,8 +12721,11 @@
 			displayWidth /= scale;
 			displayHeight = this.displayHeight * this.devicePixelRatio / scale;
 
-			// do not resize controls
-			scale = 1;
+			// see how much window is larger than original size and scale controls and fonts
+			scale = displayWidth / this.displayWidth;
+			if (displayHeight / this.displayHeight < scale) {
+				scale = displayHeight / this.displayHeight;
+			}
 
 			// check if the window size is above minimum
 			if (displayWidth < ViewConstants.minViewerWidth || displayHeight < ViewConstants.minViewerHeight) {
