@@ -2410,43 +2410,6 @@
 		}
 	};
 
-	// compute canvas offset
-	MenuManager.prototype.computeCanvasOffset = function() {
-		// get the canvas
-		var mainCanvas = this.mainCanvas,
-		    
-		    // get the item parent
-		    itemParent = mainCanvas.offsetParent;
-
-		// get the offset of the canvas
-		this.offsetLeft = mainCanvas.offsetLeft;
-		this.offsetTop = mainCanvas.offsetTop;
-
-		// visit the parents adding their offsets
-		while (itemParent) {
-			this.offsetLeft += itemParent.offsetLeft;
-			this.offsetTop += itemParent.offsetTop;
-			itemParent = itemParent.offsetParent;
-		}
-
-		// get the scroll position of the canvas
-		itemParent = mainCanvas.parentNode;
-
-		// check if the parent is fixed
-		if (itemParent.style.position === "fixed") {
-			// subtract the offset of the body
-			this.offsetLeft += (document.body.scrollLeft + document.documentElement.scrollLeft) / this.windowZoom;
-			this.offsetTop += (document.body.scrollTop + document.documentElement.scrollTop) / this.windowZoom;
-		} else {
-			// run up the parent hierarchy
-			while(itemParent.tagName.toLowerCase() !== "body") {
-				this.offsetLeft -= itemParent.scrollLeft;
-				this.offsetTop -= itemParent.scrollTop;
-				itemParent = itemParent.parentNode;
-			}
-		}
-	};
-
 	// create menu
 	MenuManager.prototype.createMenu = function(callback, activate, caller) {
 		// create menu object
@@ -3425,15 +3388,16 @@
 
 	// get cursor position over canvas
 	MenuManager.prototype.updateCursorPosition = function(me, x, y) {
-		// compute the canvas offset
-		me.computeCanvasOffset();
+		// get the bounding rectangle of the canvas
+		var rect = this.mainCanvas.getBoundingClientRect();
 
+		// adjust for window scroll
+		x -= rect.left + window.scrollX;
+		y -= rect.top + window.scrollY;
+
+		// apply zoom
 		x /= me.windowZoom;
 		y /= me.windowZoom;
-	
-		// make the position relative to the canvas
-		x -= me.offsetLeft;
-		y -= me.offsetTop;
 
 		// update position
 		me.mouseLastX = (x - 1) | 0;

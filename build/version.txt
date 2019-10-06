@@ -1,3 +1,6 @@
+Build 423
+- fix cross-browser window scaling
+
 Build 422
 - improve window scaling for PopUp Viewer
 - fixed PopUp Viewer controls not responding when browser scrolled

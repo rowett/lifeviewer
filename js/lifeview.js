@@ -250,7 +250,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 422,
+		/** @const {number} */ versionBuild : 423,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -14476,7 +14476,6 @@
 			divItem.appendChild(canvasItem);
 
 			// add to the document
-			//parentItem.appendChild(divItem);
 			document.body.appendChild(divItem);
 
 			// start the viewer in a popup
@@ -14514,7 +14513,10 @@
 
 		// update the standalone viewer with ignore thumbnail set
 		view.startViewer(cleanItem, true);
-		view.divItem.style.zoom = view.windowZoom;
+
+		// scale the viewer
+		view.divItem.style.transform = "scale(" + view.windowZoom + "," + view.windowZoom + ")";
+		view.divItem.style.transformOrigin = "top left";
 		view.resize();
 		
 		// get the popup window

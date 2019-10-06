@@ -172,8 +172,8 @@
 		    height = element.clientHeight * this.windowZoom,
 
 		    // get the maximum x and y position
-		    maxX = (window.innerWidth - width) / this.windowZoom,
-		    maxY = (window.innerHeight - height) / this.windowZoom;
+		    maxX = window.innerWidth - width,
+		    maxY = window.innerHeight - height;
 
 		// check for scrollbar
 		if (window.innerHeight < document.getElementsByTagName("body")[0].clientHeight) {
@@ -181,17 +181,17 @@
 		}
 
 		// ensure window on screen
-		if (x < 0) {
-			x = 0;
-		}
-		if (y < 0) {
-			y = 0;
-		}
 		if (x > maxX) {
 			x = maxX;
 		}
 		if (y > maxY) {
 			y = maxY;
+		}
+		if (x < 0) {
+			x = 0;
+		}
+		if (y < 0) {
+			y = 0;
 		}
 
 		// update the element
@@ -202,43 +202,6 @@
 		// save the new position
 		this.left = x;
 		this.top = y;
-	};
-
-	// compute element offset
-	PopupWindow.prototype.computeElementOffset = function() {
-		// get the element
-		var mainElement = this.wrappedElement,
-		    
-		    // get the item parent
-		    itemParent = mainElement.offsetParent;
-
-		// get the offset of the element
-		this.offsetLeft = mainElement.offsetLeft;
-		this.offsetTop = mainElement.offsetTop;
-
-		// visit the parents adding their offsets
-		while (itemParent) {
-			this.offsetLeft += itemParent.offsetLeft;
-			this.offsetTop += itemParent.offsetTop;
-			itemParent = itemParent.offsetParent;
-		}
-
-		// get the scroll position of the element
-		itemParent = mainElement.parentNode;
-
-		// check if the parent is fixed
-		if (itemParent.style.position === "fixed") {
-			// subtract the offset of the body
-			this.offsetLeft += document.body.scrollLeft + document.documentElement.scrollLeft;
-			this.offsetTop += document.body.scrollTop + document.documentElement.scrollTop;
-		} else {
-			// run up the parent hierarchy
-			while (itemParent.tagName.toLowerCase() !== "body") {
-				this.offsetLeft -= itemParent.scrollLeft;
-				this.offsetTop -= itemParent.scrollTop;
-				itemParent = itemParent.parentNode;
-			}
-		}
 	};
 
 	// touch start event
