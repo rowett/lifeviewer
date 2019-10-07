@@ -1,3 +1,8 @@
+Build 424
+- PopUp window resizes with browser window and zoom level
+- fix PopUp window drag scale
+- pass through some browser keyboard shortcuts
+
 Build 423
 - fix cross-browser window scaling
 

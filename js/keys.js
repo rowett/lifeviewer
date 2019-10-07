@@ -954,26 +954,32 @@
 			// - for slower
 			case 189:
 			case 109: // num -
-				// do not change if view only mode
-				if (!me.viewOnly) {
-					// check for step
-					if (me.gensPerStep > ViewConstants.minStepSpeed) {
-						// check for shift
-						if (event.shiftKey) {
-							// go to minimum step
-							me.gensPerStep = ViewConstants.minStepSpeed;
-						} else {
-							// decrease step
-							me.gensPerStep -= 1;
-						}
-						me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
-					} else {
-						// decrease generation speed
-						if (me.generationRange) {
-							if (me.generationRange.current[0] >= 0.01 && !event.shiftKey) {
-								me.generationRange.current = me.viewGenerationRange([me.generationRange.current[0] - 0.01, me.generationRange.current[1]], true, me);
+				// check for ctrl -
+				if (event.ctrlKey && keyCode == 189) {
+					// pass up to browser
+					processed = false;
+				} else {
+					// do not change if view only mode
+					if (!me.viewOnly) {
+						// check for step
+						if (me.gensPerStep > ViewConstants.minStepSpeed) {
+							// check for shift
+							if (event.shiftKey) {
+								// go to minimum step
+								me.gensPerStep = ViewConstants.minStepSpeed;
 							} else {
-								me.generationRange.current = me.viewGenerationRange([0, me.generationRange.current[1]], true, me);
+								// decrease step
+								me.gensPerStep -= 1;
+							}
+							me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
+						} else {
+							// decrease generation speed
+							if (me.generationRange) {
+								if (me.generationRange.current[0] >= 0.01 && !event.shiftKey) {
+									me.generationRange.current = me.viewGenerationRange([me.generationRange.current[0] - 0.01, me.generationRange.current[1]], true, me);
+								} else {
+									me.generationRange.current = me.viewGenerationRange([0, me.generationRange.current[1]], true, me);
+								}
 							}
 						}
 					}
@@ -983,31 +989,37 @@
 			// = for faster
 			case 187:
 			case 107: // num +
-				// do not change if view only mode
-				if (!me.viewOnly) {
-					// increase generation speed
-					if (me.generationRange) {
-						if (me.generationRange.current[0] <= 0.99 && !event.shiftKey) {
-							me.generationRange.current = me.viewGenerationRange([me.generationRange.current[0] + 0.01, me.generationRange.current[1]], true, me);
-						} else {
-							// check whether speed was maximum
-							if (me.generationRange.current[0] <= 0.99) {
-								// set maximum
-								me.generationRange.current = me.viewGenerationRange([1, me.generationRange.current[1]], true, me);
+				// check for ctrl +
+				if (event.ctrlKey && keyCode == 187) {
+					// pass up to browser
+					processed = false;
+				} else {
+					// do not change if view only mode
+					if (!me.viewOnly) {
+						// increase generation speed
+						if (me.generationRange) {
+							if (me.generationRange.current[0] <= 0.99 && !event.shiftKey) {
+								me.generationRange.current = me.viewGenerationRange([me.generationRange.current[0] + 0.01, me.generationRange.current[1]], true, me);
 							} else {
-								// set maximum
-								me.generationRange.current = me.viewGenerationRange([1, me.generationRange.current[1]], true, me);
-								// increase step
-								if (me.gensPerStep < ViewConstants.maxStepSpeed) {
-									// check for shift
-									if (event.shiftKey) {
-										// go to maximum step
-										me.gensPerStep = ViewConstants.maxStepSpeed;
-									} else {
-										// increase step
-										me.gensPerStep += 1;
+								// check whether speed was maximum
+								if (me.generationRange.current[0] <= 0.99) {
+									// set maximum
+									me.generationRange.current = me.viewGenerationRange([1, me.generationRange.current[1]], true, me);
+								} else {
+									// set maximum
+									me.generationRange.current = me.viewGenerationRange([1, me.generationRange.current[1]], true, me);
+									// increase step
+									if (me.gensPerStep < ViewConstants.maxStepSpeed) {
+										// check for shift
+										if (event.shiftKey) {
+											// go to maximum step
+											me.gensPerStep = ViewConstants.maxStepSpeed;
+										} else {
+											// increase step
+											me.gensPerStep += 1;
+										}
+										me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
 									}
-									me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
 								}
 							}
 						}
@@ -1093,21 +1105,27 @@
 
 			// j for jump to POI
 			case 74:
-				// check for defined POIs
-				if (me.waypointManager.numPOIs()) {
-					// check for controls locked
-					if (!me.controlsLocked) {
-						// check for shift key
-						if (event.shiftKey) {
-							// go to previous POI
-							me.prevPOIPressed(me);
-						} else {
-							// go to next POI
-							me.nextPOIPressed(me);
-						}
-					}
+				// check for ctrl and shift
+				if (event.ctrlKey && event.shiftKey) {
+					// pass up to browser
+					processed = false;
 				} else {
-					me.menuManager.notification.notify("No POIs defined", 15, 80, 15, true);
+					// check for defined POIs
+					if (me.waypointManager.numPOIs()) {
+						// check for controls locked
+						if (!me.controlsLocked) {
+							// check for shift key
+							if (event.shiftKey) {
+								// go to previous POI
+								me.prevPOIPressed(me);
+							} else {
+								// go to next POI
+								me.nextPOIPressed(me);
+							}
+						}
+					} else {
+						me.menuManager.notification.notify("No POIs defined", 15, 80, 15, true);
+					}
 				}
 				break;
 
@@ -1392,38 +1410,44 @@
 
 			// i for display information
 			case 73:
-				// check for ctrl key
-				if (event.ctrlKey) {
-					me.invertSelectionPressed(me);
+				// check for ctrl and shift
+				if (event.ctrlKey && event.shiftKey) {
+					// pass up to browser
+					processed = false;
 				} else {
-					// check for shift key
-					if (event.shiftKey) {
-						// toggle infobar
-						me.infoBarButton.current = me.viewInfoBarToggle([!me.infoBarEnabled], true, me);
+					// check for ctrl key
+					if (event.ctrlKey) {
+						me.invertSelectionPressed(me);
 					} else {
-						// check if help displayed
-						if (me.displayHelp) {
-							// check if on the info topic
-							if (me.helpTopic === ViewConstants.informationTopic) {
-								// close help
-								me.displayHelp = 0;
-							} else {
-								// switch to the information topic
-								me.setHelpTopic(ViewConstants.informationTopic, me);
-							}
+						// check for shift key
+						if (event.shiftKey) {
+							// toggle infobar
+							me.infoBarButton.current = me.viewInfoBarToggle([!me.infoBarEnabled], true, me);
 						} else {
-							// do not display information if in thumbnail mode
-							if (!me.thumbnail) {
-								me.setHelpTopic(ViewConstants.informationTopic, me);
+							// check if help displayed
+							if (me.displayHelp) {
+								// check if on the info topic
+								if (me.helpTopic === ViewConstants.informationTopic) {
+									// close help
+									me.displayHelp = 0;
+								} else {
+									// switch to the information topic
+									me.setHelpTopic(ViewConstants.informationTopic, me);
+								}
+							} else {
+								// do not display information if in thumbnail mode
+								if (!me.thumbnail) {
+									me.setHelpTopic(ViewConstants.informationTopic, me);
+								}
 							}
+		
+							// update the help UI
+							me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+							me.menuManager.toggleRequired = true;
 						}
-	
-						// update the help UI
-						me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
-						me.menuManager.toggleRequired = true;
 					}
 				}
-	
+
 				break;
 
 			// Esc to close help and clear error messages or pause playback

@@ -12,7 +12,7 @@
 	/**
 	 * @constructor
 	 */
-	function PopupWindow(element, menuManager) {
+	function PopupWindow(element, view) {
 		var me = this,
 			title = element.getElementsByTagName("div")[0];
 
@@ -25,8 +25,11 @@
 		// wrapped element
 		this.wrappedElement = element;
 
+		// view
+		this.view = view;
+
 		// menu manager
-		this.menuManager = menuManager;
+		this.menuManager = view.menuManager;
 
 		// current position
 		this.left = 0;
@@ -142,6 +145,19 @@
 	// resize window
 	/* eslint-disable no-unused-vars */
 	PopupWindow.prototype.resizeWindow = function(me, event) {
+		var view = this.view;
+
+		// check if window needs rescaling
+		view.displayWidth = view.origDisplayWidth;
+		view.displayHeight = view.origDisplayHeight;
+		view.scalePopup();
+		view.divItem.style.transform = "scale(" + view.windowZoom + "," + view.windowZoom + ")";
+		view.divItem.style.transformOrigin = "top left";
+		if (view.popupWidthChanged) {
+			this.menuManager.setAutoUpdate(true);
+			view.resize();
+		}
+
 	    /* eslint-enable no-unused-vars */
 		// check the popup window is on the display
 		me.setWindowPosition(me.left + me.resizeDx, me.top, me.wrappedElement);
@@ -158,8 +174,8 @@
 		    y = this.top;
 
 		// add the offset
-		x += dx / this.windowZoom;
-		y += dy / this.windowZoom;
+		x += dx;
+		y += dy;
 		
 		// set the window position
 		this.setWindowPosition(x, y, element);

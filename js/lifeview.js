@@ -250,7 +250,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 423,
+		/** @const {number} */ versionBuild : 424,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1293,6 +1293,10 @@
 
 		// display height
 		/** @type {number} */ this.displayHeight = 512;
+
+		// original width and height before scaling
+		/** @type {number} */ this.origDisplayWidth = 640;
+		/** @type {number} */ this.origDisplayHeight = 512;
 
 		// whether popup width has changed
 		/** @type {boolean} */ this.popupWidthChanged = false;
@@ -13413,6 +13417,8 @@
 
 			// check if popup width has changed
 			if (this.isInPopup) {
+				this.origDisplayWidth = this.displayWidth;
+				this.origDisplayHeight = this.displayHeight;
 				this.scalePopup();
 			}
 
@@ -14181,7 +14187,7 @@
 
 			// wrap it in a popup window if hidden
 			if (parentItem.style.display === "none") {
-				Controller.popupWindow = new PopupWindow(parentItem, newView.menuManager);
+				Controller.popupWindow = new PopupWindow(parentItem, newView);
 			}
 
 			// add the view to the list
