@@ -7364,71 +7364,73 @@
 			gridy = null;
 
 		// determine the buffer for current generation
-		if ((this.counter & 1) !== 0) {
-			grid = this.nextGrid16;
-		} else {
-			grid = this.grid16;
-		}
-
-		// set top and bottom row
-		topRow = grid[topY + extra];
-		bottomRow = grid[bottomY - extra];
-
-		// check for infinite width
-		if (this.boundedGridWidth === 0) {
-			// just clear top and bottom
-			left16 = 0;
-			right16 = this.width >> 4;
-			for (x = left16; x < right16; x += 1) {
-				remove += bitCounts16[bottomRow[x]];
-				bottomRow[x] = 0;
-				remove += bitCounts16[topRow[x]];
-				topRow[x] = 0;
-			}
-		} else {
-			// check for infinite height
-			if (this.boundedGridHeight === 0) {
-				// just clear left and right
-				bottomY = 0;
-				topY = this.height;
-				for (y = 0; y < topY; y += 1) {
-					gridy = grid[y];
-					if (gridy[leftWord] & ~leftMask) {
-						remove += 1;
-					}
-					gridy[leftWord] &= leftMask;
-					if (gridy[rightWord] & ~rightMask) {
-						remove += 1;
-					}
-					gridy[rightWord] &= rightMask;
-				}
+		if (!this.isPCA) {
+			if ((this.counter & 1) !== 0) {
+				grid = this.nextGrid16;
 			} else {
-				// clear top and bottom boundary
-				for (x = left16; x <= right16; x += 1) {
+				grid = this.grid16;
+			}
+
+			// set top and bottom row
+			topRow = grid[topY + extra];
+			bottomRow = grid[bottomY - extra];
+
+			// check for infinite width
+			if (this.boundedGridWidth === 0) {
+				// just clear top and bottom
+				left16 = 0;
+				right16 = this.width >> 4;
+				for (x = left16; x < right16; x += 1) {
 					remove += bitCounts16[bottomRow[x]];
 					bottomRow[x] = 0;
 					remove += bitCounts16[topRow[x]];
 					topRow[x] = 0;
 				}
+			} else {
+				// check for infinite height
+				if (this.boundedGridHeight === 0) {
+					// just clear left and right
+					bottomY = 0;
+					topY = this.height;
+					for (y = 0; y < topY; y += 1) {
+						gridy = grid[y];
+						if (gridy[leftWord] & ~leftMask) {
+							remove += 1;
+						}
+						gridy[leftWord] &= leftMask;
+						if (gridy[rightWord] & ~rightMask) {
+							remove += 1;
+						}
+						gridy[rightWord] &= rightMask;
+					}
+				} else {
+					// clear top and bottom boundary
+					for (x = left16; x <= right16; x += 1) {
+						remove += bitCounts16[bottomRow[x]];
+						bottomRow[x] = 0;
+						remove += bitCounts16[topRow[x]];
+						topRow[x] = 0;
+					}
 
-				// clear left and right boundary
-				for (y = bottomY - extra + 1; y <= topY + extra - 1; y += 1) {
-					gridy = grid[y];
-					if (gridy[leftWord] & ~leftMask) {
-						remove += 1;
+					// clear left and right boundary
+					for (y = bottomY - extra + 1; y <= topY + extra - 1; y += 1) {
+						gridy = grid[y];
+						if (gridy[leftWord] & ~leftMask) {
+							remove += 1;
+						}
+						gridy[leftWord] &= leftMask;
+						if (gridy[rightWord] & ~rightMask) {
+							remove += 1;
+						}
+						gridy[rightWord] &= rightMask;
 					}
-					gridy[leftWord] &= leftMask;
-					if (gridy[rightWord] & ~rightMask) {
-						remove += 1;
-					}
-					gridy[rightWord] &= rightMask;
 				}
 			}
-		}
 
-		// adjust population
-		if (statsOn) {
-			this.population -= remove;
+			// adjust population
+			if (statsOn) {
+				this.population -= remove;
+			}
 		}
 
 		// check for Generations or HROT
@@ -7667,6 +7669,549 @@
 			this.colourTileGrid[y][rightX >> 4] |= value;
 			this.colourTileHistoryGrid[y][rightX >> 4] |= value;
 		}
+	};
+
+	// process torus for multi-state
+	Life.prototype.processTorusMS = function(grid) {
+		// bounded grid width and height
+		var width = this.boundedGridWidth,
+		    height = this.boundedGridHeight,
+
+		    // bottom left
+		    leftX = Math.round((this.width - width) / 2),
+		    bottomY = Math.round((this.height - height) / 2),
+
+		    // top right
+		    rightX = leftX + width - 1,
+		    topY = bottomY + height - 1,
+
+		    // horizontal and vertical shifts
+		    horizShift = this.boundedGridHorizontalShift,
+		    vertShift = this.boundedGridVerticalShift,
+
+			// colour tile grid
+			colourTileGrid = this.colourTileHistoryGrid,
+
+		    // counters
+		    sourceX = 0,
+		    sourceY = 0,
+		    destX = 0,
+			destY = 0,
+			state = 0,
+		    i = 0;
+
+		// check for infinite width
+		if (this.boundedGridWidth === 0) {
+			// process whole width
+			leftX = 0;
+			rightX = this.width - 1;
+			width = this.width;
+		}
+
+		// check for infinite height
+		if (this.boundedGridHeight === 0) {
+			// process whole height
+			bottomY = 0;
+			topY = this.height - 1;
+			height = this.height;
+		}
+
+		// check for infinite height
+		if (this.boundedGridHeight !== 0) {
+			// perform vertical wrap
+			for (i = 0; i < width; i += 1) {
+				// copy top row to below bottom
+				sourceX = leftX + i;
+				destX = leftX + ((i + horizShift + width) % width);
+
+				// check if cell set
+				state = grid[topY][sourceX];
+				if (state !== 0) {
+					// copy cell to below bottom row
+					grid[bottomY - 1][destX] = state;
+
+					// set tile grid
+					colourTileGrid[(bottomY - 1) >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+
+					// check for tile boundary
+					if (((bottomY - 1) & 15) === 15) {
+						colourTileGrid[((bottomY - 1) >> 4) + 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+					}
+				}
+
+				// copy bottom row to above top
+				destX = leftX + ((i - horizShift + width) % width);
+
+				// check if cell set
+				state = grid[bottomY][sourceX];
+				if (state !== 0) {
+					// copy cell to above top row
+					grid[topY + 1][destX] = state;
+
+					// set tile grid
+					colourTileGrid[(topY + 1) >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+
+					// check for tile boundary
+					if (((topY + 1) & 15) === 0) {
+						colourTileGrid[((topY + 1) >> 4) - 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+					}
+				}
+			}
+		}
+
+		// check for infinite width
+		if (this.boundedGridWidth !== 0) {
+			// perform horizontal wrap
+			for (i = 0; i < height; i += 1) {
+				// copy left column to right of right
+				sourceY = bottomY + i;
+				destY = bottomY + ((i - vertShift + height) % height);
+
+				// check if cell set
+				state = grid[sourceY][leftX];
+				if (state !== 0) {
+					// copy cell to right of right edge
+					grid[destY][rightX + 1] = state;
+
+					// set tile grid
+					colourTileGrid[destY >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+
+					// check for tile boundary
+					if (((rightX + 1) & 15) === 0) {
+						colourTileGrid[destY >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+					}
+				}
+
+				// copy right column to left of left
+				destY = bottomY + ((i + vertShift + height) % height);
+
+				// check if cell set
+				state = grid[sourceY][rightX];
+				if (state !== 0) {
+					// copy cell to left of left edge
+					grid[destY][leftX - 1] = state;
+
+					// set tile grid
+					colourTileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+
+					// check for tile boundary
+					if (((leftX - 1) & 15) === 15) {
+						colourTileGrid[destY >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+					}
+				}
+			}
+		}
+
+		// only process corners if both dimensions are not infinite
+		if (this.boundedGridWidth !== 0 && this.boundedGridHeight !== 0) {
+			// bottom right corner
+			sourceX = leftX + ((-horizShift + width) % width);
+			sourceY = bottomY + ((height - 1 + vertShift + height) % height);
+			state = grid[sourceY][sourceX];
+			grid[bottomY - 1][rightX + 1] = state;
+
+			// bottom left corner
+			sourceX = leftX + ((width - 1 - horizShift + width) % width);
+			sourceY = bottomY + ((height - 1 - vertShift + height) % height);
+			state = grid[sourceY][sourceX];
+			grid[bottomY - 1][leftX - 1] = state;
+
+			// top right corner
+			sourceX = leftX + ((horizShift + width) % width);
+			sourceY = bottomY + ((vertShift + height) % height);
+			state = grid[sourceY][sourceX];
+			grid[topY + 1][rightX + 1] = state;
+
+			// top left corner
+			sourceX = leftX + ((width - 1 + horizShift + width) % width);
+			sourceY = bottomY + ((-vertShift + height) % height);
+			state = grid[sourceY][sourceX];
+			grid[topY + 1][leftX - 1] = state;
+		}
+	};
+
+	// process klein bottle for multi-state
+	Life.prototype.processKleinMS = function(grid) {
+		var colourTileGrid = this.colourTileHistoryGrid,
+		    
+		    // bounded grid width and height
+		    width = this.boundedGridWidth,
+		    height = this.boundedGridHeight,
+
+		    // bottom left
+		    leftX = Math.round((this.width - width) / 2),
+		    bottomY = Math.round((this.height - height) / 2),
+
+		    // top right
+		    rightX = leftX + width - 1,
+		    topY = bottomY + height - 1,
+
+		    // horizontal and vertical shifts
+		    horizShift = this.boundedGridHorizontalShift,
+		    vertShift = this.boundedGridVerticalShift,
+
+		    // horizontal and vertical twists
+		    horizTwist = this.boundedGridHorizontalTwist,
+		    vertTwist = this.boundedGridVerticalTwist,
+
+		    // counters
+		    sourceX = 0,
+		    sourceY = 0,
+		    destX = 0,
+			destY = 0,
+			state = 0,
+		    i = 0;
+
+		// perform vertical wrap
+		for (i = 0; i < width; i += 1) {
+			// copy top row to below bottom
+			sourceX = leftX + i;
+
+			// check for twist
+			if (horizTwist) {
+				destX = rightX - ((i + horizShift + width) % width);
+			} else {
+				destX = leftX + ((i + horizShift + width) % width);
+			}
+
+			state = grid[topY][sourceX];
+			if (state !== 0) {
+				// copy cell to below bottom
+				grid[bottomY - 1][destX] = state;
+
+				// set tile grid
+				colourTileGrid[(bottomY - 1) >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+
+				// check for tile boundary
+				if (((bottomY - 1) & 15) === 15) {
+					colourTileGrid[((bottomY - 1) >> 4) + 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+				}
+			}
+
+			// copy bottom row to above top
+			if (horizTwist) {
+				destX = rightX - ((i - horizShift + width) % width);
+			} else {
+				destX = leftX + ((i - horizShift + width) % width);
+			}
+
+			state = grid[bottomY][sourceX];
+			if (state !== 0) {
+				// copy cell to above top
+				grid[topY + 1][destX] = state;
+
+				// set tile grid
+				colourTileGrid[(topY + 1) >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+
+				// check for tile boundary
+				if (((topY + 1) & 15) === 0) {
+					colourTileGrid[((topY + 1) >> 4) - 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+				}
+			}
+		}
+
+		// perform horizontal wrap
+		for (i = 0; i < height; i += 1) {
+			// copy left column to right of right
+			sourceY = bottomY + i;
+
+			// check for vertical twist
+			if (vertTwist) {
+				destY = topY - ((i - vertShift + height) % height);
+			} else {
+				destY = bottomY + ((i - vertShift + height) % height);
+			}
+
+			state = grid[sourceY][leftX];
+			if (state !== 0) {
+				// copy cell to right of right edge
+				grid[destY][rightX + 1] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+
+				// check for tile boundary
+				if (((rightX + 1) & 15) === 0) {
+					colourTileGrid[destY >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+				}
+			}
+
+			// copy right column to left of left
+			if (vertTwist) {
+				destY = topY - ((i + vertShift + height) % height);
+			} else {
+				destY = bottomY + ((i + vertShift + height) % height);
+			}
+
+			state = grid[sourceY][rightX];
+			if (state !== 0) {
+				// copy cell to left of left edge
+				grid[destY][leftX - 1] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+
+				// check for tile boundary
+				if (((leftX - 1) & 15) === 15) {
+					colourTileGrid[destY >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+				}
+			}
+		}
+
+		// bottom right corner
+		if (horizTwist) {
+			sourceX = rightX - ((-horizShift + width) % width);
+		} else {
+			sourceX = leftX + ((-horizShift + width) % width);
+		}
+		if (vertTwist) {
+			sourceY = topY - ((height - 1 + vertShift + height) % height);
+		} else {
+			sourceY = bottomY + ((height - 1 + vertShift + height) % height);
+		}
+		state = grid[sourceY][sourceX];
+		grid[bottomY - 1][rightX + 1] = state;
+
+		// bottom left corner
+		if (horizTwist) {
+			sourceX = rightX - ((width - 1 - horizShift + width) % width);
+		} else {
+			sourceX = leftX + ((width - 1 - horizShift + width) % width);
+		}
+		if (vertTwist) {
+			sourceY = topY - ((height - 1 + vertShift + height) % height);
+		} else {
+			sourceY = bottomY + ((height - 1 + vertShift + height) % height);
+		}
+		state = grid[sourceY][sourceX];
+		grid[bottomY - 1][leftX - 1] = state;
+
+		// top right corner
+		if (horizTwist) {
+			sourceX = rightX - ((horizShift + width) % width);
+		} else {
+			sourceX = leftX + ((horizShift + width) % width);
+		}
+		if (vertTwist) {
+			sourceY = topY - ((vertShift + height) % height);
+		} else {
+			sourceY = bottomY + ((vertShift + height) % height);
+		}
+		state = grid[sourceY][sourceX];
+		grid[topY + 1][rightX + 1] = state;
+
+		// top left corner
+		if (horizTwist) {
+			sourceX = rightX - ((width - 1 + horizShift + width) % width);
+		} else {
+			sourceX = leftX + ((width - 1 + horizShift + width) % width);
+		}
+		if (vertTwist) {
+			sourceY = topY - ((vertShift + height) % height);
+		} else {
+			sourceY = bottomY + ((vertShift + height) % height);
+		}
+		state = grid[sourceY][sourceX];
+		grid[topY + 1][leftX - 1] = state;
+	};
+
+	// process cross-surface for multi-state
+	Life.prototype.processCrossSurfaceMS = function(grid) {
+		var colourTileGrid = this.colourTileGrid,
+
+		    // bottom left
+		    leftX = Math.round((this.width - this.boundedGridWidth) / 2),
+		    bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
+
+		    // top right
+		    rightX = leftX + this.boundedGridWidth - 1,
+		    topY = bottomY + this.boundedGridHeight - 1,
+
+		    // counters
+		    i = 0,
+		    source = 0,
+			dest = 0,
+			state = 0;
+
+		// perform vertical cross surface
+		for (i = 0; i < this.boundedGridWidth; i += 1) {
+			source = leftX + i;
+			dest = rightX - i;
+
+			// copy top row to below bottom inverse order
+			state = grid[topY][source];
+			if (state !== 0) {
+				grid[bottomY - 1][dest] = state;
+
+				// set tile grid
+				colourTileGrid[(bottomY - 1) >> 4][dest >> 8] |= (1 << (~(dest >> 4) & 15));
+
+				// check for tile boundary
+				if (((bottomY - 1) & 15) === 15) {
+					colourTileGrid[((bottomY - 1) >> 4) + 1][dest >> 8] |= (1 << (~(dest >> 4) & 15));
+				}
+			}
+
+			// copy bottom row to above top inverse order
+			state = grid[bottomY][source];
+			if (state !== 0) {
+				grid[topY + 1][dest] = state;
+
+				// set tile grid
+				colourTileGrid[(topY + 1) >> 4][dest >> 8] |= (1 << (~(dest >> 4) & 15));
+
+				// check for tile boundary
+				if (((topY + 1) & 15) === 0) {
+					colourTileGrid[((topY + 1) >> 4) - 1][dest >> 8] |= (1 << (~(dest >> 4) & 15));
+				}
+			}
+		}
+
+		// perform horizontal cross surface
+		for (i = 0; i <= this.boundedGridHeight; i += 1) {
+			source = bottomY + i;
+			dest = topY - i;
+
+			// copy left column to right of right inverse order
+			state = grid[source][leftX];
+			if (state !== 0) {
+				grid[dest][rightX + 1] = state;
+
+				// set tile grid
+				colourTileGrid[dest >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+
+				// check for tile boundary
+				if (((rightX + 1) & 15) === 0) {
+					colourTileGrid[dest >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+				}
+			}
+
+			// copy right column to left of left
+			state = grid[source][rightX];
+			if (state !== 0) {
+				grid[dest][leftX - 1] = state;
+
+				// set tile grid
+				colourTileGrid[dest >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+
+				// check for tile boundary
+				if (((leftX - 1) & 15) === 15) {
+					colourTileGrid[dest >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+				}
+			}
+		}
+
+		// top left corner
+		state = grid[topY][leftX];
+		grid[topY + 1][leftX - 1] = state;
+
+		// top right corner
+		state = grid[topY][rightX];
+		grid[topY + 1][rightX + 1] = state;
+
+		// bottom left corner
+		state = grid[bottomY][leftX];
+		grid[bottomY - 1][leftX - 1] = state;
+
+		// bottom right corner
+		state = grid[bottomY][rightX];
+		grid[bottomY - 1][rightX + 1] = state;
+	};
+
+	// process sphere for multi-state
+	Life.prototype.processSphereMS = function(grid) {
+		var colourTileGrid = this.colourTileGrid,
+
+		    // bottom left
+		    leftX = Math.round((this.width - this.boundedGridWidth) / 2),
+		    bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
+
+		    // top right
+		    rightX = leftX + this.boundedGridWidth - 1,
+		    topY = bottomY + this.boundedGridWidth - 1,
+
+		    // counters
+		    i = 0,
+		    x = 0,
+			y = 0,
+			state = 0;
+
+		// copy adjacent edges
+		for (i = 0; i < this.boundedGridWidth; i += 1) {
+			y = bottomY + i;
+			x = leftX + i;
+
+			// copy left column to below bottom row
+			state = grid[y][leftX];
+			if (state !== 0) {
+				grid[bottomY - 1][x] = state;
+
+				// set tile grid
+				colourTileGrid[(bottomY - 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+
+				// check for tile boundary
+				if (((bottomY - 1) & 15) === 15) {
+					colourTileGrid[((bottomY - 1) >> 4) + 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+				}
+			}
+
+			// copy right column to above top row
+			state = grid[y][rightX];
+			if (state !== 0) {
+				grid[topY + 1][x] = state;
+
+				// set tile grid
+				colourTileGrid[(topY + 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+
+				// check for tile boundary
+				if (((topY + 1) & 15) === 0) {
+					colourTileGrid[((topY + 1) >> 4) - 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+				}
+			}
+
+			// copy bottom row to left of left column
+			state = grid[bottomY][x];
+			if (state !== 0) {
+				grid[y][leftX - 1] = state;
+
+				// set tile grid
+				colourTileGrid[y >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+				// check for tile boundary
+				if (((leftX - 1) & 15) === 15) {
+					colourTileGrid[y >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+				}
+			}
+
+			// copy top row to right of right column
+			state = grid[topY][x];
+			if (state !== 0) {
+				grid[y][rightX + 1] = state;
+
+				// set tile grid
+				colourTileGrid[y >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+
+				// check for tile boundary
+				if (((rightX + 1) & 15) === 0) {
+					colourTileGrid[y >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+				}
+			}
+		}
+
+		// top left corner
+		state = grid[topY][leftX];
+		grid[topY + 1][leftX - 1] = state;
+
+		// top right corner
+		state = grid[topY][rightX];
+		grid[topY + 1][rightX + 1] = state;
+
+		// bottom left corner
+		state = grid[bottomY][leftX];
+		grid[bottomY - 1][leftX - 1] = state;
+
+		// bottom right corner
+		state = grid[bottomY][rightX];
+		grid[bottomY - 1][rightX + 1] = state;
 	};
 
 	// process torus
@@ -8369,6 +8914,17 @@
 
 	// pre-process bounded grid
 	Life.prototype.preProcessBoundedGrid = function() {
+		var colourGrid = this.colourGrid;
+
+		// alternate colour grids for PCA rules
+		if (this.isPCA) {
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+			}
+			this.drawBoundedGridBorder(colourGrid, 0);
+		}
+
+		// set tiles on boundary
 		this.setBoundedTiles();
 
 		// determine grid type
@@ -8378,19 +8934,35 @@
 			break;
 		case 1:
 			// torus
-			this.processTorus();
+			if (this.isPCA) {
+				this.processTorusMS(colourGrid);
+			} else {
+				this.processTorus();
+			}
 			break;
 		case 2:
 			// klein bottle
-			this.processKlein();
+			if (this.isPCA) {
+				this.processKleinMS(colourGrid);
+			} else {
+				this.processKlein();
+			}
 			break;
 		case 3:
 			// cross-surface
-			this.processCrossSurface();
+			if (this.isPCA) {
+				this.processCrossSurfaceMS(colourGrid);
+			} else {
+				this.processCrossSurface();
+			}
 			break;
 		case 4:
 			// sphere
-			this.processSphere();
+			if (this.isPCA) {
+				this.processSphereMS(colourGrid);
+			} else {
+				this.processSphere();
+			}
 			break;
 		}
 
@@ -15990,7 +16562,28 @@
 			aboveRow = null,
 			gridRow = null,
 			belowRow = null,
-			tileRow = null;
+			tileRow = null,
+	
+			// bounded grid width and height
+			width = this.boundedGridWidth,
+		    height = this.boundedGridHeight,
+
+		    // bottom left
+		    bLeftX = Math.round((this.width - width) / 2),
+		    bBottomY = Math.round((this.height - height) / 2),
+
+		    // top right
+		    bRightX = bLeftX + width - 1,
+			bTopY = bBottomY + height - 1;
+			
+		// check for bounded grid
+		if (this.boundedGridType !== -1) {
+			leftX = bLeftX + 1;
+			bottomY = bBottomY + 1;
+			rightX = bRightX - 1;
+			topY = bTopY - 1;
+		}
+
 
 		// check for change in playback direction
 		if (this.reversePending) {
@@ -17414,13 +18007,10 @@
 	};
 
 	// draw the bounded grid border
-	Life.prototype.drawBoundedGridBorder = function(border) {
+	Life.prototype.drawBoundedGridBorder = function(colourGrid, border) {
 		// get width and height
 		var width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
-
-		    // colour grid
-		    colourGrid = this.colourGrid,
 
 		    // coordinates of box
 		    leftX = Math.round((this.width - width) / 2 - 1),
@@ -17434,16 +18024,6 @@
 
 		    // counter
 		    i = 0;
-
-		// check for PCA rules
-		if (this.isPCA) {
-			// swap grids every generation
-			if ((this.counter & 1) !== 0) {
-				colourGrid = this.nextColourGrid;
-				bottomRow = colourGrid[bottomY];
-				topRow = colourGrid[topY];
-			}
-		}
 
 		// check for infinite width
 		if (width === 0) {
@@ -17542,7 +18122,7 @@
 
 		// create bounded grid border if specified
 		if (this.boundedGridType !== -1) {
-			this.drawBoundedGridBorder(this.boundedBorderColour);
+			this.drawBoundedGridBorder(colourGrid, this.boundedBorderColour);
 		}
 
 		// check if drawing grid with polygons

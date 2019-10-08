@@ -1,3 +1,6 @@
+Build 426
+- PCA rules now support Bounded Grids
+
 Build 425
 - support for PCA rules
 	- reverse playback is supported for reversible rules

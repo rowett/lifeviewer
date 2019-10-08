@@ -6086,11 +6086,6 @@
 			}
 		}
 
-		// PCA rules do not yet support bounded grids
-		if (pattern.isPCA && pattern.gridType !== -1) {
-			pattern.gridType = -1;  // TBD
-		}
-
 		// Margolus rules only allow first value to be either 0, or 15 if the last value is 0
 		if (pattern.isMargolus) {
 			if (this.ruleArray[0] === 15 && this.ruleArray[15] !== 0) {
