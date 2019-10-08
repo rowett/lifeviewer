@@ -1346,7 +1346,7 @@
 								itemName += " Vertices";
 							}
 						} else {
-							if (view.engine.isVonNeumann) {
+							if (view.engine.isVonNeumann || view.engine.isPCA) {
 								itemName = "von Neumann";
 							} else {
 								itemName = "Moore";

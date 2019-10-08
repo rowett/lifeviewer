@@ -4717,7 +4717,11 @@
 						me.diedGeneration = me.engine.counter;
 
 						// clear the bit grids
-						me.engine.clearGrids(true);
+						if (me.engine.isPCA) {
+							me.engine.clearGrids(false);
+						} else {
+							me.engine.clearGrids(true);
+						}
 
 						// notify simulation stopped unless loop defined and enabled
 						if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {

@@ -4066,10 +4066,8 @@
 		    topY = zoomBox.topY,
 			bottomY = zoomBox.bottomY;
 			
-			// TBD PCA
-
-		// check for HROT
-		if (this.isHROT) {
+		// check for HROT or PCA
+		if (this.isHROT || this.isPCA) {
 			// compute population from colour grid
 			for (h = bottomY; h <= topY; h += 1) {
 				// get next row
@@ -15981,6 +15979,9 @@
 			state = 0,
 			index = 0,
 			population = 0,
+			births = 0,
+			deaths = 0,
+			last = 0,
 			nLeftX = this.width,
 			nBottomY = this.height,
 			nRightX = 0,
@@ -16030,6 +16031,20 @@
 			}
 		}
 
+		// ensure on display
+		if (bottomY < 1) {
+			bottomY = 1;
+		}
+		if (topY > this.height - 2) {
+			topY = this.height - 2;
+		}
+		if (leftX < 1) {
+			leftX = 1;
+		}
+		if (rightX > this.width - 2) {
+			rightX = this.width - 2;
+		}
+
 		// process each cell in the bounding box
 		for (y = bottomY - 1; y <= topY + 1; y += 1) {
 			aboveRow = grid[y - 1];
@@ -16039,6 +16054,7 @@
 
 			// process each row in the bounding box
 			for (x = leftX - 1; x <= rightX + 1; x += 1) {
+				last = gridRow[x];
 				index = gridRow[x - 1] | (belowRow[x] << 4) | (gridRow[x + 1] << 8) | (aboveRow[x] << 12);
 				state = indexLookup[index];
 				nextGrid[y][x] = state;
@@ -16062,11 +16078,21 @@
 						nTopY = y;
 					}
 				}
+
+				// update births and deaths
+				if (last === 0 && state !== 0) {
+					births += 1;
+				}
+				if (last !== 0 && state === 0) {
+					deaths += 1;
+				}
 			}
 		}
 
 		// save statistics
 		this.population = population;
+		this.births = births;
+		this.deaths = deaths;
 		this.anythingAlive = population;
 
 		// update bounding box
