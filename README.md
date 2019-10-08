@@ -41,7 +41,7 @@ LifeViewer supports several different pattern formats, rules and neighbourhoods,
 Topic|Supported
 -----|---------
 Pattern formats|RLE, Life 1.06, Life 1.05, Cells
-Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP, Larger than Life, HROT, Alternate, Margolus
+Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP, Larger than Life, HROT, Alternate, Margolus, PCA
 Bounded Grid|Plane, Torus, Klein, Cross-Surface, Sphere
 States|2 state, [R]History, Niemiec, Generations
 Neighbourhoods|Moore, Von Neumann, 1D, Hexagonal, Triangular, Circular
@@ -53,7 +53,7 @@ Neighbourhoods|Moore, Von Neumann, 1D, Hexagonal, Triangular, Circular
   2. Add a `<meta name="LifeViewer" content="viewer textarea">` tag.
 * In the `<body>` section of your web page for each LifeViewer you want displayed add `<div class="viewer">` containing:
   1. A `<textarea>` element containing the pattern definition.
-  2. A `<canvas width="480" height="480"></canvas>` element on which LifeViewer can draw the pattern.
+  2. A `<canvas width="560" height="560"></canvas>` element on which LifeViewer can draw the pattern.
 ```
 <!DOCTYPE html>
 <html>
