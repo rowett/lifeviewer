@@ -57,6 +57,24 @@
 		this.aliases.push(["SwapOnDiag", "M0,8,4,12,2,10,6,14,1,9,5,13,3,11,7,15"]);
 		this.aliases.push(["Tron", "M15,1,2,3,4,5,6,7,8,9,10,11,12,13,14,0"]);
 
+		// add PCA aliases
+		this.sectionNames.push("PCA");
+		this.aliases.push(["PCA", ""]);
+		this.aliases.push(["Model_1", "2PCA4,0,4,8,3,1,10,6,7,2,9,5,11,12,13,14,15"]);
+		this.aliases.push(["PCA_1", "2PCA4,0,4,8,3,1,10,6,7,2,9,5,11,12,13,14,15"]);
+		this.aliases.push(["PCA_2", "2PCA4,0,2,4,3,8,10,6,7,1,9,5,11,12,13,14,15"]);
+		this.aliases.push(["PCA_3", "2PCA4,0,8,1,3,2,5,6,7,4,9,10,11,12,13,14,15"]);
+		this.aliases.push(["PCA_4", "2PCA4,0,2,4,12,8,5,9,7,1,6,10,11,3,13,14,15"]);
+		this.aliases.push(["Model_2", "2PCA4,0,4,8,3,1,10,6,11,2,9,5,13,12,14,7,15"]);
+		this.aliases.push(["PCA_5", "2PCA4,0,4,8,3,1,10,6,11,2,9,5,13,12,14,7,15"]);
+		this.aliases.push(["PCA_6", "2PCA4,0,2,4,3,8,10,6,14,1,9,5,7,12,11,13,15"]);
+		this.aliases.push(["PCA_7", "2PCA4,0,2,4,12,8,5,9,14,1,6,10,7,3,11,13,15"]);
+		this.aliases.push(["PCA_8", "2PCA4,0,2,4,12,8,10,9,14,1,6,5,7,3,11,13,15"]);
+		this.aliases.push(["PCA_9", "2PCA4,0,2,4,12,8,10,9,13,1,6,5,14,3,7,11,15"]);
+		this.aliases.push(["PCA_10", "2PCA4,0,1,2,3,4,5,6,13,8,9,10,14,12,7,11,15"]);
+		this.aliases.push(["PCA_11", "2PCA4,0,4,8,3,1,10,6,11,2,9,5,11,13,12,14,15"]);
+		this.aliases.push(["PCA_12", "2PCA4,0,4,2,3,14,6,11,5,8,7,9,13,10,12,1,15"]);
+
 		// add 2 state totalistic aliases
 		this.sectionNames.push("OT M");
 		this.aliases.push(["Outer-Totalistic Moore", ""]);

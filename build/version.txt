@@ -1,6 +1,11 @@
+Build 425
+- support for PCA rules
+	- reverse playback is supported for reversible rules
+	- Bounded Grids are not yet supported and will be ignored
+
 Build 424
-- PopUp window resizes with browser window and zoom level
-- fix PopUp window drag scale
+- PopUp Viewer resizes with browser window and zoom level
+- fix PopUp Viewer window drag scale
 - pass through some browser keyboard shortcuts
 
 Build 423

@@ -55,9 +55,6 @@
 		this.lastClientX = -1;
 		this.lastClientY = -1;
 
-		// scrollbar width
-		this.scrollBarWidth = 21;
-
 		// element offset
 		this.offsetLeft = 0;
 		this.offsetTop = 0;
@@ -189,12 +186,13 @@
 
 		    // get the maximum x and y position
 		    maxX = window.innerWidth - width,
-		    maxY = window.innerHeight - height;
+			maxY = window.innerHeight - height,
+			
+			// scrollbar width
+			scrollBarWidth = window.innerWidth - document.body.clientWidth;
 
 		// check for scrollbar
-		if (window.innerHeight < document.getElementsByTagName("body")[0].clientHeight) {
-			maxX -= this.scrollBarWidth;
-		}
+		maxX -= scrollBarWidth * this.windowZoom;
 
 		// ensure window on screen
 		if (x > maxX) {

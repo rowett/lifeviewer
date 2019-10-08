@@ -250,7 +250,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 424,
+		/** @const {number} */ versionBuild : 425,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1825,7 +1825,7 @@
 			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
 			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1),
 			states = this.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !this.engine.isNone),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA)),
 			newRecord = 0,
 			addedToRun = false,
 			runCount = 0;
@@ -2403,7 +2403,7 @@
 			ayy = trans[3],
 			pattern = new Pattern("rleToCellList"),
 			patternRow = null,
-			invertForGenerations = (states > 2 && !this.engine.isNone);
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA));
 
 		// check the RLE is valid
 		rle += " ";
@@ -2853,12 +2853,12 @@
 			finished = false;
 
 		// for Margolus rules use Margolus generation
-		if (this.engine.isMargolus) {
+		if (this.engine.isMargolus || this.engine.isPCA) {
 			counter = this.engine.counterMargolus;
 		}
 
 		// do not paste repeating patterns for reversible Margolus rules until maximum Margolus generation reached
-		if (paste.every !== 0 && this.engine.isMargolus && this.engine.margolusReverseLookup1 !== null && counter < this.engine.maxMargolusGen) {
+		if (paste.every !== 0 && (this.engine.isMargolus || this.engine.isPCA) && this.engine.margolusReverseLookup1 !== null && counter < this.engine.maxMargolusGen) {
 			needsPaste = false;
 			finished = true;
 		}
@@ -3091,7 +3091,8 @@
 		var x = 0, y = 0,
 		    // life grid and colour grid
 		    grid = this.engine.grid16,
-		    colourGrid = this.engine.colourGrid,
+			colourGrid = this.engine.colourGrid,
+			nextColourGrid = this.engine.nextColourGrid,
 		    overlayGrid = this.engine.overlayGrid,
 
 		    // lookup pattern width and height
@@ -3206,7 +3207,7 @@
 			gridRow = grid[(y + panY) & hm];
 
 			// check for multi-state view
-			if (this.multiStateView) {
+			if (this.multiStateView || this.engine.isPCA) {
 				multiStateRow = pattern.multiStateMap[y];
 				colourGridRow = colourGrid[(y + panY) & hm];
 
@@ -3262,6 +3263,11 @@
 					}
 				}
 			}
+		}
+
+		// copy colour grid to next colour grid for PCA rules
+		if (this.engine.isPCA) {
+			nextColourGrid.whole.set(colourGrid.whole);
 		}
 	};
 
@@ -4304,7 +4310,7 @@
 			separator = " ";
 
 		// use Margolus counter for Margolus rules
-		if (me.engine.isMargolus) {
+		if (me.engine.isMargolus || me.engine.isPCA) {
 			counter = me.engine.counterMargolus;
 		}
 
@@ -5133,7 +5139,7 @@
 
 		// reverse direction button
 		shown = hide || this.popGraph || this.selecting || settingsMenuOpen;
-		if (this.engine.isMargolus && this.engine.margolusReverseLookup1 !== null) {
+		if ((this.engine.isMargolus || this.engine.isPCA) && this.engine.margolusReverseLookup1 !== null) {
 			this.directionButton.deleted = shown;
 		}
 
@@ -5394,7 +5400,11 @@
 				if (i + this.startState === 0) {
 					value = 0;
 				} else {
-					value = this.historyStates + this.engine.multiNumStates - (i + this.startState);
+					if (this.engine.isPCA) {
+						value = i + this.startState;
+					} else {
+						value = this.historyStates + this.engine.multiNumStates - (i + this.startState);
+					}
 				}
 				this.stateColsList.bgColList[i] = "rgb(" + this.engine.redChannel[value] + "," + this.engine.greenChannel[value] + "," + this.engine.blueChannel[value] + ")";
 			}
@@ -6297,7 +6307,7 @@
 		} else {
 			// set to play icon
 			toolTip = "play";
-			if (this.engine.isMargolus) {
+			if (this.engine.isMargolus || this.engine.isPCA) {
 				// invert direction if pending change
 				if (this.engine.reversePending) {
 					reverse = !reverse;
@@ -6313,7 +6323,7 @@
 		}
 
 		// check for Margolus reverse direction
-		if (this.engine.isMargolus) {
+		if (this.engine.isMargolus || this.engine.isPCA) {
 			reverse = this.engine.reverseMargolus;
 			if (this.engine.reversePending) {
 				reverse = !reverse;
@@ -6565,10 +6575,25 @@
 			if (state === 0) {
 				name = "Dead";
 			} else {
-				if (state === 1) {
-					name = "Alive";
+				if (this.engine.isPCA) {
+					if ((state & 1) !== 0) {
+						name += "N";
+					}
+					if ((state & 2) !== 0) {
+						name += "E";
+					}
+					if ((state & 4) !== 0) {
+						name += "S";
+					}
+					if ((state & 8) !== 0) {
+						name += "W";
+					}
 				} else {
-					name = "Dying " + String(state - 1);
+					if (state === 1) {
+						name = "Alive";
+					} else {
+						name = "Dying " + String(state - 1);
+					}
 				}
 			}
 		}
@@ -6588,7 +6613,11 @@
 				if (newValue === 0) {
 					me.drawState = 0;
 				} else {
-					me.drawState = me.engine.multiNumStates - newValue;
+					if (me.engine.isPCA) {
+						me.drawState = newValue;
+					} else {
+						me.drawState = me.engine.multiNumStates - newValue;
+					}
 				}
 			}
 
@@ -7027,7 +7056,7 @@
 				if (!me.generationOn) {
 					// set playback to forward if waypoints on and not disabled
 					if (me.waypointsDefined && !me.waypointsDisabled) {
-						if (me.engine.isMargolus && (me.engine.reverseMargolus || (!me.engine.reverseMargolus && me.engine.reversePending))) {
+						if ((me.engine.isMargolus || me.engine.isPCA) && (me.engine.reverseMargolus || (!me.engine.reverseMargolus && me.engine.reversePending))) {
 							me.directionPressed(me);
 						}
 					}
@@ -7061,7 +7090,7 @@
 				// step back
 				if (!me.generationOn) {
 					// check for reversible Margolus rules
-					if (me.engine.isMargolus && me.engine.margolusReverseLookup1 !== null) {
+					if ((me.engine.isMargolus || me.engine.isPCA) && me.engine.margolusReverseLookup1 !== null) {
 						// change direction
 						me.engine.reversePending = !me.engine.reversePending;
 						if (me.engine.reversePending) {
@@ -7196,7 +7225,7 @@
 		if (fromX === -1 && fromY === -1) {
 			this.penColour = this.readCell();
 			// adjust test state if generations style
-			if (this.engine.multiNumStates > 2) {
+			if (this.engine.multiNumStates > 2 && !this.engine.isPCA) {
 				testState = this.engine.multiNumStates - testState;
 			}
 
@@ -7599,8 +7628,7 @@
 
 	// drag ended for pick
 	View.prototype.dragEndPick = function(me, x, y) {
-		var saveStart = me.startState,
-			state = 0;
+		var state = 0;
 
 		// check if on window
 		if (x!== -1 && y !== -1) {
@@ -7614,10 +7642,8 @@
 			} else {
 				// set pen colour
 				me.penColour = state;
-				// highlight state in state list UI (clear start state first, set, then restore)
-				me.startState = 0;
-				me.stateList.current = me.viewStateList(me.penColour, true, me);
-				me.startState = saveStart;
+				// highlight state in state list UI
+				me.switchToState(state);
 			}
 		}
 	};
@@ -9236,7 +9262,7 @@
 			swap = 0,
 			state = 0,
 			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !me.engine.isNone),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA)),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			buffer = null,
@@ -9356,7 +9382,7 @@
 			height = 0,
 			state = 0,
 			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !me.engine.isNone),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA)),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			buffer = null;
@@ -9970,7 +9996,7 @@
 			row = null,
 			state = 0,
 			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !me.engine.isNone),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA)),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
@@ -10053,7 +10079,7 @@
 			column = null,
 			state = 0,
 			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !me.engine.isNone),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA)),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
@@ -10105,15 +10131,26 @@
 			h = me.pasteHeight,
 			x = 0,
 			y = 0,
+			value = 0,
 			newBuffer = me.engine.allocator.allocate(Uint8, w * h, "View.pasteBuffer");
 
 		// rotate cells into new buffer
 		for (y = 0; y < h; y += 1) {
 			for (x = 0; x < w; x += 1) {
-				if (clockwise) {
-					newBuffer[x * h + (h - y - 1)] = me.pasteBuffer[y * w + x];
+				if (me.engine.isPCA) {
+					if (clockwise) {
+						value = me.pasteBuffer[y * w + x];
+						newBuffer[x * h + (h - y - 1)] = ((value << 1) & 15) | ((value & 8) >> 3);
+					} else {
+						value = me.pasteBuffer[y * w + x];
+						newBuffer[(w - x - 1) * h + y] = ((value >> 1) & 15) | ((value & 1) << 3);
+					}
 				} else {
-					newBuffer[(w - x - 1) * h + y] = me.pasteBuffer[y * w + x];
+					if (clockwise) {
+						newBuffer[x * h + (h - y - 1)] = me.pasteBuffer[y * w + x];
+					} else {
+						newBuffer[(w - x - 1) * h + y] = me.pasteBuffer[y * w + x];
+					}
 				}
 			}
 		}
@@ -10156,7 +10193,7 @@
 			saveTopY = 0,
 			states = me.engine.multiNumStates,
 			/** @type {boolean} */ rotateFits = true,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !me.engine.isNone),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA)),
 		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2),
 		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2),
 		    /** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
@@ -10260,6 +10297,14 @@
 						if (invertForGenerations) {
 							if (state > 0) {
 								state = states - state;
+							}
+						} else {
+							if (me.engine.isPCA) {
+								if (clockwise) {
+									state = ((state << 1) & 15) | ((state & 8) >> 3);
+								} else {
+									state = ((state >> 1) & 15) | ((state & 1) << 3);
+								}
 							}
 						}
 						cells[i] = newX;
@@ -12422,10 +12467,14 @@
 
 		// reset history states
 		if (this.engine.multiNumStates > 2) {
-			if (256 - this.engine.multiNumStates >= 63) {
-				this.maxHistoryStates = 63;
+			if (this.engine.isPCA) {
+				this.maxHistoryStates = 0;
 			} else {
-				this.maxHistoryStates = 256 - this.engine.multiNumStates;
+				if (256 - this.engine.multiNumStates >= 63) {
+					this.maxHistoryStates = 63;
+				} else {
+					this.maxHistoryStates = 256 - this.engine.multiNumStates;
+				}
 			}
 		} else {
 			this.maxHistoryStates = 63;
@@ -12576,10 +12625,14 @@
 			if (state === 0) {
 				message = "dead";
 			} else {
-				if (state === 1) {
-					message = "alive";
+				if (this.engine.isPCA) {
+					message = this.getStateName(state);
 				} else {
-					message = "dying " + String(state - 1);
+					if (state === 1) {
+						message = "alive";
+					} else {
+						message = "dying " + String(state - 1);
+					}
 				}
 			}
 			this.stateList.toolTip[i] = message;
@@ -12591,7 +12644,9 @@
 		// update the selected state
 		state = this.drawState;
 		if (state > 0) {
-			state = this.engine.multiNumStates - state;
+			if (!this.engine.isPCA) {
+				state = this.engine.multiNumStates - state;
+			}
 		}
 		this.stateList.current = state - this.startState;
 	};
@@ -12641,7 +12696,11 @@
 				this.stateColsList.bgAlpha = 1;
 				this.stateColsList.current = [false, false];
 			} else {
-				this.drawState = states - 1;
+				if (this.engine.isPCA) {
+					this.drawState = 1;
+				} else {
+					this.drawState = states - 1;
+				}
 				this.updateStatesList();
 				this.stateList.setWidth(this.maxDisplayStates * 40);
 				this.stateColsList.setWidth(this.maxDisplayStates * 40);
@@ -12789,6 +12848,7 @@
 		this.patternFormat = "(none)";
 		this.engine.isNone = false;
 		this.engine.isMargolus = false;
+		this.engine.isPCA = false;
 		this.engine.isLifeHistory = false;
 		this.engine.displayLifeHistory = false;
 		this.engine.isHex = false;
@@ -13004,6 +13064,9 @@
 
 			// check if the rule is Margolus
 			this.engine.isMargolus = pattern.isMargolus;
+
+			// check if the rule is PCA
+			this.engine.isPCA = pattern.isPCA;
 
 			// use hexagons for hex dispaly
 			this.engine.useHexagons = true;

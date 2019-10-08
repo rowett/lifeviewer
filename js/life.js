@@ -52,6 +52,9 @@
 		// size of Margolus lookup array
 		/** @const {number} */ hashMargolus : 65536,
 
+		// size of PCA lookup array
+		/** @const {number} */ hashPCA : 65536,
+
 		// size of 13bit triangular single cell hash lookup array
 		/** @const {number} */ hashTriangular : 8192,
 
@@ -354,6 +357,9 @@
 		// whether rule is Margolus
 		/** @type {boolean} */ this.isMargolus = false;
 
+		// whether rule is PCA
+		/** @type {boolean} */ this.isPCA = false;
+
 		// whether rule is Wolfram
 		/** @type {number} */ this.wolframRule = -1;
 
@@ -609,6 +615,11 @@
 
 		// colour grid
 		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
+
+		// next colour grid for PCA rules
+		this.nextColourGrid = null;
+		this.nextcolourGrid16 = null;
+		this.nextcolourGrid32 = null;
 
 		// small colour grid used for zooms < 1
 		this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
@@ -2795,6 +2806,14 @@
 			// x coordinate for boundary check
 			/** @type {number} */ cx = 0;
 
+		// check for PCA rules
+		if (this.isPCA) {
+			// swap grids every generation
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+			}
+		}
+
 		// check for bounded grid cylinders
 		if (this.boundedGridType !== -1) {
 			if (this.boundedGridWidth === 0) {
@@ -3220,12 +3239,23 @@
 
 		    // bounded grid bottom right
 		    /** @type {number} */ rightX = leftX + this.boundedGridWidth - 1,
-			/** @type {number} */ topY = bottomY + this.boundedGridHeight - 1;
+			/** @type {number} */ topY = bottomY + this.boundedGridHeight - 1,
+
+			// colour grid
+			colourGrid = this.colourGrid;
+
+		// check for PCA rules
+		if (this.isPCA) {
+			// swap grids every generation
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+			}
+		}
 
 		// check if coordinates are on the grid
 		if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
 			// get the colour grid result
-			col = this.colourGrid[y][x];
+			col = colourGrid[y][x];
 
 			// check if raw data requested or Generations or HROT rule used
 			if (rawRequested || this.multiNumStates > 2) {
@@ -3251,7 +3281,11 @@
 						if (this.boundedGridType !== -1 && col === this.boundedBorderColour && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
 							result = 0;
 						} else {
-							result = this.multiNumStates + this.historyStates - col;
+							if (this.isPCA) {
+								result = col;
+							} else {
+								result = this.multiNumStates + this.historyStates - col;
+							}
 						}
 					}
 				} else {
@@ -3349,7 +3383,7 @@
 			found = false;
 
 		// do nothing if not Margolus rule
-		if (this.isMargolus) {
+		if (this.isMargolus || this.isPCA) {
 			// see if there is a reverse playback record at the given generation
 			this.reversePending = false;
 			this.reverseMargolus = false;
@@ -3474,7 +3508,8 @@
 		    i = 0,
 		    length = 0,
 		    blankRow = this.blankRow,
-		    blankColourRow = this.blankColourRow;
+			blankColourRow = this.blankColourRow,
+			colourGrid = this.colourGrid;
 
 		// restore the counter
 		this.counter = snapshot.counter;
@@ -3500,12 +3535,18 @@
 			grid.whole.fill(0);
 			nextGrid.whole.fill(0);
 			this.colourGrid.whole.fill(0);
+			if (this.isPCA) {
+				this.nextColourGrid.whole.fill(0);
+			}
 			this.smallColourGrid.whole.fill(0);
 		} else {
 			length = grid.length;
 			for (i = 0; i < length; i += 1) {
 				grid[i].set(blankRow);
 				this.colourGrid[i].set(blankColourRow);
+				if (this.isPCA) {
+					this.nextColourGrid[i].set(blankColourRow);
+				}
 				this.smallColourGrid[i].set(blankColourRow);
 			}
 			// clear the next grid
@@ -3520,7 +3561,10 @@
 		snapshot.restoreGridUsingTile(grid, tileGrid, this);
 
 		// restore colour grid from snapshot
-		snapshot.restoreColourGridUsingTile(this.colourGrid, this.colourTileHistoryGrid, this);
+		snapshot.restoreColourGridUsingTile(colourGrid, this.colourTileHistoryGrid, this);
+		if (this.isPCA) {
+			this.nextColourGrid.whole.set(colourGrid);
+		}
 
 		// copy the tile grid to the next tile grid
 		Array.copy(tileGrid, nextTileGrid);
@@ -3580,8 +3624,18 @@
 
 	// save to a specific snapshot
 	Life.prototype.saveToSnapshot = function(isReset, grid, tileGrid) {
+		var colourGrid = this.colourGrid;
+
+		// check for PCA rules
+		if (this.isPCA) {
+			// swap grids every generation
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+			}
+		}
+
 		// create the snapshot
-		this.snapshotManager.saveSnapshot(grid, tileGrid, this.colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, this.counterMargolus, this.maxMargolusGen, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive);
+		this.snapshotManager.saveSnapshot(grid, tileGrid, colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, this.counterMargolus, this.maxMargolusGen, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive);
 	};
 
 	// save grid
@@ -3661,6 +3715,15 @@
 
 		// colour grid
 		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
+		if (this.isPCA) {
+			this.nextColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
+			this.nextColourGrid16 = Array.matrixView(Uint16, this.nextColourGrid, "Life.nextColourGrid16");
+			this.nextColourGrid32 = Array.matrixView(Uint32, this.nextColourGrid, "Life.nextColourGrid32");
+		} else {
+			this.nextColourGrid = null;
+			this.nextColourGrid16 = null;
+			this.nextColourGrid32 = null;
+		}
 		this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
 		this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
 		this.colourGrid32 = Array.matrixView(Uint32, this.colourGrid, "Life.colourGrid32");
@@ -3726,6 +3789,16 @@
 		// colour grid
 		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
 		this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
+		this.colourGrid32 = Array.matrixView(Uint32, this.colourGrid, "Life.colourGrid32");
+		if (this.isPCA) {
+			this.nextColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
+			this.nextColourGrid16 = Array.matrixView(Uint16, this.nextColourGrid, "Life.nextColourGrid16");
+			this.nextColourGrid32 = Array.matrixView(Uint32, this.nextColourGrid, "Life.nextColourGrid32");
+		} else {
+			this.nextColourGrid = null;
+			this.nextColourGrid16 = null;
+			this.nextColourGrid32 = null;
+		}
 
 		// create the grid width and height masks
 		this.widthMask = this.width - 1;
@@ -3740,7 +3813,8 @@
 		    // get current grid buffers
 		    currentGrid = this.grid,
 		    currentNextGrid = this.nextGrid,
-		    currentColourGrid = this.colourGrid,
+			currentColourGrid = this.colourGrid,
+			currentNextColourGrid = this.nextColourGrid,
 		    currentSmallColourGrid = this.smallColourGrid,
 		    currentOverlayGrid = this.overlayGrid,
 		    currentSmallOverlayGrid = this.smallOverlayGrid,
@@ -3830,6 +3904,15 @@
 			this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
 			this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
 			this.colourGrid32 = Array.matrixView(Uint32, this.colourGrid, "Life.colourGrid32");
+			if (this.isPCA) {
+				this.nextColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
+				this.nextColourGrid16 = Array.matrixView(Uint16, this.nextColourGrid, "Life.nextColourGrid16");
+				this.nextColourGrid32 = Array.matrixView(Uint32, this.nextColourGrid, "Life.nextColourGrid32");
+			} else {
+				this.nextColourGrid = null;
+				this.nextColourGrid16 = null;
+				this.nextColourGrid32 = null;
+			}
 
 			// check if overlay grid was allocated
 			if (currentOverlayGrid) {
@@ -3849,6 +3932,9 @@
 				this.nextGrid[y + yOffset].set(currentNextGrid[y], xOffset >> 3);
 				this.colourGrid[y + yOffset].set(currentColourGrid[y], xOffset);
 				this.smallColourGrid[y + yOffset].set(currentSmallColourGrid[y], xOffset);
+				if (this.isPCA) {
+					this.nextColourGrid[y + yOffset].set(currentNextColourGrid[y], xOffset);
+				}
 
 				// check if overlay grid was allocated
 				if (currentOverlayGrid && currentSmallOverlayGrid) {
@@ -3980,6 +4066,8 @@
 		    topY = zoomBox.topY,
 			bottomY = zoomBox.bottomY;
 			
+			// TBD PCA
+
 		// check for HROT
 		if (this.isHROT) {
 			// compute population from colour grid
@@ -4338,48 +4426,51 @@
 		    topY = zoomBox.topY,
 			bottomY = zoomBox.bottomY;
 
-		// set the colour grid from the grid
-		for (y = bottomY; y <= topY; y += 1) {
-			gridRow = grid[y];
-			colourRow = colourGrid[y];
-			cr = (leftX << 4);
-			for (x = leftX; x <= rightX; x += 1) {
-				// get first 8 bits
-				rowOffset = (gridRow[x] >> 8) << 3;
-				colourRow[cr] = colourReset[rowOffset];
-				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 1];
-				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 2];
-				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 3];
-				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 4];
-				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 5];
-				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 6];
-				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 7];
-				cr += 1;
-				// get second 8 bits
-				rowOffset = (gridRow[x] & 255) << 3;
-				colourRow[cr] = colourReset[rowOffset];
-				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 1];
-				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 2];
-				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 3];
-				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 4];
-				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 5];
-				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 6];
-				cr += 1;
-				colourRow[cr] = colourReset[rowOffset + 7];
-				cr += 1;
+		// ignore for PCA rules
+		if (!this.isPCA) {
+			// set the colour grid from the grid
+			for (y = bottomY; y <= topY; y += 1) {
+				gridRow = grid[y];
+				colourRow = colourGrid[y];
+				cr = (leftX << 4);
+				for (x = leftX; x <= rightX; x += 1) {
+					// get first 8 bits
+					rowOffset = (gridRow[x] >> 8) << 3;
+					colourRow[cr] = colourReset[rowOffset];
+					cr += 1;
+					colourRow[cr] = colourReset[rowOffset + 1];
+					cr += 1;
+					colourRow[cr] = colourReset[rowOffset + 2];
+					cr += 1;
+					colourRow[cr] = colourReset[rowOffset + 3];
+					cr += 1;
+					colourRow[cr] = colourReset[rowOffset + 4];
+					cr += 1;
+					colourRow[cr] = colourReset[rowOffset + 5];
+					cr += 1;
+					colourRow[cr] = colourReset[rowOffset + 6];
+					cr += 1;
+					colourRow[cr] = colourReset[rowOffset + 7];
+					cr += 1;
+					// get second 8 bits
+					rowOffset = (gridRow[x] & 255) << 3;
+					colourRow[cr] = colourReset[rowOffset];
+					cr += 1;
+					colourRow[cr] = colourReset[rowOffset + 1];
+					cr += 1;
+					colourRow[cr] = colourReset[rowOffset + 2];
+					cr += 1;
+					colourRow[cr] = colourReset[rowOffset + 3];
+					cr += 1;
+					colourRow[cr] = colourReset[rowOffset + 4];
+					cr += 1;
+					colourRow[cr] = colourReset[rowOffset + 5];
+					cr += 1;
+					colourRow[cr] = colourReset[rowOffset + 6];
+					cr += 1;
+					colourRow[cr] = colourReset[rowOffset + 7];
+					cr += 1;
+				}
 			}
 		}
 	};
@@ -4772,7 +4863,7 @@
 
 		// do nothing for "none" rule since colours are fixed
 		if (!this.isNone) {
-			// check for Generations or HROT rules
+			// check for Generations, HROT or PCA rules
 			if (this.multiNumStates > 2) {
 				// set unoccupied colour
 				i = 0;
@@ -4936,7 +5027,7 @@
 					currentComponent = this.aliveColCurrent.startColour.blue * weight + this.aliveColCurrent.endColour.blue * (1 - weight);
 					targetComponent = this.aliveColTarget.startColour.blue * weight + this.aliveColTarget.endColour.blue * (1 - weight);
 					this.blueChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-				}
+					}
 			}
 		}
 	};
@@ -5128,6 +5219,7 @@
 			grid = this.grid,
 			nextGrid = this.nextGrid,
 			colourGrid = this.colourGrid,
+			nextColourGrid = this.nextColourGrid,
 			smallColourGrid = this.smallColourGrid,
 			overlayGrid = this.overlayGrid,
 			smallOverlayGrid = this.smallOverlayGrid,
@@ -5152,6 +5244,9 @@
 			nextGrid.whole.fill(0);
 			if (!bitOnly) {
 				colourGrid.whole.fill(unoccupied);
+				if (nextColourGrid) {
+					nextColourGrid.whole.fill(unoccupied);
+				}
 				smallColourGrid.whole.fill(unoccupied);
 				if (overlayGrid) {
 					overlayGrid.whole.fill(unoccupied);
@@ -5164,6 +5259,9 @@
 				nextGrid[h].set(blankRow);
 				if (!bitOnly) {
 					colourGrid[h].set(blankColourRow);
+					if (nextColourGrid) {
+						nextColourGrid[h].set(blankColourRow);
+					}
 					smallColourGrid[h].set(blankColourRow);
 					if (overlayGrid) {
 						overlayGrid[h].set(blankColourRow);
@@ -5242,6 +5340,44 @@
 		return result;
 	};
 			
+	// create PCA index
+	Life.prototype.createPCAIndex = function(index, ruleArray, reverse) {
+		var i = 0,
+			value = 0,
+			reverseArray = null;
+
+		// index lookup is 4 x 4bit values for n, e, s, w
+		// n3 n2 n1 n0 e3 e2 e1 e0 s3 s2 s1 s0 w3 w2 w1 w0
+		// 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00
+		//           2        3        0       1
+		if (reverse) {
+			reverseArray = new Uint8Array(16);
+
+			// create the reverse transitions
+			for (i = 0; i < 16; i += 1) {
+				value = ruleArray[i];
+				reverseArray[value] = i;
+			}
+
+			// create the lookup index
+			for (i = 0; i < LifeConstants.hashPCA; i += 1) {
+				value = (reverseArray[i >> 12] & 1) << 2;
+				value |= (reverseArray[(i >> 8) & 15] & 2) << 2;
+				value |= (reverseArray[(i >> 4) & 15] & 4) >> 2;
+				value |= (reverseArray[i & 15] & 8) >> 2;
+				index[i] = value;
+			}
+		} else {
+			for (i = 0; i < LifeConstants.hashPCA; i += 1) {
+				value = ((i >> 12) & 1) << 2;
+				value |= ((i >> 8) & 2) << 2;
+				value |= ((i >> 4) & 4) >> 2;
+				value |= (i & 8) >> 2;
+				index[i] = ruleArray[value];
+			}
+		}
+	};
+
 	// create Margolus index
 	Life.prototype.createMargolusIndex = function(index, ruleArray) {
 		var i = 0,
@@ -5258,7 +5394,7 @@
 		// index holds four 2x2 blocks
 		// 00 00  01 01  02 02  03 03
 		// 00 00  01 01  02 02  03 03
-		for (i = 0; i < 65536; i += 1) {
+		for (i = 0; i < LifeConstants.hashMargolus; i += 1) {
 			row1 = i >> 8;
 			row0 = i & 255;
 			mask = 192;
@@ -5364,8 +5500,8 @@
 
 		// check if alternates are duplicates
 		if (this.altSpecified) {
-			// Margolus only uses first 16 entries
-			if (this.isMargolus) {
+			// Margolus and PCA only uses first 16 entries
+			if (this.isMargolus || this.isPCA) {
 				length = 16;
 			}
 
@@ -5386,7 +5522,7 @@
 			}
 
 			// if alt specified then swap
-			if (this.altSpecified && this.isMargolus) {
+			if (this.altSpecified && (this.isMargolus || this.isPCA)) {
 				for (i = 0; i < length; i += 1) {
 					tmp = ruleArray[i];
 					ruleArray[i] = ruleAltArray[i];
@@ -5405,117 +5541,147 @@
 		this.margolusReverseLookup1 = null;
 		this.margolusReverseLookup2 = null;
 
-		// check for Margolus
-		if (this.isMargolus) {
+		// check for PCA
+		if (this.isPCA) {
 			// create lookup array
-			this.margolusLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusLookup1");
-			//  check for V0 = 15 and V15 = 0
-			if (ruleArray[0] === 15 && ruleArray[15] === 0) {
-				this.altSpecified = true;
-				altSpecified = true;
-
-				// save the original array
-				savedArray = new Uint8Array(16);
-				for (i = 0; i < 16; i += 1) {
-					savedArray[i] = ruleArray[i];
-				}
-
-				// create non-strobing alternate rules
-				this.createNonStrobingAlternates(ruleArray, ruleAltArray);
-			}
-
+			this.margolusLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashPCA, "Life.PCALookup1");
 			if (altSpecified) {
-				this.margolusLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusLookup2");
-				this.createMargolusIndex(this.margolusLookup2, ruleArray);
-				this.createMargolusIndex(this.margolusLookup1, ruleAltArray);
+				this.margolusLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashPCA, "Life.PCALookup2");
+				this.createPCAIndex(this.margolusLookup2, ruleArray, false);
+				this.createPCAIndex(this.margolusLookup1, ruleAltArray, false);
 
-				// check for reverse V0=15/V15=0
-				if (savedArray && this.canReverse(savedArray, true)) {
-					this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
-					this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
-					this.createNonStrobingAlternates(savedArray, ruleAltArray);
-					this.createMargolusIndex(this.margolusReverseLookup1, ruleAltArray);
-					this.createMargolusIndex(this.margolusReverseLookup2, savedArray);
-				} else {
-					// check for alternate
-					if (this.canReverse(ruleArray, false) && this.canReverse(ruleAltArray, false)) {
-						this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
-						this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
-						this.canReverse(ruleAltArray, true);
-						this.createMargolusIndex(this.margolusReverseLookup1, ruleAltArray);
-						this.canReverse(ruleArray, true);
-						this.createMargolusIndex(this.margolusReverseLookup2, ruleArray);
-					}
+				// check for alternate
+				if (this.canReverse(ruleArray, false) && this.canReverse(ruleAltArray, false)) {
+					this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashPCA, "Life.PCAReverseLookup1");
+					this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashPCA, "Life.PCAReverseLookup2");
+					this.canReverse(ruleAltArray, false);
+					this.createPCAIndex(this.margolusReverseLookup1, ruleAltArray, true);
+					this.canReverse(ruleArray, false);
+					this.createPCAIndex(this.margolusReverseLookup2, ruleArray, true);
 				}
 			} else {
-				this.createMargolusIndex(this.margolusLookup1, ruleArray);
+				this.createPCAIndex(this.margolusLookup1, ruleArray, false);
 
 				// check for reverse
-				if (this.canReverse(ruleArray, true)) {
-					this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
-					this.createMargolusIndex(this.margolusReverseLookup1, ruleArray);
+				if (this.canReverse(ruleArray, false)) {
+					this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashPCA, "Life.PCAsReverseLookup1");
+					this.createPCAIndex(this.margolusReverseLookup1, ruleArray, true);
 				}
 			}
 		} else {
-			// check for Triangular
-			if (this.isTriangular) {
-				// create lookup arrays
-				this.indexLookupTri1 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri1");
+			// check for Margolus
+			if (this.isMargolus) {
+				// create lookup array
+				this.margolusLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusLookup1");
+
+				//  check for V0 = 15 and V15 = 0
+				if (ruleArray[0] === 15 && ruleArray[15] === 0) {
+					this.altSpecified = true;
+					altSpecified = true;
+
+					// save the original array
+					savedArray = new Uint8Array(16);
+					for (i = 0; i < 16; i += 1) {
+						savedArray[i] = ruleArray[i];
+					}
+
+					// create non-strobing alternate rules
+					this.createNonStrobingAlternates(ruleArray, ruleAltArray);
+				}
+
 				if (altSpecified) {
-					this.indexLookupTri2 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri2");
-					this.createTriangularIndex(this.indexLookupTri2, ruleArray);
-					this.createTriangularIndex(this.indexLookupTri1, ruleAltArray);
+					this.margolusLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusLookup2");
+					this.createMargolusIndex(this.margolusLookup2, ruleArray);
+					this.createMargolusIndex(this.margolusLookup1, ruleAltArray);
+
+					// check for reverse V0=15/V15=0
+					if (savedArray && this.canReverse(savedArray, true)) {
+						this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
+						this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
+						this.createNonStrobingAlternates(savedArray, ruleAltArray);
+						this.createMargolusIndex(this.margolusReverseLookup1, ruleAltArray);
+						this.createMargolusIndex(this.margolusReverseLookup2, savedArray);
+					} else {
+						// check for alternate
+						if (this.canReverse(ruleArray, false) && this.canReverse(ruleAltArray, false)) {
+							this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
+							this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
+							this.canReverse(ruleAltArray, true);
+							this.createMargolusIndex(this.margolusReverseLookup1, ruleAltArray);
+							this.canReverse(ruleArray, true);
+							this.createMargolusIndex(this.margolusReverseLookup2, ruleArray);
+						}
+					}
 				} else {
-					this.createTriangularIndex(this.indexLookupTri1, ruleArray);
+					this.createMargolusIndex(this.margolusLookup1, ruleArray);
+
+					// check for reverse
+					if (this.canReverse(ruleArray, true)) {
+						this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
+						this.createMargolusIndex(this.margolusReverseLookup1, ruleArray);
+					}
 				}
 			} else {
-				// create the first lookup array
-				this.indexLookup63 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup63");
-	
-				// check for Wolfram
-				if (this.wolframRule === -1) {
-					// check for B0
-					if (ruleArray[0]) {
-						// check for Smax
-						if (ruleArray[hashSize - 1]) {
-							// B0 with Smax: rule -> NOT(reverse(bits))
-							for (i = 0; i < hashSize / 2; i += 1) {
-								tmp = ruleArray[i];
-								ruleArray[i] = 1 - ruleArray[hashSize - i - 1];
-								ruleArray[hashSize - i - 1] = 1 - tmp;
-							}
-						} else {
-							// B0 without Smax needs two rules
-							// odd rule -> reverse(bits)
-							for (i = 0; i < hashSize / 2; i += 1) {
-								tmp = ruleArray[i];
-								ruleArray[i] = ruleArray[hashSize - i - 1];
-								ruleArray[hashSize - i - 1] = tmp;
-							}
-							odd = true;
-							this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
-							this.createLifeIndex63(this.indexLookup632, ruleArray);
-	
-							// even rule -> NOT(bits)
-							for (i = 0; i < hashSize / 2; i += 1) {
-								tmp = ruleArray[i];
-								// need to reverse then invert due to even rule above
-								ruleArray[i] = 1 - ruleArray[hashSize - i - 1];
-								ruleArray[hashSize - i - 1] = 1 - tmp;
+				// check for Triangular
+				if (this.isTriangular) {
+					// create lookup arrays
+					this.indexLookupTri1 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri1");
+					if (altSpecified) {
+						this.indexLookupTri2 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri2");
+						this.createTriangularIndex(this.indexLookupTri2, ruleArray);
+						this.createTriangularIndex(this.indexLookupTri1, ruleAltArray);
+					} else {
+						this.createTriangularIndex(this.indexLookupTri1, ruleArray);
+					}
+				} else {
+					// create the first lookup array
+					this.indexLookup63 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup63");
+		
+					// check for Wolfram
+					if (this.wolframRule === -1) {
+						// check for B0
+						if (ruleArray[0]) {
+							// check for Smax
+							if (ruleArray[hashSize - 1]) {
+								// B0 with Smax: rule -> NOT(reverse(bits))
+								for (i = 0; i < hashSize / 2; i += 1) {
+									tmp = ruleArray[i];
+									ruleArray[i] = 1 - ruleArray[hashSize - i - 1];
+									ruleArray[hashSize - i - 1] = 1 - tmp;
+								}
+							} else {
+								// B0 without Smax needs two rules
+								// odd rule -> reverse(bits)
+								for (i = 0; i < hashSize / 2; i += 1) {
+									tmp = ruleArray[i];
+									ruleArray[i] = ruleArray[hashSize - i - 1];
+									ruleArray[hashSize - i - 1] = tmp;
+								}
+								odd = true;
+								this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
+								this.createLifeIndex63(this.indexLookup632, ruleArray);
+		
+								// even rule -> NOT(bits)
+								for (i = 0; i < hashSize / 2; i += 1) {
+									tmp = ruleArray[i];
+									// need to reverse then invert due to even rule above
+									ruleArray[i] = 1 - ruleArray[hashSize - i - 1];
+									ruleArray[hashSize - i - 1] = 1 - tmp;
+								}
 							}
 						}
 					}
-				}
 
-				// copy rules from pattern
-				if (this.altSpecified) {
-					this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
-					this.createLifeIndex63(this.indexLookup632, ruleArray);
-					this.createLifeIndex63(this.indexLookup63, ruleAltArray);
-				} else {
-					this.createLifeIndex63(this.indexLookup63, ruleArray);
-					if (odd) {
-						this.altSpecified = true;
+					// copy rules from pattern
+					if (this.altSpecified) {
+						this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
+						this.createLifeIndex63(this.indexLookup632, ruleArray);
+						this.createLifeIndex63(this.indexLookup63, ruleAltArray);
+					} else {
+						this.createLifeIndex63(this.indexLookup63, ruleArray);
+						if (odd) {
+							this.altSpecified = true;
+						}
 					}
 				}
 			}
@@ -7272,6 +7438,14 @@
 			// clear the colour grid boundary
 			grid = this.colourGrid;
 
+			// check for PCA rules
+			if (this.isPCA) {
+				// swap grids every generation
+				if ((this.counter & 1) !== 0) {
+					grid = this.nextColourGrid;
+				}
+			}
+
 			// extend to the boundary
 			leftX -= extra;
 			rightX += extra;
@@ -8274,29 +8448,33 @@
 
 		// check if any bitmap cells are alive
 		if (this.anythingAlive) {
-			if (this.isHROT) {
-				// compute HROT next generation
-				this.HROT.nextGenerationHROT(this.counter);
+			if (this.isPCA) {
+				this.nextGenerationPCATile();
 			} else {
-				// stats are required if they are on but not for multi-state rules which compute their own stats
-				if (statsOn && this.multiNumStates < 2) {
-					if (this.isMargolus) {
-						this.nextGenerationMargolusTile();
-					} else {
-						if (this.isTriangular) {
-							this.nextGenerationTriTile();
-						} else {
-							this.nextGenerationTile();
-						}
-					}
+				if (this.isHROT) {
+					// compute HROT next generation
+					this.HROT.nextGenerationHROT(this.counter);
 				} else {
-					if (this.isMargolus) {
-						this.nextGenerationOnlyMargolusTile();
-					} else {
-						if (this.isTriangular) {
-							this.nextGenerationOnlyTriTile();
+					// stats are required if they are on but not for multi-state rules which compute their own stats
+					if (statsOn && this.multiNumStates < 2) {
+						if (this.isMargolus) {
+							this.nextGenerationMargolusTile();
 						} else {
-							this.nextGenerationOnlyTile();
+							if (this.isTriangular) {
+								this.nextGenerationTriTile();
+							} else {
+								this.nextGenerationTile();
+							}
+						}
+					} else {
+						if (this.isMargolus) {
+							this.nextGenerationOnlyMargolusTile();
+						} else {
+							if (this.isTriangular) {
+								this.nextGenerationOnlyTriTile();
+							} else {
+								this.nextGenerationOnlyTile();
+							}
 						}
 					}
 				}
@@ -8306,8 +8484,8 @@
 		// increment generation count
 		this.counter += 1;
 
-		// adjust Margolus generation based on playback direction
-		if (this.isMargolus) {
+		// adjust PCA/Margolus generation based on playback direction
+		if (this.isMargolus || this.isPCA) {
 			if (this.reverseMargolus) {
 				this.counterMargolus -= 1;
 			} else {
@@ -8320,7 +8498,7 @@
 		}
 
 		// check for Generations
-		if (this.multiNumStates !== -1 && !this.isHROT) {
+		if (this.multiNumStates !== -1 && !this.isHROT && !this.isPCA) {
 			this.nextGenerationGenerations();
 		}
 
@@ -15311,42 +15489,53 @@
 
 	// create the small colour grids based on zoom level
 	Life.prototype.createSmallColourGrids = function() {
-		var camZoom = this.camZoom;
+		var camZoom = this.camZoom,
+			colourGrid16 = this.colourGrid16,
+			colourGrid32 = this.colourGrid32;
+
+		// check for PCA rules
+		if (this.isPCA) {
+			// swap grids every generation
+			if ((this.counter & 1) !== 0) {
+				colourGrid16 = this.nextColourGrid16;
+				colourGrid32 = this.nextColourGrid32;
+			}
+		}
 
 		// check if 0.5 <= zoom < 1
 		if (camZoom >= 0.5 && camZoom < 1) {
 			// create 2x2 colour grid
 			if (this.themeHistory || this.isHROT) {
-				this.create2x2ColourGrid16(this.colourGrid16, this.smallColourGrid);
+				this.create2x2ColourGrid16(colourGrid16, this.smallColourGrid);
 			} else {
-				this.create2x2ColourGridNoHistory16(this.colourGrid16, this.smallColourGrid);
+				this.create2x2ColourGridNoHistory16(colourGrid16, this.smallColourGrid);
 			}
 		} else {
 			// check if 0.25 <= zoom < 0.5
 			if (camZoom >= 0.25 && camZoom < 0.5) {
 				// create 4x4 colour grid
 				if (this.themeHistory || this.isHROT) {
-					this.create4x4ColourGrid32(this.colourGrid32, this.smallColourGrid);
+					this.create4x4ColourGrid32(colourGrid32, this.smallColourGrid);
 				} else {
-					this.create4x4ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
+					this.create4x4ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
 				}
 			} else {
 				// check if 0.125 <= zoom < 0.25
 				if (camZoom >= 0.125 && camZoom < 0.25) {
 					// create 8x8 colour grid
 					if (this.themeHistory || this.isHROT) {
-						this.create8x8ColourGrid32(this.colourGrid32, this.smallColourGrid);
+						this.create8x8ColourGrid32(colourGrid32, this.smallColourGrid);
 					} else {
-						this.create8x8ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
+						this.create8x8ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
 					}
 				} else {
 					// check if zoom < 0.125
 					if (camZoom < 0.125) {
 						// create 16x16 colour grid
 						if (this.themeHistory || this.isHROT) {
-							this.create16x16ColourGrid32(this.colourGrid32, this.smallColourGrid);
+							this.create16x16ColourGrid32(colourGrid32, this.smallColourGrid);
 						} else {
-							this.create16x16ColourGridNoHistory32(this.colourGrid32, this.smallColourGrid);
+							this.create16x16ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
 						}
 					}
 				}
@@ -15659,8 +15848,8 @@
 
 	// convert life grid region to pens using tiles
 	Life.prototype.convertToPensTile = function() {
-		// ignore if rule is none
-		if (!this.isNone) {
+		// ignore if rule is none or PCA
+		if (!(this.isNone || this.isPCA)) {
 			// check for generations or HROT rule
 			if (this.multiNumStates === -1) {
 				// check for theme history
@@ -15775,6 +15964,116 @@
 			bottomY += ySize;
 			topY += ySize;
 		}
+	};
+
+	// next generation for PCA rules
+	Life.prototype.nextGenerationPCATile = function() {
+		var indexLookup = this.margolusLookup1,
+			y = 0,
+			x = 0,
+			grid = this.colourGrid,
+			nextGrid = this.nextColourGrid,
+			zoomBox = this.zoomBox,
+			leftX = zoomBox.leftX,
+			bottomY = zoomBox.bottomY,
+			rightX = zoomBox.rightX,
+			topY = zoomBox.topY,
+			state = 0,
+			index = 0,
+			population = 0,
+			nLeftX = this.width,
+			nBottomY = this.height,
+			nRightX = 0,
+			nTopY = 0,
+			colourTileGrid = this.colourTileHistoryGrid,
+			aboveRow = null,
+			gridRow = null,
+			belowRow = null,
+			tileRow = null;
+
+		// check for change in playback direction
+		if (this.reversePending) {
+			this.reverseMargolus = !this.reverseMargolus;
+			this.reversePending = false;
+		}
+
+		// clear anything alive
+		this.anythingAlive = 0;
+
+		// select the correct grid
+		if ((this.counter & 1) !== 0) {
+			grid = this.nextColourGrid;
+			nextGrid = this.colourGrid;
+
+			// check for reverse playback
+			if (this.reverseMargolus) {
+				if (this.altSpecified) {
+					indexLookup = this.margolusReverseLookup1;
+				} else {
+					indexLookup = this.margolusReverseLookup1;
+				}
+			}
+		} else {
+			grid = this.colourGrid;
+			nextGrid = this.nextColourGrid;
+			if (this.altSpecified) {
+				indexLookup = this.margolusLookup2;
+			}
+
+			// check for reverse playback
+			if (this.reverseMargolus) {
+				if (this.altSpecified) {
+					indexLookup = this.margolusReverseLookup2;
+				} else {
+					indexLookup = this.margolusReverseLookup1;
+				}
+			}
+		}
+
+		// process each cell in the bounding box
+		for (y = bottomY - 1; y <= topY + 1; y += 1) {
+			aboveRow = grid[y - 1];
+			gridRow = grid[y];
+			belowRow = grid[y + 1];
+			tileRow = colourTileGrid[y >> 4];
+
+			// process each row in the bounding box
+			for (x = leftX - 1; x <= rightX + 1; x += 1) {
+				index = gridRow[x - 1] | (belowRow[x] << 4) | (gridRow[x + 1] << 8) | (aboveRow[x] << 12);
+				state = indexLookup[index];
+				nextGrid[y][x] = state;
+
+				// check if state is alive
+				if (state > 0) {
+					tileRow[x >> 8] = 65535;
+					population += 1;
+
+					// update bounding box
+					if (x < nLeftX) {
+						nLeftX = x;
+					}
+					if (x > nRightX) {
+						nRightX = x;
+					}
+					if (y < nBottomY) {
+						nBottomY = y;
+					}
+					if (y > nTopY) {
+						nTopY = y;
+					}
+				}
+			}
+		}
+
+		// save statistics
+		this.population = population;
+		this.anythingAlive = population;
+
+		// update bounding box
+		zoomBox.leftX = nLeftX;
+		zoomBox.bottomY = nBottomY;
+		zoomBox.rightX = nRightX;
+		zoomBox.topY = nTopY;
 	};
 
 	// convert life grid region to pens using tiles but without history
@@ -17110,6 +17409,16 @@
 		    // counter
 		    i = 0;
 
+		// check for PCA rules
+		if (this.isPCA) {
+			// swap grids every generation
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+				bottomRow = colourGrid[bottomY];
+				topRow = colourGrid[topY];
+			}
+		}
+
 		// check for infinite width
 		if (width === 0) {
 			// draw top and bottom only
@@ -17157,7 +17466,16 @@
 	Life.prototype.renderGrid = function() {
 		var colour0 = this.pixelColours[0],
 			data32 = this.data32,
-			i = 0, l = 0;
+			i = 0, l = 0,
+			colourGrid = this.colourGrid;
+
+		// check for PCA rules
+		if (this.isPCA) {
+			// swap grids every generation
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+			}
+		}
 
 		// check if colour is changing
 		if (this.colourChange) {
@@ -17265,10 +17583,10 @@
 							// check for LifeHistory overlay
 							if (this.drawOverlay) {
 								// render the grid with the overlay on top
-								this.renderGridOverlayProjection(this.overlayGrid, this.colourGrid, 0);
+								this.renderGridOverlayProjection(this.overlayGrid, colourGrid, 0);
 							} else {
 								// render the grid
-								this.renderGridProjection(this.colourGrid, this.colourGrid, 0);
+								this.renderGridProjection(colourGrid, colourGrid, 0);
 							}
 						}
 					}
