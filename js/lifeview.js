@@ -250,7 +250,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 427,
+		/** @const {number} */ versionBuild : 429,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -7898,6 +7898,12 @@
 				}
 				me.patternAliasName = "";
 				patternText = me.engine.asRLE(me, me.engine, true);
+
+				// restore previous size
+				me.displayWidth = me.origDisplayWidth;
+				me.displayHeight = me.origDisplayHeight;
+
+				// start viewer
 				me.startViewer(patternText, false);
 			} else {
 				me.menuManager.notification.notify("Invalid rule", 15, 180, 15, true);
@@ -8449,7 +8455,13 @@
 			result = window.confirm("Create new random pattern?");
 		}
 		if (result) {
+			// restore previous size
+			me.displayWidth = me.origDisplayWidth;
+			me.displayHeight = me.origDisplayHeight;
+
+			// start viewer
 			me.startViewer(patternText, false);
+
 			// save the new pattern
 			me.saveCurrentRLE(me);
 		}
@@ -8467,6 +8479,12 @@
 					result = "Life";
 				}
 				patternText += result + "\nb!";
+
+				// restore previous size
+				me.displayWidth = me.origDisplayWidth;
+				me.displayHeight = me.origDisplayHeight;
+
+				// start viewer
 				me.startViewer(patternText, false);
 			} else {
 				me.menuManager.notification.notify("Invalid rule", 15, 180, 15, true);
@@ -13478,7 +13496,9 @@
 							resizeRequired = true;
 						}
 					} else {
-						this.displayWidth = ViewConstants.minViewerWidth;
+						if (this.displayWidth < ViewConstants.minViewerWidth) {
+							this.displayWidth = ViewConstants.minViewerWidth;
+						}
 					}
 
 					if (this.requestedPopupHeight > -1) {
