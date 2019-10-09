@@ -1,3 +1,6 @@
+Build 427
+- PCA rules now support LifeViewer history states
+
 Build 426
 - PCA rules now support Bounded Grids
 

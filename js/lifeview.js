@@ -250,7 +250,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 426,
+		/** @const {number} */ versionBuild : 427,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3213,7 +3213,7 @@
 
 				// copy colour cells
 				for (x = 0; x < copyWidth; x += 1) {
-					colourGridRow[(x + panX) & wm] = multiStateRow[x];
+					colourGridRow[(x + panX) & wm] = multiStateRow[x] + this.historyStates;
 				}
 			} else {
 				// check for multi-state pattern
@@ -5405,7 +5405,7 @@
 					value = 0;
 				} else {
 					if (this.engine.isPCA) {
-						value = i + this.startState;
+						value = i + this.startState + this.historyStates;
 					} else {
 						value = this.historyStates + this.engine.multiNumStates - (i + this.startState);
 					}
@@ -12471,14 +12471,10 @@
 
 		// reset history states
 		if (this.engine.multiNumStates > 2) {
-			if (this.engine.isPCA) {
-				this.maxHistoryStates = 0;
+			if (256 - this.engine.multiNumStates >= 63) {
+				this.maxHistoryStates = 63;
 			} else {
-				if (256 - this.engine.multiNumStates >= 63) {
-					this.maxHistoryStates = 63;
-				} else {
-					this.maxHistoryStates = 256 - this.engine.multiNumStates;
-				}
+				this.maxHistoryStates = 256 - this.engine.multiNumStates;
 			}
 		} else {
 			this.maxHistoryStates = 63;

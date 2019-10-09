@@ -2855,75 +2855,75 @@
 			if (this.boundedGridType !== -1 && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
 				// do nothing
 			} else {
-				// get correct grid for current generation
-				if ((this.counter & 1) !== 0) {
-					grid = this.nextGrid16;
-					tileGrid = this.nextTileGrid;
-				}
-
-				// get the cell as a bit mask and tile mask
-				cellAsBit = 1 << (~x & 15);
-				cellAsTileBit = 1 << (~(x >> 4) & 15);
-
-				// check for multi-state rules
-				if (!this.isHROT) {
-					if (this.multiNumStates <= 2) {
-						// 2-state
-						bitAlive = ((state & 1) === 1);
+				// check for PCA
+				if (this.isPCA) {
+					bitAlive = (colourGrid[y][x] > this.historyStates);
+					colourGrid[y][x] = this.historyStates + state;
+					colourTileHistoryGrid[y >> 4][x >> 8] = 65535;
+					// update population
+					if (state === 0) {
+						if (bitAlive) {
+							this.population -= 1;
+						}
 					} else {
-						// generations
-						bitAlive = (state === this.multiNumStates - 1);
-					}
-
-					// draw alive or dead
-					if (bitAlive) {
-						// mark a cell is alive
 						this.anythingAlive = 1;
-
-						// adjust population if cell was dead
-						if ((grid[y][x >> 4] & cellAsBit) === 0) {
+						if (!bitAlive) {
 							this.population += 1;
 						}
-						// set cell
-						colourGrid[y][x] = this.aliveStart;
-						colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
-						colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
-						grid[y][x >> 4] |= cellAsBit;
-						tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
-						// check left boundary
-						cx = x & 15;
-						if ((x > 0) && (cx <= leftTarget)) {
-							x -= (cx + 1);
-							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-							x += (cx + 1);
+					}
+				} else {
+					// get correct grid for current generation
+					if ((this.counter & 1) !== 0) {
+						grid = this.nextGrid16;
+						tileGrid = this.nextTileGrid;
+					}
+	
+					// get the cell as a bit mask and tile mask
+					cellAsBit = 1 << (~x & 15);
+					cellAsTileBit = 1 << (~(x >> 4) & 15);
+	
+					// check for multi-state rules
+					if (!this.isHROT) {
+						if (this.multiNumStates <= 2) {
+							// 2-state
+							bitAlive = ((state & 1) === 1);
 						} else {
-							// check right boundary
-							if ((x < this.width - 1) && (cx >= rightTarget)) {
-								x += (16 - cx);
-								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-								x -= (16 - cx);
-							}
+							// generations
+							bitAlive = (state === this.multiNumStates - 1);
 						}
-						// check bottom boundary
-						if ((y > 0) && ((y & 15) === 0)) {
-							y -= 1;
-							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+	
+						// draw alive or dead
+						if (bitAlive) {
+							// mark a cell is alive
+							this.anythingAlive = 1;
+	
+							// adjust population if cell was dead
+							if ((grid[y][x >> 4] & cellAsBit) === 0) {
+								this.population += 1;
+							}
+							// set cell
+							colourGrid[y][x] = this.aliveStart;
+							colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+							colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
+							grid[y][x >> 4] |= cellAsBit;
+							tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+							// check left boundary
+							cx = x & 15;
 							if ((x > 0) && (cx <= leftTarget)) {
 								x -= (cx + 1);
 								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 								x += (cx + 1);
 							} else {
+								// check right boundary
 								if ((x < this.width - 1) && (cx >= rightTarget)) {
 									x += (16 - cx);
 									tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 									x -= (16 - cx);
 								}
 							}
-							y += 1;
-						} else {
-							// check top boundary
-							if ((y < this.height - 1) && ((y & 15) === 15)) {
-								y += 1;
+							// check bottom boundary
+							if ((y > 0) && ((y & 15) === 0)) {
+								y -= 1;
 								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 								if ((x > 0) && (cx <= leftTarget)) {
 									x -= (cx + 1);
@@ -2936,82 +2936,100 @@
 										x -= (16 - cx);
 									}
 								}
-								y -= 1;
+								y += 1;
+							} else {
+								// check top boundary
+								if ((y < this.height - 1) && ((y & 15) === 15)) {
+									y += 1;
+									tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+									if ((x > 0) && (cx <= leftTarget)) {
+										x -= (cx + 1);
+										tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+										x += (cx + 1);
+									} else {
+										if ((x < this.width - 1) && (cx >= rightTarget)) {
+											x += (16 - cx);
+											tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+											x -= (16 - cx);
+										}
+									}
+									y -= 1;
+								}
+							}
+						} else {
+							// adjust population if cell was alive
+							if ((grid[y][x >> 4] & cellAsBit) !== 0) {
+								this.population -= 1;
+							}
+							// clear cell
+							if (deadZero) {
+								colourGrid[y][x] = this.unoccupied;
+							} else {
+								colourGrid[y][x] = this.deadStart;
+							}
+							colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+							colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
+							grid[y][x >> 4] &= ~cellAsBit;
+						}
+	
+						// check for LifeHistory
+						if (this.isLifeHistory && overlayGrid) {
+							// check if the cell used to be or has become state 6
+							current = overlayGrid[y][x];
+							if (current > 0) {
+								current = ViewConstants.stateMap.indexOf(current - 128);
+							}
+							if ((state === 6 && current !== 6) || (state !== 6 && current === 6)) {
+								result = 1;
+							}
+		
+							// update colour grid if history state
+							if (state === 2) {
+								colourGrid[y][x] = LifeConstants.deadMin;
+							} else {
+								// update overlay grid if not
+								if (state === 0) {
+									overlayGrid[y][x] = 0;
+								} else {
+									overlayGrid[y][x] = ViewConstants.stateMap[state] + 128;
+								}
 							}
 						}
-					} else {
-						// adjust population if cell was alive
-						if ((grid[y][x >> 4] & cellAsBit) !== 0) {
-							this.population -= 1;
+	
+						// check for generations style rule
+						if (this.multiNumStates > 2) {
+							// write the correct state to the colour grid
+							if (state > 0) {
+								state = this.historyStates + state;
+							}
+							colourGrid[y][x] = state;
 						}
-						// clear cell
-						if (deadZero) {
-							colourGrid[y][x] = this.unoccupied;
+					} else {
+						// update population for HROT
+						current = colourGrid[y][x];
+						if (this.multiNumStates === 2) {
+							aliveState = this.aliveStart;
+							if (state === 1) {
+								state = this.aliveStart;
+								this.anythingAlive = 1;
+							}
+							colourGrid[y][x] = state;
 						} else {
-							colourGrid[y][x] = this.deadStart;
+							aliveState = this.multiNumStates - 1 + this.historyStates;
+							if (state > 0) {
+								state = this.historyStates + state;
+								this.anythingAlive = 1;
+							}
+							colourGrid[y][x] = state;
 						}
 						colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
 						colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
-						grid[y][x >> 4] &= ~cellAsBit;
-					}
-
-					// check for LifeHistory
-					if (this.isLifeHistory && overlayGrid) {
-						// check if the cell used to be or has become state 6
-						current = overlayGrid[y][x];
-						if (current > 0) {
-							current = ViewConstants.stateMap.indexOf(current - 128);
-						}
-						if ((state === 6 && current !== 6) || (state !== 6 && current === 6)) {
-							result = 1;
-						}
-	
-						// update colour grid if history state
-						if (state === 2) {
-							colourGrid[y][x] = LifeConstants.deadMin;
+						if (current !== aliveState && state === aliveState) {
+							this.population += 1;
 						} else {
-							// update overlay grid if not
-							if (state === 0) {
-								overlayGrid[y][x] = 0;
-							} else {
-								overlayGrid[y][x] = ViewConstants.stateMap[state] + 128;
+							if (current === aliveState && state !== aliveState) {
+								this.population -= 1;
 							}
-						}
-					}
-
-					// check for generations style rule
-					if (this.multiNumStates > 2) {
-						// write the correct state to the colour grid
-						if (state > 0) {
-							state = this.historyStates + state;
-						}
-						colourGrid[y][x] = state;
-					}
-				} else {
-					// update population for HROT
-					current = colourGrid[y][x];
-					if (this.multiNumStates === 2) {
-						aliveState = this.aliveStart;
-						if (state === 1) {
-							state = this.aliveStart;
-							this.anythingAlive = 1;
-						}
-						colourGrid[y][x] = state;
-					} else {
-						aliveState = this.multiNumStates - 1 + this.historyStates;
-						if (state > 0) {
-							state = this.historyStates + state;
-							this.anythingAlive = 1;
-						}
-						colourGrid[y][x] = state;
-					}
-					colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
-					colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
-					if (current !== aliveState && state === aliveState) {
-						this.population += 1;
-					} else {
-						if (current === aliveState && state !== aliveState) {
-							this.population -= 1;
 						}
 					}
 				}
@@ -3282,7 +3300,7 @@
 							result = 0;
 						} else {
 							if (this.isPCA) {
-								result = col;
+								result = col - this.historyStates;
 							} else {
 								result = this.multiNumStates + this.historyStates - col;
 							}
@@ -16058,19 +16076,8 @@
 	};
 
 	// create the small colour grids based on zoom level
-	Life.prototype.createSmallColourGrids = function() {
-		var camZoom = this.camZoom,
-			colourGrid16 = this.colourGrid16,
-			colourGrid32 = this.colourGrid32;
-
-		// check for PCA rules
-		if (this.isPCA) {
-			// swap grids every generation
-			if ((this.counter & 1) !== 0) {
-				colourGrid16 = this.nextColourGrid16;
-				colourGrid32 = this.nextColourGrid32;
-			}
-		}
+	Life.prototype.createSmallColourGrids = function(colourGrid16, colourGrid32) {
+		var camZoom = this.camZoom;
 
 		// check if 0.5 <= zoom < 1
 		if (camZoom >= 0.5 && camZoom < 1) {
@@ -16553,7 +16560,6 @@
 			population = 0,
 			births = 0,
 			deaths = 0,
-			last = 0,
 			nLeftX = this.width,
 			nBottomY = this.height,
 			nRightX = 0,
@@ -16563,7 +16569,21 @@
 			gridRow = null,
 			belowRow = null,
 			tileRow = null,
+			nextRow = null,
+			rowAlive = false,
 	
+			// maximum dead state number
+			deadState = this.historyStates,
+
+			// minimum dead state number
+			minDeadState = (this.historyStates > 0 ? 1 : 0),
+
+			// cells
+			n = 0,
+			e = 0,
+			s = 0,
+			w = 0,
+
 			// bounded grid width and height
 			width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
@@ -16583,7 +16603,6 @@
 			rightX = bRightX - 1;
 			topY = bTopY - 1;
 		}
-
 
 		// check for change in playback direction
 		if (this.reversePending) {
@@ -16644,16 +16663,31 @@
 			gridRow = grid[y];
 			belowRow = grid[y + 1];
 			tileRow = colourTileGrid[y >> 4];
+			nextRow = nextGrid[y];
 
 			// process each row in the bounding box
+			rowAlive = false;
+			w = gridRow[leftX - 2];
 			for (x = leftX - 1; x <= rightX + 1; x += 1) {
-				last = gridRow[x];
-				index = gridRow[x - 1] | (belowRow[x] << 4) | (gridRow[x + 1] << 8) | (aboveRow[x] << 12);
+				n = belowRow[x];
+				e = gridRow[x + 1];
+				s = aboveRow[x];
+
+				if (deadState > 0) {
+					n = (n <= deadState ? 0 : n - deadState);
+					e = (e <= deadState ? 0 : e - deadState);
+					s = (s <= deadState ? 0 : s - deadState);
+					w = (w <= deadState ? 0 : w - deadState);
+				}
+
+				index = w | (n << 4) | (e << 8) | (s << 12);
 				state = indexLookup[index];
-				nextGrid[y][x] = state;
+				w = gridRow[x];
 
 				// check if state is alive
 				if (state > 0) {
+					nextRow[x] = state + deadState;
+					rowAlive = true;
 					tileRow[x >> 8] = 65535;
 					population += 1;
 
@@ -16664,20 +16698,38 @@
 					if (x > nRightX) {
 						nRightX = x;
 					}
-					if (y < nBottomY) {
-						nBottomY = y;
-					}
-					if (y > nTopY) {
-						nTopY = y;
-					}
-				}
 
-				// update births and deaths
-				if (last === 0 && state !== 0) {
-					births += 1;
+					// update births
+					if (w <= deadState) {
+						births += 1;
+					}
+				} else {
+					// check for death
+					state = w;
+					if (state > deadState) {
+						// update deaths
+						deaths += 1;
+						state = deadState;
+					} else {
+						// check for dying
+						if (state > minDeadState) {
+							state -= 1;
+						}
+					}
+					nextRow[x] = state;
+					if (state > 0) {
+						rowAlive = true;
+					}
 				}
-				if (last !== 0 && state === 0) {
-					deaths += 1;
+			}
+
+			// if any cells alive in the row then update bounding box
+			if (rowAlive) {
+				if (y < nBottomY) {
+					nBottomY = y;
+				}
+				if (y > nTopY) {
+					nTopY = y;
 				}
 			}
 		}
@@ -18073,13 +18125,17 @@
 		var colour0 = this.pixelColours[0],
 			data32 = this.data32,
 			i = 0, l = 0,
-			colourGrid = this.colourGrid;
+			colourGrid = this.colourGrid,
+			colourGrid16 = this.colourGrid16,
+			colourGrid32 = this.colourGrid32;
 
 		// check for PCA rules
 		if (this.isPCA) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
+				colourGrid16 = this.nextColourGrid16;
+				colourGrid32 = this.nextColourGrid32;
 			}
 		}
 
@@ -18139,7 +18195,7 @@
 		} else {
 			// create small colour grids if zoomed out
 			if (this.camZoom < 1) {
-				this.createSmallColourGrids();
+				this.createSmallColourGrids(colourGrid16, colourGrid32);
 			}
 
 			// check if zoom < 0.125x
