@@ -3213,7 +3213,11 @@
 
 				// copy colour cells
 				for (x = 0; x < copyWidth; x += 1) {
-					colourGridRow[(x + panX) & wm] = multiStateRow[x] + this.historyStates;
+					state = multiStateRow[x];
+					if (state > 0) {
+						state += this.historyStates;
+					}
+					colourGridRow[(x + panX) & wm] = state;
 				}
 			} else {
 				// check for multi-state pattern
@@ -8162,8 +8166,8 @@
 	};
 
 	// create random Margolus rule name
-	View.prototype.createRandomMargolus = function() {
-		var result = "M",
+	View.prototype.createRandomMargolus = function(isPCA) {
+		var result = (isPCA ? PatternManager.pcaRulePrefix.toUpperCase() + "," : "M"),
 			i = 0,
 			j = 0,
 			value = 0,
@@ -8235,20 +8239,26 @@
 		} else {
 			// check for reversible rules
 			if (this.randomReversible) {
-				// first must be 0 or 15
 				i = 16;
-				value = (this.randGen.random() * 16) | 0;
-				if (value == 15) {
-					first15 = true;
-	
-					// mark 15 and 0 used
-					used |= (1 << 15);
-					used |= 1;
-					i -= 1;
-				} else {
-					// first must be 0
+				// PCA rules must have 0 as the first number
+				if (isPCA) {
 					value = 0;
 					used |= 1;
+				} else {
+					// Margolus rules first must be 0 or 15
+					value = (this.randGen.random() * 16) | 0;
+					if (value == 15) {
+						first15 = true;
+		
+						// mark 15 and 0 used
+						used |= (1 << 15);
+						used |= 1;
+						i -= 1;
+					} else {
+						// first must be 0
+						value = 0;
+						used |= 1;
+					}
 				}
 				result += String(value);
 				i -= 1;
@@ -8276,13 +8286,18 @@
 					result += ",0";
 				}
 			} else {
-				// first must be 0 or 15
-				value = (this.randGen.random() * 16) | 0;
-				if (value === 15) {
-					first15 = true;
-				} else {
-					// first must be zero
+				// PCA first must be 0
+				if (isPCA) {
 					value = 0;
+				} else {
+					// Margolus first must be 0 or 15
+					value = (this.randGen.random() * 16) | 0;
+					if (value === 15) {
+						first15 = true;
+					} else {
+						// first must be zero
+						value = 0;
+					}
 				}
 				result += String(value) + ",";
 	
@@ -8389,8 +8404,8 @@
 		rleText += "!\n";
 
 		// create random rule
-		if (me.engine.isMargolus) {
-			me.patternRuleName = me.createRandomMargolus();
+		if (me.engine.isMargolus || me.engine.isPCA) {
+			me.patternRuleName = me.createRandomMargolus(me.engine.isPCA);
 		} else {
 			if (me.engine.isHROT) {
 				if (me.wasLtL) {

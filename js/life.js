@@ -2857,18 +2857,21 @@
 			} else {
 				// check for PCA
 				if (this.isPCA) {
-					bitAlive = (colourGrid[y][x] > this.historyStates);
+					current = colourGrid[y][x];
 					colourGrid[y][x] = this.historyStates + state;
 					colourTileHistoryGrid[y >> 4][x >> 8] = 65535;
 					// update population
 					if (state === 0) {
-						if (bitAlive) {
-							this.population -= 1;
+						if (current > this.historyStates) {
+							this.population -= this.bitCounts16[current - this.historyStates];
 						}
 					} else {
 						this.anythingAlive = 1;
-						if (!bitAlive) {
-							this.population += 1;
+						if (current <= this.historyStates) {
+							this.population += this.bitCounts16[state];
+						} else {
+							this.population -= this.bitCounts16[current - this.historyStates];
+							this.population += this.bitCounts16[state];
 						}
 					}
 				} else {
@@ -16082,7 +16085,7 @@
 		// check if 0.5 <= zoom < 1
 		if (camZoom >= 0.5 && camZoom < 1) {
 			// create 2x2 colour grid
-			if (this.themeHistory || this.isHROT) {
+			if (this.themeHistory || this.isHROT || this.isPCA) {
 				this.create2x2ColourGrid16(colourGrid16, this.smallColourGrid);
 			} else {
 				this.create2x2ColourGridNoHistory16(colourGrid16, this.smallColourGrid);
@@ -16091,7 +16094,7 @@
 			// check if 0.25 <= zoom < 0.5
 			if (camZoom >= 0.25 && camZoom < 0.5) {
 				// create 4x4 colour grid
-				if (this.themeHistory || this.isHROT) {
+				if (this.themeHistory || this.isHROT || this.isPCA) {
 					this.create4x4ColourGrid32(colourGrid32, this.smallColourGrid);
 				} else {
 					this.create4x4ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
@@ -16100,7 +16103,7 @@
 				// check if 0.125 <= zoom < 0.25
 				if (camZoom >= 0.125 && camZoom < 0.25) {
 					// create 8x8 colour grid
-					if (this.themeHistory || this.isHROT) {
+					if (this.themeHistory || this.isHROT || this.isPCA) {
 						this.create8x8ColourGrid32(colourGrid32, this.smallColourGrid);
 					} else {
 						this.create8x8ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
@@ -16109,7 +16112,7 @@
 					// check if zoom < 0.125
 					if (camZoom < 0.125) {
 						// create 16x16 colour grid
-						if (this.themeHistory || this.isHROT) {
+						if (this.themeHistory || this.isHROT || this.isPCA) {
 							this.create16x16ColourGrid32(colourGrid32, this.smallColourGrid);
 						} else {
 							this.create16x16ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
@@ -16571,6 +16574,7 @@
 			tileRow = null,
 			nextRow = null,
 			rowAlive = false,
+			bitCounts = this.bitCounts16,
 	
 			// maximum dead state number
 			deadState = this.historyStates,
@@ -16686,10 +16690,10 @@
 
 				// check if state is alive
 				if (state > 0) {
+					population += bitCounts[state];
 					nextRow[x] = state + deadState;
 					rowAlive = true;
 					tileRow[x >> 8] = 65535;
-					population += 1;
 
 					// update bounding box
 					if (x < nLeftX) {
@@ -16719,6 +16723,12 @@
 					nextRow[x] = state;
 					if (state > 0) {
 						rowAlive = true;
+						if (x < nLeftX) {
+							nLeftX = x;
+						}
+						if (x > nRightX) {
+							nRightX = x;
+						}
 					}
 				}
 			}

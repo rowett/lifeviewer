@@ -6082,6 +6082,7 @@
 		if (pattern.isPCA) {
 			if (this.ruleArray[0] !== 0) {
 				this.failureReason = "PCA first value must be 0";
+				this.ruleArray[0] = 0;
 				this.executable = false;
 			}
 		}

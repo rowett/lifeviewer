@@ -573,7 +573,7 @@
 			y = this.renderHelpLine(view, "Backspace", "pause / previous generation", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Tab", "pause / next step", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Shift Tab", "pause / previous step", ctx, x, y, height, helpLine);
-			if (view.engine.isMargolus) {
+			if (view.engine.isMargolus || view.engine.isPCA) {
 				y = this.renderHelpLine(view, "U", "toggle playback direction", ctx, x, y, height, helpLine);
 			}
 			if (view.isInPopup) {
@@ -1116,7 +1116,7 @@
 		y = this.renderHelpLine(view, Keywords.randomWidthWord + " <" + ViewConstants.minRandomWidth + ".." + ViewConstants.maxRandomWidth + ">", "set random pattern width", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.randomHeightWord + " <" + ViewConstants.minRandomHeight + ".." + ViewConstants.maxRandomHeight + ">", "set random pattern height", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.randomFillWord + " <" + ViewConstants.minRandomFill + ".." + ViewConstants.maxRandomFill + ">", "set random pattern fill percentage", ctx, x, y, height, helpLine);
-		if (view.engine.isMargolus) {
+		if (view.engine.isMargolus || view.engine.isPCA) {
 			y = this.renderHelpLine(view, Keywords.randomReversibleWord, "only generate reversible rules", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, Keywords.randomSwapWord, "only generate fixed population rules", ctx, x, y, height, helpLine);
 		} else {
@@ -1401,7 +1401,10 @@
 		if (view.engine.isMargolus) {
 			y = this.renderHelpLine(view, "MargolusGen", view.engine.counterMargolus + view.genOffset, ctx, x, y, height, helpLine);
 		}
-		if (view.engine.isMargolus && view.engine.margolusReverseLookup1) {
+		if (view.engine.isPCA) {
+			y = this.renderHelpLine(view, "PCAGen", view.engine.counterMargolus + view.genOffset, ctx, x, y, height, helpLine);
+		}
+		if ((view.engine.isMargolus || view.engine.isPCA) && view.engine.margolusReverseLookup1) {
 			flag = view.engine.reverseMargolus;
 			if (view.engine.reversePending) {
 				flag = !flag;
@@ -1722,7 +1725,7 @@
 		y = this.renderHelpLine(view, "Width", view.randomWidth, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Height", view.randomHeight, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Fill", view.randomFillPercentage + "%", ctx, x, y, height, helpLine);
-		if (view.engine.isMargolus) {
+		if (view.engine.isMargolus || view.engine.isPCA) {
 			y = this.renderHelpLine(view, "Reversible", (view.randomReversible ? "Only" : "Any"), ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "FixedPop", (view.randomSwap ? "Yes" : "No"), ctx, x, y, height, helpLine);
 		} else {
