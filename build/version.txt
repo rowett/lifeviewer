@@ -1,5 +1,6 @@
 Build 429
 - ensure PopUp Viewer size is consistent when using Randomize, New Pattern or Change Rule
+- fixed PopUp title message size
 
 Build 428
 - PCA rules now support Randomize

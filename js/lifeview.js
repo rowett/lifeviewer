@@ -12365,7 +12365,7 @@
 		    ctx = this.mainContext,
 
 		    // width of title bar
-		    titleWidth = 420,
+		    titleWidth = 500,
 
 		    // length of message in characters
 		    length = message.length,
@@ -12382,11 +12382,8 @@
 			// font size
 			itemFontSize = 18;
 
-		// setup device pixel ratio
-		if (window.devicePixelRatio) {
-			devicePixelRatio = window.devicePixelRatio;
-			itemFontSize = (itemFontSize * devicePixelRatio) | 0;
-		}
+		// scale font
+		itemFontSize = (itemFontSize * this.viewMenu.yScale) | 0;
 
 		// set the variable font
 		ctx.font = itemFontSize + "px " + ViewConstants.variableFontFamily;
