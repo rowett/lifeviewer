@@ -7900,8 +7900,10 @@
 				patternText = me.engine.asRLE(me, me.engine, true);
 
 				// restore previous size
-				me.displayWidth = me.origDisplayWidth;
-				me.displayHeight = me.origDisplayHeight;
+				if (me.isInPopup) {
+					me.displayWidth = me.origDisplayWidth;
+					me.displayHeight = me.origDisplayHeight;
+				}
 
 				// start viewer
 				me.startViewer(patternText, false);
@@ -8456,8 +8458,10 @@
 		}
 		if (result) {
 			// restore previous size
-			me.displayWidth = me.origDisplayWidth;
-			me.displayHeight = me.origDisplayHeight;
+			if (me.isInPopup) {
+				me.displayWidth = me.origDisplayWidth;
+				me.displayHeight = me.origDisplayHeight;
+			}
 
 			// start viewer
 			me.startViewer(patternText, false);
@@ -8481,8 +8485,10 @@
 				patternText += result + "\nb!";
 
 				// restore previous size
-				me.displayWidth = me.origDisplayWidth;
-				me.displayHeight = me.origDisplayHeight;
+				if (me.isInPopup) {
+					me.displayWidth = me.origDisplayWidth;
+					me.displayHeight = me.origDisplayHeight;
+				}
 
 				// start viewer
 				me.startViewer(patternText, false);
