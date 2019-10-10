@@ -1,3 +1,7 @@
+Build 430
+- CXRLE Gen now accepts negative generations
+- new Theme for PCA rules which has a different colour for each of the 4 sub-pixels
+
 Build 429
 - ensure PopUp Viewer size is consistent when using Randomize, New Pattern or Change Rule
 - fixed PopUp title message size

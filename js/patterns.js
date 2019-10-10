@@ -4946,6 +4946,9 @@
 		    // whether character found
 		    found = false,
 
+			// whether minus found
+			minus = false,
+
 		    // counter
 		    i = 0;
 
@@ -4977,6 +4980,12 @@
 			// skip any whitespace
 			i = this.skipWhitespace(source, i, newLine);
 
+			// check for minus
+			if (i < newLine && source[i] === "-") {
+				minus = true;
+				i += 1;
+			}
+
 			// check each digit
 			found = false;
 			while (i < newLine && !found) {
@@ -4994,6 +5003,9 @@
 
 			// save the generation
 			this.genDefined = true;
+			if (minus) {
+				generation = -generation;
+			}
 			this.generation = generation;
 		}
 	};

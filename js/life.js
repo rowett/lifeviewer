@@ -14,6 +14,12 @@
 	// Life constants
 	/** @const */
 	var LifeConstants = {
+		// PCA palette
+		/** @const {Array<Array<number>>} */ coloursPCA : [[0, 0, 0], [255, 0, 0], [0, 255, 0], [128, 128, 0],
+														   [0, 0, 255], [128, 0, 128], [0, 128, 128], [85, 85, 85],
+														   [255, 255, 0], [255, 128, 0], [128, 255, 0], [170, 170, 0],
+														   [128, 128, 128], [170, 85, 85], [85, 128, 43], [128, 128, 64]],
+
 		// NW glider (top left cell must be set for detection)
 		/** @const {Array<Array<number>>} */ gliderNW : [[1, 1, 1],
 														 [1, 0, 0],
@@ -4719,6 +4725,11 @@
 		this.themes[i].setGridLines(2, new Colour(32, 32, 255), new Colour(64, 64, 128));
 		i += 1;
 
+		// PCA theme
+		this.themes[i] = new Theme("PCA", new ColourRange(new Colour(16, 16, 16), new Colour(64, 64, 64)), new ColourRange(new Colour(176, 176, 176), new Colour(240, 240, 240)), new Colour(0, 0, 0),
+									new Colour(240, 240, 240), new ColourRange(new Colour(160, 160, 160), new Colour(-1, -1, -1)), new ColourRange(new Colour(16, 16, 16), new Colour(64, 64, 64)), new Colour(0, 0, 0));
+		i += 1;
+
 		// custom theme
 		this.themes[i] = new Theme(Keywords.themeCustomWord, new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0),
 									new Colour(0, 0, 0), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
@@ -4890,7 +4901,7 @@
 				this.greenChannel[i] = this.unoccupiedGenCurrent.green * mixWeight + this.unoccupiedGenTarget.green * (1 - mixWeight);
 				this.blueChannel[i] = this.unoccupiedGenCurrent.blue * mixWeight + this.unoccupiedGenTarget.blue * (1 - mixWeight);
 
-				// set generations ramp
+				// set generations or PCA colours
 				for (i = 1; i < this.multiNumStates - 1; i += 1) {
 					// compute the weighting between the start and end colours in the range
 					if (this.multiNumStates <= 3) {
@@ -4899,32 +4910,39 @@
 						weight = (i - 1) / (this.multiNumStates - 3);
 					}
 
-					// compute the red component of the current and target colour
-					currentComponent = this.dyingGenColCurrent.endColour.red * weight + this.dyingGenColCurrent.startColour.red * (1 - weight);
-					targetComponent = this.dyingGenColTarget.endColour.red * weight + this.dyingGenColTarget.startColour.red * (1 - weight);
-					this.redChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-
-					// compute the green component of the current and target colour
-					currentComponent = this.dyingGenColCurrent.endColour.green * weight + this.dyingGenColCurrent.startColour.green * (1 - weight);
-					targetComponent = this.dyingGenColTarget.endColour.green * weight + this.dyingGenColTarget.startColour.green * (1 - weight);
-					this.greenChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-
-					// compute the blue component of the current and target colour
-					currentComponent = this.dyingGenColCurrent.endColour.blue * weight + this.dyingGenColCurrent.startColour.blue * (1 - weight);
-					targetComponent = this.dyingGenColTarget.endColour.blue * weight + this.dyingGenColTarget.startColour.blue * (1 - weight);
-					this.blueChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-
-					// override with custom colour if specified
-					if (this.customColours && this.customColours.length >= i) {
-						if (!this.isHROT) {
-							current = this.customColours[this.multiNumStates - i];
-						} else {
-							current = this.customColours[i];
-						}
-						if (current !== -1) {
-							this.redChannel[i + this.historyStates] = current >> 16;
-							this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
-							this.blueChannel[i + this.historyStates] = (current & 255);
+					// check for PCA (note hard coded theme number! TBD)
+					if (this.colourTheme === 18) {
+						this.redChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][0];
+						this.greenChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][1];
+						this.blueChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][2];
+					} else {
+						// compute the red component of the current and target colour
+						currentComponent = this.dyingGenColCurrent.endColour.red * weight + this.dyingGenColCurrent.startColour.red * (1 - weight);
+						targetComponent = this.dyingGenColTarget.endColour.red * weight + this.dyingGenColTarget.startColour.red * (1 - weight);
+						this.redChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+	
+						// compute the green component of the current and target colour
+						currentComponent = this.dyingGenColCurrent.endColour.green * weight + this.dyingGenColCurrent.startColour.green * (1 - weight);
+						targetComponent = this.dyingGenColTarget.endColour.green * weight + this.dyingGenColTarget.startColour.green * (1 - weight);
+						this.greenChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+	
+						// compute the blue component of the current and target colour
+						currentComponent = this.dyingGenColCurrent.endColour.blue * weight + this.dyingGenColCurrent.startColour.blue * (1 - weight);
+						targetComponent = this.dyingGenColTarget.endColour.blue * weight + this.dyingGenColTarget.startColour.blue * (1 - weight);
+						this.blueChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+	
+						// override with custom colour if specified
+						if (this.customColours && this.customColours.length >= i) {
+							if (!(this.isHROT || this.isPCA)) {
+								current = this.customColours[this.multiNumStates - i];
+							} else {
+								current = this.customColours[i];
+							}
+							if (current !== -1) {
+								this.redChannel[i + this.historyStates] = current >> 16;
+								this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
+								this.blueChannel[i + this.historyStates] = (current & 255);
+							}
 						}
 					}
 				}

@@ -55,8 +55,8 @@
 		/** @const {number} */ maxRandomFill : 100,
 
 		// theme selection button positions and order
-		/** @const {Array<number>} */ themeX : [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3],
-		/** @const {Array<number>} */ themeOrder : [1, 10, 11, 17, 18, 2, 3, 4, 5, 7, 12, 13, 14, 15, 16, 0, 6, 8, 9],
+		/** @const {Array<number>} */ themeX : [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3],
+		/** @const {Array<number>} */ themeOrder : [1, 10, 11, 17, 18, 2, 3, 4, 5, 7, 12, 13, 14, 15, 16, 0, 6, 8, 9, 19],
 
 		// paste positions
 		/** @const {number} */ pastePositionNW : 0,
@@ -250,7 +250,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 429,
+		/** @const {number} */ versionBuild : 430,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5228,7 +5228,7 @@
 			this.themeSectionLabel.preText = "Display";
 		} else {
 			if (this.showInfoSettings) {
-				this.themeSectionLabel.preText = "Info";
+				this.themeSectionLabel.preText = "Advanced";
 			} else {
 				if (this.showPlaybackSettings) {
 					this.themeSectionLabel.preText = "Playback";
@@ -8965,6 +8965,10 @@
 		return me.setThemeFromCallback(18, newValue, change);
 	};
 
+	View.prototype.toggleTheme19 = function(newValue, change, me) {
+		return me.setThemeFromCallback(19, newValue, change);
+	};
+
 	// graph close button
 	View.prototype.graphClosePressed = function(me) {
 		me.popGraph = false;
@@ -11935,8 +11939,8 @@
 		this.graphButton.toolTip = ["toggle population graph display"];
 
 		// add the info button
-		this.infoButton = this.viewMenu.addButtonItem(this.infoPressed, Menu.middle, 0, 25, 150, 40, "Info");
-		this.infoButton.toolTip = "info settings";
+		this.infoButton = this.viewMenu.addButtonItem(this.infoPressed, Menu.middle, 0, 25, 150, 40, "Advanced");
+		this.infoButton.toolTip = "advanced settings";
 
 		// add the display button
 		this.displayButton = this.viewMenu.addButtonItem(this.displayPressed, Menu.middle, 0, 75,  150, 40, "Display");
@@ -11982,6 +11986,7 @@
 		this.themeSelections[16].callback = this.toggleTheme16;
 		this.themeSelections[17].callback = this.toggleTheme17;
 		this.themeSelections[18].callback = this.toggleTheme18;
+		this.themeSelections[19].callback = this.toggleTheme19;
 
 		// add the theme category labels
 		this.themeDefaultLabel = this.viewMenu.addLabelItem(Menu.north, -210, 60, 120, 40, "Default");
@@ -12382,9 +12387,6 @@
 		    // index
 			i = length,
 			
-			// device pixel ratio
-			devicePixelRatio = 1,
-
 			// font size
 			itemFontSize = 18;
 
@@ -12763,7 +12765,7 @@
 					themeRequested = 10;
 				} else {
 					// check for Generations or HROT
-					if (this.engine.multiNumStates > 2) {
+					if (this.engine.multiNumStates > 2 && !this.engine.isPCA) {
 						// multi state uses theme 11
 						themeRequested = 11;
 					} else {
@@ -12771,8 +12773,13 @@
 						if (this.engine.isMargolus) {
 							themeRequested = 17;
 						} else {
-							// default to theme 1
-							themeRequested = 1;
+							// check for PCA
+							if (this.engine.isPCA) {
+								themeRequested = 18;
+							} else {
+								// default to theme 1
+								themeRequested = 1;
+							}
 						}
 					}
 				}
