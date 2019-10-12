@@ -16,9 +16,9 @@
 	var LifeConstants = {
 		// PCA palette
 		/** @const {Array<Array<number>>} */ coloursPCA : [[0, 0, 0], [255, 0, 0], [0, 255, 0], [128, 128, 0],
-														   [0, 0, 255], [128, 0, 128], [0, 128, 128], [85, 85, 85],
+														   [16, 16, 255], [128, 0, 128], [0, 128, 128], [96, 96, 96],
 														   [255, 255, 0], [255, 128, 0], [128, 255, 0], [170, 170, 0],
-														   [128, 128, 128], [170, 85, 85], [85, 128, 43], [128, 128, 64]],
+														   [144, 144, 144], [170, 85, 85], [85, 128, 43], [128, 128, 64]],
 
 		// NW glider (top left cell must be set for detection)
 		/** @const {Array<Array<number>>} */ gliderNW : [[1, 1, 1],
@@ -4726,8 +4726,8 @@
 		i += 1;
 
 		// PCA theme
-		this.themes[i] = new Theme("PCA", new ColourRange(new Colour(16, 16, 16), new Colour(64, 64, 64)), new ColourRange(new Colour(176, 176, 176), new Colour(240, 240, 240)), new Colour(0, 0, 0),
-									new Colour(240, 240, 240), new ColourRange(new Colour(160, 160, 160), new Colour(-1, -1, -1)), new ColourRange(new Colour(16, 16, 16), new Colour(64, 64, 64)), new Colour(0, 0, 0));
+		this.themes[i] = new Theme("PCA", new ColourRange(new Colour(24, 24, 24), new Colour(64, 64, 64)), new ColourRange(new Colour(176, 176, 176), new Colour(240, 240, 240)), new Colour(0, 0, 0),
+									new Colour(240, 240, 240), new ColourRange(new Colour(160, 160, 160), new Colour(-1, -1, -1)), new ColourRange(new Colour(24, 24, 24), new Colour(64, 64, 64)), new Colour(0, 0, 0));
 		i += 1;
 
 		// custom theme
@@ -4911,7 +4911,7 @@
 					}
 
 					// check for PCA (note hard coded theme number! TBD)
-					if (this.colourTheme === 18) {
+					if (this.isPCA && this.colourTheme === 18) {
 						this.redChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][0];
 						this.greenChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][1];
 						this.blueChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][2];
@@ -6837,6 +6837,14 @@
 
 		if (this.shrinkNeeded) {
 			this.shrinkNeeded = false;
+
+			// check for PCA rules
+			if (this.isPCA) {
+				// swap grids every generation
+				if ((this.counter & 1) !== 0) {
+					colourGrid = this.nextColourGrid;
+				}
+			}
 
 			// determine the buffer for current generation
 			if ((this.counter & 1) !== 0) {

@@ -250,7 +250,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 430,
+		/** @const {number} */ versionBuild : 432,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -10014,16 +10014,27 @@
 			x = 0,
 			y = 0,
 			i = 0,
-			swap = 0;
+			swap = 0,
+			state = 0;
 
 		// flip each row
 		i = 0;
 		for (y = 0; y < h; y += 1) {
-			// flip the row
-			for (x = 0; x < w2; x += 1) {
-				swap = me.pasteBuffer[i + x];
-				me.pasteBuffer[i + x] = me.pasteBuffer[i + w - x - 1];
-				me.pasteBuffer[i + w - x - 1] = swap;
+			// flip the bits for PCA rules
+			if (me.engine.isPCA) {
+				for (x = 0; x < w2; x += 1) {
+					swap = me.pasteBuffer[i + x];
+					state = me.pasteBuffer[i + w - x - 1];
+					me.pasteBuffer[i + x] = (state & 5) | ((state & 2) << 2) | ((state & 8) >> 2);
+					me.pasteBuffer[i + w - x - 1] = (swap & 5) | ((swap & 2) << 2) | ((swap & 8) >> 2);
+				}
+			} else {
+				// flip the row
+				for (x = 0; x < w2; x += 1) {
+					swap = me.pasteBuffer[i + x];
+					me.pasteBuffer[i + x] = me.pasteBuffer[i + w - x - 1];
+					me.pasteBuffer[i + w - x - 1] = swap;
+				}
 			}
 			// skip next half
 			i += w;
@@ -10075,9 +10086,17 @@
 					}
 					row[x - x1] = state;
 				}
+
 				// write the row back in reverse order
-				for (x = x1; x <= x2; x += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, row[x2 - x], true);
+				if (me.engine.isPCA) {
+					for (x = x1; x <= x2; x += 1) {
+						state = row[x2 - x];
+						me.setStateWithUndo(x + xOff, y + yOff, (state & 5) | ((state & 2) << 2) | ((state & 8) >> 2), true);
+					}
+				} else {
+					for (x = x1; x <= x2; x += 1) {
+						me.setStateWithUndo(x + xOff, y + yOff, row[x2 - x], true);
+					}
 				}
 			}
 
@@ -10097,16 +10116,27 @@
 			x = 0,
 			y = 0,
 			i = 0,
-			swap = 0;
+			swap = 0,
+			state = 0;
 
 		// flip each column
 		i = 0;
 		for (x = 0; x < w; x += 1) {
-			// flip the row
-			for (y = 0; y < h2; y += 1) {
-				swap = me.pasteBuffer[i + y * w];
-				me.pasteBuffer[i + y * w] = me.pasteBuffer[i + (h - y - 1) * w];
-				me.pasteBuffer[i + (h - y - 1) * w] = swap;
+			// flip the bits for PCA rules
+			if (me.engine.isPCA) {
+				for (y = 0; y < h2; y += 1) {
+					swap = me.pasteBuffer[i + y * w];
+					state = me.pasteBuffer[i + (h - y - 1) * w];
+					me.pasteBuffer[i + y * w] = (state & 10) | ((state & 1) << 2) | ((state & 4) >> 2);
+					me.pasteBuffer[i + (h - y - 1) * w] = (swap & 10) | ((swap & 1) << 2) | ((swap & 4) >> 2);
+				}
+			} else {
+				// flip the row
+				for (y = 0; y < h2; y += 1) {
+					swap = me.pasteBuffer[i + y * w];
+					me.pasteBuffer[i + y * w] = me.pasteBuffer[i + (h - y - 1) * w];
+					me.pasteBuffer[i + (h - y - 1) * w] = swap;
+				}
 			}
 			// skip next half
 			i += 1;
@@ -10159,8 +10189,15 @@
 					column[y - y1] = state;
 				}
 				// write the column back in reverse order
-				for (y = y1; y <= y2; y += 1) {
-					me.setStateWithUndo(x + xOff, y + yOff, column[y2 - y], true);
+				if (me.engine.isPCA) {
+					for (y = y1; y <= y2; y += 1) {
+						state = column[y2 - y];
+						me.setStateWithUndo(x + xOff, y + yOff, (state & 10) | ((state & 1) << 2) | ((state & 4) >> 2), true);
+					}
+				} else {
+					for (y = y1; y <= y2; y += 1) {
+						me.setStateWithUndo(x + xOff, y + yOff, column[y2 - y], true);
+					}
 				}
 			}
 
