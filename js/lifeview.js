@@ -2775,7 +2775,7 @@
 
 				// put the cells from the cell list onto the grid
 				this.engine.counter = 0;
-				if (!isSimple2State) {
+				if (isSimple2State) {
 					// can use batch set
 					this.engine.setStateList(cells, xOff - item.leftX, yOff - item.bottomY);
 				} else {
@@ -2930,7 +2930,7 @@
 				// determine paste mode
 				switch (mode) {
 				case ViewConstants.pasteModeOr:
-					if (!isSimple2State) {
+					if (isSimple2State) {
 						this.engine.setStateList(cells, xOff, yOff);
 					} else {
 						while (i < cells.length) {
