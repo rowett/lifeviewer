@@ -4910,8 +4910,8 @@
 						weight = (i - 1) / (this.multiNumStates - 3);
 					}
 
-					// check for PCA (note hard coded theme number! TBD)
-					if (this.isPCA && this.colourTheme === 18) {
+					// check for PCA (theme is PCA or Custom)  TBD hard coded theme number!
+					if (this.isPCA && this.colourTheme >= 18) {
 						this.redChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][0];
 						this.greenChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][1];
 						this.blueChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][2];

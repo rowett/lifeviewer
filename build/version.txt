@@ -1,3 +1,6 @@
+Build 433
+- workround slowdown on iOS 13 devices
+
 Build 432
 - Flip X and Flip Y now flip sub-pixels in PCA cells
 - Help->Info->Theme now shows PCA Theme colour labels

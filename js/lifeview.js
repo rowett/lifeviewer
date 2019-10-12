@@ -250,7 +250,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 432,
+		/** @const {number} */ versionBuild : 433,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -14697,8 +14697,8 @@
 		}
 
 		// give focus to the popup window
-		view.mainContext.canvas.focus();
-		view.menuManager.hasFocus = true;
+		//view.mainContext.canvas.focus();
+		//view.menuManager.hasFocus = true;
 
 		return false;
 	}

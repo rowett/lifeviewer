@@ -3178,7 +3178,9 @@
 		// check if the canvas has focus
 		if (!me.hasFocus) {
 			// set focus on canvas element
-			me.mainCanvas.focus();
+			if (!me.eventWasTouch) {
+				me.mainCanvas.focus();
+			}
 			me.hasFocus = true;
 
 			// clear click to focus notification
