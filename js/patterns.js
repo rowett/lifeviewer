@@ -578,7 +578,7 @@
 		}
 
 		// check for neighborhoods
-		if ((this.isPCA !== source.isPCA) || (this.isMargolus !== source.isMargolus) || (this.isHex !== source.isHex) || (this.isTriangular !== source.isTriangular) || (this.triangularNeighbourhood !== source.triangularNeighbourhood) || (this.isVonNeumann !== source.isVonNeumann) || (this.wolframRule !== source.wolframRule) || (this.neighborhoodLTL !== source.neighborhoodLTL) || (this.neighborhoodHROT !== source.neighborhoodHROT)) {
+		if ((this.isPCA !== source.isPCA) || (this.isMargolus !== source.isMargolus) || (this.isHex !== source.isHex) || (this.isTriangular !== source.isTriangular) || (this.triangularNeighbourhood !== source.triangularNeighbourhood) || (this.isVonNeumann !== source.isVonNeumann) || (this.wolframRule == -1 && source.wolframRule !== -1) || (this.wolframRule !== -1 && source.wolframRule === -1) || (this.neighborhoodLTL !== source.neighborhoodLTL) || (this.neighborhoodHROT !== source.neighborhoodHROT)) {
 			return "Alternate has different neighborhood";
 		}
 
@@ -2436,7 +2436,7 @@
 	};
 
 	// decode Wolfram rule
-	PatternManager.decodeWolfram = function(pattern, rule) {
+	PatternManager.decodeWolfram = function(pattern, rule, ruleArray) {
 		var valid = true,
 
 		    // rule number
@@ -2472,7 +2472,7 @@
 					valid = false;
 				} else {
 					// build the map
-					this.createWolframMap(this.ruleArray, number);
+					this.createWolframMap(ruleArray, number);
 					pattern.wolframRule = number;
 
 					// save the canonical name
@@ -4220,7 +4220,7 @@
 							// check for Wolfram rule
 							if (rule[0] === "w") {
 								// decode Wolframe rule
-								valid = this.decodeWolfram(pattern, rule);
+								valid = this.decodeWolfram(pattern, rule, ruleArray);
 							} else {
 								// check for triangular rules
 								triangularIndex = rule.lastIndexOf(PatternManager.triangularPostfix);

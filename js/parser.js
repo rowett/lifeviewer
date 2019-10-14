@@ -136,11 +136,23 @@
 			case Keywords.everyWord:
 			case Keywords.pasteTWord:
 			case Keywords.pasteModeWord:
-			case Keywords.pasteModeOrWord:
-			case Keywords.pasteModeCopyWord:
-			case Keywords.pasteModeXorWord:
+			case Keywords.pasteModeZeroWord:
 			case Keywords.pasteModeAndWord:
-			case Keywords.pasteModeNotWord:
+			case Keywords.pasteMode0010Word:
+			case Keywords.pasteModeXWord:
+			case Keywords.pasteMode0100Word:
+			case Keywords.pasteModeYWord:
+			case Keywords.pasteModeXorWord:
+			case Keywords.pasteModeOrWord:
+			case Keywords.pasteModeNOrWord:
+			case Keywords.pasteModeXNOrWord:
+			case Keywords.pasteModeNotYWord:
+			case Keywords.pasteMode1011Word:
+			case Keywords.pasteModeNotXWord:
+			case Keywords.pasteMode1101Word:
+			case Keywords.pasteModeNAndWord:
+			case Keywords.pasteModeOneWord:
+			case Keywords.pasteModeCopyWord:
 				result = true;
 				break;
 			default:
@@ -2475,25 +2487,75 @@
 							type = "paste mode";
 							peekToken = scriptReader.peekAtNextToken();
 							switch (peekToken) {
-							case Keywords.pasteModeOrWord:
-								view.pasteMode = ViewConstants.pasteModeOr;
-								break;
-							case Keywords.pasteModeCopyWord:
-								view.pasteMode = ViewConstants.pasteModeCopy;
-								break;
-							case Keywords.pasteModeXorWord:
-								view.pasteMode = ViewConstants.pasteModeXor;
+							case Keywords.pasteModeZeroWord:
+								view.pasteMode = ViewConstants.pasteModeZero;
 								break;
 							case Keywords.pasteModeAndWord:
 								view.pasteMode = ViewConstants.pasteModeAnd;
 								break;
-							case Keywords.pasteModeNotWord:
-								view.pasteMode = ViewConstants.pasteModeNot;
+							case Keywords.pasteMode0010Word:
+								view.pasteMode = ViewConstants.pasteMode0010;
+								break;
+							case Keywords.pasteModeXWord:
+								view.pasteMode = ViewConstants.pasteModeX;
+								break;
+							case Keywords.pasteMode0100Word:
+								view.pasteMode = ViewConstants.pasteMode0100;
+								break;
+							case Keywords.pasteModeYWord:
+								view.pasteMode = ViewConstants.pasteModeY;
+								break;
+							case Keywords.pasteModeXorWord:
+								view.pasteMode = ViewConstants.pasteModeXor;
+								break;
+							case Keywords.pasteModeOrWord:
+								view.pasteMode = ViewConstants.pasteModeOr;
+								break;
+							case Keywords.pasteModeNOrWord:
+								view.pasteMode = ViewConstants.pasteModeNOr;
+								break;
+							case Keywords.pasteModeXNOrWord:
+								view.pasteMode = ViewConstants.pasteModeXNOr;
+								break;
+							case Keywords.pasteModeNotYWord:
+								view.pasteMode = ViewConstants.pasteModeNotY;
+								break;
+							case Keywords.pasteMode1011Word:
+								view.pasteMode = ViewConstants.pasteMode1011;
+								break;
+							case Keywords.pasteModeNotXWord:
+								view.pasteMode = ViewConstants.pasteModeNotX;
+								break;
+							case Keywords.pasteMode1101Word:
+								view.pasteMode = ViewConstants.pasteMode1101;
+								break;
+							case Keywords.pasteModeNAndWord:
+								view.pasteMode = ViewConstants.pasteModeNAnd;
+								break;
+							case Keywords.pasteModeOneWord:
+								view.pasteMode = ViewConstants.pasteModeOne;
+								break;
+							case Keywords.pasteModeCopyWord:
+								view.pasteMode = ViewConstants.pasteModeCopy;
 								break;
 							default:
-								itemValid = false;
+								// check for numeric value
+								if (scriptReader.nextTokenIsNumeric()) {
+									isNumeric = true;
+
+									// get the value
+									numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+									// check it is in range
+									if (numberValue >= 0 && numberValue <= 15) {
+										view.pasteMode = numberValue;
+									}
+								} else {
+									itemValid = false;
+								}
 							}
-							if (itemValid) {
+							// eat the paste mode token if valid and not numeric
+							if (itemValid && !isNumeric) {
 								scriptReader.getNextToken();
 							}
 							break;

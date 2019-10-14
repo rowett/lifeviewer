@@ -2207,162 +2207,6 @@
 		return rle;
 	};
 
-	// set state list
-	Life.prototype.setStateList = function(cells, xOff, yOff) {
-		var i = 0,
-			x = 0,
-			y = 0,
-			state = 0,
-			grid = this.grid16,
-			tileGrid = this.tileGrid,
-			colourGrid = this.colourGrid,
-			colourTileGrid = this.colourTileGrid,
-			colourTileHistoryGrid = this.colourTileHistoryGrid,
-			zoomBox = this.zoomBox,
-			historyBox = this.historyBox,
-			cellAsBit = 0,
-			cellAsTileBit = 0,
-			bitAlive = false,
-
-			// left target for next tile
-			/** @type {number} */ leftTarget = (this.isTriangular ? 1 : 0),
-
-			// right target to next tile
-			/** @type {number} */ rightTarget = (this.isTriangular ? 14 : 15),
-
-			// x coordinate for boundary check
-			/** @type {number} */ cx = 0;
-
-		// get correct grid for current generation
-		if ((this.counter & 1) !== 0) {
-			grid = this.nextGrid16;
-			tileGrid = this.nextTileGrid;
-		}
-
-		// set each cell in the list
-		while (i < cells.length) {
-			// get the cell location
-			x = cells[i] + xOff;
-			y = cells[i + 1] + yOff;
-
-			// check if the cell is on the grid
-			if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
-				// get the cell state
-				state = cells[i + 2];
-
-				// get the cell as a bit mask and tile mask
-				cellAsBit = 1 << (~x & 15);
-				cellAsTileBit = 1 << (~(x >> 4) & 15);
-
-				// check if it is alive
-				bitAlive = ((state & 1) === 1);
-				if (bitAlive) {
-					// adjust population if cell was dead
-					if ((grid[y][x >> 4] & cellAsBit) === 0) {
-						this.population += 1;
-					}
-					// set cell
-					colourGrid[y][x] = this.aliveStart;
-					colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
-					colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
-					grid[y][x >> 4] |= cellAsBit;
-					tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
-
-					// check left boundary
-					cx = x & 15;
-					if ((x > 0) && (cx <= leftTarget)) {
-						x -= (cx + 1);
-						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-						x += (cx + 1);
-					} else {
-						// check right boundary
-						if ((x < this.width - 1) && (cx >= rightTarget)) {
-							x += (16 - cx);
-							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-							x -= (16 - cx);
-						}
-					}
-					// check bottom boundary
-					if ((y > 0) && ((y & 15) === 0)) {
-						y -= 1;
-						tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
-						if ((x > 0) && (cx <= leftTarget)) {
-							x -= (cx + 1);
-							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-							x += (cx + 1);
-						} else {
-							if ((x < this.width - 1) && (cx >= rightTarget)) {
-								x += (16 - cx);
-								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-								x -= (16 - cx);
-							}
-						}
-						y += 1;
-					} else {
-						// check top boundary
-						if ((y < this.height - 1) && ((y & 15) === 15)) {
-							y += 1;
-							tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
-							if ((x > 0) && (cx <= leftTarget)) {
-								x -= (cx + 1);
-								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-								x += (cx + 1);
-							} else {
-								if ((x < this.width - 1) && (cx >= rightTarget)) {
-									x += (16 - cx);
-									tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-									x -= (16 - cx);
-								}
-							}
-							y -= 1;
-						}
-					}
-				} else {
-					// adjust population if cell was alive
-					if ((grid[y][x >> 4] & cellAsBit) !== 0) {
-						this.population -= 1;
-					}
-					// clear cell
-					colourGrid[y][x] = this.unoccupied;
-					colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
-					colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
-					grid[y][x >> 4] &= ~cellAsBit;
-				}
-			}
-
-			// update bounding box if cell was not dead
-			if (state > 0) {
-				if (x < zoomBox.leftX) {
-					zoomBox.leftX = x;
-				}
-				if (x > zoomBox.rightX) {
-					zoomBox.rightX = x;
-				}
-				if (y < zoomBox.bottomY) {
-					zoomBox.bottomY = y;
-				}
-				if (y > zoomBox.topY) {
-					zoomBox.topY = y;
-				}
-				if (x < historyBox.leftX) {
-					historyBox.leftX = x;
-				}
-				if (x > historyBox.rightX) {
-					historyBox.rightX = x;
-				}
-				if (y < historyBox.bottomY) {
-					historyBox.bottomY = y;
-				}
-				if (y > historyBox.topY) {
-					historyBox.topY = y;
-				}
-			}
-
-			// next cell
-			i += 3;
-		}
-	};
-
 	// overridden by specific function below
 	Life.prototype.setState = null;
 	
@@ -5520,7 +5364,7 @@
 	};
 
 	// update the Life rule
-	Life.prototype.updateLifeRule = function() {
+	Life.prototype.updateLifeRule = function(view) {
 		var i = 0,
 		    tmp = 0,
 			ruleArray = (this.isTriangular ? PatternManager.ruleTriangularArray : PatternManager.ruleArray),
@@ -5556,6 +5400,16 @@
 			// if identical then disable alternate rule
 			if (match) {
 				this.altSpecified = false;
+
+				// update the rule name and alias name
+				i = view.patternRuleName.indexOf("|");
+				if (i !== -1) {
+					view.patternRuleName = view.patternRuleName.substr(0, i);
+				}
+				i = view.patternAliasName.indexOf("|");
+				if (i !== -1) {
+					view.patternAliasName = view.patternAliasName.substr(0, i);
+				}
 			}
 
 			// if alt specified then swap

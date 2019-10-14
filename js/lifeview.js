@@ -95,11 +95,23 @@
 		/** @const {number} */ transRotateCCW : 7,
 
 		// rle paste modes
-		/** @const {number} */ pasteModeAnd : 0,
-		/** @const {number} */ pasteModeCopy : 1,
-		/** @const {number} */ pasteModeOr : 2,
-		/** @const {number} */ pasteModeXor : 3,
-		/** @const {number} */ pasteModeNot : 4,
+		/** @const {number} */ pasteModeZero : 0,
+		/** @const {number} */ pasteModeAnd : 1,
+		/** @const {number} */ pasteMode0010 : 2,
+		/** @const {number} */ pasteModeX : 3,
+		/** @const {number} */ pasteMode0100 : 4,
+		/** @const {number} */ pasteModeY : 5,
+		/** @const {number} */ pasteModeXor : 6,
+		/** @const {number} */ pasteModeOr : 7,
+		/** @const {number} */ pasteModeNOr : 8,
+		/** @const {number} */ pasteModeXNOr : 9,
+		/** @const {number} */ pasteModeNotY : 10,
+		/** @const {number} */ pasteMode1011 : 11,
+		/** @const {number} */ pasteModeNotX : 12,
+		/** @const {number} */ pasteMode1101 : 13,
+		/** @const {number} */ pasteModeNAnd : 14,
+		/** @const {number} */ pasteModeOne : 15,
+		/** @const {number} */ pasteModeCopy : 3,
 
 		// square root of 3 used for triangular grid
 		/** @const {number} */ sqrt3 : Math.sqrt(3),
@@ -250,7 +262,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 433,
+		/** @const {number} */ versionBuild : 434,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2753,8 +2765,7 @@
 			minX = 0,
 			minY = 0,
 			zoomBox = this.engine.zoomBox,
-			cells = [],
-			isSimple2State = this.engine.multiNumStates <= 2 && !this.engine.isHROT && !this.engine.isLifeHistory && this.engine.boundedGridType === -1;
+			cells = [];
 
 		// evolve rle snippets
 		for (j = 0; j < this.pasteList.length; j += 1) {
@@ -2775,15 +2786,10 @@
 
 				// put the cells from the cell list onto the grid
 				this.engine.counter = 0;
-				if (isSimple2State) {
-					// can use batch set
-					this.engine.setStateList(cells, xOff - item.leftX, yOff - item.bottomY);
-				} else {
-					while (i < cells.length) {
-						// cells list only contains non-zero cells
-						this.engine.setState(xOff + cells[i] - item.leftX, yOff + cells[i + 1] - item.bottomY, cells[i + 2], true);
-						i += 3;
-					}
+				while (i < cells.length) {
+					// cells list only contains non-zero cells
+					this.engine.setState(xOff + cells[i] - item.leftX, yOff + cells[i + 1] - item.bottomY, cells[i + 2], true);
+					i += 3;
 				}
 
 				// now run the required number of generations
@@ -2901,8 +2907,7 @@
 
 	// paste rle list to grid
 	View.prototype.pasteRLEList = function() {
-		var i = 0,
-			j = 0,
+		var j = 0,
 			y = 0,
 			x = 0,
 			xOff = 0,
@@ -2910,12 +2915,12 @@
 			paste = null,
 			counter = this.engine.counter,
 			mode = ViewConstants.pasteModeOr,
-			cells = null,
-			state = 0,
+			source = 0,
+			dest = 0,
+			result = 0,
 			gridWidth = this.engine.width,
 			stateMap = null,
-			stateRow = null,
-			isSimple2State = this.engine.multiNumStates <= 2 && !this.engine.isHROT && !this.engine.isLifeHistory && this.engine.boundedGridType === -1;
+			stateRow = null;
 
 		// check each pattern to see which need to be drawn this generation
 		for (j = 0; j < this.pasteList.length; j += 1) {
@@ -2924,71 +2929,19 @@
 				mode = paste.mode;
 				xOff = (gridWidth >> 1) - (this.patternWidth >> 1);
 				yOff = (gridWidth >> 1) - (this.patternHeight >> 1);
-				cells = paste.cells;
 				stateMap = paste.map;
-				i = 0;
-				// determine paste mode
-				switch (mode) {
-				case ViewConstants.pasteModeOr:
-					if (isSimple2State) {
-						this.engine.setStateList(cells, xOff, yOff);
-					} else {
-						while (i < cells.length) {
-							state = cells[i + 2];
-							if (state > 0) {
-								this.engine.setState(xOff + cells[i], yOff + cells[i + 1], cells[i + 2], true);
-							}
-							i += 3;
-						}
+
+				// paste with the given mode
+				xOff += paste.leftX;
+				yOff += paste.bottomY;
+				for (y = 0; y < stateMap.length; y += 1) {
+					stateRow = stateMap[y];
+					for (x = 0; x < stateRow.length; x += 1) {
+						source = (stateRow[x] === 0 ? 0 : 1);
+						dest = (this.engine.getState(xOff + x, yOff + y, false) === 0 ? 0 : 1);
+						result = ((mode & (8 >> ((source + source) | dest))) === 0 ? 0 : 1);
+						this.engine.setState(xOff + x, yOff + y, result, true);
 					}
-					break;
-				case ViewConstants.pasteModeCopy:
-					xOff += paste.leftX;
-					yOff += paste.bottomY;
-					for (y = 0; y < stateMap.length; y += 1) {
-						stateRow = stateMap[y];
-						for (x = 0; x < stateRow.length; x += 1) {
-							// set the cell
-							this.engine.setState(xOff + x, yOff + y, stateRow[x], true);
-						}
-					}
-					break;
-				case ViewConstants.pasteModeXor:
-					while (i < cells.length) {
-						x = cells[i];
-						y = cells[i + 1];
-						state = this.engine.getState(xOff + x, yOff + y, false);
-						// set the cell
-						this.engine.setState(xOff + x, yOff + y, cells[i + 2] ^ state, false);
-						i += 3;
-					}
-					break;
-				case ViewConstants.pasteModeAnd:
-					xOff += paste.leftX;
-					yOff += paste.bottomY;
-					for (y = 0; y < stateMap.length; y += 1) {
-						stateRow = stateMap[y];
-						for (x = 0; x < stateRow.length; x += 1) {
-							state = this.engine.getState(xOff + x, yOff + y, false);
-							// set the cell
-							this.engine.setState(xOff + x, yOff + y, stateRow[x] & state, false);
-						}
-					}
-					break;
-				case ViewConstants.pasteModeNot:
-					xOff += paste.leftX;
-					yOff += paste.bottomY;
-					for (y = 0; y < stateMap.length; y += 1) {
-						stateRow = stateMap[y];
-						for (x = 0; x < stateRow.length; x += 1) {
-							if (stateRow[x] === 0) {
-								// set the cell
-								this.engine.setState(xOff + x, yOff + y, 1, true);
-							}
-						}
-						i += 3;
-					}
-					break;
 				}
 			}
 		}
@@ -13625,7 +13578,7 @@
 			}
 
 			// update the life rule
-			this.engine.updateLifeRule();
+			this.engine.updateLifeRule(this);
 
 			// process any rle snippet evolution
 			if (this.isEvolution) {

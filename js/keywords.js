@@ -411,11 +411,23 @@
 		/** @const {string} */ pasteModeWord : "PASTEMODE",
 
 		// paste modes
-		/** @const {string} */ pasteModeOrWord : "OR",
-		/** @const {string} */ pasteModeCopyWord : "COPY",
-		/** @const {string} */ pasteModeNotWord : "NOT",
-		/** @const {string} */ pasteModeXorWord : "XOR",
+		/** @const {string} */ pasteModeZeroWord : "ZERO",
 		/** @const {string} */ pasteModeAndWord : "AND",
+		/** @const {string} */ pasteMode0010Word : "0010",
+		/** @const {string} */ pasteModeXWord : "X",
+		/** @const {string} */ pasteMode0100Word : "0100",
+		/** @const {string} */ pasteModeYWord : "Y",
+		/** @const {string} */ pasteModeXorWord : "XOR",
+		/** @const {string} */ pasteModeOrWord : "OR",
+		/** @const {string} */ pasteModeNOrWord : "NOR",
+		/** @const {string} */ pasteModeXNOrWord : "XNOR",
+		/** @const {string} */ pasteModeNotYWord : "NOTY",
+		/** @const {string} */ pasteMode1011Word : "1011",
+		/** @const {string} */ pasteModeNotXWord : "NOTX",
+		/** @const {string} */ pasteMode1101Word : "1101",
+		/** @const {string} */ pasteModeNAndWord : "NAND",
+		/** @const {string} */ pasteModeOneWord : "ONE",
+		/** @const {string} */ pasteModeCopyWord : "COPY",
 
 		// tranformation types
 		/** @const {string} */ transTypeIdentity : "IDENTITY",
