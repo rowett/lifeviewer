@@ -2,8 +2,8 @@ Build 434
 - fixed Wolfram alternate rules
 - alternate rules where the alternates are duplicates now remove duplicate from rule and alias name
 - [[ PASTEMODE <0..15>|mode ]] script command now supports 16 paste modes:
--	ZERO, AND, 0010, X, 0100, Y, XOR, OR, NOR, XNOR, NOTY, 1011, NOTX, 1101, NAND, ONE
--	COPY can be used instead of X
+	- ZERO, AND, 0010, X, 0100, Y, XOR, OR, NOR, XNOR, NOTY, 1011, NOTX, 1101, NAND, ONE
+	- COPY can be used instead of X
 
 Build 433
 - workround slowdown on iOS 13 devices

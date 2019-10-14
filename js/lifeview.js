@@ -2917,10 +2917,13 @@
 			mode = ViewConstants.pasteModeOr,
 			source = 0,
 			dest = 0,
+			sourceFlag = 0,
+			destFlag = 0,
 			result = 0,
 			gridWidth = this.engine.width,
 			stateMap = null,
-			stateRow = null;
+			stateRow = null,
+			numStates = this.engine.multiNumStates - 1;
 
 		// check each pattern to see which need to be drawn this generation
 		for (j = 0; j < this.pasteList.length; j += 1) {
@@ -2936,11 +2939,71 @@
 				yOff += paste.bottomY;
 				for (y = 0; y < stateMap.length; y += 1) {
 					stateRow = stateMap[y];
-					for (x = 0; x < stateRow.length; x += 1) {
-						source = (stateRow[x] === 0 ? 0 : 1);
-						dest = (this.engine.getState(xOff + x, yOff + y, false) === 0 ? 0 : 1);
-						result = ((mode & (8 >> ((source + source) | dest))) === 0 ? 0 : 1);
-						this.engine.setState(xOff + x, yOff + y, result, true);
+					if (this.engine.isPCA) {
+						for (x = 0; x < stateRow.length; x += 1) {
+							source = stateRow[x];
+							dest = this.engine.getState(xOff + x, yOff + y, false);
+							switch (mode) {
+								case ViewConstants.pasteModeZero:
+									result = 0;
+									break;
+								case ViewConstants.pasteModeAnd:
+									result = source & dest;
+									break;
+								case ViewConstants.pasteMode0010:
+									result = source & (numStates - dest);
+									break;
+								case ViewConstants.pasteModeX:
+									result = source;
+									break;
+								case ViewConstants.pasteMode0100:
+									result = (numStates - source) & dest;
+									break;
+								case ViewConstants.pasteModeY:
+									result = dest;
+									break;
+								case ViewConstants.pasteModeXor:
+									result = source ^ dest;
+									break;
+								case ViewConstants.pasteModeOr:
+									result = source | dest;
+									break;
+								case ViewConstants.pasteModeNOr:
+									result = numStates - (source | dest);
+									break;
+								case ViewConstants.pasteModeXNOr:
+									result = numStates - (source ^ dest);
+									break;
+								case ViewConstants.pasteModeNotY:
+									result = numStates - dest;
+									break;
+								case ViewConstants.pasteMode1011:
+									result = source | (numStates - dest);
+									break;
+								case ViewConstants.pasteModeNotX:
+									result = numStates - source;
+									break;
+								case ViewConstants.pasteMode1101:
+									result = (numStates - source) | dest;
+									break;
+								case ViewConstants.pasteModeNAnd:
+									result = numStates - (source & dest);
+									break;
+								case ViewConstants.pasteModeOne:
+									result = 1;
+									break;
+							}
+							this.engine.setState(xOff + x, yOff + y, result, true);
+						}
+					} else {
+						for (x = 0; x < stateRow.length; x += 1) {
+							source = stateRow[x];
+							sourceFlag = (source === 0 ? 0 : 1);
+							dest = this.engine.getState(xOff + x, yOff + y, false);
+							destFlag = (dest === 0 ? 0 : 1);
+							result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
+							this.engine.setState(xOff + x, yOff + y, result, true);
+						}
 					}
 				}
 			}
