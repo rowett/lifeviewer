@@ -415,7 +415,7 @@
 		/** @const {string} */ pasteModeAndWord : "AND",
 		/** @const {string} */ pasteMode0010Word : "0010",
 		/** @const {string} */ pasteModeXWord : "X",
-		/** @const {string} */ pasteMode0100Word : "0100",
+		/** @const {string} */ pasteMode0100Word : "DIFF",
 		/** @const {string} */ pasteModeYWord : "Y",
 		/** @const {string} */ pasteModeXorWord : "XOR",
 		/** @const {string} */ pasteModeOrWord : "OR",

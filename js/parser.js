@@ -2539,19 +2539,43 @@
 								view.pasteMode = ViewConstants.pasteModeCopy;
 								break;
 							default:
-								// check for numeric value
-								if (scriptReader.nextTokenIsNumeric()) {
-									isNumeric = true;
-
-									// get the value
-									numberValue = scriptReader.getNextTokenAsNumber() | 0;
-
-									// check it is in range
-									if (numberValue >= 0 && numberValue <= 15) {
+								// check for binary
+								if (peekToken.length === 4) {
+									numberValue = 0;
+									i = 0;
+									while (i < 4 && itemValid) {
+										numberValue <<= 1;
+										switch (peekToken.substr(i, 1)) {
+											case "1":
+												numberValue |= 1;
+												break;
+											case "0":
+												break;
+											default:
+												itemValid = false;
+										}
+										i += 1;
+									}
+									if (itemValid) {
 										view.pasteMode = numberValue;
 									}
 								} else {
-									itemValid = false;
+									// check for numeric value
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+	
+										// get the value
+										numberValue = scriptReader.getNextTokenAsNumber() | 0;
+	
+										// check it is in range
+										if (numberValue >= 0 && numberValue <= 15) {
+											view.pasteMode = numberValue;
+										} else {
+											itemValid = false;
+										}
+									} else {
+										itemValid = false;
+									}
 								}
 							}
 							// eat the paste mode token if valid and not numeric
