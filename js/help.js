@@ -2239,6 +2239,9 @@
 	Help.renderErrorLineUpDown = function(view, up, separator, down, error, ctx, x, y, height, startLine) {
 		var result = y,
 
+			// scale
+			xScale = view.viewMenu.xScale,
+
 		    // get the width of the command
 		    width = 0,
 
@@ -2286,7 +2289,7 @@
 
 			// use tab width rather than command width if specified
 			if (view.tabs[0]) {
-				width = view.tabs[0];
+				width = view.tabs[0] * xScale;
 			}
 
 			// draw error message
@@ -2308,6 +2311,9 @@
 	Help.renderErrorLine = function(view, command, error, ctx, x, y, height, startLine) {
 		var result = y,
 
+			// scale
+			xScale = view.viewMenu.xScale,
+
 		    // get the width of the command
 		    width = 0,
 
@@ -2325,7 +2331,7 @@
 
 			// use tab width rather than command width if specified
 			if (view.tabs[0]) {
-				width = view.tabs[0];
+				width = view.tabs[0] * xScale;
 			}
 
 			// draw error message

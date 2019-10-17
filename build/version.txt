@@ -1,3 +1,8 @@
+Build 436
+- fixed tab position on scaled window for error messages
+- remove focus from embedded Viewer after THUMBLAUNCH
+- fixed resizing bounding box after some editor actions
+
 Build 435
 - PASTEMODE now accepts binary truth table output (e.g. 0001 for AND and 0111 for OR)
 - PASTEMODE now allows DIFF as an alias for mode 4 (0010)

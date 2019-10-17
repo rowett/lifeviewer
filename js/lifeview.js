@@ -262,7 +262,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 435,
+		/** @const {number} */ versionBuild : 436,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -9202,6 +9202,7 @@
 				}
 	
 				// check if shrink needed
+				me.engine.shrinkNeeded = true;
 				me.engine.doShrink();
 	
 				// mark nothing happened since selection
@@ -9374,6 +9375,7 @@
 			me.createClipboardTooltips();
 
 			// check if shrink needed
+			me.engine.shrinkNeeded = true;
 			me.engine.doShrink();
 
 			// mark that a paste can happen
@@ -9992,6 +9994,7 @@
 			}
 
 			// check if shrink needed
+			me.engine.shrinkNeeded = true;
 			me.engine.doShrink();
 
 			// save edit
@@ -10117,6 +10120,7 @@
 			}
 
 			// check if shrink needed
+			me.engine.shrinkNeeded = true;
 			me.engine.doShrink();
 
 			// save edit
@@ -10218,6 +10222,7 @@
 			}
 
 			// check if shrink needed
+			me.engine.shrinkNeeded = true;
 			me.engine.doShrink();
 
 			// save edit
@@ -10453,6 +10458,7 @@
 				}
 	
 				// check if shrink needed
+			me.engine.shrinkNeeded = true;
 				me.engine.doShrink();
 	
 				// save edit
@@ -10572,6 +10578,7 @@
 				}
 
 				// check if shrink needed
+				me.engine.shrinkNeeded = true;
 				me.engine.doShrink();
 	
 				// save edit
@@ -14712,8 +14719,9 @@
 			view.innerDivItem.style.lineHeight = itemHeight + "px";
 		}
 
-		// give focus to the popup window
-		//view.mainContext.canvas.focus();
+		// give focus to the popup window and then remove it (so any thumblaunch doesn't retain focus)
+		view.mainContext.canvas.focus();
+		view.mainContext.canvas.blur();
 		//view.menuManager.hasFocus = true;
 
 		return false;
