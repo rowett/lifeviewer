@@ -1,8 +1,11 @@
+Build 438
+- fix various rendering issues for invalid patterns
+
 Build 437
 - added Oscillator and Spaceship period detection
-	- toggle with Settings->Pattern->Oscillator (hotkey F6)
+	- toggle with Settings->Pattern->Identify (hotkey F6)
 	- will detect oscillators and spaceships up to a period of 2^20 generations
-	- Help->Info->Pattern->Oscillator shows last search result
+	- Help->Info->Identify shows last search result
 - adjusted position of close window button
 - multi-state patterns with invalid rules were displaying as 2-state
 

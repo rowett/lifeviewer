@@ -262,7 +262,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 437,
+		/** @const {number} */ versionBuild : 438,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13643,6 +13643,11 @@
 				}
 			}
 
+			// remove history states if pattern is not executable
+			if (!this.executable) {
+				this.historyStates = 0;
+			}
+
 			// initialise random number generator from seed
 			this.randGen.init(this.randomSeed);
 
@@ -13952,6 +13957,9 @@
 		if (this.multiStateView) {
 			// check if the pattern loaded
 			if (pattern) {
+				// compute bounding box
+				this.engine.resetBoxes(this.state1Fit);
+
 				// check if a custom colour set was defined
 				if (this.customColours) {
 					this.colourList = this.customColours;

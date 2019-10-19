@@ -10,7 +10,16 @@ Investigate:
 Planned:
     menu items coordinates should be reflected based on compass position
     fit grid with hex patterns
-
+    AutoFit types for rule families
+        Family      AUTO    HISTORY     STATE1
+        Life-like   *       *           NA
+        LifeHistory *       *           *
+        Generations *       *           *
+        LtL/HROT    *       *           NA
+        LtL/HROT MS *       *           *
+        Margolus    *       *           NA
+        PCA         *       *           NA
+        
 In progress:
 [STARTED]add type information for closure compiler
 [STARTED]Triangular neighbourhood

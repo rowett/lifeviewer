@@ -4557,6 +4557,12 @@
 		if (valid) {
 			// add any postfixes
 			this.addNamePostfixes(pattern, base64);
+		} else {
+			// remove rule type
+			pattern.isLtL = false;
+			pattern.isHROT = false;
+			pattern.multiNumStates = -1;
+			pattern.isNone = true;
 		}
 
 		// return whether rule is valid
