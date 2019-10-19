@@ -1,10 +1,10 @@
 Build 437
-- added Oscillator and Spaceship detection
+- added Oscillator and Spaceship period detection
 	- toggle with Settings->Pattern->Oscillator (hotkey F6)
 	- will detect oscillators and spaceships up to a period of 2^20 generations
 	- Help->Info->Pattern->Oscillator shows last search result
 - adjusted position of close window button
-- multi-state patterns with invalid rules now display as multi-state
+- multi-state patterns with invalid rules were displaying as 2-state
 
 Build 436
 - fixed tab position on scaled window for error messages
