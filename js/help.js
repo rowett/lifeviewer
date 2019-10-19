@@ -762,6 +762,7 @@
 		y = this.renderHelpLine(view, "Ctrl O", "open original or last saved pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl S", "save pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt Z", "randomize pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "F6", "toggle oscillator and spaceship identification", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// clipboard controls
@@ -1392,6 +1393,17 @@
 
 		// output decoder used
 		y = this.renderHelpLine(view, "Decoder", view.patternFormat, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
+		// output last oscillator search result
+		view.helpSections[sectionNum] = [view.lineNo, "Identify"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Identify:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Enabled", view.oscar ? "Yes" : "No", ctx, x, y, height, helpLine);
+		if (view.oscar) {
+			y = this.renderHelpLine(view, "Searched", view.engine.oscLength, ctx, x, y, height, helpLine);
+		}
+		y = this.renderHelpLine(view, "Last Result", view.lastOscillator, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// grid information

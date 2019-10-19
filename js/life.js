@@ -14,6 +14,15 @@
 	// Life constants
 	/** @const */
 	var LifeConstants = {
+		// number of hash buckets (must be power of 2)
+		/** @const {number} */ numBuckets : 4096,
+
+		// maximum number of generations to check for oscillators
+		/** @const {number} */ maxOscillatorGens : 1048576,
+
+		// buffer full
+		/** @const {string} */ bufferFullMessage : "Buffer Full",
+
 		// PCA palette
 		/** @const {Array<Array<number>>} */ coloursPCA : [[0, 0, 0], [255, 0, 0], [0, 255, 0], [128, 128, 0],
 														   [16, 16, 255], [128, 0, 128], [0, 128, 128], [96, 96, 96],
@@ -263,6 +272,14 @@
 	function Life(context, /** @type {number} */ displayWidth, /** @type {number} */ displayHeight, /** @type {number} */ gridWidth, /** @type {number} */ gridHeight) {
 		// allocator
 		this.allocator = new Allocator();
+
+		// oscillator lists
+		this.bucketList = null;
+		this.hashList = null;
+		this.genList = null;
+		this.popList = null;
+		this.boxList = null;
+		this.oscLength = 0;
 
 		// flag for alternating Margolus grid lines
 		/** @type {boolean} */ this.altGrid = false;
@@ -752,6 +769,237 @@
 		// number of hex or triangle cells
 		/** @type {number} */ this.numCells = 0;
 	}
+
+	// initialize oscillator search
+	Life.prototype.initSearch = function(on) {
+		var i = 0;
+
+		// zero array index
+		this.oscLength = 0;
+
+		// check if search has been switched on
+		if (on) {
+			// just switched on so check if buffers are allocated
+			if (this.hashList === null) {
+				// allocate buffers
+				this.bucketList = this.allocator.allocate(Int32, LifeConstants.numBuckets, "Life.bucketList");
+				this.hashList = this.allocator.allocate(Int32, LifeConstants.maxOscillatorGens, "Life.hashList");
+				this.genList = this.allocator.allocate(Uint32, LifeConstants.maxOscillatorGens, "Life.genList");
+				this.popList = this.allocator.allocate(Uint32, LifeConstants.maxOscillatorGens, "Life.popList");
+				this.boxList = this.allocator.allocate(Uint32, 2 * LifeConstants.maxOscillatorGens, "Life.boxList");
+				this.nextList = this.allocator.allocate(Int32, LifeConstants.maxOscillatorGens, "Life.nextList");
+			}
+
+			// @ts-ignore
+			if (arrayFill) {
+				this.bucketList.fill(-1);
+				this.nextList.fill(-1);
+			} else {
+				// initialise bucket list
+				for (i = 0; i < LifeConstants.numBuckets; i += 1) {
+					this.bucketList[i] = -1;
+				}
+				for (i = 0 ; i < LifeConstants.maxOscillatorGens; i += 1) {
+					this.nextList[i] = -1;
+				}
+			}
+		} else {
+			// just switched off so release buffers
+			this.bucketList = null;
+			this.bucketCount = null;
+			this.hashList = null;
+			this.genList = null;
+			this.popList = null;
+			this.boxList = null;
+			this.nextList = null;
+		}
+	};
+
+	// ouput spaceship speed as string
+	Life.prototype.spaceshipSpeed = function(period, deltaX, deltaY) {
+		var message = deltaX + "," + deltaY;
+
+		if ((Math.abs(deltaX) === Math.abs(deltaY)) || (deltaX === 0) || (deltaY === 0)) {
+			if (period === 1) {
+				message = "Spaceship speed (" + message + ")c";
+			} else {
+				message = "Spaceship speed (" + message + ")c/" + period;
+			}
+		} else {
+			// deltaX !== deltaY and both !== 0
+			if (period === 1) {
+				message = "Knightship speed (" + message + ")c";
+			} else {
+				message = "Knightship speed (" + message + ")c/" + period;
+			}
+		}
+		
+		return message;
+	};
+
+	// get hash from pattern
+	Life.prototype.getHash = function(box) {
+		var hash = 31415962,
+			x = box.leftX,
+			y = box.bottomY,
+			right = box.rightX,
+			top = box.topY,
+			cx = 0,
+			cy = 0,
+			yshift = 0,
+			state = 0,
+			twoState = this.multiNumStates <= 2,
+			colourGrid = this.colourGrid,
+			colourRow = null,
+			aliveStart = LifeConstants.aliveStart;
+
+		// create a hash from every alive cell
+		for (cy = y; cy <= top; cy += 1) {
+			yshift = cy - y;
+			colourRow = colourGrid[cy];
+			if (twoState) {
+				for (cx = x; cx <= right; cx += 1) {
+					if (colourRow[cx] >= aliveStart) {
+						hash = (hash * 1000003) ^ yshift;
+						hash = (hash * 1000003) ^ (cx - x);
+					}
+				}
+			} else {
+				for (cx = x; cx <= right; cx += 1) {
+					// get the raw state
+					state = this.getState(cx, cy, true);
+					if (state !== 0) {
+						hash = (hash * 1000003) ^ yshift;
+						hash = (hash * 1000003) ^ (cx - x);
+						hash = (hash * 1000003) ^ state;
+					}
+				}
+			}
+		}
+
+		return hash;
+	};
+
+	// return true if pattern is empty, stable or oscillating
+	Life.prototype.oscillating = function() {
+		// get bounding box
+		var box = (this.isHROT ? this.HROTBox : this.zoomBox),
+		leftX = box.leftX,
+		bottomY = box.bottomY,
+		rightX = box.rightX,
+		topY = box.topY,
+		boxWidth = rightX - leftX + 1,
+		boxHeight = topY - bottomY + 1,
+
+		// merge size into one value
+		boxSize = (boxWidth << 16) | boxHeight,
+
+		// merge location into one value
+		boxLocation = (leftX << 16) | bottomY,
+
+		// hash value of current pattern
+		hash = 0,
+
+		// period
+		period = 0,
+
+		// bucket number
+		bucketNum = 0,
+
+		// flag to quit loop
+		quitLoop = false,
+		quit = false,
+
+		// hash entry index
+		i = 0,
+		j = 0,
+
+		// movement vector
+		deltaX = 0,
+		deltaY = 0,
+
+		// message
+		message = "";
+
+		// for alternating rules skip odd generations
+		if (this.altSpecified && ((this.counter & 1) !== 0)) {
+			return message;
+		}
+
+		// check buffer
+		if (this.oscLength < LifeConstants.maxOscillatorGens) {
+			// check population
+			if (this.population === 0) {
+				message = "Empty Pattern";
+				quit = true;
+			} else {
+				// get the hash of the current pattern
+				hash = this.getHash(box);
+
+				// get the first entry in the bucket
+				bucketNum = hash & (LifeConstants.numBuckets - 1);
+				i = this.bucketList[bucketNum];
+
+				// search hash list for match
+				quitLoop = false;
+
+				// search entries in the bucket
+				while ((i !== -1) && !quitLoop) {
+					if (hash === this.hashList[i]) {
+						j = i << 1;
+						// hash found so check population and bounding box
+						if ((this.population === this.popList[i]) && boxSize === this.boxList[j]) {
+							period = this.counter - this.genList[i];
+
+							if (this.boxList[j + 1] === boxLocation) {
+								// pattern hasn't moved
+								if (period === 1) {
+									message = "Stable Pattern";
+								} else {
+									message = "Oscillator period " + period;
+								}
+							} else {
+								// pattern is moving
+								deltaX = leftX - (this.boxList[j + 1] >> 16);
+								deltaY = bottomY - (this.boxList[j + 1] & 65535);
+								message = this.spaceshipSpeed(period, deltaX, deltaY);
+							}
+							quitLoop = true;
+							quit = true;
+						}
+					}
+
+					// get next entry in the bucket
+					i = this.nextList[i];
+				}
+			
+				// add to the lists
+				if (!quit) {
+					// create the new record
+					this.hashList[this.oscLength] = hash;
+					this.genList[this.oscLength] = this.counter;
+					this.popList[this.oscLength] = this.population;
+					this.boxList[this.oscLength << 1] = boxSize;
+					this.boxList[(this.oscLength << 1) + 1] = (leftX << 16) | bottomY;
+					// point it at the current bucket head
+					this.nextList[this.oscLength] = this.bucketList[bucketNum];
+
+					// point the bucket head at the new entry
+					this.bucketList[bucketNum] = this.oscLength;
+					this.oscLength += 1;
+
+					// check for buffer full
+					if (this.oscLength === LifeConstants.maxOscillatorGens) {
+						this.oscLength = 0;
+						message = LifeConstants.bufferFullMessage;
+					}
+				}
+			}
+		}
+
+		// return the message
+		return message;
+	};
 
 	// draw triangle cells in selection
 	Life.prototype.drawTriangleCellsInSelection = function(leftX, bottomY, rightX, topY, xOff, yOff, cells) {
@@ -16434,10 +16682,11 @@
 			grid = this.colourGrid,
 			nextGrid = this.nextColourGrid,
 			zoomBox = this.zoomBox,
-			leftX = zoomBox.leftX,
-			bottomY = zoomBox.bottomY,
-			rightX = zoomBox.rightX,
-			topY = zoomBox.topY,
+			historyBox = this.historyBox,
+			leftX = historyBox.leftX,
+			bottomY = historyBox.bottomY,
+			rightX = historyBox.rightX,
+			topY = historyBox.topY,
 			state = 0,
 			index = 0,
 			population = 0,
@@ -16447,6 +16696,10 @@
 			nBottomY = this.height,
 			nRightX = 0,
 			nTopY = 0,
+			zLeftX = this.width,
+			zBottomY = this.height,
+			zRightX = 0,
+			zTopY = 0,
 			colourTileGrid = this.colourTileHistoryGrid,
 			aboveRow = null,
 			gridRow = null,
@@ -16454,6 +16707,7 @@
 			tileRow = null,
 			nextRow = null,
 			rowAlive = false,
+			zAlive = false,
 			bitCounts = this.bitCounts16,
 	
 			// maximum dead state number
@@ -16551,6 +16805,7 @@
 
 			// process each row in the bounding box
 			rowAlive = false;
+			zAlive = false;
 			w = gridRow[leftX - 2];
 			for (x = leftX - 1; x <= rightX + 1; x += 1) {
 				n = belowRow[x];
@@ -16610,6 +16865,18 @@
 							nRightX = x;
 						}
 					}
+					state = 0;
+				}
+				
+				// check for alive states
+				if (state > 0) {
+					if (x < zLeftX) {
+						zLeftX = x;
+					}
+					if (x > zRightX) {
+						zRightX = x;
+					}
+					zAlive = true;
 				}
 			}
 
@@ -16622,6 +16889,14 @@
 					nTopY = y;
 				}
 			}
+			if (zAlive) {
+				if (y < zBottomY) {
+					zBottomY = y;
+				}
+				if (y > zTopY) {
+					zTopY = y;
+				}
+			}
 		}
 
 		// save statistics
@@ -16630,11 +16905,15 @@
 		this.deaths = deaths;
 		this.anythingAlive = population;
 
-		// update bounding box
-		zoomBox.leftX = nLeftX;
-		zoomBox.bottomY = nBottomY;
-		zoomBox.rightX = nRightX;
-		zoomBox.topY = nTopY;
+		// update bounding boxes
+		historyBox.leftX = nLeftX;
+		historyBox.bottomY = nBottomY;
+		historyBox.rightX = nRightX;
+		historyBox.topY = nTopY;
+		zoomBox.leftX = zLeftX;
+		zoomBox.bottomY = zBottomY;
+		zoomBox.rightX = zRightX;
+		zoomBox.topY = zTopY;
 	};
 
 	// convert life grid region to pens using tiles but without history

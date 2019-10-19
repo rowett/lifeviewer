@@ -1653,6 +1653,11 @@
 				me.modeList.current = me.viewModeList(ViewConstants.modePan, true, me);
 				break;
 
+			// f6 to toggle oscillator search
+			case 117:
+				me.searchButton.current = me.toggleOscar([!me.oscar], true, me);
+				break;
+
 			// ignore other keys
 			default:
 				// flag key not handled if specified or f5 (browser refresh) if not implemented above

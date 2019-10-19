@@ -590,6 +590,12 @@
 	function View(element) {
 		var i = 0;
 
+		// last oscillator message
+		/** @type {string} */ this.lastOscillator = "";
+
+		// whether computing oscillators
+		/** @type {boolean} */ this.oscar = false;
+
 		// window zoom for high DPI devices
 		/** @type {number} */ this.windowZoom = 1;
 
@@ -1547,6 +1553,9 @@
 
 		// randomize button
 		this.randomizeButton = null;
+
+		// search button
+		this.searchButton = null;
 
 		// back button
 		this.backButton = null;
@@ -4408,7 +4417,10 @@
 
 			// saved bounding box
 			zoomBox = me.engine.zoomBox,
-			saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY);
+			saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
+
+			// oscillator message
+			message = "";
 
 		// unlock controls
 		me.controlsLocked = false;
@@ -4678,6 +4690,23 @@
 						me.engine.nextGeneration(false, me.noHistory, me.graphDisabled);
 					}
 
+					// compute oscillators if enabled
+					if (this.oscar) {
+						message = this.engine.oscillating();
+						if (message !== "") {
+							// check for buffer full
+							if (message === LifeConstants.bufferFullMessage) {
+								message = "Nothing Identified";
+								this.lastOscillator = "none";
+							} else {
+								this.lastOscillator = message;
+							}
+							this.toggleOscar([false], true, this);
+							this.menuManager.notification.notify(message, 15, 216000, 15, false);
+						}
+					}
+
+					// next step
 					stepsTaken += 1;
 
 					// check theme has history or this is the last generation in the step
@@ -5213,6 +5242,7 @@
 		this.newButton.deleted = shown;
 		this.loadButton.deleted = shown;
 		this.randomizeButton.deleted = shown;
+		this.searchButton.deleted = shown;
 		// info category
 		shown = hide || !this.showInfoSettings;
 		this.fpsButton.deleted = shown;
@@ -6298,7 +6328,9 @@
 		me.waypointManager.resetPlayback();
 
 		// clear any waypoint messages
-		me.menuManager.notification.clear(false, false);
+		if (!me.oscar) {
+			me.menuManager.notification.clear(false, false);
+		}
 
 		// reset died generation
 		me.diedGeneration = -1;
@@ -6308,6 +6340,9 @@
 
 		// reset undo/redo to generation 0
 		me.setUndoGen(me.engine.counter);
+
+		// reset oscar
+		me.engine.initSearch(me.oscar);
 
 		// draw any undo/redo edit records
 		me.pasteEdits();
@@ -10633,6 +10668,24 @@
 		}
 	};
 
+	// oscar toggle
+	View.prototype.toggleOscar = function(newValue, change, me) {
+		if (change) {
+			me.oscar = newValue[0];
+
+			if (me.oscar) {
+				me.menuManager.notification.notify("Identifying...", 15, 216000, 15, false);
+			} else {
+				me.menuManager.notification.notify("Cancelled", 15, 80, 15, false);
+			}
+
+			// initialize search
+			me.engine.initSearch(me.oscar);
+		}
+
+		return [me.oscar];
+	};
+
 	// grid toggle
 	View.prototype.toggleGrid = function(newValue, change, me) {
 		if (change) {
@@ -11888,24 +11941,28 @@
 		this.autoHideButton.toolTip = ["toggle hide UI on playback"]; 
 
 		// rule button
-		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, 0, -100, 180, 40, "Change Rule");
+		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, 0, -125, 180, 40, "Change Rule");
 		this.ruleButton.toolTip = "change rule";
 
 		// new button
-		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 0, -50, 180, 40, "New Pattern");
+		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 0, -75, 180, 40, "New Pattern");
 		this.newButton.toolTip = "new pattern";
 
 		// load button
-		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, 0, 0, 180, 40, "Load Pattern");
+		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, 0, -25, 180, 40, "Load Pattern");
 		this.loadButton.toolTip = "load last saved pattern";
 
 		// save button
-		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 0, 50, 180, 40, "Save Pattern");
+		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 0, 25, 180, 40, "Save Pattern");
 		this.saveButton.toolTip = "save pattern";
 
 		// randomize button
-		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, 0, 100, 180, 40, "Randomize");
+		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, 0, 75, 180, 40, "Randomize");
 		this.randomizeButton.toolTip = "randomize pattern and rule";
+
+		// load button
+		this.searchButton = this.viewMenu.addListItem(this.toggleOscar, Menu.middle, 0, 125, 180, 40, ["Identify"], [this.oscar], Menu.multi);
+		this.searchButton.toolTip = ["identify oscillator or spaceship period"];
 
 		// fps button
 		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -75, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
@@ -11932,7 +11989,7 @@
 		this.nextUniverseButton.toolTip = "go to next universe";
 
 		// esc button
-		this.escButton = this.viewMenu.addButtonItem(this.escPressed, Menu.southEast, -40, -90, 40, 40, "Esc");
+		this.escButton = this.viewMenu.addButtonItem(this.escPressed, Menu.southEast, -40, -85, 40, 40, "Esc");
 		this.escButton.toolTip = "close errors";
 		this.escButton.setFont("16px Arial");
 		
@@ -13142,6 +13199,12 @@
 
 			// read the number of states (Generations or HROT)
 			this.engine.multiNumStates = pattern.multiNumStates;
+			if (!this.executable) {
+				// if not exectuable then copy from pattern states
+				if (pattern.numStates > 2) {
+					this.engine.multiNumStates = pattern.numStates;
+				}
+			}
 
 			// check if the rule is HROT
 			this.engine.isHROT = pattern.isHROT;
@@ -13485,7 +13548,7 @@
 
 		// copy pattern to center
 		if (pattern) {
-			if (pattern.isNone) {
+			if (pattern.isNone || (!this.executable && this.engine.multiNumStates > 2)) {
 				this.colourList = ColourManager.defaultSet();
 				this.colourSetName = "(default)";
 			} else {
@@ -13823,6 +13886,12 @@
 			}
 		}
 
+		// setup oscillator search
+		this.lastOscillator = "none";
+		this.oscar = false;
+		this.searchButton.current = [this.oscar];
+		this.engine.initSearch(this.oscar);
+
 		// update performance warning
 		this.showLagToggle.current = this.toggleShowLag([this.perfWarning], true, this);
 
@@ -13836,7 +13905,7 @@
 		this.engine.customColours = this.customColours;
 
 		// create the colour palette
-		if (this.engine.isNone) {
+		if (this.engine.isNone || (!this.executable && this.engine.multiNumStates > 2)) {
 			this.engine.createMultiStateColours(this.colourList, this.customColours);
 		} else {
 			this.engine.createColours();

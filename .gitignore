@@ -8,3 +8,8 @@ settings.json
 images/triangular*.png
 .vscode/ipch/*
 *.cpp
+all.js
+end.js
+start.js
+debug.bat
+install.bat
