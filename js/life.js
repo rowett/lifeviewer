@@ -640,7 +640,7 @@
 		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
 
 		// next colour grid for PCA rules
-		this.nextColourGrid = null;
+		/** @type {Array} */ this.nextColourGrid = null;
 		this.nextcolourGrid16 = null;
 		this.nextcolourGrid32 = null;
 

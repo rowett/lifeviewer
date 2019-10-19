@@ -5,6 +5,9 @@ declare var AliasManager;
 
 // allocator.js
 declare var Allocator, Uint8, Uint8Clamped, Uint16, Uint32, Int8, Int16, Int32, Float32, Float64;
+interface Array {
+    whole;
+}
 interface ArrayConstructor {
     matrix;
     addRow;
