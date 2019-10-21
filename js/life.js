@@ -278,7 +278,10 @@
 		this.hashList = null;
 		this.genList = null;
 		this.popList = null;
+		this.bornList = null;
+		this.diedList = null;
 		this.boxList = null;
+		this.nextList = null;
 		this.oscLength = 0;
 
 		// flag for alternating Margolus grid lines
@@ -786,6 +789,8 @@
 				this.hashList = this.allocator.allocate(Int32, LifeConstants.maxOscillatorGens, "Life.hashList");
 				this.genList = this.allocator.allocate(Uint32, LifeConstants.maxOscillatorGens, "Life.genList");
 				this.popList = this.allocator.allocate(Uint32, LifeConstants.maxOscillatorGens, "Life.popList");
+				this.bornList = this.allocator.allocate(Uint32, LifeConstants.maxOscillatorGens, "Life.bornList");
+				this.diedList = this.allocator.allocate(Uint32, LifeConstants.maxOscillatorGens, "Life.diedList");
 				this.boxList = this.allocator.allocate(Uint32, 2 * LifeConstants.maxOscillatorGens, "Life.boxList");
 				this.nextList = this.allocator.allocate(Int32, LifeConstants.maxOscillatorGens, "Life.nextList");
 			}
@@ -810,6 +815,8 @@
 			this.hashList = null;
 			this.genList = null;
 			this.popList = null;
+			this.bornList = null;
+			this.diedList = null;
 			this.boxList = null;
 			this.nextList = null;
 		}
@@ -817,23 +824,25 @@
 
 	// ouput spaceship speed as string
 	Life.prototype.spaceshipSpeed = function(period, deltaX, deltaY) {
-		var message = deltaX + "," + deltaY;
+		var message = deltaX + "," + deltaY,
+			type = "";
 
+		// detect spaceship type
 		if ((Math.abs(deltaX) === Math.abs(deltaY)) || (deltaX === 0) || (deltaY === 0)) {
-			if (period === 1) {
-				message = "Spaceship speed (" + message + ")c";
-			} else {
-				message = "Spaceship speed (" + message + ")c/" + period;
-			}
+			type = "Spaceship";
 		} else {
 			// deltaX !== deltaY and both !== 0
-			if (period === 1) {
-				message = "Knightship speed (" + message + ")c";
-			} else {
-				message = "Knightship speed (" + message + ")c/" + period;
-			}
+			type = "Knightship";
 		}
-		
+
+		// add the speed
+		message = type + " speed (" + message + ")c";
+
+		// add period if greather than 1
+		if (period > 1) {
+			message += "/" + period;
+		}
+
 		return message;
 	};
 
@@ -880,6 +889,147 @@
 		return hash;
 	};
 
+	// return identify results
+	Life.prototype.identifyResults = function(i, message, period, deltaX, deltaY, boxWidth, boxHeight) {
+			// simple version of speed
+		var simpleSpeed = "",
+
+			// generation
+			genMessage = String(this.counter - period),
+
+			// type
+			type = "",
+
+			// direction
+			direction = "",
+
+			// slope
+			slope = "",
+
+			// max and min population
+			min = this.population,
+			max = min,
+			current = 0,
+			currentWidth = 0,
+			currentHeight = 0,
+
+			// last record to check
+			last = i + period,
+			start = i,
+
+			// heat
+			heatVal = 0,
+			heat = "";
+
+		// only use one generation for still life
+		if (period > 0) {
+			genMessage += " and " + this.counter;
+		}
+
+		// check for movement
+		deltaX = Math.abs(deltaX);
+		deltaY = Math.abs(deltaY);
+		
+		// if a spaceship then compute simpified speed
+		if (deltaX > 0 || deltaY > 0) {
+			type = "Spaceship";
+			if (deltaX === 0 || deltaY === 0) {
+				slope = "0";
+			} else {
+				if (deltaX > deltaY) {
+					slope = String((deltaX / deltaY) | 0);
+				} else {
+					slope = String((deltaY / deltaX) | 0);
+				}
+			}
+			if ((deltaX === deltaY) || (deltaX === 0) || (deltaY === 0)) {
+				if ((deltaX === deltaY) && (deltaX !== 0)) {
+					direction = "Diagonal";
+				} else {
+					direction = "Orthogonal";
+				}
+				if (deltaX === 0) {
+					deltaX = deltaY;
+				}
+				if (deltaX > 1) {
+					if (period === 1) {
+						simpleSpeed = deltaX + "c";
+					} else {
+						if (period % deltaX === 0) {
+							simpleSpeed = "c/" + (period / deltaX);
+						} else {
+							simpleSpeed = deltaX + "c/" + period;
+						}
+					}
+				} else {
+					// delta = 1
+					simpleSpeed = "c";
+					if (period > 1) {
+						simpleSpeed += "/" + period;
+					}
+				}
+			} else {
+				direction = "Oblique";
+				simpleSpeed = deltaX + "," + deltaY + "c";
+				if (period > 1) {
+					simpleSpeed += "/" + period;
+				}
+			}
+		} else {
+			if (period === 1) {
+				type = "Still Life";
+			} else {
+				// oscillator
+				type = "Oscillator";
+			}
+		}
+		
+		// compute the min and max population
+		while (i < last) {
+			current = this.popList[i];
+			if (current < min) {
+				min = current;
+			}
+			if (current > max) {
+				max = current;
+			}
+			i += 1;
+		}
+
+		// compute the bounding box
+		i = start;
+		while (i < last) {
+			current = this.boxList[i << 1];
+			currentWidth = current >> 16;
+			currentHeight = current & 65535;
+			if (currentWidth > boxWidth) {
+				boxWidth = currentWidth;
+			}
+			if (currentHeight > boxHeight) {
+				boxHeight = currentHeight;
+			}
+			i += 1;
+		}
+
+		// compute the heat
+		if (period > 0) {
+			heatVal = 0;
+			i = start;
+			while (i < last) {
+				heatVal += this.bornList[i] + this.diedList[i];
+				i += 1;
+			}
+			if (heatVal % period === 0) {
+				heat = String(heatVal / period);
+			} else {
+				heat = String((heatVal / period).toFixed(1));
+			}
+		}
+	
+		// return the message
+		return [message, type, direction, simpleSpeed, boxWidth, boxHeight, genMessage, min, max, slope, period, heat];
+	};
+
 	// return true if pattern is empty, stable or oscillating
 	Life.prototype.oscillating = function() {
 		// get bounding box
@@ -919,18 +1069,23 @@
 		deltaY = 0,
 
 		// message
-		message = "";
+		message = "",
+
+		// result
+		result = [];
 
 		// for alternating rules skip odd generations
 		if (this.altSpecified && ((this.counter & 1) !== 0)) {
-			return message;
+			return result;
 		}
 
 		// check buffer
 		if (this.oscLength < LifeConstants.maxOscillatorGens) {
 			// check population
 			if (this.population === 0) {
-				message = "Empty Pattern";
+				result = ["Empty Pattern", "Empty"];
+				boxWidth = 0;
+				boxHeight = 0;
 				quit = true;
 			} else {
 				// get the hash of the current pattern
@@ -954,7 +1109,7 @@
 							if (this.boxList[j + 1] === boxLocation) {
 								// pattern hasn't moved
 								if (period === 1) {
-									message = "Stable Pattern";
+									message = "Still Life";
 								} else {
 									message = "Oscillator period " + period;
 								}
@@ -966,6 +1121,9 @@
 							}
 							quitLoop = true;
 							quit = true;
+
+							// create the results
+							result = this.identifyResults(i, message, period, deltaX, deltaY, boxWidth, boxHeight);
 						}
 					}
 
@@ -979,6 +1137,8 @@
 					this.hashList[this.oscLength] = hash;
 					this.genList[this.oscLength] = this.counter;
 					this.popList[this.oscLength] = this.population;
+					this.bornList[this.oscLength] = this.births;
+					this.diedList[this.oscLength] = this.deaths;
 					this.boxList[this.oscLength << 1] = boxSize;
 					this.boxList[(this.oscLength << 1) + 1] = (leftX << 16) | bottomY;
 					// point it at the current bucket head
@@ -997,8 +1157,8 @@
 			}
 		}
 
-		// return the message
-		return message;
+		// return results
+		return result;
 	};
 
 	// draw triangle cells in selection
@@ -3568,7 +3728,7 @@
 			if (this.anythingAlive) {
 				// check for reverse direction
 				this.checkReverse(view, this.counter);
-				this.nextGeneration(false, true, graphDisabled);
+				this.nextGeneration(false, true, graphDisabled, view.oscar);
 				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
 					this.convertToPensTile();
 				}
@@ -3577,7 +3737,7 @@
 					// clear the other buffer
 					this.anythingAlive = 1;
 					this.checkReverse(view, this.counter);
-					this.nextGeneration(false, false, graphDisabled);
+					this.nextGeneration(false, false, graphDisabled, view.oscar);
 					this.anythingAlive = 0;
 					this.counter -= 1;
 				}
@@ -3592,7 +3752,7 @@
 		if (this.counter < targetGen) {
 			if (this.anythingAlive) {
 				this.checkReverse(view, this.counter);
-				this.nextGeneration(statsOn, true, graphDisabled);
+				this.nextGeneration(statsOn, true, graphDisabled, view.oscar);
 				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
 					this.convertToPensTile();
 				}
@@ -3601,7 +3761,7 @@
 					// clear the other buffer
 					this.anythingAlive = 1;
 					this.checkReverse(view, this.counter);
-					this.nextGeneration(false, false, graphDisabled);
+					this.nextGeneration(false, false, graphDisabled, view.oscar);
 					this.anythingAlive = 0;
 					this.counter -= 1;
 				}
@@ -9120,10 +9280,10 @@
 	};
 
 	// compute the next generation unless rule is none
-	Life.prototype.nextGeneration = function(statsOn, noHistory, graphDisabled) {
+	Life.prototype.nextGeneration = function(statsOn, noHistory, graphDisabled, oscar) {
 		// do nothing if rule is none
 		if (!this.isNone) {
-			this.processNextGen(statsOn, noHistory, graphDisabled);
+			this.processNextGen(statsOn, noHistory, graphDisabled, oscar);
 		} else {
 			this.anythingAlive = 1;
 			this.counter += 1;
@@ -9131,14 +9291,14 @@
 	};
 
 	// compute the next generation with or without statistics
-	Life.prototype.processNextGen = function(statsOn, noHistory, graphDisabled) {
+	Life.prototype.processNextGen = function(statsOn, noHistory, graphDisabled, oscar) {
 		var performSave = false,
 		    zoomBox = this.zoomBox,
 			historyBox = this.historyBox,
 			boundarySize = 16;
 
-		// turn stats on unless graph disabled
-		if (!graphDisabled) {
+		// turn stats on unless graph disabled or identify running
+		if (!graphDisabled || oscar) {
 			statsOn = true;
 		}
 

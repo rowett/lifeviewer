@@ -1400,10 +1400,32 @@
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Identify:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Enabled", view.oscar ? "Yes" : "No", ctx, x, y, height, helpLine);
-		if (view.oscar) {
-			y = this.renderHelpLine(view, "Searched", view.engine.oscLength, ctx, x, y, height, helpLine);
+		if (view.lastOscillatorTyp !== "none") {
+			y = this.renderHelpLine(view, "Type", view.lastOscillatorTyp, ctx, x, y, height, helpLine);
+			if (view.lastOscillatorTyp !== "Empty") {
+				if (view.lastOscillatorTyp === "Still Life" || (view.lastOscillatorPop === view.lastOscillatorPopMax)) {
+					y = this.renderHelpLine(view, "Cells", view.lastOscillatorPop, ctx, x, y, height, helpLine);
+				} else {
+					y = this.renderHelpLine(view, "Min Cells", view.lastOscillatorPop, ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, "Max Cells", view.lastOscillatorPopMax, ctx, x, y, height, helpLine);
+				}
+				y = this.renderHelpLine(view, "BoundingBox", view.lastOscillatorBox, ctx, x, y, height, helpLine);
+				if (view.lastOscillatorTyp === "Oscillator") {
+					y = this.renderHelpLine(view, "Period", view.lastOscillatorPer, ctx, x, y, height, helpLine);
+				} else {
+					if (view.lastOscillatorTyp !== "Still Life") {
+						y = this.renderHelpLine(view, "Direction", view.lastOscillatorDir, ctx, x, y, height, helpLine);
+						y = this.renderHelpLine(view, "Period", view.lastOscillatorPer, ctx, x, y, height, helpLine);
+						y = this.renderHelpLine(view, "Slope", view.lastOscillatorSlo, ctx, x, y, height, helpLine);
+						y = this.renderHelpLine(view, "Speed", view.lastOscillatorSim, ctx, x, y, height, helpLine);
+					}	
+				}
+				if (view.lastOscillatorTyp !== "Still Life") {
+					y = this.renderHelpLine(view, "Heat", view.lastOscillatorHeat, ctx, x, y, height, helpLine);
+				}
+				y = this.renderHelpLine(view, "Generation", view.lastOscillatorGen, ctx, x, y, height, helpLine);
+			}
 		}
-		y = this.renderHelpLine(view, "Last Result", view.lastOscillator, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// grid information

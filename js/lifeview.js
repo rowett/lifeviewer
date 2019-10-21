@@ -262,7 +262,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 438,
+		/** @const {number} */ versionBuild : 439,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -592,6 +592,34 @@
 
 		// last oscillator message
 		/** @type {string} */ this.lastOscillator = "";
+
+		// last oscillator heat
+		/** @type {string} */ this.lastOscillatorHeat = "";
+
+		// last oscillator type
+		/** @type {string} */ this.lastOscillatorTyp = "";
+
+		// last oscillator direction
+		/** @type {string} */ this.lastOscillatorDir = "";
+
+		// last oscillator period
+		/** @type {string} */ this.lastOscillatorPer = "";
+
+		// last oscillator simple speed
+		/** @type {string} */ this.lastOscillatorSim = "";
+
+		// last oscillator bounding box
+		/** @type {string} */ this.lastOscillatorBox = "";
+
+		// last oscillator generation 
+		/** @type {string} */ this.lastOscillatorGen = "";
+
+		// last oscillator population (min and max)
+		/** @type {string} */ this.lastOscillatorPop = "";
+		/** @type {string} */ this.lastOscillatorPopMax = "";
+
+		// last oscillator slope 
+		/** @type {string} */ this.lastOscillatorSlo = "";
 
 		// whether computing oscillators
 		/** @type {boolean} */ this.oscar = false;
@@ -2804,7 +2832,7 @@
 				// now run the required number of generations
 				while (gens > 0) {
 					// compute next generation with no stats, history and graph disabled
-					this.engine.nextGeneration(false, true, true);
+					this.engine.nextGeneration(false, true, true, this.oscar);
 					this.engine.convertToPensTile();
 					gens -= 1;
 				}
@@ -4420,7 +4448,7 @@
 			saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
 
 			// oscillator message
-			message = "";
+			identifyResult = [];
 
 		// unlock controls
 		me.controlsLocked = false;
@@ -4684,25 +4712,45 @@
 					saveBox.set(zoomBox);
 					if (me.statsOn && ((me.engine.counter === (me.floatCounter | 0) - 1) || bailout)) {
 						// compute next generation with stats
-						me.engine.nextGeneration(true, me.noHistory, me.graphDisabled);
+						me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.oscar);
 					} else {
 						// just compute next generation
-						me.engine.nextGeneration(false, me.noHistory, me.graphDisabled);
+						me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.oscar);
 					}
 
 					// compute oscillators if enabled
 					if (this.oscar) {
-						message = this.engine.oscillating();
-						if (message !== "") {
+						identifyResult = this.engine.oscillating();
+						if (identifyResult.length > 0) {
 							// check for buffer full
-							if (message === LifeConstants.bufferFullMessage) {
-								message = "Nothing Identified";
+							if (identifyResult[0] === LifeConstants.bufferFullMessage) {
+								identifyResult[0] = "Nothing Identified";
 								this.lastOscillator = "none";
+								this.lastOscillatorHeat = "none";
+								this.lastOscillatorTyp = "none";
+								this.lastOscillatorPer = "none";
+								this.lastOscillatorDir = "none";
+								this.lastOscillatorSim = "none";
+								this.lastOscillatorBox = "none";
+								this.lastOscillatorGen = "none";
+								this.lastOscillatorPop = "none";
+								this.lastOscillatorPopMax = "none";
+								this.lastOscillatorSlo = "none";
 							} else {
-								this.lastOscillator = message;
+								this.lastOscillator = identifyResult[0];
+								this.lastOscillatorTyp = identifyResult[1];
+								this.lastOscillatorDir = identifyResult[2];
+								this.lastOscillatorSim = identifyResult[3];
+								this.lastOscillatorBox = identifyResult[4] + " x " + identifyResult[5];
+								this.lastOscillatorGen = identifyResult[6];
+								this.lastOscillatorPop = identifyResult[7];
+								this.lastOscillatorPopMax = identifyResult[8];
+								this.lastOscillatorSlo = identifyResult[9];
+								this.lastOscillatorPer = identifyResult[10];
+								this.lastOscillatorHeat = identifyResult[11];
 							}
 							this.toggleOscar([false], true, this);
-							this.menuManager.notification.notify(message, 15, 216000, 15, false);
+							this.menuManager.notification.notify(identifyResult[0], 15, 216000, 15, false);
 						}
 					}
 
@@ -5719,7 +5767,7 @@
 			}
 
 			// compute the next generation
-			me.engine.nextGeneration(false, noSnapshots, me.graphDisabled);
+			me.engine.nextGeneration(false, noSnapshots, me.graphDisabled, me.oscar);
 			me.engine.convertToPensTile();
 
 			// paste any RLE snippets
@@ -5735,7 +5783,7 @@
 		// check if complete
 		if (me.engine.counter === targetGen - 1) {
 			// compute final generation with stats on if required
-			me.engine.nextGeneration(me.statsOn, false, me.graphDisabled);
+			me.engine.nextGeneration(me.statsOn, false, me.graphDisabled, me.oscar);
 			me.engine.convertToPensTile();
 
 			// paste any RLE snippets
@@ -7157,7 +7205,7 @@
 						}
 						me.afterEdit("");
 						for (i = 0; i < me.gensPerStep; i += 1) {
-							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled);
+							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.oscar);
 							me.engine.convertToPensTile();
 						}
 						me.engine.reversePending = true;
@@ -9556,7 +9604,7 @@
 				me.cutSelection(me, me.currentPasteBuffer, true);
 
 				// step
-				me.engine.nextGeneration(true, me.noHistory, me.graphDisabled);
+				me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.oscar);
 				me.engine.convertToPensTile();
 				me.afterEdit("");
 
@@ -9652,7 +9700,7 @@
 		}
 
 		// compute next generation
-		me.engine.nextGeneration(false, true, true);
+		me.engine.nextGeneration(false, true, true, me.oscar);
 		me.engine.convertToPensTile();
 
 		// set new paste buffer
@@ -10958,7 +11006,7 @@
 							me.engine.counter -= 1;
 
 							// compute next generation
-							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled);
+							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.oscar);
 
 							// paste any RLE snippets
 							me.pasteRLEList();
@@ -11062,7 +11110,7 @@
 		// compute each generation up to just before the target with stats off (for speed)
 		while (this.engine.counter < targetGen - 1) {
 			if (this.engine.anythingAlive) {
-				this.engine.nextGeneration(false, false, this.graphDisabled);
+				this.engine.nextGeneration(false, false, this.graphDisabled, this.oscar);
 				if (!(this.engine.anythingAlive === 0 && this.engine.multiNumStates > 2)) {
 					this.engine.convertToPensTile();
 				}
@@ -11070,7 +11118,7 @@
 				if (this.engine.anythingAlive === 0 && this.engine.multiNumStates <= 2) {
 					// clear the other buffer
 					this.engine.anythingAlive = 1;
-					this.engine.nextGeneration(false, false, this.graphDisabled);
+					this.engine.nextGeneration(false, false, this.graphDisabled, this.oscar);
 					this.engine.counter -= 1;
 				}
 			} else {
@@ -11083,7 +11131,7 @@
 		// compute the final generation with stats on if required
 		if (this.engine.counter < targetGen) {
 			if (this.engine.anythingAlive) {
-				this.engine.nextGeneration(this.statsOn, false, this.graphDisabled);
+				this.engine.nextGeneration(this.statsOn, false, this.graphDisabled, this.oscar);
 				if (!(this.engine.anythingAlive === 0 && this.engine.multiNumStates > 2)) {
 					this.engine.convertToPensTile();
 				}
@@ -11091,7 +11139,7 @@
 				if (this.engine.anythingAlive === 0 && this.engine.multiNumStates <= 2) {
 					// clear the other buffer
 					this.engine.anythingAlive = 1;
-					this.engine.nextGeneration(false, false, this.graphDisabled);
+					this.engine.nextGeneration(false, false, this.graphDisabled, this.oscar);
 					this.engine.counter -= 1;
 				}
 			} else {
@@ -13893,6 +13941,16 @@
 
 		// setup oscillator search
 		this.lastOscillator = "none";
+		this.lastOscillatorTyp = "none";
+		this.lastOscillatorPer = "none";
+		this.lastOscillatorDir = "none";
+		this.lastOscillatorSim = "none";
+		this.lastOscillatorBox = "none";
+		this.lastOscillatorGen = "none";
+		this.lastOscillatorPop = "none";
+		this.lastOscillatorPopMax = "none";
+		this.lastOscillatorSlo = "none";
+		this.lastOscillatorHeat = "none";
 		this.oscar = false;
 		this.searchButton.current = [this.oscar];
 		this.engine.initSearch(this.oscar);

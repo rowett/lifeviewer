@@ -1,3 +1,16 @@
+Build 439
+- Identify now adds the following metrics to Help->Info->Identify:
+	- Type (Still Life [0], Oscillator [1] or Spaceship [2])
+	- Cells (number of live cells) or if different:
+		- Min Cells and Max Cells [1][2]
+	- Bounding Box
+	- Direction (Orthogonal, Diagonal or Oblique) [2]
+	- Period [1][2]
+	- Slope [2]
+	- Speed [2]
+	- Heat [1][2]
+	- Generation (the start and end generation of detection)
+
 Build 438
 - fix various rendering issues for invalid patterns
 
