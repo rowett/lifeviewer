@@ -1,3 +1,7 @@
+Build 441
+- improved Identify hash function
+- fixed bounding box for oscillators
+
 Build 440
 - Identify improvements:
 	- automatically starts searching at full STEP speed

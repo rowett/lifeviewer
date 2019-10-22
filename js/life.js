@@ -851,7 +851,8 @@
 			twoState = this.multiNumStates <= 2,
 			colourGrid = this.colourGrid,
 			colourRow = null,
-			aliveStart = LifeConstants.aliveStart;
+			aliveStart = LifeConstants.aliveStart,
+			lastNonZero = 0;
 
 		// create a hash from every alive cell
 		for (cy = y; cy <= top; cy += 1) {
@@ -872,12 +873,13 @@
 						hash = (hash * 1000003) ^ yshift;
 						hash = (hash * 1000003) ^ (cx - x);
 						hash = (hash * 1000003) ^ state;
+						lastNonZero = state;
 					}
 				}
 			}
 		}
 
-		return hash;
+		return hash + lastNonZero;
 	};
 
 	// return identify results
@@ -903,6 +905,12 @@
 			current = 0,
 			currentWidth = 0,
 			currentHeight = 0,
+			currentLeft = 0,
+			currentBottom = 0,
+			minX = 16384,
+			maxX = 0,
+			minY = 16384,
+			maxY = 0,
 
 			// last record to check
 			last = i + period,
@@ -989,17 +997,45 @@
 
 		// compute the bounding box
 		i = start;
-		while (i < last) {
-			current = this.boxList[i << 1];
-			currentWidth = current >> 16;
-			currentHeight = current & 65535;
-			if (currentWidth > boxWidth) {
-				boxWidth = currentWidth;
+		if (type === "Spaceship") {
+			while (i < last) {
+				current = this.boxList[i << 1];
+				currentWidth = current >> 16;
+				currentHeight = current & 65535;
+				if (currentWidth > boxWidth) {
+					boxWidth = currentWidth;
+				}
+				if (currentHeight > boxHeight) {
+					boxHeight = currentHeight;
+				}
+				i += 1;
 			}
-			if (currentHeight > boxHeight) {
-				boxHeight = currentHeight;
+		} else {
+			while (i < last) {
+				current = this.boxList[i << 1];
+				currentWidth = current >> 16;
+				currentHeight = current & 65535;
+				current = this.boxList[(i << 1) + 1];
+				currentLeft = current >> 16;
+				currentBottom = current & 65535;
+	
+				// update bounding box
+				if (currentLeft < minX) {
+					minX = currentLeft;
+				}
+				if (currentBottom < minY) {
+					minY = currentBottom;
+				}
+				if (currentLeft + currentWidth - 1 > maxX) {
+					maxX = currentLeft + currentWidth - 1;
+				}
+				if (currentBottom + currentHeight - 1 > maxY) {
+					maxY = currentBottom + currentHeight - 1;
+				}
+				i += 1;
 			}
-			i += 1;
+			boxWidth = maxX - minX + 1;
+			boxHeight = maxY - minY + 1;
 		}
 
 		// compute the heat
