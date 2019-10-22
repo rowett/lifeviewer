@@ -6517,10 +6517,15 @@
 		// reset waypoint manager for playback
 		me.waypointManager.resetPlayback();
 
-		// clear any waypoint messages
-		if (!me.identify) {
-			me.menuManager.notification.clear(false, false);
+		// reset identify
+		if (me.identify) {
+			me.identify = false;
+			me.menuManager.notification.clear(true, false);
 		}
+		me.engine.initSearch(me.identify);
+
+		// clear any waypoint messages
+		me.menuManager.notification.clear(false, false);
 
 		// reset died generation
 		me.diedGeneration = -1;
@@ -6530,9 +6535,6 @@
 
 		// reset undo/redo to generation 0
 		me.setUndoGen(me.engine.counter);
-
-		// reset identify
-		me.engine.initSearch(me.identify);
 
 		// clear identify results
 		me.resultsDisplayed = false;
