@@ -596,6 +596,9 @@
 		// step speed before identify started
 		/** @type {number} */ this.originalStepSpeed = 0;
 
+		// gens per second before identify started
+		/** @type {number} */ this.originalGenSpeed= 0;
+
 		// last oscillator message
 		/** @type {string} */ this.lastOscillator = "";
 
@@ -4873,8 +4876,8 @@
 					// next step
 					stepsTaken += 1;
 
-					// check theme has history or this is the last generation in the step
-					if (me.engine.themeHistory || me.anyPasteThisGen() || ((me.engine.counter === (me.floatCounter | 0)) || bailout)) {
+					// check theme has history or this is the last generation in the step or identify is running
+					if (me.engine.themeHistory || me.anyPasteThisGen() || ((me.engine.counter === (me.floatCounter | 0)) || bailout) || me.identify) {
 						// convert life grid to pen colours unless Generations just died (since this will start fading dead cells)
 						if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
 							me.engine.convertToPensTile();
@@ -10865,6 +10868,8 @@
 
 	// identify button clicked
 	View.prototype.identifyPressed = function(me) {
+		var value = 0;
+
 		// check if anything is alive
 		if (!me.engine.anythingAlive) {
 			me.menuManager.notification.notify("Empty Pattern", 15, 120, 15, false);
@@ -10873,7 +10878,10 @@
 
 			// restore original step
 			me.gensPerStep = me.originalStepSpeed;
+			me.genSpeed = me.originalGenSpeed;
 			me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
+			value = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
+			me.generationRange.current = me.viewGenerationRange([value, value], true, me);
 			me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 		} else {
 			if (me.identify) {
@@ -10881,7 +10889,10 @@
 
 				// restore original step
 				me.gensPerStep = me.originalStepSpeed;
+				me.genSpeed = me.originalGenSpeed;
 				me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
+				value = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
+				me.generationRange.current = me.viewGenerationRange([value, value], true, me);
 				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 				me.menuManager.notification.notify("Identify Cancelled", 15, 120, 15, false);
 			} else {
@@ -10896,6 +10907,11 @@
 					me.gensPerStep = ViewConstants.maxStepSpeed;
 					me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
 				}
+				me.originalGenSpeed = me.genSpeed;
+				me.genSpeed = ViewConstants.maxGenSpeed;
+				value = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
+				me.generationRange.current = me.viewGenerationRange([value, value], true, me);
+
 				// start playback
 				if (!me.generationOn) {
 					me.playList.current = me.viewPlayList(ViewConstants.modePlay, true, me);
