@@ -4,7 +4,7 @@ Build 440
 	- stops playback when finished
 	- displays table of results
 	- autofits display to result
-	- click Settings->Pattern->Identify will now close Settings menu
+	- clicking Settings->Pattern->Identify will now close Settings menu
 	- Reset to hide table of results
 
 Build 439

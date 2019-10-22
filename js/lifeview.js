@@ -4188,7 +4188,7 @@
 	// set the identify results label positions
 	View.prototype.setResultsPosition = function() {
 		var y = 170,
-			h = this.identifyTypeLabel.height,
+			h = this.identifyTypeLabel.relHeight,
 			x = this.identifyTypeLabel.relX,
 			xv = this.identifyTypeValueLabel.relX;
 

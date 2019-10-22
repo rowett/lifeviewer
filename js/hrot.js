@@ -607,7 +607,7 @@
 			if (this.engine.boundedGridType === 0 && maxGeneration === 1) {
 				// clear bounded grid cells since they have value 255
 				// they will be replaced before rendering
-				this.engine.drawBoundedGridBorder(0);
+				this.engine.drawBoundedGridBorder(colourGrid, 0);
 			}
 
 			// fit to bounded grid
