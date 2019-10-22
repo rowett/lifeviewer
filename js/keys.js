@@ -288,7 +288,9 @@
 					// z for randomize
 					case 90:
 						// randomize rule and pattern
-						me.randomPattern(me);
+						if (!me.randomizeButton.locked) {
+							me.randomPattern(me);
+						}
 						break;
 					}
 				}
@@ -1655,7 +1657,9 @@
 
 			// f6 to toggle oscillator search
 			case 117:
-				me.searchButton.current = me.toggleOscar([!me.oscar], true, me);
+				if (!me.identifyButton.locked) {
+					me.identifyPressed(me);
+				}
 				break;
 
 			// ignore other keys

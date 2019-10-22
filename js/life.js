@@ -824,19 +824,10 @@
 
 	// ouput spaceship speed as string
 	Life.prototype.spaceshipSpeed = function(period, deltaX, deltaY) {
-		var message = deltaX + "," + deltaY,
-			type = "";
-
-		// detect spaceship type
-		if ((Math.abs(deltaX) === Math.abs(deltaY)) || (deltaX === 0) || (deltaY === 0)) {
-			type = "Spaceship";
-		} else {
-			// deltaX !== deltaY and both !== 0
-			type = "Knightship";
-		}
+		var message = deltaX + "," + deltaY;
 
 		// add the speed
-		message = type + " speed (" + message + ")c";
+		message = "Spaceship speed (" + message + ")c";
 
 		// add period if greather than 1
 		if (period > 1) {
@@ -1151,7 +1142,7 @@
 					// check for buffer full
 					if (this.oscLength === LifeConstants.maxOscillatorGens) {
 						this.oscLength = 0;
-						message = LifeConstants.bufferFullMessage;
+						result = [LifeConstants.bufferFullMessage];
 					}
 				}
 			}

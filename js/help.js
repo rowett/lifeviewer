@@ -1399,32 +1399,30 @@
 		view.helpSections[sectionNum] = [view.lineNo, "Identify"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Identify:", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Enabled", view.oscar ? "Yes" : "No", ctx, x, y, height, helpLine);
-		if (view.lastOscillatorTyp !== "none") {
-			y = this.renderHelpLine(view, "Type", view.lastOscillatorTyp, ctx, x, y, height, helpLine);
-			if (view.lastOscillatorTyp !== "Empty") {
-				if (view.lastOscillatorTyp === "Still Life" || (view.lastOscillatorPop === view.lastOscillatorPopMax)) {
-					y = this.renderHelpLine(view, "Cells", view.lastOscillatorPop, ctx, x, y, height, helpLine);
-				} else {
-					y = this.renderHelpLine(view, "Min Cells", view.lastOscillatorPop, ctx, x, y, height, helpLine);
-					y = this.renderHelpLine(view, "Max Cells", view.lastOscillatorPopMax, ctx, x, y, height, helpLine);
-				}
-				y = this.renderHelpLine(view, "BoundingBox", view.lastOscillatorBox, ctx, x, y, height, helpLine);
-				if (view.lastOscillatorTyp === "Oscillator") {
-					y = this.renderHelpLine(view, "Period", view.lastOscillatorPer, ctx, x, y, height, helpLine);
-				} else {
-					if (view.lastOscillatorTyp !== "Still Life") {
-						y = this.renderHelpLine(view, "Direction", view.lastOscillatorDir, ctx, x, y, height, helpLine);
-						y = this.renderHelpLine(view, "Period", view.lastOscillatorPer, ctx, x, y, height, helpLine);
-						y = this.renderHelpLine(view, "Slope", view.lastOscillatorSlo, ctx, x, y, height, helpLine);
-						y = this.renderHelpLine(view, "Speed", view.lastOscillatorSim, ctx, x, y, height, helpLine);
-					}	
-				}
-				if (view.lastOscillatorTyp !== "Still Life") {
-					y = this.renderHelpLine(view, "Heat", view.lastOscillatorHeat, ctx, x, y, height, helpLine);
-				}
-				y = this.renderHelpLine(view, "Generation", view.lastOscillatorGen, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Enabled", view.identify ? "Yes" : "No", ctx, x, y, height, helpLine);
+		if (view.lastIdentifyType !== "none" && view.lastIdentifyType !== "Empty") {
+			y = this.renderHelpLine(view, "Type", view.lastIdentifyType, ctx, x, y, height, helpLine);
+			if (view.lastIdentifyType === "Still Life" || (view.lastIdentifyCells === view.lastIdentifyCellsMax)) {
+				y = this.renderHelpLine(view, "Cells", view.lastIdentifyCells, ctx, x, y, height, helpLine);
+			} else {
+				y = this.renderHelpLine(view, "Min Cells", view.lastIdentifyCells, ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "Max Cells", view.lastIdentifyCellsMax, ctx, x, y, height, helpLine);
 			}
+			y = this.renderHelpLine(view, "BoundingBox", view.lastIdentifyBox, ctx, x, y, height, helpLine);
+			if (view.lastIdentifyType === "Oscillator") {
+				y = this.renderHelpLine(view, "Period", view.lastIdentifyPeriod, ctx, x, y, height, helpLine);
+			} else {
+				if (view.lastIdentifyType !== "Still Life") {
+					y = this.renderHelpLine(view, "Direction", view.lastIdentifyDirection, ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, "Period", view.lastIdentifyPeriod, ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, "Slope", view.lastIdentifySlope, ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, "Speed", view.lastIdentifySpeed, ctx, x, y, height, helpLine);
+				}	
+			}
+			if (view.lastIdentifyType !== "Still Life") {
+				y = this.renderHelpLine(view, "Heat", view.lastIdentifyHeat, ctx, x, y, height, helpLine);
+			}
+			y = this.renderHelpLine(view, "Generation", view.lastIdentifyGen, ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 

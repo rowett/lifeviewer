@@ -590,39 +590,65 @@
 	function View(element) {
 		var i = 0;
 
+		// whether identify results displayed
+		/** @type {boolean} */ this.resultsDisplayed = false;
+
+		// step speed before identify started
+		/** @type {number} */ this.originalStepSpeed = 0;
+
 		// last oscillator message
 		/** @type {string} */ this.lastOscillator = "";
 
 		// last oscillator heat
-		/** @type {string} */ this.lastOscillatorHeat = "";
+		/** @type {string} */ this.lastIdentifyHeat = "";
 
 		// last oscillator type
-		/** @type {string} */ this.lastOscillatorTyp = "";
+		/** @type {string} */ this.lastIdentifyType = "";
 
 		// last oscillator direction
-		/** @type {string} */ this.lastOscillatorDir = "";
+		/** @type {string} */ this.lastIdentifyDirection = "";
 
 		// last oscillator period
-		/** @type {string} */ this.lastOscillatorPer = "";
+		/** @type {string} */ this.lastIdentifyPeriod = "";
 
 		// last oscillator simple speed
-		/** @type {string} */ this.lastOscillatorSim = "";
+		/** @type {string} */ this.lastIdentifySpeed = "";
 
 		// last oscillator bounding box
-		/** @type {string} */ this.lastOscillatorBox = "";
+		/** @type {string} */ this.lastIdentifyBox = "";
 
 		// last oscillator generation 
-		/** @type {string} */ this.lastOscillatorGen = "";
+		/** @type {string} */ this.lastIdentifyGen = "";
 
 		// last oscillator population (min and max)
-		/** @type {string} */ this.lastOscillatorPop = "";
-		/** @type {string} */ this.lastOscillatorPopMax = "";
+		/** @type {string} */ this.lastIdentifyCells = "";
+		/** @type {string} */ this.lastIdentifyCellsMax = "";
 
 		// last oscillator slope 
-		/** @type {string} */ this.lastOscillatorSlo = "";
+		/** @type {string} */ this.lastIdentifySlope = "";
 
 		// whether computing oscillators
-		/** @type {boolean} */ this.oscar = false;
+		/** @type {boolean} */ this.identify = false;
+
+		// labels for identify results
+		this.identifyTypeLabel = null;
+		this.identifyCellsLabel = null;
+		this.identifyMaxCellsLabel = null;
+		this.identifyBoxLabel = null;
+		this.identifyDirectionLabel = null;
+		this.identifyPeriodLabel = null;
+		this.identifySlopeLabel = null;
+		this.identifySpeedLabel = null;
+		this.identifyHeatLabel = null;
+		this.identifyTypeValueLabel = null;
+		this.identifyCellsValueLabel = null;
+		this.identifyMaxCellsValueLabel = null;
+		this.identifyBoxValueLabel = null;
+		this.identifyDirectionValueLabel = null;
+		this.identifyPeriodValueLabel = null;
+		this.identifySlopeValueLabel = null;
+		this.identifySpeedValueLabel = null;
+		this.identifyHeatValueLabel = null;
 
 		// window zoom for high DPI devices
 		/** @type {number} */ this.windowZoom = 1;
@@ -1582,8 +1608,8 @@
 		// randomize button
 		this.randomizeButton = null;
 
-		// search button
-		this.searchButton = null;
+		// identify button
+		this.identifyButton = null;
 
 		// back button
 		this.backButton = null;
@@ -2832,7 +2858,7 @@
 				// now run the required number of generations
 				while (gens > 0) {
 					// compute next generation with no stats, history and graph disabled
-					this.engine.nextGeneration(false, true, true, this.oscar);
+					this.engine.nextGeneration(false, true, true, this.identify);
 					this.engine.convertToPensTile();
 					gens -= 1;
 				}
@@ -4159,6 +4185,73 @@
 		return result;
 	};
 
+	// set the identify results label positions
+	View.prototype.setResultsPosition = function() {
+		var y = 170,
+			h = this.identifyTypeLabel.height,
+			x = this.identifyTypeLabel.relX,
+			xv = this.identifyTypeValueLabel.relX;
+
+		// type
+		this.identifyTypeLabel.setPosition(Menu.north, x, y);
+		this.identifyTypeValueLabel.setPosition(Menu.north, xv, y);
+		y += h;
+
+		// cells
+		this.identifyCellsLabel.setPosition(Menu.north, x, y);
+		this.identifyCellsValueLabel.setPosition(Menu.north, xv, y);
+		y += h;
+
+		if (this.lastIdentifyCells !== this.lastIdentifyCellsMax) {
+			this.identifyCellsLabel.preText = "Min Cells";
+
+			// max cells
+			this.identifyMaxCellsLabel.setPosition(Menu.north, x, y);
+			this.identifyMaxCellsValueLabel.setPosition(Menu.north, xv, y);
+			y += h;
+		} else {
+			this.identifyCellsLabel.preText = "Cells";
+		}
+
+		// bounding box
+		this.identifyBoxLabel.setPosition(Menu.north, x, y);
+		this.identifyBoxValueLabel.setPosition(Menu.north, xv, y);
+		y += h;
+
+		if (this.lastIdentifyType === "Spaceship") {
+			// direction
+			this.identifyDirectionLabel.setPosition(Menu.north, x, y);
+			this.identifyDirectionValueLabel.setPosition(Menu.north, xv, y);
+			y += h;
+		}
+
+		if (this.lastIdentifyType !== "Still Life") {
+			// period
+			this.identifyPeriodLabel.setPosition(Menu.north, x, y);
+			this.identifyPeriodValueLabel.setPosition(Menu.north, xv, y);
+			y += h;
+		}
+
+		if (this.lastIdentifyType === "Spaceship") {
+			// slope
+			this.identifySlopeLabel.setPosition(Menu.north, x, y);
+			this.identifySlopeValueLabel.setPosition(Menu.north, xv, y);
+			y += h;
+
+			// speed
+			this.identifySpeedLabel.setPosition(Menu.north, x, y);
+			this.identifySpeedValueLabel.setPosition(Menu.north, xv, y);
+			y += h;
+		}
+
+		if (this.lastIdentifyType !== "Still Life") {
+			// heat
+			this.identifyHeatLabel.setPosition(Menu.north, x, y);
+			this.identifyHeatValueLabel.setPosition(Menu.north, xv, y);
+			y += h;
+		}
+	};
+
 	// update step label
 	View.prototype.updateStepLabel = function(stepsTaken) {
 		var i = 0,
@@ -4712,45 +4805,68 @@
 					saveBox.set(zoomBox);
 					if (me.statsOn && ((me.engine.counter === (me.floatCounter | 0) - 1) || bailout)) {
 						// compute next generation with stats
-						me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.oscar);
+						me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify);
 					} else {
 						// just compute next generation
-						me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.oscar);
+						me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify);
 					}
 
 					// compute oscillators if enabled
-					if (this.oscar) {
-						identifyResult = this.engine.oscillating();
+					if (me.identify) {
+						identifyResult = me.engine.oscillating();
 						if (identifyResult.length > 0) {
 							// check for buffer full
 							if (identifyResult[0] === LifeConstants.bufferFullMessage) {
 								identifyResult[0] = "Nothing Identified";
-								this.lastOscillator = "none";
-								this.lastOscillatorHeat = "none";
-								this.lastOscillatorTyp = "none";
-								this.lastOscillatorPer = "none";
-								this.lastOscillatorDir = "none";
-								this.lastOscillatorSim = "none";
-								this.lastOscillatorBox = "none";
-								this.lastOscillatorGen = "none";
-								this.lastOscillatorPop = "none";
-								this.lastOscillatorPopMax = "none";
-								this.lastOscillatorSlo = "none";
+								me.lastOscillator = "none";
+								me.lastIdentifyType = "none";
+								me.lastIdentifyDirection = "none";
+								me.lastIdentifySpeed = "none";
+								me.lastIdentifyBox = "none";
+								me.lastIdentifyGen = "none";
+								me.lastIdentifyCells = "none";
+								me.lastIdentifyCellsMax = "none";
+								me.lastIdentifySlope = "none";
+								me.lastIdentifyPeriod = "none";
+								me.lastIdentifyHeat = "none";
 							} else {
-								this.lastOscillator = identifyResult[0];
-								this.lastOscillatorTyp = identifyResult[1];
-								this.lastOscillatorDir = identifyResult[2];
-								this.lastOscillatorSim = identifyResult[3];
-								this.lastOscillatorBox = identifyResult[4] + " x " + identifyResult[5];
-								this.lastOscillatorGen = identifyResult[6];
-								this.lastOscillatorPop = identifyResult[7];
-								this.lastOscillatorPopMax = identifyResult[8];
-								this.lastOscillatorSlo = identifyResult[9];
-								this.lastOscillatorPer = identifyResult[10];
-								this.lastOscillatorHeat = identifyResult[11];
+								me.lastOscillator = identifyResult[0];
+								me.lastIdentifyType = identifyResult[1];
+								me.lastIdentifyDirection = identifyResult[2];
+								me.lastIdentifySpeed = identifyResult[3];
+								me.lastIdentifyBox = identifyResult[4] + " x " + identifyResult[5];
+								me.lastIdentifyGen = identifyResult[6];
+								me.lastIdentifyCells = identifyResult[7];
+								me.lastIdentifyCellsMax = identifyResult[8];
+								me.lastIdentifySlope = identifyResult[9];
+								me.lastIdentifyPeriod = identifyResult[10];
+								me.lastIdentifyHeat = identifyResult[11];
+
+								// update result labels
+								me.identifyTypeValueLabel.preText = me.lastIdentifyType;
+								me.identifyCellsValueLabel.preText = me.lastIdentifyCells;
+								me.identifyMaxCellsValueLabel.preText = me.lastIdentifyCellsMax;
+								me.identifyBoxValueLabel.preText = me.lastIdentifyBox;
+								me.identifyDirectionValueLabel.preText = me.lastIdentifyDirection;
+								me.identifyPeriodValueLabel.preText = me.lastIdentifyPeriod;
+								me.identifySlopeValueLabel.preText = me.lastIdentifySlope;
+								me.identifySpeedValueLabel.preText = me.lastIdentifySpeed;
+								me.identifyHeatValueLabel.preText = me.lastIdentifyHeat;
+								me.resultsDisplayed = true;
+								me.setResultsPosition();
 							}
-							this.toggleOscar([false], true, this);
-							this.menuManager.notification.notify(identifyResult[0], 15, 216000, 15, false);
+							// switch off search
+							me.identifyPressed(me);
+							if (me.lastIdentifyType === "Empty") {
+								me.menuManager.notification.notify(identifyResult[0], 15, 120, 15, false);
+							} else {
+								me.menuManager.notification.notify(identifyResult[0], 15, 216000, 15, false);
+								me.fitZoomDisplay(true, false);
+							}
+							me.engine.initSearch(me.identify);
+
+							// bail out
+							bailout = true;
 						}
 					}
 
@@ -5216,6 +5332,27 @@
 			}
 		}
 
+		// identify results labels
+		shown = hide || !this.resultsDisplayed || (this.lastIdentifyType === "Empty") || (this.lastIdentifyType === "none");
+		this.identifyTypeLabel.deleted = shown;
+		this.identifyCellsLabel.deleted = shown;
+		this.identifyMaxCellsLabel.deleted = shown || (this.lastIdentifyCells === this.lastIdentifyCellsMax);
+		this.identifyBoxLabel.deleted = shown;
+		this.identifyDirectionLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
+		this.identifyPeriodLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
+		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
+		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
+		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
+		this.identifyTypeValueLabel.deleted = shown;
+		this.identifyCellsValueLabel.deleted = shown;
+		this.identifyMaxCellsValueLabel.deleted = shown || (this.lastIdentifyCells === this.lastIdentifyCellsMax);
+		this.identifyBoxValueLabel.deleted = shown;
+		this.identifyDirectionValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
+		this.identifyPeriodValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
+		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
+		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
+		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
+
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
 		this.undoButton.locked = (this.editNum <= 1 || this.undoButton.toolTip === "undo ");
@@ -5290,7 +5427,7 @@
 		this.newButton.deleted = shown;
 		this.loadButton.deleted = shown;
 		this.randomizeButton.deleted = shown;
-		this.searchButton.deleted = shown;
+		this.identifyButton.deleted = shown;
 		// info category
 		shown = hide || !this.showInfoSettings;
 		this.fpsButton.deleted = shown;
@@ -5315,6 +5452,11 @@
 		this.showLagToggle.deleted = shown;
 		this.killButton.deleted = shown;
 		this.autoHideButton.deleted = shown;
+
+		// lock buttons depending on rule
+		shown = this.engine.isNone || !this.executable;
+		this.randomizeButton.locked = shown;
+		this.identifyButton.locked = shown;
 
 		// set theme section label text
 		this.themeSectionLabel.deleted = hide || !(this.showDisplaySettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings);
@@ -5767,7 +5909,7 @@
 			}
 
 			// compute the next generation
-			me.engine.nextGeneration(false, noSnapshots, me.graphDisabled, me.oscar);
+			me.engine.nextGeneration(false, noSnapshots, me.graphDisabled, me.identify);
 			me.engine.convertToPensTile();
 
 			// paste any RLE snippets
@@ -5783,7 +5925,7 @@
 		// check if complete
 		if (me.engine.counter === targetGen - 1) {
 			// compute final generation with stats on if required
-			me.engine.nextGeneration(me.statsOn, false, me.graphDisabled, me.oscar);
+			me.engine.nextGeneration(me.statsOn, false, me.graphDisabled, me.identify);
 			me.engine.convertToPensTile();
 
 			// paste any RLE snippets
@@ -6376,7 +6518,7 @@
 		me.waypointManager.resetPlayback();
 
 		// clear any waypoint messages
-		if (!me.oscar) {
+		if (!me.identify) {
 			me.menuManager.notification.clear(false, false);
 		}
 
@@ -6389,8 +6531,11 @@
 		// reset undo/redo to generation 0
 		me.setUndoGen(me.engine.counter);
 
-		// reset oscar
-		me.engine.initSearch(me.oscar);
+		// reset identify
+		me.engine.initSearch(me.identify);
+
+		// clear identify results
+		me.resultsDisplayed = false;
 
 		// draw any undo/redo edit records
 		me.pasteEdits();
@@ -7205,7 +7350,7 @@
 						}
 						me.afterEdit("");
 						for (i = 0; i < me.gensPerStep; i += 1) {
-							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.oscar);
+							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify);
 							me.engine.convertToPensTile();
 						}
 						me.engine.reversePending = true;
@@ -9604,7 +9749,7 @@
 				me.cutSelection(me, me.currentPasteBuffer, true);
 
 				// step
-				me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.oscar);
+				me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify);
 				me.engine.convertToPensTile();
 				me.afterEdit("");
 
@@ -9700,7 +9845,7 @@
 		}
 
 		// compute next generation
-		me.engine.nextGeneration(false, true, true, me.oscar);
+		me.engine.nextGeneration(false, true, true, me.identify);
 		me.engine.convertToPensTile();
 
 		// set new paste buffer
@@ -10716,22 +10861,54 @@
 		}
 	};
 
-	// oscar toggle
-	View.prototype.toggleOscar = function(newValue, change, me) {
-		if (change) {
-			me.oscar = newValue[0];
+	// identify button clicked
+	View.prototype.identifyPressed = function(me) {
+		// check if anything is alive
+		if (!me.engine.anythingAlive) {
+			me.menuManager.notification.notify("Empty Pattern", 15, 120, 15, false);
+			me.identify = false;
+			me.displayResults = false;
 
-			if (me.oscar) {
-				me.menuManager.notification.notify("Identifying...", 15, 216000, 15, false);
+			// restore original step
+			me.gensPerStep = me.originalStepSpeed;
+			me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
+			me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+		} else {
+			if (me.identify) {
+				me.identify = false;
+
+				// restore original step
+				me.gensPerStep = me.originalStepSpeed;
+				me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
+				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+				me.menuManager.notification.notify("Identify Cancelled", 15, 120, 15, false);
 			} else {
-				me.menuManager.notification.notify("Cancelled", 15, 80, 15, false);
-			}
+				me.identify = true;
 
-			// initialize search
-			me.engine.initSearch(me.oscar);
+				// hide previous results
+				me.displayResults = false;
+
+				// save step speed and set to maximum
+				me.originalStepSpeed = me.gensPerStep;
+				if (me.gensPerStep < ViewConstants.maxStepSpeed) {
+					me.gensPerStep = ViewConstants.maxStepSpeed;
+					me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
+				}
+				// start playback
+				if (!me.generationOn) {
+					me.playList.current = me.viewPlayList(ViewConstants.modePlay, true, me);
+				}
+				me.menuManager.notification.notify("Identifying...", 15, 216000, 15, false);
+			}
 		}
 
-		return [me.oscar];
+		// initialize search
+		me.engine.initSearch(me.identify);
+
+		// close settings menu
+		me.backPressed(me);
+		me.backPressed(me);
+		me.menuManager.toggleRequired = true;
 	};
 
 	// grid toggle
@@ -11006,7 +11183,7 @@
 							me.engine.counter -= 1;
 
 							// compute next generation
-							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.oscar);
+							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify);
 
 							// paste any RLE snippets
 							me.pasteRLEList();
@@ -11110,7 +11287,7 @@
 		// compute each generation up to just before the target with stats off (for speed)
 		while (this.engine.counter < targetGen - 1) {
 			if (this.engine.anythingAlive) {
-				this.engine.nextGeneration(false, false, this.graphDisabled, this.oscar);
+				this.engine.nextGeneration(false, false, this.graphDisabled, this.identify);
 				if (!(this.engine.anythingAlive === 0 && this.engine.multiNumStates > 2)) {
 					this.engine.convertToPensTile();
 				}
@@ -11118,7 +11295,7 @@
 				if (this.engine.anythingAlive === 0 && this.engine.multiNumStates <= 2) {
 					// clear the other buffer
 					this.engine.anythingAlive = 1;
-					this.engine.nextGeneration(false, false, this.graphDisabled, this.oscar);
+					this.engine.nextGeneration(false, false, this.graphDisabled, this.identify);
 					this.engine.counter -= 1;
 				}
 			} else {
@@ -11131,7 +11308,7 @@
 		// compute the final generation with stats on if required
 		if (this.engine.counter < targetGen) {
 			if (this.engine.anythingAlive) {
-				this.engine.nextGeneration(this.statsOn, false, this.graphDisabled, this.oscar);
+				this.engine.nextGeneration(this.statsOn, false, this.graphDisabled, this.identify);
 				if (!(this.engine.anythingAlive === 0 && this.engine.multiNumStates > 2)) {
 					this.engine.convertToPensTile();
 				}
@@ -11139,7 +11316,7 @@
 				if (this.engine.anythingAlive === 0 && this.engine.multiNumStates <= 2) {
 					// clear the other buffer
 					this.engine.anythingAlive = 1;
-					this.engine.nextGeneration(false, false, this.graphDisabled, this.oscar);
+					this.engine.nextGeneration(false, false, this.graphDisabled, this.identify);
 					this.engine.counter -= 1;
 				}
 			} else {
@@ -11684,6 +11861,28 @@
 		// add callback for wakeup when GUI locked
 		this.viewMenu.wakeCallback = this.viewWakeUp;
 
+		// create identify results labels
+		this.identifyTypeLabel = this.viewMenu.addLabelItem(Menu.north, -100, 100, 200, 32, "Type");
+		this.identifyCellsLabel = this.viewMenu.addLabelItem(Menu.north, -100, 140, 200, 32, "Cells");
+		this.identifyMaxCellsLabel = this.viewMenu.addLabelItem(Menu.north, -100, 180, 200, 32, "Max Cells");
+		this.identifyBoxLabel = this.viewMenu.addLabelItem(Menu.north, -100, 220, 200, 32, "Bounding Box");
+		this.identifyDirectionLabel = this.viewMenu.addLabelItem(Menu.north, -100, 260, 200, 32, "Direction");
+		this.identifyPeriodLabel = this.viewMenu.addLabelItem(Menu.north, -100, 300, 200, 32, "Period");
+		this.identifySlopeLabel = this.viewMenu.addLabelItem(Menu.north, -100, 340, 200, 32, "Slope");
+		this.identifySpeedLabel = this.viewMenu.addLabelItem(Menu.north, -100, 380, 200, 32, "Speed");
+		this.identifyHeatLabel = this.viewMenu.addLabelItem(Menu.north, -100, 420, 200, 32, "Heat");
+
+		// create identify results values
+		this.identifyTypeValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 100, 200, 32, "");
+		this.identifyCellsValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 140, 200, 32, "");
+		this.identifyMaxCellsValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 180, 200, 32, "");
+		this.identifyBoxValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 220, 200, 32, "");
+		this.identifyDirectionValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 260, 200, 32, "");
+		this.identifyPeriodValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 300, 200, 32, "");
+		this.identifySlopeValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 340, 200, 32, "");
+		this.identifySpeedValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 380, 200, 32, "");
+		this.identifyHeatValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 420, 200, 32, "");
+
 		// infobar labels for camera X, Y and ANGLE
 		this.infoBarLabelXLeft = this.viewMenu.addLabelItem(Menu.northWest, 0, 40, 16, 20, "X");
 		this.infoBarLabelXLeft.setFont(ViewConstants.smallStatsFont);
@@ -12008,9 +12207,9 @@
 		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, 0, 75, 180, 40, "Randomize");
 		this.randomizeButton.toolTip = "randomize pattern and rule";
 
-		// load button
-		this.searchButton = this.viewMenu.addListItem(this.toggleOscar, Menu.middle, 0, 125, 180, 40, ["Identify"], [this.oscar], Menu.multi);
-		this.searchButton.toolTip = ["identify oscillator or spaceship period"];
+		// identify button
+		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, 0, 125, 180, 40, "Identify");
+		this.identifyButton.toolTip = ["identify oscillator or spaceship period"];
 
 		// fps button
 		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -75, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
@@ -13940,20 +14139,21 @@
 		}
 
 		// setup oscillator search
+		this.resultsDisplayed = false;
 		this.lastOscillator = "none";
-		this.lastOscillatorTyp = "none";
-		this.lastOscillatorPer = "none";
-		this.lastOscillatorDir = "none";
-		this.lastOscillatorSim = "none";
-		this.lastOscillatorBox = "none";
-		this.lastOscillatorGen = "none";
-		this.lastOscillatorPop = "none";
-		this.lastOscillatorPopMax = "none";
-		this.lastOscillatorSlo = "none";
-		this.lastOscillatorHeat = "none";
-		this.oscar = false;
-		this.searchButton.current = [this.oscar];
-		this.engine.initSearch(this.oscar);
+		this.lastIdentifyType = "none";
+		this.lastIdentifyPeriod = "none";
+		this.lastIdentifyDirection = "none";
+		this.lastIdentifySpeed = "none";
+		this.lastIdentifyBox = "none";
+		this.lastIdentifyGen = "none";
+		this.lastIdentifyCells = "none";
+		this.lastIdentifyCellsMax = "none";
+		this.lastIdentifySlope = "none";
+		this.lastIdentifyHeat = "none";
+		this.identify = false;
+		this.identifyButton.current = [this.identify];
+		this.engine.initSearch(this.identify);
 
 		// update performance warning
 		this.showLagToggle.current = this.toggleShowLag([this.perfWarning], true, this);
