@@ -20,6 +20,19 @@
 		/** @const {number} */ cellWasDead : 2,
 		/** @const {number} */ cellHasChanged : 3,
 
+		// transformation for mod hash
+		/** @const {number} */ modFirstTrans : 0,
+		/** @const {number} */ modRot90 : 0,
+		/** @const {number} */ modRot180 : 1,
+		/** @const {number} */ modRot270 : 2,
+		/** @const {number} */ modFlipX : 3,
+		/** @const {number} */ modFlipY : 4,
+		/** @const {number} */ modRot90FlipX : 5,
+		/** @const {number} */ modRot90FlipY : 6,
+		/** @const {number} */ modRot270FlipX : 7,
+		/** @const {number} */ modRot270FlipY : 8,
+		/** @const {number} */ modLastTrans : 8,
+
 		// number of hash buckets (must be power of 2)
 		/** @const {number} */ numBuckets : 4096,
 
@@ -291,6 +304,7 @@
 		this.oscLength = 0;
 		this.countList = null;
 		this.hashBox = new BoundingBox(0, 0, 0, 0);
+		this.modValue = "";
 
 		// flag for alternating Margolus grid lines
 		/** @type {boolean} */ this.altGrid = false;
@@ -806,6 +820,7 @@
 				this.hashBox.bottomY = this.height;
 				this.hashBox.rightX = 0;
 				this.hashBox.topY = 0;
+				this.modValue = "";
 			}
 
 			// @ts-ignore
@@ -833,6 +848,7 @@
 			this.boxList = null;
 			this.nextList = null;
 			this.countList = null;
+			this.modValue = "";
 		}
 	};
 
@@ -849,6 +865,103 @@
 		}
 
 		return message;
+	};
+
+	// get mod hash from pattern
+	Life.prototype.getModHash = function(box, transform) {
+		var hash = 31415962,
+			left = box.leftX,
+			bottom = box.bottomY,
+			right = box.rightX,
+			top = box.topY,
+			width = right - left + 1,
+			height = top - bottom + 1,
+			x = 0,
+			y = 0,
+			cx = 0,
+			cy = 0,
+			index = 0,
+			colourGrid = this.colourGrid,
+			aliveStart = LifeConstants.aliveStart;
+
+		// create a hash from every alive cell
+		for (y = 0; y < height; y += 1) {
+			for (x = 0; x < width; x += 1) {
+				// adjust the coordinates based on the transformation
+				switch (transform) {
+				case LifeConstants.modRot90:
+					cx = (index / height) | 0;
+					cy = height - (index % height) - 1;
+					break;
+				case LifeConstants.modRot180:
+					cx = width - x - 1;
+					cy = height - y - 1;
+					break;
+				case LifeConstants.modRot270:
+					cx = width - ((index / height) | 0) - 1;
+					cy = index %  height;
+					break;
+				case LifeConstants.modFlipX:
+					cx = width - x - 1;
+					cy = y;
+					break;
+				case LifeConstants.modFlipY:
+					cx = x;
+					cy = height - y - 1;
+					break;
+				case LifeConstants.modRot90FlipX:
+					cx = (index / height) | 0;
+					cy = index % height;
+					break;
+				case LifeConstants.modRot90FlipY:
+					cx = width - ((index / height) | 0) - 1;
+					cy = height - (index % height) - 1;
+					break;
+				case LifeConstants.modRot270FlipX:
+					cx = width - ((index / height) | 0) - 1;
+					cy = height - (index % height) - 1;
+					break;
+				case LifeConstants.modRot270FlipY:
+					cx = (index / height) | 0;
+					cy = index % height;
+					break;
+				}
+
+				// get the cell state
+				if (colourGrid[cy + bottom][cx + left] >= aliveStart) {
+					// update the hash
+					hash = (hash * 1000003) ^ y;
+					hash = (hash * 1000003) ^ x;
+				}
+
+				index += 1;
+			}
+		}
+
+		return hash;
+	};
+
+	// check mod hashes
+	Life.prototype.checkModHash = function(box) {
+		var i = 0,
+			trans = LifeConstants.modFirstTrans,
+			found = -1,
+			hash = 0;
+
+		while (trans <= LifeConstants.modLastTrans && found === -1) {
+			hash = this.getModHash(box, trans);
+			i = 0;
+			while (i < this.oscLength && found === -1) {
+				if (hash === this.hashList[i]) {
+					found = i;
+				} else {
+					i += 1;
+				}
+			}
+			trans += 1;
+		}
+
+		return found;
 	};
 
 	// get hash from pattern
@@ -1000,13 +1113,15 @@
 
 			// volatility
 			volatility = "",
-			strictVolatility = "",
 
 			// count list
 			countList = this.countList,
 			countRow = null,
 			rotor = 0,
 			stator = 0,
+
+			// mod value
+			modValue = this.modValue,
 
 			// counters
 			x = 0,
@@ -1162,8 +1277,13 @@
 			volatility = String((rotor / (rotor + stator)).toFixed(2));
 		}
 
+		// mod value
+		if (modValue === "") {
+			modValue = period;
+		}
+
 		// return the message
-		return [message, type, direction, simpleSpeed, boxWidth, boxHeight, genMessage, min, max, slope, period, heat, volatility, strictVolatility];
+		return [message, type, direction, simpleSpeed, boxWidth, boxHeight, genMessage, min, max, slope, period, heat, volatility, modValue];
 	};
 
 	// return true if pattern is empty, stable or oscillating
@@ -1185,6 +1305,7 @@
 
 		// hash value of current pattern
 		hash = 0,
+		modHash = 0,
 
 		// period
 		period = 0,
@@ -1282,9 +1403,15 @@
 
 					// point the bucket head at the new entry
 					this.bucketList[bucketNum] = this.oscLength;
-					this.oscLength += 1;
+
+					// check for mod matches
+					modHash = this.checkModHash(box);
+					if (modHash !== -1) {
+						this.modValue = String(this.oscLength - modHash);
+					}
 
 					// check for buffer full
+					this.oscLength += 1;
 					if (this.oscLength === LifeConstants.maxOscillatorGens) {
 						this.oscLength = 0;
 						result = [LifeConstants.bufferFullMessage];

@@ -633,6 +633,9 @@
 		// last oscillator volatility
 		/** @type {string} */ this.lastIdentifyVolatility = "";
 
+		// last oscillator mod
+		/** @type {string} */ this.lastIdentifyMod = "";
+
 		// whether computing oscillators
 		/** @type {boolean} */ this.identify = false;
 
@@ -647,6 +650,7 @@
 		this.identifySpeedLabel = null;
 		this.identifyHeatLabel = null;
 		this.identifyVolatilityLabel = null;
+		this.identifyModLabel = null;
 		this.identifyTypeValueLabel = null;
 		this.identifyCellsValueLabel = null;
 		this.identifyMaxCellsValueLabel = null;
@@ -656,7 +660,7 @@
 		this.identifySlopeValueLabel = null;
 		this.identifySpeedValueLabel = null;
 		this.identifyHeatValueLabel = null;
-		this.identifyVolatilityValueLabel = null;
+		this.identifyModValueLabel = null;
 
 		// window zoom for high DPI devices
 		/** @type {number} */ this.windowZoom = 1;
@@ -4238,6 +4242,11 @@
 			this.identifyPeriodLabel.setPosition(Menu.north, x, y);
 			this.identifyPeriodValueLabel.setPosition(Menu.north, xv, y);
 			y += h;
+
+			// mod
+			this.identifyModLabel.setPosition(Menu.north, x, y);
+			this.identifyModValueLabel.setPosition(Menu.north, xv, y);
+			y += h;
 		}
 
 		if (this.lastIdentifyType === "Spaceship") {
@@ -4861,6 +4870,7 @@
 										me.lastIdentifyPeriod = "none";
 										me.lastIdentifyHeat = "none";
 										me.lastIdentifyVolatility = "none";
+										me.lastIdentifyMod = "none";
 									} else {
 										me.lastOscillator = identifyResult[0];
 										me.lastIdentifyType = identifyResult[1];
@@ -4874,6 +4884,7 @@
 										me.lastIdentifyPeriod = identifyResult[10];
 										me.lastIdentifyHeat = identifyResult[11];
 										me.lastIdentifyVolatility = identifyResult[12];
+										me.lastIdentifyMod = identifyResult[13];
 
 										// update result labels
 										me.identifyTypeValueLabel.preText = me.lastIdentifyType;
@@ -4886,6 +4897,7 @@
 										me.identifySpeedValueLabel.preText = me.lastIdentifySpeed;
 										me.identifyHeatValueLabel.preText = me.lastIdentifyHeat;
 										me.identifyVolatilityValueLabel.preText = me.lastIdentifyVolatility;
+										me.identifyModValueLabel.preText = me.lastIdentifyMod;
 										me.resultsDisplayed = true;
 										me.setResultsPosition();
 									}
@@ -5358,6 +5370,7 @@
 		this.identifyBoxLabel.deleted = shown;
 		this.identifyDirectionLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyPeriodLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
+		this.identifyModLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
 		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
@@ -5368,6 +5381,7 @@
 		this.identifyBoxValueLabel.deleted = shown;
 		this.identifyDirectionValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyPeriodValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
+		this.identifyModValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
 		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
@@ -11907,6 +11921,7 @@
 		this.identifySpeedLabel = this.viewMenu.addLabelItem(Menu.north, -100, 380, 200, 32, "Speed");
 		this.identifyHeatLabel = this.viewMenu.addLabelItem(Menu.north, -100, 420, 200, 32, "Heat");
 		this.identifyVolatilityLabel = this.viewMenu.addLabelItem(Menu.north, -100, 460, 200, 32, "Volatility");
+		this.identifyModLabel = this.viewMenu.addLabelItem(Menu.north, -100, 500, 200, 32, "Mod");
 
 		// create identify results values
 		this.identifyTypeValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 100, 200, 32, "");
@@ -11919,6 +11934,7 @@
 		this.identifySpeedValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 380, 200, 32, "");
 		this.identifyHeatValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 420, 200, 32, "");
 		this.identifyVolatilityValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 460, 200, 32, "");
+		this.identifyModValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 500, 200, 32, "");
 
 		// infobar labels for camera X, Y and ANGLE
 		this.infoBarLabelXLeft = this.viewMenu.addLabelItem(Menu.northWest, 0, 40, 16, 20, "X");
@@ -14189,6 +14205,7 @@
 		this.lastIdentifySlope = "none";
 		this.lastIdentifyHeat = "none";
 		this.lastIdentifyVolatility = "none";
+		this.lastIdentifyMod = "none";
 		this.identify = false;
 		this.identifyButton.current = [this.identify];
 		this.engine.initSearch(this.identify);
