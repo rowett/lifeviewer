@@ -1,6 +1,13 @@
+Build 443
+- added Volatility to Identify output for Oscillators
+
+Build 442
+- IE11 compatibility fix
+
 Build 441
 - improved Identify hash function
 - fixed bounding box for oscillators
+- fix Identify not working with Themes with no history
 
 Build 440
 - Identify improvements:

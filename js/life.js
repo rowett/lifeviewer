@@ -14,6 +14,12 @@
 	// Life constants
 	/** @const */
 	var LifeConstants = {
+		// cell types for rotor/stator calculations
+		/** @const {number} */ cellNotSeen : 0,
+		/** @const {number} */ cellWasAlive : 1,
+		/** @const {number} */ cellWasDead : 2,
+		/** @const {number} */ cellHasChanged : 3,
+
 		// number of hash buckets (must be power of 2)
 		/** @const {number} */ numBuckets : 4096,
 
@@ -273,7 +279,7 @@
 		// allocator
 		this.allocator = new Allocator();
 
-		// oscillator lists
+		// identify lists
 		this.bucketList = null;
 		this.hashList = null;
 		this.genList = null;
@@ -283,6 +289,8 @@
 		this.boxList = null;
 		this.nextList = null;
 		this.oscLength = 0;
+		this.countList = null;
+		this.hashBox = new BoundingBox(0, 0, 0, 0);
 
 		// flag for alternating Margolus grid lines
 		/** @type {boolean} */ this.altGrid = false;
@@ -793,6 +801,11 @@
 				this.diedList = this.allocator.allocate(Uint32, LifeConstants.maxOscillatorGens, "Life.diedList");
 				this.boxList = this.allocator.allocate(Uint32, 2 * LifeConstants.maxOscillatorGens, "Life.boxList");
 				this.nextList = this.allocator.allocate(Int32, LifeConstants.maxOscillatorGens, "Life.nextList");
+				this.countList = Array.matrix(Uint8, this.height, this.width, LifeConstants.cellNotSeen, this.allocator, "Life.countList");
+				this.hashBox.leftX = this.width;
+				this.hashBox.bottomY = this.height;
+				this.hashBox.rightX = 0;
+				this.hashBox.topY = 0;
 			}
 
 			// @ts-ignore
@@ -819,6 +832,7 @@
 			this.diedList = null;
 			this.boxList = null;
 			this.nextList = null;
+			this.countList = null;
 		}
 	};
 
@@ -851,8 +865,24 @@
 			twoState = this.multiNumStates <= 2,
 			colourGrid = this.colourGrid,
 			colourRow = null,
+			countList = this.countList,
+			countRow = null,
 			aliveStart = LifeConstants.aliveStart,
-			lastNonZero = 0;
+			hashBox = this.hashBox;
+
+		// update bounding box for hash
+		if (x < hashBox.leftX) {
+			hashBox.leftX = x;
+		}
+		if (y < hashBox.bottomY) {
+			hashBox.bottomY = y;
+		}
+		if (right > hashBox.rightX) {
+			hashBox.rightX = right;
+		}
+		if (top > hashBox.topY) {
+			hashBox.topY = top;
+		}
 
 		// create a hash from every alive cell
 		for (cy = y; cy <= top; cy += 1) {
@@ -873,13 +903,61 @@
 						hash = (hash * 1000003) ^ yshift;
 						hash = (hash * 1000003) ^ (cx - x);
 						hash = (hash * 1000003) ^ state;
-						lastNonZero = state;
 					}
 				}
 			}
 		}
 
-		return hash + lastNonZero;
+		// update count
+		for (cy = hashBox.bottomY; cy <= hashBox.topY; cy += 1) {
+			colourRow = colourGrid[cy];
+			countRow = countList[cy];
+			if (twoState) {
+				for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+					if (colourRow[cx] >= aliveStart) {
+						// update count
+						if (countRow[cx] === LifeConstants.cellNotSeen) {
+							countRow[cx] = LifeConstants.cellWasAlive;
+						} else {
+							if (countRow[cx] === LifeConstants.cellWasDead) {
+								countRow[cx] = LifeConstants.cellHasChanged;
+							}
+						}
+					} else {
+						// update count
+						if (countRow[cx] === LifeConstants.cellNotSeen) {
+							countRow[cx] = LifeConstants.cellWasDead;
+						} else {
+							if (countRow[cx] === LifeConstants.cellWasAlive) {
+								countRow[cx] = LifeConstants.cellHasChanged;
+							}
+						}
+					}
+				}
+			} else {
+				if (colourRow[cx] !== 0) {
+					// update count
+					if (countRow[cx] === LifeConstants.cellNotSeen) {
+						countRow[cx] = LifeConstants.cellWasAlive;
+					} else {
+						if (countRow[cx] === LifeConstants.cellWasDead) {
+							countRow[cx] = LifeConstants.cellHasChanged;
+						}
+					}
+				} else {
+					// update count
+					if (countRow[cx] === LifeConstants.cellNotSeen) {
+						countRow[cx] = LifeConstants.cellWasDead;
+					} else {
+						if (countRow[cx] === LifeConstants.cellWasAlive) {
+							countRow[cx] = LifeConstants.cellHasChanged;
+						}
+					}
+				}
+			}
+		}
+
+		return hash;
 	};
 
 	// return identify results
@@ -918,7 +996,21 @@
 
 			// heat
 			heatVal = 0,
-			heat = "";
+			heat = "",
+
+			// volatility
+			volatility = "",
+			strictVolatility = "",
+
+			// count list
+			countList = this.countList,
+			countRow = null,
+			rotor = 0,
+			stator = 0,
+
+			// counters
+			x = 0,
+			y = 0;
 
 		// only use one generation for still life
 		if (period > 0) {
@@ -1053,8 +1145,25 @@
 			}
 		}
 	
+		// compute volatility
+		if (type === "Oscillator") {
+			for (y = minY; y <= maxY; y += 1) {
+				countRow = countList[y];
+				for (x = minX; x <= maxX; x += 1) {
+					if (countRow[x] === LifeConstants.cellHasChanged) {
+						rotor += 1;
+					} else {
+						if (countRow[x] === LifeConstants.cellWasAlive) {
+							stator += 1;
+						}
+					}
+				}
+			}
+			volatility = String((rotor / (rotor + stator)).toFixed(2));
+		}
+
 		// return the message
-		return [message, type, direction, simpleSpeed, boxWidth, boxHeight, genMessage, min, max, slope, period, heat];
+		return [message, type, direction, simpleSpeed, boxWidth, boxHeight, genMessage, min, max, slope, period, heat, volatility, strictVolatility];
 	};
 
 	// return true if pattern is empty, stable or oscillating
@@ -4126,7 +4235,8 @@
 		    currentSmallOverlayGrid = this.smallOverlayGrid,
 		    currentMaskGrid = this.state6Mask,
 		    currentMaskAliveGrid = this.state6Alive,
-		    currentMaskCellsGrid = this.state6Cells,
+			currentMaskCellsGrid = this.state6Cells,
+			currentCountList = this.countList,
 
 		    // get current tile buffers
 		    currentMaskTileGrid = this.state6TileGrid,
@@ -4205,6 +4315,11 @@
 			// row occupancy array for grid bounding box calculation
 			this.rowOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.rowOccupied16");
 
+			// count grid
+			if (currentCountList) {
+				this.countList = Array.matrix(Uint8, this.height, this.width, LifeConstants.cellNotSeen, this.allocator, "Life.countList");
+			}
+
 			// colour grid
 			this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
 			this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
@@ -4240,6 +4355,9 @@
 				this.smallColourGrid[y + yOffset].set(currentSmallColourGrid[y], xOffset);
 				if (this.isPCA) {
 					this.nextColourGrid[y + yOffset].set(currentNextColourGrid[y], xOffset);
+				}
+				if (this.countList) {
+					this.countList[y + yOffset].set(currentCountList[y], xOffset);
 				}
 
 				// check if overlay grid was allocated

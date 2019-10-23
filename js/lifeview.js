@@ -262,7 +262,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 441,
+		/** @const {number} */ versionBuild : 443,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -630,6 +630,9 @@
 		// last oscillator slope 
 		/** @type {string} */ this.lastIdentifySlope = "";
 
+		// last oscillator volatility
+		/** @type {string} */ this.lastIdentifyVolatility = "";
+
 		// whether computing oscillators
 		/** @type {boolean} */ this.identify = false;
 
@@ -643,6 +646,7 @@
 		this.identifySlopeLabel = null;
 		this.identifySpeedLabel = null;
 		this.identifyHeatLabel = null;
+		this.identifyVolatilityLabel = null;
 		this.identifyTypeValueLabel = null;
 		this.identifyCellsValueLabel = null;
 		this.identifyMaxCellsValueLabel = null;
@@ -652,6 +656,7 @@
 		this.identifySlopeValueLabel = null;
 		this.identifySpeedValueLabel = null;
 		this.identifyHeatValueLabel = null;
+		this.identifyVolatilityValueLabel = null;
 
 		// window zoom for high DPI devices
 		/** @type {number} */ this.windowZoom = 1;
@@ -4253,6 +4258,13 @@
 			this.identifyHeatValueLabel.setPosition(Menu.north, xv, y);
 			y += h;
 		}
+
+		if (this.lastIdentifyType === "Oscillator") {
+			// volatility
+			this.identifyVolatilityLabel.setPosition(Menu.north, x, y);
+			this.identifyVolatilityValueLabel.setPosition(Menu.north, xv, y);
+			y += h;
+		}
 	};
 
 	// update step label
@@ -4814,65 +4826,6 @@
 						me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify);
 					}
 
-					// compute oscillators if enabled
-					if (me.identify) {
-						identifyResult = me.engine.oscillating();
-						if (identifyResult.length > 0) {
-							// check for buffer full
-							if (identifyResult[0] === LifeConstants.bufferFullMessage) {
-								identifyResult[0] = "Nothing Identified";
-								me.lastOscillator = "none";
-								me.lastIdentifyType = "none";
-								me.lastIdentifyDirection = "none";
-								me.lastIdentifySpeed = "none";
-								me.lastIdentifyBox = "none";
-								me.lastIdentifyGen = "none";
-								me.lastIdentifyCells = "none";
-								me.lastIdentifyCellsMax = "none";
-								me.lastIdentifySlope = "none";
-								me.lastIdentifyPeriod = "none";
-								me.lastIdentifyHeat = "none";
-							} else {
-								me.lastOscillator = identifyResult[0];
-								me.lastIdentifyType = identifyResult[1];
-								me.lastIdentifyDirection = identifyResult[2];
-								me.lastIdentifySpeed = identifyResult[3];
-								me.lastIdentifyBox = identifyResult[4] + " x " + identifyResult[5];
-								me.lastIdentifyGen = identifyResult[6];
-								me.lastIdentifyCells = identifyResult[7];
-								me.lastIdentifyCellsMax = identifyResult[8];
-								me.lastIdentifySlope = identifyResult[9];
-								me.lastIdentifyPeriod = identifyResult[10];
-								me.lastIdentifyHeat = identifyResult[11];
-
-								// update result labels
-								me.identifyTypeValueLabel.preText = me.lastIdentifyType;
-								me.identifyCellsValueLabel.preText = me.lastIdentifyCells;
-								me.identifyMaxCellsValueLabel.preText = me.lastIdentifyCellsMax;
-								me.identifyBoxValueLabel.preText = me.lastIdentifyBox;
-								me.identifyDirectionValueLabel.preText = me.lastIdentifyDirection;
-								me.identifyPeriodValueLabel.preText = me.lastIdentifyPeriod;
-								me.identifySlopeValueLabel.preText = me.lastIdentifySlope;
-								me.identifySpeedValueLabel.preText = me.lastIdentifySpeed;
-								me.identifyHeatValueLabel.preText = me.lastIdentifyHeat;
-								me.resultsDisplayed = true;
-								me.setResultsPosition();
-							}
-							// switch off search
-							me.identifyPressed(me);
-							if (me.lastIdentifyType === "Empty") {
-								me.menuManager.notification.notify(identifyResult[0], 15, 120, 15, false);
-							} else {
-								me.menuManager.notification.notify(identifyResult[0], 15, 216000, 15, false);
-								me.fitZoomDisplay(true, false);
-							}
-							me.engine.initSearch(me.identify);
-
-							// bail out
-							bailout = true;
-						}
-					}
-
 					// next step
 					stepsTaken += 1;
 
@@ -4887,6 +4840,68 @@
 							// since cells will appear in the future
 							if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
 								me.engine.anythingAlive = 1;
+							}
+
+							// compute oscillators if enabled
+							if (me.identify) {
+								identifyResult = me.engine.oscillating();
+								if (identifyResult.length > 0) {
+									// check for buffer full
+									if (identifyResult[0] === LifeConstants.bufferFullMessage) {
+										identifyResult[0] = "Nothing Identified";
+										me.lastOscillator = "none";
+										me.lastIdentifyType = "none";
+										me.lastIdentifyDirection = "none";
+										me.lastIdentifySpeed = "none";
+										me.lastIdentifyBox = "none";
+										me.lastIdentifyGen = "none";
+										me.lastIdentifyCells = "none";
+										me.lastIdentifyCellsMax = "none";
+										me.lastIdentifySlope = "none";
+										me.lastIdentifyPeriod = "none";
+										me.lastIdentifyHeat = "none";
+										me.lastIdentifyVolatility = "none";
+									} else {
+										me.lastOscillator = identifyResult[0];
+										me.lastIdentifyType = identifyResult[1];
+										me.lastIdentifyDirection = identifyResult[2];
+										me.lastIdentifySpeed = identifyResult[3];
+										me.lastIdentifyBox = identifyResult[4] + " x " + identifyResult[5];
+										me.lastIdentifyGen = identifyResult[6];
+										me.lastIdentifyCells = identifyResult[7];
+										me.lastIdentifyCellsMax = identifyResult[8];
+										me.lastIdentifySlope = identifyResult[9];
+										me.lastIdentifyPeriod = identifyResult[10];
+										me.lastIdentifyHeat = identifyResult[11];
+										me.lastIdentifyVolatility = identifyResult[12];
+
+										// update result labels
+										me.identifyTypeValueLabel.preText = me.lastIdentifyType;
+										me.identifyCellsValueLabel.preText = me.lastIdentifyCells;
+										me.identifyMaxCellsValueLabel.preText = me.lastIdentifyCellsMax;
+										me.identifyBoxValueLabel.preText = me.lastIdentifyBox;
+										me.identifyDirectionValueLabel.preText = me.lastIdentifyDirection;
+										me.identifyPeriodValueLabel.preText = me.lastIdentifyPeriod;
+										me.identifySlopeValueLabel.preText = me.lastIdentifySlope;
+										me.identifySpeedValueLabel.preText = me.lastIdentifySpeed;
+										me.identifyHeatValueLabel.preText = me.lastIdentifyHeat;
+										me.identifyVolatilityValueLabel.preText = me.lastIdentifyVolatility;
+										me.resultsDisplayed = true;
+										me.setResultsPosition();
+									}
+									// switch off search
+									me.identifyPressed(me);
+									if (me.lastIdentifyType === "Empty") {
+										me.menuManager.notification.notify(identifyResult[0], 15, 120, 15, false);
+									} else {
+										me.menuManager.notification.notify(identifyResult[0], 15, 216000, 15, false);
+										me.fitZoomDisplay(true, false);
+									}
+									me.engine.initSearch(me.identify);
+
+									// bail out
+									bailout = true;
+								}
 							}
 						}
 					}
@@ -5346,6 +5361,7 @@
 		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
+		this.identifyVolatilityLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifyTypeValueLabel.deleted = shown;
 		this.identifyCellsValueLabel.deleted = shown;
 		this.identifyMaxCellsValueLabel.deleted = shown || (this.lastIdentifyCells === this.lastIdentifyCellsMax);
@@ -5355,6 +5371,7 @@
 		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
+		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
@@ -11889,6 +11906,7 @@
 		this.identifySlopeLabel = this.viewMenu.addLabelItem(Menu.north, -100, 340, 200, 32, "Slope");
 		this.identifySpeedLabel = this.viewMenu.addLabelItem(Menu.north, -100, 380, 200, 32, "Speed");
 		this.identifyHeatLabel = this.viewMenu.addLabelItem(Menu.north, -100, 420, 200, 32, "Heat");
+		this.identifyVolatilityLabel = this.viewMenu.addLabelItem(Menu.north, -100, 460, 200, 32, "Volatility");
 
 		// create identify results values
 		this.identifyTypeValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 100, 200, 32, "");
@@ -11900,6 +11918,7 @@
 		this.identifySlopeValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 340, 200, 32, "");
 		this.identifySpeedValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 380, 200, 32, "");
 		this.identifyHeatValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 420, 200, 32, "");
+		this.identifyVolatilityValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 460, 200, 32, "");
 
 		// infobar labels for camera X, Y and ANGLE
 		this.infoBarLabelXLeft = this.viewMenu.addLabelItem(Menu.northWest, 0, 40, 16, 20, "X");
@@ -14169,6 +14188,7 @@
 		this.lastIdentifyCellsMax = "none";
 		this.lastIdentifySlope = "none";
 		this.lastIdentifyHeat = "none";
+		this.lastIdentifyVolatility = "none";
 		this.identify = false;
 		this.identifyButton.current = [this.identify];
 		this.engine.initSearch(this.identify);

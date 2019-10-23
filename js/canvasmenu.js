@@ -3394,8 +3394,13 @@
 		var rect = this.mainCanvas.getBoundingClientRect();
 
 		// adjust for window scroll
-		x -= rect.left + window.scrollX;
-		y -= rect.top + window.scrollY;
+		if (!window.scrollX) {
+			x -= rect.left + window.pageXOffset;
+			y -= rect.top + window.pageYOffset;
+		} else {
+			x -= rect.left + window.scrollX;
+			y -= rect.top + window.scrollY;
+		}
 
 		// apply zoom
 		x /= me.windowZoom;
