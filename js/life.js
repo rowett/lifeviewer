@@ -1284,11 +1284,11 @@
 		}
 
 		// mod value
-		if (modValue === 0) {
-			modValue = period;
-		}
 		if (modValue > (period >> 1)) {
 			modValue = period - modValue;
+		}
+		if (modValue === 0) {
+			modValue = period;
 		}
 
 		// return the message
