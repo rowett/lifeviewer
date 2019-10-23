@@ -304,7 +304,7 @@
 		this.oscLength = 0;
 		this.countList = null;
 		this.hashBox = new BoundingBox(0, 0, 0, 0);
-		this.modValue = "";
+		this.modValue = 0;
 
 		// flag for alternating Margolus grid lines
 		/** @type {boolean} */ this.altGrid = false;
@@ -820,7 +820,7 @@
 				this.hashBox.bottomY = this.height;
 				this.hashBox.rightX = 0;
 				this.hashBox.topY = 0;
-				this.modValue = "";
+				this.modValue = 0;
 			}
 
 			// @ts-ignore
@@ -848,7 +848,7 @@
 			this.boxList = null;
 			this.nextList = null;
 			this.countList = null;
-			this.modValue = "";
+			this.modValue = 0;
 		}
 	};
 
@@ -946,16 +946,22 @@
 		var i = 0,
 			trans = LifeConstants.modFirstTrans,
 			found = -1,
-			hash = 0;
+			hash = 0,
+			bucketNum = 0;
 
 		while (trans <= LifeConstants.modLastTrans && found === -1) {
 			hash = this.getModHash(box, trans);
-			i = 0;
-			while (i < this.oscLength && found === -1) {
+
+			// get the first entry in the bucket
+			bucketNum = hash & (LifeConstants.numBuckets - 1);
+			i = this.bucketList[bucketNum];
+			
+			// search entries in the bucket
+			while (i !== -1  && found === -1) {
 				if (hash === this.hashList[i]) {
 					found = i;
 				} else {
-					i += 1;
+					i = this.nextList[i];
 				}
 			}
 			trans += 1;
@@ -1278,12 +1284,15 @@
 		}
 
 		// mod value
-		if (modValue === "") {
+		if (modValue === 0) {
 			modValue = period;
+		}
+		if (modValue > (period >> 1)) {
+			modValue = period - modValue;
 		}
 
 		// return the message
-		return [message, type, direction, simpleSpeed, boxWidth, boxHeight, genMessage, min, max, slope, period, heat, volatility, modValue];
+		return [message, type, direction, simpleSpeed, boxWidth, boxHeight, genMessage, min, max, slope, period, heat, volatility, String(modValue)];
 	};
 
 	// return true if pattern is empty, stable or oscillating
@@ -1407,7 +1416,7 @@
 					// check for mod matches
 					modHash = this.checkModHash(box);
 					if (modHash !== -1) {
-						this.modValue = String(this.oscLength - modHash);
+						this.modValue = this.counter - this.genList[modHash];
 					}
 
 					// check for buffer full
