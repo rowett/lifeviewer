@@ -1,3 +1,6 @@
+Build 444
+- added Mod to Identify output
+
 Build 443
 - added Volatility to Identify output for Oscillators
 
