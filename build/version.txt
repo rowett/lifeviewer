@@ -1,3 +1,6 @@
+Build 445
+- reverse playback hotkey was not working for PCA rules
+
 Build 444
 - added Mod to Identify output
 

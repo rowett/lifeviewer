@@ -876,6 +876,8 @@
 			top = box.topY,
 			width = right - left + 1,
 			height = top - bottom + 1,
+			state = 0,
+			twoState = this.multiNumStates <= 2,
 			x = 0,
 			y = 0,
 			cx = 0,
@@ -928,12 +930,21 @@
 				}
 
 				// get the cell state
-				if (colourGrid[cy + bottom][cx + left] >= aliveStart) {
-					// update the hash
-					hash = (hash * 1000003) ^ y;
-					hash = (hash * 1000003) ^ x;
+				if (twoState) {
+					if (colourGrid[cy + bottom][cx + left] >= aliveStart) {
+						// update the hash
+						hash = (hash * 1000003) ^ y;
+						hash = (hash * 1000003) ^ x;
+					}
+				} else {
+					state = this.getState(cx, cy, true);
+					if (state !== 0) {
+						hash = (hash * 1000003) ^ y;
+						hash = (hash * 1000003) ^ x;
+						hash = (hash * 1000003) ^ state;
+					}
 				}
-
+	
 				index += 1;
 			}
 		}

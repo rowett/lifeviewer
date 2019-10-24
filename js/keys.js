@@ -1159,7 +1159,7 @@
 					}
 				} else {
 					// check for Margolus
-					if (me.engine.isMargolus) {
+					if (me.engine.isMargolus || me.engine.isPCA) {
 						// check rule is reversible
 						if (me.engine.margolusReverseLookup1) {
 							me.directionPressed(me);
