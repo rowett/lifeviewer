@@ -1,3 +1,6 @@
+Build 446
+- added Temperature (active and rotor) to Identify output for Oscillators
+
 Build 445
 - improved Mod calculation performance for multi-state patterns
 - Mod calculation now works for PCA sub-cells

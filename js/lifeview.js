@@ -262,7 +262,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 445,
+		/** @const {number} */ versionBuild : 446,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -638,6 +638,9 @@
 		// last oscillator active cells
 		/** @type {string} */ this.lastIdentifyActive = "";
 
+		// last oscillator temperature
+		/** @type {string} */ this.lastIdentifyTemperature = "";
+
 		// whether computing oscillators
 		/** @type {boolean} */ this.identify = false;
 
@@ -653,6 +656,10 @@
 		this.identifyVolatilityLabel = null;
 		this.identifyModLabel = null;
 		this.identifyActiveLabel = null;
+		this.identifyTemperatureLabel = null;
+
+		// labels for identify result values
+		this.identifyActiveLabel = null;
 		this.identifyTypeValueLabel = null;
 		this.identifyCellsValueLabel = null;
 		this.identifyBoxValueLabel = null;
@@ -663,6 +670,7 @@
 		this.identifyHeatValueLabel = null;
 		this.identifyModValueLabel = null;
 		this.identifyActiveValueLabel = null;
+		this.identifyTemperatureValueLabel = null;
 
 		// window zoom for high DPI devices
 		/** @type {number} */ this.windowZoom = 1;
@@ -4267,6 +4275,11 @@
 		}
 
 		if (this.lastIdentifyType === "Oscillator") {
+			// temperature
+			this.identifyTemperatureLabel.setPosition(Menu.north, x, y);
+			this.identifyTemperatureValueLabel.setPosition(Menu.north, xv, y);
+			y += h;
+
 			// volatility
 			this.identifyVolatilityLabel.setPosition(Menu.north, x, y);
 			this.identifyVolatilityValueLabel.setPosition(Menu.north, xv, y);
@@ -4856,17 +4869,19 @@
 									if (identifyResult[0] === LifeConstants.bufferFullMessage) {
 										identifyResult[0] = "Nothing Identified";
 										me.lastOscillator = "none";
-										me.lastIdentifyType = "none";
-										me.lastIdentifyDirection = "none";
-										me.lastIdentifySpeed = "none";
-										me.lastIdentifyBox = "none";
-										me.lastIdentifyGen = "none";
-										me.lastIdentifyCells = "none";
-										me.lastIdentifySlope = "none";
-										me.lastIdentifyPeriod = "none";
-										me.lastIdentifyHeat = "none";
-										me.lastIdentifyVolatility = "none";
-										me.lastIdentifyMod = "none";
+										me.lastIdentifyType = "";
+										me.lastIdentifyDirection = "";
+										me.lastIdentifySpeed = "";
+										me.lastIdentifyBox = "";
+										me.lastIdentifyGen = "";
+										me.lastIdentifyCells = "";
+										me.lastIdentifySlope = "";
+										me.lastIdentifyPeriod = "";
+										me.lastIdentifyHeat = "";
+										me.lastIdentifyVolatility = "";
+										me.lastIdentifyMod = "";
+										me.lastIdentifyActive = "";
+										me.lastIdentifyTemperature = "";
 									} else {
 										me.lastOscillator = identifyResult[0];
 										me.lastIdentifyType = identifyResult[1];
@@ -4881,6 +4896,7 @@
 										me.lastIdentifyVolatility = identifyResult[10];
 										me.lastIdentifyMod = identifyResult[11];
 										me.lastIdentifyActive = identifyResult[12];
+										me.lastIdentifyTemperature = identifyResult[13];
 
 										// update result labels
 										me.identifyTypeValueLabel.preText = me.lastIdentifyType;
@@ -4905,6 +4921,8 @@
 										me.identifyModValueLabel.preText = me.lastIdentifyMod;
 										me.identifyActiveValueLabel.preText = me.lastIdentifyActive;
 										me.identifyActiveValueLabel.toolTip = "rotor / stator / total";
+										me.identifyTemperatureValueLabel.preText = me.lastIdentifyTemperature;
+										me.identifyTemperatureValueLabel.toolTip = "active / rotor";
 										me.resultsDisplayed = true;
 										me.setResultsPosition();
 									}
@@ -5381,6 +5399,7 @@
 		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
+		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifyVolatilityLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifyTypeValueLabel.deleted = shown;
 		this.identifyCellsValueLabel.deleted = shown;
@@ -5392,6 +5411,7 @@
 		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
+		this.identifyTemperatureValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 
 		// undo and redo buttons
@@ -11930,6 +11950,7 @@
 		this.identifyVolatilityLabel = this.viewMenu.addLabelItem(Menu.north, -160, 440, 160, 32, "Volatility");
 		this.identifyModLabel = this.viewMenu.addLabelItem(Menu.north, -160, 460, 160, 32, "Mod");
 		this.identifyActiveLabel = this.viewMenu.addLabelItem(Menu.north, -160, 500, 160, 32, "Active Cells");
+		this.identifyTemperatureLabel = this.viewMenu.addLabelItem(Menu.north, -160, 540, 160, 32, "Temperature");
 
 		// create identify results values
 		this.identifyTypeValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 100, 320, 32, "");
@@ -11943,6 +11964,7 @@
 		this.identifyVolatilityValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 420, 320, 32, "");
 		this.identifyModValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 460, 320, 32, "");
 		this.identifyActiveValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 500, 320, 32, "");
+		this.identifyTemperatureValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 540, 320, 32, "");
 
 		// infobar labels for camera X, Y and ANGLE
 		this.infoBarLabelXLeft = this.viewMenu.addLabelItem(Menu.northWest, 0, 40, 16, 20, "X");

@@ -1423,6 +1423,7 @@
 				y = this.renderHelpLine(view, "Heat", view.lastIdentifyHeat, ctx, x, y, height, helpLine);
 			}
 			if (view.lastIdentifyType === "Oscillator") {
+				y = this.renderHelpLine(view, "Temperature", view.lastIdentifyTemperature, ctx, x, y, height, helpLine);
 				y = this.renderHelpLine(view, "Volatility", view.lastIdentifyVolatility, ctx, x, y, height, helpLine);
 			}
 			y = this.renderHelpLine(view, "Generation", view.lastIdentifyGen, ctx, x, y, height, helpLine);

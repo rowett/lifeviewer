@@ -19,8 +19,8 @@ Planned:
         LtL/HROT MS *       *           *
         Margolus    *       *           NA
         PCA         *       *           NA
-    Generations Identify should use all states
-        
+    PCA Mod needs sub-cell calculations
+
 In progress:
 [STARTED]add type information for closure compiler
 [STARTED]Triangular neighbourhood

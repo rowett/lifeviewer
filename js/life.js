@@ -1210,6 +1210,9 @@
 			modValue = this.modValue,
 			modResult = "",
 
+			// temperature
+			tempResult = "",
+
 			// counters
 			x = 0,
 			y = 0;
@@ -1360,7 +1363,8 @@
 			}
 			// if min and max are the same then just output onej
 			if (minHeat === maxHeat) {
-				heat = String(minHeat.toFixed(1));
+				avgHeat = minHeat;
+				heat = String(avgHeat.toFixed(1));
 			} else {
 				// output min, max and average
 				avgHeat = heatVal / (last - start);
@@ -1385,6 +1389,11 @@
 			volatility = String((rotor / (rotor + stator)).toFixed(2));
 		}
 
+		// temperature
+		if (type === "Oscillator") {
+			tempResult = String((avgHeat / (rotor + stator)).toFixed(2) + " / " + (avgHeat / rotor).toFixed(2));
+		}
+
 		// active cells
 		activeResult = String(rotor + " / " + stator + " / " + (rotor + stator));
 
@@ -1397,7 +1406,7 @@
 		}
 
 		// return the result
-		return [message, type, direction, simpleSpeed, boxResult, genMessage, popResult, slope, period, heat, volatility, modResult, activeResult];
+		return [message, type, direction, simpleSpeed, boxResult, genMessage, popResult, slope, period, heat, volatility, modResult, activeResult, tempResult];
 	};
 
 	// return true if pattern is empty, stable or oscillating
