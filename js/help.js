@@ -1402,11 +1402,9 @@
 		y = this.renderHelpLine(view, "Enabled", view.identify ? "Yes" : "No", ctx, x, y, height, helpLine);
 		if (view.lastIdentifyType !== "none" && view.lastIdentifyType !== "Empty") {
 			y = this.renderHelpLine(view, "Type", view.lastIdentifyType, ctx, x, y, height, helpLine);
-			if (view.lastIdentifyType === "Still Life" || (view.lastIdentifyCells === view.lastIdentifyCellsMax)) {
-				y = this.renderHelpLine(view, "Cells", view.lastIdentifyCells, ctx, x, y, height, helpLine);
-			} else {
-				y = this.renderHelpLine(view, "Min Cells", view.lastIdentifyCells, ctx, x, y, height, helpLine);
-				y = this.renderHelpLine(view, "Max Cells", view.lastIdentifyCellsMax, ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Cells", view.lastIdentifyCells, ctx, x, y, height, helpLine);
+			if (view.lastIdentifyType === "Oscillator") {
+				y = this.renderHelpLine(view, "ActiveCells", view.lastIdentifyActive, ctx, x, y, height, helpLine);
 			}
 			y = this.renderHelpLine(view, "BoundingBox", view.lastIdentifyBox, ctx, x, y, height, helpLine);
 			if (view.lastIdentifyType === "Oscillator") {

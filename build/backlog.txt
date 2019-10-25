@@ -19,6 +19,7 @@ Planned:
         LtL/HROT MS *       *           *
         Margolus    *       *           NA
         PCA         *       *           NA
+    Generations Identify should use all states
         
 In progress:
 [STARTED]add type information for closure compiler

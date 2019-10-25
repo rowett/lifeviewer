@@ -323,13 +323,13 @@
 			case 66:
 				// do not move if in view only mode
 				if (!me.viewOnly) {
-					if (me.engine.isMargolus) {
-						// for Margolus patterns step back key should always step one generation
+					if (me.engine.isMargolus || me.engine.isPCA) {
+						// for Margolus and PCA patterns step back key should always step one generation
 						value = me.gensPerStep;
 						me.gensPerStep = 1;
 					}
 					me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
-					if (me.engine.isMargolus) {
+					if (me.engine.isMargolus || me.engine.isPCA) {
 						me.gensPerStep = value;
 					}
 				}
@@ -368,12 +368,12 @@
 					} else {
 						// check for shift key
 						if (event.shiftKey) {
-							// step back if not at start
-							if (me.engine.counter > 0) {
-								// check for reversible Margolus patterns
-								if (me.engine.isMargolus && me.engine.margolusReverseLookup1 !== null) {
-									me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
-								} else {
+							// check for reversible Margolus or PCA patterns
+							if ((me.engine.isMargolus || me.engine.isPCA) && me.engine.margolusReverseLookup1 !== null) {
+								me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
+							} else {
+								// step back if not at start
+								if (me.engine.counter > 0) {
 									// run from start to previous step
 									me.runTo(me.engine.counter - me.gensPerStep);
 	

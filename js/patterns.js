@@ -1642,7 +1642,7 @@
 			}
 
 			// if maximum letters minus number used is greater than number used then invert
-			if (setbits + negative > (maxbits >> 1)) {
+			if (setbits >= 2) {
 				// invert maximum letters for this count
 				bits = ~bits & ((1 << maxbits) - 1);
 				if (bits) {

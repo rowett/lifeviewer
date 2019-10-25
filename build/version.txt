@@ -1,5 +1,18 @@
 Build 445
+- improved Mod calculation performance for multi-state patterns
+- Mod calculation now works for PCA sub-cells
 - reverse playback hotkey was not working for PCA rules
+- fixed Identify for alternating rules
+- fixed canonical form for Hex rules
+- made step back hotkey behaviour for PCA rules match Margolus rules
+- fixed step back at T=0 for reversible rules
+- fixed an issue with Mod buffer not being reset when loading new pattern in Viewer
+- Identify results now include:
+	- min, max and average cells
+	- rotor, stator, total active cells (for Oscillators)
+	- min, max and average Heat (for Oscillators and Spaceships)
+	- Mod transformation (for Oscillators and Spaceships)
+	- bounding box size in cells
 
 Build 444
 - added Mod to Identify output

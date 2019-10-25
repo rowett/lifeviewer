@@ -623,9 +623,8 @@
 		// last oscillator generation 
 		/** @type {string} */ this.lastIdentifyGen = "";
 
-		// last oscillator population (min and max)
+		// last oscillator population (min, avg, max)
 		/** @type {string} */ this.lastIdentifyCells = "";
-		/** @type {string} */ this.lastIdentifyCellsMax = "";
 
 		// last oscillator slope 
 		/** @type {string} */ this.lastIdentifySlope = "";
@@ -636,13 +635,15 @@
 		// last oscillator mod
 		/** @type {string} */ this.lastIdentifyMod = "";
 
+		// last oscillator active cells
+		/** @type {string} */ this.lastIdentifyActive = "";
+
 		// whether computing oscillators
 		/** @type {boolean} */ this.identify = false;
 
 		// labels for identify results
 		this.identifyTypeLabel = null;
 		this.identifyCellsLabel = null;
-		this.identifyMaxCellsLabel = null;
 		this.identifyBoxLabel = null;
 		this.identifyDirectionLabel = null;
 		this.identifyPeriodLabel = null;
@@ -651,9 +652,9 @@
 		this.identifyHeatLabel = null;
 		this.identifyVolatilityLabel = null;
 		this.identifyModLabel = null;
+		this.identifyActiveLabel = null;
 		this.identifyTypeValueLabel = null;
 		this.identifyCellsValueLabel = null;
-		this.identifyMaxCellsValueLabel = null;
 		this.identifyBoxValueLabel = null;
 		this.identifyDirectionValueLabel = null;
 		this.identifyPeriodValueLabel = null;
@@ -661,6 +662,7 @@
 		this.identifySpeedValueLabel = null;
 		this.identifyHeatValueLabel = null;
 		this.identifyModValueLabel = null;
+		this.identifyActiveValueLabel = null;
 
 		// window zoom for high DPI devices
 		/** @type {number} */ this.windowZoom = 1;
@@ -4214,15 +4216,11 @@
 		this.identifyCellsValueLabel.setPosition(Menu.north, xv, y);
 		y += h;
 
-		if (this.lastIdentifyCells !== this.lastIdentifyCellsMax) {
-			this.identifyCellsLabel.preText = "Min Cells";
-
-			// max cells
-			this.identifyMaxCellsLabel.setPosition(Menu.north, x, y);
-			this.identifyMaxCellsValueLabel.setPosition(Menu.north, xv, y);
+		// active cells
+		if (this.lastIdentifyType === "Oscillator") {
+			this.identifyActiveLabel.setPosition(Menu.north, x, y);
+			this.identifyActiveValueLabel.setPosition(Menu.north, xv, y);
 			y += h;
-		} else {
-			this.identifyCellsLabel.preText = "Cells";
 		}
 
 		// bounding box
@@ -4604,7 +4602,7 @@
 				me.originCounter += (me.gensPerStep * me.genSpeed * timeSinceLastUpdate / 1000);
 				me.floatCounter += (me.genSpeed * timeSinceLastUpdate / 1000);
 				if ((me.floatCounter | 0) > me.engine.counter) {
-					me.floatCounter += (me.gensPerStep -1);
+					me.floatCounter += (me.gensPerStep - 1);
 					me.nextStep = true;
 				} else {
 					// update elapsed time here (otherwise happens during next step processing below)
@@ -4810,7 +4808,6 @@
 
 					// check for stop or delta time being too large or single step (ignore time for manual stepping)
 					if ((me.engine.counter === me.stopGeneration - 1 && !me.stopDisabled) || ((deltaTime > ViewConstants.updateThreshold) && !manualStepping)) {
-
 						// if at stop generation then actually bailout
 						if (me.engine.counter === me.stopGeneration - 1 && !me.stopDisabled) {
 							bailout = true;
@@ -4841,7 +4838,7 @@
 					// check theme has history or this is the last generation in the step or identify is running
 					if (me.engine.themeHistory || me.anyPasteThisGen() || ((me.engine.counter === (me.floatCounter | 0)) || bailout) || me.identify) {
 						// convert life grid to pen colours unless Generations just died (since this will start fading dead cells)
-						if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
+						if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2) || me.identify) {
 							me.engine.convertToPensTile();
 							me.pasteRLEList();
 
@@ -4865,7 +4862,6 @@
 										me.lastIdentifyBox = "none";
 										me.lastIdentifyGen = "none";
 										me.lastIdentifyCells = "none";
-										me.lastIdentifyCellsMax = "none";
 										me.lastIdentifySlope = "none";
 										me.lastIdentifyPeriod = "none";
 										me.lastIdentifyHeat = "none";
@@ -4876,28 +4872,39 @@
 										me.lastIdentifyType = identifyResult[1];
 										me.lastIdentifyDirection = identifyResult[2];
 										me.lastIdentifySpeed = identifyResult[3];
-										me.lastIdentifyBox = identifyResult[4] + " x " + identifyResult[5];
-										me.lastIdentifyGen = identifyResult[6];
-										me.lastIdentifyCells = identifyResult[7];
-										me.lastIdentifyCellsMax = identifyResult[8];
-										me.lastIdentifySlope = identifyResult[9];
-										me.lastIdentifyPeriod = identifyResult[10];
-										me.lastIdentifyHeat = identifyResult[11];
-										me.lastIdentifyVolatility = identifyResult[12];
-										me.lastIdentifyMod = identifyResult[13];
+										me.lastIdentifyBox = identifyResult[4];
+										me.lastIdentifyGen = identifyResult[5];
+										me.lastIdentifyCells = identifyResult[6];
+										me.lastIdentifySlope = identifyResult[7];
+										me.lastIdentifyPeriod = identifyResult[8];
+										me.lastIdentifyHeat = identifyResult[9];
+										me.lastIdentifyVolatility = identifyResult[10];
+										me.lastIdentifyMod = identifyResult[11];
+										me.lastIdentifyActive = identifyResult[12];
 
 										// update result labels
 										me.identifyTypeValueLabel.preText = me.lastIdentifyType;
 										me.identifyCellsValueLabel.preText = me.lastIdentifyCells;
-										me.identifyMaxCellsValueLabel.preText = me.lastIdentifyCellsMax;
+										if (me.lastIdentifyCells.indexOf("/") === -1) {
+											me.identifyCellsValueLabel.toolTip = "";
+										} else {
+											me.identifyCellsValueLabel.toolTip = "min / max / average";
+										}
 										me.identifyBoxValueLabel.preText = me.lastIdentifyBox;
 										me.identifyDirectionValueLabel.preText = me.lastIdentifyDirection;
 										me.identifyPeriodValueLabel.preText = me.lastIdentifyPeriod;
 										me.identifySlopeValueLabel.preText = me.lastIdentifySlope;
 										me.identifySpeedValueLabel.preText = me.lastIdentifySpeed;
 										me.identifyHeatValueLabel.preText = me.lastIdentifyHeat;
+										if (me.lastIdentifyHeat.indexOf("/") === -1) {
+											me.identifyHeatValueLabel.toolTip = "";
+										} else {
+											me.identifyHeatValueLabel.toolTip = "min / max / average";
+										}
 										me.identifyVolatilityValueLabel.preText = me.lastIdentifyVolatility;
 										me.identifyModValueLabel.preText = me.lastIdentifyMod;
+										me.identifyActiveValueLabel.preText = me.lastIdentifyActive;
+										me.identifyActiveValueLabel.toolTip = "rotor / stator / total";
 										me.resultsDisplayed = true;
 										me.setResultsPosition();
 									}
@@ -5366,22 +5373,22 @@
 		shown = hide || !this.resultsDisplayed || (this.lastIdentifyType === "Empty") || (this.lastIdentifyType === "none");
 		this.identifyTypeLabel.deleted = shown;
 		this.identifyCellsLabel.deleted = shown;
-		this.identifyMaxCellsLabel.deleted = shown || (this.lastIdentifyCells === this.lastIdentifyCellsMax);
 		this.identifyBoxLabel.deleted = shown;
 		this.identifyDirectionLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyPeriodLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
 		this.identifyModLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
+		this.identifyActiveLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
 		this.identifyVolatilityLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifyTypeValueLabel.deleted = shown;
 		this.identifyCellsValueLabel.deleted = shown;
-		this.identifyMaxCellsValueLabel.deleted = shown || (this.lastIdentifyCells === this.lastIdentifyCellsMax);
 		this.identifyBoxValueLabel.deleted = shown;
 		this.identifyDirectionValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyPeriodValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
 		this.identifyModValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
+		this.identifyActiveValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
@@ -7388,6 +7395,7 @@
 						for (i = 0; i < me.gensPerStep; i += 1) {
 							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify);
 							me.engine.convertToPensTile();
+							me.floatCounter = me.engine.counter;
 						}
 						me.engine.reversePending = true;
 					} else {
@@ -11911,30 +11919,30 @@
 		this.viewMenu.wakeCallback = this.viewWakeUp;
 
 		// create identify results labels
-		this.identifyTypeLabel = this.viewMenu.addLabelItem(Menu.north, -100, 100, 200, 32, "Type");
-		this.identifyCellsLabel = this.viewMenu.addLabelItem(Menu.north, -100, 140, 200, 32, "Cells");
-		this.identifyMaxCellsLabel = this.viewMenu.addLabelItem(Menu.north, -100, 180, 200, 32, "Max Cells");
-		this.identifyBoxLabel = this.viewMenu.addLabelItem(Menu.north, -100, 220, 200, 32, "Bounding Box");
-		this.identifyDirectionLabel = this.viewMenu.addLabelItem(Menu.north, -100, 260, 200, 32, "Direction");
-		this.identifyPeriodLabel = this.viewMenu.addLabelItem(Menu.north, -100, 300, 200, 32, "Period");
-		this.identifySlopeLabel = this.viewMenu.addLabelItem(Menu.north, -100, 340, 200, 32, "Slope");
-		this.identifySpeedLabel = this.viewMenu.addLabelItem(Menu.north, -100, 380, 200, 32, "Speed");
-		this.identifyHeatLabel = this.viewMenu.addLabelItem(Menu.north, -100, 420, 200, 32, "Heat");
-		this.identifyVolatilityLabel = this.viewMenu.addLabelItem(Menu.north, -100, 460, 200, 32, "Volatility");
-		this.identifyModLabel = this.viewMenu.addLabelItem(Menu.north, -100, 500, 200, 32, "Mod");
+		this.identifyTypeLabel = this.viewMenu.addLabelItem(Menu.north, -160, 100, 160, 32, "Type");
+		this.identifyCellsLabel = this.viewMenu.addLabelItem(Menu.north, -160, 140, 160, 32, "Cells");
+		this.identifyBoxLabel = this.viewMenu.addLabelItem(Menu.north, -160, 180, 160, 32, "Bounding Box");
+		this.identifyDirectionLabel = this.viewMenu.addLabelItem(Menu.north, -160, 240, 160, 32, "Direction");
+		this.identifyPeriodLabel = this.viewMenu.addLabelItem(Menu.north, -160, 280, 160, 32, "Period");
+		this.identifySlopeLabel = this.viewMenu.addLabelItem(Menu.north, -160, 320, 160, 32, "Slope");
+		this.identifySpeedLabel = this.viewMenu.addLabelItem(Menu.north, -160, 360, 160, 32, "Speed");
+		this.identifyHeatLabel = this.viewMenu.addLabelItem(Menu.north, -160, 400, 160, 32, "Heat");
+		this.identifyVolatilityLabel = this.viewMenu.addLabelItem(Menu.north, -160, 440, 160, 32, "Volatility");
+		this.identifyModLabel = this.viewMenu.addLabelItem(Menu.north, -160, 460, 160, 32, "Mod");
+		this.identifyActiveLabel = this.viewMenu.addLabelItem(Menu.north, -160, 500, 160, 32, "Active Cells");
 
 		// create identify results values
-		this.identifyTypeValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 100, 200, 32, "");
-		this.identifyCellsValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 140, 200, 32, "");
-		this.identifyMaxCellsValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 180, 200, 32, "");
-		this.identifyBoxValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 220, 200, 32, "");
-		this.identifyDirectionValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 260, 200, 32, "");
-		this.identifyPeriodValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 300, 200, 32, "");
-		this.identifySlopeValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 340, 200, 32, "");
-		this.identifySpeedValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 380, 200, 32, "");
-		this.identifyHeatValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 420, 200, 32, "");
-		this.identifyVolatilityValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 460, 200, 32, "");
-		this.identifyModValueLabel = this.viewMenu.addLabelItem(Menu.north, 100, 500, 200, 32, "");
+		this.identifyTypeValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 100, 320, 32, "");
+		this.identifyCellsValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 140, 320, 32, "");
+		this.identifyBoxValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 180, 320, 32, "");
+		this.identifyDirectionValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 220, 320, 32, "");
+		this.identifyPeriodValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 260, 320, 32, "");
+		this.identifySlopeValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 300, 320, 32, "");
+		this.identifySpeedValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 340, 320, 32, "");
+		this.identifyHeatValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 380, 320, 32, "");
+		this.identifyVolatilityValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 420, 320, 32, "");
+		this.identifyModValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 460, 320, 32, "");
+		this.identifyActiveValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 500, 320, 32, "");
 
 		// infobar labels for camera X, Y and ANGLE
 		this.infoBarLabelXLeft = this.viewMenu.addLabelItem(Menu.northWest, 0, 40, 16, 20, "X");
@@ -13345,6 +13353,9 @@
 			this.isEdge = false;
 		}
 
+		// clear identify buffer (needs to be done before growGrid)
+		this.engine.countList = null;
+
 		// flag not empty start
 		this.emptyStart = false;
 		this.diedGeneration = -1;
@@ -14201,7 +14212,6 @@
 		this.lastIdentifyBox = "none";
 		this.lastIdentifyGen = "none";
 		this.lastIdentifyCells = "none";
-		this.lastIdentifyCellsMax = "none";
 		this.lastIdentifySlope = "none";
 		this.lastIdentifyHeat = "none";
 		this.lastIdentifyVolatility = "none";

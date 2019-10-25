@@ -29,9 +29,10 @@
 		/** @const {number} */ modFlipY : 4,
 		/** @const {number} */ modRot90FlipX : 5,
 		/** @const {number} */ modRot90FlipY : 6,
-		/** @const {number} */ modRot270FlipX : 7,
-		/** @const {number} */ modRot270FlipY : 8,
-		/** @const {number} */ modLastTrans : 8,
+		/** @const {number} */ modLastTrans : 6,
+
+		// mod type names
+		/** @const {Array<string>} */ modTypeName : ["RotCW", "FlipXY", "RotCCW", "FlipX", "FlipY", "RotCWFlipX", "RotCWFlipY"],
 
 		// number of hash buckets (must be power of 2)
 		/** @const {number} */ numBuckets : 4096,
@@ -305,6 +306,7 @@
 		this.countList = null;
 		this.hashBox = new BoundingBox(0, 0, 0, 0);
 		this.modValue = 0;
+		this.modType = -1;
 
 		// flag for alternating Margolus grid lines
 		/** @type {boolean} */ this.altGrid = false;
@@ -821,6 +823,7 @@
 				this.hashBox.rightX = 0;
 				this.hashBox.topY = 0;
 				this.modValue = 0;
+				this.modType = -1;
 			}
 
 			// @ts-ignore
@@ -849,6 +852,7 @@
 			this.nextList = null;
 			this.countList = null;
 			this.modValue = 0;
+			this.modType = -1;
 		}
 	};
 
@@ -876,15 +880,26 @@
 			top = box.topY,
 			width = right - left + 1,
 			height = top - bottom + 1,
+			wm1 = width - 1,
+			hm1 = height - 1,
 			state = 0,
 			twoState = this.multiNumStates <= 2,
 			x = 0,
 			y = 0,
 			cx = 0,
 			cy = 0,
-			index = 0,
+			iDivHeight = 0,
+			iModHeight = 0,
 			colourGrid = this.colourGrid,
 			aliveStart = LifeConstants.aliveStart;
+
+		// check for PCA rules
+		if (this.isPCA) {
+			// swap grids every generation
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+			}
+		}
 
 		// create a hash from every alive cell
 		for (y = 0; y < height; y += 1) {
@@ -892,40 +907,32 @@
 				// adjust the coordinates based on the transformation
 				switch (transform) {
 				case LifeConstants.modRot90:
-					cx = (index / height) | 0;
-					cy = height - (index % height) - 1;
+					cx = iDivHeight;
+					cy = hm1 - iModHeight;
 					break;
 				case LifeConstants.modRot180:
-					cx = width - x - 1;
-					cy = height - y - 1;
+					cx = wm1 - x;
+					cy = hm1 - y;
 					break;
 				case LifeConstants.modRot270:
-					cx = width - ((index / height) | 0) - 1;
-					cy = index %  height;
+					cx = wm1 - iDivHeight;
+					cy = iModHeight;
 					break;
 				case LifeConstants.modFlipX:
-					cx = width - x - 1;
+					cx = wm1 - x;
 					cy = y;
 					break;
 				case LifeConstants.modFlipY:
 					cx = x;
-					cy = height - y - 1;
+					cy = hm1 - y;
 					break;
 				case LifeConstants.modRot90FlipX:
-					cx = (index / height) | 0;
-					cy = index % height;
+					cx = iDivHeight;
+					cy = iModHeight;
 					break;
 				case LifeConstants.modRot90FlipY:
-					cx = width - ((index / height) | 0) - 1;
-					cy = height - (index % height) - 1;
-					break;
-				case LifeConstants.modRot270FlipX:
-					cx = width - ((index / height) | 0) - 1;
-					cy = height - (index % height) - 1;
-					break;
-				case LifeConstants.modRot270FlipY:
-					cx = (index / height) | 0;
-					cy = index % height;
+					cx = wm1 - iDivHeight;
+					cy = hm1 - iModHeight;
 					break;
 				}
 
@@ -937,15 +944,49 @@
 						hash = (hash * 1000003) ^ x;
 					}
 				} else {
-					state = this.getState(cx, cy, true);
-					if (state !== 0) {
+					state = colourGrid[cy + bottom][cx + left];
+					if (state > this.historyStates) {
+						state -= this.historyStates;
+						// adjust sub-cells for PCA rules based on transformation
+						if (this.isPCA) {
+							switch (transform) {
+							case LifeConstants.modRot90:
+								state = ((state << 1) & 15) | ((state & 8) >> 3);
+								break;
+							case LifeConstants.modRot180:
+								state = ((state & 3 << 2) | (state & 12 >> 2));
+								break;
+							case LifeConstants.modRot270:
+								state = ((state >> 1) & 15) | ((state & 1) << 3);
+								break;
+							case LifeConstants.modFlipX:
+								state = (state & 5) | ((state & 2) << 2) | ((state & 8) >> 2);
+								break;
+							case LifeConstants.modFlipY:
+								state = (state & 10) | ((state & 1) << 2) | ((state & 4) >> 2);
+								break;
+							case LifeConstants.modRot90FlipX:
+								state = ((state & 8) >> 3) | ((state & 4) >> 1) | ((state & 2) << 1) | ((state & 1) << 3);
+								break;
+							case LifeConstants.modRot90FlipY:
+								state = ((state & 4) << 1) | ((state & 8) >> 1) | ((state & 1) << 1) | ((state & 2) >> 1);
+								break;
+							}
+						}
+
+						// update the hash value
 						hash = (hash * 1000003) ^ y;
 						hash = (hash * 1000003) ^ x;
 						hash = (hash * 1000003) ^ state;
 					}
 				}
 	
-				index += 1;
+				// update index
+				iModHeight += 1;
+				if (iModHeight === height) {
+					iModHeight = 0;
+					iDivHeight += 1;
+				}
 			}
 		}
 
@@ -968,9 +1009,15 @@
 			i = this.bucketList[bucketNum];
 			
 			// search entries in the bucket
-			while (i !== -1  && found === -1) {
+			while (i !== -1 && found === -1) {
 				if (hash === this.hashList[i]) {
-					found = i;
+					// ignore entries at the current generation
+					if (this.genList[i] !== this.counter) {
+						found = i;
+						this.modType = trans;
+					} else {
+						i = this.nextList[i];
+					}
 				} else {
 					i = this.nextList[i];
 				}
@@ -1000,6 +1047,14 @@
 			aliveStart = LifeConstants.aliveStart,
 			hashBox = this.hashBox;
 
+		// check for PCA rules
+		if (this.isPCA) {
+			// swap grids every generation
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+			}
+		}
+
 		// update bounding box for hash
 		if (x < hashBox.leftX) {
 			hashBox.leftX = x;
@@ -1028,8 +1083,9 @@
 			} else {
 				for (cx = x; cx <= right; cx += 1) {
 					// get the raw state
-					state = this.getState(cx, cy, true);
-					if (state !== 0) {
+					state = colourRow[cx];
+					if (state > this.historyStates) {
+						state -= this.historyStates;
 						hash = (hash * 1000003) ^ yshift;
 						hash = (hash * 1000003) ^ (cx - x);
 						hash = (hash * 1000003) ^ state;
@@ -1065,22 +1121,24 @@
 					}
 				}
 			} else {
-				if (colourRow[cx] !== 0) {
-					// update count
-					if (countRow[cx] === LifeConstants.cellNotSeen) {
-						countRow[cx] = LifeConstants.cellWasAlive;
-					} else {
-						if (countRow[cx] === LifeConstants.cellWasDead) {
-							countRow[cx] = LifeConstants.cellHasChanged;
+				for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+					if (colourRow[cx] > this.historyStates) {
+						// update count
+						if (countRow[cx] === LifeConstants.cellNotSeen) {
+							countRow[cx] = LifeConstants.cellWasAlive;
+						} else {
+							if (countRow[cx] === LifeConstants.cellWasDead) {
+								countRow[cx] = LifeConstants.cellHasChanged;
+							}
 						}
-					}
-				} else {
-					// update count
-					if (countRow[cx] === LifeConstants.cellNotSeen) {
-						countRow[cx] = LifeConstants.cellWasDead;
 					} else {
-						if (countRow[cx] === LifeConstants.cellWasAlive) {
-							countRow[cx] = LifeConstants.cellHasChanged;
+						// update count
+						if (countRow[cx] === LifeConstants.cellNotSeen) {
+							countRow[cx] = LifeConstants.cellWasDead;
+						} else {
+							if (countRow[cx] === LifeConstants.cellWasAlive) {
+								countRow[cx] = LifeConstants.cellHasChanged;
+							}
 						}
 					}
 				}
@@ -1110,6 +1168,11 @@
 			// max and min population
 			min = this.population,
 			max = min,
+			avg = this.population,
+			total = 0,
+			popResult = "",
+
+			// bounding box
 			current = 0,
 			currentWidth = 0,
 			currentHeight = 0,
@@ -1119,12 +1182,17 @@
 			maxX = 0,
 			minY = 16384,
 			maxY = 0,
+			boxResult = "",
 
 			// last record to check
-			last = i + period,
+			last = this.oscLength,
 			start = i,
 
 			// heat
+			minHeat = 16384,
+			maxHeat = 0,
+			avgHeat = 0,
+			nextHeat = 0,
 			heatVal = 0,
 			heat = "",
 
@@ -1136,9 +1204,11 @@
 			countRow = null,
 			rotor = 0,
 			stator = 0,
+			activeResult = "",
 
 			// mod value
 			modValue = this.modValue,
+			modResult = "",
 
 			// counters
 			x = 0,
@@ -1208,8 +1278,10 @@
 		}
 		
 		// compute the min and max population
+		total = 0;
 		while (i < last) {
 			current = this.popList[i];
+			total += current;
 			if (current < min) {
 				min = current;
 			}
@@ -1217,6 +1289,14 @@
 				max = current;
 			}
 			i += 1;
+		}
+		if (min === max) {
+			// if min and max are the same then just output one
+			popResult = String(min);
+		} else {
+			// otherwise output min, max and average
+			avg = total / (last - start);
+			popResult = String(min) + " / " + String(max) + " / " + String(avg.toFixed(1));
 		}
 
 		// compute the bounding box
@@ -1261,19 +1341,30 @@
 			boxWidth = maxX - minX + 1;
 			boxHeight = maxY - minY + 1;
 		}
+		boxResult = String(boxWidth + " x " + boxHeight + " = " + (boxWidth * boxHeight));
 
 		// compute the heat
 		if (period > 0) {
 			heatVal = 0;
 			i = start;
 			while (i < last) {
-				heatVal += this.bornList[i] + this.diedList[i];
+				nextHeat = this.bornList[i] + this.diedList[i];
+				if (nextHeat < minHeat) {
+					minHeat = nextHeat;
+				}
+				if (nextHeat > maxHeat) {
+					maxHeat = nextHeat;
+				}
+				heatVal += nextHeat;
 				i += 1;
 			}
-			if (heatVal % period === 0) {
-				heat = String(heatVal / period);
+			// if min and max are the same then just output onej
+			if (minHeat === maxHeat) {
+				heat = String(minHeat.toFixed(1));
 			} else {
-				heat = String((heatVal / period).toFixed(1));
+				// output min, max and average
+				avgHeat = heatVal / (last - start);
+				heat = String(minHeat.toFixed(1) + " / " + maxHeat.toFixed(1) + " / " + avgHeat.toFixed(1));
 			}
 		}
 	
@@ -1294,16 +1385,19 @@
 			volatility = String((rotor / (rotor + stator)).toFixed(2));
 		}
 
+		// active cells
+		activeResult = String(rotor + " / " + stator + " / " + (rotor + stator));
+
 		// mod value
-		if (modValue > (period >> 1)) {
-			modValue = period - modValue;
-		}
 		if (modValue === 0) {
 			modValue = period;
+			modResult = String(modValue);
+		} else {
+			modResult = String(modValue) + " (" + LifeConstants.modTypeName[this.modType] + ")";
 		}
 
-		// return the message
-		return [message, type, direction, simpleSpeed, boxWidth, boxHeight, genMessage, min, max, slope, period, heat, volatility, String(modValue)];
+		// return the result
+		return [message, type, direction, simpleSpeed, boxResult, genMessage, popResult, slope, period, heat, volatility, modResult, activeResult];
 	};
 
 	// return true if pattern is empty, stable or oscillating
@@ -1424,12 +1518,14 @@
 					// point the bucket head at the new entry
 					this.bucketList[bucketNum] = this.oscLength;
 
-					// check for mod matches
-					modHash = this.checkModHash(box);
-					if (modHash !== -1) {
-						this.modValue = this.counter - this.genList[modHash];
+					// check for mod matches if one hasn't already been found
+					if (this.modValue === 0) {
+						modHash = this.checkModHash(box);
+						if (modHash !== -1) {
+							this.modValue = this.counter - this.genList[modHash];
+						}
 					}
-
+	
 					// check for buffer full
 					this.oscLength += 1;
 					if (this.oscLength === LifeConstants.maxOscillatorGens) {
