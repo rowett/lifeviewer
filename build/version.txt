@@ -3,6 +3,7 @@ Build 446
 - added Unsimplified Speed to Identify output for Spaceships
 - fixed an issue with Mod calculation for non-square bounding boxes and rotations
 - Active cell counts and Volatility now work for PCA sub-cells
+- disable TRACK and LOOP during Identify
 
 Build 445
 - improved Mod calculation performance for multi-state patterns

@@ -602,6 +602,9 @@
 		// original loop mode before identify started
 		/** @type {boolean} */ this.originalLoopMode = false;
 
+		// original track mode before identify started
+		/** @type {boolean} */ this.originalTrackMode = false;
+
 		// last oscillator message
 		/** @type {string} */ this.lastOscillator = "";
 
@@ -10946,7 +10949,12 @@
 			// restore original step, speed and loop setting
 			me.gensPerStep = me.originalStepSpeed;
 			me.genSpeed = me.originalGenSpeed;
-			me.loopDisabled = me.originalLoopMode;
+			if (me.loopGeneration !== -1) {
+				me.loopDisabled = me.originalLoopMode;
+			}
+			if (me.trackDefined) {
+				me.trackDisabled = me.originalTrackMode;
+			}
 			me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
 			value = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
 			me.generationRange.current = me.viewGenerationRange([value, value], true, me);
@@ -10958,7 +10966,12 @@
 				// restore original step
 				me.gensPerStep = me.originalStepSpeed;
 				me.genSpeed = me.originalGenSpeed;
-				me.loopDisabled = me.originaLoopMode;
+				if (me.loopGeneration !== -1) {
+					me.loopDisabled = me.originaLoopMode;
+				}
+				if (me.trackDefined) {
+					me.trackDisabled = me.originalTrackMode;
+				}
 				me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
 				value = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
 				me.generationRange.current = me.viewGenerationRange([value, value], true, me);
@@ -10982,8 +10995,15 @@
 				value = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
 				me.generationRange.current = me.viewGenerationRange([value, value], true, me);
 				// disable loop mode
-				me.originalLoopMode = me.loopDisabled;
-				me.loopDisabled = true;
+				if (me.loopGeneration !== -1) {
+					me.originalLoopMode = me.loopDisabled;
+					me.loopDisabled = true;
+				}
+				// disable track mode
+				if (me.trackDefined) {
+					me.originalTrackMode = me.trackDisabled;
+					me.trackDisabled = true;
+				}
 
 				// start playback
 				if (!me.generationOn) {
