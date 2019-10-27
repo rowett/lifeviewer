@@ -4901,28 +4901,33 @@
 										// update result labels
 										me.identifyTypeValueLabel.preText = me.lastIdentifyType;
 										me.identifyCellsValueLabel.preText = me.lastIdentifyCells;
-										if (me.lastIdentifyCells.indexOf("/") === -1) {
+										if (me.lastIdentifyCells.indexOf("|") === -1) {
 											me.identifyCellsValueLabel.toolTip = "";
 										} else {
-											me.identifyCellsValueLabel.toolTip = "min / max / average";
+											me.identifyCellsValueLabel.toolTip = "min | max | average";
 										}
 										me.identifyBoxValueLabel.preText = me.lastIdentifyBox;
 										me.identifyDirectionValueLabel.preText = me.lastIdentifyDirection;
 										me.identifyPeriodValueLabel.preText = me.lastIdentifyPeriod;
 										me.identifySlopeValueLabel.preText = me.lastIdentifySlope;
 										me.identifySpeedValueLabel.preText = me.lastIdentifySpeed;
+										if (me.lastIdentifySpeed.indexOf("|") === -1) {
+											me.identifySpeedValueLabel.toolTip = "";
+										} else {
+											me.identifySpeedValueLabel.toolTip = "simplified | unsimplified";
+										}
 										me.identifyHeatValueLabel.preText = me.lastIdentifyHeat;
-										if (me.lastIdentifyHeat.indexOf("/") === -1) {
+										if (me.lastIdentifyHeat.indexOf("|") === -1) {
 											me.identifyHeatValueLabel.toolTip = "";
 										} else {
-											me.identifyHeatValueLabel.toolTip = "min / max / average";
+											me.identifyHeatValueLabel.toolTip = "min | max | average";
 										}
 										me.identifyVolatilityValueLabel.preText = me.lastIdentifyVolatility;
 										me.identifyModValueLabel.preText = me.lastIdentifyMod;
 										me.identifyActiveValueLabel.preText = me.lastIdentifyActive;
-										me.identifyActiveValueLabel.toolTip = "rotor / stator / total";
+										me.identifyActiveValueLabel.toolTip = "rotor | stator | total";
 										me.identifyTemperatureValueLabel.preText = me.lastIdentifyTemperature;
-										me.identifyTemperatureValueLabel.toolTip = "active / rotor";
+										me.identifyTemperatureValueLabel.toolTip = "active | rotor";
 										me.resultsDisplayed = true;
 										me.setResultsPosition();
 									}

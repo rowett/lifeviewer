@@ -882,6 +882,9 @@
 			height = top - bottom + 1,
 			wm1 = width - 1,
 			hm1 = height - 1,
+			checkWidth = width,
+			checkHeight = height,
+			swap = 0,
 			state = 0,
 			twoState = this.multiNumStates <= 2,
 			x = 0,
@@ -901,9 +904,16 @@
 			}
 		}
 
+		// if rotate is used then swap check width and height
+		if (transform === LifeConstants.modRot90 || transform === LifeConstants.modRot270 || transform === LifeConstants.modRot90FlipX || transform === LifeConstants.modRot90FlipY) {
+			swap = checkWidth;
+			checkWidth = checkHeight;
+			checkHeight = swap;
+		}
+
 		// create a hash from every alive cell
-		for (y = 0; y < height; y += 1) {
-			for (x = 0; x < width; x += 1) {
+		for (y = 0; y < checkHeight; y += 1) {
+			for (x = 0; x < checkWidth; x += 1) {
 				// adjust the coordinates based on the transformation
 				switch (transform) {
 				case LifeConstants.modRot90:
@@ -1039,6 +1049,11 @@
 			cy = 0,
 			yshift = 0,
 			state = 0,
+			count = 0,
+			countN = 0,
+			countE = 0,
+			countS = 0,
+			countW = 0,
 			twoState = this.multiNumStates <= 2,
 			colourGrid = this.colourGrid,
 			colourRow = null,
@@ -1121,23 +1136,128 @@
 					}
 				}
 			} else {
-				for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
-					if (colourRow[cx] > this.historyStates) {
-						// update count
-						if (countRow[cx] === LifeConstants.cellNotSeen) {
-							countRow[cx] = LifeConstants.cellWasAlive;
+				if (this.isPCA) {
+					// handle sub-cells
+					for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+						// get the 4 sub-cell counts
+						count = countRow[cx];
+
+						// get the 4 sub-cell states
+						state = colourRow[cx];
+						if (state > this.historyStates) {
+							state -= this.historyStates;
+						}
+
+						// north sub-cell
+						countN = count & 3;
+						if ((state & 1) !== 0) {
+							// update count
+							if (countN === LifeConstants.cellNotSeen) {
+								countN = LifeConstants.cellWasAlive;
+							} else {
+								if (countN === LifeConstants.cellWasDead) {
+									countN = LifeConstants.cellHasChanged;
+								}
+							}
 						} else {
-							if (countRow[cx] === LifeConstants.cellWasDead) {
-								countRow[cx] = LifeConstants.cellHasChanged;
+							// update count
+							if (countN === LifeConstants.cellNotSeen) {
+								countN = LifeConstants.cellWasDead;
+							} else {
+								if (countN === LifeConstants.cellWasAlive) {
+									countN = LifeConstants.cellHasChanged;
+								}
 							}
 						}
-					} else {
-						// update count
-						if (countRow[cx] === LifeConstants.cellNotSeen) {
-							countRow[cx] = LifeConstants.cellWasDead;
+
+						// east sub-cell
+						countE = (count >> 2) & 3;
+						if ((state & 2) !== 0) {
+							// update count
+							if (countE === LifeConstants.cellNotSeen) {
+								countE = LifeConstants.cellWasAlive;
+							} else {
+								if (countE === LifeConstants.cellWasDead) {
+									countE = LifeConstants.cellHasChanged;
+								}
+							}
 						} else {
-							if (countRow[cx] === LifeConstants.cellWasAlive) {
-								countRow[cx] = LifeConstants.cellHasChanged;
+							// update count
+							if (countE === LifeConstants.cellNotSeen) {
+								countE = LifeConstants.cellWasDead;
+							} else {
+								if (countE === LifeConstants.cellWasAlive) {
+									countE = LifeConstants.cellHasChanged;
+								}
+							}
+						}
+
+						// north sub-cell
+						countS = (count >> 4) & 3;
+						if ((state & 4) !== 0) {
+							// update count
+							if (countS === LifeConstants.cellNotSeen) {
+								countS = LifeConstants.cellWasAlive;
+							} else {
+								if (countS === LifeConstants.cellWasDead) {
+									countS = LifeConstants.cellHasChanged;
+								}
+							}
+						} else {
+							// update count
+							if (countS === LifeConstants.cellNotSeen) {
+								countS = LifeConstants.cellWasDead;
+							} else {
+								if (countS === LifeConstants.cellWasAlive) {
+									countS = LifeConstants.cellHasChanged;
+								}
+							}
+						}
+
+						// west sub-cell
+						countW = (count >> 6) & 3;
+						if ((state & 8) !== 0) {
+							// update count
+							if (countW === LifeConstants.cellNotSeen) {
+								countW = LifeConstants.cellWasAlive;
+							} else {
+								if (countW === LifeConstants.cellWasDead) {
+									countW = LifeConstants.cellHasChanged;
+								}
+							}
+						} else {
+							// update count
+							if (countW === LifeConstants.cellNotSeen) {
+								countW = LifeConstants.cellWasDead;
+							} else {
+								if (countW === LifeConstants.cellWasAlive) {
+									countW = LifeConstants.cellHasChanged;
+								}
+							}
+						}
+
+						// combine the counts
+						countRow[cx] = countN | (countE << 2) | (countS << 4) | (countW << 6);
+					}
+				} else {
+					for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+						if (colourRow[cx] > this.historyStates) {
+							// update count
+							if (countRow[cx] === LifeConstants.cellNotSeen) {
+								countRow[cx] = LifeConstants.cellWasAlive;
+							} else {
+								if (countRow[cx] === LifeConstants.cellWasDead) {
+									countRow[cx] = LifeConstants.cellHasChanged;
+								}
+							}
+						} else {
+							// update count
+							if (countRow[cx] === LifeConstants.cellNotSeen) {
+								countRow[cx] = LifeConstants.cellWasDead;
+							} else {
+								if (countRow[cx] === LifeConstants.cellWasAlive) {
+									countRow[cx] = LifeConstants.cellHasChanged;
+								}
 							}
 						}
 					}
@@ -1202,6 +1322,7 @@
 			// count list
 			countList = this.countList,
 			countRow = null,
+			count = 0,
 			rotor = 0,
 			stator = 0,
 			activeResult = "",
@@ -1252,7 +1373,7 @@
 						simpleSpeed = deltaX + "c";
 					} else {
 						if (period % deltaX === 0) {
-							simpleSpeed = "c/" + (period / deltaX);
+							simpleSpeed = "c/" + (period / deltaX) + " | " + deltaX + "c/" + period;
 						} else {
 							simpleSpeed = deltaX + "c/" + period;
 						}
@@ -1299,7 +1420,7 @@
 		} else {
 			// otherwise output min, max and average
 			avg = total / (last - start);
-			popResult = String(min) + " / " + String(max) + " / " + String(avg.toFixed(1));
+			popResult = String(min) + " | " + String(max) + " | " + String(avg.toFixed(1));
 		}
 
 		// compute the bounding box
@@ -1368,7 +1489,7 @@
 			} else {
 				// output min, max and average
 				avgHeat = heatVal / (last - start);
-				heat = String(minHeat.toFixed(1) + " / " + maxHeat.toFixed(1) + " / " + avgHeat.toFixed(1));
+				heat = String(minHeat.toFixed(1) + " | " + maxHeat.toFixed(1) + " | " + avgHeat.toFixed(1));
 			}
 		}
 	
@@ -1376,12 +1497,58 @@
 		if (type === "Oscillator") {
 			for (y = minY; y <= maxY; y += 1) {
 				countRow = countList[y];
-				for (x = minX; x <= maxX; x += 1) {
-					if (countRow[x] === LifeConstants.cellHasChanged) {
-						rotor += 1;
-					} else {
-						if (countRow[x] === LifeConstants.cellWasAlive) {
-							stator += 1;
+				if (this.isPCA) {
+					// handle PCA sub-cells
+					for (x = minX; x <= maxX; x += 1) {
+						count = countRow[x];
+
+						// north sub-cell
+						if ((count & 3) === LifeConstants.cellHasChanged) {
+							rotor += 1;
+						} else {
+							if ((count & 3) === LifeConstants.cellWasAlive) {
+								stator += 1;
+							}
+						}
+
+						// east sub-cell
+						count >>= 2;
+						if ((count & 3) === LifeConstants.cellHasChanged) {
+							rotor += 1;
+						} else {
+							if ((count & 3) === LifeConstants.cellWasAlive) {
+								stator += 1;
+							}
+						}
+
+						// south sub-cell
+						count >>= 2;
+						if ((count & 3) === LifeConstants.cellHasChanged) {
+							rotor += 1;
+						} else {
+							if ((count & 3) === LifeConstants.cellWasAlive) {
+								stator += 1;
+							}
+						}
+
+						// west sub-cell
+						count >>= 2;
+						if ((count & 3) === LifeConstants.cellHasChanged) {
+							rotor += 1;
+						} else {
+							if ((count & 3) === LifeConstants.cellWasAlive) {
+								stator += 1;
+							}
+						}
+					}
+				} else {
+					for (x = minX; x <= maxX; x += 1) {
+						if (countRow[x] === LifeConstants.cellHasChanged) {
+							rotor += 1;
+						} else {
+							if (countRow[x] === LifeConstants.cellWasAlive) {
+								stator += 1;
+							}
 						}
 					}
 				}
@@ -1391,18 +1558,24 @@
 
 		// temperature
 		if (type === "Oscillator") {
-			tempResult = String((avgHeat / (rotor + stator)).toFixed(2) + " / " + (avgHeat / rotor).toFixed(2));
+			tempResult = String((avgHeat / (rotor + stator)).toFixed(2) + " | " + (avgHeat / rotor).toFixed(2));
 		}
 
 		// active cells
-		activeResult = String(rotor + " / " + stator + " / " + (rotor + stator));
+		activeResult = String(rotor + " | " + stator + " | " + (rotor + stator));
 
 		// mod value
 		if (modValue === 0) {
 			modValue = period;
 			modResult = String(modValue);
 		} else {
-			modResult = String(modValue) + " (" + LifeConstants.modTypeName[this.modType] + ")";
+			// check the mod is a divisor of the period
+			if (period % modValue === 0) {
+				modResult = String(modValue) + " (" + LifeConstants.modTypeName[this.modType] + ")";
+			} else {
+				modValue = period;
+				modResult = String(modValue);
+			}
 		}
 
 		// return the result
