@@ -602,9 +602,6 @@
 		// original loop mode before identify started
 		/** @type {boolean} */ this.originalLoopMode = false;
 
-		// original track mode before identify started
-		/** @type {boolean} */ this.originalTrackMode = false;
-
 		// last oscillator message
 		/** @type {string} */ this.lastOscillator = "";
 
@@ -4582,7 +4579,10 @@
 			saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
 
 			// oscillator message
-			identifyResult = [];
+			identifyResult = [],
+
+			// whether just identified
+			justIdentified = false;
 
 		// unlock controls
 		me.controlsLocked = false;
@@ -4949,6 +4949,7 @@
 
 									// bail out
 									bailout = true;
+									justIdentified = true;
 								}
 							}
 						}
@@ -4963,7 +4964,7 @@
 					me.saveElapsedTime(timeSinceLastUpdate, stepsToTake);
 
 					// check for loop
-					if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled) {
+					if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled && !justIdentified) {
 						// reset
 						me.elapsedTime = 0;
 						me.reset(me);
@@ -5011,6 +5012,10 @@
 
 				// remove steps not taken from target counter
 				me.floatCounter -= (stepsToTake - stepsTaken);
+				if (me.floatCounter < 0) {
+					me.floatCounter = 0;
+					me.originCounter = 0;
+				}
 
 				// if not enough steps taken then display actual number
 				if ((stepsTaken < stepsToTake) && ((me.engine.counter !== me.stopGeneration) || me.stopDisabled) && me.perfWarning) {
@@ -10952,9 +10957,6 @@
 			if (me.loopGeneration !== -1) {
 				me.loopDisabled = me.originalLoopMode;
 			}
-			if (me.trackDefined) {
-				me.trackDisabled = me.originalTrackMode;
-			}
 			me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
 			value = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
 			me.generationRange.current = me.viewGenerationRange([value, value], true, me);
@@ -10967,10 +10969,7 @@
 				me.gensPerStep = me.originalStepSpeed;
 				me.genSpeed = me.originalGenSpeed;
 				if (me.loopGeneration !== -1) {
-					me.loopDisabled = me.originaLoopMode;
-				}
-				if (me.trackDefined) {
-					me.trackDisabled = me.originalTrackMode;
+					me.loopDisabled = me.originalLoopMode;
 				}
 				me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
 				value = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
@@ -10998,11 +10997,6 @@
 				if (me.loopGeneration !== -1) {
 					me.originalLoopMode = me.loopDisabled;
 					me.loopDisabled = true;
-				}
-				// disable track mode
-				if (me.trackDefined) {
-					me.originalTrackMode = me.trackDisabled;
-					me.trackDisabled = true;
 				}
 
 				// start playback
