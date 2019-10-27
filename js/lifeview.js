@@ -599,6 +599,9 @@
 		// gens per second before identify started
 		/** @type {number} */ this.originalGenSpeed= 0;
 
+		// original loop mode before identify started
+		/** @type {boolean} */ this.originalLoopMode = false;
+
 		// last oscillator message
 		/** @type {string} */ this.lastOscillator = "";
 
@@ -10940,9 +10943,10 @@
 			me.identify = false;
 			me.displayResults = false;
 
-			// restore original step
+			// restore original step, speed and loop setting
 			me.gensPerStep = me.originalStepSpeed;
 			me.genSpeed = me.originalGenSpeed;
+			me.loopDisabled = me.originalLoopMode;
 			me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
 			value = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
 			me.generationRange.current = me.viewGenerationRange([value, value], true, me);
@@ -10954,6 +10958,7 @@
 				// restore original step
 				me.gensPerStep = me.originalStepSpeed;
 				me.genSpeed = me.originalGenSpeed;
+				me.loopDisabled = me.originaLoopMode;
 				me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
 				value = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
 				me.generationRange.current = me.viewGenerationRange([value, value], true, me);
@@ -10971,10 +10976,14 @@
 					me.gensPerStep = ViewConstants.maxStepSpeed;
 					me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
 				}
+				// save generation speed and set to maximum
 				me.originalGenSpeed = me.genSpeed;
 				me.genSpeed = ViewConstants.maxGenSpeed;
 				value = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
 				me.generationRange.current = me.viewGenerationRange([value, value], true, me);
+				// disable loop mode
+				me.originalLoopMode = me.loopDisabled;
+				me.loopDisabled = true;
 
 				// start playback
 				if (!me.generationOn) {

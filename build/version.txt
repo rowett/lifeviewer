@@ -2,7 +2,7 @@ Build 446
 - added Temperature (active and rotor) to Identify output for Oscillators
 - added Unsimplified Speed to Identify output for Spaceships
 - fixed an issue with Mod calculation for non-square bounding boxes and rotations
-- Active cells counts and Volatility now works for PCA sub-cells
+- Active cell counts and Volatility now work for PCA sub-cells
 
 Build 445
 - improved Mod calculation performance for multi-state patterns
