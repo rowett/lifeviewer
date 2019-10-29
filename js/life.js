@@ -1039,27 +1039,33 @@
 	};
 
 	// get hash from pattern
-	Life.prototype.getHash = function(box) {
-		var hash = 31415962,
-			x = box.leftX,
-			y = box.bottomY,
-			right = box.rightX,
-			top = box.topY,
-			cx = 0,
-			cy = 0,
-			yshift = 0,
-			state = 0,
-			count = 0,
-			countN = 0,
-			countE = 0,
-			countS = 0,
-			countW = 0,
-			twoState = this.multiNumStates <= 2,
+	Life.prototype.getHash = function(box, fast) {
+		var /** @type {number} */ hash = 31415962,
+			/** @const {number} */ factor = 1000003,
+			/** @type {number} */ x = box.leftX,
+			/** @type {number} */ y = box.bottomY,
+			/** @type {number} */ right = box.rightX,
+			/** @type {number} */ top = box.topY,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ yshift = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ count = 0,
+			/** @type {number} */ countN = 0,
+			/** @type {number} */ countE = 0,
+			/** @type {number} */ countS = 0,
+			/** @type {number} */ countW = 0,
+			/** @type {number} */ x32 = 0,
+			/** @type {number} */ right32 = 0,
+			/** @type {number} */ cells = 0,
+			/** @type {boolean} */ twoState = this.multiNumStates <= 2,
 			colourGrid = this.colourGrid,
+			colourGrid32 = this.colourGrid32,
 			colourRow = null,
+			colourRow32 = null,
 			countList = this.countList,
 			countRow = null,
-			aliveStart = LifeConstants.aliveStart,
+			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
 			hashBox = this.hashBox;
 
 		// check for PCA rules
@@ -1067,6 +1073,7 @@
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
+				colourGrid32 = this.nextColourGrid32;
 			}
 		}
 
@@ -1084,15 +1091,42 @@
 			hashBox.topY = top;
 		}
 
+		// convert x to 32bit
+		x32 = x >> 2;
+		right32 = right >> 2;
+		if ((right & 3) !== 0) {
+			right32 += 1;
+		}
+
 		// create a hash from every alive cell
 		for (cy = y; cy <= top; cy += 1) {
 			yshift = cy - y;
 			colourRow = colourGrid[cy];
+			colourRow32 = colourGrid32[cy];
 			if (twoState) {
-				for (cx = x; cx <= right; cx += 1) {
-					if (colourRow[cx] >= aliveStart) {
-						hash = (hash * 1000003) ^ yshift;
-						hash = (hash * 1000003) ^ (cx - x);
+				for (cx = x32; cx <= right32; cx += 1) {
+					cells = colourRow32[cx] &0x40404040;
+					if (cells !== 0) {
+						x = (cx - x32) << 2;
+						if ((cells & 0x40000000) !== 0) {
+							hash = (hash * factor) ^ yshift;
+							hash = (hash * factor) ^ x;
+						}
+						x += 1;
+						if ((cells & 0x400000) !== 0) {
+							hash = (hash * factor) ^ yshift;
+							hash = (hash * factor) ^ x;
+						}
+						x += 1;
+						if ((cells & 0x4000) !== 0) {
+							hash = (hash * factor) ^ yshift;
+							hash = (hash * factor) ^ x;
+						}
+						x += 1; 
+						if ((cells & 0x40) !== 0) {
+							hash = (hash * factor) ^ yshift;
+							hash = (hash * factor) ^ x;
+						}
 					}
 				}
 			} else {
@@ -1109,139 +1143,14 @@
 			}
 		}
 
-		// update count
-		for (cy = hashBox.bottomY; cy <= hashBox.topY; cy += 1) {
-			colourRow = colourGrid[cy];
-			countRow = countList[cy];
-			if (twoState) {
-				for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
-					if (colourRow[cx] >= aliveStart) {
-						// update count
-						if (countRow[cx] === LifeConstants.cellNotSeen) {
-							countRow[cx] = LifeConstants.cellWasAlive;
-						} else {
-							if (countRow[cx] === LifeConstants.cellWasDead) {
-								countRow[cx] = LifeConstants.cellHasChanged;
-							}
-						}
-					} else {
-						// update count
-						if (countRow[cx] === LifeConstants.cellNotSeen) {
-							countRow[cx] = LifeConstants.cellWasDead;
-						} else {
-							if (countRow[cx] === LifeConstants.cellWasAlive) {
-								countRow[cx] = LifeConstants.cellHasChanged;
-							}
-						}
-					}
-				}
-			} else {
-				if (this.isPCA) {
-					// handle sub-cells
+		// update count if not fast mode
+		if (!fast) {
+			for (cy = hashBox.bottomY; cy <= hashBox.topY; cy += 1) {
+				colourRow = colourGrid[cy];
+				countRow = countList[cy];
+				if (twoState) {
 					for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
-						// get the 4 sub-cell counts
-						count = countRow[cx];
-
-						// get the 4 sub-cell states
-						state = colourRow[cx];
-						if (state > this.historyStates) {
-							state -= this.historyStates;
-						}
-
-						// north sub-cell
-						countN = count & 3;
-						if ((state & 1) !== 0) {
-							// update count
-							if (countN === LifeConstants.cellNotSeen) {
-								countN = LifeConstants.cellWasAlive;
-							} else {
-								if (countN === LifeConstants.cellWasDead) {
-									countN = LifeConstants.cellHasChanged;
-								}
-							}
-						} else {
-							// update count
-							if (countN === LifeConstants.cellNotSeen) {
-								countN = LifeConstants.cellWasDead;
-							} else {
-								if (countN === LifeConstants.cellWasAlive) {
-									countN = LifeConstants.cellHasChanged;
-								}
-							}
-						}
-
-						// east sub-cell
-						countE = (count >> 2) & 3;
-						if ((state & 2) !== 0) {
-							// update count
-							if (countE === LifeConstants.cellNotSeen) {
-								countE = LifeConstants.cellWasAlive;
-							} else {
-								if (countE === LifeConstants.cellWasDead) {
-									countE = LifeConstants.cellHasChanged;
-								}
-							}
-						} else {
-							// update count
-							if (countE === LifeConstants.cellNotSeen) {
-								countE = LifeConstants.cellWasDead;
-							} else {
-								if (countE === LifeConstants.cellWasAlive) {
-									countE = LifeConstants.cellHasChanged;
-								}
-							}
-						}
-
-						// north sub-cell
-						countS = (count >> 4) & 3;
-						if ((state & 4) !== 0) {
-							// update count
-							if (countS === LifeConstants.cellNotSeen) {
-								countS = LifeConstants.cellWasAlive;
-							} else {
-								if (countS === LifeConstants.cellWasDead) {
-									countS = LifeConstants.cellHasChanged;
-								}
-							}
-						} else {
-							// update count
-							if (countS === LifeConstants.cellNotSeen) {
-								countS = LifeConstants.cellWasDead;
-							} else {
-								if (countS === LifeConstants.cellWasAlive) {
-									countS = LifeConstants.cellHasChanged;
-								}
-							}
-						}
-
-						// west sub-cell
-						countW = (count >> 6) & 3;
-						if ((state & 8) !== 0) {
-							// update count
-							if (countW === LifeConstants.cellNotSeen) {
-								countW = LifeConstants.cellWasAlive;
-							} else {
-								if (countW === LifeConstants.cellWasDead) {
-									countW = LifeConstants.cellHasChanged;
-								}
-							}
-						} else {
-							// update count
-							if (countW === LifeConstants.cellNotSeen) {
-								countW = LifeConstants.cellWasDead;
-							} else {
-								if (countW === LifeConstants.cellWasAlive) {
-									countW = LifeConstants.cellHasChanged;
-								}
-							}
-						}
-
-						// combine the counts
-						countRow[cx] = countN | (countE << 2) | (countS << 4) | (countW << 6);
-					}
-				} else {
-					for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
-						if (colourRow[cx] > this.historyStates) {
+						if (colourRow[cx] >= aliveStart) {
 							// update count
 							if (countRow[cx] === LifeConstants.cellNotSeen) {
 								countRow[cx] = LifeConstants.cellWasAlive;
@@ -1261,6 +1170,133 @@
 							}
 						}
 					}
+				} else {
+					if (this.isPCA) {
+						// handle sub-cells
+						for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+							// get the 4 sub-cell counts
+							count = countRow[cx];
+	
+							// get the 4 sub-cell states
+							state = colourRow[cx];
+							if (state > this.historyStates) {
+								state -= this.historyStates;
+							}
+	
+							// north sub-cell
+							countN = count & 3;
+							if ((state & 1) !== 0) {
+								// update count
+								if (countN === LifeConstants.cellNotSeen) {
+									countN = LifeConstants.cellWasAlive;
+								} else {
+									if (countN === LifeConstants.cellWasDead) {
+										countN = LifeConstants.cellHasChanged;
+									}
+								}
+							} else {
+								// update count
+								if (countN === LifeConstants.cellNotSeen) {
+									countN = LifeConstants.cellWasDead;
+								} else {
+									if (countN === LifeConstants.cellWasAlive) {
+										countN = LifeConstants.cellHasChanged;
+									}
+								}
+							}
+	
+							// east sub-cell
+							countE = (count >> 2) & 3;
+							if ((state & 2) !== 0) {
+								// update count
+								if (countE === LifeConstants.cellNotSeen) {
+									countE = LifeConstants.cellWasAlive;
+								} else {
+									if (countE === LifeConstants.cellWasDead) {
+										countE = LifeConstants.cellHasChanged;
+									}
+								}
+							} else {
+								// update count
+								if (countE === LifeConstants.cellNotSeen) {
+									countE = LifeConstants.cellWasDead;
+								} else {
+									if (countE === LifeConstants.cellWasAlive) {
+										countE = LifeConstants.cellHasChanged;
+									}
+								}
+							}
+	
+							// south sub-cell
+							countS = (count >> 4) & 3;
+							if ((state & 4) !== 0) {
+								// update count
+								if (countS === LifeConstants.cellNotSeen) {
+									countS = LifeConstants.cellWasAlive;
+								} else {
+									if (countS === LifeConstants.cellWasDead) {
+										countS = LifeConstants.cellHasChanged;
+									}
+								}
+							} else {
+								// update count
+								if (countS === LifeConstants.cellNotSeen) {
+									countS = LifeConstants.cellWasDead;
+								} else {
+									if (countS === LifeConstants.cellWasAlive) {
+										countS = LifeConstants.cellHasChanged;
+									}
+								}
+							}
+	
+							// west sub-cell
+							countW = (count >> 6) & 3;
+							if ((state & 8) !== 0) {
+								// update count
+								if (countW === LifeConstants.cellNotSeen) {
+									countW = LifeConstants.cellWasAlive;
+								} else {
+									if (countW === LifeConstants.cellWasDead) {
+										countW = LifeConstants.cellHasChanged;
+									}
+								}
+							} else {
+								// update count
+								if (countW === LifeConstants.cellNotSeen) {
+									countW = LifeConstants.cellWasDead;
+								} else {
+									if (countW === LifeConstants.cellWasAlive) {
+										countW = LifeConstants.cellHasChanged;
+									}
+								}
+							}
+
+							// combine the counts
+							countRow[cx] = countN | (countE << 2) | (countS << 4) | (countW << 6);
+						}
+					} else {
+						for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+							if (colourRow[cx] > this.historyStates) {
+								// update count
+								if (countRow[cx] === LifeConstants.cellNotSeen) {
+									countRow[cx] = LifeConstants.cellWasAlive;
+								} else {
+									if (countRow[cx] === LifeConstants.cellWasDead) {
+										countRow[cx] = LifeConstants.cellHasChanged;
+									}
+								}
+							} else {
+								// update count
+								if (countRow[cx] === LifeConstants.cellNotSeen) {
+									countRow[cx] = LifeConstants.cellWasDead;
+								} else {
+									if (countRow[cx] === LifeConstants.cellWasAlive) {
+										countRow[cx] = LifeConstants.cellHasChanged;
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -1269,7 +1305,7 @@
 	};
 
 	// return identify results
-	Life.prototype.identifyResults = function(i, message, period, deltaX, deltaY, boxWidth, boxHeight) {
+	Life.prototype.identifyResults = function(i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast) {
 			// simple version of speed
 		var simpleSpeed = "",
 
@@ -1494,7 +1530,7 @@
 		}
 	
 		// compute volatility
-		if (type === "Oscillator") {
+		if (type === "Oscillator" && !fast) {
 			for (y = minY; y <= maxY; y += 1) {
 				countRow = countList[y];
 				if (this.isPCA) {
@@ -1557,24 +1593,28 @@
 		}
 
 		// temperature
-		if (type === "Oscillator") {
+		if (type === "Oscillator" && !fast) {
 			tempResult = String((avgHeat / (rotor + stator)).toFixed(2) + " | " + (avgHeat / rotor).toFixed(2));
 		}
 
 		// active cells
-		activeResult = String(rotor + " | " + stator + " | " + (rotor + stator));
+		if (!fast) {
+			activeResult = String(rotor + " | " + stator + " | " + (rotor + stator));
+		}
 
 		// mod value
-		if (modValue === 0) {
-			modValue = period;
-			modResult = String(modValue);
-		} else {
-			// check the mod is a divisor of the period
-			if (period % modValue === 0) {
-				modResult = String(modValue) + " (" + LifeConstants.modTypeName[this.modType] + ")";
-			} else {
+		if (!fast) {
+			if (modValue === 0) {
 				modValue = period;
 				modResult = String(modValue);
+			} else {
+				// check the mod is a divisor of the period
+				if (period % modValue === 0) {
+					modResult = String(modValue) + " (" + LifeConstants.modTypeName[this.modType] + ")";
+				} else {
+					modValue = period;
+					modResult = String(modValue);
+				}
 			}
 		}
 
@@ -1583,7 +1623,7 @@
 	};
 
 	// return true if pattern is empty, stable or oscillating
-	Life.prototype.oscillating = function() {
+	Life.prototype.oscillating = function(fast) {
 		// get bounding box
 		var box = (this.isHROT ? this.HROTBox : this.zoomBox),
 		leftX = box.leftX,
@@ -1642,7 +1682,7 @@
 				quit = true;
 			} else {
 				// get the hash of the current pattern
-				hash = this.getHash(box);
+				hash = this.getHash(box, fast);
 
 				// get the first entry in the bucket
 				bucketNum = hash & (LifeConstants.numBuckets - 1);
@@ -1676,7 +1716,7 @@
 							quit = true;
 
 							// create the results
-							result = this.identifyResults(i, message, period, deltaX, deltaY, boxWidth, boxHeight);
+							result = this.identifyResults(i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast);
 						}
 					}
 
@@ -1701,7 +1741,7 @@
 					this.bucketList[bucketNum] = this.oscLength;
 
 					// check for mod matches if one hasn't already been found
-					if (this.modValue === 0) {
+					if (this.modValue === 0 && !fast) {
 						modHash = this.checkModHash(box);
 						if (modHash !== -1) {
 							this.modValue = this.counter - this.genList[modHash];

@@ -1,3 +1,8 @@
+Build 447
+- Ctrl+F6 will now run Identify in fast mode
+	- Active Cells, Mod, Temperature and Volatility are not calculated
+	- performance is much faster especially for large patterns
+
 Build 446
 - added Temperature (active and rotor) to Identify output for Oscillators
 - added Unsimplified Speed to Identify output for Spaceships

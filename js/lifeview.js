@@ -262,7 +262,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 446,
+		/** @const {number} */ versionBuild : 447,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -590,6 +590,9 @@
 	function View(element) {
 		var i = 0;
 
+		// whether to identify quickly (no Mod calculation)
+		/** @type {boolean} */ this.identifyFast = false;
+
 		// whether identify results displayed
 		/** @type {boolean} */ this.resultsDisplayed = false;
 
@@ -604,6 +607,9 @@
 
 		// last oscillator message
 		/** @type {string} */ this.lastOscillator = "";
+
+		// last results were fast
+		/** @type {boolean} */ this.lastWasFast = false;
 
 		// last oscillator heat
 		/** @type {string} */ this.lastIdentifyHeat = "";
@@ -4228,7 +4234,7 @@
 		y += h;
 
 		// active cells
-		if (this.lastIdentifyType === "Oscillator") {
+		if (this.lastIdentifyType === "Oscillator" && !this.lastWasFast) {
 			this.identifyActiveLabel.setPosition(Menu.north, x, y);
 			this.identifyActiveValueLabel.setPosition(Menu.north, xv, y);
 			y += h;
@@ -4253,9 +4259,11 @@
 			y += h;
 
 			// mod
-			this.identifyModLabel.setPosition(Menu.north, x, y);
-			this.identifyModValueLabel.setPosition(Menu.north, xv, y);
-			y += h;
+			if (!this.lastWasFast) {
+				this.identifyModLabel.setPosition(Menu.north, x, y);
+				this.identifyModValueLabel.setPosition(Menu.north, xv, y);
+				y += h;
+			}
 		}
 
 		if (this.lastIdentifyType === "Spaceship") {
@@ -4277,7 +4285,7 @@
 			y += h;
 		}
 
-		if (this.lastIdentifyType === "Oscillator") {
+		if (this.lastIdentifyType === "Oscillator" && !this.lastWasFast) {
 			// temperature
 			this.identifyTemperatureLabel.setPosition(Menu.north, x, y);
 			this.identifyTemperatureValueLabel.setPosition(Menu.north, xv, y);
@@ -4869,7 +4877,7 @@
 
 							// compute oscillators if enabled
 							if (me.identify) {
-								identifyResult = me.engine.oscillating();
+								identifyResult = me.engine.oscillating(this.identifyFast);
 								if (identifyResult.length > 0) {
 									// check for buffer full
 									if (identifyResult[0] === LifeConstants.bufferFullMessage) {
@@ -4935,8 +4943,14 @@
 										me.identifyTemperatureValueLabel.preText = me.lastIdentifyTemperature;
 										me.identifyTemperatureValueLabel.toolTip = "active | rotor";
 										me.resultsDisplayed = true;
+
+										// save fast setting
+										me.lastWasFast = me.identifyFast;
+
+										// set label position for results
 										me.setResultsPosition();
 									}
+
 									// switch off search
 									me.identifyPressed(me);
 									if (me.lastIdentifyType === "Empty") {
@@ -4946,6 +4960,9 @@
 										me.fitZoomDisplay(true, false);
 									}
 									me.engine.initSearch(me.identify);
+
+									// switch of fast mode
+									me.identifyFast = false;
 
 									// bail out
 									bailout = true;
@@ -5410,25 +5427,25 @@
 		this.identifyBoxLabel.deleted = shown;
 		this.identifyDirectionLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyPeriodLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyModLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyActiveLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
+		this.identifyModLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || this.lastWasFast;
+		this.identifyActiveLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
 		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
-		this.identifyVolatilityLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
+		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
+		this.identifyVolatilityLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
 		this.identifyTypeValueLabel.deleted = shown;
 		this.identifyCellsValueLabel.deleted = shown;
 		this.identifyBoxValueLabel.deleted = shown;
 		this.identifyDirectionValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyPeriodValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyModValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyActiveValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
+		this.identifyModValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || this.lastWasFast;
+		this.identifyActiveValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
 		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyTemperatureValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
-		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
+		this.identifyTemperatureValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
+		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
 
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
@@ -8184,7 +8201,7 @@
 		// attempt to build a pattern from the string
 		try {
 			// create a pattern
-			pattern = PatternManager.create("", patternText, this.engine.allocator);
+			pattern = PatternManager.create("", patternText, this.engine.allocator, true);
 		}
 		catch(err) {
 			pattern = null;
@@ -13509,7 +13526,7 @@
 		this.wasLtL = false;
 
 		// attempt to create the pattern
-		pattern = PatternManager.create("", patternString, this.engine.allocator);
+		pattern = PatternManager.create("", patternString, this.engine.allocator, true);
 		if (pattern) {
 			// copy the generation offset
 			this.genDefined = PatternManager.genDefined;
@@ -15185,7 +15202,7 @@
 		// attempt to build a pattern from the string
 		try {
 			// create a pattern
-			pattern = PatternManager.create("", patternString, allocator);
+			pattern = PatternManager.create("", patternString, allocator, false);
 
 			// check if it created
 			if (pattern.lifeMap) {

@@ -1658,6 +1658,9 @@
 			// f6 to toggle oscillator search
 			case 117:
 				if (!me.identifyButton.locked) {
+					if (event.ctrlKey) {
+						me.identifyFast = true;
+					}
 					me.identifyPressed(me);
 				}
 				break;

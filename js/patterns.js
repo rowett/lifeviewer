@@ -46,6 +46,21 @@
 
 	// pattern manager singleton
 	PatternManager = {
+		// whether attempting to load from repository
+		/** @const {boolean} */ loadingFromRepository : false,
+
+		// rule search name
+		/** @const {string} */ ruleSearchName : "",
+
+		// rule search URI
+		/** @const {string} */ ruleSearchURI : "",
+
+		// HTML tags to strip from RuleTable repository rules ("li" must come first)
+		/** @const {Array<string>} */ ruleSearchTags : ["li", "p", "ol", "pre"],
+
+		// RuleTable repository end tag
+		/** @const {string} */ ruleSearchEndTag : "<!--",
+
 		// _none_ rule (must be lower case)
 		/** @const {string} */ noneRuleName : "none",
 
@@ -6464,10 +6479,13 @@
 	};
 
 	// add a pattern to the list
-	PatternManager.create = function(name, source, allocator) {
+	PatternManager.create = function(name, source, allocator, tryRuleTable) {
 		// create a pattern skeleton
 		var newPattern = new Pattern(name),
 			index = 0;
+
+		// clear loading flag
+		this.loadingFromRepository = false;
 
 		// flag that last pattern was not too big
 		this.tooBig = false;
@@ -6596,10 +6614,109 @@
 					newPattern.isTriangular = false;
 				}
 			}
+
+			// check if a pattern was loaded
+			if (this.failureReason !== "" && tryRuleTable) {
+				// attempt to load rule table
+				this.loadRuleTable(newPattern.ruleName);
+			}
 		}
 
 		// return the pattern
 		return newPattern;
+	};
+
+	// get the rule table from an html page
+	PatternManager.getRuleTable = function(htmlPage) {
+		var result = "",
+			i = htmlPage.indexOf(this.ruleTableRuleName),
+			l = htmlPage.length,
+			j = 0,
+			k = 0,
+			found = false,
+			tags = [],
+			lengths = [],
+			endLength = this.ruleSearchEndTag.length;
+
+		// attempt to locate the @RULE
+		if (i === -1) {
+			result = "Rule not found in response!";
+		} else {
+			// prepare the search tags
+			k = 0;
+			for (j = 0; j < this.ruleSearchTags.length; j += 1) {
+				tags[k] = "<" + this.ruleSearchTags[j] + ">";
+				lengths[k] = tags[k].length;
+				k += 1;
+				tags[k] = "</" + this.ruleSearchTags[j] + ">";
+				lengths[k] = tags[k].length;
+				k += 1;
+			}
+			endLength = this.ruleSearchEndTag.length;
+
+			// rule found so decode the rest
+			result = this.ruleTableRuleName;
+			i += this.ruleTableRuleName.length;
+
+			while (i < l) {
+				j = 0;
+				found = false;
+				while (j < tags.length && !found) {
+					if (htmlPage.substr(i, lengths[j]) === tags[j]) {
+						found = true;
+						i += lengths[j];
+						if (j === 0) {
+							result += "# ";
+						}
+					} else {
+						j += 1;
+					}
+				}
+				if (!found) {
+					if (htmlPage.substr(i, endLength) === this.ruleSearchEndTag) {
+						// exit
+						i = l;
+					} else {
+						// add character to result
+						result += htmlPage[i];
+						i += 1;
+					}
+				}
+			}
+		}
+
+		return result;
+	};
+
+	// load rule table from URI
+	PatternManager.loadRuleTable = function(ruleName) {
+		var xhr = new XMLHttpRequest(),
+			uri = "/lifeview/plugin/wiki/Rule/" + ruleName;
+			//uri = "/wiki/Rule:" + ruleName;
+
+		// save rule name for use in error message
+		this.ruleSearchName = ruleName;
+		this.ruleSearchURI = uri;
+
+		// on completion
+		xhr.onload = function() {
+			if (xhr.readyState === 4) {
+				if (xhr.status === 200) {
+					alert(PatternManager.getRuleTable(xhr.responseText));
+				} else {
+					alert("RuleTable fetch failed\n\nRule: " + PatternManager.ruleSearchName + "\nURI: " + PatternManager.ruleSearchURI + "\nStatus: " + xhr.statusText);
+				}
+			}
+		}
+
+		// on error
+		xhr.onerror = function() {
+			alert("RuleTable fetch failed\n\nRule: " + PatternManager.ruleSearchName + "\nURI: " + PatternManager.ruleSearchURI + "\nStatus: " + xhr.statusText);
+		}
+
+		// attempt to get the requested resource
+		xhr.open("GET", uri, true);
+		xhr.send(null);
 	};
 
 	// create the global interface

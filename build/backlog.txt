@@ -19,7 +19,6 @@ Planned:
         LtL/HROT MS *       *           *
         Margolus    *       *           NA
         PCA         *       *           NA
-    PCA Mod needs sub-cell calculations
 
 In progress:
 [STARTED]add type information for closure compiler

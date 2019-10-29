@@ -763,6 +763,7 @@
 		y = this.renderHelpLine(view, "Ctrl S", "save pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt Z", "randomize pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F6", "toggle oscillator and spaceship identification", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl+F6", "fast identification", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// clipboard controls
@@ -1403,18 +1404,22 @@
 		if (view.lastIdentifyType !== "none" && view.lastIdentifyType !== "Empty") {
 			y = this.renderHelpLine(view, "Type", view.lastIdentifyType, ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Cells", view.lastIdentifyCells, ctx, x, y, height, helpLine);
-			if (view.lastIdentifyType === "Oscillator") {
+			if (view.lastIdentifyType === "Oscillator" && !view.lastWasFast) {
 				y = this.renderHelpLine(view, "ActiveCells", view.lastIdentifyActive, ctx, x, y, height, helpLine);
 			}
 			y = this.renderHelpLine(view, "BoundingBox", view.lastIdentifyBox, ctx, x, y, height, helpLine);
 			if (view.lastIdentifyType === "Oscillator") {
 				y = this.renderHelpLine(view, "Period", view.lastIdentifyPeriod, ctx, x, y, height, helpLine);
-				y = this.renderHelpLine(view, "Mod", view.lastIdentifyMod, ctx, x, y, height, helpLine);
+				if (!view.lastWasFast) {
+					y = this.renderHelpLine(view, "Mod", view.lastIdentifyMod, ctx, x, y, height, helpLine);
+				}
 			} else {
 				if (view.lastIdentifyType !== "Still Life") {
 					y = this.renderHelpLine(view, "Direction", view.lastIdentifyDirection, ctx, x, y, height, helpLine);
 					y = this.renderHelpLine(view, "Period", view.lastIdentifyPeriod, ctx, x, y, height, helpLine);
-					y = this.renderHelpLine(view, "Mod", view.lastIdentifyMod, ctx, x, y, height, helpLine);
+					if (!view.lastWasFast) {
+						y = this.renderHelpLine(view, "Mod", view.lastIdentifyMod, ctx, x, y, height, helpLine);
+					}
 					y = this.renderHelpLine(view, "Slope", view.lastIdentifySlope, ctx, x, y, height, helpLine);
 					y = this.renderHelpLine(view, "Speed", view.lastIdentifySpeed, ctx, x, y, height, helpLine);
 				}	
@@ -1422,7 +1427,7 @@
 			if (view.lastIdentifyType !== "Still Life") {
 				y = this.renderHelpLine(view, "Heat", view.lastIdentifyHeat, ctx, x, y, height, helpLine);
 			}
-			if (view.lastIdentifyType === "Oscillator") {
+			if (view.lastIdentifyType === "Oscillator" && !view.lastWasFast) {
 				y = this.renderHelpLine(view, "Temperature", view.lastIdentifyTemperature, ctx, x, y, height, helpLine);
 				y = this.renderHelpLine(view, "Volatility", view.lastIdentifyVolatility, ctx, x, y, height, helpLine);
 			}
