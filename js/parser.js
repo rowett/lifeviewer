@@ -1113,7 +1113,7 @@
 		    i = 0,
 
 			// dummy pattern for RLE decoding
-			pattern = new Pattern("decode"),
+			pattern = new Pattern("decode", view.manager),
 
 		    // suppress errors flags
 		    suppressErrors = {

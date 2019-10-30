@@ -9,7 +9,7 @@
 	"use strict";
 
 	// define globals
-	/* global Reflect Keywords littleEndian BoundingBox AliasManager PatternManager Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager HROT ViewConstants arrayFill */
+	/* global Reflect Keywords littleEndian BoundingBox AliasManager Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager HROT ViewConstants arrayFill */
 
 	// Life constants
 	/** @const */
@@ -289,7 +289,10 @@
 	/**
 	 * @constructor
 	 */
-	function Life(context, /** @type {number} */ displayWidth, /** @type {number} */ displayHeight, /** @type {number} */ gridWidth, /** @type {number} */ gridHeight) {
+	function Life(context, /** @type {number} */ displayWidth, /** @type {number} */ displayHeight, /** @type {number} */ gridWidth, /** @type {number} */ gridHeight, manager) {
+		// pattern manager
+		this.manager = manager;
+
 		// allocator
 		this.allocator = new Allocator();
 
@@ -417,7 +420,7 @@
 		/** @type {boolean} */ this.isTriangular = false;
 
 		// triangular neighbourhood
-		/** @type {number} */ this.triangularNeighbourhood = PatternManager.triangularAll;
+		/** @type {number} */ this.triangularNeighbourhood = this.manager.triangularAll;
 
 		// whether neighbourhood is hex
 		/** @type {boolean} */ this.isHex = false;
@@ -6385,9 +6388,9 @@
 	Life.prototype.updateLifeRule = function(view) {
 		var i = 0,
 		    tmp = 0,
-			ruleArray = (this.isTriangular ? PatternManager.ruleTriangularArray : PatternManager.ruleArray),
-			ruleAltArray = (this.isTriangular ? PatternManager.ruleAltTriangularArray : PatternManager.ruleAltArray),
-			altSpecified = PatternManager.altSpecified,
+			ruleArray = (this.isTriangular ? this.manager.ruleTriangularArray : this.manager.ruleArray),
+			ruleAltArray = (this.isTriangular ? this.manager.ruleAltTriangularArray : this.manager.ruleAltArray),
+			altSpecified = this.manager.altSpecified,
 		    hashSize = (this.isTriangular ? LifeConstants.hashTriangular : LifeConstants.hash33),
 			odd = false,
 			match = true,

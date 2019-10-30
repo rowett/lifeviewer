@@ -160,20 +160,11 @@
 	};
 
 	// draw notification string
-	TextAlert.prototype.draw = function(message, isPriority) {
+	TextAlert.prototype.draw = function(message, isPriority, lineHeight) {
 		var xPos = 0,
 
 		    // alpha for background
-		    alpha = 0,
-
-		    // line height
-			lineHeight = 0;
-
-		// make font smaller if canvas is small
-		if (this.context.canvas.width < 96) {
-			this.defaultFontSize = 24;
-		}
-		lineHeight = this.defaultFontSize;
+		    alpha = 0;
 
 		// compute x position to center text horizontally
 		xPos = this.context.measureText(message).width >> 1;
@@ -214,19 +205,20 @@
 	TextAlert.prototype.updateNotification = function(message, appear, hold, disappear, start, offset, isPriority) {
 		var scaleFactor = 0,
 		    elapsedTime = 0,
-		    index = 0,
+			index = 0,
+			yScale = this.menuManager.currentMenu.yScale,
 
 		    // default font size when not in thumbnail mode
-		    fontSize = this.defaultFontSize,
+		    fontSize = this.defaultFontSize * yScale,
 
 		    // line height
-		    lineHeight = fontSize + 2,
+		    lineHeight = (this.defaultFontSize + 2) * yScale,
 
 		    // thumbnail divisor
 		    thumbDivisor = this.menuManager.thumbnailDivisor,
 
 		    // number of pixels from top of display
-		    fromTop = 60,
+		    fromTop = 60 * yScale,
 
 		    // flag whether to clear message
 		    clearMessage = true;
@@ -304,16 +296,16 @@
 				index = message.indexOf("\\n");
 				if (index === -1) {
 					// draw the text
-					this.draw(message, isPriority);
+					this.draw(message, isPriority, lineHeight);
 				} else {
 					// draw the first line
-					this.draw(message.substr(0, index), isPriority);
+					this.draw(message.substr(0, index), isPriority, lineHeight);
 					
 					// go to next line
 					this.context.translate(0, lineHeight);
 
 					// draw the second line
-					this.draw(message.substr(index + 2), isPriority);
+					this.draw(message.substr(index + 2), isPriority, lineHeight);
 				}
 			}
 
@@ -327,14 +319,16 @@
 
 	// update notification
 	TextAlert.prototype.update = function() {
+		var yScale = this.menuManager.currentMenu.yScale;
+
 		// update the standard message
-		if (this.updateNotification(this.message, this.textAppear, this.textHold, this.textDisappear, this.startTime, 36 + this.notificationYOffset, false)) {
+		if (this.updateNotification(this.message, this.textAppear, this.textHold, this.textDisappear, this.startTime, (36 + this.notificationYOffset) * yScale, false)) {
 			this.message = "";
 		}
 
 		// update the priority message
 		if (!this.menuManager.thumbnail || this.priorityMessage === "Expand" || this.priorityMessage === "Launch") {
-			if (this.updateNotification(this.priorityMessage, this.priorityAppear, this.priorityHold, this.priorityDisappear, this.priorityStart, this.notificationYOffset, true)) {
+			if (this.updateNotification(this.priorityMessage, this.priorityAppear, this.priorityHold, this.priorityDisappear, this.priorityStart, (this.notificationYOffset * yScale), true)) {
 				this.priorityMessage = "";
 			}
 		}

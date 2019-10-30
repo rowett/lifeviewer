@@ -7,7 +7,7 @@
 	"use strict";
 
 	// define globals
-	/* global Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script arrayFill */
+	/* global registerEvent Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script arrayFill */
 
 	// Life 1.05 section
 	/**
@@ -42,270 +42,282 @@
 	Life106 = {
 		// magic header
 		/** @const {string} */ magic : "#Life 1.06"
-	},
+	};
 
-	// pattern manager singleton
-	PatternManager = {
+	// pattern manager
+	/**
+	 * @constructor
+	 */
+	function PatternManager() {
+		// repository request
+		this.xhr = null;
+
 		// whether attempting to load from repository
-		/** @const {boolean} */ loadingFromRepository : false,
+		/** @type {boolean} */ this.loadingFromRepository = false;
 
 		// rule search name
-		/** @const {string} */ ruleSearchName : "",
+		/** @type {string} */ this.ruleSearchName = "";
 
 		// rule search URI
-		/** @const {string} */ ruleSearchURI : "",
+		/** @type {string} */ this.ruleSearchURI = "";
 
 		// HTML tags to strip from RuleTable repository rules ("li" must come first)
-		/** @const {Array<string>} */ ruleSearchTags : ["li", "p", "ol", "pre"],
+		/** @const {Array<string>} */ this.ruleSearchTags = ["li", "p", "ol", "pre"];
 
 		// RuleTable repository end tag
-		/** @const {string} */ ruleSearchEndTag : "<!--",
+		/** @const {string} */ this.ruleSearchEndTag = "<!--";
 
 		// _none_ rule (must be lower case)
-		/** @const {string} */ noneRuleName : "none",
+		/** @const {string} */ this.noneRuleName = "none";
 
 		// PCA rule prefix (must be lower case)
-		/** @const {string} */ pcaRulePrefix : "2pca4",
+		/** @const {string} */ this.pcaRulePrefix = "2pca4";
 
 		// base64 digits
-		/** @const {string} */ base64Characters : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+		/** @const {string} */ this.base64Characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 		// hex digits
-		/** @const {string} */ hexCharacters : "0123456789abcdef",
+		/** @const {string} */ this.hexCharacters = "0123456789abcdef";
 
 		// number of base64 characters in 512bit (Moore) map string
-		/** @const {number} */ map512Length : 86,
+		/** @const {number} */ this.map512Length = 86;
 
 		// number of base64 characters in 128bit (hexagonal) map string
-		/** @const {number} */ map128Length : 22,
+		/** @const {number} */ this.map128Length = 22;
 
 		// number of base64 characters in 32bit (von Neumann) map string
-		/** @const {number} */ map32Length : 6,
+		/** @const {number} */ this.map32Length = 6;
 
 		// number of neighbours for MAP rule
-		/** @type {number} */ mapNeighbours : 8,
+		/** @type {number} */ this.mapNeighbours = 8;
 
 		// extended command prefix
-		/** @const {string} */ extendedPrefix : "XRLE",
+		/** @const {string} */ this.extendedPrefix = "XRLE";
 
 		// pos command
-		/** @const {string} */ posCommand : "Pos",
+		/** @const {string} */ this.posCommand = "Pos";
 
 		// gen command
-		/** @const {string} */ genCommand : "Gen",
+		/** @const {string} */ this.genCommand = "Gen";
 
 		// decode failure reason
-		/** @type {string} */ failureReason : "",
+		/** @type {string} */ this.failureReason = "";
 
 		// bounded grid prefix
-		/** @const {string} */ boundedGridPrefix : ":",
+		/** @const {string} */ this.boundedGridPrefix = "=";
 
 		// valid bounded grid types
-		/** @const {string} */ boundedGridTypes : "ptkcs",
+		/** @const {string} */ this.boundedGridTypes = "ptkcs";
 
 		// vadlid rule characters (digits must come first)
-		/** @const {string} */ validRuleLetters : "012345678ceaiknjqrytwz-",
+		/** @const {string} */ this.validRuleLetters = "012345678ceaiknjqrytwz-";
 
 		// decimal digits
-		/** @const {string} */ decimalDigits : "0123456789",
+		/** @const {string} */ this.decimalDigits = "0123456789";
 
 		// valid triangular rule characters
-		/** @const {string} */ validTriangularRuleLetters: "0123456789xyz",
+		/** @const {string} */ this.validTriangularRuleLetters= "0123456789xyz";
 
 		// valid triangular Edges rule characters
-		/** @const {string} */ validTriangularEdgesRuleLetters : "0123",
+		/** @const {string} */ this.validTriangularEdgesRuleLetters = "0123";
 
 		// valid triangular Vertices rule characters
-		/** @const {string} */ validTriangularVerticesRuleLetters : "0123456789",
+		/** @const {string} */ this.validTriangularVerticesRuleLetters = "0123456789";
 
 		// triangular mask
-		/** @const {number} */ triangularMask : 8191,
+		/** @const {number} */ this.triangularMask = 8191;
 
 		// triangular Edges mask
-		/** @const {number} */ triangularEdgesMask : 1038,
+		/** @const {number} */ this.triangularEdgesMask = 1038;
 
 		// triangular Vertices mask
-		/** @const {number} */ triangularVerticesMask : 7157,
+		/** @const {number} */ this.triangularVerticesMask = 7157;
 
 		// valid hex rule characters
-		/** @const {string} */ validHexRuleLetters : "0123456omp-",
+		/** @const {string} */ this.validHexRuleLetters = "0123456omp-";
 
 		// hex digits
-		/** @const {string} */ hexDigits : "0123456",
+		/** @const {string} */ this.hexDigits = "0123456";
 
 		// von neumann digits
-		/** @const {string} */ vonNeumannDigits : "01234",
+		/** @const {string} */ this.vonNeumannDigits = "01234";
 
 		// rule letters
-		/** @const {Array<string>} */ ruleLetters : ["ce", "ceaikn", "ceaiknjqry", "ceaiknjqrytwz"],
+		/** @const {Array<string>} */ this.ruleLetters = ["ce", "ceaikn", "ceaiknjqry", "ceaiknjqrytwz"];
 
 		// rule hex letters
-		/** @const {string} */ ruleHexLetters : "omp",
+		/** @const {string} */ this.ruleHexLetters = "omp";
 
 		// rule hex neighborhoods
-		/** @const {Array<Array<number>>} */ ruleHexNeighbourhoods : [[[6, 36, 160, 192, 72, 10], [132, 96, 136, 66, 12, 34], [68, 40, 130]], [[38, 164, 224, 200, 74, 14], [44, 162, 196, 104, 138, 70, 100, 168, 194, 76, 42, 134], [140, 98]], [[166, 228, 232, 202, 78, 46], [172, 226, 204, 106, 142, 102], [108, 170, 198]]],
+		/** @const {Array<Array<Array<number>>>} */ this.ruleHexNeighbourhoods = [
+																				 	[[6, 36, 160, 192, 72, 10], [132, 96, 136, 66, 12, 34], [68, 40, 130]],
+																					[[38, 164, 224, 200, 74, 14], [44, 162, 196, 104, 138, 70, 100, 168, 194, 76, 42, 134], [140, 98]],
+																					[[166, 228, 232, 202, 78, 46], [172, 226, 204, 106, 142, 102], [108, 170, 198]]
+																				];
 
 		// valid letters per digit
-		/** @const {Array<string>} */ validLettersPerDigit : ["", "ce", "ceaikn", "ceaiknjqry", "ceaiknjqrytwz", "ceaiknjqry", "ceaikn", "ce", ""],
+		/** @const {Array<string>} */ this.validLettersPerDigit = ["", "ce", "ceaikn", "ceaiknjqry", "ceaiknjqrytwz", "ceaiknjqry", "ceaikn", "ce", ""];
 
 		// valid hex letters per digit
-		/** @const {Array<string>} */ validHexLettersPerDigit : ["", "", "omp", "omp", "omp", "", ""],
+		/** @const {Array<string>} */ this.validHexLettersPerDigit = ["", "", "omp", "omp", "omp", "", ""];
 
 		// maximum number of letters for each neighbour count
-		/** @const {Array<number>} */ maxLetters : [0, 2, 6, 10, 13, 10, 6, 2, 0],
+		/** @const {Array<number>} */ this.maxLetters = [0, 2, 6, 10, 13, 10, 6, 2, 0];
 
 		// order of letters for canonical format
-		/** @const {Array<Array<number>>} */ orderLetters: [[0], [0, 1], [2, 0, 1, 3, 4, 5], [2, 0, 1, 3, 6, 4, 5, 7, 8, 9] , [2, 0, 1, 3, 6, 4, 5, 7, 8, 10, 11, 9, 12], [2, 0, 1, 3, 6, 4, 5, 7, 8, 9], [2, 0, 1, 3, 4, 5], [0, 1], [0]],
+		/** @const {Array<Array<number>>} */ this.orderLetters= [[0], [0, 1], [2, 0, 1, 3, 4, 5], [2, 0, 1, 3, 6, 4, 5, 7, 8, 9] , [2, 0, 1, 3, 6, 4, 5, 7, 8, 10, 11, 9, 12], [2, 0, 1, 3, 6, 4, 5, 7, 8, 9], [2, 0, 1, 3, 4, 5], [0, 1], [0]];
 
 		// rule neighbourhoods
-		/** @const {Array<Array<number>>} */ ruleNeighbourhoods : [[1, 2], [5, 10, 3, 40, 33, 68], [69, 42, 11, 7, 98, 13, 14, 70, 41, 97], [325, 170, 15, 45, 99, 71, 106, 102, 43, 101, 105, 78, 108]],
+		/** @const {Array<Array<number>>} */ this.ruleNeighbourhoods = [[1, 2], [5, 10, 3, 40, 33, 68], [69, 42, 11, 7, 98, 13, 14, 70, 41, 97], [325, 170, 15, 45, 99, 71, 106, 102, 43, 101, 105, 78, 108]];
 
 		// negative bit in letters bitmask
-		/** @const {number} */ negativeBit : 13,
+		/** @const {number} */ this.negativeBit = 13;
 
 		// maximum width and height of patterns
-		/** @const {number} */ maxWidth : 16384,
-		/** @const {number} */ maxHeight : 16384,
+		/** @const {number} */ this.maxWidth = 16384;
+		/** @const {number} */ this.maxHeight = 16384;
 
 		// maxmimum states
-		/** @const {number} */ maxStates : 256,
+		/** @const {number} */ this.maxStates = 256;
 
 		// state count
-		stateCount : new Uint32Array(256),
+		this.stateCount = new Uint32Array(256);
 
 		// 8192 bit triangular rule
-		ruleTriangularArray : new Uint8Array(8192),
+		this.ruleTriangularArray = new Uint8Array(8192);
 
 		// 8192 bit triangular alternate rule
-		ruleAltTriangularArray : new Uint8Array(8192),
+		this.ruleAltTriangularArray = new Uint8Array(8192);
 
 		// 512 bit rule
-		ruleArray : new Uint8Array(512),
+		this.ruleArray = new Uint8Array(512);
 
 		// 512 bit alternate rule
-		ruleAltArray : new Uint8Array(512),
+		this.ruleAltArray = new Uint8Array(512);
 
 		// swap array
-		swapArray : new Uint16Array(512),
+		this.swapArray = new Uint16Array(512);
 
 		// whether pattern is executable
-		/** @type {boolean} */ executable : false,
+		/** @type {boolean} */ this.executable = false;
 
 		// whether pattern in extended RLE format
-		/** @type {boolean} */ extendedFormat : false,
+		/** @type {boolean} */ this.extendedFormat = false;
 
 		// lower case name of [R]History postfix
-		/** @const {string} */ historyPostfix : "history",
+		/** @const {string} */ this.historyPostfix = "history";
 
 		// lower case name of Triangular postfix
-		/** @const {string} */ triangularPostfix : "l",
+		/** @const {string} */ this.triangularPostfix = "l";
 
 		// lower case name of Triangular Edges postfix
-		/** @const {string} */ triangularEdgesPostfix : "le",
+		/** @const {string} */ this.triangularEdgesPostfix = "le";
 
 		// lower case name of Triangular Vertices postfix
-		/** @const {string} */ triangularVerticesPostfix : "lv",
+		/** @const {string} */ this.triangularVerticesPostfix = "lv";
 
 		// lower case name of Hex postfix
-		/** @const {string} */ hexPostfix : "h",
+		/** @const {string} */ this.hexPostfix = "h";
 
 		// lower case name of Von-Neumann postfix
-		/** @const {string} */ vonNeumannPostfix : "v",
+		/** @const {string} */ this.vonNeumannPostfix = "v";
 
 		// flag if last pattern was too big
-		/** @type {boolean} */ tooBig : false,
+		/** @type {boolean} */ this.tooBig = false;
 
 		// generation number
-		/** @type {number} */ generation : 0,
-		/** @type {boolean} */ genDefined : false,
+		/** @type {number} */ this.generation = 0;
+		/** @type {boolean} */ this.genDefined = false;
 
 		// position x and y
-		/** @type {number} */ posX : 0,
-		/** @type {number} */ posY : 0,
-		/** @type {boolean} */ posDefined : false,
+		/** @type {number} */ this.posX = 0;
+		/** @type {number} */ this.posY = 0;
+		/** @type {boolean} */ this.posDefined = false;
 
 		// index in string
-		/** @type {number} */ index : 0,
+		/** @type {number} */ this.index = 0;
 
 		// LTL min and max range
-		/** @const {number} */ minRangeLTL : 1,
-		/** @const {number} */ maxRangeLTL : 500,
+		/** @const {number} */ this.minRangeLTL = 1;
+		/** @const {number} */ this.maxRangeLTL = 500;
 
 		// LTL min and max states
-		/** @const {number} */ minStatesLTL : 0,
-		/** @const {number} */ maxStatesLTL : 256,
+		/** @const {number} */ this.minStatesLTL = 0;
+		/** @const {number} */ this.maxStatesLTL = 256;
 
 		// LTL min and max middle value
-		/** @const {number} */ minMiddleLTL : 0,
-		/** @const {number} */ maxMiddleLTL : 1,
+		/** @const {number} */ this.minMiddleLTL = 0;
+		/** @const {number} */ this.maxMiddleLTL = 1;
 
 		// LTL neighborhoods
-		/** @const {number} */ mooreLTL: 0,
-		/** @const {number} */ vonNeumannLTL : 1,
-		/** @const {number} */ circularLTL : 2,
+		/** @const {number} */ this.mooreLTL= 0;
+		/** @const {number} */ this.vonNeumannLTL = 1;
+		/** @const {number} */ this.circularLTL = 2;
 
 		// HROT min and max range
-		/** @const {number} */ minRangeHROT: 1,
-		/** @const {number} */ maxRangeHROT: 500,
+		/** @const {number} */ this.minRangeHROT = 1;
+		/** @const {number} */ this.maxRangeHROT = 500;
 
 		// HROT min and max states
-		/** @const {number} */ minStatesHROT : 0,
-		/** @const {number} */ maxStatesHROT : 256,
+		/** @const {number} */ this.minStatesHROT = 0;
+		/** @const {number} */ this.maxStatesHROT = 256;
 
 		// max state seen
-		/** @type {number} */ maxSurvivalHROT : 0,
-		/** @type {number} */ maxBirthHROT : 0,
+		/** @type {number} */ this.maxSurvivalHROT = 0;
+		/** @type {number} */ this.maxBirthHROT = 0;
 
 		// HROT neighborhoods
-		/** @const {number} */ mooreHROT : 0,
-		/** @const {number} */ vonNeumannHROT : 1,
-		/** @const {number} */ circularHROT : 2,
+		/** @const {number} */ this.mooreHROT = 0;
+		/** @const {number} */ this.vonNeumannHROT = 1;
+		/** @const {number} */ this.circularHROT = 2;
 
 		// specified width and height from RLE pattern
-		/** @type {number} */ specifiedWidth : -1,
-		/** @type {number} */ specifiedHeight : -1,
+		/** @type {number} */ this.specifiedWidth = -1;
+		/** @type {number} */ this.specifiedHeight = -1;
 
 		// triangular neighbourhoods
-		/** @const {number} */ triangularAll : 0,
-		/** @const {number} */ triangularEdges : 1,
-		/** @const {number} */ triangularVertices : 2,
+		/** @const {number} */ this.triangularAll = 0;
+		/** @const {number} */ this.triangularEdges = 1;
+		/** @const {number} */ this.triangularVertices = 2;
 	
 		// alternate rule separator
-		/** @const {string} */ altRuleSeparator : "|",
+		/** @const {string} */ this.altRuleSeparator = "|";
 		
 		// whether alternate rule specified
-		/** @type {boolean} */ altSpecified : false,
+		/** @type {boolean} */ this.altSpecified = false;
 
 		// rule table rule section including trailing space
-		/** @const {string} */ ruleTableRuleName : "@RULE",
+		/** @const {string} */ this.ruleTableRuleName = "@RULE";
 
 		// rule table tree section
-		/** @const {string} */ ruleTableTreeName : "@TREE",
+		/** @const {string} */ this.ruleTableTreeName = "@TREE";
 
 		// tree section states setting
-		/** @const {string} */ ruleTreeStates : "num_states",
+		/** @const {string} */ this.ruleTreeStates = "num_states";
 
 		// tree section neighbours setting
-		/** @const {string} */ ruleTreeNeighbours : "num_neighbors",
+		/** @const {string} */ this.ruleTreeNeighbours = "num_neighbors";
 
 		// tree section nodes setting
-		/** @const {string} */ ruleTreeNodes : "num_nodes",
+		/** @const {string} */ this.ruleTreeNodes = "num_nodes";
 
 		// rule table table section
-		/** @const {string} */ ruleTableTableName : "@TABLE",
+		/** @const {string} */ this.ruleTableTableName = "@TABLE";
 
 		// rule table colours section
-		/** @const {string} */ ruleTableColoursName : "@COLORS",
+		/** @const {string} */ this.ruleTableColoursName = "@COLORS";
 
 		// rule table icons section
-		/** @const {string} */ ruleTableIconsName : "@ICONS"
-	};
+		/** @const {string} */ this.ruleTableIconsName = "@ICONS";
+	}
 
 	// Life pattern constructor
 	/**
 	 * @constructor
 	 */
-	function Pattern(name) {
+	function Pattern(name, manager) {
+		this.manager = manager;
+
 		// remove extension from name if present
 		var i = name.lastIndexOf(".");
 		if (i !== -1) {
@@ -371,7 +383,7 @@
 		/** @type {boolean} */ this.isTriangular = false;
 
 		// triangular neighbourhood (0 - full, 1 - edges, 2 - vertices)
-		/** @type {number} */ this.triangularNeighbourhood = PatternManager.triangularAll;
+		/** @type {number} */ this.triangularNeighbourhood = this.manager.triangularAll;
 
 		// is Wolfram rule
 		/** @type {number} */ this.wolframRule = -1;
@@ -564,7 +576,7 @@
 		this.isTriangular = false;
 		this.birthTriMask = 0;
 		this.survivalTriMask = 0;
-		this.triangularNeighbourhood = PatternManager.triangularAll;
+		this.triangularNeighbourhood = this.manager.triangularAll;
 		this.wolframRule = -1;
 		this.isVonNeumann = false;
 		this.isLTL = false;
@@ -612,7 +624,7 @@
 	};
 
 	// decode a Cells pattern
-	PatternManager.decodeCells = function(pattern, source, allocator) {
+	PatternManager.prototype.decodeCells = function(pattern, source, allocator) {
 		var i, length, chr, mode,
 		    maxWidth = 0,
 		    width = 0,
@@ -806,7 +818,7 @@
 	};
 
 	// decode a Life 1.06 pattern
-	PatternManager.decode106 = function(pattern, source, allocator) {
+	PatternManager.prototype.decode106 = function(pattern, source, allocator) {
 		var i, length, chr, item, minX, maxX, minY, maxY, cells, n, x, y, negative, sawPosition,
 
 		// item types
@@ -978,7 +990,7 @@
 	};
 
 	// decode a Life 1.05 pattern
-	PatternManager.decode105 = function(pattern, source, header, allocator) {
+	PatternManager.prototype.decode105 = function(pattern, source, header, allocator) {
 		var i, j, chr, endX, endY, width, maxWidth, height, sectionStart, sectionEnd, x, y, xOffset, yOffset, skipBlanks,
 
 		    // parser modes
@@ -1378,7 +1390,7 @@
 	};
 	
 	// set triangular totalistic neighbourhood
-	PatternManager.setTriangularTotalistic = function(ruleTriangularArray, value, survival, ruleMask) {
+	PatternManager.prototype.setTriangularTotalistic = function(ruleTriangularArray, value, survival, ruleMask) {
 		// mask
 		var /** @type {number} */ mask = 0,
 
@@ -1440,7 +1452,7 @@
 	};
 
 	// set totalistic neighbourhood
-	PatternManager.setTotalistic = function(ruleArray, value, survival, hexMask) {
+	PatternManager.prototype.setTotalistic = function(ruleArray, value, survival, hexMask) {
 		// mask
 		var mask = 0,
 
@@ -1475,19 +1487,19 @@
 	};
 
 	// flip bits
-	PatternManager.flipBits = function(x) {
+	PatternManager.prototype.flipBits = function(x) {
 		return ((x & 0x07) << 6) | ((x & 0x1c0) >> 6) | (x & 0x38);
 	};
 
 	// rotate 90
-	PatternManager.rotateBits90Clockwise = function(x) {
+	PatternManager.prototype.rotateBits90Clockwise = function(x) {
 		return ((x & 0x4) << 6) | ((x & 0x20) << 2) | ((x & 0x100) >> 2)
 			| ((x & 0x2) << 4) | (x & 0x10) | ((x & 0x80) >> 4)
 			| ((x & 0x1) << 2) | ((x & 0x8) >> 2) | ((x & 0x40) >> 6);
 	};
 
 	// set symmetrical neighbourhood into 512bit value
-	PatternManager.setSymmetrical512 = function(ruleArray, x, b) {
+	PatternManager.prototype.setSymmetrical512 = function(ruleArray, x, b) {
 		// variables
 		var y = x,
 
@@ -1511,7 +1523,7 @@
 	};
 
 	// set symmetrical hex neighbourhood
-	PatternManager.setHexSymmetrical = function(ruleArray, value, survival, character, normal, hexMask) {
+	PatternManager.prototype.setHexSymmetrical = function(ruleArray, value, survival, character, normal, hexMask) {
 		// default values
 		var settings = [],
 			i = 0,
@@ -1542,7 +1554,7 @@
 	};
 
 	// set symmetrical neighbourhood
-	PatternManager.setSymmetrical = function(ruleArray, value, survival, character, normal, hexMask) {
+	PatternManager.prototype.setSymmetrical = function(ruleArray, value, survival, character, normal, hexMask) {
 		// default values
 		var xOrbit = 0,
 		    nIndex = value - 1,
@@ -1577,7 +1589,7 @@
 	};
 
 	// set totalistic birth or survival rule from a string
-	PatternManager.setTotalisticRuleFromString = function(ruleArray, rule, survival, mask) {
+	PatternManager.prototype.setTotalisticRuleFromString = function(ruleArray, rule, survival, mask) {
 		// current character
 		var current = null,
 
@@ -1616,7 +1628,7 @@
 	};
 
 	// return a count of the number of bits set in the given number
-	PatternManager.bitCount = function(number) {
+	PatternManager.prototype.bitCount = function(number) {
 		var r = 0;
 
 		while (number) {
@@ -1627,7 +1639,7 @@
 	};
 
 	// add canonical hex letter representation
-	PatternManager.addHexLetters = function(count, lettersArray) {
+	PatternManager.prototype.addHexLetters = function(count, lettersArray) {
 		var canonical = "",
 		    bits = 0,
 		    negative = 0,
@@ -1692,7 +1704,7 @@
 	};
 
 	// add canonical letter representation
-	PatternManager.addLetters = function(count, lettersArray) {
+	PatternManager.prototype.addLetters = function(count, lettersArray) {
 		var canonical = "",
 		    bits = 0,
 		    negative = 0,
@@ -1758,7 +1770,7 @@
 	};
 
 	// set birth or survival hex rule from a string
-	PatternManager.setHexRuleFromString = function(ruleArray, rule, survival) {
+	PatternManager.prototype.setHexRuleFromString = function(ruleArray, rule, survival) {
 		// current and next characters
 		var current = null,
 		    next = null,
@@ -1891,7 +1903,7 @@
 	};
 
 	// set birth or survival rule from a string
-	PatternManager.setRuleFromString = function(ruleArray, rule, survival) {
+	PatternManager.prototype.setRuleFromString = function(ruleArray, rule, survival) {
 		// current and next characters
 		var current = null,
 		    next = null,
@@ -2024,7 +2036,7 @@
 	};
 
 	// create the rule map from Wolfram rule number
-	PatternManager.createWolframMap = function(ruleArray, number) {
+	PatternManager.prototype.createWolframMap = function(ruleArray, number) {
 		var i = 0;
 
 		// set the rule array
@@ -2042,21 +2054,21 @@
 	};
 
 	// create triangular map
-	PatternManager.createTriMap = function(pattern, ruleTriangularArray, secondTriangularArray) {
+	PatternManager.prototype.createTriMap = function(pattern, ruleTriangularArray, secondTriangularArray) {
 		var i = 0,
 			digits = 12,
-			ruleMask = PatternManager.triangularMask,
+			ruleMask = this.triangularMask,
 			bMask = pattern.birthTriMask,
 			sMask = pattern.survivalTriMask;
 
 		// check neighbourhood
-		if (pattern.triangularNeighbourhood === PatternManager.triangularEdges) {
+		if (pattern.triangularNeighbourhood === this.triangularEdges) {
 			digits = 3;
-			ruleMask = PatternManager.triangularEdgesMask;
+			ruleMask = this.triangularEdgesMask;
 		} else {
-			if (pattern.triangularNeighbourhood === PatternManager.triangularVertices) {
+			if (pattern.triangularNeighbourhood === this.triangularVertices) {
 				digits = 9;
-				ruleMask = PatternManager.triangularVerticesMask;
+				ruleMask = this.triangularVerticesMask;
 			}
 		}
 
@@ -2152,7 +2164,7 @@
 	};
 
 	// create a triangular map from birth and survival strings
-	PatternManager.createTriangularRuleMap = function(pattern, birthPart, survivalPart, generationsStates, ruleTriangularArray, triangularNeighbourhood) {
+	PatternManager.prototype.createTriangularRuleMap = function(pattern, birthPart, survivalPart, generationsStates, ruleTriangularArray, triangularNeighbourhood) {
 		var canonicalName = "",
 			letters = this.validTriangularRuleLetters,
 			i = 0,
@@ -2161,10 +2173,10 @@
 			survivalName = "";
 
 		// check which triangular neighbourhood is specified
-		if (triangularNeighbourhood === PatternManager.triangularEdges) {
+		if (triangularNeighbourhood === this.triangularEdges) {
 			letters = this.validTriangularEdgesRuleLetters;
 		} else {
-			if (triangularNeighbourhood === PatternManager.triangularVertices) {
+			if (triangularNeighbourhood === this.triangularVertices) {
 				letters = this.validTriangularVerticesRuleLetters;
 			}
 		}
@@ -2208,7 +2220,7 @@
 	};
 
 	// create the rule map from birth and survival strings
-	PatternManager.createRuleMap = function(pattern, birthPart, survivalPart, base64, ruleArray, ruleTriangularArray) {
+	PatternManager.prototype.createRuleMap = function(pattern, birthPart, survivalPart, base64, ruleArray, ruleTriangularArray) {
 		var i = 0,
 		    j = 0,
 		    c = 0,
@@ -2232,7 +2244,7 @@
 
 		// check for _none_ rule
 		if (pattern.isNone) {
-			canonicalName = PatternManager.noneRuleName;
+			canonicalName = this.noneRuleName;
 		} else {
 			// check for Margolus or PCA rule
 			if (isMargolus || isPCA) {
@@ -2291,7 +2303,7 @@
 						// decode the base64 string
 						for (i = 0; i < fullchars; i += 1) {
 							canonicalName += base64[i];
-							c = PatternManager.base64Characters.indexOf(base64[i]);
+							c = this.base64Characters.indexOf(base64[i]);
 							tempArray[j] = c >> 5;
 							j += 1;
 							tempArray[j] = (c >> 4) & 1;
@@ -2307,16 +2319,16 @@
 						}
 			
 						// decode final character
-						c = PatternManager.base64Characters.indexOf(base64[i]);
+						c = this.base64Characters.indexOf(base64[i]);
 						tempArray[j] = c >> 5;
 						j += 1;
 						tempArray[j] = (c >> 4) & 1;
-						canonicalName += PatternManager.base64Characters[c & ((1 << 5) | (1 << 4))];
+						canonicalName += this.base64Characters[c & ((1 << 5) | (1 << 4))];
 			
 						// copy into array using the neighbourhood mask
 						for (i = 0; i < 512; i += 1) {
 							k = 0;
-							m = PatternManager.mapNeighbours;
+							m = this.mapNeighbours;
 							for (j = 8; j >= 0; j -= 1) {
 								if ((mask & (1 << j)) !== 0) {
 									if ((i & (1 << j)) !== 0) {
@@ -2372,7 +2384,7 @@
 	};
 
 	// create n-neighbour counts
-	PatternManager.minusN = function(rule, neighbours) {
+	PatternManager.prototype.minusN = function(rule, neighbours) {
 		var i = 0,
 
 		    // digit to test
@@ -2397,7 +2409,7 @@
 	};
 
 	// invert neighbour counts
-	PatternManager.invertCounts = function(rule) {
+	PatternManager.prototype.invertCounts = function(rule) {
 		var i = 0,
 
 		    // digit to test
@@ -2423,7 +2435,7 @@
 	};
 
 	// remove whitespace in a string
-	PatternManager.removeWhiteSpace = function(string) {
+	PatternManager.prototype.removeWhiteSpace = function(string) {
 		// result
 		var result = string,
 
@@ -2451,7 +2463,7 @@
 	};
 
 	// decode Wolfram rule
-	PatternManager.decodeWolfram = function(pattern, rule, ruleArray) {
+	PatternManager.prototype.decodeWolfram = function(pattern, rule, ruleArray) {
 		var valid = true,
 
 		    // rule number
@@ -2500,7 +2512,7 @@
 	};
 
 	// add postfixes to canonical rule name
-	PatternManager.addNamePostfixes = function(pattern, base64) {
+	PatternManager.prototype.addNamePostfixes = function(pattern, base64) {
 		var aliasName = null,
 			nameLtL = "";
 
@@ -2514,14 +2526,14 @@
 				} else {
 					if (pattern.isTriangular) {
 						switch (pattern.triangularNeighbourhood) {
-						case PatternManager.triangularAll:
-							pattern.ruleName += PatternManager.triangularPostfix.toUpperCase();
+						case this.triangularAll:
+							pattern.ruleName += this.triangularPostfix.toUpperCase();
 							break;
-						case PatternManager.triangularEdges:
-							pattern.ruleName += PatternManager.triangularEdgesPostfix.toUpperCase();
+						case this.triangularEdges:
+							pattern.ruleName += this.triangularEdgesPostfix.toUpperCase();
 							break;
-						case PatternManager.triangularVertices:
-							pattern.ruleName += PatternManager.triangularVerticesPostfix.toUpperCase();
+						case this.triangularVertices:
+							pattern.ruleName += this.triangularVerticesPostfix.toUpperCase();
 							break;
 						}
 					}
@@ -2557,7 +2569,7 @@
 		// check for bounded grid
 		if (pattern.gridType !== -1) {
 			// add grid type
-			pattern.ruleName += ":" + PatternManager.boundedGridTypes[pattern.gridType].toUpperCase();
+			pattern.ruleName += ":" + this.boundedGridTypes[pattern.gridType].toUpperCase();
 
 			// add width
 			pattern.ruleName += pattern.gridWidth;
@@ -2611,9 +2623,9 @@
 	};
 
 	// validate base64 MAP string
-	PatternManager.validateMap = function(base64, pattern) {
+	PatternManager.prototype.validateMap = function(base64, pattern) {
 		var i = 0,
-		    testLen = PatternManager.map512Length,
+		    testLen = this.map512Length,
 		    currentLen = base64.length;
 
 		// compute the length
@@ -2621,13 +2633,13 @@
 			// Moore
 			this.mapNeighbours = 8;
 		} else {
-			testLen = PatternManager.map128Length;
+			testLen = this.map128Length;
 			if (currentLen >= testLen) {
 				// Hex
 				this.mapNeighbours = 6;
 				pattern.isHex = true;
 			} else {
-				testLen = PatternManager.map32Length;
+				testLen = this.map32Length;
 				if (currentLen >= testLen) {
 					// von Neumann
 					this.mapNeighbours = 4;
@@ -2642,7 +2654,7 @@
 		// check map characters
 		if (testLen >= 0) {
 			for (i = 0; i < testLen; i += 1) {
-				if (PatternManager.base64Characters.indexOf(base64[i]) === -1) {
+				if (this.base64Characters.indexOf(base64[i]) === -1) {
 					testLen = -1;
 				}
 			}
@@ -2652,7 +2664,7 @@
 	};
 
 	// decode part of LTL rule
-	PatternManager.decodeLTLpart = function (rule, part, lower, upper, partof) {
+	PatternManager.prototype.decodeLTLpart = function (rule, part, lower, upper, partof) {
 		var result = 0,
 		    partlen = part.length,
 		    rulepart = rule.substr(this.index, partlen),
@@ -2742,7 +2754,7 @@
 	};
 
 	// decode LTL rule in Rr,Cc,Mm,Ssmin..smax,Bbmin..bmax,Nn format
-	PatternManager.decodeLTLMC = function(pattern, rule) {
+	PatternManager.prototype.decodeLTLMC = function(pattern, rule) {
 		var value = 0,
 		    result = false,
 			maxCells = 0,
@@ -2818,15 +2830,15 @@
 			} else {
 				// check Smax and Bmax based on range and neighborhood
 				switch(pattern.neighborhoodLTL) {
-					case PatternManager.mooreLTL:
+					case this.mooreLTL:
 						maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1);
 						break;
 
-					case PatternManager.vonNeumannLTL:
+					case this.vonNeumannLTL:
 						maxCells = 2 * pattern.rangeLTL * (pattern.rangeLTL + 1) + 1;
 						break;
 
-					case PatternManager.circularLTL:
+					case this.circularLTL:
 						count = 0;
 						r2 = pattern.rangeLTL * pattern.rangeLTL + pattern.rangeLTL;
 						for (i = -pattern.rangeLTL; i <= pattern.rangeLTL; i += 1) {
@@ -2864,7 +2876,7 @@
 	};
 
 	// decode LTL rule in r,bmin,bmax,smin,smax format
-	PatternManager.decodeLTLnum = function(pattern, rule) {
+	PatternManager.prototype.decodeLTLnum = function(pattern, rule) {
 		var value = 0,
 		    result = false,
 		    maxCells = 0;
@@ -2875,7 +2887,7 @@
 		// set unspecified defaults: 2 states, whether middle is included (yes) and neighborhood (Moore)
 		pattern.multiNumStates = 2;
 		pattern.middleLTL = 1;
-		pattern.neighborhoodLTL = PatternManager.mooreLTL;
+		pattern.neighborhoodLTL = this.mooreLTL;
 
 		// decode R part
 		value = this.decodeLTLpart(rule, "", this.minRangeLTL, this.maxRangeLTL, "");
@@ -2942,7 +2954,7 @@
 	};
 
 	// decode LTL rule in RBTST format
-	PatternManager.decodeLTLRBTST = function(pattern, rule) {
+	PatternManager.prototype.decodeLTLRBTST = function(pattern, rule) {
 		var value = 0,
 		    result = false,
 		    maxCells = 0;
@@ -2957,7 +2969,7 @@
 
 		// set unspecified defaults: whether middle is included (yes) and neighborhood (Moore)
 		pattern.middleLTL = 1;
-		pattern.neighborhoodLTL = PatternManager.mooreLTL;
+		pattern.neighborhoodLTL = this.mooreLTL;
 
 		// decode R part
 		value = this.decodeLTLpart(rule, "r", this.minRangeLTL, this.maxRangeLTL, "");
@@ -3024,7 +3036,7 @@
 	};
 
 	// decode HROT hex digits
-	PatternManager.readHexDigits = function(rule, which, numDigits, pattern, allocator) {
+	PatternManager.prototype.readHexDigits = function(rule, which, numDigits, pattern, allocator) {
 		var result = false,
 			hexValue = 0,
 			list = null,
@@ -3095,7 +3107,7 @@
 	};
 
 	// decode HROT number (returns -1 if number is invalid)
-	PatternManager.decodeHROTNumber = function(rule, partName) {
+	PatternManager.prototype.decodeHROTNumber = function(rule, partName) {
 		var value = -1,
 			// ASCII 0
 			asciiZero = String("0").charCodeAt(0),
@@ -3133,7 +3145,7 @@
 	};
 
 	// decode HROT range
-	PatternManager.decodeHROTRange = function(rule, list, partName, maxCount) {
+	PatternManager.prototype.decodeHROTRange = function(rule, list, partName, maxCount) {
 		var result = true,
 			lower = -1,
 			upper = -1,
@@ -3193,7 +3205,7 @@
 	};
 
 	// create HROT arrays from Bmin to Bmax and Smin to Smax
-	PatternManager.setupHROTfromLTL = function(pattern, allocator) {
+	PatternManager.prototype.setupHROTfromLTL = function(pattern, allocator) {
 		var range = pattern.rangeLTL,
 			maxCount = (range * 2 + 1) * (range * 2 + 1),
 			i = 0;
@@ -3234,7 +3246,7 @@
 	};
 
 	// decode HROT rule in Rr,Cc,S,B(,Nn) format
-	PatternManager.decodeHROTMulti = function(pattern, rule, allocator) {
+	PatternManager.prototype.decodeHROTMulti = function(pattern, rule, allocator) {
 		var value = 0,
 			result = false,
 			count = 0,
@@ -3409,15 +3421,15 @@
 		if (result) {
 			// check neighborhood counts for the neighborhood
 			switch(pattern.neighborhoodHROT) {
-				case PatternManager.mooreHROT:
+				case this.mooreHROT:
 					maxCount = (pattern.rangeHROT * 2 + 1) * (pattern.rangeHROT * 2 + 1);
 					break;
 
-				case PatternManager.vonNeumannHROT:
+				case this.vonNeumannHROT:
 					maxCount = 2 * pattern.rangeHROT * (pattern.rangeHROT + 1) + 1;
 					break;
 
-				case PatternManager.circularHROT:
+				case this.circularHROT:
 					count = 0;
 					r2 = pattern.rangeHROT * pattern.rangeHROT + pattern.rangeHROT;
 					for (i = -pattern.rangeHROT; i <= pattern.rangeHROT; i += 1) {
@@ -3463,7 +3475,7 @@
 	};
 
 	// decode HROT rule in r<num>b<hex>s<hex> format
-	PatternManager.decodeHROTHex = function(pattern, rule, allocator) {
+	PatternManager.prototype.decodeHROTHex = function(pattern, rule, allocator) {
 		var value = 0,
 		    result = false,
 			// ASCII 0
@@ -3583,7 +3595,7 @@
 				this.failureReason = "HROT invalid characters after rule";
 			} else {
 				// default to Moore
-				pattern.neighborhoodHROT = PatternManager.mooreHROT;
+				pattern.neighborhoodHROT = this.mooreHROT;
 				pattern.isHROT = true;
 			}
 		}
@@ -3592,7 +3604,7 @@
 	};
 
 	// convert array to multi string for HROT
-	PatternManager.asMulti = function(list, offset) {
+	PatternManager.prototype.asMulti = function(list, offset) {
 		var length = list.length,
 			start = -1,
 			result = "",
@@ -3642,7 +3654,7 @@
 	};
 
 	// decode rule string and return whether valid
-	PatternManager.decodeRuleString = function(pattern, rule, allocator) {
+	PatternManager.prototype.decodeRuleString = function(pattern, rule, allocator) {
 		// check for alternate rules
 		var altIndex = -1,
 			firstPattern = null,
@@ -3661,7 +3673,7 @@
 		}
 
 		// check if the rule has an alternate
-		altIndex = rule.indexOf(PatternManager.altRuleSeparator);
+		altIndex = rule.indexOf(this.altRuleSeparator);
 
 		// check if the rule has an alternate
 		if (altIndex === -1) {
@@ -3675,12 +3687,12 @@
 			}
 		} else {
 			// check there is only one separator
-			if (rule.substr(altIndex + 1).indexOf(PatternManager.altRuleSeparator) === -1) {
+			if (rule.substr(altIndex + 1).indexOf(this.altRuleSeparator) === -1) {
 				// decode first rule
 				result = this.decodeRuleStringPart(pattern, rule.substr(0, altIndex), allocator, this.ruleAltArray, this.ruleAltTriangularArray);
 				if (result) {
 					// save the first pattern details
-					firstPattern = new Pattern(pattern.name);
+					firstPattern = new Pattern(pattern.name, this);
 					firstPattern.copySettingsFrom(pattern);
 
 					// if succeeded then decode alternate rule
@@ -3711,12 +3723,12 @@
 										if (firstPattern.aliasName === "") {
 											firstPattern.aliasName = firstPattern.ruleName;
 										}
-										pattern.aliasName = firstPattern.aliasName + PatternManager.altRuleSeparator + pattern.aliasName;
+										pattern.aliasName = firstPattern.aliasName + this.altRuleSeparator + pattern.aliasName;
 									}
 								}
 
 								// add the alternate rule name
-								pattern.ruleName = firstPattern.ruleName + PatternManager.altRuleSeparator + pattern.ruleName;
+								pattern.ruleName = firstPattern.ruleName + this.altRuleSeparator + pattern.ruleName;
 
 								// if HROT them copy arrays across
 								if (pattern.isHROT || pattern.isLTL) {
@@ -3741,7 +3753,7 @@
 	};
 
 	// decode PCA rule
-	PatternManager.decodePCA = function(rule, ruleArray) {
+	PatternManager.prototype.decodePCA = function(rule, ruleArray) {
 		var valid = true,
 			index = 0,
 			length = rule.length,
@@ -3824,7 +3836,7 @@
 	};
 
 	// decode Margolus rule
-	PatternManager.decodeMargolus = function(rule, ruleArray) {
+	PatternManager.prototype.decodeMargolus = function(rule, ruleArray) {
 		var valid = true,
 			index = 0,
 			length = rule.length,
@@ -3903,7 +3915,7 @@
 	};
 
 	// decode rule string and return whether valid
-	PatternManager.decodeRuleStringPart = function(pattern, rule, allocator, ruleArray, ruleTriangularArray) {
+	PatternManager.prototype.decodeRuleStringPart = function(pattern, rule, allocator, ruleArray, ruleTriangularArray) {
 		// whether the rule contains a slash
 		var slashIndex = -1,
 
@@ -3944,31 +3956,31 @@
 		    hexIndex = -1,
 
 		    // hex postfix length
-		    hexLength = PatternManager.hexPostfix.length,
+		    hexLength = this.hexPostfix.length,
 
 			// triangular index
 			triangularIndex = -1,
 
 			// triangular postfix length
-			triangularLength = PatternManager.triangularPostfix.length,
+			triangularLength = this.triangularPostfix.length,
 
 			// triangular Edges postfix length
-			triangularEdgesLength = PatternManager.triangularEdgesPostfix.length,
+			triangularEdgesLength = this.triangularEdgesPostfix.length,
 
 			// triangular Vertices postfix length
-			triangularVerticesLength = PatternManager.triangularVerticesPostfix.length,
+			triangularVerticesLength = this.triangularVerticesPostfix.length,
 
 		    // von neumann index
 		    vonNeumannIndex = -1,
 
 		    // von neumann postfix length
-		    vonNeumannLength = PatternManager.vonNeumannPostfix.length,
+		    vonNeumannLength = this.vonNeumannPostfix.length,
 
 		    // base64 map string
 			base64 = "",
 			
 			// PCA prefix
-			prefix = PatternManager.pcaRulePrefix,
+			prefix = this.pcaRulePrefix,
 
 		    // counter
 		    i = 0;
@@ -4053,16 +4065,16 @@
 					if (generationsPart !== "") {
 						// illegal trailing characters
 						i = generationsPart.length;
-						this.failureReason = "MAP length must be " + PatternManager.map32Length + ", " + PatternManager.map128Length + " or " + PatternManager.map512Length + " not " + (i + mapLength);
+						this.failureReason = "MAP length must be " + this.map32Length + ", " + this.map128Length + " or " + this.map512Length + " not " + (i + mapLength);
 						valid = false;
 					}
 				}
 			} else {
 				// illegal map
-				if (base64.length === PatternManager.map512Length || base64.length === PatternManager.map128Length || base64.length === PatternManager.map32Length) {
+				if (base64.length === this.map512Length || base64.length === this.map128Length || base64.length === this.map32Length) {
 					this.failureReason = "MAP contains illegal base64 character";
 				} else {
-					this.failureReason = "MAP length must be " + PatternManager.map32Length + ", " + PatternManager.map128Length + " or " + PatternManager.map512Length + " not " + base64.length;
+					this.failureReason = "MAP length must be " + this.map32Length + ", " + this.map128Length + " or " + this.map512Length + " not " + base64.length;
 				}
 			}
 		} else {
@@ -4238,11 +4250,11 @@
 								valid = this.decodeWolfram(pattern, rule, ruleArray);
 							} else {
 								// check for triangular rules
-								triangularIndex = rule.lastIndexOf(PatternManager.triangularPostfix);
+								triangularIndex = rule.lastIndexOf(this.triangularPostfix);
 								if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularLength)) {
 									// rule is a triangular type
 									pattern.isTriangular = true;
-									pattern.triangularNeighbourhood = PatternManager.triangularAll;
+									pattern.triangularNeighbourhood = this.triangularAll;
 
 									// remove the postfix
 									rule = rule.substr(0, rule.length - triangularLength);
@@ -4252,11 +4264,11 @@
 								}
 
 								// check for triangular Edges rules
-								triangularIndex = rule.lastIndexOf(PatternManager.triangularEdgesPostfix);
+								triangularIndex = rule.lastIndexOf(this.triangularEdgesPostfix);
 								if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularEdgesLength)) {
 									// rule is a triangular type
 									pattern.isTriangular = true;
-									pattern.triangularNeighbourhood = PatternManager.triangularEdges;
+									pattern.triangularNeighbourhood = this.triangularEdges;
 
 									// remove the postfix
 									rule = rule.substr(0, rule.length - triangularEdgesLength);
@@ -4266,11 +4278,11 @@
 								}
 
 								// check for triangular Vertices rules
-								triangularIndex = rule.lastIndexOf(PatternManager.triangularVerticesPostfix);
+								triangularIndex = rule.lastIndexOf(this.triangularVerticesPostfix);
 								if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularVerticesLength)) {
 									// rule is a triangular type
 									pattern.isTriangular = true;
-									pattern.triangularNeighbourhood = PatternManager.triangularVertices;
+									pattern.triangularNeighbourhood = this.triangularVertices;
 
 									// remove the postfix
 									rule = rule.substr(0, rule.length - triangularVerticesLength);
@@ -4280,7 +4292,7 @@
 								}
 
 								// check for Hex rules
-								hexIndex = rule.lastIndexOf(PatternManager.hexPostfix);
+								hexIndex = rule.lastIndexOf(this.hexPostfix);
 								if ((hexIndex !== -1) && (hexIndex === rule.length - hexLength)) {
 									// rule is a hex type
 									pattern.isHex = true;
@@ -4293,7 +4305,7 @@
 								}
 
 								// check for Von Neumann rules
-								vonNeumannIndex = rule.lastIndexOf(PatternManager.vonNeumannPostfix);
+								vonNeumannIndex = rule.lastIndexOf(this.vonNeumannPostfix);
 								if ((vonNeumannIndex !== -1) && (vonNeumannIndex === rule.length - vonNeumannLength)) {
 									// rule is a vonNeumann type
 									pattern.isVonNeumann = true;
@@ -4331,11 +4343,11 @@
 										rule = rule.substr(0, generationsIndex);
 
 										// check for triangular rules
-										triangularIndex = rule.lastIndexOf(PatternManager.triangularPostfix);
+										triangularIndex = rule.lastIndexOf(this.triangularPostfix);
 										if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularLength)) {
 											// rule is a triangular type
 											pattern.isTriangular = true;
-											pattern.triangularNeighbourhood = PatternManager.triangularAll;
+											pattern.triangularNeighbourhood = this.triangularAll;
 
 											// remove the postfix
 											rule = rule.substr(0, rule.length - triangularLength);
@@ -4345,11 +4357,11 @@
 										}
 
 										// check for triangular Edges rules
-										triangularIndex = rule.lastIndexOf(PatternManager.triangularEdgesPostfix);
+										triangularIndex = rule.lastIndexOf(this.triangularEdgesPostfix);
 										if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularEdgesLength)) {
 											// rule is a triangular type
 											pattern.isTriangular = true;
-											pattern.triangularNeighbourhood = PatternManager.triangularEdges;
+											pattern.triangularNeighbourhood = this.triangularEdges;
 
 											// remove the postfix
 											rule = rule.substr(0, rule.length - triangularEdgesLength);
@@ -4359,11 +4371,11 @@
 										}
 
 										// check for triangular Vertices rules
-										triangularIndex = rule.lastIndexOf(PatternManager.triangularVerticesPostfix);
+										triangularIndex = rule.lastIndexOf(this.triangularVerticesPostfix);
 										if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularVerticesLength)) {
 											// rule is a triangular type
 											pattern.isTriangular = true;
-											pattern.triangularNeighbourhood = PatternManager.triangularVertices;
+											pattern.triangularNeighbourhood = this.triangularVertices;
 
 											// remove the postfix
 											rule = rule.substr(0, rule.length - triangularVerticesLength);
@@ -4373,7 +4385,7 @@
 										}
 
 										// check for Hex rules
-										hexIndex = rule.lastIndexOf(PatternManager.hexPostfix);
+										hexIndex = rule.lastIndexOf(this.hexPostfix);
 										if ((hexIndex !== -1) && (hexIndex === rule.length - hexLength)) {
 											// rule is a hex type
 											pattern.isHex = true;
@@ -4386,7 +4398,7 @@
 										}
 
 										// check for Von Neumann rules
-										vonNeumannIndex = rule.lastIndexOf(PatternManager.vonNeumannPostfix);
+										vonNeumannIndex = rule.lastIndexOf(this.vonNeumannPostfix);
 										if ((vonNeumannIndex !== -1) && (vonNeumannIndex === rule.length - vonNeumannLength)) {
 											// rule is a vonNeumann type
 											pattern.isVonNeumann = true;
@@ -4401,7 +4413,7 @@
 								}
 
 								// check for "_none_" rule
-								if (rule === PatternManager.noneRuleName) {
+								if (rule === this.noneRuleName) {
 									// mark rule as none and allow all states
 									pattern.isNone = true;
 									pattern.multiNumStates = 256;
@@ -4585,7 +4597,7 @@
 	};
 
 	// decode an RLE string into a pattern
-	PatternManager.decodeRLEString = function(pattern, string, save, allocator) {
+	PatternManager.prototype.decodeRLEString = function(pattern, string, save, allocator) {
 		// index of next character
 		var index = 0,
 
@@ -4890,7 +4902,7 @@
 			pattern.width = width;
 			pattern.height = y;
 			// check if small enough to save
-			if (width > PatternManager.maxWidth || y > PatternManager.maxHeight) {
+			if (width > this.maxWidth || y > this.maxHeight) {
 				// flag pattern too large
 				pattern.tooBig = true;
 				pattern.patternFormat = "RLE";
@@ -4916,7 +4928,7 @@
 	};
 
 	// set the pattern originator
-	PatternManager.setOriginator = function(pattern, source) {
+	PatternManager.prototype.setOriginator = function(pattern, source) {
 		// end of line index
 		var endIndex = source.indexOf("\n");
 
@@ -4930,7 +4942,7 @@
 	};
 
 	// skip whitespace
-	PatternManager.skipWhitespace = function(source, index, endIndex) {
+	PatternManager.prototype.skipWhitespace = function(source, index, endIndex) {
 		// index of next non-whitespace character
 		var result = index,
 
@@ -4954,7 +4966,7 @@
 	};
 
 	// read Generation
-	PatternManager.readGeneration = function(source) {
+	PatternManager.prototype.readGeneration = function(source) {
 		// find the end of line
 		var newLine = source.indexOf("\n"),
 
@@ -5011,7 +5023,7 @@
 			found = false;
 			while (i < newLine && !found) {
 				// read the digit
-				digit = PatternManager.decimalDigits.indexOf(source[i]);
+				digit = this.decimalDigits.indexOf(source[i]);
 
 				// check if the digit was a number
 				if (digit !== -1) {
@@ -5032,7 +5044,7 @@
 	};
 
 	// read Position
-	PatternManager.readPosition = function(source, needEquals) {
+	PatternManager.prototype.readPosition = function(source, needEquals) {
 		// find the end of line
 		var newLine = source.indexOf("\n"),
 
@@ -5098,7 +5110,7 @@
 				found = false;
 				while (i < newLine && !found) {
 					// read the digit
-					digit = PatternManager.decimalDigits.indexOf(source[i]);
+					digit = this.decimalDigits.indexOf(source[i]);
 
 					// check if the digit was a number
 					if (digit !== -1) {
@@ -5140,7 +5152,7 @@
 							found = false;
 							while (i < newLine && !found) {
 								// read the digit
-								digit = PatternManager.decimalDigits.indexOf(source[i]);
+								digit = this.decimalDigits.indexOf(source[i]);
 
 								// check if the digit was a number
 								if (digit !== -1) {
@@ -5165,28 +5177,28 @@
 	};
 
 	// check for extended RLE command
-	PatternManager.checkExtendedCommand = function(source) {
+	PatternManager.prototype.checkExtendedCommand = function(source) {
 		// check if string starts with extended prefix
-		var exists = source.indexOf(PatternManager.extendedPrefix);
+		var exists = source.indexOf(this.extendedPrefix);
 
 		if (exists === 0) {
 			// check if Pos command exists
-			exists = source.indexOf(PatternManager.posCommand);
+			exists = source.indexOf(this.posCommand);
 			if (exists !== -1) {
 				// attempt to read the Position
-				this.readPosition(source.substr(exists + PatternManager.posCommand.length), true);
+				this.readPosition(source.substr(exists + this.posCommand.length), true);
 			}
 
 			// check if Gen command exists
-			exists = source.indexOf(PatternManager.genCommand);
+			exists = source.indexOf(this.genCommand);
 			if (exists !== -1) {
-				this.readGeneration(source.substr(exists + PatternManager.genCommand.length));
+				this.readGeneration(source.substr(exists + this.genCommand.length));
 			}
 		}
 	};
 
 	// set the pattern name
-	PatternManager.setName = function(pattern, source) {
+	PatternManager.prototype.setName = function(pattern, source) {
 		// end of line index
 		var endIndex = source.indexOf("\n");
 
@@ -5200,7 +5212,7 @@
 	};
 
 	// add a line from the source to the title
-	PatternManager.addToTitle = function(pattern, prefix, source, afterRLE) {
+	PatternManager.prototype.addToTitle = function(pattern, prefix, source, afterRLE) {
 		// end of line index
 		var endIndex = source.indexOf("\n"),
 			text = "";
@@ -5233,7 +5245,7 @@
 	};
 
 	// read value from string
-	PatternManager.readValueFromString = function(source) {
+	PatternManager.prototype.readValueFromString = function(source) {
 		// digit value
 		var digit = 0,
 
@@ -5261,7 +5273,7 @@
 	};
 
 	// decode sphere and set width to -1 if invalid
-	PatternManager.decodeSphere = function(pattern, source) {
+	PatternManager.prototype.decodeSphere = function(pattern, source) {
 		// read width
 		var width = this.readValueFromString(source),
 
@@ -5274,7 +5286,7 @@
 	};
 
 	// decode torus and set width to -1 if invalid
-	PatternManager.decodeTorus = function(pattern, source) {
+	PatternManager.prototype.decodeTorus = function(pattern, source) {
 		// read width
 		var width = this.readValueFromString(source),
 
@@ -5368,7 +5380,7 @@
 	};
 
 	// decode klein bottle and set width to -1 if invalid
-	PatternManager.decodeKlein = function(pattern, source) {
+	PatternManager.prototype.decodeKlein = function(pattern, source) {
 		// read width
 		var width = this.readValueFromString(source),
 
@@ -5499,7 +5511,7 @@
 	};
 
 	// decode cross-surface and set width to -1 if invalid
-	PatternManager.decodeCrossSurface = function(pattern, source) {
+	PatternManager.prototype.decodeCrossSurface = function(pattern, source) {
 		// read width
 		var width = this.readValueFromString(source),
 
@@ -5529,7 +5541,7 @@
 	};
 
 	// decode plane and set width to -1 if invalid
-	PatternManager.decodePlane = function(pattern, source) {
+	PatternManager.prototype.decodePlane = function(pattern, source) {
 		// read width
 		var width = this.readValueFromString(source),
 
@@ -5564,7 +5576,7 @@
 	};
 
 	// decode bounded grid definition
-	PatternManager.decodeBoundedGrid = function(pattern, source) {
+	PatternManager.prototype.decodeBoundedGrid = function(pattern, source) {
 		// whether definition is valid
 		var valid = false;
 
@@ -5637,7 +5649,7 @@
 	};
 
 	// decode a single name=value
-	PatternManager.decodeNameValue = function(name, index, source, length) {
+	PatternManager.prototype.decodeNameValue = function(name, index, source, length) {
 		var value = 0,
 			valueFound = false,
 			// ASCII 0
@@ -5710,7 +5722,7 @@
 	};
 
 	// decode specified size from RLE header
-	PatternManager.decodeSpecifiedSize = function(source, length) {
+	PatternManager.prototype.decodeSpecifiedSize = function(source, length) {
 		var result,
 			index = 0;
 
@@ -5749,7 +5761,7 @@
 	};
 
 	// decode rule
-	PatternManager.decodeRule = function(pattern, source, needPrefix, allocator) {
+	PatternManager.prototype.decodeRule = function(pattern, source, needPrefix, allocator) {
 		// end of line index
 		var endIndex = source.indexOf("\n"),
 
@@ -5763,7 +5775,7 @@
 		    historyIndex = -1,
 
 		    // history postfix length
-		    historyLength = PatternManager.historyPostfix.length,
+		    historyLength = this.historyPostfix.length,
 
 		    // rule string
 			ruleString = "",
@@ -5799,7 +5811,7 @@
 		pattern.ruleName = ruleString;
 
 		// check for bounded grid
-		boundedIndex = ruleString.lastIndexOf(PatternManager.boundedGridPrefix);
+		boundedIndex = ruleString.lastIndexOf(this.boundedGridPrefix);
 		if (boundedIndex !== -1) {
 			// decode the bounded grid definition
 			if (!this.decodeBoundedGrid(pattern, ruleString.substring(boundedIndex + 1))) {
@@ -5812,7 +5824,7 @@
 		}
 
 		// check for History rules
-		historyIndex = ruleString.toLowerCase().lastIndexOf(PatternManager.historyPostfix);
+		historyIndex = ruleString.toLowerCase().lastIndexOf(this.historyPostfix);
 		if ((historyIndex !== -1) && (historyIndex === ruleString.length - historyLength)) {
 			// rule is a history type
 			pattern.isHistory = true;
@@ -5825,7 +5837,7 @@
 		historyIndex = ruleString.indexOf(this.altRuleSeparator);
 		if (historyIndex !== -1) {
 			// check for History just before separartor
-			if (ruleString.toLowerCase().substr(0, historyIndex).trim().substr(-historyLength) === PatternManager.historyPostfix) {
+			if (ruleString.toLowerCase().substr(0, historyIndex).trim().substr(-historyLength) === this.historyPostfix) {
 				// rule is a history type
 				pattern.isHistory = true;
 			
@@ -5849,7 +5861,7 @@
 	};
 
 	// reutrn a bounded grid name
-	PatternManager.boundedGridName = function(gridIndex) {
+	PatternManager.prototype.boundedGridName = function(gridIndex) {
 		// result
 		var result = "";
 
@@ -5880,7 +5892,7 @@
 	};
 
 	// decode a Life RLE pattern
-	PatternManager.decodeRLE = function(pattern, source, allocator) {
+	PatternManager.prototype.decodeRLE = function(pattern, source, allocator) {
 		// index in string
 		var index = 0,
 
@@ -6259,28 +6271,28 @@
 	};
 
 	// decode rule table icons TBD
-	PatternManager.decodeIcons = function() {
+	PatternManager.prototype.decodeIcons = function() {
 		var valid = true;
 
 		return valid;
 	};
 
 	// decode rule table colours TBD
-	PatternManager.decodeColours = function() {
+	PatternManager.prototype.decodeColours = function() {
 		var valid = true;
 
 		return valid;
 	};
 
 	// decode rule table table TBD
-	PatternManager.decodeTable = function() {
+	PatternManager.prototype.decodeTable = function() {
 		var valid = false;
 
 		return valid;
 	};
 
 	// decode rule table tree
-	PatternManager.decodeTree = function(pattern, reader) {
+	PatternManager.prototype.decodeTree = function(pattern, reader) {
 		var nextToken = "",
 			states = -1,
 			neighbours = -1,
@@ -6297,7 +6309,7 @@
 
 		// read states setting
 		nextToken = reader.getNextTokenSkipNewline();
-		if (nextToken === PatternManager.ruleTreeStates) {
+		if (nextToken === this.ruleTreeStates) {
 			if (reader.getNextToken() === "=") {
 				if (reader.nextTokenIsNumeric()) {
 					states = reader.getNextTokenAsNumber();
@@ -6311,7 +6323,7 @@
 		// read neighbours setting
 		if (valid) {
 			nextToken = reader.getNextTokenSkipNewline();
-			if (nextToken === PatternManager.ruleTreeNeighbours) {
+			if (nextToken === this.ruleTreeNeighbours) {
 				if (reader.getNextToken() === "=") {
 					if (reader.nextTokenIsNumeric()) {
 						neighbours = reader.getNextTokenAsNumber();
@@ -6326,7 +6338,7 @@
 		// read nodes setting
 		if (valid) {
 			nextToken = reader.getNextTokenSkipNewline();
-			if (nextToken === PatternManager.ruleTreeNodes) {
+			if (nextToken === this.ruleTreeNodes) {
 				if (reader.getNextToken() === "=") {
 					if (reader.nextTokenIsNumeric()) {
 						nodes = reader.getNextTokenAsNumber();
@@ -6387,7 +6399,7 @@
 					valid = false;
 				}
 			} else {
-				if (!(nextToken === "" || nextToken === PatternManager.ruleTableColoursName || nextToken === PatternManager.ruleTableIconsName)) {
+				if (!(nextToken === "" || nextToken === this.ruleTableColoursName || nextToken === this.ruleTableIconsName)) {
 					valid = false;
 				} else {
 					nextToken = "";
@@ -6433,7 +6445,7 @@
 	};
 
 	// decode rule table
-	PatternManager.decodeRuleTable = function(pattern) {
+	PatternManager.prototype.decodeRuleTable = function(pattern) {
 		var valid = false,
 			tableIndex = -1,
 			treeIndex = -1,
@@ -6443,18 +6455,18 @@
 			reader = new Script(pattern.afterTitle, true);
 
 		// check if rule table rule exists
-		if (reader.findToken(PatternManager.ruleTableRuleName, -1) !== -1) {
+		if (reader.findToken(this.ruleTableRuleName, -1) !== -1) {
 			// get the rule name
 			if (!reader.nextIsNewline()) {
 				pattern.ruleTableName = reader.getNextToken();
 
 				// search for a table from current position
-				tableIndex = reader.findToken(PatternManager.ruleTableTableName, -1);
+				tableIndex = reader.findToken(this.ruleTableTableName, -1);
 				if (tableIndex !== -1) {
 					valid = this.decodeTable();
 				} else {
 					// search for a tree from the current position
-					treeIndex = reader.findToken(PatternManager.ruleTableTreeName, -1);
+					treeIndex = reader.findToken(this.ruleTableTreeName, -1);
 					if (treeIndex !== -1) {
 						valid = this.decodeTree(pattern, reader);
 					}
@@ -6462,13 +6474,13 @@
 
 				// if valid then search for colours from start position since sections could be in any order
 				if (valid) {
-					colourIndex = reader.findToken(PatternManager.ruleTableColoursName, 0);
+					colourIndex = reader.findToken(this.ruleTableColoursName, 0);
 					if (colourIndex !== -1) {
 						valid = this.decodeColours();
 					}
 					// if valid then search for icons from start position
 					if (valid) {
-						iconIndex = reader.findToken(PatternManager.ruleTableIconsName, 0);
+						iconIndex = reader.findToken(this.ruleTableIconsName, 0);
 						if (iconIndex !== -1) {
 							valid = this.decodeIcons();
 						}
@@ -6479,9 +6491,9 @@
 	};
 
 	// add a pattern to the list
-	PatternManager.create = function(name, source, allocator, tryRuleTable) {
+	PatternManager.prototype.create = function(name, source, allocator, tryRuleTable) {
 		// create a pattern skeleton
-		var newPattern = new Pattern(name),
+		var newPattern = new Pattern(name, this),
 			index = 0;
 
 		// clear loading flag
@@ -6627,7 +6639,7 @@
 	};
 
 	// get the rule table from an html page
-	PatternManager.getRuleTable = function(htmlPage) {
+	PatternManager.prototype.getRuleTable = function(htmlPage) {
 		var result = "",
 			i = htmlPage.indexOf(this.ruleTableRuleName),
 			l = htmlPage.length,
@@ -6688,35 +6700,44 @@
 		return result;
 	};
 
+	// load event handler
+	PatternManager.prototype.loadHandler = function(me, event) {
+		if (me.xhr.readyState === 4) {
+			if (me.xhr.status === 200) {
+				alert(me.getRuleTable(me.xhr.responseText));
+			} else {
+				me.errorHandler(me, event);
+			}
+		}
+	};
+
+	// error event handler
+	PatternManager.prototype.errorHandler = function(me, event) {
+		alert("RuleTable fetch failed\n\nRule: " + me.ruleSearchName + "\nURI: " + me.ruleSearchURI + "\nStatus: " + me.xhr.statusText);
+	};
+
 	// load rule table from URI
-	PatternManager.loadRuleTable = function(ruleName) {
-		var xhr = new XMLHttpRequest(),
+	PatternManager.prototype.loadRuleTable = function(ruleName) {
+		var	me = this,
 			uri = "/lifeview/plugin/wiki/Rule/" + ruleName;
 			//uri = "/wiki/Rule:" + ruleName;
+
+		// create the request
+		this.xhr = new XMLHttpRequest();
 
 		// save rule name for use in error message
 		this.ruleSearchName = ruleName;
 		this.ruleSearchURI = uri;
 
-		// on completion
-		xhr.onload = function() {
-			if (xhr.readyState === 4) {
-				if (xhr.status === 200) {
-					alert(PatternManager.getRuleTable(xhr.responseText));
-				} else {
-					alert("RuleTable fetch failed\n\nRule: " + PatternManager.ruleSearchName + "\nURI: " + PatternManager.ruleSearchURI + "\nStatus: " + xhr.statusText);
-				}
-			}
-		}
+		// mark loading
+		this.loadingFromRepository = true;
 
-		// on error
-		xhr.onerror = function() {
-			alert("RuleTable fetch failed\n\nRule: " + PatternManager.ruleSearchName + "\nURI: " + PatternManager.ruleSearchURI + "\nStatus: " + xhr.statusText);
-		}
+		registerEvent(this.xhr, "load", function(event) {me.loadHandler(me, event);}, false);
+		registerEvent(this.xhr, "error", function(event) {me.errorHandler(me, event);}, false);
 
 		// attempt to get the requested resource
-		xhr.open("GET", uri, true);
-		xhr.send(null);
+		this.xhr.open("GET", uri, true);
+		this.xhr.send(null);
 	};
 
 	// create the global interface

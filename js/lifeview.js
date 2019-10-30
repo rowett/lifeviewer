@@ -590,6 +590,9 @@
 	function View(element) {
 		var i = 0;
 
+		// pattern manager
+		this.manager = new PatternManager();
+
 		// whether to identify quickly (no Mod calculation)
 		/** @type {boolean} */ this.identifyFast = false;
 
@@ -2513,8 +2516,8 @@
 
 		// check the RLE is valid
 		rle += " ";
-		if (PatternManager.decodeRLEString(pattern, rle, false, this.engine.allocator) !== -1) {
-			if (PatternManager.decodeRLEString(pattern, rle, true, this.engine.allocator) !== -1) {
+		if (this.manager.decodeRLEString(pattern, rle, false, this.engine.allocator) !== -1) {
+			if (this.manager.decodeRLEString(pattern, rle, true, this.engine.allocator) !== -1) {
 				// convert to cell list
 				for (j = 0; j < pattern.height; j += 1) {
 					patternRow = pattern.multiStateMap[j];
@@ -3666,7 +3669,7 @@
 		}
 
 		// check for view only and multi-state pattern
-		if ((this.viewOnly || !this.engine.isLifeHistory) && PatternManager.extendedFormat && this.engine.multiNumStates !== -1) {
+		if ((this.viewOnly || !this.engine.isLifeHistory) && this.manager.extendedFormat && this.engine.multiNumStates !== -1) {
 			// center multi-state pattern on display
 			this.multiStateView = true;
 			this.viewOnly = true;
@@ -3791,7 +3794,7 @@
 			if (me.engine.boundedGridType !== -1) {
 				borderSize += me.engine.HROT.range * 2;
 			}
-			if (me.engine.HROT.type === PatternManager.vonNeumannHROT) {
+			if (me.engine.HROT.type === this.manager.vonNeumannHROT) {
 				if (me.engine.boundedGridType !== -1) {
 					borderSize += me.engine.boundedGridHeight / 2;
 				} else {
@@ -5573,7 +5576,7 @@
 		}
 
 		// lock kill button if not 2-state moore
-		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || (this.engine.isHROT && !(this.engine.HROT.range === 1 && this.engine.HROT.type === PatternManager.mooreHROT && this.engine.HROT.scount === 2)) || this.engine.isTriangular || this.engine.isVonNeumann;
+		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || (this.engine.isHROT && !(this.engine.HROT.range === 1 && this.engine.HROT.type === this.manager.mooreHROT && this.engine.HROT.scount === 2)) || this.engine.isTriangular || this.engine.isVonNeumann;
 
 		// lock theme button if mode doesn't support themes
 		this.themeButton.locked =  this.multiStateView || this.engine.isNone;
@@ -8201,7 +8204,7 @@
 		// attempt to build a pattern from the string
 		try {
 			// create a pattern
-			pattern = PatternManager.create("", patternText, this.engine.allocator, true);
+			pattern = this.manager.create("", patternText, this.engine.allocator, true);
 		}
 		catch(err) {
 			pattern = null;
@@ -8273,15 +8276,15 @@
 
 		// set the neighbourhood and compute max neighbour count
 		switch (this.engine.HROT.type) {
-		case PatternManager.mooreHROT:
+		case this.manager.mooreHROT:
 			neighbourhood = "";
 			neighbours = (range * 2 + 1) * (range * 2 + 1);
 			break;
-		case PatternManager.vonNeumannHROT:
+		case this.manager.vonNeumannHROT:
 			neighbourhood = "N";
 			neighbours = 2 * range * (range + 1) + 1;
 			break;
-		case PatternManager.circularHROT:
+		case this.manager.circularHROT:
 			neighbourhood = "C";
 			neighbours = 0;
 			r2 = range * range + range;
@@ -8340,15 +8343,15 @@
 
 		// set the neighbourhood and compute max neighbour count
 		switch (this.engine.HROT.type) {
-		case PatternManager.mooreHROT:
+		case this.manager.mooreHROT:
 			neighbourhood = "M";
 			neighbours = (range * 2 + 1) * (range * 2 + 1);
 			break;
-		case PatternManager.vonNeumannHROT:
+		case this.manager.vonNeumannHROT:
 			neighbourhood = "N";
 			neighbours = 2 * range * (range + 1) + 1;
 			break;
-		case PatternManager.circularHROT:
+		case this.manager.circularHROT:
 			neighbourhood = "C";
 			neighbours = 0;
 			r2 = range * range + range;
@@ -8410,27 +8413,27 @@
 		// get neighbourhood
 		if (this.engine.isHex) {
 			neighbours = 6;
-			postfix = PatternManager.hexPostfix;
+			postfix = this.manager.hexPostfix;
 		} else{
 			if (this.engine.isTriangular) {
 				switch (this.engine.triangularNeighbourhood) {
-				case PatternManager.triangularEdges:
+				case this.manager.triangularEdges:
 					neighbours = 3;
-					postfix = PatternManager.triangularEdgesPostfix;
+					postfix = this.manager.triangularEdgesPostfix;
 					break;
-				case PatternManager.triangularVertices:
+				case this.manager.triangularVertices:
 					neighbours = 9;
-					postfix = PatternManager.triangularVerticesPostfix;
+					postfix = this.manager.triangularVerticesPostfix;
 					break;
-				case PatternManager.triangularAll:
+				case this.manager.triangularAll:
 					neighbours = 12;
-					postfix = PatternManager.triangularPostfix;
+					postfix = this.manager.triangularPostfix;
 					break;
 				}
 			} else {
 				if (this.engine.isVonNeumann) {
 					neighbours = 4;
-					postfix = PatternManager.vonNeumannPostfix;
+					postfix = this.manager.vonNeumannPostfix;
 				}
 			}
 		}
@@ -8516,7 +8519,7 @@
 
 	// create random Margolus rule name
 	View.prototype.createRandomMargolus = function(isPCA) {
-		var result = (isPCA ? PatternManager.pcaRulePrefix.toUpperCase() + "," : "M"),
+		var result = (isPCA ? this.manager.pcaRulePrefix.toUpperCase() + "," : "M"),
 			i = 0,
 			j = 0,
 			value = 0,
@@ -12710,7 +12713,7 @@
 			this.displayHeight = this.mainCanvas.height;
 
 			// initialise life engine
-			this.engine = new Life(this.mainContext, this.displayWidth, this.displayHeight, this.defaultGridWidth, this.defaultGridHeight);
+			this.engine = new Life(this.mainContext, this.displayWidth, this.displayHeight, this.defaultGridWidth, this.defaultGridHeight, this.manager);
 			this.engine.initEngine(this.mainContext, this.displayWidth, this.displayHeight);
 
 			// create the elapsed times buffer
@@ -13388,7 +13391,7 @@
 		this.engine.displayLifeHistory = false;
 		this.engine.isHex = false;
 		this.engine.isTriangular = false;
-		this.engine.triangularNeighbourhood = PatternManager.triangularAll;
+		this.engine.triangularNeighbourhood = this.manager.triangularAll;
 		this.engine.isVonNeumann = false;
 		this.engine.wolframRule = -1;
 		this.engine.patternDisplayMode = false;
@@ -13400,9 +13403,15 @@
 	};
 
 	// start the viewer from a supplied pattern string
+	//View.prototype.startViewer = function(patternString, ignoreThumbnail) {
+		// attempt to load the pattern
+		//var pattern = this.manager.create("", patternString, this.engine.allocator, true);
+	//};
+
+	// start the viewer from a supplied pattern string
 	View.prototype.startViewer = function(patternString, ignoreThumbnail) {
 		var pattern = null,
-		    numberValue = 0,
+			numberValue = 0,
 		    savedX = 0,
 		    savedY = 0,
 		    savedThumbnail = false,
@@ -13526,20 +13535,20 @@
 		this.wasLtL = false;
 
 		// attempt to create the pattern
-		pattern = PatternManager.create("", patternString, this.engine.allocator, true);
+		pattern = this.manager.create("", patternString, this.engine.allocator, true);
 		if (pattern) {
 			// copy the generation offset
-			this.genDefined = PatternManager.genDefined;
-			this.genOffset = PatternManager.generation;
+			this.genDefined = this.manager.genDefined;
+			this.genOffset = this.manager.generation;
 
 			// copy the pos offsets
-			this.posDefined = PatternManager.posDefined;
-			this.posXOffset = PatternManager.posX;
-			this.posYOffset = PatternManager.posY;
+			this.posDefined = this.manager.posDefined;
+			this.posXOffset = this.manager.posX;
+			this.posYOffset = this.manager.posY;
 
 			// copy the specified size
-			this.specifiedWidth = PatternManager.specifiedWidth;
-			this.specifiedHeight = PatternManager.specifiedHeight;
+			this.specifiedWidth = this.manager.specifiedWidth;
+			this.specifiedHeight = this.manager.specifiedHeight;
 
 			// read the pattern size
 			this.patternWidth = pattern.width;
@@ -13569,7 +13578,7 @@
 			this.engine.afterTitle = pattern.afterTitle;
 
 			// read if the pattern is executable
-			this.executable = PatternManager.executable;
+			this.executable = this.manager.executable;
 
 			// check if the rule is a History rule
 			this.engine.isLifeHistory = pattern.isHistory;
@@ -13591,7 +13600,7 @@
 				this.engine.HROT.survivals = pattern.survivalHROT;
 				this.engine.HROT.scount = pattern.multiNumStates;
 				this.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT);
-				if (PatternManager.altSpecified) {
+				if (this.manager.altSpecified) {
 					this.engine.HROT.altBirths = pattern.altBirthHROT;
 					this.engine.HROT.altSurvivals = pattern.altSurvivalHROT;
 					this.engine.HROT.altSpecified = true;
@@ -13642,7 +13651,7 @@
 			this.patternStateCount = new Uint32Array(this.patternStates);
 
 			for (i = 0; i < this.patternStates; i += 1) {
-				this.patternStateCount[i] = PatternManager.stateCount[i];
+				this.patternStateCount[i] = this.manager.stateCount[i];
 			}
 		} else {
 			this.clearPatternData();
@@ -13671,7 +13680,7 @@
 		this.genRelative = false;
 
 		// read any failure reason
-		this.failureReason = PatternManager.failureReason;
+		this.failureReason = this.manager.failureReason;
 
 		// set anything alive flags
 		this.engine.anythingAlive = 1;
@@ -13930,7 +13939,7 @@
 				this.colourList = ColourManager.defaultSet();
 				this.colourSetName = "(default)";
 			} else {
-				if (PatternManager.extendedFormat || pattern.isHistory) {
+				if (this.manager.extendedFormat || pattern.isHistory) {
 					// get the colour list for the pattern based on rule name
 					if (pattern.isHistory) {
 						this.colourList = ColourManager.colourSet("LifeHistory");
@@ -14140,7 +14149,7 @@
 				if (this.engine.boundedGridType !== -1) {
 					borderSize += this.engine.HROT.range * 2;
 				}
-				if (this.engine.HROT.type === PatternManager.vonNeumannHROT) {
+				if (this.engine.HROT.type === this.manager.vonNeumannHROT) {
 					if (this.engine.boundedGridType !== -1) {
 						borderSize += this.engine.boundedGridHeight / 2;
 					} else {
@@ -14212,7 +14221,7 @@
 			// populate the state 6 mask
 			if (this.engine.isLifeHistory) {
 				// check if state 6 is used
-				if (PatternManager.stateCount[6]) {
+				if (this.manager.stateCount[6]) {
 					this.engine.populateState6Mask(pattern, this.panX, this.panY);
 				}
 			}
@@ -14229,7 +14238,7 @@
 			// set states used if no custom colours used
 			if (this.customColours === null) {
 				for (i = 0; i < this.colourList.length; i += 1) {
-					if (PatternManager.stateCount[i]) {
+					if (this.manager.stateCount[i]) {
 						this.customColourUsed[i] = ViewConstants.stateUsedDefault;
 					} else {
 						this.customColourUsed[i] = ViewConstants.stateNotUsed;
@@ -14381,7 +14390,7 @@
 			// check if this is a LifeHistory pattern
 			if (this.engine.isLifeHistory) {
 				// check if there are state 2 cells
-				if (PatternManager.stateCount[2]) {
+				if (this.manager.stateCount[2]) {
 					// copy state 2 to the colour grid
 					this.engine.copyState2(pattern, this.panX, this.panY);
 				}
@@ -14648,7 +14657,7 @@
 		// display error notification if failed
 		if (!pattern) {
 			// check if the pattern was too big
-			if (PatternManager.tooBig) {
+			if (this.manager.tooBig) {
 				this.menuManager.notification.notify("Pattern too big!", 15, ViewConstants.errorDuration, 15, false);
 			} else {
 				this.menuManager.notification.notify("Invalid pattern!", 15, ViewConstants.errorDuration, 15, false);
@@ -15202,7 +15211,7 @@
 		// attempt to build a pattern from the string
 		try {
 			// create a pattern
-			pattern = PatternManager.create("", patternString, allocator, false);
+			pattern = this.manager.create("", patternString, allocator, false);
 
 			// check if it created
 			if (pattern.lifeMap) {

@@ -21,7 +21,9 @@ Planned:
         PCA         *       *           NA
 
 In progress:
+
 [STARTED]add type information for closure compiler
+
 [STARTED]Triangular neighbourhood
     - square bounded grids
     - need to optimize triangular grid lines using lines across width and height of window
@@ -34,11 +36,22 @@ In progress:
     [DONE]decode triangular neighbourhood rules
     [DONE]support Triangular, Triangular Edges and Triangular Vertices neighbourhoods
     [DONE]B0 rules
+
 [STARTED]Rule Table rules
-    - decode @TABLE, @COLORS and @ICONS
-    - implement rule table and rule tree algorithms
+    - decode @TABLE
+    - decode @COLORS
+    - decode @ICONS
     [DONE]decode @TREE
-    [DONE]search after RLE terminating ! character for rule table sections
+    [DONE]load rules from repository
+    - rules with hyphen in the name and missing @COLORS or @ICONS load from repository
+    - cache last rule so it's there on New Pattern or updateViewer()
+    - async load
+    - ruletable algo
+    - ruletree algo
+
+[STARTED]PCA rules
+    - use tile system
+    
 [STARTED]Pattern Editor
     - ability to define rule
     - improved LifeHistory drawing modes
@@ -49,7 +62,6 @@ In progress:
         [DONE]10 clipboards
         [DONE]square selection
         [DONE]auto-shrink selection on/off
-        - name selection
         [DONE]flip X selection
         [DONE]flip Y selection
         [DONE]rotate CW selection
@@ -59,7 +71,6 @@ In progress:
         [DONE]random 2-state fill selection
         [DONE]clear cells in selection
         [DONE]invert cells in selection
-        - copy library or named snippet to buffer
         [DONE]copy selection to buffer
         [DONE]cut selection to buffer
         [DONE]flip X buffer
