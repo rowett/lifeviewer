@@ -6628,7 +6628,7 @@
 			}
 
 			// check if a pattern was loaded
-			if (this.failureReason !== "" && tryRuleTable) {
+			if (this.failureReason !== "" && !this.tooBig && tryRuleTable) {
 				// attempt to load rule table
 				this.loadRuleTable(newPattern.ruleName);
 			}

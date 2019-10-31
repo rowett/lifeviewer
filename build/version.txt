@@ -1,3 +1,7 @@
+Build 448
+- fix false positive for Mod on some patterns
+- fix rule lookup for too big patterns
+
 Build 447
 - Ctrl+F6 will now run Identify in fast mode
 	- Active Cells, Mod, Temperature and Volatility are not calculated

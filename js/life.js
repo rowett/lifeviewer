@@ -1059,6 +1059,7 @@
 			/** @type {number} */ countS = 0,
 			/** @type {number} */ countW = 0,
 			/** @type {number} */ x32 = 0,
+			/** @type {number} */ m32 = 0,
 			/** @type {number} */ right32 = 0,
 			/** @type {number} */ cells = 0,
 			/** @type {boolean} */ twoState = this.multiNumStates <= 2,
@@ -1096,6 +1097,7 @@
 
 		// convert x to 32bit
 		x32 = x >> 2;
+		m32 = x & 3;
 		right32 = right >> 2;
 		if ((right & 3) !== 0) {
 			right32 += 1;
@@ -1110,13 +1112,8 @@
 				for (cx = x32; cx <= right32; cx += 1) {
 					cells = colourRow32[cx] &0x40404040;
 					if (cells !== 0) {
-						x = (cx - x32) << 2;
-						if ((cells & 0x40000000) !== 0) {
-							hash = (hash * factor) ^ yshift;
-							hash = (hash * factor) ^ x;
-						}
-						x += 1;
-						if ((cells & 0x400000) !== 0) {
+						x = ((cx - x32) << 2) - m32;
+						if ((cells & 0x40) !== 0) {
 							hash = (hash * factor) ^ yshift;
 							hash = (hash * factor) ^ x;
 						}
@@ -1125,8 +1122,13 @@
 							hash = (hash * factor) ^ yshift;
 							hash = (hash * factor) ^ x;
 						}
+						x += 1;
+						if ((cells & 0x400000) !== 0) {
+							hash = (hash * factor) ^ yshift;
+							hash = (hash * factor) ^ x;
+						}
 						x += 1; 
-						if ((cells & 0x40) !== 0) {
+						if ((cells & 0x40000000) !== 0) {
 							hash = (hash * factor) ^ yshift;
 							hash = (hash * factor) ^ x;
 						}
