@@ -503,6 +503,9 @@
 
 		// rule tree a array
 		this.ruleTreeA = null;
+
+		// rule tree colours
+		this.ruleTreeColours = null;
 	}
 
 	// copy settings from one pattern to another
@@ -6278,10 +6281,63 @@
 	};
 
 	// decode rule table colours TBD
-	PatternManager.prototype.decodeColours = function() {
-		var valid = true;
+	PatternManager.prototype.decodeColours = function(pattern, reader) {
+		var states = pattern.numStates,
+			cols = pattern.ruleTreeColours,
+			index = 0,
+			red = 0,
+			green = 0,
+			blue = 0,
+			valid = false;
 
-		return valid;
+		// get first token
+		while (reader.nextIsNewline()) {
+			// skip newline
+			reader.getNextToken();
+		}
+		if (reader.nextTokenIsNumeric()) {
+			index = reader.getNextTokenAsNumber();
+		}
+
+		// read each colour
+		while (index >= 0 && index < states) {
+			valid = false;
+
+			// read r g b
+			if (reader.nextTokenIsNumeric()) {
+				red = reader.getNextTokenAsNumber();
+				if (red >= 0 && red <= 255) {
+					if (reader.nextTokenIsNumeric()) {
+						green = reader.getNextTokenAsNumber();
+						if (green >= 0 && green <= 255) {
+							if (reader.nextTokenIsNumeric()) {
+								blue = reader.getNextTokenAsNumber();
+								if (blue >= 0 && blue <= 255) {
+									cols[index] = (red << 16) | (green << 8) | blue;
+									valid = true;
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// check if valid
+			if (valid) {
+				// valid so look for next colour entry
+				while (reader.nextIsNewline()) {
+					reader.getNextToken();
+				}
+				if (reader.nextTokenIsNumeric()) {
+					index = reader.getNextTokenAsNumber();
+				} else {
+					index = -1;
+				}
+			} else {
+				// exit
+				index = -1;
+			}
+		}
 	};
 
 	// decode rule table table TBD
@@ -6289,6 +6345,37 @@
 		var valid = false;
 
 		return valid;
+	};
+
+	// create default rule tree colours
+	PatternManager.prototype.createDefaultTreeColours = function(pattern) {
+		var i = 0,
+			sr = 255,
+			sg = 255,
+			sb = 0,
+			er = 255,
+			eg = 0,
+			eb = 0,
+			mix = 0,
+			cols = null,
+			states = pattern.numStates;
+
+		// allocate colour array
+		pattern.ruleTreeColours = new Uint32Array(pattern.ruleTreeStates);
+		cols = pattern.ruleTreeColours;
+
+		// state zero is black
+		cols[0] = 0;
+
+		// remaining states fade from red to yellow
+		for (i = 1; i < states; i += 1) {
+			if (states === 2) {
+				mix = 0;
+			} else {
+				mix = (i - 1) / (states - 2);
+			}
+			cols[i] = ((((sr * mix) + (er * (1 - mix))) | 0) << 16) | ((((sg * mix) + (eg * (1 - mix))) | 0) << 8) | (((sb * mix) + (eb * (1 - mix))) | 0);
+		}
 	};
 
 	// decode rule table tree
@@ -6437,6 +6524,9 @@
 			this.executable = true;
 			this.extendedFormat = false;
 			pattern.isNone = false;
+
+			// create default colours
+			this.createDefaultTreeColours(pattern);
 		}
 
 		return valid;
@@ -6474,14 +6564,12 @@
 				if (valid) {
 					colourIndex = reader.findToken(this.ruleTableColoursName, 0);
 					if (colourIndex !== -1) {
-						valid = this.decodeColours();
+						this.decodeColours(pattern, reader);
 					}
-					// if valid then search for icons from start position
-					if (valid) {
-						iconIndex = reader.findToken(this.ruleTableIconsName, 0);
-						if (iconIndex !== -1) {
-							valid = this.decodeIcons();
-						}
+					// search for icons from start position
+					iconIndex = reader.findToken(this.ruleTableIconsName, 0);
+					if (iconIndex !== -1) {
+						this.decodeIcons();
 					}
 				}
 			}

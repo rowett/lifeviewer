@@ -48,10 +48,7 @@
 														   [16, 16, 255], [128, 0, 128], [0, 128, 128], [96, 96, 96],
 														   [255, 255, 0], [255, 128, 0], [128, 255, 0], [170, 170, 0],
 														   [144, 144, 144], [170, 85, 85], [85, 128, 43], [128, 128, 64],
-														   [0, 0, 0], [255, 0, 0], [0, 255, 0], [128, 128, 0],
-														   [16, 16, 255], [128, 0, 128], [0, 128, 128], [96, 96, 96],
-														   [255, 255, 0], [255, 128, 0], [128, 255, 0], [170, 170, 0],
-														   [144, 144, 144], [170, 85, 85], [85, 128, 43], [128, 128, 64]],
+														   [0, 0, 0], [255, 0, 0], [0, 255, 0], [128, 128, 0]],
 
 		// NW glider (top left cell must be set for detection)
 		/** @const {Array<Array<number>>} */ gliderNW : [[1, 1, 1],
@@ -302,12 +299,13 @@
 
 		// whether current rule is RuleTree
 		this.isRuleTree = false;
-		this.ruleTreeNeighbours = 8;
-		this.ruleTreeStates = 2;
-		this.ruleTreeNodes = 0;
-		this.ruleTreeBase = -1;
+		/** @type {number} */ this.ruleTreeNeighbours = 8;
+		/** @type {number} */ this.ruleTreeStates = 2;
+		/** @type {number} */ this.ruleTreeNodes = 0;
+		/** @type {number} */ this.ruleTreeBase = -1;
 		/** @type {Array<number>} */ this.ruleTreeA = null;
 		/** @type {Array<number>} */ this.ruleTreeB = null;
+		/** @type {Array<number>} */ this.ruleTreeColours = null;
 
 		// identify lists
 		this.bucketList = null;
@@ -318,11 +316,11 @@
 		this.diedList = null;
 		this.boxList = null;
 		this.nextList = null;
-		this.oscLength = 0;
+		/** @type {number} */ this.oscLength = 0;
 		this.countList = null;
 		this.hashBox = new BoundingBox(0, 0, 0, 0);
-		this.modValue = 0;
-		this.modType = -1;
+		/** @type {number} */ this.modValue = 0;
+		/** @type {number} */ this.modType = -1;
 
 		// flag for alternating Margolus grid lines
 		/** @type {boolean} */ this.altGrid = false;
@@ -5774,9 +5772,15 @@
 			if (this.multiNumStates > 2) {
 				// set unoccupied colour
 				i = 0;
-				this.redChannel[i] = this.unoccupiedGenCurrent.red * mixWeight + this.unoccupiedGenTarget.red * (1 - mixWeight);
-				this.greenChannel[i] = this.unoccupiedGenCurrent.green * mixWeight + this.unoccupiedGenTarget.green * (1 - mixWeight);
-				this.blueChannel[i] = this.unoccupiedGenCurrent.blue * mixWeight + this.unoccupiedGenTarget.blue * (1 - mixWeight);
+				if (this.isRuleTree) {
+					this.redChannel[i] = this.ruleTreeColours[i] >> 16;
+					this.greenChannel[i] = (this.ruleTreeColours[i] >> 8) & 255;
+					this.blueChannel[i] = this.ruleTreeColours[i] & 255;
+				} else {
+					this.redChannel[i] = this.unoccupiedGenCurrent.red * mixWeight + this.unoccupiedGenTarget.red * (1 - mixWeight);
+					this.greenChannel[i] = this.unoccupiedGenCurrent.green * mixWeight + this.unoccupiedGenTarget.green * (1 - mixWeight);
+					this.blueChannel[i] = this.unoccupiedGenCurrent.blue * mixWeight + this.unoccupiedGenTarget.blue * (1 - mixWeight);
+				}
 
 				// set generations or PCA colours
 				for (i = 1; i < this.multiNumStates - 1; i += 1) {
@@ -5788,37 +5792,43 @@
 					}
 
 					// check for PCA (theme is PCA or Custom)  TBD hard coded theme number!
-					if ((this.isPCA || this.isRuleTree) && this.colourTheme >= 18) {
+					if (this.isPCA && this.colourTheme >= 18) {
 						this.redChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][0];
 						this.greenChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][1];
 						this.blueChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][2];
 					} else {
-						// compute the red component of the current and target colour
-						currentComponent = this.dyingGenColCurrent.endColour.red * weight + this.dyingGenColCurrent.startColour.red * (1 - weight);
-						targetComponent = this.dyingGenColTarget.endColour.red * weight + this.dyingGenColTarget.startColour.red * (1 - weight);
-						this.redChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-	
-						// compute the green component of the current and target colour
-						currentComponent = this.dyingGenColCurrent.endColour.green * weight + this.dyingGenColCurrent.startColour.green * (1 - weight);
-						targetComponent = this.dyingGenColTarget.endColour.green * weight + this.dyingGenColTarget.startColour.green * (1 - weight);
-						this.greenChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-	
-						// compute the blue component of the current and target colour
-						currentComponent = this.dyingGenColCurrent.endColour.blue * weight + this.dyingGenColCurrent.startColour.blue * (1 - weight);
-						targetComponent = this.dyingGenColTarget.endColour.blue * weight + this.dyingGenColTarget.startColour.blue * (1 - weight);
-						this.blueChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-	
-						// override with custom colour if specified
-						if (this.customColours && this.customColours.length >= i) {
-							if (!(this.isHROT || this.isPCA || this.isRuleTree)) {
-								current = this.customColours[this.multiNumStates - i];
-							} else {
-								current = this.customColours[i];
-							}
-							if (current !== -1) {
-								this.redChannel[i + this.historyStates] = current >> 16;
-								this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
-								this.blueChannel[i + this.historyStates] = (current & 255);
+						if (this.isRuleTree) {
+							this.redChannel[i] = this.ruleTreeColours[i] >> 16;
+							this.greenChannel[i] = (this.ruleTreeColours[i] >> 8) & 255;
+							this.blueChannel[i] = this.ruleTreeColours[i] & 255;
+						} else {
+							// compute the red component of the current and target colour
+							currentComponent = this.dyingGenColCurrent.endColour.red * weight + this.dyingGenColCurrent.startColour.red * (1 - weight);
+							targetComponent = this.dyingGenColTarget.endColour.red * weight + this.dyingGenColTarget.startColour.red * (1 - weight);
+							this.redChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+		
+							// compute the green component of the current and target colour
+							currentComponent = this.dyingGenColCurrent.endColour.green * weight + this.dyingGenColCurrent.startColour.green * (1 - weight);
+							targetComponent = this.dyingGenColTarget.endColour.green * weight + this.dyingGenColTarget.startColour.green * (1 - weight);
+							this.greenChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+		
+							// compute the blue component of the current and target colour
+							currentComponent = this.dyingGenColCurrent.endColour.blue * weight + this.dyingGenColCurrent.startColour.blue * (1 - weight);
+							targetComponent = this.dyingGenColTarget.endColour.blue * weight + this.dyingGenColTarget.startColour.blue * (1 - weight);
+							this.blueChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+		
+							// override with custom colour if specified
+							if (this.customColours && this.customColours.length >= i) {
+								if (!(this.isHROT || this.isPCA || this.isRuleTree)) {
+									current = this.customColours[this.multiNumStates - i];
+								} else {
+									current = this.customColours[i];
+								}
+								if (current !== -1) {
+									this.redChannel[i + this.historyStates] = current >> 16;
+									this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
+									this.blueChannel[i + this.historyStates] = (current & 255);
+								}
 							}
 						}
 					}
@@ -5826,9 +5836,15 @@
 
 				// set alive colour
 				i = this.multiNumStates - 1;
-				this.redChannel[i + this.historyStates] = this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight);
-				this.greenChannel[i + this.historyStates] = this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight);
-				this.blueChannel[i + this.historyStates] = this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight);
+				if (this.isRuleTree) {
+					this.redChannel[i] = this.ruleTreeColours[i] >> 16;
+					this.greenChannel[i] = (this.ruleTreeColours[i] >> 8) & 255;
+					this.blueChannel[i] = this.ruleTreeColours[i] & 255;
+				} else {
+					this.redChannel[i + this.historyStates] = this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight);
+					this.greenChannel[i + this.historyStates] = this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight);
+					this.blueChannel[i + this.historyStates] = this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight);
+				}
 
 				// override with custom colour if specified
 				if (this.customColours && this.customColours.length >= i) {
@@ -17567,18 +17583,36 @@
 
 			// process each row in the bounding box
 			rowAlive = false;
+			x = leftX - 1;
+			if (neighbours === 4) {
+				c = gridRow[x - 1];
+				e = gridRow[x];
+			} else {
+				n = aboveRow[x - 1];
+				ne = aboveRow[x];
+				s = belowRow[x - 1];
+				se = belowRow[x];
+				c = gridRow[x - 1];
+				e = gridRow[x];
+			}
+
 			for (x = leftX - 1; x <= rightX + 1; x += 1) {
-				n = aboveRow[x];
-				e = gridRow[x + 1];
-				s = belowRow[x];
-				w = gridRow[x - 1];
-				c = gridRow[x];
 				if (neighbours === 4) {
+					w = c;
+					c = e;
+					n = aboveRow[x];
+					e = gridRow[x + 1];
+					s = belowRow[x];
 					state = b[a[a[a[a[base + n] + w] + e] + s] + c];
 				} else {
-					nw = aboveRow[x - 1];
+					nw = n;
+					n = ne;
 					ne = aboveRow[x + 1];
-					sw = belowRow[x - 1];
+					w = c;
+					c = e;
+					e = gridRow[x + 1];
+					sw = s;
+					s = se;
 					se = belowRow[x + 1];
 					state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
 				}

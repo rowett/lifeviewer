@@ -13403,6 +13403,7 @@
 		this.engine.isRuleTree = false;
 		this.engine.ruleTreeA = null;
 		this.engine.ruleTreeB = null;
+		this.engine.ruleTreeColours = null;
 	};
 
 	// start the viewer from a supplied pattern string
@@ -13609,6 +13610,7 @@
 				me.engine.ruleTreeBase = pattern.ruleTreeBase;
 				me.engine.ruleTreeA = pattern.ruleTreeA;
 				me.engine.ruleTreeB = pattern.ruleTreeB;
+				me.engine.ruleTreeColours = pattern.ruleTreeColours;
 				me.engine.isRuleTree = true;
 			} else {
 				me.engine.isRuleTree = false;
