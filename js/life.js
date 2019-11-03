@@ -9,7 +9,7 @@
 	"use strict";
 
 	// define globals
-	/* global Reflect Keywords littleEndian BoundingBox AliasManager Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager HROT ViewConstants arrayFill */
+	/* global Reflect Keywords littleEndian BoundingBox Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager HROT ViewConstants arrayFill */
 
 	// Life constants
 	/** @const */
@@ -45,6 +45,10 @@
 
 		// PCA palette
 		/** @const {Array<Array<number>>} */ coloursPCA : [[0, 0, 0], [255, 0, 0], [0, 255, 0], [128, 128, 0],
+														   [16, 16, 255], [128, 0, 128], [0, 128, 128], [96, 96, 96],
+														   [255, 255, 0], [255, 128, 0], [128, 255, 0], [170, 170, 0],
+														   [144, 144, 144], [170, 85, 85], [85, 128, 43], [128, 128, 64],
+														   [0, 0, 0], [255, 0, 0], [0, 255, 0], [128, 128, 0],
 														   [16, 16, 255], [128, 0, 128], [0, 128, 128], [96, 96, 96],
 														   [255, 255, 0], [255, 128, 0], [128, 255, 0], [170, 170, 0],
 														   [144, 144, 144], [170, 85, 85], [85, 128, 43], [128, 128, 64]],
@@ -295,6 +299,15 @@
 
 		// allocator
 		this.allocator = new Allocator();
+
+		// whether current rule is RuleTree
+		this.isRuleTree = false;
+		this.ruleTreeNeighbours = 8;
+		this.ruleTreeStates = 2;
+		this.ruleTreeNodes = 0;
+		this.ruleTreeBase = -1;
+		/** @type {Array<number>} */ this.ruleTreeA = null;
+		/** @type {Array<number>} */ this.ruleTreeB = null;
 
 		// identify lists
 		this.bucketList = null;
@@ -899,8 +912,8 @@
 			colourGrid = this.colourGrid,
 			aliveStart = LifeConstants.aliveStart;
 
-		// check for PCA rules
-		if (this.isPCA) {
+		// check for PCA or RuleTree rules
+		if (this.isPCA || this.isRuleTree) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -1073,7 +1086,7 @@
 			hashBox = this.hashBox;
 
 		// check for PCA rules
-		if (this.isPCA) {
+		if (this.isPCA || this.isRuleTree) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -3671,7 +3684,7 @@
 			/** @type {number} */ cx = 0;
 
 		// check for PCA rules
-		if (this.isPCA) {
+		if (this.isPCA || this.isRuleTree) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -4130,7 +4143,7 @@
 			colourGrid = this.colourGrid;
 
 		// check for PCA rules
-		if (this.isPCA) {
+		if (this.isPCA || this.isRuleTree) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -4166,7 +4179,7 @@
 						if (this.boundedGridType !== -1 && col === this.boundedBorderColour && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
 							result = 0;
 						} else {
-							if (this.isPCA) {
+							if (this.isPCA || this.isRuleTree) {
 								result = col - this.historyStates;
 							} else {
 								result = this.multiNumStates + this.historyStates - col;
@@ -4420,7 +4433,7 @@
 			grid.whole.fill(0);
 			nextGrid.whole.fill(0);
 			this.colourGrid.whole.fill(0);
-			if (this.isPCA) {
+			if (this.isPCA || this.isRuleTree) {
 				this.nextColourGrid.whole.fill(0);
 			}
 			this.smallColourGrid.whole.fill(0);
@@ -4429,7 +4442,7 @@
 			for (i = 0; i < length; i += 1) {
 				grid[i].set(blankRow);
 				this.colourGrid[i].set(blankColourRow);
-				if (this.isPCA) {
+				if (this.isPCA || this.isRuleTree) {
 					this.nextColourGrid[i].set(blankColourRow);
 				}
 				this.smallColourGrid[i].set(blankColourRow);
@@ -4447,7 +4460,7 @@
 
 		// restore colour grid from snapshot
 		snapshot.restoreColourGridUsingTile(colourGrid, this.colourTileHistoryGrid, this);
-		if (this.isPCA) {
+		if (this.isPCA || this.isRuleTree) {
 			this.nextColourGrid.whole.set(colourGrid);
 		}
 
@@ -4512,7 +4525,7 @@
 		var colourGrid = this.colourGrid;
 
 		// check for PCA rules
-		if (this.isPCA) {
+		if (this.isPCA || this.isRuleTree) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -4600,7 +4613,7 @@
 
 		// colour grid
 		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
-		if (this.isPCA) {
+		if (this.isPCA || this.isRuleTree) {
 			this.nextColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
 			this.nextColourGrid16 = Array.matrixView(Uint16, this.nextColourGrid, "Life.nextColourGrid16");
 			this.nextColourGrid32 = Array.matrixView(Uint32, this.nextColourGrid, "Life.nextColourGrid32");
@@ -4675,7 +4688,7 @@
 		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
 		this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
 		this.colourGrid32 = Array.matrixView(Uint32, this.colourGrid, "Life.colourGrid32");
-		if (this.isPCA) {
+		if (this.isPCA || this.isRuleTree) {
 			this.nextColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
 			this.nextColourGrid16 = Array.matrixView(Uint16, this.nextColourGrid, "Life.nextColourGrid16");
 			this.nextColourGrid32 = Array.matrixView(Uint32, this.nextColourGrid, "Life.nextColourGrid32");
@@ -4795,7 +4808,7 @@
 			this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
 			this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
 			this.colourGrid32 = Array.matrixView(Uint32, this.colourGrid, "Life.colourGrid32");
-			if (this.isPCA) {
+			if (this.isPCA || this.isRuleTree) {
 				this.nextColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
 				this.nextColourGrid16 = Array.matrixView(Uint16, this.nextColourGrid, "Life.nextColourGrid16");
 				this.nextColourGrid32 = Array.matrixView(Uint32, this.nextColourGrid, "Life.nextColourGrid32");
@@ -4823,7 +4836,7 @@
 				this.nextGrid[y + yOffset].set(currentNextGrid[y], xOffset >> 3);
 				this.colourGrid[y + yOffset].set(currentColourGrid[y], xOffset);
 				this.smallColourGrid[y + yOffset].set(currentSmallColourGrid[y], xOffset);
-				if (this.isPCA) {
+				if (this.isPCA || this.isRuleTree) {
 					this.nextColourGrid[y + yOffset].set(currentNextColourGrid[y], xOffset);
 				}
 				if (this.countList) {
@@ -4961,7 +4974,7 @@
 			bottomY = zoomBox.bottomY;
 			
 		// check for HROT or PCA
-		if (this.isHROT || this.isPCA) {
+		if (this.isHROT || this.isPCA || this.isRuleTree) {
 			// compute population from colour grid
 			for (h = bottomY; h <= topY; h += 1) {
 				// get next row
@@ -5319,7 +5332,7 @@
 			bottomY = zoomBox.bottomY;
 
 		// ignore for PCA rules
-		if (!this.isPCA) {
+		if (!(this.isPCA || this.isRuleTree)) {
 			// set the colour grid from the grid
 			for (y = bottomY; y <= topY; y += 1) {
 				gridRow = grid[y];
@@ -5446,9 +5459,6 @@
 
 		// initialise colour reset
 		this.initColourReset();
-
-		// initialise the aliases
-		AliasManager.init();
 
 		// resize display
 		this.resizeDisplay(displayWidth, displayHeight);
@@ -5778,7 +5788,7 @@
 					}
 
 					// check for PCA (theme is PCA or Custom)  TBD hard coded theme number!
-					if (this.isPCA && this.colourTheme >= 18) {
+					if ((this.isPCA || this.isRuleTree) && this.colourTheme >= 18) {
 						this.redChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][0];
 						this.greenChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][1];
 						this.blueChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][2];
@@ -5800,7 +5810,7 @@
 	
 						// override with custom colour if specified
 						if (this.customColours && this.customColours.length >= i) {
-							if (!(this.isHROT || this.isPCA)) {
+							if (!(this.isHROT || this.isPCA || this.isRuleTree)) {
 								current = this.customColours[this.multiNumStates - i];
 							} else {
 								current = this.customColours[i];
@@ -6401,6 +6411,11 @@
 
 		// save flag
 		this.altSpecified = altSpecified;
+
+		// exit for RuleTree rules
+		if (this.isRuleTree) {
+			return;
+		}
 
 		// check if alternates are duplicates
 		if (this.altSpecified) {
@@ -7716,7 +7731,7 @@
 			this.shrinkNeeded = false;
 
 			// check for PCA rules
-			if (this.isPCA) {
+			if (this.isPCA || this.isRuleTree) {
 				// swap grids every generation
 				if ((this.counter & 1) !== 0) {
 					colourGrid = this.nextColourGrid;
@@ -8288,7 +8303,7 @@
 			gridy = null;
 
 		// determine the buffer for current generation
-		if (!this.isPCA) {
+		if (!this.isPCA || this.isRuleTree) {
 			if ((this.counter & 1) !== 0) {
 				grid = this.nextGrid16;
 			} else {
@@ -8363,7 +8378,7 @@
 			grid = this.colourGrid;
 
 			// check for PCA rules
-			if (this.isPCA) {
+			if (this.isPCA || this.isRuleTree) {
 				// swap grids every generation
 				if ((this.counter & 1) !== 0) {
 					grid = this.nextColourGrid;
@@ -9841,7 +9856,7 @@
 		var colourGrid = this.colourGrid;
 
 		// alternate colour grids for PCA rules
-		if (this.isPCA) {
+		if (this.isPCA || this.isRuleTree) {
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
 			}
@@ -9858,7 +9873,7 @@
 			break;
 		case 1:
 			// torus
-			if (this.isPCA) {
+			if (this.isPCA || this.isRuleTree) {
 				this.processTorusMS(colourGrid);
 			} else {
 				this.processTorus();
@@ -9866,7 +9881,7 @@
 			break;
 		case 2:
 			// klein bottle
-			if (this.isPCA) {
+			if (this.isPCA || this.isRuleTree) {
 				this.processKleinMS(colourGrid);
 			} else {
 				this.processKlein();
@@ -9874,7 +9889,7 @@
 			break;
 		case 3:
 			// cross-surface
-			if (this.isPCA) {
+			if (this.isPCA || this.isRuleTree) {
 				this.processCrossSurfaceMS(colourGrid);
 			} else {
 				this.processCrossSurface();
@@ -9882,7 +9897,7 @@
 			break;
 		case 4:
 			// sphere
-			if (this.isPCA) {
+			if (this.isPCA || this.isRuleTree) {
 				this.processSphereMS(colourGrid);
 			} else {
 				this.processSphere();
@@ -9942,32 +9957,36 @@
 
 		// check if any bitmap cells are alive
 		if (this.anythingAlive) {
-			if (this.isPCA) {
-				this.nextGenerationPCATile();
+			if (this.isRuleTree) {
+				this.nextGenerationRuleTree();
 			} else {
-				if (this.isHROT) {
-					// compute HROT next generation
-					this.HROT.nextGenerationHROT(this.counter);
+				if (this.isPCA) {
+					this.nextGenerationPCATile();
 				} else {
-					// stats are required if they are on but not for multi-state rules which compute their own stats
-					if (statsOn && this.multiNumStates < 2) {
-						if (this.isMargolus) {
-							this.nextGenerationMargolusTile();
-						} else {
-							if (this.isTriangular) {
-								this.nextGenerationTriTile();
-							} else {
-								this.nextGenerationTile();
-							}
-						}
+					if (this.isHROT) {
+						// compute HROT next generation
+						this.HROT.nextGenerationHROT(this.counter);
 					} else {
-						if (this.isMargolus) {
-							this.nextGenerationOnlyMargolusTile();
-						} else {
-							if (this.isTriangular) {
-								this.nextGenerationOnlyTriTile();
+						// stats are required if they are on but not for multi-state rules which compute their own stats
+						if (statsOn && this.multiNumStates < 2) {
+							if (this.isMargolus) {
+								this.nextGenerationMargolusTile();
 							} else {
-								this.nextGenerationOnlyTile();
+								if (this.isTriangular) {
+									this.nextGenerationTriTile();
+								} else {
+									this.nextGenerationTile();
+								}
+							}
+						} else {
+							if (this.isMargolus) {
+								this.nextGenerationOnlyMargolusTile();
+							} else {
+								if (this.isTriangular) {
+									this.nextGenerationOnlyTriTile();
+								} else {
+									this.nextGenerationOnlyTile();
+								}
 							}
 						}
 					}
@@ -9992,7 +10011,7 @@
 		}
 
 		// check for Generations
-		if (this.multiNumStates !== -1 && !this.isHROT && !this.isPCA) {
+		if (this.multiNumStates !== -1 && !this.isHROT && !this.isPCA && !this.isRuleTree) {
 			this.nextGenerationGenerations();
 		}
 
@@ -16988,7 +17007,7 @@
 		// check if 0.5 <= zoom < 1
 		if (camZoom >= 0.5 && camZoom < 1) {
 			// create 2x2 colour grid
-			if (this.themeHistory || this.isHROT || this.isPCA) {
+			if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree) {
 				this.create2x2ColourGrid16(colourGrid16, this.smallColourGrid);
 			} else {
 				this.create2x2ColourGridNoHistory16(colourGrid16, this.smallColourGrid);
@@ -16997,7 +17016,7 @@
 			// check if 0.25 <= zoom < 0.5
 			if (camZoom >= 0.25 && camZoom < 0.5) {
 				// create 4x4 colour grid
-				if (this.themeHistory || this.isHROT || this.isPCA) {
+				if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree) {
 					this.create4x4ColourGrid32(colourGrid32, this.smallColourGrid);
 				} else {
 					this.create4x4ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
@@ -17006,7 +17025,7 @@
 				// check if 0.125 <= zoom < 0.25
 				if (camZoom >= 0.125 && camZoom < 0.25) {
 					// create 8x8 colour grid
-					if (this.themeHistory || this.isHROT || this.isPCA) {
+					if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree) {
 						this.create8x8ColourGrid32(colourGrid32, this.smallColourGrid);
 					} else {
 						this.create8x8ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
@@ -17015,7 +17034,7 @@
 					// check if zoom < 0.125
 					if (camZoom < 0.125) {
 						// create 16x16 colour grid
-						if (this.themeHistory || this.isHROT || this.isPCA) {
+						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree) {
 							this.create16x16ColourGrid32(colourGrid32, this.smallColourGrid);
 						} else {
 							this.create16x16ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
@@ -17332,7 +17351,7 @@
 	// convert life grid region to pens using tiles
 	Life.prototype.convertToPensTile = function() {
 		// ignore if rule is none or PCA
-		if (!(this.isNone || this.isPCA)) {
+		if (!(this.isNone || this.isPCA || this.isRuleTree)) {
 			// check for generations or HROT rule
 			if (this.multiNumStates === -1) {
 				// check for theme history
@@ -17447,6 +17466,178 @@
 			bottomY += ySize;
 			topY += ySize;
 		}
+	};
+
+	// next generation for RuleTree rules
+	Life.prototype.nextGenerationRuleTree = function() {
+		var y = 0,
+			x = 0,
+			grid = this.colourGrid,
+			nextGrid = this.nextColourGrid,
+			zoomBox = this.zoomBox,
+			historyBox = this.historyBox,
+			leftX = historyBox.leftX,
+			bottomY = historyBox.bottomY,
+			rightX = historyBox.rightX,
+			topY = historyBox.topY,
+			state = 0,
+			population = 0,
+			births = 0,
+			deaths = 0,
+			nLeftX = this.width,
+			nBottomY = this.height,
+			nRightX = 0,
+			nTopY = 0,
+			colourTileGrid = this.colourTileHistoryGrid,
+			aboveRow = null,
+			gridRow = null,
+			belowRow = null,
+			tileRow = null,
+			nextRow = null,
+			rowAlive = false,
+			neighbours = this.ruleTreeNeighbours,
+			a = this.ruleTreeA,
+			b = this.ruleTreeB,
+			base = this.ruleTreeBase,
+	
+			// cells
+			n = 0,
+			e = 0,
+			s = 0,
+			w = 0,
+			c = 0,
+			ne = 0,
+			nw = 0,
+			se = 0,
+			sw = 0,
+
+			// bounded grid width and height
+			width = this.boundedGridWidth,
+		    height = this.boundedGridHeight,
+
+		    // bottom left
+		    bLeftX = Math.round((this.width - width) / 2),
+		    bBottomY = Math.round((this.height - height) / 2),
+
+		    // top right
+		    bRightX = bLeftX + width - 1,
+			bTopY = bBottomY + height - 1;
+			
+		// check for bounded grid
+		if (this.boundedGridType !== -1) {
+			leftX = bLeftX + 1;
+			bottomY = bBottomY + 1;
+			rightX = bRightX - 1;
+			topY = bTopY - 1;
+		}
+
+		// clear anything alive
+		this.anythingAlive = 0;
+
+		// select the correct grid
+		if ((this.counter & 1) !== 0) {
+			grid = this.nextColourGrid;
+			nextGrid = this.colourGrid;
+		} else {
+			grid = this.colourGrid;
+			nextGrid = this.nextColourGrid;
+		}
+
+		// ensure on display
+		if (bottomY < 1) {
+			bottomY = 1;
+		}
+		if (topY > this.height - 2) {
+			topY = this.height - 2;
+		}
+		if (leftX < 1) {
+			leftX = 1;
+		}
+		if (rightX > this.width - 2) {
+			rightX = this.width - 2;
+		}
+
+		// process each cell in the bounding box
+		for (y = bottomY - 1; y <= topY + 1; y += 1) {
+			aboveRow = grid[y - 1];
+			gridRow = grid[y];
+			belowRow = grid[y + 1];
+			tileRow = colourTileGrid[y >> 4];
+			nextRow = nextGrid[y];
+
+			// process each row in the bounding box
+			rowAlive = false;
+			for (x = leftX - 1; x <= rightX + 1; x += 1) {
+				n = aboveRow[x];
+				e = gridRow[x + 1];
+				s = belowRow[x];
+				w = gridRow[x - 1];
+				c = gridRow[x];
+				if (neighbours === 4) {
+					state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+				} else {
+					nw = aboveRow[x - 1];
+					ne = aboveRow[x + 1];
+					sw = belowRow[x - 1];
+					se = belowRow[x + 1];
+					state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
+				}
+
+				// check if state is alive
+				if (state > 0) {
+					population += 1;
+					nextRow[x] = state;
+					rowAlive = true;
+					tileRow[x >> 8] = 65535;
+
+					// update bounding box
+					if (x < nLeftX) {
+						nLeftX = x;
+					}
+					if (x > nRightX) {
+						nRightX = x;
+					}
+
+					// update births
+					if (c === 0) {
+						births += 1;
+					}
+				} else {
+					// check for death
+					if (c > 0) {
+						// update deaths
+						deaths += 1;
+					}
+					nextRow[x] = state;
+				}
+			}
+
+			// if any cells alive in the row then update bounding box
+			if (rowAlive) {
+				if (y < nBottomY) {
+					nBottomY = y;
+				}
+				if (y > nTopY) {
+					nTopY = y;
+				}
+			}
+		}
+
+		// save statistics
+		this.population = population;
+		this.births = births;
+		this.deaths = deaths;
+		this.anythingAlive = population;
+
+		// update bounding boxes
+		historyBox.leftX = nLeftX;
+		historyBox.bottomY = nBottomY;
+		historyBox.rightX = nRightX;
+		historyBox.topY = nTopY;
+		zoomBox.leftX = nLeftX;
+		zoomBox.bottomY = nBottomY;
+		zoomBox.rightX = nRightX;
+		zoomBox.topY = nTopY;
 	};
 
 	// next generation for PCA rules
@@ -19074,7 +19265,7 @@
 			colourGrid32 = this.colourGrid32;
 
 		// check for PCA rules
-		if (this.isPCA) {
+		if (this.isPCA || this.isRuleTree) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;

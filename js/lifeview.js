@@ -262,7 +262,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 448,
+		/** @const {number} */ versionBuild : 449,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1934,7 +1934,7 @@
 			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
 			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1),
 			states = this.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA)),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
 			newRecord = 0,
 			addedToRun = false,
 			runCount = 0;
@@ -2510,9 +2510,9 @@
 			axy = trans[1],
 			ayx = trans[2],
 			ayy = trans[3],
-			pattern = new Pattern("rleToCellList"),
+			pattern = new Pattern("rleToCellList", this.manager),
 			patternRow = null,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA));
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree));
 
 		// check the RLE is valid
 		rle += " ";
@@ -3036,7 +3036,7 @@
 				yOff += paste.bottomY;
 				for (y = 0; y < stateMap.length; y += 1) {
 					stateRow = stateMap[y];
-					if (this.engine.isPCA) {
+					if (this.engine.isPCA || this.engine.isRuleTree) {
 						for (x = 0; x < stateRow.length; x += 1) {
 							source = stateRow[x];
 							dest = this.engine.getState(xOff + x, yOff + y, false);
@@ -3320,7 +3320,7 @@
 			gridRow = grid[(y + panY) & hm];
 
 			// check for multi-state view
-			if (this.multiStateView || this.engine.isPCA) {
+			if (this.multiStateView || this.engine.isPCA || this.engine.isRuleTree) {
 				multiStateRow = pattern.multiStateMap[y];
 				colourGridRow = colourGrid[(y + panY) & hm];
 
@@ -3382,8 +3382,8 @@
 			}
 		}
 
-		// copy colour grid to next colour grid for PCA rules
-		if (this.engine.isPCA) {
+		// copy colour grid to next colour grid for PCA and RuleTree rules
+		if (this.engine.isPCA || this.engine.isRuleTree) {
 			nextColourGrid.whole.set(colourGrid.whole);
 		}
 	};
@@ -3681,7 +3681,7 @@
 		var pos = value,
 			result = "";
 
-		// get absolute value
+		// get absolute valuE
 		if (value < 0) { 
 			value = -value;
 		}
@@ -5017,7 +5017,7 @@
 						me.diedGeneration = me.engine.counter;
 
 						// clear the bit grids
-						if (me.engine.isPCA) {
+						if (me.engine.isPCA || me.engine.isRuleTree) {
 							me.engine.clearGrids(false);
 						} else {
 							me.engine.clearGrids(true);
@@ -5741,7 +5741,7 @@
 				if (i + this.startState === 0) {
 					value = 0;
 				} else {
-					if (this.engine.isPCA) {
+					if (this.engine.isPCA || this.engine.isRuleTree) {
 						value = i + this.startState + this.historyStates;
 					} else {
 						value = this.historyStates + this.engine.multiNumStates - (i + this.startState);
@@ -6964,7 +6964,7 @@
 				if (newValue === 0) {
 					me.drawState = 0;
 				} else {
-					if (me.engine.isPCA) {
+					if (me.engine.isPCA || me.engine.isRuleTree) {
 						me.drawState = newValue;
 					} else {
 						me.drawState = me.engine.multiNumStates - newValue;
@@ -7577,7 +7577,7 @@
 		if (fromX === -1 && fromY === -1) {
 			this.penColour = this.readCell();
 			// adjust test state if generations style
-			if (this.engine.multiNumStates > 2 && !this.engine.isPCA) {
+			if (this.engine.multiNumStates > 2 && !(this.engine.isPCA || this.engine.isRuleTree)) {
 				testState = this.engine.multiNumStates - testState;
 			}
 
@@ -8204,7 +8204,7 @@
 		// attempt to build a pattern from the string
 		try {
 			// create a pattern
-			pattern = this.manager.create("", patternText, this.engine.allocator, true);
+			pattern = this.manager.create("", patternText, this.engine.allocator, null, null, [], this);
 		}
 		catch(err) {
 			pattern = null;
@@ -9654,7 +9654,7 @@
 			swap = 0,
 			state = 0,
 			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA)),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			buffer = null,
@@ -9775,7 +9775,7 @@
 			height = 0,
 			state = 0,
 			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA)),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			buffer = null;
@@ -10401,7 +10401,7 @@
 			row = null,
 			state = 0,
 			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA)),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
@@ -10504,7 +10504,7 @@
 			column = null,
 			state = 0,
 			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA)),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
@@ -10626,7 +10626,7 @@
 			saveTopY = 0,
 			states = me.engine.multiNumStates,
 			/** @type {boolean} */ rotateFits = true,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
 		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2),
 		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2),
 		    /** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
@@ -13177,7 +13177,7 @@
 		// update the selected state
 		state = this.drawState;
 		if (state > 0) {
-			if (!this.engine.isPCA) {
+			if (!(this.engine.isPCA || this.engine.isRuleTree)) {
 				state = this.engine.multiNumStates - state;
 			}
 		}
@@ -13229,7 +13229,7 @@
 				this.stateColsList.bgAlpha = 1;
 				this.stateColsList.current = [false, false];
 			} else {
-				if (this.engine.isPCA) {
+				if (this.engine.isPCA || this.engine.isRuleTree) {
 					this.drawState = 1;
 				} else {
 					this.drawState = states - 1;
@@ -13260,7 +13260,7 @@
 					themeRequested = 10;
 				} else {
 					// check for Generations or HROT
-					if (this.engine.multiNumStates > 2 && !this.engine.isPCA) {
+					if (this.engine.multiNumStates > 2 && !(this.engine.isPCA || this.engine.isRuleTree)) {
 						// multi state uses theme 11
 						themeRequested = 11;
 					} else {
@@ -13269,7 +13269,7 @@
 							themeRequested = 17;
 						} else {
 							// check for PCA
-							if (this.engine.isPCA) {
+							if (this.engine.isPCA || this.engine.isRuleTree) {
 								themeRequested = 18;
 							} else {
 								// default to theme 1
@@ -13400,18 +13400,26 @@
 		this.engine.isHROT = false;
 		this.multiStateView = false;
 		this.executable = false;
+		this.engine.isRuleTree = false;
+		this.engine.ruleTreeA = null;
+		this.engine.ruleTreeB = null;
 	};
 
 	// start the viewer from a supplied pattern string
-	//View.prototype.startViewer = function(patternString, ignoreThumbnail) {
-		// attempt to load the pattern
-		//var pattern = this.manager.create("", patternString, this.engine.allocator, true);
-	//};
-
-	// start the viewer from a supplied pattern string
 	View.prototype.startViewer = function(patternString, ignoreThumbnail) {
-		var pattern = null,
-			numberValue = 0,
+		// attempt to load the pattern
+		var pattern = this.manager.create("", patternString, this.engine.allocator, this.completeStart, this.completeStart, [ignoreThumbnail], this);
+
+		// if the pattern is not attempt to load from the repository asynchronously then complete the start
+		// (otherwise it will happen once the async load is complete)
+		if (!this.manager.loadingFromRepository) {
+			this.completeStart(pattern, [ignoreThumbnail], this);
+		}
+	};
+
+	// complete pattern start process
+	View.prototype.completeStart = function(pattern, ignoreThumbnail, me) {
+		var numberValue = 0,
 		    savedX = 0,
 		    savedY = 0,
 		    savedThumbnail = false,
@@ -13424,665 +13432,679 @@
 
 		// check for Edge browser
 		if (window.navigator.userAgent.indexOf("Edge") !== -1) {
-			this.isEdge = true;
+			me.isEdge = true;
 		} else {
-			this.isEdge = false;
+			me.isEdge = false;
 		}
 
 		// clear identify buffer (needs to be done before growGrid)
-		this.engine.countList = null;
+		me.engine.countList = null;
 
 		// flag not empty start
-		this.emptyStart = false;
-		this.diedGeneration = -1;
+		me.emptyStart = false;
+		me.diedGeneration = -1;
 
 		// mark bailout possible
-		this.throttleToggle.current = this.toggleThrottle([true], true, this);
+		me.throttleToggle.current = me.toggleThrottle([true], true, me);
 
 		// hide theme selection buttons
-		this.showThemeSelection = false;
+		me.showThemeSelection = false;
 
 		// hide info settings
-		this.showInfoSettings = false;
+		me.showInfoSettings = false;
 
 		// hide display settings
-		this.showDisplaySettings = false;
+		me.showDisplaySettings = false;
 
 		// hide playback settings
-		this.showPlaybackSettings = false;
+		me.showPlaybackSettings = false;
 
 		// hide rule settings
-		this.showPatternSettings = false;
+		me.showPatternSettings = false;
 
 		// ensure theme is set
-		this.engine.colourTheme = -1;
+		me.engine.colourTheme = -1;
 
 		// clear time intervals
-		this.menuManager.resetTimeIntervals();
+		me.menuManager.resetTimeIntervals();
 
 		// disable copy sync
-		this.copySyncExternal = false;
+		me.copySyncExternal = false;
 
 		// disable auto-shrink
-		this.autoShrink = false;
+		me.autoShrink = false;
 
 		// clear any selection
-		this.isSelection = false;
-		this.drawingSelection = false;
+		me.isSelection = false;
+		me.drawingSelection = false;
 
 		// clear any paste
-		this.pasteBuffers = [];
+		me.pasteBuffers = [];
 		for (i = 0; i < 10; i += 1) {
-			this.pasteBuffers[i] = null;
+			me.pasteBuffers[i] = null;
 		}
-		this.currentPasteBuffer = 0;
-		this.canPaste = false;
-		this.pasteBuffer = null;
-		this.isPasting = false;
-		this.pasteWidth = 0;
-		this.pasteHeight = 0;
-		this.evolvingPaste = false;
-		this.afterSelectAction = false;
+		me.currentPasteBuffer = 0;
+		me.canPaste = false;
+		me.pasteBuffer = null;
+		me.isPasting = false;
+		me.pasteWidth = 0;
+		me.pasteHeight = 0;
+		me.evolvingPaste = false;
+		me.afterSelectAction = false;
 
 		// set default paste mode for UI
-		this.pasteModeList.current = this.viewPasteModeList(ViewConstants.pasteModeOr, true, this);
+		me.pasteModeList.current = me.viewPasteModeList(ViewConstants.pasteModeOr, true, me);
 
 		// clear playback draw pause
-		this.playbackDrawPause = false;
+		me.playbackDrawPause = false;
 
 		// clear recipe list
-		this.recipeList = [];
-		this.recipeDelta = [];
+		me.recipeList = [];
+		me.recipeDelta = [];
 
 		// clear script error list
-		this.scriptErrors = [];
+		me.scriptErrors = [];
 
 		// clear rle snippets
-		this.rleList = [];
+		me.rleList = [];
 
 		// clear undo/reset
-		this.editList = [];
-		this.currentEdit = [];
-		this.currentEditIndex = 0;
-		this.editNum = 0;
-		this.numEdits = 0;
-		this.engine.shrinkNeeded = false;
+		me.editList = [];
+		me.currentEdit = [];
+		me.currentEditIndex = 0;
+		me.editNum = 0;
+		me.numEdits = 0;
+		me.engine.shrinkNeeded = false;
 
 		// clear paste list
-		this.pasteList = [];
-		this.pasteMode = ViewConstants.pasteModeOr;
-		this.pasteGen = 0;
-		this.pasteEnd = -1;
-		this.pasteDelta = [];
-		this.pasteEvery = 0;
-		this.isPasteEvery = false;
-		this.maxPasteGen = 0;
-		this.isEvolution = false;
-		this.pasteLeftX = ViewConstants.bigInteger;
-		this.pasteRightX = -ViewConstants.bigInteger;
-		this.pasteBottomY = ViewConstants.bigInteger;
-		this.pasteTopY = -ViewConstants.bigInteger;
+		me.pasteList = [];
+		me.pasteMode = ViewConstants.pasteModeOr;
+		me.pasteGen = 0;
+		me.pasteEnd = -1;
+		me.pasteDelta = [];
+		me.pasteEvery = 0;
+		me.isPasteEvery = false;
+		me.maxPasteGen = 0;
+		me.isEvolution = false;
+		me.pasteLeftX = ViewConstants.bigInteger;
+		me.pasteRightX = -ViewConstants.bigInteger;
+		me.pasteBottomY = ViewConstants.bigInteger;
+		me.pasteTopY = -ViewConstants.bigInteger;
 
 		// clear any notifications
-		this.menuManager.notification.clear(true, true);
-		this.menuManager.notification.clear(false, true);
+		me.menuManager.notification.clear(true, true);
+		me.menuManager.notification.clear(false, true);
 
 		// clear reverse Margolus playback
-		this.engine.reverseMargolus = false;
-		this.engine.reversePending = false;
+		me.engine.reverseMargolus = false;
+		me.engine.reversePending = false;
 
 		// clear was LtL
-		this.wasLtL = false;
+		me.wasLtL = false;
 
-		// attempt to create the pattern
-		pattern = this.manager.create("", patternString, this.engine.allocator, true);
+		// check if the pattern was created successfully
 		if (pattern) {
 			// copy the generation offset
-			this.genDefined = this.manager.genDefined;
-			this.genOffset = this.manager.generation;
+			me.genDefined = me.manager.genDefined;
+			me.genOffset = me.manager.generation;
 
 			// copy the pos offsets
-			this.posDefined = this.manager.posDefined;
-			this.posXOffset = this.manager.posX;
-			this.posYOffset = this.manager.posY;
+			me.posDefined = me.manager.posDefined;
+			me.posXOffset = me.manager.posX;
+			me.posYOffset = me.manager.posY;
 
 			// copy the specified size
-			this.specifiedWidth = this.manager.specifiedWidth;
-			this.specifiedHeight = this.manager.specifiedHeight;
+			me.specifiedWidth = me.manager.specifiedWidth;
+			me.specifiedHeight = me.manager.specifiedHeight;
 
 			// read the pattern size
-			this.patternWidth = pattern.width;
-			this.patternHeight = pattern.height;
+			me.patternWidth = pattern.width;
+			me.patternHeight = pattern.height;
 
 			// read pattern name and originator
-			this.patternName = pattern.name;
-			this.patternOriginator = pattern.originator;
+			me.patternName = pattern.name;
+			me.patternOriginator = pattern.originator;
 
 			// read the pattern format
-			this.patternFormat = pattern.patternFormat;
-			if (this.patternFormat === "") {
-				this.patternFormat = "(none)";
+			me.patternFormat = pattern.patternFormat;
+			if (me.patternFormat === "") {
+				me.patternFormat = "(none)";
 			}
 
 			// read the number of states and number used
-			this.patternStates = pattern.numStates;
-			this.patternUsedStates = pattern.numUsedStates;
+			me.patternStates = pattern.numStates;
+			me.patternUsedStates = pattern.numUsedStates;
 
 			// read the rule name
-			this.patternRuleName = pattern.ruleName;
-			this.patternAliasName = pattern.aliasName;
-			this.patternBoundedGridDef = pattern.boundedGridDef;
+			me.patternRuleName = pattern.ruleName;
+			me.patternAliasName = pattern.aliasName;
+			me.patternBoundedGridDef = pattern.boundedGridDef;
 
 			// read the before and after RLE comments
-			this.engine.beforeTitle = pattern.beforeTitle;
-			this.engine.afterTitle = pattern.afterTitle;
+			me.engine.beforeTitle = pattern.beforeTitle;
+			me.engine.afterTitle = pattern.afterTitle;
 
 			// read if the pattern is executable
-			this.executable = this.manager.executable;
+			me.executable = me.manager.executable;
 
 			// check if the rule is a History rule
-			this.engine.isLifeHistory = pattern.isHistory;
-			this.engine.displayLifeHistory = pattern.isHistory;
+			me.engine.isLifeHistory = pattern.isHistory;
+			me.engine.displayLifeHistory = pattern.isHistory;
 
 			// read the number of states (Generations or HROT)
-			this.engine.multiNumStates = pattern.multiNumStates;
-			if (!this.executable) {
+			me.engine.multiNumStates = pattern.multiNumStates;
+			if (!me.executable) {
 				// if not exectuable then copy from pattern states
 				if (pattern.numStates > 2) {
-					this.engine.multiNumStates = pattern.numStates;
+					me.engine.multiNumStates = pattern.numStates;
 				}
+			}
+
+			// check if the rule is a RuleTree rules
+			if (pattern.ruleTreeStates !== -1) {
+				me.engine.ruleTreeNeighbours = pattern.ruleTreeNeighbours;
+				me.engine.ruleTreeStates = pattern.ruleTreeStates;
+				me.engine.multiNumStates = pattern.ruleTreeStates;
+				me.engine.ruleTreeNodes = pattern.ruleTreeNodes;
+				me.engine.ruleTreeBase = pattern.ruleTreeBase;
+				me.engine.ruleTreeA = pattern.ruleTreeA;
+				me.engine.ruleTreeB = pattern.ruleTreeB;
+				me.engine.isRuleTree = true;
+			} else {
+				me.engine.isRuleTree = false;
 			}
 
 			// check if the rule is HROT
-			this.engine.isHROT = pattern.isHROT;
+			me.engine.isHROT = pattern.isHROT;
 			if (pattern.isHROT) {
-				this.engine.HROT.births = pattern.birthHROT;
-				this.engine.HROT.survivals = pattern.survivalHROT;
-				this.engine.HROT.scount = pattern.multiNumStates;
-				this.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT);
-				if (this.manager.altSpecified) {
-					this.engine.HROT.altBirths = pattern.altBirthHROT;
-					this.engine.HROT.altSurvivals = pattern.altSurvivalHROT;
-					this.engine.HROT.altSpecified = true;
+				me.engine.HROT.births = pattern.birthHROT;
+				me.engine.HROT.survivals = pattern.survivalHROT;
+				me.engine.HROT.scount = pattern.multiNumStates;
+				me.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT);
+				if (me.manager.altSpecified) {
+					me.engine.HROT.altBirths = pattern.altBirthHROT;
+					me.engine.HROT.altSurvivals = pattern.altSurvivalHROT;
+					me.engine.HROT.altSpecified = true;
 				} else {
-					this.engine.HROT.altSpecified = false;
+					me.engine.HROT.altSpecified = false;
 				}
 
 				// check if pattern was LtL
-				this.wasLtL = pattern.isLTL;
+				me.wasLtL = pattern.isLTL;
 			}
 
 			// check if the rule is _none_
-			this.engine.isNone = pattern.isNone;
+			me.engine.isNone = pattern.isNone;
 
 			// check if the rule is Margolus
-			this.engine.isMargolus = pattern.isMargolus;
+			me.engine.isMargolus = pattern.isMargolus;
 
 			// check if the rule is PCA
-			this.engine.isPCA = pattern.isPCA;
+			me.engine.isPCA = pattern.isPCA;
 
 			// use hexagons for hex dispaly
-			this.engine.useHexagons = true;
+			me.engine.useHexagons = true;
 
 			// check if the neighbourhood is hex
-			this.engine.isHex = pattern.isHex;
-			this.engine.patternDisplayMode = pattern.isHex;
+			me.engine.isHex = pattern.isHex;
+			me.engine.patternDisplayMode = pattern.isHex;
 
 			// check if the neighbourhood is triangular
-			this.engine.isTriangular = pattern.isTriangular;
-			this.engine.triangularNeighbourhood = pattern.triangularNeighbourhood;
+			me.engine.isTriangular = pattern.isTriangular;
+			me.engine.triangularNeighbourhood = pattern.triangularNeighbourhood;
 
 			// check if the neighbourhood is Von Neumann
-			this.engine.isVonNeumann = pattern.isVonNeumann;
+			me.engine.isVonNeumann = pattern.isVonNeumann;
 
 			// check if the rule is Wolfram
-			this.engine.wolframRule = pattern.wolframRule;
+			me.engine.wolframRule = pattern.wolframRule;
 
 			// read the bounded grid details
-			this.engine.boundedGridType = pattern.gridType;
-			this.engine.boundedGridWidth = pattern.gridWidth;
-			this.engine.boundedGridHeight = pattern.gridHeight;
-			this.engine.boundedGridHorizontalShift = pattern.gridHorizontalShift;
-			this.engine.boundedGridVerticalShift = pattern.gridVerticalShift;
-			this.engine.boundedGridHorizontalTwist = pattern.gridHorizontalTwist;
-			this.engine.boundedGridVerticalTwist = pattern.gridVerticalTwist;
+			me.engine.boundedGridType = pattern.gridType;
+			me.engine.boundedGridWidth = pattern.gridWidth;
+			me.engine.boundedGridHeight = pattern.gridHeight;
+			me.engine.boundedGridHorizontalShift = pattern.gridHorizontalShift;
+			me.engine.boundedGridVerticalShift = pattern.gridVerticalShift;
+			me.engine.boundedGridHorizontalTwist = pattern.gridHorizontalTwist;
+			me.engine.boundedGridVerticalTwist = pattern.gridVerticalTwist;
 
 			// copy states used and state count
-			this.patternStateCount = new Uint32Array(this.patternStates);
+			me.patternStateCount = new Uint32Array(me.patternStates);
 
-			for (i = 0; i < this.patternStates; i += 1) {
-				this.patternStateCount[i] = this.manager.stateCount[i];
+			for (i = 0; i < me.patternStates; i += 1) {
+				me.patternStateCount[i] = me.manager.stateCount[i];
 			}
 		} else {
-			this.clearPatternData();
+			me.clearPatternData();
 		}
 
 		// setup dynamic calls in the engine for performance
-		this.engine.setupDynamicCalls();
+		me.engine.setupDynamicCalls();
 
 		// show labels
-		this.showLabels = true;
+		me.showLabels = true;
 
 		// do not display population graph
-		this.popGraph = false;
-		this.popGraphLines = true;
-		this.popGraphOpacity = ViewConstants.defaultOpacity;
+		me.popGraph = false;
+		me.popGraphLines = true;
+		me.popGraphOpacity = ViewConstants.defaultOpacity;
 		if (!pattern) {
-			this.graphDisabled = true;
+			me.graphDisabled = true;
 		} else {
-			this.graphDisabled = false;
+			me.graphDisabled = false;
 		}
 
 		// display life ended and stop notifications
-		this.genNotifications = true;
+		me.genNotifications = true;
 
 		// display generation as absolute
-		this.genRelative = false;
+		me.genRelative = false;
 
 		// read any failure reason
-		this.failureReason = this.manager.failureReason;
+		me.failureReason = me.manager.failureReason;
 
 		// set anything alive flags
-		this.engine.anythingAlive = 1;
+		me.engine.anythingAlive = 1;
 
 		// reset delete pattern radius
-		this.engine.removePatternRadius = ViewConstants.defaultDeleteRadius;
+		me.engine.removePatternRadius = ViewConstants.defaultDeleteRadius;
 
 		// reset x and y offset
-		this.xOffset = 0;
-		this.yOffset = 0;
+		me.xOffset = 0;
+		me.yOffset = 0;
 
 		// reset current point of interest
-		this.currentPOI = -1;
-		this.stepsPOI = -1;
+		me.currentPOI = -1;
+		me.stepsPOI = -1;
 
 		// clear compute history mode
-		this.computeHistory = false;
+		me.computeHistory = false;
 
 		// clear copy to clipboard mode
-		this.clipboardCopy = false;
+		me.clipboardCopy = false;
 
 		// unlock menu
-		this.viewMenu.locked = false;
+		me.viewMenu.locked = false;
 
 		// clear history fit mode
-		this.historyFit = false;
+		me.historyFit = false;
 
 		// clear state 1 fit
-		this.state1Fit = false;
+		me.state1Fit = false;
 
 		// free overlay
-		this.engine.freeOverlay();
+		me.engine.freeOverlay();
 
 		// free state6 mask
-		this.engine.freeState6Mask();
+		me.engine.freeState6Mask();
 
 		// create the overlay
-		if (this.engine.isLifeHistory) {
+		if (me.engine.isLifeHistory) {
 			// always create the overlay since the editor may introduce any LifeHistory state
-			this.engine.createOverlay();
-			this.engine.createState6Mask();
+			me.engine.createOverlay();
+			me.engine.createState6Mask();
 		}
 
 		// clear any window title
-		this.windowTitle = "";
+		me.windowTitle = "";
 
 		// disable stars
-		this.starsOn = false;
+		me.starsOn = false;
 
 		// initalised ColourManager
 		ColourManager.init();
 
 		// clear the grid
-		this.engine.clearGrids(false);
+		me.engine.clearGrids(false);
 
 		// reset grid lines
-		this.engine.gridLineRaw = ViewConstants.gridLineRawDefault;
-		this.engine.gridLineBoldRaw = ViewConstants.gridLineBoldRawDefault;
-		this.engine.gridLineMajor = 10;
-		this.engine.definedGridLineMajor = 10;
-		this.engine.gridLineMajorEnabled = true;
-		this.customGridMajorColour = -1;
-		this.customGridColour = -1;
+		me.engine.gridLineRaw = ViewConstants.gridLineRawDefault;
+		me.engine.gridLineBoldRaw = ViewConstants.gridLineBoldRawDefault;
+		me.engine.gridLineMajor = 10;
+		me.engine.definedGridLineMajor = 10;
+		me.engine.gridLineMajorEnabled = true;
+		me.customGridMajorColour = -1;
+		me.customGridColour = -1;
 
 		// set the default generation speed
-		this.genSpeed = 60;
+		me.genSpeed = 60;
 
 		// set the default generations per step
-		this.gensPerStep = 1;
+		me.gensPerStep = 1;
 
 		// set the default layers
-		this.engine.layers = 1;
+		me.engine.layers = 1;
 
 		// set the default layer depth
-		this.engine.layerDepth = 0.1;
+		me.engine.layerDepth = 0.1;
 
 		// set the default angle
-		this.engine.angle = 0;
+		me.engine.angle = 0;
 
 		// set the default zoom
-		this.engine.zoom = 6;
+		me.engine.zoom = 6;
 
 		// reset the grid size
-		this.engine.resetGridSize(this.defaultGridWidth, this.defaultGridHeight);
+		me.engine.resetGridSize(me.defaultGridWidth, me.defaultGridHeight);
 
 		// set the default position
-		this.engine.xOff = this.engine.width / 2;
-		this.engine.yOff = this.engine.height / 2;
+		me.engine.xOff = me.engine.width / 2;
+		me.engine.yOff = me.engine.height / 2;
 
 		// set the default zoom and position are not used
-		this.defaultZoomUsed = false;
-		this.defaultXUsed = false;
-		this.defaultYUsed = false;
-		this.defaultX = 0;
-		this.defaultY = 0;
+		me.defaultZoomUsed = false;
+		me.defaultXUsed = false;
+		me.defaultYUsed = false;
+		me.defaultX = 0;
+		me.defaultY = 0;
 
 		// clear requested width and height
-		this.requestedWidth = -1;
-		this.requestedHeight = -1;
+		me.requestedWidth = -1;
+		me.requestedHeight = -1;
 
 		// clear requested popup width and height
-		this.requestedPopupWidth = -1;
-		this.requestedPopupHeight = -1;
+		me.requestedPopupWidth = -1;
+		me.requestedPopupHeight = -1;
 
 		// reset custom theme
-		this.customThemeValue[ViewConstants.customThemeBackground] = -1;
-		this.customThemeValue[ViewConstants.customThemeAlive] = -1;
-		this.customThemeValue[ViewConstants.customThemeAliveRamp] = -1;
-		this.customThemeValue[ViewConstants.customThemeDead] = -1;
-		this.customThemeValue[ViewConstants.customThemeDeadRamp] = -1;
-		this.customThemeValue[ViewConstants.customThemeGrid] = -1;
-		this.customThemeValue[ViewConstants.customThemeGridMajor] = -1;
-		this.customThemeValue[ViewConstants.customThemeStars] = -1;
-		this.customThemeValue[ViewConstants.customThemeText] = -1;
-		this.customThemeValue[ViewConstants.customThemeBoundary] = -1;
-		this.customThemeValue[ViewConstants.customThemeGraphBg] = -1;
-		this.customThemeValue[ViewConstants.customThemeGraphAxis] = -1;
-		this.customThemeValue[ViewConstants.customThemeGraphAlive] = -1;
-		this.customThemeValue[ViewConstants.customThemeGraphBirth] = -1;
-		this.customThemeValue[ViewConstants.customThemeGraphDeath] = -1;
-		this.customThemeValue[ViewConstants.customThemeError] = -1;
-		this.customThemeValue[ViewConstants.customThemeLabel] = -1;
-		this.customThemeValue[ViewConstants.customThemeDying] = -1;
-		this.customThemeValue[ViewConstants.customThemeDyingRamp] = -1;
-		this.customThemeValue[ViewConstants.customThemeUIFG] = -1;
-		this.customThemeValue[ViewConstants.customThemeUIBG] = -1;
-		this.customThemeValue[ViewConstants.customThemeUIHighlight] = -1;
-		this.customThemeValue[ViewConstants.customThemeUISelect] = -1;
-		this.customThemeValue[ViewConstants.customThemeUILocked] = -1;
-		this.customThemeValue[ViewConstants.customThemeUIBorder] = -1;
-		this.customThemeValue[ViewConstants.customThemeArrow] = -1;
-		this.customThemeValue[ViewConstants.customThemePoly] = -1;
-		this.customLabelColour = ViewConstants.labelFontColour;
-		this.customArrowColour = ViewConstants.arrowColour;
-		this.customPolygonColour = ViewConstants.polyColour;
+		me.customThemeValue[ViewConstants.customThemeBackground] = -1;
+		me.customThemeValue[ViewConstants.customThemeAlive] = -1;
+		me.customThemeValue[ViewConstants.customThemeAliveRamp] = -1;
+		me.customThemeValue[ViewConstants.customThemeDead] = -1;
+		me.customThemeValue[ViewConstants.customThemeDeadRamp] = -1;
+		me.customThemeValue[ViewConstants.customThemeGrid] = -1;
+		me.customThemeValue[ViewConstants.customThemeGridMajor] = -1;
+		me.customThemeValue[ViewConstants.customThemeStars] = -1;
+		me.customThemeValue[ViewConstants.customThemeText] = -1;
+		me.customThemeValue[ViewConstants.customThemeBoundary] = -1;
+		me.customThemeValue[ViewConstants.customThemeGraphBg] = -1;
+		me.customThemeValue[ViewConstants.customThemeGraphAxis] = -1;
+		me.customThemeValue[ViewConstants.customThemeGraphAlive] = -1;
+		me.customThemeValue[ViewConstants.customThemeGraphBirth] = -1;
+		me.customThemeValue[ViewConstants.customThemeGraphDeath] = -1;
+		me.customThemeValue[ViewConstants.customThemeError] = -1;
+		me.customThemeValue[ViewConstants.customThemeLabel] = -1;
+		me.customThemeValue[ViewConstants.customThemeDying] = -1;
+		me.customThemeValue[ViewConstants.customThemeDyingRamp] = -1;
+		me.customThemeValue[ViewConstants.customThemeUIFG] = -1;
+		me.customThemeValue[ViewConstants.customThemeUIBG] = -1;
+		me.customThemeValue[ViewConstants.customThemeUIHighlight] = -1;
+		me.customThemeValue[ViewConstants.customThemeUISelect] = -1;
+		me.customThemeValue[ViewConstants.customThemeUILocked] = -1;
+		me.customThemeValue[ViewConstants.customThemeUIBorder] = -1;
+		me.customThemeValue[ViewConstants.customThemeArrow] = -1;
+		me.customThemeValue[ViewConstants.customThemePoly] = -1;
+		me.customLabelColour = ViewConstants.labelFontColour;
+		me.customArrowColour = ViewConstants.arrowColour;
+		me.customPolygonColour = ViewConstants.polyColour;
 
 		// switch off thumbnail mode if on
-		if (this.thumbnail) {
-			this.switchOffThumbnail();
+		if (me.thumbnail) {
+			me.switchOffThumbnail();
 		}
-		this.thumbnailEverOn = false;
-		this.menuManager.thumbnail = false;
-		this.thumbnailDivisor = ViewConstants.defaultThumbSize;
-		this.thumbLaunch = false;
-		this.menuManager.thumbLaunch = false;
-		this.thumbZoomDefined = false;
+		me.thumbnailEverOn = false;
+		me.menuManager.thumbnail = false;
+		me.thumbnailDivisor = ViewConstants.defaultThumbSize;
+		me.thumbLaunch = false;
+		me.menuManager.thumbLaunch = false;
+		me.thumbZoomDefined = false;
 
 		// reset parameters to defaults
 		if (!pattern) {
-			this.multiStateView = true;
+			me.multiStateView = true;
 		} else {
-			this.multiStateView = false;
+			me.multiStateView = false;
 		}
-		this.viewOnly = false;
-		this.engine.displayGrid = false;
-		this.engine.cellBorders = false;
+		me.viewOnly = false;
+		me.engine.displayGrid = false;
+		me.engine.cellBorders = false;
 
 		// reset menu visibility to defaults
-		this.playList.deleted = false;
-		this.modeList.deleted = false;
-		this.genToggle.deleted = false;
-		this.generationRange.deleted = false;
-		this.stepRange.deleted = false;
-		this.navToggle.deleted = false;
-		this.layersItem.deleted = false;
-		this.depthItem.deleted = false;
-		this.themeButton.deleted = false;
-		this.throttleToggle.deleted = false;
-		this.showLagToggle.deleted = false;
-		this.viewMenu.deleted = false;
-		this.progressBar.deleted = false;
-		this.undoButton.deleted = false;
-		this.redoButton.deleted = false;
-		this.patternButton.deleted = false;
-		this.infoButton.deleted = false;
-		this.playbackButton.deleted = false;
-		this.displayButton.deleted = false;
-		this.backButton.deleted = false;
+		me.playList.deleted = false;
+		me.modeList.deleted = false;
+		me.genToggle.deleted = false;
+		me.generationRange.deleted = false;
+		me.stepRange.deleted = false;
+		me.navToggle.deleted = false;
+		me.layersItem.deleted = false;
+		me.depthItem.deleted = false;
+		me.themeButton.deleted = false;
+		me.throttleToggle.deleted = false;
+		me.showLagToggle.deleted = false;
+		me.viewMenu.deleted = false;
+		me.progressBar.deleted = false;
+		me.undoButton.deleted = false;
+		me.redoButton.deleted = false;
+		me.patternButton.deleted = false;
+		me.infoButton.deleted = false;
+		me.playbackButton.deleted = false;
+		me.displayButton.deleted = false;
+		me.backButton.deleted = false;
 
 		// reset menu toggles to off
-		this.navToggle.current = [false];
-		this.genToggle.current = [false];
+		me.navToggle.current = [false];
+		me.genToggle.current = [false];
 
 		// turn off help and errors
-		this.displayHelp = 0;
-		this.displayErrors = 0;
+		me.displayHelp = 0;
+		me.displayErrors = 0;
 
 		// hide library
-		this.libraryToggle.current = [false];
+		me.libraryToggle.current = [false];
 
 		// default auto-shrink
-		this.autoShrinkToggle.current = this.viewAutoShrinkList([this.autoShrink], true, this);
+		me.autoShrinkToggle.current = me.viewAutoShrinkList([me.autoShrink], true, me);
 
 		// default copy sync
-		this.copySyncToggle.current = this.viewCopySyncList([this.copySyncExternal], true, this);
-		this.syncNotified = false;
+		me.copySyncToggle.current = me.viewCopySyncList([me.copySyncExternal], true, me);
+		me.syncNotified = false;
 
 		// start in pan mode
-		this.modeList.current = this.viewModeList(ViewConstants.modePan, true, this);
+		me.modeList.current = me.viewModeList(ViewConstants.modePan, true, me);
 
 		// set random density to 50%
-		this.randomItem.current = this.viewRandomRange([50, 50], true, this);
+		me.randomItem.current = me.viewRandomRange([50, 50], true, me);
 
 		// set paste position to top left
-		this.pastePositionItem.current = this.viewPastePositionRange([ViewConstants.pastePositionNW, ViewConstants.pastePositionNW], true, this);
+		me.pastePositionItem.current = me.viewPastePositionRange([ViewConstants.pastePositionNW, ViewConstants.pastePositionNW], true, me);
 
 		// update help UI
-		this.helpToggle.current = this.toggleHelp([this.displayHelp], true, this);
+		me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
 
 		// reset boundary colour
-		this.customBoundaryColour = [96, 96, 96];
-		if (this.engine.littleEndian) {
-			this.engine.boundaryColour = 0xff606060;
+		me.customBoundaryColour = [96, 96, 96];
+		if (me.engine.littleEndian) {
+			me.engine.boundaryColour = 0xff606060;
 		} else {
-			this.engine.boundaryColour = 0x606060ff;
+			me.engine.boundaryColour = 0x606060ff;
 		}
 
 		// reset waypoints
-		this.waypointManager.reset();
-		this.waypointsDefined = false;
+		me.waypointManager.reset();
+		me.waypointsDefined = false;
 
 		// reset annotations
-		this.waypointManager.clearAnnotations();
+		me.waypointManager.clearAnnotations();
 
 		// disable hide GUI on playback
-		this.hideGUI = false;
+		me.hideGUI = false;
 
 		// enable history
-		this.noHistory = false;
+		me.noHistory = false;
 
 		// enable performance warnings
-		this.perfWarning = true;
+		me.perfWarning = true;
 
 		// disable custom theme
-		this.customTheme = false;
-		this.customGridMajor = false;
+		me.customTheme = false;
+		me.customGridMajor = false;
 
 		// flag not drawing overlay
-		this.engine.drawOverlay = false;
+		me.engine.drawOverlay = false;
 
 		// default random parameters
-		this.randomWidth = ViewConstants.randomDimension;
-		this.randomHeight = ViewConstants.randomDimension;
-		this.randomFillPercentage = 50;
-		this.randomReversible = false;
-		this.randomSwap = false;
-		this.randomChanceAll = -1;
-		this.randomChanceB = -1;
-		this.randomChanceS = -1;
-		this.randomChanceBN = [];
-		this.randomChanceSN = [];
+		me.randomWidth = ViewConstants.randomDimension;
+		me.randomHeight = ViewConstants.randomDimension;
+		me.randomFillPercentage = 50;
+		me.randomReversible = false;
+		me.randomSwap = false;
+		me.randomChanceAll = -1;
+		me.randomChanceB = -1;
+		me.randomChanceS = -1;
+		me.randomChanceBN = [];
+		me.randomChanceSN = [];
 
 		// copy pattern to center
 		if (pattern) {
-			if (pattern.isNone || (!this.executable && this.engine.multiNumStates > 2)) {
-				this.colourList = ColourManager.defaultSet();
-				this.colourSetName = "(default)";
+			if (pattern.isNone || (!me.executable && me.engine.multiNumStates > 2)) {
+				me.colourList = ColourManager.defaultSet();
+				me.colourSetName = "(default)";
 			} else {
-				if (this.manager.extendedFormat || pattern.isHistory) {
+				if (me.manager.extendedFormat || pattern.isHistory) {
 					// get the colour list for the pattern based on rule name
 					if (pattern.isHistory) {
-						this.colourList = ColourManager.colourSet("LifeHistory");
+						me.colourList = ColourManager.colourSet("LifeHistory");
 	
 						// set the history colour to the Theme 10 dead colour
-						this.colourList[2] = 0 << 16 | 0 << 8 | 96;
+						me.colourList[2] = 0 << 16 | 0 << 8 | 96;
 					} else {
-						this.colourList = ColourManager.colourSet(pattern.ruleName);
+						me.colourList = ColourManager.colourSet(pattern.ruleName);
 					}
 	
 					// check if a colour list was found
-					if (this.colourList.length) {
-						this.colourSetName = pattern.ruleName;
+					if (me.colourList.length) {
+						me.colourSetName = pattern.ruleName;
 					} else {
 						// load the default set
-						this.colourList = ColourManager.defaultSet();
-						this.colourSetName = "(default)";
+						me.colourList = ColourManager.defaultSet();
+						me.colourSetName = "(default)";
 					}
 				}
 			}
 
 			// reset controls a script can overwrite
-			this.resetScriptControls();
+			me.resetScriptControls();
 
 			// set random seed
-			this.randomSeed = Date.now().toString();
+			me.randomSeed = Date.now().toString();
 
 			// read any script in the title
 			if (pattern.title) {
 				// decode any script commands
 				numberValue = pattern.numStates;
-				if (this.engine.isLifeHistory) {
+				if (me.engine.isLifeHistory) {
 					numberValue = 7;
 				}
-				this.readScript(pattern.title, numberValue);
+				me.readScript(pattern.title, numberValue);
 
 				// set errors to display if any found
-				if (this.scriptErrors.length) {
-					this.displayErrors = 1;
+				if (me.scriptErrors.length) {
+					me.displayErrors = 1;
 				}
 
 				// override thumbnail if specified
-				if (this.thumbnail && ignoreThumbnail) {
-					this.thumbnail = false;
+				if (me.thumbnail && ignoreThumbnail) {
+					me.thumbnail = false;
 				}
 
 				// check whether to resize canvas width based on script commands
-				if (this.requestedWidth > -1) {
+				if (me.requestedWidth > -1) {
 					// ensure width is a multiple of 8
-					this.requestedWidth &= ~7;
+					me.requestedWidth &= ~7;
 
 					// check if the width is different than the current width
-					if (this.requestedWidth !== this.displayWidth) {
-						this.displayWidth = this.requestedWidth;
+					if (me.requestedWidth !== me.displayWidth) {
+						me.displayWidth = me.requestedWidth;
 						resizeRequired = true;
 					}
 				}
 
 				// check whether to resize canvas height based on script commands
-				if (this.requestedHeight > -1) {
+				if (me.requestedHeight > -1) {
 					// check if the height is different than the current height
-					if (this.requestedHeight !== this.displayHeight) {
-						this.displayHeight = this.requestedHeight;
+					if (me.requestedHeight !== me.displayHeight) {
+						me.displayHeight = me.requestedHeight;
 						resizeRequired = true;
 					}
 				}
 
 				// check whether to resize popup window
-				if (this.isInPopup) {
-					if (this.requestedPopupWidth > -1) {
-						this.requestedPopupWidth &= ~7;
-						if (this.requestedPopupWidth !== this.displayWidth) {
-							this.displayWidth = this.requestedPopupWidth;
+				if (me.isInPopup) {
+					if (me.requestedPopupWidth > -1) {
+						me.requestedPopupWidth &= ~7;
+						if (me.requestedPopupWidth !== me.displayWidth) {
+							me.displayWidth = me.requestedPopupWidth;
 							resizeRequired = true;
 						}
 					} else {
-						if (this.displayWidth < ViewConstants.minViewerWidth) {
-							this.displayWidth = ViewConstants.minViewerWidth;
+						if (me.displayWidth < ViewConstants.minViewerWidth) {
+							me.displayWidth = ViewConstants.minViewerWidth;
 						}
 					}
 
-					if (this.requestedPopupHeight > -1) {
-						if (this.requestedPopupHeight !== this.displayHeight) {
-							this.displayHeight = this.requestedPopupHeight;
+					if (me.requestedPopupHeight > -1) {
+						if (me.requestedPopupHeight !== me.displayHeight) {
+							me.displayHeight = me.requestedPopupHeight;
 							resizeRequired = true;
 						}
 					}
 				}
 			}
 
-			// remove history states if pattern is not executable
-			if (!this.executable) {
-				this.historyStates = 0;
+			// remove history states if pattern is not executable or rule does not support them
+			if (!me.executable || me.engine.isRuleTree) {
+				me.historyStates = 0;
 			}
 
+
 			// initialise random number generator from seed
-			this.randGen.init(this.randomSeed);
+			me.randGen.init(me.randomSeed);
 
 			// check if popup width has changed
-			if (this.isInPopup) {
-				this.origDisplayWidth = this.displayWidth;
-				this.origDisplayHeight = this.displayHeight;
-				this.scalePopup();
+			if (me.isInPopup) {
+				me.origDisplayWidth = me.displayWidth;
+				me.origDisplayHeight = me.displayHeight;
+				me.scalePopup();
 			}
 
 			// if pattern is too big and has no paste commands then generate error
-			if (pattern.tooBig && this.pasteList.length === 0) {
-				this.executable = false;
+			if (pattern.tooBig && me.pasteList.length === 0) {
+				me.executable = false;
 			}
 
 			// setup the state list for drawing
-			this.setupStateList();
+			me.setupStateList();
 
 			// set the menu colours
-			this.setMenuColours();
+			me.setMenuColours();
 
 			// update help topic button positions based on window height
-			this.updateTopicButtonsPosition();
+			me.updateTopicButtonsPosition();
 
 			// update selection controls position based on window height
-			this.updateSelectionControlsPosition();
+			me.updateSelectionControlsPosition();
 
 			// process dynamic themes
-			this.engine.processMultiStateThemes();
+			me.engine.processMultiStateThemes();
 
 			// set history states in engine
-			this.engine.historyStates = this.historyStates;
+			me.engine.historyStates = me.historyStates;
 
 			// disable graph if using THUMBLAUNCH and graph not displayed (since there's no way to turn it on)
-			if (this.thumbLaunch && !this.popGraph) {
-				this.graphDisabled = true;
-				this.popGraph = false;
+			if (me.thumbLaunch && !me.popGraph) {
+				me.graphDisabled = true;
+				me.popGraph = false;
 			}
 
 			// allocate graph data unless graph disabled
-			this.engine.allocateGraphData(!this.graphDisabled);
+			me.engine.allocateGraphData(!me.graphDisabled);
 
 			// check pattern size (script command may have increased maximum allowed size)
-			if (pattern.width > this.engine.maxGridSize || pattern.height > this.engine.maxGridSize) {
-				this.failureReason = "Pattern too big (maximum " + this.engine.maxGridSize + "x" + this.engine.maxGridSize + ")";
-				this.tooBig = true;
-				this.executable = false;
-				this.clearPatternData();
+			if (pattern.width > me.engine.maxGridSize || pattern.height > me.engine.maxGridSize) {
+				me.failureReason = "Pattern too big (maximum " + me.engine.maxGridSize + "x" + me.engine.maxGridSize + ")";
+				me.tooBig = true;
+				me.executable = false;
+				me.clearPatternData();
 			}
 
 			// check bounded grid size (script command may have increased maximum allowed size)
@@ -14094,34 +14116,34 @@
 				if (pattern.isLTL) {
 					borderSize = pattern.rangeLTL * 6;
 				}
-				if (pattern.gridWidth >= this.engine.maxGridSize - borderSize || pattern.gridHeight >= this.engine.maxGridSize - borderSize) {
+				if (pattern.gridWidth >= me.engine.maxGridSize - borderSize || pattern.gridHeight >= me.engine.maxGridSize - borderSize) {
 					// make invalid
-					this.failureReason = "Bounded grid is too big";
-					this.executable = false;
-					this.engine.boundedGridType = -1;
+					me.failureReason = "Bounded grid is too big";
+					me.executable = false;
+					me.engine.boundedGridType = -1;
 				}
 			}
 
 			// update the life rule
-			this.engine.updateLifeRule(this);
+			me.engine.updateLifeRule(me);
 
 			// process any rle snippet evolution
-			if (this.isEvolution) {
+			if (me.isEvolution) {
 				// create the colour index
-				this.engine.createColourIndex();
+				me.engine.createColourIndex();
 
 				// process evolution
-				this.processEvolution();
+				me.processEvolution();
 			}
 
 			// mark pattern not clipped to bounded grid
-			this.wasClipped = false;
+			me.wasClipped = false;
 
 			// get the needed width and height for the grid size
-			if (this.engine.boundedGridType !== -1) {
+			if (me.engine.boundedGridType !== -1) {
 				// use bounded grid
-				neededWidth = this.engine.boundedGridWidth;
-				neededHeight = this.engine.boundedGridHeight;
+				neededWidth = me.engine.boundedGridWidth;
+				neededHeight = me.engine.boundedGridHeight;
 
 				// check for zero dimensions
 				if (neededWidth === 0) {
@@ -14136,24 +14158,24 @@
 				neededHeight = pattern.height;
 
 				// add any paste clips
-				if (this.pasteList.length > 0) {
-					neededWidth = this.computeNeededWidth(neededWidth);
-					neededHeight = this.computeNeededHeight(neededHeight);
+				if (me.pasteList.length > 0) {
+					neededWidth = me.computeNeededWidth(neededWidth);
+					neededHeight = me.computeNeededHeight(neededHeight);
 				}
 			}
 
 			// check if the grid is smaller than the pattern and/or bounded grid plus the maximum step speed
 			borderSize = ViewConstants.maxStepSpeed;
-			if (this.engine.isHROT) {
-				borderSize = this.engine.HROT.range * 4 + 1;
-				if (this.engine.boundedGridType !== -1) {
-					borderSize += this.engine.HROT.range * 2;
+			if (me.engine.isHROT) {
+				borderSize = me.engine.HROT.range * 4 + 1;
+				if (me.engine.boundedGridType !== -1) {
+					borderSize += me.engine.HROT.range * 2;
 				}
-				if (this.engine.HROT.type === this.manager.vonNeumannHROT) {
-					if (this.engine.boundedGridType !== -1) {
-						borderSize += this.engine.boundedGridHeight / 2;
+				if (me.engine.HROT.type === me.manager.vonNeumannHROT) {
+					if (me.engine.boundedGridType !== -1) {
+						borderSize += me.engine.boundedGridHeight / 2;
 					} else {
-						borderSize += (this.engine.zoomBox.topY - this.engine.zoomBox.bottomY + 1) / 2;
+						borderSize += (me.engine.zoomBox.topY - me.engine.zoomBox.bottomY + 1) / 2;
 					}
 				}
 				if (borderSize < ViewConstants.maxStepSpeed) {
@@ -14162,367 +14184,367 @@
 			}
 
 			// add CXRLE Pos if defined
-			i = this.engine.maxGridSize / 2 - borderSize;
-			if (this.posDefined) {
-				if (this.posXOffset < -i) {
-					this.posXOffset = -i;
-				} else if (this.posXOffset >= i) {
-					this.posXOffset = i - 1;
+			i = me.engine.maxGridSize / 2 - borderSize;
+			if (me.posDefined) {
+				if (me.posXOffset < -i) {
+					me.posXOffset = -i;
+				} else if (me.posXOffset >= i) {
+					me.posXOffset = i - 1;
 				}
-				if (this.posYOffset < -i) {
-					this.posYOffset = -i;
-				} else if (this.posYOffset >= i) {
-					this.posYOffset = i - 1;
+				if (me.posYOffset < -i) {
+					me.posYOffset = -i;
+				} else if (me.posYOffset >= i) {
+					me.posYOffset = i - 1;
 				}
-				this.xOffset += this.posXOffset;
-				this.yOffset += this.posYOffset;
+				me.xOffset += me.posXOffset;
+				me.yOffset += me.posYOffset;
 			}
 
 			// ensure offset in range
-			if (this.xOffset < -i) {
-				this.xOffset = -i;
-			} else if (this.xOffset >= i) {
-				this.xOffset = i - 1;
+			if (me.xOffset < -i) {
+				me.xOffset = -i;
+			} else if (me.xOffset >= i) {
+				me.xOffset = i - 1;
 			}
-			if (this.yOffset < -i) {
-				this.yOffset = -i;
-			} else if (this.yOffset >= i) {
-				this.yOffset = i - 1;
+			if (me.yOffset < -i) {
+				me.yOffset = -i;
+			} else if (me.yOffset >= i) {
+				me.yOffset = i - 1;
 			}
 
 			// grow the grid if the pattern is too big to fit
-			while (this.engine.width < this.engine.maxGridSize && ((neededWidth + borderSize + Math.abs(this.xOffset) * 2) >= this.engine.width || (neededHeight + borderSize + Math.abs(this.yOffset) * 2) >= this.engine.height)) {
+			while (me.engine.width < me.engine.maxGridSize && ((neededWidth + borderSize + Math.abs(me.xOffset) * 2) >= me.engine.width || (neededHeight + borderSize + Math.abs(me.yOffset) * 2) >= me.engine.height)) {
 				// grow the grid
-				this.engine.growGrid();
+				me.engine.growGrid();
 
 				// update the default x and y
-				this.defaultX += this.engine.width >> 2;
-				this.defaultY += this.engine.height >> 2;
+				me.defaultX += me.engine.width >> 2;
+				me.defaultY += me.engine.height >> 2;
 
 				// update the saved x and y
-				this.savedX += this.engine.width >> 2;
-				this.savedY += this.engine.height >> 2;
+				me.savedX += me.engine.width >> 2;
+				me.savedY += me.engine.height >> 2;
 
 				// check for hex mode
-				if (this.engine.isHex) {
-					this.defaultX -= this.engine.height >> 3;
-					this.savedX -= this.engine.height >> 3;
+				if (me.engine.isHex) {
+					me.defaultX -= me.engine.height >> 3;
+					me.savedX -= me.engine.height >> 3;
 				}
 			}
 
 			// resize the HROT buffer to the current width and height
 			if (pattern.isHROT) {
-				this.engine.HROT.resize(this.engine.width, this.engine.height);
+				me.engine.HROT.resize(me.engine.width, me.engine.height);
 			}
 
 			// compute pan X and Y for the pattern on the grid
-			this.computePanXY(pattern.width, pattern.height);
+			me.computePanXY(pattern.width, pattern.height);
 			
 			// populate the state 6 mask
-			if (this.engine.isLifeHistory) {
+			if (me.engine.isLifeHistory) {
 				// check if state 6 is used
-				if (this.manager.stateCount[6]) {
-					this.engine.populateState6Mask(pattern, this.panX, this.panY);
+				if (me.manager.stateCount[6]) {
+					me.engine.populateState6Mask(pattern, me.panX, me.panY);
 				}
 			}
 
 			// set custom text colour
-			if (this.customTextColour) {
+			if (me.customTextColour) {
 				// copy to text colour
-				this.menuManager.notification.colour = "rgb(" + this.customTextColour[0] + "," + this.customTextColour[1] + "," + this.customTextColour[2] + ")";
+				me.menuManager.notification.colour = "rgb(" + me.customTextColour[0] + "," + me.customTextColour[1] + "," + me.customTextColour[2] + ")";
 			} else {
 				// set default
-				this.menuManager.notification.colour = this.menuManager.notification.priorityColour;
+				me.menuManager.notification.colour = me.menuManager.notification.priorityColour;
 			}
 
 			// set states used if no custom colours used
-			if (this.customColours === null) {
-				for (i = 0; i < this.colourList.length; i += 1) {
-					if (this.manager.stateCount[i]) {
-						this.customColourUsed[i] = ViewConstants.stateUsedDefault;
+			if (me.customColours === null) {
+				for (i = 0; i < me.colourList.length; i += 1) {
+					if (me.manager.stateCount[i]) {
+						me.customColourUsed[i] = ViewConstants.stateUsedDefault;
 					} else {
-						this.customColourUsed[i] = ViewConstants.stateNotUsed;
+						me.customColourUsed[i] = ViewConstants.stateNotUsed;
 					}
 				}
 			}
 
 			// create LifeHistory overlay colours if required
-			if (this.engine.overlayGrid) {
+			if (me.engine.overlayGrid) {
 				// create overlay colours
-				this.engine.createLHOverlayColours(this.colourList, this.customColours);
+				me.engine.createLHOverlayColours(me.colourList, me.customColours);
 
 				// flag overlay drawing required
-				this.engine.drawOverlay = true;
+				me.engine.drawOverlay = true;
 			} else {
-				this.engine.drawOverlay = false;
+				me.engine.drawOverlay = false;
 			}
 
 			// copy pattern to center of grid
 			if (!pattern.tooBig) {
-				this.copyPatternTo(pattern);
+				me.copyPatternTo(pattern);
 			}
 
 			// update rule label
-			if (this.patternAliasName !== "") {
-				this.ruleLabel.preText = this.patternAliasName;
+			if (me.patternAliasName !== "") {
+				me.ruleLabel.preText = me.patternAliasName;
 			} else {
-				this.ruleLabel.preText = this.patternRuleName;
+				me.ruleLabel.preText = me.patternRuleName;
 			}
 
 			// set the tool tip in case the rule name is wider than the label
-			this.ruleLabel.toolTip = this.patternRuleName;
+			me.ruleLabel.toolTip = me.patternRuleName;
 			
 			// check for alias name
-			if (this.patternAliasName !== "") {
-				this.ruleLabel.toolTip += " alias " + this.patternAliasName;
+			if (me.patternAliasName !== "") {
+				me.ruleLabel.toolTip += " alias " + me.patternAliasName;
 			}
 		}
 
 		// setup oscillator search
-		this.resultsDisplayed = false;
-		this.lastOscillator = "none";
-		this.lastIdentifyType = "none";
-		this.lastIdentifyPeriod = "none";
-		this.lastIdentifyDirection = "none";
-		this.lastIdentifySpeed = "none";
-		this.lastIdentifyBox = "none";
-		this.lastIdentifyGen = "none";
-		this.lastIdentifyCells = "none";
-		this.lastIdentifySlope = "none";
-		this.lastIdentifyHeat = "none";
-		this.lastIdentifyVolatility = "none";
-		this.lastIdentifyMod = "none";
-		this.identify = false;
-		this.identifyButton.current = [this.identify];
-		this.engine.initSearch(this.identify);
+		me.resultsDisplayed = false;
+		me.lastOscillator = "none";
+		me.lastIdentifyType = "none";
+		me.lastIdentifyPeriod = "none";
+		me.lastIdentifyDirection = "none";
+		me.lastIdentifySpeed = "none";
+		me.lastIdentifyBox = "none";
+		me.lastIdentifyGen = "none";
+		me.lastIdentifyCells = "none";
+		me.lastIdentifySlope = "none";
+		me.lastIdentifyHeat = "none";
+		me.lastIdentifyVolatility = "none";
+		me.lastIdentifyMod = "none";
+		me.identify = false;
+		me.identifyButton.current = [me.identify];
+		me.engine.initSearch(me.identify);
 
 		// update performance warning
-		this.showLagToggle.current = this.toggleShowLag([this.perfWarning], true, this);
+		me.showLagToggle.current = me.toggleShowLag([me.perfWarning], true, me);
 
 		// create the colour index
-		this.engine.createColourIndex();
+		me.engine.createColourIndex();
 
 		// setup the colour theme
-		this.setColourTheme(this.themeRequested);
+		me.setColourTheme(me.themeRequested);
 
 		// copy custom colours to engine
-		this.engine.customColours = this.customColours;
+		me.engine.customColours = me.customColours;
 
 		// create the colour palette
-		if (this.engine.isNone || (!this.executable && this.engine.multiNumStates > 2)) {
-			this.engine.createMultiStateColours(this.colourList, this.customColours);
+		if (me.engine.isNone || (!me.executable && me.engine.multiNumStates > 2)) {
+			me.engine.createMultiStateColours(me.colourList, me.customColours);
 		} else {
-			this.engine.createColours();
+			me.engine.createColours();
 		}
 
 		// create the pixel colours from the palette at full brightness
-		this.engine.createPixelColours(1);	
+		me.engine.createPixelColours(1);	
 
 		// set bounded grid border cell
-		this.engine.setBoundedGridBorderCell();
+		me.engine.setBoundedGridBorderCell();
 
 		// set smart drawing control
-		this.smartToggle.current = this.toggleSmart([this.smartDrawing], true, this);
+		me.smartToggle.current = me.toggleSmart([me.smartDrawing], true, me);
 
 		// set the graph controls
-		this.opacityItem.current = this.viewOpacityRange([this.popGraphOpacity, this.popGraphOpacity], false, this);
-		this.linesToggle.current = [this.popGraphLines];
+		me.opacityItem.current = me.viewOpacityRange([me.popGraphOpacity, me.popGraphOpacity], false, me);
+		me.linesToggle.current = [me.popGraphLines];
 
 		// update autofit UI
-		this.autoFitToggle.current = [this.autoFit];
+		me.autoFitToggle.current = [me.autoFit];
 
 		// update grid UI
-		this.gridToggle.current = [this.engine.displayGrid];
+		me.gridToggle.current = [me.engine.displayGrid];
 
 		// reset generation
-		this.engine.counter = 0;
-		this.engine.counterMargolus = 0;
-		this.engine.maxMargolusGen = 0;
-		this.floatCounter = 0;
-		this.originCounter = 0;
+		me.engine.counter = 0;
+		me.engine.counterMargolus = 0;
+		me.engine.maxMargolusGen = 0;
+		me.floatCounter = 0;
+		me.originCounter = 0;
 
 		// reset elapsed time
-		this.elapsedTime = 0;
+		me.elapsedTime = 0;
 
 		// setup mode UI
-		this.modeList.itemLocked = [false, false, false];
+		me.modeList.itemLocked = [false, false, false];
 
 		// check whether to disable drawing
-		if (this.viewOnly || this.engine.isNone) {
-			this.modeList.itemLocked[ViewConstants.modeDraw] = true;
+		if (me.viewOnly || me.engine.isNone) {
+			me.modeList.itemLocked[ViewConstants.modeDraw] = true;
 		}
 
 		// if standard view mode then reset colour grid and population
-		if (this.multiStateView) {
+		if (me.multiStateView) {
 			// check if the pattern loaded
 			if (pattern) {
 				// compute bounding box
-				this.engine.resetBoxes(this.state1Fit);
+				me.engine.resetBoxes(me.state1Fit);
 
 				// check if a custom colour set was defined
-				if (this.customColours) {
-					this.colourList = this.customColours;
+				if (me.customColours) {
+					me.colourList = me.customColours;
 				}
 			}
-			this.colourSetSize = this.colourList.length;
+			me.colourSetSize = me.colourList.length;
 
 			// create multi state colours
-			this.engine.createMultiStateColours(this.colourList, this.customColours);
+			me.engine.createMultiStateColours(me.colourList, me.customColours);
 
 			// reset snapshot manager
-			this.engine.snapshotManager.reset();
+			me.engine.snapshotManager.reset();
 
 			// disable graph
-			this.graphDisabled = true;
-			this.popGraph = false;
+			me.graphDisabled = true;
+			me.popGraph = false;
 		} else {
 			// compute bounding box
-			this.engine.resetBoxes(this.state1Fit);
+			me.engine.resetBoxes(me.state1Fit);
 
 			// reset history box
-			this.engine.resetHistoryBox();
+			me.engine.resetHistoryBox();
 
 			// reset the colour grid if not multi-state Generations or HROT rule
-			if (this.engine.multiNumStates <= 2) {
-				this.engine.resetColourGridBox(this.engine.grid16);
+			if (me.engine.multiNumStates <= 2) {
+				me.engine.resetColourGridBox(me.engine.grid16);
 			}
 
-			// check if this is a LifeHistory pattern
-			if (this.engine.isLifeHistory) {
+			// check if me is a LifeHistory pattern
+			if (me.engine.isLifeHistory) {
 				// check if there are state 2 cells
-				if (this.manager.stateCount[2]) {
+				if (me.manager.stateCount[2]) {
 					// copy state 2 to the colour grid
-					this.engine.copyState2(pattern, this.panX, this.panY);
+					me.engine.copyState2(pattern, me.panX, me.panY);
 				}
 			}
 
 			// draw any rle snippets after colour grid conversion (for paste blending modes)
-			this.pasteRLEList();
+			me.pasteRLEList();
 
 			// reset boxes again if RLE was pasted
-			if (this.pasteList.length > 0) {
-				this.engine.resetBoxes(this.state1Fit);
-				this.engine.resetHistoryBox();
-				if (this.engine.multiNumStates <= 2) {
-					this.engine.resetColourGridBox(this.engine.grid16);
+			if (me.pasteList.length > 0) {
+				me.engine.resetBoxes(me.state1Fit);
+				me.engine.reseme();
+				if (me.engine.multiNumStates <= 2) {
+					me.engine.resetColourGridBox(me.engine.grid16);
 				}
 			}
 
 			// reset population
-			this.engine.resetPopulationBox(this.engine.grid16, this.engine.colourGrid);
-			if (pattern && this.engine.population === 0 && !this.isPasteEvery) {
-				this.emptyStart = true;
-				if (!this.engine.isNone) {
+			me.engine.resetPopulationBox(me.engine.grid16, me.engine.colourGrid);
+			if (pattern && me.engine.population === 0 && !me.isPasteEvery) {
+				me.emptyStart = true;
+				if (!me.engine.isNone) {
 					if (pattern.tooBig) {
-						this.menuManager.notification.notify("Pattern too big!", 15, ViewConstants.errorDuration, 15, false);
+						me.menuManager.notification.notify("Pattern too big!", 15, ViewConstants.errorDuration, 15, false);
 					} else {
-						this.menuManager.notification.notify("New pattern", 15, 300, 15, false);
+						me.menuManager.notification.notify("New pattern", 15, 300, 15, false);
 					}
 				}
 			} else {
-				this.emptyStart = false;
+				me.emptyStart = false;
 			}
 
 			// set the bounded grid tiles if specified
-			if (this.engine.boundedGridType !== -1) {
-				this.engine.setBoundedTiles();
+			if (me.engine.boundedGridType !== -1) {
+				me.engine.setBoundedTiles();
 			}
 
 			// save state for reset
-			this.engine.saveGrid(this.noHistory);
-			this.engine.restoreSavedGrid(this.noHistory);
+			me.engine.saveGrid(me.noHistory);
+			me.engine.restoreSavedGrid(me.noHistory);
 		}
 
 		// set the xy label UI width based on max grid size
-		if (this.engine.maxGridSize > 9999) {
-			this.xyLabel.width = 166;
+		if (me.engine.maxGridSize > 9999) {
+			me.xyLabel.width = 166;
 		} else {
-			this.xyLabel.width = 140;
+			me.xyLabel.width = 140;
 		}
 		// set the selection size label just to the right of the xy label
-		this.selSizeLabel.setX(this.xyLabel.relWidth);
+		me.selSizeLabel.setX(me.xyLabel.relWidth);
 
 		// set the [R]History toggle UI control
-		this.rHistoryButton.locked = !this.engine.isLifeHistory;
-		this.rHistoryButton.current = [this.engine.displayLifeHistory];
+		me.rHistoryButton.locked = !me.engine.isLifeHistory;
+		me.rHistoryButton.current = [me.engine.displayLifeHistory];
 
 		// set the graph UI control
-		this.graphButton.locked = this.graphDisabled;
-		this.graphButton.current = [this.popGraph];
+		me.graphButton.locked = me.graphDisabled;
+		me.graphButton.current = [me.popGraph];
 
 		// set the performance warning UI control
-		this.showLagToggle.current = [this.perfWarning];
+		me.showLagToggle.current = [me.perfWarning];
 
 		// set the throttle UI control
-		this.throttleToggle.current = [this.canBailOut];
+		me.throttleToggle.current = [me.canBailOut];
 
 		// set the kill gliders UI control
-		this.killButton.current = [this.engine.clearGliders];
+		me.killButton.current = [me.engine.clearGliders];
 
 		// set the autohide UI control
-		this.autoHideButton.current = [this.hideGUI];
+		me.autoHideButton.current = [me.hideGUI];
 
 		// set the autogrid UI control
-		this.autoGridButton.current = [this.autoGrid];
+		me.autoGridButton.current = [me.autoGrid];
 
 		// set the alternating grid UI control
-		this.altGridButton.current = [this.engine.altGrid];
-		this.altGridButton.locked = !this.engine.isMargolus;
+		me.altGridButton.current = [me.engine.altGrid];
+		me.altGridButton.locked = !me.engine.isMargolus;
 
 		// set the hex cell UI control and lock if triangular grid
-		this.hexCellButton.current = [this.engine.useHexagons];
-		this.hexCellButton.locked = this.engine.isTriangular;
+		me.hexCellButton.current = [me.engine.useHexagons];
+		me.hexCellButton.locked = me.engine.isTriangular;
 
 		// set reverse direction button if reversible Margolus rule loaded
-		if (this.engine.isMargolus && this.engine.margolusReverseLookup1 !== null) {
-			this.directionButton.deleted = false;
+		if (me.engine.isMargolus && me.engine.margolusReverseLookup1 !== null) {
+			me.directionButton.deleted = false;
 		} else {
-			this.directionButton.deleted = true;
+			me.directionButton.deleted = true;
 		}
 
 		// set the label UI control
-		if (this.waypointManager.numAnnotations() === 0) {
-			this.labelButton.locked = true;
-			this.showLabels = false;
+		if (me.waypointManager.numAnnotations() === 0) {
+			me.labelButton.locked = true;
+			me.showLabels = false;
 		} else {
-			this.labelButton.locked = false;
-			this.showLabels = true;
+			me.labelButton.locked = false;
+			me.showLabels = true;
 		}
-		this.labelButton.current = [this.showLabels];
+		me.labelButton.current = [me.showLabels];
 
 		// set the Information Bar UI control
-		this.infoBarButton.current = [this.infoBarEnabled];
+		me.infoBarButton.current = [me.infoBarEnabled];
 		
 		// set the relative generation display UI control
-		this.relativeToggle.current = [this.genRelative];
+		me.relativeToggle.current = [me.genRelative];
 
 		// set the Stars UI control
-		this.starsButton.current = [this.starsOn];
+		me.starsButton.current = [me.starsOn];
 
 		// set the history fit UI control
-		this.historyFitButton.current = [this.historyFit];
+		me.historyFitButton.current = [me.historyFit];
 
 		// set the POI control
-		if (this.waypointManager.numPOIs()) {
-			this.prevPOIButton.deleted = false;
-			this.nextPOIButton.deleted = false;
+		if (me.waypointManager.numPOIs()) {
+			me.prevPOIButton.deleted = false;
+			me.nextPOIButton.deleted = false;
 		} else{
-			this.prevPOIButton.deleted = true;
-			this.nextPOIButton.deleted = true;
+			me.prevPOIButton.deleted = true;
+			me.nextPOIButton.deleted = true;
 		}
 
 		// set the major gridlines UI control
-		if (this.engine.gridLineMajor === 0) {
-			this.majorButton.current = [false];
-			this.majorButton.locked = true;
+		if (me.engine.gridLineMajor === 0) {
+			me.majorButton.current = [false];
+			me.majorButton.locked = true;
 		} else {
-			this.majorButton.current = [this.engine.gridLineMajorEnabled];
-			this.majorButton.locked = false;
+			me.majorButton.current = [me.engine.gridLineMajorEnabled];
+			me.majorButton.locked = false;
 		}
 
 		// reset population data
-		if (!this.graphDisabled) {
-			this.engine.resetPopulationData();
+		if (!me.graphDisabled) {
+			me.engine.resetPopulationData();
 		}
 
 		if (pattern) {
@@ -14531,260 +14553,260 @@
 		}
 
 		// fit zoom
-		numberValue = this.engine.zoom;
-		savedX = this.engine.xOff;
-		savedY = this.engine.yOff;
-		savedThumbnail = this.thumbnail;
-		this.thumbnail = false;
-		this.fitZoomDisplay(true, false);
-		this.thumbnail = savedThumbnail;
+		numberValue = me.engine.zoom;
+		savedX = me.engine.xOff;
+		savedY = me.engine.yOff;
+		savedThumbnail = me.thumbnail;
+		me.thumbnail = false;
+		me.fitZoomDisplay(true, false);
+		me.thumbnail = savedThumbnail;
 
 		// override the default zoom if specified
-		if (this.defaultZoomUsed) {
-			this.engine.zoom = numberValue;
+		if (me.defaultZoomUsed) {
+			me.engine.zoom = numberValue;
 		} else {
 			// enforce default maximum if zoom or autofit not specified
-			if (!this.autoFit) {
-				if (this.engine.zoom > ViewConstants.maxDefaultZoom) {
-					this.engine.zoom = ViewConstants.maxDefaultZoom;
+			if (!me.autoFit) {
+				if (me.engine.zoom > ViewConstants.maxDefaultZoom) {
+					me.engine.zoom = ViewConstants.maxDefaultZoom;
 				}
 			}
 		}
 
 		// override the default position if specified
-		if (this.defaultXUsed) {
-			this.engine.xOff = savedX;
+		if (me.defaultXUsed) {
+			me.engine.xOff = savedX;
 		}
-		if (this.defaultYUsed) {
-			this.engine.yOff = savedY;
+		if (me.defaultYUsed) {
+			me.engine.yOff = savedY;
 		}
 
 		// update the waypoints if the defaults were not used
-		if (this.waypointsDefined) {
-			this.validateWaypoints(this.scriptErrors);
+		if (me.waypointsDefined) {
+			me.validateWaypoints(me.scriptErrors);
 		}
 
 		// set thumbnail zoom if specified
-		if (this.thumbnail && this.thumbZoomDefined) {
-			this.engine.zoom = this.thumbZoomValue;
+		if (me.thumbnail && me.thumbZoomDefined) {
+			me.engine.zoom = me.thumbZoomValue;
 		}
 
-		// make this current position the default
-		this.defaultZoom = this.engine.zoom;
-		this.zoomItem.current = this.viewZoomRange([this.engine.zoom, this.engine.zoom], false, this);
-		this.defaultX = this.engine.xOff;
-		this.defaultY = this.engine.yOff;
+		// make me current position the default
+		me.defaultZoom = me.engine.zoom;
+		me.zoomItem.current = me.viewZoomRange([me.engine.zoom, me.engine.zoom], false, me);
+		me.defaultX = me.engine.xOff;
+		me.defaultY = me.engine.yOff;
 
 		// set the default angle
-		this.defaultAngle = this.engine.angle;
-		this.angleItem.current = [this.defaultAngle, this.defaultAngle];
+		me.defaultAngle = me.engine.angle;
+		me.angleItem.current = [me.defaultAngle, me.defaultAngle];
 
 		// set the default theme
-		this.defaultTheme = this.engine.colourTheme;
-		this.setNewTheme(this.defaultTheme, this.engine.colourChangeSteps, this);
+		me.defaultTheme = me.engine.colourTheme;
+		me.setNewTheme(me.defaultTheme, me.engine.colourChangeSteps, me);
 
 		// set the generation speed
-		this.defaultGPS = this.genSpeed;
-		numberValue = Math.sqrt((this.defaultGPS - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
-		this.generationRange.current = this.viewGenerationRange([numberValue, numberValue], true, this);
+		me.defaultGPS = me.genSpeed;
+		numberValue = Math.sqrt((me.defaultGPS - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
+		me.generationRange.current = me.viewGenerationRange([numberValue, numberValue], true, me);
 
 		// set the step
-		this.defaultStep = this.gensPerStep;
-		this.stepRange.current = this.viewStepRange([this.defaultStep, this.defaultStep], true, this);
+		me.defaultStep = me.gensPerStep;
+		me.stepRange.current = me.viewStepRange([me.defaultStep, me.defaultStep], true, me);
 
 		// set the layers
-		this.defaultLayers = this.engine.layers;
-		this.layersItem.current = [this.defaultLayers, this.defaultLayers];
+		me.defaultLayers = me.engine.layers;
+		me.layersItem.current = [me.defaultLayers, me.defaultLayers];
 
 		// set the layer depth
-		this.defaultDepth = this.engine.layerDepth;
-		numberValue = Math.sqrt(this.defaultDepth);
-		this.depthItem.current = this.viewDepthRange([numberValue, numberValue], true, this);
+		me.defaultDepth = me.engine.layerDepth;
+		numberValue = Math.sqrt(me.defaultDepth);
+		me.depthItem.current = me.viewDepthRange([numberValue, numberValue], true, me);
 
 		// mark something alive
-		this.engine.anythingAlive = 1;
+		me.engine.anythingAlive = 1;
 
 		// check whether autostart required
-		if (this.autoStart && !this.autoStartDisabled) {
-			this.generationOn = true;
-			this.playList.current = ViewConstants.modePlay;
+		if (me.autoStart && !me.autoStartDisabled) {
+			me.generationOn = true;
+			me.playList.current = ViewConstants.modePlay;
 		} else {
-			this.generationOn = false;
-			this.playList.current = ViewConstants.modePause;
+			me.generationOn = false;
+			me.playList.current = ViewConstants.modePause;
 		}
 
 		// set the pause button
-		this.setPauseIcon(this.generationOn);
+		me.setPauseIcon(me.generationOn);
 
 		// disable menu controls if height is too small
-		if (this.displayHeight < ViewConstants.minMenuHeight) {
+		if (me.displayHeight < ViewConstants.minMenuHeight) {
 			// delete the navigation menu toggle
-			this.navToggle.deleted = true;
+			me.navToggle.deleted = true;
 
 			// move gps, step and play controls right
-			this.playList.setX(this.playListX + 45);
-			this.generationRange.setX(this.generationRangeX + 45);
-			this.stepRange.setX(this.stepRangeX + 45);
+			me.playList.setX(me.playListX + 45);
+			me.generationRange.setX(me.generationRangeX + 45);
+			me.stepRange.setX(me.stepRangeX + 45);
 		} else {
 			// reset gps and play control position
-			this.playList.setX(this.playListX);
-			this.generationRange.setX(this.generationRangeX);
-			this.stepRange.setX(this.stepRangeX);
+			me.playList.setX(me.playListX);
+			me.generationRange.setX(me.generationRangeX);
+			me.stepRange.setX(me.stepRangeX);
 		}
 
 		// resize the zoom slider
-		if (this.displayWidth > ViewConstants.minViewerWidth && !this.isInPopup) {
-			i = (this.displayWidth - ViewConstants.minViewerWidth) + ViewConstants.zoomSliderDefaultWidth;
+		if (me.displayWidth > ViewConstants.minViewerWidth && !me.isInPopup) {
+			i = (me.displayWidth - ViewConstants.minViewerWidth) + ViewConstants.zoomSliderDefaultWidth;
 			if (i > ViewConstants.zoomSliderMaxWidth) {
 				i = ViewConstants.zoomSliderMaxWidth;
 			}
-			this.zoomItem.setWidth(i);
+			me.zoomItem.setWidth(i);
 		} else {
-			this.zoomItem.setWidth(ViewConstants.zoomSliderDefaultWidth);
+			me.zoomItem.setWidth(ViewConstants.zoomSliderDefaultWidth);
 		}
 
 		// check whether to resize the canvas
-		if (resizeRequired || this.thumbnail) {
+		if (resizeRequired || me.thumbnail) {
 			// check for thumbnail view
-			if (this.thumbnail) {
-				this.switchOnThumbnail();
+			if (me.thumbnail) {
+				me.switchOnThumbnail();
 			} else {
 				// resize the viewer
-				this.resize();
+				me.resize();
 			}
 		}
 
 		// display error notification if failed
 		if (!pattern) {
 			// check if the pattern was too big
-			if (this.manager.tooBig) {
-				this.menuManager.notification.notify("Pattern too big!", 15, ViewConstants.errorDuration, 15, false);
+			if (me.manager.tooBig) {
+				me.menuManager.notification.notify("Pattern too big!", 15, ViewConstants.errorDuration, 15, false);
 			} else {
-				this.menuManager.notification.notify("Invalid pattern!", 15, ViewConstants.errorDuration, 15, false);
+				me.menuManager.notification.notify("Invalid pattern!", 15, ViewConstants.errorDuration, 15, false);
 			}
 		}
 
 		// close help if errors found
-		if (this.scriptErrors.length) {
-			this.displayHelp = 0;
+		if (me.scriptErrors.length) {
+			me.displayHelp = 0;
 		} else {
 			// close errors
-			this.displayErrors = 0;
+			me.displayErrors = 0;
 		}
 
 		// make view only if not executable
-		if (!this.executable) {
-			this.viewOnly = true;
+		if (!me.executable) {
+			me.viewOnly = true;
 		}
 
 		// disable playback if view only
-		if (this.viewOnly) {
+		if (me.viewOnly) {
 			// delete the playback controls
-			this.playList.deleted = true;
+			me.playList.deleted = true;
 
 			// delete the generation toggle
-			this.genToggle.deleted = true;
+			me.genToggle.deleted = true;
 			
 			// delete the progress bar
-			this.progressBar.deleted = true;
+			me.progressBar.deleted = true;
 
 			// delete gps range
-			this.generationRange.deleted = true;
+			me.generationRange.deleted = true;
 
 			// delete the step range
-			this.stepRange.deleted = true;
+			me.stepRange.deleted = true;
 
 			// delete the undo and redo buttons
-			this.undoButton.deleted = true;
-			this.redoButton.deleted = true;
+			me.undoButton.deleted = true;
+			me.redoButton.deleted = true;
 
 			// delete layers and depth if multi-state view on
-			if (this.multiStateView) {
-				this.layersItem.deleted = true;
-				this.depthItem.deleted = true;
-				this.themeButton.deleted = true;
+			if (me.multiStateView) {
+				me.layersItem.deleted = true;
+				me.depthItem.deleted = true;
+				me.themeButton.deleted = true;
 
 				// reset layers to 1
-				this.engine.layers = 1;
+				me.engine.layers = 1;
 			}
 
 			// show the reason label
-			this.reasonLabel.deleted = false;
+			me.reasonLabel.deleted = false;
 
 			// check if there was an error
-			if (this.failureReason === "") {
+			if (me.failureReason === "") {
 				// label reason is VIEWONLY
-				this.reasonLabel.preText = Keywords.viewOnlyWord;
-				this.reasonLabel.fgCol = ViewConstants.helpFontColour;
+				me.reasonLabel.preText = Keywords.viewOnlyWord;
+				me.reasonLabel.fgCol = ViewConstants.helpFontColour;
 			} else {
-				this.reasonLabel.preText = this.failureReason;
-				this.reasonLabel.fgCol = this.errorsFontColour;
+				me.reasonLabel.preText = me.failureReason;
+				me.reasonLabel.fgCol = me.errorsFontColour;
 			}
 		} else {
-			this.reasonLabel.deleted = true;
+			me.reasonLabel.deleted = true;
 		}
 
 		// adjust close/back button to fit
-		if (this.displayHeight < 540) {
-			this.backButton.setPosition(Menu.south, 0, -85);
+		if (me.displayHeight < 540) {
+			me.backButton.setPosition(Menu.south, 0, -85);
 		} else {
-			this.backButton.setPosition(Menu.south, 0, -100);
+			me.backButton.setPosition(Menu.south, 0, -100);
 		}
 
 		// update the grid icon for hex/square mode
-		this.updateGridIcon();
+		me.updateGridIcon();
 
 		// clear manual change flag
-		this.manualChange = false;
+		me.manualChange = false;
 
 		// clear last waypoint message
-		this.lastWaypointMessage = "";
+		me.lastWaypointMessage = "";
 
 		// set saved view to current view
-		this.saveCamera(this);
+		me.saveCamera(me);
 
 		// if grid is finitely bounded then show density rather than births and deaths
-		if (this.finitelyBounded()) {
-			this.birthsLabel.preText = "Density";
-			this.birthsLabel.toolTip = "cell density";
+		if (me.finitelyBounded()) {
+			me.birthsLabel.preText = "Density";
+			me.birthsLabel.toolTip = "cell density";
 		} else {
-			this.birthsLabel.preText = "Births";
-			this.birthsLabel.toolTip = "cells born this generation";
+			me.birthsLabel.preText = "Births";
+			me.birthsLabel.toolTip = "cells born this generation";
 		}
 
 		// ensure update
-		this.menuManager.toggleRequired = true;
-		this.menuManager.setAutoUpdate(true);
+		me.menuManager.toggleRequired = true;
+		me.menuManager.setAutoUpdate(true);
 
 		// set the window title if in a popup
-		if (this.isInPopup) {
+		if (me.isInPopup) {
 			// set the title
-			if (this.titleElement) {
-				if (this.windowTitle === "") {
-					this.titleElement.nodeValue = "LifeViewer";
+			if (me.titleElement) {
+				if (me.windowTitle === "") {
+					me.titleElement.nodeValue = "LifeViewer";
 				} else {
-					this.titleElement.nodeValue = this.fitTitle(this.windowTitle);
+					me.titleElement.nodeValue = me.fitTitle(me.windowTitle);
 				}
 			}
 		}
 
 		// display universe if in multiverse mode
 		if (DocConfig.multi) {
-			name = this.patternName;
+			name = me.patternName;
 			if (name === "") {
-				name = "Universe " + (this.universe + 1);
+				name = "Universe " + (me.universe + 1);
 			}
-			this.menuManager.notification.notify(name, 15, 120, 15, true);
-			this.prevUniverseButton.deleted = false;
-			this.nextUniverseButton.deleted = false;
+			me.menuManager.notification.notify(name, 15, 120, 15, true);
+			me.prevUniverseButton.deleted = false;
+			me.nextUniverseButton.deleted = false;
 		} else {
-			this.prevUniverseButton.deleted = true;
-			this.nextUniverseButton.deleted = true;
+			me.prevUniverseButton.deleted = true;
+			me.nextUniverseButton.deleted = true;
 
 		}
 
 		// save initial undo state
-		this.afterEdit("");
+		me.afterEdit("");
 	};
 
 	// start a viewer
@@ -15203,35 +15225,64 @@
 		return false;
 	}
 
-	// check if a string is a valid pattern
-	function isPattern(patternString, allocator) {
-		var result = false,
-		    pattern = null;
 
-		// attempt to build a pattern from the string
-		try {
-			// create a pattern
-			pattern = this.manager.create("", patternString, allocator, false);
+	// create anchor
+	function createAnchor(rleItem, textItem) {
+		// add the show in viewer anchor
+		var anchorItem = rleItem.getElementsByTagName("a")[0],
+			newAnchor = document.createElement("a"),
+			nodeItem = null;
 
-			// check if it created
-			if (pattern.lifeMap) {
-				result = true;
-				// check if in multiverse mode
-				if (DocConfig.multi) {
-					// add details to Controller
-					Controller.patterns[Controller.patterns.length] = new PatternInfo(pattern.name, patternString, pattern.ruleName + pattern.boundedGridDef, pattern.width, pattern.height);
-				}
+		// create new anchor
+		newAnchor.setAttribute("href", "#");
+		newAnchor.innerHTML = "Show in Viewer";
+
+		// set the onclick
+		registerEvent(newAnchor, "click", anchorCallback, false);
+
+		// check if there was an anchor
+		if (anchorItem) {
+			// create a text divider
+			nodeItem = document.createTextNode(" / ");
+
+			// add to the parent
+			anchorItem.parentNode.appendChild(nodeItem);
+			anchorItem.parentNode.appendChild(newAnchor);
+		} else {
+			// add to the parent
+			textItem.parentNode.appendChild(newAnchor);
+		}
+	}
+
+	// complete isPattern check
+	function completeIsPattern(pattern, args) {
+		// unpack arguments
+		var patternString = args[0],
+			rleItem = args[1],
+			textItem = args[2];
+
+		if (pattern && pattern.lifeMap) {
+			// create the anchor if specified
+			if (rleItem !== null) {
+				createAnchor(rleItem, textItem);
+			}
+
+			if (DocConfig.multi) {
+				// add details to Controller
+				Controller.patterns[Controller.patterns.length] = new PatternInfo(pattern.name, patternString, pattern.ruleName + pattern.boundedGridDef, pattern.width, pattern.height);
 			}
 		}
-		catch(err) {
-			pattern = null;
+	}
+
+	// check if a string is a valid pattern
+	function isPattern(patternString, allocator, manager, rleItem, textItem) {
+		var pattern = null;
+
+		// attempt to create a pattern
+		pattern = manager.create("", patternString, allocator, completeIsPattern, null, [patternString, rleItem, textItem], false, null);
+		if (!manager.loadingFromRepository) {
+			completeIsPattern(pattern, [patternString, rleItem, textItem]);
 		}
-
-		// free the pattern
-		pattern = null;
-
-		// return the flag
-		return result;
 	}
 
 	// callback for show in viewer anchor
@@ -15255,21 +15306,23 @@
 			c = null,
 		    textItem = null,
 		    anchorItem = null,
-		    newAnchor = null,
 		    canvasItem = null,
 		    cleanItem = null,
 		    rleItem = null,
-		    nodeItem = null,
 			childItem = null,
 			
 			// whether added a show in viewer link
 			addedLink = false,
 
-		    // temporary allocator
-			allocator = new Allocator();
+		    // temporary allocator and pattern manager
+			allocator = new Allocator(),
+			manager = new PatternManager();
 
 		// read settings
 		readSettingsFromMeta();
+
+		// initialise the aliases
+		AliasManager.init();
 
 		// search for rle divs
 		for (b = 0; b < a.length; b += 1) {
@@ -15296,7 +15349,7 @@
 					// check for multiverse
 					if (DocConfig.multi) {
 						// check if the text is a pattern and add to Controller if in multiverse mode
-						isPattern(cleanItem, allocator);
+						isPattern(cleanItem, allocator, manager, null, null);
 					}
 
 					// check if the canvas exists
@@ -15334,32 +15387,7 @@
 								anchorItem = null;
 							
 								// check if the contents is a valid pattern (will add to Controller if in multiverse mode)
-								if (isPattern(cleanItem, allocator)) {
-									// add the show in viewer anchor
-									anchorItem = rleItem.getElementsByTagName("a")[0];
-
-									// add a new anchor
-									newAnchor = document.createElement("a");
-									newAnchor.setAttribute("href", "#");
-									newAnchor.innerHTML = "Show in Viewer";
-									addedLink = true;
-
-									// set the onclick
-									registerEvent(newAnchor, "click", anchorCallback, false);
-
-									// check if there was an anchor
-									if (anchorItem) {
-										// create a text divider
-										nodeItem = document.createTextNode(" / ");
-
-										// add to the parent
-										anchorItem.parentNode.appendChild(nodeItem);
-										anchorItem.parentNode.appendChild(newAnchor);
-									} else {
-										// add to the parent
-										textItem.parentNode.appendChild(newAnchor);
-									}
-								}
+								isPattern(cleanItem, allocator, manager, rleItem, textItem);
 							}
 						}
 					}

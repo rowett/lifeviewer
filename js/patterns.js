@@ -104,7 +104,7 @@
 		/** @type {string} */ this.failureReason = "";
 
 		// bounded grid prefix
-		/** @const {string} */ this.boundedGridPrefix = "=";
+		/** @const {string} */ this.boundedGridPrefix = ":";
 
 		// valid bounded grid types
 		/** @const {string} */ this.boundedGridTypes = "ptkcs";
@@ -6415,44 +6415,42 @@
 			valid = false;
 		}
 
-		// if valid then check if requested rule is this rule
+		// if valid then save parameters
 		if (valid) {
-			if (pattern.ruleName === pattern.ruleTableName) {
-				// save rule information
-				pattern.ruleTreeNeighbours = neighbours;
-				pattern.ruleTreeStates = states;
-				pattern.ruleTreeNodes = nodes;
-				pattern.ruleTreeBase = noff[noff.length - 1];
-				pattern.ruleTreeA = new Uint32Array(dat.length);
-				pattern.ruleTreeB = new Uint32Array(datb.length);
-				for (i = 0; i < dat.length; i += 1) {
-					pattern.ruleTreeA[i] = dat[i];
-				}
-				for (i = 0; i < datb.length; i += 1) {
-					pattern.ruleTreeB[i] = datb[i];
-				}
-
-				// mark pattern as valid
-				this.failureReason = "";
-				this.executable = true;
-			} else {
-				// mark rule as invalid since the pattern hasn't requested it
-				valid = false;
+			// save rule information
+			pattern.ruleTreeNeighbours = neighbours;
+			pattern.ruleTreeStates = states;
+			pattern.ruleTreeNodes = nodes;
+			pattern.ruleTreeBase = noff[noff.length - 1];
+			pattern.ruleTreeA = new Uint32Array(dat.length);
+			pattern.ruleTreeB = new Uint32Array(datb.length);
+			for (i = 0; i < dat.length; i += 1) {
+				pattern.ruleTreeA[i] = dat[i];
 			}
+			for (i = 0; i < datb.length; i += 1) {
+				pattern.ruleTreeB[i] = datb[i];
+			}
+
+			// mark pattern as valid
+			pattern.numStates = pattern.ruleTreeStates;
+			this.failureReason = "";
+			this.executable = true;
+			this.extendedFormat = false;
+			pattern.isNone = false;
 		}
 
 		return valid;
 	};
 
 	// decode rule table
-	PatternManager.prototype.decodeRuleTable = function(pattern) {
+	PatternManager.prototype.decodeRuleTable = function(pattern, ruleText) {
 		var valid = false,
 			tableIndex = -1,
 			treeIndex = -1,
 			colourIndex = -1,
 			iconIndex = -1,
 			// tokenize string keeping newlines as tokens
-			reader = new Script(pattern.afterTitle, true);
+			reader = new Script(ruleText, true);
 
 		// check if rule table rule exists
 		if (reader.findToken(this.ruleTableRuleName, -1) !== -1) {
@@ -6491,7 +6489,7 @@
 	};
 
 	// add a pattern to the list
-	PatternManager.prototype.create = function(name, source, allocator, tryRuleTable) {
+	PatternManager.prototype.create = function(name, source, allocator, succeedCallback, failCallback, args, view) {
 		// create a pattern skeleton
 		var newPattern = new Pattern(name, this),
 			index = 0;
@@ -6510,6 +6508,9 @@
 
 		// clear failure reason
 		this.failureReason = "";
+
+		// clear index
+		this.index = 0;
 
 		// clear extended RLE values
 		this.genDefined = false;
@@ -6614,9 +6615,6 @@
 				if (newPattern.afterTitle[newPattern.afterTitle.length - 1] !== "\n") {
 					newPattern.afterTitle += "\n";
 				}
-
-				// check if the after comments contain a rule definition
-				this.decodeRuleTable(newPattern);
 			}
 
 			// if triangular or hex and invalid then switch to square
@@ -6628,9 +6626,9 @@
 			}
 
 			// check if a pattern was loaded
-			if (this.failureReason !== "" && !this.tooBig && tryRuleTable) {
+			if (this.failureReason !== "" && !this.tooBig) {
 				// attempt to load rule table
-				this.loadRuleTable(newPattern.ruleName);
+				this.loadRuleTable(newPattern.ruleName, newPattern, succeedCallback, failCallback, args, view);
 			}
 		}
 
@@ -6652,7 +6650,7 @@
 
 		// attempt to locate the @RULE
 		if (i === -1) {
-			result = "Rule not found in response!";
+			result = "";
 		} else {
 			// prepare the search tags
 			k = 0;
@@ -6701,23 +6699,46 @@
 	};
 
 	// load event handler
-	PatternManager.prototype.loadHandler = function(me, event) {
+	PatternManager.prototype.loadHandler = function(me, event, pattern, succeedCallback, failCallback, args, view) {
+		// rule table text
+		var ruleText = "";
+
+		// check if the load succeeeded
 		if (me.xhr.readyState === 4) {
 			if (me.xhr.status === 200) {
-				alert(me.getRuleTable(me.xhr.responseText));
+				ruleText = me.getRuleTable(me.xhr.responseText);
+				if (ruleText === "") {
+					pattern.manager.failureReason = "@RULE not found";
+					if (failCallback !== null) {
+						return failCallback(pattern, args, view);
+					}
+				} else {
+					// attempt to decode the rule table
+					me.decodeRuleTable(pattern, ruleText);
+					if (succeedCallback !== null) {
+						return succeedCallback(pattern, args, view);
+					}
+				}
 			} else {
-				me.errorHandler(me, event);
+				console.debug("RuleTable fetch failed\n\nRule: " + me.ruleSearchName + "\nURI: " + me.ruleSearchURI + "\nStatus: " + me.xhr.statusText);
+				if (failCallback !== null) {
+					return failCallback(pattern, args, view);
+				}
 			}
 		}
 	};
 
 	// error event handler
-	PatternManager.prototype.errorHandler = function(me, event) {
-		alert("RuleTable fetch failed\n\nRule: " + me.ruleSearchName + "\nURI: " + me.ruleSearchURI + "\nStatus: " + me.xhr.statusText);
+	PatternManager.prototype.errorHandler = function(me, event, pattern, callback, args, view) {
+		console.debug("RuleTable fetch failed\n\nRule: " + me.ruleSearchName + "\nURI: " + me.ruleSearchURI + "\nStatus: " + me.xhr.statusText);
+		// complete load if specified
+		if (callback !== null) {
+			return callback(pattern, args, view);
+		}
 	};
 
 	// load rule table from URI
-	PatternManager.prototype.loadRuleTable = function(ruleName) {
+	PatternManager.prototype.loadRuleTable = function(ruleName, pattern, succeedCallback, failCallback, args, view) {
 		var	me = this,
 			uri = "/lifeview/plugin/wiki/Rule/" + ruleName;
 			//uri = "/wiki/Rule:" + ruleName;
@@ -6732,8 +6753,8 @@
 		// mark loading
 		this.loadingFromRepository = true;
 
-		registerEvent(this.xhr, "load", function(event) {me.loadHandler(me, event);}, false);
-		registerEvent(this.xhr, "error", function(event) {me.errorHandler(me, event);}, false);
+		registerEvent(this.xhr, "load", function(event) {me.loadHandler(me, event, pattern, succeedCallback, failCallback, args, view);}, false);
+		registerEvent(this.xhr, "error", function(event) {me.errorHandler(me, event, pattern, failCallback, args, view);}, false);
 
 		// attempt to get the requested resource
 		this.xhr.open("GET", uri, true);

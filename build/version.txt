@@ -1,3 +1,6 @@
+Build 449
+- initial RuleTree implementation
+
 Build 448
 - fix false positive for Mod on some patterns
 - fix rule lookup for too big patterns

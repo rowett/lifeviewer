@@ -1364,7 +1364,7 @@
 								itemName += " Vertices";
 							}
 						} else {
-							if (view.engine.isVonNeumann || view.engine.isPCA) {
+							if (view.engine.isVonNeumann || view.engine.isPCA || (view.engine.isRuleTree && view.engine.ruleTreeStates === 4)) {
 								itemName = "von Neumann";
 							} else {
 								itemName = "Moore";
