@@ -262,7 +262,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 449,
+		/** @const {number} */ versionBuild : 450,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13441,7 +13441,7 @@
 	};
 
 	// complete pattern start process
-	View.prototype.completeStart = function(pattern, ignoreThumbnail, me) {
+	View.prototype.completeStart = function(pattern, args, me) {
 		var numberValue = 0,
 		    savedX = 0,
 		    savedY = 0,
@@ -13451,6 +13451,7 @@
 			neededHeight = 0,
 			borderSize = 0,
 			i = 0,
+			ignoreThumbnail = args[0],
 			name = "";
 
 		// check for Edge browser

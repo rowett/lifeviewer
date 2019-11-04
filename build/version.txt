@@ -1,5 +1,9 @@
+Build 450
+- fix thumbnail mode being ignored
+
 Build 449
 - initial RuleTree implementation
+	- supports @TREE and @COLORS sections
 
 Build 448
 - fix false positive for Mod on some patterns

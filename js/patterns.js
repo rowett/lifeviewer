@@ -49,9 +49,6 @@
 	 * @constructor
 	 */
 	function PatternManager() {
-		// repository request
-		this.xhr = null;
-
 		// whether attempting to load from repository
 		/** @type {boolean} */ this.loadingFromRepository = false;
 
@@ -6793,14 +6790,14 @@
 	};
 
 	// load event handler
-	PatternManager.prototype.loadHandler = function(me, event, pattern, succeedCallback, failCallback, args, view) {
+	PatternManager.prototype.loadHandler = function(me, event, xhr, pattern, succeedCallback, failCallback, args, view) {
 		// rule table text
 		var ruleText = "";
 
 		// check if the load succeeeded
-		if (me.xhr.readyState === 4) {
-			if (me.xhr.status === 200) {
-				ruleText = me.getRuleTable(me.xhr.responseText);
+		if (xhr.readyState === 4) {
+			if (xhr.status === 200) {
+				ruleText = me.getRuleTable(xhr.responseText);
 				if (ruleText === "") {
 					pattern.manager.failureReason = "@RULE not found";
 					if (failCallback !== null) {
@@ -6823,7 +6820,7 @@
 	};
 
 	// error event handler
-	PatternManager.prototype.errorHandler = function(me, event, pattern, callback, args, view) {
+	PatternManager.prototype.errorHandler = function(me, event, xhr, pattern, callback, args, view) {
 		console.debug("RuleTable fetch failed\n\nRule: " + me.ruleSearchName + "\nURI: " + me.ruleSearchURI + "\nStatus: " + me.xhr.statusText);
 		// complete load if specified
 		if (callback !== null) {
@@ -6834,11 +6831,9 @@
 	// load rule table from URI
 	PatternManager.prototype.loadRuleTable = function(ruleName, pattern, succeedCallback, failCallback, args, view) {
 		var	me = this,
-			uri = "/lifeview/plugin/wiki/Rule/" + ruleName;
-			//uri = "/wiki/Rule:" + ruleName;
-
-		// create the request
-		this.xhr = new XMLHttpRequest();
+			xhr = new XMLHttpRequest(),
+			//uri = "/lifeview/plugin/wiki/Rule/" + ruleName;
+			uri = "/wiki/Rule:" + ruleName;
 
 		// save rule name for use in error message
 		this.ruleSearchName = ruleName;
@@ -6847,12 +6842,12 @@
 		// mark loading
 		this.loadingFromRepository = true;
 
-		registerEvent(this.xhr, "load", function(event) {me.loadHandler(me, event, pattern, succeedCallback, failCallback, args, view);}, false);
-		registerEvent(this.xhr, "error", function(event) {me.errorHandler(me, event, pattern, failCallback, args, view);}, false);
+		registerEvent(xhr, "load", function(event) {me.loadHandler(me, event, xhr, pattern, succeedCallback, failCallback, args, view);}, false);
+		registerEvent(xhr, "error", function(event) {me.errorHandler(me, event, xhr, pattern, failCallback, args, view);}, false);
 
 		// attempt to get the requested resource
-		this.xhr.open("GET", uri, true);
-		this.xhr.send(null);
+		xhr.open("GET", uri, true);
+		xhr.send(null);
 	};
 
 	// create the global interface
