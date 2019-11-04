@@ -168,9 +168,11 @@
 					case 67:
 						// set default theme
 						if (!me.multiStateView) {
-							me.setNewTheme(me.defaultTheme, me.engine.colourChangeSteps, me);
-							if (!me.engine.isNone && !me.showThemeSelection) {
-								me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
+							if (me.themeButton && !me.themeButton.locked) {
+								me.setNewTheme(me.defaultTheme, me.engine.colourChangeSteps, me);
+								if (!me.engine.isNone && !me.showThemeSelection) {
+									me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
+								}
 							}
 						}
 						break;
@@ -558,10 +560,14 @@
 					if (event.altKey) {
 						me.clearCells(me, false, false);
 						value = me.drawState;
-						if (me.engine.multiNumStates > 2) {
+						if (me.engine.multiNumStates > 2 && !(me.engine.isPCA || me.engine.isRuleTree) && value > 0) {
 							value = me.engine.multiNumStates - value;
 						}
-						me.menuManager.notification.notify("Cleared " + me.getStateName(value) + " cells", 15, 120, 15, true);
+						if (me.engine.isRuleTree) {
+							me.menuManager.notification.notify("Cleared state " + value + " cells", 15, 120, 15, true);
+						} else {
+							me.menuManager.notification.notify("Cleared " + me.getStateName(value) + " cells", 15, 120, 15, true);
+						}
 					} else {
 						// remove selection
 						me.removeSelection(me);

@@ -799,7 +799,7 @@
 
 		// HROT engine
 		// @ts-ignore
-		this.HROT = new HROT(this.allocator, this);
+		this.HROT = new HROT(this.allocator, this, manager);
 
 		// hex or triangle cell coordinates
 		this.coords = this.allocator.allocate(Float32, 1, "Life.coords");

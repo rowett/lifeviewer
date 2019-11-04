@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global LifeConstants ViewConstants ColourManager Keywords WaypointConstants DocConfig PatternManager Controller AliasManager littleEndian arrayFill copyWithin */
+	/* global LifeConstants ViewConstants ColourManager Keywords WaypointConstants DocConfig Controller AliasManager littleEndian arrayFill copyWithin */
 
 	// Help singleton
 	var Help = {
@@ -1301,7 +1301,7 @@
 			y = this.renderHelpLine(view, "CXRLE Pos", "X " + view.posXOffset + "  Y " + view.posYOffset, ctx, x, y, height, helpLine);
 		}
 		if (view.wasClipped) {
-			y = this.renderHelpLine(view, "Clipped", (view.engine.boundedGridWidth === 0 ? "Inf" : view.engine.boundedGridWidth) + " x " + (view.engine.boundedGridHeight === 0 ? "Inf" : view.engine.boundedGridHeight) + " " + PatternManager.boundedGridName(view.engine.boundedGridType), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Clipped", (view.engine.boundedGridWidth === 0 ? "Inf" : view.engine.boundedGridWidth) + " x " + (view.engine.boundedGridHeight === 0 ? "Inf" : view.engine.boundedGridHeight) + " " + view.manager.boundedGridName(view.engine.boundedGridType), ctx, x, y, height, helpLine);
 		}
 
 		if (!view.executable) {
@@ -1314,11 +1314,11 @@
 		}
 
 		// check for MAP rule
-		if (itemName.substr(0, 3) === "MAP" && itemName.length === PatternManager.map512Length + 3) {
+		if (itemName.substr(0, 3) === "MAP" && itemName.length === view.manager.map512Length + 3) {
 			// display on multiple lines
 			y = this.renderHelpLine(view, "Rule", "MAP", ctx, x, y, height, helpLine);
 			value = 3;
-			while (value < PatternManager.map512Length + 3) {
+			while (value < view.manager.map512Length + 3) {
 				y = this.renderHelpLine(view, "  " + (value - 3), itemName.substr(value, 16), ctx, x, y, height, helpLine);
 				value += 16;
 			}
@@ -1345,9 +1345,9 @@
 					itemName = "Hex";
 				} else {
 					if (view.engine.isHROT) {
-						if (view.engine.HROT.type === PatternManager.mooreHROT) {
+						if (view.engine.HROT.type === view.manager.mooreHROT) {
 							itemName = "Moore";
-						} else if (view.engine.HROT.type === PatternManager.vonNeumannHROT) {
+						} else if (view.engine.HROT.type === view.manager.vonNeumannHROT) {
 							itemName = "von Neumann";
 						} else {
 							itemName = "Circular";
@@ -1358,9 +1358,9 @@
 					} else {
 						if (view.engine.isTriangular) {
 							itemName = "Triangular";
-							if (view.engine.triangularNeighbourhood === PatternManager.triangularEdges) {
+							if (view.engine.triangularNeighbourhood === view.manager.triangularEdges) {
 								itemName += " Edges";
-							} else if (view.engine.triangularNeighbourhood === PatternManager.triangularVertices) {
+							} else if (view.engine.triangularNeighbourhood === view.manager.triangularVertices) {
 								itemName += " Vertices";
 							}
 						} else {
@@ -1479,7 +1479,7 @@
 			view.helpSections[sectionNum] = [view.lineNo, "Bounded"];
 			sectionNum += 1;
 			y = this.renderHelpLine(view, "", "Bounded grid:", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Type", PatternManager.boundedGridName(view.engine.boundedGridType), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Type", view.manager.boundedGridName(view.engine.boundedGridType), ctx, x, y, height, helpLine);
 			if (view.engine.boundedGridWidth === 0) {
 				y = this.renderHelpLine(view, "Width", "Infinite", ctx, x, y, height, helpLine);
 			} else {
@@ -1629,13 +1629,15 @@
 			view.helpSections[sectionNum] = [view.lineNo, "Theme"];
 			sectionNum += 1;
 			y = this.renderHelpLine(view, "", "Theme:", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Name", view.engine.themes[view.engine.colourTheme].name, ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "History", view.historyStates, ctx, x, y, height, helpLine);
+			if (!view.engine.isRuleTree) {
+				y = this.renderHelpLine(view, "Name", view.engine.themes[view.engine.colourTheme].name, ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "History", view.historyStates, ctx, x, y, height, helpLine);
+			}
 			this.renderColourBox(view, view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 			y = this.renderHelpLine(view, "Background", this.rgbString(view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0]), ctx, x, y, height, helpLine);
 
 			// check for none rule
-			if (view.engine.isNone) {
+			if (view.engine.isNone || view.engine.isRuleTree) {
 				for (i = 1; i < view.engine.multiNumStates; i += 1) {
 					this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 					y = this.renderHelpLine(view, "State " + i, this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);

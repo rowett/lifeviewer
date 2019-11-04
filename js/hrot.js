@@ -6,18 +6,21 @@
 	"use strict";
 
 	// define globals
-	/* global Uint8 Uint32 PatternManager LifeConstants arrayFill copyWithin */
+	/* global Uint8 Uint32 LifeConstants arrayFill copyWithin */
 
 	// HROT object
 	/**
 	 * @constructor
 	 */
-	function HROT(allocator, engine) {
+	function HROT(allocator, engine, manager) {
 		// allocator
 		this.allocator = allocator;
 
 		// engine
 		this.engine = engine;
+
+		// pattern manager
+		this.manager = manager;
 
 		// algorithm parameters
 		/** @type {number} */ this.range = 1;
@@ -26,7 +29,7 @@
 		this.survivals = allocator.allocate(Uint8, 0, "HROT.survivals");
 		this.altBirths = allocator.allocate(Uint8, 0, "HROT.altBirths");
 		this.altSurvivals = allocator.allocate(Uint8, 0, "HROT.altSurvivals");
-		/** @type {number} */ this.type = PatternManager.mooreHROT;
+		/** @type {number} */ this.type = manager.mooreHROT;
 
 		// neighbour count array (will be resized)
 		this.counts = Array.matrix(Uint32, 1, 1, 0, allocator, "HROT.counts");
@@ -72,7 +75,7 @@
 
 		// create the widths array based on the neighborhood type
 		switch(type) {
-			case PatternManager.mooreHROT:
+			case this.manager.mooreHROT:
 			// Moore is a square
 			for (i = 0; i < width; i += 1) {
 				this.widths[i] = range;
@@ -80,7 +83,7 @@
 			break;
 
 			// von Neumann is a diamond
-			case PatternManager.vonNeumannHROT:
+			case this.manager.vonNeumannHROT:
 			for (i = 0; i < range; i += 1) {
 				this.widths[i] = i;
 				this.widths[width - i - 1] = i;
@@ -89,7 +92,7 @@
 			break;
 
 			// circular is a circle
-			case PatternManager.circularHROT:
+			case this.manager.circularHROT:
 			for (i = -range; i <= range; i += 1) {
 				w = 0;
 				while ((w + 1) * (w + 1) + (i * i) <= r2) {
@@ -624,13 +627,13 @@
 				bottomY = gridBottomY + range;
 			}
 
-			if (type === PatternManager.mooreHROT) {
+			if (type === this.manager.mooreHROT) {
 				leftX -= r2;
 				bottomY -= r2;
 				rightX += r2;
 				topY += r2;
 			} else {
-				if (type === PatternManager.vonNeumannHROT && range > this.rangeVN) {
+				if (type === this.manager.vonNeumannHROT && range > this.rangeVN) {
 					leftX -= range;
 					bottomY -= range;
 					rightX += range;
@@ -640,7 +643,7 @@
 		}
 
 		// compute counts for given neighborhood
-		if (type === PatternManager.mooreHROT) {
+		if (type === this.manager.mooreHROT) {
 			// temporarily expand bounding box
 			leftX -= r2;
 			bottomY -= r2;
@@ -1044,7 +1047,7 @@
 				this.engine.anythingAlive = 0;
 			}
 		} else {
-			if (type === PatternManager.vonNeumannHROT && range > this.rangeVN) {
+			if (type === this.manager.vonNeumannHROT && range > this.rangeVN) {
 				// set variables to use in getCount
 				leftX -= range;
 				rightX += range;
@@ -1227,7 +1230,7 @@
 		}
 
 		// compute next generation from counts if not Moore which was done above
-		if (type !== PatternManager.mooreHROT && !(type === PatternManager.vonNeumannHROT && range > this.rangeVN)) {
+		if (type !== this.manager.mooreHROT && !(type === this.manager.vonNeumannHROT && range > this.rangeVN)) {
 			this.updateGridFromCountsHROT(leftX, bottomY, rightX, topY, useAlternate);
 		}
 
@@ -1356,13 +1359,13 @@
 				bottomY = gridBottomY + range;
 			}
 
-			if (type === PatternManager.mooreHROT) {
+			if (type === this.manager.mooreHROT) {
 				leftX -= r2;
 				bottomY -= r2;
 				rightX += r2;
 				topY += r2;
 			} else {
-				if (type === PatternManager.vonNeumannHROT && range > this.rangeVN) {
+				if (type === this.manager.vonNeumannHROT && range > this.rangeVN) {
 					leftX -= range;
 					bottomY -= range;
 					rightX += range;
@@ -1372,7 +1375,7 @@
 		}
 
 		// compute counts for given neighborhood
-		if (type === PatternManager.mooreHROT) {
+		if (type === this.manager.mooreHROT) {
 			// temporarily expand bounding box
 			leftX -= r2;
 			bottomY -= r2;
@@ -1720,7 +1723,7 @@
 				this.engine.anythingAlive = 0;
 			}
 		} else {
-			if (type === PatternManager.vonNeumannHROT && range > this.rangeVN) {
+			if (type === this.manager.vonNeumannHROT && range > this.rangeVN) {
 				// set variables to use in getCount
 				leftX -= range;
 				rightX += range;
@@ -1909,7 +1912,7 @@
 		}
 
 		// compute next generation from counts if not Moore which was done above
-		if (type !== PatternManager.mooreHROT && !(type === PatternManager.vonNeumannHROT && range > this.rangeVN)) {
+		if (type !== this.manager.mooreHROT && !(type === this.manager.vonNeumannHROT && range > this.rangeVN)) {
 			this.updateGridFromCountsHROT(leftX, bottomY, rightX, topY, useAlternate);
 		}
 

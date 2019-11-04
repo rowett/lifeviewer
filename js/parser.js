@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global Int32 ColourManager Script ViewConstants Pattern Keywords PatternManager WaypointConstants DocConfig arrayFill */
+	/* global Int32 ColourManager Script ViewConstants Pattern Keywords WaypointConstants DocConfig arrayFill */
 
 	// singleton
 	var ScriptParser = {
@@ -2230,7 +2230,7 @@
 
 									// concatenate subequent tokens that are valid RLE
 									transToken = scriptReader.peekAtNextToken();
-									while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && PatternManager.decodeRLEString(pattern, transToken, false, view.engine.allocator) !== -1) {
+									while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && this.manager.decodeRLEString(pattern, transToken, false, view.engine.allocator) !== -1) {
 										// consume token
 										scriptReader.getNextToken();
 										// add to rle
@@ -2310,7 +2310,7 @@
 
 								// concatenate subequent tokens that are valid RLE
 								transToken = scriptReader.peekAtNextToken();
-								while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && PatternManager.decodeRLEString(pattern, transToken, false, view.engine.allocator) !== -1) {
+								while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && this.manager.decodeRLEString(pattern, transToken, false, view.engine.allocator) !== -1) {
 									// consume token
 									scriptReader.getNextToken();
 									// add to rle
@@ -4949,7 +4949,7 @@
 
 				// if custom colours were provided then check they exist for all states
 				for (i = 0; i < numStates; i += 1) {
-					if (PatternManager.stateCount[i]) {
+					if (view.manager.stateCount[i]) {
 						if (view.customColours[i] === -1) {
 							// mark not all custom colours used
 							view.allCustom = false;

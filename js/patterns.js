@@ -6502,6 +6502,12 @@
 			valid = false;
 		}
 
+		// check the rule supports supplied pattern states
+		if (pattern.numStates > states) {
+			valid = false;
+			this.failureReason = "Illegal state in pattern";
+		}
+
 		// if valid then save parameters
 		if (valid) {
 			// save rule information

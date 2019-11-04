@@ -590,6 +590,9 @@
 	function View(element) {
 		var i = 0;
 
+		// whether update function needs to call post function to complete after async load
+		this.needsComplete = false;
+
 		// pattern manager
 		this.manager = new PatternManager();
 
@@ -5579,7 +5582,7 @@
 		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || (this.engine.isHROT && !(this.engine.HROT.range === 1 && this.engine.HROT.type === this.manager.mooreHROT && this.engine.HROT.scount === 2)) || this.engine.isTriangular || this.engine.isVonNeumann;
 
 		// lock theme button if mode doesn't support themes
-		this.themeButton.locked =  this.multiStateView || this.engine.isNone;
+		this.themeButton.locked =  this.multiStateView || this.engine.isNone || this.engine.isRuleTree;
 
 		// lock major button if hex or triangular grid
 		this.majorButton.locked = (this.engine.isHex && this.engine.useHexagons) || this.engine.isTriangular;
@@ -6916,34 +6919,43 @@
 	View.prototype.getStateName = function(state) {
 		var name = "";
 
-		if (this.engine.multiNumStates <= 2) {
-			if (this.engine.isLifeHistory) {
-				name = ViewConstants.stateNames[state];
-			} else {
-				name = (state ? "Alive" : "Dead");
-			}
-		} else {
-			if (state === 0) {
-				name = "Dead";
-			} else {
-				if (this.engine.isPCA) {
-					if ((state & 1) !== 0) {
-						name += "N";
-					}
-					if ((state & 2) !== 0) {
-						name += "E";
-					}
-					if ((state & 4) !== 0) {
-						name += "S";
-					}
-					if ((state & 8) !== 0) {
-						name += "W";
-					}
+		// rule tree states don't have names
+		if (!this.engine.isRuleTree) {
+			// check for 2-state rules
+			if (this.engine.multiNumStates <= 2) {
+				if (this.engine.isLifeHistory) {
+					name = ViewConstants.stateNames[state];
 				} else {
-					if (state === 1) {
-						name = "Alive";
+				name = (state ? "Alive" : "Dead");
+				}
+			} else {
+				// multi-state (Generations or PCA)
+				if (state === 0) {
+					name = "Dead";
+				} else {
+					if (this.engine.isPCA) {
+						if ((state & 1) !== 0) {
+							name += "N";
+						}
+						if ((state & 2) !== 0) {
+							name += "E";
+						}
+						if ((state & 4) !== 0) {
+							name += "S";
+						}
+						if ((state & 8) !== 0) {
+							name += "W";
+						}
 					} else {
-						name = "Dying " + String(state - 1);
+						if (this.engine.isRuleTree) {
+							name = "State " + String(state);
+						} else {
+							if (state === 1) {
+								name = "Alive";
+							} else {
+								name = "Dying " + String(state - 1);
+							}
+						}
 					}
 				}
 			}
@@ -6976,7 +6988,11 @@
 			me.pickToggle.current = me.togglePick([false], true, me);
 
 			// notify after switching mode since switching clears notifications
-			me.menuManager.notification.notify("Drawing with state " + newValue + " (" + me.getStateName(newValue) + ")", 15, 120, 15, true);
+			if (me.engine.isRuleTree) {
+				me.menuManager.notification.notify("Drawing with state " + newValue, 15, 120, 15, true);
+			} else {
+				me.menuManager.notification.notify("Drawing with state " + newValue + " (" + me.getStateName(newValue) + ")", 15, 120, 15, true);
+			}
 		}
 
 		return result;
@@ -7052,7 +7068,7 @@
 			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1);
 			
 		// adjust current state if generations style
-		if (this.engine.multiNumStates > 2) {
+		if (this.engine.multiNumStates > 2 && !(this.engine.isPCA || this.engine.isRuleTree)) {
 			if (replace > 0) {
 				replace = this.engine.multiNumStates - replace;
 			}
@@ -7082,7 +7098,7 @@
 			for (y = bottomY; y <= topY; y += 1) {
 				for (x = leftX; x <= rightX; x += 1) {
 					state = this.engine.getState(x, y, false);
-					if (this.engine.multiNumStates > 2 && state > 0) {
+					if (this.engine.multiNumStates > 2 && !(this.engine.isPCA || this.engine.isRuleTree) && state > 0) {
 						state = this.engine.multiNumStates - state;
 					}
 					if (state === replace) {
@@ -7094,7 +7110,7 @@
 			if (numReplaced > 0) {
 				// check for state 6
 				if (this.engine.isLifeHistory && replace === 6 || current === 6) {
-						this.engine.populateState6MaskFromColGrid();
+					this.engine.populateState6MaskFromColGrid();
 				}
 				this.afterEdit("replace states");
 			}
@@ -7118,7 +7134,7 @@
 		// delete any cell of the current pen colour
 		if (current > 0) {
 			// adjust current state if generations style
-			if (me.engine.multiNumStates > 2) {
+			if (me.engine.multiNumStates > 2 && !(me.engine.isPCA || me.engine.isRuleTree)) {
 				current = me.engine.multiNumStates - current;
 			}
 			// adjust for LifeHistory
@@ -8756,24 +8772,26 @@
 		rleText += "!\n";
 
 		// create random rule
-		if (me.engine.isMargolus || me.engine.isPCA) {
-			me.patternRuleName = me.createRandomMargolus(me.engine.isPCA);
-		} else {
-			if (me.engine.isHROT) {
-				if (me.wasLtL) {
-					me.patternRuleName = me.createRandomLTL();
-				} else {
-					me.patternRuleName = me.createRandomHROT();
-				}
+		if (!me.engine.isRuleTree) {
+			if (me.engine.isMargolus || me.engine.isPCA) {
+				me.patternRuleName = me.createRandomMargolus(me.engine.isPCA);
 			} else {
-				if (me.engine.wolframRule !== -1) {
-					me.patternRuleName = me.createRandomWolfram();
+				if (me.engine.isHROT) {
+					if (me.wasLtL) {
+						me.patternRuleName = me.createRandomLTL();
+					} else {
+						me.patternRuleName = me.createRandomHROT();
+					}
 				} else {
-					me.patternRuleName = me.createRandomLifeLike();
+					if (me.engine.wolframRule !== -1) {
+						me.patternRuleName = me.createRandomWolfram();
+					} else {
+						me.patternRuleName = me.createRandomLifeLike();
+					}
 				}
 			}
 		}
-
+	
 		// check for [R]History
 		if (me.engine.isLifeHistory) {
 			me.patternRuleName += "History";
@@ -13161,10 +13179,14 @@
 				if (this.engine.isPCA) {
 					message = this.getStateName(state);
 				} else {
-					if (state === 1) {
-						message = "alive";
+					if (this.engine.isRuleTree) {
+						message = "state " + String(state);
 					} else {
-						message = "dying " + String(state - 1);
+						if (state === 1) {
+							message = "alive";
+						} else {
+							message = "dying " + String(state - 1);
+						}
 					}
 				}
 			}
@@ -14809,6 +14831,11 @@
 
 		// save initial undo state
 		me.afterEdit("");
+
+		// check if complete update needed
+		if (me.needsComplete) {
+			completeUpdate(me);
+		}
 	};
 
 	// start a viewer
@@ -15039,6 +15066,51 @@
 		viewer[1].startViewer(cleanItem, false);
 	}
 
+	// complete update process after potential async load
+	function completeUpdate(view) {
+		var itemHeight = 28,
+			itemFontSize = 18,
+			viewer = Controller.standaloneViewer(),
+
+			// get the popup window
+			popup = viewer[2];
+
+		// scale the viewer
+		view.divItem.style.transform = "scale(" + view.windowZoom + "," + view.windowZoom + ")";
+		view.divItem.style.transformOrigin = "top left";
+		view.resize();
+		
+		// mark popup as displayed
+		popup.displayed = true;
+
+		// ensure popup is within the browser window
+		popup.resizeWindow(popup, null);
+
+		// scale the elements
+		if (view.viewMenu.yScale !== 1) {
+			itemHeight = (itemHeight * view.viewMenu.yScale) | 0;
+			itemFontSize = (itemFontSize * view.viewMenu.yScale) | 0;
+			view.anchorItem.style.height = itemHeight + "px";
+			view.anchorItem.style.fontSize = itemFontSize + "px";
+			view.hiddenItem.style.height = itemHeight + "px";
+			view.hiddenItem.style.fontSize = itemFontSize + "px";
+			view.centerDivItem.style.height = itemHeight + "px";
+			view.centerDivItem.style.fontSize = itemFontSize + "px";
+			view.innerDivItem.style.height = itemHeight + "px";
+			view.innerDivItem.style.lineHeight = itemHeight + "px";
+		}
+
+		// give focus to the popup window and then remove it (so any thumblaunch doesn't retain focus)
+		view.mainContext.canvas.focus();
+		view.mainContext.canvas.blur();
+		//view.menuManager.hasFocus = true;
+
+		// clear update flag
+		view.needsComplete = false;
+
+		return false;
+	}
+
 	// display and update the external viewer
 	function updateViewer(element) {
 		// get the parent node
@@ -15053,9 +15125,6 @@
 		    // get the standalone viewer
 			viewer = Controller.standaloneViewer(),
 			view = null,
-
-		    // popup window
-		    popup = null,
 
 		    // elements
 		    canvasItem = null,
@@ -15189,44 +15258,12 @@
 		view.menuManager.notification.clear(false, true);
 
 		// update the standalone viewer with ignore thumbnail set
+		view.needsComplete = true;
 		view.startViewer(cleanItem, true);
-
-		// scale the viewer
-		view.divItem.style.transform = "scale(" + view.windowZoom + "," + view.windowZoom + ")";
-		view.divItem.style.transformOrigin = "top left";
-		view.resize();
-		
-		// get the popup window
-		popup = viewer[2];
-
-		// mark popup as displayed
-		popup.displayed = true;
-
-		// ensure popup is within the browser window
-		popup.resizeWindow(popup, null);
-
-		// scale the elements
-		if (view.viewMenu.yScale !== 1) {
-			itemHeight = (itemHeight * view.viewMenu.yScale) | 0;
-			itemFontSize = (itemFontSize * view.viewMenu.yScale) | 0;
-			view.anchorItem.style.height = itemHeight + "px";
-			view.anchorItem.style.fontSize = itemFontSize + "px";
-			view.hiddenItem.style.height = itemHeight + "px";
-			view.hiddenItem.style.fontSize = itemFontSize + "px";
-			view.centerDivItem.style.height = itemHeight + "px";
-			view.centerDivItem.style.fontSize = itemFontSize + "px";
-			view.innerDivItem.style.height = itemHeight + "px";
-			view.innerDivItem.style.lineHeight = itemHeight + "px";
+		if (!view.needsComplete) {
+			completeUpdate(view);
 		}
-
-		// give focus to the popup window and then remove it (so any thumblaunch doesn't retain focus)
-		view.mainContext.canvas.focus();
-		view.mainContext.canvas.blur();
-		//view.menuManager.hasFocus = true;
-
-		return false;
 	}
-
 
 	// create anchor
 	function createAnchor(rleItem, textItem) {
