@@ -1,3 +1,6 @@
+Build 452
+- fixed reading comments in @COLORS section
+
 Build 451
 - support colour ramp in @COLORS section
 - RuleTree definitions are cached when retrieved from repository
