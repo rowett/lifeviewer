@@ -64,7 +64,7 @@ interface Node {
 declare var LTL;
 
 // pattern.js
-declare var PatternManager, Pattern;
+declare var PatternManager, Pattern, RuleTreeCache;
 
 // random.js
 declare var Random;

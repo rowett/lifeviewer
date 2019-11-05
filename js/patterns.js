@@ -9,6 +9,71 @@
 	// define globals
 	/* global registerEvent Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script arrayFill */
 
+	// RuleTreeCache singleton
+	var RuleTreeCache = {
+		// list of rules
+		rules : []
+	};
+
+	// add a new rule to the cache
+	RuleTreeCache.add = function(pattern) {
+		var i = 0,
+			l = this.rules.length,
+			found = false,
+			name = pattern.ruleName;
+
+		// check if the rule already exists
+		i = 0;
+		while (i < l && !found) {
+			if (this.rules[i].name === name) {
+				found = true;
+			} else {
+				i += 1;
+			}
+		}
+
+		// add if not found
+		if (!found) {
+			this.rules[l] = {name: name, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
+				 nodes: pattern.ruleTreeNodes, base: pattern.ruleTreeBase, ruleA: pattern.ruleTreeA,
+				 ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours};
+		}
+	};
+
+	// populate a pattern from the rule cache
+	RuleTreeCache.loadIfExists = function(pattern) {
+		var i = 0,
+			l = this.rules.length,
+			record = null,
+			found = false,
+			name = pattern.ruleName;
+
+		// check if the rule exists
+		i = 0;
+		while (i < l && !found) {
+			if (this.rules[i].name === name) {
+				found = true;
+				record = this.rules[i];
+			} else {
+				i += 1;
+			}
+		}
+
+		// populate pattern from the cache if found
+		if (found) {
+			pattern.ruleTreeStates = record.states;
+			pattern.ruleTreeNeighbours = record.neighbours;
+			pattern.ruleTreeNodes = record.nodes;
+			pattern.ruleTreeBase = record.base;
+			pattern.ruleTreeA = record.ruleA;
+			pattern.ruleTreeB = record.ruleB;
+			pattern.ruleTreeColours = record.colours;
+		}
+
+		// return whether populated
+		return found;
+	};
+
 	// Life 1.05 section
 	/**
 	 * @constructor
@@ -6281,58 +6346,78 @@
 	PatternManager.prototype.decodeColours = function(pattern, reader) {
 		var states = pattern.numStates,
 			cols = pattern.ruleTreeColours,
-			index = 0,
-			red = 0,
-			green = 0,
-			blue = 0,
+			num1 = 0,
+			num2 = 0,
+			num3 = 0,
+			num4 = 0,
+			num5 = 0,
+			num6 = 0,
 			valid = false;
 
-		// get first token
+		// skip newline and blank lines
 		while (reader.nextIsNewline()) {
 			// skip newline
 			reader.getNextToken();
 		}
+
+		// check if first token is a number
 		if (reader.nextTokenIsNumeric()) {
-			index = reader.getNextTokenAsNumber();
+			num1 = reader.getNextTokenAsNumber();
+			valid = true;
 		}
 
-		// read each colour
-		while (index >= 0 && index < states) {
+		// read each line containing colour definition
+		while (valid) {
+			// must be at least three more numbers (for R G B)
 			valid = false;
-
-			// read r g b
 			if (reader.nextTokenIsNumeric()) {
-				red = reader.getNextTokenAsNumber();
-				if (red >= 0 && red <= 255) {
+				num2 = reader.getNextTokenAsNumber();
+				if (reader.nextTokenIsNumeric()) {
+					num3 = reader.getNextTokenAsNumber();
 					if (reader.nextTokenIsNumeric()) {
-						green = reader.getNextTokenAsNumber();
-						if (green >= 0 && green <= 255) {
-							if (reader.nextTokenIsNumeric()) {
-								blue = reader.getNextTokenAsNumber();
-								if (blue >= 0 && blue <= 255) {
-									cols[index] = (red << 16) | (green << 8) | blue;
-									valid = true;
-								}
-							}
-						}
+						num4 = reader.getNextTokenAsNumber();
+						valid = true;
+					}
+				}
+			}
+
+			// check if mandatory set of numbers preset
+			if (valid) {
+				// check for optional two numbers (in case defining ramp)
+				if (reader.nextTokenIsNumeric() && reader.forwardTokenIsNumeric(1)) {
+					num5 = reader.getNextTokenAsNumber();
+					num6 = reader.getNextTokenAsNumber();
+					// validate ramp
+					if (num1 >= 0 && num1 <= 255 && num2 >= 0 && num2 <= 255 && num3 >= 0 && num3 <= 255 && num4 >= 0 && num4 <= 255 && num5 >= 0 && num5 <= 255 && num6 >= 0 && num6 <= 255) {
+						this.createColourRamp(cols, num1, num2, num3, num4, num5, num6);
+					} else {
+						valid = false;
+					}
+				} else {
+					// validate R G B definition
+					if (num1 >= 0 && num1 < states && num2 >= 0 && num2 <= 255 && num3 >= 0 && num3 <= 255 && num4 >= 0 && num4 <= 255) {
+						// save colour entry
+						cols[num1] = (num2 << 16) | (num3 << 8) | num4;
+					} else {
+						valid = false;
 					}
 				}
 			}
 
 			// check if valid
 			if (valid) {
-				// valid so look for next colour entry
+				// skip to end of line
+				reader.skipToEndOfLine();
+
+				// look for next colour entry
 				while (reader.nextIsNewline()) {
 					reader.getNextToken();
 				}
 				if (reader.nextTokenIsNumeric()) {
-					index = reader.getNextTokenAsNumber();
+					num1 = reader.getNextTokenAsNumber();
 				} else {
-					index = -1;
+					valid = false;
 				}
-			} else {
-				// exit
-				index = -1;
 			}
 		}
 	};
@@ -6344,35 +6429,33 @@
 		return valid;
 	};
 
-	// create default rule tree colours
-	PatternManager.prototype.createDefaultTreeColours = function(pattern) {
-		var i = 0,
-			sr = 255,
-			sg = 255,
-			sb = 0,
-			er = 255,
-			eg = 0,
-			eb = 0,
+	// create colour ramp
+	PatternManager.prototype.createColourRamp = function(colours, er, eg, eb, sr, sg, sb) {
+		var states = colours.length,
 			mix = 0,
-			cols = null,
-			states = pattern.numStates;
-
-		// allocate colour array
-		pattern.ruleTreeColours = new Uint32Array(pattern.ruleTreeStates);
-		cols = pattern.ruleTreeColours;
+			i = 0;
 
 		// state zero is black
-		cols[0] = 0;
+		colours[0] = 0;
 
-		// remaining states fade from red to yellow
+		// alive states fade
 		for (i = 1; i < states; i += 1) {
 			if (states === 2) {
 				mix = 0;
 			} else {
 				mix = (i - 1) / (states - 2);
 			}
-			cols[i] = ((((sr * mix) + (er * (1 - mix))) | 0) << 16) | ((((sg * mix) + (eg * (1 - mix))) | 0) << 8) | (((sb * mix) + (eb * (1 - mix))) | 0);
+			colours[i] = ((((sr * mix) + (er * (1 - mix))) | 0) << 16) | ((((sg * mix) + (eg * (1 - mix))) | 0) << 8) | (((sb * mix) + (eb * (1 - mix))) | 0);
 		}
+	};
+
+	// create default rule tree colours
+	PatternManager.prototype.createDefaultTreeColours = function(pattern) {
+		// allocate colour array
+		pattern.ruleTreeColours = new Uint32Array(pattern.ruleTreeStates);
+
+		// create ramp
+		this.createColourRamp(pattern.ruleTreeColours, 255, 0, 0, 255, 255, 0);
 	};
 
 	// decode rule table tree
@@ -6555,6 +6638,13 @@
 				tableIndex = reader.findToken(this.ruleTableTableName, -1);
 				if (tableIndex !== -1) {
 					valid = this.decodeTable();
+					if (!valid) {
+						// if the table was not found or not valid then sometimes there is a tree too
+						treeIndex = reader.findToken(this.ruleTableTreeName, -1);
+						if (treeIndex !== -1) {
+							valid = this.decodeTree(pattern, reader);
+						}
+					}
 				} else {
 					// search for a tree from the current position
 					treeIndex = reader.findToken(this.ruleTableTreeName, -1);
@@ -6718,8 +6808,22 @@
 
 			// check if a pattern was loaded
 			if (this.failureReason !== "" && !this.tooBig) {
-				// attempt to load rule table
-				this.loadRuleTable(newPattern.ruleName, newPattern, succeedCallback, failCallback, args, view);
+				// check the rule tree cache
+				if (RuleTreeCache.loadIfExists(newPattern)) {
+					// check for pattern states
+					if (newPattern.numStates > newPattern.ruleTreeStates) {
+						this.failureReason = "Illegal state in pattern";
+					} else {
+						newPattern.numStates = newPattern.ruleTreeStates;
+						this.failureReason = "";
+						this.executable = true;
+						this.extendedFormat = false;
+						newPattern.isNone = false;
+					}
+				} else {
+					// attempt to load rule table
+					this.loadRuleTable(newPattern.ruleName, newPattern, succeedCallback, failCallback, args, view);
+				}
 			}
 		}
 
@@ -6806,12 +6910,19 @@
 				} else {
 					// attempt to decode the rule table
 					me.decodeRuleTable(pattern, ruleText);
+
+					// if rule tree decoded successfully then add to cache
+					if (pattern.ruleTreeStates !== -1) {
+						RuleTreeCache.add(pattern);
+					}
+
+					// execute success callback
 					if (succeedCallback !== null) {
 						return succeedCallback(pattern, args, view);
 					}
 				}
 			} else {
-				console.debug("RuleTable fetch failed\n\nRule: " + me.ruleSearchName + "\nURI: " + me.ruleSearchURI + "\nStatus: " + me.xhr.statusText);
+				console.debug("RuleTable fetch failed\n\nRule: " + me.ruleSearchName + "\nURI: " + me.ruleSearchURI + "\nStatus: " + xhr.statusText);
 				if (failCallback !== null) {
 					return failCallback(pattern, args, view);
 				}
@@ -6821,7 +6932,7 @@
 
 	// error event handler
 	PatternManager.prototype.errorHandler = function(me, event, xhr, pattern, callback, args, view) {
-		console.debug("RuleTable fetch failed\n\nRule: " + me.ruleSearchName + "\nURI: " + me.ruleSearchURI + "\nStatus: " + me.xhr.statusText);
+		console.debug("RuleTable fetch failed\n\nRule: " + me.ruleSearchName + "\nURI: " + me.ruleSearchURI + "\nStatus: " + xhr.statusText);
 		// complete load if specified
 		if (callback !== null) {
 			return callback(pattern, args, view);
@@ -6832,8 +6943,8 @@
 	PatternManager.prototype.loadRuleTable = function(ruleName, pattern, succeedCallback, failCallback, args, view) {
 		var	me = this,
 			xhr = new XMLHttpRequest(),
-			//uri = "/lifeview/plugin/wiki/Rule/" + ruleName;
-			uri = "/wiki/Rule:" + ruleName;
+			uri = "/lifeview/plugin/wiki/Rule/" + ruleName;
+			//uri = "/wiki/Rule:" + ruleName;
 
 		// save rule name for use in error message
 		this.ruleSearchName = ruleName;
@@ -6853,5 +6964,6 @@
 	// create the global interface
 	window["PatternManager"] = PatternManager;
 	window["Pattern"] = Pattern;
+	window["RuleTreeCache"] = RuleTreeCache;
 }
 ());

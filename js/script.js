@@ -22,7 +22,7 @@
 		// replace html substitutions
 		source = source.replace(/&amp;/gi, "&");
 
-		// tokinze newlines if requested
+		// tokenize newlines if requested
 		if (tokenizeNewline) {
 			source = source.replace(/[=]/gm, " = ");
 			source = source.replace(/\n/gm, this.newlineToken);
@@ -35,7 +35,8 @@
 		this.tokens = [];
 		for (i = 0; i < tokens.length; i += 1) {
 			if (tokenizeNewline) {
-				if (tokens[i][0] === "#") {
+				// skip comment lines
+				while (i < tokens.length && tokens[i][0] === "#") {
 					// ignore whole line
 					i += 1;
 					while (i < tokens.length && tokens[i] !== this.trimNewlineToken) {
@@ -47,13 +48,26 @@
 				}
 			}
 			if (i < tokens.length) {
-				this.tokens[this.tokens.length] = tokens[i];
+				// discard duplicate new lines
+				if (!(this.tokens.length > 0 && this.tokens[this.tokens.length - 1] === this.trimNewlineToken && tokens[i] === this.trimNewlineToken)) {
+					this.tokens[this.tokens.length] = tokens[i];
+				}
 			}
 		}
 
 		// current token index
 		this.current = 0;
 	}
+
+	// skip to end of line
+	Script.prototype.skipToEndOfLine = function() {
+		// check if there are more tokens
+		if (this.tokens) {
+			while (this.current < this.tokens.length && this.tokens[this.current] !== this.trimNewlineToken) {
+				this.current += 1;
+			}
+		}
+	};
 
 	// check whether next token is newline
 	Script.prototype.nextIsNewline = function() {
@@ -250,6 +264,31 @@
 		if (this.tokens) {
 			if (this.current < this.tokens.length) {
 				token = this.tokens[this.current];
+
+				// check if it is a fraction
+				if (this.isFraction(token)) {
+					result = true;
+				}
+				else {
+					result = this.isNumeric(token);
+				}
+			}
+		}
+
+		// return the numeric flag
+		return result;
+	};
+
+	// check if a token forward from here is a number (including a fraction)
+	Script.prototype.forwardTokenIsNumeric = function(howFar) {
+		var result = false,
+			token = "",
+			current = this.current + howFar;
+
+		// check if there are tokens
+		if (this.tokens) {
+			if (current < this.tokens.length) {
+				token = this.tokens[current];
 
 				// check if it is a fraction
 				if (this.isFraction(token)) {

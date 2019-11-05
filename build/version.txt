@@ -1,3 +1,8 @@
+Build 451
+- support colour ramp in @COLORS section
+- RuleTree definitions are cached when retrieved from repository
+	- cache information is in Help->Info->Rule Cache
+
 Build 450
 - fix thumbnail mode being ignored
 

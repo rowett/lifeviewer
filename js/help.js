@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global LifeConstants ViewConstants ColourManager Keywords WaypointConstants DocConfig Controller AliasManager littleEndian arrayFill copyWithin */
+	/* global LifeConstants ViewConstants RuleTreeCache ColourManager Keywords WaypointConstants DocConfig Controller AliasManager littleEndian arrayFill copyWithin */
 
 	// Help singleton
 	var Help = {
@@ -1570,8 +1570,8 @@
 		y = this.renderHelpLine(view, " ", "Isotropic Non-Totalistic (Hensel, Callahan),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Alternating, MAP, Larger than Life (LtL),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Higher-range outer-totalistic (HROT),", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Partitioned cellular automata (PCA),", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "RuleTable (@TREE and @COLORS)", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Partitioned cellular automata (PCA)", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Repository", "RuleTable (@TREE and @COLORS)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "BoundedGrid", "Plane, Torus, Klein, Cross-surface, Sphere", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "States", "2 state, [R]History, Niemiec, Generations", ctx, x, y, height, helpLine);
 
@@ -1596,6 +1596,16 @@
 		y = this.renderHelpLine(view, "ArrayFill", (arrayFill ? "Yes": "No"), ctx, x, y, height, helpLine);
 		// @ts-ignore
 		y = this.renderHelpLine(view, "CopyWithin", (copyWithin ? "Yes": "No"), ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
+		// rule cache
+		view.helpSections[sectionNum] = [view.lineNo, "Rule Cache"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Rule Cache:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Entries", RuleTreeCache.rules.length, ctx, x, y, height, helpLine);
+		for (i = 0; i < RuleTreeCache.rules.length; i += 1) {
+			y = this.renderHelpLine(view, String(i), RuleTreeCache.rules[i].name, ctx, x, y, height, helpLine);
+		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// colour set information
