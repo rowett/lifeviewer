@@ -2,6 +2,7 @@ Build 454
 - Identify can perform much faster since it's no longer limited by maximum STEP
 - reduce chance of Identify false positives
 - fix snapshot and step back issue at snapshot interval (every 64 generations)
+- RuleTree algo performance improvements
 
 Build 453
 - the location of the rule Repository can be overriden with the <meta> tag on the web page hosting the Viewer

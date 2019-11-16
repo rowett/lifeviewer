@@ -5029,7 +5029,7 @@
 		me.menuManager.setAutoUpdate(updateNeeded);
 	};
 
-
+	// render the world
 	View.prototype.renderWorld = function(me, tooSlow, deltaTime, manualStepping) {
 		// check for autofit
 		if (me.autoFit && (me.generationOn || me.waypointsDefined)) {
@@ -6008,6 +6008,10 @@
 
 		// render world
 		me.renderWorld(me, false, 0, false);
+
+		// set counters to the current
+		me.floatCounter = me.engine.counter;
+		me.originCounter = me.engine.counter;
 
 		// set the auto update mode
 		me.menuManager.setAutoUpdate(true);

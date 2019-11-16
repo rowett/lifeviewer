@@ -4448,7 +4448,7 @@
 		// restore colour grid from snapshot
 		snapshot.restoreColourGridUsingTile(colourGrid, this.colourTileHistoryGrid, this);
 		if (this.isPCA || this.isRuleTree) {
-			this.nextColourGrid.whole.set(colourGrid);
+			Array.copy(colourGrid, this.nextColourGrid);
 		}
 
 		// copy the tile grid to the next tile grid
@@ -18175,10 +18175,15 @@
 			}
 		}
 
+		// copy the tile grid to the colour history grid
+		Array.copy(nextTileGrid, this.colourTileGrid);
+		Array.copy(nextTileGrid, this.colourTileHistoryGrid);
+
 		// save statistics
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
+		this.anythingAlive = population;
 	};
 
 	// next generation for RuleTree rules
