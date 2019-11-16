@@ -34,6 +34,9 @@
 		// div class name containing code block
 		/** @const {string} */ divCodeClassName : "codebox",
 
+		// repository location
+		/** @type {string} */ repositoryLocation : "",
+
 		// patterns (in source RLE)
 		patterns : []
 	},
@@ -262,7 +265,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 452,
+		/** @const {number} */ versionBuild : 454,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -601,15 +604,6 @@
 
 		// whether identify results displayed
 		/** @type {boolean} */ this.resultsDisplayed = false;
-
-		// step speed before identify started
-		/** @type {number} */ this.originalStepSpeed = 0;
-
-		// gens per second before identify started
-		/** @type {number} */ this.originalGenSpeed= 0;
-
-		// original loop mode before identify started
-		/** @type {boolean} */ this.originalLoopMode = false;
 
 		// last oscillator message
 		/** @type {string} */ this.lastOscillator = "";
@@ -4590,13 +4584,7 @@
 
 			// saved bounding box
 			zoomBox = me.engine.zoomBox,
-			saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
-
-			// oscillator message
-			identifyResult = [],
-
-			// whether just identified
-			justIdentified = false;
+			saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY);
 
 		// unlock controls
 		me.controlsLocked = false;
@@ -4868,10 +4856,10 @@
 					// next step
 					stepsTaken += 1;
 
-					// check theme has history or this is the last generation in the step or identify is running
-					if (me.engine.themeHistory || me.anyPasteThisGen() || ((me.engine.counter === (me.floatCounter | 0)) || bailout) || me.identify) {
+					// check theme has history or this is the last generation in the step
+					if (me.engine.themeHistory || me.anyPasteThisGen() || ((me.engine.counter === (me.floatCounter | 0)) || bailout)) {
 						// convert life grid to pen colours unless Generations just died (since this will start fading dead cells)
-						if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2) || me.identify) {
+						if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
 							me.engine.convertToPensTile();
 							me.pasteRLEList();
 
@@ -4879,101 +4867,6 @@
 							// since cells will appear in the future
 							if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
 								me.engine.anythingAlive = 1;
-							}
-
-							// compute oscillators if enabled
-							if (me.identify) {
-								identifyResult = me.engine.oscillating(this.identifyFast);
-								if (identifyResult.length > 0) {
-									// check for buffer full
-									if (identifyResult[0] === LifeConstants.bufferFullMessage) {
-										identifyResult[0] = "Nothing Identified";
-										me.lastOscillator = "none";
-										me.lastIdentifyType = "";
-										me.lastIdentifyDirection = "";
-										me.lastIdentifySpeed = "";
-										me.lastIdentifyBox = "";
-										me.lastIdentifyGen = "";
-										me.lastIdentifyCells = "";
-										me.lastIdentifySlope = "";
-										me.lastIdentifyPeriod = "";
-										me.lastIdentifyHeat = "";
-										me.lastIdentifyVolatility = "";
-										me.lastIdentifyMod = "";
-										me.lastIdentifyActive = "";
-										me.lastIdentifyTemperature = "";
-									} else {
-										me.lastOscillator = identifyResult[0];
-										me.lastIdentifyType = identifyResult[1];
-										me.lastIdentifyDirection = identifyResult[2];
-										me.lastIdentifySpeed = identifyResult[3];
-										me.lastIdentifyBox = identifyResult[4];
-										me.lastIdentifyGen = identifyResult[5];
-										me.lastIdentifyCells = identifyResult[6];
-										me.lastIdentifySlope = identifyResult[7];
-										me.lastIdentifyPeriod = identifyResult[8];
-										me.lastIdentifyHeat = identifyResult[9];
-										me.lastIdentifyVolatility = identifyResult[10];
-										me.lastIdentifyMod = identifyResult[11];
-										me.lastIdentifyActive = identifyResult[12];
-										me.lastIdentifyTemperature = identifyResult[13];
-
-										// update result labels
-										me.identifyTypeValueLabel.preText = me.lastIdentifyType;
-										me.identifyCellsValueLabel.preText = me.lastIdentifyCells;
-										if (me.lastIdentifyCells.indexOf("|") === -1) {
-											me.identifyCellsValueLabel.toolTip = "";
-										} else {
-											me.identifyCellsValueLabel.toolTip = "min | max | average";
-										}
-										me.identifyBoxValueLabel.preText = me.lastIdentifyBox;
-										me.identifyDirectionValueLabel.preText = me.lastIdentifyDirection;
-										me.identifyPeriodValueLabel.preText = me.lastIdentifyPeriod;
-										me.identifySlopeValueLabel.preText = me.lastIdentifySlope;
-										me.identifySpeedValueLabel.preText = me.lastIdentifySpeed;
-										if (me.lastIdentifySpeed.indexOf("|") === -1) {
-											me.identifySpeedValueLabel.toolTip = "";
-										} else {
-											me.identifySpeedValueLabel.toolTip = "simplified | unsimplified";
-										}
-										me.identifyHeatValueLabel.preText = me.lastIdentifyHeat;
-										if (me.lastIdentifyHeat.indexOf("|") === -1) {
-											me.identifyHeatValueLabel.toolTip = "";
-										} else {
-											me.identifyHeatValueLabel.toolTip = "min | max | average";
-										}
-										me.identifyVolatilityValueLabel.preText = me.lastIdentifyVolatility;
-										me.identifyModValueLabel.preText = me.lastIdentifyMod;
-										me.identifyActiveValueLabel.preText = me.lastIdentifyActive;
-										me.identifyActiveValueLabel.toolTip = "rotor | stator | total";
-										me.identifyTemperatureValueLabel.preText = me.lastIdentifyTemperature;
-										me.identifyTemperatureValueLabel.toolTip = "active | rotor";
-										me.resultsDisplayed = true;
-
-										// save fast setting
-										me.lastWasFast = me.identifyFast;
-
-										// set label position for results
-										me.setResultsPosition();
-									}
-
-									// switch off search
-									me.identifyPressed(me);
-									if (me.lastIdentifyType === "Empty") {
-										me.menuManager.notification.notify(identifyResult[0], 15, 120, 15, false);
-									} else {
-										me.menuManager.notification.notify(identifyResult[0], 15, 216000, 15, false);
-										me.fitZoomDisplay(true, false);
-									}
-									me.engine.initSearch(me.identify);
-
-									// switch of fast mode
-									me.identifyFast = false;
-
-									// bail out
-									bailout = true;
-									justIdentified = true;
-								}
 							}
 						}
 					}
@@ -4987,7 +4880,7 @@
 					me.saveElapsedTime(timeSinceLastUpdate, stepsToTake);
 
 					// check for loop
-					if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled && !justIdentified) {
+					if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled) {
 						// reset
 						me.elapsedTime = 0;
 						me.reset(me);
@@ -5120,6 +5013,24 @@
 			me.wheelDelta = 0;
 		}
 
+		// render the world
+		me.renderWorld(me, tooSlow, deltaTime, manualStepping);
+
+		// clear next step flags
+		me.nextStep = false;
+		me.singleStep = false;
+
+		// detemine whether to update based on generations on or autofit or POI change not finished
+		if (me.generationOn || (me.autoFit && (me.autoFitDelta > me.autoFitThreshold)) || me.stepsPOI !== -1) {
+			updateNeeded = true;
+		}
+
+		// set the auto update mode
+		me.menuManager.setAutoUpdate(updateNeeded);
+	};
+
+
+	View.prototype.renderWorld = function(me, tooSlow, deltaTime, manualStepping) {
 		// check for autofit
 		if (me.autoFit && (me.generationOn || me.waypointsDefined)) {
 			me.fitZoomDisplay(false, false);
@@ -5236,21 +5147,12 @@
 			me.stepRange.bgCol = me.fitButton.bgCol;
 		}
 
-		// clear next step flags
-		me.nextStep = false;
-		me.singleStep = false;
-
 		// set the x/y position on the UI
 		me.setXYPosition();
 
 		// check for POI transition
 		if (me.stepsPOI !== -1) {
 			me.updateCameraPOI();
-		}
-
-		// detemine whether to update based on generations on or autofit or POI change not finished
-		if (me.generationOn || (me.autoFit && (me.autoFitDelta > me.autoFitThreshold)) || me.stepsPOI !== -1) {
-			updateNeeded = true;
 		}
 
 		// update indicators
@@ -5272,8 +5174,6 @@
 			me.mainContext.fillRect(0, 0, me.mainCanvas.width, me.mainCanvas.height);
 			me.mainContext.globalAlpha = 1;
 		}
-		// set the auto update mode
-		me.menuManager.setAutoUpdate(updateNeeded);
 	};
 
 	// update GPS and Step control background based on performance
@@ -5982,6 +5882,137 @@
 		me.menuManager.setAutoUpdate(true);
 	};
 
+	// view update for identify
+	View.prototype.viewAnimateIdentify = function(me) {
+		// start time of updates
+		var startTime = performance.now(),
+
+		    // time budget in ms for this frame
+			timeLimit = 13,
+
+			// identify result
+			identifyResult = [];
+
+		// lock the menu
+		me.viewMenu.locked = true;
+
+		// compute the next set of generations without stats for speed
+		while (me.identify && (performance.now() - startTime < timeLimit)) {
+			// compute the next generation
+			me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify);
+			me.engine.convertToPensTile();
+
+			// paste any RLE snippets
+			me.pasteRLEList();
+
+			// if paste every is defined then always flag there are alive cells
+			// since cells will appear in the future
+			if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
+				me.engine.anythingAlive = 1;
+			}
+
+			// compute oscillators
+			identifyResult = me.engine.oscillating(me.identifyFast);
+			if (identifyResult.length > 0) {
+				// check for buffer full
+				if (identifyResult[0] === LifeConstants.bufferFullMessage) {
+					identifyResult[0] = "Nothing Identified";
+					me.lastOscillator = "none";
+					me.lastIdentifyType = "";
+					me.lastIdentifyDirection = "";
+					me.lastIdentifySpeed = "";
+					me.lastIdentifyBox = "";
+					me.lastIdentifyGen = "";
+					me.lastIdentifyCells = "";
+					me.lastIdentifySlope = "";
+					me.lastIdentifyPeriod = "";
+					me.lastIdentifyHeat = "";
+					me.lastIdentifyVolatility = "";
+					me.lastIdentifyMod = "";
+					me.lastIdentifyActive = "";
+					me.lastIdentifyTemperature = "";
+				} else {
+					me.lastOscillator = identifyResult[0];
+					me.lastIdentifyType = identifyResult[1];
+					if (me.lastIdentifyType !== "Empty") {
+						me.lastIdentifyDirection = identifyResult[2];
+						me.lastIdentifySpeed = identifyResult[3];
+						me.lastIdentifyBox = identifyResult[4];
+						me.lastIdentifyGen = identifyResult[5];
+						me.lastIdentifyCells = identifyResult[6];
+						me.lastIdentifySlope = identifyResult[7];
+						me.lastIdentifyPeriod = identifyResult[8];
+						me.lastIdentifyHeat = identifyResult[9];
+						me.lastIdentifyVolatility = identifyResult[10];
+						me.lastIdentifyMod = identifyResult[11];
+						me.lastIdentifyActive = identifyResult[12];
+						me.lastIdentifyTemperature = identifyResult[13];
+
+						// update result labels
+						me.identifyTypeValueLabel.preText = me.lastIdentifyType;
+						me.identifyCellsValueLabel.preText = me.lastIdentifyCells;
+						if (me.lastIdentifyCells.indexOf("|") === -1) {
+							me.identifyCellsValueLabel.toolTip = "";
+						} else {
+							me.identifyCellsValueLabel.toolTip = "min | max | average";
+						}
+						me.identifyBoxValueLabel.preText = me.lastIdentifyBox;
+						me.identifyDirectionValueLabel.preText = me.lastIdentifyDirection;
+						me.identifyPeriodValueLabel.preText = me.lastIdentifyPeriod;
+						me.identifySlopeValueLabel.preText = me.lastIdentifySlope;
+						me.identifySpeedValueLabel.preText = me.lastIdentifySpeed;
+						if (me.lastIdentifySpeed.indexOf("|") === -1) {
+							me.identifySpeedValueLabel.toolTip = "";
+						} else {
+							me.identifySpeedValueLabel.toolTip = "simplified | unsimplified";
+						}
+						me.identifyHeatValueLabel.preText = me.lastIdentifyHeat;
+						if (me.lastIdentifyHeat.indexOf("|") === -1) {
+							me.identifyHeatValueLabel.toolTip = "";
+						} else {
+							me.identifyHeatValueLabel.toolTip = "min | max | average";
+						}
+						me.identifyVolatilityValueLabel.preText = me.lastIdentifyVolatility;
+						me.identifyModValueLabel.preText = me.lastIdentifyMod;
+						me.identifyActiveValueLabel.preText = me.lastIdentifyActive;
+						me.identifyActiveValueLabel.toolTip = "rotor | stator | total";
+						me.identifyTemperatureValueLabel.preText = me.lastIdentifyTemperature;
+						me.identifyTemperatureValueLabel.toolTip = "active | rotor";
+					}
+					me.resultsDisplayed = true;
+
+					// save fast setting
+					me.lastWasFast = me.identifyFast;
+
+					// set label position for results
+					me.setResultsPosition();
+				}
+
+				// switch off search
+				me.identifyPressed(me);
+				if (me.lastIdentifyType === "Empty") {
+					me.menuManager.notification.notify(identifyResult[0], 15, 120, 15, false);
+				} else {
+					me.menuManager.notification.notify(identifyResult[0], 15, 216000, 15, false);
+					me.fitZoomDisplay(true, false);
+				}
+				me.engine.initSearch(me.identify);
+
+				// switch off fast mode
+				me.identifyFast = false;
+
+				// unlock the menu
+				me.viewMenu.locked = false;
+			}
+		}
+
+		// render world
+		me.renderWorld(me, false, 0, false);
+
+		// set the auto update mode
+		me.menuManager.setAutoUpdate(true);
+	};
+
 	// view update for history calculation
 	View.prototype.viewAnimateHistory = function(me) {
 		// target generation
@@ -6088,10 +6119,14 @@
 		if (me.computeHistory) {
 			me.viewAnimateHistory(me);
 		} else {
-			if (me.clipboardCopy) {
-				me.viewAnimateClipboard(me);
+			if (me.identify) {
+				me.viewAnimateIdentify(me);
 			} else {
-				me.viewAnimateNormal(timeSinceLastUpdate, me);
+				if (me.clipboardCopy) {
+					me.viewAnimateClipboard(me);
+				} else {
+					me.viewAnimateNormal(timeSinceLastUpdate, me);
+				}
 			}
 		}
 	};
@@ -10981,77 +11016,46 @@
 
 	// identify button clicked
 	View.prototype.identifyPressed = function(me) {
-		var value = 0;
-
 		// check if anything is alive
 		if (!me.engine.anythingAlive) {
 			me.menuManager.notification.notify("Empty Pattern", 15, 120, 15, false);
 			me.identify = false;
 			me.displayResults = false;
-
-			// restore original step, speed and loop setting
-			me.gensPerStep = me.originalStepSpeed;
-			me.genSpeed = me.originalGenSpeed;
-			if (me.loopGeneration !== -1) {
-				me.loopDisabled = me.originalLoopMode;
-			}
-			me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
-			value = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
-			me.generationRange.current = me.viewGenerationRange([value, value], true, me);
 			me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 		} else {
 			if (me.identify) {
 				me.identify = false;
-
-				// restore original step
-				me.gensPerStep = me.originalStepSpeed;
-				me.genSpeed = me.originalGenSpeed;
-				if (me.loopGeneration !== -1) {
-					me.loopDisabled = me.originalLoopMode;
-				}
-				me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
-				value = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
-				me.generationRange.current = me.viewGenerationRange([value, value], true, me);
-				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 				me.menuManager.notification.notify("Identify Cancelled", 15, 120, 15, false);
+				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 			} else {
 				me.identify = true;
 
 				// hide previous results
 				me.displayResults = false;
 
-				// save step speed and set to maximum
-				me.originalStepSpeed = me.gensPerStep;
-				if (me.gensPerStep < ViewConstants.maxStepSpeed) {
-					me.gensPerStep = ViewConstants.maxStepSpeed;
-					me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
-				}
-				// save generation speed and set to maximum
-				me.originalGenSpeed = me.genSpeed;
-				me.genSpeed = ViewConstants.maxGenSpeed;
-				value = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
-				me.generationRange.current = me.viewGenerationRange([value, value], true, me);
-				// disable loop mode
-				if (me.loopGeneration !== -1) {
-					me.originalLoopMode = me.loopDisabled;
-					me.loopDisabled = true;
+				// start identification
+				if (me.identifyFast) {
+					me.menuManager.notification.notify("Identifying (fast)...", 15, 216000, 15, false);
+				} else {
+					me.menuManager.notification.notify("Identifying...", 15, 216000, 15, false);
 				}
 
-				// start playback
-				if (!me.generationOn) {
-					me.playList.current = me.viewPlayList(ViewConstants.modePlay, true, me);
-				}
-				me.menuManager.notification.notify("Identifying...", 15, 216000, 15, false);
+				// start playback (to create undo point)
+				me.playList.current = me.viewPlayList(ViewConstants.modePlay, true, me);
 			}
 		}
 
 		// initialize search
 		me.engine.initSearch(me.identify);
 
+		// close help
+		me.displayHelp = 0;
+
 		// close settings menu
 		me.backPressed(me);
 		me.backPressed(me);
 		me.menuManager.toggleRequired = true;
+		me.viewMenu.locked = false;
 	};
 
 	// grid toggle
@@ -11834,14 +11838,20 @@
 			// @ts-ignore
 			processed = KeyProcessor.processKeyHistory(me, keyCode, event);
 		} else {
-			// check for clipboard copy
-			if (me.clipboardCopy) {
+			if (me.identify) {
+				// process the key in identify mode
 				// @ts-ignore
-				processed = KeyProcessor.processKeyCopy(me, keyCode, event);
+				processed = KeyProcessor.processKeyIdentify(me, keyCode, event);
 			} else {
-				// process the key
-				// @ts-ignore
-				processed = KeyProcessor.processKey(me, keyCode, event);
+				// check for clipboard copy
+				if (me.clipboardCopy) {
+					// @ts-ignore
+					processed = KeyProcessor.processKeyCopy(me, keyCode, event);
+				} else {
+					// process the key
+					// @ts-ignore
+					processed = KeyProcessor.processKey(me, keyCode, event);
+				}
 			}
 		}
 
@@ -14449,7 +14459,7 @@
 			// reset boxes again if RLE was pasted
 			if (me.pasteList.length > 0) {
 				me.engine.resetBoxes(me.state1Fit);
-				me.engine.reseme();
+				me.engine.resetHistoryBox();
 				if (me.engine.multiNumStates <= 2) {
 					me.engine.resetColourGridBox(me.engine.grid16);
 				}
@@ -14947,12 +14957,16 @@
 							DocConfig.multi = true;
 							break;
 
-						// otherwise check if it is numeric
+						// otherwise check if it begins with slash or is numeric
 						default:
-							value = tokens[i];
-							if (!isNaN(parseFloat(value)) && isFinite(Number(value))) {
-								// set the source element maximum height
-								DocConfig.patternSourceMaxHeight = parseFloat(value) | 0;
+							if (tokens[i][0] === "/") {
+								DocConfig.repositoryLocation = tokens[i];
+							} else {
+								value = tokens[i];
+								if (!isNaN(parseFloat(value)) && isFinite(Number(value))) {
+									// set the source element maximum height
+									DocConfig.patternSourceMaxHeight = parseFloat(value) | 0;
+								}
 							}
 							break;
 						}
@@ -15351,9 +15365,6 @@
 		    rleItem = null,
 			childItem = null,
 			
-			// whether added a show in viewer link
-			addedLink = false,
-
 		    // temporary allocator and pattern manager
 			allocator = new Allocator(),
 			manager = new PatternManager();
@@ -15435,19 +15446,16 @@
 			}
 		}
 
-		// check if any viewers were found
-		if (Controller.viewers.length > 0 || addedLink) {
-			// remove accesskey elements that conflict with LifeViewer
-			c = document.getElementsByTagName("a");
+		// remove accesskey elements that conflict with LifeViewer
+		c = document.getElementsByTagName("a");
 
-			for (b = 0; b < c.length; b += 1) {
-				// get the next anchor
-				anchorItem = c[b];
-				if (anchorItem.accessKey !== "") {
-					// check if it conflicts
-					if (ViewConstants.altKeys.indexOf(anchorItem.accessKey) !== -1) {
-						anchorItem.accessKey = "";
-					}
+		for (b = 0; b < c.length; b += 1) {
+			// get the next anchor
+			anchorItem = c[b];
+			if (anchorItem.accessKey !== "") {
+				// check if it conflicts
+				if (ViewConstants.altKeys.indexOf(anchorItem.accessKey) !== -1) {
+					anchorItem.accessKey = "";
 				}
 			}
 		}

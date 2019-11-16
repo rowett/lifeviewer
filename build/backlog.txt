@@ -39,15 +39,15 @@ In progress:
 
 [STARTED]Rule Table rules
     - decode @TABLE
-    - decode @COLORS
     - decode @ICONS
     [DONE]decode @TREE
+    [DONE]decode @COLORS
     [DONE]load rules from repository
     - rules with hyphen in the name and missing @COLORS or @ICONS load from repository
-    - cache last rule so it's there on New Pattern or updateViewer()
-    - async load
+    [DONE]cache last rule so it's there on New Pattern or updateViewer()
+    [DONE]async load
     - ruletable algo
-    - ruletree algo
+    [DONE]ruletree algo
 
 [STARTED]PCA rules
     - use tile system

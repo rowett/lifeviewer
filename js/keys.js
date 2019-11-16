@@ -47,6 +47,42 @@
 		return processed;
 	};
 
+	// process keys in identify mode
+	KeyProcessor.processKeyIdentify = function(me, keyCode, event) {
+		// flag event processed
+		var processed = true;
+
+		// check for control, meta or alt
+		if (event.ctrlKey || event.metaKey || event.altKey) {
+			// clear key code so it is not handled here
+			keyCode = -1;
+		}
+
+		// determine if the key can be processed
+		switch (keyCode) {
+		// t for timing display
+		case 84:
+			// toggle fps
+			me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+			break;
+
+		// Esc f6 to cancel Identify
+		case 27:
+		case 117:
+			me.identifyPressed(me);
+			break;
+
+		// ignore other keys
+		default:
+			// flag not handled
+			processed = false;
+			break;
+		}
+
+		// return whether key processed
+		return processed;
+	};
+
 	// process keys in history mode
 	KeyProcessor.processKeyHistory = function(me, keyCode, event) {
 		// flag event processed

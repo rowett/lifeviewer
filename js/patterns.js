@@ -7,7 +7,7 @@
 	"use strict";
 
 	// define globals
-	/* global registerEvent Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script arrayFill */
+	/* global registerEvent DocConfig Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script arrayFill */
 
 	// RuleTreeCache singleton
 	var RuleTreeCache = {
@@ -6922,7 +6922,6 @@
 					}
 				}
 			} else {
-				console.debug("RuleTable fetch failed\n\nRule: " + me.ruleSearchName + "\nURI: " + me.ruleSearchURI + "\nStatus: " + xhr.statusText);
 				if (failCallback !== null) {
 					return failCallback(pattern, args, view);
 				}
@@ -6932,7 +6931,6 @@
 
 	// error event handler
 	PatternManager.prototype.errorHandler = function(me, event, xhr, pattern, callback, args, view) {
-		console.debug("RuleTable fetch failed\n\nRule: " + me.ruleSearchName + "\nURI: " + me.ruleSearchURI + "\nStatus: " + xhr.statusText);
 		// complete load if specified
 		if (callback !== null) {
 			return callback(pattern, args, view);
@@ -6943,8 +6941,12 @@
 	PatternManager.prototype.loadRuleTable = function(ruleName, pattern, succeedCallback, failCallback, args, view) {
 		var	me = this,
 			xhr = new XMLHttpRequest(),
-			uri = "/lifeview/plugin/wiki/Rule/" + ruleName;
-			//uri = "/wiki/Rule:" + ruleName;
+			uri = "/wiki/Rule:" + ruleName;
+
+		// check if a repository location if specified in meta settings
+		if (DocConfig.repositoryLocation !== "") {
+			uri = DocConfig.repositoryLocation + ruleName;
+		}
 
 		// save rule name for use in error message
 		this.ruleSearchName = ruleName;

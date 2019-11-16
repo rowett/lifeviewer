@@ -34,9 +34,6 @@
 		// mod type names
 		/** @const {Array<string>} */ modTypeName : ["RotCW", "FlipXY", "RotCCW", "FlipX", "FlipY", "RotCWFlipX", "RotCWFlipY"],
 
-		// number of hash buckets (must be power of 2)
-		/** @const {number} */ numBuckets : 4096,
-
 		// maximum number of generations to check for oscillators
 		/** @const {number} */ maxOscillatorGens : 1048576,
 
@@ -308,7 +305,6 @@
 		/** @type {Array<number>} */ this.ruleTreeColours = null;
 
 		// identify lists
-		this.bucketList = null;
 		this.hashList = null;
 		this.genList = null;
 		this.popList = null;
@@ -316,6 +312,7 @@
 		this.diedList = null;
 		this.boxList = null;
 		this.nextList = null;
+		this.startItem = 0;
 		/** @type {number} */ this.oscLength = 0;
 		this.countList = null;
 		this.hashBox = new BoundingBox(0, 0, 0, 0);
@@ -823,7 +820,6 @@
 			// just switched on so check if buffers are allocated
 			if (this.hashList === null) {
 				// allocate buffers
-				this.bucketList = this.allocator.allocate(Int32, LifeConstants.numBuckets, "Life.bucketList");
 				this.hashList = this.allocator.allocate(Int32, LifeConstants.maxOscillatorGens, "Life.hashList");
 				this.genList = this.allocator.allocate(Uint32, LifeConstants.maxOscillatorGens, "Life.genList");
 				this.popList = this.allocator.allocate(Uint32, LifeConstants.maxOscillatorGens, "Life.popList");
@@ -838,25 +834,20 @@
 				this.hashBox.topY = 0;
 				this.modValue = 0;
 				this.modType = -1;
-			}
+				this.startItem = -1;
 
-			// @ts-ignore
-			if (arrayFill) {
-				this.bucketList.fill(-1);
-				this.nextList.fill(-1);
-			} else {
-				// initialise bucket list
-				for (i = 0; i < LifeConstants.numBuckets; i += 1) {
-					this.bucketList[i] = -1;
-				}
-				for (i = 0 ; i < LifeConstants.maxOscillatorGens; i += 1) {
-					this.nextList[i] = -1;
+				// clear next pointers
+				// @ts-ignore
+				if (arrayFill) {
+					this.nextList.fill(-1);
+				} else {
+					for (i = 0; i < this.nextList.length; i += 1) {
+						this.nextList[i] = -1;
+					}
 				}
 			}
 		} else {
 			// just switched off so release buffers
-			this.bucketList = null;
-			this.bucketCount = null;
 			this.hashList = null;
 			this.genList = null;
 			this.popList = null;
@@ -867,6 +858,7 @@
 			this.countList = null;
 			this.modValue = 0;
 			this.modType = -1;
+			this.startItem = -1;
 		}
 	};
 
@@ -887,7 +879,8 @@
 
 	// get mod hash from pattern
 	Life.prototype.getModHash = function(box, transform) {
-		var hash = 31415962,
+		var /** @type {number} */ hash = 31415962,
+			/** @const {number} */ factor = 1000003,
 			left = box.leftX,
 			bottom = box.bottomY,
 			right = box.rightX,
@@ -964,8 +957,8 @@
 				if (twoState) {
 					if (colourGrid[cy + bottom][cx + left] >= aliveStart) {
 						// update the hash
-						hash = (hash * 1000003) ^ y;
-						hash = (hash * 1000003) ^ x;
+						hash = (hash * factor) ^ y;
+						hash = (hash * factor) ^ x;
 					}
 				} else {
 					state = colourGrid[cy + bottom][cx + left];
@@ -999,9 +992,9 @@
 						}
 
 						// update the hash value
-						hash = (hash * 1000003) ^ y;
-						hash = (hash * 1000003) ^ x;
-						hash = (hash * 1000003) ^ state;
+						hash = (hash * factor) ^ y;
+						hash = (hash * factor) ^ x;
+						hash = (hash * factor) ^ state;
 					}
 				}
 	
@@ -1014,7 +1007,7 @@
 			}
 		}
 
-		return hash;
+		return hash | 0;
 	};
 
 	// check mod hashes
@@ -1022,17 +1015,13 @@
 		var i = 0,
 			trans = LifeConstants.modFirstTrans,
 			found = -1,
-			hash = 0,
-			bucketNum = 0;
+			hash = 0;
 
 		while (trans <= LifeConstants.modLastTrans && found === -1) {
 			hash = this.getModHash(box, trans);
 
-			// get the first entry in the bucket
-			bucketNum = hash & (LifeConstants.numBuckets - 1);
-			i = this.bucketList[bucketNum];
-			
-			// search entries in the bucket
+			// search entries
+			i = this.startItem;
 			while (i !== -1 && found === -1) {
 				if (hash === this.hashList[i]) {
 					// ignore entries at the current generation
@@ -1069,15 +1058,9 @@
 			/** @type {number} */ countE = 0,
 			/** @type {number} */ countS = 0,
 			/** @type {number} */ countW = 0,
-			/** @type {number} */ x32 = 0,
-			/** @type {number} */ m32 = 0,
-			/** @type {number} */ right32 = 0,
-			/** @type {number} */ cells = 0,
 			/** @type {boolean} */ twoState = this.multiNumStates <= 2,
 			colourGrid = this.colourGrid,
-			colourGrid32 = this.colourGrid32,
 			colourRow = null,
-			colourRow32 = null,
 			countList = this.countList,
 			countRow = null,
 			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
@@ -1088,7 +1071,6 @@
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
-				colourGrid32 = this.nextColourGrid32;
 			}
 		}
 
@@ -1106,43 +1088,15 @@
 			hashBox.topY = top;
 		}
 
-		// convert x to 32bit
-		x32 = x >> 2;
-		m32 = x & 3;
-		right32 = right >> 2;
-		if ((right & 3) !== 0) {
-			right32 += 1;
-		}
-
 		// create a hash from every alive cell
 		for (cy = y; cy <= top; cy += 1) {
 			yshift = cy - y;
 			colourRow = colourGrid[cy];
-			colourRow32 = colourGrid32[cy];
 			if (twoState) {
-				for (cx = x32; cx <= right32; cx += 1) {
-					cells = colourRow32[cx] &0x40404040;
-					if (cells !== 0) {
-						x = ((cx - x32) << 2) - m32;
-						if ((cells & 0x40) !== 0) {
-							hash = (hash * factor) ^ yshift;
-							hash = (hash * factor) ^ x;
-						}
-						x += 1;
-						if ((cells & 0x4000) !== 0) {
-							hash = (hash * factor) ^ yshift;
-							hash = (hash * factor) ^ x;
-						}
-						x += 1;
-						if ((cells & 0x400000) !== 0) {
-							hash = (hash * factor) ^ yshift;
-							hash = (hash * factor) ^ x;
-						}
-						x += 1; 
-						if ((cells & 0x40000000) !== 0) {
-							hash = (hash * factor) ^ yshift;
-							hash = (hash * factor) ^ x;
-						}
+				for (cx = x; cx <= right; cx += 1) {
+					if (colourRow[cx] >= aliveStart) {
+						hash = (hash * factor) ^ yshift;
+						hash = (hash * factor) ^ (cx - x);
 					}
 				}
 			} else {
@@ -1151,9 +1105,9 @@
 					state = colourRow[cx];
 					if (state > this.historyStates) {
 						state -= this.historyStates;
-						hash = (hash * 1000003) ^ yshift;
-						hash = (hash * 1000003) ^ (cx - x);
-						hash = (hash * 1000003) ^ state;
+						hash = (hash * factor) ^ yshift;
+						hash = (hash * factor) ^ (cx - x);
+						hash = (hash * factor) ^ state;
 					}
 				}
 			}
@@ -1317,7 +1271,7 @@
 			}
 		}
 
-		return hash;
+		return hash | 0;
 	};
 
 	// return identify results
@@ -1658,12 +1612,10 @@
 		// hash value of current pattern
 		hash = 0,
 		modHash = 0,
+		currentValue = 0,
 
 		// period
 		period = 0,
-
-		// bucket number
-		bucketNum = 0,
 
 		// flag to quit loop
 		quitLoop = false,
@@ -1672,6 +1624,7 @@
 		// hash entry index
 		i = 0,
 		j = 0,
+		lastI = 0,
 
 		// movement vector
 		deltaX = 0,
@@ -1700,44 +1653,57 @@
 				// get the hash of the current pattern
 				hash = this.getHash(box, fast);
 
-				// get the first entry in the bucket
-				bucketNum = hash & (LifeConstants.numBuckets - 1);
-				i = this.bucketList[bucketNum];
-
 				// search hash list for match
 				quitLoop = false;
 
-				// search entries in the bucket
+				// get the start item
+				i = this.startItem;
+				lastI = -1;
+
+				// search the hash list
 				while ((i !== -1) && !quitLoop) {
-					if (hash === this.hashList[i]) {
-						j = i << 1;
-						// hash found so check population and bounding box
-						if ((this.population === this.popList[i]) && boxSize === this.boxList[j]) {
-							period = this.counter - this.genList[i];
-
-							if (this.boxList[j + 1] === boxLocation) {
-								// pattern hasn't moved
-								if (period === 1) {
-									message = "Still Life";
-								} else {
-									message = "Oscillator period " + period;
-								}
-							} else {
-								// pattern is moving
-								deltaX = leftX - (this.boxList[j + 1] >> 16);
-								deltaY = bottomY - (this.boxList[j + 1] & 65535);
-								message = this.spaceshipSpeed(period, deltaX, deltaY);
-							}
+					currentValue = this.hashList[i];
+					if (hash > currentValue) {
+						// hash value greater so try next
+						lastI = i;
+						i = this.nextList[i];
+					} else {
+						if (hash < this.hashList[i]) {
+							// hash value less so truncate list here
 							quitLoop = true;
-							quit = true;
-
-							// create the results
-							result = this.identifyResults(i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast);
+						} else {
+							if (hash === this.hashList[i]) {
+								j = i << 1;
+								// hash matched so check population and bounding box
+								if ((this.population === this.popList[i]) && boxSize === this.boxList[j]) {
+									period = this.counter - this.genList[i];
+		
+									if (this.boxList[j + 1] === boxLocation) {
+										// pattern hasn't moved
+										if (period === 1) {
+											message = "Still Life";
+										} else {
+											message = "Oscillator period " + period;
+										}
+									} else {
+										// pattern is moving
+										deltaX = leftX - (this.boxList[j + 1] >> 16);
+										deltaY = bottomY - (this.boxList[j + 1] & 65535);
+										message = this.spaceshipSpeed(period, deltaX, deltaY);
+									}
+									quitLoop = true;
+									quit = true;
+	
+									// create the results
+									result = this.identifyResults(i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast);
+								} else {
+									// false positive so try next
+									lastI = i;
+									i = this.nextList[i];
+								}
+							}
 						}
 					}
-
-					// get next entry in the bucket
-					i = this.nextList[i];
 				}
 			
 				// add to the lists
@@ -1750,11 +1716,18 @@
 					this.diedList[this.oscLength] = this.deaths;
 					this.boxList[this.oscLength << 1] = boxSize;
 					this.boxList[(this.oscLength << 1) + 1] = (leftX << 16) | bottomY;
-					// point it at the current bucket head
-					this.nextList[this.oscLength] = this.bucketList[bucketNum];
+					this.nextList[this.oscLength] = -1;
 
-					// point the bucket head at the new entry
-					this.bucketList[bucketNum] = this.oscLength;
+					// point the previous record at this one
+					if (this.startItem === -1) {
+						this.startItem = 0;
+					} else {
+						if (lastI === -1) {
+							this.startItem = this.oscLength;
+						} else {
+							this.nextList[lastI] = this.oscLength;
+						}
+					}
 
 					// check for mod matches if one hasn't already been found
 					if (this.modValue === 0 && !fast) {
@@ -3731,22 +3704,32 @@
 				// do nothing
 			} else {
 				// check for PCA
-				if (this.isPCA) {
+				if (this.isPCA || this.isRuleTree) {
 					current = colourGrid[y][x];
 					colourGrid[y][x] = this.historyStates + state;
 					colourTileHistoryGrid[y >> 4][x >> 8] = 65535;
 					// update population
 					if (state === 0) {
 						if (current > this.historyStates) {
-							this.population -= this.bitCounts16[current - this.historyStates];
+							if (this.isPCA) {
+								this.population -= this.bitCounts16[current - this.historyStates];
+							} else {
+								this.population -= 1;
+							}
 						}
 					} else {
 						this.anythingAlive = 1;
-						if (current <= this.historyStates) {
-							this.population += this.bitCounts16[state];
+						if (this.isPCA) {
+							if (current <= this.historyStates) {
+								this.population += this.bitCounts16[state];
+							} else {
+								this.population -= this.bitCounts16[current - this.historyStates];
+								this.population += this.bitCounts16[state];
+							}
 						} else {
-							this.population -= this.bitCounts16[current - this.historyStates];
-							this.population += this.bitCounts16[state];
+							if (current === 0) {
+								this.population += 1;
+							}
 						}
 					}
 				} else {
@@ -4345,7 +4328,7 @@
 			if (this.anythingAlive) {
 				// check for reverse direction
 				this.checkReverse(view, this.counter);
-				this.nextGeneration(false, true, graphDisabled, view.oscar);
+				this.nextGeneration(false, true, graphDisabled, view.identify);
 				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
 					this.convertToPensTile();
 				}
@@ -4354,7 +4337,7 @@
 					// clear the other buffer
 					this.anythingAlive = 1;
 					this.checkReverse(view, this.counter);
-					this.nextGeneration(false, false, graphDisabled, view.oscar);
+					this.nextGeneration(false, false, graphDisabled, view.identify);
 					this.anythingAlive = 0;
 					this.counter -= 1;
 				}
@@ -4369,7 +4352,7 @@
 		if (this.counter < targetGen) {
 			if (this.anythingAlive) {
 				this.checkReverse(view, this.counter);
-				this.nextGeneration(statsOn, true, graphDisabled, view.oscar);
+				this.nextGeneration(statsOn, true, graphDisabled, view.identify);
 				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
 					this.convertToPensTile();
 				}
@@ -4378,7 +4361,7 @@
 					// clear the other buffer
 					this.anythingAlive = 1;
 					this.checkReverse(view, this.counter);
-					this.nextGeneration(false, false, graphDisabled, view.oscar);
+					this.nextGeneration(false, false, graphDisabled, view.identify);
 					this.anythingAlive = 0;
 					this.counter -= 1;
 				}
@@ -4387,7 +4370,13 @@
 				this.convertToPensTile();
 			}
 			view.pasteRLEList();
+		} else {
+			// for two state rules convert to pens once since colour grid was on previous generation when snapshot saved
+			if (this.multiNumStates === -1) {
+				this.convertToPensTile();
+			}
 		}
+
 		// if paste every is defined then always flag there are alive cells
 		// since cells will appear in the future
 		if (view.isPasteEvery) {
@@ -9926,10 +9915,10 @@
 	};
 
 	// compute the next generation unless rule is none
-	Life.prototype.nextGeneration = function(statsOn, noHistory, graphDisabled, oscar) {
+	Life.prototype.nextGeneration = function(statsOn, noHistory, graphDisabled, identify) {
 		// do nothing if rule is none
 		if (!this.isNone) {
-			this.processNextGen(statsOn, noHistory, graphDisabled, oscar);
+			this.processNextGen(statsOn, noHistory, graphDisabled, identify);
 		} else {
 			this.anythingAlive = 1;
 			this.counter += 1;
@@ -9937,14 +9926,14 @@
 	};
 
 	// compute the next generation with or without statistics
-	Life.prototype.processNextGen = function(statsOn, noHistory, graphDisabled, oscar) {
+	Life.prototype.processNextGen = function(statsOn, noHistory, graphDisabled, identify) {
 		var performSave = false,
 		    zoomBox = this.zoomBox,
 			historyBox = this.historyBox,
 			boundarySize = 16;
 
 		// turn stats on unless graph disabled or identify running
-		if (!graphDisabled || oscar) {
+		if (!graphDisabled || identify) {
 			statsOn = true;
 		}
 
@@ -9974,7 +9963,7 @@
 		// check if any bitmap cells are alive
 		if (this.anythingAlive) {
 			if (this.isRuleTree) {
-				this.nextGenerationRuleTree();
+				this.nextGenerationRuleTreeTile();
 			} else {
 				if (this.isPCA) {
 					this.nextGenerationPCATile();
@@ -13666,7 +13655,19 @@
 		    blankTileRow = this.blankTileRow,
 
 		    // flags for edges of tile occupied
-		    neighbours = 0;
+			neighbours = 0,
+
+			// bounded grid width and height
+			bWidth = this.boundedGridWidth,
+		    bHeight = this.boundedGridHeight,
+
+		    // bottom left
+		    bLeftX = Math.round((this.width - bWidth) / 2),
+		    bBottomY = Math.round((this.height - bHeight) / 2),
+
+		    // top right
+		    bRightX = bLeftX + bWidth - 1,
+			bTopY = bBottomY + bHeight - 1;
 
 		// switch buffers each generation
 		if ((this.counter & 1) !== 0) {
@@ -14727,6 +14728,22 @@
 			topY += ySize;
 		}
 
+		// remove bounded grid column and row entries (+1 in all directions)
+		if (this.boundedGridType !== -1) {
+			if (bWidth !== 0) {
+				columnOccupied16[(bLeftX - 1) >> 4] &= ~(1 << (~(bLeftX - 1) & 15));
+				columnOccupied16[(bRightX + 1) >> 4] &= ~(1 << (~(bRightX + 1) & 15));
+				columnOccupied16[(bLeftX - 2) >> 4] &= ~(1 << (~(bLeftX - 2) & 15));
+				columnOccupied16[(bRightX + 2) >> 4] &= ~(1 << (~(bRightX + 2) & 15));
+			}
+			if (bHeight !== 0) {
+				rowOccupied16[(bBottomY - 1) >> 4] &= ~(1 << (~(bBottomY - 1) & 15));
+				rowOccupied16[(bTopY + 1) >> 4] &= ~(1 << (~(bTopY + 1) & 15));
+				rowOccupied16[(bBottomY - 2) >> 4] &= ~(1 << (~(bBottomY - 2) & 15));
+				rowOccupied16[(bTopY + 2) >> 4] &= ~(1 << (~(bTopY + 2) & 15));
+			}
+		}
+
 		// update bounding box
 		for (tw = 0; tw < width16; tw += 1) {
 			if (columnOccupied16[tw]) {
@@ -14870,7 +14887,19 @@
 		    blankTileRow = this.blankTileRow,
 
 		    // flags for edges of tile occupied
-		    neighbours = 0;
+		    neighbours = 0,
+
+			// bounded grid width and height
+			bWidth = this.boundedGridWidth,
+		    bHeight = this.boundedGridHeight,
+
+		    // bottom left
+		    bLeftX = Math.round((this.width - bWidth) / 2),
+		    bBottomY = Math.round((this.height - bHeight) / 2),
+
+		    // top right
+		    bRightX = bLeftX + bWidth - 1,
+			bTopY = bBottomY + bHeight - 1;
 
 		// switch buffers each generation
 		if ((this.counter & 1) !== 0) {
@@ -15760,6 +15789,22 @@
 			// next tile rows
 			bottomY += ySize;
 			topY += ySize;
+		}
+
+		// remove bounded grid column and row entries (+1 in all directions)
+		if (this.boundedGridType !== -1) {
+			if (bWidth !== 0) {
+				columnOccupied16[(bLeftX - 1) >> 4] &= ~(1 << (~(bLeftX - 1) & 15));
+				columnOccupied16[(bRightX + 1) >> 4] &= ~(1 << (~(bRightX + 1) & 15));
+				columnOccupied16[(bLeftX - 2) >> 4] &= ~(1 << (~(bLeftX - 2) & 15));
+				columnOccupied16[(bRightX + 2) >> 4] &= ~(1 << (~(bRightX + 2) & 15));
+			}
+			if (bHeight !== 0) {
+				rowOccupied16[(bBottomY - 1) >> 4] &= ~(1 << (~(bBottomY - 1) & 15));
+				rowOccupied16[(bTopY + 1) >> 4] &= ~(1 << (~(bTopY + 1) & 15));
+				rowOccupied16[(bBottomY - 2) >> 4] &= ~(1 << (~(bBottomY - 2) & 15));
+				rowOccupied16[(bTopY + 2) >> 4] &= ~(1 << (~(bTopY + 2) & 15));
+			}
 		}
 
 		// update bounding box
@@ -17484,6 +17529,658 @@
 		}
 	};
 
+	// update the life grid region using tiles for RuleTree patterns
+	Life.prototype.nextGenerationRuleTreeTile = function() {
+		var gridRow0 = null,
+			gridRow1 = null,
+			gridRow2 = null,
+			nextRow = null,
+			treeNeighbours = this.ruleTreeNeighbours,
+			a = this.ruleTreeA,
+			b = this.ruleTreeB,
+			base = this.ruleTreeBase,
+
+			// cells
+			n = 0,
+			e = 0,
+			s = 0,
+			w = 0,
+			c = 0,
+			ne = 0,
+			nw = 0,
+			se = 0,
+			sw = 0,
+			
+			state = 0,
+			y = 0,
+			x = 0,
+			bit = 0,
+			th = 0, tw = 0,
+			grid = null, nextGrid = null,
+		    tileGrid = null, nextTileGrid = null,
+		    tileRow = null, nextTileRow = null,
+		    belowNextTileRow = null, aboveNextTileRow = null,
+		    tiles = 0, nextTiles = 0,
+		    belowNextTiles = 0, aboveNextTiles = 0,
+			bottomY = 0, topY = 0, leftX = 0, rightX = 0,
+
+			// whether cells were set in the tile
+			tileCells = 0,
+
+		    // column occupied
+		    columnOccupied16 = this.columnOccupied16,
+			colOccupied = 0,
+			colIndex = 0,
+			
+			// row occupied
+			rowOccupied16 = this.rowOccupied16,
+			rowOccupied = 0,
+			rowIndex = 0,
+
+			// population statistics
+			population = 0, births = 0, deaths = 0,
+
+		    // height of grid
+		    height = this.height,
+
+		    // width of grid
+		    width = this.width,
+
+		    // width of grid in 16 bit chunks
+			width16 = width >> 4,
+
+		    // get the bounding box
+		    zoomBox = this.zoomBox,
+
+		    // new box extent
+		    newBottomY = height,
+		    newTopY = -1,
+		    newLeftX = width,
+		    newRightX = -1,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (use height since we need bytes)
+		    xSize = this.tileY,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+		    tileCols16 = this.tileCols >> 4,
+
+		    // blank tile row for top and bottom
+		    blankTileRow = this.blankTileRow,
+
+		    // flags for edges of tile occupied
+		    neighbours = 0;
+
+		// switch buffers each generation
+		if ((this.counter & 1) !== 0) {
+			grid = this.nextColourGrid;
+			nextGrid = this.colourGrid;
+			tileGrid = this.nextTileGrid;
+			nextTileGrid = this.tileGrid;
+		} else {
+			grid = this.colourGrid;
+			nextGrid = this.nextColourGrid;
+			tileGrid = this.tileGrid;
+			nextTileGrid = this.nextTileGrid;
+		}
+
+		// clear column occupied flags
+		// @ts-ignore
+		if (arrayFill) {
+			columnOccupied16.fill(0);
+		} else {
+			for (y = 0; y < columnOccupied16.length; y += 1) {
+				columnOccupied16[y] = 0;
+			}
+		}
+
+		// clear row occupied flags
+		// @ts-ignore
+		if (arrayFill) {
+			rowOccupied16.fill(0);
+		} else {
+			for (y = 0; b < rowOccupied16.length; y += 1) {
+				rowOccupied16[y] = 0;
+			}
+		}
+
+		// set the initial tile row
+		bottomY = 0;
+		topY = bottomY + ySize;
+
+		// clear the next tile grid
+		// @ts-ignore
+		if (arrayFill) {
+			nextTileGrid.whole.fill(0);
+		} else {
+			for (th = 0; th < nextTileGrid.length; th += 1) {
+				tileRow = nextTileGrid[th];
+				for (tw = 0; tw < tileRow.length; tw += 1) {
+					tileRow[tw] = 0;
+				}
+			}
+		}
+
+		// scan each row of tiles
+		for (th = 0; th < tileGrid.length; th += 1) {
+			// set initial tile column
+			leftX = 0;
+			rightX = leftX + xSize;
+
+			// get the tile row
+			tileRow = tileGrid[th];
+			nextTileRow = nextTileGrid[th];
+
+			// get the tile row below
+			if (th > 0) {
+				belowNextTileRow = nextTileGrid[th - 1];
+			} else {
+				belowNextTileRow = blankTileRow;
+			}
+
+			// get the tile row above
+			if (th < tileRows - 1) {
+				aboveNextTileRow = nextTileGrid[th + 1];
+			} else {
+				aboveNextTileRow = blankTileRow;
+			}
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = tileRow[tw];
+
+				// check if any are occupied
+				if (tiles) {
+					// get the destination (with any set because of edges)
+					nextTiles = nextTileRow[tw];
+					belowNextTiles = belowNextTileRow[tw];
+					aboveNextTiles = aboveNextTileRow[tw];
+
+					// compute next generation for each set tile
+					for (bit = 15; bit >= 0; bit -= 1) {
+						// check if this tile needs computing
+						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells in this column
+							colOccupied = 0;
+
+							// mark no cells in the tile rows
+							rowOccupied = 0;
+
+							// clear the edge flags
+							neighbours = 0;
+
+							// process the bottom row of the tile
+							y = bottomY;
+							rowIndex = 32768;
+
+							if (y === 0) {
+								gridRow0 = this.blankColourRow;
+							} else {
+								gridRow0 = grid[y - 1];
+							}
+							gridRow1 = grid[y];
+
+							// process each row of the tile
+							while (y < topY) {
+								// deal with bottom row of the grid
+								if (y === 0) {
+									gridRow0 = this.blankColourRow;
+								} else {
+									gridRow0 = grid[y - 1];
+								}
+	
+								// current row
+								gridRow1 = grid[y];
+
+								// deal with top row of the grid
+								if (y === this.height - 1) {
+									gridRow2 = this.blankColourRow;
+								} else {
+									gridRow2 = grid[y + 1];
+								}
+
+								// get output row
+								nextRow = nextGrid[y];
+
+								// get initial values for this row
+								x = leftX;
+								if (treeNeighbours === 4) {
+									c = gridRow1[x - 1];
+									e = gridRow1[x];
+								} else {
+									n = gridRow0[x - 1];
+									ne = gridRow0[x];
+									s = gridRow2[x - 1];
+									se = gridRow2[x];
+									c = gridRow1[x - 1];
+									e = gridRow1[x];
+								}
+
+								// column index
+								colIndex = 32768;
+
+								// process each column in the row
+								x = leftX;
+								while (x < rightX) {
+									// unroll 1
+									if (treeNeighbours === 4) {
+										w = c;
+										c = e;
+										n = gridRow0[x];
+										e = gridRow1[x + 1];
+										s = gridRow2[x];
+										state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									} else {
+										nw = n;
+										n = ne;
+										ne = gridRow0[x + 1];
+										w = c;
+										c = e;
+										e = gridRow1[x + 1];
+										sw = s;
+										s = se;
+										se = gridRow2[x + 1];
+										state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
+									}
+
+									// check if state is alive
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+
+										// update births
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										// check for death
+										if (c > 0) {
+											// update deaths
+											deaths += 1;
+										}
+									}
+
+									// next column
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 2
+									if (treeNeighbours === 4) {
+										w = c;
+										c = e;
+										n = gridRow0[x];
+										e = gridRow1[x + 1];
+										s = gridRow2[x];
+										state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									} else {
+										nw = n;
+										n = ne;
+										ne = gridRow0[x + 1];
+										w = c;
+										c = e;
+										e = gridRow1[x + 1];
+										sw = s;
+										s = se;
+										se = gridRow2[x + 1];
+										state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
+									}
+
+									// check if state is alive
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+
+										// update births
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										// check for death
+										if (c > 0) {
+											// update deaths
+											deaths += 1;
+										}
+									}
+
+									// next column
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 3
+									if (treeNeighbours === 4) {
+										w = c;
+										c = e;
+										n = gridRow0[x];
+										e = gridRow1[x + 1];
+										s = gridRow2[x];
+										state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									} else {
+										nw = n;
+										n = ne;
+										ne = gridRow0[x + 1];
+										w = c;
+										c = e;
+										e = gridRow1[x + 1];
+										sw = s;
+										s = se;
+										se = gridRow2[x + 1];
+										state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
+									}
+
+									// check if state is alive
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+
+										// update births
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										// check for death
+										if (c > 0) {
+											// update deaths
+											deaths += 1;
+										}
+									}
+
+									// next column
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 4
+									if (treeNeighbours === 4) {
+										w = c;
+										c = e;
+										n = gridRow0[x];
+										e = gridRow1[x + 1];
+										s = gridRow2[x];
+										state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									} else {
+										nw = n;
+										n = ne;
+										ne = gridRow0[x + 1];
+										w = c;
+										c = e;
+										e = gridRow1[x + 1];
+										sw = s;
+										s = se;
+										se = gridRow2[x + 1];
+										state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
+									}
+
+									// check if state is alive
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+
+										// update births
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										// check for death
+										if (c > 0) {
+											// update deaths
+											deaths += 1;
+										}
+									}
+
+									// next column
+									colIndex >>= 1;
+									x += 1;
+								}
+
+								// next row
+								y += 1;
+								rowIndex >>= 1;
+							}
+
+							// save the column occupied cells
+							columnOccupied16[leftX >> 4] |= colOccupied;
+
+							// update tile grid if any cells are set
+							if (colOccupied || tileCells) {
+								// set this tile
+								nextTiles |= (1 << bit);
+
+								// check for neighbours
+								if (rowOccupied & 1) {
+									neighbours |= LifeConstants.topSet;
+									if (colOccupied & 32768) {
+										neighbours |= LifeConstants.topLeftSet;
+									}
+									if (colOccupied & 1) {
+										neighbours |= LifeConstants.topRightSet;
+									}
+								}
+
+								if (rowOccupied & 32768) {
+									neighbours |= LifeConstants.bottomSet;
+									if (colOccupied & 32768) {
+										neighbours |= LifeConstants.bottomLeftSet;
+									}
+									if (colOccupied & 1) {
+										neighbours |= LifeConstants.bottomRightSet;
+									}
+								}
+
+								if (colOccupied & 32768) {
+									neighbours |= LifeConstants.leftSet;
+								}
+
+								if (colOccupied & 1) {
+									neighbours |= LifeConstants.rightSet;
+								}
+
+								// update any neighbouring tiles
+								if (neighbours) {
+									// check whether left edge occupied
+									if ((neighbours & LifeConstants.leftSet) !== 0) {
+										if (bit < 15) {
+											nextTiles |= (1 << (bit + 1));
+										} else {
+											// set in previous set if not at left edge
+											if ((tw > 0) && (leftX > 0)) {
+												nextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether right edge occupied
+									if ((neighbours & LifeConstants.rightSet) !== 0) {
+										if (bit > 0) {
+											nextTiles |= (1 << (bit - 1));
+										} else {
+											// set carry over to go into next set if not at right edge
+											if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+												nextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+
+									// check whether bottom edge occupied
+									if ((neighbours & LifeConstants.bottomSet) !== 0) {
+										// set in lower tile set
+										belowNextTiles |= (1 << bit);
+									}
+
+									// check whether top edge occupied
+									if ((neighbours & LifeConstants.topSet) !== 0) {
+										// set in upper tile set
+										aboveNextTiles |= (1 << bit);
+									}
+
+									// check whether bottom left occupied
+									if ((neighbours & LifeConstants.bottomLeftSet) !== 0) {
+										if (bit < 15) {
+											belowNextTiles |= (1 << (bit + 1));
+										} else {
+											if ((tw > 0) && (leftX > 0)) {
+												belowNextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether bottom right occupied
+									if ((neighbours & LifeConstants.bottomRightSet) !== 0) {
+										if (bit > 0) {
+											belowNextTiles |= (1 << (bit - 1));
+										} else {
+											if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+												belowNextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+
+									// check whether top left occupied
+									if ((neighbours & LifeConstants.topLeftSet) !== 0) {
+										if (bit < 15) {
+											aboveNextTiles |= (1 << (bit + 1));
+										} else {
+											if ((tw > 0) && (leftX > 0)) {
+												aboveNextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether top right occupied
+									if ((neighbours & LifeConstants.topRightSet) !== 0) {
+										if (bit > 0) {
+											aboveNextTiles |= (1 << (bit - 1));
+										} else {
+											if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+												aboveNextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+								}
+							}
+
+							// save the row occupied falgs
+							rowOccupied16[th] |= rowOccupied;
+						}
+
+						// next tile columns
+						leftX += xSize;
+						rightX += xSize;
+					}
+
+					// save the tile groups
+					nextTileRow[tw] |= nextTiles;
+					if (th > 0) {
+						belowNextTileRow[tw] |= belowNextTiles;
+					}
+					if (th < tileRows - 1) {
+						aboveNextTileRow[tw] |= aboveNextTiles;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+					rightX += xSize << 4;
+				}
+			}
+
+			// next tile rows
+			bottomY += ySize;
+			topY += ySize;
+		}
+
+		// update bounding box
+		for (tw = 0; tw < width16; tw += 1) {
+			if (columnOccupied16[tw]) {
+				if (tw < newLeftX) {
+					newLeftX = tw;
+				}
+				if (tw > newRightX) {
+					newRightX = tw;
+				}
+			}
+		}
+
+		for (th = 0; th < rowOccupied16.length; th += 1) {
+			if (rowOccupied16[th]) {
+				if (th < newBottomY) {
+					newBottomY = th;
+				}
+				if (th > newTopY) {
+					newTopY = th;
+				}
+			}
+		}
+
+		// convert new width to pixels
+		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
+		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
+
+		// convert new height to pixels
+		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
+		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
+	
+		// ensure the box is not blank
+		if (newTopY < 0) {
+			newTopY = height - 1;
+		}
+		if (newBottomY >= height) {
+			newBottomY = 0;
+		}
+		if (newLeftX >= width) {
+			newLeftX = 0;
+		}
+		if (newRightX < 0) {
+			newRightX = width - 1;
+		}
+
+		// clip to the screen
+		if (newTopY > height - 1) {
+			newTopY = height - 1;
+		}
+		if (newBottomY < 0) {
+			newBottomY = 0;
+		}
+		if (newLeftX < 0) {
+			newLeftX = 0;
+		}
+		if (newRightX > width - 1) {
+			newRightX = width - 1;
+		}
+
+		// save to zoom box
+		zoomBox.topY = newTopY;
+		zoomBox.bottomY = newBottomY;
+		zoomBox.leftX = newLeftX;
+		zoomBox.rightX = newRightX;
+
+		// clear the blank tile row since it may have been written to at top and bottom
+		// @ts-ignore
+		if (arrayFill) {
+			blankTileRow.fill(0);
+		} else {
+			for (y = 0; y < blankTileRow.length; y += 1) {
+				blankTileRow[y] = 0;
+			}
+		}
+
+		// save statistics
+		this.population = population;
+		this.births = births;
+		this.deaths = deaths;
+	};
+
 	// next generation for RuleTree rules
 	Life.prototype.nextGenerationRuleTree = function() {
 		var y = 0,
@@ -17622,7 +18319,7 @@
 					population += 1;
 					nextRow[x] = state;
 					rowAlive = true;
-					tileRow[x >> 8] = 65535;
+					//tileRow[x >> 8] = 65535;
 
 					// update bounding box
 					if (x < nLeftX) {
@@ -17644,6 +18341,7 @@
 					}
 					nextRow[x] = state;
 				}
+				tileRow[x >> 8] = 65535;
 			}
 
 			// if any cells alive in the row then update bounding box
