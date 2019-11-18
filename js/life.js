@@ -17556,6 +17556,8 @@
 			x = 0,
 			bit = 0,
 			th = 0, tw = 0,
+			colourTileGrid = this.colourTileHistoryGrid,
+			colourTileRow = null,
 			grid = null, nextGrid = null,
 		    tileGrid = null, nextTileGrid = null,
 		    tileRow = null, nextTileRow = null,
@@ -17748,35 +17750,424 @@
 								// get output row
 								nextRow = nextGrid[y];
 
-								// get initial values for this row
+								// column index
+								colIndex = 32768;
+
+								// process each column in the row
 								x = leftX;
 								if (treeNeighbours === 4) {
+									// get initial values for this row
 									c = gridRow1[x - 1];
 									e = gridRow1[x];
+
+									// process each cell along the tile row
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+
+									// check if state is alive
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+
+										// update births
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										// check for death
+										if (c > 0) {
+											// update deaths
+											deaths += 1;
+										}
+									}
+	
+									// next column
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 1
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 2
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 3
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 4
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 5
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 6
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 7
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 8
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 9
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 10
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 11
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 12
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+									// unroll 9
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 13
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 14
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
+
+									// unroll 15
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										if (c > 0) {
+											deaths += 1;
+										}
+									}
+									colIndex >>= 1;
+									x += 1;
 								} else {
+									// get initial values for this row
 									n = gridRow0[x - 1];
 									ne = gridRow0[x];
 									s = gridRow2[x - 1];
 									se = gridRow2[x];
 									c = gridRow1[x - 1];
 									e = gridRow1[x];
-								}
 
-								// column index
-								colIndex = 32768;
-
-								// process each column in the row
-								x = leftX;
-								while (x < rightX) {
-									// unroll 1
-									if (treeNeighbours === 4) {
-										w = c;
-										c = e;
-										n = gridRow0[x];
-										e = gridRow1[x + 1];
-										s = gridRow2[x];
-										state = b[a[a[a[a[base + n] + w] + e] + s] + c];
-									} else {
+									// process each cell along the tile row
+									while (x < rightX) {
 										nw = n;
 										n = ne;
 										ne = gridRow0[x + 1];
@@ -17787,162 +18178,30 @@
 										s = se;
 										se = gridRow2[x + 1];
 										state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
-									}
-
-									// check if state is alive
-									nextRow[x] = state;
-									if (state > 0) {
-										population += 1;
-
-										// update births
-										if (c === 0) {
-											births += 1;
+	
+										// check if state is alive
+										nextRow[x] = state;
+										if (state > 0) {
+											population += 1;
+	
+											// update births
+											if (c === 0) {
+												births += 1;
+											}
+											rowOccupied |= rowIndex;
+											colOccupied |= colIndex;
+										} else {
+											// check for death
+											if (c > 0) {
+												// update deaths
+												deaths += 1;
+											}
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
-									} else {
-										// check for death
-										if (c > 0) {
-											// update deaths
-											deaths += 1;
-										}
+	
+										// next column
+										colIndex >>= 1;
+										x += 1;
 									}
-
-									// next column
-									colIndex >>= 1;
-									x += 1;
-
-									// unroll 2
-									if (treeNeighbours === 4) {
-										w = c;
-										c = e;
-										n = gridRow0[x];
-										e = gridRow1[x + 1];
-										s = gridRow2[x];
-										state = b[a[a[a[a[base + n] + w] + e] + s] + c];
-									} else {
-										nw = n;
-										n = ne;
-										ne = gridRow0[x + 1];
-										w = c;
-										c = e;
-										e = gridRow1[x + 1];
-										sw = s;
-										s = se;
-										se = gridRow2[x + 1];
-										state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
-									}
-
-									// check if state is alive
-									nextRow[x] = state;
-									if (state > 0) {
-										population += 1;
-
-										// update births
-										if (c === 0) {
-											births += 1;
-										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
-									} else {
-										// check for death
-										if (c > 0) {
-											// update deaths
-											deaths += 1;
-										}
-									}
-
-									// next column
-									colIndex >>= 1;
-									x += 1;
-
-									// unroll 3
-									if (treeNeighbours === 4) {
-										w = c;
-										c = e;
-										n = gridRow0[x];
-										e = gridRow1[x + 1];
-										s = gridRow2[x];
-										state = b[a[a[a[a[base + n] + w] + e] + s] + c];
-									} else {
-										nw = n;
-										n = ne;
-										ne = gridRow0[x + 1];
-										w = c;
-										c = e;
-										e = gridRow1[x + 1];
-										sw = s;
-										s = se;
-										se = gridRow2[x + 1];
-										state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
-									}
-
-									// check if state is alive
-									nextRow[x] = state;
-									if (state > 0) {
-										population += 1;
-
-										// update births
-										if (c === 0) {
-											births += 1;
-										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
-									} else {
-										// check for death
-										if (c > 0) {
-											// update deaths
-											deaths += 1;
-										}
-									}
-
-									// next column
-									colIndex >>= 1;
-									x += 1;
-
-									// unroll 4
-									if (treeNeighbours === 4) {
-										w = c;
-										c = e;
-										n = gridRow0[x];
-										e = gridRow1[x + 1];
-										s = gridRow2[x];
-										state = b[a[a[a[a[base + n] + w] + e] + s] + c];
-									} else {
-										nw = n;
-										n = ne;
-										ne = gridRow0[x + 1];
-										w = c;
-										c = e;
-										e = gridRow1[x + 1];
-										sw = s;
-										s = se;
-										se = gridRow2[x + 1];
-										state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
-									}
-
-									// check if state is alive
-									nextRow[x] = state;
-									if (state > 0) {
-										population += 1;
-
-										// update births
-										if (c === 0) {
-											births += 1;
-										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
-									} else {
-										// check for death
-										if (c > 0) {
-											// update deaths
-											deaths += 1;
-										}
-									}
-
-									// next column
-									colIndex >>= 1;
-									x += 1;
 								}
 
 								// next row
@@ -18081,7 +18340,7 @@
 					}
 
 					// save the tile groups
-					nextTileRow[tw] |= nextTiles;
+					nextTileRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -18175,206 +18434,22 @@
 			}
 		}
 
-		// copy the tile grid to the colour history grid
-		Array.copy(nextTileGrid, this.colourTileGrid);
-		Array.copy(nextTileGrid, this.colourTileHistoryGrid);
+		// set colour tiles
+		for (th = 0; th < tileGrid.length; th += 1) {
+			tileRow = tileGrid[th];
+			nextTileRow = nextTileGrid[th];
+			colourTileRow = colourTileGrid[th];
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				colourTileRow[tw] = tileRow[tw] | nextTileRow[tw];
+			}
+		}
+		Array.copy(colourTileGrid, this.colourTileGrid);
 
 		// save statistics
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
 		this.anythingAlive = population;
-	};
-
-	// next generation for RuleTree rules
-	Life.prototype.nextGenerationRuleTree = function() {
-		var y = 0,
-			x = 0,
-			grid = this.colourGrid,
-			nextGrid = this.nextColourGrid,
-			zoomBox = this.zoomBox,
-			historyBox = this.historyBox,
-			leftX = historyBox.leftX,
-			bottomY = historyBox.bottomY,
-			rightX = historyBox.rightX,
-			topY = historyBox.topY,
-			state = 0,
-			population = 0,
-			births = 0,
-			deaths = 0,
-			nLeftX = this.width,
-			nBottomY = this.height,
-			nRightX = 0,
-			nTopY = 0,
-			colourTileGrid = this.colourTileHistoryGrid,
-			aboveRow = null,
-			gridRow = null,
-			belowRow = null,
-			tileRow = null,
-			nextRow = null,
-			rowAlive = false,
-			neighbours = this.ruleTreeNeighbours,
-			a = this.ruleTreeA,
-			b = this.ruleTreeB,
-			base = this.ruleTreeBase,
-	
-			// cells
-			n = 0,
-			e = 0,
-			s = 0,
-			w = 0,
-			c = 0,
-			ne = 0,
-			nw = 0,
-			se = 0,
-			sw = 0,
-
-			// bounded grid width and height
-			width = this.boundedGridWidth,
-		    height = this.boundedGridHeight,
-
-		    // bottom left
-		    bLeftX = Math.round((this.width - width) / 2),
-		    bBottomY = Math.round((this.height - height) / 2),
-
-		    // top right
-		    bRightX = bLeftX + width - 1,
-			bTopY = bBottomY + height - 1;
-			
-		// check for bounded grid
-		if (this.boundedGridType !== -1) {
-			leftX = bLeftX + 1;
-			bottomY = bBottomY + 1;
-			rightX = bRightX - 1;
-			topY = bTopY - 1;
-		}
-
-		// clear anything alive
-		this.anythingAlive = 0;
-
-		// select the correct grid
-		if ((this.counter & 1) !== 0) {
-			grid = this.nextColourGrid;
-			nextGrid = this.colourGrid;
-		} else {
-			grid = this.colourGrid;
-			nextGrid = this.nextColourGrid;
-		}
-
-		// ensure on display
-		if (bottomY < 1) {
-			bottomY = 1;
-		}
-		if (topY > this.height - 2) {
-			topY = this.height - 2;
-		}
-		if (leftX < 1) {
-			leftX = 1;
-		}
-		if (rightX > this.width - 2) {
-			rightX = this.width - 2;
-		}
-
-		// process each cell in the bounding box
-		for (y = bottomY - 1; y <= topY + 1; y += 1) {
-			aboveRow = grid[y - 1];
-			gridRow = grid[y];
-			belowRow = grid[y + 1];
-			tileRow = colourTileGrid[y >> 4];
-			nextRow = nextGrid[y];
-
-			// process each row in the bounding box
-			rowAlive = false;
-			x = leftX - 1;
-			if (neighbours === 4) {
-				c = gridRow[x - 1];
-				e = gridRow[x];
-			} else {
-				n = aboveRow[x - 1];
-				ne = aboveRow[x];
-				s = belowRow[x - 1];
-				se = belowRow[x];
-				c = gridRow[x - 1];
-				e = gridRow[x];
-			}
-
-			for (x = leftX - 1; x <= rightX + 1; x += 1) {
-				if (neighbours === 4) {
-					w = c;
-					c = e;
-					n = aboveRow[x];
-					e = gridRow[x + 1];
-					s = belowRow[x];
-					state = b[a[a[a[a[base + n] + w] + e] + s] + c];
-				} else {
-					nw = n;
-					n = ne;
-					ne = aboveRow[x + 1];
-					w = c;
-					c = e;
-					e = gridRow[x + 1];
-					sw = s;
-					s = se;
-					se = belowRow[x + 1];
-					state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
-				}
-
-				// check if state is alive
-				if (state > 0) {
-					population += 1;
-					nextRow[x] = state;
-					rowAlive = true;
-					//tileRow[x >> 8] = 65535;
-
-					// update bounding box
-					if (x < nLeftX) {
-						nLeftX = x;
-					}
-					if (x > nRightX) {
-						nRightX = x;
-					}
-
-					// update births
-					if (c === 0) {
-						births += 1;
-					}
-				} else {
-					// check for death
-					if (c > 0) {
-						// update deaths
-						deaths += 1;
-					}
-					nextRow[x] = state;
-				}
-				tileRow[x >> 8] = 65535;
-			}
-
-			// if any cells alive in the row then update bounding box
-			if (rowAlive) {
-				if (y < nBottomY) {
-					nBottomY = y;
-				}
-				if (y > nTopY) {
-					nTopY = y;
-				}
-			}
-		}
-
-		// save statistics
-		this.population = population;
-		this.births = births;
-		this.deaths = deaths;
-		this.anythingAlive = population;
-
-		// update bounding boxes
-		historyBox.leftX = nLeftX;
-		historyBox.bottomY = nBottomY;
-		historyBox.rightX = nRightX;
-		historyBox.topY = nTopY;
-		zoomBox.leftX = nLeftX;
-		zoomBox.bottomY = nBottomY;
-		zoomBox.rightX = nRightX;
-		zoomBox.topY = nTopY;
 	};
 
 	// next generation for PCA rules
