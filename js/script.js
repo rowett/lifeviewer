@@ -42,9 +42,6 @@
 					while (i < tokens.length && tokens[i] !== this.trimNewlineToken) {
 						i += 1;
 					}
-					if (i < tokens.length) {
-						i += 1;
-					}
 				}
 			}
 			if (i < tokens.length) {

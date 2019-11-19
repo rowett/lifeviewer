@@ -3708,6 +3708,16 @@
 					current = colourGrid[y][x];
 					colourGrid[y][x] = this.historyStates + state;
 					colourTileHistoryGrid[y >> 4][x >> 8] = 65535;
+					if (this.isRuleTree) {
+						if ((this.counter & 1) !== 0) {
+							grid = this.nextGrid16;
+							tileGrid = this.nextTileGrid;
+						}
+		
+						// get the tile mask
+						cellAsTileBit = 1 << (~(x >> 4) & 15);
+					}
+
 					// update population
 					if (state === 0) {
 						if (current > this.historyStates) {
@@ -3727,6 +3737,7 @@
 								this.population += this.bitCounts16[state];
 							}
 						} else {
+							tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
 							if (current === 0) {
 								this.population += 1;
 							}
@@ -17556,7 +17567,9 @@
 			x = 0,
 			bit = 0,
 			th = 0, tw = 0,
-			colourTileGrid = this.colourTileHistoryGrid,
+			colourTileHistoryGrid = this.colourTileHistoryGrid,
+			colourTileHistoryRow = null,
+			colourTileGrid = this.colourTileGrid,
 			colourTileRow = null,
 			grid = null, nextGrid = null,
 		    tileGrid = null, nextTileGrid = null,
@@ -17677,6 +17690,8 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
+			colourTileRow = colourTileGrid[th];
+			colourTileHistoryRow = colourTileHistoryGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -18066,28 +18081,6 @@
 									}
 									colIndex >>= 1;
 									x += 1;
-									// unroll 9
-									w = c;
-									c = e;
-									n = gridRow0[x];
-									e = gridRow1[x + 1];
-									s = gridRow2[x];
-									state = b[a[a[a[a[base + n] + w] + e] + s] + c];
-									nextRow[x] = state;
-									if (state > 0) {
-										population += 1;
-										if (c === 0) {
-											births += 1;
-										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
-									} else {
-										if (c > 0) {
-											deaths += 1;
-										}
-									}
-									colIndex >>= 1;
-									x += 1;
 
 									// unroll 13
 									w = c;
@@ -18340,7 +18333,9 @@
 					}
 
 					// save the tile groups
-					nextTileRow[tw] |= tiles | nextTiles;
+					nextTileRow[tw] |= nextTiles;
+					colourTileRow[tw] = tiles | nextTiles;
+					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -18434,16 +18429,46 @@
 			}
 		}
 
-		// set colour tiles
+		// clear tiles that died in source
+		bottomY = 0;
+		topY = bottomY + ySize;
+		// process each tile row
 		for (th = 0; th < tileGrid.length; th += 1) {
+			leftX = 0;
+			rightX = leftX + xSize;
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
+			// process each tile group in the row
 			for (tw = 0; tw < tileCols16; tw += 1) {
-				colourTileRow[tw] = tileRow[tw] | nextTileRow[tw];
+				tiles = tileRow[tw];
+				nextTiles = nextTileRow[tw];
+				// process each tile in the group
+				if (tiles !== nextTiles) {
+					for (bit = 15; bit >= 0; bit -= 1) {
+						// check if tile changed (i.e. was dead and is now alive or vice verse)
+						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
+							// check if tile died
+							if ((nextTiles & (1 << bit)) === 0) {
+								// clear source cells for double buffering
+								for (y = bottomY; y <= topY; y += 1) {
+									gridRow1 = grid[y];
+									for (x = leftX; x <= rightX; x += 1) {
+										gridRow1[x] = 0;
+									}
+								}
+							}
+						}
+						leftX += xSize;
+						rightX += xSize;
+					}
+				} else {
+					leftX += xSize << 4;
+					rightX += xSize << 4;
+				}
 			}
+			bottomY += ySize;
+			topY += ySize;
 		}
-		Array.copy(colourTileGrid, this.colourTileGrid);
 
 		// save statistics
 		this.population = population;
