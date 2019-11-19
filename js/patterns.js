@@ -6960,6 +6960,13 @@
 				lengths[k] = tags[k].length;
 				k += 1;
 			}
+
+			// add <br /> tag
+			tags[k] = "<br";
+			lengths[k] = tags[k].length;
+			k += 1;
+			tags[k] = "/>";
+			lengths[k] = tags[k].length;
 			endLength = this.ruleSearchEndTag.length;
 
 			// rule found so decode the rest
