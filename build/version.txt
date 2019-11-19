@@ -5,6 +5,8 @@ Build 456
 Build 455
 - neighbourhood was sometimes wrong in Help->Info for RuleTree rules
 - improved tile usage in RuleTree algorithm
+- only make one request per rule to the Repository
+- fixed set cell for RuleTree rules
 
 Build 454
 - Identify can perform much faster since it's no longer limited by maximum STEP

@@ -17783,11 +17783,17 @@
 								x = leftX;
 
 								// get initial values for this row
-								n = gridRow0[x - 1];
+								if (x === 0) {
+									n = 0;
+									s = 0;
+									c = 0;
+								} else {
+									n = gridRow0[x - 1];
+									s = gridRow2[x - 1];
+									c = gridRow1[x - 1];
+								}
 								ne = gridRow0[x];
-								s = gridRow2[x - 1];
 								se = gridRow2[x];
-								c = gridRow1[x - 1];
 								e = gridRow1[x];
 
 								// process each cell along the tile row
@@ -18203,16 +18209,22 @@
 								colIndex >>= 1;
 								x += 1;
 
-								// unroll 15
+								// unroll 15 (and handle right edge)
 								nw = n;
 								n = ne;
-								ne = gridRow0[x + 1];
 								w = c;
 								c = e;
-								e = gridRow1[x + 1];
 								sw = s;
 								s = se;
-								se = gridRow2[x + 1];
+								if (x === width - 1) {
+									ne = 0;
+									e = 0;
+									se = 0;
+								} else {
+									ne = gridRow0[x + 1];
+									e = gridRow1[x + 1];
+									se = gridRow2[x + 1];
+								}
 								state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
 								nextRow[x] = state;
 								if (state > 0) {
@@ -18737,7 +18749,11 @@
 								x = leftX;
 
 								// get initial values for this row
-								c = gridRow1[x - 1];
+								if (x === 0) {
+									c = 0;
+								} else {
+									c = gridRow1[x - 1];
+								}
 								e = gridRow1[x];
 
 								// process each cell along the tile row
@@ -19093,11 +19109,15 @@
 								colIndex >>= 1;
 								x += 1;
 
-								// unroll 15
+								// unroll 15 (and handle right edge)
 								w = c;
 								c = e;
 								n = gridRow0[x];
-								e = gridRow1[x + 1];
+								if (x === width - 1) {
+									e = 0;
+								} else {
+									e = gridRow1[x + 1];
+								}
 								s = gridRow2[x];
 								state = b[a[a[a[a[base + n] + w] + e] + s] + c];
 								nextRow[x] = state;
