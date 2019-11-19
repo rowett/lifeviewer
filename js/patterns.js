@@ -12,7 +12,106 @@
 	// RuleTreeCache singleton
 	var RuleTreeCache = {
 		// list of rules
-		rules : []
+		rules : [],
+
+		// list of pending requests
+		requests : []
+	};
+
+	// add a request to the cache
+	RuleTreeCache.addRequest = function(pattern, succeedCallback, failCallback, args, view) {
+		var i = 0,
+			l = this.requests.length,
+			request = null,
+			found = false,
+			name = pattern.ruleName;
+
+		// check if the rule already exists
+		i = 0;
+		while (i < l && !found) {
+			request = this.requests[i];
+			if (request.name === name) {
+				found = true;
+				// add callbacks to the existing record
+				request.pattern[request.pattern.length] = pattern;
+				request.succeedCallback[request.succeedCallback.length] = succeedCallback;
+				request.failCallback[request.failCallback.length] = failCallback;
+				request.args[request.args.length] = args;
+				request.view[request.view.length] = view;
+			} else {
+				i += 1;
+			}
+		}
+
+		// add if not found
+		if (!found) {
+			this.requests[l] = {name: name, pattern: [pattern], succeedCallback: [succeedCallback], failCallback: [failCallback], args: [args], view: [view]};
+		}
+
+		// return whether there was already a request for the rule
+		return found;
+	};
+
+	// remove a request from the cache
+	RuleTreeCache.removeRequest = function(pattern) {
+		var i = 0,
+			j = 0,
+			l = this.requests.length,
+			request = null,
+			found = false,
+			name = pattern.ruleName;
+
+		// check if the rule already exists
+		i = 0;
+		while (i < l && !found) {
+			request = this.requests[i];
+			if (request.name === name) {
+				found = true;
+				// remove the request name
+				request.name = "";
+
+				// call the success callback on requesters
+				for (j = 0; j < request.succeedCallback.length; j += 1) {
+					if (request.succeedCallback[j] !== null) {
+						this.loadIfExists(request.pattern[j]);
+						request.pattern[j].manager.failureReason = "";
+						request.pattern[j].manager.executable = true;
+						request.pattern[j].manager.extendedFormat = false;
+						request.succeedCallback[j](request.pattern[j], request.args[j], request.view[j]);
+					}
+				}
+			} else {
+				i += 1;
+			}
+		}
+	};
+
+	// process a failed request 
+	RuleTreeCache.requestFailed = function(pattern) {
+		var i = 0,
+			j = 0,
+			l = this.requests.length,
+			request = null,
+			found = false,
+			name = pattern.ruleName;
+
+		// check if the rule already exists
+		i = 0;
+		while (i < l && !found) {
+			request = this.requests[i];
+			if (request.name === name) {
+				found = true;
+				request.name = "";
+				// call the fail callback on requesters
+				for (j = 0; j < request.failCallback.length; j += 1) {
+					if (request.failCallback[j] !== null) {
+						request.failCallback[j](request.pattern[j], request.args[j], request.view[j]);
+					}
+				}
+			} else {
+				i += 1;
+			}
+		}
 	};
 
 	// add a new rule to the cache
@@ -37,6 +136,9 @@
 			this.rules[l] = {name: name, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
 				 nodes: pattern.ruleTreeNodes, base: pattern.ruleTreeBase, ruleA: pattern.ruleTreeA,
 				 ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours};
+
+			// remove the rule from the request list
+			this.removeRequest(pattern);
 		}
 	};
 
@@ -68,6 +170,7 @@
 			pattern.ruleTreeA = record.ruleA;
 			pattern.ruleTreeB = record.ruleB;
 			pattern.ruleTreeColours = record.colours;
+			pattern.isNone = false;
 		}
 
 		// return whether populated
@@ -6894,7 +6997,7 @@
 	};
 
 	// load event handler
-	PatternManager.prototype.loadHandler = function(me, event, xhr, pattern, succeedCallback, failCallback, args, view) {
+	PatternManager.prototype.loadHandler = function(me, event, xhr, pattern) {
 		// rule table text
 		var ruleText = "";
 
@@ -6904,9 +7007,7 @@
 				ruleText = me.getRuleTable(xhr.responseText);
 				if (ruleText === "") {
 					pattern.manager.failureReason = "@RULE not found";
-					if (failCallback !== null) {
-						return failCallback(pattern, args, view);
-					}
+					RuleTreeCache.requestFailed(pattern);
 				} else {
 					// attempt to decode the rule table
 					me.decodeRuleTable(pattern, ruleText);
@@ -6914,53 +7015,56 @@
 					// if rule tree decoded successfully then add to cache
 					if (pattern.ruleTreeStates !== -1) {
 						RuleTreeCache.add(pattern);
-					}
-
-					// execute success callback
-					if (succeedCallback !== null) {
-						return succeedCallback(pattern, args, view);
+					} else {
+						RuleTreeCache.requestFailed(pattern);
 					}
 				}
 			} else {
-				if (failCallback !== null) {
-					return failCallback(pattern, args, view);
-				}
+				// inform other requesters that this rule failed to load
+				RuleTreeCache.requestFailed(pattern);
 			}
 		}
 	};
 
 	// error event handler
-	PatternManager.prototype.errorHandler = function(me, event, xhr, pattern, callback, args, view) {
-		// complete load if specified
-		if (callback !== null) {
-			return callback(pattern, args, view);
-		}
+	PatternManager.prototype.errorHandler = function(me, event, pattern) {
+		// inform other requesters that this rule failed to load
+		RuleTreeCache.requestFailed(pattern);
 	};
 
 	// load rule table from URI
 	PatternManager.prototype.loadRuleTable = function(ruleName, pattern, succeedCallback, failCallback, args, view) {
 		var	me = this,
-			xhr = new XMLHttpRequest(),
+			xhr = null,
 			uri = "/wiki/Rule:" + ruleName;
 
-		// check if a repository location if specified in meta settings
-		if (DocConfig.repositoryLocation !== "") {
-			uri = DocConfig.repositoryLocation + ruleName;
-		}
-
-		// save rule name for use in error message
-		this.ruleSearchName = ruleName;
-		this.ruleSearchURI = uri;
-
-		// mark loading
+		// mark loading from repository
 		this.loadingFromRepository = true;
+	
+		// add this request to the list and check if there is already a request for this rule
+		if (RuleTreeCache.addRequest(pattern, succeedCallback, failCallback, args, view)) {
+			// nothing to do
+		} else {
+			// create a request
+			xhr = new XMLHttpRequest();
 
-		registerEvent(xhr, "load", function(event) {me.loadHandler(me, event, xhr, pattern, succeedCallback, failCallback, args, view);}, false);
-		registerEvent(xhr, "error", function(event) {me.errorHandler(me, event, xhr, pattern, failCallback, args, view);}, false);
-
-		// attempt to get the requested resource
-		xhr.open("GET", uri, true);
-		xhr.send(null);
+			// check if a repository location if specified in meta settings
+			if (DocConfig.repositoryLocation !== "") {
+				uri = DocConfig.repositoryLocation + ruleName;
+			}
+	
+			// save rule name for use in error message
+			this.ruleSearchName = ruleName;
+			this.ruleSearchURI = uri;
+	
+			// register load and error events
+			registerEvent(xhr, "load", function(event) {me.loadHandler(me, event, xhr, pattern);}, false);
+			registerEvent(xhr, "error", function(event) {me.errorHandler(me, event, xhr);}, false);
+	
+			// attempt to get the requested resource
+			xhr.open("GET", uri, true);
+			xhr.send(null);
+		}
 	};
 
 	// create the global interface

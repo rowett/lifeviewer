@@ -14586,11 +14586,6 @@
 			me.engine.resetPopulationData();
 		}
 
-		if (pattern) {
-			// free the multi-state map
-			pattern.multiStateMap = null;
-		}
-
 		// fit zoom
 		numberValue = me.engine.zoom;
 		savedX = me.engine.xOff;
