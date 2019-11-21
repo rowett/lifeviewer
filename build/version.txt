@@ -1,3 +1,6 @@
+Build 457
+- faster RuleTree performance for vonNeumann rules with <= 16 states
+
 Build 456
 - handle html line breaks in Wiki rules
 - improve clear tile performance
