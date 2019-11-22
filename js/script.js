@@ -5,64 +5,146 @@
 	// use strict mode
 	"use strict";
 
+	// define globals
+	/* global Uint32Array Uint16Array */
+
 	// Script constructor
 	/**
 	 * @constructor
 	 */
 	function Script(/** @type {string} */ source, /** @const {boolean} */ tokenizeNewline) {
-		var tokens = [],
-			i = 0;
+		var /** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ l = source.length,
+			/** @type {number} */ halfLength = (l >> 1) + 2,
+			/** @type {string} */ v = 0,
+			/** @type {boolean} */ inToken = false,
+			/** @type {number} */ tokens = 0,
+			/** @type {Array<number>} */ starts = new Uint32Array(halfLength),
+			/** @type {Array<number>} */ lengths = new Uint16Array(halfLength),
+			/** @type {Array<number>} */ numbers = new Uint32Array(halfLength),
+			/** @type {number} */ value = 0,
+			/** @type {boolean} */ isNumber = false;
 
-		// newline token
-		/** @const {string} */ this.newlineToken = " _NEWLINE_ ";
+		// parse the source
+		while (i < l) {
+			v = source[i];
 
-		// trimmed newline token
-		/** @const {string} */ this.trimNewlineToken = this.newlineToken.trim();
-
-		// replace html substitutions
-		source = source.replace(/&amp;/gi, "&");
-
-		// tokenize newlines if requested
-		if (tokenizeNewline) {
-			source = source.replace(/[=]/gm, " = ");
-			source = source.replace(/\n/gm, this.newlineToken);
-		}
-
-		// split the source into tokens
-		tokens = source.match(/\S+/g);
-
-		// copy tokens
-		this.tokens = [];
-		for (i = 0; i < tokens.length; i += 1) {
-			if (tokenizeNewline) {
-				// skip comment lines
-				while (i < tokens.length && tokens[i][0] === "#") {
-					// ignore whole line
-					i += 1;
-					while (i < tokens.length && tokens[i] !== this.trimNewlineToken) {
-						i += 1;
+			switch (v) {
+			case "\n":
+				if (inToken) {
+					// complete last token
+					starts[tokens] = j;
+					lengths[tokens] = i - j;
+					numbers[tokens] = (isNumber ? (value << 1) + 1 : 0);
+					tokens += 1;
+					inToken = false;
+				}
+				// add new line token if last token was not a new line
+				if (tokenizeNewline) {
+					if (tokens > 0 && source[starts[tokens - 1]] !== "\n") {
+						starts[tokens] = i;
+						lengths[tokens] = 1;
+						numbers[tokens] = 0;
+						tokens += 1;
 					}
 				}
-			}
-			if (i < tokens.length) {
-				// discard duplicate new lines
-				if (!(this.tokens.length > 0 && this.tokens[this.tokens.length - 1] === this.trimNewlineToken && tokens[i] === this.trimNewlineToken)) {
-					this.tokens[this.tokens.length] = tokens[i];
+				break;
+			case "\r":
+				if (inToken) {
+					// complete last token
+					starts[tokens] = j;
+					lengths[tokens] = i - j;
+					numbers[tokens] = (isNumber ? (value << 1) + 1 : 0);
+					tokens += 1;
+					inToken = false;
 				}
+				break;
+			case " ":
+				if (inToken) {
+					// complete last token
+					starts[tokens] = j;
+					lengths[tokens] = i - j;
+					numbers[tokens] = (isNumber ? (value << 1) + 1 : 0);
+					tokens += 1;
+					inToken = false;
+				}
+				break;
+			case "\t":
+				if (inToken) {
+					// complete last token
+					starts[tokens] = j;
+					lengths[tokens] = i - j;
+					numbers[tokens] = (isNumber ? (value << 1) + 1 : 0);
+					tokens += 1;
+					inToken = false;
+				}
+				break;
+			case "=":
+				if (tokenizeNewline) {
+					if (inToken) {
+						// complete last token
+						starts[tokens] = j;
+						lengths[tokens] = i - j;
+						numbers[tokens] = (value << 1) + 1;
+						tokens += 1;
+						inToken = false;
+					}
+					// add equals token
+					starts[tokens] = i;
+					lengths[tokens] = 1;
+					numbers[tokens] = 0;
+					tokens += 1;
+				} else {
+					if (!inToken) {
+						inToken = true;
+						isNumber = false;
+						j = i;
+					}
+				}
+				break;
+			default:
+				if (!inToken) {
+					inToken = true;
+					j = i;
+					if (v >= "0" && v <= "9") {
+						isNumber = true;
+						value = v - "0";
+					} else {
+						isNumber = false;
+					}
+				} else {
+					if (v >= "0" && v <= "9") {
+						value = (value * 10) + (v - "0");
+					} else {
+						isNumber = false;
+					}
+				}
+				break;
 			}
+			i += 1;
 		}
 
-		// current token index
+		// resize arrays and copy
+		this.starts = starts.slice(0, tokens);
+		this.lengths = lengths.slice(0, tokens);
+		this.numbers = numbers.slice(0, tokens);
 		this.current = 0;
+		this.source = source;
 	}
 
 	// skip to end of line
 	Script.prototype.skipToEndOfLine = function() {
 		// check if there are more tokens
-		if (this.tokens) {
-			while (this.current < this.tokens.length && this.tokens[this.current] !== this.trimNewlineToken) {
-				this.current += 1;
-			}
+		while (this.current < this.starts.length && this.source[this.starts[this.current]] !== "\n") {
+			this.current += 1;
+		}
+	};
+
+	// skip new lines
+	Script.prototype.skipNewlines = function() {
+		while (this.current < this.starts.length && this.source[this.starts[this.current]] === "\n") {
+			this.current += 1;
 		}
 	};
 
@@ -71,23 +153,10 @@
 		var result = false; 
 
 		// check if there are more tokens
-		if (this.tokens) {
-			if (this.current < this.tokens.length) {
-				if (this.tokens[this.current] === this.trimNewlineToken) {
-					result = true;
-				}
+		if (this.current < this.starts.length) {
+			if (this.source[this.starts[this.current]] === "\n") {
+				result = true;
 			}
-		}
-
-		return result;
-	};
-
-	// check whether give token is newline
-	Script.prototype.isNewline = function(token) {
-		var result = false;
-		
-		if (token === this.trimNewlineToken) {
-			result = true;
 		}
 
 		return result;
@@ -98,13 +167,11 @@
 		var result = "";
 
 		// check if there are more tokens
-		if (this.tokens) {
-			if (this.current < this.tokens.length) {
-				result = this.tokens[this.current];
+		if (this.current < this.starts.length) {
+			result = this.source.substr(this.starts[this.current], this.lengths[this.current]);
 
-				// advance to next token
-				this.current += 1;
-			}
+			// advance to next token
+			this.current += 1;
 		}
 
 		// return the token
@@ -117,7 +184,7 @@
 
 		// check if there are more tokens
 		result = this.getNextToken();
-		while (result === this.trimNewlineToken) {
+		while (result === "\n") {
 			result = this.getNextToken();
 		}
 
@@ -129,10 +196,8 @@
 		var result = "";
 
 		// check if there are more tokens
-		if (this.tokens) {
-			if (this.current < this.tokens.length) {
-				result = this.tokens[this.current];
-			}
+		if (this.current < this.starts.length) {
+			result = this.source.substr(this.starts[this.current], this.lengths[this.current]);
 		}
 
 		// return the token
@@ -143,27 +208,42 @@
 	// don't update position if token not found
 	Script.prototype.findToken = function(token, from) {
 		var result = -1,
-			current = this.current;
+			current = this.current,
+			found = false,
+			i = 0;
 
 		// if from supplied then set current position
 		if (from !== -1) {
 			// check it is in range
-			if (from >= 0 && from < this.tokens.length) {
+			if (from >= 0 && from < this.starts.length) {
 				current = from;
 			}
 		}
 
 		// check if there are more tokens
-		if (this.tokens) {
-			while (current < this.tokens.length && result === -1) {
-				if (this.tokens[current] === token) {
-					// token found
-					result = current;
+		while (current < this.starts.length && result === -1) {
+			// check lengths
+			if (token.length === this.lengths[current]) {
+				i = 0;
+				found = true;
+				while (found && i < token.length) {
+					if (token[i] !== this.source[this.starts[current] + i]) {
+						found = false;
+					} else {
+						i += 1;
+					}
 				}
-
-				// move to next token
-				current += 1;
+			} else {
+				found = false;
 			}
+
+			if (found) {
+				// token found
+				result = current;
+			}
+
+			// move to next token
+			current += 1;
 		}
 
 		// if the token was found then eat it
@@ -228,8 +308,7 @@
 			if (Number(rightPart) !== 0) {
 				result = Number(leftPart) / Number(rightPart);
 			}
-		}
-		else {
+		} else {
 			// check if the token is a number
 			if (this.isNumeric(token)) {
 				result = parseFloat(token);
@@ -243,10 +322,20 @@
 	// get the next token as a number
 	Script.prototype.getNextTokenAsNumber = function() {
 		var result = 0,
-		    token = this.getNextToken();
+		    token = "";
 
-		// convert to a number
-		result = this.asNumber(token);
+		// check for pre-converted number
+		if (this.current < this.starts.length) {
+			if ((this.numbers[this.current] & 1) !== 0) {
+				result = this.numbers[this.current] >> 1;
+				this.current += 1;
+			} else {
+				// get the next token
+				token = this.getNextToken();
+				// convert to a number
+				result = this.asNumber(token);
+			}
+		}
 
 		// return the number
 		return result;
@@ -258,15 +347,18 @@
 		    token = "";
 
 		// check if there are tokens
-		if (this.tokens) {
-			if (this.current < this.tokens.length) {
-				token = this.tokens[this.current];
+		if (this.current < this.starts.length) {
+			// check if it was recognized as a number during tokenization
+			if (this.numbers[this.current]) {
+				result = true;
+			} else {
+				// inspect the token since it may be a fraction
+				token = this.source.substr(this.starts[this.current], this.lengths[this.current]);
 
 				// check if it is a fraction
 				if (this.isFraction(token)) {
 					result = true;
-				}
-				else {
+				} else {
 					result = this.isNumeric(token);
 				}
 			}
@@ -283,15 +375,18 @@
 			current = this.current + howFar;
 
 		// check if there are tokens
-		if (this.tokens) {
-			if (current < this.tokens.length) {
-				token = this.tokens[current];
+		if (current < this.starts.length) {
+			// check if it was recognized as a number during tokenization
+			if (this.numbers[current]) {
+				result = true;
+			} else {
+				// inspect the token since it may be a fraction
+				token = this.source.substr(this.starts[current], this.lengths[current]);
 
 				// check if it is a fraction
 				if (this.isFraction(token)) {
 					result = true;
-				}
-				else {
+				} else {
 					result = this.isNumeric(token);
 				}
 			}
@@ -303,9 +398,7 @@
 
 	// eat all tokens
 	Script.prototype.eatAllTokens = function() {
-		if (this.tokens) {
-			this.current = this.tokens.length;
-		}
+		this.current = this.starts.length;
 	};
 
 	window["Script"] = Script;

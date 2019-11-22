@@ -18590,7 +18590,7 @@
 							// check if tile died
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
-								for (y = bottomY; y <= topY; y += 1) {
+								for (y = bottomY; y < topY; y += 1) {
 									gridRow1 = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells
@@ -19479,7 +19479,7 @@
 							// check if tile died
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
-								for (y = bottomY; y <= topY; y += 1) {
+								for (y = bottomY; y < topY; y += 1) {
 									gridRow1 = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells
@@ -20368,7 +20368,7 @@
 							// check if tile died
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
-								for (y = bottomY; y <= topY; y += 1) {
+								for (y = bottomY; y < topY; y += 1) {
 									gridRow1 = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells
@@ -21257,7 +21257,7 @@
 							// check if tile died
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
-								for (y = bottomY; y <= topY; y += 1) {
+								for (y = bottomY; y < topY; y += 1) {
 									gridRow1 = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells
@@ -22146,7 +22146,7 @@
 							// check if tile died
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
-								for (y = bottomY; y <= topY; y += 1) {
+								for (y = bottomY; y < topY; y += 1) {
 									gridRow1 = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells
@@ -23048,7 +23048,7 @@
 							// check if tile died
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
-								for (y = bottomY; y <= topY; y += 1) {
+								for (y = bottomY; y < topY; y += 1) {
 									gridRow1 = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells

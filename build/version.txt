@@ -1,3 +1,11 @@
+Build 459
+- fix a grid boundary crash in RuleTree algo
+- tokenizer uses less memory and is significantly faster
+
+Build 458
+- decode Repository response faster
+- use original rule name for Repository request
+
 Build 457
 - faster RuleTree performance for vonNeumann rules with <= 16 states
 

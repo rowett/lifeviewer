@@ -7,7 +7,7 @@
 	"use strict";
 
 	// define globals
-	/* global registerEvent DocConfig Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script arrayFill */
+	/* global registerEvent DocConfig Uint8 Uint16 Uint32 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script arrayFill */
 
 	// RuleTreeCache singleton
 	var RuleTreeCache = {
@@ -217,6 +217,9 @@
 	 * @constructor
 	 */
 	function PatternManager() {
+		// timing
+		/** @type {number} */ this.time = 0;
+
 		// whether attempting to load from repository
 		/** @type {boolean} */ this.loadingFromRepository = false;
 
@@ -481,6 +484,10 @@
 	 * @constructor
 	 */
 	function Pattern(name, manager) {
+		// allocator
+		this.allocator = null;
+
+		// manager
 		this.manager = manager;
 
 		// remove extension from name if present
@@ -516,6 +523,9 @@
 
 		// grid vertical twist
 		/** @type {boolean} */ this.gridVerticalTwist = false;
+
+		// original rule name
+		/** @type {string} */ this.originalRuleName = "";
 
 		// rule name
 		/** @type {string} */ this.ruleName = "";
@@ -676,6 +686,7 @@
 	// copy settings from one pattern to another
 	Pattern.prototype.copySettingsFrom = function(source) {
 		// copy settings
+		this.originalRuleName = source.originalRuleName;
 		this.ruleName = source.ruleName;
 		this.isMargolus = source.isMargolus;
 		this.isPCA = source.isPCA;
@@ -735,6 +746,7 @@
 
 	// reset settings to defaults
 	Pattern.prototype.resetSettings = function() {
+		this.originalRuleName = "";
 		this.ruleName = "";
 		this.aliasName = "";
 		this.isMargolus = false;
@@ -5976,6 +5988,7 @@
 		}
 
 		// set the pattern rule name
+		pattern.originalRuleName = ruleString;
 		pattern.ruleName = ruleString;
 
 		// check for bounded grid
@@ -6445,7 +6458,7 @@
 		return valid;
 	};
 
-	// decode rule table colours TBD
+	// decode rule table colours
 	PatternManager.prototype.decodeColours = function(pattern, reader) {
 		var states = pattern.numStates,
 			cols = pattern.ruleTreeColours,
@@ -6574,8 +6587,7 @@
 			nodelev = [],
 			lev = 1000,
 			vcnt = 0,
-			v = 0,
-			i = 0;
+			v = 0;
 
 		// read states setting
 		nextToken = reader.getNextTokenSkipNewline();
@@ -6621,60 +6633,43 @@
 		}
 
 		// read each line
-		nextToken = reader.getNextTokenSkipNewline();
-		while (valid && nextToken !== "") {
-			// skip newlines
-			while (reader.isNewline(nextToken)) {
-				nextToken = reader.getNextToken();
+		reader.skipNewlines();
+		while (valid && reader.nextTokenIsNumeric()) {
+			lev = reader.getNextTokenAsNumber();
+			vcnt = 0;
+			if (lev === 1) {
+				noff[noff.length] = datb.length;
+			} else {
+				noff[noff.length] = dat.length;
 			}
-			if (reader.isNumeric(nextToken)) {
-				lev = reader.asNumber(nextToken);
-				vcnt = 0;
-				if (lev === 1) {
-					noff[noff.length] = datb.length;
-				} else {
-					noff[noff.length] = dat.length;
-				}
-				nodelev[nodelev.length] = lev;
+			nodelev[nodelev.length] = lev;
 
-				// read the line of values
-				nextToken = reader.getNextToken();
-				while (valid && !reader.isNewline(nextToken)) {
-					if (reader.isNumeric(nextToken)) {
-						v = reader.asNumber(nextToken);
-						if (lev === 1) {
-							if (v < 0 || v >= states) {
-								valid = false;
-							} else {
-								datb[datb.length] = v;
-							}
-						} else {
-							if (v < 0 || v > noff.length) {
-								valid = false;
-							} else {
-								if (nodelev[v] !== lev - 1) {
-									valid = false;
-								} else {
-									dat[dat.length] = noff[v];
-								}
-							}
-						}
-						vcnt += 1;
-						nextToken = reader.getNextToken();
-					} else {
+			// read the line of values
+			while (valid && reader.nextTokenIsNumeric()) {
+				v = reader.getNextTokenAsNumber();
+				if (lev === 1) {
+					if (v < 0 || v >= states) {
 						valid = false;
+					} else {
+						datb[datb.length] = v;
+					}
+				} else {
+					if (v < 0 || v > noff.length) {
+						valid = false;
+					} else {
+						if (nodelev[v] !== lev - 1) {
+							valid = false;
+						} else {
+							dat[dat.length] = noff[v];
+						}
 					}
 				}
-				if (vcnt !== states) {
-					valid = false;
-				}
-			} else {
-				if (!(nextToken === "" || nextToken === this.ruleTableColoursName || nextToken === this.ruleTableIconsName)) {
-					valid = false;
-				} else {
-					nextToken = "";
-				}
+				vcnt += 1;
 			}
+			if (vcnt !== states) {
+				valid = false;
+			}
+			reader.skipNewlines();
 		}
 
 		if ((dat.length + datb.length) !== (nodes * states)) {
@@ -6698,14 +6693,10 @@
 			pattern.ruleTreeStates = states;
 			pattern.ruleTreeNodes = nodes;
 			pattern.ruleTreeBase = noff[noff.length - 1];
-			pattern.ruleTreeA = new Uint32Array(dat.length);
-			pattern.ruleTreeB = new Uint32Array(datb.length);
-			for (i = 0; i < dat.length; i += 1) {
-				pattern.ruleTreeA[i] = dat[i];
-			}
-			for (i = 0; i < datb.length; i += 1) {
-				pattern.ruleTreeB[i] = datb[i];
-			}
+			pattern.ruleTreeA = pattern.allocator.allocate(Uint32, dat.length, "Pattern.ruleTreeA");
+			pattern.ruleTreeB = pattern.allocator.allocate(Uint8, datb.length, "Pattern.ruleTreeB");
+			pattern.ruleTreeA.set(dat);
+			pattern.ruleTreeB.set(datb);
 
 			// mark pattern as valid
 			pattern.numStates = pattern.ruleTreeStates;
@@ -6925,7 +6916,7 @@
 					}
 				} else {
 					// attempt to load rule table
-					this.loadRuleTable(newPattern.ruleName, newPattern, succeedCallback, failCallback, args, view);
+					this.loadRuleTable(newPattern.originalRuleName, newPattern, succeedCallback, failCallback, args, view);
 				}
 			}
 		}
@@ -6937,67 +6928,34 @@
 	// get the rule table from an html page
 	PatternManager.prototype.getRuleTable = function(htmlPage) {
 		var result = "",
-			i = htmlPage.indexOf(this.ruleTableRuleName),
-			l = htmlPage.length,
-			j = 0,
-			k = 0,
-			found = false,
-			tags = [],
-			lengths = [],
-			endLength = this.ruleSearchEndTag.length;
+		i = htmlPage.indexOf(this.ruleTableRuleName),
+		tags = this.ruleSearchTags,
+		j = 0,
+		re = null;
 
 		// attempt to locate the @RULE
 		if (i === -1) {
 			result = "";
 		} else {
-			// prepare the search tags
-			k = 0;
-			for (j = 0; j < this.ruleSearchTags.length; j += 1) {
-				tags[k] = "<" + this.ruleSearchTags[j] + ">";
-				lengths[k] = tags[k].length;
-				k += 1;
-				tags[k] = "</" + this.ruleSearchTags[j] + ">";
-				lengths[k] = tags[k].length;
-				k += 1;
+			result = htmlPage.substr(i);
+
+			// substitute to remove html tags
+			for (j = 0; j < tags.length; j += 1) {
+				re = new RegExp("<" + tags[j] + ">", "g");
+				result = result.replace(re, "");
+				re = new RegExp("</" + tags[j] + ">", "g");
+				result = result.replace(re, "");
 			}
+			re = new RegExp("<br", "g");
+			result = result.replace(re, "");
+			re = new RegExp("/>", "g");
+			result = result.replace(re, "");
+		}
 
-			// add <br /> tag
-			tags[k] = "<br";
-			lengths[k] = tags[k].length;
-			k += 1;
-			tags[k] = "/>";
-			lengths[k] = tags[k].length;
-			endLength = this.ruleSearchEndTag.length;
-
-			// rule found so decode the rest
-			result = this.ruleTableRuleName;
-			i += this.ruleTableRuleName.length;
-
-			while (i < l) {
-				j = 0;
-				found = false;
-				while (j < tags.length && !found) {
-					if (htmlPage.substr(i, lengths[j]) === tags[j]) {
-						found = true;
-						i += lengths[j];
-						if (j === 0) {
-							result += "# ";
-						}
-					} else {
-						j += 1;
-					}
-				}
-				if (!found) {
-					if (htmlPage.substr(i, endLength) === this.ruleSearchEndTag) {
-						// exit
-						i = l;
-					} else {
-						// add character to result
-						result += htmlPage[i];
-						i += 1;
-					}
-				}
-			}
+		// remove from end tag if present
+		i = result.indexOf(this.ruleSearchEndTag);
+		if (i !== -1) {
+			result = result.substr(0, i);
 		}
 
 		return result;
@@ -7008,16 +6966,22 @@
 		// rule table text
 		var ruleText = "";
 
+		console.debug("Repository fetch", (performance.now() - this.time).toFixed(1) + "ms");
+		this.time = performance.now();
+
 		// check if the load succeeeded
 		if (xhr.readyState === 4) {
 			if (xhr.status === 200) {
 				ruleText = me.getRuleTable(xhr.responseText);
+				console.debug("Get Response", (performance.now() - this.time).toFixed(1) + "ms");
+				this.time = performance.now();
 				if (ruleText === "") {
 					pattern.manager.failureReason = "@RULE not found";
 					RuleTreeCache.requestFailed(pattern);
 				} else {
 					// attempt to decode the rule table
 					me.decodeRuleTable(pattern, ruleText);
+					console.debug("Decode Tree", (performance.now() - this.time).toFixed(1) + "ms");
 
 					// if rule tree decoded successfully then add to cache
 					if (pattern.ruleTreeStates !== -1) {
@@ -7045,8 +7009,14 @@
 			xhr = null,
 			uri = "/wiki/Rule:" + ruleName;
 
+		// start timing
+		this.time = performance.now();
+
 		// mark loading from repository
 		this.loadingFromRepository = true;
+
+		// set the allocator reference in the pattern
+		pattern.allocator = view.engine.allocator;
 	
 		// add this request to the list and check if there is already a request for this rule
 		if (RuleTreeCache.addRequest(pattern, succeedCallback, failCallback, args, view)) {
