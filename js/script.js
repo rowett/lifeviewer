@@ -19,6 +19,7 @@
 			/** @type {number} */ halfLength = (l >> 1) + 2,
 			/** @type {string} */ v = 0,
 			/** @type {boolean} */ inToken = false,
+			/** @type {boolean} */ inComment = false,
 			/** @type {number} */ tokens = 0,
 			/** @type {Array<number>} */ starts = new Uint32Array(halfLength),
 			/** @type {Array<number>} */ lengths = new Uint16Array(halfLength),
@@ -33,13 +34,13 @@
 			switch (v) {
 			case "\n":
 				if (inToken) {
-					// complete last token
 					starts[tokens] = j;
 					lengths[tokens] = i - j;
 					numbers[tokens] = (isNumber ? (value << 1) + 1 : 0);
 					tokens += 1;
 					inToken = false;
 				}
+				inComment = false;
 				// add new line token if last token was not a new line
 				if (tokenizeNewline) {
 					if (tokens > 0 && source[starts[tokens - 1]] !== "\n") {
@@ -99,25 +100,50 @@
 					if (!inToken) {
 						inToken = true;
 						isNumber = false;
+						inComment = false;
+						j = i;
+					}
+				}
+				break;
+			case "#":
+				if (tokenizeNewline) {
+					if (!inComment) {
+						if (inToken) {
+							// complete last token
+							starts[tokens] = j;
+							lengths[tokens] = i - j;
+							numbers[tokens] = (value << 1) + 1;
+							tokens += 1;
+							inToken = false;
+						}
+						inComment = true;
+					}
+				} else {
+					if (!inToken) {
+						inToken = true;
+						isNumber = false;
+						inComment = false;
 						j = i;
 					}
 				}
 				break;
 			default:
-				if (!inToken) {
-					inToken = true;
-					j = i;
-					if (v >= "0" && v <= "9") {
-						isNumber = true;
-						value = v - "0";
+				if (!inComment) {
+					if (!inToken) {
+						inToken = true;
+						j = i;
+						if (v >= "0" && v <= "9") {
+							isNumber = true;
+							value = v - "0";
+						} else {
+							isNumber = false;
+						}
 					} else {
-						isNumber = false;
-					}
-				} else {
-					if (v >= "0" && v <= "9") {
-						value = (value * 10) + (v - "0");
-					} else {
-						isNumber = false;
+						if (v >= "0" && v <= "9") {
+							value = (value * 10) + (v - "0");
+						} else {
+							isNumber = false;
+						}
 					}
 				}
 				break;

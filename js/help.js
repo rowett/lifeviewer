@@ -1599,12 +1599,22 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// rule cache
+		view.tabs[1] = 300;
+		view.tabs[2] = 380;
+		view.tabs[3] = 460;
 		view.helpSections[sectionNum] = [view.lineNo, "Rule Cache"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Rule Cache:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Entries", RuleTreeCache.rules.length, ctx, x, y, height, helpLine);
-		for (i = 0; i < RuleTreeCache.rules.length; i += 1) {
-			y = this.renderHelpLine(view, String(i), RuleTreeCache.rules[i].name, ctx, x, y, height, helpLine);
+		if (RuleTreeCache.rules.length > 0) {
+			y = this.renderHelpLine(view, "Entry", "Name\tSize Kb\tFetch\tDecode", ctx, x, y, height, helpLine);
+			for (i = 0; i < RuleTreeCache.rules.length; i += 1) {
+				itemName = RuleTreeCache.rules[i].name;
+				if (itemName.length > 17) {
+					itemName = itemName.substr(0,17) + "*";
+				}
+				y = this.renderHelpLine(view, String(i), itemName + "\t" + (RuleTreeCache.meta[i].size >> 10) + "\t" + RuleTreeCache.meta[i].fetch + "ms\t" + RuleTreeCache.meta[i].decode + "ms", ctx, x, y, height, helpLine);
+			}
 		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 

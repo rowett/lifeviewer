@@ -14,6 +14,9 @@
 		// list of rules
 		rules : [],
 
+		// meta data
+		meta : [],
+
 		// list of pending requests
 		requests : []
 	};
@@ -115,7 +118,7 @@
 	};
 
 	// add a new rule to the cache
-	RuleTreeCache.add = function(pattern) {
+	RuleTreeCache.add = function(pattern, fetchTime, decodeTime, ruleSize) {
 		var i = 0,
 			l = this.rules.length,
 			found = false,
@@ -133,9 +136,13 @@
 
 		// add if not found
 		if (!found) {
+			// create rule record
 			this.rules[l] = {name: name, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
 				 nodes: pattern.ruleTreeNodes, base: pattern.ruleTreeBase, ruleA: pattern.ruleTreeA,
 				 ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours};
+
+			// create metadata
+			this.meta[l] = {fetch: fetchTime | 0, decode: decodeTime | 0, size: ruleSize};
 
 			// remove the rule from the request list
 			this.removeRequest(pattern);
@@ -6964,16 +6971,15 @@
 	// load event handler
 	PatternManager.prototype.loadHandler = function(me, event, xhr, pattern) {
 		// rule table text
-		var ruleText = "";
-
-		console.debug("Repository fetch", (performance.now() - this.time).toFixed(1) + "ms");
-		this.time = performance.now();
+		var ruleText = "",
+			fetchTime = 0,
+			decodeTime = 0;
 
 		// check if the load succeeeded
 		if (xhr.readyState === 4) {
 			if (xhr.status === 200) {
 				ruleText = me.getRuleTable(xhr.responseText);
-				console.debug("Get Response", (performance.now() - this.time).toFixed(1) + "ms");
+				fetchTime = performance.now() - this.time;
 				this.time = performance.now();
 				if (ruleText === "") {
 					pattern.manager.failureReason = "@RULE not found";
@@ -6981,11 +6987,11 @@
 				} else {
 					// attempt to decode the rule table
 					me.decodeRuleTable(pattern, ruleText);
-					console.debug("Decode Tree", (performance.now() - this.time).toFixed(1) + "ms");
+					decodeTime = performance.now() - this.time;
 
 					// if rule tree decoded successfully then add to cache
 					if (pattern.ruleTreeStates !== -1) {
-						RuleTreeCache.add(pattern);
+						RuleTreeCache.add(pattern, fetchTime, decodeTime, ruleText.length);
 					} else {
 						RuleTreeCache.requestFailed(pattern);
 					}
