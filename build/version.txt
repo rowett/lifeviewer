@@ -1,6 +1,7 @@
 Build 459
 - fix a grid boundary crash in RuleTree algo
 - tokenizer uses less memory and is significantly faster
+- added size and timing information to Help->Info->Rule Cache
 
 Build 458
 - decode Repository response faster

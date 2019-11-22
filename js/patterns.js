@@ -7,7 +7,7 @@
 	"use strict";
 
 	// define globals
-	/* global registerEvent DocConfig Uint8 Uint16 Uint32 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script arrayFill */
+	/* global registerEvent DocConfig Uint8 Uint16 Uint32 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script arrayFill Allocator */
 
 	// RuleTreeCache singleton
 	var RuleTreeCache = {
@@ -137,7 +137,7 @@
 		// add if not found
 		if (!found) {
 			// create rule record
-			this.rules[l] = {name: name, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
+			this.rules[l] = {name: pattern.originalRuleName, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
 				 nodes: pattern.ruleTreeNodes, base: pattern.ruleTreeBase, ruleA: pattern.ruleTreeA,
 				 ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours};
 
@@ -6695,6 +6695,9 @@
 
 		// if valid then save parameters
 		if (valid) {
+			if (pattern.allocator === null) {
+				pattern.allocator = new Allocator();
+			}
 			// save rule information
 			pattern.ruleTreeNeighbours = neighbours;
 			pattern.ruleTreeStates = states;
@@ -7022,7 +7025,11 @@
 		this.loadingFromRepository = true;
 
 		// set the allocator reference in the pattern
-		pattern.allocator = view.engine.allocator;
+		if (view) {
+			pattern.allocator = view.engine.allocator;
+		} else {
+			pattern.allocator = null;
+		}
 	
 		// add this request to the list and check if there is already a request for this rule
 		if (RuleTreeCache.addRequest(pattern, succeedCallback, failCallback, args, view)) {
