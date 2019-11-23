@@ -875,7 +875,7 @@
 		var message = deltaX + "," + deltaY;
 
 		// add the speed
-		message = "Spaceship speed (" + message + ")c";
+		message = "Spaceship (" + message + ")c";
 
 		// add period if greather than 1
 		if (period > 1) {

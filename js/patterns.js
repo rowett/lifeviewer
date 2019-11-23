@@ -6912,6 +6912,8 @@
 
 			// check if a pattern was loaded
 			if (this.failureReason !== "" && !this.tooBig) {
+				newPattern.ruleName = newPattern.originalRuleName;
+
 				// check the rule tree cache
 				if (RuleTreeCache.loadIfExists(newPattern)) {
 					// check for pattern states
@@ -6926,7 +6928,7 @@
 					}
 				} else {
 					// attempt to load rule table
-					this.loadRuleTable(newPattern.originalRuleName, newPattern, succeedCallback, failCallback, args, view);
+					this.loadRuleTable(newPattern, succeedCallback, failCallback, args, view);
 				}
 			}
 		}
@@ -7013,9 +7015,10 @@
 	};
 
 	// load rule table from URI
-	PatternManager.prototype.loadRuleTable = function(ruleName, pattern, succeedCallback, failCallback, args, view) {
+	PatternManager.prototype.loadRuleTable = function(pattern, succeedCallback, failCallback, args, view) {
 		var	me = this,
 			xhr = null,
+			ruleName = pattern.ruleName,
 			uri = "/wiki/Rule:" + ruleName;
 
 		// start timing
