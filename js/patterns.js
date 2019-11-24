@@ -6733,25 +6733,25 @@
 			reader = new Script(ruleText, true);
 
 		// check if rule table rule exists
-		if (reader.findToken(this.ruleTableRuleName, -1) !== -1) {
+		if (reader.findTokenAtLineStart(this.ruleTableRuleName, -1) !== -1) {
 			// get the rule name
 			if (!reader.nextIsNewline()) {
 				pattern.ruleTableName = reader.getNextToken();
 
 				// search for a table from current position
-				tableIndex = reader.findToken(this.ruleTableTableName, -1);
+				tableIndex = reader.findTokenAtLineStart(this.ruleTableTableName, -1);
 				if (tableIndex !== -1) {
 					valid = this.decodeTable();
 					if (!valid) {
 						// if the table was not found or not valid then sometimes there is a tree too
-						treeIndex = reader.findToken(this.ruleTableTreeName, -1);
+						treeIndex = reader.findTokenAtLineStart(this.ruleTableTreeName, -1);
 						if (treeIndex !== -1) {
 							valid = this.decodeTree(pattern, reader);
 						}
 					}
 				} else {
 					// search for a tree from the current position
-					treeIndex = reader.findToken(this.ruleTableTreeName, -1);
+					treeIndex = reader.findTokenAtLineStart(this.ruleTableTreeName, -1);
 					if (treeIndex !== -1) {
 						valid = this.decodeTree(pattern, reader);
 					}
@@ -6759,12 +6759,12 @@
 
 				// if valid then search for colours from start position since sections could be in any order
 				if (valid) {
-					colourIndex = reader.findToken(this.ruleTableColoursName, 0);
+					colourIndex = reader.findTokenAtLineStart(this.ruleTableColoursName, 0);
 					if (colourIndex !== -1) {
 						this.decodeColours(pattern, reader);
 					}
 					// search for icons from start position
-					iconIndex = reader.findToken(this.ruleTableIconsName, 0);
+					iconIndex = reader.findTokenAtLineStart(this.ruleTableIconsName, 0);
 					if (iconIndex !== -1) {
 						this.decodeIcons();
 					}

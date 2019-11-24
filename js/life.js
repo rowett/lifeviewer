@@ -1600,7 +1600,7 @@
 		return [message, type, direction, simpleSpeed, boxResult, genMessage, popResult, slope, period, heat, volatility, modResult, activeResult, tempResult];
 	};
 
-	// return true if pattern is empty, stable or oscillating
+	// return true if pattern is empty, stable, oscillating or a spaceship
 	Life.prototype.oscillating = function(fast) {
 		// get bounding box
 		var box = (this.isHROT ? this.HROTBox : this.zoomBox),
@@ -4742,7 +4742,12 @@
 
 		    // x and y offsets
 		    xOffset = this.width >> 1,
-		    yOffset = this.height >> 1,
+			yOffset = this.height >> 1,
+			
+			// identify bottom left
+			idCurrent = 0,
+			idBottom = 0,
+			idLeft = 0,
 
 		    // row number
 		    y = 0;
@@ -4911,6 +4916,16 @@
 			this.historyBox.rightX += xOffset;
 			this.historyBox.topY += yOffset;
 			this.historyBox.bottomY += yOffset;
+
+			// update identify positions
+			if (this.oscLength > 0) {
+				for (y = 0; y < this.oscLength; y += 1) {
+					idCurrent = this.boxList[(y << 1) + 1];
+					idLeft = (idCurrent >> 16) + xOffset;
+					idBottom = (idCurrent & 65535) + yOffset;
+					this.boxList[(y << 1) + 1] = (idLeft << 16) | idBottom;
+				}
+			}
 		}
 	};
 

@@ -1,3 +1,7 @@
+Build 460
+- fix an issue with Identify calculating wrong spaceship speeds after grid growth
+- ensure RuleTable sections are at the beginning of the line
+
 Build 459
 - fix a grid boundary crash in RuleTree algo
 - tokenizer uses less memory and is significantly faster

@@ -231,8 +231,18 @@
 	};
 
 	// search for a specific token and return token index
-	// don't update position if token not found
 	Script.prototype.findToken = function(token, from) {
+		return this.findTokenSomewhere(token, from, false);
+	};
+
+	// search for a specific token at the start of a line and return token index
+	Script.prototype.findTokenAtLineStart = function(token, from) {
+		return this.findTokenSomewhere(token, from, true);
+	};
+
+	// search for a specific token and return token index
+	// don't update position if token not found
+	Script.prototype.findTokenSomewhere = function(token, from, atLineStart) {
 		var result = -1,
 			current = this.current,
 			found = false,
@@ -264,8 +274,16 @@
 			}
 
 			if (found) {
-				// token found
-				result = current;
+				// token found so check if line start is required
+				if (atLineStart) {
+					if (!(current === 0 || this.source[this.starts[current - 1]] === "\n")) {
+						found = false;
+					} 
+				}
+
+				if (found) {
+					result = current;
+				}
 			}
 
 			// move to next token
