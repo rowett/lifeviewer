@@ -265,7 +265,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 460,
+		/** @const {number} */ versionBuild : 461,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5988,8 +5988,13 @@
 					me.setResultsPosition();
 				}
 
-				// switch off search
-				me.identifyPressed(me);
+				// switch off search and pause playback
+				me.identify = false;
+				if (me.generationOn) {
+					me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+				}
+				me.afterEdit("");
+
 				if (me.lastIdentifyType === "Empty") {
 					me.menuManager.notification.notify(identifyResult[0], 15, 120, 15, false);
 				} else {
@@ -11025,12 +11030,13 @@
 			me.menuManager.notification.notify("Empty Pattern", 15, 120, 15, false);
 			me.identify = false;
 			me.displayResults = false;
-			me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 		} else {
 			if (me.identify) {
 				me.identify = false;
 				me.menuManager.notification.notify("Identify Cancelled", 15, 120, 15, false);
-				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+
+				// create undo point
+				me.afterEdit("");
 			} else {
 				me.identify = true;
 
@@ -11044,8 +11050,8 @@
 					me.menuManager.notification.notify("Identifying...", 15, 216000, 15, false);
 				}
 
-				// start playback (to create undo point)
-				me.playList.current = me.viewPlayList(ViewConstants.modePlay, true, me);
+				// create undo point
+				me.afterEdit("");
 			}
 		}
 

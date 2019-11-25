@@ -7,7 +7,7 @@
 	"use strict";
 
 	// define globals
-	/* global registerEvent DocConfig Uint8 Uint16 Uint32 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script arrayFill Allocator */
+	/* global registerEvent DocConfig Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script arrayFill Allocator */
 
 	// RuleTreeCache singleton
 	var RuleTreeCache = {
@@ -6583,18 +6583,22 @@
 
 	// decode rule table tree
 	PatternManager.prototype.decodeTree = function(pattern, reader) {
-		var nextToken = "",
-			states = -1,
-			neighbours = -1,
-			nodes = -1,
-			valid = false,
-			dat = [],
-			datb = [],
-			noff = [],
-			nodelev = [],
-			lev = 1000,
-			vcnt = 0,
-			v = 0;
+		var /** @type {string} */ nextToken = "",
+			/** @type {number} */ states = -1,
+			/** @type {number} */ neighbours = -1,
+			/** @type {number} */ nodes = -1,
+			/** @type {boolean} */ valid = false,
+			dat = null,
+			/** @type {number} */ datLen = 0,
+			datb = null,
+			/** @type {number} */ datBLen = 0,
+			noff = null,
+			/** @type {number} */ noffLen = 0,
+			nodelev = null,
+			/** @type {number} */ nodelevLen = 0,
+			/** @type {number} */ lev = 0, // was 1000,
+			/** @type {number} */ vcnt = 0,
+			/** @type {number} */ v = 0;
 
 		// read states setting
 		nextToken = reader.getNextTokenSkipNewline();
@@ -6639,17 +6643,32 @@
 			}
 		}
 
+		// allocate arrays
+		if (valid) {
+			dat = new Uint32Array(nodes * states);
+			datb = new Uint8Array(nodes * states);
+			noff = new Uint32Array(nodes);
+			nodelev = new Uint32Array(nodes);
+		}
+
 		// read each line
 		reader.skipNewlines();
 		while (valid && reader.nextTokenIsNumeric()) {
-			lev = reader.getNextTokenAsNumber();
-			vcnt = 0;
-			if (lev === 1) {
-				noff[noff.length] = datb.length;
+			if (noffLen > nodes) {
+				valid = false;
 			} else {
-				noff[noff.length] = dat.length;
+				lev = reader.getNextTokenAsNumber();
+				vcnt = 0;
+				if (lev === 1) {
+					noff[noffLen] = datBLen;
+					noffLen += 1;
+				} else {
+					noff[noffLen] = datLen;
+					noffLen += 1;
+				}
+				nodelev[nodelevLen] = lev;
+				nodelevLen += 1;
 			}
-			nodelev[nodelev.length] = lev;
 
 			// read the line of values
 			while (valid && reader.nextTokenIsNumeric()) {
@@ -6658,7 +6677,8 @@
 					if (v < 0 || v >= states) {
 						valid = false;
 					} else {
-						datb[datb.length] = v;
+						datb[datBLen] = v;
+						datBLen += 1;
 					}
 				} else {
 					if (v < 0 || v > noff.length) {
@@ -6667,7 +6687,8 @@
 						if (nodelev[v] !== lev - 1) {
 							valid = false;
 						} else {
-							dat[dat.length] = noff[v];
+							dat[datLen] = noff[v];
+							datLen += 1;
 						}
 					}
 				}
@@ -6679,7 +6700,7 @@
 			reader.skipNewlines();
 		}
 
-		if ((dat.length + datb.length) !== (nodes * states)) {
+		if ((datLen + datBLen) !== (nodes * states)) {
 			valid = false;
 		}
 
@@ -6703,10 +6724,8 @@
 			pattern.ruleTreeStates = states;
 			pattern.ruleTreeNodes = nodes;
 			pattern.ruleTreeBase = noff[noff.length - 1];
-			pattern.ruleTreeA = pattern.allocator.allocate(Uint32, dat.length, "Pattern.ruleTreeA");
-			pattern.ruleTreeB = pattern.allocator.allocate(Uint8, datb.length, "Pattern.ruleTreeB");
-			pattern.ruleTreeA.set(dat);
-			pattern.ruleTreeB.set(datb);
+			pattern.ruleTreeA = dat.slice(datLen);
+			pattern.ruleTreeB = datb.slice(datBLen);
 
 			// mark pattern as valid
 			pattern.numStates = pattern.ruleTreeStates;
@@ -6941,6 +6960,7 @@
 	PatternManager.prototype.getRuleTable = function(htmlPage) {
 		var result = "",
 		i = htmlPage.indexOf(this.ruleTableRuleName),
+		k = htmlPage.indexOf(this.ruleSearchEndTag, i),
 		tags = this.ruleSearchTags,
 		j = 0,
 		re = null;
@@ -6949,7 +6969,18 @@
 		if (i === -1) {
 			result = "";
 		} else {
-			result = htmlPage.substr(i);
+			// check if end tag was present
+			if (k === -1) {
+				// not present so just remove up to start tag
+				if (i === 0) {
+					result = htmlPage;
+				} else {
+					result = htmlPage.substr(i);
+				}
+			} else {
+				// present so just keep start to end tag
+				result = htmlPage.substr(i, k - i);
+			}
 
 			// substitute to remove html tags
 			for (j = 0; j < tags.length; j += 1) {
@@ -6962,12 +6993,6 @@
 			result = result.replace(re, "");
 			re = new RegExp("/>", "g");
 			result = result.replace(re, "");
-		}
-
-		// remove from end tag if present
-		i = result.indexOf(this.ruleSearchEndTag);
-		if (i !== -1) {
-			result = result.substr(0, i);
 		}
 
 		return result;

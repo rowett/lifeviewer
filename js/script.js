@@ -25,22 +25,36 @@
 			/** @type {Uint16Array} */ lengths = new Uint16Array(halfLength),
 			/** @type {Uint32Array} */ numbers = new Uint32Array(halfLength),
 			/** @type {number} */ value = 0,
-			/** @type {boolean} */ isNumber = false;
+			/** @type {number} */ isNumber = 0;
 
 		// parse the source
 		while (i < l) {
-			v = source[i];
+			v = source.charCodeAt(i);
 
 			switch (v) {
-			case "\n":
+			case 32: // " "
+			case 13: // "\r"
+			case 9:  // "\t"
+				if (inToken) {
+					// complete last token
+					starts[tokens] = j;
+					lengths[tokens] = i - j;
+					numbers[tokens] = ((value << 1) + 1) & isNumber;
+					tokens += 1;
+					inToken = false;
+				}
+				break;
+
+			case 10: // "\n"
 				if (inToken) {
 					starts[tokens] = j;
 					lengths[tokens] = i - j;
-					numbers[tokens] = (isNumber ? (value << 1) + 1 : 0);
+					numbers[tokens] = ((value << 1) + 1) & isNumber;
 					tokens += 1;
 					inToken = false;
 				}
 				inComment = false;
+
 				// add new line token if last token was not a new line
 				if (tokenizeNewline) {
 					if (tokens > 0 && source[starts[tokens - 1]] !== "\n") {
@@ -51,46 +65,18 @@
 					}
 				}
 				break;
-			case "\r":
-				if (inToken) {
-					// complete last token
-					starts[tokens] = j;
-					lengths[tokens] = i - j;
-					numbers[tokens] = (isNumber ? (value << 1) + 1 : 0);
-					tokens += 1;
-					inToken = false;
-				}
-				break;
-			case " ":
-				if (inToken) {
-					// complete last token
-					starts[tokens] = j;
-					lengths[tokens] = i - j;
-					numbers[tokens] = (isNumber ? (value << 1) + 1 : 0);
-					tokens += 1;
-					inToken = false;
-				}
-				break;
-			case "\t":
-				if (inToken) {
-					// complete last token
-					starts[tokens] = j;
-					lengths[tokens] = i - j;
-					numbers[tokens] = (isNumber ? (value << 1) + 1 : 0);
-					tokens += 1;
-					inToken = false;
-				}
-				break;
-			case "=":
+
+			case 61: // "="
 				if (tokenizeNewline) {
 					if (inToken) {
 						// complete last token
 						starts[tokens] = j;
 						lengths[tokens] = i - j;
-						numbers[tokens] = (value << 1) + 1;
+						numbers[tokens] = ((value << 1) + 1) & isNumber;
 						tokens += 1;
 						inToken = false;
 					}
+
 					// add equals token
 					starts[tokens] = i;
 					lengths[tokens] = 1;
@@ -99,20 +85,21 @@
 				} else {
 					if (!inToken) {
 						inToken = true;
-						isNumber = false;
+						isNumber = 0;
 						inComment = false;
 						j = i;
 					}
 				}
 				break;
-			case "#":
+
+			case 35: // "#"
 				if (tokenizeNewline) {
 					if (!inComment) {
 						if (inToken) {
 							// complete last token
 							starts[tokens] = j;
 							lengths[tokens] = i - j;
-							numbers[tokens] = (value << 1) + 1;
+							numbers[tokens] = ((value << 1) + 1) & isNumber;
 							tokens += 1;
 							inToken = false;
 						}
@@ -121,34 +108,43 @@
 				} else {
 					if (!inToken) {
 						inToken = true;
-						isNumber = false;
+						isNumber = 0;
 						inComment = false;
 						j = i;
 					}
 				}
 				break;
+
 			default:
 				if (!inComment) {
 					if (!inToken) {
 						inToken = true;
 						j = i;
-						if (v >= "0" && v <= "9") {
-							isNumber = true;
-							value = v - "0";
+						if (v >= 48 && v <= 57) { // >= "0" && <= "9"
+							isNumber = ~0; // all bits set
+							value = v - 48; // v - "0"
 						} else {
-							isNumber = false;
+							isNumber = 0;
 						}
 					} else {
-						if (v >= "0" && v <= "9") {
-							value = (value * 10) + (v - "0");
+						if (v >= 48 && v <= 57) { // >= "0" && <= "9"
+							value = (value * 10) + v - 48; // v - "0"
 						} else {
-							isNumber = false;
+							isNumber = 0;
 						}
 					}
 				}
 				break;
 			}
 			i += 1;
+		}
+
+		// handle final token
+		if (inToken) {
+			starts[tokens] = j;
+			lengths[tokens] = i - j;
+			numbers[tokens] = ((value << 1) + 1) & isNumber;
+			tokens += 1;
 		}
 
 		// resize arrays and copy
@@ -162,14 +158,14 @@
 	// skip to end of line
 	Script.prototype.skipToEndOfLine = function() {
 		// check if there are more tokens
-		while (this.current < this.starts.length && this.source[this.starts[this.current]] !== "\n") {
+		while (this.current < this.starts.length && this.source.charCodeAt(this.starts[this.current]) !== 10) {
 			this.current += 1;
 		}
 	};
 
 	// skip new lines
 	Script.prototype.skipNewlines = function() {
-		while (this.current < this.starts.length && this.source[this.starts[this.current]] === "\n") {
+		while (this.current < this.starts.length && this.source.charCodeAt(this.starts[this.current]) === 10) {
 			this.current += 1;
 		}
 	};
@@ -180,7 +176,7 @@
 
 		// check if there are more tokens
 		if (this.current < this.starts.length) {
-			if (this.source[this.starts[this.current]] === "\n") {
+			if (this.source.charCodeAt(this.starts[this.current]) === 10) {
 				result = true;
 			}
 		}
@@ -276,7 +272,7 @@
 			if (found) {
 				// token found so check if line start is required
 				if (atLineStart) {
-					if (!(current === 0 || this.source[this.starts[current - 1]] === "\n")) {
+					if (!(current === 0 || this.source.charCodeAt(this.starts[current - 1]) === 10)) {
 						found = false;
 					} 
 				}
@@ -370,7 +366,7 @@
 
 		// check for pre-converted number
 		if (this.current < this.starts.length) {
-			if ((this.numbers[this.current] & 1) !== 0) {
+			if ((this.numbers[this.current]) !== 0) {
 				result = this.numbers[this.current] >> 1;
 				this.current += 1;
 			} else {
@@ -448,4 +444,3 @@
 	window["Script"] = Script;
 }
 ());
-

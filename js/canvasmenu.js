@@ -36,6 +36,10 @@
 		// current priority message
 		this.priorityMessage = "";
 
+		// flag for pending clear used if message is reset before disappear
+		this.pendingNormalClear = false;
+		this.pendingPriorityClear = false;
+
 		// drawing context
 		this.context = context;
 
@@ -98,22 +102,26 @@
 			// check if priority message is displayed
 			if (this.priorityMessage !== "") {
 				// check if immediate clear is required
-				if (immediately) {
+				if (immediately || this.pendingPriorityClear) {
 					this.priorityMessage = "";
+					this.pendingPriorityClear = false;
 				} else {
 					// switch to disappear section
 					this.priorityStart = performance.now() - (this.priorityAppear + this.priorityHold);
+					this.pendingPriorityClear = true;
 				}
 			}
 		} else {
 			// check normal message
 			if (this.message !== "") {
 				// check if immediate clear is required
-				if (immediately) {
+				if (immediately || this.pendingNormalClear) {
+					this.pendingNormalClear = false;
 					this.message = "";
 				} else {
 					// switch to disappear section
 					this.startTime = performance.now() - (this.textAppear + this.textHold);
+					this.pendingNormalClear = true;
 				}
 			}
 		}
@@ -137,6 +145,7 @@
 
 					// set start time to now
 					this.priorityStart = performance.now();
+					this.pendingPriorityClear = false;
 
 					// clear the priority iterator for colour animation
 					this.priorityIter = 0;
@@ -155,6 +164,7 @@
 
 				// set the start time to now
 				this.startTime = performance.now();
+				this.pendingNormalClear = false;
 			}
 		}
 	};
