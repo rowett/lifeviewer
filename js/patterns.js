@@ -6721,8 +6721,8 @@
 			pattern.ruleTreeStates = states;
 			pattern.ruleTreeNodes = nodes;
 			pattern.ruleTreeBase = noff[noff.length - 1];
-			pattern.ruleTreeA = dat.slice(datLen);
-			pattern.ruleTreeB = datb.slice(datBLen);
+			pattern.ruleTreeA = dat.slice(0, datLen);
+			pattern.ruleTreeB = datb.slice(0, datBLen);
 
 			// mark pattern as valid
 			pattern.numStates = pattern.ruleTreeStates;
