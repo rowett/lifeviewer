@@ -236,9 +236,6 @@
 		// rule search URI
 		/** @type {string} */ this.ruleSearchURI = "";
 
-		// HTML tags to strip from RuleTable repository rules ("li" must come first)
-		/** @const {Array<string>} */ this.ruleSearchTags = ["li", "p", "ol", "pre"];
-
 		// RuleTable repository end tag
 		/** @const {string} */ this.ruleSearchEndTag = "<!--";
 
@@ -6766,6 +6763,11 @@
 						treeIndex = reader.findTokenAtLineStart(this.ruleTableTreeName, -1);
 						if (treeIndex !== -1) {
 							valid = this.decodeTree(pattern, reader);
+							if (!valid) {
+								pattern.manager.failureReason = "@TREE not valid";
+							}
+						} else {
+							pattern.manager.failureReason = "@TREE not found";
 						}
 					}
 				} else {
@@ -6773,6 +6775,11 @@
 					treeIndex = reader.findTokenAtLineStart(this.ruleTableTreeName, -1);
 					if (treeIndex !== -1) {
 						valid = this.decodeTree(pattern, reader);
+						if (!valid) {
+							pattern.manager.failureReason = "@TREE not valid";
+						}
+					} else {
+						pattern.manager.failureReason = "@TREE not found";
 					}
 				}
 
@@ -6960,16 +6967,14 @@
 	PatternManager.prototype.getRuleTable = function(htmlPage) {
 		var result = "",
 		i = htmlPage.indexOf(this.ruleTableRuleName),
-		k = htmlPage.indexOf(this.ruleSearchEndTag, i),
-		tags = this.ruleSearchTags,
-		j = 0,
-		re = null;
+		k = 0;
 
 		// attempt to locate the @RULE
 		if (i === -1) {
 			result = "";
 		} else {
 			// check if end tag was present
+			k = htmlPage.indexOf(this.ruleSearchEndTag, i);
 			if (k === -1) {
 				// not present so just remove up to start tag
 				if (i === 0) {
@@ -6982,17 +6987,11 @@
 				result = htmlPage.substr(i, k - i);
 			}
 
-			// substitute to remove html tags
-			for (j = 0; j < tags.length; j += 1) {
-				re = new RegExp("<" + tags[j] + ">", "g");
-				result = result.replace(re, "");
-				re = new RegExp("</" + tags[j] + ">", "g");
-				result = result.replace(re, "");
-			}
-			re = new RegExp("<br", "g");
-			result = result.replace(re, "");
-			re = new RegExp("/>", "g");
-			result = result.replace(re, "");
+			// convert <li> to "# " since this is what comments will have become
+			result = result.replace(/<li>/g, "# ");
+
+			// remove any html tags
+			result = result.replace(/<[^<]*>/g, "");
 		}
 
 		return result;

@@ -2,6 +2,7 @@ Build 461
 - further performance improvements to tokenizer
 - improved performance of @TREE decoder
 - fixed Identify misbehaving with LOOP
+- handle HTML entities
 
 Build 460
 - fix an issue with Identify calculating wrong spaceship speeds after grid growth

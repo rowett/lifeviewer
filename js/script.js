@@ -27,6 +27,14 @@
 			/** @type {number} */ value = 0,
 			/** @type {number} */ isNumber = 0;
 
+		// check for html entities
+		if (source.indexOf("&") !== -1) {
+			source = source.replace(/&amp;/g, "&");
+			source = source.replace(/&lt;/g, "<");
+			source = source.replace(/&gt;/g, ">");
+			l = source.length;
+		}
+
 		// parse the source
 		while (i < l) {
 			v = source.charCodeAt(i);
