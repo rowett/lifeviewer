@@ -40,19 +40,27 @@
 			v = source.charCodeAt(i);
 
 			switch (v) {
-			case 32: // " "
-			case 13: // "\r"
-			case 9:  // "\t"
-				if (inToken) {
-					// complete last token
-					starts[tokens] = j;
-					lengths[tokens] = i - j;
-					numbers[tokens] = ((value << 1) + 1) & isNumber;
-					tokens += 1;
-					inToken = false;
+
+			// whitespace (the character is discarded)
+			case 32:  // " "
+			case 13:  // "\r"
+			case 9:   // "\t"
+			case 44:  // ","
+			case 123: // "{"
+			case 125: // "}"
+				if (!inComment) {
+					if (inToken) {
+						// complete last token
+						starts[tokens] = j;
+						lengths[tokens] = i - j;
+						numbers[tokens] = ((value << 1) + 1) & isNumber;
+						tokens += 1;
+						inToken = false;
+					}
 				}
 				break;
 
+			// newline
 			case 10: // "\n"
 				if (inToken) {
 					starts[tokens] = j;
@@ -74,22 +82,26 @@
 				}
 				break;
 
+			// separators (the separator becomes a token)
+			case 58: // ":"
 			case 61: // "="
 				if (tokenizeNewline) {
-					if (inToken) {
-						// complete last token
-						starts[tokens] = j;
-						lengths[tokens] = i - j;
-						numbers[tokens] = ((value << 1) + 1) & isNumber;
+					if (!inComment) {
+						if (inToken) {
+							// complete last token
+							starts[tokens] = j;
+							lengths[tokens] = i - j;
+							numbers[tokens] = ((value << 1) + 1) & isNumber;
+							tokens += 1;
+							inToken = false;
+						}
+	
+						// add separator token
+						starts[tokens] = i;
+						lengths[tokens] = 1;
+						numbers[tokens] = 0;
 						tokens += 1;
-						inToken = false;
 					}
-
-					// add equals token
-					starts[tokens] = i;
-					lengths[tokens] = 1;
-					numbers[tokens] = 0;
-					tokens += 1;
 				} else {
 					if (!inToken) {
 						inToken = true;
@@ -100,6 +112,7 @@
 				}
 				break;
 
+			// comment
 			case 35: // "#"
 				if (tokenizeNewline) {
 					if (!inComment) {

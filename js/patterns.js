@@ -476,6 +476,84 @@
 		// rule table table section
 		/** @const {string} */ this.ruleTableTableName = "@TABLE";
 
+		// table section states setting
+		/** @const {string} */ this.ruleTableStates = "n_states";
+
+		// table section neighbourhood setting
+		/** @const {string} */ this.ruleTableNeighbours = "neighborhood";
+
+		// table section symmetries setting
+		/** @const {string} */ this.ruleTableSymmetries = "symmetries";
+
+		// table section neighbourhood strings
+		/** @const {Array<string>} */ this.ruleTableNeighbourhoods = [];
+
+		// ** table section neighbourhood indices (must be in the same order as strings above)
+		/** @const {number} */ this.ruleTableVN = 0;
+		/** @const {number} */ this.ruleTableMoore = 1;
+		/** @const {number} */ this.ruleTableHex = 2;
+		/** @const {number} */ this.ruleTableOneD = 3;
+
+		// populate neighbourhoods
+		this.ruleTableNeighbourhoods[this.ruleTableVN] = "vonNeumann";
+		this.ruleTableNeighbourhoods[this.ruleTableMoore] = "Moore";
+		this.ruleTableNeighbourhoods[this.ruleTableHex] = "hexagonal";
+		this.ruleTableNeighbourhoods[this.ruleTableOneD] = "oneDimensional";
+
+		// rule table inputs per neighbourhood
+		/** @const {Array<number>} */ this.ruleTableInputs = [];
+
+		// populate inputs
+		this.ruleTableInputs[this.ruleTableVN] = 5;
+		this.ruleTableInputs[this.ruleTableMoore] = 9;
+		this.ruleTableInputs[this.ruleTableHex] = 7;
+		this.ruleTableInputs[this.ruleTableOneD] = 3;
+
+		// table section variable keyword
+		/** @const {string} */ this.ruleTableVar = "var";
+
+		// table section symmetries
+		/** @const {Array<Array{string}>} */ this.ruleTableSymmetriesList = [];
+
+		// populate symmetries
+		this.ruleTableSymmetriesList[this.ruleTableVN] = ["none", "rotate4", "rotate4reflect", "reflect_horizontal", "permute"];
+		this.ruleTableSymmetriesList[this.ruleTableMoore] = ["none", "rotate4", "rotate8", "rotate4reflect", "rotate8reflect", "reflect_horizontal", "permute"];
+		this.ruleTableSymmetriesList[this.ruleTableHex] = ["none", "rotate2", "rotate3", "rotate6", "rotate6reflect", "permute"];
+		this.ruleTableSymmetriesList[this.ruleTableOneD] = ["none", "reflect", "permute"];
+
+		// symmetry remap
+		/** @const {Array<object>} */ this.ruleTableSymmetryRemap = [];
+
+		// populate remap
+		// von Neumann
+		this.ruleTableSymmetryRemap[this.ruleTableVN] = [
+			[[0, 1, 2, 3, 4, 5], [0, 2, 3, 4, 1, 5], [0, 3, 4, 1, 2, 5], [0, 4, 1, 2, 3, 5]],  // rotate4
+			[[0, 1, 2, 3, 4, 5], [0, 2, 3, 4, 1, 5], [0, 3, 4, 1, 2, 5], [0, 4, 1, 2, 3, 5],  [0, 4, 3, 2, 1, 5], [0, 3, 2, 1, 4, 5], [0, 2, 1, 4, 3, 5], [0, 1, 4, 3, 2, 5]],  // rotate4reflect
+			[[0, 1, 2, 3, 4, 5], [0, 1, 4, 3, 2, 5]]  // reflect_horizonal
+		];
+
+		// Moore
+		this.ruleTableSymmetryRemap[this.ruleTableMoore] = [
+			[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 3, 4, 5, 6, 7, 8, 1, 2, 9], [0, 5, 6, 7, 8, 1, 2, 3, 4, 9], [0, 7, 8, 1, 2, 3, 4, 5, 6, 9]],  // rotate4
+			[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 2, 3, 4, 5, 6, 7, 8, 1, 9], [0, 3, 4, 5, 6, 7, 8, 1, 2, 9], [0, 4, 5, 6, 7, 8, 1, 2, 3, 9], [0, 5, 6, 7, 8, 1, 2, 3, 4, 9], [0, 6, 7, 8, 1, 2, 3, 4, 5, 9], [0, 7, 8, 1, 2, 3, 4, 5, 6, 9], [0, 8, 1, 2, 3, 4, 5, 6, 7, 9]],  // rotate8
+			[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 3, 4, 5, 6, 7, 8, 1, 2, 9], [0, 5, 6, 7, 8, 1, 2, 3, 4, 9], [0, 7, 8, 1, 2, 3, 4, 5, 6, 9], [0, 1, 8, 7, 6, 5, 4, 3, 2, 9], [0, 7, 6, 5, 4, 3, 2, 1, 8, 9], [0, 5, 4, 3, 2, 1, 8, 7, 6, 9], [0, 3, 2, 1, 8, 7, 6, 5, 4, 9]],  // rotate4reflect
+			[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 2, 3, 4, 5, 6, 7, 8, 1, 9], [0, 3, 4, 5, 6, 7, 8, 1, 2, 9], [0, 4, 5, 6, 7, 8, 1, 2, 3, 9], [0, 5, 6, 7, 8, 1, 2, 3, 4, 9], [0, 6, 7, 8, 1, 2, 3, 4, 5, 9], [0, 7, 8, 1, 2, 3, 4, 5, 6, 9], [0, 8, 1, 2, 3, 4, 5, 6, 7, 9], [0, 8, 7, 6, 5, 4, 3, 2, 1, 9], [0, 7, 6, 5, 4, 3, 2, 1, 8, 9], [0, 6, 5, 4, 3, 2, 1, 8, 7, 9], [0, 5, 4, 3, 2, 1, 8, 7, 6, 9], [0, 4, 3, 2, 1, 8, 7, 6, 5, 9], [0, 3, 2, 1, 8, 7, 6, 5, 4, 9], [0, 2, 1, 8, 7, 6, 5, 4, 3, 9], [0, 1, 8, 7, 6, 5, 4, 3, 2, 9]],  // rotate8reflect
+			[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 8, 7, 6, 5, 4, 3, 2, 9]]  // reflect_horizontal
+		];
+
+		// One dimensional
+		this.ruleTableSymmetryRemap[this.ruleTableOneD] = [
+			[[0, 1, 2, 3], [0, 2, 1, 3]]  // reflect
+		];
+
+		// Hexagonal
+		this.ruleTableSymmetryRemap[this.ruleTableHex] = [
+			[[0, 1, 2, 3, 4, 5, 6, 7], [0, 4, 5, 6, 1, 2, 3, 7]],  // rotate2
+			[[0, 1, 2, 3, 4, 5, 6, 7], [0, 3, 4, 5, 6, 1, 2, 7], [0, 5, 6, 1, 2, 3, 4, 7]], // rotate3
+			[[0, 1, 2, 3, 4, 5, 6, 7], [0, 2, 3, 4, 5, 6, 1, 7], [0, 3, 4, 5, 6, 1, 2, 7], [0, 4, 5, 6, 1, 2, 3, 7], [0, 5, 6, 1, 2, 3, 4, 7], [0, 6, 1, 2, 3, 4, 5, 7]],  // rotate6
+			[[0, 1, 2, 3, 4, 5, 6, 7], [0, 2, 3, 4, 5, 6, 1, 7], [0, 3, 4, 5, 6, 1, 2, 7], [0, 4, 5, 6, 1, 2, 3, 7], [0, 5, 6, 1, 2, 3, 4, 7], [0, 6, 1, 2, 3, 4, 5, 7], [0, 6, 5, 4, 3, 2, 1, 7], [0, 5, 4, 3, 2, 1, 6, 7], [0, 4, 3, 2, 1, 6, 5, 7], [0, 3, 2, 1, 6, 5, 4, 7], [0, 2, 1, 6, 5, 4, 3, 7], [0, 1, 6, 5, 4, 3, 2, 7]]  // rotate6reflect
+		];
+
 		// rule table colours section
 		/** @const {string} */ this.ruleTableColoursName = "@COLORS";
 
@@ -676,6 +754,22 @@
 
 		// rule tree base
 		/** @type {number} */ this.ruleTreeBase = -1;
+
+		// rule table neighbourhood
+		/** @type {number} */ this.ruleTableNeighbourhood = -1;
+
+		// rule table states
+		/** @type {number} */ this.ruleTableStates = -1;
+
+		// rule table LUT
+		this.ruleTableLUT = null;
+
+		// rule table output
+		this.ruleTableOutput = null;
+		/** @type {number} */ this.ruleTableOutputSize = 0;
+
+		// rule table number of compressed rules
+		/** @type {number} */ this.ruleTableCompressedRules = 0;
 
 		// rule tree b array
 		this.ruleTreeB = null;
@@ -6542,9 +6636,460 @@
 		}
 	};
 
-	// decode rule table table TBD
-	PatternManager.prototype.decodeTable = function() {
-		var valid = false;
+	// return an array of all permutations of the input array
+	PatternManager.prototype.getPermutations = function(permutation) {
+		var length = permutation.length,
+			result = [permutation.slice()],
+			c = new Uint8Array(length),
+			i = 1,
+			k,
+			p;
+
+		while (i < length) {
+			if (c[i] < i) {
+				k = i % 2 && c[i];
+				p = permutation[i];
+				permutation[i] = permutation[k];
+				permutation[k] = p;
+				++c[i];
+				i = 1;
+				result.push(permutation.slice());
+			} else {
+				c[i] = 0;
+				++i;
+			}
+		}
+		return result;
+	};
+
+	// pack a single transition
+	PatternManager.prototype.packTransition = function(inputs, pIndex, output, pattern) {
+		var	lut = pattern.ruleTableLUT,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			outputList = pattern.ruleTableOutput,
+			/** @const {number} */ nInputs = inputs.length,
+			/** @const {number} */ nBits = 32,
+			/** @const {number} */ iRule = pattern.ruleTableOutputSize,
+			/** @const {number} */ iBit = iRule % nBits,
+			/** @const {number} */ mask = 1 << iBit,
+			possibles = null,
+			/** @type {number} */ iRuleC = (iRule - iBit) / nBits; // compress index of rule
+
+		// add the output to the result
+		outputList[pattern.ruleTableOutputSize] = output;
+		pattern.ruleTableOutputSize += 1;
+
+		// add a new compressed rule if required
+		if (iRuleC >= pattern.ruleTableCompressedRules) {
+			for (i = 0; i < nInputs; i += 1) {
+				for (j = 0; j < pattern.ruleTableStates; j += 1) {
+					lut[i][j][lut[i][j].length] = 0;
+				}
+			}
+			pattern.ruleTableCompressedRules += 1;
+		}
+
+		// populate the LUT
+		for (i = 0; i < nInputs; i += 1) {
+			possibles = inputs[i];
+			for (j = 0; j < possibles.length; j += 1) {
+				lut[i][possibles[j]][iRuleC] |= mask;
+			}
+		}
+	};
+
+	// pack transitions for rule table
+	PatternManager.prototype.packTransitions = function(symmetry, nSymmetries, nInputs, transitionTable, pattern) {
+		var /** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @const {number} */ neighbourhood = pattern.ruleTableNeighbourhood,
+			/** @type {Array<number>} */ inputs = [],
+			/** @type {Array<number>} */ permutedInputs = new Uint8Array(nInputs),
+			/** @type {Array<Array<number>>} */ permutations = [],
+			/** @type {Array<number>} */ remap = [],
+			/** @type {number} */ size = 0,
+			/** @type {number} */ output = 0;
+
+		// populate the permuted inputs index
+		for (i = 0; i < permutedInputs.length; i += 1) {
+			permutedInputs[i] = i;
+		}
+
+		// compute the output size
+		if (symmetry === 0) {
+			// none - size is number of transitions
+			size = transitionTable.length;
+		} else if (symmetry === nSymmetries - 1) {
+			// permute - size is permutations * transitions
+			permutations = this.getPermutations(permutedInputs);
+			size = permutations.length * transitionTable.length;
+		} else {
+			// other symmetry - size is remap size * transitions
+			remap = this.ruleTableSymmetryRemap[neighbourhood][symmetry - 1];  // -1 offset since "none" isn't in the list
+			size = remap.length * transitionTable.length;
+		}
+
+		// allocate the LUT
+		pattern.ruleTableLUT = [];
+		for (i = 0; i < nInputs; i += 1) {
+			pattern.ruleTableLUT[i] = [];
+			for (j = 0; j < pattern.ruleTableStates; j += 1) {
+				pattern.ruleTableLUT[i][j] = [];
+			}
+		}
+
+		// allocate the output
+		pattern.ruleTableOutput = new Uint8Array(size);
+		pattern.ruleTableOutputSize = 0;  // current element
+
+		// clear the compressed count
+		pattern.ruleTableCompressedRules = 0;
+
+		// process each transition
+		for (i = 0; i < transitionTable.length; i += 1) {
+			inputs = transitionTable[i].inputs;
+			output = transitionTable[i].output;
+			if (symmetry === 0) {
+				// none - permuted inputs are sequential
+				this.packTransition(inputs, permutedInputs, output, pattern);
+			} else if (symmetry === nSymmetries - 1) {
+				// permute - get all permutations
+				for (j = 0; j < permutations.length; j += 1) {
+					this.packTransition(inputs, permutations[j], output, pattern);
+				}
+			} else {
+				// other symmetry - get the remaps for the given symmetry
+				for (j = 0; j < remap.length; j += 1) {
+					this.packTransition(inputs, remap[j], output, pattern);
+				}
+			}
+		}
+	};
+
+	// decode rule table table
+	PatternManager.prototype.decodeTable = function(pattern, reader) {
+		var /** @type {string} */ nextToken = "",
+			/** @type {number} */ states = -1,
+			/** @type {number} */ neighbourhood = -1,
+			/** @type {number} */ symmetry = -1,
+			/** @type {number} */ nInputs = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {string} */ varName = "",
+			/** @type {Array<number>} */ varValues = [],
+			/** @type {number} */ readState = 0,
+			/** @type {string} */ readVar = "",
+			/** @type {object} */ variables = {},
+			/** @type {object} */ boundVariableIndices = {},
+			/** @type {number} */ numVars = 0,
+			/** @type {Array<Array<number>>} */ inputs = [],
+			/** @type {number} */ output = 0,
+			/** @type {number} */ charVal = 0,
+			/** @type {Array<object>} */ transitionTable = [],
+			/** @type {Array<string>} */ lineTokens = [],
+			/** @type {Array<string>} */ boundVars = [],
+			/** @type {number} */ varCount = 0,
+			/** @type {boolean} */ found = false,
+			/** @type {boolean} */ valid = false;
+
+		// read first three lines
+		i = 0;
+		valid = true;
+		while (valid && i < 3) {
+			nextToken = reader.getNextTokenSkipNewline();
+			switch (nextToken) {
+
+			// n_states
+			case this.ruleTableStates:
+				valid = false;
+				if (reader.getNextToken() === ":") {
+					if (reader.nextTokenIsNumeric()) {
+						states = reader.getNextTokenAsNumber();
+						if (states >= 2 && states <= 256) {
+							valid = true;
+						}
+					}
+				}
+				break;
+
+			// neighborhood
+			case this.ruleTableNeighbours:
+				valid = false;
+				if (reader.getNextToken() === ":") {
+					nextToken = reader.getNextToken();
+
+					// search for the neighbourhood
+					found = false;
+					i = 0;
+					while (!found && i < this.ruleTableNeighbourhoods.length) {
+						if (nextToken === this.ruleTableNeighbourhoods[i]) {
+							neighbourhood = i;
+							nInputs = this.ruleTableInputs[i];
+							found = true;
+						} else {
+							i += 1;
+						}
+					}
+					valid = found;
+				}
+				break;
+
+			// symmetries
+			case this.ruleTableSymmetries:
+				valid = false;
+				// must have already read neighbourhood
+				if (neighbourhood !== -1) {
+					if (reader.getNextToken() === ":") {
+						nextToken = reader.getNextToken();
+	
+						// search the neighbourhood symmetries
+						found = false;
+						i = 0;
+						while (!found && i < this.ruleTableSymmetriesList[neighbourhood].length) {
+							if (nextToken === this.ruleTableSymmetriesList[neighbourhood][i]) {
+								symmetry = i;
+								found = true;
+							} else {
+								i += 1;
+							}
+						}
+						valid = found;
+					}
+				}
+				break;
+
+			default:
+				// anything else is an error
+				valid = false;
+				break;
+			}
+
+			// next line
+			i += 1;
+		}
+
+		// check if mandatory settings were read
+		if (states === -1 || neighbourhood === -1 || symmetry === -1) {
+			valid = false;
+		}
+
+		// read each line
+		reader.skipNewlines();
+		nextToken = reader.getNextToken();
+		while (valid && nextToken !== "") {
+			// check for variable
+			if (nextToken === this.ruleTableVar) {
+				valid = false;
+
+				// get variable name
+				varName = reader.getNextToken();
+
+				// check if already defined
+				if (variables[varName] === undefined) {
+					// read the rest of the line
+					varValues = [];
+
+					if (reader.getNextToken() === "=") {
+						valid = true;
+						while (valid && !reader.nextIsNewline()) {
+							// if the next token is a number then read it as a state
+							if (reader.nextTokenIsNumeric()) {
+								readState = reader.getNextTokenAsNumber();
+								if (readState >= 0 && readState <= states) {
+									varValues[varValues.length] = readState;
+								} else {
+									valid = false;
+								}
+							} else {
+								// next token is not numeric so should be a variable
+								readVar = reader.getNextToken();
+	
+								// if the variable exists then copy its contents
+								if (variables[readVar] !== undefined) {
+									for (i = 0; i < variables[readVar].length; i += 1) {
+										varValues[varValues.length] = variables[readVar][i];
+									}
+								} else {
+									valid = false;
+								}
+							}
+						}
+					}
+
+					// check if line decoded
+					if (valid) {
+						// save the variable
+						variables[varName] = varValues;
+						numVars += 1;
+					}
+				}
+			} else {
+				// read transition line
+				if (states <= 10 && numVars === 0 && reader.nextIsNewline()) {
+					// single-digit format
+					inputs = [];
+					valid = false
+					if (nextToken.length === nInputs + 1) {
+						// decode transitions
+						i = 0;
+						valid = true;
+						while (valid && i < nInputs) {
+							charVal = nextToken.charCodeAt(i);
+							if (charVal >= 48 && charVal < 48 + states) {
+								inputs[inputs.length] = [charVal - 48];
+								i += 1;
+							} else {
+								valid = false;
+							}
+						}
+						if (valid) {
+							charVal = nextToken.charCodeAt(i);
+							if (charVal >= 48 && charVal < 48 + states) {
+								output = charVal - 48;
+
+								// add to transition table
+								transitionTable[transitionTable.length] = {inputs: inputs, output: output};
+							} else {
+								valid = false;
+							}
+						}
+					}
+				} else {
+					// comma separated format
+					valid = false;
+
+					// read the tokens on the line
+					lineTokens = [];
+					lineTokens[0] = nextToken;
+					while (!reader.nextIsNewline()) {
+						lineTokens[lineTokens.length] = reader.getNextToken();
+					}
+
+					// check there are enough
+					if (lineTokens.length === nInputs + 1) {
+						// first pass: find variables that occur more than once
+						// these are "bound" and must take the same value each time they apepar in this transition
+						boundVars = [];
+						// eslint-disable-next-line
+						for (varName in variables) {
+							varCount = 0;
+							for (i = 0; i < lineTokens.length; i += 1) {
+								if (varName === lineTokens[i]) {
+									varCount += 1;
+								}
+							}
+							if (varCount > 1) {
+								boundVars[boundVars.length] = varName;
+							}
+						}
+
+						// second pass: iterate through the possible states for the bound variables adding
+						// a transition for each combination
+						inputs = [];
+						boundVariableIndices = {};
+						for (i = 0; i < boundVars.length; i += 1) {
+							boundVariableIndices[boundVars[i]] = 0;
+						}
+
+						valid = true;
+						for (;;) {
+							// output the transition for the current set of bound varialbes
+							for (i = 0; i < nInputs; i += 1) {
+								found = false;
+								// if there are bound variables see if this token is one
+								if (boundVars.length) {
+									j = 0;
+									while (!found && j < boundVars.length) {
+										if (boundVars[j] === lineTokens[i]) {
+											found = true;
+										} else {
+											j += 1;
+										}
+									}
+								}
+								if (boundVars.length > 0 && found) {
+									// bound variable
+									inputs[i] = [variables[lineTokens[i]][boundVariableIndices[lineTokens[i]]]];
+								} else if (variables[lineTokens[i]] !== undefined) {
+									// unbound variable
+									inputs[i] = variables[lineTokens[i]];
+								} else {
+									// state
+									readState = parseInt(lineTokens[i], 10);
+									if (readState < 0 || readState > states) {
+										valid = false;
+									} else {
+										inputs[i] = [readState];
+									}
+								}
+							}
+
+							// collect the output
+							found = false;
+							if (boundVars.length > 0) {
+								j = 0;
+								while (!found && j < boundVars.length) {
+									if (boundVars[j] === lineTokens[i]) {
+										found = true;
+									} else {
+										j += 1;
+									}
+								}
+							}
+							if (boundVars.length > 0 && found) {
+								// bound variable
+								output = variables[lineTokens[i]][boundVariableIndices[lineTokens[i]]];
+							} else if (variables[lineTokens[i]] !== undefined) {
+								// unbound variable
+								output = variables[lineTokens[i]];
+							} else {
+								// state
+								readState = parseInt(lineTokens[i], 10);
+								if (readState < 0 || readState > states) {
+									valid = false;
+								} else {
+									output = readState;
+								}
+							}
+
+							// create the transition table entry
+							transitionTable[transitionTable.length] = {inputs: inputs, output: output};
+
+							// move on to the next value of bound variables
+							for (i = 0; i < boundVars.length; i += 1) {
+								if (boundVariableIndices[boundVars[i]] < variables[boundVars[i]].length - 1) {
+									boundVariableIndices[boundVars[i]] += 1;
+									break;
+								} else {
+									boundVariableIndices[boundVars[i]] = 0;
+									i += 1;
+								}
+
+							}
+							if (i >= boundVars.length) {
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			reader.skipNewlines();
+			nextToken = reader.getNextToken();
+			if (nextToken !== "" && nextToken[0] === "@") {
+				nextToken = "";
+			}
+		}
+
+		if (valid) {
+			pattern.ruleTableStates = states;
+			pattern.ruleTableNeighbourhood = neighbourhood;
+			this.packTransitions(symmetry, this.ruleTableSymmetriesList[neighbourhood].length, nInputs, transitionTable, pattern);
+
+			console.debug("@TABLE n_states:" + states, "neighborhood:" + this.ruleTableNeighbourhoods[neighbourhood], "symmetry:" + this.ruleTableSymmetriesList[neighbourhood][symmetry]);
+			valid = false;
+		}
 
 		return valid;
 	};
@@ -6612,6 +7157,7 @@
 
 		// read neighbours setting
 		if (valid) {
+			valid = false;
 			nextToken = reader.getNextTokenSkipNewline();
 			if (nextToken === this.ruleTreeNeighbours) {
 				if (reader.getNextToken() === "=") {
@@ -6627,6 +7173,7 @@
 
 		// read nodes setting
 		if (valid) {
+			valid = false;
 			nextToken = reader.getNextTokenSkipNewline();
 			if (nextToken === this.ruleTreeNodes) {
 				if (reader.getNextToken() === "=") {
@@ -6757,7 +7304,7 @@
 				// search for a table from current position
 				tableIndex = reader.findTokenAtLineStart(this.ruleTableTableName, -1);
 				if (tableIndex !== -1) {
-					valid = this.decodeTable();
+					valid = this.decodeTable(pattern, reader);
 					if (!valid) {
 						// if the table was not found or not valid then sometimes there is a tree too
 						treeIndex = reader.findTokenAtLineStart(this.ruleTableTreeName, -1);

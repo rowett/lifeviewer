@@ -1,3 +1,6 @@
+Build 462
+- RuleTable parser
+
 Build 461
 - further performance improvements to tokenizer
 - improved performance of @TREE decoder
