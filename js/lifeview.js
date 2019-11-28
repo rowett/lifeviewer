@@ -13446,6 +13446,10 @@
 		this.engine.ruleTreeA = null;
 		this.engine.ruleTreeB = null;
 		this.engine.ruleTreeColours = null;
+		this.engine.ruleTableLUT = [];
+		this.engine.ruleTableOutput = null;
+		this.engine.ruleTableCompressedRules = 0;
+		this.engine.ruleTableNeighbourhood = 0;
 	};
 
 	// start the viewer from a supplied pattern string
@@ -13644,7 +13648,7 @@
 				}
 			}
 
-			// check if the rule is a RuleTree rules
+			// check if the rule is a RuleTree rule
 			if (pattern.ruleTreeStates !== -1) {
 				me.engine.ruleTreeNeighbours = pattern.ruleTreeNeighbours;
 				me.engine.ruleTreeStates = pattern.ruleTreeStates;
@@ -13657,6 +13661,17 @@
 				me.engine.isRuleTree = true;
 			} else {
 				me.engine.isRuleTree = false;
+			}
+
+			// check if the rule is a RuleTable rule
+			if (pattern.ruleTableOutput !== null) {
+				me.engine.ruleTableLUT = pattern.ruleTableLUT;
+				me.engine.ruleTableOutput = pattern.ruleTableOutput;
+				me.engine.ruleTableCompressedRules = pattern.ruleTableCompressedRules;
+				me.engine.ruleTableNeighbourhood = pattern.ruleTableNeighbourhood;
+				me.engine.multiNumStates = pattern.ruleTableStates;
+				me.engine.ruleTreeColours = pattern.ruleTreeColours;
+				me.engine.isRuleTree = true;
 			}
 
 			// check if the rule is HROT

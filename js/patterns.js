@@ -137,9 +137,17 @@
 		// add if not found
 		if (!found) {
 			// create rule record
-			this.rules[l] = {name: pattern.originalRuleName, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
-				 nodes: pattern.ruleTreeNodes, base: pattern.ruleTreeBase, ruleA: pattern.ruleTreeA,
-				 ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours};
+			if (this.ruleTableOuput === null) {
+				// add @TREE
+				this.rules[l] = {name: pattern.originalRuleName, isTree: true, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
+					nodes: pattern.ruleTreeNodes, base: pattern.ruleTreeBase, ruleA: pattern.ruleTreeA,
+					ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours};
+			} else {
+				// add @TABLE
+				this.rules[l] = {name: pattern.originalRuleName, isTree: false, states: pattern.ruleTableStates, neighbourhood: pattern.ruleTableNeighbourhood,
+					compressed: pattern.ruleTableCompressedRules, output: pattern.ruleTableOutput,
+					LUT: pattern.ruleTableLUT, colours: pattern.ruleTreeColours};
+			}
 
 			// create metadata
 			this.meta[l] = {fetch: fetchTime | 0, decode: decodeTime | 0, size: ruleSize};
@@ -170,12 +178,20 @@
 
 		// populate pattern from the cache if found
 		if (found) {
-			pattern.ruleTreeStates = record.states;
-			pattern.ruleTreeNeighbours = record.neighbours;
-			pattern.ruleTreeNodes = record.nodes;
-			pattern.ruleTreeBase = record.base;
-			pattern.ruleTreeA = record.ruleA;
-			pattern.ruleTreeB = record.ruleB;
+			if (record.isTree) {
+				pattern.ruleTreeStates = record.states;
+				pattern.ruleTreeNeighbours = record.neighbours;
+				pattern.ruleTreeNodes = record.nodes;
+				pattern.ruleTreeBase = record.base;
+				pattern.ruleTreeA = record.ruleA;
+				pattern.ruleTreeB = record.ruleB;
+			} else {
+				pattern.ruleTableStates = record.states;
+				pattern.ruleTableNeighbourhood = record.neighbourhood;
+				pattern.ruleTableCompressedRules = record.compressed;
+				pattern.ruleTableOutput = record.output;
+				pattern.ruleTableLUT = record.LUT;
+			}
 			pattern.ruleTreeColours = record.colours;
 			pattern.isNone = false;
 		}
@@ -6639,12 +6655,13 @@
 	// return an array of all permutations of the input array
 	PatternManager.prototype.getPermutations = function(permutation) {
 		var length = permutation.length,
-			result = [permutation.slice()],
+			result = [new Uint8Array(length + 1)],
 			c = new Uint8Array(length),
 			i = 1,
 			k,
 			p;
 
+		result[0].set(permutation, 1);
 		while (i < length) {
 			if (c[i] < i) {
 				k = i % 2 && c[i];
@@ -6653,7 +6670,9 @@
 				permutation[k] = p;
 				++c[i];
 				i = 1;
-				result.push(permutation.slice());
+				result[result.length] = new Uint8Array(length + 1);
+				result[result.length - 1].set(permutation, 1);
+				//result.push(permutation.slice());
 			} else {
 				c[i] = 0;
 				++i;
@@ -6692,7 +6711,7 @@
 
 		// populate the LUT
 		for (i = 0; i < nInputs; i += 1) {
-			possibles = inputs[i];
+			possibles = inputs[pIndex[i]];
 			for (j = 0; j < possibles.length; j += 1) {
 				lut[i][possibles[j]][iRuleC] |= mask;
 			}
@@ -6712,8 +6731,15 @@
 			/** @type {number} */ output = 0;
 
 		// populate the permuted inputs index
-		for (i = 0; i < permutedInputs.length; i += 1) {
-			permutedInputs[i] = i;
+		if (symmetry === nSymmetries - 1) {
+			permutedInputs = new Uint8Array(nInputs - 1);
+			for (i = 0; i < permutedInputs.length; i += 1) {
+				permutedInputs[i] = i + 1;
+			}
+		} else {
+			for (i = 0; i < permutedInputs.length; i += 1) {
+				permutedInputs[i] = i;
+			}
 		}
 
 		// compute the output size
@@ -6821,14 +6847,14 @@
 
 					// search for the neighbourhood
 					found = false;
-					i = 0;
-					while (!found && i < this.ruleTableNeighbourhoods.length) {
-						if (nextToken === this.ruleTableNeighbourhoods[i]) {
-							neighbourhood = i;
-							nInputs = this.ruleTableInputs[i];
+					j = 0;
+					while (!found && j < this.ruleTableNeighbourhoods.length) {
+						if (nextToken === this.ruleTableNeighbourhoods[j]) {
+							neighbourhood = j;
+							nInputs = this.ruleTableInputs[j];
 							found = true;
 						} else {
-							i += 1;
+							j += 1;
 						}
 					}
 					valid = found;
@@ -6845,13 +6871,13 @@
 	
 						// search the neighbourhood symmetries
 						found = false;
-						i = 0;
-						while (!found && i < this.ruleTableSymmetriesList[neighbourhood].length) {
-							if (nextToken === this.ruleTableSymmetriesList[neighbourhood][i]) {
-								symmetry = i;
+						j = 0;
+						while (!found && j < this.ruleTableSymmetriesList[neighbourhood].length) {
+							if (nextToken === this.ruleTableSymmetriesList[neighbourhood][j]) {
+								symmetry = j;
 								found = true;
 							} else {
-								i += 1;
+								j += 1;
 							}
 						}
 						valid = found;
@@ -7082,13 +7108,35 @@
 			}
 		}
 
+		// check if decoded successfully
 		if (valid) {
+			if (pattern.allocator === null) {
+				pattern.allocator = new Allocator();
+			}
+
+			// save rule information
 			pattern.ruleTableStates = states;
 			pattern.ruleTableNeighbourhood = neighbourhood;
+
+			// check for hex grid
+			if (neighbourhood === this.ruleTableHex) {
+				pattern.isHex = true;
+			} else {
+				pattern.isHex = false;
+			}
+
+			// create compressed LUT
 			this.packTransitions(symmetry, this.ruleTableSymmetriesList[neighbourhood].length, nInputs, transitionTable, pattern);
 
-			console.debug("@TABLE n_states:" + states, "neighborhood:" + this.ruleTableNeighbourhoods[neighbourhood], "symmetry:" + this.ruleTableSymmetriesList[neighbourhood][symmetry]);
-			valid = false;
+			// mark pattern as valid
+			pattern.numStates = pattern.ruleTableStates;
+			this.failureReason = "";
+			this.executable = true;
+			this.extendedFormat = false;
+			pattern.isNone = false;
+
+			// create default colours
+			this.createDefaultTreeColours(pattern, pattern.ruleTableStates);
 		}
 
 		return valid;
@@ -7115,9 +7163,9 @@
 	};
 
 	// create default rule tree colours
-	PatternManager.prototype.createDefaultTreeColours = function(pattern) {
+	PatternManager.prototype.createDefaultTreeColours = function(pattern, states) {
 		// allocate colour array
-		pattern.ruleTreeColours = new Uint32Array(pattern.ruleTreeStates);
+		pattern.ruleTreeColours = new Uint32Array(states);
 
 		// create ramp
 		this.createColourRamp(pattern.ruleTreeColours, 255, 0, 0, 255, 255, 0);
@@ -7279,7 +7327,7 @@
 			pattern.isNone = false;
 
 			// create default colours
-			this.createDefaultTreeColours(pattern);
+			this.createDefaultTreeColours(pattern, pattern.ruleTreeStates);
 		}
 
 		return valid;
@@ -7306,27 +7354,18 @@
 				if (tableIndex !== -1) {
 					valid = this.decodeTable(pattern, reader);
 					if (!valid) {
-						// if the table was not found or not valid then sometimes there is a tree too
-						treeIndex = reader.findTokenAtLineStart(this.ruleTableTreeName, -1);
-						if (treeIndex !== -1) {
-							valid = this.decodeTree(pattern, reader);
-							if (!valid) {
-								pattern.manager.failureReason = "@TREE not valid";
-							}
-						} else {
-							pattern.manager.failureReason = "@TREE not found";
-						}
+						pattern.manager.failureReason = "@TABLE not valid";
 					}
 				} else {
-					// search for a tree from the current position
-					treeIndex = reader.findTokenAtLineStart(this.ruleTableTreeName, -1);
+					// search for a tree from the start since the sections could be in any order
+					treeIndex = reader.findTokenAtLineStart(this.ruleTableTreeName, 0);
 					if (treeIndex !== -1) {
 						valid = this.decodeTree(pattern, reader);
 						if (!valid) {
 							pattern.manager.failureReason = "@TREE not valid";
 						}
 					} else {
-						pattern.manager.failureReason = "@TREE not found";
+						pattern.manager.failureReason = "@TABLE and @TREE not found";
 					}
 				}
 
@@ -7350,6 +7389,7 @@
 	PatternManager.prototype.create = function(name, source, allocator, succeedCallback, failCallback, args, view) {
 		// create a pattern skeleton
 		var newPattern = new Pattern(name, this),
+			states = 0,
 			index = 0;
 
 		// clear loading flag
@@ -7490,10 +7530,15 @@
 				// check the rule tree cache
 				if (RuleTreeCache.loadIfExists(newPattern)) {
 					// check for pattern states
-					if (newPattern.numStates > newPattern.ruleTreeStates) {
+					if (newPattern.ruleTableOutput === null) {
+						states = newPattern.ruleTreeStates;
+					} else {
+						states = newPattern.ruleTableStates;
+					}
+					if (newPattern.numStates > states) {
 						this.failureReason = "Illegal state in pattern";
 					} else {
-						newPattern.numStates = newPattern.ruleTreeStates;
+						newPattern.numStates = states;
 						this.failureReason = "";
 						this.executable = true;
 						this.extendedFormat = false;
@@ -7566,7 +7611,7 @@
 					decodeTime = performance.now() - this.time;
 
 					// if rule tree decoded successfully then add to cache
-					if (pattern.ruleTreeStates !== -1) {
+					if (pattern.ruleTreeStates !== -1 || pattern.ruleTableOutput !== null) {
 						RuleTreeCache.add(pattern, fetchTime, decodeTime, ruleText.length);
 					} else {
 						RuleTreeCache.requestFailed(pattern);
