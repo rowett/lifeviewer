@@ -1,5 +1,8 @@
 Build 462
-- added RuleTable algo support
+- added @TABLE support
+- an optional rule name postfix may be specified with the <meta> tag on the web page hosting the Viewer
+	- <meta name="LifeViewer" content="/myrepository/rules/ .rule">
+	- an entry beginning with "." is used to define the postfix
 
 Build 461
 - further performance improvements to tokenizer
