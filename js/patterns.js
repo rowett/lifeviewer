@@ -6748,6 +6748,7 @@
 		var /** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ k = 0,
+			/** @type {number} */ l = 0,
 			/** @type {Array<number>} */ inputs = [],
 			/** @type {Array<number>} */ permutedInputs = [],
 			/** @type {Array<number>} */ remap = [],
@@ -6792,7 +6793,16 @@
 					for (k = 0; k < inputs.length; k += 1) {
 						permutedInputs[k] = inputs[remap[j][k]];
 					}
-					this.packTransition(permutedInputs, output, pattern, outputList, lut);
+					// check if the permuted inputs are the same as the inputs after first time to remove duplicates
+					l = 0;
+					if (j > 0) {
+						while (l < inputs.length && this.compareArrays(inputs[l], permutedInputs[l]) === 0) {
+							l += 1;
+						}
+					}
+					if (l !== inputs.length) {
+						this.packTransition(permutedInputs, output, pattern, outputList, lut);
+					}
 				}
 			}
 		}
@@ -7100,7 +7110,7 @@
 							}
 
 							// create the transition table entry
-							transitionTable[transitionTable.length] = {inputs: inputs, output: output};
+							transitionTable[transitionTable.length] = {inputs: inputs.slice(), output: output};
 
 							// move on to the next value of bound variables
 							for (i = 0; i < boundVars.length; i += 1) {
