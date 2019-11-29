@@ -37,6 +37,9 @@
 		// repository location
 		/** @type {string} */ repositoryLocation : "",
 
+		// repository rule postfix
+		/** @type {string} */ rulePostfix : "",
+
 		// patterns (in source RLE)
 		patterns : []
 	},
@@ -13450,6 +13453,7 @@
 		this.engine.ruleTableOutput = null;
 		this.engine.ruleTableCompressedRules = 0;
 		this.engine.ruleTableNeighbourhood = 0;
+		this.engine.ruleTableDups = 0;
 	};
 
 	// start the viewer from a supplied pattern string
@@ -13649,6 +13653,8 @@
 			}
 
 			// check if the rule is a RuleTree rule
+			me.engine.ruleTableOutput = null;
+			me.engine.ruleTableLUT = null;
 			if (pattern.ruleTreeStates !== -1) {
 				me.engine.ruleTreeNeighbours = pattern.ruleTreeNeighbours;
 				me.engine.ruleTreeStates = pattern.ruleTreeStates;
@@ -13669,6 +13675,7 @@
 				me.engine.ruleTableOutput = pattern.ruleTableOutput;
 				me.engine.ruleTableCompressedRules = pattern.ruleTableCompressedRules;
 				me.engine.ruleTableNeighbourhood = pattern.ruleTableNeighbourhood;
+				me.engine.ruleTableDups = pattern.ruleTableDups;
 				me.engine.multiNumStates = pattern.ruleTableStates;
 				me.engine.ruleTreeColours = pattern.ruleTreeColours;
 				me.engine.isRuleTree = true;
@@ -14977,15 +14984,19 @@
 							DocConfig.multi = true;
 							break;
 
-						// otherwise check if it begins with slash or is numeric
+						// otherwise check if it begins with slash, dot, or is numeric
 						default:
 							if (tokens[i][0] === "/") {
 								DocConfig.repositoryLocation = tokens[i];
 							} else {
-								value = tokens[i];
-								if (!isNaN(parseFloat(value)) && isFinite(Number(value))) {
-									// set the source element maximum height
-									DocConfig.patternSourceMaxHeight = parseFloat(value) | 0;
+								if (tokens[i][0] === ".") {
+									DocConfig.rulePostfix = tokens[i];
+								} else {
+									value = tokens[i];
+									if (!isNaN(parseFloat(value)) && isFinite(Number(value))) {
+										// set the source element maximum height
+										DocConfig.patternSourceMaxHeight = parseFloat(value) | 0;
+									}
 								}
 							}
 							break;

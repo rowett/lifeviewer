@@ -312,6 +312,7 @@
 		/** @type {Uint8Array} */ this.ruleTableOutput = null;
 		/** @type {number} */ this.ruleTableCompressedRules = 0;
 		/** @type {number} */ this.ruleTableNeighbourhood = 0;
+		/** @type {number} */ this.ruleTableDups = 0;
 
 		// identify lists
 		this.hashList = null;

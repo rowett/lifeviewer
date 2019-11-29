@@ -1336,7 +1336,11 @@
 
 		// display type if RuleTable
 		if (view.engine.isRuleTree) {
-			y = this.renderHelpLine(view, "Type", (view.engine.ruleTableOutput === null ? "@TREE" : "@TABLE [" + view.engine.ruleTableCompressedRules + "]"), ctx, x, y, height, helpLine);
+			if (view.engine.ruleTableOutput === null) {
+				y = this.renderHelpLine(view, "Type", "@TREE", ctx, x, y, height, helpLine);
+			} else {
+				y = this.renderHelpLine(view, "Type", "@TABLE [" + view.engine.ruleTableCompressedRules + (view.engine.ruleTableDups > 0 ? " / " + view.engine.ruleTableDups : "") + "]", ctx, x, y, height, helpLine);
+			}
 		}
 
 		// display neighbourhood

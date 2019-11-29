@@ -137,16 +137,16 @@
 		// add if not found
 		if (!found) {
 			// create rule record
-			if (this.ruleTableOuput === null) {
+			if (pattern.ruleTableOutput === null) {
 				// add @TREE
-				this.rules[l] = {name: pattern.originalRuleName, isTree: true, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
+				this.rules[l] = {name: pattern.ruleName, isTree: true, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
 					nodes: pattern.ruleTreeNodes, base: pattern.ruleTreeBase, ruleA: pattern.ruleTreeA,
 					ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours};
 			} else {
 				// add @TABLE
-				this.rules[l] = {name: pattern.originalRuleName, isTree: false, states: pattern.ruleTableStates, neighbourhood: pattern.ruleTableNeighbourhood,
+				this.rules[l] = {name: pattern.ruleName, isTree: false, states: pattern.ruleTableStates, neighbourhood: pattern.ruleTableNeighbourhood,
 					compressed: pattern.ruleTableCompressedRules, output: pattern.ruleTableOutput,
-					LUT: pattern.ruleTableLUT, colours: pattern.ruleTreeColours};
+					LUT: pattern.ruleTableLUT, colours: pattern.ruleTreeColours, dups: pattern.ruleTableDups};
 			}
 
 			// create metadata
@@ -178,6 +178,10 @@
 
 		// populate pattern from the cache if found
 		if (found) {
+			// clear pattern record first
+			pattern.ruleTableOutput = null;
+
+			// load retrieved record
 			if (record.isTree) {
 				pattern.ruleTreeStates = record.states;
 				pattern.ruleTreeNeighbours = record.neighbours;
@@ -191,6 +195,7 @@
 				pattern.ruleTableCompressedRules = record.compressed;
 				pattern.ruleTableOutput = record.output;
 				pattern.ruleTableLUT = record.LUT;
+				pattern.ruleTableDups = record.dups;
 			}
 			pattern.ruleTreeColours = record.colours;
 			pattern.isNone = false;
@@ -785,6 +790,9 @@
 
 		// rule table output
 		this.ruleTableOutput = null;
+
+		// rule table number of duplicates removed
+		this.ruleTableDups = 0;
 
 		// rule table number of compressed rules
 		/** @type {number} */ this.ruleTableCompressedRules = 0;
@@ -6655,37 +6663,72 @@
 	};
 
 	// pack a single transition
-	PatternManager.prototype.packTransition = function(inputs, output, pattern, outputList, lut) {
+	PatternManager.prototype.packTransition = function(inputs, output, pattern, outputList, lut, dedupe) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
+			/** @type {boolean} */ duplicate = false,
+			record = {},
 			/** @const {number} */ nInputs = inputs.length,
 			/** @const {number} */ nBits = 32,
 			/** @const {number} */ iRule = outputList.length,
 			/** @const {number} */ iBit = iRule % nBits,
 			/** @const {number} */ mask = 1 << iBit,
-			possibles = null,
+			/** @type {Array<Array<number>>} */ possibles = null,
 			/** @type {number} */ iRuleC = (iRule - iBit) / nBits; // compress index of rule
 
-		// add the output to the result
-		outputList[outputList.length] = output;
+		// check if the transition is a duplicate
+		if (dedupe !== null) {
+			i = 0;
+			while (!duplicate && i < dedupe.length) {
+				record = dedupe[i];
+				// check against next record
+				if (record.output === output) {
+					// outputs match so check inputs
+					j = 0;
+					duplicate = true;
+					while (duplicate && j < inputs.length) {
+						if (this.compareArrays(inputs[j], record.inputs[j]) !== 0) {
+							duplicate = false;
+						}
+						j += 1;
+					}
+				}
+				i += 1;
+			}
+		}
 
-		// add a new compressed rule if required
-		if (iRuleC >= pattern.ruleTableCompressedRules) {
+		// add the output to the result
+		if (!duplicate) {
+			// add to the dedupe list
+			if (dedupe !== null) {
+				record = {inputs: [], output: output};
+				record.inputs = inputs.slice();
+				dedupe[dedupe.length] = record;
+			}
+
+			// add to the result
+			outputList[outputList.length] = output;
+
+			// add a new compressed rule if required
+			if (iRuleC >= pattern.ruleTableCompressedRules) {
+				for (i = 0; i < nInputs; i += 1) {
+					for (j = 0; j < pattern.ruleTableStates; j += 1) {
+						lut[i][j][lut[i][j].length] = 0;
+					}
+				}
+				pattern.ruleTableCompressedRules += 1;
+			}
+	
+			// populate the LUT
 			for (i = 0; i < nInputs; i += 1) {
-				for (j = 0; j < pattern.ruleTableStates; j += 1) {
-					lut[i][j][lut[i][j].length] = 0;
+				possibles = inputs[i];
+				for (j = 0; j < possibles.length; j += 1) {
+					lut[i][possibles[j]][iRuleC] |= mask;
 				}
 			}
-			pattern.ruleTableCompressedRules += 1;
 		}
 
-		// populate the LUT
-		for (i = 0; i < nInputs; i += 1) {
-			possibles = inputs[i];
-			for (j = 0; j < possibles.length; j += 1) {
-				lut[i][possibles[j]][iRuleC] |= mask;
-			}
-		}
+		return duplicate;
 	};
 
 	// get the next permutation of an array of arrays (ignoring the first element)
@@ -6748,13 +6791,14 @@
 		var /** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ k = 0,
-			/** @type {number} */ l = 0,
 			/** @type {Array<number>} */ inputs = [],
 			/** @type {Array<number>} */ permutedInputs = [],
 			/** @type {Array<number>} */ remap = [],
 			/** @type {number} */ output = 0,
 			/** @type {Array<number>} */ outputList = [],
-			/** @type {Array<Array<Array<number>>>} */ lut = [];
+			/** @type {Array<Array<Array<number>>>} */ lut = [],
+			/** @type {number} */ numDups = 0,
+			dedupe = [];
 
 		// allocate the LUT
 		for (i = 0; i < nInputs; i += 1) {
@@ -6775,7 +6819,9 @@
 			// check which symmetry is required
 			if (symmetry === 0) {
 				// none - permuted inputs are sequential
-				this.packTransition(inputs, output, pattern, outputList, lut);
+				if (this.packTransition(inputs, output, pattern, outputList, lut, dedupe)) {
+					numDups += 1;
+				}
 			} else if (symmetry === nSymmetries - 1) {
 				// permute - start with sorted list (from element 1 onwards)
 				permutedInputs = inputs.slice(1).sort(this.compareArrays);
@@ -6783,7 +6829,9 @@
 					inputs[j + 1] = permutedInputs[j];
 				}
 				do {
-					this.packTransition(inputs, output, pattern, outputList, lut);
+					if (this.packTransition(inputs, output, pattern, outputList, lut, null)) {
+						numDups += 1;
+					}
 					// permute from element 1 onwards
 				} while(this.nextPermutation(inputs));
 			} else {
@@ -6793,15 +6841,8 @@
 					for (k = 0; k < inputs.length; k += 1) {
 						permutedInputs[k] = inputs[remap[j][k]];
 					}
-					// check if the permuted inputs are the same as the inputs after first time to remove duplicates
-					l = 0;
-					if (j > 0) {
-						while (l < inputs.length && this.compareArrays(inputs[l], permutedInputs[l]) === 0) {
-							l += 1;
-						}
-					}
-					if (l !== inputs.length) {
-						this.packTransition(permutedInputs, output, pattern, outputList, lut);
+					if (this.packTransition(permutedInputs, output, pattern, outputList, lut, dedupe)) {
+						numDups += 1;
 					}
 				}
 			}
@@ -6821,6 +6862,7 @@
 		// save the outputs
 		pattern.ruleTableOutput = new Uint8Array(outputList.length);
 		pattern.ruleTableOutput.set(outputList);
+		pattern.ruleTableDups = numDups;
 	};
 
 	// decode rule table table
@@ -7050,7 +7092,7 @@
 
 						valid = true;
 						for (;;) {
-							// output the transition for the current set of bound varialbes
+							// output the transition for the current set of bound variables
 							for (i = 0; i < nInputs; i += 1) {
 								found = false;
 								// if there are bound variables see if this token is one
@@ -7119,7 +7161,6 @@
 									break;
 								} else {
 									boundVariableIndices[boundVars[i]] = 0;
-									i += 1;
 								}
 
 							}
@@ -7381,20 +7422,20 @@
 			if (!reader.nextIsNewline()) {
 				pattern.ruleTableName = reader.getNextToken();
 
-				// search for a table from current position
-				tableIndex = reader.findTokenAtLineStart(this.ruleTableTableName, -1);
-				if (tableIndex !== -1) {
-					valid = this.decodeTable(pattern, reader);
+				// search for a tree from current position
+				treeIndex = reader.findTokenAtLineStart(this.ruleTableTreeName, -1);
+				if (treeIndex !== -1) {
+					valid = this.decodeTree(pattern, reader);
 					if (!valid) {
-						pattern.manager.failureReason = "@TABLE not valid";
+						pattern.manager.failureReason = "@TREE not valid";
 					}
 				} else {
-					// search for a tree from the start since the sections could be in any order
-					treeIndex = reader.findTokenAtLineStart(this.ruleTableTreeName, 0);
-					if (treeIndex !== -1) {
-						valid = this.decodeTree(pattern, reader);
+					// search for a table from the start since the sections could be in any order
+					tableIndex = reader.findTokenAtLineStart(this.ruleTableTableName, 0);
+					if (tableIndex !== -1) {
+						valid = this.decodeTable(pattern, reader);
 						if (!valid) {
-							pattern.manager.failureReason = "@TREE not valid";
+							pattern.manager.failureReason = "@TABLE not valid";
 						}
 					} else {
 						pattern.manager.failureReason = "@TABLE and @TREE not found";
@@ -7698,7 +7739,7 @@
 
 			// check if a repository location if specified in meta settings
 			if (DocConfig.repositoryLocation !== "") {
-				uri = DocConfig.repositoryLocation + ruleName;
+				uri = DocConfig.repositoryLocation + ruleName + DocConfig.rulePostfix;
 			}
 	
 			// save rule name for use in error message

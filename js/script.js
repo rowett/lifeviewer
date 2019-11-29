@@ -16,14 +16,13 @@
 		var /** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ l = source.length,
-			/** @type {number} */ halfLength = (l >> 1) + 2,
 			/** @type {number} */ v = 0,
 			/** @type {boolean} */ inToken = false,
 			/** @type {boolean} */ inComment = false,
 			/** @type {number} */ tokens = 0,
-			/** @type {Uint32Array} */ starts = new Uint32Array(halfLength),
-			/** @type {Uint16Array} */ lengths = new Uint16Array(halfLength),
-			/** @type {Uint32Array} */ numbers = new Uint32Array(halfLength),
+			/** @type {Uint32Array} */ starts = new Uint32Array(l),
+			/** @type {Uint16Array} */ lengths = new Uint16Array(l),
+			/** @type {Uint32Array} */ numbers = new Uint32Array(l),
 			/** @type {number} */ value = 0,
 			/** @type {number} */ isNumber = 0;
 
