@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global LifeConstants ViewConstants RuleTreeCache ColourManager Keywords WaypointConstants DocConfig Controller AliasManager littleEndian arrayFill copyWithin */
+	/* global LifeConstants ViewConstants PatternConstants RuleTreeCache ColourManager Keywords WaypointConstants DocConfig Controller AliasManager littleEndian arrayFill copyWithin */
 
 	// Help singleton
 	var Help = {
@@ -1334,6 +1334,11 @@
 			y = this.renderHelpLine(view, "Alias", view.patternAliasName, ctx, x, y, height, helpLine);
 		}
 
+		// display type if RuleTable
+		if (view.engine.isRuleTree) {
+			y = this.renderHelpLine(view, "Type", (view.engine.ruleTableOutput === null ? "@TREE" : "@TABLE [" + view.engine.ruleTableCompressedRules + "]"), ctx, x, y, height, helpLine);
+		}
+
 		// display neighbourhood
 		if (view.engine.isMargolus) {
 			itemName = "Margolus";
@@ -1364,10 +1369,37 @@
 								itemName += " Vertices";
 							}
 						} else {
-							if (view.engine.isVonNeumann || view.engine.isPCA || (view.engine.isRuleTree && view.engine.ruleTreeNeighbours === 4)) {
-								itemName = "von Neumann";
+							if (view.engine.isRuleTree) {
+								if (view.engine.ruleTableOutput === null) {
+									if (view.engine.ruleTreeNeighbours === 4) {
+										itemName = "von Neumann";
+									} else {
+										itemName = "Moore";
+									}
+								} else {
+									switch (view.engine.ruleTableNeighbourhood) {
+									case PatternConstants.ruleTableVN:
+										itemName = "von Neumann";
+										break;
+									case PatternConstants.ruleTableMoore:
+										itemName = "Moore";
+										break;
+									case PatternConstants.ruleTableHex:
+										itemName = "Hex";
+										break;
+									case PatternConstants.ruleTableOneD:
+										itemName = "1D";
+										break;
+									default:
+										itemName = "unknown";
+									}
+								}
 							} else {
-								itemName = "Moore";
+								if (view.engine.isVonNeumann || view.engine.isPCA) {
+									itemName = "von Neumann";
+								} else {
+									itemName = "Moore";
+								}
 							}
 						}
 					}

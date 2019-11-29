@@ -176,6 +176,13 @@
 		this.source = source;
 	}
 
+	// step back one token
+	Script.prototype.stepBack = function() {
+		if (this.current > 0) {
+			this.current -= 1;
+		}
+	};
+
 	// skip to end of line
 	Script.prototype.skipToEndOfLine = function() {
 		// check if there are more tokens

@@ -235,6 +235,15 @@
 		/** @const {string} */ magic : "#Life 1.06"
 	};
 
+	// pattern constants
+	var PatternConstants = {
+		// ** table section neighbourhood indices (must be in the same order as strings above)
+		/** @const {number} */ ruleTableVN : 0,
+		/** @const {number} */ ruleTableMoore : 1,
+		/** @const {number} */ ruleTableHex : 2,
+		/** @const {number} */ ruleTableOneD : 3
+	};
+
 	// pattern manager
 	/**
 	 * @constructor
@@ -504,52 +513,46 @@
 		// table section neighbourhood strings
 		/** @const {Array<string>} */ this.ruleTableNeighbourhoods = [];
 
-		// ** table section neighbourhood indices (must be in the same order as strings above)
-		/** @const {number} */ this.ruleTableVN = 0;
-		/** @const {number} */ this.ruleTableMoore = 1;
-		/** @const {number} */ this.ruleTableHex = 2;
-		/** @const {number} */ this.ruleTableOneD = 3;
-
 		// populate neighbourhoods
-		this.ruleTableNeighbourhoods[this.ruleTableVN] = "vonNeumann";
-		this.ruleTableNeighbourhoods[this.ruleTableMoore] = "Moore";
-		this.ruleTableNeighbourhoods[this.ruleTableHex] = "hexagonal";
-		this.ruleTableNeighbourhoods[this.ruleTableOneD] = "oneDimensional";
+		this.ruleTableNeighbourhoods[PatternConstants.ruleTableVN] = "vonNeumann";
+		this.ruleTableNeighbourhoods[PatternConstants.ruleTableMoore] = "Moore";
+		this.ruleTableNeighbourhoods[PatternConstants.ruleTableHex] = "hexagonal";
+		this.ruleTableNeighbourhoods[PatternConstants.ruleTableOneD] = "oneDimensional";
 
 		// rule table inputs per neighbourhood
 		/** @const {Array<number>} */ this.ruleTableInputs = [];
 
 		// populate inputs
-		this.ruleTableInputs[this.ruleTableVN] = 5;
-		this.ruleTableInputs[this.ruleTableMoore] = 9;
-		this.ruleTableInputs[this.ruleTableHex] = 7;
-		this.ruleTableInputs[this.ruleTableOneD] = 3;
+		this.ruleTableInputs[PatternConstants.ruleTableVN] = 5;
+		this.ruleTableInputs[PatternConstants.ruleTableMoore] = 9;
+		this.ruleTableInputs[PatternConstants.ruleTableHex] = 7;
+		this.ruleTableInputs[PatternConstants.ruleTableOneD] = 3;
 
 		// table section variable keyword
 		/** @const {string} */ this.ruleTableVar = "var";
 
 		// table section symmetries
-		/** @const {Array<Array{string}>} */ this.ruleTableSymmetriesList = [];
+		/** @const {Array<Array<string>>} */ this.ruleTableSymmetriesList = [];
 
 		// populate symmetries
-		this.ruleTableSymmetriesList[this.ruleTableVN] = ["none", "rotate4", "rotate4reflect", "reflect_horizontal", "permute"];
-		this.ruleTableSymmetriesList[this.ruleTableMoore] = ["none", "rotate4", "rotate8", "rotate4reflect", "rotate8reflect", "reflect_horizontal", "permute"];
-		this.ruleTableSymmetriesList[this.ruleTableHex] = ["none", "rotate2", "rotate3", "rotate6", "rotate6reflect", "permute"];
-		this.ruleTableSymmetriesList[this.ruleTableOneD] = ["none", "reflect", "permute"];
+		this.ruleTableSymmetriesList[PatternConstants.ruleTableVN] = ["none", "rotate4", "rotate4reflect", "reflect_horizontal", "permute"];
+		this.ruleTableSymmetriesList[PatternConstants.ruleTableMoore] = ["none", "rotate4", "rotate8", "rotate4reflect", "rotate8reflect", "reflect_horizontal", "permute"];
+		this.ruleTableSymmetriesList[PatternConstants.ruleTableHex] = ["none", "rotate2", "rotate3", "rotate6", "rotate6reflect", "permute"];
+		this.ruleTableSymmetriesList[PatternConstants.ruleTableOneD] = ["none", "reflect", "permute"];
 
 		// symmetry remap
-		/** @const {Array<object>} */ this.ruleTableSymmetryRemap = [];
+		this.ruleTableSymmetryRemap = [];
 
 		// populate remap
 		// von Neumann
-		this.ruleTableSymmetryRemap[this.ruleTableVN] = [
+		this.ruleTableSymmetryRemap[PatternConstants.ruleTableVN] = [
 			[[0, 1, 2, 3, 4, 5], [0, 2, 3, 4, 1, 5], [0, 3, 4, 1, 2, 5], [0, 4, 1, 2, 3, 5]],  // rotate4
 			[[0, 1, 2, 3, 4, 5], [0, 2, 3, 4, 1, 5], [0, 3, 4, 1, 2, 5], [0, 4, 1, 2, 3, 5],  [0, 4, 3, 2, 1, 5], [0, 3, 2, 1, 4, 5], [0, 2, 1, 4, 3, 5], [0, 1, 4, 3, 2, 5]],  // rotate4reflect
 			[[0, 1, 2, 3, 4, 5], [0, 1, 4, 3, 2, 5]]  // reflect_horizonal
 		];
 
 		// Moore
-		this.ruleTableSymmetryRemap[this.ruleTableMoore] = [
+		this.ruleTableSymmetryRemap[PatternConstants.ruleTableMoore] = [
 			[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 3, 4, 5, 6, 7, 8, 1, 2, 9], [0, 5, 6, 7, 8, 1, 2, 3, 4, 9], [0, 7, 8, 1, 2, 3, 4, 5, 6, 9]],  // rotate4
 			[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 2, 3, 4, 5, 6, 7, 8, 1, 9], [0, 3, 4, 5, 6, 7, 8, 1, 2, 9], [0, 4, 5, 6, 7, 8, 1, 2, 3, 9], [0, 5, 6, 7, 8, 1, 2, 3, 4, 9], [0, 6, 7, 8, 1, 2, 3, 4, 5, 9], [0, 7, 8, 1, 2, 3, 4, 5, 6, 9], [0, 8, 1, 2, 3, 4, 5, 6, 7, 9]],  // rotate8
 			[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 3, 4, 5, 6, 7, 8, 1, 2, 9], [0, 5, 6, 7, 8, 1, 2, 3, 4, 9], [0, 7, 8, 1, 2, 3, 4, 5, 6, 9], [0, 1, 8, 7, 6, 5, 4, 3, 2, 9], [0, 7, 6, 5, 4, 3, 2, 1, 8, 9], [0, 5, 4, 3, 2, 1, 8, 7, 6, 9], [0, 3, 2, 1, 8, 7, 6, 5, 4, 9]],  // rotate4reflect
@@ -558,12 +561,12 @@
 		];
 
 		// One dimensional
-		this.ruleTableSymmetryRemap[this.ruleTableOneD] = [
+		this.ruleTableSymmetryRemap[PatternConstants.ruleTableOneD] = [
 			[[0, 1, 2, 3], [0, 2, 1, 3]]  // reflect
 		];
 
 		// Hexagonal
-		this.ruleTableSymmetryRemap[this.ruleTableHex] = [
+		this.ruleTableSymmetryRemap[PatternConstants.ruleTableHex] = [
 			[[0, 1, 2, 3, 4, 5, 6, 7], [0, 4, 5, 6, 1, 2, 3, 7]],  // rotate2
 			[[0, 1, 2, 3, 4, 5, 6, 7], [0, 3, 4, 5, 6, 1, 2, 7], [0, 5, 6, 1, 2, 3, 4, 7]], // rotate3
 			[[0, 1, 2, 3, 4, 5, 6, 7], [0, 2, 3, 4, 5, 6, 1, 7], [0, 3, 4, 5, 6, 1, 2, 7], [0, 4, 5, 6, 1, 2, 3, 7], [0, 5, 6, 1, 2, 3, 4, 7], [0, 6, 1, 2, 3, 4, 5, 7]],  // rotate6
@@ -782,7 +785,6 @@
 
 		// rule table output
 		this.ruleTableOutput = null;
-		/** @type {number} */ this.ruleTableOutputSize = 0;
 
 		// rule table number of compressed rules
 		/** @type {number} */ this.ruleTableCompressedRules = 0;
@@ -6652,52 +6654,20 @@
 		}
 	};
 
-	// return an array of all permutations of the input array
-	PatternManager.prototype.getPermutations = function(permutation) {
-		var length = permutation.length,
-			result = [new Uint8Array(length + 1)],
-			c = new Uint8Array(length),
-			i = 1,
-			k,
-			p;
-
-		result[0].set(permutation, 1);
-		while (i < length) {
-			if (c[i] < i) {
-				k = i % 2 && c[i];
-				p = permutation[i];
-				permutation[i] = permutation[k];
-				permutation[k] = p;
-				++c[i];
-				i = 1;
-				result[result.length] = new Uint8Array(length + 1);
-				result[result.length - 1].set(permutation, 1);
-				//result.push(permutation.slice());
-			} else {
-				c[i] = 0;
-				++i;
-			}
-		}
-		return result;
-	};
-
 	// pack a single transition
-	PatternManager.prototype.packTransition = function(inputs, pIndex, output, pattern) {
-		var	lut = pattern.ruleTableLUT,
-			/** @type {number} */ i = 0,
+	PatternManager.prototype.packTransition = function(inputs, output, pattern, outputList, lut) {
+		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
-			outputList = pattern.ruleTableOutput,
 			/** @const {number} */ nInputs = inputs.length,
 			/** @const {number} */ nBits = 32,
-			/** @const {number} */ iRule = pattern.ruleTableOutputSize,
+			/** @const {number} */ iRule = outputList.length,
 			/** @const {number} */ iBit = iRule % nBits,
 			/** @const {number} */ mask = 1 << iBit,
 			possibles = null,
 			/** @type {number} */ iRuleC = (iRule - iBit) / nBits; // compress index of rule
 
 		// add the output to the result
-		outputList[pattern.ruleTableOutputSize] = output;
-		pattern.ruleTableOutputSize += 1;
+		outputList[outputList.length] = output;
 
 		// add a new compressed rule if required
 		if (iRuleC >= pattern.ruleTableCompressedRules) {
@@ -6711,63 +6681,87 @@
 
 		// populate the LUT
 		for (i = 0; i < nInputs; i += 1) {
-			possibles = inputs[pIndex[i]];
+			possibles = inputs[i];
 			for (j = 0; j < possibles.length; j += 1) {
 				lut[i][possibles[j]][iRuleC] |= mask;
 			}
 		}
 	};
 
+	// get the next permutation of an array of arrays (ignoring the first element)
+	PatternManager.prototype.nextPermutation = function(source) {
+		var l = source.length,
+			i = l - 2,
+			j = l - 1,
+			h = 0,
+			swap = null,
+			result = false;
+
+		// only process arrays with 2 or more elements
+        if (l > 1) {
+			// find the decreasing element
+			while ((i >= 0) && (this.compareArrays(source[i], source[i + 1]) >= 0)) {
+				i -= 1;
+			}
+			if (i > 0) {
+				result = true;
+				// find next larger number
+				while ((j >= i) && (this.compareArrays(source[j], source[i]) <= 0)) {
+					j -= 1;
+				}
+				swap = source[i];
+				source[i] = source[j];
+				source[j] = swap;
+
+				// reverse elements
+				h = ((l - (i + 1)) / 2) | 0;
+				for (j = 0; j < h; j += 1) {
+					swap = source[l - j - 1];
+					source[l - j - 1] = source[i + 1 + j];
+					source[i + 1 + j] = swap;
+				}
+			}
+		}
+
+		return result;
+	};
+
+	// compare arrays of arrays function
+	PatternManager.prototype.compareArrays = function(a, b) {
+		var i = 0,
+			aLen = a.length;
+
+		if (aLen === b.length) {
+			while (i < aLen && a[i] === b[i]) {
+				i += 1;
+			}
+			if (i === aLen) {
+				return 0;
+			}
+			return a[i] - b[i];
+		}
+		return aLen - b.length;
+	};
+
 	// pack transitions for rule table
 	PatternManager.prototype.packTransitions = function(symmetry, nSymmetries, nInputs, transitionTable, pattern) {
 		var /** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
-			/** @const {number} */ neighbourhood = pattern.ruleTableNeighbourhood,
+			/** @type {number} */ k = 0,
 			/** @type {Array<number>} */ inputs = [],
-			/** @type {Array<number>} */ permutedInputs = new Uint8Array(nInputs),
-			/** @type {Array<Array<number>>} */ permutations = [],
+			/** @type {Array<number>} */ permutedInputs = [],
 			/** @type {Array<number>} */ remap = [],
-			/** @type {number} */ size = 0,
-			/** @type {number} */ output = 0;
-
-		// populate the permuted inputs index
-		if (symmetry === nSymmetries - 1) {
-			permutedInputs = new Uint8Array(nInputs - 1);
-			for (i = 0; i < permutedInputs.length; i += 1) {
-				permutedInputs[i] = i + 1;
-			}
-		} else {
-			for (i = 0; i < permutedInputs.length; i += 1) {
-				permutedInputs[i] = i;
-			}
-		}
-
-		// compute the output size
-		if (symmetry === 0) {
-			// none - size is number of transitions
-			size = transitionTable.length;
-		} else if (symmetry === nSymmetries - 1) {
-			// permute - size is permutations * transitions
-			permutations = this.getPermutations(permutedInputs);
-			size = permutations.length * transitionTable.length;
-		} else {
-			// other symmetry - size is remap size * transitions
-			remap = this.ruleTableSymmetryRemap[neighbourhood][symmetry - 1];  // -1 offset since "none" isn't in the list
-			size = remap.length * transitionTable.length;
-		}
+			/** @type {number} */ output = 0,
+			/** @type {Array<number>} */ outputList = [],
+			/** @type {Array<Array<Array<number>>>} */ lut = [];
 
 		// allocate the LUT
-		pattern.ruleTableLUT = [];
 		for (i = 0; i < nInputs; i += 1) {
-			pattern.ruleTableLUT[i] = [];
+			lut[i] = [];
 			for (j = 0; j < pattern.ruleTableStates; j += 1) {
-				pattern.ruleTableLUT[i][j] = [];
+				lut[i][j] = [];
 			}
 		}
-
-		// allocate the output
-		pattern.ruleTableOutput = new Uint8Array(size);
-		pattern.ruleTableOutputSize = 0;  // current element
 
 		// clear the compressed count
 		pattern.ruleTableCompressedRules = 0;
@@ -6776,21 +6770,47 @@
 		for (i = 0; i < transitionTable.length; i += 1) {
 			inputs = transitionTable[i].inputs;
 			output = transitionTable[i].output;
+
+			// check which symmetry is required
 			if (symmetry === 0) {
 				// none - permuted inputs are sequential
-				this.packTransition(inputs, permutedInputs, output, pattern);
+				this.packTransition(inputs, output, pattern, outputList, lut);
 			} else if (symmetry === nSymmetries - 1) {
-				// permute - get all permutations
-				for (j = 0; j < permutations.length; j += 1) {
-					this.packTransition(inputs, permutations[j], output, pattern);
+				// permute - start with sorted list (from element 1 onwards)
+				permutedInputs = inputs.slice(1).sort(this.compareArrays);
+				for (j = 0; j < permutedInputs.length; j += 1) {
+					inputs[j + 1] = permutedInputs[j];
 				}
+				do {
+					this.packTransition(inputs, output, pattern, outputList, lut);
+					// permute from element 1 onwards
+				} while(this.nextPermutation(inputs));
 			} else {
 				// other symmetry - get the remaps for the given symmetry
+				remap = this.ruleTableSymmetryRemap[pattern.ruleTableNeighbourhood][symmetry - 1];
 				for (j = 0; j < remap.length; j += 1) {
-					this.packTransition(inputs, remap[j], output, pattern);
+					for (k = 0; k < inputs.length; k += 1) {
+						permutedInputs[k] = inputs[remap[j][k]];
+					}
+					this.packTransition(permutedInputs, output, pattern, outputList, lut);
 				}
 			}
 		}
+
+		// save the LUT
+		pattern.ruleTableLUT = [];
+		for (i = 0; i < nInputs; i += 1) {
+			pattern.ruleTableLUT[i] = [];
+			for (j = 0; j < pattern.ruleTableStates; j += 1) {
+				// @ts-ignore
+				pattern.ruleTableLUT[i][j] = new Uint32Array(lut[i][j].length);
+				pattern.ruleTableLUT[i][j].set(lut[i][j]);
+			}
+		}
+
+		// save the outputs
+		pattern.ruleTableOutput = new Uint8Array(outputList.length);
+		pattern.ruleTableOutput.set(outputList);
 	};
 
 	// decode rule table table
@@ -6806,13 +6826,13 @@
 			/** @type {Array<number>} */ varValues = [],
 			/** @type {number} */ readState = 0,
 			/** @type {string} */ readVar = "",
-			/** @type {object} */ variables = {},
-			/** @type {object} */ boundVariableIndices = {},
+			variables = {},
+			boundVariableIndices = {},
 			/** @type {number} */ numVars = 0,
 			/** @type {Array<Array<number>>} */ inputs = [],
 			/** @type {number} */ output = 0,
 			/** @type {number} */ charVal = 0,
-			/** @type {Array<object>} */ transitionTable = [],
+			transitionTable = [],
 			/** @type {Array<string>} */ lineTokens = [],
 			/** @type {Array<string>} */ boundVars = [],
 			/** @type {number} */ varCount = 0,
@@ -7104,6 +7124,8 @@
 			reader.skipNewlines();
 			nextToken = reader.getNextToken();
 			if (nextToken !== "" && nextToken[0] === "@") {
+				// if the token was a new section then rewind one step in the reader
+				reader.stepBack();
 				nextToken = "";
 			}
 		}
@@ -7119,7 +7141,7 @@
 			pattern.ruleTableNeighbourhood = neighbourhood;
 
 			// check for hex grid
-			if (neighbourhood === this.ruleTableHex) {
+			if (neighbourhood === PatternConstants.ruleTableHex) {
 				pattern.isHex = true;
 			} else {
 				pattern.isHex = false;
@@ -7526,6 +7548,13 @@
 			// check if a pattern was loaded
 			if (this.failureReason !== "" && !this.tooBig) {
 				newPattern.ruleName = newPattern.originalRuleName;
+				if (newPattern.gridType !== -1) {
+					index = newPattern.ruleName.lastIndexOf(":");
+					newPattern.boundedGridDef = newPattern.ruleName.substr(index);
+					newPattern.ruleName = newPattern.ruleName.substr(0, index);
+				} else {
+					newPattern.boundedGridDef = "";
+				}
 
 				// check the rule tree cache
 				if (RuleTreeCache.loadIfExists(newPattern)) {
@@ -7677,6 +7706,7 @@
 	};
 
 	// create the global interface
+	window["PatternConstants"] = PatternConstants;
 	window["PatternManager"] = PatternManager;
 	window["Pattern"] = Pattern;
 	window["RuleTreeCache"] = RuleTreeCache;

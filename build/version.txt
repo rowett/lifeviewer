@@ -1,5 +1,5 @@
 Build 462
-- RuleTable parser
+- added RuleTable algo support
 
 Build 461
 - further performance improvements to tokenizer
