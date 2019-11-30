@@ -32,6 +32,7 @@ LifeViewer features:
 * Support for multiple embedded LifeViewers and/or a single popup LifeViewer.
 * Ability to step back to earlier generations for all patterns and reverse playback for reversible Margolus patterns.
 * Pattern annotation with Labels, Arrows, Lines and Polygons.
+* Ability to fetch RuleTable rules from a Repository
 * Programatically pasting cells onto the grid at defined intervals (for example: glider injection).
 * Editor with unlimitied undo/redo and multiple clipboards.
 
@@ -41,7 +42,7 @@ LifeViewer supports several different pattern formats, rules and neighbourhoods,
 Topic|Supported
 -----|---------
 Pattern formats|RLE, Life 1.06, Life 1.05, Cells
-Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP, Larger than Life, HROT, Alternate, Margolus, PCA
+Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP, Larger than Life, HROT, Alternate, Margolus, PCA, RuleTable (@TABLE, @TREE and @COLORS)
 Bounded Grid|Plane, Torus, Klein, Cross-Surface, Sphere
 States|2 state, [R]History, Niemiec, Generations
 Neighbourhoods|Moore, Von Neumann, 1D, Hexagonal, Triangular, Circular
@@ -75,10 +76,12 @@ Neighbourhoods|Moore, Von Neumann, 1D, Hexagonal, Triangular, Circular
   1. The class name of the `<div>` element that contains an element containing the pattern definition and the `<canvas>` element.
   2. The name of the element in that `<div>` that contains the pattern definition.
 In the example above the `<div>` class name is **viewer** and the pattern definition element is **textarea**.
-* The content part of the `<meta>` tag may also contain up to three optional items:
+* The content part of the `<meta>` tag may also contain up to five optional items:
   1. *an integer* (example: "30") - if specified then sets the height in pixels of the element containing the pattern definition.
   2. "*hide*" - if specified then hide the `<canvas>` element on browsers that don't support LifeViewer.
   3. "*limit*" - if specified then limit the width of LifeViewer to the width of the element containing the pattern.
+  4. *a path beginning with /* - if specified then defines the path to a local Repository containing RuleTable rules
+  5. *a string beginning with .* - if specified then defines a rule name postfix to add to rule requests to the Repository
 
 You can put multiple LifeViewers on a single page. Each time you want one just specify an enclosing `<div>` containing both the `<textarea>` with the pattern definition and a `<canvas>`.
 ```

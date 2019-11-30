@@ -17675,6 +17675,12 @@
 		var gridRow1 = null,
 			nextRow = null,
 			lut = this.ruleTableLUT,
+			lut0 = lut[0],
+			lut1 = lut[1],
+			lut2 = lut[2],
+			lute = null,
+			lutw = null,
+			lutc = null,
 			output = this.ruleTableOutput,
 			nCompressed = this.ruleTableCompressedRules,
 			isMatch = 0,
@@ -17688,7 +17694,6 @@
 			c = 0,
 			
 			state = 0,
-			state32 = 0,
 			y = 0,
 			x = 0,
 			bit = 0,
@@ -17698,14 +17703,14 @@
 			colourTileGrid = this.colourTileGrid,
 			colourTileRow = null,
 			grid = null,
-			nextGrid32 = null,
+			nextGrid = null,
 			grid32 = null,
 		    tileGrid = null, nextTileGrid = null,
 		    tileRow = null, nextTileRow = null,
 		    belowNextTileRow = null, aboveNextTileRow = null,
 		    tiles = 0, nextTiles = 0,
 		    belowNextTiles = 0, aboveNextTiles = 0,
-			bottomY = 0, topY = 0, leftX = 0,
+			bottomY = 0, topY = 0, leftX = 0, rightX = 0,
 
 			// whether cells were set in the tile
 			tileCells = 0,
@@ -17763,13 +17768,13 @@
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextColourGrid;
 			grid32 = this.nextColourGrid32;
-			nextGrid32 = this.colourGrid32;
+			nextGrid = this.colourGrid;
 			tileGrid = this.nextTileGrid;
 			nextTileGrid = this.tileGrid;
 		} else {
 			grid = this.colourGrid;
 			grid32 = this.colourGrid32;
-			nextGrid32 = this.nextColourGrid32;
+			nextGrid = this.nextColourGrid;
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
 		}
@@ -17815,6 +17820,7 @@
 		for (th = 0; th < tileGrid.length; th += 1) {
 			// set initial tile column
 			leftX = 0;
+			rightX = leftX + xSize;
 
 			// get the tile row
 			tileRow = tileGrid[th];
@@ -17871,7 +17877,7 @@
 								gridRow1 = grid[y];
 
 								// get output row
-								nextRow = nextGrid32[y];
+								nextRow = nextGrid[y];
 
 								// column index
 								colIndex = 32768;
@@ -17888,557 +17894,53 @@
 								e = gridRow1[x];
 
 								// process each cell along the tile row
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
+								while (x < rightX - 1) {
+									w = c;
+									c = e;
+									e = gridRow1[x + 1];
+									lutc = lut0[c];
+									lutw = lut1[w];
+									lute = lut2[e];
 									state = c;
-								}
-								state32 = state;
-
-								// check if state is alive
-								if (state > 0) {
-									population += 1;
-
-									// update births
-									if (c === 0) {
-										births += 1;
+									for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
+										isMatch = lutc[iRuleC] & lutw[iRuleC] & lute[iRuleC];
+										if (isMatch) {
+											iBit = 0;
+											mask = 1;
+											while (!(isMatch & mask)) {
+												iBit += 1;
+												mask <<= 1;
+											}
+											state = output[(iRuleC << 5) + iBit];
+											break;
+										}
 									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									// check for death
-									if (c > 0) {
-										// update deaths
-										deaths += 1;
-									}
-								}
 	
-								// next column
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 1
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
+									// check if state is alive
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+	
+										// update births
+										if (c === 0) {
+											births += 1;
 										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 8);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 2
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										// check for death
+										if (c > 0) {
+											// update deaths
+											deaths += 1;
 										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
 									}
+		
+									// next column
+									colIndex >>= 1;
+									x += 1;
 								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 16);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
 
-								// unroll 3
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 24);
-								nextRow[x >> 2] = state32;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 4
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 5
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 8);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 6
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 16);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 7
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 24);
-								nextRow[x >> 2] = state32;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 8
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 9
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 8);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 10
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 16);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 11
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 24);
-								nextRow[x >> 2] = state32;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 12
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 13
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 8);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 14
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 16);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 15 (and handle right edge)
+								// handle right edge
 								w = c;
 								c = e;
 								if (x === width - 1) {
@@ -18446,8 +17948,12 @@
 								} else {
 									e = gridRow1[x + 1];
 								}
+								lutc = lut0[c];
+								lutw = lut1[w];
+								lute = lut2[e];
+								state = c;
 								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][w][iRuleC] & lut[2][e][iRuleC];
+									isMatch = lutc[iRuleC] & lutw[iRuleC] & lute[iRuleC];
 									if (isMatch) {
 										iBit = 0;
 										mask = 1;
@@ -18459,11 +17965,7 @@
 										break;
 									}
 								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 24);
-								nextRow[x >> 2] = state32;
+								nextRow[x] = state;
 								if (state > 0) {
 									population += 1;
 									if (c === 0) {
@@ -18613,6 +18115,7 @@
 
 						// next tile columns
 						leftX += xSize;
+						rightX += xSize;
 					}
 
 					// save the tile groups
@@ -18628,6 +18131,7 @@
 				} else {
 					// skip tile set
 					leftX += xSize << 4;
+					rightX += xSize << 4;
 				}
 			}
 
@@ -18766,6 +18270,16 @@
 			gridRow2 = null,
 			nextRow = null,
 			lut = this.ruleTableLUT,
+			lut0 = lut[0],
+			lut1 = lut[1],
+			lut2 = lut[2],
+			lut3 = lut[3],
+			lut4 = lut[4],
+			lutn = null,
+			lute = null,
+			luts = null,
+			lutw = null,
+			lutc = null,
 			output = this.ruleTableOutput,
 			nCompressed = this.ruleTableCompressedRules,
 			isMatch = 0,
@@ -18781,7 +18295,6 @@
 			c = 0,
 			
 			state = 0,
-			state32 = 0,
 			y = 0,
 			x = 0,
 			bit = 0,
@@ -18791,14 +18304,14 @@
 			colourTileGrid = this.colourTileGrid,
 			colourTileRow = null,
 			grid = null,
-			nextGrid32 = null,
+			nextGrid = null,
 			grid32 = null,
 		    tileGrid = null, nextTileGrid = null,
 		    tileRow = null, nextTileRow = null,
 		    belowNextTileRow = null, aboveNextTileRow = null,
 		    tiles = 0, nextTiles = 0,
 		    belowNextTiles = 0, aboveNextTiles = 0,
-			bottomY = 0, topY = 0, leftX = 0,
+			bottomY = 0, topY = 0, leftX = 0, rightX = 0,
 
 			// whether cells were set in the tile
 			tileCells = 0,
@@ -18856,13 +18369,13 @@
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextColourGrid;
 			grid32 = this.nextColourGrid32;
-			nextGrid32 = this.colourGrid32;
+			nextGrid = this.colourGrid;
 			tileGrid = this.nextTileGrid;
 			nextTileGrid = this.tileGrid;
 		} else {
 			grid = this.colourGrid;
 			grid32 = this.colourGrid32;
-			nextGrid32 = this.nextColourGrid32;
+			nextGrid = this.nextColourGrid;
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
 		}
@@ -18908,6 +18421,7 @@
 		for (th = 0; th < tileGrid.length; th += 1) {
 			// set initial tile column
 			leftX = 0;
+			rightX = leftX + xSize;
 
 			// get the tile row
 			tileRow = tileGrid[th];
@@ -18985,7 +18499,7 @@
 								}
 
 								// get output row
-								nextRow = nextGrid32[y];
+								nextRow = nextGrid[y];
 
 								// column index
 								colIndex = 32768;
@@ -19002,602 +18516,58 @@
 								e = gridRow1[x];
 
 								// process each cell along the tile row
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
+								while (x < rightX - 1) {
+									w = c;
+									c = e;
+									n = gridRow0[x];
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									lutc = lut0[c];
+									lutn = lut1[n];
+									lute = lut2[e];
+									luts = lut3[s];
+									lutw = lut4[w];
 									state = c;
-								}
-								state32 = state;
-
-								// check if state is alive
-								if (state > 0) {
-									population += 1;
-
-									// update births
-									if (c === 0) {
-										births += 1;
+									for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
+										isMatch = lutc[iRuleC] & lutn[iRuleC] & lute[iRuleC] & 
+											luts[iRuleC] & lutw[iRuleC];
+										if (isMatch) {
+											iBit = 0;
+											mask = 1;
+											while (!(isMatch & mask)) {
+												iBit += 1;
+												mask <<= 1;
+											}
+											state = output[(iRuleC << 5) + iBit];
+											break;
+										}
 									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									// check for death
-									if (c > 0) {
-										// update deaths
-										deaths += 1;
-									}
-								}
+
+									// check if state is alive
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
 	
-								// next column
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 1
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
+										// update births
+										if (c === 0) {
+											births += 1;
 										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 8);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 2
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										// check for death
+										if (c > 0) {
+											// update deaths
+											deaths += 1;
 										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
 									}
+	
+									// next column
+									colIndex >>= 1;
+									x += 1;
 								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 16);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
 
-								// unroll 3
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 24);
-								nextRow[x >> 2] = state32;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 4
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 5
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 8);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 6
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 16);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 7
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 24);
-								nextRow[x >> 2] = state32;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 8
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 9
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 8);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 10
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 16);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 11
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 24);
-								nextRow[x >> 2] = state32;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 12
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 13
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 8);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 14
-								w = c;
-								c = e;
-								n = gridRow0[x];
-								e = gridRow1[x + 1];
-								s = gridRow2[x];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 16);
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 15 (and handle right edge)
+								// handle right edge
 								w = c;
 								c = e;
 								n = gridRow0[x];
@@ -19607,9 +18577,15 @@
 									e = gridRow1[x + 1];
 								}
 								s = gridRow2[x];
+								lutc = lut0[c];
+								lutn = lut1[n];
+								lute = lut2[e];
+								luts = lut3[s];
+								lutw = lut4[w];
+								state = c;
 								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] & 
-										lut[3][s][iRuleC] & lut[4][w][iRuleC];
+									isMatch = lutc[iRuleC] & lutn[iRuleC] & lute[iRuleC] & 
+										luts[iRuleC] & lutw[iRuleC];
 									if (isMatch) {
 										iBit = 0;
 										mask = 1;
@@ -19621,11 +18597,7 @@
 										break;
 									}
 								}
-								if (!isMatch) {
-									state = c;
-								}
-								state32 |= (state << 24);
-								nextRow[x >> 2] = state32;
+								nextRow[x] = state;
 								if (state > 0) {
 									population += 1;
 									if (c === 0) {
@@ -19775,6 +18747,7 @@
 
 						// next tile columns
 						leftX += xSize;
+						rightX += xSize;
 					}
 
 					// save the tile groups
@@ -19790,6 +18763,7 @@
 				} else {
 					// skip tile set
 					leftX += xSize << 4;
+					rightX += xSize << 4;
 				}
 			}
 
@@ -19928,6 +18902,24 @@
 			gridRow2 = null,
 			nextRow = null,
 			lut = this.ruleTableLUT,
+			lut0 = lut[0],
+			lut1 = lut[1],
+			lut2 = lut[2],
+			lut3 = lut[3],
+			lut4 = lut[4],
+			lut5 = lut[5],
+			lut6 = lut[6],
+			lut7 = lut[7],
+			lut8 = lut[8],
+			lutnw = null,
+			lutn = null,
+			lutne = null,
+			lutw = null,
+			lutc = null,
+			lute = null,
+			lutsw = null,
+			luts = null,
+			lutse = null,
 			output = this.ruleTableOutput,
 			nCompressed = this.ruleTableCompressedRules,
 			isMatch = 0,
@@ -19963,7 +18955,7 @@
 		    belowNextTileRow = null, aboveNextTileRow = null,
 		    tiles = 0, nextTiles = 0,
 		    belowNextTiles = 0, aboveNextTiles = 0,
-			bottomY = 0, topY = 0, leftX = 0,
+			bottomY = 0, topY = 0, leftX = 0, rightX = 0,
 
 			// whether cells were set in the tile
 			tileCells = 0,
@@ -20073,6 +19065,7 @@
 		for (th = 0; th < tileGrid.length; th += 1) {
 			// set initial tile column
 			leftX = 0;
+			rightX = leftX + xSize;
 
 			// get the tile row
 			tileRow = tileGrid[th];
@@ -20173,675 +19166,67 @@
 								e = gridRow1[x];
 
 								// process each cell along the tile row
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
+								while (x < rightX - 1) {
+									nw = n;
+									n = ne;
+									ne = gridRow0[x + 1];
+									w = c;
+									c = e;
+									e = gridRow1[x + 1];
+									sw = s;
+									s = se;
+									se = gridRow2[x + 1];
 									state = c;
-								}
-
-								// check if state is alive
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-
-									// update births
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									// check for death
-									if (c > 0) {
-										// update deaths
-										deaths += 1;
-									}
-								}
-
-								// next column
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 1
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
+									lutc = lut0[c];
+									lutn = lut1[n];
+									lutne = lut2[ne];
+									lute = lut3[e];
+									lutse = lut4[se];
+									luts = lut5[s];
+									lutsw = lut6[sw];
+									lutw = lut7[w];
+									lutnw = lut8[nw];
+									for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
+										isMatch = lutc[iRuleC] & lutn[iRuleC] & lutne[iRuleC] & 
+											lute[iRuleC] & lutse[iRuleC] & luts[iRuleC] & 
+											lutsw[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
+										if (isMatch) {
+											iBit = 0;
+											mask = 1;
+											while (!(isMatch & mask)) {
+												iBit += 1;
+												mask <<= 1;
+											}
+											state = output[(iRuleC << 5) + iBit];
+											break;
 										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
 									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 2
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
+	
+									// check if state is alive
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+	
+										// update births
+										if (c === 0) {
+											births += 1;
 										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 3
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										// check for death
+										if (c > 0) {
+											// update deaths
+											deaths += 1;
 										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
 									}
+	
+									// next column
+									colIndex >>= 1;
+									x += 1;
 								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
 
-								// unroll 4
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 5
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 6
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 7
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 8
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 9
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 10
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 11
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 12
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 13
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 14
-								nw = n;
-								n = ne;
-								ne = gridRow0[x + 1];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								sw = s;
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 15 (and handle right edge)
+								// handle right edge
 								nw = n;
 								n = ne;
 								w = c;
@@ -20857,10 +19242,20 @@
 									e = gridRow1[x + 1];
 									se = gridRow2[x + 1];
 								}
+								lutc = lut0[c];
+								lutn = lut1[n];
+								lutne = lut2[ne];
+								lute = lut3[e];
+								lutse = lut4[se];
+								luts = lut5[s];
+								lutsw = lut6[sw];
+								lutw = lut7[w];
+								lutnw = lut8[nw];
+								state = c;
 								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][ne][iRuleC] & 
-										lut[3][e][iRuleC] & lut[4][se][iRuleC] & lut[5][s][iRuleC] & 
-										lut[6][sw][iRuleC] & lut[7][w][iRuleC] & lut[8][nw][iRuleC];
+									isMatch = lutc[iRuleC] & lutn[iRuleC] & lutne[iRuleC] & 
+										lute[iRuleC] & lutse[iRuleC] & luts[iRuleC] & 
+										lutsw[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
 									if (isMatch) {
 										iBit = 0;
 										mask = 1;
@@ -20871,9 +19266,6 @@
 										state = output[(iRuleC << 5) + iBit];
 										break;
 									}
-								}
-								if (!isMatch) {
-									state = c;
 								}
 								nextRow[x] = state;
 								if (state > 0) {
@@ -21025,6 +19417,7 @@
 
 						// next tile columns
 						leftX += xSize;
+						rightX += xSize;
 					}
 
 					// save the tile groups
@@ -21040,6 +19433,7 @@
 				} else {
 					// skip tile set
 					leftX += xSize << 4;
+					rightX += xSize << 4;
 				}
 			}
 
@@ -21178,6 +19572,20 @@
 			gridRow2 = null,
 			nextRow = null,
 			lut = this.ruleTableLUT,
+			lut0 = lut[0],
+			lut1 = lut[1],
+			lut2 = lut[2],
+			lut3 = lut[3],
+			lut4 = lut[4],
+			lut5 = lut[5],
+			lut6 = lut[6],
+			lutn = null,
+			lute = null,
+			luts = null,
+			lutw = null,
+			lutc = null,
+			lutnw = null,
+			lutse = null,
 			output = this.ruleTableOutput,
 			nCompressed = this.ruleTableCompressedRules,
 			isMatch = 0,
@@ -21211,7 +19619,7 @@
 		    belowNextTileRow = null, aboveNextTileRow = null,
 		    tiles = 0, nextTiles = 0,
 		    belowNextTiles = 0, aboveNextTiles = 0,
-			bottomY = 0, topY = 0, leftX = 0,
+			bottomY = 0, topY = 0, leftX = 0, rightX = 0,
 
 			// whether cells were set in the tile
 			tileCells = 0,
@@ -21321,6 +19729,7 @@
 		for (th = 0; th < tileGrid.length; th += 1) {
 			// set initial tile column
 			leftX = 0;
+			rightX = leftX + xSize;
 
 			// get the tile row
 			tileRow = tileGrid[th];
@@ -21420,645 +19829,63 @@
 								e = gridRow1[x];
 
 								// process each cell along the tile row
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
+								while (x < rightX - 1) {
+									nw = n;
+									n = gridRow0[x];
+									w = c;
+									c = e;
+									e = gridRow1[x + 1];
+									s = se;
+									se = gridRow2[x + 1];
+									lutc = lut0[c];
+									lutn = lut1[n];
+									lute = lut2[e];
+									lutse = lut3[se];
+									luts = lut4[s];
+									lutw = lut5[w];
+									lutnw = lut6[nw];
 									state = c;
-								}
-
-								// check if state is alive
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-
-									// update births
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									// check for death
-									if (c > 0) {
-										// update deaths
-										deaths += 1;
-									}
-								}
-
-								// next column
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 1
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
+									for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
+										isMatch = lutc[iRuleC] & lutn[iRuleC] & lute[iRuleC] &
+											lutse[iRuleC] & luts[iRuleC] & lutw[iRuleC] &
+											lutnw[iRuleC];
+										if (isMatch) {
+											iBit = 0;
+											mask = 1;
+											while (!(isMatch & mask)) {
+												iBit += 1;
+												mask <<= 1;
+											}
+											state = output[(iRuleC << 5) + iBit];
+											break;
 										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
 									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
 
-								// unroll 2
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
+									// check if state is alive
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+	
+										// update births
+										if (c === 0) {
+											births += 1;
 										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 3
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										// check for death
+										if (c > 0) {
+											// update deaths
+											deaths += 1;
 										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
 									}
+	
+									// next column
+									colIndex >>= 1;
+									x += 1;
 								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
 
-								// unroll 4
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 5
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 6
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 7
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 8
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 9
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 10
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 11
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 12
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 13
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 14
-								nw = n;
-								n = gridRow0[x];
-								w = c;
-								c = e;
-								e = gridRow1[x + 1];
-								s = se;
-								se = gridRow2[x + 1];
-								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
-									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
-										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
-									}
-								}
-								if (!isMatch) {
-									state = c;
-								}
-								nextRow[x] = state;
-								if (state > 0) {
-									population += 1;
-									if (c === 0) {
-										births += 1;
-									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								} else {
-									if (c > 0) {
-										deaths += 1;
-									}
-								}
-								colIndex >>= 1;
-								x += 1;
-
-								// unroll 15 (and handle right edge)
+								// handle right edge
 								nw = n;
 								n = gridRow0[x];
 								w = c;
@@ -22071,10 +19898,18 @@
 									e = gridRow1[x + 1];
 									se = gridRow2[x + 1];
 								}
+								lutc = lut0[c];
+								lutn = lut1[n];
+								lute = lut2[e];
+								lutse = lut3[se];
+								luts = lut4[s];
+								lutw = lut5[w];
+								lutnw = lut6[nw];
+								state = c;
 								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lut[0][c][iRuleC] & lut[1][n][iRuleC] & lut[2][e][iRuleC] &
-										lut[3][se][iRuleC] & lut[4][s][iRuleC] & lut[5][w][iRuleC] &
-										lut[6][nw][iRuleC];
+									isMatch = lutc[iRuleC] & lutn[iRuleC] & lute[iRuleC] &
+										lutse[iRuleC] & luts[iRuleC] & lutw[iRuleC] &
+										lutnw[iRuleC];
 									if (isMatch) {
 										iBit = 0;
 										mask = 1;
@@ -22085,9 +19920,6 @@
 										state = output[(iRuleC << 5) + iBit];
 										break;
 									}
-								}
-								if (!isMatch) {
-									state = c;
 								}
 								nextRow[x] = state;
 								if (state > 0) {
@@ -22239,6 +20071,7 @@
 
 						// next tile columns
 						leftX += xSize;
+						rightX += xSize;
 					}
 
 					// save the tile groups
@@ -22254,6 +20087,7 @@
 				} else {
 					// skip tile set
 					leftX += xSize << 4;
+					rightX += xSize << 4;
 				}
 			}
 

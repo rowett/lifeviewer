@@ -1,8 +1,11 @@
+Build 464
+- improved @TABLE runtime performance
+
 Build 463
-- added hexaganal and one dimensional neighbourhood @TABLE runtimes
+- added hexagonal and one dimensional neighbourhood @TABLE runtimes
 - fixed colours for @TREE or @TABLE rules with only 2 states
 - added improved error reporting for invalid @TREE or @TABLE rules
-- allow var redefenition in @TABLE rules
+- allow var redefinition in @TABLE rules
 
 Build 462
 - added @TABLE support
