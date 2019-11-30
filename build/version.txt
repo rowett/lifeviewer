@@ -1,3 +1,8 @@
+Build 463
+- added hex neighbourhood @TABLE runtime
+- fixed colours for @TREE or @TABLE rules with only 2 states
+- added improved error reporting for invalid @TREE or @TABLE rules
+
 Build 462
 - added @TABLE support
 - an optional rule name postfix may be specified with the <meta> tag on the web page hosting the Viewer

@@ -189,6 +189,7 @@
 				pattern.ruleTreeBase = record.base;
 				pattern.ruleTreeA = record.ruleA;
 				pattern.ruleTreeB = record.ruleB;
+				pattern.isHex = false;
 			} else {
 				pattern.ruleTableStates = record.states;
 				pattern.ruleTableNeighbourhood = record.neighbourhood;
@@ -196,6 +197,11 @@
 				pattern.ruleTableOutput = record.output;
 				pattern.ruleTableLUT = record.LUT;
 				pattern.ruleTableDups = record.dups;
+				if (pattern.ruleTableNeighbourhood === PatternConstants.ruleTableHex) {
+					pattern.isHex = true;
+				} else {
+					pattern.isHex = false;
+				}
 			}
 			pattern.ruleTreeColours = record.colours;
 			pattern.isNone = false;
@@ -6906,8 +6912,14 @@
 						states = reader.getNextTokenAsNumber();
 						if (states >= 2 && states <= 256) {
 							valid = true;
+						} else {
+							this.failureReason = this.ruleTableStates + " must be from 2 to 256";
 						}
+					} else {
+						this.failureReason = this.ruleTableStates + " must be numeric";
 					}
+				} else {
+					this.failureReason = this.ruleTableStates + " missing :";
 				}
 				break;
 
@@ -6930,6 +6942,11 @@
 						}
 					}
 					valid = found;
+					if (!found) {
+						this.failureReason = this.ruleTableNeighbours + " invalid";
+					}
+				} else {
+					this.failureReason = this.ruleTableNeighbours + " missing :";
 				}
 				break;
 
@@ -6953,7 +6970,14 @@
 							}
 						}
 						valid = found;
+						if (!found) {
+							this.failureReason = this.ruleTableSymmetries + " invalid";
+						}
+					} else {
+						this.failureReason = this.ruleTableSymmetries + " missing :";
 					}
+				} else {
+					this.failureReason = this.ruleTableSymmetries + " must follow " + this.ruleTableNeighbours;
 				}
 				break;
 
@@ -6969,6 +6993,17 @@
 
 		// check if mandatory settings were read
 		if (states === -1 || neighbourhood === -1 || symmetry === -1) {
+			if (this.failureReason === "") {
+				if (states === -1) {
+					this.failureReason = "missing " + this.ruleTableStates;
+				} else {
+					if (neighbourhood === -1) {
+						this.failureReason = "missing " + this.ruleTableNeighbours;
+					} else {
+						this.failureReason = "missing " + this.ruleTableSymmetries;
+					}
+				}
+			}
 			valid = false;
 		}
 
@@ -6998,6 +7033,7 @@
 									varValues[varValues.length] = readState;
 								} else {
 									valid = false;
+									this.failureReason = "out of range value: " + varName + "=" + readState;
 								}
 							} else {
 								// next token is not numeric so should be a variable
@@ -7010,9 +7046,12 @@
 									}
 								} else {
 									valid = false;
+									this.failureReason = "var unknown assignment: " + varName + "=" + readVar;
 								}
 							}
 						}
+					} else {
+						this.failureReason = "missing =: " + varName;
 					}
 
 					// check if line decoded
@@ -7021,6 +7060,8 @@
 						variables[varName] = varValues;
 						numVars += 1;
 					}
+				} else {
+					this.failureReason = "duplicate var: " + varName;
 				}
 			} else {
 				// read transition line
@@ -7038,6 +7079,7 @@
 								inputs[inputs.length] = [charVal - 48];
 								i += 1;
 							} else {
+								this.failureReason = "expected only digits: " + nextToken;
 								valid = false;
 							}
 						}
@@ -7049,6 +7091,7 @@
 								// add to transition table
 								transitionTable[transitionTable.length] = {inputs: inputs, output: output};
 							} else {
+								this.failureReason = "expected only digits: " + nextToken;
 								valid = false;
 							}
 						}
@@ -7113,12 +7156,19 @@
 									// unbound variable
 									inputs[i] = variables[lineTokens[i]];
 								} else {
-									// state
-									readState = parseInt(lineTokens[i], 10);
-									if (readState < 0 || readState > states) {
-										valid = false;
+									// check if numeric
+									if (reader.isNumeric(lineTokens[i])) {
+										// get state
+										readState = parseInt(lineTokens[i], 10);
+										if (readState < 0 || readState >= states) {
+											this.failureReason = "state out of range: " + readState;
+											valid = false;
+										} else {
+											inputs[i] = [readState];
+										}
 									} else {
-										inputs[i] = [readState];
+										this.failureReason = "unknown variable: " + lineTokens[i];
+										valid = false;
 									}
 								}
 							}
@@ -7142,12 +7192,19 @@
 								// unbound variable
 								output = variables[lineTokens[i]];
 							} else {
-								// state
-								readState = parseInt(lineTokens[i], 10);
-								if (readState < 0 || readState > states) {
-									valid = false;
+								// check if numeric
+								if (reader.isNumeric(lineTokens[i])) {
+									// state
+									readState = parseInt(lineTokens[i], 10);
+									if (readState < 0 || readState >= states) {
+										this.failureReason = "output state out of range: " + readState;
+										valid = false;
+									} else {
+										output = readState;
+									}
 								} else {
-									output = readState;
+									this.failureReason = "unknown output variable: " + lineTokens[i];
+									valid = false;
 								}
 							}
 
@@ -7261,51 +7318,98 @@
 			/** @type {number} */ nodelevLen = 0,
 			/** @type {number} */ lev = 0, // was 1000,
 			/** @type {number} */ vcnt = 0,
-			/** @type {number} */ v = 0;
+			/** @type {number} */ v = 0,
+			/** @type {number} */ i = 0;
 
-		// read states setting
-		nextToken = reader.getNextTokenSkipNewline();
-		if (nextToken === this.ruleTreeStates) {
-			if (reader.getNextToken() === "=") {
-				if (reader.nextTokenIsNumeric()) {
-					states = reader.getNextTokenAsNumber();
-					if (states >= 2 && states <= 256) {
-						valid = true;
-					}
-				}
-			}
-		}
-
-		// read neighbours setting
-		if (valid) {
-			valid = false;
+		// read first three lines
+		i = 0;
+		valid = true;
+		while (valid && i < 3) {
 			nextToken = reader.getNextTokenSkipNewline();
-			if (nextToken === this.ruleTreeNeighbours) {
+			switch (nextToken) {
+
+			// num_states
+			case this.ruleTreeStates:
+				valid = false;
+				if (reader.getNextToken() === "=") {
+					if (reader.nextTokenIsNumeric()) {
+						states = reader.getNextTokenAsNumber();
+						if (states >= 2 && states <= 256) {
+							valid = true;
+						} else {
+							this.failureReason = this.ruleTreeStates + " must be from 2 to 256";
+						}
+					} else {
+						this.failureReason = this.ruleTreeStates + " must be numeric";
+					}
+				} else {
+					this.failureReason = this.ruleTreeStates + " missing =";
+				}
+				break;
+
+			// num_neighbors
+			case this.ruleTreeNeighbours:
+				valid = false;
 				if (reader.getNextToken() === "=") {
 					if (reader.nextTokenIsNumeric()) {
 						neighbours = reader.getNextTokenAsNumber();
 						if (neighbours === 4 || neighbours === 8) {
 							valid = true;
+						} else {
+							this.failureReason = this.ruleTreeNeighbours + " must be 4 or 8";
 						}
+					} else {
+						this.failureReason = this.ruleTreeNeighbours + " must be numeric";
 					}
+				} else {
+					this.failureReason = this.ruleTreeNeighbours + " missing =";
 				}
-			}
-		}
+				break;
 
-		// read nodes setting
-		if (valid) {
-			valid = false;
-			nextToken = reader.getNextTokenSkipNewline();
-			if (nextToken === this.ruleTreeNodes) {
+			// num_nodes
+			case this.ruleTreeNodes:
+				valid = false;
 				if (reader.getNextToken() === "=") {
 					if (reader.nextTokenIsNumeric()) {
 						nodes = reader.getNextTokenAsNumber();
 						if (nodes >= neighbours && nodes <= 100000000) {
 							valid = true;
+						} else {
+							this.failureReason = this.ruleTreeNodes + " out of range";
 						}
+					} else {
+						this.failureReason = this.ruleTreeNodes + " must be numeric";
+					}
+				} else {
+					this.failureReason = this.ruleTreeNodes + " missing =";
+				}
+				break;
+
+			default:
+				// anything else is an error
+				valid = false;
+				break;
+
+			}
+
+			// next line
+			i += 1;
+		}
+
+		// check if mandatory settings were read
+		if (states === -1 || neighbours === -1 || nodes === -1) {
+			if (this.failureReason === "") {
+				if (states === -1) {
+					this.failureReason = "missing " + this.ruleTreeStates;
+				} else {
+					if (neighbours === -1) {
+						this.failureReason = "missing " + this.ruleTreeNeighbours;
+					} else {
+						this.failureReason = "missing " + this.ruleTreeNodes;
 					}
 				}
 			}
+			valid = false;
 		}
 
 		// allocate arrays
@@ -7340,6 +7444,7 @@
 				v = reader.getNextTokenAsNumber();
 				if (lev === 1) {
 					if (v < 0 || v >= states) {
+						this.failureReason = "bad state value in tree data: " + v;
 						valid = false;
 					} else {
 						datb[datBLen] = v;
@@ -7347,9 +7452,11 @@
 					}
 				} else {
 					if (v < 0 || v > noff.length) {
+						this.failureReaons = "bad node value in tree data: " + v;
 						valid = false;
 					} else {
 						if (nodelev[v] !== lev - 1) {
+							this.failureReason = "bad node pointer in tree data: " + lev;
 							valid = false;
 						} else {
 							dat[datLen] = noff[v];
@@ -7359,24 +7466,30 @@
 				}
 				vcnt += 1;
 			}
-			if (vcnt !== states) {
+			if (valid && (vcnt !== states)) {
+				this.failureReason = "bad number of values on tree data line";
 				valid = false;
 			}
 			reader.skipNewlines();
 		}
 
-		if ((datLen + datBLen) !== (nodes * states)) {
-			valid = false;
-		}
-
-		if (lev !== neighbours + 1) {
-			valid = false;
-		}
-
-		// check the rule supports supplied pattern states
-		if (pattern.numStates > states) {
-			valid = false;
-			this.failureReason = "Illegal state in pattern";
+		// perform final validation
+		if (valid) {
+			if ((datLen + datBLen) !== (nodes * states)) {
+				this.failureReason = "bad count of values in tree data";
+				valid = false;
+			} else {
+				if (lev !== neighbours + 1) {
+					this.failureReason = "bad last node (wrong level)";
+					valid = false;
+				} else {
+					// check the rule supports supplied pattern states
+					if (pattern.numStates > states) {
+						valid = false;
+						this.failureReason = "illegal state in pattern";
+					}
+				}
+			}
 		}
 
 		// if valid then save parameters
@@ -7417,6 +7530,7 @@
 			reader = new Script(ruleText, true);
 
 		// check if rule table rule exists
+		pattern.manager.failureReason = "";
 		if (reader.findTokenAtLineStart(this.ruleTableRuleName, -1) !== -1) {
 			// get the rule name
 			if (!reader.nextIsNewline()) {
@@ -7427,7 +7541,10 @@
 				if (treeIndex !== -1) {
 					valid = this.decodeTree(pattern, reader);
 					if (!valid) {
-						pattern.manager.failureReason = "@TREE not valid";
+						if (pattern.manager.failureReason === "") {
+							pattern.manager.failureReason = "not valid";
+						}
+						pattern.manager.failureReason = this.ruleTableTreeName +" " + pattern.manager.failureReason;
 					}
 				} else {
 					// search for a table from the start since the sections could be in any order
@@ -7435,10 +7552,13 @@
 					if (tableIndex !== -1) {
 						valid = this.decodeTable(pattern, reader);
 						if (!valid) {
-							pattern.manager.failureReason = "@TABLE not valid";
+							if (pattern.manager.failureReason === "") {
+								pattern.manager.failureReason = "not valid";
+							}
+							pattern.manager.failureReason = this.ruleTableTableName +" " + pattern.manager.failureReason;
 						}
 					} else {
-						pattern.manager.failureReason = "@TABLE and @TREE not found";
+						pattern.manager.failureReason = this.ruleTableTableName + " and " + this.ruleTableTreeName + " not found";
 					}
 				}
 
@@ -7683,7 +7803,7 @@
 				fetchTime = performance.now() - this.time;
 				this.time = performance.now();
 				if (ruleText === "") {
-					pattern.manager.failureReason = "@RULE not found";
+					pattern.manager.failureReason = this.ruleTableRuleName + " not found";
 					RuleTreeCache.requestFailed(pattern);
 				} else {
 					// attempt to decode the rule table

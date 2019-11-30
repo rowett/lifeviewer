@@ -268,7 +268,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 462,
+		/** @const {number} */ versionBuild : 463,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5623,7 +5623,7 @@
 		shown = hide || !this.drawing || !this.showStates || settingsMenuOpen;
 		this.stateList.deleted = shown;
 		this.stateColsList.deleted = shown;
-		if (this.engine.multiNumStates <= 2) {
+		if (this.engine.multiNumStates <= 2 && !this.engine.isRuleTree) {
 			// 2-state potentially with LifeHistory
 			for (i = 0; i < this.stateColsList.lower.length; i += 1) {
 				if (i <= 2) {
@@ -6973,7 +6973,7 @@
 				if (this.engine.isLifeHistory) {
 					name = ViewConstants.stateNames[state];
 				} else {
-				name = (state ? "Alive" : "Dead");
+					name = (state ? "Alive" : "Dead");
 				}
 			} else {
 				// multi-state (Generations or PCA)
