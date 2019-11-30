@@ -1,5 +1,5 @@
 Build 463
-- added hex neighbourhood @TABLE runtime
+- added hexaganal and one dimensional neighbourhood @TABLE runtimes
 - fixed colours for @TREE or @TABLE rules with only 2 states
 - added improved error reporting for invalid @TREE or @TABLE rules
 
