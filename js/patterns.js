@@ -7018,50 +7018,44 @@
 				// get variable name
 				varName = reader.getNextToken();
 
-				// check if already defined
-				if (variables[varName] === undefined) {
-					// read the rest of the line
-					varValues = [];
+				// read the rest of the line
+				varValues = [];
+				if (reader.getNextToken() === "=") {
+					valid = true;
+					while (valid && !reader.nextIsNewline()) {
+						// if the next token is a number then read it as a state
+						if (reader.nextTokenIsNumeric()) {
+							readState = reader.getNextTokenAsNumber();
+							if (readState >= 0 && readState <= states) {
+								varValues[varValues.length] = readState;
+							} else {
+								valid = false;
+								this.failureReason = "out of range value: " + varName + "=" + readState;
+							}
+						} else {
+							// next token is not numeric so should be a variable
+							readVar = reader.getNextToken();
 
-					if (reader.getNextToken() === "=") {
-						valid = true;
-						while (valid && !reader.nextIsNewline()) {
-							// if the next token is a number then read it as a state
-							if (reader.nextTokenIsNumeric()) {
-								readState = reader.getNextTokenAsNumber();
-								if (readState >= 0 && readState <= states) {
-									varValues[varValues.length] = readState;
-								} else {
-									valid = false;
-									this.failureReason = "out of range value: " + varName + "=" + readState;
+							// if the variable exists then copy its contents
+							if (variables[readVar] !== undefined) {
+								for (i = 0; i < variables[readVar].length; i += 1) {
+									varValues[varValues.length] = variables[readVar][i];
 								}
 							} else {
-								// next token is not numeric so should be a variable
-								readVar = reader.getNextToken();
-	
-								// if the variable exists then copy its contents
-								if (variables[readVar] !== undefined) {
-									for (i = 0; i < variables[readVar].length; i += 1) {
-										varValues[varValues.length] = variables[readVar][i];
-									}
-								} else {
-									valid = false;
-									this.failureReason = "var unknown assignment: " + varName + "=" + readVar;
-								}
+								valid = false;
+								this.failureReason = "var unknown assignment: " + varName + "=" + readVar;
 							}
 						}
-					} else {
-						this.failureReason = "missing =: " + varName;
-					}
-
-					// check if line decoded
-					if (valid) {
-						// save the variable
-						variables[varName] = varValues;
-						numVars += 1;
 					}
 				} else {
-					this.failureReason = "duplicate var: " + varName;
+					this.failureReason = "missing =: " + varName;
+				}
+
+				// check if line decoded
+				if (valid) {
+					// save the variable
+					variables[varName] = varValues;
+					numVars += 1;
 				}
 			} else {
 				// read transition line
