@@ -1,3 +1,6 @@
+Build 465
+- @TABLE and @TREE matches are now case-insensitive
+
 Build 464
 - improved @TABLE runtime performance
 

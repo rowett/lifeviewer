@@ -524,11 +524,11 @@
 		// table section neighbourhood strings
 		/** @const {Array<string>} */ this.ruleTableNeighbourhoods = [];
 
-		// populate neighbourhoods
-		this.ruleTableNeighbourhoods[PatternConstants.ruleTableVN] = "vonNeumann";
-		this.ruleTableNeighbourhoods[PatternConstants.ruleTableMoore] = "Moore";
+		// populate neighbourhoods (must be lower case)
+		this.ruleTableNeighbourhoods[PatternConstants.ruleTableVN] = "vonneumann";
+		this.ruleTableNeighbourhoods[PatternConstants.ruleTableMoore] = "moore";
 		this.ruleTableNeighbourhoods[PatternConstants.ruleTableHex] = "hexagonal";
-		this.ruleTableNeighbourhoods[PatternConstants.ruleTableOneD] = "oneDimensional";
+		this.ruleTableNeighbourhoods[PatternConstants.ruleTableOneD] = "onedimensional";
 
 		// rule table inputs per neighbourhood
 		/** @const {Array<number>} */ this.ruleTableInputs = [];
@@ -539,13 +539,13 @@
 		this.ruleTableInputs[PatternConstants.ruleTableHex] = 7;
 		this.ruleTableInputs[PatternConstants.ruleTableOneD] = 3;
 
-		// table section variable keyword
+		// table section variable keyword (must be lower case)
 		/** @const {string} */ this.ruleTableVar = "var";
 
 		// table section symmetries
 		/** @const {Array<Array<string>>} */ this.ruleTableSymmetriesList = [];
 
-		// populate symmetries
+		// populate symmetries (must be lower case)
 		this.ruleTableSymmetriesList[PatternConstants.ruleTableVN] = ["none", "rotate4", "rotate4reflect", "reflect_horizontal", "permute"];
 		this.ruleTableSymmetriesList[PatternConstants.ruleTableMoore] = ["none", "rotate4", "rotate8", "rotate4reflect", "rotate8reflect", "reflect_horizontal", "permute"];
 		this.ruleTableSymmetriesList[PatternConstants.ruleTableHex] = ["none", "rotate2", "rotate3", "rotate6", "rotate6reflect", "permute"];
@@ -6902,7 +6902,7 @@
 		valid = true;
 		while (valid && i < 3) {
 			nextToken = reader.getNextTokenSkipNewline();
-			switch (nextToken) {
+			switch (nextToken.toLowerCase()) {
 
 			// n_states
 			case this.ruleTableStates:
@@ -6933,7 +6933,7 @@
 					found = false;
 					j = 0;
 					while (!found && j < this.ruleTableNeighbourhoods.length) {
-						if (nextToken === this.ruleTableNeighbourhoods[j]) {
+						if (nextToken.toLowerCase() === this.ruleTableNeighbourhoods[j]) {
 							neighbourhood = j;
 							nInputs = this.ruleTableInputs[j];
 							found = true;
@@ -6962,7 +6962,7 @@
 						found = false;
 						j = 0;
 						while (!found && j < this.ruleTableSymmetriesList[neighbourhood].length) {
-							if (nextToken === this.ruleTableSymmetriesList[neighbourhood][j]) {
+							if (nextToken.toLowerCase() === this.ruleTableSymmetriesList[neighbourhood][j]) {
 								symmetry = j;
 								found = true;
 							} else {
@@ -7012,7 +7012,7 @@
 		nextToken = reader.getNextToken();
 		while (valid && nextToken !== "") {
 			// check for variable
-			if (nextToken === this.ruleTableVar) {
+			if (nextToken.toLowerCase() === this.ruleTableVar) {
 				valid = false;
 
 				// get variable name
@@ -7320,7 +7320,7 @@
 		valid = true;
 		while (valid && i < 3) {
 			nextToken = reader.getNextTokenSkipNewline();
-			switch (nextToken) {
+			switch (nextToken.toLowerCase()) {
 
 			// num_states
 			case this.ruleTreeStates:
