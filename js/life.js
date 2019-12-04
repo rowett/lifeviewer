@@ -18124,17 +18124,19 @@
 									lutw = lut4[w];
 									state = c;
 									for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-										isMatch = lutc[iRuleC] & lutn[iRuleC] & lute[iRuleC] & 
-											luts[iRuleC] & lutw[iRuleC];
+										isMatch = lutc[iRuleC] & lutn[iRuleC];
 										if (isMatch) {
-											iBit = 0;
-											mask = 1;
-											while (!(isMatch & mask)) {
-												iBit += 1;
-												mask <<= 1;
+											isMatch &= lute[iRuleC] & luts[iRuleC] & lutw[iRuleC];
+											if (isMatch) {
+												iBit = 0;
+												mask = 1;
+												while (!(isMatch & mask)) {
+													iBit += 1;
+													mask <<= 1;
+												}
+												state = output[(iRuleC << 5) + iBit];
+												break;
 											}
-											state = output[(iRuleC << 5) + iBit];
-											break;
 										}
 									}
 
@@ -18179,17 +18181,19 @@
 								lutw = lut4[w];
 								state = c;
 								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lutc[iRuleC] & lutn[iRuleC] & lute[iRuleC] & 
-										luts[iRuleC] & lutw[iRuleC];
+									isMatch = lutc[iRuleC] & lutn[iRuleC];
 									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
+										isMatch &= lute[iRuleC] & luts[iRuleC] & lutw[iRuleC];
+										if (isMatch) {
+											iBit = 0;
+											mask = 1;
+											while (!(isMatch & mask)) {
+												iBit += 1;
+												mask <<= 1;
+											}
+											state = output[(iRuleC << 5) + iBit];
+											break;
 										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
 									}
 								}
 								nextRow[x] = state;
@@ -18751,18 +18755,25 @@
 									lutw = lut7[w];
 									lutnw = lut8[nw];
 									for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-										isMatch = lutc[iRuleC] & lutn[iRuleC] & lutne[iRuleC] & 
-											lute[iRuleC] & lutse[iRuleC] & luts[iRuleC] & 
-											lutsw[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
+										isMatch = lutc[iRuleC] & lutn[iRuleC];
 										if (isMatch) {
-											iBit = 0;
-											mask = 1;
-											while (!(isMatch & mask)) {
-												iBit += 1;
-												mask <<= 1;
+											isMatch &= lutne[iRuleC] & lute[iRuleC];
+											if (isMatch){
+												isMatch &= lutse[iRuleC] & luts[iRuleC];
+												if (isMatch) {
+													isMatch &= lutsw[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
+													if (isMatch) {
+														iBit = 0;
+														mask = 1;
+														while (!(isMatch & mask)) {
+															iBit += 1;
+															mask <<= 1;
+														}
+														state = output[(iRuleC << 5) + iBit];
+														break;
+													}
+												}
 											}
-											state = output[(iRuleC << 5) + iBit];
-											break;
 										}
 									}
 	
@@ -18817,18 +18828,25 @@
 								lutnw = lut8[nw];
 								state = c;
 								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lutc[iRuleC] & lutn[iRuleC] & lutne[iRuleC] & 
-										lute[iRuleC] & lutse[iRuleC] & luts[iRuleC] & 
-										lutsw[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
+									isMatch = lutc[iRuleC] & lutn[iRuleC];
 									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
+										isMatch &= lutne[iRuleC] & lute[iRuleC];
+										if (isMatch){
+											isMatch &= lutse[iRuleC] & luts[iRuleC];
+											if (isMatch) {
+												isMatch &= lutsw[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
+												if (isMatch) {
+													iBit = 0;
+													mask = 1;
+													while (!(isMatch & mask)) {
+														iBit += 1;
+														mask <<= 1;
+													}
+													state = output[(iRuleC << 5) + iBit];
+													break;
+												}
+											}
 										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
 									}
 								}
 								nextRow[x] = state;
@@ -19379,18 +19397,22 @@
 									lutnw = lut6[nw];
 									state = c;
 									for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-										isMatch = lutc[iRuleC] & lutn[iRuleC] & lute[iRuleC] &
-											lutse[iRuleC] & luts[iRuleC] & lutw[iRuleC] &
-											lutnw[iRuleC];
+										isMatch = lutc[iRuleC] & lutn[iRuleC];
 										if (isMatch) {
-											iBit = 0;
-											mask = 1;
-											while (!(isMatch & mask)) {
-												iBit += 1;
-												mask <<= 1;
+											isMatch &= lute[iRuleC] & lutse[iRuleC];
+											if (isMatch) {
+												isMatch &= luts[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
+												if (isMatch) {
+													iBit = 0;
+													mask = 1;
+													while (!(isMatch & mask)) {
+														iBit += 1;
+														mask <<= 1;
+													}
+													state = output[(iRuleC << 5) + iBit];
+													break;
+												}
 											}
-											state = output[(iRuleC << 5) + iBit];
-											break;
 										}
 									}
 
@@ -19440,18 +19462,23 @@
 								lutnw = lut6[nw];
 								state = c;
 								for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
-									isMatch = lutc[iRuleC] & lutn[iRuleC] & lute[iRuleC] &
-										lutse[iRuleC] & luts[iRuleC] & lutw[iRuleC] &
-										lutnw[iRuleC];
+									isMatch = lutc[iRuleC] & lutn[iRuleC];
 									if (isMatch) {
-										iBit = 0;
-										mask = 1;
-										while (!(isMatch & mask)) {
-											iBit += 1;
-											mask <<= 1;
+										isMatch &= lute[iRuleC] & lutse[iRuleC];
+										if (isMatch) {
+											isMatch &= luts[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
+											if (isMatch) {
+												iBit = 0;
+												mask = 1;
+												while (!(isMatch & mask)) {
+													iBit += 1;
+													mask <<= 1;
+												}
+												state = output[(iRuleC << 5) + iBit];
+												break;
+											}
 										}
-										state = output[(iRuleC << 5) + iBit];
-										break;
+
 									}
 								}
 								nextRow[x] = state;

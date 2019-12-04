@@ -5,6 +5,7 @@ Build 466
 - reset pattern type flags before RuleTable decode
 - fix quotes in comments for tokenizer
 - allow empty @TABLE or @TREE section for -shared rules
+- improved @TABLE runtime performance
 
 Build 465
 - @TABLE and @TREE matches are now case-insensitive
