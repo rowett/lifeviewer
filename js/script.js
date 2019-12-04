@@ -116,10 +116,12 @@
 			// quote
 			case 34: // quotes
 				if (tokenizeNewline) {
-					inQuotes = !inQuotes;
-					if (!inToken) {
-						inToken = true;
-						j = i;
+					if (!inComment) {
+						inQuotes = !inQuotes;
+						if (!inToken) {
+							inToken = true;
+							j = i;
+						}
 					}
 				}
 				break;

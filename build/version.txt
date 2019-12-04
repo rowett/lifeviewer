@@ -2,6 +2,9 @@ Build 466
 - decode RuleTable @ICONS section (no render)
 - IE compatibility fixes
 - fixed reading RuleTables with missing final new line
+- reset pattern type flags before RuleTable decode
+- fix quotes in comments for tokenizer
+- allow empty @TABLE or @TREE section for -shared rules
 
 Build 465
 - @TABLE and @TREE matches are now case-insensitive

@@ -7167,6 +7167,9 @@
 		// read each line
 		reader.skipNewlines();
 		nextToken = reader.getNextToken();
+		if (nextToken !== "" && nextToken[0] === "@") {
+			nextToken = "";
+		}
 		while (valid && nextToken !== "") {
 			// check for variable
 			if (nextToken.toLowerCase() === this.ruleTableVar) {
@@ -7958,6 +7961,18 @@
 					RuleTreeCache.requestFailed(pattern);
 				} else {
 					// attempt to decode the rule table
+					pattern.isMargolus = false;
+					pattern.isPCA = false;
+					pattern.isNone = false;
+					pattern.isHistory = false;
+					pattern.isNiemiec = false;
+					pattern.isHex = false;
+					pattern.isTriangular = false;
+					pattern.wolframRule = -1;
+					pattern.isVonNeumann = false;
+					pattern.isLTL = false;
+					pattern.isHROT = false;
+
 					me.decodeRuleTable(pattern, ruleText);
 					decodeTime = performance.now() - this.time;
 
