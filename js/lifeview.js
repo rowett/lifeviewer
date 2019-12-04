@@ -268,7 +268,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 465,
+		/** @const {number} */ versionBuild : 466,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13449,6 +13449,7 @@
 		this.engine.ruleTreeA = null;
 		this.engine.ruleTreeB = null;
 		this.engine.ruleTreeColours = null;
+		this.engine.ruleTableIcons = null;
 		this.engine.ruleTableLUT = [];
 		this.engine.ruleTableOutput = null;
 		this.engine.ruleTableCompressedRules = 0;
@@ -13664,6 +13665,7 @@
 				me.engine.ruleTreeA = pattern.ruleTreeA;
 				me.engine.ruleTreeB = pattern.ruleTreeB;
 				me.engine.ruleTreeColours = pattern.ruleTreeColours;
+				me.engine.ruleTableIcons = pattern.ruleTableIcons;
 				me.engine.isRuleTree = true;
 			} else {
 				me.engine.isRuleTree = false;
@@ -13678,6 +13680,7 @@
 				me.engine.ruleTableDups = pattern.ruleTableDups;
 				me.engine.multiNumStates = pattern.ruleTableStates;
 				me.engine.ruleTreeColours = pattern.ruleTreeColours;
+				me.engine.ruleTableIcons = pattern.ruleTableIcons;
 				me.engine.isRuleTree = true;
 			}
 

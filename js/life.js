@@ -9,7 +9,7 @@
 	"use strict";
 
 	// define globals
-	/* global Reflect Keywords littleEndian BoundingBox Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager HROT ViewConstants PatternConstants arrayFill */
+	/* global Reflect Keywords littleEndian BoundingBox Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager HROT ViewConstants PatternConstants */
 
 	// Life constants
 	/** @const */
@@ -306,6 +306,7 @@
 		/** @type {Array<number>} */ this.ruleTreeA = null;
 		/** @type {Array<number>} */ this.ruleTreeB = null;
 		/** @type {Array<number>} */ this.ruleTreeColours = null;
+		this.ruleTableIcons = null;
 
 		// RuleTable
 		this.ruleTableLUT = [];
@@ -825,8 +826,6 @@
 
 	// initialize oscillator search
 	Life.prototype.initSearch = function(on) {
-		var i = 0;
-
 		// zero array index
 		this.oscLength = 0;
 
@@ -852,14 +851,7 @@
 				this.startItem = -1;
 
 				// clear next pointers
-				// @ts-ignore
-				if (arrayFill) {
-					this.nextList.fill(-1);
-				} else {
-					for (i = 0; i < this.nextList.length; i += 1) {
-						this.nextList[i] = -1;
-					}
-				}
+				this.nextList.fill(-1);
 			}
 		} else {
 			// just switched off so release buffers
@@ -2922,14 +2914,7 @@
 		if (filled && !drawingSelection && colours.sort) {
 			// ensure unused buffer is at end
 			state = (LifeConstants.coordBufferSize << LifeConstants.coordBufferBits) + 256;
-			// @ts-ignore
-			if (arrayFill) {
-				colours.fill(state, numCoords);
-			} else {
-				for (i = numCoords; i < LifeConstants.coordBufferSize; i += 1) {
-					colours[i] = state;
-				}
-			}
+			colours.fill(state, numCoords);
 			colours.sort();
 		}
 
@@ -4426,10 +4411,6 @@
 		    nextGrid = null,
 		    tileGrid = null,
 		    nextTileGrid = null,
-		    i = 0,
-		    length = 0,
-		    blankRow = this.blankRow,
-			blankColourRow = this.blankColourRow,
 			colourGrid = this.colourGrid;
 
 		// restore the counter
@@ -4451,29 +4432,13 @@
 		}
 
 		// clear the grid, colour grid and small colour grid
-		// @ts-ignore
-		if (arrayFill) {
-			grid.whole.fill(0);
-			nextGrid.whole.fill(0);
-			this.colourGrid.whole.fill(0);
-			if (this.isPCA || this.isRuleTree) {
-				this.nextColourGrid.whole.fill(0);
-			}
-			this.smallColourGrid.whole.fill(0);
-		} else {
-			length = grid.length;
-			for (i = 0; i < length; i += 1) {
-				grid[i].set(blankRow);
-				this.colourGrid[i].set(blankColourRow);
-				if (this.isPCA || this.isRuleTree) {
-					this.nextColourGrid[i].set(blankColourRow);
-				}
-				this.smallColourGrid[i].set(blankColourRow);
-			}
-			// clear the next grid
-			Array.copy(grid, nextGrid);
+		grid.whole.fill(0);
+		nextGrid.whole.fill(0);
+		this.colourGrid.whole.fill(0);
+		if (this.isPCA || this.isRuleTree) {
+			this.nextColourGrid.whole.fill(0);
 		}
-
+		this.smallColourGrid.whole.fill(0);
 
 		// copy the colour tile history grid into the colour grid
 		Array.copy(this.colourTileHistoryGrid, this.colourTileGrid);
@@ -5206,28 +5171,12 @@
 			state6 = ViewConstants.stateMap[6] + 128;
 
 		// clear current mask and cells
-		// @ts-ignore
-		if (arrayFill) {
-			this.state6Mask.whole.fill(0);
-			this.state6Cells.whole.fill(0);
-			this.state6Alive.whole.fill(0);
-		} else {
-			for (y = 0; y < this.state6Mask.length; y += 1) {
-				this.state6Mask[y].set(this.blankRow16);
-				this.state6Cells[y].set(this.blankRow16);
-				this.state6Alive[y].set(this.blankRow16);
-			}
-		}
+		this.state6Mask.whole.fill(0);
+		this.state6Cells.whole.fill(0);
+		this.state6Alive.whole.fill(0);
 
 		// clear state6 tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			this.state6TileGrid.whole.fill(0);
-		} else {
-			for (y = 0; y < this.state6TileGrid.length; y += 1) {
-				this.state6TileGrid[y].set(this.blankTileRow);
-			}
-		}
+		this.state6TileGrid.whole.fill(0);
 
 		// remove bits from the mask that are state 6 in the pattern
 		for (y = 1; y < this.height - 1; y += 1) {
@@ -5454,9 +5403,7 @@
 
 	// initialise life engine
 	Life.prototype.initEngine = function(context, displayWidth, displayHeight) {
-		var i = 0,
-		    w = 0,
-		    unoccupied = this.unoccupied,
+		var unoccupied = this.unoccupied,
 		    blankRow = this.blankRow,
 		    blankColourRow = this.blankColourRow,
 		    blankPixelRow = this.blankPixelRow,
@@ -5502,36 +5449,10 @@
 		this.resizeDisplay(displayWidth, displayHeight);
 
 		// create the blank rows
-		// @ts-ignore
-		if (arrayFill) {
-			blankRow.fill(0);
-			blankColourRow.fill(unoccupied);
-			blankTileRow.fill(0);
-			blankPixelRow.fill(pixelColour);
-		} else {
-			// create the blank grid row
-			w = ((this.width - 1) >> 3) + 1;
-			for (i = 0; i < w; i += 1) {
-				blankRow[i] = 0;
-			}
-	
-			// create the blank colour row
-			w = this.width;
-			for (i = 0; i < w; i += 1) {
-				blankColourRow[i] = unoccupied;
-			}
-	
-			// create the blank tile row
-			w = this.tileCols >> 4;
-			for (i = 0; i < w; i += 1) {
-				blankTileRow[i] = 0;
-			}	
-	
-			// create the blank pixel row
-			for (i = 0; i < displayWidth; i += 1) {
-				blankPixelRow[i] = pixelColour;
-			}
-		}
+		blankRow.fill(0);
+		blankColourRow.fill(unoccupied);
+		blankTileRow.fill(0);
+		blankPixelRow.fill(pixelColour);
 
 		// create the 7x7 gliders
 		this.create7x7Gliders();
@@ -6185,8 +6106,7 @@
 
 	// clear the life grids (or just the bit grids if specified)
 	Life.prototype.clearGrids = function(bitOnly) {
-		var height = this.height,
-			grid = this.grid,
+		var grid = this.grid,
 			nextGrid = this.nextGrid,
 			colourGrid = this.colourGrid,
 			nextColourGrid = this.nextColourGrid,
@@ -6197,71 +6117,29 @@
 			colourTileGrid = this.colourTileGrid,
 			colourTileHistoryGrid = this.colourTileHistoryGrid,
 			nextTileGrid = this.nextTileGrid,
-			unoccupied = this.unoccupied,
-
-			// blank rows
-			blankRow = this.blankRow,
-			blankTileRow = this.blankTileRow,
-			blankColourRow = this.blankColourRow,
-	
-			// loop counter
-			h = 0;
+			unoccupied = this.unoccupied;
 	
 		// clear each cell
-		// @ts-ignore
-		if (arrayFill) {
-			grid.whole.fill(0);
-			nextGrid.whole.fill(0);
-			if (!bitOnly) {
-				colourGrid.whole.fill(unoccupied);
-				if (nextColourGrid) {
-					nextColourGrid.whole.fill(unoccupied);
-				}
-				smallColourGrid.whole.fill(unoccupied);
-				if (overlayGrid) {
-					overlayGrid.whole.fill(unoccupied);
-					smallOverlayGrid.whole.fill(unoccupied);
-				}
+		grid.whole.fill(0);
+		nextGrid.whole.fill(0);
+		if (!bitOnly) {
+			colourGrid.whole.fill(unoccupied);
+			if (nextColourGrid) {
+				nextColourGrid.whole.fill(unoccupied);
 			}
-		} else {
-			for (h = 0; h < height; h += 1) {
-				grid[h].set(blankRow);
-				nextGrid[h].set(blankRow);
-				if (!bitOnly) {
-					colourGrid[h].set(blankColourRow);
-					if (nextColourGrid) {
-						nextColourGrid[h].set(blankColourRow);
-					}
-					smallColourGrid[h].set(blankColourRow);
-					if (overlayGrid) {
-						overlayGrid[h].set(blankColourRow);
-						smallOverlayGrid[h].set(blankColourRow);
-					}
-				}
+			smallColourGrid.whole.fill(unoccupied);
+			if (overlayGrid) {
+				overlayGrid.whole.fill(unoccupied);
+				smallOverlayGrid.whole.fill(unoccupied);
 			}
 		}
 
-		// clear tile map
-		height = this.tileRows;
-
 		// clear the tiles
-		// @ts-ignore
-		if (arrayFill) {
-			tileGrid.whole.fill(0);
-			nextTileGrid.whole.fill(0);
-			if (!bitOnly) {
-				colourTileGrid.whole.fill(0);
-				colourTileHistoryGrid.whole.fill(0);
-			}
-		} else {
-			for (h = 0; h < height; h += 1) {
-				tileGrid[h].set(blankTileRow);
-				nextTileGrid[h].set(blankTileRow);
-				if (!bitOnly) {
-					colourTileGrid[h].set(blankTileRow);
-					colourTileHistoryGrid[h].set(blankTileRow);
-				}
-			}
+		tileGrid.whole.fill(0);
+		nextTileGrid.whole.fill(0);
+		if (!bitOnly) {
+			colourTileGrid.whole.fill(0);
+			colourTileHistoryGrid.whole.fill(0);
 		}
 	};
 
@@ -7011,14 +6889,7 @@
 		topY = bottomY + ySize;
 
 		// clear the destination tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < tileRows; th += 1) {
-				nextTileGrid[th].set(blankTileRow);
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileRows; th += 1) {
@@ -7269,14 +7140,7 @@
 		}
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (th = 0; th < blankTileRow.length; th += 1) {
-				blankTileRow[th] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 	};
 
 	// shrink the tile grid to the pattern
@@ -7333,14 +7197,7 @@
 		topY = bottomY + ySize;
 
 		// clear the destination tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < tileRows; th += 1) {
-				nextTileGrid[th].set(blankTileRow);
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileRows; th += 1) {
@@ -7792,14 +7649,7 @@
 		}
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (th = 0; th < blankTileRow.length; th += 1) {
-				blankTileRow[th] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 	};
 
 	// shrink grid (after major edit)
@@ -7906,14 +7756,7 @@
 
 			// use the pattern grid to set the bounding box
 			// clear column occupied flags
-			// @ts-ignore
-			if (arrayFill) {
-				columnOccupied16.fill(0);
-			} else {
-				for (h = 0; h < columnOccupied16.length; h += 1) {
-					columnOccupied16[h] = 0;
-				}
-			}
+			columnOccupied16.fill(0);
 
 			// check for Generations or HROT
 			if (this.multiNumStates !== -1) {
@@ -8102,9 +7945,6 @@
 		    // flags if something in the column was alive
 		    columnOccupied16 = this.columnOccupied16,
 
-		    // tile rows
-		    tileRows = this.tileRows,
-
 		    // tile grids
 		    tileGrid = this.tileGrid,
 		    tileRow = null,
@@ -8113,9 +7953,6 @@
 		    // colour tile grids
 		    colourTileGrid = this.colourTileGrid,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
-
-		    // blank tile row
-		    blankTileRow = this.blankTileRow,
 
 		    // bottom tile row
 		    bottomY = 0,
@@ -8178,24 +8015,10 @@
 
 		// use the pattern grid to set the bounding box
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (h = 0; h < columnOccupied16.length; h += 1) {
-				columnOccupied16[h] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (h = 0; h < tileRows; h += 1) {
-				nextTileGrid[h].set(blankTileRow);
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// check for Generations or HROT
 		if (this.multiNumStates !== -1) {
@@ -8521,16 +8344,8 @@
 			// check for infinite width
 			if (this.boundedGridWidth === 0) {
 				// just clear top and bottom
-				// @ts-ignore
-				if (arrayFill) {
-					bottomRow.fill(0);
-					topRow.fill(0);
-				} else {
-					for (x = 0; x < this.width; x += 1) {
-						bottomRow[x] = 0;
-						topRow[x] = 0;
-					}
-				}
+				bottomRow.fill(0);
+				topRow.fill(0);
 			} else {
 				// check for infinite height
 				if (this.boundedGridHeight === 0) {
@@ -8541,16 +8356,8 @@
 					}
 				} else {
 					// clear top and bottom boundary
-					// @ts-ignore
-					if (arrayFill) {
-						bottomRow.fill(0, leftX, rightX + 1);
-						topRow.fill(0, leftX, rightX + 1);
-					} else {
-						for (x = leftX; x <= rightX; x += 1) {
-							bottomRow[x] = 0;
-							topRow[x] = 0;
-						}
-					}
+					bottomRow.fill(0, leftX, rightX + 1);
+					topRow.fill(0, leftX, rightX + 1);
 
 					// clear left and right boundary
 					for (y = bottomY + 1; y <= topY - 1; y += 1) {
@@ -11165,14 +10972,7 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (th = 0; th < columnOccupied16.length; th += 1) {
-				columnOccupied16[th] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// check start and end row are in range
 		if (tileStartRow < 0) {
@@ -11187,17 +10987,7 @@
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = tileStartRow; th < tileEndRow; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = tileStartRow; th < tileEndRow; th += 1) {
@@ -11660,14 +11450,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (th = 0; th < blankTileRow.length; th += 1) {
-				blankTileRow[th] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 
 		// save statistics
 		this.population = population;
@@ -11790,31 +11573,14 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (th = 0; th < columnOccupied16.length; th += 1) {
-				columnOccupied16[th] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = 1 - counter;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileGrid.length; th += 1) {
@@ -12419,14 +12185,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (th = 0; th < blankTileRow.length; th += 1) {
-				blankTileRow[th] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 
 		// save statistics
 		this.population = population;
@@ -12543,31 +12302,14 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (th = 0; th < columnOccupied16.length; th += 1) {
-				columnOccupied16[th] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = 1 - counter;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileGrid.length; th += 1) {
@@ -13129,14 +12871,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (th = 0; th < blankTileRow.length; th += 1) {
-				blankTileRow[th] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 	};
 
 	// update the life grid region using tiles for triangular grid (no stats)
@@ -13224,14 +12959,7 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (th = 0; th < columnOccupied16.length; th += 1) {
-				columnOccupied16[th] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// check start and end row are in range
 		if (tileStartRow < 0) {
@@ -13246,17 +12974,7 @@
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = tileStartRow; th < tileEndRow; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = tileStartRow; th < tileEndRow; th += 1) {
@@ -13699,14 +13417,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (th = 0; th < blankTileRow.length; th += 1) {
-				blankTileRow[th] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 	};
 
 	// update the life grid region using tiles
@@ -13811,41 +13522,17 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (b = 0; b < columnOccupied16.length; b += 1) {
-				columnOccupied16[b] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// clear row occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			rowOccupied16.fill(0);
-		} else {
-			for (b = 0; b < rowOccupied16.length; b += 1) {
-				rowOccupied16[b] = 0;
-			}
-		}
+		rowOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = 0;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileGrid.length; th += 1) {
@@ -14933,14 +14620,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (b = 0; b < blankTileRow.length; b += 1) {
-				blankTileRow[b] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 
 		// save statistics
 		this.population = population;
@@ -15043,40 +14723,17 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (b = 0; b < columnOccupied16.length; b += 1) {
-				columnOccupied16[b] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// clear row occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			rowOccupied16.fill(0);
-		} else {
-			for (b = 0; b < rowOccupied16.length; b += 1) {
-				rowOccupied16[b] = 0;
-			}
-		}
+		rowOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = 0;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		if (nextTileGrid.whole.fill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileGrid.length; th += 1) {
@@ -15996,15 +15653,8 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (b = 0; b < blankTileRow.length; b += 1) {
-				blankTileRow[b] = 0;
-			}
-		}
-};
+		blankTileRow.fill(0);
+	};
 
 	// create 2x2 colour grid with no history for 0.5 <= zoom < 1
 	Life.prototype.create2x2ColourGridNoHistory16 = function(colourGrid, smallColourGrid) {
@@ -17780,41 +17430,17 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (y = 0; y < columnOccupied16.length; y += 1) {
-				columnOccupied16[y] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// clear row occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			rowOccupied16.fill(0);
-		} else {
-			for (y = 0; y < rowOccupied16.length; y += 1) {
-				rowOccupied16[y] = 0;
-			}
-		}
+		rowOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = 0;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileGrid.length; th += 1) {
@@ -18206,14 +17832,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (y = 0; y < blankTileRow.length; y += 1) {
-				blankTileRow[y] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 
 		// clear tiles that died in source
 		bottomY = 0;
@@ -18381,41 +18000,17 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (y = 0; y < columnOccupied16.length; y += 1) {
-				columnOccupied16[y] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// clear row occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			rowOccupied16.fill(0);
-		} else {
-			for (y = 0; y < rowOccupied16.length; y += 1) {
-				rowOccupied16[y] = 0;
-			}
-		}
+		rowOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = 0;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileGrid.length; th += 1) {
@@ -18838,14 +18433,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (y = 0; y < blankTileRow.length; y += 1) {
-				blankTileRow[y] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 
 		// clear tiles that died in source
 		bottomY = 0;
@@ -19025,41 +18613,17 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (y = 0; y < columnOccupied16.length; y += 1) {
-				columnOccupied16[y] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// clear row occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			rowOccupied16.fill(0);
-		} else {
-			for (y = 0; y < rowOccupied16.length; y += 1) {
-				rowOccupied16[y] = 0;
-			}
-		}
+		rowOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = 0;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileGrid.length; th += 1) {
@@ -19508,14 +19072,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (y = 0; y < blankTileRow.length; y += 1) {
-				blankTileRow[y] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 
 		// clear tiles that died in source
 		bottomY = 0;
@@ -19689,41 +19246,17 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (y = 0; y < columnOccupied16.length; y += 1) {
-				columnOccupied16[y] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// clear row occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			rowOccupied16.fill(0);
-		} else {
-			for (y = 0; y < rowOccupied16.length; y += 1) {
-				rowOccupied16[y] = 0;
-			}
-		}
+		rowOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = 0;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileGrid.length; th += 1) {
@@ -20162,14 +19695,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (y = 0; y < blankTileRow.length; y += 1) {
-				blankTileRow[y] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 
 		// clear tiles that died in source
 		bottomY = 0;
@@ -20356,41 +19882,17 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (y = 0; y < columnOccupied16.length; y += 1) {
-				columnOccupied16[y] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// clear row occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			rowOccupied16.fill(0);
-		} else {
-			for (y = 0; y < rowOccupied16.length; y += 1) {
-				rowOccupied16[y] = 0;
-			}
-		}
+		rowOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = 0;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileGrid.length; th += 1) {
@@ -21164,14 +20666,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (y = 0; y < blankTileRow.length; y += 1) {
-				blankTileRow[y] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 
 		// clear tiles that died in source
 		bottomY = 0;
@@ -21336,41 +20831,17 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (y = 0; y < columnOccupied16.length; y += 1) {
-				columnOccupied16[y] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// clear row occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			rowOccupied16.fill(0);
-		} else {
-			for (y = 0; y < rowOccupied16.length; y += 1) {
-				rowOccupied16[y] = 0;
-			}
-		}
+		rowOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = 0;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileGrid.length; th += 1) {
@@ -22053,14 +21524,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (y = 0; y < blankTileRow.length; y += 1) {
-				blankTileRow[y] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 
 		// clear tiles that died in source
 		bottomY = 0;
@@ -22225,41 +21689,17 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (y = 0; y < columnOccupied16.length; y += 1) {
-				columnOccupied16[y] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// clear row occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			rowOccupied16.fill(0);
-		} else {
-			for (y = 0; y < rowOccupied16.length; y += 1) {
-				rowOccupied16[y] = 0;
-			}
-		}
+		rowOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = 0;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileGrid.length; th += 1) {
@@ -22942,14 +22382,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (y = 0; y < blankTileRow.length; y += 1) {
-				blankTileRow[y] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 
 		// clear tiles that died in source
 		bottomY = 0;
@@ -23114,41 +22547,17 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (y = 0; y < columnOccupied16.length; y += 1) {
-				columnOccupied16[y] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// clear row occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			rowOccupied16.fill(0);
-		} else {
-			for (y = 0; y < rowOccupied16.length; y += 1) {
-				rowOccupied16[y] = 0;
-			}
-		}
+		rowOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = 0;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileGrid.length; th += 1) {
@@ -23831,14 +23240,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (y = 0; y < blankTileRow.length; y += 1) {
-				blankTileRow[y] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 
 		// clear tiles that died in source
 		bottomY = 0;
@@ -24003,41 +23405,17 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (y = 0; y < columnOccupied16.length; y += 1) {
-				columnOccupied16[y] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// clear row occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			rowOccupied16.fill(0);
-		} else {
-			for (y = 0; y < rowOccupied16.length; y += 1) {
-				rowOccupied16[y] = 0;
-			}
-		}
+		rowOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = 0;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileGrid.length; th += 1) {
@@ -24720,14 +24098,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (y = 0; y < blankTileRow.length; y += 1) {
-				blankTileRow[y] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 
 		// clear tiles that died in source
 		bottomY = 0;
@@ -24882,41 +24253,17 @@
 		}
 
 		// clear column occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			columnOccupied16.fill(0);
-		} else {
-			for (y = 0; y < columnOccupied16.length; y += 1) {
-				columnOccupied16[y] = 0;
-			}
-		}
+		columnOccupied16.fill(0);
 
 		// clear row occupied flags
-		// @ts-ignore
-		if (arrayFill) {
-			rowOccupied16.fill(0);
-		} else {
-			for (y = 0; y < rowOccupied16.length; y += 1) {
-				rowOccupied16[y] = 0;
-			}
-		}
+		rowOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = 0;
 		topY = bottomY + ySize;
 
 		// clear the next tile grid
-		// @ts-ignore
-		if (arrayFill) {
-			nextTileGrid.whole.fill(0);
-		} else {
-			for (th = 0; th < nextTileGrid.length; th += 1) {
-				tileRow = nextTileGrid[th];
-				for (tw = 0; tw < tileRow.length; tw += 1) {
-					tileRow[tw] = 0;
-				}
-			}
-		}
+		nextTileGrid.whole.fill(0);
 
 		// scan each row of tiles
 		for (th = 0; th < tileGrid.length; th += 1) {
@@ -25622,14 +24969,7 @@
 		zoomBox.rightX = newRightX;
 
 		// clear the blank tile row since it may have been written to at top and bottom
-		// @ts-ignore
-		if (arrayFill) {
-			blankTileRow.fill(0);
-		} else {
-			for (y = 0; y < blankTileRow.length; y += 1) {
-				blankTileRow[y] = 0;
-			}
-		}
+		blankTileRow.fill(0);
 
 		// clear tiles that died in source
 		bottomY = 0;
@@ -26516,7 +25856,6 @@
 		    // pixel offset in bitmap
 		    offset = 0,
 		    end = 0,
-			endTarget = 0,
 			temp = 0;
 
 		// order the x coordinates
@@ -26545,56 +25884,10 @@
 		// pixel offsets in bitmap
 		offset = y * w + startX;
 		end = y * w + endX;
-		endTarget = end - 15;
 
 		// see if the line is on the display
 		if (y >= 0 && y < h) {
-			// @ts-ignore
-			if (arrayFill) {
-				data32.fill(colour, offset, end);
-			} else {
-				// draw the horizontal line
-				while (offset <= endTarget) {
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-					data32[offset] = colour;
-					offset += 1;
-				}
-
-				// draw the last part
-				while (offset <= end) {
-					data32[offset] = colour;
-					offset += 1;
-				}
-			}
+			data32.fill(colour, offset, end);
 		}
 	};
 
@@ -27254,16 +26547,8 @@
 		// check for infinite width
 		if (width === 0) {
 			// draw top and bottom only
-			// @ts-ignore
-			if (arrayFill) {
-				bottomRow.fill(border, 0, this.width);
-				topRow.fill(border, 0, this.width);
-			} else {
-				for (i = 0; i < this.width; i += 1) {
-					bottomRow[i] = border;
-					topRow[i] = border;
-				}
-			}
+			bottomRow.fill(border, 0, this.width);
+			topRow.fill(border, 0, this.width);
 		} else {
 			// check for infinite height
 			if (height === 0) {
@@ -27274,16 +26559,8 @@
 				}
 			} else {
 				// draw top and bottom
-				// @ts-ignore
-				if (arrayFill) {
-					bottomRow.fill(border, leftX, rightX + 1);
-					topRow.fill(border, leftX, rightX + 1);
-				} else {
-					for (i = leftX; i <= rightX; i += 1) {
-						bottomRow[i] = border;
-						topRow[i] = border;
-					}
-				}
+				bottomRow.fill(border, leftX, rightX + 1);
+				topRow.fill(border, leftX, rightX + 1);
 
 				// draw left and right
 				for (i = bottomY + 1; i <= topY - 1; i += 1) {
@@ -27298,7 +26575,6 @@
 	Life.prototype.renderGrid = function() {
 		var colour0 = this.pixelColours[0],
 			data32 = this.data32,
-			i = 0, l = 0,
 			colourGrid = this.colourGrid,
 			colourGrid16 = this.colourGrid16,
 			colourGrid32 = this.colourGrid32;
@@ -27358,12 +26634,8 @@
 		// check if drawing grid with polygons
 		if (this.camZoom >= 4 && ((this.useHexagons && this.isHex) || this.isTriangular)) {
 			// clear grid
-			i = 0;
-			l = data32.length;
-			while (i < l) {
-				data32[i] = colour0;
-				i += 1;
-			}
+			data32.fill(colour0);
+
 			// create pixel colours
 			this.createPixelColours(1);
 		} else {
@@ -27976,30 +27248,8 @@
 				}
 			} else {
 				// draw off grid row
-				// @ts-ignore
-				if (arrayFill) {
-					data32.fill(offGrid, idx, idx + this.displayWidth + 1);
-					idx += this.displayWidth;
-				} else {
-					for (w = 0; w < w8; w += 1) {
-						data32[idx] = offGrid;
-						idx += 1;
-						data32[idx] = offGrid;
-						idx += 1;
-						data32[idx] = offGrid;
-						idx += 1;
-						data32[idx] = offGrid;
-						idx += 1;
-						data32[idx] = offGrid;
-						idx += 1;
-						data32[idx] = offGrid;
-						idx += 1;
-						data32[idx] = offGrid;
-						idx += 1;
-						data32[idx] = offGrid;
-						idx += 1;
-					}
-				}
+				data32.fill(offGrid, idx, idx + this.displayWidth + 1);
+				idx += this.displayWidth;
 			}
 
 			// update column position
@@ -30646,30 +29896,8 @@
 				}
 			} else {
 				// draw off grid row
-				// @ts-ignore
-				if (arrayFill) {
-					data32.fill(offGrid, idx, idx + this.displayWidth + 1);
-					idx += this.displayWidth;
-				} else {
-					for (w = 0; w < w8; w += 1) {
-						data32[idx] = offGrid;
-						idx += 1;
-						data32[idx] = offGrid;
-						idx += 1;
-						data32[idx] = offGrid;
-						idx += 1;
-						data32[idx] = offGrid;
-						idx += 1;
-						data32[idx] = offGrid;
-						idx += 1;
-						data32[idx] = offGrid;
-						idx += 1;
-						data32[idx] = offGrid;
-						idx += 1;
-						data32[idx] = offGrid;
-						idx += 1;
-					}
-				}
+				data32.fill(offGrid, idx, idx + this.displayWidth + 1);
+				idx += this.displayWidth;
 			}
 
 			// update column position
@@ -31005,22 +30233,9 @@
 
 	// clear pixels
 	Life.prototype.clearPixels = function(pixelColour) {
-		var i = 0,
-		    offset = 0,
-		    rows = this.displayHeight,
-		    columns = this.displayWidth,
-		    data32 = this.data32,
-		    blankPixelRow = this.blankPixelRow;
+		var data32 = this.data32;
 
-		// @ts-ignore
-		if (arrayFill) {
-			data32.fill(pixelColour);
-		} else {
-			for (i = 0; i < rows; i += 1) {
-				data32.set(blankPixelRow, offset);
-				offset += columns;
-			}
-		}
+		data32.fill(pixelColour);
 	};
 
 	// create the global interface

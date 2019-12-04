@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global LifeConstants ViewConstants PatternConstants RuleTreeCache ColourManager Keywords WaypointConstants DocConfig Controller AliasManager littleEndian arrayFill copyWithin */
+	/* global LifeConstants ViewConstants PatternConstants RuleTreeCache ColourManager Keywords WaypointConstants DocConfig Controller AliasManager littleEndian arrayFill arraySlice copyWithin */
 
 	// Help singleton
 	var Help = {
@@ -1428,6 +1428,17 @@
 			}
 		}
 
+		// output icon info
+		if (view.engine.ruleTableIcons) {
+			value = view.engine.ruleTableIcons[0].width;
+			itemName = view.engine.ruleTableIcons[0].height / value + "@" + value + "x" + value;
+			for (i = 1; i < view.engine.ruleTableIcons.length; i += 1) {
+				value = view.engine.ruleTableIcons[i].width;
+				itemName += " / " + view.engine.ruleTableIcons[i].height / value + "@" + value + "x" + value;
+			}
+			y = this.renderHelpLine(view, "Icons", itemName, ctx, x, y, height, helpLine);
+		}
+
 		// output decoder used
 		y = this.renderHelpLine(view, "Decoder", view.patternFormat, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
@@ -1630,6 +1641,8 @@
 		y = this.renderHelpLine(view, "Endian", (littleEndian ? "Little": "Big"), ctx, x, y, height, helpLine);
 		// @ts-ignore
 		y = this.renderHelpLine(view, "ArrayFill", (arrayFill ? "Yes": "No"), ctx, x, y, height, helpLine);
+		// @ts-ignore
+		y = this.renderHelpLine(view, "ArraySlice", (arraySlice ? "Yes": "No"), ctx, x, y, height, helpLine);
 		// @ts-ignore
 		y = this.renderHelpLine(view, "CopyWithin", (copyWithin ? "Yes": "No"), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);

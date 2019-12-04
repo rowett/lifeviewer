@@ -19,6 +19,7 @@
 			/** @type {number} */ v = 0,
 			/** @type {boolean} */ inToken = false,
 			/** @type {boolean} */ inComment = false,
+			/** @type {boolean} */ inQuotes = false,
 			/** @type {number} */ tokens = 0,
 			/** @type {Uint32Array} */ starts = new Uint32Array(l),
 			/** @type {Uint16Array} */ lengths = new Uint16Array(l),
@@ -78,6 +79,7 @@
 						numbers[tokens] = 0;
 						tokens += 1;
 					}
+					inQuotes = false;
 				}
 				break;
 
@@ -111,19 +113,32 @@
 				}
 				break;
 
+			// quote
+			case 34: // quotes
+				if (tokenizeNewline) {
+					inQuotes = !inQuotes;
+					if (!inToken) {
+						inToken = true;
+						j = i;
+					}
+				}
+				break;
+
 			// comment
 			case 35: // "#"
 				if (tokenizeNewline) {
-					if (!inComment) {
-						if (inToken) {
-							// complete last token
-							starts[tokens] = j;
-							lengths[tokens] = i - j;
-							numbers[tokens] = ((value << 1) + 1) & isNumber;
-							tokens += 1;
-							inToken = false;
+					if (!inQuotes) {
+						if (!inComment) {
+							if (inToken) {
+								// complete last token
+								starts[tokens] = j;
+								lengths[tokens] = i - j;
+								numbers[tokens] = ((value << 1) + 1) & isNumber;
+								tokens += 1;
+								inToken = false;
+							}
+							inComment = true;
 						}
-						inComment = true;
 					}
 				} else {
 					if (!inToken) {
@@ -182,10 +197,15 @@
 		}
 	};
 
-	// skip to end of line
-	Script.prototype.skipToEndOfLine = function() {
+	// skip to start of next line
+	Script.prototype.skipToNextLine = function() {
 		// check if there are more tokens
 		while (this.current < this.starts.length && this.source.charCodeAt(this.starts[this.current]) !== 10) {
+			this.current += 1;
+		}
+
+		// skip newline if present
+		if (this.current < this.starts.length) {
 			this.current += 1;
 		}
 	};
@@ -195,6 +215,19 @@
 		while (this.current < this.starts.length && this.source.charCodeAt(this.starts[this.current]) === 10) {
 			this.current += 1;
 		}
+	};
+
+	// check whether there are more tokens on the line
+	Script.prototype.moreTokensOnLine = function() {
+		var result = false;
+
+		if (this.current < this.starts.length) {
+			if (this.source.charCodeAt(this.starts[this.current]) !== 10) {
+				result = true;
+			}
+		}
+
+		return result;
 	};
 
 	// check whether next token is newline

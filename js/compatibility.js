@@ -7,10 +7,11 @@
 	"use strict";
 
 	// define globals
-	/* global Uint8Array Uint32Array */
+	/* global Int8Array Int16Array Int32Array Uint8Array Uint8ClampedArray Uint16Array Uint32Array Float32Array  Float64Array */
 
 	// for determining endian
-	var data8, data32;
+	var data8 = null,
+		data32 = null;
 
 	// cross-browser register event function
 	function registerEvent(element, event, handler, capture) {
@@ -77,6 +78,385 @@
 		window.Uint32Array = Array;
 	}
 
+	if (!window.Int32Array) {
+
+		/** @suppress {checkTypes} */
+		window.Int32Array = Array;
+	}
+
+	if (!window.Int16Array) {
+
+		/** @suppress {checkTypes} */
+		window.Int16Array = Array;
+	}
+
+	if (!window.Int8Array) {
+
+		/** @suppress {checkTypes} */
+		window.Int8Array = Array;
+	}
+
+	if (!window.Uint8ClampedArray) {
+
+		/** @suppress {checkTypes} */
+		window.Uint8ClampedArray = Array;
+	}
+
+	if (!window.Float32Array) {
+
+		/** @suppress {checkTypes} */
+		window.Float32Array = Array;
+	}
+
+	if (!window.Float64Array) {
+
+		/** @suppress {checkTypes} */
+		window.Float64Array = Array;
+	}
+
+	// check for array fill
+	if (!window.Uint32Array.prototype.fill) {
+		window["arrayFill"] = false;
+
+		window.Uint32Array.prototype.fill = function(value, begin, end) {
+			var i = 0;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			if (begin == undefined) {
+				begin = 0;
+			}
+
+			for (i = 0; i < end; i += 1) {
+				this[i] = value;
+			}
+		};
+	} else {
+		window["arrayFill"] = true;
+	}
+
+	if (!window.Uint16Array.prototype.fill) {
+		window.Uint16Array.prototype.fill = function(value, begin, end) {
+			var i = 0;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			if (begin == undefined) {
+				begin = 0;
+			}
+
+			for (i = 0; i < end; i += 1) {
+				this[i] = value;
+			}
+		};
+	}
+
+	if (!window.Uint8Array.prototype.fill) {
+		window.Uint8Array.prototype.fill = function(value, begin, end) {
+			var i = 0;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			if (begin == undefined) {
+				begin = 0;
+			}
+
+			for (i = 0; i < end; i += 1) {
+				this[i] = value;
+			}
+		};
+	}
+
+	if (!window.Uint8ClampedArray.prototype.fill) {
+		window.Uint8ClampedArray.prototype.fill = function(value, begin, end) {
+			var i = 0;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			if (begin == undefined) {
+				begin = 0;
+			}
+
+			for (i = 0; i < end; i += 1) {
+				this[i] = value;
+			}
+		};
+	}
+
+	if (!window.Int32Array.prototype.fill) {
+		window.Int32Array.prototype.fill = function(value, begin, end) {
+			var i = 0;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			if (begin == undefined) {
+				begin = 0;
+			}
+
+			for (i = 0; i < end; i += 1) {
+				this[i] = value;
+			}
+		};
+	}
+
+	if (!window.Int16Array.prototype.fill) {
+		window.Int16Array.prototype.fill = function(value, begin, end) {
+			var i = 0;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			if (begin == undefined) {
+				begin = 0;
+			}
+
+			for (i = 0; i < end; i += 1) {
+				this[i] = value;
+			}
+		};
+	}
+
+	if (!window.Int8Array.prototype.fill) {
+		window.Int8Array.prototype.fill = function(value, begin, end) {
+			var i = 0;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			if (begin == undefined) {
+				begin = 0;
+			}
+
+			for (i = 0; i < end; i += 1) {
+				this[i] = value;
+			}
+		};
+	}
+
+	if (!window.Float32Array.prototype.fill) {
+		window.Float32Array.prototype.fill = function(value, begin, end) {
+			var i = 0;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			if (begin == undefined) {
+				begin = 0;
+			}
+
+			for (i = 0; i < end; i += 1) {
+				this[i] = value;
+			}
+		};
+	}
+
+	if (!window.Float64Array.prototype.fill) {
+		window.Float64Array.prototype.fill = function(value, begin, end) {
+			var i = 0;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			if (begin == undefined) {
+				begin = 0;
+			}
+
+			for (i = 0; i < end; i += 1) {
+				this[i] = value;
+			}
+		};
+	}
+
+	// check for slice
+	if (!window.Int32Array.prototype.slice) {
+		window["arraySlice"] = false;
+
+		window.Int32Array.prototype.slice = function(begin, end) {
+			var i = 0,
+				size = 0,
+				result = null;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			size = end - begin;
+
+			result = new Int32Array(size);
+			for (i = 0; i < size; i += 1) {
+				result[i] = this[begin + i];
+			}
+
+			return result;
+		};
+	} else {
+		window["arraySlice"] = true;
+	}
+
+	if (!window.Int16Array.prototype.slice) {
+		window.Int16Array.prototype.slice = function(begin, end) {
+			var i = 0,
+				size = 0,
+				result = null;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			size = end - begin;
+
+			result = new Int16Array(size);
+			for (i = 0; i < size; i += 1) {
+				result[i] = this[begin + i];
+			}
+
+			return result;
+		};
+	}
+
+	if (!window.Int8Array.prototype.slice) {
+		window.Int8Array.prototype.slice = function(begin, end) {
+			var i = 0,
+				size = 0,
+				result = null;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			size = end - begin;
+
+			result = new Int8Array(size);
+			for (i = 0; i < size; i += 1) {
+				result[i] = this[begin + i];
+			}
+
+			return result;
+		};
+	}
+
+	if (!window.Uint32Array.prototype.slice) {
+		window.Uint32Array.prototype.slice = function(begin, end) {
+			var i = 0,
+				size = 0,
+				result = null;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			size = end - begin;
+
+			result = new Uint32Array(size);
+			for (i = 0; i < size; i += 1) {
+				result[i] = this[begin + i];
+			}
+
+			return result;
+		};
+	}
+
+	if (!window.Uint16Array.prototype.slice) {
+		window.Uint16Array.prototype.slice = function(begin, end) {
+			var i = 0,
+				size = 0,
+				result = null;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			size = end - begin;
+
+			result = new Uint16Array(size);
+			for (i = 0; i < size; i += 1) {
+				result[i] = this[begin + i];
+			}
+
+			return result;
+		};
+	}
+
+	if (!window.Uint8Array.prototype.slice) {
+		window.Uint8Array.prototype.slice = function(begin, end) {
+			var i = 0,
+				size = 0,
+				result = null;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			size = end - begin;
+
+			result = new Uint8Array(size);
+			for (i = 0; i < size; i += 1) {
+				result[i] = this[begin + i];
+			}
+
+			return result;
+		};
+	}
+
+	if (!window.Uint8ClampedArray.prototype.slice) {
+		window.Uint8ClampedArray.prototype.slice = function(begin, end) {
+			var i = 0,
+				size = 0,
+				result = null;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			size = end - begin;
+
+			result = new Uint8ClampedArray(size);
+			for (i = 0; i < size; i += 1) {
+				result[i] = this[begin + i];
+			}
+
+			return result;
+		};
+	}
+
+	if (!window.Float32Array.prototype.slice) {
+		window.Float32Array.prototype.slice = function(begin, end) {
+			var i = 0,
+				size = 0,
+				result = null;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			size = end - begin;
+
+			result = new Float32Array(size);
+			for (i = 0; i < size; i += 1) {
+				result[i] = this[begin + i];
+			}
+
+			return result;
+		};
+	}
+
+	if (!window.Float64Array.prototype.slice) {
+		window.Float64Array.prototype.slice = function(begin, end) {
+			var i = 0,
+				size = 0,
+				result = null;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			size = end - begin;
+
+			result = new Float64Array(size);
+			for (i = 0; i < size; i += 1) {
+				result[i] = this[begin + i];
+			}
+
+			return result;
+		};
+	}
+
 	// set endian flag
 	data32 = new Uint32Array(1);
 	data32[0] = 0x1234;
@@ -87,13 +467,6 @@
 		window["littleEndian"] = false;
 	}
 	
-	// set fill flag
-	if (data32.fill) {
-		window["arrayFill"] = true;
-	} else {
-		window["arrayFill"] = false;
-	}
-
 	// set copy within flag
 	if (data32.copyWithin) {
 		window["copyWithin"] = true;

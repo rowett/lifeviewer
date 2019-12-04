@@ -7,7 +7,7 @@
 	"use strict";
 
 	// define globals
-	/* global registerEvent DocConfig Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script arrayFill Allocator */
+	/* global registerEvent DocConfig Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script Allocator */
 
 	// RuleTreeCache singleton
 	var RuleTreeCache = {
@@ -141,12 +141,12 @@
 				// add @TREE
 				this.rules[l] = {name: pattern.ruleName, isTree: true, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
 					nodes: pattern.ruleTreeNodes, base: pattern.ruleTreeBase, ruleA: pattern.ruleTreeA,
-					ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours};
+					ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours, icons: pattern.ruleTableIcons};
 			} else {
 				// add @TABLE
 				this.rules[l] = {name: pattern.ruleName, isTree: false, states: pattern.ruleTableStates, neighbourhood: pattern.ruleTableNeighbourhood,
 					compressed: pattern.ruleTableCompressedRules, output: pattern.ruleTableOutput,
-					LUT: pattern.ruleTableLUT, colours: pattern.ruleTreeColours, dups: pattern.ruleTableDups};
+					LUT: pattern.ruleTableLUT, colours: pattern.ruleTreeColours, dups: pattern.ruleTableDups, icons: pattern.ruleTableIcons};
 			}
 
 			// create metadata
@@ -204,6 +204,7 @@
 				}
 			}
 			pattern.ruleTreeColours = record.colours;
+			pattern.ruleTableIcons = record.icons;
 			pattern.isNone = false;
 		}
 
@@ -589,6 +590,9 @@
 
 		// rule table icons section
 		/** @const {string} */ this.ruleTableIconsName = "@ICONS";
+
+		// rule table XPM keyword
+		/** @const {string} */ this.ruleTableIconsXPM = "xpm";
 	}
 
 	// Life pattern constructor
@@ -811,6 +815,9 @@
 
 		// rule tree colours
 		this.ruleTreeColours = null;
+
+		// rule table icons
+		this.ruleTableIcons = null;
 	}
 
 	// copy settings from one pattern to another
@@ -2383,23 +2390,9 @@
 		}
 
 		// clear arrays
-		// @ts-ignore
-		if (arrayFill) {
-			ruleTriangularArray.fill(0);
-		} else {
-			for (i = 0; i < ruleTriangularArray.length; i += 1) {
-				ruleTriangularArray[i] = 0;
-			}
-		}
+		ruleTriangularArray.fill(0);
 		if (secondTriangularArray) {
-			// @ts-ignore
-			if (arrayFill) {
-				secondTriangularArray.fill(0);
-			} else {
-				for (i = 0; i < secondTriangularArray.length; i += 1) {
-					secondTriangularArray[i] = 0;
-				}
-			}
+			secondTriangularArray.fill(0);
 		}
 
 		// check for B0
@@ -2585,16 +2578,8 @@
 					}
 			
 					// clear the rule array
-					// @ts-ignore
-					if (arrayFill) {
-						tempArray.fill(0);
-						ruleArray.fill(0);
-					} else {
-						for (i = 0; i < tempArray.length; i += 1) {
-							tempArray[i] = 0;
-							ruleArray[i] = 0;
-						}
-					}
+					tempArray.fill(0);
+					ruleArray.fill(0);
 	
 					// create swap array for hex
 					for (i = 0; i < tempArray.length; i += 1) {
@@ -6226,7 +6211,6 @@
 			border = 4,
 
 		    // counters
-			i = 0,
 			j = 0;
 
 		// reset the pattern
@@ -6263,14 +6247,7 @@
 		pattern.numUsedStates = 0;
 		
 		// clear the state used counts
-		// @ts-ignore
-		if (arrayFill) {
-			stateCount.fill(0);
-		} else {
-			for (i = 0; i < stateCount.length; i += 1) {
-				stateCount[i] = 0;
-			}
-		}
+		stateCount.fill(0);
 
 		// add one to the string for lookahead
 		source += " ";
@@ -6581,9 +6558,195 @@
 		}
 	};
 
-	// decode rule table icons TBD
-	PatternManager.prototype.decodeIcons = function() {
-		var valid = true;
+	// decode rule table icons
+	PatternManager.prototype.decodeIcons = function(pattern, reader) {
+		var /** @type {boolean} */ valid = true,
+			/** @type {boolean} */ xpmHeader = false,
+			/** @type {number} */ width = 0,
+			/** @type {number} */ height = 0,
+			/** @type {number} */ numColours = 0,
+			/** @type {number} */ charsPerPixel = 0,
+			/** @type {string} */ nextToken = "",
+			/** @type {string} */ colourChar = "",
+			/** @type {string} */ colourValue = "",
+			/** @type {number} */ lineNo = 0,
+			/** @type {number} */ i = 0,
+			iconData = null,
+			xpmSections = [],
+			colourList = {};
+
+		// skip newline and blank lines
+		reader.skipToNextLine();
+
+		// get next token
+		nextToken = reader.getNextToken();
+		if (nextToken !== "") {
+			if (nextToken[0] === "@") {
+				nextToken = "";
+			}
+		}
+
+		// decode each XPM section
+		while (valid && nextToken !== "") {
+			// decode header
+			while (valid && !xpmHeader && nextToken !== "") {
+				// skip slash comment lines
+				if (nextToken[0] === "/") {
+					reader.skipToNextLine();
+				} else{
+					// check for XPM keyword
+					if (nextToken.toLowerCase() === this.ruleTableIconsXPM) {
+						reader.skipToNextLine();
+					} else {
+						// check for quoted line
+						if (nextToken[0] === "\"") {
+							// look for header
+							nextToken = nextToken.substr(1);
+							if (reader.isNumeric(nextToken)) {
+								// decode value
+								width = reader.asNumber(nextToken);
+	
+								// get height
+								if (reader.nextTokenIsNumeric()) {
+									height = reader.getNextTokenAsNumber();
+	
+									// get number of colours
+									if (reader.nextTokenIsNumeric()) {
+										numColours = reader.getNextTokenAsNumber();
+	
+										// get chars per pixel
+										nextToken = reader.getNextToken();
+										if (nextToken[nextToken.length - 1] === "\"") {
+											nextToken = nextToken.substr(0, nextToken.length - 1);
+											if (reader.isNumeric(nextToken)) {
+												charsPerPixel = reader.asNumber(nextToken);
+											}
+										}
+									}
+								}
+							}
+	
+							// check if header decoded
+							if (width > 0 && height > 0 && charsPerPixel >= 1 && charsPerPixel <= 2 && height % width === 0) {
+								// header valid so check width is supported
+								if (!(width === 7 || width === 15 || width === 31)) {
+									xpmHeader = false;
+								} else {
+									// switch to reading colours and icon data
+									xpmHeader = true;
+									lineNo = 0;
+									iconData = new Uint32Array(width * height);
+								}
+							} else {
+								valid = false;
+							}
+						}
+					}
+				}
+
+				// skip newline and blank lines
+				while (reader.nextIsNewline()) {
+					// skip newline
+					reader.getNextToken();
+				}
+				nextToken = reader.getNextToken();
+				if (nextToken !== "" && nextToken[0] === "@") {
+					nextToken = "";
+				}
+			}
+
+			// decode icons
+			while (valid && xpmHeader && nextToken !== "") {
+				// skip slash comment lines
+				if (nextToken[0] === "/") {
+					reader.skipToNextLine();
+				} else {
+					// find quoted line
+					if (nextToken[0] === "\"") {
+						valid = false;
+						// check if reading colours
+						if (lineNo < numColours) {
+							// get colour character
+							colourChar = nextToken.substr(1);
+							if (colourChar.length === charsPerPixel) {
+								if (colourList[colourChar] === undefined) {
+									// read the c character
+									nextToken = reader.getNextToken();
+									if (nextToken === "c") {
+										// read the colour value
+										nextToken = reader.getNextToken();
+										if (nextToken[nextToken.length - 1] === "\"") {
+											colourValue = nextToken.substr(0, nextToken.length - 1);
+											colourList[colourChar] = colourValue;
+											valid = true;
+										}
+									}
+								}
+							}
+						} else {
+							// reading icon data
+							valid = false;
+							if (nextToken[nextToken.length - 1] === "\"" && ((nextToken.length - 2) === (width * charsPerPixel))) {
+								nextToken = nextToken.substr(1, nextToken.length - 2);
+								// check each pixel
+								i = 0;
+								valid = true;
+								while (valid && i < width) {
+									colourChar = nextToken[i * charsPerPixel];
+									if (charsPerPixel > 1) {
+										colourChar += nextToken[i * charsPerPixel + 1];
+									}
+									if (colourList[colourChar] === undefined) {
+										valid = false;
+									} else {
+										iconData[(lineNo - numColours) * height + i] = parseInt(colourList[colourChar], 16);
+									}
+									i += 1;
+								}
+							}
+						}
+					} else {
+						// end of icon data
+						if (lineNo === height + numColours) {
+							xpmHeader = false;
+							// save xpm section
+							xpmSections[xpmSections.length] = {width: width, height: height, charsPerPixel: charsPerPixel, numColours: numColours, colours: colourList, iconData: iconData.slice()};
+							colourList = {};
+							iconData = null;
+						} else {
+							valid = false;
+						}
+						reader.stepBack();
+					}
+					lineNo += 1;
+				}
+
+				// skip newline and blank lines
+				while (reader.nextIsNewline()) {
+					// skip newline
+					reader.getNextToken();
+				}
+				nextToken = reader.getNextToken();
+				if (nextToken !== "" && nextToken[0] === "@") {
+					nextToken = "";
+				}
+			}
+		}
+
+		// save icons if valid
+		if (valid) {
+			// save last section
+			if (lineNo === height + numColours) {
+				// save xpm section
+				xpmSections[xpmSections.length] = {width: width, height: height, charsPerPixel: charsPerPixel, numColours: numColours, colours: colourList, iconData: iconData.slice()};
+				pattern.ruleTableIcons = xpmSections;
+			} else {
+				valid = false;
+				pattern.ruleTableIcons = null;
+			}
+		} else {
+			pattern.ruleTableIcons = null;
+		}
 
 		return valid;
 	};
@@ -6601,10 +6764,7 @@
 			valid = false;
 
 		// skip newline and blank lines
-		while (reader.nextIsNewline()) {
-			// skip newline
-			reader.getNextToken();
-		}
+		reader.skipToNextLine();
 
 		// check if first token is a number
 		if (reader.nextTokenIsNumeric()) {
@@ -6652,13 +6812,10 @@
 
 			// check if valid
 			if (valid) {
-				// skip to end of line
-				reader.skipToEndOfLine();
+				// skip to next line
+				reader.skipToNextLine();
 
 				// look for next colour entry
-				while (reader.nextIsNewline()) {
-					reader.getNextToken();
-				}
 				if (reader.nextTokenIsNumeric()) {
 					num1 = reader.getNextTokenAsNumber();
 				} else {
@@ -7097,7 +7254,7 @@
 					// read the tokens on the line
 					lineTokens = [];
 					lineTokens[0] = nextToken;
-					while (!reader.nextIsNewline()) {
+					while (reader.moreTokensOnLine()) {
 						lineTokens[lineTokens.length] = reader.getNextToken();
 					}
 
@@ -7565,7 +7722,7 @@
 					// search for icons from start position
 					iconIndex = reader.findTokenAtLineStart(this.ruleTableIconsName, 0);
 					if (iconIndex !== -1) {
-						this.decodeIcons();
+						this.decodeIcons(pattern, reader);
 					}
 				}
 			}

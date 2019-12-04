@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global Uint8Array Uint16Array Uint32Array Int8Array Int16Array Int32Array Float32Array Float64Array arrayFill */
+	/* global Uint8Array Uint16Array Uint32Array Int8Array Int16Array Int32Array Float32Array Float64Array */
 
 	// allocation bits
 	var AllocBits = {
@@ -367,19 +367,7 @@
 			// check whether to fill with an initial value
 			if (initial !== 0) {
 				// fill the array with the initial value
-				// @ts-ignore
-				if (arrayFill) {
-					// use fill if available
-					whole.fill(initial);
-				}
-				else {
-					// fill manually
-					i = 0;
-					while (i < whole.length) {
-						whole[i] = initial;
-						i += 1;
-					}
-				}
+				whole.fill(initial);
 			}
 		}
 
@@ -389,9 +377,7 @@
 
 	// add an extra row to an array
 	Array.addRow = function(source, initial, name) {
-		var i = 0,
-
-		    // get the size of the source row
+		var // get the size of the source row
 		    m = source[0].length,
 
 		    // create the new row
@@ -400,19 +386,7 @@
 		// check whether to fill with an initial value
 		if (initial !== 0) {
 			// fill the array with initial value
-			// @ts-ignore
-			if (arrayFill) {
-				// use fill if available
-				row.fill(initial);
-			}
-			else {
-				// fill manually
-				i = 0;
-				while (i < m) {
-					row[i] = initial;
-					i += 1;
-				}
-			}
+			row.fill(initial);
 		}
 
 		// add to the array
