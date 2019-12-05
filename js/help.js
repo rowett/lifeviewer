@@ -1430,13 +1430,21 @@
 
 		// output icon info
 		if (view.engine.ruleTableIcons) {
-			value = view.engine.ruleTableIcons[0].width;
-			itemName = view.engine.ruleTableIcons[0].height / value + "@" + value + "x" + value;
-			for (i = 1; i < view.engine.ruleTableIcons.length; i += 1) {
-				value = view.engine.ruleTableIcons[i].width;
-				itemName += " / " + view.engine.ruleTableIcons[i].height / value + "@" + value + "x" + value;
+			view.tabs[1] = 200;
+			view.tabs[2] = 280;
+			view.tabs[3] = 360;
+			view.tabs[4] = 440;
+			// check for built in icons
+			if (view.engine.ruleTableIcons[0].builtIn !== PatternConstants.ruleTableIconNone) {
+				y = this.renderHelpLine(view, "Icons", PatternConstants.ruleTableIconNames[view.engine.ruleTableIcons[0].builtIn], ctx, x, y, height, helpLine);
+			} else {
+				y = this.renderHelpLine(view, "Icons", "Size\tNumber\tColours\tGrayScale", ctx, x, y, height, helpLine);
+				for (i = 0; i < view.engine.ruleTableIcons.length; i += 1) {
+					value = view.engine.ruleTableIcons[i].width;
+					itemName = value + "x" + value + "\t" + view.engine.ruleTableIcons[i].height / value + "\t" + view.engine.ruleTableIcons[i].numColours + "\t" + (view.engine.ruleTableIcons[i].greyScale ? "Yes" : "No");
+					y = this.renderHelpLine(view, "  Set " + i, itemName, ctx, x, y, height, helpLine);
+				}
 			}
-			y = this.renderHelpLine(view, "Icons", itemName, ctx, x, y, height, helpLine);
 		}
 
 		// output decoder used

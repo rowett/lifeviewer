@@ -249,11 +249,20 @@
 
 	// pattern constants
 	var PatternConstants = {
-		// ** table section neighbourhood indices (must be in the same order as strings above)
+		// table section neighbourhood indices (must be in the same order as strings above)
 		/** @const {number} */ ruleTableVN : 0,
 		/** @const {number} */ ruleTableMoore : 1,
 		/** @const {number} */ ruleTableHex : 2,
-		/** @const {number} */ ruleTableOneD : 3
+		/** @const {number} */ ruleTableOneD : 3,
+
+		// icons section built-in icon sets
+		/** @const {number} */ ruleTableIconNone : -1,
+		/** @const {number} */ ruleTableIconCircles : 0,
+		/** @const {number} */ ruleTableIconDiamonds : 1,
+		/** @const {number} */ ruleTableIconHexagons : 2,
+		/** @const {number} */ ruleTableIconTriangles : 3,
+
+		/** @const {Array<string>} */ ruleTableIconNames : ["circles", "diamonds", "hexagons", "triangles"]
 	};
 
 	// pattern manager
@@ -922,7 +931,7 @@
 		}
 
 		// check for neighborhoods
-		if ((this.isPCA !== source.isPCA) || (this.isMargolus !== source.isMargolus) || (this.isHex !== source.isHex) || (this.isTriangular !== source.isTriangular) || (this.triangularNeighbourhood !== source.triangularNeighbourhood) || (this.isVonNeumann !== source.isVonNeumann) || (this.wolframRule == -1 && source.wolframRule !== -1) || (this.wolframRule !== -1 && source.wolframRule === -1) || (this.neighborhoodLTL !== source.neighborhoodLTL) || (this.neighborhoodHROT !== source.neighborhoodHROT)) {
+		if ((this.isPCA !== source.isPCA) || (this.isMargolus !== source.isMargolus) || (this.isHex !== source.isHex) || (this.isTriangular !== source.isTriangular) || (this.triangularNeighbourhood !== source.triangularNeighbourhood) || (this.isVonNeumann !== source.isVonNeumann) || (this.wolframRule === -1 && source.wolframRule !== -1) || (this.wolframRule !== -1 && source.wolframRule === -1) || (this.neighborhoodLTL !== source.neighborhoodLTL) || (this.neighborhoodHROT !== source.neighborhoodHROT)) {
 			return "Alternate has different neighborhood";
 		}
 
@@ -6569,7 +6578,10 @@
 			/** @type {string} */ nextToken = "",
 			/** @type {string} */ colourChar = "",
 			/** @type {string} */ colourValue = "",
+			/** @type {number} */ colourNum = 0,
 			/** @type {number} */ lineNo = 0,
+			/** @type {boolean} */ isGreyScale = true,
+			/** @type {number} */ builtIn = PatternConstants.ruleTableIconNone,
 			/** @type {number} */ i = 0,
 			iconData = null,
 			xpmSections = [],
@@ -6640,6 +6652,22 @@
 							} else {
 								valid = false;
 							}
+						} else {
+							// check for built-in icons
+							switch (nextToken) {
+								case "circles":
+									builtIn = PatternConstants.ruleTableIconCircles;
+									break;
+								case "diamonds":
+									builtIn = PatternConstants.ruleTableIconDiamonds;
+									break;
+								case "hexagons":
+									builtIn = PatternConstants.ruleTableIconHexagons;
+									break;
+								case "triangles":
+									builtIn = PatternConstants.ruleTableIconTriangles;
+									break;
+							}
 						}
 					}
 				}
@@ -6677,7 +6705,12 @@
 										nextToken = reader.getNextToken();
 										if (nextToken[nextToken.length - 1] === "\"") {
 											colourValue = nextToken.substr(0, nextToken.length - 1);
-											colourList[colourChar] = colourValue;
+											colourNum = parseInt(colourValue, 16);
+											colourList[colourChar] = colourNum;
+											// check for greyscale
+											if (!(((colourNum >> 16) === ((colourNum >> 8) & 255)) && ((colourNum >> 16) === (colourNum & 255)))) {
+												isGreyScale = false;
+											}
 											valid = true;
 										}
 									}
@@ -6699,7 +6732,7 @@
 									if (colourList[colourChar] === undefined) {
 										valid = false;
 									} else {
-										iconData[(lineNo - numColours) * height + i] = parseInt(colourList[colourChar], 16);
+										iconData[(lineNo - numColours) * height + i] = colourList[colourChar];
 									}
 									i += 1;
 								}
@@ -6710,9 +6743,17 @@
 						if (lineNo === height + numColours) {
 							xpmHeader = false;
 							// save xpm section
-							xpmSections[xpmSections.length] = {width: width, height: height, charsPerPixel: charsPerPixel, numColours: numColours, colours: colourList, iconData: iconData.slice()};
+							if (builtIn !== PatternConstants.ruleTableIconNone) {
+								colourList = {};
+								iconData = [];
+							}
+							xpmSections[xpmSections.length] = {builtIn: builtIn, width: width, height: height, numColours: numColours, colours: colourList, iconData: iconData.slice(), greyScale: isGreyScale};
+
+							// reset for next section
 							colourList = {};
 							iconData = null;
+							isGreyScale = true;
+							builtIn = PatternConstants.ruleTableIconNone;
 						} else {
 							valid = false;
 						}
@@ -6738,7 +6779,11 @@
 			// save last section
 			if (lineNo === height + numColours) {
 				// save xpm section
-				xpmSections[xpmSections.length] = {width: width, height: height, charsPerPixel: charsPerPixel, numColours: numColours, colours: colourList, iconData: iconData.slice()};
+				if (builtIn !== PatternConstants.ruleTableIconNone) {
+					colourList = {};
+					iconData = [];
+				}
+				xpmSections[xpmSections.length] = {builtIn: builtIn, width: width, height: height, numColours: numColours, colours: colourList, iconData: iconData.slice(), greyScale: isGreyScale};
 				pattern.ruleTableIcons = xpmSections;
 			} else {
 				valid = false;

@@ -1,3 +1,6 @@
+Build 467
+- handle built-in icon sets
+
 Build 466
 - decode RuleTable @ICONS section (no render)
 - IE compatibility fixes

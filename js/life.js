@@ -18758,7 +18758,7 @@
 										isMatch = lutc[iRuleC] & lutn[iRuleC];
 										if (isMatch) {
 											isMatch &= lutne[iRuleC] & lute[iRuleC];
-											if (isMatch){
+											if (isMatch) {
 												isMatch &= lutse[iRuleC] & luts[iRuleC];
 												if (isMatch) {
 													isMatch &= lutsw[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
@@ -18831,7 +18831,7 @@
 									isMatch = lutc[iRuleC] & lutn[iRuleC];
 									if (isMatch) {
 										isMatch &= lutne[iRuleC] & lute[iRuleC];
-										if (isMatch){
+										if (isMatch) {
 											isMatch &= lutse[iRuleC] & luts[iRuleC];
 											if (isMatch) {
 												isMatch &= lutsw[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
