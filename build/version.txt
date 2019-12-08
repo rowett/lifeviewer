@@ -1,3 +1,10 @@
+Build 469
+- improved @TABLE decode performance
+- fix pattern settings not being reset when rule already in cache
+
+Build 468
+- fix quotes handling in tokenizer for script commands
+
 Build 467
 - handle built-in icon sets
 

@@ -123,6 +123,12 @@
 							j = i;
 						}
 					}
+				} else {
+					if (!inToken) {
+						inToken = true;
+						isNumber = 0;
+						j = i;
+					}
 				}
 				break;
 

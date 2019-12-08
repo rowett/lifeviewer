@@ -7,7 +7,7 @@
 	"use strict";
 
 	// define globals
-	/* global registerEvent DocConfig Uint8 Uint16 Uint8Array Uint16Array Uint32Array AliasManager LifeConstants Script Allocator */
+	/* global registerEvent DocConfig Uint8 Uint16 Uint8Array Uint16Array Uint32Array Int32Array AliasManager LifeConstants Script Allocator */
 
 	// RuleTreeCache singleton
 	var RuleTreeCache = {
@@ -6657,15 +6657,23 @@
 							switch (nextToken) {
 								case "circles":
 									builtIn = PatternConstants.ruleTableIconCircles;
+									colourList = {};
+									iconData = [];
 									break;
 								case "diamonds":
 									builtIn = PatternConstants.ruleTableIconDiamonds;
+									colourList = {};
+									iconData = [];
 									break;
 								case "hexagons":
 									builtIn = PatternConstants.ruleTableIconHexagons;
+									colourList = {};
+									iconData = [];
 									break;
 								case "triangles":
 									builtIn = PatternConstants.ruleTableIconTriangles;
+									colourList = {};
+									iconData = [];
 									break;
 							}
 						}
@@ -6743,10 +6751,6 @@
 						if (lineNo === height + numColours) {
 							xpmHeader = false;
 							// save xpm section
-							if (builtIn !== PatternConstants.ruleTableIconNone) {
-								colourList = {};
-								iconData = [];
-							}
 							xpmSections[xpmSections.length] = {builtIn: builtIn, width: width, height: height, numColours: numColours, colours: colourList, iconData: iconData.slice(), greyScale: isGreyScale};
 
 							// reset for next section
@@ -6779,10 +6783,6 @@
 			// save last section
 			if (lineNo === height + numColours) {
 				// save xpm section
-				if (builtIn !== PatternConstants.ruleTableIconNone) {
-					colourList = {};
-					iconData = [];
-				}
 				xpmSections[xpmSections.length] = {builtIn: builtIn, width: width, height: height, numColours: numColours, colours: colourList, iconData: iconData.slice(), greyScale: isGreyScale};
 				pattern.ruleTableIcons = xpmSections;
 			} else {
@@ -7027,9 +7027,7 @@
 			// check which symmetry is required
 			if (symmetry === 0) {
 				// none - permuted inputs are sequential
-				if (this.packTransition(inputs, output, pattern, outputList, lut, dedupe)) {
-					numDups += 1;
-				}
+				this.packTransition(inputs, output, pattern, outputList, lut, null);
 			} else if (symmetry === nSymmetries - 1) {
 				// permute - start with sorted list (from element 1 onwards)
 				permutedInputs = inputs.slice(1).sort(this.compareArrays);
@@ -7037,14 +7035,14 @@
 					inputs[j + 1] = permutedInputs[j];
 				}
 				do {
-					if (this.packTransition(inputs, output, pattern, outputList, lut, null)) {
-						numDups += 1;
-					}
+					this.packTransition(inputs, output, pattern, outputList, lut, null);
 					// permute from element 1 onwards
 				} while(this.nextPermutation(inputs));
 			} else {
 				// other symmetry - get the remaps for the given symmetry
 				remap = this.ruleTableSymmetryRemap[pattern.ruleTableNeighbourhood][symmetry - 1];
+				// check for duplicates within this input set
+				dedupe = [];
 				for (j = 0; j < remap.length; j += 1) {
 					for (k = 0; k < inputs.length; k += 1) {
 						permutedInputs[k] = inputs[remap[j][k]];
@@ -7094,6 +7092,8 @@
 			/** @type {number} */ charVal = 0,
 			transitionTable = [],
 			/** @type {Array<string>} */ lineTokens = [],
+			lineValues = null,
+			/** @type {string} */ currentToken = "",
 			/** @type {Array<string>} */ boundVars = [],
 			/** @type {number} */ varCount = 0,
 			/** @type {boolean} */ found = false,
@@ -7139,6 +7139,9 @@
 							neighbourhood = j;
 							nInputs = this.ruleTableInputs[j];
 							found = true;
+
+							// allocate the line values array
+							lineValues = new Int32Array(nInputs + 1);
 						} else {
 							j += 1;
 						}
@@ -7302,8 +7305,25 @@
 					// read the tokens on the line
 					lineTokens = [];
 					lineTokens[0] = nextToken;
+					if (reader.isNumeric(nextToken)) {
+						lineValues[0] = parseInt(nextToken, 10);
+					} else {
+						lineValues[0] = -1;
+					}
+					i = 1;
 					while (reader.moreTokensOnLine()) {
-						lineTokens[lineTokens.length] = reader.getNextToken();
+						if (i < nInputs + 1) {
+							if (reader.nextTokenIsNumeric()) {
+								lineValues[i] = reader.getNextTokenAsNumber();
+								lineTokens[i] = "";
+							} else {
+								lineValues[i] = -1;
+								lineTokens[i] = reader.getNextToken();
+							}
+						} else {
+							lineTokens[i] = reader.getNextToken();
+						}
+						i += 1;
 					}
 
 					// check there are enough
@@ -7337,11 +7357,58 @@
 							// output the transition for the current set of bound variables
 							for (i = 0; i < nInputs; i += 1) {
 								found = false;
-								// if there are bound variables see if this token is one
-								if (boundVars.length) {
+								// check if the current token is numeric
+								readState = lineValues[i];
+								if (readState !== -1) {
+									if (readState >= states) {
+										this.failureReason = "state out of range: " + readState;
+										valid = false;
+									} else {
+										inputs[i] = [readState];
+									}
+								} else {
+									currentToken = lineTokens[i];
+
+									// if there are bound variables see if this token is one
+									if (boundVars.length) {
+										j = 0;
+										while (!found && j < boundVars.length) {
+											if (boundVars[j] === currentToken) {
+												found = true;
+											} else {
+												j += 1;
+											}
+										}
+									}
+									if (boundVars.length > 0 && found) {
+										// bound variable
+										inputs[i] = [variables[currentToken][boundVariableIndices[currentToken]]];
+									} else if (variables[currentToken] !== undefined) {
+										// unbound variable
+										inputs[i] = variables[currentToken];
+									} else {
+										this.failureReason = "unknown variable: " + currentToken;
+										valid = false;
+									}
+								}
+							}
+
+							// collect the output
+							found = false;
+							readState = lineValues[i];
+							if (readState !== -1) {
+								if (readState < 0 || readState >= states) {
+									this.failureReason = "output state out of range: " + readState;
+									valid = false;
+								} else {
+									output = readState;
+								}
+							} else {
+								currentToken = lineTokens[i];
+								if (boundVars.length > 0) {
 									j = 0;
 									while (!found && j < boundVars.length) {
-										if (boundVars[j] === lineTokens[i]) {
+										if (boundVars[j] === currentToken) {
 											found = true;
 										} else {
 											j += 1;
@@ -7350,59 +7417,12 @@
 								}
 								if (boundVars.length > 0 && found) {
 									// bound variable
-									inputs[i] = [variables[lineTokens[i]][boundVariableIndices[lineTokens[i]]]];
-								} else if (variables[lineTokens[i]] !== undefined) {
+									output = variables[currentToken][boundVariableIndices[currentToken]];
+								} else if (variables[currentToken] !== undefined) {
 									// unbound variable
-									inputs[i] = variables[lineTokens[i]];
+									output = variables[currentToken];
 								} else {
-									// check if numeric
-									if (reader.isNumeric(lineTokens[i])) {
-										// get state
-										readState = parseInt(lineTokens[i], 10);
-										if (readState < 0 || readState >= states) {
-											this.failureReason = "state out of range: " + readState;
-											valid = false;
-										} else {
-											inputs[i] = [readState];
-										}
-									} else {
-										this.failureReason = "unknown variable: " + lineTokens[i];
-										valid = false;
-									}
-								}
-							}
-
-							// collect the output
-							found = false;
-							if (boundVars.length > 0) {
-								j = 0;
-								while (!found && j < boundVars.length) {
-									if (boundVars[j] === lineTokens[i]) {
-										found = true;
-									} else {
-										j += 1;
-									}
-								}
-							}
-							if (boundVars.length > 0 && found) {
-								// bound variable
-								output = variables[lineTokens[i]][boundVariableIndices[lineTokens[i]]];
-							} else if (variables[lineTokens[i]] !== undefined) {
-								// unbound variable
-								output = variables[lineTokens[i]];
-							} else {
-								// check if numeric
-								if (reader.isNumeric(lineTokens[i])) {
-									// state
-									readState = parseInt(lineTokens[i], 10);
-									if (readState < 0 || readState >= states) {
-										this.failureReason = "output state out of range: " + readState;
-										valid = false;
-									} else {
-										output = readState;
-									}
-								} else {
-									this.failureReason = "unknown output variable: " + lineTokens[i];
+									this.failureReason = "unknown output variable: " + currentToken;
 									valid = false;
 								}
 							}
@@ -7743,7 +7763,7 @@
 						if (pattern.manager.failureReason === "") {
 							pattern.manager.failureReason = "not valid";
 						}
-						pattern.manager.failureReason = this.ruleTableTreeName +" " + pattern.manager.failureReason;
+						pattern.manager.failureReason = this.ruleTableTreeName + " " + pattern.manager.failureReason;
 					}
 				} else {
 					// search for a table from the start since the sections could be in any order
@@ -7926,6 +7946,19 @@
 					newPattern.boundedGridDef = "";
 				}
 
+				// reset pattern after failed decode
+				newPattern.isMargolus = false;
+				newPattern.isPCA = false;
+				newPattern.isNone = false;
+				newPattern.isHistory = false;
+				newPattern.isNiemiec = false;
+				newPattern.isHex = false;
+				newPattern.isTriangular = false;
+				newPattern.wolframRule = -1;
+				newPattern.isVonNeumann = false;
+				newPattern.isLTL = false;
+				newPattern.isHROT = false;
+
 				// check the rule tree cache
 				if (RuleTreeCache.loadIfExists(newPattern)) {
 					// check for pattern states
@@ -8006,18 +8039,6 @@
 					RuleTreeCache.requestFailed(pattern);
 				} else {
 					// attempt to decode the rule table
-					pattern.isMargolus = false;
-					pattern.isPCA = false;
-					pattern.isNone = false;
-					pattern.isHistory = false;
-					pattern.isNiemiec = false;
-					pattern.isHex = false;
-					pattern.isTriangular = false;
-					pattern.wolframRule = -1;
-					pattern.isVonNeumann = false;
-					pattern.isLTL = false;
-					pattern.isHROT = false;
-
 					me.decodeRuleTable(pattern, ruleText);
 					decodeTime = performance.now() - this.time;
 
