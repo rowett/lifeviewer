@@ -1,3 +1,7 @@
+Build 470
+- create missing @ICONS sizes
+- allow @RULE to be in pattern comments
+
 Build 469
 - improved @TABLE decode performance
 - fix pattern settings not being reset when rule already in cache

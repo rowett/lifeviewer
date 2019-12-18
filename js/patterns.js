@@ -6585,7 +6585,8 @@
 			/** @type {number} */ i = 0,
 			iconData = null,
 			xpmSections = [],
-			colourList = {};
+			colourList = {},
+			colourValues = null;
 
 		// skip newline and blank lines
 		reader.skipToNextLine();
@@ -6647,7 +6648,8 @@
 									// switch to reading colours and icon data
 									xpmHeader = true;
 									lineNo = 0;
-									iconData = new Uint32Array(width * height);
+									iconData = new Uint16Array(width * height);
+									colourValues = new Uint32Array(numColours);
 								}
 							} else {
 								valid = false;
@@ -6659,21 +6661,25 @@
 									builtIn = PatternConstants.ruleTableIconCircles;
 									colourList = {};
 									iconData = [];
+									colourValues = [];
 									break;
 								case "diamonds":
 									builtIn = PatternConstants.ruleTableIconDiamonds;
 									colourList = {};
 									iconData = [];
+									colourValues = [];
 									break;
 								case "hexagons":
 									builtIn = PatternConstants.ruleTableIconHexagons;
 									colourList = {};
 									iconData = [];
+									colourValues = [];
 									break;
 								case "triangles":
 									builtIn = PatternConstants.ruleTableIconTriangles;
 									colourList = {};
 									iconData = [];
+									colourValues = [];
 									break;
 							}
 						}
@@ -6714,7 +6720,8 @@
 										if (nextToken[nextToken.length - 1] === "\"") {
 											colourValue = nextToken.substr(0, nextToken.length - 1);
 											colourNum = parseInt(colourValue, 16);
-											colourList[colourChar] = colourNum;
+											colourList[colourChar] = lineNo;
+											colourValues[lineNo] = colourNum;
 											// check for greyscale
 											if (!(((colourNum >> 16) === ((colourNum >> 8) & 255)) && ((colourNum >> 16) === (colourNum & 255)))) {
 												isGreyScale = false;
@@ -6740,7 +6747,7 @@
 									if (colourList[colourChar] === undefined) {
 										valid = false;
 									} else {
-										iconData[(lineNo - numColours) * height + i] = colourList[colourChar];
+										iconData[(lineNo - numColours) * width + i] = colourList[colourChar];
 									}
 									i += 1;
 								}
@@ -6751,7 +6758,7 @@
 						if (lineNo === height + numColours) {
 							xpmHeader = false;
 							// save xpm section
-							xpmSections[xpmSections.length] = {builtIn: builtIn, width: width, height: height, numColours: numColours, colours: colourList, iconData: iconData.slice(), greyScale: isGreyScale};
+							xpmSections[xpmSections.length] = {builtIn: builtIn, width: width, height: height, numColours: numColours, colours: colourValues.slice(), iconData: iconData.slice(), greyScale: isGreyScale};
 
 							// reset for next section
 							colourList = {};
@@ -6783,7 +6790,7 @@
 			// save last section
 			if (lineNo === height + numColours) {
 				// save xpm section
-				xpmSections[xpmSections.length] = {builtIn: builtIn, width: width, height: height, numColours: numColours, colours: colourList, iconData: iconData.slice(), greyScale: isGreyScale};
+				xpmSections[xpmSections.length] = {builtIn: builtIn, width: width, height: height, numColours: numColours, colours: colourValues.slice(), iconData: iconData.slice(), greyScale: isGreyScale};
 				pattern.ruleTableIcons = xpmSections;
 			} else {
 				valid = false;
@@ -7802,6 +7809,9 @@
 		// create a pattern skeleton
 		var newPattern = new Pattern(name, this),
 			states = 0,
+			decodeTime = 0,
+			ruleText = "",
+			ruleIndex = 0,
 			index = 0;
 
 		// clear loading flag
@@ -7977,8 +7987,26 @@
 						newPattern.isNone = false;
 					}
 				} else {
-					// attempt to load rule table
-					this.loadRuleTable(newPattern, succeedCallback, failCallback, args, view);
+					// check if the rule table is in the comments
+					ruleIndex = newPattern.afterTitle.indexOf(this.ruleTableRuleName);
+					if (ruleIndex !== -1) {
+						// attempt to decode
+						ruleText = newPattern.afterTitle.substr(ruleIndex);
+						decodeTime = performance.now();
+						this.decodeRuleTable(newPattern, ruleText);
+						decodeTime = performance.now() - decodeTime;
+
+						// if rule tree decoded successfully then add to cache
+						if (newPattern.ruleTreeStates !== -1 || newPattern.ruleTableOutput !== null) {
+							RuleTreeCache.add(newPattern, 0, decodeTime, ruleText.length);
+						}
+					}
+
+					// check if local rule was found
+					if (newPattern.ruleTreeStates === -1 && newPattern.ruleTableOutput === null) {
+						// attempt to load rule table from repository
+						this.loadRuleTable(newPattern, succeedCallback, failCallback, args, view);
+					}
 				}
 			}
 		}

@@ -268,7 +268,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 469,
+		/** @const {number} */ versionBuild : 470,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13683,6 +13683,9 @@
 				me.engine.ruleTableIcons = pattern.ruleTableIcons;
 				me.engine.isRuleTree = true;
 			}
+
+			// process icons if loaded
+			me.engine.processIcons(pattern.ruleTableIcons);
 
 			// check if the rule is HROT
 			me.engine.isHROT = pattern.isHROT;

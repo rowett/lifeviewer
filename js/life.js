@@ -315,6 +315,9 @@
 		/** @type {number} */ this.ruleTableNeighbourhood = 0;
 		/** @type {number} */ this.ruleTableDups = 0;
 
+		// icons
+		this.ruleTableIcons = null;
+
 		// identify lists
 		this.hashList = null;
 		this.genList = null;
@@ -823,6 +826,16 @@
 		// number of hex or triangle cells
 		/** @type {number} */ this.numCells = 0;
 	}
+
+	// process icons
+	Life.prototype.processIcons = function(icons) {
+		var stateCols = this.ruleTreeColours;
+
+		this.ruleTableIcons = icons;
+		if (icons !== null) {
+			console.debug("states", this.multiNumStates, "colour", stateCols.length, "icons", icons[0].height / icons[0].width, "iconcols", icons[0].colours.length);
+		}
+	};
 
 	// initialize oscillator search
 	Life.prototype.initSearch = function(on) {
@@ -19838,7 +19851,7 @@
 		    tileRow = null, nextTileRow = null,
 		    belowNextTileRow = null, aboveNextTileRow = null,
 		    tiles = 0, nextTiles = 0,
-		    belowNextTiles = 0, aboveNextTiles = 0,
+			belowNextTiles = 0, aboveNextTiles = 0,
 			bottomY = 0, topY = 0, leftX = 0,
 
 			// whether cells were set in the tile
@@ -19891,7 +19904,7 @@
 		    blankTileRow = this.blankTileRow,
 
 		    // flags for edges of tile occupied
-		    neighbours = 0;
+			neighbours = 0;
 
 		// switch buffers each generation
 		if ((this.counter & 1) !== 0) {
