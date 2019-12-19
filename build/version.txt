@@ -1,3 +1,7 @@
+Build 471
+- do not add local @RULEs to the rule cache
+- fix an issue when repository load failed
+
 Build 470
 - create missing @ICONS sizes
 - allow @RULE to be in pattern comments

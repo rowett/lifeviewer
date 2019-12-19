@@ -7809,7 +7809,6 @@
 		// create a pattern skeleton
 		var newPattern = new Pattern(name, this),
 			states = 0,
-			decodeTime = 0,
 			ruleText = "",
 			ruleIndex = 0,
 			index = 0;
@@ -7990,16 +7989,9 @@
 					// check if the rule table is in the comments
 					ruleIndex = newPattern.afterTitle.indexOf(this.ruleTableRuleName);
 					if (ruleIndex !== -1) {
-						// attempt to decode
+						// attempt to decode and if successful do not add to cache since this is a local rule
 						ruleText = newPattern.afterTitle.substr(ruleIndex);
-						decodeTime = performance.now();
 						this.decodeRuleTable(newPattern, ruleText);
-						decodeTime = performance.now() - decodeTime;
-
-						// if rule tree decoded successfully then add to cache
-						if (newPattern.ruleTreeStates !== -1 || newPattern.ruleTableOutput !== null) {
-							RuleTreeCache.add(newPattern, 0, decodeTime, ruleText.length);
-						}
 					}
 
 					// check if local rule was found
@@ -8128,7 +8120,7 @@
 	
 			// register load and error events
 			registerEvent(xhr, "load", function(event) {me.loadHandler(me, event, xhr, pattern);}, false);
-			registerEvent(xhr, "error", function(event) {me.errorHandler(me, event, xhr);}, false);
+			registerEvent(xhr, "error", function(event) {me.errorHandler(me, event, pattern);}, false);
 	
 			// attempt to get the requested resource
 			xhr.open("GET", uri, true);

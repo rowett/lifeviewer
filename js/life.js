@@ -829,12 +829,12 @@
 
 	// process icons
 	Life.prototype.processIcons = function(icons) {
-		var stateCols = this.ruleTreeColours;
+		//var stateCols = this.ruleTreeColours;
 
 		this.ruleTableIcons = icons;
-		if (icons !== null) {
-			console.debug("states", this.multiNumStates, "colour", stateCols.length, "icons", icons[0].height / icons[0].width, "iconcols", icons[0].colours.length);
-		}
+		//if (icons !== null) {  TBD !!!
+			//console.debug("states", this.multiNumStates, "colour", stateCols.length, "icons", icons[0].height / icons[0].width, "iconcols", icons[0].colours.length);
+		//}
 	};
 
 	// initialize oscillator search
