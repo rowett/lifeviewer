@@ -9,11 +9,14 @@
 	"use strict";
 
 	// define globals
-	/* global Reflect Keywords littleEndian BoundingBox Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint32Array SnapshotManager HROT ViewConstants PatternConstants */
+	/* global Random Reflect Keywords littleEndian BoundingBox Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint16Array Uint32Array Float32Array SnapshotManager HROT ViewConstants PatternConstants */
 
 	// Life constants
 	/** @const */
 	var LifeConstants = {
+		// number of snowflakes
+		/** @const {number} */ flakes : 50000,
+
 		// cell types for rotor/stator calculations
 		/** @const {number} */ cellNotSeen : 0,
 		/** @const {number} */ cellWasAlive : 1,
@@ -296,6 +299,18 @@
 
 		// allocator
 		this.allocator = new Allocator();
+
+		// snow flakes (x, y, dy)
+		this.snowX = null;
+		this.snowY = null;
+		this.snowDY = null;
+
+		// snow flake revive list
+		this.snowRevive = null;
+
+		// initialise random number generator
+		this.randGen = new Random;
+		this.randGen.init(Date.now().toString());
 
 		// whether current rule is RuleTree
 		/** @type {boolean} */ this.isRuleTree = false;
@@ -649,7 +664,7 @@
 		this.data8 = null;
 
 		// 32 bit view of image data
-		this.data32 = null;
+		/** @type {Uint32Array} */ this.data32 = null;
 
 		// image data
 		this.imageData = null;
@@ -826,6 +841,206 @@
 		// number of hex or triangle cells
 		/** @type {number} */ this.numCells = 0;
 	}
+
+	// initialise snow flakes
+	Life.prototype.initSnow = function() {
+		var /** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ d = 0,
+			/** @const {number} */ maxX = this.displayWidth,
+			/** @const {number} */ maxY = this.displayHeight,
+			/** @const {number} */ yRange = 20 * maxY,
+			/** @type {number} */ maxPos = -yRange,
+			/** @type {number} */ yVal = 0,
+			randGen = this.randGen,
+			snowX = null,
+			snowY = null,
+			snowDY = null;
+
+		// allocate snow flakes
+		this.snowX = new Uint16Array(LifeConstants.flakes);
+		this.snowY = new Float32Array(LifeConstants.flakes);
+		this.snowDY = new Float32Array(LifeConstants.flakes);
+		this.snowRevive = new Uint32Array(LifeConstants.flakes);
+		snowX = this.snowX;
+		snowY = this.snowY;
+		snowDY = this.snowDY;
+
+		// position each snowflake
+		for (i = 0; i < LifeConstants.flakes; i += 1) {
+			// pick integer x position
+			snowX[i] = (randGen.random() * maxX) | 0;
+
+			// pick y position as a normal distribution
+			yVal = 0;
+			for (j = 0; j < 10; j += 1) {
+				yVal = yVal + randGen.random() * yRange;
+			}
+			snowY[i] = -yVal / 10;
+			if (snowY[i] > maxPos) {
+				maxPos = snowY[i];
+			}
+
+			// pick random delta
+			snowDY[i] = randGen.random() / 5 + 0.8;
+
+			// check whether there is space to make a big snowflake
+			if (i < LifeConstants.flakes - 4) {
+				if (randGen.random() < 0.2) {
+					x = snowX[i];
+					y = snowY[i];
+					d = snowDY[i];
+
+					// make a bigger snowflake
+					i += 1;
+					snowX[i] = x;
+					snowY[i] = y - 2;
+					snowDY[i] = d;
+					i += 1;
+					snowX[i] = x;
+					snowY[i] = y + 2;
+					snowDY[i] = d;
+					if (x > 1) {
+						i += 1;
+						snowX[i] = x - 2;
+						snowY[i] = y;
+						snowDY[i] = d;
+					}
+					if (x < maxX - 2) {
+						i += 1;
+						snowX[i] = x + 2;
+						snowY[i] = y;
+						snowDY[i] = d;
+					}
+				}
+			}
+		}
+		for (i = 0; i < LifeConstants.flakes; i += 1) {
+			snowY[i] -= maxPos;
+		}
+	};
+
+	// update and draw snowflakes
+	Life.prototype.drawSnow = function() {
+		var /** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ r = 0,
+			/** @type {number} */ numRevive = 0,
+			/** @type {number} */ dx = 0,
+			/** @type {number} */ lastX,
+			/** @type {number} */ lastY,
+			/** @type {number} */ dirY,
+			/** @type {number} */ newX,
+			/** @type {number} */ newY,
+			/** @const {number} */ wd = this.displayWidth,
+			/** @const {number} */ ht = this.displayHeight,
+			/** @const {number} */ bg = this.pixelColours[0],
+			/** @type {Uint32Array} */ screen = this.data32,
+			randGen = this.randGen,
+			snowX = this.snowX,
+			snowY = this.snowY,
+			snowDY = this.snowDY,
+			snowRevive = this.snowRevive;
+
+		// update each snowflake
+		for (i = 0; i < LifeConstants.flakes; i += 1) {
+			lastX = snowX[i];
+			lastY = snowY[i];
+			dirY = snowDY[i];
+			newX = lastX;
+			newY = lastY;
+			// check if the flake is on screen
+			if (lastY >= 0 && lastY < ht - 1) {
+				// check if the delta moves the flake a pixel down
+				if ((lastY | 0) == ((lastY + dirY) | 0)) {
+					newY = lastY + dirY;
+					// draw the flake at the current position
+					screen[(newY | 0) * wd + newX] = -1;
+				} else {
+					// check if the space below is free
+					if (screen[((lastY + dirY) | 0) * wd + lastX] === bg) {
+						newY = lastY + dirY;
+					} else {
+						// space not free so check bottom left or bottom right
+						r = randGen.random();
+						if (r < 0.05) {
+							dx = 1;
+							if (r < 0.025) {
+								dx = -1;
+							}
+							if (lastX + dx >= 0 && lastX + dx < wd) {
+								if (screen[((lastY + dirY) | 0) * wd + lastX + dx] === bg && screen[(lastY | 0) * wd + lastX + dx] === bg) {
+									newX = lastX + dx;
+									newY = lastY + dirY;
+								}
+							}
+						}
+					}
+					// draw the flake at the new position
+					screen[(newY | 0) * wd + newX] = -1;
+				}
+			} else if (lastY < 0) {
+				// flake is above the screen so move it down
+				newY = lastY + dirY;
+			}
+
+			// if the flake is off the bottom then add to revive list
+			if (newY >= ht - 1) {
+				// add to revive list
+				snowRevive[numRevive] = i
+				numRevive += 1;
+			}
+			snowX[i] = newX;
+			snowY[i] = newY;
+		}
+
+		// process any flakes to be revived
+		if (numRevive > 5) {
+			for (i = 0; i < numRevive; i += 1) {
+				if (randGen.random() < 0.25) {
+					j = snowRevive[i];
+					newY = -(randGen.random() * ht);
+					newX = (randGen.random() * wd) | 0;
+					snowX[j] = newX;
+					snowY[j] = newY;
+					dirY = snowDY[j];
+		
+					// check whether there is space to make a big snowflake
+					if (i < numRevive - 4) {
+						if (randGen.random() < 0.2) {
+							// make a bigger snowflake
+							i += 1;
+							j = snowRevive[i];
+							snowX[j] = newX;
+							snowY[j] = newY - 2;
+							snowDY[j] = dirY;
+							i += 1;
+							j = snowRevive[i];
+							snowX[j] = newX;
+							snowY[j] = newY + 2;
+							snowDY[j] = dirY;
+							if (newX > 1) {
+								i += 1;
+								j = snowRevive[i];
+								snowX[j] = newX - 2;
+								snowY[j] = newY;
+								snowDY[j] = dirY;
+							}
+							if (newX < wd - 2) {
+								i += 1;
+								j = snowRevive[i];
+								snowX[j] = newX + 2;
+								snowY[j] = newY;
+								snowDY[j] = dirY;
+							}
+						}
+					}
+				}
+			}
+		}
+	};
 
 	// process icons
 	Life.prototype.processIcons = function(icons) {

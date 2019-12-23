@@ -268,7 +268,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 471,
+		/** @const {number} */ versionBuild : 472,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -595,6 +595,9 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// whether drawing snow
+		this.drawingSnow = false;
 
 		// whether update function needs to call post function to complete after async load
 		this.needsComplete = false;
@@ -5045,6 +5048,12 @@
 		// draw stars if switched on
 		if (me.starsOn) {
 			me.drawStars();
+		}
+
+		// draw snow
+		if (this.drawingSnow) {
+			me.engine.drawSnow();
+			me.menuManager.setAutoUpdate(true);
 		}
 
 		// draw grid
@@ -14880,6 +14889,12 @@
 		if (me.needsComplete) {
 			completeUpdate(me);
 		}
+
+		// check if snow needed
+		if (me.engine.zoom === 8 && (this.numScriptCommands & 3) === 0) {
+			this.drawingSnow = true;
+			me.engine.initSnow();
+		}
 	};
 
 	// start a viewer
@@ -15509,5 +15524,6 @@
 	window['updateViewer'] = updateViewer;
 	window['updateMe'] = updateMe;
 	window['hideViewer'] = hideViewer;
+	window['lifeViewerBuild'] = ViewConstants.versionBuild;
 }
 ());
