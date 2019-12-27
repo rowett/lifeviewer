@@ -3112,11 +3112,6 @@
 			if (thisChange !== null) {
 				me.performUp(me, thisChange.pageX, thisChange.pageY);
 				me.currentTouchId = -1;
-
-				// ensure update happens
-				if (me.updateCount < 2) {
-					me.updateCount = 2;
-				}
 			}
 			break;
 
@@ -3241,8 +3236,8 @@
 			// schedule update if no update scheduled
 			if (!me.updateScheduled) {
 				me.scheduleNextUpdate(me);
-				if (me.updateCount < 2) {
-					me.updateCount = 2;
+				if (me.updateCount < 4) {
+					me.updateCount = 4;
 				}
 			}
 		}
@@ -3417,8 +3412,8 @@
 		// schedule update if no update scheduled
 		if (!me.updateScheduled) {
 			me.scheduleNextUpdate(me);
-			if (me.updateCount < 2) {
-				me.updateCount = 2;
+			if (me.updateCount < 4) {
+				me.updateCount = 4;
 			}
 		}
 	};

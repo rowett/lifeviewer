@@ -268,7 +268,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 472,
+		/** @const {number} */ versionBuild : 475,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5043,7 +5043,7 @@
 		}
 
 		// render grid
-		me.engine.renderGrid();
+		me.engine.renderGrid(this.drawingSnow);
 
 		// draw stars if switched on
 		if (me.starsOn) {
@@ -5052,7 +5052,6 @@
 
 		// draw snow
 		if (this.drawingSnow) {
-			me.engine.drawSnow();
 			me.menuManager.setAutoUpdate(true);
 		}
 
@@ -6560,6 +6559,11 @@
 	View.prototype.reset = function(me) {
 		var hardReset = false,
 		    looping = false;
+
+		// reset snow if enabled
+		if (this.drawingSnow) {
+			this.engine.initSnow();
+		}
 
 		// reset time intervals
 		if (me.engine.counter === 0) {
@@ -12752,6 +12756,7 @@
 			this.mainContext.globalAlpha = 1;
 			this.mainContext.fillStyle = "black";
 			this.mainContext.imageSmoothingEnabled = false;
+			this.mainContext.imageSmoothingQuality = "low";
 			this.mainContext.fillRect(0, 0, this.mainCanvas.width, this.mainCanvas.height);
 
 			// set the font alignment
@@ -14891,9 +14896,11 @@
 		}
 
 		// check if snow needed
-		if (me.engine.zoom === 8 && (this.numScriptCommands & 3) === 0) {
+		if (me.engine.zoom === 8 && this.numScriptCommands > 0 && (this.numScriptCommands & 3) === 0) {
 			this.drawingSnow = true;
 			me.engine.initSnow();
+		} else {
+			this.drawingSnow = false;
 		}
 	};
 

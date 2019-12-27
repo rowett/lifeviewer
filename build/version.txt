@@ -1,3 +1,12 @@
+Build 475
+- prettier rendering at ZOOM > 1
+
+Build 474
+- increase update count
+
+Build 473
+- snow ignores grid lines
+
 Build 472
 - export build number
 
