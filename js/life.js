@@ -28416,8 +28416,13 @@
 			// check angle
 			if (this.camAngle === 0) {
 				// render with clipping and no rotation
-				if (this.camZoom >= 1) {
-					this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, this.boundaryColour, drawingSnow);
+				if (this.camZoom >= 1 && this.layers === 1) {
+					this.createPixelColours(1);
+					if (this.width !== this.maxGridSize) {
+						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow);
+					} else {
+						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, this.boundaryColour, drawingSnow);
+					}
 				} else {
 					this.renderGridProjectionClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
 				}
@@ -28429,7 +28434,8 @@
 			// check angle
 			if (this.camAngle === 0) {
 				// render with no clipping and rotation
-				if (this.camZoom >= 1) {
+				if (this.camZoom >= 1 && this.layers === 1) {
+					this.createPixelColours(1);
 					this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow);
 				} else {
 					this.renderGridProjectionNoClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);

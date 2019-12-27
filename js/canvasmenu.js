@@ -734,12 +734,20 @@
 
 	// set item foreground and background colour
 	MenuItem.prototype.setColours = function(fg, bg, highlight, selected, locked, border) {
+		var i = 0;
+
 		this.fgCol = fg;
 		this.bgCol = bg;
 		this.hlCol = highlight;
 		this.selectedCol = selected;
 		this.lockedCol = locked;
 		this.borderCol = border;
+		if (this.type === Menu.list) {
+			this.bgColList = [];
+			for (i = 0; i < this.lower.length; i += 1) {
+				this.bgColList[i] = this.bgCol;
+			}
+		}
 	};
 
 	// set border width
