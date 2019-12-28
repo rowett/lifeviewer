@@ -854,15 +854,16 @@
 	// initialise pretty rendering
 	Life.prototype.initPretty = function() {
 		var displayWidth = this.displayWidth,
-			displayHeight = this.displayHeight;
+			displayHeight = this.displayHeight,
+			maxZoom = ViewConstants.maxZoom;
 
 		// check if pretty rendering enabled
 		if (this.pretty) {
 			if (this.sCanvas === null) {
 				this.sCanvas = document.createElement("canvas");
 			}
-			this.sCanvas.width = (displayWidth << 1) + ViewConstants.maxZoom;
-			this.sCanvas.height = (displayHeight << 1) + ViewConstants.maxZoom;
+			this.sCanvas.width = (displayWidth + maxZoom + maxZoom) << 1;
+			this.sCanvas.height = (displayHeight + maxZoom + maxZoom) << 1;
 			this.sContext = this.sCanvas.getContext("2d", {alpha: false});
 			this.sContext.imageSmoothingQuality = "low";
 			this.sImageData = this.sContext.getImageData(0, 0, this.sCanvas.width, this.sCanvas.height);
