@@ -28433,7 +28433,7 @@
 		}
 
 		// check whether clipping is required
-		if ((boundLeft | 0) < 0 || (boundRight | 0) >= this.width || (boundTop | 0) < 0 || (boundBottom | 0) >= this.height) {
+		if ((boundLeft | 0) < 0 || (boundRight | 0) >= this.width || (boundBottom | 0) < 0 || (boundTop | 0) >= this.height) {
 			// check angle
 			if (this.camAngle === 0) {
 				// render with clipping and no rotation
@@ -28506,17 +28506,19 @@
 			if (y < 0 || y >= grid.length) {
 				col = offGridCol;
 				l = i;
-				for (yz = 0; yz < intZoom2; yz += 1) {
-					for (xz = 0; xz < intZoom; xz += 1) {
-						sData32[i] = col;
-						i += 1;
-						sData32[i] = col;
-						i += 1;
+				for (x = leftX; x < rightX; x += 1) {
+					for (yz = 0; yz < intZoom2; yz += 1) {
+						for (xz = 0; xz < intZoom; xz += 1) {
+							sData32[i] = col;
+							i += 1;
+							sData32[i] = col;
+							i += 1;
+						}
+						i += sWidth - intZoom2;
 					}
-					i += sWidth - intZoom2;
+					i = l + intZoom2;
+					l = i;
 				}
-				i = l + intZoom2;
-				l = i;
 			} else {
 				gridRow = grid[y];
 				l = i;
