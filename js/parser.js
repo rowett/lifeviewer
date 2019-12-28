@@ -98,6 +98,7 @@
 			case Keywords.pauseWord:
 			case Keywords.gridWord:
 			case Keywords.gridMajorWord:
+			case Keywords.qualityWord:
 			case Keywords.suppressWord:
 			case Keywords.colorWord:
 			case Keywords.colourWord:
@@ -2174,6 +2175,12 @@
 								}
 							}
 
+							break;
+
+						// quality rendering
+						case Keywords.qualityWord:
+							view.engine.pretty = true;
+							itemValid = true;
 							break;
 
 						// suppress escaping gliders

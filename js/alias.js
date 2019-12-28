@@ -233,6 +233,7 @@
 		this.aliases.push(["Flowflakes", "B2-ac3acei4ey6n8/S02-n3-nqy4cekyz5ei6k7e"]);
 		this.aliases.push(["Flying Life", "B3-k5r/S236n7e"]);
 		this.aliases.push(["FogLife", "B35eq7/S2-i34q"]);
+		this.aliases.push(["Fuzey", "B2-ae3aej4ez/S03ac4aikqryz78"]);
 		this.aliases.push(["Gentle relative", "B2cen3ek4jkw5-aein6a7e/S12an3-eijq4enrty5e6k"]);
 		this.aliases.push(["GlideLife", "B34ek5ak/S2-c34z"]);
 		this.aliases.push(["GliderGlut", "B2k3aijn4ak5y6k/S2ae3ajnr4aiw"]);
@@ -267,6 +268,7 @@
 		this.aliases.push(["LifeWithoutGliders", "B35n/S23"]);
 		this.aliases.push(["Linea", "B2-a3-i/S23-a"]);
 		this.aliases.push(["LoafLife", "B2n3-q/S23"]);
+		this.aliases.push(["MaritimeLife", "B2i34c6cen7c8/S2-i3-q4c5a6e8"]);
 		this.aliases.push(["Migrating Bookends", "B2ein3inry/S12-n3ce"]);
 		this.aliases.push(["Mooselife", "B34kz5e7c/S23-a4ityz5k"]);
 		this.aliases.push(["Movero VIII", "B2-a5k6n7c/S12-i3ij4k5j8"]);

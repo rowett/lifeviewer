@@ -667,11 +667,16 @@
 
 			// q for increase layers
 			case 81:
-				// disable layers in multi-state mode
-				if (!me.multiStateView) {
-					if (!me.layersItem.locked) {
-						if (me.layersItem.current[0] < ViewConstants.maxLayers) {
-							me.layersItem.current = me.viewLayersRange([me.engine.layers + 1, me.layersItem.current[1]], true, me);
+				// check for ctrl
+				if (event.ctrlKey) {
+					me.qualityToggle.current = me.viewQualityToggle([!me.engine.pretty], true, me);
+				} else {
+					// disable layers in multi-state mode
+					if (!me.multiStateView) {
+						if (!me.layersItem.locked) {
+							if (me.layersItem.current[0] < ViewConstants.maxLayers) {
+								me.layersItem.current = me.viewLayersRange([me.engine.layers + 1, me.layersItem.current[1]], true, me);
+							}
 						}
 					}
 				}

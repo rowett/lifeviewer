@@ -16,7 +16,10 @@
 		// script end
 		/** @const {string} */ scriptEndWord : "]]",
 
-		// suppress
+		// quality
+		/** @const {string} */ qualityWord : "QUALITY",
+
+		// time
 		/** @const {string} */ timeIntervalWord : "TIME",
 
 		// suppress

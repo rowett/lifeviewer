@@ -268,7 +268,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 475,
+		/** @const {number} */ versionBuild : 477,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1488,6 +1488,9 @@
 
 		// relative generation toggle
 		this.relativeToggle = null;
+
+		// quality rendering toggle
+		this.qualityToggle = null;
 
 		// reason label
 		this.reasonLabel = null;
@@ -5446,6 +5449,7 @@
 		this.infoBarButton.deleted = shown;
 		this.relativeToggle.deleted = shown;
 		this.relativeToggle.locked = !this.genDefined;
+		this.qualityToggle.deleted = shown;
 		// display categoy
 		shown = hide || !this.showDisplaySettings;
 		this.hexCellButton.deleted = shown;
@@ -11339,6 +11343,16 @@
 		return [me.genRelative];
 	};
 
+	// quality rendering display toggle
+	View.prototype.viewQualityToggle = function(newValue, change, me) {
+		if (change) {
+			me.engine.pretty = newValue[0];
+			me.engine.initPretty();
+		}
+
+		return [me.engine.pretty];
+	};
+
 	// stats toggle
 	View.prototype.viewStats = function(newValue, change, me) {
 		if (change) {
@@ -12397,20 +12411,24 @@
 		this.identifyButton.toolTip = ["identify oscillator or spaceship period"];
 
 		// fps button
-		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -75, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
+		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -100, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
 		this.fpsButton.toolTip = ["toggle timing display"];
 
 		// timing detail button
-		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 0, -25, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
+		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 0, -50, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
 		this.timingDetailButton.toolTip = ["toggle timing details"];
 
 		// infobar toggle button
-		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, 0, 25, 180, 40, ["Display Info Bar"], [this.infoBarEnabled], Menu.multi);
+		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, 0, 0, 180, 40, ["Display Info Bar"], [this.infoBarEnabled], Menu.multi);
 		this.infoBarButton.toolTip = ["toggle Information Bar"];
 
 		// relative toggle button
-		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, 0, 75, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
+		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, 0, 50, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
 		this.relativeToggle.toolTip = ["toggle absolute/relative generation display"];
+
+		// quality rendering toggle button
+		this.qualityToggle = this.viewMenu.addListItem(this.viewQualityToggle, Menu.middle, 0, 100, 180, 40, ["Render Quality"], [this.engine.pretty], Menu.multi);
+		this.qualityToggle.toolTip = ["toggle anti-aliased cell display"];
 
 		// previous universe button
 		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -90, 120, 40, "Prev");
@@ -13503,6 +13521,9 @@
 		} else {
 			me.isEdge = false;
 		}
+
+		// turn off pretty rendering
+		me.engine.pretty = false;
 
 		// clear identify buffer (needs to be done before growGrid)
 		me.engine.countList = null;
@@ -14605,6 +14626,9 @@
 		// set the relative generation display UI control
 		me.relativeToggle.current = [me.genRelative];
 
+		// set the quality rendering display UI control
+		me.qualityToggle.current = [me.engine.pretty];
+
 		// set the Stars UI control
 		me.starsButton.current = [me.starsOn];
 
@@ -14896,12 +14920,15 @@
 		}
 
 		// check if snow needed
-		if (me.engine.zoom === 8 && this.numScriptCommands > 0 && (this.numScriptCommands & 3) === 0) {
-			this.drawingSnow = true;
+		if (me.engine.zoom === 8 && me.numScriptCommands > 0 && (me.numScriptCommands & 3) === 0) {
+			me.drawingSnow = true;
 			me.engine.initSnow();
 		} else {
-			this.drawingSnow = false;
+			me.drawingSnow = false;
 		}
+
+		// initialise pretty renderer
+		me.engine.initPretty();
 	};
 
 	// start a viewer

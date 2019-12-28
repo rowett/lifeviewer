@@ -1,5 +1,19 @@
+Build 477
+- new button Settings->Advanced->Render Quality (hotkey Ctrl+"Q") toggles rendering quality
+	- high quality
+		- cells are anti-aliased at ZOOM > 1
+		- slower and uses more memory
+	- standard quality (the original)
+		- default rendering mode
+		- faster and uses less memory
+- new script command [[ QUALITY ]] enables high quality rendering
+
+Build 476
+- improved pretty rendering
+
 Build 475
 - prettier rendering at ZOOM > 1
+- list controls were not respecting custom background colour
 
 Build 474
 - increase update count

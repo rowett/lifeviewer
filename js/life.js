@@ -300,14 +300,14 @@
 		// allocator
 		this.allocator = new Allocator();
 
+		// whether pretty rendering enabled
+		/** @type {boolean} */ this.pretty = false;
+
 		// scaling canvas
-		this.sCanvas = document.createElement("canvas");
-		this.sCanvas.width = displayWidth + ViewConstants.maxZoom;
-		this.sCanvas.height = displayHeight + ViewConstants.maxZoom;
-		this.sContext = this.sCanvas.getContext("2d", {alpha: false});
-		this.sContext.imageSmoothingQuality = "low";
-		this.sImageData = this.sContext.getImageData(0, 0, this.sCanvas.width, this.sCanvas.height);
-		this.sData32 = new Uint32Array(this.sImageData.data.buffer);
+		this.sCanvas = null;
+		this.sContext = null;
+		this.sImageData = null;
+		this.sData32 = null;
 
 		// snow flakes (x, y, dy)
 		this.snowX = null;
@@ -850,6 +850,29 @@
 		// number of hex or triangle cells
 		/** @type {number} */ this.numCells = 0;
 	}
+
+	// initialise pretty rendering
+	Life.prototype.initPretty = function() {
+		var displayWidth = this.displayWidth,
+			displayHeight = this.displayHeight;
+
+		// check if pretty rendering enabled
+		if (this.pretty) {
+			if (this.sCanvas === null) {
+				this.sCanvas = document.createElement("canvas");
+			}
+			this.sCanvas.width = (displayWidth << 1) + ViewConstants.maxZoom;
+			this.sCanvas.height = (displayHeight << 1) + ViewConstants.maxZoom;
+			this.sContext = this.sCanvas.getContext("2d", {alpha: false});
+			this.sContext.imageSmoothingQuality = "low";
+			this.sImageData = this.sContext.getImageData(0, 0, this.sCanvas.width, this.sCanvas.height);
+			this.sData32 = new Uint32Array(this.sImageData.data.buffer);
+		} else {
+			this.sContext = null;
+			this.sImageData = null;
+			this.sData32 = null;
+		}
+	};
 
 	// initialise snow flakes
 	Life.prototype.initSnow = function() {
@@ -5295,11 +5318,8 @@
 		// clear pixels
 		this.clearPixels(pixelColour);
 
-		// resize the scale canvas to one zoom cell bigger than the drawing canvas
-		this.sCanvas.width = displayWidth + ViewConstants.maxZoom;
-		this.sCanvas.height = displayHeight + ViewConstants.maxZoom;
-		this.sImageData = this.sContext.getImageData(0, 0, this.sCanvas.width, this.sCanvas.height);
-		this.sData32 = new Uint32Array(this.sImageData.data.buffer);
+		// resize the scale canvas to double the drawing canvas plus one zoom cell
+		this.initPretty();
 	};
 
 	// copy state 2 cells to colour grid
@@ -28416,7 +28436,7 @@
 			// check angle
 			if (this.camAngle === 0) {
 				// render with clipping and no rotation
-				if (this.camZoom >= 1 && this.layers === 1) {
+				if (this.pretty && this.camZoom >= 1 && this.layers === 1) {
 					this.createPixelColours(1);
 					if (this.width !== this.maxGridSize) {
 						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow);
@@ -28434,7 +28454,7 @@
 			// check angle
 			if (this.camAngle === 0) {
 				// render with no clipping and rotation
-				if (this.camZoom >= 1 && this.layers === 1) {
+				if (this.pretty && this.camZoom >= 1 && this.layers === 1) {
 					this.createPixelColours(1);
 					this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow);
 				} else {
@@ -28453,8 +28473,9 @@
 			sCanvas = this.sCanvas,
 			sContext = this.sContext,
 			sImageData = this.sImageData,
+			intZoom2 = (this.camZoom | 0) << 1,
 			sWidth = sCanvas.width,
-			intZoom = this.camZoom | 0,
+			sZWidth = sWidth * intZoom2,
 			gridRow = null,
 			width = rightX - leftX,
 			height = topY - bottomY,
@@ -28463,7 +28484,12 @@
 			x = 0,
 			y = 0,
 			i = 0,
-			j = 0;
+			j = 0,
+			l = 0,
+			xz = 0,
+			yz = 0,
+			col = 0,
+			intZoom = intZoom2 >> 1;
 
 		// align coordinates size to integers
 		bottomY |= 0;
@@ -28473,41 +28499,55 @@
 		rightX = leftX + width;
 		topY = bottomY + height;
 
-		// draw cells at 1x zoom
-		j = sWidth;
+		// draw cells at integer zoom
+		j = sZWidth;
 		for (y = bottomY; y < topY; y += 1) {
 			if (y < 0 || y >= grid.length) {
-				for (x = leftX; x < rightX; x += 1) {
-					sData32[i] = offGridCol;
-					i += 1;
+				col = offGridCol;
+				l = i;
+				for (yz = 0; yz < intZoom2; yz += 1) {
+					for (xz = 0; xz < intZoom; xz += 1) {
+						sData32[i] = col;
+						i += 1;
+						sData32[i] = col;
+						i += 1;
+					}
+					i += sWidth - intZoom2;
 				}
+				i = l + intZoom2;
+				l = i;
 			} else {
 				gridRow = grid[y];
+				l = i;
 				for (x = leftX; x < rightX; x += 1) {
 					if (x < 0 || x >= gridRow.length) {
-						sData32[i] = offGridCol;
+						col = offGridCol;
 					} else {
-						sData32[i] = pixelColours[gridRow[x]];
+						col = pixelColours[gridRow[x]];
 					}
-					i += 1;
+					for (yz = 0; yz < intZoom2; yz += 1) {
+						for (xz = 0; xz < intZoom; xz += 1) {
+							sData32[i] = col;
+							i += 1;
+							sData32[i] = col;
+							i += 1;
+						}
+						i += sWidth - intZoom2;
+					}
+					i = l + intZoom2;
+					l = i;
 				}
 			}
 			i = j;
-			j += sWidth;
+			j += sZWidth;
 		}
 
-		// put the 1x zoom cells from the image data onto the canvas
-		sContext.putImageData(sImageData, 0, 0, 0, 0, width, height);
+		// put the integer zoom cells from the image data onto the canvas
+		sContext.putImageData(sImageData, 0, 0, 0, 0, width * intZoom2, height * intZoom2);
 
-		// scale fast to integer zoom
-		sContext.imageSmoothingEnabled = false;
-		sContext.drawImage(this.sCanvas, 0, 0, width, height, 0, 0, width * intZoom, height * intZoom);
-
-		// scale pretty to the display
-		if (width * intZoom !== ((width * this.camZoom) | 0)) {
-			sContext.imageSmoothingEnabled = true;
-			sContext.drawImage(this.sCanvas, 0, 0, width * intZoom, height * intZoom, 0, 0, (width * this.camZoom), (height * this.camZoom));
-		}
+		// pretty scale to the display
+		sContext.imageSmoothingEnabled = true;
+		sContext.drawImage(this.sCanvas, 0, 0, width * intZoom2, height * intZoom2, 0, 0, (width * this.camZoom), (height * this.camZoom));
 
 		// draw the scaled canvas onto the drawing canvas
 		dx |= 0;

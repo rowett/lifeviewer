@@ -726,6 +726,7 @@
 		y = this.renderHelpLine(view, "Shift T", "toggle extended timing information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "I", "toggle pattern and engine information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift I", "toggle information bar", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl Q", "toggle cell anti-aliasing", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt B", "toggle cell borders", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "X", "toggle gridlines", ctx, x, y, height, helpLine);
 		if (view.engine.gridLineMajor > 0) {
@@ -1259,6 +1260,8 @@
 			}
 		}
 		y = this.renderHelpLine(view, "Cells", itemName, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Quality", (view.engine.pretty ? "High" : "Normal"), ctx, x, y, height, helpLine);
+
 		if (view.thumbnailEverOn) {
 			y = this.renderHelpLine(view, "Thumbnail", "1/" + view.thumbnailDivisor, ctx, x, y, height, helpLine);
 		}
