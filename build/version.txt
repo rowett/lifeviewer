@@ -1,3 +1,9 @@
+Build 478
+- high quality rendering performance improvement
+- don't use high quality renderer at integer zooms
+- if pattern load failure is because of illegal cell state then don't assume rule is invalid
+- high quality rendering now works with [R]History rules
+
 Build 477
 - new button Settings->Advanced->Render Quality (hotkey Ctrl+"Q") toggles rendering quality
 	- high quality

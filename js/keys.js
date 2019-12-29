@@ -670,6 +670,7 @@
 				// check for ctrl
 				if (event.ctrlKey) {
 					me.qualityToggle.current = me.viewQualityToggle([!me.engine.pretty], true, me);
+					me.menuManager.notification.notify("Rendering Quality " + (me.engine.pretty ? "High" : "Standard"), 15, 80, 15, true);
 				} else {
 					// disable layers in multi-state mode
 					if (!me.multiStateView) {

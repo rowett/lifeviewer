@@ -1260,7 +1260,7 @@
 			}
 		}
 		y = this.renderHelpLine(view, "Cells", itemName, ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Quality", (view.engine.pretty ? "High" : "Normal"), ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Quality", (view.engine.pretty ? "High" : "Standard"), ctx, x, y, height, helpLine);
 
 		if (view.thumbnailEverOn) {
 			y = this.renderHelpLine(view, "Thumbnail", "1/" + view.thumbnailDivisor, ctx, x, y, height, helpLine);

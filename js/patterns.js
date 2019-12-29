@@ -276,6 +276,9 @@
 		// whether attempting to load from repository
 		/** @type {boolean} */ this.loadingFromRepository = false;
 
+		// illegal state found (rule is valid but pattern is not)
+		/** @type {boolean} */ this.illegalState = false;
+
 		// rule search name
 		/** @type {string} */ this.ruleSearchName = "";
 
@@ -5163,6 +5166,7 @@
 					this.failureReason = "Illegal character in pattern: " + current;
 					pattern.invalid = true;
 					finished = true;
+					this.illegalState = true;
 				}
 			}
 
@@ -6529,6 +6533,7 @@
 				if (pattern.numStates > 8) {
 					this.failureReason = "Illegal state in pattern for Niemiec";
 					this.executable = false;
+					this.illegalState = true;
 				}
 			} else {
 				// check for [R]History
@@ -6536,6 +6541,7 @@
 					if (pattern.numStates > 7) {
 						this.failureReason = "Illegal state in pattern for [R]History";
 						this.executable = false;
+						this.illegalState = true;
 					}
 				} else {
 					// check for Generations
@@ -6543,14 +6549,18 @@
 						if (pattern.numStates > pattern.multiNumStates) {
 							if (pattern.isLTL) {
 								this.failureReason = "Illegal state in pattern for LtL";
+								this.illegalState = true;
 							} else {
 								if (pattern.isHROT) {
 									this.failureReason = "Illegal state in pattern for HROT";
+									this.illegalState = true;
 								} else {
 									if (pattern.isPCA) {
 										this.failureReason = "Illegal state in pattern for PCA";
+										this.illegalState = true;
 									} else {
 										this.failureReason = "Illegal state in pattern for Generations";
+										this.illegalState = true;
 									}
 								}
 							}
@@ -7816,6 +7826,9 @@
 		// clear loading flag
 		this.loadingFromRepository = false;
 
+		// flag that no illegal states have been found
+		this.illegalState = false;
+
 		// flag that last pattern was not too big
 		this.tooBig = false;
 
@@ -7945,7 +7958,7 @@
 			}
 
 			// check if a pattern was loaded
-			if (this.failureReason !== "" && !this.tooBig) {
+			if (this.failureReason !== "" && !this.tooBig && !this.illegalState) {
 				newPattern.ruleName = newPattern.originalRuleName;
 				if (newPattern.gridType !== -1) {
 					index = newPattern.ruleName.lastIndexOf(":");
@@ -7978,6 +7991,7 @@
 					}
 					if (newPattern.numStates > states) {
 						this.failureReason = "Illegal state in pattern";
+						this.illegalState = true;
 					} else {
 						newPattern.numStates = states;
 						this.failureReason = "";

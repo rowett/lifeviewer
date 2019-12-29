@@ -28437,7 +28437,7 @@
 			// check angle
 			if (this.camAngle === 0) {
 				// render with clipping and no rotation
-				if (this.pretty && this.camZoom >= 1 && this.layers === 1) {
+				if (this.pretty && this.camZoom >= 1 && this.layers === 1 && ((this.camZoom | 0) !== this.camZoom)) {
 					this.createPixelColours(1);
 					if (this.width !== this.maxGridSize) {
 						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow);
@@ -28455,7 +28455,7 @@
 			// check angle
 			if (this.camAngle === 0) {
 				// render with no clipping and rotation
-				if (this.pretty && this.camZoom >= 1 && this.layers === 1) {
+				if (this.pretty && this.camZoom >= 1 && this.layers === 1 && ((this.camZoom | 0) !== this.camZoom)) {
 					this.createPixelColours(1);
 					this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow);
 				} else {
@@ -28467,7 +28467,7 @@
 		}
 	};
 
-	// render the grid using image scaling
+	// render the grid using anti-aliasing
 	Life.prototype.renderGridProjectionPretty = function(grid, leftX, bottomY, rightX, topY, offGridCol, drawingSnow) {
 		var pixelColours = this.pixelColours,
 			sData32 = this.sData32,
@@ -28482,11 +28482,14 @@
 			height = topY - bottomY,
 			dx = -(leftX - (leftX | 0)) * this.camZoom,
 			dy = -(bottomY - (bottomY | 0)) * this.camZoom,
+			widthMask = this.width - 1,
+			heightMask = this.height - 1,
 			x = 0,
 			y = 0,
 			i = 0,
 			j = 0,
 			l = 0,
+			k = 0,
 			xz = 0,
 			yz = 0,
 			col = 0,
@@ -28500,49 +28503,164 @@
 		rightX = leftX + width;
 		topY = bottomY + height;
 
-		// draw cells at integer zoom
-		j = sZWidth;
-		for (y = bottomY; y < topY; y += 1) {
-			if (y < 0 || y >= grid.length) {
-				col = offGridCol;
-				l = i;
-				for (x = leftX; x < rightX; x += 1) {
-					for (yz = 0; yz < intZoom2; yz += 1) {
-						for (xz = 0; xz < intZoom; xz += 1) {
-							sData32[i] = col;
-							i += 1;
-							sData32[i] = col;
-							i += 1;
-						}
-						i += sWidth - intZoom2;
-					}
-					i = l + intZoom2;
+		// use optimized scaling based on zoom level
+		switch (intZoom) {
+		case 1:
+			// draw 2x2 cells
+			j = sZWidth;
+			for (y = bottomY; y < topY; y += 1) {
+				if ((y & heightMask) !== y) {
+					col = offGridCol;
 					l = i;
-				}
-			} else {
-				gridRow = grid[y];
-				l = i;
-				for (x = leftX; x < rightX; x += 1) {
-					if (x < 0 || x >= gridRow.length) {
-						col = offGridCol;
-					} else {
-						col = pixelColours[gridRow[x]];
+					for (x = leftX; x < rightX; x += 1) {
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						i = l + intZoom2;
+						l = i;
 					}
-					for (yz = 0; yz < intZoom2; yz += 1) {
-						for (xz = 0; xz < intZoom; xz += 1) {
-							sData32[i] = col;
-							i += 1;
-							sData32[i] = col;
-							i += 1;
-						}
-						i += sWidth - intZoom2;
-					}
-					i = l + intZoom2;
+				} else {
+					gridRow = grid[y];
 					l = i;
+					for (x = leftX; x < rightX; x += 1) {
+						if ((x & widthMask) !== x) {
+							col = offGridCol;
+						} else {
+							col = pixelColours[gridRow[x]];
+						}
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						i = l + intZoom2;
+						l = i;
+					}
 				}
+				i = j;
+				j += sZWidth;
 			}
-			i = j;
-			j += sZWidth;
+			break;
+
+		case 2:
+			// draw 4x4 cells
+			j = sZWidth;
+			for (y = bottomY; y < topY; y += 1) {
+				if ((y & heightMask) !== y) {
+					col = offGridCol;
+					l = i;
+					for (x = leftX; x < rightX; x += 1) {
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2] = col;
+						sData32[i + 3] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2] = col;
+						sData32[i + 3] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2] = col;
+						sData32[i + 3] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2] = col;
+						sData32[i + 3] = col;
+						i = l + intZoom2;
+						l = i;
+					}
+				} else {
+					gridRow = grid[y];
+					l = i;
+					for (x = leftX; x < rightX; x += 1) {
+						if ((x & widthMask) !== x) {
+							col = offGridCol;
+						} else {
+							col = pixelColours[gridRow[x]];
+						}
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2]= col;
+						sData32[i + 3] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2]= col;
+						sData32[i + 3] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2]= col;
+						sData32[i + 3] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2] = col;
+						sData32[i + 3] = col;
+						i = l + intZoom2;
+						l = i;
+					}
+				}
+				i = j;
+				j += sZWidth;
+			}
+			break;
+
+		default:
+			// draw NxN cells
+			k = sWidth + sWidth - intZoom2;
+			j = sZWidth;
+			for (y = bottomY; y < topY; y += 1) {
+				if ((y & heightMask) !== y) {
+					col = offGridCol;
+					l = i;
+					for (x = leftX; x < rightX; x += 1) {
+						for (yz = 0; yz < intZoom; yz += 1) {
+							for (xz = 0; xz < intZoom; xz += 1) {
+								sData32[i] = col;
+								sData32[i + 1] = col;
+								sData32[i + sWidth] = col;
+								sData32[i + sWidth + 1] = col;
+								i += 2;
+							}
+							i += k;
+						}
+						i = l + intZoom2;
+						l = i;
+					}
+				} else {
+					gridRow = grid[y];
+					l = i;
+					for (x = leftX; x < rightX; x += 1) {
+						if ((x & widthMask) !== x) {
+							col = offGridCol;
+						} else {
+							col = pixelColours[gridRow[x]];
+						}
+						for (yz = 0; yz < intZoom; yz += 1) {
+							for (xz = 0; xz < intZoom; xz += 1) {
+								sData32[i] = col;
+								sData32[i + 1] = col;
+								sData32[i + sWidth] = col;
+								sData32[i + sWidth + 1] = col;
+								i += 2;
+							}
+							i += k;
+						}
+						i = l + intZoom2;
+						l = i;
+					}
+				}
+				i = j;
+				j += sZWidth;
+			}
+
+			break;
 		}
 
 		// put the integer zoom cells from the image data onto the canvas
@@ -28570,6 +28688,286 @@
 		}
 	};
 
+	// render the grid with overlay using anti-aliasing
+	Life.prototype.renderGridOverlayProjectionPretty = function(bottomGrid, layersGrid, leftX, bottomY, rightX, topY, offGridCol, drawingSnow) {
+		var pixelColours = this.pixelColours,
+			sData32 = this.sData32,
+			sCanvas = this.sCanvas,
+			sContext = this.sContext,
+			sImageData = this.sImageData,
+			intZoom2 = (this.camZoom | 0) << 1,
+			sWidth = sCanvas.width,
+			sZWidth = sWidth * intZoom2,
+			grid = layersGrid,
+			gridRow = null,
+			overlayGrid = bottomGrid,
+			overlayRow = null,
+			width = rightX - leftX,
+			height = topY - bottomY,
+			dx = -(leftX - (leftX | 0)) * this.camZoom,
+			dy = -(bottomY - (bottomY | 0)) * this.camZoom,
+			widthMask = this.width - 1,
+			heightMask = this.height - 1,
+			x = 0,
+			y = 0,
+			i = 0,
+			j = 0,
+			l = 0,
+			k = 0,
+			xz = 0,
+			yz = 0,
+			col = 0,
+			over = 0,
+			aliveStart = this.aliveStart,
+			intZoom = intZoom2 >> 1,
+			state3 = ViewConstants.stateMap[3] + 128,
+			state4 = ViewConstants.stateMap[4] + 128,
+			state5 = ViewConstants.stateMap[5] + 128,
+			state6 = ViewConstants.stateMap[6] + 128;
+
+		// align coordinates size to integers
+		bottomY |= 0;
+		leftX |= 0;
+		width = (width | 0) + 2;
+		height = (height | 0) + 2;
+		rightX = leftX + width;
+		topY = bottomY + height;
+
+		// use optimized scaling based on zoom level
+		switch (intZoom) {
+		case 1:
+			// draw 2x2 cells
+			j = sZWidth;
+			for (y = bottomY; y < topY; y += 1) {
+				if ((y & heightMask) !== y) {
+					col = offGridCol;
+					l = i;
+					for (x = leftX; x < rightX; x += 1) {
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						i = l + intZoom2;
+						l = i;
+					}
+				} else {
+					gridRow = grid[y];
+					overlayRow = overlayGrid[y];
+					l = i;
+					for (x = leftX; x < rightX; x += 1) {
+						if ((x & widthMask) !== x) {
+							col = offGridCol;
+						} else {
+							col = gridRow[x];
+							over = overlayRow[x];
+							if (over === state4 || over === state6) {
+								if (col >= aliveStart) {
+									over = state3;
+								}
+								col = pixelColours[over];
+							} else {
+								if (over === state3 || over === state5) {
+									if (col < aliveStart) {
+										over = state4;
+									}
+									col = pixelColours[over];
+								} else {
+									col = pixelColours[col];
+								}
+							}
+						}
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						i = l + intZoom2;
+						l = i;
+					}
+				}
+				i = j;
+				j += sZWidth;
+			}
+			break;
+
+		case 2:
+			// draw 4x4 cells
+			j = sZWidth;
+			for (y = bottomY; y < topY; y += 1) {
+				if ((y & heightMask) !== y) {
+					col = offGridCol;
+					l = i;
+					for (x = leftX; x < rightX; x += 1) {
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2] = col;
+						sData32[i + 3] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2] = col;
+						sData32[i + 3] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2] = col;
+						sData32[i + 3] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2] = col;
+						sData32[i + 3] = col;
+						i = l + intZoom2;
+						l = i;
+					}
+				} else {
+					gridRow = grid[y];
+					overlayRow = overlayGrid[y];
+					l = i;
+					for (x = leftX; x < rightX; x += 1) {
+						if ((x & widthMask) !== x) {
+							col = offGridCol;
+						} else {
+							col = gridRow[x];
+							over = overlayRow[x];
+							if (over === state4 || over === state6) {
+								if (col >= aliveStart) {
+									over = state3;
+								}
+								col = pixelColours[over];
+							} else {
+								if (over === state3 || over === state5) {
+									if (col < aliveStart) {
+										over = state4;
+									}
+									col = pixelColours[over];
+								} else {
+									col = pixelColours[col];
+								}
+							}
+						}
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2]= col;
+						sData32[i + 3] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2]= col;
+						sData32[i + 3] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2]= col;
+						sData32[i + 3] = col;
+						i += sWidth;
+						sData32[i] = col;
+						sData32[i + 1] = col;
+						sData32[i + 2] = col;
+						sData32[i + 3] = col;
+						i = l + intZoom2;
+						l = i;
+					}
+				}
+				i = j;
+				j += sZWidth;
+			}
+			break;
+
+		default:
+			// draw NxN cells
+			k = sWidth + sWidth - intZoom2;
+			j = sZWidth;
+			for (y = bottomY; y < topY; y += 1) {
+				if ((y & heightMask) !== y) {
+					col = offGridCol;
+					l = i;
+					for (x = leftX; x < rightX; x += 1) {
+						for (yz = 0; yz < intZoom; yz += 1) {
+							for (xz = 0; xz < intZoom; xz += 1) {
+								sData32[i] = col;
+								sData32[i + 1] = col;
+								sData32[i + sWidth] = col;
+								sData32[i + sWidth + 1] = col;
+								i += 2;
+							}
+							i += k;
+						}
+						i = l + intZoom2;
+						l = i;
+					}
+				} else {
+					gridRow = grid[y];
+					overlayRow = overlayGrid[y];
+					l = i;
+					for (x = leftX; x < rightX; x += 1) {
+						if ((x & widthMask) !== x) {
+							col = offGridCol;
+						} else {
+							col = gridRow[x];
+							over = overlayRow[x];
+							if (over === state4 || over === state6) {
+								if (col >= aliveStart) {
+									over = state3;
+								}
+								col = pixelColours[over];
+							} else {
+								if (over === state3 || over === state5) {
+									if (col < aliveStart) {
+										over = state4;
+									}
+									col = pixelColours[over];
+								} else {
+									col = pixelColours[col];
+								}
+							}
+						}
+						for (yz = 0; yz < intZoom; yz += 1) {
+							for (xz = 0; xz < intZoom; xz += 1) {
+								sData32[i] = col;
+								sData32[i + 1] = col;
+								sData32[i + sWidth] = col;
+								sData32[i + sWidth + 1] = col;
+								i += 2;
+							}
+							i += k;
+						}
+						i = l + intZoom2;
+						l = i;
+					}
+				}
+				i = j;
+				j += sZWidth;
+			}
+
+			break;
+		}
+
+		// put the integer zoom cells from the image data onto the canvas
+		sContext.putImageData(sImageData, 0, 0, 0, 0, width * intZoom2, height * intZoom2);
+
+		// pretty scale to the display
+		sContext.imageSmoothingEnabled = true;
+		sContext.drawImage(this.sCanvas, 0, 0, width * intZoom2, height * intZoom2, 0, 0, (width * this.camZoom), (height * this.camZoom));
+
+		// draw the scaled canvas onto the drawing canvas
+		dx |= 0;
+		dy |= 0;
+		this.context.drawImage(this.sCanvas, dx, dy);
+
+		// update the image data array from the rendered image
+		this.imageData = this.context.getImageData(0, 0, this.context.canvas.width, this.context.canvas.height);
+		this.data32 = new Uint32Array(this.imageData.data.buffer);
+
+		// draw grid lines if enabled
+		if (drawingSnow) {
+			this.drawSnow();
+		}
+		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
+			this.drawGridLines();
+		}
+	};
 	// project the life grid onto the canvas with transformation
 	Life.prototype.renderGridOverlayProjectionClip = function(bottomGrid, layersGrid, mask, drawingSnow) {
 		var w8 = this.displayWidth >> 3,
@@ -30542,23 +30940,23 @@
 
 		    // display width and height
 		    width = this.displayWidth,
-		    height = this.displayHeight,
-
-		    // compute top left
-		    topLeftY = -((this.displayWidth / 2) * (-dxy) + (this.displayHeight / 2) * dyy) + this.camYOff,
-		    topLeftX = -((this.displayWidth / 2) * dyy + (this.displayHeight / 2) * dxy) + this.camXOff,
-
-		    // compute top right
-		    topRightY = topLeftY + width * (-dxy),
-		    topRightX = topLeftX + width * dyy,
+			height = this.displayHeight,
 
 		    // compute bottom left
-		    bottomLeftY = topLeftY + height * dyy,
-		    bottomLeftX = topLeftX + height * dxy,
+		    bottomLeftY = -((this.displayWidth / 2) * (-dxy) + (this.displayHeight / 2) * dyy) + this.camYOff,
+		    bottomLeftX = -((this.displayWidth / 2) * dyy + (this.displayHeight / 2) * dxy) + this.camXOff,
 
 		    // compute bottom right
 		    bottomRightY = bottomLeftY + width * (-dxy),
 		    bottomRightX = bottomLeftX + width * dyy,
+
+		    // compute top left
+		    topLeftY = bottomLeftY + height * dyy,
+		    topLeftX = bottomLeftX + height * dxy,
+
+		    // compute top right
+		    topRightY = topLeftY + width * (-dxy),
+		    topRightX = topLeftX + width * dyy,
 
 		    // initialise the bounding box
 		    boundTop = topLeftY,
@@ -30589,33 +30987,42 @@
 		}
 
 		// set the top Y extent
-		if (topRightY < boundTop) {
+		if (topRightY > boundTop) {
 			boundTop = topRightY;
 		}
-		if (bottomLeftY < boundTop) {
+		if (bottomLeftY > boundTop) {
 			boundTop = bottomLeftY;
 		}
-		if (bottomRightY < boundTop) {
+		if (bottomRightY > boundTop) {
 			boundTop = bottomRightY;
 		}
 
 		// set the bottom Y extent
-		if (topRightY > boundBottom) {
+		if (topRightY < boundBottom) {
 			 boundBottom = topRightY;
 		}
-		if (bottomLeftY > boundBottom) {
+		if (bottomLeftY < boundBottom) {
 			boundBottom = bottomLeftY;
 		}
-		if (bottomRightY > boundBottom) {
+		if (bottomRightY < boundBottom) {
 			boundBottom = bottomRightY;
 		}
 
 		// check whether clipping is required
-		if ((boundLeft | 0) < 0 || (boundRight | 0) >= this.width || (boundTop | 0) < 0 || (boundBottom | 0) >= this.height) {
+		if ((boundLeft | 0) < 0 || (boundRight | 0) >= this.width || (boundBottom | 0) < 0 || (boundTop | 0) >= this.height) {
 			// check angle
 			if (this.camAngle === 0) {
 				// render with clipping and no rotation
-				this.renderGridOverlayProjectionClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
+				if (this.pretty && this.camZoom >= 1 && this.layers === 1 && ((this.camZoom | 0) !== this.camZoom)) {
+					this.createPixelColours(1);
+					if (this.width !== this.maxGridSize) {
+						this.renderGridOverlayProjectionPretty(bottomGrid, layersGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow);
+					} else {
+						this.renderGridOverlayProjectionPretty(bottomGrid, layersGrid, boundLeft, boundBottom, boundRight, boundTop, this.boundaryColour, drawingSnow);
+					}
+				} else {
+					this.renderGridOverlayProjectionClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
+				}
 			} else {
 				// render with clipping
 				this.renderGridOverlayProjectionClip(bottomGrid, layersGrid, mask, drawingSnow);
@@ -30624,7 +31031,12 @@
 			// check angle
 			if (this.camAngle === 0) {
 				// render with no clipping and no rotation
-				this.renderGridOverlayProjectionNoClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
+				if (this.pretty && this.camZoom >= 1 && this.layers === 1 && ((this.camZoom | 0) !== this.camZoom)) {
+					this.createPixelColours(1);
+					this.renderGridOverlayProjectionPretty(bottomGrid, layersGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow);
+				} else {
+					this.renderGridOverlayProjectionNoClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
+				}
 			} else {
 				// render with no clipping
 				this.renderGridOverlayProjectionNoClip(bottomGrid, layersGrid, mask, drawingSnow);
