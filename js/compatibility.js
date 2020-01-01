@@ -471,6 +471,38 @@
 	if (data32.copyWithin) {
 		window["copyWithin"] = true;
 	} else {
+		window.Uint32Array.prototype.copyWithin = function(target, start, end) {
+			var i = 0,
+				size = 0,
+				reverse = false;
+
+			if (end === undefined) {
+				end = this.length;
+			}
+			size = end - start;
+
+			if (start !== target) {
+				// check for overlap
+				if ((target >= start && target <= end) || (target + size >= start && target + size <= end)) {
+					// overlap so determine which direction to copy
+					if (target > start) {
+						reverse = true;
+					}
+				}
+
+				// check which direction to copy
+				if (reverse) {
+					for (i = size - 1; i >= 0; i -= 1) {
+						this[target + i] = this[start + i];
+					}
+				} else {
+					for (i = 0; i < size; i += 1) {
+						this[target + i] = this[start + i];
+					}
+				}
+			}
+		};
+
 		window["copyWithin"] = false;
 	}
 

@@ -855,17 +855,22 @@
 	Life.prototype.initPretty = function() {
 		var displayWidth = this.displayWidth,
 			displayHeight = this.displayHeight,
-			maxZoom = ViewConstants.maxZoom;
+			maxZoom = ViewConstants.maxZoom,
+			width = (displayWidth + maxZoom + maxZoom) << 1,
+			height = (displayHeight + maxZoom + maxZoom) << 1;
 
 		// check if pretty rendering enabled
 		if (this.pretty) {
 			if (this.sCanvas === null) {
-				this.sCanvas = document.createElement("canvas");
+				if (window.OffScreenCanvas) {
+					this.sCanvas = new OffscreenCanvas(width, height);
+				} else {
+					this.sCanvas = document.createElement("canvas");
+				}
 			}
-			this.sCanvas.width = (displayWidth + maxZoom + maxZoom) << 1;
-			this.sCanvas.height = (displayHeight + maxZoom + maxZoom) << 1;
+			this.sCanvas.width = width;
+			this.sCanvas.height = height;
 			this.sContext = this.sCanvas.getContext("2d", {alpha: false});
-			this.sContext.imageSmoothingQuality = "low";
 			this.sImageData = this.sContext.getImageData(0, 0, this.sCanvas.width, this.sCanvas.height);
 			this.sData32 = new Uint32Array(this.sImageData.data.buffer);
 		} else {
@@ -28474,26 +28479,26 @@
 			sCanvas = this.sCanvas,
 			sContext = this.sContext,
 			sImageData = this.sImageData,
-			intZoom2 = (this.camZoom | 0) << 1,
-			sWidth = sCanvas.width,
-			sZWidth = sWidth * intZoom2,
+			/** @const {number} */ intZoom2 = (this.camZoom | 0) << 1,
+			/** @const {number} */ sWidth = sCanvas.width,
+			/** @const {number} */ sZWidth = sWidth * intZoom2,
 			gridRow = null,
-			width = rightX - leftX,
-			height = topY - bottomY,
-			dx = -(leftX - (leftX | 0)) * this.camZoom,
-			dy = -(bottomY - (bottomY | 0)) * this.camZoom,
-			widthMask = this.width - 1,
-			heightMask = this.height - 1,
-			x = 0,
-			y = 0,
-			i = 0,
-			j = 0,
-			l = 0,
-			k = 0,
-			xz = 0,
-			yz = 0,
-			col = 0,
-			intZoom = intZoom2 >> 1;
+			/** @type {number} */ width = rightX - leftX,
+			/** @type {number} */ height = topY - bottomY,
+			/** @type {number} */ dx = -(leftX - Math.floor(leftX)) * this.camZoom,
+			/** @type {number} */ dy = -(bottomY - Math.floor(bottomY)) * this.camZoom,
+			/** @const {number} */ widthMask = this.width - 1,
+			/** @const {number} */ heightMask = this.height - 1,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ l = 0,
+			/** @type {number} */ xz = 0,
+			/** @type {number} */ yz = 0,
+			/** @type {number} */ col = 0,
+			/** @const {number} */ intZoom = intZoom2 >> 1,
+			/** @type {number} */ intWidth2 = 0;
 
 		// align coordinates size to integers
 		bottomY |= 0;
@@ -28508,19 +28513,12 @@
 		case 1:
 			// draw 2x2 cells
 			j = sZWidth;
+			intWidth2 = width << 1;
 			for (y = bottomY; y < topY; y += 1) {
 				if ((y & heightMask) !== y) {
-					col = offGridCol;
-					l = i;
-					for (x = leftX; x < rightX; x += 1) {
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						i = l + intZoom2;
-						l = i;
-					}
+					sData32.fill(offGridCol, i, i + intWidth2);
+					i += sWidth;
+					sData32.fill(offGridCol, i, i + intWidth2);
 				} else {
 					gridRow = grid[y];
 					l = i;
@@ -28532,12 +28530,10 @@
 						}
 						sData32[i] = col;
 						sData32[i + 1] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						i = l + intZoom2;
-						l = i;
+						i += 2;
 					}
+					i = l + sWidth;
+					sData32.copyWithin(i, l, l + intWidth2);
 				}
 				i = j;
 				j += sZWidth;
@@ -28547,33 +28543,16 @@
 		case 2:
 			// draw 4x4 cells
 			j = sZWidth;
+			intWidth2 = width << 2;
 			for (y = bottomY; y < topY; y += 1) {
 				if ((y & heightMask) !== y) {
-					col = offGridCol;
-					l = i;
-					for (x = leftX; x < rightX; x += 1) {
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						sData32[i + 2] = col;
-						sData32[i + 3] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						sData32[i + 2] = col;
-						sData32[i + 3] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						sData32[i + 2] = col;
-						sData32[i + 3] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						sData32[i + 2] = col;
-						sData32[i + 3] = col;
-						i = l + intZoom2;
-						l = i;
-					}
+					sData32.fill(offGridCol, i, i + intWidth2);
+					i += sWidth;
+					sData32.fill(offGridCol, i, i + intWidth2);
+					i += sWidth;
+					sData32.fill(offGridCol, i, i + intWidth2);
+					i += sWidth;
+					sData32.fill(offGridCol, i, i + intWidth2);
 				} else {
 					gridRow = grid[y];
 					l = i;
@@ -28587,24 +28566,16 @@
 						sData32[i + 1] = col;
 						sData32[i + 2]= col;
 						sData32[i + 3] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						sData32[i + 2]= col;
-						sData32[i + 3] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						sData32[i + 2]= col;
-						sData32[i + 3] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						sData32[i + 2] = col;
-						sData32[i + 3] = col;
-						i = l + intZoom2;
-						l = i;
+						i += 4;
 					}
+					i = l + sWidth;
+					sData32.copyWithin(i, l, l + intWidth2);
+					i += sWidth;
+					l += sWidth;
+					sData32.copyWithin(i, l, l + intWidth2);
+					i += sWidth;
+					l += sWidth;
+					sData32.copyWithin(i, l, l + intWidth2);
 				}
 				i = j;
 				j += sZWidth;
@@ -28613,25 +28584,15 @@
 
 		default:
 			// draw NxN cells
-			k = sWidth + sWidth - intZoom2;
 			j = sZWidth;
+			intWidth2 = width * intZoom2;
 			for (y = bottomY; y < topY; y += 1) {
 				if ((y & heightMask) !== y) {
-					col = offGridCol;
-					l = i;
-					for (x = leftX; x < rightX; x += 1) {
-						for (yz = 0; yz < intZoom; yz += 1) {
-							for (xz = 0; xz < intZoom; xz += 1) {
-								sData32[i] = col;
-								sData32[i + 1] = col;
-								sData32[i + sWidth] = col;
-								sData32[i + sWidth + 1] = col;
-								i += 2;
-							}
-							i += k;
-						}
-						i = l + intZoom2;
-						l = i;
+					for (yz = 0; yz < intZoom; yz += 1) {
+						sData32.fill(offGridCol, i, i + intWidth2);
+						i += sWidth;
+						sData32.fill(offGridCol, i, i + intWidth2);
+						i += sWidth;
 					}
 				} else {
 					gridRow = grid[y];
@@ -28642,24 +28603,22 @@
 						} else {
 							col = pixelColours[gridRow[x]];
 						}
-						for (yz = 0; yz < intZoom; yz += 1) {
-							for (xz = 0; xz < intZoom; xz += 1) {
-								sData32[i] = col;
-								sData32[i + 1] = col;
-								sData32[i + sWidth] = col;
-								sData32[i + sWidth + 1] = col;
-								i += 2;
-							}
-							i += k;
+						for (xz = 0; xz < intZoom; xz += 1) {
+							sData32[i] = col;
+							sData32[i + 1] = col;
+							i += 2;
 						}
-						i = l + intZoom2;
-						l = i;
+					}
+					i = l + sWidth;
+					for (yz = 1; yz < intZoom2; yz += 1) {
+						sData32.copyWithin(i, l, l + intWidth2);
+						l += sWidth
+						i += sWidth;
 					}
 				}
 				i = j;
 				j += sZWidth;
 			}
-
 			break;
 		}
 
@@ -28667,13 +28626,9 @@
 		sContext.putImageData(sImageData, 0, 0, 0, 0, width * intZoom2, height * intZoom2);
 
 		// pretty scale to the display
-		sContext.imageSmoothingEnabled = true;
-		sContext.drawImage(this.sCanvas, 0, 0, width * intZoom2, height * intZoom2, 0, 0, (width * this.camZoom), (height * this.camZoom));
-
-		// draw the scaled canvas onto the drawing canvas
-		dx |= 0;
-		dy |= 0;
-		this.context.drawImage(this.sCanvas, dx, dy);
+		this.context.imageSmoothingEnabled = true;
+		this.context.drawImage(this.sCanvas, 0, 0, width * intZoom2, height * intZoom2, dx, dy, (width * this.camZoom), (height * this.camZoom));
+		this.context.imageSmoothingEnabled = false;
 
 		// update the image data array from the rendered image
 		this.imageData = this.context.getImageData(0, 0, this.context.canvas.width, this.context.canvas.height);
@@ -28695,35 +28650,35 @@
 			sCanvas = this.sCanvas,
 			sContext = this.sContext,
 			sImageData = this.sImageData,
-			intZoom2 = (this.camZoom | 0) << 1,
-			sWidth = sCanvas.width,
-			sZWidth = sWidth * intZoom2,
+			/** @const {number} */ intZoom2 = (this.camZoom | 0) << 1,
+			/** @const {number} */ sWidth = sCanvas.width,
+			/** @const {number} */ sZWidth = sWidth * intZoom2,
 			grid = layersGrid,
 			gridRow = null,
 			overlayGrid = bottomGrid,
 			overlayRow = null,
-			width = rightX - leftX,
-			height = topY - bottomY,
-			dx = -(leftX - (leftX | 0)) * this.camZoom,
-			dy = -(bottomY - (bottomY | 0)) * this.camZoom,
-			widthMask = this.width - 1,
-			heightMask = this.height - 1,
-			x = 0,
-			y = 0,
-			i = 0,
-			j = 0,
-			l = 0,
-			k = 0,
-			xz = 0,
-			yz = 0,
-			col = 0,
-			over = 0,
-			aliveStart = this.aliveStart,
-			intZoom = intZoom2 >> 1,
-			state3 = ViewConstants.stateMap[3] + 128,
-			state4 = ViewConstants.stateMap[4] + 128,
-			state5 = ViewConstants.stateMap[5] + 128,
-			state6 = ViewConstants.stateMap[6] + 128;
+			/** @type {number} */ width = rightX - leftX,
+			/** @type {number} */ height = topY - bottomY,
+			/** @type {number} */ dx = -(leftX - Math.floor(leftX)) * this.camZoom,
+			/** @type {number} */ dy = -(bottomY - Math.floor(bottomY)) * this.camZoom,
+			/** @const {number} */ widthMask = this.width - 1,
+			/** @const {number} */ heightMask = this.height - 1,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ l = 0,
+			/** @type {number} */ xz = 0,
+			/** @type {number} */ yz = 0,
+			/** @type {number} */ col = 0,
+			/** @type {number} */ over = 0,
+			/** @const {number} */ aliveStart = this.aliveStart,
+			/** @const {number} */ intZoom = intZoom2 >> 1,
+			/** @const {number} */ state3 = ViewConstants.stateMap[3] + 128,
+			/** @const {number} */ state4 = ViewConstants.stateMap[4] + 128,
+			/** @const {number} */ state5 = ViewConstants.stateMap[5] + 128,
+			/** @const {number} */ state6 = ViewConstants.stateMap[6] + 128,
+			/** @type {number} */ intWidth2 = 0;
 
 		// align coordinates size to integers
 		bottomY |= 0;
@@ -28738,19 +28693,12 @@
 		case 1:
 			// draw 2x2 cells
 			j = sZWidth;
+			intWidth2 = width << 1;
 			for (y = bottomY; y < topY; y += 1) {
 				if ((y & heightMask) !== y) {
-					col = offGridCol;
-					l = i;
-					for (x = leftX; x < rightX; x += 1) {
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						i = l + intZoom2;
-						l = i;
-					}
+					sData32.fill(offGridCol, i, i + intWidth2);
+					i += sWidth;
+					sData32.fill(offGridCol, i, i + intWidth2);
 				} else {
 					gridRow = grid[y];
 					overlayRow = overlayGrid[y];
@@ -28779,12 +28727,10 @@
 						}
 						sData32[i] = col;
 						sData32[i + 1] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						i = l + intZoom2;
-						l = i;
+						i += 2;
 					}
+					i = l + sWidth;
+					sData32.copyWithin(i, l, l + intWidth2);
 				}
 				i = j;
 				j += sZWidth;
@@ -28794,33 +28740,16 @@
 		case 2:
 			// draw 4x4 cells
 			j = sZWidth;
+			intWidth2 = width << 2;
 			for (y = bottomY; y < topY; y += 1) {
 				if ((y & heightMask) !== y) {
-					col = offGridCol;
-					l = i;
-					for (x = leftX; x < rightX; x += 1) {
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						sData32[i + 2] = col;
-						sData32[i + 3] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						sData32[i + 2] = col;
-						sData32[i + 3] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						sData32[i + 2] = col;
-						sData32[i + 3] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						sData32[i + 2] = col;
-						sData32[i + 3] = col;
-						i = l + intZoom2;
-						l = i;
-					}
+					sData32.fill(offGridCol, i, i + intWidth2);
+					i += sWidth;
+					sData32.fill(offGridCol, i, i + intWidth2);
+					i += sWidth;
+					sData32.fill(offGridCol, i, i + intWidth2);
+					i += sWidth;
+					sData32.fill(offGridCol, i, i + intWidth2);
 				} else {
 					gridRow = grid[y];
 					overlayRow = overlayGrid[y];
@@ -28851,24 +28780,16 @@
 						sData32[i + 1] = col;
 						sData32[i + 2]= col;
 						sData32[i + 3] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						sData32[i + 2]= col;
-						sData32[i + 3] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						sData32[i + 2]= col;
-						sData32[i + 3] = col;
-						i += sWidth;
-						sData32[i] = col;
-						sData32[i + 1] = col;
-						sData32[i + 2] = col;
-						sData32[i + 3] = col;
-						i = l + intZoom2;
-						l = i;
+						i += 4;
 					}
+					i = l + sWidth;
+					sData32.copyWithin(i, l, l + intWidth2);
+					i += sWidth;
+					l += sWidth;
+					sData32.copyWithin(i, l, l + intWidth2);
+					i += sWidth;
+					l += sWidth;
+					sData32.copyWithin(i, l, l + intWidth2);
 				}
 				i = j;
 				j += sZWidth;
@@ -28877,25 +28798,15 @@
 
 		default:
 			// draw NxN cells
-			k = sWidth + sWidth - intZoom2;
 			j = sZWidth;
+			intWidth2 = width * intZoom2;
 			for (y = bottomY; y < topY; y += 1) {
 				if ((y & heightMask) !== y) {
-					col = offGridCol;
-					l = i;
-					for (x = leftX; x < rightX; x += 1) {
-						for (yz = 0; yz < intZoom; yz += 1) {
-							for (xz = 0; xz < intZoom; xz += 1) {
-								sData32[i] = col;
-								sData32[i + 1] = col;
-								sData32[i + sWidth] = col;
-								sData32[i + sWidth + 1] = col;
-								i += 2;
-							}
-							i += k;
-						}
-						i = l + intZoom2;
-						l = i;
+					for (yz = 0; yz < intZoom; yz += 1) {
+						sData32.fill(offGridCol, i, i + intWidth2);
+						i += sWidth;
+						sData32.fill(offGridCol, i, i + intWidth2);
+						i += sWidth;
 					}
 				} else {
 					gridRow = grid[y];
@@ -28923,24 +28834,22 @@
 								}
 							}
 						}
-						for (yz = 0; yz < intZoom; yz += 1) {
-							for (xz = 0; xz < intZoom; xz += 1) {
-								sData32[i] = col;
-								sData32[i + 1] = col;
-								sData32[i + sWidth] = col;
-								sData32[i + sWidth + 1] = col;
-								i += 2;
-							}
-							i += k;
+						for (xz = 0; xz < intZoom; xz += 1) {
+							sData32[i] = col;
+							sData32[i + 1] = col;
+							i += 2;
 						}
-						i = l + intZoom2;
-						l = i;
+					}
+					i = l + sWidth;
+					for (yz = 1; yz < intZoom2; yz += 1) {
+						sData32.copyWithin(i, l, l + intWidth2);
+						l += sWidth;
+						i += sWidth;
 					}
 				}
 				i = j;
 				j += sZWidth;
 			}
-
 			break;
 		}
 
@@ -28948,13 +28857,9 @@
 		sContext.putImageData(sImageData, 0, 0, 0, 0, width * intZoom2, height * intZoom2);
 
 		// pretty scale to the display
-		sContext.imageSmoothingEnabled = true;
-		sContext.drawImage(this.sCanvas, 0, 0, width * intZoom2, height * intZoom2, 0, 0, (width * this.camZoom), (height * this.camZoom));
-
-		// draw the scaled canvas onto the drawing canvas
-		dx |= 0;
-		dy |= 0;
-		this.context.drawImage(this.sCanvas, dx, dy);
+		this.context.imageSmoothingEnabled = true;
+		this.context.drawImage(this.sCanvas, 0, 0, width * intZoom2, height * intZoom2, dx, dy, (width * this.camZoom), (height * this.camZoom));
+		this.context.imageSmoothingEnabled = false;
 
 		// update the image data array from the rendered image
 		this.imageData = this.context.getImageData(0, 0, this.context.canvas.width, this.context.canvas.height);
@@ -28968,6 +28873,7 @@
 			this.drawGridLines();
 		}
 	};
+
 	// project the life grid onto the canvas with transformation
 	Life.prototype.renderGridOverlayProjectionClip = function(bottomGrid, layersGrid, mask, drawingSnow) {
 		var w8 = this.displayWidth >> 3,
