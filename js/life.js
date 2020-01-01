@@ -300,6 +300,9 @@
 		// allocator
 		this.allocator = new Allocator();
 
+		// whether to draw grid
+		/** @type {boolean} */ this.doDrawGrid = true;
+
 		// whether pretty rendering enabled
 		/** @type {boolean} */ this.pretty = false;
 
@@ -26868,12 +26871,15 @@
 	};
 
 	// project the life grid onto the canvas
-	Life.prototype.renderGrid = function(drawingSnow) {
+	Life.prototype.renderGrid = function(drawingSnow, drawingStars) {
 		var colour0 = this.pixelColours[0],
 			data32 = this.data32,
 			colourGrid = this.colourGrid,
 			colourGrid16 = this.colourGrid16,
 			colourGrid32 = this.colourGrid32;
+
+		// mark that grid should be drawn
+		this.doDrawGrid = true;
 
 		// check for PCA rules
 		if (this.isPCA || this.isRuleTree) {
@@ -26945,10 +26951,10 @@
 				// check for LifeHistory overlay
 				if (this.drawOverlay) {
 					// render the grid with the overlay on top
-					this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 15, drawingSnow);
+					this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 15, drawingSnow, drawingStars);
 				} else {
 					// render using small colour grid 16x16
-					this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 15, drawingSnow);
+					this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 15, drawingSnow, drawingStars);
 				}
 			} else {
 				// check if zoom < 0.25x
@@ -26956,10 +26962,10 @@
 					// check for LifeHistory overlay
 					if (this.drawOverlay) {
 						// render the grid with the overlay on top
-						this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 7, drawingSnow);
+						this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 7, drawingSnow, drawingStars);
 					} else {
 						// render using small colour grid 8x8
-						this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 7, drawingSnow);
+						this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 7, drawingSnow, drawingStars);
 					}
 				} else {
 					// check if zoom < 0.5x
@@ -26967,10 +26973,10 @@
 						// check for LifeHistory overlay
 						if (this.drawOverlay) {
 							// render the grid with the overlay on top
-							this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 3, drawingSnow);
+							this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 3, drawingSnow, drawingStars);
 						} else {
 							// render using small colour grid 4x4
-							this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 3, drawingSnow);
+							this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 3, drawingSnow, drawingStars);
 						}
 					} else {
 						// check for zoom < 1x
@@ -26978,19 +26984,19 @@
 							// check for LifeHistory overlay
 							if (this.drawOverlay) {
 								// render the grid with the overlay on top
-								this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 1, drawingSnow);
+								this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 1, drawingSnow, drawingStars);
 							} else {
 								// render using small colour grid 2x2
-								this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 1, drawingSnow);
+								this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 1, drawingSnow, drawingStars);
 							}
 						} else {
 							// check for LifeHistory overlay
 							if (this.drawOverlay) {
 								// render the grid with the overlay on top
-								this.renderGridOverlayProjection(this.overlayGrid, colourGrid, 0, drawingSnow);
+								this.renderGridOverlayProjection(this.overlayGrid, colourGrid, 0, drawingSnow, drawingStars);
 							} else {
 								// render the grid
-								this.renderGridProjection(colourGrid, colourGrid, 0, drawingSnow);
+								this.renderGridProjection(colourGrid, colourGrid, 0, drawingSnow, drawingStars);
 							}
 						}
 					}
@@ -28362,7 +28368,7 @@
 	};
 
 	// project the life grid onto the canvas with transformation
-	Life.prototype.renderGridProjection = function(bottomGrid, layersGrid, mask, drawingSnow) {
+	Life.prototype.renderGridProjection = function(bottomGrid, layersGrid, mask, drawingSnow, drawingStars) {
 		// compute deltas in horizontal and vertical direction based on rotation
 		var dxy = Math.sin(this.camAngle / 180 * Math.PI) / this.camZoom,
 		    dyy = Math.cos(this.camAngle / 180 * Math.PI) / this.camZoom,
@@ -28445,9 +28451,9 @@
 				if (this.pretty && this.camZoom >= 1 && this.layers === 1 && ((this.camZoom | 0) !== this.camZoom)) {
 					this.createPixelColours(1);
 					if (this.width !== this.maxGridSize) {
-						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow);
+						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow, drawingStars);
 					} else {
-						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, this.boundaryColour, drawingSnow);
+						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, this.boundaryColour, drawingSnow, drawingStars);
 					}
 				} else {
 					this.renderGridProjectionClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
@@ -28462,7 +28468,7 @@
 				// render with no clipping and rotation
 				if (this.pretty && this.camZoom >= 1 && this.layers === 1 && ((this.camZoom | 0) !== this.camZoom)) {
 					this.createPixelColours(1);
-					this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow);
+					this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow, drawingStars);
 				} else {
 					this.renderGridProjectionNoClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
 				}
@@ -28473,7 +28479,7 @@
 	};
 
 	// render the grid using anti-aliasing
-	Life.prototype.renderGridProjectionPretty = function(grid, leftX, bottomY, rightX, topY, offGridCol, drawingSnow) {
+	Life.prototype.renderGridProjectionPretty = function(grid, leftX, bottomY, rightX, topY, offGridCol, drawingSnow, drawingStars) {
 		var pixelColours = this.pixelColours,
 			sData32 = this.sData32,
 			sCanvas = this.sCanvas,
@@ -28630,21 +28636,27 @@
 		this.context.drawImage(this.sCanvas, 0, 0, width * intZoom2, height * intZoom2, dx, dy, (width * this.camZoom), (height * this.camZoom));
 		this.context.imageSmoothingEnabled = false;
 
-		// update the image data array from the rendered image
-		this.imageData = this.context.getImageData(0, 0, this.context.canvas.width, this.context.canvas.height);
-		this.data32 = new Uint32Array(this.imageData.data.buffer);
+		// update the image data if further rendering is required
+		if (drawingSnow || drawingStars || ((this.displayGrid || this.cellBorders) && this.canDisplayGrid())) {
+			// update the image data array from the rendered image
+			this.imageData = this.context.getImageData(0, 0, this.context.canvas.width, this.context.canvas.height);
+			this.data32 = new Uint32Array(this.imageData.data.buffer);
 
-		// draw grid lines if enabled
-		if (drawingSnow) {
-			this.drawSnow();
-		}
-		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
-			this.drawGridLines();
+			// draw grid lines if enabled
+			if (drawingSnow) {
+				this.drawSnow();
+			}
+			if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
+				this.drawGridLines();
+			}
+		} else {
+			// no need to draw the grid since it's already been rendered and there are no overlays (snow, stars, grdlines)
+			this.doDrawGrid = false;
 		}
 	};
 
 	// render the grid with overlay using anti-aliasing
-	Life.prototype.renderGridOverlayProjectionPretty = function(bottomGrid, layersGrid, leftX, bottomY, rightX, topY, offGridCol, drawingSnow) {
+	Life.prototype.renderGridOverlayProjectionPretty = function(bottomGrid, layersGrid, leftX, bottomY, rightX, topY, offGridCol, drawingSnow, drawingStars) {
 		var pixelColours = this.pixelColours,
 			sData32 = this.sData32,
 			sCanvas = this.sCanvas,
@@ -28861,16 +28873,22 @@
 		this.context.drawImage(this.sCanvas, 0, 0, width * intZoom2, height * intZoom2, dx, dy, (width * this.camZoom), (height * this.camZoom));
 		this.context.imageSmoothingEnabled = false;
 
-		// update the image data array from the rendered image
-		this.imageData = this.context.getImageData(0, 0, this.context.canvas.width, this.context.canvas.height);
-		this.data32 = new Uint32Array(this.imageData.data.buffer);
+		// update the image data if further rendering is required
+		if (drawingSnow || drawingStars || ((this.displayGrid || this.cellBorders) && this.canDisplayGrid())) {
+			// update the image data array from the rendered image
+			this.imageData = this.context.getImageData(0, 0, this.context.canvas.width, this.context.canvas.height);
+			this.data32 = new Uint32Array(this.imageData.data.buffer);
 
-		// draw grid lines if enabled
-		if (drawingSnow) {
-			this.drawSnow();
-		}
-		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
-			this.drawGridLines();
+			// draw grid lines if enabled
+			if (drawingSnow) {
+				this.drawSnow();
+			}
+			if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
+				this.drawGridLines();
+			}
+		} else {
+			// no need to draw the grid since it's already been rendered and there are no overlays (snow, stars, grdlines)
+			this.doDrawGrid = false;
 		}
 	};
 
@@ -30839,7 +30857,7 @@
 	};
 
 	// project the overlay onto the canvas with transformation
-	Life.prototype.renderGridOverlayProjection = function(bottomGrid, layersGrid, mask, drawingSnow) {
+	Life.prototype.renderGridOverlayProjection = function(bottomGrid, layersGrid, mask, drawingSnow, drawingStars) {
 		// compute deltas in horizontal and vertical direction based on rotation
 		var dxy = Math.sin(this.camAngle / 180 * Math.PI) / this.camZoom,
 		    dyy = Math.cos(this.camAngle / 180 * Math.PI) / this.camZoom,
@@ -30922,9 +30940,9 @@
 				if (this.pretty && this.camZoom >= 1 && this.layers === 1 && ((this.camZoom | 0) !== this.camZoom)) {
 					this.createPixelColours(1);
 					if (this.width !== this.maxGridSize) {
-						this.renderGridOverlayProjectionPretty(bottomGrid, layersGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow);
+						this.renderGridOverlayProjectionPretty(bottomGrid, layersGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow, drawingStars);
 					} else {
-						this.renderGridOverlayProjectionPretty(bottomGrid, layersGrid, boundLeft, boundBottom, boundRight, boundTop, this.boundaryColour, drawingSnow);
+						this.renderGridOverlayProjectionPretty(bottomGrid, layersGrid, boundLeft, boundBottom, boundRight, boundTop, this.boundaryColour, drawingSnow, drawingStars);
 					}
 				} else {
 					this.renderGridOverlayProjectionClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
@@ -30939,7 +30957,7 @@
 				// render with no clipping and no rotation
 				if (this.pretty && this.camZoom >= 1 && this.layers === 1 && ((this.camZoom | 0) !== this.camZoom)) {
 					this.createPixelColours(1);
-					this.renderGridOverlayProjectionPretty(bottomGrid, layersGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow);
+					this.renderGridOverlayProjectionPretty(bottomGrid, layersGrid, boundLeft, boundBottom, boundRight, boundTop, this.pixelColours[0], drawingSnow, drawingStars);
 				} else {
 					this.renderGridOverlayProjectionNoClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
 				}
@@ -30954,30 +30972,32 @@
 	Life.prototype.drawGrid = function() {
 		var i = 0, l, s, t;
 
-		// check if copy required
-		if (!this.imageData.data.buffer) {
-			s = this.imageData.data;
-			t = this.data8;
-
-			// get buffer length
-			l = t.length;
-
-			// copy buffer
-			i = 0;
-			while (i < l) {
-				s[i] = t[i];
-				i += 1;
-				s[i] = t[i];
-				i += 1;
-				s[i] = t[i];
-				i += 1;
-				s[i] = t[i];
-				i += 1;
+		if (this.doDrawGrid) {
+			// check if copy required
+			if (!this.imageData.data.buffer) {
+				s = this.imageData.data;
+				t = this.data8;
+	
+				// get buffer length
+				l = t.length;
+	
+				// copy buffer
+				i = 0;
+				while (i < l) {
+					s[i] = t[i];
+					i += 1;
+					s[i] = t[i];
+					i += 1;
+					s[i] = t[i];
+					i += 1;
+					s[i] = t[i];
+					i += 1;
+				}
 			}
-		}
 
-		// draw the image on the canvas
-		this.context.putImageData(this.imageData, 0, 0);
+			// draw the image on the canvas
+			this.context.putImageData(this.imageData, 0, 0);
+		}
 	};
 
 	// clear pixels

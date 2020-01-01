@@ -268,7 +268,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 479,
+		/** @const {number} */ versionBuild : 480,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5046,15 +5046,15 @@
 		}
 
 		// render grid
-		me.engine.renderGrid(this.drawingSnow);
+		me.engine.renderGrid(me.drawingSnow, me.starsOn);
 
 		// draw stars if switched on
 		if (me.starsOn) {
 			me.drawStars();
 		}
 
-		// draw snow
-		if (this.drawingSnow) {
+		// if snow is being drawn then set auto update to keep snow drawing
+		if (me.drawingSnow) {
 			me.menuManager.setAutoUpdate(true);
 		}
 

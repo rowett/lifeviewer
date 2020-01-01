@@ -1,5 +1,8 @@
+Build 480
+- high quality rendering faster if none of stars, snow or grid lines displayed
+
 Build 479
-- double performance of high quality rendering
+- much faster high quality rendering
 
 Build 478
 - high quality rendering performance improvement
