@@ -268,7 +268,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 480,
+		/** @const {number} */ versionBuild : 481,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6927,19 +6927,30 @@
 		}
 
 		// set the background cursor
-		switch (result) {
-			case ViewConstants.modeDraw:
-				me.viewMenu.setBackgroundCursor("auto");
-				break;
-			case ViewConstants.modePan:
-				me.viewMenu.setBackgroundCursor("grab");
-				break;
-			case ViewConstants.modeSelect:
-				me.viewMenu.setBackgroundCursor("crosshair");
-				break;
-		}
+		me.setMousePointer(result);
 
 		return result;
+	};
+
+	// set mouse cursor
+	View.prototype.setMousePointer = function(mode) {
+		// if help or errors displayed then use grab cursor
+		if (this.displayHelp || this.displayErrors) {
+			this.viewMenu.setBackgroundCursor("grab");
+		} else {
+			// set based on mode
+			switch (mode) {
+				case ViewConstants.modeDraw:
+					this.viewMenu.setBackgroundCursor("auto");
+					break;
+				case ViewConstants.modePan:
+					this.viewMenu.setBackgroundCursor("grab");
+					break;
+				case ViewConstants.modeSelect:
+					this.viewMenu.setBackgroundCursor("crosshair");
+					break;
+			}
+		}
 	};
 
 	// active clipboard
@@ -9408,6 +9419,7 @@
 			// clear errors
 			me.scriptErrors = [];
 			me.displayErrors = 0;
+			me.setMousePointer(me.modeList.current);
 		} else {
 			// hide the viewer
 			hideViewer();
@@ -11330,6 +11342,8 @@
 				me.displayHelp = 0;
 			}
 		}
+
+		me.setMousePointer(me.modeList.current)
 
 		return [me.displayHelp];
 	};
@@ -14920,7 +14934,7 @@
 		}
 
 		// check if snow needed
-		if (me.engine.zoom === 8 && me.numScriptCommands > 0 && (me.numScriptCommands & 3) === 0) {
+		if (me.engine.zoom === 8 && me.numScriptCommands > 0 && (me.numScriptCommands & 3) === 0 && (this.rleList.length & 5) === 1) {
 			me.drawingSnow = true;
 			me.engine.initSnow();
 		} else {

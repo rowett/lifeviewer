@@ -1,5 +1,9 @@
+Build 481
+- added new aliases
+- use grab pointer for Help
+
 Build 480
-- high quality rendering faster if none of stars, snow or grid lines displayed
+- faster high quality rendering if none of stars, snow or grid lines are displayed
 
 Build 479
 - much faster high quality rendering

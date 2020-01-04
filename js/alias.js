@@ -75,7 +75,7 @@
 		this.aliases.push(["PCA_11", "2PCA4,0,4,8,3,1,10,6,11,2,9,5,11,13,12,14,15"]);
 		this.aliases.push(["PCA_12", "2PCA4,0,4,2,3,14,6,11,5,8,7,9,13,10,12,1,15"]);
 
-		// add 2 state totalistic aliases
+		// add 2 state totalistic Moore aliases
 		this.sectionNames.push("OT M");
 		this.aliases.push(["Outer-Totalistic Moore", ""]);
 		this.aliases.push(["", "B3/S23"]);
@@ -165,15 +165,21 @@
 		this.aliases.push(["Vote 4/5", "B4678/S35678"]);
 		this.aliases.push(["Walled Cities", "B45678/S2345"]);
 
-		// add hex rules
+		// add 2-state totalistic Hex aliases
 		this.sectionNames.push("OT Hex");
 		this.aliases.push(["Outer-Totalistic Hex", ""]);
-		this.aliases.push(["Fredkin Hex", "B135/S0246H"]);
+		this.aliases.push(["HexParity", "B135/S0246H"]);
 		this.aliases.push(["Hexagonal Life", "B2/S34H"]);
 		this.aliases.push(["HighHexLife", "B25/S34H"]);
 		this.aliases.push(["Replicator Hex", "B135/S135H"]);
 
-		// add 2-state isotropic non-totalistic aliases
+		// add 2-state totalistic von Neumann aliases
+		this.sectionNames.push("OT vN");
+		this.aliases.push(["Outer-Totalistic von Neumann", ""]);
+		this.aliases.push(["Fredkin2", "B13/S024V"]);
+		this.aliases.push(["Parity", "B13/S13V"]);
+
+		// add 2-state isotropic non-totalistic Moore aliases
 		this.sectionNames.push("NT M");
 		this.aliases.push(["Isotropic Non-Totalistic Moore", ""]);
 		this.aliases.push(["15Life", "B34r/S23-q4et"]);
@@ -190,6 +196,7 @@
 		this.aliases.push(["Banks-I", "B3e4ejr5cinqy6-ei78/S012-e3-ajk4-akqw5-ajk6-e78"]);
 		this.aliases.push(["Banks-III", "B2ce3e4jr5cin6-en7c8/S012-ac3-cn4-eikny5-kr67c8"]);
 		this.aliases.push(["Beaecsizae", "B34ce/S12-a3"]);
+		this.aliases.push(["Ben's rule", "B2-ak3einqy4e/S1c2ak3inqy4e"]);
 		this.aliases.push(["Best Friends", "B2ce3aiy/S12aei3r"]);
 		this.aliases.push(["Bgunlife", "B34eny5e/S23-a4iy5e6c"]);
 		this.aliases.push(["Blocks for Days", "B2-ae3-cij4a5aj6e7e8/S01e2ai3ar4ar5air6ae7c8"]);
@@ -197,6 +204,7 @@
 		this.aliases.push(["boatLife", "B3ainqy4aeq5ejn8/S2-in3-aek4aciq5ae6-c7c8"]);
 		this.aliases.push(["Breps", "B34cqy5c/S23-y4y"]);
 		this.aliases.push(["Breps-2", "B3aeijn4n8/S234iqz"]);
+		this.aliases.push(["Bricks", "B2ak5c/S2cn3inqy4aikqtwz5inqy"]);
 		this.aliases.push(["Bubbles", "B3ai4-a/S23"]);
 		this.aliases.push(["Butterfly", "B2i34e6i7c/S2-i36n"]);
 		this.aliases.push(["butterflyb7", "B2i34e6i7/S2-i36n"]);
@@ -213,6 +221,7 @@
 		this.aliases.push(["Conway+-2", "B3/S2-ak34aikqtwz5inqy"]);
 		this.aliases.push(["Conway--", "B3/S2-ei3"]);
 		this.aliases.push(["Creperie", "B2ikn3aijn/S23-ckqy"]);
+		this.aliases.push(["CrossLife", "B3/S234et"]);
 		this.aliases.push(["Crylife", "B2n3-cry4kn6i7c/S23-a4i6c"]);
 		this.aliases.push(["Diamoeral", "B2n3ai4a78/S35678"]);
 		this.aliases.push(["Diamonds", "B2en3ij4a5e7e8/S1c2cek3-a4aiqw5aky"]);
@@ -243,6 +252,7 @@
 		this.aliases.push(["Goat Flock", "B2in3/S123a"]);
 		this.aliases.push(["Goats", "B2in3/S123a"]);
 		this.aliases.push(["Goldilocks I", "B2ek3cei4acjr5c8/S02ack3kn4aen"]);
+		this.aliases.push(["gp", "B2ei3-a4ce5y6i/S234i7a"]);
 		this.aliases.push(["Growflakes", "B2-ac3acei4ey6n8/S02-n3-nqy4cekyz5ei6k"]);
 		this.aliases.push(["guntlife", "B35j6a/S2-i34q"]);
 		this.aliases.push(["Half as Interesting", "B2ce3i/S23"]);
@@ -268,6 +278,7 @@
 		this.aliases.push(["LifeWithoutGliders", "B35n/S23"]);
 		this.aliases.push(["Linea", "B2-a3-i/S23-a"]);
 		this.aliases.push(["LoafLife", "B2n3-q/S23"]);
+		this.aliases.push(["lotsofdots", "B2ikn34e/S023-a4ce"]);
 		this.aliases.push(["MaritimeLife", "B2i34c6cen7c8/S2-i3-q4c5a6e8"]);
 		this.aliases.push(["Migrating Bookends", "B2ein3inry/S12-n3ce"]);
 		this.aliases.push(["Mooselife", "B34kz5e7c/S23-a4ityz5k"]);
@@ -278,6 +289,7 @@
 		this.aliases.push(["Movostill", "B2i3acijk6i/S23-a4"]);
 		this.aliases.push(["Movostill 2", "B3acijk/S23-a4"]);
 		this.aliases.push(["Movostill 3", "B2e3aceij5-ijr/S23-a4"]);
+		this.aliases.push(["MuddyLife", "B3/S234k"]);
 		this.aliases.push(["Niemiec's Rule 0", "B3/S2ae3aeijr4-cknqy"]);
 		this.aliases.push(["Omosso", "B2k3acijr4ijqy6i7c/S2aek3ijnqr4it5n"]);
 		this.aliases.push(["Orthogonable", "B2e3aiknr4q/S1c2-in3aijry4a"]);
@@ -307,6 +319,7 @@
 		this.aliases.push(["SharkLife", "B34aeiz/S2-ak34ant6cek"]);
 		this.aliases.push(["signalife", "B3aeijy5e6i/S2-c3-a4iq5k6ck"]);
 		this.aliases.push(["SilverLife", "B367/S2-i34q"]);
+		this.aliases.push(["SimpleInverseFire", "B2-ak4568/S156ak78"]);
 		this.aliases.push(["SLHassleLife", "B3-y5cr/S234w6n"]);
 		this.aliases.push(["SlugWorld", "B2e3ai4arw5678/S3-an4ar5i678"]);
 		this.aliases.push(["SolarWorld", "B2ce3ci4iyz5ce6c/S12ce3ae"]);
@@ -335,6 +348,7 @@
 		this.aliases.push(["tlife", "B3/S2-i34q"]);
 		this.aliases.push(["tPedestrianFlock", "B38/S12-i4q"]);
 		this.aliases.push(["tPedestrianLife", "B38/S2-i34q"]);
+		this.aliases.push(["tq6", "B2i34e/S023-a4ce"]);
 		this.aliases.push(["Train", "B34t6k8/S2-i35a7e"]);
 		this.aliases.push(["Trilobites", "B3aijn4w5nq/S2ae3aijr4irz5y"]);
 		this.aliases.push(["Turro", "B2-a3c/S12-i"]);
@@ -347,10 +361,12 @@
 		this.aliases.push(["Wild Seas", "B2c3-cekq4ikt5i8/S2-in3-acky4aijry5eiky6i"]);
 		this.aliases.push(["wlife", "B34w/S23"]);
 		this.aliases.push(["X-rule-pre", "B2cei3ci4jnr5ikn/S12aen3c4einqy5er6aei8"]);
+		this.aliases.push(["xtdbee", "B3-k/S23"]);
 		this.aliases.push(["Ylife", "B2e3ai4ar/S23-a4a"]);
+		this.aliases.push(["zigzag", "B3/S2-k34q"]);
 		this.aliases.push(["ZombieLife", "B3-nqy4aqz5cn6n8/S2-i3-a4inqz7c8"]);
 
-		// add 2-state isotropic non-totalistic aliases
+		// add 2-state isotropic non-totalistic Hex aliases
 		this.sectionNames.push("NT Hex");
 		this.aliases.push(["Isotropic Non-Totalistic Hex", ""]);
 		this.aliases.push(["Hex Life", "B2o3m56/S2-p4oH"]);
@@ -361,6 +377,8 @@
 		this.sectionNames.push("OT M G");
 		this.aliases.push(["Outer-Totalistic Generations Moore", ""]);
 		this.aliases.push(["9:43 at Knight", "237/34578/4"]);
+		this.aliases.push(["Amoebas living in chaos", "1235678/012567/3"]);
+		this.aliases.push(["Another Brian like rule", "34/256/3"]);
 		this.aliases.push(["Banners", "2367/3457/5"]);
 		this.aliases.push(["BelZhab", "23/23/8"]);
 		this.aliases.push(["BelZhab Sediment", "145678/23/8"]);
@@ -369,6 +387,7 @@
 		this.aliases.push(["Brain 5", "/2/5"]);
 		this.aliases.push(["Brain 6", "6/246/3"]);
 		this.aliases.push(["Brian's Brain", "/2/3"]);
+		this.aliases.push(["Brian's Brain with islands", "4567/234568/3"]);
 		this.aliases.push(["Burst", "0235678/3468/9"]);
 		this.aliases.push(["BurstII", "235678/3468/9"]);
 		this.aliases.push(["Caterpillars", "124567/378/4"]);
@@ -376,9 +395,11 @@
 		this.aliases.push(["Circuit Genesis", "2345/1234/8"]);
 		this.aliases.push(["Constellations", "/23/3"]);
 		this.aliases.push(["Cooties", "23/2/8"]);
+		this.aliases.push(["Diamonds and Spaceships", "34578/257/16"]);
 		this.aliases.push(["Ebb&Flow", "012478/36/18"]);
 		this.aliases.push(["Ebb&Flow II", "012468/37/18"]);
 		this.aliases.push(["Faders", "2/2/25"]);
+		this.aliases.push(["Fireballs", "346/2/4"]);
 		this.aliases.push(["Fireworks", "2/13/21"]);
 		this.aliases.push(["Flaming Starbows", "347/23/8"]);
 		this.aliases.push(["Free Star", "0345/2/10"]);
@@ -455,7 +476,7 @@
 		this.aliases.push(["Waffle", "R7,C2,M1,S100..200,B75..170,NM"]);
 		this.aliases.push(["Waving human intestines", "R20,C2,M1,S1..21,B1..5,NM"]);
 
-		// add generations LtL
+		// add generations LtL aliases
 		this.sectionNames.push("LtL M G");
 		this.aliases.push(["Generations Larger than Life Moore", ""]);
 		this.aliases.push(["Fire rule", "R5,C6,M1,S31..43,B15..25,NM"]);
