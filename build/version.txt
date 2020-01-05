@@ -1,3 +1,6 @@
+Build 482
+- correctly identify B0 or Alternating rule still life
+
 Build 481
 - added new aliases
 - use grab pointer for Help

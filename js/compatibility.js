@@ -501,6 +501,8 @@
 					}
 				}
 			}
+
+			return this;
 		};
 
 		window["copyWithin"] = false;

@@ -1675,7 +1675,7 @@
 				}
 			}
 		} else {
-			if (period === 1) {
+			if (period === 1 || (this.altSpecified && period === 2)) {
 				type = "Still Life";
 			} else {
 				// oscillator
@@ -1956,7 +1956,7 @@
 		
 									if (this.boxList[j + 1] === boxLocation) {
 										// pattern hasn't moved
-										if (period === 1) {
+										if (period === 1 || (this.altSpecified && period === 2)) {
 											message = "Still Life";
 										} else {
 											message = "Oscillator period " + period;
