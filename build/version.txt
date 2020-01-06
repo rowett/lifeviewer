@@ -1,3 +1,10 @@
+Build 483
+- resolve Alternate rule aliases from pattern
+- fixed two aliases that were not in canoncial form
+- Identify now reduces down displacements
+- PCA colours can be set with [[ COLOR 0..15 RGB|name ]]
+- added new aliases
+
 Build 482
 - Identify was not correctly identifying B0 or Alternating rule still lives
 - added new aliases

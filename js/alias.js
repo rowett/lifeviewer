@@ -303,6 +303,7 @@
 		a.push(["Eatsplosion IV", "B2n3-q4aqz6n8/S2-in3-q4iz7c8"]);
 		a.push(["EightGoats", "B2in3/S123a8"]);
 		a.push(["Einstein", "B2ein3cijn4cnrwy5cnq6e/S1c2-ai3acny4anqy5c6ek8b2ein3cijn4cnrwy5cnq6es1c2-ai3acny4anqy5c6ek8"]);
+		a.push(["ElectrumLife", "B367cS2-i34q"]);
 		a.push(["Emitters", "B2i3ai4cei5c6c7/S2-ae3acein4-t5-aq6cei7c8"]);
 		a.push(["Extension", "B2cei3-ijnr4-a6i/S12-cn"]);
 		a.push(["fakePiShipLife", "B3-ck4e5k6i/S2-in35i6c8"]);
@@ -432,6 +433,7 @@
 		a.push(["Whichlife", "B2in3aeijn/S234e"]);
 		a.push(["Wild Seas", "B2c3-cekq4ikt5i8/S2-in3-acky4aijry5eiky6i"]);
 		a.push(["wlife", "B34w/S23"]);
+		a.push(["Worms 0", "B01c2n5a/S3a5i"]);
 		a.push(["X-rule-pre", "B2cei3ci4jnr5ikn/S12aen3c4einqy5er6aei8"]);
 		a.push(["xtdbee", "B3-k/S23"]);
 		a.push(["Ylife", "B2e3ai4ar/S23-a4a"]);
@@ -507,8 +509,8 @@
 		// add HROT von Neumann aliases
 		s.push("HROT vN");
 		a.push(["Higher-Range Outer-Totalistic von Neumann", ""]);
-		a.push(["Fredkin2 R2", "R2,C0,S0,2,4,6,8,10,12,B1,3,5,7,9,11,NN"]);
-		a.push(["Parity R2", "R2,C0,S1,3,5,7,9,11,B1,3,5,7,9,11,NN"]);
+		a.push(["Fredkin2 R2", "R2,C2,S0,2,4,6,8,10,12,B1,3,5,7,9,11,NN"]);
+		a.push(["Parity R2", "R2,C2,S1,3,5,7,9,11,B1,3,5,7,9,11,NN"]);
 
 		// add non-isotropic aliases
 		s.push("MAP NINT");

@@ -4037,6 +4037,13 @@
 								// add the alternate rule name
 								pattern.ruleName = firstPattern.ruleName + this.altRuleSeparator + pattern.ruleName;
 
+								// check for alternate rule alias
+								aliasName = AliasManager.getAliasFromRule(pattern.ruleName);
+								if (aliasName !== "") {
+									pattern.aliasName = aliasName;
+								}
+
+
 								// if HROT them copy arrays across
 								if (pattern.isHROT || pattern.isLTL) {
 									pattern.copyMultiSettingsFrom(firstPattern, allocator);

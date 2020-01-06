@@ -14117,6 +14117,9 @@
 				if (me.engine.isLifeHistory) {
 					numberValue = 7;
 				}
+				if (me.engine.isPCA) {
+					numberValue = 16;
+				}
 				me.readScript(pattern.title, numberValue);
 
 				// set errors to display if any found

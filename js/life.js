@@ -1550,10 +1550,24 @@
 		return hash | 0;
 	};
 
+	// get greatest common divisor
+	Life.prototype.gcd = function(a, b) {
+		var temp = 0;
+
+		while (b !== 0) {
+			temp = b;
+			b = a % b;
+			a = temp;
+		}
+
+		return a;
+	};
+
 	// get oblique displacement name
-	Life.prototype.getOblique = function(x, y) {
+	Life.prototype.getDisplacementName = function(x, y) {
 		var result = "Oblique",
-			swap = 0;
+			swap = 0,
+			d = 0;
 
 		// order the deltas
 		if (x > y) {
@@ -1561,6 +1575,11 @@
 			x = y;
 			y = swap;
 		}
+
+		// find greatest common divisor
+		d = this.gcd(x, y);
+		x /= d;
+		y /= d;
 
 		// check for known displacements
 		switch (x * 10 + y) {
@@ -1712,7 +1731,7 @@
 				if (period > 1) {
 					simpleSpeed += "/" + period;
 				}
-				direction = this.getOblique(deltaX, deltaY);
+				direction = this.getDisplacementName(deltaX, deltaY);
 			}
 		} else {
 			if (period === 1 || (this.altSpecified && period === 2)) {
@@ -6069,6 +6088,14 @@
 						this.redChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][0];
 						this.greenChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][1];
 						this.blueChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][2];
+						if (this.customColours && this.customColours.length >= i) {
+							current = this.customColours[i];
+							if (current !== -1) {
+								this.redChannel[i + this.historyStates] = current >> 16;
+								this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
+								this.blueChannel[i + this.historyStates] = (current & 255);
+							}
+						}
 					} else {
 						if (this.isRuleTree) {
 							this.redChannel[i] = this.ruleTreeColours[i] >> 16;
@@ -6109,19 +6136,25 @@
 
 				// set alive colour
 				i = this.multiNumStates - 1;
-				if (this.isRuleTree) {
-					this.redChannel[i] = this.ruleTreeColours[i] >> 16;
-					this.greenChannel[i] = (this.ruleTreeColours[i] >> 8) & 255;
-					this.blueChannel[i] = this.ruleTreeColours[i] & 255;
+				if (this.isPCA && this.colourTheme >= 18) {
+					this.redChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][0];
+					this.greenChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][1];
+					this.blueChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][2];
 				} else {
-					this.redChannel[i + this.historyStates] = this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight);
-					this.greenChannel[i + this.historyStates] = this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight);
-					this.blueChannel[i + this.historyStates] = this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight);
+					if (this.isRuleTree) {
+						this.redChannel[i] = this.ruleTreeColours[i] >> 16;
+						this.greenChannel[i] = (this.ruleTreeColours[i] >> 8) & 255;
+						this.blueChannel[i] = this.ruleTreeColours[i] & 255;
+					} else {
+						this.redChannel[i + this.historyStates] = this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight);
+						this.greenChannel[i + this.historyStates] = this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight);
+						this.blueChannel[i + this.historyStates] = this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight);
+					}
 				}
 
 				// override with custom colour if specified
 				if (this.customColours && this.customColours.length >= i) {
-					if (!this.isHROT) {
+					if (!(this.isHROT || this.isPCA || this.isRuleTree)) {
 						current = this.customColours[this.multiNumStates - i];
 					} else {
 						current = this.customColours[i];
