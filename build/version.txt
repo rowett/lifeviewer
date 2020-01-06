@@ -1,5 +1,7 @@
 Build 482
-- correctly identify B0 or Alternating rule still life
+- Identify was not correctly identifying B0 or Alternating rule still lives
+- added new aliases
+- added some movement displacements to Identify output
 
 Build 481
 - added new aliases

@@ -1550,6 +1550,46 @@
 		return hash | 0;
 	};
 
+	// get oblique displacement name
+	Life.prototype.getOblique = function(x, y) {
+		var result = "Oblique",
+			swap = 0;
+
+		// order the deltas
+		if (x > y) {
+			swap = x;
+			x = y;
+			y = swap;
+		}
+
+		// check for known displacements
+		switch (x * 10 + y) {
+		case 12:
+			result += " Knightwise"
+			break;
+		case 13:
+			result += " Camelwise"
+			break;
+		case 14:
+			result += " Giraffewise"
+			break;
+		case 15:
+			result += " Ibiswise"
+			break;
+		case 16:
+			result += " Flamingowise"
+			break;
+		case 23:
+			result += " Zebrawise"
+			break;
+		case 34:
+			result += " Antelopewise"
+			break;
+		}
+	
+		return result;
+	};
+
 	// return identify results
 	Life.prototype.identifyResults = function(i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast) {
 			// simple version of speed
@@ -1668,11 +1708,11 @@
 					}
 				}
 			} else {
-				direction = "Oblique";
 				simpleSpeed = deltaX + "," + deltaY + "c";
 				if (period > 1) {
 					simpleSpeed += "/" + period;
 				}
+				direction = this.getOblique(deltaX, deltaY);
 			}
 		} else {
 			if (period === 1 || (this.altSpecified && period === 2)) {
