@@ -45,7 +45,6 @@
 			case 32:  // " "
 			case 13:  // "\r"
 			case 9:   // "\t"
-			case 44:  // ","
 			case 123: // "{"
 			case 125: // "}"
 				if (!inComment) {
@@ -56,6 +55,29 @@
 						numbers[tokens] = ((value << 1) + 1) & isNumber;
 						tokens += 1;
 						inToken = false;
+					}
+				}
+				break;
+
+			// commma (discarded if tokenizing newlines)
+			case 44:  // ","
+				if (tokenizeNewline) {
+					if (!inComment) {
+						if (inToken) {
+							// complete last token
+							starts[tokens] = j;
+							lengths[tokens] = i - j;
+							numbers[tokens] = ((value << 1) + 1) & isNumber;
+							tokens += 1;
+							inToken = false;
+						}
+					}
+				} else {
+					if (!inToken) {
+						inToken = true;
+						isNumber = 0;
+						inComment = false;
+						j = i;
 					}
 				}
 				break;

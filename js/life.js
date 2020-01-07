@@ -9,11 +9,16 @@
 	"use strict";
 
 	// define globals
-	/* global Random Reflect Keywords littleEndian BoundingBox Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint16Array Uint32Array Float32Array SnapshotManager HROT ViewConstants PatternConstants */
+	/* global Random Keywords littleEndian BoundingBox Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint16Array Uint32Array Float32Array SnapshotManager HROT ViewConstants PatternConstants */
 
 	// Life constants
 	/** @const */
 	var LifeConstants = {
+		// state modes
+		/** @const {number} */ mode2 : 0,
+		/** @const {number} */ mode2History : 1,
+		/** @const {number} */ modeAny : 2,
+
 		// number of snowflakes
 		/** @const {number} */ flakes : 50000,
 
@@ -3543,10 +3548,7 @@
 		return rle;
 	};
 
-	// overridden by specific function below
-	Life.prototype.setState = null;
-	
-	// get state (2 state patterns without bounded grid or [R]History)
+	// set state (2 state patterns without bounded grid or [R]History)
 	/** @result {number} */
 	Life.prototype.setState2 = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
 		var grid = this.grid16,
@@ -3731,7 +3733,7 @@
 		return result;
 	};
 
-	// get state (2 state [R]History patterns without bounded grid)
+	// set state (2 state [R]History patterns without bounded grid)
 	/** @result {number} */
 	Life.prototype.setState2History = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
 		var grid = this.grid16,
@@ -3945,7 +3947,7 @@
 		return result;
 	};
 
-	// get state (any pattern)
+	// set state (any pattern)
 	/** @result {number} */
 	Life.prototype.setStateAny = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
 		var grid = this.grid16,
@@ -4299,35 +4301,43 @@
 		return result;
 	};
 
+	// dispatcher for getState
+	/** @result {number} */
+	Life.prototype.getState = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
+		switch (this.stateMode) {
+		case LifeConstants.mode2:
+			return this.getState2(x, y, rawRequested);
+		case LifeConstants.mode2History:
+			return this.getState2History(x, y, rawRequested);
+		default:
+			return this.getStateAny(x, y, rawRequested);
+		}
+	};
+
+	// dispatcher for setState
+	/** @result {number} */
+	Life.prototype.setState = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
+		switch (this.stateMode) {
+		case LifeConstants.mode2:
+			return this.setState2(x, y, state, deadZero);
+		case LifeConstants.mode2History:
+			return this.setState2History(x, y, state, deadZero);
+		default:
+			return this.setStateAny(x, y, state, deadZero);
+		}
+	};
+
 	// setup dynamic calls for performance
 	Life.prototype.setupDynamicCalls = function() {
-		var proto = null;
-		
-		// @ts-ignore
-		if (window.Reflect) {
-			// @ts-ignore
-			if (window.Reflect.getPrototypeOf) {
-				// @ts-ignore
-				proto = Reflect.getPrototypeOf(this);
-			}
-		}
-		if (proto === null) {
-			// @ts-ignore
-			proto = this.__proto__;
-		}
-
 		// pick optimized get and set cell calls based on pattern type and bounded grid
 		if (this.multiNumStates == -1 && this.boundedGridType === -1 && !this.isNone) {
 			if (this.isLifeHistory) {
-				proto.getState = proto.getState2History;
-				proto.setState = proto.setState2History;
+				this.stateMode = LifeConstants.mode2History;
 			} else {
-				proto.getState = proto.getState2;
-				proto.setState = proto.setState2;
+				this.stateMode = LifeConstants.mode2;
 			}
 		} else {
-			proto.getState = proto.getStateAny;
-			proto.setState = proto.setStateAny;
+			this.stateMode = LifeConstants.modeAny;
 		}
 	};
 
@@ -4347,9 +4357,6 @@
 			this.popGraphEntries = 0;
 		}
 	};
-
-	// overridden by specific function below
-	Life.prototype.getState = null;
 
 	// get state (2 state patterns without bounded grid or [R]History)
 	/** @result {number} */

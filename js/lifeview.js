@@ -268,7 +268,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 485,
+		/** @const {number} */ versionBuild : 487,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2044,6 +2044,7 @@
 			}
 	
 			// set the state
+			this.diedGeneration = -1;
 			return this.engine.setState(x, y, colour, deadZero);
 		}
 	};

@@ -1,3 +1,10 @@
+Build 487
+- replace dynamic calls with switch
+- reset died generation when new cells are drawn
+
+Build 486
+- don't eat commas when parsing script commands
+
 Build 485
 - fix one alias and add another
 - add PCA states to Help for COLOR command
