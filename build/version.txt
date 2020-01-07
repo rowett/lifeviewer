@@ -1,3 +1,13 @@
+Build 485
+- fix one alias and add another
+- add PCA states to Help for COLOR command
+- hide Help section buttons that don't fit
+- fixed notification size on scaled windows
+
+Build 484
+- allow PCA state names in [[ COLOR ]] command
+- ensure smooth UI icons with High Quality rendering
+
 Build 483
 - resolve Alternate rule aliases from pattern
 - fixed two aliases that were not in canoncial form

@@ -216,19 +216,18 @@
 		var scaleFactor = 0,
 		    elapsedTime = 0,
 			index = 0,
-			yScale = this.menuManager.currentMenu.yScale,
 
 		    // default font size when not in thumbnail mode
-		    fontSize = this.defaultFontSize * yScale,
+		    fontSize = this.defaultFontSize * this.scale,
 
 		    // line height
-		    lineHeight = (this.defaultFontSize + 2) * yScale,
+		    lineHeight = (this.defaultFontSize + 2) * this.scale,
 
 		    // thumbnail divisor
 		    thumbDivisor = this.menuManager.thumbnailDivisor,
 
 		    // number of pixels from top of display
-		    fromTop = 60 * yScale,
+		    fromTop = 60 * this.scale,
 
 		    // flag whether to clear message
 		    clearMessage = true;
@@ -274,7 +273,7 @@
 			}
 
 			// set the font size
-			this.context.font = ((fontSize * this.scale) | 0) + "px Arial";
+			this.context.font = (fontSize | 0) + "px Arial";
 
 			// scale based on appear or disappear
 			this.context.translate(this.context.canvas.width / 2 - 1, fromTop + offset);
@@ -470,6 +469,7 @@
 				this.context.save();
 				this.context.translate(x, y);
 				this.context.scale(this.scale, this.scale);
+				this.context.imageSmoothingEnabled = true;
 				x = 0;
 				y = 0;
 			}
@@ -480,6 +480,7 @@
 			}
 			if (this.scale !== 1) {
 				this.context.restore();
+				this.context.imageSmoothingEnabled = false;
 			}
 		}
 	};

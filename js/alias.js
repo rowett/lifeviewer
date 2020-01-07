@@ -303,7 +303,7 @@
 		a.push(["Eatsplosion IV", "B2n3-q4aqz6n8/S2-in3-q4iz7c8"]);
 		a.push(["EightGoats", "B2in3/S123a8"]);
 		a.push(["Einstein", "B2ein3cijn4cnrwy5cnq6e/S1c2-ai3acny4anqy5c6ek8b2ein3cijn4cnrwy5cnq6es1c2-ai3acny4anqy5c6ek8"]);
-		a.push(["ElectrumLife", "B367cS2-i34q"]);
+		a.push(["ElectrumLife", "B367c/S2-i34q"]);
 		a.push(["Emitters", "B2i3ai4cei5c6c7/S2-ae3acein4-t5-aq6cei7c8"]);
 		a.push(["Extension", "B2cei3-ijnr4-a6i/S12-cn"]);
 		a.push(["fakePiShipLife", "B3-ck4e5k6i/S2-in35i6c8"]);
@@ -316,6 +316,7 @@
 		a.push(["Fuzey", "B2-ae3aej4ez/S03ac4aikqryz78"]);
 		a.push(["Gentle relative", "B2cen3ek4jkw5-aein6a7e/S12an3-eijq4enrty5e6k"]);
 		a.push(["GlideLife", "B34ek5ak/S2-c34z"]);
+		a.push(["GlideLife2", "B34ek5ak/S2-c34iz5y"]);
 		a.push(["GliderGlut", "B2k3aijn4ak5y6k/S2ae3ajnr4aiw"]);
 		a.push(["GliderRROLife", "B2e3einy4ak5ijq7c/S1c2-ai3-ceky4ejny5ceqr6ak"]);
 		a.push(["Glimmering Garden", "B3-jknr4ity5ijk6i8/S23-a4city6c7c"]);

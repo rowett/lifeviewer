@@ -268,7 +268,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 482,
+		/** @const {number} */ versionBuild : 485,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5563,15 +5563,19 @@
 			this.updateSectionControl = false;
 
 			// build the list of sections and tooltips
-			for (i = 0; i < this.helpSections.length; i += 1) {
+			value = this.helpSectionList.y;
+			i = 0;
+			while (i < this.helpSections.length && value < this.displayHeight - (40 + 26) * this.viewMenu.yScale) {
 				captions[i] = this.helpSections[i][1];
 				toolTips[i] = "";
+				value += 26 * this.viewMenu.yScale;
+				i += 1;
 			}
 
 			// update the control
 			this.helpSectionList.lower = captions;
 			this.helpSectionList.toolTip = toolTips;
-			this.helpSectionList.setHeight(this.helpSections.length * 26);
+			this.helpSectionList.setHeight(captions.length * 26);
 			this.helpSectionList.current = 0;
 		}
 
