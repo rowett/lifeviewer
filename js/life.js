@@ -16,8 +16,9 @@
 	var LifeConstants = {
 		// state modes
 		/** @const {number} */ mode2 : 0,
-		/** @const {number} */ mode2History : 1,
-		/** @const {number} */ modeAny : 2,
+		/** @const {number} */ mode2Table : 1,
+		/** @const {number} */ mode2History : 2,
+		/** @const {number} */ modeAny : 3,
 
 		// number of snowflakes
 		/** @const {number} */ flakes : 50000,
@@ -3464,7 +3465,7 @@
 		while (y <= topY) {
 			x = leftX;
 			// check for 2 state pattern
-			if (twoState) {
+			if (twoState && !this.isRuleTree) {
 				// use fast lookup
 				colourRow = colourGrid[y];
 				col = colourRow[x];
@@ -3484,7 +3485,7 @@
 					state = -1;
 				} else {
 					// check for 2 state pattern
-					if (twoState) {
+					if (twoState && !this.isRuleTree) {
 						// use fast lookup
 						col = colourRow[x];
 						if (col <= this.deadStart || col === this.boundedBorderColour) {
@@ -4307,6 +4308,8 @@
 		switch (this.stateMode) {
 		case LifeConstants.mode2:
 			return this.getState2(x, y, rawRequested);
+		case LifeConstants.mode2Table:
+			return this.getState2(x, y, true);
 		case LifeConstants.mode2History:
 			return this.getState2History(x, y, rawRequested);
 		default:
@@ -4320,6 +4323,8 @@
 		switch (this.stateMode) {
 		case LifeConstants.mode2:
 			return this.setState2(x, y, state, deadZero);
+		case LifeConstants.mode2Table:
+			return this.setStateAny(x, y, state, deadZero);
 		case LifeConstants.mode2History:
 			return this.setState2History(x, y, state, deadZero);
 		default:
@@ -4337,7 +4342,11 @@
 				this.stateMode = LifeConstants.mode2;
 			}
 		} else {
-			this.stateMode = LifeConstants.modeAny;
+			if (this.isRuleTree && this.multiNumStates === 2) {
+				this.stateMode = LifeConstants.mode2Table;
+			} else {
+				this.stateMode = LifeConstants.modeAny;
+			}
 		}
 	};
 

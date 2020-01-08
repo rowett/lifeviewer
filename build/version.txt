@@ -1,3 +1,6 @@
+Build 489
+- fix get/set state for 2-state RuleLoader rules
+
 Build 488
 - fix Identify for 2-state RuleLoader rules
 
