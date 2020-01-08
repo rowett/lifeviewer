@@ -1,3 +1,6 @@
+Build 488
+- fix Identify for 2-state RuleLoader rules
+
 Build 487
 - replace dynamic calls with switch
 - reset died generation when new cells are drawn
