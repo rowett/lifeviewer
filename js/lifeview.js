@@ -268,7 +268,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 489,
+		/** @const {number} */ versionBuild : 491,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4255,7 +4255,7 @@
 		this.identifyBoxValueLabel.setPosition(Menu.north, xv, y);
 		y += h;
 
-		if (this.lastIdentifyType === "Spaceship") {
+		if (this.lastIdentifyType === "Spaceship" && !(this.engine.isHex || this.engine.isTriangular)) {
 			// direction
 			this.identifyDirectionLabel.setPosition(Menu.north, x, y);
 			this.identifyDirectionValueLabel.setPosition(Menu.north, xv, y);
@@ -4269,7 +4269,7 @@
 			y += h;
 
 			// mod
-			if (!this.lastWasFast) {
+			if (!this.lastWasFast && !(this.engine.isHex || this.engine.isTriangular)) {
 				this.identifyModLabel.setPosition(Menu.north, x, y);
 				this.identifyModValueLabel.setPosition(Menu.north, xv, y);
 				y += h;
@@ -4278,9 +4278,11 @@
 
 		if (this.lastIdentifyType === "Spaceship") {
 			// slope
-			this.identifySlopeLabel.setPosition(Menu.north, x, y);
-			this.identifySlopeValueLabel.setPosition(Menu.north, xv, y);
-			y += h;
+			if (!(this.engine.isHex || this.engine.isTriangular)) {
+				this.identifySlopeLabel.setPosition(Menu.north, x, y);
+				this.identifySlopeValueLabel.setPosition(Menu.north, xv, y);
+				y += h;
+			}
 
 			// speed
 			this.identifySpeedLabel.setPosition(Menu.north, x, y);
@@ -5346,11 +5348,11 @@
 		this.identifyTypeLabel.deleted = shown;
 		this.identifyCellsLabel.deleted = shown;
 		this.identifyBoxLabel.deleted = shown;
-		this.identifyDirectionLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
+		this.identifyDirectionLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyModLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || this.lastWasFast;
+		this.identifyModLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || this.lastWasFast || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyActiveLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
-		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
+		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
 		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
@@ -5358,11 +5360,11 @@
 		this.identifyTypeValueLabel.deleted = shown;
 		this.identifyCellsValueLabel.deleted = shown;
 		this.identifyBoxValueLabel.deleted = shown;
-		this.identifyDirectionValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
+		this.identifyDirectionValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyModValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || this.lastWasFast;
+		this.identifyModValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || this.lastWasFast || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyActiveValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
-		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
+		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
 		this.identifyTemperatureValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
@@ -7845,6 +7847,19 @@
 		    /** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
 			/** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1;
 
+		// check for infinite dimension bounded grid
+		if (me.boundedGridType !== -1) {
+			if (me.engine.boundedGridWidth === 0) {
+				leftX = 0;
+				rightX = me.engine.width - 1;
+			}
+			if (me.engine.boundedGridHeight === 0) {
+				bottomY = 0;
+				topY = me.engine.height - 1;
+			}
+		}
+
+		// check for drag start
 		if (x !== -1 && y !== -1) {
 			// convert display coordinates to cell location
 			this.updateCellLocation(x, y);

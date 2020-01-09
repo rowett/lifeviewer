@@ -4039,7 +4039,7 @@
 
 								// check for alternate rule alias
 								aliasName = AliasManager.getAliasFromRule(pattern.ruleName);
-								if (aliasName !== "") {
+								if (aliasName !== null) {
 									pattern.aliasName = aliasName;
 								}
 

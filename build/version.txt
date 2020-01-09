@@ -1,5 +1,13 @@
+Build 491
+- hide Slope and Direction for Identify on non-square grid since they're not supported
+
+Build 490
+- handle selection in infinite dimension bounded grid
+- hide Mod for Identify on non-square grid since it's not supported
+
 Build 489
 - fix get/set state for 2-state RuleLoader rules
+- handle null for reverse alias lookup
 
 Build 488
 - fix Identify for 2-state RuleLoader rules

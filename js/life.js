@@ -1914,7 +1914,7 @@
 		}
 
 		// mod value
-		if (!fast) {
+		if (!fast && !(this.isHex || this.isTriangular)) {
 			if (modValue === 0) {
 				modValue = period;
 				modResult = String(modValue);
@@ -2070,8 +2070,8 @@
 						}
 					}
 
-					// check for mod matches if one hasn't already been found
-					if (this.modValue === 0 && !fast) {
+					// check for mod matches if one hasn't already been found (ignore for non-square grid)
+					if (this.modValue === 0 && !fast && !(this.isHex || this.isTriangular)) {
 						modHash = this.checkModHash(box);
 						if (modHash !== -1) {
 							this.modValue = this.counter - this.genList[modHash];
@@ -26181,13 +26181,6 @@
 			bottomY = this.height / 2 - height / 2;
 		}
 
-		// check for Hex neighbourhood
-		if (this.isHex) {
-			leftX -= (topY / 2);
-			rightX -= (bottomY / 2);
-			width = rightX - leftX + 1;
-		}
-
 		// ensure width and height are non zero
 		if (width === 0) {
 			width = 1;
@@ -26225,6 +26218,9 @@
 		// set the x and y offset
 		newY = bottomY - this.originY + (height / 2);
 		newX = leftX - this.originX + (width / 2);
+		if (this.isHex) {
+			newX -= (topY - (topY - bottomY) / 2) / 2;
+		}
 		
 		// make zoom an exact value if close to the exact value
 		if (!autoFit) {
