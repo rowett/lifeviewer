@@ -9,7 +9,6 @@ Investigate:
 
 Planned:
     menu items coordinates should be reflected based on compass position
-    fit grid with hex patterns
     AutoFit types for rule families
         Family      AUTO    HISTORY     STATE1
         Life-like   *       *           NA

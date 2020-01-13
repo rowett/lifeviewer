@@ -1,3 +1,6 @@
+Build 493
+- fix Fit Zoom for hex grid
+
 Build 492
 - fix a crash while drawing graph due to no data after pattern died
 

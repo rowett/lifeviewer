@@ -26159,7 +26159,9 @@
 		var zoomBox = this.zoomBox,
 		    initialBox = this.initialBox,
 		    historyBox = this.historyBox,
-		    trackBox = this.trackBox,
+			trackBox = this.trackBox,
+			colourGrid = this.colourGrid,
+			colourRow = null,
 		    zoom = 1,
 		    newX = 0,
 		    newY = 0,
@@ -26170,7 +26172,22 @@
 		    leftX = 0,
 		    rightX = 0,
 		    topY = 0,
-			bottomY = 0;
+			bottomY = 0,
+			x = 0,
+			y = 0,
+			state = 0,
+			swap = 0,
+			hexX = 0,
+			minX = 0,
+			maxX = 0;
+
+		// check for PCA or RuleTree rules
+		if (this.isPCA || this.isRuleTree) {
+			// swap grids every generation
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+			}
+		}
 
 		// check for track box mode
 		if (useTrackBox) {
@@ -26270,6 +26287,35 @@
 			bottomY = this.height / 2 - height / 2;
 		}
 
+		// check for hex
+		if (this.isHex) {
+			minX = (this.width + this.height) * 2;
+			maxX = -minX;
+			for (y = bottomY; y <= topY; y += 1) {
+				colourRow = colourGrid[y];
+				for (x = leftX ; x <= rightX; x += 1) {
+					state = colourRow[x];
+					if (state > 0) {
+						hexX = x - y / 2;
+						if (hexX < minX) {
+							minX = hexX;
+						}
+						if (hexX > maxX) {
+							maxX = hexX;
+						}
+					}
+				}
+			}
+			leftX = minX;
+			rightX = maxX;
+			if (leftX > rightX) {
+				swap = leftX;
+				leftX = rightX;
+				rightX = swap;
+			}
+			width = rightX - leftX + 1;
+		}
+
 		// ensure width and height are non zero
 		if (width === 0) {
 			width = 1;
@@ -26307,9 +26353,6 @@
 		// set the x and y offset
 		newY = bottomY - this.originY + (height / 2);
 		newX = leftX - this.originX + (width / 2);
-		if (this.isHex) {
-			newX -= (topY - (topY - bottomY) / 2) / 2;
-		}
 		
 		// make zoom an exact value if close to the exact value
 		if (!autoFit) {
