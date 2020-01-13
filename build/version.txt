@@ -1,3 +1,6 @@
+Build 492
+- fix a crash while drawing graph due to no data after pattern died
+
 Build 491
 - hide Slope and Direction for Identify on non-square grid since they're not supported
 

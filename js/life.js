@@ -10412,7 +10412,8 @@
 		    index = 0, next = 0, inc = 1,
 			minVal = 0, maxVal, nextVal = 0,
 			popChunk = 0, popOffset = 0,
-			popMask = (1 << LifeConstants.popChunkPower) - 1;
+			popMask = (1 << LifeConstants.popChunkPower) - 1,
+			maxPopSamples = LifeConstants.maxPopSamples;
 
 		// check if increment is needed
 		if (this.counter > displayX) {
@@ -10429,12 +10430,17 @@
 			ctx.fillStyle = graphCol;
 		}
 
+		// check if there is enough data
+		if (graphData.length << LifeConstants.popChunkPower < maxPopSamples) {
+			maxPopSamples = graphData.length << LifeConstants.popChunkPower;
+		}
+
 		// draw graph
 		next = 0;
 		index = 1;
 		for (i = 1; i < displayX; i += 1) {
 			// get the next graph data point
-			if (index < LifeConstants.maxPopSamples) {
+			if (index < maxPopSamples) {
 				popChunk = index >> LifeConstants.popChunkPower;
 				popOffset = index & popMask;
 				minVal = graphData[popChunk][popOffset];
@@ -17375,7 +17381,8 @@
 								nextCell = gridRow[leftX];
 
 								// process each cell in the chunk
-								for (n = 1 << 15; n > 0; n >>= 1) {
+								n = 1 << 15;
+								while (n > 0) {
 									// get next colour cell
 									value = colourGridRow[cr];
 									lastValue = value;
@@ -17406,6 +17413,88 @@
 									}
 
 									cr += 1;
+									n >>= 1;
+
+									// loop unroll 1
+									value = colourGridRow[cr];
+									lastValue = value;
+									if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
+										value = maxGenState;
+									} else {
+										nextCell &= ~n;
+										if (value > minDeadState) {
+											value -= 1;
+										}
+									}
+									colourGridRow[cr] = value;
+									if (value > minDeadState) {
+										tileAlive = 1;
+										if (value === maxGenState) {
+											population += 1;
+											if (lastValue !== maxGenState) {
+												births += 1;
+											}
+										}
+									}
+									if (lastValue === maxGenState && value !== maxGenState) {
+										deaths += 1;
+									}
+									cr += 1;
+									n >>= 1;
+
+									// loop unroll 2
+									value = colourGridRow[cr];
+									lastValue = value;
+									if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
+										value = maxGenState;
+									} else {
+										nextCell &= ~n;
+										if (value > minDeadState) {
+											value -= 1;
+										}
+									}
+									colourGridRow[cr] = value;
+									if (value > minDeadState) {
+										tileAlive = 1;
+										if (value === maxGenState) {
+											population += 1;
+											if (lastValue !== maxGenState) {
+												births += 1;
+											}
+										}
+									}
+									if (lastValue === maxGenState && value !== maxGenState) {
+										deaths += 1;
+									}
+									cr += 1;
+									n >>= 1;
+
+									// loop unroll 3
+									value = colourGridRow[cr];
+									lastValue = value;
+									if ((value <= deadState || value === maxGenState) && ((nextCell & n) !== 0)) {
+										value = maxGenState;
+									} else {
+										nextCell &= ~n;
+										if (value > minDeadState) {
+											value -= 1;
+										}
+									}
+									colourGridRow[cr] = value;
+									if (value > minDeadState) {
+										tileAlive = 1;
+										if (value === maxGenState) {
+											population += 1;
+											if (lastValue !== maxGenState) {
+												births += 1;
+											}
+										}
+									}
+									if (lastValue === maxGenState && value !== maxGenState) {
+										deaths += 1;
+									}
+									cr += 1;
+									n >>= 1;
 								}
 
 								// save the updated state 1 cells to the bitmap
