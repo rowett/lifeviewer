@@ -1,3 +1,9 @@
+Build 494
+- [[ RANDCHANCE FIXED ]] keeps the rule constant when generating random patterns
+- handle non-integer Slopes
+- fix colours for [R]History patterns containing illegal states
+- add more aliases
+
 Build 493
 - fix Fit Zoom for hex grid
 

@@ -4233,6 +4233,12 @@
 							// check the argument
 							peekToken = scriptReader.peekAtNextToken();
 							switch(peekToken) {
+							// fixed
+							case Keywords.fixedWord:
+								peekToken = scriptReader.getNextToken();
+								itemValid = true;
+								view.randomRuleFixed = true;
+								break;
 							// all
 							case Keywords.allWord:
 								peekToken = scriptReader.getNextToken();

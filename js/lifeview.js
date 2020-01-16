@@ -268,7 +268,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 493,
+		/** @const {number} */ versionBuild : 494,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -694,6 +694,9 @@
 		/** @type {number} */ this.randomWidth = ViewConstants.randomDimension;
 		/** @type {number} */ this.randomHeight = ViewConstants.randomDimension;
 		/** @type {number} */ this.randomFillPercentage = 50;
+
+		// whether random rule is fixed
+		/** @type {boolean} */ this.randomRuleFixed = false;
 
 		// random rule whether to only generate reversible Margolus rules
 		/** @type {boolean} */ this.randomReversible = false;
@@ -8867,37 +8870,39 @@
 		rleText += "!\n";
 
 		// create random rule
-		if (!me.engine.isRuleTree) {
-			if (me.engine.isMargolus || me.engine.isPCA) {
-				me.patternRuleName = me.createRandomMargolus(me.engine.isPCA);
-			} else {
-				if (me.engine.isHROT) {
-					if (me.wasLtL) {
-						me.patternRuleName = me.createRandomLTL();
-					} else {
-						me.patternRuleName = me.createRandomHROT();
-					}
+		if (!me.randomRuleFixed) {
+			if (!me.engine.isRuleTree) {
+				if (me.engine.isMargolus || me.engine.isPCA) {
+					me.patternRuleName = me.createRandomMargolus(me.engine.isPCA);
 				} else {
-					if (me.engine.wolframRule !== -1) {
-						me.patternRuleName = me.createRandomWolfram();
+					if (me.engine.isHROT) {
+						if (me.wasLtL) {
+							me.patternRuleName = me.createRandomLTL();
+						} else {
+							me.patternRuleName = me.createRandomHROT();
+						}
 					} else {
-						me.patternRuleName = me.createRandomLifeLike();
+						if (me.engine.wolframRule !== -1) {
+							me.patternRuleName = me.createRandomWolfram();
+						} else {
+							me.patternRuleName = me.createRandomLifeLike();
+						}
 					}
 				}
 			}
-		}
+		
+			// check for [R]History
+			if (me.engine.isLifeHistory) {
+				me.patternRuleName += "History";
+			}
 	
-		// check for [R]History
-		if (me.engine.isLifeHistory) {
-			me.patternRuleName += "History";
-		}
-
-		// check if there is an alias for the generated pattern name
-		aliasName = AliasManager.getAliasFromRule(me.patternRuleName);
-		if (aliasName !== null) {
-			me.patternAliasName = aliasName;
-		} else {
-			me.patternAliasName = "";
+			// check if there is an alias for the generated pattern name
+			aliasName = AliasManager.getAliasFromRule(me.patternRuleName);
+			if (aliasName !== null) {
+				me.patternAliasName = aliasName;
+			} else {
+				me.patternAliasName = "";
+			}
 		}
 
 		// create the pattern
@@ -14088,6 +14093,7 @@
 		me.randomWidth = ViewConstants.randomDimension;
 		me.randomHeight = ViewConstants.randomDimension;
 		me.randomFillPercentage = 50;
+		me.randomRuleFixed = false;
 		me.randomReversible = false;
 		me.randomSwap = false;
 		me.randomChanceAll = -1;
@@ -14514,11 +14520,6 @@
 		// setup mode UI
 		me.modeList.itemLocked = [false, false, false];
 
-		// check whether to disable drawing
-		if (me.viewOnly || me.engine.isNone) {
-			me.modeList.itemLocked[ViewConstants.modeDraw] = true;
-		}
-
 		// if standard view mode then reset colour grid and population
 		if (me.multiStateView) {
 			// check if the pattern loaded
@@ -14840,6 +14841,13 @@
 		// make view only if not executable
 		if (!me.executable) {
 			me.viewOnly = true;
+			me.engine.drawOverlay = false;
+			me.engine.isNone = true;
+		}
+
+		// check whether to disable drawing
+		if (me.viewOnly || me.engine.isNone) {
+			me.modeList.itemLocked[ViewConstants.modeDraw] = true;
 		}
 
 		// disable playback if view only

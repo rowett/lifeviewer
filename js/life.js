@@ -1631,6 +1631,7 @@
 
 			// slope
 			slope = "",
+			divisor = 0,
 
 			// max and min population
 			min = this.population,
@@ -1701,9 +1702,19 @@
 				slope = "0";
 			} else {
 				if (deltaX > deltaY) {
-					slope = String((deltaX / deltaY) | 0);
+					divisor = this.gcd(deltaX, deltaY);
+					if (divisor === 1) {
+						slope = String((deltaX / deltaY) | 0);
+					} else {
+						slope = String(deltaX / divisor) + "/" + String(deltaY / divisor);
+					}
 				} else {
-					slope = String((deltaY / deltaX) | 0);
+					divisor = this.gcd(deltaY, deltaX);
+					if (divisor === 1) {
+						slope = String((deltaY / deltaX) | 0);
+					} else {
+						slope = String(deltaY / divisor) + "/" + String(deltaX / divisor);
+					}
 				}
 			}
 			if ((deltaX === deltaY) || (deltaX === 0) || (deltaY === 0)) {

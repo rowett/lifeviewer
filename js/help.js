@@ -1140,6 +1140,7 @@
 		y = this.renderHelpLine(view, Keywords.randomWidthWord + " <" + ViewConstants.minRandomWidth + ".." + ViewConstants.maxRandomWidth + ">", "set random pattern width", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.randomHeightWord + " <" + ViewConstants.minRandomHeight + ".." + ViewConstants.maxRandomHeight + ">", "set random pattern height", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.randomFillWord + " <" + ViewConstants.minRandomFill + ".." + ViewConstants.maxRandomFill + ">", "set random pattern fill percentage", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.randomChanceWord + " " + Keywords.fixedWord, "keep rule fixed", ctx, x, y, height, helpLine);
 		if (view.engine.isMargolus || view.engine.isPCA) {
 			y = this.renderHelpLine(view, Keywords.randomReversibleWord, "only generate reversible rules", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, Keywords.randomSwapWord, "only generate fixed population rules", ctx, x, y, height, helpLine);
@@ -1902,35 +1903,38 @@
 		y = this.renderHelpLine(view, "Width", view.randomWidth, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Height", view.randomHeight, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Fill", view.randomFillPercentage + "%", ctx, x, y, height, helpLine);
-		if (view.engine.isMargolus || view.engine.isPCA) {
-			y = this.renderHelpLine(view, "Reversible", (view.randomReversible ? "Only" : "Any"), ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "FixedPop", (view.randomSwap ? "Yes" : "No"), ctx, x, y, height, helpLine);
-		} else {
-			if (view.engine.isHROT) {
-				// TBD
+		y = this.renderHelpLine(view, "Rule Fixed", view.randomRuleFixed ? "Yes" : "No", ctx, x, y, height, helpLine);
+		if (!view.randomRuleFixed) {
+			if (view.engine.isMargolus || view.engine.isPCA) {
+				y = this.renderHelpLine(view, "Reversible", (view.randomReversible ? "Only" : "Any"), ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "FixedPop", (view.randomSwap ? "Yes" : "No"), ctx, x, y, height, helpLine);
 			} else {
-				if (view.engine.wolframRule === -1) {
-					if (view.randomChanceB === -1 && view.randomChanceS === -1) {
-						y = this.renderHelpLine(view, "Chance ALL" + (view.randomChanceAll === -1 ? "*" : ""), (view.randomChanceAll === -1 ? "50%" : view.randomChanceAll + "%"), ctx, x, y, height, helpLine);
-						// check for default B0
-						flag = false;
-						for (i = 0; i < view.randomChanceBN.length; i += 2) {
-							if (view.randomChanceBN[i] === 0) {
-								flag = true;
+				if (view.engine.isHROT) {
+					// TBD
+				} else {
+					if (view.engine.wolframRule === -1) {
+						if (view.randomChanceB === -1 && view.randomChanceS === -1) {
+							y = this.renderHelpLine(view, "Chance ALL" + (view.randomChanceAll === -1 ? "*" : ""), (view.randomChanceAll === -1 ? "50%" : view.randomChanceAll + "%"), ctx, x, y, height, helpLine);
+							// check for default B0
+							flag = false;
+							for (i = 0; i < view.randomChanceBN.length; i += 2) {
+								if (view.randomChanceBN[i] === 0) {
+									flag = true;
+								}
 							}
+							if (!flag) {
+								y = this.renderHelpLine(view, "Chance B0*", "25%" , ctx, x, y, height, helpLine);
+							}
+						} else {
+							y = this.renderHelpLine(view, "Chance B" + (view.randomChanceB === -1 ? "*" : ""), (view.randomChanceB === -1 ? "50%" : view.randomChanceB + "%"), ctx, x, y, height, helpLine);
+							y = this.renderHelpLine(view, "Chance S" + (view.randomChanceS === -1 ? "*" : ""), (view.randomChanceS === -1 ? "50%" : view.randomChanceS + "%"), ctx, x, y, height, helpLine);
 						}
-						if (!flag) {
-							y = this.renderHelpLine(view, "Chance B0*", "25%" , ctx, x, y, height, helpLine);
+						for (i = 0; i < view.randomChanceBN.length; i += 2) {
+							y = this.renderHelpLine(view, "Chance B" + view.randomChanceBN[i], view.randomChanceBN[i + 1] + "%", ctx, x, y, height, helpLine);
 						}
-					} else {
-						y = this.renderHelpLine(view, "Chance B" + (view.randomChanceB === -1 ? "*" : ""), (view.randomChanceB === -1 ? "50%" : view.randomChanceB + "%"), ctx, x, y, height, helpLine);
-						y = this.renderHelpLine(view, "Chance S" + (view.randomChanceS === -1 ? "*" : ""), (view.randomChanceS === -1 ? "50%" : view.randomChanceS + "%"), ctx, x, y, height, helpLine);
-					}
-					for (i = 0; i < view.randomChanceBN.length; i += 2) {
-						y = this.renderHelpLine(view, "Chance B" + view.randomChanceBN[i], view.randomChanceBN[i + 1] + "%", ctx, x, y, height, helpLine);
-					}
-					for (i = 0; i < view.randomChanceSN.length; i += 2) {
-						y = this.renderHelpLine(view, "Chance S" + view.randomChanceSN[i], view.randomChanceSN[i + 1] + "%", ctx, x, y, height, helpLine);
+						for (i = 0; i < view.randomChanceSN.length; i += 2) {
+							y = this.renderHelpLine(view, "Chance S" + view.randomChanceSN[i], view.randomChanceSN[i + 1] + "%", ctx, x, y, height, helpLine);
+						}
 					}
 				}
 			}
@@ -2238,7 +2242,7 @@
 		y = this.renderHelpLine(view, "", "Alias names can be used as rule names in RLE", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "for example 'rule = HighLife'", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "* denotes duplicate rule and should be omitted", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "* denotes duplicate rule", ctx, x, y, height, helpLine);
 
 		// display alias table
 		view.wrapHelpText = true;
