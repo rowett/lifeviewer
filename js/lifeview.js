@@ -214,6 +214,10 @@
 		/** @const {number} */ customThemeUIBorder : 24,
 		/** @const {number} */ customThemeArrow : 25,
 		/** @const {number} */ customThemePoly : 26,
+		/** @const {number} */ customThemeBounded : 27,
+		/** @const {number} */ customThemeSelect : 28,
+		/** @const {number} */ customThemePaste : 29,
+		/** @const {number} */ customThemeAdvance : 30,
 
 		// state numbers
 		/** @const {number} */ offState : 0,
@@ -268,7 +272,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 494,
+		/** @const {number} */ versionBuild : 495,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1161,6 +1165,18 @@
 		// boundary colour (for help display)
 		this.customBoundaryColour = [96, 96, 96];
 
+		// bounded colour
+		this.customBoundedColour = [128, 128, 128];
+
+		// select colour
+		this.customSelectColour = [0, 255, 0];
+
+		// paste colour
+		this.customPasteColour = [255, 0, 0];
+
+		// advance colour
+		this.customAdvanceColour = [255, 255, 0];
+
 		// window title element
 		this.titleElement = null;
 
@@ -1275,7 +1291,7 @@
 		/** @type {boolean} */ this.customGridMajor = false;
 
 		// custom theme value
-		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
 		// custom grid colour
 		/** @type {number} */ this.customGridColour = -1;
@@ -5609,7 +5625,7 @@
 		this.clearRHistoryButton.deleted = shown || !this.engine.isLifeHistory;
 		this.randomButton.deleted = shown;
 		this.randomItem.deleted = shown;
-		shown = hide || !this.selecting || settingsMenuOpen || this.engine.multiNumStates <= 2;
+		shown = hide || !this.selecting || settingsMenuOpen || this.engine.multiNumStates <= 2 || this.engine.isNone;
 		this.random2Button.deleted = shown;
 
 		// lock select tools in VIEWONLY
@@ -13981,6 +13997,10 @@
 		me.customThemeValue[ViewConstants.customThemeUIBorder] = -1;
 		me.customThemeValue[ViewConstants.customThemeArrow] = -1;
 		me.customThemeValue[ViewConstants.customThemePoly] = -1;
+		me.customThemeValue[ViewConstants.customThemeBounded] = -1;
+		me.customThemeValue[ViewConstants.customThemeSelect] = -1;
+		me.customThemeValue[ViewConstants.customThemePaste] = -1;
+		me.customThemeValue[ViewConstants.customThemeAdvance] = -1;
 		me.customLabelColour = ViewConstants.labelFontColour;
 		me.customArrowColour = ViewConstants.arrowColour;
 		me.customPolygonColour = ViewConstants.polyColour;
@@ -14065,6 +14085,26 @@
 		} else {
 			me.engine.boundaryColour = 0x606060ff;
 		}
+
+		// reset bounded colour
+		me.customBoundedColour = [128, 128, 128];
+		if (me.engine.littleEndian) {
+			me.engine.boundedColour = 0xff808080;
+		} else {
+			me.engine.boundedColour = 0x808080ff;
+		}
+
+		// reset select colour
+		me.customSelectColour = [0, 255, 0];
+		me.engine.selectColour = "rgb(0,255,0)";
+		
+		// reset paste colour
+		me.customPasteColour = [255, 0, 0];
+		me.engine.pasteColour = "rgb(255,0,0)";
+
+		// reset advance colour
+		me.customAdvanceColour = [255, 255, 0];
+		me.engine.advanceColour = "rgb(255,255,0)";
 
 		// reset waypoints
 		me.waypointManager.reset();
@@ -14843,6 +14883,7 @@
 			me.viewOnly = true;
 			me.engine.drawOverlay = false;
 			me.engine.isNone = true;
+			me.engine.isLifeHistory = false;
 		}
 
 		// check whether to disable drawing

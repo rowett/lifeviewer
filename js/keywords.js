@@ -263,6 +263,15 @@
 		// boundary
 		/** @const {string} */ boundaryWord : "BOUNDARY",
 
+		// bounded grid
+		/** @const {string} */ boundedWord : "BOUNDED",
+
+		// select
+		/** @const {string} */ selectWord : "SELECT",
+
+		// advance
+		/** @const {string} */ advanceWord: "ADVANCE",
+
 		// autofit word
 		/** @const {string} */ autoFitWord : "AUTOFIT",
 

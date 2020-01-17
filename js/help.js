@@ -1067,6 +1067,10 @@
 		if (view.engine.isPCA) {
 			y = this.renderHelpLine(view, Keywords.colorWord + " N*E*S*W* R G B", "set PCA state color", ctx, x, y, height, helpLine);
 		}
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.boundedWord + " R G B", "set bounded color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.selectWord + " R G B", "set select color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.pasteWord + " R G B", "set paste color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.advanceWord + " R G B", "set advance color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.gridWord + " R G B", "set grid color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.gridMajorWord + " R G B", "set grid major color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.starfieldWord + " R G B", "set star color", ctx, x, y, height, helpLine);
@@ -1830,6 +1834,13 @@
 			}
 		}
 
+		// check for bounded grid
+		if (view.engine.gridType !== -1) {
+			// display bounded colour
+			this.renderColourBox(view, view.customBoundedColour[0], view.customBoundedColour[1], view.customBoundedColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "Bounded", this.rgbString(view.customBoundedColour[0], view.customBoundedColour[1], view.customBoundedColour[2]), ctx, x, y, height, helpLine);
+		}
+
 		// display boundary colour
 		this.renderColourBox(view, view.customBoundaryColour[0], view.customBoundaryColour[1], view.customBoundaryColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Boundary", this.rgbString(view.customBoundaryColour[0], view.customBoundaryColour[1], view.customBoundaryColour[2]), ctx, x, y, height, helpLine);
@@ -1845,6 +1856,14 @@
 			this.renderColourBox(view, view.customErrorColour[0], view.customErrorColour[1], view.customErrorColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 			y = this.renderHelpLine(view, "Error", this.rgbString(view.customErrorColour[0], view.customErrorColour[1], view.customErrorColour[2]), ctx, x, y, height, helpLine);
 		}
+
+		// select, paste and advance colours
+		this.renderColourBox(view, view.customSelectColour[0], view.customSelectColour[1], view.customSelectColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Select", this.rgbString(view.customSelectColour[0], view.customSelectColour[1], view.customSelectColour[2]), ctx, x, y, height, helpLine);
+		this.renderColourBox(view, view.customPasteColour[0], view.customPasteColour[1], view.customPasteColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Paste", this.rgbString(view.customPasteColour[0], view.customPasteColour[1], view.customPasteColour[2]), ctx, x, y, height, helpLine);
+		this.renderColourBox(view, view.customAdvanceColour[0], view.customAdvanceColour[1], view.customAdvanceColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Advance", this.rgbString(view.customAdvanceColour[0], view.customAdvanceColour[1], view.customAdvanceColour[2]), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// grid line information

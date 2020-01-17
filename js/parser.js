@@ -333,6 +333,36 @@
 				}
 				break;
 
+			case ViewConstants.customThemeBounded:
+				// copy to custom bounded colour for help display
+				view.customBoundedColour = [redValue, greenValue, blueValue];
+
+				// copy to bounded colour
+				if (view.engine.littleEndian) {
+					view.engine.boundedColour = 255 << 24 | blueValue << 16 | greenValue << 8 | redValue;
+				} else {
+					view.engine.boundedColour = redValue << 24 | greenValue << 16 | blueValue << 8 | 255;
+				}
+				break;
+
+			case ViewConstants.customThemeSelect:
+				// create custom select colour
+				view.customSelectColour = [redValue, greenValue, blueValue];
+				view.engine.selectColour = "rgb(" + redValue + "," + greenValue + "," + blueValue + ")";
+				break;
+
+			case ViewConstants.customThemePaste:
+				// create custom paste colour
+				view.customPasteColour = [redValue, greenValue, blueValue];
+				view.engine.pasteColour = "rgb(" + redValue + "," + greenValue + "," + blueValue + ")";
+				break;
+
+			case ViewConstants.customThemeAdvance:
+				// create custom advance colour
+				view.customAdvanceColour = [redValue, greenValue, blueValue];
+				view.engine.advanceColour = "rgb(" + redValue + "," + greenValue + "," + blueValue + ")";
+				break;
+
 			case ViewConstants.customThemeGraphBg:
 				// copy to graph background color
 				view.engine.graphBgColor = [redValue, greenValue, blueValue];
@@ -2866,6 +2896,26 @@
 								// boundary
 								case Keywords.boundaryWord:
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeBoundary, whichColour);
+									break;
+
+								// bounded
+								case Keywords.boundedWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeBounded, whichColour);
+									break;
+
+								// select
+								case Keywords.selectWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeSelect, whichColour);
+									break;
+
+								// paste
+								case Keywords.pasteWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemePaste, whichColour);
+									break;
+
+								// advance
+								case Keywords.advanceWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeAdvance, whichColour);
 									break;
 
 								// graph background

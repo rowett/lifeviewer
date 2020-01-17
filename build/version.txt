@@ -1,3 +1,10 @@
+Build 495
+- [[ COLOR BOUNDED R G B|name ]] sets custom bounded grid border colour
+- [[ COLOR SELECT R G B|name ]] sets custom selection colour
+- [[ COLOR PASTE R G B|name ]] sets custom paste colour
+- [[ COLOR ADVANCE R G B|name ]] sets custom advance selection colour
+- fix button overlap
+
 Build 494
 - [[ RANDCHANCE FIXED ]] keeps the rule constant when generating random patterns
 - handle non-integer Slopes

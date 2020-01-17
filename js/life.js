@@ -459,6 +459,18 @@
 		// boundary colour
 		/** @type {number} */ this.boundaryColour = 0xffffffff;
 
+		// bounded grid border colour
+		/** @type {number} */ this.boundedColour = 0xff808080;
+
+		// select colour
+		/** @type {string} */ this.selectColour = "rgb(0,255,0)";
+
+		// paste colour
+		/** @type {string} */ this.pasteColour = "rgb(255,0,0)";
+
+		// advance colour
+		/** @type {string} */ this.advanceColour = "rgb(255,255,0)";
+
 		// whether rule is _none_
 		/** @type {boolean} */ this.isNone = false;
 
@@ -4549,32 +4561,37 @@
 			} else {
 				// check for the overlay grid
 				if (this.overlayGrid) {
-					// get the overlay colour
-					over = this.overlayGrid[y][x];
-
-					// states 4 and 6
-					if (over === state4 || over === state6) {
-						// if alive cell then use state 3
-						if (col >= this.aliveStart) {
-							over = state3;
-						}
-						result = ViewConstants.stateMap.indexOf(over - 128);
+					// check for bounded grid
+					if (this.boundedGridType !== -1 && col === this.boundedBorderColour && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
+						result = 0;
 					} else {
-						// states 3 and 5
-						if (over === state3 || over === state5) {
-							// if dead cell then use state 4
-							if (col < this.aliveStart) {
-								over = state4;
+						// get the overlay colour
+						over = this.overlayGrid[y][x];
+
+						// states 4 and 6
+						if (over === state4 || over === state6) {
+							// if alive cell then use state 3
+							if (col >= this.aliveStart) {
+								over = state3;
 							}
 							result = ViewConstants.stateMap.indexOf(over - 128);
 						} else {
-							if (col === this.unoccupied) {
-								result = 0;
+							// states 3 and 5
+							if (over === state3 || over === state5) {
+								// if dead cell then use state 4
+								if (col < this.aliveStart) {
+									over = state4;
+								}
+								result = ViewConstants.stateMap.indexOf(over - 128);
 							} else {
-								if (col <= this.deadStart) {
-									result = 2;
+								if (col === this.unoccupied) {
+									result = 0;
 								} else {
-									result = 1;
+									if (col <= this.deadStart) {
+										result = 2;
+									} else {
+										result = 1;
+									}
 								}
 							}
 						}
@@ -6470,9 +6487,15 @@
 
 		// create bounded grid border colour if specified
 		if (this.boundedGridType !== -1 && (this.multiNumStates + this.historyStates < 256)) {
-			redChannel[this.boundedBorderColour] = 0x80;
-			greenChannel[this.boundedBorderColour] = 0x80;
-			blueChannel[this.boundedBorderColour] = 0x80;
+			if (this.littleEndian) {
+				redChannel[this.boundedBorderColour] = this.boundedColour & 255;
+				greenChannel[this.boundedBorderColour] = (this.boundedColour >> 8) & 255;
+				blueChannel[this.boundedBorderColour] = (this.boundedColour >> 16) & 255;
+			} else {
+				redChannel[this.boundedBorderColour] = this.boundedColour >> 24;
+				greenChannel[this.boundedBorderColour] = (this.boundedColour >> 16) & 255;
+				blueChannel[this.boundedBorderColour] = (this.boundedColour >> 8) & 255;
+			}
 		}
 	};
 
@@ -26826,17 +26849,17 @@
 			yOff = (this.height >> 1) - (view.patternHeight >> 1) + (view.yOffset << 1);
 
 		if (view.isSelection || view.drawingSelection) {
-			this.drawBox(view, view.selectionBox, "rgb(0,255,0)");
+			this.drawBox(view, view.selectionBox, this.selectColour);
 		}
 		if (view.evolvingPaste) {
-			this.drawPasteWithCells(view, view.evolveBox.leftX, view.evolveBox.bottomY, ViewConstants.pastePositionNW, "rgb(255,255,0)");
+			this.drawPasteWithCells(view, view.evolveBox.leftX, view.evolveBox.bottomY, ViewConstants.pastePositionNW, this.advanceColour);
 		}
 		if (view.isPasting) {
 			mouseX = view.menuManager.mouseLastX;
 			mouseY = view.menuManager.mouseLastY;
 			if (mouseX !== -1) {
 				view.updateCellLocation(mouseX, mouseY);
-				this.drawPasteWithCells(view, view.cellX - xOff, view.cellY - yOff, position, "rgb(255,0,0)");
+				this.drawPasteWithCells(view, view.cellX - xOff, view.cellY - yOff, position, this.pasteColour);
 			}
 		}
 	};
