@@ -1644,6 +1644,8 @@
 			// slope
 			slope = "",
 			divisor = 0,
+			dDeltaX = 0,
+			dPeriod = 0,
 
 			// max and min population
 			min = this.population,
@@ -1721,12 +1723,7 @@
 						slope = String(deltaX / divisor) + "/" + String(deltaY / divisor);
 					}
 				} else {
-					divisor = this.gcd(deltaY, deltaX);
-					if (divisor === 1) {
-						slope = String((deltaY / deltaX) | 0);
-					} else {
-						slope = String(deltaY / divisor) + "/" + String(deltaX / divisor);
-					}
+					slope = "1";
 				}
 			}
 			if ((deltaX === deltaY) || (deltaX === 0) || (deltaY === 0)) {
@@ -1742,8 +1739,15 @@
 					if (period === 1) {
 						simpleSpeed = deltaX + "c";
 					} else {
-						if (period % deltaX === 0) {
-							simpleSpeed = "c/" + (period / deltaX) + " | " + deltaX + "c/" + period;
+						divisor = this.gcd(deltaX, period);
+						dDeltaX = deltaX / divisor;
+						dPeriod = period / divisor;
+						if (divisor !== 1) {
+							if (dDeltaX === 1) {
+								simpleSpeed = "c/" + dPeriod + " | " + deltaX + "c/" + period;
+							} else {
+								simpleSpeed = dDeltaX + "c/" + dPeriod + " | " + deltaX + "c/" + period;
+							}
 						} else {
 							simpleSpeed = deltaX + "c/" + period;
 						}

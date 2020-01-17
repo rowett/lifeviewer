@@ -6,6 +6,7 @@ Build 495
 - fix button overlap
 - Pick on the bounded grid border now always sets Dead cell for drawing
 - added more aliases
+- fix simplified Speeds and Slope for Identify
 
 Build 494
 - [[ RANDCHANCE FIXED ]] keeps the rule constant when generating random patterns
