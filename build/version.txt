@@ -4,6 +4,8 @@ Build 495
 - [[ COLOR PASTE R G B|name ]] sets custom paste colour
 - [[ COLOR ADVANCE R G B|name ]] sets custom advance selection colour
 - fix button overlap
+- Pick on the bounded grid border now always sets Dead cell for drawing
+- added more aliases
 
 Build 494
 - [[ RANDCHANCE FIXED ]] keeps the rule constant when generating random patterns

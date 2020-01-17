@@ -255,6 +255,7 @@
 		a.push(["2xpand2", "B3/S123eik4ce"]);
 		a.push(["3x3", "B35cky68/S0245-c6n"]);
 		a.push(["38life", "B35y/S2-n35k6ci"]);
+		a.push(["4diagonal", "B34c/S23"]);
 		a.push(["4life", "B34jy/S23"]);
 		a.push(["4life2", "B34j/S23"]);
 		a.push(["57life", "B34tyz5cy/S23-a4it5ej"]);
@@ -270,7 +271,9 @@
 		a.push(["Ben's rule", "B2-ak3einqy4e/S1c2ak3inqy4e"]);
 		a.push(["Best Friends", "B2ce3aiy/S12aei3r"]);
 		a.push(["Bgunlife", "B34eny5e/S23-a4iy5e6c"]);
+		a.push(["Billiard", "B36-e/S12345"]);
 		a.push(["Blocks for Days", "B2-ae3-cij4a5aj6e7e8/S01e2ai3ar4ar5air6ae7c8"]);
+		a.push(["blockandglider", "B3/S234cw7c"]);
 		a.push(["BoatLife", "B3-knqy/S2-n3-ey4akwy5aik6kn"]);
 		a.push(["boatLife", "B3ainqy4aeq5ejn8/S2-in3-aek4aciq5ae6-c7c8"]);
 		a.push(["bpuff", "B3/S23-cky4k7e8"]);
@@ -292,6 +295,7 @@
 		a.push(["Conway+-1", "B3/S23-inqy4aikqtwz"]);
 		a.push(["Conway+-2", "B3/S2-ak34aikqtwz5inqy"]);
 		a.push(["Conway--", "B3/S2-ei3"]);
+		a.push(["crawl", "B37e/S2-i34y8"]);
 		a.push(["Creperie", "B2ikn3aijn/S23-ckqy"]);
 		a.push(["CrossLife", "B3/S234et"]);
 		a.push(["Crylife", "B2n3-cry4kn6i7c/S23-a4i6c"]);
@@ -303,6 +307,7 @@
 		a.push(["Dominoplex", "B2cen3ek4ejkwz5-ein6an7e8/S12an3-eijq4enrty5e6k"]);
 		a.push(["Dry15Life", "B34r7/S23-q4et"]);
 		a.push(["DryGoats", "B2in37/S123a"]);
+		a.push(["Dustclouds01", "B2ce3-ai/S01"]);
 		a.push(["EasyHighLife", "B36-i/S23"]);
 		a.push(["Eatsplosion", "B2n3-ekqy4c5e/S2-cn3-eky4aij5e"]);
 		a.push(["Eatsplosion IV", "B2n3-q4aqz6n8/S2-in3-q4iz7c8"]);
@@ -352,6 +357,7 @@
 		a.push(["ilife", "B3/S235i"]);
 		a.push(["Immortalife", "B3-cqy4j/S2-n34i"]);
 		a.push(["IronGoats", "B2in36/S123a8"]);
+		a.push(["Ising", "B3e4ejr5cinqy6-ei78/S2ei3aejkr4-cny5-e678"]);
 		a.push(["Just Friends", "B2-a/S12"]);
 		a.push(["Kgdm", "B3/S2-c3-en4ceitz"]);
 		a.push(["klife", "B34n/S23"]);
@@ -364,6 +370,7 @@
 		a.push(["longlast", "B3/S234ce8"]);
 		a.push(["lotsofdots", "B2ikn34e/S023-a4ce"]);
 		a.push(["MaritimeLife", "B2i34c6cen7c8/S2-i3-q4c5a6e8"]);
+		a.push(["maxe2", "B3/S234-acew"]);
 		a.push(["Migrating Bookends", "B2ein3inry/S12-n3ce"]);
 		a.push(["Mooselife", "B34kz5e7c/S23-a4ityz5k"]);
 		a.push(["move_rep", "B3-r4e5e6-n/S23cr457e"]);
@@ -398,6 +405,7 @@
 		a.push(["Prismatika Crystallios", "B2ae3r/S1e"]);
 		a.push(["PlasmaLife", "B34-air/S234-air"]);
 		a.push(["Puffers", "B3-nqr6/S235-nqr"]);
+		a.push(["PuffLife", "B34-i5-a6-a/S2-an34-akrw"]);
 		a.push(["qlife", "B3-q/S23"]);
 		a.push(["quadraticlife", "B34j/S23"]);
 		a.push(["Quasilinear Collisions", "B2-ak3-jnqr/S15678"]);
@@ -405,6 +413,7 @@
 		a.push(["Rainflakes", "B2-ac3aei4ey5n6n8/S02-n3aceir4ceyz5e6k"]);
 		a.push(["replife", "B34jy6n/S2-i3"]);
 		a.push(["reptlife", "B36-k/S2-i34q"]);
+		a.push(["rgun", "B34t/S2-i35a7e"]);
 		a.push(["Rule X3VI", "B2c3aei4ajnr5acn/S2-ci3-ck4in5jkq6c7c"]);
 		a.push(["RustyLife", "B34-ai/S24-air5-a"]);
 		a.push(["Salad", "B2i34c/S2-i3"]);
@@ -443,17 +452,22 @@
 		a.push(["tHighLife", "B36/S2-i34q"]);
 		a.push(["ThisLife", "B36i/S23-ce5q"]);
 		a.push(["tlife", "B3/S2-i34q"]);
+		a.push(["tosc", "B3/S234wz"]);
+		a.push(["tosc2", "B36in/S234cw"]);
 		a.push(["tPedestrianFlock", "B38/S12-i4q"]);
 		a.push(["tPedestrianLife", "B38/S2-i34q"]);
 		a.push(["tq6", "B2i34e/S023-a4ce"]);
 		a.push(["Train", "B34t6k8/S2-i35a7e"]);
 		a.push(["Trilobites", "B3aijn4w5nq/S2ae3aijr4irz5y"]);
+		a.push(["triship", "B2a3e/S012-ai3-i45-i678"]);
+		a.push(["Trycogene", "B2ce3aijn/S2ak3-aijn4jkqty5cekr6ce8"]);
 		a.push(["Turro", "B2-a3c/S12-i"]);
 		a.push(["Two-dots rule 1", "B2ei3ci4aerw5acky6i8/S012-an3eiknq4qrty5aeik6ik8"]);
 		a.push(["Two-dots rule 2", "B2-ak3aen4cenrtw5iq6e/S02ac3aenqy4ejqtwy5ak6acn7"]);
 		a.push(["Twinkles", "B2in34-a/S1e2ekn34ent"]);
 		a.push(["Virus_v2", "B3-nqr6/S235"]);
 		a.push(["Wartlife", "B3aijnq6n/S2-cn3-ceky4i"]);
+		a.push(["WetLife", "B34r/S23"]);
 		a.push(["Whichlife", "B2in3aeijn/S234e"]);
 		a.push(["Wild Seas", "B2c3-cekq4ikt5i8/S2-in3-acky4aijry5eiky6i"]);
 		a.push(["wlife", "B34w/S23"]);
