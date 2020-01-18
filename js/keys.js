@@ -1518,8 +1518,13 @@
 							if (me.pickMode) {
 								me.pickToggle.current = me.togglePick([false], true, me);
 							} else {
-								// close the popup Viewer
-								hideViewer();
+								// check for Identify reuslts
+								if (me.resultsDisplayed) {
+									me.identifyClosePressed(me);
+								} else {
+									// close the popup Viewer
+									hideViewer();
+								}
 							}
 						}
 					}
@@ -1542,10 +1547,15 @@
 								if (me.pickMode) {
 									me.pickToggle.current = me.togglePick([false], true, me);
 								} else {
-									// check if playing
-									if (me.generationOn) {
-										// switch to pause
-										me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+									// check for Identify results
+									if (me.resultsDisplayed) {
+										me.identifyClosePressed(me);
+									} else {
+										// check if playing
+										if (me.generationOn) {
+											// switch to pause
+											me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+										}
 									}
 								}
 							}

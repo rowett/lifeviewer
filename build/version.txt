@@ -1,3 +1,9 @@
+Build 496
+- simplify oblique speeds for Identify
+- search for hex neighbourhood definition for @TREE rules
+- add Close button for Identify
+- added more aliases
+
 Build 495
 - [[ COLOR BOUNDED R G B|name ]] sets custom bounded grid border colour
 - [[ COLOR SELECT R G B|name ]] sets custom selection colour

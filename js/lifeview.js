@@ -272,7 +272,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 495,
+		/** @const {number} */ versionBuild : 496,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -664,6 +664,7 @@
 		/** @type {boolean} */ this.identify = false;
 
 		// labels for identify results
+		this.identifyBannerLabel = null;
 		this.identifyTypeLabel = null;
 		this.identifyCellsLabel = null;
 		this.identifyBoxLabel = null;
@@ -1645,6 +1646,9 @@
 
 		// close button for graph
 		this.graphCloseButton = null;
+
+		// close button for identify
+		this.identifyCloseButton = null;
 
 		// infobar button
 		this.infoBarButton = null;
@@ -4252,6 +4256,12 @@
 			x = this.identifyTypeLabel.relX,
 			xv = this.identifyTypeValueLabel.relX;
 
+		// banner
+		this.identifyBannerLabel.setPosition(Menu.north, 0, y - 48);
+
+		// close button at same height as banner
+		this.identifyCloseButton.setY(y - 48);
+
 		// type
 		this.identifyTypeLabel.setPosition(Menu.north, x, y);
 		this.identifyTypeValueLabel.setPosition(Menu.north, xv, y);
@@ -5362,8 +5372,12 @@
 			}
 		}
 
-		// identify results labels
+		// identify close button
 		shown = hide || !this.resultsDisplayed || (this.lastIdentifyType === "Empty") || (this.lastIdentifyType === "none");
+		this.identifyCloseButton.deleted = hide || !this.resultsDisplayed;
+
+		// identify results labels
+		this.identifyBannerLabel.deleted = shown;
 		this.identifyTypeLabel.deleted = shown;
 		this.identifyCellsLabel.deleted = shown;
 		this.identifyBoxLabel.deleted = shown;
@@ -6036,10 +6050,12 @@
 				}
 				me.afterEdit("");
 
+				me.identifyBannerLabel.preText = identifyResult[0];
 				if (me.lastIdentifyType === "Empty") {
 					me.menuManager.notification.notify(identifyResult[0], 15, 120, 15, false);
 				} else {
-					me.menuManager.notification.notify(identifyResult[0], 15, 216000, 15, false);
+					me.menuManager.notification.clear(true, false);
+					me.menuManager.notification.clear(false, false);
 					me.fitZoomDisplay(true, false);
 				}
 				me.engine.initSearch(me.identify);
@@ -9447,6 +9463,11 @@
 		return me.setThemeFromCallback(19, newValue, change);
 	};
 
+	// identify close button
+	View.prototype.identifyClosePressed = function(me) {
+		me.resultsDisplayed = false;
+	};
+
 	// graph close button
 	View.prototype.graphClosePressed = function(me) {
 		me.popGraph = false;
@@ -11102,7 +11123,7 @@
 		if (!me.engine.anythingAlive) {
 			me.menuManager.notification.notify("Empty Pattern", 15, 120, 15, false);
 			me.identify = false;
-			me.displayResults = false;
+			me.resultsDisplayed = false;
 		} else {
 			if (me.identify) {
 				me.identify = false;
@@ -11114,7 +11135,7 @@
 				me.identify = true;
 
 				// hide previous results
-				me.displayResults = false;
+				me.resultsDisplayed = false;
 
 				// start identification
 				if (me.identifyFast) {
@@ -12109,6 +12130,10 @@
 		// add callback for wakeup when GUI locked
 		this.viewMenu.wakeCallback = this.viewWakeUp;
 
+		// identify banner label
+		this.identifyBannerLabel = this.viewMenu.addLabelItem(Menu.north, 0, 52, 480, 48, "Banner");
+		this.identifyBannerLabel.setFont("32px Arial");
+
 		// create identify results labels
 		this.identifyTypeLabel = this.viewMenu.addLabelItem(Menu.north, -160, 100, 160, 32, "Type");
 		this.identifyCellsLabel = this.viewMenu.addLabelItem(Menu.north, -160, 140, 160, 32, "Cells");
@@ -12514,6 +12539,10 @@
 		this.linesToggle = this.viewMenu.addListItem(this.toggleLines, Menu.northEast, -85, 45, 40, 40, [""], [false], Menu.multi);
 		this.linesToggle.icon = [this.iconManager.icon("lines")];
 		this.linesToggle.toolTip = ["toggle graph lines/points"];
+
+		// identify  close button
+		this.identifyCloseButton = this.viewMenu.addButtonItem(this.identifyClosePressed, Menu.northEast, -40, 45, 40, 40, "X");
+		this.identifyCloseButton.toolTip = "close results";
 
 		// graph close button
 		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -40, 45, 40, 40, "X");

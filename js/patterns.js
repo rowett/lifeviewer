@@ -141,7 +141,7 @@
 				// add @TREE
 				this.rules[l] = {name: pattern.ruleName, isTree: true, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
 					nodes: pattern.ruleTreeNodes, base: pattern.ruleTreeBase, ruleA: pattern.ruleTreeA,
-					ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours, icons: pattern.ruleTableIcons};
+					ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours, icons: pattern.ruleTableIcons, isHex: pattern.ruleTreeIsHex};
 			} else {
 				// add @TABLE
 				this.rules[l] = {name: pattern.ruleName, isTree: false, states: pattern.ruleTableStates, neighbourhood: pattern.ruleTableNeighbourhood,
@@ -189,7 +189,7 @@
 				pattern.ruleTreeBase = record.base;
 				pattern.ruleTreeA = record.ruleA;
 				pattern.ruleTreeB = record.ruleB;
-				pattern.isHex = false;
+				pattern.isHex = record.isHex;
 			} else {
 				pattern.ruleTableStates = record.states;
 				pattern.ruleTableNeighbourhood = record.neighbourhood;
@@ -791,6 +791,9 @@
 
 		// rule tree states
 		/** @type {number} */ this.ruleTreeStates = -1;
+
+		// whether rule tree is hex
+		/** @type {boolean} */ this.ruleTreeIsHex = false;
 
 		// rule tree neighbours
 		/** @type {number} */ this.ruleTreeNeighbours = -1;
@@ -7544,6 +7547,14 @@
 		this.createColourRamp(pattern.ruleTreeColours, 255, 0, 0, 255, 255, 0);
 	};
 
+	// determine if there is a hex neighbourhood definition for @TREE (will be in another section)
+	PatternManager.prototype.ruleTreeHex = function(reader) {
+		var reg = new RegExp(this.ruleTableNeighbours + " *:" + this.ruleTableNeighbourhoods[PatternConstants.ruleTableHex]),
+			isHex = reg.test(reader.source);
+
+		return isHex;
+	};
+
 	// decode rule table tree
 	PatternManager.prototype.decodeTree = function(pattern, reader) {
 		var /** @type {string} */ nextToken = "",
@@ -7747,6 +7758,8 @@
 			pattern.ruleTreeBase = noff[noff.length - 1];
 			pattern.ruleTreeA = dat.slice(0, datLen);
 			pattern.ruleTreeB = datb.slice(0, datBLen);
+			pattern.ruleTreeIsHex = this.ruleTreeHex(reader);
+			pattern.isHex = pattern.ruleTreeIsHex;
 
 			// mark pattern as valid
 			pattern.numStates = pattern.ruleTreeStates;

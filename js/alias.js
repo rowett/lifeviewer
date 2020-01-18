@@ -370,7 +370,7 @@
 		a.push(["longlast", "B3/S234ce8"]);
 		a.push(["lotsofdots", "B2ikn34e/S023-a4ce"]);
 		a.push(["MaritimeLife", "B2i34c6cen7c8/S2-i3-q4c5a6e8"]);
-		a.push(["maxe2", "B3/S234-acew"]);
+		a.push(["maze2", "B3/S234-acew"]);
 		a.push(["Migrating Bookends", "B2ein3inry/S12-n3ce"]);
 		a.push(["Mooselife", "B34kz5e7c/S23-a4ityz5k"]);
 		a.push(["move_rep", "B3-r4e5e6-n/S23cr457e"]);
@@ -555,8 +555,15 @@
 		s.push("MAP NINT");
 		a.push(["MAP Non-Isotropic", ""]);
 		a.push(["2CellSlug", "MAPBTDe/yAA9/8AAP//AAD//yAA/78AAP//AID//wAA//8AAP//AAD/2wAA//8AgP//AAD//4AA//+AAH//AAD//w"]);
+		a.push(["BLAHTWOCELLGUN", "MAPAMB/vwAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//w"]);
 		a.push(["FoxLife", "MAPARYXfhZofugWaH7oaIFoxBZofuhogOiAaIFoxIAAgAAWaH7oaIFoxGiA6ICAAIAAaIFoxIAAgACAAIAAAAAAAA"]);
+		a.push(["MuzikThing", "MAPACD//wAA3/8AgH//AAD//wCAf/8AAP//AAD//wAA//8AAH//AAD//wAA//8AAP//gAD//wAA//8AAP//AAD//w"]);
+		a.push(["MyEntry", "MAPIAD/7wgA/f8AAP//AAD//wAA//8AAP//AAD/fwAA//8AAP//AAD//wAA//8AAP//AAD//4AA//8AAP//AAD//w"]);
+		a.push(["OLife", "MAPABD/vgIB//8AAP//AAD//wAA/78AAN3/AJB/vwAAf/8AAP//AABd/wAA//8AAP//AAD//4IA//8AAP//AIB//w"]);
+		a.push(["Rhufo", "MAPARH//wMA//8AAP9/AAD//wAA//8AAP9/AAD//wAA//8AAP//AAB//wAA//8AAP//AAD//wAA//8AAH9/AAB//w"]);
+		a.push(["Rhufo2", "MAPARH//wMA//8AAH9/AAD//wAAX/8AAP9/AAB/7wAA//8AAH//AAB//wAA//8AAP//AAB//wAA/f8AAH8/AAB3/w"]);
 		a.push(["SemiFelineLife", "MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaICatGiA6ICAAIAAaICatIAAgACAAIAAAAAAAA"]);
+		a.push(["Simple Weird Ships", "MAPABHs/wMA//8AAP//AAD//wAA/38AAP//AAD//wAA//8AAP//gAD//wAA//8AAP//AAD//wAA//8AAP//AAD//w"]);
 		a.push(["Socrates", "MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaIDogGiA6ICAAIAAaIDogIAAg00IAmSocrateg"]);
 
 		// add Alternating aliases

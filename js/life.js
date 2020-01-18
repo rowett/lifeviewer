@@ -1645,6 +1645,7 @@
 			slope = "",
 			divisor = 0,
 			dDeltaX = 0,
+			dDeltaY = 0,
 			dPeriod = 0,
 
 			// max and min population
@@ -1760,9 +1761,24 @@
 					}
 				}
 			} else {
-				simpleSpeed = deltaX + "," + deltaY + "c";
-				if (period > 1) {
-					simpleSpeed += "/" + period;
+				divisor = this.gcd(deltaX, this.gcd(deltaY, period));
+				dDeltaX = deltaX / divisor;
+				dDeltaY = deltaY / divisor;
+				dPeriod = period / divisor;
+				if (divisor !== 1) {
+					simpleSpeed = dDeltaX + "," + dDeltaY + "c";
+					if (dPeriod > 1) {
+						simpleSpeed += "/" + dPeriod;
+					}
+					simpleSpeed += " | " + deltaX + "," + deltaY + "c";
+					if (period > 1) {
+						simpleSpeed += "/" + period;
+					}
+				} else {
+					simpleSpeed = deltaX + "," + deltaY + "c";
+					if (period > 1) {
+						simpleSpeed += "/" + period;
+					}
 				}
 				direction = this.getDisplacementName(deltaX, deltaY);
 			}
@@ -6380,21 +6396,22 @@
 		gridLineBoldRaw = this.gridLineBoldRaw,
 		colourStrings = this.cellColourStrings,
 		needStrings = (this.isHex && this.useHexagons) || this.isTriangular,
-		i = 0;
+		i = 0,
+		alpha = 255;
 
 		// check for Generations or HROT
 		if (this.multiNumStates > 2) {
 			// create state colours
 			if (this.littleEndian) {
 				for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
-					pixelColours[i] = (255 << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+					pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
 					if (needStrings) {
 						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
 				}
 			} else {
 				for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
-					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
+					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
 					if (needStrings) {
 						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
@@ -6405,7 +6422,7 @@
 			if (this.littleEndian) {
 				// create dead colours
 				for (i = 0; i < this.aliveStart; i += 1) {
-					pixelColours[i] = (255 << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
+					pixelColours[i] = (alpha << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
 					if (needStrings) {
 						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
@@ -6413,7 +6430,7 @@
 
 				// create alive colours
 				for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
-					pixelColours[i] = (255 << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+					pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
 					if (needStrings) {
 						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
@@ -6421,7 +6438,7 @@
 
 				// create remaining multi-state colours
 				for (i = this.aliveMax + 1; i < 256; i += 1) {
-					pixelColours[i] = (255 << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+					pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
 					if (needStrings) {
 						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
@@ -6429,7 +6446,7 @@
 			} else {
 				// create dead colours
 				for (i = 0; i < this.aliveStart; i += 1) {
-					pixelColours[i] = (redChannel[i] << 24) | (greenChannel[i] << 16) | (blueChannel[i] << 8) | 255;
+					pixelColours[i] = (redChannel[i] << 24) | (greenChannel[i] << 16) | (blueChannel[i] << 8) | alpha;
 					if (needStrings) {
 						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
@@ -6437,7 +6454,7 @@
 
 				// create alive colours
 				for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
-					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
+					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
 					if (needStrings) {
 						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
@@ -6445,7 +6462,7 @@
 
 				// create remaining multi-state colours
 				for (i = this.aliveMax + 1; i < 256; i += 1) {
-					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
+					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
 					if (needStrings) {
 						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
 					}
@@ -6455,20 +6472,20 @@
 
 		// create grid line colours
 		if (this.littleEndian) {
-			this.gridLineColour = (255 << 24) | ((gridLineRaw & 255) << 16) | (((gridLineRaw >> 8) & 255) << 8) | (gridLineRaw >> 16);
-			this.gridLineBoldColour = (255 << 24) | ((gridLineBoldRaw & 255) << 16) | (((gridLineBoldRaw >> 8) & 255) << 8) | (gridLineBoldRaw >> 16);
+			this.gridLineColour = (alpha << 24) | ((gridLineRaw & 255) << 16) | (((gridLineRaw >> 8) & 255) << 8) | (gridLineRaw >> 16);
+			this.gridLineBoldColour = (alpha << 24) | ((gridLineBoldRaw & 255) << 16) | (((gridLineBoldRaw >> 8) & 255) << 8) | (gridLineBoldRaw >> 16);
 		} else {
-			this.gridLineColour = ((gridLineRaw >> 16) << 24) | (((gridLineRaw >> 8) & 255) << 16) | ((gridLineRaw & 255) << 8) | 255;
-			this.gridLineBoldColour = ((gridLineBoldRaw >> 16) << 24) | (((gridLineBoldRaw >> 8) & 255) << 16) | ((gridLineBoldRaw & 255) << 8) | 255;
+			this.gridLineColour = ((gridLineRaw >> 16) << 24) | (((gridLineRaw >> 8) & 255) << 16) | ((gridLineRaw & 255) << 8) | alpha;
+			this.gridLineBoldColour = ((gridLineBoldRaw >> 16) << 24) | (((gridLineBoldRaw >> 8) & 255) << 16) | ((gridLineBoldRaw & 255) << 8) | alpha;
 		}
 
 		// create bounded grid border colour
 		if (this.boundedGridType !== -1) {
 			i = this.boundedBorderColour;
 			if (this.littleEndian) {
-				pixelColours[i] = (255 << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+				pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
 			} else {
-				pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | 255;
+				pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
 			}
 			if (needStrings) {
 				colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
