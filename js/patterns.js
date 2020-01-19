@@ -7549,7 +7549,7 @@
 
 	// determine if there is a hex neighbourhood definition for @TREE (will be in another section)
 	PatternManager.prototype.ruleTreeHex = function(reader) {
-		var reg = new RegExp(this.ruleTableNeighbours + " *:" + this.ruleTableNeighbourhoods[PatternConstants.ruleTableHex]),
+		var reg = new RegExp(this.ruleTableNeighbours + " *: *" + this.ruleTableNeighbourhoods[PatternConstants.ruleTableHex]),
 			isHex = reg.test(reader.source);
 
 		return isHex;

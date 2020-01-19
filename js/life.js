@@ -26379,9 +26379,15 @@
 			height = 1;
 		}
 
+
 		// compute the zoom in each direction
 		zoomX = displayWidth / width;
 		zoomY = displayHeight / height;
+
+		// adjust for triangular grid if required
+		if (this.isTriangular && this.zoom >= 4) {
+			zoomY /= ViewConstants.sqrt3;
+		}
 
 		// select the zoom from the smallest ratio
 		if (zoomX > zoomY) {
