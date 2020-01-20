@@ -272,7 +272,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 496,
+		/** @const {number} */ versionBuild : 497,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -9788,7 +9788,7 @@
 			}
 	
 			// cut to the current clipboard
-			me.cutSelection(me, me.currentPasteBuffer, false);
+			me.cutSelection(me, me.currentPasteBuffer, false, false);
 		}
 	}
 
@@ -9798,7 +9798,7 @@
 	};
 
 	// cut selection
-	View.prototype.cutSelection = function(me, number, evolveStep) {
+	View.prototype.cutSelection = function(me, number, evolveStep, noSave) {
 		var box = me.selectionBox,
 			x1 = box.leftX,
 			x2 = box.rightX,
@@ -9868,10 +9868,12 @@
 			me.afterSelectAction = true;
 
 			// save edit
-			if (evolveStep) {
-				me.afterEdit("advance outside");
-			} else {
-				me.afterEdit("cut");
+			if (!noSave) {
+				if (evolveStep) {
+					me.afterEdit("advance outside");
+				} else {
+					me.afterEdit("cut");
+				}
 			}
 		}
 	};
@@ -10002,7 +10004,7 @@
 		if (shift) {
 			if (me.isSelection) {
 				// process cut but mark advance outside
-				me.cutSelection(me, me.currentPasteBuffer, true);
+				me.cutSelection(me, me.currentPasteBuffer, true, false);
 
 				// step
 				me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify);
@@ -10282,6 +10284,101 @@
 		// save edit
 		if (saveEdit) {
 			me.afterEdit("paste");
+		}
+	};
+
+	// paste at offset from selection
+	View.prototype.pasteOffset = function(me, dx, dy) {
+		var xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			selBox = me.selectionBox,
+			leftX = selBox.leftX,
+			bottomY = selBox.bottomY,
+			rightX = selBox.rightX,
+			topY = selBox.topY,
+			width = rightX - leftX + 1,
+			height = topY - bottomY + 1,
+			buffer = null,
+			state = 0,
+			i = 0,
+			x = 0,
+			y = 0,
+			direction = "",
+			bLeftX = 0,
+			bRightX = me.engine.width - 1,
+			bBottomY = 0,
+			bTopY = me.engine.height - 1;
+
+		if (!me.viewOnly) {
+			// check if there is a selection
+			if (me.isSelection) {
+				// use bounded grid if defined
+				if (me.engine.boundedGridType !== -1) {
+					if (me.engine.boundedGridWidth !== 0) {
+						// set width to included bounded grid cells
+						bLeftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) - 1;
+						bRightX = bLeftX + me.engine.boundedGridWidth - 1 + 2;
+					} else {
+						// infinite width so set to grid width
+						bLeftX = 0;
+						bRightX = me.engine.width - 1;
+					}
+
+					if (me.engine.boundedGridHeight !== 0) {
+						// set height to included bounded grid cells
+						bBottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) - 1;
+						bTopY = bBottomY + me.engine.boundedGridHeight - 1 + 2;
+					} else {
+						// infinite height to set to grid height
+						bBottomY = 0;
+						bTopY = me.engine.height - 1;
+					}
+				}
+
+				// check if the pattern can move
+				if (leftX + xOff + dx > bLeftX && rightX + xOff + dx < bRightX && bottomY + yOff + dy > bBottomY && topY + yOff + dy < bTopY) {
+					// cut pattern in selection
+					me.cutSelection(me, me.currentPasteBuffer, false, true);
+
+					// add the offset
+					xOff += dx;
+					yOff += dy;
+
+					// paste to the new location
+					i = 0;
+					buffer = me.pasteBuffers[me.currentPasteBuffer].buffer;
+					for (y = 0; y < height; y += 1) {
+						for (x = 0; x < width; x += 1) {
+							state = buffer[i];
+							me.setStateWithUndo(leftX + x + xOff, bottomY + y + yOff, state, true);
+							i += 1;
+						}
+					}
+					// adjust selection box
+					selBox.leftX += dx;
+					selBox.rightX += dx;
+					selBox.bottomY += dy;
+					selBox.topY += dy;
+	
+					// save edit
+					if (dx === 0) {
+						if (dy === -1) {
+							direction = "up";
+						} else {
+							direction = "down";
+						}
+					} else {
+						if (dx === -1) {
+							direction = "left";
+						} else {
+							direction = "right";
+						}
+					}
+					me.afterEdit("nudge " + direction);
+				} else {
+					me.menuManager.notification.notify("No room to nudge selection", 15, 180, 15, true);
+				}
+			}
 		}
 	};
 

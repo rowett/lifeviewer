@@ -134,7 +134,7 @@
 			}
 		} else {
 			// convert control-arrow keys into PageUp/PageDown/Home/End
-			if (event.ctrlKey && (keyCode >= 37 && keyCode <= 40)) {
+			if (event.ctrlKey && !event.altKey && (keyCode >= 37 && keyCode <= 40)) {
 				if (keyCode === 37) {
 					keyCode = 33;
 				} else if (keyCode === 38)  {
@@ -1288,13 +1288,18 @@
 
 			// arrow left for left
 			case 37:
-				// check for shift key
-				if (event.shiftKey) {
-					// scroll pattern diagonally
-					me.moveView(me.engine.zoom, me.engine.zoom);
+				// check for ctrl alt
+				if (event.ctrlKey && event.altKey) {
+					me.pasteOffset(me, -1, 0);
 				} else {
-					// scroll pattern right
-					me.moveView(me.engine.zoom, 0);
+					// check for shift key
+					if (event.shiftKey) {
+						// scroll pattern diagonally
+						me.moveView(me.engine.zoom, me.engine.zoom);
+					} else {
+						// scroll pattern right
+						me.moveView(me.engine.zoom, 0);
+					}
 				}
 				break;
 
@@ -1310,13 +1315,18 @@
 						// scroll error list up
 						me.scrollErrorsUp(me, 1);
 					} else {
-						// check for shift key
-						if (event.shiftKey) {
-							// scroll pattern diagonally
-							me.moveView(-me.engine.zoom, me.engine.zoom);
+						// check for ctrl alt
+						if (event.ctrlKey && event.altKey) {
+							me.pasteOffset(me, 0, -1);
 						} else {
-							// scroll pattern down
-							me.moveView(0, me.engine.zoom);
+							// check for shift key
+							if (event.shiftKey) {
+								// scroll pattern diagonally
+								me.moveView(-me.engine.zoom, me.engine.zoom);
+							} else {
+								// scroll pattern down
+								me.moveView(0, me.engine.zoom);
+							}
 						}
 					}
 				}
@@ -1324,13 +1334,18 @@
 
 			// arrow right for right
 			case 39:
-				// check for shift key
-				if (event.shiftKey) {
-					// scroll pattern diagonally
-					me.moveView(-me.engine.zoom, -me.engine.zoom);
+				// check for ctrl alt
+				if (event.ctrlKey && event.altKey) {
+					me.pasteOffset(me, 1, 0);
 				} else {
-					// scroll pattern left
-					me.moveView(-me.engine.zoom, 0);
+					// check for shift key
+					if (event.shiftKey) {
+						// scroll pattern diagonally
+						me.moveView(-me.engine.zoom, -me.engine.zoom);
+					} else {
+						// scroll pattern left
+						me.moveView(-me.engine.zoom, 0);
+					}
 				}
 				break;
 
@@ -1346,12 +1361,17 @@
 						// scroll error list down
 						me.scrollErrorsDown(me, 1);
 					} else {
-						// check for shift key
-						if (event.shiftKey) {
-							me.moveView(me.engine.zoom, -me.engine.zoom);
+						// check for ctrl key
+						if (event.ctrlKey && event.altKey) {
+							me.pasteOffset(me, 0, 1);
 						} else {
-							// scroll pattern up
-							me.moveView(0, -me.engine.zoom);
+							// check for shift key
+							if (event.shiftKey) {
+								me.moveView(me.engine.zoom, -me.engine.zoom);
+							} else {
+								// scroll pattern up
+								me.moveView(0, -me.engine.zoom);
+							}
 						}
 					}
 				}

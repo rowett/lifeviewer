@@ -1,3 +1,11 @@
+Build 498
+- Ctrl+Alt+cursor keys now nudges selection one cell in the specified direction
+- fix non-reducible Slope for Identify
+- added more aliases
+
+Build 497
+- fix Fit Zoom for triangular grid
+
 Build 496
 - simplify oblique speeds for Identify
 - search for hex neighbourhood definition for @TREE rules

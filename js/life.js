@@ -1719,7 +1719,7 @@
 				if (deltaX > deltaY) {
 					divisor = this.gcd(deltaX, deltaY);
 					if (divisor === 1) {
-						slope = String((deltaX / deltaY) | 0);
+						slope = String(deltaX) + "/" + String(deltaY);
 					} else {
 						slope = String(deltaX / divisor) + "/" + String(deltaY / divisor);
 					}

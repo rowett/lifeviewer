@@ -94,6 +94,8 @@
 		a.push(["Blinkers", "B345/S2"]);
 		a.push(["Bugs", "B3567/S15678"]);
 		a.push(["Castles", "B3678/S135678"]);
+		a.push(["Cheerios", "B35678/S34567"]);
+		a.push(["Christmas Life", "B1/S012345678"]);
 		a.push(["Coagulations", "B378/S235678"]);
 		a.push(["Conway's Game of Life", "B3/S23"]);
 		a.push(["Conway's Life", "B3/S23"]);
@@ -116,8 +118,10 @@
 		a.push(["Flock", "B3/S12"]);
 		a.push(["Forest of Ls", "B168/S236"]);
 		a.push(["Fredkin", "B1357/S02468"]);
+		a.push(["Fuzz", "B1/S014567"]);
 		a.push(["Gems Minor", "B34578/S456"]);
 		a.push(["Gems", "B3457/S4568"]);
+		a.push(["Geology", "B3578/S24678"]);
 		a.push(["Gnarl", "B1/S1"]);
 		a.push(["H-Trees", "B1/S012345678"]);
 		a.push(["HighFlock", "B36/S12"]);
@@ -151,6 +155,7 @@
 		a.push(["Morley", "B368/S245"]);
 		a.push(["Move", "B368/S245"]);
 		a.push(["Neon Blobs", "B08/S4"]);
+		a.push(["Never happy", "B345/S0456"]);
 		a.push(["Pedestrian Flock", "B38/S12"]);
 		a.push(["Pedestrian Life", "B38/S23"]);
 		a.push(["Pedestrian Life without Death", "B38/S012345678"]);
@@ -165,9 +170,11 @@
 		a.push(["Serviettes", "B234/S"]);
 		a.push(["Shoots and Roots", "B3/S245678"]);
 		a.push(["Slow Blob", "B367/S125678"]);
+		a.push(["Snakeskin", "B1/S134567"]);
 		a.push(["Solid islands grow amongst static","B12678/S15678"])
 		a.push(["SnowLife", "B3/S1237"]);
 		a.push(["Stains", "B3678/S235678"]);
+		a.push(["Star Trek", "B3/S0248"]);
 		a.push(["Virus", "B36/S235"]);
 		a.push(["Vote", "B5678/S45678"]);
 		a.push(["Vote 4/5", "B4678/S35678"]);
