@@ -343,7 +343,7 @@
 					case 90:
 						// randomize rule and pattern
 						if (!me.randomizeButton.locked) {
-							me.randomPattern(me);
+							me.randomPattern(me, false);
 						}
 						break;
 					}
@@ -522,6 +522,11 @@
 			case 90:
 				// check for control
 				if (event.ctrlKey) {
+					if (event.altKey) {
+						if (!me.randomizeButton.locked) {
+							me.randomPattern(me, true);
+						}
+					}
 					// check for shift
 					if (event.shiftKey) {
 						// redo edit

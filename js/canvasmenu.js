@@ -727,6 +727,13 @@
 		this.fontFamily = owner.defaultFont.substr(owner.defaultFont.indexOf("px") + 3);
 	}
 
+	// delete if shown
+	MenuItem.prototype.deleteIfShown = function(del) {
+		if (!this.deleted && del) {
+			this.deleted = true;
+		}
+	};
+
 	// set font
 	MenuItem.prototype.setFont = function(font) {
 		this.fontSize = parseInt(font.substr(0, font.indexOf("px")), 10);

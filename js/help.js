@@ -762,7 +762,8 @@
 		y = this.renderHelpLine(view, "Alt R", "change rule", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl O", "open original or last saved pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl S", "save pattern", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt Z", "randomize pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt Z", "randomize pattern and rule", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl+Alt Z", "randomize pattern only", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F6", "toggle oscillator and spaceship identification", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl+F6", "fast identification", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);

@@ -1,7 +1,14 @@
+Build 500
+- hotkey Ctrl+Alt+Z randomizes the pattern without changing the rule
+- generations AutoFit now includes Dying states
+- editor action buttons now hide when not available (rather than grey out)
+- fix paste mode UI
+
 Build 499
 - new UI buttons in Select mode to nudge pattern one cell up, down, left or right
 	- can also use hotkeys Alt+Up, Alt+Down, Alt+Left and Alt+Right
 - fix another Slope simplification for Identify
+- fix Slope /1 issue for Identify
 
 Build 498
 - Ctrl+Alt+cursor keys now nudges selection one cell in the specified direction

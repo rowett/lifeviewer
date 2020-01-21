@@ -17349,6 +17349,24 @@
 			births = 0,
 			deaths = 0,
 			lastValue = 0,
+			width = this.width,
+			width16 = width >> 4,
+			height = this.height,
+			newLeftX = width,
+			newRightX = -1,
+			newTopY = -1,
+			newBottomY = height,
+			zoomBox = this.zoomBox,
+
+		    // column occupied
+		    columnOccupied16 = this.columnOccupied16,
+			colOccupied = 0,
+			colIndex = 0,
+			
+			// row occupied
+			rowOccupied16 = this.rowOccupied16,
+			rowOccupied = 0,
+			rowIndex = 0,
 
 		    // whether the tile is alive
 		    tileAlive = 0,
@@ -17398,6 +17416,12 @@
 			tileEndRow = tileRows;
 		}
 
+		// clear column occupied flags
+		columnOccupied16.fill(0);
+
+		// clear row occupied flags
+		rowOccupied16.fill(0);
+
 		// set the initial tile row
 		bottomY = tileStartRow << this.tilePower;
 		topY = bottomY + ySize;
@@ -17424,6 +17448,13 @@
 					for (b = 15; b >= 0; b -= 1) {
 						// check if this tile is occupied
 						if ((tiles & (1 << b)) !== 0) {
+							// mark no cells in this column
+							colOccupied = 0;
+
+							// mark no cells in the tile rows
+							rowOccupied = 0;
+							rowIndex = 32768;
+
 							// flag nothing alive in the tile
 							tileAlive = 0;
 
@@ -17440,6 +17471,7 @@
 								nextCell = gridRow[leftX];
 
 								// process each cell in the chunk
+								colIndex = 32768;
 								n = 1 << 15;
 								while (n > 0) {
 									// get next colour cell
@@ -17460,6 +17492,10 @@
 									colourGridRow[cr] = value;
 									if (value > minDeadState) {
 										tileAlive = 1;
+										if (value > deadState) {
+											colOccupied |= colIndex;
+											rowOccupied |= rowIndex;
+										}
 										if (value === maxGenState) {
 											population += 1;
 											if (lastValue !== maxGenState) {
@@ -17471,6 +17507,7 @@
 										deaths += 1;
 									}
 
+									colIndex >>= 1;
 									cr += 1;
 									n >>= 1;
 
@@ -17488,6 +17525,10 @@
 									colourGridRow[cr] = value;
 									if (value > minDeadState) {
 										tileAlive = 1;
+										if (value > deadState) {
+											colOccupied |= colIndex;
+											rowOccupied |= rowIndex;
+										}
 										if (value === maxGenState) {
 											population += 1;
 											if (lastValue !== maxGenState) {
@@ -17498,6 +17539,7 @@
 									if (lastValue === maxGenState && value !== maxGenState) {
 										deaths += 1;
 									}
+									colIndex >>= 1;
 									cr += 1;
 									n >>= 1;
 
@@ -17515,6 +17557,10 @@
 									colourGridRow[cr] = value;
 									if (value > minDeadState) {
 										tileAlive = 1;
+										if (value > deadState) {
+											colOccupied |= colIndex;
+											rowOccupied |= rowIndex;
+										}
 										if (value === maxGenState) {
 											population += 1;
 											if (lastValue !== maxGenState) {
@@ -17525,6 +17571,7 @@
 									if (lastValue === maxGenState && value !== maxGenState) {
 										deaths += 1;
 									}
+									colIndex >>= 1;
 									cr += 1;
 									n >>= 1;
 
@@ -17542,6 +17589,10 @@
 									colourGridRow[cr] = value;
 									if (value > minDeadState) {
 										tileAlive = 1;
+										if (value > deadState) {
+											colOccupied |= colIndex;
+											rowOccupied |= rowIndex;
+										}
 										if (value === maxGenState) {
 											population += 1;
 											if (lastValue !== maxGenState) {
@@ -17552,6 +17603,7 @@
 									if (lastValue === maxGenState && value !== maxGenState) {
 										deaths += 1;
 									}
+									colIndex >>= 1;
 									cr += 1;
 									n >>= 1;
 								}
@@ -17559,7 +17611,10 @@
 								// save the updated state 1 cells to the bitmap
 								gridRow[leftX] = nextCell;
 								this.anythingAlive |= nextCell;
+								rowIndex >>= 1;
 							}
+							columnOccupied16[leftX] |= colOccupied;
+							rowOccupied16[th] |= rowOccupied;
 
 							// check if the row was alive
 							if (tileAlive) {
@@ -17585,6 +17640,71 @@
 			bottomY += ySize;
 			topY += ySize;
 		}
+
+		// update bounding box
+		for (tw = 0; tw < width16; tw += 1) {
+			if (columnOccupied16[tw]) {
+				if (tw < newLeftX) {
+					newLeftX = tw;
+				}
+				if (tw > newRightX) {
+					newRightX = tw;
+				}
+			}
+		}
+
+		for (th = 0; th < rowOccupied16.length; th += 1) {
+			if (rowOccupied16[th]) {
+				if (th < newBottomY) {
+					newBottomY = th;
+				}
+				if (th > newTopY) {
+					newTopY = th;
+				}
+			}
+		}
+
+		// convert new width to pixels
+		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
+		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
+
+		// convert new height to pixels
+		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
+		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
+	
+		// ensure the box is not blank
+		if (newTopY < 0) {
+			newTopY = height - 1;
+		}
+		if (newBottomY >= height) {
+			newBottomY = 0;
+		}
+		if (newLeftX >= width) {
+			newLeftX = 0;
+		}
+		if (newRightX < 0) {
+			newRightX = width - 1;
+		}
+
+		// clip to the screen
+		if (newTopY > height - 1) {
+			newTopY = height - 1;
+		}
+		if (newBottomY < 0) {
+			newBottomY = 0;
+		}
+		if (newLeftX < 0) {
+			newLeftX = 0;
+		}
+		if (newRightX > width - 1) {
+			newRightX = width - 1;
+		}
+
+		// save to zoom box
+		zoomBox.topY = newTopY;
+		zoomBox.bottomY = newBottomY;
+		zoomBox.leftX = newLeftX;
+		zoomBox.rightX = newRightX;
 
 		// update the population
 		this.population = population;

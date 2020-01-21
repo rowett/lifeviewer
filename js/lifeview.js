@@ -119,6 +119,9 @@
 		/** @const {number} */ pasteModeOne : 15,
 		/** @const {number} */ pasteModeCopy : 3,
 
+		// UI paste modes (AND, COPY, OR, XOR)
+		/** @const {Array<number>} */ uiPasteModes : [1, 3, 7, 6],
+
 		// square root of 3 used for triangular grid
 		/** @const {number} */ sqrt3 : Math.sqrt(3),
 
@@ -272,7 +275,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 499,
+		/** @const {number} */ versionBuild : 500,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -821,8 +824,8 @@
 		// where a selection is happening
 		/** @type {boolean} */ this.drawingSelection = false;
 
-		// paste mode for paste tool
-		/** @type {number} */ this.pasteModeForUI = ViewConstants.pasteModeOr;
+		// paste mode for paste tool (index into paste modes for UI list: OR)
+		/** @type {number} */ this.pasteModeForUI = 2;
 
 		// edit list for undo/redo
 		this.editList = [];
@@ -5669,21 +5672,21 @@
 
 		// lock select tools for VIEWONLY
 		shown = !(this.isSelection || this.isPasting) || this.viewOnly;
-		this.randomButton.locked = shown;
-		this.random2Button.locked = shown;
-		this.randomItem.locked = shown;
-		this.nudgeLeftButton.locked = shown;
-		this.nudgeRightButton.locked = shown;
-		this.nudgeUpButton.locked = shown;
-		this.nudgeDownButton.locked = shown;
-		this.flipXButton.locked = shown;
-		this.flipYButton.locked = shown;
-		this.rotateCWButton.locked = shown;
-		this.rotateCCWButton.locked = shown;
-		this.invertSelectionButton.locked = shown;
-		this.clearSelectionButton.locked = shown;
-		this.clearOutsideButton.locked = shown;
-		this.clearRHistoryButton.locked = shown;
+		this.randomButton.deleteIfShown(shown);
+		this.random2Button.deleteIfShown(shown);
+		this.randomItem.deleteIfShown(shown);
+		this.nudgeLeftButton.deleteIfShown(shown);
+		this.nudgeRightButton.deleteIfShown(shown);
+		this.nudgeUpButton.deleteIfShown(shown);
+		this.nudgeDownButton.deleteIfShown(shown);
+		this.flipXButton.deleteIfShown(shown);
+		this.flipYButton.deleteIfShown(shown);
+		this.rotateCWButton.deleteIfShown(shown);
+		this.rotateCCWButton.deleteIfShown(shown);
+		this.invertSelectionButton.deleteIfShown(shown);
+		this.clearSelectionButton.deleteIfShown(shown);
+		this.clearOutsideButton.deleteIfShown(shown);
+		this.clearRHistoryButton.deleteIfShown(shown);
 		shown = !this.isSelection || this.viewOnly;
 		this.cutButton.locked = shown;
 
@@ -7035,20 +7038,21 @@
 	// paste mode
 	View.prototype.viewPasteModeList = function(newValue, change, me) {
 		if (change) {
-			me.pasteMode = newValue;
+			me.pasteModeForUI = newValue;
+			me.pasteMode = ViewConstants.uiPasteModes[newValue];
 		}
 
-		return me.pasteMode;
+		return me.pasteModeForUI;
 	};
 
 	// cycle paste mode
 	View.prototype.cyclePasteMode = function(me) {
 		if (!me.viewOnly) {
-			me.pasteMode += 1;
-			if (me.pasteMode > 3) {
-				me.pasteMode = 0;
+			me.pasteModeForUI += 1;
+			if (me.pasteModeForUI > 3) {
+				me.pasteModeForUI = 0;
 			}
-			me.pasteModeList.current = me.viewPasteModeList(me.pasteMode, true, me);
+			me.pasteModeList.current = me.viewPasteModeList(me.pasteModeForUI, true, me);
 		}
 	};
 
@@ -8844,7 +8848,7 @@
 	};
 
 	// randomize rule and pattern
-	View.prototype.randomPattern = function(me) {
+	View.prototype.randomPattern = function(me, fixedRule) {
 		var patternText = "",
 			rleText = "",
 			result = null,
@@ -8926,7 +8930,7 @@
 		rleText += "!\n";
 
 		// create random rule
-		if (!me.randomRuleFixed) {
+		if (!(me.randomRuleFixed || fixedRule)) {
 			if (!me.engine.isRuleTree) {
 				if (me.engine.isMargolus || me.engine.isPCA) {
 					me.patternRuleName = me.createRandomMargolus(me.engine.isPCA);
@@ -9359,7 +9363,7 @@
 
 	// randomize button
 	View.prototype.randomizePressed = function(me) {
-		me.randomPattern(me);
+		me.randomPattern(me, false);
 	};
 
 	// save button
@@ -12863,7 +12867,7 @@
 		this.createClipboardTooltips();
 
 		// paste mode list
-		this.pasteModeList = this.viewMenu.addListItem(this.viewPasteModeList, Menu.northEast, -160, 45, 160, 40, ["AND", "CPY", "OR", "XOR"], this.pasteModeForUI, Menu.single);
+		this.pasteModeList = this.viewMenu.addListItem(this.viewPasteModeList, Menu.northEast, -160, 45, 160, 40, ["AND", "CPY", "OR", "XOR"], ViewConstants.uiPasteModes[this.pasteModeForUI], Menu.single);
 		this.pasteModeList.toolTip = ["paste mode", "paste mode", "paste mode", "paste mode"];
 		this.pasteModeList.setFont("16px Arial");
 
@@ -13834,7 +13838,7 @@
 		me.afterSelectAction = false;
 
 		// set default paste mode for UI
-		me.pasteModeList.current = me.viewPasteModeList(ViewConstants.pasteModeOr, true, me);
+		me.pasteModeList.current = me.viewPasteModeList(2, true, me);
 
 		// clear playback draw pause
 		me.playbackDrawPause = false;
