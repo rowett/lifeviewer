@@ -1647,6 +1647,8 @@
 			dDeltaX = 0,
 			dDeltaY = 0,
 			dPeriod = 0,
+			maxDelta = 0,
+			minDelta = 0,
 
 			// max and min population
 			min = this.population,
@@ -1717,14 +1719,16 @@
 				slope = "0";
 			} else {
 				if (deltaX > deltaY) {
-					divisor = this.gcd(deltaX, deltaY);
-					if (divisor === 1) {
-						slope = String(deltaX) + "/" + String(deltaY);
-					} else {
-						slope = String(deltaX / divisor) + "/" + String(deltaY / divisor);
-					}
+					maxDelta = deltaX;
+					minDelta = deltaY;
 				} else {
-					slope = "1";
+					maxDelta = deltaY;
+					minDelta = deltaX;
+				}
+				divisor = this.gcd(maxDelta, minDelta);
+				slope = String(maxDelta / divisor);
+				if (minDelta / divisor !== 1) {
+					slope += "/" + String(minDelta / divisor);
 				}
 			}
 			if ((deltaX === deltaY) || (deltaX === 0) || (deltaY === 0)) {

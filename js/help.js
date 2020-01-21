@@ -826,10 +826,10 @@
 		y = this.renderHelpLine(view, "<", "rotate selection counter-clockwise", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt X", "flip selection horizontally", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt Y", "flip selection vertically", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Alt Left", "nudge selection 1 cell left", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Alt Right", "nudge selection 1 cell right", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Alt Up", "nudge selection 1 cell up", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Alt Down", "nudge selection 1 cell down", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt Left", "nudge selection 1 cell left", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt Right", "nudge selection 1 cell right", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt Up", "nudge selection 1 cell up", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt Down", "nudge selection 1 cell down", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Esc", "hide paste", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Enter", "perform paste", ctx, x, y, height, helpLine);
 		if (view.engine.isLifeHistory) {
