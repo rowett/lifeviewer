@@ -296,6 +296,7 @@
 		a.push(["Cataverters", "B3-cen/S234eijkrw5cry6ik"]);
 		a.push(["CB2", "B2ae4i/S1e2in"]);
 		a.push(["cetlife", "B34cet/S234jkwyz"]);
+		a.push(["Clouds", "B2e3aceij/S23-a4"]);
 		a.push(["CommonRepl", "B3/S23-ac4eiy6"]);
 		a.push(["Conquerors and Colonizers", "B2ace3acei4ace5acei6ace/S"]);
 		a.push(["Conway++", "B3/S234c"]);
@@ -564,6 +565,7 @@
 		a.push(["2CellSlug", "MAPBTDe/yAA9/8AAP//AAD//yAA/78AAP//AID//wAA//8AAP//AAD/2wAA//8AgP//AAD//4AA//+AAH//AAD//w"]);
 		a.push(["BLAHTWOCELLGUN", "MAPAMB/vwAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//w"]);
 		a.push(["FoxLife", "MAPARYXfhZofugWaH7oaIFoxBZofuhogOiAaIFoxIAAgAAWaH7oaIFoxGiA6ICAAIAAaIFoxIAAgACAAIAAAAAAAA"]);
+		a.push(["MovingStrings", "MAPARH+/wMT//8BEf7/AxP//wER/v8DE///AREAAAMTAAABEf7/AxP//wER/v8DE///AREAAAMTAAABEQAAAxMAAA"])
 		a.push(["MuzikThing", "MAPACD//wAA3/8AgH//AAD//wCAf/8AAP//AAD//wAA//8AAH//AAD//wAA//8AAP//gAD//wAA//8AAP//AAD//w"]);
 		a.push(["MyEntry", "MAPIAD/7wgA/f8AAP//AAD//wAA//8AAP//AAD/fwAA//8AAP//AAD//wAA//8AAP//AAD//4AA//8AAP//AAD//w"]);
 		a.push(["OLife", "MAPABD/vgIB//8AAP//AAD//wAA/78AAN3/AJB/vwAAf/8AAP//AABd/wAA//8AAP//AAD//4IA//8AAP//AIB//w"]);

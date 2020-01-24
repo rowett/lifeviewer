@@ -1,3 +1,12 @@
+Build 502
+- hotkey Ctrl+F will Fit Selection to the display
+- remove period 1 from simplified Speed
+
+Build 501
+- better error handling for invalid LtL/HROT rules
+- added more aliases
+- fix Evolve Selection initial position and handling life ending
+
 Build 500
 - hotkey Ctrl+Alt+Z randomizes the pattern without changing the rule
 - generations AutoFit now includes Dying states

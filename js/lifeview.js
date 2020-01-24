@@ -275,7 +275,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 500,
+		/** @const {number} */ versionBuild : 502,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3588,7 +3588,7 @@
 	};
 
 	// fit zoom to display width and height
-	View.prototype.fitZoomDisplay = function(immediate, smooth) {
+	View.prototype.fitZoomDisplay = function(immediate, smooth, fitSelection) {
 		// get the x, y and zoom that fits the pattern on the display
 		var fitZoom = 0,
 
@@ -3603,18 +3603,43 @@
 		    yDelta = 0,
 
 		    // sum weight
-		    weight = this.autoFitWeight;
+			weight = this.autoFitWeight,
+			
+			// offset for selection
+			swap = 0,
+			middleBox = this.middleBox,
+			selBox = this.selectionBox,
+			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1) + (this.xOffset << 1),
+			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1);
+
+		// check for selection
+		if (fitSelection) {
+			middleBox.leftX = selBox.leftX + xOff;
+			middleBox.rightX = selBox.rightX + xOff;
+			if (middleBox.leftX > middleBox.rightX) {
+				swap = middleBox.rightX;
+				middleBox.rightX = middleBox.leftX;
+				middleBox.leftX = swap;
+			}
+			middleBox.bottomY = selBox.bottomY + yOff;
+			middleBox.topY = selBox.topY + yOff;
+			if (middleBox.bottomY > middleBox.topY) {
+				swap = middleBox.topY;
+				middleBox.topY = middleBox.bottomY;
+				middleBox.bottomY = swap;
+			}
+		}
 
 		// check for thumbnail
 		if (this.thumbnail) {
-			fitZoom = this.engine.fitZoomDisplay(this.floatCounter, this.displayWidth * this.thumbnailDivisor, this.displayHeight * this.thumbnailDivisor, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit, this.autoFit);
+			fitZoom = this.engine.fitZoomDisplay(fitSelection, middleBox, this.floatCounter, this.displayWidth * this.thumbnailDivisor, this.displayHeight * this.thumbnailDivisor, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit, this.autoFit);
 			fitZoom[0] /= this.thumbnailDivisor;
 		} else {
 			var heightAdjust = ViewConstants.guiExtraHeight;
 			if (this.noGUI) {
 				heightAdjust = 0;
 			}
-			fitZoom = this.engine.fitZoomDisplay(this.floatCounter, this.displayWidth, this.displayHeight - heightAdjust, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit, this.autoFit);
+			fitZoom = this.engine.fitZoomDisplay(fitSelection, middleBox, this.floatCounter, this.displayWidth, this.displayHeight - heightAdjust, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit, this.autoFit);
 		}
 
 		// check for auto fit
@@ -4720,7 +4745,7 @@
 			// check for fit zoom
 			if (currentWaypoint.fitZoom) {
 				// fit zoom
-				me.fitZoomDisplay(true, false);
+				me.fitZoomDisplay(true, false, false);
 
 				// clear manual change flag that fit zoom will set
 				me.manualChange = false;
@@ -5089,7 +5114,7 @@
 	View.prototype.renderWorld = function(me, tooSlow, deltaTime, manualStepping) {
 		// check for autofit
 		if (me.autoFit && (me.generationOn || me.waypointsDefined)) {
-			me.fitZoomDisplay(false, false);
+			me.fitZoomDisplay(false, false, false);
 		}
 
 		// render grid
@@ -6079,7 +6104,7 @@
 				} else {
 					me.menuManager.notification.clear(true, false);
 					me.menuManager.notification.clear(false, false);
-					me.fitZoomDisplay(true, false);
+					me.fitZoomDisplay(true, false, false);
 				}
 				me.engine.initSearch(me.identify);
 
@@ -6702,7 +6727,7 @@
 			if (!looping || me.waypointsDefined || me.autoFit) {
 				me.resetCamera(me, hardReset);
 				if (me.autoFit) {
-					me.fitZoomDisplay(true, false);
+					me.fitZoomDisplay(true, false, false);
 				}
 			}
 
@@ -10117,8 +10142,8 @@
 		me.engine.allocateGrid(1024, 1024);
 
 		// copy paste to center of grid
-		xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-		yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+		xOff = Math.round((me.engine.width - me.patternWidth) / 2);
+		yOff = Math.round((me.engine.height - me.patternHeight) / 2) - 2;
 		i = 0;
 		for (y = 0; y < height; y += 1) {
 			for (x = 0; x < width; x += 1) {
@@ -10133,36 +10158,40 @@
 		// compute next generation
 		me.engine.nextGeneration(false, true, true, me.identify);
 		me.engine.convertToPensTile();
+		if (me.engine.anythingAlive) {
+			// set new paste buffer
+			me.pasteWidth = zoomBox.rightX - zoomBox.leftX + 1;
+			me.pasteHeight = zoomBox.topY - zoomBox.bottomY + 1;
+			me.pasteBuffer = me.engine.allocator.allocate(Uint8, me.pasteWidth * me.pasteHeight, "View.pasteBuffer");
 
-		// set new paste buffer
-		me.pasteWidth = zoomBox.rightX - zoomBox.leftX + 1;
-		me.pasteHeight = zoomBox.topY - zoomBox.bottomY + 1;
-		me.pasteBuffer = me.engine.allocator.allocate(Uint8, me.pasteWidth * me.pasteHeight, "View.pasteBuffer");
-
-		// copy cells in
-		i = 0;
-		for (y = zoomBox.bottomY; y <= zoomBox.topY; y += 1) {
-			for (x = zoomBox.leftX; x <= zoomBox.rightX; x += 1) {
-				me.pasteBuffer[i] = me.engine.getState(x, y, false);
-				i += 1;
+			// copy cells in
+			i = 0;
+			for (y = zoomBox.bottomY; y <= zoomBox.topY; y += 1) {
+				for (x = zoomBox.leftX; x <= zoomBox.rightX; x += 1) {
+					me.pasteBuffer[i] = me.engine.getState(x, y, false);
+					i += 1;
+				}
 			}
-		}
-
-		// update selection
-		if (!me.evolvingPaste) {
-			evolveBox.leftX = selBox.leftX + zoomBox.leftX - xOff;
-			evolveBox.bottomY = selBox.bottomY + zoomBox.bottomY - xOff;
-			evolveBox.rightX = evolveBox.leftX + me.pasteWidth - 1;
-			evolveBox.topY = evolveBox.bottomY + me.pasteHeight - 1;
+	
+			// update selection
+			if (!me.evolvingPaste) {
+				evolveBox.leftX = selBox.leftX + zoomBox.leftX - xOff;
+				evolveBox.bottomY = selBox.bottomY + zoomBox.bottomY - xOff;
+				evolveBox.rightX = evolveBox.leftX + me.pasteWidth - 1;
+				evolveBox.topY = evolveBox.bottomY + me.pasteHeight - 1;
+			} else {
+				evolveBox.leftX += zoomBox.leftX - xOff;
+				evolveBox.bottomY += zoomBox.bottomY - yOff;
+				evolveBox.rightX = evolveBox.leftX + me.pasteWidth - 1;
+				evolveBox.topY = evolveBox.bottomY + me.pasteHeight - 1;
+			}
+	
+			// mark paste is evolving
+			me.evolvingPaste = true;
 		} else {
-			evolveBox.leftX += zoomBox.leftX - xOff;
-			evolveBox.bottomY += zoomBox.bottomY - yOff;
-			evolveBox.rightX = evolveBox.leftX + me.pasteWidth - 1;
-			evolveBox.topY = evolveBox.bottomY + me.pasteHeight - 1;
+			// mark paste finished since all cells died
+			me.evolvingPaste = false;
 		}
-
-		// mark paste is evolving
-		me.evolvingPaste = true;
 
 		// restore grid
 		me.engine.grid = currentGrid;
@@ -11262,7 +11291,7 @@
 	// fit button
 	View.prototype.fitPressed = function(me) {
 		// fit zoom
-		me.fitZoomDisplay(true, true);
+		me.fitZoomDisplay(true, true, false);
 
 		// flag manual change made if paused
 		if (!me.generationOn) {
@@ -11422,7 +11451,7 @@
 
 			// autofit now if just switched on and playback paused
 			if (me.autoFit && !me.generationOn) {
-				me.fitZoomDisplay(true, true);
+				me.fitZoomDisplay(true, true, false);
 			}
 		}
 
@@ -13372,7 +13401,7 @@
 				this.engine.zoom = this.thumbOrigZoom;
 			} else {
 				this.thumbnail = false;
-				this.fitZoomDisplay(true, false);
+				this.fitZoomDisplay(true, false, false);
 			}
 			if (this.zoomItem) {
 				this.zoomItem.current = this.viewZoomRange([this.engine.zoom, this.engine.zoom], false, this);
@@ -14944,7 +14973,7 @@
 		savedY = me.engine.yOff;
 		savedThumbnail = me.thumbnail;
 		me.thumbnail = false;
-		me.fitZoomDisplay(true, false);
+		me.fitZoomDisplay(true, false, false);
 		me.thumbnail = savedThumbnail;
 
 		// override the default zoom if specified

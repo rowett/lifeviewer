@@ -108,6 +108,7 @@
 				// call the fail callback on requesters
 				for (j = 0; j < request.failCallback.length; j += 1) {
 					if (request.failCallback[j] !== null) {
+						request.pattern[j].isHROT = request.pattern[j].wasHROT;
 						request.failCallback[j](request.pattern[j], request.args[j], request.view[j]);
 					}
 				}
@@ -727,6 +728,7 @@
 
 		// is HROT rule
 		/** @type {boolean} */ this.isHROT = false;
+		/** @type {boolean} */ this.wasHROT = false;
 
 		// HROT range
 		/** @type {number} */ this.rangeHROT = -1;
@@ -7999,6 +8001,7 @@
 				newPattern.wolframRule = -1;
 				newPattern.isVonNeumann = false;
 				newPattern.isLTL = false;
+				newPattern.wasHROT = newPattern.isHROT;
 				newPattern.isHROT = false;
 
 				// check the rule tree cache

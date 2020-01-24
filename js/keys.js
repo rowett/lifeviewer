@@ -1268,23 +1268,30 @@
 
 			// f for fit zoom
 			case 70:
-				// check for shift key
-				if (event.shiftKey) {
-					// toggle fit zoom
-					if (!me.autoFitToggle.locked) {
-						me.autoFit = !me.autoFit;
-						me.autoFitToggle.current = me.toggleAutoFit([me.autoFit], true, me);
-						me.menuManager.notification.notify("AutoFit " + (me.autoFit ? "On" : "Off"), 15, 40, 15, true);
+				// check for ctrl key
+				if (event.ctrlKey) {
+					if (me.isSelection) {
+						me.fitZoomDisplay(true, true, true);
+						me.menuManager.notification.notify("Fit Selection", 15, 80, 15, true);
 					}
 				} else {
-					// fit zoom
-					if (!me.fitButton.locked) {
-						me.fitZoomDisplay(true, true);
-						me.menuManager.notification.notify("Fit Zoom", 15, 80, 15, true);
-
-						// flag manual change made if paused
-						if (!me.generationOn) {
-							me.manualChange = true;
+					// check for shift key
+					if (event.shiftKey) {
+						if (!me.autoFitToggle.locked) {
+							me.autoFit = !me.autoFit;
+							me.autoFitToggle.current = me.toggleAutoFit([me.autoFit], true, me);
+							me.menuManager.notification.notify("AutoFit " + (me.autoFit ? "On" : "Off"), 15, 40, 15, true);
+						}
+					} else {
+						// fit zoom
+						if (!me.fitButton.locked) {
+							me.fitZoomDisplay(true, true, false);
+							me.menuManager.notification.notify("Fit Pattern", 15, 80, 15, true);
+	
+							// flag manual change made if paused
+							if (!me.generationOn) {
+								me.manualChange = true;
+							}
 						}
 					}
 				}

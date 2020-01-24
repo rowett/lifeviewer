@@ -1749,9 +1749,17 @@
 						dPeriod = period / divisor;
 						if (divisor !== 1) {
 							if (dDeltaX === 1) {
-								simpleSpeed = "c/" + dPeriod + " | " + deltaX + "c/" + period;
+								simpleSpeed = "c";
+								if (dPeriod > 1) {
+									simpleSpeed += "/" + dPeriod;
+								 }
+								 simpleSpeed += " | " + deltaX + "c/" + period;
 							} else {
-								simpleSpeed = dDeltaX + "c/" + dPeriod + " | " + deltaX + "c/" + period;
+								simpleSpeed = dDeltaX + "c";
+								if (dPeriod > 1) {
+									simpleSpeed += "/" + dPeriod;
+								 }
+								 simpleSpeed += " | " + deltaX + "c/" + period;
 							}
 						} else {
 							simpleSpeed = deltaX + "c/" + period;
@@ -26334,7 +26342,7 @@
 	};
 
 	// fit zoom to display
-	Life.prototype.fitZoomDisplay = function(accurateCounter, displayWidth, displayHeight, minZoom, maxZoom, scaleFactor, patternWidth, patternHeight, usePattern, historyFit, useTrackBox, trackN, trackE, trackS, trackW, genSpeed, state1Fit, autoFit) {
+	Life.prototype.fitZoomDisplay = function(fitSelection, selBox, accurateCounter, displayWidth, displayHeight, minZoom, maxZoom, scaleFactor, patternWidth, patternHeight, usePattern, historyFit, useTrackBox, trackN, trackE, trackS, trackW, genSpeed, state1Fit, autoFit) {
 		var zoomBox = this.zoomBox,
 		    initialBox = this.initialBox,
 		    historyBox = this.historyBox,
@@ -26408,45 +26416,53 @@
 			}
 		}
 
-		leftX = zoomBox.leftX;
-		rightX = zoomBox.rightX;
-		topY = zoomBox.topY;
-		bottomY = zoomBox.bottomY;
+		// check for fit selection
+		if (fitSelection) {
+			leftX = selBox.leftX;
+			rightX = selBox.rightX;
+			topY = selBox.topY;
+			bottomY = selBox.bottomY;
+		} else {
+			leftX = zoomBox.leftX;
+			rightX = zoomBox.rightX;
+			topY = zoomBox.topY;
+			bottomY = zoomBox.bottomY;
 
-		// ensure box no smaller than initial box due to multi-state cells in LifeHistory
-		if (this.isLifeHistory && !state1Fit) {
-			if (initialBox.leftX < leftX) {
-				leftX = initialBox.leftX;
+			// ensure box no smaller than initial box due to multi-state cells in LifeHistory
+			if (this.isLifeHistory && !state1Fit) {
+				if (initialBox.leftX < leftX) {
+					leftX = initialBox.leftX;
+				}
+				if (initialBox.rightX > rightX) {
+					rightX = initialBox.rightX;
+				}
+				if (initialBox.topY > topY) {
+					topY = initialBox.topY;
+				}
+				if (initialBox.bottomY < bottomY) {
+					bottomY = initialBox.bottomY;
+				}
 			}
-			if (initialBox.rightX > rightX) {
-				rightX = initialBox.rightX;
-			}
-			if (initialBox.topY > topY) {
-				topY = initialBox.topY;
-			}
-			if (initialBox.bottomY < bottomY) {
-				bottomY = initialBox.bottomY;
-			}
-		}
 
-		// check if bounded box defined
-		if (this.boundedGridType !== -1) {
-			width = this.boundedGridWidth;
-			height = this.boundedGridHeight;
-			if (width > 0) {
-				if ((this.width / 2 - width / 2) < leftX) {
-					leftX = this.width / 2 - width / 2;
+			// check if bounded box defined
+			if (this.boundedGridType !== -1) {
+				width = this.boundedGridWidth;
+				height = this.boundedGridHeight;
+				if (width > 0) {
+					if ((this.width / 2 - width / 2) < leftX) {
+						leftX = this.width / 2 - width / 2;
+					}
+					if ((this.width / 2 + width / 2) > rightX) {
+						rightX = this.width / 2 + width / 2;
+					}
 				}
-				if ((this.width / 2 + width / 2) > rightX) {
-					rightX = this.width / 2 + width / 2;
-				}
-			}
-			if (height > 0) {
-				if ((this.height / 2 - height / 2) <  bottomY) {
-					bottomY = this.height / 2 - height / 2;
-				}
-				if ((this.height / 2 + height / 2) > topY) {
-					topY = this.height / 2 + height / 2;
+				if (height > 0) {
+					if ((this.height / 2 - height / 2) <  bottomY) {
+						bottomY = this.height / 2 - height / 2;
+					}
+					if ((this.height / 2 + height / 2) > topY) {
+						topY = this.height / 2 + height / 2;
+					}
 				}
 			}
 		}
@@ -26468,31 +26484,37 @@
 
 		// check for hex
 		if (this.isHex) {
-			minX = (this.width + this.height) * 2;
-			maxX = -minX;
-			for (y = bottomY; y <= topY; y += 1) {
-				colourRow = colourGrid[y];
-				for (x = leftX ; x <= rightX; x += 1) {
-					state = colourRow[x];
-					if (state > 0) {
-						hexX = x - y / 2;
-						if (hexX < minX) {
-							minX = hexX;
-						}
-						if (hexX > maxX) {
-							maxX = hexX;
+			if (fitSelection) {
+				leftX = leftX - topY / 2;
+				rightX = rightX - bottomY / 2;
+				width = rightX - leftX + 1;
+			} else {
+				minX = (this.width + this.height) * 2;
+				maxX = -minX;
+				for (y = bottomY; y <= topY; y += 1) {
+					colourRow = colourGrid[y];
+					for (x = leftX ; x <= rightX; x += 1) {
+						state = colourRow[x];
+						if (state > 0) {
+							hexX = x - y / 2;
+							if (hexX < minX) {
+								minX = hexX;
+							}
+							if (hexX > maxX) {
+								maxX = hexX;
+							}
 						}
 					}
 				}
+				leftX = minX;
+				rightX = maxX;
+				if (leftX > rightX) {
+					swap = leftX;
+					leftX = rightX;
+					rightX = swap;
+				}
+				width = rightX - leftX + 1;
 			}
-			leftX = minX;
-			rightX = maxX;
-			if (leftX > rightX) {
-				swap = leftX;
-				leftX = rightX;
-				rightX = swap;
-			}
-			width = rightX - leftX + 1;
 		}
 
 		// ensure width and height are non zero
