@@ -844,7 +844,9 @@
 				if (event.ctrlKey) {
 					if (event.shiftKey) {
 						// random fill 2 state
-						me.randomFill(me, true);
+						if (!me.engine.isPCA) {
+							me.randomFill(me, true);
+						}
 					} else {
 						me.switchToState(5);
 					}
@@ -1271,7 +1273,7 @@
 				// check for ctrl key
 				if (event.ctrlKey) {
 					if (me.isSelection) {
-						me.fitZoomDisplay(true, true, true);
+						me.fitZoomDisplay(true, true, ViewConstants.fitZoomSelection);
 						me.menuManager.notification.notify("Fit Selection", 15, 80, 15, true);
 					}
 				} else {
@@ -1285,7 +1287,7 @@
 					} else {
 						// fit zoom
 						if (!me.fitButton.locked) {
-							me.fitZoomDisplay(true, true, false);
+							me.fitZoomDisplay(true, true, ViewConstants.fitZoomPattern);
 							me.menuManager.notification.notify("Fit Pattern", 15, 80, 15, true);
 	
 							// flag manual change made if paused
@@ -1387,15 +1389,20 @@
 
 			// m for menu or cycle paste mode
 			case 77:
-				if (event.shiftKey) {
-					me.cyclePasteMode(me);
+				if (event.ctrlKey) {
+					me.fitZoomDisplay(true, true, ViewConstants.fitZoomMiddle);
+					me.menuManager.notification.notify("Center Pattern", 15, 80, 15, true);
 				} else {
-					if (me.navToggle && !me.navToggle.deleted) {
-						// toggle navigation menu
-						me.navToggle.current[0] = !me.navToggle.current[0];
-	
-						// mark toggle required
-						me.menuManager.toggleRequired = true;
+					if (event.shiftKey) {
+						me.cyclePasteMode(me);
+					} else {
+						if (me.navToggle && !me.navToggle.deleted) {
+							// toggle navigation menu
+							me.navToggle.current[0] = !me.navToggle.current[0];
+		
+							// mark toggle required
+							me.menuManager.toggleRequired = true;
+						}
 					}
 				}
 				break;

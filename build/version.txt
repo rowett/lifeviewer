@@ -1,3 +1,15 @@
+Build 504
+- fixed PCA Invert Selection
+- fixed PCA initial population count
+- fixed PCA births and deaths calculation to use subcells
+- fixed Change Rule incorrectly enforcing VIEWONLY
+- hide Random 2-state button for PCA patterns
+- check Mod values using more than 1 sample
+
+Build 503
+- hotkey Ctrl+M for middle (center pattern on display but don't change Zoom)
+- check FlipX and FlipY before FlipXY in Mod detection
+
 Build 502
 - hotkey Ctrl+F will Fit Selection to the display
 - remove period 1 from simplified Speed

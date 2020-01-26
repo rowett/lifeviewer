@@ -658,6 +658,7 @@
 		y = this.renderHelpLine(view, "Shift F", "toggle autofit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift H", "toggle autofit history mode", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl F", "fit selection to display", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl M", "center pattern on display", ctx, x, y, height, helpLine);
 		if (view.engine.isLifeHistory) {
 			y = this.renderHelpLine(view, "Shift S", "toggle autofit state 1 mode", ctx, x, y, height, helpLine);
 		}
@@ -812,7 +813,9 @@
 		y = this.renderHelpLine(view, "Shift M", "cycle paste mode", ctx, x, y, height, helpLine);
 		if (view.engine.multiNumStates > 2) {
 			y = this.renderHelpLine(view, "Shift 5", "multi-state random fill", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Ctrl+Shift 5", "2-state random fill", ctx, x, y, height, helpLine);
+			if (!view.engine.isPCA) {
+				y = this.renderHelpLine(view, "Ctrl+Shift 5", "2-state random fill", ctx, x, y, height, helpLine);
+			}
 		} else {
 			y = this.renderHelpLine(view, "Shift 5", "random fill", ctx, x, y, height, helpLine);
 		}

@@ -31,11 +31,11 @@
 
 		// transformation for mod hash
 		/** @const {number} */ modFirstTrans : 0,
-		/** @const {number} */ modRot90 : 0,
-		/** @const {number} */ modRot180 : 1,
-		/** @const {number} */ modRot270 : 2,
-		/** @const {number} */ modFlipX : 3,
-		/** @const {number} */ modFlipY : 4,
+		/** @const {number} */ modFlipX : 0,
+		/** @const {number} */ modFlipY : 1,
+		/** @const {number} */ modRot90 : 2,
+		/** @const {number} */ modRot180 : 3,
+		/** @const {number} */ modRot270 : 4,
 		/** @const {number} */ modRot90FlipX : 5,
 		/** @const {number} */ modRot90FlipY : 6,
 		/** @const {number} */ modLastTrans : 6,
@@ -44,7 +44,7 @@
 		/** @const {number} */ maxRuleTreeLookupBits : 20,
 
 		// mod type names
-		/** @const {Array<string>} */ modTypeName : ["RotCW", "FlipXY", "RotCCW", "FlipX", "FlipY", "RotCWFlipX", "RotCWFlipY"],
+		/** @const {Array<string>} */ modTypeName : ["FlipX", "FlipY", "RotCW", "FlipXY", "RotCCW", "RotCWFlipX", "RotCWFlipY"],
 
 		// maximum number of generations to check for oscillators
 		/** @const {number} */ maxOscillatorGens : 1048576,
@@ -365,6 +365,8 @@
 		this.hashBox = new BoundingBox(0, 0, 0, 0);
 		/** @type {number} */ this.modValue = 0;
 		/** @type {number} */ this.modType = -1;
+		/** @type {number} */ this.checkModGen = 0;
+		/** @type {boolean} */ this.checkedMod = false;
 
 		// flag for alternating Margolus grid lines
 		/** @type {boolean} */ this.altGrid = false;
@@ -2130,6 +2132,17 @@
 						modHash = this.checkModHash(box);
 						if (modHash !== -1) {
 							this.modValue = this.counter - this.genList[modHash];
+							this.checkModGen = this.counter + this.modValue;
+						}
+					} else {
+						// check if the Mod was correct by testing next Mod period
+						if (this.modValue !== 0 && !this.checkedMod && this.counter === this.checkModGen) {
+							modHash = this.checkModHash(box);
+							if (modHash !== -1) {
+								this.checkedMod = true;
+							} else {
+								this.modValue = 0;
+							}
 						}
 					}
 	
@@ -5371,7 +5384,8 @@
 		    nextRow = null,
 		    population = 0,
 		    count = 0,
-		    bitCounts16 = this.bitCounts16,
+			bitCounts16 = this.bitCounts16,
+			state = 0,
 
 		    // get grid bounding box
 		    zoomBox = this.zoomBox,
@@ -5389,8 +5403,13 @@
 
 				// count population along the row
 				for (w = leftX; w <= rightX; w += 1) {
-					if (nextRow[w] > 0) {
-						population += 1;
+					state = nextRow[w];
+					if (state > 0) {
+						if (this.isPCA) {
+							population += bitCounts16[state - this.historyStates];
+						} else {
+							population += 1;
+						}
 					}
 				}
 			}
@@ -25848,15 +25867,15 @@
 					}
 
 					// update births
-					if (w <= deadState) {
-						births += 1;
-					}
+					//if (w <= deadState) {
+						//births += 1;
+					//}
 				} else {
 					// check for death
 					state = w;
 					if (state > deadState) {
 						// update deaths
-						deaths += 1;
+						//deaths += 1;
 						state = deadState;
 					} else {
 						// check for dying
@@ -25875,6 +25894,16 @@
 						}
 					}
 					state = 0;
+				}
+
+				// updates births and deaths from the 4 cell bitmap
+				if (w > deadState) {
+					w -= deadState;
+					births += bitCounts[state & ~w];
+					deaths += bitCounts[w & ~state];
+					w += deadState;
+				} else {
+					births += bitCounts[state];
 				}
 				
 				// check for alive states
@@ -26342,7 +26371,7 @@
 	};
 
 	// fit zoom to display
-	Life.prototype.fitZoomDisplay = function(fitSelection, selBox, accurateCounter, displayWidth, displayHeight, minZoom, maxZoom, scaleFactor, patternWidth, patternHeight, usePattern, historyFit, useTrackBox, trackN, trackE, trackS, trackW, genSpeed, state1Fit, autoFit) {
+	Life.prototype.fitZoomDisplay = function(fitType, selBox, accurateCounter, displayWidth, displayHeight, minZoom, maxZoom, scaleFactor, patternWidth, patternHeight, usePattern, historyFit, useTrackBox, trackN, trackE, trackS, trackW, genSpeed, state1Fit, autoFit) {
 		var zoomBox = this.zoomBox,
 		    initialBox = this.initialBox,
 		    historyBox = this.historyBox,
@@ -26417,7 +26446,7 @@
 		}
 
 		// check for fit selection
-		if (fitSelection) {
+		if (fitType === ViewConstants.fitZoomSelection) {
 			leftX = selBox.leftX;
 			rightX = selBox.rightX;
 			topY = selBox.topY;
@@ -26484,7 +26513,7 @@
 
 		// check for hex
 		if (this.isHex) {
-			if (fitSelection) {
+			if (fitType === ViewConstants.fitZoomSelection) {
 				leftX = leftX - topY / 2;
 				rightX = rightX - bottomY / 2;
 				width = rightX - leftX + 1;
@@ -26564,6 +26593,11 @@
 		// make zoom an exact value if close to the exact value
 		if (!autoFit) {
 			zoom = this.makeIntegerZoom(zoom);
+		}
+
+		// check if fit to middle required
+		if (fitType === ViewConstants.fitZoomMiddle) {
+			zoom = this.zoom;
 		}
 
 		// return zoom

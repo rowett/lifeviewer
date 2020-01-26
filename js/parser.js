@@ -5103,11 +5103,6 @@
 				}
 			}
 
-			// enforce view only for multi-state patterns that aren't LifeHistory
-			if (numStates > 2 && !(view.engine.isLifeHistory || view.engine.multiNumStates !== -1)) {
-				view.viewOnly = true;
-			}
-
 			// check if playback disabled
 			if (view.viewOnly) {
 				// create the error message

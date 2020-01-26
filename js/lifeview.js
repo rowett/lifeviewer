@@ -49,6 +49,11 @@
 		// alt keys that LifeViewer uses (any accesskey attributes that match these will be disabled)
 		/** @const {string} */ altKeys : "0123456789rtyopasghjklxcbn",
 
+		// fit zoom types
+		/** @const {number} */ fitZoomPattern : 0,
+		/** @const {number} */ fitZoomSelection : 1,
+		/** @const {number} */ fitZoomMiddle : 2,
+
 		// default random pattern dimension
 		/** @const {number} */ randomDimension : 64,
 
@@ -275,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 502,
+		/** @const {number} */ versionBuild : 504,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3588,7 +3593,7 @@
 	};
 
 	// fit zoom to display width and height
-	View.prototype.fitZoomDisplay = function(immediate, smooth, fitSelection) {
+	View.prototype.fitZoomDisplay = function(immediate, smooth, fitType) {
 		// get the x, y and zoom that fits the pattern on the display
 		var fitZoom = 0,
 
@@ -3613,7 +3618,7 @@
 			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1);
 
 		// check for selection
-		if (fitSelection) {
+		if (fitType === ViewConstants.fitZoomSelection) {
 			middleBox.leftX = selBox.leftX + xOff;
 			middleBox.rightX = selBox.rightX + xOff;
 			if (middleBox.leftX > middleBox.rightX) {
@@ -3632,14 +3637,14 @@
 
 		// check for thumbnail
 		if (this.thumbnail) {
-			fitZoom = this.engine.fitZoomDisplay(fitSelection, middleBox, this.floatCounter, this.displayWidth * this.thumbnailDivisor, this.displayHeight * this.thumbnailDivisor, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit, this.autoFit);
+			fitZoom = this.engine.fitZoomDisplay(fitType, middleBox, this.floatCounter, this.displayWidth * this.thumbnailDivisor, this.displayHeight * this.thumbnailDivisor, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit, this.autoFit);
 			fitZoom[0] /= this.thumbnailDivisor;
 		} else {
 			var heightAdjust = ViewConstants.guiExtraHeight;
 			if (this.noGUI) {
 				heightAdjust = 0;
 			}
-			fitZoom = this.engine.fitZoomDisplay(fitSelection, middleBox, this.floatCounter, this.displayWidth, this.displayHeight - heightAdjust, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit, this.autoFit);
+			fitZoom = this.engine.fitZoomDisplay(fitType, middleBox, this.floatCounter, this.displayWidth, this.displayHeight - heightAdjust, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit, this.autoFit);
 		}
 
 		// check for auto fit
@@ -4745,7 +4750,7 @@
 			// check for fit zoom
 			if (currentWaypoint.fitZoom) {
 				// fit zoom
-				me.fitZoomDisplay(true, false, false);
+				me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
 
 				// clear manual change flag that fit zoom will set
 				me.manualChange = false;
@@ -5114,7 +5119,7 @@
 	View.prototype.renderWorld = function(me, tooSlow, deltaTime, manualStepping) {
 		// check for autofit
 		if (me.autoFit && (me.generationOn || me.waypointsDefined)) {
-			me.fitZoomDisplay(false, false, false);
+			me.fitZoomDisplay(false, false, ViewConstants.fitZoomPattern);
 		}
 
 		// render grid
@@ -5684,7 +5689,7 @@
 		this.randomButton.deleted = shown;
 		this.randomItem.deleted = shown;
 		shown = hide || !this.selecting || settingsMenuOpen || this.engine.multiNumStates <= 2 || this.engine.isNone;
-		this.random2Button.deleted = shown;
+		this.random2Button.deleted = shown || this.engine.isPCA;
 
 		// lock select tools in VIEWONLY
 		shown = this.viewOnly;
@@ -6104,7 +6109,7 @@
 				} else {
 					me.menuManager.notification.clear(true, false);
 					me.menuManager.notification.clear(false, false);
-					me.fitZoomDisplay(true, false, false);
+					me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
 				}
 				me.engine.initSearch(me.identify);
 
@@ -6727,7 +6732,7 @@
 			if (!looping || me.waypointsDefined || me.autoFit) {
 				me.resetCamera(me, hardReset);
 				if (me.autoFit) {
-					me.fitZoomDisplay(true, false, false);
+					me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
 				}
 			}
 
@@ -11236,7 +11241,7 @@
 				for (y = y1; y <= y2; y += 1) {
 					for (x = x1; x <= x2; x += 1) {
 						state = me.engine.getState(x + xOff, y + yOff, false);
-						if (numStates > 2 && state > 0) {
+						if (!me.engine.isPCA && numStates > 2 && state > 0) {
 							state = numStates - state;
 						}
 						me.setStateWithUndo(x + xOff, y + yOff, numStates - state - 1, true);
@@ -11291,7 +11296,7 @@
 	// fit button
 	View.prototype.fitPressed = function(me) {
 		// fit zoom
-		me.fitZoomDisplay(true, true, false);
+		me.fitZoomDisplay(true, true, ViewConstants.fitZoomPattern);
 
 		// flag manual change made if paused
 		if (!me.generationOn) {
@@ -11315,6 +11320,8 @@
 				me.afterEdit("");
 			} else {
 				me.identify = true;
+				me.checkedMod = false;
+				me.checkModGen = 0;
 
 				// hide previous results
 				me.resultsDisplayed = false;
@@ -11451,7 +11458,7 @@
 
 			// autofit now if just switched on and playback paused
 			if (me.autoFit && !me.generationOn) {
-				me.fitZoomDisplay(true, true, false);
+				me.fitZoomDisplay(true, true, ViewConstants.fitZoomPattern);
 			}
 		}
 
@@ -12178,10 +12185,16 @@
 				this.randomItem.setPosition(Menu.southEast, -190, -130);
 			} else {
 				this.invertSelectionButton.setPosition(Menu.southEast, -40, -130);
-				this.randomButton.setPosition(Menu.southEast, -130, -130);
-				this.randomButton.toolTip = "random multi-state fill";
-				this.random2Button.setPosition(Menu.southEast, -85, -130);
-				this.randomItem.setPosition(Menu.southEast, -235, -130);
+				if (this.engine.isPCA) {
+					this.randomButton.setPosition(Menu.southEast, -85, -130);
+					this.randomButton.toolTip = "random multi-state fill";
+					this.randomItem.setPosition(Menu.southEast, -190, -130);
+				} else {
+					this.randomButton.setPosition(Menu.southEast, -130, -130);
+					this.randomButton.toolTip = "random multi-state fill";
+					this.random2Button.setPosition(Menu.southEast, -85, -130);
+					this.randomItem.setPosition(Menu.southEast, -235, -130);
+				}
 			}
 		}
 	};
@@ -13401,7 +13414,7 @@
 				this.engine.zoom = this.thumbOrigZoom;
 			} else {
 				this.thumbnail = false;
-				this.fitZoomDisplay(true, false, false);
+				this.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
 			}
 			if (this.zoomItem) {
 				this.zoomItem.current = this.viewZoomRange([this.engine.zoom, this.engine.zoom], false, this);
@@ -14973,7 +14986,7 @@
 		savedY = me.engine.yOff;
 		savedThumbnail = me.thumbnail;
 		me.thumbnail = false;
-		me.fitZoomDisplay(true, false, false);
+		me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
 		me.thumbnail = savedThumbnail;
 
 		// override the default zoom if specified
