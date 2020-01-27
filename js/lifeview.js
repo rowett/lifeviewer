@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 505,
+		/** @const {number} */ versionBuild : 506,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5399,6 +5399,13 @@
 			toolTips = [],
 			settingsMenuOpen = this.navToggle.current[0],
 			shown = false;
+
+		// step back button
+		if (this.noHistory || (this.engine.counter === 0 && !((this.engine.isMargolus || this.engine.isPCA) && this.engine.margolusReverseLookup1 !== null))) {
+			this.playList.itemLocked[1] = true;
+		} else {
+			this.playList.itemLocked[1] = false;
+		}
 
 		// theme selection buttons
 		shown = hide || !this.showThemeSelection;
@@ -11792,9 +11799,7 @@
 		var fading = this.historyStates + (this.engine.multiNumStates > 0 ? this.engine.multiNumStates : 0);
 
 		// check whether history enabled
-		if (this.noHistory) {
-			this.menuManager.notification.notify("Step back disabled", 15, 40, 15, true);
-		} else {
+		if (!this.noHistory) {
 			// check if update event process
 			if (this.menuManager.processedEvent) {
 				this.menuManager.processedEvent = false;
@@ -12551,34 +12556,34 @@
 		this.reasonLabel.deleted = true;
 
 		// add the population label and value
-		this.popLabel = this.viewMenu.addLabelItem(Menu.southEast, -140, -130, 70, 30, "Alive");
+		this.popLabel = this.viewMenu.addLabelItem(Menu.southEast, -70, -130, 70, 30, "Alive");
 		this.popLabel.textAlign = Menu.left;
 		this.popLabel.setFont(ViewConstants.statsFont);
 		this.popLabel.toolTip = "current population";
 
-		this.popValue = this.viewMenu.addLabelItem(Menu.southEast, -70, -130, 70, 30, "");
+		this.popValue = this.viewMenu.addLabelItem(Menu.southEast, -140, -130, 70, 30, "");
 		this.popValue.textAlign = Menu.right;
 		this.popValue.setFont(ViewConstants.statsFont);
 		this.popValue.toolTip = "alive";
 
 		// add the births label and value
-		this.birthsLabel = this.viewMenu.addLabelItem(Menu.southEast, -140, -100, 70, 30, "Births");
+		this.birthsLabel = this.viewMenu.addLabelItem(Menu.southEast, -70, -100, 70, 30, "Births");
 		this.birthsLabel.textAlign = Menu.left;
 		this.birthsLabel.setFont(ViewConstants.statsFont);
 		this.birthsLabel.toolTip = "cells born this generation";
 
-		this.birthsValue = this.viewMenu.addLabelItem(Menu.southEast, -70, -100, 70, 30, "");
+		this.birthsValue = this.viewMenu.addLabelItem(Menu.southEast, -140, -100, 70, 30, "");
 		this.birthsValue.textAlign = Menu.right;
 		this.birthsValue.setFont(ViewConstants.statsFont);
 		this.birthsValue.toolTip = "births";
 
 		// add the deaths label and value
-		this.deathsLabel = this.viewMenu.addLabelItem(Menu.southEast, -140, -70, 70, 30, "Deaths");
+		this.deathsLabel = this.viewMenu.addLabelItem(Menu.southEast, -70, -70, 70, 30, "Deaths");
 		this.deathsLabel.textAlign = Menu.left;
 		this.deathsLabel.setFont(ViewConstants.statsFont);
 		this.deathsLabel.toolTip = "cells died this generation";
 
-		this.deathsValue = this.viewMenu.addLabelItem(Menu.southEast, -70, -70, 70, 30, "");
+		this.deathsValue = this.viewMenu.addLabelItem(Menu.southEast, -140, -70, 70, 30, "");
 		this.deathsValue.textAlign = Menu.right;
 		this.deathsValue.setFont(ViewConstants.statsFont);
 		this.deathsValue.toolTip = "deaths";

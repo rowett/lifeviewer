@@ -4129,7 +4129,11 @@
 				// check for PCA
 				if (this.isPCA || this.isRuleTree) {
 					current = colourGrid[y][x];
-					colourGrid[y][x] = this.historyStates + state;
+					if (deadZero && state === 0) {
+						colourGrid[y][x] = 0;
+					} else {
+						colourGrid[y][x] = this.historyStates + state;
+					}
 					colourTileHistoryGrid[y >> 4][x >> 8] = 65535;
 					if (this.isRuleTree) {
 						if ((this.counter & 1) !== 0) {

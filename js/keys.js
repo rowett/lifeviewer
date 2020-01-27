@@ -377,14 +377,17 @@
 			case 66:
 				// do not move if in view only mode
 				if (!me.viewOnly) {
-					if (me.engine.isMargolus || me.engine.isPCA) {
-						// for Margolus and PCA patterns step back key should always step one generation
-						value = me.gensPerStep;
-						me.gensPerStep = 1;
-					}
-					me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
-					if (me.engine.isMargolus || me.engine.isPCA) {
-						me.gensPerStep = value;
+					// check control is not locked
+					if (!me.playList.itemLocked[1]) {
+						if (me.engine.isMargolus || me.engine.isPCA) {
+							// for Margolus and PCA patterns step back key should always step one generation
+							value = me.gensPerStep;
+							me.gensPerStep = 1;
+						}
+						me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
+						if (me.engine.isMargolus || me.engine.isPCA) {
+							me.gensPerStep = value;
+						}
 					}
 				}
 				break;

@@ -1,3 +1,8 @@
+Build 506
+- grey out step back button when disabled or at Gen 0 with non-reversible rule
+- PCA state 0 drawing should draw background colour
+- switched Alive, Births and Deaths label and value so the value is visible when reversible rules are loaded
+
 Build 505
 - remove Identify Close button for empty patterns
 - fixed inconsitency on PCA Identify
