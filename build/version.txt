@@ -1,3 +1,9 @@
+Build 505
+- remove Identify Close button for empty patterns
+- fixed inconsitency on PCA Identify
+- change Speed values to canonical form
+- fix Margolus Still Life detection
+
 Build 504
 - fixed PCA Invert Selection
 - fixed PCA initial population count

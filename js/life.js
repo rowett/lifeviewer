@@ -31,11 +31,11 @@
 
 		// transformation for mod hash
 		/** @const {number} */ modFirstTrans : 0,
-		/** @const {number} */ modFlipX : 0,
-		/** @const {number} */ modFlipY : 1,
-		/** @const {number} */ modRot90 : 2,
-		/** @const {number} */ modRot180 : 3,
-		/** @const {number} */ modRot270 : 4,
+		/** @const {number} */ modRot90 : 0,
+		/** @const {number} */ modRot270 : 1,
+		/** @const {number} */ modFlipX : 2,
+		/** @const {number} */ modFlipY : 3,
+		/** @const {number} */ modRot180 : 4,
 		/** @const {number} */ modRot90FlipX : 5,
 		/** @const {number} */ modRot90FlipY : 6,
 		/** @const {number} */ modLastTrans : 6,
@@ -44,7 +44,7 @@
 		/** @const {number} */ maxRuleTreeLookupBits : 20,
 
 		// mod type names
-		/** @const {Array<string>} */ modTypeName : ["FlipX", "FlipY", "RotCW", "FlipXY", "RotCCW", "RotCWFlipX", "RotCWFlipY"],
+		/** @const {Array<string>} */ modTypeName : ["RotCW", "RowCCW", "FlipX", "FlipY", "FlipXY", "RotCWFlipX", "RotCWFlipY"],
 
 		// maximum number of generations to check for oscillators
 		/** @const {number} */ maxOscillatorGens : 1048576,
@@ -363,7 +363,7 @@
 		/** @type {number} */ this.oscLength = 0;
 		this.countList = null;
 		this.hashBox = new BoundingBox(0, 0, 0, 0);
-		/** @type {number} */ this.modValue = 0;
+		/** @type {number} */ this.modValue = -1;
 		/** @type {number} */ this.modType = -1;
 		/** @type {number} */ this.checkModGen = 0;
 		/** @type {boolean} */ this.checkedMod = false;
@@ -1135,7 +1135,7 @@
 				this.hashBox.bottomY = this.height;
 				this.hashBox.rightX = 0;
 				this.hashBox.topY = 0;
-				this.modValue = 0;
+				this.modValue = -1;
 				this.modType = -1;
 				this.startItem = -1;
 
@@ -1152,7 +1152,7 @@
 			this.boxList = null;
 			this.nextList = null;
 			this.countList = null;
-			this.modValue = 0;
+			this.modValue = -1;
 			this.modType = -1;
 			this.startItem = -1;
 		}
@@ -1780,16 +1780,28 @@
 				dDeltaY = deltaY / divisor;
 				dPeriod = period / divisor;
 				if (divisor !== 1) {
-					simpleSpeed = dDeltaX + "," + dDeltaY + "c";
+					if (dDeltaX > dDeltaY) {
+						simpleSpeed = "(" + dDeltaX + "," + dDeltaY + ")c";
+					} else {
+						simpleSpeed = "(" + dDeltaY + "," + dDeltaX + ")c";
+					}
 					if (dPeriod > 1) {
 						simpleSpeed += "/" + dPeriod;
 					}
-					simpleSpeed += " | " + deltaX + "," + deltaY + "c";
+					if (deltaX > deltaY) {
+						simpleSpeed += " | (" + deltaX + "," + deltaY + ")c";
+					} else {
+						simpleSpeed += " | (" + deltaY + "," + deltaX + ")c";
+					}
 					if (period > 1) {
 						simpleSpeed += "/" + period;
 					}
 				} else {
-					simpleSpeed = deltaX + "," + deltaY + "c";
+					if (deltaX > deltaY) {
+						simpleSpeed = "(" + deltaX + "," + deltaY + ")c";
+					} else {
+						simpleSpeed = "(" + deltaY + "," + deltaX + ")c";
+					}
 					if (period > 1) {
 						simpleSpeed += "/" + period;
 					}
@@ -1972,7 +1984,7 @@
 
 		// mod value
 		if (!fast && !(this.isHex || this.isTriangular)) {
-			if (modValue === 0) {
+			if (modValue <= 0) {
 				modValue = period;
 				modResult = String(modValue);
 			} else {
@@ -2078,8 +2090,9 @@
 		
 									if (this.boxList[j + 1] === boxLocation) {
 										// pattern hasn't moved
-										if (period === 1 || (this.altSpecified && period === 2)) {
+										if (period === 1 || ((this.altSpecified || this.isMargolus) && period === 2)) {
 											message = "Still Life";
+											period = 1;
 										} else {
 											message = "Oscillator period " + period;
 										}
@@ -2128,7 +2141,7 @@
 					}
 
 					// check for mod matches if one hasn't already been found (ignore for non-square grid)
-					if (this.modValue === 0 && !fast && !(this.isHex || this.isTriangular)) {
+					if (this.modValue === -1 && !fast && !(this.isHex || this.isTriangular)) {
 						modHash = this.checkModHash(box);
 						if (modHash !== -1) {
 							this.modValue = this.counter - this.genList[modHash];
@@ -2136,12 +2149,13 @@
 						}
 					} else {
 						// check if the Mod was correct by testing next Mod period
-						if (this.modValue !== 0 && !this.checkedMod && this.counter === this.checkModGen) {
+						if (this.modValue !== -1 && !this.checkedMod && this.counter === this.checkModGen) {
 							modHash = this.checkModHash(box);
 							if (modHash !== -1) {
 								this.checkedMod = true;
 							} else {
-								this.modValue = 0;
+								// Mod failed so stop searching
+								this.modValue = -2;
 							}
 						}
 					}

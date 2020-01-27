@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 504,
+		/** @const {number} */ versionBuild : 505,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6106,6 +6106,7 @@
 				me.identifyBannerLabel.preText = identifyResult[0];
 				if (me.lastIdentifyType === "Empty") {
 					me.menuManager.notification.notify(identifyResult[0], 15, 120, 15, false);
+					me.resultsDisplayed = false;
 				} else {
 					me.menuManager.notification.clear(true, false);
 					me.menuManager.notification.clear(false, false);
@@ -11306,6 +11307,10 @@
 
 	// identify button clicked
 	View.prototype.identifyPressed = function(me) {
+		// reset check
+		me.engine.checkedMod = false;
+		me.engine.checkModGen = 0;
+
 		// check if anything is alive
 		if (!me.engine.anythingAlive) {
 			me.menuManager.notification.notify("Empty Pattern", 15, 120, 15, false);
@@ -11320,8 +11325,6 @@
 				me.afterEdit("");
 			} else {
 				me.identify = true;
-				me.checkedMod = false;
-				me.checkModGen = 0;
 
 				// hide previous results
 				me.resultsDisplayed = false;
