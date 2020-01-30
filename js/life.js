@@ -24,10 +24,9 @@
 		/** @const {number} */ flakes : 50000,
 
 		// cell types for rotor/stator calculations
-		/** @const {number} */ cellNotSeen : 0,
+		/** @const {number} */ cellWasDead : 0,
 		/** @const {number} */ cellWasAlive : 1,
-		/** @const {number} */ cellWasDead : 2,
-		/** @const {number} */ cellHasChanged : 3,
+		/** @const {number} */ cellHasChanged : 2,
 
 		// transformation for mod hash
 		/** @const {number} */ modFirstTrans : 0,
@@ -44,7 +43,7 @@
 		/** @const {number} */ maxRuleTreeLookupBits : 20,
 
 		// mod type names
-		/** @const {Array<string>} */ modTypeName : ["RotCW", "RowCCW", "FlipX", "FlipY", "FlipXY", "RotCWFlipX", "RotCWFlipY"],
+		/** @const {Array<string>} */ modTypeName : ["RotCCW", "RotCW", "FlipX", "FlipY", "FlipXY", "RotCWFlipX", "RotCWFlipY"],
 
 		// maximum number of generations to check for oscillators
 		/** @const {number} */ maxOscillatorGens : 1048576,
@@ -362,10 +361,12 @@
 		this.startItem = 0;
 		/** @type {number} */ this.oscLength = 0;
 		this.countList = null;
+		/** @type {boolean} */ this.firstCount = true;
 		this.hashBox = new BoundingBox(0, 0, 0, 0);
 		/** @type {number} */ this.modValue = -1;
 		/** @type {number} */ this.modType = -1;
 		/** @type {number} */ this.checkModGen = 0;
+		/** @type {number} */ this.checkModHashValue = 0;
 		/** @type {boolean} */ this.checkedMod = false;
 
 		// flag for alternating Margolus grid lines
@@ -1130,7 +1131,8 @@
 				this.diedList = this.allocator.allocate(Uint32, LifeConstants.maxOscillatorGens, "Life.diedList");
 				this.boxList = this.allocator.allocate(Uint32, 2 * LifeConstants.maxOscillatorGens, "Life.boxList");
 				this.nextList = this.allocator.allocate(Int32, LifeConstants.maxOscillatorGens, "Life.nextList");
-				this.countList = Array.matrix(Uint8, this.height, this.width, LifeConstants.cellNotSeen, this.allocator, "Life.countList");
+				this.countList = Array.matrix(Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
+				this.firstCount = true;
 				this.hashBox.leftX = this.width;
 				this.hashBox.bottomY = this.height;
 				this.hashBox.rightX = 0;
@@ -1307,7 +1309,7 @@
 	};
 
 	// check mod hashes
-	Life.prototype.checkModHash = function(box) {
+	Life.prototype.checkModHash = function(box, updateType) {
 		var i = 0,
 			trans = LifeConstants.modFirstTrans,
 			found = -1,
@@ -1316,19 +1318,24 @@
 		while (trans <= LifeConstants.modLastTrans && found === -1) {
 			hash = this.getModHash(box, trans);
 
-			// search entries
-			i = this.startItem;
-			while (i !== -1 && found === -1) {
-				if (hash === this.hashList[i]) {
-					// ignore entries at the current generation
-					if (this.genList[i] !== this.counter) {
+			// check if updating or just checking
+			if (updateType) {
+				// search entries
+				i = this.startItem;
+				while (i !== -1 && found === -1) {
+					if (hash === this.hashList[i] && this.genList[i] !== this.counter) {
+						// ignore entries at the current generation
 						found = i;
-						this.modType = trans;
+						if (updateType) {
+							this.modType = trans;
+						}
 					} else {
 						i = this.nextList[i];
 					}
-				} else {
-					i = this.nextList[i];
+				}
+			} else {
+				if (hash === this.checkModHashValue) {
+					found = 1;
 				}
 			}
 			trans += 1;
@@ -1415,21 +1422,21 @@
 				colourRow = colourGrid[cy];
 				countRow = countList[cy];
 				if (twoState) {
-					for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
-						if (colourRow[cx] >= aliveStart) {
-							// update count
-							if (countRow[cx] === LifeConstants.cellNotSeen) {
+					if (this.firstCount) {
+						for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+							if (colourRow[cx] >= aliveStart) {
 								countRow[cx] = LifeConstants.cellWasAlive;
-							} else {
+							}
+						}
+					} else {
+						for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+							if (colourRow[cx] >= aliveStart) {
+								// update count
 								if (countRow[cx] === LifeConstants.cellWasDead) {
 									countRow[cx] = LifeConstants.cellHasChanged;
 								}
-							}
-						} else {
-							// update count
-							if (countRow[cx] === LifeConstants.cellNotSeen) {
-								countRow[cx] = LifeConstants.cellWasDead;
 							} else {
+								// update count
 								if (countRow[cx] === LifeConstants.cellWasAlive) {
 									countRow[cx] = LifeConstants.cellHasChanged;
 								}
@@ -1439,123 +1446,130 @@
 				} else {
 					if (this.isPCA) {
 						// handle sub-cells
-						for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
-							// get the 4 sub-cell counts
-							count = countRow[cx];
-	
-							// get the 4 sub-cell states
-							state = colourRow[cx];
-							if (state > this.historyStates) {
-								state -= this.historyStates;
-							}
-	
-							// north sub-cell
-							countN = count & 3;
-							if ((state & 1) !== 0) {
-								// update count
-								if (countN === LifeConstants.cellNotSeen) {
-									countN = LifeConstants.cellWasAlive;
+						if (this.firstCount) {
+							for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+								// get the 4 sub-cell states
+								state = colourRow[cx];
+								if (state > this.historyStates) {
+									state -= this.historyStates;
 								} else {
+									state = 0;
+								}
+
+								// north sub-cell
+								countN = 0;
+								if ((state & 1) !== 0) {
+									countN = LifeConstants.cellWasAlive;
+								}
+
+								// east sub-cell
+								countE = 0;
+								if ((state & 2) !== 0) {
+									countE = LifeConstants.cellWasAlive;
+								}
+
+								// south sub-cell
+								countS = 0;
+								if ((state & 4) !== 0) {
+									countS = LifeConstants.cellWasAlive;
+								}
+
+								// west sub-cell
+								countW = 0;
+								if ((state & 8) !== 0) {
+									countW = LifeConstants.cellWasAlive;
+								}
+
+								// combine the counts
+								countRow[cx] = countN | (countE << 2) | (countS << 4) | (countW << 6);
+							}
+						} else {
+							for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+								// get the 4 sub-cell counts
+								count = countRow[cx];
+		
+								// get the 4 sub-cell states
+								state = colourRow[cx];
+								if (state > this.historyStates) {
+									state -= this.historyStates;
+								} else {
+									state = 0;
+								}
+		
+								// north sub-cell
+								countN = count & 3;
+								if ((state & 1) !== 0) {
+									// update count
 									if (countN === LifeConstants.cellWasDead) {
 										countN = LifeConstants.cellHasChanged;
 									}
-								}
-							} else {
-								// update count
-								if (countN === LifeConstants.cellNotSeen) {
-									countN = LifeConstants.cellWasDead;
 								} else {
+									// update count
 									if (countN === LifeConstants.cellWasAlive) {
 										countN = LifeConstants.cellHasChanged;
 									}
 								}
-							}
-	
-							// east sub-cell
-							countE = (count >> 2) & 3;
-							if ((state & 2) !== 0) {
-								// update count
-								if (countE === LifeConstants.cellNotSeen) {
-									countE = LifeConstants.cellWasAlive;
-								} else {
+		
+								// east sub-cell
+								countE = (count >> 2) & 3;
+								if ((state & 2) !== 0) {
+									// update count
 									if (countE === LifeConstants.cellWasDead) {
 										countE = LifeConstants.cellHasChanged;
 									}
-								}
-							} else {
-								// update count
-								if (countE === LifeConstants.cellNotSeen) {
-									countE = LifeConstants.cellWasDead;
 								} else {
+									// update count
 									if (countE === LifeConstants.cellWasAlive) {
 										countE = LifeConstants.cellHasChanged;
 									}
 								}
-							}
-	
-							// south sub-cell
-							countS = (count >> 4) & 3;
-							if ((state & 4) !== 0) {
-								// update count
-								if (countS === LifeConstants.cellNotSeen) {
-									countS = LifeConstants.cellWasAlive;
-								} else {
+		
+								// south sub-cell
+								countS = (count >> 4) & 3;
+								if ((state & 4) !== 0) {
+									// update count
 									if (countS === LifeConstants.cellWasDead) {
 										countS = LifeConstants.cellHasChanged;
 									}
-								}
-							} else {
-								// update count
-								if (countS === LifeConstants.cellNotSeen) {
-									countS = LifeConstants.cellWasDead;
 								} else {
+									// update count
 									if (countS === LifeConstants.cellWasAlive) {
 										countS = LifeConstants.cellHasChanged;
 									}
 								}
-							}
-	
-							// west sub-cell
-							countW = (count >> 6) & 3;
-							if ((state & 8) !== 0) {
-								// update count
-								if (countW === LifeConstants.cellNotSeen) {
-									countW = LifeConstants.cellWasAlive;
-								} else {
+		
+								// west sub-cell
+								countW = (count >> 6) & 3;
+								if ((state & 8) !== 0) {
+									// update count
 									if (countW === LifeConstants.cellWasDead) {
 										countW = LifeConstants.cellHasChanged;
 									}
-								}
-							} else {
-								// update count
-								if (countW === LifeConstants.cellNotSeen) {
-									countW = LifeConstants.cellWasDead;
 								} else {
+									// update count
 									if (countW === LifeConstants.cellWasAlive) {
 										countW = LifeConstants.cellHasChanged;
 									}
 								}
-							}
 
-							// combine the counts
-							countRow[cx] = countN | (countE << 2) | (countS << 4) | (countW << 6);
+								// combine the counts
+								countRow[cx] = countN | (countE << 2) | (countS << 4) | (countW << 6);
+							}
 						}
 					} else {
 						for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
-							if (colourRow[cx] > this.historyStates) {
-								// update count
-								if (countRow[cx] === LifeConstants.cellNotSeen) {
+							if (this.firstCount) {
+								if (colourRow[cx] > this.historyStates) {
 									countRow[cx] = LifeConstants.cellWasAlive;
-								} else {
+								}
+							} else {
+								if (colourRow[cx] > this.historyStates) {
+									// update count
 									if (countRow[cx] === LifeConstants.cellWasDead) {
 										countRow[cx] = LifeConstants.cellHasChanged;
 									}
-								}
-							} else {
-								// update count
-								if (countRow[cx] === LifeConstants.cellNotSeen) {
-									countRow[cx] = LifeConstants.cellWasDead;
 								} else {
+									// update count
 									if (countRow[cx] === LifeConstants.cellWasAlive) {
 										countRow[cx] = LifeConstants.cellHasChanged;
 									}
@@ -1565,6 +1579,9 @@
 					}
 				}
 			}
+
+			// mark first count done
+			this.firstCount = false;
 		}
 
 		return hash | 0;
@@ -2142,15 +2159,16 @@
 
 					// check for mod matches if one hasn't already been found (ignore for non-square grid)
 					if (this.modValue === -1 && !fast && !(this.isHex || this.isTriangular)) {
-						modHash = this.checkModHash(box);
+						modHash = this.checkModHash(box, true);
 						if (modHash !== -1) {
 							this.modValue = this.counter - this.genList[modHash];
 							this.checkModGen = this.counter + this.modValue;
+							this.checkModHashValue = hash;
 						}
 					} else {
 						// check if the Mod was correct by testing next Mod period
 						if (this.modValue !== -1 && !this.checkedMod && this.counter === this.checkModGen) {
-							modHash = this.checkModHash(box);
+							modHash = this.checkModHash(box, false);
 							if (modHash !== -1) {
 								this.checkedMod = true;
 							} else {
@@ -5228,7 +5246,7 @@
 
 			// count grid
 			if (currentCountList) {
-				this.countList = Array.matrix(Uint8, this.height, this.width, LifeConstants.cellNotSeen, this.allocator, "Life.countList");
+				this.countList = Array.matrix(Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
 			}
 
 			// colour grid
@@ -6201,14 +6219,6 @@
 						this.redChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][0];
 						this.greenChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][1];
 						this.blueChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][2];
-						if (this.customColours && this.customColours.length >= i) {
-							current = this.customColours[i];
-							if (current !== -1) {
-								this.redChannel[i + this.historyStates] = current >> 16;
-								this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
-								this.blueChannel[i + this.historyStates] = (current & 255);
-							}
-						}
 					} else {
 						if (this.isRuleTree) {
 							this.redChannel[i] = this.ruleTreeColours[i] >> 16;
@@ -6229,20 +6239,20 @@
 							currentComponent = this.dyingGenColCurrent.endColour.blue * weight + this.dyingGenColCurrent.startColour.blue * (1 - weight);
 							targetComponent = this.dyingGenColTarget.endColour.blue * weight + this.dyingGenColTarget.startColour.blue * (1 - weight);
 							this.blueChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+						}
+					}
 		
-							// override with custom colour if specified
-							if (this.customColours && this.customColours.length >= i) {
-								if (!(this.isHROT || this.isPCA || this.isRuleTree)) {
-									current = this.customColours[this.multiNumStates - i];
-								} else {
-									current = this.customColours[i];
-								}
-								if (current !== -1) {
-									this.redChannel[i + this.historyStates] = current >> 16;
-									this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
-									this.blueChannel[i + this.historyStates] = (current & 255);
-								}
-							}
+					// override with custom colour if specified
+					if (this.customColours && this.customColours.length >= i) {
+						if (!(this.isHROT || this.isPCA || this.isRuleTree)) {
+							current = this.customColours[this.multiNumStates - i];
+						} else {
+							current = this.customColours[i];
+						}
+						if (current !== -1) {
+							this.redChannel[i + this.historyStates] = current >> 16;
+							this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
+								this.blueChannel[i + this.historyStates] = (current & 255);
 						}
 					}
 				}
@@ -6996,16 +7006,6 @@
 						this.createNonStrobingAlternates(savedArray, ruleAltArray);
 						this.createMargolusIndex(this.margolusReverseLookup1, ruleAltArray);
 						this.createMargolusIndex(this.margolusReverseLookup2, savedArray);
-					} else {
-						// check for alternate
-						if (this.canReverse(ruleArray, false) && this.canReverse(ruleAltArray, false)) {
-							this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
-							this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
-							this.canReverse(ruleAltArray, true);
-							this.createMargolusIndex(this.margolusReverseLookup1, ruleAltArray);
-							this.canReverse(ruleArray, true);
-							this.createMargolusIndex(this.margolusReverseLookup2, ruleArray);
-						}
 					}
 				} else {
 					this.createMargolusIndex(this.margolusLookup1, ruleArray);

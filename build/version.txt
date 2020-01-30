@@ -1,3 +1,11 @@
+Build 508
+- allow custom colours for RuleTable states
+- fix Mod for PCA
+
+Build 507
+- disable reverse playback for alternating Margolus rules
+- fixed an issue calculating rotor and stator missing the final generation
+
 Build 506
 - grey out step back button when disabled or at Gen 0 with non-reversible rule
 - PCA state 0 drawing should draw background colour
