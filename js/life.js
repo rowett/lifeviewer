@@ -12143,11 +12143,21 @@
 									colOccupied |= output;
 
 									// update min and max row
-									if (h < newBottomY) {
-										newBottomY = h;
+									if (output0) {
+										if (h < newBottomY) {
+											newBottomY = h;
+										}
+										if (h > newTopY) {
+											newTopY = h;
+										}
 									}
-									if (h + 1 > newTopY) {
-										newTopY = h + 1;
+									if (output1) {
+										if (h + 1 < newBottomY) {
+											newBottomY = h + 1;
+										}
+										if (h + 1 > newTopY) {
+											newTopY = h + 1;
+										}
 									}
 
 									// check for left column now set
@@ -12199,11 +12209,21 @@
 										colOccupied |= output;
 		
 										// update min and max row
-										if (h < newBottomY) {
-											newBottomY = h;
+										if (output0) {
+											if (h < newBottomY) {
+												newBottomY = h;
+											}
+											if (h > newTopY) {
+												newTopY = h;
+											}
 										}
-										if (h + 1 > newTopY) {
-											newTopY = h + 1;
+										if (output1) {
+											if (h + 1 < newBottomY) {
+												newBottomY = h + 1;
+											}
+											if (h + 1 > newTopY) {
+												newTopY = h + 1;
+											}
 										}
 									}
 	
@@ -12243,11 +12263,21 @@
 									colOccupied |= output;
 	
 									// update min and max row
-									if (h < newBottomY) {
-										newBottomY = h;
+									if (output0) {
+										if (h < newBottomY) {
+											newBottomY = h;
+										}
+										if (h > newTopY) {
+											newTopY = h;
+										}
 									}
-									if (h + 1 > newTopY) {
-										newTopY = h + 1;
+									if (output1) {
+										if (h + 1 < newBottomY) {
+											newBottomY = h + 1;
+										}
+										if (h + 1 > newTopY) {
+											newTopY = h + 1;
+										}
 									}
 	
 									// check for left column now set
@@ -12336,11 +12366,21 @@
 									colOccupied |= output;
 
 									// update min and max row
-									if (h < newBottomY) {
-										newBottomY = h;
+									if (output0) {
+										if (h < newBottomY) {
+											newBottomY = h;
+										}
+										if (h > newTopY) {
+											newTopY = h;
+										}
 									}
-									if (h + 1 > newTopY) {
-										newTopY = h + 1;
+									if (output0) {
+										if (h + 1 < newBottomY) {
+											newBottomY = h + 1;
+										}
+										if (h + 1 > newTopY) {
+											newTopY = h + 1;
+										}
 									}
 
 									// there is no neighbour below since this is the odd phase
@@ -12393,11 +12433,21 @@
 										colOccupied |= output;
 		
 										// update min and max row
-										if (h < newBottomY) {
-											newBottomY = h;
+										if (output0) {
+											if (h < newBottomY) {
+												newBottomY = h;
+											}
+											if (h > newTopY) {
+												newTopY = h;
+											}
 										}
-										if (h + 1 > newTopY) {
-											newTopY = h + 1;
+										if (output1) {
+											if (h + 1 < newBottomY) {
+												newBottomY = h + 1;
+											}
+											if (h + 1 > newTopY) {
+												newTopY = h + 1;
+											}
 										}
 									}
 	
@@ -12449,11 +12499,21 @@
 									colOccupied |= output;
 	
 									// update min and max row
-									if (h < newBottomY) {
-										newBottomY = h;
+									if (output0) {
+										if (h < newBottomY) {
+											newBottomY = h;
+										}
+										if (h > newTopY) {
+											newTopY = h;
+										}
 									}
-									if (h + 1 > newTopY) {
-										newTopY = h + 1;
+									if (output1) {
+										if (h + 1 < newBottomY) {
+											newBottomY = h+ 1;
+										}
+										if (h + 1 > newTopY) {
+											newTopY = h + 1;
+										}
 									}
 	
 									// check for right column set in this tile or left column set in right hand tile

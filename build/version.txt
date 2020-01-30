@@ -1,3 +1,6 @@
+Build 509
+- added new aliases
+
 Build 508
 - allow custom colours for RuleTable states
 - fix Mod for PCA

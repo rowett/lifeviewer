@@ -114,6 +114,7 @@
 		a.push(["EightLife", "B3/S238"]);
 		a.push(["Electrified Maze", "B45/S12345"]);
 		a.push(["Eppstein", "B35/S236"]);
+		a.push(["Feux", "B1358/S0247"]);
 		a.push(["Flakes", "B3/S012345678"]);
 		a.push(["Flock", "B3/S12"]);
 		a.push(["Forest of Ls", "B168/S236"]);
@@ -156,6 +157,7 @@
 		a.push(["Move", "B368/S245"]);
 		a.push(["Neon Blobs", "B08/S4"]);
 		a.push(["Never happy", "B345/S0456"]);
+		a.push(["Oscillators Rule", "B45/S1235"]);
 		a.push(["Pedestrian Flock", "B38/S12"]);
 		a.push(["Pedestrian Life", "B38/S23"]);
 		a.push(["Pedestrian Life without Death", "B38/S012345678"]);
@@ -500,6 +502,19 @@
 		a.push(["Hex Life", "B2o3m56/S2-p4oH"]);
 		a.push(["22da", "B2o/S2-mH"]);
 		a.push(["Hexrule b2o", "B2o/S2m34H"]);
+
+		// add 2-state totalistic Triangular aliases
+		s.push("OT Tri");
+		a.push(["Outer-Totalistic Triangular", ""]);
+		a.push(["Life 4644", "B4/S456L"]);
+		a.push(["Life 3445", "B45/S34L"]);
+		a.push(["Life 4546", "B456/S45L"]);
+		a.push(["Life 2346", "B456/S23L"]);
+		a.push(["Life 3446", "B456/S34L"]);
+		a.push(["Life 2345", "B45/S23L"]);
+		a.push(["Rule 1246", "B456/S12L"]);
+		a.push(["Life 2333", "B3/S23L"]);
+		a.push(["Rule 3544", "B4/S345L"]);
 
 		// add LtL 2-state aliases
 		s.push("LtL M");
