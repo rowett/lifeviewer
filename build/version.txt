@@ -1,5 +1,18 @@
+Build 512
+- added script command [[ REVERSESTART ]]
+	- sets initial playback direction to Reverse for reversible rules
+	- ignored for other rules
+	- reverse playback is also set on hard Reset
+	
+Build 511
+- fix STEP in Waypoints
+
+Build 510
+- fix selection box position with #CXRLE Pos
+
 Build 509
 - added new aliases
+- fixed Margolus bounding box on alternate generations
 
 Build 508
 - allow custom colours for RuleTable states

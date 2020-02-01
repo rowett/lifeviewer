@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 509,
+		/** @const {number} */ versionBuild : 512,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -607,6 +607,9 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// whether to start playback in reverse for reversible rules
+		this.reverseStart = false;
 
 		// whether drawing snow
 		this.drawingSnow = false;
@@ -6721,6 +6724,11 @@
 
 		// perform hard reset if required
 		if (hardReset) {
+			// check for reverse start
+			if ((this.engine.isMargolus || this.engine.isPCA) && this.engine.margolusReverseLookup1 !== null && me.reverseStart) {
+				me.engine.reversePending = true;
+			}
+
 			// enable waypoints
 			if (me.waypointsDefined) {
 				me.waypointsDisabled = false;
@@ -14394,6 +14402,9 @@
 		me.randomChanceBN = [];
 		me.randomChanceSN = [];
 
+		// clear reverse start flag
+		me.reverseStart = false;
+
 		// copy pattern to center
 		if (pattern) {
 			if (pattern.isNone || (!me.executable && me.engine.multiNumStates > 2)) {
@@ -14933,8 +14944,8 @@
 		me.hexCellButton.current = [me.engine.useHexagons];
 		me.hexCellButton.locked = me.engine.isTriangular;
 
-		// set reverse direction button if reversible Margolus rule loaded
-		if (me.engine.isMargolus && me.engine.margolusReverseLookup1 !== null) {
+		// set reverse direction button if reversible Margolus or PCA rule loaded
+		if ((me.engine.isMargolus || me.engine.isPCA) && me.engine.margolusReverseLookup1 !== null) {
 			me.directionButton.deleted = false;
 		} else {
 			me.directionButton.deleted = true;
@@ -15267,6 +15278,14 @@
 
 		// initialise pretty renderer
 		me.engine.initPretty();
+
+		// check for reverse start
+		if ((me.engine.isMargolus || me.engine.isPCA) && me.engine.margolusReverseLookup1 !== null && me.reverseStart) {
+			me.engine.reversePending = true;
+
+			// update play icon
+			me.setPauseIcon(me.generationOn);
+		}
 	};
 
 	// start a viewer

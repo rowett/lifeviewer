@@ -21,6 +21,7 @@
 		// check if the token is a script command
 		switch (tokenString) {
 			case Keywords.noThrottleWord:
+			case Keywords.reverseStartWord:
 			case Keywords.textColorWord:
 			case Keywords.errorColorWord:
 			case Keywords.showGenStatsWord:
@@ -3071,6 +3072,12 @@
 						// hide source
 						case Keywords.noSourceWord:
 							view.noSource = true;
+							itemValid = true;
+							break;
+
+						// reverse playback start
+						case Keywords.reverseStartWord:
+							view.reverseStart = true;
 							itemValid = true;
 							break;
 

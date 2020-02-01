@@ -27137,13 +27137,21 @@
 			this.drawBox(view, view.selectionBox, this.selectColour);
 		}
 		if (view.evolvingPaste) {
-			this.drawPasteWithCells(view, view.evolveBox.leftX, view.evolveBox.bottomY, ViewConstants.pastePositionNW, this.advanceColour);
+			if (this.boundedGridType !== -1 && view.posDefined) {
+				this.drawPasteWithCells(view, view.evolveBox.leftX - view.patternWidth, view.evolveBox.bottomY - view.patternHeight, ViewConstants.pastePositionNW, this.advanceColour);
+			} else {
+				this.drawPasteWithCells(view, view.evolveBox.leftX, view.evolveBox.bottomY, ViewConstants.pastePositionNW, this.advanceColour);
+			}
 		}
 		if (view.isPasting) {
 			mouseX = view.menuManager.mouseLastX;
 			mouseY = view.menuManager.mouseLastY;
 			if (mouseX !== -1) {
 				view.updateCellLocation(mouseX, mouseY);
+				if (this.boundedGridType !== -1 && view.posDefined) {
+					xOff += view.patternWidth;
+					yOff += view.patternHeight;
+				}
 				this.drawPasteWithCells(view, view.cellX - xOff, view.cellY - yOff, position, this.pasteColour);
 			}
 		}
@@ -27182,6 +27190,11 @@
 		}
 		width = x2 - x1 + 1;
 		height = y2 - y1 + 1;
+
+		if (this.boundedGridType !== -1 && view.posDefined) {
+			yOff += view.patternHeight;
+			xOff += view.patternWidth;
+		}
 
 		// convert cell coordinates to screen coordinates
 		y1 = yZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;

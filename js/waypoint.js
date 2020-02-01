@@ -163,8 +163,9 @@
 		// copy theme
 		this.theme = fromWaypoint.theme;
 
-		// copy gps
+		// copy gps and step
 		this.gps = fromWaypoint.gps;
+		this.step = fromWaypoint.step;
 
 		// copy target generation and time
 		this.targetGen = fromWaypoint.targetGen;

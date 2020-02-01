@@ -78,6 +78,20 @@
 		a.push(["PCA_11", "2PCA4,0,4,8,3,1,10,6,11,2,9,5,11,13,12,14,15"]);
 		a.push(["PCA_12", "2PCA4,0,4,2,3,14,6,11,5,8,7,9,13,10,12,1,15"]);
 
+		// add 2-state totalistic von Neumann aliases
+		s.push("OT vN");
+		a.push(["Outer-Totalistic von Neumann", ""]);
+		a.push(["Fredkin2", "B13/S024V"]);
+		a.push(["Parity", "B13/S13V"]);
+
+		// add 2-state totalistic Hex aliases
+		s.push("OT Hex");
+		a.push(["Outer-Totalistic Hex", ""]);
+		a.push(["HexParity", "B135/S0246H"]);
+		a.push(["Hexagonal Life", "B2/S34H"]);
+		a.push(["HighHexLife", "B25/S34H"]);
+		a.push(["Replicator Hex", "B135/S135H"]);
+
 		// add 2 state totalistic Moore aliases
 		s.push("OT M");
 		a.push(["Outer-Totalistic Moore", ""]);
@@ -182,6 +196,19 @@
 		a.push(["Vote 4/5", "B4678/S35678"]);
 		a.push(["Walled Cities", "B45678/S2345"]);
 
+		// add 2-state totalistic Triangular aliases
+		s.push("OT Tri");
+		a.push(["Outer-Totalistic Triangular", ""]);
+		a.push(["Rule 1246", "B456/S12L"]);
+		a.push(["Life 2333", "B3/S23L"]);
+		a.push(["Life 2345", "B45/S23L"]);
+		a.push(["Life 2346", "B456/S23L"]);
+		a.push(["Life 3445", "B45/S34L"]);
+		a.push(["Life 3446", "B456/S34L"]);
+		a.push(["Rule 3544", "B4/S345L"]);
+		a.push(["Life 4546", "B456/S45L"]);
+		a.push(["Life 4644", "B4/S456L"]);
+
 		// add outer-totalistic Moore Generations aliases
 		s.push("OT M G");
 		a.push(["Outer-Totalistic Generations Moore", ""]);
@@ -240,19 +267,12 @@
 		a.push(["Worms", "3467/25/6"]);
 		a.push(["Xtasy", "1456/2356/16"]);
 
-		// add 2-state totalistic Hex aliases
-		s.push("OT Hex");
-		a.push(["Outer-Totalistic Hex", ""]);
-		a.push(["HexParity", "B135/S0246H"]);
-		a.push(["Hexagonal Life", "B2/S34H"]);
-		a.push(["HighHexLife", "B25/S34H"]);
-		a.push(["Replicator Hex", "B135/S135H"]);
-
-		// add 2-state totalistic von Neumann aliases
-		s.push("OT vN");
-		a.push(["Outer-Totalistic von Neumann", ""]);
-		a.push(["Fredkin2", "B13/S024V"]);
-		a.push(["Parity", "B13/S13V"]);
+		// add 2-state isotropic non-totalistic Hex aliases
+		s.push("INT Hex");
+		a.push(["Isotropic Non-Totalistic Hex", ""]);
+		a.push(["Hex Life", "B2o3m56/S2-p4oH"]);
+		a.push(["22da", "B2o/S2-mH"]);
+		a.push(["Hexrule b2o", "B2o/S2m34H"]);
 
 		// add 2-state isotropic non-totalistic Moore aliases
 		s.push("INT M");
@@ -496,26 +516,6 @@
 		a.push(["Sliders", "012-e3-ae4acnqyz5acer6acn78/3j4-eikq5c/3"]);
 		a.push(["tGeneC1WC0", "2-i34q/2c34w5c/4"]);
 
-		// add 2-state isotropic non-totalistic Hex aliases
-		s.push("INT Hex");
-		a.push(["Isotropic Non-Totalistic Hex", ""]);
-		a.push(["Hex Life", "B2o3m56/S2-p4oH"]);
-		a.push(["22da", "B2o/S2-mH"]);
-		a.push(["Hexrule b2o", "B2o/S2m34H"]);
-
-		// add 2-state totalistic Triangular aliases
-		s.push("OT Tri");
-		a.push(["Outer-Totalistic Triangular", ""]);
-		a.push(["Life 4644", "B4/S456L"]);
-		a.push(["Life 3445", "B45/S34L"]);
-		a.push(["Life 4546", "B456/S45L"]);
-		a.push(["Life 2346", "B456/S23L"]);
-		a.push(["Life 3446", "B456/S34L"]);
-		a.push(["Life 2345", "B45/S23L"]);
-		a.push(["Rule 1246", "B456/S12L"]);
-		a.push(["Life 2333", "B3/S23L"]);
-		a.push(["Rule 3544", "B4/S345L"]);
-
 		// add LtL 2-state aliases
 		s.push("LtL M");
 		a.push(["Larger than Life Moore", ""]);
@@ -558,6 +558,12 @@
 		a.push(["Fire whirl", "R8,C6,M1,S46..91,B65..100,NM"]);
 		a.push(["ModernArt", "R10,C255,M1,S2..3,B3..3,NM"]);
 
+		// add HROT von Neumann aliases
+		s.push("HROT vN");
+		a.push(["Higher-Range Outer-Totalistic von Neumann", ""]);
+		a.push(["Fredkin2 R2", "R2,C2,S0,2,4,6,8,10,12,B1,3,5,7,9,11,NN"]);
+		a.push(["Parity R2", "R2,C2,S1,3,5,7,9,11,B1,3,5,7,9,11,NN"]);
+
 		// add HROT Moore aliases
 		s.push("HROT M");
 		a.push(["Higher-Range Outer-Totalistic Moore", ""]);
@@ -567,12 +573,6 @@
 		a.push(["Replicator R2", "R2,C2,S1,3,5,7,9,11,13,15,17,19,21,23,B1,3,5,7,9,11,13,15,17,19,21,23"]);
 		a.push(["Replicator R3", "R3,C2,S1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,B1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47"]);
 		a.push(["Replicator R4", "R4,C2,S1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,B1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79"]);
-
-		// add HROT von Neumann aliases
-		s.push("HROT vN");
-		a.push(["Higher-Range Outer-Totalistic von Neumann", ""]);
-		a.push(["Fredkin2 R2", "R2,C2,S0,2,4,6,8,10,12,B1,3,5,7,9,11,NN"]);
-		a.push(["Parity R2", "R2,C2,S1,3,5,7,9,11,B1,3,5,7,9,11,NN"]);
 
 		// add non-isotropic aliases
 		s.push("MAP NINT");

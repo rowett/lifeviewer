@@ -9,17 +9,15 @@ Investigate:
 
 Planned:
     menu items coordinates should be reflected based on compass position
-    AutoFit types for rule families
-        Family      AUTO    HISTORY     STATE1
-        Life-like   *       *           NA
-        LifeHistory *       *           *
-        Generations *       *           *
-        LtL/HROT    *       *           NA
-        LtL/HROT MS *       *           *
-        Margolus    *       *           NA
-        PCA         *       *           NA
-
-In progress:
+    ability to specify Dying state colours
+    add UI colours to Themes
+    investigate PCA cells and layers
+    consistent generation counters in T menu
+    @NAMES support
+        [[ COLOUR @NAME ]]
+        [[ XY = @NAME display ]]
+        [[ colour picker @NAME display ]]
+    check reverse for alternating rules
 
 [STARTED]add type information for closure compiler
 

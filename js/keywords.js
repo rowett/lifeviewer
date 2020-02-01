@@ -401,6 +401,9 @@
 		// no throttle
 		/** @const {string} */ noThrottleWord : "NOTHROTTLE",
 
+		// reverse start
+		/** @const {string} */ reverseStartWord : "REVERSESTART",
+
 		// suppress escaping gliders 
 		/** @const {string} */ killGlidersWord : "KILLGLIDERS",
 

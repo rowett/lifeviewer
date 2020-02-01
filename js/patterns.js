@@ -7798,7 +7798,9 @@
 				treeIndex = reader.findTokenAtLineStart(this.ruleTableTreeName, -1);
 				if (treeIndex !== -1) {
 					valid = this.decodeTree(pattern, reader);
-					if (!valid) {
+					if (valid) {
+						pattern.ruleName = pattern.ruleTableName;
+					} else {
 						if (pattern.manager.failureReason === "") {
 							pattern.manager.failureReason = "not valid";
 						}
@@ -7809,7 +7811,9 @@
 					tableIndex = reader.findTokenAtLineStart(this.ruleTableTableName, 0);
 					if (tableIndex !== -1) {
 						valid = this.decodeTable(pattern, reader);
-						if (!valid) {
+						if (valid) {
+							pattern.ruleName = pattern.ruleTableName;
+						} else {
 							if (pattern.manager.failureReason === "") {
 								pattern.manager.failureReason = "not valid";
 							}
