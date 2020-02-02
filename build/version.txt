@@ -3,6 +3,9 @@ Build 512
 	- sets initial playback direction to Reverse for reversible rules
 	- ignored for other rules
 	- reverse playback is also set on hard Reset
+- Randomize now supports alternating rules
+- Margolus gridlines now alternate by default
+- bounded grids were clipping Margolus patterns
 	
 Build 511
 - fix STEP in Waypoints

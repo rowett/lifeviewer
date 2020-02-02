@@ -370,7 +370,7 @@
 		/** @type {boolean} */ this.checkedMod = false;
 
 		// flag for alternating Margolus grid lines
-		/** @type {boolean} */ this.altGrid = false;
+		/** @type {boolean} */ this.altGrid = true;
 
 		// flag for reverse Margolus playback
 		/** @type {boolean} */ this.reverseMargolus = false;
@@ -4063,9 +4063,10 @@
 			cellAsBit = 0,
 			cellAsTileBit = 0,
 
-		    // bounded grid top left
-		    /** @type {number} */ leftX = Math.round((this.width - this.boundedGridWidth) / 2),
-		    /** @type {number} */ bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
+			// bounded grid top left
+			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
+		    /** @type {number} */ leftX = Math.round((this.width - this.boundedGridWidth) / 2) + boxOffset,
+		    /** @type {number} */ bottomY = Math.round((this.height - this.boundedGridHeight) / 2) + boxOffset,
 
 		    // bounded grid bottom right
 		    /** @type {number} */ rightX = leftX + this.boundedGridWidth - 1,
@@ -4582,8 +4583,9 @@
 			/** @const {number} */ state6 = ViewConstants.stateMap[6] + 128,
 			
 		    // bounded grid top left
-		    /** @type {number} */ leftX = Math.round((this.width - this.boundedGridWidth) / 2),
-		    /** @type {number} */ bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
+			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
+		    /** @type {number} */ leftX = Math.round((this.width - this.boundedGridWidth) / 2) + boxOffset,
+		    /** @type {number} */ bottomY = Math.round((this.height - this.boundedGridHeight) / 2) + boxOffset,
 
 		    // bounded grid bottom right
 		    /** @type {number} */ rightX = leftX + this.boundedGridWidth - 1,
@@ -8680,9 +8682,12 @@
 		// life grid
 		var grid = null,
 
+			// box offset
+			boxOffset = (this.isMargolus ? -1 : 0),
+
 		    // top left
-		    leftX = Math.round((this.width - this.boundedGridWidth) / 2),
-		    bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
+		    leftX = Math.round((this.width - this.boundedGridWidth) / 2) + boxOffset,
+		    bottomY = Math.round((this.height - this.boundedGridHeight) / 2) + boxOffset,
 
 		    // bottom right
 		    rightX = leftX + this.boundedGridWidth - 1,
@@ -8935,13 +8940,18 @@
 	Life.prototype.setBoundedTiles = function() {
 		// counters
 		var x = 0,
-		    y = 0,
+			y = 0,
+
+			// box offset
+			boxOffset = (this.isMargolus ? -1 : 0),
+
+			// bounded grid dimensions
 		    width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
-		    leftX = Math.round((this.width - width) / 2 - 1) >> this.tilePower,
-		    rightX = Math.round((this.width + width) / 2) >> this.tilePower,
-		    bottomY = Math.round((this.height - height) / 2 - 1) >> this.tilePower,
-		    topY = Math.round((this.height + height) / 2) >> this.tilePower,
+		    leftX = (Math.round((this.width - width) / 2 - 1) + boxOffset) >> this.tilePower,
+		    rightX = (Math.round((this.width + width) / 2) + boxOffset) >> this.tilePower,
+		    bottomY = (Math.round((this.height - height) / 2 - 1) + boxOffset) >> this.tilePower,
+		    topY = (Math.round((this.height + height) / 2) + boxOffset) >> this.tilePower,
 		    value = 0;
 
 		// check for infinite height
@@ -9011,9 +9021,12 @@
 		var width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
 
+			// box offset
+			boxOffset = (this.isMargolus ? -1 : 0),
+
 		    // bottom left
-		    leftX = Math.round((this.width - width) / 2),
-		    bottomY = Math.round((this.height - height) / 2),
+		    leftX = Math.round((this.width - width) / 2) + boxOffset,
+		    bottomY = Math.round((this.height - height) / 2) + boxOffset,
 
 		    // top right
 		    rightX = leftX + width - 1,
@@ -9172,9 +9185,12 @@
 		    width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
 
+			// box offset
+			boxOffset = (this.isMargolus ? -1 : 0),
+
 		    // bottom left
-		    leftX = Math.round((this.width - width) / 2),
-		    bottomY = Math.round((this.height - height) / 2),
+		    leftX = Math.round((this.width - width) / 2) + boxOffset,
+		    bottomY = Math.round((this.height - height) / 2) + boxOffset,
 
 		    // top right
 		    rightX = leftX + width - 1,
@@ -9353,13 +9369,20 @@
 	Life.prototype.processCrossSurfaceMS = function(grid) {
 		var colourTileGrid = this.colourTileGrid,
 
+		    // bounded grid width and height
+		    width = this.boundedGridWidth,
+		    height = this.boundedGridHeight,
+
+			// box offset
+			boxOffset = (this.isMargolus ? -1 : 0),
+
 		    // bottom left
-		    leftX = Math.round((this.width - this.boundedGridWidth) / 2),
-		    bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
+		    leftX = Math.round((this.width - width) / 2) + boxOffset,
+		    bottomY = Math.round((this.height - height) / 2) + boxOffset,
 
 		    // top right
-		    rightX = leftX + this.boundedGridWidth - 1,
-		    topY = bottomY + this.boundedGridHeight - 1,
+		    rightX = leftX + width - 1,
+		    topY = bottomY + height - 1,
 
 		    // counters
 		    i = 0,
@@ -9368,7 +9391,7 @@
 			state = 0;
 
 		// perform vertical cross surface
-		for (i = 0; i < this.boundedGridWidth; i += 1) {
+		for (i = 0; i < width; i += 1) {
 			source = leftX + i;
 			dest = rightX - i;
 
@@ -9402,7 +9425,7 @@
 		}
 
 		// perform horizontal cross surface
-		for (i = 0; i <= this.boundedGridHeight; i += 1) {
+		for (i = 0; i <= height; i += 1) {
 			source = bottomY + i;
 			dest = topY - i;
 
@@ -9456,13 +9479,20 @@
 	Life.prototype.processSphereMS = function(grid) {
 		var colourTileGrid = this.colourTileGrid,
 
+		    // bounded grid width and height
+		    width = this.boundedGridWidth,
+		    height = this.boundedGridHeight,
+
+			// box offset
+			boxOffset = (this.isMargolus ? -1 : 0),
+
 		    // bottom left
-		    leftX = Math.round((this.width - this.boundedGridWidth) / 2),
-		    bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
+		    leftX = Math.round((this.width - width) / 2) + boxOffset,
+		    bottomY = Math.round((this.height - height) / 2) + boxOffset,
 
 		    // top right
-		    rightX = leftX + this.boundedGridWidth - 1,
-		    topY = bottomY + this.boundedGridWidth - 1,
+		    rightX = leftX + width - 1,
+		    topY = bottomY + height - 1,
 
 		    // counters
 		    i = 0,
@@ -9471,7 +9501,7 @@
 			state = 0;
 
 		// copy adjacent edges
-		for (i = 0; i < this.boundedGridWidth; i += 1) {
+		for (i = 0; i < width; i += 1) {
 			y = bottomY + i;
 			x = leftX + i;
 
@@ -9559,9 +9589,12 @@
 		    width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
 
+			// box offset
+			boxOffset = (this.isMargolus ? -1 : 0),
+
 		    // bottom left
-		    leftX = Math.round((this.width - width) / 2),
-		    bottomY = Math.round((this.height - height) / 2),
+		    leftX = Math.round((this.width - width) / 2) + boxOffset,
+		    bottomY = Math.round((this.height - height) / 2) + boxOffset,
 
 		    // top right
 		    rightX = leftX + width - 1,
@@ -9795,9 +9828,12 @@
 		    width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
 
+			// box offset
+			boxOffset = (this.isMargolus ? -1 : 0),
+
 		    // bottom left
-		    leftX = Math.round((this.width - width) / 2),
-		    bottomY = Math.round((this.height - height) / 2),
+		    leftX = Math.round((this.width - width) / 2) + boxOffset,
+		    bottomY = Math.round((this.height - height) / 2) + boxOffset,
 
 		    // top right
 		    rightX = leftX + width - 1,
@@ -9995,13 +10031,20 @@
 		    tileGrid = null,
 		    colourTileGrid = this.colourTileGrid,
 
+		    // bounded grid width and height
+		    width = this.boundedGridWidth,
+		    height = this.boundedGridHeight,
+
+			// box offset
+			boxOffset = (this.isMargolus ? -1 : 0),
+
 		    // bottom left
-		    leftX = Math.round((this.width - this.boundedGridWidth) / 2),
-		    bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
+		    leftX = Math.round((this.width - width) / 2) + boxOffset,
+		    bottomY = Math.round((this.height - height) / 2) + boxOffset,
 
 		    // top right
-		    rightX = leftX + this.boundedGridWidth - 1,
-		    topY = bottomY + this.boundedGridHeight - 1,
+		    rightX = leftX + width - 1,
+		    topY = bottomY + height - 1,
 
 		    // counters
 		    i = 0,
@@ -10018,7 +10061,7 @@
 		}
 
 		// perform vertical cross surface
-		for (i = 0; i < this.boundedGridWidth; i += 1) {
+		for (i = 0; i < width; i += 1) {
 			source = leftX + i;
 			dest = rightX - i;
 
@@ -10054,7 +10097,7 @@
 		}
 
 		// perform horizontal cross surface
-		for (i = 0; i <= this.boundedGridHeight; i += 1) {
+		for (i = 0; i <= height; i += 1) {
 			source = bottomY + i;
 			dest = topY - i;
 
@@ -10117,13 +10160,20 @@
 		    tileGrid = null,
 		    colourTileGrid = this.colourTileGrid,
 
+		    // bounded grid width and height
+		    width = this.boundedGridWidth,
+		    height = this.boundedGridHeight,
+
+			// box offset
+			boxOffset = (this.isMargolus ? -1 : 0),
+
 		    // bottom left
-		    leftX = Math.round((this.width - this.boundedGridWidth) / 2),
-		    bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
+		    leftX = Math.round((this.width - width) / 2) + boxOffset,
+		    bottomY = Math.round((this.height - height) / 2) + boxOffset,
 
 		    // top right
-		    rightX = leftX + this.boundedGridWidth - 1,
-		    topY = bottomY + this.boundedGridWidth - 1,
+		    rightX = leftX + width - 1,
+		    topY = bottomY + height - 1,
 
 		    // counters
 		    i = 0,
@@ -10140,7 +10190,7 @@
 		}
 
 		// copy adjacent edges
-		for (i = 0; i < this.boundedGridWidth; i += 1) {
+		for (i = 0; i < width; i += 1) {
 			y = bottomY + i;
 			x = leftX + i;
 
@@ -27379,10 +27429,13 @@
 		var width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
 
+			// box offset
+			boxOffset = (this.isMargolus ? -1 : 0),
+
 		    // coordinates of box
-		    leftX = Math.round((this.width - width) / 2 - 1),
+		    leftX = Math.round((this.width - width) / 2 - 1) + boxOffset,
 		    rightX = leftX + width + 1,
-		    bottomY = Math.round((this.height - height) / 2 - 1),
+		    bottomY = Math.round((this.height - height) / 2 - 1) + boxOffset,
 		    topY = bottomY + height + 1,
 
 		    // top and bottom row

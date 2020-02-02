@@ -7945,8 +7945,9 @@
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 
 		    // bounded grid top left
-		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2),
-		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2),
+			/** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
+		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
+		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
 
 		    // bounded grid bottom right
 		    /** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
@@ -8620,7 +8621,7 @@
 	};
 
 	// create random LifeLife rule name
-	View.prototype.createRandomLifeLike = function() {
+	View.prototype.createRandomLifeLike = function(noB0) {
 		var result = "B",
 			i = 0,
 			valueB = 0,
@@ -8702,7 +8703,7 @@
 		}
 
 		// skip B0 for generations
-		if (this.engine.multiNumStates > 2) {
+		if (this.engine.multiNumStates > 2 || noB0) {
 			i = 1;
 		} else {
 			i = 0;
@@ -8910,7 +8911,13 @@
 			maxState = 0,
 			rows = me.randomHeight,
 			columns = me.randomWidth,
-			fill = me.randomFillPercentage / 100;
+			fill = me.randomFillPercentage / 100,
+			isAlternating = false;
+
+		// check if rule is alternating
+		if (me.patternRuleName.indexOf("|") !== -1) {
+			isAlternating = true;
+		}
 
 		// populate output states
 		if (me.engine.multiNumStates <= 2 && !me.engine.displayLifeHistory) {
@@ -8980,18 +8987,33 @@
 			if (!me.engine.isRuleTree) {
 				if (me.engine.isMargolus || me.engine.isPCA) {
 					me.patternRuleName = me.createRandomMargolus(me.engine.isPCA);
+					if (isAlternating) {
+						me.patternRuleName += "|" + me.createRandomMargolus(me.engine.isPCA);
+					}
 				} else {
 					if (me.engine.isHROT) {
 						if (me.wasLtL) {
 							me.patternRuleName = me.createRandomLTL();
+							if (isAlternating) {
+								me.patternRuleName += "|" + me.createRandomLTL();
+							}
 						} else {
 							me.patternRuleName = me.createRandomHROT();
+							if (isAlternating) {
+								me.patternRuleName += "|" + me.createRandomHROT();
+							}
 						}
 					} else {
 						if (me.engine.wolframRule !== -1) {
 							me.patternRuleName = me.createRandomWolfram();
+							if (isAlternating) {
+								me.patternRuleName += "|" + me.createRandomWolfram();
+							}
 						} else {
-							me.patternRuleName = me.createRandomLifeLike();
+							me.patternRuleName = me.createRandomLifeLike(isAlternating);
+							if (isAlternating) {
+								me.patternRuleName += "|" + me.createRandomLifeLike(isAlternating);
+							}
 						}
 					}
 				}
@@ -10958,8 +10980,9 @@
 			states = me.engine.multiNumStates,
 			/** @type {boolean} */ rotateFits = true,
 			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
-		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2),
-		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2),
+		    /** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
+		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
+		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
 		    /** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
 			/** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1,
 			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
@@ -13836,6 +13859,9 @@
 		} else {
 			me.isEdge = false;
 		}
+
+		// default alternating Margolus grid to on
+		me.engine.altGrid = true;
 
 		// turn off pretty rendering
 		me.engine.pretty = false;
