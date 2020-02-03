@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 514,
+		/** @const {number} */ versionBuild : 515,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6036,7 +6036,7 @@
 				if (identifyResult[0] === LifeConstants.bufferFullMessage) {
 					identifyResult[0] = "Nothing Identified";
 					me.lastOscillator = "none";
-					me.lastIdentifyType = "";
+					me.lastIdentifyType = "None";
 					me.lastIdentifyDirection = "";
 					me.lastIdentifySpeed = "";
 					me.lastIdentifyBox = "";
@@ -6114,8 +6114,8 @@
 				me.afterEdit("");
 
 				me.identifyBannerLabel.preText = identifyResult[0];
-				if (me.lastIdentifyType === "Empty") {
-					me.menuManager.notification.notify(identifyResult[0], 15, 120, 15, false);
+				if (me.lastIdentifyType === "Empty" || me.lastIdentifyType === "None") {
+					me.menuManager.notification.notify(identifyResult[0], 15, 240, 15, false);
 					me.resultsDisplayed = false;
 				} else {
 					me.menuManager.notification.clear(true, false);

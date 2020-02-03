@@ -1,3 +1,7 @@
+Build 515
+- display message if Identify reaches maximum period
+- added some more aliases
+
 Build 514
 - fixed support for reversible alternating Margolus rules
 

@@ -288,6 +288,7 @@
 		a.push(["4life", "B34jy/S23"]);
 		a.push(["4life2", "B34j/S23"]);
 		a.push(["57life", "B34tyz5cy/S23-a4it5ej"]);
+		a.push(["acnelife", "B34/S2eik3"]);
 		a.push(["aLife", "B3/S234iw"]);
 		a.push(["Arcane Circuitry", "B2ci3aikr/S1e2-a3i"]);
 		a.push(["Arrow", "B3-jkn4a/S1e2-a3ijnry4n"]);
@@ -319,6 +320,7 @@
 		a.push(["CB2", "B2ae4i/S1e2in"]);
 		a.push(["cetlife", "B34cet/S234jkwyz"]);
 		a.push(["Clouds", "B2e3aceij/S23-a4"]);
+		a.push(["Cloudsdale", "B2kn3-ekqr4i5eq6n8/S23-aeny4cikqr5ek6ace7c"]);
 		a.push(["CommonRepl", "B3/S23-ac4eiy6"]);
 		a.push(["Conquerors and Colonizers", "B2ace3acei4ace5acei6ace/S"]);
 		a.push(["Conway++", "B3/S234c"]);
@@ -386,10 +388,12 @@
 		a.push(["IceNine", "B3aeiy4ae5i68/S2-in3-kqr4artz5aeny6-e78"]);
 		a.push(["ilife", "B3/S235i"]);
 		a.push(["Immortalife", "B3-cqy4j/S2-n34i"]);
+		a.push(["IneticLife", "B2-an3-k/S2ac"]);
 		a.push(["IronGoats", "B2in36/S123a8"]);
 		a.push(["Ising", "B3e4ejr5cinqy6-ei78/S2ei3aejkr4-cny5-e678"]);
 		a.push(["Just Friends", "B2-a/S12"]);
 		a.push(["Kgdm", "B3/S2-c3-en4ceitz"]);
+		a.push(["KineticLife", "B2-an3/S2ac"]);
 		a.push(["klife", "B34n/S23"]);
 		a.push(["Knyght", "B2e3/S23-jq"]);
 		a.push(["ktlife", "B3/S2-i34nq"]);
@@ -502,6 +506,7 @@
 		a.push(["Wild Seas", "B2c3-cekq4ikt5i8/S2-in3-acky4aijry5eiky6i"]);
 		a.push(["wlife", "B34w/S23"]);
 		a.push(["Worms 0", "B01c2n5a/S3a5i"]);
+		a.push(["WSScentral", "B3-n45qr6i/S2eik3"]);
 		a.push(["X-rule-pre", "B2cei3ci4jnr5ikn/S12aen3c4einqy5er6aei8"]);
 		a.push(["xtdbee", "B3-k/S23"]);
 		a.push(["xvaLifeg", "B2e3/S23"]);
