@@ -271,7 +271,7 @@
 		s.push("INT Hex");
 		a.push(["Isotropic Non-Totalistic Hex", ""]);
 		a.push(["Hex Life", "B2o3m56/S2-p4oH"]);
-		a.push(["22da", "B2o/S2-mH"]);
+		a.push(["22da", "B2/S2-mH"]);
 		a.push(["Hexrule b2o", "B2o/S2m34H"]);
 
 		// add 2-state isotropic non-totalistic Moore aliases
@@ -587,13 +587,14 @@
 		a.push(["Rhufo", "MAPARH//wMA//8AAP9/AAD//wAA//8AAP9/AAD//wAA//8AAP//AAB//wAA//8AAP//AAD//wAA//8AAH9/AAB//w"]);
 		a.push(["Rhufo2", "MAPARH//wMA//8AAH9/AAD//wAAX/8AAP9/AAB/7wAA//8AAH//AAB//wAA//8AAP//AAB//wAA/f8AAH8/AAB3/w"]);
 		a.push(["SemiFelineLife", "MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaICatGiA6ICAAIAAaICatIAAgACAAIAAAAAAAA"]);
-		a.push(["Simple Weird Ships", "MAPABHs/wMA//8AAP//AAD//wAA/38AAP//AAD//wAA//8AAP//gAD//wAA//8AAP//AAD//wAA//8AAP//AAD//w"]);
+		a.push(["Simple_Weird_Ships", "MAPABHs/wMA//8AAP//AAD//wAA/38AAP//AAD//wAA//8AAP//gAD//wAA//8AAP//AAD//wAA//8AAP//AAD//w"]);
 		a.push(["Socrates", "MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaIDogGiA6ICAAIAAaIDogIAAg00IAmSocrateg"]);
 
 		// add Alternating aliases
 		s.push("Alt OT M");
 		a.push(["Alternating Outer-Totalistic Moore", ""]);
 		a.push(["alternlife", "B13/S012345678|B/S15"]);
+		a.push(["comb395", "B3/S1237|B2/S"]);
 		a.push(["comb625", "B3/S348|B2/S356"]);
 		a.push(["Dotlesslife", "B3/S23|B/S12345678"]);
 		a.push(["Fizzler", "B13/S3|B/S345678"]);
