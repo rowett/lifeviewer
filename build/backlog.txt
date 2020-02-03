@@ -6,6 +6,7 @@ Investigate:
     LtL Margolus rules
     grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
     user preferences
+    strict volatility (Identify)
 
 Planned:
     menu items coordinates should be reflected based on compass position
@@ -17,7 +18,6 @@ Planned:
         [[ COLOUR @NAME ]]
         [[ XY = @NAME display ]]
         [[ colour picker @NAME display ]]
-    check reverse for alternating rules
 
 [STARTED]add type information for closure compiler
 

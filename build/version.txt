@@ -1,3 +1,10 @@
+Build 514
+- fixed support for reversible alternating Margolus rules
+
+Build 513
+- added a new alias
+- fixed a couple of aliases
+
 Build 512
 - added script command [[ REVERSESTART ]]
 	- sets initial playback direction to Reverse for reversible rules

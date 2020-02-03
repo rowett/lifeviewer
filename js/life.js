@@ -7008,6 +7008,16 @@
 						this.createNonStrobingAlternates(savedArray, ruleAltArray);
 						this.createMargolusIndex(this.margolusReverseLookup1, ruleAltArray);
 						this.createMargolusIndex(this.margolusReverseLookup2, savedArray);
+					} else {
+						// check for alternate
+						if (this.canReverse(ruleArray, false) && this.canReverse(ruleAltArray, false)) {
+							this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
+							this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
+							this.canReverse(ruleArray, true);
+							this.createMargolusIndex(this.margolusReverseLookup1, ruleArray);
+							this.canReverse(ruleAltArray, true);
+							this.createMargolusIndex(this.margolusReverseLookup2, ruleAltArray);
+						}
 					}
 				} else {
 					this.createMargolusIndex(this.margolusLookup1, ruleArray);
