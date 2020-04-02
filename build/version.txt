@@ -1,3 +1,6 @@
+Build 516
+- fix [[ RLE ]] with multi-line pattern
+
 Build 515
 - display message if Identify reaches maximum period
 - added some more aliases

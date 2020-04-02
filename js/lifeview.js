@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 515,
+		/** @const {number} */ versionBuild : 516,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2477,7 +2477,7 @@
 			this.engine.doShrink();
 
 			// update state 6 grid
-			if (this.engine.isLifeHistory) {
+			if (this.engine.isLifeHistory || me.engine.isSuper) {
 				this.engine.populateState6MaskFromColGrid();
 			}
 		}
@@ -2545,7 +2545,7 @@
 			this.engine.doShrink();
 
 			// update state 6 grid
-			if (this.engine.isLifeHistory) {
+			if (this.engine.isLifeHistory || me.engine.isSuper) {
 				this.engine.populateState6MaskFromColGrid();
 			}
 		}
@@ -13803,6 +13803,7 @@
 		this.engine.isMargolus = false;
 		this.engine.isPCA = false;
 		this.engine.isLifeHistory = false;
+		this.engine.isSuper = false;
 		this.engine.displayLifeHistory = false;
 		this.engine.isHex = false;
 		this.engine.isTriangular = false;
@@ -14019,6 +14020,9 @@
 			// check if the rule is a History rule
 			me.engine.isLifeHistory = pattern.isHistory;
 			me.engine.displayLifeHistory = pattern.isHistory;
+
+			// check if the rule is a Super rule
+			me.engine.isSuper = pattern.isSuper;
 
 			// read the number of states (Generations or HROT)
 			me.engine.multiNumStates = pattern.multiNumStates;
@@ -14475,6 +14479,9 @@
 				if (me.engine.isPCA) {
 					numberValue = 16;
 				}
+				if (me.engine.isSuper) {
+					numberValue = 26;
+				}
 				me.readScript(pattern.title, numberValue);
 
 				// set errors to display if any found
@@ -14721,7 +14728,7 @@
 			me.computePanXY(pattern.width, pattern.height);
 			
 			// populate the state 6 mask
-			if (me.engine.isLifeHistory) {
+			if (me.engine.isLifeHistory || me.engine.isSuper) {
 				// check if state 6 is used
 				if (me.manager.stateCount[6]) {
 					me.engine.populateState6Mask(pattern, me.panX, me.panY);
@@ -15173,6 +15180,7 @@
 			me.engine.drawOverlay = false;
 			me.engine.isNone = true;
 			me.engine.isLifeHistory = false;
+			me.engine.isSuper = false;
 		}
 
 		// check whether to disable drawing

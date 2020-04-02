@@ -510,6 +510,9 @@
 		// whether pattern is [R]History
 		/** @type {boolean} */ this.isLifeHistory = false;
 
+		// whether pattern is [R]Super
+		/** @type {boolean} */ this.isSuper = false;
+
 		// whether to display [R]History states
 		/** @type {boolean} */ this.displayLifeHistory = false;
 
@@ -10481,6 +10484,11 @@
 			this.state6Post();
 		}
 
+		// perform super processing
+		if (this.isSuper) {
+			this.nextGenerationSuperTile();
+		}
+
 		// perform bounded grid post-processing
 		if (this.boundedGridType !== -1 && !this.isHROT) {
 			this.postProcessBoundedGrid(statsOn);
@@ -17978,8 +17986,8 @@
 
 	// convert life grid region to pens using tiles
 	Life.prototype.convertToPensTile = function() {
-		// ignore if rule is none or PCA
-		if (!(this.isNone || this.isPCA || this.isRuleTree)) {
+		// ignore if rule is none, PCA, RuleTable or Super
+		if (!(this.isNone || this.isPCA || this.isRuleTree || this.isSuper)) {
 			// check for generations or HROT rule
 			if (this.multiNumStates === -1) {
 				// check for theme history
@@ -18094,6 +18102,12 @@
 			bottomY += ySize;
 			topY += ySize;
 		}
+	};
+
+	// update the life grid region using tiles for Super patterns
+	Life.prototype.nextGenerationSuperTile = function() {
+		// TBD add other neighbourhoods
+		this.nextGenerationSuperTileMoore();
 	};
 
 	// update the life grid region using tiles for RuleTable patterns

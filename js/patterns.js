@@ -429,6 +429,9 @@
 		// lower case name of [R]History postfix
 		/** @const {string} */ this.historyPostfix = "history";
 
+		// lower case name of [R]Super postfix
+		/** @const {string} */ this.superPostfix = "super";
+
 		// lower case name of Triangular postfix
 		/** @const {string} */ this.triangularPostfix = "l";
 
@@ -676,6 +679,9 @@
 
 		// is history rule
 		/** @type {boolean} */ this.isHistory = false;
+
+		// is super rule
+		/** @type {boolean} */ this.isSuper = false;
 
 		// contains Niemiec extended states
 		/** @type {boolean} */ this.isNiemiec = false;
@@ -1671,6 +1677,7 @@
 					// disable multi-state
 					pattern.multiNumStates = -1;
 					pattern.isHistory = false;
+					pattern.isSuper = false;
 				}
 			} else {
 				// default to Conway's Life
@@ -6092,10 +6099,16 @@
 		    boundedIndex = -1,
 
 		    // history index
-		    historyIndex = -1,
-
+			historyIndex = -1,
+			
 		    // history postfix length
 		    historyLength = this.historyPostfix.length,
+
+			// super index
+			superIndex = -1,
+
+			// super postfix length
+			superLength = this.superPostfix.length,
 
 		    // rule string
 			ruleString = "",
@@ -6165,6 +6178,32 @@
 				// remove the postfix
 				temp = ruleString.substr(0, historyIndex).trim();
 				ruleString = temp.substr(0, temp.length - historyLength) + ruleString.substr(historyIndex);
+			}
+		}
+
+		// check for Super rules
+		if (!pattern.isHistory) {
+			superIndex = ruleString.toLowerCase().lastIndexOf(this.superPostfix);
+			if ((superIndex !== -1) && (superIndex === ruleString.length - superLength)) {
+				// rule is a super type
+				pattern.isSuper = true;
+
+				// remove the postfix
+				ruleString = ruleString.substr(0, ruleString.length - superLength).trim();
+			}
+
+			// check for Super when alternate rules defined
+			superIndex = ruleString.indexOf(this.altRuleSeparator);
+			if (superIndex !== -1) {
+				// check for History just before separartor
+				if (ruleString.toLowerCase().substr(0, superIndex).trim().substr(-superLength) === this.superPostfix) {
+					// rule is a super type
+					pattern.isSuper = true;
+				
+					// remove the postfix
+					temp = ruleString.substr(0, superIndex).trim();
+					ruleString = temp.substr(0, temp.length - superLength) + ruleString.substr(superIndex);
+				}
 			}
 		}
 
@@ -6249,6 +6288,7 @@
 		pattern.multiStateMap = null;
 		pattern.invalid = false;
 		pattern.isHistory = false;
+		pattern.isSuper = false;
 		pattern.isNiemiec = false;
 		pattern.isHex = false;
 		pattern.wolframRule = -1;
@@ -6490,10 +6530,24 @@
 			this.executable = false;
 		}
 
+		// check for "none" and [R]Super
+		if (pattern.isNone && pattern.isSuper) {
+			this.failureReason = "[R]Super not valid with none rule";
+			pattern.isHistory = false;
+			this.executable = false;
+		}
+
 		// check for generations and [R]History
 		if (pattern.multiNumStates !== -1 && pattern.isHistory && !(pattern.isLTL || pattern.isHROT)) {
 			this.failureReason = "[R]History not valid with Generations";
 			pattern.isHistory = false;
+			this.executable = false;
+		}
+
+		// check for generations and [R]Super
+		if (pattern.multiNumStates !== -1 && pattern.isSuper && !(pattern.isLTL || pattern.isHROT)) {
+			this.failureReason = "[R]Super not valid with Generations";
+			pattern.isSuper = false;
 			this.executable = false;
 		}
 
@@ -6510,6 +6564,13 @@
 			this.executable = false;
 		}
 
+		// check for LTL and [R]Super
+		if (pattern.isLTL && pattern.isSuper) {
+			this.failureReason = "[R]Super not valid with LtL";
+			pattern.isSuper = false;
+			this.executable = false;
+		}
+
 		// check for HROT and [R]History
 		if (pattern.isHROT && pattern.isHistory) {
 			this.failureReason = "[R]History not valid with HROT";
@@ -6517,10 +6578,24 @@
 			this.executable = false;
 		}
 
+		// check for HROT and [R]Super
+		if (pattern.isHROT && pattern.isSuper) {
+			this.failureReason = "[R]Super not valid with HROT";
+			pattern.isSuper = false;
+			this.executable = false;
+		}
+
 		// check for Margolus and [R]History
 		if (pattern.isMargolus && pattern.isHistory) {
 			this.failureReason = "[R]History not valid with Margolus";
 			pattern.isHistory = false;
+			this.executable = false;
+		}
+
+		// check for Margolus and [R]Super
+		if (pattern.isMargolus && pattern.isSuper) {
+			this.failureReason = "[R]Super not valid with Margolus";
+			pattern.isSuper = false;
 			this.executable = false;
 		}
 
@@ -6556,27 +6631,36 @@
 						this.illegalState = true;
 					}
 				} else {
-					// check for Generations
-					if (pattern.multiNumStates !== -1) {
-						if (pattern.numStates > pattern.multiNumStates) {
-							if (pattern.isLTL) {
-								this.failureReason = "Illegal state in pattern for LtL";
-								this.illegalState = true;
-							} else {
-								if (pattern.isHROT) {
-									this.failureReason = "Illegal state in pattern for HROT";
+					// check for [R]Super
+					if (pattern.isSuper) {
+						if (pattern.numStates > 26) {
+							this.failureReason = "Illegal state in pattern for [R]Super";
+							this.executable = false;
+							this.illegalState = true;
+						}
+					} else {
+						// check for other rules
+						if (pattern.multiNumStates !== -1) {
+							if (pattern.numStates > pattern.multiNumStates) {
+								if (pattern.isLTL) {
+									this.failureReason = "Illegal state in pattern for LtL";
 									this.illegalState = true;
 								} else {
-									if (pattern.isPCA) {
-										this.failureReason = "Illegal state in pattern for PCA";
+									if (pattern.isHROT) {
+										this.failureReason = "Illegal state in pattern for HROT";
 										this.illegalState = true;
 									} else {
-										this.failureReason = "Illegal state in pattern for Generations";
-										this.illegalState = true;
+										if (pattern.isPCA) {
+											this.failureReason = "Illegal state in pattern for PCA";
+											this.illegalState = true;
+										} else {
+											this.failureReason = "Illegal state in pattern for Generations";
+											this.illegalState = true;
+										}
 									}
 								}
+								this.executable = false;
 							}
-							this.executable = false;
 						}
 					}
 				}
@@ -7917,6 +8001,7 @@
 							this.extendedFormat = false;
 							newPattern.multiStateMap = null;
 							newPattern.isHistory = false;
+							newPattern.isSuper = false;
 							newPattern.numStates = 2;
 							newPattern.numUsedStates = 0;
 						}
@@ -7999,6 +8084,7 @@
 				newPattern.isPCA = false;
 				newPattern.isNone = false;
 				newPattern.isHistory = false;
+				newPattern.isSuper = false;
 				newPattern.isNiemiec = false;
 				newPattern.isHex = false;
 				newPattern.isTriangular = false;

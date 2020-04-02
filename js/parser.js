@@ -2260,7 +2260,7 @@
 
 									// concatenate subequent tokens that are valid RLE
 									transToken = scriptReader.peekAtNextToken();
-									while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && this.manager.decodeRLEString(pattern, transToken, false, view.engine.allocator) !== -1) {
+									while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && view.manager.decodeRLEString(pattern, transToken, false, view.engine.allocator) !== -1) {
 										// consume token
 										scriptReader.getNextToken();
 										// add to rle
@@ -2340,7 +2340,7 @@
 
 								// concatenate subequent tokens that are valid RLE
 								transToken = scriptReader.peekAtNextToken();
-								while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && this.manager.decodeRLEString(pattern, transToken, false, view.engine.allocator) !== -1) {
+								while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && view.manager.decodeRLEString(pattern, transToken, false, view.engine.allocator) !== -1) {
 									// consume token
 									scriptReader.getNextToken();
 									// add to rle
