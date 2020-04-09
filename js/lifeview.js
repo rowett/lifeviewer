@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 516,
+		/** @const {number} */ versionBuild : 517,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -891,6 +891,10 @@
 
 		// rle paste modulus
 		/** @type {number} */ this.pasteEvery = 0;
+
+		// rle PASTET EVERY position delta
+		/** @type {number} */ this.pasteDeltaX = 0;
+		/** @type {number} */ this.pasteDeltaY = 0;
 
 		// whether there is a paste every snippet
 		/** @type {boolean} */ this.isPasteEvery = false;
@@ -1940,7 +1944,7 @@
 			} else {
 				tip = "activate ";
 			}
-			tip += "clipboard"
+			tip += "clipboard";
 			if (buffer[i] !== null) {
 				tip += " (" + buffer[i].width + " x " + buffer[i].height + ")";
 			}
@@ -2757,7 +2761,7 @@
 					cells = this.rleToCellList(rle, x, y, transform);
 					if (cells[0] !== "error") {
 						// add to the named list
-						this.rleList[this.rleList.length] = {name: name, cells: cells}
+						this.rleList[this.rleList.length] = {name: name, cells: cells};
 					} else {
 						scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "invalid RLE"];
 					}
@@ -2767,7 +2771,7 @@
 	};
 
 	// add rle to paste list
-	View.prototype.addRLE = function(gen, end, deltaList, every, mode, rle, x, y, transform) {
+	View.prototype.addRLE = function(gen, end, deltaList, every, mode, deltaX, deltaY, rle, x, y, transform) {
 		var i = 0,
 			found = false,
 			cells = [],
@@ -2888,7 +2892,7 @@
 			}
 
 			// create the paste entry
-			this.pasteList[this.pasteList.length] = {genList: genList, end: end, every: every, mode: mode, cells: cells, map: stateMap, leftX: leftX, bottomY: bottomY, width: rightX - leftX + 1, height: topY - bottomY + 1, evolution: evolution};
+			this.pasteList[this.pasteList.length] = {genList: genList, end: end, every: every, mode: mode, cells: cells, map: stateMap, leftX: leftX, bottomY: bottomY, width: rightX - leftX + 1, height: topY - bottomY + 1, evolution: evolution, deltaX: deltaX, deltaY: deltaY};
 			if (every > 0) {
 				this.isPasteEvery = true;
 			}
@@ -3070,6 +3074,7 @@
 			sourceFlag = 0,
 			destFlag = 0,
 			result = 0,
+			mult = 0,
 			gridWidth = this.engine.width,
 			stateMap = null,
 			stateRow = null,
@@ -3083,6 +3088,13 @@
 				xOff = (gridWidth >> 1) - (this.patternWidth >> 1);
 				yOff = (gridWidth >> 1) - (this.patternHeight >> 1);
 				stateMap = paste.map;
+
+				// check for deltas with PASTET EVERY
+				if (paste.every !== 0 && (paste.deltaX !== 0 || paste.deltaY !== 0)) {
+					mult = (counter - paste.genList[0]) / paste.every;
+					xOff += paste.deltaX * mult;
+					yOff += paste.deltaY * mult;
+				}
 
 				// paste with the given mode
 				xOff += paste.leftX;
@@ -3920,9 +3932,9 @@
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
-		midBox.leftX = selBox.leftX + xOff,
-		midBox.bottomY = selBox.bottomY + yOff,
-		midBox.rightX = selBox.rightX + xOff,
+		midBox.leftX = selBox.leftX + xOff;
+		midBox.bottomY = selBox.bottomY + yOff;
+		midBox.rightX = selBox.rightX + xOff;
 		midBox.topY = selBox.topY + yOff;
 
 		me.checkGridSize(me, midBox);
@@ -5545,7 +5557,7 @@
 		shown = hide || !this.showDisplaySettings;
 		this.hexCellButton.deleted = shown;
 		this.bordersButton.deleted = shown;
-		this.majorButton.deleted = shown
+		this.majorButton.deleted = shown;
 		this.starsButton.deleted = shown;
 		this.labelButton.deleted = shown;
 		this.rHistoryButton.deleted = shown;
@@ -9646,7 +9658,7 @@
 	// sections button
 	View.prototype.sectionsPressed = function(me) {
 		me.showSections = true;
-	}
+	};
 
 	// topics button
 	View.prototype.topicsPressed = function(me) {
@@ -9886,7 +9898,7 @@
 			// cut to the current clipboard
 			me.cutSelection(me, me.currentPasteBuffer, false, false);
 		}
-	}
+	};
 
 	// cut pressed
 	View.prototype.cutPressed = function(me) {
@@ -10250,15 +10262,15 @@
 		me.engine.grid16 = currentGrid16;
 		me.engine.nextGrid16 = currentNextGrid16;
 		me.engine.zoomBox.leftX = currentZoomBox.leftX;
-		me.engine.blankRow = currentBlankRow,
+		me.engine.blankRow = currentBlankRow;
 		me.engine.blankRow16 = currentBlankRow16;
 		me.engine.blankTileRow = currentBlankTileRow;
 		me.engine.blankColourRow = currentBlankColourRow;
-		me.engine.tileRows = currentTileRows,
-		me.engine.tileCols = currentTileCols,
-		me.engine.widthMask = currentWidthMask,
-		me.engine.heightMask = currentHeightMask,
-		me.engine.counter = currentCounter,
+		me.engine.tileRows = currentTileRows;
+		me.engine.tileCols = currentTileCols;
+		me.engine.widthMask = currentWidthMask;
+		me.engine.heightMask = currentHeightMask;
+		me.engine.counter = currentCounter;
 		zoomBox.leftX = currentZoomBox.leftX;
 		zoomBox.bottomY = currentZoomBox.bottomY;
 		zoomBox.rightX = currentZoomBox.rightX;
@@ -10692,7 +10704,7 @@
 				me.randomSelection(me, twoStateOnly);
 			}
 		}
-	}
+	};
 
 	// random pressed
 	View.prototype.randomPressed = function(me) {
@@ -11197,7 +11209,7 @@
 				me.flipYSelection(me);
 			}
 		}
-	}
+	};
 
 	// rotate CW pressed
 	View.prototype.rotateCWPressed = function(me) {
@@ -11635,7 +11647,7 @@
 			}
 		}
 
-		me.setMousePointer(me.modeList.current)
+		me.setMousePointer(me.modeList.current);
 
 		return [me.displayHelp];
 	};
@@ -13954,6 +13966,8 @@
 		me.pasteDelta = [];
 		me.pasteEvery = 0;
 		me.isPasteEvery = false;
+		me.pasteDeltaX = 0;
+		me.pasteDeltaY = 0;
 		me.maxPasteGen = 0;
 		me.isEvolution = false;
 		me.pasteLeftX = ViewConstants.bigInteger;

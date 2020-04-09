@@ -2272,7 +2272,7 @@
 		this.lockedAlpha = 1.0;
 
 		// border colour and alpha
-		this.borderCol = "rgb(32,255,255)"
+		this.borderCol = "rgb(32,255,255)";
 		this.borderAlpha = 1.0;
 
 		// default border width

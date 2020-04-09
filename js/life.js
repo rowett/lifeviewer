@@ -326,7 +326,7 @@
 		this.snowRevive = null;
 
 		// initialise random number generator
-		this.randGen = new Random;
+		this.randGen = new Random();
 		this.randGen.init(Date.now().toString());
 
 		// whether current rule is RuleTree
@@ -1054,7 +1054,7 @@
 			// if the flake is off the bottom then add to revive list
 			if (newY >= ht - 1) {
 				// add to revive list
-				snowRevive[numRevive] = i
+				snowRevive[numRevive] = i;
 				numRevive += 1;
 			}
 			snowX[i] = newX;
@@ -1624,25 +1624,25 @@
 		// check for known displacements
 		switch (x * 10 + y) {
 		case 12:
-			result += " Knightwise"
+			result += " Knightwise";
 			break;
 		case 13:
-			result += " Camelwise"
+			result += " Camelwise";
 			break;
 		case 14:
-			result += " Giraffewise"
+			result += " Giraffewise";
 			break;
 		case 15:
-			result += " Ibiswise"
+			result += " Ibiswise";
 			break;
 		case 16:
-			result += " Flamingowise"
+			result += " Flamingowise";
 			break;
 		case 23:
-			result += " Zebrawise"
+			result += " Zebrawise";
 			break;
 		case 34:
-			result += " Antelopewise"
+			result += " Antelopewise";
 			break;
 		}
 	
@@ -17246,7 +17246,7 @@
 						// check if this tile is occupied
 						if ((tiles & (1 << b)) !== 0) {
 							// get the destination row
-							destRow = smallColourGrid[bottomY]
+							destRow = smallColourGrid[bottomY];
 
 							// get the next 16 rows
 							sourceRow = colourGrid[bottomY];
@@ -29244,7 +29244,7 @@
 					i = l + sWidth;
 					for (yz = 1; yz < intZoom2; yz += 1) {
 						sData32.copyWithin(i, l, l + intWidth2);
-						l += sWidth
+						l += sWidth;
 						i += sWidth;
 					}
 				}

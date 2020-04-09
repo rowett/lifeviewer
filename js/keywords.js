@@ -419,6 +419,9 @@
 		// paste T
 		/** @const {string} */ pasteTWord : "PASTET",
 
+		// paste delta
+		/** @const {string} */ pasteDeltaWord : "PASTEDELTA",
+
 		/** every for paste T */
 		/** @const {string} */ everyWord : "EVERY",
 

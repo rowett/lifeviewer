@@ -1130,6 +1130,7 @@
 		y = this.renderHelpLine(view, "(recipe|<1..>+)*", "... optional delta list", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteTWord + " " + Keywords.everyWord + " <1..>", "set paste interval", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (<0..> (<1..>))", "... optional start and end", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.pasteDeltaWord + " X Y", "set position delta for " + Keywords.pasteTWord + " " + Keywords.everyWord, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteModeWord + " <0..15>|mode", "set paste mode", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " 0   0000  " + Keywords.pasteModeZeroWord, "", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " 1   0001  " + Keywords.pasteModeAndWord, "", ctx, x, y, height, helpLine);
@@ -1266,7 +1267,7 @@
 			itemName = "Hexagonal";
 		} else {
 			if (view.engine.isTriangular) {
-				itemName = "Triangular"
+				itemName = "Triangular";
 			} else {
 				itemName = "Square";
 			}

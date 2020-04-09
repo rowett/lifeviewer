@@ -430,7 +430,7 @@
 		/** @const {string} */ this.historyPostfix = "history";
 
 		// lower case name of [R]Super postfix
-		/** @const {string} */ this.superPostfix = "super";
+		/** @const {string} */ this.superPostfix = "superTBD";  // TBD remove TBD when implementation complete
 
 		// lower case name of Triangular postfix
 		/** @const {string} */ this.triangularPostfix = "l";
@@ -7383,7 +7383,7 @@
 				if (states <= 10 && numVars === 0 && reader.nextIsNewline()) {
 					// single-digit format
 					inputs = [];
-					valid = false
+					valid = false;
 					if (nextToken.length === nInputs + 1) {
 						// decode transitions
 						i = 0;

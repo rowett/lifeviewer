@@ -137,6 +137,7 @@
 			case Keywords.pasteWord:
 			case Keywords.everyWord:
 			case Keywords.pasteTWord:
+			case Keywords.pasteDeltaWord:
 			case Keywords.pasteModeWord:
 			case Keywords.pasteModeZeroWord:
 			case Keywords.pasteModeAndWord:
@@ -2405,7 +2406,7 @@
 									z = ViewConstants.transIdentity;
 								}
 
-								if (!view.addRLE(view.pasteGen, view.pasteEnd, view.pasteDelta, view.pasteEvery, view.pasteMode, stringToken, x, y, z)) {
+								if (!view.addRLE(view.pasteGen, view.pasteEnd, view.pasteDelta, view.pasteEvery, view.pasteMode, view.pasteDeltaX, view.pasteDeltaY, stringToken, x, y, z)) {
 									scriptErrors[scriptErrors.length] = [Keywords.pasteWord + " " + stringToken, "invalid name or rle"];
 								}
 	
@@ -2413,6 +2414,29 @@
 								itemValid = true;
 							}
 
+							break;
+
+						// set position delta for PASTET EVERY
+						case Keywords.pasteDeltaWord:
+							// get the X offset
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+								if (numberValue >= -4096 && numberValue <= 4096) {
+									view.pasteDeltaX = numberValue;
+									isNumeric = false;
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+										numberValue = scriptReader.getNextTokenAsNumber();
+										if (numberValue >= -4096 && numberValue <= 4096) {
+											view.pasteDeltaY = numberValue;
+											itemValid = true;
+										}
+									}
+								}
+							}
 							break;
 
 						// set rle paste generation

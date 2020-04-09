@@ -1,3 +1,7 @@
+Build 517
+- added script command [[ PASTEDELTA X Y ]]
+	- sets position delta for [[ PASTET EVERY ]]
+
 Build 516
 - fix [[ RLE ]] with multi-line pattern
 
