@@ -1,3 +1,6 @@
+Build 518
+- fix [R]History 2-state paste
+
 Build 517
 - added script command [[ PASTEDELTA X Y ]]
 	- sets position delta for [[ PASTET EVERY ]]
