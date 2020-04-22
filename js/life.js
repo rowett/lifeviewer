@@ -6033,6 +6033,12 @@
 									new Colour(240, 240, 240), new ColourRange(new Colour(160, 160, 160), new Colour(-1, -1, -1)), new ColourRange(new Colour(24, 24, 24), new Colour(64, 64, 64)), new Colour(0, 0, 0));
 		i += 1;
 
+		// Book theme
+		this.themes[i] = new Theme("Book", new ColourRange(new Colour(255, 220, 192), new Colour(192, 220, 255)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(255, 255, 255),
+									new Colour(0, 0, 0), new ColourRange(new Colour(24, 24, 24), new Colour(128, 128, 128)), new ColourRange(new Colour(255, 220, 192), new Colour(192, 220, 255)), new Colour(255, 255, 255));
+		this.themes[i].setGridLines(0, new Colour(192, 192, 192), new Colour(209, 209, 209));
+		i += 1;
+
 		// custom theme
 		this.themes[i] = new Theme(Keywords.themeCustomWord, new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0),
 									new Colour(0, 0, 0), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));

@@ -1,3 +1,18 @@
+Build 520
+- annotations now support specifying the zoom range at which they will be visible
+	- [[ LABEL X Y ZOOM (MAXZOOM) (FIXED) "string" ]]
+	- [[ ARROW X1 Y1 X2 Y2 ZOOM (MAXZOOM) (FIXED) ]]
+	- [[ POLYLINE X1 Y1 X2 Y2 .. ZOOM (MAXZOOM) (FIXED) ]]
+	- [[ POLYFILL X1 Y1 X2 Y2 .. ZOOM (MAXZOOM) (FIXED) ]]
+	- if MAXZOOM is specified then the annotation will be visible from ZOOM to MAXZOOM
+	- if MAXZOOM is not specified then the annotation will be visible from ZOOM / 4 to ZOOM * 4
+	- negative zoom value -N mean a zoom of 1/N so ZOOM -4 is the same as ZOOM 1/4 or ZOOM 0.25
+- fixed Theme button position
+- fixed Help->Info->Identify having info when no identification happened
+
+Build 519
+- added "BOOK" Theme
+
 Build 518
 - fix [R]History 2-state paste
 

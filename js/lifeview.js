@@ -66,8 +66,8 @@
 		/** @const {number} */ maxRandomFill : 100,
 
 		// theme selection button positions and order
-		/** @const {Array<number>} */ themeX : [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3],
-		/** @const {Array<number>} */ themeOrder : [1, 10, 11, 17, 18, 2, 3, 4, 5, 7, 12, 13, 14, 15, 16, 0, 6, 8, 9, 19],
+		/** @const {Array<number>} */ themeX : [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3],
+		/** @const {Array<number>} */ themeOrder : [1, 10, 11, 17, 18, 2, 3, 4, 5, 7, 12, 13, 14, 15, 16, 0, 6, 8, 9, 19, 20],
 
 		// paste positions
 		/** @const {number} */ pastePositionNW : 0,
@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 518,
+		/** @const {number} */ versionBuild : 520,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6059,7 +6059,7 @@
 				if (identifyResult[0] === LifeConstants.bufferFullMessage) {
 					identifyResult[0] = "Nothing Identified";
 					me.lastOscillator = "none";
-					me.lastIdentifyType = "None";
+					me.lastIdentifyType = "none";
 					me.lastIdentifyDirection = "";
 					me.lastIdentifySpeed = "";
 					me.lastIdentifyBox = "";
@@ -6137,7 +6137,7 @@
 				me.afterEdit("");
 
 				me.identifyBannerLabel.preText = identifyResult[0];
-				if (me.lastIdentifyType === "Empty" || me.lastIdentifyType === "None") {
+				if (me.lastIdentifyType === "Empty" || me.lastIdentifyType === "none") {
 					me.menuManager.notification.notify(identifyResult[0], 15, 240, 15, false);
 					me.resultsDisplayed = false;
 				} else {

@@ -977,8 +977,9 @@
 		view.helpSections[sectionNum] = [view.lineNo, "Annotations"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Annotations:", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.labelWord + " X Y ZOOM (" + Keywords.fixedWord + ")", "define label at position", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " " + Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "... optionally fix position", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.labelWord + " X Y ZOOM", "define label at position", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " " + " (MAXZOOM) (" + Keywords.fixedWord + ")", "... zoom range and fixed position", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " " + Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "... label text", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelSizeWord + " <" + ViewConstants.minLabelSize + ".." + ViewConstants.maxLabelSize + ">", "define label font size", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelAlphaWord + " <0.0..1.0>", "define label font alpha", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelTWord + " <0..> <0..> <0..>", "generation range / fade", ctx, x, y, height, helpLine);
@@ -987,7 +988,7 @@
 		y = this.renderHelpLine(view, Keywords.labelTargetWord + " X Y D|" + Keywords.offWord, "label target and distance", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelTrackWord + " DX DY|" + Keywords.fixedWord, "label move per generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowWord + " X1 Y1 X2 Y2 ZOOM", "define arrow at position", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix position", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (MAXZOOM) (" + Keywords.fixedWord + ")", "... zoom range and fix position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowSizeWord + " <" + ViewConstants.minLineSize + ".." + ViewConstants.maxLineSize + "> <0.0..1.0>", "line width and head multiple", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowAlphaWord + " <0.0..1.0>", "define arrow alpha", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowTWord + " <0..> <0..> <0..>", "generation range / fade", ctx, x, y, height, helpLine);
@@ -996,9 +997,9 @@
 		y = this.renderHelpLine(view, Keywords.arrowTargetWord + " X Y D|" + Keywords.offWord, "arrow target and distance", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowTrackWord + " DX DY|" + Keywords.fixedWord, "arrow move per generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.polyLineWord + " X1 Y1 X2 Y2 .. ZOOM", "define outline polygon", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix position", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (MAXZOOM) (" + Keywords.fixedWord + ")", "... zoom range and fix position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.polyFillWord + " X1 Y1 X2 Y2 .. ZOOM", "define filled polygon", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix position", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (MAXZOOM) (" + Keywords.fixedWord + ")", "... zoom range and fix position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.polySizeWord + " <" + ViewConstants.minLineSize + ".." + ViewConstants.maxLineSize + ">", "line width", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.polyAlphaWord + " <0.0..1.0>", "define polygon alpha", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.polyTWord + " <0..> <0..> <0..>", "generation range / fade", ctx, x, y, height, helpLine);
@@ -1482,7 +1483,7 @@
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Identify:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Enabled", view.identify ? "Yes" : "No", ctx, x, y, height, helpLine);
-		if (view.lastIdentifyType !== "None" && view.lastIdentifyType !== "Empty") {
+		if (view.lastIdentifyType !== "none" && view.lastIdentifyType !== "Empty") {
 			y = this.renderHelpLine(view, "Type", view.lastIdentifyType, ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Cells", view.lastIdentifyCells, ctx, x, y, height, helpLine);
 			if (view.lastIdentifyType === "Oscillator" && !view.lastWasFast) {

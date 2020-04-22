@@ -1138,7 +1138,7 @@
 		    trackBoxW = 0,
 
 			// holders
-			x = 0, y = 0, z = 0,
+			x = 0, y = 0, z = 0, maxZ = 0,
 			x2 = 0, y2 = 0,
 			coords = [],
 
@@ -1533,6 +1533,7 @@
 							coords = [];
 							itemValid = true;
 							z = -1000;
+							maxZ = -2000;
 
 							// get the coordinates
 							while (itemValid && scriptReader.nextTokenIsNumeric()) {
@@ -1568,11 +1569,44 @@
 
 							// check that zoom was specified
 							if (z === -1000) {
-								scriptErrors[scriptErrors.length] = [nextToken, "missing zoom value"];
+								// assume the last coordinate pair was zoom range
+								if (coords.length > 4) {
+									// read min zoom
+									x = coords[coords.length - 2];
+									if (x >= ViewConstants.minZoom && x <= ViewConstants.maxZoom) {
+										z = x;
+									} else if (x >= ViewConstants.minNegZoom && x <= ViewConstants.maxNegZoom) {
+										z = -(1 / x);
+									} else {
+										scriptErrors[scriptErrors.length] = [nextToken + " " + x, "zoom out of range"];
+										z = 0;
+										itemValid = false;
+									}
+									if (itemValid) {
+										// read max zoom
+										x = coords[coords.length - 1];
+										if (x >= ViewConstants.minZoom && x <= ViewConstants.maxZoom) {
+											maxZ = x;
+										} else if (x >= ViewConstants.minNegZoom && x <= ViewConstants.maxNegZoom) {
+											maxZ = -(1 / x);
+										} else {
+											scriptErrors[scriptErrors.length] = [nextToken + " " + x, "zoom out of range"];
+											maxZ = 0;
+											itemValid = false;
+										}
+									}
+									if (itemValid) {
+										// shorten the coords list
+										coords = coords.slice(0, coords.length - 2);
+									}
+								} else {
+									scriptErrors[scriptErrors.length] = [nextToken, "missing zoom value"];
+									itemValid = false;
+								}
 							}
 							
 							// check at least two coordinate pairs were specified
-							if (coords.length < 4) {
+							if (itemValid && coords.length < 4) {
 								scriptErrors[scriptErrors.length] = [nextToken, "requires at least 2 coordinate pairs"];
 								itemValid = false;
 							}
@@ -1588,7 +1622,7 @@
 									peekToken = scriptReader.peekAtNextToken();
 								}
 								// save the polygon
-								currentPolygon = view.waypointManager.createPolygon(coords, (nextToken === Keywords.polyFillWord), z, view.customPolygonColour, currentPolygonAlpha,
+								currentPolygon = view.waypointManager.createPolygon(coords, (nextToken === Keywords.polyFillWord), z, maxZ, view.customPolygonColour, currentPolygonAlpha,
 									currentPolygonSize, currentPolygonT1, currentPolygonT2, currentPolygonTFade, currentPolygonAngle, currentPolygonAngleFixed,
 									currentPolygonPositionFixed, currentPolygonTX, currentPolygonTY, currentPolygonTDistance, currentPolygonDX, currentPolygonDY);
 								view.waypointManager.addPolygon(currentPolygon);
@@ -1895,6 +1929,26 @@
 																	}
 																}
 																if (z !== -1000) {
+																	maxZ = -2000;
+
+																	// check for optional max zoom
+																	if (scriptReader.nextTokenIsNumeric()) {
+																		isNumeric = true;
+																		numberValue = scriptReader.getNextTokenAsNumber();
+
+																		// check it is in range
+																		maxZ = -1000;
+
+																		if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
+																			maxZ = numberValue;
+																		} else {
+																			// check for negative zoom format
+																			if (numberValue >= ViewConstants.minNegZoom && numberValue <= ViewConstants.maxNegZoom) {
+																				maxZ = -(1 / numberValue);
+																			}
+																		}
+																	}
+
 																	// check for optional fixed keyword
 																	peekToken = scriptReader.peekAtNextToken();
 																	currentArrowPositionFixed = false;
@@ -1905,9 +1959,9 @@
 																		peekToken = scriptReader.peekAtNextToken();
 																	}
 																	// save the arrow
-																	currentArrow = view.waypointManager.createArrow(x, y, x2, y2, z, view.customArrowColour, currentArrowAlpha, currentArrowSize,
-																		currentArrowHeadMultiple, currentArrowT1, currentArrowT2, currentArrowTFade, currentArrowAngle, currentArrowAngleFixed,
-																		currentArrowPositionFixed, currentArrowTX, currentArrowTY, currentArrowTDistance, currentArrowDX, currentArrowDY);
+																	currentArrow = view.waypointManager.createArrow(x, y, x2, y2, z, maxZ, view.customArrowColour, currentArrowAlpha, currentArrowSize,
+																	currentArrowHeadMultiple, currentArrowT1, currentArrowT2, currentArrowTFade, currentArrowAngle, currentArrowAngleFixed,
+																	currentArrowPositionFixed, currentArrowTX, currentArrowTY, currentArrowTDistance, currentArrowDX, currentArrowDY);
 																	view.waypointManager.addArrow(currentArrow);
 																	itemValid = true;
 																}
@@ -2180,25 +2234,47 @@
 													}
 												}
 												if (z !== -1000) {
-													// check for optional fixed keyword
-													peekToken = scriptReader.peekAtNextToken();
-													currentLabelPositionFixed = false;
-													if (peekToken === Keywords.fixedWord) {
-														// consume the token
-														peekToken = scriptReader.getNextToken();
-														currentLabelPositionFixed = true;
-														peekToken = scriptReader.peekAtNextToken();
+													maxZ = -2000;
+
+													// check for optional max zoom
+													if (scriptReader.nextTokenIsNumeric()) {
+														isNumeric = true;
+														numberValue = scriptReader.getNextTokenAsNumber();
+
+														// check it is in range
+														maxZ = -1000;
+
+														if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
+															maxZ = numberValue;
+														} else {
+															// check for negative zoom format
+															if (numberValue >= ViewConstants.minNegZoom && numberValue <= ViewConstants.maxNegZoom) {
+																maxZ = -(1 / numberValue);
+															}
+														}
 													}
-													// check there is text
-													if (peekToken[0] === Keywords.stringDelimiter) {
-														// save the label
-														currentLabel = view.waypointManager.createLabel(x, y, z, view.customLabelColour, currentLabelAlpha, currentLabelSize,
-															currentLabelT1, currentLabelT2, currentLabelTFade, currentLabelAngle, currentLabelAngleFixed, currentLabelPositionFixed,
-															currentLabelTX, currentLabelTY, currentLabelTDistance, currentLabelDX, currentLabelDY);
-														readingLabel = true;
-														itemValid = true;
-													} else {
-														isNumeric = false;
+
+													// check for optional fixed keyword
+													if (maxZ !== -1000) {
+														peekToken = scriptReader.peekAtNextToken();
+														currentLabelPositionFixed = false;
+														if (peekToken === Keywords.fixedWord) {
+															// consume the token
+															peekToken = scriptReader.getNextToken();
+															currentLabelPositionFixed = true;
+															peekToken = scriptReader.peekAtNextToken();
+														}
+														// check there is text
+														if (peekToken[0] === Keywords.stringDelimiter) {
+															// save the label
+															currentLabel = view.waypointManager.createLabel(x, y, z, maxZ, view.customLabelColour, currentLabelAlpha, currentLabelSize,
+																currentLabelT1, currentLabelT2, currentLabelTFade, currentLabelAngle, currentLabelAngleFixed, currentLabelPositionFixed,
+																currentLabelTX, currentLabelTY, currentLabelTDistance, currentLabelDX, currentLabelDY);
+															readingLabel = true;
+															itemValid = true;
+														} else {
+															isNumeric = false;
+														}
 													}
 												}
 											}

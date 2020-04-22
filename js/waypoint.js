@@ -354,7 +354,7 @@
 	/**
 	 * @constructor
 	 */
-	function Polygon(coords, isFilled, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
+	function Polygon(coords, isFilled, zoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
 		// coordinates
 		this.coords = coords;
 
@@ -363,6 +363,12 @@
 
 		// zoom
 		this.zoom = zoom;
+
+		// minimum zoom
+		this.minZoom = zoom;
+
+		// maximum zoom
+		this.maxZoom = maxZoom;
 
 		// colour
 		this.colour = colour;
@@ -399,13 +405,22 @@
 		// label movement vector
 		this.dx = dx;
 		this.dy = dy;
+
+		// process zoom range
+		if (this.maxZoom === -2000) {
+			this.minZoom = this.zoom / 4;
+			this.maxZoom = this.zoom * 4;
+		} else {
+			this.minZoom = this.zoom;
+			this.zoom =  this.minZoom * Math.pow(this.maxZoom / this.minZoom, 0.5);
+		}
 	}
 
 	// Arrow constructor
 	/**
 	 * @constructor
 	 */
-	function Arrow(x1, y1, x2, y2, zoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
+	function Arrow(x1, y1, x2, y2, zoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
 		// x1 position
 		this.x1 = x1;
 
@@ -420,6 +435,12 @@
 
 		// zoom
 		this.zoom = zoom;
+
+		// minimum zoom
+		this.minZoom = zoom;
+
+		// maximum zoom
+		this.maxZoom = maxZoom;
 
 		// colour
 		this.colour = colour;
@@ -459,13 +480,22 @@
 		// label movement vector
 		this.dx = dx;
 		this.dy = dy;
+
+		// process zoom range
+		if (this.maxZoom === -2000) {
+			this.minZoom = this.zoom / 4;
+			this.maxZoom = this.zoom * 4;
+		} else {
+			this.minZoom = this.zoom;
+			this.zoom =  this.minZoom * Math.pow(this.maxZoom / this.minZoom, 0.5);
+		}
 	}
 
 	// Label constructor
 	/**
 	 * @constructor
 	 */
-	function Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
+	function Label(x, y, zoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
 		// message
 		this.message = "";
 
@@ -477,6 +507,12 @@
 
 		// zoom
 		this.zoom = zoom;
+
+		// minimum zoom
+		this.minZoom = zoom;
+
+		// maximum zoom
+		this.maxZoom = maxZoom; 
 
 		// colour
 		this.colour = colour;
@@ -513,6 +549,15 @@
 		// label movement vector
 		this.dx = dx;
 		this.dy = dy;
+
+		// process zoom range
+		if (this.maxZoom === -2000) {
+			this.minZoom = this.zoom / 4;
+			this.maxZoom = this.zoom * 4;
+		} else {
+			this.minZoom = this.zoom;
+			this.zoom =  this.minZoom * Math.pow(this.maxZoom / this.minZoom, 0.5);
+		}
 	}
 
 	// WaypointManager constructor
@@ -555,8 +600,8 @@
 	}
 
 	// create a polygon
-	WaypointManager.prototype.createPolygon = function(coords, isFilled, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
-		return new Polygon(coords, isFilled, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
+	WaypointManager.prototype.createPolygon = function(coords, isFilled, zoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
+		return new Polygon(coords, isFilled, zoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
 	};
 
 	// clear all polygons
@@ -575,8 +620,8 @@
 	};
 
 	// create an arrow
-	WaypointManager.prototype.createArrow = function(x1, y1, x2, y2, zoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
-		return new Arrow(x1, y1, x2, y2, zoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
+	WaypointManager.prototype.createArrow = function(x1, y1, x2, y2, zoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
+		return new Arrow(x1, y1, x2, y2, zoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
 	};
 
 	// clear all arrows
@@ -595,8 +640,8 @@
 	};
 
 	// create a label
-	WaypointManager.prototype.createLabel = function(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
-		return new Label(x, y, zoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
+	WaypointManager.prototype.createLabel = function(x, y, zoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
+		return new Label(x, y, zoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
 	};
 
 	// clear all labels
@@ -876,7 +921,6 @@
 			x = 0, y = 0,
 			cx = 0, cy = 0,
 			cx2 = 0, cy2 = 0,
-			minSize = 0, maxSize = 0,
 			currentSize = 0,
 			linearZoom = 1, alphaValue = 1, timeAlpha = 1, distAlpha = 1,
 			counter = view.engine.counter,
@@ -917,8 +961,6 @@
 			if (inrange) {
 				// scale the arrow based on the zoom
 				currentSize = (current.size * zoom / current.zoom);
-				minSize = current.size / 4;
-				maxSize = current.size * 4;
 
 				// adjust the shadow offset if drawing shadows
 				if (drawingShadows) {
@@ -932,9 +974,9 @@
 				}
 	
 				// do not draw if too big or too small
-				if (currentSize >= minSize && currentSize <= maxSize) {
+				if (zoom >= current.minZoom && zoom <= current.maxZoom) {
 					// convert zoom into a linear range
-					linearZoom = Math.log(currentSize / minSize) / Math.log(maxSize / minSize);
+					linearZoom = Math.log(zoom / current.minZoom) / Math.log(current.maxZoom / current.minZoom);
 	
 					// make more transparent if in bottom or top 20% of linear range
 					if (linearZoom <= 0.25) {
@@ -994,7 +1036,6 @@
 						if (current.t1 !== -1) {
 							cx += current.dx * (view.floatCounter - current.t1);
 							cy += current.dy * (view.floatCounter - current.t1);
-
 						} else {
 							cx += current.dx * view.floatCounter;
 							cy += current.dy * view.floatCounter;
@@ -1116,7 +1157,6 @@
 			x = 0, y = 0,
 			cx = 0, cy = 0,
 			cx2 = 0, cy2 = 0,
-			minSize = 0, maxSize = 0,
 			currentSize = 0,
 			linearZoom = 1, alphaValue = 1, timeAlpha = 1, distAlpha = 1,
 			counter = view.engine.counter,
@@ -1159,8 +1199,6 @@
 			if (inrange) {
 				// scale the polygon based on the zoom
 				currentSize = (current.size * zoom / current.zoom);
-				minSize = current.size / 4;
-				maxSize = current.size * 4;
 
 				// adjust the shadow offset if drawing shadows
 				if (drawingShadows) {
@@ -1174,9 +1212,9 @@
 				}
 	
 				// do not draw if too big or too small
-				if (currentSize >= minSize && currentSize <= maxSize) {
+				if (zoom >= current.minZoom && zoom <= current.maxZoom) {
 					// convert zoom into a linear range
-					linearZoom = Math.log(currentSize / minSize) / Math.log(maxSize / minSize);
+					linearZoom = Math.log(zoom / current.minZoom) / Math.log(current.maxZoom / current.minZoom);
 	
 					// make more transparent if in bottom or top 20% of linear range
 					if (linearZoom <= 0.25) {
@@ -1238,7 +1276,6 @@
 						if (current.t1 !== -1) {
 							cx += current.dx * (view.floatCounter - current.t1);
 							cy += current.dy * (view.floatCounter - current.t1);
-
 						} else {
 							cx += current.dx * view.floatCounter;
 							cy += current.dy * view.floatCounter;
@@ -1359,7 +1396,6 @@
 			currentSize = 0,
 			shadowColour = ViewConstants.labelShadowColour,
 			fontEnd = "px " + ViewConstants.labelFontFamily,
-			minFont = 0, maxFont = 0,
 			linearZoom = 1, alphaValue = 1, timeAlpha = 1, distAlpha = 1,
 			index = 0, message = "", line = "",
 			counter = view.engine.counter,
@@ -1392,8 +1428,6 @@
 			if (inrange) {
 				// scale the font based on the zoom
 				currentSize = (current.size * zoom / current.zoom);
-				minFont = current.size / 4;
-				maxFont = current.size * 4;
 				shadowOffset = 1;
 				if (currentSize >= 24) {
 					shadowOffset = 2;
@@ -1403,12 +1437,12 @@
 				}
 	
 				// do not draw if too big or too small
-				if (currentSize >= minFont && currentSize <= maxFont) {
+				if (zoom >= current.minZoom && zoom <= current.maxZoom) {
 					// convert zoom into a linear range
-					linearZoom = Math.log(currentSize / minFont) / Math.log(maxFont / minFont);
+					linearZoom = Math.log(zoom / current.minZoom) / Math.log(current.maxZoom / current.minZoom);
 					context.font = currentSize + fontEnd;
 	
-					// make more transparent if in bottom or top 20% of linear range
+					// make more transparent if in bottom or top 25% of linear range
 					if (linearZoom <= 0.25) {
 						alphaValue = linearZoom * 4;
 					} else {
