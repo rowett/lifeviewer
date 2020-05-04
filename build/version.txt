@@ -1,3 +1,6 @@
+Build 521
+- fixed an issue with Nudge and Selection direction
+
 Build 520
 - annotations now support specifying the zoom range at which they will be visible
 	- [[ LABEL X Y ZOOM (MAXZOOM) (FIXED) "string" ]]

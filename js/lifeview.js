@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 520,
+		/** @const {number} */ versionBuild : 521,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -10426,6 +10426,7 @@
 			i = 0,
 			x = 0,
 			y = 0,
+			swap = 0,
 			direction = "",
 			bLeftX = 0,
 			bRightX = me.engine.width - 1,
@@ -10435,6 +10436,20 @@
 		if (!me.viewOnly) {
 			// check if there is a selection
 			if (me.isSelection) {
+				// order selection
+				if (leftX > rightX) {
+					swap = rightX;
+					rightX = leftX;
+					leftX = swap;
+				}
+				if (bottomY > topY) {
+					swap = topY;
+					topY = bottomY;
+					bottomY = swap;
+				}
+				width = rightX - leftX + 1;
+				height = topY - bottomY + 1;
+
 				// use bounded grid if defined
 				if (me.engine.boundedGridType !== -1) {
 					if (me.engine.boundedGridWidth !== 0) {
