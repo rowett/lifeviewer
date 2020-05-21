@@ -3456,6 +3456,7 @@
 			/** @type {number} */ height = topY - bottomY + 1,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
+			/** @type {number} */ swap = 0,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ last = 0,
 			/** @type {number} */ count = 0,
@@ -3480,6 +3481,20 @@
 			bottomY = selBox.bottomY + yOff;
 			rightX = selBox.rightX + xOff;
 			topY = selBox.topY + yOff;
+
+			// order selection
+			if (leftX > rightX) {
+				swap = leftX;
+				leftX = rightX;
+				rightX = swap;
+			}
+			if (bottomY > topY) {
+				swap = bottomY;
+				bottomY = topY;
+				topY = swap;
+			}
+
+			// compute selection size
 			width = rightX - leftX + 1;
 			height = topY - bottomY + 1;
 		}

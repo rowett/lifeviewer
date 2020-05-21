@@ -1,3 +1,6 @@
+Build 522
+- fixed an issue with Selection direction and copy to external clipboard
+
 Build 521
 - fixed an issue with Nudge and Selection direction
 
