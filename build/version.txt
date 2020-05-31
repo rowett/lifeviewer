@@ -1,3 +1,7 @@
+Build 523
+- attempt to fix window positioning on iPad
+- fix Load Pattern
+
 Build 522
 - fixed an issue with Selection direction and copy to external clipboard
 

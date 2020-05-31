@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 522,
+		/** @const {number} */ versionBuild : 523,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -15582,7 +15582,9 @@
 		    viewer = Controller.viewers[0];
 
 		// copy the text item into the inner html
-		textItem.innerHTML = textItem.value;
+		if (textItem.value) {
+			textItem.innerHTML = textItem.value;
+		}
 
 		// clean the pattern text
 		cleanItem = cleanPattern(textItem);

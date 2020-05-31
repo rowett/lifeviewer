@@ -16,6 +16,9 @@
 		var me = this,
 			title = element.getElementsByTagName("div")[0];
 
+		// whether using touch events (so ignore mouse events)
+		this.usingTouch = false;
+
 		// current touch id
 		this.currentTouchId = -1;
 
@@ -98,6 +101,9 @@
 		var changes = event.changedTouches,
 			thisChange = null;
 			
+		// mark that touch events are being used (so ignore mouse events)
+		this.usingTouch = true;
+
 		// determine which event was received
 		switch (event.type) {
 		// touch start
@@ -258,17 +264,20 @@
 	PopupWindow.prototype.elementMouseDown = function(me, event) {
 		var x = 0, y = 0;
 
-		// get event position
-		if (event.pageX || event.pageY) {
-			x = event.pageX;
-			y = event.pageY;
-		} else {
-			x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-			y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+		// ignore if using touch
+		if (!me.usingTouch) {
+			// get event position
+			if (event.pageX || event.pageY) {
+				x = event.pageX;
+				y = event.pageY;
+			} else {
+				x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+				y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+			}
+	
+			// perform down event
+			me.performDown(me, x, y);
 		}
-
-		// perform down event
-		me.performDown(me, x, y);
 
 		// stop event propagating
 		if (event.stopPropagation) {
@@ -281,52 +290,58 @@
 	PopupWindow.prototype.elementMouseUp = function(me, event) {
 		var x = 0, y = 0;
 
-		// ignore if popup not displayed
-		if (me.displayed && me.mouseDown) {
-			// get event position
-			if (event.pageX || event.pageY) {
-				x = event.pageX;
-				y = event.pageY;
-			} else {
-				x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-				y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+		// ignore if using touch events
+		if (!me.usingTouch) {
+			// ignore if popup not displayed
+			if (me.displayed && me.mouseDown) {
+				// get event position
+				if (event.pageX || event.pageY) {
+					x = event.pageX;
+					y = event.pageY;
+				} else {
+					x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+					y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+				}
+	
+				// update cursor position
+				me.performUp(me, x, y);
 			}
-
-			// update cursor position
-			me.performUp(me, x, y);
-
-			// stop event propagating
-			if (event.stopPropagation) {
-				event.stopPropagation();
-			}
-			event.preventDefault();
 		}
+
+		// stop event propagating
+		if (event.stopPropagation) {
+			event.stopPropagation();
+		}
+		event.preventDefault();
 	};
 
 	// mouse move event
 	PopupWindow.prototype.elementMouseMove = function(me, event) {
 		var x = 0, y = 0;
 
-		// ignore if popup not displayed
-		if (me.displayed && me.mouseDown) {
-			// get event position
-			if (event.pageX || event.pageY) {
-				x = event.pageX;
-				y = event.pageY;
-			} else {
-				x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-				y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+		// ignore if using touch events
+		if (!me.usingTouch) {
+			// ignore if popup not displayed
+			if (me.displayed && me.mouseDown) {
+				// get event position
+				if (event.pageX || event.pageY) {
+					x = event.pageX;
+					y = event.pageY;
+				} else {
+					x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+					y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+				}
+	
+				// update cursor position
+				me.performMove(me, x, y);
 			}
-
-			// update cursor position
-			me.performMove(me, x, y);
-
-			// stop event propagating
-			if (event.stopPropagation) {
-				event.stopPropagation();
-			}
-			event.preventDefault();
 		}
+
+		// stop event propagating
+			if (event.stopPropagation) {
+			event.stopPropagation();
+		}
+		event.preventDefault();
 	};
 
 	// get cursor position over element
