@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 523,
+		/** @const {number} */ versionBuild : 526,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -8540,6 +8540,10 @@
 				neighbours += 2 * width + 1;
 			}
 			break;
+		case this.manager.crossHROT:
+			neighbourhood = "+";
+			neighbours = 4 * range + 1;
+			break;
 		}
 
 		// add random survival range
@@ -8606,6 +8610,10 @@
 				}
 				neighbours += 2 * width + 1;
 			}
+			break;
+		case this.manager.crossHROT:
+			neighbourhood = "+";
+			neighbours = 4 * range + 1;
 			break;
 		}
 
@@ -9999,35 +10007,45 @@
 
 	// process copy
 	View.prototype.processCopy = function(me, shift, alt) {
-		// check for sync
-		if (!me.noCopy && (me.copySyncExternal || !me.isSelection)) {
-			if (shift) {
-				// copy reset position to external clipboard
-				me.copyRLE(me, true);
-			} else {
-				// check for view only mode
-				if (me.viewOnly) {
-					// copy reset position to clipboard
+		// check for Help copy
+		if (me.displayHelp !== 0) {
+			Help.copying = true;
+			Help.copyText = "";
+			Help.drawHelpText(me);
+			me.copyToClipboard(me, Help.copyText, false);
+			Help.copying = false;
+			Help.copyText = "";
+		} else {
+			// check for sync
+			if (!me.noCopy && (me.copySyncExternal || !me.isSelection)) {
+				if (shift) {
+					// copy reset position to external clipboard
 					me.copyRLE(me, true);
 				} else {
-					// check for alt/meta key
-					if (alt) {
-						// copy with pattern comments
-						me.copyCurrentRLE(me, true);
+					// check for view only mode
+					if (me.viewOnly) {
+						// copy reset position to clipboard
+						me.copyRLE(me, true);
 					} else {
-						// copy without pattern comments
-						me.copyCurrentRLE(me, false);
+						// check for alt/meta key
+						if (alt) {
+							// copy with pattern comments
+							me.copyCurrentRLE(me, true);
+						} else {
+							// copy without pattern comments
+							me.copyCurrentRLE(me, false);
+						}
 					}
 				}
 			}
-		}
-
-		// copy to the standard clipboard
-		if (me.isSelection) {
-			me.copySelection(me, me.currentPasteBuffer);
-			if (!me.syncNotified) {
-				me.syncNotified = true;
-				me.menuManager.notification.notify("For external clipboard enable Sync", 15, 180, 15, true);
+	
+			// copy to the standard clipboard
+			if (me.isSelection) {
+				me.copySelection(me, me.currentPasteBuffer);
+				if (!me.syncNotified) {
+					me.syncNotified = true;
+					me.menuManager.notification.notify("For external clipboard enable Sync", 15, 180, 15, true);
+				}
 			}
 		}
 	};
@@ -15671,11 +15689,20 @@
 
 			// element sizes for scaling
 			itemHeight = 28,
-			itemFontSize = 18;
+			itemFontSize = 18,
+
+			// popup window
+			popup = null;
 
 		// check if the standalone viewer exists
 		if (viewer) {
-			// reset it
+			// reset the popup
+			popup = viewer[2];
+			if (popup) {
+				popup.reset();
+			}
+
+			// reset the view
 			view = viewer[1];
 			view.element = textItem;
 			view.viewStart(view);

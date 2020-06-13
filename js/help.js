@@ -11,7 +11,9 @@
 	// Help singleton
 	var Help = {
 		// shadow x offset
-		shadowX : 0
+		shadowX : 0,
+		copyText : "",
+		copying : false
 	};
 
 	// draw a line of help text with up down greyed based on position
@@ -177,6 +179,18 @@
 
 			// scale
 			xScale = view.viewMenu.xScale;
+
+		// check for copy
+		if (Help.copying && Help.shadowX === 0) {
+			if (fixed === "") {
+				Help.copyText += text + "\n";
+			} else {
+				// ignore Esc text
+				if (fixed !== "H / Esc") {
+					Help.copyText += fixed + "\t" + text + "\n";
+				}
+			}
+		}
 
 		// check if there is fixed text
 		if (fixed.length) {
@@ -1385,8 +1399,10 @@
 							itemName = "Moore";
 						} else if (view.engine.HROT.type === view.manager.vonNeumannHROT) {
 							itemName = "von Neumann";
-						} else {
+						} else if (view.engine.HROT.type === view.manager.circularHROT) {
 							itemName = "Circular";
+						} else {
+							itemName = "Cross";
 						}
 						if (view.engine.HROT.range > 1) {
 							itemName += " range " + view.engine.HROT.range;

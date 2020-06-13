@@ -101,6 +101,15 @@
 				this.widths[i + range] = w;
 			}
 			break;
+
+			// cross is a plus
+			case this.manager.crossHROT:
+			for (i = 0; i < range; i += 1) {
+				this.widths[i] = 0;
+				this.widths[width - i - 1] = 0;
+			}
+			this.widths[i] = range;
+			break;
 		}
 	};
 

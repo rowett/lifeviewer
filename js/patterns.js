@@ -478,6 +478,9 @@
 		/** @const {number} */ this.mooreLTL= 0;
 		/** @const {number} */ this.vonNeumannLTL = 1;
 		/** @const {number} */ this.circularLTL = 2;
+		/** @const {number} */ this.crossLTL = 3;
+		/** @const {number} */ this.salitireLTL = 4;
+		/** @const {number} */ this.starLTL = 5;
 
 		// HROT min and max range
 		/** @const {number} */ this.minRangeHROT = 1;
@@ -495,6 +498,9 @@
 		/** @const {number} */ this.mooreHROT = 0;
 		/** @const {number} */ this.vonNeumannHROT = 1;
 		/** @const {number} */ this.circularHROT = 2;
+		/** @const {number} */ this.crossHROT = 3;
+		/** @const {number} */ this.saltireHROT = 4;
+		/** @const {number} */ this.starHROT = 5;
 
 		// specified width and height from RLE pattern
 		/** @type {number} */ this.specifiedWidth = -1;
@@ -3021,7 +3027,7 @@
 			// check for N part
 			if (part === "n") {
 				// check for neighborhood
-				if (next === "m" || next === "n" || next === "c") {
+				if (next === "m" || next === "n" || next === "c" || next === "+") {
 					this.index += 1;
 					result = this.mooreLTL;
 					if (next === "n") {
@@ -3029,10 +3035,14 @@
 					} else {
 						if (next === "c") {
 							result = this.circularLTL;
+						} else {
+							if (next === "+") {
+								result = this.crossLTL;
+							}
 						}
 					}
 				} else {
-					this.failureReason = "LtL expected 'NM', 'NN' or 'NC' got 'N" + next.toUpperCase() + "'";
+					this.failureReason = "LtL expected 'NM', 'NN', 'NC' or 'N+' got 'N" + next.toUpperCase() + "'";
 					this.index = -1;
 				}
 			} else {
@@ -3168,6 +3178,10 @@
 							count += 2 * width + 1;
 						}
 						maxCells = count;
+						break;
+
+					case this.crossLTL:
+						maxCells = pattern.rangeLTL * 4 + 1;
 						break;
 				}
 				// adjust max cells by middle cell setting
@@ -3711,19 +3725,23 @@
 					// check for neighborhood
 					this.index += 1;
 					if (this.index < rule.length) {
-						if (rule[this.index] === "m" || rule[this.index] === "n" || rule[this.index] === "c") {
+						if (rule[this.index] === "m" || rule[this.index] === "n" || rule[this.index] === "c" || rule[this.index] === "+") {
 							if (rule[this.index] === "n") {
 								pattern.neighborhoodHROT = this.vonNeumannHROT;
 							} else {
 								if (rule[this.index] === "c") {
 									pattern.neighborhoodHROT = this.circularHROT;
+								} else {
+									if (rule[this.index] === "+") {
+										pattern.neighborhoodHROT = this.crossHROT;
+									}
 								}
 							}
 							// mark rule valid
 							this.index += 1;
 							result = true;
 						} else {
-							this.failureReason = "HROT expected 'NM', 'NN' or 'NC' got 'N" + rule[this.index].toUpperCase() + "'";
+							this.failureReason = "HROT expected 'NM', 'NN', 'NC' or 'N+' got 'N" + rule[this.index].toUpperCase() + "'";
 						}
 					} else {
 						this.failureReason = "HROT 'N' needs a neighborhood";
@@ -3759,6 +3777,10 @@
 						count += 2 * width + 1;
 					}
 					maxCount = count;
+					break;
+
+				case this.crossHROT:
+					maxCount = 4 * pattern.rangeHROT + 1;
 					break;
 			}
 
@@ -4546,8 +4568,10 @@
 										pattern.ruleName += ",N";
 										if (pattern.neighborhoodHROT === this.vonNeumannHROT) {
 											pattern.ruleName += "N";
-										} else {
+										} else if (pattern.neighbourhoodHROT === this.circularHROT) {
 											pattern.ruleName += "C";
+										} else {
+											pattern.ruleName += "+";
 										}
 									}
 								} else {
@@ -4558,8 +4582,10 @@
 										pattern.ruleName += "M";
 									} else if (pattern.neighborhoodLTL === this.vonNeumannLTL) {
 										pattern.ruleName += "N";
-									} else {
+									} else if (pattern.neighborhoodLTL === this.circularLTL) {
 										pattern.ruleName += "C";
+									} else {
+										pattern.ruleName += "+";
 									}
 
 									// adjust the survival range if the center cell is not included

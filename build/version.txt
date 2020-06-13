@@ -1,3 +1,13 @@
+Build 526
+- added support for Cross neighbourhood for LtL and HROT rules
+	- specify with N+
+
+Build 525
+- Ctrl-C while Help displayed will copy topic to clipboard
+
+Build 524
+- attempt to fix second popup move on iPad
+
 Build 523
 - attempt to fix window positioning on iPad
 - fix Load Pattern

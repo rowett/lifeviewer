@@ -26579,6 +26579,7 @@
 		}
 
 		// check for track box mode
+		useTrackBox = false;
 		if (useTrackBox) {
 			// compute the track box
 			trackBox.topY = trackS * accurateCounter + initialBox.topY;

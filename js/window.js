@@ -96,6 +96,12 @@
 		return change;
 	};
 
+	// reset popup window event handling
+	PopupWindow.prototype.reset = function() {
+		this.mouseDown = false;
+		this.currentTouchId = -1;
+	};
+
 	// touch event handler
 	PopupWindow.prototype.touchHandler = function(me, event) {
 		var changes = event.changedTouches,
