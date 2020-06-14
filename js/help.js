@@ -1395,14 +1395,30 @@
 					itemName = "Hex";
 				} else {
 					if (view.engine.isHROT) {
-						if (view.engine.HROT.type === view.manager.mooreHROT) {
+						switch(view.engine.HROT.type) {
+						case view.manager.mooreHROT:
 							itemName = "Moore";
-						} else if (view.engine.HROT.type === view.manager.vonNeumannHROT) {
+							break;
+
+						case view.manager.vonNeumannHROT:
 							itemName = "von Neumann";
-						} else if (view.engine.HROT.type === view.manager.circularHROT) {
+							break;
+
+						case view.manager.circularHROT:
 							itemName = "Circular";
-						} else {
+							break;
+
+						case view.manager.crossHROT:
 							itemName = "Cross";
+							break;
+
+						case view.manager.saltireHROT:
+							itemName = "Saltire";
+							break;
+
+						case view.manager.starHROT:
+							itemName = "Star";
+							break;
 						}
 						if (view.engine.HROT.range > 1) {
 							itemName += " range " + view.engine.HROT.range;

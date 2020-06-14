@@ -110,6 +110,24 @@
 			}
 			this.widths[i] = range;
 			break;
+
+			// saltire is an X
+			case this.manager.saltireHROT:
+			for (i = 0; i < range; i += 1) {
+				this.widths[i] = range - i;
+				this.widths[width - i - 1] = range - i;
+			}
+			this.widths[i] = 0;
+			break;
+
+			// star is a *
+			case this.manager.starHROT:
+			for (i = 0; i < range; i += 1) {
+				this.widths[i] = range - i;
+				this.widths[width - i - 1] = range - i;
+			}
+			this.widths[i] = range;
+			break;
 		}
 	};
 
@@ -1068,40 +1086,119 @@
 					this.engine.anythingAlive = 0;
 				}
 			} else {
-				// Circular or short range von Neumann
-				for (y = bottomY - range; y <= topY + range; y += 1) {
-					countRow = counts[y];
-					x = leftX - range;
-					// for the first cell in the row count the entire neighborhood
-					count = 0;
-					for (j = -range; j <= range; j += 1) {
-						width = widths[j + range];
-						colourRow = colourGrid[y + j];
-						for (i = -width; i <= width; i += 1) {
-							if ((colourRow[x + i]) >= aliveStart) {
-								count += 1;
+				// determine neighbourhood type
+				switch (type) {
+					case this.manager.saltireHROT:
+						// saltire
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							while (x <= rightX + range) {
+								count = 0;
+								for (j = 1; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									if ((colourRow[x - j]) >= aliveStart) {
+										count += 1;
+									}
+									if ((colourRow[x + j]) >= aliveStart) {
+										count += 1;
+									}
+									colourRow = colourGrid[y - j];
+									if ((colourRow[x - j]) >= aliveStart) {
+										count += 1;
+									}
+									if ((colourRow[x + j]) >= aliveStart) {
+										count += 1;
+									}
+								}
+								colourRow = colourGrid[y];
+								if ((colourRow[x]) >= aliveStart) {
+									count += 1;
+								}
+								countRow[x] = count;
+								x += 1;
 							}
-						}
-					}
-					countRow[x] = count;
-					x += 1;
-	
-					// for the remaining rows subtract the left and add the right cells
-					while (x <= rightX + range) {
-						for (j = -range; j <= range; j += 1) {
-							width = widths[j + range];
-							colourRow = colourGrid[y + j];
-							if (colourRow[x - width - 1] >= aliveStart) {
-								count -= 1;
+						}	
+						break;
+
+					case this.manager.starHROT:
+						// star
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							while (x <= rightX + range) {
+								count = 0;
+								for (j = 1; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									if ((colourRow[x - j]) >= aliveStart) {
+										count += 1;
+									}
+									if ((colourRow[x + j]) >= aliveStart) {
+										count += 1;
+									}
+									if ((colourRow[x] >= aliveStart)) {
+										count += 1;
+									}
+									colourRow = colourGrid[y - j];
+									if ((colourRow[x - j]) >= aliveStart) {
+										count += 1;
+									}
+									if ((colourRow[x + j]) >= aliveStart) {
+										count += 1;
+									}
+									if ((colourRow[x] >= aliveStart)) {
+										count += 1;
+									}
+								}
+								colourRow = colourGrid[y];
+								for (i = -range; i <= range; i += 1) {
+									if ((colourRow[x + i]) >= aliveStart) {
+										count += 1;
+									}
+								}
+								countRow[x] = count;
+								x += 1;
 							}
-							if (colourRow[x + width] >= aliveStart) {
-								count += 1;
+						}	
+						break;
+
+					default:
+						// circular, cross, or short range von Neumann
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							// for the first cell in the row count the entire neighborhood
+							count = 0;
+							for (j = -range; j <= range; j += 1) {
+								width = widths[j + range];
+								colourRow = colourGrid[y + j];
+								for (i = -width; i <= width; i += 1) {
+									if ((colourRow[x + i]) >= aliveStart) {
+										count += 1;
+									}
+								}
 							}
-						}
-						countRow[x] = count;
-						x += 1;
-					}
-				}	
+							countRow[x] = count;
+							x += 1;
+			
+							// for the remaining rows subtract the left and add the right cells
+							while (x <= rightX + range) {
+								for (j = -range; j <= range; j += 1) {
+									width = widths[j + range];
+									colourRow = colourGrid[y + j];
+									if (colourRow[x - width - 1] >= aliveStart) {
+										count -= 1;
+									}
+									if (colourRow[x + width] >= aliveStart) {
+										count += 1;
+									}
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}	
+						break;
+				}
 			}
 		}
 	

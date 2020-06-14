@@ -479,7 +479,7 @@
 		/** @const {number} */ this.vonNeumannLTL = 1;
 		/** @const {number} */ this.circularLTL = 2;
 		/** @const {number} */ this.crossLTL = 3;
-		/** @const {number} */ this.salitireLTL = 4;
+		/** @const {number} */ this.saltireLTL = 4;
 		/** @const {number} */ this.starLTL = 5;
 
 		// HROT min and max range
@@ -3027,23 +3027,41 @@
 			// check for N part
 			if (part === "n") {
 				// check for neighborhood
-				if (next === "m" || next === "n" || next === "c" || next === "+") {
-					this.index += 1;
-					result = this.mooreLTL;
-					if (next === "n") {
+				switch(next) {
+					case "m":
+						this.index += 1;
+						result = this.mooreLTL;
+						break;
+
+					case "n":
+						this.index += 1;
 						result = this.vonNeumannLTL;
-					} else {
-						if (next === "c") {
-							result = this.circularLTL;
-						} else {
-							if (next === "+") {
-								result = this.crossLTL;
-							}
-						}
-					}
-				} else {
-					this.failureReason = "LtL expected 'NM', 'NN', 'NC' or 'N+' got 'N" + next.toUpperCase() + "'";
-					this.index = -1;
+						break;
+
+					case "c":
+						this.index += 1;
+						result = this.circularLTL;
+						break;
+
+					case "+":
+						this.index += 1;
+						result = this.crossLTL;
+						break;
+
+					case "x":
+						this.index += 1;
+						result = this.saltireLTL;
+						break;
+
+					case "*":
+						this.index += 1;
+						result = this.starLTL;
+						break;
+
+					default:
+						this.failureReason = "LtL 'N' needs 'M', 'N', 'C', '+', 'X' or '*' got 'N" + next.toUpperCase() + "'";
+						this.index = -1;
+						break;
 				}
 			} else {
 				// check for digit
@@ -3182,6 +3200,14 @@
 
 					case this.crossLTL:
 						maxCells = pattern.rangeLTL * 4 + 1;
+						break;
+
+					case this.saltireLTL:
+						maxCells = pattern.rangeLTL * 4 + 1;
+						break;
+
+					case this.starLTL:
+						maxCells = pattern.rangeLTL * 8 + 1;
 						break;
 				}
 				// adjust max cells by middle cell setting
@@ -3725,23 +3751,46 @@
 					// check for neighborhood
 					this.index += 1;
 					if (this.index < rule.length) {
-						if (rule[this.index] === "m" || rule[this.index] === "n" || rule[this.index] === "c" || rule[this.index] === "+") {
-							if (rule[this.index] === "n") {
+						switch(rule[this.index]) {
+							case "m":
+								pattern.neighborhoodHROT = this.mooreHROT;
+								this.index += 1;
+								result = true;
+								break;
+
+							case "n":
 								pattern.neighborhoodHROT = this.vonNeumannHROT;
-							} else {
-								if (rule[this.index] === "c") {
-									pattern.neighborhoodHROT = this.circularHROT;
-								} else {
-									if (rule[this.index] === "+") {
-										pattern.neighborhoodHROT = this.crossHROT;
-									}
-								}
-							}
-							// mark rule valid
-							this.index += 1;
-							result = true;
-						} else {
-							this.failureReason = "HROT expected 'NM', 'NN', 'NC' or 'N+' got 'N" + rule[this.index].toUpperCase() + "'";
+								this.index += 1;
+								result = true;
+								break;
+
+							case "c":
+								pattern.neighborhoodHROT = this.circularHROT;
+								this.index += 1;
+								result = true;
+								break;
+
+							case "+":
+								pattern.neighborhoodHROT = this.crossHROT;
+								this.index += 1;
+								result = true;
+								break;
+
+							case "x":
+								pattern.neighborhoodHROT = this.saltireHROT;
+								this.index += 1;
+								result = true;
+								break;
+
+							case "*":
+								pattern.neighborhoodHROT = this.starHROT;
+								this.index += 1;
+								result = true;
+								break;
+
+							default:
+								this.failureReason = "HROT 'N' needs 'M', 'N', 'C', '+', 'X' or '*' got '" + rule[this.index].toUpperCase() + "'";
+								break;
 						}
 					} else {
 						this.failureReason = "HROT 'N' needs a neighborhood";
@@ -3781,6 +3830,14 @@
 
 				case this.crossHROT:
 					maxCount = 4 * pattern.rangeHROT + 1;
+					break;
+
+				case this.saltireHROT:
+					maxCount = 4 * pattern.rangeHROT + 1;
+					break;
+
+				case this.starHROT:
+					maxCount = 8 * pattern.rangeHROT + 1;
 					break;
 			}
 
@@ -4566,12 +4623,26 @@
 									pattern.ruleName += "B" + this.asMulti(pattern.birthHROT, 0);
 									if (pattern.neighborhoodHROT !== this.mooreHROT) {
 										pattern.ruleName += ",N";
-										if (pattern.neighborhoodHROT === this.vonNeumannHROT) {
-											pattern.ruleName += "N";
-										} else if (pattern.neighbourhoodHROT === this.circularHROT) {
-											pattern.ruleName += "C";
-										} else {
-											pattern.ruleName += "+";
+										switch(pattern.neighborhoodHROT) {
+											case this.vonNeumannHROT:
+												pattern.ruleName += "N";
+												break;
+
+											case this.circularHROT:
+												pattern.ruleName += "C";
+												break;
+
+											case this.crossHROT:
+												pattern.ruleName += "+";
+												break;
+
+											case this.saltireHROT:
+												pattern.ruleName += "X";
+												break;
+
+											case this.starHROT:
+												pattern.ruleName += "*";
+												break;
 										}
 									}
 								} else {

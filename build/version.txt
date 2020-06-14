@@ -1,3 +1,7 @@
+Build 527
+- added support for Saltire and Star neighbourhoods for LtL and HROT rules
+	- specify with NX (Saltire) and N* (Star)
+	
 Build 526
 - added support for Cross neighbourhood for LtL and HROT rules
 	- specify with N+

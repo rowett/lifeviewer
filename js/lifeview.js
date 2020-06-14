@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 526,
+		/** @const {number} */ versionBuild : 527,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -8524,10 +8524,12 @@
 			neighbourhood = "";
 			neighbours = (range * 2 + 1) * (range * 2 + 1);
 			break;
+
 		case this.manager.vonNeumannHROT:
 			neighbourhood = "N";
 			neighbours = 2 * range * (range + 1) + 1;
 			break;
+
 		case this.manager.circularHROT:
 			neighbourhood = "C";
 			neighbours = 0;
@@ -8540,9 +8542,20 @@
 				neighbours += 2 * width + 1;
 			}
 			break;
+
 		case this.manager.crossHROT:
 			neighbourhood = "+";
 			neighbours = 4 * range + 1;
+			break;
+
+		case this.manager.saltireHROT:
+			neighbourhood = "X";
+			neighbours = 4 * range + 1;
+			break;
+
+		case this.manager.starHROT:
+			neighbourhood = "*";
+			neighbours = 8 * range + 1;
 			break;
 		}
 
@@ -8595,10 +8608,12 @@
 			neighbourhood = "M";
 			neighbours = (range * 2 + 1) * (range * 2 + 1);
 			break;
+
 		case this.manager.vonNeumannHROT:
 			neighbourhood = "N";
 			neighbours = 2 * range * (range + 1) + 1;
 			break;
+
 		case this.manager.circularHROT:
 			neighbourhood = "C";
 			neighbours = 0;
@@ -8611,9 +8626,20 @@
 				neighbours += 2 * width + 1;
 			}
 			break;
+
 		case this.manager.crossHROT:
 			neighbourhood = "+";
 			neighbours = 4 * range + 1;
+			break;
+
+		case this.manager.saltireHROT:
+			neighbourhood = "X";
+			neighbours = 4 * range + 1;
+			break;
+
+		case this.manager.starHROT:
+			neighbourhood = "*";
+			neighbours = 8 * range + 1;
 			break;
 		}
 
