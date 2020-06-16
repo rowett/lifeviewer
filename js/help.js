@@ -1168,6 +1168,7 @@
 		view.helpSections[sectionNum] = [view.lineNo, "Randomize"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Randomize:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.randomizeWord, "create random pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.randomSeedWord + " <string>", "set random seed", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.randomWidthWord + " <" + ViewConstants.minRandomWidth + ".." + ViewConstants.maxRandomWidth + ">", "set random pattern width", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.randomHeightWord + " <" + ViewConstants.minRandomHeight + ".." + ViewConstants.maxRandomHeight + ">", "set random pattern height", ctx, x, y, height, helpLine);
@@ -1181,7 +1182,7 @@
 				// TBD
 			} else {
 				if (view.engine.wolframRule === -1) {
-					y = this.renderHelpLine(view, Keywords.randomChanceWord + " <item> <0..100>", "set percentage change for <item>", ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, Keywords.randomChanceWord + " <item> <0..100>", "set percentage chance for <item>", ctx, x, y, height, helpLine);
 					y = this.renderHelpLine(view,  " " + Keywords.allWord, "all conditions", ctx, x, y, height, helpLine);
 					y = this.renderHelpLine(view,  " " + Keywords.randomBWord, "all birth conditions", ctx, x, y, height, helpLine);
 					y = this.renderHelpLine(view,  " " + Keywords.randomSWord, "all survival conditions", ctx, x, y, height, helpLine);
@@ -1963,6 +1964,7 @@
 		view.helpSections[sectionNum] = [view.lineNo, "Randomize"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Randomize:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Pattern", view.randomizePattern ? "On" : "Off", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Custom Seed", view.randomSeedCustom ? "On" : "Off", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Seed", view.randomSeed, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Width", view.randomWidth, ctx, x, y, height, helpLine);

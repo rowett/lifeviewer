@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 527,
+		/** @const {number} */ versionBuild : 528,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1005,6 +1005,12 @@
 		// random seed
 		this.randomSeed = Date.now().toString();
 		/** @type {boolean} */ this.randomSeedCustom = false;
+
+		// whether to randomize pattern
+		/** @type {boolean} */ this.randomizePattern = false;
+
+		// whether randomize pattern in progress
+		/** @type {boolean} */ this.randomizeGuard = false;
 
 		// current help topic
 		/** @type {number} */ this.helpTopic = ViewConstants.welcomeTopic;
@@ -9098,7 +9104,7 @@
 		patternText += me.engine.afterTitle;
 
 		// check whether prompt required
-		if (me.undoButton.locked) {
+		if (me.undoButton.locked || me.randomGuard) {
 			result = true;
 		} else {
 			result = window.confirm("Create new random pattern?");
@@ -13433,6 +13439,9 @@
 		// clear custom random seed
 		this.randomSeedCustom = false;
 
+		// clear randomize pattern
+		this.randomizePattern = false;
+
 		// clear origin
 		this.engine.originX = 0;
 		this.engine.originY = 0;
@@ -15403,6 +15412,17 @@
 
 			// update play icon
 			me.setPauseIcon(me.generationOn);
+		}
+
+		// check for random pattern
+		if (me.randomizePattern) {
+			if (me.randomGuard) {
+				me.randomGuard = false;
+			} else {
+				me.randomGuard = true;
+				me.randomPattern(me, true);
+				me.randomGuard = false;
+			}
 		}
 	};
 

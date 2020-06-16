@@ -1,3 +1,6 @@
+Build 528
+- attempt to fix ignored touch events on iPad
+
 Build 527
 - added support for Saltire and Star neighbourhoods for LtL and HROT rules
 	- specify with NX (Saltire) and N* (Star)

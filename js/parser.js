@@ -34,6 +34,7 @@
 			case Keywords.hexCellsWord:
 			case Keywords.squareCellsWord:
 			case Keywords.bordersWord:
+			case Keywords.randomizeWord:
 			case Keywords.randomSeedWord:
 			case Keywords.randomWidthWord:
 			case Keywords.randomHeightWord:
@@ -4470,6 +4471,14 @@
 								}
 								break;
 							}
+							break;
+
+						// randomize word
+						case Keywords.randomizeWord:
+							// read the seed
+							view.randomizePattern = true;
+
+							itemValid = true;
 							break;
 
 						// random seed

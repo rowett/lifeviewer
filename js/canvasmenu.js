@@ -2251,6 +2251,9 @@
 		// count of updates to run
 		this.updateCount = 1;
 
+		// default update count
+		this.defaultUpdateCount = 8;
+
 		// default background colour
 		this.bgCol = "black";
 		this.bgAlpha = 0.7;
@@ -3252,8 +3255,8 @@
 			// schedule update if no update scheduled
 			if (!me.updateScheduled) {
 				me.scheduleNextUpdate(me);
-				if (me.updateCount < 4) {
-					me.updateCount = 4;
+				if (me.updateCount < me.defaultUpdateCount) {
+					me.updateCount = me.defaultUpdateCount;
 				}
 			}
 		}
@@ -3428,8 +3431,8 @@
 		// schedule update if no update scheduled
 		if (!me.updateScheduled) {
 			me.scheduleNextUpdate(me);
-			if (me.updateCount < 4) {
-				me.updateCount = 4;
+			if (me.updateCount < me.defaultUpdateCount) {
+				me.updateCount = me.defaultUpdateCount;
 			}
 		}
 	};

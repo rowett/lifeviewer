@@ -109,6 +109,9 @@
 		// integer zoom
 		/** @const {string} */ integerZoomWord : "INTEGERZOOM",
 
+		// randomize pattern
+		/**@const {string} */ randomizeWord : "RANDOMIZE",
+
 		// random seed
 		/** @const {string} */ randomSeedWord : "RANDSEED",
 
