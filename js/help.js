@@ -1420,6 +1420,10 @@
 						case view.manager.starHROT:
 							itemName = "Star";
 							break;
+
+						case view.manager.l2HROT:
+							itemName = "L2";
+							break;
 						}
 						if (view.engine.HROT.range > 1) {
 							itemName += " range " + view.engine.HROT.range;
@@ -1680,7 +1684,8 @@
 		y = this.renderHelpLine(view, "Build", ViewConstants.versionBuild, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Author", ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Decoders", "RLE, Life 1.06, Life 1.05, Cells", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "N'hoods", "Moore, Hex, von Neumann, Circular, 1D", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "N'hoods", "Moore, Hex, von Neumann, Triangular, 1D,", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Circular, Cross, L2, Saltire, Star", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Rules", "Wolfram, Totalistic, Generations, Margolus,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Isotropic Non-Totalistic (Hensel, Callahan),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Alternating, MAP, Larger than Life (LtL),", ctx, x, y, height, helpLine);

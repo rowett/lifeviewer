@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 528,
+		/** @const {number} */ versionBuild : 530,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -8549,6 +8549,19 @@
 			}
 			break;
 
+		case this.manager.l2HROT:
+			neighbourhood = "2";
+			neighbours = 0;
+			r2 = range * range;
+			for (i = -range; i <= range; i += 1) {
+				width = 0;
+				while ((width + 1) * (width + 1) + (i * i) <= r2) {
+					width += 1;
+				}
+				neighbours += 2 * width + 1;
+			}
+			break;
+
 		case this.manager.crossHROT:
 			neighbourhood = "+";
 			neighbours = 4 * range + 1;
@@ -15415,7 +15428,7 @@
 		}
 
 		// check for random pattern
-		if (me.randomizePattern) {
+		if (me.randomizePattern && me.failureReason === "") {
 			if (me.randomGuard) {
 				me.randomGuard = false;
 			} else {

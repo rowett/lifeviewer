@@ -2555,7 +2555,11 @@
 			if (this.toolTipMulti !== -1) {
 				toolTip = control.toolTip[this.toolTipMulti];
 			} else {
-				toolTip = control.toolTip;
+				if (Array.isArray(control.toolTip)) {
+					toolTip = "";
+				} else {
+					toolTip = control.toolTip;
+				}
 			}
 
 			// check for newline

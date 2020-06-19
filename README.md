@@ -45,7 +45,7 @@ Pattern formats|RLE, Life 1.06, Life 1.05, Cells
 Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP, Larger than Life, HROT, Alternate, Margolus, PCA, RuleTable (@TABLE, @TREE and @COLORS)
 Bounded Grid|Plane, Torus, Klein, Cross-Surface, Sphere
 States|2 state, [R]History, Niemiec, Generations
-Neighbourhoods|Moore, Von Neumann, 1D, Hexagonal, Triangular, Circular
+Neighbourhoods|Moore, Hexagonal, Von Neumann, Triangular, 1D, Circular, Cross, L2, Saltire, Star
 
 ## How do I use it?
 * [Build](#how-do-i-build-it) the plugin file **lv-plugin.js**.

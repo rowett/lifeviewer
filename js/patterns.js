@@ -481,6 +481,7 @@
 		/** @const {number} */ this.crossLTL = 3;
 		/** @const {number} */ this.saltireLTL = 4;
 		/** @const {number} */ this.starLTL = 5;
+		/** @const {number} */ this.l2LTL = 6;
 
 		// HROT min and max range
 		/** @const {number} */ this.minRangeHROT = 1;
@@ -501,6 +502,7 @@
 		/** @const {number} */ this.crossHROT = 3;
 		/** @const {number} */ this.saltireHROT = 4;
 		/** @const {number} */ this.starHROT = 5;
+		/** @const {number} */ this.l2HROT = 6;
 
 		// specified width and height from RLE pattern
 		/** @type {number} */ this.specifiedWidth = -1;
@@ -735,7 +737,7 @@
 		/** @type {number} */ this.altBminLTL = -1;
 		/** @type {number} */ this.altBmaxLTL = -1;
  
-		// LTL neightborhood (0 Moore, 1 von Neumann, 2 circular)
+		// LTL neightborhood (0 Moore, 1 von Neumann, 2 circular, 3 cross, 4 saltire, 5 star, 6 L2)
 		/** @type {number} */ this.neighborhoodLTL = -1;
 
 		// is HROT rule
@@ -755,7 +757,7 @@
 		this.altBirthHROT = null;
 		this.altSurvivalHROT = null;
 
-		// HROT neighborhood (0 Moore, 1 von Neumann, 2 circular)
+		// HROT neighborhood (0 Moore, 1 von Neumann, 2 circular, 3 cross, 4 saltire, 5 star, 6 L2)
 		/** @type {number} */ this.neighborhoodHROT = -1;
 
 		// states for generations, LTL or HROT
@@ -3058,8 +3060,13 @@
 						result = this.starLTL;
 						break;
 
+					case "2":
+						this.index += 1;
+						result = this.l2LTL;
+						break;
+
 					default:
-						this.failureReason = "LtL 'N' needs 'M', 'N', 'C', '+', 'X' or '*' got 'N" + next.toUpperCase() + "'";
+						this.failureReason = "LtL 'N' needs 'M' 'N' 'C' '+' 'X' '2' or '*' got 'N" + next.toUpperCase() + "'";
 						this.index = -1;
 						break;
 				}
@@ -3208,6 +3215,19 @@
 
 					case this.starLTL:
 						maxCells = pattern.rangeLTL * 8 + 1;
+						break;
+
+					case this.l2LTL:
+						count = 0;
+						r2 = pattern.rangeLTL * pattern.rangeLTL;
+						for (i = -pattern.rangeLTL; i <= pattern.rangeLTL; i += 1) {
+							width = 0;
+							while ((width + 1) * (width + 1) + (i * i) <= r2) {
+								width += 1;
+							}
+							count += 2 * width + 1;
+						}
+						maxCells = count;
 						break;
 				}
 				// adjust max cells by middle cell setting
@@ -3788,8 +3808,14 @@
 								result = true;
 								break;
 
+							case "2":
+								pattern.neighborhoodHROT = this.l2HROT;
+								this.index += 1;
+								result = true;
+								break;
+
 							default:
-								this.failureReason = "HROT 'N' needs 'M', 'N', 'C', '+', 'X' or '*' got '" + rule[this.index].toUpperCase() + "'";
+								this.failureReason = "HROT 'N' needs 'M' 'N' 'C' '+' 'X' '2' or '*' got '" + rule[this.index].toUpperCase() + "'";
 								break;
 						}
 					} else {
@@ -3838,6 +3864,19 @@
 
 				case this.starHROT:
 					maxCount = 8 * pattern.rangeHROT + 1;
+					break;
+
+				case this.l2HROT:
+					count = 0;
+					r2 = pattern.rangeHROT * pattern.rangeHROT;
+					for (i = -pattern.rangeHROT; i <= pattern.rangeHROT; i += 1) {
+						width = 0;
+						while ((width + 1) * (width + 1) + (i * i) <= r2) {
+							width += 1;
+						}
+						count += 2 * width + 1;
+					}
+					maxCount = count;
 					break;
 			}
 
@@ -4643,20 +4682,44 @@
 											case this.starHROT:
 												pattern.ruleName += "*";
 												break;
+
+											case this.l2HROT:
+												pattern.ruleName += "2";
+												break;
 										}
 									}
 								} else {
 									// LTL
 									pattern.isLTL = true;
 									pattern.ruleName = "R" + pattern.rangeLTL + ",C" + pattern.multiNumStates + ",M" + pattern.middleLTL + ",S" + pattern.SminLTL + ".." + pattern.SmaxLTL + ",B" + pattern.BminLTL + ".." + pattern.BmaxLTL + ",N";
-									if (pattern.neighborhoodLTL === this.mooreLTL) {
-										pattern.ruleName += "M";
-									} else if (pattern.neighborhoodLTL === this.vonNeumannLTL) {
-										pattern.ruleName += "N";
-									} else if (pattern.neighborhoodLTL === this.circularLTL) {
-										pattern.ruleName += "C";
-									} else {
-										pattern.ruleName += "+";
+									switch (pattern.neighborhoodLTL) {
+										case this.mooreLTL:
+											pattern.ruleName += "M";
+											break;
+
+										case this.vonNeumannLTL:
+											pattern.ruleName += "N";
+											break;
+
+										case this.circularLTL:
+											pattern.ruleName += "C";
+											break;
+
+										case this.crossLTL:
+											pattern.ruleName += "+";
+											break;
+
+										case this.saltireLTL:
+											pattern.ruleName += "X";
+											break;
+
+										case this.starLTL:
+											pattern.ruleName += "*";
+											break;
+
+										case this.l2LTL:
+											pattern.ruleName += "2";
+											break;
 									}
 
 									// adjust the survival range if the center cell is not included

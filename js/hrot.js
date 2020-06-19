@@ -64,7 +64,8 @@
 	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range) {
 		// compute widest width
 		var /** @const {number} */ width = range * 2 + 1,
-			/** @const {number} */ r2 = range * range + range,
+			/** @const {number} */ r2 = range * range,
+			/** @const {number} */ r2plus = r2 + range,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ w = 0;
 
@@ -93,6 +94,17 @@
 
 			// circular is a circle
 			case this.manager.circularHROT:
+			for (i = -range; i <= range; i += 1) {
+				w = 0;
+				while ((w + 1) * (w + 1) + (i * i) <= r2plus) {
+					w += 1;
+				}
+				this.widths[i + range] = w;
+			}
+			break;
+
+			// l2 is euclidean distance
+			case this.manager.l2HROT:
 			for (i = -range; i <= range; i += 1) {
 				w = 0;
 				while ((w + 1) * (w + 1) + (i * i) <= r2) {
@@ -525,6 +537,7 @@
 			/** @type {number} */ state = 0,
 			/** @type {number} */ xpr = 0,
 			/** @type {number} */ xmrp1 = 0,
+			/** @type {number} */ rowCount = 0,
 			/** @type {boolean} */ rowAlive = false,
 			/** @type {boolean} */ colAlive = false,
 			/** @type {boolean} */ liveRowAlive = false,
@@ -1162,8 +1175,59 @@
 						}	
 						break;
 
+					case this.manager.crossHROT:
+						// cross
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							// for the first cell count the entire neighbourhood
+							count = 0;
+							rowCount = 0;
+							for (j = 1; j <= range; j += 1) {
+								colourRow = colourGrid[y + j];
+								if ((colourRow[x] >= aliveStart)) {
+									count += 1;
+								}
+								colourRow = colourGrid[y - j];
+								if ((colourRow[x] >= aliveStart)) {
+									count += 1;
+								}
+							}
+							colourRow = colourGrid[y];
+							for (i = -range; i <= range; i += 1) {
+								if ((colourRow[x + i]) >= aliveStart) {
+									rowCount += 1;
+								}
+							}
+							countRow[x] = count + rowCount;
+							x += 1;
+
+							// for remaining rows subtract the left and the right cells
+							while (x <= rightX + range) {
+								count = 0;
+								for (j = 1; j <= range; j += 1) {
+									if (colourGrid[y + j][x] >= aliveStart) {
+										count += 1;
+									}
+									if (colourGrid[y - j][x] >= aliveStart) {
+										count += 1;
+									}
+								}
+								colourRow = colourGrid[y];
+								if (colourRow[x - range - 1] >= aliveStart) {
+									rowCount -= 1;
+								}
+								if (colourRow[x + range] >= aliveStart) {
+									rowCount += 1;
+								}
+								countRow[x] = count + rowCount;
+								x += 1;
+							}
+						}	
+						break;
+
 					default:
-						// circular, cross, or short range von Neumann
+						// circular, or short range von Neumann
 						for (y = bottomY - range; y <= topY + range; y += 1) {
 							countRow = counts[y];
 							x = leftX - range;

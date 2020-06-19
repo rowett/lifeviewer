@@ -447,10 +447,12 @@
 		a.push(["Rainflakes", "B2-ac3aei4ey5n6n8/S02-n3aceir4ceyz5e6k"]);
 		a.push(["replife", "B34jy6n/S2-i3"]);
 		a.push(["reptlife", "B36-k/S2-i34q"]);
+		a.push(["Ribbons", "B3-nqr/S23"]);
 		a.push(["rgun", "B34t/S2-i35a7e"]);
 		a.push(["Rule X3VI", "B2c3aei4ajnr5acn/S2-ci3-ck4in5jkq6c7c"]);
 		a.push(["RustyLife", "B34-ai/S24-air5-a"]);
 		a.push(["Salad", "B2i34c/S2-i3"]);
+		a.push(["sansdomino", "B2-a/S014"]);
 		a.push(["Savanna", "B2e3aeiy4ce5i6c7e/S2-n3-a4artz5aeny6cn"]);
 		a.push(["Scenery", "B3-cnry4-acery5i/S23-a4-jknqr5y8"]);
 		a.push(["SharkLife", "B34aeiz/S2-ak34ant6cek"]);

@@ -1,4 +1,13 @@
+Build 530
+- added support for L2 neighbourhood for LtL and HROT rules
+
+Build 529
+- don't randomize pattern if the rule is invalid
+- add some more aliases
+- improved Cross performance for LtL and HROT rules
+
 Build 528
+- new script command [[ RANDOMIZE ]] will generate random pattern on start
 - attempt to fix ignored touch events on iPad
 
 Build 527
