@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 530,
+		/** @const {number} */ versionBuild : 533,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6897,13 +6897,18 @@
 				forwardToolTip = "step forward";
 				backToolTip = "step back";
 			}
-
-			// set the step back and forward icons and tooltips
-			this.playList.icon[ViewConstants.modePause] = this.iconManager.icon(forwardIconName);
-			this.playList.toolTip[ViewConstants.modePause] = forwardToolTip;
-			this.playList.icon[ViewConstants.modeStepBack] = this.iconManager.icon(backIconName);
-			this.playList.toolTip[ViewConstants.modeStepBack] = backToolTip;
+		} else {
+			forwardIconName = "stepforward";
+			backIconName = "stepback";
+			forwardToolTip = "step forward";
+			backToolTip = "step back";
 		}
+
+		// set the step back and forward icons and tooltips
+		this.playList.icon[ViewConstants.modePause] = this.iconManager.icon(forwardIconName);
+		this.playList.toolTip[ViewConstants.modePause] = forwardToolTip;
+		this.playList.icon[ViewConstants.modeStepBack] = this.iconManager.icon(backIconName);
+		this.playList.toolTip[ViewConstants.modeStepBack] = backToolTip;
 
 		// set the play icon and tooltip
 		this.playList.icon[ViewConstants.modePlay] = this.iconManager.icon(iconName);
@@ -8576,6 +8581,11 @@
 			neighbourhood = "*";
 			neighbours = 8 * range + 1;
 			break;
+
+		case this.manager.hexHROT:
+			neighbourhood = "H";
+			neighbours = (range * 2 + 1) * (range * 2 + 1) - (range * (range + 1));
+			break;
 		}
 
 		// add random survival range
@@ -8646,6 +8656,19 @@
 			}
 			break;
 
+		case this.manager.l2HROT:
+			neighbourhood = "2";
+			neighbours = 0;
+			r2 = range * range;
+			for (i = -range; i <= range; i += 1) {
+				width = 0;
+				while ((width + 1) * (width + 1) + (i * i) <= r2) {
+					width += 1;
+				}
+				neighbours += 2 * width + 1;
+			}
+			break;
+
 		case this.manager.crossHROT:
 			neighbourhood = "+";
 			neighbours = 4 * range + 1;
@@ -8659,6 +8682,11 @@
 		case this.manager.starHROT:
 			neighbourhood = "*";
 			neighbours = 8 * range + 1;
+			break;
+
+		case this.manager.hexHROT:
+			neighbourhood = "H";
+			neighbours = (range * 2 + 1) * (range * 2 + 1) - (range * (range + 1));
 			break;
 		}
 
@@ -13956,6 +13984,7 @@
 			borderSize = 0,
 			i = 0,
 			ignoreThumbnail = args[0],
+			stateCount = 0,
 			name = "";
 
 		// check for Edge browser
@@ -13964,9 +13993,6 @@
 		} else {
 			me.isEdge = false;
 		}
-
-		// default alternating Margolus grid to on
-		me.engine.altGrid = true;
 
 		// turn off pretty rendering
 		me.engine.pretty = false;
@@ -14197,6 +14223,9 @@
 
 			// check if the rule is Margolus
 			me.engine.isMargolus = pattern.isMargolus;
+
+			// default alternating Margolus grid to on if the rule is Margolus
+			me.engine.altGrid = me.engine.isMargolus;
 
 			// check if the rule is PCA
 			me.engine.isPCA = pattern.isPCA;
@@ -15020,7 +15049,13 @@
 
 			// reset population
 			me.engine.resetPopulationBox(me.engine.grid16, me.engine.colourGrid);
-			if (pattern && me.engine.population === 0 && !me.isPasteEvery) {
+
+			// count non-zero states
+			stateCount = 0;
+			for (i = 1; i < me.patternStateCount.length; i += 1) {
+				stateCount += me.patternStateCount[i];
+			}
+			if (pattern && stateCount === 0 && !me.isPasteEvery) {
 				me.emptyStart = true;
 				if (!me.engine.isNone) {
 					if (pattern.tooBig) {

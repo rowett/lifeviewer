@@ -1,3 +1,18 @@
+Build 533
+- added support for Hex neighbourhood for LtL and HROT rules
+	- specify with NH
+- display "New pattern" if there are only state 0 cells
+- playback controls were not being reset after rule change from reversible rule
+- fixed some Margolus Identify issues
+
+Build 532
+- fixed LtL L2 random rule generation
+- disabled Alt Gridlines button should be off
+
+Build 531
+- added more aliases
+- added support for Cross, Saltire, Star and L2 neighbourhoods for Generations LtL/HROT rules
+
 Build 530
 - added support for L2 neighbourhood for LtL and HROT rules
 

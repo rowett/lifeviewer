@@ -238,6 +238,7 @@
 		a.push(["Free Star", "0345/2/10"]);
 		a.push(["Frogs", "12/34/3"]);
 		a.push(["Frozen spirals", "356/23/6"]);
+		a.push(["GeneroLife", "2356/3567/4"]);
 		a.push(["Glisserati", "035678/245678/7"]);
 		a.push(["Glissergy", "035678/245678/5"]);
 		a.push(["Lava", "12345/45678/8"]);
@@ -295,6 +296,7 @@
 		a.push(["Artillery", "B3-y7/S2-i3-c4kqt"]);
 		a.push(["Atomic", "B2ei3i/S1c2-n3jr4an5i6c"]);
 		a.push(["ATPP", "B3-ckq4z/S2-c3-a4iq5k6k"]);
+		a.push(["B - ibis", "B2n34cyz6n8/S2-n3-a4cq68"]);
 		a.push(["Banks-I", "B3e4ejr5cinqy6-ei78/S012-e3-ajk4-akqw5-ajk6-e78"]);
 		a.push(["Banks-III", "B2ce3e4jr5cin6-en7c8/S012-ac3-cn4-eikny5-kr67c8"]);
 		a.push(["Beaecsizae", "B34ce/S12-a3"]);
@@ -302,6 +304,8 @@
 		a.push(["Best Friends", "B2ce3aiy/S12aei3r"]);
 		a.push(["Bgunlife", "B34eny5e/S23-a4iy5e6c"]);
 		a.push(["Billiard", "B36-e/S12345"]);
+		a.push(["Blasts", "B2e3airy4kt5jr6c8/S02ace3eiknr4-aj5-cei6-a78"]);
+		a.push(["BlinkBlink", "B35ky/S234y"]);
 		a.push(["Blocks for Days", "B2-ae3-cij4a5aj6e7e8/S01e2ai3ar4ar5air6ae7c8"]);
 		a.push(["blockandglider", "B3/S234cw7c"]);
 		a.push(["BoatLife", "B3-knqy/S2-n3-ey4akwy5aik6kn"]);
@@ -331,8 +335,10 @@
 		a.push(["Creperie", "B2ikn3aijn/S23-ckqy"]);
 		a.push(["CrossLife", "B3/S234et"]);
 		a.push(["Crylife", "B2n3-cry4kn6i7c/S23-a4i6c"]);
+		a.push(["DenseLife", "B3-q4y/S234z"]);
 		a.push(["Diamoeral", "B2n3ai4a78/S35678"]);
 		a.push(["Diamonds", "B2en3ij4a5e7e8/S1c2cek3-a4aiqw5aky"]);
+		a.push(["DirtyLife", "B3-cky5aq6ci7c/S23-ck4n6k7e"]);
 		a.push(["DLife", "B3-n/S23"]);
 		a.push(["dolife", "B2-ak3acei4ceqz5y/S234ce5ceky78"]);
 		a.push(["dolife2", "B2-a3acei4ceqz5y/S234ce5ceky78"]);
@@ -350,13 +356,19 @@
 		a.push(["Extension", "B2cei3-ijnr4-a6i/S12-cn"]);
 		a.push(["fakePiShipLife", "B3-ck4e5k6i/S2-in35i6c8"]);
 		a.push(["FalseB5", "B35ce/S234jqtyz6k8"]);
+		a.push(["Frespa", "B34ck5/S23aceik4aci"]);
 		a.push(["FattyLife", "B3-n4nt5qr6i/S23"]);
 		a.push(["FishLife", "B3-ekqr4nt5r6i/S02-c3"]);
 		a.push(["FlashLife", "B2kn3-n4e/S23"]);
 		a.push(["Flowflakes", "B2-ac3acei4ey6n8/S02-n3-nqy4cekyz5ei6k7e"]);
+		a.push(["Flutter", "B2-a3j4-acekn56/S15y"]);
 		a.push(["Flying Life", "B3-k5r/S236n7e"]);
 		a.push(["FogLife", "B35eq7/S2-i34q"]);
+		a.push(["Forestfire", "B3ai4ekq5cy6n/S2-ci3-ace4inr5eqry"]);
+		a.push(["FrogLife", "B36i/S1c23-acek5k6i8"]);
+		a.push(["Fruitflies", "B2-an4jn7e8/S12-k4r"]);
 		a.push(["Fuzey", "B2-ae3aej4ez/S03ac4aikqryz78"]);
+		a.push(["GemLife", "B34c6/S23-q"]);
 		a.push(["Gentle relative", "B2cen3ek4jkw5-aein6a7e/S12an3-eijq4enrty5e6k"]);
 		a.push(["GlideLife", "B34ek5ak/S2-c34z"]);
 		a.push(["GlideLife2", "B34ek5ak/S2-c34iz5y"]);
@@ -398,14 +410,17 @@
 		a.push(["Knyght", "B2e3/S23-jq"]);
 		a.push(["ktlife", "B3/S2-i34nq"]);
 		a.push(["LambdaLife", "B3-k/S2-i3-k4cen"]);
+		a.push(["Leaplized D&N", "B2n3678/S3-q4678"]);
 		a.push(["LifeWithoutGliders", "B35n/S23"]);
 		a.push(["Linea", "B2-a3-i/S23-a"]);
+		a.push(["LispLife", "B2n3/S23-q4e8"]);
 		a.push(["LoafLife", "B2n3-q/S23"]);
 		a.push(["longlast", "B3/S234ce8"]);
 		a.push(["lotsofdots", "B2ikn34e/S023-a4ce"]);
 		a.push(["MaritimeLife", "B2i34c6cen7c8/S2-i3-q4c5a6e8"]);
 		a.push(["maze2", "B3/S234-acew"]);
 		a.push(["Migrating Bookends", "B2ein3inry/S12-n3ce"]);
+		a.push(["MilkyLife", "B3-c4c5y8/S234qy5y8"]);
 		a.push(["Mooselife", "B34kz5e7c/S23-a4ityz5k"]);
 		a.push(["move_rep", "B3-r4e5e6-n/S23cr457e"]);
 		a.push(["Movero VIII", "B2-a5k6n7c/S12-i3ij4k5j8"]);
@@ -416,9 +431,11 @@
 		a.push(["Movostill 2", "B3acijk/S23-a4"]);
 		a.push(["Movostill 3", "B2e3aceij5-ijr/S23-a4"]);
 		a.push(["MuddyLife", "B3/S234k"]);
+		a.push(["Nah", "B345-a6/S2-a3-a4-a"]);
 		a.push(["nonlife", "B3-n/S234iz"]);
 		a.push(["notlife", "B3-q7c/S2-i3-q4q"]);
 		a.push(["notlife (Wright)", "B2k3-k/S23-a"]);
+		a.push(["Notlife / Ace", "B2-a3/S2ce"]);
 		a.push(["Niemiec's Rule 0", "B3/S2ae3aeijr4-cknqy"]);
 		a.push(["olife", "B2in3/S2-in3"]);
 		a.push(["Omosso", "B2k3acijr4ijqy6i7c/S2aek3ijnqr4it5n"]);
@@ -429,8 +446,10 @@
 		a.push(["Pentadecathlife", "B34e5y6cn8/S234c5e"]);
 		a.push(["Photics I", "B2ae4c678/S01e4aeqrtw5678"]);
 		a.push(["Photics II", "B2ae4cw5y6i/S01e2i4q"]);
+		a.push(["Pi replicator life", "B3-r4z5y/S238"]);
 		a.push(["Pi-plicator", "B3-ckq/S2-c34ci"]);
 		a.push(["PiLife", "B37e/S23"]);
+		a.push(["Pilife2", "B34c/S234y8"]);
 		a.push(["plasma1", "B012-in3-cky4ar5cjnr6ae/S05aijnr6n"]);
 		a.push(["plife", "B35j/S2-i3"]);
 		a.push(["plife2", "B35j6i/S2-i3"]);
@@ -445,13 +464,18 @@
 		a.push(["Quasilinear Collisions", "B2-ak3-jnqr/S15678"]);
 		a.push(["Rakelife", "B3aij/S2-i3ajnr4arz56-a7e"]);
 		a.push(["Rainflakes", "B2-ac3aei4ey5n6n8/S02-n3aceir4ceyz5e6k"]);
+		a.push(["RBeeLife", "B34cijkq5k6i8/S2-n3-ik4cjqt5y6cin8"]);
 		a.push(["replife", "B34jy6n/S2-i3"]);
 		a.push(["reptlife", "B36-k/S2-i34q"]);
+		a.push(["ResistantLife", "B34eknqyz/S23"]);
 		a.push(["Ribbons", "B3-nqr/S23"]);
+		a.push(["RotoBlocks", "B34cyz5y8/S234y5y6n8"]);
+		a.push(["RotoHooks", "B34ckyz/S234cz"]);
 		a.push(["rgun", "B34t/S2-i35a7e"]);
 		a.push(["Rule X3VI", "B2c3aei4ajnr5acn/S2-ci3-ck4in5jkq6c7c"]);
 		a.push(["RustyLife", "B34-ai/S24-air5-a"]);
 		a.push(["Salad", "B2i34c/S2-i3"]);
+		a.push(["Sanctuary", "B2ei3ci/S1c23"]);
 		a.push(["sansdomino", "B2-a/S014"]);
 		a.push(["Savanna", "B2e3aeiy4ce5i6c7e/S2-n3-a4artz5aeny6cn"]);
 		a.push(["Scenery", "B3-cnry4-acery5i/S23-a4-jknqr5y8"]);
@@ -459,6 +483,7 @@
 		a.push(["signalife", "B3aeijy5e6i/S2-c3-a4iq5k6ck"]);
 		a.push(["SilverLife", "B367/S2-i34q"]);
 		a.push(["SimpleInverseFire", "B2-ak4568/S156ak78"]);
+		a.push(["Simple Life", "B2k34c/S2-c34z8"]);
 		a.push(["SLHassleLife", "B3-y5cr/S234w6n"]);
 		a.push(["SlugWorld", "B2e3ai4arw5678/S3-an4ar5i678"]);
 		a.push(["SolarWorld", "B2ce3ci4iyz5ce6c/S12ce3ae"]);
@@ -468,6 +493,7 @@
 		a.push(["Snowflakes", "B2ci3ai4c8/S02ae3eijkq4iz5ar6i7e"]);
 		a.push(["Snowflakes 2", "B2ci3ai4c8/S02ae3eijkq4aiz5ar6i7e"]);
 		a.push(["SparkLife", "B36i/S234j"]);
+		a.push(["SparklingLife", "B34cqy/S234q"]);
 		a.push(["SparseMethuseLife", "B35y/S1e2-ci3-a5i"]);
 		a.push(["StairWorld", "B2-a3i4aijk/S2a3-i4"]);
 		a.push(["Stars", "B2e3-ceny4einqwz5-cikr6cei/S1c2e3aijky4aceijrz5-cejk6-ak7c8"]);
@@ -493,6 +519,7 @@
 		a.push(["tPedestrianFlock", "B38/S12-i4q"]);
 		a.push(["tPedestrianLife", "B38/S2-i34q"]);
 		a.push(["tq6", "B2i34e/S023-a4ce"]);
+		a.push(["Traffic Flow", "B2e3aciy4jnw68/S23678"]);
 		a.push(["Train", "B34t6k8/S2-i35a7e"]);
 		a.push(["Trilobites", "B3aijn4w5nq/S2ae3aijr4irz5y"]);
 		a.push(["triship", "B2a3e/S012-ai3-i45-i678"]);
@@ -508,18 +535,22 @@
 		a.push(["Wild Seas", "B2c3-cekq4ikt5i8/S2-in3-acky4aijry5eiky6i"]);
 		a.push(["wlife", "B34w/S23"]);
 		a.push(["Worms 0", "B01c2n5a/S3a5i"]);
+		a.push(["Writers", "B2-a3-inqr4c6/S23"]);
 		a.push(["WSScentral", "B3-n45qr6i/S2eik3"]);
 		a.push(["X-rule-pre", "B2cei3ci4jnr5ikn/S12aen3c4einqy5er6aei8"]);
 		a.push(["xtdbee", "B3-k/S23"]);
 		a.push(["xvaLifeg", "B2e3/S23"]);
 		a.push(["Ylife", "B2e3ai4ar/S23-a4a"]);
+		a.push(["ylife (BokaBB)", "B34y5y/S234y5y"]);
 		a.push(["zigzag", "B3/S2-k34q"]);
 		a.push(["ZombieLife", "B3-nqy4aqz5cn6n8/S2-i3-a4inqz7c8"]);
 
 		// add isotropic Moore generations aliases
 		s.push("INT M G");
 		a.push(["Isotropic Non-Totalistic Generations Moore", ""]);
+		a.push(["HTech", "234e/2e3/3"]);
 		a.push(["Jellyfish", "2ak34-a5-i/2c36k7/4"]);
+		a.push(["KST", "1234-i5anq6kn/3r4kr5eiq6ack7e/3"]);
 		a.push(["Sliders", "012-e3-ae4acnqyz5acer6acn78/3j4-eikq5c/3"]);
 		a.push(["tGeneC1WC0", "2-i34q/2c34w5c/4"]);
 

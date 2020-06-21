@@ -113,33 +113,6 @@
 				this.widths[i + range] = w;
 			}
 			break;
-
-			// cross is a plus
-			case this.manager.crossHROT:
-			for (i = 0; i < range; i += 1) {
-				this.widths[i] = 0;
-				this.widths[width - i - 1] = 0;
-			}
-			this.widths[i] = range;
-			break;
-
-			// saltire is an X
-			case this.manager.saltireHROT:
-			for (i = 0; i < range; i += 1) {
-				this.widths[i] = range - i;
-				this.widths[width - i - 1] = range - i;
-			}
-			this.widths[i] = 0;
-			break;
-
-			// star is a *
-			case this.manager.starHROT:
-			for (i = 0; i < range; i += 1) {
-				this.widths[i] = range - i;
-				this.widths[width - i - 1] = range - i;
-			}
-			this.widths[i] = range;
-			break;
 		}
 	};
 
@@ -1101,6 +1074,59 @@
 			} else {
 				// determine neighbourhood type
 				switch (type) {
+					case this.manager.hexHROT:
+						// hex
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							// for the first cell count the entire neighbourhood
+							count = 0;
+							for (j = -range; j < 0; j += 1) {
+								colourRow = colourGrid[y + j];
+								for (i = -range; i <= range + j; i += 1) {
+									if ((colourRow[x + i]) >= aliveStart) {
+										count += 1;
+									}
+								}
+							}
+							for (j = 0; j <= range; j += 1) {
+								colourRow = colourGrid[y + j];
+								for (i = -range + j; i <= range; i += 1) {
+									if ((colourRow[x + i]) >= aliveStart) {
+										count += 1;
+									}
+								}
+							}
+							countRow[x] = count;
+							x += 1;
+
+							// for the remaining rows subtract the left and add the right cells
+							while (x <= rightX + range) {
+								for (j = -range; j < 0; j += 1) {
+									colourRow = colourGrid[y + j];
+									if (colourRow[x - range - 1] >= aliveStart) {
+										count -= 1;
+									}
+									if (colourRow[x + range + j] >= aliveStart) {
+										count += 1;
+									}
+								}
+								for (j = 0; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									if (colourRow[x - range + j - 1] >= aliveStart) {
+										count -= 1;
+									}
+									if (colourRow[x + range] >= aliveStart) {
+										count += 1;
+									}
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}
+
+						break;
+
 					case this.manager.saltireHROT:
 						// saltire
 						for (y = bottomY - range; y <= topY + range; y += 1) {
@@ -1227,7 +1253,7 @@
 						break;
 
 					default:
-						// circular, or short range von Neumann
+						// L2, circular, or short range von Neumann
 						for (y = bottomY - range; y <= topY + range; y += 1) {
 							countRow = counts[y];
 							x = leftX - range;
@@ -1340,6 +1366,7 @@
 			/** @type {number} */ state = 0,
 			/** @type {number} */ xpr = 0,
 			/** @type {number} */ xmrp1 = 0,
+			/** @type {number} */ rowCount = 0,
 			/** @type {boolean} */ rowAlive = false,
 			/** @type {boolean} */ colAlive = false,
 			/** @type {boolean} */ liveRowAlive = false,
@@ -1892,39 +1919,222 @@
 					this.engine.anythingAlive = 0;
 				}
 			} else {
-				// von Neumann and Circular
-				for (y = bottomY - range; y <= topY + range; y += 1) {
-					countRow = counts[y];
-					x = leftX - range;
-					// for the first cell in the row count the entire neighborhood
-					count = 0;
-					for (j = -range; j <= range; j += 1) {
-						width = widths[j + range];
-						colourRow = colourGrid[y + j];
-						for (i = -width; i <= width; i += 1) {
-							if ((colourRow[x + i]) === maxGenState) {
-								count += 1;
+				// determine neighbourhood type
+				switch (type) {
+					case this.manager.hexHROT:
+						// hex
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							// for the first cell count the entire neighbourhood
+							count = 0;
+							for (j = -range; j < 0; j += 1) {
+								colourRow = colourGrid[y + j];
+								for (i = -range; i <= range + j; i += 1) {
+									if ((colourRow[x + i]) === maxGenState) {
+										count += 1;
+									}
+								}
+							}
+							for (j = 0; j <= range; j += 1) {
+								colourRow = colourGrid[y + j];
+								for (i = -range + j; i <= range; i += 1) {
+									if ((colourRow[x + i]) === maxGenState) {
+										count += 1;
+									}
+								}
+							}
+							countRow[x] = count;
+							x += 1;
+
+							// for the remaining rows subtract the left and add the right cells
+							while (x <= rightX + range) {
+								for (j = -range; j < 0; j += 1) {
+									colourRow = colourGrid[y + j];
+									if (colourRow[x - range - 1] === maxGenState) {
+										count -= 1;
+									}
+									if (colourRow[x + range + j] === maxGenState) {
+										count += 1;
+									}
+								}
+								for (j = 0; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									if (colourRow[x - range + j - 1] === maxGenState) {
+										count -= 1;
+									}
+									if (colourRow[x + range] === maxGenState) {
+										count += 1;
+									}
+								}
+								countRow[x] = count;
+								x += 1;
 							}
 						}
-					}
-					countRow[x] = count;
-					x += 1;
-	
-					// for the remaining rows subtract the left and add the right cells
-					while (x <= rightX + range) {
-						for (j = -range; j <= range; j += 1) {
-							width = widths[j + range];
-							colourRow = colourGrid[y + j];
-							if (colourRow[x - width - 1] === maxGenState) {
-								count -= 1;
+
+						break;
+
+					case this.manager.saltireHROT:
+						// saltire
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							while (x <= rightX + range) {
+								count = 0;
+								for (j = 1; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									if ((colourRow[x - j]) === maxGenState) {
+										count += 1;
+									}
+									if ((colourRow[x + j]) === maxGenState) {
+										count += 1;
+									}
+									colourRow = colourGrid[y - j];
+									if ((colourRow[x - j]) === maxGenState) {
+										count += 1;
+									}
+									if ((colourRow[x + j]) === maxGenState) {
+										count += 1;
+									}
+								}
+								colourRow = colourGrid[y];
+								if ((colourRow[x]) === maxGenState) {
+									count += 1;
+								}
+								countRow[x] = count;
+								x += 1;
 							}
-							if (colourRow[x + width] === maxGenState) {
-								count += 1;
+						}	
+						break;
+
+					case this.manager.starHROT:
+						// star
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							while (x <= rightX + range) {
+								count = 0;
+								for (j = 1; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									if ((colourRow[x - j]) === maxGenState) {
+										count += 1;
+									}
+									if ((colourRow[x + j]) === maxGenState) {
+										count += 1;
+									}
+									if ((colourRow[x] === maxGenState)) {
+										count += 1;
+									}
+									colourRow = colourGrid[y - j];
+									if ((colourRow[x - j]) === maxGenState) {
+										count += 1;
+									}
+									if ((colourRow[x + j]) === maxGenState) {
+										count += 1;
+									}
+									if ((colourRow[x] === maxGenState)) {
+										count += 1;
+									}
+								}
+								colourRow = colourGrid[y];
+								for (i = -range; i <= range; i += 1) {
+									if ((colourRow[x + i]) === maxGenState) {
+										count += 1;
+									}
+								}
+								countRow[x] = count;
+								x += 1;
 							}
-						}
-						countRow[x] = count;
-						x += 1;
-					}
+						}	
+						break;
+
+					case this.manager.crossHROT:
+						// cross
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							// for the first cell count the entire neighbourhood
+							count = 0;
+							rowCount = 0;
+							for (j = 1; j <= range; j += 1) {
+								colourRow = colourGrid[y + j];
+								if ((colourRow[x] === maxGenState)) {
+									count += 1;
+								}
+								colourRow = colourGrid[y - j];
+								if ((colourRow[x] === maxGenState)) {
+									count += 1;
+								}
+							}
+							colourRow = colourGrid[y];
+							for (i = -range; i <= range; i += 1) {
+								if ((colourRow[x + i]) === maxGenState) {
+									rowCount += 1;
+								}
+							}
+							countRow[x] = count + rowCount;
+							x += 1;
+
+							// for remaining rows subtract the left and the right cells
+							while (x <= rightX + range) {
+								count = 0;
+								for (j = 1; j <= range; j += 1) {
+									if (colourGrid[y + j][x] === maxGenState) {
+										count += 1;
+									}
+									if (colourGrid[y - j][x] === maxGenState) {
+										count += 1;
+									}
+								}
+								colourRow = colourGrid[y];
+								if (colourRow[x - range - 1] === maxGenState) {
+									rowCount -= 1;
+								}
+								if (colourRow[x + range] === maxGenState) {
+									rowCount += 1;
+								}
+								countRow[x] = count + rowCount;
+								x += 1;
+							}
+						}	
+						break;
+
+					default:
+						// L2, circular, or short range von Neumann
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							// for the first cell in the row count the entire neighborhood
+							count = 0;
+							for (j = -range; j <= range; j += 1) {
+								width = widths[j + range];
+								colourRow = colourGrid[y + j];
+								for (i = -width; i <= width; i += 1) {
+									if ((colourRow[x + i]) === maxGenState) {
+										count += 1;
+									}
+								}
+							}
+							countRow[x] = count;
+							x += 1;
+			
+							// for the remaining rows subtract the left and add the right cells
+							while (x <= rightX + range) {
+								for (j = -range; j <= range; j += 1) {
+									width = widths[j + range];
+									colourRow = colourGrid[y + j];
+									if (colourRow[x - width - 1] === maxGenState) {
+										count -= 1;
+									}
+									if (colourRow[x + width] === maxGenState) {
+										count += 1;
+									}
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}	
+						break;
 				}
 			}
 		}

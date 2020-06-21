@@ -2066,8 +2066,8 @@
 		// result
 		result = [];
 
-		// for alternating rules skip odd generations
-		if (this.altSpecified && ((this.counter & 1) !== 0)) {
+		// for alternating rules or Margolus skip odd generations
+		if ((this.isMargolus || this.altSpecified) && ((this.counter & 1) !== 0)) {
 			return result;
 		}
 

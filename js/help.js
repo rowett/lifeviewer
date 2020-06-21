@@ -1394,6 +1394,9 @@
 			} else {
 				if (view.engine.patternDisplayMode) {
 					itemName = "Hex";
+					if (view.engine.HROT.range > 1) {
+						itemName += " range " + view.engine.HROT.range;
+					}
 				} else {
 					if (view.engine.isHROT) {
 						switch(view.engine.HROT.type) {
@@ -1423,6 +1426,10 @@
 
 						case view.manager.l2HROT:
 							itemName = "L2";
+							break;
+
+						case view.manager.hexHROT:
+							itemName = "Hex";
 							break;
 						}
 						if (view.engine.HROT.range > 1) {
