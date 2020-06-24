@@ -1,3 +1,8 @@
+Build 534
+- hex display was incorrect from ZOOM 1x to 4x when High Quality Rendering enabled
+- improved text wrapping in Help->Aliases
+- hotkeys "b" and "Backspace" should only step back 1 generation
+
 Build 533
 - added support for Hex neighbourhood for LtL and HROT rules
 	- specify with NH

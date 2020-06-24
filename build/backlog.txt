@@ -9,6 +9,7 @@ Investigate:
     strict volatility (Identify)
 
 Planned:
+    pretty rendering with Hex grid from 1x to 4x zoom (currently renders square grid at this range)
     menu items coordinates should be reflected based on compass position
     ability to specify Dying state colours
     add UI colours to Themes

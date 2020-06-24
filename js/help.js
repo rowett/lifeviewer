@@ -20,14 +20,19 @@
 	Help.renderHelpLineUpDown = function(view, up, separator, down, text, ctx, x, y, height, startLine) {
 		var result = y,
 		    
+			// scale
+			xScale = view.viewMenu.xScale,
+			yScale = view.viewMenu.xScale,
+
+			// shadow
+			shadowX = this.shadowX * xScale,
+			shadowY = this.shadowX * yScale,
+
 		    // only change colour if not drawing shadow
 		    drawingShadow = false,
 
 		    // line number
-			lineNo = view.lineNo,
-			
-			// scale
-			xScale = view.viewMenu.xScale;
+			lineNo = view.lineNo;
 
 		// only render if context exists
 		if (ctx) {
@@ -49,13 +54,13 @@
 						ctx.fillStyle = ViewConstants.greyFontColour;
 					}
 				}
-				ctx.fillText(up, x, y);
+				ctx.fillText(up, x + shadowX, y + shadowY);
 
 				// draw the separator
 				if (!drawingShadow) {
 					ctx.fillStyle = ViewConstants.helpFontColour;
 				}
-				ctx.fillText(separator, x + ctx.measureText(up).width, y);
+				ctx.fillText(separator, x + shadowX + ctx.measureText(up).width, y + shadowY);
 
 				// set colour based on whether help can scroll down
 				if (!drawingShadow) {
@@ -65,14 +70,14 @@
 						ctx.fillStyle = ViewConstants.greyFontColour;
 					}
 				}
-				ctx.fillText(down, x + ctx.measureText(up + separator).width, y);
+				ctx.fillText(down, x + shadowX + ctx.measureText(up + separator).width, y + shadowY);
 
 				// draw the variable part
 				if (!drawingShadow) {
 					ctx.fillStyle = ViewConstants.helpFontColour;
 				}
 				ctx.font = view.helpVariableFont;
-				ctx.fillText(text, x + (view.tabs[0] * xScale), y);
+				ctx.fillText(text, x + shadowX + (view.tabs[0] * xScale), y + shadowY);
 
 				// move the y coordinate to the next screen line
 				result += height;
@@ -170,15 +175,24 @@
 
 			// rule divider
 			divider = 0,
+			nextComma = 0,
 
 			// whether text was drawn
 			drewText = false,
 
-			// whether text should be drawn
-			shouldDraw = (view.lineNo >= startLine && view.lineNo <= (startLine + view.numHelpPerPage)),
+			// view scaling factors
+			xScale = view.viewMenu.xScale,
+			yScale = view.viewMenu.yScale,
 
-			// scale
-			xScale = view.viewMenu.xScale;
+			// shadow offset
+			shadowX = this.shadowX * xScale,
+			shadowY = this.shadowX * yScale,
+
+			// lower case string
+			lower = "",
+
+			// whether text should be drawn
+			shouldDraw = (view.lineNo >= startLine && view.lineNo <= (startLine + view.numHelpPerPage));
 
 		// check for copy
 		if (Help.copying && Help.shadowX === 0) {
@@ -196,7 +210,7 @@
 		if (fixed.length) {
 			if (shouldDraw) {
 				ctx.font = view.helpFixedFont;
-				ctx.fillText(fixed, x, y);
+				ctx.fillText(fixed, x + shadowX, y + shadowY);
 			}
 
 			// check if the fixed portion was wider than the first tab
@@ -218,7 +232,7 @@
 			while (tab !== -1) {
 				// draw the text up to the tab at the current tab stop
 				if (shouldDraw) {
-					ctx.fillText(text.substr(0, tab), x + (view.tabs[tabNo] * xScale), y);
+					ctx.fillText(text.substr(0, tab), x + shadowX + (view.tabs[tabNo] * xScale), y + shadowY);
 				}
 
 				// next tab stop
@@ -233,31 +247,47 @@
 			drewText = false;
 			if (view.wrapHelpText) {
 				width = this.measureText(view, ctx, text, 1);
-				// remove the shadow offset from x otherwise normal and shadow text wrap differently
-				if (x + (view.tabs[tabNo] * xScale) + width + this.shadowX > ctx.canvas.width) {
+
+				// check if the text fits
+				if (x + (view.tabs[tabNo] * xScale) + width > ctx.canvas.width) {
 					// check if the text can be split at "|"
-					divider = text.toLowerCase().indexOf("|");
+					lower = text.toLowerCase();
+					divider = lower.indexOf("|");
 					if (divider === -1) {
-						// check if the text can be split at "s"
-						divider = text.toLowerCase().indexOf("s");
+						// check if the text can be split at "s" for normal or "b" for LtL/HROT
+						if (lower[0] === "r") {
+							divider = lower.indexOf("b");
+						} else {
+							if (lower[0] !== "m") {
+								divider = lower.indexOf("s");
+							}
+						}
 						if (divider === -1) {
 							// try slash
-							divider = text.indexOf("/");
-							if (divider !== -1) {
+							divider = lower.indexOf("/");
+							if (divider !== -1 && lower[0] !== "m") {
+								// leave the slash on the first line
 								divider += 1;
+							} else {
+								// pick a point mid-way in the string
+								divider = text.length >> 1;
+								nextComma = lower.indexOf(",", divider);
+								if (nextComma !== -1) {
+									divider = nextComma + 1;
+								}
 							}
 						}
 					}
 					if (divider !== -1) {
 						if (shouldDraw) {
-							ctx.fillText(text.substr(0, divider), x + (view.tabs[tabNo] * xScale), y);
+							ctx.fillText(text.substr(0, divider), x + shadowX + (view.tabs[tabNo] * xScale), y + shadowY);
 							y += height;
 							result += height;
 						}
 						view.lineNo += 1;
 						shouldDraw = (view.lineNo >= startLine && view.lineNo <= (startLine + view.numHelpPerPage));
 						if (shouldDraw) {
-							ctx.fillText("  " + text.substr(divider), x + (view.tabs[tabNo] * xScale), y);
+							ctx.fillText("  " + text.substr(divider), x + shadowX + (view.tabs[tabNo] * xScale), y + shadowY);
 						}
 						drewText = true;
 					}
@@ -266,13 +296,13 @@
 			if (!drewText) {
 				// draw on one line
 				if (shouldDraw) {
-					ctx.fillText(text, x + (view.tabs[tabNo] * xScale), y);
+					ctx.fillText(text, x + shadowX + (view.tabs[tabNo] * xScale), y + shadowY);
 				}
 			}
 		} else {
 			ctx.font = view.helpVariableFont;
 			if (shouldDraw) {
-				ctx.fillText(text, x, y);
+				ctx.fillText(text, x + shadowX, y + shadowY);
 			}
 		}
 
@@ -2438,13 +2468,13 @@
 
 		// draw shadow
 		ctx.fillStyle = ViewConstants.helpShadowColour; 
-		this.shadowX = -2;
+		this.shadowX = 2;
 		this.renderHelpText(view, ctx, 6 * xScale, 14 * yScale, lineHeight, view.displayHelp | 0);
 
 		// draw text
 		ctx.fillStyle = ViewConstants.helpFontColour;
 		this.shadowX = 0;
-		this.renderHelpText(view, ctx, 4 * xScale, 12 * yScale, lineHeight, view.displayHelp | 0);
+		this.renderHelpText(view, ctx, 6 * xScale, 14 * yScale, lineHeight, view.displayHelp | 0);
 	};
 
 	// render error with up down greyed based on position
@@ -2453,6 +2483,11 @@
 
 			// scale
 			xScale = view.viewMenu.xScale,
+			yScale = view.viewMenu.xScale,
+
+			// shadow
+			shadowX = this.shadowX * xScale,
+			shadowY = this.shadowX * yScale,
 
 		    // get the width of the command
 		    width = 0,
@@ -2481,13 +2516,13 @@
 					ctx.fillStyle = ViewConstants.greyFontColour;
 				}
 			}
-			ctx.fillText(up, x, y);
+			ctx.fillText(up, x + shadowX, y + shadowY);
 
 			// draw the separator
 			if (!drawingShadow) {
 				ctx.fillStyle = view.errorsFontColour;
 			}
-			ctx.fillText(separator, x + ctx.measureText(up).width, y);
+			ctx.fillText(separator, x + shadowX + ctx.measureText(up).width, y + shadowY);
 
 			// set colour based on whether errors can scroll down
 			if (!drawingShadow) {
@@ -2497,7 +2532,7 @@
 					ctx.fillStyle = ViewConstants.greyFontColour;
 				}
 			}
-			ctx.fillText(down, x + ctx.measureText(up + separator).width, y);
+			ctx.fillText(down, x + shadowX + ctx.measureText(up + separator).width, y + shadowY);
 
 			// use tab width rather than command width if specified
 			if (view.tabs[0]) {
@@ -2509,7 +2544,7 @@
 				ctx.fillStyle = view.errorsFontColour;
 			}
 			ctx.font = view.helpVariableFont;
-			ctx.fillText(error, x + width, y);
+			ctx.fillText(error, x + shadowX + width, y + shadowY);
 
 			// move the y coordinate to the next screen line
 			result += height;
