@@ -308,6 +308,7 @@
 		a.push(["BlinkBlink", "B35ky/S234y"]);
 		a.push(["Blocks for Days", "B2-ae3-cij4a5aj6e7e8/S01e2ai3ar4ar5air6ae7c8"]);
 		a.push(["blockandglider", "B3/S234cw7c"]);
+		a.push(["Blockship", "B3-cer4ceqwz5acek6in78/S2-in3-eq4eqwyz5eikn678"]);
 		a.push(["BoatLife", "B3-knqy/S2-n3-ey4akwy5aik6kn"]);
 		a.push(["boatLife", "B3ainqy4aeq5ejn8/S2-in3-aek4aciq5ae6-c7c8"]);
 		a.push(["bpuff", "B3/S23-cky4k7e8"]);
@@ -386,6 +387,7 @@
 		a.push(["Half as Interesting", "B2ce3i/S23"]);
 		a.push(["hassl8life", "B34k5e7c/S23-a4iyz"]);
 		a.push(["hatlife", "B35y/S23"]);
+		a.push(["Hats and Shuttles", "B34iqwy/S23-cq"]);
 		a.push(["hedgehog", "B3/S1c2-a35r6i"]);
 		a.push(["HeptaFish", "B3-e4i5i/S234e"]);
 		a.push(["High15Life", "B34r6/S23-q4et"]);
@@ -454,6 +456,7 @@
 		a.push(["plife", "B35j/S2-i3"]);
 		a.push(["plife2", "B35j6i/S2-i3"]);
 		a.push(["PondLife", "B36i/S2-i35i"]);
+		a.push(["PortLife", "B34cz5y/S234y8"]);
 		a.push(["pre-X-rule", "B2cei3ci4jnr5ikn/S12-ck4einqy5er6aei8"]);
 		a.push(["Prismatika Crystallios", "B2ae3r/S1e"]);
 		a.push(["PlasmaLife", "B34-air/S234-air"]);
@@ -470,6 +473,7 @@
 		a.push(["ResistantLife", "B34eknqyz/S23"]);
 		a.push(["Ribbons", "B3-nqr/S23"]);
 		a.push(["RotoBlocks", "B34cyz5y8/S234y5y6n8"]);
+		a.push(["RotoDotPuffers", "B2ikn3-ejnr/S01c2cei3ay4c"]);
 		a.push(["RotoHooks", "B34ckyz/S234cz"]);
 		a.push(["rgun", "B34t/S2-i35a7e"]);
 		a.push(["Rule X3VI", "B2c3aei4ajnr5acn/S2-ci3-ck4in5jkq6c7c"]);
@@ -551,6 +555,7 @@
 		a.push(["HTech", "234e/2e3/3"]);
 		a.push(["Jellyfish", "2ak34-a5-i/2c36k7/4"]);
 		a.push(["KST", "1234-i5anq6kn/3r4kr5eiq6ack7e/3"]);
+		a.push(["Simple Brain", "234e/e3/3"]);
 		a.push(["Sliders", "012-e3-ae4acnqyz5acer6acn78/3j4-eikq5c/3"]);
 		a.push(["tGeneC1WC0", "2-i34q/2c34w5c/4"]);
 
