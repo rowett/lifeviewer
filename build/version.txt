@@ -1,3 +1,6 @@
+Build 536
+- fixed "New pattern" message for non-RLE format patterns
+
 Build 535
 - added more aliases
 

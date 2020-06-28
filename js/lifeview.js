@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 535,
+		/** @const {number} */ versionBuild : 536,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -15055,7 +15055,7 @@
 			for (i = 1; i < me.patternStateCount.length; i += 1) {
 				stateCount += me.patternStateCount[i];
 			}
-			if (pattern && stateCount === 0 && !me.isPasteEvery) {
+			if (pattern && stateCount === 0 && me.engine.population === 0 && !me.isPasteEvery) {
 				me.emptyStart = true;
 				if (!me.engine.isNone) {
 					if (pattern.tooBig) {
