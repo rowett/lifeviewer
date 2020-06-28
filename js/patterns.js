@@ -483,6 +483,8 @@
 		/** @const {number} */ this.starLTL = 5;
 		/** @const {number} */ this.l2LTL = 6;
 		/** @const {number} */ this.hexLTL = 7;
+		/** @const {number} */ this.checkerLTL = 8;
+		/** @const {number} */ this.hashLTL = 9;
 
 		// HROT min and max range
 		/** @const {number} */ this.minRangeHROT = 1;
@@ -505,6 +507,8 @@
 		/** @const {number} */ this.starHROT = 5;
 		/** @const {number} */ this.l2HROT = 6;
 		/** @const {number} */ this.hexHROT = 7;
+		/** @const {number} */ this.checkerHROT = 8;
+		/** @const {number} */ this.hashHROT = 9;
 
 		// specified width and height from RLE pattern
 		/** @type {number} */ this.specifiedWidth = -1;
@@ -2902,6 +2906,12 @@
 					case this.hexLTL:
 						nameLtL += "H";
 						break;
+					case this.checkerLTL:
+						nameLtL += "B";
+						break;
+					case this.hashLTL:
+						nameLtL += "#";
+						break;
 				}
 
 				// lookup alias
@@ -3091,8 +3101,18 @@
 						result = this.hexLTL;
 						break;
 
+					case "b":
+						this.index += 1;
+						result = this.checkerLTL;
+						break;
+
+					case "#":
+						this.index += 1;
+						result = this.hashLTL;
+						break;
+
 					default:
-						this.failureReason = "LtL 'N' needs M|H|N|C|+|X|2|* got 'N" + next.toUpperCase() + "'";
+						this.failureReason = "LtL 'N' needs M|H|N|C|+|X|2|*|B|# got 'N" + next.toUpperCase() + "'";
 						this.index = -1;
 						break;
 				}
@@ -3258,6 +3278,14 @@
 
 					case this.hexLTL:
 						maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1) - (pattern.rangeLTL * (pattern.rangeLTL + 1));
+						break;
+
+					case this.checkerLTL:
+						maxCells = ((pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1) - 1) / 2 + 1;
+						break;
+
+					case this.hashLTL:
+						maxCells = pattern.rangeLTL * 8 + 1;
 						break;
 				}
 				// adjust max cells by middle cell setting
@@ -3850,8 +3878,20 @@
 								result = true;
 								break;
 
+							case "b":
+								pattern.neighborhoodHROT = this.checkerHROT;
+								this.index += 1;
+								result = true;
+								break;
+							
+							case "#":
+								pattern.neighborhoodHROT = this.hashHROT;
+								this.index += 1;
+								result = true;
+								break;
+
 							default:
-								this.failureReason = "HROT 'N' needs M|N|H|C|+|X|2|* got '" + rule[this.index].toUpperCase() + "'";
+								this.failureReason = "HROT 'N' needs M|N|H|C|+|X|2|*|B|# got '" + rule[this.index].toUpperCase() + "'";
 								break;
 						}
 					} else {
@@ -3917,6 +3957,14 @@
 
 				case this.hexHROT:
 					maxCount = (pattern.rangeHROT * 2 + 1) * (pattern.rangeHROT * 2 + 1) - (pattern.rangeHROT * (pattern.rangeHROT + 1));
+					break;
+
+				case this.checkerHROT:
+					maxCount = ((pattern.rangeHROT * 2 + 1) * (pattern.rangeHROT * 2 + 1) - 1) / 2 + 1;
+					break;
+
+				case this.hashHROT:
+					maxCount = pattern.rangeHROT * 8 + 1;
 					break;
 			}
 
@@ -4730,6 +4778,14 @@
 											case this.hexHROT:
 												pattern.ruleName += "H";
 												break;
+
+											case this.checkerHROT:
+												pattern.ruleName += "B";
+												break;
+
+											case this.hashHROT:
+												pattern.ruleName += "#";
+												break;
 										}
 									}
 								} else {
@@ -4767,6 +4823,14 @@
 
 										case this.hexLTL:
 											pattern.ruleName += "H";
+											break;
+
+										case this.checkerLTL:
+											pattern.ruleName += "B";
+											break;
+
+										case this.hashLTL:
+											pattern.ruleName += "#";
 											break;
 									}
 
@@ -6881,7 +6945,7 @@
 		}
 
 		// check for hex HROT patterns
-		if (pattern.isHROT && pattern.neighborhoodHROT === this.hexLTL) {
+		if (pattern.isHROT && pattern.neighborhoodHROT === this.hexHROT) {
 			pattern.isHex = true;
 		}
 	};

@@ -1307,7 +1307,12 @@
 			case 79:
 				// check for ctrl key
 				if (event.ctrlKey) {
-					me.loadPattern(me);
+					if (event.shiftKey) {
+						// attempt to read RLE from clipboard
+						navigator.clipboard.readText().then(text => me.loadText(me, text));
+					} else {
+						me.loadPattern(me);
+					}
 				} else {
 					// check for shift key
 					if (event.shiftKey) {

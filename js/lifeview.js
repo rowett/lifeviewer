@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 536,
+		/** @const {number} */ versionBuild : 538,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -8586,6 +8586,16 @@
 			neighbourhood = "H";
 			neighbours = (range * 2 + 1) * (range * 2 + 1) - (range * (range + 1));
 			break;
+
+		case this.manager.checkerHROT:
+			neighbourhood = "B";
+			neighbours = ((range * 2 + 1) * (range * 2 + 1) - 1) / 2 + 1;
+			break;
+
+		case this.manager.hashHROT:
+			neighbourhood = "#";
+			neighbours = range * 8 + 1;
+			break;
 		}
 
 		// add random survival range
@@ -8687,6 +8697,16 @@
 		case this.manager.hexHROT:
 			neighbourhood = "H";
 			neighbours = (range * 2 + 1) * (range * 2 + 1) - (range * (range + 1));
+			break;
+
+		case this.manager.checkerHROT:
+			neighbourhood = "B";
+			neighbours = ((range * 2 + 1) * (range * 2 + 1) - 1) / 2 + 1;
+			break;
+
+		case this.manager.hashHROT:
+			neighbourhood = "#";
+			neighbours = range * 8 + 1;
 			break;
 		}
 
@@ -12277,6 +12297,23 @@
 	View.prototype.saveCurrentRLE = function(me) {
 		me.element.innerHTML = me.engine.asRLE(me, me.engine, true);
 		me.element.value = me.element.innerHTML;
+	};
+
+	// replace the current rle with the given text
+	View.prototype.loadText = function(me, text) {
+		var result = false;
+
+		// check whether prompt required
+		if (me.undoButton.locked || me.randomGuard) {
+			result = true;
+		} else {
+			result = window.confirm("Open clipboard?");
+		}
+		if (result) {
+			me.element.innerHTML = text;
+			me.element.value = me.element.innerHTML;
+			updateMe(me.element);
+		}
 	};
 
 	// select and copy reset position rle

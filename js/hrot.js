@@ -530,7 +530,8 @@
 			/** @type {number} */ ipr = 0,
 			/** @type {number} */ jpr = 0,
 			/** @type {number} */ jmr = 0,
-			/** @type {number} */ jpmincol = 0;
+			/** @type {number} */ jpmincol = 0,
+			/** @type {number} */ offset = 0;
 
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {
@@ -1074,6 +1075,95 @@
 			} else {
 				// determine neighbourhood type
 				switch (type) {
+					case this.manager.hashHROT:
+						// hash
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							// for the first cell count the entire neighbourhood
+							count = 0;
+							rowCount = 0;
+							for (j = -range; j <= range; j += 1) {
+								colourRow = colourGrid[y + j];
+								if (j === 1 || j === -1) {
+									for (i = -range; i <= range; i += 1) {
+										if (colourRow[x + i] >= aliveStart) {
+											rowCount += 1;
+										}
+									}
+								} else {
+									if (colourRow[x - 1] >= aliveStart) {
+										count += 1;
+									}
+									if (colourRow[x + 1] >= aliveStart) {
+										count += 1;
+									}
+								}
+							}
+							if (colourGrid[y][x] >= aliveStart) {
+								count += 1;
+							}
+							countRow[x] = count + rowCount;
+							x += 1;
+
+							// handle remaining rows
+							while (x <= rightX + range) {
+								count = 0;
+								for (j = -range; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									if (j === 1 || j === -1) {
+										if (colourRow[x - range - 1] >= aliveStart) {
+											rowCount -= 1;
+										}
+										if (colourRow[x + range] >= aliveStart) {
+											rowCount += 1;
+										}
+									} else {
+										if (colourRow[x - 1] >= aliveStart) {
+											count += 1;
+										}
+										if (colourRow[x + 1] >= aliveStart) {
+											count += 1;
+										}
+									}
+								}
+								// check for survival
+								if (colourGrid[y][x] >= aliveStart) {
+									count += 1;
+								}
+								countRow[x] = count + rowCount;
+								x += 1;
+							}
+						}	
+						break;
+
+					case this.manager.checkerHROT:
+						// checkerboard
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							while (x <= rightX + range) {
+								count = 0;
+								offset = 1;
+								for (j = -range; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									for (i = -range + offset; i <= range - offset; i += 2) {
+										if ((colourRow[x + i]) >= aliveStart) {
+											count += 1;
+										}
+									}
+									offset = 1 - offset;
+								}
+								// check for survival
+								if (colourGrid[y][x] >= aliveStart) {
+									count += 1;
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}	
+						break;
+
 					case this.manager.hexHROT:
 						// hex
 						for (y = bottomY - range; y <= topY + range; y += 1) {
@@ -1381,6 +1471,7 @@
 			/** @type {number} */ jpr = 0,
 			/** @type {number} */ jmr = 0,
 			/** @type {number} */ jpmincol = 0,
+			/** @type {number} */ offset = 0,
 
 			// maximum generations state
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
@@ -1921,6 +2012,94 @@
 			} else {
 				// determine neighbourhood type
 				switch (type) {
+					case this.manager.hashHROT:
+						// hash
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							// for the first cell count the entire neighbourhood
+							count = 0;
+							rowCount = 0;
+							for (j = -range; j <= range; j += 1) {
+								colourRow = colourGrid[y + j];
+								if (j === 1 || j === -1) {
+									for (i = -range; i <= range; i += 1) {
+										if (colourRow[x + i] === maxGenState) {
+											rowCount += 1;
+										}
+									}
+								} else {
+									if (colourRow[x - 1] === maxGenState) {
+										count += 1;
+									}
+									if (colourRow[x + 1] === maxGenState) {
+										count += 1;
+									}
+								}
+							}
+							if (colourGrid[y][x] === maxGenState) {
+								count += 1;
+							}
+							countRow[x] = count + rowCount;
+							x += 1;
+
+							// handle remaining rows
+							while (x <= rightX + range) {
+								count = 0;
+								for (j = -range; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									if (j === 1 || j === -1) {
+										if (colourRow[x - range - 1] === maxGenState) {
+											rowCount -= 1;
+										}
+										if (colourRow[x + range] === maxGenState) {
+											rowCount += 1;
+										}
+									} else {
+										if (colourRow[x - 1] === maxGenState) {
+											count += 1;
+										}
+										if (colourRow[x + 1] === maxGenState) {
+											count += 1;
+										}
+									}
+								}
+								// check for survival
+								if (colourGrid[y][x] === maxGenState) {
+									count += 1;
+								}
+								countRow[x] = count + rowCount;
+								x += 1;
+							}
+						}	
+						break;
+
+					case this.manager.checkerHROT:
+						// checkerboard
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							while (x <= rightX + range) {
+								count = 0;
+								offset = 1;
+								for (j = -range; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									for (i = -range + offset; i <= range - offset; i += 2) {
+										if ((colourRow[x + i]) === maxGenState) {
+											count += 1;
+										}
+									}
+									offset = 1 - offset;
+								}
+								// check for survival
+								if (colourGrid[y][x] === maxGenState) {
+									count += 1;
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}	
+						break;
 					case this.manager.hexHROT:
 						// hex
 						for (y = bottomY - range; y <= topY + range; y += 1) {

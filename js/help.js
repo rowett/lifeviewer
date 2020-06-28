@@ -807,6 +807,7 @@
 		y = this.renderHelpLine(view, "Alt N", "new pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt R", "change rule", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl O", "open original or last saved pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl+Shift O", "open clipboard as pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl S", "save pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt Z", "randomize pattern and rule", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl+Alt Z", "randomize pattern only", ctx, x, y, height, helpLine);
@@ -1461,6 +1462,14 @@
 						case view.manager.hexHROT:
 							itemName = "Hex";
 							break;
+
+						case view.manager.checkerHROT:
+							itemName = "Checkerboard";
+							break;
+
+						case view.manager.hashHROT:
+							itemName = "Hash";
+							break;
 						}
 						if (view.engine.HROT.range > 1) {
 							itemName += " range " + view.engine.HROT.range;
@@ -1722,7 +1731,8 @@
 		y = this.renderHelpLine(view, "Author", ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Decoders", "RLE, Life 1.06, Life 1.05, Cells", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "N'hoods", "Moore, Hex, von Neumann, Triangular, 1D,", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Circular, Cross, L2, Saltire, Star", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Circular, Cross, L2, Saltire, Star, Checkerboard,", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Hash", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Rules", "Wolfram, Totalistic, Generations, Margolus,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Isotropic Non-Totalistic (Hensel, Callahan),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Alternating, MAP, Larger than Life (LtL),", ctx, x, y, height, helpLine);

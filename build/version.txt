@@ -1,3 +1,12 @@
+Build 538
+- added support for Hash neighbourhood for LtL and HROT rules
+	- specify with N#
+- added hotkey Ctrl+Shift+O to open clipboard as pattern on some browsers
+
+Build 537
+- added support for Checkerboard neighbourhood for LtL and HROT rules
+	- specify with NB
+	
 Build 536
 - fixed "New pattern" message for non-RLE format patterns
 
