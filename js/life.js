@@ -495,6 +495,9 @@
 		// whether neighbourhood is hex
 		/** @type {boolean} */ this.isHex = false;
 
+		// hex neighbourhood
+		/** @type {number} */ this.hexNeighbourhood = this.manager.hexAll;
+
 		// whether to draw cells as hexagons in hex display mode
 		/** @type {boolean} */ this.useHexagons = true;
 

@@ -1425,6 +1425,9 @@
 			} else {
 				if (view.engine.patternDisplayMode) {
 					itemName = "Hex";
+					if (view.engine.hexNeighbourhood === view.manager.hexTripod) {
+						itemName += " Tripod";
+					}
 					if (view.engine.HROT.range > 1) {
 						itemName += " range " + view.engine.HROT.range;
 					}
@@ -1470,6 +1473,10 @@
 						case view.manager.hashHROT:
 							itemName = "Hash";
 							break;
+
+						case view.manager.customHROT:
+							itemName = "Custom";
+							break;
 						}
 						if (view.engine.HROT.range > 1) {
 							itemName += " range " + view.engine.HROT.range;
@@ -1477,10 +1484,19 @@
 					} else {
 						if (view.engine.isTriangular) {
 							itemName = "Triangular";
-							if (view.engine.triangularNeighbourhood === view.manager.triangularEdges) {
-								itemName += " Edges";
-							} else if (view.engine.triangularNeighbourhood === view.manager.triangularVertices) {
-								itemName += " Vertices";
+							switch (view.engine.triangularNeighbourhood) {
+								case view.manager.triangularEdges:
+									itemName += " Edges";
+									break;
+								case view.manager.triangularVertices:
+									itemName += " Vertices";
+									break;
+								case view.manager.triangularInner:
+									itemName += " Inner";
+									break;
+								case view.manager.triangularOuter:
+									itemName += " Outer";
+									break;
 							}
 						} else {
 							if (view.engine.isRuleTree) {
@@ -1732,7 +1748,7 @@
 		y = this.renderHelpLine(view, "Decoders", "RLE, Life 1.06, Life 1.05, Cells", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "N'hoods", "Moore, Hex, von Neumann, Triangular, 1D,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Circular, Cross, L2, Saltire, Star, Checkerboard,", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Hash", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Hash, Tripod", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Rules", "Wolfram, Totalistic, Generations, Margolus,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Isotropic Non-Totalistic (Hensel, Callahan),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Alternating, MAP, Larger than Life (LtL),", ctx, x, y, height, helpLine);

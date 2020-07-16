@@ -9,7 +9,6 @@ Investigate:
     strict volatility (Identify)
 
 Planned:
-    pretty rendering with Hex grid from 1x to 4x zoom (currently renders square grid at this range)
     menu items coordinates should be reflected based on compass position
     ability to specify Dying state colours
     add UI colours to Themes
@@ -19,6 +18,21 @@ Planned:
         [[ COLOUR @NAME ]]
         [[ XY = @NAME display ]]
         [[ colour picker @NAME display ]]
+    optimize range 1-7 LtL/HROT rules
+        - Circular
+        - L2
+        - Cross
+        - Saltire
+        - Star
+        - Hash
+        - Checkerboard
+    add LtL/HROT custom neighbourhoods
+        - CoordCA hex format
+        - shader fragment format
+
+[STARTED][R]Super support
+    [DONE]rule parser
+    - runtime
 
 [STARTED]add type information for closure compiler
 
@@ -32,7 +46,7 @@ Planned:
     [DONE]build next generation function
     [DONE]triangle renderer
     [DONE]decode triangular neighbourhood rules
-    [DONE]support Triangular, Triangular Edges and Triangular Vertices neighbourhoods
+    [DONE]support Triangular, Triangular Edges, Triangular Vertices, Triangular Inner and Triangular Outer neighbourhoods
     [DONE]B0 rules
 
 [STARTED]Rule Table rules

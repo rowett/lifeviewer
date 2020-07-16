@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 538,
+		/** @const {number} */ versionBuild : 539,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -8518,7 +8518,10 @@
 			neighbours = 0,
 			range = this.engine.HROT.range,
 			neighbourhood = "",
+			lastValue = -1,
 			value = 0,
+			number = 0,
+			added = 0,
 			r2 = 0,
 			width = 0,
 			i = 0;
@@ -8598,20 +8601,92 @@
 			break;
 		}
 
-		// add random survival range
-		value = (this.randGen.random() * neighbours) | 0;
-		result += "S" + String(value);
-		value = ((this.randGen.random() * (neighbours - value)) | 0) + value;
-		if (value > 0) {
-			result += "-" + String(value);
+		// pick number of survival neighbour counts
+		number = (this.randGen.random() * neighbours) / neighbours;
+		result += "S";
+		lastValue = -1;
+		i = 0;
+		added = 0;
+		while (i < neighbours) {
+			// check whether to add this neighbour count
+			if (this.randGen.random() < number) {
+				// check if this is part of a run
+				if (lastValue === -1) {
+					// start of new run
+					if (added > 0) {
+						result += ",";
+					}
+					result += String(i);
+					lastValue = i;
+					added += 1;
+				}
+			} else {
+				// check if there is a run in progress
+				if (lastValue !== -1) {
+					// add range
+					if (lastValue !== i - 1) {
+						result += "-" + String(i - 1);
+					}
+					lastValue = -1;
+				}
+			}
+			i += 1;
+		}
+
+		// finish any final run
+		if (lastValue !== -1 && lastValue !== i - 1) {
+			result += "-" + String(i - 1);
+		}
+
+		// add a single value if nothing was added
+		if (added === 0) {
+			value = (this.randGen.random() * neighbours) | 0;
+			result += String(value);
 		}
 
 		// add random birth range excluding B0
-		value = ((this.randGen.random() * (neighbours - 1)) | 0) + 1;
-		result += ",B" + String(value);
-		value = ((this.randGen.random() * (neighbours - value)) | 0) + value;
-		if (value > 0) {
-			result += "-" + String(value);
+		result += ",B";
+
+		// pick number of birth neighbour counts
+		number = (this.randGen.random() * (neighbours - 1)) / (neighbours - 1);
+		lastValue = -1;
+		i = 1;
+		added = 0;
+		while (i < neighbours) {
+			// check whether to add this neighbour count
+			if (this.randGen.random() < number) {
+				// check if this is part of a run
+				if (lastValue === -1) {
+					// start of new run
+					if (added > 0) {
+						result += ",";
+					}
+					result += String(i);
+					lastValue = i;
+					added += 1;
+				}
+			} else {
+				// check if there is a run in progress
+				if (lastValue !== -1) {
+					// add range
+					if (lastValue !== i - 1) {
+						result += "-" + String(i - 1);
+					}
+					lastValue = -1;
+				}
+			}
+			i += 1;
+		}
+
+		// finish any final run
+		if (lastValue !== -1 && lastValue !== i - 1) {
+			result += "-" + String(i - 1);
+		}
+
+		// add a single value if nothing was added
+		if (added === 0) {
+			value = (this.randGen.random() * (neighbours - 1)) | 0 + 1;
+			result += String(value);
 		}
 
 		// add the neighbourhood
@@ -8757,14 +8832,30 @@
 
 		// get neighbourhood
 		if (this.engine.isHex) {
-			neighbours = 6;
-			postfix = this.manager.hexPostfix;
+			switch (this.engine.hexNeighbourhood) {
+				case this.manager.hexAll:
+					neighbours = 6;
+					postfix = this.manager.hexPostfix;
+					break;
+				case this.manager.hexTripod:
+					neighbours = 3;
+					postfix = this.manager.hexTripodPostfix;
+					break;
+			}
 		} else{
 			if (this.engine.isTriangular) {
 				switch (this.engine.triangularNeighbourhood) {
 				case this.manager.triangularEdges:
 					neighbours = 3;
 					postfix = this.manager.triangularEdgesPostfix;
+					break;
+				case this.manager.triangularInner:
+					neighbours = 6;
+					postfix = this.manager.triangularInnerPostfix;
+					break;
+				case this.manager.triangularOuter:
+					neighbours = 6;
+					postfix = this.manager.triangularOuterPostfix;
 					break;
 				case this.manager.triangularVertices:
 					neighbours = 9;
@@ -13975,6 +14066,7 @@
 		this.engine.isSuper = false;
 		this.engine.displayLifeHistory = false;
 		this.engine.isHex = false;
+		this.engine.hexNeighbourhood = this.manager.hexAll;
 		this.engine.isTriangular = false;
 		this.engine.triangularNeighbourhood = this.manager.triangularAll;
 		this.engine.isVonNeumann = false;
@@ -14273,6 +14365,7 @@
 			// check if the neighbourhood is hex
 			me.engine.isHex = pattern.isHex;
 			me.engine.patternDisplayMode = pattern.isHex;
+			me.engine.hexNeighbourhood = pattern.hexNeighbourhood;
 
 			// check if the neighbourhood is triangular
 			me.engine.isTriangular = pattern.isTriangular;

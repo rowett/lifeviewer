@@ -1,3 +1,10 @@
+Build 539
+- improved random rule choice for HROT rules
+- added support for range 1 Hex Tripod neighbourhood
+	- specify with HT
+- added support for range 1 Triangular Inner and Triangular Outer neighbourhoods
+	- specify with LI and LO
+
 Build 538
 - added support for Hash neighbourhood for LtL and HROT rules
 	- specify with N#

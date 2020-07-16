@@ -346,6 +346,12 @@
 		// valid triangular Vertices rule characters
 		/** @const {string} */ this.validTriangularVerticesRuleLetters = "0123456789";
 
+		// valid triangular Inner rule characters
+		/** @const {string} */ this.validTriangularInnerRuleLetters = "0123456";
+
+		// valid triangular Outer rule characters
+		/** @const {string} */ this.validTriangularOuterRuleLetters = "0123456";
+
 		// triangular mask
 		/** @const {number} */ this.triangularMask = 8191;
 
@@ -355,11 +361,17 @@
 		// triangular Vertices mask
 		/** @const {number} */ this.triangularVerticesMask = 7157;
 
+		// triangular Inner mask
+		/** @const {number} */ this.triangularInnerMask = 5454;
+
+		// triangular Outer mask
+		/** @const {number} */ this.triangularOuterMask = 2741;
+
+		// valid hex tripod rule characters
+		/** @const {string} */ this.validHexTripodRuleLetters = "0123";
+
 		// valid hex rule characters
 		/** @const {string} */ this.validHexRuleLetters = "0123456omp-";
-
-		// hex digits
-		/** @const {string} */ this.hexDigits = "0123456";
 
 		// von neumann digits
 		/** @const {string} */ this.vonNeumannDigits = "01234";
@@ -441,8 +453,17 @@
 		// lower case name of Triangular Vertices postfix
 		/** @const {string} */ this.triangularVerticesPostfix = "lv";
 
+		// lower case name of Triangular Inner postfix
+		/** @const {string} */ this.triangularInnerPostfix = "li";
+
+		// lower case name of Triangular Outer postfix
+		/** @const {string} */ this.triangularOuterPostfix = "lo";
+
 		// lower case name of Hex postfix
 		/** @const {string} */ this.hexPostfix = "h";
+
+		// lower case name of Hex tripod postfix
+		/** @const {string} */ this.hexTripodPostfix = "ht";
 
 		// lower case name of Von-Neumann postfix
 		/** @const {string} */ this.vonNeumannPostfix = "v";
@@ -474,18 +495,6 @@
 		/** @const {number} */ this.minMiddleLTL = 0;
 		/** @const {number} */ this.maxMiddleLTL = 1;
 
-		// LTL neighborhoods
-		/** @const {number} */ this.mooreLTL= 0;
-		/** @const {number} */ this.vonNeumannLTL = 1;
-		/** @const {number} */ this.circularLTL = 2;
-		/** @const {number} */ this.crossLTL = 3;
-		/** @const {number} */ this.saltireLTL = 4;
-		/** @const {number} */ this.starLTL = 5;
-		/** @const {number} */ this.l2LTL = 6;
-		/** @const {number} */ this.hexLTL = 7;
-		/** @const {number} */ this.checkerLTL = 8;
-		/** @const {number} */ this.hashLTL = 9;
-
 		// HROT min and max range
 		/** @const {number} */ this.minRangeHROT = 1;
 		/** @const {number} */ this.maxRangeHROT = 500;
@@ -498,7 +507,7 @@
 		/** @type {number} */ this.maxSurvivalHROT = 0;
 		/** @type {number} */ this.maxBirthHROT = 0;
 
-		// HROT neighborhoods
+		// LtL/HROT neighborhoods
 		/** @const {number} */ this.mooreHROT = 0;
 		/** @const {number} */ this.vonNeumannHROT = 1;
 		/** @const {number} */ this.circularHROT = 2;
@@ -509,6 +518,7 @@
 		/** @const {number} */ this.hexHROT = 7;
 		/** @const {number} */ this.checkerHROT = 8;
 		/** @const {number} */ this.hashHROT = 9;
+		/** @const {number} */ this.customHROT = 10;
 
 		// specified width and height from RLE pattern
 		/** @type {number} */ this.specifiedWidth = -1;
@@ -518,7 +528,13 @@
 		/** @const {number} */ this.triangularAll = 0;
 		/** @const {number} */ this.triangularEdges = 1;
 		/** @const {number} */ this.triangularVertices = 2;
+		/** @const {number} */ this.triangularInner = 3;
+		/** @const {number} */ this.triangularOuter = 4;
 	
+		// hex neighbourhoods
+		/** @const {number} */ this.hexAll = 0;
+		/** @const {number} */ this.hexTripod = 1;
+
 		// alternate rule separator
 		/** @const {string} */ this.altRuleSeparator = "|";
 		
@@ -703,10 +719,13 @@
 		// is hex rule
 		/** @type {boolean} */ this.isHex = false;
 
+		// hex neighbourhood (0 - full, 1 - tripod)
+		/** @type {number} */ this.hexNeighbourhood = this.manager.hexAll;
+
 		// is triangular rule
 		/** @type {boolean} */ this.isTriangular = false;
 
-		// triangular neighbourhood (0 - full, 1 - edges, 2 - vertices)
+		// triangular neighbourhood (0 - full, 1 - edges, 2 - vertices, 3 - inner, 4 - outer)
 		/** @type {number} */ this.triangularNeighbourhood = this.manager.triangularAll;
 
 		// is Wolfram rule
@@ -743,7 +762,7 @@
 		/** @type {number} */ this.altBminLTL = -1;
 		/** @type {number} */ this.altBmaxLTL = -1;
  
-		// LTL neightborhood (0 Moore, 1 von Neumann, 2 circular, 3 cross, 4 saltire, 5 star, 6 L2)
+		// LTL neightborhood (0 Moore, 1 von Neumann, 2 circular, 3 cross, 4 saltire, 5 star, 6 L2, 7 hex, 8 checkerboard, 9 hash, 10 custom)
 		/** @type {number} */ this.neighborhoodLTL = -1;
 
 		// is HROT rule
@@ -763,11 +782,15 @@
 		this.altBirthHROT = null;
 		this.altSurvivalHROT = null;
 
-		// HROT neighborhood (0 Moore, 1 von Neumann, 2 circular, 3 cross, 4 saltire, 5 star, 6 L2)
+		// HROT neighborhood (0 Moore, 1 von Neumann, 2 circular, 3 cross, 4 saltire, 5 star, 6 L2, 7 hex, 8 checkerboard, 9 hash, 10 custom)
 		/** @type {number} */ this.neighborhoodHROT = -1;
 
 		// states for generations, LTL or HROT
 		/** @type {number} */ this.multiNumStates = -1;
+
+		// HROT custom neighbourhood
+		/** @type {string} */ this.customNeighbourhood = "";
+		/** @type {number} */ this.customNeighbourCount = -1;
 
 		// width of grid
 		/** @type {number} */ this.width = 0;
@@ -867,6 +890,7 @@
 		this.isNone = source.isNone;
 		this.aliasName = source.aliasName;
 		this.isHex = source.isHex;
+		this.hexNeighbourhood = source.hexNeighbourhood;
 		this.isTriangular = source.isTriangular;
 		this.birthTriMask = source.birthTriMask;
 		this.survivalTriMask = source.survivalTriMask;
@@ -927,6 +951,7 @@
 		this.isPCA = false;
 		this.isNone = false;
 		this.isHex = false;
+		this.hexNeighbourhood = this.manager.hexAll;
 		this.isTriangular = false;
 		this.birthTriMask = 0;
 		this.survivalTriMask = 0;
@@ -959,7 +984,7 @@
 		}
 
 		// check for neighborhoods
-		if ((this.isPCA !== source.isPCA) || (this.isMargolus !== source.isMargolus) || (this.isHex !== source.isHex) || (this.isTriangular !== source.isTriangular) || (this.triangularNeighbourhood !== source.triangularNeighbourhood) || (this.isVonNeumann !== source.isVonNeumann) || (this.wolframRule === -1 && source.wolframRule !== -1) || (this.wolframRule !== -1 && source.wolframRule === -1) || (this.neighborhoodLTL !== source.neighborhoodLTL) || (this.neighborhoodHROT !== source.neighborhoodHROT)) {
+		if ((this.isPCA !== source.isPCA) || (this.isMargolus !== source.isMargolus) || (this.isHex !== source.isHex) || (this.hexNeighbourhood !== source.hexNeighbourhood) || (this.isTriangular !== source.isTriangular) || (this.triangularNeighbourhood !== source.triangularNeighbourhood) || (this.isVonNeumann !== source.isVonNeumann) || (this.wolframRule === -1 && source.wolframRule !== -1) || (this.wolframRule !== -1 && source.wolframRule === -1) || (this.neighborhoodLTL !== source.neighborhoodLTL) || (this.neighborhoodHROT !== source.neighborhoodHROT)) {
 			return "Alternate has different neighborhood";
 		}
 
@@ -1780,6 +1805,18 @@
 		// -- -- e3 -- --         -- -- -- -- --
 		// Mask is: 1038 = b0010000001110
 
+		// Triangular Outer neighbourhood is:
+		// -- e1 -- e1 --         -- o1 -- o1 --
+		// e2 -- EC -- e2   and   o2 -- OC -- o2
+		// -- e3 -- e3 --         -- o3 -- o3 --
+		// Mask is: 2741 = b0101010110101
+
+		// Triangular Inner neighbourhood is:
+		// -- -- e1 -- --         o1 -- o1 -- o1
+		// -- e2 EC e2 --   and   -- o2 OC o2 --
+		// e3 -- e3 -- e3         -- -- o3 -- --
+		// Mask is: 5454 = b1010101001110
+
 		// bit order is:
 		// e3 e3 e3 e3 e3 e1 e1 e1 e2 e2 EC e2 e2
 		// and:
@@ -2125,7 +2162,7 @@
 	};
 
 	// set birth or survival hex rule from a string
-	PatternManager.prototype.setHexRuleFromString = function(ruleArray, rule, survival) {
+	PatternManager.prototype.setHexRuleFromString = function(ruleArray, rule, survival, mask) {
 		// current and next characters
 		var current = null,
 		    next = null,
@@ -2144,9 +2181,6 @@
 
 		    // letter index
 		    letterIndex = 0,
-
-		    // hex neighbourhood mask
-		    mask = 254,
 
 		    // used bit array
 		    used = 0,
@@ -2417,14 +2451,26 @@
 			sMask = pattern.survivalTriMask;
 
 		// check neighbourhood
-		if (pattern.triangularNeighbourhood === this.triangularEdges) {
-			digits = 3;
-			ruleMask = this.triangularEdgesMask;
-		} else {
-			if (pattern.triangularNeighbourhood === this.triangularVertices) {
+		switch (pattern.triangularNeighbourhood) {
+			case this.triangularEdges:
+				digits = 3;
+				ruleMask = this.triangularEdgesMask;
+				break;
+
+			case this.triangularVertices:
 				digits = 9;
 				ruleMask = this.triangularVerticesMask;
-			}
+				break;
+
+			case this.triangularInner:
+				digits = 6;
+				ruleMask = this.triangularInnerMask;
+				break;
+
+			case this.triangularOuter:
+				digits = 6;
+				ruleMask = this.triangularOuterMask;
+				break;
 		}
 
 		// clear arrays
@@ -2514,12 +2560,22 @@
 			survivalName = "";
 
 		// check which triangular neighbourhood is specified
-		if (triangularNeighbourhood === this.triangularEdges) {
-			letters = this.validTriangularEdgesRuleLetters;
-		} else {
-			if (triangularNeighbourhood === this.triangularVertices) {
+		switch (triangularNeighbourhood) {
+			case this.triangularEdges:
+				letters = this.validTriangularEdgesRuleLetters;
+				break;
+
+			case this.triangularVertices:
 				letters = this.validTriangularVerticesRuleLetters;
-			}
+				break;
+
+			case this.triangularInner:
+				letters = this.validTriangularInnerRuleLetters;
+				break;
+
+			case this.triangularOuter:
+				letters = this.validTriangularOuterRuleLetters;
+				break;
 		}
 
 		// find out which birth letters are specified
@@ -2578,6 +2634,7 @@
 			isMargolus = pattern.isMargolus,
 			isPCA = pattern.isPCA,
 			isHex = pattern.isHex,
+			hexNeighbourhood = pattern.hexNeighbourhood,
 			isTriangular = pattern.isTriangular,
 			triangularNeighbourhood = pattern.triangularNeighbourhood,
 			isVonNeumann = pattern.isVonNeumann,
@@ -2608,7 +2665,11 @@
 					// create the masks
 					mask = 511;
 					if (isHex) {
-						mask = 254;
+						if (hexNeighbourhood === this.hexTripod) {
+							mask = 114;
+						} else {
+							mask = 254;
+						}
 					} else {
 						if (isVonNeumann) {
 							mask = 186;
@@ -2688,10 +2749,10 @@
 						} else {
 							if (isHex) {
 								// set the hex birth rule
-								birthName = this.setHexRuleFromString(ruleArray, birthPart, false);
+								birthName = this.setHexRuleFromString(ruleArray, birthPart, false, mask);
 			
 								// set the hex survival rule
-								survivalName = this.setHexRuleFromString(ruleArray, survivalPart, true);
+								survivalName = this.setHexRuleFromString(ruleArray, survivalPart, true, mask);
 							} else {
 								// set the Moore birth rule
 								birthName = this.setRuleFromString(ruleArray, birthPart, false);
@@ -2853,6 +2914,9 @@
 		if (base64 === "") {
 			if (pattern.isHex) {
 				pattern.ruleName += "H";
+				if (pattern.hexNeighbourhood === this.hexTripod) {
+					pattern.ruleName += "T";
+				}
 			} else {
 				if (pattern.isVonNeumann) {
 					pattern.ruleName += "V";
@@ -2868,6 +2932,12 @@
 						case this.triangularVertices:
 							pattern.ruleName += this.triangularVerticesPostfix.toUpperCase();
 							break;
+						case this.triangularInner:
+							pattern.ruleName += this.triangularInnerPostfix.toUpperCase();
+							break;
+						case this.triangularOuter:
+							pattern.ruleName += this.triangularOuterPostfix.toUpperCase();
+							break;
 						}
 					}
 				}
@@ -2882,35 +2952,38 @@
 				// build the rule string
 				nameLtL = "R" + pattern.rangeLTL + ",C" + pattern.multiNumStates + ",M1,S" + pattern.SminLTL + ".." + pattern.SmaxLTL + ",B" + pattern.BminLTL + ".." + pattern.BmaxLTL + ",N";
 				switch (pattern.neighborhoodLTL) {
-					case this.mooreLTL:
+					case this.mooreHROT:
 						nameLtL += "M";
 						break;
-					case this.vonNeumannLTL:
+					case this.vonNeumannHROT:
 						nameLtL += "N";
 						break;
-					case this.circularLTL:
+					case this.circularHROT:
 						nameLtL += "C";
 						break;
-					case this.crossLTL:
+					case this.crossHROT:
 						nameLtL += "+";
 						break;
-					case this.saltireLTL:
+					case this.saltireHROT:
 						nameLtL += "X";
 						break;
-					case this.starLTL:
+					case this.starHROT:
 						nameLtL += "*";
 						break;
-					case this.l2LTL:
+					case this.l2HROT:
 						nameLtL += "2";
 						break;
-					case this.hexLTL:
+					case this.hexHROT:
 						nameLtL += "H";
 						break;
-					case this.checkerLTL:
+					case this.checkerHROT:
 						nameLtL += "B";
 						break;
-					case this.hashLTL:
+					case this.hashHROT:
 						nameLtL += "#";
+						break;
+					case this.customHROT:
+						nameLtL += "@" + this.customNeighbourhood;
 						break;
 				}
 
@@ -3022,7 +3095,7 @@
 	};
 
 	// decode part of LTL rule
-	PatternManager.prototype.decodeLTLpart = function (rule, part, lower, upper, partof) {
+	PatternManager.prototype.decodeLTLpart = function (rule, part, lower, upper, partof, range) {
 		var result = 0,
 		    partlen = part.length,
 		    rulepart = rule.substr(this.index, partlen),
@@ -3063,56 +3136,64 @@
 				switch(next) {
 					case "m":
 						this.index += 1;
-						result = this.mooreLTL;
+						result = this.mooreHROT;
 						break;
 
 					case "n":
 						this.index += 1;
-						result = this.vonNeumannLTL;
+						result = this.vonNeumannHROT;
 						break;
 
 					case "c":
 						this.index += 1;
-						result = this.circularLTL;
+						result = this.circularHROT;
 						break;
 
 					case "+":
 						this.index += 1;
-						result = this.crossLTL;
+						result = this.crossHROT;
 						break;
 
 					case "x":
 						this.index += 1;
-						result = this.saltireLTL;
+						result = this.saltireHROT;
 						break;
 
 					case "*":
 						this.index += 1;
-						result = this.starLTL;
+						result = this.starHROT;
 						break;
 
 					case "2":
 						this.index += 1;
-						result = this.l2LTL;
+						result = this.l2HROT;
 						break;
 
 					case "h":
 						this.index += 1;
-						result = this.hexLTL;
+						result = this.hexHROT;
 						break;
 
 					case "b":
 						this.index += 1;
-						result = this.checkerLTL;
+						result = this.checkerHROT;
 						break;
 
 					case "#":
 						this.index += 1;
-						result = this.hashLTL;
+						result = this.hashHROT;
+						break;
+
+					case "@":
+						this.index += 1;
+						result = this.readCustomNeighbourhood(rule, range, "LtL");
+						if (result === -1) {
+							this.index = -1;
+						}
 						break;
 
 					default:
-						this.failureReason = "LtL 'N' needs M|H|N|C|+|X|2|*|B|# got 'N" + next.toUpperCase() + "'";
+						this.failureReason = "LtL 'N' needs M|H|N|C|+|X|2|*|B|#|@ got 'N" + next.toUpperCase() + "'";
 						this.index = -1;
 						break;
 				}
@@ -3167,12 +3248,12 @@
 		this.index = 0;
 
 		// decode R part
-		value = this.decodeLTLpart(rule, "r", this.minRangeLTL, this.maxRangeLTL, "");
+		value = this.decodeLTLpart(rule, "r", this.minRangeLTL, this.maxRangeLTL, "", pattern.rangeLTL);
 		if (this.index !== -1) {
 			pattern.rangeLTL = value;
 			
 			// decode C part
-			value = this.decodeLTLpart(rule, ",c", this.minStatesLTL, this.maxStatesLTL, "");
+			value = this.decodeLTLpart(rule, ",c", this.minStatesLTL, this.maxStatesLTL, "", pattern.rangeLTL);
 			if (this.index !== -1) {
 				// ensure number of states is at least 2
 				if (value < 2) {
@@ -3181,32 +3262,32 @@
 				pattern.multiNumStates = value;
 
 				// decode M part
-				value = this.decodeLTLpart(rule, ",m", this.minMiddleLTL, this.maxMiddleLTL, "");
+				value = this.decodeLTLpart(rule, ",m", this.minMiddleLTL, this.maxMiddleLTL, "", pattern.rangeLTL);
 				if (this.index !== -1) {
 					pattern.middleLTL = value;
 
 					// decode S first part
-					value = this.decodeLTLpart(rule, ",s", 0, -1, "");
+					value = this.decodeLTLpart(rule, ",s", 0, -1, "", pattern.rangeLTL);
 					if (this.index !== -1) {
 						pattern.SminLTL = value;
 
 						// decode second S part
-						value = this.decodeLTLpart(rule, "..", pattern.SminLTL, -1, "S");
+						value = this.decodeLTLpart(rule, "..", pattern.SminLTL, -1, "S", pattern.rangeLTL);
 						if (this.index !== -1) {
 							pattern.SmaxLTL = value;
 
 							// decode first B part
-							value = this.decodeLTLpart(rule, ",b", 0, -1, "");
+							value = this.decodeLTLpart(rule, ",b", 0, -1, "", pattern.rangeLTL);
 							if (this.index !== -1) {
 								pattern.BminLTL = value;
 
 								// decode second B part
-								value = this.decodeLTLpart(rule, "..", pattern.BminLTL, -1, "B");
+								value = this.decodeLTLpart(rule, "..", pattern.BminLTL, -1, "B", pattern.rangeLTL);
 								if (this.index !== -1) {
 									pattern.BmaxLTL = value;
 
 									// decode N part
-									value = this.decodeLTLpart(rule, ",n", -1, -1, "");
+									value = this.decodeLTLpart(rule, ",n", -1, -1, "", pattern.rangeLTL);
 									if (this.index !== -1) {
 										pattern.neighborhoodLTL = value;
 
@@ -3230,15 +3311,15 @@
 			} else {
 				// check Smax and Bmax based on range and neighborhood
 				switch(pattern.neighborhoodLTL) {
-					case this.mooreLTL:
+					case this.mooreHROT:
 						maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1);
 						break;
 
-					case this.vonNeumannLTL:
+					case this.vonNeumannHROT:
 						maxCells = 2 * pattern.rangeLTL * (pattern.rangeLTL + 1) + 1;
 						break;
 
-					case this.circularLTL:
+					case this.circularHROT:
 						count = 0;
 						r2 = pattern.rangeLTL * pattern.rangeLTL + pattern.rangeLTL;
 						for (i = -pattern.rangeLTL; i <= pattern.rangeLTL; i += 1) {
@@ -3251,19 +3332,19 @@
 						maxCells = count;
 						break;
 
-					case this.crossLTL:
+					case this.crossHROT:
 						maxCells = pattern.rangeLTL * 4 + 1;
 						break;
 
-					case this.saltireLTL:
+					case this.saltireHROT:
 						maxCells = pattern.rangeLTL * 4 + 1;
 						break;
 
-					case this.starLTL:
+					case this.starHROT:
 						maxCells = pattern.rangeLTL * 8 + 1;
 						break;
 
-					case this.l2LTL:
+					case this.l2HROT:
 						count = 0;
 						r2 = pattern.rangeLTL * pattern.rangeLTL;
 						for (i = -pattern.rangeLTL; i <= pattern.rangeLTL; i += 1) {
@@ -3276,16 +3357,20 @@
 						maxCells = count;
 						break;
 
-					case this.hexLTL:
+					case this.hexHROT:
 						maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1) - (pattern.rangeLTL * (pattern.rangeLTL + 1));
 						break;
 
-					case this.checkerLTL:
+					case this.checkerHROT:
 						maxCells = ((pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1) - 1) / 2 + 1;
 						break;
 
-					case this.hashLTL:
+					case this.hashHROT:
 						maxCells = pattern.rangeLTL * 8 + 1;
+						break;
+
+					case this.customHROT:
+						maxCells = this.customNeighbourCount + 1;
 						break;
 				}
 				// adjust max cells by middle cell setting
@@ -3324,30 +3409,30 @@
 		// set unspecified defaults: 2 states, whether middle is included (yes) and neighborhood (Moore)
 		pattern.multiNumStates = 2;
 		pattern.middleLTL = 1;
-		pattern.neighborhoodLTL = this.mooreLTL;
+		pattern.neighborhoodLTL = this.mooreHROT;
 
 		// decode R part
-		value = this.decodeLTLpart(rule, "", this.minRangeLTL, this.maxRangeLTL, "");
+		value = this.decodeLTLpart(rule, "", this.minRangeLTL, this.maxRangeLTL, "", pattern.rangeLTL);
 		if (this.index !== -1) {
 			pattern.rangeLTL = value;
 			
 			// decode first B part
-			value = this.decodeLTLpart(rule, ",", 0, -1, "");
+			value = this.decodeLTLpart(rule, ",", 0, -1, "", pattern.rangeLTL);
 			if (this.index !== -1) {
 				pattern.BminLTL = value;
 
 				// decode second B part
-				value = this.decodeLTLpart(rule, ",", pattern.BminLTL, -1, "B");
+				value = this.decodeLTLpart(rule, ",", pattern.BminLTL, -1, "B", pattern.rangeLTL);
 				if (this.index !== -1) {
 					pattern.BmaxLTL = value;
 
 					// decode S first part
-					value = this.decodeLTLpart(rule, ",", 0, -1, "");
+					value = this.decodeLTLpart(rule, ",", 0, -1, "", pattern.rangeLTL);
 					if (this.index !== -1) {
 						pattern.SminLTL = value;
 
 						// decode second S part
-						value = this.decodeLTLpart(rule, ",", pattern.SminLTL, -1, "S");
+						value = this.decodeLTLpart(rule, ",", pattern.SminLTL, -1, "S", pattern.rangeLTL);
 						if (this.index !== -1) {
 							pattern.SmaxLTL = value;
 
@@ -3406,30 +3491,30 @@
 
 		// set unspecified defaults: whether middle is included (yes) and neighborhood (Moore)
 		pattern.middleLTL = 1;
-		pattern.neighborhoodLTL = this.mooreLTL;
+		pattern.neighborhoodLTL = this.mooreHROT;
 
 		// decode R part
-		value = this.decodeLTLpart(rule, "r", this.minRangeLTL, this.maxRangeLTL, "");
+		value = this.decodeLTLpart(rule, "r", this.minRangeLTL, this.maxRangeLTL, "", pattern.rangeLTL);
 		if (this.index !== -1) {
 			pattern.rangeLTL = value;
 			
 			// decode first B part
-			value = this.decodeLTLpart(rule, "b", 0, -1, "");
+			value = this.decodeLTLpart(rule, "b", 0, -1, "", pattern.rangeLTL);
 			if (this.index !== -1) {
 				pattern.BminLTL = value;
 
 				// decode second B part
-				value = this.decodeLTLpart(rule, "t", pattern.BminLTL, -1, "B");
+				value = this.decodeLTLpart(rule, "t", pattern.BminLTL, -1, "B", pattern.rangeLTL);
 				if (this.index !== -1) {
 					pattern.BmaxLTL = value;
 
 					// decode S first part
-					value = this.decodeLTLpart(rule, "s", 0, -1, "");
+					value = this.decodeLTLpart(rule, "s", 0, -1, "", pattern.rangeLTL);
 					if (this.index !== -1) {
 						pattern.SminLTL = value;
 
 						// decode second S part
-						value = this.decodeLTLpart(rule, "t", pattern.SminLTL, -1, "S");
+						value = this.decodeLTLpart(rule, "t", pattern.SminLTL, -1, "S", pattern.rangeLTL);
 						if (this.index !== -1) {
 							pattern.SmaxLTL = value;
 
@@ -3636,6 +3721,48 @@
 					}
 				}
 			}
+		}
+
+		return result;
+	};
+
+	// read custom HROT neighbourhood
+	// rule parameter is lower case
+	PatternManager.prototype.readCustomNeighbourhood = function(rule, range, family) {
+		var i = this.index,
+			l = rule.length,
+			numRead = 0,
+			neededLength = ((range * 2 + 1) * (range * 2 + 1) - 1) / 4,
+			next = 0,
+			count = 0,
+			result = this.customHROT;
+
+		// read hex characters
+		while (i < l && numRead < neededLength && result !== -1) {
+			next = this.hexCharacters.indexOf(rule[i]);
+			if (next >= 0) {
+				i += 1;
+				numRead += 1;
+				count += this.bitCount(next);
+			} else {
+				result = -1;
+			}
+		}
+
+		// check if enough digits were read
+		if (numRead !== neededLength) {
+			result = -1;
+		}
+
+		// check if string is valid
+		if (result === -1) {
+			this.failureReason = family + " 'N@' needs " + String(neededLength) + " hex digits";
+			this.customNeighbourhood = "";
+			this.customNeighbourCount = -1;
+		} else {
+			this.customNeighbourhood = rule.substr(this.index, numRead);
+			this.customNeighbourCount = count;
+			this.index += numRead;
 		}
 
 		return result;
@@ -3890,8 +4017,16 @@
 								result = true;
 								break;
 
+							case "@":
+								this.index += 1;
+								pattern.neighborhoodHROT = this.readCustomNeighbourhood(rule, pattern.rangeHROT, "HROT");
+								if (pattern.neighborhoodHROT !== -1) {
+									result = true;
+								}
+								break;
+
 							default:
-								this.failureReason = "HROT 'N' needs M|N|H|C|+|X|2|*|B|# got '" + rule[this.index].toUpperCase() + "'";
+								this.failureReason = "HROT 'N' needs M|N|H|C|+|X|2|*|B|#|@ got '" + rule[this.index].toUpperCase() + "'";
 								break;
 						}
 					} else {
@@ -3965,6 +4100,10 @@
 
 				case this.hashHROT:
 					maxCount = pattern.rangeHROT * 8 + 1;
+					break;
+
+				case this.customHROT:
+					maxCount = this.customNeighbourCount + 1;
 					break;
 			}
 
@@ -4484,6 +4623,9 @@
 		    // valid character index
 		    validIndex = -1,
 
+			// hex tripod postfix length
+			hexTripodLength = this.hexTripodPostfix.length,
+
 		    // hex index
 		    hexIndex = -1,
 
@@ -4501,6 +4643,12 @@
 
 			// triangular Vertices postfix length
 			triangularVerticesLength = this.triangularVerticesPostfix.length,
+
+			// triangular Inner postfix length
+			triangularInnerLength = this.triangularInnerPostfix.length,
+
+			// triangular Outer postfix length
+			triangularOuterLength = this.triangularOuterPostfix.length,
 
 		    // von neumann index
 		    vonNeumannIndex = -1,
@@ -4786,6 +4934,10 @@
 											case this.hashHROT:
 												pattern.ruleName += "#";
 												break;
+
+											case this.customHROT:
+												pattern.ruleName += "@" + this.customNeighbourhood;
+												break;
 										}
 									}
 								} else {
@@ -4793,44 +4945,48 @@
 									pattern.isLTL = true;
 									pattern.ruleName = "R" + pattern.rangeLTL + ",C" + pattern.multiNumStates + ",M" + pattern.middleLTL + ",S" + pattern.SminLTL + ".." + pattern.SmaxLTL + ",B" + pattern.BminLTL + ".." + pattern.BmaxLTL + ",N";
 									switch (pattern.neighborhoodLTL) {
-										case this.mooreLTL:
+										case this.mooreHROT:
 											pattern.ruleName += "M";
 											break;
 
-										case this.vonNeumannLTL:
+										case this.vonNeumannHROT:
 											pattern.ruleName += "N";
 											break;
 
-										case this.circularLTL:
+										case this.circularHROT:
 											pattern.ruleName += "C";
 											break;
 
-										case this.crossLTL:
+										case this.crossHROT:
 											pattern.ruleName += "+";
 											break;
 
-										case this.saltireLTL:
+										case this.saltireHROT:
 											pattern.ruleName += "X";
 											break;
 
-										case this.starLTL:
+										case this.starHROT:
 											pattern.ruleName += "*";
 											break;
 
-										case this.l2LTL:
+										case this.l2HROT:
 											pattern.ruleName += "2";
 											break;
 
-										case this.hexLTL:
+										case this.hexHROT:
 											pattern.ruleName += "H";
 											break;
 
-										case this.checkerLTL:
+										case this.checkerHROT:
 											pattern.ruleName += "B";
 											break;
 
-										case this.hashLTL:
+										case this.hashHROT:
 											pattern.ruleName += "#";
+											break;
+
+										case this.customHROT:
+											pattern.ruleName += "@" + this.customNeighbourhood;
 											break;
 									}
 
@@ -4889,11 +5045,54 @@
 									validRuleLetters = this.validTriangularVerticesRuleLetters;
 								}
 
+								// check for triangular Inner rules
+								triangularIndex = rule.lastIndexOf(this.triangularInnerPostfix);
+								if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularInnerLength)) {
+									// rule is a triangular type
+									pattern.isTriangular = true;
+									pattern.triangularNeighbourhood = this.triangularInner;
+
+									// remove the postfix
+									rule = rule.substr(0, rule.length - triangularInnerLength);
+
+									// update the valid rule letters to triangular letters
+									validRuleLetters = this.validTriangularInnerRuleLetters;
+								}
+
+								// check for triangular Outer rules
+								triangularIndex = rule.lastIndexOf(this.triangularOuterPostfix);
+								if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularOuterLength)) {
+									// rule is a triangular type
+									pattern.isTriangular = true;
+									pattern.triangularNeighbourhood = this.triangularOuter;
+
+									// remove the postfix
+									rule = rule.substr(0, rule.length - triangularOuterLength);
+
+									// update the valid rule letters to triangular letters
+									validRuleLetters = this.validTriangularOuterRuleLetters;
+								}
+
+								// check for Hex tripod rules
+								hexIndex = rule.lastIndexOf(this.hexTripodPostfix);
+								if ((hexIndex !== -1) && (hexIndex === rule.length - hexTripodLength)) {
+									// rule is a hex type
+									pattern.isHex = true;
+									pattern.hexNeighbourhood = this.hexTripod;
+
+									// remove the postfix
+									rule = rule.substr(0, rule.length - hexTripodLength);
+
+									// update the valid rule letters to hex digits
+									validRuleLetters = this.validHexTripodRuleLetters;
+								}
+
 								// check for Hex rules
 								hexIndex = rule.lastIndexOf(this.hexPostfix);
 								if ((hexIndex !== -1) && (hexIndex === rule.length - hexLength)) {
 									// rule is a hex type
 									pattern.isHex = true;
+									pattern.hexNeighbourhood = this.hexAll;
 
 									// remove the postfix
 									rule = rule.substr(0, rule.length - hexLength);

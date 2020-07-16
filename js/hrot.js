@@ -31,6 +31,9 @@
 		this.altSurvivals = allocator.allocate(Uint8, 0, "HROT.altSurvivals");
 		/** @type {number} */ this.type = manager.mooreHROT;
 
+		// neighbourhood array for custom neighbourhoods (will be resized)
+		this.neighbourhood = Array.matrix(Uint8, 1, 1, 0, allocator, "HROT.neighbourhood");
+
 		// neighbour count array (will be resized)
 		this.counts = Array.matrix(Uint32, 1, 1, 0, allocator, "HROT.counts");
 
@@ -849,10 +852,10 @@
 				liveRowAlive = false;
 				for (x = leftX + 1; x <= rightX; x += 1) {
 					state = colourRow[x];
-					count = countRowYpr[xpr]
-						+ countRowYmrp1[xmrp1]
-						- countRowYpr[xmrp1]
-						- countRowYmrp1[xpr];
+					count = countRowYpr[xpr] + 
+						countRowYmrp1[xmrp1] -
+						countRowYpr[xmrp1] -
+						countRowYmrp1[xpr];
 					aliveIndex = 0;
 					if (state < aliveStart) {
 						// this cell is dead
@@ -1138,30 +1141,144 @@
 						break;
 
 					case this.manager.checkerHROT:
-						// checkerboard
-						for (y = bottomY - range; y <= topY + range; y += 1) {
-							countRow = counts[y];
-							x = leftX - range;
-							while (x <= rightX + range) {
-								count = 0;
-								offset = 1;
-								for (j = -range; j <= range; j += 1) {
-									colourRow = colourGrid[y + j];
-									for (i = -range + offset; i <= range - offset; i += 2) {
-										if ((colourRow[x + i]) >= aliveStart) {
-											count += 1;
+						var t = performance.now();
+
+						if (range === 5) {
+							for (y = bottomY - range; y <= topY + range; y += 1) {
+								countRow = counts[y];
+								x = leftX - range;
+								while (x <= rightX + range) {
+									count = 0;
+
+									j = y - 5;
+									colourRow = colourGrid[j];
+									count += colourRow[x - 4] >> 6;
+									count += colourRow[x - 2] >> 6;
+									count += colourRow[x] >> 6;
+									count += colourRow[x + 2] >> 6;
+									count += colourRow[x + 4] >> 6;
+									j += 1;
+
+									colourRow = colourGrid[j];
+									count += colourRow[x - 5] >> 6;
+									count += colourRow[x - 3] >> 6;
+									count += colourRow[x - 1] >> 6;
+									count += colourRow[x + 1] >> 6;
+									count += colourRow[x + 3] >> 6;
+									count += colourRow[x + 5] >> 6;
+									j += 1;
+
+									colourRow = colourGrid[j];
+									count += colourRow[x - 4] >> 6;
+									count += colourRow[x - 2] >> 6;
+									count += colourRow[x] >> 6;
+									count += colourRow[x + 2] >> 6;
+									count += colourRow[x + 4] >> 6;
+									j += 1;
+
+									colourRow = colourGrid[j];
+									count += colourRow[x - 5] >> 6;
+									count += colourRow[x - 3] >> 6;
+									count += colourRow[x - 1] >> 6;
+									count += colourRow[x + 1] >> 6;
+									count += colourRow[x + 3] >> 6;
+									count += colourRow[x + 5] >> 6;
+									j += 1;
+
+									colourRow = colourGrid[j];
+									count += colourRow[x - 4] >> 6;
+									count += colourRow[x - 2] >> 6;
+									count += colourRow[x] >> 6;
+									count += colourRow[x + 2] >> 6;
+									count += colourRow[x + 4] >> 6;
+									j += 1;
+
+									colourRow = colourGrid[j];
+									count += colourRow[x - 5] >> 6;
+									count += colourRow[x - 3] >> 6;
+									count += colourRow[x - 1] >> 6;
+									count += colourRow[x + 1] >> 6;
+									count += colourRow[x + 3] >> 6;
+									count += colourRow[x + 5] >> 6;
+									j += 1;
+
+									colourRow = colourGrid[j];
+									count += colourRow[x - 4] >> 6;
+									count += colourRow[x - 2] >> 6;
+									count += colourRow[x] >> 6;
+									count += colourRow[x + 2] >> 6;
+									count += colourRow[x + 4] >> 6;
+									j += 1;
+
+									colourRow = colourGrid[j];
+									count += colourRow[x - 5] >> 6;
+									count += colourRow[x - 3] >> 6;
+									count += colourRow[x - 1] >> 6;
+									count += colourRow[x + 1] >> 6;
+									count += colourRow[x + 3] >> 6;
+									count += colourRow[x + 5] >> 6;
+									j += 1;
+
+									colourRow = colourGrid[j];
+									count += colourRow[x - 4] >> 6;
+									count += colourRow[x - 2] >> 6;
+									count += colourRow[x] >> 6;
+									count += colourRow[x + 2] >> 6;
+									count += colourRow[x + 4] >> 6;
+									j += 1;
+
+									colourRow = colourGrid[j];
+									count += colourRow[x - 5] >> 6;
+									count += colourRow[x - 3] >> 6;
+									count += colourRow[x - 1] >> 6;
+									count += colourRow[x + 1] >> 6;
+									count += colourRow[x + 3] >> 6;
+									count += colourRow[x + 5] >> 6;
+									j += 1;
+
+									colourRow = colourGrid[j];
+									count += colourRow[x - 4] >> 6;
+									count += colourRow[x - 2] >> 6;
+									count += colourRow[x] >> 6;
+									count += colourRow[x + 2] >> 6;
+									count += colourRow[x + 4] >> 6;
+
+									// check for survival
+									count += colourGrid[y][x] >> 6;
+									countRow[x] = count;
+									x += 1;
+								}
+							}	
+						} else {
+							// checkerboard
+							for (y = bottomY - range; y <= topY + range; y += 1) {
+								countRow = counts[y];
+								x = leftX - range;
+								while (x <= rightX + range) {
+									count = 0;
+									offset = 1;
+									for (j = -range; j <= range; j += 1) {
+										colourRow = colourGrid[y + j];
+										for (i = -range + offset; i <= range - offset; i += 2) {
+											if (colourRow[x + i] >= aliveStart) {
+												count += 1;
+											}
 										}
+										offset = 1 - offset;
 									}
-									offset = 1 - offset;
+									// check for survival
+									if (colourGrid[y][x] >= aliveStart) {
+										count += 1;
+									}
+									countRow[x] = count;
+									x += 1;
 								}
-								// check for survival
-								if (colourGrid[y][x] >= aliveStart) {
-									count += 1;
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}	
+							}	
+						}
+
+						t = performance.now() - t;
+						console.debug(t.toFixed(2));
+
 						break;
 
 					case this.manager.hexHROT:
@@ -1785,10 +1902,10 @@
 				xmrp1 = leftX + 1 - rp1;
 				for (x = leftX + 1; x <= rightX; x += 1) {
 					state = colourRow[x];
-					count = countRowYpr[xpr]
-						+ countRowYmrp1[xmrp1]
-						- countRowYpr[xmrp1]
-						- countRowYmrp1[xpr];
+					count = countRowYpr[xpr] +
+						countRowYmrp1[xmrp1] -
+						countRowYpr[xmrp1] -
+						countRowYmrp1[xpr];
 					if (state <= deadState) {
 						// this cell is dead
 						if (birthList[count] === 1) {
