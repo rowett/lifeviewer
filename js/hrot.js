@@ -1512,6 +1512,7 @@
 			colourTileRow = null,
 			countRow = null, prevCountRow = null,
 			widths = this.widths,
+			/** @type {Array<number>} */ neighbourRow,
 			/** @type {number} */ width = 0,
 			/** @const {number} */ bgWidth = this.engine.boundedGridWidth,
 			/** @const {number} */ bgHeight = this.engine.boundedGridHeight,
@@ -2081,6 +2082,30 @@
 			} else {
 				// determine neighbourhood type
 				switch (type) {
+					case this.manager.customHROT:
+						// custom
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							while (x <= rightX + range) {
+								count = 0;
+								for (j = -range; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									neighbourRow = this.neighbourhood[range - j];
+									for (i = -range; i <= range; i += 1) {
+										if (neighbourRow[range - i]) {
+											if (colourRow[x + i] === maxGenState) {
+												count += 1;
+											}
+										}
+									}
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}	
+						break;
+
 					case this.manager.hashHROT:
 						// hash
 						for (y = bottomY - range; y <= topY + range; y += 1) {
