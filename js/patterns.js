@@ -2983,7 +2983,7 @@
 						nameLtL += "#";
 						break;
 					case this.customHROT:
-						nameLtL += "@" + this.customNeighbourhood;
+						nameLtL += "@" + pattern.customNeighbourhood;
 						break;
 				}
 
@@ -3095,7 +3095,7 @@
 	};
 
 	// decode part of LTL rule
-	PatternManager.prototype.decodeLTLpart = function (rule, part, lower, upper, partof, range) {
+	PatternManager.prototype.decodeLTLpart = function (rule, part, lower, upper, partof, pattern) {
 		var result = 0,
 		    partlen = part.length,
 		    rulepart = rule.substr(this.index, partlen),
@@ -3104,7 +3104,8 @@
 			// ASCII 9
 			asciiNine = String("9").charCodeAt(0),
 			next,
-			nextCode;
+			nextCode,
+			range = pattern.rangeLTL;
 
 		// check if the next character is the expected part
 		if (rulepart !== part) {
@@ -3186,7 +3187,7 @@
 
 					case "@":
 						this.index += 1;
-						result = this.readCustomNeighbourhood(rule, range, "LtL");
+						result = this.readCustomNeighbourhood(rule, range, "LtL", pattern);
 						if (result === -1) {
 							this.index = -1;
 						}
@@ -3248,12 +3249,12 @@
 		this.index = 0;
 
 		// decode R part
-		value = this.decodeLTLpart(rule, "r", this.minRangeLTL, this.maxRangeLTL, "", pattern.rangeLTL);
+		value = this.decodeLTLpart(rule, "r", this.minRangeLTL, this.maxRangeLTL, "", pattern);
 		if (this.index !== -1) {
 			pattern.rangeLTL = value;
 			
 			// decode C part
-			value = this.decodeLTLpart(rule, ",c", this.minStatesLTL, this.maxStatesLTL, "", pattern.rangeLTL);
+			value = this.decodeLTLpart(rule, ",c", this.minStatesLTL, this.maxStatesLTL, "", pattern);
 			if (this.index !== -1) {
 				// ensure number of states is at least 2
 				if (value < 2) {
@@ -3262,32 +3263,32 @@
 				pattern.multiNumStates = value;
 
 				// decode M part
-				value = this.decodeLTLpart(rule, ",m", this.minMiddleLTL, this.maxMiddleLTL, "", pattern.rangeLTL);
+				value = this.decodeLTLpart(rule, ",m", this.minMiddleLTL, this.maxMiddleLTL, "", pattern);
 				if (this.index !== -1) {
 					pattern.middleLTL = value;
 
 					// decode S first part
-					value = this.decodeLTLpart(rule, ",s", 0, -1, "", pattern.rangeLTL);
+					value = this.decodeLTLpart(rule, ",s", 0, -1, "", pattern);
 					if (this.index !== -1) {
 						pattern.SminLTL = value;
 
 						// decode second S part
-						value = this.decodeLTLpart(rule, "..", pattern.SminLTL, -1, "S", pattern.rangeLTL);
+						value = this.decodeLTLpart(rule, "..", pattern.SminLTL, -1, "S", pattern);
 						if (this.index !== -1) {
 							pattern.SmaxLTL = value;
 
 							// decode first B part
-							value = this.decodeLTLpart(rule, ",b", 0, -1, "", pattern.rangeLTL);
+							value = this.decodeLTLpart(rule, ",b", 0, -1, "", pattern);
 							if (this.index !== -1) {
 								pattern.BminLTL = value;
 
 								// decode second B part
-								value = this.decodeLTLpart(rule, "..", pattern.BminLTL, -1, "B", pattern.rangeLTL);
+								value = this.decodeLTLpart(rule, "..", pattern.BminLTL, -1, "B", pattern);
 								if (this.index !== -1) {
 									pattern.BmaxLTL = value;
 
 									// decode N part
-									value = this.decodeLTLpart(rule, ",n", -1, -1, "", pattern.rangeLTL);
+									value = this.decodeLTLpart(rule, ",n", -1, -1, "", pattern);
 									if (this.index !== -1) {
 										pattern.neighborhoodLTL = value;
 
@@ -3370,7 +3371,7 @@
 						break;
 
 					case this.customHROT:
-						maxCells = this.customNeighbourCount + 1;
+						maxCells = pattern.customNeighbourCount + 1;
 						break;
 				}
 				// adjust max cells by middle cell setting
@@ -3412,27 +3413,27 @@
 		pattern.neighborhoodLTL = this.mooreHROT;
 
 		// decode R part
-		value = this.decodeLTLpart(rule, "", this.minRangeLTL, this.maxRangeLTL, "", pattern.rangeLTL);
+		value = this.decodeLTLpart(rule, "", this.minRangeLTL, this.maxRangeLTL, "", pattern);
 		if (this.index !== -1) {
 			pattern.rangeLTL = value;
 			
 			// decode first B part
-			value = this.decodeLTLpart(rule, ",", 0, -1, "", pattern.rangeLTL);
+			value = this.decodeLTLpart(rule, ",", 0, -1, "", pattern);
 			if (this.index !== -1) {
 				pattern.BminLTL = value;
 
 				// decode second B part
-				value = this.decodeLTLpart(rule, ",", pattern.BminLTL, -1, "B", pattern.rangeLTL);
+				value = this.decodeLTLpart(rule, ",", pattern.BminLTL, -1, "B", pattern);
 				if (this.index !== -1) {
 					pattern.BmaxLTL = value;
 
 					// decode S first part
-					value = this.decodeLTLpart(rule, ",", 0, -1, "", pattern.rangeLTL);
+					value = this.decodeLTLpart(rule, ",", 0, -1, "", pattern);
 					if (this.index !== -1) {
 						pattern.SminLTL = value;
 
 						// decode second S part
-						value = this.decodeLTLpart(rule, ",", pattern.SminLTL, -1, "S", pattern.rangeLTL);
+						value = this.decodeLTLpart(rule, ",", pattern.SminLTL, -1, "S", pattern);
 						if (this.index !== -1) {
 							pattern.SmaxLTL = value;
 
@@ -3494,27 +3495,27 @@
 		pattern.neighborhoodLTL = this.mooreHROT;
 
 		// decode R part
-		value = this.decodeLTLpart(rule, "r", this.minRangeLTL, this.maxRangeLTL, "", pattern.rangeLTL);
+		value = this.decodeLTLpart(rule, "r", this.minRangeLTL, this.maxRangeLTL, "", pattern);
 		if (this.index !== -1) {
 			pattern.rangeLTL = value;
 			
 			// decode first B part
-			value = this.decodeLTLpart(rule, "b", 0, -1, "", pattern.rangeLTL);
+			value = this.decodeLTLpart(rule, "b", 0, -1, "", pattern);
 			if (this.index !== -1) {
 				pattern.BminLTL = value;
 
 				// decode second B part
-				value = this.decodeLTLpart(rule, "t", pattern.BminLTL, -1, "B", pattern.rangeLTL);
+				value = this.decodeLTLpart(rule, "t", pattern.BminLTL, -1, "B", pattern);
 				if (this.index !== -1) {
 					pattern.BmaxLTL = value;
 
 					// decode S first part
-					value = this.decodeLTLpart(rule, "s", 0, -1, "", pattern.rangeLTL);
+					value = this.decodeLTLpart(rule, "s", 0, -1, "", pattern);
 					if (this.index !== -1) {
 						pattern.SminLTL = value;
 
 						// decode second S part
-						value = this.decodeLTLpart(rule, "t", pattern.SminLTL, -1, "S", pattern.rangeLTL);
+						value = this.decodeLTLpart(rule, "t", pattern.SminLTL, -1, "S", pattern);
 						if (this.index !== -1) {
 							pattern.SmaxLTL = value;
 
@@ -3728,7 +3729,7 @@
 
 	// read custom HROT neighbourhood
 	// rule parameter is lower case
-	PatternManager.prototype.readCustomNeighbourhood = function(rule, range, family) {
+	PatternManager.prototype.readCustomNeighbourhood = function(rule, range, family, pattern) {
 		var i = this.index,
 			l = rule.length,
 			numRead = 0,
@@ -3757,11 +3758,11 @@
 		// check if string is valid
 		if (result === -1) {
 			this.failureReason = family + " 'N@' needs " + String(neededLength) + " hex digits";
-			this.customNeighbourhood = "";
-			this.customNeighbourCount = -1;
+			pattern.customNeighbourhood = "";
+			pattern.customNeighbourCount = -1;
 		} else {
-			this.customNeighbourhood = rule.substr(this.index, numRead);
-			this.customNeighbourCount = count;
+			pattern.customNeighbourhood = rule.substr(this.index, numRead).toLowerCase();
+			pattern.customNeighbourCount = count;
 			this.index += numRead;
 		}
 
@@ -4019,7 +4020,7 @@
 
 							case "@":
 								this.index += 1;
-								pattern.neighborhoodHROT = this.readCustomNeighbourhood(rule, pattern.rangeHROT, "HROT");
+								pattern.neighborhoodHROT = this.readCustomNeighbourhood(rule, pattern.rangeHROT, "HROT", pattern);
 								if (pattern.neighborhoodHROT !== -1) {
 									result = true;
 								}
@@ -4103,7 +4104,7 @@
 					break;
 
 				case this.customHROT:
-					maxCount = this.customNeighbourCount + 1;
+					maxCount = pattern.customNeighbourCount + 1;
 					break;
 			}
 
@@ -4936,7 +4937,7 @@
 												break;
 
 											case this.customHROT:
-												pattern.ruleName += "@" + this.customNeighbourhood;
+												pattern.ruleName += "@" + pattern.customNeighbourhood;
 												break;
 										}
 									}
@@ -4986,7 +4987,7 @@
 											break;
 
 										case this.customHROT:
-											pattern.ruleName += "@" + this.customNeighbourhood;
+											pattern.ruleName += "@" + pattern.customNeighbourhood;
 											break;
 									}
 

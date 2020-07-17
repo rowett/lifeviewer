@@ -64,13 +64,19 @@
 	};
 
 	// set type and range
-	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range) {
+	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood) {
 		// compute widest width
 		var /** @const {number} */ width = range * 2 + 1,
 			/** @const {number} */ r2 = range * range,
 			/** @const {number} */ r2plus = r2 + range,
 			/** @type {number} */ i = 0,
-			/** @type {number} */ w = 0;
+			/** @type {number} */ j = 0,
+			/** @type {number} */ k = 0,
+			/** @type {number} */ l = 0,
+			/** @type {number} */ w = 0,
+			/** @type {number} */ middleK = customNeighbourhood.length >> 1, 
+			/** @type {Array<number>} */ row,
+			/** @const {string} */ hexDigits = "0123456789abcdef";
 
 		// save type and range and allocate widths array
 		this.type = type;
@@ -114,6 +120,40 @@
 					w += 1;
 				}
 				this.widths[i + range] = w;
+			}
+			break;
+
+			// @ is custom neighbourhood
+			case this.manager.customHROT:
+			// resize and populate the array
+			this.neighbourhood = Array.matrix(Uint8, width, width, 0, this.allocator, "HROT.neighbourhood");
+			k = 0;
+			j = 0;
+			i = 0;
+			row = this.neighbourhood[j];
+			while (j < width) {
+				// get next 4 bits
+				w = hexDigits.indexOf(customNeighbourhood[k]);
+				if (k === middleK) {
+					row[i] = 1;
+					i += 1;
+				}
+				k += 1;
+
+				// set neighbourhood
+				for (l = 3; l >=0 ; l -= 1) {
+					if ((w & (1 << l)) !== 0) {
+						row[i] = 1;
+					}
+					i += 1;
+					if (i === width) {
+						i = 0;
+						j += 1;
+						if (j < width) {
+							row = this.neighbourhood[j];
+						}
+					}
+				}
 			}
 			break;
 		}
@@ -522,6 +562,7 @@
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @const {number} */ deadMin = LifeConstants.deadMin,
 			/** @type {number} */ aliveIndex = 0,
+			/** @type {Array<number>} */ neighbourRow,
 			colourLookup = this.engine.colourLookup,
 			colUsed = this.colUsed,
 			/** @type {number} */ im1 = 0,
@@ -1078,6 +1119,30 @@
 			} else {
 				// determine neighbourhood type
 				switch (type) {
+					case this.manager.customHROT:
+						// custom
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							while (x <= rightX + range) {
+								count = 0;
+								for (j = -range; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									neighbourRow = this.neighbourhood[range - j];
+									for (i = -range; i <= range; i += 1) {
+										if (neighbourRow[range - i]) {
+											if (colourRow[x + i] >= aliveStart) {
+												count += 1;
+											}
+										}
+									}
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}	
+						break;
+
 					case this.manager.hashHROT:
 						// hash
 						for (y = bottomY - range; y <= topY + range; y += 1) {
@@ -1141,143 +1206,30 @@
 						break;
 
 					case this.manager.checkerHROT:
-						var t = performance.now();
-
-						if (range === 5) {
-							for (y = bottomY - range; y <= topY + range; y += 1) {
-								countRow = counts[y];
-								x = leftX - range;
-								while (x <= rightX + range) {
-									count = 0;
-
-									j = y - 5;
-									colourRow = colourGrid[j];
-									count += colourRow[x - 4] >> 6;
-									count += colourRow[x - 2] >> 6;
-									count += colourRow[x] >> 6;
-									count += colourRow[x + 2] >> 6;
-									count += colourRow[x + 4] >> 6;
-									j += 1;
-
-									colourRow = colourGrid[j];
-									count += colourRow[x - 5] >> 6;
-									count += colourRow[x - 3] >> 6;
-									count += colourRow[x - 1] >> 6;
-									count += colourRow[x + 1] >> 6;
-									count += colourRow[x + 3] >> 6;
-									count += colourRow[x + 5] >> 6;
-									j += 1;
-
-									colourRow = colourGrid[j];
-									count += colourRow[x - 4] >> 6;
-									count += colourRow[x - 2] >> 6;
-									count += colourRow[x] >> 6;
-									count += colourRow[x + 2] >> 6;
-									count += colourRow[x + 4] >> 6;
-									j += 1;
-
-									colourRow = colourGrid[j];
-									count += colourRow[x - 5] >> 6;
-									count += colourRow[x - 3] >> 6;
-									count += colourRow[x - 1] >> 6;
-									count += colourRow[x + 1] >> 6;
-									count += colourRow[x + 3] >> 6;
-									count += colourRow[x + 5] >> 6;
-									j += 1;
-
-									colourRow = colourGrid[j];
-									count += colourRow[x - 4] >> 6;
-									count += colourRow[x - 2] >> 6;
-									count += colourRow[x] >> 6;
-									count += colourRow[x + 2] >> 6;
-									count += colourRow[x + 4] >> 6;
-									j += 1;
-
-									colourRow = colourGrid[j];
-									count += colourRow[x - 5] >> 6;
-									count += colourRow[x - 3] >> 6;
-									count += colourRow[x - 1] >> 6;
-									count += colourRow[x + 1] >> 6;
-									count += colourRow[x + 3] >> 6;
-									count += colourRow[x + 5] >> 6;
-									j += 1;
-
-									colourRow = colourGrid[j];
-									count += colourRow[x - 4] >> 6;
-									count += colourRow[x - 2] >> 6;
-									count += colourRow[x] >> 6;
-									count += colourRow[x + 2] >> 6;
-									count += colourRow[x + 4] >> 6;
-									j += 1;
-
-									colourRow = colourGrid[j];
-									count += colourRow[x - 5] >> 6;
-									count += colourRow[x - 3] >> 6;
-									count += colourRow[x - 1] >> 6;
-									count += colourRow[x + 1] >> 6;
-									count += colourRow[x + 3] >> 6;
-									count += colourRow[x + 5] >> 6;
-									j += 1;
-
-									colourRow = colourGrid[j];
-									count += colourRow[x - 4] >> 6;
-									count += colourRow[x - 2] >> 6;
-									count += colourRow[x] >> 6;
-									count += colourRow[x + 2] >> 6;
-									count += colourRow[x + 4] >> 6;
-									j += 1;
-
-									colourRow = colourGrid[j];
-									count += colourRow[x - 5] >> 6;
-									count += colourRow[x - 3] >> 6;
-									count += colourRow[x - 1] >> 6;
-									count += colourRow[x + 1] >> 6;
-									count += colourRow[x + 3] >> 6;
-									count += colourRow[x + 5] >> 6;
-									j += 1;
-
-									colourRow = colourGrid[j];
-									count += colourRow[x - 4] >> 6;
-									count += colourRow[x - 2] >> 6;
-									count += colourRow[x] >> 6;
-									count += colourRow[x + 2] >> 6;
-									count += colourRow[x + 4] >> 6;
-
-									// check for survival
-									count += colourGrid[y][x] >> 6;
-									countRow[x] = count;
-									x += 1;
-								}
-							}	
-						} else {
-							// checkerboard
-							for (y = bottomY - range; y <= topY + range; y += 1) {
-								countRow = counts[y];
-								x = leftX - range;
-								while (x <= rightX + range) {
-									count = 0;
-									offset = 1;
-									for (j = -range; j <= range; j += 1) {
-										colourRow = colourGrid[y + j];
-										for (i = -range + offset; i <= range - offset; i += 2) {
-											if (colourRow[x + i] >= aliveStart) {
-												count += 1;
-											}
+						// checkerboard
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							while (x <= rightX + range) {
+								count = 0;
+								offset = 1;
+								for (j = -range; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									for (i = -range + offset; i <= range - offset; i += 2) {
+										if (colourRow[x + i] >= aliveStart) {
+											count += 1;
 										}
-										offset = 1 - offset;
 									}
-									// check for survival
-									if (colourGrid[y][x] >= aliveStart) {
-										count += 1;
-									}
-									countRow[x] = count;
-									x += 1;
+									offset = 1 - offset;
 								}
-							}	
+								// check for survival
+								if (colourGrid[y][x] >= aliveStart) {
+									count += 1;
+								}
+								countRow[x] = count;
+								x += 1;
+							}
 						}
-
-						t = performance.now() - t;
-						console.debug(t.toFixed(2));
 
 						break;
 

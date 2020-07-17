@@ -8512,6 +8512,24 @@
 		}
 	};
 
+	// create random HROT custom neighbourhopod
+	View.prototype.generateRandomCustomHROT = function(range) {
+		var neighbourhood = "@",
+			neighbours = 0,
+			neededLength = ((range * 2 + 1) * (range * 2 + 1) - 1) / 4,
+			number = 0,
+			bitCount = this.engine.bitCounts16,
+			i = 0;
+
+		for (i = 0; i < neededLength; i += 1) {
+			number = (this.randGen.random() * 16) | 0;
+			neighbours += bitCount[number];
+			neighbourhood += this.manager.hexCharacters[number];
+		}
+
+		return [neighbourhood, neighbours];
+	};
+
 	// create random HROT rule name
 	View.prototype.createRandomHROT = function() {
 		var result = "",
@@ -8524,7 +8542,8 @@
 			added = 0,
 			r2 = 0,
 			width = 0,
-			i = 0;
+			i = 0,
+			output = [];
 
 		// set the range
 		result = "R" + range  + ",";
@@ -8598,6 +8617,12 @@
 		case this.manager.hashHROT:
 			neighbourhood = "#";
 			neighbours = range * 8 + 1;
+			break;
+
+		case this.manager.customHROT:
+			output = this.generateRandomCustomHROT(range);
+			neighbourhood = output[0];
+			neighbours = output[1];
 			break;
 		}
 
@@ -8705,7 +8730,8 @@
 			value = 0,
 			r2 = 0,
 			width = 0,
-			i = 0;
+			i = 0,
+			output = [];
 
 		// set the range
 		result = "R" + range  + ",";
@@ -8782,6 +8808,12 @@
 		case this.manager.hashHROT:
 			neighbourhood = "#";
 			neighbours = range * 8 + 1;
+			break;
+
+		case this.manager.customHROT:
+			output = this.generateRandomCustomHROT(range);
+			neighbourhood = output[0];
+			neighbours = output[1];
 			break;
 		}
 
@@ -14334,7 +14366,7 @@
 				me.engine.HROT.births = pattern.birthHROT;
 				me.engine.HROT.survivals = pattern.survivalHROT;
 				me.engine.HROT.scount = pattern.multiNumStates;
-				me.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT);
+				me.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT, pattern.customNeighbourhood);
 				if (me.manager.altSpecified) {
 					me.engine.HROT.altBirths = pattern.altBirthHROT;
 					me.engine.HROT.altSurvivals = pattern.altSurvivalHROT;

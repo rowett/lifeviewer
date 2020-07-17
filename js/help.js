@@ -1748,7 +1748,7 @@
 		y = this.renderHelpLine(view, "Decoders", "RLE, Life 1.06, Life 1.05, Cells", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "N'hoods", "Moore, Hex, von Neumann, Triangular, 1D,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Circular, Cross, L2, Saltire, Star, Checkerboard,", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Hash, Tripod", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Hash, Tripod, Custom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Rules", "Wolfram, Totalistic, Generations, Margolus,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Isotropic Non-Totalistic (Hensel, Callahan),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Alternating, MAP, Larger than Life (LtL),", ctx, x, y, height, helpLine);
