@@ -34,6 +34,9 @@
 		// neighbourhood array for custom neighbourhoods (will be resized)
 		this.neighbourhood = Array.matrix(Uint8, 1, 1, 0, allocator, "HROT.neighbourhood");
 
+		// neighbourhood list for custom neighbourhoods (will be resized)
+		this.neighbourList = allocator.allocate(Int16, 0, "HROT.neighbourList");
+
 		// neighbour count array (will be resized)
 		this.counts = Array.matrix(Uint32, 1, 1, 0, allocator, "HROT.counts");
 
@@ -74,9 +77,11 @@
 			/** @type {number} */ k = 0,
 			/** @type {number} */ l = 0,
 			/** @type {number} */ w = 0,
+			/** @type {number} */ count = 0,
 			/** @type {number} */ middleK = customNeighbourhood.length >> 1, 
 			/** @type {Array<number>} */ row,
-			/** @const {string} */ hexDigits = "0123456789abcdef";
+			/** @const {string} */ hexDigits = "0123456789abcdef",
+			/** @type {Uint32Array} */ neighbourCache = null;
 
 		// save type and range and allocate widths array
 		this.type = type;
@@ -130,6 +135,7 @@
 			k = 0;
 			j = 0;
 			i = 0;
+			count = 0;
 			row = this.neighbourhood[j];
 			while (j < width) {
 				// get next 4 bits
@@ -137,6 +143,7 @@
 				if (k === middleK) {
 					row[i] = 1;
 					i += 1;
+					count += 1;
 				}
 				k += 1;
 
@@ -144,6 +151,7 @@
 				for (l = 3; l >=0 ; l -= 1) {
 					if ((w & (1 << l)) !== 0) {
 						row[i] = 1;
+						count += 1;
 					}
 					i += 1;
 					if (i === width) {
@@ -155,7 +163,39 @@
 					}
 				}
 			}
-			break;
+
+			// allocate the neighbour list
+			this.neighbourList = this.allocator.allocate(Int16, count * 2, "HROT.neighbourList");
+			neighbourCache = new Uint32Array(count);
+
+			// populate the list from the array
+			count = 0;
+			for (j = 0; j < width; j += 1) {
+				row = this.neighbourhood[j];
+				for (i = 0; i < width; i += 1) {
+					if (row[i] > 0) {
+						neighbourCache[count] = (j << 16) | i;
+						count += 1;
+					}
+				}
+			}
+
+			// sort the cache into reverse order
+			j = neighbourCache.length;
+			for (i = 0; i < j / 2; i += 1) {
+				count = neighbourCache[i];
+				neighbourCache[i] = neighbourCache[j - i - 1];
+				neighbourCache[j - i - 1] = count;
+			}
+
+			// populate the list from the cache
+			count = 0;
+			for (i = 0; i < neighbourCache.length; i += 1) {
+				j = neighbourCache[i];
+				this.neighbourList[count] = range - (j >> 16);
+				this.neighbourList[count + 1] = range - (j & 65535);
+				count += 2;
+			}
 		}
 	};
 
@@ -575,7 +615,8 @@
 			/** @type {number} */ jpr = 0,
 			/** @type {number} */ jmr = 0,
 			/** @type {number} */ jpmincol = 0,
-			/** @type {number} */ offset = 0;
+			/** @type {number} */ offset = 0,
+			/** @type {Int16Array} */ neighbourList = this.neighbourList;
 
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {
@@ -1119,6 +1160,73 @@
 			} else {
 				// determine neighbourhood type
 				switch (type) {
+					case this.manager.asteriskHROT:
+						// asterisk
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							while (x <= rightX + range) {
+								count = 0;
+								for (j = -range; j < 0; j += 1) {
+									colourRow = colourGrid[y + j];
+									if (colourRow[x] >= aliveStart) {
+										count += 1;
+									}
+									if (colourRow[x + j] >= aliveStart) {
+										count += 1;
+									}
+								}
+								colourRow = colourGrid[y];
+								for (i = -range; i <= range; i += 1) {
+									if (colourRow[x + i] >= aliveStart) {
+										count += 1;
+									}
+								}
+								for (j = 1; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									if (colourRow[x] >= aliveStart) {
+										count += 1;
+									}
+									if (colourRow[x + j] >= aliveStart) {
+										count += 1;
+									}
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}	
+						break;
+
+					case this.manager.tripodHROT:
+						// tripod
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							while (x <= rightX + range) {
+								count = 0;
+								for (j = -range; j < 0; j += 1) {
+									colourRow = colourGrid[y + j];
+									if (colourRow[x] >= aliveStart) {
+										count += 1;
+									}
+								}
+								colourRow = colourGrid[y];
+								for (i = -range; i <= 0; i += 1) {
+									if (colourRow[x + i] >= aliveStart) {
+										count += 1;
+									}
+								}
+								for (j = 1; j <= range; j += 1) {
+									if (colourGrid[y + j][x + j] >= aliveStart) {
+										count += 1;
+									}
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}	
+						break;
+
 					case this.manager.customHROT:
 						// custom
 						for (y = bottomY - range; y <= topY + range; y += 1) {
@@ -1126,15 +1234,15 @@
 							x = leftX - range;
 							while (x <= rightX + range) {
 								count = 0;
-								for (j = -range; j <= range; j += 1) {
-									colourRow = colourGrid[y + j];
-									neighbourRow = this.neighbourhood[range - j];
-									for (i = -range; i <= range; i += 1) {
-										if (neighbourRow[range - i]) {
-											if (colourRow[x + i] >= aliveStart) {
-												count += 1;
-											}
-										}
+								offset = -1;
+								for (j = 0; j < neighbourList.length; j += 2) {
+									i = neighbourList[j];
+									if (i !== offset) {
+										offset = i;
+										colourRow = colourGrid[y + i];
+									}
+									if (colourRow[x + neighbourList[j + 1]] >= aliveStart) {
+										count += 1;
 									}
 								}
 								countRow[x] = count;
@@ -1542,6 +1650,7 @@
 			/** @type {number} */ jmr = 0,
 			/** @type {number} */ jpmincol = 0,
 			/** @type {number} */ offset = 0,
+			/** @type {Int16Array} */ neighbourList = this.neighbourList,
 
 			// maximum generations state
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
@@ -2082,6 +2191,73 @@
 			} else {
 				// determine neighbourhood type
 				switch (type) {
+					case this.manager.asteriskHROT:
+						// asterisk
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							while (x <= rightX + range) {
+								count = 0;
+								for (j = -range; j < 0; j += 1) {
+									colourRow = colourGrid[y + j];
+									if (colourRow[x] === maxGenState) {
+										count += 1;
+									}
+									if (colourRow[x + j] === maxGenState) {
+										count += 1;
+									}
+								}
+								colourRow = colourGrid[y];
+								for (i = -range; i <= range; i += 1) {
+									if (colourRow[x + i] === maxGenState) {
+										count += 1;
+									}
+								}
+								for (j = 1; j <= range; j += 1) {
+									colourRow = colourGrid[y + j];
+									if (colourRow[x] === maxGenState) {
+										count += 1;
+									}
+									if (colourRow[x + j] === maxGenState) {
+										count += 1;
+									}
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}	
+						break;
+
+					case this.manager.tripodHROT:
+						// tripod
+						for (y = bottomY - range; y <= topY + range; y += 1) {
+							countRow = counts[y];
+							x = leftX - range;
+							while (x <= rightX + range) {
+								count = 0;
+								for (j = -range; j < 0; j += 1) {
+									colourRow = colourGrid[y + j];
+									if (colourRow[x] === maxGenState) {
+										count += 1;
+									}
+								}
+								colourRow = colourGrid[y];
+								for (i = -range; i <= 0; i += 1) {
+									if (colourRow[x + i] === maxGenState) {
+										count += 1;
+									}
+								}
+								for (j = 1; j <= range; j += 1) {
+									if (colourGrid[y + j][x + j] === maxGenState) {
+										count += 1;
+									}
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}	
+						break;
+
 					case this.manager.customHROT:
 						// custom
 						for (y = bottomY - range; y <= topY + range; y += 1) {
@@ -2089,15 +2265,15 @@
 							x = leftX - range;
 							while (x <= rightX + range) {
 								count = 0;
-								for (j = -range; j <= range; j += 1) {
-									colourRow = colourGrid[y + j];
-									neighbourRow = this.neighbourhood[range - j];
-									for (i = -range; i <= range; i += 1) {
-										if (neighbourRow[range - i]) {
-											if (colourRow[x + i] === maxGenState) {
-												count += 1;
-											}
-										}
+								offset = -1;
+								for (j = 0; j < neighbourList.length; j += 2) {
+									i = neighbourList[j];
+									if (i !== offset) {
+										offset = i;
+										colourRow = colourGrid[y + i];
+									}
+									if (colourRow[x + neighbourList[j + 1]] === maxGenState) {
+										count += 1;
 									}
 								}
 								countRow[x] = count;

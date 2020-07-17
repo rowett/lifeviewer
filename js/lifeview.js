@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 539,
+		/** @const {number} */ versionBuild : 541,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -8624,6 +8624,16 @@
 			neighbourhood = output[0];
 			neighbours = output[1];
 			break;
+
+		case this.manager.tripodHROT:
+			neighbourhood = "3";
+			neighbours = range * 3 + 1;
+			break;
+
+		case this.manager.asteriskHROT:
+			neighbourhood = "A";
+			neighbours = range * 6 + 1;
+			break;
 		}
 
 		// pick number of survival neighbour counts
@@ -8814,6 +8824,16 @@
 			output = this.generateRandomCustomHROT(range);
 			neighbourhood = output[0];
 			neighbours = output[1];
+			break;
+
+		case this.manager.tripodHROT:
+			neighbourhood = "3";
+			neighbours = range * 3 + 1;
+			break;
+
+		case this.manager.asteriskHROT:
+			neighbourhood = "A";
+			neighbours = range * 6 + 1;
 			break;
 		}
 
