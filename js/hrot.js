@@ -77,11 +77,15 @@
 			/** @type {number} */ k = 0,
 			/** @type {number} */ l = 0,
 			/** @type {number} */ w = 0,
+			/** @type {number} */ item = 0,
 			/** @type {number} */ count = 0,
+			/** @type {number} */ total = 0,
+			/** @type {number} */ numInRow = 0,
 			/** @type {number} */ middleK = customNeighbourhood.length >> 1, 
 			/** @type {Array<number>} */ row,
 			/** @const {string} */ hexDigits = "0123456789abcdef",
-			/** @type {Uint32Array} */ neighbourCache = null;
+			/** @type {Uint32Array} */ neighbourCache = null,
+			/** @type {Uint16Array} */ rowCount = null;
 
 		// save type and range and allocate widths array
 		this.type = type;
@@ -132,10 +136,14 @@
 			case this.manager.customHROT:
 			// resize and populate the array
 			this.neighbourhood = Array.matrix(Uint8, width, width, 0, this.allocator, "HROT.neighbourhood");
+			rowCount = new Uint16Array(width);
 			k = 0;
 			j = 0;
 			i = 0;
+			w = 0;
 			count = 0;
+			numInRow = 0;
+			item = 0;
 			row = this.neighbourhood[j];
 			while (j < width) {
 				// get next 4 bits
@@ -144,6 +152,7 @@
 					row[i] = 1;
 					i += 1;
 					count += 1;
+					numInRow += 1;
 				}
 				k += 1;
 
@@ -152,9 +161,13 @@
 					if ((w & (1 << l)) !== 0) {
 						row[i] = 1;
 						count += 1;
+						numInRow += 1;
 					}
 					i += 1;
 					if (i === width) {
+						rowCount[item] = numInRow;
+						numInRow = 0;
+						item += 1;
 						i = 0;
 						j += 1;
 						if (j < width) {
@@ -164,8 +177,7 @@
 				}
 			}
 
-			// allocate the neighbour list
-			this.neighbourList = this.allocator.allocate(Int16, count * 2, "HROT.neighbourList");
+			// allocate the neighbour cache
 			neighbourCache = new Uint32Array(count);
 
 			// populate the list from the array
@@ -180,21 +192,28 @@
 				}
 			}
 
-			// sort the cache into reverse order
-			j = neighbourCache.length;
-			for (i = 0; i < j / 2; i += 1) {
-				count = neighbourCache[i];
-				neighbourCache[i] = neighbourCache[j - i - 1];
-				neighbourCache[j - i - 1] = count;
+			// allocate the neighbour list
+			total = 0;
+			for (i = 0; i < rowCount.length; i += 1) {
+				// number of items in the row plus the count plus the row number
+				total += rowCount[i] + 2;
 			}
+			this.neighbourList = this.allocator.allocate(Int16, total, "HROT.neighbourList");
 
-			// populate the list from the cache
+			// populate the list from each row in the cache
+			k = 0;
 			count = 0;
-			for (i = 0; i < neighbourCache.length; i += 1) {
-				j = neighbourCache[i];
-				this.neighbourList[count] = range - (j >> 16);
-				this.neighbourList[count + 1] = range - (j & 65535);
+			for (i = 0; i < rowCount.length; i += 1) {
+				// get the row
+				item = neighbourCache[k];
+				this.neighbourList[count] = range - (item >> 16);
+				this.neighbourList[count + 1] = rowCount[i];
 				count += 2;
+				for (j = 0; j < rowCount[i]; j += 1) {
+					this.neighbourList[count + j]  = range - (neighbourCache[k] & 65535);
+					k += 1;
+				}
+				count += rowCount[i];
 			}
 		}
 	};
@@ -552,6 +571,8 @@
 			/** @type {number} */ y = 0,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
+			/** @type {number} */ k = 0,
+			/** @type {number} */ l = 0,
 			/** @type {number} */ leftX = this.engine.zoomBox.leftX,
 			/** @type {number} */ rightX = this.engine.zoomBox.rightX,
 			/** @type {number} */ bottomY = this.engine.zoomBox.bottomY,
@@ -1234,16 +1255,22 @@
 							x = leftX - range;
 							while (x <= rightX + range) {
 								count = 0;
-								offset = -1;
-								for (j = 0; j < neighbourList.length; j += 2) {
+								j = 0;
+								while (j < neighbourList.length) {
+									// get the row number
 									i = neighbourList[j];
-									if (i !== offset) {
-										offset = i;
-										colourRow = colourGrid[y + i];
+									j += 1;
+									colourRow = colourGrid[y + i];
+
+									// get the count of items in the row
+									k = neighbourList[j];
+									j += 1;
+									for (l = j; l < j + k; l += 1) {
+										if (colourRow[x + neighbourList[l]] >= aliveStart) {
+											count += 1;
+										}
 									}
-									if (colourRow[x + neighbourList[j + 1]] >= aliveStart) {
-										count += 1;
-									}
+									j += k;
 								}
 								countRow[x] = count;
 								x += 1;
@@ -1593,6 +1620,8 @@
 			/** @type {number} */ y = 0,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
+			/** @type {number} */ k = 0,
+			/** @type {number} */ l = 0,
 			/** @type {number} */ leftX = this.engine.zoomBox.leftX,
 			/** @type {number} */ rightX = this.engine.zoomBox.rightX,
 			/** @type {number} */ bottomY = this.engine.zoomBox.bottomY,
@@ -2265,16 +2294,22 @@
 							x = leftX - range;
 							while (x <= rightX + range) {
 								count = 0;
-								offset = -1;
-								for (j = 0; j < neighbourList.length; j += 2) {
+								j = 0;
+								while (j < neighbourList.length) {
+									// get the row number
 									i = neighbourList[j];
-									if (i !== offset) {
-										offset = i;
-										colourRow = colourGrid[y + i];
+									j += 1;
+									colourRow = colourGrid[y + i];
+
+									// get the count of items in the row
+									k = neighbourList[j];
+									j += 1;
+									for (l = j; l < j + k; l += 1) {
+										if (colourRow[x + neighbourList[l]] === maxGenState) {
+											count += 1;
+										}
 									}
-									if (colourRow[x + neighbourList[j + 1]] === maxGenState) {
-										count += 1;
-									}
+									j += k;
 								}
 								countRow[x] = count;
 								x += 1;

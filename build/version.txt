@@ -1,5 +1,5 @@
 Build 541
-- improved Custom neighbourhood performance
+- improved Custom neighbourhood performance for large ranges
 
 Build 540
 - added support for Asterisk and Tripod hexagonal neighbourhoods for LtL and HROT rules
