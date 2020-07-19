@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 541,
+		/** @const {number} */ versionBuild : 543,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -10289,6 +10289,93 @@
 	// copy pressed
 	View.prototype.copyPressed = function(me) {
 		me.processCopy(me, false, false);
+	};
+
+	// create CoordCA neighbourhood from selection and copy to clipboard
+	View.prototype.copyCoordCA = function(me) {
+		var selBox = me.selectionBox,
+			x1 = selBox.leftX,
+			y1 = selBox.bottomY,
+			x2 = selBox.rightX,
+			y2 = selBox.topY,
+			value = 0,
+			x = 0,
+			y = 0,
+			midX = 0,
+			midY = 0,
+			i = 0,
+			width = 0,
+			height = 0,
+			state = 0,
+			swap = 0,
+			states = me.engine.multiNumStates,
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			valid = true,
+			output = "";
+
+		if (me.isSelection) {
+			// order selection 
+			if (x1 > x2) {
+				swap = x1;
+				x1 = x2;
+				x2 = swap;
+			}
+			if (y1 > y2) {
+				swap = y1;
+				y1 = y2;
+				y2 = swap;
+			}
+
+			// compute width and height of selection
+			width = (x2 - x1 + 1);
+			height = (y2 - y1 + 1);
+
+			// check selection is square and an odd number wide from 3 to 99
+			if (width !== height) {
+				me.menuManager.notification.notify("CoordCA needs a square selection", 15, 180, 15, true);
+				valid = false;
+			} else {
+				if ((width & 1) === 0) {
+					me.menuManager.notification.notify("CoordCA size must be odd", 15, 180, 15, true);
+					valid = false;
+				} else {
+					if (width < 3 || width > 99) {
+						me.menuManager.notification.notify("CoordCA size must be >= 3 and <= 99", 15, 180, 15, true);
+						valid = false;
+					}
+				}
+			}
+
+			// check if selection is valid
+			if (valid) {
+				// create CoordCA neighbourhood
+				output = "";
+				midY = y1 + ((y2 - y1 + 1) >> 1);
+				midX = x1 + ((x2 - x1 + 1) >> 1);
+				i = 3;
+				for (y = y1; y <= y2; y += 1) {
+					for (x = x1; x <= x2; x += 1) {
+						if (!(y === midY && x === midX)) {
+							state = me.engine.getState(x + xOff, y + yOff, false);
+							if (state > 0) {
+								value |= 1 << i;
+							}
+							i -= 1;
+							if (i < 0) {
+								output += me.manager.hexCharacters[value];
+								i = 3;
+								value = 0;
+							}
+						}
+					}
+				}
+				me.copyToClipboard(me, output, false);
+				me.menuManager.notification.notify("CoordCA R" + ((width - 1) >> 1) + " copied to clipboard", 15, 180, 15, true);
+			}
+		} else {
+			me.menuManager.notification.notify("CoordCA needs a selection", 15, 180, 15, true);
+		}
 	};
 
 	// copy selection

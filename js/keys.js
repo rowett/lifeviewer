@@ -381,14 +381,20 @@
 
 			// b for back one step
 			case 66:
-				// do not move if in view only mode
-				if (!me.viewOnly) {
-					// check control is not locked
-					if (!me.playList.itemLocked[1]) {
-						value = me.gensPerStep;
-						me.gensPerStep = 1;
-						me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
-						me.gensPerStep = value;
+				// check for ctrl
+				if (event.ctrlKey) {
+					// copy CoordCA neighbourhood to clipboard from selection
+					me.copyCoordCA(me);
+				} else {
+					// do not move if in view only mode
+					if (!me.viewOnly) {
+						// check control is not locked
+						if (!me.playList.itemLocked[1]) {
+							value = me.gensPerStep;
+							me.gensPerStep = 1;
+							me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
+							me.gensPerStep = value;
+						}
 					}
 				}
 				break;

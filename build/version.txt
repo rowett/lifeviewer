@@ -1,3 +1,10 @@
+Build 543
+- Custom neighbourhoods now allow of postfix of "H" to specify hex grid
+
+Build 542
+- hotkey Ctrl+B converts the selection to a CoordCA neighbourhood and copies it to the external clipboard
+	- selection must be square and have a odd side length from 3 to 99
+
 Build 541
 - improved Custom neighbourhood performance for large ranges
 

@@ -793,6 +793,7 @@
 		// HROT custom neighbourhood
 		/** @type {string} */ this.customNeighbourhood = "";
 		/** @type {number} */ this.customNeighbourCount = -1;
+		/** @type {string} */ this.customGridType = "";
 
 		// width of grid
 		/** @type {number} */ this.width = 0;
@@ -2985,7 +2986,7 @@
 						nameLtL += "#";
 						break;
 					case this.customHROT:
-						nameLtL += "@" + pattern.customNeighbourhood;
+						nameLtL += "@" + pattern.customNeighbourhood + pattern.customGridType;
 						break;
 					case this.tripodHROT:
 						nameLtL += "3";
@@ -3765,6 +3766,9 @@
 			count = 0,
 			result = this.customHROT;
 
+		// set default grid type
+		pattern.customGridType = "";
+
 		// read hex characters
 		while (i < l && numRead < neededLength && result !== -1) {
 			next = this.hexCharacters.indexOf(rule[i]);
@@ -3791,6 +3795,14 @@
 			pattern.customNeighbourhood = rule.substr(this.index, numRead).toLowerCase();
 			pattern.customNeighbourCount = count;
 			this.index += numRead;
+
+			// check for hex grid type postfix
+			if (i < l) {
+				if (rule[i] === "h") {
+					pattern.customGridType = "H";
+					this.index += 1;
+				}
+			}
 		}
 
 		return result;
@@ -4984,7 +4996,7 @@
 												break;
 
 											case this.customHROT:
-												pattern.ruleName += "@" + pattern.customNeighbourhood;
+												pattern.ruleName += "@" + pattern.customNeighbourhood + pattern.customGridType;
 												break;
 
 											case this.tripodHROT:
@@ -7208,7 +7220,7 @@
 		}
 
 		// check for hex HROT patterns
-		if (pattern.isHROT && (pattern.neighborhoodHROT === this.hexHROT || pattern.neighborhoodHROT === this.tripodHROT || pattern.neighborhoodHROT === this.asteriskHROT)) {
+		if (pattern.isHROT && (pattern.neighborhoodHROT === this.hexHROT || pattern.neighborhoodHROT === this.tripodHROT || pattern.neighborhoodHROT === this.asteriskHROT || (pattern.neighborhoodHROT === this.customHROT && pattern.customGridType === "H"))) {
 			pattern.isHex = true;
 		}
 	};
