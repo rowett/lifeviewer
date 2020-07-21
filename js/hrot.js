@@ -57,6 +57,15 @@
 
 		// whether alternate rule defined
 		/** @type {boolean} */ this.altSpecified = false;
+
+		// custom neighbourhood string
+		/** @type {string} */ this.customNeighbourhood = "";
+
+		// number of cells in custom neighbourhood
+		/** @type {number} */ this.customNeighbourCount = -1;
+
+		// whether rule is triangular
+		/** @type {boolean} */ this.isTriangular = false;
 	}
 
 	// resize counts array
@@ -67,7 +76,7 @@
 	};
 
 	// set type and range
-	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood) {
+	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood, /** @type {number} */ neighbourCount, /** @type {boolean} */ isTriangular) {
 		// compute widest width
 		var /** @const {number} */ width = range * 2 + 1,
 			/** @const {number} */ r2 = range * range,
@@ -91,6 +100,9 @@
 		this.type = type;
 		this.range = range;
 		this.widths = this.allocator.allocate(Uint32, width, "HROT.widths");
+		this.customNeighbourhood = customNeighbourhood;
+		this.customNeighbourCount = neighbourCount;
+		this.isTriangular = isTriangular;
 
 		// create the widths array based on the neighborhood type
 		switch(type) {
@@ -196,7 +208,9 @@
 			total = 0;
 			for (i = 0; i < rowCount.length; i += 1) {
 				// number of items in the row plus the count plus the row number
-				total += rowCount[i] + 2;
+				if (rowCount[i] > 0) {
+					total += rowCount[i] + 2;
+				}
 			}
 			this.neighbourList = this.allocator.allocate(Int16, total, "HROT.neighbourList");
 
@@ -205,16 +219,20 @@
 			count = 0;
 			for (i = 0; i < rowCount.length; i += 1) {
 				// get the row
-				item = neighbourCache[k];
-				this.neighbourList[count] = range - (item >> 16);
-				this.neighbourList[count + 1] = rowCount[i];
-				count += 2;
-				for (j = 0; j < rowCount[i]; j += 1) {
-					this.neighbourList[count + j]  = range - (neighbourCache[k] & 65535);
-					k += 1;
+				if (rowCount[i] > 0) {
+					item = neighbourCache[k];
+					this.neighbourList[count] = range - (item >> 16);
+					this.neighbourList[count + 1] = rowCount[i];
+					count += 2;
+					for (j = 0; j < rowCount[i]; j += 1) {
+						this.neighbourList[count + j]  = range - (neighbourCache[k] & 65535);
+						k += 1;
+					}
+					count += rowCount[i];
 				}
-				count += rowCount[i];
 			}
+
+			break;
 		}
 	};
 
@@ -1259,6 +1277,9 @@
 								while (j < neighbourList.length) {
 									// get the row number
 									i = neighbourList[j];
+									if (this.isTriangular && (((x + y) & 1) === 0)) {
+										i = -i;
+									}
 									j += 1;
 									colourRow = colourGrid[y + i];
 
@@ -1275,7 +1296,7 @@
 								countRow[x] = count;
 								x += 1;
 							}
-						}	
+						}
 						break;
 
 					case this.manager.hashHROT:
@@ -2298,6 +2319,9 @@
 								while (j < neighbourList.length) {
 									// get the row number
 									i = neighbourList[j];
+									if (this.isTriangular && (((x + y) & 1) === 0)) {
+										i = -i;
+									}
 									j += 1;
 									colourRow = colourGrid[y + i];
 

@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 543,
+		/** @const {number} */ versionBuild : 545,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5046,7 +5046,8 @@
 
 				// remove steps not taken from target counter
 				me.floatCounter -= (stepsToTake - stepsTaken);
-				if (me.floatCounter < 0) {
+				me.originCounter -= (stepsToTake - stepsTaken);
+				if (me.floatCounter < 0 || me.originCounter < 0) {
 					me.floatCounter = 0;
 					me.originCounter = 0;
 				}
@@ -8512,24 +8513,6 @@
 		}
 	};
 
-	// create random HROT custom neighbourhopod
-	View.prototype.generateRandomCustomHROT = function(range) {
-		var neighbourhood = "@",
-			neighbours = 0,
-			neededLength = ((range * 2 + 1) * (range * 2 + 1) - 1) / 4,
-			number = 0,
-			bitCount = this.engine.bitCounts16,
-			i = 0;
-
-		for (i = 0; i < neededLength; i += 1) {
-			number = (this.randGen.random() * 16) | 0;
-			neighbours += bitCount[number];
-			neighbourhood += this.manager.hexCharacters[number];
-		}
-
-		return [neighbourhood, neighbours];
-	};
-
 	// create random HROT rule name
 	View.prototype.createRandomHROT = function() {
 		var result = "",
@@ -8542,8 +8525,7 @@
 			added = 0,
 			r2 = 0,
 			width = 0,
-			i = 0,
-			output = [];
+			i = 0;
 
 		// set the range
 		result = "R" + range  + ",";
@@ -8620,9 +8602,15 @@
 			break;
 
 		case this.manager.customHROT:
-			output = this.generateRandomCustomHROT(range);
-			neighbourhood = output[0];
-			neighbours = output[1];
+			neighbourhood = "@" + this.engine.HROT.customNeighbourhood;
+			neighbours = this.engine.HROT.customNeighbourCount;
+			if (this.engine.isHex) {
+				neighbourhood += "H";
+			} else {
+				if (this.engine.isTriangular) {
+					neighbourhood += "L";
+				}
+			}
 			break;
 
 		case this.manager.tripodHROT:
@@ -8740,8 +8728,7 @@
 			value = 0,
 			r2 = 0,
 			width = 0,
-			i = 0,
-			output = [];
+			i = 0;
 
 		// set the range
 		result = "R" + range  + ",";
@@ -8821,9 +8808,15 @@
 			break;
 
 		case this.manager.customHROT:
-			output = this.generateRandomCustomHROT(range);
-			neighbourhood = output[0];
-			neighbours = output[1];
+			neighbourhood = "@" + this.engine.HROT.customNeighbourhood;
+			neighbours = this.engine.HROT.customNeighbourCount;
+			if (this.engine.isHex) {
+				neighbourhood += "H";
+			} else {
+				if (this.engine.isTriangular) {
+					neighbourhood += "L";
+				}
+			}
 			break;
 
 		case this.manager.tripodHROT:
@@ -8841,17 +8834,13 @@
 		value = (this.randGen.random() * neighbours) | 0;
 		result += "S" + String(value);
 		value = ((this.randGen.random() * (neighbours - value)) | 0) + value;
-		if (value > 0) {
-			result += ".." + String(value);
-		}
+		result += ".." + String(value);
 
 		// add random birth range excluding B0
 		value = ((this.randGen.random() * (neighbours - 1)) | 0) + 1;
 		result += ",B" + String(value);
 		value = ((this.randGen.random() * (neighbours - value)) | 0) + value;
-		if (value > 0) {
-			result += ".." + String(value);
-		}
+		result += ".." + String(value);
 
 		// add the neighbourhood
 		result += ",N" + neighbourhood;
@@ -10308,7 +10297,6 @@
 			height = 0,
 			state = 0,
 			swap = 0,
-			states = me.engine.multiNumStates,
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			valid = true,
@@ -10370,6 +10358,17 @@
 						}
 					}
 				}
+
+				// add grid
+				if (me.engine.isHex) {
+					output += "H";
+				} else {
+					if (me.engine.isTriangular) {
+						output += "L";
+					}
+				}
+
+				// copy to external clipboard
 				me.copyToClipboard(me, output, false);
 				me.menuManager.notification.notify("CoordCA R" + ((width - 1) >> 1) + " copied to clipboard", 15, 180, 15, true);
 			}
@@ -14473,7 +14472,7 @@
 				me.engine.HROT.births = pattern.birthHROT;
 				me.engine.HROT.survivals = pattern.survivalHROT;
 				me.engine.HROT.scount = pattern.multiNumStates;
-				me.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT, pattern.customNeighbourhood);
+				me.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT, pattern.customNeighbourhood, pattern.customNeighbourCount, pattern.isTriangular);
 				if (me.manager.altSpecified) {
 					me.engine.HROT.altBirths = pattern.altBirthHROT;
 					me.engine.HROT.altSurvivals = pattern.altSurvivalHROT;

@@ -951,6 +951,8 @@
 		this.mouseY = -1;
 		this.mouseDown = false;
 		this.clickHappened = false;
+		this.origX = -1;
+		this.origY = -1;
 
 		// range highlight width
 		this.rangeHighlightSize = 6;
@@ -2054,11 +2056,33 @@
 		if (this.deleted) {
 			// check for wakeup
 			if (this.mouseDown) {
-				this.activeItem = -2;
+				if (this.activeItem !== -2) {
+					this.origX = this.mouseX;
+					this.origY = this.mouseY;
+					this.lastMouseX = this.mouseX;
+					this.lastMouseY = this.mouseY;
+					this.activeItem = -2;
+				} else {
+					// call drag callback if set and menu not locked
+					if (this.dragCallback && !this.locked) {
+						this.dragCallback(this.mouseX, this.mouseY, this.mouseDown, this.caller);
+					}
+				}
 			} else {
 				if (this.activeItem === -2) {
-					if (this.wakeCallback) {
-						this.wakeCallback(this.mouseX, this.mouseY, this.mouseDown, this.caller);
+					if (this.dragCallback && !this.locked) {
+						this.dragCallback(this.mouseX, this.mouseY, this.mouseDown, this.caller);
+					}
+					// check if mouse moved since mouse down
+					if (this.mouseX === this.origX && this.mouseY === this.origY) {
+						if (this.wakeCallback) {
+							// ignore click if getting focus
+							if (this.manager.clickToInteract) {
+								this.manager.clickToInteract = false;
+							} else {
+								this.wakeCallback(this.mouseX, this.mouseY, this.mouseDown, this.caller);
+							}
+						}
 					}
 				}
 				if (!this.mouseDown) {

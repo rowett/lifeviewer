@@ -3801,6 +3801,11 @@
 				if (rule[i] === "h") {
 					pattern.customGridType = "H";
 					this.index += 1;
+				} else {
+					if (rule[i] === "l") {
+						pattern.customGridType = "L";
+						this.index += 1;
+					}
 				}
 			}
 		}
@@ -5054,7 +5059,7 @@
 											break;
 
 										case this.customHROT:
-											pattern.ruleName += "@" + pattern.customNeighbourhood;
+											pattern.ruleName += "@" + pattern.customNeighbourhood + pattern.customGridType;
 											break;
 
 										case this.tripodHROT:
@@ -7222,6 +7227,11 @@
 		// check for hex HROT patterns
 		if (pattern.isHROT && (pattern.neighborhoodHROT === this.hexHROT || pattern.neighborhoodHROT === this.tripodHROT || pattern.neighborhoodHROT === this.asteriskHROT || (pattern.neighborhoodHROT === this.customHROT && pattern.customGridType === "H"))) {
 			pattern.isHex = true;
+		}
+
+		// check for triangular HROT patterns
+		if (pattern.isHROT && (pattern.neighborhoodHROT === this.customHROT && pattern.customGridType === "L")) {
+			pattern.isTriangular = true;
 		}
 	};
 

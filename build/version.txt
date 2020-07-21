@@ -1,5 +1,14 @@
+Build 545
+- "Click to control" doesn't show controls if AUTOHIDEGUI active
+- can now drag background during AUTOHIDEGUI
+- better synchronization of Annotation positions during performance throttling
+
+Build 544
+- Custom neighbourhoods now allow a postfix of "L" to specify triangular grid
+- Random Pattern no longer randomizes Custom neighbourhood
+
 Build 543
-- Custom neighbourhoods now allow of postfix of "H" to specify hex grid
+- Custom neighbourhoods now allow a postfix of "H" to specify hex grid
 
 Build 542
 - hotkey Ctrl+B converts the selection to a CoordCA neighbourhood and copies it to the external clipboard
