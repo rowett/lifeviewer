@@ -361,6 +361,7 @@
 		this.startItem = 0;
 		/** @type {number} */ this.oscLength = 0;
 		this.countList = null;
+		this.initList = null;
 		/** @type {boolean} */ this.firstCount = true;
 		this.hashBox = new BoundingBox(0, 0, 0, 0);
 		/** @type {number} */ this.modValue = -1;
@@ -1138,6 +1139,9 @@
 				this.boxList = this.allocator.allocate(Uint32, 2 * LifeConstants.maxOscillatorGens, "Life.boxList");
 				this.nextList = this.allocator.allocate(Int32, LifeConstants.maxOscillatorGens, "Life.nextList");
 				this.countList = Array.matrix(Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
+				if (this.multiNumStates > 2) {
+					this.initList = Array.matrix(Uint8, this.height, this.width, 0, this.allocator, "Life.initList");
+				}
 				this.firstCount = true;
 				this.hashBox.leftX = this.width;
 				this.hashBox.bottomY = this.height;
@@ -1160,6 +1164,7 @@
 			this.boxList = null;
 			this.nextList = null;
 			this.countList = null;
+			this.initList = null;
 			this.modValue = -1;
 			this.modType = -1;
 			this.startItem = -1;
@@ -1372,6 +1377,8 @@
 			colourRow = null,
 			countList = this.countList,
 			countRow = null,
+			initList = this.initList,
+			initRow = null,
 			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
 			hashBox = this.hashBox;
 
@@ -1563,8 +1570,11 @@
 							}
 						}
 					} else {
+						// multi-state
+						initRow = initList[cy];
 						for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
 							if (this.firstCount) {
+								initRow[cx] = colourRow[cx];
 								if (colourRow[cx] > this.historyStates) {
 									countRow[cx] = LifeConstants.cellWasAlive;
 								}
@@ -1573,6 +1583,10 @@
 									// update count
 									if (countRow[cx] === LifeConstants.cellWasDead) {
 										countRow[cx] = LifeConstants.cellHasChanged;
+									} else {
+										if (colourRow[cx] !== initRow[cx]) {
+											countRow[cx] = LifeConstants.cellHasChanged;
+										}
 									}
 								} else {
 									// update count

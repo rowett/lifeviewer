@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 545,
+		/** @const {number} */ versionBuild : 547,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4881,6 +4881,7 @@
 				if (currentWaypoint.targetGen > me.engine.counter) {
 					me.nextStep = true;
 					me.floatCounter = currentWaypoint.targetGen;
+					console.debug("here: ", currentWaypoint.targetGen);
 				} else {
 					me.nextStep = false;
 				}
@@ -5047,8 +5048,10 @@
 				// remove steps not taken from target counter
 				me.floatCounter -= (stepsToTake - stepsTaken);
 				me.originCounter -= (stepsToTake - stepsTaken);
-				if (me.floatCounter < 0 || me.originCounter < 0) {
+				if (me.floatCounter < 0) {
 					me.floatCounter = 0;
+				}
+				if (me.originCounter < 0) {
 					me.originCounter = 0;
 				}
 

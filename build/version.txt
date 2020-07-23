@@ -1,3 +1,9 @@
+Build 547
+- fixed an issue with waypoint timing
+
+Build 546
+- Identify works better with multi-state rules
+
 Build 545
 - "Click to control" doesn't show controls if AUTOHIDEGUI active
 - can now drag background during AUTOHIDEGUI
