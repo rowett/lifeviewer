@@ -1424,15 +1424,15 @@
 				itemName = "1D";
 			} else {
 				if (view.engine.patternDisplayMode) {
-					itemName = "Hex";
+					itemName = "Hexagonal";
 					if (view.engine.hexNeighbourhood === view.manager.hexTripod || view.engine.isHROT && view.engine.HROT.type === view.manager.tripodHROT) {
 						itemName = "Tripod";
 					}
 					if (view.engine.isHROT && view.engine.HROT.type === view.manager.asteriskHROT) {
 						itemName = "Asterisk";
 					}
-					if (view.engine.HROT.range > 1) {
-						itemName += " range " + view.engine.HROT.range;
+					if (view.engine.HROT.yrange > 1) {
+						itemName += " range " + view.engine.HROT.yrange;
 					}
 				} else {
 					if (view.engine.isHROT) {
@@ -1466,7 +1466,7 @@
 							break;
 
 						case view.manager.hexHROT:
-							itemName = "Hex";
+							itemName = "Hexagonal";
 							break;
 
 						case view.manager.checkerHROT:
@@ -1488,10 +1488,14 @@
 						case view.manager.asteriskHROT:
 							itemName = "Asterisk";
 							break;
+
+						case view.manager.triangularHROT:
+							itemName = "Triangular";
+							break;
 						}
 
-						if (view.engine.HROT.range > 1) {
-							itemName += " range " + view.engine.HROT.range;
+						if (view.engine.HROT.yrange > 1) {
+							itemName += " range " + view.engine.HROT.yrange;
 						}
 					} else {
 						if (view.engine.isTriangular) {
@@ -1527,7 +1531,7 @@
 										itemName = "Moore";
 										break;
 									case PatternConstants.ruleTableHex:
-										itemName = "Hex";
+										itemName = "Hexagonal";
 										break;
 									case PatternConstants.ruleTableOneD:
 										itemName = "1D";
@@ -1758,9 +1762,9 @@
 		y = this.renderHelpLine(view, "Build", ViewConstants.versionBuild, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Author", ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Decoders", "RLE, Life 1.06, Life 1.05, Cells", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "N'hoods", "Moore, Hex, von Neumann, Triangular, 1D,", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "N'hoods", "Moore, Hexagonal, von Neumann, Triangular, 1D,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Circular, Cross, L2, Saltire, Star, Checkerboard,", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Hash, Tripod, Asterisk, Custom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Hash, Tripod, Asterisk, Custom (CoordCA)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Rules", "Wolfram, Totalistic, Generations, Margolus,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Isotropic Non-Totalistic (Hensel, Callahan),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Alternating, MAP, Larger than Life (LtL),", ctx, x, y, height, helpLine);

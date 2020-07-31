@@ -1,3 +1,15 @@
+Build 548
+- Waypoints now do not lock controls if there are no camera commands
+- added support for triangular neighbourhoods for LtL and HROT rules
+	- specify with NL
+- clicking or dragging the pattern during Waypoint playback (when controls are locked) will pause playback
+- improved Goucher LtL format detection
+- external and internal clipboard Sync is now enabled by default (to make Copy more intuitive)
+	- disable to use internal clipboard only for faster cut/copy/paste
+- fix annotation position when drawing with triangular grid
+- fixed Advance Selection for non Life-like patterns
+- clipboard buttons tooltip now contains cell count
+
 Build 547
 - fixed an issue with waypoint timing
 

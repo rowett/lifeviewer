@@ -597,6 +597,9 @@
 
 		// whether last waypoint has been reached
 		this.lastReached = false;
+
+		// whether waypoints contain camera commands
+		this.hasCamera = false;
 	}
 
 	// create a polygon
@@ -915,7 +918,9 @@
 			context = engine.context,
 			xOff = engine.width / 2 - engine.xOff - engine.originX,
 			yOff = engine.height / 2 - engine.yOff - engine.originY,
-			zoom = engine.zoom * engine.originZ,
+			yMult = (engine.isTriangular && engine.zoom >= 4) ? ViewConstants.sqrt3 : 1,
+			xZoom = engine.zoom * engine.originZ,
+			yZoom = engine.zoom * engine.originZ * yMult,
 			halfDisplayWidth = engine.displayWidth / 2,
 			halfDisplayHeight = engine.displayHeight / 2,
 			x = 0, y = 0,
@@ -960,7 +965,7 @@
 			// continue if in generation range
 			if (inrange) {
 				// scale the arrow based on the zoom
-				currentSize = (current.size * zoom / current.zoom);
+				currentSize = (current.size * xZoom / current.zoom);
 
 				// adjust the shadow offset if drawing shadows
 				if (drawingShadows) {
@@ -974,9 +979,9 @@
 				}
 	
 				// do not draw if too big or too small
-				if (zoom >= current.minZoom && zoom <= current.maxZoom) {
+				if (xZoom >= current.minZoom && xZoom <= current.maxZoom) {
 					// convert zoom into a linear range
-					linearZoom = Math.log(zoom / current.minZoom) / Math.log(current.maxZoom / current.minZoom);
+					linearZoom = Math.log(xZoom / current.minZoom) / Math.log(current.maxZoom / current.minZoom);
 	
 					// make more transparent if in bottom or top 20% of linear range
 					if (linearZoom <= 0.25) {
@@ -1063,10 +1068,10 @@
 						}
 	
 						// draw the arrow
-						y = (cy * zoom) + halfDisplayHeight;
-						x = (cx * zoom) + halfDisplayWidth;
-						cx2 = (current.x2 - current.x1) * zoom;
-						cy2 = (current.y2 - current.y1) * zoom;
+						y = (cy * yZoom) + halfDisplayHeight;
+						x = (cx * xZoom) + halfDisplayWidth;
+						cx2 = (current.x2 - current.x1) * xZoom;
+						cy2 = (current.y2 - current.y1) * yZoom;
 						if (engine.isHex) {
 							cx2 -= cy2 / 2;
 						}
@@ -1151,7 +1156,9 @@
 			context = engine.context,
 			xOff = engine.width / 2 - engine.xOff - engine.originX,
 			yOff = engine.height / 2 - engine.yOff - engine.originY,
-			zoom = engine.zoom * engine.originZ,
+			yMult = (engine.isTriangular && engine.zoom >= 4) ? ViewConstants.sqrt3 : 1,
+			xZoom = engine.zoom * engine.originZ,
+			yZoom = engine.zoom * engine.originZ * yMult,
 			halfDisplayWidth = engine.displayWidth / 2,
 			halfDisplayHeight = engine.displayHeight / 2,
 			x = 0, y = 0,
@@ -1198,7 +1205,7 @@
 			// continue if in generation range
 			if (inrange) {
 				// scale the polygon based on the zoom
-				currentSize = (current.size * zoom / current.zoom);
+				currentSize = (current.size * xZoom / current.zoom);
 
 				// adjust the shadow offset if drawing shadows
 				if (drawingShadows) {
@@ -1212,9 +1219,9 @@
 				}
 	
 				// do not draw if too big or too small
-				if (zoom >= current.minZoom && zoom <= current.maxZoom) {
+				if (xZoom >= current.minZoom && xZoom <= current.maxZoom) {
 					// convert zoom into a linear range
-					linearZoom = Math.log(zoom / current.minZoom) / Math.log(current.maxZoom / current.minZoom);
+					linearZoom = Math.log(xZoom / current.minZoom) / Math.log(current.maxZoom / current.minZoom);
 	
 					// make more transparent if in bottom or top 20% of linear range
 					if (linearZoom <= 0.25) {
@@ -1303,10 +1310,10 @@
 						}
 	
 						// draw the polygon
-						y = (cy * zoom) + halfDisplayHeight;
-						x = (cx * zoom) + halfDisplayWidth;
-						cx2 = (coords[coord] - coords[0]) * zoom;
-						cy2 = (coords[coord + 1] - coords[1]) * zoom;
+						y = (cy * yZoom) + halfDisplayHeight;
+						x = (cx * xZoom) + halfDisplayWidth;
+						cx2 = (coords[coord] - coords[0]) * xZoom;
+						cy2 = (coords[coord + 1] - coords[1]) * yZoom;
 						if (engine.isHex) {
 							cx2 -= cy2 / 2;
 						}
@@ -1345,8 +1352,8 @@
 						context.moveTo(0, 0);
 						context.lineTo(cx2, cy2);
 						while (coord < length) {
-							cx2 = (coords[coord] - coords[0]) * zoom;
-							cy2 = (coords[coord + 1] - coords[1]) * zoom;
+							cx2 = (coords[coord] - coords[0]) * xZoom;
+							cy2 = (coords[coord + 1] - coords[1]) * yZoom;
 							if (engine.isHex) {
 								cx2 -= cy2 / 2;
 							}
@@ -1388,7 +1395,9 @@
 			xPos = 0,
 			xOff = engine.width / 2 - engine.xOff - engine.originX,
 			yOff = engine.height / 2 - engine.yOff - engine.originY,
-			zoom = engine.zoom * engine.originZ,
+			yMult = (engine.isTriangular && engine.zoom >= 4) ? ViewConstants.sqrt3 : 1,
+			xZoom = engine.zoom * engine.originZ,
+			yZoom = engine.zoom * engine.originZ * yMult,
 			halfDisplayWidth = engine.displayWidth / 2,
 			halfDisplayHeight = engine.displayHeight / 2,
 			x = 0, y = 0,
@@ -1427,7 +1436,7 @@
 			// continue if in generation range
 			if (inrange) {
 				// scale the font based on the zoom
-				currentSize = (current.size * zoom / current.zoom);
+				currentSize = (current.size * xZoom / current.zoom);
 				shadowOffset = 1;
 				if (currentSize >= 24) {
 					shadowOffset = 2;
@@ -1437,9 +1446,9 @@
 				}
 	
 				// do not draw if too big or too small
-				if (zoom >= current.minZoom && zoom <= current.maxZoom) {
+				if (xZoom >= current.minZoom && xZoom <= current.maxZoom) {
 					// convert zoom into a linear range
-					linearZoom = Math.log(zoom / current.minZoom) / Math.log(current.maxZoom / current.minZoom);
+					linearZoom = Math.log(xZoom / current.minZoom) / Math.log(current.maxZoom / current.minZoom);
 					context.font = currentSize + fontEnd;
 	
 					// make more transparent if in bottom or top 25% of linear range
@@ -1529,8 +1538,8 @@
 						// draw each line of the label
 						message = current.message;
 						index = message.indexOf("\\n");
-						y = (cy * zoom) + halfDisplayHeight;
-						x = (cx * zoom) + halfDisplayWidth;
+						y = (cy * yZoom) + halfDisplayHeight;
+						x = (cx * xZoom) + halfDisplayWidth;
 	
 						// rotate context for drawing
 						context.save();
@@ -1770,6 +1779,11 @@
 		} else {
 			// add the waypoint to the end of the waypoint list
 			this.waypointList[this.waypointList.length] = waypoint;
+
+			// check if the waypoint controls the camera
+			if (waypoint.xDefined || waypoint.yDefined || waypoint.zoomDefined || waypoint.angleDefined || waypoint.fitZoom) {
+				this.hasCamera = true;
+			}
 		}
 	};
 

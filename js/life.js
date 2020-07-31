@@ -5138,6 +5138,11 @@
 		this.tileCols = this.width >> this.tilePower;
 		this.tileRows = this.height >> this.tilePower;
 
+		// create state 6 grids if required
+		if (this.state6TileGrid) {
+			this.createState6Mask();
+		}
+
 		// allocate tile grids
 		this.tileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.tileGrid");
 		this.nextTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid");
@@ -5174,6 +5179,12 @@
 			this.nextColourGrid = null;
 			this.nextColourGrid16 = null;
 			this.nextColourGrid32 = null;
+		}
+		this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
+
+		// check if overlay grid was allocated
+		if (this.overlayGrid) {
+			this.createOverlay();
 		}
 
 		// create the grid width and height masks
@@ -10536,7 +10547,7 @@
 		if (this.width === this.maxGridSize) {
 			// check for LtL or HROT
 			if (this.isHROT) {
-				boundarySize = this.HROT.range * 2;
+				boundarySize = this.HROT.xrange * 2;
 			} else {
 				boundarySize = 16;
 			}
@@ -11391,7 +11402,8 @@
 			topY = zoomBox.topY,
 
 			// range
-			range = this.HROT.range * 2 + 1,
+			xrange = this.HROT.xrange * 2 + 1,
+			yrange = this.HROT.yrange * 2 + 1,
 
 			// alive and dead states
 			alive = (this.multiNumStates > 2 ? 0 : LifeConstants.aliveStart),
@@ -11401,8 +11413,8 @@
 			y = 0;
 
 		// clear top boundary
-		if ((ht - topY) <= range) {
-			for (y = ht - range; y <= topY; y += 1) {
+		if ((ht - topY) <= yrange) {
+			for (y = ht - yrange; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= rightX; x += 1) {
 					if (colourRow[x] >= alive) {
@@ -11410,12 +11422,12 @@
 					}
 				}
 			}
-			zoomBox.topY = ht - range;
+			zoomBox.topY = ht - yrange;
 		}
 
 		// clear bottom boundary
-		if (bottomY <= range) {
-			for (y = bottomY; y <= range; y += 1) {
+		if (bottomY <= yrange) {
+			for (y = bottomY; y <= yrange; y += 1) {
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= rightX; x += 1) {
 					if (colourRow[x] >= alive) {
@@ -11423,33 +11435,33 @@
 					}
 				}
 			}
-			zoomBox.bottomY = range;
+			zoomBox.bottomY = yrange;
 		}
 
 		// clear left boundary
-		if (leftX <= range) {
+		if (leftX <= xrange) {
 			for (y = bottomY; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
-				for (x = leftX; x <= range; x += 1) {
+				for (x = leftX; x <= xrange; x += 1) {
 					if (colourRow[x] >= alive) {
 						this.removeMSPattern(x, y);
 					}
 				}
 			}
-			zoomBox.leftX = range;
+			zoomBox.leftX = xrange;
 		}
 
 		// clear right boundary
-		if ((wd - rightX) <= range) {
+		if ((wd - rightX) <= xrange) {
 			for (y = bottomY; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
-				for (x = wd - range; x <= rightX; x += 1) {
+				for (x = wd - xrange; x <= rightX; x += 1) {
 					if (colourRow[x] >= alive) {
 						this.removeMSPattern(x, y);
 					}
 				}
 			}
-			zoomBox.rightX = wd - range;
+			zoomBox.rightX = wd - xrange;
 		}
 	};
 	

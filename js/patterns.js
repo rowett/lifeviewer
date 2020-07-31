@@ -521,6 +521,7 @@
 		/** @const {number} */ this.customHROT = 10;
 		/** @const {number} */ this.tripodHROT = 11;
 		/** @const {number} */ this.asteriskHROT = 12;
+		/** @const {number} */ this.triangularHROT = 13;
 
 		// specified width and height from RLE pattern
 		/** @type {number} */ this.specifiedWidth = -1;
@@ -2994,6 +2995,9 @@
 					case this.asteriskHROT:
 						nameLtL += "A";
 						break;
+					case this.triangularHROT:
+						nameLtL += "L";
+						break;
 				}
 
 				// lookup alias
@@ -3213,8 +3217,13 @@
 						result = this.asteriskHROT;
 						break;
 
+					case "l":
+						this.index += 1;
+						result = this.triangularHROT;
+						break;
+
 					default:
-						this.failureReason = "LtL 'N' needs [ABCHMNX23*+#@] got 'N" + next.toUpperCase() + "'";
+						this.failureReason = "LtL 'N' needs [ABCHLMNX23*+#@] got 'N" + next.toUpperCase() + "'";
 						this.index = -1;
 						break;
 				}
@@ -3400,6 +3409,10 @@
 
 					case this.asteriskHROT:
 						maxCells = pattern.rangeLTL * 6 + 1;
+						break;
+
+					case this.triangularHROT:
+						maxCells = (pattern.rangeLTL * 4 + 1) * (pattern.rangeLTL * 2 + 1) - (pattern.rangeLTL * 2 * pattern.rangeLTL);
 						break;
 				}
 				// adjust max cells by middle cell setting
@@ -3816,7 +3829,7 @@
 	// create HROT arrays from Bmin to Bmax and Smin to Smax
 	PatternManager.prototype.setupHROTfromLTL = function(pattern, allocator) {
 		var range = pattern.rangeLTL,
-			maxCount = (range * 2 + 1) * (range * 2 + 1),
+			maxCount = (range * 4 + 1) * (range * 2 + 1), // TBD should use actual count based on neighbourhood
 			i = 0;
 			
 		// copy the range and neighborhood
@@ -3889,7 +3902,7 @@
 						pattern.rangeHROT = value;
 						result = true;
 						// compute maximum count value for Moore neighbourhood
-						maxCount = (value * 2 + 1) * (value * 2 + 1);
+						maxCount = (value * 4 + 1) * (value * 2 + 1);  // TBD should use actual count from neighbourhood
 					}
 				}
 			}
@@ -4082,8 +4095,14 @@
 								result = true;
 								break;
 
+							case "l":
+								pattern.neighborhoodHROT = this.triangularHROT;
+								this.index += 1;
+								result = true;
+								break;
+
 							default:
-								this.failureReason = "HROT 'N' needs [ABCHMNX23*+#@] got '" + rule[this.index].toUpperCase() + "'";
+								this.failureReason = "HROT 'N' needs [ABCHLMNX23*+#@] got '" + rule[this.index].toUpperCase() + "'";
 								break;
 						}
 					} else {
@@ -4169,6 +4188,10 @@
 
 				case this.asteriskHROT:
 					maxCount = pattern.rangeHROT * 6 + 1;
+					break;
+
+				case this.triangularHROT:
+					maxCount = (pattern.rangeHROT * 4 + 1) * (pattern.rangeHROT * 2 + 1) - (pattern.rangeHROT * 2 * pattern.rangeHROT);
 					break;
 			}
 
@@ -4936,8 +4959,8 @@
 								if (rule.indexOf(".") !== -1) {
 									valid = this.decodeLTLMC(pattern, rule);
 								} else {
-									// check for Goucher format LTL
-									if (rule.indexOf("t") !== -1) {
+									// check for Goucher format LTL (t with no n)
+									if (rule.indexOf("t") !== -1 && rule.indexOf("n") === -1) {
 										valid = this.decodeLTLRBTST(pattern, rule);
 									} else {
 										// check for multi format HROT
@@ -5011,6 +5034,10 @@
 											case this.asteriskHROT:
 												pattern.ruleName += "A";
 												break;
+
+											case this.triangularHROT:
+												pattern.ruleName += "L";
+												break;
 										}
 									}
 								} else {
@@ -5068,6 +5095,10 @@
 
 										case this.asteriskHROT:
 											pattern.ruleName += "A";
+											break;
+
+										case this.triangularHROT:
+											pattern.ruleName += "L";
 											break;
 									}
 
@@ -7230,7 +7261,7 @@
 		}
 
 		// check for triangular HROT patterns
-		if (pattern.isHROT && (pattern.neighborhoodHROT === this.customHROT && pattern.customGridType === "L")) {
+		if (pattern.isHROT && (pattern.neighborhoodHROT === this.triangularHROT || (pattern.neighborhoodHROT === this.customHROT && pattern.customGridType === "L"))) {
 			pattern.isTriangular = true;
 		}
 	};

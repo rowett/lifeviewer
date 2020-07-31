@@ -18,21 +18,23 @@ Planned:
         [[ COLOUR @NAME ]]
         [[ XY = @NAME display ]]
         [[ colour picker @NAME display ]]
-    optimize range 1-7 LtL/HROT rules
-        - Circular
-        - L2
-        - Cross
-        - Saltire
-        - Star
-        - Hash
-        - Checkerboard
-    add LtL/HROT custom neighbourhoods
-        - CoordCA hex format
-        - shader fragment format
 
 [STARTED][R]Super support
     [DONE]rule parser
     - runtime
+
+[STARTED]additional LtL/HROT neighbourhoods
+    [DONE]L2
+    [DONE]star
+    [DONE]cross
+    [DONE]saltire
+    [DONE]checkerboard
+    [DONE]hash
+    [DONE]hex
+    [DONE]tripod
+    [DONE]asterisk
+    [DONE]triangular
+    [DONE]custom (CoordCA)
 
 [STARTED]add type information for closure compiler
 

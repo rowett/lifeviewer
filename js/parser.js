@@ -1168,6 +1168,9 @@
 			popupHeight : false
 		    };
 
+		// reset waypoint manager camera flag
+		view.waypointManager.hasCamera = false;
+
 		// reset counts
 		view.numScriptCommands = 0;
 		view.numScriptErrors = 0;

@@ -280,7 +280,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 547,
+		/** @const {number} */ versionBuild : 548,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1952,7 +1952,13 @@
 			}
 			tip += "clipboard";
 			if (buffer[i] !== null) {
-				tip += " (" + buffer[i].width + " x " + buffer[i].height + ")";
+				tip += " (" + buffer[i].width + " x " + buffer[i].height + ", " + buffer[i].count + " cell";
+				if (buffer[i].count !== 1) {
+					tip += "s";
+				}
+				tip += ")";
+			} else {
+				tip += " (empty)";
 			}
 			tips[i] = tip;
 		}
@@ -3897,9 +3903,9 @@
 
 		// compute border based on algorithm
 		if (me.engine.isHROT) {
-			borderSize = me.engine.HROT.range * 4 + 1;
+			borderSize = me.engine.HROT.xrange * 4 + 1;
 			if (me.engine.boundedGridType !== -1) {
-				borderSize += me.engine.HROT.range * 2;
+				borderSize += me.engine.HROT.xrange * 2;
 			}
 			if (me.engine.HROT.type === this.manager.vonNeumannHROT) {
 				if (me.engine.boundedGridType !== -1) {
@@ -4770,30 +4776,33 @@
 
 		// check if waypoints are defined and enabled
 		if (me.waypointsDefined && !me.waypointsDisabled && me.generationOn) {
-			// check if a manual change happened
-			if (me.manualChange && !me.waypointManager.atLast(me.elapsedTime + timeSinceLastUpdate)) {
-				// clear flag
-				me.manualChange = false;
-
-				// create temporary position
-				me.elapsedTime = me.waypointManager.createTemporaryPosition(me.engine.width / 2 - me.engine.xOff, me.engine.height / 2 - me.engine.yOff, me.engine.zoom, me.engine.angle, me.engine.layers, me.engine.layerDepth * ViewConstants.depthScale, me.engine.colourTheme, me.genSpeed, me.gensPerStep, me.engine.counter, me.elapsedTime);
-			}
-			
-			// check for fit zoom
-			if (currentWaypoint.fitZoom) {
-				// fit zoom
-				me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
-
-				// clear manual change flag that fit zoom will set
-				me.manualChange = false;
-
-				// copy fit zoom to current waypoint
-				currentWaypoint.x = me.engine.width / 2 - me.engine.xOff;
-				currentWaypoint.y = me.engine.height / 2 - me.engine.yOff;
-				if (me.thumbnail) {
-					me.engine.zoom *= me.thumbnailDivisor;
+			// check if the waypoints are controlling the camera
+			if (me.waypointManager.hasCamera) {
+				// check if a manual change happened
+				if (me.manualChange && !me.waypointManager.atLast(me.elapsedTime + timeSinceLastUpdate)) {
+					// clear flag
+					me.manualChange = false;
+	
+					// create temporary position
+					me.elapsedTime = me.waypointManager.createTemporaryPosition(me.engine.width / 2 - me.engine.xOff, me.engine.height / 2 - me.engine.yOff, me.engine.zoom, me.engine.angle, me.engine.layers, me.engine.layerDepth * ViewConstants.depthScale, me.engine.colourTheme, me.genSpeed, me.gensPerStep, me.engine.counter, me.elapsedTime);
 				}
-				currentWaypoint.zoom = me.engine.zoom;
+			
+				// check for fit zoom
+				if (currentWaypoint.fitZoom) {
+					// fit zoom
+					me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
+	
+					// clear manual change flag that fit zoom will set
+					me.manualChange = false;
+	
+					// copy fit zoom to current waypoint
+					currentWaypoint.x = me.engine.width / 2 - me.engine.xOff;
+					currentWaypoint.y = me.engine.height / 2 - me.engine.yOff;
+					if (me.thumbnail) {
+						me.engine.zoom *= me.thumbnailDivisor;
+					}
+					currentWaypoint.zoom = me.engine.zoom;
+				}
 			}
 
 			// update based on elapsed time
@@ -4820,45 +4829,47 @@
 					me.nextStep = true;
 				}
 			} else {
-				// check whether paused
-				if (me.generationOn) {
-					// lock controls if playing
-					me.controlsLocked = true;
-				}
+				if (me.waypointManager.hasCamera) {
+					// check whether paused
+					if (me.generationOn) {
+						// lock controls if playing
+						me.controlsLocked = true;
+					}
 
-				// set the camera position
-				me.engine.xOff = me.engine.width / 2 - currentWaypoint.x;
-				me.engine.yOff = me.engine.height / 2 - currentWaypoint.y;
+					// set the camera position
+					me.engine.xOff = me.engine.width / 2 - currentWaypoint.x;
+					me.engine.yOff = me.engine.height / 2 - currentWaypoint.y;
 
-				// set zoom
-				me.engine.zoom = currentWaypoint.zoom;
+					// set zoom
+					me.engine.zoom = currentWaypoint.zoom;
 
-				// check for thumbnail mode
-				if (me.thumbnail) {
-					me.engine.zoom = me.engine.zoom / me.thumbnailDivisor;
-				}
+					// check for thumbnail mode
+					if (me.thumbnail) {
+						me.engine.zoom = me.engine.zoom / me.thumbnailDivisor;
+					}
+	
+					// update the zoom control
+					if (me.zoomItem) {
+						me.zoomItem.current = me.viewZoomRange([me.engine.zoom, me.engine.zoom], false, me);
+					}
 
-				// update the zoom control
-				if (me.zoomItem) {
-					me.zoomItem.current = me.viewZoomRange([me.engine.zoom, me.engine.zoom], false, me);
-				}
-
-				// set angle and update angle control
-				me.engine.angle = currentWaypoint.angle;
-				if (me.angleItem) {
-					me.angleItem.current = [me.engine.angle, me.engine.angle];
-				}
-
-				// set layers
-				me.engine.layers = currentWaypoint.layers;
-				if (me.layersItem) {
-					me.layersItem.current = [me.engine.layers, me.engine.layers];
-				}
-
-				// set layer depth
-				me.engine.layerDepth = (currentWaypoint.depth / ViewConstants.depthScale) + ViewConstants.minDepth;
-				if (me.depthItem) {
-					me.depthItem.current = [Math.sqrt(me.engine.layerDepth), me.engine.layerDepth * ViewConstants.depthScale];
+					// set angle and update angle control
+					me.engine.angle = currentWaypoint.angle;
+					if (me.angleItem) {
+						me.angleItem.current = [me.engine.angle, me.engine.angle];
+					}
+	
+					// set layers
+					me.engine.layers = currentWaypoint.layers;
+					if (me.layersItem) {
+						me.layersItem.current = [me.engine.layers, me.engine.layers];
+					}
+	
+					// set layer depth
+					me.engine.layerDepth = (currentWaypoint.depth / ViewConstants.depthScale) + ViewConstants.minDepth;
+					if (me.depthItem) {
+						me.depthItem.current = [Math.sqrt(me.engine.layerDepth), me.engine.layerDepth * ViewConstants.depthScale];
+					}
 				}
 
 				// set gps
@@ -4876,16 +4887,15 @@
 
 				// set grid TBD
 				//me.engine.displayGrid = currentWaypoint.grid; 
-
+	
 				// if waypoints not ended then work out whether to step to next generation
 				if (currentWaypoint.targetGen > me.engine.counter) {
 					me.nextStep = true;
 					me.floatCounter = currentWaypoint.targetGen;
-					console.debug("here: ", currentWaypoint.targetGen);
 				} else {
 					me.nextStep = false;
 				}
-
+	
 				// check if a new waypoint message is available
 				if (currentWaypoint.textMessage !== me.lastWaypointMessage) {
 					// check if cancelling
@@ -4897,11 +4907,11 @@
 						// @ts-ignore
 						me.menuManager.notification.notify(ScriptParser.substituteVariables(this, currentWaypoint.textMessage), 15, 21600, 15, false);
 					}
-
+	
 					// save message
 					me.lastWaypointMessage = currentWaypoint.textMessage;
 				}
-
+	
 				// check if a new theme is available
 				if (currentWaypoint.theme !== me.lastWaypointTheme) {
 					// fade to new theme
@@ -5618,7 +5628,7 @@
 		}
 
 		// lock kill button if not 2-state moore
-		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || (this.engine.isHROT && !(this.engine.HROT.range === 1 && this.engine.HROT.type === this.manager.mooreHROT && this.engine.HROT.scount === 2)) || this.engine.isTriangular || this.engine.isVonNeumann;
+		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || (this.engine.isHROT && !(this.engine.HROT.xrange === 1 && this.engine.HROT.type === this.manager.mooreHROT && this.engine.HROT.scount === 2)) || this.engine.isTriangular || this.engine.isVonNeumann;
 
 		// lock theme button if mode doesn't support themes
 		this.themeButton.locked =  this.multiStateView || this.engine.isNone || this.engine.isRuleTree;
@@ -6778,7 +6788,7 @@
 			}
 
 			// reset the camera
-			if (!looping || me.waypointsDefined || me.autoFit) {
+			if (!looping || (me.waypointsDefined && me.waypointManager.hasCamera) || me.autoFit) {
 				me.resetCamera(me, hardReset);
 				if (me.autoFit) {
 					me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
@@ -7114,6 +7124,13 @@
 			// close library
 			me.libraryToggle.current = [false];
 			me.menuManager.toggleRequired = true;
+
+			// if already pasting then update paste
+			if (me.isPasting) {
+				me.pasteSelection(me, newValue);
+			} else {
+				me.menuManager.notification.notify("Clipboard " + newValue + " active", 15, 80, 15, true);
+			}
 		}
 
 		return me.currentPasteBuffer;
@@ -7932,6 +7949,9 @@
 				// update position
 				me.engine.xOff += dx * cosAngle + dy * (-sinAngle);
 				me.engine.yOff += dx * sinAngle + dy * cosAngle;
+			} else {
+				// pause playback if controls locked
+				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 			}
 		}
 	};
@@ -8520,7 +8540,7 @@
 	View.prototype.createRandomHROT = function() {
 		var result = "",
 			neighbours = 0,
-			range = this.engine.HROT.range,
+			range = this.engine.HROT.yrange,
 			neighbourhood = "",
 			lastValue = -1,
 			value = 0,
@@ -8625,6 +8645,11 @@
 			neighbourhood = "A";
 			neighbours = range * 6 + 1;
 			break;
+
+		case this.manager.triangularHROT:
+			neighbourhood = "L";
+			neighbours = (range * 4 + 1) * (range * 2 + 1) - (range * 2 * range);
+			break;
 		}
 
 		// pick number of survival neighbour counts
@@ -8726,7 +8751,7 @@
 	View.prototype.createRandomLTL = function() {
 		var result = "",
 			neighbours = 0,
-			range = this.engine.HROT.range,
+			range = this.engine.HROT.yrange,
 			neighbourhood = "",
 			value = 0,
 			r2 = 0,
@@ -8830,6 +8855,11 @@
 		case this.manager.asteriskHROT:
 			neighbourhood = "A";
 			neighbours = range * 6 + 1;
+			break;
+
+		case this.manager.triangularHROT:
+			neighbourhood = "L";
+			neighbours = (range * 4 + 1) * (range * 2 + 1) - (range * 2 * range);
 			break;
 		}
 
@@ -10164,6 +10194,7 @@
 			i = 0,
 			swap = 0,
 			state = 0,
+			count = 0,
 			states = me.engine.multiNumStates,
 			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
@@ -10201,13 +10232,16 @@
 						state = states - state;
 					}
 					buffer[i] = state;
+					if (state > 0) {
+						count += 1;
+					}
 					me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 					i += 1;
 				}
 			}
 
 			// copy to required buffer
-			me.pasteBuffers[number] = {buffer: buffer, width: width, height: height};
+			me.pasteBuffers[number] = {buffer: buffer, width: width, height: height, count: count};
 			me.pasteBuffer = buffer;
 			me.pasteWidth = width;
 			me.pasteHeight = height;
@@ -10272,7 +10306,7 @@
 				me.copySelection(me, me.currentPasteBuffer);
 				if (!me.syncNotified) {
 					me.syncNotified = true;
-					me.menuManager.notification.notify("For external clipboard enable Sync", 15, 180, 15, true);
+					me.menuManager.notification.notify("Disable Sync for faster internal clipboard", 15, 360, 15, false);
 				}
 			}
 		}
@@ -10394,6 +10428,7 @@
 			width = 0,
 			height = 0,
 			state = 0,
+			count = 0,
 			states = me.engine.multiNumStates,
 			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
@@ -10429,12 +10464,15 @@
 						state = states - state;
 					}
 					buffer[i] = state;
+					if (state > 0) {
+						count += 1;
+					}
 					i += 1;
 				}
 			}
 
 			// copy to required buffer
-			me.pasteBuffers[number] = {buffer: buffer, width: width, height: height};
+			me.pasteBuffers[number] = {buffer: buffer, width: width, height: height, count: count};
 			me.pasteBuffer = buffer;
 			me.pasteWidth = width;
 			me.pasteHeight = height;
@@ -10460,7 +10498,8 @@
 	// evolve pressed
 	View.prototype.evolvePressed = function(me, ctrl, shift) {
 		// save paste mode
-		var savedMode = this.pasteMode;
+		var savedMode = this.pasteMode,
+			savedSync = this.copySyncExternal;
 
 		// check for evolve outside
 		if (shift) {
@@ -10484,17 +10523,26 @@
 			// check if already evolving
 			if (me.evolvingPaste) {
 				me.evolvePaste(me);
+				if (!me.evolvingPaste) {
+					me.menuManager.notification.notify("Advance Selection all cells died", 15, 180, 15, true);
+				}
 			} else {
 				// check if there is a selection
 				if (me.isSelection) {
 					// check if there has been an action since selection
 					if (!me.afterSelectAction) {
+						// only use internal clipboard
+						this.copySyncExternal = false;
 						me.cutPressed(me);
+						this.copySyncExternal = savedSync;
 					}
 		
 					// check whether there is something to paste
 					if (me.canPaste) {
 						me.evolvePaste(me);
+						if (!me.evolvingPaste) {
+							me.menuManager.notification.notify("Advance Selection no live cells", 15, 180, 15, true);
+						}
 					}
 				} else {
 					me.menuManager.notification.notify("Advance Selection needs a selection", 15, 180, 15, true);
@@ -10516,12 +10564,16 @@
 			yOff = 0,
 			selBox = me.selectionBox,
 			zoomBox = me.engine.zoomBox,
+			historyBox = me.engine.historyBox,
 			evolveBox = me.evolveBox,
 			// save current grid
 		    currentGrid = me.engine.grid,
 		    currentNextGrid = me.engine.nextGrid,
 			currentColourGrid = me.engine.colourGrid,
 			currentColourGrid16 = me.engine.colourGrid16,
+			currentColourGrid32 = me.engine.colourGrid32,
+			currentSmallColourGrid = me.engine.smallColourGrid,
+			currentNextColourGrid = me.engine.nextColourGrid,
 		    currentTileGrid = me.engine.tileGrid,
 		    currentNextTileGrid = me.engine.nextTileGrid,
 		    currentColourTileGrid = me.engine.colourTileGrid,
@@ -10539,26 +10591,42 @@
 			currentWidthMask = me.engine.widthMask,
 			currentHeightMask = me.engine.heightMask,
 			currentCounter = me.engine.counter,
-			currentZoomBox = new BoundingBox(0, 0, 0, 0);
+			currentZoomBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
+			currentHistoryBox = new BoundingBox(historyBox.leftX, historyBox.bottomY, historyBox.rightX, historyBox.topY),
+			currentState6Mask = me.engine.state6Mask,
+			currentState6Cells = me.engine.state6Cells,
+			currentState6Alive = me.engine.state6Alive,
+			currentState6TileGrid = me.engine.state6TileGrid,
+			currentOverlayGrid = me.engine.overlayGrid,
+			currentSmallOverlayGrid = me.engine.smallOverlayGrid,
+			currentOverlayGrid16 = me.engine.overlayGrid16,
+			currentOverlayGrid32 = me.engine.overlayGrid32,
+			currentCounts = null,
+			currentColUsed = null;
 
-		// save bounding box
-		currentZoomBox.leftX = zoomBox.leftX;
-		currentZoomBox.bottomY = zoomBox.bottomY;
-		currentZoomBox.rightX = zoomBox.rightX;
-		currentZoomBox.topY = zoomBox.topY;
-		
+		// check for HROT rules
+		if (me.engine.isHROT) {
+			currentCounts = me.engine.HROT.counts;
+			currentColUsed = me.engine.HROT.colUsed;
+			me.engine.HROT.resize(1024, 1024);
+		}
+
 		// allocate new grid
 		me.engine.allocateGrid(1024, 1024);
 
 		// copy paste to center of grid
 		xOff = Math.round((me.engine.width - me.patternWidth) / 2);
-		yOff = Math.round((me.engine.height - me.patternHeight) / 2) - 2;
+		yOff = Math.round((me.engine.height - me.patternHeight) / 2);
+
 		i = 0;
 		for (y = 0; y < height; y += 1) {
 			for (x = 0; x < width; x += 1) {
 				state = buffer[i];
 				if (state > 0) {
-					me.engine.setState(x + xOff, y + yOff, state, false);
+					//if (me.engine.multiNumStates > 2 && !(me.engine.isPCA || me.engine.isRuleTree)) {
+						//state = me.engine.multiNumStates - state;
+					//}
+					me.engine.setState(x + xOff, y + yOff, state, true);
 				}
 				i += 1;
 			}
@@ -10577,15 +10645,27 @@
 			i = 0;
 			for (y = zoomBox.bottomY; y <= zoomBox.topY; y += 1) {
 				for (x = zoomBox.leftX; x <= zoomBox.rightX; x += 1) {
-					me.pasteBuffer[i] = me.engine.getState(x, y, false);
+					state = me.engine.getState(x, y, false);
+					if (state > 0 && me.engine.multiNumStates > 2 && !(me.engine.isPCA || me.engine.isRuleTree)) {
+						state = me.engine.multiNumStates - state;
+					}
+					me.pasteBuffer[i] = state;
 					i += 1;
 				}
 			}
 	
 			// update selection
 			if (!me.evolvingPaste) {
-				evolveBox.leftX = selBox.leftX + zoomBox.leftX - xOff;
-				evolveBox.bottomY = selBox.bottomY + zoomBox.bottomY - xOff;
+				if (selBox.leftX < selBox.rightX) {
+					evolveBox.leftX = selBox.leftX + zoomBox.leftX - xOff;
+				} else {
+					evolveBox.leftX = selBox.rightX + zoomBox.leftX - xOff;
+				}
+				if (selBox.bottomY < selBox.topY) {
+					evolveBox.bottomY = selBox.bottomY + zoomBox.bottomY - yOff;
+				} else {
+					evolveBox.bottomY = selBox.topY + zoomBox.bottomY - yOff;
+				}
 				evolveBox.rightX = evolveBox.leftX + me.pasteWidth - 1;
 				evolveBox.topY = evolveBox.bottomY + me.pasteHeight - 1;
 			} else {
@@ -10607,6 +10687,9 @@
 		me.engine.nextGrid = currentNextGrid;
 		me.engine.colourGrid = currentColourGrid;
 		me.engine.colourGrid16 = currentColourGrid16;
+		me.engine.colourGrid32 = currentColourGrid32;
+		me.engine.smallColourGrid = currentSmallColourGrid;
+		me.engine.nextColourGrid = currentNextColourGrid;
 		me.engine.tileGrid = currentTileGrid;
 		me.engine.nextTileGrid = currentNextTileGrid;
 		me.engine.colourTileGrid = currentColourTileGrid;
@@ -10625,10 +10708,28 @@
 		me.engine.widthMask = currentWidthMask;
 		me.engine.heightMask = currentHeightMask;
 		me.engine.counter = currentCounter;
+		me.engine.state6Mask = currentState6Mask;
+		me.engine.state6Cells = currentState6Cells;
+		me.engine.state6Alive = currentState6Alive;
+		me.engine.state6TileGrid = currentState6TileGrid;
+		me.engine.overlayGrid = currentOverlayGrid;
+		me.engine.smallOverlayGrid = currentSmallOverlayGrid;
+		me.engine.overlayGrid16 = currentOverlayGrid16;
+		me.engine.overlayGrid32 = currentOverlayGrid32;
 		zoomBox.leftX = currentZoomBox.leftX;
 		zoomBox.bottomY = currentZoomBox.bottomY;
 		zoomBox.rightX = currentZoomBox.rightX;
 		zoomBox.topY = currentZoomBox.topY;
+		historyBox.leftX = currentHistoryBox.leftX;
+		historyBox.bottomY = currentHistoryBox.bottomY;
+		historyBox.rightX = currentHistoryBox.rightX;
+		historyBox.topY = currentHistoryBox.topY;
+
+		// restore HROT
+		if (me.engine.isHROT) {
+			me.engine.HROT.counts = currentCounts;
+			me.engine.HROT.colUsed = currentColUsed;
+		}
 	};
 
 	// perform paste
@@ -10886,7 +10987,7 @@
 				// check for paste to selection
 				if (shift) {
 					// check for a selection
-					if (me.isSelection) {
+					if (me.isSelection || me.evolvingPaste) {
 						// check if paste has evolved
 						if (me.evolvingPaste) {
 							leftX = evolveBox.leftX;
@@ -10947,6 +11048,7 @@
 	View.prototype.pasteFromEnter = function(me) {
 		if (me.evolvingPaste) {
 			me.processPaste(me, true, false);
+			me.afterSelectAction = false;
 		} else {
 			me.performPaste(me, me.cellX, me.cellY, true);
 		}
@@ -11661,7 +11763,7 @@
 				for (y = y1; y <= y2; y += 1) {
 					for (x = x1; x <= x2; x += 1) {
 						state = me.engine.getState(x + xOff, y + yOff, false);
-						if (!me.engine.isPCA && numStates > 2 && state > 0) {
+						if (!(me.engine.isPCA || me.engine.isRuleTree) && numStates > 2 && state > 0) {
 							state = numStates - state;
 						}
 						me.setStateWithUndo(x + xOff, y + yOff, numStates - state - 1, true);
@@ -11971,6 +12073,10 @@
 					if (me.waypointsDisabled) {
 						me.menuManager.notification.clear(false, false);
 						me.lastWaypointMessage = "";
+					} else {
+						// mark manual change if waypoints just enabled
+						me.manualChange = true;
+						me.waypointManager.findClosestWaypoint(me.engine.counter);
 					}
 
 					// check for loop
@@ -14298,8 +14404,8 @@
 		// clear time intervals
 		me.menuManager.resetTimeIntervals();
 
-		// disable copy sync
-		me.copySyncExternal = false;
+		// enable copy sync
+		me.copySyncExternal = true;
 
 		// disable auto-shrink
 		me.autoShrink = false;
@@ -15060,9 +15166,9 @@
 			// check if the grid is smaller than the pattern and/or bounded grid plus the maximum step speed
 			borderSize = ViewConstants.maxStepSpeed;
 			if (me.engine.isHROT) {
-				borderSize = me.engine.HROT.range * 4 + 1;
+				borderSize = me.engine.HROT.xrange * 4 + 1;
 				if (me.engine.boundedGridType !== -1) {
-					borderSize += me.engine.HROT.range * 2;
+					borderSize += me.engine.HROT.xrange * 2;
 				}
 				if (me.engine.HROT.type === me.manager.vonNeumannHROT) {
 					if (me.engine.boundedGridType !== -1) {

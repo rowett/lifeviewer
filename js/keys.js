@@ -162,13 +162,6 @@
 						} else {
 							// switch to required buffer
 							me.clipboardList.current = me.viewClipboardList(value, true, me);
-
-							// if already pasting then update paste
-							if (me.isPasting) {
-								me.pasteSelection(me, value);
-							} else {
-								me.menuManager.notification.notify("Clipboard " + value + " active", 15, 80, 15, true);
-							}
 						}
 					} else {
 						// POIs only use 1 to 9
