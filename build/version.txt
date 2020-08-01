@@ -1,3 +1,6 @@
+Build 549
+- close settings submenus when settings closed with hotkey
+
 Build 548
 - Waypoints now do not lock controls if there are no camera commands
 - added support for triangular neighbourhoods for LtL and HROT rules
