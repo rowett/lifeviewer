@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/parser.js"></script>
+		<script src="../js/keys.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>Moore R1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R1,C2,S,B1,NM
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Moore R1" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>Moore R2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R2,C2,S,B1,NM
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Moore R2" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>Moore R3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R3,C2,S,B1,NM
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Moore R3" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>Moore R4</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R4,C2,S,B1,NM
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Moore R4" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>Moore R5</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R5,C2,S,B1,NM
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Moore R5" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>von Neumann R1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R1,C2,S,B1,NN
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "von Neumann R1" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>von Neumann R2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R2,C2,S,B1,NN
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "von Neumann R2" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>von Neumann R3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R3,C2,S,B1,NN
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "von Neumann R3" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>von Neumann R4</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R4,C2,S,B1,NN
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "von Neumann R4" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>von Neumann R5</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R5,C2,S,B1,NN
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "von Neumann R5" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>hexagonal R1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R1,C2,S,B1,NH
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Hexagonal R1" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>hexagonal R2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R2,C2,S,B1,NH
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Hexagonal R2" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>hexagonal R3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R3,C2,S,B1,NH
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Hexagonal R3" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>hexagonal R4</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R4,C2,S,B1,NH
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Hexagonal R4" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>hexagonal R5</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R5,C2,S,B1,NH
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Hexagonal R5" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>triangular R1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R1,C2,S,B1,NL
+o!
+[[ AUTOSTART STOP 1 ZOOM 9.5 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 9.5 "Triangular R1" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>triangular R2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R2,C2,S,B1,NL
+o!
+[[ AUTOSTART STOP 1 ZOOM 9.5 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 9.5 "Triangular R2" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>triangular R3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R3,C2,S,B1,NL
+o!
+[[ AUTOSTART STOP 1 ZOOM 9.5 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 9.5 "Triangular R3" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>triangular R4</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R4,C2,S,B1,NL
+o!
+[[ AUTOSTART STOP 1 ZOOM 9.5 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 9.5 "Triangular R4" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>triangular R5</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R5,C2,S,B1,NL
+o!
+[[ AUTOSTART STOP 1 ZOOM 9.5 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 9.5 "Triangular R5" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>circular R1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R1,C2,S,B1,NC
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Circular R1" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>circular R2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R2,C2,S,B1,NC
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Circular R2" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>circular R3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R3,C2,S,B1,NC
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Circular R3" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>circular R4</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R4,C2,S,B1,NC
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Circular R4" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>circular R5</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R5,C2,S,B1,NC
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Circular R5" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>L2 R1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R1,C2,S,B1,N2
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "L2 R1" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>L2 R2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R2,C2,S,B1,N2
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "L2 R2" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>L2 R3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R3,C2,S,B1,N2
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "L2 R3" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>L2 R4</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R4,C2,S,B1,N2
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "L2 R4" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>L2 R5</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R5,C2,S,B1,N2
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "L2 R5" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>cross R1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R1,C2,S,B1,N+
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Cross R1" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>cross R2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R2,C2,S,B1,N+
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Cross R2" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>cross R3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R3,C2,S,B1,N+
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Cross R3" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>cross R4</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R4,C2,S,B1,N+
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Cross R4" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>cross R5</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R5,C2,S,B1,N+
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Cross R5" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>saltire R1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R1,C2,S,B1,NX
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Saltire R1" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>saltire R2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R2,C2,S,B1,NX
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Saltire R2" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>saltire R3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R3,C2,S,B1,NX
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Saltire R3" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>saltire R4</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R4,C2,S,B1,NX
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Saltire R4" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>saltire R5</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R5,C2,S,B1,NX
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Saltire R5" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>star R1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R1,C2,S,B1,N*
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Star R1" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>star R2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R2,C2,S,B1,N*
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Star R2" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>star R3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R3,C2,S,B1,N*
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Star R3" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>star R4</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R4,C2,S,B1,N*
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Star R4" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>star R5</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R5,C2,S,B1,N*
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Star R5" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>checkerboard R1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R1,C2,S,B1,NB
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Checkerboard R1" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>checkerboard R2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R2,C2,S,B1,NB
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Checkerboard R2" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>checkerboard R3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R3,C2,S,B1,NB
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Checkerboard R3" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>checkerboard R4</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R4,C2,S,B1,NB
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Checkerboard R4" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>checkerboard R5</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R5,C2,S,B1,NB
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Checkerboard R5" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>hash R1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R1,C2,S,B1,N#
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Hash R1" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>hash R2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R2,C2,S,B1,N#
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Hash R2" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>hash R3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R3,C2,S,B1,N#
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Hash R3" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>hash R4</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R4,C2,S,B1,N#
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Hash R4" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>hash R5</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R5,C2,S,B1,N#
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL 0 -11 16 "Hash R5" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>tripod R1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R1,C2,S,B1,N3
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Tripod R1" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>tripod R2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R2,C2,S,B1,N3
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Tripod R2" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>tripod R3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R3,C2,S,B1,N3
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Tripod R3" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>tripod R4</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R4,C2,S,B1,N3
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Tripod R4" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>tripod R5</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R5,C2,S,B1,N3
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Tripod R5" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>asterisk R1</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R1,C2,S,B1,NA
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Asterisk R1" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>asterisk R2</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R2,C2,S,B1,NA
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Asterisk R2" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>asterisk R3</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R3,C2,S,B1,NA
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Asterisk R3" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>asterisk R4</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R4,C2,S,B1,NA
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Asterisk R4" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<h2>asterisk R5</h2>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = R5,C2,S,B1,NA
+o!
+[[ AUTOSTART STOP 1 ZOOM 16 NOSOURCE GRID GRIDMAJOR 0 LABEL -5 -11 16 "Asterisk R5" ]]
+			</textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>
