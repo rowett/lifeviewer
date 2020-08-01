@@ -1405,6 +1405,16 @@
 						me.cyclePasteMode(me);
 					} else {
 						if (me.navToggle && !me.navToggle.deleted) {
+							// if menu open then close any settings sections
+							if (me.navToggle.current[0]) {
+								// clear settings section
+								me.showDisplaySettings = false;
+								me.showInfoSettings = false;
+								me.showPatternSettings = false;
+								me.showPlaybackSettings = false;
+								me.showThemeSelection = false;
+							}
+
 							// toggle navigation menu
 							me.navToggle.current[0] = !me.navToggle.current[0];
 		
