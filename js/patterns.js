@@ -4850,6 +4850,9 @@
 			// PCA prefix
 			prefix = this.pcaRulePrefix,
 
+			// offset
+			offset = 0,
+
 		    // counter
 		    i = 0;
 
@@ -5080,9 +5083,10 @@
 								// set canonical name
 								if (pattern.isHROT) {
 									// HROT
+									offset = (pattern.neighborhoodHROT === this.weightedHROT || pattern.neighborhoodHROT === this.gaussianHROT) ? 0 : -1;
 									pattern.ruleName = "R" + pattern.rangeHROT + ",";
 									pattern.ruleName += "C" + pattern.multiNumStates + ",";
-									pattern.ruleName += "S" + this.asMulti(pattern.survivalHROT, -1) + ",";
+									pattern.ruleName += "S" + this.asMulti(pattern.survivalHROT, offset) + ",";
 									pattern.ruleName += "B" + this.asMulti(pattern.birthHROT, 0);
 									if (pattern.neighborhoodHROT !== this.mooreHROT) {
 										pattern.ruleName += ",N";

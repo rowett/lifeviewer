@@ -1,3 +1,6 @@
+Build 551
+- added the majority of Weighted aliases from MCell's built-in Weighted Life rules
+
 Build 550
 - added weighted rules
 	- specify with NW and then hex digits for each cell in the neighbourhood
@@ -18,9 +21,9 @@ Build 550
 		   becomes NW8a05140464828b0694
 	- can postfix with "H" for hex grid or "L" for triangular grid
 		- triangular grid will cause weightings to be treated as a triangular neighbourhood and flip verticall on alternating cells
+- added Gaussian rules (specify with NG)
 - fixed an issue with bounded grids on tile boundaries
 - fixed initial zoom for empty patterns
-- added Gaussian rules (specify with NG)
 - don't capture F11 while LifeViewer has focus
 - fix an error decoding HROT rules with empty B or S sections
 - embedded viewer can now resize with the browser window
