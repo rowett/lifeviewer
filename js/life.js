@@ -8636,6 +8636,10 @@
 			newBottomY = newTopY;
 			newLeftX = width >> 1;
 			newRightX = newLeftX;
+			overlayTopY = newTopY;
+			overlayBottomY = newBottomY;
+			overlayLeftX = newLeftX;
+			overlayRightX = newRightX;
 		}
 
 		// merge with overlay if required
@@ -9003,6 +9007,7 @@
 		// counters
 		var x = 0,
 			y = 0,
+			i = 0,
 
 			// box offset
 			boxOffset = (this.isMargolus ? -1 : 0),
@@ -9010,70 +9015,78 @@
 			// bounded grid dimensions
 		    width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
-		    leftX = (Math.round((this.width - width) / 2 - 1) + boxOffset) >> this.tilePower,
-		    rightX = (Math.round((this.width + width) / 2) + boxOffset) >> this.tilePower,
-		    bottomY = (Math.round((this.height - height) / 2 - 1) + boxOffset) >> this.tilePower,
-		    topY = (Math.round((this.height + height) / 2) + boxOffset) >> this.tilePower,
+		    leftX = 0,
+		    rightX = 0,
+		    bottomY = 0,
+		    topY = 0,
 		    value = 0;
 
-		// check for infinite height
-		if (height === 0) {
-			bottomY = 0;
-			topY = (this.height >> this.tilePower) - 1;
-		}
+		// handle bounded grid on tile boundary
+		for (i = 0; i <= 1; i += 1) {
+		    leftX = (Math.round((this.width - width) / 2 - 1) + boxOffset + i) >> this.tilePower;
+		    rightX = (Math.round((this.width + width) / 2) + boxOffset - i) >> this.tilePower;
+		    bottomY = (Math.round((this.height - height) / 2 - 1 + i) + boxOffset) >> this.tilePower;
+			topY = (Math.round((this.height + height) / 2) + boxOffset - i) >> this.tilePower;
 
-		// check for infinite width
-		if (width === 0) {
-			leftX = 0;
-			rightX = (this.width >> this.tilePower) - 1;
-		}
+			// check for infinite height
+			if (height === 0) {
+				bottomY = 0;
+				topY = (this.height >> this.tilePower) - 1;
+			}
 
-		// ensure tiles are on grid
-		if (leftX < 0) {
-			leftX = 0;
-		}
-		if (bottomY < 0) {
-			bottomY = 0;
-		}
-		if (rightX >= (this.width >> this.tilePower)) {
-			rightX = (this.width >> this.tilePower) - 1;
-		}
-		if (topY >= (this.height >> this.tilePower)) {
-			topY = (this.height >> this.tilePower) - 1;
-		}
+			// check for infinite width
+			if (width === 0) {
+				leftX = 0;
+				rightX = (this.width >> this.tilePower) - 1;
+			}
 
-		// set the top and bottom row of the bounded grid in the tile map
-		for (x = leftX; x <= rightX; x += 1) {
-			value = 1 << (~x & 15);
+			// ensure tiles are on grid
+			if (leftX < 0) {
+				leftX = 0;
+			}
+			if (bottomY < 0) {
+				bottomY = 0;
+			}
+			if (rightX >= (this.width >> this.tilePower)) {
+				rightX = (this.width >> this.tilePower) - 1;
+			}
+			if (topY >= (this.height >> this.tilePower)) {
+				topY = (this.height >> this.tilePower) - 1;
+			}
 
-			// bottom row
-			this.tileGrid[bottomY][x >> 4] |= value;
-			this.nextTileGrid[bottomY][x >> 4] |= value;
-			this.colourTileGrid[bottomY][x >> 4] |= value;
-			this.colourTileHistoryGrid[bottomY][x >> 4] |= value;
+			// set the top and bottom row of the bounded grid in the tile map
+			for (x = leftX; x <= rightX; x += 1) {
+				value = -1;
 
-			// top row
-			this.tileGrid[topY][x >> 4] |= value;
-			this.nextTileGrid[topY][x >> 4] |= value;
-			this.colourTileGrid[topY][x >> 4] |= value;
-			this.colourTileHistoryGrid[topY][x >> 4] |= value;
-		}
+				// bottom row
+				this.tileGrid[bottomY][x >> 4] |= value;
+				this.nextTileGrid[bottomY][x >> 4] |= value;
+				this.colourTileGrid[bottomY][x >> 4] |= value;
+				this.colourTileHistoryGrid[bottomY][x >> 4] |= value;
 
-		// set left and right column of the bounded grid in the tile map
-		for (y = bottomY; y <= topY; y += 1) {
-			// left column
-			value = 1 << (~leftX & 15);
-			this.tileGrid[y][leftX >> 4] |= value;
-			this.nextTileGrid[y][leftX >> 4] |= value;
-			this.colourTileGrid[y][leftX >> 4] |= value;
-			this.colourTileHistoryGrid[y][leftX >> 4] |= value;
+				// top row
+				this.tileGrid[topY][x >> 4] |= value;
+				this.nextTileGrid[topY][x >> 4] |= value;
+				this.colourTileGrid[topY][x >> 4] |= value;
+				this.colourTileHistoryGrid[topY][x >> 4] |= value;
+			}
 
-			// right column
-			value = 1 << (~rightX & 15);
-			this.tileGrid[y][rightX >> 4] |= value;
-			this.nextTileGrid[y][rightX >> 4] |= value;
-			this.colourTileGrid[y][rightX >> 4] |= value;
-			this.colourTileHistoryGrid[y][rightX >> 4] |= value;
+			// set left and right column of the bounded grid in the tile map
+			for (y = bottomY; y <= topY; y += 1) {
+				// left column
+				value = 1 << (~leftX & 15);
+				this.tileGrid[y][leftX >> 4] |= value;
+				this.nextTileGrid[y][leftX >> 4] |= value;
+				this.colourTileGrid[y][leftX >> 4] |= value;
+				this.colourTileHistoryGrid[y][leftX >> 4] |= value;
+
+				// right column
+				value = 1 << (~rightX & 15);
+				this.tileGrid[y][rightX >> 4] |= value;
+				this.nextTileGrid[y][rightX >> 4] |= value;
+				this.colourTileGrid[y][rightX >> 4] |= value;
+				this.colourTileHistoryGrid[y][rightX >> 4] |= value;
+			}
 		}
 	};
 
@@ -26745,7 +26758,12 @@
 					leftX = rightX;
 					rightX = swap;
 				}
-				width = rightX - leftX + 1;
+				// check for empty pattern
+				if (rightX < 0 || leftX < 0) {
+					width = 0;
+				} else {
+					width = rightX - leftX + 1;
+				}
 			}
 		}
 
@@ -26763,7 +26781,7 @@
 		zoomY = displayHeight / height;
 
 		// adjust for triangular grid if required
-		if (this.isTriangular && this.zoom >= 4) {
+		if (this.isTriangular) {
 			zoomY /= ViewConstants.sqrt3;
 		}
 
@@ -27057,7 +27075,7 @@
 			state = 0,
 			ctx = this.context,
 			xZoom = this.zoom,
-			yZoom = this.zoom * ((this.isTriangular && xZoom >= 4) ? ViewConstants.sqrt3 : 1),
+			yZoom = this.zoom * (this.isTriangular ? ViewConstants.sqrt3 : 1),
 			xOff = (this.width >> 1) - (view.patternWidth >> 1),
 			yOff = (this.height >> 1) - (view.patternHeight >> 1),
 		    engineY = view.panY - this.yOff,
@@ -27286,7 +27304,7 @@
 	Life.prototype.drawBox = function(view, box, colour) {
 		var ctx = this.context,
 			xZoom = this.zoom,
-			yZoom = this.zoom * ((this.isTriangular && xZoom >= 4) ? ViewConstants.sqrt3 : 1),
+			yZoom = this.zoom * (this.isTriangular ? ViewConstants.sqrt3 : 1),
 			x1 = box.leftX,
 			y1 = box.bottomY,
 			x2 = box.rightX,
@@ -28058,7 +28076,7 @@
 		var w8 = this.displayWidth >> 3,
 		    pixelColours = this.pixelColours,
 		    data32 = this.data32,
-		    i = 0, h = 0, w = 0, x = 0, y = 0, dyy = 0, sy = 0, sx = 0,
+		    i = 0, h = 0, w = 0, x = 0, y = 0, dyy = 0, dyx = 0, sy = 0, sx = 0,
 		    transparentTarget = 0,
 
 		    // index in pixel buffer
@@ -28101,10 +28119,14 @@
 
 		// compute deltas in horizontal and vertical direction based on rotation
 		dyy = 1 / this.camZoom;
+		if (this.isTriangular) {
+			dyy /= ViewConstants.sqrt3;
+		}
+		dyx = 1 / this.camZoom;
 
 		// compute starting position
 		sy = -((this.displayHeight / 2) * dyy) + this.camYOff;
-		sx = -((this.displayWidth / 2) * dyy) + this.camXOff;
+		sx = -((this.displayWidth / 2) * dyx) + this.camXOff;
 
 		// check if depth shading is on
 		if (this.depthOn && this.layers > 1 && this.camLayerDepth > 1) {
@@ -28156,7 +28178,7 @@
 					idx += 1;
 
 					// update row position
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					if ((x & wt) === (x & wm)) {
@@ -28166,7 +28188,7 @@
 						data32[idx] = offGrid;
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					if ((x & wt) === (x & wm)) {
@@ -28176,7 +28198,7 @@
 						data32[idx] = offGrid;
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					if ((x & wt) === (x & wm)) {
@@ -28186,7 +28208,7 @@
 						data32[idx] = offGrid;
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					if ((x & wt) === (x & wm)) {
@@ -28196,7 +28218,7 @@
 						data32[idx] = offGrid;
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					if ((x & wt) === (x & wm)) {
@@ -28206,7 +28228,7 @@
 						data32[idx] = offGrid;
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					if ((x & wt) === (x & wm)) {
@@ -28216,7 +28238,7 @@
 						data32[idx] = offGrid;
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					if ((x & wt) === (x & wm)) {
@@ -28226,7 +28248,7 @@
 						data32[idx] = offGrid;
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 				}
 			} else {
 				// draw off grid row
@@ -28276,6 +28298,7 @@
 
 			// zoom for the next layer
 			dyy = dyy / this.camLayerDepth;
+			dyx = dyx / this.camLayerDepth;
 
 			// update layer zoom
 			layerZoom *= this.camLayerDepth;
@@ -28321,7 +28344,7 @@
 
 			// compute starting position
 			sy = -((this.displayHeight / 2) * dyy) + this.camYOff;
-			sx = -((this.displayWidth / 2) * dyy) + this.camXOff;
+			sx = -((this.displayWidth / 2) * dyx) + this.camXOff;
 
 			// draw each pixel
 			idx = 0 | 0;
@@ -28354,7 +28377,7 @@
 						idx += 1;
 
 						// update row position
-						x += dyy;
+						x += dyx;
 
 						// loop unroll
 						if ((x & wt) === (x & wm)) {
@@ -28364,7 +28387,7 @@
 							}
 						}
 						idx += 1;
-						x += dyy;
+						x += dyx;
 
 						// loop unroll
 						if ((x & wt) === (x & wm)) {
@@ -28374,7 +28397,7 @@
 							}
 						}
 						idx += 1;
-						x += dyy;
+						x += dyx;
 
 						// loop unroll
 						if ((x & wt) === (x & wm)) {
@@ -28384,7 +28407,7 @@
 							}
 						}
 						idx += 1;
-						x += dyy;
+						x += dyx;
 
 						// loop unroll
 						if ((x & wt) === (x & wm)) {
@@ -28394,7 +28417,7 @@
 							}
 						}
 						idx += 1;
-						x += dyy;
+						x += dyx;
 
 						// loop unroll
 						if ((x & wt) === (x & wm)) {
@@ -28404,7 +28427,7 @@
 							}
 						}
 						idx += 1;
-						x += dyy;
+						x += dyx;
 
 						// loop unroll
 						if ((x & wt) === (x & wm)) {
@@ -28414,7 +28437,7 @@
 							}
 						}
 						idx += 1;
-						x += dyy;
+						x += dyx;
 
 						// loop unroll
 						if ((x & wt) === (x & wm)) {
@@ -28424,7 +28447,7 @@
 							}
 						}
 						idx += 1;
-						x += dyy;
+						x += dyx;
 					}
 				} else {
 					// skip blank row
@@ -28747,7 +28770,7 @@
 		var w8 = this.displayWidth >> 3,
 		    pixelColours = this.pixelColours,
 		    data32 = this.data32,
-		    i = 0, h = 0, w = 0, x = 0, y = 0, dyy = 0, sy = 0, sx = 0,
+		    i = 0, h = 0, w = 0, x = 0, y = 0, dyy = 0, dyx = 0, sy = 0, sx = 0,
 		    transparentTarget = 0,
 
 		    // index in pixel buffer
@@ -28781,12 +28804,16 @@
 			layerTarget = this.layers;
 		}
 
-		// compute deltas in horizontal and vertical direction based on rotation
+		// compute deltas in horizontal and vertical direction
 		dyy = 1 / this.camZoom;
+		if (this.isTriangular) {
+			dyy /= ViewConstants.sqrt3;
+		}
+		dyx = 1 / this.camZoom;
 
 		// compute starting position
 		sy = -((this.displayHeight / 2) * dyy) + this.camYOff;
-		sx = -((this.displayWidth / 2) * dyy) + this.camXOff;
+		sx = -((this.displayWidth / 2) * dyx) + this.camXOff;
 
 		// check if depth shading is on
 		if (this.depthOn && this.layers > 1 && this.camLayerDepth > 1) {
@@ -28821,49 +28848,49 @@
 				idx += 1;
 
 				// update row position
-				x += dyy;
+				x += dyx;
 
 				// loop unroll
 				col = colourGridRow[x & wm];
 				data32[idx] = pixelColours[col];
 				idx += 1;
-				x += dyy;
+				x += dyx;
 
 				// loop unroll
 				col = colourGridRow[x & wm];
 				data32[idx] = pixelColours[col];
 				idx += 1;
-				x += dyy;
+				x += dyx;
 
 				// loop unroll
 				col = colourGridRow[x & wm];
 				data32[idx] = pixelColours[col];
 				idx += 1;
-				x += dyy;
+				x += dyx;
 
 				// loop unroll
 				col = colourGridRow[x & wm];
 				data32[idx] = pixelColours[col];
 				idx += 1;
-				x += dyy;
+				x += dyx;
 
 				// loop unroll
 				col = colourGridRow[x & wm];
 				data32[idx] = pixelColours[col];
 				idx += 1;
-				x += dyy;
+				x += dyx;
 
 				// loop unroll
 				col = colourGridRow[x & wm];
 				data32[idx] = pixelColours[col];
 				idx += 1;
-				x += dyy;
+				x += dyx;
 
 				// loop unroll
 				col = colourGridRow[x & wm];
 				data32[idx] = pixelColours[col];
 				idx += 1;
-				x += dyy;
+				x += dyx;
 			}
 
 			// update column position
@@ -28908,6 +28935,7 @@
 
 			// zoom for the next layer
 			dyy = dyy / this.camLayerDepth;
+			dyx = dyx / this.camLayerDepth;
 
 			// update layer zoom
 			layerZoom *= this.camLayerDepth;
@@ -28949,7 +28977,7 @@
 
 			// compute starting position
 			sy = -((this.displayHeight / 2) * dyy) + this.camYOff;
-			sx = -((this.displayWidth / 2) * dyy) + this.camXOff;
+			sx = -((this.displayWidth / 2) * dyx) + this.camXOff;
 
 			// draw each pixel
 			idx = 0 | 0;
@@ -28978,7 +29006,7 @@
 					idx += 1;
 
 					// update row position
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					col = colourGridRow[x & wm] | 0;
@@ -28986,7 +29014,7 @@
 						data32[idx] = pixelColours[col];
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					col = colourGridRow[x & wm] | 0;
@@ -28994,7 +29022,7 @@
 						data32[idx] = pixelColours[col];
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					col = colourGridRow[x & wm] | 0;
@@ -29002,7 +29030,7 @@
 						data32[idx] = pixelColours[col];
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					col = colourGridRow[x & wm] | 0;
@@ -29010,7 +29038,7 @@
 						data32[idx] = pixelColours[col];
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					col = colourGridRow[x & wm] | 0;
@@ -29018,7 +29046,7 @@
 						data32[idx] = pixelColours[col];
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					col = colourGridRow[x & wm] | 0;
@@ -29026,7 +29054,7 @@
 						data32[idx] = pixelColours[col];
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					col = colourGridRow[x & wm] | 0;
@@ -29034,7 +29062,7 @@
 						data32[idx] = pixelColours[col];
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 				}
 
 				// update column position
@@ -30547,7 +30575,7 @@
 		var w8 = this.displayWidth >> 3,
 		    pixelColours = this.pixelColours,
 		    data32 = this.data32,
-		    i = 0, h = 0, w = 0, x = 0, y = 0, dyy = 0, sy = 0, sx = 0,
+		    i = 0, h = 0, w = 0, x = 0, y = 0, dyy = 0, dyx = 0, sy = 0, sx = 0,
 		    transparentTarget = 0,
 
 		    // get states 3, 4, 5 and 6
@@ -30600,10 +30628,14 @@
 
 		// compute deltas in horizontal and vertical direction based on rotation
 		dyy = 1 / this.camZoom;
+		if (this.isTriangular) {
+			dyy /= ViewConstants.sqrt3;
+		}
+		dyx = 1/ this.camZoom;
 
 		// compute starting position
 		sy = -((this.displayHeight / 2) * dyy) + this.camYOff;
-		sx = -((this.displayWidth / 2) * dyy) + this.camXOff;
+		sx = -((this.displayWidth / 2) * dyx) + this.camXOff;
 
 		// check if depth shading is on
 		if (this.depthOn && this.layers > 1 && this.camLayerDepth > 1) {
@@ -30660,7 +30692,7 @@
 				idx += 1;
 
 				// update row position
-				x += dyy;
+				x += dyx;
 
 				// loop unroll
 				col = colourGridRow[x & wm];
@@ -30682,7 +30714,7 @@
 				}
 				data32[idx] = pixel;
 				idx += 1;
-				x += dyy;
+				x += dyx;
 
 				// loop unroll
 				col = colourGridRow[x & wm];
@@ -30704,7 +30736,7 @@
 				}
 				data32[idx] = pixel;
 				idx += 1;
-				x += dyy;
+				x += dyx;
 
 				// loop unroll
 				col = colourGridRow[x & wm];
@@ -30726,7 +30758,7 @@
 				}
 				data32[idx] = pixel;
 				idx += 1;
-				x += dyy;
+				x += dyx;
 
 				// loop unroll
 				col = colourGridRow[x & wm];
@@ -30748,7 +30780,7 @@
 				}
 				data32[idx] = pixel;
 				idx += 1;
-				x += dyy;
+				x += dyx;
 
 				// loop unroll
 				col = colourGridRow[x & wm];
@@ -30770,7 +30802,7 @@
 				}
 				data32[idx] = pixel;
 				idx += 1;
-				x += dyy;
+				x += dyx;
 
 				// loop unroll
 				col = colourGridRow[x & wm];
@@ -30792,7 +30824,7 @@
 				}
 				data32[idx] = pixel;
 				idx += 1;
-				x += dyy;
+				x += dyx;
 
 				// loop unroll
 				col = colourGridRow[x & wm];
@@ -30814,7 +30846,7 @@
 				}
 				data32[idx] = pixel;
 				idx += 1;
-				x += dyy;
+				x += dyx;
 			}
 
 			// update column position
@@ -30859,6 +30891,7 @@
 
 			// zoom for the next layer
 			dyy = dyy / this.camLayerDepth;
+			dyx = dyx / this.camLayerDepth;
 
 			// update layer zoom
 			layerZoom *= this.camLayerDepth;
@@ -30901,7 +30934,7 @@
 
 			// compute starting position
 			sy = -((this.displayHeight / 2) * dyy) + this.camYOff;
-			sx = -((this.displayWidth / 2) * dyy) + this.camXOff;
+			sx = -((this.displayWidth / 2) * dyx) + this.camXOff;
 
 			// draw each pixel
 			idx = 0 | 0;
@@ -30930,7 +30963,7 @@
 					idx += 1;
 
 					// update row position
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					col = colourGridRow[x & wm] | 0;
@@ -30938,7 +30971,7 @@
 						data32[idx] = pixelColours[col];
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					col = colourGridRow[x & wm] | 0;
@@ -30946,7 +30979,7 @@
 						data32[idx] = pixelColours[col];
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					col = colourGridRow[x & wm] | 0;
@@ -30954,7 +30987,7 @@
 						data32[idx] = pixelColours[col];
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					col = colourGridRow[x & wm] | 0;
@@ -30962,7 +30995,7 @@
 						data32[idx] = pixelColours[col];
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					col = colourGridRow[x & wm] | 0;
@@ -30970,7 +31003,7 @@
 						data32[idx] = pixelColours[col];
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					col = colourGridRow[x & wm] | 0;
@@ -30978,7 +31011,7 @@
 						data32[idx] = pixelColours[col];
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					col = colourGridRow[x & wm] | 0;
@@ -30986,7 +31019,7 @@
 						data32[idx] = pixelColours[col];
 					}
 					idx += 1;
-					x += dyy;
+					x += dyx;
 				}
 
 				// update column position
@@ -31001,7 +31034,7 @@
 		var w8 = this.displayWidth >> 3,
 		    pixelColours = this.pixelColours,
 		    data32 = this.data32,
-		    i = 0, h = 0, w = 0, x = 0, y = 0, dyy = 0, sy = 0, sx = 0,
+		    i = 0, h = 0, w = 0, x = 0, y = 0, dyy = 0, dyx = 0, sy = 0, sx = 0,
 		    transparentTarget = 0,
 
 		    // get states 3, 4, 5 and 6
@@ -31061,10 +31094,14 @@
 
 		// compute deltas in horizontal and vertical direction based on rotation
 		dyy = 1 / this.camZoom;
+		if (this.isTriangular) {
+			dyy /= ViewConstants.sqrt3;
+		}
+		dyx = 1 / this.camZoom;
 
 		// compute starting position
 		sy = -((this.displayHeight / 2) * dyy) + this.camYOff;
-		sx = -((this.displayWidth / 2) * dyy) + this.camXOff;
+		sx = -((this.displayWidth / 2) * dyx) + this.camXOff;
 
 		// check if depth shading is on
 		if (this.depthOn && this.layers > 1 && this.camLayerDepth > 1) {
@@ -31137,7 +31174,7 @@
 					idx += 1;
 
 					// update row position
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					if ((x & wt) === (x & wm)) {
@@ -31163,7 +31200,7 @@
 					}
 					data32[idx] = pixel;
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					if ((x & wt) === (x & wm)) {
@@ -31189,7 +31226,7 @@
 					}
 					data32[idx] = pixel;
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					if ((x & wt) === (x & wm)) {
@@ -31215,7 +31252,7 @@
 					}
 					data32[idx] = pixel;
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					if ((x & wt) === (x & wm)) {
@@ -31241,7 +31278,7 @@
 					}
 					data32[idx] = pixel;
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					if ((x & wt) === (x & wm)) {
@@ -31267,7 +31304,7 @@
 					}
 					data32[idx] = pixel;
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					if ((x & wt) === (x & wm)) {
@@ -31293,7 +31330,7 @@
 					}
 					data32[idx] = pixel;
 					idx += 1;
-					x += dyy;
+					x += dyx;
 
 					// loop unroll
 					if ((x & wt) === (x & wm)) {
@@ -31319,7 +31356,7 @@
 					}
 					data32[idx] = pixel;
 					idx += 1;
-					x += dyy;
+					x += dyx;
 				}
 			} else {
 				// draw off grid row
@@ -31369,6 +31406,7 @@
 
 			// zoom for the next layer
 			dyy = dyy / this.camLayerDepth;
+			dyx = dyx / this.camLayerDepth;
 
 			// update layer zoom
 			layerZoom *= this.camLayerDepth;
@@ -31415,7 +31453,7 @@
 
 			// compute starting position
 			sy = -((this.displayHeight / 2) * dyy) + this.camYOff;
-			sx = -((this.displayWidth / 2) * dyy) + this.camXOff;
+			sx = -((this.displayWidth / 2) * dyx) + this.camXOff;
 
 			// draw each pixel
 			idx = 0 | 0;
@@ -31449,7 +31487,7 @@
 						idx += 1;
 
 						// update row position
-						x += dyy;
+						x += dyx;
 
 						// loop unroll
 						if ((x & wt) === (x & wm)) {
@@ -31459,7 +31497,7 @@
 							}
 						}
 						idx += 1;
-						x += dyy;
+						x += dyx;
 
 						// loop unroll
 						if ((x & wt) === (x & wm)) {
@@ -31469,7 +31507,7 @@
 							}
 						}
 						idx += 1;
-						x += dyy;
+						x += dyx;
 
 						// loop unroll
 						if ((x & wt) === (x & wm)) {
@@ -31479,7 +31517,7 @@
 							}
 						}
 						idx += 1;
-						x += dyy;
+						x += dyx;
 
 						// loop unroll
 						if ((x & wt) === (x & wm)) {
@@ -31489,7 +31527,7 @@
 							}
 						}
 						idx += 1;
-						x += dyy;
+						x += dyx;
 
 						// loop unroll
 						if ((x & wt) === (x & wm)) {
@@ -31499,7 +31537,7 @@
 							}
 						}
 						idx += 1;
-						x += dyy;
+						x += dyx;
 
 						// loop unroll
 						if ((x & wt) === (x & wm)) {
@@ -31509,7 +31547,7 @@
 							}
 						}
 						idx += 1;
-						x += dyy;
+						x += dyx;
 
 						// loop unroll
 						if ((x & wt) === (x & wm)) {
@@ -31519,7 +31557,7 @@
 							}
 						}
 						idx += 1;
-						x += dyy;
+						x += dyx;
 					}
 				} else {
 					// skip blank row

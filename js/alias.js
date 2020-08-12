@@ -322,7 +322,7 @@
 		a.push(["CapLife", "B36c/S23"]);
 		a.push(["CarrierLife", "B2e3aceik/S23"]);
 		a.push(["Cataverters", "B3-cen/S234eijkrw5cry6ik"]);
-		a.push(["CB2", "B2ae4i/S1e2in"]);
+		a.push(["cb2", "B2ae4i/S1e2in"]);
 		a.push(["cetlife", "B34cet/S234jkwyz"]);
 		a.push(["Clouds", "B2e3aceij/S23-a4"]);
 		a.push(["Cloudsdale", "B2kn3-ekqr4i5eq6n8/S23-aeny4cikqr5ek6ace7c"]);
@@ -675,6 +675,9 @@
 		    // counter
 			i = 0;
 			
+		// replace any html elements
+		alias = alias.replace(/&amp;/g, "&");
+
 		// first try an exact match
 		while (i < this.aliases.length && result === null) {
 			// check for category

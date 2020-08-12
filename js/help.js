@@ -1492,6 +1492,14 @@
 						case view.manager.triangularHROT:
 							itemName = "Triangular";
 							break;
+
+						case view.manager.gaussianHROT:
+							itemName = "Gaussian";
+							break;
+
+						case view.manager.weightedHROT:
+							itemName = "Weighted";
+							break;
 						}
 
 						if (view.engine.HROT.yrange > 1) {
@@ -1768,7 +1776,7 @@
 		y = this.renderHelpLine(view, "Rules", "Wolfram, Totalistic, Generations, Margolus,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Isotropic Non-Totalistic (Hensel, Callahan),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Alternating, MAP, Larger than Life (LtL),", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Higher-range outer-totalistic (HROT),", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Higher-range outer-totalistic (HROT), Gaussian,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Partitioned cellular automata (PCA)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Repository", "RuleTable (@TABLE, @TREE and @COLORS)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "BoundedGrid", "Plane, Torus, Klein, Cross-surface, Sphere", ctx, x, y, height, helpLine);

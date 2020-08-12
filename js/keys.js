@@ -1776,6 +1776,11 @@
 				}
 				break;
 
+			// ignore f11 so browser processes it (toggle fullscreen)
+			case 122:
+				processed = false;
+				break;
+
 			// ignore other keys
 			default:
 				// flag key not handled if specified or f5 (browser refresh) if not implemented above

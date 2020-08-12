@@ -522,6 +522,8 @@
 		/** @const {number} */ this.tripodHROT = 11;
 		/** @const {number} */ this.asteriskHROT = 12;
 		/** @const {number} */ this.triangularHROT = 13;
+		/** @const {number} */ this.gaussianHROT = 14;
+		/** @const {number} */ this.weightedHROT = 15;
 
 		// specified width and height from RLE pattern
 		/** @type {number} */ this.specifiedWidth = -1;
@@ -795,6 +797,9 @@
 		/** @type {string} */ this.customNeighbourhood = "";
 		/** @type {number} */ this.customNeighbourCount = -1;
 		/** @type {string} */ this.customGridType = "";
+		
+		// HROT weighted neighbourhood
+		this.weightedNeighbourhood = null;
 
 		// width of grid
 		/** @type {number} */ this.width = 0;
@@ -2998,6 +3003,12 @@
 					case this.triangularHROT:
 						nameLtL += "L";
 						break;
+					case this.gaussianHROT:
+						nameLtL += "G";
+						break;
+				case this.weightedHROT:
+						nameLtL += "W" + pattern.customNeighbourhood + pattern.customGridType;
+						break;
 				}
 
 				// lookup alias
@@ -3222,8 +3233,21 @@
 						result = this.triangularHROT;
 						break;
 
+					case "g":
+						this.index += 1;
+						result = this.gaussianHROT;
+						break;
+
+					case "w":
+						this.index += 1;
+						result = this.readWeightedNeighbourhood(rule, range, "LtL", pattern);
+						if (result === -1) {
+							this.index = -1;
+						}
+						break;
+				
 					default:
-						this.failureReason = "LtL 'N' needs [ABCHLMNX23*+#@] got 'N" + next.toUpperCase() + "'";
+						this.failureReason = "LtL 'N' [ABCGHLMNWX23*+#@] got 'N" + next.toUpperCase() + "'";
 						this.index = -1;
 						break;
 				}
@@ -3264,15 +3288,107 @@
 		return result;
 	};
 
-	// decode LTL rule in Rr,Cc,Mm,Ssmin..smax,Bbmin..bmax,Nn format
-	PatternManager.prototype.decodeLTLMC = function(pattern, rule) {
-		var value = 0,
-		    result = false,
-			maxCells = 0,
+	// determine the maximum neighbours in a neighbourhood
+	// result includes center cell
+	PatternManager.prototype.maxNeighbours = function(range, neighbourhood, customCount) {
+		var result = 0,
 			i = 0,
 			count = 0,
 			width = 0,
 			r2 = 0;
+
+		switch(neighbourhood) {
+			case this.mooreHROT:
+				result = (range * 2 + 1) * (range * 2 + 1) - 1;
+				break;
+
+			case this.vonNeumannHROT:
+				result = 2 * range * (range + 1);
+				break;
+
+			case this.circularHROT:
+				count = 0;
+				r2 = range * range + range;
+				for (i = -range; i <= range; i += 1) {
+					width = 0;
+					while ((width + 1) * (width + 1) + (i * i) <= r2) {
+						width += 1;
+					}
+					count += 2 * width + 1;
+				}
+				result = count - 1;
+				break;
+
+			case this.crossHROT:
+				result = range * 4;
+				break;
+
+			case this.saltireHROT:
+				result = range * 4;
+				break;
+
+			case this.starHROT:
+				result = range * 8;
+				break;
+
+			case this.l2HROT:
+				count = 0;
+				r2 = range * range;
+				for (i = -range; i <= range; i += 1) {
+					width = 0;
+					while ((width + 1) * (width + 1) + (i * i) <= r2) {
+						width += 1;
+					}
+					count += 2 * width + 1;
+				}
+				result = count - 1;
+				break;
+
+			case this.hexHROT:
+				result = (range * 2 + 1) * (range * 2 + 1) - (range * (range + 1)) - 1
+				break;
+
+			case this.checkerHROT:
+				result = ((range * 2 + 1) * (range * 2 + 1) - 1) / 2;
+				break;
+
+			case this.hashHROT:
+				result = range * 8;
+				break;
+
+			case this.customHROT:
+				result = customCount;
+				break;
+
+			case this.tripodHROT:
+				result = range * 3;
+				break;
+
+			case this.asteriskHROT:
+				result = range * 6;
+				break;
+
+			case this.triangularHROT:
+				result = (range * 4 + 1) * (range * 2 + 1) - (range * 2 * range) - 1;
+				break;
+
+			case this.gaussianHROT:
+				result = (range + 1) * (range + 1) * (range + 1) * (range + 1);
+				break;
+
+			case this.weightedHROT:
+				result = customCount;
+				break;
+		}
+
+		return result;
+	};
+
+	// decode LTL rule in Rr,Cc,Mm,Ssmin..smax,Bbmin..bmax,Nn format
+	PatternManager.prototype.decodeLTLMC = function(pattern, rule) {
+		var value = 0,
+		    result = false,
+			maxCells = 0;
 
 		// reset string index
 		this.index = 0;
@@ -3340,83 +3456,10 @@
 				this.failureReason = "LtL invalid characters after rule";
 			} else {
 				// check Smax and Bmax based on range and neighborhood
-				switch(pattern.neighborhoodLTL) {
-					case this.mooreHROT:
-						maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1);
-						break;
+				maxCells = this.maxNeighbours(pattern.rangeLTL, pattern.neighborhoodLTL, pattern.customNeighbourCount);
 
-					case this.vonNeumannHROT:
-						maxCells = 2 * pattern.rangeLTL * (pattern.rangeLTL + 1) + 1;
-						break;
-
-					case this.circularHROT:
-						count = 0;
-						r2 = pattern.rangeLTL * pattern.rangeLTL + pattern.rangeLTL;
-						for (i = -pattern.rangeLTL; i <= pattern.rangeLTL; i += 1) {
-							width = 0;
-							while ((width + 1) * (width + 1) + (i * i) <= r2) {
-								width += 1;
-							}
-							count += 2 * width + 1;
-						}
-						maxCells = count;
-						break;
-
-					case this.crossHROT:
-						maxCells = pattern.rangeLTL * 4 + 1;
-						break;
-
-					case this.saltireHROT:
-						maxCells = pattern.rangeLTL * 4 + 1;
-						break;
-
-					case this.starHROT:
-						maxCells = pattern.rangeLTL * 8 + 1;
-						break;
-
-					case this.l2HROT:
-						count = 0;
-						r2 = pattern.rangeLTL * pattern.rangeLTL;
-						for (i = -pattern.rangeLTL; i <= pattern.rangeLTL; i += 1) {
-							width = 0;
-							while ((width + 1) * (width + 1) + (i * i) <= r2) {
-								width += 1;
-							}
-							count += 2 * width + 1;
-						}
-						maxCells = count;
-						break;
-
-					case this.hexHROT:
-						maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1) - (pattern.rangeLTL * (pattern.rangeLTL + 1));
-						break;
-
-					case this.checkerHROT:
-						maxCells = ((pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1) - 1) / 2 + 1;
-						break;
-
-					case this.hashHROT:
-						maxCells = pattern.rangeLTL * 8 + 1;
-						break;
-
-					case this.customHROT:
-						maxCells = pattern.customNeighbourCount + 1;
-						break;
-
-					case this.tripodHROT:
-						maxCells = pattern.rangeLTL * 3 + 1;
-						break;
-
-					case this.asteriskHROT:
-						maxCells = pattern.rangeLTL * 6 + 1;
-						break;
-
-					case this.triangularHROT:
-						maxCells = (pattern.rangeLTL * 4 + 1) * (pattern.rangeLTL * 2 + 1) - (pattern.rangeLTL * 2 * pattern.rangeLTL);
-						break;
-				}
 				// adjust max cells by middle cell setting
-				maxCells -= (1 - pattern.middleLTL);
+				maxCells += pattern.middleLTL;
 				if (pattern.BminLTL > maxCells) {
 					result = false;
 					this.failureReason = "LtL 'B" + pattern.BminLTL + "..' > " + maxCells;
@@ -3493,7 +3536,7 @@
 				result = false;
 				this.failureReason = "LtL invalid characters after rule";
 			} else {
-				// check Smax and Bmax based on range and neighborhood
+				// check Smax and Bmax based on range and neighborhood (which is always Moore)
 				maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1);
 				if (pattern.BminLTL > maxCells) {
 					result = false;
@@ -3575,7 +3618,7 @@
 				result = false;
 				this.failureReason = "LtL invalid characters after rule";
 			} else {
-				// check Smax and Bmax based on range and neighborhood
+				// check Smax and Bmax based on range and neighborhood (which is always Moore)
 				maxCells = (pattern.rangeLTL * 2 + 1) * (pattern.rangeLTL * 2 + 1);
 				if (pattern.BminLTL > maxCells) {
 					result = false;
@@ -3709,13 +3752,21 @@
 	};
 
 	// decode HROT range
-	PatternManager.prototype.decodeHROTRange = function(rule, list, partName, maxCount) {
+	PatternManager.prototype.decodeHROTRange = function(rule, list, partName, maxCount, outer) {
 		var result = true,
 			lower = -1,
 			upper = -1,
 			i = 0;
 
+		// get lower range value
 		lower = this.decodeHROTNumber(rule, partName);
+
+		// if not present then clear error - it's valid for no range to be specified
+		if (lower === -1) {
+			this.failureReason = "";
+		}
+
+		// decode the upper range if present
 		while (result && lower !== -1) {
 			// check if next character is a "-"
 			upper = -1;
@@ -3737,8 +3788,11 @@
 				if (result) {
 					if (partName === "S") {
 						this.maxSurvivalHROT = upper;
-						lower += 1;
-						upper += 1;
+						// algos include middle cell so if rule is outer totalistic add middle cell count for survival
+						if (outer) {
+							lower += 1;
+							upper += 1;
+						}
 					} else {
 						this.maxBirthHROT = upper;
 					}
@@ -3760,6 +3814,93 @@
 							this.index -= 1;
 							this.failureReason = "";
 						}
+					}
+				}
+			}
+		}
+
+		return result;
+	};
+
+	// read weighted HROT neighbourhood
+	// rule parameter is lower case
+	PatternManager.prototype.readWeightedNeighbourhood = function(rule, range, family, pattern) {
+		var i = this.index,
+			l = rule.length,
+			j = 0,
+			needed1 = (range * 2 + 1) * (range * 2 + 1),
+			needed2 = needed1 + needed1,
+			value = 0,
+			numRead = 0,
+			weights = [],
+			result = this.weightedHROT;
+
+		// set default grid type
+		pattern.customGridType = "";
+
+		// check how long hex string is
+		while (i < l && this.hexCharacters.indexOf(rule[i]) !== -1) {
+			i += 1;
+		}
+		numRead = i - this.index;
+		
+		// check for length 1
+		if (numRead === needed1) {
+			while (this.index < i) {
+				value = this.hexCharacters.indexOf(rule[this.index]);
+				// check for negative
+				if ((value & 8) !== 0) {
+					value = -(value & 7);
+				}
+				weights[weights.length] = value;
+				this.index += 1;
+			}
+		} else {
+			// check for length 2
+			if (numRead === needed2) {
+				while (this.index < i) {
+					value = this.hexCharacters.indexOf(rule[this.index]) << 4;
+					this.index += 1;
+					value |= this.hexCharacters.indexOf(rule[this.index]);
+					this.index += 1;
+					if ((value & 128) !== 0) {
+						value = -(value & 127);
+					}
+					weights[weights.length] = value;
+				}
+			} else {
+				// invalid number of digits
+				this.failureReason = family + " 'NW' needs " + String(needed1) + " or " + String(needed2) + " hex digits";
+				pattern.customNeighbourhood = "";
+				pattern.customNeighbourCount = -1;
+				pattern.weightedNeighbourhood = null;
+				result = -1;
+			}
+
+		}
+
+		// check if string is valid
+		if (result !== -1) {
+			// sum weights ignoring negatives for maximum neighbour count
+			value = 0;
+			for (j = 0; j < weights.length; j += 1) {
+				if (weights[j] > 0) {
+					value += weights[j];
+				}
+			}
+			pattern.customNeighbourhood = rule.substr(this.index - numRead, numRead).toLowerCase();
+			pattern.customNeighbourCount = value;
+			pattern.weightedNeighbourhood = weights;
+
+			// check for hex grid type postfix
+			if (this.index < l) {
+				if (rule[this.index] === "h") {
+					pattern.customGridType = "H";
+					this.index += 1;
+				} else {
+					if (rule[this.index] === "l") {
+						pattern.customGridType = "L";
+						this.index += 1;
 					}
 				}
 			}
@@ -3829,16 +3970,18 @@
 	// create HROT arrays from Bmin to Bmax and Smin to Smax
 	PatternManager.prototype.setupHROTfromLTL = function(pattern, allocator) {
 		var range = pattern.rangeLTL,
-			maxCount = (range * 4 + 1) * (range * 2 + 1), // TBD should use actual count based on neighbourhood
+			maxCount = 0,
 			i = 0;
 			
 		// copy the range and neighborhood
 		pattern.rangeHROT = range;
 		pattern.neighborhoodHROT = pattern.neighborhoodLTL;
+		maxCount = this.maxNeighbours(range, pattern.neighborhoodLTL, pattern.customNeighbourCount);
+		maxCount += pattern.middleLTL;
 
 		// allocate the survival and birth arrays
-		pattern.survivalHROT = allocator.allocate(Uint8, maxCount + 1, "HROT.survivals");
-		pattern.birthHROT = allocator.allocate(Uint8, maxCount, "HROT.births");
+		pattern.survivalHROT = allocator.allocate(Uint8, maxCount + 2, "HROT.survivals");
+		pattern.birthHROT = allocator.allocate(Uint8, maxCount + 1, "HROT.births");
 
 		// populate the arrays
 		for (i = pattern.SminLTL; i <= pattern.SmaxLTL; i += 1) {
@@ -3851,8 +3994,8 @@
 		// check for alternate rule
 		if (this.altSpecified) {
 			// allocate the alternate survival and birth arrays
-			pattern.altSurvivalHROT = allocator.allocate(Uint8, maxCount + 1, "HROT.altSurvivals");
-			pattern.altBirthHROT = allocator.allocate(Uint8, maxCount, "HROT.altBirths");
+			pattern.altSurvivalHROT = allocator.allocate(Uint8, maxCount + 2, "HROT.altSurvivals");
+			pattern.altBirthHROT = allocator.allocate(Uint8, maxCount + 1, "HROT.altBirths");
 
 			// populate the arrays
 			for (i = pattern.altSminLTL; i <= pattern.altSmaxLTL; i += 1) {
@@ -3871,14 +4014,13 @@
 	PatternManager.prototype.decodeHROTMulti = function(pattern, rule, allocator) {
 		var value = 0,
 			result = false,
-			count = 0,
-			width = 0,
-			r2 = 0,
-			i = 0,
-			maxCount = 0;
+			maxCount = 0,
+			saveIndex = 0,
+			outer = true,
+			hoodIndex = rule.indexOf(",n");
 
-			// reset string index
-			this.index = 0;
+		// reset string index
+		this.index = 0;
 
 		// reset maximum S and B seen
 		this.maxBirthHROT = 0;
@@ -3901,11 +4043,158 @@
 						// save result
 						pattern.rangeHROT = value;
 						result = true;
-						// compute maximum count value for Moore neighbourhood
-						maxCount = (value * 4 + 1) * (value * 2 + 1);  // TBD should use actual count from neighbourhood
 					}
 				}
 			}
+		}
+
+		// find neighbourhood next since the neighbour count is needed for validation
+		if (result) {
+			saveIndex = this.index;
+			this.index = hoodIndex;
+
+			// default rule to outer totalistic
+			outer = true;
+
+			// decode optional neighborhood
+			pattern.neighborhoodHROT = this.mooreHROT;
+			if (this.index !== -1 && this.index < rule.length && rule[this.index] === ",") {
+				// comma found so check for neighborhood
+				result = false;
+				this.index += 1;
+				if (this.index < rule.length) {
+					if (rule[this.index] === "n") {
+						// check for neighborhood
+						this.index += 1;
+						if (this.index < rule.length) {
+							switch(rule[this.index]) {
+								case "m":
+									pattern.neighborhoodHROT = this.mooreHROT;
+									this.index += 1;
+									result = true;
+									break;
+
+								case "n":
+									pattern.neighborhoodHROT = this.vonNeumannHROT;
+									this.index += 1;
+									result = true;
+									break;
+
+								case "c":
+									pattern.neighborhoodHROT = this.circularHROT;
+									this.index += 1;
+									result = true;
+									break;
+
+								case "+":
+									pattern.neighborhoodHROT = this.crossHROT;
+									this.index += 1;
+									result = true;
+									break;
+
+								case "x":
+									pattern.neighborhoodHROT = this.saltireHROT;
+									this.index += 1;
+									result = true;
+									break;
+
+								case "*":
+									pattern.neighborhoodHROT = this.starHROT;
+									this.index += 1;
+									result = true;
+									break;
+
+								case "2":
+									pattern.neighborhoodHROT = this.l2HROT;
+									this.index += 1;
+									result = true;
+									break;
+
+								case "h":
+									pattern.neighborhoodHROT = this.hexHROT;
+									this.index += 1;
+									result = true;
+									break;
+
+								case "b":
+									pattern.neighborhoodHROT = this.checkerHROT;
+									this.index += 1;
+									result = true;
+									break;
+								
+								case "#":
+									pattern.neighborhoodHROT = this.hashHROT;
+									this.index += 1;
+									result = true;
+									break;
+
+								case "@":
+									this.index += 1;
+									pattern.neighborhoodHROT = this.readCustomNeighbourhood(rule, pattern.rangeHROT, "HROT", pattern);
+									if (pattern.neighborhoodHROT !== -1) {
+										result = true;
+									}
+									break;
+
+								case "3":
+									pattern.neighborhoodHROT = this.tripodHROT;
+									this.index += 1;
+									result = true;
+									break;
+
+								case "a":
+									pattern.neighborhoodHROT = this.asteriskHROT;
+									this.index += 1;
+									result = true;
+									break;
+
+								case "l":
+									pattern.neighborhoodHROT = this.triangularHROT;
+									this.index += 1;
+									result = true;
+									break;
+
+								case "g":
+									pattern.neighborhoodHROT = this.gaussianHROT;
+									// gaussian is totalistic (not outer totalistic)
+									outer = false;
+									this.index += 1;
+									result = true;
+									break;
+
+								case "w":
+									this.index += 1;
+									pattern.neighborhoodHROT = this.readWeightedNeighbourhood(rule, pattern.rangeHROT, "HROT", pattern);
+									if (pattern.neighborhoodHROT !== -1) {
+										// weighted is totalistic (not outer totalistic)
+										outer = false;
+										result = true;
+									}
+									break;
+
+								default:
+									this.failureReason = "HROT 'N' [ABCGHLMNWX23*+#@] got '" + rule[this.index].toUpperCase() + "'";
+									break;
+							}
+						} else {
+							this.failureReason = "HROT 'N' needs a neighborhood";
+						}
+					} else {
+						this.failureReason = "HROT expected 'N' got '" + rule[this.index].toUpperCase() + "'";
+					}
+				} else {
+					this.failureReason = "HROT expected 'N'";
+				}
+
+				// save index after neighbourhood
+				hoodIndex = this.index;
+			}
+
+			// check neighborhood counts for the neighborhood
+			maxCount = this.maxNeighbours(pattern.rangeHROT, pattern.neighborhoodHROT, pattern.customNeighbourCount);
+
+			// go back to earlier rule position to continue decoding
+			this.index = saveIndex;
 		}
 
 		// decode states
@@ -3965,7 +4254,7 @@
 						} else {
 							// read and save survivals
 							pattern.survivalHROT = allocator.allocate(Uint8, maxCount + 2, "HROT.survivals");
-							result = this.decodeHROTRange(rule, pattern.survivalHROT, "S", maxCount);
+							result = this.decodeHROTRange(rule, pattern.survivalHROT, "S", maxCount, outer);
 						}
 					} else {
 						this.failureReason = "HROT expected 'S'";
@@ -3992,7 +4281,7 @@
 						} else {
 							// read and save survivals
 							pattern.birthHROT = allocator.allocate(Uint8, maxCount + 1, "HROT.births");
-							result = this.decodeHROTRange(rule, pattern.birthHROT, "B", maxCount);
+							result = this.decodeHROTRange(rule, pattern.birthHROT, "B", maxCount, outer);
 						}
 					} else {
 						this.failureReason = "HROT expected 'B'";
@@ -4003,200 +4292,17 @@
 			}
 		}
 
-		// decode optional neighborhood
-		pattern.neighborhoodHROT = this.mooreHROT;
-		if (result && this.index < rule.length && rule[this.index] === ",") {
-			// comma found so check for neighborhood
-			result = false;
-			this.index += 1;
-			if (this.index < rule.length) {
-				if (rule[this.index] === "n") {
-					// check for neighborhood
-					this.index += 1;
-					if (this.index < rule.length) {
-						switch(rule[this.index]) {
-							case "m":
-								pattern.neighborhoodHROT = this.mooreHROT;
-								this.index += 1;
-								result = true;
-								break;
-
-							case "n":
-								pattern.neighborhoodHROT = this.vonNeumannHROT;
-								this.index += 1;
-								result = true;
-								break;
-
-							case "c":
-								pattern.neighborhoodHROT = this.circularHROT;
-								this.index += 1;
-								result = true;
-								break;
-
-							case "+":
-								pattern.neighborhoodHROT = this.crossHROT;
-								this.index += 1;
-								result = true;
-								break;
-
-							case "x":
-								pattern.neighborhoodHROT = this.saltireHROT;
-								this.index += 1;
-								result = true;
-								break;
-
-							case "*":
-								pattern.neighborhoodHROT = this.starHROT;
-								this.index += 1;
-								result = true;
-								break;
-
-							case "2":
-								pattern.neighborhoodHROT = this.l2HROT;
-								this.index += 1;
-								result = true;
-								break;
-
-							case "h":
-								pattern.neighborhoodHROT = this.hexHROT;
-								this.index += 1;
-								result = true;
-								break;
-
-							case "b":
-								pattern.neighborhoodHROT = this.checkerHROT;
-								this.index += 1;
-								result = true;
-								break;
-							
-							case "#":
-								pattern.neighborhoodHROT = this.hashHROT;
-								this.index += 1;
-								result = true;
-								break;
-
-							case "@":
-								this.index += 1;
-								pattern.neighborhoodHROT = this.readCustomNeighbourhood(rule, pattern.rangeHROT, "HROT", pattern);
-								if (pattern.neighborhoodHROT !== -1) {
-									result = true;
-								}
-								break;
-
-							case "3":
-								pattern.neighborhoodHROT = this.tripodHROT;
-								this.index += 1;
-								result = true;
-								break;
-
-							case "a":
-								pattern.neighborhoodHROT = this.asteriskHROT;
-								this.index += 1;
-								result = true;
-								break;
-
-							case "l":
-								pattern.neighborhoodHROT = this.triangularHROT;
-								this.index += 1;
-								result = true;
-								break;
-
-							default:
-								this.failureReason = "HROT 'N' needs [ABCHLMNX23*+#@] got '" + rule[this.index].toUpperCase() + "'";
-								break;
-						}
-					} else {
-						this.failureReason = "HROT 'N' needs a neighborhood";
-					}
-				} else {
-					this.failureReason = "HROT expected 'N' got '" + rule[this.index].toUpperCase() + "'";
-				}
-			} else {
-				this.failureReason = "HROT expected 'N'";
-			}
-		}
-
 		// final validation
 		if (result) {
-			// check neighborhood counts for the neighborhood
-			switch(pattern.neighborhoodHROT) {
-				case this.mooreHROT:
-					maxCount = (pattern.rangeHROT * 2 + 1) * (pattern.rangeHROT * 2 + 1);
-					break;
-
-				case this.vonNeumannHROT:
-					maxCount = 2 * pattern.rangeHROT * (pattern.rangeHROT + 1) + 1;
-					break;
-
-				case this.circularHROT:
-					count = 0;
-					r2 = pattern.rangeHROT * pattern.rangeHROT + pattern.rangeHROT;
-					for (i = -pattern.rangeHROT; i <= pattern.rangeHROT; i += 1) {
-						width = 0;
-						while ((width + 1) * (width + 1) + (i * i) <= r2) {
-							width += 1;
-						}
-						count += 2 * width + 1;
-					}
-					maxCount = count;
-					break;
-
-				case this.crossHROT:
-					maxCount = 4 * pattern.rangeHROT + 1;
-					break;
-
-				case this.saltireHROT:
-					maxCount = 4 * pattern.rangeHROT + 1;
-					break;
-
-				case this.starHROT:
-					maxCount = 8 * pattern.rangeHROT + 1;
-					break;
-
-				case this.l2HROT:
-					count = 0;
-					r2 = pattern.rangeHROT * pattern.rangeHROT;
-					for (i = -pattern.rangeHROT; i <= pattern.rangeHROT; i += 1) {
-						width = 0;
-						while ((width + 1) * (width + 1) + (i * i) <= r2) {
-							width += 1;
-						}
-						count += 2 * width + 1;
-					}
-					maxCount = count;
-					break;
-
-				case this.hexHROT:
-					maxCount = (pattern.rangeHROT * 2 + 1) * (pattern.rangeHROT * 2 + 1) - (pattern.rangeHROT * (pattern.rangeHROT + 1));
-					break;
-
-				case this.checkerHROT:
-					maxCount = ((pattern.rangeHROT * 2 + 1) * (pattern.rangeHROT * 2 + 1) - 1) / 2 + 1;
-					break;
-
-				case this.hashHROT:
-					maxCount = pattern.rangeHROT * 8 + 1;
-					break;
-
-				case this.customHROT:
-					maxCount = pattern.customNeighbourCount + 1;
-					break;
-
-				case this.tripodHROT:
-					maxCount = pattern.rangeHROT * 3 + 1;
-					break;
-
-				case this.asteriskHROT:
-					maxCount = pattern.rangeHROT * 6 + 1;
-					break;
-
-				case this.triangularHROT:
-					maxCount = (pattern.rangeHROT * 4 + 1) * (pattern.rangeHROT * 2 + 1) - (pattern.rangeHROT * 2 * pattern.rangeHROT);
-					break;
+			// check for trailing characters
+			if (hoodIndex !== -1) {
+				this.index = hoodIndex;
 			}
 
-			// adjust max count since middle cell is not included
-			maxCount -= 1;
+			if (this.index !== rule.length) {
+				result = false;
+				this.failureReason = "HROT invalid characters after rule";
+			}
 
 			// check maximum survival count
 			if (this.maxSurvivalHROT > maxCount) {
@@ -4211,16 +4317,10 @@
 					this.failureReason = "HROT 'B" + this.maxBirthHROT + "' > " + maxCount;
 				}
 			}
-
-			// check for trailing characters
-			if (result) {
-				if (this.index !== rule.length) {
-					result = false;
-					this.failureReason = "HROT invalid characters after rule";
-				} else {
-					pattern.isHROT = true;
-				}
-			}
+		}
+		
+		if (result) {
+			pattern.isHROT = true;
 		}
 
 		return result;
@@ -5038,6 +5138,14 @@
 											case this.triangularHROT:
 												pattern.ruleName += "L";
 												break;
+
+											case this.gaussianHROT:
+												pattern.ruleName += "G";
+												break;
+
+											case this.weightedHROT:
+												pattern.ruleName += "W" + pattern.customNeighbourhood + pattern.customGridType;
+												break;
 										}
 									}
 								} else {
@@ -5099,6 +5207,14 @@
 
 										case this.triangularHROT:
 											pattern.ruleName += "L";
+											break;
+
+										case this.gaussianHROT:
+											pattern.ruleName += "G";
+											break;
+
+										case this.weightedHROT:
+											pattern.ruleName += "W" + pattern.customNeighbourhood + pattern.customGridType;
 											break;
 									}
 
@@ -6679,7 +6795,10 @@
 		    ruleIndex = source.indexOf("rule"),
 
 		    // bounded grid index
-		    boundedIndex = -1,
+			boundedIndex = -1,
+			
+			// colon index
+			colonIndex = -1,
 
 		    // history index
 			historyIndex = -1,
@@ -6727,8 +6846,22 @@
 		pattern.originalRuleName = ruleString;
 		pattern.ruleName = ruleString;
 
+		// find the first colon
+		colonIndex = ruleString.indexOf(this.boundedGridPrefix);
+
 		// check for bounded grid
 		boundedIndex = ruleString.lastIndexOf(this.boundedGridPrefix);
+		if (boundedIndex !== -1) {
+			// check if there is just one colon
+			if (colonIndex === boundedIndex) {
+				// check if rule is an alias including the colon
+				if (AliasManager.getRuleFromAlias(pattern.ruleName) !== null) {
+					boundedIndex = -1;
+				}
+			}
+		}
+
+		// check for bounded grid
 		if (boundedIndex !== -1) {
 			// decode the bounded grid definition
 			if (!this.decodeBoundedGrid(pattern, ruleString.substring(boundedIndex + 1))) {
@@ -7256,12 +7389,12 @@
 		}
 
 		// check for hex HROT patterns
-		if (pattern.isHROT && (pattern.neighborhoodHROT === this.hexHROT || pattern.neighborhoodHROT === this.tripodHROT || pattern.neighborhoodHROT === this.asteriskHROT || (pattern.neighborhoodHROT === this.customHROT && pattern.customGridType === "H"))) {
+		if (pattern.isHROT && (pattern.neighborhoodHROT === this.hexHROT || pattern.neighborhoodHROT === this.tripodHROT || pattern.neighborhoodHROT === this.asteriskHROT || ((pattern.neighborhoodHROT === this.weightedHROT || pattern.neighborhoodHROT === this.customHROT) && pattern.customGridType === "H"))) {
 			pattern.isHex = true;
 		}
 
 		// check for triangular HROT patterns
-		if (pattern.isHROT && (pattern.neighborhoodHROT === this.triangularHROT || (pattern.neighborhoodHROT === this.customHROT && pattern.customGridType === "L"))) {
+		if (pattern.isHROT && (pattern.neighborhoodHROT === this.triangularHROT || ((pattern.neighborhoodHROT === this.weightedHROT || pattern.neighborhoodHROT === this.customHROT) && pattern.customGridType === "L"))) {
 			pattern.isTriangular = true;
 		}
 	};
@@ -8385,7 +8518,7 @@
 					}
 				} else {
 					if (v < 0 || v > noff.length) {
-						this.failureReaons = "bad node value in tree data: " + v;
+						this.failureReason = "bad node value in tree data: " + v;
 						valid = false;
 					} else {
 						if (nodelev[v] !== lev - 1) {

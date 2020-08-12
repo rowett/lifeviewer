@@ -47,6 +47,9 @@
 		// used row array (will be resized)
 		this.colUsed = allocator.allocate(Uint8, 0, "HROT.colUsed");
 
+		// weighted neighbourhood array (will be resized)
+		this.weightedNeighbourhood = allocator.allocate(Int8, 0, "HROT.weightedNeighbourhood");
+
 		// range threshold to use fast von Neumann algorithm
 		/** @const {number} */ this.rangeVN = 6;
 
@@ -77,7 +80,7 @@
 	};
 
 	// set type and range
-	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood, /** @type {number} */ neighbourCount, /** @type {boolean} */ isTriangular) {
+	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood, /** @type {number} */ neighbourCount, /** @type {boolean} */ isTriangular, /** @type {Array<number>} */ weightedNeighbourhood) {
 		// compute widest width
 		var /** @const {number} */ width = range * 2 + 1,
 			/** @const {number} */ r2 = range * range,
@@ -100,11 +103,21 @@
 		// save type and range and allocate widths array
 		this.type = type;
 		this.yrange = range;
-		this.xrange = isTriangular ? range + range : range;
+		this.xrange = (isTriangular && !(type == this.manager.customHROT || type == this.manager.weightedHROT)) ? range + range : range;
 		this.widths = this.allocator.allocate(Uint32, width, "HROT.widths");
 		this.customNeighbourhood = customNeighbourhood;
 		this.customNeighbourCount = neighbourCount;
 		this.isTriangular = isTriangular;
+
+		// copy the weighted neighbourhood if specified
+		if (weightedNeighbourhood) {
+			this.weightedNeighbourhood = this.allocator.allocate(Int8, weightedNeighbourhood.length, "HROT.weightedNeighbourhood");
+			for (i = 0; i < weightedNeighbourhood.length; i += 1) {
+				this.weightedNeighbourhood[i] = weightedNeighbourhood[i];
+			}
+		} else {
+			this.weightedNeighbourhood = null;
+		}
 
 		// create the widths array based on the neighborhood type
 		switch(type) {
@@ -677,6 +690,8 @@
 			/** @type {number} */ jmr = 0,
 			/** @type {number} */ jpmincol = 0,
 			/** @type {number} */ offset = 0,
+			/** @type {number} */ weight = 0,
+			/** @type {number} */ inc = 0,
 			/** @type {Int16Array} */ neighbourList = this.neighbourList;
 
 		// check for bounded grid
@@ -1288,6 +1303,37 @@
 						}	
 						break;
 
+					case this.manager.weightedHROT:
+						// weighted
+						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+							countRow = counts[y];
+							x = leftX - xrange;
+							while (x <= rightX + xrange) {
+								if (this.isTriangular && (((x + y) & 1) !== 0)) {
+									l = -(xrange + xrange + 1);
+									k = this.weightedNeighbourhood.length + l;
+									l += l;
+								} else {
+									k = 0;
+									l = 0;
+								}
+								count = 0;
+								for (j = -yrange; j <= yrange; j += 1) {
+									colourRow = colourGrid[y + j];
+									for (i = -xrange; i <= xrange; i += 1) {
+										if (colourRow[x + i] >= aliveStart) {
+											count += this.weightedNeighbourhood[k];
+										}
+										k += 1;
+									}
+									k += l;
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}
+						break;
+
 					case this.manager.customHROT:
 						// custom
 						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -1608,6 +1654,69 @@
 											count += 1;
 										}
 									}
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}
+						break;
+
+					case this.manager.gaussianHROT:
+						// gaussian
+						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+							countRow = counts[y];
+							x = leftX - xrange;
+							while (x <= rightX + xrange) {
+								count = 0;
+								for (j = -yrange; j < 0; j += 1) {
+									inc = j + yrange + 1;
+									weight = inc;
+									colourRow = colourGrid[y + j];
+									for (i = -xrange; i <= 0; i += 1) {
+										if (colourRow[x + i] >= aliveStart) {
+											count += weight;
+										}
+										weight += inc;
+									}
+									weight -= inc + inc;
+									for (i = 1; i <= xrange; i += 1) {
+										if (colourRow[x + i] >= aliveStart) {
+											count += weight;
+										}
+										weight -= inc;
+									}
+									inc = j + yrange + 1;
+									weight = inc;
+									colourRow = colourGrid[y - j];
+									for (i = -xrange; i <= 0; i += 1) {
+										if (colourRow[x + i] >= aliveStart) {
+											count += weight;
+										}
+										weight += inc;
+									}
+									weight -= inc + inc;
+									for (i = 1; i <= xrange; i += 1) {
+										if (colourRow[x + i] >= aliveStart) {
+											count += weight;
+										}
+										weight -= inc;
+									}
+								}
+								inc = xrange + 1;
+								weight = inc;
+								colourRow = colourGrid[y];
+								for (i = -xrange; i <= 0; i += 1) {
+									if (colourRow[x + i] >= aliveStart) {
+										count += weight;
+									}
+									weight += inc;
+								}
+								weight -= inc + inc;
+								for (i = 1; i <= xrange; i += 1) {
+									if (colourRow[x + i] >= aliveStart) {
+										count += weight;
+									}
+									weight -= inc;
 								}
 								countRow[x] = count;
 								x += 1;
@@ -2357,6 +2466,37 @@
 								x += 1;
 							}
 						}	
+						break;
+
+					case this.manager.weightedHROT:
+						// weighted
+						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+							countRow = counts[y];
+							x = leftX - xrange;
+							while (x <= rightX + xrange) {
+								if (this.isTriangular && (((x + y) & 1) !== 0)) {
+									l = -(xrange + xrange + 1);
+									k = this.weightedNeighbourhood.length + l;
+									l += l;
+								} else {
+									k = 0;
+									l = 0;
+								}
+								count = 0;
+								for (j = -yrange; j <= yrange; j += 1) {
+									colourRow = colourGrid[y + j];
+									for (i = -xrange; i <= xrange; i += 1) {
+										if (colourRow[x + i] === maxGenState) {
+											count += this.weightedNeighbourhood[k];
+										}
+										k += 1;
+									}
+									k += l;
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}
 						break;
 
 					case this.manager.customHROT:

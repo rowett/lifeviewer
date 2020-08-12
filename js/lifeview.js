@@ -13,6 +13,18 @@
 		// meta tag name
 		/** @const {string} */ tagName : "LifeViewer",
 
+		// fullscreen name
+		/** @const {string} */ fullScreenToken : "fullscreen",
+
+		// hide
+		/** @const {string} */ hideToken : "hide",
+
+		// multi
+		/** @const {string} */ multiToken : "multi",
+
+		// limit
+		/** @const {string} */ limitToken : "limit",
+
 		// div class name
 		/** @const {string} */ divClassName : "rle",
 
@@ -24,6 +36,9 @@
 
 		// whether to hide canvas if no support
 		/** @type {boolean} */ hide : true,
+
+		// whether viewer is in fullscreen mode
+		/** @type {boolean} */ fullScreen : false,
 
 		// whether to limit width to the pattern source element width
 		/** @type {boolean} */ limitWidth : false,
@@ -280,7 +295,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 549,
+		/** @const {number} */ versionBuild : 550,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -415,6 +430,7 @@
 
 		// minimum height to display navigation menu in the Viewer
 		/** @const {number} */ minMenuHeight : 480,
+		/** @const {number} */ preferredMenuHeight : 560,
 
 		// default width for the zoom slider (gets wider if the window is wider than the default)
 		/** @const {number} */ zoomSliderDefaultWidth : 132,
@@ -4123,7 +4139,7 @@
 
 			// x and y zoom
 			xZoom = this.engine.zoom,
-			yZoom = this.engine.zoom * ((this.engine.isTriangular && xZoom >= 4) ? ViewConstants.sqrt3 : 1),
+			yZoom = this.engine.zoom * (this.engine.isTriangular ? ViewConstants.sqrt3 : 1),
 
 			// cell state
 			state = -1;
@@ -4189,7 +4205,7 @@
 		    
 			// x and y zoom
 			xZoom = this.engine.zoom,
-			yZoom = this.engine.zoom * ((this.engine.isTriangular && xZoom >= 4) ? ViewConstants.sqrt3 : 1),
+			yZoom = this.engine.zoom * (this.engine.isTriangular ? ViewConstants.sqrt3 : 1),
 
 			// rotation
 			theta = 0, radius = 0;
@@ -4468,7 +4484,7 @@
 
 			// x and y zoom
 			xZoom = this.engine.zoom,
-			yZoom = this.engine.zoom * ((this.engine.isTriangular && xZoom >= 4) ? ViewConstants.sqrt3 : 1),
+			yZoom = this.engine.zoom * (this.engine.isTriangular ? ViewConstants.sqrt3 : 1),
 
 		    // cell position
 		    yPos = 0, xPos = 0,
@@ -7923,14 +7939,14 @@
 	View.prototype.dragPan = function(me, x, y) {
 		// compute the movement
 		var dx = (me.lastDragX - x) / me.engine.camZoom,
-			dy = ((me.lastDragY - y) / me.engine.camZoom) / ((me.engine.isTriangular && me.engine.camZoom >= 4) ? ViewConstants.sqrt3 : 1),
+			dy = ((me.lastDragY - y) / me.engine.camZoom) / (me.engine.isTriangular ? ViewConstants.sqrt3 : 1),
 			angle = 0,
 			sinAngle = 0,
 			cosAngle = 0;
 
 		// pan grid
 		if (me.lastDragY !== -1) {
-			// check for hex
+			// check for hex or triangular grid
 			if (me.engine.isHex || me.engine.isTriangular) {
 				angle = 0;
 			} else {
@@ -7950,8 +7966,10 @@
 				me.engine.xOff += dx * cosAngle + dy * (-sinAngle);
 				me.engine.yOff += dx * sinAngle + dy * cosAngle;
 			} else {
-				// pause playback if controls locked
-				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+				// pause playback if controls locked because of Waypoint animation
+				if (me.waypointsDefined && !me.waypointsDisabled) {
+					me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+				}
 			}
 		}
 	};
@@ -8556,77 +8574,53 @@
 		// set the number of states
 		result += "C" + this.engine.HROT.scount + ",";
 
-		// set the neighbourhood and compute max neighbour count
+		// get the max neighbour count
+		neighbours = this.manager.maxNeighbours(range, this.engine.HROT.type, this.engine.HROT.customNeighbourCount);
+
+		// set the neighbourhood
 		switch (this.engine.HROT.type) {
 		case this.manager.mooreHROT:
 			neighbourhood = "";
-			neighbours = (range * 2 + 1) * (range * 2 + 1);
 			break;
 
 		case this.manager.vonNeumannHROT:
 			neighbourhood = "N";
-			neighbours = 2 * range * (range + 1) + 1;
 			break;
 
 		case this.manager.circularHROT:
 			neighbourhood = "C";
-			neighbours = 0;
-			r2 = range * range + range;
-			for (i = -range; i <= range; i += 1) {
-				width = 0;
-				while ((width + 1) * (width + 1) + (i * i) <= r2) {
-					width += 1;
-				}
-				neighbours += 2 * width + 1;
-			}
 			break;
 
 		case this.manager.l2HROT:
 			neighbourhood = "2";
-			neighbours = 0;
-			r2 = range * range;
-			for (i = -range; i <= range; i += 1) {
-				width = 0;
-				while ((width + 1) * (width + 1) + (i * i) <= r2) {
-					width += 1;
-				}
-				neighbours += 2 * width + 1;
-			}
 			break;
 
 		case this.manager.crossHROT:
 			neighbourhood = "+";
-			neighbours = 4 * range + 1;
 			break;
 
 		case this.manager.saltireHROT:
 			neighbourhood = "X";
-			neighbours = 4 * range + 1;
 			break;
 
 		case this.manager.starHROT:
 			neighbourhood = "*";
-			neighbours = 8 * range + 1;
 			break;
 
 		case this.manager.hexHROT:
 			neighbourhood = "H";
-			neighbours = (range * 2 + 1) * (range * 2 + 1) - (range * (range + 1));
 			break;
 
 		case this.manager.checkerHROT:
 			neighbourhood = "B";
-			neighbours = ((range * 2 + 1) * (range * 2 + 1) - 1) / 2 + 1;
 			break;
 
 		case this.manager.hashHROT:
 			neighbourhood = "#";
-			neighbours = range * 8 + 1;
 			break;
 
 		case this.manager.customHROT:
 			neighbourhood = "@" + this.engine.HROT.customNeighbourhood;
-			neighbours = this.engine.HROT.customNeighbourCount;
 			if (this.engine.isHex) {
 				neighbourhood += "H";
 			} else {
@@ -8638,17 +8632,29 @@
 
 		case this.manager.tripodHROT:
 			neighbourhood = "3";
-			neighbours = range * 3 + 1;
 			break;
 
 		case this.manager.asteriskHROT:
 			neighbourhood = "A";
-			neighbours = range * 6 + 1;
 			break;
 
 		case this.manager.triangularHROT:
 			neighbourhood = "L";
-			neighbours = (range * 4 + 1) * (range * 2 + 1) - (range * 2 * range);
+			break;
+
+		case this.manager.gaussianHROT:
+			neighbourhood = "G";
+			break;
+
+		case this.manager.weightedHROT:
+			neighbourhood = "W" + this.engine.HROT.customNeighbourhood;
+			if (this.engine.isHex) {
+				neighbourhood += "H";
+			} else {
+				if (this.engine.isTriangular) {
+					neighbourhood += "L";
+				}
+			}
 			break;
 		}
 
@@ -8767,77 +8773,54 @@
 		// set the middle
 		result += "M1,";
 
-		// set the neighbourhood and compute max neighbour count
+		// get the max neighbour count
+		neighbours = this.manager.maxNeighbours(range, this.engine.HROT.type, this.engine.HROT.customNeighbourCount);
+		neighbours += 1;
+
+		// set the neighbourhood
 		switch (this.engine.HROT.type) {
 		case this.manager.mooreHROT:
 			neighbourhood = "M";
-			neighbours = (range * 2 + 1) * (range * 2 + 1);
 			break;
 
 		case this.manager.vonNeumannHROT:
 			neighbourhood = "N";
-			neighbours = 2 * range * (range + 1) + 1;
 			break;
 
 		case this.manager.circularHROT:
 			neighbourhood = "C";
-			neighbours = 0;
-			r2 = range * range + range;
-			for (i = -range; i <= range; i += 1) {
-				width = 0;
-				while ((width + 1) * (width + 1) + (i * i) <= r2) {
-					width += 1;
-				}
-				neighbours += 2 * width + 1;
-			}
 			break;
 
 		case this.manager.l2HROT:
 			neighbourhood = "2";
-			neighbours = 0;
-			r2 = range * range;
-			for (i = -range; i <= range; i += 1) {
-				width = 0;
-				while ((width + 1) * (width + 1) + (i * i) <= r2) {
-					width += 1;
-				}
-				neighbours += 2 * width + 1;
-			}
 			break;
 
 		case this.manager.crossHROT:
 			neighbourhood = "+";
-			neighbours = 4 * range + 1;
 			break;
 
 		case this.manager.saltireHROT:
 			neighbourhood = "X";
-			neighbours = 4 * range + 1;
 			break;
 
 		case this.manager.starHROT:
 			neighbourhood = "*";
-			neighbours = 8 * range + 1;
 			break;
 
 		case this.manager.hexHROT:
 			neighbourhood = "H";
-			neighbours = (range * 2 + 1) * (range * 2 + 1) - (range * (range + 1));
 			break;
 
 		case this.manager.checkerHROT:
 			neighbourhood = "B";
-			neighbours = ((range * 2 + 1) * (range * 2 + 1) - 1) / 2 + 1;
 			break;
 
 		case this.manager.hashHROT:
 			neighbourhood = "#";
-			neighbours = range * 8 + 1;
 			break;
 
 		case this.manager.customHROT:
 			neighbourhood = "@" + this.engine.HROT.customNeighbourhood;
-			neighbours = this.engine.HROT.customNeighbourCount;
 			if (this.engine.isHex) {
 				neighbourhood += "H";
 			} else {
@@ -8849,17 +8832,29 @@
 
 		case this.manager.tripodHROT:
 			neighbourhood = "3";
-			neighbours = range * 3 + 1;
 			break;
 
 		case this.manager.asteriskHROT:
 			neighbourhood = "A";
-			neighbours = range * 6 + 1;
 			break;
 
 		case this.manager.triangularHROT:
 			neighbourhood = "L";
-			neighbours = (range * 4 + 1) * (range * 2 + 1) - (range * 2 * range);
+			break;
+
+		case this.manager.gaussianHROT:
+			neighbourhood = "G";
+			break;
+
+		case this.manager.weightedHROT:
+			neighbourhood = "W" + this.engine.HROT.customNeighbourhood;
+			if (this.engine.isHex) {
+				neighbourhood += "H";
+			} else {
+				if (this.engine.isTriangular) {
+					neighbourhood += "L";
+				}
+			}
 			break;
 		}
 
@@ -14341,7 +14336,7 @@
 		// attempt to load the pattern
 		var pattern = this.manager.create("", patternString, this.engine.allocator, this.completeStart, this.completeStart, [ignoreThumbnail], this);
 
-		// if the pattern is not attempt to load from the repository asynchronously then complete the start
+		// if the pattern loaded synchronously (i.e. did not need a rule definition from the repository) then complete the setup
 		// (otherwise it will happen once the async load is complete)
 		if (!this.manager.loadingFromRepository) {
 			this.completeStart(pattern, [ignoreThumbnail], this);
@@ -14581,7 +14576,7 @@
 				me.engine.HROT.births = pattern.birthHROT;
 				me.engine.HROT.survivals = pattern.survivalHROT;
 				me.engine.HROT.scount = pattern.multiNumStates;
-				me.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT, pattern.customNeighbourhood, pattern.customNeighbourCount, pattern.isTriangular);
+				me.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT, pattern.customNeighbourhood, pattern.customNeighbourCount, pattern.isTriangular, pattern.weightedNeighbourhood);
 				if (me.manager.altSpecified) {
 					me.engine.HROT.altBirths = pattern.altBirthHROT;
 					me.engine.HROT.altSurvivals = pattern.altSurvivalHROT;
@@ -14980,6 +14975,19 @@
 
 			// set random seed
 			me.randomSeed = Date.now().toString();
+
+			// check for fullscreen not in popup
+			if (!me.isInPopup && DocConfig.fullScreen) {
+				this.displayWidth = document.body.clientWidth & ~7;
+				this.displayHeight = window.innerHeight - 128;
+				if (this.displayWidth < ViewConstants.minViewerWidth) {
+					this.displayWidth = ViewConstants.minViewerWidth;
+				}
+				if (this.displayHeight < ViewConstants.minViewerHeight) {
+					this.displayHeight = ViewConstants.minViewerHeight;
+				}
+				resizeRequired = true;
+			}
 
 			// read any script in the title
 			if (pattern.title) {
@@ -15934,29 +15942,34 @@
 
 				// split into tokens
 				tokens = content.match(/\S+/g);
-				if (tokens && tokens.length >= 2 && tokens.length <= 5) {
+				if (tokens && tokens.length >= 2 && tokens.length <= 6) {
 					// set the div class name
 					DocConfig.divClassName = tokens[0];
 
 					// set the pattern source element name
 					DocConfig.patternSourceName = tokens[1];
 
-					// check for the optional "hide" and "limit" tokens
+					// check for the optional tokens
 					for (i = 2; i < tokens.length; i += 1) {
 						switch(tokens[i]) {
 						// hide viewer if no support
-						case "hide":
+						case DocConfig.hideToken:
 							DocConfig.hide = true;
 							break;
 
 						// viewer width is limited to pattern element width
-						case "limit":
+						case DocConfig.limitToken:
 							DocConfig.limitWidth = true;
 							break;
 						
 						// viewer is in multiverse mode
-						case "multi":
+						case DocConfig.multiToken:
 							DocConfig.multi = true;
+							break;
+
+						// view is in fullscreen mode
+						case DocConfig.fullScreenToken:
+							DocConfig.fullScreen = true;
 							break;
 
 						// otherwise check if it begins with slash, dot, or is numeric
@@ -16369,6 +16382,47 @@
 		return false;
 	}
 
+	// resize event
+	function resizeWindow() {
+		var view = null,
+			i = 0;
+
+		// check for fullscreen viewer
+		if (DocConfig.fullScreen) {
+			// find default viewer
+			view = Controller.viewers[0][1];
+			view.displayWidth = document.body.clientWidth & ~7;
+			view.displayHeight = window.innerHeight - 128;
+			if (view.displayWidth < ViewConstants.minViewerWidth) {
+				view.displayWidth = ViewConstants.minViewerWidth;
+			}
+			if (view.displayHeight < ViewConstants.preferredMenuHeight) {
+				view.displayHeight = ViewConstants.preferredMenuHeight;
+			}
+
+			// resize the zoom slider
+			if (view.displayWidth > ViewConstants.minViewerWidth && !view.isInPopup) {
+				i = (view.displayWidth - ViewConstants.minViewerWidth) + ViewConstants.zoomSliderDefaultWidth;
+				if (i > ViewConstants.zoomSliderMaxWidth) {
+					i = ViewConstants.zoomSliderMaxWidth;
+				}
+				view.zoomItem.setWidth(i);
+			} else {
+				view.zoomItem.setWidth(ViewConstants.zoomSliderDefaultWidth);
+			}
+
+			// setup drawing states list
+			i = view.drawState;
+			view.setupStateList();
+			view.drawState = i;
+			view.updateStatesList();
+
+			// resize
+			view.resize();
+			view.menuManager.setAutoUpdate(true);
+		}
+	}
+
 	// start all viewers in the document
 	function startAllViewers() {
 		// find all viewers in the document (should be enclosed in <div class="rle">)
@@ -16480,6 +16534,7 @@
 
 	// register event to start viewers when document is loaded
 	registerEvent(window, "load", startAllViewers, false);
+	window.onresize = resizeWindow;
 
 	// external interface
 	window['DocConfig'] = DocConfig;
