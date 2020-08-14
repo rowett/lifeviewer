@@ -376,8 +376,8 @@
 			case 66:
 				// check for ctrl
 				if (event.ctrlKey) {
-					// copy CoordCA neighbourhood to clipboard from selection
-					me.copyCoordCA(me);
+					// copy neighbourhood to clipboard from selection
+					me.copyNeighbourhood(me);
 				} else {
 					// do not move if in view only mode
 					if (!me.viewOnly) {

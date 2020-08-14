@@ -295,7 +295,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 551,
+		/** @const {number} */ versionBuild : 555,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -10312,6 +10312,108 @@
 		me.processCopy(me, false, false);
 	};
 
+	// create weighted neighbourhood from selection and copy to clipboard
+	View.prototype.copyWeighted = function(me) {
+		var selBox = me.selectionBox,
+			x1 = selBox.leftX,
+			y1 = selBox.bottomY,
+			x2 = selBox.rightX,
+			y2 = selBox.topY,
+			x = 0,
+			y = 0,
+			i = 0,
+			width = 0,
+			height = 0,
+			state = 0,
+			maxState = 0,
+			swap = 0,
+			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			valid = true,
+			output = "",
+			cells = [];
+
+		if (me.isSelection) {
+			// order selection 
+			if (x1 > x2) {
+				swap = x1;
+				x1 = x2;
+				x2 = swap;
+			}
+			if (y1 > y2) {
+				swap = y1;
+				y1 = y2;
+				y2 = swap;
+			}
+
+			// compute width and height of selection
+			width = (x2 - x1 + 1);
+			height = (y2 - y1 + 1);
+
+			// check selection is square and an odd number wide from 3 to 99
+			if (width !== height) {
+				me.menuManager.notification.notify("Weighted needs a square selection", 15, 180, 15, true);
+				valid = false;
+			} else {
+				if ((width & 1) === 0) {
+					me.menuManager.notification.notify("Weighted size must be odd", 15, 180, 15, true);
+					valid = false;
+				} else {
+					if (width < 3 || width > 99) {
+						me.menuManager.notification.notify("Weighted size must be >= 3 and <= 99", 15, 180, 15, true);
+						valid = false;
+					}
+				}
+			}
+
+			// check if selection is valid
+			if (valid) {
+				// create Weighted neighbourhood
+				output = "";
+				maxState = 0;
+				for (y = y1; y <= y2; y += 1) {
+					for (x = x1; x <= x2; x += 1) {
+						state = me.engine.getState(x + xOff, y + yOff, false);
+						cells[cells.length] = state;
+						if (state > maxState) {
+							maxState = state;
+						}
+					}
+				}
+
+				// determine whether to use single or double digit hex values
+				if (maxState <= 7) {
+					// use single digit
+					for (i = 0; i < cells.length; i += 1) {
+						state = cells[i];
+						output += me.manager.hexCharacters[state];
+					}
+				} else {
+					// use double digit
+					for (i = 0; i < cells.length; i += 1) {
+						state = cells[i];
+						output += me.manager.hexCharacters[state >> 4];
+						output += me.manager.hexCharacters[state & 15];
+					}
+				}
+
+				// add grid
+				if (me.engine.isHex) {
+					output += "H";
+				} else {
+					if (me.engine.isTriangular) {
+						output += "L";
+					}
+				}
+
+				// copy to external clipboard
+				me.copyToClipboard(me, output, false);
+				me.menuManager.notification.notify("Weighted R" + ((width - 1) >> 1) + " copied to clipboard", 15, 180, 15, true);
+			}
+		} else {
+			me.menuManager.notification.notify("Weighted needs a selection", 15, 180, 15, true);
+		}
+	};
 	// create CoordCA neighbourhood from selection and copy to clipboard
 	View.prototype.copyCoordCA = function(me) {
 		var selBox = me.selectionBox,
@@ -10406,6 +10508,17 @@
 			}
 		} else {
 			me.menuManager.notification.notify("CoordCA needs a selection", 15, 180, 15, true);
+		}
+	};
+
+	// copy neighbourhood
+	View.prototype.copyNeighbourhood = function(me) {
+		// for multi-state patterns create a weighted neighbourhood
+		if (me.engine.multiNumStates > 2) {
+			me.copyWeighted(me);
+		} else {
+			// for 2 state create a custom neighbourhood
+			me.copyCoordCA(me);
 		}
 	};
 
@@ -14576,7 +14689,7 @@
 				me.engine.HROT.births = pattern.birthHROT;
 				me.engine.HROT.survivals = pattern.survivalHROT;
 				me.engine.HROT.scount = pattern.multiNumStates;
-				me.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT, pattern.customNeighbourhood, pattern.customNeighbourCount, pattern.isTriangular, pattern.weightedNeighbourhood);
+				me.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT, pattern.customNeighbourhood, pattern.customNeighbourCount, pattern.isTriangular, pattern.weightedNeighbourhood, pattern.weightedStates);
 				if (me.manager.altSpecified) {
 					me.engine.HROT.altBirths = pattern.altBirthHROT;
 					me.engine.HROT.altSurvivals = pattern.altSurvivalHROT;

@@ -1,3 +1,17 @@
+Build 555
+- added optional state weights to Weighted rules
+	- add a comma after NW specification and then one hex digit per state
+	- state weight values are 0 - 15 (decimal) = 0 to f (hexadecimal)
+
+Build 554
+- added Gaussian neighbourhood for generations
+
+Build 553
+- hotkey Ctrl+B will now create a Weighted neighbourhood from a selection if the pattern is multi-state
+
+Build 552
+- fixed HROT S limit issue
+
 Build 551
 - added the majority of Weighted aliases from MCell's built-in Weighted Life rules
 

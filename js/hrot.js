@@ -50,6 +50,9 @@
 		// weighted neighbourhood array (will be resized)
 		this.weightedNeighbourhood = allocator.allocate(Int8, 0, "HROT.weightedNeighbourhood");
 
+		// weighted states array
+		this.weightedStates = null;
+
 		// range threshold to use fast von Neumann algorithm
 		/** @const {number} */ this.rangeVN = 6;
 
@@ -80,7 +83,7 @@
 	};
 
 	// set type and range
-	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood, /** @type {number} */ neighbourCount, /** @type {boolean} */ isTriangular, /** @type {Array<number>} */ weightedNeighbourhood) {
+	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood, /** @type {number} */ neighbourCount, /** @type {boolean} */ isTriangular, /** @type {Array<number>} */ weightedNeighbourhood, /** @type {Array<number>} */ weightedStates) {
 		// compute widest width
 		var /** @const {number} */ width = range * 2 + 1,
 			/** @const {number} */ r2 = range * range,
@@ -117,6 +120,16 @@
 			}
 		} else {
 			this.weightedNeighbourhood = null;
+		}
+
+		// copy the weighted states if specified
+		if (weightedStates) {
+			this.weightedStates = this.allocator.allocate(Uint8, weightedStates.length, "HROT.weightedStates");
+			for (i = 0; i < weightedStates.length; i += 1) {
+				this.weightedStates[i] = weightedStates[i];
+			}
+		} else {
+			this.weightedStates = null;
 		}
 
 		// create the widths array based on the neighborhood type
@@ -692,6 +705,8 @@
 			/** @type {number} */ offset = 0,
 			/** @type {number} */ weight = 0,
 			/** @type {number} */ inc = 0,
+			/** @type {number} */ aliveWeight = 0,
+			/** @type {number} */ deadWeight = 0,
 			/** @type {Int16Array} */ neighbourList = this.neighbourList;
 
 		// check for bounded grid
@@ -1305,31 +1320,67 @@
 
 					case this.manager.weightedHROT:
 						// weighted
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								if (this.isTriangular && (((x + y) & 1) !== 0)) {
-									l = -(xrange + xrange + 1);
-									k = this.weightedNeighbourhood.length + l;
-									l += l;
-								} else {
-									k = 0;
-									l = 0;
-								}
-								count = 0;
-								for (j = -yrange; j <= yrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									for (i = -xrange; i <= xrange; i += 1) {
-										if (colourRow[x + i] >= aliveStart) {
-											count += this.weightedNeighbourhood[k];
-										}
-										k += 1;
+						if (this.weightedStates === null) {
+							// no weighted states
+							for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+								countRow = counts[y];
+								x = leftX - xrange;
+								while (x <= rightX + xrange) {
+									if (this.isTriangular && (((x + y) & 1) !== 0)) {
+										l = -(xrange + xrange + 1);
+										k = this.weightedNeighbourhood.length + l;
+										l += l;
+									} else {
+										k = 0;
+										l = 0;
 									}
-									k += l;
+									count = 0;
+									for (j = -yrange; j <= yrange; j += 1) {
+										colourRow = colourGrid[y + j];
+										for (i = -xrange; i <= xrange; i += 1) {
+											if (colourRow[x + i] >= aliveStart) {
+												count += this.weightedNeighbourhood[k];
+											}
+											k += 1;
+										}
+										k += l;
+									}
+									countRow[x] = count;
+									x += 1;
 								}
-								countRow[x] = count;
-								x += 1;
+							}
+						} else {
+							// weighted states
+							deadWeight = this.weightedStates[0];
+							aliveWeight = this.weightedStates[1];
+							for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+								countRow = counts[y];
+								x = leftX - xrange;
+								while (x <= rightX + xrange) {
+									if (this.isTriangular && (((x + y) & 1) !== 0)) {
+										l = -(xrange + xrange + 1);
+										k = this.weightedNeighbourhood.length + l;
+										l += l;
+									} else {
+										k = 0;
+										l = 0;
+									}
+									count = 0;
+									for (j = -yrange; j <= yrange; j += 1) {
+										colourRow = colourGrid[y + j];
+										for (i = -xrange; i <= xrange; i += 1) {
+											if (colourRow[x + i] >= aliveStart) {
+												count += this.weightedNeighbourhood[k] * aliveWeight;
+											} else {
+												count += this.weightedNeighbourhood[k] * deadWeight;
+											}
+											k += 1;
+										}
+										k += l;
+									}
+									countRow[x] = count;
+									x += 1;
+								}
 							}
 						}
 						break;
@@ -1860,6 +1911,9 @@
 			/** @type {number} */ jmr = 0,
 			/** @type {number} */ jpmincol = 0,
 			/** @type {number} */ offset = 0,
+			/** @type {number} */ weight = 0,
+			/** @type {number} */ inc = 0,
+			/** @type {number} */ deadWeight = 0,
 			/** @type {Int16Array} */ neighbourList = this.neighbourList,
 
 			// maximum generations state
@@ -2470,31 +2524,69 @@
 
 					case this.manager.weightedHROT:
 						// weighted
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								if (this.isTriangular && (((x + y) & 1) !== 0)) {
-									l = -(xrange + xrange + 1);
-									k = this.weightedNeighbourhood.length + l;
-									l += l;
-								} else {
-									k = 0;
-									l = 0;
-								}
-								count = 0;
-								for (j = -yrange; j <= yrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									for (i = -xrange; i <= xrange; i += 1) {
-										if (colourRow[x + i] === maxGenState) {
-											count += this.weightedNeighbourhood[k];
-										}
-										k += 1;
+						if (this.weightedStates === null) {
+							// no weighted states
+							for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+								countRow = counts[y];
+								x = leftX - xrange;
+								while (x <= rightX + xrange) {
+									if (this.isTriangular && (((x + y) & 1) !== 0)) {
+										l = -(xrange + xrange + 1);
+										k = this.weightedNeighbourhood.length + l;
+										l += l;
+									} else {
+										k = 0;
+										l = 0;
 									}
-									k += l;
+									count = 0;
+									for (j = -yrange; j <= yrange; j += 1) {
+										colourRow = colourGrid[y + j];
+										for (i = -xrange; i <= xrange; i += 1) {
+											if (colourRow[x + i] === maxGenState) {
+												count += this.weightedNeighbourhood[k];
+											}
+											k += 1;
+										}
+										k += l;
+									}
+									countRow[x] = count;
+									x += 1;
 								}
-								countRow[x] = count;
-								x += 1;
+							}
+						} else {
+							// weighted states
+							deadWeight = this.weightedStates[0];
+							for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+								countRow = counts[y];
+								x = leftX - xrange;
+								while (x <= rightX + xrange) {
+									if (this.isTriangular && (((x + y) & 1) !== 0)) {
+										l = -(xrange + xrange + 1);
+										k = this.weightedNeighbourhood.length + l;
+										l += l;
+									} else {
+										k = 0;
+										l = 0;
+									}
+									count = 0;
+									for (j = -yrange; j <= yrange; j += 1) {
+										colourRow = colourGrid[y + j];
+										for (i = -xrange; i <= xrange; i += 1) {
+											state = colourRow[x + i];
+											if (state > deadState) {
+												count += this.weightedNeighbourhood[k] * this.weightedStates[maxGenState + 1 - state];
+											} else {
+												if (deadWeight > 0) {
+													count += deadWeight * this.weightedNeighbourhood[k];
+												}
+											}
+											k += 1;
+										}
+										k += l;
+									}
+									countRow[x] = count;
+									x += 1;
+								}
 							}
 						}
 						break;
@@ -2824,6 +2916,68 @@
 						}
 						break;
 
+					case this.manager.gaussianHROT:
+						// gaussian
+						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+							countRow = counts[y];
+							x = leftX - xrange;
+							while (x <= rightX + xrange) {
+								count = 0;
+								for (j = -yrange; j < 0; j += 1) {
+									inc = j + yrange + 1;
+									weight = inc;
+									colourRow = colourGrid[y + j];
+									for (i = -xrange; i <= 0; i += 1) {
+										if (colourRow[x + i] === maxGenState) {
+											count += weight;
+										}
+										weight += inc;
+									}
+									weight -= inc + inc;
+									for (i = 1; i <= xrange; i += 1) {
+										if (colourRow[x + i] === maxGenState) {
+											count += weight;
+										}
+										weight -= inc;
+									}
+									inc = j + yrange + 1;
+									weight = inc;
+									colourRow = colourGrid[y - j];
+									for (i = -xrange; i <= 0; i += 1) {
+										if (colourRow[x + i] === maxGenState) {
+											count += weight;
+										}
+										weight += inc;
+									}
+									weight -= inc + inc;
+									for (i = 1; i <= xrange; i += 1) {
+										if (colourRow[x + i] === maxGenState) {
+											count += weight;
+										}
+										weight -= inc;
+									}
+								}
+								inc = xrange + 1;
+								weight = inc;
+								colourRow = colourGrid[y];
+								for (i = -xrange; i <= 0; i += 1) {
+									if (colourRow[x + i] === maxGenState) {
+										count += weight;
+									}
+									weight += inc;
+								}
+								weight -= inc + inc;
+								for (i = 1; i <= xrange; i += 1) {
+									if (colourRow[x + i] === maxGenState) {
+										count += weight;
+									}
+									weight -= inc;
+								}
+								countRow[x] = count;
+								x += 1;
+							}
+						}
+						break;
 					default:
 						// L2, circular, or short range von Neumann
 						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {

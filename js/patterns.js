@@ -801,6 +801,9 @@
 		// HROT weighted neighbourhood
 		this.weightedNeighbourhood = null;
 
+		// HROT weighted states
+		this.weightedStates = null;
+
 		// width of grid
 		/** @type {number} */ this.width = 0;
 
@@ -3758,6 +3761,11 @@
 			upper = -1,
 			i = 0;
 
+		// if not outer totalistic then include the middle in the count
+		if (outer && partName === "S") {
+			maxCount += 1;
+		}
+
 		// get lower range value
 		lower = this.decodeHROTNumber(rule, partName);
 
@@ -3832,7 +3840,10 @@
 			needed2 = needed1 + needed1,
 			value = 0,
 			numRead = 0,
+			numSW = 0,
 			weights = [],
+			stateWeights = [],
+			maxStateWeight = 0,
 			result = this.weightedHROT;
 
 		// set default grid type
@@ -3871,28 +3882,12 @@
 			} else {
 				// invalid number of digits
 				this.failureReason = family + " 'NW' needs " + String(needed1) + " or " + String(needed2) + " hex digits";
-				pattern.customNeighbourhood = "";
-				pattern.customNeighbourCount = -1;
-				pattern.weightedNeighbourhood = null;
 				result = -1;
 			}
-
 		}
 
-		// check if string is valid
+		// check for hex grid type postfix
 		if (result !== -1) {
-			// sum weights ignoring negatives for maximum neighbour count
-			value = 0;
-			for (j = 0; j < weights.length; j += 1) {
-				if (weights[j] > 0) {
-					value += weights[j];
-				}
-			}
-			pattern.customNeighbourhood = rule.substr(this.index - numRead, numRead).toLowerCase();
-			pattern.customNeighbourCount = value;
-			pattern.weightedNeighbourhood = weights;
-
-			// check for hex grid type postfix
 			if (this.index < l) {
 				if (rule[this.index] === "h") {
 					pattern.customGridType = "H";
@@ -3904,6 +3899,65 @@
 					}
 				}
 			}
+		}
+
+		// check for optional state weights
+		if (result !== -1) {
+			if (rule[this.index] === ",") {
+				this.index += 1;
+				i = this.index;
+
+				// check how long hex string is
+				while (i < l && this.hexCharacters.indexOf(rule[i]) !== -1) {
+					i += 1;
+				}
+				numSW = i - this.index;
+
+				if (numSW !== pattern.multiNumStates) {
+					this.failureReason = family + " 'NW' needs " + String(pattern.multiNumStates) + " state weights";
+					result = -1;
+				} else {
+					// read state weights and compute the maximum
+					for (i = 0; i < pattern.multiNumStates; i += 1) {
+						value = this.hexCharacters.indexOf(rule[this.index]);
+						this.index += 1;
+						stateWeights[stateWeights.length] = value;
+						if (value > maxStateWeight) {
+							maxStateWeight = value;
+						}
+					}
+				}
+			} else {
+				// no state weights so set maximum to 1
+				maxStateWeight = 1;
+			}
+		}
+
+		// check if string is valid
+		if (result !== -1) {
+			// sum weights ignoring negatives for maximum neighbour count
+			value = 0;
+			for (j = 0; j < weights.length; j += 1) {
+				if (weights[j] > 0) {
+					value += weights[j] * maxStateWeight;
+				}
+			}
+			if (stateWeights.length > 0) {
+				pattern.customNeighbourhood = rule.substr(this.index - (numRead + numSW + 1), numRead + numSW + 1).toLowerCase();
+			} else {
+				pattern.customNeighbourhood = rule.substr(this.index - numRead, numRead).toLowerCase();
+			}
+			pattern.customNeighbourCount = value;
+			pattern.weightedNeighbourhood = weights;
+			pattern.weightedStates = stateWeights;
+		}
+
+		// clear settings if decode failed
+		if (result === -1) {
+			pattern.customNeighbourhood = "";
+			pattern.customNeighbourCount = -1;
+			pattern.weightedNeighbourhood = null;
+			pattern.weightedStates = null;
 		}
 
 		return result;
@@ -4045,6 +4099,47 @@
 						result = true;
 					}
 				}
+			}
+		}
+
+		// decode states
+		if (result) {
+			result = false;
+			if (this.index < rule.length) {
+				// check for comma
+				if (rule[this.index] !== ",") {
+					this.failureReason = "HROT expected ',' got " + rule[this.index].toUpperCase();
+				} else {
+					// check for c
+					this.index += 1;
+					if (this.index < rule.length) {
+						if (rule[this.index] !== "c") {
+							this.failureReason = "HROT expected 'C' got " + rule[this.index].toUpperCase();
+						} else {
+							value = this.decodeHROTNumber(rule, "C");
+							if (value !== -1) {
+								if (value < this.minStatesHROT) {
+									this.failureReason = "HROT 'C" + value + "' < " + this.minStatesHROT;
+								} else {
+									if (value > this.maxStatesHROT) {
+										this.failureReason = "HROT 'C" + value  + "' > " + this.maxStatesHROT;
+									} else {
+										// ensure at least 2 states
+										if (value < 2) {
+											value = 2;
+										}
+										pattern.multiNumStates = value;
+										result = true;
+									}
+								}
+							}
+						}
+					} else {
+						this.failureReason = "HROT expected 'C'";
+					}
+				}
+			} else {
+				this.failureReason = "HROT expected ','";
 			}
 		}
 
@@ -4195,47 +4290,6 @@
 
 			// go back to earlier rule position to continue decoding
 			this.index = saveIndex;
-		}
-
-		// decode states
-		if (result) {
-			result = false;
-			if (this.index < rule.length) {
-				// check for comma
-				if (rule[this.index] !== ",") {
-					this.failureReason = "HROT expected ',' got " + rule[this.index].toUpperCase();
-				} else {
-					// check for c
-					this.index += 1;
-					if (this.index < rule.length) {
-						if (rule[this.index] !== "c") {
-							this.failureReason = "HROT expected 'C' got " + rule[this.index].toUpperCase();
-						} else {
-							value = this.decodeHROTNumber(rule, "C");
-							if (value !== -1) {
-								if (value < this.minStatesHROT) {
-									this.failureReason = "HROT 'C" + value + "' < " + this.minStatesHROT;
-								} else {
-									if (value > this.maxStatesHROT) {
-										this.failureReason = "HROT 'C" + value  + "' > " + this.maxStatesHROT;
-									} else {
-										// ensure at least 2 states
-										if (value < 2) {
-											value = 2;
-										}
-										pattern.multiNumStates = value;
-										result = true;
-									}
-								}
-							}
-						}
-					} else {
-						this.failureReason = "HROT expected 'C'";
-					}
-				}
-			} else {
-				this.failureReason = "HROT expected ','";
-			}
 		}
 
 		// decode survivals
