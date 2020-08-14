@@ -816,6 +816,7 @@
 	};
 
 	// global interface
+	/*jshint -W069 */
 	window["AliasManager"] = AliasManager;
 }
 ());

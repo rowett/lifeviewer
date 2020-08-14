@@ -24,6 +24,7 @@
 		this.topY = source.topY;
 	};
 
+	/*jshint -W069 */
 	window["BoundingBox"] = BoundingBox;
 }
 ());

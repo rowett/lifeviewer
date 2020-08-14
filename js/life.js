@@ -18170,7 +18170,7 @@
 	// update the life grid region using tiles for Super patterns
 	Life.prototype.nextGenerationSuperTile = function() {
 		// TBD add other neighbourhoods
-		this.nextGenerationSuperTileMoore();
+		//this.nextGenerationSuperTileMoore();
 	};
 
 	// update the life grid region using tiles for RuleTable patterns
@@ -31722,6 +31722,7 @@
 		data32.fill(pixelColour);
 	};
 
+	/*jshint -W069 */
 	// create the global interface
 	window["LifeConstants"] = LifeConstants;
 	window["Life"] = Life;

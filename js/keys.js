@@ -1308,6 +1308,7 @@
 				if (event.ctrlKey) {
 					if (event.shiftKey) {
 						// attempt to read RLE from clipboard
+						/*jshint -W119 */
 						navigator.clipboard.readText().then(text => me.loadText(me, text));
 					} else {
 						me.loadPattern(me);
@@ -1795,6 +1796,7 @@
 		return processed;
 	};
 
+	/*jshint -W069 */
 	window["KeyProcessor"] = KeyProcessor;
 }
 ());

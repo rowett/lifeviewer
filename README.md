@@ -42,7 +42,7 @@ LifeViewer supports several different pattern formats, rules and neighbourhoods,
 Topic|Supported
 -----|---------
 Pattern formats|RLE, Life 1.06, Life 1.05, Cells
-Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP, Larger than Life, HROT, Alternate, Margolus, PCA, RuleTable (@TABLE, @TREE and @COLORS)
+Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP, Larger than Life, HROT, Alternate, Margolus, PCA, RuleTable (@TABLE, @TREE and @COLORS), Weighted
 Bounded Grid|Plane, Torus, Klein, Cross-Surface, Sphere
 States|2 to 256 states, [R]History, Niemiec, Generations
 Neighbourhoods|Moore, Hexagonal, Von Neumann, Triangular, 1D, Circular, Cross, L2, Saltire, Star, Checkerboard, Hash, Tripod, Asterisk, Custom

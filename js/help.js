@@ -2717,6 +2717,7 @@
 		this.renderErrors(view, ctx, 4 * xScale, 12 * yScale, lineHeight, view.displayErrors | 0);
 	};
 
+	/*jshint -W069 */
 	window['Help'] = Help;
 }
 ());

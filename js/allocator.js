@@ -438,6 +438,7 @@
 	};
 
 	// global interface
+	/*jshint -W069 */
 	window["Allocator"] = Allocator;
 	window["Uint8"] = Type.Uint8;
 	window["Uint8Clamped"] = Type.Uint8Clamped;

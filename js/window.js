@@ -357,6 +357,7 @@
 		me.mouseLastY = y | 0;
 	};
 
+	/*jshint -W069 */
 	// create the global interface
 	window["PopupWindow"] = PopupWindow;
 }

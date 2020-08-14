@@ -56,6 +56,7 @@
 		return number / 18446744073709551616;
 	};
 
+	/*jshint -W069 */
 	// create global interface
 	window["Random"] = Random;
 }

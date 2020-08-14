@@ -513,6 +513,7 @@
 		}
 	};
 
+	/*jshint -W069 */
 	window["ColourManager"] = ColourManager;
 }
 ());

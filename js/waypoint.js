@@ -2461,6 +2461,7 @@
 		}
 	};
 
+	/*jshint -W069 */
 	// external interface
 	window["Waypoint"] = Waypoint;
 	window["WaypointManager"] = WaypointManager;

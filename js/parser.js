@@ -5385,6 +5385,7 @@
 		view.waypointManager.sortAnnotations();
 	};
 
+	/*jshint -W069 */
 	window["ScriptParser"] = ScriptParser;
 }
 ());

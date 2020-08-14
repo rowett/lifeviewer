@@ -1244,6 +1244,7 @@
 		}
 	};
 
+	/*jshint -W069 */
 	// create the global interface
 	window["SnapshotManager"] = SnapshotManager;
 	window["Snapshot"] = Snapshot;

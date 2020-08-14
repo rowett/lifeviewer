@@ -3065,6 +3065,7 @@
 		}
 	};
 
+	/*jshint -W069 */
 	// create the global interface
 	window["HROT"] = HROT;
 }

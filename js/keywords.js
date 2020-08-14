@@ -464,6 +464,7 @@
 		/** @const {string} */ variablePrefixSymbol : "#"
 	};
 
+	/*jshint -W069 */
 	window['Keywords'] = Keywords;
 }
 ());

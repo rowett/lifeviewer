@@ -531,6 +531,7 @@
 		this.current = this.starts.length;
 	};
 
+	/*jshint -W069 */
 	window["Script"] = Script;
 }
 ());

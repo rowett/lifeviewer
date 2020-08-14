@@ -266,6 +266,7 @@
 		}
 	};
 
+	/*jshint -W069 */
 	// create the global interface
 	window["Stars"] = Stars;
 }

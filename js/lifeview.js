@@ -16484,6 +16484,7 @@
 
 	// callback for show in viewer anchor
 	function anchorCallback(event) {
+		/*jshint -W040 */
 		updateViewer(this);
 
 		// stop event propagating
@@ -16649,6 +16650,7 @@
 	registerEvent(window, "load", startAllViewers, false);
 	window.onresize = resizeWindow;
 
+	/*jshint -W069 */
 	// external interface
 	window['DocConfig'] = DocConfig;
 	window['Controller'] = Controller;

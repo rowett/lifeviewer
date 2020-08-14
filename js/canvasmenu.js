@@ -3477,6 +3477,7 @@
 	};
 
 	// create the global interface
+	/*jshint -W069 */
 	window["IconManager"] = IconManager;
 	window["Menu"] = Menu;
 	window["MenuManager"] = MenuManager;

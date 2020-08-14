@@ -9,6 +9,8 @@
 	// define globals
 	/* global Int8Array Int16Array Int32Array Uint8Array Uint8ClampedArray Uint16Array Uint32Array Float32Array  Float64Array */
 
+	/*jshint -W069 */
+
 	// for determining endian
 	var data8 = null,
 		data32 = null;

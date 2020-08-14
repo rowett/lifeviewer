@@ -3348,7 +3348,7 @@
 				break;
 
 			case this.hexHROT:
-				result = (range * 2 + 1) * (range * 2 + 1) - (range * (range + 1)) - 1
+				result = (range * 2 + 1) * (range * 2 + 1) - (range * (range + 1)) - 1;
 				break;
 
 			case this.checkerHROT:
@@ -9039,6 +9039,7 @@
 		}
 	};
 
+	/*jshint -W069 */
 	// create the global interface
 	window["PatternConstants"] = PatternConstants;
 	window["PatternManager"] = PatternManager;
