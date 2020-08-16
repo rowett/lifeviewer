@@ -1076,6 +1076,7 @@
 		y = this.renderHelpLine(view, Keywords.starfieldWord + " (" + Keywords.offWord + ")", "display stars", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.hexCellsWord, "hexagonal cells for hex", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.squareCellsWord, "square cells for hex", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.bordersWord, "display cell borders", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noGUIWord, "disable menus and hotkeys", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.hideGUIWord, "hide menus during playback", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.showTimingWord, "show timing information", ctx, x, y, height, helpLine);
@@ -1090,6 +1091,7 @@
 		y = this.renderHelpLine(view, Keywords.thumbSizeWord + " <" + ViewConstants.minThumbSize + ".." + ViewConstants.maxThumbSize + ">", "set thumbnail divisor", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.thumbLaunchWord + " (" + Keywords.offWord + ")", "thumbnail launches viewer", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.thumbZoomWord + " <" + Number(-1 / ViewConstants.minZoom).toFixed(1) + ".." + (ViewConstants.maxZoom).toFixed(1) + ">", "set thumbnail zoom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.thumbStartWord, "start playback on thumbnail expand", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		view.helpSections[sectionNum] = [view.lineNo, "Graph"];
 		sectionNum += 1;
@@ -2401,7 +2403,8 @@
 		y = this.renderHelpLine(view, "", "Alias names can be used as rule names in RLE", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "for example 'rule = HighLife'", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "* denotes duplicate rule", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "* denotes duplicate definition", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "+ denotes duplicate alias name", ctx, x, y, height, helpLine);
 
 		// display alias table
 		view.wrapHelpText = true;
@@ -2417,7 +2420,7 @@
 				// check for default alias
 				if (aliases[i][0] !== "") {
 					// render non-default alias
-					y = this.renderHelpLine(view, aliases[i][0] + (aliases[i][2] ? "*" : ""), aliases[i][1], ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, aliases[i][0] + " " + (aliases[i][2] ? "*" : "") + (aliases[i][3] ? "+" : ""), aliases[i][1], ctx, x, y, height, helpLine);
 				}
 			}
 		}

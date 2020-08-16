@@ -16,7 +16,8 @@
 
 	// initialise Alias Manager
 	AliasManager.init = function() {
-		var current = null,
+		var currentDef = "",
+			currentName = "",
 			i = 0, j = 0,
 			a = null, s = null;
 
@@ -64,11 +65,11 @@
 		s.push("PCA");
 		a.push(["PCA", ""]);
 		a.push(["Model_1", "2PCA4,0,4,8,3,1,10,6,7,2,9,5,11,12,13,14,15"]);
+		a.push(["Model_2", "2PCA4,0,4,8,3,1,10,6,11,2,9,5,13,12,14,7,15"]);
 		a.push(["PCA_1", "2PCA4,0,4,8,3,1,10,6,7,2,9,5,11,12,13,14,15"]);
 		a.push(["PCA_2", "2PCA4,0,2,4,3,8,10,6,7,1,9,5,11,12,13,14,15"]);
 		a.push(["PCA_3", "2PCA4,0,8,1,3,2,5,6,7,4,9,10,11,12,13,14,15"]);
 		a.push(["PCA_4", "2PCA4,0,2,4,12,8,5,9,7,1,6,10,11,3,13,14,15"]);
-		a.push(["Model_2", "2PCA4,0,4,8,3,1,10,6,11,2,9,5,13,12,14,7,15"]);
 		a.push(["PCA_5", "2PCA4,0,4,8,3,1,10,6,11,2,9,5,13,12,14,7,15"]);
 		a.push(["PCA_6", "2PCA4,0,2,4,3,8,10,6,14,1,9,5,7,12,11,13,15"]);
 		a.push(["PCA_7", "2PCA4,0,2,4,12,8,5,9,14,1,6,10,7,3,11,13,15"]);
@@ -636,7 +637,7 @@
 		// add weighted aliases
 		s.push("Weighted");
 		a.push(["Weighted", ""]);
-		a.push(["Ben's rule","R1,C0,S3,5,8,B4,6,8,NW323202323"]);
+		a.push(["Ben's rule","R1,C2,S3,5,8,B4,6,8,NW323202323"]);
 		a.push(["Border", "R1,C2,S10-16,B1-8,NW010101010901010101"]);
 		a.push(["Bricks", "R1,C3,S10,12,14,16,B7,13,NW525202525"]);
 		a.push(["Bustle", "R1,C4,S2,4-5,7,B3,NW212101212"]);
@@ -702,6 +703,20 @@
 		a.push(["Weighted Brain", "R1,C3,S3-4,7,B4-5,8,NW3323d3232"]);
 		a.push(["Y_Chromosome", "R1,C3,S2,B2,NW110101011"]);
 
+		s.push("Weighted G");
+		a.push(["Weighted Generations", ""]);
+		a.push(["WG Rule004", "R1,C4,S6-11,B4,NW111101111,0201"]);
+		a.push(["WG Rule012", "R1,C6,S4-5,B5,NW111101111,021111"]);
+		a.push(["WG Rule020", "R1,C6,S5-8,B5,NW111101111,020301"]);
+		a.push(["WG Rule031", "R1,C4,S5-7,B4,NW111101111,0210"]);
+		a.push(["WG Rule038", "R1,C5,S8,B6,9,NW111101111,03210"]);
+		a.push(["WG Rule050", "R1,C8,S4-8,B6,NW111101111,02120300"]);
+		a.push(["WG Rule063", "R1,C5,S6-7,9-11,B7,10,NW212101212,03101"]);
+		a.push(["WG Rule071", "R1,C6,S8-16,B6,NW111101111,031012"]);
+		a.push(["WG Rule072", "R1,C6,S8-16,B6,NW111101111,030112"]);
+		a.push(["WG Rule074", "R1,C5,S4-8,B3,NW111101111,02001"]);
+		a.push(["WG Rule084", "R1,C7,S5-6,B5,NW212101212,0121001"]);
+
 		// add Alternating aliases
 		s.push("Alt OT M");
 		a.push(["Alternating Outer-Totalistic Moore", ""]);
@@ -719,18 +734,25 @@
 		a.push(["Unidim2", "B12ci34578/S02345678|B7/S268"]);
 		a.push(["Unidim3", "B12ci34578/S02345678|B6i7/S268"]);
 
-		// mark duplicates
+		// mark duplicate definitions and names
 		this.aliases[0][2] = false;
+		this.aliases[0][3] = false;
 		for (i = 1; i < this.aliases.length; i += 1) {
 			// get the next alias rule
-			current = this.aliases[i][1];
+			currentDef = this.aliases[i][1];
+			currentName = this.aliases[i][0];
 			this.aliases[i][2] = false;
+			this.aliases[i][3] = false;
 			for (j = 0; j < i; j += 1) {
-				if (this.aliases[j][1] === current) {
+				if (this.aliases[j][0] === currentName) {
+					// mark as duplicate name
+					this.aliases[j][3] = true;
+					this.aliases[i][3] = true;
+				}
+				if (this.aliases[j][1] === currentDef) {
 					// mark as duplicate rule
 					this.aliases[j][2] = true;
 					this.aliases[i][2] = true;
-					j = i;
 				}
 			}
 		}

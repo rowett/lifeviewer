@@ -350,8 +350,14 @@
 		// thumbnail launches popup
 		/** @const {string} */ thumbLaunchWord : "THUMBLAUNCH",
 
+		// thumbnail expansion starts playback
+		/** @const {string} */ thumbStartWord : "THUMBSTART",
+
 		// theme
 		/** @const {string} */ themeWord : "THEME",
+
+		// rainbow word
+		/** @const {string} */ rainbowWord : "RAINBOW",
 
 		// autostart
 		/** @const {string} */ autoStartWord : "AUTOSTART",

@@ -295,7 +295,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 555,
+		/** @const {number} */ versionBuild : 556,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -623,6 +623,9 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// whether to start playback when thumbnail expands
+		this.thumbStart = false;
 
 		// whether to start playback in reverse for reversible rules
 		this.reverseStart = false;
@@ -14097,6 +14100,11 @@
 		// check if thumbnail mode on
 		if (me.thumbnail) {
 			me.switchOffThumbnail();
+			if (me.thumbStart) {
+				if (!me.generationOn) {
+					me.playList.current = me.viewPlayList(ViewConstants.modePlay, true, me);
+				}
+			}
 		} else {
 			// check for NOGUI
 			if (me.noGUI) {
@@ -15055,6 +15063,9 @@
 		// clear reverse start flag
 		me.reverseStart = false;
 
+		// clear play on thumb expand
+		me.thumbStart = false;
+
 		// copy pattern to center
 		if (pattern) {
 			if (pattern.isNone || (!me.executable && me.engine.multiNumStates > 2)) {
@@ -15101,6 +15112,9 @@
 				}
 				resizeRequired = true;
 			}
+
+			// reset rainbow mode
+			this.engine.rainbow = false;
 
 			// read any script in the title
 			if (pattern.title) {
@@ -15168,6 +15182,13 @@
 							resizeRequired = true;
 						}
 					}
+				}
+			}
+
+			// check rainbow and remove if not supported
+			if (this.engine.rainbow) {
+				if (this.engine.multiNumStates > 2 || this.engine.isHROT || this.isPCA || this.isLifeHistory || this.isRuleTree || this.isMargolus) {
+					this.engine.rainbow = false;
 				}
 			}
 

@@ -118,6 +118,7 @@
 			case Keywords.thumbnailWord:
 			case Keywords.thumbSizeWord:
 			case Keywords.thumbLaunchWord:
+			case Keywords.thumbStartWord:
 			case Keywords.thumbZoomWord:
 			case Keywords.autoStartWord:
 			case Keywords.scriptStartWord:
@@ -4079,6 +4080,12 @@
 							itemValid = true;
 							break;
 
+						// thumbnail start
+						case Keywords.thumbStartWord:
+							view.thumbStart = true;
+							itemValid = true;
+							break;
+
 						// thumbnail launch
 						case Keywords.thumbLaunchWord:
 							// check for OFF
@@ -4205,6 +4212,12 @@
 									}
 								}
 							}
+							break;
+
+						// rainbow word
+						case Keywords.rainbowWord:
+							view.engine.rainbow = true;
+							itemValid = true;
 							break;
 
 						// start script

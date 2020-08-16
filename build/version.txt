@@ -1,3 +1,10 @@
+Build 556
+- Help->Aliases now marks aliases with duplicate names
+- added Weighted Generations aliases
+- new script command [[ THUMBSTART ]] will start playback when a thumbnail is expanded
+- new script command [[ RAINBOW ]] will draw 2-state Life-like patterns in rainbow colours
+- improved performance for range 1 Weighted and Weighted Generations rules
+
 Build 555
 - added optional state weights to Weighted rules
 	- add a comma after NW specification and then one hex digit per state
