@@ -295,7 +295,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 556,
+		/** @const {number} */ versionBuild : 557,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -15102,19 +15102,19 @@
 
 			// check for fullscreen not in popup
 			if (!me.isInPopup && DocConfig.fullScreen) {
-				this.displayWidth = document.body.clientWidth & ~7;
-				this.displayHeight = window.innerHeight - 128;
-				if (this.displayWidth < ViewConstants.minViewerWidth) {
-					this.displayWidth = ViewConstants.minViewerWidth;
+				me.displayWidth = document.body.clientWidth & ~7;
+				me.displayHeight = window.innerHeight - 128;
+				if (me.displayWidth < ViewConstants.minViewerWidth) {
+					me.displayWidth = ViewConstants.minViewerWidth;
 				}
-				if (this.displayHeight < ViewConstants.minViewerHeight) {
-					this.displayHeight = ViewConstants.minViewerHeight;
+				if (me.displayHeight < ViewConstants.minViewerHeight) {
+					me.displayHeight = ViewConstants.minViewerHeight;
 				}
 				resizeRequired = true;
 			}
 
 			// reset rainbow mode
-			this.engine.rainbow = false;
+			me.engine.rainbow = false;
 
 			// read any script in the title
 			if (pattern.title) {
@@ -15186,9 +15186,9 @@
 			}
 
 			// check rainbow and remove if not supported
-			if (this.engine.rainbow) {
-				if (this.engine.multiNumStates > 2 || this.engine.isHROT || this.isPCA || this.isLifeHistory || this.isRuleTree || this.isMargolus) {
-					this.engine.rainbow = false;
+			if (me.engine.rainbow) {
+				if (me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isRuleTree || me.engine.isMargolus) {
+					me.engine.rainbow = false;
 				}
 			}
 
@@ -15963,7 +15963,7 @@
 		}
 
 		// check if snow needed
-		if (me.engine.zoom === 8 && me.numScriptCommands > 0 && (me.numScriptCommands & 3) === 0 && (this.rleList.length & 5) === 1) {
+		if (me.engine.zoom === 8 && me.numScriptCommands > 0 && (me.numScriptCommands & 3) === 0 && (me.rleList.length & 5) === 1) {
 			me.drawingSnow = true;
 			me.engine.initSnow();
 		} else {

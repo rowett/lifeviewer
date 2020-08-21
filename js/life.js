@@ -305,7 +305,7 @@
 		// allocator
 		this.allocator = new Allocator();
 
-		// whether to draw 2-state as rainbox
+		// whether to draw 2-state as rainbow
 		/** @type {boolean} */ this.rainbow = false;
 
 		// whether to draw grid
@@ -3764,7 +3764,7 @@
 				}
 				// set cell
 				if (this.rainbow) {
-					colourGrid[y][x] = ((x + y) & 63) + 64;
+					colourGrid[y][x] = ((x + y) & 127) + 64;
 				} else {
 					colourGrid[y][x] = this.aliveStart;
 				}
@@ -5854,49 +5854,49 @@
 				// get first 8 bits
 				cells = (gridRow[x] >> 8);
 				if (cells & 128) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
 				cr += 1;
 				if (cells & 64) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
 				cr += 1;
 				if (cells & 32) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
 				cr += 1;
 				if (cells & 16) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
 				cr += 1;
 				if (cells & 8) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
 				cr += 1;
 				if (cells & 4) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
 				cr += 1;
 				if (cells & 2) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
 				cr += 1;
 				if (cells & 1) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
@@ -5904,49 +5904,49 @@
 				// get second 8 bits
 				cells = gridRow[x] & 255;
 				if (cells & 128) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
 				cr += 1;
 				if (cells & 64) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
 				cr += 1;
 				if (cells & 32) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
 				cr += 1;
 				if (cells & 16) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
 				cr += 1;
 				if (cells & 8) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
 				cr += 1;
 				if (cells & 4) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
 				cr += 1;
 				if (cells & 2) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
 				cr += 1;
 				if (cells & 1) {
-					colourRow[cr] = ((y + cr) & 63) + 64;
+					colourRow[cr] = ((y + cr) & 127) + 64;
 				} else {
 					colourRow[cr] = 0;
 				}
@@ -6318,6 +6318,46 @@
 
 	// create the colour index
 	Life.prototype.createColourIndex = function() {
+		if (this.rainbow) {
+			this.createColourIndexRainbow();
+		} else {
+			this.createColourIndexRegular();
+		}
+	};
+
+	// create rainbow colour index
+	Life.prototype.createColourIndexRainbow = function() {
+		var colourLookup = this.colourLookup,
+			left = 0,
+			right = 0,
+			offset = 0,
+			value = 0,
+			i = 0;
+
+		// create 9 bit lookup
+		// a b v v v v v v v
+		// a - left cell alive
+		// b - right cell alive
+		// v - offset in rainbow
+
+		// use byte lookup to create 16bit lookup
+		for (i = 0; i < 512; i += 1) {
+			left = i & 128;
+			right = i & 256;
+			offset = i & 127;
+			value = 0;
+			if (left !== 0) {
+				value = (((offset + 1) & 127) + 64) << 8;
+			}
+			if (right !== 0) {
+				value |= (offset & 127) + 64;
+			}
+			colourLookup[i] = value;
+		}
+	};
+
+	// create normal colour index
+	Life.prototype.createColourIndexRegular = function() {
 		var colourLookup = this.colourLookup,
 			aliveMax = this.aliveMax,
 			aliveStart = this.aliveStart,
@@ -6664,7 +6704,9 @@
 			incs = [[0, 1, 0], [-1, 0, 0], [0, 0, 1], [0, -1, 0], [1, 0, 0], [0, 0, -1]],
 			redChannel = this.redChannel,
 			greenChannel = this.greenChannel,
-			blueChannel = this.blueChannel;
+			blueChannel = this.blueChannel,
+			gridLineRaw = this.gridLineRaw,
+			gridLineBoldRaw = this.gridLineBoldRaw;
 
 		// create rainbow colours
 		for (i = 1; i <= 240; i += 1) {
@@ -6684,12 +6726,12 @@
 		}
 
 		// spread across colours 64 to 127 to match renderer
-		for (i = 0; i <= 63; i += 1) {
-			s = ((i + 1) * 240 / 64) | 0;
+		for (i = 0; i < 128; i += 1) {
+			s = ((i + 1) * 240 / 128) | 0;
 			pixelColours[i] = pixelColours[s];
 		}
-		for (i = 0; i <= 63; i += 1) {
-			pixelColours[64 + i] = pixelColours[i];
+		for (i = 127; i >= 0; i -= 1) {
+			pixelColours[i + 64] = pixelColours[i];
 		}
 
 		// create background colour
@@ -6697,6 +6739,25 @@
 			pixelColours[0] = (alpha << 24) | ((blueChannel[0] * brightness) << 16) | ((greenChannel[0] * brightness) << 8) | (redChannel[0] * brightness);
 		} else {
 			pixelColours[0] = ((redChannel[0] * brightness) << 24) | ((greenChannel[0] * brightness) << 16) | ((blueChannel[0] * brightness) << 8) | alpha;
+		}
+
+		// create grid line colours
+		if (this.littleEndian) {
+			this.gridLineColour = (alpha << 24) | ((gridLineRaw & 255) << 16) | (((gridLineRaw >> 8) & 255) << 8) | (gridLineRaw >> 16);
+			this.gridLineBoldColour = (alpha << 24) | ((gridLineBoldRaw & 255) << 16) | (((gridLineBoldRaw >> 8) & 255) << 8) | (gridLineBoldRaw >> 16);
+		} else {
+			this.gridLineColour = ((gridLineRaw >> 16) << 24) | (((gridLineRaw >> 8) & 255) << 16) | ((gridLineRaw & 255) << 8) | alpha;
+			this.gridLineBoldColour = ((gridLineBoldRaw >> 16) << 24) | (((gridLineBoldRaw >> 8) & 255) << 16) | ((gridLineBoldRaw & 255) << 8) | alpha;
+		}
+
+		// create bounded grid border colour
+		if (this.boundedGridType !== -1) {
+			i = this.boundedBorderColour;
+			if (this.littleEndian) {
+				pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+			} else {
+				pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
+			}
 		}
 	};
 
@@ -18254,7 +18315,7 @@
 		if (!(this.isNone || this.isPCA || this.isRuleTree || this.isSuper)) {
 			// check for generations or HROT rule
 			if (this.multiNumStates === -1) {
-				// check for rainbox
+				// check for rainbow
 				if (this.rainbow) {
 					this.convertToPensTileRainbow();
 				} else {
@@ -26794,90 +26855,42 @@
 								this.anythingAlive |= nextCell;
 
 								// lookup next colour
-								value16 = 0;
-								if ((nextCell & 32768) >> 8) {
-									value16 = ((h + cr + cr) & 63) + 64;
-								}
-								if ((nextCell & 16384) << 1) {
-									value16 |= (((h + cr + cr + 1) & 63) + 64) << 8;
-								}
+								value16 = colourLookup[((nextCell & 49152) >> 7) | ((h + cr + cr) & 127)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value16 = 0;
-								if ((nextCell & 8192) >> 6) {
-									value16 = ((h + cr + cr) & 63) + 64;
-								}
-								if ((nextCell & 4096) << 3) {
-									value16 |= (((h + cr + cr + 1) & 63) + 64) << 8;
-								}
+								value16 = colourLookup[((nextCell & 12288) >> 5) | ((h + cr + cr) & 127)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value16 = 0;
-								if ((nextCell & 2048) >> 4) {
-									value16 = ((h + cr + cr) & 63) + 64;
-								}
-								if ((nextCell & 1024) << 5) {
-									value16 |= (((h + cr + cr + 1) & 63) + 64) << 8;
-								}
+								value16 = colourLookup[((nextCell & 3072) >> 3) | ((h + cr + cr) & 127)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value16 = 0;
-								if ((nextCell & 512) >> 2) {
-									value16 = ((h + cr + cr) & 63) + 64;
-								}
-								if ((nextCell & 256) << 7) {
-									value16 |= (((h + cr + cr + 1) & 63) + 64) << 8;
-								}
+								value16 = colourLookup[((nextCell & 768) >> 1) | ((h + cr + cr) & 127)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value16 = 0;
-								if (nextCell & 128) {
-									value16 = ((h + cr + cr) & 63) + 64;
-								}
-								if ((nextCell & 64) << 9) {
-									value16 |= (((h + cr + cr + 1) & 63) + 64) << 8;
-								}
+								value16 = colourLookup[((nextCell & 192) << 1) | ((h + cr + cr) & 127)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value16 = 0;
-								if ((nextCell & 32) << 2) {
-									value16 = ((h + cr + cr) & 63) + 64;
-								}
-								if ((nextCell & 16) << 11) {
-									value16 |= (((h + cr + cr + 1) & 63) + 64) << 8;
-								}
+								value16 = colourLookup[((nextCell & 48) << 3) | ((h + cr + cr) & 127)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value16 = 0;
-								if ((nextCell & 8) << 4) {
-									value16 = ((h + cr + cr) & 63) + 64;
-								}
-								if ((nextCell & 4) << 13) {
-									value16 |= (((h + cr + cr + 1) & 63) + 64) << 8;
-								}
+								value16 = colourLookup[((nextCell & 12) << 5) | ((h + cr + cr) & 127)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value16 = 0;
-								if ((nextCell & 2) << 6) {
-									value16 = ((h + cr + cr) & 63) + 64;
-								}
-								if ((nextCell & 1) << 15) {
-									value16 |= (((h + cr + cr + 1) & 63) + 64) << 8;
-								}
+								value16 = colourLookup[((nextCell & 3) << 7) | ((h + cr + cr) & 127)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								// cr += 1 - no need for final increments they will be reset next row

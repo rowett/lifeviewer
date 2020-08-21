@@ -1,3 +1,6 @@
+Build 557
+- improved [[ RAINBOW ]] rendering performance
+
 Build 556
 - Help->Aliases now marks aliases with duplicate names
 - added Weighted Generations aliases
