@@ -320,6 +320,20 @@
 						me.menuManager.notification.notify("Throttling " + (me.canBailOut ? "On" : "Off"), 15, 40, 15, true);
 						break;
 
+					// w for toggle rainbow display
+					case 87:
+						// toggle rainbow mode
+						if (!(me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isRuleTree || me.engine.isMargolus)) {
+							me.engine.rainbow = !me.engine.rainbow;
+							me.engine.createColourIndex();
+							if ((me.engine.counter & 1) === 0) {
+								me.engine.resetColourGridBox(me.engine.grid16);
+							} else {
+								me.engine.resetColourGridBox(me.engine.nextGrid16);
+							}
+						}
+						break;
+
 					// x for flip X
 					case 88:
 						// flip selection horizontally

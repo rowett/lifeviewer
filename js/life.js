@@ -5822,7 +5822,7 @@
 	};
 
 	// reset the colour grid from the grid
-	Life.prototype.resetColourGridBox= function(grid) {
+	Life.prototype.resetColourGridBox = function(grid) {
 		if (this.rainbow) {
 			this.resetColourGridBoxRainbow(grid);
 		} else {
@@ -6693,9 +6693,9 @@
 	Life.prototype.createPixelColoursRainbow = function(brightness) {
 		var pixelColours = this.pixelColours,
 			i = 0,
-			r = 240,
-			g = 0,
-			b = 0,
+			r = 255,
+			g = 15,
+			b = 15,
 			alpha = 255,
 			s = 0,
 			steps = 240 / 6,
@@ -6711,9 +6711,9 @@
 		// create rainbow colours
 		for (i = 1; i <= 240; i += 1) {
 			if (this.littleEndian) {
-				pixelColours[i] = (alpha << 24) | ((b | 0) << 16) | ((g | 0) << 8) | (r | 0);
+				pixelColours[i] = (alpha << 24) | ((b * brightness) << 16) | ((g * brightness) << 8) | (r * brightness);
 			} else {
-				pixelColours[i] = (r << 24) | (g << 16) | (b << 8) | alpha;
+				pixelColours[i] = ((r * brightness) << 24) | ((g * brightness) << 16) | ((b * brightness) << 8) | alpha;
 			}
 			r += incs[inc][0] * amount;
 			g += incs[inc][1] * amount;
@@ -28341,7 +28341,11 @@
 					}
 				}
 			} else {
-				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				if (this.rainbow) {
+					transparentTarget = 1;
+				} else {
+					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				}
 			}
 
 			// update brightness
@@ -28725,7 +28729,11 @@
 					}
 				}
 			} else {
-				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				if (this.rainbow) {
+					transparentTarget = 1;
+				} else {
+					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				}
 			}
 
 			// update brightness
@@ -29053,7 +29061,11 @@
 					}
 				}
 			} else {
-				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				if (this.rainbow) {
+					transparentTarget = 1;
+				} else {
+					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				}
 			}
 
 			// update brightness
@@ -29362,7 +29374,11 @@
 					}
 				}
 			} else {
-				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				if (this.rainbow) {
+					transparentTarget = 1;
+				} else {
+					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				}
 			}
 
 			// update brightness
@@ -30387,7 +30403,11 @@
 					}
 				}
 			} else {
-				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				if (this.rainbow) {
+					transparentTarget = 1;
+				} else {
+					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				}
 			}
 
 			// update brightness
@@ -30859,7 +30879,11 @@
 					}
 				}
 			} else {
-				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				if (this.rainbow) {
+					transparentTarget = 1;
+				} else {
+					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				}
 			}
 
 			// update brightness
@@ -31318,7 +31342,11 @@
 					}
 				}
 			} else {
-				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				if (this.rainbow) {
+					transparentTarget = 1;
+				} else {
+					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				}
 			}
 
 			// update brightness
@@ -31833,7 +31861,11 @@
 					}
 				}
 			} else {
-				transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				if (this.rainbow) {
+					transparentTarget = 1;
+				} else {
+					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+				}
 			}
 
 			// update brightness

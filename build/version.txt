@@ -1,5 +1,7 @@
 Build 557
 - improved [[ RAINBOW ]] rendering performance
+- hotkey Alt+W to toggle rainbow rendering mode (only available for 2-state Life-like patterns)
+- [[ RAINBOW ]] works with layers
 
 Build 556
 - Help->Aliases now marks aliases with duplicate names
