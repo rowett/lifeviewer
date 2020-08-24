@@ -634,7 +634,7 @@
 					if (event.altKey) {
 						me.clearCells(me, false, false);
 						value = me.drawState;
-						if (me.engine.multiNumStates > 2 && !(me.engine.isPCA || me.engine.isRuleTree) && value > 0) {
+						if (me.engine.multiNumStates > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper) && value > 0) {
 							value = me.engine.multiNumStates - value;
 						}
 						if (me.engine.isRuleTree) {

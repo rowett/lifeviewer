@@ -442,7 +442,7 @@
 		/** @const {string} */ this.historyPostfix = "history";
 
 		// lower case name of [R]Super postfix
-		/** @const {string} */ this.superPostfix = "superTBD";  // TBD remove TBD when implementation complete
+		/** @const {string} */ this.superPostfix = "super";
 
 		// lower case name of Triangular postfix
 		/** @const {string} */ this.triangularPostfix = "l";
@@ -3024,6 +3024,11 @@
 			pattern.ruleName += "History";
 		}
 
+		// check for Super
+		if (pattern.isSuper) {
+			pattern.ruleName += "Super";
+		}
+
 		// check for bounded grid
 		if (pattern.gridType !== -1) {
 			// add grid type
@@ -3073,6 +3078,11 @@
 			// check for [R]History
 			if (pattern.isHistory) {
 				aliasName += "History";
+			}
+
+			// check for [R]Super
+			if (pattern.isSuper) {
+				aliasName += "Super";
 			}
 
 			// save the alias name
@@ -5894,7 +5904,7 @@
 				if (stateNum > 0 && save) {
 					while (runCount > 0) {
 						// save multi-state cell
-						if (pattern.multiNumStates === -1) {
+						if (pattern.multiNumStates === -1 && pattern.isSuper) {
 							// save cell normally
 							pattern.multiStateMap[y][x] = stateNum;
 						} else {
@@ -5915,8 +5925,8 @@
 							}
 						}
 
-						// update 2d map if normal state 1, LifeHistory odd states, Generations state 1
-						if ((!pattern.isHistory && pattern.multiNumStates === -1 && stateNum === 1) || (pattern.isHistory && (stateNum & 1)) || (pattern.multiNumStates !== -1 && stateNum === 1)) {
+						// update 2d map if normal state 1, [R]History or [R]Super odd states, Generations state 1
+						if ((!(pattern.isHistory || pattern.isSuper) && pattern.multiNumStates === -1 && stateNum === 1) || ((pattern.isHistory || pattern.isSuper) && (stateNum & 1)) || (pattern.multiNumStates !== -1 && stateNum === 1)) {
 							pattern.lifeMap[y][x >> 4] |= 1 << (~x & 15);
 						}
 
@@ -7454,6 +7464,11 @@
 		// check for triangular HROT patterns
 		if (pattern.isHROT && (pattern.neighborhoodHROT === this.triangularHROT || ((pattern.neighborhoodHROT === this.weightedHROT || pattern.neighborhoodHROT === this.customHROT) && pattern.customGridType === "L"))) {
 			pattern.isTriangular = true;
+		}
+
+		// setup number of states for [R]Super patterns
+		if (pattern.isSuper) {
+			pattern.multiNumStates = 26;
 		}
 	};
 

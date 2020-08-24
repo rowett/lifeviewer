@@ -295,7 +295,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 557,
+		/** @const {number} */ versionBuild : 558,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2021,7 +2021,7 @@
 			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
 			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1),
 			states = this.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
 			newRecord = 0,
 			addedToRun = false,
 			runCount = 0;
@@ -2600,7 +2600,7 @@
 			ayy = trans[3],
 			pattern = new Pattern("rleToCellList", this.manager),
 			patternRow = null,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree));
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper));
 
 		// check the RLE is valid
 		rle += " ";
@@ -3427,7 +3427,7 @@
 			gridRow = grid[(y + panY) & hm];
 
 			// check for multi-state view
-			if (this.multiStateView || this.engine.isPCA || this.engine.isRuleTree) {
+			if (this.multiStateView || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper) {
 				multiStateRow = pattern.multiStateMap[y];
 				colourGridRow = colourGrid[(y + panY) & hm];
 
@@ -4266,7 +4266,7 @@
 			e2 = 0,
 			width = this.engine.width,
 			height = this.engine.height,
-			// whether LifeHistory state6 changed
+			// whether [R]History or [R]Super state6 changed
 			result = 0;
 
 		// set the first point
@@ -4347,7 +4347,7 @@
 			}
 		}
 
-		// return whether LifeHistory state6 changed
+		// return whether [R]History or [R]Super state6 changed
 		return result;
 	};
 
@@ -5650,7 +5650,7 @@
 		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || (this.engine.isHROT && !(this.engine.HROT.xrange === 1 && this.engine.HROT.type === this.manager.mooreHROT && this.engine.HROT.scount === 2)) || this.engine.isTriangular || this.engine.isVonNeumann;
 
 		// lock theme button if mode doesn't support themes
-		this.themeButton.locked =  this.multiStateView || this.engine.isNone || this.engine.isRuleTree;
+		this.themeButton.locked =  this.multiStateView || this.engine.isNone || this.engine.isRuleTree || this.engine.isSuper;
 
 		// lock major button if hex or triangular grid
 		this.majorButton.locked = (this.engine.isHex && this.engine.useHexagons) || this.engine.isTriangular;
@@ -5824,7 +5824,7 @@
 				if (i + this.startState === 0) {
 					value = 0;
 				} else {
-					if (this.engine.isPCA || this.engine.isRuleTree) {
+					if (this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper) {
 						value = i + this.startState + this.historyStates;
 					} else {
 						value = this.historyStates + this.engine.multiNumStates - (i + this.startState);
@@ -7208,13 +7208,17 @@
 							name += "W";
 						}
 					} else {
-						if (this.engine.isRuleTree) {
-							name = "State " + String(state);
+						if (this.engine.isSuper) {
+							name = LifeConstants.namesSuper[state];
 						} else {
-							if (state === 1) {
-								name = "Alive";
+							if (this.engine.isRuleTree) {
+								name = "State " + String(state);
 							} else {
-								name = "Dying " + String(state - 1);
+								if (state === 1) {
+									name = "Alive";
+								} else {
+									name = "Dying " + String(state - 1);
+								}
 							}
 						}
 					}
@@ -7237,7 +7241,7 @@
 				if (newValue === 0) {
 					me.drawState = 0;
 				} else {
-					if (me.engine.isPCA || me.engine.isRuleTree) {
+					if (me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper) {
 						me.drawState = newValue;
 					} else {
 						me.drawState = me.engine.multiNumStates - newValue;
@@ -7329,7 +7333,7 @@
 			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1);
 			
 		// adjust current state if generations style
-		if (this.engine.multiNumStates > 2 && !(this.engine.isPCA || this.engine.isRuleTree)) {
+		if (this.engine.multiNumStates > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)) {
 			if (replace > 0) {
 				replace = this.engine.multiNumStates - replace;
 			}
@@ -7370,7 +7374,7 @@
 			}
 			if (numReplaced > 0) {
 				// check for state 6
-				if (this.engine.isLifeHistory && replace === 6 || current === 6) {
+				if ((this.engine.isLifeHistory || this.engine.isSuper) && replace === 6 || current === 6) {
 					this.engine.populateState6MaskFromColGrid();
 				}
 				this.afterEdit("replace states");
@@ -7395,7 +7399,7 @@
 		// delete any cell of the current pen colour
 		if (current > 0) {
 			// adjust current state if generations style
-			if (me.engine.multiNumStates > 2 && !(me.engine.isPCA || me.engine.isRuleTree)) {
+			if (me.engine.multiNumStates > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper)) {
 				current = me.engine.multiNumStates - current;
 			}
 			// adjust for LifeHistory
@@ -7854,7 +7858,7 @@
 		if (fromX === -1 && fromY === -1) {
 			this.penColour = this.readCell();
 			// adjust test state if generations style
-			if (this.engine.multiNumStates > 2 && !(this.engine.isPCA || this.engine.isRuleTree)) {
+			if (this.engine.multiNumStates > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)) {
 				testState = this.engine.multiNumStates - testState;
 			}
 
@@ -9013,7 +9017,7 @@
 		}
 
 		// if current pattern is multistate then keep the number of states
-		if (this.engine.multiNumStates > 2) {
+		if (this.engine.multiNumStates > 2 && !this.engine.isSuper) {
 			result += "/" + this.engine.multiNumStates;
 		}
 
@@ -9309,6 +9313,11 @@
 			// check for [R]History
 			if (me.engine.isLifeHistory) {
 				me.patternRuleName += "History";
+			}
+
+			// check for [R]Super
+			if (me.engine.isSuper) {
+				me.patternRuleName += "Super";
 			}
 	
 			// check if there is an alias for the generated pattern name
@@ -10194,7 +10203,7 @@
 			state = 0,
 			count = 0,
 			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			buffer = null,
@@ -10541,7 +10550,7 @@
 			state = 0,
 			count = 0,
 			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			buffer = null;
@@ -11348,7 +11357,7 @@
 			row = null,
 			state = 0,
 			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
@@ -11451,7 +11460,7 @@
 			column = null,
 			state = 0,
 			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
@@ -11573,7 +11582,7 @@
 			saveTopY = 0,
 			states = me.engine.multiNumStates,
 			/** @type {boolean} */ rotateFits = true,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
 		    /** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
 		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
 		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
@@ -14192,7 +14201,7 @@
 			if (state === 0) {
 				message = "dead";
 			} else {
-				if (this.engine.isPCA) {
+				if (this.engine.isPCA || this.engine.isSuper) {
 					message = this.getStateName(state);
 				} else {
 					if (this.engine.isRuleTree) {
@@ -14215,7 +14224,7 @@
 		// update the selected state
 		state = this.drawState;
 		if (state > 0) {
-			if (!(this.engine.isPCA || this.engine.isRuleTree)) {
+			if (!(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)) {
 				state = this.engine.multiNumStates - state;
 			}
 		}
@@ -14267,7 +14276,7 @@
 				this.stateColsList.bgAlpha = 1;
 				this.stateColsList.current = [false, false];
 			} else {
-				if (this.engine.isPCA || this.engine.isRuleTree) {
+				if (this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper) {
 					this.drawState = 1;
 				} else {
 					this.drawState = states - 1;
@@ -14823,6 +14832,10 @@
 		if (me.engine.isLifeHistory) {
 			// always create the overlay since the editor may introduce any LifeHistory state
 			me.engine.createOverlay();
+		}
+
+		// create the state 6 mask
+		if (me.engine.isLifeHistory || me.engine.isSuper) {
 			me.engine.createState6Mask();
 		}
 
@@ -15193,10 +15206,9 @@
 			}
 
 			// remove history states if pattern is not executable or rule does not support them
-			if (!me.executable || me.engine.isRuleTree) {
+			if (!me.executable || me.engine.isRuleTree || me.engine.isSuper) {
 				me.historyStates = 0;
 			}
-
 
 			// initialise random number generator from seed
 			me.randGen.init(me.randomSeed);

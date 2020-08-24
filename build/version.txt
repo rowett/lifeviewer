@@ -1,3 +1,6 @@
+Build 558
+- further [R]Super work
+
 Build 557
 - improved [[ RAINBOW ]] rendering performance
 - hotkey Alt+W to toggle rainbow rendering mode (only available for 2-state Life-like patterns)
