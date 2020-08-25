@@ -1,5 +1,5 @@
 Build 558
-- further [R]Super work
+- [R]Super prototype
 - fixed maximum Bounded Grid size (depending on rule at least 6 less than max grid size)
 
 Build 557
