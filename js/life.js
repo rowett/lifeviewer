@@ -1229,8 +1229,8 @@
 			colourGrid = this.colourGrid,
 			aliveStart = LifeConstants.aliveStart;
 
-		// check for PCA or RuleTree rules
-		if (this.isPCA || this.isRuleTree) {
+		// check for PCA, RuleTree or Super rules
+		if (this.isPCA || this.isRuleTree || this.isSuper) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -1399,8 +1399,8 @@
 			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
 			hashBox = this.hashBox;
 
-		// check for PCA rules
-		if (this.isPCA || this.isRuleTree) {
+		// check for PCA, RuleTree or Super rules
+		if (this.isPCA || this.isRuleTree || this.isSuper) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -2483,7 +2483,7 @@
 			/** @type {boolean} */ drawFilledCellBorders = !this.displayGrid && !this.cellBorders;
 
 		// switch buffers if required
-		if (this.isRuleTree && ((this.counter & 1) !== 0)) {
+		if ((this.isSuper || this.isRuleTree) && ((this.counter & 1) !== 0)) {
 			colourGrid = this.nextColourGrid;
 		}
 
@@ -3141,7 +3141,7 @@
 			/** @type {boolean} */ drawFilledCellBorders = !this.displayGrid && !this.cellBorders;
 
 		// switch buffers if required
-		if (this.isRuleTree && ((this.counter & 1) !== 0)) {
+		if ((this.isSuper || this.isRuleTree) && ((this.counter & 1) !== 0)) {
 			colourGrid = this.nextColourGrid;
 		}
 
@@ -4152,8 +4152,8 @@
 			// x coordinate for boundary check
 			/** @type {number} */ cx = 0;
 
-		// check for PCA rules
-		if (this.isPCA || this.isRuleTree) {
+		// check for PCA, RuleTree or Super rules
+		if (this.isPCA || this.isRuleTree || this.isSuper) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -4346,7 +4346,7 @@
 							grid[y][x >> 4] &= ~cellAsBit;
 						}
 	
-						// check for LifeHistory
+						// check for [R]History
 						if (this.isLifeHistory && overlayGrid) {
 							// check if the cell used to be or has become state 6
 							current = overlayGrid[y][x];
@@ -4367,6 +4367,13 @@
 								} else {
 									overlayGrid[y][x] = ViewConstants.stateMap[state] + 128;
 								}
+							}
+						}
+
+						// check for [R]Super
+						if (this.isSuper) {
+							if ((state === 6 && current !== 6) || (state !== 6 && current === 6)) {
+								result = 1;
 							}
 						}
 	
@@ -4650,8 +4657,8 @@
 			// colour grid
 			colourGrid = this.colourGrid;
 
-		// check for PCA rules
-		if (this.isPCA || this.isRuleTree) {
+		// check for PCA, RuleTree or Super rules
+		if (this.isPCA || this.isRuleTree || this.isSuper) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -4946,7 +4953,7 @@
 		grid.whole.fill(0);
 		nextGrid.whole.fill(0);
 		this.colourGrid.whole.fill(0);
-		if (this.isPCA || this.isRuleTree) {
+		if (this.isPCA || this.isRuleTree || this.isSuper) {
 			this.nextColourGrid.whole.fill(0);
 		}
 		this.smallColourGrid.whole.fill(0);
@@ -4959,7 +4966,7 @@
 
 		// restore colour grid from snapshot
 		snapshot.restoreColourGridUsingTile(colourGrid, this.colourTileHistoryGrid, this);
-		if (this.isPCA || this.isRuleTree) {
+		if (this.isPCA || this.isRuleTree || this.isSuper) {
 			Array.copy(colourGrid, this.nextColourGrid);
 		}
 
@@ -5024,7 +5031,7 @@
 		var colourGrid = this.colourGrid;
 
 		// check for PCA rules
-		if (this.isPCA || this.isRuleTree) {
+		if (this.isPCA || this.isRuleTree || this.isSuper) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -5112,7 +5119,7 @@
 
 		// colour grid
 		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
-		if (this.isPCA || this.isRuleTree) {
+		if (this.isPCA || this.isRuleTree || this.isSuper) {
 			this.nextColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
 			this.nextColourGrid16 = Array.matrixView(Uint16, this.nextColourGrid, "Life.nextColourGrid16");
 			this.nextColourGrid32 = Array.matrixView(Uint32, this.nextColourGrid, "Life.nextColourGrid32");
@@ -5192,7 +5199,7 @@
 		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
 		this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
 		this.colourGrid32 = Array.matrixView(Uint32, this.colourGrid, "Life.colourGrid32");
-		if (this.isPCA || this.isRuleTree) {
+		if (this.isPCA || this.isRuleTree || this.isSuper) {
 			this.nextColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
 			this.nextColourGrid16 = Array.matrixView(Uint16, this.nextColourGrid, "Life.nextColourGrid16");
 			this.nextColourGrid32 = Array.matrixView(Uint32, this.nextColourGrid, "Life.nextColourGrid32");
@@ -5323,7 +5330,7 @@
 			this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
 			this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
 			this.colourGrid32 = Array.matrixView(Uint32, this.colourGrid, "Life.colourGrid32");
-			if (this.isPCA || this.isRuleTree) {
+			if (this.isPCA || this.isRuleTree || this.isSuper) {
 				this.nextColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
 				this.nextColourGrid16 = Array.matrixView(Uint16, this.nextColourGrid, "Life.nextColourGrid16");
 				this.nextColourGrid32 = Array.matrixView(Uint32, this.nextColourGrid, "Life.nextColourGrid32");
@@ -5351,7 +5358,7 @@
 				this.nextGrid[y + yOffset].set(currentNextGrid[y], xOffset >> 3);
 				this.colourGrid[y + yOffset].set(currentColourGrid[y], xOffset);
 				this.smallColourGrid[y + yOffset].set(currentSmallColourGrid[y], xOffset);
-				if (this.isPCA || this.isRuleTree) {
+				if (this.isPCA || this.isRuleTree || this.isSuper) {
 					this.nextColourGrid[y + yOffset].set(currentNextColourGrid[y], xOffset);
 				}
 				if (this.countList) {
@@ -5699,7 +5706,10 @@
 			tilePower = this.tilePower,
 			
 			// state 6 value in colour grid
-			state6 = ViewConstants.stateMap[6] + 128;
+			state6 = this.isSuper ? 6 : ViewConstants.stateMap[6] + 128,
+
+			// grid
+			grid = this.isSuper ? this.colourGrid : this.overlayGrid;
 
 		// clear current mask and cells
 		this.state6Mask.whole.fill(0);
@@ -5712,7 +5722,7 @@
 		// remove bits from the mask that are state 6 in the pattern
 		for (y = 1; y < this.height - 1; y += 1) {
 			// get the rows
-			overlayRow = this.overlayGrid[y];
+			overlayRow = grid[y];
 			maskRow0 = this.state6Mask[(y - 1) & hm];
 			maskRow1 = this.state6Mask[y & hm];
 			maskRow2 = this.state6Mask[(y + 1) & hm];
@@ -8517,8 +8527,8 @@
 		if (this.shrinkNeeded) {
 			this.shrinkNeeded = false;
 
-			// check for PCA rules
-			if (this.isPCA || this.isRuleTree) {
+			// check for PCA, RuleTree or Super rules
+			if (this.isPCA || this.isRuleTree || this.isSuper) {
 				// swap grids every generation
 				if ((this.counter & 1) !== 0) {
 					colourGrid = this.nextColourGrid;
@@ -9144,8 +9154,8 @@
 			// clear the colour grid boundary
 			grid = this.colourGrid;
 
-			// check for PCA rules
-			if (this.isPCA || this.isRuleTree) {
+			// check for PCA, RuleTree or Super rules
+			if (this.isPCA || this.isRuleTree || this.isSuper) {
 				// swap grids every generation
 				if ((this.counter & 1) !== 0) {
 					grid = this.nextColourGrid;
@@ -10660,8 +10670,8 @@
 	Life.prototype.preProcessBoundedGrid = function() {
 		var colourGrid = this.colourGrid;
 
-		// alternate colour grids for PCA rules
-		if (this.isPCA || this.isRuleTree) {
+		// alternate colour grids for PCA, RuleTree and Super rules
+		if (this.isPCA || this.isRuleTree || this.isSuper) {
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
 			}
@@ -10825,15 +10835,15 @@
 			this.nextGenerationGenerations();
 		}
 
+		// perform super processing
+		if (this.isSuper) {
+			this.nextGenerationSuperTile();
+		}
+
 		// check if state 6 is on
 		if (this.state6Mask) {
 			// post-process for state 6
 			this.state6Post();
-		}
-
-		// perform super processing
-		if (this.isSuper) {
-			this.nextGenerationSuperTile();
 		}
 
 		// perform bounded grid post-processing
@@ -17788,7 +17798,7 @@
 		// check if 0.5 <= zoom < 1
 		if (camZoom >= 0.5 && camZoom < 1) {
 			// create 2x2 colour grid
-			if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree) {
+			if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
 				this.create2x2ColourGrid16(colourGrid16, this.smallColourGrid);
 			} else {
 				this.create2x2ColourGridNoHistory16(colourGrid16, this.smallColourGrid);
@@ -17797,7 +17807,7 @@
 			// check if 0.25 <= zoom < 0.5
 			if (camZoom >= 0.25 && camZoom < 0.5) {
 				// create 4x4 colour grid
-				if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree) {
+				if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
 					this.create4x4ColourGrid32(colourGrid32, this.smallColourGrid);
 				} else {
 					this.create4x4ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
@@ -17806,7 +17816,7 @@
 				// check if 0.125 <= zoom < 0.25
 				if (camZoom >= 0.125 && camZoom < 0.25) {
 					// create 8x8 colour grid
-					if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree) {
+					if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
 						this.create8x8ColourGrid32(colourGrid32, this.smallColourGrid);
 					} else {
 						this.create8x8ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
@@ -17815,7 +17825,7 @@
 					// check if zoom < 0.125
 					if (camZoom < 0.125) {
 						// create 16x16 colour grid
-						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree) {
+						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
 							this.create16x16ColourGrid32(colourGrid32, this.smallColourGrid);
 						} else {
 							this.create16x16ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
@@ -17851,6 +17861,295 @@
 				}
 			}
 		}
+	};
+
+	// compute super rule next generation (after state 0 and 1)
+	Life.prototype.nextGenerationSuperTileMoore = function() {
+		var h = 0, cr = 0, nextCell = 0,
+			colourGrid = null, outputGrid = null,
+			colourGridRow = null, colourTileRow = null,
+			aboveRow = null, belowRow = null, destRow = null,
+		    colourTileHistoryRow = null,
+		    colourTileHistoryGrid = this.colourTileHistoryGrid,
+		    colourTileGrid = this.colourTileGrid,
+		    grid = null, gridRow = null, 
+		    tileGrid = null, tileGridRow = null,
+		    value = 0, th = 0, tw = 0, b = 0, bitN = 0,
+		    bottomY = 0, topY = 0, leftX = 0,
+			tiles = 0, nextTiles = 0,
+			population = 0,
+			births = 0,
+			deaths = 0,
+			lastValue = 0,
+			width = this.width,
+			width16 = width >> 4,
+			height = this.height,
+			newLeftX = width,
+			newRightX = -1,
+			newTopY = -1,
+			newBottomY = height,
+			zoomBox = this.zoomBox,
+
+			// mask of types in the neighbourhood
+			typeMask = 0,
+
+			// cells in the neighbourhood
+			nw = 0, n = 0, ne = 0, w = 0, c = 0, e = 0, sw = 0, s = 0, se = 0,
+
+		    // column occupied
+		    columnOccupied16 = this.columnOccupied16,
+			colOccupied = 0,
+			colIndex = 0,
+			
+			// row occupied
+			rowOccupied16 = this.rowOccupied16,
+			rowOccupied = 0,
+			rowIndex = 0,
+
+		    // whether the tile is alive
+		    tileAlive = 0,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (in 16bit chunks)
+		    xSize = this.tileX >> 1,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+		    tileCols16 = this.tileCols >> 4,
+
+		    // starting and ending tile row
+		    tileStartRow = 0,
+			tileEndRow = tileRows,
+			
+			// maximum dead state number
+			deadState = this.historyStates,
+
+			// minimum dead state number
+			minDeadState = (this.historyStates > 0 ? 1 : 0),
+
+			// constants
+			/** @const {number} */ alivecells = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
+			/** @const {number} */ alivewith18 = alivecells | (1 << 18),
+			/** @const {number} */ alive7or9 = (1 << 7) | (1 << 9),
+			/** @const {number} */ alive7or11 = (1 << 7) | (1 << 11),
+			/** @const {number} */ alive1or3or5 = (1 << 1) | (1 << 3) | (1 << 5),
+			/** @const {number} */ alive9to25 = (1 << 9) | (1 << 11) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
+			/** @const {number} */ alive9or11 = (1 << 9) | (1 << 11);
+
+		// clear anything alive
+		this.anythingAlive = 0;
+
+		// select the correct grid
+		if ((this.counter & 1) !== 0) {
+			grid = this.nextGrid16;
+			tileGrid = this.nextTileGrid;
+			colourGrid = this.nextColourGrid;
+			outputGrid = this.colourGrid;
+
+		} else {
+			grid = this.grid16;
+			tileGrid = this.tileGrid;
+			colourGrid = this.colourGrid;
+			outputGrid = this.nextColourGrid;
+		}
+
+		// check the start and end row are in range
+		if (tileStartRow < 0) {
+			tileStartRow = 0;
+		}
+		if (tileEndRow > tileRows) {
+			tileEndRow = tileRows;
+		}
+
+		// clear column occupied flags
+		columnOccupied16.fill(0);
+
+		// clear row occupied flags
+		rowOccupied16.fill(0);
+
+		// set the initial tile row
+		bottomY = tileStartRow << this.tilePower;
+		topY = bottomY + ySize;
+
+		// scan each row of tiles
+		for (th = tileStartRow; th < tileEndRow; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			tileGridRow = tileGrid[th];
+			colourTileRow = colourTileGrid[th];
+			colourTileHistoryRow = colourTileHistoryGrid[th];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = tileGridRow[tw] | colourTileRow[tw];
+				nextTiles = 0;
+
+				// check if any are occupied
+				if (tiles) {
+					// compute next colour for each tile in the set
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << b)) !== 0) {
+							// mark no cells in this column
+							colOccupied = 0;
+
+							// mark no cells in the tile rows
+							rowOccupied = 0;
+							rowIndex = 32768;
+
+							// flag nothing alive in the tile
+							tileAlive = 0;
+
+							// clear type mask
+							typeMask = 0;
+
+							// process each row
+							for (h = bottomY; h < topY; h += 1) {
+								// get the grid and colour grid row
+								gridRow = grid[h];
+								colourGridRow = colourGrid[h];
+								aboveRow = colourGrid[h - 1];
+								belowRow = colourGrid[h + 1];
+								destRow = outputGrid[h];
+
+								// get correct starting colour index
+								cr = (leftX << 4);
+
+								// process each 16bit chunk (16 cells) along the row
+								nextCell = gridRow[leftX];
+
+								// process each cell in the chunk
+								colIndex = 32768;
+								bitN = 1 << 15;
+								while (bitN > 0) {
+									// get current value
+									value = colourGridRow[cr];
+									if (value !== 6) {
+										// set based on bit grid
+										if ((nextCell & bitN) !== 0) {
+											value = 1;
+										} else {
+											value = 0;
+										}
+
+										// write the colour back
+										colourGridRow[cr] = value;
+									}
+
+									colIndex >>= 1;
+									cr += 1;
+									bitN >>= 1;
+								}
+
+								// save the updated state 1 cells to the bitmap
+								gridRow[leftX] = nextCell;
+								this.anythingAlive |= nextCell;
+								rowIndex >>= 1;
+							}
+							columnOccupied16[leftX] |= colOccupied;
+							rowOccupied16[th] |= rowOccupied;
+
+							// check if the row was alive
+							if (tileAlive) {
+								// update tile flag
+								nextTiles |= (1 << b);
+							}
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+
+				// save the tile group
+				colourTileRow[tw] = tiles | nextTiles;
+				colourTileHistoryRow[tw] |= tiles | nextTiles;
+			}
+
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+
+		// update bounding box
+		for (tw = 0; tw < width16; tw += 1) {
+			if (columnOccupied16[tw]) {
+				if (tw < newLeftX) {
+					newLeftX = tw;
+				}
+				if (tw > newRightX) {
+					newRightX = tw;
+				}
+			}
+		}
+
+		for (th = 0; th < rowOccupied16.length; th += 1) {
+			if (rowOccupied16[th]) {
+				if (th < newBottomY) {
+					newBottomY = th;
+				}
+				if (th > newTopY) {
+					newTopY = th;
+				}
+			}
+		}
+
+		// convert new width to pixels
+		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
+		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
+
+		// convert new height to pixels
+		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
+		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
+	
+		// ensure the box is not blank
+		if (newTopY < 0) {
+			newTopY = height - 1;
+		}
+		if (newBottomY >= height) {
+			newBottomY = 0;
+		}
+		if (newLeftX >= width) {
+			newLeftX = 0;
+		}
+		if (newRightX < 0) {
+			newRightX = width - 1;
+		}
+
+		// clip to the screen
+		if (newTopY > height - 1) {
+			newTopY = height - 1;
+		}
+		if (newBottomY < 0) {
+			newBottomY = 0;
+		}
+		if (newLeftX < 0) {
+			newLeftX = 0;
+		}
+		if (newRightX > width - 1) {
+			newRightX = width - 1;
+		}
+
+		// save to zoom box
+		zoomBox.topY = newTopY;
+		zoomBox.bottomY = newBottomY;
+		zoomBox.leftX = newLeftX;
+		zoomBox.rightX = newRightX;
+
+		// update the population
+		//this.population = population;
+		//this.births = births;
+		//this.deaths = deaths;
 	};
 
 	// compute generations rule next generation (after state 0 and 1)
@@ -18460,7 +18759,7 @@
 	// update the life grid region using tiles for Super patterns
 	Life.prototype.nextGenerationSuperTile = function() {
 		// TBD add other neighbourhoods
-		//this.nextGenerationSuperTileMoore();
+		this.nextGenerationSuperTileMoore();
 	};
 
 	// update the life grid region using tiles for RuleTable patterns
@@ -27073,8 +27372,8 @@
 			minX = 0,
 			maxX = 0;
 
-		// check for PCA or RuleTree rules
-		if (this.isPCA || this.isRuleTree) {
+		// check for PCA, RuleTree or Super rules
+		if (this.isPCA || this.isRuleTree || this.isSuper) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -28037,8 +28336,8 @@
 		// mark that grid should be drawn
 		this.doDrawGrid = true;
 
-		// check for PCA rules
-		if (this.isPCA || this.isRuleTree) {
+		// check for PCA, RuleTree or Super rules
+		if (this.isPCA || this.isRuleTree || this.isSuper) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;

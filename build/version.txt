@@ -1,5 +1,6 @@
 Build 558
 - further [R]Super work
+- fixed maximum Bounded Grid size (depending on rule at least 6 less than max grid size)
 
 Build 557
 - improved [[ RAINBOW ]] rendering performance

@@ -3489,8 +3489,8 @@
 			}
 		}
 
-		// copy colour grid to next colour grid for PCA and RuleTree rules
-		if (this.engine.isPCA || this.engine.isRuleTree) {
+		// copy colour grid to next colour grid for PCA, RuleTree and Super rules
+		if (this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper) {
 			nextColourGrid.whole.set(colourGrid.whole);
 		}
 	};
@@ -7363,7 +7363,7 @@
 			for (y = bottomY; y <= topY; y += 1) {
 				for (x = leftX; x <= rightX; x += 1) {
 					state = this.engine.getState(x, y, false);
-					if (this.engine.multiNumStates > 2 && !(this.engine.isPCA || this.engine.isRuleTree) && state > 0) {
+					if (this.engine.multiNumStates > 2 && !(this.engine.isPCA || this.engine.isRuleTree) && state > 0) { // TBD 
 						state = this.engine.multiNumStates - state;
 					}
 					if (state === replace) {
@@ -7374,7 +7374,7 @@
 			}
 			if (numReplaced > 0) {
 				// check for state 6
-				if ((this.engine.isLifeHistory || this.engine.isSuper) && replace === 6 || current === 6) {
+				if ((this.engine.isLifeHistory || this.engine.isSuper) && (replace === 6 || current === 6)) {
 					this.engine.populateState6MaskFromColGrid();
 				}
 				this.afterEdit("replace states");
@@ -15262,6 +15262,8 @@
 
 			// check bounded grid size (script command may have increased maximum allowed size)
 			if (pattern.gridType !== -1) {
+				borderSize = 6;
+
 				// check for LtL or HROT rules
 				if (pattern.isHROT) {
 					borderSize = pattern.rangeHROT * 6;
