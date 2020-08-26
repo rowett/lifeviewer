@@ -3068,7 +3068,7 @@
 		if (aliasName !== null) {
 			// check for blank Conway rule
 			if (aliasName === "") {
-				if (pattern.isHistory) {
+				if (pattern.isHistory || pattern.isSuper) {
 					aliasName = "Life";
 				} else {
 					aliasName = "Conway's Life";
@@ -5904,7 +5904,7 @@
 				if (stateNum > 0 && save) {
 					while (runCount > 0) {
 						// save multi-state cell
-						if (pattern.multiNumStates === -1 && pattern.isSuper) {
+						if (pattern.multiNumStates === -1 && (pattern.isSuper || pattern.isHistory)) {
 							// save cell normally
 							pattern.multiStateMap[y][x] = stateNum;
 						} else {

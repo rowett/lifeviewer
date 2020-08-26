@@ -18076,11 +18076,9 @@
 													// typemask has a bit set per state in the neighbouring cells
 													typeMask = (1 << nw) | (1 << n) | (1 << ne) | (1 << e) | (1 << w) | (1 << sw) | (1 << s) | (1 << se);
 													value = 1;
-													//if ((typeMask & alive7or9) === alive7or9) {
 													if (((typeMask & alive7or9) !== 0) && ((typeMask & alivenot7or9) === 0)) {
 														value = 9;
 													} else {
-														//if ((typeMask & alive7or11) === alive7or11) {
 														if (((typeMask & alive7or11) !== 0) && ((typeMask & alivenot7or11) === 0)) {
 															value = 11;
 														}
@@ -18180,6 +18178,10 @@
 
 									// output new cell state
 									destRow[cr] = value;
+									if (value > 0) {
+										colOccupied |= colIndex;
+										rowOccupied |= rowIndex;
+									}
 
 									// next bit cell
 									colIndex >>= 1;
@@ -28785,14 +28787,18 @@
 		for (i = 1; i < layerTarget; i += 1) {
 			// compute the transparent target
 			if (this.multiNumStates > 2) {
-				// use number of generations states as maximum
-				if (this.historyStates === 0) {
-					transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				if (this.isSuper) {
+					transparentTarget = 1;
 				} else {
-					if (i < layerTarget / 2) {
-						transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+					// use number of generations states as maximum
+					if (this.historyStates === 0) {
+						transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
 					} else {
-						transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+						if (i < layerTarget / 2) {
+							transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+						} else {
+							transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+						}
 					}
 				}
 			} else {
@@ -29173,14 +29179,18 @@
 		for (i = 1; i < layerTarget; i += 1) {
 			// compute the transparent target
 			if (this.multiNumStates > 2) {
-				// use number of generations states as maximum
-				if (this.historyStates === 0) {
-					transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				if (this.isSuper) {
+					transparentTarget = 1;
 				} else {
-					if (i < layerTarget / 2) {
-						transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+					// use number of generations states as maximum
+					if (this.historyStates === 0) {
+						transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
 					} else {
-						transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+						if (i < layerTarget / 2) {
+							transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+						} else {
+							transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+						}
 					}
 				}
 			} else {
@@ -29505,14 +29515,18 @@
 		for (i = 1; i < layerTarget; i += 1) {
 			// compute the transparent target
 			if (this.multiNumStates > 2) {
-				// use number of generations states as maximum
-				if (this.historyStates === 0) {
-					transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				if (this.isSuper) {
+					transparentTarget = 1;
 				} else {
-					if (i < layerTarget / 2) {
-						transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+					// use number of generations states as maximum
+					if (this.historyStates === 0) {
+						transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
 					} else {
-						transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+						if (i < layerTarget / 2) {
+							transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+						} else {
+							transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+						}
 					}
 				}
 			} else {
@@ -29818,14 +29832,18 @@
 		for (i = 1; i < layerTarget; i += 1) {
 			// compute the transparent target
 			if (this.multiNumStates > 2) {
-				// use number of generations states as maximum
-				if (this.historyStates === 0) {
-					transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
+				if (this.isSuper) {
+					transparentTarget = 1;
 				} else {
-					if (i < layerTarget / 2) {
-						transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+					// use number of generations states as maximum
+					if (this.historyStates === 0) {
+						transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
 					} else {
-						transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+						if (i < layerTarget / 2) {
+							transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
+						} else {
+							transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+						}
 					}
 				}
 			} else {
