@@ -5061,7 +5061,7 @@
 						me.diedGeneration = me.engine.counter;
 
 						// clear the bit grids
-						if (me.engine.isPCA || me.engine.isRuleTree) {
+						if (me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper) {
 							me.engine.clearGrids(false);
 						} else {
 							me.engine.clearGrids(true);

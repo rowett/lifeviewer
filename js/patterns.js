@@ -7308,15 +7308,22 @@
 		}
 
 		// check for "none" and [R]History
-		if (pattern.isNone && pattern.isHistory) {
+		if (pattern.isNone && pattern.isHistory && this.failureReason === "") {
 			this.failureReason = "[R]History not valid with none rule";
 			pattern.isHistory = false;
 			this.executable = false;
 		}
 
 		// check for "none" and [R]Super
-		if (pattern.isNone && pattern.isSuper) {
+		if (pattern.isNone && pattern.isSuper && this.failureReason === "") {
 			this.failureReason = "[R]Super not valid with none rule";
+			pattern.isHistory = false;
+			this.executable = false;
+		}
+
+		// check for triangular and [R]Super
+		if (pattern.isTriangular && pattern.isSuper && this.failureReason === "") {
+			this.failureReason = "[R]Super not valid with triangular rule";
 			pattern.isHistory = false;
 			this.executable = false;
 		}

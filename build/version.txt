@@ -1,6 +1,7 @@
 Build 558
-- [R]Super prototype
+- [R]Super support for Moore, Hexagonal and von Neumann neighbourhoods
 - fixed maximum Bounded Grid size (depending on rule at least 6 less than max grid size)
+- rainbow rendering now works with hexagons and triangles
 
 Build 557
 - improved [[ RAINBOW ]] rendering performance
