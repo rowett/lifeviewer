@@ -237,21 +237,19 @@
 						me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
 						break;
 
-					// h for [R]History on
+					// h for [R]History/[R]Super on
 					case 72:
-						if (me.engine.isLifeHistory) {
-							me.engine.displayLifeHistory = true;
-							me.engine.drawOverlay = true;
-							me.menuManager.notification.notify("[R]History Display " + (me.engine.displayLifeHistory ? "On" : "Off"), 15, 40, 15, true);
+						if (me.engine.isLifeHistory || me.engine.isSuper) {
+							me.viewRHistoryToggle([true], true, me);
+							me.menuManager.notification.notify((me.engine.isSuper ? "[R]Super" : "[R]History") + " Display " + (me.engine.displayLifeHistory ? "On" : "Off"), 15, 40, 15, true);
 						}
 						break;
 
-					// j for [R]History off
+					// j for [R]History/[R]Super off
 					case 74:
-						if (me.engine.isLifeHistory) {
-							me.engine.displayLifeHistory = false;
-							me.engine.drawOverlay = false;
-							me.menuManager.notification.notify("[R]History Display " + (me.engine.displayLifeHistory ? "On" : "Off"), 15, 40, 15, true);
+						if (me.engine.isLifeHistory || me.engine.isSuper) {
+							me.viewRHistoryToggle([false], true, me);
+							me.menuManager.notification.notify((me.engine.isSuper ? "[R]Super" : "[R]History") + " Display " + (me.engine.displayLifeHistory ? "On" : "Off"), 15, 40, 15, true);
 						}
 						break;
 

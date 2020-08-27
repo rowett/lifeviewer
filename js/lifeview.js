@@ -1636,7 +1636,7 @@
 		// clear outside button
 		this.clearOutsideButton = null;
 
-		// clear [R]History button
+		// clear [R]History or [R]Super button
 		this.clearRHistoryButton = null;
 
 		// auto-shrink toggle
@@ -5757,7 +5757,7 @@
 		this.invertSelectionButton.deleted = shown;
 		this.clearSelectionButton.deleted = shown;
 		this.clearOutsideButton.deleted = shown;
-		this.clearRHistoryButton.deleted = shown || !this.engine.isLifeHistory;
+		this.clearRHistoryButton.deleted = shown || !(this.engine.isLifeHistory || this.engine.isSuper);
 		this.randomButton.deleted = shown;
 		this.randomItem.deleted = shown;
 		shown = hide || !this.selecting || settingsMenuOpen || this.engine.multiNumStates <= 2 || this.engine.isNone;
@@ -6493,7 +6493,9 @@
 		// check if chaning
 		if (change) {
 			me.engine.displayLifeHistory = newValue[0];
-			me.engine.drawOverlay = newValue[0];
+			if (me.engine.isLifeHistory) {
+				me.engine.drawOverlay = newValue[0];
+			}
 		}
 
 		return [me.engine.displayLifeHistory];
@@ -7407,7 +7409,7 @@
 				clearValue = current & 1;
 			}
 
-			// check for LifeHistory clear
+			// check for [R]History or [R]Super clear
 			if (me.engine.isLifeHistory && ctrl) {
 				// check for marked only
 				if (markedOnly) {
@@ -7422,7 +7424,11 @@
 						}
 					}
 					if (numCleared > 0) {
-						me.afterEdit("clear [R]History marked cells");
+						if (me.isSuper) {
+							me.afterEdit("clear [R]Super marked cells");
+						} else {
+							me.afterEdit("clear [R]History marked cells");
+						}
 					}
 				} else {
 					// clear all LifeHistory states
@@ -7438,7 +7444,11 @@
 					if (numCleared > 0) {
 						// update state 6 grid
 						this.engine.populateState6MaskFromColGrid();
-						me.afterEdit("clear [R]History cells");
+						if (me.isSuper) {
+							me.afterEdit("clear [R]Super cells");
+						} else {
+							me.afterEdit("clear [R]History cells");
+						}
 					}
 				}
 			} else {
@@ -9954,7 +9964,7 @@
 	View.prototype.clearPaste = function(me, ctrl) {
 		var i = 0;
 
-		if (me.engine.isLifeHistory && ctrl) {
+		if ((me.engine.isLifeHistory || me.engine.isSuper) && ctrl) {
 			while (i < me.pasteBuffer.length) {
 				if (me.pasteBuffer[i] > 1) {
 					me.pasteBuffer[i] &= 1;
@@ -10053,8 +10063,8 @@
 					y1 = swap;
 				}
 	
-				if (me.engine.isLifeHistory && ctrl) {
-					// clear [R]History states in selection
+				if ((me.engine.isLifeHistory || me.engine.isSuper) && ctrl) {
+					// clear [R]History or [R]Super states in selection
 					for (y = y1; y <= y2; y += 1) {
 						for (x = x1; x <= x2; x += 1) {
 							state = me.engine.getState(x + xOff, y + yOff, false);
@@ -10085,8 +10095,12 @@
 				me.afterSelectAction = false;
 	
 				// save edit
-				if (me.engine.isLifeHistory && ctrl) {
-					me.afterEdit("clear [R]History cells in selection");
+				if ((me.engine.isLifeHistory || me.engine.isSuper) && ctrl) {
+					if (me.engine.isLifeHistory) {
+						me.afterEdit("clear [R]History cells in selection");
+					} else {
+						me.afterEdit("clear [R]Super cells in selection");
+					}
 				} else {
 					me.afterEdit("clear cells in selection");
 				}
@@ -10115,7 +10129,7 @@
 		me.clearOutside(me);
 	};
 
-	// clear [R]History pressed
+	// clear [R]History or [R]Super pressed
 	View.prototype.clearRHistoryPressed = function(me) {
 		me.doClearSelection(me, true);
 	};
@@ -12835,11 +12849,15 @@
 
 	// update selection controls position based on window height
 	View.prototype.updateSelectionControlsPosition = function() {
-		if (this.engine.isLifeHistory) {
+		if (this.engine.isLifeHistory || this.engine.isSuper) {
 			this.invertSelectionButton.setPosition(Menu.southEast, -85, -130);
 			this.randomButton.setPosition(Menu.southEast, -130, -130);
 			this.randomButton.toolTip = "random fill";
-			this.randomItem.setPosition(Menu.southEast, -235, -130);
+			if (this.engine.isLifeHistory) {
+				this.randomItem.setPosition(Menu.southEast, -235, -130);
+			} else {
+				this.randomItem.setPosition(Menu.southEast, -280, -130);
+			}
 		} else {
 			if (this.engine.multiNumStates <= 2) {
 				this.invertSelectionButton.setPosition(Menu.southEast, -40, -130);
@@ -13641,7 +13659,7 @@
 		this.clearOutsideButton.icon = this.iconManager.icon("outside");
 		this.clearOutsideButton.toolTip = "clear cells outside selection";
 
-		// add the clear [R]History button
+		// add the clear [R]History or [R]Super button
 		this.clearRHistoryButton = this.viewMenu.addButtonItem(this.clearRHistoryPressed, Menu.southEast, -40, -130, 40, 40, "R");
 		this.clearRHistoryButton.icon = this.iconManager.icon("select");
 		this.clearRHistoryButton.toolTip = "clear [R]History cells";
@@ -14652,10 +14670,22 @@
 
 			// check if the rule is a History rule
 			me.engine.isLifeHistory = pattern.isHistory;
-			me.engine.displayLifeHistory = pattern.isHistory;
 
 			// check if the rule is a Super rule
 			me.engine.isSuper = pattern.isSuper;
+
+			// display [R]History or [R]Super states if either specified
+			me.engine.displayLifeHistory = pattern.isHistory || pattern.isSuper;
+
+			// set toggle button caption
+			me.rHistoryButton.lower = ["[R]History"];
+			me.rHistoryButton.toolTip = ["toggle [R]History display"];
+			me.clearRHistoryButton.toolTip = "clear [R]History cells";
+			if (me.engine.isSuper) {
+				me.rHistoryButton.lower = ["[R]Super"];
+				me.rHistoryButton.toolTip = ["toggle [R]Super display"];
+				me.clearRHistoryButton.toolTip = "clear [R]Super cells";
+			}
 
 			// read the number of states (Generations or HROT)
 			me.engine.multiNumStates = pattern.multiNumStates;
@@ -15621,7 +15651,7 @@
 		me.selSizeLabel.setX(me.xyLabel.relWidth);
 
 		// set the [R]History toggle UI control
-		me.rHistoryButton.locked = !me.engine.isLifeHistory;
+		me.rHistoryButton.locked = !(me.engine.isLifeHistory || me.engine.isSuper);
 		me.rHistoryButton.current = [me.engine.displayLifeHistory];
 
 		// set the graph UI control

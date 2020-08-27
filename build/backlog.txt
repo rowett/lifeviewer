@@ -19,9 +19,18 @@ Planned:
         [[ XY = @NAME display ]]
         [[ colour picker @NAME display ]]
 
+[STARTED]Rainbow rendering
+    [DONE]add toggle for 2-state Life-like rules for rainbow rendering
+    [DONE]add for Hexagons and triangles
+    [DONE]add script command
+    [DONE]add hotkey for toggle
+    - add toggle button to settings
+
 [STARTED][R]Super support
     [DONE]rule parser
-    - runtime
+    [DONE]runtime
+    [DONE]toggle [R]Super display (so Copy can output 2-state version of pattern)
+    [DONE]updated editor controls that clear [R]History states to support [R]Super
 
 [STARTED]additional LtL/HROT neighbourhoods
     [DONE]L2

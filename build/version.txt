@@ -1,5 +1,10 @@
 Build 558
 - [R]Super support for Moore, Hexagonal and von Neumann neighbourhoods
+- [R]Super cells can be displayed as 2-state pattern:
+	- Settings->Display->[R]Super to toggle cell display
+	- hotkey Alt+H to enable [R]Super cell display, hotkey Alt+J to disable [R]Super cell display
+	- while [R]Super display is disabled Copy will copy 2-state pattern
+- [R]Super cells can be cleared from a Selection in the editor with the [R] button or hotkey Ctrl+Del
 - fixed maximum Bounded Grid size (depending on rule at least 6 less than max grid size)
 - rainbow rendering now works with hexagons and triangles
 

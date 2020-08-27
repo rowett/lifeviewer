@@ -534,7 +534,7 @@
 		// whether pattern is [R]Super
 		/** @type {boolean} */ this.isSuper = false;
 
-		// whether to display [R]History states
+		// whether to display [R]History or [R]Super states
 		/** @type {boolean} */ this.displayLifeHistory = false;
 
 		// how many history states to draw
@@ -3558,13 +3558,17 @@
 		}
 
 		// populate output states
-		if (me.multiNumStates <= 2 && !me.displayLifeHistory) {
+		if ((me.multiNumStates <= 2 && !me.displayLifeHistory) || (me.isSuper && !me.displayLifeHistory)) {
 			twoState = true;
 			outputState[0] = "b";
 			outputState[1] = "o";
 		} else {
 			if (me.displayLifeHistory) {
-				maxState = 7;
+				if (me.isSuper) {
+					maxState = 26;
+				} else {
+					maxState = 7;
+				}
 			} else {
 				maxState = me.multiNumStates;
 			}
@@ -3593,23 +3597,25 @@
 
 		// output header
 		rle += "x = " + width + ", y = " + height + ", rule = ";
-		if (view.patternAliasName === "LifeSuper") {
-			rle += "LifeSuper";
-		} else {
-			if (view.patternAliasName === "LifeHistory") {
-				// if [R]History but history is not displayed then remove History from rule name
-				if (!me.displayLifeHistory) {
-					rle += "Life";
-				} else {
-					rle += view.patternAliasName;
-				}
+		if (view.patternAliasName === "LifeHistory" || view.patternAliasName === "LifeSuper") {
+			// if [R]History but history is not displayed then remove History from rule name
+			if (!me.displayLifeHistory) {
+				rle += "Life";
 			} else {
-				// if [R]History rule but history is not displayed then remove History from rule name
-				if (me.isLifeHistory && !me.displayLifeHistory) {
+				rle += view.patternAliasName;
+			}
+		} else {
+			// if [R]History rule but history is not displayed then remove History from rule name
+			if ((me.isLifeHistory || me.isLifeSuper) && !me.displayLifeHistory) {
+				if (me.isLifeHistory) {
+					// remove History
 					rle += view.patternRuleName.substr(0, view.patternRuleName.length - 7);
 				} else {
-					rle += view.patternRuleName;
+					// remove Super
+					rle += view.patternRuleName.substr(0, view.patternRuleName.length - 5);
 				}
+			} else {
+				rle += view.patternRuleName;
 			}
 		}
 
@@ -3626,7 +3632,7 @@
 				// use fast lookup
 				colourRow = colourGrid[y];
 				col = colourRow[x];
-				if (col <= this.deadStart || col === this.boundedBorderColour) {
+				if ((!this.isSuper && (col <= this.deadStart || col === this.boundedBorderColour)) || (this.isSuper && ((col & 1) === 0))) {
 					last = 0;
 				} else {
 					last = 1;
@@ -3645,7 +3651,7 @@
 					if (twoState && !this.isRuleTree) {
 						// use fast lookup
 						col = colourRow[x];
-						if (col <= this.deadStart || col === this.boundedBorderColour) {
+						if ((!this.isSuper && (col <= this.deadStart || col === this.boundedBorderColour)) || (this.isSuper && ((col & 1) === 0))) {
 							state = 0;
 						} else {
 							state = 1;
@@ -6828,21 +6834,34 @@
 			alpha = 255,
 			i = 0;
 
-		// check for Generations or HROT
+		// check for Generations, HROT or [R]Super
 		if (this.multiNumStates > 2) {
-			// create state colours
-			if (this.littleEndian) {
-				for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
-					pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
-					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+			// check for [R]Super with no history display
+			if (this.isSuper && !this.displayLifeHistory) {
+				if (this.littleEndian) {
+					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
+						pixelColours[i] = (alpha << 24) | ((blueChannel[i & 1] * brightness) << 16) | ((greenChannel[i & 1] * brightness) << 8) | (redChannel[i & 1] * brightness);
+					}
+				} else {
+					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
+						pixelColours[i] = ((redChannel[i & 1] * brightness) << 24) | ((greenChannel[i & 1] * brightness) << 16) | ((blueChannel[i & 1] * brightness) << 8) | alpha;
 					}
 				}
 			} else {
-				for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
-					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
-					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+				// create state colours
+				if (this.littleEndian) {
+					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
+						pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+						}
+					}
+				} else {
+					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
+						pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+						}
 					}
 				}
 			}
