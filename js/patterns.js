@@ -5904,7 +5904,7 @@
 				if (stateNum > 0 && save) {
 					while (runCount > 0) {
 						// save multi-state cell
-						if (pattern.multiNumStates === -1 && (pattern.isSuper || pattern.isHistory)) {
+						if (pattern.multiNumStates === -1) {
 							// save cell normally
 							pattern.multiStateMap[y][x] = stateNum;
 						} else {

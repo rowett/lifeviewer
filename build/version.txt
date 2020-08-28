@@ -1,3 +1,6 @@
+Build 559
+- fix broken 8-bit rules
+
 Build 558
 - [R]Super support for Moore, Hexagonal and von Neumann neighbourhoods
 - [R]Super cells can be displayed as 2-state pattern:
