@@ -867,6 +867,7 @@
 			/** @type {number} */ xpr = 0,
 			/** @type {number} */ xmrp1 = 0,
 			/** @type {number} */ rowCount = 0,
+			/** @type {number} */ rowCount2 = 0,
 			/** @type {boolean} */ rowAlive = false,
 			/** @type {boolean} */ colAlive = false,
 			/** @type {boolean} */ liveRowAlive = false,
@@ -1615,40 +1616,21 @@
 							// for the first cell count the entire neighbourhood
 							count = 0;
 							rowCount = 0;
+							rowCount2 = 0;
 							for (j = -yrange; j <= yrange; j += 1) {
 								colourRow = colourGrid[y + j];
-								if (j === 1 || j === -1) {
+								if (j === 1) {
 									for (i = -xrange; i <= xrange; i += 1) {
 										if (colourRow[x + i] >= aliveStart) {
 											rowCount += 1;
 										}
 									}
 								} else {
-									if (colourRow[x - 1] >= aliveStart) {
-										count += 1;
-									}
-									if (colourRow[x + 1] >= aliveStart) {
-										count += 1;
-									}
-								}
-							}
-							if (colourGrid[y][x] >= aliveStart) {
-								count += 1;
-							}
-							countRow[x] = count + rowCount;
-							x += 1;
-
-							// handle remaining rows
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = -yrange; j <= yrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (j === 1 || j === -1) {
-										if (colourRow[x - xrange - 1] >= aliveStart) {
-											rowCount -= 1;
-										}
-										if (colourRow[x + xrange] >= aliveStart) {
-											rowCount += 1;
+									if (j === -1) {
+										for (i = -xrange; i <= xrange; i += 1) {
+											if (colourRow[x + i] >= aliveStart) {
+												rowCount2 += 1;
+											}
 										}
 									} else {
 										if (colourRow[x - 1] >= aliveStart) {
@@ -1659,11 +1641,48 @@
 										}
 									}
 								}
+							}
+							if (colourGrid[y][x] >= aliveStart) {
+								count += 1;
+							}
+							countRow[x] = count + rowCount + rowCount2;
+							x += 1;
+
+							// handle remaining rows
+							while (x <= rightX + xrange) {
+								count = 0;
+								for (j = -yrange; j <= yrange; j += 1) {
+									colourRow = colourGrid[y + j];
+									if (j === 1) {
+										if (colourRow[x - xrange - 1] >= aliveStart) {
+											rowCount -= 1;
+										}
+										if (colourRow[x + xrange] >= aliveStart) {
+											rowCount += 1;
+										}
+									} else {
+										if (j === -1) {
+											if (colourRow[x - xrange - 1] >= aliveStart) {
+												rowCount2 -= 1;
+											}
+											if (colourRow[x + xrange] >= aliveStart) {
+												rowCount2 += 1;
+											}
+										} else {
+											if (colourRow[x - 1] >= aliveStart) {
+												count += 1;
+											}
+											if (colourRow[x + 1] >= aliveStart) {
+												count += 1;
+											}
+										}
+									}
+								}
 								// check for survival
 								if (colourGrid[y][x] >= aliveStart) {
 									count += 1;
 								}
-								countRow[x] = count + rowCount;
+								countRow[x] = count + rowCount + rowCount2;
 								x += 1;
 							}
 						}	

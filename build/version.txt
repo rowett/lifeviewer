@@ -1,3 +1,16 @@
+Build 563
+- fixed a bug in Hash neighbourhood
+
+Build 562
+- fixed B0 with native triangular rules
+
+Build 561
+- fixed some bugs in [R]Super
+
+Build 560
+- new script command [[ EXCLUSIVEPLAY ]] will pause other Viewers when playback is started
+- new script command [[ IGNOREEXCLUSIVE ]] will ignore pause requests from other Viewers
+
 Build 559
 - fix broken 8-bit rules
 

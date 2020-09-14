@@ -2539,6 +2539,9 @@
 						this.setTriangularTotalistic(ruleTriangularArray, i, true, ruleMask);
 					}
 				}
+
+				// mark as alternating
+				this.altSpecified = true;
 			}
 		} else {
 			// add birth digits
@@ -3302,7 +3305,7 @@
 	};
 
 	// determine the maximum neighbours in a neighbourhood
-	// result includes center cell
+	// result excludes center cell
 	PatternManager.prototype.maxNeighbours = function(range, neighbourhood, customCount) {
 		var result = 0,
 			i = 0,
@@ -4619,7 +4622,7 @@
 						this.failureReason = pattern.isSameFamilyAs(firstPattern);
 						if (this.failureReason === "") {
 							// check for B0 in either rule
-							if ((!pattern.isTriangular && (this.ruleArray[0] || this.ruleAltArray[0])) || (pattern.isTriangular && ((pattern.birthTriMask & 1) !== 0) || ((firstPattern.birthTriMask & 1) !== 0))) {
+							if ((pattern.isHROT && pattern.birthHROT[0] !== 0) || (!pattern.isTriangular && (this.ruleArray[0] || this.ruleAltArray[0])) || (pattern.isTriangular && ((pattern.birthTriMask & 1) !== 0) || ((firstPattern.birthTriMask & 1) !== 0))) {
 								this.failureReason = "Alternate not supported with B0";
 								result = false;
 							} else {
@@ -4652,8 +4655,7 @@
 									pattern.aliasName = aliasName;
 								}
 
-
-								// if HROT them copy arrays across
+								// if HROT then copy arrays across
 								if (pattern.isHROT || pattern.isLTL) {
 									pattern.copyMultiSettingsFrom(firstPattern, allocator);
 								}
@@ -7221,7 +7223,7 @@
 		}
 
 		// check whether LTL bounded grid type is valid
-		if (pattern.isLTL) {
+		if (pattern.isLTL && this.failureReason === "") {
 			if (pattern.gridType > 1) {
 				this.failureReason = "LtL only supports Plane or Torus";
 				this.executable = false;
@@ -7283,7 +7285,7 @@
 		}
 
 		// check whether HROT bounded grid type is valid
-		if (pattern.isHROT) {
+		if (pattern.isHROT && this.failureReason === "") {
 			if (pattern.gridType > 1) {
 				this.failureReason = "HROT only supports Plane or Torus";
 				this.executable = false;

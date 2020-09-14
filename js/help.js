@@ -972,6 +972,8 @@
 		y = this.renderHelpLine(view, Keywords.noReportWord, "disable stop messages", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noPerfWarningWord, "disable performance warning", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noThrottleWord, "disable playback throttling", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.exclusivePlayWord, "starting playback pauses others", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.ignoreExclusiveWord, "ignore other pause requests", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		view.helpSections[sectionNum] = [view.lineNo, "Camera"];
 		sectionNum += 1;
@@ -1800,6 +1802,8 @@
 		} else {
 			y = this.renderHelpLine(view, "Universe", "Single", ctx, x, y, height, helpLine);
 		}
+		y = this.renderHelpLine(view, "Exclusive", (view.exclusivePlayback ? "Yes": "No"), ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "IgnorePause", (view.ignorePauseRequests ? "Yes": "No"), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Endian", (littleEndian ? "Little": "Big"), ctx, x, y, height, helpLine);
 		// @ts-ignore
 		y = this.renderHelpLine(view, "ArrayFill", (arrayFill ? "Yes": "No"), ctx, x, y, height, helpLine);

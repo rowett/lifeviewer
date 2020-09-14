@@ -20,6 +20,8 @@
 
 		// check if the token is a script command
 		switch (tokenString) {
+			case Keywords.exclusivePlayWord:
+			case Keywords.ignoreExclusiveWord:
 			case Keywords.noThrottleWord:
 			case Keywords.reverseStartWord:
 			case Keywords.textColorWord:
@@ -3189,6 +3191,18 @@
 						// no playback throttle
 						case Keywords.noThrottleWord:
 							view.canBailOut = false;
+							itemValid = true;
+							break;
+
+						// exclusive playback
+						case Keywords.exclusivePlayWord:
+							view.exclusivePlayback = true;
+							itemValid = true;
+							break;
+
+						// ignore pause requests
+						case Keywords.ignoreExclusiveWord:
+							view.ignorePauseRequests = true;
 							itemValid = true;
 							break;
 

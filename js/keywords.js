@@ -353,6 +353,12 @@
 		// thumbnail expansion starts playback
 		/** @const {string} */ thumbStartWord : "THUMBSTART",
 
+		// when this instance plays pause others
+		/** @const {string} */ exclusivePlayWord : "EXCLUSIVEPLAY",
+
+		// ignore exclusive playback pause
+		/** @const {string} */ ignoreExclusiveWord : "IGNOREEXCLUSIVE",
+
 		// theme
 		/** @const {string} */ themeWord : "THEME",
 

@@ -431,6 +431,10 @@
 		this.bitCounts16 = this.allocator.allocate(Uint8, 65536, "Life.bitCounts16");
 		this.initBitCounts16();
 
+		// first bit set for 16bit values
+		this.firstBit16 = this.allocator.allocate(Uint8, 65536, "Life.firstBit16");
+		this.initFirstBit16();
+
 		// population graph array
 		this.popGraphData = null;
 		this.birthGraphData = null;
@@ -1040,7 +1044,7 @@
 			// check if the flake is on screen
 			if (lastY >= 0 && lastY < ht - 1) {
 				// check if the delta moves the flake a pixel down
-				if ((lastY | 0) == ((lastY + dirY) | 0)) {
+				if ((lastY | 0) === ((lastY + dirY) | 0)) {
 					newY = lastY + dirY;
 					// draw the flake at the current position
 					screen[(newY | 0) * wd + newX] = -1;
@@ -4381,13 +4385,6 @@
 							}
 						}
 
-						// check for [R]Super
-						if (this.isSuper) {
-							if ((state === 6 && current !== 6) || (state !== 6 && current === 6)) {
-								result = 1;
-							}
-						}
-	
 						// check for generations style rule
 						if (this.multiNumStates > 2) {
 							// write the correct state to the colour grid
@@ -4514,7 +4511,7 @@
 	// setup dynamic calls for performance
 	Life.prototype.setupDynamicCalls = function() {
 		// pick optimized get and set cell calls based on pattern type and bounded grid
-		if (this.multiNumStates == -1 && this.boundedGridType === -1 && !this.isNone) {
+		if (this.multiNumStates === -1 && this.boundedGridType === -1 && !this.isNone) {
 			if (this.isLifeHistory) {
 				this.stateMode = LifeConstants.mode2History;
 			} else {
@@ -5472,6 +5469,34 @@
 
 		// return whether the buffer grew
 		return result;
+	};
+
+	// initialise 16bit first bit set
+	Life.prototype.initFirstBit16 = function() {
+		var i, value, calc, firstBit = this.firstBit16;
+
+		for (i = 0; i < 65536; i += 1) {
+			calc = i;
+			value = 0;
+			if (calc > 65535) {
+				calc >>= 16;
+				value += 16;
+			}
+			if (calc > 255) {
+				calc >>= 8;
+				value += 8;
+			}
+			if (calc > 15) {
+				calc >>= 4;
+				value += 4;
+			}
+			if (calc > 3) {
+				calc >>= 2;
+				value += 2;
+			}
+			value += (calc >> 1);
+			firstBit[i] = value;
+		}
 	};
 
 	// initialise 16bit counts
@@ -17931,6 +17956,7 @@
 		    bottomY = 0, topY = 0, leftX = 0,
 			tiles = 0, nextTiles = 0,
 			calc = 0,
+			process = true,
 			width = this.width,
 			width16 = width >> 4,
 			height = this.height,
@@ -17985,18 +18011,16 @@
 			bitCounts = this.bitCounts16,
 
 			// constants
-			/** @const {number} */ aliveCells = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
-			/** @const {number} */ aliveWith14 = aliveCells | (1 << 14),
-			/** @const {number} */ aliveWith18 = aliveCells | (1 << 18),
-			/** @const {number} */ aliveWith14or18 = aliveCells | (1 << 14) | (1 << 18),
-			/** @const {number} */ alive7or9 = (1 << 7) | (1 << 9),
-			/** @const {number} */ alivenot7or9 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 11) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
-			/** @const {number} */ alive7or11 = (1 << 7) | (1 << 11),
-			/** @const {number} */ alivenot7or11 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 9) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
-			/** @const {number} */ alive1or3or5 = (1 << 1) | (1 << 3) | (1 << 5),
+			/** @const {number} */ aliveWith14 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
+			/** @const {number} */ aliveWith14or18 = aliveWith14 | (1 << 18),
+			/** @const {number} */ alive1or3or5or7 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7),
 			/** @const {number} */ alive9to25 = (1 << 9) | (1 << 11) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
+			/** @const {number} */ alive1or3or5or9or11 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 9) | (1 << 11),
+			/** @const {number} */ alive7or13or15or17or19or21or23or25 = (1 << 7) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
+			/** @const {number} */ alive1or5or7or9or11 = (1 << 1) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11),
+			/** @const {number} */ alive13or15or17or19or21or23or25 = (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
 			/** @const {number} */ alive9or11 = (1 << 9) | (1 << 11),
-			/** @const {number} */ alive1or3or5or9or11 = alive1or3or5 | alive9or11;
+			/** @const {number} */ alive1or3or5or13or15or17or19or21or23or25 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
 
 		// clear anything alive
 		this.anythingAlive = 0;
@@ -18116,38 +18140,95 @@
 									se = belowRow[cr + 1];
 									value = c;
 
-									// get cell state from bit grid
-									if ((nextCell & bitN) !== 0) {
-										// cell alive
-										// was cell alive in this generation
-										if ((c & 1) === 0) {
-											// cell was dead so has been born now
+									// handle state 6
+									process = true;
+									if ((typeMask & (1 << 6)) !== 0) {
+										process = false;
+										if (c === 7 || c === 8 || c >= 13) {
+											value = 0;
+										} else {
 											switch (c) {
-												case 4:
-													value = 3;
+												case 1:
+													value = 2;
 													break;
-	
-												case 6:
+
+												case 3:
+												case 5:
+													value = 4;
 													break;
-	
-												case 8:
-													value = 7;
+
+												case 9:
+													value = 10;
 													break;
-	
-												case 10:
-												case 12:
-													// typemask has a bit set per state in the neighbouring cells
-													typeMask = (1 << nw) | (1 << n) | (1 << e) | (1 << w) | (1 << s) | (1 << se);
-													value = 1;
-													if (((typeMask & alive7or9) !== 0) && ((typeMask & alivenot7or9) === 0)) {
-														value = 9;
-													} else {
-														if (((typeMask & alive7or11) !== 0) && ((typeMask & alivenot7or11) === 0)) {
-															value = 11;
+
+												case 11:
+													value = 12;
+													break;
+
+												default:
+													// not handled here so process below
+													process = true;
+													break;
+											}
+										}
+
+										// clear cell in bit grid
+										if (!process && ((c & 1) !== 0)) {
+											gridRow[leftX] &= ~bitN;
+										}
+									}
+
+									// typemask has a bit set per state in the neighbouring cells
+									typeMask = (1 << nw) | (1 << n) | (1 << e) | (1 << w) | (1 << s) | (1 << se);
+
+									// check whether state still needs processing
+									if (process) {
+										// get cell state from bit grid
+										if ((nextCell & bitN) !== 0) {
+											// cell alive
+											// was cell alive in this generation
+											if ((c & 1) === 0) {
+												// cell was dead so has been born now
+												switch (c) {
+													case 4:
+														value = 3;
+														break;
+		
+													case 6:
+														// clear cell in bit grid
+														gridRow[leftX] &= ~bitN;
+														break;
+		
+													case 8:
+														value = 7;
+														break;
+		
+													default:
+														value = 1;
+														calc = typeMask & alive9to25;
+														if (((typeMask & alive1or3or5or7) === 0) && (bitCounts[calc & 65535] + bitCounts[calc >> 16] === 1)) {
+															// the bit index gives the cell state
+															value = 0;
+															if (calc > 65535) {
+																calc >>= 16;
+																value += 16;
+															}
+															if (calc > 255) {
+																calc >>= 8;
+																value += 8;
+															}
+															if (calc > 15) {
+																calc >>= 4;
+																value += 4;
+															}
+															if (calc > 3) {
+																calc >>= 2;
+																value += 2;
+															}
+															value += (calc >> 1);
 														} else {
-															calc = typeMask & alive9to25;
-															if (bitCounts[calc & 65535] + bitCounts[calc >> 16] === 1) {
-																// the bit index gives the cell state
+															calc = typeMask & alive13or15or17or19or21or23or25;
+															if (((typeMask & (1 << 3)) !== 0) && ((typeMask & alive1or5or7or9or11) === 0) && (bitCounts[calc & 65535] + bitCounts[calc >> 16] === 1)) {
 																value = 0;
 																if (calc > 65535) {
 																	calc >>= 16;
@@ -18166,96 +18247,89 @@
 																	value += 2;
 																}
 																value += (calc >> 1);
+															} else {
+																calc = typeMask & alive9or11;
+																if (((typeMask & (1 << 7)) !== 0) && ((typeMask & alive1or3or5or13or15or17or19or21or23or25) === 0) && (bitCounts[calc & 65535] + bitCounts[calc >> 16] === 1)) {
+																	value = 0;
+																	if (calc > 65535) {
+																		calc >>= 16;
+																		value += 16;
+																	}
+																	if (calc > 255) {
+																		calc >>= 8;
+																		value += 8;
+																	}
+																	if (calc > 15) {
+																		calc >>= 4;
+																		value += 4;
+																	}
+																	if (calc > 3) {
+																		calc >>= 2;
+																		value += 2;
+																	}
+																	value += (calc >> 1);
+																} else {
+																	calc = typeMask & alive7or13or15or17or19or21or23or25;
+																	if (calc && ((typeMask & alive1or3or5or9or11) === 0)) {
+																		value = 13;
+																	}
+																}
 															}
 														}
-													}
-													break;
-	
-												default:
-													// typemask has a bit set per state in the neighbouring cells
-													typeMask = (1 << nw) | (1 << n) | (1 << e) | (1 << w) | (1 << s) | (1 << se);
-													value = 1;
-													calc = typeMask & alive9to25;
-													if (((typeMask & (1 << 1)) === 0) && (bitCounts[calc & 65535] + bitCounts[calc >> 16] === 1)) {
-														// the bit index gives the cell state
-														value = 0;
-														if (calc > 65535) {
-															calc >>= 16;
-															value += 16;
-														}
-														if (calc > 255) {
-															calc >>= 8;
-															value += 8;
-														}
-														if (calc > 15) {
-															calc >>= 4;
-															value += 4;
-														}
-														if (calc > 3) {
-															calc >>= 2;
-															value += 2;
-														}
-														value += (calc >> 1);
-													} else {
-														if ((typeMask & alive1or3or5or9or11) === 0) {
-															value = 13;
-														}
-													}
-													break;
-											}
-										}
-									} else {
-										// cell dead
-										// was cell alive in this generation
-										if ((c & 1) !== 0) {
-											// cell was alive so has died
-											if (c <= 11) {
-												if (c === 5) {
-													value = 4;
-												} else {
-													value = c + 1;
+														break;
 												}
-											} else {
-												value = 0;
 											}
 										} else {
-											// cell is still dead
-											if (c === 14) {
-												value = 0;
+											// cell dead
+											// was cell alive in this generation
+											if ((c & 1) !== 0) {
+												// cell was alive so has died
+												if (c <= 11) {
+													if (c === 5) {
+														value = 4;
+													} else {
+														value = c + 1;
+													}
+												} else {
+													value = 0;
+												}
 											} else {
-												if (c > 14) {
-													// typemask has a bit set per state in the neighbouring cells
-													typeMask = (1 << nw) | (1 << n) | (1 << e) | (1 << w) | (1 << s) | (1 << se);
-													switch (c) {
-														case 16:
-															if ((typeMask & aliveWith14) !== 0) {
-																value = 14;
-															}
-															break;
+												// cell is still dead
+												if (c === 14) {
+													value = 0;
+												} else {
+													if (c > 14) {
+														switch (c) {
+															case 16:
+																if ((typeMask & aliveWith14) !== 0) {
+																	value = 14;
+																}
+																break;
 
-														case 18:
-															if ((typeMask & (1 << 22)) !== 0) {
-																value = 22;
-															}
-															break;
+															case 18:
+																if ((typeMask & (1 << 22)) !== 0) {
+																	value = 22;
+																}
+																break;
 
-														case 20:
-															if ((typeMask & (1 << 18)) !== 0) {
-																value = 18;
-															}
-															break;
+															case 20:
+																if ((typeMask & (1 << 18)) !== 0) {
+																	value = 18;
+																}
+																break;
 
-														case 22:
-															if ((typeMask & (1 << 20)) !== 0) {
-																value = 20;
-															}
-															break;
+															case 22:
+																if ((typeMask & (1 << 20)) !== 0) {
+																	value = 20;
+																}
+																break;
 
-														case 24:
-															if ((typeMask & aliveWith14or18) !== 0) {
-																value = 18;
-															}
-															break;
+															case 24:
+																if ((typeMask & aliveWith14or18) !== 0) {
+																	value = 18;
+																}
+																break;
+														}
 													}
 												}
 											}
@@ -18389,6 +18463,7 @@
 		    bottomY = 0, topY = 0, leftX = 0,
 			tiles = 0, nextTiles = 0,
 			calc = 0,
+			process = true,
 			width = this.width,
 			width16 = width >> 4,
 			height = this.height,
@@ -18443,18 +18518,16 @@
 			bitCounts = this.bitCounts16,
 
 			// constants
-			/** @const {number} */ aliveCells = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
-			/** @const {number} */ aliveWith14 = aliveCells | (1 << 14),
-			/** @const {number} */ aliveWith18 = aliveCells | (1 << 18),
-			/** @const {number} */ aliveWith14or18 = aliveCells | (1 << 14) | (1 << 18),
-			/** @const {number} */ alive7or9 = (1 << 7) | (1 << 9),
-			/** @const {number} */ alivenot7or9 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 11) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
-			/** @const {number} */ alive7or11 = (1 << 7) | (1 << 11),
-			/** @const {number} */ alivenot7or11 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 9) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
-			/** @const {number} */ alive1or3or5 = (1 << 1) | (1 << 3) | (1 << 5),
+			/** @const {number} */ aliveWith14 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
+			/** @const {number} */ aliveWith14or18 = aliveWith14 | (1 << 18),
+			/** @const {number} */ alive1or3or5or7 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7),
 			/** @const {number} */ alive9to25 = (1 << 9) | (1 << 11) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
+			/** @const {number} */ alive1or3or5or9or11 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 9) | (1 << 11),
+			/** @const {number} */ alive7or13or15or17or19or21or23or25 = (1 << 7) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
+			/** @const {number} */ alive1or5or7or9or11 = (1 << 1) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11),
+			/** @const {number} */ alive13or15or17or19or21or23or25 = (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
 			/** @const {number} */ alive9or11 = (1 << 9) | (1 << 11),
-			/** @const {number} */ alive1or3or5or9or11 = alive1or3or5 | alive9or11;
+			/** @const {number} */ alive1or3or5or13or15or17or19or21or23or25 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
 
 		// clear anything alive
 		this.anythingAlive = 0;
@@ -18569,38 +18642,95 @@
 									s = belowRow[cr];
 									value = c;
 
-									// get cell state from bit grid
-									if ((nextCell & bitN) !== 0) {
-										// cell alive
-										// was cell alive in this generation
-										if ((c & 1) === 0) {
-											// cell was dead so has been born now
+									// typemask has a bit set per state in the neighbouring cells
+									typeMask = (1 << n) | (1 << e) | (1 << w) | (1 << s);
+
+									// handle state 6
+									process = true;
+									if ((typeMask & (1 << 6)) !== 0) {
+										process = false;
+										if (c === 7 || c === 8 || c >= 13) {
+											value = 0;
+										} else {
 											switch (c) {
-												case 4:
-													value = 3;
+												case 1:
+													value = 2;
 													break;
-	
-												case 6:
+
+												case 3:
+												case 5:
+													value = 4;
 													break;
-	
-												case 8:
-													value = 7;
+
+												case 9:
+													value = 10;
 													break;
-	
-												case 10:
-												case 12:
-													// typemask has a bit set per state in the neighbouring cells
-													typeMask = (1 << n) | (1 << e) | (1 << w) | (1 << s);
-													value = 1;
-													if (((typeMask & alive7or9) !== 0) && ((typeMask & alivenot7or9) === 0)) {
-														value = 9;
-													} else {
-														if (((typeMask & alive7or11) !== 0) && ((typeMask & alivenot7or11) === 0)) {
-															value = 11;
+
+												case 11:
+													value = 12;
+													break;
+
+												default:
+													// not handled here so process below
+													process = true;
+													break;
+											}
+										}
+
+										// clear cell in bit grid
+										if (!process && ((c & 1) !== 0)) {
+											gridRow[leftX] &= ~bitN;
+										}
+									}
+
+									// check whether state still needs processing
+									if (process) {
+										// get cell state from bit grid
+										if ((nextCell & bitN) !== 0) {
+											// cell alive
+											// was cell alive in this generation
+											if ((c & 1) === 0) {
+												// cell was dead so has been born now
+												switch (c) {
+													case 4:
+														value = 3;
+														break;
+		
+													case 6:
+														// clear cell in bit grid
+														gridRow[leftX] &= ~bitN;
+														break;
+		
+													case 8:
+														value = 7;
+														break;
+		
+													default:
+														value = 1;
+														calc = typeMask & alive9to25;
+														if (((typeMask & alive1or3or5or7) === 0) && (bitCounts[calc & 65535] + bitCounts[calc >> 16] === 1)) {
+															// the bit index gives the cell state
+															value = 0;
+															if (calc > 65535) {
+																calc >>= 16;
+																value += 16;
+															}
+															if (calc > 255) {
+																calc >>= 8;
+																value += 8;
+															}
+															if (calc > 15) {
+																calc >>= 4;
+																value += 4;
+															}
+															if (calc > 3) {
+																calc >>= 2;
+																value += 2;
+															}
+															value += (calc >> 1);
 														} else {
-															calc = typeMask & alive9to25;
-															if (bitCounts[calc & 65535] + bitCounts[calc >> 16] === 1) {
-																// the bit index gives the cell state
+															calc = typeMask & alive13or15or17or19or21or23or25;
+															if (((typeMask & (1 << 3)) !== 0) && ((typeMask & alive1or5or7or9or11) === 0) && (bitCounts[calc & 65535] + bitCounts[calc >> 16] === 1)) {
 																value = 0;
 																if (calc > 65535) {
 																	calc >>= 16;
@@ -18619,96 +18749,89 @@
 																	value += 2;
 																}
 																value += (calc >> 1);
+															} else {
+																calc = typeMask & alive9or11;
+																if (((typeMask & (1 << 7)) !== 0) && ((typeMask & alive1or3or5or13or15or17or19or21or23or25) === 0) && (bitCounts[calc & 65535] + bitCounts[calc >> 16] === 1)) {
+																	value = 0;
+																	if (calc > 65535) {
+																		calc >>= 16;
+																		value += 16;
+																	}
+																	if (calc > 255) {
+																		calc >>= 8;
+																		value += 8;
+																	}
+																	if (calc > 15) {
+																		calc >>= 4;
+																		value += 4;
+																	}
+																	if (calc > 3) {
+																		calc >>= 2;
+																		value += 2;
+																	}
+																	value += (calc >> 1);
+																} else {
+																	calc = typeMask & alive7or13or15or17or19or21or23or25;
+																	if (calc && ((typeMask & alive1or3or5or9or11) === 0)) {
+																		value = 13;
+																	}
+																}
 															}
 														}
-													}
-													break;
-	
-												default:
-													// typemask has a bit set per state in the neighbouring cells
-													typeMask = (1 << n) | (1 << e) | (1 << w) | (1 << s);
-													value = 1;
-													calc = typeMask & alive9to25;
-													if (((typeMask & (1 << 1)) === 0) && (bitCounts[calc & 65535] + bitCounts[calc >> 16] === 1)) {
-														// the bit index gives the cell state
-														value = 0;
-														if (calc > 65535) {
-															calc >>= 16;
-															value += 16;
-														}
-														if (calc > 255) {
-															calc >>= 8;
-															value += 8;
-														}
-														if (calc > 15) {
-															calc >>= 4;
-															value += 4;
-														}
-														if (calc > 3) {
-															calc >>= 2;
-															value += 2;
-														}
-														value += (calc >> 1);
-													} else {
-														if ((typeMask & alive1or3or5or9or11) === 0) {
-															value = 13;
-														}
-													}
-													break;
-											}
-										}
-									} else {
-										// cell dead
-										// was cell alive in this generation
-										if ((c & 1) !== 0) {
-											// cell was alive so has died
-											if (c <= 11) {
-												if (c === 5) {
-													value = 4;
-												} else {
-													value = c + 1;
+														break;
 												}
-											} else {
-												value = 0;
 											}
 										} else {
-											// cell is still dead
-											if (c === 14) {
-												value = 0;
+											// cell dead
+											// was cell alive in this generation
+											if ((c & 1) !== 0) {
+												// cell was alive so has died
+												if (c <= 11) {
+													if (c === 5) {
+														value = 4;
+													} else {
+														value = c + 1;
+													}
+												} else {
+													value = 0;
+												}
 											} else {
-												if (c > 14) {
-													// typemask has a bit set per state in the neighbouring cells
-													typeMask = (1 << n) | (1 << e) | (1 << w) | (1 << s);
-													switch (c) {
-														case 16:
-															if ((typeMask & aliveWith14) !== 0) {
-																value = 14;
-															}
-															break;
+												// cell is still dead
+												if (c === 14) {
+													value = 0;
+												} else {
+													if (c > 14) {
+														switch (c) {
+															case 16:
+																if ((typeMask & aliveWith14) !== 0) {
+																	value = 14;
+																}
+																break;
 
-														case 18:
-															if ((typeMask & (1 << 22)) !== 0) {
-																value = 22;
-															}
-															break;
+															case 18:
+																if ((typeMask & (1 << 22)) !== 0) {
+																	value = 22;
+																}
+																break;
 
-														case 20:
-															if ((typeMask & (1 << 18)) !== 0) {
-																value = 18;
-															}
-															break;
+															case 20:
+																if ((typeMask & (1 << 18)) !== 0) {
+																	value = 18;
+																}
+																break;
 
-														case 22:
-															if ((typeMask & (1 << 20)) !== 0) {
-																value = 20;
-															}
-															break;
+															case 22:
+																if ((typeMask & (1 << 20)) !== 0) {
+																	value = 20;
+																}
+																break;
 
-														case 24:
-															if ((typeMask & aliveWith14or18) !== 0) {
-																value = 18;
-															}
-															break;
+															case 24:
+																if ((typeMask & aliveWith14or18) !== 0) {
+																	value = 18;
+																}
+																break;
+														}
 													}
 												}
 											}
@@ -18842,6 +18965,7 @@
 		    bottomY = 0, topY = 0, leftX = 0,
 			tiles = 0, nextTiles = 0,
 			calc = 0,
+			process = true,
 			width = this.width,
 			width16 = width >> 4,
 			height = this.height,
@@ -18892,22 +19016,20 @@
 			// minimum dead state number
 			minDeadState = (this.historyStates > 0 ? 1 : 0),
 
-			// bit counts
-			bitCounts = this.bitCounts16,
+			// first bit set
+			firstBit = this.firstBit16,
 
 			// constants
-			/** @const {number} */ aliveCells = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
-			/** @const {number} */ aliveWith14 = aliveCells | (1 << 14),
-			/** @const {number} */ aliveWith18 = aliveCells | (1 << 18),
-			/** @const {number} */ aliveWith14or18 = aliveCells | (1 << 14) | (1 << 18),
-			/** @const {number} */ alive7or9 = (1 << 7) | (1 << 9),
-			/** @const {number} */ alivenot7or9 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 11) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
-			/** @const {number} */ alive7or11 = (1 << 7) | (1 << 11),
-			/** @const {number} */ alivenot7or11 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 9) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
-			/** @const {number} */ alive1or3or5 = (1 << 1) | (1 << 3) | (1 << 5),
+			/** @const {number} */ aliveWith14 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
+			/** @const {number} */ aliveWith14or18 = aliveWith14 | (1 << 18),
+			/** @const {number} */ alive1or3or5or7 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7),
 			/** @const {number} */ alive9to25 = (1 << 9) | (1 << 11) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
+			/** @const {number} */ alive1or3or5or9or11 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 9) | (1 << 11),
+			/** @const {number} */ alive7or13or15or17or19or21or23or25 = (1 << 7) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
+			/** @const {number} */ alive1or5or7or9or11 = (1 << 1) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11),
+			/** @const {number} */ alive13or15or17or19or21or23or25 = (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
 			/** @const {number} */ alive9or11 = (1 << 9) | (1 << 11),
-			/** @const {number} */ alive1or3or5or9or11 = alive1or3or5 | alive9or11;
+			/** @const {number} */ alive1or3or5or13or15or17or19or21or23or25 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
 
 		// clear anything alive
 		this.anythingAlive = 0;
@@ -19031,146 +19153,199 @@
 									se = belowRow[cr + 1];
 									value = c;
 
-									// get cell state from bit grid
-									if ((nextCell & bitN) !== 0) {
-										// cell alive
-										// was cell alive in this generation
-										if ((c & 1) === 0) {
-											// cell was dead so has been born now
+									// typemask has a bit set per state in the neighbouring cells
+									typeMask = (1 << nw) | (1 << n) | (1 << ne) | (1 << e) | (1 << w) | (1 << sw) | (1 << s) | (1 << se);
+
+									// handle state 6
+									process = true;
+									if ((typeMask & (1 << 6)) !== 0) {
+										process = false;
+										if (c === 7 || c === 8 || c >= 13) {
+											value = 0;
+										} else {
 											switch (c) {
-												case 4:
-													value = 3;
+												case 1:
+													value = 2;
 													break;
-	
-												case 6:
+
+												case 3:
+												case 5:
+													value = 4;
 													break;
-	
-												case 8:
-													value = 7;
+
+												case 9:
+													value = 10;
 													break;
-	
-												case 10:
-												case 12:
-													// typemask has a bit set per state in the neighbouring cells
-													typeMask = (1 << nw) | (1 << n) | (1 << ne) | (1 << e) | (1 << w) | (1 << sw) | (1 << s) | (1 << se);
-													value = 1;
-													if (((typeMask & alive7or9) !== 0) && ((typeMask & alivenot7or9) === 0)) {
-														value = 9;
-													} else {
-														if (((typeMask & alive7or11) !== 0) && ((typeMask & alivenot7or11) === 0)) {
-															value = 11;
+
+												case 11:
+													value = 12;
+													break;
+
+												default:
+													// not handled here so process below
+													process = true;
+													break;
+											}
+										}
+
+										// clear cell in bit grid
+										if (!process && ((c & 1) !== 0)) {
+											gridRow[leftX] &= ~bitN;
+										}
+									}
+
+									// check whether state still needs processing
+									if (process) {
+										// get cell state from bit grid
+										if ((nextCell & bitN) !== 0) {
+											// cell alive
+											// was cell alive in this generation
+											if ((c & 1) === 0) {
+												// cell was dead so has been born now
+												switch (c) {
+													case 4:
+														value = 3;
+														break;
+		
+													case 6:
+														// clear cell in bit grid
+														gridRow[leftX] &= ~bitN;
+														break;
+		
+													case 8:
+														value = 7;
+														break;
+		
+													default:
+														value = 1;
+														calc = typeMask & alive9to25;
+														if (((typeMask & alive1or3or5or7) === 0) && (calc && (calc & (calc - 1)) === 0)) {
+															// the bit index gives the cell state
+															value = 0;
+															if (calc > 65535) {
+																calc >>= 16;
+																value += 16;
+															}
+															value += firstBit[calc];
+															//if (calc > 255) {
+																//calc >>= 8;
+																//value += 8;
+															//}
+															//if (calc > 15) {
+																//calc >>= 4;
+																//value += 4;
+															//}
+															//if (calc > 3) {
+																//calc >>= 2;
+																//value += 2;
+															//}
+															//value += (calc >> 1);
 														} else {
-															calc = typeMask & alive9to25;
-															if (bitCounts[calc & 65535] + bitCounts[calc >> 16] === 1) {
-																// the bit index gives the cell state
+															calc = typeMask & alive13or15or17or19or21or23or25;
+															if (((typeMask & (1 << 3)) !== 0) && ((typeMask & alive1or5or7or9or11) === 0) && (calc && (calc & (calc - 1)) === 0)) {
 																value = 0;
 																if (calc > 65535) {
 																	calc >>= 16;
 																	value += 16;
 																}
-																if (calc > 255) {
-																	calc >>= 8;
-																	value += 8;
+																value += firstBit[calc];
+																//if (calc > 255) {
+																	//calc >>= 8;
+																	//value += 8;
+																//}
+																//if (calc > 15) {
+																	//calc >>= 4;
+																	//value += 4;
+																//}
+																//if (calc > 3) {
+																	//calc >>= 2;
+																	//value += 2;
+																//}
+																//value += (calc >> 1);
+															} else {
+																calc = typeMask & alive9or11;
+																if (((typeMask & (1 << 7)) !== 0) && ((typeMask & alive1or3or5or13or15or17or19or21or23or25) === 0) && (calc && (calc & (calc - 1)) === 0)) {
+																	value = 0;
+																	if (calc > 65535) {
+																		calc >>= 16;
+																		value += 16;
+																	}
+																	value += firstBit[calc];
+																	//if (calc > 255) {
+																		//calc >>= 8;
+																		//value += 8;
+																	//}
+																	//if (calc > 15) {
+																		//calc >>= 4;
+																		//value += 4;
+																	//}
+																	//if (calc > 3) {
+																		//calc >>= 2;
+																		//value += 2;
+																	//}
+																	//value += (calc >> 1);
+																} else {
+																	calc = typeMask & alive7or13or15or17or19or21or23or25;
+																	if (calc && ((typeMask & alive1or3or5or9or11) === 0)) {
+																		value = 13;
+																	}
 																}
-																if (calc > 15) {
-																	calc >>= 4;
-																	value += 4;
-																}
-																if (calc > 3) {
-																	calc >>= 2;
-																	value += 2;
-																}
-																value += (calc >> 1);
 															}
 														}
-													}
-													break;
-	
-												default:
-													// typemask has a bit set per state in the neighbouring cells
-													typeMask = (1 << nw) | (1 << n) | (1 << ne) | (1 << e) | (1 << w) | (1 << sw) | (1 << s) | (1 << se);
-													value = 1;
-													calc = typeMask & alive9to25;
-													if (((typeMask & (1 << 1)) === 0) && (bitCounts[calc & 65535] + bitCounts[calc >> 16] === 1)) {
-														// the bit index gives the cell state
-														value = 0;
-														if (calc > 65535) {
-															calc >>= 16;
-															value += 16;
-														}
-														if (calc > 255) {
-															calc >>= 8;
-															value += 8;
-														}
-														if (calc > 15) {
-															calc >>= 4;
-															value += 4;
-														}
-														if (calc > 3) {
-															calc >>= 2;
-															value += 2;
-														}
-														value += (calc >> 1);
-													} else {
-														if ((typeMask & alive1or3or5or9or11) === 0) {
-															value = 13;
-														}
-													}
-													break;
-											}
-										}
-									} else {
-										// cell dead
-										// was cell alive in this generation
-										if ((c & 1) !== 0) {
-											// cell was alive so has died
-											if (c <= 11) {
-												if (c === 5) {
-													value = 4;
-												} else {
-													value = c + 1;
+														break;
 												}
-											} else {
-												value = 0;
 											}
 										} else {
-											// cell is still dead
-											if (c === 14) {
-												value = 0;
+											// cell dead
+											// was cell alive in this generation
+											if ((c & 1) !== 0) {
+												// cell was alive so has died
+												if (c <= 11) {
+													if (c === 5) {
+														value = 4;
+													} else {
+														value = c + 1;
+													}
+												} else {
+													value = 0;
+												}
 											} else {
-												if (c > 14) {
-													// typemask has a bit set per state in the neighbouring cells
-													typeMask = (1 << nw) | (1 << n) | (1 << ne) | (1 << e) | (1 << w) | (1 << sw) | (1 << s) | (1 << se);
-													switch (c) {
-														case 16:
-															if ((typeMask & aliveWith14) !== 0) {
-																value = 14;
-															}
-															break;
+												// cell is still dead
+												if (c === 14) {
+													value = 0;
+												} else {
+													if (c > 14) {
+														switch (c) {
+															case 16:
+																if ((typeMask & aliveWith14) !== 0) {
+																	value = 14;
+																}
+																break;
 
-														case 18:
-															if ((typeMask & (1 << 22)) !== 0) {
-																value = 22;
-															}
-															break;
+															case 18:
+																if ((typeMask & (1 << 22)) !== 0) {
+																	value = 22;
+																}
+																break;
 
-														case 20:
-															if ((typeMask & (1 << 18)) !== 0) {
-																value = 18;
-															}
-															break;
+															case 20:
+																if ((typeMask & (1 << 18)) !== 0) {
+																	value = 18;
+																}
+																break;
 
-														case 22:
-															if ((typeMask & (1 << 20)) !== 0) {
-																value = 20;
-															}
-															break;
+															case 22:
+																if ((typeMask & (1 << 20)) !== 0) {
+																	value = 20;
+																}
+																break;
 
-														case 24:
-															if ((typeMask & aliveWith14or18) !== 0) {
-																value = 18;
-															}
-															break;
+															case 24:
+																if ((typeMask & aliveWith14or18) !== 0) {
+																	value = 18;
+																}
+																break;
+														}
 													}
 												}
 											}
@@ -28673,7 +28848,7 @@
 				maxX = -minX;
 				for (y = bottomY; y <= topY; y += 1) {
 					colourRow = colourGrid[y];
-					for (x = leftX ; x <= rightX; x += 1) {
+					for (x = leftX; x <= rightX; x += 1) {
 						state = colourRow[x];
 						if (state > 0) {
 							hexX = x - y / 2;

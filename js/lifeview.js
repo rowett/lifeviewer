@@ -295,7 +295,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 559,
+		/** @const {number} */ versionBuild : 563,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -563,8 +563,8 @@
 			// get the next viewer
 			currentViewer = this.viewers[i][1];
 
-			// check if it is playing
-			if (currentViewer.generationOn) {
+			// check if it is playing and pause requests are not ignored
+			if (currentViewer.generationOn && !currentViewer.ignorePauseRequests) {
 				// pause the viewer
 				currentViewer.playList.current = currentViewer.viewPlayList(ViewConstants.modePause, true, currentViewer);
 
@@ -591,7 +591,7 @@
 			// check if it is the specified one
 			if (currentViewer !== thisOne) {
 				// check if it is playing
-				if (currentViewer.generationOn) {
+				if (currentViewer.generationOn && !currentViewer.ignorePauseRequests) {
 					// pause the viewer
 					currentViewer.playList.current = currentViewer.viewPlayList(ViewConstants.modePause, true, currentViewer);
 
@@ -623,6 +623,12 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// whether starting playback pauses others
+		this.exclusivePlayback = false;
+
+		// whether to ignore pause requests from others
+		this.ignorePauseRequests = false;
 
 		// whether to start playback when thumbnail expands
 		this.thumbStart = false;
@@ -2512,7 +2518,7 @@
 			this.engine.doShrink();
 
 			// update state 6 grid
-			if (this.engine.isLifeHistory || me.engine.isSuper) {
+			if (this.engine.isLifeHistory) {
 				this.engine.populateState6MaskFromColGrid();
 			}
 		}
@@ -2580,7 +2586,7 @@
 			this.engine.doShrink();
 
 			// update state 6 grid
-			if (this.engine.isLifeHistory || me.engine.isSuper) {
+			if (this.engine.isLifeHistory) {
 				this.engine.populateState6MaskFromColGrid();
 			}
 		}
@@ -4266,7 +4272,7 @@
 			e2 = 0,
 			width = this.engine.width,
 			height = this.engine.height,
-			// whether [R]History or [R]Super state6 changed
+			// whether [R]History state6 changed
 			result = 0;
 
 		// set the first point
@@ -4347,7 +4353,7 @@
 			}
 		}
 
-		// return whether [R]History or [R]Super state6 changed
+		// return whether [R]History state6 changed
 		return result;
 	};
 
@@ -7376,7 +7382,7 @@
 			}
 			if (numReplaced > 0) {
 				// check for state 6
-				if ((this.engine.isLifeHistory || this.engine.isSuper) && (replace === 6 || current === 6)) {
+				if ((this.engine.isLifeHistory) && (replace === 6 || current === 6)) {
 					this.engine.populateState6MaskFromColGrid();
 				}
 				this.afterEdit("replace states");
@@ -7442,11 +7448,11 @@
 						}
 					}
 					if (numCleared > 0) {
-						// update state 6 grid
-						this.engine.populateState6MaskFromColGrid();
 						if (me.isSuper) {
 							me.afterEdit("clear [R]Super cells");
 						} else {
+							// update state 6 grid
+							this.engine.populateState6MaskFromColGrid();
 							me.afterEdit("clear [R]History cells");
 						}
 					}
@@ -7712,6 +7718,11 @@
 						me.emptyStart = true;
 					} else {
 						me.emptyStart = false;
+					}
+
+					// check for exclusive playback mode
+					if (me.exclusivePlayback) {
+						Controller.stopOtherViewers(me);
 					}
 
 					// zoom text
@@ -10074,7 +10085,9 @@
 						}
 					}
 					// update state 6 grid
-					this.engine.populateState6MaskFromColGrid();
+					if (me.engine.isLifeHistory) {
+						this.engine.populateState6MaskFromColGrid();
+					}
 				} else {
 					// clear cells in selection
 					for (y = y1; y <= y2; y += 1) {
@@ -13971,6 +13984,12 @@
 
 	// reset any view controls that scripts can overwrite
 	View.prototype.resetScriptControls = function() {
+		// reset exclusive playback
+		this.exclusivePlayback = false;
+
+		// reset ignore pause requests
+		this.ignorePauseRequests = false;
+
 		// reset maximum grid size
 		this.engine.maxGridSize = 1 << ViewConstants.defaultGridPower;
 
@@ -14865,7 +14884,7 @@
 		}
 
 		// create the state 6 mask
-		if (me.engine.isLifeHistory || me.engine.isSuper) {
+		if (me.engine.isLifeHistory) {
 			me.engine.createState6Mask();
 		}
 
@@ -15426,7 +15445,7 @@
 			me.computePanXY(pattern.width, pattern.height);
 			
 			// populate the state 6 mask
-			if (me.engine.isLifeHistory || me.engine.isSuper) {
+			if (me.engine.isLifeHistory) {
 				// check if state 6 is used
 				if (me.manager.stateCount[6]) {
 					me.engine.populateState6Mask(pattern, me.panX, me.panY);
