@@ -28869,7 +28869,7 @@
 					rightX = swap;
 				}
 				// check for empty pattern
-				if (rightX < 0 || leftX < 0) {
+				if (rightX < 0 && leftX < 0) {
 					width = 0;
 				} else {
 					width = rightX - leftX + 1;
