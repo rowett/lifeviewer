@@ -1,3 +1,6 @@
+Build 565
+- ensure paste can't create invalid states
+
 Build 564
 - fixed a bug with initial AutoFit on hex patterns
 

@@ -295,7 +295,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 564,
+		/** @const {number} */ versionBuild : 565,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2037,6 +2037,22 @@
 			state = states - state;
 		}
 
+		// ensure state is in range
+		if (states === -1) {
+			if (this.engine.isLifeHistory) {
+				states = 7;
+			} else {
+				states = 2;
+			}
+		}
+		if (colour < 0) {
+			colour = 0;
+		} else {
+			if (colour >= states) {
+				colour = states - 1;
+			}
+		}
+
 		// only add undo/redo records and draw if the new state is different than the current state
 		if (colour !== state) {
 			// check for undo/redo
@@ -3117,6 +3133,15 @@
 			stateRow = null,
 			numStates = this.engine.multiNumStates - 1;
 
+		// get number of states
+		if (numStates == -2) {
+			if (this.engine.isLifeHistory) {
+				numStates = 6;
+			} else {
+				numStates = 1;
+			}
+		}
+
 		// check each pattern to see which need to be drawn this generation
 		for (j = 0; j < this.pasteList.length; j += 1) {
 			paste = this.pasteList[j];
@@ -3191,6 +3216,13 @@
 								case ViewConstants.pasteModeOne:
 									result = 1;
 									break;
+							}
+							if (result < 0) {
+								result = 0;
+							} else {
+								if (result >= numStates) {
+									result = numStates - 1;
+								}
 							}
 							this.engine.setState(xOff + x, yOff + y, result, true);
 						}
