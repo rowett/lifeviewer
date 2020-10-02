@@ -16,6 +16,26 @@
 		copying : false
 	};
 
+	// render truncated LifeSuper state name so final character is always included
+	Help.superName = function(state) {
+		var name = LifeConstants.namesSuper[state];
+
+		if (name.length > 10) {
+			// perform substitutions
+			name = name.replace(/marked/, "mkd");
+			name = name.replace(/trail/, "trl");
+			if (name.length > 10) {
+				if (name.substr(-1) >= "1" && name.substr(-1) <= "9") {
+					name = name.substr(0,9) + name.substr(-1);
+				} else {
+					name = name.substr(0, 10);
+				}
+			}
+		}
+
+		return name;
+	};
+
 	// draw a line of help text with up down greyed based on position
 	Help.renderHelpLineUpDown = function(view, up, separator, down, text, ctx, x, y, height, startLine) {
 		var result = y,
@@ -1915,7 +1935,7 @@
 						if (view.engine.isSuper) {
 							for (i = 1; i < view.engine.multiNumStates; i += 1) {
 								this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-								y = this.renderHelpLine(view, LifeConstants.namesSuper[i].substr(0, 10), this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
+								y = this.renderHelpLine(view, this.superName(i), this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
 							}
 						} else {
 							// draw the alive state
