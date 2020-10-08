@@ -295,7 +295,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 566,
+		/** @const {number} */ versionBuild : 568,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1680,6 +1680,9 @@
 
 		// alternating gridlines toggle button
 		this.altGridButton = null;
+
+		// rainbow mode toggle button
+		this.rainbowButton = null;
 
 		// hex cell toggle button
 		this.hexCellButton = null;
@@ -3595,6 +3598,12 @@
 		// check if changing
 		if (change) {
 			me.randomDensity = newValue[0];
+			if (me.randomDensity < ViewConstants.minRandomFill) {
+				me.randomDensity = ViewConstants.minRandomFill;
+			}
+			if (me.randomDensity > ViewConstants.maxRandomFill) {
+				me.randomDensity = ViewConstants.maxRandomFill;
+			}
 		}
 
 		return [me.randomDensity, me.randomDensity];
@@ -5651,6 +5660,7 @@
 		this.rHistoryButton.deleted = shown;
 		this.autoGridButton.deleted = shown;
 		this.altGridButton.deleted = shown;
+		this.rainbowButton.deleted = shown;
 		// playback category
 		shown = hide || !this.showPlaybackSettings;
 		this.historyFitButton.deleted = shown;
@@ -5663,6 +5673,7 @@
 		shown = this.engine.isNone || !this.executable;
 		this.randomizeButton.locked = shown;
 		this.identifyButton.locked = shown;
+		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isRuleTree || this.engine.isMargolus);
 
 		// set theme section label text
 		this.themeSectionLabel.deleted = hide || !(this.showDisplaySettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings);
@@ -6492,6 +6503,22 @@
 			}
 		}
 		return [me.autoGrid];
+	};
+
+	// toggle rainbow mode
+	View.prototype.viewRainbowToggle = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			// toggle rainbow
+			me.engine.rainbow = newValue[0];
+			me.engine.createColourIndex();
+			if ((me.engine.counter & 1) === 0) {
+				me.engine.resetColourGridBox(me.engine.grid16);
+			} else {
+				me.engine.resetColourGridBox(me.engine.nextGrid16);
+			}
+		}
+		return [me.engine.rainbow];
 	};
 
 	// toggle Margolus alternating grid lines
@@ -13335,38 +13362,41 @@
 		this.themeSectionLabel = this.viewMenu.addLabelItem(Menu.north, 0, 100, 120, 40, "");
 
 		// hex/square cell toggle button
-		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -100, -75, 180, 40, ["Hexagons"], [this.engine.useHexagons], Menu.multi);
+		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -100, -100, 180, 40, ["Hexagons"], [this.engine.useHexagons], Menu.multi);
 		this.hexCellButton.toolTip = ["toggle hexagonal cells"];
 
 		// cell borders toggle button
-		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 100, -75, 180, 40, ["Cell Borders"], [this.engine.cellBorders], Menu.multi);
+		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 100, -100, 180, 40, ["Cell Borders"], [this.engine.cellBorders], Menu.multi);
 		this.bordersButton.toolTip = ["toggle cell borders"];
 
 		// major gridlines toggle button
-		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -100, -25, 180, 40, ["Major GridLines"], [this.engine.gridLineMajorEnabled], Menu.multi);
+		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -100, -50, 180, 40, ["Major GridLines"], [this.engine.gridLineMajorEnabled], Menu.multi);
 		this.majorButton.toolTip = ["toggle major gridlines"];
 
 		// stars toggle button
-		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.middle, 100, -25, 180, 40, ["Starfield"], [this.starsOn], Menu.multi);
+		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.middle, 100, -50, 180, 40, ["Starfield"], [this.starsOn], Menu.multi);
 		this.starsButton.toolTip = ["toggle starfield display"];
 
 		// label toggle button
-		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -100, 25, 180, 40, ["Annotations"], [this.showLabels], Menu.multi);
+		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -100, 0, 180, 40, ["Annotations"], [this.showLabels], Menu.multi);
 		this.labelButton.toolTip = ["toggle annotations"];
 
 		// [R]History display toggle
-		this.rHistoryButton = this.viewMenu.addListItem(this.viewRHistoryToggle, Menu.middle, 100, 25, 180, 40, ["[R]History"], [this.engine.displayLifeHistory], Menu.multi);
+		this.rHistoryButton = this.viewMenu.addListItem(this.viewRHistoryToggle, Menu.middle, 100, 0, 180, 40, ["[R]History"], [this.engine.displayLifeHistory], Menu.multi);
 		this.rHistoryButton.toolTip = ["toggle [R]History display"];
 
 		// autogrid toggle button
-		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, -100, 75, 180, 40, ["Auto GridLines"], [this.autoGrid], Menu.multi);
+		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, -100, 50, 180, 40, ["Auto GridLines"], [this.autoGrid], Menu.multi);
 		this.autoGridButton.toolTip = ["automatically turn on gridlines for Draw and Select and off for Pan"]; 
 
 		// alt grid toggle button
-		this.altGridButton = this.viewMenu.addListItem(this.viewAltGridToggle, Menu.middle, 100, 75, 180, 40, ["Alt GridLines"], [this.engine.altGrid], Menu.multi);
+		this.altGridButton = this.viewMenu.addListItem(this.viewAltGridToggle, Menu.middle, 100, 50, 180, 40, ["Alt GridLines"], [this.engine.altGrid], Menu.multi);
 		this.altGridButton.toolTip = ["toggle alternating gridlines"]; 
 
-		// historyfit toggle button
+		// rainbox button
+		this.rainbowButton = this.viewMenu.addListItem(this.viewRainbowToggle, Menu.middle, 0, 100, 180, 40, ["Rainbow"], [this.engine.rainbow], Menu.multi);
+		this.rainbowButton.toolTip = ["toggle rainbow mode"]; 
+
 		// historyfit toggle button
 		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.middle, -100, -50, 180, 40, ["AutoFit History"], [this.historyFit], Menu.multi);
 		this.historyFitButton.toolTip = ["toggle AutoFit History"];
@@ -15591,6 +15621,9 @@
 
 		// update grid UI
 		me.gridToggle.current = [me.engine.displayGrid];
+
+		// set rainbow toggle
+		me.rainbowButton.current = [me.engine.rainbow];
 
 		// reset generation
 		me.engine.counter = 0;

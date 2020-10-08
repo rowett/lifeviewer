@@ -321,14 +321,8 @@
 					// w for toggle rainbow display
 					case 87:
 						// toggle rainbow mode
-						if (!(me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isRuleTree || me.engine.isMargolus)) {
-							me.engine.rainbow = !me.engine.rainbow;
-							me.engine.createColourIndex();
-							if ((me.engine.counter & 1) === 0) {
-								me.engine.resetColourGridBox(me.engine.grid16);
-							} else {
-								me.engine.resetColourGridBox(me.engine.nextGrid16);
-							}
+						if (!(me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isRuleTree || me.engine.isMargolus)) {
+							me.rainbowButton.current = me.viewRainbowToggle([!me.engine.rainbow], true, me);
 						}
 						break;
 

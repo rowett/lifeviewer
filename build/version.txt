@@ -1,3 +1,13 @@
+Build 568
+- add Rainbow toggle button to Settings->Display
+
+Build 567
+- ensure random fill% stays in range
+
+Build 566
+- new [R]Super colours
+- abbreviate [R]Super state names in Help->Info->Theme
+
 Build 565
 - ensure paste can't create invalid states
 

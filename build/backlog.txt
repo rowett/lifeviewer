@@ -7,8 +7,14 @@ Investigate:
     grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
     user preferences
     strict volatility (Identify)
+    memory statistics in allocator with 0 size allocations
 
 Planned:
+    remove redundant colour map functionality from ColourManager
+    switch [R]History to [R]Super style algo
+        - remove overlay
+        - remove state6 processing
+    add HistoryStates on state 2 for [R]Super and new [R]History
     menu items coordinates should be reflected based on compass position
     ability to specify Dying state colours
     add UI colours to Themes
@@ -44,6 +50,8 @@ Planned:
     [DONE]asterisk
     [DONE]triangular
     [DONE]custom (CoordCA)
+    [DONE]weighted with optional state weights
+    - B0 emulation
 
 [STARTED]add type information for closure compiler
 
