@@ -17950,7 +17950,7 @@
 			blankColourRow = this.blankColourRow,
 		    grid = null, gridRow = null, 
 		    tileGrid = null, tileGridRow = null,
-		    value = 0, th = 0, tw = 0, b = 0, bitN = 0,
+		    value = 0, th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
 			tiles = 0, nextTiles = 0,
 			calc = 0,
@@ -18100,7 +18100,7 @@
 								} else {
 									aboveRow = colourGrid[h - 1];
 								}
-								if (h === this.height -1) {
+								if (h === this.height - 1) {
 									belowRow = blankColourRow;
 								} else {
 									belowRow = colourGrid[h + 1];
@@ -18125,9 +18125,8 @@
 								nextCell = gridRow[leftX];
 
 								// process each cell in the chunk
-								colIndex = 32768;
-								bitN = 1 << 15;
-								while (bitN > 0) {
+								colIndex = 1 << 15;
+								while (colIndex > 0) {
 									// shift neighbourhood left
 									nw = n;
 									n = aboveRow[cr];
@@ -18172,7 +18171,7 @@
 
 										// clear cell in bit grid
 										if (!process && ((c & 1) !== 0)) {
-											gridRow[leftX] &= ~bitN;
+											gridRow[leftX] &= ~colIndex;
 										}
 									}
 
@@ -18182,7 +18181,7 @@
 									// check whether state still needs processing
 									if (process) {
 										// get cell state from bit grid
-										if ((nextCell & bitN) !== 0) {
+										if ((nextCell & colIndex) !== 0) {
 											// cell alive
 											// was cell alive in this generation
 											if ((c & 1) === 0) {
@@ -18194,7 +18193,7 @@
 		
 													case 6:
 														// clear cell in bit grid
-														gridRow[leftX] &= ~bitN;
+														gridRow[leftX] &= ~colIndex;
 														break;
 		
 													case 8:
@@ -18344,7 +18343,6 @@
 									// next bit cell
 									colIndex >>= 1;
 									cr += 1;
-									bitN >>= 1;
 								}
 
 								// update alive status
@@ -18457,7 +18455,7 @@
 			blankColourRow = this.blankColourRow,
 		    grid = null, gridRow = null, 
 		    tileGrid = null, tileGridRow = null,
-		    value = 0, th = 0, tw = 0, b = 0, bitN = 0,
+		    value = 0, th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
 			tiles = 0, nextTiles = 0,
 			calc = 0,
@@ -18607,7 +18605,7 @@
 								} else {
 									aboveRow = colourGrid[h - 1];
 								}
-								if (h === this.height -1) {
+								if (h === this.height - 1) {
 									belowRow = blankColourRow;
 								} else {
 									belowRow = colourGrid[h + 1];
@@ -18629,9 +18627,8 @@
 								nextCell = gridRow[leftX];
 
 								// process each cell in the chunk
-								colIndex = 32768;
-								bitN = 1 << 15;
-								while (bitN > 0) {
+								colIndex = 1 << 15;
+								while (colIndex > 0) {
 									// shift neighbourhood left
 									n = aboveRow[cr];
 									w = c;
@@ -18677,14 +18674,14 @@
 
 										// clear cell in bit grid
 										if (!process && ((c & 1) !== 0)) {
-											gridRow[leftX] &= ~bitN;
+											gridRow[leftX] &= ~colIndex;
 										}
 									}
 
 									// check whether state still needs processing
 									if (process) {
 										// get cell state from bit grid
-										if ((nextCell & bitN) !== 0) {
+										if ((nextCell & colIndex) !== 0) {
 											// cell alive
 											// was cell alive in this generation
 											if ((c & 1) === 0) {
@@ -18696,7 +18693,7 @@
 		
 													case 6:
 														// clear cell in bit grid
-														gridRow[leftX] &= ~bitN;
+														gridRow[leftX] &= ~colIndex;
 														break;
 		
 													case 8:
@@ -18846,7 +18843,6 @@
 									// next bit cell
 									colIndex >>= 1;
 									cr += 1;
-									bitN >>= 1;
 								}
 
 								// update alive status
@@ -18959,7 +18955,7 @@
 			blankColourRow = this.blankColourRow,
 		    grid = null, gridRow = null, 
 		    tileGrid = null, tileGridRow = null,
-		    value = 0, th = 0, tw = 0, b = 0, bitN = 0,
+		    value = 0, th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
 			tiles = 0, nextTiles = 0,
 			calc = 0,
@@ -19108,7 +19104,7 @@
 								} else {
 									aboveRow = colourGrid[h - 1];
 								}
-								if (h === this.height -1) {
+								if (h === this.height - 1) {
 									belowRow = blankColourRow;
 								} else {
 									belowRow = colourGrid[h + 1];
@@ -19136,19 +19132,18 @@
 								nextCell = gridRow[leftX];
 
 								// process each cell in the chunk
-								colIndex = 32768;
-								bitN = 1 << 15;
-								while (bitN > 0) {
+								colIndex = 1 << 15;
+								while (colIndex > 0) {
 									// shift neighbourhood left
 									nw = n;
 									n = ne;
-									ne = aboveRow[cr + 1];
 									w = c;
 									c = e;
-									e = colourGridRow[cr + 1];
 									sw = s;
 									s = se;
+									e = colourGridRow[cr + 1];
 									se = belowRow[cr + 1];
+									ne = aboveRow[cr + 1];
 									value = c;
 
 									// typemask has a bit set per state in the neighbouring cells
@@ -19188,14 +19183,14 @@
 
 										// clear cell in bit grid
 										if (!process && ((c & 1) !== 0)) {
-											gridRow[leftX] &= ~bitN;
+											gridRow[leftX] &= ~colIndex;
 										}
 									}
 
 									// check whether state still needs processing
 									if (process) {
 										// get cell state from bit grid
-										if ((nextCell & bitN) !== 0) {
+										if ((nextCell & colIndex) !== 0) {
 											// cell alive
 											// was cell alive in this generation
 											if ((c & 1) === 0) {
@@ -19207,7 +19202,7 @@
 		
 													case 6:
 														// clear cell in bit grid
-														gridRow[leftX] &= ~bitN;
+														gridRow[leftX] &= ~colIndex;
 														break;
 		
 													case 8:
@@ -19225,19 +19220,6 @@
 																value += 16;
 															}
 															value += firstBit[calc];
-															//if (calc > 255) {
-																//calc >>= 8;
-																//value += 8;
-															//}
-															//if (calc > 15) {
-																//calc >>= 4;
-																//value += 4;
-															//}
-															//if (calc > 3) {
-																//calc >>= 2;
-																//value += 2;
-															//}
-															//value += (calc >> 1);
 														} else {
 															calc = typeMask & alive13or15or17or19or21or23or25;
 															if (((typeMask & (1 << 3)) !== 0) && ((typeMask & alive1or5or7or9or11) === 0) && (calc && (calc & (calc - 1)) === 0)) {
@@ -19247,19 +19229,6 @@
 																	value += 16;
 																}
 																value += firstBit[calc];
-																//if (calc > 255) {
-																	//calc >>= 8;
-																	//value += 8;
-																//}
-																//if (calc > 15) {
-																	//calc >>= 4;
-																	//value += 4;
-																//}
-																//if (calc > 3) {
-																	//calc >>= 2;
-																	//value += 2;
-																//}
-																//value += (calc >> 1);
 															} else {
 																calc = typeMask & alive9or11;
 																if (((typeMask & (1 << 7)) !== 0) && ((typeMask & alive1or3or5or13or15or17or19or21or23or25) === 0) && (calc && (calc & (calc - 1)) === 0)) {
@@ -19269,19 +19238,6 @@
 																		value += 16;
 																	}
 																	value += firstBit[calc];
-																	//if (calc > 255) {
-																		//calc >>= 8;
-																		//value += 8;
-																	//}
-																	//if (calc > 15) {
-																		//calc >>= 4;
-																		//value += 4;
-																	//}
-																	//if (calc > 3) {
-																		//calc >>= 2;
-																		//value += 2;
-																	//}
-																	//value += (calc >> 1);
 																} else {
 																	calc = typeMask & alive7or13or15or17or19or21or23or25;
 																	if (calc && ((typeMask & alive1or3or5or9or11) === 0)) {
@@ -19360,7 +19316,6 @@
 									// next bit cell
 									colIndex >>= 1;
 									cr += 1;
-									bitN >>= 1;
 								}
 
 								// update alive status

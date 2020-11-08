@@ -295,7 +295,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 568,
+		/** @const {number} */ versionBuild : 569,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3233,10 +3233,14 @@
 						if (this.engine.isLifeHistory) {
 							for (x = 0; x < stateRow.length; x += 1) {
 								source = stateRow[x];
-								sourceFlag = source & 1;
-								dest = this.engine.getState(xOff + x, yOff + y, false);
-								destFlag = dest & 1;
-								result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
+								if (mode === ViewConstants.pasteModeCopy) {
+									result = source;
+								} else {
+									sourceFlag = source & 1;
+									dest = this.engine.getState(xOff + x, yOff + y, false);
+									destFlag = dest & 1;
+									result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
+								}
 								this.engine.setState(xOff + x, yOff + y, result, true);
 							}
 						} else {
