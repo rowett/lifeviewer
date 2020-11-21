@@ -1,3 +1,6 @@
+Build 570
+- fixed issue with drag to select text not working after PopUp Viewer
+
 Build 569
 - fix PASTET in COPY mode for [R]History
 

@@ -295,7 +295,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 569,
+		/** @const {number} */ versionBuild : 570,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13876,7 +13876,6 @@
 			this.stepRangeX = this.stepRange.relX;
 
 			// register mouse wheel event
-			//registerEvent(this.mainCanvas, "DOMMouseScroll", function(event) {me.wheel(me, event);}, false);
 			registerEvent(this.mainCanvas, "wheel", function(event) {me.wheel(me,event);}, false);
 
 			// enable notifications

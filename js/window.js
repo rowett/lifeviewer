@@ -343,11 +343,7 @@
 			}
 		}
 
-		// stop event propagating
-			if (event.stopPropagation) {
-			event.stopPropagation();
-		}
-		event.preventDefault();
+		// allow event propagation otherwise dragging to select text fails
 	};
 
 	// get cursor position over element
