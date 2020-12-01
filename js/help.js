@@ -818,6 +818,9 @@
 		y = this.renderHelpLine(view, "O", "open screenshot in separate window", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift O", "open population graph in separate window", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift U", "toggle UI", ctx, x, y, height, helpLine);
+		if (view.engine.multiNumStates === -1) {
+			y = this.renderHelpLine(view, "Alt W", "toggle rainbow mode", ctx, x, y, height, helpLine);
+		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// pattern controls

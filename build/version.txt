@@ -1,3 +1,7 @@
+Build 571
+- documented rainbow mode toggle hotkey in help (Alt+W)
+- fixed a tiling issue for RuleTable rules
+
 Build 570
 - fixed issue with drag to select text not working after PopUp Viewer
 

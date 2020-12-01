@@ -4256,6 +4256,55 @@
 							if (current === 0) {
 								this.population += 1;
 							}
+							// check left boundary
+							cx = x & 15;
+							if ((x > 0) && (cx <= leftTarget)) {
+								x -= (cx + 1);
+								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+								x += (cx + 1);
+							} else {
+								// check right boundary
+								if ((x < this.width - 1) && (cx >= rightTarget)) {
+									x += (16 - cx);
+									tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+									x -= (16 - cx);
+								}
+							}
+							// check bottom boundary
+							if ((y > 0) && ((y & 15) === 0)) {
+								y -= 1;
+								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+								if ((x > 0) && (cx <= leftTarget)) {
+									x -= (cx + 1);
+									tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+									x += (cx + 1);
+								} else {
+									if ((x < this.width - 1) && (cx >= rightTarget)) {
+										x += (16 - cx);
+										tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+										x -= (16 - cx);
+									}
+								}
+								y += 1;
+							} else {
+								// check top boundary
+								if ((y < this.height - 1) && ((y & 15) === 15)) {
+									y += 1;
+									tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+									if ((x > 0) && (cx <= leftTarget)) {
+										x -= (cx + 1);
+										tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+										x += (cx + 1);
+									} else {
+										if ((x < this.width - 1) && (cx >= rightTarget)) {
+											x += (16 - cx);
+											tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+											x -= (16 - cx);
+										}
+									}
+									y -= 1;
+								}
+							}
 						}
 					}
 				} else {

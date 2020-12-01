@@ -26,13 +26,13 @@
 		/** @const {string} */ limitToken : "limit",
 
 		// div class name
-		/** @const {string} */ divClassName : "rle",
+		/** @type {string} */ divClassName : "rle",
 
 		// pattern source element name
-		/** @const {string} */ patternSourceName : "code",
+		/** @type {string} */ patternSourceName : "code",
 
 		// maximum height of pattern source element
-		/** @const {number} */ patternSourceMaxHeight : 37,
+		/** @type {number} */ patternSourceMaxHeight : 37,
 
 		// whether to hide canvas if no support
 		/** @type {boolean} */ hide : true,
@@ -295,7 +295,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 570,
+		/** @const {number} */ versionBuild : 571,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",

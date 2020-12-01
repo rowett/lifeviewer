@@ -30,7 +30,7 @@ Planned:
     [DONE]add for Hexagons and triangles
     [DONE]add script command
     [DONE]add hotkey for toggle
-    - add toggle button to settings
+    [DONE]add toggle button to settings
 
 [STARTED][R]Super support
     [DONE]rule parser
@@ -52,6 +52,7 @@ Planned:
     [DONE]custom (CoordCA)
     [DONE]weighted with optional state weights
     - B0 emulation
+    - alternating rules for custom and weighted
 
 [STARTED]add type information for closure compiler
 
