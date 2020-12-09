@@ -1,3 +1,12 @@
+Build 572
+- hotkey Alt+G switches [R]Standard or [R]History to [R]Super
+- hotkey Alt+H swtiches [R]Standard or [R]Super to [R]History
+- hotkey Alt+J switches [R]History or [R]Super to [R]Standard
+- kill gliders toggle is now on hotkey Ctrl+L
+- [R]Super colours can now be customised with [[ COLOR <0..25> R G B|name ]]
+- [R]Super paste can now paste and valid state with [[ PASTEMODE COPY ]]
+- Help->Scripts->Colours was sometimes showing an incorrect number of states for the [[ COLOR ]] command
+
 Build 571
 - documented rainbow mode toggle hotkey in help (Alt+W)
 - fixed a tiling issue for RuleTable rules

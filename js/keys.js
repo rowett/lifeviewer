@@ -230,26 +230,42 @@
 						}
 						break;
 
-					// g for toggle kill gliders
+					// g for convert to [R]Super
 					case 71:
-						// toggle kill gliders
-						me.engine.clearGliders = !me.engine.clearGliders;
-						me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
-						break;
-
-					// h for [R]History/[R]Super on
-					case 72:
-						if (me.engine.isLifeHistory || me.engine.isSuper) {
-							me.viewRHistoryToggle([true], true, me);
-							me.menuManager.notification.notify((me.engine.isSuper ? "[R]Super" : "[R]History") + " Display " + (me.engine.displayLifeHistory ? "On" : "Off"), 15, 40, 15, true);
+						if (me.engine.isLifeHistory || me.engine.multiNumStates === -1) {
+							me.convertToSuper(me);
+						} else {
+							if (me.engine.isSuper) {
+								me.menuManager.notification.notify("Rule is already [R]Super", 15, 120, 15, true);
+							} else {
+								me.menuManager.notification.notify("Unsupported rule for [R]Super", 15, 120, 15, true);
+							}
 						}
 						break;
 
-					// j for [R]History/[R]Super off
+					// h for convert to [R]History
+					case 72:
+						if (me.engine.multiNumStates === -1 || me.engine.isSuper) {
+							me.convertToHistory(me);
+						} else {
+							if (me.engine.isLifeHistory) {
+								me.menuManager.notification.notify("Rule is already [R]History", 15, 120, 15, true);
+							} else {
+								me.menuManager.notification.notify("Unsupported rule for [R]History", 15, 120, 15, true);
+							}
+						}
+						break;
+
+					// j for convert to [R]Standard
 					case 74:
 						if (me.engine.isLifeHistory || me.engine.isSuper) {
-							me.viewRHistoryToggle([false], true, me);
-							me.menuManager.notification.notify((me.engine.isSuper ? "[R]Super" : "[R]History") + " Display " + (me.engine.displayLifeHistory ? "On" : "Off"), 15, 40, 15, true);
+							me.convertToStandard(me);
+						} else {
+							if (me.engine.multiNumStates === -1) {
+								me.menuManager.notification.notify("Rule is already [R]Standard", 15, 120, 15, true);
+							} else {
+								me.menuManager.notification.notify("Unsupported rule for [R]Standard", 15, 120, 15, true);
+							}
 						}
 						break;
 
@@ -678,17 +694,24 @@
 
 			// l for decrease depth or cycle paste location
 			case 76:
-				// check for shift
-				if (event.shiftKey) {
-					me.cyclePasteLocation(me);
+				// check for ctrl
+				if (event.ctrlKey) {
+					// toggle kill gliders
+					me.engine.clearGliders = !me.engine.clearGliders;
+					me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
 				} else {
-					// disable depth in multi-state mode
-					if (!me.multiStateView) {
-						if (!me.depthItem.locked) {
-							if (me.depthItem.current[0] >= 0.01) {
-								me.depthItem.current = me.viewDepthRange([me.depthItem.current[0] - 0.01, me.depthItem.current[1]], true, me);
-							} else {
-								me.depthItem.current = me.viewDepthRange([0, me.depthItem.current[1]], true, me);
+					// check for shift
+					if (event.shiftKey) {
+						me.cyclePasteLocation(me);
+					} else {
+						// disable depth in multi-state mode
+						if (!me.multiStateView) {
+							if (!me.depthItem.locked) {
+								if (me.depthItem.current[0] >= 0.01) {
+									me.depthItem.current = me.viewDepthRange([me.depthItem.current[0] - 0.01, me.depthItem.current[1]], true, me);
+								} else {
+									me.depthItem.current = me.viewDepthRange([0, me.depthItem.current[1]], true, me);
+								}
 							}
 						}
 					}

@@ -142,6 +142,14 @@
 		// UI paste modes (AND, COPY, OR, XOR)
 		/** @const {Array<number>} */ uiPasteModes : [1, 3, 7, 6],
 
+		// state mappings
+		/** @const {Array<number>} */ standardToHistoryStates : [0, 1],
+		/** @const {Array<number>} */ standardToSuperStates : [0, 1],
+		/** @const {Array<number>} */ historyToStandardStates : [0, 1, 0, 1, 0, 1, 0],
+		/** @const {Array<number>} */ historyToSuperStates : [0, 1, 2, 3, 4, 5, 6],
+		/** @const {Array<number>} */ superToStandardStates : [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+		/** @const {Array<number>} */ superToHistoryStates : [0, 1, 2, 3, 4, 5, 6, 3, 4, 1, 0, 1, 0, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1],
+
 		// square root of 3 used for triangular grid
 		/** @const {number} */ sqrt3 : Math.sqrt(3),
 
@@ -295,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 571,
+		/** @const {number} */ versionBuild : 572,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1752,9 +1760,6 @@
 
 		// timing button
 		this.fpsButton = null;
-
-		// [R]History display button
-		this.rHistoryButton = null;
 
 		// timing details button
 		this.timingDetailButton = null;
@@ -3230,7 +3235,7 @@
 							this.engine.setState(xOff + x, yOff + y, result, true);
 						}
 					} else {
-						if (this.engine.isLifeHistory) {
+						if (this.engine.isLifeHistory || this.engine.isSuper) {
 							for (x = 0; x < stateRow.length; x += 1) {
 								source = stateRow[x];
 								if (mode === ViewConstants.pasteModeCopy) {
@@ -5661,7 +5666,6 @@
 		this.majorButton.deleted = shown;
 		this.starsButton.deleted = shown;
 		this.labelButton.deleted = shown;
-		this.rHistoryButton.deleted = shown;
 		this.autoGridButton.deleted = shown;
 		this.altGridButton.deleted = shown;
 		this.rainbowButton.deleted = shown;
@@ -6555,19 +6559,6 @@
 		}
 
 		return [me.engine.useHexagons];
-	};
-
-	// toggle [R]History display
-	View.prototype.viewRHistoryToggle = function(newValue, change, me) {
-		// check if chaning
-		if (change) {
-			me.engine.displayLifeHistory = newValue[0];
-			if (me.engine.isLifeHistory) {
-				me.engine.drawOverlay = newValue[0];
-			}
-		}
-
-		return [me.engine.displayLifeHistory];
 	};
 
 	// toggle timing detail display
@@ -8629,7 +8620,7 @@
 					me.patternBoundedGridDef = "";
 				}
 				me.patternAliasName = "";
-				patternText = me.engine.asRLE(me, me.engine, true);
+				patternText = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, []);
 
 				// restore previous size
 				if (me.isInPopup) {
@@ -8643,6 +8634,67 @@
 				me.menuManager.notification.notify("Invalid rule", 15, 180, 15, true);
 			}
 		}
+	};
+
+	// convert a pattern from one rule to another
+	View.prototype.convertPattern = function(fromPostfix, toPostfix, fromStates, toStates, mapping) {
+		var currentRule = this.patternRuleName,
+			patternText = "";
+
+		// remove the from postfix if present
+		if (fromPostfix !== "") {
+			currentRule = currentRule.substr(0, currentRule.length - fromPostfix.length);
+		}
+
+		// add the to postfix
+		currentRule += toPostfix;
+
+		// set new rule name
+		this.patternRuleName = currentRule;
+		this.patternAliasName = currentRule;
+		patternText = this.engine.asRLE(this, this.engine, true, fromStates, toStates, mapping);
+
+		// restore previous size
+		if (this.isInPopup) {
+			this.displayWidth = this.origDisplayWidth;
+			this.displayHeight = this.origDisplayHeight;
+		}
+
+		// start viewer
+		this.startViewer(patternText, false);
+	};
+
+	// convert [R]History or [R]Standard to [R]Super
+	View.prototype.convertToSuper = function(me) {
+		var fromPostfix = (me.engine.isLifeHistory ? "History" : ""),
+			fromStates = (me.engine.isLifeHistory ? 7 : 2),
+			toPostfix = "Super",
+			toStates = 26,
+			mapping = (me.engine.isLifeHistory ? ViewConstants.historyToSuperStates : ViewConstants.standardToSuperStates);
+
+		me.convertPattern(fromPostfix, toPostfix, fromStates, toStates, mapping);
+	};
+
+	// convert [R]Standard or [R]Super to [R]History
+	View.prototype.convertToHistory = function(me) {
+		var fromPostfix = (me.engine.isSuper ? "Super" : ""),
+			fromStates = (me.engine.isSuper ? 26 : 2),
+			toPostfix = "History",
+			toStates = 7,
+			mapping = (me.engine.isSuper ? ViewConstants.superToHistoryStates : ViewConstants.standardToHistoryStates);
+
+		me.convertPattern(fromPostfix, toPostfix, fromStates, toStates, mapping);
+	};
+
+	// convert [R]History or [R]Super to [R]Standard
+	View.prototype.convertToStandard = function(me) {
+		var fromPostfix = (me.engine.isLifeHistory ? "History" : "Super"),
+			fromStates = (me.engine.isLifeHistory ? 7 : 26),
+			toPostfix = "",
+			toStates = 2,
+			mapping = (me.engine.isLifeHistory ? ViewConstants.historyToStandardStates : ViewConstants.superToStandardStates);
+
+		me.convertPattern(fromPostfix, toPostfix, fromStates, toStates, mapping);
 	};
 
 	// create random HROT rule name
@@ -9295,16 +9347,12 @@
 		}
 
 		// populate output states
-		if (me.engine.multiNumStates <= 2 && !me.engine.displayLifeHistory) {
+		if (me.engine.multiNumStates <= 2) {
 			outputState[0] = "b";
 			outputState[1] = "o";
 			maxState = 2;
 		} else {
-			if (me.engine.displayLifeHistory) {
-				maxState = 2;
-			} else {
-				maxState = me.engine.multiNumStates;
-			}
+			maxState = me.engine.multiNumStates;
 			outputState[0] = ".";
 			for (x = 0; x < maxState - 1; x += 1) {
 				if (x >= 24) {
@@ -12843,7 +12891,7 @@
 
 	// save the current rle to the source document node
 	View.prototype.saveCurrentRLE = function(me) {
-		me.element.innerHTML = me.engine.asRLE(me, me.engine, true);
+		me.element.innerHTML = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, []);
 		me.element.value = me.element.innerHTML;
 	};
 
@@ -12879,7 +12927,7 @@
 	View.prototype.copyCurrentRLE = function(me, addComments) {
 		// copy the current pattern to the clipboard
 		me.copyStartTime = performance.now();
-		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, addComments), true);
+		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, addComments, me.engine.multiNumStates, me.engine.multiNumStates, []), true);
 	};
 
 	// key down
@@ -13366,40 +13414,36 @@
 		this.themeSectionLabel = this.viewMenu.addLabelItem(Menu.north, 0, 100, 120, 40, "");
 
 		// hex/square cell toggle button
-		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -100, -100, 180, 40, ["Hexagons"], [this.engine.useHexagons], Menu.multi);
+		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -100, -75, 180, 40, ["Hexagons"], [this.engine.useHexagons], Menu.multi);
 		this.hexCellButton.toolTip = ["toggle hexagonal cells"];
 
 		// cell borders toggle button
-		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 100, -100, 180, 40, ["Cell Borders"], [this.engine.cellBorders], Menu.multi);
+		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 100, -75, 180, 40, ["Cell Borders"], [this.engine.cellBorders], Menu.multi);
 		this.bordersButton.toolTip = ["toggle cell borders"];
 
 		// major gridlines toggle button
-		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -100, -50, 180, 40, ["Major GridLines"], [this.engine.gridLineMajorEnabled], Menu.multi);
+		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -100, -25, 180, 40, ["Major GridLines"], [this.engine.gridLineMajorEnabled], Menu.multi);
 		this.majorButton.toolTip = ["toggle major gridlines"];
 
 		// stars toggle button
-		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.middle, 100, -50, 180, 40, ["Starfield"], [this.starsOn], Menu.multi);
+		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.middle, 100, -25, 180, 40, ["Starfield"], [this.starsOn], Menu.multi);
 		this.starsButton.toolTip = ["toggle starfield display"];
 
 		// label toggle button
-		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -100, 0, 180, 40, ["Annotations"], [this.showLabels], Menu.multi);
+		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -100, 25, 180, 40, ["Annotations"], [this.showLabels], Menu.multi);
 		this.labelButton.toolTip = ["toggle annotations"];
 
-		// [R]History display toggle
-		this.rHistoryButton = this.viewMenu.addListItem(this.viewRHistoryToggle, Menu.middle, 100, 0, 180, 40, ["[R]History"], [this.engine.displayLifeHistory], Menu.multi);
-		this.rHistoryButton.toolTip = ["toggle [R]History display"];
+		// rainbow button
+		this.rainbowButton = this.viewMenu.addListItem(this.viewRainbowToggle, Menu.middle, 100, 25, 180, 40, ["Rainbow"], [this.engine.rainbow], Menu.multi);
+		this.rainbowButton.toolTip = ["toggle rainbow mode"]; 
 
 		// autogrid toggle button
-		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, -100, 50, 180, 40, ["Auto GridLines"], [this.autoGrid], Menu.multi);
+		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, -100, 75, 180, 40, ["Auto GridLines"], [this.autoGrid], Menu.multi);
 		this.autoGridButton.toolTip = ["automatically turn on gridlines for Draw and Select and off for Pan"]; 
 
 		// alt grid toggle button
-		this.altGridButton = this.viewMenu.addListItem(this.viewAltGridToggle, Menu.middle, 100, 50, 180, 40, ["Alt GridLines"], [this.engine.altGrid], Menu.multi);
+		this.altGridButton = this.viewMenu.addListItem(this.viewAltGridToggle, Menu.middle, 100, 75, 180, 40, ["Alt GridLines"], [this.engine.altGrid], Menu.multi);
 		this.altGridButton.toolTip = ["toggle alternating gridlines"]; 
-
-		// rainbox button
-		this.rainbowButton = this.viewMenu.addListItem(this.viewRainbowToggle, Menu.middle, 0, 100, 180, 40, ["Rainbow"], [this.engine.rainbow], Menu.multi);
-		this.rainbowButton.toolTip = ["toggle rainbow mode"]; 
 
 		// historyfit toggle button
 		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.middle, -100, -50, 180, 40, ["AutoFit History"], [this.historyFit], Menu.multi);
@@ -13777,7 +13821,7 @@
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.backButton, this.themeButton, this.patternButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.autoGridButton, this.altGridButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton, this.rHistoryButton], []);
+		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.backButton, this.themeButton, this.patternButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.autoGridButton, this.altGridButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.genLabel, this.genValueLabel, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -14538,7 +14582,6 @@
 		this.engine.isPCA = false;
 		this.engine.isLifeHistory = false;
 		this.engine.isSuper = false;
-		this.engine.displayLifeHistory = false;
 		this.engine.isHex = false;
 		this.engine.hexNeighbourhood = this.manager.hexAll;
 		this.engine.isTriangular = false;
@@ -14758,16 +14801,9 @@
 			// check if the rule is a Super rule
 			me.engine.isSuper = pattern.isSuper;
 
-			// display [R]History or [R]Super states if either specified
-			me.engine.displayLifeHistory = pattern.isHistory || pattern.isSuper;
-
 			// set toggle button caption
-			me.rHistoryButton.lower = ["[R]History"];
-			me.rHistoryButton.toolTip = ["toggle [R]History display"];
 			me.clearRHistoryButton.toolTip = "clear [R]History cells";
 			if (me.engine.isSuper) {
-				me.rHistoryButton.lower = ["[R]Super"];
-				me.rHistoryButton.toolTip = ["toggle [R]Super display"];
 				me.clearRHistoryButton.toolTip = "clear [R]Super cells";
 			}
 
@@ -15736,10 +15772,6 @@
 		}
 		// set the selection size label just to the right of the xy label
 		me.selSizeLabel.setX(me.xyLabel.relWidth);
-
-		// set the [R]History toggle UI control
-		me.rHistoryButton.locked = !(me.engine.isLifeHistory || me.engine.isSuper);
-		me.rHistoryButton.current = [me.engine.displayLifeHistory];
 
 		// set the graph UI control
 		me.graphButton.locked = me.graphDisabled;

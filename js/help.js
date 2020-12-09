@@ -802,14 +802,15 @@
 		if (view.engine.isMargolus) {
 			y = this.renderHelpLine(view, "Alt D", "toggle alternating gridlines", ctx, x, y, height, helpLine);
 		}
-		if (view.engine.isLifeHistory) {
-			y = this.renderHelpLine(view, "Alt H", "[R]History display on", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Alt J", "[R]History display off", ctx, x, y, height, helpLine);
+		if (view.engine.isLifeHistory || view.engine.isSuper || view.engine.multiNumStates === -1) {
+			y = this.renderHelpLine(view, "Alt G", "convert pattern to [R]Super", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Alt H", "convert pattern to [R]History", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Alt J", "convert pattern to [R]Standard", ctx, x, y, height, helpLine);
 		}
 		if (view.waypointManager.numAnnotations() > 0) {
-			y = this.renderHelpLine(view, "Shift L", "toggle annotation display", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Alt L", "toggle annotation display", ctx, x, y, height, helpLine);
 		}
-		y = this.renderHelpLine(view, "Alt G", "toggle kill escaping gliders", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl L", "toggle kill escaping gliders", ctx, x, y, height, helpLine);
 		// check if thumbnail ever on
 		if (view.thumbnailEverOn) {
 			y = this.renderHelpLine(view, "N", "toggle thumbnail view", ctx, x, y, height, helpLine);
@@ -1140,7 +1141,7 @@
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.themeDyingWord + " R G B", "set theme dying color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.themeDyingRampWord + " R G B", "set theme dying ramp", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.boundaryWord + " R G B", "set boundary color", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.colorWord + " <0.." + String(view.patternStates - 1) + "> R G B", "set state color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " <0.." + (view.engine.multiNumStates === -1 ? (view.engine.isLifeHistory ? "6" : "1") : String(view.engine.multiNumStates - 1)) + "> R G B", "set state color", ctx, x, y, height, helpLine);
 		if (view.engine.isLifeHistory) {
 			y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.offColorWord + " R G B", "set [R]History state color " + ViewConstants.offState, ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.onColorWord + " R G B", "set [R]History state color " + ViewConstants.onState, ctx, x, y, height, helpLine);

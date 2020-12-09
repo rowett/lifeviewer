@@ -536,9 +536,6 @@
 		// whether pattern is [R]Super
 		/** @type {boolean} */ this.isSuper = false;
 
-		// whether to display [R]History or [R]Super states
-		/** @type {boolean} */ this.displayLifeHistory = false;
-
 		// how many history states to draw
 		/** @type {number} */ this.historyStates = 0;
 
@@ -3481,7 +3478,7 @@
 
 	// convert grid to RLE
 	/** @return {string} */
-	Life.prototype.asRLE = function(view, me, /** @type {boolean} */ addComments) {
+	Life.prototype.asRLE = function(view, me, /** @type {boolean} */ addComments, inputStates, outputStates, mapping) {
 		var /** @type {string} */ rle = "",
 			zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
 			/** @type {number} */ leftX = zoomBox.leftX,
@@ -3500,16 +3497,28 @@
 			/** @type {number} */ lastLength = 0,
 			/** @const {number} */ charsPerRow = 69,
 			/** @const {Array<string>} */ outputState = [],
-			/** @type {number} */ maxState = 0,
 			/** @const {number} */ asciiA = String("A").charCodeAt(0),
 			/** @const {number} */ asciiP = String("p").charCodeAt(0),
-			/** @type {boolean} */ twoState = false,
 			colourGrid = this.colourGrid,
 			colourRow = null,
 			/** @type {number} */ col = 0,
 			/** @type {number} */ xOff = (me.width >> 1) - (view.patternWidth >> 1),
 			/** @type {number} */ yOff = (me.height >> 1) - (view.patternHeight >> 1),
 			selBox = view.selectionBox;
+
+		// ensure states are at least 2
+		if (inputStates < 2) {
+			inputStates = 2;
+		}
+		if (outputStates < 2) {
+			outputStates = 2;
+		}
+
+		// check for [R]History
+		if (inputStates === outputStates && this.isLifeHistory) {
+			inputStates = 7;
+			outputStates = 7;
+		}
 
 		// check for selection
 		if (view.isSelection) {
@@ -3559,23 +3568,20 @@
 			}
 		}
 
+		// populate mapping if not provided
+		if (mapping.length === 0) {
+			for (x = 0; x < inputStates; x += 1) {
+				mapping[x] = x;
+			}
+		}
+
 		// populate output states
-		if ((me.multiNumStates <= 2 && !me.displayLifeHistory) || (me.isSuper && !me.displayLifeHistory)) {
-			twoState = true;
+		if (outputStates <= 2) {
 			outputState[0] = "b";
 			outputState[1] = "o";
 		} else {
-			if (me.displayLifeHistory) {
-				if (me.isSuper) {
-					maxState = 26;
-				} else {
-					maxState = 7;
-				}
-			} else {
-				maxState = me.multiNumStates;
-			}
 			outputState[0] = ".";
-			for (x = 0; x < maxState - 1; x += 1) {
+			for (x = 0; x < outputStates - 1; x += 1) {
 				if (x >= 24) {
 					outputState[x + 1] = String.fromCharCode(asciiP + ((x / 24) | 0) - 1) + String.fromCharCode(asciiA + (x % 24));
 				} else {
@@ -3598,29 +3604,7 @@
 		}
 
 		// output header
-		rle += "x = " + width + ", y = " + height + ", rule = ";
-		if (view.patternAliasName === "LifeHistory" || view.patternAliasName === "LifeSuper") {
-			// if [R]History but history is not displayed then remove History from rule name
-			if (!me.displayLifeHistory) {
-				rle += "Life";
-			} else {
-				rle += view.patternAliasName;
-			}
-		} else {
-			// if [R]History rule but history is not displayed then remove History from rule name
-			if ((me.isLifeHistory || me.isLifeSuper) && !me.displayLifeHistory) {
-				if (me.isLifeHistory) {
-					// remove History
-					rle += view.patternRuleName.substr(0, view.patternRuleName.length - 7);
-				} else {
-					// remove Super
-					rle += view.patternRuleName.substr(0, view.patternRuleName.length - 5);
-				}
-			} else {
-				rle += view.patternRuleName;
-			}
-		}
-
+		rle += "x = " + width + ", y = " + height + ", rule = " + (view.patternAliasName === "" ? view.patternRuleName : view.patternAliasName);
 		rle += view.patternBoundedGridDef;
 		rle += "\n";
 		lastLength = rle.length;
@@ -3630,11 +3614,11 @@
 		while (y <= topY) {
 			x = leftX;
 			// check for 2 state pattern
-			if (twoState && !this.isRuleTree) {
+			if (inputStates <= 2 && !this.isRuleTree) {
 				// use fast lookup
 				colourRow = colourGrid[y];
 				col = colourRow[x];
-				if ((!this.isSuper && (col <= this.deadStart || col === this.boundedBorderColour)) || (this.isSuper && ((col & 1) === 0))) {
+				if (col <= this.deadStart || col === this.boundedBorderColour) {
 					last = 0;
 				} else {
 					last = 1;
@@ -3650,10 +3634,10 @@
 					state = -1;
 				} else {
 					// check for 2 state pattern
-					if (twoState && !this.isRuleTree) {
+					if (inputStates <= 2 && !this.isRuleTree) {
 						// use fast lookup
 						col = colourRow[x];
-						if ((!this.isSuper && (col <= this.deadStart || col === this.boundedBorderColour)) || (this.isSuper && ((col & 1) === 0))) {
+						if (col <= this.deadStart || col === this.boundedBorderColour) {
 							state = 0;
 						} else {
 							state = 1;
@@ -3681,12 +3665,12 @@
 						if (count > 1) {
 							rle += count;
 						}
-						rle += outputState[last];
+						rle += outputState[mapping[last]];
 					} else if (x <= rightX) {
 						if (count > 1) {
 							rle += count;
 						}
-						rle += outputState[last];
+						rle += outputState[mapping[last]];
 					}
 					if (rle.length - lastLength >= charsPerRow) {
 						rle += "\n";
@@ -6539,6 +6523,16 @@
 					this.redChannel[i + this.historyStates] = LifeConstants.coloursSuper[i][0];
 					this.greenChannel[i + this.historyStates] = LifeConstants.coloursSuper[i][1];
 					this.blueChannel[i + this.historyStates] = LifeConstants.coloursSuper[i][2];
+
+					// override with custom colour if specified
+					if (this.customColours && this.customColours.length >= i) {
+						current = this.customColours[i];
+						if (current !== -1) {
+							this.redChannel[i + this.historyStates] = current >> 16;
+							this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
+								this.blueChannel[i + this.historyStates] = (current & 255);
+						}
+					}
 				}
 			} else {
 				// check for Generations, HROT or PCA rules
@@ -6908,15 +6902,15 @@
 
 		// check for Generations, HROT or [R]Super
 		if (this.multiNumStates > 2) {
-			// check for [R]Super with no history display
-			if (this.isSuper && !this.displayLifeHistory) {
+			// check for [R]Super
+			if (this.isSuper) {
 				if (this.littleEndian) {
 					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
-						pixelColours[i] = (alpha << 24) | ((blueChannel[i & 1] * brightness) << 16) | ((greenChannel[i & 1] * brightness) << 8) | (redChannel[i & 1] * brightness);
+						pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
 					}
 				} else {
 					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
-						pixelColours[i] = ((redChannel[i & 1] * brightness) << 24) | ((greenChannel[i & 1] * brightness) << 16) | ((blueChannel[i & 1] * brightness) << 8) | alpha;
+						pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
 					}
 				}
 			} else {
