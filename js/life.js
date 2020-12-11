@@ -3478,7 +3478,7 @@
 
 	// convert grid to RLE
 	/** @return {string} */
-	Life.prototype.asRLE = function(view, me, /** @type {boolean} */ addComments, inputStates, outputStates, mapping) {
+	Life.prototype.asRLE = function(view, me, /** @type {boolean} */ addComments, inputStates, outputStates, mapping, useAlias) {
 		var /** @type {string} */ rle = "",
 			zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
 			/** @type {number} */ leftX = zoomBox.leftX,
@@ -3604,7 +3604,7 @@
 		}
 
 		// output header
-		rle += "x = " + width + ", y = " + height + ", rule = " + (view.patternAliasName === "" ? view.patternRuleName : view.patternAliasName);
+		rle += "x = " + width + ", y = " + height + ", rule = " + ((useAlias && view.patternAliasName !== "") ? view.patternAliasName : view.patternRuleName);
 		rle += view.patternBoundedGridDef;
 		rle += "\n";
 		lastLength = rle.length;

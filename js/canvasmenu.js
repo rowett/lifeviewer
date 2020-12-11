@@ -1780,7 +1780,7 @@
 			}
 			break;
 
-		// range
+		// list
 		case Menu.list:
 			l = item.lower.length;
 			if (item.orientation === Menu.horizontal) {
@@ -1922,11 +1922,18 @@
 					if (mY < item.y) {
 						mY = item.y;
 					} else {
-						if (mY >= item.y + item.height) {
+						if (mY > item.y + item.height - 1) {
 							mY = item.y + item.height - 1;
 						}
 					}
-					item.current[0] = ((mY - item.y) / (item.height - 1)) * (item.upper - item.lower) + item.lower;
+					i = ((mY - item.y) / (item.height - 1)) * (item.upper - item.lower) + item.lower;
+					if (i < item.lower) {
+						i = item.lower;
+					}
+					if (i > item.upper) {
+						i = item.upper;
+					}
+					item.current[0] = i;
 				} else {
 					// horizontal orientation
 					mX = this.mouseX;
@@ -1935,11 +1942,18 @@
 					if (mX < item.x) {
 						mX = item.x;
 					} else {
-						if (mX >= item.x + item.width) {
+						if (mX > item.x + item.width - 1) {
 							mX = item.x + item.width - 1;
 						}
 					}
-					item.current[0] = ((mX - item.x) / (item.width - 1)) * (item.upper - item.lower) + item.lower;
+					i = ((mX - item.x) / (item.width - 1)) * (item.upper - item.lower) + item.lower;
+					if (i < item.lower) {
+						i = item.lower;
+					}
+					if (i > item.upper) {
+						i = item.upper;
+					}
+					item.current[0] = i;
 				}
 
 				// execute callback

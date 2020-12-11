@@ -1,3 +1,9 @@
+Build 574
+- prevent clicks between state slider and smart selection button from drawing on the background
+
+Build 573
+- fix UI slider range on scaled Viewers
+
 Build 572
 - hotkey Alt+G switches [R]Standard or [R]History to [R]Super
 - hotkey Alt+H swtiches [R]Standard or [R]Super to [R]History

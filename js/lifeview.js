@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 572,
+		/** @const {number} */ versionBuild : 574,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1609,6 +1609,9 @@
 
 		// topics button
 		this.topicsButton = null;
+
+		// spacer to left of states slider
+		this.statesSpacer = null;
 
 		// states slider
 		this.statesSlider = null;
@@ -5897,6 +5900,7 @@
 		this.smartToggle.deleted = shown;
 		this.statesToggle.deleted = shown;
 		this.statesSlider.deleted = hide || !this.drawing || !this.showStates || (this.engine.multiNumStates <= this.maxDisplayStates) || settingsMenuOpen;
+		this.statesSpacer.deleted = hide || !this.drawing || !this.showStates || (this.engine.multiNumStates <= this.maxDisplayStates) || settingsMenuOpen;
 
 		// update states list from slider
 		if (this.engine.multiNumStates > this.maxDisplayStates) {
@@ -8620,7 +8624,7 @@
 					me.patternBoundedGridDef = "";
 				}
 				me.patternAliasName = "";
-				patternText = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, []);
+				patternText = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], true);
 
 				// restore previous size
 				if (me.isInPopup) {
@@ -8652,7 +8656,7 @@
 		// set new rule name
 		this.patternRuleName = currentRule;
 		this.patternAliasName = currentRule;
-		patternText = this.engine.asRLE(this, this.engine, true, fromStates, toStates, mapping);
+		patternText = this.engine.asRLE(this, this.engine, true, fromStates, toStates, mapping, true);
 
 		// restore previous size
 		if (this.isInPopup) {
@@ -12891,7 +12895,7 @@
 
 	// save the current rle to the source document node
 	View.prototype.saveCurrentRLE = function(me) {
-		me.element.innerHTML = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, []);
+		me.element.innerHTML = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], true);
 		me.element.value = me.element.innerHTML;
 	};
 
@@ -12927,7 +12931,7 @@
 	View.prototype.copyCurrentRLE = function(me, addComments) {
 		// copy the current pattern to the clipboard
 		me.copyStartTime = performance.now();
-		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, addComments, me.engine.multiNumStates, me.engine.multiNumStates, []), true);
+		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, addComments, me.engine.multiNumStates, me.engine.multiNumStates, []), false);
 	};
 
 	// key down
@@ -13687,6 +13691,13 @@
 		this.stateColsList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
 		this.stateColsList.bgAlpha = 1;
 
+		// add spacer to left of states slider
+		this.statesSpacer = this.viewMenu.addButtonItem(null, Menu.northWest, 175, 45, 5, 40, "");
+		this.statesSpacer.bgCol = "rgb(255,128,128)"
+		this.statesSpacer.bgAlpha = 0;
+		this.statesSpacer.locked = true;
+		this.statesSpacer.border = 0;
+
 		// add slider for states
 		this.statesSlider = this.viewMenu.addRangeItem(this.viewStatesRange, Menu.northWest, 180, 45, 100, 40, 0, 1, 0, true, "", "", -1);
 		this.statesSlider.toolTip = "select drawing states range";
@@ -13897,7 +13908,6 @@
 
 			// create the starfield
 			this.starField = new Stars(ViewConstants.numStars, this.engine.allocator);
-
 
 			// create the icon manager and icons
 			this.createIcons(this.mainContext);
