@@ -49,6 +49,9 @@
 		// POI transition speed
 		/** @const {string} */ poiTransWord : "POITRANS",
 
+		// POI add Labels word
+		/** @const {string} */ poiAddLabelsWord : "POIADDLABELS",
+
 		// hard reset
 		/** @const {string} */ hardResetWord : "HARDRESET",
 
@@ -283,6 +286,9 @@
 
 		// history states word
 		/** @const {string} */ historyStatesWord : "HISTORYSTATES",
+
+		// alive states word
+		/** @const {string} */ aliveStatesWord : "AGESTATES",
 
 		// step word
 		/** @const {string} */ stepWord : "STEP",

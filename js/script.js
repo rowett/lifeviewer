@@ -219,6 +219,20 @@
 		this.current = 0;
 		this.source = source;
 	}
+	
+	// get the string between a range of tokens
+	Script.prototype.getStringSection = function(start, end) {
+		var result = "";
+
+		// check the token indexes are valid
+		if (start < 0 || start >= this.starts.length || end < 0 || end >= this.starts.length || start > end) {
+			result = "";
+		} else {
+			result = this.source.substring(this.starts[start], this.starts[end] + this.lengths[end]);
+		}
+
+		return result;
+	};
 
 	// step back one token
 	Script.prototype.stepBack = function() {

@@ -18,7 +18,10 @@
 		meta : [],
 
 		// list of pending requests
-		requests : []
+		requests : [],
+
+		// definitions
+		definitions : []
 	};
 
 	// add a request to the cache
@@ -53,6 +56,25 @@
 
 		// return whether there was already a request for the rule
 		return found;
+	};
+
+	// get definition for a named rule
+	RuleTreeCache.getDefinition = function(name) {
+		var i = 0,
+			l = this.definitions.length,
+			found = false,
+			result = "";
+
+		while (i < l && !found) {
+			if (this.definitions[i].name === name) {
+				found = true;
+				result = this.definitions[i].definition;
+			} else {
+				i += 1;
+			}
+		}
+
+		return result;
 	};
 
 	// remove a request from the cache
@@ -119,7 +141,7 @@
 	};
 
 	// add a new rule to the cache
-	RuleTreeCache.add = function(pattern, fetchTime, decodeTime, ruleSize) {
+	RuleTreeCache.add = function(pattern, fetchTime, decodeTime, ruleSize, definition) {
 		var i = 0,
 			l = this.rules.length,
 			found = false,
@@ -140,18 +162,21 @@
 			// create rule record
 			if (pattern.ruleTableOutput === null) {
 				// add @TREE
-				this.rules[l] = {name: pattern.ruleName, isTree: true, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
+				this.rules[l] = {name: name, isTree: true, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
 					nodes: pattern.ruleTreeNodes, base: pattern.ruleTreeBase, ruleA: pattern.ruleTreeA,
 					ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours, icons: pattern.ruleTableIcons, isHex: pattern.ruleTreeIsHex};
 			} else {
 				// add @TABLE
-				this.rules[l] = {name: pattern.ruleName, isTree: false, states: pattern.ruleTableStates, neighbourhood: pattern.ruleTableNeighbourhood,
+				this.rules[l] = {name: name, isTree: false, states: pattern.ruleTableStates, neighbourhood: pattern.ruleTableNeighbourhood,
 					compressed: pattern.ruleTableCompressedRules, output: pattern.ruleTableOutput,
 					LUT: pattern.ruleTableLUT, colours: pattern.ruleTreeColours, dups: pattern.ruleTableDups, icons: pattern.ruleTableIcons};
 			}
 
 			// create metadata
 			this.meta[l] = {fetch: fetchTime | 0, decode: decodeTime | 0, size: ruleSize};
+
+			// create definition
+			this.definitions[l] ={name: name, definition: definition};
 
 			// remove the rule from the request list
 			this.removeRequest(pattern);
@@ -644,6 +669,9 @@
 
 		// rule table XPM keyword
 		/** @const {string} */ this.ruleTableIconsXPM = "xpm";
+
+		// rule loader definition
+		/** @type {string} */ this.ruleLoaderDefinition = "";
 	}
 
 	// Life pattern constructor
@@ -8676,12 +8704,16 @@
 			treeIndex = -1,
 			colourIndex = -1,
 			iconIndex = -1,
+			startIndex = -1,
+			endIndex = -1,
 			// tokenize string keeping newlines as tokens
 			reader = new Script(ruleText, true);
 
 		// check if rule table rule exists
+		pattern.manager.ruleLoaderDefinition = "";
 		pattern.manager.failureReason = "";
-		if (reader.findTokenAtLineStart(this.ruleTableRuleName, -1) !== -1) {
+		startIndex = reader.findTokenAtLineStart(this.ruleTableRuleName, -1);
+		if (startIndex !== -1) {
 			// get the rule name
 			if (!reader.nextIsNewline()) {
 				pattern.ruleTableName = reader.getNextToken();
@@ -8716,17 +8748,35 @@
 					}
 				}
 
+				// get current end token
+				endIndex = reader.current - 1;
+
 				// if valid then search for colours from start position since sections could be in any order
 				if (valid) {
 					colourIndex = reader.findTokenAtLineStart(this.ruleTableColoursName, 0);
 					if (colourIndex !== -1) {
 						this.decodeColours(pattern, reader);
+
+						// check if end token is later than the current end
+						if (reader.current - 1 > endIndex) {
+							endIndex = reader.current - 1;
+						}
 					}
 					// search for icons from start position
 					iconIndex = reader.findTokenAtLineStart(this.ruleTableIconsName, 0);
 					if (iconIndex !== -1) {
 						this.decodeIcons(pattern, reader);
+
+						// check if end token is later than the current end
+						if (reader.current - 1 > endIndex) {
+							endIndex = reader.current - 1;
+						}
 					}
+				}
+
+				// save pattern definition if valid
+				if (pattern.manager.failureReason === "") {
+					pattern.manager.ruleLoaderDefinition = reader.getStringSection(startIndex, endIndex);
 				}
 			}
 		}
@@ -8999,7 +9049,7 @@
 
 					// if rule tree decoded successfully then add to cache
 					if (pattern.ruleTreeStates !== -1 || pattern.ruleTableOutput !== null) {
-						RuleTreeCache.add(pattern, fetchTime, decodeTime, ruleText.length);
+						RuleTreeCache.add(pattern, fetchTime, decodeTime, ruleText.length, me.ruleLoaderDefinition);
 					} else {
 						RuleTreeCache.requestFailed(pattern);
 					}

@@ -495,7 +495,7 @@
 	/**
 	 * @constructor
 	 */
-	function Label(x, y, zoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
+	function Label(x, y, zoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
 		// message
 		this.message = "";
 
@@ -522,6 +522,9 @@
 
 		// size
 		this.size = size;
+
+		// whether size locked
+		this.sizeLocked = sizeLocked;
 
 		// start generation
 		this.t1 = t1;
@@ -643,8 +646,8 @@
 	};
 
 	// create a label
-	WaypointManager.prototype.createLabel = function(x, y, zoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
-		return new Label(x, y, zoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
+	WaypointManager.prototype.createLabel = function(x, y, zoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
+		return new Label(x, y, zoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
 	};
 
 	// clear all labels
@@ -1435,8 +1438,13 @@
 
 			// continue if in generation range
 			if (inrange) {
-				// scale the font based on the zoom
-				currentSize = (current.size * xZoom / current.zoom);
+				// get the label font size
+				if (current.sizeLocked) {
+					currentSize = current.size;
+				} else {
+					// scale font size based on zoom
+					currentSize = (current.size * xZoom / current.zoom);
+				}
 				shadowOffset = 1;
 				if (currentSize >= 24) {
 					shadowOffset = 2;

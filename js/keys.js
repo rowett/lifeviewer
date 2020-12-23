@@ -1210,26 +1210,31 @@
 
 			// j for jump to POI
 			case 74:
-				// check for ctrl and shift
-				if (event.ctrlKey && event.shiftKey) {
-					// pass up to browser
-					processed = false;
+				// check for just ctrl
+				if (event.ctrlKey && !event.shiftKey) {
+					me.copyRulePressed(me);
 				} else {
-					// check for defined POIs
-					if (me.waypointManager.numPOIs()) {
-						// check for controls locked
-						if (!me.controlsLocked) {
-							// check for shift key
-							if (event.shiftKey) {
-								// go to previous POI
-								me.prevPOIPressed(me);
-							} else {
-								// go to next POI
-								me.nextPOIPressed(me);
-							}
-						}
+					// check for ctrl and shift
+					if (event.ctrlKey && event.shiftKey) {
+						// pass up to browser
+						processed = false;
 					} else {
-						me.menuManager.notification.notify("No POIs defined", 15, 80, 15, true);
+						// check for defined POIs
+						if (me.waypointManager.numPOIs()) {
+							// check for controls locked
+							if (!me.controlsLocked) {
+								// check for shift key
+								if (event.shiftKey) {
+									// go to previous POI
+									me.prevPOIPressed(me);
+								} else {
+									// go to next POI
+									me.nextPOIPressed(me);
+								}
+							}
+						} else {
+							me.menuManager.notification.notify("No POIs defined", 15, 80, 15, true);
+						}
 					}
 				}
 				break;

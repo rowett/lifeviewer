@@ -82,6 +82,7 @@
 			case Keywords.poiPlayWord:
 			case Keywords.poiTWord:
 			case Keywords.poiTransWord:
+			case Keywords.poiAddLabelsWord:
 			case Keywords.initialWord:
 			case Keywords.allWord:
 			case Keywords.offWord:
@@ -97,6 +98,7 @@
 			case Keywords.autoFitWord:
 			case Keywords.historyFitWord:
 			case Keywords.historyStatesWord:
+			case Keywords.aliveStatesWord:
 			case Keywords.tWord:
 			case Keywords.stepWord:
 			case Keywords.pauseWord:
@@ -1009,6 +1011,9 @@
 		    // which colour keyword used (for error reporting)
 		    whichColour = "",
 
+			// whether to add Labels as POIs
+			addLabelsAsPOIs = false,
+
 		    // current waypoint
 		    currentWaypoint = view.waypointManager.createWaypoint(),
 		    tempWaypoint = null,
@@ -1092,8 +1097,9 @@
 			// current label alpha
 			currentLabelAlpha = 1,
 
-			// current label size
+			// current label size and locked
 			currentLabelSize = ViewConstants.labelFontSize,
+			currentLabelSizeFixed = false,
 
 			// current label T1 and T2
 			currentLabelT1 = -1,
@@ -1986,6 +1992,7 @@
 
 						// label size
 						case Keywords.labelSizeWord:
+							// read label size
 							if (scriptReader.nextTokenIsNumeric()) {
 								isNumeric = true;
 
@@ -1996,6 +2003,15 @@
 								if (numberValue >= ViewConstants.minLabelSize && numberValue <= ViewConstants.maxLabelSize) {
 									currentLabelSize = numberValue;
 									itemValid = true;
+
+									// check for optional FIXED word
+									peekToken = scriptReader.peekAtNextToken();
+									if (peekToken === Keywords.fixedWord) {
+										peekToken = scriptReader.getNextToken();
+										currentLabelSizeFixed = true;
+									} else {
+										currentLabelSizeFixed = false;
+									}
 								}
 							}
 							break;
@@ -2274,7 +2290,7 @@
 														// check there is text
 														if (peekToken[0] === Keywords.stringDelimiter) {
 															// save the label
-															currentLabel = view.waypointManager.createLabel(x, y, z, maxZ, view.customLabelColour, currentLabelAlpha, currentLabelSize,
+															currentLabel = view.waypointManager.createLabel(x, y, z, maxZ, view.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelSizeFixed,
 																currentLabelT1, currentLabelT2, currentLabelTFade, currentLabelAngle, currentLabelAngleFixed, currentLabelPositionFixed,
 																currentLabelTX, currentLabelTY, currentLabelTDistance, currentLabelDX, currentLabelDY);
 															readingLabel = true;
@@ -2816,6 +2832,23 @@
 							}
 							break;
 
+						// number of alive states
+						case Keywords.aliveStatesWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+								// check it is in range
+								if (numberValue >= 0 && numberValue <= view.maxHistoryStates) {
+									view.aliveStates = numberValue;
+
+									itemValid = true;
+								}
+							}
+							break;
+
 						// history fit mode
 						case Keywords.historyFitWord:
 							// check for OFF
@@ -3347,6 +3380,12 @@
 									itemValid = true;
 								}
 							}
+							break;
+
+						// add Labels as POIs
+						case Keywords.poiAddLabelsWord:
+							addLabelsAsPOIs = true;
+							itemValid = true;
 							break;
 
 						// hard reset
@@ -5406,6 +5445,11 @@
 					}
 				}
 			}
+		}
+
+		// check whether to add labels as POIs
+		if (addLabelsAsPOIs) {
+			view.createPOIsFromLabels();
 		}
 
 		// sort annotations into zoom order

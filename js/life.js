@@ -539,6 +539,9 @@
 		// how many history states to draw
 		/** @type {number} */ this.historyStates = 0;
 
+		// how many alive states to draw
+		/** @type {number} */ this.aliveStates = 0;
+
 		// whether pattern is HROT
 		/** @type {boolean} */ this.isHROT = false;
 
@@ -3504,6 +3507,7 @@
 			/** @type {number} */ col = 0,
 			/** @type {number} */ xOff = (me.width >> 1) - (view.patternWidth >> 1),
 			/** @type {number} */ yOff = (me.height >> 1) - (view.patternHeight >> 1),
+			/** @type {string} */ ruleName = "",
 			selBox = view.selectionBox;
 
 		// ensure states are at least 2
@@ -3604,7 +3608,11 @@
 		}
 
 		// output header
-		rle += "x = " + width + ", y = " + height + ", rule = " + ((useAlias && view.patternAliasName !== "") ? view.patternAliasName : view.patternRuleName);
+		ruleName = ((useAlias && view.patternAliasName !== "") ? view.patternAliasName : view.patternRuleName);
+		if (ruleName === "B3/S23History") {
+			ruleName = "LifeHistory";
+		}
+		rle += "x = " + width + ", y = " + height + ", rule = " + ruleName;
 		rle += view.patternBoundedGridDef;
 		rle += "\n";
 		lastLength = rle.length;
@@ -6469,12 +6477,12 @@
 
 		// adjust for history states setting
 		if (this.historyStates === 0) {
-			for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
+			for (i = aliveStart; i <= aliveMax; i += 1) {
 				byteIndex[i] = 0;
 			}
 		} else {
-			if (this.historyStates < this.deadStart) {
-				byteIndex[this.deadStart - this.historyStates] = 0;
+			if (this.historyStates < deadStart) {
+				byteIndex[deadStart - this.historyStates] = 1;
 			}
 		}
 
@@ -6714,7 +6722,15 @@
 					// set alive colours
 					for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
 						// compute the weighting between the start and end colours in the range
-						weight = 1 - ((i - this.aliveStart) / (this.aliveMax - this.aliveStart));
+						if (this.aliveStates === 0) {
+							weight = 1;
+						} else {
+							if (i < this.aliveStart + this.aliveStates) {
+								weight = 1 - ((i - this.aliveStart) / this.aliveStates);
+							} else {
+								weight = 0;
+							}
+						}
 
 						// compute the red component of the current and target colour
 						currentComponent = this.aliveColCurrent.startColour.red * weight + this.aliveColCurrent.endColour.red * (1 - weight);
@@ -9308,12 +9324,18 @@
 
 	// find N glider
 	/** @return {boolean} */
-	Life.prototype.findAndDeleteGlider = function(/** @type {Array<Array<number>>} */ glider, /** @type {number} */ x, /** @type {number} */ y) {
+	Life.prototype.findAndDeleteGlider = function(/** @type {Array<Array<number>>} */ glider, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ dx, /** @type {number} */ dy) {
 		var /** @type {boolean} */ found = false,
 			/** @type {Array<number>} */ gliderRow = null,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ xc = 0,
 			/** @type {number} */ yc = 0,
+			/** @type {number} */ xLim = 0,
+			/** @type {number} */ yLim = 0,
+			/** @const {number} */ leftX = this.zoomBox.leftX,
+			/** @const {number} */ rightX = this.zoomBox.rightX,
+			/** @const {number} */ bottomY = this.zoomBox.bottomY,
+			/** @const {number} */ topY = this.zoomBox.topY,
 			/** @type {number} */ cell = 0;
 
 		// search grid for glider
@@ -9335,17 +9357,37 @@
 			yc += 1;
 		}
 
-		// if found then delete the cells
+		// if found then check separation
 		if (found) {
-			this.numClearedGliders += 1;
-			for (yc = 0; yc < glider.length; yc += 1) {
-				gliderRow = glider[yc];
-				for (xc = 0; xc < gliderRow.length; xc += 1) {
-					if (gliderRow[xc] === 1) {
-						this.setState(x + xc, y + yc, 0, false);
-					}
+			/*
+			xc = x;
+			yc = y;
+			xLim = dx < 0 ? leftX : rightX;
+			yLim = dy < 0 ? bottomY : topY;
+			console.debug(dx, dy, xc, yc, xLim, yLim);
+			found = false;
+			while (!found && !(xc === xLim || yc === yLim)) {
+				state = this.colourGrid[xc, yc];
+				if (state >= this.aliveStart) {
+					found = true;
+				} else {
+					xc += dx;
+					yc += dy;
 				}
 			}
+
+			if (!found) {
+				*/
+				this.numClearedGliders += 1;
+				for (yc = 0; yc < glider.length; yc += 1) {
+					gliderRow = glider[yc];
+					for (xc = 0; xc < gliderRow.length; xc += 1) {
+						if (gliderRow[xc] === 1) {
+							this.setState(x + xc, y + yc, 0, false);
+						}
+					}
+				}
+			//}
 		}
 		return found;
 	};
@@ -9370,14 +9412,14 @@
 			for (x = leftX; x <= rightX; x += 1) {
 				if (bottomRow[x] >= aliveStart) {
 					// NW and NE glider
-					if (!this.findAndDeleteGlider(this.gliderNW7x7, x, bottomY)) {
-						this.findAndDeleteGlider(this.gliderNE7x7, x, bottomY);
+					if (!this.findAndDeleteGlider(this.gliderNW7x7, x, bottomY, 1, -1)) {
+						this.findAndDeleteGlider(this.gliderNE7x7, x, bottomY, 1, 1);
 					}
 				}
 				if (topRow[x] >= aliveStart) {
 					// SW and SE glider
-					if (!this.findAndDeleteGlider(this.gliderSW7x7, x, topY - 2)) {
-						this.findAndDeleteGlider(this.gliderSE7x7, x, topY - 2);
+					if (!this.findAndDeleteGlider(this.gliderSW7x7, x, topY - 2, -1, -1)) {
+						this.findAndDeleteGlider(this.gliderSE7x7, x, topY - 2, -1, 1);
 					}
 				}
 			}
@@ -9386,14 +9428,14 @@
 				currentRow = colourGrid[y];
 				if (currentRow[leftX] >= aliveStart) {
 					// NW and SW glider
-					if (!this.findAndDeleteGlider(this.gliderNW7x7, leftX, y)) {
-						this.findAndDeleteGlider(this.gliderSW7x7, leftX, y - 1);
+					if (!this.findAndDeleteGlider(this.gliderNW7x7, leftX, y, 1, -1)) {
+						this.findAndDeleteGlider(this.gliderSW7x7, leftX, y - 1, -1, -1);
 					}
 				}
 				if (currentRow[rightX] >= aliveStart) {
 					// NE and SE glider
-					if (!this.findAndDeleteGlider(this.gliderNE7x7, rightX - 2, y)) {
-						this.findAndDeleteGlider(this.gliderSE7x7, rightX - 2, y - 1);
+					if (!this.findAndDeleteGlider(this.gliderNE7x7, rightX - 2, y, 1, 1)) {
+						this.findAndDeleteGlider(this.gliderSE7x7, rightX - 2, y - 1, -1, 1);
 					}
 				}
 			}

@@ -836,7 +836,7 @@
 		y = this.renderHelpLine(view, "Alt Z", "randomize pattern and rule", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl+Alt Z", "randomize pattern only", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F6", "toggle oscillator and spaceship identification", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+F6", "fast identification", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl F6", "fast identification", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// clipboard controls
@@ -847,9 +847,10 @@
 		y = this.renderHelpLine(view, "Ctrl+Shift C", "copy original pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl C", "copy current selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl+Alt C", "copy current selection with comments", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Shift X", "copy original pattern", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl X", "copy current selection", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Alt X", "copy current selection with comments", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl+Shift X", "cut original pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl X", "cut current selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl+Alt X", "cut current selection with comments", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl J", "copy rule definition", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "K", "copy camera position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift K", "copy camera position and view", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
@@ -1044,6 +1045,7 @@
 		y = this.renderHelpLine(view, Keywords.poiTransWord + " <" + WaypointConstants.poiMinSpeed + ".." + WaypointConstants.poiMaxSpeed + ">", "set POI transition speed", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "<command>|ALL " + Keywords.initialWord, "use initial value for POI", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "define message", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.poiAddLabelsWord, "add Labels as POIs", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		view.helpSections[sectionNum] = [view.lineNo, "Annotations"];
 		sectionNum += 1;
@@ -1052,6 +1054,7 @@
 		y = this.renderHelpLine(view, " " + " (MAXZOOM) (" + Keywords.fixedWord + ")", "... zoom range and fixed position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "... label text", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelSizeWord + " <" + ViewConstants.minLabelSize + ".." + ViewConstants.maxLabelSize + ">", "define label font size", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix size", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelAlphaWord + " <0.0..1.0>", "define label font alpha", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelTWord + " <0..> <0..> <0..>", "generation range / fade", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelAngleWord + " <0..359>", "label angle", ctx, x, y, height, helpLine);
@@ -1098,7 +1101,8 @@
 		y = this.renderHelpLine(view, Keywords.depthWord + " <" + ViewConstants.minDepth.toFixed(1) + ".." + ViewConstants.maxDepth.toFixed(1) + ">", "set layer depth", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.gridWord + " (" + Keywords.offWord + ")", "display gridlines", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.gridMajorWord + " <0..16>", "set major grid line interval", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.historyStatesWord + " <0.." + ((view.engine.multiNumStates > 2) ? 1 : 63) + ">", "number of history states", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.aliveStatesWord + " <0.." + ((view.engine.multiNumStates > 2) ? 1 : 63) + ">", "number of age states to draw", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.historyStatesWord + " <0.." + ((view.engine.multiNumStates > 2) ? 1 : 63) + ">", "number of history states to draw", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.starfieldWord + " (" + Keywords.offWord + ")", "display stars", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.hexCellsWord, "hexagonal cells for hex", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.squareCellsWord, "square cells for hex", ctx, x, y, height, helpLine);
@@ -1893,6 +1897,7 @@
 			if (!(view.engine.isRuleTree || view.engine.isSuper)) {
 				y = this.renderHelpLine(view, "Name", view.engine.themes[view.engine.colourTheme].name, ctx, x, y, height, helpLine);
 				y = this.renderHelpLine(view, "History", view.historyStates, ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "Age", view.aliveStates, ctx, x, y, height, helpLine);
 			}
 			this.renderColourBox(view, view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 			y = this.renderHelpLine(view, "Background", this.rgbString(view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0]), ctx, x, y, height, helpLine);

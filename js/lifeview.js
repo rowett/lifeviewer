@@ -6,7 +6,7 @@
 	"use strict";
 
 	// define globals
-	/* global Uint8Array Random BoundingBox Allocator AliasManager Uint8 Int16 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager registerEvent Keywords ColourManager ScriptParser Uint32Array PopupWindow typedArrays Float32 */
+	/* global Uint8Array Random BoundingBox Allocator AliasManager Uint8 Int16 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager RuleTreeCache registerEvent Keywords ColourManager ScriptParser Uint32Array PopupWindow typedArrays Float32 */
 
 	// LifeViewer document configuration
 	var DocConfig = {
@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 574,
+		/** @const {number} */ versionBuild : 579,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -995,6 +995,12 @@
 
 		// number of history states (default and maximum is 63)
 		/** @type {number} */ this.historyStates = 63;
+
+		// maximum number of age states (can be less for multi-state patterns)
+		/** @type {number} */ this.maxAliveStates = 63;
+
+		// number of age states (default and maximum is 63)
+		/** @type {number} */ this.aliveStates = 63;
 
 		// whether to hide source element
 		/** @type {boolean} */ this.noSource = false;
@@ -1733,6 +1739,9 @@
 
 		// identify button
 		this.identifyButton = null;
+
+		// copy rule button
+		this.copyRuleButton = null;
 
 		// back button
 		this.backButton = null;
@@ -4561,7 +4570,11 @@
 			displayLimit = this.engine.maxGridSize > 9999 ? 99999 : 9999,
 
 			// rotation
-			theta = 0, radius = 0;
+			theta = 0, radius = 0,
+
+			// screen offset
+			screenX = -((this.engine.width / 2 - this.engine.xOff - this.engine.originX) | 0),
+			screenY = -((this.engine.height / 2 - this.engine.yOff - this.engine.originY) | 0);
 
 		// check if there are mouse coordinates
 		if (this.viewMenu.mouseX === -1) {
@@ -4632,6 +4645,13 @@
 			// set the caption
 			this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay;
 			this.xyLabel.deleted = false;
+
+			// add screen offset at cursor if InfoBar enabled
+			if (this.infoBarEnabled) {
+				screenX += xPos - this.patternWidth / 2;
+				screenY += yPos - this.patternHeight / 2;
+				//this.xyLabel.preText += " (" + String(screenX) + "," + String(screenY) + ")";
+			}
 		}
 
 		// set visibility based on stats toggle and whether paused
@@ -5654,6 +5674,7 @@
 		this.loadButton.deleted = shown;
 		this.randomizeButton.deleted = shown;
 		this.identifyButton.deleted = shown;
+		this.copyRuleButton.deleted = shown;
 		// info category
 		shown = hide || !this.showInfoSettings;
 		this.fpsButton.deleted = shown;
@@ -5684,6 +5705,7 @@
 		shown = this.engine.isNone || !this.executable;
 		this.randomizeButton.locked = shown;
 		this.identifyButton.locked = shown;
+		this.copyRuleButton.locked = shown;
 		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isRuleTree || this.engine.isMargolus);
 
 		// set theme section label text
@@ -9637,6 +9659,32 @@
 		}
 	};
 
+	// create POIs from Labels
+	View.prototype.createPOIsFromLabels = function() {
+		var wm = this.waypointManager,
+			nLabels = wm.numLabels(),
+			i = 0,
+			width = this.patternWidth,
+			height = this.patternHeight,
+			currentWaypoint = wm.createWaypoint(),
+			currentLabel = null;
+
+		for (i = 0; i < nLabels; i += 1) {
+			currentLabel = wm.labelList[i];
+			currentWaypoint.isPOI = true;
+			currentWaypoint.x = -currentLabel.x + width / 2;
+			currentWaypoint.xDefined = true;
+			currentWaypoint.y = -currentLabel.y + height / 2;
+			currentWaypoint.yDefined = true;
+			currentWaypoint.zoom = currentLabel.zoom;
+			currentWaypoint.zoomDefined = true;
+			wm.add(currentWaypoint);
+			if (i < nLabels - 1) {
+				currentWaypoint = wm.createWaypoint();
+			}
+		}
+	};
+
 	// set camera from POI
 	View.prototype.setCameraFromPOI = function(me, poiNumber) {
 		// get the point of interest
@@ -11822,30 +11870,55 @@
 				cells = me.engine.allocator.allocate(Int16, 3 * (x2 - x1 + 1) * (y2 - y1 + 1), "View.rotateCells");
 
 				// read each cell in the selection and rotate coordinates
-				for (y = y1; y <= y2; y += 1) {
-					newY = firstNewY;
-					for (x = x1; x <= x2; x += 1) {
-						state = me.engine.getState(x + xOff, y + yOff, false);
-						if (invertForGenerations) {
-							if (state > 0) {
-								state = states - state;
-							}
-						} else {
-							if (me.engine.isPCA) {
-								if (clockwise) {
-									state = ((state << 1) & 15) | ((state & 8) >> 3);
-								} else {
-									state = ((state >> 1) & 15) | ((state & 1) << 3);
+				if (me.engine.isHex) {
+					for (y = y1; y <= y2; y += 1) {
+						for (x = x1; x <= x2; x += 1) {
+							state = me.engine.getState(x + xOff, y + yOff, false);
+							if (invertForGenerations) {
+								if (state > 0) {
+									state = states - state;
+								}
+							} else {
+								if (me.engine.isPCA) {
+									if (clockwise) {
+										state = ((state << 1) & 15) | ((state & 8) >> 3);
+									} else {
+										state = ((state >> 1) & 15) | ((state & 1) << 3);
+									}
 								}
 							}
+							cells[i] = y - x;
+							cells[i + 1] = -x;
+							cells[i + 2] = state;
+							i += 3;
 						}
-						cells[i] = newX;
-						cells[i + 1] = newY;
-						cells[i + 2] = state;
-						i += 3;
-						newY += newYInc;
 					}
-					newX += newXInc;
+				} else {
+					for (y = y1; y <= y2; y += 1) {
+						newY = firstNewY;
+						for (x = x1; x <= x2; x += 1) {
+							state = me.engine.getState(x + xOff, y + yOff, false);
+							if (invertForGenerations) {
+								if (state > 0) {
+									state = states - state;
+								}
+							} else {
+								if (me.engine.isPCA) {
+									if (clockwise) {
+										state = ((state << 1) & 15) | ((state & 8) >> 3);
+									} else {
+										state = ((state >> 1) & 15) | ((state & 1) << 3);
+									}
+								}
+							}
+							cells[i] = newX;
+							cells[i + 1] = newY;
+							cells[i + 2] = state;
+							i += 3;
+							newY += newYInc;
+						}
+						newX += newXInc;
+					}
 				}
 
 				// recompute offsets in case grid changed
@@ -11885,7 +11958,7 @@
 				}
 	
 				// check if shrink needed
-			me.engine.shrinkNeeded = true;
+				me.engine.shrinkNeeded = true;
 				me.engine.doShrink();
 	
 				// save edit
@@ -12086,6 +12159,21 @@
 		if (!me.generationOn) {
 			me.manualChange = true;
 		}
+	};
+
+	// copy rule button clicked
+	View.prototype.copyRulePressed = function(me) {
+		var ruleText = me.patternRuleName;
+
+		if (me.engine.isRuleTree) {
+			// check the rule cache
+			ruleText = RuleTreeCache.getDefinition(ruleText);
+			if (ruleText === "") {
+				// if cache was empty the rule might have been inline
+				ruleText = me.manager.ruleLoaderDefinition;
+			}
+		}
+		me.copyToClipboard(me, ruleText, false);
 	};
 
 	// identify button clicked
@@ -12881,6 +12969,11 @@
 				string += Keywords.historyStatesWord + " " + me.historyStates + " ";
 			}
 
+			// add ALIVESTATES if not default
+			if (me.aliveStates !== me.maxAliveStates) {
+				string += Keywords.aliveStatesWord + " " + me.aliveStates + " ";
+			}
+
 			// add width and height
 			string += Keywords.widthWord + " " + me.displayWidth + " ";
 			string += Keywords.heightWord + " " + me.displayHeight + " ";
@@ -13470,28 +13563,32 @@
 		this.autoHideButton.toolTip = ["toggle hide UI on playback"]; 
 
 		// rule button
-		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, 0, -125, 180, 40, "Change Rule");
+		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, -100, -75, 180, 40, "Change Rule");
 		this.ruleButton.toolTip = "change rule";
 
 		// new button
-		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 0, -75, 180, 40, "New Pattern");
+		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 100, -75, 180, 40, "New Pattern");
 		this.newButton.toolTip = "new pattern";
 
 		// load button
-		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, 0, -25, 180, 40, "Load Pattern");
+		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, -100, -25, 180, 40, "Load Pattern");
 		this.loadButton.toolTip = "load last saved pattern";
 
 		// save button
-		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 0, 25, 180, 40, "Save Pattern");
+		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 100, -25, 180, 40, "Save Pattern");
 		this.saveButton.toolTip = "save pattern";
 
 		// randomize button
-		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, 0, 75, 180, 40, "Randomize");
+		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, -100, 25, 180, 40, "Randomize");
 		this.randomizeButton.toolTip = "randomize pattern and rule";
 
 		// identify button
-		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, 0, 125, 180, 40, "Identify");
-		this.identifyButton.toolTip = ["identify oscillator or spaceship period"];
+		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, 100, 25, 180, 40, "Identify");
+		this.identifyButton.toolTip = "identify oscillator or spaceship period";
+
+		// copy rule button
+		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, 0, 75, 180, 40, "Copy Rule");
+		this.copyRuleButton.toolTip = "copy rule definition";
 
 		// fps button
 		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -100, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
@@ -13693,7 +13790,6 @@
 
 		// add spacer to left of states slider
 		this.statesSpacer = this.viewMenu.addButtonItem(null, Menu.northWest, 175, 45, 5, 40, "");
-		this.statesSpacer.bgCol = "rgb(255,128,128)"
 		this.statesSpacer.bgAlpha = 0;
 		this.statesSpacer.locked = true;
 		this.statesSpacer.border = 0;
@@ -14207,6 +14303,9 @@
 			this.maxHistoryStates = 63;
 		}
 		this.historyStates = this.maxHistoryStates;
+
+		// reset alive states
+		this.aliveStates = this.maxAliveStates;
 
 		// reset drawing mode
 		this.drawing = false;
@@ -15403,6 +15502,9 @@
 			// set history states in engine
 			me.engine.historyStates = me.historyStates;
 
+			// set alive states in engine
+			me.engine.aliveStates = me.aliveStates;
+
 			// disable graph if using THUMBLAUNCH and graph not displayed (since there's no way to turn it on)
 			if (me.thumbLaunch && !me.popGraph) {
 				me.graphDisabled = true;
@@ -16136,7 +16238,7 @@
 		}
 
 		// check if snow needed
-		if (me.engine.zoom === 8 && me.numScriptCommands > 0 && (me.numScriptCommands & 3) === 0 && (me.rleList.length & 5) === 1) {
+		if ((me.engine.zoom === 8 || me.engine.zoom === 0.125) && me.numScriptCommands > 0 && (me.numScriptCommands & 3) === 0 && (me.rleList.length & 5) === 1) {
 			me.drawingSnow = true;
 			me.engine.initSnow();
 		} else {

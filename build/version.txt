@@ -1,5 +1,23 @@
+Build 579
+- new script command [[ POIADDLABELS ]] will automatically create a POI from each Label definition
+- new script command [[ AGESTATES <0..63> ]] defines the number of age states to display for a live cell when using Themes
+
+Build 578
+- hotkey Ctrl+J to copy rule definition to clipboard
+- fix [[ KILLGLIDERS ]] deleting gliders one step too early in some cases
+
+Build 577
+- Settings->Pattern->Copy Rule will now copy the rule definition to the clipboard
+	- note the rule definition will have blank lines removed
+
+Build 576
+- "B3/S23History" rule name is copied as "LifeHistory"
+
+Build 575
+- you can now fix the size of a Label so it doesn't scale with zoom [[ LABELSIZE <size> (FIXED) ]]
+
 Build 574
-- prevent clicks between state slider and smart selection button from drawing on the background
+- prevent clicks between States slider and Smart Drawing button from drawing on the background
 
 Build 573
 - fix UI slider range on scaled Viewers
