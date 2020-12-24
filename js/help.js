@@ -1104,8 +1104,15 @@
 		y = this.renderHelpLine(view, Keywords.aliveStatesWord + " <0.." + ((view.engine.multiNumStates > 2) ? 1 : 63) + ">", "number of age states to draw", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.historyStatesWord + " <0.." + ((view.engine.multiNumStates > 2) ? 1 : 63) + ">", "number of history states to draw", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.starfieldWord + " (" + Keywords.offWord + ")", "display stars", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.hexCellsWord, "hexagonal cells for hex", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.squareCellsWord, "square cells for hex", ctx, x, y, height, helpLine);
+		if (view.engine.isHex) {
+			y = this.renderHelpLine(view, Keywords.hexCellsWord, "hexagonal cells for grid", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, Keywords.squareCellsWord, "offset square cells for grid", ctx, x, y, height, helpLine);
+		} else {
+			if (view.engine.isTriangular) {
+				y = this.renderHelpLine(view, Keywords.triCellsWord, "triangular cells for grid", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, Keywords.squareCellsWord, "rectangualr cells for grid", ctx, x, y, height, helpLine);
+			}
+		}
 		y = this.renderHelpLine(view, Keywords.bordersWord, "display cell borders", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noGUIWord, "disable menus and hotkeys", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.hideGUIWord, "hide menus during playback", ctx, x, y, height, helpLine);
