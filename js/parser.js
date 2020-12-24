@@ -33,6 +33,7 @@
 			case Keywords.noSourceWord:
 			case Keywords.linearWord:
 			case Keywords.bezierWord:
+			case Keywords.triangularCellsWord:
 			case Keywords.hexCellsWord:
 			case Keywords.squareCellsWord:
 			case Keywords.bordersWord:
@@ -4371,10 +4372,20 @@
 							itemValid = true;
 							break;
 
+						// triangular cells
+						case Keywords.triCellsWord:
+							if (view.engine.isTriangular) {
+								view.engine.useHexagons = true;
+							}
+							itemValid = true;
+							break;
+
 						// hex cells
 						case Keywords.hexCellsWord:
 							// set hexagonal cells
-							view.engine.useHexagons = true;
+							if (view.engine.isHex) {
+								view.engine.useHexagons = true;
+							}
 							itemValid = true;
 							break;
 

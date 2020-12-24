@@ -1,3 +1,8 @@
+Build 580
+- cells on a Triangular grid can now be drawn as Triangles (the default) or Rectangles (faster)
+	- toggle with hotkey / or Settings->Display->Triangles
+	- override the default with script command [[ SQUARECELLS ]]
+	
 Build 579
 - new script command [[ POIADDLABELS ]] will automatically create a POI from each Label definition
 - new script command [[ AGESTATES <0..63> ]] defines the number of age states to display for a live cell when using Themes

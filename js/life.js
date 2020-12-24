@@ -6832,7 +6832,7 @@
 			greenChannel = this.greenChannel,
 			blueChannel = this.blueChannel,
 			colourStrings = this.cellColourStrings,
-			needStrings = (this.isHex && this.useHexagons) || this.isTriangular,
+			needStrings = (this.isHex && this.useHexagons) || (this.isTriangular && this.useHexagons),
 			gridLineRaw = this.gridLineRaw,
 			gridLineBoldRaw = this.gridLineBoldRaw;
 
@@ -6912,7 +6912,7 @@
 			gridLineRaw = this.gridLineRaw,
 			gridLineBoldRaw = this.gridLineBoldRaw,
 			colourStrings = this.cellColourStrings,
-			needStrings = (this.isHex && this.useHexagons) || this.isTriangular,
+			needStrings = (this.isHex && this.useHexagons) || (this.isTriangular && this.useHexagons),
 			alpha = 255,
 			i = 0;
 
@@ -29497,7 +29497,7 @@
 		ctx.fillStyle = colour;
 		ctx.globalAlpha = 0.5;
 		if (!this.isHex) {
-			if (this.isTriangular && this.zoom >= 4) {
+			if (this.isTriangular && this.useHexagons && this.zoom >= 4) {
 				this.drawTriangleSelection(selBox.leftX, selBox.bottomY, selBox.rightX, selBox.topY, xOff, yOff);
 			} else {
 				ctx.beginPath();
@@ -29541,7 +29541,8 @@
 		    h = this.displayHeight,
 		    gridCol = this.gridLineColour,
 		    gridBoldCol = this.gridLineBoldColour,
-		    zoomStep = this.camZoom,
+			xZoomStep = this.camZoom,
+			yZoomStep = this.camZoom * (this.isTriangular ? ViewConstants.sqrt3 : 1),
 		    gridLineNum = 0,
 		    vLineNum = 0,
 		    drawCol = gridCol,
@@ -29552,8 +29553,8 @@
 			odd = (this.counter & 1),
 
 		    // compute single cell offset
-		    yOff = (((this.height / 2 - (this.yOff + this.originY)) * zoomStep) + (h / 2)) % zoomStep,
-		    xOff = (((this.width / 2 - (this.xOff + this.originX)) * zoomStep) + (w / 2)) % zoomStep;
+		    yOff = (((this.height / 2 - (this.yOff + this.originY)) * yZoomStep) + (h / 2)) % yZoomStep,
+		    xOff = (((this.width / 2 - (this.xOff + this.originX)) * xZoomStep) + (w / 2)) % xZoomStep;
 
 		// draw twice if major grid lines enabled
 		if (this.displayGrid) {
@@ -29580,20 +29581,20 @@
 
 		while (loop) {
 			// compute major grid line vertical offset
-			gridLineNum = -(w / 2 / zoomStep) - (this.width / 2 - this.xOff - this.originX) | 0;
+			gridLineNum = -(w / 2 / xZoomStep) - (this.width / 2 - this.xOff - this.originX) | 0;
 
 			// extend the number of lines to cope with 45 degrees rotation
-			startX = -zoomStep * 22;
-			endX = w + zoomStep + zoomStep * 22;
-			startY = yOff - zoomStep * 22;
-			endY = h + zoomStep * 22;
+			startX = -xZoomStep * 22;
+			endX = w + xZoomStep + xZoomStep * 22;
+			startY = yOff - yZoomStep * 22;
+			endY = h + yZoomStep * 22;
 			leftX = -w / 1.5;
 			rightX = w + w / 1.5;
 			bottomY = -h / 1.5;
 			topY = h + h / 1.5;
 
 			// draw vertical lines
-			for (x = startX; x <= endX; x += zoomStep) {
+			for (x = startX; x <= endX; x += xZoomStep) {
 				// check if major gridlines are enabled
 				if (drawMajor) {
 					// choose whether to use major or minor colour
@@ -29610,14 +29611,14 @@
 					// check for hex mode
 					if (this.isHex) {
 						// compute major grid line horizontal offset
-						vLineNum = -(h / 2 / zoomStep) - (this.height / 2 - this.yOff - this.originY) | 0;
+						vLineNum = -(h / 2 / yZoomStep) - (this.height / 2 - this.yOff - this.originY) | 0;
 
 						// draw staggered vertical line
-						for (y = startY; y < endY; y += zoomStep) {
+						for (y = startY; y < endY; y += yZoomStep) {
 							if ((vLineNum & 1) === 0) {
-								this.drawLine(Math.round(x + xOff), Math.round(y), Math.round(x + xOff), Math.round(y + zoomStep - 1), drawCol);
+								this.drawLine(Math.round(x + xOff), Math.round(y), Math.round(x + xOff), Math.round(y + yZoomStep - 1), drawCol);
 							} else {
-								this.drawLine(Math.round(x + xOff + zoomStep / 2), Math.round(y), Math.round(x + xOff + zoomStep / 2), Math.round(y + zoomStep - 1), drawCol);
+								this.drawLine(Math.round(x + xOff + xZoomStep / 2), Math.round(y), Math.round(x + xOff + xZoomStep / 2), Math.round(y + yZoomStep - 1), drawCol);
 							}
 							vLineNum += 1;
 						}
@@ -29629,10 +29630,10 @@
 			}
 
 			// compute major grid line horizontal offset
-			gridLineNum = -(h / 2 / zoomStep) - (this.height / 2 - this.yOff - this.originY) | 0;
+			gridLineNum = -(h / 2 / yZoomStep) - (this.height / 2 - this.yOff - this.originY) | 0;
 
 			// draw horizontal lines
-			for (y = startY; y < endY; y += zoomStep) {
+			for (y = startY; y < endY; y += yZoomStep) {
 				// check if major gridlines are enabled
 				if (drawMajor) {
 					// choose whether to use major or minor colour
@@ -29777,7 +29778,7 @@
 		}
 
 		// check if drawing grid with polygons
-		if (this.camZoom >= 4 && ((this.useHexagons && this.isHex) || this.isTriangular)) {
+		if (this.camZoom >= 4 && ((this.useHexagons && this.isHex) || (this.useHexagons && this.isTriangular))) {
 			// clear grid
 			data32.fill(colour0);
 
@@ -31256,14 +31257,15 @@
 	Life.prototype.renderGridProjection = function(bottomGrid, layersGrid, mask, drawingSnow, drawingStars) {
 		// compute deltas in horizontal and vertical direction based on rotation
 		var dxy = Math.sin(this.camAngle / 180 * Math.PI) / this.camZoom,
-		    dyy = Math.cos(this.camAngle / 180 * Math.PI) / this.camZoom,
+			dyy = Math.cos(this.camAngle / 180 * Math.PI) / this.camZoom,
+			yFactor = this.isTriangular ? ViewConstants.sqrt3 : 1,
 
 		    // display width and height
 		    width = this.displayWidth,
 		    height = this.displayHeight,
 
 		    // compute bottom left
-		    bottomLeftY = -((this.displayWidth / 2) * (-dxy) + (this.displayHeight / 2) * dyy) + this.camYOff,
+		    bottomLeftY = -((this.displayWidth / 2) * (-dxy) + (this.displayHeight / 2) * dyy / yFactor) + this.camYOff,
 		    bottomLeftX = -((this.displayWidth / 2) * dyy + (this.displayHeight / 2) * dxy) + this.camXOff,
 
 		    // compute bottom right
@@ -31271,7 +31273,7 @@
 		    bottomRightX = bottomLeftX + width * dyy,
 
 		    // compute top left
-		    topLeftY = bottomLeftY + height * dyy,
+		    topLeftY = bottomLeftY + height * dyy / yFactor,
 		    topLeftX = bottomLeftX + height * dxy,
 
 		    // compute top right
@@ -31376,8 +31378,9 @@
 			gridRow = null,
 			/** @type {number} */ width = rightX - leftX,
 			/** @type {number} */ height = topY - bottomY,
+			/** @type {number} */ yZoom = this.camZoom * (this.isTriangular ? ViewConstants.sqrt3 : 1),
 			/** @type {number} */ dx = -(leftX - Math.floor(leftX)) * this.camZoom,
-			/** @type {number} */ dy = -(bottomY - Math.floor(bottomY)) * this.camZoom,
+			/** @type {number} */ dy = -(bottomY - Math.floor(bottomY)) * yZoom,
 			/** @const {number} */ widthMask = this.width - 1,
 			/** @const {number} */ heightMask = this.height - 1,
 			/** @type {number} */ x = 0,
@@ -31518,7 +31521,7 @@
 
 		// pretty scale to the display
 		this.context.imageSmoothingEnabled = true;
-		this.context.drawImage(this.sCanvas, 0, 0, width * intZoom2, height * intZoom2, dx, dy, (width * this.camZoom), (height * this.camZoom));
+		this.context.drawImage(this.sCanvas, 0, 0, width * intZoom2, height * intZoom2, dx, dy, width * this.camZoom, height * yZoom);
 		this.context.imageSmoothingEnabled = false;
 
 		// update the image data if further rendering is required

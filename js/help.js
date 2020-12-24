@@ -1357,7 +1357,11 @@
 			itemName = "Hexagonal";
 		} else {
 			if (view.engine.isTriangular) {
-				itemName = "Triangular";
+				if (view.engine.useHexagons) {
+					itemName = "Triangular";
+				} else {
+					itemName = "Rectangular";
+				}
 			} else {
 				itemName = "Square";
 			}

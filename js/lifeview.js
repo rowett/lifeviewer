@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 579,
+		/** @const {number} */ versionBuild : 580,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5231,8 +5231,8 @@
 		me.stepRange.locked = me.controlsLocked && me.waypointsDefined;
 		me.themeButton.locked = me.controlsLocked && me.waypointsDefined;
 		me.zoomItem.locked = me.controlsLocked;
-		me.layersItem.locked = (me.controlsLocked && me.waypointsDefined) || (me.engine.isHex && me.engine.useHexagons) || me.engine.isTriangular;
-		me.depthItem.locked = (me.controlsLocked && me.waypointsDefined) || (me.engine.isHex && me.engine.useHexagons) || me.engine.isTriangular; 
+		me.layersItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular;
+		me.depthItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular;
 
 		// check if the mouse wheel scrolled
 		if (me.wheelDelta) {
@@ -5286,7 +5286,7 @@
 		if (me.engine.useHexagons && me.engine.isHex && me.engine.zoom >= 4) {
 			me.engine.drawHexagons();
 		} else {
-			if (me.engine.isTriangular && me.engine.zoom >= 4) {
+			if (me.engine.useHexagons && me.engine.isTriangular && me.engine.zoom >= 4) {
 				me.engine.drawTriangles();
 			}
 		}
@@ -5735,10 +5735,10 @@
 		this.themeButton.locked =  this.multiStateView || this.engine.isNone || this.engine.isRuleTree || this.engine.isSuper;
 
 		// lock major button if hex or triangular grid
-		this.majorButton.locked = (this.engine.isHex && this.engine.useHexagons) || this.engine.isTriangular;
+		this.majorButton.locked = (this.engine.isHex && this.engine.useHexagons) || (this.engine.isTriangular && this.engine.useHexagons);
 
 		// lock hex cell button if not in hex mode
-		this.hexCellButton.locked = !this.engine.isHex;
+		this.hexCellButton.locked = !(this.engine.isHex || this.engine.isTriangular);
 
 		// POI controls
 		shown = hide || (this.waypointManager.numPOIs() === 0) || settingsMenuOpen;
@@ -9553,7 +9553,7 @@
 			}
 		} else {
 			// check for triangular mode
-			if (this.engine.isTriangular) {
+			if (this.engine.isTriangular && this.engine.useHexagons) {
 				this.gridToggle.icon = [this.iconManager.icon("trianglegrid")];
 			} else {
 				this.gridToggle.icon = [this.iconManager.icon("grid")];
@@ -14990,7 +14990,7 @@
 			// check if the rule is PCA
 			me.engine.isPCA = pattern.isPCA;
 
-			// use hexagons for hex dispaly
+			// use hexagons/triangulars for hexagonal/triangular dispaly
 			me.engine.useHexagons = true;
 
 			// check if the neighbourhood is hex
@@ -15909,8 +15909,19 @@
 		me.altGridButton.locked = !me.engine.isMargolus;
 
 		// set the hex cell UI control and lock if triangular grid
-		me.hexCellButton.current = [me.engine.useHexagons];
-		me.hexCellButton.locked = me.engine.isTriangular;
+		if (me.engine.isTriangular) {
+			me.hexCellButton.lower = ["Triangles"];
+			me.hexCellButton.current = [me.engine.useHexagons];
+			me.hexCellButton.toolTip = ["toggle triangular cells"];
+		} else {
+			me.hexCellButton.lower = ["Hexagons"];
+			me.hexCellButton.toolTip = ["toggle hexagonal cells"];
+			if (me.engine.isHex) {
+				me.hexCellButton.current = [me.engine.useHexagons];
+			} else {
+				me.hexCellButton.current = [false];
+			}
+		}
 
 		// set reverse direction button if reversible Margolus or PCA rule loaded
 		if ((me.engine.isMargolus || me.engine.isPCA) && me.engine.margolusReverseLookup1 !== null) {

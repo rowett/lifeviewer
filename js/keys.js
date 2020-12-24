@@ -376,7 +376,12 @@
 				// switch between hexagonal and square cells for hex display
 				if (me.engine.isHex) {
 					me.hexCellButton.current = me.viewHexCellToggle([!me.engine.useHexagons], true, me);
-					me.menuManager.notification.notify("Hex display uses " + (me.engine.useHexagons ? "Hexagons" : "Squares"), 15, 40, 15, true);
+					me.menuManager.notification.notify("Hexagonal display uses " + (me.engine.useHexagons ? "Hexagons" : "Squares"), 15, 120, 15, true);
+				} else {
+					if (me.engine.isTriangular) {
+						me.hexCellButton.current = me.viewHexCellToggle([!me.engine.useHexagons], true, me);
+						me.menuManager.notification.notify("Triangular display uses " + (me.engine.useHexagons ? "Triangles" : "Rectangles"), 15, 120, 15, true);
+					}
 				}
 				break;
 

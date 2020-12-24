@@ -100,6 +100,9 @@
 		// square display
 		/** @const {string} */ squareDisplayWord : "SQUAREDISPLAY",
 
+		// triangular cells
+		/** @const {string} */ triCellsWord : "TRIANGULARCELLS",
+
 		// hexagonal cells
 		/** @const {string} */ hexCellsWord : "HEXCELLS",
 
