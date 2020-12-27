@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 580,
+		/** @const {number} */ versionBuild : 583,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5140,10 +5140,14 @@
 						me.diedGeneration = me.engine.counter;
 
 						// clear the bit grids
-						if (me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper) {
-							me.engine.clearGrids(false);
+						if (me.engine.isSuper) {
+							me.engine.anythingAlive = 1;
 						} else {
-							me.engine.clearGrids(true);
+							if (me.engine.isPCA || me.engine.isRuleTree) {
+								me.engine.clearGrids(false);
+							} else {
+								me.engine.clearGrids(true);
+							}
 						}
 
 						// notify simulation stopped unless loop defined and enabled
@@ -12895,7 +12899,7 @@
 		// check for non-zero generation
 		if (me.engine.counter !== 0) {
 			// add T and the generation
-			string += Keywords.tWord + me.engine.counter + " ";
+			string += Keywords.tWord + " " + me.engine.counter + " ";
 		} 
 
 		// camera position

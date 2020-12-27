@@ -1,3 +1,12 @@
+Build 583
+- add missing space for T in Copy Position to clipboard
+
+Build 582
+- improved [[ KILLGLIDERS ]]
+
+Build 581
+- fix blank grid display when [R]Super pattern dies
+
 Build 580
 - cells on a Triangular grid can now be drawn as Triangles (the default) or Rectangles (faster)
 	- toggle with hotkey / or Settings->Display->Triangles

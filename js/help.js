@@ -787,7 +787,13 @@
 			}
 			y = this.renderHelpLine(view, "Shift W", "toggle performance warning", ctx, x, y, height, helpLine);
 		}
-		y = this.renderHelpLine(view, "/", "toggle hexagons for hex view", ctx, x, y, height, helpLine);
+		if (view.engine.isHex) {
+			y = this.renderHelpLine(view, "/", "toggle hexagons for hexagonal grid", ctx, x, y, height, helpLine);
+		} else {
+			if (view.engine.isTriangular) {
+				y = this.renderHelpLine(view, "/", "toggle triangles for triangular grid", ctx, x, y, height, helpLine);
+			}
+		}
 		y = this.renderHelpLine(view, "T", "toggle timing information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift T", "toggle extended timing information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "I", "toggle pattern and engine information", ctx, x, y, height, helpLine);

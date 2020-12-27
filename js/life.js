@@ -70,26 +70,74 @@
 														   [144, 144, 144], [170, 85, 85], [85, 128, 43], [128, 128, 64],
 														   [0, 0, 0], [255, 0, 0], [0, 255, 0], [128, 128, 0]],
 
-		// NW glider (top left cell must be set for detection)
-		/** @const {Array<Array<number>>} */ gliderNW : [[1, 1, 1],
-														 [1, 0, 0],
-														 [0, 1, 0]],
+		// NW glider
+		/** @const {Array<Array<number>>} */ gliderNW0 : [[1, 1, 1],
+														  [1, 0, 0],
+														  [0, 1, 0]],
 
-		// NE glider (top left cell must be set for detection)
-		/** @const {Array<Array<number>>} */ gliderNE : [[1, 1, 1],
-														 [0, 0, 1],
-														 [0, 1, 0]],
-		
-		// SW glider (top middle cell only must be set for detection)
-		/** @const {Array<Array<number>>} */ gliderSW : [[0, 1, 0],
-														 [1, 0, 0],
-														 [1, 1, 1]],
+		/** @const {Array<Array<number>>} */ gliderNW1 : [[0, 1, 0],
+														  [1, 1, 0],
+														  [1, 0, 1]],
 
-		// SE glider (top middle cell only must be set for detection)
-		/** @const {Array<Array<number>>} */ gliderSE : [[0, 1, 0],
-														 [0, 0, 1],
-														 [1, 1, 1]],
+		/** @const {Array<Array<number>>} */ gliderNW2 : [[1, 1, 0],
+														  [1, 0, 1],
+														  [1, 0, 0]],
+
+		/** @const {Array<Array<number>>} */ gliderNW3 : [[0, 1, 1],
+														  [1, 1, 0],
+														  [0, 0, 1]],
+
+		// NE glider
+		/** @const {Array<Array<number>>} */ gliderNE0 : [[1, 1, 1],
+														  [0, 0, 1],
+														  [0, 1, 0]],
 		
+		/** @const {Array<Array<number>>} */ gliderNE1 : [[0, 1, 0],
+														  [0, 1, 1],
+														  [1, 0, 1]],
+
+		/** @const {Array<Array<number>>} */ gliderNE2 : [[0, 1, 1],
+														  [1, 0, 1],
+														  [0, 0, 1]],
+
+		/** @const {Array<Array<number>>} */ gliderNE3 : [[1, 1, 0],
+														  [0, 1, 1],
+														  [1, 0, 0]],
+
+		// SW glider
+		/** @const {Array<Array<number>>} */ gliderSW0 : [[0, 1, 0],
+														  [1, 0, 0],
+														  [1, 1, 1]],
+
+		/** @const {Array<Array<number>>} */ gliderSW1 : [[1, 0, 1],
+														  [1, 1, 0],
+														  [0, 1, 0]],
+
+		/** @const {Array<Array<number>>} */ gliderSW2 : [[1, 0, 0],
+														  [1, 0, 1],
+														  [1, 1, 0]],
+
+		/** @const {Array<Array<number>>} */ gliderSW3 : [[0, 0, 1],
+														  [1, 1, 0],
+														  [0, 1, 1]],
+
+		// SE glider
+		/** @const {Array<Array<number>>} */ gliderSE0 : [[0, 1, 0],
+														  [0, 0, 1],
+														  [1, 1, 1]],
+
+		/** @const {Array<Array<number>>} */ gliderSE1 : [[1, 0, 1],
+														  [0, 1, 1],
+														  [0, 1, 0]],
+
+		/** @const {Array<Array<number>>} */ gliderSE2 : [[0, 0, 1],
+														  [1, 0, 1],
+														  [0, 1, 1]],
+
+		/** @const {Array<Array<number>>} */ gliderSE3 : [[1, 0, 0],
+														  [0, 1, 1],
+														  [1, 1, 0]],
+
 		// hex and triangle cell coordinate buffer size
 		/** @const {number} */ coordBufferSize : 4096,
 
@@ -317,6 +365,9 @@
 		// allocator
 		this.allocator = new Allocator();
 
+		// list of potential gliders to clear
+		this.potentialClears = [];
+
 		// whether to draw 2-state as rainbow
 		/** @type {boolean} */ this.rainbow = false;
 
@@ -407,10 +458,22 @@
 		/** @type {number} */ this.numClearedGliders = 0;
 
 		// gliders in 7x7 cell array
-		/** @type {Array<Array<number>>} */ this.gliderNW7x7 = [];
-		/** @type {Array<Array<number>>} */ this.gliderNE7x7 = [];
-		/** @type {Array<Array<number>>} */ this.gliderSW7x7 = [];
-		/** @type {Array<Array<number>>} */ this.gliderSE7x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderNW07x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderNW17x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderNW27x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderNW37x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderNE07x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderNE17x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderNE27x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderNE37x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderSW07x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderSW17x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderSW27x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderSW37x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderSE07x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderSE17x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderSE27x7 = [];
+		/** @type {Array<Array<number>>} */ this.gliderSE37x7 = [];
 
 		// cell colour strings
 		/** @type {Array<string>} */ this.cellColourStrings = [];
@@ -6145,10 +6208,22 @@
 
 	// create 7x7 gliders for glider detection and removal
 	Life.prototype.create7x7Gliders = function() {
-		this.gliderNW7x7 = this.create7x7Glider(LifeConstants.gliderNW);
-		this.gliderNE7x7 = this.create7x7Glider(LifeConstants.gliderNE);
-		this.gliderSW7x7 = this.create7x7Glider(LifeConstants.gliderSW);
-		this.gliderSE7x7 = this.create7x7Glider(LifeConstants.gliderSE);
+		this.gliderNW07x7 = this.create7x7Glider(LifeConstants.gliderNW0);
+		this.gliderNW17x7 = this.create7x7Glider(LifeConstants.gliderNW1);
+		this.gliderNW27x7 = this.create7x7Glider(LifeConstants.gliderNW2);
+		this.gliderNW37x7 = this.create7x7Glider(LifeConstants.gliderNW3);
+		this.gliderNE07x7 = this.create7x7Glider(LifeConstants.gliderNE0);
+		this.gliderNE17x7 = this.create7x7Glider(LifeConstants.gliderNE1);
+		this.gliderNE27x7 = this.create7x7Glider(LifeConstants.gliderNE2);
+		this.gliderNE37x7 = this.create7x7Glider(LifeConstants.gliderNE3);
+		this.gliderSW07x7 = this.create7x7Glider(LifeConstants.gliderSW0);
+		this.gliderSW17x7 = this.create7x7Glider(LifeConstants.gliderSW1);
+		this.gliderSW27x7 = this.create7x7Glider(LifeConstants.gliderSW2);
+		this.gliderSW37x7 = this.create7x7Glider(LifeConstants.gliderSW3);
+		this.gliderSE07x7 = this.create7x7Glider(LifeConstants.gliderSE0);
+		this.gliderSE17x7 = this.create7x7Glider(LifeConstants.gliderSE1);
+		this.gliderSE27x7 = this.create7x7Glider(LifeConstants.gliderSE2);
+		this.gliderSE37x7 = this.create7x7Glider(LifeConstants.gliderSE3);
 	};
 
 	// initialise life engine
@@ -9322,20 +9397,60 @@
 		}
 	};
 
-	// find N glider
+	// delete a single glider
+	Life.prototype.deleteGlider = function(glider, x, y) {
+		var /** @type {number} */ xc = 0,
+			/** @type {number} */ yc = 0,
+			/** @type {Array<number>} */ gliderRow = null;
+
+		this.numClearedGliders += 1;
+		for (yc = 0; yc < glider.length; yc += 1) {
+			gliderRow = glider[yc];
+			for (xc = 0; xc < gliderRow.length; xc += 1) {
+				if (gliderRow[xc] === 1) {
+					this.setState(x + xc, y + yc, 0, false);
+				}
+			}
+		}
+	};
+
+	// check pattern for glider
 	/** @return {boolean} */
 	Life.prototype.findAndDeleteGlider = function(/** @type {Array<Array<number>>} */ glider, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ dx, /** @type {number} */ dy) {
 		var /** @type {boolean} */ found = false,
 			/** @type {Array<number>} */ gliderRow = null,
-			/** @type {number} */ state = 0,
+			/** @type {number} */ s1 = 0,
+			/** @type {number} */ s2 = 0,
+			/** @type {number} */ s3 = 0,
+			/** @type {number} */ s4 = 0,
+			/** @type {number} */ s5 = 0,
+			/** @type {number} */ s6 = 0,
+			/** @type {number} */ s7 = 0,
+			/** @type {number} */ s8 = 0,
+			/** @type {number} */ s9 = 0,
+			/** @type {number} */ s10 = 0,
+			/** @type {number} */ s11 = 0,
+			/** @type {number} */ s12 = 0,
+			/** @type {number} */ s13 = 0,
+			/** @type {number} */ s14 = 0,
+			/** @type {number} */ s15 = 0,
 			/** @type {number} */ xc = 0,
 			/** @type {number} */ yc = 0,
 			/** @type {number} */ xLim = 0,
 			/** @type {number} */ yLim = 0,
+			/** @type {number} */ dx2 = dx + dx,
+			/** @type {number} */ dy2 = dy + dy,
+			/** @type {number} */ dx3 = dx2 + dx,
+			/** @type {number} */ dy3 = dy2 + dy,
+			/** @type {number} */ dx4 = dx3 + dx,
+			/** @type {number} */ dy4 = dy3 + dy,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @const {number} */ leftX = this.zoomBox.leftX,
 			/** @const {number} */ rightX = this.zoomBox.rightX,
 			/** @const {number} */ bottomY = this.zoomBox.bottomY,
 			/** @const {number} */ topY = this.zoomBox.topY,
+			/** @const {number} */ aliveStart = this.aliveStart,
 			/** @type {number} */ cell = 0;
 
 		// search grid for glider
@@ -9348,8 +9463,8 @@
 			gliderRow = glider[yc];
 			while (found && xc < gliderRow.length) {
 				cell = gliderRow[xc];
-				state = this.colourGrid[y + yc][x + xc];
-				if (!(state < this.aliveStart && cell === 0 || state >= this.aliveStart && cell === 1)) {
+				s1 = colourGrid[y + yc][x + xc];
+				if (!(s1 < aliveStart && cell === 0 || s1 >= aliveStart && cell === 1)) {
 					found = false;
 				}
 				xc += 1;
@@ -9359,16 +9474,31 @@
 
 		// if found then check separation
 		if (found) {
-			/*
-			xc = x;
-			yc = y;
-			xLim = dx < 0 ? leftX : rightX;
-			yLim = dy < 0 ? bottomY : topY;
-			console.debug(dx, dy, xc, yc, xLim, yLim);
+			xc = x + 3 + dx;
+			yc = y + 3 + dy;
+			xc += dx;
+			yc += dy;
+			xLim = dx < 0 ? leftX - 1 : rightX + 1;
+			yLim = dy < 0 ? bottomY - 1: topY + 1;
 			found = false;
 			while (!found && !(xc === xLim || yc === yLim)) {
-				state = this.colourGrid[xc, yc];
-				if (state >= this.aliveStart) {
+				colourRow = colourGrid[yc];
+				s1 = colourRow[xc];
+				s2 = colourGrid[yc + dy][xc];
+				s3 = colourRow[xc + dx];
+				s4 = colourGrid[yc + dy2][xc];
+				s5 = colourRow[xc + dx2];
+				s6 = colourGrid[yc + dy3][xc];
+				s7 = colourRow[xc + dx3];
+				s8 = colourGrid[yc + dy4][xc];
+				s9 = colourRow[xc + dx4];
+				s10 = colourGrid[yc + dy4 + dy][xc];
+				s11 = colourRow[xc + dx4 + dx];
+				s12 = colourGrid[yc + dy4 + dy][xc];
+				s13 = colourRow[xc + dx4 + dx];
+				s14 = colourGrid[yc + dy4 + dy2][xc];
+				s15 = colourRow[xc + dx4 + dx2];
+				if ((s1 | s2 | s3 | s4 | s5 | s6 | s7 | s8 | s9 | s10 | s11 | s12 | s13 | s14 | s15) & 64) {
 					found = true;
 				} else {
 					xc += dx;
@@ -9376,30 +9506,61 @@
 				}
 			}
 
-			if (!found) {
-				*/
-				this.numClearedGliders += 1;
-				for (yc = 0; yc < glider.length; yc += 1) {
-					gliderRow = glider[yc];
-					for (xc = 0; xc < gliderRow.length; xc += 1) {
-						if (gliderRow[xc] === 1) {
-							this.setState(x + xc, y + yc, 0, false);
-						}
-					}
-				}
-			//}
+			// if glider found but not clear then add to potential clear list
+			if (found) {
+				this.potentialClears[this.potentialClears.length] = {glider: glider, x: x, y: y, xc: xc, yc: yc};
+			} else {
+				// clear the glider
+				this.deleteGlider(glider, x, y);
+			}
 		}
 		return found;
+	};
+
+	// check potential glider clears
+	Life.prototype.checkPotentialClears = function() {
+		var /** @type {number} */ i = 0,
+		    /** @type {number} */ j = 0,
+		    /** @type {number} */ x = 0,
+		    /** @type {number} */ y = 0,
+		    /** @type {number} */ l = this.potentialClears.length,
+		    /** @type {boolean} */ found = false,
+			target = null,
+			current = null;
+
+		for (i = 0; i < l; i += 1) {
+			// get the target of the current glider
+			current = this.potentialClears[i];
+			x = current.xc;
+			y = current.yc;
+
+			// check if target was another edge glider
+			j = 0;
+			found = false;
+			while (!found && j < l) {
+				// ignore same glider
+				if (j !== i) {
+					target = this.potentialClears[j];
+					if (target.x >= x - 4 && target.x <= x + 4 && target.y >= y - 4 && target.y <= y + 4) {
+						// delete glider
+						this.deleteGlider(current.glider, current.x, current.y);
+						found = true;
+					}
+				}
+				j += 1;
+			}
+		}
 	};
 
 	// clear escaping gliders
 	Life.prototype.clearEscapingGliders = function() {
 		var /** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
-			/** @const {number} */ leftX = this.zoomBox.leftX,
-			/** @const {number} */ rightX = this.zoomBox.rightX,
-			/** @const {number} */ bottomY = this.zoomBox.bottomY,
-			/** @const {number} */ topY = this.zoomBox.topY,
+			/** @type {number} */ leftX = this.zoomBox.leftX,
+			/** @type {number} */ rightX = this.zoomBox.rightX,
+			/** @type {number} */ bottomY = this.zoomBox.bottomY,
+			/** @type {number} */ topY = this.zoomBox.topY,
+			/** @const {number} */ safeBorder = 64,
 			colourGrid = this.colourGrid,
 			topRow = colourGrid[topY],
 			bottomRow = colourGrid[bottomY],
@@ -9408,18 +9569,59 @@
 
 		// ignore bounded grids
 		if (this.boundedGridType === -1) {
+			// clear potential clear list
+			this.potentialClears = [];
+
+			// ensure bounding box is not too close to grid boundary
+			if (leftX < safeBorder) {
+				leftX = safeBorder;
+			}
+			if (rightX > this.width - safeBorder) {
+				rightX = this.width - safeBorder;
+			}
+			if (bottomY < safeBorder) {
+				bottomY = safeBorder;
+			}
+			if (topY > this.height - safeBorder) {
+				topY = this.height - safeBorder;
+			}
+
 			// check top and bottom rows
 			for (x = leftX; x <= rightX; x += 1) {
 				if (bottomRow[x] >= aliveStart) {
 					// NW and NE glider
-					if (!this.findAndDeleteGlider(this.gliderNW7x7, x, bottomY, 1, -1)) {
-						this.findAndDeleteGlider(this.gliderNE7x7, x, bottomY, 1, 1);
+					if (!this.findAndDeleteGlider(this.gliderNW07x7, x, bottomY, -1, 1)) {
+						if (!this.findAndDeleteGlider(this.gliderNW17x7, x - 1, bottomY, -1, 1)) {
+							if (!this.findAndDeleteGlider(this.gliderNW27x7, x, bottomY, -1, 1)) {
+								if (!this.findAndDeleteGlider(this.gliderNW37x7, x - 1, bottomY, -1, 1)) {
+									if (!this.findAndDeleteGlider(this.gliderNE07x7, x, bottomY, 1, 1)) {
+										if (!this.findAndDeleteGlider(this.gliderNE17x7, x - 1, bottomY, 1, 1)) {
+											if (!this.findAndDeleteGlider(this.gliderNE27x7, x - 1, bottomY, 1, 1)) {
+												this.findAndDeleteGlider(this.gliderNE37x7, x, bottomY, 1, 1);
+											}
+										}
+									}
+								}
+							}
+						}
 					}
 				}
 				if (topRow[x] >= aliveStart) {
 					// SW and SE glider
-					if (!this.findAndDeleteGlider(this.gliderSW7x7, x, topY - 2, -1, -1)) {
-						this.findAndDeleteGlider(this.gliderSE7x7, x, topY - 2, -1, 1);
+					if (!this.findAndDeleteGlider(this.gliderSW07x7, x, topY - 2, -1, -1)) {
+						if (!this.findAndDeleteGlider(this.gliderSW17x7, x - 1, topY - 2, -1, -1)) {
+							if (!this.findAndDeleteGlider(this.gliderSW27x7, x, topY - 2, -1, -1)) {
+								if (!this.findAndDeleteGlider(this.gliderSW37x7, x - 1, topY - 2, -1, -1)) {
+									if (!this.findAndDeleteGlider(this.gliderSE07x7, x, topY - 2, 1, -1)) {
+										if (!this.findAndDeleteGlider(this.gliderSE17x7, x - 1, topY - 2, 1, -1)) {
+											if (!this.findAndDeleteGlider(this.gliderSE27x7, x - 1, topY - 2, 1, -1)) {
+												this.findAndDeleteGlider(this.gliderSE37x7, x, topY - 2, 1, -1);
+											}
+										}
+									}
+								}
+							}
+						}
 					}
 				}
 			}
@@ -9428,17 +9630,44 @@
 				currentRow = colourGrid[y];
 				if (currentRow[leftX] >= aliveStart) {
 					// NW and SW glider
-					if (!this.findAndDeleteGlider(this.gliderNW7x7, leftX, y, 1, -1)) {
-						this.findAndDeleteGlider(this.gliderSW7x7, leftX, y - 1, -1, -1);
+					if (!this.findAndDeleteGlider(this.gliderNW07x7, leftX, y, 1, -1)) {
+						if (!this.findAndDeleteGlider(this.gliderNW17x7, leftX, y - 1, 1, -1)) {
+							if (!this.findAndDeleteGlider(this.gliderNW27x7, leftX, y, 1, -1)) {
+								if (!this.findAndDeleteGlider(this.gliderNW37x7, leftX, y - 1, 1, -1)) {
+									if (!this.findAndDeleteGlider(this.gliderSW07x7, leftX, y - 1, 1, 1)) {
+										if (!this.findAndDeleteGlider(this.gliderSW17x7, leftX, y, 1, 1)) {
+											if (!this.findAndDeleteGlider(this.gliderSW27x7, leftX, y, 1, 1)) {
+												this.findAndDeleteGlider(this.gliderSW37x7, leftX, y - 1, 1, 1);
+											}
+										}
+									}
+								}
+							}
+						}
 					}
 				}
 				if (currentRow[rightX] >= aliveStart) {
 					// NE and SE glider
-					if (!this.findAndDeleteGlider(this.gliderNE7x7, rightX - 2, y, 1, 1)) {
-						this.findAndDeleteGlider(this.gliderSE7x7, rightX - 2, y - 1, -1, 1);
+					if (!this.findAndDeleteGlider(this.gliderNE07x7, rightX - 2, y, -1, -1)) {
+						if (!this.findAndDeleteGlider(this.gliderNE17x7, rightX - 2, y - 1, -1, -1)) {
+							if (!this.findAndDeleteGlider(this.gliderNE27x7, rightX - 2, y, -1, -1)) {
+								if (!this.findAndDeleteGlider(this.gliderNE37x7, rightX - 2, y - 1, -1, -1)) {
+									if (!this.findAndDeleteGlider(this.gliderSE07x7, rightX - 2, y - 1, -1, 1)) {
+										if (!this.findAndDeleteGlider(this.gliderSE17x7, rightX - 2, y, -1, 1)) {
+											if (!this.findAndDeleteGlider(this.gliderSE27x7, rightX - 2, y, -1, 1)) {
+												this.findAndDeleteGlider(this.gliderSE37x7, rightX - 2, y - 1, -1, 1);
+											}
+										}
+									}
+								}
+							}
+						}
 					}
 				}
 			}
+
+			// check potential clears
+			this.checkPotentialClears();
 
 			// check if shrink needed
 			this.doShrink();
