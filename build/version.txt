@@ -1,3 +1,9 @@
+Build 584
+- [[ LABEL ]] and [[ ARROW ]] now support three ways of defining the zoom and zoom range:
+	1. [[ LABEL X Y Z "text" ]] : zoom is Z, min zoom is Z/4 and max zoom is Z*4
+	2. [[ LABEL X Y Z MAXZ "text" ]] : zoom is Z, min zoom is also Z, and max zoom is MAXZ
+	3. [[ LABEL X Y Z MINZ MAXZ "text" ]] : zoom is Z, min zoom is MINZ, and max zoom is MAXZ
+
 Build 583
 - add missing space for T in Copy Position to clipboard
 

@@ -1149,7 +1149,7 @@
 		    trackBoxW = 0,
 
 			// holders
-			x = 0, y = 0, z = 0, maxZ = 0,
+			x = 0, y = 0, z = 0, minZ = 0, maxZ = 0,
 			x2 = 0, y2 = 0,
 			coords = [],
 
@@ -1547,6 +1547,7 @@
 							coords = [];
 							itemValid = true;
 							z = -1000;
+							minZ = -2000;
 							maxZ = -2000;
 
 							// get the coordinates
@@ -1636,7 +1637,7 @@
 									peekToken = scriptReader.peekAtNextToken();
 								}
 								// save the polygon
-								currentPolygon = view.waypointManager.createPolygon(coords, (nextToken === Keywords.polyFillWord), z, maxZ, view.customPolygonColour, currentPolygonAlpha,
+								currentPolygon = view.waypointManager.createPolygon(coords, (nextToken === Keywords.polyFillWord), z, minZ, maxZ, view.customPolygonColour, currentPolygonAlpha,
 									currentPolygonSize, currentPolygonT1, currentPolygonT2, currentPolygonTFade, currentPolygonAngle, currentPolygonAngleFixed,
 									currentPolygonPositionFixed, currentPolygonTX, currentPolygonTY, currentPolygonTDistance, currentPolygonDX, currentPolygonDY);
 								view.waypointManager.addPolygon(currentPolygon);
@@ -1943,9 +1944,10 @@
 																	}
 																}
 																if (z !== -1000) {
+																	minZ = -2000;
 																	maxZ = -2000;
 
-																	// check for optional max zoom
+																	// check for optional min or max zoom
 																	if (scriptReader.nextTokenIsNumeric()) {
 																		isNumeric = true;
 																		numberValue = scriptReader.getNextTokenAsNumber();
@@ -1963,21 +1965,54 @@
 																		}
 																	}
 
-																	// check for optional fixed keyword
-																	peekToken = scriptReader.peekAtNextToken();
-																	currentArrowPositionFixed = false;
-																	if (peekToken === Keywords.fixedWord) {
-																		// consume the token
-																		peekToken = scriptReader.getNextToken();
-																		currentArrowPositionFixed = true;
-																		peekToken = scriptReader.peekAtNextToken();
+																	// check for optional max zoom if min zoom defined
+																	if (maxZ !== -1000) {
+																		if (scriptReader.nextTokenIsNumeric()) {
+																			isNumeric = true;
+																			numberValue = scriptReader.getNextTokenAsNumber();
+	
+																			// move max to min zoom since both are specified
+																			minZ = maxZ;
+
+																			// check it is in range
+																			maxZ = -1000;
+	
+																			if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
+																				maxZ = numberValue;
+																			} else {
+																				// check for negative zoom format
+																				if (numberValue >= ViewConstants.minNegZoom && numberValue <= ViewConstants.maxNegZoom) {
+																					maxZ = -(1 / numberValue);
+																				}
+																			}
+
+																			// check max >= min if specified
+																			if (maxZ !== -1000) {
+																				if (maxZ < minZ) {
+																					maxZ = -1000;
+																				}
+																			}
+																		}
 																	}
-																	// save the arrow
-																	currentArrow = view.waypointManager.createArrow(x, y, x2, y2, z, maxZ, view.customArrowColour, currentArrowAlpha, currentArrowSize,
-																	currentArrowHeadMultiple, currentArrowT1, currentArrowT2, currentArrowTFade, currentArrowAngle, currentArrowAngleFixed,
-																	currentArrowPositionFixed, currentArrowTX, currentArrowTY, currentArrowTDistance, currentArrowDX, currentArrowDY);
-																	view.waypointManager.addArrow(currentArrow);
-																	itemValid = true;
+
+																	// check for optional fixed keyword
+																	if (maxZ !== -1000) {
+																		peekToken = scriptReader.peekAtNextToken();
+																		currentArrowPositionFixed = false;
+																		if (peekToken === Keywords.fixedWord) {
+																			// consume the token
+																			peekToken = scriptReader.getNextToken();
+																			currentArrowPositionFixed = true;
+																			peekToken = scriptReader.peekAtNextToken();
+																		}
+																		
+																		// save the arrow
+																		currentArrow = view.waypointManager.createArrow(x, y, x2, y2, z, minZ, maxZ, view.customArrowColour, currentArrowAlpha, currentArrowSize,
+																		currentArrowHeadMultiple, currentArrowT1, currentArrowT2, currentArrowTFade, currentArrowAngle, currentArrowAngleFixed,
+																		currentArrowPositionFixed, currentArrowTX, currentArrowTY, currentArrowTDistance, currentArrowDX, currentArrowDY);
+																		view.waypointManager.addArrow(currentArrow);
+																		itemValid = true;
+																	}
 																}
 															}
 														}
@@ -2258,9 +2293,10 @@
 													}
 												}
 												if (z !== -1000) {
+													minZ = -2000;
 													maxZ = -2000;
 
-													// check for optional max zoom
+													// check for optional min or max zoom
 													if (scriptReader.nextTokenIsNumeric()) {
 														isNumeric = true;
 														numberValue = scriptReader.getNextTokenAsNumber();
@@ -2278,6 +2314,36 @@
 														}
 													}
 
+													// check for optional max zoom if min zoom defined
+													if (maxZ !== -1000) {
+														if (scriptReader.nextTokenIsNumeric()) {
+															isNumeric = true;
+															numberValue = scriptReader.getNextTokenAsNumber();
+
+															// move max to min zoom since both are specified
+															minZ = maxZ;
+
+															// check it is in range
+															maxZ = -1000;
+
+															if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
+																maxZ = numberValue;
+															} else {
+																// check for negative zoom format
+																if (numberValue >= ViewConstants.minNegZoom && numberValue <= ViewConstants.maxNegZoom) {
+																	maxZ = -(1 / numberValue);
+																}
+															}
+
+															// check max >= min if specified
+															if (maxZ !== -1000) {
+																if (maxZ < minZ) {
+																	maxZ = -1000;
+																}
+															}
+														}
+													}
+
 													// check for optional fixed keyword
 													if (maxZ !== -1000) {
 														peekToken = scriptReader.peekAtNextToken();
@@ -2288,10 +2354,11 @@
 															currentLabelPositionFixed = true;
 															peekToken = scriptReader.peekAtNextToken();
 														}
+
 														// check there is text
 														if (peekToken[0] === Keywords.stringDelimiter) {
 															// save the label
-															currentLabel = view.waypointManager.createLabel(x, y, z, maxZ, view.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelSizeFixed,
+															currentLabel = view.waypointManager.createLabel(x, y, z, minZ, maxZ, view.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelSizeFixed,
 																currentLabelT1, currentLabelT2, currentLabelTFade, currentLabelAngle, currentLabelAngleFixed, currentLabelPositionFixed,
 																currentLabelTX, currentLabelTY, currentLabelTDistance, currentLabelDX, currentLabelDY);
 															readingLabel = true;

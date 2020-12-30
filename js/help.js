@@ -1057,7 +1057,7 @@
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Annotations:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelWord + " X Y ZOOM", "define label at position", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " " + " (MAXZOOM) (" + Keywords.fixedWord + ")", "... zoom range and fixed position", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " " + " (MAXZOOM)|(MINZOOM MAXZOOM) (" + Keywords.fixedWord + ")", "... zoom range and fixed position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "... label text", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelSizeWord + " <" + ViewConstants.minLabelSize + ".." + ViewConstants.maxLabelSize + ">", "define label font size", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix size", ctx, x, y, height, helpLine);
@@ -1068,7 +1068,7 @@
 		y = this.renderHelpLine(view, Keywords.labelTargetWord + " X Y D|" + Keywords.offWord, "label target and distance", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelTrackWord + " DX DY|" + Keywords.fixedWord, "label move per generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowWord + " X1 Y1 X2 Y2 ZOOM", "define arrow at position", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " (MAXZOOM) (" + Keywords.fixedWord + ")", "... zoom range and fix position", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (MAXZOOM)|(MINZOOM MAXZOOM) (" + Keywords.fixedWord + ")", "... zoom range and fix position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowSizeWord + " <" + ViewConstants.minLineSize + ".." + ViewConstants.maxLineSize + "> <0.0..1.0>", "line width and head multiple", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowAlphaWord + " <0.0..1.0>", "define arrow alpha", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowTWord + " <0..> <0..> <0..>", "generation range / fade", ctx, x, y, height, helpLine);
