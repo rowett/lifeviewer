@@ -1927,11 +1927,20 @@
 						}
 					}
 					i = ((mY - item.y) / (item.height - 1)) * (item.upper - item.lower) + item.lower;
-					if (i < item.lower) {
-						i = item.lower;
-					}
-					if (i > item.upper) {
-						i = item.upper;
+					if (item.lower < item.upper) {
+						if (i < item.lower) {
+							i = item.lower;
+						}
+						if (i > item.upper) {
+							i = item.upper;
+						}
+					} else {
+						if (i < item.upper) {
+							i = item.upper;
+						}
+						if (i > item.lower) {
+							i = item.lower;
+						}
 					}
 					item.current[0] = i;
 				} else {
@@ -1947,11 +1956,20 @@
 						}
 					}
 					i = ((mX - item.x) / (item.width - 1)) * (item.upper - item.lower) + item.lower;
-					if (i < item.lower) {
-						i = item.lower;
-					}
-					if (i > item.upper) {
-						i = item.upper;
+					if (item.lower < item.upper) {
+						if (i < item.lower) {
+							i = item.lower;
+						}
+						if (i > item.upper) {
+							i = item.upper;
+						}
+					} else {
+						if (i < item.upper) {
+							i = item.upper;
+						}
+						if (i > item.lower) {
+							i = item.lower;
+						}
 					}
 					item.current[0] = i;
 				}

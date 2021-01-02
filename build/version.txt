@@ -1,3 +1,7 @@
+Build 585
+- display Weighted or Custom neighbourhood grid in Help->Info->Pattern
+- fix issue with vertical UI sliders
+
 Build 584
 - [[ LABEL ]] and [[ ARROW ]] now support three ways of defining the zoom and zoom range:
 	1. [[ LABEL X Y Z "text" ]] : zoom is Z, min zoom is Z/4 and max zoom is Z*4

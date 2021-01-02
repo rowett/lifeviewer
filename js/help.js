@@ -235,7 +235,7 @@
 
 			// check if the fixed portion was wider than the first tab
 			width = this.measureText(view, ctx, fixed, 0);
-			if (width > (view.tabs[tabNo] * xScale)) {
+			if (width > (view.tabs[tabNo] * xScale) && text !== "") {
 				// move the variable portion onto the next line
 				if (shouldDraw) {
 					y += height;
@@ -1611,6 +1611,30 @@
 			}
 		}
 		y = this.renderHelpLine(view, "N'hood", itemName, ctx, x, y, height, helpLine);
+
+		// output weighted neighbourhood if specified
+		if (view.engine.isHROT) {
+			switch (view.engine.HROT.type) {
+			case view.manager.weightedHROT:
+				value = view.engine.HROT.yrange * 2 + 1;
+				for (i = 0; i < value; i += 1) {
+					itemName = " " + view.engine.HROT.customNeighbourhood.substr(i * value, value);
+					y = this.renderHelpLine(view, itemName, "", ctx, x, y, height, helpLine);
+				}
+				break;
+
+			case view.manager.customHROT:
+				value = view.engine.HROT.yrange * 2 + 1;
+				for (i = 0; i < value; i += 1) {
+					itemName = " ";
+					for (j = 0; j < value; j+= 1) {
+						itemName += view.engine.HROT.neighbourhood[i][j] ? "1" : "0";
+					}
+					y = this.renderHelpLine(view, itemName, "", ctx, x, y, height, helpLine);
+				}
+			}
+
+		}
 
 		// get number of states
 		itemName = view.patternStates;
