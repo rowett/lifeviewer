@@ -11670,7 +11670,13 @@
 		    b = 0,
 		    y = 0,
 		    bottomY = 0,
-		    leftX = 0,
+			leftX = 0,
+			orig = 0,
+			next = 0,
+			popDiff = 0,
+
+			// bit counts
+			bitCounts16 = this.bitCounts16,
 
 		    // 16bit view of grid
 		    nextGrid16 = null,
@@ -11730,7 +11736,14 @@
 						if ((tiles & (1 << b)) !== 0) {
 							// process the tile
 							for (y = bottomY; y < bottomY + 16; y += 1) {
-								nextGrid16[y][leftX] &= ~aliveMask[y][leftX];
+								orig = nextGrid16[y][leftX];
+								next = orig & ~aliveMask[y][leftX];
+								if (next !== orig) {
+									nextGrid16[y][leftX] = next;
+									popDiff = bitCounts16[orig] - bitCounts16[next];
+									this.population -= popDiff;
+									this.deaths += popDiff;
+								}
 							}
 						}
 
