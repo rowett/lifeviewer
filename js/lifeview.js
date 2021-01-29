@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 586,
+		/** @const {number} */ versionBuild : 587,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -10206,6 +10206,10 @@
 						}
 					}
 				}
+
+				// check if shrink needed
+				me.engine.shrinkNeeded = true;
+				me.engine.doShrink();
 
 				// save edit
 				me.afterEdit("clear cells outside selection");

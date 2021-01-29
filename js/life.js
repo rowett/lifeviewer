@@ -8870,10 +8870,10 @@
 
 			// merge with overlay if required
 			if (overlayGrid) {
-				if (overlayTopY < newTopY) {
+				if (overlayTopY > newTopY) {
 					newTopY = overlayTopY;
 				}
-				if (overlayBottomY > newBottomY) {
+				if (overlayBottomY < newBottomY) {
 					newBottomY = overlayBottomY;
 				}
 				if (overlayLeftX < newLeftX) {
@@ -19300,7 +19300,11 @@
 			typeMask = 0,
 
 			// cells in the neighbourhood
-			nw = 0, n = 0, ne = 0, w = 0, c = 0, e = 0, sw = 0, s = 0, se = 0,
+			lcol = 0,
+			ccol = 0,
+			rcol = 0,
+			c = 0,
+			e = 0,
 
 		    // column occupied
 		    columnOccupied16 = this.columnOccupied16,
@@ -19442,18 +19446,16 @@
 								cr = (leftX << 4);
 
 								// get initial neighbours
+								lcol = 0;
 								if (cr === 0) {
-									n = 0;
 									c = 0;
-									s = 0;
+									ccol = 0;
 								} else {
-									n = aboveRow[cr - 1];
 									c = colourGridRow[cr - 1];
-									s = belowRow[cr - 1];
+									ccol = (1 << aboveRow[cr - 1]) | (1 << c) | (1 << belowRow[cr - 1]);
 								}
-								ne = aboveRow[cr];
 								e = colourGridRow[cr];
-								se = belowRow[cr];
+								rcol = (1 << e) | (1 << belowRow[cr]) | (1 << aboveRow[cr]);
 
 								// process each 16bit chunk (16 cells) along the row
 								nextCell = gridRow[leftX];
@@ -19461,20 +19463,19 @@
 								// process each cell in the chunk
 								colIndex = 1 << 15;
 								while (colIndex > 0) {
+									// get next column
+									cr += 1;
+
 									// shift neighbourhood left
-									nw = n;
-									n = ne;
-									w = c;
 									c = e;
-									sw = s;
-									s = se;
-									e = colourGridRow[cr + 1];
-									se = belowRow[cr + 1];
-									ne = aboveRow[cr + 1];
+									e = colourGridRow[cr];
+									lcol = ccol;
+									ccol = rcol;
+									rcol = (1 << e) | (1 << belowRow[cr]) | (1 << aboveRow[cr]);
 									value = c;
 
 									// typemask has a bit set per state in the neighbouring cells
-									typeMask = (1 << nw) | (1 << n) | (1 << ne) | (1 << e) | (1 << w) | (1 << sw) | (1 << s) | (1 << se);
+									typeMask = lcol | ccol | rcol;
 
 									// handle state 6
 									process = true;
@@ -19634,7 +19635,7 @@
 									}
 
 									// output new cell state
-									destRow[cr] = value;
+									destRow[cr - 1] = value;
 									if (value > 0) {
 										colOccupied |= colIndex;
 										rowOccupied |= rowIndex;
@@ -19642,7 +19643,6 @@
 
 									// next bit cell
 									colIndex >>= 1;
-									cr += 1;
 								}
 
 								// update alive status

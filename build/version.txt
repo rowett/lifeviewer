@@ -1,3 +1,6 @@
+Build 587
+- 20% performance improvement for LifeSuper algo (Moore)
+
 Build 586
 - fixed population count for [R]History rules with state 6 cells
 
