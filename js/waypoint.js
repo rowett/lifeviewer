@@ -2229,8 +2229,23 @@
 
 	// find the closest waypoint to a generation
 	WaypointManager.prototype.findClosestWaypoint = function(generation) {
+		var elapsed = 0,
+			generations = 0,
+			result = 0,
+			currWP,
+			prevWP;
+
 		// save the index of the closest waypoint
 		this.tempIndex = this.findWaypointNear(generation);
+
+		// interpolate elapsed time
+		currWP = this.waypointList[this.tempIndex];
+		prevWP = this.waypointList[this.tempIndex - 1];
+		elapsed = currWP.targetTime - prevWP.targetTime;
+		generations = currWP.targetGen - prevWP.targetGen;
+		result = (elapsed * (generation - prevWP.targetGen) / generations) + prevWP.targetTime;
+
+		return result;
 	};
 
 	// copy a single initial value into POI

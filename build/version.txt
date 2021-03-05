@@ -1,3 +1,10 @@
+Build 589
+- fix rendering issue that caused an extra initial row and column of cells to be drawn at edge of grid
+- fix when turning waypoints back on tracking the camera to the right location
+
+Build 588
+- fix issues with editing [R]History patterns
+
 Build 587
 - 20% performance improvement for LifeSuper algo (Moore)
 

@@ -975,7 +975,7 @@
 		// check if pretty rendering enabled
 		if (this.pretty) {
 			if (this.sCanvas === null) {
-				if (window.OffScreenCanvas) {
+				if (window.OffscreenCanvas) {
 					this.sCanvas = new OffscreenCanvas(width, height);
 				} else {
 					this.sCanvas = document.createElement("canvas");
@@ -4123,13 +4123,13 @@
 				// update colour grid if history state
 				if (state === 2) {
 					colourGrid[y][x] = LifeConstants.deadMin;
+				}
+
+				// update overlay grid if not
+				if (state === 0) {
+					overlayGrid[y][x] = 0;
 				} else {
-					// update overlay grid if not
-					if (state === 0) {
-						overlayGrid[y][x] = 0;
-					} else {
-						overlayGrid[y][x] = ViewConstants.stateMap[state] + 128;
-					}
+					overlayGrid[y][x] = ViewConstants.stateMap[state] + 128;
 				}
 			}
 
@@ -19280,7 +19280,7 @@
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 			colourTileGrid = this.colourTileGrid,
 			blankColourRow = this.blankColourRow,
-		    grid = null, gridRow = null, 
+			grid = null, gridRow = null, 
 		    tileGrid = null, tileGridRow = null,
 		    value = 0, th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
@@ -19593,41 +19593,41 @@
 												}
 											} else {
 												// cell is still dead
-												if (c === 14) {
-													value = 0;
-												} else {
-													if (c > 14) {
-														switch (c) {
-															case 16:
-																if ((typeMask & aliveWith14) !== 0) {
-																	value = 14;
-																}
-																break;
+												if (c >= 14) {
+													switch (c) {
+														case 14:
+															value = 0;
+															break;
 
-															case 18:
-																if ((typeMask & (1 << 22)) !== 0) {
-																	value = 22;
-																}
-																break;
+														case 16:
+															if ((typeMask & aliveWith14) !== 0) {
+																value = 14;
+															}
+															break;
 
-															case 20:
-																if ((typeMask & (1 << 18)) !== 0) {
-																	value = 18;
-																}
-																break;
+														case 18:
+															if ((typeMask & (1 << 22)) !== 0) {
+																value = 22;
+															}
+															break;
 
-															case 22:
-																if ((typeMask & (1 << 20)) !== 0) {
-																	value = 20;
-																}
-																break;
+														case 20:
+															if ((typeMask & (1 << 18)) !== 0) {
+																value = 18;
+															}
+															break;
 
-															case 24:
-																if ((typeMask & aliveWith14or18) !== 0) {
-																	value = 18;
-																}
-																break;
-														}
+														case 22:
+															if ((typeMask & (1 << 20)) !== 0) {
+																value = 20;
+															}
+															break;
+
+														case 24:
+															if ((typeMask & aliveWith14or18) !== 0) {
+																value = 18;
+															}
+															break;
 													}
 												}
 											}
@@ -20356,7 +20356,7 @@
 			bBottomY = 0,
 			bRightX = 0,
 			bTopY = 0;
-		
+
 		if (this.isHex) {
 			this.nextGenerationSuperTileHex();
 		} else {
@@ -30551,7 +30551,7 @@
 		
 		for (h = 0; h < this.displayHeight; h += 1) {
 			// clip rows to the grid
-			if ((y & ht) === (y & hm)) {
+			if (y >= 0 && ((y & ht) === (y & hm))) {
 				// get the colour grid row
 				colourGridRow = colourGrid[y & hm];
 				x = sx;
@@ -30564,7 +30564,7 @@
 				// process the row
 				for (w = 0; w < w8; w += 1) {
 					// clip to the grid
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						// lookup the colour
 						col = colourGridRow[x & wm] | 0;
 
@@ -30580,7 +30580,7 @@
 					x += dyx;
 
 					// loop unroll
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
 					} else {
@@ -30590,7 +30590,7 @@
 					x += dyx;
 
 					// loop unroll
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
 					} else {
@@ -30600,7 +30600,7 @@
 					x += dyx;
 
 					// loop unroll
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
 					} else {
@@ -30610,7 +30610,7 @@
 					x += dyx;
 
 					// loop unroll
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
 					} else {
@@ -30620,7 +30620,7 @@
 					x += dyx;
 
 					// loop unroll
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
 					} else {
@@ -30630,7 +30630,7 @@
 					x += dyx;
 
 					// loop unroll
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
 					} else {
@@ -30640,7 +30640,7 @@
 					x += dyx;
 
 					// loop unroll
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
 					} else {
@@ -30758,7 +30758,7 @@
 			y = sy;
 			for (h = 0; h < this.displayHeight; h += 1) {
 				// clip rows to the grid
-				if ((y & ht) === (y & hm)) {
+				if (y >= 0 && ((y & ht) === (y & hm))) {
 					// get the colour grid row
 					colourGridRow = colourGrid[y & hm];
 					x = sx;
@@ -30771,7 +30771,7 @@
 					// process the row
 					for (w = 0; w < w8; w += 1) {
 						// clip to the grid
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							// lookup the colour
 							col = colourGridRow[x & wm] | 0;
 
@@ -30787,7 +30787,7 @@
 						x += dyx;
 
 						// loop unroll
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							col = colourGrid[y & hm][x & wm] | 0;
 							if (col >= transparentTarget) {
 								data32[idx] = pixelColours[col];
@@ -30797,7 +30797,7 @@
 						x += dyx;
 
 						// loop unroll
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							col = colourGrid[y & hm][x & wm] | 0;
 							if (col >= transparentTarget) {
 								data32[idx] = pixelColours[col];
@@ -30807,7 +30807,7 @@
 						x += dyx;
 
 						// loop unroll
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							col = colourGrid[y & hm][x & wm] | 0;
 							if (col >= transparentTarget) {
 								data32[idx] = pixelColours[col];
@@ -30817,7 +30817,7 @@
 						x += dyx;
 
 						// loop unroll
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							col = colourGrid[y & hm][x & wm] | 0;
 							if (col >= transparentTarget) {
 								data32[idx] = pixelColours[col];
@@ -30827,7 +30827,7 @@
 						x += dyx;
 
 						// loop unroll
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							col = colourGrid[y & hm][x & wm] | 0;
 							if (col >= transparentTarget) {
 								data32[idx] = pixelColours[col];
@@ -30837,7 +30837,7 @@
 						x += dyx;
 
 						// loop unroll
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							col = colourGrid[y & hm][x & wm] | 0;
 							if (col >= transparentTarget) {
 								data32[idx] = pixelColours[col];
@@ -30847,7 +30847,7 @@
 						x += dyx;
 
 						// loop unroll
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							col = colourGrid[y & hm][x & wm] | 0;
 							if (col >= transparentTarget) {
 								data32[idx] = pixelColours[col];
@@ -33564,7 +33564,7 @@
 		
 		for (h = 0; h < this.displayHeight; h += 1) {
 			// clip rows to the grid
-			if ((y & ht) === (y & hm)) {
+			if (y >= 0 && ((y & ht) === (y & hm))) {
 				// get the colour grid row
 				colourGridRow = colourGrid[y & hm];
 				overlayGridRow = overlayGrid[y & hm];
@@ -33578,7 +33578,7 @@
 				// process the row
 				for (w = 0; w < w8; w += 1) {
 					// clip to the grid
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						// lookup the colour and overlay
 						col = colourGridRow[x & wm];
 						over = overlayGridRow[x & wm];
@@ -33614,7 +33614,7 @@
 					x += dyx;
 
 					// loop unroll
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						col = colourGridRow[x & wm];
 						over = overlayGridRow[x & wm];
 						if (over === state4 || over === state6) {
@@ -33640,7 +33640,7 @@
 					x += dyx;
 
 					// loop unroll
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						col = colourGridRow[x & wm];
 						over = overlayGridRow[x & wm];
 						if (over === state4 || over === state6) {
@@ -33666,7 +33666,7 @@
 					x += dyx;
 
 					// loop unroll
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						col = colourGridRow[x & wm];
 						over = overlayGridRow[x & wm];
 						if (over === state4 || over === state6) {
@@ -33692,7 +33692,7 @@
 					x += dyx;
 
 					// loop unroll
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						col = colourGridRow[x & wm];
 						over = overlayGridRow[x & wm];
 						if (over === state4 || over === state6) {
@@ -33718,7 +33718,7 @@
 					x += dyx;
 
 					// loop unroll
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						col = colourGridRow[x & wm];
 						over = overlayGridRow[x & wm];
 						if (over === state4 || over === state6) {
@@ -33744,7 +33744,7 @@
 					x += dyx;
 
 					// loop unroll
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						col = colourGridRow[x & wm];
 						over = overlayGridRow[x & wm];
 						if (over === state4 || over === state6) {
@@ -33770,7 +33770,7 @@
 					x += dyx;
 
 					// loop unroll
-					if ((x & wt) === (x & wm)) {
+					if (x >= 0 && ((x & wt) === (x & wm))) {
 						col = colourGridRow[x & wm];
 						over = overlayGridRow[x & wm];
 						if (over === state4 || over === state6) {
@@ -33901,7 +33901,7 @@
 			y = sy;
 			for (h = 0; h < this.displayHeight; h += 1) {
 				// clip rows to the grid
-				if ((y & ht) === (y & hm)) {
+				if (y >= 0 && ((y & ht) === (y & hm))) {
 					// get the colour grid row
 					colourGridRow = colourGrid[y & hm];
 					x = sx;
@@ -33914,7 +33914,7 @@
 					// process the row
 					for (w = 0; w < w8; w += 1) {
 						// clip to the grid
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							// lookup the colour
 							col = colourGridRow[x & wm] | 0;
 
@@ -33931,7 +33931,7 @@
 						x += dyx;
 
 						// loop unroll
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							col = colourGridRow[x & wm] | 0;
 							if (col >= transparentTarget) {
 								data32[idx] = pixelColours[col];
@@ -33941,7 +33941,7 @@
 						x += dyx;
 
 						// loop unroll
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							col = colourGridRow[x & wm] | 0;
 							if (col >= transparentTarget) {
 								data32[idx] = pixelColours[col];
@@ -33951,7 +33951,7 @@
 						x += dyx;
 
 						// loop unroll
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							col = colourGridRow[x & wm] | 0;
 							if (col >= transparentTarget) {
 								data32[idx] = pixelColours[col];
@@ -33961,7 +33961,7 @@
 						x += dyx;
 
 						// loop unroll
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							col = colourGridRow[x & wm] | 0;
 							if (col >= transparentTarget) {
 								data32[idx] = pixelColours[col];
@@ -33971,7 +33971,7 @@
 						x += dyx;
 
 						// loop unroll
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							col = colourGridRow[x & wm] | 0;
 							if (col >= transparentTarget) {
 								data32[idx] = pixelColours[col];
@@ -33981,7 +33981,7 @@
 						x += dyx;
 
 						// loop unroll
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							col = colourGridRow[x & wm] | 0;
 							if (col >= transparentTarget) {
 								data32[idx] = pixelColours[col];
@@ -33991,7 +33991,7 @@
 						x += dyx;
 
 						// loop unroll
-						if ((x & wt) === (x & wm)) {
+						if (x >= 0 && ((x & wt) === (x & wm))) {
 							col = colourGridRow[x & wm] | 0;
 							if (col >= transparentTarget) {
 								data32[idx] = pixelColours[col];

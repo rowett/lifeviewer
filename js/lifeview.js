@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 587,
+		/** @const {number} */ versionBuild : 589,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -12434,7 +12434,7 @@
 					} else {
 						// mark manual change if waypoints just enabled
 						me.manualChange = true;
-						me.waypointManager.findClosestWaypoint(me.engine.counter);
+						me.elapsedTime = me.waypointManager.findClosestWaypoint(me.engine.counter);
 					}
 
 					// check for loop
