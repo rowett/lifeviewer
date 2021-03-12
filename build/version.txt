@@ -1,3 +1,6 @@
+Build 590
+- fix rendering issue for [R]History rules
+
 Build 589
 - fix rendering issue that caused an extra initial row and column of cells to be drawn at edge of grid
 - fix when turning waypoints back on tracking the camera to the right location

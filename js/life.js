@@ -30168,7 +30168,7 @@
 			x = sx;
 			for (w = 0; w < w8; w += 1) {
 				// clip to the grid
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 					// lookup the colour
 					col = colourGrid[y & hm][x & wm] | 0;
 
@@ -30185,7 +30185,7 @@
 				y -= dxy;
 
 				// loop unroll
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
 				} else {
@@ -30196,7 +30196,7 @@
 				y -= dxy;
 
 				// loop unroll
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
 				} else {
@@ -30207,7 +30207,7 @@
 				y -= dxy;
 
 				// loop unroll
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
 				} else {
@@ -30218,7 +30218,7 @@
 				y -= dxy;
 
 				// loop unroll
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
 				} else {
@@ -30229,7 +30229,7 @@
 				y -= dxy;
 
 				// loop unroll
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
 				} else {
@@ -30240,7 +30240,7 @@
 				y -= dxy;
 
 				// loop unroll
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
 				} else {
@@ -30251,7 +30251,7 @@
 				y -= dxy;
 
 				// loop unroll
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
 				} else {
@@ -30368,7 +30368,7 @@
 				x = sx;
 				for (w = 0; w < w8; w += 1) {
 					// clip to the grid
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 						// lookup the colour
 						col = colourGrid[y & hm][x & wm] | 0;
 
@@ -30385,7 +30385,7 @@
 					y -= dxy;
 
 					// loop unroll
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 						col = colourGrid[y & hm][x & wm] | 0;
 						if (col >= transparentTarget) {
 							data32[idx] = pixelColours[col];
@@ -30396,7 +30396,7 @@
 					y -= dxy;
 
 					// loop unroll
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 						col = colourGrid[y & hm][x & wm] | 0;
 						if (col >= transparentTarget) {
 							data32[idx] = pixelColours[col];
@@ -30407,7 +30407,7 @@
 					y -= dxy;
 
 					// loop unroll
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 						col = colourGrid[y & hm][x & wm] | 0;
 						if (col >= transparentTarget) {
 							data32[idx] = pixelColours[col];
@@ -30418,7 +30418,7 @@
 					y -= dxy;
 
 					// loop unroll
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 						col = colourGrid[y & hm][x & wm] | 0;
 						if (col >= transparentTarget) {
 							data32[idx] = pixelColours[col];
@@ -30429,7 +30429,7 @@
 					y -= dxy;
 
 					// loop unroll
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 						col = colourGrid[y & hm][x & wm] | 0;
 						if (col >= transparentTarget) {
 							data32[idx] = pixelColours[col];
@@ -30440,7 +30440,7 @@
 					y -= dxy;
 
 					// loop unroll
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 						col = colourGrid[y & hm][x & wm] | 0;
 						if (col >= transparentTarget) {
 							data32[idx] = pixelColours[col];
@@ -30451,7 +30451,7 @@
 					y -= dxy;
 
 					// loop unroll
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y > 0 && ((y & ht) === (y & hm)))) {
 						col = colourGrid[y & hm][x & wm] | 0;
 						if (col >= transparentTarget) {
 							data32[idx] = pixelColours[col];
@@ -32115,7 +32115,7 @@
 			x = sx;
 			for (w = 0; w < w8; w += 1) {
 				// clip to the grid
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 					// lookup the colour and overlay
 					col = colourGrid[y & hm][x & wm];
 					over = overlayGrid[y & hm][x & wm];
@@ -32153,7 +32153,7 @@
 				y -= dxy;
 
 				// loop unroll
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 					col = colourGrid[y & hm][x & wm];
 					over = overlayGrid[y & hm][x & wm];
 					if (over === state4 || over === state6) {
@@ -32180,7 +32180,7 @@
 				y -= dxy;
 
 				// loop unroll
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 					col = colourGrid[y & hm][x & wm];
 					over = overlayGrid[y & hm][x & wm];
 					if (over === state4 || over === state6) {
@@ -32207,7 +32207,7 @@
 				y -= dxy;
 
 				// loop unroll
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 					col = colourGrid[y & hm][x & wm];
 					over = overlayGrid[y & hm][x & wm];
 					if (over === state4 || over === state6) {
@@ -32234,7 +32234,7 @@
 				y -= dxy;
 
 				// loop unroll
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 					col = colourGrid[y & hm][x & wm];
 					over = overlayGrid[y & hm][x & wm];
 					if (over === state4 || over === state6) {
@@ -32261,7 +32261,7 @@
 				y -= dxy;
 
 				// loop unroll
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 					col = colourGrid[y & hm][x & wm];
 					over = overlayGrid[y & hm][x & wm];
 					if (over === state4 || over === state6) {
@@ -32288,7 +32288,7 @@
 				y -= dxy;
 
 				// loop unroll
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 					col = colourGrid[y & hm][x & wm];
 					over = overlayGrid[y & hm][x & wm];
 					if (over === state4 || over === state6) {
@@ -32315,7 +32315,7 @@
 				y -= dxy;
 
 				// loop unroll
-				if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+				if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 					col = colourGrid[y & hm][x & wm];
 					over = overlayGrid[y & hm][x & wm];
 					if (over === state4 || over === state6) {
@@ -32445,7 +32445,7 @@
 				x = sx;
 				for (w = 0; w < w8; w += 1) {
 					// clip to the grid
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 						// lookup the colour
 						col = colourGrid[y & hm][x & wm] | 0;
 
@@ -32462,7 +32462,7 @@
 					y -= dxy;
 
 					// loop unroll
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 						col = colourGrid[y & hm][x & wm] | 0;
 						if (col >= transparentTarget) {
 							data32[idx] = pixelColours[col];
@@ -32473,7 +32473,7 @@
 					y -= dxy;
 
 					// loop unroll
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 						col = colourGrid[y & hm][x & wm] | 0;
 						if (col >= transparentTarget) {
 							data32[idx] = pixelColours[col];
@@ -32484,7 +32484,7 @@
 					y -= dxy;
 
 					// loop unroll
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 						col = colourGrid[y & hm][x & wm] | 0;
 						if (col >= transparentTarget) {
 							data32[idx] = pixelColours[col];
@@ -32495,7 +32495,7 @@
 					y -= dxy;
 
 					// loop unroll
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 						col = colourGrid[y & hm][x & wm] | 0;
 						if (col >= transparentTarget) {
 							data32[idx] = pixelColours[col];
@@ -32506,7 +32506,7 @@
 					y -= dxy;
 
 					// loop unroll
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 						col = colourGrid[y & hm][x & wm] | 0;
 						if (col >= transparentTarget) {
 							data32[idx] = pixelColours[col];
@@ -32517,7 +32517,7 @@
 					y -= dxy;
 
 					// loop unroll
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 						col = colourGrid[y & hm][x & wm] | 0;
 						if (col >= transparentTarget) {
 							data32[idx] = pixelColours[col];
@@ -32528,7 +32528,7 @@
 					y -= dxy;
 
 					// loop unroll
-					if (((x & wt) === (x & wm)) && ((y & ht) === (y & hm))) {
+					if ((x >= 0 && ((x & wt) === (x & wm))) && (y >= 0 && ((y & ht) === (y & hm)))) {
 						col = colourGrid[y & hm][x & wm] | 0;
 						if (col >= transparentTarget) {
 							data32[idx] = pixelColours[col];
