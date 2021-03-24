@@ -1618,7 +1618,11 @@
 			case view.manager.weightedHROT:
 				value = view.engine.HROT.yrange * 2 + 1;
 				for (i = 0; i < value; i += 1) {
-					itemName = " " + view.engine.HROT.customNeighbourhood.substr(i * value, value);
+					if (view.engine.HROT.customNeighbourhood.length > value * value) {
+						itemName = " " + view.engine.HROT.customNeighbourhood.substr(i * value * 2, value * 2);
+					} else {
+						itemName = " " + view.engine.HROT.customNeighbourhood.substr(i * value, value);
+					}
 					y = this.renderHelpLine(view, itemName, "", ctx, x, y, height, helpLine);
 				}
 				break;

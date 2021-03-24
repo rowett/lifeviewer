@@ -1,3 +1,6 @@
+Build 592
+- double digit Weighted neighborhoods were not showing correctly in Help->Info->Pattern
+
 Build 591
 - fix issue with HROT Weighted neighborhoods with negative counts
 
