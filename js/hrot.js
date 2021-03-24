@@ -39,7 +39,7 @@
 		this.neighbourList = allocator.allocate(Int16, 0, "HROT.neighbourList");
 
 		// neighbour count array (will be resized)
-		this.counts = Array.matrix(Uint32, 1, 1, 0, allocator, "HROT.counts");
+		this.counts = Array.matrix(Int32, 1, 1, 0, allocator, "HROT.counts");
 
 		// range width array (will be resized)
 		this.widths = allocator.allocate(Uint32, 0, "HROT.widths");
@@ -78,7 +78,7 @@
 	// resize counts array
 	HROT.prototype.resize = function(/** @type {number} */ width, /** @type {number} */ height) {
 		// resize counts array
-		this.counts = Array.matrix(Uint32, height, width, 0, this.allocator, "HROT.counts");
+		this.counts = Array.matrix(Int32, height, width, 0, this.allocator, "HROT.counts");
 		this.colUsed = this.allocator.allocate(Uint8, width, "HROT.colUsed");
 	};
 
@@ -472,18 +472,18 @@
 					aliveIndex = 0;
 					if (state < aliveStart) {
 						// this cell is dead
-						if (birthList[count] === 1) {
+						if (count >= 0 && birthList[count] === 1) {
 							// new cell is born
 							births += 1;
 							aliveIndex = 128;
 						}
 					} else {
 						// this cell is alive
-						if (survivalList[count] === 0) {
-							// this cell doesn't survive
-							deaths += 1;
-						} else {
+						if (count >= 0 && survivalList[count] === 1) {
+							// this cell survives
 							aliveIndex = 128;
+						} else {
+							deaths += 1;
 						}
 					}
 					state = colourLookup[state + aliveIndex];
@@ -542,7 +542,7 @@
 					count = countRow[x];
 					if (state <= deadState) {
 						// this cell is dead
-						if (birthList[count] === 1) {
+						if (count >= 0 && birthList[count] === 1) {
 							// new cell is born
 							state = maxGenState;
 							births += 1;
@@ -553,7 +553,7 @@
 						}
 					} else if (state === maxGenState) {
 						// this cell is alive
-						if (survivalList[count] === 0) {
+						if (count < 0 || survivalList[count] === 0) {
 							// cell decays by one state
 							state -= 1;
 							deaths += 1;
@@ -642,8 +642,8 @@
 			/** @type {Int8Array} */ weightedNeighbourhood = this.weightedNeighbourhood,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
-			/** @type {Array<Uint32Array>} */ counts = this.counts,
-			/** @type {Uint32Array} */ countRow = null,
+			/** @type {Array<Int32Array>} */ counts = this.counts,
+			/** @type {Int32Array} */ countRow = null,
 			/** @type {Uint8Array} */ weightedStates = this.weightedStates,
 			/** @const {number} */ deadWeight = weightedStates[0],
 			/** @const {number} */ w0 = weightedNeighbourhood[0],
@@ -757,8 +757,8 @@
 			/** @type {Int8Array} */ weightedNeighbourhood = this.weightedNeighbourhood,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
-			/** @type {Array<Uint32Array>} */ counts = this.counts,
-			/** @type {Uint32Array} */ countRow = null,
+			/** @type {Array<Int32Array>} */ counts = this.counts,
+			/** @type {Int32Array} */ countRow = null,
 			/** @const {number} */ w0 = weightedNeighbourhood[0],
 			/** @const {number} */ w1 = weightedNeighbourhood[1],
 			/** @const {number} */ w2 = weightedNeighbourhood[2],

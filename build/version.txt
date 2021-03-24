@@ -1,3 +1,6 @@
+Build 591
+- fix issue with HROT Weighted neighborhoods with negative counts
+
 Build 590
 - fix rendering issue for [R]History rules
 
