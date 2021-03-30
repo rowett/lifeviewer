@@ -1,3 +1,6 @@
+Build 593
+- improved graph rendering for smoother scaling
+
 Build 592
 - double digit Weighted neighborhoods were not showing correctly in Help->Info->Pattern
 

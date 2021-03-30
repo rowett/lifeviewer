@@ -11366,7 +11366,9 @@
 				next = next + inc;
 				index = index + 1;
 				while ((next | 0) === 0) {
-					nextVal = graphData[index];
+					popChunk = index >> LifeConstants.popChunkPower;
+					popOffset = index & popMask;
+					nextVal = graphData[popChunk][popOffset];
 					index = index + 1;
 					if (nextVal > maxVal) {
 						maxVal = nextVal;
