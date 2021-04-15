@@ -11267,6 +11267,7 @@
 			// check if history is on
 			if (!noHistory) {
 				// save the snapshot
+				this.convertToPensTile();
 				this.saveSnapshot();
 			}
 		}

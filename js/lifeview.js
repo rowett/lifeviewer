@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 593,
+		/** @const {number} */ versionBuild : 594,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2317,7 +2317,10 @@
 					tooltip += record.action;
 				}
 			}
-			this.undoButton.toolTip = tooltip;
+			if (tooltip === "undo ") {
+				tooltip = "undo";
+			}
+			this.undoButton.toolTip = tooltip + " [Ctrl Z]";
 		}
 
 		// update redo tooltip
@@ -2343,7 +2346,10 @@
 					tooltip += record.action;
 				}
 			}
-			this.redoButton.toolTip = tooltip;
+			if (tooltip === "redo ") {
+				tooltip = "redo";
+			}
+			this.redoButton.toolTip = tooltip + " [Ctrl Y]";
 		}
 	};
 
@@ -4670,7 +4676,7 @@
 		}
 
 		// draw selection size
-		if (this.isSelection || this.drawingSelection) {
+		if ((this.isSelection || this.drawingSelection) && (!this.displayHelp || this.displayErrors)) {
 			this.selSizeLabel.enabled = true;
 			if (this.selectionBox.rightX > this.selectionBox.leftX) {
 				xPos = this.selectionBox.rightX - this.selectionBox.leftX + 1;
@@ -4738,13 +4744,13 @@
 				separator = "";
 			}
 			me.genToggle.lower[0] = "+" + separator + me.shortenNumber(counter);
-			me.genToggle.toolTip = ["toggle generation statistics\ngeneration +" + counter];
+			me.genToggle.toolTip = ["toggle generation statistics [G]\ngeneration +" + counter];
 		} else {
 			if (counter + me.genOffset < 0) {
 				separator = "";
 			}
 			me.genToggle.lower[0] = "T" + separator + me.shortenNumber(counter + me.genOffset);
-			me.genToggle.toolTip = ["toggle generation statistics\ngeneration " + (counter + me.genOffset)];
+			me.genToggle.toolTip = ["toggle generation statistics [G]\ngeneration " + (counter + me.genOffset)];
 		}
 
 		// check for Margolus
@@ -5605,7 +5611,7 @@
 
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
-		this.undoButton.locked = (this.editNum <= 1 || this.undoButton.toolTip === "undo ");
+		this.undoButton.locked = (this.editNum <= 1 || this.undoButton.toolTip === "undo [Ctrl Z]");
 
 		// top menu buttons
 		this.autoFitToggle.deleted = hide;
@@ -6041,23 +6047,23 @@
 			this.waypointsIndicator.lower[0] = "TRACK";
 			this.waypointsIndicator.current = [(!this.trackDisabled && this.trackDefined)];
 			this.waypointsIndicator.locked = !(this.trackDefined);
-			this.waypointsIndicator.toolTip = ["toggle track mode"];
+			this.waypointsIndicator.toolTip = ["toggle track mode [W]"];
 		} else {
 			this.waypointsIndicator.lower[0] = "WAYPT";
 			this.waypointsIndicator.current = [(!this.waypointsDisabled && this.waypointsDefined)];
 			this.waypointsIndicator.locked = !(this.waypointsDefined);
-			this.waypointsIndicator.toolTip = ["toggle waypoint mode"];
+			this.waypointsIndicator.toolTip = ["toggle waypoint mode [W]"];
 		}
 
 		// loop
 		this.loopIndicator.current = [!this.loopDisabled && this.loopGeneration !== -1];
 		this.loopIndicator.locked = (this.loopGeneration === -1);
-		this.loopIndicator.toolTip = ["loop at " + this.loopGeneration];
+		this.loopIndicator.toolTip = ["loop at " + this.loopGeneration + " [Shift P]"];
 
 		// stop
 		this.stopIndicator.current = [!this.stopDisabled && this.stopGeneration !== -1];
 		this.stopIndicator.locked = (this.stopGeneration === -1);
-		this.stopIndicator.toolTip = ["stop at " + this.stopGeneration];
+		this.stopIndicator.toolTip = ["stop at " + this.stopGeneration + " [Alt P]"];
 	};
 
 	// save elapsed time at generation
@@ -6986,10 +6992,10 @@
 		if (isPlaying) {
 			// set to pause icon
 			iconName = "pause";
-			toolTip = "pause";
+			toolTip = "pause [Enter]";
 		} else {
 			// set to play icon
-			toolTip = "play";
+			toolTip = "play [Enter]";
 			if (this.engine.isMargolus || this.engine.isPCA) {
 				// invert direction if pending change
 				if (this.engine.reversePending) {
@@ -7014,19 +7020,19 @@
 			if (reverse) {
 				forwardIconName = "stepback";
 				backIconName = "stepforward";
-				forwardToolTip = "step back";
-				backToolTip = "step forward";
+				forwardToolTip = "step back [Shift Tab]";
+				backToolTip = "step forward [Tab]";
 			} else {
 				forwardIconName = "stepforward";
 				backIconName = "stepback";
-				forwardToolTip = "step forward";
-				backToolTip = "step back";
+				forwardToolTip = "step forward [Tab]";
+				backToolTip = "step back [Shift Tab]";
 			}
 		} else {
 			forwardIconName = "stepforward";
 			backIconName = "stepback";
-			forwardToolTip = "step forward";
-			backToolTip = "step back";
+			forwardToolTip = "step forward [Tab]";
+			backToolTip = "step back [Shift Tab]";
 		}
 
 		// set the step back and forward icons and tooltips
@@ -13081,7 +13087,7 @@
 		if (this.engine.isLifeHistory || this.engine.isSuper) {
 			this.invertSelectionButton.setPosition(Menu.southEast, -85, -130);
 			this.randomButton.setPosition(Menu.southEast, -130, -130);
-			this.randomButton.toolTip = "random fill";
+			this.randomButton.toolTip = "random fill [Shift 5]";
 			if (this.engine.isLifeHistory) {
 				this.randomItem.setPosition(Menu.southEast, -235, -130);
 			} else {
@@ -13091,17 +13097,17 @@
 			if (this.engine.multiNumStates <= 2) {
 				this.invertSelectionButton.setPosition(Menu.southEast, -40, -130);
 				this.randomButton.setPosition(Menu.southEast, -85, -130);
-				this.randomButton.toolTip = "random fill";
+				this.randomButton.toolTip = "random fill [Shift 5]";
 				this.randomItem.setPosition(Menu.southEast, -190, -130);
 			} else {
 				this.invertSelectionButton.setPosition(Menu.southEast, -40, -130);
 				if (this.engine.isPCA) {
 					this.randomButton.setPosition(Menu.southEast, -85, -130);
-					this.randomButton.toolTip = "random multi-state fill";
+					this.randomButton.toolTip = "random multi-state fill [Shift 5]";
 					this.randomItem.setPosition(Menu.southEast, -190, -130);
 				} else {
 					this.randomButton.setPosition(Menu.southEast, -130, -130);
-					this.randomButton.toolTip = "random multi-state fill";
+					this.randomButton.toolTip = "random multi-state fill [Shift 5]";
 					this.random2Button.setPosition(Menu.southEast, -85, -130);
 					this.randomItem.setPosition(Menu.southEast, -235, -130);
 				}
@@ -13326,27 +13332,27 @@
 		// autostart indicator
 		this.autostartIndicator = this.viewMenu.addListItem(this.toggleAutostart, Menu.northEast, -210, 0, 38, 20, ["START"], [false], Menu.multi);
 		this.autostartIndicator.setFont(ViewConstants.smallMenuFont);
-		this.autostartIndicator.toolTip = ["autostart"];
+		this.autostartIndicator.toolTip = ["autostart [Alt O]"];
 
 		// stop indicator
 		this.stopIndicator = this.viewMenu.addListItem(this.toggleStop, Menu.northEast, -210, 20, 38, 20, ["STOP"], [false], Menu.multi);
 		this.stopIndicator.setFont(ViewConstants.smallMenuFont);
-		this.stopIndicator.toolTip = ["stop"];
+		this.stopIndicator.toolTip = ["stop [Alt P]"];
 
 		// waypoints indicator
 		this.waypointsIndicator = this.viewMenu.addListItem(this.toggleWP, Menu.northEast, -172, 0, 38, 20, ["WAYPT"], [false], Menu.multi);
 		this.waypointsIndicator.setFont(ViewConstants.smallMenuFont);
-		this.waypointsIndicator.toolTip = ["toggle waypoint mode"];
+		this.waypointsIndicator.toolTip = ["toggle waypoint mode [W]"];
 
 		// loop indicator
 		this.loopIndicator = this.viewMenu.addListItem(this.toggleLoop, Menu.northEast, -172, 20, 38, 20, ["LOOP"], [false], Menu.multi);
 		this.loopIndicator.setFont(ViewConstants.smallMenuFont);
-		this.loopIndicator.toolTip = ["toggle loop mode"];
+		this.loopIndicator.toolTip = ["toggle loop mode [Shift P]"];
 
 		// mode list
 		this.modeList = this.viewMenu.addListItem(this.viewModeList, Menu.northWest, 90, 0, 120, 40, ["", "", ""], ViewConstants.modePan, Menu.single);
 		this.modeList.icon = [this.iconManager.icon("draw"), this.iconManager.icon("select"), this.iconManager.icon("pan")];
-		this.modeList.toolTip = ["draw", "select", "pan"];
+		this.modeList.toolTip = ["draw [F2]", "select [F4]", "pan [F5]"];
 
 		// help section list
 		this.helpSectionList = this.viewMenu.addListItem(this.viewHelpSectionList, Menu.northEast, -80, 100, 80, 60, ["1", "2"], 0, Menu.single);
@@ -13356,7 +13362,7 @@
 
 		// help button
 		this.helpToggle = this.viewMenu.addListItem(this.toggleHelp, Menu.northEast, -40, 0, 40, 40, ["Help"], [false], Menu.multi);
-		this.helpToggle.toolTip = ["toggle help display"];
+		this.helpToggle.toolTip = ["toggle help display [H]"];
 		this.helpToggle.setFont("16px Arial");
 
 		// help show topics button
@@ -13395,18 +13401,18 @@
 		// autofit button
 		this.autoFitToggle = this.viewMenu.addListItem(this.toggleAutoFit, Menu.northWest, 0, 0, 40, 40, ["Auto"], [false], Menu.multi);
 		this.autoFitToggle.icon = [this.iconManager.icon("autofit")];
-		this.autoFitToggle.toolTip = ["toggle autofit"];
+		this.autoFitToggle.toolTip = ["toggle autofit [Shift F]"];
 		this.autoFitToggle.setFont("16px Arial");
 
 		// fit button
 		this.fitButton = this.viewMenu.addButtonItem(this.fitPressed, Menu.northWest, 45, 0, 40, 40, "");
 		this.fitButton.icon = this.iconManager.icon("fit");
-		this.fitButton.toolTip = "fit pattern to display";
+		this.fitButton.toolTip = "fit pattern to display [F]";
 
 		// grid toggle
 		this.gridToggle = this.viewMenu.addListItem(this.toggleGrid, Menu.northEast, -85, 0, 40, 40, ["Grid"], [false], Menu.multi);
 		this.gridToggle.icon = [this.iconManager.icon("grid")];
-		this.gridToggle.toolTip = ["toggle gridlines"];
+		this.gridToggle.toolTip = ["toggle gridlines [X]"];
 		this.gridToggle.setFont("16px Arial");
 
 		// add the progress bar
@@ -13450,7 +13456,7 @@
 
 		// add the generation label
 		this.genToggle = this.viewMenu.addListItem(this.viewStats, Menu.southWest, 0, -40, 100, 40, [""], [this.statsOn], Menu.multi);
-		this.genToggle.toolTip = ["toggle generation statistics\ngeneration " + (this.engine.counter + this.genOffset)];
+		this.genToggle.toolTip = ["toggle generation statistics [G]\ngeneration " + (this.engine.counter + this.genOffset)];
 
 		// add the failure reason label but delete it so it's initially hidden
 		this.reasonLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -40, this.displayWidth - 40, 40, "");
@@ -13496,75 +13502,75 @@
 
 		// add the zoom range
 		this.zoomItem = this.viewMenu.addRangeItem(this.viewZoomRange, Menu.north, 0, 0, ViewConstants.zoomSliderDefaultWidth, 40, 0, 1, 0.1, true, "Zoom ", "", 1);
-		this.zoomItem.toolTip = "camera zoom";
+		this.zoomItem.toolTip = "camera zoom [[ / ]]";
 
 		// add the layers range
 		this.layersItem = this.viewMenu.addRangeItem(this.viewLayersRange, Menu.west, 30, 0, 40, 292, ViewConstants.maxLayers, ViewConstants.minLayers, 1, true, "Layers ", "", 0);
-		this.layersItem.toolTip = "number of layers";
+		this.layersItem.toolTip = "number of layers [Q / A]";
 
 		// add the depth range
 		this.depthItem = this.viewMenu.addRangeItem(this.viewDepthRange, Menu.east, -70, 0, 40, 292, 1, 0, 0.1, true, "Depth ", "", 2);
-		this.depthItem.toolTip = "depth between layers";
+		this.depthItem.toolTip = "depth between layers [P / L]";
 
 		// add the angle range
 		this.angleItem = this.viewMenu.addRangeItem(this.viewAngleRange, Menu.north, 0, 50, 390, 40, 0, 359, 0, true, "Angle ", "\u00B0", 0);
-		this.angleItem.toolTip = "camera angle";
+		this.angleItem.toolTip = "camera angle [< / >]";
 
 		// shrink button
 		this.shrinkButton = this.viewMenu.addButtonItem(this.shrinkPressed, Menu.southEast, -40, -90, 40, 40, "");
 		this.shrinkButton.icon = this.iconManager.icon("shrink");
-		this.shrinkButton.toolTip = "shrink to thumbnail";
+		this.shrinkButton.toolTip = "shrink to thumbnail [N]";
 
 		// theme section label
 		this.themeSectionLabel = this.viewMenu.addLabelItem(Menu.north, 0, 100, 120, 40, "");
 
 		// hex/square cell toggle button
 		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -100, -75, 180, 40, ["Hexagons"], [this.engine.useHexagons], Menu.multi);
-		this.hexCellButton.toolTip = ["toggle hexagonal cells"];
+		this.hexCellButton.toolTip = ["toggle hexagonal cells [/]"];
 
 		// cell borders toggle button
 		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 100, -75, 180, 40, ["Cell Borders"], [this.engine.cellBorders], Menu.multi);
-		this.bordersButton.toolTip = ["toggle cell borders"];
+		this.bordersButton.toolTip = ["toggle cell borders [Alt B]"];
 
 		// major gridlines toggle button
 		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -100, -25, 180, 40, ["Major GridLines"], [this.engine.gridLineMajorEnabled], Menu.multi);
-		this.majorButton.toolTip = ["toggle major gridlines"];
+		this.majorButton.toolTip = ["toggle major gridlines [Shift X]"];
 
 		// stars toggle button
 		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.middle, 100, -25, 180, 40, ["Starfield"], [this.starsOn], Menu.multi);
-		this.starsButton.toolTip = ["toggle starfield display"];
+		this.starsButton.toolTip = ["toggle starfield display [S]"];
 
 		// label toggle button
 		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -100, 25, 180, 40, ["Annotations"], [this.showLabels], Menu.multi);
-		this.labelButton.toolTip = ["toggle annotations"];
+		this.labelButton.toolTip = ["toggle annotations [Alt L]"];
 
 		// rainbow button
 		this.rainbowButton = this.viewMenu.addListItem(this.viewRainbowToggle, Menu.middle, 100, 25, 180, 40, ["Rainbow"], [this.engine.rainbow], Menu.multi);
-		this.rainbowButton.toolTip = ["toggle rainbow mode"]; 
+		this.rainbowButton.toolTip = ["toggle rainbow mode [Alt W]"]; 
 
 		// autogrid toggle button
 		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, -100, 75, 180, 40, ["Auto GridLines"], [this.autoGrid], Menu.multi);
-		this.autoGridButton.toolTip = ["automatically turn on gridlines for Draw and Select and off for Pan"]; 
+		this.autoGridButton.toolTip = ["automatically turn on gridlines for Draw and Select and off for Pan [Ctrl G]"]; 
 
 		// alt grid toggle button
 		this.altGridButton = this.viewMenu.addListItem(this.viewAltGridToggle, Menu.middle, 100, 75, 180, 40, ["Alt GridLines"], [this.engine.altGrid], Menu.multi);
-		this.altGridButton.toolTip = ["toggle alternating gridlines"]; 
+		this.altGridButton.toolTip = ["toggle alternating gridlines [Alt D]"]; 
 
 		// historyfit toggle button
 		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.middle, -100, -50, 180, 40, ["AutoFit History"], [this.historyFit], Menu.multi);
-		this.historyFitButton.toolTip = ["toggle AutoFit History"];
+		this.historyFitButton.toolTip = ["toggle AutoFit History [Shift H]"];
 
 		// add the throttle toggle button
 		this.throttleToggle = this.viewMenu.addListItem(this.toggleThrottle, Menu.middle, 100, -50, 180, 40, ["Throttle"], [this.canBailOut], Menu.multi);
-		this.throttleToggle.toolTip = ["toggle playback throttling"];
+		this.throttleToggle.toolTip = ["toggle playback throttling [Alt T]"];
 
 		// add the show lag toggle button
 		this.showLagToggle = this.viewMenu.addListItem(this.toggleShowLag, Menu.middle, -100, 0, 180, 40, ["Perf. Warning"], [this.perfWarning], Menu.multi);
-		this.showLagToggle.toolTip = ["toggle performance warning display"];
+		this.showLagToggle.toolTip = ["toggle performance warning display [Shift W]"];
 
 		// kill gliders toggle button
 		this.killButton = this.viewMenu.addListItem(this.viewKillToggle, Menu.middle, 100, 0, 180, 40, ["Kill Gliders"], [this.engine.clearGliders], Menu.multi);
-		this.killButton.toolTip = ["toggle kill escaping gliders"];
+		this.killButton.toolTip = ["toggle kill escaping gliders [Ctrl L]"];
 
 		// autohide toggle button
 		this.autoHideButton = this.viewMenu.addListItem(this.viewAutoHideToggle, Menu.middle, 0, 50, 180, 40, ["AutoHide UI"], [this.hideGUI], Menu.multi);
@@ -13572,51 +13578,51 @@
 
 		// rule button
 		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, -100, -75, 180, 40, "Change Rule");
-		this.ruleButton.toolTip = "change rule";
+		this.ruleButton.toolTip = "change rule [Alt R]";
 
 		// new button
 		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 100, -75, 180, 40, "New Pattern");
-		this.newButton.toolTip = "new pattern";
+		this.newButton.toolTip = "new pattern [Alt N]";
 
 		// load button
 		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, -100, -25, 180, 40, "Load Pattern");
-		this.loadButton.toolTip = "load last saved pattern";
+		this.loadButton.toolTip = "load last saved pattern [Ctrl O]";
 
 		// save button
 		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 100, -25, 180, 40, "Save Pattern");
-		this.saveButton.toolTip = "save pattern";
+		this.saveButton.toolTip = "save pattern [Ctrl S]";
 
 		// randomize button
 		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, -100, 25, 180, 40, "Randomize");
-		this.randomizeButton.toolTip = "randomize pattern and rule";
+		this.randomizeButton.toolTip = "randomize pattern and rule [Alt Z]";
 
 		// identify button
 		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, 100, 25, 180, 40, "Identify");
-		this.identifyButton.toolTip = "identify oscillator or spaceship period";
+		this.identifyButton.toolTip = "identify oscillator or spaceship period [F6]";
 
 		// copy rule button
 		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, 0, 75, 180, 40, "Copy Rule");
-		this.copyRuleButton.toolTip = "copy rule definition";
+		this.copyRuleButton.toolTip = "copy rule definition [Ctrl J]";
 
 		// fps button
 		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -100, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
-		this.fpsButton.toolTip = ["toggle timing display"];
+		this.fpsButton.toolTip = ["toggle timing display [T]"];
 
 		// timing detail button
 		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 0, -50, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
-		this.timingDetailButton.toolTip = ["toggle timing details"];
+		this.timingDetailButton.toolTip = ["toggle timing details [Shift T]"];
 
 		// infobar toggle button
 		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, 0, 0, 180, 40, ["Display Info Bar"], [this.infoBarEnabled], Menu.multi);
-		this.infoBarButton.toolTip = ["toggle Information Bar"];
+		this.infoBarButton.toolTip = ["toggle Information Bar [Shift I]"];
 
 		// relative toggle button
 		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, 0, 50, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
-		this.relativeToggle.toolTip = ["toggle absolute/relative generation display"];
+		this.relativeToggle.toolTip = ["toggle absolute/relative generation display [Shift G]"];
 
 		// quality rendering toggle button
 		this.qualityToggle = this.viewMenu.addListItem(this.viewQualityToggle, Menu.middle, 0, 100, 180, 40, ["Render Quality"], [this.engine.pretty], Menu.multi);
-		this.qualityToggle.toolTip = ["toggle anti-aliased cell display"];
+		this.qualityToggle.toolTip = ["toggle anti-aliased cell display [Ctrl Q]"];
 
 		// previous universe button
 		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -90, 120, 40, "Prev");
@@ -13641,12 +13647,12 @@
 
 		// opacity range
 		this.opacityItem = this.viewMenu.addRangeItem(this.viewOpacityRange, Menu.north, 0, 45, 172, 40, 0, 1, this.popGraphOpacity, true, "Opacity ", "%", 0);
-		this.opacityItem.toolTip = "graph opacity";
+		this.opacityItem.toolTip = "graph opacity [7 / 9]";
 
 		// points/lines toggle
 		this.linesToggle = this.viewMenu.addListItem(this.toggleLines, Menu.northEast, -85, 45, 40, 40, [""], [false], Menu.multi);
 		this.linesToggle.icon = [this.iconManager.icon("lines")];
-		this.linesToggle.toolTip = ["toggle graph lines/points"];
+		this.linesToggle.toolTip = ["toggle graph lines/points [Shift Y]"];
 
 		// identify  close button
 		this.identifyCloseButton = this.viewMenu.addButtonItem(this.identifyClosePressed, Menu.northEast, -40, 45, 40, 40, "X");
@@ -13654,12 +13660,12 @@
 
 		// graph close button
 		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -40, 45, 40, 40, "X");
-		this.graphCloseButton.toolTip = "close graph";
+		this.graphCloseButton.toolTip = "close graph [Y]";
 
 		// pick toggle
 		this.pickToggle = this.viewMenu.addListItem(this.togglePick, Menu.northWest, 0, 45, 40, 40, [""], [this.pickMode], Menu.multi);
 		this.pickToggle.icon = [this.iconManager.icon("pick")];
-		this.pickToggle.toolTip = ["pick state"];
+		this.pickToggle.toolTip = ["pick state [F3]"];
 
 		// states toggle
 		this.statesToggle = this.viewMenu.addListItem(this.toggleStates, Menu.northWest, 45, 45, 40, 40, [""], [this.showStates], Menu.multi);
@@ -13674,12 +13680,12 @@
 		// smart drawing toggle
 		this.smartToggle = this.viewMenu.addListItem(this.toggleSmart, Menu.northWest, 135, 45, 40, 40, [""], [this.smartDrawing], Menu.multi);
 		this.smartToggle.icon = [this.iconManager.icon("smart")];
-		this.smartToggle.toolTip = ["toggle smart drawing"];
+		this.smartToggle.toolTip = ["toggle smart drawing [Shift F2]"];
 
 		// add menu toggle button
 		this.navToggle = this.viewMenu.addListItem(this.toggleSettings, Menu.southEast, -40, -40, 40, 40, [""], [false], Menu.multi);
 		this.navToggle.icon = [this.iconManager.icon("menu")];
-		this.navToggle.toolTip = ["toggle settings menu"];
+		this.navToggle.toolTip = ["toggle settings menu [M]"];
 
 		// add the pattern button
 		this.patternButton = this.viewMenu.addButtonItem(this.patternPressed, Menu.middle, 0, -125, 150, 40, "Pattern");
@@ -13695,7 +13701,7 @@
 
 		// graph toggle button
 		this.graphButton = this.viewMenu.addListItem(this.viewGraphToggle, Menu.middle, 0, -25, 150, 40, ["Graph"], [this.popGraph], Menu.multi);
-		this.graphButton.toolTip = ["toggle population graph display"];
+		this.graphButton.toolTip = ["toggle population graph display [Y]"];
 
 		// add the info button
 		this.infoButton = this.viewMenu.addButtonItem(this.infoPressed, Menu.middle, 0, 25, 150, 40, "Advanced");
@@ -13755,11 +13761,11 @@
 
 		// add the generation speed range
 		this.generationRange = this.viewMenu.addRangeItem(this.viewGenerationRange, Menu.southEast, -365, -40, 75, 40, 0, 1, 0, true, "", "", -1);
-		this.generationRange.toolTip = "steps per second";
+		this.generationRange.toolTip = "steps per second [+ / -]";
 
 		// add the speed step range
 		this.stepRange = this.viewMenu.addRangeItem(this.viewStepRange, Menu.southEast, -285, -40, 75, 40, ViewConstants.minStepSpeed, ViewConstants.maxStepSpeed, 1, true, "x", "", 0);
-		this.stepRange.toolTip = "generations per step";
+		this.stepRange.toolTip = "generations per step [E / D]";
 
 		// add the actual step label
 		this.stepLabel = this.viewMenu.addLabelItem(Menu.southEast, -285, -60, 75, 20, 0);
@@ -13769,22 +13775,22 @@
 		// add the undo button
 		this.undoButton = this.viewMenu.addButtonItem(this.undoPressed, Menu.southEast, -455, -40, 40, 40, "");
 		this.undoButton.icon = this.iconManager.icon("undo");
-		this.undoButton.toolTip = "undo";
+		this.undoButton.toolTip = "undo [Ctrl Z]";
 
 		// add the redo button
 		this.redoButton = this.viewMenu.addButtonItem(this.redoPressed, Menu.southEast, -410, -40, 40, 40, "");
 		this.redoButton.icon = this.iconManager.icon("redo");
-		this.redoButton.toolTip = "redo";
+		this.redoButton.toolTip = "redo [Ctrl Y]";
 
 		// add the copy sync toggle
 		this.copySyncToggle = this.viewMenu.addListItem(this.viewCopySyncList, Menu.northEast, -130, 0, 40, 40, ["Sync"], [this.copySyncExternal], Menu.multi);
-		this.copySyncToggle.toolTip = ["sync cut and copy with external clipboard"];
+		this.copySyncToggle.toolTip = ["sync cut and copy with external clipboard [Alt S]"];
 		this.copySyncToggle.setFont("15px Arial");
 
 		// add play and pause list
 		this.playList = this.viewMenu.addListItem(this.viewPlayList, Menu.southEast, -205, -40, 160, 40, ["", "", "", ""], ViewConstants.modePause, Menu.single);
 		this.playList.icon = [this.iconManager.icon("tostart"), this.iconManager.icon("stepback"), this.iconManager.icon("stepforward"), this.iconManager.icon("play")];
-		this.playList.toolTip = ["reset", "previous generation", "next generation", "play"];
+		this.playList.toolTip = ["reset [R]", "previous generation [Shift Tab]", "next generation [Tab]", "play [Enter]"];
 
 		// add states for editor
 		this.stateList = this.viewMenu.addListItem(this.viewStateList, Menu.northEast, -280, 45, 280, 20, ["0", "1", "2", "3", "4", "5", "6"], this.drawState, Menu.single);
@@ -13809,13 +13815,13 @@
 		// select all button
 		this.selectAllButton = this.viewMenu.addButtonItem(this.selectAllPressed, Menu.northWest, 0, 45, 40, 40, "All");
 		this.selectAllButton.icon = this.iconManager.icon("select");
-		this.selectAllButton.toolTip = "select all cells";
+		this.selectAllButton.toolTip = "select all cells [Ctrl A]";
 		this.selectAllButton.setFont("16px Arial");
 
 		// auto-shrink toggle
 		this.autoShrinkToggle = this.viewMenu.addListItem(this.viewAutoShrinkList, Menu.northWest, 45, 45, 40, 40, ["Auto"], [this.autoShrink], Menu.multi);
 		this.autoShrinkToggle.icon = [this.iconManager.icon("autoshrink")];
-		this.autoShrinkToggle.toolTip = ["toggle auto shrink selection"];
+		this.autoShrinkToggle.toolTip = ["toggle auto shrink selection [Alt A]"];
 		this.autoShrinkToggle.setFont("16px Arial");
 
 		// library button
@@ -13829,94 +13835,94 @@
 
 		// paste mode list
 		this.pasteModeList = this.viewMenu.addListItem(this.viewPasteModeList, Menu.northEast, -160, 45, 160, 40, ["AND", "CPY", "OR", "XOR"], ViewConstants.uiPasteModes[this.pasteModeForUI], Menu.single);
-		this.pasteModeList.toolTip = ["paste mode", "paste mode", "paste mode", "paste mode"];
+		this.pasteModeList.toolTip = ["paste mode [Shift M]", "paste mode [Shift M]", "paste mode [Shift M]", "paste mode [Shift M]"];
 		this.pasteModeList.setFont("16px Arial");
 
 		// add the cut button
 		this.cutButton = this.viewMenu.addButtonItem(this.cutPressed, Menu.northWest, 135, 45, 40, 40, "");
 		this.cutButton.icon = this.iconManager.icon("cut");
-		this.cutButton.toolTip = "cut";
+		this.cutButton.toolTip = "cut [Ctrl X]";
 
 		// add the copy button
 		this.copyButton = this.viewMenu.addButtonItem(this.copyPressed, Menu.northWest, 180, 45, 40, 40, "");
 		this.copyButton.icon = this.iconManager.icon("copy");
-		this.copyButton.toolTip = "copy";
+		this.copyButton.toolTip = "copy [Ctrl C]";
 
 		// add the paste button
 		this.pasteButton = this.viewMenu.addButtonItem(this.pastePressed, Menu.northWest, 225, 45, 40, 40, "");
 		this.pasteButton.icon = this.iconManager.icon("paste");
-		this.pasteButton.toolTip = "paste";
+		this.pasteButton.toolTip = "paste [Ctrl V]";
 
 		// add the nudge left button
 		this.nudgeLeftButton = this.viewMenu.addButtonItem(this.nudgeLeftPressed, Menu.southEast, -175, -175, 40, 40, "");
 		this.nudgeLeftButton.icon = this.iconManager.icon("nudgeleft");
-		this.nudgeLeftButton.toolTip = "nudge left";
+		this.nudgeLeftButton.toolTip = "nudge left [Alt Left]";
 
 		// add the nudge right button
 		this.nudgeRightButton = this.viewMenu.addButtonItem(this.nudgeRightPressed, Menu.southEast, -130, -175, 40, 40, "");
 		this.nudgeRightButton.icon = this.iconManager.icon("nudgeright");
-		this.nudgeRightButton.toolTip = "nudge right";
+		this.nudgeRightButton.toolTip = "nudge right [Alt Right]";
 
 		// add the nudge up button
 		this.nudgeUpButton = this.viewMenu.addButtonItem(this.nudgeUpPressed, Menu.southEast, -85, -175, 40, 40, "");
 		this.nudgeUpButton.icon = this.iconManager.icon("nudgeup");
-		this.nudgeUpButton.toolTip = "nudge up";
+		this.nudgeUpButton.toolTip = "nudge up [Alt Up]";
 
 		// add the nudge down button
 		this.nudgeDownButton = this.viewMenu.addButtonItem(this.nudgeDownPressed, Menu.southEast, -40, -175, 40, 40, "");
 		this.nudgeDownButton.icon = this.iconManager.icon("nudgedown");
-		this.nudgeDownButton.toolTip = "nudge down";
+		this.nudgeDownButton.toolTip = "nudge down [Alt Down]";
 
 		// add the flip X button
 		this.flipXButton = this.viewMenu.addButtonItem(this.flipXPressed, Menu.southEast, -265, -85, 40, 40, "");
 		this.flipXButton.icon = this.iconManager.icon("flipx");
-		this.flipXButton.toolTip = "flip horizontally";
+		this.flipXButton.toolTip = "flip horizontally [Alt X]";
 
 		// add the flip Y button
 		this.flipYButton = this.viewMenu.addButtonItem(this.flipYPressed, Menu.southEast, -220, -85, 40, 40, "");
 		this.flipYButton.icon = this.iconManager.icon("flipy");
-		this.flipYButton.toolTip = "flip vertically";
+		this.flipYButton.toolTip = "flip vertically [Alt Y]";
 
 		// add the rotate clockwise button
 		this.rotateCWButton = this.viewMenu.addButtonItem(this.rotateCWPressed, Menu.southEast, -175, -85, 40, 40, "");
 		this.rotateCWButton.icon = this.iconManager.icon("rotatecw");
-		this.rotateCWButton.toolTip = "rotate clockwise";
+		this.rotateCWButton.toolTip = "rotate clockwise [>]";
 
 		// add the rotate counter-clockwise button
 		this.rotateCCWButton = this.viewMenu.addButtonItem(this.rotateCCWPressed, Menu.southEast, -130, -85, 40, 40, "");
 		this.rotateCCWButton.icon = this.iconManager.icon("rotateccw");
-		this.rotateCCWButton.toolTip = "rotate counter-clockwise";
+		this.rotateCCWButton.toolTip = "rotate counter-clockwise [<]";
 
 		// add the clear selection button
 		this.clearSelectionButton = this.viewMenu.addButtonItem(this.clearSelectionPressed, Menu.southEast, -85, -85, 40, 40, "");
 		this.clearSelectionButton.icon = this.iconManager.icon("inside");
-		this.clearSelectionButton.toolTip = "clear cells in selection";
+		this.clearSelectionButton.toolTip = "clear cells in selection [Del]";
 
 		// add the clear outside button
 		this.clearOutsideButton = this.viewMenu.addButtonItem(this.clearOutsidePressed, Menu.southEast, -40, -85, 40, 40, "");
 		this.clearOutsideButton.icon = this.iconManager.icon("outside");
-		this.clearOutsideButton.toolTip = "clear cells outside selection";
+		this.clearOutsideButton.toolTip = "clear cells outside selection [Shift Del]";
 
 		// add the clear [R]History or [R]Super button
 		this.clearRHistoryButton = this.viewMenu.addButtonItem(this.clearRHistoryPressed, Menu.southEast, -40, -130, 40, 40, "R");
 		this.clearRHistoryButton.icon = this.iconManager.icon("select");
-		this.clearRHistoryButton.toolTip = "clear [R]History cells";
+		this.clearRHistoryButton.toolTip = "clear [R]History cells [Ctrl Del]";
 		this.clearRHistoryButton.setFont("16px Arial");
 
 		// add the invert selection button
 		this.invertSelectionButton = this.viewMenu.addButtonItem(this.invertSelectionPressed, Menu.southEast, -85, -130, 40, 40, "");
 		this.invertSelectionButton.icon = this.iconManager.icon("invertselection");
-		this.invertSelectionButton.toolTip = "invert cells in selection";
+		this.invertSelectionButton.toolTip = "invert cells in selection [Ctrl I]";
 
 		// add the random button
 		this.randomButton = this.viewMenu.addButtonItem(this.randomPressed, Menu.southEast, -130, -130, 40, 40, "");
 		this.randomButton.icon = this.iconManager.icon("random");
-		this.randomButton.toolTip = "random fill";
+		this.randomButton.toolTip = "random fill [Shift 5]";
 
 		// add the random 2-state button
 		this.random2Button = this.viewMenu.addButtonItem(this.random2Pressed, Menu.southEast, -175, -130, 40, 40, "2");
 		this.random2Button.icon = this.iconManager.icon("random");
-		this.random2Button.toolTip = "random 2-state fill";
+		this.random2Button.toolTip = "random 2-state fill [Ctrl Shift 5]";
 
 		// add the random density slider
 		this.randomItem = this.viewMenu.addRangeItem(this.viewRandomRange, Menu.southEast, -275, -130, 100, 40, 1, 100, this.randomDensity, true, "", "%", 0);
@@ -13924,13 +13930,13 @@
 
 		// add the paste position slider
 		this.pastePositionItem = this.viewMenu.addRangeItem(this.viewPastePositionRange, Menu.northEast, -265, 45, 100, 40, 0, ViewConstants.numPastePositions - 1, this.pastePosition, true, "", "", -1);
-		this.pastePositionItem.toolTip = "paste location";
+		this.pastePositionItem.toolTip = "paste location [Shift L]";
 		this.pastePositionItem.setFont("16px Arial");
 
 		// reverse direction button
 		this.directionButton = this.viewMenu.addButtonItem(this.directionPressed, Menu.southEast, -40, -85, 40, 40, "");
 		this.directionButton.icon = this.iconManager.icon("uturn");
-		this.directionButton.toolTip = "reverse playback direction";
+		this.directionButton.toolTip = "reverse playback direction [U]";
 
 		// add items to the library toggle
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
@@ -14478,6 +14484,9 @@
 					}
 				}
 			}
+			if (state < 10) {
+				message += " [Ctrl " + state + "]";
+			}
 			this.stateList.toolTip[i] = message;
 			this.stateColsList.lower[i] = "";
 			this.stateColsList.toolTip[i] = message;
@@ -14514,13 +14523,13 @@
 			// add LifeHistory states for editor
 			this.stateList.lower = ["0", "1", "2", "3", "4", "5", "6"];
 			this.stateList.setWidth(280);
-			this.stateList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
+			this.stateList.toolTip = ["dead [Ctrl 0]", "alive [Ctrl 1]", "history [Ctrl 2]", "mark 1 [Ctrl 3]", "mark off [Ctrl 4]", "mark 2 [Ctrl 5]", "kill [Ctrl 6]"];
 			this.stateList.current = this.drawState;
 
 			// add LifeHistory state colours for editor
 			this.stateColsList.lower = ["", "", "", "", "", "", ""];
 			this.stateColsList.setWidth(280);
-			this.stateColsList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
+			this.stateColsList.toolTip = ["dead [Ctrl 0]", "alive [Ctrl 1]", "history [Ctrl 2]", "mark 1 [Ctrl 3]", "mark off [Ctrl 4]", "mark 2 [Ctrl 5]", "kill [Ctrl 6]"];
 			this.stateColsList.bgAlpha = 1;
 			this.stateColsList.current = [false, false, false, false, false, false, false];
 		} else {
@@ -14529,13 +14538,13 @@
 				// add states for editor
 				this.stateList.lower = ["0", "1"];
 				this.stateList.setWidth(80);
-				this.stateList.toolTip = ["dead", "alive"];
+				this.stateList.toolTip = ["dead [Ctrl 0]", "alive [Ctrl 1]"];
 				this.stateList.current = this.drawState;
 	
 				// add state colours for editor
 				this.stateColsList.lower = ["", ""];
 				this.stateColsList.setWidth(80);
-				this.stateColsList.toolTip = ["dead", "alive"];
+				this.stateColsList.toolTip = ["dead [Ctrl 0]", "alive [Ctrl 1]"];
 				this.stateColsList.bgAlpha = 1;
 				this.stateColsList.current = [false, false];
 			} else {
@@ -14919,9 +14928,9 @@
 			me.engine.isSuper = pattern.isSuper;
 
 			// set toggle button caption
-			me.clearRHistoryButton.toolTip = "clear [R]History cells";
+			me.clearRHistoryButton.toolTip = "clear [R]History cells [Ctrl Del]";
 			if (me.engine.isSuper) {
-				me.clearRHistoryButton.toolTip = "clear [R]Super cells";
+				me.clearRHistoryButton.toolTip = "clear [R]Super cells [Ctrl Del]";
 			}
 
 			// read the number of states (Generations or HROT)
@@ -15920,10 +15929,10 @@
 		if (me.engine.isTriangular) {
 			me.hexCellButton.lower = ["Triangles"];
 			me.hexCellButton.current = [me.engine.useHexagons];
-			me.hexCellButton.toolTip = ["toggle triangular cells"];
+			me.hexCellButton.toolTip = ["toggle triangular cells [/]"];
 		} else {
 			me.hexCellButton.lower = ["Hexagons"];
-			me.hexCellButton.toolTip = ["toggle hexagonal cells"];
+			me.hexCellButton.toolTip = ["toggle hexagonal cells [/]"];
 			if (me.engine.isHex) {
 				me.hexCellButton.current = [me.engine.useHexagons];
 			} else {

@@ -1,3 +1,8 @@
+Build 594
+- fix snapshot missing last frame of history states
+- hide selection size information when Help displayed
+- added keyboard shortcuts to tooltips
+
 Build 593
 - improved graph rendering for smoother scaling
 
