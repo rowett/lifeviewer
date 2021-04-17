@@ -1,3 +1,9 @@
+Build 595
+- tooltips now use a different colour for hotkeys
+- hotkey Ctrl-P to toggle pause playback while drawing
+- hotkey Alt-U to toggle autohide UI during playback
+- hotkey Ctrl-D to toggle states display
+
 Build 594
 - fix snapshot missing last frame of history states
 - hide selection size information when Help displayed

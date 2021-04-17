@@ -334,6 +334,12 @@
 						me.menuManager.notification.notify("Throttling " + (me.canBailOut ? "On" : "Off"), 15, 40, 15, true);
 						break;
 
+					// u for autohide UI on playback
+					case 85:
+						me.autoHideButton.current = me.viewAutoHideToggle([!me.hideGUI], true, me);
+						me.menuManager.notification.notify("AutoHide UI " + (me.hideGUI ? "On" : "Off"), 15, 80, 15, true);
+						break;
+
 					// w for toggle rainbow display
 					case 87:
 						// toggle rainbow mode
@@ -532,18 +538,25 @@
 
 			// d for decrease step size
 			case 68:
-				// decrease step size
-				if (!me.stepRange.locked) {
-					if (me.gensPerStep > ViewConstants.minStepSpeed) {
-						// check for shift
-						if (event.shiftKey) {
-							// go to minimum step
-							me.gensPerStep = ViewConstants.minStepSpeed;
-						} else {
-							// decrease step
-							me.gensPerStep -= 1;
+				// check for ctrl
+				if (event.ctrlKey) {
+					// toggle states display
+					me.statesToggle.current = me.toggleStates([!me.showStates], true, me);
+					me.menuManager.notification.notify("States Display " + (me.showStates ? "On" : "Off"), 15, 80, 15, true);
+				} else {
+					// decrease step size
+					if (!me.stepRange.locked) {
+						if (me.gensPerStep > ViewConstants.minStepSpeed) {
+							// check for shift
+							if (event.shiftKey) {
+								// go to minimum step
+								me.gensPerStep = ViewConstants.minStepSpeed;
+							} else {
+								// decrease step
+								me.gensPerStep -= 1;
+							}
+							me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
 						}
-						me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
 					}
 				}
 				break;
@@ -675,22 +688,29 @@
 
 			// p for increase depth or toggle loop
 			case 80:
-				// check for shift
-				if (event.shiftKey) {
-					if (me.loopGeneration !== -1) {
-						// toggle loop mode
-						me.loopDisabled = !me.loopDisabled;
-						me.loopIndicator.current = [me.loopDisabled];
-						me.menuManager.notification.notify("Loop " + (me.loopDisabled ? "Off" : "On"), 15, 40, 15, true);
-					}
+				// check for ctrl
+				if (event.ctrlKey) {
+					// toggle pause playback while drawing
+					me.pausePlaybackToggle.current = me.togglePausePlayback([!me.pauseWhileDrawing], true, me);
+					me.menuManager.notification.notify("Pause while drawing " + (me.pauseWhileDrawing ? "On" : "Off"), 15, 80, 15, true);
 				} else {
-					// disable depth in multi-state mode
-					if (!me.multiStateView) {
-						if (!me.depthItem.locked) {
-							if (me.depthItem.current[0] <= 0.99) {
-								me.depthItem.current = me.viewDepthRange([me.depthItem.current[0] + 0.01, me.depthItem.current[1]], true, me);
-							} else {
-								me.depthItem.current = me.viewDepthRange([1, me.depthItem.current[1]], true, me);
+					// check for shift
+					if (event.shiftKey) {
+						if (me.loopGeneration !== -1) {
+							// toggle loop mode
+							me.loopDisabled = !me.loopDisabled;
+							me.loopIndicator.current = [me.loopDisabled];
+							me.menuManager.notification.notify("Loop " + (me.loopDisabled ? "Off" : "On"), 15, 40, 15, true);
+						}
+					} else {
+						// disable depth in multi-state mode
+						if (!me.multiStateView) {
+							if (!me.depthItem.locked) {
+								if (me.depthItem.current[0] <= 0.99) {
+									me.depthItem.current = me.viewDepthRange([me.depthItem.current[0] + 0.01, me.depthItem.current[1]], true, me);
+								} else {
+									me.depthItem.current = me.viewDepthRange([1, me.depthItem.current[1]], true, me);
+								}
 							}
 						}
 					}

@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 594,
+		/** @const {number} */ versionBuild : 595,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13574,7 +13574,7 @@
 
 		// autohide toggle button
 		this.autoHideButton = this.viewMenu.addListItem(this.viewAutoHideToggle, Menu.middle, 0, 50, 180, 40, ["AutoHide UI"], [this.hideGUI], Menu.multi);
-		this.autoHideButton.toolTip = ["toggle hide UI on playback"]; 
+		this.autoHideButton.toolTip = ["toggle hide UI on playback [Alt U]"]; 
 
 		// rule button
 		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, -100, -75, 180, 40, "Change Rule");
@@ -13670,12 +13670,12 @@
 		// states toggle
 		this.statesToggle = this.viewMenu.addListItem(this.toggleStates, Menu.northWest, 45, 45, 40, 40, [""], [this.showStates], Menu.multi);
 		this.statesToggle.icon = [this.iconManager.icon("states")];
-		this.statesToggle.toolTip = ["toggle states display"];
+		this.statesToggle.toolTip = ["toggle states display [Ctrl D]"];
 
 		// pause playback while drawing toggle
 		this.pausePlaybackToggle = this.viewMenu.addListItem(this.togglePausePlayback, Menu.northWest, 90, 45, 40, 40, [""], [this.pauseWhileDrawing], Menu.multi);
 		this.pausePlaybackToggle.icon = [this.iconManager.icon("drawpause")];
-		this.pausePlaybackToggle.toolTip = ["toggle pause playback while drawing"];
+		this.pausePlaybackToggle.toolTip = ["toggle pause playback while drawing [Ctrl P]"];
 
 		// smart drawing toggle
 		this.smartToggle = this.viewMenu.addListItem(this.toggleSmart, Menu.northWest, 135, 45, 40, 40, [""], [this.smartDrawing], Menu.multi);

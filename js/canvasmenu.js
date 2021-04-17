@@ -2551,6 +2551,7 @@
 			targetWidth = 0,
 			currentChar = "",
 			i = 0, j = 0,
+			textPart = "",
 
 			// height for tooltip box
 			height = 0,
@@ -2777,9 +2778,41 @@
 					oc.fillText(extraTip, x + 2, y + fontSize + borderSize + 2);
 				}
 				oc.fillStyle = this.fgCol;
-				oc.fillText(toolTip, x, y);
+
+				// check for hotkey
+				i = toolTip.indexOf("[");
+				j = toolTip.lastIndexOf("]");
+				if (i !== -1 && j !== -1) {
+					textPart = toolTip.substr(0, i + 1);
+					width = oc.measureText(textPart).width;
+					oc.fillText(textPart, x, y);
+					oc.fillStyle = "#80FFFF";
+					textPart = toolTip.substr(i + 1, j - i - 1);
+					oc.fillText(textPart, x + width, y);
+					oc.fillStyle = this.fgCol;
+					textPart = toolTip.substr(j);
+					width = oc.measureText(toolTip.substr(0, j)).width;
+					oc.fillText(textPart, x + width, y);
+				} else {
+					oc.fillText(toolTip, x, y);
+				}
 				if (extraTip !== "") {
-					oc.fillText(extraTip, x, y + fontSize + borderSize);
+					i = extraTip.indexOf("[");
+					j = extraTip.lastIndexOf("]");
+					if (i !== -1 && j !== -1) {
+						textPart = extraTip.substr(0, i + 1);
+						width = oc.measureText(textPart).width;
+						oc.fillText(textPart, x, y + fontSize + borderSize);
+						oc.fillStyle = "#80FFFF";
+						textPart = extraTip.substr(i + 1, j - i - 1);
+						oc.fillText(textPart, x + width, y + fontSize + borderSize);
+						oc.fillStyle = this.fgCol;
+						textPart = extraTip.substr(j);
+						width = oc.measureText(extraTip.substr(0, j)).width;
+						oc.fillText(textPart, x + width, y + fontSize + borderSize);
+					} else {
+						oc.fillText(extraTip, x, y + fontSize + borderSize);
+					}
 				}
 			}
 		}

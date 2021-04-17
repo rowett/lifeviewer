@@ -655,6 +655,7 @@
 			y = this.renderHelpLine(view, "Shift D", "minimum step size", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Shift E", "maximum step size", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "0", "reset step and speed", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Ctrl P", "toggle pause playback while drawing", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Alt T", "toggle throttling", ctx, x, y, height, helpLine);
 			if (view.waypointsDefined) {
 				if (view.loopGeneration !== -1) {
@@ -825,6 +826,7 @@
 		y = this.renderHelpLine(view, "O", "open screenshot in separate window", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift O", "open population graph in separate window", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift U", "toggle UI", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt U", "toggle autohide UI during playback", ctx, x, y, height, helpLine);
 		if (view.engine.multiNumStates === -1) {
 			y = this.renderHelpLine(view, "Alt W", "toggle rainbow mode", ctx, x, y, height, helpLine);
 		}
@@ -875,6 +877,7 @@
 		y = this.renderHelpLine(view, "Shift A", "shrink selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt A", "toggle auto-shrink selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl C", "copy", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ctrl D", "toggle states display", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl I", "invert selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl K", "remove selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl V", "paste", ctx, x, y, height, helpLine);
