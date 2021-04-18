@@ -1,3 +1,9 @@
+Build 597
+- fix missing highlight on range controls with touch devices
+
+Build 596
+- use case-insensitive match when loading rules from repository
+
 Build 595
 - tooltips now use a different colour for hotkeys
 - hotkey Ctrl-P to toggle pause playback while drawing

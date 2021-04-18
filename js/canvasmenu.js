@@ -1733,7 +1733,7 @@
 		case Menu.range:
 			// compute the marker position in the range
 			markerPos = (item.current[0] - item.lower) / (item.upper - item.lower);
-			highlight = (itemNum === activeNum) || (activeNum === -1 && mouseIsOver);
+			highlight = canHighlight && ((itemNum === activeNum) || (activeNum === -1 && mouseIsOver));
 
 			// get the highlight size
 			highlightSize = 1;
