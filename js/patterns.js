@@ -30,7 +30,7 @@
 			l = this.requests.length,
 			request = null,
 			found = false,
-			name = pattern.ruleName;
+			name = pattern.ruleName.toLowerCase();
 
 		// check if the rule already exists
 		i = 0;
@@ -65,6 +65,7 @@
 			found = false,
 			result = "";
 
+		name = name.toLowerCase();
 		while (i < l && !found) {
 			if (this.definitions[i].name === name) {
 				found = true;
@@ -84,7 +85,7 @@
 			l = this.requests.length,
 			request = null,
 			found = false,
-			name = pattern.ruleName;
+			name = pattern.ruleName.toLowerCase();
 
 		// check if the rule already exists
 		i = 0;
@@ -118,7 +119,7 @@
 			l = this.requests.length,
 			request = null,
 			found = false,
-			name = pattern.ruleName;
+			name = pattern.ruleName.toLowerCase();
 
 		// check if the rule already exists
 		i = 0;
@@ -145,7 +146,7 @@
 		var i = 0,
 			l = this.rules.length,
 			found = false,
-			name = pattern.ruleName;
+			name = pattern.ruleName.toLowerCase();
 
 		// check if the rule already exists
 		i = 0;
@@ -189,7 +190,7 @@
 			l = this.rules.length,
 			record = null,
 			found = false,
-			name = pattern.ruleName;
+			name = pattern.ruleName.toLowerCase();
 
 		// check if the rule exists
 		i = 0;

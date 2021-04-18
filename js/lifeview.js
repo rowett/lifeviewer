@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 595,
+		/** @const {number} */ versionBuild : 596,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -14741,6 +14741,8 @@
 		// (otherwise it will happen once the async load is complete)
 		if (!this.manager.loadingFromRepository) {
 			this.completeStart(pattern, [ignoreThumbnail], this);
+		} else {
+			this.menuManager.notification.notify("Loading rule...", 15, 10000, 15, true);
 		}
 	};
 
