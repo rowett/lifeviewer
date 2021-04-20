@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 598,
+		/** @const {number} */ versionBuild : 599,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1739,6 +1739,9 @@
 
 		// identify button
 		this.identifyButton = null;
+
+		// fast identify button
+		this.fastIdentifyButton = null;
 
 		// copy rule button
 		this.copyRuleButton = null;
@@ -5684,6 +5687,7 @@
 		this.loadButton.deleted = shown;
 		this.randomizeButton.deleted = shown;
 		this.identifyButton.deleted = shown;
+		this.fastIdentifyButton.deleted = shown;
 		this.copyRuleButton.deleted = shown;
 		// info category
 		shown = hide || !this.showInfoSettings;
@@ -5715,6 +5719,7 @@
 		shown = this.engine.isNone || !this.executable;
 		this.randomizeButton.locked = shown;
 		this.identifyButton.locked = shown;
+		this.fastIdentifyButton.locked = shown;
 		this.copyRuleButton.locked = shown;
 		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isRuleTree || this.engine.isMargolus);
 
@@ -12190,8 +12195,8 @@
 		me.copyToClipboard(me, ruleText, false);
 	};
 
-	// identify button clicked
-	View.prototype.identifyPressed = function(me) {
+	// identify button action
+	View.prototype.identifyAction = function(me) {
 		// reset check
 		me.engine.checkedMod = false;
 		me.engine.checkModGen = 0;
@@ -12237,6 +12242,18 @@
 		me.backPressed(me);
 		me.menuManager.toggleRequired = true;
 		me.viewMenu.locked = false;
+	};
+
+	// identify button pressed
+	View.prototype.identifyPressed = function(me) {
+		me.identifyFast = false;
+		me.identifyAction(me);
+	};
+
+	// fast identify button pressed
+	View.prototype.fastIdentifyPressed = function(me) {
+		me.identifyFast = true;
+		me.identifyAction(me);
 	};
 
 	// grid toggle
@@ -13596,13 +13613,17 @@
 		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, -100, 25, 180, 40, "Randomize");
 		this.randomizeButton.toolTip = "randomize pattern and rule [Alt Z]";
 
+		// copy rule button
+		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, 100, 25, 180, 40, "Copy Rule");
+		this.copyRuleButton.toolTip = "copy rule definition [Ctrl J]";
+
 		// identify button
-		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, 100, 25, 180, 40, "Identify");
+		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, -100, 75, 180, 40, "Identify");
 		this.identifyButton.toolTip = "identify oscillator or spaceship period [F6]";
 
-		// copy rule button
-		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, 0, 75, 180, 40, "Copy Rule");
-		this.copyRuleButton.toolTip = "copy rule definition [Ctrl J]";
+		// fast identify button
+		this.fastIdentifyButton = this.viewMenu.addButtonItem(this.fastIdentifyPressed, Menu.middle, 100, 75, 180, 40, "Fast Identify");
+		this.fastIdentifyButton.toolTip = "quickly identify oscillator or spaceship period [Ctrl F6]";
 
 		// fps button
 		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -100, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);

@@ -1,3 +1,7 @@
+Build 599
+- add Fast Identify button to Settings->Pattern
+- fix issue with Fast Identify mode persisting
+
 Build 598
 - fix a crash with Identify if grid grows
 
