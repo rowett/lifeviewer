@@ -5347,6 +5347,7 @@
 		    currentMaskAliveGrid = this.state6Alive,
 			currentMaskCellsGrid = this.state6Cells,
 			currentCountList = this.countList,
+			currentInitList = this.initList,
 
 		    // get current tile buffers
 		    currentMaskTileGrid = this.state6TileGrid,
@@ -5435,6 +5436,11 @@
 				this.countList = Array.matrix(Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
 			}
 
+			// init grid
+			if (currentInitList) {
+				this.initList = Array.matrix(Uint8, this.height, this.width, 0, this.allocator, "Life.initList");
+			}
+
 			// colour grid
 			this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
 			this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
@@ -5473,6 +5479,9 @@
 				}
 				if (this.countList) {
 					this.countList[y + yOffset].set(currentCountList[y], xOffset);
+				}
+				if (this.initList) {
+					this.initList[y + yOffset].set(currentInitList[y], xOffset);
 				}
 
 				// check if overlay grid was allocated

@@ -1,3 +1,6 @@
+Build 598
+- fix a crash with Identify if grid grows
+
 Build 597
 - fix missing highlight on range controls with touch devices
 
