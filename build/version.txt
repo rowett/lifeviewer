@@ -1,3 +1,14 @@
+Build 601
+- fix Mod calculation for Identify
+
+Build 600
+- "Hexagons"/"Triangles" button is now "Use Rectangles"
+- fixed "Einstein" alias
+- added hotkey "Backspace" to Settings menu "Close" and "Back" buttons
+- fixed Hexagonal grid camera positions
+- fixed "Life ended at" message when KILLGLIDERS kills all live cells
+- fixed population metrics for KILLGLIDERS
+
 Build 599
 - add Fast Identify button to Settings->Pattern
 - fix issue with Fast Identify mode persisting

@@ -1369,17 +1369,12 @@
 			}
 		}
 		y = this.renderHelpLine(view, "Mode", itemName, ctx, x, y, height, helpLine);
-		if (view.engine.isHex && view.engine.useHexagons) {
+		itemName = "Rectangular";
+		if (view.engine.isHex && !view.engine.forceRectangles) {
 			itemName = "Hexagonal";
 		} else {
-			if (view.engine.isTriangular) {
-				if (view.engine.useHexagons) {
-					itemName = "Triangular";
-				} else {
-					itemName = "Rectangular";
-				}
-			} else {
-				itemName = "Square";
+			if (view.engine.isTriangular && !view.engine.forceRectangles) {
+				itemName = "Triangular";
 			}
 		}
 		y = this.renderHelpLine(view, "Cells", itemName, ctx, x, y, height, helpLine);
@@ -1463,7 +1458,7 @@
 		// display type if RuleTable
 		if (view.engine.isRuleTree) {
 			if (view.engine.ruleTableOutput === null) {
-				y = this.renderHelpLine(view, "Type", "@TREE", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "Type", "@TREE [" + view.engine.ruleTreeNodes + "]", ctx, x, y, height, helpLine);
 			} else {
 				y = this.renderHelpLine(view, "Type", "@TABLE [" + view.engine.ruleTableCompressedRules + (view.engine.ruleTableDups > 0 ? " / " + view.engine.ruleTableDups : "") + "]", ctx, x, y, height, helpLine);
 			}

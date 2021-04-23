@@ -381,26 +381,32 @@
 			case 111: // num /
 				// switch between hexagonal and square cells for hex display
 				if (me.engine.isHex) {
-					me.hexCellButton.current = me.viewHexCellToggle([!me.engine.useHexagons], true, me);
-					me.menuManager.notification.notify("Hexagonal display uses " + (me.engine.useHexagons ? "Hexagons" : "Squares"), 15, 120, 15, true);
+					me.hexCellButton.current = me.viewHexCellToggle([!me.engine.forceRectangles], true, me);
+					me.menuManager.notification.notify("Hexagonal display uses " + (me.engine.forceRectangles ? "Rectangles" : "Hexagons"), 15, 120, 15, true);
 				} else {
 					if (me.engine.isTriangular) {
-						me.hexCellButton.current = me.viewHexCellToggle([!me.engine.useHexagons], true, me);
-						me.menuManager.notification.notify("Triangular display uses " + (me.engine.useHexagons ? "Triangles" : "Rectangles"), 15, 120, 15, true);
+						me.hexCellButton.current = me.viewHexCellToggle([!me.engine.forceRectangles], true, me);
+						me.menuManager.notification.notify("Triangular display uses " + (me.engine.forceRectangles ? "Rectangles" : "Triangles"), 15, 120, 15, true);
 					}
 				}
 				break;
 
 			// backspace for back one step
 			case 8:
-				// do not move if in view only mode
-				if (!me.viewOnly) {
-					// check control is not locked
-					if (!me.playList.itemLocked[1]) {
-						value = me.gensPerStep;
-						me.gensPerStep = 1;
-						me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
-						me.gensPerStep = value;
+				// check for settings menu
+				if (me.navToggle.current[0]) {
+					me.backPressed(me);
+					me.menuManager.toggleRequired = true;
+				} else {
+					// do not move if in view only mode
+					if (!me.viewOnly) {
+						// check control is not locked
+						if (!me.playList.itemLocked[1]) {
+							value = me.gensPerStep;
+							me.gensPerStep = 1;
+							me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
+							me.gensPerStep = value;
+						}
 					}
 				}
 				break;
@@ -1830,9 +1836,10 @@
 			case 117:
 				if (!me.identifyButton.locked) {
 					if (event.ctrlKey) {
-						me.identifyFast = true;
+						me.fastIdentifyPressed(me);
+					} else {
+						me.identifyPressed(me);
 					}
-					me.identifyPressed(me);
 				}
 				break;
 

@@ -581,8 +581,8 @@
 		// hex neighbourhood
 		/** @type {number} */ this.hexNeighbourhood = this.manager.hexAll;
 
-		// whether to draw cells as hexagons in hex display mode
-		/** @type {boolean} */ this.useHexagons = true;
+		// whether to draw cells as rectangles with hexagonal or triangular grids
+		/** @type {boolean} */ this.forceRectangles = false;
 
 		// whether to display square or hex grid
 		/** @type {boolean} */ this.patternDisplayMode = false;
@@ -2274,8 +2274,8 @@
 							if (modHash !== -1) {
 								this.checkedMod = true;
 							} else {
-								// Mod failed so stop searching
-								this.modValue = -2;
+								// Mod was not a match so reset
+								this.modValue = -1;
 							}
 						}
 					}
@@ -6916,7 +6916,7 @@
 			greenChannel = this.greenChannel,
 			blueChannel = this.blueChannel,
 			colourStrings = this.cellColourStrings,
-			needStrings = (this.isHex && this.useHexagons) || (this.isTriangular && this.useHexagons),
+			needStrings = (this.isHex && !this.forceRectangles) || (this.isTriangular && !this.forceRectangles),
 			gridLineRaw = this.gridLineRaw,
 			gridLineBoldRaw = this.gridLineBoldRaw;
 
@@ -6996,7 +6996,7 @@
 			gridLineRaw = this.gridLineRaw,
 			gridLineBoldRaw = this.gridLineBoldRaw,
 			colourStrings = this.cellColourStrings,
-			needStrings = (this.isHex && this.useHexagons) || (this.isTriangular && this.useHexagons),
+			needStrings = (this.isHex && !this.forceRectangles) || (this.isTriangular && !this.forceRectangles),
 			alpha = 255,
 			i = 0;
 
@@ -9418,6 +9418,7 @@
 			for (xc = 0; xc < gliderRow.length; xc += 1) {
 				if (gliderRow[xc] === 1) {
 					this.setState(x + xc, y + yc, 0, false);
+					this.deaths += 1;
 				}
 			}
 		}
@@ -20260,6 +20261,7 @@
 			// clear ecaping gliders if enabled
 			if (this.clearGliders) {
 				this.clearEscapingGliders();
+				this.anythingAlive = this.population;
 			}
 		}
 	};
@@ -29550,7 +29552,7 @@
 				ctx.fill();
 			}
 		} else {
-			if (this.useHexagons && this.zoom >= 4) {
+			if (!this.forceRectangles && this.zoom >= 4) {
 				this.drawHexSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff);
 			} else {
 				ctx.beginPath();
@@ -29594,7 +29596,7 @@
 
 			// draw cells
 			ctx.fillStyle = "rgb(255, 128, 0)";
-			if (this.isHex && this.useHexagons && this.zoom >= 4) {
+			if (this.isHex && !this.forceRectangles && this.zoom >= 4) {
 				this.drawHexCellsInSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff, view.pasteBuffer);
 			} else {
 				if (this.isTriangular && this.zoom >= 4) {
@@ -29751,7 +29753,7 @@
 		ctx.fillStyle = colour;
 		ctx.globalAlpha = 0.5;
 		if (!this.isHex) {
-			if (this.isTriangular && this.useHexagons && this.zoom >= 4) {
+			if (this.isTriangular && !this.forceRectangles && this.zoom >= 4) {
 				this.drawTriangleSelection(selBox.leftX, selBox.bottomY, selBox.rightX, selBox.topY, xOff, yOff);
 			} else {
 				ctx.beginPath();
@@ -29767,7 +29769,7 @@
 			}
 		} else {
 			// check for hexagons (rather than offset squares)
-			if (this.useHexagons && this.zoom >= 4) {
+			if (!this.forceRectangles && this.zoom >= 4) {
 				this.drawHexSelection(selBox.leftX, selBox.bottomY, selBox.rightX, selBox.topY, xOff, yOff);
 			} else {
 				ctx.beginPath();
@@ -30032,7 +30034,7 @@
 		}
 
 		// check if drawing grid with polygons
-		if (this.camZoom >= 4 && ((this.useHexagons && this.isHex) || (this.useHexagons && this.isTriangular))) {
+		if (this.camZoom >= 4 && ((!this.forceRectangles && this.isHex) || (!this.forceRectangles && this.isTriangular))) {
 			// clear grid
 			data32.fill(colour0);
 

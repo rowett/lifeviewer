@@ -4442,7 +4442,7 @@
 						// triangular cells
 						case Keywords.triCellsWord:
 							if (view.engine.isTriangular) {
-								view.engine.useHexagons = true;
+								view.engine.forceRectangles = false;
 							}
 							itemValid = true;
 							break;
@@ -4451,7 +4451,7 @@
 						case Keywords.hexCellsWord:
 							// set hexagonal cells
 							if (view.engine.isHex) {
-								view.engine.useHexagons = true;
+								view.engine.forceRectangles = false;
 							}
 							itemValid = true;
 							break;
@@ -4459,7 +4459,7 @@
 						// square cells
 						case Keywords.squareCellsWord:
 							// set square cells
-							view.engine.useHexagons = false;
+							view.engine.forceRectangles = true;
 							itemValid = true;
 							break;
 
@@ -5241,11 +5241,14 @@
 			}
 
 			// set position from current
-			if (currentWaypoint.xDefined) {
-				view.engine.xOff = view.engine.width / 2 - currentWaypoint.x;
-			}
 			if (currentWaypoint.yDefined) {
 				view.engine.yOff = view.engine.height / 2 - currentWaypoint.y;
+			}
+			if (currentWaypoint.xDefined) {
+				view.engine.xOff = view.engine.width / 2 - currentWaypoint.x;
+				if (view.engine.isHex) {
+					view.engine.xOff -= view.engine.yOff / 2;
+				}
 			}
 
 			// set zoom

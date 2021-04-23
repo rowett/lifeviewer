@@ -352,7 +352,7 @@
 		a.push(["Eatsplosion", "B2n3-ekqy4c5e/S2-cn3-eky4aij5e"]);
 		a.push(["Eatsplosion IV", "B2n3-q4aqz6n8/S2-in3-q4iz7c8"]);
 		a.push(["EightGoats", "B2in3/S123a8"]);
-		a.push(["Einstein", "B2ein3cijn4cnrwy5cnq6e/S1c2-ai3acny4anqy5c6ek8b2ein3cijn4cnrwy5cnq6es1c2-ai3acny4anqy5c6ek8"]);
+		a.push(["Einstein", "B2ein3cijn4cnrwy5cnq6e/S1c2-ai3acny4anqy5c6ek8"]);
 		a.push(["ElectrumLife", "B367c/S2-i34q"]);
 		a.push(["Emitters", "B2i3ai4cei5c6c7/S2-ae3acein4-t5-aq6cei7c8"]);
 		a.push(["Extension", "B2cei3-ijnr4-a6i/S12-cn"]);

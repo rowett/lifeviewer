@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 599,
+		/** @const {number} */ versionBuild : 601,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4944,8 +4944,11 @@
 					}
 
 					// set the camera position
-					me.engine.xOff = me.engine.width / 2 - currentWaypoint.x;
 					me.engine.yOff = me.engine.height / 2 - currentWaypoint.y;
+					me.engine.xOff = me.engine.width / 2 - currentWaypoint.x;
+					if (me.engine.isHex) {
+						me.engine.xOff -= me.engine.yOff / 2;
+					}
 
 					// set zoom
 					me.engine.zoom = currentWaypoint.zoom;
@@ -5296,10 +5299,10 @@
 		me.engine.drawGrid();
 
 		// check if hexagons or triangles should be drawn
-		if (me.engine.useHexagons && me.engine.isHex && me.engine.zoom >= 4) {
+		if (!me.engine.forceRectangles && me.engine.isHex && me.engine.zoom >= 4) {
 			me.engine.drawHexagons();
 		} else {
-			if (me.engine.useHexagons && me.engine.isTriangular && me.engine.zoom >= 4) {
+			if (!me.engine.forceRectangles && me.engine.isTriangular && me.engine.zoom >= 4) {
 				me.engine.drawTriangles();
 			}
 		}
@@ -5661,8 +5664,10 @@
 
 		if (this.showDisplaySettings || this.showInfoSettings || this.showPatternSettings || this.showPlaybackSettings || this.showThemeSelection) {
 			this.backButton.preText = "Back";
+			this.backButton.toolTip = "back to previous menu [Backspace]";
 		} else {
 			this.backButton.preText = "Close";
+			this.backButton.toolTip = "close menu [Backspace]";
 		}
 
 		// settings menu
@@ -5750,7 +5755,7 @@
 		this.themeButton.locked =  this.multiStateView || this.engine.isNone || this.engine.isRuleTree || this.engine.isSuper;
 
 		// lock major button if hex or triangular grid
-		this.majorButton.locked = (this.engine.isHex && this.engine.useHexagons) || (this.engine.isTriangular && this.engine.useHexagons);
+		this.majorButton.locked = (this.engine.isHex && !this.engine.forceRectangles) || (this.engine.isTriangular && !this.engine.forceRectangles);
 
 		// lock hex cell button if not in hex mode
 		this.hexCellButton.locked = !(this.engine.isHex || this.engine.isTriangular);
@@ -5780,12 +5785,12 @@
 
 		// adjust esc button if popup
 		if (this.scriptErrors.length) {
-			this.escButton.toolTip = "close errors";
+			this.escButton.toolTip = "close errors [Esc]";
 			this.escButton.preText = "Esc";
 			this.escButton.setFont("16px Arial");
 			this.escButton.bgCol = this.autoFitToggle.bgCol;
 		} else {
-			this.escButton.toolTip = "close window";
+			this.escButton.toolTip = "close window [Esc]";
 			this.escButton.preText = "X";
 			this.escButton.setFont("24px Arial");
 			this.escButton.bgCol = "red";
@@ -6595,11 +6600,11 @@
 		// check if changing
 		if (change) {
 			// toggle cell shape
-			me.engine.useHexagons = newValue[0];
+			me.engine.forceRectangles = newValue[0];
 			me.updateGridIcon();
 		}
 
-		return [me.engine.useHexagons];
+		return [me.engine.forceRectangles];
 	};
 
 	// toggle timing detail display
@@ -9561,14 +9566,14 @@
 	View.prototype.updateGridIcon = function() {
 		// check for hex mode
 		if (this.engine.isHex) {
-			if (this.engine.useHexagons) {
+			if (!this.engine.forceRectangles) {
 				this.gridToggle.icon = [this.iconManager.icon("hexagongrid")];
 			} else {
 				this.gridToggle.icon = [this.iconManager.icon("hexgrid")];
 			}
 		} else {
 			// check for triangular mode
-			if (this.engine.isTriangular && this.engine.useHexagons) {
+			if (this.engine.isTriangular && !this.engine.forceRectangles) {
 				this.gridToggle.icon = [this.iconManager.icon("trianglegrid")];
 			} else {
 				this.gridToggle.icon = [this.iconManager.icon("grid")];
@@ -13542,7 +13547,7 @@
 		this.themeSectionLabel = this.viewMenu.addLabelItem(Menu.north, 0, 100, 120, 40, "");
 
 		// hex/square cell toggle button
-		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -100, -75, 180, 40, ["Hexagons"], [this.engine.useHexagons], Menu.multi);
+		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -100, -75, 180, 40, ["Use Rectangles"], [this.engine.forceRectangles], Menu.multi);
 		this.hexCellButton.toolTip = ["toggle hexagonal cells [/]"];
 
 		// cell borders toggle button
@@ -13714,7 +13719,7 @@
 
 		// add the back button
 		this.backButton = this.viewMenu.addButtonItem(this.backPressed, Menu.south, 0, -100, 120, 40, "Back");
-		this.backButton.toolTip = "";
+		this.backButton.toolTip = "back to previous menu [Backspace]";
 
 		// add the colour theme button
 		this.themeButton = this.viewMenu.addButtonItem(this.themePressed, Menu.middle, 0, -75, 150, 40, "Theme");
@@ -15031,7 +15036,7 @@
 			me.engine.isPCA = pattern.isPCA;
 
 			// use hexagons/triangulars for hexagonal/triangular dispaly
-			me.engine.useHexagons = true;
+			me.engine.forceRectangles = false;
 
 			// check if the neighbourhood is hex
 			me.engine.isHex = pattern.isHex;
@@ -15950,16 +15955,14 @@
 
 		// set the hex cell UI control and lock if triangular grid
 		if (me.engine.isTriangular) {
-			me.hexCellButton.lower = ["Triangles"];
-			me.hexCellButton.current = [me.engine.useHexagons];
+			me.hexCellButton.current = [me.engine.forceRectangles];
 			me.hexCellButton.toolTip = ["toggle triangular cells [/]"];
 		} else {
-			me.hexCellButton.lower = ["Hexagons"];
 			me.hexCellButton.toolTip = ["toggle hexagonal cells [/]"];
 			if (me.engine.isHex) {
-				me.hexCellButton.current = [me.engine.useHexagons];
+				me.hexCellButton.current = [me.engine.forceRectangles];
 			} else {
-				me.hexCellButton.current = [false];
+				me.hexCellButton.current = [true];
 			}
 		}
 
