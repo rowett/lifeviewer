@@ -1,3 +1,6 @@
+Build 602
+- Identify now detects Mod tranformations where the pattern is identical when flipped in either the X or Y direction as "FlipXorY"
+
 Build 601
 - fix Mod calculation for Identify
 

@@ -9,6 +9,10 @@ Investigate:
     strict volatility (Identify)
     memory statistics in allocator with 0 size allocations
 
+Committed:
+    add overlay to Snapshots so undo/redo work with [R]History rules fully
+    investigate FlipX and FlipY at the same time
+
 Planned:
     remove redundant colour map functionality from ColourManager
     switch [R]History to [R]Super style algo

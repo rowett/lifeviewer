@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 601,
+		/** @const {number} */ versionBuild : 602,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13682,7 +13682,7 @@
 
 		// identify  close button
 		this.identifyCloseButton = this.viewMenu.addButtonItem(this.identifyClosePressed, Menu.northEast, -40, 45, 40, 40, "X");
-		this.identifyCloseButton.toolTip = "close results";
+		this.identifyCloseButton.toolTip = "close results [Esc]";
 
 		// graph close button
 		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -40, 45, 40, 40, "X");

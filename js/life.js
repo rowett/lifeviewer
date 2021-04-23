@@ -38,12 +38,13 @@
 		/** @const {number} */ modRot90FlipX : 5,
 		/** @const {number} */ modRot90FlipY : 6,
 		/** @const {number} */ modLastTrans : 6,
+		/** @const {number} */ modFlipXorY : 7,
 
 		// maximum number of bits for rule tree lookup
 		/** @const {number} */ maxRuleTreeLookupBits : 20,
 
 		// mod type names
-		/** @const {Array<string>} */ modTypeName : ["RotCCW", "RotCW", "FlipX", "FlipY", "FlipXY", "RotCWFlipX", "RotCWFlipY"],
+		/** @const {Array<string>} */ modTypeName : ["RotCCW", "RotCW", "FlipX", "FlipY", "FlipXY", "RotCWFlipX", "RotCWFlipY", "FlipXorY"],
 
 		// maximum number of generations to check for oscillators
 		/** @const {number} */ maxOscillatorGens : 1048576,
@@ -1406,7 +1407,8 @@
 		var i = 0,
 			trans = LifeConstants.modFirstTrans,
 			found = -1,
-			hash = 0;
+			hash = 0,
+			hashY = 0;
 
 		while (trans <= LifeConstants.modLastTrans && found === -1) {
 			hash = this.getModHash(box, trans);
@@ -1421,6 +1423,15 @@
 						found = i;
 						if (updateType) {
 							this.modType = trans;
+
+							// if this is FlipX then check if it is also true for FlipY
+							if (trans === LifeConstants.modFlipX) {
+								hashY = this.getModHash(box, LifeConstants.modFlipY);
+								if (hashY === hash) {
+									this.modType = LifeConstants.modFlipXorY;
+								}
+							}	
+
 						}
 					} else {
 						i = this.nextList[i];
