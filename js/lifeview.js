@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 602,
+		/** @const {number} */ versionBuild : 603,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -10059,6 +10059,10 @@
 		return me.setThemeFromCallback(19, newValue, change);
 	};
 
+	View.prototype.toggleTheme20 = function(newValue, change, me) {
+		return me.setThemeFromCallback(20, newValue, change);
+	};
+
 	// identify close button
 	View.prototype.identifyClosePressed = function(me) {
 		me.resultsDisplayed = false;
@@ -13778,6 +13782,7 @@
 		this.themeSelections[17].callback = this.toggleTheme17;
 		this.themeSelections[18].callback = this.toggleTheme18;
 		this.themeSelections[19].callback = this.toggleTheme19;
+		this.themeSelections[20].callback = this.toggleTheme20;
 
 		// add the theme category labels
 		this.themeDefaultLabel = this.viewMenu.addLabelItem(Menu.north, -210, 60, 120, 40, "Default");
