@@ -3521,12 +3521,10 @@
 		me.mouseLastX = (x - 1) | 0;
 		me.mouseLastY = (y - 1) | 0;
 
-		// schedule update if no update scheduled
-		if (!me.updateScheduled) {
-			me.scheduleNextUpdate(me);
-			if (me.updateCount < me.defaultUpdateCount) {
-				me.updateCount = me.defaultUpdateCount;
-			}
+		// schedule update
+		me.scheduleNextUpdate(me);
+		if (me.updateCount < me.defaultUpdateCount) {
+			me.updateCount = me.defaultUpdateCount;
 		}
 	};
 

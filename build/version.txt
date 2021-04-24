@@ -1,3 +1,6 @@
+Build 604
+- fix click or tap occasionally being ignored
+
 Build 603
 - CUSTOM theme button was not responding correctly
 
