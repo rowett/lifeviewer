@@ -37,14 +37,15 @@
 		/** @const {number} */ modRot180 : 4,
 		/** @const {number} */ modRot90FlipX : 5,
 		/** @const {number} */ modRot90FlipY : 6,
-		/** @const {number} */ modLastTrans : 6,
+		/** @const {number} */ modLastTrans : 6,  // last native transformation, combinations follow
 		/** @const {number} */ modFlipXorY : 7,
+		/** @const {number} */ modRotCWorCCW : 8,
 
 		// maximum number of bits for rule tree lookup
 		/** @const {number} */ maxRuleTreeLookupBits : 20,
 
 		// mod type names
-		/** @const {Array<string>} */ modTypeName : ["RotCCW", "RotCW", "FlipX", "FlipY", "FlipXY", "RotCWFlipX", "RotCWFlipY", "FlipXorY"],
+		/** @const {Array<string>} */ modTypeName : ["RotCCW", "RotCW", "FlipX", "FlipY", "FlipXY", "RotCWFlipX", "RotCWFlipY", "FlipXorY", "RotCWorCCW"],
 
 		// maximum number of generations to check for oscillators
 		/** @const {number} */ maxOscillatorGens : 1048576,
@@ -1432,6 +1433,13 @@
 								}
 							}	
 
+							// if this is Rot90 then check if it also true for Rot270
+							if (trans === LifeConstants.modRot90) {
+								hashY = this.getModHash(box, LifeConstants.modRot270);
+								if (hashY === hash) {
+									this.modType = LifeConstants.modRotCWorCCW;
+								}
+							}
 						}
 					} else {
 						i = this.nextList[i];

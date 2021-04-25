@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 605,
+		/** @const {number} */ versionBuild : 606,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -15394,31 +15394,8 @@
 
 		// copy pattern to center
 		if (pattern) {
-			if (pattern.isNone || (!me.executable && me.engine.multiNumStates > 2)) {
-				me.colourList = ColourManager.defaultSet();
-				me.colourSetName = "(default)";
-			} else {
-				if (me.manager.extendedFormat || pattern.isHistory) {
-					// get the colour list for the pattern based on rule name
-					if (pattern.isHistory) {
-						me.colourList = ColourManager.colourSet("LifeHistory");
-	
-						// set the history colour to the Theme 10 dead colour
-						me.colourList[2] = 0 << 16 | 0 << 8 | 96;
-					} else {
-						me.colourList = ColourManager.colourSet(pattern.ruleName);
-					}
-	
-					// check if a colour list was found
-					if (me.colourList.length) {
-						me.colourSetName = pattern.ruleName;
-					} else {
-						// load the default set
-						me.colourList = ColourManager.defaultSet();
-						me.colourSetName = "(default)";
-					}
-				}
-			}
+			me.colourList = ColourManager.defaultSet();
+			me.colourSetName = "(default)";
 
 			// reset controls a script can overwrite
 			me.resetScriptControls();

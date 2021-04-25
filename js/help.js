@@ -1909,7 +1909,7 @@
 		view.tabs[1] = 210;
 		view.tabs[2] = 270;
 		view.tabs[3] = 330;
-		if (view.multiStateView) {
+		if (view.engine.isNone) {
 			view.helpSections[sectionNum] = [view.lineNo, "Colours"];
 			sectionNum += 1;
 			y = this.renderHelpLine(view, "", "Set:", ctx, x, y, height, helpLine);
@@ -2606,12 +2606,12 @@
 		// draw shadow
 		ctx.fillStyle = ViewConstants.helpShadowColour; 
 		this.shadowX = 2;
-		this.renderHelpText(view, ctx, 6 * xScale, 14 * yScale, lineHeight, view.displayHelp | 0);
+		Help.renderHelpText(view, ctx, 6 * xScale, 14 * yScale, lineHeight, view.displayHelp | 0);
 
 		// draw text
 		ctx.fillStyle = ViewConstants.helpFontColour;
 		this.shadowX = 0;
-		this.renderHelpText(view, ctx, 6 * xScale, 14 * yScale, lineHeight, view.displayHelp | 0);
+		Help.renderHelpText(view, ctx, 6 * xScale, 14 * yScale, lineHeight, view.displayHelp | 0);
 	};
 
 	// render error with up down greyed based on position

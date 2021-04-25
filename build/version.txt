@@ -1,3 +1,7 @@
+Build 606
+- Identify not detects Mod transformations where the pattern is identical when rotated either CCW or CW as "RotCWorCCW"
+- remove legacy colour management
+
 Build 605
 - Help topics can now be selected with hotkeys
 - hotkey "Backspace" will close a Help topic
