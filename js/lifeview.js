@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 604,
+		/** @const {number} */ versionBuild : 605,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5822,7 +5822,11 @@
 			i = 0;
 			while (i < this.helpSections.length && value < this.displayHeight - (40 + 26) * this.viewMenu.yScale) {
 				captions[i] = this.helpSections[i][1];
-				toolTips[i] = "";
+				if (captions[i] == "Top") {
+					toolTips[i] = "go to top of topic [Home]";
+				} else {
+					toolTips[i] = "";
+				}
 				value += 26 * this.viewMenu.yScale;
 				i += 1;
 			}
@@ -13393,36 +13397,36 @@
 
 		// help show topics button
 		this.topicsButton = this.viewMenu.addButtonItem(this.topicsPressed, Menu.northEast, -40, 50, 40, 40, ["^"]);
-		this.topicsButton.toolTip = ["show help topics"];
+		this.topicsButton.toolTip = "show help topics [Backspace]";
 
 		// help sections button
 		this.sectionsButton = this.viewMenu.addButtonItem(this.sectionsPressed, Menu.northEast, -40, 100, 40, 40, ["<"]);
-		this.sectionsButton.toolTip = ["show help sections"];
+		this.sectionsButton.toolTip = "show help sections";
 
 		// help individual topic buttons
 		this.helpKeysButton = this.viewMenu.addButtonItem(this.keysTopicPressed, Menu.north, 0, 50, 150, 40, ["Keys"]);
-		this.helpKeysButton.toolTip = ["show keyboard shortcuts"];
+		this.helpKeysButton.toolTip = "show keyboard shortcuts [K]";
 
 		this.helpScriptsButton = this.viewMenu.addButtonItem(this.scriptsTopicPressed, Menu.north, 0, 100, 150, 40, ["Scripts"]);
-		this.helpScriptsButton.toolTip = ["show script commands"];
+		this.helpScriptsButton.toolTip = "show script commands [S]";
 
 		this.helpInfoButton = this.viewMenu.addButtonItem(this.infoTopicPressed, Menu.north, 0, 150, 150, 40, ["Info"]);
-		this.helpInfoButton.toolTip = ["show pattern and engine information"];
+		this.helpInfoButton.toolTip = "show pattern and engine information [I]";
 
 		this.helpThemesButton = this.viewMenu.addButtonItem(this.themesTopicPressed, Menu.north, 0, 200, 150, 40, ["Themes"]);
-		this.helpThemesButton.toolTip = ["show colour Themes"];
+		this.helpThemesButton.toolTip = "show colour Themes [T]";
 
 		this.helpColoursButton = this.viewMenu.addButtonItem(this.coloursTopicPressed, Menu.north, 0, 250, 150, 40, ["Colours"]);
-		this.helpColoursButton.toolTip = ["show colour names"];
+		this.helpColoursButton.toolTip = "show colour names [C]";
 
 		this.helpAliasesButton = this.viewMenu.addButtonItem(this.aliasesTopicPressed, Menu.north, 0, 300, 150, 40, ["Aliases"]);
-		this.helpAliasesButton.toolTip = ["show rule aliases"];
+		this.helpAliasesButton.toolTip = "show rule aliases [A]";
 
 		this.helpMemoryButton = this.viewMenu.addButtonItem(this.memoryTopicPressed, Menu.north, 0, 350, 150, 40, ["Memory"]);
-		this.helpMemoryButton.toolTip = ["show memory usage"];
+		this.helpMemoryButton.toolTip = "show memory usage [Y]";
 
 		this.helpAnnotationsButton = this.viewMenu.addButtonItem(this.annotationsTopicPressed, Menu.north, 0, 350, 150, 40, ["Annotations"]);
-		this.helpAnnotationsButton.toolTip = ["show annotations"];
+		this.helpAnnotationsButton.toolTip = "show annotations [N]";
 
 		// autofit button
 		this.autoFitToggle = this.viewMenu.addListItem(this.toggleAutoFit, Menu.northWest, 0, 0, 40, 40, ["Auto"], [false], Menu.multi);

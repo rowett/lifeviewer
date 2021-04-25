@@ -1,3 +1,7 @@
+Build 605
+- Help topics can now be selected with hotkeys
+- hotkey "Backspace" will close a Help topic
+
 Build 604
 - fix click or tap occasionally being ignored
 

@@ -83,6 +83,17 @@
 		return processed;
 	};
 
+	// switch between Help welcome screen and specific topic
+	KeyProcessor.toggleHelpTopic = function(me, topic) {
+		if (me.helpTopic == ViewConstants.welcomeTopic) {
+			me.setHelpTopic(topic, me);
+		} else {
+			if (me.helpTopic == topic) {
+				me.setHelpTopic(ViewConstants.welcomeTopic, me);
+			}
+		}
+	};
+
 	// process keys in history mode
 	KeyProcessor.processKeyHistory = function(me, keyCode, event) {
 		// flag event processed
@@ -393,19 +404,28 @@
 
 			// backspace for back one step
 			case 8:
-				// check for settings menu
-				if (me.navToggle.current[0]) {
-					me.backPressed(me);
-					me.menuManager.toggleRequired = true;
+				// check for help menu
+				if (me.displayHelp !== 0) {
+					if (me.helpTopic !== ViewConstants.welcomeTopic) {
+						me.setHelpTopic(ViewConstants.welcomeTopic, me);
+					} else {
+						me.displayHelp = 0;
+					}
 				} else {
-					// do not move if in view only mode
-					if (!me.viewOnly) {
-						// check control is not locked
-						if (!me.playList.itemLocked[1]) {
-							value = me.gensPerStep;
-							me.gensPerStep = 1;
-							me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
-							me.gensPerStep = value;
+					// check for settings menu
+					if (me.navToggle.current[0]) {
+						me.backPressed(me);
+						me.menuManager.toggleRequired = true;
+					} else {
+						// do not move if in view only mode
+						if (!me.viewOnly) {
+							// check control is not locked
+							if (!me.playList.itemLocked[1]) {
+								value = me.gensPerStep;
+								me.gensPerStep = 1;
+								me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
+								me.gensPerStep = value;
+							}
 						}
 					}
 				}
@@ -636,24 +656,29 @@
 
 			// y for toggle graph
 			case 89:
-				if (event.ctrlKey) {
-					me.redo(me);
+				// check for Help
+				if (me.displayHelp !== 0) {
+					this.toggleHelpTopic(me, ViewConstants.memoryTopic);
 				} else {
-					// check if graph disabled
-					if (me.graphDisabled) {
-						me.menuManager.notification.notify("Graph Disabled", 15, 40, 15, true);
+					if (event.ctrlKey) {
+						me.redo(me);
 					} else {
-						// check for shift
-						if (event.shiftKey) {
-							// toggle lines
-							me.popGraphLines = !me.popGraphLines;
-							me.linesToggle.current = me.toggleLines([me.popGraphLines], true, me);
-							me.menuManager.notification.notify("Graph " + (me.popGraphLines ? "Lines" : "Points"), 15, 40, 15, true);
+						// check if graph disabled
+						if (me.graphDisabled) {
+							me.menuManager.notification.notify("Graph Disabled", 15, 40, 15, true);
 						} else {
-							// toggle population graph
-							me.popGraph = !me.popGraph;
-							me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
-							me.menuManager.notification.notify("Population Graph " + (me.popGraph ? "On" : "Off"), 15, 40, 15, true);
+							// check for shift
+							if (event.shiftKey) {
+								// toggle lines
+								me.popGraphLines = !me.popGraphLines;
+								me.linesToggle.current = me.toggleLines([me.popGraphLines], true, me);
+								me.menuManager.notification.notify("Graph " + (me.popGraphLines ? "Lines" : "Points"), 15, 40, 15, true);
+							} else {
+								// toggle population graph
+								me.popGraph = !me.popGraph;
+								me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
+								me.menuManager.notification.notify("Population Graph " + (me.popGraph ? "On" : "Off"), 15, 40, 15, true);
+							}
 						}
 					}
 				}
@@ -661,33 +686,38 @@
 
 			// k for copy position to clipboard
 			case 75:
-				// check for ctrl
-				if (event.ctrlKey) {
-					if (event.altKey) {
-						me.clearCells(me, false, false);
-						value = me.drawState;
-						if (me.engine.multiNumStates > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper) && value > 0) {
-							value = me.engine.multiNumStates - value;
-						}
-						if (me.engine.isRuleTree) {
-							me.menuManager.notification.notify("Cleared state " + value + " cells", 15, 120, 15, true);
-						} else {
-							me.menuManager.notification.notify("Cleared " + me.getStateName(value) + " cells", 15, 120, 15, true);
-						}
-					} else {
-						// remove selection
-						me.removeSelection(me);
-					}
+				// check for Help
+				if (me.displayHelp !== 0) {
+					this.toggleHelpTopic(me, ViewConstants.keysTopic);
 				} else {
-					// check for shift
-					if (event.shiftKey) {
-						// copy view
-						me.copyPosition(me, true);
-						me.menuManager.notification.notify("Copied view to clipboard", 15, 180, 15, true);
+					// check for ctrl
+					if (event.ctrlKey) {
+						if (event.altKey) {
+							me.clearCells(me, false, false);
+							value = me.drawState;
+							if (me.engine.multiNumStates > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper) && value > 0) {
+								value = me.engine.multiNumStates - value;
+							}
+							if (me.engine.isRuleTree) {
+								me.menuManager.notification.notify("Cleared state " + value + " cells", 15, 120, 15, true);
+							} else {
+								me.menuManager.notification.notify("Cleared " + me.getStateName(value) + " cells", 15, 120, 15, true);
+							}
+						} else {
+							// remove selection
+							me.removeSelection(me);
+						}
 					} else {
-						// copy position
-						me.copyPosition(me, false);
-						me.menuManager.notification.notify("Copied position to clipboard", 15, 180, 15, true);
+						// check for shift
+						if (event.shiftKey) {
+							// copy view
+							me.copyPosition(me, true);
+							me.menuManager.notification.notify("Copied view to clipboard", 15, 180, 15, true);
+						} else {
+							// copy position
+							me.copyPosition(me, false);
+							me.menuManager.notification.notify("Copied position to clipboard", 15, 180, 15, true);
+						}
 					}
 				}
 				break;
@@ -769,20 +799,25 @@
 
 			// a for decrease layers
 			case 65:
-				if (event.shiftKey) {
-					if (me.isSelection) {
-						me.autoShrinkSelection(me);
-					}
+				// check for Help
+				if (me.displayHelp !== 0) {
+					this.toggleHelpTopic(me, ViewConstants.aliasesTopic);
 				} else {
-					// check for ctrl key
-					if (event.ctrlKey) {
-						me.selectAllPressed(me);
+					if (event.shiftKey) {
+						if (me.isSelection) {
+							me.autoShrinkSelection(me);
+						}
 					} else {
-						// disable layers in multi-state mode
-						if (!me.multiStateView) {
-							if (!me.layersItem.locked) {
-								if (me.layersItem.current[0] > ViewConstants.minLayers) {
-									me.layersItem.current = me.viewLayersRange([me.engine.layers - 1, me.layersItem.current[1]], true, me);
+						// check for ctrl key
+						if (event.ctrlKey) {
+							me.selectAllPressed(me);
+						} else {
+							// disable layers in multi-state mode
+							if (!me.multiStateView) {
+								if (!me.layersItem.locked) {
+									if (me.layersItem.current[0] > ViewConstants.minLayers) {
+										me.layersItem.current = me.viewLayersRange([me.engine.layers - 1, me.layersItem.current[1]], true, me);
+									}
 								}
 							}
 						}
@@ -803,43 +838,53 @@
 
 			// s for toggle starfield, shift s for toggle state1 autofit, control-s for save
 			case 83:
-				// check for ctrl key
-				if (event.ctrlKey) {
-					// save current pattern to source document node
-					me.saveCurrentRLE(me);
-					me.menuManager.notification.notify("Saved", 15, 120, 15, true);
+				// check for Help
+				if (me.displayHelp !== 0) {
+					this.toggleHelpTopic(me, ViewConstants.scriptsTopic);
 				} else {
-					// check for shift key
-					if (event.shiftKey) {
-						// only enabled for [R]History
-						if (me.engine.isLifeHistory) {
-							// toggle state 1 fit mode
-							me.state1Fit = !me.state1Fit;
-							me.menuManager.notification.notify("AutoFit State 1 Mode " + (me.state1Fit ? "On" : "Off"), 15, 40, 15, true);
-						}
+					// check for ctrl key
+					if (event.ctrlKey) {
+						// save current pattern to source document node
+						me.saveCurrentRLE(me);
+						me.menuManager.notification.notify("Saved", 15, 120, 15, true);
 					} else {
-						// toggle stars
-						me.starsButton.current = me.viewStarsToggle([!me.starsOn], true, me);
-						me.menuManager.notification.notify("Stars " + (me.starsOn ? "On" : "Off"), 15, 40, 15, true);
+						// check for shift key
+						if (event.shiftKey) {
+							// only enabled for [R]History
+							if (me.engine.isLifeHistory) {
+								// toggle state 1 fit mode
+								me.state1Fit = !me.state1Fit;
+								me.menuManager.notification.notify("AutoFit State 1 Mode " + (me.state1Fit ? "On" : "Off"), 15, 40, 15, true);
+							}
+						} else {
+							// toggle stars
+							me.starsButton.current = me.viewStarsToggle([!me.starsOn], true, me);
+							me.menuManager.notification.notify("Stars " + (me.starsOn ? "On" : "Off"), 15, 40, 15, true);
+						}
 					}
 				}
 				break;
 
 			// n for switch to thumbnail view
 			case 78:
-				// check if thumbnail mode available
-				if (me.thumbnailEverOn) {
-					// check if thumbnail mode already on
-					if (me.thumbnail) {
-						// switch it off
-						me.switchOffThumbnail();
-					} else {
-						// switch it on
-						me.switchOnThumbnail();
-
-						// close help if open
-						if (me.displayHelp) {
-							me.displayHelp = 0;
+				// check for Help
+				if (me.displayHelp !== 0) {
+					this.toggleHelpTopic(me, ViewConstants.annotationsTopic);
+				} else {
+					// check if thumbnail mode available
+					if (me.thumbnailEverOn) {
+						// check if thumbnail mode already on
+						if (me.thumbnail) {
+							// switch it off
+							me.switchOffThumbnail();
+						} else {
+							// switch it on
+							me.switchOnThumbnail();
+	
+							// close help if open
+							if (me.displayHelp) {
+								me.displayHelp = 0;
+							}
 						}
 					}
 				}
@@ -1272,13 +1317,18 @@
 
 			// t for timing display
 			case 84:
-				// check for shift key
-				if (event.shiftKey) {
-					// toggle extended timing
-					me.menuManager.showExtendedTiming = !me.menuManager.showExtendedTiming;
+				// check for Help
+				if (me.displayHelp !== 0) {
+					this.toggleHelpTopic(me, ViewConstants.themesTopic);
 				} else {
-					// toggle fps
-					me.fpsButton.current = me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+					// check for shift key
+					if (event.shiftKey) {
+						// toggle extended timing
+						me.menuManager.showExtendedTiming = !me.menuManager.showExtendedTiming;
+					} else {
+						// toggle fps
+						me.fpsButton.current = me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+					}
 				}
 				break;
 				
@@ -1471,18 +1521,8 @@
 						me.cyclePasteMode(me);
 					} else {
 						if (me.navToggle && !me.navToggle.deleted) {
-							// if menu open then close any settings sections
-							if (me.navToggle.current[0]) {
-								// clear settings section
-								me.showDisplaySettings = false;
-								me.showInfoSettings = false;
-								me.showPatternSettings = false;
-								me.showPlaybackSettings = false;
-								me.showThemeSelection = false;
-							}
-
 							// toggle navigation menu
-							me.navToggle.current[0] = !me.navToggle.current[0];
+							me.navToggle.current = me.toggleSettings([!me.navToggle.current[0]], true, me);
 		
 							// mark toggle required
 							me.menuManager.toggleRequired = true;
@@ -1493,47 +1533,52 @@
 
 			// c for theme cycle or copy
 			case 67:
-				// check for control-C
-				if (event.ctrlKey) {
-					me.processCopy(me, event.shiftKey, event.altKey);
+				// check for Help
+				if (me.displayHelp !== 0) {
+					this.toggleHelpTopic(me, ViewConstants.coloursTopic);
 				} else {
-					// disable colour themes in multi-state mode
-					if (!me.multiStateView) {
-						if (me.themeButton && !me.themeButton.locked) {
-							// check for shift key
-							if (event.shiftKey) {
-								// decrement colour theme
-								value = me.engine.colourTheme - 1;
-								if (value < 0) {
-									// check for custom theme
-									if (me.customTheme) {
-										value = me.engine.numThemes;
-									} else {
-										value = me.engine.numThemes - 1;
-									}
-								}
-							} else {
-								// increment colour theme
-								value = me.engine.colourTheme + 1;
-
-								// check for custom theme
-								if (me.customTheme) {
-									// allow custom theme
-									if (value >= me.engine.numThemes + 1) {
-										value = 0;
+					// check for control-C
+					if (event.ctrlKey) {
+						me.processCopy(me, event.shiftKey, event.altKey);
+					} else {
+						// disable colour themes in multi-state mode
+						if (!me.multiStateView) {
+							if (me.themeButton && !me.themeButton.locked) {
+								// check for shift key
+								if (event.shiftKey) {
+									// decrement colour theme
+									value = me.engine.colourTheme - 1;
+									if (value < 0) {
+										// check for custom theme
+										if (me.customTheme) {
+											value = me.engine.numThemes;
+										} else {
+											value = me.engine.numThemes - 1;
+										}
 									}
 								} else {
-									// no custom theme
-									if (value >= me.engine.numThemes) {
-										value = 0;
+									// increment colour theme
+									value = me.engine.colourTheme + 1;
+	
+									// check for custom theme
+									if (me.customTheme) {
+										// allow custom theme
+										if (value >= me.engine.numThemes + 1) {
+											value = 0;
+										}
+									} else {
+										// no custom theme
+										if (value >= me.engine.numThemes) {
+											value = 0;
+										}
 									}
 								}
-							}
-
-							// set the new theme
-							me.setNewTheme(value, me.engine.colourChangeSteps, me);
-							if (!me.engine.isNone && !me.showThemeSelection) {
-								me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
+	
+								// set the new theme
+								me.setNewTheme(value, me.engine.colourChangeSteps, me);
+								if (!me.engine.isNone && !me.showThemeSelection) {
+									me.menuManager.notification.notify(me.themeName(me.engine.colourTheme) + " Theme", 15, 40, 15, true);
+								}
 							}
 						}
 					}
@@ -1596,13 +1641,7 @@
 							// check if help displayed
 							if (me.displayHelp) {
 								// check if on the info topic
-								if (me.helpTopic === ViewConstants.informationTopic) {
-									// close help
-									me.displayHelp = 0;
-								} else {
-									// switch to the information topic
-									me.setHelpTopic(ViewConstants.informationTopic, me);
-								}
+								this.toggleHelpTopic(me, ViewConstants.informationTopic);
 							} else {
 								// do not display information if in thumbnail mode
 								if (!me.thumbnail) {
