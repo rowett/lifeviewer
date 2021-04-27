@@ -927,6 +927,7 @@
 		for (i = 0; i < value; i += 1) {
 			y = this.renderHelpLine(view, "Ctrl " + i, "select state " + i + " for drawing", ctx, x, y, height, helpLine);
 		}
+		y = this.renderHelpLine(view, "Shift B", "toggle clipboard library", ctx, x, y, height, helpLine);
 		for (i = 0; i < 10; i += 1) {
 			y = this.renderHelpLine(view, "Alt " + i, "make clipboard " + i + " active", ctx, x, y, height, helpLine);
 		}

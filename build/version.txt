@@ -1,5 +1,22 @@
+Build 610
+- new menu button Settings->Pattern->Save Image will save an image of the current pattern in a new browser window
+- new menu button Settings->Pattern->Save Graph will save an image of the current population graph in a new browser window
+- remove canvas focus on touch devices
+- if GRIDMAJOR is specified but is the same as the current Theme then don't create a CUSTOM Theme
+
+Build 609
+- remove blue border on Safari after copy
+
+Build 608
+- hotkey Shift+B now toggles the clipboard library in Edit mode
+- added hotkeys to clipboard library tooltips
+- mouse cursor no longer changes when moving over greyed-out controls
+
+Build 607
+- fixed [R]History colours
+
 Build 606
-- Identify not detects Mod transformations where the pattern is identical when rotated either CCW or CW as "RotCWorCCW"
+- Identify now detects Mod transformations where the pattern is identical when rotated either CCW or CW as "RotCWorCCW"
 - remove legacy colour management
 
 Build 605

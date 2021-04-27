@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 606,
+		/** @const {number} */ versionBuild : 610,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1168,6 +1168,9 @@
 		// div used for RLE copy
 		this.tempDiv = null;
 
+		// window scroll position
+		/** @type {number} */ this.scrollPosition = 0;
+
 		// string containing RLE
 		/** @type{string} */ this.tempRLE = "";
 
@@ -1743,6 +1746,12 @@
 		// fast identify button
 		this.fastIdentifyButton = null;
 
+		// save image button
+		this.saveImageButton = null;
+
+		// save graph image button
+		this.saveGraphButton = null;
+
 		// copy rule button
 		this.copyRuleButton = null;
 
@@ -2008,7 +2017,7 @@
 			} else {
 				tip += " (empty)";
 			}
-			tips[i] = tip;
+			tips[i] = tip + " [Alt " + i + "]";
 		}
 		this.clipboardList.toolTip = tips;
 	};
@@ -5694,6 +5703,8 @@
 		this.identifyButton.deleted = shown;
 		this.fastIdentifyButton.deleted = shown;
 		this.copyRuleButton.deleted = shown;
+		this.saveImageButton.deleted = shown;
+		this.saveGraphButton.deleted = shown;
 		// info category
 		shown = hide || !this.showInfoSettings;
 		this.fpsButton.deleted = shown;
@@ -12257,6 +12268,16 @@
 		me.viewMenu.locked = false;
 	};
 
+	// save image button pressed
+	View.prototype.saveImagePressed = function(me) {
+		me.screenShotScheduled = 1;
+	};
+
+	// save graph image button pressed
+	View.prototype.saveGraphPressed = function(me) {
+		me.screenShotScheduled = 2;
+	};
+
 	// identify button pressed
 	View.prototype.identifyPressed = function(me) {
 		me.identifyFast = false;
@@ -12778,6 +12799,9 @@
 		var elementType = "textarea",
 			processingTime = 0;
 
+		// remember current window scroll position since Safari moves it
+		me.scrollPosition = document.documentElement.scrollTop || document.body.scrollTop;
+
 		// setup the contents to copy
 		me.tempRLE = contents;
 		me.tempRLEAmount = 0;
@@ -12786,7 +12810,6 @@
 		// try the copy in a single pass if small and fast enough
 		if (twoPhase) {
 			// check for Edge browser
-
 			processingTime = performance.now() - me.copyStartTime;
 			if (processingTime < ViewConstants.copyTimeThreshold && me.tempRLELength < ViewConstants.copySizeThreshold) {
 				twoPhase = false;
@@ -12833,15 +12856,38 @@
 
 	// complete copy to clipboard
 	View.prototype.completeCopyToClipboard = function(me, twoPhase) {
+		var selection = null,
+			range = null,
+			element = null;
+
 		// select and copy the temporary elements contents to the clipboard
 		if (!me.isEdge) {
-			me.tempDiv.focus();
+			if (twoPhase) {
+				element = me.tempDiv;
+			} else {
+				element = me.tempInput;
+				element.contentEditable = "true";
+				element.readOnly = "false";
+			}
 		} else {
-			me.tempInput.focus();
+			element = me.tempInput;
 		}
 
+		// focus on the element and select it
+		element.focus();
+		range = document.createRange();
+		range.selectNodeContents(element);
+
 		try {
-			document.execCommand("selectAll");
+			if (twoPhase) {
+				document.execCommand("selectAll");
+			} else {
+				selection = window.getSelection();
+				selection.removeAllRanges();
+				selection.addRange(range);
+				element.setSelectionRange(0, 999999);
+			}
+
 			document.execCommand("copy");
 		}
 		catch(err) {
@@ -12852,7 +12898,9 @@
 		me.tempRLE = "";
 
 		// set focus to the canvas
-		me.mainContext.canvas.focus();
+		if (!me.menuManager.eventWasTouch) {
+			me.mainContext.canvas.focus();
+		}
 
 		// clear notification
 		me.menuManager.notification.notify("Copied to external clipboard", 15, 180, 15, true);
@@ -12864,6 +12912,9 @@
 			// unlock menu
 			me.viewMenu.locked = false;
 		}
+
+		// restore scroll position
+		document.documentElement.scrollTop = document.body.scrollTop = me.scrollPosition;
 
 		me.copyStartTime = -1;
 	};
@@ -13607,36 +13658,44 @@
 		this.autoHideButton.toolTip = ["toggle hide UI on playback [Alt U]"]; 
 
 		// rule button
-		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, -100, -75, 180, 40, "Change Rule");
+		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, -100, -100, 180, 40, "Change Rule");
 		this.ruleButton.toolTip = "change rule [Alt R]";
 
 		// new button
-		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 100, -75, 180, 40, "New Pattern");
+		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 100, -100, 180, 40, "New Pattern");
 		this.newButton.toolTip = "new pattern [Alt N]";
 
 		// load button
-		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, -100, -25, 180, 40, "Load Pattern");
+		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, -100, -50, 180, 40, "Load Pattern");
 		this.loadButton.toolTip = "load last saved pattern [Ctrl O]";
 
 		// save button
-		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 100, -25, 180, 40, "Save Pattern");
+		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 100, -50, 180, 40, "Save Pattern");
 		this.saveButton.toolTip = "save pattern [Ctrl S]";
 
 		// randomize button
-		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, -100, 25, 180, 40, "Randomize");
+		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, -100, 0, 180, 40, "Randomize");
 		this.randomizeButton.toolTip = "randomize pattern and rule [Alt Z]";
 
 		// copy rule button
-		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, 100, 25, 180, 40, "Copy Rule");
+		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, 100, 0, 180, 40, "Copy Rule");
 		this.copyRuleButton.toolTip = "copy rule definition [Ctrl J]";
 
 		// identify button
-		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, -100, 75, 180, 40, "Identify");
+		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, -100, 50, 180, 40, "Identify");
 		this.identifyButton.toolTip = "identify oscillator or spaceship period [F6]";
 
 		// fast identify button
-		this.fastIdentifyButton = this.viewMenu.addButtonItem(this.fastIdentifyPressed, Menu.middle, 100, 75, 180, 40, "Fast Identify");
+		this.fastIdentifyButton = this.viewMenu.addButtonItem(this.fastIdentifyPressed, Menu.middle, 100, 50, 180, 40, "Fast Identify");
 		this.fastIdentifyButton.toolTip = "quickly identify oscillator or spaceship period [Ctrl F6]";
+
+		// image button
+		this.saveImageButton = this.viewMenu.addButtonItem(this.saveImagePressed, Menu.middle, -100, 100, 180, 40, "Save Image");
+		this.saveImageButton.toolTip = "save image in new window [O]";
+
+		// save graph button
+		this.saveGraphButton = this.viewMenu.addButtonItem(this.saveGraphPressed, Menu.middle, 100, 100, 180, 40, "Save Graph");
+		this.saveGraphButton.toolTip = "save population graph image in new window [Shift O]";
 
 		// fps button
 		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -100, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
@@ -13862,7 +13921,7 @@
 		// library button
 		this.libraryToggle = this.viewMenu.addListItem(null, Menu.northWest, 90, 45, 40, 40, [""], [false], Menu.multi);
 		this.libraryToggle.icon = [this.iconManager.icon("selectlibrary")];
-		this.libraryToggle.toolTip = ["clipboard library"];
+		this.libraryToggle.toolTip = ["toggle clipboard library [Shift B]"];
 
 		// clipboard list
 		this.clipboardList = this.viewMenu.addListItem(this.viewClipboardList, Menu.north, 0, 90, 400, 40, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], this.currentPasteBuffer, Menu.single);
@@ -14636,7 +14695,7 @@
 		}
 
 		// check for custom gridmajor interval
-		if (this.customGridMajor && themeRequested !== customIndex) {
+		if (this.customGridMajor && themeRequested !== customIndex && this.engine.themes[themeRequested].gridMajor !== this.engine.gridLineMajor) {
 			// copy the requested theme to the custom theme
 			this.engine.themes[customIndex].set(this.engine.themes[themeRequested]);
 			themeRequested = customIndex;
@@ -15394,8 +15453,13 @@
 
 		// copy pattern to center
 		if (pattern) {
-			me.colourList = ColourManager.defaultSet();
-			me.colourSetName = "(default)";
+			if (me.engine.isLifeHistory) {
+				me.colourList = [0, 255 << 8, 128, (216 << 16) | (255 << 8) | 216, 255 << 16, (255 << 16) | (255 << 8), (96 << 16) | ( 96 << 8) | 96];
+				me.colourSetName = "[R]History";
+			} else {
+				me.colourList = ColourManager.defaultSet();
+				me.colourSetName = "(default)";
+			}
 
 			// reset controls a script can overwrite
 			me.resetScriptControls();
@@ -16645,6 +16709,8 @@
 			canvasItem.width = ViewConstants.minViewerWidth;
 			canvasItem.height = ViewConstants.minMenuHeight + 80;
 			canvasItem.style.display = "block";
+			//canvasItem.style.outline = "none";
+			canvasItem.contentEditable = "false";
 
 			// add a new anchor
 			anchorItem = document.createElement('a');
@@ -16934,6 +17000,8 @@
 						}
 						
 						// initalise viewer not in popup
+						//canvasItem.style.outline = "none";
+						canvasItem.contentEditable = "false";
 						startView(cleanItem, canvasItem, textItem.offsetWidth, false, textItem);
 					} else {
 						// hide the canvas item

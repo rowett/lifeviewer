@@ -2211,7 +2211,7 @@
 		}
 
 		// update mouse pointer
-		if (mouseOverGlobalItem >= 0) {
+		if (mouseOverGlobalItem >= 0 && !this.menuItems[mouseOverGlobalItem].locked) {
 			// check what type of control the mouse is over
 			if (this.menuItems[mouseOverGlobalItem].type === Menu.range) {
 				if (this.menuItems[mouseOverGlobalItem].orientation === Menu.auto || this.menuItems[mouseOverGlobalItem].orientation === Menu.horizontal) {

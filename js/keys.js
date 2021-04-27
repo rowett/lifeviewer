@@ -438,14 +438,20 @@
 					// copy neighbourhood to clipboard from selection
 					me.copyNeighbourhood(me);
 				} else {
-					// do not move if in view only mode
-					if (!me.viewOnly) {
-						// check control is not locked
-						if (!me.playList.itemLocked[1]) {
-							value = me.gensPerStep;
-							me.gensPerStep = 1;
-							me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
-							me.gensPerStep = value;
+					// check for shift
+					if (event.shiftKey) {
+						me.libraryToggle.current = [!me.libraryToggle.current[0]];
+						me.menuManager.toggleRequired = true;
+					} else {
+						// do not move if in view only mode
+						if (!me.viewOnly) {
+							// check control is not locked
+							if (!me.playList.itemLocked[1]) {
+								value = me.gensPerStep;
+								me.gensPerStep = 1;
+								me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
+								me.gensPerStep = value;
+							}
 						}
 					}
 				}
@@ -869,7 +875,9 @@
 			case 78:
 				// check for Help
 				if (me.displayHelp !== 0) {
-					this.toggleHelpTopic(me, ViewConstants.annotationsTopic);
+					if (me.waypointManager.numAnnotations() > 0) {
+						this.toggleHelpTopic(me, ViewConstants.annotationsTopic);
+					}
 				} else {
 					// check if thumbnail mode available
 					if (me.thumbnailEverOn) {

@@ -11,10 +11,8 @@ Investigate:
 
 Committed:
     add overlay to Snapshots so undo/redo work with [R]History rules fully
-    investigate FlipX and FlipY at the same time
 
 Planned:
-    remove redundant colour map functionality from ColourManager
     switch [R]History to [R]Super style algo
         - remove overlay
         - remove state6 processing
@@ -29,14 +27,14 @@ Planned:
         [[ XY = @NAME display ]]
         [[ colour picker @NAME display ]]
 
-[STARTED]Rainbow rendering
+[DONE]Rainbow rendering
     [DONE]add toggle for 2-state Life-like rules for rainbow rendering
     [DONE]add for Hexagons and triangles
     [DONE]add script command
     [DONE]add hotkey for toggle
     [DONE]add toggle button to settings
 
-[STARTED][R]Super support
+[DONE][R]Super support
     [DONE]rule parser
     [DONE]runtime
     [DONE]toggle [R]Super display (so Copy can output 2-state version of pattern)
@@ -121,7 +119,7 @@ Planned:
         [DONE]copy buffer to current position
         [DONE]copy buffer to selection
         [DONE]advance outside selection
-        - advance selection
+        [DONE] advance selection
     [DONE]undo stack / step back
     [DONE]grow grid if possible when cell outside current grid drawn
     [DONE]2-state editing
@@ -131,6 +129,7 @@ Planned:
     [DONE]convert current pattern to RLE (for Ctrl-C Copy)
 
 Complete:
+[DONE]remove redundant colour map functionality from ColourManager
 [DONE]Delete boundary gliders
 [DONE]Optional border around square, hexagonal or triangular cells
 [DONE]setState should check for tile boundaries and set adjacent tiles
