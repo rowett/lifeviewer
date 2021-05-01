@@ -1,3 +1,10 @@
+Build 611
+- add keyboard shortcuts to tooltips for POI buttons and Universe buttons
+- adjust states slider when picking states
+- small performance improvement for von Neumann LtL/HROT rules
+- state names are now displayed
+- added support for @NAMES section in RuleTable/RuleTree rules
+
 Build 610
 - new menu button Settings->Pattern->Save Image will save an image of the current pattern in a new browser window
 - new menu button Settings->Pattern->Save Graph will save an image of the current population graph in a new browser window

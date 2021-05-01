@@ -165,12 +165,14 @@
 				// add @TREE
 				this.rules[l] = {name: name, isTree: true, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
 					nodes: pattern.ruleTreeNodes, base: pattern.ruleTreeBase, ruleA: pattern.ruleTreeA,
-					ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours, icons: pattern.ruleTableIcons, isHex: pattern.ruleTreeIsHex};
+					ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours, icons: pattern.ruleTableIcons,
+					names: pattern.ruleTableNames, isHex: pattern.ruleTreeIsHex};
 			} else {
 				// add @TABLE
 				this.rules[l] = {name: name, isTree: false, states: pattern.ruleTableStates, neighbourhood: pattern.ruleTableNeighbourhood,
 					compressed: pattern.ruleTableCompressedRules, output: pattern.ruleTableOutput,
-					LUT: pattern.ruleTableLUT, colours: pattern.ruleTreeColours, dups: pattern.ruleTableDups, icons: pattern.ruleTableIcons};
+					LUT: pattern.ruleTableLUT, colours: pattern.ruleTreeColours, dups: pattern.ruleTableDups,
+					icons: pattern.ruleTableIcons, names: pattern.ruleTableNames};
 			}
 
 			// create metadata
@@ -232,6 +234,7 @@
 			}
 			pattern.ruleTreeColours = record.colours;
 			pattern.ruleTableIcons = record.icons;
+			pattern.ruleTableNames = record.names;
 			pattern.isNone = false;
 		}
 
@@ -662,6 +665,9 @@
 			[[0, 1, 2, 3, 4, 5, 6, 7], [0, 2, 3, 4, 5, 6, 1, 7], [0, 3, 4, 5, 6, 1, 2, 7], [0, 4, 5, 6, 1, 2, 3, 7], [0, 5, 6, 1, 2, 3, 4, 7], [0, 6, 1, 2, 3, 4, 5, 7], [0, 6, 5, 4, 3, 2, 1, 7], [0, 5, 4, 3, 2, 1, 6, 7], [0, 4, 3, 2, 1, 6, 5, 7], [0, 3, 2, 1, 6, 5, 4, 7], [0, 2, 1, 6, 5, 4, 3, 7], [0, 1, 6, 5, 4, 3, 2, 7]]  // rotate6reflect
 		];
 
+		// rule table names section
+		/** @const {string} */ this.ruleTableNamesName = "@NAMES";
+
 		// rule table colours section
 		/** @const {string} */ this.ruleTableColoursName = "@COLORS";
 
@@ -916,6 +922,9 @@
 
 		// rule tree colours
 		this.ruleTreeColours = null;
+
+		// rule tree names
+		this.ruleTableNames = [];
 
 		// rule table icons
 		this.ruleTableIcons = null;
@@ -7746,6 +7755,55 @@
 		return valid;
 	};
 
+	// decode rule table names
+	PatternManager.prototype.decodeNames = function(pattern, reader) {
+		var states = pattern.numStates,
+			names = [],
+			index = 0,
+			name = "",
+			valid = false;
+
+		// skip newline and blank lines
+		reader.skipToNextLine();
+
+		// check if first token is a number
+		if (reader.nextTokenIsNumeric()) {
+			index = reader.getNextTokenAsNumber();
+			if (index >= 0 && index < states) {
+				valid = true;
+			}
+		}
+
+		// read each line containing name definition
+		while (valid) {
+			valid = false;
+
+			// read the name
+			name = "";
+			while (!reader.nextIsNewline()) {
+				if (name === "") {
+					name = reader.getNextToken();
+				} else {
+					name += " " + reader.getNextToken();
+				}
+			}
+
+			// save the state name
+			names[index] = name;
+
+			// check for more entries
+			reader.skipToNextLine();
+			if (reader.nextTokenIsNumeric()) {
+				index = reader.getNextTokenAsNumber();
+				if (index >= 0 && index < states) {
+					valid = true;
+				}
+			}
+		}
+
+		pattern.ruleTableNames = names;
+	};
+
 	// decode rule table colours
 	PatternManager.prototype.decodeColours = function(pattern, reader) {
 		var states = pattern.numStates,
@@ -8704,6 +8762,7 @@
 			tableIndex = -1,
 			treeIndex = -1,
 			colourIndex = -1,
+			namesIndex = -1,
 			iconIndex = -1,
 			startIndex = -1,
 			endIndex = -1,
@@ -8770,6 +8829,17 @@
 
 						// check if end token is later than the current end
 						if (reader.current - 1 > endIndex) {
+							endIndex = reader.current - 1;
+						}
+					}
+
+					// search for names from start position
+					namesIndex = reader.findTokenAtLineStart(this.ruleTableNamesName, 0);
+					if (namesIndex !== -1) {
+						this.decodeNames(pattern, reader);
+
+						// check if end token is later than current end
+						if (reader.current -1 > endIndex) {
 							endIndex = reader.current - 1;
 						}
 					}

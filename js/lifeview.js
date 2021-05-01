@@ -263,7 +263,7 @@
 		/** @const {Array<number>} */ stateMap : [0, 6, 2, 5, 3, 4, 1],
 
 		// state names for [R]History
-		/** @const {Array<string>} */ stateNames : ["Dead", "Alive", "History", "Mark1", "MarkOff", "Mark2", "Kill"],
+		/** @const {Array<string>} */ stateNames : ["dead", "alive", "history", "mark1", "markOff", "mark2", "kill"],
 
 		// display names for [R]History states
 		/** @const {Array<string>} */ stateDisplayNames : ["OFF", "ON", "HISTORY", "MARK1", "MARKOFF", "MARK2", "KILL"],
@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 610,
+		/** @const {number} */ versionBuild : 611,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -631,6 +631,9 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// pattern state names
+		this.stateNames = [];
 
 		// whether starting playback pauses others
 		this.exclusivePlayback = false;
@@ -4661,7 +4664,7 @@
 			}
 
 			// set the caption
-			this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay;
+			this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
 			this.xyLabel.deleted = false;
 
 			// add screen offset at cursor if InfoBar enabled
@@ -7304,18 +7307,24 @@
 		var name = "";
 
 		// rule tree states don't have names
-		if (!this.engine.isRuleTree) {
+		if (this.engine.isRuleTree) {
+			if (this.stateNames[state] === undefined) {
+				name = "state " + String(state);
+			} else {
+				name = this.stateNames[state];
+			}
+		} else {
 			// check for 2-state rules
 			if (this.engine.multiNumStates <= 2) {
 				if (this.engine.isLifeHistory) {
 					name = ViewConstants.stateNames[state];
 				} else {
-					name = (state ? "Alive" : "Dead");
+					name = (state ? "alive" : "dead");
 				}
 			} else {
 				// multi-state (Generations or PCA)
 				if (state === 0) {
-					name = "Dead";
+					name = "dead";
 				} else {
 					if (this.engine.isPCA) {
 						if ((state & 1) !== 0) {
@@ -7334,14 +7343,10 @@
 						if (this.engine.isSuper) {
 							name = LifeConstants.namesSuper[state];
 						} else {
-							if (this.engine.isRuleTree) {
-								name = "State " + String(state);
+							if (state === 1) {
+								name = "alive";
 							} else {
-								if (state === 1) {
-									name = "Alive";
-								} else {
-									name = "Dying " + String(state - 1);
-								}
+								name = "dying " + String(state - 1);
 							}
 						}
 					}
@@ -7376,11 +7381,7 @@
 			me.pickToggle.current = me.togglePick([false], true, me);
 
 			// notify after switching mode since switching clears notifications
-			if (me.engine.isRuleTree) {
-				me.menuManager.notification.notify("Drawing with state " + newValue, 15, 120, 15, true);
-			} else {
-				me.menuManager.notification.notify("Drawing with state " + newValue + " (" + me.getStateName(newValue) + ")", 15, 120, 15, true);
-			}
+			me.menuManager.notification.notify("Drawing with state " + newValue + " (" + me.getStateName(newValue) + ")", 15, 120, 15, true);
 		}
 
 		return result;
@@ -7389,7 +7390,10 @@
 	// switch to state from keyboard shortcut
 	View.prototype.switchToState = function(state) {
 		var numStates = this.engine.multiNumStates,
-			maxDisplayStates = this.maxDisplayStates;
+			maxDisplayStates = this.maxDisplayStates,
+			origState = state,
+			lowState = 0,
+			highState = 0;
 
 		if (numStates === -1) {
 			numStates = 2;
@@ -7399,6 +7403,8 @@
 			numStates = 7;
 			maxDisplayStates = 7;
 		}
+
+		highState = lowState + maxDisplayStates - 1;
 
 		// check the requested state is valid
 		if (state < numStates) {
@@ -7417,6 +7423,9 @@
 
 			// switch the pen to the current state
 			this.stateList.current = this.viewStateList(state, true, this);
+
+			// check if the new state is in the range shown by the state slider
+			this.statesSlider.current = this.viewStatesRange([this.startState / (this.engine.multiNumStates - this.maxDisplayStates), 0], true, this);
 		}
 	};
 
@@ -13718,12 +13727,12 @@
 		this.qualityToggle.toolTip = ["toggle anti-aliased cell display [Ctrl Q]"];
 
 		// previous universe button
-		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -90, 120, 40, "Prev");
-		this.prevUniverseButton.toolTip = "go to previous universe";
+		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -100, 120, 40, "Prev");
+		this.prevUniverseButton.toolTip = "go to previous universe [Page Up]";
 
 		// next universe button
-		this.nextUniverseButton = this.viewMenu.addButtonItem(this.nextUniversePressed, Menu.south, 135, -90, 120, 40, "Next");
-		this.nextUniverseButton.toolTip = "go to next universe";
+		this.nextUniverseButton = this.viewMenu.addButtonItem(this.nextUniversePressed, Menu.south, 135, -100, 120, 40, "Next");
+		this.nextUniverseButton.toolTip = "go to next universe [Page Down]";
 
 		// esc button
 		this.escButton = this.viewMenu.addButtonItem(this.escPressed, Menu.southEast, -40, -85, 40, 40, "Esc");
@@ -13732,11 +13741,11 @@
 		
 		// previous POI button
 		this.prevPOIButton = this.viewMenu.addButtonItem(this.prevPOIPressed, Menu.west, 10, 0, 40, 40, "<");
-		this.prevPOIButton.toolTip = "go to previous POI";
+		this.prevPOIButton.toolTip = "go to previous POI [Shift J]";
 
 		// next POI button
 		this.nextPOIButton = this.viewMenu.addButtonItem(this.nextPOIPressed, Menu.east, -50, 0, 40, 40, ">");
-		this.nextPOIButton.toolTip = "go to next POI";
+		this.nextPOIButton.toolTip = "go to next POI [J]";
 
 		// opacity range
 		this.opacityItem = this.viewMenu.addRangeItem(this.viewOpacityRange, Menu.north, 0, 45, 172, 40, 0, 1, this.popGraphOpacity, true, "Opacity ", "%", 0);
@@ -14561,23 +14570,7 @@
 		for (i = 0; i < states; i += 1) {
 			state = i + this.startState;
 			this.stateList.lower[i] = String(state);
-			if (state === 0) {
-				message = "dead";
-			} else {
-				if (this.engine.isPCA || this.engine.isSuper) {
-					message = this.getStateName(state);
-				} else {
-					if (this.engine.isRuleTree) {
-						message = "state " + String(state);
-					} else {
-						if (state === 1) {
-							message = "alive";
-						} else {
-							message = "dying " + String(state - 1);
-						}
-					}
-				}
-			}
+			message = this.getStateName(state);
 			if (state < 10) {
 				message += " [Ctrl " + state + "]";
 			}
@@ -15041,6 +15034,7 @@
 			// check if the rule is a RuleTree rule
 			me.engine.ruleTableOutput = null;
 			me.engine.ruleTableLUT = null;
+			me.stateNames = [];
 			if (pattern.ruleTreeStates !== -1) {
 				me.engine.ruleTreeNeighbours = pattern.ruleTreeNeighbours;
 				me.engine.ruleTreeStates = pattern.ruleTreeStates;
@@ -15051,6 +15045,7 @@
 				me.engine.ruleTreeB = pattern.ruleTreeB;
 				me.engine.ruleTreeColours = pattern.ruleTreeColours;
 				me.engine.ruleTableIcons = pattern.ruleTableIcons;
+				me.stateNames = pattern.ruleTableNames;
 				me.engine.isRuleTree = true;
 			} else {
 				me.engine.isRuleTree = false;
@@ -15066,6 +15061,7 @@
 				me.engine.multiNumStates = pattern.ruleTableStates;
 				me.engine.ruleTreeColours = pattern.ruleTreeColours;
 				me.engine.ruleTableIcons = pattern.ruleTableIcons;
+				me.stateNames = pattern.ruleTableNames;
 				me.engine.isRuleTree = true;
 			}
 

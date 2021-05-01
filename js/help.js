@@ -1650,7 +1650,7 @@
 		if (view.patternStateCount) {
 			for (i = 1; i < view.patternStates; i += 1) {
 				if (view.patternStateCount[i]) {
-					y = this.renderHelpLine(view, "State " + i, view.patternStateCount[i], ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, "State " + i, view.patternStateCount[i] + "\t" + view.getStateName(i), ctx, x, y, height, helpLine);
 				}
 			}
 		}
@@ -1856,7 +1856,7 @@
 		y = this.renderHelpLine(view, " ", "Higher-range outer-totalistic (HROT), Gaussian,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Partitioned cellular automata (PCA), Weighted,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "[R]History, [R]Super", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Repository", "RuleTable (@TABLE, @TREE and @COLORS)", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Repository", "RuleTable (@TABLE, @TREE, @COLORS and @NAMES)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "BoundedGrid", "Plane, Torus, Klein, Cross-surface, Sphere", ctx, x, y, height, helpLine);
 
 		y = this.renderHelpLine(view, "Viewers", numViewers, ctx, x, y, height, helpLine);

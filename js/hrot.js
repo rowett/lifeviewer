@@ -280,6 +280,29 @@
 
 	// get the count for von Neumann
 	/** @return {number} */
+	HROT.prototype.getCount2 = function(/** @type {number} */ i, /** @type {number} */ j, countRow) {
+		if (i < 0 || i + j < 0 || j - i >= this.ncols) {
+			return 0;
+		}
+		if (j < 0 && i + j < this.ccht) {
+			return this.counts[i + j][0];
+		}
+		if (j >= this.ncols && j-i >= this.ncols - this.ccht) {
+			return this.counts[i + this.ncols - 1 - j][this.ncols - 1];
+		}
+		if (i < this.ccht) {
+			return countRow[j];
+		}
+		if ((i - this.ccht + 1) + j <= this.halfccwd) {
+			return this.counts[this.ccht - 1][i - this.ccht + 1 + j];
+		}
+		if (j - (i - this.ccht + 1) >= this.halfccwd) {
+			return this.counts[this.ccht - 1][j - (i - this.ccht + 1)];
+		}
+		return this.counts[this.ccht - 1][this.halfccwd + ((i + j + this.ccht + this.halfccwd + 1) % 2)];
+	};
+	// get the count for von Neumann
+	/** @return {number} */
 	HROT.prototype.getCount = function(/** @type {number} */ i, /** @type {number} */ j) {
 		if (i < 0 || i + j < 0 || j - i >= this.ncols) {
 			return 0;
@@ -893,7 +916,13 @@
 			/** @type {number} */ inc = 0,
 			/** @type {number} */ aliveWeight = 0,
 			/** @type {number} */ deadWeight = 0,
-			/** @type {Int16Array} */ neighbourList = this.neighbourList;
+			/** @type {Int16Array} */ neighbourList = this.neighbourList,
+			countRowIm1 = null,
+			countRowIm2 = null,
+			countRowIpr = null,
+			countRowIprm1 = null,
+			countRowImrm1 = null,
+			countRowImrm2 = null;
 
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {
@@ -1329,8 +1358,10 @@
 					colourRow = colourGrid[i + bottomY];
 					im1 = i - 1;
 					im2 = im1 - 1;
+					countRowIm1 = counts[im1];
+					countRowIm2 = counts[im2];
 					for (j = 0; j <= this.ncols; j += 1) {
-						countRow[j] = this.getCount(im1, j - 1) + this.getCount(im1, j + 1) - this.getCount(im2, j);
+						countRow[j] = this.getCount2(im1, j - 1, countRowIm1) + this.getCount2(im1, j + 1, countRowIm1) - this.getCount2(im2, j, countRowIm2);
 						if (i < this.nrows) {
 							if (colourRow[j + leftX] >= aliveStart) {
 								countRow[j] += 1;
@@ -1342,10 +1373,15 @@
 				// calculate final neighborhood counts and update the corresponding cells in the grid
 				for (i = yrange; i <= this.nrows - yrange; i += 1) {
 					im1 = i - 1;
+					countRowIm1 = counts[im1];
 					ipr = i + yrange;
+					countRowIpr = counts[ipr];
 					iprm1 = ipr - 1;
+					countRowIprm1 = counts[iprm1];
 					imrm1 = i - yrange - 1;
+					countRowImrm1 = counts[imrm1];
 					imrm2 = imrm1 - 1;
+					countRowImrm2 = counts[imrm2];
 					ipminrow = i + bottomY;
 					colourRow = colourGrid[ipminrow];
 					colourTileRow = colourTileHistoryGrid[ipminrow >> 4];
@@ -1354,8 +1390,8 @@
 					for (j = xrange; j <= this.ncols - xrange; j += 1) {
 						jpr = j + xrange;
 						jmr = j - xrange;
-						count = this.getCount(ipr , j)   - this.getCount(im1 , jpr + 1) - this.getCount(im1 , jmr - 1) + this.getCount(imrm2 , j) +
-								this.getCount(iprm1 , j) - this.getCount(im1 , jpr)     - this.getCount(im1 , jmr)     + this.getCount(imrm1 , j);
+						count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
+								this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
 						jpmincol = j + leftX;
 						state = colourRow[jpmincol];
 						aliveIndex = 0;
@@ -2130,7 +2166,13 @@
 			/** @const {number} */ deadState = this.engine.historyStates,
 
 			// minimum dead state number
-			/** @const {number} */ minDeadState = (this.engine.historyStates > 0 ? 1 : 0);
+			/** @const {number} */ minDeadState = (this.engine.historyStates > 0 ? 1 : 0),
+			countRowIm1 = null,
+			countRowIm2 = null,
+			countRowIpr = null,
+			countRowIprm1 = null,
+			countRowImrm1 = null,
+			countRowImrm2 = null;
 
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {
@@ -2548,8 +2590,10 @@
 					colourRow = colourGrid[i + bottomY];
 					im1 = i - 1;
 					im2 = im1 - 1;
+					countRowIm1 = counts[im1];
+					countRowIm2 = counts[im2];
 					for (j = 0; j <= this.ncols; j += 1) {
-						countRow[j] = this.getCount(im1, j - 1) + this.getCount(im1, j + 1) - this.getCount(im2, j);
+						countRow[j] = this.getCount2(im1, j - 1, countRowIm1) + this.getCount2(im1, j + 1, countRowIm1) - this.getCount2(im2, j, countRowIm2);
 						if (i < this.nrows) {
 							if (colourRow[j + leftX] === maxGenState) {
 								countRow[j] += 1;
@@ -2561,10 +2605,15 @@
 				// calculate final neighborhood counts and update the corresponding cells in the grid
 				for (i = yrange; i <= this.nrows - yrange; i += 1) {
 					im1 = i - 1;
+					countRowIm1 = counts[im1];
 					ipr = i + yrange;
+					countRowIpr = counts[ipr];
 					iprm1 = ipr - 1;
+					countRowIprm1 = counts[iprm1];
 					imrm1 = i - yrange - 1;
+					countRowImrm1 = counts[imrm1];
 					imrm2 = imrm1 - 1;
+					countRowImrm2 = counts[imrm2];
 					ipminrow = i + bottomY;
 					colourRow = colourGrid[ipminrow];
 					colourTileRow = colourTileHistoryGrid[ipminrow >> 4];
@@ -2573,8 +2622,8 @@
 					for (j = xrange; j <= this.ncols - xrange; j += 1) {
 						jpr = j + xrange;
 						jmr = j - xrange;
-						count = this.getCount(ipr , j)   - this.getCount(im1 , jpr + 1) - this.getCount(im1 , jmr - 1) + this.getCount(imrm2 , j) +
-								this.getCount(iprm1 , j) - this.getCount(im1 , jpr)     - this.getCount(im1 , jmr)     + this.getCount(imrm1 , j);
+						count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
+								this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
 						jpmincol = j + leftX;
 						state = colourRow[jpmincol];
 						if (state <= deadState) {
