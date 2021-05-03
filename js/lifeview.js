@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 611,
+		/** @const {number} */ versionBuild : 612,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -7302,12 +7302,118 @@
 		}
 	};
 
+	// get state number from name
+	View.prototype.getStateFromName = function(name) {
+		var number = -1,
+			i = 0,
+			n = 0,
+			s = 0,
+			e = 0,
+			w = 0;
+
+		// remove quotes from the name
+		if (name.charAt(0) === "\"") {
+			name = name.substr(1, name.length - 2);
+		}
+
+		// rule tree states
+		if (this.engine.isRuleTree) {
+			// check for any @NAMES definitions
+			i = 0;
+			while (i < this.stateNames.length && number === -1) {
+				if (this.stateNames[i] !== undefined) {
+					if (this.stateNames[i] === name) {
+						number = i;
+					}
+				}
+				i += 1;
+			}
+		} else {
+			// check for 2-state rules
+			if (this.engine.multiNumStates <= 2) {
+				if (this.engine.isLifeHistory) {
+					i = 0;
+					while (i < ViewConstants.stateNames.length && number === -1) {
+						if (ViewConstants.stateNames[i] === name) {
+							number = i;
+						}
+					}
+				} else {
+					if (name === "alive") {
+						number = 1;
+					} else {
+						if (name === "dead") {
+							number = 0;
+						}
+					}
+				}
+			} else {
+				// multi-state (Generations or PCA)
+				if (name === "dead") {
+					number = 0;
+				} else {
+					if (this.engine.isPCA) {
+						i = 0;
+						while (i < name.length && number === -1) {
+							switch (name.charAt(i)) {
+								case "N":
+									n += 1;
+									break;
+								case "S":
+									s += 1;
+									break;
+								case "E":
+									e += 1;
+									break;
+								case "W":
+									w += 1;
+									break;
+								default:
+									number = -2;
+							}
+							i += 1;
+						}
+						if (n > 1 || s > 1 || e > 1 || w > 1) {
+							number = -2;
+						}
+						if (number !== -2) {
+							number = n | (e << 1) | (s << 2) | (w << 3);
+						}
+					} else {
+						if (this.engine.isSuper) {
+							i = 0;
+							while (i < LifeConstants.namesSuper.length && number === -1) {
+								if (LifeConstants.namesSuper[i] === name) {
+									number = i;
+								}
+							}
+						} else {
+							if (name === "alive") {
+								number = 1;
+							} else {
+								if (name.substr(0, 6) === "dying ") {
+									number = Number(name.substr(6)) + 1;
+									if (number >= this.engine.multiNumStates) {
+										number = -1;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return number;
+	};
+
 	// get state name
 	View.prototype.getStateName = function(state) {
 		var name = "";
 
-		// rule tree states don't have names
+		// rule tree states
 		if (this.engine.isRuleTree) {
+			// check for any @NAMES definitions
 			if (this.stateNames[state] === undefined) {
 				name = "state " + String(state);
 			} else {

@@ -1,3 +1,9 @@
+Build 612
+- state names can now be used with the [[ COLOR ]] script command (part 1)
+- re-enable Ctrl-C to copy Help
+- fixed an issue with the Population Graph at sample limit
+- increased maximum number of Population Graph samples to 524288
+
 Build 611
 - add keyboard shortcuts to tooltips for POI buttons and Universe buttons
 - adjust states slider when picking states

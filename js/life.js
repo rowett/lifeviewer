@@ -171,7 +171,7 @@
 		/** @const {number} */ snapshotInterval : 64,
 
 		// maximum number of population samples for graph
-		/** @const {number} */ maxPopSamples : 262144,
+		/** @const {number} */ maxPopSamples : 524288,
 
 		// population samples chunk size 2^n
 		/** @const {number} */ popChunkPower : 12,
@@ -11395,7 +11395,7 @@
 				maxVal = minVal;
 				next = next + inc;
 				index = index + 1;
-				while ((next | 0) === 0) {
+				while ((next | 0) === 0 && (index < maxPopSamples)) {
 					popChunk = index >> LifeConstants.popChunkPower;
 					popOffset = index & popMask;
 					nextVal = graphData[popChunk][popOffset];

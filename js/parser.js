@@ -3182,65 +3182,26 @@
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeUIBorder, whichColour);
 									break;
 
-
-								// others are errors
+								// others are errors or state names
 								default:
-									// check for PCA names
-									colNum = -1;
-									if (view.engine.isPCA) {
-										switch(peekToken) {
-										case "N":
-											colNum = 1;
-											break;
-										case "E":
-											colNum = 2;
-											break;
-										case "NE":
-											colNum = 3;
-											break;
-										case "S":
-											colNum = 4;
-											break;
-										case "NS":
-											colNum = 5;
-											break;
-										case "ES":
-											colNum = 6;
-											break;
-										case "NES":
-											colNum = 7;
-											break;
-										case "W":
-											colNum = 8;
-											break;
-										case "NW":
-											colNum = 9;
-											break;
-										case "EW":
-											colNum = 10;
-											break;
-										case "NEW":
-											colNum = 11;
-											break;
-										case "SW":
-											colNum = 12;
-											break;
-										case "NSW":
-											colNum = 13;
-											break;
-										case "ESW":
-											colNum = 14;
-											break;
-										case "NESW":
-											colNum = 15;
-											break;
+									// check if in string
+									if (peekToken.charAt(0) === "\"") {
+										peekToken = scriptReader.getNextToken();
+										do {
+											stringToken = scriptReader.getNextToken();
+											peekToken += " " + stringToken;
 										}
+										while (stringToken !== "" && stringToken.charAt(stringToken.length - 1) !== "\"");
+									} else {
+										peekToken = scriptReader.getNextToken();
+									}
 
-										// decode the rgb value
-										if (colNum !== -1) {
-											peekToken = scriptReader.getNextToken();
-											this.decodeRGB(view, scriptReader, scriptErrors, colNum, nextToken, badColour, colNum);
-										}
+									// check state names
+									colNum = view.getStateFromName(peekToken);
+
+									// decode the rgb value
+									if (colNum !== -1) {
+										this.decodeRGB(view, scriptReader, scriptErrors, colNum, nextToken, badColour, peekToken);
 									}
 
 									// illegal colour element

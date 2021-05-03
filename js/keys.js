@@ -1541,13 +1541,13 @@
 
 			// c for theme cycle or copy
 			case 67:
-				// check for Help
-				if (me.displayHelp !== 0) {
-					this.toggleHelpTopic(me, ViewConstants.coloursTopic);
+				// check for control-C
+				if (event.ctrlKey) {
+					me.processCopy(me, event.shiftKey, event.altKey);
 				} else {
-					// check for control-C
-					if (event.ctrlKey) {
-						me.processCopy(me, event.shiftKey, event.altKey);
+				// check for Help
+					if (me.displayHelp !== 0) {
+						this.toggleHelpTopic(me, ViewConstants.coloursTopic);
 					} else {
 						// disable colour themes in multi-state mode
 						if (!me.multiStateView) {
