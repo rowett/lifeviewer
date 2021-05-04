@@ -410,6 +410,10 @@
 						me.setHelpTopic(ViewConstants.welcomeTopic, me);
 					} else {
 						me.displayHelp = 0;
+
+						// update the help UI
+						me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+						me.menuManager.toggleRequired = true;
 					}
 				} else {
 					// check for settings menu

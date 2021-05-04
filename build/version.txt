@@ -1,3 +1,7 @@
+Build 613
+- experimental performance improvement for RuleTree rules
+- Help toggle was not clearing if Help closed with Backspace
+
 Build 612
 - state names can now be used with the [[ COLOR ]] script command (part 1)
 - re-enable Ctrl-C to copy Help
