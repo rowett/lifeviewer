@@ -303,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 613,
+		/** @const {number} */ versionBuild : 614,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -14935,6 +14935,9 @@
 		if (!this.manager.loadingFromRepository) {
 			this.completeStart(pattern, [ignoreThumbnail], this);
 		} else {
+			var temp = this.manager.create("", "x=1,y=1,rule=Life\n!", this.engine.allocator, this.completeStart, this.completeStart, [ignoreThumbnail], this);
+			this.completeStart(temp, [ignoreThumbnail], this);
+			this.menuManager.notification.clear(false, true);
 			this.menuManager.notification.notify("Loading rule...", 15, 10000, 15, true);
 		}
 	};

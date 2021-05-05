@@ -20495,9 +20495,6 @@
 		    belowNextTiles = 0, aboveNextTiles = 0,
 			bottomY = 0, topY = 0, leftX = 0, rightX = 0,
 
-			// whether cells were set in the tile
-			tileCells = 0,
-
 		    // column occupied
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
@@ -20751,7 +20748,7 @@
 							columnOccupied16[leftX >> 4] |= colOccupied;
 
 							// update tile grid if any cells are set
-							if (colOccupied || tileCells) {
+							if (colOccupied) {
 								// set this tile
 								nextTiles |= (1 << bit);
 
@@ -21065,9 +21062,6 @@
 		    belowNextTiles = 0, aboveNextTiles = 0,
 			bottomY = 0, topY = 0, leftX = 0, rightX = 0,
 
-			// whether cells were set in the tile
-			tileCells = 0,
-
 		    // column occupied
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
@@ -21356,7 +21350,7 @@
 							columnOccupied16[leftX >> 4] |= colOccupied;
 
 							// update tile grid if any cells are set
-							if (colOccupied || tileCells) {
+							if (colOccupied) {
 								// set this tile
 								nextTiles |= (1 << bit);
 
@@ -21682,9 +21676,6 @@
 		    belowNextTiles = 0, aboveNextTiles = 0,
 			bottomY = 0, topY = 0, leftX = 0, rightX = 0,
 
-			// whether cells were set in the tile
-			tileCells = 0,
-
 		    // column occupied
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
@@ -22009,7 +22000,7 @@
 							columnOccupied16[leftX >> 4] |= colOccupied;
 
 							// update tile grid if any cells are set
-							if (colOccupied || tileCells) {
+							if (colOccupied) {
 								// set this tile
 								nextTiles |= (1 << bit);
 
@@ -22329,9 +22320,6 @@
 		    belowNextTiles = 0, aboveNextTiles = 0,
 			bottomY = 0, topY = 0, leftX = 0, rightX = 0,
 
-			// whether cells were set in the tile
-			tileCells = 0,
-
 		    // column occupied
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
@@ -22641,7 +22629,7 @@
 							columnOccupied16[leftX >> 4] |= colOccupied;
 
 							// update tile grid if any cells are set
-							if (colOccupied || tileCells) {
+							if (colOccupied) {
 								// set this tile
 								nextTiles |= (1 << bit);
 
@@ -22977,13 +22965,11 @@
 			staticTileGrid = this.staticTileGrid,
 			staticTiles = 0, tileChanged = 0,
 
-			// whether cells were set in the tile
-			tileCells = 0,
-
 		    // column occupied
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
 			colIndex = 0,
+			localCol = 0,
 			
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
@@ -23156,6 +23142,7 @@
 
 									// column index
 									colIndex = 32768;
+									localCol = 0;
 
 									// process each column in the row
 									x = leftX;
@@ -23196,8 +23183,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										// check for death
 										if (c > 0) {
@@ -23230,8 +23216,7 @@
 											if (c === 0) {
 												births += 1;
 											}
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										} else {
 											if (c > 0) {
 												deaths += 1;
@@ -23258,8 +23243,7 @@
 											if (c === 0) {
 												births += 1;
 											}
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										} else {
 											if (c > 0) {
 												deaths += 1;
@@ -23286,8 +23270,7 @@
 											if (c === 0) {
 												births += 1;
 											}
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										} else {
 											if (c > 0) {
 												deaths += 1;
@@ -23314,8 +23297,7 @@
 											if (c === 0) {
 												births += 1;
 											}
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										} else {
 											if (c > 0) {
 												deaths += 1;
@@ -23342,8 +23324,7 @@
 											if (c === 0) {
 												births += 1;
 											}
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										} else {
 											if (c > 0) {
 												deaths += 1;
@@ -23370,8 +23351,7 @@
 											if (c === 0) {
 												births += 1;
 											}
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										} else {
 											if (c > 0) {
 												deaths += 1;
@@ -23398,8 +23378,7 @@
 											if (c === 0) {
 												births += 1;
 											}
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										} else {
 											if (c > 0) {
 												deaths += 1;
@@ -23426,8 +23405,7 @@
 											if (c === 0) {
 												births += 1;
 											}
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										} else {
 											if (c > 0) {
 												deaths += 1;
@@ -23454,8 +23432,7 @@
 											if (c === 0) {
 												births += 1;
 											}
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										} else {
 											if (c > 0) {
 												deaths += 1;
@@ -23482,8 +23459,7 @@
 											if (c === 0) {
 												births += 1;
 											}
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										} else {
 											if (c > 0) {
 												deaths += 1;
@@ -23510,8 +23486,7 @@
 											if (c === 0) {
 												births += 1;
 											}
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										} else {
 											if (c > 0) {
 												deaths += 1;
@@ -23538,8 +23513,7 @@
 											if (c === 0) {
 												births += 1;
 											}
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										} else {
 											if (c > 0) {
 												deaths += 1;
@@ -23566,8 +23540,7 @@
 											if (c === 0) {
 												births += 1;
 											}
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										} else {
 											if (c > 0) {
 												deaths += 1;
@@ -23594,8 +23567,7 @@
 											if (c === 0) {
 												births += 1;
 											}
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										} else {
 											if (c > 0) {
 												deaths += 1;
@@ -23607,8 +23579,7 @@
 										// unroll 1
 										if (gridRow1[x] > 0) {
 											population += 1;
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										}
 										colIndex >>= 1;
 										x += 1;
@@ -23616,8 +23587,7 @@
 										// unroll 2
 										if (gridRow1[x] > 0) {
 											population += 1;
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										}
 										colIndex >>= 1;
 										x += 1;
@@ -23625,8 +23595,7 @@
 										// unroll 3
 										if (gridRow1[x] > 0) {
 											population += 1;
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										}
 										colIndex >>= 1;
 										x += 1;
@@ -23634,8 +23603,7 @@
 										// unroll 4
 										if (gridRow1[x] > 0) {
 											population += 1;
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										}
 										colIndex >>= 1;
 										x += 1;
@@ -23643,8 +23611,7 @@
 										// unroll 5
 										if (gridRow1[x] > 0) {
 											population += 1;
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										}
 										colIndex >>= 1;
 										x += 1;
@@ -23652,8 +23619,7 @@
 										// unroll 6
 										if (gridRow1[x] > 0) {
 											population += 1;
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										}
 										colIndex >>= 1;
 										x += 1;
@@ -23661,8 +23627,7 @@
 										// unroll 7
 										if (gridRow1[x] > 0) {
 											population += 1;
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										}
 										colIndex >>= 1;
 										x += 1;
@@ -23670,8 +23635,7 @@
 										// unroll 8
 										if (gridRow1[x] > 0) {
 											population += 1;
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										}
 										colIndex >>= 1;
 										x += 1;
@@ -23679,8 +23643,7 @@
 										// unroll 9
 										if (gridRow1[x] > 0) {
 											population += 1;
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										}
 										colIndex >>= 1;
 										x += 1;
@@ -23688,8 +23651,7 @@
 										// unroll 10
 										if (gridRow1[x] > 0) {
 											population += 1;
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										}
 										colIndex >>= 1;
 										x += 1;
@@ -23697,8 +23659,7 @@
 										// unroll 11
 										if (gridRow1[x] > 0) {
 											population += 1;
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										}
 										colIndex >>= 1;
 										x += 1;
@@ -23706,8 +23667,7 @@
 										// unroll 12
 										if (gridRow1[x] > 0) {
 											population += 1;
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										}
 										colIndex >>= 1;
 										x += 1;
@@ -23715,8 +23675,7 @@
 										// unroll 13
 										if (gridRow1[x] > 0) {
 											population += 1;
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										}
 										colIndex >>= 1;
 										x += 1;
@@ -23730,8 +23689,7 @@
 										se = gridRow2[x + 1];
 										if (c > 0) {
 											population += 1;
-											rowOccupied |= rowIndex;
-											colOccupied |= colIndex;
+											localCol |= colIndex;
 										}
 										colIndex >>= 1;
 										x += 1;
@@ -23761,17 +23719,18 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
 										}
 									}
 
-									// no need for next column
-									//colIndex >>= 1;
-									//x += 1;
+									// if column had cells then update row flag
+									if (localCol) {
+										colOccupied |= localCol;
+										rowOccupied |= rowIndex;
+									}
 
 									// next row
 									y += 1;
@@ -23807,6 +23766,7 @@
 
 									// column index
 									colIndex = 32768;
+									localCol = 0;
 
 									// process each column in the row
 									x = leftX;
@@ -23847,8 +23807,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										// check for death
 										if (c > 0) {
@@ -23879,8 +23838,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
@@ -23907,8 +23865,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
@@ -23935,8 +23892,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
@@ -23963,8 +23919,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
@@ -23991,8 +23946,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
@@ -24019,8 +23973,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
@@ -24047,8 +24000,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
@@ -24075,8 +24027,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
@@ -24103,8 +24054,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
@@ -24131,8 +24081,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
@@ -24159,8 +24108,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
@@ -24187,8 +24135,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
@@ -24215,8 +24162,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
@@ -24243,8 +24189,7 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
@@ -24277,25 +24222,26 @@
 										if (c === 0) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
+										localCol |= colIndex;
 									} else {
 										if (c > 0) {
 											deaths += 1;
 										}
 									}
 
-									// no need for next column
-									//colIndex >>= 1;
-									//x += 1;
+									// if column had cells then update row flag
+									if (localCol) {
+										colOccupied |= localCol;
+										rowOccupied |= rowIndex;
+									}
 
 									// next row
 									y += 1;
 									rowIndex >>= 1;
 								}
 
-								// if the tile didn't change then mark the tile as static
-								if (tileChanged === 0) {
+								// if the tile didn't change then mark the tile as static unless empty
+								if ((tileChanged === 0) && colOccupied) {
 									staticTiles |= (1 << bit);
 								}
 							}
@@ -24304,7 +24250,7 @@
 							columnOccupied16[leftX >> 4] |= colOccupied;
 
 							// update tile grid if any cells are set
-							if (colOccupied || tileCells) {
+							if (colOccupied) {
 								// set this tile
 								nextTiles |= (1 << bit);
 
@@ -24611,9 +24557,6 @@
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
-
-			// whether cells were set in the tile
-			/** @type {number} */ tileCells = 0,
 
 		    // column occupied
 			/** @type {Array<number>} */ columnOccupied16 = this.columnOccupied16,
@@ -25163,7 +25106,7 @@
 							columnOccupied16[leftX >> 4] |= colOccupied;
 
 							// update tile grid if any cells are set
-							if (colOccupied || tileCells) {
+							if (colOccupied) {
 								// set this tile
 								nextTiles |= (1 << bit);
 
@@ -25469,9 +25412,6 @@
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
-
-			// whether cells were set in the tile
-			/** @type {number} */ tileCells = 0,
 
 		    // column occupied
 			/** @type {Array<number>} */ columnOccupied16 = this.columnOccupied16,
@@ -26021,7 +25961,7 @@
 							columnOccupied16[leftX >> 4] |= colOccupied;
 
 							// update tile grid if any cells are set
-							if (colOccupied || tileCells) {
+							if (colOccupied) {
 								// set this tile
 								nextTiles |= (1 << bit);
 
@@ -26327,9 +26267,6 @@
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
-
-			// whether cells were set in the tile
-			/** @type {number} */ tileCells = 0,
 
 		    // column occupied
 			/** @type {Array<number>} */ columnOccupied16 = this.columnOccupied16,
@@ -26879,7 +26816,7 @@
 							columnOccupied16[leftX >> 4] |= colOccupied;
 
 							// update tile grid if any cells are set
-							if (colOccupied || tileCells) {
+							if (colOccupied) {
 								// set this tile
 								nextTiles |= (1 << bit);
 
@@ -27185,9 +27122,6 @@
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
-
-			// whether cells were set in the tile
-			/** @type {number} */ tileCells = 0,
 
 		    // column occupied
 			/** @type {Array<number>} */ columnOccupied16 = this.columnOccupied16,
@@ -27737,7 +27671,7 @@
 							columnOccupied16[leftX >> 4] |= colOccupied;
 
 							// update tile grid if any cells are set
-							if (colOccupied || tileCells) {
+							if (colOccupied) {
 								// set this tile
 								nextTiles |= (1 << bit);
 
@@ -28035,9 +27969,6 @@
 		    tiles = 0, nextTiles = 0,
 		    belowNextTiles = 0, aboveNextTiles = 0,
 			bottomY = 0, topY = 0, leftX = 0,
-
-			// whether cells were set in the tile
-			tileCells = 0,
 
 		    // column occupied
 		    columnOccupied16 = this.columnOccupied16,
@@ -28608,7 +28539,7 @@
 							columnOccupied16[leftX >> 4] |= colOccupied;
 
 							// update tile grid if any cells are set
-							if (colOccupied || tileCells) {
+							if (colOccupied) {
 								// set this tile
 								nextTiles |= (1 << bit);
 

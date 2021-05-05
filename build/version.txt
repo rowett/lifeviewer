@@ -1,3 +1,7 @@
+Build 614
+- better handling during repository rule load
+- add missing QUALITY command description to Help
+
 Build 613
 - experimental performance improvement for RuleTree rules
 - Help toggle was not clearing if Help closed with Backspace
