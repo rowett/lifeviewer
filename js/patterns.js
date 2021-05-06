@@ -32,6 +32,9 @@
 			found = false,
 			name = pattern.ruleName.toLowerCase();
 
+		// convert spaces to underscores
+		name = name.replace(/ /g, "_");
+
 		// check if the rule already exists
 		i = 0;
 		while (i < l && !found) {
@@ -66,6 +69,9 @@
 			result = "";
 
 		name = name.toLowerCase();
+		// convert spaces to underscores
+		name = name.replace(/ /g, "_");
+
 		while (i < l && !found) {
 			if (this.definitions[i].name === name) {
 				found = true;
@@ -86,6 +92,9 @@
 			request = null,
 			found = false,
 			name = pattern.ruleName.toLowerCase();
+
+		// convert spaces to underscores
+		name = name.replace(/ /g, "_");
 
 		// check if the rule already exists
 		i = 0;
@@ -121,6 +130,9 @@
 			found = false,
 			name = pattern.ruleName.toLowerCase();
 
+		// convert spaces to underscores
+		name = name.replace(/ /g, "_");
+
 		// check if the rule already exists
 		i = 0;
 		while (i < l && !found) {
@@ -147,6 +159,9 @@
 			l = this.rules.length,
 			found = false,
 			name = pattern.ruleName.toLowerCase();
+
+		// convert spaces to underscores
+		name = name.replace(/ /g, "_");
 
 		// check if the rule already exists
 		i = 0;
@@ -179,7 +194,7 @@
 			this.meta[l] = {fetch: fetchTime | 0, decode: decodeTime | 0, size: ruleSize};
 
 			// create definition
-			this.definitions[l] ={name: name, definition: definition};
+			this.definitions[l] = {name: name, definition: definition};
 
 			// remove the rule from the request list
 			this.removeRequest(pattern);
@@ -193,6 +208,9 @@
 			record = null,
 			found = false,
 			name = pattern.ruleName.toLowerCase();
+
+		// convert spaces to underscores
+		name = name.replace(/ /g, "_");
 
 		// check if the rule exists
 		i = 0;
@@ -9143,7 +9161,12 @@
 		var	me = this,
 			xhr = null,
 			ruleName = pattern.ruleName,
-			uri = "/wiki/Rule:" + ruleName;
+			uri = "";
+
+		// convert spaces to underscores for load
+		ruleName = ruleName.replace(/ /g, "_");
+
+		uri = "/wiki/Rule:" + ruleName;
 
 		// start timing
 		this.time = performance.now();

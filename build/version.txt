@@ -1,9 +1,12 @@
+Build 615
+- experimental performance improvement for RuleTree von Neumann neighbourhood rules
+
 Build 614
 - better handling during repository rule load
 - add missing QUALITY command description to Help
 
 Build 613
-- experimental performance improvement for RuleTree rules
+- experimental performance improvement for RuleTree Moore neighbourhood rules
 - Help toggle was not clearing if Help closed with Backspace
 
 Build 612
