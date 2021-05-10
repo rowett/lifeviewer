@@ -19,6 +19,7 @@
 		// tile map for grid and colour grid
 		this.tileGrid = manager.tileGrids[index];
 		this.colourTileGrid = manager.colourTileGrids[index];
+		this.overlayTileGrid = manager.overlayTileGrids[index];
 
 		// buffer for grid tile map and colour tile map save
 		this.gridBuffer = manager.gridBuffers[index];
@@ -205,8 +206,7 @@
 						// next tile column
 						leftX += xSize;
 					}
-				}
-				else {
+				} else {
 					// skip empty tile group
 					leftX += xSize << 4;
 				}
@@ -372,8 +372,7 @@
 							// next tile column
 							leftX += xSize;
 						}
-					}
-					else {
+					} else {
 						// skip empty tile group
 						leftX += xSize << 4;
 					}
@@ -385,6 +384,236 @@
 		}
 	};
 
+	// restore overlay grid using tile map
+	Snapshot.prototype.restoreOverlayGridUsingTile = function(grid, tile, life) {
+		// length of tile array
+		var l = tile.length,
+		    
+		    // width of tile row arrays
+		    w = tile[0].length,
+
+		    // iterators
+		    x = 0,
+		    y = 0,
+		    b = 0,
+		    tx = 0,
+		    ty = 0,
+
+		    // buffer index
+		    bufInd = 0,
+
+		    // tile row
+		    tileRow = null,
+
+		    // tile group (16 tiles)
+		    tileGroup = 0,
+
+		    // tile width (in bytes) and height
+		    xSize = life.tileX << 3,
+		    ySize = life.tileY,
+
+		    // tile on the grid
+		    leftX = 0,
+		    bottomY = 0,
+
+		    // overlay grid buffer
+		    buffer = this.overlayBuffer,
+
+		    // row index
+		    rowIndex = 0,
+
+		    // buffer row
+		    bufferRow = buffer[rowIndex],
+
+		    // row size
+		    rowSize = bufferRow.length,
+
+		    // next bytes from the buffer
+		    value = 0;
+
+		// restore the colour tile grid
+		Array.copy(this.overlayTileGrid, tile);
+
+		// copy the buffer onto the colour grid
+		for (y = 0; y < l; y += 1) {
+			// get the next tile row
+			tileRow = tile[y];
+
+			// set tile column on grid
+			leftX = 0;
+
+			// get each set of tiles in the row
+			for (x = 0; x < w; x += 1) {
+				// get the next tile group
+				tileGroup = tileRow[x];
+
+				// check if any tiles are present in the tile group
+				if (tileGroup) {
+					// check each tile in the group
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile is used
+						if ((tileGroup & (1 << b)) !== 0) {
+							// copy the tile
+							for (tx = leftX; tx < leftX + xSize; tx += 4) {
+								ty = bottomY;
+
+								// get the data from the buffer
+								value = bufferRow[bufInd];
+								bufInd += 1;
+
+								// copy to the colour grid
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								// loop unroll for whole tile
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								value = bufferRow[bufInd];
+								bufInd += 1;
+								grid[ty][tx] = value & 255;
+								grid[ty][tx + 1] = (value >> 8) & 255;
+								grid[ty][tx + 2] = (value >> 16) & 255;
+								grid[ty][tx + 3] = value >> 24;
+								ty += 1;
+
+								// check if buffer row is full
+								if (bufInd >= rowSize) {
+									// get the next row
+									rowIndex += 1;
+									bufferRow = buffer[rowIndex];
+
+									// reset index
+									bufInd = 0;
+								}
+							}
+						}
+
+						// next tile column
+						leftX += xSize;
+					}
+				} else {
+					// skip empty tile group
+					leftX += xSize << 4;
+				}
+			}
+
+			// next tile row
+			bottomY += ySize;
+		}
+	};
 
 	// restore colour grid using tile map
 	Snapshot.prototype.restoreColourGridUsingTile = function(grid, tile, life) {
@@ -606,8 +835,7 @@
 						// next tile column
 						leftX += xSize;
 					}
-				}
-				else {
+				} else {
 					// skip empty tile group
 					leftX += xSize << 4;
 				}
@@ -615,6 +843,206 @@
 
 			// next tile row
 			bottomY += ySize;
+		}
+	};
+
+	// save overlay grid using tile map
+	Snapshot.prototype.saveOverlayGridUsingTile = function(grid, tile, life) {
+		// length of tile array
+		var l = tile.length,
+		    
+		    // width of tile row arrays
+		    w = tile[0].length,
+
+		    // iterators
+		    x = 0,
+		    y = 0,
+		    b = 0,
+		    tx = 0,
+		    ty = 0,
+
+		    // buffer index
+		    bufInd = 0,
+
+		    // tile row
+		    tileRow = null,
+
+		    // tile group (16 tiles)
+		    tileGroup = 0,
+
+		    // count of used tiles
+		    usedCount = 0,
+
+		    // tile width (in bytes) and height
+		    xSize = life.tileX << 3,
+		    ySize = life.tileY,
+
+		    // tile on the grid
+		    leftX = 0,
+		    bottomY = 0,
+
+		    // overlay grid buffer
+		    buffer = this.overlayBuffer,
+
+		    // row index
+		    rowIndex = 0,
+
+		    // first buffer row
+		    bufferRow = buffer[rowIndex],
+
+		    // row size
+		    rowSize = bufferRow.length,
+
+		    // number of rows
+		    numRows = buffer.length,
+
+		    // bit counts (from manager)
+		    bitCounts = this.manager.bitCounts;
+
+		// save the colour tile grid
+		Array.copy(tile, this.overlayTileGrid);
+
+		// count tiles used
+		for (y = 0; y < l; y += 1) {
+			// get the next tile row
+			tileRow = tile[y];
+
+			// get each set of tiles in the row
+			for (x = 0; x < w; x += 1) {
+				// get the next tile group
+				tileGroup = tileRow[x];
+
+				// count the tiles in the group
+				if (tileGroup) {
+					usedCount += bitCounts[tileGroup];
+				}
+			}
+		}
+
+		// allocate array to store grid
+		if (usedCount) {
+			// copy the grid in to the buffer
+			for (y = 0; y < l; y += 1) {
+				// get the next tile row
+				tileRow = tile[y];
+
+				// set tile column on grid
+				leftX = 0;
+
+				// get each set of tiles in the row
+				for (x = 0; x < w; x += 1) {
+					// get the next tile group
+					tileGroup = tileRow[x];
+
+					// check if any tiles are present in the tile group
+					if (tileGroup) {
+						// check each tile in the group
+						for (b = 15; b >= 0; b -= 1) {
+							// check if this tile is used
+							if ((tileGroup & (1 << b)) !== 0) {
+								// copy the tile
+								for (tx = leftX; tx < leftX + xSize; tx += 4) {
+									ty = bottomY;
+
+									// copy the tile from the grid to the buffer
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									// loop unroll for whole tile
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
+									bufInd += 1;
+									ty += 1;
+
+									// check if buffer row is full
+									if (bufInd >= rowSize) {
+										// go to next row
+										rowIndex += 1;
+
+										// reset index
+										bufInd = 0;
+
+										// check if there is a next row
+										if (rowIndex >= numRows) {
+											// allocate a new row
+											Array.addRow(buffer, 0, "Snapshot.overlayGridBufferRow");
+											numRows += 1;
+										}
+
+										// get the next row
+										bufferRow = buffer[rowIndex];
+									}
+								}
+							}
+
+							// next tile column
+							leftX += xSize;
+						}
+					} else {
+						// skip empty tile group
+						leftX += xSize << 4;
+					}
+				}
+
+				// next tile row
+				bottomY += ySize;
+			}
 		}
 	};
 
@@ -806,8 +1234,7 @@
 							// next tile column
 							leftX += xSize;
 						}
-					}
-					else {
+					} else {
 						// skip empty tile group
 						leftX += xSize << 4;
 					}
@@ -839,6 +1266,9 @@
 		// colour tile grids
 		this.colourTileGrids = [];
 
+		// overlay tile grids
+		this.overlayTileGrids = [];
+
 		// grid buffers
 		this.gridBuffers = [];
 
@@ -857,14 +1287,14 @@
 		// maximum number of snapshots
 		this.maxSnapshots = 51;
 
-		// reset snapshot
-		this.resetSnapshots = [];
-
 		// bit counts for bytes
 		this.bitCounts = bitcounts;
 
 		// default number of tiles to allocate
 		this.defaultTiles = 128;
+
+		// reset snapshot
+		this.resetSnapshot = null;
 	}
 
 	// return buffer size in bytes
@@ -886,8 +1316,9 @@
 			// add colour grid buffer
 			result += this.colourBuffers[i].length * this.colourBuffers[i][0].length * 4;
 
-			// add overlay grid buffer if used
+			// add overlay tile and grid buffer if used
 			if (this.overlayBuffers[i]) {
+				result += this.overlayTileGrids[i].length * this.overlayTileGrids[i][0].length * 2;
 				result += this.overlayBuffers[i].length * this.overlayBuffers[i][0].length * 4;
 			}
 
@@ -896,11 +1327,6 @@
 	
 		// return size
 		return result;
-	};
-
-	// return number of reset snapshots
-	SnapshotManager.prototype.numResetPoints = function() {
-		return this.resetSnapshots.length;
 	};
 
 	// return number of buffers used
@@ -927,34 +1353,11 @@
 
 	// reset the snapshot manager
 	SnapshotManager.prototype.reset = function() {
-		var i = 0,
-		    j = 0,
-		    found = false;
-
 		// clear the snapshots
 		this.snapshots = [];
+		this.bufferUsed = [];
+		this.numBuffers = 0;
 		this.index = -1;
-
-		// mark all buffers apart from the reset snapshots as free
-		while (i < this.bufferUsed.length) {
-			// check for the reset snapshot
-			found = false;
-			j = 0;
-			while (j < this.resetSnapshots.length && !found) {
-				if (i === this.resetSnapshots[j].index) {
-					found = true;
-				}
-				else{
-					j += 1;
-				}
-			}
-
-			// free the buffer if it isn't a reset snapshot
-			if (!found) {
-				this.bufferUsed[i] = false;
-			}
-			i += 1;
-		}
 	};
 
 	// get the snapshot before the target generation
@@ -994,39 +1397,22 @@
 	};
 
 	// save snapshot
-	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, overlayGrid, zoomBox, HROTBox, population, births, deaths, counter, counterMargolus, maxMargolusGen, width, height, life, isReset, anythingAlive) {
+	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, overlayGrid, overlayTileGrid, zoomBox, HROTBox, population, births, deaths, counter, counterMargolus, maxMargolusGen, width, height, life, isReset, anythingAlive) {
 		var snapshot = null,
 		    i = 0,
-		    l = this.resetSnapshots.length,
-			found = false,
 			usingOverlay = (overlayGrid !== null);
 
 		// check if saving to the reset snapshot
 		if (isReset) {
-			// find the correct reset snapshot
-			while (i < l && !found) {
-				if (this.resetSnapshots[i].counter === counter) {
-					found = true;
-				}
-				else {
-					i += 1;
-				}
-			}
-			if (found) {
-				snapshot = this.resetSnapshots[i];
-			}
-			else {
-				alert("reset snapshot at generation " + counter + " not found!");
-			}
-		}
-		else {
+			// use the reset snapshot
+			snapshot = this.resetSnapshot;
+		} else {
 			// check whether to create a new snapshot
 			if (this.snapshots.length < this.maxSnapshots) {
 				// create a new snapshot
 				snapshot = this.createSnapshot(width, height, false, counter, usingOverlay);
 				this.index += 1;
-			}
-			else {
+			} else {
 				// get the next snapshot index
 				this.index += 1;
 				if (this.index >= this.maxSnapshots) {
@@ -1060,6 +1446,11 @@
 
 		// save the colour grid
 		snapshot.saveColourGridUsingTile(colourGrid, colourTileGrid, life);
+
+		if (usingOverlay) {
+			// save the overlay grid
+			snapshot.saveOverlayGridUsingTile(overlayGrid, overlayTileGrid, life);
+		}
 
 		// save the bounding box
 		snapshot.zoomBox.leftX = zoomBox.leftX;
@@ -1100,8 +1491,7 @@
 			if (!this.bufferUsed[i]) {
 				// mark found
 				found = true;
-			}
-			else {
+			} else {
 				// check next buffer
 				i += 1;
 			}
@@ -1114,14 +1504,14 @@
 
 			// mark buffer used
 			this.bufferUsed[i] = true;
-		}
-		else {
+		} else {
 			// create a new buffer
 			this.tileGrids[i] = Array.matrix(Uint16, height, width, 0, this.allocator, "Snapshot.tileGrid" + i);
 			this.colourTileGrids[i] = Array.matrix(Uint16, height, width, 0, this.allocator, "Snapshot.colourTileGrid" + i);
 			this.gridBuffers[i] = Array.matrix(Uint32, 1, this.defaultTiles * 8, 0, this.allocator, "Snapshot.gridBuffer" + i);
 			this.colourBuffers[i] = Array.matrix(Uint32, 1, this.defaultTiles * 64, 0, this.allocator, "Snapshot.colourGridBuffer" + i);
 			if (usingOverlay) {
+				this.overlayTileGrids[i] = Array.matrix(Uint16, height, width, 0, this.allocator, "Snapshot.overlayTileGrid" + i);
 				this.overlayBuffers[i] = Array.matrix(Uint32, 1, this.defaultTiles * 64, 0, this.allocator, "Snapshot.overlayGridBuffer" + i);
 			}
 			this.bufferUsed[i] = true;
@@ -1139,8 +1529,6 @@
 	SnapshotManager.prototype.createSnapshot = function(w, h, isReset, counter, usingOverlay) {
 		// lookup or create a buffer
 		var i = 0,
-		    l = this.resetSnapshots.length,
-		    found = false,
 		    bufNum = this.getBuffers(w, h, usingOverlay),
 
 		    // create the new snapshot
@@ -1148,22 +1536,9 @@
 
 		// check if this is the reset snapshot
 		if (isReset) {
-			// search for an existing reset snapshot
-			while (i < l && !found) {
-				if (this.resetSnapshots[i].counter === counter) {
-					found = true;
-				} else {
-					i += 1;
-				}
-			}
-			if (found) {
-				// return the existing reset snapshot
-				result = this.resetSnapshots[i];
-			} else {
-				// save the reset snapshot
-				result = new Snapshot(this, bufNum, usingOverlay);
-				this.resetSnapshots[this.resetSnapshots.length] = result;
-			}
+			// create the reset snapshot
+			result = new Snapshot(this, bufNum, usingOverlay);
+			this.resetSnapshot = result;
 		} else {
 			// add to the list of snapshots
 			result = new Snapshot(this, bufNum, usingOverlay);
@@ -1175,10 +1550,11 @@
 	};
 
 	// resize a snapshot
-	SnapshotManager.prototype.resizeSnapshot = function(snapshot, newWidth, newHeight, offset) {
+	SnapshotManager.prototype.resizeSnapshot = function(snapshot, newWidth, newHeight, offset, useOverlay) {
 		// get current snapshot tile grid and colour tile grid
 		var currentTileGrid = snapshot.tileGrid,
 			currentColourTileGrid = snapshot.colourTileGrid,
+			currentOverlayTileGrid = snapshot.overlayTileGrid,
 		    currentHeight = snapshot.tileGrid.length,
 		    yOffset = currentHeight >> 1,
 		    xOffset = snapshot.tileGrid[0].length >> 1,
@@ -1188,16 +1564,25 @@
 		// allocate the new tile grids in the buffer
 		this.tileGrids[index] = Array.matrix(Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.tileGrid" + index);
 		this.colourTileGrids[index] = Array.matrix(Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.colourTileGrid" + index);
+		if (useOverlay) {
+			this.overlayTileGrids[index] = Array.matrix(Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.overlayTileGrid" + index);
+		}
 
 		// set them in the snapshot
 		snapshot.tileGrid = this.tileGrids[index];
 		snapshot.colourTileGrid = this.colourTileGrids[index];
+		if (useOverlay) {
+			snapshot.overlayTileGrid = this.overlayTileGrids[index];
+		}
 
 		// copy the old grids to the center of the new ones
 		if (offset > 0) {
 			while (y < currentHeight) {
 				snapshot.tileGrid[y + yOffset].set(currentTileGrid[y], xOffset);
 				snapshot.colourTileGrid[y + yOffset].set(currentColourTileGrid[y], xOffset);
+				if (useOverlay) {
+					snapshot.overlayTileGrid[y + yOffset].set(currentOverlayTileGrid[y], xOffset);
+				}
 				y += 1;
 			}
 
@@ -1214,21 +1599,20 @@
 	};
 
 	// resize snapshots to fit the new grid
-	SnapshotManager.prototype.resizeSnapshots = function(newWidth, newHeight, offset) {
+	SnapshotManager.prototype.resizeSnapshots = function(newWidth, newHeight, offset, useOverlay) {
 		var i = 0,
-		    l = this.resetSnapshots.length;
+			l = 0;
 
-		// grow the reset snapshots
-		while (i < l) {
-			this.resizeSnapshot(this.resetSnapshots[i], newWidth, newHeight, offset);
-			i += 1;
+		// grow the reset snapshot
+		if (this.resetSnapshot) {
+			this.resizeSnapshot(this.resetSnapshot, newWidth, newHeight, offset, useOverlay);
 		}
 
 		// grow each saved snapshot
 		i = 0;
 		l = this.snapshots.length;
 		while (i < l) {
-			this.resizeSnapshot(this.snapshots[i], newWidth, newHeight, offset);
+			this.resizeSnapshot(this.snapshots[i], newWidth, newHeight, offset, useOverlay);
 			i += 1;
 		}
 
@@ -1239,6 +1623,9 @@
 				// grow the buffer
 				this.tileGrids[i] = Array.matrix(Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.tileGrid" + i);
 				this.colourTileGrids[i] = Array.matrix(Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.colourTileGrid" + i);
+				if (useOverlay) {
+					this.overlayTileGrids[i] = Array.matrix(Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.overlayTileGrid" + i);
+				}
 			}
 			i += 1;
 		}

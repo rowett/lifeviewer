@@ -64,6 +64,9 @@
 		// alt keys that LifeViewer uses (any accesskey attributes that match these will be disabled)
 		/** @const {string} */ altKeys : "0123456789rtyopasghjklxcbn",
 
+		// maximum start from generation
+		/** @const {number} */ maxStartFromGeneration : 1048576,
+
 		// fit zoom types
 		/** @const {number} */ fitZoomPattern : 0,
 		/** @const {number} */ fitZoomSelection : 1,
@@ -303,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 615,
+		/** @const {number} */ versionBuild : 616,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -631,6 +634,9 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// target generation for go to
+		this.startFrom = -1;
 
 		// pattern state names
 		this.stateNames = [];
@@ -1755,11 +1761,17 @@
 		// save graph image button
 		this.saveGraphButton = null;
 
+		// go to generation button
+		this.goToGenButton = null;
+
 		// copy rule button
 		this.copyRuleButton = null;
 
 		// back button
 		this.backButton = null;
+
+		// cancel button
+		this.cancelButton = null;
 
 		// pattern button
 		this.patternButton = null;
@@ -4110,6 +4122,18 @@
 		return clipped;
 	};
 
+	// update progress bar for start from
+	View.prototype.updateProgressBarStartFrom = function(me) {
+		// update the progress bar
+		me.progressBar.current = 100 * (me.engine.counter / me.startFrom);
+
+		// show the progress bar
+		me.progressBar.deleted = false;
+
+		// clear the bg alpha to show the progress bar
+		me.genToggle.bgAlpha = 0;
+	};
+
 	// update progress bar for copy RLE
 	View.prototype.updateProgressBarCopy = function(me) {
 		// update the progress bar
@@ -5655,6 +5679,10 @@
 			this.directionButton.deleted = shown;
 		}
 
+		// cancel button
+		this.cancelButton.deleted = !(this.identify || this.startFrom !== -1);
+		this.cancelButton.locked = false;
+
 		// generation statistics
 		this.genLabel.deleted = hide;
 		this.genValueLabel.deleted = hide;
@@ -5708,6 +5736,7 @@
 		this.copyRuleButton.deleted = shown;
 		this.saveImageButton.deleted = shown;
 		this.saveGraphButton.deleted = shown;
+		this.goToGenButton.deleted = shown;
 		// info category
 		shown = hide || !this.showInfoSettings;
 		this.fpsButton.deleted = shown;
@@ -6183,6 +6212,64 @@
 		me.menuManager.setAutoUpdate(true);
 	};
 
+	// stop start from (go to generation)
+	View.prototype.stopStartFrom = function(me, cancelled) {
+		me.startFrom = -1;
+		me.viewMenu.locked = false;
+		if (cancelled) {
+			me.menuManager.notification.notify("Cancelled", 15, 80, 15, true);
+		} else {
+			me.menuManager.notification.notify("Arrived at generation " + me.engine.counter, 15, 150, 15, true);
+		}
+		me.menuManager.notification.clear(false, false);
+		me.afterEdit("");
+	};
+
+	// view update for start from
+	View.prototype.viewAnimateStartFrom = function(me) {
+		// start time of updates
+		var startTime = performance.now(),
+
+		    // time budget in ms for this frame
+			timeLimit = 13;
+
+		// lock the menu
+		me.viewMenu.locked = true;
+
+		// compute the next set of generations without stats for speed
+		while (me.engine.counter < me.startFrom && (performance.now() - startTime < timeLimit)) {
+			// compute the next generation
+			me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify);
+			me.engine.convertToPensTile();
+
+			// paste any RLE snippets
+			me.pasteRLEList();
+
+			// if paste every is defined then always flag there are alive cells
+			// since cells will appear in the future
+			if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
+				me.engine.anythingAlive = 1;
+			}
+		}
+
+		// render world
+		me.renderWorld(me, false, 0, false);
+
+		// update progress bar
+		me.updateProgressBarStartFrom(me);
+
+		// set counters to the current
+		me.floatCounter = me.engine.counter;
+		me.originCounter = me.engine.counter;
+
+		// set the auto update mode
+		me.menuManager.setAutoUpdate(true);
+
+		if (me.engine.counter >= me.startFrom) {
+			me.stopStartFrom(me, false);
+		}
+	};
+
 	// view update for identify
 	View.prototype.viewAnimateIdentify = function(me) {
 		// start time of updates
@@ -6438,7 +6525,11 @@
 				if (me.clipboardCopy) {
 					me.viewAnimateClipboard(me);
 				} else {
-					me.viewAnimateNormal(timeSinceLastUpdate, me);
+					if (me.startFrom !== -1) {
+						me.viewAnimateStartFrom(me);
+					} else {
+						me.viewAnimateNormal(timeSinceLastUpdate, me);
+					}
 				}
 			}
 		}
@@ -10018,6 +10109,17 @@
 		me.redo(me);
 	};
 
+	// cancel button
+	View.prototype.cancelPressed = function(me) {
+		if (me.identify) {
+			me.identifyPressed(me);
+		}
+
+		if (me.startFrom !== -1) {
+			me.stopStartFrom(me, true);
+		}
+	};
+
 	// back button
 	View.prototype.backPressed = function(me) {
 		// check if any settings are displayed
@@ -12336,6 +12438,9 @@
 
 	// identify button action
 	View.prototype.identifyAction = function(me) {
+		// enable cancel button
+		me.cancelButton.overrideLocked = true;
+
 		// reset check
 		me.engine.checkedMod = false;
 		me.engine.checkModGen = 0;
@@ -12391,6 +12496,45 @@
 	// save graph image button pressed
 	View.prototype.saveGraphPressed = function(me) {
 		me.screenShotScheduled = 2;
+	};
+
+	// go to generation button pressed
+	View.prototype.goToGenPressed = function(me) {
+		// prompt for generation
+		var result = window.prompt("Enter generation", me.engine.counter),
+			number = 0;
+
+		// check one was entered
+		if (result !== null) {
+			// check for relative generation
+			if (result.substr(0, 1) == "+") {
+				number = me.engine.counter + Number(result.substr(1));
+			} else {
+				if (result.substr(0, 1) == "-") {
+					number = me.engine.counter - Number(result.substr(1));
+				} else {
+					number = Number(result);
+				}
+			}
+
+			if (number >= 0 && number <= ViewConstants.maxStartFromGeneration) {
+				if (number !== me.engine.counter) {
+					me.startFrom = number;
+					me.navToggle.current = me.toggleSettings([false], true, me);
+					me.menuManager.toggleRequired = true;
+					me.menuManager.notification.notify("Going to generation " + number, 15, 10000, 15, false);
+					me.menuManager.notification.clear(true, false);
+
+					// if the required generation is earlier then reset
+					if (number < me.engine.counter) {
+						me.engine.restoreSavedGrid(false);
+						me.setUndoGen(me.engine.counter);
+					}
+				}
+			} else {
+				me.menuManager.notification.notify("Invalid generation specified", 15, 240, 15, true);
+			}
+		}
 	};
 
 	// identify button pressed
@@ -13261,9 +13405,15 @@
 					// @ts-ignore
 					processed = KeyProcessor.processKeyCopy(me, keyCode, event);
 				} else {
-					// process the key
-					// @ts-ignore
-					processed = KeyProcessor.processKey(me, keyCode, event);
+					// check for go to generation
+					if (me.startFrom !== -1) {
+						// @ts-ignore
+						processed = KeyProcessor.processKeyGoTo(me, keyCode, event);
+					} else {
+						// process the key
+						// @ts-ignore
+						processed = KeyProcessor.processKey(me, keyCode, event);
+					}
 				}
 			}
 		}
@@ -13773,44 +13923,48 @@
 		this.autoHideButton.toolTip = ["toggle hide UI on playback [Alt U]"]; 
 
 		// rule button
-		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, -100, -100, 180, 40, "Change Rule");
+		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, -100, -125, 180, 40, "Change Rule");
 		this.ruleButton.toolTip = "change rule [Alt R]";
 
 		// new button
-		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 100, -100, 180, 40, "New Pattern");
+		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 100, -125, 180, 40, "New Pattern");
 		this.newButton.toolTip = "new pattern [Alt N]";
 
 		// load button
-		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, -100, -50, 180, 40, "Load Pattern");
+		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, -100, -75, 180, 40, "Load Pattern");
 		this.loadButton.toolTip = "load last saved pattern [Ctrl O]";
 
 		// save button
-		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 100, -50, 180, 40, "Save Pattern");
+		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 100, -75, 180, 40, "Save Pattern");
 		this.saveButton.toolTip = "save pattern [Ctrl S]";
 
 		// randomize button
-		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, -100, 0, 180, 40, "Randomize");
+		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, -100, -25, 180, 40, "Randomize");
 		this.randomizeButton.toolTip = "randomize pattern and rule [Alt Z]";
 
 		// copy rule button
-		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, 100, 0, 180, 40, "Copy Rule");
+		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, 100, -25, 180, 40, "Copy Rule");
 		this.copyRuleButton.toolTip = "copy rule definition [Ctrl J]";
 
 		// identify button
-		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, -100, 50, 180, 40, "Identify");
+		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, -100, 25, 180, 40, "Identify");
 		this.identifyButton.toolTip = "identify oscillator or spaceship period [F6]";
 
 		// fast identify button
-		this.fastIdentifyButton = this.viewMenu.addButtonItem(this.fastIdentifyPressed, Menu.middle, 100, 50, 180, 40, "Fast Identify");
+		this.fastIdentifyButton = this.viewMenu.addButtonItem(this.fastIdentifyPressed, Menu.middle, 100, 25, 180, 40, "Fast Identify");
 		this.fastIdentifyButton.toolTip = "quickly identify oscillator or spaceship period [Ctrl F6]";
 
 		// image button
-		this.saveImageButton = this.viewMenu.addButtonItem(this.saveImagePressed, Menu.middle, -100, 100, 180, 40, "Save Image");
+		this.saveImageButton = this.viewMenu.addButtonItem(this.saveImagePressed, Menu.middle, -100, 75, 180, 40, "Save Image");
 		this.saveImageButton.toolTip = "save image in new window [O]";
 
 		// save graph button
-		this.saveGraphButton = this.viewMenu.addButtonItem(this.saveGraphPressed, Menu.middle, 100, 100, 180, 40, "Save Graph");
+		this.saveGraphButton = this.viewMenu.addButtonItem(this.saveGraphPressed, Menu.middle, 100, 75, 180, 40, "Save Graph");
 		this.saveGraphButton.toolTip = "save population graph image in new window [Shift O]";
+
+		// go to generation button
+		this.goToGenButton = this.viewMenu.addButtonItem(this.goToGenPressed, Menu.middle, 100, 125, 180, 40, "Go To Gen");
+		this.goToGenButton.toolTip = "go to specified generation [Shift N]";
 
 		// fps button
 		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -100, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
@@ -13902,6 +14056,10 @@
 		// add the back button
 		this.backButton = this.viewMenu.addButtonItem(this.backPressed, Menu.south, 0, -100, 120, 40, "Back");
 		this.backButton.toolTip = "back to previous menu [Backspace]";
+
+		// add the cancel button
+		this.cancelButton = this.viewMenu.addButtonItem(this.cancelPressed, Menu.south, 0, -100, 120, 40, "Cancel");
+		this.cancelButton.toolTip = "cancel operation [Esc]";
 
 		// add the colour theme button
 		this.themeButton = this.viewMenu.addButtonItem(this.themePressed, Menu.middle, 0, -75, 150, 40, "Theme");
@@ -15588,6 +15746,9 @@
 			// reset rainbow mode
 			me.engine.rainbow = false;
 
+			// reset start from
+			me.startFrom = -1;
+
 			// read any script in the title
 			if (pattern.title) {
 				// decode any script commands
@@ -16474,6 +16635,12 @@
 				me.randomPattern(me, true);
 				me.randomGuard = false;
 			}
+		}
+
+		// notify if start from is defined
+		if (me.startFrom !== -1) {
+			me.menuManager.notification.notify("Going to generation " + me.startFrom, 15, 10000, 15, false);
+			me.menuManager.notification.clear(true, false);
 		}
 	};
 

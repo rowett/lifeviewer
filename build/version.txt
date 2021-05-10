@@ -1,3 +1,12 @@
+Build 617
+- new [[ STARTFROM <generation> ]] script command to fast-forward to the specified generation on pattern load
+- Settings->Playback->Go To Gen or hotkey Shift+N to navigate to the specified generation
+	- a relative generation can be specified by prefixing the generation number with + or -
+- new Cancel button (hotkey Esc) to stop Identify or Go To Gen
+
+Build 616
+- Step Back and Undo should now work correctly with [R]History states
+
 Build 615
 - experimental performance improvement for RuleTree von Neumann neighbourhood rules
 

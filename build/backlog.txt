@@ -9,14 +9,8 @@ Investigate:
     strict volatility (Identify)
     memory statistics in allocator with 0 size allocations
 
-Committed:
-    add overlay to Snapshots so undo/redo work with [R]History rules fully
-
 Planned:
-    switch [R]History to [R]Super style algo
-        - remove overlay
-        - remove state6 processing
-    add HistoryStates on state 2 for [R]Super and new [R]History
+    add HistoryStates on state 2 for [R]Super
     menu items coordinates should be reflected based on compass position
     ability to specify Dying state colours
     add UI colours to Themes

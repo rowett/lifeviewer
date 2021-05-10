@@ -667,6 +667,9 @@
 		// whether locked
 		this.locked = false;
 
+		// whether unlock override is on
+		this.overrideLocked = false;
+
 		// whether individual list items are locked
 		this.itemLocked = [];
 		if (this.type === Menu.list) {
@@ -1308,7 +1311,7 @@
 			this.context.fillText(string, 2 - alignPos + 0.5, 2 + 0.5);
 
 			// draw the text
-			if (item.locked || this.locked) {
+			if ((item.locked || this.locked) && !item.overrideLocked) {
 				this.context.fillStyle = item.lockedCol;
 			} else {
 				this.context.fillStyle = item.fgCol;
@@ -1428,7 +1431,7 @@
 			}
 
 			// draw the marker
-			if (item.locked || this.locked) {
+			if ((item.locked || this.locked) && !item.overrideLocked) {
 				this.context.fillStyle = item.lockedCol;
 				this.context.globalAlpha = item.lockedAlpha;
 			} else {
@@ -1451,7 +1454,7 @@
 			}
 
 			// draw the marker
-			if (item.locked || this.locked) {
+			if ((item.locked || this.locked) && !item.overrideLocked) {
 				this.context.fillStyle = item.lockedCol;
 				this.context.globalAlpha = item.lockedAlpha;
 			} else {
@@ -1816,7 +1819,7 @@
 		// draw the border if non-zero
 		if (item.border > 0) {
 			// set foreground colour and alpha
-			if (item.locked || this.locked) {
+			if ((item.locked || this.locked) && !item.overrideLocked) {
 				this.context.strokeStyle = item.lockedCol;
 				this.context.globalAlpha = item.lockedAlpha;
 			} else {
@@ -2144,7 +2147,7 @@
 						mouseOverGlobalItem = i;
 
 						// check if the item is locked
-						if (currentItem.locked || this.locked) {
+						if ((currentItem.locked || this.locked) && !currentItem.overrideLocked) {
 							currentLocked = true;
 						} else {
 							mouseIsOver = true;
@@ -2167,7 +2170,7 @@
 					}
 
 					// if the current item is locked and it is the active item then clear active item
-					if ((i === activeItem) && (currentItem.locked || this.locked)) {
+					if ((i === activeItem) && ((currentItem.locked || this.locked) && !currentItem.overrideLocked)) {
 						activeItem = -1;
 						mouseIsOver = false;
 					}

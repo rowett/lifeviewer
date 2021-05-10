@@ -126,6 +126,7 @@
 			case Keywords.thumbStartWord:
 			case Keywords.thumbZoomWord:
 			case Keywords.autoStartWord:
+			case Keywords.startFromWord:
 			case Keywords.scriptStartWord:
 			case Keywords.scriptEndWord:
 			case Keywords.angleWord:
@@ -3333,6 +3334,23 @@
 						case Keywords.initialWord:
 							scriptErrors[scriptErrors.length] = [Keywords.initialWord, "must follow POI, ALL or a POI setting"];
 							itemValid = true;
+							break;
+
+						// start from
+						case Keywords.startFromWord:
+							// get the interval
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber() | 0;
+
+								// check it is in range
+								if (numberValue >= 0 && numberValue <= ViewConstants.maxStartFromGeneration) {
+									view.startFrom = numberValue;
+									itemValid = true;
+								}
+							}
 							break;
 
 						// autostart

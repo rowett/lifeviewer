@@ -374,6 +374,9 @@
 		// rainbow word
 		/** @const {string} */ rainbowWord : "RAINBOW",
 
+		// start from
+		/** @const {string} */ startFromWord : "STARTFROM",
+
 		// autostart
 		/** @const {string} */ autoStartWord : "AUTOSTART",
 

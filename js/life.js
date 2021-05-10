@@ -668,7 +668,7 @@
 		/** @type {number} */ this.tileRows = this.height >> this.tilePower;
 
 		// snapshot for reset
-		this.resetSnapshot = this.snapshotManager.createSnapshot(((this.tileCols - 1) >> 4) + 1, this.tileRows, true, 0, false);  // TBD 5th paramter is usingoverlay
+		this.resetSnapshot = null;
 
 		// display width
 		/** @type {number} */ this.displayWidth = displayWidth;
@@ -5075,7 +5075,8 @@
 		    nextGrid = null,
 		    tileGrid = null,
 		    nextTileGrid = null,
-			colourGrid = this.colourGrid;
+			colourGrid = this.colourGrid,
+			overlayGrid = this.overlayGrid;
 
 		// restore the counter
 		this.counter = snapshot.counter;
@@ -5107,16 +5108,24 @@
 		// clear the static tile grid
 		this.staticTileGrid.whole.fill(0);
 
-		// copy the colour tile history grid into the colour grid
-		Array.copy(this.colourTileHistoryGrid, this.colourTileGrid);
-
 		// restore grid from snapshot
 		snapshot.restoreGridUsingTile(grid, tileGrid, this);
 
 		// restore colour grid from snapshot
-		snapshot.restoreColourGridUsingTile(colourGrid, this.colourTileHistoryGrid, this);
+		snapshot.restoreColourGridUsingTile(colourGrid, this.colourTileGrid, this);
 		if (this.isPCA || this.isRuleTree || this.isSuper) {
 			Array.copy(colourGrid, this.nextColourGrid);
+		}
+
+		// restore overlay if required
+		if (this.drawOverlay) {
+			overlayGrid.whole.fill(0);
+			this.smallOverlayGrid.whole.fill(0);
+			snapshot.restoreOverlayGridUsingTile(overlayGrid, this.colourTileHistoryGrid, this);
+			this.populateState6MaskFromColGrid();
+		} else {
+			// copy the colour tile history grid into the colour grid
+			Array.copy(this.colourTileHistoryGrid, this.colourTileGrid);
 		}
 
 		// copy the tile grid to the next tile grid
@@ -5188,13 +5197,16 @@
 		}
 
 		// create the snapshot
-		this.snapshotManager.saveSnapshot(grid, tileGrid, colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, this.counterMargolus, this.maxMargolusGen, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive);
+		this.snapshotManager.saveSnapshot(grid, tileGrid, colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.colourTileHistoryGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, this.counterMargolus, this.maxMargolusGen, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive);
 	};
 
 	// save grid
 	Life.prototype.saveGrid = function(noHistory) {
 		// reset snapshot manager
 		this.snapshotManager.reset();
+
+		// create reset snapshot
+		this.resetSnapshot = this.snapshotManager.createSnapshot(((this.tileCols - 1) >> 4) + 1, this.tileRows, true, 0, this.drawOverlay);
 
 		// save initial position for reset
 		this.saveToSnapshot(true, this.grid, this.tileGrid);
@@ -5295,7 +5307,7 @@
 		this.heightMask = this.height - 1;
 
 		// update the snapshots
-		this.snapshotManager.resizeSnapshots(((this.tileCols - 1) >> 4) + 1, this.tileRows, 0);
+		this.snapshotManager.resizeSnapshots(((this.tileCols - 1) >> 4) + 1, this.tileRows, 0, this.drawOverlay);
 	};
 
 	// allocate grid
@@ -5559,7 +5571,7 @@
 			yOffset = this.height >> 2;
 
 			// update the snapshots
-			this.snapshotManager.resizeSnapshots(((this.tileCols - 1) >> 4) + 1, this.tileRows, xOffset);
+			this.snapshotManager.resizeSnapshots(((this.tileCols - 1) >> 4) + 1, this.tileRows, xOffset, this.drawOverlay);
 
 			// update camera x and y
 			this.xOff += xOffset;
@@ -29884,7 +29896,7 @@
 			// scan each set of tiles
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
-				tiles = tileGridRow[tw] | colourTileRow[tw];
+				tiles = tileGridRow[tw] | colourTileRow[tw] | colourTileHistoryRow[tw];
 				nextTiles = 0;
 
 				// check if any are occupied

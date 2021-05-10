@@ -646,6 +646,7 @@
 				y = this.renderHelpLine(view, "Esc", "pause if playing", ctx, x, y, height, helpLine);
 			}
 			y = this.renderHelpLine(view, "R", "reset to generation 0", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Shift N", "go to generation", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "-", "decrease generation speed", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "+", "increase generation speed", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Shift -", "minimum generation speed", ctx, x, y, height, helpLine);
@@ -996,6 +997,7 @@
 		y = this.renderHelpLine(view, Keywords.autoStartWord + " (" + Keywords.offWord + ")", "start play automatically", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.loopWord + " <1..>|" + Keywords.offWord, "loop at generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.stopWord + " <1..>|" + Keywords.offWord, "stop at generation", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.startFromWord + " (" + Keywords.offWord + ")", "play to generation on load", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.gpsWord + " <" + ViewConstants.minGenSpeed + ".." + ViewConstants.maxGenSpeed + ">", "set steps per second", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.stepWord + " <" + ViewConstants.minStepSpeed + ".." + ViewConstants.maxStepSpeed + ">", "set generations per step", ctx, x, y, height, helpLine);
 		if ((view.engine.isMargolus || view.engine.isPCA) && view.engine.margolusReverseLookup1) {

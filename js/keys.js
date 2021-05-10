@@ -47,6 +47,41 @@
 		return processed;
 	};
 
+	// process keys in go to generation mode
+	KeyProcessor.processKeyGoTo = function(me, keyCode, event) {
+		// flag event processed
+		var processed = true;
+
+		// check for control, meta or alt
+		if (event.ctrlKey || event.metaKey || event.altKey) {
+			// clear key code so it is not handled here
+			keyCode = -1;
+		}
+
+		// determine if the key can be processed
+		switch (keyCode) {
+		// t for timing display
+		case 84:
+			// toggle fps
+			me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+			break;
+
+		// Esc to cancel
+		case 27:
+			me.stopStartFrom(me, true);
+			break;
+
+		// ignore other keys
+		default:
+			// flag not handled
+			processed = false;
+			break;
+		}
+
+		// return whether key processed
+		return processed;
+	};
+
 	// process keys in identify mode
 	KeyProcessor.processKeyIdentify = function(me, keyCode, event) {
 		// flag event processed
@@ -66,7 +101,7 @@
 			me.viewFpsToggle([!me.menuManager.showTiming], true, me);
 			break;
 
-		// Esc f6 to cancel Identify
+		// Esc or f6 to cancel Identify
 		case 27:
 		case 117:
 			me.identifyPressed(me);
@@ -883,19 +918,24 @@
 						this.toggleHelpTopic(me, ViewConstants.annotationsTopic);
 					}
 				} else {
-					// check if thumbnail mode available
-					if (me.thumbnailEverOn) {
-						// check if thumbnail mode already on
-						if (me.thumbnail) {
-							// switch it off
-							me.switchOffThumbnail();
-						} else {
-							// switch it on
-							me.switchOnThumbnail();
-	
-							// close help if open
-							if (me.displayHelp) {
-								me.displayHelp = 0;
+					// check for go to generation
+					if (event.shiftKey) {
+						me.goToGenPressed(me);
+					} else {
+						// check if thumbnail mode available
+						if (me.thumbnailEverOn) {
+							// check if thumbnail mode already on
+							if (me.thumbnail) {
+								// switch it off
+								me.switchOffThumbnail();
+							} else {
+								// switch it on
+								me.switchOnThumbnail();
+		
+								// close help if open
+								if (me.displayHelp) {
+									me.displayHelp = 0;
+								}
 							}
 						}
 					}
@@ -1692,8 +1732,13 @@
 								if (me.resultsDisplayed) {
 									me.identifyClosePressed(me);
 								} else {
-									// close the popup Viewer
-									hideViewer();
+									// check for go to generation
+									if (me.startFrom !== -1) {
+										me.stopStartFrom(me, true);
+									} else {
+										// close the popup Viewer
+										hideViewer();
+									}
 								}
 							}
 						}
@@ -1721,10 +1766,15 @@
 									if (me.resultsDisplayed) {
 										me.identifyClosePressed(me);
 									} else {
-										// check if playing
-										if (me.generationOn) {
-											// switch to pause
-											me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+										// check for go to generation
+										if (me.startFrom !== -1) {
+											me.stopStartFrom(me, true);
+										} else {
+											// check if playing
+											if (me.generationOn) {
+												// switch to pause
+												me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+											}
 										}
 									}
 								}
