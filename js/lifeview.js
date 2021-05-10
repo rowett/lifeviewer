@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 616,
+		/** @const {number} */ versionBuild : 617,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -12438,9 +12438,6 @@
 
 	// identify button action
 	View.prototype.identifyAction = function(me) {
-		// enable cancel button
-		me.cancelButton.overrideLocked = true;
-
 		// reset check
 		me.engine.checkedMod = false;
 		me.engine.checkModGen = 0;
@@ -14060,6 +14057,8 @@
 		// add the cancel button
 		this.cancelButton = this.viewMenu.addButtonItem(this.cancelPressed, Menu.south, 0, -100, 120, 40, "Cancel");
 		this.cancelButton.toolTip = "cancel operation [Esc]";
+		this.cancelButton.overrideLocked = true;
+
 
 		// add the colour theme button
 		this.themeButton = this.viewMenu.addButtonItem(this.themePressed, Menu.middle, 0, -75, 150, 40, "Theme");
