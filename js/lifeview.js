@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 617,
+		/** @const {number} */ versionBuild : 619,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -634,6 +634,9 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// last failure reason from PatternManager
+		this.lastFailReason = "";
 
 		// target generation for go to
 		this.startFrom = -1;
@@ -15085,7 +15088,8 @@
 	// start the viewer from a supplied pattern string
 	View.prototype.startViewer = function(patternString, ignoreThumbnail) {
 		// attempt to load the pattern
-		var pattern = this.manager.create("", patternString, this.engine.allocator, this.completeStart, this.completeStart, [ignoreThumbnail], this);
+		var pattern = this.manager.create("", patternString, this.engine.allocator, this.completeStart, this.completeStartFailed, [ignoreThumbnail], this);
+		this.lastFailReason = this.manager.failureReason;
 
 		// if the pattern loaded synchronously (i.e. did not need a rule definition from the repository) then complete the setup
 		// (otherwise it will happen once the async load is complete)
@@ -15097,6 +15101,13 @@
 			this.menuManager.notification.clear(false, true);
 			this.menuManager.notification.notify("Loading rule...", 15, 10000, 15, true);
 		}
+	};
+
+	// complete pattern start process after lookup failure
+	View.prototype.completeStartFailed = function(pattern, args, me) {
+		me.manager.failureReason = me.lastFailReason;
+		me.manager.executable = true;
+		me.completeStart(null, args, me);
 	};
 
 	// complete pattern start process
@@ -17131,7 +17142,7 @@
 			rleItem = args[1],
 			textItem = args[2];
 
-		if (pattern && pattern.lifeMap) {
+		if (pattern && pattern.lifeMap && !pattern.tooBig) {
 			// create the anchor if specified
 			if (rleItem !== null) {
 				createAnchor(rleItem, textItem);

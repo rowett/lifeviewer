@@ -1,3 +1,9 @@
+Build 619
+- fix error reporting after failed Repository lookup
+
+Build 618
+- don't create links for patterns that are too big
+
 Build 617
 - new [[ STARTFROM <generation> ]] script command to fast-forward to the specified generation on pattern load
 - Settings->Playback->Go To Gen or hotkey Shift+N to navigate to the specified generation
