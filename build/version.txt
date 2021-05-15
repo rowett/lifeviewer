@@ -1,3 +1,6 @@
+Build 620
+- bounding box was sometimes not being correctly sized when dead cells drawn
+
 Build 619
 - fix error reporting after failed Repository lookup
 

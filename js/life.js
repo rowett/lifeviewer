@@ -14,6 +14,36 @@
 	// Life constants
 	/** @const */
 	var LifeConstants = {
+		// new RLE characters representing each 4 cell combination (for 2 state patterns)
+		/** @const {Array<string>} */ newRLEChars : ["g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v"],
+
+		// new RLE characters representing columns to ignore at right of pattern (0, 1, 2, 3)
+		/** @const {Array<string>} */ newRLEIgnoreCols : ["W", "X", "Y", "Z"],
+
+		// new RLE blank row symbol
+		/** @const {string} */ newRLEBlankRow : "$",
+
+		// new RLE duplicate non-blank row symbol
+		/** @const {string} */ newRLEDuplicateRow : "^",
+
+		// new RLE duplicate non-blank row pair symbol
+		/** @const {string} */ newRLEDuplicateRowPair : "%",
+
+		// new RLE last large count symbol
+		/** @const {string} */ newRLELastLargeCount : "=",
+
+		// new RLE last large count plus symbol
+		/** @const {string} */ newRLELastLargeCountPlus : "+",
+
+		// new RLE last large count minus symbol
+		/** @const {string} */ newRLELastLargeCountMinus : "-",
+
+		// new RLE last large count plus 2 symbol
+		/** @const {string} */ newRLELastLargeCountPlus2 : "*",
+
+		// new RLE last large count minus 2 symbol
+		/** @const {string} */ newRLELastLargeCountMinus2 : "/",
+
 		// state modes
 		/** @const {number} */ mode2 : 0,
 		/** @const {number} */ mode2Table : 1,
@@ -369,6 +399,9 @@
 
 		// list of potential gliders to clear
 		this.potentialClears = [];
+
+		// new RLE last large count
+		this.lastLargeCount = 0;
 
 		// whether to draw 2-state as rainbow
 		/** @type {boolean} */ this.rainbow = false;
@@ -3564,6 +3597,363 @@
 		}
 	};
 
+	// get 4 cells in a row
+	/** @return {number} */
+	Life.prototype.getFourCells = function(/** @type {number} */ x, /** @const @type {number} */ rightX, /** @const @type {Uint8Array} */ colourRow) {
+		var /** @type {number} */ col = 0,
+			/** @type {number} */ state = 0;
+
+		// get first cell
+		col = colourRow[x];
+		if (!(col <= this.deadStart || col === this.boundedBorderColour)) {
+			state = 8;
+		}
+		x += 1;
+		// check if the second cell is in range
+		if (x <= rightX) {
+			col = colourRow[x];
+			if (!(col <= this.deadStart || col === this.boundedBorderColour)) {
+				state |= 4;
+			}
+			x += 1;
+			// check if the third cell is in range
+			if (x <= rightX) {
+				col = colourRow[x];
+				if (!(col <= this.deadStart || col === this.boundedBorderColour)) {
+					state |= 2;
+				}
+				x += 1;
+				// check if the fourth cell is in range
+				if (x <= rightX) {
+					col = colourRow[x];
+					if (!(col <= this.deadStart || col === this.boundedBorderColour)) {
+						state |= 1;
+					}
+				}
+			}
+		}
+
+		return state;
+	};
+
+	// encode run count and cells
+	/** @return {string} */
+	Life.prototype.encodeRun = function(/** @const @type {number} */ count, /** @const @type {number} */ fourCells, /** @const @type {boolean} */ endOfRow, /** @const @type {boolean} */ useCountOptimization) {
+		var /** @type {string} */ result = "",
+			/** @const @type {Array<string>} */ stateChars = LifeConstants.newRLEChars;
+
+		// do not output blank cells at end of row
+		if (!(endOfRow && fourCells === 0)) {
+			// only output the count if it is greater than 1
+			if (count > 1) {
+				// if the count is more than one digit long then check against last long count
+				if (count >= 16 && useCountOptimization) {
+					// check if count is same as last large count
+					if (count === this.lastLargeCount) {
+						result += LifeConstants.newRLELastLargeCount;
+					} else {
+						// check if count is one more than last large count
+						if (count === this.lastLargeCount + 1) {
+							result += LifeConstants.newRLELastLargeCountPlus;
+							this.lastLargeCount += 1;
+						} else {
+							// check if count is one less than last large count
+							if (count === this.lastLargeCount - 1) {
+								result += LifeConstants.newRLELastLargeCountMinus;
+								this.lastLargeCount -= 1;
+							} else {
+								// check if count is one more than last large count
+								if (count === this.lastLargeCount + 2) {
+									result += LifeConstants.newRLELastLargeCountPlus2;
+									this.lastLargeCount += 2;
+								} else {
+									// check if count is two less than last large count
+									if (count === this.lastLargeCount - 2) {
+										result += LifeConstants.newRLELastLargeCountMinus2;
+										this.lastLargeCount -= 2;
+									} else {
+										// new last large count
+										result += count.toString(16);
+										this.lastLargeCount = count;
+									}
+								}
+							}
+						}
+					}
+				} else {
+					// count is small so just use it
+					result += count.toString(16);
+				}
+			}
+	
+			// add the character representing the four cells
+			result += stateChars[fourCells];
+		}
+	
+		return result;
+	};
+
+	// encode row in new RLE format
+	/** @return {string} */
+	Life.prototype.encodeRow = function(/** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {number} */ y, /** @const @type {boolean} */ useCountOptimization) {
+		var /** @type {string} */ result = "",
+			/** @const @type {Uint8Array} */ colourRow = this.colourGrid[y],
+			/** @type {number} */ x = leftX,
+			/** @type {number} */ last = 0,
+			/** @type {number} */ next = 0,
+			/** @type {number} */ count = 0;
+
+		// get first four cells
+		last = this.getFourCells(x, rightX, colourRow);
+		x += 4;
+		count += 1;
+
+		// read the rest of the row in groups of four cells
+		while (x <= rightX) {
+			// get the next four cells
+			next = this.getFourCells(x, rightX, colourRow);
+			x += 4;
+
+			// check if they are the same as the previous four cells
+			if (next === last) {
+				// cells are the same so increment run count
+				count += 1;
+			} else {
+				// cells are different so output previous run (hex count and 4 cell symbol)
+				result += this.encodeRun(count, last, false, useCountOptimization);
+
+				// reset for new run
+				count = 0;
+				last = next;
+			}
+		}
+
+		// output final run
+		result += this.encodeRun(count, last, true, useCountOptimization);
+
+		// mark last 4 cell state character as end of row by converting to upper case
+		if (result !== "") {
+			result = result.substr(0, result.length - 1) + result.substr(result.length - 1).toUpperCase();
+		}
+
+		return result;
+	};
+
+	// encode run of rows
+	/** @return {string} */
+	Life.prototype.encodeRowRun = function(/** @const @type {number} */ count, /** @const @type {string} */ row, /** @const @type {string} */ duplicateSymbol) {
+		var result = "";
+
+		// check if the row is blank
+		if (row === "") {
+			// output the count (if greater than 1) and then the blank row symbol
+			if (count > 1) {
+				result += count.toString(16);
+			}
+			result += LifeConstants.newRLEBlankRow;
+		} else {
+			// output the row
+			result += row;
+
+			// if there are duplicates then output count-1 and the duplicate row symbol
+			if (count > 1) {
+				if (count > 2) {
+					result += (count - 1).toString(16);
+				}
+				result += duplicateSymbol;
+			}
+		}
+
+		return result;
+	};
+
+	// convert grid to new RLE format
+	/** @return {string} */
+	Life.prototype.asNewRLE = function(/** @const */ view, /** @const @type {Life} */ me, /** @const @type {boolean} */ addComments, /** @const @type {boolean} */ useAlias) {
+		var /** @type {string} */ rle = "",
+			/** @type {string} */ lastRLERow = "",
+			/** @const @type {BoundingBox} */ zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
+			/** @type {number} */ leftX = zoomBox.leftX,
+			/** @type {number} */ rightX = zoomBox.rightX,
+			/** @type {number} */ topY = zoomBox.topY,
+			/** @type {number} */ bottomY = zoomBox.bottomY,
+			/** @type {number} */ width = rightX - leftX + 1,
+			/** @type {number} */ height = topY - bottomY + 1,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ rowCount = 0,
+			/** @type {number} */ lastRowY = 0,
+			/** @type {Array<string>} */ rows = [],
+			/** @type {Array<number>} */ pairs = [],
+			/** @const @type {number} */ xOff = (me.width >> 1) - (view.patternWidth >> 1),
+			/** @const @type {number} */ yOff = (me.height >> 1) - (view.patternHeight >> 1),
+			/** @type {string} */ ruleName = "",
+			/** @const @type {BoundingBox} */ selBox = view.selectionBox;
+
+		// check for selection
+		if (view.isSelection) {
+			leftX = selBox.leftX + xOff;
+			bottomY = selBox.bottomY + yOff;
+			rightX = selBox.rightX + xOff;
+			topY = selBox.topY + yOff;
+
+			// order selection
+			if (leftX > rightX) {
+				swap = leftX;
+				leftX = rightX;
+				rightX = swap;
+			}
+			if (bottomY > topY) {
+				swap = bottomY;
+				bottomY = topY;
+				topY = swap;
+			}
+
+			// compute selection size
+			width = rightX - leftX + 1;
+			height = topY - bottomY + 1;
+		}
+
+		// check for triangular rules
+		if (me.isTriangular) {
+			// align bounding box
+			if (leftX > 0 && ((leftX & 1) !== 0)) {
+				leftX -= 1;
+				width += 1;
+			}
+			if ((bottomY > 0) && ((bottomY & 1) !== 0)) {
+				bottomY -= 1;
+				height += 1;
+			}
+		}
+
+		// check for Margolus rules
+		if (me.isMargolus) {
+			// align bounding box
+			if (leftX > 0 && ((leftX & 1) === 0)) {
+				leftX -= 1;
+				width += 1;
+			}
+			if ((bottomY > 0) && ((bottomY & 1) === 0)) {
+				bottomY -= 1;
+				height += 1;
+			}
+		}
+
+		// output comments if requested
+		if (addComments) {
+			rle += me.beforeTitle;
+		}
+
+		// check for zero population
+		if (this.population === 0) {
+			width = 0;
+			height = 0;
+
+			// ensure loop is skipped
+			topY = bottomY - 1;
+		}
+
+		// output header (x =, y=, rule=)
+		ruleName = ((useAlias && view.patternAliasName !== "") ? view.patternAliasName : view.patternRuleName);
+		if (ruleName === "B3/S23History") {
+			ruleName = "LifeHistory";
+		}
+		rle += "x = " + width + ", y = " + height + ", rule = " + ruleName;
+		rle += view.patternBoundedGridDef;
+		rle += "\n";
+
+		// output pattern in new RLE format
+		this.lastLargeCount = 0;
+
+		// encode each row into strings without count optimization so comparing identical rows works
+		for (y = 0; y < height; y += 1) {
+			rows[y] = this.encodeRow(leftX, rightX, y + bottomY, false);
+			pairs[y] = 0;
+		}
+
+		// now find the matched pairs
+		for (y = 0; y < height - 3; y += 1) {
+			if (rows[y] === rows[y + 2] && rows[y + 1] === rows[y + 3] && rows[y] !== rows[y + 1]) {
+				rowCount = 1;
+				j = 2;
+				do {
+					j += 2;
+					rowCount += 1;
+				} while (rows[y] == rows[y + j] && rows[y + 1] == rows[y + 1 + j]);
+				pairs[y] = rowCount;
+			}
+		}
+
+		// output rows removing duplicates
+		y = 0;
+		lastRowY = y + bottomY;
+		rowCount = 1;
+
+		// check if first row is part of a matched pair
+		if (pairs[y] === 0) {
+			// if not get the first row
+			lastRLERow = rows[y];
+			y += 1;
+		}
+
+		// process each row of the pattern
+		while (y < height) {
+			// check for matched pairs
+			if (pairs[y] > 0) {
+				// get the original pair with optimized counts
+				lastRLERow = this.encodeRow(leftX, rightX, pairs[y] + bottomY, true);
+				lastRLERow += this.encodeRow(leftX, rightX, pairs[y] + 1 + bottomY, true);
+				rle += this.encodeRowRun(pairs[y], lastRLERow, LifeConstants.newRLEDuplicateRowPair);
+				y += pairs[y] * 2;
+
+				// make current row the last row
+				if (y < height) {
+					lastRLERow = rows[y];
+					lastRowY = y + bottomY;
+					rowCount = 1;
+				} else {
+					// mark finished pattern
+					lastRLERow = "0";
+				}
+			} else {
+				// check if the next row is the same as the last one
+				if (rows[y] === lastRLERow) {
+					// increment the run count
+					rowCount += 1;
+				} else {
+					// row is different so output the current run with optimized counts
+					lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
+					rle += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
+					
+					// make current row the last row
+					lastRLERow = rows[y];
+					lastRowY = y + bottomY;
+					rowCount = 1;
+				}
+			}
+			y += 1;
+		}
+
+		// output the final run with optimized counts
+		if (lastRLERow != "0") {
+			lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
+			rle += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
+		}
+
+		// add the pattern terminator representing number of right hand columns to ignore (0 to 3)
+		rle += LifeConstants.newRLEIgnoreCols[(4 - width) & 3] + "\n";
+
+		// add final comments if requested
+		if (addComments) {
+			rle += me.afterTitle;
+		}
+
+		// return the RLE
+		return rle;
+	};
+
 	// convert grid to RLE
 	/** @return {string} */
 	Life.prototype.asRLE = function(view, me, /** @type {boolean} */ addComments, inputStates, outputStates, mapping, useAlias) {
@@ -3971,8 +4361,8 @@
 				if (y > historyBox.topY) {
 					historyBox.topY = y;
 				}
-
-				// only shrink if the cell was on the boundary of the bounding box
+			} else {
+				// cell cleared so only shrink if the cell was on the boundary of the bounding box
 				if (x === zoomBox.leftX || x === zoomBox.rightX || y === zoomBox.topY || y === zoomBox.bottomY) {
 					// mark shrink needed
 					this.shrinkNeeded = true;
@@ -4189,8 +4579,8 @@
 				if (y > historyBox.topY) {
 					historyBox.topY = y;
 				}
-
-				// only shrink if the cell was on the boundary of the bounding box
+			} else {
+				// state cleared so only shrink if the cell was on the boundary of the bounding box
 				if (x === zoomBox.leftX || x === zoomBox.rightX || y === zoomBox.topY || y === zoomBox.bottomY) {
 					// mark shrink needed
 					this.shrinkNeeded = true;
@@ -4603,7 +4993,7 @@
 						}
 					}
 				} else {
-					// only shrink if the cell was on the boundary of the bounding box
+					// state cleared only shrink if the cell was on the boundary of the bounding box
 					if (x === zoomBox.leftX || x === zoomBox.rightX || y === zoomBox.topY || y === zoomBox.bottomY) {
 						// mark shrink needed
 						this.shrinkNeeded = true;

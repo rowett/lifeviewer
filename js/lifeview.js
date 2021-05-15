@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 619,
+		/** @const {number} */ versionBuild : 620,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13343,6 +13343,15 @@
 	// save the current rle to the source document node
 	View.prototype.saveCurrentRLE = function(me) {
 		me.element.innerHTML = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], true);
+		me.element.value = me.element.innerHTML;
+	};
+
+	// test for new RLE prototype
+	View.prototype.testNewRLE = function(me) {
+		var r1 = me.engine.asRLE(me, me.engine, false, me.engine.multiNumStates, me.engine.multiNumStates, [], false);
+		var r4 = me.engine.asNewRLE(me, me.engine, false, false);
+		var rulelen = r1.indexOf("\n") + 2;
+		me.element.innerHTML = "header:\t" + rulelen + "\tRLE:\t" + (r1.length - rulelen) + "\tnewRLE:\t" + (r4.length - rulelen) + " (" + ((100 * (r4.length - rulelen)) / (r1.length - rulelen)).toFixed(1) + "%)\n" + r4;
 		me.element.value = me.element.innerHTML;
 	};
 
