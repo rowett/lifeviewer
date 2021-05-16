@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 620,
+		/** @const {number} */ versionBuild : 621,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6303,7 +6303,7 @@
 			}
 
 			// compute oscillators
-			identifyResult = me.engine.oscillating(me.identifyFast);
+			identifyResult = me.engine.oscillating(me.identifyFast, me);
 			if (identifyResult.length > 0) {
 				// check for buffer full
 				if (identifyResult[0] === LifeConstants.bufferFullMessage) {
@@ -13348,11 +13348,14 @@
 
 	// test for new RLE prototype
 	View.prototype.testNewRLE = function(me) {
-		var r1 = me.engine.asRLE(me, me.engine, false, me.engine.multiNumStates, me.engine.multiNumStates, [], false);
-		var r4 = me.engine.asNewRLE(me, me.engine, false, false);
-		var rulelen = r1.indexOf("\n") + 2;
-		me.element.innerHTML = "header:\t" + rulelen + "\tRLE:\t" + (r1.length - rulelen) + "\tnewRLE:\t" + (r4.length - rulelen) + " (" + ((100 * (r4.length - rulelen)) / (r1.length - rulelen)).toFixed(1) + "%)\n" + r4;
-		me.element.value = me.element.innerHTML;
+		// check for 2 state pattern
+		if (me.engine.multiNumStates === 2 || me.engine.multiNumStates === -1) {
+			var r1 = me.engine.asRLE(me, me.engine, false, me.engine.multiNumStates, me.engine.multiNumStates, [], true);
+			var r4 = me.engine.asNewRLE(me, me.engine, false, true);
+			var rulelen = r1.indexOf("\n") + 2;
+			me.element.innerHTML = "header:\t" + rulelen + "\tRLE:\t" + (r1.length - rulelen) + "\tRLE4:\t" + (r4.length - rulelen) + " (" + ((100 * (r4.length - rulelen)) / (r1.length - rulelen)).toFixed(1) + "%)\n" + r4;
+			me.element.value = me.element.innerHTML;
+		}
 	};
 
 	// replace the current rle with the given text

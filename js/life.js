@@ -1707,28 +1707,56 @@
 							}
 						}
 					} else {
-						// multi-state
-						initRow = initList[cy];
-						for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
-							if (this.firstCount) {
-								initRow[cx] = colourRow[cx];
-								if (colourRow[cx] > this.historyStates) {
-									countRow[cx] = LifeConstants.cellWasAlive;
-								}
-							} else {
-								if (colourRow[cx] > this.historyStates) {
-									// update count
-									if (countRow[cx] === LifeConstants.cellWasDead) {
-										countRow[cx] = LifeConstants.cellHasChanged;
+						if (this.isSuper) {
+							initRow = initList[cy];
+							for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+								if (this.firstCount) {
+									initRow[cx] = colourRow[cx] & 1;
+									if (colourRow[cx] & 1) {
+										countRow[cx] = LifeConstants.cellWasAlive;
+									}
+								} else {
+									if (colourRow[cx] & 1) {
+										// update count
+										if (countRow[cx] === LifeConstants.cellWasDead) {
+											countRow[cx] = LifeConstants.cellHasChanged;
+										} else {
+											if ((colourRow[cx] & 1) !== initRow[cx]) {
+												countRow[cx] = LifeConstants.cellHasChanged;
+											}
+										}
 									} else {
-										if (colourRow[cx] !== initRow[cx]) {
+										// update count
+										if (countRow[cx] === LifeConstants.cellWasAlive) {
 											countRow[cx] = LifeConstants.cellHasChanged;
 										}
 									}
+								}
+							}
+						} else {
+							// multi-state
+							initRow = initList[cy];
+							for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+								if (this.firstCount) {
+									initRow[cx] = colourRow[cx];
+									if (colourRow[cx] > this.historyStates) {
+										countRow[cx] = LifeConstants.cellWasAlive;
+									}
 								} else {
-									// update count
-									if (countRow[cx] === LifeConstants.cellWasAlive) {
-										countRow[cx] = LifeConstants.cellHasChanged;
+									if (colourRow[cx] > this.historyStates) {
+										// update count
+										if (countRow[cx] === LifeConstants.cellWasDead) {
+											countRow[cx] = LifeConstants.cellHasChanged;
+										} else {
+											if (colourRow[cx] !== initRow[cx]) {
+												countRow[cx] = LifeConstants.cellHasChanged;
+											}
+										}
+									} else {
+										// update count
+										if (countRow[cx] === LifeConstants.cellWasAlive) {
+											countRow[cx] = LifeConstants.cellHasChanged;
+										}
 									}
 								}
 							}
@@ -1804,7 +1832,7 @@
 	};
 
 	// return identify results
-	Life.prototype.identifyResults = function(i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast) {
+	Life.prototype.identifyResults = function(view, i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast) {
 			// simple version of speed
 		var simpleSpeed = "",
 
@@ -1874,6 +1902,9 @@
 
 			// temperature
 			tempResult = "",
+
+			// bounding box for pattern
+		    box = (this.isHROT ? this.HROTBox : this.zoomBox),
 
 			// counters
 			x = 0,
@@ -1988,6 +2019,24 @@
 			} else {
 				// oscillator
 				type = "Oscillator";
+
+				// if not in fast mode then update the cell activity since it may have taken
+				// some generations for the oscillator to form
+				if (!fast) {
+					this.firstCount = true;
+					this.countList.whole.fill(0);
+					for (x = 0; x < period; x += 1) {
+						// compute the next generation
+						this.nextGeneration(false, view.noHistory, view.graphDisabled, view.identify);
+						this.convertToPensTile();
+
+						// paste any RLE snippets
+						view.pasteRLEList();
+						this.getHash(box, fast);
+						this.bornList[i + x] = this.births;
+						this.diedList[i + x] = this.deaths;
+					}
+				}
 			}
 		}
 
@@ -2177,48 +2226,48 @@
 	};
 
 	// return true if pattern is empty, stable, oscillating or a spaceship
-	Life.prototype.oscillating = function(fast) {
+	Life.prototype.oscillating = function(fast, view) {
 		// get bounding box
 		var box = (this.isHROT ? this.HROTBox : this.zoomBox),
-		leftX = box.leftX,
-		bottomY = box.bottomY,
-		rightX = box.rightX,
-		topY = box.topY,
-		boxWidth = rightX - leftX + 1,
-		boxHeight = topY - bottomY + 1,
+		    leftX = box.leftX,
+		    bottomY = box.bottomY,
+		    rightX = box.rightX,
+		    topY = box.topY,
+		    boxWidth = rightX - leftX + 1,
+		    boxHeight = topY - bottomY + 1,
 
-		// merge size into one value
-		boxSize = (boxWidth << 16) | boxHeight,
+		    // merge size into one value
+		    boxSize = (boxWidth << 16) | boxHeight,
+    
+		    // merge location into one value
+		    boxLocation = (leftX << 16) | bottomY,
+    
+		    // hash value of current pattern
+		    hash = 0,
+		    modHash = 0,
+		    currentValue = 0,
+    
+		    // period
+		    period = 0,
+    
+		    // flag to quit loop
+		    quitLoop = false,
+		    quit = false,
 
-		// merge location into one value
-		boxLocation = (leftX << 16) | bottomY,
-
-		// hash value of current pattern
-		hash = 0,
-		modHash = 0,
-		currentValue = 0,
-
-		// period
-		period = 0,
-
-		// flag to quit loop
-		quitLoop = false,
-		quit = false,
-
-		// hash entry index
-		i = 0,
-		j = 0,
-		lastI = 0,
-
-		// movement vector
-		deltaX = 0,
-		deltaY = 0,
-
-		// message
-		message = "",
-
-		// result
-		result = [];
+		    // hash entry index
+		    i = 0,
+		    j = 0,
+		    lastI = 0,
+    
+		    // movement vector
+		    deltaX = 0,
+		    deltaY = 0,
+    
+		    // message
+		    message = "",
+    
+		    // result
+		    result = [];
 
 		// for alternating rules or Margolus skip odd generations
 		if ((this.isMargolus || this.altSpecified) && ((this.counter & 1) !== 0)) {
@@ -2280,7 +2329,7 @@
 									quit = true;
 	
 									// create the results
-									result = this.identifyResults(i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast);
+									result = this.identifyResults(view, i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast);
 								} else {
 									// false positive so try next
 									lastI = i;
@@ -3772,7 +3821,7 @@
 	Life.prototype.asNewRLE = function(/** @const */ view, /** @const @type {Life} */ me, /** @const @type {boolean} */ addComments, /** @const @type {boolean} */ useAlias) {
 		var /** @type {string} */ rle = "",
 			/** @type {string} */ lastRLERow = "",
-			/** @const @type {BoundingBox} */ zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
+			/** @const */ zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
 			/** @type {number} */ leftX = zoomBox.leftX,
 			/** @type {number} */ rightX = zoomBox.rightX,
 			/** @type {number} */ topY = zoomBox.topY,
@@ -3789,7 +3838,7 @@
 			/** @const @type {number} */ xOff = (me.width >> 1) - (view.patternWidth >> 1),
 			/** @const @type {number} */ yOff = (me.height >> 1) - (view.patternHeight >> 1),
 			/** @type {string} */ ruleName = "",
-			/** @const @type {BoundingBox} */ selBox = view.selectionBox;
+			/** @const */ selBox = view.selectionBox;
 
 		// check for selection
 		if (view.isSelection) {

@@ -1,5 +1,9 @@
+Build 621
+- fix Identify statistics for oscillators that take some generations to form
+
 Build 620
 - bounding box was sometimes not being correctly sized when dead cells drawn
+- experimental new RLE4 encoder (hotkey Ctrl-E) [no decoder]
 
 Build 619
 - fix error reporting after failed Repository lookup
