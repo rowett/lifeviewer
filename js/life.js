@@ -83,10 +83,10 @@
 		// buffer full
 		/** @const {string} */ bufferFullMessage : "Buffer Full",
 
-		/** @const {Array<Array<number>>} */ coloursSuper : [[0, 0, 0], [0, 255, 0], [0, 0, 160], [255, 216, 255], [255, 0, 0], [255, 255, 0], 
-															 [96, 96, 96], [255, 105, 180], [128, 0, 128], [0, 191, 255], [0, 64, 128], 
-															 [64, 224, 208], [0, 128, 64], [255, 255, 255], [255, 99, 71], [250, 128, 114], 
-															 [219, 112, 147], [255, 165, 0], [245, 222, 179], [0, 255, 255], [192, 192, 192], 
+		/** @const {Array<Array<number>>} */ coloursSuper : [[0, 0, 0], [0, 255, 0], [0, 0, 160], [255, 216, 255], [255, 0, 0], [255, 255, 0],
+															 [96, 96, 96], [255, 105, 180], [128, 0, 128], [0, 191, 255], [0, 64, 128],
+															 [64, 224, 208], [0, 128, 64], [255, 255, 255], [255, 99, 71], [250, 128, 114],
+															 [219, 112, 147], [255, 165, 0], [245, 222, 179], [0, 255, 255], [192, 192, 192],
 															 [192, 255, 128], [255, 182, 193], [0, 255, 127], [1, 1, 1], [255, 0, 127]],
 
 		// [R]Super state names
@@ -123,7 +123,7 @@
 		/** @const {Array<Array<number>>} */ gliderNE0 : [[1, 1, 1],
 														  [0, 0, 1],
 														  [0, 1, 0]],
-		
+
 		/** @const {Array<Array<number>>} */ gliderNE1 : [[0, 1, 0],
 														  [0, 1, 1],
 														  [1, 0, 1]],
@@ -705,7 +705,7 @@
 
 		// display width
 		/** @type {number} */ this.displayWidth = displayWidth;
-		
+
 		// display height
 		/** @type {number} */ this.displayHeight = displayHeight;
 
@@ -732,7 +732,7 @@
 
 		// cell colour index for cell never occupied
 		/** @const {number} */ this.unoccupied = 0;
-		
+
 		// last update time
 		/** @type {number} */ this.lastUpdate = 0;
 
@@ -775,7 +775,7 @@
 
 		// zoom factor
 		/** @type {number} */ this.zoom = 6;
-		
+
 		// x and y pan
 		/** @type {number} */ this.xOff = 0;
 		/** @type {number} */ this.yOff = 0;
@@ -885,7 +885,7 @@
 
 		// overlay colour grid used for zooms < 1
 		this.smallOverlayGrid = null;
-		
+
 		// 16bit view of overlay grid
 		this.overlayGrid16 = null;
 
@@ -1195,7 +1195,7 @@
 					snowX[j] = newX;
 					snowY[j] = newY;
 					dirY = snowDY[j];
-		
+
 					// check whether there is space to make a big snowflake
 					if (i < numRevive - 4) {
 						if (randGen.random() < 0.2) {
@@ -1637,7 +1637,7 @@
 							for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
 								// get the 4 sub-cell counts
 								count = countRow[cx];
-		
+
 								// get the 4 sub-cell states
 								state = colourRow[cx];
 								if (state > this.historyStates) {
@@ -1645,7 +1645,7 @@
 								} else {
 									state = 0;
 								}
-		
+
 								// north sub-cell
 								countN = count & 3;
 								if ((state & 1) !== 0) {
@@ -1659,7 +1659,7 @@
 										countN = LifeConstants.cellHasChanged;
 									}
 								}
-		
+
 								// east sub-cell
 								countE = (count >> 2) & 3;
 								if ((state & 2) !== 0) {
@@ -1673,7 +1673,7 @@
 										countE = LifeConstants.cellHasChanged;
 									}
 								}
-		
+
 								// south sub-cell
 								countS = (count >> 4) & 3;
 								if ((state & 4) !== 0) {
@@ -1687,7 +1687,7 @@
 										countS = LifeConstants.cellHasChanged;
 									}
 								}
-		
+
 								// west sub-cell
 								countW = (count >> 6) & 3;
 								if ((state & 8) !== 0) {
@@ -1887,7 +1887,7 @@
 		// check for movement
 		deltaX = Math.abs(deltaX);
 		deltaY = Math.abs(deltaY);
-		
+
 		// if a spaceship then compute simpified speed
 		if (deltaX > 0 || deltaY > 0) {
 			type = "Spaceship";
@@ -1990,7 +1990,7 @@
 				type = "Oscillator";
 			}
 		}
-		
+
 		// compute the min and max population
 		total = 0;
 		while (i < last) {
@@ -2261,7 +2261,7 @@
 								// hash matched so check population and bounding box
 								if ((this.population === this.popList[i]) && boxSize === this.boxList[j]) {
 									period = this.counter - this.genList[i];
-		
+
 									if (this.boxList[j + 1] === boxLocation) {
 										// pattern hasn't moved
 										if (period === 1 || ((this.altSpecified || this.isMargolus) && period === 2)) {
@@ -2563,7 +2563,7 @@
 		}
 	};
 
-	// draw triangles 
+	// draw triangles
 	Life.prototype.drawTriangles = function() {
 		var colourGrid = this.colourGrid,
 			colourRow = null,
@@ -2909,7 +2909,7 @@
 			/** @const {number} */ w2 = this.width / 2 - 0.25,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @const {number} */ pi3 = Math.PI / 3,
-			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2) * 1.16, 
+			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2) * 1.16,
 			/** @const {number} */ xEdge = (ViewConstants.sqrt3 / 4) / Math.cos(pi3 / 2) * 1.16,
 			/** @const {Array<number>} */ xa = [],
 			/** @const {Array<number>} */ ya = [],
@@ -3066,7 +3066,7 @@
 			/** @const {number} */ w2 = this.width / 2 - 0.25,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @const {number} */ pi3 = Math.PI / 3,
-			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2) * 1.16, 
+			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2) * 1.16,
 			/** @const {number} */ xEdge = (ViewConstants.sqrt3 / 4) / Math.cos(pi3 / 2) * 1.16,
 			/** @const {Array<number>} */ xa = [],
 			/** @const {Array<number>} */ ya = [],
@@ -3177,7 +3177,7 @@
 						coords[k + 11] = ya5 + cy;
 						k += 12;
 						j += 1;
-		
+
 						// check if buffer is full
 						if (j === LifeConstants.coordBufferSize) {
 							// draw buffer
@@ -3205,7 +3205,7 @@
 		}
 	};
 
-	// draw hexagons 
+	// draw hexagons
 	Life.prototype.drawHexagons = function() {
 		var colourGrid = this.colourGrid,
 			colourRow = null,
@@ -3223,7 +3223,7 @@
 			/** @const {number} */ w2 = this.width / 2 - 0.25,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @const {number} */ pi3 = Math.PI / 3,
-			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2) * 1.16, 
+			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2) * 1.16,
 			/** @const {number} */ xEdge = (ViewConstants.sqrt3 / 4) / Math.cos(pi3 / 2) * 1.16,
 			/** @const {Array<number>} */ xa = [],
 			/** @const {Array<number>} */ ya = [],
@@ -4337,17 +4337,25 @@
 
 			// if the state is not dead (or history) then update bounding box
 			if (state > 0) {
-				if (x < zoomBox.leftX) {
+				// check for initial cell
+				if (this.population === 1) {
 					zoomBox.leftX = x;
-				}
-				if (x > zoomBox.rightX) {
 					zoomBox.rightX = x;
-				}
-				if (y < zoomBox.bottomY) {
 					zoomBox.bottomY = y;
-				}
-				if (y > zoomBox.topY) {
 					zoomBox.topY = y;
+				} else {
+					if (x < zoomBox.leftX) {
+						zoomBox.leftX = x;
+					}
+					if (x > zoomBox.rightX) {
+						zoomBox.rightX = x;
+					}
+					if (y < zoomBox.bottomY) {
+						zoomBox.bottomY = y;
+					}
+					if (y > zoomBox.topY) {
+						zoomBox.topY = y;
+					}
 				}
 				if (x < historyBox.leftX) {
 					historyBox.leftX = x;
@@ -4555,17 +4563,25 @@
 
 			// if the state is not dead (or history) then update bounding box
 			if (state > 0) {
-				if (x < zoomBox.leftX) {
+				// check for initial cell
+				if (this.population === 1) {
 					zoomBox.leftX = x;
-				}
-				if (x > zoomBox.rightX) {
 					zoomBox.rightX = x;
-				}
-				if (y < zoomBox.bottomY) {
 					zoomBox.bottomY = y;
-				}
-				if (y > zoomBox.topY) {
 					zoomBox.topY = y;
+				} else {
+					if (x < zoomBox.leftX) {
+						zoomBox.leftX = x;
+					}
+					if (x > zoomBox.rightX) {
+						zoomBox.rightX = x;
+					}
+					if (y < zoomBox.bottomY) {
+						zoomBox.bottomY = y;
+					}
+					if (y > zoomBox.topY) {
+						zoomBox.topY = y;
+					}
 				}
 				if (x < historyBox.leftX) {
 					historyBox.leftX = x;
@@ -4705,7 +4721,7 @@
 							grid = this.nextGrid16;
 							tileGrid = this.nextTileGrid;
 						}
-		
+
 						// get the tile mask
 						cellAsTileBit = 1 << (~(x >> 4) & 15);
 					}
@@ -4899,7 +4915,7 @@
 							if ((state === 6 && current !== 6) || (state !== 6 && current === 6)) {
 								result = 1;
 							}
-		
+
 							// update colour grid if history state
 							if (state === 2) {
 								colourGrid[y][x] = LifeConstants.deadMin;
@@ -4953,17 +4969,25 @@
 
 				// if the state is not dead (or history) then update bounding box
 				if (state > 0) {
-					if (x < zoomBox.leftX) {
+					// check for initial cell
+					if (this.population === 1) {
 						zoomBox.leftX = x;
-					}
-					if (x > zoomBox.rightX) {
 						zoomBox.rightX = x;
-					}
-					if (y < zoomBox.bottomY) {
 						zoomBox.bottomY = y;
-					}
-					if (y > zoomBox.topY) {
 						zoomBox.topY = y;
+					} else {
+						if (x < zoomBox.leftX) {
+							zoomBox.leftX = x;
+						}
+						if (x > zoomBox.rightX) {
+							zoomBox.rightX = x;
+						}
+						if (y < zoomBox.bottomY) {
+							zoomBox.bottomY = y;
+						}
+						if (y > zoomBox.topY) {
+							zoomBox.topY = y;
+						}
 					}
 					if (x < historyBox.leftX) {
 						historyBox.leftX = x;
@@ -4979,17 +5003,24 @@
 					}
 					// if the state is alive then update HROT alive bounding box
 					if (this.isHROT && state === this.multiNumStates - 1 + this.historyStates) {
-						if (x < HROTBox.leftX) {
+						if (this.population === 1) {
 							HROTBox.leftX = x;
-						}
-						if (x > HROTBox.rightX) {
 							HROTBox.rightX = x;
-						}
-						if (y < HROTBox.bottomY) {
 							HROTBox.bottomY = y;
-						}
-						if (y > HROTBox.topY) {
 							HROTBox.topY = y;
+						} else {
+							if (x < HROTBox.leftX) {
+								HROTBox.leftX = x;
+							}
+							if (x > HROTBox.rightX) {
+								HROTBox.rightX = x;
+							}
+							if (y < HROTBox.bottomY) {
+								HROTBox.bottomY = y;
+							}
+							if (y > HROTBox.topY) {
+								HROTBox.topY = y;
+							}
 						}
 					}
 				} else {
@@ -6182,7 +6213,7 @@
 		for (i = 0; i < displayWidth; i += 1) {
 			this.blankPixelRow[i] = pixelColour;
 		}
-		
+
 		// clear pixels
 		this.clearPixels(pixelColour);
 
@@ -6911,10 +6942,10 @@
 
 		// set the change time
 		this.colourChange = switchTime;
-		
+
 		// check whether new theme has history
 		this.themeHistory = newTheme.hasHistory(this.isLifeHistory);
-		
+
 		// check if history was just switched off
 		if (currentHistory && !this.themeHistory && !this.isHROT && this.multiNumStates <= 2) {
 			this.clearHistoryCells();
@@ -6996,7 +7027,7 @@
 			byteIndex = new Uint8Array(256);
 
 		// create byte lookup
-		// first pixel 
+		// first pixel
 		byteIndex[0] = 0;
 		byteIndex[aliveMax + 1] = aliveStart;
 
@@ -7067,7 +7098,7 @@
 						current = this.customColours[i];
 						if (current !== -1) {
 							this.redChannel[i + this.historyStates] = current >> 16;
-							this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
+							this.greenChannel[i + this.historyStates] = (current >> 8) & 255;
 								this.blueChannel[i + this.historyStates] = (current & 255);
 						}
 					}
@@ -7133,7 +7164,7 @@
 							}
 							if (current !== -1) {
 								this.redChannel[i + this.historyStates] = current >> 16;
-								this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
+								this.greenChannel[i + this.historyStates] = (current >> 8) & 255;
 									this.blueChannel[i + this.historyStates] = (current & 255);
 							}
 						}
@@ -7166,7 +7197,7 @@
 						}
 						if (current !== -1) {
 							this.redChannel[i + this.historyStates] = current >> 16;
-							this.greenChannel[i + this.historyStates] = (current >> 8) & 255; 
+							this.greenChannel[i + this.historyStates] = (current >> 8) & 255;
 							this.blueChannel[i + this.historyStates] = (current & 255);
 						}
 					}
@@ -7199,7 +7230,7 @@
 						current = this.customColours[0];
 						if (current !== -1) {
 							this.redChannel[0] = current >> 16;
-							this.greenChannel[0] = (current >> 8) & 255; 
+							this.greenChannel[0] = (current >> 8) & 255;
 							this.blueChannel[0] = (current & 255);
 						}
 					}
@@ -8044,7 +8075,7 @@
 				} else {
 					// create the first lookup array
 					this.indexLookup63 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup63");
-		
+
 					// check for Wolfram
 					if (this.wolframRule === -1) {
 						// check for B0
@@ -8068,7 +8099,7 @@
 								odd = true;
 								this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
 								this.createLifeIndex63(this.indexLookup632, ruleArray);
-		
+
 								// even rule -> NOT(bits)
 								for (i = 0; i < hashSize / 2; i += 1) {
 									tmp = ruleArray[i];
@@ -8269,7 +8300,7 @@
 		    bottomY = this.zoomBox.bottomY,
 		    leftX = this.zoomBox.leftX,
 		    rightX = this.zoomBox.rightX,
-		
+
 		    // counters
 		    h = 0, w = 0;
 
@@ -8506,7 +8537,7 @@
 
 							// check if the source was alive
 							if (tileAlive) {
-								// update 
+								// update
 								nextTiles |= (1 << b);
 
 								// check for neighbours
@@ -9015,7 +9046,7 @@
 
 							// check if the source was alive
 							if (tileAlive) {
-								// update 
+								// update
 								nextTiles |= (1 << b);
 
 								// check for neighbours
@@ -10385,7 +10416,7 @@
 	// process klein bottle for multi-state
 	Life.prototype.processKleinMS = function(grid) {
 		var colourTileGrid = this.colourTileHistoryGrid,
-		    
+
 		    // bounded grid width and height
 		    width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
@@ -10789,7 +10820,7 @@
 		var grid = null,
 		    tileGrid = null,
 		    colourTileGrid = this.colourTileGrid,
-		    
+
 		    // bounded grid width and height
 		    width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
@@ -11028,7 +11059,7 @@
 		var grid = null,
 		    tileGrid = null,
 		    colourTileGrid = this.colourTileGrid,
-		    
+
 		    // bounded grid width and height
 		    width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
@@ -11489,7 +11520,7 @@
 		if (this.boundedGridType !== 0) {
 			limit = 2;
 		}
-		
+
 		// check for triangular grid
 		if (this.isTriangular) {
 			limit += 1;
@@ -12077,7 +12108,7 @@
 
 		// set initial tile row
 		bottomY = 0;
-		
+
 		// switch buffers each generation
 		if ((this.counter & 1) !== 0) {
 			grid16 = this.nextGrid16;
@@ -12175,7 +12206,7 @@
 
 		// set initial tile row
 		bottomY = 0;
-		
+
 		// check each tile
 		for (th = 0; th < tileRows; th += 1) {
 			// set initial tile column
@@ -12243,7 +12274,7 @@
 
 		    // page mask
 		    mask = max - 1,
-		    
+
 		    // start and end of current page
 		    start = 0,
 		    end = max,
@@ -12463,7 +12494,7 @@
 
 		    // page mask
 		    mask = max - 1,
-		    
+
 		    // start and end of current page
 		    start = 0,
 			end = max,
@@ -13048,7 +13079,7 @@
 
 							// check if the source or output were alive
 							if (colOccupied || tileCells) {
-								// update 
+								// update
 								nextTiles |= (1 << b);
 
 								// check for neighbours
@@ -13496,7 +13527,7 @@
 									if (output) {
 										// update column occupied flag
 										colOccupied |= output;
-		
+
 										// update min and max row
 										if (output0) {
 											if (h < newBottomY) {
@@ -13720,7 +13751,7 @@
 									if (output) {
 										// update column occupied flag
 										colOccupied |= output;
-		
+
 										// update min and max row
 										if (output0) {
 											if (h < newBottomY) {
@@ -13840,7 +13871,7 @@
 				
 							// check if the source or output were alive
 							if (colOccupied || origValue) {
-								// update 
+								// update
 								nextTiles |= (1 << b);
 
 								// check for neighbours
@@ -14262,7 +14293,7 @@
 									if (output) {
 										// update column occupied flag
 										colOccupied |= output;
-		
+
 										// update min and max row
 										if (h < newBottomY) {
 											newBottomY = h;
@@ -14433,7 +14464,7 @@
 									if (output) {
 										// update column occupied flag
 										colOccupied |= output;
-		
+
 										// update min and max row
 										if (h < newBottomY) {
 											newBottomY = h;
@@ -14526,7 +14557,7 @@
 
 							// check if the source or output were alive
 							if (colOccupied || origValue) {
-								// update 
+								// update
 								nextTiles |= (1 << b);
 
 								// check for neighbours
@@ -15075,7 +15106,7 @@
 
 							// check if the source or output were alive
 							if (colOccupied || origValue) {
-								// update 
+								// update
 								nextTiles |= (1 << b);
 
 								// check for neighbours
@@ -16244,7 +16275,7 @@
 
 							// check if the source or output were alive
 							if (colOccupied || tileCells) {
-								// update 
+								// update
 								nextTiles |= (1 << b);
 
 								// check for neighbours
@@ -17277,7 +17308,7 @@
 
 							// check if the source or output were alive
 							if (colOccupied || origValue) {
-								// update 
+								// update
 								nextTiles |= (1 << b);
 
 								// check for neighbours
@@ -18736,7 +18767,7 @@
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 			colourTileGrid = this.colourTileGrid,
 			blankColourRow = this.blankColourRow,
-		    grid = null, gridRow = null, 
+		    grid = null, gridRow = null,
 		    tileGrid = null, tileGridRow = null,
 		    value = 0, th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
@@ -18978,16 +19009,16 @@
 													case 4:
 														value = 3;
 														break;
-		
+
 													case 6:
 														// clear cell in bit grid
 														gridRow[leftX] &= ~colIndex;
 														break;
-		
+
 													case 8:
 														value = 7;
 														break;
-		
+
 													default:
 														value = 1;
 														calc = typeMask & alive9to25;
@@ -19241,7 +19272,7 @@
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 			colourTileGrid = this.colourTileGrid,
 			blankColourRow = this.blankColourRow,
-		    grid = null, gridRow = null, 
+		    grid = null, gridRow = null,
 		    tileGrid = null, tileGridRow = null,
 		    value = 0, th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
@@ -19478,16 +19509,16 @@
 													case 4:
 														value = 3;
 														break;
-		
+
 													case 6:
 														// clear cell in bit grid
 														gridRow[leftX] &= ~colIndex;
 														break;
-		
+
 													case 8:
 														value = 7;
 														break;
-		
+
 													default:
 														value = 1;
 														calc = typeMask & alive9to25;
@@ -19741,7 +19772,7 @@
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 			colourTileGrid = this.colourTileGrid,
 			blankColourRow = this.blankColourRow,
-			grid = null, gridRow = null, 
+			grid = null, gridRow = null,
 		    tileGrid = null, tileGridRow = null,
 		    value = 0, th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
@@ -19988,16 +20019,16 @@
 													case 4:
 														value = 3;
 														break;
-		
+
 													case 6:
 														// clear cell in bit grid
 														gridRow[leftX] &= ~colIndex;
 														break;
-		
+
 													case 8:
 														value = 7;
 														break;
-		
+
 													default:
 														value = 1;
 														calc = typeMask & alive9to25;
@@ -20212,7 +20243,7 @@
 		    colourTileHistoryRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileGrid = this.colourTileGrid,
-		    grid = null, gridRow = null, 
+		    grid = null, gridRow = null,
 		    tileGrid = null, tileGridRow = null,
 		    value = 0, th = 0, tw = 0, b = 0, n = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
@@ -21109,7 +21140,7 @@
 											deaths += 1;
 										}
 									}
-		
+
 									// next column
 									colIndex >>= 1;
 									x += 1;
@@ -23543,7 +23574,7 @@
 									} else {
 										gridRow0 = grid[y - 1];
 									}
-		
+
 									// current row
 									gridRow1 = grid[y];
 
@@ -24109,7 +24140,7 @@
 									} else {
 										gridRow0 = grid[y - 1];
 									}
-		
+
 									// current row
 									gridRow1 = grid[y];
 
@@ -25008,7 +25039,7 @@
 									} else {
 										gridRow0 = grid[y - 1];
 									}
-		
+
 									// current row
 									gridRow1 = grid[y];
 
@@ -25632,7 +25663,7 @@
 									} else {
 										gridRow0 = grid[y - 1];
 									}
-		
+
 									// current row
 									gridRow1 = grid[y];
 
@@ -30075,7 +30106,7 @@
 		    colourTileHistoryRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileGrid = this.colourTileGrid,
-		    grid = null, gridRow = null, 
+		    grid = null, gridRow = null,
 		    tileGrid = null, tileGridRow = null,
 		    th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
@@ -30224,7 +30255,7 @@
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileGrid = this.colourTileGrid,
 		    colourLookup = this.colourLookup,
-		    grid = null, gridRow = null, 
+		    grid = null, gridRow = null,
 		    tileGrid = null, tileGridRow = null,
 		    th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
@@ -30395,7 +30426,7 @@
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileGrid = this.colourTileGrid,
 		    colourLookup = this.colourLookup,
-		    grid = null, gridRow = null, 
+		    grid = null, gridRow = null,
 		    tileGrid = null, tileGridRow = null,
 		    th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
@@ -30641,7 +30672,7 @@
 		} else {
 			percent = testZoom / intZoom;
 		}
-		
+
 		// check if the percentage is within a threshold
 		if (percent >= ViewConstants.integerZoomThreshold) {
 			if (zoom < 1) {
@@ -30879,7 +30910,7 @@
 		// set the x and y offset
 		newY = bottomY - this.originY + (height / 2);
 		newX = leftX - this.originX + (width / 2);
-		
+
 		// make zoom an exact value if close to the exact value
 		if (!autoFit) {
 			zoom = this.makeIntegerZoom(zoom);
@@ -30945,7 +30976,7 @@
 			h = this.displayHeight,
 
 		    // pixel offsets in bitmap
-		    offset = 0, 
+		    offset = 0,
 			end = 0,
 			endTarget = 0,
 			temp = 0;
@@ -31282,7 +31313,7 @@
 								y1d1d2 = y1d1 + dy2;
 								x1d2 = x1d1d2 - dx1;
 								y1d2 = y1d1d2 - dy1;
-		
+
 								// don't draw cell if off window
 								if (!((x1 < 0 && x1d1 < 0 && x1d1d2 < 0 && x1d2 < 0) ||
 									(x1 >= view.displayWidth && x1d1 >= view.displayWidth && x1d1d2 >= view.displayWidth && x1d2 >= view.displayWidth) ||
@@ -31567,7 +31598,7 @@
 				gridLineNum += 1;
 
 				// draw the line
-				if (drawCol === targetCol) { 
+				if (drawCol === targetCol) {
 					this.drawLine(leftX, Math.round(y), rightX - 1, Math.round(y), drawCol);
 				}
 			}
@@ -31784,7 +31815,7 @@
 		    layerTarget = 1,
 		    brightness = 1,
 		    brightInc = 0,
-		   
+
 		    // index of pixel colour
 		    col = 0 | 0,
 
@@ -31842,7 +31873,7 @@
 		// draw each pixel
 		idx = 0 | 0;
 		y = sy;
-		
+
 		for (h = 0; h < this.displayHeight; h += 1) {
 			x = sx;
 			for (w = 0; w < w8; w += 1) {
@@ -32163,7 +32194,7 @@
 		    layerTarget = 1,
 		    brightness = 1,
 		    brightInc = 0,
-		   
+
 		    // index of pixel colour
 		    col = 0 | 0,
 
@@ -32227,7 +32258,7 @@
 		// draw each pixel
 		idx = 0 | 0;
 		y = sy;
-		
+
 		for (h = 0; h < this.displayHeight; h += 1) {
 			// clip rows to the grid
 			if (y >= 0 && ((y & ht) === (y & hm))) {
@@ -32561,7 +32592,7 @@
 		    layerTarget = 1,
 		    brightness = 1,
 		    brightInc = 0,
-		   
+
 		    // index of pixel colour
 		    col = 0 | 0,
 
@@ -32603,7 +32634,7 @@
 		// draw each pixel
 		idx = 0 | 0;
 		y = sy;
-		
+
 		for (h = 0; h < this.displayHeight; h += 1) {
 			x = sx;
 
@@ -32873,7 +32904,7 @@
 		    layerTarget = 1,
 		    brightness = 1,
 		    brightInc = 0,
-		   
+
 		    // index of pixel colour
 		    col = 0,
 
@@ -32921,7 +32952,7 @@
 		// draw each pixel
 		idx = 0 | 0;
 		y = sy;
-		
+
 		for (h = 0; h < this.displayHeight; h += 1) {
 			// get the colour grid row
 			colourGridRow = colourGrid[y & hm];
@@ -33721,13 +33752,13 @@
 		    layerTarget = 1,
 		    brightness = 1,
 		    brightInc = 0,
-		   
+
 		    // index of pixel colour
 		    col = 0 | 0,
 
 		    // index of overlay colour
 		    over = 0 | 0,
-		    
+
 		    // computed pixel colour
 		    pixel = 0 | 0,
 
@@ -33789,7 +33820,7 @@
 		// draw each pixel
 		idx = 0 | 0;
 		y = sy;
-		
+
 		for (h = 0; h < this.displayHeight; h += 1) {
 			x = sx;
 			for (w = 0; w < w8; w += 1) {
@@ -34247,13 +34278,13 @@
 		    layerTarget = 1,
 		    brightness = 1,
 		    brightInc = 0,
-		   
+
 		    // index of pixel colour
 		    col = 0 | 0,
 
 		    // index of overlay colour
 		    over = 0 | 0,
-		    
+
 		    // computed pixel colour
 		    pixel = 0 | 0,
 
@@ -34299,7 +34330,7 @@
 		// draw each pixel
 		idx = 0 | 0;
 		y = sy;
-		
+
 		for (h = 0; h < this.displayHeight; h += 1) {
 			x = sx;
 			for (w = 0; w < w8; w += 1) {
@@ -34702,13 +34733,13 @@
 		    layerTarget = 1,
 		    brightness = 1,
 		    brightInc = 0,
-		   
+
 		    // index of pixel colour
 		    col = 0 | 0,
 
 		    // index of overlay colour
 		    over = 0 | 0,
-		    
+
 		    // computed pixel colour
 		    pixel = 0 | 0,
 
@@ -34761,7 +34792,7 @@
 		// draw each pixel
 		idx = 0 | 0;
 		y = sy;
-		
+
 		for (h = 0; h < this.displayHeight; h += 1) {
 			// get the colour grid row
 			colourGridRow = colourGrid[y & hm];
@@ -35165,13 +35196,13 @@
 		    layerTarget = 1,
 		    brightness = 1,
 		    brightInc = 0,
-		   
+
 		    // index of pixel colour
 		    col = 0 | 0,
 
 		    // index of overlay colour
 		    over = 0 | 0,
-		    
+
 		    // computed pixel colour
 		    pixel = 0 | 0,
 
@@ -35240,7 +35271,7 @@
 		// draw each pixel
 		idx = 0 | 0;
 		y = sy;
-		
+
 		for (h = 0; h < this.displayHeight; h += 1) {
 			// clip rows to the grid
 			if (y >= 0 && ((y & ht) === (y & hm))) {
