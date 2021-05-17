@@ -14,11 +14,11 @@
 	// Life constants
 	/** @const */
 	var LifeConstants = {
-		// new RLE characters representing each 4 cell combination (for 2 state patterns)
-		/** @const {Array<string>} */ newRLEChars : ["g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v"],
+		// new RLE characters representing each 4 cell combination (for 2 state patterns) and blank cell combinations for 8, 8+final4, 16, 16+final4, 24, 24+final4, 32 and 32+final4
+		/** @const {Array<string>} */ newRLEChars : ["g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "W", "X", "Y", "Z"],
 
 		// new RLE characters representing columns to ignore at right of pattern (0, 1, 2, 3)
-		/** @const {Array<string>} */ newRLEIgnoreCols : ["W", "X", "Y", "Z"],
+		/** @const {Array<string>} */ newRLEIgnoreCols : ["_", "]", ")", "("],
 
 		// new RLE blank row symbol
 		/** @const {string} */ newRLEBlankRow : "$",
@@ -3687,12 +3687,30 @@
 
 	// encode run count and cells
 	/** @return {string} */
-	Life.prototype.encodeRun = function(/** @const @type {number} */ count, /** @const @type {number} */ fourCells, /** @const @type {boolean} */ endOfRow, /** @const @type {boolean} */ useCountOptimization) {
+	Life.prototype.encodeRun = function(/** @type {number} */ count, /** @type {number} */ fourCells, /** @const @type {boolean} */ endOfRow, /** @const @type {boolean} */ useCountOptimization) {
 		var /** @type {string} */ result = "",
 			/** @const @type {Array<string>} */ stateChars = LifeConstants.newRLEChars;
 
 		// do not output blank cells at end of row
 		if (!(endOfRow && fourCells === 0)) {
+			// check for larger blank cells runs
+			if (count > 1 && fourCells === 0) {
+				// check for small counts (2, 3, 4, 5, 6, 7, 8 and 9)
+				if (count >= 2 && count < 10) {
+					fourCells = 14 + count;
+					count = 1;
+				} else {
+					// only optimize if it saves count characters
+					if ((count >= 16 && count < 32) || (count >= 256 && count < 512) || (count >= 4096 && count < 8192)) {
+						// convert to 8 cell symbol
+						fourCells = 16 + (count & 1);
+
+						// halve the count
+						count >>= 1;
+					}
+				}
+			}
+
 			// only output the count if it is greater than 1
 			if (count > 1) {
 				// if the count is more than one digit long then check against last long count
@@ -3820,6 +3838,7 @@
 	/** @return {string} */
 	Life.prototype.asNewRLE = function(/** @const */ view, /** @const @type {Life} */ me, /** @const @type {boolean} */ addComments, /** @const @type {boolean} */ useAlias) {
 		var /** @type {string} */ rle = "",
+			/** @type {string} */ data = "",
 			/** @type {string} */ lastRLERow = "",
 			/** @const */ zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
 			/** @type {number} */ leftX = zoomBox.leftX,
@@ -3954,7 +3973,7 @@
 				// get the original pair with optimized counts
 				lastRLERow = this.encodeRow(leftX, rightX, pairs[y] + bottomY, true);
 				lastRLERow += this.encodeRow(leftX, rightX, pairs[y] + 1 + bottomY, true);
-				rle += this.encodeRowRun(pairs[y], lastRLERow, LifeConstants.newRLEDuplicateRowPair);
+				data += this.encodeRowRun(pairs[y], lastRLERow, LifeConstants.newRLEDuplicateRowPair);
 				y += pairs[y] * 2;
 
 				// make current row the last row
@@ -3974,7 +3993,7 @@
 				} else {
 					// row is different so output the current run with optimized counts
 					lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
-					rle += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
+					data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
 					
 					// make current row the last row
 					lastRLERow = rows[y];
@@ -3988,8 +4007,11 @@
 		// output the final run with optimized counts
 		if (lastRLERow != "0") {
 			lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
-			rle += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
+			data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
 		}
+
+		// add the pattern data to the rle
+		rle += data;
 
 		// add the pattern terminator representing number of right hand columns to ignore (0 to 3)
 		rle += LifeConstants.newRLEIgnoreCols[(4 - width) & 3] + "\n";

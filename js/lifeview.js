@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 621,
+		/** @const {number} */ versionBuild : 622,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13353,8 +13353,11 @@
 			var r1 = me.engine.asRLE(me, me.engine, false, me.engine.multiNumStates, me.engine.multiNumStates, [], true);
 			var r4 = me.engine.asNewRLE(me, me.engine, false, true);
 			var rulelen = r1.indexOf("\n") + 2;
-			me.element.innerHTML = "header:\t" + rulelen + "\tRLE:\t" + (r1.length - rulelen) + "\tRLE4:\t" + (r4.length - rulelen) + " (" + ((100 * (r4.length - rulelen)) / (r1.length - rulelen)).toFixed(1) + "%)\n" + r4;
-			me.element.value = me.element.innerHTML;
+			var example = r4;
+			if (example.length > rulelen + 50) {
+				example = example.substr(0, rulelen + 50) + "...";
+			}
+			alert("RLE: " + (r1.length - rulelen) + "  RLE4: " + (r4.length - rulelen) + " (" + ((100 * (r4.length - rulelen)) / (r1.length - rulelen)).toFixed(1) + "%)\n" + example);
 		}
 	};
 
