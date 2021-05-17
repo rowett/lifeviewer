@@ -17,6 +17,9 @@
 		// new RLE characters representing each 4 cell combination (for 2 state patterns) and blank cell combinations for 8, 8+final4, 16, 16+final4, 24, 24+final4, 32 and 32+final4
 		/** @const {Array<string>} */ newRLEChars : ["g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "W", "X", "Y", "Z"],
 
+		// new RLE characters representing small runs of blank lines (2, 3, 4, 5, 6, 7)
+		/** @const {Array<string>} */ newRLEBlankRows : ["A", "B", "C", "D", "E", "F"],
+
 		// new RLE characters representing columns to ignore at right of pattern (0, 1, 2, 3)
 		/** @const {Array<string>} */ newRLEIgnoreCols : ["_", "]", ")", "("],
 
@@ -3821,15 +3824,27 @@
 	// encode run of rows
 	/** @return {string} */
 	Life.prototype.encodeRowRun = function(/** @const @type {number} */ count, /** @const @type {string} */ row, /** @const @type {string} */ duplicateSymbol) {
-		var result = "";
+		var result = "",
+			symbol = "";
 
 		// check if the row is blank
 		if (row === "") {
 			// output the count (if greater than 1) and then the blank row symbol
 			if (count > 1) {
-				result += count.toString(16);
+				// if the count is from 2 to 7 then use the relevant multiple blank rows symbol
+				if (count < 8) {
+					result += LifeConstants.newRLEBlankRows[count - 2];
+				} else {
+					// if the count is >= 8 use half count plus odd/even
+					symbol = LifeConstants.newRLEBlankRows[(count & 1)];
+					count >>= 1;
+					result += count.toString(16);
+					result += symbol;
+				}
+			} else {
+				// if the count is 1 then output the blank row symbol
+				result += LifeConstants.newRLEBlankRow;
 			}
-			result += LifeConstants.newRLEBlankRow;
 		} else {
 			// output the row
 			result += row;
@@ -3990,17 +4005,24 @@
 				// this is not needed for the second since it can be inferred from the
 				// duplicate two rows symbol
 				if (lastRLERow === "") {
-					lastRLERow = "$";
+					lastRLERow = LifeConstants.newRLEBlankRow;
 				}
 				lastRLERow += this.encodeRow(leftX, rightX, y + 1 + bottomY, true);
 				data += this.encodeRowRun(pairs[y], lastRLERow, LifeConstants.newRLEDuplicateRowPair);
 				y += pairs[y] * 2;
 
-				// make current row the last row
+				// check whther next row is another pair
 				if (y < height) {
-					lastRLERow = rows[y];
-					lastRowY = y + bottomY;
-					rowCount = 1;
+					if (pairs[y] > 0) {
+						// next row is a pair so mark it as so
+						lastRLERow = LifeConstants.newRLEInvalidRow;
+					} else {
+						// next row is not a pair
+						lastRLERow = rows[y];
+						lastRowY = y + bottomY;
+						rowCount = 1;
+						y += 1;
+					}
 				} else {
 					// mark finished pattern
 					lastRLERow = LifeConstants.newRLEInvalidRow;
@@ -4022,8 +4044,8 @@
 					lastRowY = y + bottomY;
 					rowCount = 1;
 				}
+				y += 1;
 			}
-			y += 1;
 		}
 
 		// output the final run with optimized counts
