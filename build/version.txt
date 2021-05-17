@@ -1,3 +1,6 @@
+Build 623
+- fixed Identify so [R]Super rules are as fast as 2-state rules for detection
+
 Build 622
 - improved compression of the experimental RLE4 2-state pattern encoder (hotkey Ctrl-E will display statistics)
 

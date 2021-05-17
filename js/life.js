@@ -44,6 +44,9 @@
 		// new RLE last large count minus 2 symbol
 		/** @const {string} */ newRLELastLargeCountMinus2 : "/",
 
+		// new RLE mark invalid row during encoding
+		/** @const {string} */ newRLEInvalidRow : "0",
+
 		// state modes
 		/** @const {number} */ mode2 : 0,
 		/** @const {number} */ mode2Table : 1,
@@ -1553,14 +1556,23 @@
 					}
 				}
 			} else {
-				for (cx = x; cx <= right; cx += 1) {
-					// get the raw state
-					state = colourRow[cx];
-					if (state > this.historyStates) {
-						state -= this.historyStates;
-						hash = (hash * factor) ^ yshift;
-						hash = (hash * factor) ^ (cx - x);
-						hash = (hash * factor) ^ state;
+				if (this.isSuper) {
+					for (cx = x; cx <= right; cx += 1) {
+						if ((colourRow[cx] & 1) === 1) {
+							hash = (hash * factor) ^ yshift;
+							hash = (hash * factor) ^ (cx - x);
+						}
+					}
+				} else {
+					for (cx = x; cx <= right; cx += 1) {
+						// get the raw state
+						state = colourRow[cx];
+						if (state > this.historyStates) {
+							state -= this.historyStates;
+							hash = (hash * factor) ^ yshift;
+							hash = (hash * factor) ^ (cx - x);
+							hash = (hash * factor) ^ state;
+						}
 					}
 				}
 			}
@@ -3957,22 +3969,30 @@
 		// output rows removing duplicates
 		y = 0;
 		lastRowY = y + bottomY;
-		rowCount = 1;
-
-		// check if first row is part of a matched pair
-		if (pairs[y] === 0) {
-			// if not get the first row
-			lastRLERow = rows[y];
-			y += 1;
-		}
+		lastRLERow = LifeConstants.newRLEInvalidRow;
+		rowCount = 0;
 
 		// process each row of the pattern
 		while (y < height) {
 			// check for matched pairs
 			if (pairs[y] > 0) {
+				// output any current run
+				if (lastRLERow !== LifeConstants.newRLEInvalidRow) {
+					// output the current run with optimized counts
+					lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
+					data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
+				}
+
 				// get the original pair with optimized counts
-				lastRLERow = this.encodeRow(leftX, rightX, pairs[y] + bottomY, true);
-				lastRLERow += this.encodeRow(leftX, rightX, pairs[y] + 1 + bottomY, true);
+				lastRLERow = this.encodeRow(leftX, rightX, y + bottomY, true);
+
+				// if the first of the pair is blank then make it the blank row symbol
+				// this is not needed for the second since it can be inferred from the
+				// duplicate two rows symbol
+				if (lastRLERow === "") {
+					lastRLERow = "$";
+				}
+				lastRLERow += this.encodeRow(leftX, rightX, y + 1 + bottomY, true);
 				data += this.encodeRowRun(pairs[y], lastRLERow, LifeConstants.newRLEDuplicateRowPair);
 				y += pairs[y] * 2;
 
@@ -3983,7 +4003,7 @@
 					rowCount = 1;
 				} else {
 					// mark finished pattern
-					lastRLERow = "0";
+					lastRLERow = LifeConstants.newRLEInvalidRow;
 				}
 			} else {
 				// check if the next row is the same as the last one
@@ -3992,8 +4012,10 @@
 					rowCount += 1;
 				} else {
 					// row is different so output the current run with optimized counts
-					lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
-					data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
+					if (lastRLERow !== LifeConstants.newRLEInvalidRow) {
+						lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
+						data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
+					}
 					
 					// make current row the last row
 					lastRLERow = rows[y];
@@ -4005,7 +4027,7 @@
 		}
 
 		// output the final run with optimized counts
-		if (lastRLERow != "0") {
+		if (lastRLERow != LifeConstants.newRLEInvalidRow) {
 			lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
 			data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
 		}
