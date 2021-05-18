@@ -23,6 +23,15 @@
 		// new RLE characters representing columns to ignore at right of pattern (0, 1, 2, 3)
 		/** @const {Array<string>} */ newRLEIgnoreCols : ["_", "]", ")", "("],
 
+		// new RLE 2 bits per state symbol
+		/** @const {string} */ newRLEStateBits2 : ":",
+
+		// new RLE 4 bits per state symbol
+		/** @const {string} */ newRLEStateBits4 : ";",
+
+		// new RLE 8 bits per state symbol
+		/** @const {string} */ newRLEStateBits8 : "#",
+
 		// new RLE blank row symbol
 		/** @const {string} */ newRLEBlankRow : "$",
 
@@ -411,6 +420,9 @@
 
 		// new RLE bits per state
 		this.newRLEBitsPerState = 1;
+
+		// new RLE flag to ignore state 1 (used for [R]History encoding)
+		this.newRLEIgnoreState1 = false;
 
 		// whether to draw 2-state as rainbow
 		/** @type {boolean} */ this.rainbow = false;
@@ -3666,8 +3678,16 @@
 
 	// get 1 cell
 	Life.prototype.getOneCell = function(/** @type {number} */ x, /** @const @type {number} */ y) {
-		// get first cell
-		return this.getState(x, y, false);
+		var /** @type {number} */ state = 0;
+
+		state = this.getState(x, y, false);
+
+		// ignore state 1 if requested
+		if (state === 1 && this.newRLEIgnoreState1) {
+			state = 0;
+		}
+
+		return state;
 	};
 	
 	// get 2 cells in a row
@@ -3804,7 +3824,7 @@
 				}
 			}
 	
-			// add the character representing the four cells
+			// add the character representing the cells
 			result += stateChars[fourCells];
 		}
 	
@@ -3840,7 +3860,7 @@
 		}
 		count += 1;
 
-		// read the rest of the row in groups of four cells
+		// read the rest of the row in groups of cells based on bits per cell
 		while (x <= rightX) {
 			// get the next set of cells
 			switch (this.newRLEBitsPerState) {
@@ -3860,12 +3880,12 @@
 					break;
 			}
 
-			// check if they are the same as the previous four cells
+			// check if they are the same as the previous group of cells
 			if (next === last) {
 				// cells are the same so increment run count
 				count += 1;
 			} else {
-				// cells are different so output previous run (hex count and 4 cell symbol)
+				// cells are different so output previous run (hex count and cell group symbol)
 				result += this.encodeRun(count, last, false, useCountOptimization);
 
 				// reset for new run
@@ -3877,7 +3897,7 @@
 		// output final run
 		result += this.encodeRun(count, last, true, useCountOptimization);
 
-		// mark last 4 cell state character as end of row by converting to upper case
+		// mark last cell group state character as end of row by converting to upper case
 		if (result !== "") {
 			result = result.substr(0, result.length - 1) + result.substr(result.length - 1).toUpperCase();
 		}
@@ -3925,12 +3945,165 @@
 		return result;
 	};
 
+	// encode the pattern with the given number of states
+	/** @return {string} */
+	Life.prototype.encodePattern = function(/** @const @type {number} */ numStates, /** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {number} */ bottomY, /** @const @type {number} */ height) {
+		var /** @type {string} */ data = "",
+			/** @type {string} */ lastRLERow = "",
+			/** @type {number} */ y = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ rowCount = 0,
+			/** @type {number} */ lastRowY = 0,
+			/** @type {Array<string>} */ rows = [],
+			/** @type {Array<number>} */ pairs = [],
+			/** @type {boolean} */ allBlank = true;
+
+		// compute bits per state and output pattern prefix documenting this
+		if (numStates <= 2) {
+			// this is the default number of bits so no prefix required
+			this.newRLEBitsPerState = 1;
+		} else {
+			if (numStates <= 4) {
+				// 2 bits per state
+				this.newRLEBitsPerState = 2;
+			} else {
+				if (numStates <= 16) {
+					// 4 bits per state
+					this.newRLEBitsPerState = 4;
+				} else {
+					// 8 bits per state
+					this.newRLEBitsPerState = 8;
+				}
+			}
+		}
+
+		// clear large count for count optimization
+		this.newRLELastLargeCount = 0;
+
+		// encode each row into strings without count optimization so comparing identical rows works
+		for (y = 0; y < height; y += 1) {
+			rows[y] = this.encodeRow(leftX, rightX, y + bottomY, false);
+			pairs[y] = 0;
+
+			// check if any rows are not blank
+			if (rows[y] !== "") {
+				allBlank = false;
+			}
+		}
+
+		// process pattern if there are any non-blank cells
+		if (!allBlank) {
+			// output bits per state symbol
+			if (this.newRLEBitsPerState === 2) {
+				data += LifeConstants.newRLEStateBits2;
+			} else {
+				if (this.newRLEBitsPerState === 4) {
+					data += LifeConstants.newRLEStateBits4;
+				} else {
+					if (this.newRLEBitsPerState === 8) {
+						data += LifeConstants.newRLEStateBits8;
+					}
+				}
+			}
+
+			// now find each pair of rows (where the two rows are different) that are followed by one or more duplicate pairs
+			for (y = 0; y < height - 3; y += 1) {
+				if (rows[y] === rows[y + 2] && rows[y + 1] === rows[y + 3] && rows[y] !== rows[y + 1]) {
+					rowCount = 1;
+					j = 2;
+					do {
+						j += 2;
+						rowCount += 1;
+					} while (rows[y] == rows[y + j] && rows[y + 1] == rows[y + 1 + j]);
+	
+					// output how many duplicate pairs exist
+					pairs[y] = rowCount;
+				}
+			}
+	
+			// output rows removing duplicates
+			y = 0;
+			lastRowY = y + bottomY;
+			lastRLERow = LifeConstants.newRLEInvalidRow;
+			rowCount = 0;
+	
+			// process each row of the pattern
+			while (y < height) {
+				// check for matched pairs
+				if (pairs[y] > 0) {
+					// output any current run
+					if (lastRLERow !== LifeConstants.newRLEInvalidRow) {
+						// output the current run with optimized counts
+						lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
+						data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
+					}
+	
+					// get the original pair with optimized counts
+					lastRLERow = this.encodeRow(leftX, rightX, y + bottomY, true);
+	
+					// if the first of the pair is blank then make it the blank row symbol
+					// this is not needed for the second since it can be inferred from the
+					// duplicate two rows symbol
+					if (lastRLERow === "") {
+						lastRLERow = LifeConstants.newRLEBlankRow;
+					}
+					lastRLERow += this.encodeRow(leftX, rightX, y + 1 + bottomY, true);
+					data += this.encodeRowRun(pairs[y], lastRLERow, LifeConstants.newRLEDuplicateRowPair);
+					y += pairs[y] * 2;
+	
+					// check whther next row is another pair
+					if (y < height) {
+						if (pairs[y] > 0) {
+							// next row is a pair so mark it as so
+							lastRLERow = LifeConstants.newRLEInvalidRow;
+						} else {
+							// next row is not a pair
+							lastRLERow = rows[y];
+							lastRowY = y + bottomY;
+							rowCount = 1;
+							y += 1;
+						}
+					} else {
+						// mark finished pattern
+						lastRLERow = LifeConstants.newRLEInvalidRow;
+					}
+				} else {
+					// check if the next row is the same as the last one
+					if (rows[y] === lastRLERow) {
+						// increment the run count
+						rowCount += 1;
+					} else {
+						// row is different so output the current run with optimized counts
+						if (lastRLERow !== LifeConstants.newRLEInvalidRow) {
+							lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
+							data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
+						}
+						
+						// make current row the last row
+						lastRLERow = rows[y];
+						lastRowY = y + bottomY;
+						rowCount = 1;
+					}
+					y += 1;
+				}
+			}
+
+			// output the final run with optimized counts
+			if (lastRLERow != LifeConstants.newRLEInvalidRow) {
+				lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
+				data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
+			}
+		}
+
+		return data;
+	};
+
 	// convert grid to new RLE format
 	/** @return {string} */
 	Life.prototype.asNewRLE = function(/** @const */ view, /** @const @type {Life} */ me, /** @const @type {boolean} */ addComments, /** @const @type {boolean} */ useAlias) {
 		var /** @type {string} */ rle = "",
 			/** @type {string} */ data = "",
-			/** @type {string} */ lastRLERow = "",
+			/** @type {string} */ data2 = "",
 			/** @const */ zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
 			/** @type {number} */ leftX = zoomBox.leftX,
 			/** @type {number} */ rightX = zoomBox.rightX,
@@ -3938,14 +4111,8 @@
 			/** @type {number} */ bottomY = zoomBox.bottomY,
 			/** @type {number} */ width = rightX - leftX + 1,
 			/** @type {number} */ height = topY - bottomY + 1,
-			/** @type {number} */ y = 0,
-			/** @type {number} */ j = 0,
 			/** @type {number} */ swap = 0,
-			/** @type {number} */ rowCount = 0,
-			/** @type {number} */ lastRowY = 0,
 			/** @type {number} */ numStates = me.multiNumStates,
-			/** @type {Array<string>} */ rows = [],
-			/** @type {Array<number>} */ pairs = [],
 			/** @const @type {number} */ xOff = (me.width >> 1) - (view.patternWidth >> 1),
 			/** @const @type {number} */ yOff = (me.height >> 1) - (view.patternHeight >> 1),
 			/** @type {string} */ ruleName = "",
@@ -4024,124 +4191,56 @@
 		rle += view.patternBoundedGridDef;
 		rle += "\n";
 
-		// clear large count for count optimization
-		this.newRLELastLargeCount = 0;
+		// clear the ignore state 1 flag
+		this.newRLEIgnoreState1 = false;
 
-		// compute bits per state
-		if (me.isLifeHistory) {
-			numStates = 7;
-		}
-		if (numStates <= 2) {
-			this.newRLEBitsPerState = 1;
+		// encode the pattern
+		// for [R]History try two methods and pick the smallest:
+		// 1. a 4 bit encode
+		// 2. a 1 bit encode plus a 4 bit encode without state 1
+		if (this.isLifeHistory) {
+			// 1. 4 bit encode
+			data = this.encodePattern(7, leftX, rightX, bottomY, height);
+
+			// 2. 1 bit encode
+			data2 = this.encodePattern(numStates, leftX, rightX, bottomY, height);
+
+			// 2. plus 4 bit encode without state 1
+			this.newRLEIgnoreState1 = true;
+			data2 += this.encodePattern(7, leftX, rightX, bottomY, height);
+
+			// check which is more efficient
+			if (data2.length < data.length) {
+				// use the 1 bit plus 4 bit without state 1 version
+				data = data2;
+
+				// mark bits per state as 1 for correct pattern terminator
+				this.newRLEBitsPerState = 1;
+			} else {
+				// mark bits per state as 4 for correct pattern terminator
+				this.newRLEBitsPerState = 4;
+			}
 		} else {
-			if (numStates <= 4) {
-				this.newRLEBitsPerState = 2;
-			} else {
-				if (numStates <= 16) {
-					this.newRLEBitsPerState = 4;
-				} else {
-					this.newRLEBitsPerState = 8;
-				}
-			}
+			// standard encode
+			data = this.encodePattern(numStates, leftX, rightX, bottomY, height);
 		}
 
-		// encode each row into strings without count optimization so comparing identical rows works
-		for (y = 0; y < height; y += 1) {
-			rows[y] = this.encodeRow(leftX, rightX, y + bottomY, false);
-			pairs[y] = 0;
-		}
-
-		// now find the matched pairs
-		for (y = 0; y < height - 3; y += 1) {
-			if (rows[y] === rows[y + 2] && rows[y + 1] === rows[y + 3] && rows[y] !== rows[y + 1]) {
-				rowCount = 1;
-				j = 2;
-				do {
-					j += 2;
-					rowCount += 1;
-				} while (rows[y] == rows[y + j] && rows[y + 1] == rows[y + 1 + j]);
-				pairs[y] = rowCount;
-			}
-		}
-
-		// output rows removing duplicates
-		y = 0;
-		lastRowY = y + bottomY;
-		lastRLERow = LifeConstants.newRLEInvalidRow;
-		rowCount = 0;
-
-		// process each row of the pattern
-		while (y < height) {
-			// check for matched pairs
-			if (pairs[y] > 0) {
-				// output any current run
-				if (lastRLERow !== LifeConstants.newRLEInvalidRow) {
-					// output the current run with optimized counts
-					lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
-					data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
-				}
-
-				// get the original pair with optimized counts
-				lastRLERow = this.encodeRow(leftX, rightX, y + bottomY, true);
-
-				// if the first of the pair is blank then make it the blank row symbol
-				// this is not needed for the second since it can be inferred from the
-				// duplicate two rows symbol
-				if (lastRLERow === "") {
-					lastRLERow = LifeConstants.newRLEBlankRow;
-				}
-				lastRLERow += this.encodeRow(leftX, rightX, y + 1 + bottomY, true);
-				data += this.encodeRowRun(pairs[y], lastRLERow, LifeConstants.newRLEDuplicateRowPair);
-				y += pairs[y] * 2;
-
-				// check whther next row is another pair
-				if (y < height) {
-					if (pairs[y] > 0) {
-						// next row is a pair so mark it as so
-						lastRLERow = LifeConstants.newRLEInvalidRow;
-					} else {
-						// next row is not a pair
-						lastRLERow = rows[y];
-						lastRowY = y + bottomY;
-						rowCount = 1;
-						y += 1;
-					}
-				} else {
-					// mark finished pattern
-					lastRLERow = LifeConstants.newRLEInvalidRow;
-				}
-			} else {
-				// check if the next row is the same as the last one
-				if (rows[y] === lastRLERow) {
-					// increment the run count
-					rowCount += 1;
-				} else {
-					// row is different so output the current run with optimized counts
-					if (lastRLERow !== LifeConstants.newRLEInvalidRow) {
-						lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
-						data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
-					}
-					
-					// make current row the last row
-					lastRLERow = rows[y];
-					lastRowY = y + bottomY;
-					rowCount = 1;
-				}
-				y += 1;
-			}
-		}
-
-		// output the final run with optimized counts
-		if (lastRLERow != LifeConstants.newRLEInvalidRow) {
-			lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
-			data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
-		}
-
-		// add the pattern data to the rle
+		// add the pattern to the rle
 		rle += data;
 
-		// add the pattern terminator representing number of right hand columns to ignore (0 to 3)
-		rle += LifeConstants.newRLEIgnoreCols[(4 - width) & 3] + "\n";
+		// add the pattern terminator representing number of right hand columns to ignore
+		if (this.newRLEBitsPerState === 1) {
+			// for 1 bit per state need to ignore 0 to 3 columns
+			rle += LifeConstants.newRLEIgnoreCols[(4 - width) & 3] + "\n";
+		} else {
+			if (this.newRLEBitsPerState === 2) {
+				// for 2 bits per state need to ignore 0 or 1 column
+				rle += LifeConstants.newRLEIgnoreCols[(width & 1)] + "\n";
+			} else {
+				// otherwise just use the pattern terminator
+				rle += LifeConstants.newRLEIgnoreCols[0] + "\n";
+			}
+		}
 
 		// add final comments if requested
 		if (addComments) {

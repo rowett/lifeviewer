@@ -1,3 +1,6 @@
+Build 625
+- experimental new RLE4 encoder now uses two methods for [R]History rules
+
 Build 624
 - experimental new RLE4 encoder now supports up to 16 states
 
