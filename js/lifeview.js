@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 623,
+		/** @const {number} */ versionBuild : 624,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13348,8 +13348,7 @@
 
 	// test for new RLE prototype
 	View.prototype.testNewRLE = function(me) {
-		// check for 2 state pattern
-		if (me.engine.multiNumStates === 2 || me.engine.multiNumStates === -1) {
+		if (me.engine.multiNumStates <= 16) {
 			var r1 = me.engine.asRLE(me, me.engine, false, me.engine.multiNumStates, me.engine.multiNumStates, [], true);
 			var r4 = me.engine.asNewRLE(me, me.engine, false, true);
 			var rulelen = r1.indexOf("\n") + 2;

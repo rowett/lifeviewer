@@ -407,7 +407,10 @@
 		this.potentialClears = [];
 
 		// new RLE last large count
-		this.lastLargeCount = 0;
+		this.newRLELastLargeCount = 0;
+
+		// new RLE bits per state
+		this.newRLEBitsPerState = 1;
 
 		// whether to draw 2-state as rainbow
 		/** @type {boolean} */ this.rainbow = false;
@@ -3661,18 +3664,49 @@
 		}
 	};
 
-	// get 4 cells in a row
+	// get 1 cell
+	Life.prototype.getOneCell = function(/** @type {number} */ x, /** @const @type {number} */ y) {
+		// get first cell
+		return this.getState(x, y, false);
+	};
+	
+	// get 2 cells in a row
 	/** @return {number} */
-	Life.prototype.getFourCells = function(/** @type {number} */ x, /** @const @type {number} */ rightX, /** @const @type {Uint8Array} */ colourRow) {
+	Life.prototype.getTwoCells = function(/** @type {number} */ x, /** @const @type {number} */ y, /** @const @type {number} */ rightX) {
 		var /** @type {number} */ col = 0,
 			/** @type {number} */ state = 0;
 
 		// get first cell
+		col = this.getState(x, y, false);
+		if (col) {
+			state = col << 2;
+		}
+		x += 1;
+
+		// check if the second cell is in range
+		if (x <= rightX) {
+			col = this.getState(x, y, false);
+			if (col) {
+				state |= col;
+			}
+		}
+
+		return state;
+	};
+
+	// get 4 cells in a row
+	/** @return {number} */
+	Life.prototype.getFourCells = function(/** @type {number} */ x, /** @const @type {number} */ y, /** @const @type {number} */ rightX, /** @const @type {Uint8Array} */ colourRow) {
+		var /** @type {number} */ col = 0,
+			/** @type {number} */ state = 0;
+
+		// 2 state so get first cell using fast lookup
 		col = colourRow[x];
 		if (!(col <= this.deadStart || col === this.boundedBorderColour)) {
 			state = 8;
 		}
 		x += 1;
+
 		// check if the second cell is in range
 		if (x <= rightX) {
 			col = colourRow[x];
@@ -3680,6 +3714,7 @@
 				state |= 4;
 			}
 			x += 1;
+
 			// check if the third cell is in range
 			if (x <= rightX) {
 				col = colourRow[x];
@@ -3687,6 +3722,7 @@
 					state |= 2;
 				}
 				x += 1;
+
 				// check if the fourth cell is in range
 				if (x <= rightX) {
 					col = colourRow[x];
@@ -3731,32 +3767,32 @@
 				// if the count is more than one digit long then check against last long count
 				if (count >= 16 && useCountOptimization) {
 					// check if count is same as last large count
-					if (count === this.lastLargeCount) {
+					if (count === this.newRLELastLargeCount) {
 						result += LifeConstants.newRLELastLargeCount;
 					} else {
 						// check if count is one more than last large count
-						if (count === this.lastLargeCount + 1) {
+						if (count === this.newRLELastLargeCount + 1) {
 							result += LifeConstants.newRLELastLargeCountPlus;
-							this.lastLargeCount += 1;
+							this.newRLELastLargeCount += 1;
 						} else {
 							// check if count is one less than last large count
-							if (count === this.lastLargeCount - 1) {
+							if (count === this.newRLELastLargeCount - 1) {
 								result += LifeConstants.newRLELastLargeCountMinus;
-								this.lastLargeCount -= 1;
+								this.newRLELastLargeCount -= 1;
 							} else {
 								// check if count is one more than last large count
-								if (count === this.lastLargeCount + 2) {
+								if (count === this.newRLELastLargeCount + 2) {
 									result += LifeConstants.newRLELastLargeCountPlus2;
-									this.lastLargeCount += 2;
+									this.newRLELastLargeCount += 2;
 								} else {
 									// check if count is two less than last large count
-									if (count === this.lastLargeCount - 2) {
+									if (count === this.newRLELastLargeCount - 2) {
 										result += LifeConstants.newRLELastLargeCountMinus2;
-										this.lastLargeCount -= 2;
+										this.newRLELastLargeCount -= 2;
 									} else {
 										// new last large count
 										result += count.toString(16);
-										this.lastLargeCount = count;
+										this.newRLELastLargeCount = count;
 									}
 								}
 							}
@@ -3785,16 +3821,44 @@
 			/** @type {number} */ next = 0,
 			/** @type {number} */ count = 0;
 
-		// get first four cells
-		last = this.getFourCells(x, rightX, colourRow);
-		x += 4;
+		// get first set of cells
+		switch (this.newRLEBitsPerState) {
+			case 1:
+				last = this.getFourCells(x, y, rightX, colourRow);
+				x += 4;
+				break;
+
+			case 2:
+				last = this.getTwoCells(x, y, rightX);
+				x += 2;
+				break;
+
+			case 4:
+				last = this.getOneCell(x, y);
+				x += 1;
+				break;
+		}
 		count += 1;
 
 		// read the rest of the row in groups of four cells
 		while (x <= rightX) {
-			// get the next four cells
-			next = this.getFourCells(x, rightX, colourRow);
-			x += 4;
+			// get the next set of cells
+			switch (this.newRLEBitsPerState) {
+				case 1:
+					next = this.getFourCells(x, y, rightX, colourRow);
+					x += 4;
+					break;
+
+				case 2:
+					next = this.getTwoCells(x, y, rightX);
+					x += 2;
+					break;
+
+				case 4:
+					next = this.getOneCell(x, y);
+					x += 1;
+					break;
+			}
 
 			// check if they are the same as the previous four cells
 			if (next === last) {
@@ -3805,7 +3869,7 @@
 				result += this.encodeRun(count, last, false, useCountOptimization);
 
 				// reset for new run
-				count = 0;
+				count = 1;
 				last = next;
 			}
 		}
@@ -3879,6 +3943,7 @@
 			/** @type {number} */ swap = 0,
 			/** @type {number} */ rowCount = 0,
 			/** @type {number} */ lastRowY = 0,
+			/** @type {number} */ numStates = me.multiNumStates,
 			/** @type {Array<string>} */ rows = [],
 			/** @type {Array<number>} */ pairs = [],
 			/** @const @type {number} */ xOff = (me.width >> 1) - (view.patternWidth >> 1),
@@ -3959,8 +4024,26 @@
 		rle += view.patternBoundedGridDef;
 		rle += "\n";
 
-		// output pattern in new RLE format
-		this.lastLargeCount = 0;
+		// clear large count for count optimization
+		this.newRLELastLargeCount = 0;
+
+		// compute bits per state
+		if (me.isLifeHistory) {
+			numStates = 7;
+		}
+		if (numStates <= 2) {
+			this.newRLEBitsPerState = 1;
+		} else {
+			if (numStates <= 4) {
+				this.newRLEBitsPerState = 2;
+			} else {
+				if (numStates <= 16) {
+					this.newRLEBitsPerState = 4;
+				} else {
+					this.newRLEBitsPerState = 8;
+				}
+			}
+		}
 
 		// encode each row into strings without count optimization so comparing identical rows works
 		for (y = 0; y < height; y += 1) {

@@ -1,3 +1,6 @@
+Build 624
+- experimental new RLE4 encoder now supports up to 16 states
+
 Build 623
 - fixed Identify so [R]Super rules are as fast as 2-state rules for detection
 
