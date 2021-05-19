@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 625,
+		/** @const {number} */ versionBuild : 626,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13348,16 +13348,15 @@
 
 	// test for new RLE prototype
 	View.prototype.testNewRLE = function(me) {
-		if (me.engine.multiNumStates <= 16) {
-			var r1 = me.engine.asRLE(me, me.engine, false, me.engine.multiNumStates, me.engine.multiNumStates, [], true);
-			var r4 = me.engine.asNewRLE(me, me.engine, false, true);
-			var rulelen = r1.indexOf("\n") + 2;
-			var example = r4;
-			if (example.length > rulelen + 50) {
-				example = example.substr(0, rulelen + 50) + "...";
-			}
-			alert("RLE: " + (r1.length - rulelen) + "  RLE4: " + (r4.length - rulelen) + " (" + ((100 * (r4.length - rulelen)) / (r1.length - rulelen)).toFixed(1) + "%)\n" + example);
+		var r1 = me.engine.asRLE(me, me.engine, false, me.engine.multiNumStates, me.engine.multiNumStates, [], true),
+			r4 = me.engine.asNewRLE(me, me.engine, false, true),
+			rulelen = r1.indexOf("\n") + 2,
+			example = r4;
+
+		if (example.length > rulelen + 50) {
+			example = example.substr(0, rulelen + 50) + "...";
 		}
+		alert("RLE: " + (r1.length - rulelen) + "  RLE4: " + (r4.length - rulelen) + " (" + ((100 * (r4.length - rulelen)) / (r1.length - rulelen)).toFixed(1) + "%)\n" + example);
 	};
 
 	// replace the current rle with the given text

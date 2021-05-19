@@ -23,6 +23,12 @@
 		// new RLE characters representing columns to ignore at right of pattern (0, 1, 2, 3)
 		/** @const {Array<string>} */ newRLEIgnoreCols : ["_", "]", ")", "("],
 
+		// new RLE characters representing 8 bit cells states 0 to 31
+		/** @const {Array<string>} */ newRLEChars8 : ["g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V"],
+
+		// new RLE characters representing 8 bit cells 32x state
+		/** @const {Array<string>} */ newRLEChars832 : ["C", "D", "E", "F", "W", "X", "Y", "Z"],
+
 		// new RLE 2 bits per state symbol
 		/** @const {string} */ newRLEStateBits2 : ":",
 
@@ -2151,7 +2157,7 @@
 				heatVal += nextHeat;
 				i += 1;
 			}
-			// if min and max are the same then just output onej
+			// if min and max are the same then just output one
 			if (minHeat === maxHeat) {
 				avgHeat = minHeat;
 				heat = String(avgHeat.toFixed(1));
@@ -3758,26 +3764,39 @@
 
 	// encode run count and cells
 	/** @return {string} */
-	Life.prototype.encodeRun = function(/** @type {number} */ count, /** @type {number} */ fourCells, /** @const @type {boolean} */ endOfRow, /** @const @type {boolean} */ useCountOptimization) {
+	Life.prototype.encodeRun = function(/** @type {number} */ count, /** @type {number} */ cellGroup, /** @const @type {boolean} */ endOfRow, /** @const @type {boolean} */ useCountOptimization) {
 		var /** @type {string} */ result = "",
-			/** @const @type {Array<string>} */ stateChars = LifeConstants.newRLEChars;
+			/** @const @type {Array<string>} */ stateChars = LifeConstants.newRLEChars,
+			/** @const @type {Array<string>} */ stateChars8 = LifeConstants.newRLEChars8,
+			/** @const @type {Array<string>} */ stateChars832 = LifeConstants.newRLEChars832,
+			/** @type {boolean} */ blankChar = false;
 
 		// do not output blank cells at end of row
-		if (!(endOfRow && fourCells === 0)) {
+		if (!(endOfRow && cellGroup === 0)) {
 			// check for larger blank cells runs
-			if (count > 1 && fourCells === 0) {
-				// check for small counts (2, 3, 4, 5, 6, 7, 8 and 9)
-				if (count >= 2 && count < 10) {
-					fourCells = 14 + count;
-					count = 1;
+			if (count > 1 && cellGroup === 0) {
+				// check for small counts
+				if (this.newRLEBitsPerState === 8) {
+					// for 8 bit this is just 2 or 3
+					if (count >= 2 && count <= 3) {
+						cellGroup = 14 + count;
+						count = 1;
+						blankChar = true;
+					}
 				} else {
-					// only optimize if it saves count characters
-					if ((count >= 16 && count < 32) || (count >= 256 && count < 512) || (count >= 4096 && count < 8192)) {
-						// convert to 8 cell symbol
-						fourCells = 16 + (count & 1);
-
-						// halve the count
-						count >>= 1;
+					// for lower bit counts this is 2 to 9
+					if (count >= 2 && count < 10) {
+						cellGroup = 14 + count;
+						count = 1;
+					} else {
+						// additionally optimize if it saves count characters
+						if ((count >= 16 && count < 32) || (count >= 256 && count < 512) || (count >= 4096 && count < 8192)) {
+							// convert to 8 cell symbol
+							cellGroup = 16 + (count & 1);
+	
+							// halve the count
+							count >>= 1;
+						}
 					}
 				}
 			}
@@ -3824,8 +3843,18 @@
 				}
 			}
 	
-			// add the character representing the cells
-			result += stateChars[fourCells];
+			// add the characters representing the cells
+			if (this.newRLEBitsPerState === 8 && !blankChar) {
+				// 8 bit cells encode into one or two symbols
+				if ((cellGroup >> 5) !== 0) {
+					result += stateChars832[cellGroup >> 5];
+					result += stateChars8[cellGroup & 31];
+				} else {
+					result += stateChars8[cellGroup & 31];
+				}
+			} else {
+				result += stateChars[cellGroup];
+			}
 		}
 	
 		return result;
@@ -3844,16 +3873,25 @@
 		// get first set of cells
 		switch (this.newRLEBitsPerState) {
 			case 1:
+				// get four 1 bit cells
 				last = this.getFourCells(x, y, rightX, colourRow);
 				x += 4;
 				break;
 
 			case 2:
+				// get two 2 bit cells
 				last = this.getTwoCells(x, y, rightX);
 				x += 2;
 				break;
 
 			case 4:
+				// get one 4 bit cell
+				last = this.getOneCell(x, y);
+				x += 1;
+				break;
+
+			case 8:
+				// get one 8 bit cell
 				last = this.getOneCell(x, y);
 				x += 1;
 				break;
@@ -3865,16 +3903,25 @@
 			// get the next set of cells
 			switch (this.newRLEBitsPerState) {
 				case 1:
+					// get next four 1 bit cells
 					next = this.getFourCells(x, y, rightX, colourRow);
 					x += 4;
 					break;
 
 				case 2:
+					// get next two 2 bit cells
 					next = this.getTwoCells(x, y, rightX);
 					x += 2;
 					break;
 
 				case 4:
+					// get next 4 bit cell
+					next = this.getOneCell(x, y);
+					x += 1;
+					break;
+
+				case 8:
+					// get next 8 bit cell
 					next = this.getOneCell(x, y);
 					x += 1;
 					break;
@@ -3899,7 +3946,9 @@
 
 		// mark last cell group state character as end of row by converting to upper case
 		if (result !== "") {
-			result = result.substr(0, result.length - 1) + result.substr(result.length - 1).toUpperCase();
+			if (this.newRLEBitsPerState !== 8) {
+				result = result.substr(0, result.length - 1) + result.substr(result.length - 1).toUpperCase();
+			}
 		}
 
 		return result;
@@ -3907,29 +3956,52 @@
 
 	// encode run of rows
 	/** @return {string} */
-	Life.prototype.encodeRowRun = function(/** @const @type {number} */ count, /** @const @type {string} */ row, /** @const @type {string} */ duplicateSymbol) {
+	Life.prototype.encodeRowRun = function(/** @type {number} */ count, /** @const @type {string} */ row, /** @const @type {string} */ duplicateSymbol, /** @const @type {boolean} */ firstRow) {
 		var result = "",
 			symbol = "";
 
 		// check if the row is blank
 		if (row === "") {
-			// output the count (if greater than 1) and then the blank row symbol
-			if (count > 1) {
-				// if the count is from 2 to 7 then use the relevant multiple blank rows symbol
-				if (count < 8) {
+			if (this.newRLEBitsPerState === 8) {
+				// 8 bit states need the previous row terminated so add to count
+				count += 1;
+
+				// if count is 2 or 3 then use the relevant multiple blank rows symbol
+				if (count < 4) {
 					result += LifeConstants.newRLEBlankRows[count - 2];
 				} else {
-					// if the count is >= 8 use half count plus odd/even
-					symbol = LifeConstants.newRLEBlankRows[(count & 1)];
-					count >>= 1;
-					result += count.toString(16);
-					result += symbol;
+					// if count is >= 4 use half count plus odd/even
+					if (count >= 4) {
+						symbol = LifeConstants.newRLEBlankRows[(count & 1)];
+						count >>= 1;
+						result += count.toString(16);
+						result += symbol;
+					}
 				}
 			} else {
-				// if the count is 1 then output the blank row symbol
-				result += LifeConstants.newRLEBlankRow;
+				// for < 8 bit states output the count (if greater than 1) and then the blank row symbol
+				if (count > 1) {
+					// if the count is from 2 to 7 then use the relevant multiple blank rows symbol
+					if (count < 8) {
+						result += LifeConstants.newRLEBlankRows[count - 2];
+					} else {
+						// if the count is >= 8 use half count plus odd/even
+						symbol = LifeConstants.newRLEBlankRows[(count & 1)];
+						count >>= 1;
+						result += count.toString(16);
+						result += symbol;
+					}
+				} else {
+					// if the count is 1 then output the blank row symbol
+					result += LifeConstants.newRLEBlankRow;
+				}
 			}
 		} else {
+			// add previous end of row for 8 bit states
+			if (this.newRLEBitsPerState === 8 && !firstRow) {
+				result += LifeConstants.newRLEBlankRow;
+			}
+
 			// output the row
 			result += row;
 
@@ -3956,7 +4028,8 @@
 			/** @type {number} */ lastRowY = 0,
 			/** @type {Array<string>} */ rows = [],
 			/** @type {Array<number>} */ pairs = [],
-			/** @type {boolean} */ allBlank = true;
+			/** @type {boolean} */ allBlank = true,
+			/** @type {boolean} */ firstRow = true;
 
 		// compute bits per state and output pattern prefix documenting this
 		if (numStates <= 2) {
@@ -4035,7 +4108,8 @@
 					if (lastRLERow !== LifeConstants.newRLEInvalidRow) {
 						// output the current run with optimized counts
 						lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
-						data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
+						data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow, firstRow);
+						firstRow = (lastRLERow === "");
 					}
 	
 					// get the original pair with optimized counts
@@ -4048,7 +4122,8 @@
 						lastRLERow = LifeConstants.newRLEBlankRow;
 					}
 					lastRLERow += this.encodeRow(leftX, rightX, y + 1 + bottomY, true);
-					data += this.encodeRowRun(pairs[y], lastRLERow, LifeConstants.newRLEDuplicateRowPair);
+					data += this.encodeRowRun(pairs[y], lastRLERow, LifeConstants.newRLEDuplicateRowPair, firstRow);
+					firstRow = (lastRLERow === "");
 					y += pairs[y] * 2;
 	
 					// check whther next row is another pair
@@ -4076,7 +4151,8 @@
 						// row is different so output the current run with optimized counts
 						if (lastRLERow !== LifeConstants.newRLEInvalidRow) {
 							lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
-							data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
+							data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow, firstRow);
+							firstRow = (lastRLERow === "");
 						}
 						
 						// make current row the last row
@@ -4091,7 +4167,8 @@
 			// output the final run with optimized counts
 			if (lastRLERow != LifeConstants.newRLEInvalidRow) {
 				lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
-				data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow);
+				data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow, firstRow);
+				firstRow = (lastRLERow === "");
 			}
 		}
 
