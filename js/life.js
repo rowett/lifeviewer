@@ -3777,10 +3777,17 @@
 			if (count > 1 && cellGroup === 0) {
 				// check for small counts
 				if (this.newRLEBitsPerState === 8) {
-					// for 8 bit this is just 2 or 3
-					if (count >= 2 && count <= 3) {
+					// for 8 bit this is just 2 to 5
+					if (count >= 2 && count <= 5) {
 						cellGroup = 14 + count;
 						count = 1;
+						blankChar = true;
+					} else {
+						// convert to double blank symbol
+						cellGroup = 16 + (count & 1);
+
+						// halve the count
+						count >>= 1;
 						blankChar = true;
 					}
 				} else {
@@ -3789,14 +3796,11 @@
 						cellGroup = 14 + count;
 						count = 1;
 					} else {
-						// additionally optimize if it saves count characters
-						if ((count >= 16 && count < 32) || (count >= 256 && count < 512) || (count >= 4096 && count < 8192)) {
-							// convert to 8 cell symbol
-							cellGroup = 16 + (count & 1);
-	
-							// halve the count
-							count >>= 1;
-						}
+						// at greater counts convert to the double blank symbol and halve the count
+						cellGroup = 16 + (count & 1);
+
+						// halve the count
+						count >>= 1;
 					}
 				}
 			}
@@ -3847,6 +3851,7 @@
 			if (this.newRLEBitsPerState === 8 && !blankChar) {
 				// 8 bit cells encode into one or two symbols
 				if ((cellGroup >> 5) !== 0) {
+					// use base 32
 					result += stateChars832[cellGroup >> 5];
 					result += stateChars8[cellGroup & 31];
 				} else {
@@ -3971,12 +3976,10 @@
 					result += LifeConstants.newRLEBlankRows[count - 2];
 				} else {
 					// if count is >= 4 use half count plus odd/even
-					if (count >= 4) {
-						symbol = LifeConstants.newRLEBlankRows[(count & 1)];
-						count >>= 1;
-						result += count.toString(16);
-						result += symbol;
-					}
+					symbol = LifeConstants.newRLEBlankRows[(count & 1)];
+					count >>= 1;
+					result += count.toString(16);
+					result += symbol;
 				}
 			} else {
 				// for < 8 bit states output the count (if greater than 1) and then the blank row symbol
