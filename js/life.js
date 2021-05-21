@@ -4037,7 +4037,7 @@
 
 	// output state map if not identity
 	/** @return {string} */
-	Life.prototype.outputStateMap = function(/** @const @type {Array<number>} */ statesList) {
+	Life.prototype.outputStateMap = function(/** @const @type {Array<number>} */ statesList, /** @const @type {boolean} */ justOneState) {
 		var /** @type {string} */ result = "",
 			/** @type {number} */ i = 0,
 			/** @type {number} */ state = 0,
@@ -4045,28 +4045,40 @@
 			/** @const @type {Array<string>} */ stateChars8 = LifeConstants.URLEChars8,
 			/** @const @type {Array<string>} */ stateChars832 = LifeConstants.URLEChars832;
 
-
-		// check if the states are the identity mapping
-		for (i = 0; i < statesList.length; i += 1) {
-			if (statesList[i] !== i) {
-				needMap = true;
-			}
-		}
-
-		// output the map if not identity
-		if (needMap) {
+		// check if state by state is mode being used and if so just output the current state 1 mapping
+		if (justOneState) {
 			result += LifeConstants.URLEStateMap;
+			state = statesList[1];
+			// output state in base 32
+			if ((state >> 5) !== 0) {
+				result += stateChars832[state >> 5];
+				result += stateChars8[state & 31];
+			} else {
+				result += stateChars8[state];
+			}
+		} else {
+			// check if the states are the identity mapping
 			for (i = 0; i < statesList.length; i += 1) {
-				state = statesList[i];
-				// output state in base 32
-				if ((state >> 5) !== 0) {
-					result += stateChars832[state >> 5];
-					result += stateChars8[state & 31];
-				} else {
-					result += stateChars8[state];
+				if (statesList[i] !== i) {
+					needMap = true;
 				}
 			}
-			result += LifeConstants.URLEStateMap;
+	
+			// output the map if not identity
+			if (needMap) {
+				result += LifeConstants.URLEStateMap;
+				for (i = 0; i < statesList.length; i += 1) {
+					state = statesList[i];
+					// output state in base 32
+					if ((state >> 5) !== 0) {
+						result += stateChars832[state >> 5];
+						result += stateChars8[state & 31];
+					} else {
+						result += stateChars8[state];
+					}
+				}
+				result += LifeConstants.URLEStateMap;
+			}
 		}
 
 		return result;
@@ -4074,7 +4086,7 @@
 
 	// encode the pattern with the given number of states
 	/** @return {string} */
-	Life.prototype.encodePattern = function(/** @const @type {number} */ numStates, /** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {number} */ bottomY, /** @const @type {number} */ height, /** @const @type {Array<number>} */ usedStatesList) {
+	Life.prototype.encodePattern = function(/** @const @type {number} */ numStates, /** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {number} */ bottomY, /** @const @type {number} */ height, /** @const @type {Array<number>} */ usedStatesList, /** @const @type {boolean} */ stateByState) {
 		var /** @type {string} */ data = "",
 			/** @type {string} */ lastRLERow = "",
 			/** @type {number} */ y = 0,
@@ -4130,7 +4142,7 @@
 		// check if there is a non-identity state mapping
 		if (bitsPerState !== bitsPerUsedState) {
 			// output state map
-			data += this.outputStateMap(usedStatesList);
+			data += this.outputStateMap(usedStatesList, stateByState);
 		}
 
 		// process pattern if there are any non-blank cells
@@ -4395,13 +4407,13 @@
 		}
 
 		// encode the pattern
-		data = this.encodePattern(numStates, leftX, rightX, bottomY, height, usedStatesList);
+		data = this.encodePattern(numStates, leftX, rightX, bottomY, height, usedStatesList, false);
 
 		// try state by state encoding
 		if (usedStatesList.length > 2) {
 			data2 = "";
 			for (swap = 1; swap < usedStatesList.length; swap += 1) {
-				data2 += this.encodePattern(numStates, leftX, rightX, bottomY, height, [0, usedStatesList[swap]]);
+				data2 += this.encodePattern(numStates, leftX, rightX, bottomY, height, [0, usedStatesList[swap]], true);
 			}
 			if (data2.length < data.length) {
 				data = data2;
