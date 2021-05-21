@@ -32,6 +32,9 @@
 		// URLE state map symbol
 		/** @const {string} */ URLEStateMap : "'",
 
+		// URLE 1 bit per state symbol
+		/** @const {string} */ URLEStateBits1 : ".",
+
 		// URLE 2 bits per state symbol
 		/** @const {string} */ URLEStateBits2 : ":",
 
@@ -4077,7 +4080,11 @@
 						result += stateChars8[state];
 					}
 				}
-				result += LifeConstants.URLEStateMap;
+
+				// output one bit per state if required (since it's ommitted by default)
+				if (this.URLEBitsPerState === 1) {
+					result += LifeConstants.URLEStateBits1;
+				}
 			}
 		}
 
@@ -4412,8 +4419,10 @@
 		// try state by state encoding
 		if (usedStatesList.length > 2) {
 			data2 = "";
-			for (swap = 1; swap < usedStatesList.length; swap += 1) {
-				data2 += this.encodePattern(numStates, leftX, rightX, bottomY, height, [0, usedStatesList[swap]], true);
+			for (swap = 0; swap < usedStatesList.length; swap += 1) {
+				if (usedStatesList[swap] !== 0) {
+					data2 += this.encodePattern(numStates, leftX, rightX, bottomY, height, [0, usedStatesList[swap]], true);
+				}
 			}
 			if (data2.length < data.length) {
 				data = data2;
