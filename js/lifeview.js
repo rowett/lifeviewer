@@ -13355,12 +13355,12 @@
 			example = r4,
 			percent = ((100 * (r4.length - rulelen)) / (r1.length - rulelen));
 
-		if (example.length > rulelen + 50) {
-			example = example.substr(0, rulelen + 50) + "...";
+		if (example.length > rulelen + 70) {
+			example = example.substr(0, rulelen + 70) + "...";
 		}
 		te -= t4;
 		t4 -= t1;
-		alert("RLE: " + (r1.length - rulelen) + " bytes in " + (t4 | 0) + "ms  URLE: " + (r4.length - rulelen) + " bytes (" + percent.toFixed(1) + "% saving " + (100 - percent).toFixed(1) +"%) in " + (te | 0) + "ms\n" + example);
+		alert("RLE: " + (r1.length - rulelen) + " bytes in " + (t4 | 0) + "ms\nURLE: " + (r4.length - rulelen) + " bytes in " + (te | 0) + "ms\nURLE compressed to " + (percent | 0) + "% of RLE size saving " + (r1.length - r4.length) + " bytes\n" + example);
 	};
 
 	// replace the current rle with the given text

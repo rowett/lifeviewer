@@ -4080,12 +4080,12 @@
 						result += stateChars8[state];
 					}
 				}
-
-				// output one bit per state if required (since it's ommitted by default)
-				if (this.URLEBitsPerState === 1) {
-					result += LifeConstants.URLEStateBits1;
-				}
 			}
+		}
+
+		// output one bit per state if required (since it's ommitted by default)
+		if (this.URLEBitsPerState === 1) {
+			result += LifeConstants.URLEStateBits1;
 		}
 
 		return result;
