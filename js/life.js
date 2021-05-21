@@ -14,56 +14,59 @@
 	// Life constants
 	/** @const */
 	var LifeConstants = {
-		// new RLE characters representing each 4 cell combination (for 2 state patterns) and blank cell combinations for 8, 8+final4, 16, 16+final4, 24, 24+final4, 32 and 32+final4
-		/** @const {Array<string>} */ newRLEChars : ["g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "W", "X", "Y", "Z"],
+		// URLE characters representing each 4 cell combination (for 2 state patterns) and blank cell combinations for 8, 8+final4, 16, 16+final4, 24, 24+final4, 32 and 32+final4
+		/** @const {Array<string>} */ URLEChars : ["g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "W", "X", "Y", "Z"],
 
-		// new RLE characters representing small runs of blank lines (2, 3, 4, 5, 6, 7)
-		/** @const {Array<string>} */ newRLEBlankRows : ["A", "B", "C", "D", "E", "F"],
+		// URLE characters representing small runs of blank lines (2, 3, 4, 5, 6, 7)
+		/** @const {Array<string>} */ URLEBlankRows : ["A", "B", "C", "D", "E", "F"],
 
-		// new RLE characters representing columns to ignore at right of pattern (0, 1, 2, 3)
-		/** @const {Array<string>} */ newRLEIgnoreCols : ["_", "]", ")", "("],
+		// URLE characters representing columns to ignore at right of pattern (0, 1, 2, 3)
+		/** @const {Array<string>} */ URLEIgnoreCols : ["_", "]", ")", "("],
 
-		// new RLE characters representing 8 bit cells states 0 to 31
-		/** @const {Array<string>} */ newRLEChars8 : ["g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V"],
+		// URLE characters representing 8 bit cells states 0 to 31
+		/** @const {Array<string>} */ URLEChars8 : ["g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V"],
 
-		// new RLE characters representing 8 bit cells 32x state
-		/** @const {Array<string>} */ newRLEChars832 : ["C", "D", "E", "F", "W", "X", "Y", "Z"],
+		// URLE characters representing 8 bit cells 32x state
+		/** @const {Array<string>} */ URLEChars832 : ["C", "D", "E", "F", "W", "X", "Y", "Z"],
 
-		// new RLE 2 bits per state symbol
-		/** @const {string} */ newRLEStateBits2 : ":",
+		// URLE state map symbol
+		/** @const {string} */ URLEStateMap : "'",
 
-		// new RLE 4 bits per state symbol
-		/** @const {string} */ newRLEStateBits4 : ";",
+		// URLE 2 bits per state symbol
+		/** @const {string} */ URLEStateBits2 : ":",
 
-		// new RLE 8 bits per state symbol
-		/** @const {string} */ newRLEStateBits8 : "#",
+		// URLE 4 bits per state symbol
+		/** @const {string} */ URLEStateBits4 : ";",
 
-		// new RLE blank row symbol
-		/** @const {string} */ newRLEBlankRow : "$",
+		// URLE 8 bits per state symbol
+		/** @const {string} */ URLEStateBits8 : "#",
 
-		// new RLE duplicate non-blank row symbol
-		/** @const {string} */ newRLEDuplicateRow : "^",
+		// URLE blank row symbol
+		/** @const {string} */ URLEBlankRow : "$",
 
-		// new RLE duplicate non-blank row pair symbol
-		/** @const {string} */ newRLEDuplicateRowPair : "%",
+		// URLE duplicate non-blank row symbol
+		/** @const {string} */ URLEDuplicateRow : "^",
 
-		// new RLE last large count symbol
-		/** @const {string} */ newRLELastLargeCount : "=",
+		// URLE duplicate non-blank row pair symbol
+		/** @const {string} */ URLEDuplicateRowPair : "%",
 
-		// new RLE last large count plus symbol
-		/** @const {string} */ newRLELastLargeCountPlus : "+",
+		// URLE last large count symbol
+		/** @const {string} */ URLELastLargeCount : "=",
 
-		// new RLE last large count minus symbol
-		/** @const {string} */ newRLELastLargeCountMinus : "-",
+		// URLE last large count plus symbol
+		/** @const {string} */ URLELastLargeCountPlus : "+",
 
-		// new RLE last large count plus 2 symbol
-		/** @const {string} */ newRLELastLargeCountPlus2 : "*",
+		// URLE last large count minus symbol
+		/** @const {string} */ URLELastLargeCountMinus : "-",
 
-		// new RLE last large count minus 2 symbol
-		/** @const {string} */ newRLELastLargeCountMinus2 : "/",
+		// URLE last large count plus 2 symbol
+		/** @const {string} */ URLELastLargeCountPlus2 : "*",
 
-		// new RLE mark invalid row during encoding
-		/** @const {string} */ newRLEInvalidRow : "0",
+		// URLE last large count minus 2 symbol
+		/** @const {string} */ URLELastLargeCountMinus2 : "/",
+
+		// URLE mark invalid row during encoding
+		/** @const {string} */ URLEInvalidRow : "0",
 
 		// state modes
 		/** @const {number} */ mode2 : 0,
@@ -418,17 +421,20 @@
 		// allocator
 		this.allocator = new Allocator();
 
+		// temporary grid for URLE encode
+		this.URLEGrid = [];
+
 		// list of potential gliders to clear
 		this.potentialClears = [];
 
-		// new RLE last large count
-		this.newRLELastLargeCount = 0;
+		// URLE state map
+		this.URLEStateMap = this.allocator.allocate(Uint8, 256, "Life.URLEStateMap");
 
-		// new RLE bits per state
-		this.newRLEBitsPerState = 1;
+		// URLE last large count
+		this.URLELastLargeCount = 0;
 
-		// new RLE flag to ignore state 1 (used for [R]History encoding)
-		this.newRLEIgnoreState1 = false;
+		// URLE bits per state
+		this.URLEBitsPerState = 1;
 
 		// whether to draw 2-state as rainbow
 		/** @type {boolean} */ this.rainbow = false;
@@ -3682,28 +3688,14 @@
 		}
 	};
 
-	// get 1 cell
-	Life.prototype.getOneCell = function(/** @type {number} */ x, /** @const @type {number} */ y) {
-		var /** @type {number} */ state = 0;
-
-		state = this.getState(x, y, false);
-
-		// ignore state 1 if requested
-		if (state === 1 && this.newRLEIgnoreState1) {
-			state = 0;
-		}
-
-		return state;
-	};
-	
 	// get 2 cells in a row
 	/** @return {number} */
-	Life.prototype.getTwoCells = function(/** @type {number} */ x, /** @const @type {number} */ y, /** @const @type {number} */ rightX) {
+	Life.prototype.getTwoCells = function(/** @type {number} */ x, /** @const @type {number} */ y, /** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {Uint8Array} */ gridRow) {
 		var /** @type {number} */ col = 0,
 			/** @type {number} */ state = 0;
 
 		// get first cell
-		col = this.getState(x, y, false);
+		col = this.URLEStateMap[gridRow[x - leftX]];
 		if (col) {
 			state = col << 2;
 		}
@@ -3711,7 +3703,7 @@
 
 		// check if the second cell is in range
 		if (x <= rightX) {
-			col = this.getState(x, y, false);
+			col = this.URLEStateMap[gridRow[x - leftX]];
 			if (col) {
 				state |= col;
 			}
@@ -3722,37 +3714,37 @@
 
 	// get 4 cells in a row
 	/** @return {number} */
-	Life.prototype.getFourCells = function(/** @type {number} */ x, /** @const @type {number} */ y, /** @const @type {number} */ rightX, /** @const @type {Uint8Array} */ colourRow) {
+	Life.prototype.getFourCells = function(/** @type {number} */ x, /** @const @type {number} */ y, /** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {Uint8Array} */ gridRow) {
 		var /** @type {number} */ col = 0,
 			/** @type {number} */ state = 0;
 
-		// 2 state so get first cell using fast lookup
-		col = colourRow[x];
-		if (!(col <= this.deadStart || col === this.boundedBorderColour)) {
+		// get first cell
+		col = this.URLEStateMap[gridRow[x - leftX]];
+		if (col > 0) {
 			state = 8;
 		}
 		x += 1;
 
 		// check if the second cell is in range
 		if (x <= rightX) {
-			col = colourRow[x];
-			if (!(col <= this.deadStart || col === this.boundedBorderColour)) {
+			col = this.URLEStateMap[gridRow[x - leftX]];
+			if (col > 0) {
 				state |= 4;
 			}
 			x += 1;
 
 			// check if the third cell is in range
 			if (x <= rightX) {
-				col = colourRow[x];
-				if (!(col <= this.deadStart || col === this.boundedBorderColour)) {
+				col = this.URLEStateMap[gridRow[x - leftX]];
+				if (col > 0) {
 					state |= 2;
 				}
 				x += 1;
 
 				// check if the fourth cell is in range
 				if (x <= rightX) {
-					col = colourRow[x];
-					if (!(col <= this.deadStart || col === this.boundedBorderColour)) {
+					col = this.URLEStateMap[gridRow[x - leftX]];
+					if (col > 0) {
 						state |= 1;
 					}
 				}
@@ -3766,9 +3758,9 @@
 	/** @return {string} */
 	Life.prototype.encodeRun = function(/** @type {number} */ count, /** @type {number} */ cellGroup, /** @const @type {boolean} */ endOfRow, /** @const @type {boolean} */ useCountOptimization) {
 		var /** @type {string} */ result = "",
-			/** @const @type {Array<string>} */ stateChars = LifeConstants.newRLEChars,
-			/** @const @type {Array<string>} */ stateChars8 = LifeConstants.newRLEChars8,
-			/** @const @type {Array<string>} */ stateChars832 = LifeConstants.newRLEChars832,
+			/** @const @type {Array<string>} */ stateChars = LifeConstants.URLEChars,
+			/** @const @type {Array<string>} */ stateChars8 = LifeConstants.URLEChars8,
+			/** @const @type {Array<string>} */ stateChars832 = LifeConstants.URLEChars832,
 			/** @type {boolean} */ blankChar = false;
 
 		// do not output blank cells at end of row
@@ -3776,7 +3768,7 @@
 			// check for larger blank cells runs
 			if (count > 1 && cellGroup === 0) {
 				// check for small counts
-				if (this.newRLEBitsPerState === 8) {
+				if (this.URLEBitsPerState === 8) {
 					// for 8 bit this is just 2 to 5
 					if (count >= 2 && count <= 5) {
 						cellGroup = 14 + count;
@@ -3810,32 +3802,32 @@
 				// if the count is more than one digit long then check against last long count
 				if (count >= 16 && useCountOptimization) {
 					// check if count is same as last large count
-					if (count === this.newRLELastLargeCount) {
-						result += LifeConstants.newRLELastLargeCount;
+					if (count === this.URLELastLargeCount) {
+						result += LifeConstants.URLELastLargeCount;
 					} else {
 						// check if count is one more than last large count
-						if (count === this.newRLELastLargeCount + 1) {
-							result += LifeConstants.newRLELastLargeCountPlus;
-							this.newRLELastLargeCount += 1;
+						if (count === this.URLELastLargeCount + 1) {
+							result += LifeConstants.URLELastLargeCountPlus;
+							this.URLELastLargeCount += 1;
 						} else {
 							// check if count is one less than last large count
-							if (count === this.newRLELastLargeCount - 1) {
-								result += LifeConstants.newRLELastLargeCountMinus;
-								this.newRLELastLargeCount -= 1;
+							if (count === this.URLELastLargeCount - 1) {
+								result += LifeConstants.URLELastLargeCountMinus;
+								this.URLELastLargeCount -= 1;
 							} else {
 								// check if count is one more than last large count
-								if (count === this.newRLELastLargeCount + 2) {
-									result += LifeConstants.newRLELastLargeCountPlus2;
-									this.newRLELastLargeCount += 2;
+								if (count === this.URLELastLargeCount + 2) {
+									result += LifeConstants.URLELastLargeCountPlus2;
+									this.URLELastLargeCount += 2;
 								} else {
 									// check if count is two less than last large count
-									if (count === this.newRLELastLargeCount - 2) {
-										result += LifeConstants.newRLELastLargeCountMinus2;
-										this.newRLELastLargeCount -= 2;
+									if (count === this.URLELastLargeCount - 2) {
+										result += LifeConstants.URLELastLargeCountMinus2;
+										this.URLELastLargeCount -= 2;
 									} else {
 										// new last large count
 										result += count.toString(16);
-										this.newRLELastLargeCount = count;
+										this.URLELastLargeCount = count;
 									}
 								}
 							}
@@ -3848,7 +3840,7 @@
 			}
 	
 			// add the characters representing the cells
-			if (this.newRLEBitsPerState === 8 && !blankChar) {
+			if (this.URLEBitsPerState === 8 && !blankChar) {
 				// 8 bit cells encode into one or two symbols
 				if ((cellGroup >> 5) !== 0) {
 					// use base 32
@@ -3865,39 +3857,39 @@
 		return result;
 	};
 
-	// encode row in new RLE format
+	// encode row in URLE format
 	/** @return {string} */
-	Life.prototype.encodeRow = function(/** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {number} */ y, /** @const @type {boolean} */ useCountOptimization) {
+	Life.prototype.encodeRow = function(/** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {number} */ bottomY, /** @const @type {number} */ y, /** @const @type {boolean} */ useCountOptimization) {
 		var /** @type {string} */ result = "",
-			/** @const @type {Uint8Array} */ colourRow = this.colourGrid[y],
 			/** @type {number} */ x = leftX,
 			/** @type {number} */ last = 0,
 			/** @type {number} */ next = 0,
-			/** @type {number} */ count = 0;
+			/** @type {number} */ count = 0,
+			/** @type {Uint8Array} */ gridRow = this.URLEGrid[y - bottomY];
 
 		// get first set of cells
-		switch (this.newRLEBitsPerState) {
+		switch (this.URLEBitsPerState) {
 			case 1:
 				// get four 1 bit cells
-				last = this.getFourCells(x, y, rightX, colourRow);
+				last = this.getFourCells(x, y, leftX, rightX, gridRow);
 				x += 4;
 				break;
 
 			case 2:
 				// get two 2 bit cells
-				last = this.getTwoCells(x, y, rightX);
+				last = this.getTwoCells(x, y, leftX, rightX, gridRow);
 				x += 2;
 				break;
 
 			case 4:
 				// get one 4 bit cell
-				last = this.getOneCell(x, y);
+				last = this.URLEStateMap[gridRow[x - leftX]];
 				x += 1;
 				break;
 
 			case 8:
 				// get one 8 bit cell
-				last = this.getOneCell(x, y);
+				last = this.URLEStateMap[gridRow[x - leftX]];
 				x += 1;
 				break;
 		}
@@ -3906,28 +3898,28 @@
 		// read the rest of the row in groups of cells based on bits per cell
 		while (x <= rightX) {
 			// get the next set of cells
-			switch (this.newRLEBitsPerState) {
+			switch (this.URLEBitsPerState) {
 				case 1:
 					// get next four 1 bit cells
-					next = this.getFourCells(x, y, rightX, colourRow);
+					next = this.getFourCells(x, y, leftX, rightX, gridRow);
 					x += 4;
 					break;
 
 				case 2:
 					// get next two 2 bit cells
-					next = this.getTwoCells(x, y, rightX);
+					next = this.getTwoCells(x, y, leftX, rightX, gridRow);
 					x += 2;
 					break;
 
 				case 4:
 					// get next 4 bit cell
-					next = this.getOneCell(x, y);
+					next = this.URLEStateMap[gridRow[x - leftX]];
 					x += 1;
 					break;
 
 				case 8:
 					// get next 8 bit cell
-					next = this.getOneCell(x, y);
+					next = this.URLEStateMap[gridRow[x - leftX]];
 					x += 1;
 					break;
 			}
@@ -3951,7 +3943,7 @@
 
 		// mark last cell group state character as end of row by converting to upper case
 		if (result !== "") {
-			if (this.newRLEBitsPerState !== 8) {
+			if (this.URLEBitsPerState !== 8) {
 				result = result.substr(0, result.length - 1) + result.substr(result.length - 1).toUpperCase();
 			}
 		}
@@ -3967,16 +3959,16 @@
 
 		// check if the row is blank
 		if (row === "") {
-			if (this.newRLEBitsPerState === 8) {
+			if (this.URLEBitsPerState === 8) {
 				// 8 bit states need the previous row terminated so add to count
 				count += 1;
 
 				// if count is 2 or 3 then use the relevant multiple blank rows symbol
 				if (count < 4) {
-					result += LifeConstants.newRLEBlankRows[count - 2];
+					result += LifeConstants.URLEBlankRows[count - 2];
 				} else {
 					// if count is >= 4 use half count plus odd/even
-					symbol = LifeConstants.newRLEBlankRows[(count & 1)];
+					symbol = LifeConstants.URLEBlankRows[(count & 1)];
 					count >>= 1;
 					result += count.toString(16);
 					result += symbol;
@@ -3986,23 +3978,23 @@
 				if (count > 1) {
 					// if the count is from 2 to 7 then use the relevant multiple blank rows symbol
 					if (count < 8) {
-						result += LifeConstants.newRLEBlankRows[count - 2];
+						result += LifeConstants.URLEBlankRows[count - 2];
 					} else {
 						// if the count is >= 8 use half count plus odd/even
-						symbol = LifeConstants.newRLEBlankRows[(count & 1)];
+						symbol = LifeConstants.URLEBlankRows[(count & 1)];
 						count >>= 1;
 						result += count.toString(16);
 						result += symbol;
 					}
 				} else {
 					// if the count is 1 then output the blank row symbol
-					result += LifeConstants.newRLEBlankRow;
+					result += LifeConstants.URLEBlankRow;
 				}
 			}
 		} else {
 			// add previous end of row for 8 bit states
-			if (this.newRLEBitsPerState === 8 && !firstRow) {
-				result += LifeConstants.newRLEBlankRow;
+			if (this.URLEBitsPerState === 8 && !firstRow) {
+				result += LifeConstants.URLEBlankRow;
 			}
 
 			// output the row
@@ -4020,13 +4012,75 @@
 		return result;
 	};
 
+	// get number of bits needed to encode states
+	/** @return {number} */
+	Life.prototype.bitsPerState = function(/** @const @type {number} */ states) {
+		var /** @type {number} */ result = 0;
+
+		// the output needs to be 1, 2, 4 or 8 for state encoding
+		if (states <= 2) {
+			result = 1;
+		} else {
+			if (states <= 4) {
+				result = 2;
+			} else {
+				if (states <= 16) {
+					result = 4;
+				} else {
+					result = 8;
+				}
+			}
+		}
+
+		return result;
+	};
+
+	// output state map if not identity
+	/** @return {string} */
+	Life.prototype.outputStateMap = function(/** @const @type {Array<number>} */ statesList) {
+		var /** @type {string} */ result = "",
+			/** @type {number} */ i = 0,
+			/** @type {number} */ state = 0,
+			/** @type {boolean} */ needMap = false,
+			/** @const @type {Array<string>} */ stateChars8 = LifeConstants.URLEChars8,
+			/** @const @type {Array<string>} */ stateChars832 = LifeConstants.URLEChars832;
+
+
+		// check if the states are the identity mapping
+		for (i = 0; i < statesList.length; i += 1) {
+			if (statesList[i] !== i) {
+				needMap = true;
+			}
+		}
+
+		// output the map if not identity
+		if (needMap) {
+			result += LifeConstants.URLEStateMap;
+			for (i = 0; i < statesList.length; i += 1) {
+				state = statesList[i];
+				// output state in base 32
+				if ((state >> 5) !== 0) {
+					result += stateChars832[state >> 5];
+					result += stateChars8[state & 31];
+				} else {
+					result += stateChars8[state];
+				}
+			}
+			result += LifeConstants.URLEStateMap;
+		}
+
+		return result;
+	};
+
 	// encode the pattern with the given number of states
 	/** @return {string} */
-	Life.prototype.encodePattern = function(/** @const @type {number} */ numStates, /** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {number} */ bottomY, /** @const @type {number} */ height) {
+	Life.prototype.encodePattern = function(/** @const @type {number} */ numStates, /** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {number} */ bottomY, /** @const @type {number} */ height, /** @const @type {Array<number>} */ usedStatesList) {
 		var /** @type {string} */ data = "",
 			/** @type {string} */ lastRLERow = "",
 			/** @type {number} */ y = 0,
 			/** @type {number} */ j = 0,
+			/** @type {number} */ bitsPerState = 0,
+			/** @type {number} */ bitsPerUsedState = 0,
 			/** @type {number} */ rowCount = 0,
 			/** @type {number} */ lastRowY = 0,
 			/** @type {Array<string>} */ rows = [],
@@ -4034,31 +4088,37 @@
 			/** @type {boolean} */ allBlank = true,
 			/** @type {boolean} */ firstRow = true;
 
-		// compute bits per state and output pattern prefix documenting this
-		if (numStates <= 2) {
-			// this is the default number of bits so no prefix required
-			this.newRLEBitsPerState = 1;
+		// detemine how many bits are required to represent the number of states
+		bitsPerState = this.bitsPerState(numStates);
+
+		// determine how many bits are required to represent the number of different states actually used in the pattern
+		bitsPerUsedState = this.bitsPerState(usedStatesList.length);
+
+		// check if the used states bit representation is smaller than the all states bit representation
+		if (bitsPerUsedState < bitsPerState) {
+			// use the bits per used states representation
+			this.URLEBitsPerState = bitsPerUsedState;
+			this.URLEStateMap.fill(0);
+			for (y = 0; y < usedStatesList.length; y += 1) {
+				this.URLEStateMap[usedStatesList[y]] = y;
+			}
 		} else {
-			if (numStates <= 4) {
-				// 2 bits per state
-				this.newRLEBitsPerState = 2;
-			} else {
-				if (numStates <= 16) {
-					// 4 bits per state
-					this.newRLEBitsPerState = 4;
-				} else {
-					// 8 bits per state
-					this.newRLEBitsPerState = 8;
-				}
+			// just use the bits per state representation
+			this.URLEBitsPerState = bitsPerState;
+
+			// create an identity mapping
+			this.URLEStateMap.fill(0);
+			for (y = 0; y < numStates; y += 1) {
+				this.URLEStateMap[y] = y;
 			}
 		}
 
 		// clear large count for count optimization
-		this.newRLELastLargeCount = 0;
+		this.URLELastLargeCount = 0;
 
 		// encode each row into strings without count optimization so comparing identical rows works
 		for (y = 0; y < height; y += 1) {
-			rows[y] = this.encodeRow(leftX, rightX, y + bottomY, false);
+			rows[y] = this.encodeRow(leftX, rightX, bottomY, y + bottomY, false);
 			pairs[y] = 0;
 
 			// check if any rows are not blank
@@ -4067,17 +4127,23 @@
 			}
 		}
 
+		// check if there is a non-identity state mapping
+		if (bitsPerState !== bitsPerUsedState) {
+			// output state map
+			data += this.outputStateMap(usedStatesList);
+		}
+
 		// process pattern if there are any non-blank cells
 		if (!allBlank) {
 			// output bits per state symbol
-			if (this.newRLEBitsPerState === 2) {
-				data += LifeConstants.newRLEStateBits2;
+			if (this.URLEBitsPerState === 2) {
+				data += LifeConstants.URLEStateBits2;
 			} else {
-				if (this.newRLEBitsPerState === 4) {
-					data += LifeConstants.newRLEStateBits4;
+				if (this.URLEBitsPerState === 4) {
+					data += LifeConstants.URLEStateBits4;
 				} else {
-					if (this.newRLEBitsPerState === 8) {
-						data += LifeConstants.newRLEStateBits8;
+					if (this.URLEBitsPerState === 8) {
+						data += LifeConstants.URLEStateBits8;
 					}
 				}
 			}
@@ -4100,7 +4166,7 @@
 			// output rows removing duplicates
 			y = 0;
 			lastRowY = y + bottomY;
-			lastRLERow = LifeConstants.newRLEInvalidRow;
+			lastRLERow = LifeConstants.URLEInvalidRow;
 			rowCount = 0;
 	
 			// process each row of the pattern
@@ -4108,24 +4174,24 @@
 				// check for matched pairs
 				if (pairs[y] > 0) {
 					// output any current run
-					if (lastRLERow !== LifeConstants.newRLEInvalidRow) {
+					if (lastRLERow !== LifeConstants.URLEInvalidRow) {
 						// output the current run with optimized counts
-						lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
-						data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow, firstRow);
+						lastRLERow = this.encodeRow(leftX, rightX, bottomY, lastRowY, true);
+						data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.URLEDuplicateRow, firstRow);
 						firstRow = (lastRLERow === "");
 					}
 	
 					// get the original pair with optimized counts
-					lastRLERow = this.encodeRow(leftX, rightX, y + bottomY, true);
+					lastRLERow = this.encodeRow(leftX, rightX, bottomY, y + bottomY, true);
 	
 					// if the first of the pair is blank then make it the blank row symbol
 					// this is not needed for the second since it can be inferred from the
 					// duplicate two rows symbol
 					if (lastRLERow === "") {
-						lastRLERow = LifeConstants.newRLEBlankRow;
+						lastRLERow = LifeConstants.URLEBlankRow;
 					}
-					lastRLERow += this.encodeRow(leftX, rightX, y + 1 + bottomY, true);
-					data += this.encodeRowRun(pairs[y], lastRLERow, LifeConstants.newRLEDuplicateRowPair, firstRow);
+					lastRLERow += this.encodeRow(leftX, rightX, bottomY, y + 1 + bottomY, true);
+					data += this.encodeRowRun(pairs[y], lastRLERow, LifeConstants.URLEDuplicateRowPair, firstRow);
 					firstRow = (lastRLERow === "");
 					y += pairs[y] * 2;
 	
@@ -4133,7 +4199,7 @@
 					if (y < height) {
 						if (pairs[y] > 0) {
 							// next row is a pair so mark it as so
-							lastRLERow = LifeConstants.newRLEInvalidRow;
+							lastRLERow = LifeConstants.URLEInvalidRow;
 						} else {
 							// next row is not a pair
 							lastRLERow = rows[y];
@@ -4143,7 +4209,7 @@
 						}
 					} else {
 						// mark finished pattern
-						lastRLERow = LifeConstants.newRLEInvalidRow;
+						lastRLERow = LifeConstants.URLEInvalidRow;
 					}
 				} else {
 					// check if the next row is the same as the last one
@@ -4152,9 +4218,9 @@
 						rowCount += 1;
 					} else {
 						// row is different so output the current run with optimized counts
-						if (lastRLERow !== LifeConstants.newRLEInvalidRow) {
-							lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
-							data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow, firstRow);
+						if (lastRLERow !== LifeConstants.URLEInvalidRow) {
+							lastRLERow = this.encodeRow(leftX, rightX, bottomY, lastRowY, true);
+							data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.URLEDuplicateRow, firstRow);
 							firstRow = (lastRLERow === "");
 						}
 						
@@ -4168,9 +4234,9 @@
 			}
 
 			// output the final run with optimized counts
-			if (lastRLERow != LifeConstants.newRLEInvalidRow) {
-				lastRLERow = this.encodeRow(leftX, rightX, lastRowY, true);
-				data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.newRLEDuplicateRow, firstRow);
+			if (lastRLERow != LifeConstants.URLEInvalidRow) {
+				lastRLERow = this.encodeRow(leftX, rightX, bottomY, lastRowY, true);
+				data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.URLEDuplicateRow, firstRow);
 				firstRow = (lastRLERow === "");
 			}
 		}
@@ -4178,9 +4244,56 @@
 		return data;
 	};
 
-	// convert grid to new RLE format
+	// return an array of used states in the pattern
+	/** @return {Array<number>} */
+	Life.prototype.getUsedStates = function(/** @const @type {number} */ numStates, /** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {number} */ bottomY, /** @const @type {number} */ topY) {
+		var /** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ state = 0,
+			/** @type {Uint8Array} */ stateFlags = new Uint8Array(numStates + 1),
+			/** @type {Array<number>} */ result = [];
+
+		// check used states in the pattern
+		for (y = bottomY; y <= topY; y += 1) {
+			for (x = leftX; x <= rightX; x += 1) {
+				state = this.getState(x, y, false);
+				stateFlags[state] = 1;
+			}
+		}
+
+		// build a list of used states
+		for (x = 0; x < numStates; x += 1) {
+			if (stateFlags[x]) {
+				result.push(x);
+			}
+		}
+
+		return result;
+	};
+
+	// populate URLE grid for faster lookup
+	Life.prototype.populateURLEGrid = function(/** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {number} */ bottomY, /** @const @type {number} */ topY) {
+		var /** @type {number} */ width = rightX - leftX + 1,
+			/** @type {number} */ height = topY - bottomY + 1,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			gridRow = null;
+
+		// allocate the grid
+		this.URLEGrid = Array.matrix(Uint8, height, width, 0, this.allocator, "URLEGrid");
+
+		// populate the grid
+		for (y = bottomY; y <= topY; y += 1) {
+			gridRow = this.URLEGrid[y - bottomY];
+			for (x = leftX; x <= rightX; x += 1) {
+				gridRow[x - leftX] = this.getState(x, y, false);
+			}
+		}
+	};
+
+	// convert grid to URLE format
 	/** @return {string} */
-	Life.prototype.asNewRLE = function(/** @const */ view, /** @const @type {Life} */ me, /** @const @type {boolean} */ addComments, /** @const @type {boolean} */ useAlias) {
+	Life.prototype.asURLE = function(/** @const */ view, /** @const @type {Life} */ me, /** @const @type {boolean} */ addComments, /** @const @type {boolean} */ useAlias) {
 		var /** @type {string} */ rle = "",
 			/** @type {string} */ data = "",
 			/** @type {string} */ data2 = "",
@@ -4192,10 +4305,11 @@
 			/** @type {number} */ width = rightX - leftX + 1,
 			/** @type {number} */ height = topY - bottomY + 1,
 			/** @type {number} */ swap = 0,
-			/** @type {number} */ numStates = me.multiNumStates,
+			/** @type {number} */ numStates = (me.multiNumStates === -1 ? 2 : me.multiNumStates),
 			/** @const @type {number} */ xOff = (me.width >> 1) - (view.patternWidth >> 1),
 			/** @const @type {number} */ yOff = (me.height >> 1) - (view.patternHeight >> 1),
 			/** @type {string} */ ruleName = "",
+			/** @type {Array<number>} */ usedStatesList = [],
 			/** @const */ selBox = view.selectionBox;
 
 		// check for selection
@@ -4253,17 +4367,11 @@
 			rle += me.beforeTitle;
 		}
 
-		// check for zero population
-		if (this.population === 0) {
-			width = 0;
-			height = 0;
-
-			// ensure loop is skipped
-			topY = bottomY - 1;
-		}
-
 		// output header (x =, y=, rule=)
 		ruleName = ((useAlias && view.patternAliasName !== "") ? view.patternAliasName : view.patternRuleName);
+		if (ruleName === "Conway's Life") {
+			ruleName = "Life";
+		}
 		if (ruleName === "B3/S23History") {
 			ruleName = "LifeHistory";
 		}
@@ -4271,54 +4379,49 @@
 		rle += view.patternBoundedGridDef;
 		rle += "\n";
 
-		// clear the ignore state 1 flag
-		this.newRLEIgnoreState1 = false;
+		// check for [R]History patterns
+		if (this.isLifeHistory) {
+			numStates = 7;
+		}
+
+		// create the URLE grid for faster lookup
+		this.populateURLEGrid(leftX, rightX, bottomY, topY);
+
+		// for multi-state patterns check how many states are actually used
+		if (numStates > 2) {
+			usedStatesList = this.getUsedStates(numStates, leftX, rightX, bottomY, topY);
+		} else {
+			usedStatesList = [0, 1];
+		}
 
 		// encode the pattern
-		// for [R]History try two methods and pick the smallest:
-		// 1. a 4 bit encode
-		// 2. a 1 bit encode plus a 4 bit encode without state 1
-		if (this.isLifeHistory) {
-			// 1. 4 bit encode
-			data = this.encodePattern(7, leftX, rightX, bottomY, height);
+		data = this.encodePattern(numStates, leftX, rightX, bottomY, height, usedStatesList);
 
-			// 2. 1 bit encode
-			data2 = this.encodePattern(numStates, leftX, rightX, bottomY, height);
-
-			// 2. plus 4 bit encode without state 1
-			this.newRLEIgnoreState1 = true;
-			data2 += this.encodePattern(7, leftX, rightX, bottomY, height);
-
-			// check which is more efficient
-			if (data2.length < data.length) {
-				// use the 1 bit plus 4 bit without state 1 version
-				data = data2;
-
-				// mark bits per state as 1 for correct pattern terminator
-				this.newRLEBitsPerState = 1;
-			} else {
-				// mark bits per state as 4 for correct pattern terminator
-				this.newRLEBitsPerState = 4;
+		// try state by state encoding
+		if (usedStatesList.length > 2) {
+			data2 = "";
+			for (swap = 1; swap < usedStatesList.length; swap += 1) {
+				data2 += this.encodePattern(numStates, leftX, rightX, bottomY, height, [0, usedStatesList[swap]]);
 			}
-		} else {
-			// standard encode
-			data = this.encodePattern(numStates, leftX, rightX, bottomY, height);
+			if (data2.length < data.length) {
+				data = data2;
+			}
 		}
 
 		// add the pattern to the rle
 		rle += data;
 
 		// add the pattern terminator representing number of right hand columns to ignore
-		if (this.newRLEBitsPerState === 1) {
+		if (this.URLEBitsPerState === 1) {
 			// for 1 bit per state need to ignore 0 to 3 columns
-			rle += LifeConstants.newRLEIgnoreCols[(4 - width) & 3] + "\n";
+			rle += LifeConstants.URLEIgnoreCols[(4 - width) & 3] + "\n";
 		} else {
-			if (this.newRLEBitsPerState === 2) {
+			if (this.URLEBitsPerState === 2) {
 				// for 2 bits per state need to ignore 0 or 1 column
-				rle += LifeConstants.newRLEIgnoreCols[(width & 1)] + "\n";
+				rle += LifeConstants.URLEIgnoreCols[(width & 1)] + "\n";
 			} else {
 				// otherwise just use the pattern terminator
-				rle += LifeConstants.newRLEIgnoreCols[0] + "\n";
+				rle += LifeConstants.URLEIgnoreCols[0] + "\n";
 			}
 		}
 
@@ -4326,6 +4429,9 @@
 		if (addComments) {
 			rle += me.afterTitle;
 		}
+
+		// free the grid
+		this.URLEGrid = null;
 
 		// return the RLE
 		return rle;
@@ -4451,16 +4557,11 @@
 			rle += me.beforeTitle;
 		}
 
-		// check for zero population
-		if (this.population === 0) {
-			width = 0;
-			height = 0;
-			// ensure loop is skipped
-			topY = bottomY - 1;
-		}
-
 		// output header
 		ruleName = ((useAlias && view.patternAliasName !== "") ? view.patternAliasName : view.patternRuleName);
+		if (ruleName === "Conway's Life") {
+			ruleName = "Life";
+		}
 		if (ruleName === "B3/S23History") {
 			ruleName = "LifeHistory";
 		}
@@ -5348,23 +5449,20 @@
 				if (state > 0) {
 					// check for initial cell
 					if (this.population === 1) {
+						// use shrink since there might be Generations dying cells
+						this.shirnkNeeded = true;
+					}
+					if (x < zoomBox.leftX) {
 						zoomBox.leftX = x;
+					}
+					if (x > zoomBox.rightX) {
 						zoomBox.rightX = x;
+					}
+					if (y < zoomBox.bottomY) {
 						zoomBox.bottomY = y;
+					}
+					if (y > zoomBox.topY) {
 						zoomBox.topY = y;
-					} else {
-						if (x < zoomBox.leftX) {
-							zoomBox.leftX = x;
-						}
-						if (x > zoomBox.rightX) {
-							zoomBox.rightX = x;
-						}
-						if (y < zoomBox.bottomY) {
-							zoomBox.bottomY = y;
-						}
-						if (y > zoomBox.topY) {
-							zoomBox.topY = y;
-						}
 					}
 					if (x < historyBox.leftX) {
 						historyBox.leftX = x;

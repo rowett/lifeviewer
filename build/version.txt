@@ -1,24 +1,32 @@
+Build 628
+- experimental new URLE encoder now has a state by state mode which gives better compression for most multi-state patterns
+
+Build 627
+- changed default B3/S23 alias to "Life"
+- Select All and Save now work with Generations dying states
+- experimental new URLE encoder detects used states in pattern for better compression
+
 Build 626
-- experimental new RLE4 encoder now supports up to 256 states
+- experimental new URLE encoder now supports up to 256 states
 
 Build 625
-- experimental new RLE4 encoder now uses two methods for [R]History rules
+- experimental new URLE encoder now uses two methods for [R]History rules
 
 Build 624
-- experimental new RLE4 encoder now supports up to 16 states
+- experimental new URLE encoder now supports up to 16 states
 
 Build 623
 - fixed Identify so [R]Super rules are as fast as 2-state rules for detection
 
 Build 622
-- improved compression of the experimental RLE4 2-state pattern encoder (hotkey Ctrl-E will display statistics)
+- improved compression of the experimental URLE 2-state pattern encoder (hotkey Ctrl-E will display statistics)
 
 Build 621
 - fix Identify statistics for oscillators that take some generations to form
 
 Build 620
 - bounding box was sometimes not being correctly sized when dead cells drawn
-- experimental new RLE4 encoder (hotkey Ctrl-E) [no decoder]
+- experimental new URLE encoder (hotkey Ctrl-E) [no decoder]
 
 Build 619
 - fix error reporting after failed Repository lookup

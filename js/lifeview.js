@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 626,
+		/** @const {number} */ versionBuild : 628,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -10583,27 +10583,25 @@
 			height = 0;
 
 		// set the selection box to the current pattern bounding box
-		if (me.engine.population > 0) {
-			selBox.leftX = zoomBox.leftX - xOff;
-			selBox.bottomY = zoomBox.bottomY - yOff;
-			selBox.rightX = zoomBox.rightX - xOff;
-			selBox.topY = zoomBox.topY - yOff;
-			me.isSelection = true;
-			me.afterSelectAction = false;
-			if (selBox.rightX < selBox.leftX) {
-				width = selBox.leftX - selBox.rightX + 1;
-			} else {
-				width = selBox.rightX - selBox.leftX + 1;
-			}
-			if (selBox.topY < selBox.bottomY) {
-				height = selBox.bottomY - selBox.topY + 1;
-			} else {
-				height = selBox.topY - selBox.bottomY + 1;
-			}
-			me.afterEdit("select all (" + width + " x " + height + ")");
+		me.engine.shrinkNeeded = true;
+		me.engine.doShrink();
+		selBox.leftX = zoomBox.leftX - xOff;
+		selBox.bottomY = zoomBox.bottomY - yOff;
+		selBox.rightX = zoomBox.rightX - xOff;
+		selBox.topY = zoomBox.topY - yOff;
+		me.isSelection = true;
+		me.afterSelectAction = false;
+		if (selBox.rightX < selBox.leftX) {
+			width = selBox.leftX - selBox.rightX + 1;
 		} else {
-			me.removeSelection(me);
+			width = selBox.rightX - selBox.leftX + 1;
 		}
+		if (selBox.topY < selBox.bottomY) {
+			height = selBox.bottomY - selBox.topY + 1;
+		} else {
+			height = selBox.topY - selBox.bottomY + 1;
+		}
+		me.afterEdit("select all (" + width + " x " + height + ")");
 	};
 
 	// process cut
@@ -13346,17 +13344,23 @@
 		me.element.value = me.element.innerHTML;
 	};
 
-	// test for new RLE prototype
+	// test for URLE prototype
 	View.prototype.testNewRLE = function(me) {
-		var r1 = me.engine.asRLE(me, me.engine, false, me.engine.multiNumStates, me.engine.multiNumStates, [], true),
-			r4 = me.engine.asNewRLE(me, me.engine, false, true),
+		var t1 = performance.now(),
+		    r1 = me.engine.asRLE(me, me.engine, false, me.engine.multiNumStates, me.engine.multiNumStates, [], true),
+			t4 = performance.now(),
+			r4 = me.engine.asURLE(me, me.engine, false, true),
+			te = performance.now(),
 			rulelen = r1.indexOf("\n") + 2,
-			example = r4;
+			example = r4,
+			percent = ((100 * (r4.length - rulelen)) / (r1.length - rulelen));
 
 		if (example.length > rulelen + 50) {
 			example = example.substr(0, rulelen + 50) + "...";
 		}
-		alert("RLE: " + (r1.length - rulelen) + "  RLE4: " + (r4.length - rulelen) + " (" + ((100 * (r4.length - rulelen)) / (r1.length - rulelen)).toFixed(1) + "%)\n" + example);
+		te -= t4;
+		t4 -= t1;
+		alert("RLE: " + (r1.length - rulelen) + " bytes in " + (t4 | 0) + "ms  URLE: " + (r4.length - rulelen) + " bytes (" + percent.toFixed(1) + "% saving " + (100 - percent).toFixed(1) +"%) in " + (te | 0) + "ms\n" + example);
 	};
 
 	// replace the current rle with the given text
