@@ -15,10 +15,10 @@
 	/** @const */
 	var LifeConstants = {
 		// URLE characters representing each 4 cell combination (for 2 state patterns) and blank cell combinations for 8, 8+final4, 16, 16+final4, 24, 24+final4, 32 and 32+final4
-		/** @const {Array<string>} */ URLEChars : ["g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "W", "X", "Y", "Z"],
+		/** @const {Array<string>} */ URLEChars : ["g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "W", "X", "Y", "Z", "C", "D", "E", "F"],
 
-		// URLE characters representing small runs of blank lines (2, 3, 4, 5, 6, 7)
-		/** @const {Array<string>} */ URLEBlankRows : ["A", "B", "C", "D", "E", "F"],
+		// URLE characters representing small runs of blank lines (2, 3)
+		/** @const {Array<string>} */ URLEBlankRows : ["A", "B"],
 
 		// URLE characters representing columns to ignore at right of pattern (0, 1, 2, 3)
 		/** @const {Array<string>} */ URLEIgnoreCols : ["_", "]", ")", "("],
@@ -438,6 +438,15 @@
 
 		// URLE bits per state
 		this.URLEBitsPerState = 1;
+
+		// URLE statistics
+		this.URLEEquals = 0;
+		this.URLEPlus1 = 0;
+		this.URLEPlus2 = 0;
+		this.URLEMinus1 = 0;
+		this.URLEMinus2 = 0;
+		this.URLEBlankRow = 0;
+		this.URLEBlankCells = 0;
 
 		// whether to draw 2-state as rainbow
 		/** @type {boolean} */ this.rainbow = false;
@@ -3757,6 +3766,22 @@
 		return state;
 	};
 
+	// find the small dividor or dividor + 1 that divides the supplied count exactly
+	/** @return {number} */
+	Life.prototype.dividesNorNPlus1 = function(/** @const @type {number} */ count, /** @type {number} */ dividor) {
+		var /** @type {boolean} */ found = false;
+
+		while (!found) {
+			if (count % dividor === 0 || count % dividor === 1) {
+				found = true;
+			} else {
+				dividor -= 2;
+			}
+		}
+
+		return dividor;
+	};
+
 	// encode run count and cells
 	/** @return {string} */
 	Life.prototype.encodeRun = function(/** @type {number} */ count, /** @type {number} */ cellGroup, /** @const @type {boolean} */ endOfRow, /** @const @type {boolean} */ useCountOptimization) {
@@ -3764,6 +3789,7 @@
 			/** @const @type {Array<string>} */ stateChars = LifeConstants.URLEChars,
 			/** @const @type {Array<string>} */ stateChars8 = LifeConstants.URLEChars8,
 			/** @const @type {Array<string>} */ stateChars832 = LifeConstants.URLEChars832,
+			/** @type {number} */ dividor = 0,
 			/** @type {boolean} */ blankChar = false;
 
 		// do not output blank cells at end of row
@@ -3778,11 +3804,13 @@
 						count = 1;
 						blankChar = true;
 					} else {
-						// convert to double blank symbol
-						cellGroup = 16 + (count & 1);
+						// find the largest representation that divides exactly
+						dividor = this.dividesNorNPlus1(count, 4);
+						this.URLEBlankCells += (count.toString(16).length - ((count / dividor) | 0).toString(16).length);  // TBD STATS
+						cellGroup = 14 + dividor + (count & 1);
+						count = (count / dividor) | 0;
 
 						// halve the count
-						count >>= 1;
 						blankChar = true;
 					}
 				} else {
@@ -3791,11 +3819,11 @@
 						cellGroup = 14 + count;
 						count = 1;
 					} else {
-						// at greater counts convert to the double blank symbol and halve the count
-						cellGroup = 16 + (count & 1);
-
-						// halve the count
-						count >>= 1;
+						// at greater counts find the largest representation that divides exactly
+						dividor = this.dividesNorNPlus1(count, 12);
+						this.URLEBlankCells += (count.toString(16).length - ((count / dividor) | 0).toString(16).length);  // TBD STATS
+						cellGroup = 14 + dividor + (count & 1);
+						count = (count / dividor) | 0;
 					}
 				}
 			}
@@ -3807,26 +3835,31 @@
 					// check if count is same as last large count
 					if (count === this.URLELastLargeCount) {
 						result += LifeConstants.URLELastLargeCount;
+						this.URLEEquals += (count.toString(16).length - 1);  // TBD STATS
 					} else {
 						// check if count is one more than last large count
 						if (count === this.URLELastLargeCount + 1) {
 							result += LifeConstants.URLELastLargeCountPlus;
 							this.URLELastLargeCount += 1;
+							this.URLEPlus1 += (count.toString(16).length - 1);  // TBD STATS
 						} else {
 							// check if count is one less than last large count
 							if (count === this.URLELastLargeCount - 1) {
 								result += LifeConstants.URLELastLargeCountMinus;
 								this.URLELastLargeCount -= 1;
+								this.URLEMinus1 += (count.toString(16).length - 1);  // TBD STATS
 							} else {
 								// check if count is one more than last large count
 								if (count === this.URLELastLargeCount + 2) {
 									result += LifeConstants.URLELastLargeCountPlus2;
 									this.URLELastLargeCount += 2;
+									this.URLEPlus2 += (count.toString(16).length - 1);  // TBD STATS
 								} else {
 									// check if count is two less than last large count
 									if (count === this.URLELastLargeCount - 2) {
 										result += LifeConstants.URLELastLargeCountMinus2;
 										this.URLELastLargeCount -= 2;
+										this.URLEMinus2 += (count.toString(16).length - 1);  // TBD STATS
 									} else {
 										// new last large count
 										result += count.toString(16);
@@ -3957,8 +3990,8 @@
 	// encode run of rows
 	/** @return {string} */
 	Life.prototype.encodeRowRun = function(/** @type {number} */ count, /** @const @type {string} */ row, /** @const @type {string} */ duplicateSymbol, /** @const @type {boolean} */ firstRow) {
-		var result = "",
-			symbol = "";
+		var /** @type {string} */ result = "",
+			/** @type {string} */ symbol = "";
 
 		// check if the row is blank
 		if (row === "") {
@@ -3972,6 +4005,7 @@
 				} else {
 					// if count is >= 4 use half count plus odd/even
 					symbol = LifeConstants.URLEBlankRows[(count & 1)];
+					this.URLEBlankRow += (count.toString(16).length - (count >> 1).toString(16).length);  // TBD STATS
 					count >>= 1;
 					result += count.toString(16);
 					result += symbol;
@@ -3979,12 +4013,13 @@
 			} else {
 				// for < 8 bit states output the count (if greater than 1) and then the blank row symbol
 				if (count > 1) {
-					// if the count is from 2 to 7 then use the relevant multiple blank rows symbol
-					if (count < 8) {
+					// if the count is from 2 to 3 then use the relevant multiple blank rows symbol
+					if (count < 4) {
 						result += LifeConstants.URLEBlankRows[count - 2];
 					} else {
-						// if the count is >= 8 use half count plus odd/even
+						// if count is >= 4 use half count plus odd/even
 						symbol = LifeConstants.URLEBlankRows[(count & 1)];
+						this.URLEBlankRow += (count.toString(16).length - (count >> 1).toString(16).length);  // TBD STATS
 						count >>= 1;
 						result += count.toString(16);
 						result += symbol;
@@ -4414,16 +4449,48 @@
 		}
 
 		// encode the pattern
+		var tdata = performance.now();
+
+		// reset stats
+		this.URLEEquals = 0;
+		this.URLEPlus1 = 0;
+		this.URLEPlus2 = 0;
+		this.URLEMinus1 = 0;
+		this.URLEMinus2 = 0;
+		this.URLEBlankCells = 0;
+		this.URLEBlankRow = 0;
+
 		data = this.encodePattern(numStates, leftX, rightX, bottomY, height, usedStatesList, false);
+
+		tdata = performance.now() - tdata;
+
+		//console.debug(this.URLEEquals, this.URLEPlus1, this.URLEPlus2, this.URLEMinus1, this.URLEMinus2, this.URLEBlankCells, this.URLEBlankRow, this.URLEEquals + this.URLEPlus1 + this.URLEPlus2 + this.URLEMinus1 + this.URLEMinus2 + this.URLEBlankCells + this.URLEBlankRow);
+
+		var tdata2 = 0;
 
 		// try state by state encoding
 		if (usedStatesList.length > 2) {
+			tdata2 = performance.now();
+
+			// reset stats
+			this.URLEEquals = 0;
+			this.URLEPlus1 = 0;
+			this.URLEPlus2 = 0;
+			this.URLEMinus1 = 0;
+			this.URLEMinus2 = 0;
+			this.URLEBlankCells = 0;
+			this.URLEBlankRow = 0;
+
 			data2 = "";
 			for (swap = 0; swap < usedStatesList.length; swap += 1) {
 				if (usedStatesList[swap] !== 0) {
 					data2 += this.encodePattern(numStates, leftX, rightX, bottomY, height, [0, usedStatesList[swap]], true);
 				}
 			}
+
+			tdata2 = performance.now() - tdata2;
+
+			//console.debug(this.URLEEquals, this.URLEPlus1, this.URLEPlus2, this.URLEMinus1, this.URLEMinus2, this.URLEBlankCells, this.URLEBlankRow, this.URLEEquals + this.URLEPlus1 + this.URLEPlus2 + this.URLEMinus1 + this.URLEMinus2 + this.URLEBlankCells + this.URLEBlankRow);
 			if (data2.length < data.length) {
 				data = data2;
 			}
@@ -4431,6 +4498,7 @@
 
 		// add the pattern to the rle
 		rle += data;
+		//console.debug(tdata.toFixed(1) + "ms", tdata2.toFixed(1) + "ms");
 
 		// add the pattern terminator representing number of right hand columns to ignore
 		if (this.URLEBitsPerState === 1) {
