@@ -29,6 +29,9 @@
 		// URLE characters representing 8 bit cells 32x state
 		/** @const {Array<string>} */ URLEChars832 : ["C", "D", "E", "F", "W", "X", "Y", "Z"],
 
+		// URLE row number symbol
+		/** @const {string} */ URLERowNum : "?",
+
 		// URLE state map symbol
 		/** @const {string} */ URLEStateMap : "'",
 
@@ -293,7 +296,7 @@
 			this.gridMajorColour = ViewConstants.gridLineBoldRawDefault;
 		}
 	}
-	
+
 	// copy theme
 	Theme.prototype.set = function(source) {
 		this.gridDefined = source.gridDefined;
@@ -1471,7 +1474,7 @@
 						hash = (hash * factor) ^ state;
 					}
 				}
-	
+
 				// update index
 				iModHeight += 1;
 				if (iModHeight === height) {
@@ -1881,7 +1884,7 @@
 			result += " Antelopewise";
 			break;
 		}
-	
+
 		return result;
 	};
 
@@ -2139,7 +2142,7 @@
 				current = this.boxList[(i << 1) + 1];
 				currentLeft = current >> 16;
 				currentBottom = current & 65535;
-	
+
 				// update bounding box
 				if (currentLeft < minX) {
 					minX = currentLeft;
@@ -2185,7 +2188,7 @@
 				heat = String(minHeat.toFixed(1) + " | " + maxHeat.toFixed(1) + " | " + avgHeat.toFixed(1));
 			}
 		}
-	
+
 		// compute volatility
 		if (type === "Oscillator" && !fast) {
 			for (y = minY; y <= maxY; y += 1) {
@@ -2292,18 +2295,18 @@
 
 		    // merge size into one value
 		    boxSize = (boxWidth << 16) | boxHeight,
-    
+
 		    // merge location into one value
 		    boxLocation = (leftX << 16) | bottomY,
-    
+
 		    // hash value of current pattern
 		    hash = 0,
 		    modHash = 0,
 		    currentValue = 0,
-    
+
 		    // period
 		    period = 0,
-    
+
 		    // flag to quit loop
 		    quitLoop = false,
 		    quit = false,
@@ -2312,14 +2315,14 @@
 		    i = 0,
 		    j = 0,
 		    lastI = 0,
-    
+
 		    // movement vector
 		    deltaX = 0,
 		    deltaY = 0,
-    
+
 		    // message
 		    message = "",
-    
+
 		    // result
 		    result = [];
 
@@ -2381,7 +2384,7 @@
 									}
 									quitLoop = true;
 									quit = true;
-	
+
 									// create the results
 									result = this.identifyResults(view, i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast);
 								} else {
@@ -2393,7 +2396,7 @@
 						}
 					}
 				}
-			
+
 				// add to the lists
 				if (!quit) {
 					// create the new record
@@ -2437,7 +2440,7 @@
 							}
 						}
 					}
-	
+
 					// check for buffer full
 					this.oscLength += 1;
 					if (this.oscLength === LifeConstants.maxOscillatorGens) {
@@ -2529,13 +2532,13 @@
 							coords[k + 5] = cy + 1 - oddEven;
 							k += 6;
 							j += 1;
-	
+
 							// check if buffer is full
 							if (j === LifeConstants.coordBufferSize) {
 								// draw buffer
 								this.numCells = j;
 								this.drawTriangleCells(true, false, true);
-	
+
 								// clear buffer
 								j = 0;
 								k = 0;
@@ -2947,7 +2950,7 @@
 			cy2 = (coords[coord + 1] - cy0) * yzoom;
 			cx2 = (coords[coord] - cx0) * xzoom;
 			coord += 2;
-	
+
 			// set line colour
 			if (state !== lastState) {
 				lastState = state;
@@ -3124,13 +3127,13 @@
 							coords[k + 11] = ya5 + cy;
 							k += 12;
 							j += 1;
-			
+
 							// check if buffer is full
 							if (j === LifeConstants.coordBufferSize) {
 								// draw buffer
 								this.numCells = j;
 								this.drawHexCells(true, false, false, true);
-			
+
 								// clear buffer
 								j = 0;
 								k = 0;
@@ -3286,7 +3289,7 @@
 							// draw buffer
 							this.numCells = j;
 							this.drawHexCells(true, false, false, true);
-			
+
 							// clear buffer
 							j = 0;
 							k = 0;
@@ -3648,7 +3651,7 @@
 			cy2 = (coords[coord + 1] - cy0) * zoom;
 			cx2 = (coords[coord] - cx0) * zoom - cy2 / 2;
 			coord += 2;
-	
+
 			// set line colour
 			if (state !== lastState) {
 				lastState = state;
@@ -3874,7 +3877,7 @@
 					result += count.toString(16);
 				}
 			}
-	
+
 			// add the characters representing the cells
 			if (this.URLEBitsPerState === 8 && !blankChar) {
 				// 8 bit cells encode into one or two symbols
@@ -3889,7 +3892,7 @@
 				result += stateChars[cellGroup];
 			}
 		}
-	
+
 		return result;
 	};
 
@@ -4101,7 +4104,7 @@
 					needMap = true;
 				}
 			}
-	
+
 			// output the map if not identity
 			if (needMap) {
 				result += LifeConstants.URLEStateMap;
@@ -4126,18 +4129,27 @@
 		return result;
 	};
 
+	// compare row records [encoded, rownum]
+	/** @return {number} */
+	Life.prototype.compareRows = function(a, b) {
+		return a[0].localeCompare(b[0]) || a[1] - b[1];
+	};
+
 	// encode the pattern with the given number of states
 	/** @return {string} */
 	Life.prototype.encodePattern = function(/** @const @type {number} */ numStates, /** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {number} */ bottomY, /** @const @type {number} */ height, /** @const @type {Array<number>} */ usedStatesList, /** @const @type {boolean} */ stateByState) {
 		var /** @type {string} */ data = "",
 			/** @type {string} */ lastRLERow = "",
+			/** @type {string} */ testRLERow = "",
 			/** @type {number} */ y = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ bitsPerState = 0,
 			/** @type {number} */ bitsPerUsedState = 0,
 			/** @type {number} */ rowCount = 0,
 			/** @type {number} */ lastRowY = 0,
-			/** @type {Array<string>} */ rows = [],
+			/** @type {Array<any>} */ rows = [],
+			/** @type {Array<any>} */ rowDups = [],
+			/** @type {Array<number>} */ dups = [],
 			/** @type {Array<number>} */ pairs = [],
 			/** @type {boolean} */ allBlank = true,
 			/** @type {boolean} */ firstRow = true;
@@ -4172,11 +4184,11 @@
 
 		// encode each row into strings without count optimization so comparing identical rows works
 		for (y = 0; y < height; y += 1) {
-			rows[y] = this.encodeRow(leftX, rightX, bottomY, y + bottomY, false);
+			rows[y] = [this.encodeRow(leftX, rightX, bottomY, y + bottomY, false), y];
 			pairs[y] = 0;
 
 			// check if any rows are not blank
-			if (rows[y] !== "") {
+			if (rows[y][0] !== "") {
 				allBlank = false;
 			}
 		}
@@ -4204,25 +4216,41 @@
 
 			// now find each pair of rows (where the two rows are different) that are followed by one or more duplicate pairs
 			for (y = 0; y < height - 3; y += 1) {
-				if (rows[y] === rows[y + 2] && rows[y + 1] === rows[y + 3] && rows[y] !== rows[y + 1]) {
+				if (rows[y][0] === rows[y + 2][0] && rows[y + 1][0] === rows[y + 3][0] && rows[y][0] !== rows[y + 1][0]) {
 					rowCount = 1;
 					j = 2;
 					do {
 						j += 2;
 						rowCount += 1;
-					} while (rows[y] == rows[y + j] && rows[y + 1] == rows[y + 1 + j]);
-	
+					} while (y + 1 + j < height && rows[y][0] == rows[y + j][0] && rows[y + 1][0] == rows[y + 1 + j][0]);
+
 					// output how many duplicate pairs exist
 					pairs[y] = rowCount;
 				}
 			}
-	
+
+			// sort the rows to find non-sequential duplicate rows
+			rowDups = rows.slice();
+			rowDups.sort(this.compareRows);
+			lastRLERow = rowDups[0][0];
+			lastRowY = rowDups[0][1];
+			dups[lastRowY] = lastRowY;
+			for (y = 1; y < height; y += 1) {
+				if (rowDups[y][0] === lastRLERow) {
+					dups[rowDups[y][1]] = lastRowY;
+				} else {
+					lastRLERow = rowDups[y][0];
+					lastRowY = rowDups[y][1];
+					dups[lastRowY] = lastRowY;
+				}
+			}
+
 			// output rows removing duplicates
 			y = 0;
 			lastRowY = y + bottomY;
 			lastRLERow = LifeConstants.URLEInvalidRow;
 			rowCount = 0;
-	
+
 			// process each row of the pattern
 			while (y < height) {
 				// check for matched pairs
@@ -4234,10 +4262,10 @@
 						data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.URLEDuplicateRow, firstRow);
 						firstRow = (lastRLERow === "");
 					}
-	
+
 					// get the original pair with optimized counts
 					lastRLERow = this.encodeRow(leftX, rightX, bottomY, y + bottomY, true);
-	
+
 					// if the first of the pair is blank then make it the blank row symbol
 					// this is not needed for the second since it can be inferred from the
 					// duplicate two rows symbol
@@ -4248,7 +4276,7 @@
 					data += this.encodeRowRun(pairs[y], lastRLERow, LifeConstants.URLEDuplicateRowPair, firstRow);
 					firstRow = (lastRLERow === "");
 					y += pairs[y] * 2;
-	
+
 					// check whther next row is another pair
 					if (y < height) {
 						if (pairs[y] > 0) {
@@ -4256,7 +4284,7 @@
 							lastRLERow = LifeConstants.URLEInvalidRow;
 						} else {
 							// next row is not a pair
-							lastRLERow = rows[y];
+							lastRLERow = rows[y][0];
 							lastRowY = y + bottomY;
 							rowCount = 1;
 							y += 1;
@@ -4267,19 +4295,27 @@
 					}
 				} else {
 					// check if the next row is the same as the last one
-					if (rows[y] === lastRLERow) {
+					if (rows[y][0] === lastRLERow) {
 						// increment the run count
 						rowCount += 1;
 					} else {
 						// row is different so output the current run with optimized counts
 						if (lastRLERow !== LifeConstants.URLEInvalidRow) {
 							lastRLERow = this.encodeRow(leftX, rightX, bottomY, lastRowY, true);
+
+							// check for non-sequential duplicate
+							if ((dups[lastRowY - bottomY] !== lastRowY - bottomY)) {
+								testRLERow = LifeConstants.URLERowNum + dups[lastRowY - bottomY].toString(16) + LifeConstants.URLERowNum;
+								if (testRLERow.length < lastRLERow.length) {
+									lastRLERow = testRLERow;
+								}
+							}
 							data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.URLEDuplicateRow, firstRow);
 							firstRow = (lastRLERow === "");
 						}
-						
+
 						// make current row the last row
-						lastRLERow = rows[y];
+						lastRLERow = rows[y][0];
 						lastRowY = y + bottomY;
 						rowCount = 1;
 					}
@@ -4290,6 +4326,14 @@
 			// output the final run with optimized counts
 			if (lastRLERow != LifeConstants.URLEInvalidRow) {
 				lastRLERow = this.encodeRow(leftX, rightX, bottomY, lastRowY, true);
+
+				// check for non-sequential duplicate
+				if ((dups[lastRowY - bottomY] !== lastRowY - bottomY)) {
+					testRLERow = LifeConstants.URLERowNum + dups[lastRowY - bottomY].toString(16) + LifeConstants.URLERowNum;
+					if (testRLERow.length < lastRLERow.length) {
+						lastRLERow = testRLERow;
+					}
+				}
 				data += this.encodeRowRun(rowCount, lastRLERow, LifeConstants.URLEDuplicateRow, firstRow);
 				firstRow = (lastRLERow === "");
 			}
@@ -5375,11 +5419,11 @@
 						grid = this.nextGrid16;
 						tileGrid = this.nextTileGrid;
 					}
-	
+
 					// get the cell as a bit mask and tile mask
 					cellAsBit = 1 << (~x & 15);
 					cellAsTileBit = 1 << (~(x >> 4) & 15);
-	
+
 					// check for multi-state rules
 					if (!this.isHROT) {
 						if (this.multiNumStates <= 2 || this.isSuper) {
@@ -5389,12 +5433,12 @@
 							// generations
 							bitAlive = (state === this.multiNumStates - 1);
 						}
-	
+
 						// draw alive or dead
 						if (bitAlive) {
 							// mark a cell is alive
 							this.anythingAlive = 1;
-	
+
 							// adjust population if cell was dead
 							if ((grid[y][x >> 4] & cellAsBit) === 0) {
 								this.population += 1;
@@ -5471,7 +5515,7 @@
 							colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
 							grid[y][x >> 4] &= ~cellAsBit;
 						}
-	
+
 						// check for [R]History
 						if (this.isLifeHistory && overlayGrid) {
 							// check if the cell used to be or has become state 6
@@ -5705,7 +5749,7 @@
 		    /** @const {number} */ state4 = ViewConstants.stateMap[4] + 128,
 		    /** @const {number} */ state5 = ViewConstants.stateMap[5] + 128,
 			/** @const {number} */ state6 = ViewConstants.stateMap[6] + 128;
-			
+
 		// check if coordinates are on the grid
 		if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
 			// get the colour grid result
@@ -5775,7 +5819,7 @@
 		    /** @const {number} */ state4 = ViewConstants.stateMap[4] + 128,
 		    /** @const {number} */ state5 = ViewConstants.stateMap[5] + 128,
 			/** @const {number} */ state6 = ViewConstants.stateMap[6] + 128,
-			
+
 		    // bounded grid top left
 			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
 		    /** @type {number} */ leftX = Math.round((this.width - this.boundedGridWidth) / 2) + boxOffset,
@@ -5974,7 +6018,7 @@
 		// get the latest snapshot
 		var numSnapshots = this.snapshotManager.snapshots.length,
 			snapshot = null;
-			
+
 		// if generation is earlier than current go from previous snapshot
 		if (targetGen < this.counter) {
 			snapshot = this.snapshotManager.snapshotBefore(targetGen);
@@ -5985,7 +6029,7 @@
 				this.nextSnapshotTarget -= (LifeConstants.snapshotInterval * (numSnapshots - this.snapshotManager.snapshots.length));
 			}
 		}
-	
+
 		// check if the snapshot exists
 		if (snapshot) {
 			// restore the snapshot
@@ -6207,7 +6251,7 @@
 		// get current grid buffers
 		var currentOverlayGrid = this.overlayGrid,
 		    currentMaskGrid = this.state6Mask;
-			
+
 		// set width and height
 		this.width = width;
 		this.height = height;
@@ -6404,7 +6448,7 @@
 		    // x and y offsets
 		    xOffset = this.width >> 1,
 			yOffset = this.height >> 1,
-			
+
 			// identify bottom left
 			idCurrent = 0,
 			idBottom = 0,
@@ -6693,7 +6737,7 @@
 		    rightX = zoomBox.rightX,
 		    topY = zoomBox.topY,
 			bottomY = zoomBox.bottomY;
-			
+
 		// check for HROT or PCA
 		if (this.isHROT || this.isPCA || this.isRuleTree) {
 			// compute population from colour grid
@@ -6720,7 +6764,7 @@
 			for (h = bottomY; h <= topY; h += 1) {
 				// get next row
 				nextRow = grid16[h];
-	
+
 				// count population along row
 				for (w = leftX; w <= rightX; w += 1) {
 					count = bitCounts16[nextRow[w]];
@@ -6892,7 +6936,7 @@
 
 		    // tile size (2^n)
 			tilePower = this.tilePower,
-			
+
 			// state 6 value in colour grid
 			state6 = this.isSuper ? 6 : ViewConstants.stateMap[6] + 128,
 
@@ -7304,7 +7348,7 @@
 
 		// initial bounding box for HROT alive cells
 		this.HROTBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
-	
+
 		// initial bounding box for LifeHistory
 		this.initialBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
 
@@ -7706,19 +7750,19 @@
 								currentComponent = this.dyingGenColCurrent.endColour.red * weight + this.dyingGenColCurrent.startColour.red * (1 - weight);
 								targetComponent = this.dyingGenColTarget.endColour.red * weight + this.dyingGenColTarget.startColour.red * (1 - weight);
 								this.redChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-			
+
 								// compute the green component of the current and target colour
 								currentComponent = this.dyingGenColCurrent.endColour.green * weight + this.dyingGenColCurrent.startColour.green * (1 - weight);
 								targetComponent = this.dyingGenColTarget.endColour.green * weight + this.dyingGenColTarget.startColour.green * (1 - weight);
 								this.greenChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-			
+
 								// compute the blue component of the current and target colour
 								currentComponent = this.dyingGenColCurrent.endColour.blue * weight + this.dyingGenColCurrent.startColour.blue * (1 - weight);
 								targetComponent = this.dyingGenColTarget.endColour.blue * weight + this.dyingGenColTarget.startColour.blue * (1 - weight);
 								this.blueChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
 							}
 						}
-			
+
 						// override with custom colour if specified
 						if (this.customColours && this.customColours.length >= i) {
 							if (!(this.isHROT || this.isPCA || this.isRuleTree)) {
@@ -7826,17 +7870,17 @@
 							} else {
 								weight = 1 - ((i - deadMin) / (this.deadStart - deadMin));
 							}
-			
+
 							// compute the red component of the current and target colour
 							currentComponent = this.deadColCurrent.startColour.red * weight + this.deadColCurrent.endColour.red * (1 - weight);
 							targetComponent = this.deadColTarget.startColour.red * weight + this.deadColTarget.endColour.red * (1 - weight);
 							this.redChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-			
+
 							// compute the green component of the current and target colour
 							currentComponent = this.deadColCurrent.startColour.green * weight + this.deadColCurrent.endColour.green * (1 - weight);
 							targetComponent = this.deadColTarget.startColour.green * weight + this.deadColTarget.endColour.green * (1 - weight);
 							this.greenChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
-			
+
 							// compute the blue component of the current and target colour
 							currentComponent = this.deadColCurrent.startColour.blue * weight + this.deadColCurrent.endColour.blue * (1 - weight);
 							targetComponent = this.deadColTarget.startColour.blue * weight + this.deadColTarget.endColour.blue * (1 - weight);
@@ -8190,7 +8234,7 @@
 			nextTileGrid = this.nextTileGrid,
 			staticTileGrid = this.staticTileGrid,
 			unoccupied = this.unoccupied;
-	
+
 		// clear each cell
 		grid.whole.fill(0);
 		nextGrid.whole.fill(0);
@@ -8260,7 +8304,7 @@
 		// return density
 		return result;
 	};
-			
+
 	// create PCA index
 	Life.prototype.createPCAIndex = function(index, ruleArray, reverse) {
 		var i = 0,
@@ -10322,7 +10366,7 @@
 		    // counters
 		    x = 0,
 			y = 0,
-			
+
 			// cell population to adjust
 			bitCounts16 = this.bitCounts16,
 			remove = 0,
@@ -11559,11 +11603,11 @@
 					if ((grid[sourceY][rightX >> 4] & (1 << (~rightX & 15))) !== 0) {
 						// copy cell to left of left edge
 						grid[destY][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
-	
+
 						// set tile grid
 						tileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
 						colourTileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
-	
+
 						// check for tile boundary
 						if (((leftX - 1) & 15) === 15) {
 							tileGrid[destY >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
@@ -13027,7 +13071,7 @@
 			if ((grid16[h][wt - 1] & rightMask) !== 0) {
 				this.removePatternRight(wt - 1, h, grid16);
 			}
-			
+
 			// next row
 			h += 1;
 		}
@@ -13062,7 +13106,7 @@
 		    // start and end of current page
 		    start = 0,
 			end = max,
-			
+
 			// masks for width and height
 			widthMask = this.widthMask,
 			heightMask = this.heightMask,
@@ -13113,7 +13157,7 @@
 						if (colourRow[tx] >= alive) {
 							// remove the cell
 							colourRow[tx] = dead;
-							
+
 							// stack the cell
 							if (index === end) {
 								// switch to next page
@@ -13230,7 +13274,7 @@
 			zoomBox.rightX = wd - xrange;
 		}
 	};
-	
+
 	// update the life grid region using tiles for triangular grid
 	Life.prototype.nextGenerationTriTile = function() {
 		var indexLookup = this.indexLookupTri1,
@@ -13296,7 +13340,7 @@
 		    // starting and ending tile row
 		    tileStartRow = 0,
 			tileEndRow = tileRows,
-			
+
 			// left, middle and right bitmasks for rule lookup
 			/** @const{number} */ maskL = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8),
 			/** @const{number} */ maskC = (1 << 7) | (1 << 6) | (1 << 5),
@@ -13478,12 +13522,12 @@
 
 								// next row
 								gridRow2 = grid[h + 1];
-	
+
 								// read three rows
 								val0 = val1;
 								val1 = val2;
 								val2 = (gridRow2[leftX - 1] << 18) | (gridRow2[leftX] << 2) | (gridRow2[leftX + 1] >> 14);
-	
+
 								// check for odd/even
 								if ((h & 1) !== 0) {
 									swap = val0;
@@ -13523,12 +13567,12 @@
 
 								// save output 16bits
 								nextGrid[h][leftX] = output;
-	
+
 								// check if any cells are set
 								if (output) {
 									// update column occupied flag
 									colOccupied |= output;
-	
+
 									// update min and max row
 									if (h < newBottomY) {
 										newBottomY = h;
@@ -13769,7 +13813,7 @@
 		// convert new width to pixels
 		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
 		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -13878,7 +13922,7 @@
 
 		    // population statistics
 			population = 0, births = 0, deaths = 0,
-			
+
 			// counter for even/odd
 			counter = this.counter & 1;
 
@@ -14019,7 +14063,7 @@
 								population += bitCounts16[output1];
 								births += bitCounts16[output1 & ~val1];
 								deaths += bitCounts16[val1 & ~output1];
-	
+
 								// check if any cells are set
 								output = output0 | output1;
 								if (output) {
@@ -14048,12 +14092,12 @@
 									if ((output & 49152) !== 0) {
 										neighbours |= LifeConstants.bottomLeftSet;
 									}
-	
+
 									// check for right column now set
 									if ((output & 3) !== 0) {
 										neighbours |= LifeConstants.bottomRightSet;
 									}
-	
+
 									// bottom row set
 									neighbours |= LifeConstants.bottomSet;
 								}
@@ -14065,7 +14109,7 @@
 									val0 = grid[h][leftX];
 									val1 = grid[h + 1][leftX];
 									origValue |= (val0 | val1);
-	
+
 									// get output
 									output = indexLookup[(val0 & 65280) | (val1 >> 8)];
 									output0 = output & 65280;
@@ -14073,11 +14117,11 @@
 									output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
 									output0 |= (output >> 8);
 									output1 |= (output & 255);
-	
+
 									// save output 16bits
 									nextGrid[h][leftX] = output0;
 									nextGrid[h + 1][leftX] = output1;
-	
+
 									// update statistics
 									population += bitCounts16[output0];
 									births += bitCounts16[output0 & ~val0];
@@ -14110,16 +14154,16 @@
 											}
 										}
 									}
-	
+
 									// next row
 									h += 2;
 								}
-	
+
 								// process top row
 								val0 = grid[h][leftX];
 								val1 = grid[h + 1][leftX];
 								origValue |= (val0 | val1);
-	
+
 								// get output
 								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
 								output0 = output & 65280;
@@ -14127,11 +14171,11 @@
 								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
 								output0 |= (output >> 8);
 								output1 |= (output & 255);
-	
+
 								// save output 16bits
 								nextGrid[h][leftX] = output0;
 								nextGrid[h + 1][leftX] = output1;
-	
+
 								// update statistics
 								population += bitCounts16[output0];
 								births += bitCounts16[output0 & ~val0];
@@ -14145,7 +14189,7 @@
 								if (output) {
 									// update column occupied flag
 									colOccupied |= output;
-	
+
 									// update min and max row
 									if (output0) {
 										if (h < newBottomY) {
@@ -14163,18 +14207,18 @@
 											newTopY = h + 1;
 										}
 									}
-	
+
 									// check for left column now set
 									if (output) {
 										if ((output & 49152) !== 0) {
 											neighbours |= LifeConstants.topLeftSet;
 										}
-	
+
 										// check for right column now set
 										if ((output & 3) !== 0) {
 											neighbours |= LifeConstants.topRightSet;
 										}
-	
+
 										// top row set
 										neighbours |= LifeConstants.topSet;
 									}
@@ -14242,7 +14286,7 @@
 								population += bitCounts16[output1];
 								births += bitCounts16[output1 & ~val1];
 								deaths += bitCounts16[val1 & ~output1];
-								
+
 								// check if any cells are set
 								output = output0 | output1;
 								if (output) {
@@ -14282,7 +14326,7 @@
 										val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
 									}
 									origValue |= (val0 | val1);
-	
+
 									// get output
 									output = indexLookup[(val0 & 65280) | (val1 >> 8)];
 									output0 = output & 65280;
@@ -14290,7 +14334,7 @@
 									output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
 									output0 |= (output >> 8);
 									output1 |= (output & 255);
-	
+
 									// save output 16bits
 									if (rightTile) {
 										nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
@@ -14309,7 +14353,7 @@
 									population += bitCounts16[output1];
 									births += bitCounts16[output1 & ~val1];
 									deaths += bitCounts16[val1 & ~output1];
-									
+
 									// check if any cells are set
 									output = output0 | output1;
 									if (output) {
@@ -14334,7 +14378,7 @@
 											}
 										}
 									}
-	
+
 									// next row
 									h += 2;
 								}
@@ -14375,13 +14419,13 @@
 								population += bitCounts16[output1];
 								births += bitCounts16[output1 & ~val1];
 								deaths += bitCounts16[val1 & ~output1];
-								
+
 								// check if any cells are set
 								output = output0 | output1;
 								if (output) {
 									// update column occupied flag
 									colOccupied |= output;
-	
+
 									// update min and max row
 									if (output0) {
 										if (h < newBottomY) {
@@ -14399,16 +14443,16 @@
 											newTopY = h + 1;
 										}
 									}
-	
+
 									// check for right column set in this tile or left column set in right hand tile
 									if ((output & 3) !== 0) {
 										neighbours |= LifeConstants.topRightSet;
 									}
-	
+
 									// top row set
 									neighbours |= LifeConstants.topSet;
 								}
-								
+
 								if (val0 | val1) {
 									if (((val0 | val1) & 3) !== 0) {
 										neighbours |= LifeConstants.topRightSet;
@@ -14432,7 +14476,7 @@
 									neighbours |= LifeConstants.rightSet;
 								}
 							}
-				
+
 							// check if the source or output were alive
 							if (colOccupied || origValue) {
 								// update
@@ -14564,7 +14608,7 @@
 		// convert new width to pixels
 		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
 		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -14667,7 +14711,7 @@
 
 		    // flags for edges of tile occupied
 			neighbours = 0,
-			
+
 			// counter for even/odd
 			counter = this.counter & 1;
 
@@ -14821,12 +14865,12 @@
 										if ((output & 49152) !== 0) {
 											neighbours |= LifeConstants.bottomLeftSet;
 										}
-	
+
 										// check for right column now set
 										if ((output & 3) !== 0) {
 											neighbours |= LifeConstants.bottomRightSet;
 										}
-	
+
 										// bottom row set
 										neighbours |= LifeConstants.bottomSet;
 									}
@@ -14839,7 +14883,7 @@
 									val0 = grid[h][leftX];
 									val1 = grid[h + 1][leftX];
 									origValue |= (val0 | val1);
-	
+
 									// get output
 									output = indexLookup[(val0 & 65280) | (val1 >> 8)];
 									output0 = output & 65280;
@@ -14847,11 +14891,11 @@
 									output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
 									output0 |= (output >> 8);
 									output1 |= (output & 255);
-	
+
 									// save output 16bits
 									nextGrid[h][leftX] = output0;
 									nextGrid[h + 1][leftX] = output1;
-	
+
 									// check if any cells are set
 									output = output0 | output1;
 									if (output) {
@@ -14866,16 +14910,16 @@
 											newTopY = h + 1;
 										}
 									}
-	
+
 									// next row
 									h += 2;
 								}
-	
+
 								// process top row
 								val0 = grid[h][leftX];
 								val1 = grid[h + 1][leftX];
 								origValue |= (val0 | val1);
-	
+
 								// get output
 								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
 								output0 = output & 65280;
@@ -14883,17 +14927,17 @@
 								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
 								output0 |= (output >> 8);
 								output1 |= (output & 255);
-	
+
 								// save output 16bits
 								nextGrid[h][leftX] = output0;
 								nextGrid[h + 1][leftX] = output1;
-	
+
 								// check if any cells are set
 								output = output0 | output1;
 								if (output) {
 									// update column occupied flag
 									colOccupied |= output;
-	
+
 									// update min and max row
 									if (h < newBottomY) {
 										newBottomY = h;
@@ -14901,18 +14945,18 @@
 									if (h + 1 > newTopY) {
 										newTopY = h + 1;
 									}
-	
+
 									// check for left column now set
 									if (output) {
 										if ((output & 49152) !== 0) {
 											neighbours |= LifeConstants.topLeftSet;
 										}
-	
+
 										// check for right column now set
 										if ((output & 3) !== 0) {
 											neighbours |= LifeConstants.topRightSet;
 										}
-	
+
 										// top row set
 										neighbours |= LifeConstants.topSet;
 									}
@@ -15003,7 +15047,7 @@
 										val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
 									}
 									origValue |= (val0 | val1);
-	
+
 									// get output
 									output = indexLookup[(val0 & 65280) | (val1 >> 8)];
 									output0 = output & 65280;
@@ -15011,7 +15055,7 @@
 									output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
 									output0 |= (output >> 8);
 									output1 |= (output & 255);
-	
+
 									// save output 16bits
 									if (rightTile) {
 										nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
@@ -15037,7 +15081,7 @@
 											newTopY = h + 1;
 										}
 									}
-	
+
 									// next row
 									h += 2;
 								}
@@ -15076,7 +15120,7 @@
 								if (output) {
 									// update column occupied flag
 									colOccupied |= output;
-	
+
 									// update min and max row
 									if (h < newBottomY) {
 										newBottomY = h;
@@ -15084,12 +15128,12 @@
 									if (h + 1 > newTopY) {
 										newTopY = h + 1;
 									}
-	
+
 									// check for right column set in this tile or left column set in right hand tile
 									if ((output & 3) !== 0) {
 											neighbours |= LifeConstants.topRightSet;
 									}
-	
+
 									// top row set
 									neighbours |= LifeConstants.topSet;
 								}
@@ -15250,7 +15294,7 @@
 		// convert new width to pixels
 		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
 		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -15351,7 +15395,7 @@
 		    // starting and ending tile row
 		    tileStartRow = 0,
 			tileEndRow = tileRows,
-			
+
 			// left, middle and right bitmasks for rule lookup
 			/** @const{number} */ maskL = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8),
 			/** @const{number} */ maskC = (1 << 7) | (1 << 6) | (1 << 5),
@@ -15516,12 +15560,12 @@
 
 								// next row
 								gridRow2 = grid[h + 1];
-	
+
 								// read three rows
 								val0 = val1;
 								val1 = val2;
 								val2 = (gridRow2[leftX - 1] << 18) | (gridRow2[leftX] << 2) | (gridRow2[leftX + 1] >> 14);
-	
+
 								// check for odd/even
 								if ((h & 1) !== 0) {
 									swap = val0;
@@ -15556,12 +15600,12 @@
 
 								// save output 16bits
 								nextGrid[h][leftX] = output;
-	
+
 								// check if any cells are set
 								if (output) {
 									// update column occupied flag
 									colOccupied |= output;
-	
+
 									// update min and max row
 									if (h < newBottomY) {
 										newBottomY = h;
@@ -15796,7 +15840,7 @@
 		// convert new width to pixels
 		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
 		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -15853,14 +15897,14 @@
 
 		    // which cells were set in source
 			origValue = 0,
-			
+
 			// whether cells were set in the tile
 			tileCells = 0,
 
 		    // column occupied
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			rowOccupied = 0,
@@ -16041,7 +16085,7 @@
 										// update row and column occupied flags
 										colOccupied |= output;
 										rowOccupied |= rowIndex;
-	
+
 										// check for right column now set
 										if ((output & 1) !== 0) {
 											neighbours |= LifeConstants.bottomRightSet;
@@ -16063,7 +16107,7 @@
 									births += bitCounts16[output & ~origValue];
 									deaths += bitCounts16[origValue & ~output];
 								}
-								
+
 								// process left edge tile middle rows
 								h += 1;
 								rowIndex >>= 1;
@@ -16108,7 +16152,7 @@
 										births += bitCounts16[output & ~origValue];
 										deaths += bitCounts16[origValue & ~output];
 									}
-									
+
 									// next row
 									h += 1;
 									rowIndex >>= 1;
@@ -16235,7 +16279,7 @@
 											output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
 											output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 											output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-	
+
 											// check if any cells are set
 											if (output) {
 												// update row and column occupied flags
@@ -16333,7 +16377,7 @@
 											// update row and column occupied flags
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
-	
+
 											// update population
 											population += bitCounts16[output];
 
@@ -16341,12 +16385,12 @@
 											if ((output & 32768) !== 0) {
 												neighbours |= LifeConstants.bottomLeftSet;
 											}
-	
+
 											// check for right column now set
 											if ((output & 1) !== 0) {
 												neighbours |= LifeConstants.bottomRightSet;
 											}
-	
+
 											// bottom row set
 											neighbours |= LifeConstants.bottomSet;
 										}
@@ -16999,7 +17043,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -17065,7 +17109,7 @@
 		    // column occupied
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			rowOccupied = 0,
@@ -17239,7 +17283,7 @@
 										// update row and column occupied flags
 										colOccupied |= output;
 										rowOccupied |= rowIndex;
-	
+
 										// check for right column now set
 										if ((output & 1) !== 0) {
 											neighbours |= LifeConstants.bottomRightSet;
@@ -17252,7 +17296,7 @@
 
 								// save output 16bits
 								nextGrid[h][leftX] = output;
-								
+
 								// process left edge tile middle rows
 								h += 1;
 								rowIndex >>= 1;
@@ -17394,7 +17438,7 @@
 											output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
 											output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
 											output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-	
+
 											// check if any cells are set
 											if (output) {
 												// update row and column occupied flags
@@ -17473,17 +17517,17 @@
 											// update row and column occupied flags
 											colOccupied |= output;
 											rowOccupied |= rowIndex;
-	
+
 											// check for left column now set
 											if ((output & 32768) !== 0) {
 												neighbours |= LifeConstants.bottomLeftSet;
 											}
-	
+
 											// check for right column now set
 											if ((output & 1) !== 0) {
 												neighbours |= LifeConstants.bottomRightSet;
 											}
-	
+
 											// bottom row set
 											neighbours |= LifeConstants.bottomSet;
 										}
@@ -18032,7 +18076,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -18127,7 +18171,7 @@
 								sourceRow = colourGrid[h];
 								sourceRow1 = colourGrid[h + 1];
 								cr = (leftX << 3);
-									
+
 								// find any set cells in each 2x2 block
 								// first two cells in first row
 								value = sourceRow[cr];
@@ -18188,7 +18232,7 @@
 					leftX += xSize << 4;
 				}
 			}
-			
+
 			// next tile row
 			bottomY += ySize;
 			topY += ySize;
@@ -18252,7 +18296,7 @@
 								sourceRow = colourGrid[h];
 								sourceRow1 = colourGrid[h + 1];
 								cr = (leftX << 3);
-									
+
 								// get the maximum of 4 pixels
 								// first two pixels in first row
 								value = sourceRow[cr];
@@ -18353,7 +18397,7 @@
 					leftX += xSize << 4;
 				}
 			}
-			
+
 			// next tile row
 			bottomY += ySize;
 			topY += ySize;
@@ -18424,7 +18468,7 @@
 								sourceRow3 = colourGrid[h + 3];
 								cr = (leftX << 2);
 								dr = (leftX << 4);
-									
+
 								// find any set cells in each 4x4 block
 								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
 								// @ts-ignore
@@ -18461,7 +18505,7 @@
 					leftX += xSize << 4;
 				}
 			}
-			
+
 			// next tile row
 			bottomY += ySize;
 			topY += ySize;
@@ -18533,7 +18577,7 @@
 								sourceRow3 = colourGrid[h + 3];
 								cr = (leftX << 2);
 								dr = (leftX << 4);
-									
+
 								// get the maximum of each 4x4 block
 								for (i = 0; i < 4; i += 1) {
 									smallValue = 0;
@@ -18597,7 +18641,7 @@
 					leftX += xSize << 4;
 				}
 			}
-			
+
 			// next tile row
 			bottomY += ySize;
 			topY += ySize;
@@ -18676,7 +18720,7 @@
 								sourceRow7 = colourGrid[h + 7];
 								cr = (leftX << 2);
 								dr = (leftX << 4);
-									
+
 								// find any set cells in each 8x8 block
 								value = sourceRow[cr] | sourceRow[cr + 1];
 								value |= sourceRow1[cr] | sourceRow1[cr + 1];
@@ -18717,7 +18761,7 @@
 					leftX += xSize << 4;
 				}
 			}
-			
+
 			// next tile row
 			bottomY += ySize;
 			topY += ySize;
@@ -18797,7 +18841,7 @@
 								sourceRow7 = colourGrid[h + 7];
 								cr = (leftX << 2);
 								dr = (leftX << 4);
-									
+
 								// get the maximum of each 8x8 block
 								for (i = 0; i < 2; i += 1) {
 									smallValue = 0;
@@ -18992,7 +19036,7 @@
 					leftX += xSize << 4;
 				}
 			}
-			
+
 			// next tile row
 			bottomY += ySize;
 			topY += ySize;
@@ -19107,7 +19151,7 @@
 									}
 								}
 							}
-									
+
 							// output the cell
 							// @ts-ignore
 							destRow[dr] = (value > 0) << 6;
@@ -19121,7 +19165,7 @@
 					leftX += xSize << 4;
 				}
 			}
-			
+
 			// next tile row
 			bottomY += ySize;
 		}
@@ -19242,7 +19286,7 @@
 					leftX += xSize << 4;
 				}
 			}
-			
+
 			// next tile row
 			bottomY += ySize;
 			topY += ySize;
@@ -19357,7 +19401,7 @@
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
 			colIndex = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			rowOccupied = 0,
@@ -19381,7 +19425,7 @@
 		    // starting and ending tile row
 		    tileStartRow = 0,
 			tileEndRow = tileRows,
-			
+
 			// maximum dead state number
 			deadState = this.historyStates,
 
@@ -19790,7 +19834,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -19862,7 +19906,7 @@
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
 			colIndex = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			rowOccupied = 0,
@@ -19886,7 +19930,7 @@
 		    // starting and ending tile row
 		    tileStartRow = 0,
 			tileEndRow = tileRows,
-			
+
 			// maximum dead state number
 			deadState = this.historyStates,
 
@@ -20290,7 +20334,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -20366,7 +20410,7 @@
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
 			colIndex = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			rowOccupied = 0,
@@ -20390,7 +20434,7 @@
 		    // starting and ending tile row
 		    tileStartRow = 0,
 			tileEndRow = tileRows,
-			
+
 			// maximum dead state number
 			deadState = this.historyStates,
 
@@ -20763,7 +20807,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -20829,7 +20873,7 @@
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
 			colIndex = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			rowOccupied = 0,
@@ -20853,7 +20897,7 @@
 		    // starting and ending tile row
 		    tileStartRow = 0,
 			tileEndRow = tileRows,
-			
+
 		    // maximum generations state
 		    maxGenState = this.multiNumStates + this.historyStates - 1,
 
@@ -20954,7 +20998,7 @@
 											value -= 1;
 										}
 									}
-	
+
 									// write the colour back
 									colourGridRow[cr] = value;
 									if (value > minDeadState) {
@@ -21138,7 +21182,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -21308,7 +21352,7 @@
 			}
 		}
 	};
-	
+
 	// remove history cells from colour grid
 	Life.prototype.clearHistoryCells = function() {
 		var h = 0, cr = 0,
@@ -21331,7 +21375,7 @@
 
 		    // tile columns in 16 bit values
 			tileCols16 = this.tileCols >> 4,
-			
+
 			// alive mask for two cells
 			aliveMask16 = (64 << 8) | 64;
 
@@ -21433,7 +21477,7 @@
 		    // top right
 		    bRightX = bLeftX + width - 1;
 			bTopY = bBottomY + height - 1;
-			
+
 			if (zoomBox.leftX < bLeftX) {
 				zoomBox.leftX = bLeftX;
 			}
@@ -21489,7 +21533,7 @@
 			e = 0,
 			w = 0,
 			c = 0,
-			
+
 			state = 0,
 			y = 0,
 			x = 0,
@@ -21513,7 +21557,7 @@
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
 			colIndex = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			rowOccupied = 0,
@@ -21685,12 +21729,12 @@
 											break;
 										}
 									}
-	
+
 									// check if state is alive
 									nextRow[x] = state;
 									if (state > 0) {
 										population += 1;
-	
+
 										// update births
 										if (c === 0) {
 											births += 1;
@@ -21940,7 +21984,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -22056,7 +22100,7 @@
 			s = 0,
 			w = 0,
 			c = 0,
-			
+
 			state = 0,
 			y = 0,
 			x = 0,
@@ -22080,7 +22124,7 @@
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
 			colIndex = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			rowOccupied = 0,
@@ -22223,7 +22267,7 @@
 								} else {
 									gridRow0 = grid[y - 1];
 								}
-	
+
 								// current row
 								gridRow1 = grid[y];
 
@@ -22285,7 +22329,7 @@
 									nextRow[x] = state;
 									if (state > 0) {
 										population += 1;
-	
+
 										// update births
 										if (c === 0) {
 											births += 1;
@@ -22299,7 +22343,7 @@
 											deaths += 1;
 										}
 									}
-	
+
 									// next column
 									colIndex >>= 1;
 									x += 1;
@@ -22542,7 +22586,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -22670,7 +22714,7 @@
 			nw = 0,
 			se = 0,
 			sw = 0,
-			
+
 			// states and counters
 			state = 0,
 			y = 0,
@@ -22694,7 +22738,7 @@
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
 			colIndex = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			rowOccupied = 0,
@@ -22837,7 +22881,7 @@
 								} else {
 									gridRow0 = grid[y - 1];
 								}
-	
+
 								// current row
 								gridRow1 = grid[y];
 
@@ -22914,12 +22958,12 @@
 											}
 										}
 									}
-	
+
 									// check if state is alive
 									nextRow[x] = state;
 									if (state > 0) {
 										population += 1;
-	
+
 										// update births
 										if (c === 0) {
 											births += 1;
@@ -22933,7 +22977,7 @@
 											deaths += 1;
 										}
 									}
-	
+
 									// next column
 									colIndex >>= 1;
 									x += 1;
@@ -23192,7 +23236,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -23314,7 +23358,7 @@
 			c = 0,
 			nw = 0,
 			se = 0,
-			
+
 			// states and counters
 			state = 0,
 			y = 0,
@@ -23338,7 +23382,7 @@
 		    columnOccupied16 = this.columnOccupied16,
 			colOccupied = 0,
 			colIndex = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			rowOccupied = 0,
@@ -23481,7 +23525,7 @@
 								} else {
 									gridRow0 = grid[y - 1];
 								}
-	
+
 								// current row
 								gridRow1 = grid[y];
 
@@ -23555,7 +23599,7 @@
 									nextRow[x] = state;
 									if (state > 0) {
 										population += 1;
-	
+
 										// update births
 										if (c === 0) {
 											births += 1;
@@ -23569,7 +23613,7 @@
 											deaths += 1;
 										}
 									}
-	
+
 									// next column
 									colIndex >>= 1;
 									x += 1;
@@ -23821,7 +23865,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -23952,7 +23996,7 @@
 			s = 0,
 			w = 0,
 			c = 0,
-			
+
 			// states and counters
 			state = 0,
 			state32 = 0,
@@ -23982,7 +24026,7 @@
 			colOccupied = 0,
 			colIndex = 0,
 			localCol = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			rowOccupied = 0,
@@ -25160,11 +25204,11 @@
 											neighbours |= LifeConstants.bottomRightSet;
 										}
 									}
-	
+
 								if (colOccupied & 32768) {
 									neighbours |= LifeConstants.leftSet;
 								}
-	
+
 								if (colOccupied & 1) {
 									neighbours |= LifeConstants.rightSet;
 								}
@@ -25313,7 +25357,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -25419,7 +25463,7 @@
 			nw = 0,
 			se = 0,
 			sw = 0,
-			
+
 			// states and counters
 			state = 0,
 			y = 0,
@@ -25447,7 +25491,7 @@
 			colOccupied = 0,
 			colIndex = 0,
 			localCol = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			rowOccupied = 0,
@@ -26904,7 +26948,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -27026,7 +27070,7 @@
 			/** @type {Array<number>} */ nextTileRow = null,
 			/** @type {Array<number>} */ belowNextTileRow = null,
 			/** @type {Array<number>} */ aboveNextTileRow = null,
-			
+
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
@@ -27039,7 +27083,7 @@
 			/** @type {Array<number>} */ columnOccupied16 = this.columnOccupied16,
 			/** @type {number} */ colOccupied = 0,
 			/** @type {number} */ colIndex = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			/** @type {number} */ rowOccupied = 0,
@@ -27183,7 +27227,7 @@
 								} else {
 									gridRow0 = grid[y - 1];
 								}
-	
+
 								// current row
 								gridRow1 = grid[y];
 
@@ -27232,7 +27276,7 @@
 										deaths += 1;
 									}
 								}
-	
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
@@ -27759,7 +27803,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -27881,7 +27925,7 @@
 			/** @type {Array<number>} */ nextTileRow = null,
 			/** @type {Array<number>} */ belowNextTileRow = null,
 			/** @type {Array<number>} */ aboveNextTileRow = null,
-			
+
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
@@ -27894,7 +27938,7 @@
 			/** @type {Array<number>} */ columnOccupied16 = this.columnOccupied16,
 			/** @type {number} */ colOccupied = 0,
 			/** @type {number} */ colIndex = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			/** @type {number} */ rowOccupied = 0,
@@ -28038,7 +28082,7 @@
 								} else {
 									gridRow0 = grid[y - 1];
 								}
-	
+
 								// current row
 								gridRow1 = grid[y];
 
@@ -28087,7 +28131,7 @@
 										deaths += 1;
 									}
 								}
-	
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
@@ -28614,7 +28658,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -28736,7 +28780,7 @@
 			/** @type {Array<number>} */ nextTileRow = null,
 			/** @type {Array<number>} */ belowNextTileRow = null,
 			/** @type {Array<number>} */ aboveNextTileRow = null,
-			
+
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
@@ -28749,7 +28793,7 @@
 			/** @type {Array<number>} */ columnOccupied16 = this.columnOccupied16,
 			/** @type {number} */ colOccupied = 0,
 			/** @type {number} */ colIndex = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			/** @type {number} */ rowOccupied = 0,
@@ -28893,7 +28937,7 @@
 								} else {
 									gridRow0 = grid[y - 1];
 								}
-	
+
 								// current row
 								gridRow1 = grid[y];
 
@@ -28942,7 +28986,7 @@
 										deaths += 1;
 									}
 								}
-	
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
@@ -29469,7 +29513,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -29591,7 +29635,7 @@
 			/** @type {Array<number>} */ nextTileRow = null,
 			/** @type {Array<number>} */ belowNextTileRow = null,
 			/** @type {Array<number>} */ aboveNextTileRow = null,
-			
+
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
@@ -29604,7 +29648,7 @@
 			/** @type {Array<number>} */ columnOccupied16 = this.columnOccupied16,
 			/** @type {number} */ colOccupied = 0,
 			/** @type {number} */ colIndex = 0,
-			
+
 			// row occupied
 			rowOccupied16 = this.rowOccupied16,
 			/** @type {number} */ rowOccupied = 0,
@@ -29748,7 +29792,7 @@
 								} else {
 									gridRow0 = grid[y - 1];
 								}
-	
+
 								// current row
 								gridRow1 = grid[y];
 
@@ -29797,7 +29841,7 @@
 										deaths += 1;
 									}
 								}
-	
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
@@ -30324,7 +30368,7 @@
 		// convert new height to pixels
 		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
 		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-	
+
 		// ensure the box is not blank
 		if (newTopY < 0) {
 			newTopY = height - 1;
@@ -30445,7 +30489,7 @@
 			rowAlive = false,
 			zAlive = false,
 			bitCounts = this.bitCounts16,
-	
+
 			// maximum dead state number
 			deadState = this.historyStates,
 
@@ -30469,7 +30513,7 @@
 		    // top right
 		    bRightX = bLeftX + width - 1,
 			bTopY = bBottomY + height - 1;
-			
+
 		// check for bounded grid
 		if (this.boundedGridType !== -1) {
 			leftX = bLeftX + 1;
@@ -30613,7 +30657,7 @@
 				} else {
 					births += bitCounts[state];
 				}
-				
+
 				// check for alive states
 				if (state > 0) {
 					if (x < zLeftX) {
@@ -31907,7 +31951,7 @@
 			}
 		}
 	};
-	
+
 	// get rotated coordinates
 	Life.prototype.rotateCoords = function(x, y, result) {
 		var radius = 0,
@@ -32581,7 +32625,7 @@
 
 			// update brightness
 			brightness += brightInc;
-			
+
 			// create pixel colours
 			this.createPixelColours(brightness);
 
@@ -32973,7 +33017,7 @@
 
 			// update brightness
 			brightness += brightInc;
-			
+
 			// create pixel colours
 			this.createPixelColours(brightness);
 
@@ -33309,7 +33353,7 @@
 
 			// update brightness
 			brightness += brightInc;
-			
+
 			// create pixel colours
 			this.createPixelColours(brightness);
 
@@ -33626,7 +33670,7 @@
 
 			// update brightness
 			brightness += brightInc;
-			
+
 			// create pixel colours
 			this.createPixelColours(brightness);
 
@@ -34657,7 +34701,7 @@
 
 			// update brightness
 			brightness += brightInc;
-			
+
 			// create pixel colours
 			this.createPixelColours(brightness);
 
@@ -34858,7 +34902,7 @@
 		    // create the width and height masks
 		    wm = this.widthMask & ~mask,
 			hm = this.heightMask & ~mask,
-			
+
 			// last mask
 			lastMask = mask,
 
@@ -35133,7 +35177,7 @@
 
 			// update brightness
 			brightness += brightInc;
-			
+
 			// create pixel colours
 			this.createPixelColours(brightness);
 
@@ -35596,7 +35640,7 @@
 
 			// update brightness
 			brightness += brightInc;
-			
+
 			// create pixel colours
 			this.createPixelColours(brightness);
 
@@ -36115,7 +36159,7 @@
 
 			// update brightness
 			brightness += brightInc;
-			
+
 			// create pixel colours
 			this.createPixelColours(brightness);
 
@@ -36407,10 +36451,10 @@
 			if (!this.imageData.data.buffer) {
 				s = this.imageData.data;
 				t = this.data8;
-	
+
 				// get buffer length
 				l = t.length;
-	
+
 				// copy buffer
 				i = 0;
 				while (i < l) {
