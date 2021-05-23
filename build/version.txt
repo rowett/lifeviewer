@@ -1,3 +1,9 @@
+Build 630
+- experimental new URLE encoder can now encode duplicate non-sequential rows
+
+Build 629
+- experimental new URLE encoder can now compress non-sequential duplicate rows
+
 Build 628
 - experimental new URLE encoder now has a state by state mode which gives better compression for most multi-state patterns
 

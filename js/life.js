@@ -439,6 +439,9 @@
 		// URLE last large count
 		this.URLELastLargeCount = 0;
 
+		// URLE last encoded row number
+		this.URLELastEncodedRowNumber = 0;
+
 		// URLE bits per state
 		this.URLEBitsPerState = 1;
 
@@ -450,6 +453,7 @@
 		this.URLEMinus2 = 0;
 		this.URLEBlankRow = 0;
 		this.URLEBlankCells = 0;
+		this.URLERowLookup = 0;
 
 		// whether to draw 2-state as rainbow
 		/** @type {boolean} */ this.rainbow = false;
@@ -4132,8 +4136,79 @@
 	// compare row records [encoded, rownum]
 	/** @return {number} */
 	Life.prototype.compareRows = function(a, b) {
-		return a[0].localeCompare(b[0]) || a[1] - b[1];
+		return a.data.localeCompare(b.data) || a.row - b.row;
 	};
+
+	// encode row number
+	/** @return {string} */
+	Life.prototype.encodeRowNumber = function(row) {
+		var /** @type {number} */ digits = 0,
+			/** @type {number} */ bits = 0,
+			/** @type {number} */ orig = row,
+			/** @type {Array<string>} */ chars = LifeConstants.URLEChars,
+			/** @type {string} */ result = "";
+
+		// check last encoded row number
+		if (row === this.URLELastEncodedRowNumber) {
+			result = LifeConstants.URLELastLargeCount;
+		} else {
+			if (row === this.URLELastEncodedRowNumber - 1) {
+				result = LifeConstants.URLELastLargeCountMinus;
+				this.URLELastEncodedRowNumber -= 1;
+			} else {
+				if (row === this.URLELastEncodedRowNumber + 1) {
+					result = LifeConstants.URLELastLargeCountPlus;
+					this.URLELastEncodedRowNumber += 1;
+				} else {
+					if (row === this.URLELastEncodedRowNumber - 2) {
+						result = LifeConstants.URLELastLargeCountMinus2;
+						this.URLELastEncodedRowNumber -= 2;
+					} else {
+						if (row === this.URLELastEncodedRowNumber + 2) {
+							result = LifeConstants.URLELastLargeCountPlus2;
+							this.URLELastEncodedRowNumber += 2;
+						} else {
+							// save the last row
+							this.URLELastEncodedRowNumber = row;
+
+							// count how many digits are needed
+							while (orig > 0) {
+								digits += 1;
+								orig >>= 4;
+							}
+
+							// ensure at least one digit
+							if (digits === 0) {
+								digits = 1;
+							}
+
+							// output all but last digit in lower case
+							bits = (digits - 1) << 2;
+							while (digits > 1) {
+								result += chars[(row >> bits) & 15];
+								digits -= 1;
+								bits -= 4;
+							}
+
+							// output last digit in upper case
+							result += chars[row & 15].toUpperCase();
+						}
+					}
+				}
+			}
+		}
+
+		return result;
+	};
+
+	// EncodedRow object
+	/**
+	 * @constructor
+	 */
+	function EncodedRow(/** @const @type {string} */ data, /** @const @type {number} */ row) {
+		/** @type {string} */ this.data = data;
+		/** @type {number} */ this.row = row;
+	}
 
 	// encode the pattern with the given number of states
 	/** @return {string} */
@@ -4147,8 +4222,8 @@
 			/** @type {number} */ bitsPerUsedState = 0,
 			/** @type {number} */ rowCount = 0,
 			/** @type {number} */ lastRowY = 0,
-			/** @type {Array<any>} */ rows = [],
-			/** @type {Array<any>} */ rowDups = [],
+			/** @type {Array<EncodedRow>} */ rows = [],
+			/** @type {Array<EncodedRow>} */ rowDups = [],
 			/** @type {Array<number>} */ dups = [],
 			/** @type {Array<number>} */ pairs = [],
 			/** @type {boolean} */ allBlank = true,
@@ -4182,13 +4257,16 @@
 		// clear large count for count optimization
 		this.URLELastLargeCount = 0;
 
+		// clear last encoded row number
+		this.URLELastEncodedRowNumber = 0;
+
 		// encode each row into strings without count optimization so comparing identical rows works
 		for (y = 0; y < height; y += 1) {
-			rows[y] = [this.encodeRow(leftX, rightX, bottomY, y + bottomY, false), y];
+			rows[y] = new EncodedRow(this.encodeRow(leftX, rightX, bottomY, y + bottomY, false), y);
 			pairs[y] = 0;
 
 			// check if any rows are not blank
-			if (rows[y][0] !== "") {
+			if (rows[y].data !== "") {
 				allBlank = false;
 			}
 		}
@@ -4216,13 +4294,13 @@
 
 			// now find each pair of rows (where the two rows are different) that are followed by one or more duplicate pairs
 			for (y = 0; y < height - 3; y += 1) {
-				if (rows[y][0] === rows[y + 2][0] && rows[y + 1][0] === rows[y + 3][0] && rows[y][0] !== rows[y + 1][0]) {
+				if (rows[y].data === rows[y + 2].data && rows[y + 1].data === rows[y + 3].data && rows[y].data !== rows[y + 1].data) {
 					rowCount = 1;
 					j = 2;
 					do {
 						j += 2;
 						rowCount += 1;
-					} while (y + 1 + j < height && rows[y][0] == rows[y + j][0] && rows[y + 1][0] == rows[y + 1 + j][0]);
+					} while (y + 1 + j < height && rows[y].data == rows[y + j].data && rows[y + 1].data == rows[y + 1 + j].data);
 
 					// output how many duplicate pairs exist
 					pairs[y] = rowCount;
@@ -4232,15 +4310,15 @@
 			// sort the rows to find non-sequential duplicate rows
 			rowDups = rows.slice();
 			rowDups.sort(this.compareRows);
-			lastRLERow = rowDups[0][0];
-			lastRowY = rowDups[0][1];
+			lastRLERow = rowDups[0].data;
+			lastRowY = rowDups[0].row;
 			dups[lastRowY] = lastRowY;
 			for (y = 1; y < height; y += 1) {
-				if (rowDups[y][0] === lastRLERow) {
-					dups[rowDups[y][1]] = lastRowY;
+				if (rowDups[y].data === lastRLERow) {
+					dups[rowDups[y].row] = lastRowY;
 				} else {
-					lastRLERow = rowDups[y][0];
-					lastRowY = rowDups[y][1];
+					lastRLERow = rowDups[y].data;
+					lastRowY = rowDups[y].row;
 					dups[lastRowY] = lastRowY;
 				}
 			}
@@ -4284,7 +4362,7 @@
 							lastRLERow = LifeConstants.URLEInvalidRow;
 						} else {
 							// next row is not a pair
-							lastRLERow = rows[y][0];
+							lastRLERow = rows[y].data;
 							lastRowY = y + bottomY;
 							rowCount = 1;
 							y += 1;
@@ -4295,7 +4373,7 @@
 					}
 				} else {
 					// check if the next row is the same as the last one
-					if (rows[y][0] === lastRLERow) {
+					if (rows[y].data === lastRLERow) {
 						// increment the run count
 						rowCount += 1;
 					} else {
@@ -4305,8 +4383,9 @@
 
 							// check for non-sequential duplicate
 							if ((dups[lastRowY - bottomY] !== lastRowY - bottomY)) {
-								testRLERow = LifeConstants.URLERowNum + dups[lastRowY - bottomY].toString(16) + LifeConstants.URLERowNum;
+								testRLERow = LifeConstants.URLERowNum + this.encodeRowNumber(dups[lastRowY - bottomY]);
 								if (testRLERow.length < lastRLERow.length) {
+									this.URLERowLookup += lastRLERow.length - testRLERow.length; // STATS TBD
 									lastRLERow = testRLERow;
 								}
 							}
@@ -4315,7 +4394,7 @@
 						}
 
 						// make current row the last row
-						lastRLERow = rows[y][0];
+						lastRLERow = rows[y].data;
 						lastRowY = y + bottomY;
 						rowCount = 1;
 					}
@@ -4329,8 +4408,9 @@
 
 				// check for non-sequential duplicate
 				if ((dups[lastRowY - bottomY] !== lastRowY - bottomY)) {
-					testRLERow = LifeConstants.URLERowNum + dups[lastRowY - bottomY].toString(16) + LifeConstants.URLERowNum;
+					testRLERow = LifeConstants.URLERowNum + this.encodeRowNumber(dups[lastRowY - bottomY]);
 					if (testRLERow.length < lastRLERow.length) {
+						this.URLERowLookup += lastRLERow.length - testRLERow.length; // STATS TBD
 						lastRLERow = testRLERow;
 					}
 				}
@@ -4503,12 +4583,13 @@
 		this.URLEMinus2 = 0;
 		this.URLEBlankCells = 0;
 		this.URLEBlankRow = 0;
+		this.URLERowLookup = 0;
 
 		data = this.encodePattern(numStates, leftX, rightX, bottomY, height, usedStatesList, false);
 
 		tdata = performance.now() - tdata;
 
-		//console.debug(this.URLEEquals, this.URLEPlus1, this.URLEPlus2, this.URLEMinus1, this.URLEMinus2, this.URLEBlankCells, this.URLEBlankRow, this.URLEEquals + this.URLEPlus1 + this.URLEPlus2 + this.URLEMinus1 + this.URLEMinus2 + this.URLEBlankCells + this.URLEBlankRow);
+		console.debug(this.URLEEquals, this.URLEPlus1, this.URLEPlus2, this.URLEMinus1, this.URLEMinus2, this.URLEBlankCells, this.URLEBlankRow, this.URLERowLookup, this.URLEEquals + this.URLEPlus1 + this.URLEPlus2 + this.URLEMinus1 + this.URLEMinus2 + this.URLEBlankCells + this.URLEBlankRow + this.URLERowLookup);
 
 		var tdata2 = 0;
 
@@ -4524,6 +4605,7 @@
 			this.URLEMinus2 = 0;
 			this.URLEBlankCells = 0;
 			this.URLEBlankRow = 0;
+			this.URLERowLookup = 0;
 
 			data2 = "";
 			for (swap = 0; swap < usedStatesList.length; swap += 1) {
@@ -4534,7 +4616,8 @@
 
 			tdata2 = performance.now() - tdata2;
 
-			//console.debug(this.URLEEquals, this.URLEPlus1, this.URLEPlus2, this.URLEMinus1, this.URLEMinus2, this.URLEBlankCells, this.URLEBlankRow, this.URLEEquals + this.URLEPlus1 + this.URLEPlus2 + this.URLEMinus1 + this.URLEMinus2 + this.URLEBlankCells + this.URLEBlankRow);
+			console.debug(this.URLEEquals, this.URLEPlus1, this.URLEPlus2, this.URLEMinus1, this.URLEMinus2, this.URLEBlankCells, this.URLEBlankRow, this.URLERowLookup, this.URLEEquals + this.URLEPlus1 + this.URLEPlus2 + this.URLEMinus1 + this.URLEMinus2 + this.URLEBlankCells + this.URLEBlankRow + this.URLERowLookup);
+
 			if (data2.length < data.length) {
 				data = data2;
 			}
