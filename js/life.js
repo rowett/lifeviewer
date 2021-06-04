@@ -4315,7 +4315,15 @@
 			dups[lastRowY] = lastRowY;
 			for (y = 1; y < height; y += 1) {
 				if (rowDups[y].data === lastRLERow) {
+					// mark it as a duplicate
 					dups[rowDups[y].row] = lastRowY;
+
+					// encode the row again with count optimization
+					rows[lastRowY].data = this.encodeRow(leftX, rightX, bottomY, lastRowY + bottomY, true);
+					testRLERow = LifeConstants.URLERowNum + this.encodeRowNumber(dups[lastRowY - bottomY]);
+					if (testRLERow.length < rows[lastRowY].data.length) {
+						rows[lastRowY].data = testRLERow;
+					}
 				} else {
 					lastRLERow = rowDups[y].data;
 					lastRowY = rowDups[y].row;
@@ -4589,7 +4597,7 @@
 
 		tdata = performance.now() - tdata;
 
-		console.debug(this.URLEEquals, this.URLEPlus1, this.URLEPlus2, this.URLEMinus1, this.URLEMinus2, this.URLEBlankCells, this.URLEBlankRow, this.URLERowLookup, this.URLEEquals + this.URLEPlus1 + this.URLEPlus2 + this.URLEMinus1 + this.URLEMinus2 + this.URLEBlankCells + this.URLEBlankRow + this.URLERowLookup);
+		//console.debug(this.URLEEquals, this.URLEPlus1, this.URLEPlus2, this.URLEMinus1, this.URLEMinus2, this.URLEBlankCells, this.URLEBlankRow, this.URLERowLookup, this.URLEEquals + this.URLEPlus1 + this.URLEPlus2 + this.URLEMinus1 + this.URLEMinus2 + this.URLEBlankCells + this.URLEBlankRow + this.URLERowLookup);
 
 		var tdata2 = 0;
 
@@ -4616,7 +4624,7 @@
 
 			tdata2 = performance.now() - tdata2;
 
-			console.debug(this.URLEEquals, this.URLEPlus1, this.URLEPlus2, this.URLEMinus1, this.URLEMinus2, this.URLEBlankCells, this.URLEBlankRow, this.URLERowLookup, this.URLEEquals + this.URLEPlus1 + this.URLEPlus2 + this.URLEMinus1 + this.URLEMinus2 + this.URLEBlankCells + this.URLEBlankRow + this.URLERowLookup);
+			//console.debug(this.URLEEquals, this.URLEPlus1, this.URLEPlus2, this.URLEMinus1, this.URLEMinus2, this.URLEBlankCells, this.URLEBlankRow, this.URLERowLookup, this.URLEEquals + this.URLEPlus1 + this.URLEPlus2 + this.URLEMinus1 + this.URLEMinus2 + this.URLEBlankCells + this.URLEBlankRow + this.URLERowLookup);
 
 			if (data2.length < data.length) {
 				data = data2;

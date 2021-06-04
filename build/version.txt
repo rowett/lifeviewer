@@ -1,3 +1,6 @@
+Build 631
+- fixed popup viewer scaling issue when loading rules from Repository
+
 Build 630
 - experimental new URLE encoder can now encode duplicate non-sequential rows
 

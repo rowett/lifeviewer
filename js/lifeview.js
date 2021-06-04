@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 630,
+		/** @const {number} */ versionBuild : 631,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -15113,8 +15113,15 @@
 		if (!this.manager.loadingFromRepository) {
 			this.completeStart(pattern, [ignoreThumbnail], this);
 		} else {
+			// create a dummy pattern so view processing completes otherwise window isn't correctly setup
 			var temp = this.manager.create("", "x=1,y=1,rule=Life\n!", this.engine.allocator, this.completeStart, this.completeStart, [ignoreThumbnail], this);
 			this.completeStart(temp, [ignoreThumbnail], this);
+
+			// restore original width and height so when pattern loads with new rule we don't scale the window again
+			this.displayWidth = this.origDisplayWidth;
+			this.displayHeight = this.origDisplayHeight;
+
+			// notify rule is loading
 			this.menuManager.notification.clear(false, true);
 			this.menuManager.notification.notify("Loading rule...", 15, 10000, 15, true);
 		}
