@@ -14,6 +14,28 @@
 	// Life constants
 	/** @const */
 	var LifeConstants = {
+		// URLE5 encoded row types
+		/** @const {number} */ URLE5RowTypeStandard : 0,
+		/** @const {number} */ URLE5RowTypePair : 1,
+		/** @const {number} */ URLE5RowTypeDupe : 2,
+
+		// URLE5 characters representing each 5 cell combination and blank cell combinations for 2, 2+final, 4, 4+final, 6, 6+final, 8, 8+final, 10, 10+final, 12, 12+final
+		/** @const {Array<string>} */ URLE5Chars : ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "[", "]", "'", "#", ",", ".",
+													"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "{", "}", "@", "~", "<", ">",
+													"|", "\"", "*", "/", "+", "-", "=", "\\", "(", ")", "|", "&"],
+
+		// URLE5 blank row, copy previous row, copy previous row pair, copy specified row symbols
+		/** @const {string} */ URLE5BlankRow : "$",
+		/** @const {string} */ URLE5CopyRow : "^",
+		/** @const {string} */ URLE5CopyRowPair : "%",
+		/** @const {string} */ URLE5CopySpecifiedRow : "?",
+
+		// URLE5 end of pattern
+		/** @const {string} */ URLE5EndPattern : "_",
+
+		// URLE5 new state encoding symbol
+		/** @const {string} */ URLE5NewState : "0",
+
 		// URLE characters representing each 4 cell combination (for 2 state patterns) and blank cell combinations for 8, 8+final4, 16, 16+final4, 24, 24+final4, 32 and 32+final4
 		/** @const {Array<string>} */ URLEChars : ["g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "W", "X", "Y", "Z", "C", "D", "E", "F"],
 
@@ -426,6 +448,9 @@
 
 		// allocator
 		this.allocator = new Allocator();
+
+		// URLE5 variables
+		this.URLE5Grid = [];
 
 		// temporary grid for URLE encode
 		this.URLEGrid = [];
@@ -4300,7 +4325,7 @@
 					do {
 						j += 2;
 						rowCount += 1;
-					} while (y + 1 + j < height && rows[y].data == rows[y + j].data && rows[y + 1].data == rows[y + 1 + j].data);
+					} while (y + 1 + j < height && rows[y].data === rows[y + j].data && rows[y + 1].data === rows[y + 1 + j].data);
 
 					// output how many duplicate pairs exist
 					pairs[y] = rowCount;
@@ -4411,7 +4436,7 @@
 			}
 
 			// output the final run with optimized counts
-			if (lastRLERow != LifeConstants.URLEInvalidRow) {
+			if (lastRLERow !== LifeConstants.URLEInvalidRow) {
 				lastRLERow = this.encodeRow(leftX, rightX, bottomY, lastRowY, true);
 
 				// check for non-sequential duplicate
@@ -4656,6 +4681,485 @@
 
 		// free the grid
 		this.URLEGrid = null;
+
+		// return the RLE
+		return rle;
+	};
+
+	// encode run of rows
+	/** @return {string} */
+	Life.prototype.encodeURLE5RowRun = function(/** @type {number} */ count, /** @const @type {string} */ row, /** @const @type {string} */ symbol) {
+		var /** @type {string} */ result = "";
+
+		// check if the row is blank
+		if (row === LifeConstants.URLEBlankRow) {
+			// output the count if greater than 1
+			if (count > 1) {
+				result += count.toString();
+			}
+
+			// output the blank row symbol
+			result += row;
+		} else {
+			// output the row
+			result += row;
+
+			// if there are duplicates then output count-1 and the duplicate row symbol
+			if (count > 1) {
+				if (count > 2) {
+					result += (count - 1).toString();
+				}
+				result += symbol;
+			}
+		}
+
+		return result;
+	};
+
+	// encode run count and cells
+	/** @return {string} */
+	Life.prototype.encodeURLE5Run = function(/** @type {number} */ count, /** @type {number} */ cellGroup) {
+		var /** @type {string} */ result = "",
+			/** @const @type {Array<string>} */ stateChars = LifeConstants.URLE5Chars,
+			/** @type {number} */ dividor = 0;
+
+		// check for larger blank cells runs
+		if (count > 1 && cellGroup === 0) {
+			// check for small blank runs
+			if (count >= 2 && count < 14) {
+				cellGroup = 64 + count - 2;
+				count = 1;
+			} else {
+				// at greater counts find the largest representation that divides exactly
+				dividor = this.dividesNorNPlus1(count, 12);
+				cellGroup = 64 + dividor + (count & 1) - 2;
+				count = (count / dividor) | 0;
+			}
+		}
+
+		// only output the count if it is greater than 1
+		if (count > 1) {
+			// count is small so just use it
+			result += count.toString();
+		}
+
+		// add the characters representing the cells
+		result += stateChars[cellGroup];
+
+		return result;
+	};
+
+	// get 5 cells in a row
+	/** @return {number} */
+	Life.prototype.getURLE5FiveCells = function(/** @type {number} */ x, /** @const @type {number} */ y, /** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {Uint8Array} */ gridRow, /** @const @type {number} */ state) {
+		var /** @type {number} */ col = 0,
+			/** @type {number} */ output = 0,
+			/** @type {number} */ maxX = x + 4,
+			/** @type {number} */ bit = 16;
+
+		// clip to pattern extent
+		if (maxX > rightX) {
+			maxX = rightX;
+		}
+
+		// get next 5 cells
+		while (x <= maxX) {
+			col = gridRow[x - leftX];
+			if (col === state) {
+				output |= bit;
+			}
+			x += 1;
+			bit >>= 1;
+		}
+
+		return output;
+	};
+
+	// encode row in URLE format
+	/** @return {string} */
+	Life.prototype.encodeURLE5Row = function(/** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {number} */ bottomY, /** @const @type {number} */ y, /** @const @type {number} */ state) {
+		var /** @type {string} */ result = "",
+			/** @type {number} */ x = leftX,
+			/** @type {number} */ last = 0,
+			/** @type {number} */ next = 0,
+			/** @type {number} */ count = 0,
+			/** @const @type {Array<string>} */ stateChars = LifeConstants.URLE5Chars,
+			/** @type {Uint8Array} */ gridRow = this.URLE5Grid[y - bottomY];
+
+		// get first set of cells
+		last = this.getURLE5FiveCells(x, y, leftX, rightX, gridRow, state);
+		x += 5;
+		count += 1;
+
+		// read the rest of the row in groups of cells based on bits per cell
+		while (x <= rightX) {
+			// get the next set of cells
+			next = this.getURLE5FiveCells(x, y, leftX, rightX, gridRow, state);
+			x += 5;
+
+			// check if they are the same as the previous group of cells
+			if (next === last) {
+				// cells are the same so increment run count
+				count += 1;
+			} else {
+				// cells are different so output previous run
+				result += this.encodeURLE5Run(count, last);
+
+				// reset for new run
+				count = 1;
+				last = next;
+			}
+		}
+
+		// check if final run is blank
+		if (last === 0) {
+			// run is blank so change last encoded symbol to add end of row marker
+			if (result !== "") {
+				result = result.substr(0, result.length - 1) + stateChars[stateChars.indexOf(result.substr(result.length - 1)) + 32];
+			}
+		} else {
+			// run is not blank so adjust to add end of row marker
+			last += 32;
+			result += this.encodeURLE5Run(count, last);
+		}
+
+		return result;
+	};
+
+	// EncodedURLE5Row object
+	/**
+	 * @constructor
+	 */
+	function EncodedURLE5Row(/** @const @type {string} */ data, /** @const @type {number} */ row) {
+		/** @type {string} */ this.data = data;
+		/** @type {number} */ this.row = row;
+		/** @type {number} */ this.type = LifeConstants.URLE5RowTypeStandard;
+		/** @type {number} */ this.count = 1;
+	}
+
+	// encode the pattern with the given number of states
+	/** @return {string} */
+	Life.prototype.encodeURLE5Pattern = function(/** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {number} */ bottomY, /** @const @type {number} */ height, /** @const @type {number} */ state) {
+		var /** @type {string} */ data = "",
+			/** @type {string} */ usePrevious = "",
+			/** @type {number} */ y = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ rowCount = 0,
+			/** @type {number} */ lastDataRow = 0,
+			/** @type {EncodedURLE5Row} */ encodedRow1 = null,
+			/** @type {EncodedURLE5Row} */ encodedRow2 = null,
+			/** @type {Array<EncodedURLE5Row>} */ rows = [],
+			/** @type {Array<EncodedURLE5Row>} */ rowDups = [],
+			/** @type {boolean} */ allBlank = true,
+			/** @type {number} */ lastRowPairRow = -1,
+			/** @type {boolean} */ ignoreFirst = false;
+
+		// encode each row
+		for (y = 0; y < height; y += 1) {
+			encodedRow1 = new EncodedURLE5Row(this.encodeURLE5Row(leftX, rightX, bottomY, y + bottomY, state), y);
+			rows[y] = encodedRow1;
+
+			// check if any rows are not blank
+			if (encodedRow1.data !== "") {
+				allBlank = false;
+			} else {
+				// replace blank row with the blank row symbol
+				encodedRow1.data = LifeConstants.URLE5BlankRow;
+			}
+		}
+
+		// if the pattern is blank return empty string
+		if (allBlank) {
+			return data;
+		}
+
+		// now find each pair of rows (where the two rows are different) that are followed by one or more duplicate pairs
+		for (y = 0; y < height - 3; y += 1) {
+			encodedRow1 = rows[y];
+			encodedRow2 = rows[y + 1];
+			if (encodedRow1.data === rows[y + 2].data && encodedRow2.data === rows[y + 3].data && encodedRow1.data !== encodedRow2.data) {
+				rowCount = 1;
+				j = 2;
+				do {
+					j += 2;
+					rowCount += 1;
+				} while (y + 1 + j < height && encodedRow1.data === rows[y + j].data && encodedRow2.data === rows[y + 1 + j].data);
+
+				// set the row type as a pair on the first row
+				encodedRow1.type = LifeConstants.URLE5RowTypePair;
+				encodedRow1.count = rowCount;
+
+				// skip pairs
+				y += rowCount * 2 - 1;
+			}
+		}
+
+		// create a duplicate of the encoded rows array and sort it by content and then row number to find groups of duplicates
+		rowDups = rows.slice();
+		rowDups.sort(this.compareRows);
+
+		// in each duplicate set make the row number of all duplicates the row number of the first one in the set
+		encodedRow1 = rowDups[0];
+		for (y = 1; y < height; y += 1) {
+			encodedRow2 = rowDups[y];
+
+			// check for duplicates
+			if (encodedRow2.data === encodedRow1.data) {
+				// mark as duplicates but don't overwrite duplicate pairs
+				if (rows[encodedRow1.row].type === LifeConstants.URLE5RowTypeStandard) {
+					rows[encodedRow1.row].type = LifeConstants.URLE5RowTypeDupe;
+				}
+				if (rows[encodedRow2.row].type === LifeConstants.URLE5RowTypeStandard) {
+					rows[encodedRow2.row].type = LifeConstants.URLE5RowTypeDupe;
+				}
+				
+				// check if the copy previous row encoding is not longer than the data encoding
+				usePrevious = encodedRow1.row.toString() + LifeConstants.URLE5CopySpecifiedRow;
+				if (usePrevious.length <= encodedRow2.data.length) {
+					encodedRow2.data = usePrevious;
+				}
+
+				// set the row to point to the first duplicate
+				rows[encodedRow2.row].row = encodedRow1.row;
+			} else {
+				encodedRow1 = encodedRow2;
+			}
+		}
+
+		// finally count sequential runs
+		for (y = 0; y < height - 1; y += 1) {
+			encodedRow1 = rows[y];
+			encodedRow2 = rows[y + 1];
+
+			// check for duplicate runs
+			//if (encodedRow1.type === LifeConstants.URLE5RowTypeDupe && encodedRow2.type === LifeConstants.URLE5RowTypeDupe && encodedRow1.row === encodedRow2.row) {
+			if (encodedRow1.row === encodedRow2.row) {
+				rowCount = 1;
+				j = 1;
+				do {
+					j += 1;
+					rowCount += 1;
+				//} while (y + j < height && rows[y + j].type === LifeConstants.URLE5RowTypeDupe && rows[y + j].row === encodedRow1.row);
+				} while (y + j < height && rows[y + j].row === encodedRow1.row);
+
+				// set the count
+				encodedRow1.count = rowCount;
+			}
+		}
+
+		// remove any final blank rows
+		lastDataRow = height - 1;
+		while (lastDataRow >= 0 && rows[lastDataRow].data === LifeConstants.URLE5BlankRow) {
+			lastDataRow--;
+		}
+
+		// now encode output the rows
+		ignoreFirst = false;
+		lastRowPairRow = -1;
+		y = 0;
+		while (y <= lastDataRow) {
+			// get the next row
+			encodedRow1 = rows[y];
+			rowCount = encodedRow1.count;
+
+			// check the row type
+			switch (encodedRow1.type) {
+				case LifeConstants.URLE5RowTypeStandard:
+					// standard row just output
+					data += encodedRow1.data;
+					y += rowCount;
+					lastRowPairRow = -1;
+					break;
+
+				case LifeConstants.URLE5RowTypeDupe:
+					// if the run includes the last row of a pair then include that in the count
+					if (encodedRow1.row === lastRowPairRow) {
+						data += this.encodeURLE5RowRun(rowCount + 1, "", LifeConstants.URLE5CopyRow);
+					} else {
+						// duplicate row encode as a count of duplicate rows
+						data += this.encodeURLE5RowRun(rowCount, encodedRow1.data, LifeConstants.URLE5CopyRow);
+					}
+					y += rowCount;
+
+					// if the run includes the first row of a pair the move back to the previous row but skip the row's data when encoding the pair
+					if (rows[y - 1].type === LifeConstants.URLE5RowTypePair) {
+						ignoreFirst = true;
+						y -= 1;
+					}
+
+					lastRowPairRow = -1;
+					break;
+
+				case LifeConstants.URLE5RowTypePair:
+					// duplicate row pair encode as a count of duplicate row pairs
+					if (ignoreFirst) {
+						data += this.encodeURLE5RowRun(rowCount, rows[y + 1].data, LifeConstants.URLE5CopyRowPair);
+						ignoreFirst = false;
+					} else {
+						data += this.encodeURLE5RowRun(rowCount, encodedRow1.data + rows[y + 1].data, LifeConstants.URLE5CopyRowPair);
+					}
+					lastRowPairRow = y + 1;
+
+					y += rowCount * 2;
+					break;
+			}
+		}
+
+		return data;
+	};
+
+	// populate URLE5 grid for faster lookup and return an array of used states in the pattern
+	/** @return {Array<number>} */
+	Life.prototype.populateURLE5Grid = function(/** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {number} */ bottomY, /** @const @type {number} */ topY, /** @const @type {number} */ states) {
+		var /** @type {number} */ width = rightX - leftX + 1,
+			/** @type {number} */ height = topY - bottomY + 1,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ state = 0,
+			/** @type {Array<number>} */ result = [],
+			/** @type {Uint8Array} */ stateFlags = new Uint8Array(states + 1),
+			gridRow = null;
+
+		// allocate the grid
+		this.URLE5Grid = Array.matrix(Uint8, height, width, 0, this.allocator, "URLE5Grid");
+
+		// populate the grid
+		for (y = bottomY; y <= topY; y += 1) {
+			gridRow = this.URLE5Grid[y - bottomY];
+			for (x = leftX; x <= rightX; x += 1) {
+				state = this.getState(x, y, false);
+				stateFlags[state] = 1;
+				gridRow[x - leftX] = state;
+			}
+		}
+
+		// build a list of used states
+		for (x = 0; x < states; x += 1) {
+			if (stateFlags[x]) {
+				result.push(x);
+			}
+		}
+
+		// if there is just one state and it is not zero then prefix with zero
+		if (result.length === 1 && result[0] !== 0) {
+			result = [0, result[0]];
+		}
+
+		return result;
+	};
+
+	// convert grid to URLE5 format
+	/** @return {string} */
+	Life.prototype.asURLE5 = function(/** @const */ view, /** @const @type {Life} */ me, /** @const @type {boolean} */ addComments, /** @const @type {boolean} */ useAlias) {
+		var /** @type {string} */ rle = "",
+			/** @type {string} */ data = "",
+			/** @const */ zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
+			/** @type {number} */ leftX = zoomBox.leftX,
+			/** @type {number} */ rightX = zoomBox.rightX,
+			/** @type {number} */ topY = zoomBox.topY,
+			/** @type {number} */ bottomY = zoomBox.bottomY,
+			/** @type {number} */ width = rightX - leftX + 1,
+			/** @type {number} */ height = topY - bottomY + 1,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ numStates = (me.multiNumStates === -1 ? 2 : me.multiNumStates),
+			/** @const @type {number} */ xOff = (me.width >> 1) - (view.patternWidth >> 1),
+			/** @const @type {number} */ yOff = (me.height >> 1) - (view.patternHeight >> 1),
+			/** @type {string} */ ruleName = "",
+			/** @type {Array<number>} */ usedStatesList = [],
+			/** @const */ selBox = view.selectionBox;
+
+		// check for selection
+		if (view.isSelection) {
+			leftX = selBox.leftX + xOff;
+			bottomY = selBox.bottomY + yOff;
+			rightX = selBox.rightX + xOff;
+			topY = selBox.topY + yOff;
+
+			// order selection
+			if (leftX > rightX) {
+				swap = leftX;
+				leftX = rightX;
+				rightX = swap;
+			}
+			if (bottomY > topY) {
+				swap = bottomY;
+				bottomY = topY;
+				topY = swap;
+			}
+
+			// compute selection size
+			width = rightX - leftX + 1;
+			height = topY - bottomY + 1;
+		}
+
+		// check for triangular rules
+		if (me.isTriangular) {
+			// align bounding box
+			if (leftX > 0 && ((leftX & 1) !== 0)) {
+				leftX -= 1;
+				width += 1;
+			}
+			if ((bottomY > 0) && ((bottomY & 1) !== 0)) {
+				bottomY -= 1;
+				height += 1;
+			}
+		}
+
+		// check for Margolus rules
+		if (me.isMargolus) {
+			// align bounding box
+			if (leftX > 0 && ((leftX & 1) === 0)) {
+				leftX -= 1;
+				width += 1;
+			}
+			if ((bottomY > 0) && ((bottomY & 1) === 0)) {
+				bottomY -= 1;
+				height += 1;
+			}
+		}
+
+		// output comments if requested
+		if (addComments) {
+			rle += me.beforeTitle;
+		}
+
+		// output header (x =, y=, rule=)
+		ruleName = ((useAlias && view.patternAliasName !== "") ? view.patternAliasName : view.patternRuleName);
+		if (ruleName === "Conway's Life") {
+			ruleName = "Life";
+		}
+		if (ruleName === "B3/S23History") {
+			ruleName = "LifeHistory";
+		}
+		rle += "x = " + width + ", y = " + height + ", rule = " + ruleName;
+		rle += view.patternBoundedGridDef;
+		rle += "\n";
+
+		// check for [R]History patterns
+		if (this.isLifeHistory) {
+			numStates = 7;
+		}
+
+		// create the URLE5 grid for faster lookup and return an array of used states
+		usedStatesList = this.populateURLE5Grid(leftX, rightX, bottomY, topY, numStates);
+
+		// encode each state in the pattern
+		for (i = 1; i < usedStatesList.length; i += 1) {
+			data = this.encodeURLE5Pattern(leftX, rightX, bottomY, height, usedStatesList[i]);
+			rle += data;
+		}
+
+		// add the pattern terminator
+		rle += LifeConstants.URLE5EndPattern;
+
+		// add final comments if requested
+		if (addComments) {
+			rle += me.afterTitle;
+		}
+
+		// unreference the grid
+		this.URLE5Grid = null;
 
 		// return the RLE
 		return rle;
@@ -10622,6 +11126,8 @@
 			/** @type {number} */ s13 = 0,
 			/** @type {number} */ s14 = 0,
 			/** @type {number} */ s15 = 0,
+			/** @type {number} */ s16 = 0,
+			/** @type {number} */ s17 = 0,
 			/** @type {number} */ xc = 0,
 			/** @type {number} */ yc = 0,
 			/** @type {number} */ xLim = 0,
@@ -10686,7 +11192,9 @@
 				s13 = colourRow[xc + dx4 + dx];
 				s14 = colourGrid[yc + dy4 + dy2][xc];
 				s15 = colourRow[xc + dx4 + dx2];
-				if ((s1 | s2 | s3 | s4 | s5 | s6 | s7 | s8 | s9 | s10 | s11 | s12 | s13 | s14 | s15) & 64) {
+				s16 = colourGrid[yc + dy4 + dy3][xc];
+				s17 = colourRow[xc + dx4 + dx3];
+				if ((s1 | s2 | s3 | s4 | s5 | s6 | s7 | s8 | s9 | s10 | s11 | s12 | s13 | s14 | s15 | s16 | s17) & 64) {
 					found = true;
 				} else {
 					xc += dx;
@@ -36578,4 +37086,3 @@
 	window["Life"] = Life;
 }
 ());
-

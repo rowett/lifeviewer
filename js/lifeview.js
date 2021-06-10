@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 631,
+		/** @const {number} */ versionBuild : 633,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13349,7 +13349,7 @@
 		var t1 = performance.now(),
 		    r1 = me.engine.asRLE(me, me.engine, false, me.engine.multiNumStates, me.engine.multiNumStates, [], true),
 			t4 = performance.now(),
-			r4 = me.engine.asURLE(me, me.engine, false, true),
+			r4 = me.engine.asURLE5(me, me.engine, false, true),
 			te = performance.now(),
 			rulelen = r1.indexOf("\n") + 2,
 			example = r4,
