@@ -5089,7 +5089,7 @@
 		var /** @type {string} */ result = "",
 			/** @const @type {Array<string>} */ stateChars = LifeConstants.URLE5Chars;
 
-		if (state > 32) {
+		if (state >= 32) {
 			result = stateChars[state >> 5];
 			state &= 31;
 		}
