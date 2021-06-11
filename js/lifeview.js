@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 633,
+		/** @const {number} */ versionBuild : 634,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13360,7 +13360,10 @@
 		}
 		te -= t4;
 		t4 -= t1;
-		alert("RLE: " + (r1.length - rulelen) + " bytes in " + (t4 | 0) + "ms\nURLE: " + (r4.length - rulelen) + " bytes in " + (te | 0) + "ms\nURLE compressed to " + (percent | 0) + "% of RLE size saving " + (r1.length - r4.length) + " bytes\n" + example);
+		var td = performance.now();
+		var decode = me.engine.decodeURLE5(r4.substr(rulelen - 1));
+		td = performance.now() - td;
+		alert("RLE: " + (r1.length - rulelen) + " bytes in " + (t4 | 0) + "ms\nURLE: " + (r4.length - rulelen) + " bytes in " + (te | 0) + "ms\nURLE compressed to " + (percent | 0) + "% of RLE size saving " + (r1.length - r4.length) + " bytes\n" + example + "\n\ndecoded URLE in " + (td | 0) + "ms\n" + decode);
 	};
 
 	// replace the current rle with the given text

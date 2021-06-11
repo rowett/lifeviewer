@@ -4718,14 +4718,16 @@
 
 	// encode run count and cells
 	/** @return {string} */
-	Life.prototype.encodeURLE5Run = function(/** @type {number} */ count, /** @type {number} */ cellGroup) {
+	Life.prototype.encodeURLE5Run = function(/** @type {number} */ count, /** @type {number} */ cellGroup, /** @type {number} */ state) {
 		var /** @type {string} */ result = "",
 			/** @const @type {Array<string>} */ stateChars = LifeConstants.URLE5Chars,
+			/** @type {boolean} */ wasBlank = false,
 			/** @type {number} */ dividor = 0;
 
 		// check for larger blank cells runs
 		if (count > 1 && cellGroup === 0) {
 			// check for small blank runs
+			wasBlank = true;
 			if (count >= 2 && count < 14) {
 				cellGroup = 64 + count - 2;
 				count = 1;
@@ -4744,9 +4746,19 @@
 		}
 
 		// add the characters representing the cells
-		result += stateChars[cellGroup];
+		if (state < 0 && !wasBlank) {
+			result += this.encodeURLE5StateNumber(cellGroup);
+		} else {
+			result += stateChars[cellGroup];
+		}
 
 		return result;
+	};
+
+	// get a cell
+	/** @return {number} */
+	Life.prototype.getURLE5Cell = function(/** @type {number} */ x, /** @const @type {number} */ y, /** @const @type {number} */ leftX, /** @const @type {number} */ rightX, /** @const @type {Uint8Array} */ gridRow) {
+		return gridRow[x - leftX];
 	};
 
 	// get 5 cells in a row
@@ -4787,15 +4799,25 @@
 			/** @type {Uint8Array} */ gridRow = this.URLE5Grid[y - bottomY];
 
 		// get first set of cells
-		last = this.getURLE5FiveCells(x, y, leftX, rightX, gridRow, state);
-		x += 5;
+		if (state < 0) {
+			last = this.getURLE5Cell(x, y, leftX, rightX, gridRow);
+			x += 1;
+		} else {
+			last = this.getURLE5FiveCells(x, y, leftX, rightX, gridRow, state);
+			x += 5;
+		}
 		count += 1;
 
 		// read the rest of the row in groups of cells based on bits per cell
 		while (x <= rightX) {
 			// get the next set of cells
-			next = this.getURLE5FiveCells(x, y, leftX, rightX, gridRow, state);
-			x += 5;
+			if (state < 0) {
+				next = this.getURLE5Cell(x, y, leftX, rightX, gridRow);
+				x += 1;
+			} else {
+				next = this.getURLE5FiveCells(x, y, leftX, rightX, gridRow, state);
+				x += 5;
+			}
 
 			// check if they are the same as the previous group of cells
 			if (next === last) {
@@ -4803,7 +4825,7 @@
 				count += 1;
 			} else {
 				// cells are different so output previous run
-				result += this.encodeURLE5Run(count, last);
+				result += this.encodeURLE5Run(count, last, state);
 
 				// reset for new run
 				count = 1;
@@ -4813,14 +4835,27 @@
 
 		// check if final run is blank
 		if (last === 0) {
-			// run is blank so change last encoded symbol to add end of row marker
+			// run is blank
 			if (result !== "") {
-				result = result.substr(0, result.length - 1) + stateChars[stateChars.indexOf(result.substr(result.length - 1)) + 32];
+				if (state < 0) {
+					// add end of row marker
+					result += LifeConstants.URLE5BlankRow;
+				} else {
+					// change last encoded symbol to indicate end of row
+					result = result.substr(0, result.length - 1) + stateChars[stateChars.indexOf(result.substr(result.length - 1)) + 32];
+				}
 			}
 		} else {
-			// run is not blank so adjust to add end of row marker
-			last += 32;
-			result += this.encodeURLE5Run(count, last);
+			// run is not blank
+			if (state < 0) {
+				// encode run and add end of row marker
+				result += this.encodeURLE5Run(count, last, state);
+				result += LifeConstants.URLE5BlankRow;
+			} else {
+				// adjust symbol to indicate end of row
+				last += 32;
+				result += this.encodeURLE5Run(count, last, state);
+			}
 		}
 
 		return result;
@@ -5048,11 +5083,27 @@
 		return result;
 	};
 
+	// encode URLE5 state number
+	/** @return {string} */
+	Life.prototype.encodeURLE5StateNumber = function(/** @const @type {number} */ state) {
+		var /** @type {string} */ result = "",
+			/** @const @type {Array<string>} */ stateChars = LifeConstants.URLE5Chars;
+
+		if (state > 32) {
+			result = stateChars[state >> 5];
+			state &= 31;
+		}
+		result += stateChars[state + 32];
+
+		return result;
+	};
+
 	// convert grid to URLE5 format
 	/** @return {string} */
 	Life.prototype.asURLE5 = function(/** @const */ view, /** @const @type {Life} */ me, /** @const @type {boolean} */ addComments, /** @const @type {boolean} */ useAlias) {
 		var /** @type {string} */ rle = "",
 			/** @type {string} */ data = "",
+			/** @type {string} */ altData = "",
 			/** @const */ zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
 			/** @type {number} */ leftX = zoomBox.leftX,
 			/** @type {number} */ rightX = zoomBox.rightX,
@@ -5145,10 +5196,31 @@
 		usedStatesList = this.populateURLE5Grid(leftX, rightX, bottomY, topY, numStates);
 
 		// encode each state in the pattern
+		data = "";
 		for (i = 1; i < usedStatesList.length; i += 1) {
-			data = this.encodeURLE5Pattern(leftX, rightX, bottomY, height, usedStatesList[i]);
-			rle += data;
+			if (usedStatesList.length > 2 || (usedStatesList.length === 2 && usedStatesList[1] !== 1)) {
+				data += LifeConstants.URLE5NewState + this.encodeURLE5StateNumber(usedStatesList[i]);
+			}
+			data += this.encodeURLE5Pattern(leftX, rightX, bottomY, height, usedStatesList[i]);
 		}
+
+		// encode all states in the pattern and check if this is a more compact encoding
+		if (usedStatesList.length > 2) {
+			// output the state header showing all states
+			altData = LifeConstants.URLE5NewState + LifeConstants.URLE5NewState;
+
+			// encode pattern with all states at once
+			altData += this.encodeURLE5Pattern(leftX, rightX, bottomY, height, -numStates);
+
+			// check if this encoding is more compact
+			//console.debug(altData.length, data.length);
+			if (altData.length < data.length) {
+				data = altData;
+			}
+		}
+
+		// add the pattern encoding
+		rle += data;
 
 		// add the pattern terminator
 		rle += LifeConstants.URLE5EndPattern;
@@ -5163,6 +5235,407 @@
 
 		// return the RLE
 		return rle;
+	};
+
+	// decode URLE5 pattern
+	// return "" for success or error message
+	/** @return {string} */
+	Life.prototype.decodeURLE5 = function(/** @type {string} */ pattern) {
+		var /** @type {number} */ count = 0,
+			/** @type {string} */ nextChar = "",
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ k = 0,
+			/** @type {number} */ error = -1,
+			/** @type {string} */ message = "",
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ maxX = 0,
+			/** @type {number} */ maxY = 0,
+			/** @type {number} */ width = 0,
+			/** @type {number} */ value = 0,
+			/** @type {number} */ value2 = 0,
+			/** @type {number} */ pass = 0,
+			/** @type {Array<string>} */ stateChars = LifeConstants.URLE5Chars,
+			/** @type {number} */ currentState = 1,
+			/** @type {Uint8Array} */ rightMostBit = new Uint8Array(32),
+			/** @type {Array<Uint8Array>} */ grid = null,
+			/** @type {Uint8Array} */ gridRow1 = null,
+			/** @type {Uint8Array} */ gridRow2 = null,
+			/** @type {Uint8Array} */ gridRow3 = null,
+			/** @type {Uint8Array} */ gridRow4 = null,
+			/** @const @type {number} */ asciiZero = "0".charCodeAt(0);
+
+		var t = performance.now();
+
+		// populate the right-most bit array
+		for (i = 0; i < 32; i += 1) {
+			value = 5;
+			if (i & 1) {
+				value = 0;
+			} else {
+				if (i & 2) {
+					value = 1;
+				} else {
+					if (i & 4) {
+						value = 2;
+					} else {
+						if (i & 8) {
+							value = 3;
+						} else {
+							if (i & 16) {
+								value = 4;
+							}
+						}
+					}
+				}
+			}
+			rightMostBit[i] = value;
+		}
+
+		// decode in two passes: the first pass to size the grid, the second pass to populate
+		for (pass = 0; pass < 2; pass += 1) {
+			// on the second pass allocate the grid
+			if (pass === 1) {
+				grid = Array.matrix(Uint8, maxY, maxX, 0, this.allocator, "URLE5Grid");
+				width = maxX;
+				x = 0;
+				y = 0;
+			}
+
+			// decode the pattern
+			i = 0;
+			while (i < pattern.length) {
+				nextChar = pattern[i];
+				switch (nextChar) {
+					case LifeConstants.URLE5NewState:
+						// new state, specified row zero or zero count digit
+						if (count === 0) {
+							// new state so get state value
+							if (i < pattern.length) {
+								// look at next character
+								nextChar = pattern[i + 1];
+	
+								// check for specified row
+								if (nextChar !== LifeConstants.URLE5CopySpecifiedRow) {
+									// consume character
+									i += 1;
+
+									// check for multi state mode
+									if (nextChar === LifeConstants.URLE5NewState) {
+										currentState = -1;
+									} else {
+										// decode single state
+										value = stateChars.indexOf(nextChar);
+										if (value === -1 || value >= 64) {
+											error = i;
+											message = "invalid state definition";
+											i = pattern.length;
+										} else {
+											if (value < 32) {
+												value <<= 5;
+												if (i < pattern.length) {
+													i += 1;
+													nextChar = pattern[i];
+													value2 = stateChars.indexOf(nextChar);
+													if (value2 < 32 || value2 >= 64) {
+														error = i;
+														message = "invalid state definition";
+														i = pattern.length;
+													} else {
+														value += (value2 - 32);
+													}
+												} else {
+													error = i;
+													message = "unfinished state definition";
+													i = pattern.length;
+												}
+											} else {
+												value -= 32;
+											}
+											currentState = value;
+											x = 0;
+											y = 0;
+										}
+									}
+								}
+							} else {
+								error = i;
+								message = "missing state definition";
+								i = pattern.length;
+							}
+						} else {
+							// count digit 0
+							count *= 10;
+						}
+						break;
+					
+					case LifeConstants.URLE5CopyRow:
+						// copy last pattern row
+						if (count === 0) {
+							count = 1;
+						}
+
+						// copy previous row
+						if (pass > 0) {
+							gridRow1 = grid[y - 1];
+							for (k = 0; k < count; k += 1) {
+								gridRow2 = grid[y + k];
+								if (currentState === -1) {
+									for (j = 0; j < width; j += 1) {
+										gridRow2[j] = gridRow1[j];
+									}
+								} else {
+									for (j = 0; j < width; j += 1) {
+										if (gridRow1[j] === currentState) {
+											gridRow2[j] = currentState;
+										}
+									}
+								}
+							}
+						}
+
+						y += count;
+						if (y > maxY) {
+							maxY = y;
+						}
+						count = 0;
+						x = 0;
+						break;
+	
+					case LifeConstants.URLE5CopyRowPair:
+						// copy last row pair
+						if (count === 0) {
+							count = 1;
+						}
+
+						if (pass > 0) {
+							gridRow1 = grid[y - 2];
+							gridRow2 = grid[y - 1];
+							for (k = 0; k < count; k += 1) {
+								gridRow3 = grid[y + k * 2];
+								gridRow4 = grid[y + k * 2 + 1];
+								if (currentState === -1) {
+									for (j = 0; j < width; j += 1) {
+										gridRow3[j] = gridRow1[j];
+										gridRow4[j] = gridRow2[j];
+									}
+								} else {
+									for (j = 0; j < width; j += 1) {
+										if (gridRow1[j] === currentState) {
+											gridRow3[j] = currentState;
+										}
+										if (gridRow2[j] === currentState) {
+											gridRow4[j] = currentState;
+										}
+									}
+								}
+							}
+						}
+
+						y += count * 2;
+						if (y > maxY) {
+							maxY = y;
+						}
+						count = 0;
+						x = 0;
+						break;
+	
+					case LifeConstants.URLE5CopySpecifiedRow:
+						// copy specified row
+						if (pass > 0) {
+							gridRow1 = grid[count];
+							gridRow2 = grid[y];
+							if (currentState === 1) {
+								for (j = 0; j < width; j += 1) {
+									gridRow2[j] = gridRow1[j];
+								}
+							} else {
+								for (j = 0; j < width; j += 1) {
+									if (gridRow1[j] === currentState) {
+										gridRow2[j] = currentState;
+									}
+								}
+							}
+						}
+
+						y += 1;
+						if (y > maxY) {
+							maxY = y;
+						}
+						count = 0;
+						x = 0;
+						break;
+	
+					case LifeConstants.URLE5EndPattern:
+						// end of pattern
+						i = pattern.length;
+						break;
+	
+					case LifeConstants.URLE5BlankRow:
+						// blank rows
+						if (count === 0) {
+							count = 1;
+						}
+						y += count;
+						if (y > maxY) {
+							maxY = y;
+						}
+						count = 0;
+						x = 0;
+						break;
+	
+					case " ":
+						// ignore space
+						break;
+	
+					case "\t":
+						// ignore tab
+						break;
+	
+					case "\n":
+						// ignore newline
+						break;
+	
+					default:
+						// check for digits
+						if (nextChar >= "1" && nextChar <= "9") {
+							count *= 10;
+							count += nextChar.charCodeAt(0) - asciiZero;
+						} else {
+							// check for cells
+							value = stateChars.indexOf(nextChar);
+							if (value === -1) {
+								error = i;
+								message = "invalid character";
+								i = pattern.length;
+							} else {
+								// decode cell specification
+								if (count === 0) {
+									count = 1;
+								}
+	
+								// check for multiple blanks
+								if (value >= 64) {
+									value -= 62;
+									if (currentState === -1) {
+										x += (count * (value &~ 1)) + (value & 1);
+										if (x > maxX) {
+											maxX = x;
+										}
+									} else {
+										x += ((count * (value &~ 1)) + (value & 1)) * 5;
+										if (x > maxX) {
+											maxX = x;
+										}
+									}
+								} else {
+									// decode cells
+									if (currentState === -1) {
+										if (value < 32) {
+											value <<= 5;
+											if (i < pattern.length) {
+												i += 1;
+												nextChar = pattern[i];
+												value2 = stateChars.indexOf(nextChar);
+												if (value2 < 32 || value2 >= 64) {
+													error = i;
+													i = pattern.length;
+													message = "invalid cell definition";
+												} else {
+													value += value2 - 32;
+												}
+											} else {
+												error = i;
+												i = pattern.length;
+												message = "unfinished cell definition";
+											}
+	
+										} else {
+											value -= 32;
+										}
+
+										if (pass > 0) {
+											gridRow1 = grid[y];
+											for (j = 0; j < count; j += 1) {
+												gridRow1[x + j] = value;
+											}
+										}
+
+										x += count;
+										if (x > maxX) {
+											maxX = x;
+										}
+									} else {
+										if (value >= 32) {
+											if (pass > 0) {
+												gridRow1 = grid[y];
+												for (j = 0; j < count - 1; j += 1) {
+													for (k = 0; k < 5; k += 1) {
+														if (value & (1 << (4 - k))) {
+															gridRow1[x + j * count + k] = currentState;
+														}
+													}
+												}
+												for (k = 0; k < 5 - rightMostBit[value - 32]; k += 1) {
+													if (value & (1 << (4 - k))) {
+														gridRow1[x + j * count + k] = currentState;
+													}
+												}
+											}
+
+											x += 5 * count - rightMostBit[value - 32];
+											if (x > maxX) {
+												maxX = x;
+											}
+											y += 1;
+											if (y > maxY) {
+												maxY = y;
+											}
+											x = 0;
+										} else {
+											if (pass > 0) {
+												gridRow1 = grid[y];
+												for (j = 0; j < count; j += 1) {
+													for (k = 0; k < 5; k += 1) {
+														if (value & (1 << (4 - k))) {
+															gridRow1[x + j * count + k] = currentState;
+														}
+													}
+												}
+											}
+
+											x += count * 5;
+											if (x > maxX) {
+												maxX = x;
+											}
+										}
+									}
+								}
+	
+								// reset count
+								count = 0;
+							}
+						}
+						break;
+				}
+	
+				// next character
+				i += 1;
+			}
+
+			// exit if there was an error
+			if (error !== -1) {
+				break;
+			}
+		}
+	
+		if (error !== -1) {
+			message = "decode failed at index " + error + " reason: " + message;
+		} else {
+			message = "decoded " + maxX + " x " + maxY + " OK";
+		}
+		return message;
 	};
 
 	// convert grid to RLE
