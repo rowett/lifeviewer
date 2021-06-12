@@ -87,6 +87,9 @@ declare var SnapshotManager, Snapshot;
 // stars.js
 declare var Stars;
 
+// urle.js
+declare var URLEEngine;
+
 // waypoint.js
 declare var Waypoint, WaypointManager, WaypointConstants;
 

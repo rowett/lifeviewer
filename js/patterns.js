@@ -7233,6 +7233,7 @@
 					decoded = true;
 
 					// start of bitmap so attempt to size the pattern
+					var t1 = performance.now(); // TBD
 					j = this.decodeRLEString(pattern, source.substring(index), false, allocator);
 					if (j !== -1) {
 						// looks valid so check if pattern is too big
@@ -7244,6 +7245,8 @@
 							index += this.decodeRLEString(pattern, source.substring(index), true, allocator);
 						}
 					}
+					t1 = performance.now() - t1; // TBD
+					console.debug(t1.toFixed(2) + "ms"); // TBD
 				}
 				break;
 			}

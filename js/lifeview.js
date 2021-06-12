@@ -13361,7 +13361,10 @@
 		te -= t4;
 		t4 -= t1;
 		var td = performance.now();
-		var decode = me.engine.decodeURLE5(r4.substr(rulelen - 1));
+		var decode = URLEEngine.decode(r4.substr(rulelen - 1), me.engine.allocator);
+		if (decode === "") {
+			decode = "decoded pattern of size " + URLEEngine.width + " x " + URLEEngine.height;
+		}
 		td = performance.now() - td;
 		alert("RLE: " + (r1.length - rulelen) + " bytes in " + (t4 | 0) + "ms\nURLE: " + (r4.length - rulelen) + " bytes in " + (te | 0) + "ms\nURLE compressed to " + (percent | 0) + "% of RLE size saving " + (r1.length - r4.length) + " bytes\n" + example + "\n\ndecoded URLE in " + (td | 0) + "ms\n" + decode);
 	};
