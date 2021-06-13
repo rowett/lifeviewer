@@ -435,7 +435,6 @@
 	URLEEngine.getUsedStates = function() {
 		var /** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
-			/** @type {number} */ state = 0,
 			/** @type {Array<number>} */ result = [],
 			/** @type {Uint8Array} */ stateFlags = new Uint8Array(256),
 			gridRow = null;
@@ -444,7 +443,7 @@
 		for (y = 0; y < URLEEngine.height; y += 1) {
 			gridRow = URLEEngine.grid[y];
 			for (x = 0; x < URLEEngine.width; x += 1) {
-				stateFlags[gridRow[x]] = x;
+				stateFlags[gridRow[x]] = 1;
 			}
 		}
 
