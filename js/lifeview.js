@@ -13361,10 +13361,16 @@
 		te -= t4;
 		t4 -= t1;
 		var td = performance.now();
-		var decode = URLEEngine.decode(r4.substr(rulelen - 1), me.engine.allocator);
+		var orig = r4.substr(rulelen - 1);
+		var decode = URLEEngine.decode(orig, me.engine.allocator);
 		if (decode === "") {
 			decode = "decoded pattern of size " + URLEEngine.width + " x " + URLEEngine.height;
 		}
+		var check = URLEEngine.encode(URLEEngine.grid, URLEEngine.width, URLEEngine.height);
+		if (check !== orig) {
+			decode += " FAIL validation: " + check.length + " " + orig.length;
+		}
+
 		td = performance.now() - td;
 		alert("RLE: " + (r1.length - rulelen) + " bytes in " + (t4 | 0) + "ms\nURLE: " + (r4.length - rulelen) + " bytes in " + (te | 0) + "ms\nURLE compressed to " + (percent | 0) + "% of RLE size saving " + (r1.length - r4.length) + " bytes\n" + example + "\n\ndecoded URLE in " + (td | 0) + "ms\n" + decode);
 	};

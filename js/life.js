@@ -4770,9 +4770,6 @@
 			rle += me.afterTitle;
 		}
 
-		// unreference the grid
-		this.URLE5Grid = null;
-
 		// return the RLE
 		return rle;
 	};
