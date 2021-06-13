@@ -246,7 +246,7 @@
 
 	// EncodedRow object
 	/**
-	 * @const @typeructor
+	 * @constructor
 	 */
 	function EncodedRow(/** @const @type {string} */ data, /** @const @type {number} */ row) {
 		/** @type {string} */ this.data = data;
@@ -526,7 +526,7 @@
 	};
 
 	// populate right-most bit array
-	URLEEngine.initRightMostBits = function(/** @type {Allocator} */ allocator) {
+	URLEEngine.initRightMostBits = function(allocator) {
 		var /** @type {number} */ i = 0,
 			/** @type {number} */ value = 0,
 			/** @type {Uint8Array} */ rightMostBit = URLEEngine.rightMostBit;
@@ -655,7 +655,7 @@
 
 	// decode pattern
 	/** @return {string} */
-	URLEEngine.decode = function(/** @type {string} */ pattern, /** @type {Allocator} */ allocator) {
+	URLEEngine.decode = function(/** @type {string} */ pattern, allocator) {
 		var /** @type {number} */ count = 0,
 			/** @type {number} */ nextByte = 0,
 			/** @type {number} */ i = 0,
