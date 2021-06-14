@@ -77,9 +77,9 @@
 
 		// min and max random width, height and fill percentage
 		/** @const {number} */ minRandomWidth : 1,
-		/** @const {number} */ maxRandomWidth : 1024,
+		/** @const {number} */ maxRandomWidth : 2048,
 		/** @const {number} */ minRandomHeight : 1,
-		/** @const {number} */ maxRandomHeight : 1024,
+		/** @const {number} */ maxRandomHeight : 2048,
 		/** @const {number} */ minRandomFill : 1,
 		/** @const {number} */ maxRandomFill : 100,
 
@@ -13355,24 +13355,25 @@
 			example = r4,
 			percent = ((100 * (r4.length - rulelen)) / (r1.length - rulelen));
 
-		if (example.length > rulelen + 70) {
-			example = example.substr(0, rulelen + 70) + "...";
+		if (example.length > rulelen + 40) {
+			example = example.substr(0, rulelen + 40) + "...";
 		}
 		te -= t4;
 		t4 -= t1;
-		var td = performance.now();
 		var orig = r4.substr(rulelen - 1);
-		var decode = URLEEngine.decode(orig, me.engine.allocator);
+		var td = performance.now();
+		var decode = URLEEngine.decode(orig, 8192, 8192);
+		td = performance.now() - td;
 		if (decode === "") {
-			decode = "decoded pattern of size " + URLEEngine.width + " x " + URLEEngine.height;
-		}
-		var check = URLEEngine.encode(URLEEngine.grid, URLEEngine.width, URLEEngine.height);
-		if (check !== orig) {
-			decode += " FAIL validation: " + check.length + " " + orig.length;
+			decode = "decoded pattern of size " + URLEEngine.width + " x " + URLEEngine.height + " in " + (td | 0) + "ms\nmaxState: " + URLEEngine.maxState + " totalPop: " + URLEEngine.totalPopulation + " oddStatePop: " + URLEEngine.oddStatePopulation + " state1Pop: " + URLEEngine.stateCounts[1];
+
+			var check = URLEEngine.encode(URLEEngine.grid, URLEEngine.width, URLEEngine.height);
+			if (check !== orig) {
+				decode += " FAIL validation: " + check.length + " " + orig.length;
+			}
 		}
 
-		td = performance.now() - td;
-		alert("RLE: " + (r1.length - rulelen) + " bytes in " + (t4 | 0) + "ms\nURLE: " + (r4.length - rulelen) + " bytes in " + (te | 0) + "ms\nURLE compressed to " + (percent | 0) + "% of RLE size saving " + (r1.length - r4.length) + " bytes\n" + example + "\n\ndecoded URLE in " + (td | 0) + "ms\n" + decode);
+		alert("RLE: " + (r1.length - rulelen) + " bytes in " + (t4 | 0) + "ms\nURLE: " + (r4.length - rulelen) + " bytes in " + (te | 0) + "ms\nURLE compressed to " + (percent | 0) + "% of RLE size saving " + (r1.length - r4.length) + " bytes\n" + example + "\n" + decode);
 	};
 
 	// replace the current rle with the given text

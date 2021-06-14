@@ -23,13 +23,13 @@
 		/** @const @type {number} */ StartBlanks : "\"".charCodeAt(0),
 		/** @const @type {number} */ EndBlanks : "/".charCodeAt(0),
 
-		//  blank row, copy previous row, copy previous row pair, copy specified row symbols
+		//  symbols for: blank row, copy previous row, copy previous row pair, copy specified row
 		/** @const @type {string} */ BlankRow : ":",
 		/** @const @type {string} */ CopyRow : ";",
 		/** @const @type {string} */ CopyRowPair : "<",
 		/** @const @type {string} */ CopySpecifiedRow : "=",
 
-		//  end of pattern
+		//  end of pattern symbol
 		/** @const @type {string} */ EndPattern : ">",
 
 		//  new state encoding symbol
@@ -44,7 +44,9 @@
 		/** @type {TextEncoder} */ textEncoder : new TextEncoder(),
 		/** @type {Uint32Array} */ stateCounts : new Uint32Array(256),
 		/** @type {Uint8Array} */ rightMostBit : null,
-		/** @type {number} */ population : 0,
+		/** @type {number} */ totalPopulation : 0,
+		/** @type {number} */ oddStatePopulation : 0,
+		/** @type {number} */ maxState : 0,
 		/** @type {number} */ endPatternIndex : 0
 	};
 
@@ -78,7 +80,7 @@
 		return result;
 	};
 
-	// find the small dividor or dividor + 1 that divides the supplied count exactly
+	// find the small dividor or dividor + 1 that divides the supplied count exactly - used for blank cell group encoding
 	/** @return {number} */
 	URLEEngine.dividesNorNPlus1 = function(/** @const @type {number} */ count, /** @type {number} */ dividor) {
 		var /** @type {boolean} */ found = false;
@@ -92,6 +94,20 @@
 		}
 
 		return dividor;
+	};
+
+	// encode state number in base 32
+	/** @return {string} */
+	URLEEngine.encodeStateNumber = function(/** @const @type {number} */ state) {
+		var /** @type {string} */ result = "";
+
+		if (state >= 32) {
+			result = String.fromCharCode(URLEConstants.Start64 + (state >> 5));
+			state &= 31;
+		}
+		result += String.fromCharCode(URLEConstants.Start64 + state + 32);
+
+		return result;
 	};
 
 	// encode run count and cells
@@ -119,7 +135,6 @@
 
 		// only output the count if it is greater than 1
 		if (count > 1) {
-			// count is small so just use it
 			result += count.toString();
 		}
 
@@ -137,13 +152,13 @@
 		return result;
 	};
 
-	// get a cell
+	// get the state value of a cell on the given row
 	/** @return {number} */
 	URLEEngine.getCell = function(/** @type {number} */ x, /** @const @type {Uint8Array} */ gridRow) {
 		return gridRow[x];
 	};
 
-	// get 5 cells in a row
+	// get the state value of five 2-state cells on the given row as a 5 bit binary value
 	/** @return {number} */
 	URLEEngine.getFiveCells = function(/** @type {number} */ x, /** @const @type {Uint8Array} */ gridRow, /** @const @type {number} */ state) {
 		var /** @type {number} */ col = 0,
@@ -157,7 +172,7 @@
 			maxX = width - 1;
 		}
 
-		// get next 5 cells
+		// get up to 5 cells depending on clipping
 		while (x <= maxX) {
 			col = gridRow[x];
 			if (col === state) {
@@ -170,7 +185,7 @@
 		return output;
 	};
 
-	// encode row in URLE format
+	// encode a row in URLE format
 	/** @return {string} */
 	URLEEngine.encodeRow = function(/** @const @type {number} */ y, /** @const @type {number} */ state) {
 		var /** @type {string} */ result = "",
@@ -181,7 +196,7 @@
 			/** @type {number} */ count = 0,
 			/** @type {Uint8Array} */ gridRow = URLEEngine.grid[y];
 
-		// get first set of cells
+		// get first group of cells
 		if (state < 0) {
 			last = URLEEngine.getCell(x, gridRow);
 			x += 1;
@@ -191,9 +206,9 @@
 		}
 		count += 1;
 
-		// read the rest of the row in groups of cells based on bits per cell
+		// read the rest of the row
 		while (x < width) {
-			// get the next set of cells
+			// get the next group of cells
 			if (state < 0) {
 				next = URLEEngine.getCell(x, gridRow);
 				x += 1;
@@ -255,13 +270,13 @@
 		/** @type {number} */ this.count = 1;
 	}
 
-	// compare EncodedRow records sorting by data and then row
+	// sort function to compare EncodedRow records sorting by data and then by row
 	/** @return {number} */
 	URLEEngine.compareRows = function(/** @type {EncodedRow} */ a, /** @type {EncodedRow} */ b) {
 		return a.data.localeCompare(b.data) || a.row - b.row;
 	};
 
-	// encode the pattern with the given number of states
+	// encode the pattern using the supplied state value, or using all states if the supplied state value is -1
 	/** @return {string} */
 	URLEEngine.encodePattern = function(/** @const @type {number} */ state) {
 		var /** @type {string} */ data = "",
@@ -375,7 +390,7 @@
 			lastDataRow--;
 		}
 
-		// now encode output the rows
+		// now output the rows
 		ignoreFirst = false;
 		lastRowPairRow = -1;
 		y = 0;
@@ -435,7 +450,7 @@
 	URLEEngine.getUsedStates = function() {
 		var /** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
-			/** @type {Array<number>} */ result = [],
+			/** @type {Array<number>} */ result = [0],   // always include state 0
 			/** @type {Uint8Array} */ stateFlags = new Uint8Array(256),
 			gridRow = null;
 		
@@ -447,36 +462,17 @@
 			}
 		}
 
-		// for each state present add the state number to the list
-		for (y = 0; y < 256; y += 1) {
+		// for each state above 0 present add the state number to the list
+		for (y = 1; y < 256; y += 1) {
 			if (stateFlags[y]) {
 				result.push(y);
 			}
 		}
 
-		// if there is just one state and it is not zero then prefix with zero
-		if (result.length === 1 && result[0] !== 0) {
-			result = [0, result[0]];
-		}
-
 		return result;
 	};
 
-	// encode state number
-	/** @return {string} */
-	URLEEngine.encodeStateNumber = function(/** @const @type {number} */ state) {
-		var /** @type {string} */ result = "";
-
-		if (state >= 32) {
-			result = String.fromCharCode(URLEConstants.Start64 + (state >> 5));
-			state &= 31;
-		}
-		result += String.fromCharCode(URLEConstants.Start64 + state + 32);
-
-		return result;
-	};
-
-	// encode  pattern
+	// encode pattern from supplied grid, width and height
 	/** @return {string} */
 	URLEEngine.encode = function(/** @const @type {Array<Uint8Array>} */ grid, /** @const @type {number} */ width, /** @const @type {number} */ height) {
 		var /** @type {string} */ result = "",
@@ -500,9 +496,9 @@
 			result += URLEEngine.encodePattern(usedStatesList[i]);
 		}
 
-		// encode all states in the pattern and check if this is a more compact encoding
+		// for multi-state patterns encode all states in the pattern at once and check if this is a more compact encoding
 		if (usedStatesList.length > 2) {
-			// output the state header showing all states
+			// output the state header indicating all states
 			altEncoding = URLEConstants.NewState + URLEConstants.NewState;
 
 			// encode pattern with all states at once
@@ -514,7 +510,7 @@
 			}
 		}
 
-		// add the pattern ending
+		// add the end of pattern symbol
 		result += URLEConstants.EndPattern;
 
 		// release the reference to the grid
@@ -524,44 +520,42 @@
 		return result;
 	};
 
-	// populate right-most bit array
-	URLEEngine.initRightMostBits = function(allocator) {
+	// populate right-most bit array used for clipping 5 cell groups to the pattern width
+	URLEEngine.initRightMostBits = function() {
 		var /** @type {number} */ i = 0,
 			/** @type {number} */ value = 0,
 			/** @type {Uint8Array} */ rightMostBit = URLEEngine.rightMostBit;
 
 		// create the array if not initialized
 		if (rightMostBit === null) {
-			rightMostBit = allocator.allocate(Uint8, 32, "URLEEngine.rightMostBit");
-		}
+			URLEEngine.rightMostBit = new Uint8Array(32);
+			rightMostBit = URLEEngine.rightMostBit;
 
-		// populate the right-most bit array
-		for (i = 0; i < 32; i += 1) {
-			value = 5;
-			if (i & 1) {
-				value = 0;
-			} else {
-				if (i & 2) {
-					value = 1;
+			// populate the array
+			for (i = 0; i < 32; i += 1) {
+				value = 5;
+				if (i & 1) {
+					value = 0;
 				} else {
-					if (i & 4) {
-						value = 2;
+					if (i & 2) {
+						value = 1;
 					} else {
-						if (i & 8) {
-							value = 3;
+						if (i & 4) {
+							value = 2;
 						} else {
-							if (i & 16) {
-								value = 4;
+							if (i & 8) {
+								value = 3;
+							} else {
+								if (i & 16) {
+									value = 4;
+								}
 							}
 						}
 					}
 				}
+				rightMostBit[i] = value;
 			}
-			rightMostBit[i] = value;
 		}
-
-		// save array
-		URLEEngine.rightMostBit = rightMostBit;
 	};
 
 	// copy previous pattern row a number of times
@@ -628,8 +622,7 @@
 		}
 	};
 
-
-	// copy specified pattern row
+	// copy specified pattern row once
 	URLEEngine.copySpecifiedRow = function(/** @type {Array<Uint8Array>} */ grid, /** @type {number} */ currentRow, /** @type {number} */ specifiedRow, /** @type {number} */ width, /** @type {number} */ state) {
 		var /** @type {Uint8Array} */ gridRow1 = grid[specifiedRow],
 			/** @type {Uint8Array} */ gridRow2 = grid[currentRow],
@@ -652,9 +645,38 @@
 		}
 	};
 
-	// decode pattern
+	// compute pattern metrics
+	URLEEngine.computeMetrics = function() {
+		var /** @type {number} */ i = 0,
+			/** @type {number} */ totalPop = 0,
+			/** @type {number} */ oddStatePop = 0,
+			/** @type {number} */ count = 0,
+			/** @type {number} */ maxState = 0;
+
+		// compute population counts
+		for (i = 1; i < 256; i += 1) {
+			count = URLEEngine.stateCounts[i];
+			if (count > 0) {
+				maxState = i;
+				totalPop += count;
+				if ((i & 1) !== 0) {
+					oddStatePop += count;
+				}
+			}
+		}
+
+		// save metrics
+		URLEEngine.stateCounts[0] = URLEEngine.width * URLEEngine.height - totalPop;
+		URLEEngine.totalPopulation = totalPop;
+		URLEEngine.oddStatePopulation = oddStatePop;
+		URLEEngine.maxState = maxState;
+	};
+
+	// decode pattern from the given string
+	// on success return "" and populate the URLEEngine singleton with the grid, width, height, population, state counts and index of end of pattern character
+	// on failure return an error message and set the URLEEngine singleton grid to null
 	/** @return {string} */
-	URLEEngine.decode = function(/** @type {string} */ pattern, allocator) {
+	URLEEngine.decode = function(/** @type {string} */ pattern, /** @const @type {number} */ maxWidth, /** @const @type {number} */ maxHeight) {
 		var /** @type {number} */ count = 0,
 			/** @type {number} */ nextByte = 0,
 			/** @type {number} */ i = 0,
@@ -685,10 +707,10 @@
 			/** @const @type {number} */ nineByte = "9".charCodeAt(0),
 			/** @const @type {number} */ endIndex = pattern.indexOf(URLEConstants.EndPattern);
 
-		// initialize and populate the right most bit array
-		URLEEngine.initRightMostBits(allocator);
+		// initialize and populate the right most bit array used to clip 5 cell groups to the grid width
+		URLEEngine.initRightMostBits();
 
-		// remove whitespace from the pattern string
+		// remove all whitespace from the pattern string
 		pattern = pattern.replace(/[ \t\n]/g, "");
 
 		// add two terminators for lookahead
@@ -702,17 +724,30 @@
 		for (pass = 0; pass < 2; pass += 1) {
 			// on the second pass allocate the grid
 			if (pass === 1) {
-				grid = Array.matrix(Uint8, maxY, maxX, 0, allocator, "");
-				width = maxX;
-				x = 0;
-				y = 0;
+				// check the max size was not exceeded
+				if (maxX > maxWidth || maxY > maxHeight) {
+					message = "pattern too big: pattern " + maxX + " x " + maxY + " limit " + maxWidth + " x " + maxHeight;
+				} else {
+					grid = [];
+					for (y = 0; y < maxY; y += 1) {
+						grid[y] = new Uint8Array(maxX);
+					}
+					width = maxX;
+					x = 0;
+					y = 0;
 
-				// clear the state counts
-				URLEEngine.stateCounts.fill(0);
+					// clear the state counts
+					URLEEngine.stateCounts.fill(0);
+				}
+			}
+
+			// check there is no error before decoding
+			i = 0;
+			if (message !== "") {
+				i = patternBytesLength;
 			}
 
 			// decode the pattern
-			i = 0;
 			while (i < patternBytesLength) {
 				// get the next byte from the pattern
 				nextByte = patternBytes[i];
@@ -972,6 +1007,8 @@
 			// decode failed so return error message and clear grid
 			message = "URLE decode failed: " + message;
 			URLEEngine.grid = null;
+			URLEEngine.width = maxX;
+			URLEEngine.height = maxY;
 		} else {
 			// decode succeeded for return no error and save grid
 			message = "";
@@ -980,13 +1017,8 @@
 			URLEEngine.height = maxY;
 			URLEEngine.endPatternIndex = endIndex;
 
-			// compute state 0 count and population
-			count = 0;
-			for (i = 1; i < 256; i += 1) {
-				count += URLEEngine.stateCounts[i];
-			}
-			URLEEngine.stateCounts[0] = (maxX * maxY) - count;
-			URLEEngine.population = count;
+			// compute pattern metrics
+			URLEEngine.computeMetrics();
 		}
 		
 		// return error message (or "" if no error)
