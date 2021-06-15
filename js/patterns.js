@@ -3127,11 +3127,7 @@
 		if (aliasName !== null) {
 			// check for blank Conway rule
 			if (aliasName === "") {
-				if (pattern.isHistory || pattern.isSuper) {
-					aliasName = "Life";
-				} else {
-					aliasName = "Conway's Life";
-				}
+				aliasName = "Life";
 			}
 
 			// check for [R]History
@@ -4986,7 +4982,7 @@
 		if (alias !== null) {
 			// check for blank rule
 			if (rule === "") {
-				pattern.ruleName = "Conway's Life";
+				pattern.ruleName = "Life";
 			}
 			rule = alias;
 		}

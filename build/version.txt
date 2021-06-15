@@ -1,3 +1,7 @@
+Build 636
+- URLE move to 6bit format for 2-state patterns
+- convert "Conway's Life" alias to "Life" to prevent compatibility issues with other tools
+
 Build 635
 - performance improvements to experimental URLE decoder
 

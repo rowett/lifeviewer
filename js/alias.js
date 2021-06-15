@@ -833,6 +833,11 @@
 			i += 1;
 		}
 
+		// check for "Conway's Life"
+		if (result === "Conway's Life") {
+			result = "Life";
+		}
+
 		// return the alias
 		return result;
 	};

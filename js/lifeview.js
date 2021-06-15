@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 635,
+		/** @const {number} */ versionBuild : 636,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1766,6 +1766,9 @@
 
 		// go to generation button
 		this.goToGenButton = null;
+		
+		// test URLE Button
+		this.testURLEButton = null;
 
 		// copy rule button
 		this.copyRuleButton = null;
@@ -5740,6 +5743,7 @@
 		this.saveImageButton.deleted = shown;
 		this.saveGraphButton.deleted = shown;
 		this.goToGenButton.deleted = shown;
+		this.testURLEButton.deleted = shown;
 		// info category
 		shown = hide || !this.showInfoSettings;
 		this.fpsButton.deleted = shown;
@@ -12496,6 +12500,11 @@
 		me.screenShotScheduled = 2;
 	};
 
+	// test URLE button pressed
+	View.prototype.testURLEPressed = function(me) {
+		me.testNewRLE(me);
+	};
+
 	// go to generation button pressed
 	View.prototype.goToGenPressed = function(me) {
 		// prompt for generation
@@ -13991,6 +14000,10 @@
 		// save graph button
 		this.saveGraphButton = this.viewMenu.addButtonItem(this.saveGraphPressed, Menu.middle, 100, 75, 180, 40, "Save Graph");
 		this.saveGraphButton.toolTip = "save population graph image in new window [Shift O]";
+
+		// URLE test button
+		this.testURLEButton = this.viewMenu.addButtonItem(this.testURLEPressed, Menu.middle, -100, 125, 180, 40, "Test URLE");
+		this.testURLEButton.toolTip = "test URLE encoding [Ctrl E]";
 
 		// go to generation button
 		this.goToGenButton = this.viewMenu.addButtonItem(this.goToGenPressed, Menu.middle, 100, 125, 180, 40, "Go To Gen");
