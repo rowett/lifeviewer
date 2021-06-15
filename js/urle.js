@@ -158,21 +158,21 @@
 		return gridRow[x];
 	};
 
-	// get the state value of five 2-state cells on the given row as a 5 bit binary value
+	// get the state value of six 2-state cells on the given row as a 6 bit binary value
 	/** @return {number} */
-	URLEEngine.getFiveCells = function(/** @type {number} */ x, /** @const @type {Uint8Array} */ gridRow, /** @const @type {number} */ state) {
+	URLEEngine.getSixCells = function(/** @type {number} */ x, /** @const @type {Uint8Array} */ gridRow, /** @const @type {number} */ state) {
 		var /** @type {number} */ col = 0,
 			/** @type {number} */ output = 0,
-			/** @type {number} */ maxX = x + 4,
+			/** @type {number} */ maxX = x + 5,
 			/** @type {number} */ width = URLEEngine.width, 
-			/** @type {number} */ bit = 16;
+			/** @type {number} */ bit = 32;
 
 		// clip to pattern extent
 		if (maxX >= width) {
 			maxX = width - 1;
 		}
 
-		// get up to 5 cells depending on clipping
+		// get up to 6 cells depending on clipping
 		while (x <= maxX) {
 			col = gridRow[x];
 			if (col === state) {
@@ -201,8 +201,8 @@
 			last = URLEEngine.getCell(x, gridRow);
 			x += 1;
 		} else {
-			last = URLEEngine.getFiveCells(x, gridRow, state);
-			x += 5;
+			last = URLEEngine.getSixCells(x, gridRow, state);
+			x += 6;
 		}
 		count += 1;
 
@@ -213,8 +213,8 @@
 				next = URLEEngine.getCell(x, gridRow);
 				x += 1;
 			} else {
-				next = URLEEngine.getFiveCells(x, gridRow, state);
-				x += 5;
+				next = URLEEngine.getSixCells(x, gridRow, state);
+				x += 6;
 			}
 
 			// check if they are the same as the previous group of cells
@@ -235,25 +235,13 @@
 		if (last === 0) {
 			// run is blank
 			if (result !== "") {
-				if (state < 0) {
-					// add end of row marker
-					result += URLEConstants.BlankRow;
-				} else {
-					// change last encoded symbol to indicate end of row
-					result = result.substr(0, result.length - 1) + String.fromCharCode(result.charCodeAt(result.length - 1) + 32);
-				}
+				// add end of row marker
+				result += URLEConstants.BlankRow;
 			}
 		} else {
-			// run is not blank
-			if (state < 0) {
-				// encode run and add end of row marker
-				result += URLEEngine.encodeRun(count, last, state);
-				result += URLEConstants.BlankRow;
-			} else {
-				// adjust symbol to indicate end of row
-				last += 32;
-				result += URLEEngine.encodeRun(count, last, state);
-			}
+			// run is not blank so encode run and add end of row marker
+			result += URLEEngine.encodeRun(count, last, state);
+			result += URLEConstants.BlankRow;
 		}
 
 		return result;
@@ -520,7 +508,7 @@
 		return result;
 	};
 
-	// populate right-most bit array used for clipping 5 cell groups to the pattern width
+	// populate right-most bit array used for clipping 6 cell groups to the pattern width
 	URLEEngine.initRightMostBits = function() {
 		var /** @type {number} */ i = 0,
 			/** @type {number} */ value = 0,
@@ -528,12 +516,12 @@
 
 		// create the array if not initialized
 		if (rightMostBit === null) {
-			URLEEngine.rightMostBit = new Uint8Array(32);
+			URLEEngine.rightMostBit = new Uint8Array(64);
 			rightMostBit = URLEEngine.rightMostBit;
 
 			// populate the array
-			for (i = 0; i < 32; i += 1) {
-				value = 5;
+			for (i = 0; i < 64; i += 1) {
+				value = 6;
 				if (i & 1) {
 					value = 0;
 				} else {
@@ -548,6 +536,10 @@
 							} else {
 								if (i & 16) {
 									value = 4;
+								} else {
+									if (i & 32) {
+										value = 5;
+									}
 								}
 							}
 						}
@@ -707,7 +699,7 @@
 			/** @const @type {number} */ nineByte = "9".charCodeAt(0),
 			/** @const @type {number} */ endIndex = pattern.indexOf(URLEConstants.EndPattern);
 
-		// initialize and populate the right most bit array used to clip 5 cell groups to the grid width
+		// initialize and populate the right most bit array used to clip 6 cell groups to the grid width
 		URLEEngine.initRightMostBits();
 
 		// remove all whitespace from the pattern string
@@ -873,7 +865,7 @@
 						break;
 	
 					default:
-						// check for digits
+						// check for digits 1 to 9 (digit 0 is handled above)
 						if (nextByte >= oneByte && nextByte <= nineByte) {
 							count *= 10;
 							count += nextByte - zeroByte;
@@ -895,7 +887,7 @@
 											maxX = x;
 										}
 									} else {
-										x += ((count * (value &~ 1)) + (value & 1)) * 5;
+										x += ((count * (value &~ 1)) + (value & 1)) * 6;
 										if (x > maxX) {
 											maxX = x;
 										}
@@ -932,55 +924,28 @@
 											maxX = x;
 										}
 									} else {
-										if (value >= 32) {
-											// cells followed by end of row
-											if (pass > 0) {
-												gridRow1 = grid[y];
-												for (j = 0; j < count - 1; j += 1) {
-													for (k = 0; k < 5; k += 1) {
-														if (value & (1 << (4 - k))) {
-															gridRow1[x + j * 5 + k] = currentState;
-															URLEEngine.stateCounts[currentState] += 1;
-														}
-													}
-												}
-												for (k = 0; k < 5 - URLEEngine.rightMostBit[value - 32]; k += 1) {
-													if (value & (1 << (4 - k))) {
-														gridRow1[x + j * 5 + k] = currentState;
+										// decode up to six cells
+										if (pass > 0) {
+											gridRow1 = grid[y];
+											for (j = 0; j < count; j += 1) {
+												for (k = 0; k < 6; k += 1) {
+													if (value & (1 << (5 - k))) {
+														gridRow1[x + j * 6 + k] = currentState;
 														URLEEngine.stateCounts[currentState] += 1;
 													}
 												}
 											}
-
-											x += 5 * count - URLEEngine.rightMostBit[value - 32];
-											if (x > maxX) {
-												maxX = x;
-											}
-											y += 1;
-											if (y > maxY) {
-												maxY = y;
-											}
-
-											// end of row so reset to beginning of row
-											x = 0;
+										}
+										
+										// check for end of row
+										if (patternBytes[i] === blankRowByte) {
+											x += count * 6 - URLEEngine.rightMostBit[value];
 										} else {
-											// cells with no end of row
-											if (pass > 0) {
-												gridRow1 = grid[y];
-												for (j = 0; j < count; j += 1) {
-													for (k = 0; k < 5; k += 1) {
-														if (value & (1 << (4 - k))) {
-															gridRow1[x + j * 5 + k] = currentState;
-															URLEEngine.stateCounts[currentState] += 1;
-														}
-													}
-												}
-											}
+											x += count * 6;
+										}
 
-											x += count * 5;
-											if (x > maxX) {
-												maxX = x;
-											}
+										if (x > maxX) {
+											maxX = x;
 										}
 									}
 								}
