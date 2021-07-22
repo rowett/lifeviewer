@@ -3622,9 +3622,9 @@
 		}
 	};
 
-	// convert grid to URLE5 format
+	// convert grid to URLE format
 	/** @return {string} */
-	Life.prototype.asURLE5 = function(/** @const */ view, /** @const @type {Life} */ me, /** @const @type {boolean} */ addComments, /** @const @type {boolean} */ useAlias) {
+	Life.prototype.asURLE = function(/** @const */ view, /** @const @type {Life} */ me, /** @const @type {boolean} */ addComments, /** @const @type {boolean} */ useAlias) {
 		var /** @type {string} */ rle = "",
 			/** @const */ zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
 			/** @type {number} */ leftX = zoomBox.leftX,

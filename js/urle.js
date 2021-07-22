@@ -33,7 +33,12 @@
 		/** @const @type {string} */ EndPattern : ">",
 
 		//  new state encoding symbol
-		/** @const @type {string} */ NewState : "0"
+		/** @const @type {string} */ NewState : "0",
+
+		// digits
+		/** @const @type {number} */ ZeroByte : "0".charCodeAt(0),
+		/** @const @type {number} */ OneByte : "1".charCodeAt(0),
+		/** @const @type {number} */ NineByte : "9".charCodeAt(0)
 	};
 
 	// encoder/decoder singleton
@@ -390,8 +395,13 @@
 			// check the row type
 			switch (encodedRow1.type) {
 				case URLEConstants.RowTypeStandard:
-					// standard row just output
-					data += encodedRow1.data;
+					// don't add end of row marker on final row
+					if (y === lastDataRow) {
+						data += encodedRow1.data.substr(0, encodedRow1.data.length - 1);
+					} else {
+						// standard row just output
+						data += encodedRow1.data;
+					}
 					y += rowCount;
 					lastRowPairRow = -1;
 					break;
@@ -694,9 +704,6 @@
 			/** @const @type {number} */ copySpecifiedRowByte = URLEConstants.CopySpecifiedRow.charCodeAt(0),
 			/** @const @type {number} */ newStateByte = URLEConstants.NewState.charCodeAt(0),
 			/** @const @type {number} */ endPatternByte = URLEConstants.EndPattern.charCodeAt(0),
-			/** @const @type {number} */ zeroByte = "0".charCodeAt(0),
-			/** @const @type {number} */ oneByte = "1".charCodeAt(0),
-			/** @const @type {number} */ nineByte = "9".charCodeAt(0),
 			/** @const @type {number} */ endIndex = pattern.indexOf(URLEConstants.EndPattern);
 
 		// initialize and populate the right most bit array used to clip 6 cell groups to the grid width
@@ -769,15 +776,20 @@
 										i = patternBytesLength;
 									} else {
 										if (value < 32) {
-											value <<= 5;
-											nextByte = patternBytes[i];
-											i += 1;
-											value2 = nextByte - URLEConstants.Start64;
-											if (value2 < 32 || value2 >= 64) {
-												message = "invalid state definition";
-												i = patternBytesLength;
+											if (value <= 7) {
+												value <<= 5;
+												nextByte = patternBytes[i];
+												i += 1;
+												value2 = nextByte - URLEConstants.Start64;
+												if (value2 < 32 || value2 >= 64) {
+													message = "invalid state definition";
+													i = patternBytesLength;
+												} else {
+													value += (value2 - 32);
+												}
 											} else {
-												value += (value2 - 32);
+												message = "invalid state";
+												i = patternBytesLength;
 											}
 										} else {
 											value -= 32;
@@ -835,7 +847,13 @@
 					case copySpecifiedRowByte:
 						// copy specified row
 						if (pass > 0) {
-							URLEEngine.copySpecifiedRow(grid, y, count, width, currentState);
+							// check row is in range
+							if (count >= y) {
+								message = "illegal row";
+								i = patternBytesLength;
+							} else {
+								URLEEngine.copySpecifiedRow(grid, y, count, width, currentState);
+							}
 						}
 
 						y += 1;
@@ -847,7 +865,11 @@
 						break;
 	
 					case endPatternByte:
-						// end of pattern
+						// end of pattern so close final row
+						y += 1;
+						if (y > maxY) {
+							maxY = y;
+						}
 						i = patternBytesLength;
 						break;
 	
@@ -866,9 +888,9 @@
 	
 					default:
 						// check for digits 1 to 9 (digit 0 is handled above)
-						if (nextByte >= oneByte && nextByte <= nineByte) {
+						if (nextByte >= URLEConstants.OneByte && nextByte <= URLEConstants.NineByte) {
 							count *= 10;
-							count += nextByte - zeroByte;
+							count += nextByte - URLEConstants.ZeroByte;
 						} else {
 							// check for cells
 							value = nextByte;
@@ -897,15 +919,20 @@
 									value -= URLEConstants.Start64;
 									if (currentState === -1) {
 										if (value < 32) {
-											value <<= 5;
-											nextByte = patternBytes[i];
-											i += 1;
-											value2 = nextByte - URLEConstants.Start64;
-											if (value2 < 32 || value2 >= 64) {
+											if (value <= 7) {
+												value <<= 5;
+												nextByte = patternBytes[i];
+												i += 1;
+												value2 = nextByte - URLEConstants.Start64;
+												if (value2 < 32 || value2 >= 64) {
+													message = "invalid cell definition";
+													i = patternBytesLength;
+												} else {
+													value += value2 - 32;
+												}
+											} else {
 												message = "invalid cell definition";
 												i = patternBytesLength;
-											} else {
-												value += value2 - 32;
 											}
 										} else {
 											value -= 32;

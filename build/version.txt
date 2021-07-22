@@ -1,3 +1,6 @@
+Build 637
+- [[ LABEL X Y ZOOM MINZOOM MAXZOOM ]] was ignoring ZOOM parameter
+
 Build 636
 - URLE move to 6bit format for 2-state patterns
 - convert "Conway's Life" alias to "Life" to prevent compatibility issues with other tools

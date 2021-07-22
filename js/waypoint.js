@@ -563,7 +563,6 @@
 			if (this.minZoom === -2000) {
 				this.minZoom = this.zoom;
 			}
-			this.zoom =  this.minZoom * Math.pow(this.maxZoom / this.minZoom, 0.5);
 		}
 	}
 
