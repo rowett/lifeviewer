@@ -1,3 +1,6 @@
+Build 638
+- fixed visual issue after deleting cells for RuleTable rules
+
 Build 637
 - [[ LABEL X Y ZOOM MINZOOM MAXZOOM ]] was ignoring ZOOM parameter
 

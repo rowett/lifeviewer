@@ -4387,6 +4387,7 @@
 		var grid = this.grid16,
 			tileGrid = this.tileGrid,
 			colourGrid = this.colourGrid,
+			nextColourGrid = this.nextColourGrid,
 			colourTileGrid = this.colourTileGrid,
 			colourTileHistoryGrid = this.colourTileHistoryGrid,
 			staticTileGrid = this.staticTileGrid,
@@ -4399,11 +4400,11 @@
 
 			// bounded grid top left
 			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
-		    /** @type {number} */ leftX = Math.round((this.width - this.boundedGridWidth) / 2) + boxOffset,
-		    /** @type {number} */ bottomY = Math.round((this.height - this.boundedGridHeight) / 2) + boxOffset,
+			/** @type {number} */ leftX = Math.round((this.width - this.boundedGridWidth) / 2) + boxOffset,
+			/** @type {number} */ bottomY = Math.round((this.height - this.boundedGridHeight) / 2) + boxOffset,
 
-		    // bounded grid bottom right
-		    /** @type {number} */ rightX = leftX + this.boundedGridWidth - 1,
+			// bounded grid bottom right
+			/** @type {number} */ rightX = leftX + this.boundedGridWidth - 1,
 			/** @type {number} */ topY = bottomY + this.boundedGridHeight - 1,
 
 			// multi-state alive cell
@@ -4435,6 +4436,7 @@
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
+				nextColourGrid = this.colourGrid;
 			}
 		}
 
@@ -4485,6 +4487,7 @@
 					current = colourGrid[y][x];
 					if (deadZero && state === 0) {
 						colourGrid[y][x] = 0;
+						nextColourGrid[y][x] = 0;
 					} else {
 						colourGrid[y][x] = this.historyStates + state;
 					}
