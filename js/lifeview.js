@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 638,
+		/** @const {number} */ versionBuild : 639,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -345,12 +345,18 @@
 		/** @const {number} */ maxDefaultZoom : 32,
 
 		// minimum and maximum zoom
-		/** @const {number} */ minZoom : 0.0625,
+		/** @const {number} */ minZoom : 1 / 16,
 		/** @const {number} */ maxZoom : 64,
 		
 		// minimum and maximum negative zoom
 		/** @const {number} */ minNegZoom : -16,
 		/** @const {number} */ maxNegZoom : -1,
+
+		// minimum and maximum zoom for annotations (so they won't fade at min or max camera zoom)
+		/** @const {number} */ minAnnotationNegZoom : -2048,
+		/** @const {number} */ maxAnnotationNegZoom : -1,
+		/** @const {number} */ minAnnotationZoom : 1 / 2048,
+		/** @const {number} */ maxAnnotationZoom : 2048,
 
 		// minimum and maximum generation speed
 		/** @const {number} */ minGenSpeed : 1,
@@ -4594,6 +4600,65 @@
 		this.stepLabel.deleted = true;
 	};
 
+	// get cell distance from the center of the viewpoint
+	View.prototype.getDistFromCenter = function(x, y) {
+		// position relative to display width and height
+		var displayX = 0,
+		    displayY = 0,
+
+		    // engine camera x and y
+		    engineY = this.panY - this.engine.yOff,
+		    engineX = this.panX - this.engine.xOff - (this.engine.isHex ? this.engine.yOff / 2 : 0),
+
+		    // x and y zoom
+		    xZoom = this.engine.zoom,
+		    yZoom = this.engine.zoom * (this.engine.isTriangular ? ViewConstants.sqrt3 : 1),
+
+		    // cell position
+		    yPos = 0, xPos = 0,
+		    yFrac = 0, xFrac = 0,
+
+		    // rotation
+		    theta = 0, radius = 0;
+
+		// apply rotation to the display position
+		if (this.engine.camAngle !== 0) {
+			radius = Math.sqrt((displayX * displayX) + (displayY * displayY));
+			theta = Math.atan2(displayY, displayX) * (180 / Math.PI);
+			theta -= this.engine.camAngle;
+			displayX = radius * Math.cos(theta * (Math.PI / 180));
+			displayY = radius * Math.sin(theta * (Math.PI / 180));
+		}
+
+		// compute the x and y cell coordinate
+		yPos = displayY / yZoom - engineY + this.engine.originY;
+		xPos = (displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX;
+		if (this.engine.isTriangular) {
+			xPos -= (0.2 * (this.engine.zoom / 32));
+		}
+		xFrac = xPos - Math.floor(xPos);
+		yFrac = yPos - Math.floor(yPos);
+		xPos -= xFrac;
+		yPos -= yFrac;
+
+		// adjust for triangular grid
+		if (this.engine.isTriangular) {
+			if (((xPos + this.panX + yPos + this.panY) & 1) === 0) {
+				// triangle pointing down
+				if (xFrac + yFrac > 1) {
+					xPos += 1;
+				}
+			} else {
+				// triangle pointing up
+				if ((1 - xFrac) + yFrac < 1) {
+					xPos += 1;
+				}
+			}
+		}
+
+		return Math.sqrt((xPos - x) * (xPos - x) + (yPos - y) * (yPos - y));
+	};
+
 	// set the x/y position on the UI
 	View.prototype.setXYPosition = function() {
 		// position relative to display width and height
@@ -4604,28 +4669,28 @@
 		    engineY = this.panY - this.engine.yOff,
 		    engineX = this.panX - this.engine.xOff - (this.engine.isHex ? this.engine.yOff / 2 : 0),
 
-			// x and y zoom
-			xZoom = this.engine.zoom,
-			yZoom = this.engine.zoom * (this.engine.isTriangular ? ViewConstants.sqrt3 : 1),
+		    // x and y zoom
+		    xZoom = this.engine.zoom,
+		    yZoom = this.engine.zoom * (this.engine.isTriangular ? ViewConstants.sqrt3 : 1),
 
 		    // cell position
 		    yPos = 0, xPos = 0,
-			yFrac = 0, xFrac = 0,
+		    yFrac = 0, xFrac = 0,
 		    
 		    // display strings
 		    xDisplay = "",
 		    yDisplay = "",
-			stateDisplay = "",
+		    stateDisplay = "",
 			
-			// display limit
-			displayLimit = this.engine.maxGridSize > 9999 ? 99999 : 9999,
+		    // display limit
+		    displayLimit = this.engine.maxGridSize > 9999 ? 99999 : 9999,
 
-			// rotation
-			theta = 0, radius = 0,
+		    // rotation
+		    theta = 0, radius = 0,
 
-			// screen offset
-			screenX = -((this.engine.width / 2 - this.engine.xOff - this.engine.originX) | 0),
-			screenY = -((this.engine.height / 2 - this.engine.yOff - this.engine.originY) | 0);
+		    // screen offset
+		    screenX = -((this.engine.width / 2 - this.engine.xOff - this.engine.originX) | 0),
+		    screenY = -((this.engine.height / 2 - this.engine.yOff - this.engine.originY) | 0);
 
 		// check if there are mouse coordinates
 		if (this.viewMenu.mouseX === -1) {

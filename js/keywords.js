@@ -180,11 +180,14 @@
 		// polygon angle and fixed 
 		/** @const {string} */ polyAngleWord : "POLYANGLE",
 
-		// polygon target 
-		/** @const {string} */ polyTargetWord : "POLYTARGET",
+		// polygon zoom range
+		/** @const {string} */ polyZoomRangeWord : "POLYZOOMRANGE",
 
 		// polygon track
 		/** @const {string} */ polyTrackWord : "POLYTRACK",
+
+		// polygon view radius
+		/** @const {string} */ polyViewWord : "POLYVIEWDIST",
 
 		// arrow
 		/** @const {string} */ arrowWord : "ARROW",
@@ -201,11 +204,14 @@
 		// arrow angle and fixed 
 		/** @const {string} */ arrowAngleWord : "ARROWANGLE",
 
-		// arrow target 
-		/** @const {string} */ arrowTargetWord : "ARROWTARGET",
+		// arrow zoom range
+		/** @const {string} */ arrowZoomRangeWord : "ARROWZOOMRANGE",
 
 		// arrow track
 		/** @const {string} */ arrowTrackWord : "ARROWTRACK",
+
+		// arrow view radius
+		/** @const {string} */ arrowViewWord : "ARROWVIEWDIST",
 
 		// label
 		/** @const {string} */ labelWord : "LABEL",
@@ -222,11 +228,14 @@
 		// label angle and fixed 
 		/** @const {string} */ labelAngleWord : "LABELANGLE",
 
-		// label target 
-		/** @const {string} */ labelTargetWord : "LABELTARGET",
+		// label zoom range
+		/** @const {string} */ labelZoomRangeWord : "LABELZOOMRANGE",
 
 		// label track
 		/** @const {string} */ labelTrackWord : "LABELTRACK",
+
+		// label view radius
+		/** @const {string} */ labelViewWord : "LABELVIEWDIST",
 
 		// label angle fixed
 		/** @const {string} */ fixedWord: "FIXED",

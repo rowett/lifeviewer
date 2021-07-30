@@ -1,3 +1,21 @@
+Build 639
+- Annotation zoom range visibility is now defined in separate script commands:
+	- [[ LABELZOOMRANGE MINZOOM MAXZOOM|OFF ]]
+	- [[ ARROWZOOMRANGE MINZOOM MAXZOOM|OFF ]]
+	- [[ POLYZOOMRANGE MINZOOM MAXZOOM|OFF ]]
+	- the "OFF" keyword defaults to a visible zoom range of the Annotation ZOOM/4 to Annotation ZOOM*4
+	- these commands specfiy the visible zoom range for subsequent Annotation definitions
+- new Annotation script commands to specify Annotation visibility based on distance in cells from viewpoint center:
+	- [[ LABELVIEWDIST D|OFF]]
+	- [[ ARROWVIEWDIST D|OFF]]
+	- [[ POLYVIEWDIST D|OFF]]
+	- the "OFF" keyword means no distance limit
+	- these commands specify the visible distance from the viewpoint center for subsequent Annotation definitions
+- Annotation visibility target script commands have been deprecated:
+	- [[ LABELTARGET X Y D ]]
+	- [[ ARROWTARGET X Y D ]]
+	- [[ POLYTARGET X Y D ]]
+
 Build 638
 - fixed visual issue after deleting cells for RuleTable rules
 

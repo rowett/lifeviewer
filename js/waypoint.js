@@ -354,7 +354,7 @@
 	/**
 	 * @constructor
 	 */
-	function Polygon(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
+	function Polygon(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tDistance, dx, dy) {
 		// coordinates
 		this.coords = coords;
 
@@ -397,9 +397,7 @@
 		// position locked when TRACK used
 		this.positionLocked = positionLocked;
 
-		// target location and distance
-		this.tx = tx;
-		this.ty = ty;
+		// target distance
 		this.tDistance = tDistance;
 
 		// label movement vector
@@ -407,13 +405,9 @@
 		this.dy = dy;
 
 		// process zoom range
-		if (this.maxZoom === -2000 && this.minZoom === -2000) {
+		if (this.maxZoom === -1000 && this.minZoom === -1000) {
 			this.minZoom = this.zoom / 4;
 			this.maxZoom = this.zoom * 4;
-		} else {
-			if (this.minZoom === -2000) {
-				this.minZoom = this.zoom;
-			}
 		}
 	}
 
@@ -421,7 +415,7 @@
 	/**
 	 * @constructor
 	 */
-	function Arrow(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
+	function Arrow(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tDistance, dx, dy) {
 		// x1 position
 		this.x1 = x1;
 
@@ -473,9 +467,7 @@
 		// position locked when TRACK used
 		this.positionLocked = positionLocked;
 
-		// target location and distance
-		this.tx = tx;
-		this.ty = ty;
+		// target distance
 		this.tDistance = tDistance;
 
 		// label movement vector
@@ -483,13 +475,9 @@
 		this.dy = dy;
 
 		// process zoom range
-		if (this.maxZoom === -2000 && this.minZoom === -2000) {
+		if (this.maxZoom === -1000 && this.minZoom === -1000) {
 			this.minZoom = this.zoom / 4;
 			this.maxZoom = this.zoom * 4;
-		} else {
-			if (this.minZoom === -2000) {
-				this.minZoom = this.zoom;
-			}
 		}
 	}
 
@@ -497,7 +485,7 @@
 	/**
 	 * @constructor
 	 */
-	function Label(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tDistance, dx, dy) {
+	function Label(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tDistance, dx, dy) {
 		// message
 		this.message = "";
 
@@ -546,9 +534,7 @@
 		// position locked when TRACK used
 		this.positionLocked = positionLocked;
 
-		// target location and distance
-		this.tx = tx;
-		this.ty = ty;
+		// target distance
 		this.tDistance = tDistance;
 
 		// label movement vector
@@ -556,13 +542,9 @@
 		this.dy = dy;
 
 		// process zoom range
-		if (this.maxZoom === -2000 && this.minZoom === -2000) {
+		if (this.maxZoom === -1000 && this.minZoom === -1000) {
 			this.minZoom = this.zoom / 4;
 			this.maxZoom = this.zoom * 4;
-		} else {
-			if (this.minZoom === -2000) {
-				this.minZoom = this.zoom;
-			}
 		}
 	}
 
@@ -609,8 +591,8 @@
 	}
 
 	// create a polygon
-	WaypointManager.prototype.createPolygon = function(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
-		return new Polygon(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
+	WaypointManager.prototype.createPolygon = function(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy) {
+		return new Polygon(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy);
 	};
 
 	// clear all polygons
@@ -629,8 +611,8 @@
 	};
 
 	// create an arrow
-	WaypointManager.prototype.createArrow = function(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
-		return new Arrow(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
+	WaypointManager.prototype.createArrow = function(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy) {
+		return new Arrow(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy);
 	};
 
 	// clear all arrows
@@ -649,8 +631,8 @@
 	};
 
 	// create a label
-	WaypointManager.prototype.createLabel = function(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy) {
-		return new Label(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tx, ty, tdistance, dx, dy);
+	WaypointManager.prototype.createLabel = function(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy) {
+		return new Label(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy);
 	};
 
 	// clear all labels
@@ -1016,7 +998,7 @@
 					inrange = true;
 					distAlpha = 1;
 					if (current.tDistance !== -1) {
-						rangeFromTarget = Math.sqrt((-(xOff + hexAdjust) - current.tx) * (-(xOff + hexAdjust) - current.tx) + (-yOff - current.ty) * (-yOff - current.ty));
+						rangeFromTarget = view.getDistFromCenter(current.x, current.y);
 						if (rangeFromTarget > current.tDistance) {
 							inrange = false;
 						} else {
@@ -1256,7 +1238,7 @@
 					inrange = true;
 					distAlpha = 1;
 					if (current.tDistance !== -1) {
-						rangeFromTarget = Math.sqrt((-(xOff + hexAdjust) - current.tx) * (-(xOff + hexAdjust) - current.tx) + (-yOff - current.ty) * (-yOff - current.ty));
+						rangeFromTarget = view.getDistFromCenter(current.x, current.y);
 						if (rangeFromTarget > current.tDistance) {
 							inrange = false;
 						} else {
@@ -1489,7 +1471,7 @@
 					inrange = true;
 					distAlpha = 1;
 					if (current.tDistance !== -1) {
-						rangeFromTarget = Math.sqrt((-(xOff + hexAdjust) - current.tx) * (-(xOff + hexAdjust) - current.tx) + (-yOff - current.ty) * (-yOff - current.ty));
+						rangeFromTarget = view.getDistFromCenter(current.x, current.y);
 						if (rangeFromTarget > current.tDistance) {
 							inrange = false;
 						} else {

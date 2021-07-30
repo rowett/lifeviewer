@@ -56,22 +56,25 @@
 			case Keywords.polySizeWord:
 			case Keywords.polyTWord:
 			case Keywords.polyAngleWord:
-			case Keywords.polyTargetWord:
+			case Keywords.polyZoomRangetWord:
 			case Keywords.polyTrackWord:
+			case Keywords.polyViewWord:
 			case Keywords.arrowWord:
 			case Keywords.arrowAlphaWord:
 			case Keywords.arrowSizeWord:
 			case Keywords.arrowTWord:
 			case Keywords.arrowAngleWord:
-			case Keywords.arrowTargetWord:
+			case Keywords.arrowZoomRangeWord:
 			case Keywords.arrowTrackWord:
+			case Keywords.arrowViewWord:
 			case Keywords.labelWord:
 			case Keywords.labelAlphaWord:
 			case Keywords.labelSizeWord:
 			case Keywords.labelTWord:
 			case Keywords.labelAngleWord:
-			case Keywords.labelTargetWord:
+			case Keywords.labelZoomRangeWord:
 			case Keywords.labelTrackWord:
+			case Keywords.labelViewWord:
 			case Keywords.noHistoryWord:
 			case Keywords.noReportWord:
 			case Keywords.noPerfWarningWord:
@@ -1049,11 +1052,14 @@
 			// current position locked
 			currentPolygonPositionFixed = false,
 
-			// current polygon target and distance
-			currentPolygonTX = 0,
-			currentPolygonTY = 0,
-			currentPolygonTDistance = -1,
+			// current polygon visibility distance
+			currentPolygonVDistance = -1,
 
+			// current polygon zoom range
+			currentPolygonMinZ = -1000,
+			currentPolygonMaxZ = -1000,
+
+			// current label
 			// current polygon movement vector
 			currentPolygonDX = 0,
 			currentPolygonDY = 0,
@@ -1084,14 +1090,16 @@
 			// current position locked
 			currentArrowPositionFixed = false,
 
-			// current arrow target and distance
-			currentArrowTX = 0,
-			currentArrowTY = 0,
-			currentArrowTDistance = -1,
+			// current arrow visibility distance
+			currentArrowVDistance = -1,
 
 			// current arrow movement vector
 			currentArrowDX = 0,
 			currentArrowDY = 0,
+
+			// current arrow zoom range
+			currentArrowMinZ = -1000,
+			currentArrowMaxZ = -1000,
 
 			// current label
 			currentLabel = null,
@@ -1117,14 +1125,16 @@
 			// current position locked
 			currentLabelPositionFixed = false,
 
-			// current label target and distance
-			currentLabelTX = 0,
-			currentLabelTY = 0,
-			currentLabelTDistance = -1,
+			// current label visibility distance
+			currentLabelVDistance = -1,
 
 			// current label movement vector
 			currentLabelDX = 0,
 			currentLabelDY = 0,
+
+			// current label zoom range
+			currentLabelMinZ = -1000,
+			currentLabelMaxZ = -1000,
 
 			// whether reading label
 			readingLabel = false,
@@ -1150,7 +1160,7 @@
 		    trackBoxW = 0,
 
 			// holders
-			x = 0, y = 0, z = 0, minZ = 0, maxZ = 0,
+			x = 0, y = 0, z = 0,
 			x2 = 0, y2 = 0,
 			coords = [],
 
@@ -1388,9 +1398,9 @@
 
 							break;
 
-						// polygon target
-						case Keywords.polyTargetWord:
-							// get the x position
+						// polygon view distance
+						case Keywords.polyViewWord:
+							// get the distance
 							if (scriptReader.nextTokenIsNumeric()) {
 								isNumeric = true;
 
@@ -1398,39 +1408,9 @@
 								numberValue = scriptReader.getNextTokenAsNumber();
 
 								// check it is in range
-								if (numberValue >= -view.engine.maxGridSize / 2 && numberValue <= view.engine.maxGridSize / 2) {
-									isNumeric = false;
-									x = numberValue;
-
-									// get the y position
-									if (scriptReader.nextTokenIsNumeric()) {
-										isNumeric = true;
-
-										// get the value
-										numberValue = scriptReader.getNextTokenAsNumber();
-
-										// check it is in range
-										if (numberValue >= -view.engine.maxGridSize / 2 && numberValue <= view.engine.maxGridSize / 2) {
-											isNumeric = false;
-											y = numberValue;
-
-											// get the distance
-											if (scriptReader.nextTokenIsNumeric()) {
-												isNumeric = true;
-
-												// get the value
-												numberValue = scriptReader.getNextTokenAsNumber();
-
-												// check it is in range
-												if (numberValue >= 0 && numberValue <= view.engine.maxGridSize / 2) {
-													currentPolygonTX = x;
-													currentPolygonTY = y;
-													currentPolygonTDistance = numberValue;
-													itemValid = true;
-												}
-											}
-										}
-									}
+								if (numberValue >= 0 && numberValue <= view.engine.maxGridSize / 2) {
+									currentPolygonVDistance = numberValue;
+									itemValid = true;
 								}
 							} else {
 								// check for OFF keyword
@@ -1438,9 +1418,7 @@
 								if (peekToken === Keywords.offWord) {
 									// consume token
 									peekToken = scriptReader.getNextToken();
-									currentPolygonTX = 0;
-									currentPolygonTY = 0;
-									currentPolygonTDistance = -1;
+									currentPolygonVDistance = -1;
 									itemValid = true;
 								}
 							}
@@ -1548,8 +1526,6 @@
 							coords = [];
 							itemValid = true;
 							z = -1000;
-							minZ = -2000;
-							maxZ = -2000;
 
 							// get the coordinates
 							while (itemValid && scriptReader.nextTokenIsNumeric()) {
@@ -1583,47 +1559,14 @@
 								}
 							}
 
-							// check that zoom was specified
-							if (z === -1000) {
-								// assume the last coordinate pair was zoom range
-								if (coords.length > 4) {
-									// read min zoom
-									x = coords[coords.length - 2];
-									if (x >= ViewConstants.minZoom && x <= ViewConstants.maxZoom) {
-										z = x;
-									} else if (x >= ViewConstants.minNegZoom && x <= ViewConstants.maxNegZoom) {
-										z = -(1 / x);
-									} else {
-										scriptErrors[scriptErrors.length] = [nextToken + " " + x, "zoom out of range"];
-										z = 0;
-										itemValid = false;
-									}
-									if (itemValid) {
-										// read max zoom
-										x = coords[coords.length - 1];
-										if (x >= ViewConstants.minZoom && x <= ViewConstants.maxZoom) {
-											maxZ = x;
-										} else if (x >= ViewConstants.minNegZoom && x <= ViewConstants.maxNegZoom) {
-											maxZ = -(1 / x);
-										} else {
-											scriptErrors[scriptErrors.length] = [nextToken + " " + x, "zoom out of range"];
-											maxZ = 0;
-											itemValid = false;
-										}
-									}
-									if (itemValid) {
-										// shorten the coords list
-										coords = coords.slice(0, coords.length - 2);
-									}
-								} else {
-									scriptErrors[scriptErrors.length] = [nextToken, "missing zoom value"];
-									itemValid = false;
-								}
-							}
-							
 							// check at least two coordinate pairs were specified
 							if (itemValid && coords.length < 4) {
 								scriptErrors[scriptErrors.length] = [nextToken, "requires at least 2 coordinate pairs"];
+								itemValid = false;
+							}
+							
+							// check zoom exists
+							if (itemValid && z === -1000) {
 								itemValid = false;
 							}
 
@@ -1638,13 +1581,10 @@
 									peekToken = scriptReader.peekAtNextToken();
 								}
 								// save the polygon
-								currentPolygon = view.waypointManager.createPolygon(coords, (nextToken === Keywords.polyFillWord), z, minZ, maxZ, view.customPolygonColour, currentPolygonAlpha,
+								currentPolygon = view.waypointManager.createPolygon(coords, (nextToken === Keywords.polyFillWord), z, currentPolygonMinZ, currentPolygonMaxZ, view.customPolygonColour, currentPolygonAlpha,
 									currentPolygonSize, currentPolygonT1, currentPolygonT2, currentPolygonTFade, currentPolygonAngle, currentPolygonAngleFixed,
-									currentPolygonPositionFixed, currentPolygonTX, currentPolygonTY, currentPolygonTDistance, currentPolygonDX, currentPolygonDY);
+									currentPolygonPositionFixed, currentPolygonVDistance, currentPolygonDX, currentPolygonDY);
 								view.waypointManager.addPolygon(currentPolygon);
-							} else {
-								// errors have already been reported
-								itemValid = true;
 							}
 
 							break;
@@ -1723,9 +1663,9 @@
 
 							break;
 
-						// arrow target
-						case Keywords.arrowTargetWord:
-							// get the x position
+						// arrow view distance
+						case Keywords.arrowViewWord:
+							// get the distance
 							if (scriptReader.nextTokenIsNumeric()) {
 								isNumeric = true;
 
@@ -1733,39 +1673,9 @@
 								numberValue = scriptReader.getNextTokenAsNumber();
 
 								// check it is in range
-								if (numberValue >= -view.engine.maxGridSize / 2 && numberValue <= view.engine.maxGridSize / 2) {
-									isNumeric = false;
-									x = numberValue;
-
-									// get the y position
-									if (scriptReader.nextTokenIsNumeric()) {
-										isNumeric = true;
-
-										// get the value
-										numberValue = scriptReader.getNextTokenAsNumber();
-
-										// check it is in range
-										if (numberValue >= -view.engine.maxGridSize / 2 && numberValue <= view.engine.maxGridSize / 2) {
-											isNumeric = false;
-											y = numberValue;
-
-											// get the distance
-											if (scriptReader.nextTokenIsNumeric()) {
-												isNumeric = true;
-
-												// get the value
-												numberValue = scriptReader.getNextTokenAsNumber();
-
-												// check it is in range
-												if (numberValue >= 0 && numberValue <= view.engine.maxGridSize / 2) {
-													currentArrowTX = x;
-													currentArrowTY = y;
-													currentArrowTDistance = numberValue;
-													itemValid = true;
-												}
-											}
-										}
-									}
+								if (numberValue >= 0 && numberValue <= view.engine.maxGridSize / 2) {
+									currentArrowVDistance = numberValue;
+									itemValid = true;
 								}
 							} else {
 								// check for OFF keyword
@@ -1773,9 +1683,7 @@
 								if (peekToken === Keywords.offWord) {
 									// consume token
 									peekToken = scriptReader.getNextToken();
-									currentArrowTX = 0;
-									currentArrowTY = 0;
-									currentArrowTDistance = -1;
+									currentArrowVDistance = -1;
 									itemValid = true;
 								}
 							}
@@ -1945,75 +1853,21 @@
 																	}
 																}
 																if (z !== -1000) {
-																	minZ = -2000;
-																	maxZ = -2000;
-
-																	// check for optional min or max zoom
-																	if (scriptReader.nextTokenIsNumeric()) {
-																		isNumeric = true;
-																		numberValue = scriptReader.getNextTokenAsNumber();
-
-																		// check it is in range
-																		maxZ = -1000;
-
-																		if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
-																			maxZ = numberValue;
-																		} else {
-																			// check for negative zoom format
-																			if (numberValue >= ViewConstants.minNegZoom && numberValue <= ViewConstants.maxNegZoom) {
-																				maxZ = -(1 / numberValue);
-																			}
-																		}
-																	}
-
-																	// check for optional max zoom if min zoom defined
-																	if (maxZ !== -1000) {
-																		if (scriptReader.nextTokenIsNumeric()) {
-																			isNumeric = true;
-																			numberValue = scriptReader.getNextTokenAsNumber();
-	
-																			// move max to min zoom since both are specified
-																			minZ = maxZ;
-
-																			// check it is in range
-																			maxZ = -1000;
-	
-																			if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
-																				maxZ = numberValue;
-																			} else {
-																				// check for negative zoom format
-																				if (numberValue >= ViewConstants.minNegZoom && numberValue <= ViewConstants.maxNegZoom) {
-																					maxZ = -(1 / numberValue);
-																				}
-																			}
-
-																			// check max >= min if specified
-																			if (maxZ !== -1000) {
-																				if (maxZ < minZ) {
-																					maxZ = -1000;
-																				}
-																			}
-																		}
-																	}
-
-																	// check for optional fixed keyword
-																	if (maxZ !== -1000) {
+																	peekToken = scriptReader.peekAtNextToken();
+																	currentArrowPositionFixed = false;
+																	if (peekToken === Keywords.fixedWord) {
+																		// consume the token
+																		peekToken = scriptReader.getNextToken();
+																		currentArrowPositionFixed = true;
 																		peekToken = scriptReader.peekAtNextToken();
-																		currentArrowPositionFixed = false;
-																		if (peekToken === Keywords.fixedWord) {
-																			// consume the token
-																			peekToken = scriptReader.getNextToken();
-																			currentArrowPositionFixed = true;
-																			peekToken = scriptReader.peekAtNextToken();
-																		}
-																		
-																		// save the arrow
-																		currentArrow = view.waypointManager.createArrow(x, y, x2, y2, z, minZ, maxZ, view.customArrowColour, currentArrowAlpha, currentArrowSize,
-																		currentArrowHeadMultiple, currentArrowT1, currentArrowT2, currentArrowTFade, currentArrowAngle, currentArrowAngleFixed,
-																		currentArrowPositionFixed, currentArrowTX, currentArrowTY, currentArrowTDistance, currentArrowDX, currentArrowDY);
-																		view.waypointManager.addArrow(currentArrow);
-																		itemValid = true;
 																	}
+																	
+																	// save the arrow
+																	currentArrow = view.waypointManager.createArrow(x, y, x2, y2, z, currentArrowMinZ, currentArrowMaxZ, view.customArrowColour, currentArrowAlpha, currentArrowSize,
+																	currentArrowHeadMultiple, currentArrowT1, currentArrowT2, currentArrowTFade, currentArrowAngle, currentArrowAngleFixed,
+																	currentArrowPositionFixed, currentArrowVDistance, currentArrowDX, currentArrowDY);
+																	view.waypointManager.addArrow(currentArrow);
+																	itemValid = true;
 																}
 															}
 														}
@@ -2096,9 +1950,9 @@
 
 							break;
 
-						// label target
-						case Keywords.labelTargetWord:
-							// get the x position
+						// label view distance
+						case Keywords.labelViewWord:
+							// get the distance
 							if (scriptReader.nextTokenIsNumeric()) {
 								isNumeric = true;
 
@@ -2106,39 +1960,9 @@
 								numberValue = scriptReader.getNextTokenAsNumber();
 
 								// check it is in range
-								if (numberValue >= -view.engine.maxGridSize / 2 && numberValue <= view.engine.maxGridSize / 2) {
-									isNumeric = false;
-									x = numberValue;
-
-									// get the y position
-									if (scriptReader.nextTokenIsNumeric()) {
-										isNumeric = true;
-
-										// get the value
-										numberValue = scriptReader.getNextTokenAsNumber();
-
-										// check it is in range
-										if (numberValue >= -view.engine.maxGridSize / 2 && numberValue <= view.engine.maxGridSize / 2) {
-											isNumeric = false;
-											y = numberValue;
-
-											// get the distance
-											if (scriptReader.nextTokenIsNumeric()) {
-												isNumeric = true;
-
-												// get the value
-												numberValue = scriptReader.getNextTokenAsNumber();
-
-												// check it is in range
-												if (numberValue >= 0 && numberValue <= view.engine.maxGridSize / 2) {
-													currentLabelTX = x;
-													currentLabelTY = y;
-													currentLabelTDistance = numberValue;
-													itemValid = true;
-												}
-											}
-										}
-									}
+								if (numberValue >= 0 && numberValue <= view.engine.maxGridSize / 2) {
+									currentLabelVDistance = numberValue;
+									itemValid = true;
 								}
 							} else {
 								// check for OFF keyword
@@ -2146,9 +1970,7 @@
 								if (peekToken === Keywords.offWord) {
 									// consume token
 									peekToken = scriptReader.getNextToken();
-									currentLabelTX = 0;
-									currentLabelTY = 0;
-									currentLabelTDistance = -1;
+									currentLabelVDistance = -1;
 									itemValid = true;
 								}
 							}
@@ -2250,6 +2072,192 @@
 							}
 							break;
 
+						// polygon zoom range
+						case Keywords.polyZoomRangeWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								x = -1000;
+								if (numberValue >= ViewConstants.minAnnotationZoom && numberValue <= ViewConstants.maxAnnotationZoom) {
+									x = numberValue;
+								} else {
+									// check for negative zoom format
+									if (numberValue >= ViewConstants.minAnnotationNegZoom && numberValue <= ViewConstants.maxAnnotationNegZoom) {
+										x = -(1 / numberValue);
+									}
+								}
+
+								if (x !== -1000) {
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+										numberValue = scriptReader.getNextTokenAsNumber();
+
+										y = -1000;
+										if (numberValue >= ViewConstants.minAnnotationZoom && numberValue <= ViewConstants.maxAnnotationZoom) {
+											y = numberValue;
+										} else {
+											// check for negative zoom format
+											if (numberValue >= ViewConstants.minAnnotationNegZoom && numberValue <= ViewConstants.maxAnnotationNegZoom) {
+												y = -(1 / numberValue);
+											}
+										}
+	
+										// check max >= min
+										if (y !== -1000) {
+											if (y < x) {
+												y = -1000;
+											}
+										}
+
+										// validate
+										if (y !== -1000) {
+											currentPolygonMinZ = x;
+											currentPolygonMaxZ = y;
+											itemValid = true;
+										}
+									}
+								}
+							} else {
+								// check for OFF word
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken === Keywords.offWord) {
+									// consume the token
+									peekToken = scriptReader.getNextToken();
+
+									// clear the zoom range
+									currentPolygonMinZ = -1000;
+									currentPolygonMaxZ = -1000;
+
+									itemValid = true;
+								}
+							}
+							break;
+
+						// arrow zoom range
+						case Keywords.arrowZoomRangeWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								x = -1000;
+								if (numberValue >= ViewConstants.minAnnotationZoom && numberValue <= ViewConstants.maxAnnotationZoom) {
+									x = numberValue;
+								} else {
+									// check for negative zoom format
+									if (numberValue >= ViewConstants.minAnnotationNegZoom && numberValue <= ViewConstants.maxAnnotationNegZoom) {
+										x = -(1 / numberValue);
+									}
+								}
+
+								if (x !== -1000) {
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+										numberValue = scriptReader.getNextTokenAsNumber();
+
+										y = -1000;
+										if (numberValue >= ViewConstants.minAnnotationZoom && numberValue <= ViewConstants.maxAnnotationZoom) {
+											y = numberValue;
+										} else {
+											// check for negative zoom format
+											if (numberValue >= ViewConstants.minAnnotationNegZoom && numberValue <= ViewConstants.maxAnnotationNegZoom) {
+												y = -(1 / numberValue);
+											}
+										}
+	
+										// check max >= min
+										if (y !== -1000) {
+											if (y < x) {
+												y = -1000;
+											}
+										}
+
+										// validate
+										if (y !== -1000) {
+											currentArrowMinZ = x;
+											currentArrowMaxZ = y;
+											itemValid = true;
+										}
+									}
+								}
+							} else {
+								// check for OFF word
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken === Keywords.offWord) {
+									// consume the token
+									peekToken = scriptReader.getNextToken();
+
+									// clear the zoom range
+									currentArrowMinZ = -1000;
+									currentArrowMaxZ = -1000;
+
+									itemValid = true;
+								}
+							}
+							break;
+
+						// label zoom range
+						case Keywords.labelZoomRangeWord:
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								x = -1000;
+								if (numberValue >= ViewConstants.minAnnotationZoom && numberValue <= ViewConstants.maxAnnotationZoom) {
+									x = numberValue;
+								} else {
+									// check for negative zoom format
+									if (numberValue >= ViewConstants.minAnnotationNegZoom && numberValue <= ViewConstants.maxAnnotationNegZoom) {
+										x = -(1 / numberValue);
+									}
+								}
+
+								if (x !== -1000) {
+									if (scriptReader.nextTokenIsNumeric()) {
+										isNumeric = true;
+										numberValue = scriptReader.getNextTokenAsNumber();
+
+										y = -1000;
+										if (numberValue >= ViewConstants.minAnnotationZoom && numberValue <= ViewConstants.maxAnnotationZoom) {
+											y = numberValue;
+										} else {
+											// check for negative zoom format
+											if (numberValue >= ViewConstants.minAnnotationNegZoom && numberValue <= ViewConstants.maxAnnotationNegZoom) {
+												y = -(1 / numberValue);
+											}
+										}
+	
+										// check max >= min
+										if (y !== -1000) {
+											if (y < x) {
+												y = -1000;
+											}
+										}
+
+										// validate
+										if (y !== -1000) {
+											currentLabelMinZ = x;
+											currentLabelMaxZ = y;
+											itemValid = true;
+										}
+									}
+								}
+							} else {
+								// check for OFF word
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken === Keywords.offWord) {
+									// consume the token
+									peekToken = scriptReader.getNextToken();
+
+									// clear the zoom range
+									currentLabelMinZ = -1000;
+									currentLabelMaxZ = -1000;
+
+									itemValid = true;
+								}
+							}
+							break;
+
 						// label
 						case Keywords.labelWord:
 							// get the x position
@@ -2294,79 +2302,27 @@
 													}
 												}
 												if (z !== -1000) {
-													minZ = -2000;
-													maxZ = -2000;
-
-													// check for optional min or max zoom
-													if (scriptReader.nextTokenIsNumeric()) {
-														isNumeric = true;
-														numberValue = scriptReader.getNextTokenAsNumber();
-
-														// check it is in range
-														maxZ = -1000;
-
-														if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
-															maxZ = numberValue;
-														} else {
-															// check for negative zoom format
-															if (numberValue >= ViewConstants.minNegZoom && numberValue <= ViewConstants.maxNegZoom) {
-																maxZ = -(1 / numberValue);
-															}
-														}
-													}
-
-													// check for optional max zoom if min zoom defined
-													if (maxZ !== -1000) {
-														if (scriptReader.nextTokenIsNumeric()) {
-															isNumeric = true;
-															numberValue = scriptReader.getNextTokenAsNumber();
-
-															// move max to min zoom since both are specified
-															minZ = maxZ;
-
-															// check it is in range
-															maxZ = -1000;
-
-															if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
-																maxZ = numberValue;
-															} else {
-																// check for negative zoom format
-																if (numberValue >= ViewConstants.minNegZoom && numberValue <= ViewConstants.maxNegZoom) {
-																	maxZ = -(1 / numberValue);
-																}
-															}
-
-															// check max >= min if specified
-															if (maxZ !== -1000) {
-																if (maxZ < minZ) {
-																	maxZ = -1000;
-																}
-															}
-														}
-													}
-
 													// check for optional fixed keyword
-													if (maxZ !== -1000) {
+													isNumeric = false;
+													peekToken = scriptReader.peekAtNextToken();
+													currentLabelPositionFixed = false;
+													if (peekToken === Keywords.fixedWord) {
+														// consume the token
+														peekToken = scriptReader.getNextToken();
+														currentLabelPositionFixed = true;
 														peekToken = scriptReader.peekAtNextToken();
-														currentLabelPositionFixed = false;
-														if (peekToken === Keywords.fixedWord) {
-															// consume the token
-															peekToken = scriptReader.getNextToken();
-															currentLabelPositionFixed = true;
-															peekToken = scriptReader.peekAtNextToken();
-														}
+													}
 
-														// check there is text
-														if (peekToken[0] === Keywords.stringDelimiter) {
-															// save the label
-															currentLabel = view.waypointManager.createLabel(x, y, z, minZ, maxZ, view.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelSizeFixed,
-																currentLabelT1, currentLabelT2, currentLabelTFade, currentLabelAngle, currentLabelAngleFixed, currentLabelPositionFixed,
-																currentLabelTX, currentLabelTY, currentLabelTDistance, currentLabelDX, currentLabelDY);
-															readingLabel = true;
-															itemValid = true;
-														} else {
-															isNumeric = false;
-														}
+													// check there is text
+													if (peekToken[0] === Keywords.stringDelimiter) {
+														// save the label
+														currentLabel = view.waypointManager.createLabel(x, y, z, currentLabelMinZ, currentLabelMaxZ, view.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelSizeFixed,
+															currentLabelT1, currentLabelT2, currentLabelTFade, currentLabelAngle, currentLabelAngleFixed, currentLabelPositionFixed,
+															currentLabelVDistance, currentLabelDX, currentLabelDY);
+														readingLabel = true;
+														itemValid = true;
+													} else {
+														type = "a string";
 													}
 												}
 											}

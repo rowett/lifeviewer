@@ -4387,7 +4387,6 @@
 		var grid = this.grid16,
 			tileGrid = this.tileGrid,
 			colourGrid = this.colourGrid,
-			nextColourGrid = this.nextColourGrid,
 			colourTileGrid = this.colourTileGrid,
 			colourTileHistoryGrid = this.colourTileHistoryGrid,
 			staticTileGrid = this.staticTileGrid,
@@ -4436,7 +4435,6 @@
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
-				nextColourGrid = this.colourGrid;
 			}
 		}
 
@@ -4487,7 +4485,6 @@
 					current = colourGrid[y][x];
 					if (deadZero && state === 0) {
 						colourGrid[y][x] = 0;
-						nextColourGrid[y][x] = 0;
 					} else {
 						colourGrid[y][x] = this.historyStates + state;
 					}
@@ -4500,6 +4497,10 @@
 
 						// get the tile mask
 						cellAsTileBit = 1 << (~(x >> 4) & 15);
+
+						// mark the tile as not static
+						tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+						staticTileGrid[y >> 4][x >> 8] &= ~cellAsTileBit;
 					}
 
 					// update population
@@ -4748,7 +4749,7 @@
 					// check for initial cell
 					if (this.population === 1) {
 						// use shrink since there might be Generations dying cells
-						this.shirnkNeeded = true;
+						this.shrinkNeeded = true;
 					}
 					if (x < zoomBox.leftX) {
 						zoomBox.leftX = x;
