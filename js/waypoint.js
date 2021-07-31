@@ -489,6 +489,11 @@
 		// message
 		this.message = "";
 
+		// whether message has generation substitution
+		this.genSub = false;
+		this.genPre = "";
+		this.genPost = "";
+
 		// x position
 		this.x = x;
 
@@ -642,7 +647,18 @@
 
 	// add a label to the list
 	WaypointManager.prototype.addLabel = function(label) {
+		// check for generation substitution
+		var i = label.message.indexOf("#G");
+
+		// add to label list
 		this.labelList[this.labelList.length] = label;
+
+		// check if generation subsitution was found
+		if (i !== -1) {
+			label.genPre = label.message.substr(0, i);
+			label.genPost = label.message.substr(i + 2);
+			label.genSub = true;
+		}
 	};
 
 	// return number of labels
@@ -1530,6 +1546,11 @@
 
 						// draw each line of the label
 						message = current.message;
+
+						// add generation if required
+						if (current.genSub) {
+							message = current.genPre + view.engine.counter + current.genPost;
+						}
 						index = message.indexOf("\\n");
 						y = (cy * yZoom) + halfDisplayHeight;
 						x = (cx * xZoom) + halfDisplayWidth;

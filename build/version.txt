@@ -1,3 +1,6 @@
+Build 641
+- Labels support variable substitutions with #G for current generation
+
 Build 640
 - fix bounded grids with RuleTree rules
 
