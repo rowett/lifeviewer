@@ -1,3 +1,6 @@
+Build 640
+- fix bounded grids with RuleTree rules
+
 Build 639
 - Annotation zoom range visibility is now defined in separate script commands:
 	- [[ LABELZOOMRANGE MINZOOM MAXZOOM|OFF ]]

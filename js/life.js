@@ -10050,8 +10050,9 @@
 		    horizShift = this.boundedGridHorizontalShift,
 		    vertShift = this.boundedGridVerticalShift,
 
-			// colour tile grid
-			colourTileGrid = this.colourTileHistoryGrid,
+		    // colour tile grid
+		    colourTileGrid = this.colourTileHistoryGrid,
+		    staticTileGrid = this.staticTileGrid,
 
 		    // counters
 		    sourceX = 0,
@@ -10093,10 +10094,12 @@
 
 					// set tile grid
 					colourTileGrid[(bottomY - 1) >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+					staticTileGrid[(bottomY - 1) >> 4][destX >> 8] &= ~(1 << (~(destX >> 4) & 15));
 
 					// check for tile boundary
 					if (((bottomY - 1) & 15) === 15) {
 						colourTileGrid[((bottomY - 1) >> 4) + 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+						staticTileGrid[((bottomY - 1) >> 4) + 1][destX >> 8] &= ~(1 << (~(destX >> 4) & 15));
 					}
 				}
 
@@ -10111,10 +10114,12 @@
 
 					// set tile grid
 					colourTileGrid[(topY + 1) >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+					staticTileGrid[(topY + 1) >> 4][destX >> 8] &= ~(1 << (~(destX >> 4) & 15));
 
 					// check for tile boundary
 					if (((topY + 1) & 15) === 0) {
 						colourTileGrid[((topY + 1) >> 4) - 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+						staticTileGrid[((topY + 1) >> 4) - 1][destX >> 8] &= ~(1 << (~(destX >> 4) & 15));
 					}
 				}
 			}
@@ -10136,10 +10141,12 @@
 
 					// set tile grid
 					colourTileGrid[destY >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+					staticTileGrid[destY >> 4][(rightX + 1) >> 8] &= ~(1 << (~((rightX + 1) >> 4) & 15));
 
 					// check for tile boundary
 					if (((rightX + 1) & 15) === 0) {
 						colourTileGrid[destY >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+						staticTileGrid[destY >> 4][(rightX - 15) >> 8] &= ~(1 << (~((rightX - 15) >> 4) & 15));
 					}
 				}
 
@@ -10154,10 +10161,12 @@
 
 					// set tile grid
 					colourTileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+					staticTileGrid[destY >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
 
 					// check for tile boundary
 					if (((leftX - 1) & 15) === 15) {
 						colourTileGrid[destY >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+						staticTileGrid[destY >> 4][(leftX + 15) >> 8] &= ~(1 << (~((leftX + 15) >> 4) & 15));
 					}
 				}
 			}
@@ -10194,6 +10203,7 @@
 	// process klein bottle for multi-state
 	Life.prototype.processKleinMS = function(grid) {
 		var colourTileGrid = this.colourTileHistoryGrid,
+		    staticTileGrid = this.staticTileGrid,
 
 		    // bounded grid width and height
 		    width = this.boundedGridWidth,
@@ -10245,10 +10255,12 @@
 
 				// set tile grid
 				colourTileGrid[(bottomY - 1) >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+				staticTileGrid[(bottomY - 1) >> 4][destX >> 8] &= ~(1 << (~(destX >> 4) & 15));
 
 				// check for tile boundary
 				if (((bottomY - 1) & 15) === 15) {
 					colourTileGrid[((bottomY - 1) >> 4) + 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+					staticTileGrid[((bottomY - 1) >> 4) + 1][destX >> 8] &= ~(1 << (~(destX >> 4) & 15));
 				}
 			}
 
@@ -10266,10 +10278,12 @@
 
 				// set tile grid
 				colourTileGrid[(topY + 1) >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+				staticTileGrid[(topY + 1) >> 4][destX >> 8] &= ~(1 << (~(destX >> 4) & 15));
 
 				// check for tile boundary
 				if (((topY + 1) & 15) === 0) {
 					colourTileGrid[((topY + 1) >> 4) - 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+					staticTileGrid[((topY + 1) >> 4) - 1][destX >> 8] &= ~(1 << (~(destX >> 4) & 15));
 				}
 			}
 		}
@@ -10293,10 +10307,12 @@
 
 				// set tile grid
 				colourTileGrid[destY >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+				staticTileGrid[destY >> 4][(rightX + 1) >> 8] &= ~(1 << (~((rightX + 1) >> 4) & 15));
 
 				// check for tile boundary
 				if (((rightX + 1) & 15) === 0) {
 					colourTileGrid[destY >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+					staticTileGrid[destY >> 4][(rightX - 15) >> 8] &= ~(1 << (~((rightX - 15) >> 4) & 15));
 				}
 			}
 
@@ -10314,10 +10330,12 @@
 
 				// set tile grid
 				colourTileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+				staticTileGrid[destY >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
 
 				// check for tile boundary
 				if (((leftX - 1) & 15) === 15) {
 					colourTileGrid[destY >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+					staticTileGrid[destY >> 4][(leftX + 15) >> 8] &= ~(1 << (~((leftX + 15) >> 4) & 15));
 				}
 			}
 		}
@@ -10382,6 +10400,7 @@
 	// process cross-surface for multi-state
 	Life.prototype.processCrossSurfaceMS = function(grid) {
 		var colourTileGrid = this.colourTileGrid,
+		    staticTileGrid = this.staticTileGrid,
 
 		    // bounded grid width and height
 		    width = this.boundedGridWidth,
@@ -10416,10 +10435,12 @@
 
 				// set tile grid
 				colourTileGrid[(bottomY - 1) >> 4][dest >> 8] |= (1 << (~(dest >> 4) & 15));
+				staticTileGrid[(bottomY - 1) >> 4][dest >> 8] &= ~(1 << (~(dest >> 4) & 15));
 
 				// check for tile boundary
 				if (((bottomY - 1) & 15) === 15) {
 					colourTileGrid[((bottomY - 1) >> 4) + 1][dest >> 8] |= (1 << (~(dest >> 4) & 15));
+					staticTileGrid[((bottomY - 1) >> 4) + 1][dest >> 8] &= ~(1 << (~(dest >> 4) & 15));
 				}
 			}
 
@@ -10430,10 +10451,12 @@
 
 				// set tile grid
 				colourTileGrid[(topY + 1) >> 4][dest >> 8] |= (1 << (~(dest >> 4) & 15));
+				staticTileGrid[(topY + 1) >> 4][dest >> 8] &= ~(1 << (~(dest >> 4) & 15));
 
 				// check for tile boundary
 				if (((topY + 1) & 15) === 0) {
 					colourTileGrid[((topY + 1) >> 4) - 1][dest >> 8] |= (1 << (~(dest >> 4) & 15));
+					staticTileGrid[((topY + 1) >> 4) - 1][dest >> 8] &= ~(1 << (~(dest >> 4) & 15));
 				}
 			}
 		}
@@ -10450,10 +10473,12 @@
 
 				// set tile grid
 				colourTileGrid[dest >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+				staticTileGrid[dest >> 4][(rightX + 1) >> 8] &= ~(1 << (~((rightX + 1) >> 4) & 15));
 
 				// check for tile boundary
 				if (((rightX + 1) & 15) === 0) {
 					colourTileGrid[dest >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+					staticTileGrid[dest >> 4][(rightX - 15) >> 8] &= ~(1 << (~((rightX - 15) >> 4) & 15));
 				}
 			}
 
@@ -10464,10 +10489,12 @@
 
 				// set tile grid
 				colourTileGrid[dest >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+				staticTileGrid[dest >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
 
 				// check for tile boundary
 				if (((leftX - 1) & 15) === 15) {
 					colourTileGrid[dest >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+					staticTileGrid[dest >> 4][(leftX + 15) >> 8] &= ~(1 << (~((leftX + 15) >> 4) & 15));
 				}
 			}
 		}
@@ -10492,6 +10519,7 @@
 	// process sphere for multi-state
 	Life.prototype.processSphereMS = function(grid) {
 		var colourTileGrid = this.colourTileGrid,
+		    staticTileGrid = this.staticTileGrid,
 
 		    // bounded grid width and height
 		    width = this.boundedGridWidth,
@@ -10526,10 +10554,12 @@
 
 				// set tile grid
 				colourTileGrid[(bottomY - 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+				staticTileGrid[(bottomY - 1) >> 4][x >> 8] &= ~(1 << (~(x >> 4) & 15));
 
 				// check for tile boundary
 				if (((bottomY - 1) & 15) === 15) {
 					colourTileGrid[((bottomY - 1) >> 4) + 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+					staticTileGrid[((bottomY - 1) >> 4) + 1][x >> 8] &= ~(1 << (~(x >> 4) & 15));
 				}
 			}
 
@@ -10540,10 +10570,12 @@
 
 				// set tile grid
 				colourTileGrid[(topY + 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+				staticTileGrid[(topY + 1) >> 4][x >> 8] &= ~(1 << (~(x >> 4) & 15));
 
 				// check for tile boundary
 				if (((topY + 1) & 15) === 0) {
 					colourTileGrid[((topY + 1) >> 4) - 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+					staticTileGrid[((topY + 1) >> 4) - 1][x >> 8] &= ~(1 << (~(x >> 4) & 15));
 				}
 			}
 
@@ -10554,9 +10586,12 @@
 
 				// set tile grid
 				colourTileGrid[y >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+				staticTileGrid[y >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
+
 				// check for tile boundary
 				if (((leftX - 1) & 15) === 15) {
 					colourTileGrid[y >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+					staticTileGrid[y >> 4][(leftX + 15) >> 8] &= ~(1 << (~((leftX + 15) >> 4) & 15));
 				}
 			}
 
@@ -10567,10 +10602,12 @@
 
 				// set tile grid
 				colourTileGrid[y >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+				staticTileGrid[y >> 4][(rightX + 1) >> 8] &= ~(1 << (~((rightX + 1) >> 4) & 15));
 
 				// check for tile boundary
 				if (((rightX + 1) & 15) === 0) {
 					colourTileGrid[y >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+					staticTileGrid[y >> 4][(rightX - 15) >> 8] &= ~(1 << (~((rightX - 15) >> 4) & 15));
 				}
 			}
 		}
