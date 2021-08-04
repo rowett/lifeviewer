@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 641,
+		/** @const {number} */ versionBuild : 643,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5273,6 +5273,9 @@
 						if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
 							me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 600, 15, true);
 						}
+
+						// if the pattern dies again then notify (this would be caused by drawing during playback)
+						me.emptyStart = false;
 					}
 				}
 

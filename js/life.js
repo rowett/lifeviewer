@@ -5252,7 +5252,7 @@
 			view.pasteRLEList();
 		} else {
 			// for two state rules convert to pens once since colour grid was on previous generation when snapshot saved
-			if (this.multiNumStates === -1) {
+			if (this.multiNumStates === -1 && this.counter > 0) {
 				this.convertToPensTile();
 			}
 		}

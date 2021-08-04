@@ -490,9 +490,10 @@
 		this.message = "";
 
 		// whether message has generation substitution
-		this.genSub = false;
-		this.genPre = "";
-		this.genPost = "";
+		this.genSub = -1;
+
+		// whether message has population substitution
+		this.popSub = -1;
 
 		// x position
 		this.x = x;
@@ -647,18 +648,12 @@
 
 	// add a label to the list
 	WaypointManager.prototype.addLabel = function(label) {
-		// check for generation substitution
-		var i = label.message.indexOf("#G");
+		// check for generation or population substitution
+		label.genSub = label.message.indexOf("#G");
+		label.popSub = label.message.indexOf("#P");
 
 		// add to label list
 		this.labelList[this.labelList.length] = label;
-
-		// check if generation subsitution was found
-		if (i !== -1) {
-			label.genPre = label.message.substr(0, i);
-			label.genPost = label.message.substr(i + 2);
-			label.genSub = true;
-		}
 	};
 
 	// return number of labels
@@ -1548,9 +1543,20 @@
 						message = current.message;
 
 						// add generation if required
-						if (current.genSub) {
-							message = current.genPre + view.engine.counter + current.genPost;
+						if (current.genSub !== -1) {
+							message = message.substr(0, current.genSub) + view.engine.counter + message.substr(current.genSub + 2);
+
+							// if population substitution also exists then recalculate position since it will have changed
+							if (current.popSub !== -1) {
+								current.popSub = message.indexOf("#P");
+							}
 						}
+
+						// add population if required
+						if (current.popSub !== -1) {
+							message = message.substr(0, current.popSub) + view.engine.population + message.substr(current.popSub + 2);
+						}
+
 						index = message.indexOf("\\n");
 						y = (cy * yZoom) + halfDisplayHeight;
 						x = (cx * xZoom) + halfDisplayWidth;

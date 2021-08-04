@@ -1,3 +1,10 @@
+Build 643
+- fixed alive ramp on Step Back to generation 0
+- fixed "Life ended at..." message not displaying if pattern died and then during playback new cells are added which all die
+
+Build 642
+- add #P for population to Label variable substitutions
+
 Build 641
 - Labels support variable substitutions with #G for current generation
 
