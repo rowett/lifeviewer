@@ -1,3 +1,6 @@
+Build 644
+- fixed thumbnail mode on touch devices
+
 Build 643
 - fixed alive ramp on Step Back to generation 0
 - fixed "Life ended at..." message not displaying if pattern died and then during playback new cells are added which all die

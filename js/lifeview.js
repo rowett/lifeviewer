@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 643,
+		/** @const {number} */ versionBuild : 644,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1773,9 +1773,6 @@
 		// go to generation button
 		this.goToGenButton = null;
 		
-		// test URLE Button
-		this.testURLEButton = null;
-
 		// copy rule button
 		this.copyRuleButton = null;
 
@@ -5811,7 +5808,6 @@
 		this.saveImageButton.deleted = shown;
 		this.saveGraphButton.deleted = shown;
 		this.goToGenButton.deleted = shown;
-		this.testURLEButton.deleted = shown;
 		// info category
 		shown = hide || !this.showInfoSettings;
 		this.fpsButton.deleted = shown;
@@ -12568,11 +12564,6 @@
 		me.screenShotScheduled = 2;
 	};
 
-	// test URLE button pressed
-	View.prototype.testURLEPressed = function(me) {
-		me.testNewRLE(me);
-	};
-
 	// go to generation button pressed
 	View.prototype.goToGenPressed = function(me) {
 		// prompt for generation
@@ -13421,38 +13412,6 @@
 		me.element.value = me.element.innerHTML;
 	};
 
-	// test for URLE prototype
-	View.prototype.testNewRLE = function(me) {
-		var t1 = performance.now(),
-		    r1 = me.engine.asRLE(me, me.engine, false, me.engine.multiNumStates, me.engine.multiNumStates, [], true),
-			t4 = performance.now(),
-			r4 = me.engine.asURLE(me, me.engine, false, true),
-			te = performance.now(),
-			rulelen = r1.indexOf("\n") + 2,
-			example = r4,
-			percent = ((100 * (r4.length - rulelen)) / (r1.length - rulelen));
-
-		if (example.length > rulelen + 40) {
-			example = example.substr(0, rulelen + 40) + "...";
-		}
-		te -= t4;
-		t4 -= t1;
-		var orig = r4.substr(rulelen - 1);
-		var td = performance.now();
-		var decode = URLEEngine.decode(orig, 8192, 8192);
-		td = performance.now() - td;
-		if (decode === "") {
-			decode = "decoded pattern of size " + URLEEngine.width + " x " + URLEEngine.height + " in " + (td | 0) + "ms\nmaxState: " + URLEEngine.maxState + " totalPop: " + URLEEngine.totalPopulation + " oddStatePop: " + URLEEngine.oddStatePopulation + " state1Pop: " + URLEEngine.stateCounts[1];
-
-			var check = URLEEngine.encode(URLEEngine.grid, URLEEngine.width, URLEEngine.height);
-			if (check !== orig) {
-				decode += " FAIL validation: " + check.length + " " + orig.length;
-			}
-		}
-
-		alert("RLE: " + (r1.length - rulelen) + " bytes in " + (t4 | 0) + "ms\nURLE: " + (r4.length - rulelen) + " bytes in " + (te | 0) + "ms\nURLE compressed to " + (percent | 0) + "% of RLE size saving " + (r1.length - r4.length) + " bytes\n" + example + "\n" + decode);
-	};
-
 	// replace the current rle with the given text
 	View.prototype.loadText = function(me, text) {
 		var result = false;
@@ -14068,10 +14027,6 @@
 		// save graph button
 		this.saveGraphButton = this.viewMenu.addButtonItem(this.saveGraphPressed, Menu.middle, 100, 75, 180, 40, "Save Graph");
 		this.saveGraphButton.toolTip = "save population graph image in new window [Shift O]";
-
-		// URLE test button
-		this.testURLEButton = this.viewMenu.addButtonItem(this.testURLEPressed, Menu.middle, -100, 125, 180, 40, "Test URLE");
-		this.testURLEButton.toolTip = "test URLE encoding [Ctrl E]";
 
 		// go to generation button
 		this.goToGenButton = this.viewMenu.addButtonItem(this.goToGenPressed, Menu.middle, 100, 125, 180, 40, "Go To Gen");
@@ -14846,7 +14801,9 @@
 			this.viewMenu.deleted = false;
 
 			// display hotkey to shrink
-			this.menuManager.notification.notify("Shrink with hotkey N", 15, 100, 15, true);
+			if (!this.menuManager.eventWasTouch) {
+				this.menuManager.notification.notify("Shrink with hotkey N", 15, 100, 15, true);
+			}
 
 			// resize
 			this.resize();
@@ -14919,6 +14876,7 @@
 		// tell the menu manager that thumbnail mode is active
 		this.menuManager.thumbnail = true;
 		this.menuManager.thumbnailDivisor = this.thumbnailDivisor;
+		this.menuManager.hasFocus = false;
 		this.thumbnail = true;
 
 		// resize

@@ -9,7 +9,7 @@
 	"use strict";
 
 	// define globals
-	/* global URLEEngine Random Keywords littleEndian BoundingBox Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint16Array Uint32Array Float32Array SnapshotManager HROT ViewConstants PatternConstants */
+	/* global Random Keywords littleEndian BoundingBox Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint16Array Uint32Array Float32Array SnapshotManager HROT ViewConstants PatternConstants */
 
 	// Life constants
 	/** @const */
@@ -3620,116 +3620,6 @@
 		} else {
 			context.stroke();
 		}
-	};
-
-	// convert grid to URLE format
-	/** @return {string} */
-	Life.prototype.asURLE = function(/** @const */ view, /** @const @type {Life} */ me, /** @const @type {boolean} */ addComments, /** @const @type {boolean} */ useAlias) {
-		var /** @type {string} */ rle = "",
-			/** @const */ zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
-			/** @type {number} */ leftX = zoomBox.leftX,
-			/** @type {number} */ rightX = zoomBox.rightX,
-			/** @type {number} */ topY = zoomBox.topY,
-			/** @type {number} */ bottomY = zoomBox.bottomY,
-			/** @type {number} */ width = rightX - leftX + 1,
-			/** @type {number} */ height = topY - bottomY + 1,
-			/** @type {number} */ swap = 0,
-			/** @const @type {number} */ xOff = (me.width >> 1) - (view.patternWidth >> 1),
-			/** @const @type {number} */ yOff = (me.height >> 1) - (view.patternHeight >> 1),
-			/** @type {string} */ ruleName = "",
-			/** @type {Array<Uint8Array>} */ grid = null,
-			/** @type {Uint8Array} */ gridRow = null,
-			/** @type {number} */ x = 0,
-			/** @type {number} */ y = 0,
-			/** @type {number} */ state = 0,
-			/** @const */ selBox = view.selectionBox;
-
-		// check for selection
-		if (view.isSelection) {
-			leftX = selBox.leftX + xOff;
-			bottomY = selBox.bottomY + yOff;
-			rightX = selBox.rightX + xOff;
-			topY = selBox.topY + yOff;
-
-			// order selection
-			if (leftX > rightX) {
-				swap = leftX;
-				leftX = rightX;
-				rightX = swap;
-			}
-			if (bottomY > topY) {
-				swap = bottomY;
-				bottomY = topY;
-				topY = swap;
-			}
-
-			// compute selection size
-			width = rightX - leftX + 1;
-			height = topY - bottomY + 1;
-		}
-
-		// check for triangular rules
-		if (me.isTriangular) {
-			// align bounding box
-			if (leftX > 0 && ((leftX & 1) !== 0)) {
-				leftX -= 1;
-				width += 1;
-			}
-			if ((bottomY > 0) && ((bottomY & 1) !== 0)) {
-				bottomY -= 1;
-				height += 1;
-			}
-		}
-
-		// check for Margolus rules
-		if (me.isMargolus) {
-			// align bounding box
-			if (leftX > 0 && ((leftX & 1) === 0)) {
-				leftX -= 1;
-				width += 1;
-			}
-			if ((bottomY > 0) && ((bottomY & 1) === 0)) {
-				bottomY -= 1;
-				height += 1;
-			}
-		}
-
-		// output comments if requested
-		if (addComments) {
-			rle += me.beforeTitle;
-		}
-
-		// output header (x =, y=, rule=)
-		ruleName = ((useAlias && view.patternAliasName !== "") ? view.patternAliasName : view.patternRuleName);
-		if (ruleName === "B3/S23History") {
-			ruleName = "LifeHistory";
-		}
-		rle += "x = " + width + ", y = " + height + ", rule = " + ruleName;
-		rle += view.patternBoundedGridDef;
-		rle += "\n";
-
-		// create the URLE5 grid for faster lookup and return an array of used states
-		grid = Array.matrix(Uint8, height, width,  0, this.allocator, "");
-
-		// populate the grid
-		for (y = bottomY; y <= topY; y += 1) {
-			gridRow = grid[y - bottomY];
-			for (x = leftX; x <= rightX; x += 1) {
-				state = this.getState(x, y, false);
-				gridRow[x - leftX] = state;
-			}
-		}
-
-		// encode the grid
-		rle += URLEEngine.encode(grid, width, height);
-
-		// add final comments if requested
-		if (addComments) {
-			rle += me.afterTitle;
-		}
-
-		// return the RLE
-		return rle;
 	};
 
 	// convert grid to RLE

@@ -591,23 +591,18 @@
 
 			// e for increase step size
 			case 69:
-				// check for ctrl key
-				if (event.ctrlKey) {
-					me.testNewRLE(me);
-				} else {
-					// increase step size
-					if (!me.stepRange.locked) {
-						if (me.gensPerStep < ViewConstants.maxStepSpeed) {
-							// check for shift
-							if (event.shiftKey) {
-								// go to maximum step
-								me.gensPerStep = ViewConstants.maxStepSpeed;
-							} else {
-								// increase step
-								me.gensPerStep += 1;
-							}
-							me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
+				// increase step size
+				if (!me.stepRange.locked) {
+					if (me.gensPerStep < ViewConstants.maxStepSpeed) {
+						// check for shift
+						if (event.shiftKey) {
+							// go to maximum step
+							me.gensPerStep = ViewConstants.maxStepSpeed;
+						} else {
+							// increase step
+							me.gensPerStep += 1;
 						}
+						me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
 					}
 				}
 				break;
