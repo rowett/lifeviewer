@@ -8825,6 +8825,100 @@
 		blankTileRow.fill(0);
 	};
 
+	// get alive states selection box (used for HROT patterns)
+	Life.prototype.getAliveStatesBox = function(selBox) {
+		var w = 0,
+		    h = 0,
+		    aliveStart = LifeConstants.aliveStart,
+
+		    // width and height
+		    height = this.height,
+		    width = this.width,
+
+		    // colour grid
+		    colourGrid = this.colourGrid,
+		    colourGridRow = null,
+
+		    // bounding boxes
+		    HROTBox = this.HROTBox,
+
+		    // new box extent
+		    newBottomY = this.height,
+		    newTopY = -1,
+		    newLeftX = this.width,
+		    newRightX = -1,
+
+		    // flag if something in the row was alive
+		    rowAlive = 0,
+
+		    // flags if something in the column was alive
+		    columnOccupied16 = this.columnOccupied16;
+
+		// clear column occupied flags
+		columnOccupied16.fill(0);
+
+		// check each row
+		for (h = HROTBox.bottomY; h <= HROTBox.topY; h += 1) {
+			colourGridRow = colourGrid[h];
+
+			// flag nothing in the row
+			rowAlive = 0;
+
+			// check each column
+			for (w = HROTBox.leftX; w <= HROTBox.rightX; w += 1) {
+				if (colourGridRow[w] >= aliveStart) {
+					rowAlive = 1;
+
+					if (w < newLeftX) {
+						newLeftX = w;
+					}
+					if (w > newRightX) {
+						newRightX = w;
+					}
+				}
+			}
+
+			// check if the row was alive
+			if (rowAlive) {
+				if (h < newBottomY) {
+					newBottomY = h;
+				}
+				if (h > newTopY) {
+					newTopY = h;
+				}
+			}
+		}
+
+		// ensure the box is not blank
+		if (newTopY < 0 || newBottomY >= height || newLeftX >= width || newRightX < 0) {
+			// set the box to the middle
+			newTopY = height >> 1;
+			newBottomY = newTopY;
+			newLeftX = width >> 1;
+			newRightX = newLeftX;
+		}
+
+		// clip to display
+		if (newTopY > this.height - 1) {
+			newTopY = this.height - 1;
+		}
+		if (newBottomY < 0) {
+			newBottomY = 0;
+		}
+		if (newLeftX < 0) {
+			newLeftX = 0;
+		}
+		if (newRightX > this.width - 1) {
+			newRightX = this.width - 1;
+		}
+
+		// save new grid box
+		selBox.topY = newTopY;
+		selBox.bottomY = newBottomY;
+		selBox.leftX = newLeftX;
+		selBox.rightX = newRightX;
+	};
+
 	// shrink grid (after major edit)
 	Life.prototype.doShrink = function() {
 		var w = 0,
@@ -8851,8 +8945,8 @@
 		    colourGridRow = null,
 
 		    // bounding boxes
-			zoomBox = this.zoomBox,
-			HROTBox = this.HROTBox,
+		    zoomBox = this.zoomBox,
+		    HROTBox = this.HROTBox,
 		    initialBox = this.initialBox,
 
 		    // new box extent
@@ -8871,7 +8965,7 @@
 		    rowAlive = 0,
 
 		    // flags if something in the column was alive
-			columnOccupied16 = this.columnOccupied16;
+		    columnOccupied16 = this.columnOccupied16;
 
 		if (this.shrinkNeeded) {
 			this.shrinkNeeded = false;

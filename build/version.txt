@@ -1,3 +1,9 @@
+Build 646
+- make 2-state HROT selection box consistent with Life-like equivalent
+
+Build 645
+- fixed an issue with inline Viewer window resizing incorrectly when loading rules from repository
+
 Build 644
 - fixed thumbnail mode on touch devices
 

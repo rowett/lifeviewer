@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 644,
+		/** @const {number} */ versionBuild : 646,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -10650,13 +10650,25 @@
 			width = 0,
 			height = 0;
 
-		// set the selection box to the current pattern bounding box
+		// update the pattern extent
 		me.engine.shrinkNeeded = true;
 		me.engine.doShrink();
-		selBox.leftX = zoomBox.leftX - xOff;
-		selBox.bottomY = zoomBox.bottomY - yOff;
-		selBox.rightX = zoomBox.rightX - xOff;
-		selBox.topY = zoomBox.topY - yOff;
+
+		// for HROT patterns use alive states only
+		if (me.engine.isHROT && me.engine.multiNumStates === 2) {
+			me.engine.getAliveStatesBox(selBox);
+			selBox.leftX -= xOff;
+			selBox.rightX -= xOff;
+			selBox.bottomY -= yOff;
+			selBox.topY -= yOff;
+		} else {
+			// use the pattern extent for the selection
+			selBox.leftX = zoomBox.leftX - xOff;
+			selBox.bottomY = zoomBox.bottomY - yOff;
+			selBox.rightX = zoomBox.rightX - xOff;
+			selBox.topY = zoomBox.topY - yOff;
+		}
+
 		me.isSelection = true;
 		me.afterSelectAction = false;
 		if (selBox.rightX < selBox.leftX) {
@@ -15157,6 +15169,8 @@
 	// start the viewer from a supplied pattern string
 	View.prototype.startViewer = function(patternString, ignoreThumbnail) {
 		// attempt to load the pattern
+		this.origDisplayWidth = this.displayWidth;
+		this.origDisplayHeight = this.displayHeight;
 		var pattern = this.manager.create("", patternString, this.engine.allocator, this.completeStart, this.completeStartFailed, [ignoreThumbnail], this);
 		this.lastFailReason = this.manager.failureReason;
 
