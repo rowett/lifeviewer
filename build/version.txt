@@ -1,3 +1,6 @@
+Build 647
+- fixed an issue with edited state 6 [R]History cells not working after Reset
+
 Build 646
 - make 2-state HROT selection box consistent with Life-like equivalent
 

@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 646,
+		/** @const {number} */ versionBuild : 647,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2216,7 +2216,8 @@
 			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
 			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1),
 			runCount = 0,
-			state = 0;
+			state = 0,
+			wasState6 = 0;
 
 		// check for cells
 		if (cells) {
@@ -2235,14 +2236,14 @@
 					y = cells[i + 2] + yOff;
 
 					// draw the first cell
-					this.engine.setState(x, y, state, true);
+					wasState6 |= this.engine.setState(x, y, state, true);
 					if (runCount >= 16384) {
 						runCount -= 16384;
 
 						// draw the run
 						while (runCount >= 0) {
 							x += 1;
-							this.engine.setState(x, y, state, true);
+							wasState6 |= this.engine.setState(x, y, state, true);
 							runCount -= 1;
 						}
 					}
@@ -2253,7 +2254,7 @@
 					x = cells[i] + xOff;
 					state = cells[i + 1] >> 8;
 					y = cells[i + 2] + yOff;
-					this.engine.setState(x, y, state, true);
+					wasState6 |= this.engine.setState(x, y, state, true);
 					i += 3;
 
 					// check for run
@@ -2265,12 +2266,17 @@
 						// draw the run
 						while (runCount >= 0) {
 							x += 1;
-							this.engine.setState(x, y, state, true);
+							wasState6 |= this.engine.setState(x, y, state, true);
 							runCount -= 1;
 						}
 					}
 				}
 			}
+		}
+
+		// check for state 6 changes to [R]History
+		if (this.engine.isLifeHistory && wasState6 !== 0) {
+			this.engine.populateState6MaskFromColGrid();
 		}
 	};
 
