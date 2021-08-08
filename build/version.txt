@@ -1,3 +1,6 @@
+Build 648
+- Labels support variable substitution with #H for reversible generation (for PCA and Margolus rules)
+
 Build 647
 - fixed an issue with edited state 6 [R]History cells not working after Reset
 

@@ -495,6 +495,9 @@
 		// whether message has population substitution
 		this.popSub = -1;
 
+		// whether message has reverse generation substitution (for PCA and Margolus rules)
+		this.revSub = -1;
+
 		// x position
 		this.x = x;
 
@@ -651,6 +654,7 @@
 		// check for generation or population substitution
 		label.genSub = label.message.indexOf("#G");
 		label.popSub = label.message.indexOf("#P");
+		label.revSub = label.message.indexOf("#H");
 
 		// add to label list
 		this.labelList[this.labelList.length] = label;
@@ -1546,15 +1550,32 @@
 						if (current.genSub !== -1) {
 							message = message.substr(0, current.genSub) + view.engine.counter + message.substr(current.genSub + 2);
 
-							// if population substitution also exists then recalculate position since it will have changed
+							// if other substitutions also exist then recalculate position since it will have changed
 							if (current.popSub !== -1) {
 								current.popSub = message.indexOf("#P");
+							}
+							if (current.revSub !== -1) {
+								current.revSub = message.indexOf("#H");
 							}
 						}
 
 						// add population if required
 						if (current.popSub !== -1) {
 							message = message.substr(0, current.popSub) + view.engine.population + message.substr(current.popSub + 2);
+
+							// if other subsistutions also exist then recalculate
+							if (current.revSub !== -1) {
+								current.revSub = message.indexOf("#H");
+							}
+						}
+
+						// add reverse generation if required
+						if (current.revSub !== -1) {
+							if (view.engine.isMargolus || view.engine.isPCA) {
+								message = message.substr(0, current.revSub) + view.engine.counterMargolus + message.substr(current.revSub + 2);
+							} else {
+								message = message.substr(0, current.revSub) + view.engine.counter + message.substr(current.revSub + 2);
+							}
 						}
 
 						index = message.indexOf("\\n");
