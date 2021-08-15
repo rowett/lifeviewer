@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 648,
+		/** @const {number} */ versionBuild : 649,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4867,7 +4867,7 @@
 		}
 
 		// check for Margolus
-		if (me.engine.isMargolus) {
+		if (me.engine.isMargolus || me.engine.isPCA) {
 			me.genValueLabel.preText = me.engine.counter;
 			me.genValueLabel.toolTip = "absolute generation " + me.engine.counter;
 		} else {
@@ -12915,8 +12915,8 @@
 				if (me.engine.anythingAlive) {
 					// if at zero then population will be current
 					if (me.engine.counter > 0) {
-						// check for Generations or HROT rule
-						if (me.engine.multiNumStates === -1) {
+						// for Life-like rules compute again from the previous generation to update births, deaths and population
+						if (me.engine.multiNumStates === -1 && !me.engine.isMargolus && !me.engine.isPCA) {
 							// go to previous generation
 							me.engine.counter -= 1;
 

@@ -1,3 +1,7 @@
+Build 649
+- Labels support variable substitution with #I for relative generation and #J for relative reversible generation
+- fixed an issue with Margolus rules incrementing generation count when Stats display enabled
+
 Build 648
 - Labels support variable substitution with #H for reversible generation (for PCA and Margolus rules)
 
@@ -3268,4 +3272,3 @@ Build 117
 
 Build 116
 - first plugin build (fork from main LifeViewer)
-

@@ -990,6 +990,8 @@
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "T", "program title", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "G", "current generation (Labels)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "H", "reversible generation (Labels)", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "I", "current generation relative (Labels)", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "J", "reversible generation relative (Labels)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "P", "current population (Labels)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "0..9", "saved timing as average fps", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + Keywords.variablePrefixSymbol, Keywords.variablePrefixSymbol + " symbol", ctx, x, y, height, helpLine);

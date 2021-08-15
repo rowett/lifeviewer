@@ -489,14 +489,20 @@
 		// message
 		this.message = "";
 
-		// whether message has generation substitution
-		this.genSub = -1;
-
 		// whether message has population substitution
 		this.popSub = -1;
 
+		// whether message has generation substitution
+		this.genSub = -1;
+
 		// whether message has reverse generation substitution (for PCA and Margolus rules)
 		this.revSub = -1;
+
+		// whether message has relative generation substitution
+		this.relPopSub = -1;
+
+		// whether message has relative reverse generation substitution (for PCA and Margolus rules)
+		this.relRevSub = -1;
 
 		// x position
 		this.x = x;
@@ -652,9 +658,11 @@
 	// add a label to the list
 	WaypointManager.prototype.addLabel = function(label) {
 		// check for generation or population substitution
-		label.genSub = label.message.indexOf("#G");
 		label.popSub = label.message.indexOf("#P");
+		label.genSub = label.message.indexOf("#G");
 		label.revSub = label.message.indexOf("#H");
+		label.relGenSub = label.message.indexOf("#I");
+		label.relRevSub = label.message.indexOf("#J");
 
 		// add to label list
 		this.labelList[this.labelList.length] = label;
@@ -1557,6 +1565,12 @@
 							if (current.revSub !== -1) {
 								current.revSub = message.indexOf("#H");
 							}
+							if (current.relGenSub !== -1) {
+								current.relGenSub = message.indexOf("#I");
+							}
+							if (current.relRevSub !== -1) {
+								current.relRevSub = message.indexOf("#J");
+							}
 						}
 
 						// add population if required
@@ -1567,6 +1581,12 @@
 							if (current.revSub !== -1) {
 								current.revSub = message.indexOf("#H");
 							}
+							if (current.relGenSub !== -1) {
+								current.relGenSub = message.indexOf("#I");
+							}
+							if (current.relRevSub !== -1) {
+								current.relRevSub = message.indexOf("#J");
+							}
 						}
 
 						// add reverse generation if required
@@ -1575,6 +1595,29 @@
 								message = message.substr(0, current.revSub) + view.engine.counterMargolus + message.substr(current.revSub + 2);
 							} else {
 								message = message.substr(0, current.revSub) + view.engine.counter + message.substr(current.revSub + 2);
+							}
+							if (current.relGenSub !== -1) {
+								current.relGenSub = message.indexOf("#I");
+							}
+							if (current.relRevSub !== -1) {
+								current.relRevSub = message.indexOf("#J");
+							}
+						}
+
+						// add relative generation if required
+						if (current.relGenSub !== -1) {
+							message = message.substr(0, current.relGenSub) + (view.engine.counter + view.genOffset) + message.substr(current.relGenSub + 2);
+							if (current.relRevSub !== -1) {
+								current.relRevSub = message.indexOf("#J");
+							}
+						}
+
+						// add relative reverse generation if reuqired
+						if (current.relRevSub !== -1) {
+							if (view.engine.isMargolus || view.engine.isPCA) {
+								message = message.substr(0, current.relRevSub) + (view.engine.counterMargolus + view.genOffset) + message.substr(current.relRevSub + 2);
+							} else {
+								message = message.substr(0, current.relRevSub) + (view.engine.counter + view.genOffset) + message.substr(current.relRevSub + 2);
 							}
 						}
 
