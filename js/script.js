@@ -25,7 +25,8 @@
 			/** @type {Uint16Array} */ lengths = new Uint16Array(l),
 			/** @type {Uint32Array} */ numbers = new Uint32Array(l),
 			/** @type {number} */ value = 0,
-			/** @type {number} */ isNumber = 0;
+			/** @type {number} */ isNumber = 0,
+			/** @const {number} */ maxValue = 1 << 30;   // maximum unsigned value to cache
 
 		// check for html entities
 		if (source.indexOf("&") !== -1) {
@@ -194,6 +195,9 @@
 					} else {
 						if (v >= 48 && v <= 57) { // >= "0" && <= "9"
 							value = (value * 10) + v - 48; // v - "0"
+							if (value >= maxValue) {
+								isNumber = 0;
+							}
 						} else {
 							isNumber = 0;
 						}

@@ -1,3 +1,9 @@
+Build 651
+- don't reset playback direction on soft reset
+
+Build 650
+- fixed an issue when all cells died during Identify
+
 Build 649
 - Labels support variable substitution with #I for relative generation and #J for relative reversible generation
 - fixed an issue with Margolus rules incrementing generation count when Stats display enabled

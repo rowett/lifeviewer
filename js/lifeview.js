@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 649,
+		/** @const {number} */ versionBuild : 651,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6362,10 +6362,20 @@
 		me.viewMenu.locked = true;
 
 		// compute the next set of generations without stats for speed
-		while (me.identify && (performance.now() - startTime < timeLimit)) {
+		while (me.identify && (performance.now() - startTime < timeLimit) && me.engine.anythingAlive) {
 			// compute the next generation
 			me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify);
 			me.engine.convertToPensTile();
+
+			// check if grid buffer needs to grow
+			// (normally this check happens at render time but we may have processed more generations than expected by that function)
+			if (me.engine.counter && me.engine.anythingAlive) {
+				me.middleBox.leftX = me.engine.zoomBox.leftX;
+				me.middleBox.bottomY = me.engine.zoomBox.bottomY;
+				me.middleBox.rightX = me.engine.zoomBox.rightX;
+				me.middleBox.topY = me.engine.zoomBox.topY;
+				me.checkGridSize(me, me.middleBox);
+			}
 
 			// paste any RLE snippets
 			me.pasteRLEList();
@@ -6376,83 +6386,110 @@
 				me.engine.anythingAlive = 1;
 			}
 
-			// compute oscillators
-			identifyResult = me.engine.oscillating(me.identifyFast, me);
-			if (identifyResult.length > 0) {
-				// check for buffer full
-				if (identifyResult[0] === LifeConstants.bufferFullMessage) {
-					identifyResult[0] = "Nothing Identified";
-					me.lastOscillator = "none";
-					me.lastIdentifyType = "none";
-					me.lastIdentifyDirection = "";
-					me.lastIdentifySpeed = "";
-					me.lastIdentifyBox = "";
-					me.lastIdentifyGen = "";
-					me.lastIdentifyCells = "";
-					me.lastIdentifySlope = "";
-					me.lastIdentifyPeriod = "";
-					me.lastIdentifyHeat = "";
-					me.lastIdentifyVolatility = "";
-					me.lastIdentifyMod = "";
-					me.lastIdentifyActive = "";
-					me.lastIdentifyTemperature = "";
-				} else {
-					me.lastOscillator = identifyResult[0];
-					me.lastIdentifyType = identifyResult[1];
-					if (me.lastIdentifyType !== "Empty") {
-						me.lastIdentifyDirection = identifyResult[2];
-						me.lastIdentifySpeed = identifyResult[3];
-						me.lastIdentifyBox = identifyResult[4];
-						me.lastIdentifyGen = identifyResult[5];
-						me.lastIdentifyCells = identifyResult[6];
-						me.lastIdentifySlope = identifyResult[7];
-						me.lastIdentifyPeriod = identifyResult[8];
-						me.lastIdentifyHeat = identifyResult[9];
-						me.lastIdentifyVolatility = identifyResult[10];
-						me.lastIdentifyMod = identifyResult[11];
-						me.lastIdentifyActive = identifyResult[12];
-						me.lastIdentifyTemperature = identifyResult[13];
+			// check if any cells are alive
+			if (me.engine.anythingAlive) {
+				// compute oscillators
+				identifyResult = me.engine.oscillating(me.identifyFast, me);
+				if (identifyResult.length > 0) {
+					// check for buffer full
+					if (identifyResult[0] === LifeConstants.bufferFullMessage) {
+						identifyResult[0] = "Nothing Identified";
+						me.lastOscillator = "none";
+						me.lastIdentifyType = "none";
+						me.lastIdentifyDirection = "";
+						me.lastIdentifySpeed = "";
+						me.lastIdentifyBox = "";
+						me.lastIdentifyGen = "";
+						me.lastIdentifyCells = "";
+						me.lastIdentifySlope = "";
+						me.lastIdentifyPeriod = "";
+						me.lastIdentifyHeat = "";
+						me.lastIdentifyVolatility = "";
+						me.lastIdentifyMod = "";
+						me.lastIdentifyActive = "";
+						me.lastIdentifyTemperature = "";
+					} else {
+						me.lastOscillator = identifyResult[0];
+						me.lastIdentifyType = identifyResult[1];
+						if (me.lastIdentifyType !== "Empty") {
+							me.lastIdentifyDirection = identifyResult[2];
+							me.lastIdentifySpeed = identifyResult[3];
+							me.lastIdentifyBox = identifyResult[4];
+							me.lastIdentifyGen = identifyResult[5];
+							me.lastIdentifyCells = identifyResult[6];
+							me.lastIdentifySlope = identifyResult[7];
+							me.lastIdentifyPeriod = identifyResult[8];
+							me.lastIdentifyHeat = identifyResult[9];
+							me.lastIdentifyVolatility = identifyResult[10];
+							me.lastIdentifyMod = identifyResult[11];
+							me.lastIdentifyActive = identifyResult[12];
+							me.lastIdentifyTemperature = identifyResult[13];
+	
+							// update result labels
+							me.identifyTypeValueLabel.preText = me.lastIdentifyType;
+							me.identifyCellsValueLabel.preText = me.lastIdentifyCells;
+							if (me.lastIdentifyCells.indexOf("|") === -1) {
+								me.identifyCellsValueLabel.toolTip = "";
+							} else {
+								me.identifyCellsValueLabel.toolTip = "min | max | average";
+							}
+							me.identifyBoxValueLabel.preText = me.lastIdentifyBox;
+							me.identifyDirectionValueLabel.preText = me.lastIdentifyDirection;
+							me.identifyPeriodValueLabel.preText = me.lastIdentifyPeriod;
+							me.identifySlopeValueLabel.preText = me.lastIdentifySlope;
+							me.identifySpeedValueLabel.preText = me.lastIdentifySpeed;
+							if (me.lastIdentifySpeed.indexOf("|") === -1) {
+								me.identifySpeedValueLabel.toolTip = "";
+							} else {
+								me.identifySpeedValueLabel.toolTip = "simplified | unsimplified";
+							}
+							me.identifyHeatValueLabel.preText = me.lastIdentifyHeat;
+							if (me.lastIdentifyHeat.indexOf("|") === -1) {
+								me.identifyHeatValueLabel.toolTip = "";
+							} else {
+								me.identifyHeatValueLabel.toolTip = "min | max | average";
+							}
+							me.identifyVolatilityValueLabel.preText = me.lastIdentifyVolatility;
+							me.identifyModValueLabel.preText = me.lastIdentifyMod;
+							me.identifyActiveValueLabel.preText = me.lastIdentifyActive;
+							me.identifyActiveValueLabel.toolTip = "rotor | stator | total";
+							me.identifyTemperatureValueLabel.preText = me.lastIdentifyTemperature;
+							me.identifyTemperatureValueLabel.toolTip = "active | rotor";
+						}
+						me.resultsDisplayed = true;
 
-						// update result labels
-						me.identifyTypeValueLabel.preText = me.lastIdentifyType;
-						me.identifyCellsValueLabel.preText = me.lastIdentifyCells;
-						if (me.lastIdentifyCells.indexOf("|") === -1) {
-							me.identifyCellsValueLabel.toolTip = "";
-						} else {
-							me.identifyCellsValueLabel.toolTip = "min | max | average";
-						}
-						me.identifyBoxValueLabel.preText = me.lastIdentifyBox;
-						me.identifyDirectionValueLabel.preText = me.lastIdentifyDirection;
-						me.identifyPeriodValueLabel.preText = me.lastIdentifyPeriod;
-						me.identifySlopeValueLabel.preText = me.lastIdentifySlope;
-						me.identifySpeedValueLabel.preText = me.lastIdentifySpeed;
-						if (me.lastIdentifySpeed.indexOf("|") === -1) {
-							me.identifySpeedValueLabel.toolTip = "";
-						} else {
-							me.identifySpeedValueLabel.toolTip = "simplified | unsimplified";
-						}
-						me.identifyHeatValueLabel.preText = me.lastIdentifyHeat;
-						if (me.lastIdentifyHeat.indexOf("|") === -1) {
-							me.identifyHeatValueLabel.toolTip = "";
-						} else {
-							me.identifyHeatValueLabel.toolTip = "min | max | average";
-						}
-						me.identifyVolatilityValueLabel.preText = me.lastIdentifyVolatility;
-						me.identifyModValueLabel.preText = me.lastIdentifyMod;
-						me.identifyActiveValueLabel.preText = me.lastIdentifyActive;
-						me.identifyActiveValueLabel.toolTip = "rotor | stator | total";
-						me.identifyTemperatureValueLabel.preText = me.lastIdentifyTemperature;
-						me.identifyTemperatureValueLabel.toolTip = "active | rotor";
+						// save fast setting
+						me.lastWasFast = me.identifyFast;
+	
+						// set label position for results
+						me.setResultsPosition();
 					}
-					me.resultsDisplayed = true;
 
-					// save fast setting
-					me.lastWasFast = me.identifyFast;
+					// switch off search and pause playback
+					me.identify = false;
+					if (me.generationOn) {
+						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+					}
+					me.afterEdit("");
+	
+					me.identifyBannerLabel.preText = identifyResult[0];
+					if (me.lastIdentifyType === "Empty" || me.lastIdentifyType === "none") {
+						me.menuManager.notification.notify(identifyResult[0], 15, 240, 15, false);
+						me.resultsDisplayed = false;
+					} else {
+						me.menuManager.notification.clear(true, false);
+						me.menuManager.notification.clear(false, false);
+						me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
+					}
+					me.engine.initSearch(me.identify);
 
-					// set label position for results
-					me.setResultsPosition();
+					// switch off fast mode
+					me.identifyFast = false;
+
+					// unlock the menu
+					me.viewMenu.locked = false;
 				}
-
+			} else {
 				// switch off search and pause playback
 				me.identify = false;
 				if (me.generationOn) {
@@ -6460,15 +6497,10 @@
 				}
 				me.afterEdit("");
 
-				me.identifyBannerLabel.preText = identifyResult[0];
-				if (me.lastIdentifyType === "Empty" || me.lastIdentifyType === "none") {
-					me.menuManager.notification.notify(identifyResult[0], 15, 240, 15, false);
-					me.resultsDisplayed = false;
-				} else {
-					me.menuManager.notification.clear(true, false);
-					me.menuManager.notification.clear(false, false);
-					me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
-				}
+				me.resultsDisplayed = false;
+				me.menuManager.notification.notify("All Cells Died", 15, 240, 15, false);
+				me.menuManager.notification.clear(true, false);
+				me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
 				me.engine.initSearch(me.identify);
 
 				// switch off fast mode
@@ -6476,6 +6508,12 @@
 
 				// unlock the menu
 				me.viewMenu.locked = false;
+
+				// mark the died generation
+				me.diedGeneration = me.engine.counter;
+
+				// set fade interval
+				me.fading = me.historyStates + (me.engine.multiNumStates > 0 ? me.engine.multiNumStates : 0);
 			}
 		}
 
@@ -7048,9 +7086,8 @@
 			}
 		}
 
-		// clear reverse playback
-		me.engine.reverseMargolus = false;
-		me.engine.reversePending = false;
+		// clear reversible rule counters
+		me.engine.counterMargolus = 0;
 		me.engine.maxMargolusGen = 0;
 
 		// if not looping and soft reset then disable waypoints, track and looping if defined
