@@ -66,7 +66,7 @@ Planned:
     [DONE]B0 rules
 
 [STARTED]Rule Table rules
-    [DONE] decode @TABLE
+    [DONE]decode @TABLE
     [DONE]decode @ICONS
     - render Icons
     [DONE]decode @TREE
@@ -84,8 +84,8 @@ Planned:
 [STARTED]Pattern Editor
     - ability to define rule
     - improved LifeHistory drawing modes
-    - reset to include the overlay grid
-    - selections
+    [DONE]reset to include the overlay grid
+    [DONE]selections
         [DONE]accurate hex selection
         [DONE]accurate triangular selection
         [DONE]10 clipboards

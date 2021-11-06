@@ -988,7 +988,7 @@
 			}
 			this.sCanvas.width = width;
 			this.sCanvas.height = height;
-			this.sContext = this.sCanvas.getContext("2d", {alpha: false});
+			this.sContext = this.sCanvas.getContext("2d", {alpha: false, desynchronized: true});
 			this.sImageData = this.sContext.getImageData(0, 0, this.sCanvas.width, this.sCanvas.height);
 			this.sData32 = new Uint32Array(this.sImageData.data.buffer);
 		} else {
@@ -2001,7 +2001,7 @@
 				if (!fast) {
 					this.firstCount = true;
 					this.countList.whole.fill(0);
-					for (x = 0; x < period; x += 1) {
+					for (x = 0; x < period * 2; x += 1) {   // TBD is +1 needed?
 						// compute the next generation
 						this.nextGeneration(false, view.noHistory, view.graphDisabled, view.identify);
 						this.convertToPensTile();
@@ -2259,8 +2259,9 @@
 				boxHeight = 0;
 				quit = true;
 			} else {
-				// get the hash of the current pattern
-				hash = this.getHash(box, fast);
+				// get the hash of the current pattern in fast mode since slow mode parameters
+				// will be calculated once oscillator is found
+				hash = this.getHash(box, true);
 
 				// search hash list for match
 				quitLoop = false;

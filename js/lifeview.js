@@ -196,8 +196,8 @@
 		/** @const {string} */ scriptErrorTitle : "Script errors",
 
 		// minimum and maximum track speed
-		/** @const {number} */ minTrackSpeed : -2,
-		/** @const {number} */ maxTrackSpeed : 2,
+		/** @const {number} */ minTrackSpeed : -8,
+		/** @const {number} */ maxTrackSpeed : 8,
 
 		// minimum and maximum thumbnail divisors
 		/** @const {number} */ minThumbSize : 2,
@@ -6296,7 +6296,9 @@
 		if (cancelled) {
 			me.menuManager.notification.notify("Cancelled", 15, 80, 15, true);
 		} else {
-			me.menuManager.notification.notify("Arrived at generation " + me.engine.counter, 15, 150, 15, true);
+			if (me.genNotifications) {
+				me.menuManager.notification.notify("Arrived at generation " + me.engine.counter, 15, 150, 15, true);
+			}
 		}
 		me.menuManager.notification.clear(false, false);
 		me.afterEdit("");
@@ -12643,7 +12645,9 @@
 					me.startFrom = number;
 					me.navToggle.current = me.toggleSettings([false], true, me);
 					me.menuManager.toggleRequired = true;
-					me.menuManager.notification.notify("Going to generation " + number, 15, 10000, 15, false);
+					if (me.genNotifications) {
+						me.menuManager.notification.notify("Going to generation " + number, 15, 10000, 15, false);
+					}
 					me.menuManager.notification.clear(true, false);
 
 					// if the required generation is earlier then reset
@@ -14484,7 +14488,7 @@
 			}
 
 			// setup the 2d drawing context
-			this.mainContext = this.mainCanvas.getContext("2d", {alpha: false});
+			this.mainContext = this.mainCanvas.getContext("2d", {alpha: false, desynchronized: true});
 			this.mainContext.globalAlpha = 1;
 			this.mainContext.fillStyle = "black";
 			this.mainContext.imageSmoothingEnabled = false;
@@ -16782,7 +16786,9 @@
 
 		// notify if start from is defined
 		if (me.startFrom !== -1) {
-			me.menuManager.notification.notify("Going to generation " + me.startFrom, 15, 10000, 15, false);
+			if (me.genNotifications) {
+				me.menuManager.notification.notify("Going to generation " + me.startFrom, 15, 10000, 15, false);
+			}
 			me.menuManager.notification.clear(true, false);
 		}
 	};
@@ -17403,6 +17409,14 @@
 					if (DocConfig.multi) {
 						// check if the text is a pattern and add to Controller if in multiverse mode
 						isPattern(cleanItem, allocator, manager, null, null);
+					}
+
+					// if the canvas does not exist then create it
+					if (canvasItem === undefined) {
+						canvasItem = document.createElement("canvas");
+						canvasItem.width = ViewConstants.minViewerWidth;
+						canvasItem.height = ViewConstants.minMenuHeight + 80;
+						rleItem.appendChild(canvasItem);
 					}
 
 					// check if the canvas exists

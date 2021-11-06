@@ -651,7 +651,7 @@
 		this.ruleTableSymmetriesList[PatternConstants.ruleTableOneD] = ["none", "reflect", "permute"];
 
 		// symmetry remap
-		this.ruleTableSymmetryRemap = [];
+		/** @type {Array<Array<Array<Array<number>>>>} */ this.ruleTableSymmetryRemap = [];
 
 		// populate remap
 		// von Neumann
@@ -7903,7 +7903,7 @@
 			/** @const {number} */ iRule = outputList.length,
 			/** @const {number} */ iBit = iRule % nBits,
 			/** @const {number} */ mask = 1 << iBit,
-			/** @type {Array<Array<number>>} */ possibles = null,
+			/** @type {Array<number>} */ possibles = null,
 			/** @type {number} */ iRuleC = (iRule - iBit) / nBits; // compress index of rule
 
 		// check if the transition is a duplicate
@@ -8023,7 +8023,7 @@
 			/** @type {number} */ k = 0,
 			/** @type {Array<number>} */ inputs = [],
 			/** @type {Array<number>} */ permutedInputs = [],
-			/** @type {Array<number>} */ remap = [],
+			/** @type {Array<Array<number>>} */ remap = [],
 			/** @type {number} */ output = 0,
 			/** @type {Array<number>} */ outputList = [],
 			/** @type {Array<Array<Array<number>>>} */ lut = [],
