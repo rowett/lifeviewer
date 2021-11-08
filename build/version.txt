@@ -1,3 +1,9 @@
+Build 654
+- revert create canvas for now
+
+Build 653
+- potential fix for flickering on Chromebook
+
 Build 652
 - extend TRACK range to +/- 8
 - create canvas if it doesn't exist

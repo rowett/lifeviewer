@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 651,
+		/** @const {number} */ versionBuild : 654,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -14488,7 +14488,7 @@
 			}
 
 			// setup the 2d drawing context
-			this.mainContext = this.mainCanvas.getContext("2d", {alpha: false, desynchronized: true});
+			this.mainContext = this.mainCanvas.getContext("2d", {alpha: false});
 			this.mainContext.globalAlpha = 1;
 			this.mainContext.fillStyle = "black";
 			this.mainContext.imageSmoothingEnabled = false;
@@ -17412,12 +17412,12 @@
 					}
 
 					// if the canvas does not exist then create it
-					if (canvasItem === undefined) {
-						canvasItem = document.createElement("canvas");
-						canvasItem.width = ViewConstants.minViewerWidth;
-						canvasItem.height = ViewConstants.minMenuHeight + 80;
-						rleItem.appendChild(canvasItem);
-					}
+					//if (canvasItem === undefined) {
+						//canvasItem = document.createElement("canvas");
+						//canvasItem.width = ViewConstants.minViewerWidth;
+						//canvasItem.height = ViewConstants.minMenuHeight + 80;
+						//rleItem.appendChild(canvasItem);
+					//}
 
 					// check if the canvas exists
 					if (canvasItem && canvasItem.getContext) {

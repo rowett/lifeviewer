@@ -988,7 +988,7 @@
 			}
 			this.sCanvas.width = width;
 			this.sCanvas.height = height;
-			this.sContext = this.sCanvas.getContext("2d", {alpha: false, desynchronized: true});
+			this.sContext = this.sCanvas.getContext("2d", {alpha: false});
 			this.sImageData = this.sContext.getImageData(0, 0, this.sCanvas.width, this.sCanvas.height);
 			this.sData32 = new Uint32Array(this.sImageData.data.buffer);
 		} else {
