@@ -18966,6 +18966,7 @@
 
 								// update alive status
 								this.anythingAlive |= nextCell;
+								this.anythingAlive |= colOccupied;  // ensure patterns with just dead cells continue generating
 								rowIndex >>= 1;
 							}
 							columnOccupied16[leftX] |= colOccupied;
@@ -19466,6 +19467,7 @@
 
 								// update alive status
 								this.anythingAlive |= nextCell;
+								this.anythingAlive |= colOccupied;  // ensure patterns with just dead cells continue generating
 								rowIndex >>= 1;
 							}
 							columnOccupied16[leftX] |= colOccupied;
@@ -19939,6 +19941,7 @@
 
 								// update alive status
 								this.anythingAlive |= nextCell;
+								this.anythingAlive |= colOccupied;  // ensure patterns with just dead cells continue generating
 								rowIndex >>= 1;
 							}
 							columnOccupied16[leftX] |= colOccupied;
