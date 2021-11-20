@@ -57,6 +57,9 @@
 		// camera angle
 		this.angle = 0;
 
+		// camera tilt
+		this.tilt = 0;
+
 		// camera zoom
 		this.zoom = 1;
 
@@ -102,6 +105,7 @@
 		this.xDefined = false;
 		this.yDefined = false;
 		this.angleDefined = false;
+		this.tiltDefined = false;
 		this.zoomDefined = false;
 		this.layersDefined = false;
 		this.depthDefined = false;
@@ -150,6 +154,9 @@
 
 		// copy angle
 		this.angle = fromWaypoint.angle;
+
+		// copy tilt
+		this.tilt = fromWaypoint.tilt;
 
 		// copy zoom
 		this.zoom = fromWaypoint.zoom;
@@ -318,6 +325,9 @@
 
 		// interpolate angle
 		this.angle = (startAngle + percentBezierComplete * (endAngle - startAngle)) % 360;
+
+		// interpolate tilt
+		this.tilt = fromWaypoint.tilt + percentBezierComplete * (toWaypoint.tilt - fromWaypoint.tilt);
 
 		// interpolate layers
 		this.layers = (fromWaypoint.layers + percentLinearComplete * (toWaypoint.layers - fromWaypoint.layers)) | 0;
@@ -1791,7 +1801,7 @@
 	};
 
 	// create temporary position
-	WaypointManager.prototype.createTemporaryPosition = function(x, y, zoom, angle, layers, depth, theme, gps, step, generation, elapsedTime) {
+	WaypointManager.prototype.createTemporaryPosition = function(x, y, zoom, angle, tilt, layers, depth, theme, gps, step, generation, elapsedTime) {
 		// get the temporary start waypoint
 		var temp = this.tempStart,
 		    result = 0;
@@ -1801,6 +1811,7 @@
 		temp.y = y;
 		temp.zoom = zoom;
 		temp.angle = angle;
+		temp.tilt = tilt;
 		temp.gps = gps;
 		temp.step = step;
 		temp.layers = layers;
@@ -1865,7 +1876,7 @@
 			this.waypointList[this.waypointList.length] = waypoint;
 
 			// check if the waypoint controls the camera
-			if (waypoint.xDefined || waypoint.yDefined || waypoint.zoomDefined || waypoint.angleDefined || waypoint.fitZoom) {
+			if (waypoint.xDefined || waypoint.yDefined || waypoint.zoomDefined || waypoint.angleDefined || waypoint.tiltDefined || waypoint.fitZoom) {
 				this.hasCamera = true;
 			}
 		}
@@ -1929,7 +1940,9 @@
 			if (poi.angleDefined) {
 				text += " ANGLE " + poi.angle;
 			}
-
+			if (poi.tiltDefined && poi.tilt !== 0) {
+				text += " TILT " + poi.tilt;
+			}
 		}
 
 		// return the text
@@ -2368,6 +2381,16 @@
 				poi.angleDefined = true;
 				break;
 
+			case Keywords.tiltWord:
+				// check if tilt is already defined
+				if (poi.tiltDefined) {
+					scriptErrors[scriptErrors.length] = [what + " " + Keywords.initialWord, (initialDefined ? "already defined" : "overwrites " + poi.tilt)];
+				}
+				// set tilt
+				poi.tilt = this.waypointList[0].tilt;
+				poi.tiltDefined = true;
+				break;
+
 			case Keywords.depthWord:
 				// check if depth is already defined
 				if (poi.depthDefined) {
@@ -2451,6 +2474,7 @@
 		this.copyInitial(Keywords.yWord, poi, scriptErrors, false);
 		this.copyInitial(Keywords.zoomWord, poi, scriptErrors, false);
 		this.copyInitial(Keywords.angleWord, poi, scriptErrors, false);
+		this.copyInitial(Keywords.tiltWord, poi, scriptErrors, false);
 		this.copyInitial(Keywords.layersWord, poi, scriptErrors, false);
 		this.copyInitial(Keywords.depthWord, poi, scriptErrors, false);
 		this.copyInitial(Keywords.themeWord, poi, scriptErrors, false);
@@ -2497,6 +2521,11 @@
 			// angle
 			if (!current.angleDefined) {
 				current.angle = previous.angle;
+			}
+
+			// tilt
+			if (!current.tiltDefined) {
+				current.tilt = previous.tilt;
 			}
 
 			// zoom

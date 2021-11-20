@@ -1,3 +1,17 @@
+Build 658
+- added experimental support to tilt the camera for square grids
+	- script command [[ TILT <0.0..5.0> ]] defines tilt amount (can be used in POIs and Waypoints)
+	- hotkeys ' and / to increase and decrease tilt
+	- new range control in Settings menu to set tilt amount
+- hotkey ? now toggles cell shape (for hex and triangular grids)
+
+Build 657
+- added hotkeys Ctrl-[ and Ctrl-] to tilt image
+
+Build 656
+- experimental mode7 support
+- hotkey ; toggles tilt mode on/off
+
 Build 655
 - fix LifeSuper patterns with only dead cells stopping generating
 

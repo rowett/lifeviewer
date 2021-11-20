@@ -422,18 +422,51 @@
 
 			// determine if the key can be processed
 			switch (keyCode) {
-			// '/' for toggle hex
+			// '/' for tilt down
 			case 191:
-			case 111: // num /
-				// switch between hexagonal and square cells for hex display
-				if (me.engine.isHex) {
-					me.hexCellButton.current = me.viewHexCellToggle([!me.engine.forceRectangles], true, me);
-					me.menuManager.notification.notify("Hexagonal display uses " + (me.engine.forceRectangles ? "Rectangles" : "Hexagons"), 15, 120, 15, true);
-				} else {
-					if (me.engine.isTriangular) {
+				if (event.shiftKey) {
+					// switch between hexagonal and square cells for hex display
+					if (me.engine.isHex) {
 						me.hexCellButton.current = me.viewHexCellToggle([!me.engine.forceRectangles], true, me);
-						me.menuManager.notification.notify("Triangular display uses " + (me.engine.forceRectangles ? "Rectangles" : "Triangles"), 15, 120, 15, true);
+						me.menuManager.notification.notify("Hexagonal display uses " + (me.engine.forceRectangles ? "Rectangles" : "Hexagons"), 15, 120, 15, true);
+					} else {
+						// switch between triangular and square cells for triangulr display
+						if (me.engine.isTriangular) {
+							me.hexCellButton.current = me.viewHexCellToggle([!me.engine.forceRectangles], true, me);
+							me.menuManager.notification.notify("Triangular display uses " + (me.engine.forceRectangles ? "Rectangles" : "Triangles"), 15, 120, 15, true);
+						}
 					}
+				} else {
+					if (!me.tiltItem.locked) {
+						// get the current value
+						value = me.tiltItem.current[0];
+	
+						// decrease tilt
+						value -= 0.1;
+						if (value < ViewConstants.minTilt) {
+							value = ViewConstants.minTilt;
+						}
+
+						// update UI
+						me.tiltItem.current = me.viewTiltRange([value, value], true, me);
+					}
+				}
+				break;
+
+			// single quote for tilt up
+			case 192:
+				if (!me.tiltItem.locked) {
+					// get the current value
+					value = me.tiltItem.current[0];
+
+					// decrease tilt
+					value += 0.1;
+					if (value > ViewConstants.maxTilt) {
+						value = ViewConstants.maxTilt;
+					}
+
+					// update UI
+					me.tiltItem.current = me.viewTiltRange([value, value], true, me);
 				}
 				break;
 

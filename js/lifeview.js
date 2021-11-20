@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 655,
+		/** @const {number} */ versionBuild : 658,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -348,6 +348,10 @@
 		/** @const {number} */ minZoom : 1 / 16,
 		/** @const {number} */ maxZoom : 64,
 		
+		// minimum and maximum tilt
+		/** @const {number} */ minTilt : 0,
+		/** @const {number} */ maxTilt : 5,
+
 		// minimum and maximum negative zoom
 		/** @const {number} */ minNegZoom : -16,
 		/** @const {number} */ maxNegZoom : -1,
@@ -1028,6 +1032,7 @@
 		/** @type {boolean} */ this.initialY = false;
 		/** @type {boolean} */ this.initialZ = false;
 		/** @type {boolean} */ this.initialAngle = false;
+		/** @type {boolean} */ this.initialTilt = false;
 		/** @type {boolean} */ this.initialDepth = false;
 		/** @type {boolean} */ this.initialLayers = false;
 		/** @type {boolean} */ this.initialTheme = false;
@@ -1150,6 +1155,7 @@
 		/** @type {number} */ this.startYPOI = -1;
 		/** @type {number} */ this.startZoomPOI = -1;
 		/** @type {number} */ this.startAnglePOI = -1;
+		/** @type {number} */ this.startTiltPOI = -1;
 		/** @type {number} */ this.startDepthPOI = -1;
 		/** @type {number} */ this.startLayersPOI = -1;
 
@@ -1158,6 +1164,7 @@
 		/** @type {number} */ this.endYPOI = -1;
 		/** @type {number} */ this.endZoomPOI = -1;
 		/** @type {number} */ this.endAnglePOI = -1;
+		/** @type {number} */ this.endTiltPOI = -1;
 		/** @type {number} */ this.endDepthPOI = -1;
 		/** @type {number} */ this.endLayersPOI = -1;
 
@@ -1575,6 +1582,9 @@
 		// angle item
 		this.angleItem = null;
 
+		// tilt item
+		this.tiltItem = null;
+
 		// zoom item
 		this.zoomItem = null;
 
@@ -1957,6 +1967,7 @@
 
 		// default camera
 		/** @type {number} */ this.defaultAngle = 0;
+		/** @type {number} */ this.defaultTilt = 0;
 		/** @type {number} */ this.defaultX = 0;
 		/** @type {number} */ this.defaultY = 0;
 		/** @type {number} */ this.defaultZoom = 1;
@@ -1971,6 +1982,7 @@
 
 		// saved camera
 		/** @type {number} */ this.savedAngle = 0;
+		/** @type {number} */ this.savedtilt = 0;
 		/** @type {number} */ this.savedX = 0;
 		/** @type {number} */ this.savedY = 0;
 		/** @type {number} */ this.savedZoom = 1;
@@ -3356,6 +3368,7 @@
 		this.initialY = value;
 		this.initialZ = value;
 		this.initialAngle = value;
+		this.initialTilt = value;
 		this.initialDepth = value;
 		this.initialLayers = value;
 		this.initialTheme = value;
@@ -3876,12 +3889,14 @@
 			this.startYPOI = this.engine.height / 2 - this.engine.yOff;
 			this.startZoomPOI = this.engine.zoom;
 			this.startAnglePOI = this.engine.angle;
+			this.startTiltPOI = this.engine.tilt;
 
 			// save end point
 			this.endXPOI = this.engine.width / 2 - fitZoom[1];
 			this.endYPOI = this.engine.height / 2 - fitZoom[2];
 			this.endZoomPOI = fitZoom[0];
 			this.endAnglePOI = this.startAnglePOI;
+			this.endTiltPOI = this.startTiltPOI;
 
 			// reset step number for transition
 			this.targetPOI = WaypointConstants.poiDefaultSpeed;
@@ -3901,6 +3916,11 @@
 		// update angle control if available
 		if (this.angleItem) {
 			this.angleItem.current = this.viewAngleRange([this.engine.angle, this.engine.angle], false, this);
+		}
+
+		// update tilt control if available
+		if (this.tiltItem) {
+			this.tiltItem.current = this.viewTiltRange([this.engine.tilt, this.engine.tilt], false, this);
 		}
 	};
 	
@@ -5001,7 +5021,7 @@
 					me.manualChange = false;
 	
 					// create temporary position
-					me.elapsedTime = me.waypointManager.createTemporaryPosition(me.engine.width / 2 - me.engine.xOff, me.engine.height / 2 - me.engine.yOff, me.engine.zoom, me.engine.angle, me.engine.layers, me.engine.layerDepth * ViewConstants.depthScale, me.engine.colourTheme, me.genSpeed, me.gensPerStep, me.engine.counter, me.elapsedTime);
+					me.elapsedTime = me.waypointManager.createTemporaryPosition(me.engine.width / 2 - me.engine.xOff, me.engine.height / 2 - me.engine.yOff, me.engine.zoom, me.engine.angle, me.engine.tilt, me.engine.layers, me.engine.layerDepth * ViewConstants.depthScale, me.engine.colourTheme, me.genSpeed, me.gensPerStep, me.engine.counter, me.elapsedTime);
 				}
 			
 				// check for fit zoom
@@ -5077,6 +5097,12 @@
 					me.engine.angle = currentWaypoint.angle;
 					if (me.angleItem) {
 						me.angleItem.current = [me.engine.angle, me.engine.angle];
+					}
+
+					// set tilt and update tilt control
+					me.engine.tilt = currentWaypoint.tilt;
+					if (me.tiltItem) {
+						me.tiltItem.current = [me.engine.tilt, me.engine.tilt];
 					}
 	
 					// set layers
@@ -5354,6 +5380,7 @@
 
 		// lock or unlock the controls
 		me.angleItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular;
+		me.tiltItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular;
 		me.autoFitToggle.locked = me.controlsLocked && me.waypointsDefined;
 		me.fitButton.locked = me.controlsLocked || (me.autoFit && me.generationOn);
 		me.generationRange.locked = me.controlsLocked && me.waypointsDefined;
@@ -5792,6 +5819,7 @@
 		shown = hide || this.showThemeSelection;
 		this.depthItem.deleted = shown;
 		this.angleItem.deleted = shown;
+		this.tiltItem.deleted = shown;
 		this.layersItem.deleted = shown;
 		// setting category buttons
 		shown = hide || this.showThemeSelection || this.showDisplaySettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings;
@@ -6934,6 +6962,9 @@
 		// save angle
 		me.savedAngle = me.engine.angle;
 
+		// save tilt
+		me.savedTilt = me.engine.tilt;
+
 		// save x and y
 		me.savedX = me.engine.xOff;
 		me.savedY = me.engine.yOff;
@@ -6946,11 +6977,13 @@
 		me.startYPOI = me.engine.height / 2 - me.engine.yOff;
 		me.startZoomPOI = me.engine.zoom;
 		me.startAnglePOI = me.engine.angle;
+		me.startTiltPOI = me.engine.tilt;
 
 		// set destination
 		me.endXPOI = me.engine.width / 2 - me.savedX;
 		me.endYPOI = me.engine.height / 2 - me.savedY;
 		me.endAnglePOI = me.savedAngle;
+		me.endTiltPOI = me.savedTilt;
 
 		// check for thumbnail
 		if (me.thumbnail) {
@@ -6982,6 +7015,12 @@
 		me.engine.angle = me.defaultAngle;
 		if (me.angleItem) {
 			me.angleItem.current = [me.defaultAngle, me.defaultAngle];
+		}
+
+		// reset tilt
+		me.engine.tilt = me.defaultTilt;
+		if (me.tiltItem) {
+			me.tiltItem.current = [me.defaultTilt, me.defaultTilt];
 		}
 
 		// reset x and y
@@ -8266,6 +8305,21 @@
 		
 		// return value
 		return [me.engine.angle, me.engine.angle];
+	};
+
+	// tilt range
+	View.prototype.viewTiltRange = function(newValue, change, me) {
+		// check if changing
+		if (change) {
+			// set manual change happened
+			me.manualChange = true;
+
+			// set tilt
+			me.engine.tilt = newValue[0];
+		}
+		
+		// return value
+		return [me.engine.tilt, me.engine.tilt];
 	};
 
 	// layers range
@@ -9949,7 +10003,11 @@
 
 		    // get angle
 		    startAngle = this.startAnglePOI,
-		    endAngle = this.endAnglePOI;
+		    endAngle = this.endAnglePOI,
+
+		    // get tilt
+		    startTilt = this.startTiltPOI,
+		    endTilt = this.endTiltPOI;
 
 		// set the camera position
 		this.engine.xOff = this.engine.width / 2 - (this.startXPOI + (bezierComplete * (this.endXPOI - this.startXPOI)));
@@ -9969,6 +10027,9 @@
 
 		// set the camera angle
 		this.engine.angle = (startAngle + bezierComplete * (endAngle - startAngle)) % 360;
+
+		// set the camera tilt
+		this.engine.tilt = (startTilt + bezierComplete * (endTilt - startTilt));
 
 		// check if layers defined
 		if (this.depthPOIused) {
@@ -9992,6 +10053,7 @@
 			// ensure target reached exactly
 			this.engine.zoom = this.endZoomPOI;
 			this.engine.angle = endAngle % 360;
+			this.engine.tilt = this.endTiltPOI;
 			this.engine.xOff = this.engine.width / 2 - this.endXPOI;
 			this.engine.yOff = this.engine.height / 2 - this.endYPOI;
 
@@ -10013,6 +10075,11 @@
 		// update angle control if available
 		if (this.angleItem) {
 			this.angleItem.current = this.viewAngleRange([this.engine.angle, this.engine.angle], false, this);
+		}
+
+		// update tilt control if available
+		if (this.tiltItem) {
+			this.tiltItem.current = this.viewTiltRange([this.engine.tilt, this.engine.tilt], false, this);
 		}
 	};
 
@@ -10052,6 +10119,7 @@
 		me.startYPOI = me.engine.height / 2 - me.engine.yOff;
 		me.startZoomPOI = me.engine.zoom;
 		me.startAnglePOI = me.engine.angle;
+		me.startTiltPOI = me.engine.tilt;
 
 		// save end point
 		if (poi.xDefined) {
@@ -10073,6 +10141,11 @@
 			me.endAnglePOI = poi.angle;
 		} else {
 			me.endAnglePOI = me.startAnglePOI;
+		}
+		if (poi.tiltDefined) {
+			me.endTiltPOI = poi.tilt;
+		} else {
+			me.endTiltPOI = me.startTiltPOI;
 		}
 
 		// check for hex mode
@@ -10203,12 +10276,14 @@
 			me.startYPOI = me.engine.height / 2 - me.engine.yOff;
 			me.startZoomPOI = me.engine.zoom;
 			me.startAnglePOI = me.engine.angle;
+			me.startTiltPOI = me.engine.tilt;
 
 			// save end point
 			me.endXPOI = me.startXPOI;
 			me.endYPOI = me.startYPOI;
 			me.endZoomPOI = adjustedZoom;
 			me.endAnglePOI = me.startAnglePOI;
+			me.endTiltPOI = me.startTiltPOI;
 
 			// reset step number for transition
 			me.stepsPOI = 0;
@@ -13368,6 +13443,9 @@
 			// get the angle
 			angleStr = me.engine.angle | 0,
 
+			// get the tile
+			tiltStr = me.engine.tilt | 0,
+
 			// get the theme
 			theme = me.engine.themes[me.engine.colourTheme];
 
@@ -13390,6 +13468,11 @@
 
 		// camera angle
 		string += Keywords.angleWord + " " + angleStr + " ";
+
+		// camera tilt
+		if (me.engine.tilt !== 0) {
+			string += Keywords.tiltWord + " " + tiltStr + " ";
+		}
 
 		// add script end
 		string += Keywords.scriptEndWord + "\n";
@@ -13976,12 +14059,16 @@
 		this.zoomItem.toolTip = "camera zoom [[ / ]]";
 
 		// add the layers range
-		this.layersItem = this.viewMenu.addRangeItem(this.viewLayersRange, Menu.west, 30, 0, 40, 292, ViewConstants.maxLayers, ViewConstants.minLayers, 1, true, "Layers ", "", 0);
+		this.layersItem = this.viewMenu.addRangeItem(this.viewLayersRange, Menu.east, -84, 0, 40, 292, ViewConstants.maxLayers, ViewConstants.minLayers, 1, true, "Layers ", "", 0);
 		this.layersItem.toolTip = "number of layers [Q / A]";
 
 		// add the depth range
-		this.depthItem = this.viewMenu.addRangeItem(this.viewDepthRange, Menu.east, -70, 0, 40, 292, 1, 0, 0.1, true, "Depth ", "", 2);
+		this.depthItem = this.viewMenu.addRangeItem(this.viewDepthRange, Menu.east, -40, 0, 40, 292, 1, 0, 0.1, true, "Depth ", "", 2);
 		this.depthItem.toolTip = "depth between layers [P / L]";
+
+		// add the tilt range
+		this.tiltItem = this.viewMenu.addRangeItem(this.viewTiltRange, Menu.west, 0, 0, 40, 292, ViewConstants.maxTilt, ViewConstants.minTilt, 0, true, "Tilt ", "", 1);
+		this.tiltItem.toolTip = "camera tilt [' / /]";
 
 		// add the angle range
 		this.angleItem = this.viewMenu.addRangeItem(this.viewAngleRange, Menu.north, 0, 50, 390, 40, 0, 359, 0, true, "Angle ", "\u00B0", 0);
@@ -13997,7 +14084,7 @@
 
 		// hex/square cell toggle button
 		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -100, -75, 180, 40, ["Use Rectangles"], [this.engine.forceRectangles], Menu.multi);
-		this.hexCellButton.toolTip = ["toggle hexagonal cells [/]"];
+		this.hexCellButton.toolTip = ["toggle hexagonal cells [?]"];
 
 		// cell borders toggle button
 		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 100, -75, 180, 40, ["Cell Borders"], [this.engine.cellBorders], Menu.multi);
@@ -14436,7 +14523,7 @@
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.backButton, this.themeButton, this.patternButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.autoGridButton, this.altGridButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
+		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.tiltItem, this.backButton, this.themeButton, this.patternButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.autoGridButton, this.altGridButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.genLabel, this.genValueLabel, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -14621,6 +14708,11 @@
 		// angle
 		if (!currentWaypoint.angleDefined) {
 			currentWaypoint.angle = this.engine.angle;
+		}
+
+		// tilt
+		if (!currentWaypoint.tiltDefined) {
+			currentWaypoint.tilt = this.engine.tilt;
 		}
 
 		// layers
@@ -15657,6 +15749,9 @@
 		// set the default angle
 		me.engine.angle = 0;
 
+		// set the default tilt
+		me.engine.tilt = 0;
+
 		// set the default zoom
 		me.engine.zoom = 6;
 
@@ -16419,9 +16514,9 @@
 		// set the hex cell UI control and lock if triangular grid
 		if (me.engine.isTriangular) {
 			me.hexCellButton.current = [me.engine.forceRectangles];
-			me.hexCellButton.toolTip = ["toggle triangular cells [/]"];
+			me.hexCellButton.toolTip = ["toggle triangular cells [?]"];
 		} else {
-			me.hexCellButton.toolTip = ["toggle hexagonal cells [/]"];
+			me.hexCellButton.toolTip = ["toggle hexagonal cells [?]"];
 			if (me.engine.isHex) {
 				me.hexCellButton.current = [me.engine.forceRectangles];
 			} else {
@@ -16532,6 +16627,10 @@
 		// set the default angle
 		me.defaultAngle = me.engine.angle;
 		me.angleItem.current = [me.defaultAngle, me.defaultAngle];
+
+		// set the default tilt
+		me.defaultTilt = me.engine.tilt;
+		me.tiltItem.current = [me.defaultTilt, me.defaultTilt];
 
 		// set the default theme
 		me.defaultTheme = me.engine.colourTheme;

@@ -740,6 +740,9 @@
 		// angle of rotation
 		/** @type {number} */ this.angle = 0;
 
+		// camera tilt
+		/** @type {number} */ this.tilt = 0;
+
 		// zoom factor
 		/** @type {number} */ this.zoom = 6;
 
@@ -792,6 +795,9 @@
 
 		// image data
 		this.imageData = null;
+
+		// mode 7 buffer
+		/** @type {Uint32Array} */ this.mode7Buffer = null;
 
 		// drawing context
 		this.context = context;
@@ -980,11 +986,7 @@
 		// check if pretty rendering enabled
 		if (this.pretty) {
 			if (this.sCanvas === null) {
-				if (window.OffscreenCanvas) {
-					this.sCanvas = new OffscreenCanvas(width, height);
-				} else {
-					this.sCanvas = document.createElement("canvas");
-				}
+				this.sCanvas = document.createElement("canvas");
 			}
 			this.sCanvas.width = width;
 			this.sCanvas.height = height;
@@ -5857,6 +5859,7 @@
 		this.imageData = null;
 		this.data32 = null;
 		this.data8 = null;
+		this.mode7Buffer = null;
 
 		// update the drawing context
 		this.imageData = context.createImageData(context.canvas.width, context.canvas.height);
@@ -5872,6 +5875,9 @@
 			// create an 8bit view of the buffer
 			this.data8 = new Uint8Array(this.data32.buffer);
 		}
+
+		// mode 7
+		this.mode7Buffer = new Uint32Array(context.canvas.width * context.canvas.height);
 
 		// create the new blank pixel row
 		this.blankPixelRow = this.allocator.allocate(Uint32, displayWidth, "Life.blankPixelRow");
@@ -35662,6 +35668,70 @@
 					s[i] = t[i];
 					i += 1;
 				}
+			}
+
+			// tilt
+			if (this.tilt !== 0) {
+				var y, py, sy, x, px, sx, ex, pz,
+					width = this.context.canvas.width,
+					height = this.context.canvas.height,
+					data32 = this.data32,
+					mode7 = this.mode7Buffer,
+					halfwidth = width >> 1,
+					halfheight = height >> 1,
+					rowoffset = 0,
+					projrowoffset = 0,
+					mode7Angle = this.tilt - 1,
+					dx = 0,
+
+					// use pixel 0 colour for pixels not on projected grid
+					offGrid = this.boundaryColour,
+
+					// set the number of steps based on the tilt angle
+					mode7Step = (mode7Angle * 2 + 2) / height;
+	
+				// ensure tilt around middle row
+				pz = -mode7Angle;
+
+				// tilt image
+				for (y = 0; y < height; y += 1) {
+					py = y - halfheight;
+					if (pz <= 0) {
+						sy = height;
+					} else {
+						sy = ((py / pz) + halfheight) | 0;
+					}
+					rowoffset = y * width;
+
+					// check if row is on the image
+					if (sy < 0 || sy >= height) {
+						// not on image so fill with background pixels
+						for (x = 0; x < width; x += 1) {
+							mode7[rowoffset + x] = offGrid;
+						}
+					} else {
+						// on the image so project row
+						projrowoffset = sy * width;
+						sx = ((-halfwidth / pz) + halfwidth);
+						ex = ((halfwidth / pz) + halfwidth);
+						dx = (ex - sx) / width;
+						for (x = 0; x < width; x += 1) {
+							// check if pixel is on the image
+							px = sx | 0;
+							if (px < 0 || px >= width) {
+								mode7[rowoffset + x] = offGrid;
+							} else {
+								mode7[rowoffset + x] = data32[projrowoffset + px];
+							}
+							sx += dx;
+						}
+					}
+
+					pz += mode7Step;
+				}
+
+				// copy projected image to image data
+				data32.set(mode7);
 			}
 
 			// draw the image on the canvas

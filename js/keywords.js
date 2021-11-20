@@ -350,6 +350,9 @@
 		/** @const {string} */ colorWord : "COLOR",
 		/** @const {string} */ colourWord : "COLOUR",
 
+		// mode 7
+		/** @const {string} */ tiltWord : "TILT",
+
 		// view only
 		/** @const {string} */ viewOnlyWord : "VIEWONLY",
 

@@ -121,6 +121,7 @@
 			case Keywords.integerZoomWord:
 			case Keywords.loopWord:
 			case Keywords.viewOnlyWord:
+			case Keywords.tiltWord:
 			case Keywords.noGUIWord:
 			case Keywords.noCopyWord:
 			case Keywords.thumbnailWord:
@@ -1176,6 +1177,7 @@
 			y : false,
 			zoom : false,
 			angle : false,
+			tilt : false,
 			layers : false,
 			depth : false,
 			theme : false,
@@ -3244,6 +3246,7 @@
 							suppressErrors.y = true;
 							suppressErrors.zoom = true;
 							suppressErrors.angle = true;
+							suppressErrors.tilt = true;
 							suppressErrors.layers = true;
 							suppressErrors.depth = true;
 							suppressErrors.theme = true;
@@ -3754,6 +3757,44 @@
 							// restore current Waypoint
 							currentWaypoint = tempWaypoint;
 
+							break;
+
+						// tilt
+						case Keywords.tiltWord:
+							// get the tilt
+							if (scriptReader.nextTokenIsNumeric()) {
+								isNumeric = true;
+
+								// get the value
+								numberValue = scriptReader.getNextTokenAsNumber();
+
+								// check it is in range
+								if (numberValue >= ViewConstants.minTilt && numberValue <= ViewConstants.maxTilt) { 
+									// check if tilt already defined
+									if (currentWaypoint.tiltDefined && !view.initialTilt && !suppressErrors.tilt) {
+										scriptErrors[scriptErrors.length] = [Keywords.tiltWord + " " + numberValue, "overwrites " + currentWaypoint.tilt];
+									}
+
+									// set tilt in waypoint
+									currentWaypoint.tilt = numberValue;
+									currentWaypoint.tiltDefined = true;
+									view.initialTilt = false;
+									suppressErrors.tilt = false;
+									itemValid = true;
+								}
+							} else {
+								// check for initial
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken === Keywords.initialWord) {
+									// token valid so eat it
+									peekToken = scriptReader.getNextToken();
+
+									// copy from initial waypoint
+									view.waypointManager.copyInitial(Keywords.tiltWord, currentWaypoint, scriptErrors, view.initialTilt);
+									view.initialTilt = true;
+									itemValid = true;
+								}
+							}
 							break;
 
 						// angle
@@ -5081,6 +5122,10 @@
 							currentWaypoint.angleDefined = tempWaypoint.angleDefined;
 							currentWaypoint.angle = tempWaypoint.angle;
 						}
+						if (tempWaypoint.tiltDefined) {
+							currentWaypoint.tiltDefined = tempWaypoint.tiltDefined;
+							currentWaypoint.tilt = tempWaypoint.tilt;
+						}
 						if (tempWaypoint.depthDefined) {
 							currentWaypoint.depthDefined = tempWaypoint.depthDefined;
 							currentWaypoint.depth = tempWaypoint.depth;
@@ -5194,6 +5239,11 @@
 			// set angle
 			if (currentWaypoint.angleDefined) {
 				view.engine.angle = currentWaypoint.angle;
+			}
+
+			// set tilt
+			if (currentWaypoint.tiltDefined) {
+				view.engine.tilt = currentWaypoint.tilt;
 			}
 
 			// set depth
