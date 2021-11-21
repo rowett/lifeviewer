@@ -757,6 +757,8 @@
 		y = this.renderHelpLine(view, "Shift <", "rotate left 90 degrees", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift >", "rotate right 90 degrees", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "5", "reset angle", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "'", "tilt down", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "/", "tilt up", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// view controls, only display if not in multistate mode
@@ -790,10 +792,10 @@
 			y = this.renderHelpLine(view, "Shift W", "toggle performance warning", ctx, x, y, height, helpLine);
 		}
 		if (view.engine.isHex) {
-			y = this.renderHelpLine(view, "/", "toggle hexagons for hexagonal grid", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "?", "toggle hexagons for hexagonal grid", ctx, x, y, height, helpLine);
 		} else {
 			if (view.engine.isTriangular) {
-				y = this.renderHelpLine(view, "/", "toggle triangles for triangular grid", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "?", "toggle triangles for triangular grid", ctx, x, y, height, helpLine);
 			}
 		}
 		y = this.renderHelpLine(view, "T", "toggle timing information", ctx, x, y, height, helpLine);
@@ -1030,6 +1032,7 @@
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Camera:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.angleWord + " <0..359>", "set camera angle", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.tiltWord + " <0.0..5.0>", "set camera tilt", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.xWord + " <-" + (view.engine.maxGridSize >> 1) + ".." + (view.engine.maxGridSize >> 1) + ">", "set camera x position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.yWord + " <-" + (view.engine.maxGridSize >> 1) + ".." + (view.engine.maxGridSize >> 1) + ">", "set camera y position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.zoomWord + " <" + Number(-1 / ViewConstants.minZoom).toFixed(1) + ".." + (ViewConstants.maxZoom).toFixed(1) + ">", "set camera zoom", ctx, x, y, height, helpLine);

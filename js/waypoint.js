@@ -957,6 +957,9 @@
 			headSize = 0,
 			headAngle = 0,
 			shadowOffset = 0,
+			tilt = engine.tilt,
+			mode7Angle = tilt - 1,
+			pz = 1,
 			xLeft = 0, yLeft = 0, xRight = 0, yRight = 0;
 
 		// adjust for hex
@@ -1104,9 +1107,17 @@
 							headSize = Math.sqrt((cx2 * cx2) + (cy2 * cy2)) * current.headMultiple;
 						}
 
+						// check for tilt
+						if (tilt !== 0) {
+							pz = -mode7Angle + (mode7Angle * 2 + 2) / engine.displayHeight * (engine.displayHeight - y);
+							y = (((y - halfDisplayHeight) / pz) + halfDisplayHeight);
+							x = (((x - halfDisplayWidth) / pz) + halfDisplayWidth);
+						}
+
 						// rotate context for drawing
 						context.save();
 						context.translate(x, y);
+						context.scale(1 / pz, 1 / pz);
 						theta = current.angle;
 						if (!current.angleLocked) {
 							theta += engine.camAngle;
@@ -1192,6 +1203,9 @@
 			radius = 0, theta = 0,
 			rangeFromTarget = 0,
 			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
+			tilt = engine.tilt,
+			mode7Angle = tilt - 1,
+			pz = 1,
 			shadowOffset = 0,
 			coords = [], length = 0,
 			coord = 0;
@@ -1333,8 +1347,16 @@
 						// draw the polygon
 						y = (cy * yZoom) + halfDisplayHeight;
 						x = (cx * xZoom) + halfDisplayWidth;
-						cx2 = (coords[coord] - coords[0]) * xZoom;
-						cy2 = (coords[coord + 1] - coords[1]) * yZoom;
+
+						// check for tilt
+						if (tilt !== 0) {
+							pz = -mode7Angle + (mode7Angle * 2 + 2) / engine.displayHeight * (engine.displayHeight - y);
+							y = (((y - halfDisplayHeight) / pz) + halfDisplayHeight);
+							x = (((x - halfDisplayWidth) / pz) + halfDisplayWidth);
+						}
+
+						cx2 = (coords[coord] - coords[0]) * xZoom / pz;
+						cy2 = (coords[coord + 1] - coords[1]) * yZoom / pz;
 						if (engine.isHex) {
 							cx2 -= cy2 / 2;
 						}
@@ -1343,6 +1365,7 @@
 						// rotate context for drawing
 						context.save();
 						context.translate(x, y);
+						context.scale(1 / pz, 1 / pz);
 						theta = current.angle;
 						if (!current.angleLocked) {
 							theta += engine.camAngle;
@@ -1373,8 +1396,8 @@
 						context.moveTo(0, 0);
 						context.lineTo(cx2, cy2);
 						while (coord < length) {
-							cx2 = (coords[coord] - coords[0]) * xZoom;
-							cy2 = (coords[coord + 1] - coords[1]) * yZoom;
+							cx2 = (coords[coord] - coords[0]) * xZoom / pz;
+							cy2 = (coords[coord + 1] - coords[1]) * yZoom / pz;
 							if (engine.isHex) {
 								cx2 -= cy2 / 2;
 							}
@@ -1433,6 +1456,9 @@
 			radius = 0, theta = 0,
 			shadowOffset = 0,
 			rangeFromTarget = 0,
+			tilt = engine.tilt,
+			mode7Angle = tilt - 1,
+			pz = 1,
 			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0;
 
 		// adjust for hex
@@ -1635,9 +1661,17 @@
 						y = (cy * yZoom) + halfDisplayHeight;
 						x = (cx * xZoom) + halfDisplayWidth;
 	
+						// check for tilt
+						if (tilt !== 0) {
+							pz = -mode7Angle + (mode7Angle * 2 + 2) / engine.displayHeight * (engine.displayHeight - y);
+							y = (((y - halfDisplayHeight) / pz) + halfDisplayHeight);
+							x = (((x - halfDisplayWidth) / pz) + halfDisplayWidth);
+						}
+
 						// rotate context for drawing
 						context.save();
 						context.translate(x, y);
+						context.scale(1/ pz, 1 / pz);
 						theta = current.angle;
 						if (!current.angleLocked) {
 							theta += engine.camAngle;
