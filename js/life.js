@@ -5876,8 +5876,8 @@
 			this.data8 = new Uint8Array(this.data32.buffer);
 		}
 
-		// mode 7
-		this.mode7Buffer = new Uint32Array(context.canvas.width * context.canvas.height);
+		// don't reallocate the mode 7 buffer - it will be created when used
+		//this.mode7Buffer = new Uint32Array(context.canvas.width * context.canvas.height);
 
 		// create the new blank pixel row
 		this.blankPixelRow = this.allocator.allocate(Uint32, displayWidth, "Life.blankPixelRow");
@@ -35690,6 +35690,12 @@
 					// set the number of steps based on the tilt angle
 					mode7Step = (mode7Angle * 2 + 2) / height;
 	
+				// create the mode7 buffer if it has not been done so before
+				if (this.mode7Buffer === null) {
+					this.mode7Buffer = new Uint32Array(width * height);
+					mode7 = this.mode7Buffer;
+				}
+
 				// ensure tilt around middle row
 				pz = -mode7Angle;
 

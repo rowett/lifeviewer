@@ -1114,54 +1114,57 @@
 							x = (((x - halfDisplayWidth) / pz) + halfDisplayWidth);
 						}
 
-						// rotate context for drawing
-						context.save();
-						context.translate(x, y);
-						context.scale(1 / pz, 1 / pz);
-						theta = current.angle;
-						if (!current.angleLocked) {
-							theta += engine.camAngle;
-						}
-						context.rotate(theta / 180 * Math.PI);
-		
-						// set line width
-						context.lineWidth = currentSize;
-
-						// set line colour if not drawing shadows
-						if (!drawingShadows) {
-							context.strokeStyle = current.colour;
-						}
-
-						// set round line cap and join
-						context.lineCap = "round";
-						context.lineJoin = "round";
-
-						// compute the head position
-						if (headSize > 0) {
-							headAngle = Math.atan2(cy2, cx2);
-							xLeft = Math.cos(Math.PI * 0.85 + headAngle);
-							yLeft = Math.sin(Math.PI * 0.85 + headAngle);
-							xRight = Math.cos(-Math.PI * 0.85 + headAngle);
-							yRight = Math.sin(-Math.PI * 0.85 + headAngle);
-						}
-
-						// draw arrow layer
-						if (shadowOffset > 0) {
-							context.translate(shadowOffset, shadowOffset);
-						}
-						context.beginPath();
-						context.moveTo(0, 0);
-						context.lineTo(cx2, cy2);
-						if (headSize > 0) {
-							context.moveTo(cx2, cy2);
-							context.lineTo(cx2 + headSize * xLeft, cy2 + headSize * yLeft);
-							context.moveTo(cx2, cy2);
-							context.lineTo(cx2 + headSize * xRight, cy2 + headSize * yRight);
-						}
-						context.stroke();
+						// check annotation is on display
+						if (pz >= 0) {
+							// rotate context for drawing
+							context.save();
+							context.translate(x, y);
+							context.scale(1 / pz, 1 / pz);
+							theta = current.angle;
+							if (!current.angleLocked) {
+								theta += engine.camAngle;
+							}
+							context.rotate(theta / 180 * Math.PI);
+			
+							// set line width
+							context.lineWidth = currentSize;
 	
-						// restore context
-						context.restore();
+							// set line colour if not drawing shadows
+							if (!drawingShadows) {
+								context.strokeStyle = current.colour;
+							}
+	
+							// set round line cap and join
+							context.lineCap = "round";
+							context.lineJoin = "round";
+	
+							// compute the head position
+							if (headSize > 0) {
+								headAngle = Math.atan2(cy2, cx2);
+								xLeft = Math.cos(Math.PI * 0.85 + headAngle);
+								yLeft = Math.sin(Math.PI * 0.85 + headAngle);
+								xRight = Math.cos(-Math.PI * 0.85 + headAngle);
+								yRight = Math.sin(-Math.PI * 0.85 + headAngle);
+							}
+	
+							// draw arrow layer
+							if (shadowOffset > 0) {
+								context.translate(shadowOffset, shadowOffset);
+							}
+							context.beginPath();
+							context.moveTo(0, 0);
+							context.lineTo(cx2, cy2);
+							if (headSize > 0) {
+								context.moveTo(cx2, cy2);
+								context.lineTo(cx2 + headSize * xLeft, cy2 + headSize * yLeft);
+								context.moveTo(cx2, cy2);
+								context.lineTo(cx2 + headSize * xRight, cy2 + headSize * yRight);
+							}
+							context.stroke();
+		
+							// restore context
+							context.restore();
+						}
 					}
 				}
 			}
@@ -1355,63 +1358,66 @@
 							x = (((x - halfDisplayWidth) / pz) + halfDisplayWidth);
 						}
 
-						cx2 = (coords[coord] - coords[0]) * xZoom / pz;
-						cy2 = (coords[coord + 1] - coords[1]) * yZoom / pz;
-						if (engine.isHex) {
-							cx2 -= cy2 / 2;
-						}
-						coord += 2;
-	
-						// rotate context for drawing
-						context.save();
-						context.translate(x, y);
-						context.scale(1 / pz, 1 / pz);
-						theta = current.angle;
-						if (!current.angleLocked) {
-							theta += engine.camAngle;
-						}
-						context.rotate(theta / 180 * Math.PI);
-		
-						// set line width
-						context.lineWidth = currentSize;
-
-						// set line colour if not drawing shadows
-						if (!drawingShadows) {
-							if (current.isFilled) {
-								context.fillStyle = current.colour;
-							} else {
-								context.strokeStyle = current.colour;
-							}
-						}
-
-						// set round line cap and join
-						context.lineCap = "round";
-						context.lineJoin = "round";
-
-						// draw polygon layer
-						if (shadowOffset > 0) {
-							context.translate(shadowOffset, shadowOffset);
-						}
-						context.beginPath();
-						context.moveTo(0, 0);
-						context.lineTo(cx2, cy2);
-						while (coord < length) {
+						// check annotation is on display
+						if (pz >= 0) {
 							cx2 = (coords[coord] - coords[0]) * xZoom / pz;
 							cy2 = (coords[coord + 1] - coords[1]) * yZoom / pz;
 							if (engine.isHex) {
 								cx2 -= cy2 / 2;
 							}
 							coord += 2;
-							context.lineTo(cx2, cy2);
-						}
-						if (current.isFilled) {
-							context.fill();
-						} else {
-							context.stroke();
-						}
+		
+							// rotate context for drawing
+							context.save();
+							context.translate(x, y);
+							context.scale(1 / pz, 1 / pz);
+							theta = current.angle;
+							if (!current.angleLocked) {
+								theta += engine.camAngle;
+							}
+							context.rotate(theta / 180 * Math.PI);
+			
+							// set line width
+							context.lineWidth = currentSize;
 	
-						// restore context
-						context.restore();
+							// set line colour if not drawing shadows
+							if (!drawingShadows) {
+								if (current.isFilled) {
+									context.fillStyle = current.colour;
+								} else {
+									context.strokeStyle = current.colour;
+								}
+							}
+	
+							// set round line cap and join
+							context.lineCap = "round";
+							context.lineJoin = "round";
+	
+							// draw polygon layer
+							if (shadowOffset > 0) {
+								context.translate(shadowOffset, shadowOffset);
+							}
+							context.beginPath();
+							context.moveTo(0, 0);
+							context.lineTo(cx2, cy2);
+							while (coord < length) {
+								cx2 = (coords[coord] - coords[0]) * xZoom / pz;
+								cy2 = (coords[coord + 1] - coords[1]) * yZoom / pz;
+								if (engine.isHex) {
+									cx2 -= cy2 / 2;
+								}
+								coord += 2;
+								context.lineTo(cx2, cy2);
+							}
+							if (current.isFilled) {
+								context.fill();
+							} else {
+								context.stroke();
+							}
+	
+							// restore context
+							context.restore();
+						}
 					}
 				}
 			}
@@ -1668,53 +1674,56 @@
 							x = (((x - halfDisplayWidth) / pz) + halfDisplayWidth);
 						}
 
-						// rotate context for drawing
-						context.save();
-						context.translate(x, y);
-						context.scale(1/ pz, 1 / pz);
-						theta = current.angle;
-						if (!current.angleLocked) {
-							theta += engine.camAngle;
-						}
-						context.rotate(theta / 180 * Math.PI);
-						y = 0;
+						// check annotation is on display
+						if (pz >= 0) {
+							// rotate context for drawing
+							context.save();
+							context.translate(x, y);
+							context.scale(1/ pz, 1 / pz);
+							theta = current.angle;
+							if (!current.angleLocked) {
+								theta += engine.camAngle;
+							}
+							context.rotate(theta / 180 * Math.PI);
+							y = 0;
+			
+							while (index !== -1) {
+								// get the next line
+								line = message.substr(0, index);
+								message = message.substr(index + 2);
+			
+								// measure text line width
+								xPos = context.measureText(line).width >> 1;
+				
+								// draw shadow
+								context.fillStyle = shadowColour;
+								context.fillText(line, -xPos + shadowOffset, y + shadowOffset);
+					
+								// draw message
+								context.fillStyle = current.colour;
+								context.fillText(line, -xPos, y);
 		
-						while (index !== -1) {
-							// get the next line
-							line = message.substr(0, index);
-							message = message.substr(index + 2);
-		
-							// measure text line width
-							xPos = context.measureText(line).width >> 1;
+								// compute y coordinate for next text line
+								y += currentSize;
+			
+								// check for more lines
+								index = message.indexOf("\\n");
+							}
+			
+							// measure final text line width
+							xPos = context.measureText(message).width >> 1;
 			
 							// draw shadow
 							context.fillStyle = shadowColour;
-							context.fillText(line, -xPos + shadowOffset, y + shadowOffset);
+							context.fillText(message, -xPos + shadowOffset, y + shadowOffset);
 				
 							// draw message
 							context.fillStyle = current.colour;
-							context.fillText(line, -xPos, y);
-	
-							// compute y coordinate for next text line
-							y += currentSize;
+							context.fillText(message, -xPos, y);
 		
-							// check for more lines
-							index = message.indexOf("\\n");
+							// restore context
+							context.restore();
 						}
-		
-						// measure final text line width
-						xPos = context.measureText(message).width >> 1;
-		
-						// draw shadow
-						context.fillStyle = shadowColour;
-						context.fillText(message, -xPos + shadowOffset, y + shadowOffset);
-			
-						// draw message
-						context.fillStyle = current.colour;
-						context.fillText(message, -xPos, y);
-	
-						// restore context
-						context.restore();
 					}
 				}
 			}

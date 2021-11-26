@@ -1,3 +1,6 @@
+Build 659
+- annotation position now works with camera tilt
+
 Build 658
 - added experimental support to tilt the camera for square grids
 	- script command [[ TILT <0.0..5.0> ]] defines tilt amount (can be used in POIs and Waypoints)
