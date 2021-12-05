@@ -8846,35 +8846,31 @@
 		    colourGrid = this.colourGrid,
 		    colourGridRow = null,
 
-		    // bounding boxes
-		    HROTBox = this.HROTBox,
-
 		    // new box extent
 		    newBottomY = this.height,
 		    newTopY = -1,
 		    newLeftX = this.width,
 		    newRightX = -1,
 
-		    // flag if something in the row was alive
-		    rowAlive = 0,
+		    // flag for live cells in a row
+		    rowAlive = false;
 
-		    // flags if something in the column was alive
-		    columnOccupied16 = this.columnOccupied16;
-
-		// clear column occupied flags
-		columnOccupied16.fill(0);
+		// select the correct grid for PCA
+		if (this.isPCA) {
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+			}
+		}
 
 		// check each row
-		for (h = HROTBox.bottomY; h <= HROTBox.topY; h += 1) {
+		for (h = 0; h < height; h += 1) {
 			colourGridRow = colourGrid[h];
-
-			// flag nothing in the row
-			rowAlive = 0;
+			rowAlive = false;
 
 			// check each column
-			for (w = HROTBox.leftX; w <= HROTBox.rightX; w += 1) {
+			for (w = 0; w < width; w += 1) {
 				if (colourGridRow[w] >= aliveStart) {
-					rowAlive = 1;
+					rowAlive = true;
 
 					if (w < newLeftX) {
 						newLeftX = w;
@@ -8906,8 +8902,8 @@
 		}
 
 		// clip to display
-		if (newTopY > this.height - 1) {
-			newTopY = this.height - 1;
+		if (newTopY > height - 1) {
+			newTopY = height - 1;
 		}
 		if (newBottomY < 0) {
 			newBottomY = 0;
@@ -8915,8 +8911,8 @@
 		if (newLeftX < 0) {
 			newLeftX = 0;
 		}
-		if (newRightX > this.width - 1) {
-			newRightX = this.width - 1;
+		if (newRightX > width - 1) {
+			newRightX = width - 1;
 		}
 
 		// save new grid box

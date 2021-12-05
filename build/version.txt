@@ -1,3 +1,14 @@
+Build 662
+- ignore history states for Select All on PCA rules
+
+Build 661
+- Select All with an empty pattern now cancels any selection
+- stop Identify iterating first generation with an empty pattern
+- Identify now displays generation that pattern died
+
+Build 660
+- allocate TILT buffer on first use
+
 Build 659
 - annotation position now works with camera tilt
 

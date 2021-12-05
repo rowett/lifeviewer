@@ -306,7 +306,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 660,
+		/** @const {number} */ versionBuild : 662,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6528,8 +6528,6 @@
 				me.afterEdit("");
 
 				me.resultsDisplayed = false;
-				me.menuManager.notification.notify("All Cells Died", 15, 240, 15, false);
-				me.menuManager.notification.clear(true, false);
 				me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
 				me.engine.initSearch(me.identify);
 
@@ -6544,6 +6542,10 @@
 
 				// set fade interval
 				me.fading = me.historyStates + (me.engine.multiNumStates > 0 ? me.engine.multiNumStates : 0);
+
+				// notify Life ended
+				me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 240, 15, false);
+				me.menuManager.notification.clear(true, false);
 			}
 		}
 
@@ -10770,38 +10772,46 @@
 			width = 0,
 			height = 0;
 
-		// update the pattern extent
-		me.engine.shrinkNeeded = true;
-		me.engine.doShrink();
-
-		// for HROT patterns use alive states only
-		if (me.engine.isHROT && me.engine.multiNumStates === 2) {
-			me.engine.getAliveStatesBox(selBox);
-			selBox.leftX -= xOff;
-			selBox.rightX -= xOff;
-			selBox.bottomY -= yOff;
-			selBox.topY -= yOff;
+		// check for empty population
+		if (me.engine.population > 0) {
+			// update the pattern extent
+			me.engine.shrinkNeeded = true;
+			me.engine.doShrink();
+	
+			// for HROT patterns use alive states only
+			if (me.engine.isPCA || (me.engine.isHROT && me.engine.multiNumStates === 2)) {
+				me.engine.getAliveStatesBox(selBox);
+				selBox.leftX -= xOff;
+				selBox.rightX -= xOff;
+				selBox.bottomY -= yOff;
+				selBox.topY -= yOff;
+			} else {
+				// use the pattern extent for the selection
+				selBox.leftX = zoomBox.leftX - xOff;
+				selBox.bottomY = zoomBox.bottomY - yOff;
+				selBox.rightX = zoomBox.rightX - xOff;
+				selBox.topY = zoomBox.topY - yOff;
+			}
+	
+			me.isSelection = true;
+			me.afterSelectAction = false;
+			if (selBox.rightX < selBox.leftX) {
+				width = selBox.leftX - selBox.rightX + 1;
+			} else {
+				width = selBox.rightX - selBox.leftX + 1;
+			}
+			if (selBox.topY < selBox.bottomY) {
+				height = selBox.bottomY - selBox.topY + 1;
+			} else {
+				height = selBox.topY - selBox.bottomY + 1;
+			}
+			me.afterEdit("select all (" + width + " x " + height + ")");
 		} else {
-			// use the pattern extent for the selection
-			selBox.leftX = zoomBox.leftX - xOff;
-			selBox.bottomY = zoomBox.bottomY - yOff;
-			selBox.rightX = zoomBox.rightX - xOff;
-			selBox.topY = zoomBox.topY - yOff;
+			me.menuManager.notification.notify("All cells are dead", 15, 120, 15, false);
+			if (me.isSelection) {
+				me.removeSelection(me);
+			}
 		}
-
-		me.isSelection = true;
-		me.afterSelectAction = false;
-		if (selBox.rightX < selBox.leftX) {
-			width = selBox.leftX - selBox.rightX + 1;
-		} else {
-			width = selBox.rightX - selBox.leftX + 1;
-		}
-		if (selBox.topY < selBox.bottomY) {
-			height = selBox.bottomY - selBox.topY + 1;
-		} else {
-			height = selBox.topY - selBox.bottomY + 1;
-		}
-		me.afterEdit("select all (" + width + " x " + height + ")");
 	};
 
 	// process cut
@@ -12644,7 +12654,7 @@
 		me.engine.checkModGen = 0;
 
 		// check if anything is alive
-		if (!me.engine.anythingAlive) {
+		if (me.engine.population === 0) {
 			me.menuManager.notification.notify("Empty Pattern", 15, 120, 15, false);
 			me.identify = false;
 			me.resultsDisplayed = false;
@@ -16462,7 +16472,7 @@
 					if (pattern.tooBig) {
 						me.menuManager.notification.notify("Pattern too big!", 15, ViewConstants.errorDuration, 15, false);
 					} else {
-						me.menuManager.notification.notify("New pattern", 15, 300, 15, false);
+						me.menuManager.notification.notify("New Pattern", 15, 300, 15, false);
 					}
 				}
 			} else {
