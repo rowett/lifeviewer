@@ -1400,7 +1400,7 @@
 	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, overlayGrid, overlayTileGrid, zoomBox, HROTBox, population, births, deaths, counter, counterMargolus, maxMargolusGen, width, height, life, isReset, anythingAlive) {
 		var snapshot = null,
 		    i = 0,
-			usingOverlay = (overlayGrid !== null);
+		    usingOverlay = (overlayGrid !== null);
 
 		// check if saving to the reset snapshot
 		if (isReset) {
@@ -1550,14 +1550,12 @@
 	};
 
 	// resize a snapshot
-	SnapshotManager.prototype.resizeSnapshot = function(snapshot, newWidth, newHeight, offset, useOverlay) {
+	SnapshotManager.prototype.resizeSnapshot = function(snapshot, newWidth, newHeight, xOffset, yOffset, xOffsetPixels, yOffsetPixels, useOverlay) {
 		// get current snapshot tile grid and colour tile grid
 		var currentTileGrid = snapshot.tileGrid,
-			currentColourTileGrid = snapshot.colourTileGrid,
-			currentOverlayTileGrid = snapshot.overlayTileGrid,
+		    currentColourTileGrid = snapshot.colourTileGrid,
+		    currentOverlayTileGrid = snapshot.overlayTileGrid,
 		    currentHeight = snapshot.tileGrid.length,
-		    yOffset = currentHeight >> 1,
-		    xOffset = snapshot.tileGrid[0].length >> 1,
 		    y = 0,
 		    index = snapshot.index;
 
@@ -1575,8 +1573,8 @@
 			snapshot.overlayTileGrid = this.overlayTileGrids[index];
 		}
 
-		// copy the old grids to the center of the new ones
-		if (offset > 0) {
+		// if the snapshot has grown then copy the old grids to the center of the new ones
+		if (xOffset > 0 || yOffset > 0) {
 			while (y < currentHeight) {
 				snapshot.tileGrid[y + yOffset].set(currentTileGrid[y], xOffset);
 				snapshot.colourTileGrid[y + yOffset].set(currentColourTileGrid[y], xOffset);
@@ -1585,34 +1583,34 @@
 				}
 				y += 1;
 			}
-
-			// update the zoom box
-			snapshot.zoomBox.leftX += offset;
-			snapshot.zoomBox.rightX += offset;
-			snapshot.zoomBox.bottomY += offset;
-			snapshot.zoomBox.topY += offset;
-			snapshot.HROTBox.leftX += offset;
-			snapshot.HROTBox.rightX += offset;
-			snapshot.HROTBox.bottomY += offset;
-			snapshot.HROTBox.topY += offset;
 		}
+
+		// update the zoom box
+		snapshot.zoomBox.leftX += xOffsetPixels;
+		snapshot.zoomBox.rightX += xOffsetPixels;
+		snapshot.zoomBox.bottomY += yOffsetPixels;
+		snapshot.zoomBox.topY += yOffsetPixels;
+		snapshot.HROTBox.leftX += xOffsetPixels;
+		snapshot.HROTBox.rightX += xOffsetPixels;
+		snapshot.HROTBox.bottomY += yOffsetPixels;
+		snapshot.HROTBox.topY += yOffsetPixels;
 	};
 
 	// resize snapshots to fit the new grid
-	SnapshotManager.prototype.resizeSnapshots = function(newWidth, newHeight, offset, useOverlay) {
+	SnapshotManager.prototype.resizeSnapshots = function(newWidth, newHeight, xOffset, yOffset, xOffsetPixels, yOffsetPixels, useOverlay) {
 		var i = 0,
 			l = 0;
 
 		// grow the reset snapshot
 		if (this.resetSnapshot) {
-			this.resizeSnapshot(this.resetSnapshot, newWidth, newHeight, offset, useOverlay);
+			this.resizeSnapshot(this.resetSnapshot, newWidth, newHeight, xOffset, yOffset, xOffsetPixels, yOffsetPixels, useOverlay);
 		}
 
 		// grow each saved snapshot
 		i = 0;
 		l = this.snapshots.length;
 		while (i < l) {
-			this.resizeSnapshot(this.snapshots[i], newWidth, newHeight, offset, useOverlay);
+			this.resizeSnapshot(this.snapshots[i], newWidth, newHeight, xOffset, yOffset, xOffsetPixels, yOffsetPixels, useOverlay);
 			i += 1;
 		}
 

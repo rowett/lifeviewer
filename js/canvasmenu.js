@@ -2521,8 +2521,8 @@
 		// get current menu
 		var current = this.currentMenu,
 
-			// x scale
-			xScale = current.xScale,
+		    // x scale
+		    xScale = current.xScale,
 
 		    // control
 		    control = null,
@@ -2539,37 +2539,37 @@
 		    oc = this.mainContext,
 
 		    // tooltip text
-			toolTip = "",
+		    toolTip = "",
 			
-			// extra line of text if too wide
-			extraTip = "",
+		    // extra line of text if too wide
+		    extraTip = "",
 
 		    // tooltip position
 		    x = 0,
 		    y = 0,
 
 		    // tooltip width
-			width = 0,
-			extraWidth = 0,
-			targetWidth = 0,
-			currentChar = "",
-			i = 0, j = 0,
-			textPart = "",
+		    width = 0,
+		    extraWidth = 0,
+		    targetWidth = 0,
+		    currentChar = "",
+		    i = 0, j = 0,
+		    textPart = "",
 
-			// height for tooltip box
-			height = 0,
+		    // height for tooltip box
+		    height = 0,
 
-			// number of lines of text to draw
-			lines = 1,
+		    // number of lines of text to draw
+		    lines = 1,
 
 		    // font size
 		    fontSize = 18,
 
 		    // border size
-			borderSize = 4,
+		    borderSize = 4,
 
-			// whether the tooltip contains a newline
-			newLine = -1;
+		    // whether the tooltip contains a newline
+		    newLine = -1;
 
 		// check for active item
 		if (current.activeItem !== -1 || (current.activeItem === -1 && current.mouseOverItem === -1)) {
@@ -3289,20 +3289,23 @@
 			me.clickHappened = true;
 		}
 
-		// check if the canvas has focus
-		if (!me.hasFocus) {
-			// set focus on canvas element
-			if (!me.eventWasTouch) {
-				me.mainCanvas.focus();
-			}
-			me.hasFocus = true;
-
-			// clear click to focus notification
-			me.notification.clear(true, false);
-
-			// call focus callback if registered
-			if (me.focusCallback) {
-				me.focusCallback(me.caller);
+		// check if the up event is over the canvas
+		if (me.mouseLastX >= 0 && me.mouseLastX < me.mainCanvas.width && me.mouseLastY >= 0 && me.mouseLastY < me.mainCanvas.height) {
+			// check if the canvas has focus
+			if (!me.hasFocus) {
+				// set focus on canvas element
+				if (!me.eventWasTouch) {
+					me.mainCanvas.focus();
+				}
+				me.hasFocus = true;
+	
+				// clear click to focus notification
+				me.notification.clear(true, false);
+	
+				// call focus callback if registered
+				if (me.focusCallback) {
+					me.focusCallback(me.caller);
+				}
 			}
 		}
 	};

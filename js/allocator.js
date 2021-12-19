@@ -145,6 +145,7 @@
 
 				// update frees
 				this.numFrees += 1;
+				//console.debug(type, elements, name, allocation.elements);
 
 				// update bytes freed
 				this.totalFreedBytes += allocation.elements * Type.sizeInBytes(allocation.type);

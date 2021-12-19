@@ -807,19 +807,19 @@
 		/** @type {number} */ this.heightMask = 0;
 
 		// life tile grid and double buffer
-		this.tileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.tileGrid");
-		this.nextTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid");
+		/** @type {Array} */ this.tileGrid = null;
+		/** @type {Array} */ this.nextTileGrid = null;
 
 		// static tile grid
-		this.staticTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.staticTileGrid");
+		/** @type {Array} */ this.staticTileGrid = null;
 
 		// life grid and double buffer
-		this.grid = Array.matrix(Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.grid");
-		this.nextGrid = Array.matrix(Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.nextGrid");
+		/** @type {Array} */ this.grid = null;
+		/** @type {Array} */ this.nextGrid = null;
 
 		// 16bit view of grid and double buffer
-		this.grid16 = Array.matrixView(Uint16, this.grid, "Life.grid16");
-		this.nextGrid16 = Array.matrixView(Uint16, this.nextGrid, "Life.nextGrid16");
+		/** @type {Array} */ this.grid16 = null;
+		/** @type {Array} */ this.nextGrid16 = null;
 
 		// blank pixel row for fast clear
 		this.blankPixelRow = this.allocator.allocate(Uint32, this.displayWidth, "Life.blankPixelRow");
@@ -837,39 +837,39 @@
 		this.blankColourRow = this.allocator.allocate(Uint8, this.width, "Life.blankColourRow");
 
 		// colour grid
-		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
+		/** @type {Array} */ this.colourGrid = null;
 
 		// next colour grid for PCA rules
 		/** @type {Array} */ this.nextColourGrid = null;
-		this.nextcolourGrid16 = null;
-		this.nextcolourGrid32 = null;
+		/** @type {Array} */ this.nextcolourGrid16 = null;
+		/** @type {Array} */ this.nextcolourGrid32 = null;
 
 		// small colour grid used for zooms < 1
-		this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
+		/** @type {Array} */ this.smallColourGrid = null;
 
 		// 16bit view of colour grid
-		this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
+		/** @type {Array} */ this.colourGrid16 = null;
 
 		// 32bit view of colour grid
-		this.colourGrid32 = Array.matrixView(Uint32, this.colourGrid, "Life.colourGrid32");
+		/** @type {Array} */ this.colourGrid32 = null;
 
 		// overlay grid for LifeHistory
-		this.overlayGrid = null;
+		/** @type {Array} */ this.overlayGrid = null;
 
 		// overlay colour grid used for zooms < 1
-		this.smallOverlayGrid = null;
+		/** @type {Array} */ this.smallOverlayGrid = null;
 
 		// 16bit view of overlay grid
-		this.overlayGrid16 = null;
+		/** @type {Array} */ this.overlayGrid16 = null;
 
 		// 32bit view of overlay grid
-		this.overlayGrid32 = null;
+		/** @type {Array} */ this.overlayGrid32 = null;
 
 		// colour tile grid
-		this.colourTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid");
+		/** @type {Array} */ this.colourTileGrid = null;
 
 		// colour tile history grid (where life has ever been)
-		this.colourTileHistoryGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid");
+		/** @type {Array} */ this.colourTileHistoryGrid = null;
 
 		// state 6 grid for [R]History
 		this.state6Mask = null;
@@ -939,10 +939,10 @@
 		/** @type {number} */ this.definedGridLineMajor = 10;
 
 		// column occupancy array for grid bounding box calculation
-		this.columnOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16");
+		this.columnOccupied16 = null;
 
 		// row occupancy array for grid bounding box calculation
-		this.rowOccupied16 = this.allocator.allocate(Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16");
+		this.rowOccupied16 = null;
 
 		// current maximum grid size
 		/** @type {number} */ this.maxGridSize = 8192;
@@ -3860,6 +3860,8 @@
 			historyBox = this.historyBox,
 			cellAsBit = 0,
 			cellAsTileBit = 0,
+			growX = false,
+			growY = false,
 
 			// whether cell should be alive in bit grid
 			/** @type {boolean} */ bitAlive = false,
@@ -3882,16 +3884,32 @@
 		// check if the cell is on the grid
 		if (!((x === (x & this.widthMask)) && (y === (y & this.heightMask)))) {
 			onGrid = false;
+
+			// check if grid can grow in the required direction
+			growX = (this.width < this.maxGridSize) && (x !== (x & this.widthMask));
+			growY = (this.height < this.maxGridSize) && (y !== (y & this.heightMask));
+
 			// attempt to grow the grid
-			while (this.width < this.maxGridSize && !((x === (x & this.widthMask)) && (y === (y & this.heightMask)))) {
-				this.growGrid();
-				x += this.width >> 2;
-				y += this.height >> 2;
+			while (growX || growY) {
+				if (growX || growY) {
+					this.growGrid(growX, growY);
+				}
+				if (growX) {
+					x += this.width >> 2;
+				}
+				if (growY) {
+					y += this.height >> 2;
+				}
+
+				growX = (this.width < this.maxGridSize) && (x !== (x & this.widthMask));
+				growY = (this.height < this.maxGridSize) && (y !== (y & this.heightMask));
 			}
+
 			// check if the cell is on the expanded grid
 			if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
 				// cell on expanded grid
 				onGrid = true;
+
 				// grid has changed so lookup again
 				grid = this.grid16;
 				tileGrid = this.tileGrid;
@@ -4062,6 +4080,8 @@
 			historyBox = this.historyBox,
 			cellAsBit = 0,
 			cellAsTileBit = 0,
+			growX = false,
+			growY = false,
 
 			// current cell state
 			/** @type {number} */ current = 0,
@@ -4087,16 +4107,32 @@
 		// check if the cell is on the grid
 		if (!((x === (x & this.widthMask)) && (y === (y & this.heightMask)))) {
 			onGrid = false;
+
+			// check if grid can grow in the required direction
+			growX = (this.width < this.maxGridSize) && (x !== (x & this.widthMask));
+			growY = (this.height < this.maxGridSize) && (y !== (y & this.heightMask));
+
 			// attempt to grow the grid
-			while (this.width < this.maxGridSize && !((x === (x & this.widthMask)) && (y === (y & this.heightMask)))) {
-				this.growGrid();
-				x += this.width >> 2;
-				y += this.height >> 2;
+			while (growX || growY) {
+				if (growX || growY) {
+					this.growGrid(growX, growY);
+				}
+				if (growX) {
+					x += this.width >> 2;
+				}
+				if (growY) {
+					y += this.height >> 2;
+				}
+
+				growX = (this.width < this.maxGridSize) && (x !== (x & this.widthMask));
+				growY = (this.height < this.maxGridSize) && (y !== (y & this.heightMask));
 			}
+
 			// check if the cell is on the expanded grid
 			if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
 				// cell on expanded grid
 				onGrid = true;
+
 				// grid has changed so lookup again
 				grid = this.grid16;
 				tileGrid = this.tileGrid;
@@ -4289,6 +4325,8 @@
 			historyBox = this.historyBox,
 			cellAsBit = 0,
 			cellAsTileBit = 0,
+			growX = false,
+			growY = false,
 
 			// bounded grid top left
 			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
@@ -4346,16 +4384,32 @@
 		// check if the cell is on the grid
 		if (!((x === (x & this.widthMask)) && (y === (y & this.heightMask)))) {
 			onGrid = false;
+
+			// check if grid can grow in the required direction
+			growX = (this.width < this.maxGridSize) && (x !== (x & this.widthMask));
+			growY = (this.height < this.maxGridSize) && (y !== (y & this.heightMask));
+
 			// attempt to grow the grid
-			while (this.width < this.maxGridSize && !((x === (x & this.widthMask)) && (y === (y & this.heightMask)))) {
-				this.growGrid();
-				x += this.width >> 2;
-				y += this.height >> 2;
+			while (growX || growY) {
+				if (growX || growY) {
+					this.growGrid(growX, growY);
+				}
+				if (growX) {
+					x += this.width >> 2;
+				}
+				if (growY) {
+					y += this.height >> 2;
+				}
+
+				growX = (this.width < this.maxGridSize) && (x !== (x & this.widthMask));
+				growY = (this.height < this.maxGridSize) && (y !== (y & this.heightMask));
 			}
+
 			// check if the cell is on the expanded grid
 			if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
 				// cell on expanded grid
 				onGrid = true;
+
 				// grid has changed so lookup again
 				grid = this.grid16;
 				tileGrid = this.tileGrid;
@@ -5395,7 +5449,7 @@
 		this.heightMask = this.height - 1;
 
 		// update the snapshots
-		this.snapshotManager.resizeSnapshots(((this.tileCols - 1) >> 4) + 1, this.tileRows, 0, this.drawOverlay);
+		this.snapshotManager.resizeSnapshots(((this.tileCols - 1) >> 4) + 1, this.tileRows, 0, 0, 0, 0, this.drawOverlay);
 	};
 
 	// allocate grid
@@ -5472,23 +5526,24 @@
 	};
 
 	// grow grid
-	Life.prototype.growGrid = function() {
+	Life.prototype.growGrid = function(growX, growY) {
 		// get the current grid size
-		var currentSize = this.width,
+		var currentWidth = this.width,
+		    currentHeight = this.height,
 
 		    // get current grid buffers
 		    currentGrid = this.grid,
 		    currentNextGrid = this.nextGrid,
-			currentColourGrid = this.colourGrid,
-			currentNextColourGrid = this.nextColourGrid,
+		    currentColourGrid = this.colourGrid,
+		    currentNextColourGrid = this.nextColourGrid,
 		    currentSmallColourGrid = this.smallColourGrid,
 		    currentOverlayGrid = this.overlayGrid,
 		    currentSmallOverlayGrid = this.smallOverlayGrid,
 		    currentMaskGrid = this.state6Mask,
 		    currentMaskAliveGrid = this.state6Alive,
-			currentMaskCellsGrid = this.state6Cells,
-			currentCountList = this.countList,
-			currentInitList = this.initList,
+		    currentMaskCellsGrid = this.state6Cells,
+		    currentCountList = this.countList,
+		    currentInitList = this.initList,
 
 		    // get current tile buffers
 		    currentMaskTileGrid = this.state6TileGrid,
@@ -5498,29 +5553,34 @@
 		    currentColourTileGrid = this.colourTileGrid,
 		    currentColourTileHistoryGrid = this.colourTileHistoryGrid,
 
-		    // current height
-		    currentHeight = this.height,
-
 		    // current tile height
 		    currentTileHeight = this.tileRows,
 
 		    // x and y offsets
-		    xOffset = this.width >> 1,
-			yOffset = this.height >> 1,
+		    xOffset = 0,
+		    yOffset = 0,
+		    xOffsetTile = 0,
+		    yOffsetTile = 0,
 
-			// identify bottom left
-			idCurrent = 0,
-			idBottom = 0,
-			idLeft = 0,
+		    // identify bottom left
+		    idCurrent = 0,
+		    idBottom = 0,
+		    idLeft = 0,
 
 		    // row number
 		    y = 0;
 
 		// check if already at maximum size
-		if (currentSize < this.maxGridSize) {
+		if (currentWidth < this.maxGridSize || currentHeight < this.maxGridSize) {
 			// double the size
-			this.width *= 2;
-			this.height *= 2;
+			if (growX) {
+				xOffset = this.width >> 1;
+				this.width *= 2;
+			}
+			if (growY) {
+				yOffset = this.height >> 1;
+				this.height *= 2;
+			}
 
 			// grow HROT buffers if used
 			if (this.isHROT) {
@@ -5572,7 +5632,7 @@
 			this.columnOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16");
 
 			// row occupancy array for grid bounding box calculation
-			this.rowOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.rowOccupied16");
+			this.rowOccupied16 = this.allocator.allocate(Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16");
 
 			// count grid
 			if (currentCountList) {
@@ -5642,24 +5702,26 @@
 			}
 
 			// copy the old tile grids to the center of the new ones
-			yOffset = currentTileHeight >> 1;
-			for (y = 0; y < currentTileHeight; y += 1) {
-				if (currentMaskTileGrid) {
-					this.state6TileGrid[y + yOffset].set(currentMaskTileGrid[y], this.state6TileGrid[y].length >> 2);
-				}
-				this.tileGrid[y + yOffset].set(currentTileGrid[y], this.tileGrid[y].length >> 2);
-				this.nextTileGrid[y + yOffset].set(currentNextTileGrid[y], this.nextTileGrid[y].length >> 2);
-				this.staticTileGrid[y + yOffset].set(currentStaticTileGrid[y], this.staticTileGrid[y].length >> 2);
-				this.colourTileGrid[y + yOffset].set(currentColourTileGrid[y], this.colourTileGrid[y].length >> 2);
-				this.colourTileHistoryGrid[y + yOffset].set(currentColourTileHistoryGrid[y], this.colourTileHistoryGrid[y].length >> 2);
+			if (growY) {
+				yOffsetTile = currentTileHeight >> 1;
+			}
+			if (growX) {
+				xOffsetTile = this.tileGrid[0].length >> 2;
 			}
 
-			// update the x and y offsets
-			xOffset = this.width >> 2;
-			yOffset = this.height >> 2;
+			for (y = 0; y < currentTileHeight; y += 1) {
+				if (currentMaskTileGrid) {
+					this.state6TileGrid[y + yOffsetTile].set(currentMaskTileGrid[y], xOffsetTile);
+				}
+				this.tileGrid[y + yOffsetTile].set(currentTileGrid[y], xOffsetTile);
+				this.nextTileGrid[y + yOffsetTile].set(currentNextTileGrid[y], xOffsetTile);
+				this.staticTileGrid[y + yOffsetTile].set(currentStaticTileGrid[y], xOffsetTile);
+				this.colourTileGrid[y + yOffsetTile].set(currentColourTileGrid[y], xOffsetTile);
+				this.colourTileHistoryGrid[y + yOffsetTile].set(currentColourTileHistoryGrid[y], xOffsetTile);
+			}
 
 			// update the snapshots
-			this.snapshotManager.resizeSnapshots(((this.tileCols - 1) >> 4) + 1, this.tileRows, xOffset, this.drawOverlay);
+			this.snapshotManager.resizeSnapshots(((this.tileCols - 1) >> 4) + 1, this.tileRows, xOffsetTile, yOffsetTile, xOffset, yOffset, this.drawOverlay);
 
 			// update camera x and y
 			this.xOff += xOffset;
@@ -5703,27 +5765,84 @@
 		}
 	};
 
-	// check if the grid buffer needs to grow
-	Life.prototype.checkForGrowth = function(box, maxStep) {
+	// check if the grid buffer needs to grow for one step
+	Life.prototype.checkForGrowthStep = function(me, box, maxStep) {
 	    // get the current grid width and height
 		var width = this.width,
 		    height = this.height,
+
+		    // growth direction
+		    growX = false,
+		    growY = false,
 
 		    // whether the buffer grew
 		    result = false;
 
 		// check if already at maximum size
-		if (width < this.maxGridSize && this.anythingAlive) {
+		if ((width < this.maxGridSize || height < this.maxGridSize) && this.anythingAlive) {
 			// check bounding box
-			if (box.leftX <= maxStep || box.bottomY <= maxStep || box.rightX >= (width - maxStep) || box.topY >= (height - maxStep)) {
+			if (width < this.maxGridSize && (box.leftX <= maxStep || box.rightX >= (width - maxStep))) {
+				growX = true;
+			}
+			if (height < this.maxGridSize && (box.bottomY <= maxStep || box.topY >= (height - maxStep))) {
+				growY = true;
+			}
+			if (growX || growY) {
+				// compute the growth direction
 				// grow the grid
-				this.growGrid();
+				this.growGrid(growX, growY);
 				result = true;
+
+				// update the default x and y
+				if (growX) {
+					me.defaultX += this.width >> 2;
+					me.savedX += this.width >> 2;
+				}
+
+				if (growY) {
+					me.defaultY += this.height >> 2;
+					me.savedY += this.height >> 2;
+				}
+
+				// check for hex mode
+				if (me.engine.isHex) {
+					if (growY) {
+						me.defaultX -= this.height >> 3;
+						me.savedX -= this.height >> 3;
+					}
+				}
+
+				// update pan position
+				if (growX) {
+					me.panX += this.width >> 2;
+				}
+				if (growY) {
+					me.panY += this.height >> 2;
+				}
+
+				// update the box position
+				if (growX) {
+					box.leftX += this.width >> 2;
+					box.rightX += this.width >> 2;
+				}
+
+				if (growY) {
+					box.bottomY += this.height >> 2;
+					box.topY += this.height >> 2;
+				}
 			}
 		}
 
 		// return whether the buffer grew
 		return result;
+	};
+
+	// check if the grid buffer needs to grow for as many steps as needed
+	Life.prototype.checkForGrowth = function(me, box, maxStep) {
+		// check the next step
+		while (this.checkForGrowthStep(me, box, maxStep)) {
+			// until no more steps required
+		}
 	};
 
 	// initialise 16bit first bit set
@@ -5842,7 +5961,8 @@
 	Life.prototype.resizeDisplay = function(displayWidth, displayHeight) {
 		var context = this.context,
 		    pixelColour = 0,
-		    i = 0;
+		    i = 0,
+		    sizeChanged = false;
 
 		// set the black pixel colour
 		if (this.littleEndian) {
@@ -5851,10 +5971,15 @@
 			pixelColour = 0x000000ff;
 		}
 
+		// check if the display has actually changed size
+		if (this.displayWidth !== displayWidth || this.displayHeight !== displayHeight) {
+			sizeChanged = true;
+		}
+
 		// save the display width and height
 		this.displayWidth = displayWidth;
 		this.displayHeight = displayHeight;
-
+	
 		// clear the old buffers
 		this.imageData = null;
 		this.data32 = null;
@@ -5875,21 +6000,20 @@
 			// create an 8bit view of the buffer
 			this.data8 = new Uint8Array(this.data32.buffer);
 		}
-
-		// don't reallocate the mode 7 buffer - it will be created when used
-		//this.mode7Buffer = new Uint32Array(context.canvas.width * context.canvas.height);
-
-		// create the new blank pixel row
-		this.blankPixelRow = this.allocator.allocate(Uint32, displayWidth, "Life.blankPixelRow");
-		for (i = 0; i < displayWidth; i += 1) {
-			this.blankPixelRow[i] = pixelColour;
+	
+		if (sizeChanged) {
+			// create the new blank pixel row
+			this.blankPixelRow = this.allocator.allocate(Uint32, displayWidth, "Life.blankPixelRow");
+			for (i = 0; i < displayWidth; i += 1) {
+				this.blankPixelRow[i] = pixelColour;
+			}
+	
+			// clear pixels
+			this.clearPixels(pixelColour);
+	
+			// resize the scale canvas to double the drawing canvas plus one zoom cell
+			this.initPretty();
 		}
-
-		// clear pixels
-		this.clearPixels(pixelColour);
-
-		// resize the scale canvas to double the drawing canvas plus one zoom cell
-		this.initPretty();
 	};
 
 	// copy state 2 cells to colour grid
@@ -6151,18 +6275,20 @@
 
 	// set the colour grid from the grid using rainbow
 	Life.prototype.resetColourGridBoxRainbow = function(grid) {
-		var x = 0, y = 0, cr = 0,
-			colourGrid = this.colourGrid,
-			cells = 0,
-			gridRow = null,
-			colourRow = null,
+		var /** @type {number} */ x = 0,
+		    /** @type {number} */ y = 0,
+		    /** @type {number} */ cr = 0,
+		    /** @type {Array} */ colourGrid = this.colourGrid,
+		    /** @type {number} */ cells = 0,
+		    gridRow = null,
+		    colourRow = null,
 
 		    // get the grid bounding box
 		    zoomBox = this.zoomBox,
-		    leftX = zoomBox.leftX >> 4,
-		    rightX = zoomBox.rightX >> 4,
-		    topY = zoomBox.topY,
-			bottomY = zoomBox.bottomY;
+		    /** @type {number} */ leftX = zoomBox.leftX >> 4,
+		    /** @type {number} */ rightX = zoomBox.rightX >> 4,
+		    /** @type {number} */ topY = zoomBox.topY,
+		    /** @type {number} */ bottomY = zoomBox.bottomY;
 
 		// set the colour grid from the grid
 		for (y = bottomY; y <= topY; y += 1) {
@@ -6276,17 +6402,20 @@
 
 	// set the colour grid from the grid
 	Life.prototype.resetColourGridBoxNormal = function(grid) {
-		var x = 0, y = 0, cr = 0,
+		var /** @type {number} */ x = 0,
+		    /** @type {number} */ y = 0,
+		    /** @type {number} */ cr = 0,
 		    colourGrid = this.colourGrid,
 		    colourReset = this.colourReset,
-		    gridRow, colourRow, rowOffset = 0,
+		    gridRow, colourRow,
+		    /** @type {number} */ rowOffset = 0,
 
 		    // get the grid bounding box
 		    zoomBox = this.zoomBox,
-		    leftX = zoomBox.leftX >> 4,
-		    rightX = zoomBox.rightX >> 4,
-		    topY = zoomBox.topY,
-			bottomY = zoomBox.bottomY;
+		    /** @type {number} */ leftX = zoomBox.leftX >> 4,
+		    /** @type {number} */ rightX = zoomBox.rightX >> 4,
+		    /** @type {number} */ topY = zoomBox.topY,
+		    /** @type {number} */ bottomY = zoomBox.bottomY;
 
 		// ignore for PCA rules
 		if (!(this.isPCA || this.isRuleTree)) {
@@ -8836,6 +8965,7 @@
 	Life.prototype.getAliveStatesBox = function(selBox) {
 		var w = 0,
 		    h = 0,
+		    state = 0,
 		    aliveStart = LifeConstants.aliveStart,
 
 		    // width and height
@@ -8869,7 +8999,8 @@
 
 			// check each column
 			for (w = 0; w < width; w += 1) {
-				if (colourGridRow[w] >= aliveStart) {
+				state = colourGridRow[w];
+				if (state >= aliveStart && state < 255) {
 					rowAlive = true;
 
 					if (w < newLeftX) {
@@ -12086,7 +12217,10 @@
 
 		    // width and height mask
 		    widthMask = this.widthMask,
-		    heightMask = this.heightMask;
+		    heightMask = this.heightMask,
+
+		    // number of cells cleared
+		    cleared = 0;
 
 		// stack the current cell
 		bx[index] = x;
@@ -12095,6 +12229,7 @@
 
 		// remove the cell
 		grid16[y][x >> 4] &= ~(1 << (~x & 15));
+		cleared += 1;
 
 		// keep going until all cells processed
 		while (index > 0) {
@@ -12126,6 +12261,7 @@
 						if ((grid16[ty][tx >> 4] & (1 << (~tx & 15))) !== 0) {
 							// remove the cell
 							grid16[ty][tx >> 4] &= ~(1 << (~tx & 15));
+							cleared += 1;
 
 							// stack the cell
 							if (index === end) {
@@ -12161,6 +12297,10 @@
 				ty += 1;
 			}
 		}
+
+		// update statistics
+		this.population -= cleared;
+		this.deaths += cleared;
 	};
 
 	// remove pattern at top or bottom
@@ -12276,9 +12416,9 @@
 		var tx = 0,
 		    ty = 0,
 
-			// multi-state grid
-			colourGrid = this.colourGrid,
-			colourRow = null,
+		    // multi-state grid
+		    colourGrid = this.colourGrid,
+		    colourRow = null,
 
 		    // number of pages
 		    pages = this.boundaryPages,
@@ -12299,18 +12439,21 @@
 
 		    // start and end of current page
 		    start = 0,
-			end = max,
+		    end = max,
 
-			// masks for width and height
-			widthMask = this.widthMask,
-			heightMask = this.heightMask,
+		    // masks for width and height
+		    widthMask = this.widthMask,
+		    heightMask = this.heightMask,
 
-			// alive state
-			alive = (this.multiNumStates > 2 ? 0 : LifeConstants.aliveStart),
-			dead = (this.multiNumStates > 2 ? 0 : LifeConstants.deadStart),
+		    // alive state
+		    alive = (this.multiNumStates > 2 ? 0 : LifeConstants.aliveStart),
+		    dead = (this.multiNumStates > 2 ? 0 : LifeConstants.deadStart),
 
 		    // boundary cell radius
-			radius = this.removePatternRadius;
+		    radius = this.removePatternRadius,
+
+		    // number of cells cleared
+		    cleared = 0;
 
 		// stack the current cell
 		bx[index] = x;
@@ -12319,6 +12462,7 @@
 
 		// remove the cell
 		colourGrid[y][x] = 0;
+		cleared += 1;
 
 		// keep going until all cells processed
 		while (index > 0) {
@@ -12351,6 +12495,7 @@
 						if (colourRow[tx] >= alive) {
 							// remove the cell
 							colourRow[tx] = dead;
+							cleared += 1;
 
 							// stack the cell
 							if (index === end) {
@@ -12386,6 +12531,10 @@
 				ty += 1;
 			}
 		}
+
+		// update statistics
+		this.population -= cleared;
+		this.deaths += cleared;
 	};
 
 	// remove HROT patterns that touch the boundary
@@ -20544,8 +20693,11 @@
 			}
 			// clear ecaping gliders if enabled
 			if (this.clearGliders) {
-				this.clearEscapingGliders();
-				this.anythingAlive = this.population;
+				// only supported for 2-state patterns
+				if (this.multiNumStates === -1) {
+					this.clearEscapingGliders();
+					this.anythingAlive = this.population;
+				}
 			}
 		}
 	};
@@ -30491,13 +30643,12 @@
 	};
 
 	// fit zoom to display
-	Life.prototype.fitZoomDisplay = function(fitType, selBox, accurateCounter, displayWidth, displayHeight, minZoom, maxZoom, scaleFactor, patternWidth, patternHeight, usePattern, historyFit, useTrackBox, trackN, trackE, trackS, trackW, genSpeed, state1Fit, autoFit) {
+	Life.prototype.fitZoomDisplay = function(fitType, selBox, displayWidth, displayHeight, minZoom, maxZoom, scaleFactor, patternWidth, patternHeight, usePattern, historyFit, state1Fit, autoFit) {
 		var zoomBox = this.zoomBox,
 		    initialBox = this.initialBox,
 		    historyBox = this.historyBox,
-			trackBox = this.trackBox,
-			colourGrid = this.colourGrid,
-			colourRow = null,
+		    colourGrid = this.colourGrid,
+		    colourRow = null,
 		    zoom = 1,
 		    newX = 0,
 		    newY = 0,
@@ -30508,14 +30659,14 @@
 		    leftX = 0,
 		    rightX = 0,
 		    topY = 0,
-			bottomY = 0,
-			x = 0,
-			y = 0,
-			state = 0,
-			swap = 0,
-			hexX = 0,
-			minX = 0,
-			maxX = 0;
+		    bottomY = 0,
+		    x = 0,
+		    y = 0,
+		    state = 0,
+		    swap = 0,
+		    hexX = 0,
+		    minX = 0,
+		    maxX = 0;
 
 		// check for PCA, RuleTree or Super rules
 		if (this.isPCA || this.isRuleTree || this.isSuper) {
@@ -30525,44 +30676,15 @@
 			}
 		}
 
-		// check for track box mode
-		useTrackBox = false;
-		if (useTrackBox) {
-			// compute the track box
-			trackBox.topY = trackS * accurateCounter + initialBox.topY;
-			trackBox.rightX = trackE * accurateCounter + initialBox.rightX;
-			trackBox.bottomY = trackN * accurateCounter + initialBox.bottomY;
-			trackBox.leftX = trackW * accurateCounter + initialBox.leftX;
-
-			// apply history if enabled
-			if (historyFit) {
-				if (historyBox.leftX < trackBox.leftX) {
-					trackBox.leftX = historyBox.leftX;
-				}
-				if (historyBox.bottomY < trackBox.bottomY) {
-					trackBox.bottomY = historyBox.bottomY;
-				}
-				if (historyBox.rightX > trackBox.rightX) {
-					trackBox.rightX = historyBox.rightX;
-				}
-				if (historyBox.topY > trackBox.topY) {
-					trackBox.topY = historyBox.topY;
-				}
-			}
-
-			// use in calculation
-			zoomBox = trackBox;
+		// check for history mode
+		if (historyFit) {
+			// use history box
+			zoomBox = historyBox;
 		} else {
-			// check for history mode
-			if (historyFit) {
-				// use history box
-				zoomBox = historyBox;
-			} else {
-				// check for HROT
-				if (this.isHROT) {
-					// use HROT alive state box
-					zoomBox = this.HROTBox;
-				}
+			// check for HROT
+			if (this.isHROT) {
+				// use HROT alive state box
+				zoomBox = this.HROTBox;
 			}
 		}
 
@@ -30968,26 +31090,26 @@
 	// draw paste box
 	Life.prototype.drawPasteWithCells = function(view, mouseCellX, mouseCellY, position, colour) {
 		var width = view.pasteWidth,
-			height = view.pasteHeight,
-			x = 0,
-			y = 0,
-			i = 0,
-			x1 = 0, y1 = 0,
-			x1d1 = 0, y1d1 = 0,
-			x1d1d2 = 0, y1d1d2 = 0,
-			x1d2 = 0, y1d2 = 0,
-			x2 = 0, y2 = 0,
-			state = 0,
-			ctx = this.context,
-			xZoom = this.zoom,
-			yZoom = this.zoom * (this.isTriangular ? ViewConstants.sqrt3 : 1),
-			xOff = (this.width >> 1) - (view.patternWidth >> 1),
-			yOff = (this.height >> 1) - (view.patternHeight >> 1),
+		    height = view.pasteHeight,
+		    x = 0,
+		    y = 0,
+		    i = 0,
+		    x1 = 0, y1 = 0,
+		    x1d1 = 0, y1d1 = 0,
+		    x1d1d2 = 0, y1d1d2 = 0,
+		    x1d2 = 0, y1d2 = 0,
+		    x2 = 0, y2 = 0,
+		    state = 0,
+		    ctx = this.context,
+		    xZoom = this.zoom,
+		    yZoom = this.zoom * (this.isTriangular ? ViewConstants.sqrt3 : 1),
+		    xOff = (this.width >> 1) - (view.patternWidth >> 1),
+		    yOff = (this.height >> 1) - (view.patternHeight >> 1),
 		    engineY = view.panY - this.yOff,
-			engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0),
-			coords = [0, 0],
-			dx1 = 0, dx2 = 0,
-			dy1 = 0, dy2 = 0;
+		    engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0),
+		    coords = [0, 0],
+		    dx1 = 0, dx2 = 0,
+		    dy1 = 0, dy2 = 0;
 
 		// draw paste rectangle
 		switch (position) {
@@ -31038,7 +31160,7 @@
 		ctx.fillStyle = colour;
 		ctx.globalAlpha = 0.5;
 		if (!this.isHex) {
-			if (this.isTriangular && this.zoom >= 4) {
+			if (!this.forceRectangles && this.isTriangular && this.zoom >= 4) {
 				this.drawTriangleSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff);
 			} else {
 				ctx.beginPath();
@@ -31078,10 +31200,10 @@
 				dx2 = Math.cos((this.camAngle + 90) / 180 * Math.PI) * this.camZoom;
 				dy2 = Math.sin((this.camAngle + 90) / 180 * Math.PI) * this.camZoom;
 			} else {
-				dx1 = this.camZoom;
+				dx1 = xZoom;
 				dy1 = 0;
 				dx2 = dy1;
-				dy2 = dx1;
+				dy2 = yZoom;
 			}
 
 			// compute starting coordinates
@@ -31100,7 +31222,7 @@
 			if (this.isHex && !this.forceRectangles && this.zoom >= 4) {
 				this.drawHexCellsInSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff, view.pasteBuffer);
 			} else {
-				if (this.isTriangular && this.zoom >= 4) {
+				if (!this.forceRectangles && this.isTriangular && this.zoom >= 4) {
 					this.drawTriangleCellsInSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff, view.pasteBuffer);
 				} else {
 					ctx.beginPath();
@@ -35671,8 +35793,8 @@
 				var y, py, sy, x, px, sx, ex, pz,
 					width = this.context.canvas.width,
 					height = this.context.canvas.height,
-					data32 = this.data32,
-					mode7 = this.mode7Buffer,
+					/** @type {Uint32Array} */ data32 = this.data32,
+					/** @type {Uint32Array} */ mode7 = this.mode7Buffer,
 					halfwidth = width >> 1,
 					halfheight = height >> 1,
 					rowoffset = 0,

@@ -64,6 +64,9 @@
 		// alt keys that LifeViewer uses (any accesskey attributes that match these will be disabled)
 		/** @const {string} */ altKeys : "0123456789rtyopasghjklxcbn",
 
+		// number of frames per second used for generation counter
+		/** @const {number} */ fixedMultiple : 60,
+
 		// maximum start from generation
 		/** @const {number} */ maxStartFromGeneration : 1048576,
 
@@ -306,7 +309,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 662,
+		/** @const {number} */ versionBuild : 663,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1041,11 +1044,8 @@
 		/** @type {boolean} */ this.initialStop = false;
 		/** @type {boolean} */ this.initialLoop = false;
 
-		// floating point counter
-		/** @type {number} */ this.floatCounter = 0;
-
-		// floating point counter for origin
-		/** @type {number} */ this.originCounter = 0;
+		// fixed point counter for generation
+		/** @type {number} */ this.fixedPointCounter = 0;
 
 		// elapsed time at each generation
 		this.elapsedTimes = null;
@@ -1503,7 +1503,7 @@
 		/** @type {number} */ this.defaultGridWidth = 512;
 
 		// default grid height
-		/** @type {number} */ this.defaultGridHeight = 512;
+		/** @type {number} */ this.defaultGridHeight = 256;
 
 		// display width
 		/** @type {number} */ this.displayWidth = 640;
@@ -3434,8 +3434,8 @@
 		var x = 0, y = 0,
 		    // life grid and colour grid
 		    grid = this.engine.grid16,
-			colourGrid = this.engine.colourGrid,
-			nextColourGrid = this.engine.nextColourGrid,
+		    colourGrid = this.engine.colourGrid,
+		    nextColourGrid = this.engine.nextColourGrid,
 		    overlayGrid = this.engine.overlayGrid,
 
 		    // lookup pattern width and height
@@ -3794,14 +3794,14 @@
 		    yDelta = 0,
 
 		    // sum weight
-			weight = this.autoFitWeight,
+		    weight = this.autoFitWeight,
 			
-			// offset for selection
-			swap = 0,
-			middleBox = this.middleBox,
-			selBox = this.selectionBox,
-			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1) + (this.xOffset << 1),
-			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1);
+		    // offset for selection
+		    swap = 0,
+		    middleBox = this.middleBox,
+		    selBox = this.selectionBox,
+		    xOff = (this.engine.width >> 1) - (this.patternWidth >> 1) + (this.xOffset << 1),
+		    yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1);
 
 		// check for selection
 		if (fitType === ViewConstants.fitZoomSelection) {
@@ -3823,14 +3823,14 @@
 
 		// check for thumbnail
 		if (this.thumbnail) {
-			fitZoom = this.engine.fitZoomDisplay(fitType, middleBox, this.floatCounter, this.displayWidth * this.thumbnailDivisor, this.displayHeight * this.thumbnailDivisor, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit, this.autoFit);
+			fitZoom = this.engine.fitZoomDisplay(fitType, middleBox, this.displayWidth * this.thumbnailDivisor, this.displayHeight * this.thumbnailDivisor, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.state1Fit, this.autoFit);
 			fitZoom[0] /= this.thumbnailDivisor;
 		} else {
 			var heightAdjust = ViewConstants.guiExtraHeight;
 			if (this.noGUI) {
 				heightAdjust = 0;
 			}
-			fitZoom = this.engine.fitZoomDisplay(fitType, middleBox, this.floatCounter, this.displayWidth, this.displayHeight - heightAdjust, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.trackDefined, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.genSpeed, this.state1Fit, this.autoFit);
+			fitZoom = this.engine.fitZoomDisplay(fitType, middleBox, this.displayWidth, this.displayHeight - heightAdjust, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.state1Fit, this.autoFit);
 		}
 
 		// check for auto fit
@@ -4074,30 +4074,8 @@
 			}
 		}
 
-		// check if the bounding box is now bigger than the required grid size
-		while (me.engine.checkForGrowth(box, borderSize)) {
-			// update the default x and y
-			me.defaultX += me.engine.width >> 2;
-			me.defaultY += me.engine.height >> 2;
-			me.savedX += me.engine.width >> 2;
-			me.savedY += me.engine.height >> 2;
-
-			// check for hex mode
-			if (me.engine.isHex) {
-				me.defaultX -= me.engine.height >> 3;
-				me.savedX -= me.engine.height >> 3;
-			}
-
-			// update pan position
-			me.panX += me.engine.width >> 2;
-			me.panY += me.engine.height >> 2;
-
-			// update the box position
-			box.leftX += me.engine.width >> 2;
-			box.rightX += me.engine.width >> 2;
-			box.bottomY += me.engine.height >> 2;
-			box.topY += me.engine.height >> 2;
-		}
+		// grow the grid if needed
+		me.engine.checkForGrowth(me, box, borderSize);
 	};
 
 	// check if the selection needs the grid to grow
@@ -4411,42 +4389,49 @@
 		    sx = (startX < endX) ? 1 : -1,
 		    sy = (startY < endY) ? 1 : -1,
 		    err = dx - dy,
-			e2 = 0,
-			width = this.engine.width,
-			height = this.engine.height,
-			// whether [R]History state6 changed
-			result = 0;
+		    e2 = 0,
+		    width = this.engine.width,
+		    height = this.engine.height,
+
+		    // whether [R]History state6 changed
+		    result = 0;
 
 		// set the first point
-		result |= this.setStateWithUndo(startX, startY, colour, true);
+		result = this.setStateWithUndo(startX, startY, colour, true);
 
 		// check for grid growth
-		while (width !== this.engine.width) {
-			// double width and height
-			width <<= 1;
-			height <<= 1;
+		while (width !== this.engine.width || height !== this.engine.height) {
+			if (width !== this.engine.width) {
+				// double width
+				width <<= 1;
 
-			// adjust drawing cell position
-			startX += width >> 2;
-			startY += width >> 2;
-			endX += width >> 2;
-			endY += width >> 2;
+				// adjust drawing cell position
+				startX += width >> 2;
+				endX += width >> 2;
 
-			// update the default x and y
-			this.defaultX += width >> 2;
-			this.defaultY += height >> 2;
-			this.savedX += width >> 2;
-			this.savedY += height >> 2;
+				// update the default x
+				this.defaultX += width >> 2;
+				this.savedX += width >> 2;
 
-			// check for hex mode
-			if (this.engine.isHex) {
-				this.defaultX -= height >> 3;
-				this.savedX -= height >> 3;
+				// check for hex mode  TBD
+				if (this.engine.isHex) {
+					this.defaultX -= height >> 3;
+					this.savedX -= height >> 3;
+				}
+
+				// update pan position
+				this.panX += width >> 2;
 			}
 
-			// update pan position
-			this.panX += width >> 2;
-			this.panY += height >> 2;
+			if (height !== this.engine.height) {
+				// same for height
+				height <<= 1;
+				startY += height >> 2;
+				endY += height >> 2;
+				this.defaultY += height >> 2;
+				this.savedY += height >> 2;
+				this.panY += height >> 2;
+			}
 		}
 
 		// loop for each pixel on the line
@@ -4466,32 +4451,38 @@
 			result |= this.setStateWithUndo(startX, startY, colour, true);
 
 			// check for grid growth
-			while (width !== this.engine.width) {
-				// double width and height
-				width <<= 1;
-				height <<= 1;
+			while (width !== this.engine.width || height !== this.engine.height) {
+				if (width !== this.engine.width) {
+					// double width
+					width <<= 1;
 
-				// adjust drawing cell position
-				startX += width >> 2;
-				startY += width >> 2;
-				endX += width >> 2;
-				endY += width >> 2;
+					// adjust drawing cell position
+					startX += width >> 2;
+					endX += width >> 2;
 
-				// update the default x and y
-				this.defaultX += width >> 2;
-				this.defaultY += height >> 2;
-				this.savedX += width >> 2;
-				this.savedY += height >> 2;
+					// update the default x
+					this.defaultX += width >> 2;
+					this.savedX += width >> 2;
 
-				// check for hex mode
-				if (this.engine.isHex) {
-					this.defaultX -= height >> 3;
-					this.savedX -= height >> 3;
+					// check for hex mode  TBD
+					if (this.engine.isHex) {
+						this.defaultX -= height >> 3;
+						this.savedX -= height >> 3;
+					}
+
+					// update pan position
+					this.panX += width >> 2;
 				}
 
-				// update pan position
-				this.panX += width >> 2;
-				this.panY += height >> 2;
+				if (height !== this.engine.height) {
+					// same for height
+					height <<= 1;
+					startY += height >> 2;
+					endY += height >> 2;
+					this.defaultY += height >> 2;
+					this.savedY += height >> 2;
+					this.panY += height >> 2;
+				}
 			}
 		}
 
@@ -4711,9 +4702,14 @@
 		    // rotation
 		    theta = 0, radius = 0,
 
-		    // screen offset
-		    screenX = -((this.engine.width / 2 - this.engine.xOff - this.engine.originX) | 0),
-		    screenY = -((this.engine.height / 2 - this.engine.yOff - this.engine.originY) | 0);
+		    // bounded grid top left
+		    /** @type {number} */ boxOffset = (this.engine.isMargolus ? -1 : 0),
+		    /** @type {number} */ leftX = Math.round((-this.engine.boundedGridWidth) / 2) + boxOffset,
+		    /** @type {number} */ bottomY = Math.round((-this.engine.boundedGridHeight) / 2) + boxOffset,
+
+		    // bounded grid bottom right
+		    /** @type {number} */ rightX = leftX + this.engine.boundedGridWidth - 1,
+		    /** @type {number} */ topY = bottomY + this.engine.boundedGridHeight - 1;
 
 		// check if there are mouse coordinates
 		if (this.viewMenu.mouseX === -1) {
@@ -4782,15 +4778,24 @@
 			}
 
 			// set the caption
-			this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
-			this.xyLabel.deleted = false;
-
-			// add screen offset at cursor if InfoBar enabled
-			if (this.infoBarEnabled) {
-				screenX += xPos - this.patternWidth / 2;
-				screenY += yPos - this.patternHeight / 2;
-				//this.xyLabel.preText += " (" + String(screenX) + "," + String(screenY) + ")";
+			if (this.engine.boundedGridType !== -1) {
+				if (this.engine.boundedGridWidth === 0) {
+					leftX = -this.engine.maxGridSize;
+					rightX = this.engine.maxGridSize;
+				}
+				if (this.engine.boundedGridHeight === 0) {
+					bottomY = -this.engine.maxGridSize;
+					topY = this.engine.maxGridSize;
+				}
+				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
+				} else {
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
+				}
+			} else {
+				this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
 			}
+			this.xyLabel.deleted = false;
 		}
 
 		// set visibility based on stats toggle and whether paused
@@ -4918,6 +4923,7 @@
 		var deltaTime = 0,
 		    currentTime = 0,
 		    currentWaypoint = me.waypointManager.current,
+		    i = 0,
 
 		    // whether update needed
 		    updateNeeded = false,
@@ -4929,23 +4935,27 @@
 		    waypointsEnded = false,
 
 		    // whether bailing out of stepping
-			bailout = false,
+		    bailout = false,
 			
-			// whether manual stepping (so ignore bailout)
-			manualStepping = false,
+		    // whether manual stepping (so ignore bailout)
+		    manualStepping = false,
 			
-			// how many steps to take
-			stepsToTake = 1,
+		    // how many steps to take
+		    stepsToTake = 1,
 
-			// many many steps taken
-			stepsTaken = 0,
+		    // many many steps taken
+		    stepsTaken = 0,
 
-			// save died generation
-			saveGeneration = 0,
+		    // save died generation
+		    saveGeneration = 0,
 
-			// saved bounding box
-			zoomBox = me.engine.zoomBox,
-			saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY);
+		    // current and target generations
+		    currentGen = me.engine.counter,
+		    targetGen = 0,
+
+		    // saved bounding box
+		    zoomBox = me.engine.zoomBox,
+		    saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY);
 
 		// unlock controls
 		me.controlsLocked = false;
@@ -4979,15 +4989,13 @@
 				timeSinceLastUpdate = ViewConstants.sixtyHz;
 			}
 
-			// update floating counter
+			// update fixed point counters
 			if (me.generationOn && !(me.waypointsDefined && !me.waypointsDisabled)) {
-				me.originCounter += (me.gensPerStep * me.genSpeed * timeSinceLastUpdate / 1000);
-				me.floatCounter += (me.genSpeed * timeSinceLastUpdate / 1000);
-				if ((me.floatCounter | 0) > me.engine.counter) {
-					me.floatCounter += (me.gensPerStep - 1);
+				me.fixedPointCounter += me.genSpeed * me.gensPerStep;
+				targetGen = (me.fixedPointCounter / ViewConstants.fixedMultiple) | 0;
+				if (targetGen > currentGen) {
 					me.nextStep = true;
 				} else {
-					// update elapsed time here (otherwise happens during next step processing below)
 					me.elapsedTime += timeSinceLastUpdate;
 				}
 			}
@@ -4999,12 +5007,11 @@
 
 				// advance the time to the next whole generation
 				if (me.singleStep) {
-					me.floatCounter = me.engine.counter + 1;
-					me.originCounter = me.floatCounter;
+					me.fixedPointCounter += ViewConstants.fixedMultiple;
 				} else {
-					me.floatCounter = me.engine.counter + me.gensPerStep;
-					me.originCounter = me.floatCounter;
+					me.fixedPointCounter += me.gensPerStep * ViewConstants.fixedMultiple;
 				}
+				targetGen = (me.fixedPointCounter / ViewConstants.fixedMultiple) | 0;
 			}
 		}
 
@@ -5060,9 +5067,9 @@
 						me.zoomItem.current = me.viewZoomRange([me.engine.zoom, me.engine.zoom], false, me);
 					}
 				}
-				me.floatCounter += (me.genSpeed * timeSinceLastUpdate / 1000);
-				if ((me.floatCounter | 0) > me.engine.counter) {
-					me.floatCounter += (me.gensPerStep - 1);
+				me.fixedPointCounter += me.genSpeed * me.gensPerStep;
+				targetGen = (me.fixedPointCounter / ViewConstants.fixedMultiple) | 0;
+				if (targetGen > currentGen) {
 					me.nextStep = true;
 				}
 			} else {
@@ -5137,7 +5144,8 @@
 				// if waypoints not ended then work out whether to step to next generation
 				if (currentWaypoint.targetGen > me.engine.counter) {
 					me.nextStep = true;
-					me.floatCounter = currentWaypoint.targetGen;
+					me.fixedPointCounter = currentWaypoint.targetGen * ViewConstants.fixedMultiple;
+					targetGen = (me.fixedPointCounter / ViewConstants.fixedMultiple) | 0;
 				} else {
 					me.nextStep = false;
 				}
@@ -5194,11 +5202,11 @@
 				currentTime = performance.now();
 
 				// compute how many steps there are to take
-				stepsToTake = (me.floatCounter | 0) - me.engine.counter;
+				stepsToTake = targetGen - currentGen;
 				stepsTaken = 0;
 
 				// check if statistics are displayed and if so compute them
-				while (!bailout && (me.engine.counter < (me.floatCounter | 0))) {
+				while (!bailout && (me.engine.counter < targetGen)) {
 					// compute time since generations started
 					deltaTime = performance.now() - currentTime;
 
@@ -5220,7 +5228,7 @@
 
 					// check if stats are on and this is the last generation in the step
 					saveBox.set(zoomBox);
-					if (me.statsOn && ((me.engine.counter === (me.floatCounter | 0) - 1) || bailout)) {
+					if (me.statsOn && ((me.engine.counter === targetGen - 1) || bailout)) {
 						// compute next generation with stats
 						me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify);
 					} else {
@@ -5232,7 +5240,7 @@
 					stepsTaken += 1;
 
 					// check theme has history or this is the last generation in the step
-					if (me.engine.themeHistory || me.anyPasteThisGen() || ((me.engine.counter === (me.floatCounter | 0)) || bailout)) {
+					if (me.engine.themeHistory || me.anyPasteThisGen() || (me.engine.counter === targetGen) || bailout) {
 						// convert life grid to pen colours unless Generations just died (since this will start fading dead cells)
 						if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
 							me.engine.convertToPensTile();
@@ -5250,9 +5258,6 @@
 					if (me.engine.anythingAlive === 0) {
 						zoomBox.set(saveBox);
 					}
-
-					// save elasped time for this generation
-					me.saveElapsedTime(timeSinceLastUpdate, stepsToTake);
 
 					// check for loop
 					if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled) {
@@ -5276,6 +5281,11 @@
 					if (!me.engine.anythingAlive) {
 						bailout = true;
 					}
+				}
+
+				// save elapsed time
+				for (i = 1; i <= stepsTaken; i += 1) {
+					this.saveElapsedTime(currentGen + i, timeSinceLastUpdate, stepsTaken);
 				}
 
 				// check if life just stopped
@@ -5309,13 +5319,9 @@
 				}
 
 				// remove steps not taken from target counter
-				me.floatCounter -= (stepsToTake - stepsTaken);
-				me.originCounter -= (stepsToTake - stepsTaken);
-				if (me.floatCounter < 0) {
-					me.floatCounter = 0;
-				}
-				if (me.originCounter < 0) {
-					me.originCounter = 0;
+				me.fixedPointCounter -= (stepsToTake - stepsTaken) * ViewConstants.fixedMultiple;
+				if (me.fixedPointCounter < 0) {
+					me.fixedPointCounter = 0;
 				}
 
 				// if not enough steps taken then display actual number
@@ -5345,7 +5351,10 @@
 				}
 
 				// increment generation
-				me.engine.counter += me.gensPerStep;
+				for (i = 0; i < me.gensPerStep; i += 1) {
+					me.engine.counter += 1;
+					me.saveElapsedTime(me.engine.counter, timeSinceLastUpdate, me.gensPerStep);
+				}
 
 				// check for loop
 				if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled) {
@@ -5667,17 +5676,20 @@
 		var initialZoom = 0,
 
 		    // current zoom now
-		    currentZoom = 0;
+		    currentZoom = 0,
+
+		    // origin offset
+		    originCounter = this.fixedPointCounter / ViewConstants.fixedMultiple;
 
 		// check if track defined
 		if (this.trackDefined && !this.trackDisabled) {
 			// compute origin
-			this.engine.originX = this.originCounter * (this.trackBoxE + this.trackBoxW) / 2;
-			this.engine.originY = this.originCounter * (this.trackBoxN + this.trackBoxS) / 2;
+			this.engine.originX = originCounter * (this.trackBoxE + this.trackBoxW) / 2;
+			this.engine.originY = originCounter * (this.trackBoxN + this.trackBoxS) / 2;
 
 			// compute initial zoom
 			initialZoom = this.engine.zoomAt(0, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.displayWidth, this.displayHeight - 80, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor);
-			currentZoom = this.engine.zoomAt(this.originCounter, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.displayWidth, this.displayHeight - 80, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor);
+			currentZoom = this.engine.zoomAt(originCounter, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.displayWidth, this.displayHeight - 80, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor);
 			this.engine.originZ = currentZoom / initialZoom;
 		} else {
 			// reset origin
@@ -6050,6 +6062,9 @@
 		shown = !this.canPaste || this.isPasting || this.pasteBuffers[this.currentPasteBuffer] === null || this.viewOnly;
 		this.pasteButton.locked = shown;
 
+		// lock kill gliders if not supported
+		this.killButton.locked = this.engine.multiNumStates !== -1;
+
 		// drawing tools
 		shown = hide || !this.drawing || !this.showStates || settingsMenuOpen;
 		this.stateList.deleted = shown;
@@ -6229,19 +6244,20 @@
 	};
 
 	// save elapsed time at generation
-	View.prototype.saveElapsedTime = function(timeSinceLastUpdate, gensPerStep) {
+	View.prototype.saveElapsedTime = function(counter, timeSinceLastUpdate, gensPerStep) {
 		var buffer = null;
 
 		// save elapsed time
-		if (this.engine.counter >= this.elapsedTimes.length) {
+		if (counter >= this.elapsedTimes.length) {
 			// grow buffer
 			buffer = this.engine.allocator.allocate(Float32, this.elapsedTimes.length + ViewConstants.numElapsedTimes, "View.elapsedTimes");
+
 			// copy buffer
 			buffer.set(this.elapsedTimes);
 			this.elapsedTimes = buffer;
 		}
 		this.elapsedTime += (timeSinceLastUpdate / gensPerStep);
-		this.elapsedTimes[this.engine.counter] = this.elapsedTime;
+		this.elapsedTimes[counter] = this.elapsedTime;
 	};
 
 	// view update for copy to clipboard
@@ -6318,14 +6334,18 @@
 	};
 
 	// stop start from (go to generation)
-	View.prototype.stopStartFrom = function(me, cancelled) {
+	View.prototype.stopStartFrom = function(me, cancelled, notify) {
 		me.startFrom = -1;
 		me.viewMenu.locked = false;
 		if (cancelled) {
-			me.menuManager.notification.notify("Cancelled", 15, 80, 15, true);
+			if (notify) {
+				me.menuManager.notification.notify("Cancelled", 15, 80, 15, true);
+			}
 		} else {
 			if (me.genNotifications) {
-				me.menuManager.notification.notify("Arrived at generation " + me.engine.counter, 15, 150, 15, true);
+				if (notify) {
+					me.menuManager.notification.notify("Arrived at generation " + me.engine.counter, 15, 150, 15, true);
+				}
 			}
 		}
 		me.menuManager.notification.clear(false, false);
@@ -6344,10 +6364,20 @@
 		me.viewMenu.locked = true;
 
 		// compute the next set of generations without stats for speed
-		while (me.engine.counter < me.startFrom && (performance.now() - startTime < timeLimit)) {
+		while (me.engine.population !== 0 && me.engine.counter < me.startFrom && (performance.now() - startTime < timeLimit)) {
 			// compute the next generation
 			me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify);
-			me.engine.convertToPensTile();
+			if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
+				me.engine.convertToPensTile();
+			}
+			// check for just died for 2 state patterns
+			if (me.engine.anythingAlive === 0 && me.engine.multiNumStates <= 2) {
+				// clear the other buffer
+				me.engine.anythingAlive = 1;
+				me.engine.nextGeneration(false, false, me.graphDisabled, me.identify);
+				me.engine.counter -= 1;
+			}
+
 
 			// paste any RLE snippets
 			me.pasteRLEList();
@@ -6357,6 +6387,17 @@
 			if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
 				me.engine.anythingAlive = 1;
 			}
+
+			// save elapsed time
+			me.saveElapsedTime(16, 1);
+
+			// check if life died
+			if (me.engine.population === 0) {
+				me.startFrom = me.engine.counter;
+				if (me.diedGeneration === -1) {
+					me.diedGeneration = me.engine.counter;
+				}
+			}
 		}
 
 		// render world
@@ -6365,15 +6406,17 @@
 		// update progress bar
 		me.updateProgressBarStartFrom(me);
 
-		// set counters to the current
-		me.floatCounter = me.engine.counter;
-		me.originCounter = me.engine.counter;
+		// set counter to the current generation
+		me.fixedPointCounter = me.engine.counter * ViewConstants.fixedMultiple;
 
 		// set the auto update mode
 		me.menuManager.setAutoUpdate(true);
 
 		if (me.engine.counter >= me.startFrom) {
-			me.stopStartFrom(me, false);
+			me.stopStartFrom(me, !me.engine.anythingAlive, false);
+			if (me.engine.population === 0) {
+				me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 240, 15, false);
+			}
 		}
 	};
 
@@ -6552,9 +6595,8 @@
 		// render world
 		me.renderWorld(me, false, 0, false);
 
-		// set counters to the current
-		me.floatCounter = me.engine.counter;
-		me.originCounter = me.engine.counter;
+		// set counters to the current generation
+		me.fixedPointCounter = me.engine.counter * ViewConstants.fixedMultiple;
 
 		// set the auto update mode
 		me.menuManager.setAutoUpdate(true);
@@ -6688,8 +6730,7 @@
 		me.engine.counter = 0;
 		me.engine.counterMargolus = 0;
 		me.engine.maxMargolusGen = 0;
-		me.floatCounter = 0;
-		me.originCounter = 0;
+		me.fixedPointCounter = 0;
 
 		// reset elapsed time
 		me.elapsedTime = 0;
@@ -7201,8 +7242,7 @@
 		if (!me.multiStateView) {
 			// reset grid and generation counter
 			me.engine.restoreSavedGrid(me.noHistory);
-			me.floatCounter = me.engine.counter;
-			me.originCounter = me.floatCounter;
+			me.fixedPointCounter = me.engine.counter * ViewConstants.fixedMultiple;
 
 			// mark cells alive
 			me.engine.anythingAlive = 1;
@@ -7585,6 +7625,7 @@
 						if (ViewConstants.stateNames[i] === name) {
 							number = i;
 						}
+						i += 1;
 					}
 				} else {
 					if (name === "alive") {
@@ -7634,6 +7675,7 @@
 								if (LifeConstants.namesSuper[i] === name) {
 									number = i;
 								}
+								i += 1;
 							}
 						} else {
 							if (name === "alive") {
@@ -7927,11 +7969,11 @@
 					}
 					if (numCleared > 0) {
 						if (me.isSuper) {
-							me.afterEdit("clear [R]Super cells");
+							me.afterEdit("clear Super cells");
 						} else {
 							// update state 6 grid
 							this.engine.populateState6MaskFromColGrid();
-							me.afterEdit("clear [R]History cells");
+							me.afterEdit("clear History cells");
 						}
 					}
 				}
@@ -8231,7 +8273,7 @@
 						for (i = 0; i < me.gensPerStep; i += 1) {
 							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify);
 							me.engine.convertToPensTile();
-							me.floatCounter = me.engine.counter;
+							me.fixedPointCounter = me.engine.counter * ViewConstants.fixedMultiple;
 						}
 						me.engine.reversePending = true;
 					} else {
@@ -8531,24 +8573,24 @@
 
 	// process drag for selection
 	View.prototype.doDragSelect = function(me, x, y) {
-			// selection box
+		// selection box
 		var box = me.selectionBox,
 
-			// flag if off the grid
-			offGrid = false,
+		    // flag if off the grid
+		    offGrid = false,
 
-			// offset to middle of grid
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+		    // offset to middle of grid
+		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 
 		    // bounded grid top left
-			/** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
+		    /** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
 		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
 		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
 
 		    // bounded grid bottom right
 		    /** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
-			/** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1;
+		    /** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1;
 
 		// check for infinite dimension bounded grid
 		if (me.boundedGridType !== -1) {
@@ -8787,8 +8829,6 @@
 			} else {
 				me.removeSelection(me);
 			}
-		} else {
-			me.removeSelection(me);
 		}
 	};
 
@@ -10309,7 +10349,7 @@
 		}
 
 		if (me.startFrom !== -1) {
-			me.stopStartFrom(me, true);
+			me.stopStartFrom(me, true, true);
 		}
 	};
 
@@ -10726,9 +10766,9 @@
 				// save edit
 				if ((me.engine.isLifeHistory || me.engine.isSuper) && ctrl) {
 					if (me.engine.isLifeHistory) {
-						me.afterEdit("clear [R]History cells in selection");
+						me.afterEdit("clear History cells in selection");
 					} else {
-						me.afterEdit("clear [R]Super cells in selection");
+						me.afterEdit("clear Super cells in selection");
 					}
 				} else {
 					me.afterEdit("clear cells in selection");
@@ -12341,55 +12381,30 @@
 				cells = me.engine.allocator.allocate(Int16, 3 * (x2 - x1 + 1) * (y2 - y1 + 1), "View.rotateCells");
 
 				// read each cell in the selection and rotate coordinates
-				if (me.engine.isHex) {
-					for (y = y1; y <= y2; y += 1) {
-						for (x = x1; x <= x2; x += 1) {
-							state = me.engine.getState(x + xOff, y + yOff, false);
-							if (invertForGenerations) {
-								if (state > 0) {
-									state = states - state;
-								}
-							} else {
-								if (me.engine.isPCA) {
-									if (clockwise) {
-										state = ((state << 1) & 15) | ((state & 8) >> 3);
-									} else {
-										state = ((state >> 1) & 15) | ((state & 1) << 3);
-									}
+				for (y = y1; y <= y2; y += 1) {
+					newY = firstNewY;
+					for (x = x1; x <= x2; x += 1) {
+						state = me.engine.getState(x + xOff, y + yOff, false);
+						if (invertForGenerations) {
+							if (state > 0) {
+								state = states - state;
+							}
+						} else {
+							if (me.engine.isPCA) {
+								if (clockwise) {
+									state = ((state << 1) & 15) | ((state & 8) >> 3);
+								} else {
+									state = ((state >> 1) & 15) | ((state & 1) << 3);
 								}
 							}
-							cells[i] = y - x;
-							cells[i + 1] = -x;
-							cells[i + 2] = state;
-							i += 3;
 						}
+						cells[i] = newX;
+						cells[i + 1] = newY;
+						cells[i + 2] = state;
+						i += 3;
+						newY += newYInc;
 					}
-				} else {
-					for (y = y1; y <= y2; y += 1) {
-						newY = firstNewY;
-						for (x = x1; x <= x2; x += 1) {
-							state = me.engine.getState(x + xOff, y + yOff, false);
-							if (invertForGenerations) {
-								if (state > 0) {
-									state = states - state;
-								}
-							} else {
-								if (me.engine.isPCA) {
-									if (clockwise) {
-										state = ((state << 1) & 15) | ((state & 8) >> 3);
-									} else {
-										state = ((state >> 1) & 15) | ((state & 1) << 3);
-									}
-								}
-							}
-							cells[i] = newX;
-							cells[i + 1] = newY;
-							cells[i + 2] = state;
-							i += 3;
-							newY += newYInc;
-						}
-						newX += newXInc;
-					}
+					newX += newXInc;
 				}
 
 				// recompute offsets in case grid changed
@@ -13192,8 +13207,7 @@
 
 		// restore the elapsed time
 		this.elapsedTime = this.elapsedTimes[targetGen];
-		this.floatCounter = targetGen;
-		this.originCounter = targetGen;
+		this.fixedPointCounter = targetGen * ViewConstants.fixedMultiple;
 	};
 
 	// run to given generation (used to step back)
@@ -13213,8 +13227,7 @@
 
 				// restore the elapsed time
 				this.elapsedTime = this.elapsedTimes[targetGen];
-				this.floatCounter = targetGen;
-				this.originCounter = targetGen;
+				this.fixedPointCounter = targetGen * ViewConstants.fixedMultiple;
 	
 				// don't actually step back if pattern is dead at the requested generation
 				if (this.diedGeneration !== -1 && targetGen > this.diedGeneration + fading) {
@@ -14497,7 +14510,7 @@
 		// add the clear [R]History or [R]Super button
 		this.clearRHistoryButton = this.viewMenu.addButtonItem(this.clearRHistoryPressed, Menu.southEast, -40, -130, 40, 40, "R");
 		this.clearRHistoryButton.icon = this.iconManager.icon("select");
-		this.clearRHistoryButton.toolTip = "clear [R]History cells [Ctrl Del]";
+		this.clearRHistoryButton.toolTip = "clear History cells [Ctrl Del]";
 		this.clearRHistoryButton.setFont("16px Arial");
 
 		// add the invert selection button
@@ -15357,12 +15370,15 @@
 		    savedThumbnail = false,
 		    resizeRequired = false,
 		    neededWidth = 0,
-			neededHeight = 0,
-			borderSize = 0,
-			i = 0,
-			ignoreThumbnail = args[0],
-			stateCount = 0,
-			name = "";
+		    neededHeight = 0,
+		    borderSize = 0,
+		    i = 0,
+		    ignoreThumbnail = args[0],
+		    stateCount = 0,
+		    numStatesForRule = 0,
+		    name = "",
+		    growX = false,
+		    growY = false;
 
 		// check for Edge browser
 		if (window.navigator.userAgent.indexOf("Edge") !== -1) {
@@ -15533,9 +15549,9 @@
 			me.engine.isSuper = pattern.isSuper;
 
 			// set toggle button caption
-			me.clearRHistoryButton.toolTip = "clear [R]History cells [Ctrl Del]";
+			me.clearRHistoryButton.toolTip = "clear History cells [Ctrl Del]";
 			if (me.engine.isSuper) {
-				me.clearRHistoryButton.toolTip = "clear [R]Super cells [Ctrl Del]";
+				me.clearRHistoryButton.toolTip = "clear Super cells [Ctrl Del]";
 			}
 
 			// read the number of states (Generations or HROT)
@@ -15732,9 +15748,6 @@
 		// initalised ColourManager
 		ColourManager.init();
 
-		// clear the grid
-		me.engine.clearGrids(false);
-
 		// reset grid lines
 		me.engine.gridLineRaw = ViewConstants.gridLineRawDefault;
 		me.engine.gridLineBoldRaw = ViewConstants.gridLineBoldRawDefault;
@@ -15767,6 +15780,9 @@
 
 		// reset the grid size
 		me.engine.resetGridSize(me.defaultGridWidth, me.defaultGridHeight);
+
+		// clear the grid
+		me.engine.clearGrids(false);
 
 		// set the default position
 		me.engine.xOff = me.engine.width / 2;
@@ -16244,21 +16260,39 @@
 
 			// grow the grid if the pattern is too big to fit
 			while (me.engine.width < me.engine.maxGridSize && ((neededWidth + borderSize + Math.abs(me.xOffset) * 2) >= me.engine.width || (neededHeight + borderSize + Math.abs(me.yOffset) * 2) >= me.engine.height)) {
+				// check which directions to grow
+				if ((neededWidth + borderSize + Math.abs(me.xOffset) * 2) >= me.engine.width) {
+					growX = true;
+				}
+				if ((neededHeight + borderSize + Math.abs(me.yOffset) * 2) >= me.engine.height) {
+					growY = true;
+				}
+
 				// grow the grid
-				me.engine.growGrid();
+				me.engine.growGrid(growX, growY);
 
 				// update the default x and y
-				me.defaultX += me.engine.width >> 2;
-				me.defaultY += me.engine.height >> 2;
+				if (growX) {
+					me.defaultX += me.engine.width >> 2;
+				}
+				if (growY) {
+					me.defaultY += me.engine.height >> 2;
+				}
 
 				// update the saved x and y
-				me.savedX += me.engine.width >> 2;
-				me.savedY += me.engine.height >> 2;
+				if (growX) {
+					me.savedX += me.engine.width >> 2;
+				}
+				if (growY) {
+					me.savedY += me.engine.height >> 2;
+				}
 
 				// check for hex mode
 				if (me.engine.isHex) {
-					me.defaultX -= me.engine.height >> 3;
-					me.savedX -= me.engine.height >> 3;
+					if (growY) {
+						me.defaultX -= me.engine.height >> 3;
+						me.savedX -= me.engine.height >> 3;
+					}
 				}
 			}
 
@@ -16393,8 +16427,7 @@
 		me.engine.counter = 0;
 		me.engine.counterMargolus = 0;
 		me.engine.maxMargolusGen = 0;
-		me.floatCounter = 0;
-		me.originCounter = 0;
+		me.fixedPointCounter = 0;
 
 		// reset elapsed time
 		me.elapsedTime = 0;
@@ -16463,7 +16496,11 @@
 
 			// count non-zero states
 			stateCount = 0;
-			for (i = 1; i < me.patternStateCount.length; i += 1) {
+			numStatesForRule = me.engine.multiNumStates;
+			if (numStatesForRule === -1) {
+				numStatesForRule = 2;
+			}
+			for (i = 1; i < numStatesForRule; i += 1) {
 				stateCount += me.patternStateCount[i];
 			}
 			if (pattern && stateCount === 0 && me.engine.population === 0 && !me.isPasteEvery) {

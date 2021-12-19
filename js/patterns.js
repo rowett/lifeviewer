@@ -7257,6 +7257,26 @@
 			}
 		}
 
+		// if pattern is LtL then copy parameters to HROT engine
+		if (pattern.isLTL) {
+			this.setupHROTfromLTL(pattern, allocator);
+		}
+
+		// check for hex HROT patterns
+		if (pattern.isHROT && (pattern.neighborhoodHROT === this.hexHROT || pattern.neighborhoodHROT === this.tripodHROT || pattern.neighborhoodHROT === this.asteriskHROT || ((pattern.neighborhoodHROT === this.weightedHROT || pattern.neighborhoodHROT === this.customHROT) && pattern.customGridType === "H"))) {
+			pattern.isHex = true;
+		}
+
+		// check for triangular HROT patterns
+		if (pattern.isHROT && (pattern.neighborhoodHROT === this.triangularHROT || ((pattern.neighborhoodHROT === this.weightedHROT || pattern.neighborhoodHROT === this.customHROT) && pattern.customGridType === "L"))) {
+			pattern.isTriangular = true;
+		}
+
+		// setup number of states for [R]Super patterns
+		if (pattern.isSuper) {
+			pattern.multiNumStates = 26;
+		}
+
 		// check bounded grid size
 		if (pattern.gridType !== -1) {
 			// check for LtL or HROT rules
@@ -7510,26 +7530,6 @@
 					}
 				}
 			}
-		}
-
-		// if pattern is LtL then copy parameters to HROT engine
-		if (pattern.isLTL) {
-			this.setupHROTfromLTL(pattern, allocator);
-		}
-
-		// check for hex HROT patterns
-		if (pattern.isHROT && (pattern.neighborhoodHROT === this.hexHROT || pattern.neighborhoodHROT === this.tripodHROT || pattern.neighborhoodHROT === this.asteriskHROT || ((pattern.neighborhoodHROT === this.weightedHROT || pattern.neighborhoodHROT === this.customHROT) && pattern.customGridType === "H"))) {
-			pattern.isHex = true;
-		}
-
-		// check for triangular HROT patterns
-		if (pattern.isHROT && (pattern.neighborhoodHROT === this.triangularHROT || ((pattern.neighborhoodHROT === this.weightedHROT || pattern.neighborhoodHROT === this.customHROT) && pattern.customGridType === "L"))) {
-			pattern.isTriangular = true;
-		}
-
-		// setup number of states for [R]Super patterns
-		if (pattern.isSuper) {
-			pattern.multiNumStates = 26;
 		}
 	};
 

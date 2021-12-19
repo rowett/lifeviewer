@@ -1,3 +1,26 @@
+Build 663
+- don't expand THUMBNAILs on Touch devices unless touch is released over Viewer
+- ignore extra states for 2-state patterns when computing number of alive cells at pattern load
+- disable [[ KILLGLIDERS ]] for non-2-state patterns
+- fixed [[ STARTFROM ]] when multi-state patterns die
+- don't create undo record if no selection is made
+- add AGESTATES to Theme Help
+- fixed an infinite loop when invalid [[ COLOR ]] element specified
+- improve invalid Theme error message
+- default grid size is now 512x256 (used to be 512x512)
+- grid can now grow independently in X and Y direction
+- fixed elapsed time not being calculated for T >= 16384 with [[ STARTFROM ]]
+- enforce even bounded grid width and height for triangular LtL/HROT rules
+- Select All was including bounding box for 2-state HROT/LtL patterns
+- Cells outside a bounded grid are shown as "[Boundary]"
+- when patterns are killed by hitting the grid boundary update the population and death statistics
+- hotkey "m" will display Memory topic when in Help topics menu
+- rectangular cells for triangular patterns were not being used for paste overlay
+- fixed clear [R]History/[R]Super tooltips
+- [[ STARTFROM ]] now stops if all cells die
+- fixed rotate selection for hex rules
+- fix janking during normal playback
+
 Build 662
 - ignore history states for Select All on PCA rules
 

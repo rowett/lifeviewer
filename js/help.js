@@ -2342,8 +2342,8 @@
 		y = this.renderHelpLine(view, "DEAD", "cell just died", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "DEADRAMP", "cell dead for several generations", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", (LifeConstants.aliveMax - LifeConstants.aliveStart + 1) + " states from ALIVE to ALIVERAMP", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", view.historyStates + " (HISTORYSTATES) states from DEAD to DEADRAMP", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", view.aliveStates + " (" + Keywords.aliveStatesWord + ") states from ALIVE to ALIVERAMP", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", view.historyStates + " (" + Keywords.historyStatesWord + ") states from DEAD to DEADRAMP", ctx, x, y, height, helpLine);
 
 		// draw each 2-state theme except the custom theme
 		for (i = 0; i < view.engine.themes.length - 1; i += 1) {

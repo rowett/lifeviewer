@@ -4308,6 +4308,12 @@
 										}
 									}
 								}
+
+								// output error if not valid
+								if (!itemValid) {
+									itemValid = true;
+									scriptErrors[scriptErrors.length] = [nextToken, "invalid specification"];
+								}
 							}
 							break;
 
