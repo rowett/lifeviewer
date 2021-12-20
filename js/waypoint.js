@@ -960,7 +960,8 @@
 			tilt = engine.tilt,
 			mode7Angle = tilt - 1,
 			pz = 1,
-			xLeft = 0, yLeft = 0, xRight = 0, yRight = 0;
+			xLeft = 0, yLeft = 0, xRight = 0, yRight = 0,
+			floatCounter = view.fixedPointCounter / ViewConstants.fixedMultiple;
 
 		// adjust for hex
 		if (engine.isHex) {
@@ -1063,11 +1064,11 @@
 
 						// add movement
 						if (current.t1 !== -1) {
-							cx += current.dx * (view.floatCounter - current.t1);
-							cy += current.dy * (view.floatCounter - current.t1);
+							cx += current.dx * (floatCounter - current.t1);
+							cy += current.dy * (floatCounter - current.t1);
 						} else {
-							cx += current.dx * view.floatCounter;
-							cy += current.dy * view.floatCounter;
+							cx += current.dx * floatCounter;
+							cy += current.dy * floatCounter;
 						}
 	
 						// check for camera rotation
@@ -1211,7 +1212,8 @@
 			pz = 1,
 			shadowOffset = 0,
 			coords = [], length = 0,
-			coord = 0;
+			coord = 0,
+			floatCounter = view.fixedPointCounter / ViewConstants.fixedMultiple;
 
 		// use the shadow colour if drawing shadows
 		if (drawingShadows) {
@@ -1319,11 +1321,11 @@
 
 						// add movement
 						if (current.t1 !== -1) {
-							cx += current.dx * (view.floatCounter - current.t1);
-							cy += current.dy * (view.floatCounter - current.t1);
+							cx += current.dx * (floatCounter - current.t1);
+							cy += current.dy * (floatCounter - current.t1);
 						} else {
-							cx += current.dx * view.floatCounter;
-							cy += current.dy * view.floatCounter;
+							cx += current.dx * floatCounter;
+							cy += current.dy * floatCounter;
 						}
 	
 						// check for camera rotation
@@ -1465,7 +1467,8 @@
 			tilt = engine.tilt,
 			mode7Angle = tilt - 1,
 			pz = 1,
-			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0;
+			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
+			floatCounter = view.fixedPointCounter / ViewConstants.fixedMultiple;
 
 		// adjust for hex
 		if (engine.isHex) {
@@ -1565,11 +1568,11 @@
 
 						// add movement
 						if (current.t1 !== -1) {
-							cx += current.dx * (view.floatCounter - current.t1);
-							cy += current.dy * (view.floatCounter - current.t1);
+							cx += current.dx * (floatCounter - current.t1);
+							cy += current.dy * (floatCounter - current.t1);
 						} else {
-							cx += current.dx * view.floatCounter;
-							cy += current.dy * view.floatCounter;
+							cx += current.dx * floatCounter;
+							cy += current.dy * floatCounter;
 						}
 	
 						// check for camera rotation

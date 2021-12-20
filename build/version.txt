@@ -1,3 +1,11 @@
+Build 665
+- fixed LOOP
+
+Build 664
+- fix elapsed time not being calculated for T >= 16384 with Identify
+- fix Annotation positions
+- [R]Super patterns were not loading
+
 Build 663
 - don't expand THUMBNAILs on Touch devices unless touch is released over Viewer
 - ignore extra states for 2-state patterns when computing number of alive cells at pattern load

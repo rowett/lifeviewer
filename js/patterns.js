@@ -7409,13 +7409,6 @@
 			this.executable = false;
 		}
 
-		// check for generations and [R]Super
-		if (pattern.multiNumStates !== -1 && pattern.isSuper && !(pattern.isLTL || pattern.isHROT)) {
-			this.failureReason = "[R]Super not valid with Generations";
-			pattern.isSuper = false;
-			this.executable = false;
-		}
-
 		// check for generations and B0
 		if (pattern.multiNumStates !== -1 && this.ruleArray[0] && !(pattern.isLTL || pattern.isHROT)) {
 			this.failureReason = "Generations does not support B0";

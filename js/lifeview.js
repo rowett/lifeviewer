@@ -309,7 +309,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 663,
+		/** @const {number} */ versionBuild : 665,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3082,7 +3082,7 @@
 				// now run the required number of generations
 				while (gens > 0) {
 					// compute next generation with no stats, history and graph disabled
-					this.engine.nextGeneration(false, true, true, this.identify);
+					this.engine.nextGeneration(false, true, true, this.identify, this);
 					this.engine.convertToPensTile();
 					gens -= 1;
 				}
@@ -5230,10 +5230,10 @@
 					saveBox.set(zoomBox);
 					if (me.statsOn && ((me.engine.counter === targetGen - 1) || bailout)) {
 						// compute next generation with stats
-						me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify);
+						me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify, me);
 					} else {
 						// just compute next generation
-						me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify);
+						me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify, me);
 					}
 
 					// next step
@@ -5261,9 +5261,16 @@
 
 					// check for loop
 					if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled) {
+						// save elapsed time up to the loop generation
+						for (i = 1; i <= stepsTaken; i += 1) {
+							this.saveElapsedTime(currentGen + i, timeSinceLastUpdate, stepsTaken);
+						}
+
 						// reset
 						me.elapsedTime = 0;
 						me.reset(me);
+						currentGen = 0;
+						targetGen = 0;
 
 						// check if autostart defined but disabled
 						if (me.autoStart && me.autoStartDisabled) {
@@ -6358,7 +6365,7 @@
 		var startTime = performance.now(),
 
 		    // time budget in ms for this frame
-			timeLimit = 13;
+		    timeLimit = 13;
 
 		// lock the menu
 		me.viewMenu.locked = true;
@@ -6366,7 +6373,7 @@
 		// compute the next set of generations without stats for speed
 		while (me.engine.population !== 0 && me.engine.counter < me.startFrom && (performance.now() - startTime < timeLimit)) {
 			// compute the next generation
-			me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify);
+			me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify, me);
 			if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
 				me.engine.convertToPensTile();
 			}
@@ -6374,10 +6381,9 @@
 			if (me.engine.anythingAlive === 0 && me.engine.multiNumStates <= 2) {
 				// clear the other buffer
 				me.engine.anythingAlive = 1;
-				me.engine.nextGeneration(false, false, me.graphDisabled, me.identify);
+				me.engine.nextGeneration(false, false, me.graphDisabled, me.identify, me);
 				me.engine.counter -= 1;
 			}
-
 
 			// paste any RLE snippets
 			me.pasteRLEList();
@@ -6389,7 +6395,7 @@
 			}
 
 			// save elapsed time
-			me.saveElapsedTime(16, 1);
+			me.saveElapsedTime(me.engine.counter, 0, 1);
 
 			// check if life died
 			if (me.engine.population === 0) {
@@ -6437,7 +6443,7 @@
 		// compute the next set of generations without stats for speed
 		while (me.identify && (performance.now() - startTime < timeLimit) && me.engine.anythingAlive) {
 			// compute the next generation
-			me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify);
+			me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify, me);
 			me.engine.convertToPensTile();
 
 			// check if grid buffer needs to grow
@@ -6452,6 +6458,9 @@
 
 			// paste any RLE snippets
 			me.pasteRLEList();
+
+			// save elapsed time
+			me.saveElapsedTime(me.engine.counter, 0, 1);
 
 			// if paste every is defined then always flag there are alive cells
 			// since cells will appear in the future
@@ -6629,7 +6638,7 @@
 			}
 
 			// compute the next generation
-			me.engine.nextGeneration(false, noSnapshots, me.graphDisabled, me.identify);
+			me.engine.nextGeneration(false, noSnapshots, me.graphDisabled, me.identify, me);
 			me.engine.convertToPensTile();
 
 			// paste any RLE snippets
@@ -6645,7 +6654,7 @@
 		// check if complete
 		if (me.engine.counter === targetGen - 1) {
 			// compute final generation with stats on if required
-			me.engine.nextGeneration(me.statsOn, false, me.graphDisabled, me.identify);
+			me.engine.nextGeneration(me.statsOn, false, me.graphDisabled, me.identify, me);
 			me.engine.convertToPensTile();
 
 			// paste any RLE snippets
@@ -7133,7 +7142,7 @@
 		// check for simple view
 		if (!me.multiStateView) {
 			// reset grid and generation counter
-			me.engine.restoreSavedGrid(me.noHistory);
+			me.engine.restoreSavedGrid(me, me.noHistory);
 
 			// mark cells alive
 			me.engine.anythingAlive = 1;
@@ -7241,8 +7250,7 @@
 		// check for simple view
 		if (!me.multiStateView) {
 			// reset grid and generation counter
-			me.engine.restoreSavedGrid(me.noHistory);
-			me.fixedPointCounter = me.engine.counter * ViewConstants.fixedMultiple;
+			me.engine.restoreSavedGrid(me, me.noHistory);
 
 			// mark cells alive
 			me.engine.anythingAlive = 1;
@@ -8271,7 +8279,7 @@
 						}
 						me.afterEdit("");
 						for (i = 0; i < me.gensPerStep; i += 1) {
-							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify);
+							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify, me);
 							me.engine.convertToPensTile();
 							me.fixedPointCounter = me.engine.counter * ViewConstants.fixedMultiple;
 						}
@@ -11329,7 +11337,7 @@
 				me.cutSelection(me, me.currentPasteBuffer, true, false);
 
 				// step
-				me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify);
+				me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify, me);
 				me.engine.convertToPensTile();
 				me.afterEdit("");
 
@@ -11454,7 +11462,7 @@
 		}
 
 		// compute next generation
-		me.engine.nextGeneration(false, true, true, me.identify);
+		me.engine.nextGeneration(false, true, true, me.identify, me);
 		me.engine.convertToPensTile();
 		if (me.engine.anythingAlive) {
 			// set new paste buffer
@@ -12752,7 +12760,7 @@
 
 					// if the required generation is earlier then reset
 					if (number < me.engine.counter) {
-						me.engine.restoreSavedGrid(false);
+						me.engine.restoreSavedGrid(me, false);
 						me.setUndoGen(me.engine.counter);
 					}
 				}
@@ -13062,7 +13070,7 @@
 							me.engine.counter -= 1;
 
 							// compute next generation
-							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify);
+							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify, me);
 
 							// paste any RLE snippets
 							me.pasteRLEList();
@@ -13166,7 +13174,7 @@
 		// compute each generation up to just before the target with stats off (for speed)
 		while (this.engine.counter < targetGen - 1) {
 			if (this.engine.anythingAlive) {
-				this.engine.nextGeneration(false, false, this.graphDisabled, this.identify);
+				this.engine.nextGeneration(false, false, this.graphDisabled, this.identify, this);
 				if (!(this.engine.anythingAlive === 0 && this.engine.multiNumStates > 2)) {
 					this.engine.convertToPensTile();
 				}
@@ -13174,7 +13182,7 @@
 				if (this.engine.anythingAlive === 0 && this.engine.multiNumStates <= 2) {
 					// clear the other buffer
 					this.engine.anythingAlive = 1;
-					this.engine.nextGeneration(false, false, this.graphDisabled, this.identify);
+					this.engine.nextGeneration(false, false, this.graphDisabled, this.identify, this);
 					this.engine.counter -= 1;
 				}
 			} else {
@@ -13187,7 +13195,7 @@
 		// compute the final generation with stats on if required
 		if (this.engine.counter < targetGen) {
 			if (this.engine.anythingAlive) {
-				this.engine.nextGeneration(this.statsOn, false, this.graphDisabled, this.identify);
+				this.engine.nextGeneration(this.statsOn, false, this.graphDisabled, this.identify, this);
 				if (!(this.engine.anythingAlive === 0 && this.engine.multiNumStates > 2)) {
 					this.engine.convertToPensTile();
 				}
@@ -13195,7 +13203,7 @@
 				if (this.engine.anythingAlive === 0 && this.engine.multiNumStates <= 2) {
 					// clear the other buffer
 					this.engine.anythingAlive = 1;
-					this.engine.nextGeneration(false, false, this.graphDisabled, this.identify);
+					this.engine.nextGeneration(false, false, this.graphDisabled, this.identify, this);
 					this.engine.counter -= 1;
 				}
 			} else {
@@ -13252,7 +13260,7 @@
 					this.computeHistoryTarget = targetGen;
 	
 					// reset
-					this.engine.restoreSavedGrid(false);
+					this.engine.restoreSavedGrid(this, false);
 	
 					// compute history
 					this.menuManager.notification.notify("Computing previous generations", 15, 10000, 15, true);
@@ -16522,8 +16530,8 @@
 			}
 
 			// save state for reset
-			me.engine.saveGrid(me.noHistory);
-			me.engine.restoreSavedGrid(me.noHistory);
+			me.engine.saveGrid(me.noHistory, me);
+			me.engine.restoreSavedGrid(me, me.noHistory);
 		}
 
 		// set the xy label UI width based on max grid size

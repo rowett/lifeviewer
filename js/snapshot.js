@@ -41,6 +41,7 @@
 
 		// generation and Margolus generation
 		this.counter = 0;
+		this.fixedCounter = 0;
 		this.counterMargolus = 0;
 		this.maxMargolusGen = 0;
 
@@ -1397,7 +1398,7 @@
 	};
 
 	// save snapshot
-	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, overlayGrid, overlayTileGrid, zoomBox, HROTBox, population, births, deaths, counter, counterMargolus, maxMargolusGen, width, height, life, isReset, anythingAlive) {
+	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, overlayGrid, overlayTileGrid, zoomBox, HROTBox, population, births, deaths, counter, fixedCounter, counterMargolus, maxMargolusGen, width, height, life, isReset, anythingAlive) {
 		var snapshot = null,
 		    i = 0,
 		    usingOverlay = (overlayGrid !== null);
@@ -1469,6 +1470,7 @@
 		
 		// save the generation
 		snapshot.counter = counter;
+		snapshot.fixedCounter = fixedCounter;
 		snapshot.counterMargolus = counterMargolus;
 		snapshot.maxMargolusGen = maxMargolusGen;
 	};

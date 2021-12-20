@@ -2005,7 +2005,7 @@
 					this.countList.whole.fill(0);
 					for (x = 0; x < period * 2; x += 1) {   // TBD is +1 needed?
 						// compute the next generation
-						this.nextGeneration(false, view.noHistory, view.graphDisabled, view.identify);
+						this.nextGeneration(false, view.noHistory, view.graphDisabled, view.identify, view);
 						this.convertToPensTile();
 
 						// paste any RLE snippets
@@ -5146,7 +5146,7 @@
 		// check if the snapshot exists
 		if (snapshot) {
 			// restore the snapshot
-			this.restoreSnapshot(snapshot);
+			this.restoreSnapshot(snapshot, view);
 			view.pasteRLEList();
 		}
 
@@ -5155,7 +5155,7 @@
 			if (this.anythingAlive) {
 				// check for reverse direction
 				this.checkReverse(view, this.counter);
-				this.nextGeneration(false, true, graphDisabled, view.identify);
+				this.nextGeneration(false, true, graphDisabled, view.identify, view);
 				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
 					this.convertToPensTile();
 				}
@@ -5164,7 +5164,7 @@
 					// clear the other buffer
 					this.anythingAlive = 1;
 					this.checkReverse(view, this.counter);
-					this.nextGeneration(false, false, graphDisabled, view.identify);
+					this.nextGeneration(false, false, graphDisabled, view.identify, view);
 					this.anythingAlive = 0;
 					this.counter -= 1;
 				}
@@ -5179,7 +5179,7 @@
 		if (this.counter < targetGen) {
 			if (this.anythingAlive) {
 				this.checkReverse(view, this.counter);
-				this.nextGeneration(statsOn, true, graphDisabled, view.identify);
+				this.nextGeneration(statsOn, true, graphDisabled, view.identify, view);
 				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
 					this.convertToPensTile();
 				}
@@ -5188,7 +5188,7 @@
 					// clear the other buffer
 					this.anythingAlive = 1;
 					this.checkReverse(view, this.counter);
-					this.nextGeneration(false, false, graphDisabled, view.identify);
+					this.nextGeneration(false, false, graphDisabled, view.identify, view);
 					this.anythingAlive = 0;
 					this.counter -= 1;
 				}
@@ -5212,16 +5212,17 @@
 	};
 
 	// restore snapshot
-	Life.prototype.restoreSnapshot = function(snapshot) {
+	Life.prototype.restoreSnapshot = function(snapshot, view) {
 		var grid = null,
 		    nextGrid = null,
 		    tileGrid = null,
 		    nextTileGrid = null,
-			colourGrid = this.colourGrid,
-			overlayGrid = this.overlayGrid;
+		    colourGrid = this.colourGrid,
+		    overlayGrid = this.overlayGrid;
 
 		// restore the counter
 		this.counter = snapshot.counter;
+		view.fixedPointCounter = snapshot.fixedCounter;
 		this.counterMargolus = snapshot.counterMargolus;
 		this.maxMargolusGen = snapshot.maxMargolusGen;
 
@@ -5294,7 +5295,7 @@
 	};
 
 	// save snapshot
-	Life.prototype.saveSnapshot = function() {
+	Life.prototype.saveSnapshot = function(view) {
 		var grid = null,
 		    tileGrid = null;
 
@@ -5308,13 +5309,13 @@
 		}
 
 		// save to specific snapshot
-		this.saveToSnapshot(false, grid, tileGrid);
+		this.saveToSnapshot(false, grid, tileGrid, view);
 	};
 
 	// restore saved grid
-	Life.prototype.restoreSavedGrid = function(noHistory) {
+	Life.prototype.restoreSavedGrid = function(view, noHistory) {
 		// restore the reset snapshot
-		this.restoreSnapshot(this.resetSnapshot);
+		this.restoreSnapshot(this.resetSnapshot, view);
 
 		// clear the snapshots
 		this.snapshotManager.reset();
@@ -5322,12 +5323,12 @@
 
 		// save reset position as initial snapshot if history enabled
 		if (!noHistory) {
-			this.saveSnapshot();
+			this.saveSnapshot(view);
 		}
 	};
 
 	// save to a specific snapshot
-	Life.prototype.saveToSnapshot = function(isReset, grid, tileGrid) {
+	Life.prototype.saveToSnapshot = function(isReset, grid, tileGrid, view) {
 		var colourGrid = this.colourGrid;
 
 		// check for PCA rules
@@ -5339,11 +5340,11 @@
 		}
 
 		// create the snapshot
-		this.snapshotManager.saveSnapshot(grid, tileGrid, colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.colourTileHistoryGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, this.counterMargolus, this.maxMargolusGen, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive);
+		this.snapshotManager.saveSnapshot(grid, tileGrid, colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.colourTileHistoryGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, view.fixedPointCounter, this.counterMargolus, this.maxMargolusGen, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive);
 	};
 
 	// save grid
-	Life.prototype.saveGrid = function(noHistory) {
+	Life.prototype.saveGrid = function(noHistory, view) {
 		// reset snapshot manager
 		this.snapshotManager.reset();
 
@@ -5351,11 +5352,11 @@
 		this.resetSnapshot = this.snapshotManager.createSnapshot(((this.tileCols - 1) >> 4) + 1, this.tileRows, true, 0, this.drawOverlay);
 
 		// save initial position for reset
-		this.saveToSnapshot(true, this.grid, this.tileGrid);
+		this.saveToSnapshot(true, this.grid, this.tileGrid, view);
 
 		// save reset position as initial snapshot if history enabled
 		if (!noHistory) {
-			this.saveSnapshot();
+			this.saveSnapshot(view);
 		}
 	};
 
@@ -11536,10 +11537,10 @@
 	};
 
 	// compute the next generation unless rule is none
-	Life.prototype.nextGeneration = function(statsOn, noHistory, graphDisabled, identify) {
+	Life.prototype.nextGeneration = function(statsOn, noHistory, graphDisabled, identify, view) {
 		// do nothing if rule is none
 		if (!this.isNone) {
-			this.processNextGen(statsOn, noHistory, graphDisabled, identify);
+			this.processNextGen(statsOn, noHistory, graphDisabled, identify, view);
 		} else {
 			this.anythingAlive = 1;
 			this.counter += 1;
@@ -11547,7 +11548,7 @@
 	};
 
 	// compute the next generation with or without statistics
-	Life.prototype.processNextGen = function(statsOn, noHistory, graphDisabled, identify) {
+	Life.prototype.processNextGen = function(statsOn, noHistory, graphDisabled, identify, view) {
 		var performSave = false,
 		    zoomBox = this.zoomBox,
 			historyBox = this.historyBox,
@@ -11690,7 +11691,7 @@
 			if (!noHistory) {
 				// save the snapshot
 				this.convertToPensTile();
-				this.saveSnapshot();
+				this.saveSnapshot(view);
 			}
 		}
 
