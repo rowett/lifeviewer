@@ -309,7 +309,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 665,
+		/** @const {number} */ versionBuild : 666,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4560,7 +4560,7 @@
 			y += h;
 		}
 
-		if (this.lastIdentifyType !== "Still Life") {
+		if (this.lastIdentifyType !== "Still Life" && !(this.engine.isMargolus || this.engine.altSpecified)) {
 			// heat
 			this.identifyHeatLabel.setPosition(Menu.north, x, y);
 			this.identifyHeatValueLabel.setPosition(Menu.north, xv, y);
@@ -5403,8 +5403,8 @@
 		me.stepRange.locked = me.controlsLocked && me.waypointsDefined;
 		me.themeButton.locked = me.controlsLocked && me.waypointsDefined;
 		me.zoomItem.locked = me.controlsLocked;
-		me.layersItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular;
-		me.depthItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular;
+		me.layersItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular || me.engine.isNone;
+		me.depthItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular || me.engine.isNone;
 
 		// check if the mouse wheel scrolled
 		if (me.wheelDelta) {
@@ -5758,7 +5758,7 @@
 		this.identifyActiveLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
 		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
-		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
+		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified);
 		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
 		this.identifyVolatilityLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
 		this.identifyTypeValueLabel.deleted = shown;
@@ -5770,7 +5770,7 @@
 		this.identifyActiveValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
 		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
-		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
+		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified);
 		this.identifyTemperatureValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
 		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
 
@@ -7726,7 +7726,7 @@
 					name = (state ? "alive" : "dead");
 				}
 			} else {
-				// multi-state (Generations or PCA)
+				// multi-state (Generations, PCA or none)
 				if (state === 0) {
 					name = "dead";
 				} else {
@@ -7747,10 +7747,14 @@
 						if (this.engine.isSuper) {
 							name = LifeConstants.namesSuper[state];
 						} else {
-							if (state === 1) {
-								name = "alive";
+							if (this.engine.isNone) {
+								name = "state " + String(state);
 							} else {
-								name = "dying " + String(state - 1);
+								if (state === 1) {
+									name = "alive";
+								} else {
+									name = "dying " + String(state - 1);
+								}
 							}
 						}
 					}
@@ -14028,13 +14032,13 @@
 		this.elapsedTimeLabel.toolTip = "elapsed time";
 
 		// add the selection size label
-		this.selSizeLabel = this.viewMenu.addLabelItem(Menu.southWest, 166, -70, 130, 30, "");
+		this.selSizeLabel = this.viewMenu.addLabelItem(Menu.southWest, 210, -70, 130, 30, "");
 		this.selSizeLabel.textAlign = Menu.left;
 		this.selSizeLabel.setFont(ViewConstants.statsFont);
 		this.selSizeLabel.toolTip = "selection size";
 
 		// add the cursor position labels
-		this.xyLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -70, 166, 30, "");
+		this.xyLabel = this.viewMenu.addLabelItem(Menu.southWest, 0, -70, 210, 30, "");
 		this.xyLabel.textAlign = Menu.left;
 		this.xyLabel.setFont(ViewConstants.statsFont);
 		this.xyLabel.toolTip = "cell state at cursor position";
@@ -16533,15 +16537,6 @@
 			me.engine.saveGrid(me.noHistory, me);
 			me.engine.restoreSavedGrid(me, me.noHistory);
 		}
-
-		// set the xy label UI width based on max grid size
-		if (me.engine.maxGridSize > 9999) {
-			me.xyLabel.width = 166;
-		} else {
-			me.xyLabel.width = 140;
-		}
-		// set the selection size label just to the right of the xy label
-		me.selSizeLabel.setX(me.xyLabel.relWidth);
 
 		// set the graph UI control
 		me.graphButton.locked = me.graphDisabled;

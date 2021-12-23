@@ -1,3 +1,10 @@
+Build 666
+- don't show Heat for Margolus or alternating rules (including B0)
+- fix state names for none rule
+- fix neighborhood info for none rule
+- increased the width of the current cell display
+- disable Layers and Depth for none rule
+
 Build 665
 - fixed LOOP
 

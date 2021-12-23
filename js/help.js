@@ -1616,7 +1616,11 @@
 								if (view.engine.isVonNeumann || view.engine.isPCA) {
 									itemName = "von Neumann";
 								} else {
-									itemName = "Moore";
+									if (view.engine.isNone) {
+										itemName = "none";
+									} else {
+										itemName = "Moore";
+									}
 								}
 							}
 						}
