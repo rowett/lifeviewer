@@ -4833,11 +4833,8 @@
 
 								// check it is in range
 								if (numberValue >= 0) {
-									// check whether already processing waypoints
-									if (!waypointsFound) {
-										// mark that waypoints have been found
-										waypointsFound = true;
-									}
+									// mark that waypoints have been found
+									waypointsFound = true;
 
 									// add a new waypoint if not at generation 0
 									if (numberValue > 0) {
@@ -4906,11 +4903,8 @@
 
 								// check it is in range
 								if (numberValue >= 0) {
-									// check whether already processing waypoints
-									if (!waypointsFound) {
-										// mark that waypoints have been found
-										waypointsFound = true;
-									}
+									// mark that waypoints have been found
+									waypointsFound = true;
 
 									// add the current waypoint to the list
 									view.waypointManager.add(currentWaypoint);
@@ -5270,11 +5264,17 @@
 			// set gps
 			if (currentWaypoint.gpsDefined) {
 				view.genSpeed = currentWaypoint.gps;
+
+				// default step to 1x
+				view.gensPerStep = ViewConstants.minStepSpeed;
 			}
 
 			// set step
 			if (currentWaypoint.stepDefined) {
 				view.gensPerStep = currentWaypoint.step;
+
+				// default gens per second to 60
+				view.genSpeed = ViewConstants.maxGenSpeed;
 			}
 
 			// set message

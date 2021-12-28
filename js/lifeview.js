@@ -281,12 +281,6 @@
 		// step for red shading
 		/** @const {number} */ perfRedStep : 10,
 
-		// max green shading for performance display
-		/** @const {number} */ perfMaxGreen : 100,
-
-		// step for green shading
-		/** @const {number} */ perfGreenStep : 20,
-
 		// frame time budget in ms before too slow is triggered
 		/** @const {number} */ frameBudget : 18.5,
 		
@@ -309,7 +303,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 666,
+		/** @const {number} */ versionBuild : 675,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -442,7 +436,7 @@
 		/** @const {number} */ minNoGUIWidth: 64,
 		/** @const {number} */ minNoGUIHeight: 64,
 		/** @const {number} */ minLegacyWidth : 480,
-		/** @const {number} */ minViewerWidth : 560,
+		/** @const {number} */ minViewerWidth : 600,
 		/** @const {number} */ maxViewerWidth : 4096,
 
 		// extra gui height for top and bottom row of controls (used during AutoFit)
@@ -457,7 +451,7 @@
 		/** @const {number} */ preferredMenuHeight : 560,
 
 		// default width for the zoom slider (gets wider if the window is wider than the default)
-		/** @const {number} */ zoomSliderDefaultWidth : 132,
+		/** @const {number} */ zoomSliderDefaultWidth : 172,
 
 		// maximum width for the zoom slider (gets wider if the window is wider than the default)
 		/** @const {number} */ zoomSliderMaxWidth : 292,
@@ -1296,9 +1290,6 @@
 		// performance colour red component
 		/** @type {number} */ this.perfColRed = 0;
 
-		// performance colour green component
-		/** @type {number} */ this.perfColGreen = 0;
-
 		// whether just started
 		/** @type {boolean} */ this.justStarted = false;
 
@@ -1490,8 +1481,10 @@
 
 		// moveable menu items original position
 		/** @type {number} */ this.playListX = -1;
-		/** @type {number} */ this.generationRangeX = -1;
-		/** @type {number} */ this.stepRangeX = -1;
+		/** @type {number} */ this.speedRangeX = -1;
+		/** @type {number} */ this.speed1ButtonX = -1;
+		/** @type {number} */ this.directionButtonX = -1;
+		/** @type {number} */ this.stepLabelX = -1;
 
 		// life engine
 		this.engine = null;
@@ -1536,12 +1529,6 @@
 
 		// whether stats displayed
 		/** @type {boolean} */ this.statsOn = false;
-
-		// generation range item
-		this.generationRange = null;
-
-		// speed step range item
-		this.stepRange = null;
 
 		// actual step
 		this.stepLabel = null;
@@ -1696,8 +1683,14 @@
 		// auto-shrink toggle
 		this.autoShrinkToggle = null;
 
+		// auto-shrink button
+		this.autoShrinkButton = null;
+
 		// reverse direction button
 		this.directionButton = null;
+
+		// speed 1x button
+		this.speed1Button = null;
 
 		// fit button
 		this.fitButton = null;
@@ -2081,6 +2074,7 @@
 	};
 
 	// draw cell and create undo/redo
+	/** @returns {number} */
 	View.prototype.setStateWithUndo = function(x, y, colour, deadZero) {
 		// get current state
 		var state = this.engine.getState(x, y, false),
@@ -2218,6 +2212,9 @@
 			this.diedGeneration = -1;
 			return this.engine.setState(x, y, colour, deadZero);
 		}
+
+		// nothing changed
+		return 0;
 	};
 
 	// paste raw cells for undo/redo
@@ -2287,7 +2284,7 @@
 		}
 
 		// check for state 6 changes to [R]History
-		if (this.engine.isLifeHistory && wasState6 !== 0) {
+		if (this.engine.isLifeHistory && wasState6) {
 			this.engine.populateState6MaskFromColGrid();
 		}
 	};
@@ -4084,9 +4081,9 @@
 
 		// convert selection box to middle coordinates
 		var selBox = me.selectionBox,
-			midBox = me.middleBox,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+		    midBox = me.middleBox,
+		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
 		midBox.leftX = selBox.leftX + xOff;
 		midBox.bottomY = selBox.bottomY + yOff;
@@ -4976,7 +4973,7 @@
 		}
 
 		// copy gens per step from control since it gets overwritten by waypoint playback
-		me.gensPerStep = me.stepRange.current[0];
+		me.setPlaybackFromIndex(me.speedRange.current[0]);
 
 		// update elapsed time if not paused
 		if (me.generationOn) {
@@ -5125,15 +5122,10 @@
 					}
 				}
 
-				// set gps
+				// set gps and step
 				me.genSpeed = currentWaypoint.gps;
-				if (me.generationRange) {
-					me.generationRange.current = [Math.sqrt((currentWaypoint.gps - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed)), me.genDisplay(currentWaypoint.gps)];
-				}
-
-				// set step
 				me.gensPerStep = currentWaypoint.step;
-				me.stepRange.current = [me.gensPerStep, me.gensPerStep];
+				me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
 
 				// set stars TBD
 				//me.starsOn = currentWaypoint.stars;
@@ -5395,12 +5387,12 @@
 		}
 
 		// lock or unlock the controls
-		me.angleItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular;
-		me.tiltItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular;
+		me.angleItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular || me.engine.isNone;
+		me.tiltItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular || me.engine.isNone;
 		me.autoFitToggle.locked = me.controlsLocked && me.waypointsDefined;
 		me.fitButton.locked = me.controlsLocked || (me.autoFit && me.generationOn);
-		me.generationRange.locked = me.controlsLocked && me.waypointsDefined;
-		me.stepRange.locked = me.controlsLocked && me.waypointsDefined;
+		me.speedRange.locked = me.controlsLocked && me.waypointsDefined;
+		me.speed1Button.locked = me.controlsLocked && me.waypointsDefined;
 		me.themeButton.locked = me.controlsLocked && me.waypointsDefined;
 		me.zoomItem.locked = me.controlsLocked;
 		me.layersItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular || me.engine.isNone;
@@ -5550,8 +5542,7 @@
 		if (me.perfWarning) {
 			me.updateControlBackgrounds(deltaTime, tooSlow, manualStepping, me);
 		} else {
-			me.generationRange.bgCol = me.fitButton.bgCol;
-			me.stepRange.bgCol = me.fitButton.bgCol;
+			me.speedRange.bgCol = me.fitButton.bgCol;
 		}
 
 		// set the x/y position on the UI
@@ -5590,22 +5581,8 @@
 			blue = 0,
 			controlColour;
 
-		// check for STEP skip
-		if ((deltaTime > ViewConstants.updateThreshold) && !manualStepping) {
-			// ramp the green colour up
-			me.perfColGreen += ViewConstants.perfGreenStep;
-			if (me.perfColGreen >= (2 * ViewConstants.perfMaxGreen)) {
-				me.perfColGreen = 0;
-			}
-		} else {
-			// ramp the green colour down
-			if (me.perfColGreen > 0) {
-				me.perfColGreen -= ViewConstants.perfGreenStep;
-			}
-		}
-
-		// check for frame skip
-		if (tooSlow && !manualStepping) {
+		// check for frame skip or STEP skip
+		if ((tooSlow || deltaTime > ViewConstants.updateThreshold) && !manualStepping) {
 			// ramp the red colour up
 			if (me.perfColRed < ViewConstants.perfMaxRed) {
 				me.perfColRed += ViewConstants.perfRedStep;
@@ -5615,10 +5592,6 @@
 			if (me.perfColRed > ViewConstants.perfMinRed) {
 				me.perfColRed -= ViewConstants.perfRedStep;
 			}
-		}
-
-		if (me.perfColGreen >= ViewConstants.perfMaxGreen) {
-			me.perColGreen = (2 * ViewConstants.perfMaxGreen - me.perfColGreen);
 		}
 
 		// blend the red
@@ -5648,33 +5621,9 @@
 			}
 		}
 
-		// set the background on the generation UI control using frameskip only
-		controlColour = "rgb(" + red + "," + green + "," + blue + ")";
-		me.generationRange.bgCol = controlColour;
-
-		// blend the green
-		red = me.uiBackgroundRGB >> 16;
-		green = (me.uiBackgroundRGB >> 8) & 255;
-		blue = me.uiBackgroundRGB & 255;
-		if (green >= 128) {
-			red -= me.perfColRed;
-			if (red < 0) {
-				red = 0;
-			}
-			blue -= me.perfColGreen;
-			if (blue < 0) {
-				blue = 0;
-			}
-		} else {
-			green += me.perfColGreen;
-			if (green > 255) {
-				green = 255;
-			}
-		}
-
 		// set the background on the generation and step UI controls
 		controlColour = "rgb(" + red + "," + green + "," + blue + ")";
-		me.stepRange.bgCol = controlColour;
+		me.speedRange.bgCol = controlColour;
 	};
 
 	// update origin
@@ -5795,12 +5744,6 @@
 		this.opacityItem.deleted = shown;
 		this.graphCloseButton.deleted = shown;
 		this.linesToggle.deleted = shown;
-
-		// reverse direction button
-		shown = hide || this.popGraph || this.selecting || settingsMenuOpen;
-		if ((this.engine.isMargolus || this.engine.isPCA) && this.engine.margolusReverseLookup1 !== null) {
-			this.directionButton.deleted = shown;
-		}
 
 		// cancel button
 		this.cancelButton.deleted = !(this.identify || this.startFrom !== -1);
@@ -6009,6 +5952,7 @@
 		shown = hide || !this.selecting || settingsMenuOpen;
 		this.selectAllButton.deleted = shown;
 		this.autoShrinkToggle.deleted = shown;
+		this.autoShrinkButton.deleted = shown;
 		this.libraryToggle.deleted = shown;
 		this.clipboardList.deleted = shown;
 		this.pastePositionItem.deleted = shown;
@@ -6044,6 +5988,7 @@
 		// lock select tools
 		shown = !this.isSelection;
 		this.copyButton.locked = shown;
+		this.autoShrinkButton.locked = shown;
 
 		// lock select tools for VIEWONLY
 		shown = !(this.isSelection || this.isPasting) || this.viewOnly;
@@ -6961,46 +6906,46 @@
 		}
 	};
 
-	// step size
-	View.prototype.viewStepRange = function(newValue, change, me) {
-		// check if changing
-		if (change) {
-			// set the step size
-			me.gensPerStep = (newValue[0] + 0.5) | 0;
-		}
+	// convert playback speed to range index
+	View.prototype.speedIndex = function() {
+		var perSPart = Math.sqrt((this.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed)),
+		    stepPart = (this.gensPerStep - ViewConstants.minStepSpeed) / (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed);
 
-		// return value
-		return [me.gensPerStep, me.gensPerStep];
+		return perSPart + stepPart;
 	};
 
-	// format generation display
-	View.prototype.genDisplay = function(value) {
-		var result = "";
-		if (value.toFixed(1) < 10) {
-			result = value.toFixed(1);
+	// set playback speed from speed index
+	View.prototype.setPlaybackFromIndex = function(indexValue) {
+		if (indexValue < 1) {
+			this.genSpeed = Math.round(ViewConstants.minGenSpeed + (indexValue * indexValue * (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed)));
+			this.gensPerStep = 1;
 		} else {
-			result = value.toFixed(0);
+			this.genSpeed = ViewConstants.maxGenSpeed;
+			this.gensPerStep = Math.round(ViewConstants.minStepSpeed + ((indexValue - 1) * (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed)));
 		}
-		result += "/s";
-		return result;
 	};
 
-	// generation speed
-	View.prototype.viewGenerationRange = function(newValue, change, me) {
-		var result;
+	// set playback speed
+	View.prototype.viewSpeedRange = function(newValue, change, me) {
+		var perSPart = 1,
+		    stepPart = 1,
+		    label = "";
 
 		// check if changing
 		if (change) {
-			// set generation speed
-			me.genSpeed = ViewConstants.minGenSpeed + (newValue[0] * newValue[0] * (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
-
-			result = newValue[0];
-		} else {
-			result = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
+			me.setPlaybackFromIndex(newValue[0]);
 		}
-		
-		// return value
-		return [result, me.genDisplay(me.genSpeed)];
+
+		// compute the label
+		perSPart = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
+		stepPart = (me.gensPerStep - ViewConstants.minStepSpeed) / (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed);
+		if (Math.round(me.genSpeed) < 60) {
+			label = Math.round(me.genSpeed) + "/s";
+		} else {
+			label = Math.round(me.gensPerStep) + "x";
+		}
+
+		return [perSPart + stepPart, label];
 	};
 
 	// save the camera position
@@ -7088,13 +7033,10 @@
 				me.engine.colourChange = 0;
 			}
 
-			// reset gps
-			numberValue = Math.sqrt((me.defaultGPS - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
-			me.generationRange.current = me.viewGenerationRange([numberValue, numberValue], true, me);
-
-			// reset step
+			// reset gps and step
+			me.genSpeed = me.defaultGPS;
 			me.gensPerStep = me.defaultStep;
-			me.stepRange.current = [me.gensPerStep, me.gensPerStep];
+			me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
 
 			// reset layers
 			me.engine.layers = me.defaultLayers;
@@ -7451,6 +7393,11 @@
 		return [me.autoShrink];
 	};
 
+	// shrink selection button
+	View.prototype.shrinkSelectionPressed = function(me) {
+		me.autoShrinkSelection(me);
+	};
+
 	// copy sync with external clipboard
 	View.prototype.viewCopySyncList = function(newValue, change, me) {
 		if (change) {
@@ -7723,7 +7670,17 @@
 				if (this.engine.isLifeHistory) {
 					name = ViewConstants.stateNames[state];
 				} else {
-					name = (state ? "alive" : "dead");
+					switch (state) {
+						case 0:
+							name = "dead";
+							break;
+						case 1:
+							name = "alive";
+							break;
+						default:
+							name = "state " + String(state);
+							break;
+					}
 				}
 			} else {
 				// multi-state (Generations, PCA or none)
@@ -7858,19 +7815,19 @@
 	// replace cells with the current pen colours
 	View.prototype.replaceCells = function(replace) {
 		var x = 0,
-			y = 0,
-			state = 0,
-			numReplaced = 0,
-			current = this.drawState,
-			historyBox = this.engine.historyBox,
-			selBox = this.selectionBox,
-			leftX = historyBox.leftX,
-			rightX = historyBox.rightX,
-			bottomY = historyBox.bottomY,
-			topY = historyBox.topY,
-			swap = 0,
-			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1) + (this.xOffset << 1),
-			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1);
+		    y = 0,
+		    state = 0,
+		    numReplaced = 0,
+		    current = this.drawState,
+		    historyBox = this.engine.historyBox,
+		    selBox = this.selectionBox,
+		    leftX = historyBox.leftX,
+		    rightX = historyBox.rightX,
+		    bottomY = historyBox.bottomY,
+		    topY = historyBox.topY,
+		    swap = 0,
+		    xOff = (this.engine.width >> 1) - (this.patternWidth >> 1) + (this.xOffset << 1),
+		    yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1);
 			
 		// adjust current state if generations style
 		if (this.engine.multiNumStates > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)) {
@@ -7929,12 +7886,12 @@
 	// clear cells of the current pen colours
 	View.prototype.clearCells = function(me, ctrl, markedOnly) {
 		var x = 0,
-			y = 0,
-			state = 0,
-			current = me.drawState,
-			historyBox = me.engine.historyBox,
-			numCleared = 0,
-			clearValue = 0;
+		    y = 0,
+		    state = 0,
+		    current = me.drawState,
+		    historyBox = me.engine.historyBox,
+		    numCleared = 0,
+		    clearValue = 0;
 			
 		// delete any cell of the current pen colour
 		if (current > 0) {
@@ -8016,16 +7973,16 @@
 	// view play list
 	View.prototype.viewPlayList = function(newValue, change, me) {
 		var result = newValue,
-			stopMode = me.stopDisabled,
+		    stopMode = me.stopDisabled,
 		    loopMode = me.loopDisabled,
 		    waypointMode = me.waypointsDisabled,
 		    autoStartMode = me.autoStartDisabled,
 		    autoFitMode = me.autoFit,
 		    trackMode = me.trackDisabled,
-			i = 0,
-			message = null,
-			duration = 40,
-			numChanged = 0,
+		    i = 0,
+		    message = null,
+		    duration = 40,
+		    numChanged = 0,
 
 		    // whether loop switched on or off
 		    loopChange = 0,
@@ -9004,7 +8961,7 @@
 			icons = new Image();
 
 			// load the icons from the image file
-			icons.src = "data:image/png;base64,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";
+			icons.src = "data:image/png;base64,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";
 				
 			// save the image
 			ViewConstants.icons = icons;
@@ -9056,6 +9013,7 @@
 		this.iconManager.add("nudgeleft", w, h);
 		this.iconManager.add("nudgeup", w, h);
 		this.iconManager.add("nudgedown", w, h);
+		this.iconManager.add("shrinksel", w, h);
 	};
 
 	// check if a rule is valid
@@ -10272,13 +10230,15 @@
 		// set GPS
 		if (poi.gpsDefined) {
 			me.genSpeed = Math.sqrt((poi.gps - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
-			me.generationRange.current = me.viewGenerationRange([me.genSpeed, me.genSpeed], true, me);
 		}
 
 		// set STEP
 		if (poi.stepDefined) {
 			me.gensPerStep = poi.step;
-			me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
+		}
+
+		if (poi.gpsDefined || poi.stepDefined) {
+			me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
 		}
 
 		// check for POIT
@@ -10342,6 +10302,11 @@
 			// reset step number for transition
 			me.stepsPOI = 0;
 		}
+	};
+
+	// 1x speed pressed
+	View.prototype.speed1Pressed = function(me) {
+		me.speedRange.current = me.viewSpeedRange([1, 1], true, me);
 	};
 
 	// undo button
@@ -10671,7 +10636,8 @@
 			state = 0,
 			swap = 0,
 			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			wasState6 = 0;
 
 		if (!me.viewOnly) {
 			// check for selection
@@ -10698,10 +10664,16 @@
 						if (!(y >= y1 && y <= y2 && x >= x1 && x <= x2)) {
 							state = me.engine.getState(x, y, false);
 							if (state !== 0) {
-								me.setStateWithUndo(x, y, 0, true);
+								wasState6 |= me.setStateWithUndo(x, y, 0, true);
 							}
 						}
 					}
+				}
+
+
+				if (me.engine.isLifeHistory && wasState6) {
+					// update state 6 grid
+					this.engine.populateState6MaskFromColGrid();
 				}
 
 				// check if shrink needed
@@ -10717,16 +10689,16 @@
 	// clear selection
 	View.prototype.clearSelection = function(me, ctrl) {
 		var box = me.selectionBox,
-			x1 = box.leftX,
-			x2 = box.rightX,
-			y1 = box.bottomY,
-			y2 = box.topY,
-			x = 0,
-			y = 0,
-			state = 0,
-			swap = 0,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+		    x1 = box.leftX,
+		    x2 = box.rightX,
+		    y1 = box.bottomY,
+		    y2 = box.topY,
+		    x = 0,
+		    y = 0,
+		    state = 0,
+		    swap = 0,
+		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
 		if (!me.viewOnly) {
 			// check for selection
@@ -10831,7 +10803,7 @@
 			me.engine.doShrink();
 	
 			// for HROT patterns use alive states only
-			if (me.engine.isPCA || (me.engine.isHROT && me.engine.multiNumStates === 2)) {
+			if (!me.engine.isSuper && !me.engine.isRuleTree && (me.engine.isPCA || (me.engine.isHROT && me.engine.multiNumStates === 2) || me.engine.multiNumStates > 2)) {
 				me.engine.getAliveStatesBox(selBox);
 				selBox.leftX -= xOff;
 				selBox.rightX -= xOff;
@@ -10905,23 +10877,24 @@
 	// cut selection
 	View.prototype.cutSelection = function(me, number, evolveStep, noSave) {
 		var box = me.selectionBox,
-			x1 = box.leftX,
-			x2 = box.rightX,
-			y1 = box.bottomY,
-			y2 = box.topY,
-			x = 0,
-			y = 0,
-			i = 0,
-			swap = 0,
-			state = 0,
-			count = 0,
-			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			buffer = null,
-			width = 0,
-			height = 0;
+		    x1 = box.leftX,
+		    x2 = box.rightX,
+		    y1 = box.bottomY,
+		    y2 = box.topY,
+		    x = 0,
+		    y = 0,
+		    i = 0,
+		    swap = 0,
+		    state = 0,
+		    count = 0,
+		    states = me.engine.multiNumStates,
+		    invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+		    buffer = null,
+		    width = 0,
+		    height = 0,
+		    wasState6 = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -10955,9 +10928,13 @@
 					if (state > 0) {
 						count += 1;
 					}
-					me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+					wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 					i += 1;
 				}
+			}
+
+			if (me.engine.isLifeHistory && wasState6) {
+				this.engine.populateState6MaskFromColGrid();
 			}
 
 			// copy to required buffer
@@ -11568,15 +11545,17 @@
 	// perform paste
 	View.prototype.performPaste = function(me, cellX, cellY, saveEdit) {
 		var i = 0,
-			x = 0,
-			y = 0,
-			width = me.pasteWidth,
-			height = me.pasteHeight,
-			state = 0,
-			current = 0,
-			buffer = me.pasteBuffer,
-			midBox = me.middleBox,
-			origWidth = me.engine.width;
+		    x = 0,
+		    y = 0,
+		    width = me.pasteWidth,
+		    height = me.pasteHeight,
+		    state = 0,
+		    current = 0,
+		    buffer = me.pasteBuffer,
+		    midBox = me.middleBox,
+		    origWidth = me.engine.width,
+		    origHeight = me.engine.height,
+		    wasState6 = 0;
 
 		// adjust paste position based on position mode
 		switch ((me.pastePosition + 0.5) | 0) {
@@ -11623,8 +11602,11 @@
 		// adjust paste position if grid grew
 		while (origWidth !== me.engine.width) {
 			cellX += origWidth >> 1;
-			cellY += origWidth >> 1;
 			origWidth <<= 1;
+		}
+		while (origHeight !== me.engine.height) {
+			cellY += origHeight >> 1;
+			origHeight <<= 1;
 		}
 
 		// check the paste mode
@@ -11635,7 +11617,7 @@
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
 					if (state > 0) {
-						me.setStateWithUndo(cellX + x, cellY + y, state, true);
+						wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, state, true);
 					}
 					i += 1;
 				}
@@ -11646,7 +11628,7 @@
 			for (y = 0; y < height; y += 1) {
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
-					me.setStateWithUndo(cellX + x, cellY + y, state, true);
+					wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, state, true);
 					i += 1;
 				}
 			}
@@ -11657,7 +11639,7 @@
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
 					current = this.engine.getState(cellX + x, cellY + y, false);
-					me.setStateWithUndo(cellX + x, cellY + y, current ^ state, true);
+					wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, current ^ state, true);
 					i += 1;
 				}
 			}
@@ -11668,10 +11650,14 @@
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
 					current = this.engine.getState(cellX + x, cellY + y, false);
-					me.setStateWithUndo(cellX + x, cellY + y, current & state, true);
+					wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, current & state, true);
 					i += 1;
 				}
 			}
+		}
+
+		if (me.engine.isLifeHistory && wasState6) {
+			this.engine.populateState6MaskFromColGrid();
 		}
 
 		// paste finished
@@ -11690,25 +11676,26 @@
 	// paste at offset from selection
 	View.prototype.pasteOffset = function(me, dx, dy) {
 		var xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			selBox = me.selectionBox,
-			leftX = selBox.leftX,
-			bottomY = selBox.bottomY,
-			rightX = selBox.rightX,
-			topY = selBox.topY,
-			width = rightX - leftX + 1,
-			height = topY - bottomY + 1,
-			buffer = null,
-			state = 0,
-			i = 0,
-			x = 0,
-			y = 0,
-			swap = 0,
-			direction = "",
-			bLeftX = 0,
-			bRightX = me.engine.width - 1,
-			bBottomY = 0,
-			bTopY = me.engine.height - 1;
+		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+		    selBox = me.selectionBox,
+		    leftX = selBox.leftX,
+		    bottomY = selBox.bottomY,
+		    rightX = selBox.rightX,
+		    topY = selBox.topY,
+		    width = rightX - leftX + 1,
+		    height = topY - bottomY + 1,
+		    buffer = null,
+		    state = 0,
+		    i = 0,
+		    x = 0,
+		    y = 0,
+		    swap = 0,
+		    direction = "",
+		    bLeftX = 0,
+		    bRightX = me.engine.width - 1,
+		    bBottomY = 0,
+		    bTopY = me.engine.height - 1,
+		    wasState6 = 0;
 
 		if (!me.viewOnly) {
 			// check if there is a selection
@@ -11765,10 +11752,15 @@
 					for (y = 0; y < height; y += 1) {
 						for (x = 0; x < width; x += 1) {
 							state = buffer[i];
-							me.setStateWithUndo(leftX + x + xOff, bottomY + y + yOff, state, true);
+							wasState6 |= me.setStateWithUndo(leftX + x + xOff, bottomY + y + yOff, state, true);
 							i += 1;
 						}
 					}
+
+					if (me.engine.isLifeHistory && wasState6) {
+						this.engine.populateState6MaskFromColGrid();
+					}
+
 					// adjust selection box
 					selBox.leftX += dx;
 					selBox.rightX += dx;
@@ -11800,19 +11792,19 @@
 	// process paste
 	View.prototype.processPaste = function(me, shift, evolveStep) {
 		var xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			selBox = me.selectionBox,
-			evolveBox = me.evolveBox,
-			save = 0,
-			leftX = selBox.leftX,
-			bottomY = selBox.bottomY,
-			rightX = selBox.rightX,
-			topY = selBox.topY,
-			width = 0,
-			height = 0,
-			savedLocation = 0,
-			x = 0,
-			y = 0;
+		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+		    selBox = me.selectionBox,
+		    evolveBox = me.evolveBox,
+		    save = 0,
+		    leftX = selBox.leftX,
+		    bottomY = selBox.bottomY,
+		    rightX = selBox.rightX,
+		    topY = selBox.topY,
+		    width = 0,
+		    height = 0,
+		    savedLocation = 0,
+		    x = 0,
+		    y = 0;
 
 		if (!me.viewOnly) {
 			// check for copy buffer
@@ -11930,7 +11922,7 @@
 		for (i = 0; i < me.pasteBuffer.length; i += 1) {
 			if (me.randGen.random() * 100 <= me.randomDensity) {
 				if (numStates === 2 || twoStateOnly) {
-					state = numStates - 1;
+					state = me.drawState;
 				} else {
 					state = ((me.randGen.random() * (numStates - 1)) | 0) + 1;
 				}
@@ -11944,17 +11936,18 @@
 	// random selection
 	View.prototype.randomSelection = function(me, twoStateOnly) {
 		var box = me.selectionBox,
-			x1 = box.leftX,
-			x2 = box.rightX,
-			y1 = box.bottomY,
-			y2 = box.topY,
-			x = 0,
-			y = 0,
-			state = 0,
-			swap = 0,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			numStates = me.engine.multiNumStates;
+		    x1 = box.leftX,
+		    x2 = box.rightX,
+		    y1 = box.bottomY,
+		    y2 = box.topY,
+		    x = 0,
+		    y = 0,
+		    state = 0,
+		    swap = 0,
+		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+		    numStates = me.engine.multiNumStates,
+		    wasState6 = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -11979,15 +11972,19 @@
 				for (x = x1; x <= x2; x += 1) {
 					if (me.randGen.random() * 100 <= me.randomDensity) {
 						if (numStates === 2 || twoStateOnly) {
-							state = numStates - 1;
+							state = me.drawState;
 						} else {
 							state = ((me.randGen.random() * (numStates - 1)) | 0) + 1;
 						}
 					} else {
 						state = 0;
 					}
-					me.setStateWithUndo(x + xOff, y + yOff, state, true);
+					wasState6 = me.setStateWithUndo(x + xOff, y + yOff, state, true);
 				}
+			}
+
+			if (me.engine.isLifeHistory && wasState6) {
+				this.engine.populateState6MaskFromColGrid();
 			}
 
 			// check if shrink needed
@@ -12060,19 +12057,20 @@
 	// flip X selection
 	View.prototype.flipXSelection = function(me) {
 		var box = me.selectionBox,
-			x1 = box.leftX,
-			x2 = box.rightX,
-			y1 = box.bottomY,
-			y2 = box.topY,
-			x = 0,
-			y = 0,
-			swap = 0,
-			row = null,
-			state = 0,
-			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+		    x1 = box.leftX,
+		    x2 = box.rightX,
+		    y1 = box.bottomY,
+		    y2 = box.topY,
+		    x = 0,
+		    y = 0,
+		    swap = 0,
+		    row = null,
+		    state = 0,
+		    states = me.engine.multiNumStates,
+		    invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+		    wasState6 = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -12111,9 +12109,13 @@
 					}
 				} else {
 					for (x = x1; x <= x2; x += 1) {
-						me.setStateWithUndo(x + xOff, y + yOff, row[x2 - x], true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, row[x2 - x], true);
 					}
 				}
+			}
+
+			if (me.engine.isLifeHistory && wasState6) {
+				this.engine.populateState6MaskFromColGrid();
 			}
 
 			// check if shrink needed
@@ -12128,13 +12130,13 @@
 	// flip Y paste
 	View.prototype.flipYPaste = function(me) {
 		var w = me.pasteWidth,
-			h = me.pasteHeight,
-			h2 = h >> 1,
-			x = 0,
-			y = 0,
-			i = 0,
-			swap = 0,
-			state = 0;
+		    h = me.pasteHeight,
+		    h2 = h >> 1,
+		    x = 0,
+		    y = 0,
+		    i = 0,
+		    swap = 0,
+		    state = 0;
 
 		// flip each column
 		i = 0;
@@ -12163,19 +12165,20 @@
 	// flip Y selection
 	View.prototype.flipYSelection = function(me) {
 		var box = me.selectionBox,
-			x1 = box.leftX,
-			x2 = box.rightX,
-			y1 = box.bottomY,
-			y2 = box.topY,
-			x = 0,
-			y = 0,
-			swap = 0,
-			column = null,
-			state = 0,
-			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+		    x1 = box.leftX,
+		    x2 = box.rightX,
+		    y1 = box.bottomY,
+		    y2 = box.topY,
+		    x = 0,
+		    y = 0,
+		    swap = 0,
+		    column = null,
+		    state = 0,
+		    states = me.engine.multiNumStates,
+		    invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+		    wasState6 = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -12213,9 +12216,13 @@
 					}
 				} else {
 					for (y = y1; y <= y2; y += 1) {
-						me.setStateWithUndo(x + xOff, y + yOff, column[y2 - y], true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, column[y2 - y], true);
 					}
 				}
+			}
+
+			if (me.engine.isLifeHistory && wasState6) {
+				this.engine.populateState6MaskFromColGrid();
 			}
 
 			// check if shrink needed
@@ -12266,43 +12273,44 @@
 	// rotate selection
 	View.prototype.rotateSelection = function(me, clockwise, comment) {
 		var box = me.selectionBox,
-			x1 = box.leftX,
-			x2 = box.rightX,
-			y1 = box.bottomY,
-			y2 = box.topY,
-			x = 0,
-			y = 0,
-			swap = 0,
-			cells = null,
-			state = 0,
-			i = 0,
-			cx = 0,
-			cy = 0,
-			w = 0,
-			h = 0,
-			newLeftX = 0,
-			newBottomY = 0,
-			newRightX = 0,
-			newTopY = 0,
-			newXInc = 0,
-			newYInc = 0,
-			firstNewY = 0,
-			newX = 0,
-			newY = 0,
-			saveLeftX = 0,
-			saveBottomY = 0,
-			saveRightX = 0,
-			saveTopY = 0,
-			states = me.engine.multiNumStates,
-			/** @type {boolean} */ rotateFits = true,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+		    x1 = box.leftX,
+		    x2 = box.rightX,
+		    y1 = box.bottomY,
+		    y2 = box.topY,
+		    x = 0,
+		    y = 0,
+		    swap = 0,
+		    cells = null,
+		    state = 0,
+		    i = 0,
+		    cx = 0,
+		    cy = 0,
+		    w = 0,
+		    h = 0,
+		    newLeftX = 0,
+		    newBottomY = 0,
+		    newRightX = 0,
+		    newTopY = 0,
+		    newXInc = 0,
+		    newYInc = 0,
+		    firstNewY = 0,
+		    newX = 0,
+		    newY = 0,
+		    saveLeftX = 0,
+		    saveBottomY = 0,
+		    saveRightX = 0,
+		    saveTopY = 0,
+		    states = me.engine.multiNumStates,
+		    /** @type {boolean} */ rotateFits = true,
+		    /** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
 		    /** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
 		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
 		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
 		    /** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
-			/** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1,
-			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+		    /** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1,
+		    /** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+		    /** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+		    wasState6 = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -12429,32 +12437,36 @@
 					x = cells[i];
 					y = cells[i + 1];
 					state = cells[i + 2];
-					me.setStateWithUndo(x + xOff, y + yOff, state, true);
+					wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, state, true);
 					i += 3;
 				}
 	
 				// clear outside intersection between new selection and old
 				for (x = x1; x < box.leftX; x += 1) {
 					for (y = y1; y <= y2; y += 1) {
-						me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 					}
 				}
 				for (x = box.rightX + 1; x <= x2; x += 1) {
 					for (y = y1; y <= y2; y += 1) {
-						me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 					}
 				}
 				for (y = y1; y < box.bottomY; y += 1) {
 					for (x = x1; x <= x2; x += 1) {
-						me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 					}
 				}
 				for (y = box.topY + 1; y <= y2; y += 1) {
 					for (x = x1; x <= x2; x += 1) {
-						me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 					}
 				}
 	
+				if (me.engine.isLifeHistory && wasState6) {
+					this.engine.populateState6MaskFromColGrid();
+				}
+
 				// check if shrink needed
 				me.engine.shrinkNeeded = true;
 				me.engine.doShrink();
@@ -12561,17 +12573,18 @@
 	// invert selection
 	View.prototype.invertSelection = function(me) {
 		var box = me.selectionBox,
-			x1 = box.leftX,
-			x2 = box.rightX,
-			y1 = box.bottomY,
-			y2 = box.topY,
-			x = 0,
-			y = 0,
-			state = 0,
-			swap = 0,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			numStates = me.engine.multiNumStates;
+		    x1 = box.leftX,
+		    x2 = box.rightX,
+		    y1 = box.bottomY,
+		    y2 = box.topY,
+		    x = 0,
+		    y = 0,
+		    state = 0,
+		    swap = 0,
+		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+		    numStates = me.engine.multiNumStates,
+		    wasState6 = 0;
 
 		if (!me.viewOnly) {
 			// check for selection
@@ -12599,8 +12612,12 @@
 						if (!(me.engine.isPCA || me.engine.isRuleTree) && numStates > 2 && state > 0) {
 							state = numStates - state;
 						}
-						me.setStateWithUndo(x + xOff, y + yOff, numStates - state - 1, true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, numStates - state - 1, true);
 					}
+				}
+
+				if (me.engine.isLifeHistory && wasState6) {
+					this.engine.populateState6MaskFromColGrid();
 				}
 
 				// check if shrink needed
@@ -13675,11 +13692,14 @@
 	View.prototype.updateSelectionControlsPosition = function() {
 		if (this.engine.isLifeHistory || this.engine.isSuper) {
 			this.invertSelectionButton.setPosition(Menu.southEast, -85, -130);
-			this.randomButton.setPosition(Menu.southEast, -130, -130);
-			this.randomButton.toolTip = "random fill [Shift 5]";
 			if (this.engine.isLifeHistory) {
+				this.randomButton.setPosition(Menu.southEast, -130, -130);
+				this.randomButton.toolTip = "random fill [Shift 5]";
 				this.randomItem.setPosition(Menu.southEast, -235, -130);
 			} else {
+				this.randomButton.setPosition(Menu.southEast, -175, -130);
+				this.randomButton.toolTip = "random multi-state fill [Shift 5]";
+				this.random2Button.setPosition(Menu.southEast, -130, -130);
 				this.randomItem.setPosition(Menu.southEast, -280, -130);
 			}
 		} else {
@@ -14263,7 +14283,7 @@
 		this.linesToggle.icon = [this.iconManager.icon("lines")];
 		this.linesToggle.toolTip = ["toggle graph lines/points [Shift Y]"];
 
-		// identify  close button
+		// identify close button
 		this.identifyCloseButton = this.viewMenu.addButtonItem(this.identifyClosePressed, Menu.northEast, -40, 45, 40, 40, "X");
 		this.identifyCloseButton.toolTip = "close results [Esc]";
 
@@ -14308,7 +14328,6 @@
 		this.cancelButton = this.viewMenu.addButtonItem(this.cancelPressed, Menu.south, 0, -100, 120, 40, "Cancel");
 		this.cancelButton.toolTip = "cancel operation [Esc]";
 		this.cancelButton.overrideLocked = true;
-
 
 		// add the colour theme button
 		this.themeButton = this.viewMenu.addButtonItem(this.themePressed, Menu.middle, 0, -75, 150, 40, "Theme");
@@ -14375,26 +14394,26 @@
 		this.themeProgramLabel = this.viewMenu.addLabelItem(Menu.north, 70, 60, 120, 40, "Program");
 		this.themeDebugLabel = this.viewMenu.addLabelItem(Menu.north, 210, 60, 120, 40, "Basic");
 
-		// add the generation speed range
-		this.generationRange = this.viewMenu.addRangeItem(this.viewGenerationRange, Menu.southEast, -365, -40, 75, 40, 0, 1, 0, true, "", "", -1);
-		this.generationRange.toolTip = "steps per second [+ / -]";
+		// 1x speed button
+		this.speed1Button = this.viewMenu.addButtonItem(this.speed1Pressed, Menu.southEast, -405, -40, 40, 40, "1x");
+		this.speed1Button.toolTip = "set 1x playback speed [0]";
 
-		// add the speed step range
-		this.stepRange = this.viewMenu.addRangeItem(this.viewStepRange, Menu.southEast, -285, -40, 75, 40, ViewConstants.minStepSpeed, ViewConstants.maxStepSpeed, 1, true, "x", "", 0);
-		this.stepRange.toolTip = "generations per step [E / D]";
+		// add the speed range
+		this.speedRange = this.viewMenu.addRangeItem(this.viewSpeedRange, Menu.southEast, -360, -40, 105, 40, 0, 2, 1, true, "", "", -1);
+		this.speedRange.toolTip = "playback speed [+ / -]";
 
 		// add the actual step label
-		this.stepLabel = this.viewMenu.addLabelItem(Menu.southEast, -285, -60, 75, 20, 0);
+		this.stepLabel = this.viewMenu.addLabelItem(Menu.southEast, -284, -30, 27, 20, 0);
 		this.stepLabel.setFont(ViewConstants.statsFont);
 		this.stepLabel.deleted = true;
 
 		// add the undo button
-		this.undoButton = this.viewMenu.addButtonItem(this.undoPressed, Menu.southEast, -455, -40, 40, 40, "");
+		this.undoButton = this.viewMenu.addButtonItem(this.undoPressed, Menu.southEast, -495, -40, 40, 40, "");
 		this.undoButton.icon = this.iconManager.icon("undo");
 		this.undoButton.toolTip = "undo [Ctrl Z]";
 
 		// add the redo button
-		this.redoButton = this.viewMenu.addButtonItem(this.redoPressed, Menu.southEast, -410, -40, 40, 40, "");
+		this.redoButton = this.viewMenu.addButtonItem(this.redoPressed, Menu.southEast, -450, -40, 40, 40, "");
 		this.redoButton.icon = this.iconManager.icon("redo");
 		this.redoButton.toolTip = "redo [Ctrl Y]";
 
@@ -14440,8 +14459,13 @@
 		this.autoShrinkToggle.toolTip = ["toggle auto shrink selection [Alt A]"];
 		this.autoShrinkToggle.setFont("16px Arial");
 
+		// add the auto-shrink button
+		this.autoShrinkButton = this.viewMenu.addButtonItem(this.shrinkSelectionPressed, Menu.northWest, 90, 45, 40, 40, "");
+		this.autoShrinkButton.icon = this.iconManager.icon("shrinksel");
+		this.autoShrinkButton.toolTip = "shrink selection [Shift A]";
+
 		// library button
-		this.libraryToggle = this.viewMenu.addListItem(null, Menu.northWest, 90, 45, 40, 40, [""], [false], Menu.multi);
+		this.libraryToggle = this.viewMenu.addListItem(null, Menu.northWest, 135, 45, 40, 40, [""], [false], Menu.multi);
 		this.libraryToggle.icon = [this.iconManager.icon("selectlibrary")];
 		this.libraryToggle.toolTip = ["toggle clipboard library [Shift B]"];
 
@@ -14455,17 +14479,17 @@
 		this.pasteModeList.setFont("16px Arial");
 
 		// add the cut button
-		this.cutButton = this.viewMenu.addButtonItem(this.cutPressed, Menu.northWest, 135, 45, 40, 40, "");
+		this.cutButton = this.viewMenu.addButtonItem(this.cutPressed, Menu.northWest, 180, 45, 40, 40, "");
 		this.cutButton.icon = this.iconManager.icon("cut");
 		this.cutButton.toolTip = "cut [Ctrl X]";
 
 		// add the copy button
-		this.copyButton = this.viewMenu.addButtonItem(this.copyPressed, Menu.northWest, 180, 45, 40, 40, "");
+		this.copyButton = this.viewMenu.addButtonItem(this.copyPressed, Menu.northWest, 225, 45, 40, 40, "");
 		this.copyButton.icon = this.iconManager.icon("copy");
 		this.copyButton.toolTip = "copy [Ctrl C]";
 
 		// add the paste button
-		this.pasteButton = this.viewMenu.addButtonItem(this.pastePressed, Menu.northWest, 225, 45, 40, 40, "");
+		this.pasteButton = this.viewMenu.addButtonItem(this.pastePressed, Menu.northWest, 270, 45, 40, 40, "");
 		this.pasteButton.icon = this.iconManager.icon("paste");
 		this.pasteButton.toolTip = "paste [Ctrl V]";
 
@@ -14550,7 +14574,7 @@
 		this.pastePositionItem.setFont("16px Arial");
 
 		// reverse direction button
-		this.directionButton = this.viewMenu.addButtonItem(this.directionPressed, Menu.southEast, -40, -85, 40, 40, "");
+		this.directionButton = this.viewMenu.addButtonItem(this.directionPressed, Menu.southEast, -250, -40, 40, 40, "");
 		this.directionButton.icon = this.iconManager.icon("uturn");
 		this.directionButton.toolTip = "reverse playback direction [U]";
 
@@ -14652,8 +14676,10 @@
 
 			// save position of moveable menu items
 			this.playListX = this.playList.relX;
-			this.generationRangeX = this.generationRange.relX;
-			this.stepRangeX = this.stepRange.relX;
+			this.speedRangeX = this.speedRange.relX;
+			this.speed1ButtonX = this.speed1Button.relX;
+			this.directionButtonX = this.directionButton.relX;
+			this.stepLabelX = this.stepLabel.relX;
 
 			// register mouse wheel event
 			registerEvent(this.mainCanvas, "wheel", function(event) {me.wheel(me,event);}, false);
@@ -15876,8 +15902,7 @@
 		me.playList.deleted = false;
 		me.modeList.deleted = false;
 		me.genToggle.deleted = false;
-		me.generationRange.deleted = false;
-		me.stepRange.deleted = false;
+		me.speedRange.deleted = false;
 		me.navToggle.deleted = false;
 		me.layersItem.deleted = false;
 		me.depthItem.deleted = false;
@@ -15995,7 +16020,9 @@
 		me.thumbStart = false;
 
 		// copy pattern to center
-		if (pattern) {
+		if (!pattern) {
+			me.setMenuColours();
+		} else {
 			if (me.engine.isLifeHistory) {
 				me.colourList = [0, 255 << 8, 128, (216 << 16) | (255 << 8) | 216, 255 << 16, (255 << 16) | (255 << 8), (96 << 16) | ( 96 << 8) | 96];
 				me.colourSetName = "[R]History";
@@ -16271,15 +16298,10 @@
 			}
 
 			// grow the grid if the pattern is too big to fit
-			while (me.engine.width < me.engine.maxGridSize && ((neededWidth + borderSize + Math.abs(me.xOffset) * 2) >= me.engine.width || (neededHeight + borderSize + Math.abs(me.yOffset) * 2) >= me.engine.height)) {
-				// check which directions to grow
-				if ((neededWidth + borderSize + Math.abs(me.xOffset) * 2) >= me.engine.width) {
-					growX = true;
-				}
-				if ((neededHeight + borderSize + Math.abs(me.yOffset) * 2) >= me.engine.height) {
-					growY = true;
-				}
+			growX = (me.engine.width < me.engine.maxGridSize) && ((neededWidth + borderSize + Math.abs(me.xOffset) * 2) >= me.engine.width);
+			growY = (me.engine.height < me.engine.maxGridSize) && ((neededHeight + borderSize + Math.abs(me.yOffset) * 2) >= me.engine.height);
 
+			while (growX || growY) {
 				// grow the grid
 				me.engine.growGrid(growX, growY);
 
@@ -16306,6 +16328,10 @@
 						me.savedX -= me.engine.height >> 3;
 					}
 				}
+
+				// see if the grid needs to grow further
+				growX = (me.engine.width < me.engine.maxGridSize) && ((neededWidth + borderSize + Math.abs(me.xOffset) * 2) >= me.engine.width);
+				growY = (me.engine.height < me.engine.maxGridSize) && ((neededHeight + borderSize + Math.abs(me.yOffset) * 2) >= me.engine.height);
 			}
 
 			// resize the HROT buffer to the current width and height
@@ -16576,9 +16602,9 @@
 
 		// set reverse direction button if reversible Margolus or PCA rule loaded
 		if ((me.engine.isMargolus || me.engine.isPCA) && me.engine.margolusReverseLookup1 !== null) {
-			me.directionButton.deleted = false;
+			me.directionButton.locked = false;
 		} else {
-			me.directionButton.deleted = true;
+			me.directionButton.locked = true;
 		}
 
 		// set the label UI control
@@ -16686,14 +16712,10 @@
 		me.defaultTheme = me.engine.colourTheme;
 		me.setNewTheme(me.defaultTheme, me.engine.colourChangeSteps, me);
 
-		// set the generation speed
+		// set the generation speed and step
 		me.defaultGPS = me.genSpeed;
-		numberValue = Math.sqrt((me.defaultGPS - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
-		me.generationRange.current = me.viewGenerationRange([numberValue, numberValue], true, me);
-
-		// set the step
 		me.defaultStep = me.gensPerStep;
-		me.stepRange.current = me.viewStepRange([me.defaultStep, me.defaultStep], true, me);
+		me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
 
 		// set the layers
 		me.defaultLayers = me.engine.layers;
@@ -16724,15 +16746,19 @@
 			// delete the navigation menu toggle
 			me.navToggle.deleted = true;
 
-			// move gps, step and play controls right
+			// move speed and play controls right
 			me.playList.setX(me.playListX + 45);
-			me.generationRange.setX(me.generationRangeX + 45);
-			me.stepRange.setX(me.stepRangeX + 45);
+			me.speedRange.setX(me.speedRangeX + 45);
+			me.speed1Button.setX(me.speed1ButtonX + 45);
+			me.directionButton.setX(me.directionButtonX + 45);
+			me.stepLabel.setX(me.stepLabelX + 45);
 		} else {
 			// reset gps and play control position
 			me.playList.setX(me.playListX);
-			me.generationRange.setX(me.generationRangeX);
-			me.stepRange.setX(me.stepRangeX);
+			me.speedRange.setX(me.speedRangeX);
+			me.speed1Button.setX(me.speed1ButtonX);
+			me.directionButton.setX(me.directionButtonX);
+			me.stepLabel.setX(me.stepLabelX);
 		}
 
 		// resize the zoom slider
@@ -16784,9 +16810,10 @@
 			me.engine.isSuper = false;
 		}
 
-		// check whether to disable drawing
+		// check whether to disable drawing and selection
 		if (me.viewOnly || me.engine.isNone) {
 			me.modeList.itemLocked[ViewConstants.modeDraw] = true;
+			me.modeList.itemLocked[ViewConstants.modeSelect] = true;
 		}
 
 		// disable playback if view only
@@ -16800,15 +16827,18 @@
 			// delete the progress bar
 			me.progressBar.deleted = true;
 
-			// delete gps range
-			me.generationRange.deleted = true;
-
-			// delete the step range
-			me.stepRange.deleted = true;
+			// delete speed range
+			me.speedRange.deleted = true;
 
 			// delete the undo and redo buttons
 			me.undoButton.deleted = true;
 			me.redoButton.deleted = true;
+
+			// delete the reverse button
+			me.directionButton.deleted = true;
+
+			// delete the speed 1x button
+			me.speed1Button.deleted = true;
 
 			// delete layers and depth if multi-state view on
 			if (me.multiStateView) {
@@ -17150,6 +17180,11 @@
 		// remove space or tab at the beginning of lines
 		result = result.replace(/\n[ ]+/g, "\n");
 		result = result.replace(/\n\t+/g, "\n");
+
+		// if the result is empty make it a valid pattern
+		if (result === "") {
+			result = "!";
+		}
 
 		// return cleaned string
 		return result;
@@ -17559,14 +17594,6 @@
 						// check if the text is a pattern and add to Controller if in multiverse mode
 						isPattern(cleanItem, allocator, manager, null, null);
 					}
-
-					// if the canvas does not exist then create it
-					//if (canvasItem === undefined) {
-						//canvasItem = document.createElement("canvas");
-						//canvasItem.width = ViewConstants.minViewerWidth;
-						//canvasItem.height = ViewConstants.minMenuHeight + 80;
-						//rleItem.appendChild(canvasItem);
-					//}
 
 					// check if the canvas exists
 					if (canvasItem && canvasItem.getContext) {

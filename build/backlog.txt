@@ -4,7 +4,6 @@ Investigate:
     Deficient rules
     half-integer Wolfram rules
     LtL Margolus rules
-    grow grid separately horizontally and vertically to allow grid sizes like 16384x1024
     user preferences
     strict volatility (Identify)
     memory statistics in allocator with 0 size allocations
@@ -16,10 +15,10 @@ Planned:
     add UI colours to Themes
     investigate PCA cells and layers
     consistent generation counters in T menu
-    @NAMES support
-        [[ COLOUR @NAME ]]
-        [[ XY = @NAME display ]]
-        [[ colour picker @NAME display ]]
+
+[DONE]@NAMES support
+    [[ COLOUR @NAME ]]
+    [[ XY = @NAME display ]]
 
 [DONE]Rainbow rendering
     [DONE]add toggle for 2-state Life-like rules for rainbow rendering

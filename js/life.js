@@ -7388,8 +7388,8 @@
 	// set the bounded grid border cell
 	Life.prototype.setBoundedGridBorderCell = function() {
 		var redChannel = this.redChannel,
-			greenChannel = this.greenChannel,
-			blueChannel = this.blueChannel;
+		    greenChannel = this.greenChannel,
+		    blueChannel = this.blueChannel;
 
 		// check for bounded grid
 		if (this.boundedGridType !== -1 && (this.multiNumStates + this.historyStates === 256)) {
@@ -11664,7 +11664,7 @@
 		}
 
 		// clear boundary if maximum grid size
-		if (this.width === this.maxGridSize) {
+		if (this.width === this.maxGridSize || this.height === this.maxGridSize) {
 			// check for LtL or HROT
 			if (this.isHROT) {
 				boundarySize = this.HROT.xrange * 2;
@@ -12447,7 +12447,7 @@
 		    heightMask = this.heightMask,
 
 		    // alive state
-		    alive = (this.multiNumStates > 2 ? 0 : LifeConstants.aliveStart),
+		    alive = (this.multiNumStates > 2 ? 1 : LifeConstants.aliveStart),
 		    dead = (this.multiNumStates > 2 ? 0 : LifeConstants.deadStart),
 
 		    // boundary cell radius
@@ -12560,7 +12560,7 @@
 			yrange = this.HROT.yrange * 2 + 1,
 
 			// alive and dead states
-			alive = (this.multiNumStates > 2 ? 0 : LifeConstants.aliveStart),
+			alive = (this.multiNumStates > 2 ? 1 : LifeConstants.aliveStart),
 
 			// counters
 			x = 0,

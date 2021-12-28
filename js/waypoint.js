@@ -1925,6 +1925,19 @@
 			if (waypoint.xDefined || waypoint.yDefined || waypoint.zoomDefined || waypoint.angleDefined || waypoint.tiltDefined || waypoint.fitZoom) {
 				this.hasCamera = true;
 			}
+
+			// convert the step and gps into a playback speed
+			if (waypoint.gpsDefined || waypoint.stepDefined) {
+				// if just gens per second defined then default step to 1x
+				if (waypoint.gpsDefined && !waypoint.stepDefined) {
+					waypoint.step = ViewConstants.minStepSpeed;
+				}
+				
+				// if step defined then default gens per second to 60/s
+				if (waypoint.stepDefined) {
+					waypoint.gps = ViewConstants.maxGenSpeed;
+				}
+			}
 		}
 	};
 
@@ -2250,8 +2263,8 @@
 	WaypointManager.prototype.update = function(view, elapsedTime, generation) {
 		var length = this.waypointList.length,
 		    found = false,
-			i = this.tempIndex,
-			origI = i,
+		    i = this.tempIndex,
+		    origI = i,
 		    current = null,
 
 		    // set waypoints not ended
@@ -2602,6 +2615,19 @@
 			// step size
 			if (!current.stepDefined) {
 				current.step = previous.step;
+			}
+
+			// convert the step and gps into a playback speed
+			if (current.gpsDefined || current.stepDefined) {
+				// if just gens per second defined then default step to 1x
+				if (current.gpsDefined && !current.stepDefined) {
+					current.step = ViewConstants.minStepSpeed;
+				}
+				
+				// if step defined then default gens per second to 60/s
+				if (current.stepDefined) {
+					current.gps = ViewConstants.maxGenSpeed;
+				}
 			}
 
 			// target generation

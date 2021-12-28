@@ -5779,7 +5779,7 @@
 		    codep = String("p").charCodeAt(0) - 1,
 
 		    // state counts
-			stateCount = this.stateCount;
+		    stateCount = this.stateCount;
 			
 		// get the first character
 		next = string[index];
@@ -7109,11 +7109,11 @@
 		    // state used flags and counts
 		    stateCount = this.stateCount,
 			
-			// border for bounded grid
-			border = 4,
+		    // border for bounded grid
+		    border = 4,
 
 		    // counters
-			j = 0;
+		    j = 0;
 
 		// reset the pattern
 		pattern.isMargolus = false;

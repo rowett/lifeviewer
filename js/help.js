@@ -647,14 +647,10 @@
 			}
 			y = this.renderHelpLine(view, "R", "reset to generation 0", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Shift N", "go to generation", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "-", "decrease generation speed", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "+", "increase generation speed", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Shift -", "minimum generation speed", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Shift +", "maximum generation speed", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "D", "decrease step size", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "E", "increase step size", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Shift D", "minimum step size", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Shift E", "maximum step size", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "-", "decrease playback speed", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "+", "increase playback speed", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Shift -", "minimum playback speed", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Shift +", "maximum playback speed", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "0", "reset step and speed", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Ctrl P", "toggle pause playback while drawing", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Alt T", "toggle throttling", ctx, x, y, height, helpLine);
@@ -2082,8 +2078,13 @@
 		// check for bounded grid
 		if (view.engine.gridType !== -1) {
 			// display bounded colour
-			this.renderColourBox(view, view.customBoundedColour[0], view.customBoundedColour[1], view.customBoundedColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "Bounded", this.rgbString(view.customBoundedColour[0], view.customBoundedColour[1], view.customBoundedColour[2]), ctx, x, y, height, helpLine);
+			if (view.engine.boundedGridType !== -1 && (view.engine.multiNumStates + view.engine.historyStates < 256)) {
+				this.renderColourBox(view, view.customBoundedColour[0], view.customBoundedColour[1], view.customBoundedColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+				y = this.renderHelpLine(view, "Bounded", this.rgbString(view.customBoundedColour[0], view.customBoundedColour[1], view.customBoundedColour[2]), ctx, x, y, height, helpLine);
+			} else {
+				this.renderColourBox(view, view.engine.redChannel[2], view.engine.greenChannel[2], view.engine.blueChannel[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+				y = this.renderHelpLine(view, "Bounded*", this.rgbString(view.engine.redChannel[2], view.engine.greenChannel[2], view.engine.blueChannel[2]), ctx, x, y, height, helpLine);
+			}
 		}
 
 		// display boundary colour

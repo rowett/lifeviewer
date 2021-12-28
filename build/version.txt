@@ -1,3 +1,39 @@
+Build 675
+- fix issue for Safari 12 on iOS
+
+Build 674
+- various fixes for Edit operations and [R]History state 6
+
+Build 673
+- fix Select All for [R]Super patterns
+
+Build 672
+- fixed a crash with multi-state HROT patterns hitting the grid boundary
+- disable selection for none rules
+- added Shrink Selection button to Edit mode (hotkey Shift-A)
+- fix crash with grid growth
+- when playback STEP size can not be reached show actual STEP attained in playback speed UI control
+
+Build 671
+- fixes to Waypoint playback speed
+
+Build 670
+- fixed Bounded cell colour in Help
+- fixed state names when patterns have more states than the rule
+
+Build 669
+- fixed step size rounding
+
+Build 668
+- combine generations per step and steps per second controls and add 1x Speed button
+- allow blank RLE to mean empty pattern
+- fix menu colours when invalid pattern loaded
+- LifeViewer window is 40px wider
+
+Build 667
+- Select All for Generations now ignores history states
+- 2-state Random Fill (selection and paste) now use the current drawing state
+
 Build 666
 - don't show Heat for Margolus or alternating rules (including B0)
 - fix state names for none rule

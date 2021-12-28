@@ -165,7 +165,7 @@
 		var processed = true,
 
 		    // value for changes
-			value = 0;
+		    value = 0;
 
 		// check if gui enabled
 		if (me.noGUI) {
@@ -622,46 +622,13 @@
 				}
 				break;
 
-			// e for increase step size
-			case 69:
-				// increase step size
-				if (!me.stepRange.locked) {
-					if (me.gensPerStep < ViewConstants.maxStepSpeed) {
-						// check for shift
-						if (event.shiftKey) {
-							// go to maximum step
-							me.gensPerStep = ViewConstants.maxStepSpeed;
-						} else {
-							// increase step
-							me.gensPerStep += 1;
-						}
-						me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
-					}
-				}
-				break;
-
-			// d for decrease step size
+			// d for toggle states display
 			case 68:
 				// check for ctrl
 				if (event.ctrlKey) {
 					// toggle states display
 					me.statesToggle.current = me.toggleStates([!me.showStates], true, me);
 					me.menuManager.notification.notify("States Display " + (me.showStates ? "On" : "Off"), 15, 80, 15, true);
-				} else {
-					// decrease step size
-					if (!me.stepRange.locked) {
-						if (me.gensPerStep > ViewConstants.minStepSpeed) {
-							// check for shift
-							if (event.shiftKey) {
-								// go to minimum step
-								me.gensPerStep = ViewConstants.minStepSpeed;
-							} else {
-								// decrease step
-								me.gensPerStep -= 1;
-							}
-							me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
-						}
-					}
 				}
 				break;
 
@@ -888,7 +855,9 @@
 					} else {
 						// check for ctrl key
 						if (event.ctrlKey) {
-							me.selectAllPressed(me);
+							if (!me.modeList.itemLocked[ViewConstants.modeSelect]) {
+								me.selectAllPressed(me);
+							}
 						} else {
 							// disable layers in multi-state mode
 							if (!me.multiStateView) {
@@ -1208,12 +1177,8 @@
 				if (event.ctrlKey) {
 					me.switchToState(0);
 				} else {
-					// reset gps
-					me.gensPerStep = 1;
-					me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
-	
-					// reset 
-					me.generationRange.current = me.viewGenerationRange([1, me.generationRange.current[1]], true, me);
+					// reset playback speed
+					me.speedRange.current = me.viewSpeedRange([1, 1], true, me);
 				}
 				break;
 
@@ -1236,17 +1201,24 @@
 							} else {
 								// decrease step
 								me.gensPerStep -= 1;
-							}
-							me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
-						} else {
-							// decrease generation speed
-							if (me.generationRange) {
-								if (me.generationRange.current[0] >= 0.01 && !event.shiftKey) {
-									me.generationRange.current = me.viewGenerationRange([me.generationRange.current[0] - 0.01, me.generationRange.current[1]], true, me);
-								} else {
-									me.generationRange.current = me.viewGenerationRange([0, me.generationRange.current[1]], true, me);
+								if (me.gensPerStep < ViewConstants.minStepSpeed) {
+									me.gensPerStep = ViewConstants.minStepSpeed;
 								}
 							}
+							me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
+						} else {
+							// decrease generation speed
+							if (me.genSpeed > ViewConstants.minGenSpeed) {
+								if (event.shiftKey) {
+									me.genSpeed = ViewConstants.minGenSpeed;
+								} else {
+									me.genSpeed -= 1;
+									if (me.genSpeed < ViewConstants.minGenSpeed) {
+										me.genSpeed = ViewConstants.minGenSpeed;
+									}
+								}
+							}
+							me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
 						}
 					}
 				}
@@ -1263,32 +1235,28 @@
 					// do not change if view only mode
 					if (!me.viewOnly) {
 						// increase generation speed
-						if (me.generationRange) {
-							if (me.generationRange.current[0] <= 0.99 && !event.shiftKey) {
-								me.generationRange.current = me.viewGenerationRange([me.generationRange.current[0] + 0.01, me.generationRange.current[1]], true, me);
+						if (me.genSpeed < ViewConstants.maxGenSpeed) {
+							if (event.shiftKey) {
+								me.genSpeed = ViewConstants.maxGenSpeed;
 							} else {
-								// check whether speed was maximum
-								if (me.generationRange.current[0] <= 0.99) {
-									// set maximum
-									me.generationRange.current = me.viewGenerationRange([1, me.generationRange.current[1]], true, me);
+								me.genSpeed += 1;
+								if (me.genSpeed > ViewConstants.maxGenSpeed) {
+									me.genSpeed = ViewConstants.maxGenSpeed;
+								}
+							}
+						} else {
+							if (me.gensPerStep < ViewConstants.maxStepSpeed) {
+								if (event.shiftKey) {
+									me.gensPerStep = ViewConstants.maxStepSpeed;
 								} else {
-									// set maximum
-									me.generationRange.current = me.viewGenerationRange([1, me.generationRange.current[1]], true, me);
-									// increase step
-									if (me.gensPerStep < ViewConstants.maxStepSpeed) {
-										// check for shift
-										if (event.shiftKey) {
-											// go to maximum step
-											me.gensPerStep = ViewConstants.maxStepSpeed;
-										} else {
-											// increase step
-											me.gensPerStep += 1;
-										}
-										me.stepRange.current = me.viewStepRange([me.gensPerStep, me.gensPerStep], true, me);
+									me.gensPerStep += 1;
+									if (me.gensPerStep > ViewConstants.maxStepSpeed) {
+										me.gensPerStep = ViewConstants.maxStepSpeed;
 									}
 								}
 							}
 						}
+						me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
 					}
 				}
 				break;
