@@ -1912,7 +1912,7 @@
 	};
 
 	// add a waypoint to the manager
-	WaypointManager.prototype.add = function(waypoint) {
+	WaypointManager.prototype.add = function(waypoint, view) {
 		// check if this is a waypoint or a point of interest
 		if (waypoint.isPOI) {
 			// add the waypoint to the end of the POI list
@@ -1933,9 +1933,9 @@
 					waypoint.step = ViewConstants.minStepSpeed;
 				}
 				
-				// if step defined then default gens per second to 60/s
+				// if step defined then default gens per second
 				if (waypoint.stepDefined) {
-					waypoint.gps = ViewConstants.maxGenSpeed;
+					waypoint.gps = view.refreshRate();
 				}
 			}
 		}
@@ -2544,7 +2544,7 @@
 	};
 
 	// prepare waypoints for execution
-	WaypointManager.prototype.prepare = function(scriptErrors) {
+	WaypointManager.prototype.prepare = function(scriptErrors, view) {
 		var i = 0,
 		    previous = null,
 		    current = null,
@@ -2624,9 +2624,9 @@
 					current.step = ViewConstants.minStepSpeed;
 				}
 				
-				// if step defined then default gens per second to 60/s
+				// if step defined then default gens per second
 				if (current.stepDefined) {
-					current.gps = ViewConstants.maxGenSpeed;
+					current.gps = view.refershRate();
 				}
 			}
 

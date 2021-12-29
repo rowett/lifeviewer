@@ -1235,13 +1235,13 @@
 					// do not change if view only mode
 					if (!me.viewOnly) {
 						// increase generation speed
-						if (me.genSpeed < ViewConstants.maxGenSpeed) {
+						if (me.genSpeed < me.refreshRate) {
 							if (event.shiftKey) {
-								me.genSpeed = ViewConstants.maxGenSpeed;
+								me.genSpeed = me.refreshRate;
 							} else {
 								me.genSpeed += 1;
-								if (me.genSpeed > ViewConstants.maxGenSpeed) {
-									me.genSpeed = ViewConstants.maxGenSpeed;
+								if (me.genSpeed > me.refreshRate) {
+									me.genSpeed = me.refreshRate;
 								}
 							}
 						} else {

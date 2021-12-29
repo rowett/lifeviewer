@@ -4127,13 +4127,16 @@
 								numberValue = scriptReader.getNextTokenAsNumber() | 0;
 
 								// check it is in range
-								if (numberValue >= ViewConstants.minGenSpeed && numberValue <= ViewConstants.maxGenSpeed) {
+								if (numberValue >= ViewConstants.minGenSpeed) {
 									// check if gps already defined
 									if (currentWaypoint.gpsDefined && !view.initialGps && !suppressErrors.gps) {
 										scriptErrors[scriptErrors.length] = [Keywords.gpsWord + " " + numberValue, "overwrites " + currentWaypoint.gps];
 									}
 
 									// set gps in waypoint
+									if (numberValue > view.refreshRate) {
+										numberValue = view.refreshRate;
+									}
 									currentWaypoint.gps = numberValue;
 									currentWaypoint.gpsDefined = true;
 									view.initialGps = false;
@@ -4795,7 +4798,7 @@
 							poiFound = true;
 
 							// add the current waypoint to the list
-							view.waypointManager.add(currentWaypoint);
+							view.waypointManager.add(currentWaypoint, view);
 
 							// create a new waypoint as a point of interest
 							currentWaypoint = view.waypointManager.createWaypoint();
@@ -4839,7 +4842,7 @@
 									// add a new waypoint if not at generation 0
 									if (numberValue > 0) {
 										// add the current waypoint to the list
-										view.waypointManager.add(currentWaypoint);
+										view.waypointManager.add(currentWaypoint, view);
 
 										// create a new waypoint
 										currentWaypoint = view.waypointManager.createWaypoint();
@@ -4907,7 +4910,7 @@
 									waypointsFound = true;
 
 									// add the current waypoint to the list
-									view.waypointManager.add(currentWaypoint);
+									view.waypointManager.add(currentWaypoint, view);
 									
 									// create a new waypoint
 									currentWaypoint = view.waypointManager.createWaypoint();
@@ -5092,7 +5095,7 @@
 			// check if waypoints or POI were found
 			if (waypointsFound || poiFound) {
 				// add the waypoint/POI to the list
-				view.waypointManager.add(currentWaypoint);
+				view.waypointManager.add(currentWaypoint, view);
 
 				// set the current waypoint to be the first one
 				currentWaypoint = view.waypointManager.firstWaypoint();
@@ -5273,8 +5276,8 @@
 			if (currentWaypoint.stepDefined) {
 				view.gensPerStep = currentWaypoint.step;
 
-				// default gens per second to 60
-				view.genSpeed = ViewConstants.maxGenSpeed;
+				// default gens per second
+				view.genSpeed = view.refreshRate;
 			}
 
 			// set message

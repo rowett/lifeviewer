@@ -2244,6 +2244,9 @@
 		// window zoom
 		this.windowZoom = 1;
 
+		// refresh rate
+		this.refreshRate = 60;
+
 		// whether event processed
 		this.processedEvent = true;
 
@@ -2885,8 +2888,8 @@
 		// time menu draw and callback work
 		newWork = performance.now();
 		if (me.idle) {
-			// if idle then set time to one frame (60Hz)
-			me.lastUpdate = newWork - (1000 / 60);
+			// if idle then set time to one frame
+			me.lastUpdate = newWork - (1000 / me.refreshRate);
 		}
 
 		// schedule the next update if auto update on or notification is displayed
@@ -2964,9 +2967,9 @@
 		me.timingIndex = (me.timingIndex + 1) % me.numTimings;
 
 		// get the total fps
-		total = 1000 / frame;
-		if (total > 60) {
-			total = 60;
+		total = Math.round(1000 / frame);
+		if (total > me.refreshRate) {
+			total = me.refreshRate;
 		}
 
 		// update total time

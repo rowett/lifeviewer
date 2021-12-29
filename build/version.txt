@@ -1,3 +1,11 @@
+Build 677
+- handle different refresh rates
+	- measured frame rate is shown in Help->Info->Display
+
+Build 676
+- added Cancel Selection button to Select mode
+- added Rand Pattern button to Settings->Pattern menu which randomizes the pattern but keeps the current rule
+
 Build 675
 - fix issue for Safari 12 on iOS
 

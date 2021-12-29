@@ -5989,6 +5989,7 @@
 
 		// update the drawing context
 		this.imageData = context.createImageData(context.canvas.width, context.canvas.height);
+		this.allocator.saveAllocationInfo(Uint32, context.canvas.width * context.canvas.height, "Life.imageData");
 
 		// check if buffer is available
 		if (this.imageData.data.buffer) {
@@ -35811,7 +35812,7 @@
 	
 				// create the mode7 buffer if it has not been done so before
 				if (this.mode7Buffer === null) {
-					this.mode7Buffer = new Uint32Array(width * height);
+					this.mode7Buffer = this.allocator.allocate(Uint32, width * height, "Life.tiltBuffer");
 					mode7 = this.mode7Buffer;
 				}
 

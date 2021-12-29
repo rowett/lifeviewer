@@ -64,8 +64,11 @@
 		// alt keys that LifeViewer uses (any accesskey attributes that match these will be disabled)
 		/** @const {string} */ altKeys : "0123456789rtyopasghjklxcbn",
 
-		// number of frames per second used for generation counter
-		/** @const {number} */ fixedMultiple : 60,
+		// number of frames for frame rate measurement
+		/** @const {number} */ measurementSteps : 10,
+
+		// number of frames to average (allow the first few to be ignored)
+		/** @const {number} */ measureStart : 5,
 
 		// maximum start from generation
 		/** @const {number} */ maxStartFromGeneration : 1048576,
@@ -193,7 +196,7 @@
 		/** @const {number} */ defaultOpacity : 0.7,
 
 		// number of stars in starfield
-		/** @const {number} */ numStars : 10000,
+		/** @const {number} */ numStars : 16384,
 
 		// script error title
 		/** @const {string} */ scriptErrorTitle : "Script errors",
@@ -281,12 +284,6 @@
 		// step for red shading
 		/** @const {number} */ perfRedStep : 10,
 
-		// frame time budget in ms before too slow is triggered
-		/** @const {number} */ frameBudget : 18.5,
-		
-		// frame cap for 60Hz in ms
-		/** @const {number} */ sixtyHz : 1000 / 60,
-
 		// whether colour theme has colour history
 		/** @const {boolean} */ colourHistory : false,
 
@@ -303,7 +300,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 675,
+		/** @const {number} */ versionBuild : 677,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -361,7 +358,6 @@
 
 		// minimum and maximum generation speed
 		/** @const {number} */ minGenSpeed : 1,
-		/** @const {number} */ maxGenSpeed : 60,
 
 		// minimum and maximum steps
 		/** @const {number} */ minStepSpeed : 1,
@@ -641,6 +637,15 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// refresh rate
+		this.refreshRate = 60;
+
+		// steps to measure frame rate
+		this.measureFrameRate = ViewConstants.measurementSteps;
+
+		// total measurement
+		this.measureTotal = 0;
 
 		// last failure reason from PatternManager
 		this.lastFailReason = "";
@@ -1758,8 +1763,11 @@
 		// load button
 		this.loadButton = null;
 
-		// randomize button
+		// randomize pattern and rule button
 		this.randomizeButton = null;
+
+		// ranomize pattern and keep rule button
+		this.randomizePatternButton = null;
 
 		// identify button
 		this.identifyButton = null;
@@ -1901,6 +1909,9 @@
 
 		// nudge down button
 		this.nudgeDownButton = null;
+
+		// cancel selection button
+		this.cancelSelectionButton = null;
 
 		// invert selection button
 		this.invertSelectionButton = null;
@@ -3206,6 +3217,7 @@
 			result = 0,
 			mult = 0,
 			gridWidth = this.engine.width,
+			gridHeight = this.engine.height,
 			stateMap = null,
 			stateRow = null,
 			numStates = this.engine.multiNumStates - 1;
@@ -3225,7 +3237,7 @@
 			if (this.pasteThisGen(paste)) {
 				mode = paste.mode;
 				xOff = (gridWidth >> 1) - (this.patternWidth >> 1);
-				yOff = (gridWidth >> 1) - (this.patternHeight >> 1);
+				yOff = (gridHeight >> 1) - (this.patternHeight >> 1);
 				stateMap = paste.map;
 
 				// check for deltas with PASTET EVERY
@@ -4952,7 +4964,10 @@
 
 		    // saved bounding box
 		    zoomBox = me.engine.zoomBox,
-		    saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY);
+		    saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
+
+		    // frame target time in ms
+		    frameTargetTime = (1000 / this.refreshRate);
 
 		// unlock controls
 		me.controlsLocked = false;
@@ -4977,19 +4992,21 @@
 
 		// update elapsed time if not paused
 		if (me.generationOn) {
-			// check if actual interval is greater than frame budget
-			if (timeSinceLastUpdate > ViewConstants.frameBudget) {
+			// check if actual interval (in ms) is greater than frame budget
+			if (timeSinceLastUpdate > frameTargetTime) {
 				// flag machine too slow
-				tooSlow = true;
-			}
-			if (timeSinceLastUpdate > ViewConstants.sixtyHz) {
-				timeSinceLastUpdate = ViewConstants.sixtyHz;
+				if (timeSinceLastUpdate - 0.3 > frameTargetTime) {
+					tooSlow = true;
+				}
+
+				// cap to frame rate
+				timeSinceLastUpdate = frameTargetTime;
 			}
 
 			// update fixed point counters
 			if (me.generationOn && !(me.waypointsDefined && !me.waypointsDisabled)) {
 				me.fixedPointCounter += me.genSpeed * me.gensPerStep;
-				targetGen = (me.fixedPointCounter / ViewConstants.fixedMultiple) | 0;
+				targetGen = (me.fixedPointCounter / me.refreshRate) | 0;
 				if (targetGen > currentGen) {
 					me.nextStep = true;
 				} else {
@@ -5004,11 +5021,11 @@
 
 				// advance the time to the next whole generation
 				if (me.singleStep) {
-					me.fixedPointCounter += ViewConstants.fixedMultiple;
+					me.fixedPointCounter += me.refreshRate;
 				} else {
-					me.fixedPointCounter += me.gensPerStep * ViewConstants.fixedMultiple;
+					me.fixedPointCounter += me.gensPerStep * me.refreshRate;
 				}
-				targetGen = (me.fixedPointCounter / ViewConstants.fixedMultiple) | 0;
+				targetGen = (me.fixedPointCounter / me.refreshRate) | 0;
 			}
 		}
 
@@ -5065,7 +5082,7 @@
 					}
 				}
 				me.fixedPointCounter += me.genSpeed * me.gensPerStep;
-				targetGen = (me.fixedPointCounter / ViewConstants.fixedMultiple) | 0;
+				targetGen = (me.fixedPointCounter / me.refreshRate) | 0;
 				if (targetGen > currentGen) {
 					me.nextStep = true;
 				}
@@ -5136,8 +5153,8 @@
 				// if waypoints not ended then work out whether to step to next generation
 				if (currentWaypoint.targetGen > me.engine.counter) {
 					me.nextStep = true;
-					me.fixedPointCounter = currentWaypoint.targetGen * ViewConstants.fixedMultiple;
-					targetGen = (me.fixedPointCounter / ViewConstants.fixedMultiple) | 0;
+					me.fixedPointCounter = currentWaypoint.targetGen * me.refreshRate;
+					targetGen = (me.fixedPointCounter / me.refreshRate) | 0;
 				} else {
 					me.nextStep = false;
 				}
@@ -5318,7 +5335,7 @@
 				}
 
 				// remove steps not taken from target counter
-				me.fixedPointCounter -= (stepsToTake - stepsTaken) * ViewConstants.fixedMultiple;
+				me.fixedPointCounter -= (stepsToTake - stepsTaken) * me.refreshRate;
 				if (me.fixedPointCounter < 0) {
 					me.fixedPointCounter = 0;
 				}
@@ -5635,7 +5652,7 @@
 		    currentZoom = 0,
 
 		    // origin offset
-		    originCounter = this.fixedPointCounter / ViewConstants.fixedMultiple;
+		    originCounter = this.fixedPointCounter / this.refreshRate;
 
 		// check if track defined
 		if (this.trackDefined && !this.trackDisabled) {
@@ -5798,6 +5815,7 @@
 		this.newButton.deleted = shown;
 		this.loadButton.deleted = shown;
 		this.randomizeButton.deleted = shown;
+		this.randomizePatternButton.deleted = shown;
 		this.identifyButton.deleted = shown;
 		this.fastIdentifyButton.deleted = shown;
 		this.copyRuleButton.deleted = shown;
@@ -5833,6 +5851,7 @@
 		// lock buttons depending on rule
 		shown = this.engine.isNone || !this.executable;
 		this.randomizeButton.locked = shown;
+		this.randomizePatternButton.locked = shown;
 		this.identifyButton.locked = shown;
 		this.fastIdentifyButton.locked = shown;
 		this.copyRuleButton.locked = shown;
@@ -5963,6 +5982,7 @@
 
 		// selection action tools
 		shown = hide || !this.selecting || settingsMenuOpen;
+		this.cancelSelectionButton.deleted = shown;
 		this.nudgeLeftButton.deleted = shown;
 		this.nudgeRightButton.deleted = shown;
 		this.nudgeUpButton.deleted = shown;
@@ -5992,6 +6012,7 @@
 
 		// lock select tools for VIEWONLY
 		shown = !(this.isSelection || this.isPasting) || this.viewOnly;
+		this.cancelSelectionButton.deleteIfShown(shown);
 		this.randomButton.deleteIfShown(shown);
 		this.random2Button.deleteIfShown(shown);
 		this.randomItem.deleteIfShown(shown);
@@ -6358,7 +6379,7 @@
 		me.updateProgressBarStartFrom(me);
 
 		// set counter to the current generation
-		me.fixedPointCounter = me.engine.counter * ViewConstants.fixedMultiple;
+		me.fixedPointCounter = me.engine.counter * me.refreshRate;
 
 		// set the auto update mode
 		me.menuManager.setAutoUpdate(true);
@@ -6550,7 +6571,7 @@
 		me.renderWorld(me, false, 0, false);
 
 		// set counters to the current generation
-		me.fixedPointCounter = me.engine.counter * ViewConstants.fixedMultiple;
+		me.fixedPointCounter = me.engine.counter * me.refreshRate;
 
 		// set the auto update mode
 		me.menuManager.setAutoUpdate(true);
@@ -6656,6 +6677,21 @@
 		me.menuManager.setAutoUpdate(true);
 	};
 
+	// measure frame rate
+	View.prototype.viewAnimateMeasure = function(timeSinceLastUpdate, me) {
+		if (me.measureFrameRate <= ViewConstants.measureStart) {
+			me.measureTotal += timeSinceLastUpdate;
+		}
+		me.measureFrameRate -= 1;
+
+		if (me.measureFrameRate === 0) {
+			me.measureTotal /= ViewConstants.measureStart;
+			me.refreshRate = Math.round(1000 / me.measureTotal);
+			me.defaultGPS = me.refreshRate;
+			me.menuManager.refreshRate = me.refreshRate;
+		}
+	};
+
 	// update view mode dispatcher
 	View.prototype.viewAnimate = function(timeSinceLastUpdate, me) {
 		// check view mode
@@ -6671,7 +6707,11 @@
 					if (me.startFrom !== -1) {
 						me.viewAnimateStartFrom(me);
 					} else {
-						me.viewAnimateNormal(timeSinceLastUpdate, me);
+						if (me.measureFrameRate > 0) {
+							me.viewAnimateMeasure(timeSinceLastUpdate, me);
+						} else {
+							me.viewAnimateNormal(timeSinceLastUpdate, me);
+						}
 					}
 				}
 			}
@@ -6703,6 +6743,12 @@
 
 		// reset died generation
 		me.diedGeneration = -1;
+
+		// reset frame rate measurement
+		me.measureFrameRate = ViewConstants.measurementSteps;
+		me.measureTotal = 0;
+
+		me.updateUIForHelp();
 	};
 
 	// toggle stars display
@@ -6908,7 +6954,7 @@
 
 	// convert playback speed to range index
 	View.prototype.speedIndex = function() {
-		var perSPart = Math.sqrt((this.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed)),
+		var perSPart = Math.sqrt((this.genSpeed - ViewConstants.minGenSpeed) / (this.refreshRate - ViewConstants.minGenSpeed)),
 		    stepPart = (this.gensPerStep - ViewConstants.minStepSpeed) / (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed);
 
 		return perSPart + stepPart;
@@ -6917,10 +6963,10 @@
 	// set playback speed from speed index
 	View.prototype.setPlaybackFromIndex = function(indexValue) {
 		if (indexValue < 1) {
-			this.genSpeed = Math.round(ViewConstants.minGenSpeed + (indexValue * indexValue * (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed)));
+			this.genSpeed = Math.round(ViewConstants.minGenSpeed + (indexValue * indexValue * (this.refreshRate - ViewConstants.minGenSpeed)));
 			this.gensPerStep = 1;
 		} else {
-			this.genSpeed = ViewConstants.maxGenSpeed;
+			this.genSpeed = this.refreshRate;
 			this.gensPerStep = Math.round(ViewConstants.minStepSpeed + ((indexValue - 1) * (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed)));
 		}
 	};
@@ -6937,9 +6983,9 @@
 		}
 
 		// compute the label
-		perSPart = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
+		perSPart = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (me.refreshRate - ViewConstants.minGenSpeed));
 		stepPart = (me.gensPerStep - ViewConstants.minStepSpeed) / (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed);
-		if (Math.round(me.genSpeed) < 60) {
+		if (Math.round(me.genSpeed) < me.refreshRate) {
 			label = Math.round(me.genSpeed) + "/s";
 		} else {
 			label = Math.round(me.gensPerStep) + "x";
@@ -8242,7 +8288,7 @@
 						for (i = 0; i < me.gensPerStep; i += 1) {
 							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify, me);
 							me.engine.convertToPensTile();
-							me.fixedPointCounter = me.engine.counter * ViewConstants.fixedMultiple;
+							me.fixedPointCounter = me.engine.counter * me.refreshRate;
 						}
 						me.engine.reversePending = true;
 					} else {
@@ -8961,7 +9007,7 @@
 			icons = new Image();
 
 			// load the icons from the image file
-			icons.src = "data:image/png;base64,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";
+			icons.src = "data:image/png;base64,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";
 				
 			// save the image
 			ViewConstants.icons = icons;
@@ -9014,6 +9060,7 @@
 		this.iconManager.add("nudgeup", w, h);
 		this.iconManager.add("nudgedown", w, h);
 		this.iconManager.add("shrinksel", w, h);
+		this.iconManager.add("cancelsel", w, h);
 	};
 
 	// check if a rule is valid
@@ -10229,7 +10276,7 @@
 
 		// set GPS
 		if (poi.gpsDefined) {
-			me.genSpeed = Math.sqrt((poi.gps - ViewConstants.minGenSpeed) / (ViewConstants.maxGenSpeed - ViewConstants.minGenSpeed));
+			me.genSpeed = Math.sqrt((poi.gps - ViewConstants.minGenSpeed) / (me.refreshRate - ViewConstants.minGenSpeed));
 		}
 
 		// set STEP
@@ -10371,9 +10418,14 @@
 		me.newPattern(me);
 	};
 
-	// randomize button
+	// randomize pattern and rule
 	View.prototype.randomizePressed = function(me) {
 		me.randomPattern(me, false);
+	};
+
+	// randomize pattern and keep current rule
+	View.prototype.randomizePatternPressed = function(me) {
+		me.randomPattern(me, true);
 	};
 
 	// save button
@@ -12477,6 +12529,11 @@
 		}
 	};
 
+	// cancel seleciton pressed
+	View.prototype.cancelSelectionPressed = function(me) {
+		me.removeSelection(me);
+	};
+
 	// nudge left pressed
 	View.prototype.nudgeLeftPressed = function(me) {
 		if (!me.viewOnly) {
@@ -13236,7 +13293,7 @@
 
 		// restore the elapsed time
 		this.elapsedTime = this.elapsedTimes[targetGen];
-		this.fixedPointCounter = targetGen * ViewConstants.fixedMultiple;
+		this.fixedPointCounter = targetGen * this.refreshRate;
 	};
 
 	// run to given generation (used to step back)
@@ -13256,7 +13313,7 @@
 
 				// restore the elapsed time
 				this.elapsedTime = this.elapsedTimes[targetGen];
-				this.fixedPointCounter = targetGen * ViewConstants.fixedMultiple;
+				this.fixedPointCounter = targetGen * this.refreshRate;
 	
 				// don't actually step back if pattern is dead at the requested generation
 				if (this.diedGeneration !== -1 && targetGen > this.diedGeneration + fading) {
@@ -13842,6 +13899,7 @@
 		// View menu
 
 		// create the view menu
+		this.measureFrameRate = 10;
 		this.viewMenu = this.menuManager.createMenu(this.viewAnimate, this.viewStart, this);
 
 		// add callback for background drag
@@ -14206,12 +14264,12 @@
 		this.saveButton.toolTip = "save pattern [Ctrl S]";
 
 		// randomize button
-		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, -100, -25, 180, 40, "Randomize");
+		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, -100, -25, 180, 40, "Rand All");
 		this.randomizeButton.toolTip = "randomize pattern and rule [Alt Z]";
 
-		// copy rule button
-		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, 100, -25, 180, 40, "Copy Rule");
-		this.copyRuleButton.toolTip = "copy rule definition [Ctrl J]";
+		// randomize button
+		this.randomizePatternButton = this.viewMenu.addButtonItem(this.randomizePatternPressed, Menu.middle, 100, -25, 180, 40, "Rand Pattern");
+		this.randomizePatternButton.toolTip = "randomize pattern and keep rule [Ctrl Alt Z]";
 
 		// identify button
 		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, -100, 25, 180, 40, "Identify");
@@ -14232,6 +14290,10 @@
 		// go to generation button
 		this.goToGenButton = this.viewMenu.addButtonItem(this.goToGenPressed, Menu.middle, 100, 125, 180, 40, "Go To Gen");
 		this.goToGenButton.toolTip = "go to specified generation [Shift N]";
+
+		// copy rule button
+		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, -100, 125, 180, 40, "Copy Rule");
+		this.copyRuleButton.toolTip = "copy rule definition [Ctrl J]";
 
 		// fps button
 		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -100, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
@@ -14492,6 +14554,11 @@
 		this.pasteButton = this.viewMenu.addButtonItem(this.pastePressed, Menu.northWest, 270, 45, 40, 40, "");
 		this.pasteButton.icon = this.iconManager.icon("paste");
 		this.pasteButton.toolTip = "paste [Ctrl V]";
+
+		// add the cancel selection button
+		this.cancelSelectionButton = this.viewMenu.addButtonItem(this.cancelSelectionPressed, Menu.southEast, -220, -175, 40, 40, "");
+		this.cancelSelectionButton.icon = this.iconManager.icon("cancelsel");
+		this.cancelSelectionButton.toolTip = "cancel selection [Ctrl K]";
 
 		// add the nudge left button
 		this.nudgeLeftButton = this.viewMenu.addButtonItem(this.nudgeLeftPressed, Menu.southEast, -175, -175, 40, 40, "");
@@ -14802,7 +14869,7 @@
 		}
 
 		// prepare the waypoint list
-		this.waypointManager.prepare(scriptErrors);
+		this.waypointManager.prepare(scriptErrors, this);
 	};
 
 	// fit message to popup title bar
