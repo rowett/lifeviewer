@@ -961,7 +961,7 @@
 			mode7Angle = tilt - 1,
 			pz = 1,
 			xLeft = 0, yLeft = 0, xRight = 0, yRight = 0,
-			floatCounter = view.fixedPointCounter / ViewConstants.fixedMultiple;
+			floatCounter = view.fixedPointCounter / view.refreshRate;
 
 		// adjust for hex
 		if (engine.isHex) {
@@ -1213,7 +1213,7 @@
 			shadowOffset = 0,
 			coords = [], length = 0,
 			coord = 0,
-			floatCounter = view.fixedPointCounter / ViewConstants.fixedMultiple;
+			floatCounter = view.fixedPointCounter / view.refreshRate;
 
 		// use the shadow colour if drawing shadows
 		if (drawingShadows) {
@@ -1468,7 +1468,7 @@
 			mode7Angle = tilt - 1,
 			pz = 1,
 			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
-			floatCounter = view.fixedPointCounter / ViewConstants.fixedMultiple;
+			floatCounter = view.fixedPointCounter / view.refreshRate;
 
 		// adjust for hex
 		if (engine.isHex) {
@@ -1935,7 +1935,7 @@
 				
 				// if step defined then default gens per second
 				if (waypoint.stepDefined) {
-					waypoint.gps = view.refreshRate();
+					waypoint.gps = view.refreshRate;
 				}
 			}
 		}
@@ -2626,7 +2626,7 @@
 				
 				// if step defined then default gens per second
 				if (current.stepDefined) {
-					current.gps = view.refershRate();
+					current.gps = view.refreshRate;
 				}
 			}
 
