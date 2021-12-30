@@ -65,10 +65,10 @@
 		/** @const {string} */ altKeys : "0123456789rtyopasghjklxcbn",
 
 		// number of frames for frame rate measurement
-		/** @const {number} */ measurementSteps : 10,
+		/** @const {number} */ measurementSteps : 16,
 
-		// number of frames to average (allow the first few to be ignored)
-		/** @const {number} */ measureStart : 5,
+		// number of frames to average
+		/** @const {number} */ measureStart : 8,
 
 		// maximum start from generation
 		/** @const {number} */ maxStartFromGeneration : 1048576,
@@ -300,7 +300,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 677,
+		/** @const {number} */ versionBuild : 678,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -637,6 +637,12 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// whether standard gps used
+		this.standardGPS = true;
+
+		// whether standard gens per step used
+		this.standardStep = true;
 
 		// refresh rate
 		this.refreshRate = 60;
@@ -6679,6 +6685,10 @@
 
 	// measure frame rate
 	View.prototype.viewAnimateMeasure = function(timeSinceLastUpdate, me) {
+		if (me.measureFrameRate === ViewConstants.measurementSteps) {
+			me.viewMenu.locked = true;
+			me.engine.renderGrid();
+		}
 		if (me.measureFrameRate <= ViewConstants.measureStart) {
 			me.measureTotal += timeSinceLastUpdate;
 		}
@@ -6687,8 +6697,17 @@
 		if (me.measureFrameRate === 0) {
 			me.measureTotal /= ViewConstants.measureStart;
 			me.refreshRate = Math.round(1000 / me.measureTotal);
-			me.defaultGPS = me.refreshRate;
 			me.menuManager.refreshRate = me.refreshRate;
+			if (me.standardStep) {
+				me.gensPerStep = 1;
+			}
+			if (me.standardGPS) {
+				me.genSpeed = me.refreshRate;
+			}
+			me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
+
+			// unlock menu
+			me.viewMenu.locked = false;
 		}
 	};
 
@@ -6747,7 +6766,6 @@
 		// reset frame rate measurement
 		me.measureFrameRate = ViewConstants.measurementSteps;
 		me.measureTotal = 0;
-
 		me.updateUIForHelp();
 	};
 
@@ -6954,14 +6972,28 @@
 
 	// convert playback speed to range index
 	View.prototype.speedIndex = function() {
-		var perSPart = Math.sqrt((this.genSpeed - ViewConstants.minGenSpeed) / (this.refreshRate - ViewConstants.minGenSpeed)),
-		    stepPart = (this.gensPerStep - ViewConstants.minStepSpeed) / (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed);
+		var perSPart = 0,
+		    stepPart = 0;
+
+		// ensure gen speed is not greater than the refresh rate
+		if (this.genSpeed > this.refreshRate) {
+			this.genSpeed = this.refreshRate;
+		}
+
+		perSPart = Math.sqrt((this.genSpeed - ViewConstants.minGenSpeed) / (this.refreshRate - ViewConstants.minGenSpeed));
+		stepPart = (this.gensPerStep - ViewConstants.minStepSpeed) / (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed);
 
 		return perSPart + stepPart;
 	};
 
 	// set playback speed from speed index
 	View.prototype.setPlaybackFromIndex = function(indexValue) {
+		// ensure gen speed is not greater than refresh rate
+		if (this.genSpeed > this.refreshRate) {
+			this.genSpeed = this.refreshRate;
+		}
+
+		// compute the generations per step and step
 		if (indexValue < 1) {
 			this.genSpeed = Math.round(ViewConstants.minGenSpeed + (indexValue * indexValue * (this.refreshRate - ViewConstants.minGenSpeed)));
 			this.gensPerStep = 1;
@@ -6980,6 +7012,11 @@
 		// check if changing
 		if (change) {
 			me.setPlaybackFromIndex(newValue[0]);
+		}
+
+		// ensure gen speed is not greater than frame rate
+		if (me.genSpeed > me.refreshRate) {
+			me.genSpeed = me.refreshRate;
 		}
 
 		// compute the label
@@ -14122,7 +14159,7 @@
 		this.xyLabel.toolTip = "cell state at cursor position";
 
 		// add the generation label
-		this.genToggle = this.viewMenu.addListItem(this.viewStats, Menu.southWest, 0, -40, 100, 40, [""], [this.statsOn], Menu.multi);
+		this.genToggle = this.viewMenu.addListItem(this.viewStats, Menu.southWest, 0, -40, 100, 40, ["T 0"], [this.statsOn], Menu.multi);
 		this.genToggle.toolTip = ["toggle generation statistics [G]\ngeneration " + (this.engine.counter + this.genOffset)];
 
 		// add the failure reason label but delete it so it's initially hidden
@@ -14927,6 +14964,12 @@
 
 	// reset any view controls that scripts can overwrite
 	View.prototype.resetScriptControls = function() {
+		// reset rainbow mode
+		this.engine.rainbow = false;
+
+		// reset start from
+		this.startFrom = -1;
+
 		// reset exclusive playback
 		this.exclusivePlayback = false;
 
@@ -15435,6 +15478,11 @@
 
 	// start the viewer from a supplied pattern string
 	View.prototype.startViewer = function(patternString, ignoreThumbnail) {
+		// reset playback speed
+		this.genSpeed = 60;
+		this.gensPerStep = 1;
+		this.speedRange.current = this.viewSpeedRange([this.speedIndex(), 1], true, this);
+
 		// attempt to load the pattern
 		this.origDisplayWidth = this.displayWidth;
 		this.origDisplayHeight = this.displayHeight;
@@ -16086,6 +16134,10 @@
 		// clear play on thumb expand
 		me.thumbStart = false;
 
+		// set standard step and GPS used
+		me.standardStep = true;
+		me.standardGPS = true;
+
 		// copy pattern to center
 		if (!pattern) {
 			me.setMenuColours();
@@ -16116,12 +16168,6 @@
 				}
 				resizeRequired = true;
 			}
-
-			// reset rainbow mode
-			me.engine.rainbow = false;
-
-			// reset start from
-			me.startFrom = -1;
 
 			// read any script in the title
 			if (pattern.title) {

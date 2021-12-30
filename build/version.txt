@@ -1,3 +1,6 @@
+Build 678
+- fix incorrect speed setting in initial UI control
+
 Build 677
 - handle different refresh rates
 	- measured frame rate is shown in Help->Info->Display

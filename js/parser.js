@@ -4141,6 +4141,7 @@
 									currentWaypoint.gpsDefined = true;
 									view.initialGps = false;
 									suppressErrors.gps = false;
+									view.standardGPS = false;
 									itemValid = true;
 								}
 							} else {
@@ -4878,6 +4879,7 @@
 									currentWaypoint.stepDefined = true;
 									view.initialStep = false;
 									suppressErrors.step = false;
+									view.standardStep = false;
 									itemValid = true;
 								}
 							} else {
