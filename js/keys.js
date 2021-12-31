@@ -1573,17 +1573,12 @@
 					if (event.shiftKey) {
 						me.cyclePasteMode(me);
 					} else {
-						// check for Help
-						if (me.displayHelp !== 0) {
-							this.toggleHelpTopic(me, ViewConstants.memoryTopic);
-						} else {
-							if (me.navToggle && !me.navToggle.deleted) {
-								// toggle navigation menu
-								me.navToggle.current = me.toggleSettings([!me.navToggle.current[0]], true, me);
-			
-								// mark toggle required
-								me.menuManager.toggleRequired = true;
-							}
+						if (me.navToggle && !me.navToggle.deleted) {
+							// toggle navigation menu
+							me.navToggle.current = me.toggleSettings([!me.navToggle.current[0]], true, me);
+		
+							// mark toggle required
+							me.menuManager.toggleRequired = true;
 						}
 					}
 				}

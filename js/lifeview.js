@@ -300,7 +300,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 678,
+		/** @const {number} */ versionBuild : 680,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6709,6 +6709,12 @@
 			// unlock menu
 			me.viewMenu.locked = false;
 		}
+
+		// set the auto update mode
+		me.xyLabel.enabled = false;
+		me.selSizeLabel.enabled = false;
+		me.updateUIForHelp(0);
+		me.menuManager.setAutoUpdate(true);
 	};
 
 	// update view mode dispatcher
@@ -6766,7 +6772,6 @@
 		// reset frame rate measurement
 		me.measureFrameRate = ViewConstants.measurementSteps;
 		me.measureTotal = 0;
-		me.updateUIForHelp();
 	};
 
 	// toggle stars display
@@ -13129,10 +13134,6 @@
 		if (change) {
 			me.displayHelp = newValue[0];
 			if (me.displayHelp) {
-				// show Scripts topic if there are script errors
-				if (me.scriptErrors.length) {
-					me.setHelpTopic(ViewConstants.scriptsTopic, me);
-				}
 				// close settings menu if open
 				if (me.navToggle.current[0]) {
 					me.navToggle.current = me.toggleSettings([false], true, me);

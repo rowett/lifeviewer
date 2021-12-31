@@ -1,3 +1,9 @@
+Build 680
+- don't jump to Script Help Topic if Help requested with script errors displayed
+
+Build 679
+- don't override GPS definition when STEP is 1x
+
 Build 678
 - fix incorrect speed setting in initial UI control
 

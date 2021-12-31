@@ -5279,7 +5279,9 @@
 				view.gensPerStep = currentWaypoint.step;
 
 				// default gens per second
-				view.genSpeed = view.refreshRate;
+				if (view.gensPerStep > 1) {
+					view.genSpeed = view.refreshRate;
+				}
 			}
 
 			// set message
