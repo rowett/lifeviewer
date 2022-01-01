@@ -65,10 +65,10 @@
 		/** @const {string} */ altKeys : "0123456789rtyopasghjklxcbn",
 
 		// number of frames for frame rate measurement
-		/** @const {number} */ measurementSteps : 16,
+		/** @const {number} */ measurementSteps : 10,
 
 		// number of frames to average
-		/** @const {number} */ measureStart : 8,
+		/** @const {number} */ measureStart : 6,
 
 		// maximum start from generation
 		/** @const {number} */ maxStartFromGeneration : 1048576,
@@ -300,7 +300,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 680,
+		/** @const {number} */ versionBuild : 681,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6685,19 +6685,52 @@
 
 	// measure frame rate
 	View.prototype.viewAnimateMeasure = function(timeSinceLastUpdate, me) {
-		if (me.measureFrameRate === ViewConstants.measurementSteps) {
-			me.viewMenu.locked = true;
-			me.engine.renderGrid();
+		var /** @type {number} */ i = 0,
+		    /** @type {number} */ pixelColour = 0;
+
+		// set the black pixel colour
+		if (me.engine.littleEndian) {
+			pixelColour = 0xff000000;
+		} else {
+			pixelColour = 0x000000ff;
 		}
+
+		// check if this is the first measurement frame
+		if (me.measureFrameRate === ViewConstants.measurementSteps) {
+			// lock the menu
+			me.viewMenu.locked = true;
+
+			// set the auto update mode
+			me.xyLabel.enabled = false;
+			me.selSizeLabel.enabled = false;
+			me.updateUIForHelp(0);
+			me.menuManager.setAutoUpdate(true);
+
+			// clear the canvas
+			if (me.engine.data32) {
+				me.engine.data32.fill(pixelColour);
+			}
+		}
+
+		// check if we should start measuring
 		if (me.measureFrameRate <= ViewConstants.measureStart) {
+			// add current frame time to total
 			me.measureTotal += timeSinceLastUpdate;
 		}
+
+		// decrease number of remaining frames
 		me.measureFrameRate -= 1;
 
+		// check if measurement has finished
 		if (me.measureFrameRate === 0) {
+			// compute the average frame time
 			me.measureTotal /= ViewConstants.measureStart;
+
+			// save the measured refresh rate
 			me.refreshRate = Math.round(1000 / me.measureTotal);
 			me.menuManager.refreshRate = me.refreshRate;
+
+			// set the playback speed but don't override any script settings
 			if (me.standardStep) {
 				me.gensPerStep = 1;
 			}
@@ -6710,11 +6743,8 @@
 			me.viewMenu.locked = false;
 		}
 
-		// set the auto update mode
-		me.xyLabel.enabled = false;
-		me.selSizeLabel.enabled = false;
-		me.updateUIForHelp(0);
-		me.menuManager.setAutoUpdate(true);
+		// clear the grid
+		me.engine.drawGrid();
 	};
 
 	// update view mode dispatcher

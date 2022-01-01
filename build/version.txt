@@ -1,3 +1,6 @@
+Build 681
+- prevent flickering during frame rate measurement
+
 Build 680
 - don't jump to Script Help Topic if Help requested with script errors displayed
 
