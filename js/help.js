@@ -1338,7 +1338,7 @@
 		y = this.renderHelpLine(view, "Scale", view.viewMenu.xScale.toFixed(2), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Pixel Ratio", view.devicePixelRatio.toFixed(2), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Window Zoom", view.windowZoom.toFixed(2), ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Refresh", view.refreshRate + "Hz", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Refresh", view.refreshRate + "Hz (" + ((view.lastFrame - view.firstFrame) / (ViewConstants.measureStart - 1)).toFixed(1) + "ms)", ctx, x, y, height, helpLine);
 		if (DocConfig.limitWidth) {
 			y = this.renderHelpLine(view, "Limit Width", view.maxCodeWidth, ctx, x, y, height, helpLine);
 		}

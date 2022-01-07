@@ -65,10 +65,10 @@
 		/** @const {string} */ altKeys : "0123456789rtyopasghjklxcbn",
 
 		// number of frames for frame rate measurement
-		/** @const {number} */ measurementSteps : 10,
+		/** @const {number} */ measurementSteps : 18,
 
 		// number of frames to average
-		/** @const {number} */ measureStart : 6,
+		/** @const {number} */ measureStart : 10,
 
 		// maximum start from generation
 		/** @const {number} */ maxStartFromGeneration : 1048576,
@@ -300,7 +300,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 681,
+		/** @const {number} */ versionBuild : 685,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -650,8 +650,9 @@
 		// steps to measure frame rate
 		this.measureFrameRate = ViewConstants.measurementSteps;
 
-		// total measurement
-		this.measureTotal = 0;
+		// first and last time for frame rate measurement
+		this.firstFrame = 0;
+		this.lastFrame = 0;
 
 		// last failure reason from PatternManager
 		this.lastFailReason = "";
@@ -5861,6 +5862,7 @@
 		this.identifyButton.locked = shown;
 		this.fastIdentifyButton.locked = shown;
 		this.copyRuleButton.locked = shown;
+		this.goToGenButton.locked = shown;
 		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isRuleTree || this.engine.isMargolus);
 
 		// set theme section label text
@@ -6712,10 +6714,9 @@
 			}
 		}
 
-		// check if we should start measuring
-		if (me.measureFrameRate <= ViewConstants.measureStart) {
-			// add current frame time to total
-			me.measureTotal += timeSinceLastUpdate;
+		// if at first measure step then get timestamp
+		if (me.measureFrameRate === ViewConstants.measureStart) {
+			me.firstFrame = performance.now();
 		}
 
 		// decrease number of remaining frames
@@ -6723,11 +6724,18 @@
 
 		// check if measurement has finished
 		if (me.measureFrameRate === 0) {
-			// compute the average frame time
-			me.measureTotal /= ViewConstants.measureStart;
+			// get the timestamp
+			me.lastFrame = performance.now();
 
 			// save the measured refresh rate
-			me.refreshRate = Math.round(1000 / me.measureTotal);
+			me.refreshRate = Math.round(1000 / ((me.lastFrame - me.firstFrame) / (ViewConstants.measureStart -1)));
+
+			// floor to 60Hz
+			if (me.refreshRate < 60) {
+				me.refreshRate = 60;
+			}
+
+			// update in the menu manager
 			me.menuManager.refreshRate = me.refreshRate;
 
 			// set the playback speed but don't override any script settings
@@ -6801,7 +6809,6 @@
 
 		// reset frame rate measurement
 		me.measureFrameRate = ViewConstants.measurementSteps;
-		me.measureTotal = 0;
 	};
 
 	// toggle stars display
@@ -16064,6 +16071,8 @@
 		me.playbackButton.deleted = false;
 		me.displayButton.deleted = false;
 		me.backButton.deleted = false;
+		me.directionButton.deleted = false;
+		me.speed1Button.deleted = false;
 
 		// reset menu toggles to off
 		me.navToggle.current = [false];

@@ -1,3 +1,15 @@
+Build 685
+- fixed issue with UI controls being hidden after error report
+
+Build 684
+- restore Hex grid support for HROT rules
+
+Build 683
+- ensure frame rate is no lower than 60Hz
+
+Build 682
+- add extra frame time measurement information to Help->Info->Display
+
 Build 681
 - prevent flickering during frame rate measurement
 

@@ -101,50 +101,65 @@
 	};
 	
 	// convert stars to display position
-	Stars.prototype.create2D = function(xOff, yOff, zOff, angle, displayWidth, displayHeight, pixelBuffer, blackPixel) {
-		var i = 0,
+	Stars.prototype.create2D = function(/** @type {number} */ xOff, /** @type {number} */ yOff, /** @type {number} */ zOff, /** @type {number} */ angle, /** @type {number} */ displayWidth, /** @type {number} */ displayHeight, /** @type {Uint32Array} */ pixelBuffer, /** @type {number} */ blackPixel) {
+		var /** @type {number} */ i = 0,
 
 		    // offset in pixel data
-		    offset = 0,
+		    /** @type {number} */ offset = 0,
 
 		    // computed star colour
-		    pixelColour = 0,
+		    /** @type {number} */ pixelColour = 0,
 
 		    // z distance and x, y position of star
-		    zDist = 0,
-		    x = 0,
-		    y = 0,
+		    /** @type {number} */ zDist = 0,
+		    /** @type {number} */ x = 0,
+		    /** @type {number} */ y = 0,
 
 		    // computed angle and radius
-		    theta = 0,
-		    radius = 0,
+		    /** @type {number} */ theta = 0,
+		    /** @type {number} */ radius = 0,
 
 		    // r g b components of background colour
-		    blackRed = 0,
-		    blackGreen = 0,
-		    blackBlue = 0,
+		    /** @type {number} */ blackRed = 0,
+		    /** @type {number} */ blackGreen = 0,
+		    /** @type {number} */ blackBlue = 0,
 
 		    // r g b components of star colour
-		    currentRed = 0,
-		    currentGreen = 0,
-		    currentBlue = 0;
+		    /** @type {number} */ currentRed = 0,
+		    /** @type {number} */ currentGreen = 0,
+		    /** @type {number} */ currentBlue = 0,
+
+		    // half width and height
+		    /** @const {number} */ halfWidth = displayWidth >> 1,
+		    /** @const {number} */ halfHeight = displayHeight >> 1,
+
+		    // width and height minus 1
+		    /** @const {number} */ widthMinus1 = displayWidth - 1,
+		    /** @const {number} */ heightMinus1 = displayHeight - 1,
+
+		    /** @type {number} */ starMinusBlackRed = 0,
+		    /** @type {number} */ starMinusBlackGreen = 0,
+		    /** @type {number} */ starMinusBlackBlue = 0;
 
 		// check if initialized
 		if (!this.initialized) {
 			this.init(8192, 8192, 1024);
 			this.initialized = true;
 		}
+
 		// compute black pixel rgb components
 		if (littleEndian) {
 			blackBlue = (blackPixel >> 16) & 0xff;
 			blackGreen = (blackPixel >> 8) & 0xff;
 			blackRed = blackPixel & 0xff;
-		}
-		else {
+		} else {
 			blackRed = (blackPixel >> 24) & 0xff;
 			blackGreen = (blackPixel >> 16) & 0xff;
 			blackBlue = (blackPixel >> 8) & 0xff;
 		}
+		starMinusBlackRed = this.red - blackRed;
+		starMinusBlackGreen = this.green - blackGreen;
+		starMinusBlackBlue = this.blue - blackBlue;
 
 		// update each star
 		for (i = 0; i < this.numStars; i += 1) {
@@ -184,11 +199,14 @@
 			
 			// create the 2D position
 			zDist = (this.z[i] / zOff) * 2;
-			x = ((displayWidth / 2) + (x / zDist)) | 0;
-			y = ((displayHeight / 2) + (y / zDist)) | 0;
+			//x = ((displayWidth / 2) + (x / zDist)) | 0;
+			//y = ((displayHeight / 2) + (y / zDist)) | 0;
+			x = (halfWidth + (x / zDist)) | 0;
+			y = (halfHeight + (y / zDist)) | 0;
 
 			// check if on display (including the halo)
-			if (x > 0 && x < (displayWidth - 1) && y > 0 && y < (displayHeight - 1)) {
+			//if (x > 0 && x < (displayWidth - 1) && y > 0 && y < (displayHeight - 1)) {
+			if (x > 0 && x < widthMinus1 && y > 0 && y < heightMinus1) {
 				// compute the pixel buffer offset
 				offset = x + y * displayWidth;
 
@@ -206,9 +224,9 @@
 				// check if the pixel is black
 				if (pixelBuffer[offset] === blackPixel) {
 					// compute the pixel colour components
-					currentRed = blackRed + (this.red - blackRed) * zDist;
-					currentGreen = blackGreen + (this.green - blackGreen) * zDist;
-					currentBlue = blackBlue + (this.blue - blackBlue) * zDist;
+					currentRed = blackRed + starMinusBlackRed * zDist;
+					currentGreen = blackGreen + starMinusBlackGreen * zDist;
+					currentBlue = blackBlue + starMinusBlackBlue * zDist;
 
 					// set the pixel
 					if (littleEndian) {
@@ -226,9 +244,9 @@
 				zDist = zDist / 2;
 
 				// compute the pixel colour components
-				currentRed = blackRed + (this.red - blackRed) * zDist;
-				currentGreen = blackGreen + (this.green - blackGreen) * zDist;
-				currentBlue = blackBlue + (this.blue - blackBlue) * zDist;
+				currentRed = blackRed + starMinusBlackRed * zDist;
+				currentGreen = blackGreen + starMinusBlackGreen * zDist;
+				currentBlue = blackBlue + starMinusBlackBlue * zDist;
 
 				// set the pixel
 				if (littleEndian) {

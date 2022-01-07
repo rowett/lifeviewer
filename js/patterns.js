@@ -7363,11 +7363,6 @@
 				this.executable = false;
 				pattern.gridType = -1;
 			}
-			if (pattern.isHex) {
-				this.failureReason = "HROT does not support Hex grid";
-				this.executable = false;
-				pattern.isHex = false;
-			}
 			if (pattern.birthHROT && pattern.birthHROT[0] === 1 && pattern.gridType === -1) {
 				this.failureReason = "HROT does not support B0 unbounded";
 				this.executable = false;
