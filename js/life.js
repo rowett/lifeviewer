@@ -5918,7 +5918,7 @@
 			bottomY = zoomBox.bottomY;
 
 		// check for HROT or PCA
-		if (this.isHROT || this.isPCA || this.isRuleTree) {
+		if (this.isHROT || this.isPCA || this.isRuleTree || this.isNone) {
 			// compute population from colour grid
 			for (h = bottomY; h <= topY; h += 1) {
 				// get next row
@@ -8174,6 +8174,10 @@
 		    belowNextTiles = 0, aboveNextTiles = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
 
+		    // left and right tile grid masks
+		    leftMask = (this.isTriangular ? 49152 : 32768),
+		    rightMask = (this.isTriangular ? 3 : 1),
+
 		    // flag if any cells in the tile are alive
 		    tileAlive = false,
 
@@ -8266,13 +8270,13 @@
 								tileAlive = true;
 
 								// check for left column now set
-								if ((output & 32768) !== 0) {
+								if ((output & leftMask) !== 0) {
 									neighbours |= LifeConstants.leftSet;
 									neighbours |= LifeConstants.bottomLeftSet;
 								}
 
 								// check for right column now set
-								if ((output & 1) !== 0) {
+								if ((output & rightMask) !== 0) {
 									neighbours |= LifeConstants.rightSet;
 									neighbours |= LifeConstants.bottomRightSet;
 								}
@@ -8296,12 +8300,12 @@
 									tileAlive = true;
 
 									// check for left column now set
-									if ((output & 32768) !== 0) {
+									if ((output & leftMask) !== 0) {
 										neighbours |= LifeConstants.leftSet;
 									}
 
 									// check for right column now set
-									if ((output & 1) !== 0) {
+									if ((output & rightMask) !== 0) {
 										neighbours |= LifeConstants.rightSet;
 									}
 								}
@@ -8322,13 +8326,13 @@
 								tileAlive = true;
 
 								// check for left column now set
-								if ((output & 32768) !== 0) {
+								if ((output & leftMask) !== 0) {
 									neighbours |= LifeConstants.leftSet;
 									neighbours |= LifeConstants.topLeftSet;
 								}
 
 								// check for right column now set
-								if ((output & 1) !== 0) {
+								if ((output & rightMask) !== 0) {
 									neighbours |= LifeConstants.rightSet;
 									neighbours |= LifeConstants.topRightSet;
 								}

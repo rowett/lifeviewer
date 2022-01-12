@@ -300,7 +300,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 685,
+		/** @const {number} */ versionBuild : 687,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3491,16 +3491,16 @@
 		    dLeftX = panX - (this.engine.width >> 1),
 		    dRightX = dLeftX + width - 1,
 		    dBottomY = panY - (this.engine.height >> 1),
-			dTopY = dBottomY + height - 1,
+		    dTopY = dBottomY + height - 1,
 			
-			// number of pattern states
-			numStates = this.engine.multiNumStates,
+		    // number of pattern states
+		    numStates = this.engine.multiNumStates,
 
 		    // whether pattern is inside bounded grid
-			inside = true,
+		    inside = true,
 			
-			// whether pattern is 2-state HROT
-			isTwoStateHROT = (numStates === 2 && this.engine.isHROT);
+		    // whether pattern is 2-state HROT
+		    isTwoStateHROT = (numStates === 2 && this.engine.isHROT);
 
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {

@@ -7301,11 +7301,6 @@
 				this.executable = false;
 				pattern.gridType = -1;
 			}
-			if (pattern.isHex) {
-				this.failureReason = "LtL does not support Hex grid";
-				this.executable = false;
-				pattern.isHex = false;
-			}
 			if (pattern.BminLTL === 0 && pattern.gridType === -1) {
 				this.failureReason = "LtL does not support B0 unbounded";
 				this.executable = false;

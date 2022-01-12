@@ -1957,7 +1957,9 @@
 			if (!(view.engine.isRuleTree || view.engine.isSuper)) {
 				y = this.renderHelpLine(view, "Name", view.engine.themes[view.engine.colourTheme].name, ctx, x, y, height, helpLine);
 				y = this.renderHelpLine(view, "History", view.historyStates, ctx, x, y, height, helpLine);
-				y = this.renderHelpLine(view, "Age", view.aliveStates, ctx, x, y, height, helpLine);
+				if (view.engine.multiNumStates <= 2) {
+					y = this.renderHelpLine(view, "Age", view.aliveStates, ctx, x, y, height, helpLine);
+				}
 			}
 			this.renderColourBox(view, view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 			y = this.renderHelpLine(view, "Background", this.rgbString(view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0]), ctx, x, y, height, helpLine);

@@ -1,3 +1,11 @@
+Build 687
+- only show Age states in Help for rules that have them
+- restore Hex grid support for LtL rules
+- fixed issue with Triangular rules and grid alignment
+
+Build 686
+- fixed Alive cell count for "none" rules
+
 Build 685
 - fixed issue with UI controls being hidden after error report
 
