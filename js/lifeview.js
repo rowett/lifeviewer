@@ -300,7 +300,7 @@
 		/** @const {string} */ versionName : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 687,
+		/** @const {number} */ versionBuild : 690,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -339,7 +339,7 @@
 		/** @const {number} */ maxDefaultZoom : 32,
 
 		// minimum and maximum zoom
-		/** @const {number} */ minZoom : 1 / 16,
+		/** @const {number} */ minZoom : 1 / 32,
 		/** @const {number} */ maxZoom : 64,
 		
 		// minimum and maximum tilt
@@ -347,7 +347,7 @@
 		/** @const {number} */ maxTilt : 5,
 
 		// minimum and maximum negative zoom
-		/** @const {number} */ minNegZoom : -16,
+		/** @const {number} */ minNegZoom : -32,
 		/** @const {number} */ maxNegZoom : -1,
 
 		// minimum and maximum zoom for annotations (so they won't fade at min or max camera zoom)
@@ -362,6 +362,9 @@
 		// minimum and maximum steps
 		/** @const {number} */ minStepSpeed : 1,
 		/** @const {number} */ maxStepSpeed : 64,
+
+		// dead zone factor in speed control
+		/** @const {number} */ deadZoneSpeed : 0.1,
 
 		// fixed font
 		/** @const {string} */ fixedFontFamily : "Courier",
@@ -637,6 +640,9 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// amount of ms of last playback
+		this.lastPlaybackMS = 0;
 
 		// whether standard gps used
 		this.standardGPS = true;
@@ -5122,27 +5128,29 @@
 					}
 
 					// set angle and update angle control
-					me.engine.angle = currentWaypoint.angle;
-					if (me.angleItem) {
-						me.angleItem.current = [me.engine.angle, me.engine.angle];
-					}
+					if (!(me.engine.isHex || me.engine.isTriangular || me.engine.isNone)) {
+						me.engine.angle = currentWaypoint.angle;
+						if (me.angleItem) {
+							me.angleItem.current = [me.engine.angle, me.engine.angle];
+						}
 
-					// set tilt and update tilt control
-					me.engine.tilt = currentWaypoint.tilt;
-					if (me.tiltItem) {
-						me.tiltItem.current = [me.engine.tilt, me.engine.tilt];
-					}
+						// set tilt and update tilt control
+						me.engine.tilt = currentWaypoint.tilt;
+						if (me.tiltItem) {
+							me.tiltItem.current = [me.engine.tilt, me.engine.tilt];
+						}
 	
-					// set layers
-					me.engine.layers = currentWaypoint.layers;
-					if (me.layersItem) {
-						me.layersItem.current = [me.engine.layers, me.engine.layers];
-					}
+						// set layers
+						me.engine.layers = currentWaypoint.layers;
+						if (me.layersItem) {
+							me.layersItem.current = [me.engine.layers, me.engine.layers];
+						}
 	
-					// set layer depth
-					me.engine.layerDepth = (currentWaypoint.depth / ViewConstants.depthScale) + ViewConstants.minDepth;
-					if (me.depthItem) {
-						me.depthItem.current = [Math.sqrt(me.engine.layerDepth), me.engine.layerDepth * ViewConstants.depthScale];
+						// set layer depth
+						me.engine.layerDepth = (currentWaypoint.depth / ViewConstants.depthScale) + ViewConstants.minDepth;
+						if (me.depthItem) {
+							me.depthItem.current = [Math.sqrt(me.engine.layerDepth), me.engine.layerDepth * ViewConstants.depthScale];
+						}
 					}
 				}
 
@@ -6752,7 +6760,10 @@
 		}
 
 		// clear the grid
+		i = me.engine.tilt;
+		me.engine.tilt = 0;
 		me.engine.drawGrid();
+		me.engine.tilt = i;
 	};
 
 	// update view mode dispatcher
@@ -7015,7 +7026,9 @@
 	// convert playback speed to range index
 	View.prototype.speedIndex = function() {
 		var perSPart = 0,
-		    stepPart = 0;
+		    stepPart = 0,
+		    result = 0,
+		    deadZone = ViewConstants.deadZoneSpeed;
 
 		// ensure gen speed is not greater than the refresh rate
 		if (this.genSpeed > this.refreshRate) {
@@ -7025,23 +7038,38 @@
 		perSPart = Math.sqrt((this.genSpeed - ViewConstants.minGenSpeed) / (this.refreshRate - ViewConstants.minGenSpeed));
 		stepPart = (this.gensPerStep - ViewConstants.minStepSpeed) / (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed);
 
-		return perSPart + stepPart;
+		if (stepPart === 0) {
+			result = perSPart * (1 - deadZone);
+		} else {
+			result = stepPart * (1 - deadZone) + 1 + deadZone;
+
+		}
+		return result;
 	};
 
 	// set playback speed from speed index
 	View.prototype.setPlaybackFromIndex = function(indexValue) {
+		var deadZone = ViewConstants.deadZoneSpeed;
+
 		// ensure gen speed is not greater than refresh rate
 		if (this.genSpeed > this.refreshRate) {
 			this.genSpeed = this.refreshRate;
 		}
 
 		// compute the generations per step and step
-		if (indexValue < 1) {
+		if (indexValue <= (1 - deadZone)) {
+			indexValue /= (1 - deadZone);
 			this.genSpeed = Math.round(ViewConstants.minGenSpeed + (indexValue * indexValue * (this.refreshRate - ViewConstants.minGenSpeed)));
 			this.gensPerStep = 1;
 		} else {
+			if (indexValue < 1 + deadZone) {
+				indexValue = 0;
+			} else {
+				indexValue -= 1 + deadZone;
+				indexValue /= (1 - deadZone);
+			}
 			this.genSpeed = this.refreshRate;
-			this.gensPerStep = Math.round(ViewConstants.minStepSpeed + ((indexValue - 1) * (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed)));
+			this.gensPerStep = Math.round(ViewConstants.minStepSpeed + (indexValue * (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed)));
 		}
 	};
 
@@ -7049,11 +7077,13 @@
 	View.prototype.viewSpeedRange = function(newValue, change, me) {
 		var perSPart = 1,
 		    stepPart = 1,
-		    label = "";
+		    label = "",
+		    value = me.speedIndex();
 
 		// check if changing
 		if (change) {
-			me.setPlaybackFromIndex(newValue[0]);
+			value = newValue[0];
+			me.setPlaybackFromIndex(value);
 		}
 
 		// ensure gen speed is not greater than frame rate
@@ -7070,7 +7100,7 @@
 			label = Math.round(me.gensPerStep) + "x";
 		}
 
-		return [perSPart + stepPart, label];
+		return [value, label];
 	};
 
 	// save the camera position
@@ -8341,6 +8371,7 @@
 
 					// zoom text
 					me.menuManager.notification.notify("Play", 15, 40, 15, true);
+					me.lastPlaybackMS = performance.now();
 				} else {
 					// pause
 					me.generationOn = false;
@@ -8350,6 +8381,8 @@
 					if (!(me.engine.counter === me.stopGeneration && !me.stopDisabled && !me.genNotifications)) {
 						me.menuManager.notification.notify("Pause", 15, 40, 15, true);
 					}
+					me.lastPlaybackMS = performance.now() - me.lastPlaybackMS;
+					//me.menuManager.notification.notify("Playback time " + (me.lastPlaybackMS / 1000).toFixed(2), 15, 300, 15, false);
 				}
 				break;
 
@@ -8402,6 +8435,8 @@
 					if (!(me.engine.counter === me.stopGeneration && !me.stopDisabled && !me.genNotifications)) {
 						me.menuManager.notification.notify("Pause", 15, 40, 15, true);
 					}
+					me.lastPlaybackMS = performance.now() - me.lastPlaybackMS;
+					//me.menuManager.notification.notify("Playback time " + (me.lastPlaybackMS / 1000).toFixed(2), 15, 300, 15, false);
 				} else {
 					// step
 					me.nextStep = true;
@@ -10962,7 +10997,7 @@
 			}
 			me.afterEdit("select all (" + width + " x " + height + ")");
 		} else {
-			me.menuManager.notification.notify("All cells are dead", 15, 120, 15, false);
+			me.menuManager.notification.notify("Empty Pattern", 15, 120, 15, false);
 			if (me.isSelection) {
 				me.removeSelection(me);
 			}
@@ -16597,6 +16632,9 @@
 
 		// set bounded grid border cell
 		me.engine.setBoundedGridBorderCell();
+
+		// set the cell borders control
+		me.bordersButton.current = [me.engine.cellBorders];
 
 		// set smart drawing control
 		me.smartToggle.current = me.toggleSmart([me.smartDrawing], true, me);

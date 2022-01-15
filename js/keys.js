@@ -1071,8 +1071,8 @@
 				} else {
 					// check for shift
 					if (event.shiftKey) {
-						// zoom to 6400%
-						me.changeZoom(me, 64, false);
+						// zoom to -32x
+						me.changeZoom(me, 0.03125, false);
 					} else {
 						// zoom to 3200%
 						me.changeZoom(me, 32, false);

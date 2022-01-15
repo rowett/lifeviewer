@@ -347,6 +347,9 @@
 		    triple = null,
 		    i = 0;
 
+		// add hex representation
+		result += "\t" + ((1 << 24) | (redValue << 16) | (greenValue << 8) | blueValue).toString(16).slice(-6).toUpperCase();
+
 		// search the object for a key matching the r, g, b
 		while (i < keys.length && !found) {
 			// get the value at the key
@@ -734,12 +737,12 @@
 		y = this.renderHelpLine(view, "8", "8x zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "6", "16x zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "3", "32x zoom", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Shift 3", "64x zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift 1", "integer zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift 2", "-2x zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift 4", "-4x zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift 8", "-8x zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift 6", "-16x zoom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift 3", "-32x zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Left", "pan left", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Right", "pan right", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Up", "pan up", ctx, x, y, height, helpLine);
@@ -1325,6 +1328,7 @@
 
 		// information
 		view.tabs[0] = 128;
+		view.tabs[4] = 430;
 		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Information", ctx, x, y, height, helpLine);
@@ -2328,6 +2332,7 @@
 		view.tabs[1] = 200;
 		view.tabs[2] = 250;
 		view.tabs[3] = 300;
+		view.tabs[4] = 380;
 		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Themes", ctx, x, y, height, helpLine);
@@ -2464,8 +2469,9 @@
 		view.tabs[0] = 260;
 		view.tabs[1] = 330;
 		view.tabs[2] = 380;
+		view.tabs[3] = 430;
 		// hide the colour name from renderColourBox off the display since the name is already drawn
-		view.tabs[3] = view.displayWidth;
+		view.tabs[4] = view.displayWidth;
 		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Colours", ctx, x, y, height, helpLine);

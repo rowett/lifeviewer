@@ -200,15 +200,15 @@
 		// add 2-state totalistic Triangular aliases
 		s.push("OT Tri");
 		a.push(["Outer-Totalistic Triangular", ""]);
-		a.push(["Rule 1246", "B456/S12L"]);
 		a.push(["Life 2333", "B3/S23L"]);
 		a.push(["Life 2345", "B45/S23L"]);
 		a.push(["Life 2346", "B456/S23L"]);
 		a.push(["Life 3445", "B45/S34L"]);
 		a.push(["Life 3446", "B456/S34L"]);
-		a.push(["Rule 3544", "B4/S345L"]);
 		a.push(["Life 4546", "B456/S45L"]);
 		a.push(["Life 4644", "B4/S456L"]);
+		a.push(["Rule 1246", "B456/S12L"]);
+		a.push(["Rule 3544", "B4/S345L"]);
 
 		// add outer-totalistic Moore Generations aliases
 		s.push("OT M G");

@@ -5242,23 +5242,25 @@
 			}
 
 			// set angle
-			if (currentWaypoint.angleDefined) {
-				view.engine.angle = currentWaypoint.angle;
-			}
+			if (!(view.engine.isTriangular || view.engine.isHex || view.engine.isNone)) {
+				if (currentWaypoint.angleDefined) {
+					view.engine.angle = currentWaypoint.angle;
+				}
 
-			// set tilt
-			if (currentWaypoint.tiltDefined) {
-				view.engine.tilt = currentWaypoint.tilt;
-			}
-
-			// set depth
-			if (currentWaypoint.depthDefined) {
-				view.engine.layerDepth = (currentWaypoint.depth / ViewConstants.depthScale) + ViewConstants.minDepth;
-			}
-
-			// set layers
-			if (currentWaypoint.layersDefined) {
-				view.engine.layers = currentWaypoint.layers;
+				// set tilt
+				if (currentWaypoint.tiltDefined) {
+					view.engine.tilt = currentWaypoint.tilt;
+				}
+	
+				// set depth
+				if (currentWaypoint.depthDefined) {
+					view.engine.layerDepth = (currentWaypoint.depth / ViewConstants.depthScale) + ViewConstants.minDepth;
+				}
+	
+				// set layers
+				if (currentWaypoint.layersDefined) {
+					view.engine.layers = currentWaypoint.layers;
+				}
 			}
 
 			// set theme

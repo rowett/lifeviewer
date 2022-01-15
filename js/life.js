@@ -364,6 +364,9 @@
 		// pattern manager
 		this.manager = manager;
 
+		// whether last zoom was < 1/16x
+		this.lastZoom16 = true;
+
 		// allocator
 		this.allocator = new Allocator();
 
@@ -5156,6 +5159,7 @@
 				// check for reverse direction
 				this.checkReverse(view, this.counter);
 				this.nextGeneration(false, true, graphDisabled, view.identify, view);
+				view.fixedPointCounter += view.refreshRate;
 				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
 					this.convertToPensTile();
 				}
@@ -5167,9 +5171,11 @@
 					this.nextGeneration(false, false, graphDisabled, view.identify, view);
 					this.anythingAlive = 0;
 					this.counter -= 1;
+					view.fixedPointCounter -= view.refreshRate;
 				}
 			} else {
 				this.counter += 1;
+				view.fixedPointCounter += view.refreshRate;
 				this.convertToPensTile();
 			}
 			view.pasteRLEList();
@@ -5180,6 +5186,7 @@
 			if (this.anythingAlive) {
 				this.checkReverse(view, this.counter);
 				this.nextGeneration(statsOn, true, graphDisabled, view.identify, view);
+				view.fixedPointCounter += view.refreshRate;
 				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
 					this.convertToPensTile();
 				}
@@ -5191,9 +5198,11 @@
 					this.nextGeneration(false, false, graphDisabled, view.identify, view);
 					this.anythingAlive = 0;
 					this.counter -= 1;
+					view.fixedPointCounter -= view.refreshRate;
 				}
 			} else {
 				this.counter += 1;
+				view.fixedPointCounter += view.refreshRate;
 				this.convertToPensTile();
 			}
 			view.pasteRLEList();
@@ -18642,6 +18651,271 @@
 		}
 	};
 
+
+	// create 16x16 colour grid with no history for zoom < 0.0625
+	Life.prototype.create32x32ColourGridNoHistory32 = function(colourGrid, smallColourGrid) {
+		var cr = 0,
+		    dr = 0,
+		    sourceRow = null,
+		    destRow = null,
+		    colourTileHistoryGrid = this.colourTileHistoryGrid,
+		    colourTileHistoryRow1 = null,
+		    colourTileHistoryRow2 = null,
+		    th = 0, tw = 0, b = 0,
+		    y = 0,
+		    bottomY = 0,
+		    topY = 0,
+		    leftX = 0,
+		    tiles = 0,
+		    value = 0,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (in 16bit chunks)
+		    xSize = this.tileX >> 1,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+		    tileCols16 = this.tileCols >> 4;
+
+		// set the initial tile row
+		bottomY = 0;
+		topY = bottomY + ySize + ySize;
+
+		// scan each row pair of tiles
+		for (th = 0; th < tileRows; th += 2) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			colourTileHistoryRow1 = colourTileHistoryGrid[th];
+			colourTileHistoryRow2 = colourTileHistoryGrid[th + 1];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = colourTileHistoryRow1[tw] | colourTileHistoryRow2[tw];
+
+				// check if any are occupied
+				if (tiles !== 0) {
+					// compute next colour for each tile in the set
+					for (b = (1 << 15) | (1 << 14); b > 0; b >>= 2) {
+						// check if this tile is occupied
+						if ((tiles & b) !== 0) {
+							// get the destination row
+							dr = (leftX << 4);
+							destRow = smallColourGrid[bottomY];
+
+							// process each row
+							cr = (leftX << 2);
+							y = bottomY;
+							value = 0;
+							while (y < topY && value === 0) {
+								sourceRow = colourGrid[y];
+								value |= sourceRow[cr] | sourceRow[cr + 1] | sourceRow[cr + 2] | sourceRow[cr + 3]
+									| sourceRow[cr + 4] | sourceRow[cr +5] | sourceRow[cr + 6] | sourceRow[cr + 7];
+								y += 1;
+							}
+
+							// output the cell
+							// @ts-ignore
+							destRow[dr] = (value > 0) << 6;
+						}
+
+						// next tile columns
+						leftX += xSize + xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+			}
+
+			// next tile row
+			bottomY += ySize + ySize;
+			topY += ySize + ySize;
+		}
+	};
+
+	// create 16x16 colour grid for zoom < 0.0625
+	Life.prototype.create32x32ColourGrid32 = function(colourGrid, smallColourGrid) {
+		var cr = 0,
+		    dr = 0,
+		    sourceRow = null,
+		    destRow = null,
+		    colourTileHistoryGrid = this.colourTileHistoryGrid,
+		    colourTileHistoryRow1 = null,
+		    colourTileHistoryRow2 = null,
+		    value = 0, th = 0, tw = 0, b = 0, h = 0,
+		    bottomY = 0, leftX = 0, topY = 0,
+		    tiles = 0,
+		    smallValue = 0,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (in 16bit chunks)
+		    xSize = this.tileX >> 1,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+		    tileCols16 = this.tileCols >> 4;
+
+		// set the initial two tile rows
+		bottomY = 0;
+		topY = bottomY + ySize + ySize;
+
+		// scan each row pair of tiles
+		for (th = 0; th < tileRows; th += 2) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			colourTileHistoryRow1 = colourTileHistoryGrid[th];
+			colourTileHistoryRow2 = colourTileHistoryGrid[th + 1];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next two tile groups (16 tiles each)
+				tiles = colourTileHistoryRow1[tw] | colourTileHistoryRow2[tw];
+
+				// check if any are occupied
+				if (tiles !== 0) {
+					// compute next colour for each tile in the set
+					for (b = (1 << 15) | (1 << 14); b > 0; b >>= 2) {
+						// check if this tile is occupied
+						if ((tiles & b) !== 0) {
+							// update the small colour grid
+							smallValue = 0;
+							for (h = bottomY; h < topY; h += 1) {
+								// get the next row
+								sourceRow = colourGrid[h];
+								cr = (leftX << 2);
+
+								// get the maximum of 32 cells
+								value = sourceRow[cr];
+								if (value) {
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								}
+
+								value = sourceRow[cr + 1];
+								if (value) {
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								}
+
+								value = sourceRow[cr + 2];
+								if (value) {
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								}
+
+								value = sourceRow[cr + 3];
+								if (value) {
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								}
+
+								value = sourceRow[cr + 4];
+								if (value) {
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								}
+
+								value = sourceRow[cr + 5];
+								if (value) {
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								}
+
+								value = sourceRow[cr + 6];
+								if (value) {
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								}
+
+								value = sourceRow[cr + 7];
+								if (value) {
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+									value >>= 8;
+									smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								}
+							}
+
+							// get the destination row
+							destRow = smallColourGrid[bottomY];
+							dr = (leftX << 4);
+							destRow[dr] = smallValue;
+						}
+
+						// next tile columns
+						leftX += xSize + xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+			}
+
+			// next tile row pair
+			bottomY += ySize + ySize;
+			topY += ySize + ySize;
+		}
+	};
+
+	// clear the small colour grid if last zoom < 1/16x
+	Life.prototype.clearSmallColourGridOnZoom = function() {
+		if (this.lastZoom16) {
+			this.lastZoom16 = false;
+			this.smallColourGrid.whole.fill(0);
+		}
+	};
+
 	// create the small colour grids based on zoom level
 	Life.prototype.createSmallColourGrids = function(colourGrid16, colourGrid32) {
 		var camZoom = this.camZoom;
@@ -18649,6 +18923,8 @@
 		// check if 0.5 <= zoom < 1
 		if (camZoom >= 0.5 && camZoom < 1) {
 			// create 2x2 colour grid
+			this.clearSmallColourGridOnZoom();
+
 			if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
 				this.create2x2ColourGrid16(colourGrid16, this.smallColourGrid);
 			} else {
@@ -18658,6 +18934,8 @@
 			// check if 0.25 <= zoom < 0.5
 			if (camZoom >= 0.25 && camZoom < 0.5) {
 				// create 4x4 colour grid
+				this.clearSmallColourGridOnZoom();
+
 				if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
 					this.create4x4ColourGrid32(colourGrid32, this.smallColourGrid);
 				} else {
@@ -18667,19 +18945,31 @@
 				// check if 0.125 <= zoom < 0.25
 				if (camZoom >= 0.125 && camZoom < 0.25) {
 					// create 8x8 colour grid
+					this.clearSmallColourGridOnZoom();
+
 					if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
 						this.create8x8ColourGrid32(colourGrid32, this.smallColourGrid);
 					} else {
 						this.create8x8ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
 					}
 				} else {
-					// check if zoom < 0.125
-					if (camZoom < 0.125) {
+					// check if 0.0625 <= zoom < 0.125
+					if (camZoom >= 0.0625 && camZoom < 0.125) {
 						// create 16x16 colour grid
+						this.clearSmallColourGridOnZoom();
+
 						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
 							this.create16x16ColourGrid32(colourGrid32, this.smallColourGrid);
 						} else {
 							this.create16x16ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
+						}
+					} else {
+						// zoom < 0.0625
+						this.lastZoom16 = true;
+						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
+							this.create32x32ColourGrid32(colourGrid32, this.smallColourGrid);
+						} else {
+							this.create32x32ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
 						}
 					}
 				}
@@ -18703,10 +18993,13 @@
 						// create 8x8 colour grid
 						this.create8x8ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
 					} else {
-						// check if zoom < 0.125
-						if (camZoom < 0.125) {
+						// check if 0.0625 <= zoom < 0.125
+						if (camZoom >= 0.0625 && camZoom < 0.125) {
 							// create 16x16 colour grid
 							this.create16x16ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
+						} else {
+							// createa 32x32 colour grid
+							this.create32x32ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
 						}
 					}
 				}
@@ -31675,57 +31968,69 @@
 				this.createSmallColourGrids(colourGrid16, colourGrid32);
 			}
 
-			// check if zoom < 0.125x
-			if (this.camZoom < 0.125) {
+			// check if zoom < 0.0625x
+			if (this.camZoom < 0.0625) {
 				// check for LifeHistory overlay
 				if (this.drawOverlay) {
 					// render the grid with the overlay on top
-					this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 15, drawingSnow, drawingStars);
+					this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 31, drawingSnow, drawingStars);
 				} else {
-					// render using small colour grid 16x16
-					this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 15, drawingSnow, drawingStars);
+					// render using small colour grid 32x32
+					this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 31, drawingSnow, drawingStars);
 				}
 			} else {
-				// check if zoom < 0.25x
-				if (this.camZoom < 0.25) {
+				// check if zoom < 0.125x
+				if (this.camZoom < 0.125) {
 					// check for LifeHistory overlay
 					if (this.drawOverlay) {
 						// render the grid with the overlay on top
-						this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 7, drawingSnow, drawingStars);
+						this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 15, drawingSnow, drawingStars);
 					} else {
-						// render using small colour grid 8x8
-						this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 7, drawingSnow, drawingStars);
+						// render using small colour grid 16x16
+						this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 15, drawingSnow, drawingStars);
 					}
 				} else {
-					// check if zoom < 0.5x
-					if (this.camZoom < 0.5) {
+					// check if zoom < 0.25x
+					if (this.camZoom < 0.25) {
 						// check for LifeHistory overlay
 						if (this.drawOverlay) {
 							// render the grid with the overlay on top
-							this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 3, drawingSnow, drawingStars);
+							this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 7, drawingSnow, drawingStars);
 						} else {
-							// render using small colour grid 4x4
-							this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 3, drawingSnow, drawingStars);
+							// render using small colour grid 8x8
+							this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 7, drawingSnow, drawingStars);
 						}
 					} else {
-						// check for zoom < 1x
-						if (this.camZoom < 1) {
+						// check if zoom < 0.5x
+						if (this.camZoom < 0.5) {
 							// check for LifeHistory overlay
 							if (this.drawOverlay) {
 								// render the grid with the overlay on top
-								this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 1, drawingSnow, drawingStars);
+								this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 3, drawingSnow, drawingStars);
 							} else {
-								// render using small colour grid 2x2
-								this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 1, drawingSnow, drawingStars);
+								// render using small colour grid 4x4
+								this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 3, drawingSnow, drawingStars);
 							}
 						} else {
-							// check for LifeHistory overlay
-							if (this.drawOverlay) {
-								// render the grid with the overlay on top
-								this.renderGridOverlayProjection(this.overlayGrid, colourGrid, 0, drawingSnow, drawingStars);
+							// check for zoom < 1x
+							if (this.camZoom < 1) {
+								// check for LifeHistory overlay
+								if (this.drawOverlay) {
+									// render the grid with the overlay on top
+									this.renderGridOverlayProjection(this.smallOverlayGrid, this.smallColourGrid, 1, drawingSnow, drawingStars);
+								} else {
+									// render using small colour grid 2x2
+									this.renderGridProjection(this.smallColourGrid, this.smallColourGrid, 1, drawingSnow, drawingStars);
+								}
 							} else {
-								// render the grid
-								this.renderGridProjection(colourGrid, colourGrid, 0, drawingSnow, drawingStars);
+								// check for LifeHistory overlay
+								if (this.drawOverlay) {
+									// render the grid with the overlay on top
+									this.renderGridOverlayProjection(this.overlayGrid, colourGrid, 0, drawingSnow, drawingStars);
+								} else {
+									// render the grid
+									this.renderGridProjection(colourGrid, colourGrid, 0, drawingSnow, drawingStars);
+								}
 							}
 						}
 					}

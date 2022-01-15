@@ -1,3 +1,20 @@
+Build 690
+- added a small dead zone in the speed slider to make it easier to select 1x speed
+	- you can also set 1x by clicking the button to the left of the slider
+- fixed CellBorders UI control not being set when CELLBORDERS script command specified
+- added Hex RGB values to Help
+
+Build 689
+- you can now zoom out to -32x
+	- hotkey Shift-3 now sets zoom to -32x
+
+Build 688
+- fix Tilt issue during frame rate measurement
+- prevent script commands from altering camera controls not supported by the current rule
+- align "Empty Pattern" messages
+- step forward after step back was being ignored for the first step
+- sort outer-totalistic Triangular aliases alphabetically
+
 Build 687
 - only show Age states in Help for rules that have them
 - restore Hex grid support for LtL rules
