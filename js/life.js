@@ -646,9 +646,6 @@
 		// track box bounding box
 		this.trackBox = null;
 
-		// program title
-		/** @const {string} */ this.title = "LifeViewer";
-
 		// width of life grid in pixels
 		/** @type {number} */ this.width = gridWidth;
 
@@ -4831,12 +4828,21 @@
 	Life.prototype.getState2 = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
 		// result
 		var /** @type {number} */ result = 0,
-		    /** @type {number} */ col = 0;
+		    /** @type {number} */ col = 0,
+		    colourGrid = this.colourGrid;
 
 		// check if coordinates are on the grid
 		if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
+			// check which grid is needed
+			if (this.isRuleTree) {
+				// swap grids every generation
+				if ((this.counter & 1) !== 0) {
+					colourGrid = this.nextColourGrid;
+				}
+			}
+
 			// get the colour grid result
-			col = this.colourGrid[y][x];
+			col = colourGrid[y][x];
 			if (rawRequested) {
 				result = col;
 			} else {

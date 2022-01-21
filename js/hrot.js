@@ -150,20 +150,6 @@
 			this.widths[i] = range;
 			break;
 
-			// triangular
-			case this.manager.triangularHROT:
-			w = range * 2;
-			for (i = -1; i >= -range; i -= 1) {
-				this.widths[i + range] = w;
-				w -= 1;
-			}
-			w = range * 2;
-			for (i = 0; i <= range; i += 1) {
-				this.widths[i + range] = w;
-				w -= 1;
-			}
-			break;
-
 			// circular is a circle
 			case this.manager.circularHROT:
 			for (i = -range; i <= range; i += 1) {
@@ -1935,18 +1921,127 @@
 						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
 							countRow = counts[y];
 							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = -yrange; j <= yrange; j += 1) {
-									if (((x + y) & 1) === 0) {
-										width = widths[j + yrange];
-									} else {
-										width = widths[yrange - j];
-									}
+							
+							// for the first cell compute the whole neighbourhood
+							count = 0;
+							k = (x + y) & 1;
+							if (k === 0) {
+								width = yrange + 1;
+								for (j = -yrange; j < 0; j += 1) {
 									colourRow = colourGrid[y + j];
+									widths[j + yrange] = width;
 									for (i = -width; i <= width; i += 1) {
 										if (colourRow[x + i] >= aliveStart) {
 											count += 1;
+										}
+									}
+									width += 1;
+								}
+								for (j = 0; j <= yrange; j += 1) {
+									width -= 1;
+									colourRow = colourGrid[y + j];
+									widths[j + yrange] = width;
+									for (i = -width; i <= width; i += 1) {
+										if (colourRow[x + i] >= aliveStart) {
+											count += 1;
+										}
+									}
+								}
+							} else {
+								width = yrange;
+								for (j = -yrange; j <= 0; j += 1) {
+									colourRow = colourGrid[y + j];
+									widths[j + yrange] = width;
+									for (i = -width; i <= width; i += 1) {
+										if (colourRow[x + i] >= aliveStart) {
+											count += 1;
+										}
+									}
+									width += 1;
+								}
+								for (j = 1; j <= yrange; j += 1) {
+									width -= 1;
+									colourRow = colourGrid[y + j];
+									widths[j + yrange] = width;
+									for (i = -width; i <= width; i += 1) {
+										if (colourRow[x + i] >= aliveStart) {
+											count += 1;
+										}
+									}
+								}
+							}
+							countRow[x] = count;
+
+							// for the remaining cells compute the edge differences
+							x += 1;
+							while (x <= rightX + xrange) {
+								k = (x + y) & 1;
+								if (k === 0) {
+									width = yrange + 1;
+									for (j = -yrange; j < 0; j += 1) {
+										colourRow = colourGrid[y + j];
+										l = widths[j + yrange];
+										widths[j + yrange] = width;
+										for (i = -l - 1; i < -width; i += 1) {
+											if (colourRow[x + i] >= aliveStart) {
+												count -= 1;
+											}
+										}
+										for (i = l; i <= width; i += 1) {
+											if (colourRow[x + i] >= aliveStart) {
+												count += 1;
+											}
+										}
+										width += 1;
+									}
+									for (j = 0; j <= yrange; j += 1) {
+										width -= 1;
+										colourRow = colourGrid[y + j];
+										l = widths[j + yrange];
+										widths[j + yrange] = width;
+										for (i = -l - 1; i < -width; i += 1) {
+											if (colourRow[x + i] >= aliveStart) {
+												count -= 1;
+											}
+										}
+										for (i = l; i <= width; i += 1) {
+											if (colourRow[x + i] >= aliveStart) {
+												count += 1;
+											}
+										}
+									}
+								} else {
+									width = yrange;
+									for (j = -yrange; j <= 0; j += 1) {
+										colourRow = colourGrid[y + j];
+										l = widths[j + yrange];
+										widths[j + yrange] = width;
+										for (i = -l - 1; i < -width; i += 1) {
+											if (colourRow[x + i] >= aliveStart) {
+												count -= 1;
+											}
+										}
+										for (i = l; i <= width; i += 1) {
+											if (colourRow[x + i] >= aliveStart) {
+												count += 1;
+											}
+										}
+										width += 1;
+									}
+									for (j = 1; j <= yrange; j += 1) {
+										width -= 1;
+										colourRow = colourGrid[y + j];
+										l = widths[j + yrange];
+										widths[j + yrange] = width;
+										for (i = -l - 1; i < -width; i += 1) {
+											if (colourRow[x + i] >= aliveStart) {
+												count -= 1;
+											}
+										}
+										for (i = l; i <= width; i += 1) {
+											if (colourRow[x + i] >= aliveStart) {
+												count += 1;
+											}
 										}
 									}
 								}
@@ -3155,18 +3250,127 @@
 						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
 							countRow = counts[y];
 							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = -yrange; j <= yrange; j += 1) {
-									if (((x + y) & 1) === 0) {
-										width = widths[j + yrange];
-									} else {
-										width = widths[yrange - j];
-									}
+							
+							// for the first cell compute the whole neighbourhood
+							count = 0;
+							k = (x + y) & 1;
+							if (k === 0) {
+								width = yrange + 1;
+								for (j = -yrange; j < 0; j += 1) {
 									colourRow = colourGrid[y + j];
+									widths[j + yrange] = width;
 									for (i = -width; i <= width; i += 1) {
 										if (colourRow[x + i] === maxGenState) {
 											count += 1;
+										}
+									}
+									width += 1;
+								}
+								for (j = 0; j <= yrange; j += 1) {
+									width -= 1;
+									colourRow = colourGrid[y + j];
+									widths[j + yrange] = width;
+									for (i = -width; i <= width; i += 1) {
+										if (colourRow[x + i] === maxGenState) {
+											count += 1;
+										}
+									}
+								}
+							} else {
+								width = yrange;
+								for (j = -yrange; j <= 0; j += 1) {
+									colourRow = colourGrid[y + j];
+									widths[j + yrange] = width;
+									for (i = -width; i <= width; i += 1) {
+										if (colourRow[x + i] === maxGenState) {
+											count += 1;
+										}
+									}
+									width += 1;
+								}
+								for (j = 1; j <= yrange; j += 1) {
+									width -= 1;
+									colourRow = colourGrid[y + j];
+									widths[j + yrange] = width;
+									for (i = -width; i <= width; i += 1) {
+										if (colourRow[x + i] === maxGenState) {
+											count += 1;
+										}
+									}
+								}
+							}
+							countRow[x] = count;
+
+							// for the remaining cells compute the edge differences
+							x += 1;
+							while (x <= rightX + xrange) {
+								k = (x + y) & 1;
+								if (k === 0) {
+									width = yrange + 1;
+									for (j = -yrange; j < 0; j += 1) {
+										colourRow = colourGrid[y + j];
+										l = widths[j + yrange];
+										widths[j + yrange] = width;
+										for (i = -l - 1; i < -width; i += 1) {
+											if (colourRow[x + i] === maxGenState) {
+												count -= 1;
+											}
+										}
+										for (i = l; i <= width; i += 1) {
+											if (colourRow[x + i] === maxGenState) {
+												count += 1;
+											}
+										}
+										width += 1;
+									}
+									for (j = 0; j <= yrange; j += 1) {
+										width -= 1;
+										colourRow = colourGrid[y + j];
+										l = widths[j + yrange];
+										widths[j + yrange] = width;
+										for (i = -l - 1; i < -width; i += 1) {
+											if (colourRow[x + i] === maxGenState) {
+												count -= 1;
+											}
+										}
+										for (i = l; i <= width; i += 1) {
+											if (colourRow[x + i] === maxGenState) {
+												count += 1;
+											}
+										}
+									}
+								} else {
+									width = yrange;
+									for (j = -yrange; j <= 0; j += 1) {
+										colourRow = colourGrid[y + j];
+										l = widths[j + yrange];
+										widths[j + yrange] = width;
+										for (i = -l - 1; i < -width; i += 1) {
+											if (colourRow[x + i] === maxGenState) {
+												count -= 1;
+											}
+										}
+										for (i = l; i <= width; i += 1) {
+											if (colourRow[x + i] === maxGenState) {
+												count += 1;
+											}
+										}
+										width += 1;
+									}
+									for (j = 1; j <= yrange; j += 1) {
+										width -= 1;
+										colourRow = colourGrid[y + j];
+										l = widths[j + yrange];
+										widths[j + yrange] = width;
+										for (i = -l - 1; i < -width; i += 1) {
+											if (colourRow[x + i] === maxGenState) {
+												count -= 1;
+											}
+										}
+										for (i = l; i <= width; i += 1) {
+											if (colourRow[x + i] === maxGenState) {
+												count += 1;
+											}
 										}
 									}
 								}

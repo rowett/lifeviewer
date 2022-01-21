@@ -296,11 +296,8 @@
 		// screenshot window
 		/** @const {string} */ screenShotTitle : "LifeViewer Image",
 
-		// name
-		/** @const {string} */ versionName : "LifeViewer",
-
 		// build version
-		/** @const {number} */ versionBuild : 690,
+		/** @const {number} */ versionBuild : 693,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3721,7 +3718,14 @@
 		if (change) {
 			me.startState = ((me.engine.multiNumStates - me.maxDisplayStates) * newValue[0]) | 0;
 		}
-		result[1] = me.startState + "-" + (me.startState + me.maxDisplayStates - 1);
+		result[1] = "";
+		if (me.startState > 0) {
+			result[1] = "<";
+		}
+		result[1] += me.startState + "-" + (me.startState + me.maxDisplayStates - 1);
+		if (me.startState + me.maxDisplayStates < me.engine.multiNumStates) {
+			result[1] += ">";
+		}
 
 		return result;
 	};
@@ -14616,7 +14620,7 @@
 		this.statesSpacer.border = 0;
 
 		// add slider for states
-		this.statesSlider = this.viewMenu.addRangeItem(this.viewStatesRange, Menu.northWest, 180, 45, 100, 40, 0, 1, 0, true, "", "", -1);
+		this.statesSlider = this.viewMenu.addRangeItem(this.viewStatesRange, Menu.northWest, 180, 45, 130, 40, 0, 1, 0, true, "", "", -1);
 		this.statesSlider.toolTip = "select drawing states range";
 
 		// select all button
@@ -17094,7 +17098,7 @@
 			// set the title
 			if (me.titleElement) {
 				if (me.windowTitle === "") {
-					me.titleElement.nodeValue = "LifeViewer";
+					me.titleElement.nodeValue = ViewConstants.externalViewerTitle;
 				} else {
 					me.titleElement.nodeValue = me.fitTitle(me.windowTitle);
 				}
@@ -17537,7 +17541,7 @@
 			centerDivItem.style.fontFamily = "Arial, Verdana, Helvetica, sans-serif";
 			centerDivItem.style.fontSize = itemFontSize + "px";
 			centerDivItem.style.height = itemHeight + "px";
-			windowTitleItem = document.createTextNode("LifeViewer");
+			windowTitleItem = document.createTextNode(ViewConstants.externalViewerTitle);
 			centerDivItem.style.cursor = "default";
 			centerDivItem.appendChild(windowTitleItem);
 
@@ -17649,6 +17653,46 @@
 		}
 	}
 
+	// callback for show pattern error link
+	function patternErrorCallback(event, message) {
+		// stop event propagating
+		if (event.stopPropagation) {
+			event.stopPropagation();
+		}
+		event.preventDefault();
+
+		alert(message);
+		return false;
+	}
+
+	// create error
+	function createError(rleItem, textItem, message) {
+		// add the show in viewer anchor
+		var anchorItem = rleItem.getElementsByTagName("a")[0],
+			newAnchor = document.createElement("a"),
+			nodeItem = null;
+
+		// create new anchor
+		newAnchor.setAttribute("href", "#");
+		newAnchor.innerHTML = "Show Pattern Error";
+
+		// set the onclick
+		registerEvent(newAnchor, "click", function(event) {patternErrorCallback(event, message);}, false);
+
+		// check if there was an anchor
+		if (anchorItem) {
+			// create a text divider
+			nodeItem = document.createTextNode(" / ");
+
+			// add to the parent
+			anchorItem.parentNode.appendChild(nodeItem);
+			anchorItem.parentNode.appendChild(newAnchor);
+		} else {
+			// add to the parent
+			textItem.parentNode.appendChild(newAnchor);
+		}
+	}
+
 	// complete isPattern check
 	function completeIsPattern(pattern, args) {
 		// unpack arguments
@@ -17669,12 +17713,26 @@
 		}
 	}
 
+	// complete isPattern check after load failure
+	function completeIsPatternFailed(pattern, args) {
+		// unpack arguments
+		var patternString = args[0],
+			rleItem = args[1],
+			textItem = args[2];
+
+		if (pattern) {
+			if (rleItem !== null) {
+				createError(rleItem, textItem, pattern.ruleName + " - " + pattern.originalFailure);
+			}
+		}
+	}
+
 	// check if a string is a valid pattern
 	function isPattern(patternString, allocator, manager, rleItem, textItem) {
 		var pattern = null;
 
 		// attempt to create a pattern
-		pattern = manager.create("", patternString, allocator, completeIsPattern, null, [patternString, rleItem, textItem], false, null);
+		pattern = manager.create("", patternString, allocator, completeIsPattern, completeIsPatternFailed, [patternString, rleItem, textItem], false, null);
 		if (!manager.loadingFromRepository) {
 			completeIsPattern(pattern, [patternString, rleItem, textItem]);
 		}

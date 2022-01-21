@@ -710,6 +710,9 @@
 		// manager
 		this.manager = manager;
 
+		// original failure reason before repository lookup
+		this.originalFailure = "";
+
 		// remove extension from name if present
 		var i = name.lastIndexOf(".");
 		if (i !== -1) {
@@ -8996,6 +8999,7 @@
 
 			// check if a pattern was loaded
 			if (this.failureReason !== "" && !this.tooBig && !this.illegalState) {
+				newPattern.originalFailure = this.failureReason;
 				newPattern.ruleName = newPattern.originalRuleName;
 				if (newPattern.gridType !== -1) {
 					index = newPattern.ruleName.lastIndexOf(":");

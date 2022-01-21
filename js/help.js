@@ -527,7 +527,7 @@
 		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
 
-		y = this.renderHelpLine(view, "", ViewConstants.versionName + " build " + ViewConstants.versionBuild + " by " + ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", ViewConstants.externalViewerTitle + " build " + ViewConstants.versionBuild + " by " + ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
 	};
 
 	// render annotations topic
@@ -1863,7 +1863,7 @@
 		view.helpSections[sectionNum] = [view.lineNo, "Engine"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Engine:", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Name", ViewConstants.versionName, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Name", ViewConstants.externalViewerTitle, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Build", ViewConstants.versionBuild, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Author", ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Decoders", "RLE, Life 1.06, Life 1.05, Cells", ctx, x, y, height, helpLine);
@@ -2098,16 +2098,22 @@
 		this.renderColourBox(view, view.customBoundaryColour[0], view.customBoundaryColour[1], view.customBoundaryColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Boundary", this.rgbString(view.customBoundaryColour[0], view.customBoundaryColour[1], view.customBoundaryColour[2]), ctx, x, y, height, helpLine);
 
-		// display custom text colour if defined
+		// display text colour
 		if (view.customTextColour) {
 			this.renderColourBox(view, view.customTextColour[0], view.customTextColour[1], view.customTextColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "Text", this.rgbString(view.customTextColour[0], view.customTextColour[1], view.customTextColour[2]), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Text*", this.rgbString(view.customTextColour[0], view.customTextColour[1], view.customTextColour[2]), ctx, x, y, height, helpLine);
+		} else {
+			this.renderColourBox(view, 255, 255, 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "Text", this.rgbString(255, 255, 255), ctx, x, y, height, helpLine);
 		}
 
-		// display custom text colour if defined
+		// display error text colour
 		if (view.customErrorColour) {
 			this.renderColourBox(view, view.customErrorColour[0], view.customErrorColour[1], view.customErrorColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "Error", this.rgbString(view.customErrorColour[0], view.customErrorColour[1], view.customErrorColour[2]), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Error*", this.rgbString(view.customErrorColour[0], view.customErrorColour[1], view.customErrorColour[2]), ctx, x, y, height, helpLine);
+		} else {
+			this.renderColourBox(view, 255, 96, 96, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "Error", this.rgbString(255, 96, 96), ctx, x, y, height, helpLine);
 		}
 
 		// select, paste and advance colours

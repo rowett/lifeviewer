@@ -1,3 +1,14 @@
+Build 693
+- added "Text" and "Error" colours to Help->Info->Theme when not customized
+- improved performance for HROT Triangular rules
+
+Build 692
+- when a pattern fails to decode add a "Show Pattern Error" link which pops up the error details when clicked
+
+Build 691
+- show in which directions there are more states on the state UI slider in Draw mode
+- fixed edit actions for 2-state RuleTable/RuleTree rules on odd generations
+
 Build 690
 - added a small dead zone in the speed slider to make it easier to select 1x speed
 	- you can also set 1x by clicking the button to the left of the slider
