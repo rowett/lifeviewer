@@ -297,7 +297,7 @@
 		/** @const {string} */ screenShotTitle : "LifeViewer Image",
 
 		// build version
-		/** @const {number} */ versionBuild : 693,
+		/** @const {number} */ versionBuild : 695,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4092,7 +4092,7 @@
 				if (me.engine.boundedGridType !== -1) {
 					borderSize += me.engine.boundedGridHeight / 2;
 				} else {
-					borderSize += (me.engine.zoomBox.topY - me.engine.zoomBox.bottomY + 1) / 2;
+					borderSize += me.engine.HROT.xrange * 2;
 				}
 			}
 			if (borderSize < ViewConstants.maxStepSpeed) {
@@ -16452,7 +16452,7 @@
 					if (me.engine.boundedGridType !== -1) {
 						borderSize += me.engine.boundedGridHeight / 2;
 					} else {
-						borderSize += (me.engine.zoomBox.topY - me.engine.zoomBox.bottomY + 1) / 2;
+						borderSize += me.engine.HROT.xrange * 2;
 					}
 				}
 				if (borderSize < ViewConstants.maxStepSpeed) {

@@ -848,6 +848,7 @@
 			/** @const {number} */ type = this.type,
 			/** @const {number} */ maxGeneration = scount - 1,
 			/** @type {number} */ count = 0,
+			/** @type {number} */ count2 = 0,
 			/** @type {number} */ minX = this.engine.width,
 			/** @type {number} */ maxX = 0,
 			/** @type {number} */ minY = this.engine.height,
@@ -1715,27 +1716,98 @@
 						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
 							countRow = counts[y];
 							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
+
+							// for the first two cells in a row count the entire neighbourhood
+							count = 0;
+							offset = 1;
+							for (j = -yrange; j <= yrange; j += 1) {
+								colourRow = colourGrid[y + j];
+								for (i = -xrange + offset; i <= xrange - offset; i += 2) {
+									if (colourRow[x + i] >= aliveStart) {
+										count += 1;
+									}
+								}
+								offset = 1 - offset;
+							}
+
+							// check for survival
+							if (colourGrid[y][x] >= aliveStart) {
+								count += 1;
+							}
+							countRow[x] = count;
+							x += 1;
+
+							// check if there are two cells in the row
+							if (x <= rightX + xrange) {
+								count2 = 0;
 								offset = 1;
 								for (j = -yrange; j <= yrange; j += 1) {
 									colourRow = colourGrid[y + j];
 									for (i = -xrange + offset; i <= xrange - offset; i += 2) {
 										if (colourRow[x + i] >= aliveStart) {
-											count += 1;
+											count2 += 1;
 										}
 									}
 									offset = 1 - offset;
 								}
+
 								// check for survival
 								if (colourGrid[y][x] >= aliveStart) {
-									count += 1;
+									count2 += 1;
 								}
-								countRow[x] = count;
+								countRow[x] = count2;
 								x += 1;
+
+								// for the remaining cell pairs on the row subtract the left and add the right cells
+								while (x <= rightX + xrange) {
+									offset = 1;
+									for (j = -yrange; j <= yrange; j += 1) {
+										colourRow = colourGrid[y + j];
+										if (colourRow[x - xrange + offset - 2] >= aliveStart) {
+											count -= 1;
+										}
+										if (colourRow[x + xrange - offset] >= aliveStart) {
+											count += 1;
+										}
+										offset = 1 - offset;
+									}
+
+									// check for survival
+									if (colourGrid[y][x - 2] >= aliveStart) {
+										count -= 1;
+									}
+									if (colourGrid[y][x] >= aliveStart) {
+										count += 1;
+									}
+									countRow[x] = count;
+									x += 1;
+
+									if (x <= rightX + xrange) {
+										offset = 1;
+										for (j = -yrange; j <= yrange; j += 1) {
+											colourRow = colourGrid[y + j];
+											if (colourRow[x - xrange + offset - 2] >= aliveStart) {
+												count2 -= 1;
+											}
+											if (colourRow[x + xrange - offset] >= aliveStart) {
+												count2 += 1;
+											}
+											offset = 1 - offset;
+										}
+
+										// check for survival
+										if (colourGrid[y][x - 2] >= aliveStart) {
+											count2 -= 1;
+										}
+										if (colourGrid[y][x] >= aliveStart) {
+											count2 += 1;
+										}
+										countRow[x] = count2;
+										x += 1;
+									}
+								}
 							}
 						}
-
 						break;
 
 					case this.manager.hexHROT:
@@ -1929,44 +2001,64 @@
 								width = yrange + 1;
 								for (j = -yrange; j < 0; j += 1) {
 									colourRow = colourGrid[y + j];
-									widths[j + yrange] = width;
-									for (i = -width; i <= width; i += 1) {
+									for (i = -width; i < width; i += 2) {
 										if (colourRow[x + i] >= aliveStart) {
 											count += 1;
 										}
+										if (colourRow[x + i + 1] >= aliveStart) {
+											count += 1;
+										}
+									}
+									if (colourRow[x + i] >= aliveStart) {
+										count += 1;
 									}
 									width += 1;
 								}
 								for (j = 0; j <= yrange; j += 1) {
 									width -= 1;
 									colourRow = colourGrid[y + j];
-									widths[j + yrange] = width;
-									for (i = -width; i <= width; i += 1) {
+									for (i = -width; i < width; i += 2) {
 										if (colourRow[x + i] >= aliveStart) {
 											count += 1;
 										}
+										if (colourRow[x + i + 1] >= aliveStart) {
+											count += 1;
+										}
+									}
+									if (colourRow[x + i] >= aliveStart) {
+										count += 1;
 									}
 								}
 							} else {
 								width = yrange;
 								for (j = -yrange; j <= 0; j += 1) {
 									colourRow = colourGrid[y + j];
-									widths[j + yrange] = width;
-									for (i = -width; i <= width; i += 1) {
+									for (i = -width; i < width; i += 2) {
 										if (colourRow[x + i] >= aliveStart) {
 											count += 1;
 										}
+										if (colourRow[x + i + 1] >= aliveStart) {
+											count += 1;
+										}
+									}
+									if (colourRow[x + i] >= aliveStart) {
+										count += 1;
 									}
 									width += 1;
 								}
 								for (j = 1; j <= yrange; j += 1) {
 									width -= 1;
 									colourRow = colourGrid[y + j];
-									widths[j + yrange] = width;
-									for (i = -width; i <= width; i += 1) {
+									for (i = -width; i < width; i += 2) {
 										if (colourRow[x + i] >= aliveStart) {
 											count += 1;
 										}
+										if (colourRow[x + i + 1] >= aliveStart) {
+											count += 1;
+										}
+									}
+									if (colourRow[x + i] >= aliveStart) {
+										count += 1;
 									}
 								}
 							}
@@ -1978,70 +2070,76 @@
 								k = (x + y) & 1;
 								if (k === 0) {
 									width = yrange + 1;
+									l = yrange;
 									for (j = -yrange; j < 0; j += 1) {
 										colourRow = colourGrid[y + j];
-										l = widths[j + yrange];
-										widths[j + yrange] = width;
-										for (i = -l - 1; i < -width; i += 1) {
-											if (colourRow[x + i] >= aliveStart) {
-												count -= 1;
-											}
+										if (colourRow[x + l] >= aliveStart) {
+											count += 1;
 										}
-										for (i = l; i <= width; i += 1) {
-											if (colourRow[x + i] >= aliveStart) {
-												count += 1;
-											}
+										l += 1;
+										if (colourRow[x + l] >= aliveStart) {
+											count += 1;
 										}
 										width += 1;
 									}
-									for (j = 0; j <= yrange; j += 1) {
+
+									// j === 0 case
+									width -= 1;
+									colourRow = colourGrid[y];
+									if (colourRow[x - l - 1] >= aliveStart) {
+										count -= 1;
+									}
+									if (colourRow[x + l] >= aliveStart) {
+										count += 1;
+									}
+									l += 1;
+
+									for (j = 1; j <= yrange; j += 1) {
 										width -= 1;
+										l -= 1;
 										colourRow = colourGrid[y + j];
-										l = widths[j + yrange];
-										widths[j + yrange] = width;
-										for (i = -l - 1; i < -width; i += 1) {
-											if (colourRow[x + i] >= aliveStart) {
-												count -= 1;
-											}
+										if (colourRow[x - l - 1] >= aliveStart) {
+											count -= 1;
 										}
-										for (i = l; i <= width; i += 1) {
-											if (colourRow[x + i] >= aliveStart) {
-												count += 1;
-											}
+										if (colourRow[x - l] >= aliveStart) {
+											count -= 1;
 										}
 									}
 								} else {
 									width = yrange;
-									for (j = -yrange; j <= 0; j += 1) {
+									l = yrange + 1;
+									for (j = -yrange; j < 0; j += 1) {
 										colourRow = colourGrid[y + j];
-										l = widths[j + yrange];
-										widths[j + yrange] = width;
-										for (i = -l - 1; i < -width; i += 1) {
-											if (colourRow[x + i] >= aliveStart) {
-												count -= 1;
-											}
+										if (colourRow[x - l - 1] >= aliveStart) {
+											count -= 1;
 										}
-										for (i = l; i <= width; i += 1) {
-											if (colourRow[x + i] >= aliveStart) {
-												count += 1;
-											}
+										if (colourRow[x - l] >= aliveStart) {
+											count -= 1;
 										}
 										width += 1;
+										l += 1;
 									}
+
+									// j === 0 case
+									l -= 1;
+									colourRow = colourGrid[y];
+									if (colourRow[x - l - 1] >= aliveStart) {
+										count -= 1;
+									}
+									if (colourRow[x + l] >= aliveStart) {
+										count += 1;
+									}
+									width += 1;
+
 									for (j = 1; j <= yrange; j += 1) {
 										width -= 1;
+										l -= 1;
 										colourRow = colourGrid[y + j];
-										l = widths[j + yrange];
-										widths[j + yrange] = width;
-										for (i = -l - 1; i < -width; i += 1) {
-											if (colourRow[x + i] >= aliveStart) {
-												count -= 1;
-											}
+										if (colourRow[x + l] >= aliveStart) {
+											count += 1;
 										}
-										for (i = l; i <= width; i += 1) {
-											if (colourRow[x + i] >= aliveStart) {
-												count += 1;
-											}
+										if (colourRow[x + l + 1] >= aliveStart) {
+											count += 1;
 										}
 									}
 								}
@@ -2124,10 +2222,16 @@
 							for (j = -yrange; j <= yrange; j += 1) {
 								width = widths[j + yrange];
 								colourRow = colourGrid[y + j];
-								for (i = -width; i <= width; i += 1) {
+								for (i = -width; i < width; i += 2) {
 									if (colourRow[x + i] >= aliveStart) {
 										count += 1;
 									}
+									if (colourRow[x + i + 1] >= aliveStart) {
+										count += 1;
+									}
+								}
+								if (colourRow[x + i] >= aliveStart) {
+									count += 1;
 								}
 							}
 							countRow[x] = count;
@@ -2206,6 +2310,7 @@
 			counts = this.counts,
 			/** @const {number} */ type = this.type,
 			/** @type {number} */ count = 0,
+			/** @type {number} */ count2 = 0,
 			/** @type {number} */ minX = this.engine.width,
 			/** @type {number} */ maxX = 0,
 			/** @type {number} */ minY = this.engine.height,
@@ -3046,27 +3151,100 @@
 						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
 							countRow = counts[y];
 							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
+
+							// for the first two cells in a row count the entire neighbourhood
+							count = 0;
+							offset = 1;
+							for (j = -yrange; j <= yrange; j += 1) {
+								colourRow = colourGrid[y + j];
+								for (i = -xrange + offset; i <= xrange - offset; i += 2) {
+									if (colourRow[x + i] === maxGenState) {
+										count += 1;
+									}
+								}
+								offset = 1 - offset;
+							}
+
+							// check for survival
+							if (colourGrid[y][x] === maxGenState) {
+								count += 1;
+							}
+							countRow[x] = count;
+							x += 1;
+
+							// check if there are two cells in the row
+							if (x <= rightX + xrange) {
+								count2 = 0;
 								offset = 1;
 								for (j = -yrange; j <= yrange; j += 1) {
 									colourRow = colourGrid[y + j];
 									for (i = -xrange + offset; i <= xrange - offset; i += 2) {
-										if ((colourRow[x + i]) === maxGenState) {
-											count += 1;
+										if (colourRow[x + i] === maxGenState) {
+											count2 += 1;
 										}
 									}
 									offset = 1 - offset;
 								}
+
 								// check for survival
 								if (colourGrid[y][x] === maxGenState) {
-									count += 1;
+									count2 += 1;
 								}
-								countRow[x] = count;
+								countRow[x] = count2;
 								x += 1;
+
+								// for the remaining cell pairs on the row subtract the left and add the right cells
+								while (x <= rightX + xrange) {
+									offset = 1;
+									for (j = -yrange; j <= yrange; j += 1) {
+										colourRow = colourGrid[y + j];
+										if (colourRow[x - xrange + offset - 2] === maxGenState) {
+											count -= 1;
+										}
+										if (colourRow[x + xrange - offset] === maxGenState) {
+											count += 1;
+										}
+										offset = 1 - offset;
+									}
+
+									// check for survival
+									if (colourGrid[y][x - 2] === maxGenState) {
+										count -= 1;
+									}
+									if (colourGrid[y][x] === maxGenState) {
+										count += 1;
+									}
+									countRow[x] = count;
+									x += 1;
+
+									if (x <= rightX + xrange) {
+										offset = 1;
+										for (j = -yrange; j <= yrange; j += 1) {
+											colourRow = colourGrid[y + j];
+											if (colourRow[x - xrange + offset - 2] === maxGenState) {
+												count2 -= 1;
+											}
+											if (colourRow[x + xrange - offset] === maxGenState) {
+												count2 += 1;
+											}
+											offset = 1 - offset;
+										}
+
+										// check for survival
+										if (colourGrid[y][x - 2] === maxGenState) {
+											count2 -= 1;
+										}
+										if (colourGrid[y][x] === maxGenState) {
+											count2 += 1;
+										}
+										countRow[x] = count2;
+										x += 1;
+									}
+								}
 							}
-						}	
+						}
 						break;
+
 					case this.manager.hexHROT:
 						// hex
 						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -3258,44 +3436,64 @@
 								width = yrange + 1;
 								for (j = -yrange; j < 0; j += 1) {
 									colourRow = colourGrid[y + j];
-									widths[j + yrange] = width;
-									for (i = -width; i <= width; i += 1) {
+									for (i = -width; i < width; i += 2) {
 										if (colourRow[x + i] === maxGenState) {
 											count += 1;
 										}
+										if (colourRow[x + i + 1] === maxGenState) {
+											count += 1;
+										}
+									}
+									if (colourRow[x + i] === maxGenState) {
+										count += 1;
 									}
 									width += 1;
 								}
 								for (j = 0; j <= yrange; j += 1) {
 									width -= 1;
 									colourRow = colourGrid[y + j];
-									widths[j + yrange] = width;
-									for (i = -width; i <= width; i += 1) {
+									for (i = -width; i < width; i += 2) {
 										if (colourRow[x + i] === maxGenState) {
 											count += 1;
 										}
+										if (colourRow[x + i + 1] === maxGenState) {
+											count += 1;
+										}
+									}
+									if (colourRow[x + i] === maxGenState) {
+										count += 1;
 									}
 								}
 							} else {
 								width = yrange;
 								for (j = -yrange; j <= 0; j += 1) {
 									colourRow = colourGrid[y + j];
-									widths[j + yrange] = width;
-									for (i = -width; i <= width; i += 1) {
+									for (i = -width; i < width; i += 2) {
 										if (colourRow[x + i] === maxGenState) {
 											count += 1;
 										}
+										if (colourRow[x + i + 1] === maxGenState) {
+											count += 1;
+										}
+									}
+									if (colourRow[x + i] === maxGenState) {
+										count += 1;
 									}
 									width += 1;
 								}
 								for (j = 1; j <= yrange; j += 1) {
 									width -= 1;
 									colourRow = colourGrid[y + j];
-									widths[j + yrange] = width;
-									for (i = -width; i <= width; i += 1) {
+									for (i = -width; i < width; i += 2) {
 										if (colourRow[x + i] === maxGenState) {
 											count += 1;
 										}
+										if (colourRow[x + i + 1] === maxGenState) {
+											count += 1;
+										}
+									}
+									if (colourRow[x + i] === maxGenState) {
+										count += 1;
 									}
 								}
 							}
@@ -3307,70 +3505,76 @@
 								k = (x + y) & 1;
 								if (k === 0) {
 									width = yrange + 1;
+									l = yrange;
 									for (j = -yrange; j < 0; j += 1) {
 										colourRow = colourGrid[y + j];
-										l = widths[j + yrange];
-										widths[j + yrange] = width;
-										for (i = -l - 1; i < -width; i += 1) {
-											if (colourRow[x + i] === maxGenState) {
-												count -= 1;
-											}
+										if (colourRow[x + l] === maxGenState) {
+											count += 1;
 										}
-										for (i = l; i <= width; i += 1) {
-											if (colourRow[x + i] === maxGenState) {
-												count += 1;
-											}
+										l += 1;
+										if (colourRow[x + l] === maxGenState) {
+											count += 1;
 										}
 										width += 1;
 									}
-									for (j = 0; j <= yrange; j += 1) {
+
+									// j === 0 case
+									width -= 1;
+									colourRow = colourGrid[y];
+									if (colourRow[x - l - 1] === maxGenState) {
+										count -= 1;
+									}
+									if (colourRow[x + l] === maxGenState) {
+										count += 1;
+									}
+									l += 1;
+
+									for (j = 1; j <= yrange; j += 1) {
 										width -= 1;
+										l -= 1;
 										colourRow = colourGrid[y + j];
-										l = widths[j + yrange];
-										widths[j + yrange] = width;
-										for (i = -l - 1; i < -width; i += 1) {
-											if (colourRow[x + i] === maxGenState) {
-												count -= 1;
-											}
+										if (colourRow[x - l - 1] === maxGenState) {
+											count -= 1;
 										}
-										for (i = l; i <= width; i += 1) {
-											if (colourRow[x + i] === maxGenState) {
-												count += 1;
-											}
+										if (colourRow[x - l] === maxGenState) {
+											count -= 1;
 										}
 									}
 								} else {
 									width = yrange;
-									for (j = -yrange; j <= 0; j += 1) {
+									l = yrange + 1;
+									for (j = -yrange; j < 0; j += 1) {
 										colourRow = colourGrid[y + j];
-										l = widths[j + yrange];
-										widths[j + yrange] = width;
-										for (i = -l - 1; i < -width; i += 1) {
-											if (colourRow[x + i] === maxGenState) {
-												count -= 1;
-											}
+										if (colourRow[x - l - 1] === maxGenState) {
+											count -= 1;
 										}
-										for (i = l; i <= width; i += 1) {
-											if (colourRow[x + i] === maxGenState) {
-												count += 1;
-											}
+										if (colourRow[x - l] === maxGenState) {
+											count -= 1;
 										}
 										width += 1;
+										l += 1;
 									}
+
+									// j === 0 case
+									l -= 1;
+									colourRow = colourGrid[y];
+									if (colourRow[x - l - 1] === maxGenState) {
+										count -= 1;
+									}
+									if (colourRow[x + l] === maxGenState) {
+										count += 1;
+									}
+									width += 1;
+
 									for (j = 1; j <= yrange; j += 1) {
 										width -= 1;
+										l -= 1;
 										colourRow = colourGrid[y + j];
-										l = widths[j + yrange];
-										widths[j + yrange] = width;
-										for (i = -l - 1; i < -width; i += 1) {
-											if (colourRow[x + i] === maxGenState) {
-												count -= 1;
-											}
+										if (colourRow[x + l] === maxGenState) {
+											count += 1;
 										}
-										for (i = l; i <= width; i += 1) {
-											if (colourRow[x + i] === maxGenState) {
-												count += 1;
-											}
+										if (colourRow[x + l + 1] === maxGenState) {
+											count += 1;
 										}
 									}
 								}
@@ -3452,10 +3656,16 @@
 							for (j = -yrange; j <= yrange; j += 1) {
 								width = widths[j + yrange];
 								colourRow = colourGrid[y + j];
-								for (i = -width; i <= width; i += 1) {
+								for (i = -width; i < width; i += 1) {
 									if ((colourRow[x + i]) === maxGenState) {
 										count += 1;
 									}
+									if ((colourRow[x + i + 1]) === maxGenState) {
+										count += 1;
+									}
+								}
+								if ((colourRow[x + i]) === maxGenState) {
+									count += 1;
 								}
 							}
 							countRow[x] = count;
