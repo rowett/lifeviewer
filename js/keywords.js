@@ -22,6 +22,9 @@
 		// time
 		/** @const {string} */ timeIntervalWord : "TIME",
 
+		// playtime
+		/** @const {string} */ playTimeWord : "PLAYTIME",
+
 		// suppress
 		/** @const {string} */ suppressWord : "SUPPRESS",
 

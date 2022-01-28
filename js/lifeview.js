@@ -297,7 +297,7 @@
 		/** @const {string} */ screenShotTitle : "LifeViewer Image",
 
 		// build version
-		/** @const {number} */ versionBuild : 695,
+		/** @const {number} */ versionBuild : 696,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -637,6 +637,9 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// whether playback duration displayed
+		this.showPlayDuration = false;
 
 		// amount of ms of last playback
 		this.lastPlaybackMS = 0;
@@ -8386,7 +8389,9 @@
 						me.menuManager.notification.notify("Pause", 15, 40, 15, true);
 					}
 					me.lastPlaybackMS = performance.now() - me.lastPlaybackMS;
-					//me.menuManager.notification.notify("Playback time " + (me.lastPlaybackMS / 1000).toFixed(2), 15, 300, 15, false);
+					if (me.showPlayDuration) {
+						me.menuManager.notification.notify("Playback time " + (me.lastPlaybackMS / 1000).toFixed(2), 15, 300, 15, false);
+					}
 				}
 				break;
 
@@ -8440,7 +8445,9 @@
 						me.menuManager.notification.notify("Pause", 15, 40, 15, true);
 					}
 					me.lastPlaybackMS = performance.now() - me.lastPlaybackMS;
-					//me.menuManager.notification.notify("Playback time " + (me.lastPlaybackMS / 1000).toFixed(2), 15, 300, 15, false);
+					if (me.showPlayDuration) {
+						me.menuManager.notification.notify("Playback time " + (me.lastPlaybackMS / 1000).toFixed(2), 15, 300, 15, false);
+					}
 				} else {
 					// step
 					me.nextStep = true;
@@ -9321,8 +9328,6 @@
 			value = 0,
 			number = 0,
 			added = 0,
-			r2 = 0,
-			width = 0,
 			i = 0;
 
 		// set the range
@@ -9336,6 +9341,10 @@
 
 		// set the neighbourhood
 		switch (this.engine.HROT.type) {
+		case this.manager.cornerEdgeHROT:
+			neighbourhood = "FC" + this.engine.HROT.cornerRange + "E" + this.engine.HROT.edgeRange;
+			break;
+
 		case this.manager.mooreHROT:
 			neighbourhood = "";
 			break;
@@ -9510,16 +9519,14 @@
 
 		return result;
 	};
+
 	// create random LtL rule name
 	View.prototype.createRandomLTL = function() {
 		var result = "",
 			neighbours = 0,
 			range = this.engine.HROT.yrange,
 			neighbourhood = "",
-			value = 0,
-			r2 = 0,
-			width = 0,
-			i = 0;
+			value = 0;
 
 		// set the range
 		result = "R" + range  + ",";
@@ -9536,6 +9543,10 @@
 
 		// set the neighbourhood
 		switch (this.engine.HROT.type) {
+		case this.manager.cornerEdgeHROT:
+			neighbourhood = "FC" + this.engine.HROT.cornerRange + "E" + this.engine.HROT.edgeRange;
+			break;
+
 		case this.manager.mooreHROT:
 			neighbourhood = "M";
 			break;
@@ -15041,6 +15052,9 @@
 
 	// reset any view controls that scripts can overwrite
 	View.prototype.resetScriptControls = function() {
+		// reset show play duration
+		this.showPlayDuration = false;
+
 		// reset rainbow mode
 		this.engine.rainbow = false;
 
@@ -15836,7 +15850,7 @@
 				me.engine.HROT.births = pattern.birthHROT;
 				me.engine.HROT.survivals = pattern.survivalHROT;
 				me.engine.HROT.scount = pattern.multiNumStates;
-				me.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT, pattern.customNeighbourhood, pattern.customNeighbourCount, pattern.isTriangular, pattern.weightedNeighbourhood, pattern.weightedStates);
+				me.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT, pattern.customNeighbourhood, pattern.customNeighbourCount, pattern.isTriangular, pattern.weightedNeighbourhood, pattern.weightedStates, pattern.cornerRange, pattern.edgeRange);
 				if (me.manager.altSpecified) {
 					me.engine.HROT.altBirths = pattern.altBirthHROT;
 					me.engine.HROT.altSurvivals = pattern.altSurvivalHROT;

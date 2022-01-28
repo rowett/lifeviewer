@@ -21,6 +21,7 @@
 		// check if the token is a script command
 		switch (tokenString) {
 			case Keywords.exclusivePlayWord:
+			case Keywords.playTimeWord:
 			case Keywords.ignoreExclusiveWord:
 			case Keywords.noThrottleWord:
 			case Keywords.reverseStartWord:
@@ -2656,6 +2657,13 @@
 						case Keywords.timeIntervalWord:
 							// add to the waypoint
 							currentWaypoint.intervalTime = true;
+
+							itemValid = true;
+							break;
+
+						// show play duration
+						case Keywords.playTimeWord:
+							view.showPlayDuration = true;
 
 							itemValid = true;
 							break;

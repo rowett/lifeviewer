@@ -1026,6 +1026,7 @@
 		y = this.renderHelpLine(view, Keywords.noThrottleWord, "disable playback throttling", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.exclusivePlayWord, "starting playback pauses others", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.ignoreExclusiveWord, "ignore other pause requests", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.playTimeWord, "show playback duration", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		view.helpSections[sectionNum] = [view.lineNo, "Camera"];
 		sectionNum += 1;
@@ -1502,6 +1503,10 @@
 				} else {
 					if (view.engine.isHROT) {
 						switch(view.engine.HROT.type) {
+						case view.manager.cornerEdgeHROT:
+							itemName = "Corner/Edge";
+							break;
+
 						case view.manager.mooreHROT:
 							itemName = "Moore";
 							break;
@@ -1567,8 +1572,12 @@
 							break;
 						}
 
-						if (view.engine.HROT.yrange > 1) {
-							itemName += " range " + view.engine.HROT.yrange;
+						if (view.engine.HROT.type === view.manager.cornerEdgeHROT) {
+							itemName += " range " + view.engine.HROT.cornerRange + "/" + view.engine.HROT.edgeRange;
+						} else {
+							if (view.engine.HROT.yrange > 1) {
+								itemName += " range " + view.engine.HROT.yrange;
+							}
 						}
 					} else {
 						if (view.engine.isTriangular) {

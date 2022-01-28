@@ -1,3 +1,10 @@
+Build 696
+- new LtL/HROT neighbourhood 'NF' for far corner/far edges rules
+	- rule R parameter sets the default range for Corners and Edges
+	- override R by specifying C<number> and/or E<number>
+	- example: FarCorners rule would be: R2,C2,S2-3,B3,NFE1 (i.e. corners 2, edges 1)
+- new script command [[ PLAYTIME ]] will show duration of last playback
+
 Build 695
 - further performance improvement for HROT Triangular rules
 

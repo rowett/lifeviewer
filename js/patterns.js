@@ -571,6 +571,7 @@
 		/** @const {number} */ this.triangularHROT = 13;
 		/** @const {number} */ this.gaussianHROT = 14;
 		/** @const {number} */ this.weightedHROT = 15;
+		/** @const {number} */ this.cornerEdgeHROT = 16;
 
 		// specified width and height from RLE pattern
 		/** @type {number} */ this.specifiedWidth = -1;
@@ -849,6 +850,10 @@
 		// states for generations, LTL or HROT
 		/** @type {number} */ this.multiNumStates = -1;
 
+		// HROT corner and edge ranges
+		/** @type {number} */ this.cornerRange = 1;
+		/** @type {number} */ this.edgeRange = 1;
+
 		// HROT custom neighbourhood
 		/** @type {string} */ this.customNeighbourhood = "";
 		/** @type {number} */ this.customNeighbourCount = -1;
@@ -950,6 +955,22 @@
 		// rule table icons
 		this.ruleTableIcons = null;
 	}
+
+	// corner/edge canonical rule name part
+	Pattern.prototype.cornerEdgeCanonical = function(range) {
+		var result = "";
+
+		if (this.cornerRange !== range || this.edgeRange !== range) {
+			if (this.cornerRange !== range) {
+				result += "C" + this.cornerRange;
+			}
+			if (this.edgeRange !== range) {
+				result += "E" + this.edgeRange;
+			}
+		}
+
+		return result;
+	};
 
 	// copy settings from one pattern to another
 	Pattern.prototype.copySettingsFrom = function(source) {
@@ -3071,8 +3092,11 @@
 					case this.gaussianHROT:
 						nameLtL += "G";
 						break;
-				case this.weightedHROT:
+					case this.weightedHROT:
 						nameLtL += "W" + pattern.customNeighbourhood + pattern.customGridType;
+						break;
+					case this.cornerEdgeHROT:
+						nameLtL += "F" + pattern.cornerEdgeCanonical(pattern.rangeLTL);
 						break;
 				}
 
@@ -3317,8 +3341,16 @@
 						}
 						break;
 				
+					case "f":
+						this.index += 1;
+						result = this.readCornerEdge(rule, range, "LtL", pattern);
+						if (result === -1) {
+							this.index = -1;
+						}
+						break;
+
 					default:
-						this.failureReason = "LtL 'N' [ABCGHLMNWX23*+#@] got 'N" + next.toUpperCase() + "'";
+						this.failureReason = "LtL 'N' [ABCFGHLMNWX23*+#@] got 'N" + next.toUpperCase() + "'";
 						this.index = -1;
 						break;
 				}
@@ -3449,6 +3481,10 @@
 
 			case this.weightedHROT:
 				result = customCount;
+				break;
+
+			case this.cornerEdgeHROT:
+				result = 8;
 				break;
 		}
 
@@ -4031,6 +4067,113 @@
 		return result;
 	};
 
+	// read number from string
+	PatternManager.prototype.readNumberFromIndex = function(str, l) {
+		var result = 0,
+			code = 0,
+			readDigit = false,
+			finished = false;
+
+		while (!finished && this.index < l) {
+			code = str.charCodeAt(this.index);
+			if (code >= 48 && code <= 57) {
+				readDigit = true;
+				result = result * 10 + (code - 48);
+				this.index += 1;
+			} else {
+				finished = true;
+			}
+		}
+
+		if (!readDigit) {
+			result = -1;
+		}
+
+		return result;
+	};
+
+	// read corner edge neighbourhood
+	// rule parameter is lower case
+	PatternManager.prototype.readCornerEdge = function(rule, range, family, pattern) {
+		var l = rule.length,
+			item = "",
+			corner = -1,
+			edge = -1,
+			result = -1;
+
+		// check if corner or edge are specified
+		if (this.index >= l) {
+			pattern.cornerRange = range;
+			pattern.edgeRange = range;
+			result = this.cornerEdgeHROT;
+			return result;
+		}
+
+		// check for C or E
+		item = rule[this.index].toUpperCase();
+		this.index += 1;
+
+		while (item === "C" || item === "E") {
+			if (item === "C") {
+				if (corner === -1) {
+					corner = this.readNumberFromIndex(rule, l);
+					if (corner === -1) {
+						corner = range;
+					}
+					if (corner < 1 || corner > this.maxRangeHROT) {
+						this.failureReason = family + " 'NF' invalid corner range";
+						return result;
+					}
+				} else {
+					this.failureReason = family + " 'NF' duplicate 'C'";
+					return result;
+				}
+			} else {
+				if (edge === -1) {
+					edge = this.readNumberFromIndex(rule, l);
+					if (edge === -1) {
+						edge = range;
+					}
+					if (edge < 1 || edge > this.maxRangeHROT) {
+						this.failureReason = family + " 'NF' invalid edge range";
+						return result;
+					}
+				} else {
+					this.failureReason = family + " 'NF' duplicate 'E'";
+					return result;
+				}
+			}
+			if (this.index < l) {
+				item = rule[this.index].toUpperCase();
+				this.index += 1;
+			} else {
+				item = "";
+			}
+		}
+
+		// step back if last character was not valid
+		if (item !== "") {
+			this.index -= 1;
+		}
+
+		// save settings
+		if (corner === -1) {
+			pattern.cornerRange = range;
+		} else {
+			pattern.cornerRange = corner;
+		}
+
+		if (edge === -1) {
+			pattern.edgeRange = range;
+		} else {
+			pattern.edgeRange = edge;
+		}
+
+		// report as valid neighbourhood
+		result = this.cornerEdgeHROT;
+		return result;
+	};
+
 	// read custom HROT neighbourhood
 	// rule parameter is lower case
 	PatternManager.prototype.readCustomNeighbourhood = function(rule, range, family, pattern) {
@@ -4335,8 +4478,16 @@
 									}
 									break;
 
+								case "f":
+									this.index += 1;
+									pattern.neighborhoodHROT = this.readCornerEdge(rule, pattern.rangeHROT, "HROT", pattern);
+									if (pattern.neighborhoodHROT !== -1) {
+										result = true;
+									}
+									break;
+
 								default:
-									this.failureReason = "HROT 'N' [ABCGHLMNWX23*+#@] got '" + rule[this.index].toUpperCase() + "'";
+									this.failureReason = "HROT 'N' [ABCFGHLMNWX23*+#@] got '" + rule[this.index].toUpperCase() + "'";
 									break;
 							}
 						} else {
@@ -5203,6 +5354,16 @@
 							if (valid) {
 								// set canonical name
 								if (pattern.isHROT) {
+									// normalize range for edge/corner rules
+									if (pattern.neighborhoodHROT === this.cornerEdgeHROT) {
+										if (pattern.cornerRange > pattern.rangeHROT) {
+											pattern.rangeHROT = pattern.cornerRange;
+										}
+										if (pattern.edgeRange > pattern.rangeHROT) {
+											pattern.rangeHROT = pattern.edgeRange;
+										}
+									}
+
 									// HROT
 									offset = (pattern.neighborhoodHROT === this.weightedHROT || pattern.neighborhoodHROT === this.gaussianHROT) ? 0 : -1;
 									pattern.ruleName = "R" + pattern.rangeHROT + ",";
@@ -5271,9 +5432,23 @@
 											case this.weightedHROT:
 												pattern.ruleName += "W" + pattern.customNeighbourhood + pattern.customGridType;
 												break;
+
+											case this.cornerEdgeHROT:
+												pattern.ruleName += "F" + pattern.cornerEdgeCanonical(pattern.rangeHROT);
+												break;
 										}
 									}
 								} else {
+									// normalize range for edge/corner rules
+									if (pattern.neighborhoodLTL === this.cornerEdgeHROT) {
+										if (pattern.cornerRange > pattern.rangeLTL) {
+											pattern.rangeLTL = pattern.cornerRange;
+										}
+										if (pattern.edgeRange > pattern.rangeLTL) {
+											pattern.rangeLTL = pattern.edgeRange;
+										}
+									}
+
 									// LTL
 									pattern.isLTL = true;
 									pattern.ruleName = "R" + pattern.rangeLTL + ",C" + pattern.multiNumStates + ",M" + pattern.middleLTL + ",S" + pattern.SminLTL + ".." + pattern.SmaxLTL + ",B" + pattern.BminLTL + ".." + pattern.BmaxLTL + ",N";
@@ -5340,6 +5515,10 @@
 
 										case this.weightedHROT:
 											pattern.ruleName += "W" + pattern.customNeighbourhood + pattern.customGridType;
+											break;
+
+										case this.cornerEdgeHROT:
+											pattern.ruleName += "F" + pattern.cornerEdgeCanonical(pattern.rangeLTL);
 											break;
 									}
 

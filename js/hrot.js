@@ -53,6 +53,10 @@
 		// weighted states array
 		this.weightedStates = null;
 
+		// corner and edge range
+		this.edgeRange = -1;
+		this.cornerRange = -1;
+
 		// range threshold to use fast von Neumann algorithm
 		/** @const {number} */ this.rangeVN = 6;
 
@@ -83,7 +87,7 @@
 	};
 
 	// set type and range
-	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood, /** @type {number} */ neighbourCount, /** @type {boolean} */ isTriangular, /** @type {Array<number>} */ weightedNeighbourhood, /** @type {Array<number>} */ weightedStates) {
+	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood, /** @type {number} */ neighbourCount, /** @type {boolean} */ isTriangular, /** @type {Array<number>} */ weightedNeighbourhood, /** @type {Array<number>} */ weightedStates, /** @type {number} */ cornerRange, /** @type {number} */ edgeRange) {
 		// compute widest width
 		var /** @const {number} */ width = range * 2 + 1,
 			/** @const {number} */ r2 = range * range,
@@ -111,6 +115,8 @@
 		this.customNeighbourhood = customNeighbourhood;
 		this.customNeighbourCount = neighbourCount;
 		this.isTriangular = isTriangular;
+		this.cornerRange = cornerRange;
+		this.edgeRange = edgeRange;
 
 		// copy the weighted neighbourhood if specified
 		if (weightedNeighbourhood) {
@@ -287,6 +293,7 @@
 		}
 		return this.counts[this.ccht - 1][this.halfccwd + ((i + j + this.ccht + this.halfccwd + 1) % 2)];
 	};
+
 	// get the count for von Neumann
 	/** @return {number} */
 	HROT.prototype.getCount = function(/** @type {number} */ i, /** @type {number} */ j) {
@@ -756,7 +763,7 @@
 	};
 
 	// weighted neighbourhood optimized range 1 version
-	HROT.prototype.nextGenerationWeighted2 = function(/** @const{number} */bottomY, /** @const{number} */topY, /** @const{number} */leftX, /** @const{number} */rightX, /** @const{number} */range) {
+	HROT.prototype.nextGenerationWeighted2R1 = function(/** @const{number} */bottomY, /** @const{number} */topY, /** @const{number} */leftX, /** @const{number} */rightX, /** @const{number} */range) {
 		var /** @type {number} */ y,
 			/** @type {number} */ x,
 			/** @type {number} */ xm1,
@@ -823,14 +830,1046 @@
 		}
 	};
 
+	// 2-state corner/edge
+	HROT.prototype.nextGenerationCornerEdge2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @const {number} */ cornerRange = this.cornerRange,
+			/** @const {number} */ edgeRange = this.edgeRange,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// asterisk
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			while (x <= rightX + xrange) {
+				count = 0;
+
+				// corners
+				colourRow = colourGrid[y - cornerRange];
+				if (colourRow[x - cornerRange] >= aliveStart) {
+					count += 1;
+				}
+				if (colourRow[x + cornerRange] >= aliveStart) {
+					count += 1;
+				}
+				colourRow = colourGrid[y + cornerRange];
+				if (colourRow[x - cornerRange] >= aliveStart) {
+					count += 1;
+				}
+				if (colourRow[x + cornerRange] >= aliveStart) {
+					count += 1;
+				}
+
+				// edges
+				if (colourGrid[y - edgeRange][x] >= aliveStart) {
+					count += 1;
+				}
+				if (colourGrid[y + edgeRange][x] >= aliveStart) {
+					count += 1;
+				}
+				colourRow = colourGrid[y];
+				if (colourRow[x - edgeRange] >= aliveStart) {
+					count += 1;
+				}
+				if (colourRow[x + edgeRange] >= aliveStart) {
+					count += 1;
+				}
+
+				// survival
+				if (colourRow[x] >= aliveStart) {
+					count += 1;
+				}
+
+				// save count
+				countRow[x] = count;
+				x += 1;
+			}
+		}	
+	};
+
+	// 2-state asterisk
+	HROT.prototype.nextGenerationAsterisk2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// asterisk
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			while (x <= rightX + xrange) {
+				count = 0;
+				for (j = -yrange; j < 0; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (colourRow[x] >= aliveStart) {
+						count += 1;
+					}
+					if (colourRow[x + j] >= aliveStart) {
+						count += 1;
+					}
+				}
+				colourRow = colourGrid[y];
+				for (i = -xrange; i <= xrange; i += 1) {
+					if (colourRow[x + i] >= aliveStart) {
+						count += 1;
+					}
+				}
+				for (j = 1; j <= xrange; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (colourRow[x] >= aliveStart) {
+						count += 1;
+					}
+					if (colourRow[x + j] >= aliveStart) {
+						count += 1;
+					}
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}	
+	};
+
+	// 2-state tripod
+	HROT.prototype.nextGenerationTripod2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// tripod
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			while (x <= rightX + xrange) {
+				count = 0;
+				for (j = -yrange; j < 0; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (colourRow[x] >= aliveStart) {
+						count += 1;
+					}
+				}
+				colourRow = colourGrid[y];
+				for (i = -xrange; i <= 0; i += 1) {
+					if (colourRow[x + i] >= aliveStart) {
+						count += 1;
+					}
+				}
+				for (j = 1; j <= xrange; j += 1) {
+					if (colourGrid[y + j][x + j] >= aliveStart) {
+						count += 1;
+					}
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}	
+	};
+
+	// 2-state weighted
+	HROT.prototype.nextGenerationWeighted2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ k,
+			/** @type {number} */ l,
+			/** @type {number} */ deadWeight,
+			/** @type {number} */ aliveWeight,
+			/** @type {number} */ count,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// weighted
+		if (this.weightedStates === null) {
+			// no weighted states
+			if (xrange === 1 && yrange === 1 && !this.isTriangular) {
+				this.nextGenerationWeighted2R1(bottomY, topY, leftX, rightX, xrange);
+			} else {
+				for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+					countRow = counts[y];
+					x = leftX - xrange;
+					while (x <= rightX + xrange) {
+						if (this.isTriangular && (((x + y) & 1) !== 0)) {
+							l = -(xrange + xrange + 1);
+							k = this.weightedNeighbourhood.length + l;
+							l += l;
+						} else {
+							k = 0;
+							l = 0;
+						}
+						count = 0;
+						for (j = -yrange; j <= yrange; j += 1) {
+							colourRow = colourGrid[y + j];
+							for (i = -xrange; i <= xrange; i += 1) {
+								if (colourRow[x + i] >= aliveStart) {
+									count += this.weightedNeighbourhood[k];
+								}
+								k += 1;
+							}
+							k += l;
+						}
+						countRow[x] = count;
+						x += 1;
+					}
+				}
+			}
+		} else {
+			// weighted states
+			deadWeight = this.weightedStates[0];
+			aliveWeight = this.weightedStates[1];
+			for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+				countRow = counts[y];
+				x = leftX - xrange;
+				while (x <= rightX + xrange) {
+					if (this.isTriangular && (((x + y) & 1) !== 0)) {
+						l = -(xrange + xrange + 1);
+						k = this.weightedNeighbourhood.length + l;
+						l += l;
+					} else {
+						k = 0;
+						l = 0;
+					}
+					count = 0;
+					for (j = -yrange; j <= yrange; j += 1) {
+						colourRow = colourGrid[y + j];
+						for (i = -xrange; i <= xrange; i += 1) {
+							if (colourRow[x + i] >= aliveStart) {
+								count += this.weightedNeighbourhood[k] * aliveWeight;
+							} else {
+								count += this.weightedNeighbourhood[k] * deadWeight;
+							}
+							k += 1;
+						}
+						k += l;
+					}
+					countRow[x] = count;
+					x += 1;
+				}
+			}
+		}
+	};
+
+	// 2-state custom
+	HROT.prototype.nextGenerationCustom2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ k,
+			/** @type {number} */ l,
+			/** @type {number} */ count,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {Int16Array} */ neighbourList = this.neighbourList,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// custom
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			while (x <= rightX + xrange) {
+				count = 0;
+				j = 0;
+				while (j < neighbourList.length) {
+					// get the row number
+					i = neighbourList[j];
+					if (this.isTriangular && (((x + y) & 1) === 0)) {
+						i = -i;
+					}
+					j += 1;
+					colourRow = colourGrid[y + i];
+
+					// get the count of items in the row
+					k = neighbourList[j];
+					j += 1;
+					for (l = j; l < j + k; l += 1) {
+						if (colourRow[x + neighbourList[l]] >= aliveStart) {
+							count += 1;
+						}
+					}
+					j += k;
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}
+	};
+
+	// 2-state hash
+	HROT.prototype.nextGenerationHash2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @type {number} */ rowCount,
+			/** @type {number} */ rowCount2,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// hash
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			// for the first cell count the entire neighbourhood
+			count = 0;
+			rowCount = 0;
+			rowCount2 = 0;
+			for (j = -yrange; j <= yrange; j += 1) {
+				colourRow = colourGrid[y + j];
+				if (j === 1) {
+					for (i = -xrange; i <= xrange; i += 1) {
+						if (colourRow[x + i] >= aliveStart) {
+							rowCount += 1;
+						}
+					}
+				} else {
+					if (j === -1) {
+						for (i = -xrange; i <= xrange; i += 1) {
+							if (colourRow[x + i] >= aliveStart) {
+								rowCount2 += 1;
+							}
+						}
+					} else {
+						if (colourRow[x - 1] >= aliveStart) {
+							count += 1;
+						}
+						if (colourRow[x + 1] >= aliveStart) {
+							count += 1;
+						}
+					}
+				}
+			}
+			if (colourGrid[y][x] >= aliveStart) {
+				count += 1;
+			}
+			countRow[x] = count + rowCount + rowCount2;
+			x += 1;
+
+			// handle remaining rows
+			while (x <= rightX + xrange) {
+				count = 0;
+				for (j = -yrange; j <= yrange; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (j === 1) {
+						if (colourRow[x - xrange - 1] >= aliveStart) {
+							rowCount -= 1;
+						}
+						if (colourRow[x + xrange] >= aliveStart) {
+							rowCount += 1;
+						}
+					} else {
+						if (j === -1) {
+							if (colourRow[x - xrange - 1] >= aliveStart) {
+								rowCount2 -= 1;
+							}
+							if (colourRow[x + xrange] >= aliveStart) {
+								rowCount2 += 1;
+							}
+						} else {
+							if (colourRow[x - 1] >= aliveStart) {
+								count += 1;
+							}
+							if (colourRow[x + 1] >= aliveStart) {
+								count += 1;
+							}
+						}
+					}
+				}
+				// check for survival
+				if (colourGrid[y][x] >= aliveStart) {
+					count += 1;
+				}
+				countRow[x] = count + rowCount + rowCount2;
+				x += 1;
+			}
+		}	
+	};
+
+	// 2-state checkerboard
+	HROT.prototype.nextGenerationCheckerboard2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @type {number} */ count2,
+			/** @type {number} */ offset,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// checkerboard
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+
+			// for the first two cells in a row count the entire neighbourhood
+			count = 0;
+			offset = 1;
+			for (j = -yrange; j <= yrange; j += 1) {
+				colourRow = colourGrid[y + j];
+				for (i = -xrange + offset; i <= xrange - offset; i += 2) {
+					if (colourRow[x + i] >= aliveStart) {
+						count += 1;
+					}
+				}
+				offset = 1 - offset;
+			}
+
+			// check for survival
+			if (colourGrid[y][x] >= aliveStart) {
+				count += 1;
+			}
+			countRow[x] = count;
+			x += 1;
+
+			// check if there are two cells in the row
+			if (x <= rightX + xrange) {
+				count2 = 0;
+				offset = 1;
+				for (j = -yrange; j <= yrange; j += 1) {
+					colourRow = colourGrid[y + j];
+					for (i = -xrange + offset; i <= xrange - offset; i += 2) {
+						if (colourRow[x + i] >= aliveStart) {
+							count2 += 1;
+						}
+					}
+					offset = 1 - offset;
+				}
+
+				// check for survival
+				if (colourGrid[y][x] >= aliveStart) {
+					count2 += 1;
+				}
+				countRow[x] = count2;
+				x += 1;
+
+				// for the remaining cell pairs on the row subtract the left and add the right cells
+				while (x <= rightX + xrange) {
+					offset = 1;
+					for (j = -yrange; j <= yrange; j += 1) {
+						colourRow = colourGrid[y + j];
+						if (colourRow[x - xrange + offset - 2] >= aliveStart) {
+							count -= 1;
+						}
+						if (colourRow[x + xrange - offset] >= aliveStart) {
+							count += 1;
+						}
+						offset = 1 - offset;
+					}
+
+					// check for survival
+					if (colourGrid[y][x - 2] >= aliveStart) {
+						count -= 1;
+					}
+					if (colourGrid[y][x] >= aliveStart) {
+						count += 1;
+					}
+					countRow[x] = count;
+					x += 1;
+
+					if (x <= rightX + xrange) {
+						offset = 1;
+						for (j = -yrange; j <= yrange; j += 1) {
+							colourRow = colourGrid[y + j];
+							if (colourRow[x - xrange + offset - 2] >= aliveStart) {
+								count2 -= 1;
+							}
+							if (colourRow[x + xrange - offset] >= aliveStart) {
+								count2 += 1;
+							}
+							offset = 1 - offset;
+						}
+
+						// check for survival
+						if (colourGrid[y][x - 2] >= aliveStart) {
+							count2 -= 1;
+						}
+						if (colourGrid[y][x] >= aliveStart) {
+							count2 += 1;
+						}
+						countRow[x] = count2;
+						x += 1;
+					}
+				}
+			}
+		}
+	};
+
+	// 2-state hexagonal
+	HROT.prototype.nextGenerationHexagonal2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// hexagonal
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			// for the first cell count the entire neighbourhood
+			count = 0;
+			for (j = -yrange; j < 0; j += 1) {
+				colourRow = colourGrid[y + j];
+				for (i = -xrange; i <= xrange + j; i += 1) {
+					if (colourRow[x + i] >= aliveStart) {
+						count += 1;
+					}
+				}
+			}
+			for (j = 0; j <= yrange; j += 1) {
+				colourRow = colourGrid[y + j];
+				for (i = -xrange + j; i <= xrange; i += 1) {
+					if (colourRow[x + i] >= aliveStart) {
+						count += 1;
+					}
+				}
+			}
+			countRow[x] = count;
+			x += 1;
+
+			// for the remaining rows subtract the left and add the right cells
+			while (x <= rightX + xrange) {
+				for (j = -yrange; j < 0; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (colourRow[x - xrange - 1] >= aliveStart) {
+						count -= 1;
+					}
+					if (colourRow[x + xrange + j] >= aliveStart) {
+						count += 1;
+					}
+				}
+				for (j = 0; j <= yrange; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (colourRow[x - xrange + j - 1] >= aliveStart) {
+						count -= 1;
+					}
+					if (colourRow[x + xrange] >= aliveStart) {
+						count += 1;
+					}
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}
+	};
+
+	// 2-state saltire
+	HROT.prototype.nextGenerationSaltire2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// saltire
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			while (x <= rightX + xrange) {
+				count = 0;
+				for (j = 1; j <= yrange; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (colourRow[x - j] >= aliveStart) {
+						count += 1;
+					}
+					if (colourRow[x + j] >= aliveStart) {
+						count += 1;
+					}
+					colourRow = colourGrid[y - j];
+					if (colourRow[x - j] >= aliveStart) {
+						count += 1;
+					}
+					if (colourRow[x + j] >= aliveStart) {
+						count += 1;
+					}
+				}
+				colourRow = colourGrid[y];
+				if (colourRow[x] >= aliveStart) {
+					count += 1;
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}	
+	};
+
+	// 2-state star
+	HROT.prototype.nextGenerationStar2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// star
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			while (x <= rightX + xrange) {
+				count = 0;
+				for (j = 1; j <= yrange; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (colourRow[x - j] >= aliveStart) {
+						count += 1;
+					}
+					if (colourRow[x + j] >= aliveStart) {
+						count += 1;
+					}
+					if (colourRow[x] >= aliveStart) {
+						count += 1;
+					}
+					colourRow = colourGrid[y - j];
+					if (colourRow[x - j] >= aliveStart) {
+						count += 1;
+					}
+					if (colourRow[x + j] >= aliveStart) {
+						count += 1;
+					}
+					if (colourRow[x] >= aliveStart) {
+						count += 1;
+					}
+				}
+				colourRow = colourGrid[y];
+				for (i = -xrange; i <= xrange; i += 1) {
+					if (colourRow[x + i] >= aliveStart) {
+						count += 1;
+					}
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}	
+	};
+
+	// 2-state cross
+	HROT.prototype.nextGenerationCross2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @type {number} */ rowCount,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// cross
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			// for the first cell count the entire neighbourhood
+			count = 0;
+			rowCount = 0;
+			for (j = 1; j <= yrange; j += 1) {
+				colourRow = colourGrid[y + j];
+				if (colourRow[x] >= aliveStart) {
+					count += 1;
+				}
+				colourRow = colourGrid[y - j];
+				if (colourRow[x] >= aliveStart) {
+					count += 1;
+				}
+			}
+			colourRow = colourGrid[y];
+			for (i = -xrange; i <= xrange; i += 1) {
+				if (colourRow[x + i] >= aliveStart) {
+					rowCount += 1;
+				}
+			}
+			countRow[x] = count + rowCount;
+			x += 1;
+
+			// for remaining rows subtract the left and the right cells
+			while (x <= rightX + xrange) {
+				count = 0;
+				for (j = 1; j <= yrange; j += 1) {
+					if (colourGrid[y + j][x] >= aliveStart) {
+						count += 1;
+					}
+					if (colourGrid[y - j][x] >= aliveStart) {
+						count += 1;
+					}
+				}
+				colourRow = colourGrid[y];
+				if (colourRow[x - xrange - 1] >= aliveStart) {
+					rowCount -= 1;
+				}
+				if (colourRow[x + xrange] >= aliveStart) {
+					rowCount += 1;
+				}
+				countRow[x] = count + rowCount;
+				x += 1;
+			}
+		}	
+	};
+
+	// 2-state triangular
+	HROT.prototype.nextGenerationTriangular2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ k,
+			/** @type {number} */ l,
+			/** @type {number} */ count,
+			/** @type {number} */ width,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// triangular
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			
+			// for the first cell compute the whole neighbourhood
+			count = 0;
+			k = (x + y) & 1;
+			if (k === 0) {
+				width = yrange + 1;
+				for (j = -yrange; j < 0; j += 1) {
+					colourRow = colourGrid[y + j];
+					for (i = -width; i < width; i += 2) {
+						if (colourRow[x + i] >= aliveStart) {
+							count += 1;
+						}
+						if (colourRow[x + i + 1] >= aliveStart) {
+							count += 1;
+						}
+					}
+					if (colourRow[x + i] >= aliveStart) {
+						count += 1;
+					}
+					width += 1;
+				}
+				for (j = 0; j <= yrange; j += 1) {
+					width -= 1;
+					colourRow = colourGrid[y + j];
+					for (i = -width; i < width; i += 2) {
+						if (colourRow[x + i] >= aliveStart) {
+							count += 1;
+						}
+						if (colourRow[x + i + 1] >= aliveStart) {
+							count += 1;
+						}
+					}
+					if (colourRow[x + i] >= aliveStart) {
+						count += 1;
+					}
+				}
+			} else {
+				width = yrange;
+				for (j = -yrange; j <= 0; j += 1) {
+					colourRow = colourGrid[y + j];
+					for (i = -width; i < width; i += 2) {
+						if (colourRow[x + i] >= aliveStart) {
+							count += 1;
+						}
+						if (colourRow[x + i + 1] >= aliveStart) {
+							count += 1;
+						}
+					}
+					if (colourRow[x + i] >= aliveStart) {
+						count += 1;
+					}
+					width += 1;
+				}
+				for (j = 1; j <= yrange; j += 1) {
+					width -= 1;
+					colourRow = colourGrid[y + j];
+					for (i = -width; i < width; i += 2) {
+						if (colourRow[x + i] >= aliveStart) {
+							count += 1;
+						}
+						if (colourRow[x + i + 1] >= aliveStart) {
+							count += 1;
+						}
+					}
+					if (colourRow[x + i] >= aliveStart) {
+						count += 1;
+					}
+				}
+			}
+			countRow[x] = count;
+
+			// for the remaining cells compute the edge differences
+			x += 1;
+			while (x <= rightX + xrange) {
+				k = (x + y) & 1;
+				if (k === 0) {
+					width = yrange + 1;
+					l = yrange;
+					for (j = -yrange; j < 0; j += 1) {
+						colourRow = colourGrid[y + j];
+						if (colourRow[x + l] >= aliveStart) {
+							count += 1;
+						}
+						l += 1;
+						if (colourRow[x + l] >= aliveStart) {
+							count += 1;
+						}
+						width += 1;
+					}
+
+					// j === 0 case
+					width -= 1;
+					colourRow = colourGrid[y];
+					if (colourRow[x - l - 1] >= aliveStart) {
+						count -= 1;
+					}
+					if (colourRow[x + l] >= aliveStart) {
+						count += 1;
+					}
+					l += 1;
+
+					for (j = 1; j <= yrange; j += 1) {
+						width -= 1;
+						l -= 1;
+						colourRow = colourGrid[y + j];
+						if (colourRow[x - l - 1] >= aliveStart) {
+							count -= 1;
+						}
+						if (colourRow[x - l] >= aliveStart) {
+							count -= 1;
+						}
+					}
+				} else {
+					width = yrange;
+					l = yrange + 1;
+					for (j = -yrange; j < 0; j += 1) {
+						colourRow = colourGrid[y + j];
+						if (colourRow[x - l - 1] >= aliveStart) {
+							count -= 1;
+						}
+						if (colourRow[x - l] >= aliveStart) {
+							count -= 1;
+						}
+						width += 1;
+						l += 1;
+					}
+
+					// j === 0 case
+					l -= 1;
+					colourRow = colourGrid[y];
+					if (colourRow[x - l - 1] >= aliveStart) {
+						count -= 1;
+					}
+					if (colourRow[x + l] >= aliveStart) {
+						count += 1;
+					}
+					width += 1;
+
+					for (j = 1; j <= yrange; j += 1) {
+						width -= 1;
+						l -= 1;
+						colourRow = colourGrid[y + j];
+						if (colourRow[x + l] >= aliveStart) {
+							count += 1;
+						}
+						if (colourRow[x + l + 1] >= aliveStart) {
+							count += 1;
+						}
+					}
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}
+	};
+
+	// 2-state gaussian
+	HROT.prototype.nextGenerationGuassian2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ inc,
+			/** @type {number} */ weight,
+			/** @type {number} */ count,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// gaussian
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			while (x <= rightX + xrange) {
+				count = 0;
+				for (j = -yrange; j < 0; j += 1) {
+					inc = j + yrange + 1;
+					weight = inc;
+					colourRow = colourGrid[y + j];
+					for (i = -xrange; i <= 0; i += 1) {
+						if (colourRow[x + i] >= aliveStart) {
+							count += weight;
+						}
+						weight += inc;
+					}
+					weight -= inc + inc;
+					for (i = 1; i <= xrange; i += 1) {
+						if (colourRow[x + i] >= aliveStart) {
+							count += weight;
+						}
+						weight -= inc;
+					}
+					inc = j + yrange + 1;
+					weight = inc;
+					colourRow = colourGrid[y - j];
+					for (i = -xrange; i <= 0; i += 1) {
+						if (colourRow[x + i] >= aliveStart) {
+							count += weight;
+						}
+						weight += inc;
+					}
+					weight -= inc + inc;
+					for (i = 1; i <= xrange; i += 1) {
+						if (colourRow[x + i] >= aliveStart) {
+							count += weight;
+						}
+						weight -= inc;
+					}
+				}
+				inc = xrange + 1;
+				weight = inc;
+				colourRow = colourGrid[y];
+				for (i = -xrange; i <= 0; i += 1) {
+					if (colourRow[x + i] >= aliveStart) {
+						count += weight;
+					}
+					weight += inc;
+				}
+				weight -= inc + inc;
+				for (i = 1; i <= xrange; i += 1) {
+					if (colourRow[x + i] >= aliveStart) {
+						count += weight;
+					}
+					weight -= inc;
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}
+	};
+
+	// 2-state shaped
+	HROT.prototype.nextGenerationShaped2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @type {number} */ width,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			widths = this.widths,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// L2, circular, or short range von Neumann
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			// for the first cell in the row count the entire neighborhood
+			count = 0;
+			for (j = -yrange; j <= yrange; j += 1) {
+				width = widths[j + yrange];
+				colourRow = colourGrid[y + j];
+				for (i = -width; i < width; i += 2) {
+					if (colourRow[x + i] >= aliveStart) {
+						count += 1;
+					}
+					if (colourRow[x + i + 1] >= aliveStart) {
+						count += 1;
+					}
+				}
+				if (colourRow[x + i] >= aliveStart) {
+					count += 1;
+				}
+			}
+			countRow[x] = count;
+			x += 1;
+
+			// for the remaining rows subtract the left and add the right cells
+			while (x <= rightX + xrange) {
+				for (j = -yrange; j <= yrange; j += 1) {
+					width = widths[j + yrange];
+					colourRow = colourGrid[y + j];
+					if (colourRow[x - width - 1] >= aliveStart) {
+						count -= 1;
+					}
+					if (colourRow[x + width] >= aliveStart) {
+						count += 1;
+					}
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}	
+	};
+
 	// update the life grid region using HROT for 2 state patterns
 	HROT.prototype.nextGenerationHROT2 = function(/** @type {boolean} */useAlternate) {
 		var /** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
-			/** @type {number} */ k = 0,
-			/** @type {number} */ l = 0,
 			/** @type {number} */ leftX = this.engine.zoomBox.leftX,
 			/** @type {number} */ rightX = this.engine.zoomBox.rightX,
 			/** @type {number} */ bottomY = this.engine.zoomBox.bottomY,
@@ -848,7 +1887,6 @@
 			/** @const {number} */ type = this.type,
 			/** @const {number} */ maxGeneration = scount - 1,
 			/** @type {number} */ count = 0,
-			/** @type {number} */ count2 = 0,
 			/** @type {number} */ minX = this.engine.width,
 			/** @type {number} */ maxX = 0,
 			/** @type {number} */ minY = this.engine.height,
@@ -862,8 +1900,6 @@
 			colourRow = null, countRowYpr = null, countRowYmrp1 = null,
 			colourTileRow = null,
 			countRow = null, prevCountRow = null,
-			widths = this.widths,
-			/** @type {number} */ width = 0,
 			/** @const {number} */ bgWidth = this.engine.boundedGridWidth,
 			/** @const {number} */ bgHeight = this.engine.boundedGridHeight,
 			/** @type {number} */ gridLeftX = 0,
@@ -876,8 +1912,6 @@
 			/** @type {number} */ state = 0,
 			/** @type {number} */ xpr = 0,
 			/** @type {number} */ xmrp1 = 0,
-			/** @type {number} */ rowCount = 0,
-			/** @type {number} */ rowCount2 = 0,
 			/** @type {boolean} */ rowAlive = false,
 			/** @type {boolean} */ colAlive = false,
 			/** @type {boolean} */ liveRowAlive = false,
@@ -898,12 +1932,6 @@
 			/** @type {number} */ jpr = 0,
 			/** @type {number} */ jmr = 0,
 			/** @type {number} */ jpmincol = 0,
-			/** @type {number} */ offset = 0,
-			/** @type {number} */ weight = 0,
-			/** @type {number} */ inc = 0,
-			/** @type {number} */ aliveWeight = 0,
-			/** @type {number} */ deadWeight = 0,
-			/** @type {Int16Array} */ neighbourList = this.neighbourList,
 			countRowIm1 = null,
 			countRowIm2 = null,
 			countRowIpr = null,
@@ -1460,799 +2488,74 @@
 			} else {
 				// determine neighbourhood type
 				switch (type) {
+					case this.manager.cornerEdgeHROT:
+						// corner/edge
+						this.nextGenerationCornerEdge2(leftX, bottomY, rightX, topY, xrange, yrange);
+						break;
+
 					case this.manager.asteriskHROT:
 						// asterisk
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = -yrange; j < 0; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (colourRow[x] >= aliveStart) {
-										count += 1;
-									}
-									if (colourRow[x + j] >= aliveStart) {
-										count += 1;
-									}
-								}
-								colourRow = colourGrid[y];
-								for (i = -xrange; i <= xrange; i += 1) {
-									if (colourRow[x + i] >= aliveStart) {
-										count += 1;
-									}
-								}
-								for (j = 1; j <= xrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (colourRow[x] >= aliveStart) {
-										count += 1;
-									}
-									if (colourRow[x + j] >= aliveStart) {
-										count += 1;
-									}
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}	
+						this.nextGenerationAsterisk2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.tripodHROT:
 						// tripod
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = -yrange; j < 0; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (colourRow[x] >= aliveStart) {
-										count += 1;
-									}
-								}
-								colourRow = colourGrid[y];
-								for (i = -xrange; i <= 0; i += 1) {
-									if (colourRow[x + i] >= aliveStart) {
-										count += 1;
-									}
-								}
-								for (j = 1; j <= xrange; j += 1) {
-									if (colourGrid[y + j][x + j] >= aliveStart) {
-										count += 1;
-									}
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}	
+						this.nextGenerationTripod2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.weightedHROT:
 						// weighted
-						if (this.weightedStates === null) {
-							// no weighted states
-							if (xrange === 1 && yrange === 1 && !this.isTriangular) {
-								this.nextGenerationWeighted2(bottomY, topY, leftX, rightX, xrange);
-							} else {
-								for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-									countRow = counts[y];
-									x = leftX - xrange;
-									while (x <= rightX + xrange) {
-										if (this.isTriangular && (((x + y) & 1) !== 0)) {
-											l = -(xrange + xrange + 1);
-											k = this.weightedNeighbourhood.length + l;
-											l += l;
-										} else {
-											k = 0;
-											l = 0;
-										}
-										count = 0;
-										for (j = -yrange; j <= yrange; j += 1) {
-											colourRow = colourGrid[y + j];
-											for (i = -xrange; i <= xrange; i += 1) {
-												if (colourRow[x + i] >= aliveStart) {
-													count += this.weightedNeighbourhood[k];
-												}
-												k += 1;
-											}
-											k += l;
-										}
-										countRow[x] = count;
-										x += 1;
-									}
-								}
-							}
-						} else {
-							// weighted states
-							deadWeight = this.weightedStates[0];
-							aliveWeight = this.weightedStates[1];
-							for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-								countRow = counts[y];
-								x = leftX - xrange;
-								while (x <= rightX + xrange) {
-									if (this.isTriangular && (((x + y) & 1) !== 0)) {
-										l = -(xrange + xrange + 1);
-										k = this.weightedNeighbourhood.length + l;
-										l += l;
-									} else {
-										k = 0;
-										l = 0;
-									}
-									count = 0;
-									for (j = -yrange; j <= yrange; j += 1) {
-										colourRow = colourGrid[y + j];
-										for (i = -xrange; i <= xrange; i += 1) {
-											if (colourRow[x + i] >= aliveStart) {
-												count += this.weightedNeighbourhood[k] * aliveWeight;
-											} else {
-												count += this.weightedNeighbourhood[k] * deadWeight;
-											}
-											k += 1;
-										}
-										k += l;
-									}
-									countRow[x] = count;
-									x += 1;
-								}
-							}
-						}
+						this.nextGenerationWeighted2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.customHROT:
 						// custom
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
-								j = 0;
-								while (j < neighbourList.length) {
-									// get the row number
-									i = neighbourList[j];
-									if (this.isTriangular && (((x + y) & 1) === 0)) {
-										i = -i;
-									}
-									j += 1;
-									colourRow = colourGrid[y + i];
-
-									// get the count of items in the row
-									k = neighbourList[j];
-									j += 1;
-									for (l = j; l < j + k; l += 1) {
-										if (colourRow[x + neighbourList[l]] >= aliveStart) {
-											count += 1;
-										}
-									}
-									j += k;
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}
+						this.nextGenerationCustom2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.hashHROT:
 						// hash
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							// for the first cell count the entire neighbourhood
-							count = 0;
-							rowCount = 0;
-							rowCount2 = 0;
-							for (j = -yrange; j <= yrange; j += 1) {
-								colourRow = colourGrid[y + j];
-								if (j === 1) {
-									for (i = -xrange; i <= xrange; i += 1) {
-										if (colourRow[x + i] >= aliveStart) {
-											rowCount += 1;
-										}
-									}
-								} else {
-									if (j === -1) {
-										for (i = -xrange; i <= xrange; i += 1) {
-											if (colourRow[x + i] >= aliveStart) {
-												rowCount2 += 1;
-											}
-										}
-									} else {
-										if (colourRow[x - 1] >= aliveStart) {
-											count += 1;
-										}
-										if (colourRow[x + 1] >= aliveStart) {
-											count += 1;
-										}
-									}
-								}
-							}
-							if (colourGrid[y][x] >= aliveStart) {
-								count += 1;
-							}
-							countRow[x] = count + rowCount + rowCount2;
-							x += 1;
-
-							// handle remaining rows
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = -yrange; j <= yrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (j === 1) {
-										if (colourRow[x - xrange - 1] >= aliveStart) {
-											rowCount -= 1;
-										}
-										if (colourRow[x + xrange] >= aliveStart) {
-											rowCount += 1;
-										}
-									} else {
-										if (j === -1) {
-											if (colourRow[x - xrange - 1] >= aliveStart) {
-												rowCount2 -= 1;
-											}
-											if (colourRow[x + xrange] >= aliveStart) {
-												rowCount2 += 1;
-											}
-										} else {
-											if (colourRow[x - 1] >= aliveStart) {
-												count += 1;
-											}
-											if (colourRow[x + 1] >= aliveStart) {
-												count += 1;
-											}
-										}
-									}
-								}
-								// check for survival
-								if (colourGrid[y][x] >= aliveStart) {
-									count += 1;
-								}
-								countRow[x] = count + rowCount + rowCount2;
-								x += 1;
-							}
-						}	
+						this.nextGenerationHash2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.checkerHROT:
 						// checkerboard
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-
-							// for the first two cells in a row count the entire neighbourhood
-							count = 0;
-							offset = 1;
-							for (j = -yrange; j <= yrange; j += 1) {
-								colourRow = colourGrid[y + j];
-								for (i = -xrange + offset; i <= xrange - offset; i += 2) {
-									if (colourRow[x + i] >= aliveStart) {
-										count += 1;
-									}
-								}
-								offset = 1 - offset;
-							}
-
-							// check for survival
-							if (colourGrid[y][x] >= aliveStart) {
-								count += 1;
-							}
-							countRow[x] = count;
-							x += 1;
-
-							// check if there are two cells in the row
-							if (x <= rightX + xrange) {
-								count2 = 0;
-								offset = 1;
-								for (j = -yrange; j <= yrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									for (i = -xrange + offset; i <= xrange - offset; i += 2) {
-										if (colourRow[x + i] >= aliveStart) {
-											count2 += 1;
-										}
-									}
-									offset = 1 - offset;
-								}
-
-								// check for survival
-								if (colourGrid[y][x] >= aliveStart) {
-									count2 += 1;
-								}
-								countRow[x] = count2;
-								x += 1;
-
-								// for the remaining cell pairs on the row subtract the left and add the right cells
-								while (x <= rightX + xrange) {
-									offset = 1;
-									for (j = -yrange; j <= yrange; j += 1) {
-										colourRow = colourGrid[y + j];
-										if (colourRow[x - xrange + offset - 2] >= aliveStart) {
-											count -= 1;
-										}
-										if (colourRow[x + xrange - offset] >= aliveStart) {
-											count += 1;
-										}
-										offset = 1 - offset;
-									}
-
-									// check for survival
-									if (colourGrid[y][x - 2] >= aliveStart) {
-										count -= 1;
-									}
-									if (colourGrid[y][x] >= aliveStart) {
-										count += 1;
-									}
-									countRow[x] = count;
-									x += 1;
-
-									if (x <= rightX + xrange) {
-										offset = 1;
-										for (j = -yrange; j <= yrange; j += 1) {
-											colourRow = colourGrid[y + j];
-											if (colourRow[x - xrange + offset - 2] >= aliveStart) {
-												count2 -= 1;
-											}
-											if (colourRow[x + xrange - offset] >= aliveStart) {
-												count2 += 1;
-											}
-											offset = 1 - offset;
-										}
-
-										// check for survival
-										if (colourGrid[y][x - 2] >= aliveStart) {
-											count2 -= 1;
-										}
-										if (colourGrid[y][x] >= aliveStart) {
-											count2 += 1;
-										}
-										countRow[x] = count2;
-										x += 1;
-									}
-								}
-							}
-						}
+						this.nextGenerationCheckerboard2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.hexHROT:
-						// hex
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							// for the first cell count the entire neighbourhood
-							count = 0;
-							for (j = -yrange; j < 0; j += 1) {
-								colourRow = colourGrid[y + j];
-								for (i = -xrange; i <= xrange + j; i += 1) {
-									if (colourRow[x + i] >= aliveStart) {
-										count += 1;
-									}
-								}
-							}
-							for (j = 0; j <= yrange; j += 1) {
-								colourRow = colourGrid[y + j];
-								for (i = -xrange + j; i <= xrange; i += 1) {
-									if (colourRow[x + i] >= aliveStart) {
-										count += 1;
-									}
-								}
-							}
-							countRow[x] = count;
-							x += 1;
-
-							// for the remaining rows subtract the left and add the right cells
-							while (x <= rightX + xrange) {
-								for (j = -yrange; j < 0; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (colourRow[x - xrange - 1] >= aliveStart) {
-										count -= 1;
-									}
-									if (colourRow[x + xrange + j] >= aliveStart) {
-										count += 1;
-									}
-								}
-								for (j = 0; j <= yrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (colourRow[x - xrange + j - 1] >= aliveStart) {
-										count -= 1;
-									}
-									if (colourRow[x + xrange] >= aliveStart) {
-										count += 1;
-									}
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}
-
+						// hexagonal
+						this.nextGenerationHexagonal2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.saltireHROT:
 						// saltire
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = 1; j <= yrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (colourRow[x - j] >= aliveStart) {
-										count += 1;
-									}
-									if (colourRow[x + j] >= aliveStart) {
-										count += 1;
-									}
-									colourRow = colourGrid[y - j];
-									if (colourRow[x - j] >= aliveStart) {
-										count += 1;
-									}
-									if (colourRow[x + j] >= aliveStart) {
-										count += 1;
-									}
-								}
-								colourRow = colourGrid[y];
-								if (colourRow[x] >= aliveStart) {
-									count += 1;
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}	
+						this.nextGenerationSaltire2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.starHROT:
 						// star
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = 1; j <= yrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (colourRow[x - j] >= aliveStart) {
-										count += 1;
-									}
-									if (colourRow[x + j] >= aliveStart) {
-										count += 1;
-									}
-									if (colourRow[x] >= aliveStart) {
-										count += 1;
-									}
-									colourRow = colourGrid[y - j];
-									if (colourRow[x - j] >= aliveStart) {
-										count += 1;
-									}
-									if (colourRow[x + j] >= aliveStart) {
-										count += 1;
-									}
-									if (colourRow[x] >= aliveStart) {
-										count += 1;
-									}
-								}
-								colourRow = colourGrid[y];
-								for (i = -xrange; i <= xrange; i += 1) {
-									if (colourRow[x + i] >= aliveStart) {
-										count += 1;
-									}
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}	
+						this.nextGenerationStar2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.crossHROT:
 						// cross
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							// for the first cell count the entire neighbourhood
-							count = 0;
-							rowCount = 0;
-							for (j = 1; j <= yrange; j += 1) {
-								colourRow = colourGrid[y + j];
-								if (colourRow[x] >= aliveStart) {
-									count += 1;
-								}
-								colourRow = colourGrid[y - j];
-								if (colourRow[x] >= aliveStart) {
-									count += 1;
-								}
-							}
-							colourRow = colourGrid[y];
-							for (i = -xrange; i <= xrange; i += 1) {
-								if (colourRow[x + i] >= aliveStart) {
-									rowCount += 1;
-								}
-							}
-							countRow[x] = count + rowCount;
-							x += 1;
-
-							// for remaining rows subtract the left and the right cells
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = 1; j <= yrange; j += 1) {
-									if (colourGrid[y + j][x] >= aliveStart) {
-										count += 1;
-									}
-									if (colourGrid[y - j][x] >= aliveStart) {
-										count += 1;
-									}
-								}
-								colourRow = colourGrid[y];
-								if (colourRow[x - xrange - 1] >= aliveStart) {
-									rowCount -= 1;
-								}
-								if (colourRow[x + xrange] >= aliveStart) {
-									rowCount += 1;
-								}
-								countRow[x] = count + rowCount;
-								x += 1;
-							}
-						}	
+						this.nextGenerationCross2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.triangularHROT:
 						// triangular
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							
-							// for the first cell compute the whole neighbourhood
-							count = 0;
-							k = (x + y) & 1;
-							if (k === 0) {
-								width = yrange + 1;
-								for (j = -yrange; j < 0; j += 1) {
-									colourRow = colourGrid[y + j];
-									for (i = -width; i < width; i += 2) {
-										if (colourRow[x + i] >= aliveStart) {
-											count += 1;
-										}
-										if (colourRow[x + i + 1] >= aliveStart) {
-											count += 1;
-										}
-									}
-									if (colourRow[x + i] >= aliveStart) {
-										count += 1;
-									}
-									width += 1;
-								}
-								for (j = 0; j <= yrange; j += 1) {
-									width -= 1;
-									colourRow = colourGrid[y + j];
-									for (i = -width; i < width; i += 2) {
-										if (colourRow[x + i] >= aliveStart) {
-											count += 1;
-										}
-										if (colourRow[x + i + 1] >= aliveStart) {
-											count += 1;
-										}
-									}
-									if (colourRow[x + i] >= aliveStart) {
-										count += 1;
-									}
-								}
-							} else {
-								width = yrange;
-								for (j = -yrange; j <= 0; j += 1) {
-									colourRow = colourGrid[y + j];
-									for (i = -width; i < width; i += 2) {
-										if (colourRow[x + i] >= aliveStart) {
-											count += 1;
-										}
-										if (colourRow[x + i + 1] >= aliveStart) {
-											count += 1;
-										}
-									}
-									if (colourRow[x + i] >= aliveStart) {
-										count += 1;
-									}
-									width += 1;
-								}
-								for (j = 1; j <= yrange; j += 1) {
-									width -= 1;
-									colourRow = colourGrid[y + j];
-									for (i = -width; i < width; i += 2) {
-										if (colourRow[x + i] >= aliveStart) {
-											count += 1;
-										}
-										if (colourRow[x + i + 1] >= aliveStart) {
-											count += 1;
-										}
-									}
-									if (colourRow[x + i] >= aliveStart) {
-										count += 1;
-									}
-								}
-							}
-							countRow[x] = count;
-
-							// for the remaining cells compute the edge differences
-							x += 1;
-							while (x <= rightX + xrange) {
-								k = (x + y) & 1;
-								if (k === 0) {
-									width = yrange + 1;
-									l = yrange;
-									for (j = -yrange; j < 0; j += 1) {
-										colourRow = colourGrid[y + j];
-										if (colourRow[x + l] >= aliveStart) {
-											count += 1;
-										}
-										l += 1;
-										if (colourRow[x + l] >= aliveStart) {
-											count += 1;
-										}
-										width += 1;
-									}
-
-									// j === 0 case
-									width -= 1;
-									colourRow = colourGrid[y];
-									if (colourRow[x - l - 1] >= aliveStart) {
-										count -= 1;
-									}
-									if (colourRow[x + l] >= aliveStart) {
-										count += 1;
-									}
-									l += 1;
-
-									for (j = 1; j <= yrange; j += 1) {
-										width -= 1;
-										l -= 1;
-										colourRow = colourGrid[y + j];
-										if (colourRow[x - l - 1] >= aliveStart) {
-											count -= 1;
-										}
-										if (colourRow[x - l] >= aliveStart) {
-											count -= 1;
-										}
-									}
-								} else {
-									width = yrange;
-									l = yrange + 1;
-									for (j = -yrange; j < 0; j += 1) {
-										colourRow = colourGrid[y + j];
-										if (colourRow[x - l - 1] >= aliveStart) {
-											count -= 1;
-										}
-										if (colourRow[x - l] >= aliveStart) {
-											count -= 1;
-										}
-										width += 1;
-										l += 1;
-									}
-
-									// j === 0 case
-									l -= 1;
-									colourRow = colourGrid[y];
-									if (colourRow[x - l - 1] >= aliveStart) {
-										count -= 1;
-									}
-									if (colourRow[x + l] >= aliveStart) {
-										count += 1;
-									}
-									width += 1;
-
-									for (j = 1; j <= yrange; j += 1) {
-										width -= 1;
-										l -= 1;
-										colourRow = colourGrid[y + j];
-										if (colourRow[x + l] >= aliveStart) {
-											count += 1;
-										}
-										if (colourRow[x + l + 1] >= aliveStart) {
-											count += 1;
-										}
-									}
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}
+						this.nextGenerationTriangular2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.gaussianHROT:
 						// gaussian
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = -yrange; j < 0; j += 1) {
-									inc = j + yrange + 1;
-									weight = inc;
-									colourRow = colourGrid[y + j];
-									for (i = -xrange; i <= 0; i += 1) {
-										if (colourRow[x + i] >= aliveStart) {
-											count += weight;
-										}
-										weight += inc;
-									}
-									weight -= inc + inc;
-									for (i = 1; i <= xrange; i += 1) {
-										if (colourRow[x + i] >= aliveStart) {
-											count += weight;
-										}
-										weight -= inc;
-									}
-									inc = j + yrange + 1;
-									weight = inc;
-									colourRow = colourGrid[y - j];
-									for (i = -xrange; i <= 0; i += 1) {
-										if (colourRow[x + i] >= aliveStart) {
-											count += weight;
-										}
-										weight += inc;
-									}
-									weight -= inc + inc;
-									for (i = 1; i <= xrange; i += 1) {
-										if (colourRow[x + i] >= aliveStart) {
-											count += weight;
-										}
-										weight -= inc;
-									}
-								}
-								inc = xrange + 1;
-								weight = inc;
-								colourRow = colourGrid[y];
-								for (i = -xrange; i <= 0; i += 1) {
-									if (colourRow[x + i] >= aliveStart) {
-										count += weight;
-									}
-									weight += inc;
-								}
-								weight -= inc + inc;
-								for (i = 1; i <= xrange; i += 1) {
-									if (colourRow[x + i] >= aliveStart) {
-										count += weight;
-									}
-									weight -= inc;
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}
+						this.nextGenerationGuassian2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					default:
 						// L2, circular, or short range von Neumann
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							// for the first cell in the row count the entire neighborhood
-							count = 0;
-							for (j = -yrange; j <= yrange; j += 1) {
-								width = widths[j + yrange];
-								colourRow = colourGrid[y + j];
-								for (i = -width; i < width; i += 2) {
-									if (colourRow[x + i] >= aliveStart) {
-										count += 1;
-									}
-									if (colourRow[x + i + 1] >= aliveStart) {
-										count += 1;
-									}
-								}
-								if (colourRow[x + i] >= aliveStart) {
-									count += 1;
-								}
-							}
-							countRow[x] = count;
-							x += 1;
-			
-							// for the remaining rows subtract the left and add the right cells
-							while (x <= rightX + xrange) {
-								for (j = -yrange; j <= yrange; j += 1) {
-									width = widths[j + yrange];
-									colourRow = colourGrid[y + j];
-									if (colourRow[x - width - 1] >= aliveStart) {
-										count -= 1;
-									}
-									if (colourRow[x + width] >= aliveStart) {
-										count += 1;
-									}
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}	
+						this.nextGenerationShaped2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 				}
 			}
@@ -2286,14 +2589,1044 @@
 		}
 	};
 
+	// 2-state corner/edge
+	HROT.prototype.nextGenerationCornerEdgeN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+			/** @const {number} */ cornerRange = this.cornerRange,
+			/** @const {number} */ edgeRange = this.edgeRange,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// asterisk
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			while (x <= rightX + xrange) {
+				count = 0;
+
+				// corners
+				colourRow = colourGrid[y - cornerRange];
+				if (colourRow[x - cornerRange] === maxGenState) {
+					count += 1;
+				}
+				if (colourRow[x + cornerRange] === maxGenState) {
+					count += 1;
+				}
+				colourRow = colourGrid[y + cornerRange];
+				if (colourRow[x - cornerRange] === maxGenState) {
+					count += 1;
+				}
+				if (colourRow[x + cornerRange] === maxGenState) {
+					count += 1;
+				}
+
+				// edges
+				if (colourGrid[y - edgeRange][x] === maxGenState) {
+					count += 1;
+				}
+				if (colourGrid[y + edgeRange][x] === maxGenState) {
+					count += 1;
+				}
+				colourRow = colourGrid[y];
+				if (colourRow[x - edgeRange] === maxGenState) {
+					count += 1;
+				}
+				if (colourRow[x + edgeRange] === maxGenState) {
+					count += 1;
+				}
+
+				if (colourRow[x] === maxGenState) {
+					count += 1;
+				}
+
+				// save count
+				countRow[x] = count;
+				x += 1;
+			}
+		}	
+	};
+	// 2-state asterisk
+	HROT.prototype.nextGenerationAsteriskN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// asterisk
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			while (x <= rightX + xrange) {
+				count = 0;
+				for (j = -yrange; j < 0; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (colourRow[x] === maxGenState) {
+						count += 1;
+					}
+					if (colourRow[x + j] === maxGenState) {
+						count += 1;
+					}
+				}
+				colourRow = colourGrid[y];
+				for (i = -xrange; i <= xrange; i += 1) {
+					if (colourRow[x + i] === maxGenState) {
+						count += 1;
+					}
+				}
+				for (j = 1; j <= xrange; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (colourRow[x] === maxGenState) {
+						count += 1;
+					}
+					if (colourRow[x + j] === maxGenState) {
+						count += 1;
+					}
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}	
+	};
+
+	// 2-state tripod
+	HROT.prototype.nextGenerationTripodN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// tripod
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			while (x <= rightX + xrange) {
+				count = 0;
+				for (j = -yrange; j < 0; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (colourRow[x] === maxGenState) {
+						count += 1;
+					}
+				}
+				colourRow = colourGrid[y];
+				for (i = -xrange; i <= 0; i += 1) {
+					if (colourRow[x + i] === maxGenState) {
+						count += 1;
+					}
+				}
+				for (j = 1; j <= xrange; j += 1) {
+					if (colourGrid[y + j][x + j] === maxGenState) {
+						count += 1;
+					}
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}	
+	};
+
+	// 2-state weighted
+	HROT.prototype.nextGenerationWeightedN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ k,
+			/** @type {number} */ l,
+			/** @type {number} */ deadWeight,
+			/** @type {number} */ aliveWeight,
+			/** @type {number} */ count,
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// weighted
+		if (this.weightedStates === null) {
+			// no weighted states
+			for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+				countRow = counts[y];
+				x = leftX - xrange;
+				while (x <= rightX + xrange) {
+					if (this.isTriangular && (((x + y) & 1) !== 0)) {
+						l = -(xrange + xrange + 1);
+						k = this.weightedNeighbourhood.length + l;
+						l += l;
+					} else {
+						k = 0;
+						l = 0;
+					}
+					count = 0;
+					for (j = -yrange; j <= yrange; j += 1) {
+						colourRow = colourGrid[y + j];
+						for (i = -xrange; i <= xrange; i += 1) {
+							if (colourRow[x + i] === maxGenState) {
+								count += this.weightedNeighbourhood[k];
+							}
+							k += 1;
+						}
+						k += l;
+					}
+					countRow[x] = count;
+					x += 1;
+				}
+			}
+		} else {
+			// weighted states
+			if (xrange === 1 && yrange === 1 && !this.isTriangular) {
+				this.nextGenerationWeightedGenerations(bottomY, topY, leftX, rightX, xrange);
+			} else {
+				deadWeight = this.weightedStates[0];
+				aliveWeight = this.weightedStates[1];
+				for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+					countRow = counts[y];
+					x = leftX - xrange;
+					while (x <= rightX + xrange) {
+						if (this.isTriangular && (((x + y) & 1) !== 0)) {
+							l = -(xrange + xrange + 1);
+							k = this.weightedNeighbourhood.length + l;
+							l += l;
+						} else {
+							k = 0;
+							l = 0;
+						}
+						count = 0;
+						for (j = -yrange; j <= yrange; j += 1) {
+							colourRow = colourGrid[y + j];
+							for (i = -xrange; i <= xrange; i += 1) {
+								if (colourRow[x + i] === maxGenState) {
+									count += this.weightedNeighbourhood[k] * aliveWeight;
+								} else {
+									count += this.weightedNeighbourhood[k] * deadWeight;
+								}
+								k += 1;
+							}
+							k += l;
+						}
+						countRow[x] = count;
+						x += 1;
+					}
+				}
+			}
+		}
+	};
+
+	// 2-state custom
+	HROT.prototype.nextGenerationCustomN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ k,
+			/** @type {number} */ l,
+			/** @type {number} */ count,
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+			/** @type {Int16Array} */ neighbourList = this.neighbourList,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// custom
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			while (x <= rightX + xrange) {
+				count = 0;
+				j = 0;
+				while (j < neighbourList.length) {
+					// get the row number
+					i = neighbourList[j];
+					if (this.isTriangular && (((x + y) & 1) === 0)) {
+						i = -i;
+					}
+					j += 1;
+					colourRow = colourGrid[y + i];
+
+					// get the count of items in the row
+					k = neighbourList[j];
+					j += 1;
+					for (l = j; l < j + k; l += 1) {
+						if (colourRow[x + neighbourList[l]] === maxGenState) {
+							count += 1;
+						}
+					}
+					j += k;
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}
+	};
+
+	// 2-state hash
+	HROT.prototype.nextGenerationHashN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @type {number} */ rowCount,
+			/** @type {number} */ rowCount2,
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// hash
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			// for the first cell count the entire neighbourhood
+			count = 0;
+			rowCount = 0;
+			rowCount2 = 0;
+			for (j = -yrange; j <= yrange; j += 1) {
+				colourRow = colourGrid[y + j];
+				if (j === 1) {
+					for (i = -xrange; i <= xrange; i += 1) {
+						if (colourRow[x + i] === maxGenState) {
+							rowCount += 1;
+						}
+					}
+				} else {
+					if (j === -1) {
+						for (i = -xrange; i <= xrange; i += 1) {
+							if (colourRow[x + i] === maxGenState) {
+								rowCount2 += 1;
+							}
+						}
+					} else {
+						if (colourRow[x - 1] === maxGenState) {
+							count += 1;
+						}
+						if (colourRow[x + 1] === maxGenState) {
+							count += 1;
+						}
+					}
+				}
+			}
+			if (colourGrid[y][x] === maxGenState) {
+				count += 1;
+			}
+			countRow[x] = count + rowCount + rowCount2;
+			x += 1;
+
+			// handle remaining rows
+			while (x <= rightX + xrange) {
+				count = 0;
+				for (j = -yrange; j <= yrange; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (j === 1) {
+						if (colourRow[x - xrange - 1] === maxGenState) {
+							rowCount -= 1;
+						}
+						if (colourRow[x + xrange] === maxGenState) {
+							rowCount += 1;
+						}
+					} else {
+						if (j === -1) {
+							if (colourRow[x - xrange - 1] === maxGenState) {
+								rowCount2 -= 1;
+							}
+							if (colourRow[x + xrange] === maxGenState) {
+								rowCount2 += 1;
+							}
+						} else {
+							if (colourRow[x - 1] === maxGenState) {
+								count += 1;
+							}
+							if (colourRow[x + 1] === maxGenState) {
+								count += 1;
+							}
+						}
+					}
+				}
+				// check for survival
+				if (colourGrid[y][x] === maxGenState) {
+					count += 1;
+				}
+				countRow[x] = count + rowCount + rowCount2;
+				x += 1;
+			}
+		}	
+	};
+
+	// 2-state checkerboard
+	HROT.prototype.nextGenerationCheckerboardN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @type {number} */ count2,
+			/** @type {number} */ offset,
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// checkerboard
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+
+			// for the first two cells in a row count the entire neighbourhood
+			count = 0;
+			offset = 1;
+			for (j = -yrange; j <= yrange; j += 1) {
+				colourRow = colourGrid[y + j];
+				for (i = -xrange + offset; i <= xrange - offset; i += 2) {
+					if (colourRow[x + i] === maxGenState) {
+						count += 1;
+					}
+				}
+				offset = 1 - offset;
+			}
+
+			// check for survival
+			if (colourGrid[y][x] === maxGenState) {
+				count += 1;
+			}
+			countRow[x] = count;
+			x += 1;
+
+			// check if there are two cells in the row
+			if (x <= rightX + xrange) {
+				count2 = 0;
+				offset = 1;
+				for (j = -yrange; j <= yrange; j += 1) {
+					colourRow = colourGrid[y + j];
+					for (i = -xrange + offset; i <= xrange - offset; i += 2) {
+						if (colourRow[x + i] === maxGenState) {
+							count2 += 1;
+						}
+					}
+					offset = 1 - offset;
+				}
+
+				// check for survival
+				if (colourGrid[y][x] === maxGenState) {
+					count2 += 1;
+				}
+				countRow[x] = count2;
+				x += 1;
+
+				// for the remaining cell pairs on the row subtract the left and add the right cells
+				while (x <= rightX + xrange) {
+					offset = 1;
+					for (j = -yrange; j <= yrange; j += 1) {
+						colourRow = colourGrid[y + j];
+						if (colourRow[x - xrange + offset - 2] === maxGenState) {
+							count -= 1;
+						}
+						if (colourRow[x + xrange - offset] === maxGenState) {
+							count += 1;
+						}
+						offset = 1 - offset;
+					}
+
+					// check for survival
+					if (colourGrid[y][x - 2] === maxGenState) {
+						count -= 1;
+					}
+					if (colourGrid[y][x] === maxGenState) {
+						count += 1;
+					}
+					countRow[x] = count;
+					x += 1;
+
+					if (x <= rightX + xrange) {
+						offset = 1;
+						for (j = -yrange; j <= yrange; j += 1) {
+							colourRow = colourGrid[y + j];
+							if (colourRow[x - xrange + offset - 2] === maxGenState) {
+								count2 -= 1;
+							}
+							if (colourRow[x + xrange - offset] === maxGenState) {
+								count2 += 1;
+							}
+							offset = 1 - offset;
+						}
+
+						// check for survival
+						if (colourGrid[y][x - 2] === maxGenState) {
+							count2 -= 1;
+						}
+						if (colourGrid[y][x] === maxGenState) {
+							count2 += 1;
+						}
+						countRow[x] = count2;
+						x += 1;
+					}
+				}
+			}
+		}
+	};
+
+	// 2-state hexagonal
+	HROT.prototype.nextGenerationHexagonalN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// hexagonal
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			// for the first cell count the entire neighbourhood
+			count = 0;
+			for (j = -yrange; j < 0; j += 1) {
+				colourRow = colourGrid[y + j];
+				for (i = -xrange; i <= xrange + j; i += 1) {
+					if (colourRow[x + i] === maxGenState) {
+						count += 1;
+					}
+				}
+			}
+			for (j = 0; j <= yrange; j += 1) {
+				colourRow = colourGrid[y + j];
+				for (i = -xrange + j; i <= xrange; i += 1) {
+					if (colourRow[x + i] === maxGenState) {
+						count += 1;
+					}
+				}
+			}
+			countRow[x] = count;
+			x += 1;
+
+			// for the remaining rows subtract the left and add the right cells
+			while (x <= rightX + xrange) {
+				for (j = -yrange; j < 0; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (colourRow[x - xrange - 1] === maxGenState) {
+						count -= 1;
+					}
+					if (colourRow[x + xrange + j] === maxGenState) {
+						count += 1;
+					}
+				}
+				for (j = 0; j <= yrange; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (colourRow[x - xrange + j - 1] === maxGenState) {
+						count -= 1;
+					}
+					if (colourRow[x + xrange] === maxGenState) {
+						count += 1;
+					}
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}
+	};
+
+	// 2-state saltire
+	HROT.prototype.nextGenerationSaltireN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// saltire
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			while (x <= rightX + xrange) {
+				count = 0;
+				for (j = 1; j <= yrange; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (colourRow[x - j] === maxGenState) {
+						count += 1;
+					}
+					if (colourRow[x + j] === maxGenState) {
+						count += 1;
+					}
+					colourRow = colourGrid[y - j];
+					if (colourRow[x - j] === maxGenState) {
+						count += 1;
+					}
+					if (colourRow[x + j] === maxGenState) {
+						count += 1;
+					}
+				}
+				colourRow = colourGrid[y];
+				if (colourRow[x] === maxGenState) {
+					count += 1;
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}	
+	};
+
+	// 2-state star
+	HROT.prototype.nextGenerationStarN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// star
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			while (x <= rightX + xrange) {
+				count = 0;
+				for (j = 1; j <= yrange; j += 1) {
+					colourRow = colourGrid[y + j];
+					if (colourRow[x - j] === maxGenState) {
+						count += 1;
+					}
+					if (colourRow[x + j] === maxGenState) {
+						count += 1;
+					}
+					if (colourRow[x] === maxGenState) {
+						count += 1;
+					}
+					colourRow = colourGrid[y - j];
+					if (colourRow[x - j] === maxGenState) {
+						count += 1;
+					}
+					if (colourRow[x + j] === maxGenState) {
+						count += 1;
+					}
+					if (colourRow[x] === maxGenState) {
+						count += 1;
+					}
+				}
+				colourRow = colourGrid[y];
+				for (i = -xrange; i <= xrange; i += 1) {
+					if (colourRow[x + i] === maxGenState) {
+						count += 1;
+					}
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}	
+	};
+
+	// 2-state cross
+	HROT.prototype.nextGenerationCrossN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @type {number} */ rowCount,
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// cross
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			// for the first cell count the entire neighbourhood
+			count = 0;
+			rowCount = 0;
+			for (j = 1; j <= yrange; j += 1) {
+				colourRow = colourGrid[y + j];
+				if (colourRow[x] === maxGenState) {
+					count += 1;
+				}
+				colourRow = colourGrid[y - j];
+				if (colourRow[x] === maxGenState) {
+					count += 1;
+				}
+			}
+			colourRow = colourGrid[y];
+			for (i = -xrange; i <= xrange; i += 1) {
+				if (colourRow[x + i] === maxGenState) {
+					rowCount += 1;
+				}
+			}
+			countRow[x] = count + rowCount;
+			x += 1;
+
+			// for remaining rows subtract the left and the right cells
+			while (x <= rightX + xrange) {
+				count = 0;
+				for (j = 1; j <= yrange; j += 1) {
+					if (colourGrid[y + j][x] === maxGenState) {
+						count += 1;
+					}
+					if (colourGrid[y - j][x] === maxGenState) {
+						count += 1;
+					}
+				}
+				colourRow = colourGrid[y];
+				if (colourRow[x - xrange - 1] === maxGenState) {
+					rowCount -= 1;
+				}
+				if (colourRow[x + xrange] === maxGenState) {
+					rowCount += 1;
+				}
+				countRow[x] = count + rowCount;
+				x += 1;
+			}
+		}	
+	};
+
+	// 2-state triangular
+	HROT.prototype.nextGenerationTriangularN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ k,
+			/** @type {number} */ l,
+			/** @type {number} */ count,
+			/** @type {number} */ width,
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// triangular
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			
+			// for the first cell compute the whole neighbourhood
+			count = 0;
+			k = (x + y) & 1;
+			if (k === 0) {
+				width = yrange + 1;
+				for (j = -yrange; j < 0; j += 1) {
+					colourRow = colourGrid[y + j];
+					for (i = -width; i < width; i += 2) {
+						if (colourRow[x + i] === maxGenState) {
+							count += 1;
+						}
+						if (colourRow[x + i + 1] === maxGenState) {
+							count += 1;
+						}
+					}
+					if (colourRow[x + i] === maxGenState) {
+						count += 1;
+					}
+					width += 1;
+				}
+				for (j = 0; j <= yrange; j += 1) {
+					width -= 1;
+					colourRow = colourGrid[y + j];
+					for (i = -width; i < width; i += 2) {
+						if (colourRow[x + i] === maxGenState) {
+							count += 1;
+						}
+						if (colourRow[x + i + 1] === maxGenState) {
+							count += 1;
+						}
+					}
+					if (colourRow[x + i] === maxGenState) {
+						count += 1;
+					}
+				}
+			} else {
+				width = yrange;
+				for (j = -yrange; j <= 0; j += 1) {
+					colourRow = colourGrid[y + j];
+					for (i = -width; i < width; i += 2) {
+						if (colourRow[x + i] === maxGenState) {
+							count += 1;
+						}
+						if (colourRow[x + i + 1] === maxGenState) {
+							count += 1;
+						}
+					}
+					if (colourRow[x + i] === maxGenState) {
+						count += 1;
+					}
+					width += 1;
+				}
+				for (j = 1; j <= yrange; j += 1) {
+					width -= 1;
+					colourRow = colourGrid[y + j];
+					for (i = -width; i < width; i += 2) {
+						if (colourRow[x + i] === maxGenState) {
+							count += 1;
+						}
+						if (colourRow[x + i + 1] === maxGenState) {
+							count += 1;
+						}
+					}
+					if (colourRow[x + i] === maxGenState) {
+						count += 1;
+					}
+				}
+			}
+			countRow[x] = count;
+
+			// for the remaining cells compute the edge differences
+			x += 1;
+			while (x <= rightX + xrange) {
+				k = (x + y) & 1;
+				if (k === 0) {
+					width = yrange + 1;
+					l = yrange;
+					for (j = -yrange; j < 0; j += 1) {
+						colourRow = colourGrid[y + j];
+						if (colourRow[x + l] === maxGenState) {
+							count += 1;
+						}
+						l += 1;
+						if (colourRow[x + l] === maxGenState) {
+							count += 1;
+						}
+						width += 1;
+					}
+
+					// j === 0 case
+					width -= 1;
+					colourRow = colourGrid[y];
+					if (colourRow[x - l - 1] === maxGenState) {
+						count -= 1;
+					}
+					if (colourRow[x + l] === maxGenState) {
+						count += 1;
+					}
+					l += 1;
+
+					for (j = 1; j <= yrange; j += 1) {
+						width -= 1;
+						l -= 1;
+						colourRow = colourGrid[y + j];
+						if (colourRow[x - l - 1] === maxGenState) {
+							count -= 1;
+						}
+						if (colourRow[x - l] === maxGenState) {
+							count -= 1;
+						}
+					}
+				} else {
+					width = yrange;
+					l = yrange + 1;
+					for (j = -yrange; j < 0; j += 1) {
+						colourRow = colourGrid[y + j];
+						if (colourRow[x - l - 1] === maxGenState) {
+							count -= 1;
+						}
+						if (colourRow[x - l] === maxGenState) {
+							count -= 1;
+						}
+						width += 1;
+						l += 1;
+					}
+
+					// j === 0 case
+					l -= 1;
+					colourRow = colourGrid[y];
+					if (colourRow[x - l - 1] === maxGenState) {
+						count -= 1;
+					}
+					if (colourRow[x + l] === maxGenState) {
+						count += 1;
+					}
+					width += 1;
+
+					for (j = 1; j <= yrange; j += 1) {
+						width -= 1;
+						l -= 1;
+						colourRow = colourGrid[y + j];
+						if (colourRow[x + l] === maxGenState) {
+							count += 1;
+						}
+						if (colourRow[x + l + 1] === maxGenState) {
+							count += 1;
+						}
+					}
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}
+	};
+
+	// 2-state gaussian
+	HROT.prototype.nextGenerationGuassianN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ inc,
+			/** @type {number} */ weight,
+			/** @type {number} */ count,
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// gaussian
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			while (x <= rightX + xrange) {
+				count = 0;
+				for (j = -yrange; j < 0; j += 1) {
+					inc = j + yrange + 1;
+					weight = inc;
+					colourRow = colourGrid[y + j];
+					for (i = -xrange; i <= 0; i += 1) {
+						if (colourRow[x + i] === maxGenState) {
+							count += weight;
+						}
+						weight += inc;
+					}
+					weight -= inc + inc;
+					for (i = 1; i <= xrange; i += 1) {
+						if (colourRow[x + i] === maxGenState) {
+							count += weight;
+						}
+						weight -= inc;
+					}
+					inc = j + yrange + 1;
+					weight = inc;
+					colourRow = colourGrid[y - j];
+					for (i = -xrange; i <= 0; i += 1) {
+						if (colourRow[x + i] === maxGenState) {
+							count += weight;
+						}
+						weight += inc;
+					}
+					weight -= inc + inc;
+					for (i = 1; i <= xrange; i += 1) {
+						if (colourRow[x + i] === maxGenState) {
+							count += weight;
+						}
+						weight -= inc;
+					}
+				}
+				inc = xrange + 1;
+				weight = inc;
+				colourRow = colourGrid[y];
+				for (i = -xrange; i <= 0; i += 1) {
+					if (colourRow[x + i] === maxGenState) {
+						count += weight;
+					}
+					weight += inc;
+				}
+				weight -= inc + inc;
+				for (i = 1; i <= xrange; i += 1) {
+					if (colourRow[x + i] === maxGenState) {
+						count += weight;
+					}
+					weight -= inc;
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}
+	};
+
+	// 2-state shaped
+	HROT.prototype.nextGenerationShapedN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		var counts = this.counts,
+			/** @type {number} */ x,
+			/** @type {number} */ y,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {number} */ count,
+			/** @type {number} */ width,
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+			widths = this.widths,
+			countRow = null,
+			colourRow = null,
+			colourGrid = this.engine.colourGrid;
+
+		// L2, circular, or short range von Neumann
+		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+			countRow = counts[y];
+			x = leftX - xrange;
+			// for the first cell in the row count the entire neighborhood
+			count = 0;
+			for (j = -yrange; j <= yrange; j += 1) {
+				width = widths[j + yrange];
+				colourRow = colourGrid[y + j];
+				for (i = -width; i < width; i += 2) {
+					if (colourRow[x + i] === maxGenState) {
+						count += 1;
+					}
+					if (colourRow[x + i + 1] === maxGenState) {
+						count += 1;
+					}
+				}
+				if (colourRow[x + i] === maxGenState) {
+					count += 1;
+				}
+			}
+			countRow[x] = count;
+			x += 1;
+
+			// for the remaining rows subtract the left and add the right cells
+			while (x <= rightX + xrange) {
+				for (j = -yrange; j <= yrange; j += 1) {
+					width = widths[j + yrange];
+					colourRow = colourGrid[y + j];
+					if (colourRow[x - width - 1] === maxGenState) {
+						count -= 1;
+					}
+					if (colourRow[x + width] === maxGenState) {
+						count += 1;
+					}
+				}
+				countRow[x] = count;
+				x += 1;
+			}
+		}	
+	};
+
 	// update the life grid region using HROT for >2 state patterns
 	HROT.prototype.nextGenerationHROTN = function(/** @type {boolean} */ useAlternate) {
 		var /** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
-			/** @type {number} */ k = 0,
-			/** @type {number} */ l = 0,
 			/** @type {number} */ leftX = this.engine.zoomBox.leftX,
 			/** @type {number} */ rightX = this.engine.zoomBox.rightX,
 			/** @type {number} */ bottomY = this.engine.zoomBox.bottomY,
@@ -2310,7 +3643,6 @@
 			counts = this.counts,
 			/** @const {number} */ type = this.type,
 			/** @type {number} */ count = 0,
-			/** @type {number} */ count2 = 0,
 			/** @type {number} */ minX = this.engine.width,
 			/** @type {number} */ maxX = 0,
 			/** @type {number} */ minY = this.engine.height,
@@ -2324,8 +3656,6 @@
 			colourRow = null, countRowYpr = null, countRowYmrp1 = null,
 			colourTileRow = null,
 			countRow = null, prevCountRow = null,
-			widths = this.widths,
-			/** @type {number} */ width = 0,
 			/** @const {number} */ bgWidth = this.engine.boundedGridWidth,
 			/** @const {number} */ bgHeight = this.engine.boundedGridHeight,
 			/** @type {number} */ gridLeftX = 0,
@@ -2338,7 +3668,6 @@
 			/** @type {number} */ state = 0,
 			/** @type {number} */ xpr = 0,
 			/** @type {number} */ xmrp1 = 0,
-			/** @type {number} */ rowCount = 0,
 			/** @type {boolean} */ rowAlive = false,
 			/** @type {boolean} */ colAlive = false,
 			/** @type {boolean} */ liveRowAlive = false,
@@ -2353,11 +3682,6 @@
 			/** @type {number} */ jpr = 0,
 			/** @type {number} */ jmr = 0,
 			/** @type {number} */ jpmincol = 0,
-			/** @type {number} */ offset = 0,
-			/** @type {number} */ weight = 0,
-			/** @type {number} */ inc = 0,
-			/** @type {number} */ deadWeight = 0,
-			/** @type {Int16Array} */ neighbourList = this.neighbourList,
 
 			// maximum generations state
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
@@ -2911,784 +4235,77 @@
 			} else {
 				// determine neighbourhood type
 				switch (type) {
+					case this.manager.cornerEdgeHROT:
+						// corner/edge
+						this.nextGenerationCornerEdgeN(leftX, bottomY, rightX, topY, xrange, yrange);
+						break;
+
 					case this.manager.asteriskHROT:
 						// asterisk
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = -yrange; j < 0; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (colourRow[x] === maxGenState) {
-										count += 1;
-									}
-									if (colourRow[x + j] === maxGenState) {
-										count += 1;
-									}
-								}
-								colourRow = colourGrid[y];
-								for (i = -xrange; i <= xrange; i += 1) {
-									if (colourRow[x + i] === maxGenState) {
-										count += 1;
-									}
-								}
-								for (j = 1; j <= yrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (colourRow[x] === maxGenState) {
-										count += 1;
-									}
-									if (colourRow[x + j] === maxGenState) {
-										count += 1;
-									}
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}	
+						this.nextGenerationAsteriskN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.tripodHROT:
 						// tripod
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = -yrange; j < 0; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (colourRow[x] === maxGenState) {
-										count += 1;
-									}
-								}
-								colourRow = colourGrid[y];
-								for (i = -xrange; i <= 0; i += 1) {
-									if (colourRow[x + i] === maxGenState) {
-										count += 1;
-									}
-								}
-								for (j = 1; j <= yrange; j += 1) {
-									if (colourGrid[y + j][x + j] === maxGenState) {
-										count += 1;
-									}
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}	
+						this.nextGenerationTripodN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.weightedHROT:
 						// weighted
-						if (this.weightedStates === null) {
-							// no weighted states
-							for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-								countRow = counts[y];
-								x = leftX - xrange;
-								while (x <= rightX + xrange) {
-									if (this.isTriangular && (((x + y) & 1) !== 0)) {
-										l = -(xrange + xrange + 1);
-										k = this.weightedNeighbourhood.length + l;
-										l += l;
-									} else {
-										k = 0;
-										l = 0;
-									}
-									count = 0;
-									for (j = -yrange; j <= yrange; j += 1) {
-										colourRow = colourGrid[y + j];
-										for (i = -xrange; i <= xrange; i += 1) {
-											if (colourRow[x + i] === maxGenState) {
-												count += this.weightedNeighbourhood[k];
-											}
-											k += 1;
-										}
-										k += l;
-									}
-									countRow[x] = count;
-									x += 1;
-								}
-							}
-						} else {
-							// weighted states
-							if (xrange === 1 && yrange === 1 && !this.isTriangular) {
-								this.nextGenerationWeightedGenerations(bottomY, topY, leftX, rightX, xrange);
-							} else {
-								deadWeight = this.weightedStates[0];
-								for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-									countRow = counts[y];
-									x = leftX - xrange;
-									while (x <= rightX + xrange) {
-										if (this.isTriangular && (((x + y) & 1) !== 0)) {
-											l = -(xrange + xrange + 1);
-											k = this.weightedNeighbourhood.length + l;
-											l += l;
-										} else {
-											k = 0;
-											l = 0;
-										}
-										count = 0;
-										for (j = -yrange; j <= yrange; j += 1) {
-											colourRow = colourGrid[y + j];
-											for (i = -xrange; i <= xrange; i += 1) {
-												state = colourRow[x + i];
-												if (state > deadState) {
-													count += this.weightedNeighbourhood[k] * this.weightedStates[maxGenState + 1 - state];
-												} else {
-													if (deadWeight > 0) {
-														count += deadWeight * this.weightedNeighbourhood[k];
-													}
-												}
-												k += 1;
-											}
-											k += l;
-										}
-										countRow[x] = count;
-										x += 1;
-									}
-								}
-							}
-						}
+						this.nextGenerationWeightedN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.customHROT:
 						// custom
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
-								j = 0;
-								while (j < neighbourList.length) {
-									// get the row number
-									i = neighbourList[j];
-									if (this.isTriangular && (((x + y) & 1) === 0)) {
-										i = -i;
-									}
-									j += 1;
-									colourRow = colourGrid[y + i];
-
-									// get the count of items in the row
-									k = neighbourList[j];
-									j += 1;
-									for (l = j; l < j + k; l += 1) {
-										if (colourRow[x + neighbourList[l]] === maxGenState) {
-											count += 1;
-										}
-									}
-									j += k;
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}	
+						this.nextGenerationCustomN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.hashHROT:
 						// hash
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							// for the first cell count the entire neighbourhood
-							count = 0;
-							rowCount = 0;
-							for (j = -yrange; j <= yrange; j += 1) {
-								colourRow = colourGrid[y + j];
-								if (j === 1 || j === -1) {
-									for (i = -xrange; i <= xrange; i += 1) {
-										if (colourRow[x + i] === maxGenState) {
-											rowCount += 1;
-										}
-									}
-								} else {
-									if (colourRow[x - 1] === maxGenState) {
-										count += 1;
-									}
-									if (colourRow[x + 1] === maxGenState) {
-										count += 1;
-									}
-								}
-							}
-							if (colourGrid[y][x] === maxGenState) {
-								count += 1;
-							}
-							countRow[x] = count + rowCount;
-							x += 1;
-
-							// handle remaining rows
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = -yrange; j <= yrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (j === 1 || j === -1) {
-										if (colourRow[x - xrange - 1] === maxGenState) {
-											rowCount -= 1;
-										}
-										if (colourRow[x + xrange] === maxGenState) {
-											rowCount += 1;
-										}
-									} else {
-										if (colourRow[x - 1] === maxGenState) {
-											count += 1;
-										}
-										if (colourRow[x + 1] === maxGenState) {
-											count += 1;
-										}
-									}
-								}
-								// check for survival
-								if (colourGrid[y][x] === maxGenState) {
-									count += 1;
-								}
-								countRow[x] = count + rowCount;
-								x += 1;
-							}
-						}	
+						this.nextGenerationHashN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.checkerHROT:
 						// checkerboard
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-
-							// for the first two cells in a row count the entire neighbourhood
-							count = 0;
-							offset = 1;
-							for (j = -yrange; j <= yrange; j += 1) {
-								colourRow = colourGrid[y + j];
-								for (i = -xrange + offset; i <= xrange - offset; i += 2) {
-									if (colourRow[x + i] === maxGenState) {
-										count += 1;
-									}
-								}
-								offset = 1 - offset;
-							}
-
-							// check for survival
-							if (colourGrid[y][x] === maxGenState) {
-								count += 1;
-							}
-							countRow[x] = count;
-							x += 1;
-
-							// check if there are two cells in the row
-							if (x <= rightX + xrange) {
-								count2 = 0;
-								offset = 1;
-								for (j = -yrange; j <= yrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									for (i = -xrange + offset; i <= xrange - offset; i += 2) {
-										if (colourRow[x + i] === maxGenState) {
-											count2 += 1;
-										}
-									}
-									offset = 1 - offset;
-								}
-
-								// check for survival
-								if (colourGrid[y][x] === maxGenState) {
-									count2 += 1;
-								}
-								countRow[x] = count2;
-								x += 1;
-
-								// for the remaining cell pairs on the row subtract the left and add the right cells
-								while (x <= rightX + xrange) {
-									offset = 1;
-									for (j = -yrange; j <= yrange; j += 1) {
-										colourRow = colourGrid[y + j];
-										if (colourRow[x - xrange + offset - 2] === maxGenState) {
-											count -= 1;
-										}
-										if (colourRow[x + xrange - offset] === maxGenState) {
-											count += 1;
-										}
-										offset = 1 - offset;
-									}
-
-									// check for survival
-									if (colourGrid[y][x - 2] === maxGenState) {
-										count -= 1;
-									}
-									if (colourGrid[y][x] === maxGenState) {
-										count += 1;
-									}
-									countRow[x] = count;
-									x += 1;
-
-									if (x <= rightX + xrange) {
-										offset = 1;
-										for (j = -yrange; j <= yrange; j += 1) {
-											colourRow = colourGrid[y + j];
-											if (colourRow[x - xrange + offset - 2] === maxGenState) {
-												count2 -= 1;
-											}
-											if (colourRow[x + xrange - offset] === maxGenState) {
-												count2 += 1;
-											}
-											offset = 1 - offset;
-										}
-
-										// check for survival
-										if (colourGrid[y][x - 2] === maxGenState) {
-											count2 -= 1;
-										}
-										if (colourGrid[y][x] === maxGenState) {
-											count2 += 1;
-										}
-										countRow[x] = count2;
-										x += 1;
-									}
-								}
-							}
-						}
+						this.nextGenerationCheckerboardN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.hexHROT:
-						// hex
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							// for the first cell count the entire neighbourhood
-							count = 0;
-							for (j = -yrange; j < 0; j += 1) {
-								colourRow = colourGrid[y + j];
-								for (i = -xrange; i <= xrange + j; i += 1) {
-									if ((colourRow[x + i]) === maxGenState) {
-										count += 1;
-									}
-								}
-							}
-							for (j = 0; j <= yrange; j += 1) {
-								colourRow = colourGrid[y + j];
-								for (i = -xrange + j; i <= xrange; i += 1) {
-									if ((colourRow[x + i]) === maxGenState) {
-										count += 1;
-									}
-								}
-							}
-							countRow[x] = count;
-							x += 1;
-
-							// for the remaining rows subtract the left and add the right cells
-							while (x <= rightX + xrange) {
-								for (j = -yrange; j < 0; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (colourRow[x - xrange - 1] === maxGenState) {
-										count -= 1;
-									}
-									if (colourRow[x + xrange + j] === maxGenState) {
-										count += 1;
-									}
-								}
-								for (j = 0; j <= yrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									if (colourRow[x - xrange + j - 1] === maxGenState) {
-										count -= 1;
-									}
-									if (colourRow[x + xrange] === maxGenState) {
-										count += 1;
-									}
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}
-
+						// hexagonal
+						this.nextGenerationHexagonalN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.saltireHROT:
 						// saltire
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = 1; j <= yrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									if ((colourRow[x - j]) === maxGenState) {
-										count += 1;
-									}
-									if ((colourRow[x + j]) === maxGenState) {
-										count += 1;
-									}
-									colourRow = colourGrid[y - j];
-									if ((colourRow[x - j]) === maxGenState) {
-										count += 1;
-									}
-									if ((colourRow[x + j]) === maxGenState) {
-										count += 1;
-									}
-								}
-								colourRow = colourGrid[y];
-								if ((colourRow[x]) === maxGenState) {
-									count += 1;
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}	
+						this.nextGenerationSaltireN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.starHROT:
 						// star
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = 1; j <= yrange; j += 1) {
-									colourRow = colourGrid[y + j];
-									if ((colourRow[x - j]) === maxGenState) {
-										count += 1;
-									}
-									if ((colourRow[x + j]) === maxGenState) {
-										count += 1;
-									}
-									if ((colourRow[x] === maxGenState)) {
-										count += 1;
-									}
-									colourRow = colourGrid[y - j];
-									if ((colourRow[x - j]) === maxGenState) {
-										count += 1;
-									}
-									if ((colourRow[x + j]) === maxGenState) {
-										count += 1;
-									}
-									if ((colourRow[x] === maxGenState)) {
-										count += 1;
-									}
-								}
-								colourRow = colourGrid[y];
-								for (i = -xrange; i <= xrange; i += 1) {
-									if ((colourRow[x + i]) === maxGenState) {
-										count += 1;
-									}
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}	
+						this.nextGenerationStarN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.crossHROT:
 						// cross
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							// for the first cell count the entire neighbourhood
-							count = 0;
-							rowCount = 0;
-							for (j = 1; j <= yrange; j += 1) {
-								colourRow = colourGrid[y + j];
-								if ((colourRow[x] === maxGenState)) {
-									count += 1;
-								}
-								colourRow = colourGrid[y - j];
-								if ((colourRow[x] === maxGenState)) {
-									count += 1;
-								}
-							}
-							colourRow = colourGrid[y];
-							for (i = -xrange; i <= xrange; i += 1) {
-								if ((colourRow[x + i]) === maxGenState) {
-									rowCount += 1;
-								}
-							}
-							countRow[x] = count + rowCount;
-							x += 1;
-
-							// for remaining rows subtract the left and the right cells
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = 1; j <= yrange; j += 1) {
-									if (colourGrid[y + j][x] === maxGenState) {
-										count += 1;
-									}
-									if (colourGrid[y - j][x] === maxGenState) {
-										count += 1;
-									}
-								}
-								colourRow = colourGrid[y];
-								if (colourRow[x - xrange - 1] === maxGenState) {
-									rowCount -= 1;
-								}
-								if (colourRow[x + xrange] === maxGenState) {
-									rowCount += 1;
-								}
-								countRow[x] = count + rowCount;
-								x += 1;
-							}
-						}	
+						this.nextGenerationCrossN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.triangularHROT:
 						// triangular
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							
-							// for the first cell compute the whole neighbourhood
-							count = 0;
-							k = (x + y) & 1;
-							if (k === 0) {
-								width = yrange + 1;
-								for (j = -yrange; j < 0; j += 1) {
-									colourRow = colourGrid[y + j];
-									for (i = -width; i < width; i += 2) {
-										if (colourRow[x + i] === maxGenState) {
-											count += 1;
-										}
-										if (colourRow[x + i + 1] === maxGenState) {
-											count += 1;
-										}
-									}
-									if (colourRow[x + i] === maxGenState) {
-										count += 1;
-									}
-									width += 1;
-								}
-								for (j = 0; j <= yrange; j += 1) {
-									width -= 1;
-									colourRow = colourGrid[y + j];
-									for (i = -width; i < width; i += 2) {
-										if (colourRow[x + i] === maxGenState) {
-											count += 1;
-										}
-										if (colourRow[x + i + 1] === maxGenState) {
-											count += 1;
-										}
-									}
-									if (colourRow[x + i] === maxGenState) {
-										count += 1;
-									}
-								}
-							} else {
-								width = yrange;
-								for (j = -yrange; j <= 0; j += 1) {
-									colourRow = colourGrid[y + j];
-									for (i = -width; i < width; i += 2) {
-										if (colourRow[x + i] === maxGenState) {
-											count += 1;
-										}
-										if (colourRow[x + i + 1] === maxGenState) {
-											count += 1;
-										}
-									}
-									if (colourRow[x + i] === maxGenState) {
-										count += 1;
-									}
-									width += 1;
-								}
-								for (j = 1; j <= yrange; j += 1) {
-									width -= 1;
-									colourRow = colourGrid[y + j];
-									for (i = -width; i < width; i += 2) {
-										if (colourRow[x + i] === maxGenState) {
-											count += 1;
-										}
-										if (colourRow[x + i + 1] === maxGenState) {
-											count += 1;
-										}
-									}
-									if (colourRow[x + i] === maxGenState) {
-										count += 1;
-									}
-								}
-							}
-							countRow[x] = count;
-
-							// for the remaining cells compute the edge differences
-							x += 1;
-							while (x <= rightX + xrange) {
-								k = (x + y) & 1;
-								if (k === 0) {
-									width = yrange + 1;
-									l = yrange;
-									for (j = -yrange; j < 0; j += 1) {
-										colourRow = colourGrid[y + j];
-										if (colourRow[x + l] === maxGenState) {
-											count += 1;
-										}
-										l += 1;
-										if (colourRow[x + l] === maxGenState) {
-											count += 1;
-										}
-										width += 1;
-									}
-
-									// j === 0 case
-									width -= 1;
-									colourRow = colourGrid[y];
-									if (colourRow[x - l - 1] === maxGenState) {
-										count -= 1;
-									}
-									if (colourRow[x + l] === maxGenState) {
-										count += 1;
-									}
-									l += 1;
-
-									for (j = 1; j <= yrange; j += 1) {
-										width -= 1;
-										l -= 1;
-										colourRow = colourGrid[y + j];
-										if (colourRow[x - l - 1] === maxGenState) {
-											count -= 1;
-										}
-										if (colourRow[x - l] === maxGenState) {
-											count -= 1;
-										}
-									}
-								} else {
-									width = yrange;
-									l = yrange + 1;
-									for (j = -yrange; j < 0; j += 1) {
-										colourRow = colourGrid[y + j];
-										if (colourRow[x - l - 1] === maxGenState) {
-											count -= 1;
-										}
-										if (colourRow[x - l] === maxGenState) {
-											count -= 1;
-										}
-										width += 1;
-										l += 1;
-									}
-
-									// j === 0 case
-									l -= 1;
-									colourRow = colourGrid[y];
-									if (colourRow[x - l - 1] === maxGenState) {
-										count -= 1;
-									}
-									if (colourRow[x + l] === maxGenState) {
-										count += 1;
-									}
-									width += 1;
-
-									for (j = 1; j <= yrange; j += 1) {
-										width -= 1;
-										l -= 1;
-										colourRow = colourGrid[y + j];
-										if (colourRow[x + l] === maxGenState) {
-											count += 1;
-										}
-										if (colourRow[x + l + 1] === maxGenState) {
-											count += 1;
-										}
-									}
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}
+						this.nextGenerationTriangularN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.gaussianHROT:
 						// gaussian
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							while (x <= rightX + xrange) {
-								count = 0;
-								for (j = -yrange; j < 0; j += 1) {
-									inc = j + yrange + 1;
-									weight = inc;
-									colourRow = colourGrid[y + j];
-									for (i = -xrange; i <= 0; i += 1) {
-										if (colourRow[x + i] === maxGenState) {
-											count += weight;
-										}
-										weight += inc;
-									}
-									weight -= inc + inc;
-									for (i = 1; i <= xrange; i += 1) {
-										if (colourRow[x + i] === maxGenState) {
-											count += weight;
-										}
-										weight -= inc;
-									}
-									inc = j + yrange + 1;
-									weight = inc;
-									colourRow = colourGrid[y - j];
-									for (i = -xrange; i <= 0; i += 1) {
-										if (colourRow[x + i] === maxGenState) {
-											count += weight;
-										}
-										weight += inc;
-									}
-									weight -= inc + inc;
-									for (i = 1; i <= xrange; i += 1) {
-										if (colourRow[x + i] === maxGenState) {
-											count += weight;
-										}
-										weight -= inc;
-									}
-								}
-								inc = xrange + 1;
-								weight = inc;
-								colourRow = colourGrid[y];
-								for (i = -xrange; i <= 0; i += 1) {
-									if (colourRow[x + i] === maxGenState) {
-										count += weight;
-									}
-									weight += inc;
-								}
-								weight -= inc + inc;
-								for (i = 1; i <= xrange; i += 1) {
-									if (colourRow[x + i] === maxGenState) {
-										count += weight;
-									}
-									weight -= inc;
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}
+						this.nextGenerationGuassianN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
+
 					default:
 						// L2, circular, or short range von Neumann
-						for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
-							countRow = counts[y];
-							x = leftX - xrange;
-							// for the first cell in the row count the entire neighborhood
-							count = 0;
-							for (j = -yrange; j <= yrange; j += 1) {
-								width = widths[j + yrange];
-								colourRow = colourGrid[y + j];
-								for (i = -width; i < width; i += 1) {
-									if ((colourRow[x + i]) === maxGenState) {
-										count += 1;
-									}
-									if ((colourRow[x + i + 1]) === maxGenState) {
-										count += 1;
-									}
-								}
-								if ((colourRow[x + i]) === maxGenState) {
-									count += 1;
-								}
-							}
-							countRow[x] = count;
-							x += 1;
-			
-							// for the remaining rows subtract the left and add the right cells
-							while (x <= rightX + xrange) {
-								for (j = -yrange; j <= yrange; j += 1) {
-									width = widths[j + yrange];
-									colourRow = colourGrid[y + j];
-									if (colourRow[x - width - 1] === maxGenState) {
-										count -= 1;
-									}
-									if (colourRow[x + width] === maxGenState) {
-										count += 1;
-									}
-								}
-								countRow[x] = count;
-								x += 1;
-							}
-						}	
+						this.nextGenerationShapedN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 				}
+
 			}
 		}
 
