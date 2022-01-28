@@ -1878,15 +1878,17 @@
 		y = this.renderHelpLine(view, "Decoders", "RLE, Life 1.06, Life 1.05, Cells", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "N'hoods", "Moore, Hexagonal, von Neumann, Triangular, 1D,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Circular, Cross, L2, Saltire, Star, Checkerboard,", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Hash, Tripod, Asterisk, Custom (CoordCA)", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Hash, Tripod, Asterisk, Far Corners/Edges and", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Custom (CoordCA)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Rules", "Wolfram, Totalistic, Generations, Margolus,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Isotropic Non-Totalistic (Hensel, Callahan),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Alternating, MAP, Larger than Life (LtL),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Higher-range outer-totalistic (HROT), Gaussian,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Partitioned cellular automata (PCA), Weighted,", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "[R]History, [R]Super", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Repository", "RuleTable (@TABLE, @TREE, @COLORS and @NAMES)", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "BoundedGrid", "Plane, Torus, Klein, Cross-surface, Sphere", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "[R]History and [R]Super", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Repository", "RuleTable (@TABLE, @TREE, @COLORS and", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "@NAMES)", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "BoundedGrid", "Plane, Torus, Klein, Cross-surface and Sphere", ctx, x, y, height, helpLine);
 
 		y = this.renderHelpLine(view, "Viewers", numViewers, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Playing", Controller.viewersPlaying(), ctx, x, y, height, helpLine);
