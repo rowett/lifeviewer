@@ -297,7 +297,7 @@
 		/** @const {string} */ screenShotTitle : "LifeViewer Image",
 
 		// build version
-		/** @const {number} */ versionBuild : 696,
+		/** @const {number} */ versionBuild : 697,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -9381,6 +9381,10 @@
 			neighbourhood = "B";
 			break;
 
+		case this.manager.alignedCheckerHROT:
+			neighbourhood = "D";
+			break;
+
 		case this.manager.hashHROT:
 			neighbourhood = "#";
 			break;
@@ -9581,6 +9585,10 @@
 
 		case this.manager.checkerHROT:
 			neighbourhood = "B";
+			break;
+
+		case this.manager.alignedCheckerHROT:
+			neighbourhood = "D";
 			break;
 
 		case this.manager.hashHROT:

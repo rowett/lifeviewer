@@ -1543,6 +1543,10 @@
 							itemName = "Checkerboard";
 							break;
 
+						case view.manager.alignedCheckerHROT:
+							itemName = "Aligned Checkerboard";
+							break;
+
 						case view.manager.hashHROT:
 							itemName = "Hash";
 							break;
@@ -1878,8 +1882,8 @@
 		y = this.renderHelpLine(view, "Decoders", "RLE, Life 1.06, Life 1.05, Cells", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "N'hoods", "Moore, Hexagonal, von Neumann, Triangular, 1D,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Circular, Cross, L2, Saltire, Star, Checkerboard,", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Hash, Tripod, Asterisk, Far Corners/Edges and", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Custom (CoordCA)", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Aligned Checkerboard, Hash, Tripod, Asterisk,", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Far Corners/Edges and Custom (CoordCA)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Rules", "Wolfram, Totalistic, Generations, Margolus,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Isotropic Non-Totalistic (Hensel, Callahan),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Alternating, MAP, Larger than Life (LtL),", ctx, x, y, height, helpLine);

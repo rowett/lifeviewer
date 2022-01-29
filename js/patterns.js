@@ -572,6 +572,7 @@
 		/** @const {number} */ this.gaussianHROT = 14;
 		/** @const {number} */ this.weightedHROT = 15;
 		/** @const {number} */ this.cornerEdgeHROT = 16;
+		/** @const {number} */ this.alignedCheckerHROT = 17;
 
 		// specified width and height from RLE pattern
 		/** @type {number} */ this.specifiedWidth = -1;
@@ -824,7 +825,7 @@
 		/** @type {number} */ this.altBminLTL = -1;
 		/** @type {number} */ this.altBmaxLTL = -1;
  
-		// LTL neightborhood (0 Moore, 1 von Neumann, 2 circular, 3 cross, 4 saltire, 5 star, 6 L2, 7 hex, 8 checkerboard, 9 hash, 10 custom)
+		// LTL neightborhood
 		/** @type {number} */ this.neighborhoodLTL = -1;
 
 		// is HROT rule
@@ -844,7 +845,7 @@
 		this.altBirthHROT = null;
 		this.altSurvivalHROT = null;
 
-		// HROT neighborhood (0 Moore, 1 von Neumann, 2 circular, 3 cross, 4 saltire, 5 star, 6 L2, 7 hex, 8 checkerboard, 9 hash, 10 custom)
+		// HROT neighborhood
 		/** @type {number} */ this.neighborhoodHROT = -1;
 
 		// states for generations, LTL or HROT
@@ -3074,6 +3075,9 @@
 					case this.checkerHROT:
 						nameLtL += "B";
 						break;
+					case this.alignedCheckerHROT:
+						nameLtL += "D";
+						break;
 					case this.hashHROT:
 						nameLtL += "#";
 						break;
@@ -3300,6 +3304,11 @@
 						result = this.checkerHROT;
 						break;
 
+					case "d":
+						this.index += 1;
+						result = this.alignedCheckerHROT;
+						break;
+
 					case "#":
 						this.index += 1;
 						result = this.hashHROT;
@@ -3350,7 +3359,7 @@
 						break;
 
 					default:
-						this.failureReason = "LtL 'N' [ABCFGHLMNWX23*+#@] got 'N" + next.toUpperCase() + "'";
+						this.failureReason = "LtL 'N' [ABCDFGHLMNWX23*+#@] got 'N" + next.toUpperCase() + "'";
 						this.index = -1;
 						break;
 				}
@@ -3452,6 +3461,10 @@
 				break;
 
 			case this.checkerHROT:
+				result = ((range * 2 + 1) * (range * 2 + 1) - 1) / 2;
+				break;
+
+			case this.alignedCheckerHROT:
 				result = ((range * 2 + 1) * (range * 2 + 1) - 1) / 2;
 				break;
 
@@ -4428,6 +4441,12 @@
 									result = true;
 									break;
 								
+								case "d":
+									pattern.neighborhoodHROT = this.alignedCheckerHROT;
+									this.index += 1;
+									result = true;
+									break;
+
 								case "#":
 									pattern.neighborhoodHROT = this.hashHROT;
 									this.index += 1;
@@ -4487,7 +4506,7 @@
 									break;
 
 								default:
-									this.failureReason = "HROT 'N' [ABCFGHLMNWX23*+#@] got '" + rule[this.index].toUpperCase() + "'";
+									this.failureReason = "HROT 'N' [ABCDFGHLMNWX23*+#@] got '" + rule[this.index].toUpperCase() + "'";
 									break;
 							}
 						} else {
@@ -5405,6 +5424,10 @@
 												pattern.ruleName += "B";
 												break;
 
+											case this.alignedCheckerHROT:
+												pattern.ruleName += "D";
+												break;
+
 											case this.hashHROT:
 												pattern.ruleName += "#";
 												break;
@@ -5487,6 +5510,10 @@
 
 										case this.checkerHROT:
 											pattern.ruleName += "B";
+											break;
+
+										case this.alignedCheckerHROT:
+											pattern.ruleName += "D";
 											break;
 
 										case this.hashHROT:

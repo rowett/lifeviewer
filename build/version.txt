@@ -1,3 +1,6 @@
+Build 697
+- new LtL/HROT neighbourhood 'ND' for aligned Checkerboard
+
 Build 696
 - new LtL/HROT neighbourhood 'NF' for far corner/far edges rules
 	- rule R parameter sets the default range for Corners and Edges

@@ -845,7 +845,7 @@
 			colourRow = null,
 			colourGrid = this.engine.colourGrid;
 
-		// asterisk
+		// corner/edge
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
 			countRow = counts[y];
 			x = leftX - xrange;
@@ -1215,8 +1215,8 @@
 		}	
 	};
 
-	// 2-state checkerboard
-	HROT.prototype.nextGenerationCheckerboard2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+	// 2-state checkerboard or aligned checkerboard
+	HROT.prototype.nextGenerationCheckerBoth2 = function(leftX, bottomY, rightX, topY, xrange, yrange, start) {
 		var counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -1237,7 +1237,7 @@
 
 			// for the first two cells in a row count the entire neighbourhood
 			count = 0;
-			offset = 1;
+			offset = start;
 			for (j = -yrange; j <= yrange; j += 1) {
 				colourRow = colourGrid[y + j];
 				for (i = -xrange + offset; i <= xrange - offset; i += 2) {
@@ -1258,7 +1258,7 @@
 			// check if there are two cells in the row
 			if (x <= rightX + xrange) {
 				count2 = 0;
-				offset = 1;
+				offset = start;
 				for (j = -yrange; j <= yrange; j += 1) {
 					colourRow = colourGrid[y + j];
 					for (i = -xrange + offset; i <= xrange - offset; i += 2) {
@@ -1278,7 +1278,7 @@
 
 				// for the remaining cell pairs on the row subtract the left and add the right cells
 				while (x <= rightX + xrange) {
-					offset = 1;
+					offset = start;
 					for (j = -yrange; j <= yrange; j += 1) {
 						colourRow = colourGrid[y + j];
 						if (colourRow[x - xrange + offset - 2] >= aliveStart) {
@@ -1301,7 +1301,7 @@
 					x += 1;
 
 					if (x <= rightX + xrange) {
-						offset = 1;
+						offset = start;
 						for (j = -yrange; j <= yrange; j += 1) {
 							colourRow = colourGrid[y + j];
 							if (colourRow[x - xrange + offset - 2] >= aliveStart) {
@@ -1326,6 +1326,16 @@
 				}
 			}
 		}
+	};
+
+	// 2-state checkerboard
+	HROT.prototype.nextGenerationCheckerboard2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		this.nextGenerationCheckerBoth2(leftX, bottomY, rightX, topY, xrange, yrange, 1);
+	};
+
+	// 2-state aligned checkerboard
+	HROT.prototype.nextGenerationAlignedCheckerboard2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		this.nextGenerationCheckerBoth2(leftX, bottomY, rightX, topY, xrange, yrange, 0);
 	};
 
 	// 2-state hexagonal
@@ -2523,6 +2533,11 @@
 						this.nextGenerationCheckerboard2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
+					case this.manager.alignedCheckerHROT:
+						// aligned checkerboard
+						this.nextGenerationAlignedCheckerboard2(leftX, bottomY, rightX, topY, xrange, yrange);
+						break;
+
 					case this.manager.hexHROT:
 						// hexagonal
 						this.nextGenerationHexagonal2(leftX, bottomY, rightX, topY, xrange, yrange);
@@ -2589,7 +2604,7 @@
 		}
 	};
 
-	// 2-state corner/edge
+	// n-state corner/edge
 	HROT.prototype.nextGenerationCornerEdgeN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
 		var counts = this.counts,
 			/** @type {number} */ x,
@@ -2604,7 +2619,7 @@
 			colourRow = null,
 			colourGrid = this.engine.colourGrid;
 
-		// asterisk
+		// corner/edge
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
 			countRow = counts[y];
 			x = leftX - xrange;
@@ -2652,7 +2667,8 @@
 			}
 		}	
 	};
-	// 2-state asterisk
+
+	// n-state asterisk
 	HROT.prototype.nextGenerationAsteriskN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
 		var counts = this.counts,
 			/** @type {number} */ x,
@@ -2701,7 +2717,7 @@
 		}	
 	};
 
-	// 2-state tripod
+	// n-state tripod
 	HROT.prototype.nextGenerationTripodN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
 		var counts = this.counts,
 			/** @type {number} */ x,
@@ -2743,7 +2759,7 @@
 		}	
 	};
 
-	// 2-state weighted
+	// n-state weighted
 	HROT.prototype.nextGenerationWeightedN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
 		var counts = this.counts,
 			/** @type {number} */ x,
@@ -2830,7 +2846,7 @@
 		}
 	};
 
-	// 2-state custom
+	// n-state custom
 	HROT.prototype.nextGenerationCustomN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
 		var counts = this.counts,
 			/** @type {number} */ x,
@@ -2878,7 +2894,7 @@
 		}
 	};
 
-	// 2-state hash
+	// n-state hash
 	HROT.prototype.nextGenerationHashN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
 		var counts = this.counts,
 			/** @type {number} */ x,
@@ -2972,8 +2988,8 @@
 		}	
 	};
 
-	// 2-state checkerboard
-	HROT.prototype.nextGenerationCheckerboardN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+	// n-state checkerboard or aligned checkerboard
+	HROT.prototype.nextGenerationCheckerBothN = function(leftX, bottomY, rightX, topY, xrange, yrange, start) {
 		var counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -2994,7 +3010,7 @@
 
 			// for the first two cells in a row count the entire neighbourhood
 			count = 0;
-			offset = 1;
+			offset = start;
 			for (j = -yrange; j <= yrange; j += 1) {
 				colourRow = colourGrid[y + j];
 				for (i = -xrange + offset; i <= xrange - offset; i += 2) {
@@ -3015,7 +3031,7 @@
 			// check if there are two cells in the row
 			if (x <= rightX + xrange) {
 				count2 = 0;
-				offset = 1;
+				offset = start;
 				for (j = -yrange; j <= yrange; j += 1) {
 					colourRow = colourGrid[y + j];
 					for (i = -xrange + offset; i <= xrange - offset; i += 2) {
@@ -3035,7 +3051,7 @@
 
 				// for the remaining cell pairs on the row subtract the left and add the right cells
 				while (x <= rightX + xrange) {
-					offset = 1;
+					offset = start;
 					for (j = -yrange; j <= yrange; j += 1) {
 						colourRow = colourGrid[y + j];
 						if (colourRow[x - xrange + offset - 2] === maxGenState) {
@@ -3058,7 +3074,7 @@
 					x += 1;
 
 					if (x <= rightX + xrange) {
-						offset = 1;
+						offset = start;
 						for (j = -yrange; j <= yrange; j += 1) {
 							colourRow = colourGrid[y + j];
 							if (colourRow[x - xrange + offset - 2] === maxGenState) {
@@ -3085,7 +3101,17 @@
 		}
 	};
 
-	// 2-state hexagonal
+	// n-state checkerboard
+	HROT.prototype.nextGenerationCheckerboardN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		this.nextGenerationCheckerBothN(leftX, bottomY, rightX, topY, xrange, yrange, 1);
+	};
+
+	// n-state aligned checkerboard
+	HROT.prototype.nextGenerationAlignedCheckerboardN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+		this.nextGenerationCheckerBothN(leftX, bottomY, rightX, topY, xrange, yrange, 0);
+	};
+
+	// n-state hexagonal
 	HROT.prototype.nextGenerationHexagonalN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
 		var counts = this.counts,
 			/** @type {number} */ x,
@@ -3149,7 +3175,7 @@
 		}
 	};
 
-	// 2-state saltire
+	// n-state saltire
 	HROT.prototype.nextGenerationSaltireN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
 		var counts = this.counts,
 			/** @type {number} */ x,
@@ -3194,7 +3220,7 @@
 		}	
 	};
 
-	// 2-state star
+	// n-state star
 	HROT.prototype.nextGenerationStarN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
 		var counts = this.counts,
 			/** @type {number} */ x,
@@ -3247,7 +3273,7 @@
 		}	
 	};
 
-	// 2-state cross
+	// n-state cross
 	HROT.prototype.nextGenerationCrossN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
 		var counts = this.counts,
 			/** @type {number} */ x,
@@ -3311,7 +3337,7 @@
 		}	
 	};
 
-	// 2-state triangular
+	// n-state triangular
 	HROT.prototype.nextGenerationTriangularN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
 		var counts = this.counts,
 			/** @type {number} */ x,
@@ -3487,7 +3513,7 @@
 		}
 	};
 
-	// 2-state gaussian
+	// n-state gaussian
 	HROT.prototype.nextGenerationGuassianN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
 		var counts = this.counts,
 			/** @type {number} */ x,
@@ -3564,7 +3590,7 @@
 		}
 	};
 
-	// 2-state shaped
+	// n-state shaped
 	HROT.prototype.nextGenerationShapedN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
 		var counts = this.counts,
 			/** @type {number} */ x,
@@ -4268,6 +4294,11 @@
 					case this.manager.checkerHROT:
 						// checkerboard
 						this.nextGenerationCheckerboardN(leftX, bottomY, rightX, topY, xrange, yrange);
+						break;
+
+					case this.manager.alignedCheckerHROT:
+						// checkerboard
+						this.nextGenerationAlignedCheckerboardN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					case this.manager.hexHROT:
