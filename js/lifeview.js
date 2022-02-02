@@ -297,7 +297,7 @@
 		/** @const {string} */ screenShotTitle : "LifeViewer Image",
 
 		// build version
-		/** @const {number} */ versionBuild : 697,
+		/** @const {number} */ versionBuild : 699,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -17307,7 +17307,7 @@
 							if (tokens[i][0] === "/") {
 								DocConfig.repositoryLocation = tokens[i];
 							} else {
-								if (tokens[i][0] === ".") {
+								if (tokens[i][0] === "." || tokens[i][0] === "?") {
 									DocConfig.rulePostfix = tokens[i];
 								} else {
 									value = tokens[i];

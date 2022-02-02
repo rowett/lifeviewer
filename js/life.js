@@ -18915,10 +18915,9 @@
 	};
 
 	// clear the small colour grid if last zoom < 1/16x
-	Life.prototype.clearSmallColourGridOnZoom = function() {
+	Life.prototype.clearSmallGridOnZoom = function(smallGrid) {
 		if (this.lastZoom16) {
-			this.lastZoom16 = false;
-			this.smallColourGrid.whole.fill(0);
+			smallGrid.whole.fill(0);
 		}
 	};
 
@@ -18929,7 +18928,7 @@
 		// check if 0.5 <= zoom < 1
 		if (camZoom >= 0.5 && camZoom < 1) {
 			// create 2x2 colour grid
-			this.clearSmallColourGridOnZoom();
+			this.clearSmallGridOnZoom(this.smallColourGrid);
 
 			if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
 				this.create2x2ColourGrid16(colourGrid16, this.smallColourGrid);
@@ -18940,7 +18939,7 @@
 			// check if 0.25 <= zoom < 0.5
 			if (camZoom >= 0.25 && camZoom < 0.5) {
 				// create 4x4 colour grid
-				this.clearSmallColourGridOnZoom();
+				this.clearSmallGridOnZoom(this.smallColourGrid);
 
 				if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
 					this.create4x4ColourGrid32(colourGrid32, this.smallColourGrid);
@@ -18951,7 +18950,7 @@
 				// check if 0.125 <= zoom < 0.25
 				if (camZoom >= 0.125 && camZoom < 0.25) {
 					// create 8x8 colour grid
-					this.clearSmallColourGridOnZoom();
+					this.clearSmallGridOnZoom(this.smallColourGrid);
 
 					if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
 						this.create8x8ColourGrid32(colourGrid32, this.smallColourGrid);
@@ -18962,7 +18961,7 @@
 					// check if 0.0625 <= zoom < 0.125
 					if (camZoom >= 0.0625 && camZoom < 0.125) {
 						// create 16x16 colour grid
-						this.clearSmallColourGridOnZoom();
+						this.clearSmallGridOnZoom(this.smallColourGrid);
 
 						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
 							this.create16x16ColourGrid32(colourGrid32, this.smallColourGrid);
@@ -18971,7 +18970,6 @@
 						}
 					} else {
 						// zoom < 0.0625
-						this.lastZoom16 = true;
 						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
 							this.create32x32ColourGrid32(colourGrid32, this.smallColourGrid);
 						} else {
@@ -18987,21 +18985,29 @@
 			// check if 0.5 <= zoom < 1
 			if (camZoom >= 0.5 && camZoom < 1) {
 				// create 2x2 colour grid
+				this.clearSmallGridOnZoom(this.smallOverlayGrid);
+
 				this.create2x2ColourGrid16(this.overlayGrid16, this.smallOverlayGrid);
 			} else {
 				// check if 0.25 <= zoom < 0.5
 				if (camZoom >= 0.25 && camZoom < 0.5) {
 					// create 4x4 colour grid
+					this.clearSmallGridOnZoom(this.smallOverlayGrid);
+
 					this.create4x4ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
 				} else {
 					// check if 0.125 <= zoom < 0.25
 					if (camZoom >= 0.125 && camZoom < 0.25) {
 						// create 8x8 colour grid
+						this.clearSmallGridOnZoom(this.smallOverlayGrid);
+
 						this.create8x8ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
 					} else {
 						// check if 0.0625 <= zoom < 0.125
 						if (camZoom >= 0.0625 && camZoom < 0.125) {
 							// create 16x16 colour grid
+							this.clearSmallGridOnZoom(this.smallOverlayGrid);
+
 							this.create16x16ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
 						} else {
 							// createa 32x32 colour grid
@@ -19010,6 +19016,13 @@
 					}
 				}
 			}
+		}
+
+		// if zoom was 32x then mark it as so for clear when it changes
+		if (camZoom < 0.0625) {
+			this.lastZoom16 = true;
+		} else {
+			this.lastZoom16 = false;
 		}
 	};
 
@@ -32106,7 +32119,7 @@
 		this.createPixelColours(brightness);
 
 		// set the off grid colour
-		if (this.width < this.maxGridSize) {
+		if (this.width < this.maxGridSize || this.height < this.maxGridSize) {
 			// use the state 0 colour
 			offGrid = pixelColours[0] | 0;
 		} else {
@@ -32491,7 +32504,7 @@
 		this.createPixelColours(brightness);
 
 		// set the off grid colour
-		if (this.width < this.maxGridSize) {
+		if (this.width < this.maxGridSize || this.height < this.maxGridSize) {
 			// use the state 0 colour
 			offGrid = pixelColours[0] | 0;
 		} else {
@@ -34053,7 +34066,7 @@
 		this.createPixelColours(brightness);
 
 		// set the off grid colour
-		if (this.width < this.maxGridSize) {
+		if (this.width < this.maxGridSize || this.height < this.maxGridSize) {
 			// use the state 0 colour
 			offGrid = pixelColours[0] | 0;
 		} else {
@@ -35504,7 +35517,7 @@
 		this.createPixelColours(brightness);
 
 		// set the off grid colour
-		if (this.width < this.maxGridSize) {
+		if (this.width < this.maxGridSize || this.height < this.maxGridSize) {
 			// use the state 0 colour
 			offGrid = pixelColours[0] | 0;
 		} else {

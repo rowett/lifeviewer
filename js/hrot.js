@@ -1249,8 +1249,10 @@
 			}
 
 			// check for survival
-			if (colourGrid[y][x] >= aliveStart) {
-				count += 1;
+			if (start === 1) {
+				if (colourGrid[y][x] >= aliveStart) {
+					count += 1;
+				}
 			}
 			countRow[x] = count;
 			x += 1;
@@ -1270,8 +1272,10 @@
 				}
 
 				// check for survival
-				if (colourGrid[y][x] >= aliveStart) {
-					count2 += 1;
+				if (start == 1) {
+					if (colourGrid[y][x] >= aliveStart) {
+						count2 += 1;
+					}
 				}
 				countRow[x] = count2;
 				x += 1;
@@ -1291,11 +1295,13 @@
 					}
 
 					// check for survival
-					if (colourGrid[y][x - 2] >= aliveStart) {
-						count -= 1;
-					}
-					if (colourGrid[y][x] >= aliveStart) {
-						count += 1;
+					if (start === 1) {
+						if (colourGrid[y][x - 2] >= aliveStart) {
+							count -= 1;
+						}
+						if (colourGrid[y][x] >= aliveStart) {
+							count += 1;
+						}
 					}
 					countRow[x] = count;
 					x += 1;
@@ -1314,11 +1320,13 @@
 						}
 
 						// check for survival
-						if (colourGrid[y][x - 2] >= aliveStart) {
-							count2 -= 1;
-						}
-						if (colourGrid[y][x] >= aliveStart) {
-							count2 += 1;
+						if (start === 1) {
+							if (colourGrid[y][x - 2] >= aliveStart) {
+								count2 -= 1;
+							}
+							if (colourGrid[y][x] >= aliveStart) {
+								count2 += 1;
+							}
 						}
 						countRow[x] = count2;
 						x += 1;
@@ -3022,8 +3030,10 @@
 			}
 
 			// check for survival
-			if (colourGrid[y][x] === maxGenState) {
-				count += 1;
+			if (start === 1) {
+				if (colourGrid[y][x] === maxGenState) {
+					count += 1;
+				}
 			}
 			countRow[x] = count;
 			x += 1;
@@ -3043,8 +3053,10 @@
 				}
 
 				// check for survival
-				if (colourGrid[y][x] === maxGenState) {
-					count2 += 1;
+				if (start === 1) {
+					if (colourGrid[y][x] === maxGenState) {
+						count2 += 1;
+					}
 				}
 				countRow[x] = count2;
 				x += 1;
@@ -3064,11 +3076,13 @@
 					}
 
 					// check for survival
-					if (colourGrid[y][x - 2] === maxGenState) {
-						count -= 1;
-					}
-					if (colourGrid[y][x] === maxGenState) {
-						count += 1;
+					if (start === 1) {
+						if (colourGrid[y][x - 2] === maxGenState) {
+							count -= 1;
+						}
+						if (colourGrid[y][x] === maxGenState) {
+							count += 1;
+						}
 					}
 					countRow[x] = count;
 					x += 1;
@@ -3087,11 +3101,13 @@
 						}
 
 						// check for survival
-						if (colourGrid[y][x - 2] === maxGenState) {
-							count2 -= 1;
-						}
-						if (colourGrid[y][x] === maxGenState) {
-							count2 += 1;
+						if (start === 1) {
+							if (colourGrid[y][x - 2] === maxGenState) {
+								count2 -= 1;
+							}
+							if (colourGrid[y][x] === maxGenState) {
+								count2 += 1;
+							}
 						}
 						countRow[x] = count2;
 						x += 1;

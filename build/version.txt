@@ -1,3 +1,11 @@
+Build 699
+- the optional rule name postfix specified with the <meta> tag now allows postfixes beginning with "?"
+	- <meta name="LifeViewer" content="/myrepository/rules/ ?action=raw">
+
+Build 698
+- fix overlay rendering glitch after ZOOM < 16x
+- only show grid borders when both height and width at maximum
+
 Build 697
 - new LtL/HROT neighbourhood 'ND' for aligned Checkerboard
 

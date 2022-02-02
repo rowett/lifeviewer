@@ -5102,8 +5102,8 @@
 		    // valid character index
 		    validIndex = -1,
 
-			// hex tripod postfix length
-			hexTripodLength = this.hexTripodPostfix.length,
+		    // hex tripod postfix length
+		    hexTripodLength = this.hexTripodPostfix.length,
 
 		    // hex index
 		    hexIndex = -1,
@@ -5111,23 +5111,23 @@
 		    // hex postfix length
 		    hexLength = this.hexPostfix.length,
 
-			// triangular index
-			triangularIndex = -1,
+		    // triangular index
+		    triangularIndex = -1,
 
-			// triangular postfix length
-			triangularLength = this.triangularPostfix.length,
+		    // triangular postfix length
+		    triangularLength = this.triangularPostfix.length,
 
-			// triangular Edges postfix length
-			triangularEdgesLength = this.triangularEdgesPostfix.length,
+		    // triangular Edges postfix length
+		    triangularEdgesLength = this.triangularEdgesPostfix.length,
 
-			// triangular Vertices postfix length
-			triangularVerticesLength = this.triangularVerticesPostfix.length,
+		    // triangular Vertices postfix length
+		    triangularVerticesLength = this.triangularVerticesPostfix.length,
 
-			// triangular Inner postfix length
-			triangularInnerLength = this.triangularInnerPostfix.length,
+		    // triangular Inner postfix length
+		    triangularInnerLength = this.triangularInnerPostfix.length,
 
-			// triangular Outer postfix length
-			triangularOuterLength = this.triangularOuterPostfix.length,
+		    // triangular Outer postfix length
+		    triangularOuterLength = this.triangularOuterPostfix.length,
 
 		    // von neumann index
 		    vonNeumannIndex = -1,
@@ -5136,13 +5136,13 @@
 		    vonNeumannLength = this.vonNeumannPostfix.length,
 
 		    // base64 map string
-			base64 = "",
+		    base64 = "",
 			
-			// PCA prefix
-			prefix = this.pcaRulePrefix,
+		    // PCA prefix
+		    prefix = this.pcaRulePrefix,
 
-			// offset
-			offset = 0,
+		    // offset
+		    offset = 0,
 
 		    // counter
 		    i = 0;
