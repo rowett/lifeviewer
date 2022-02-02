@@ -297,7 +297,7 @@
 		/** @const {string} */ screenShotTitle : "LifeViewer Image",
 
 		// build version
-		/** @const {number} */ versionBuild : 699,
+		/** @const {number} */ versionBuild : 700,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -17272,7 +17272,7 @@
 
 				// split into tokens
 				tokens = content.match(/\S+/g);
-				if (tokens && tokens.length >= 2 && tokens.length <= 6) {
+				if (tokens && tokens.length >= 2 && tokens.length <= 7) {
 					// set the div class name
 					DocConfig.divClassName = tokens[0];
 
