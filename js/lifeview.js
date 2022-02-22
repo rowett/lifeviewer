@@ -5285,6 +5285,11 @@
 						}
 					}
 
+					// if no theme history then set anything alive from population
+					if (!me.engine.themeHistory && me.engine.population === 0) {
+						me.engine.anythingAlive = 0;
+					}
+
 					// if nothing alive now then restore last bounding box
 					if (me.engine.anythingAlive === 0) {
 						zoomBox.set(saveBox);

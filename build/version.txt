@@ -1,5 +1,5 @@
 Build 701
-
+- fixed issue with stop generation and Themes with no history
 
 Build 700
 - allow extra parameters in <meta> setting
