@@ -244,15 +244,16 @@
 		this.gridColour = source.gridColour;
 		this.gridMajorColour = source.gridMajorColour;
 
-		this.unoccupied = source.unoccupied;
-		this.aliveRange = source.aliveRange;
-		this.deadRange = source.deadRange;
+		this.unoccupied.set(source.unoccupied);
+		this.aliveRange.set(source.aliveRange);
+		this.deadRange.set(source.deadRange);
 
-		this.aliveGen = source.aliveGen;
-		this.dyingRangeGen = source.dyningRangeGen;
-		this.deadRangeGen = source.deadRangeGen;
-		this.unoccupiedGen = source.unoccupiedGen;
-		this.dyingRangeGen = source.dyingRangeGen;
+		this.aliveGen.set(source.aliveGen);
+		this.dyingRangeGen.set(source.dyingRangeGen);
+		this.deadRangeGen.set(source.deadRangeGen);
+		this.unoccupiedGen.set(source.unoccupiedGen);
+		this.dyingRangeGen.set(source.dyingRangeGen);
+
 		this.dyingRangeDynamic = source.dyingRangeDynamic;
 	};
 

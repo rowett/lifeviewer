@@ -1,3 +1,6 @@
+Build 702
+- fixed an issue with copying Themes
+
 Build 701
 - fixed issue with stop generation and Themes with no history
 
