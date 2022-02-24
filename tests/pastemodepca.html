@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/parser.js"></script>
+		<script src="../js/keys.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>PASTEMODE for PCA rules</h2>
+		<div class="viewer">
+			<a href="" onclick="updateViewer(this); return false;">View Standalone</a><br>
+			<textarea rows=10 cols=70>
+x = 3, y = 3, rule = PCA_1
+4$
+3Obb3Obb3Obb3Obb3Obb3Obb3Obb3O$
+3Obb3Obb3Obb3Obb3Obb3Obb3Obb3O$
+3Obb3Obb3Obb3Obb3Obb3Obb3Obb3O$
+8$
+3Obb3Obb3Obb3Obb3Obb3Obb3Obb3O$
+3Obb3Obb3Obb3Obb3Obb3Obb3Obb3O$
+3Obb3Obb3Obb3Obb3Obb3Obb3Obb3O!
+[[ GRID ]]
+[[ RLE glider o$obo$oo! ]]
+[[ RLE block 3O$3O$3O! ]]
+
+# draw key
+[[ PASTEMODE COPY ]]
+[[ PASTE glider -10 0 ]]
+[[ PASTE glider -10 4 ]]
+[[ PASTE glider -10 11 ]]
+[[ PASTE glider -10 15 ]]
+[[ PASTE block -5 4 ]]
+[[ PASTE block -5 15 ]]
+[[ POLYSIZE 1 ]]
+[[ POLYLINE -5.5 -0.5 -2.5 -0.5 -2.5 2.5 -5.5 2.5 -5.5 -0.5 8 ]]
+[[ POLYLINE -5.5 3.5 -2.5 3.5 -2.5 6.5 -5.5 6.5 -5.5 3.5 8 ]]
+[[ POLYLINE -5.5 10.5 -2.5 10.5 -2.5 13.5 -5.5 13.5 -5.5 10.5 8 ]]
+[[ POLYLINE -5.5 14.5 -2.5 14.5 -2.5 17.5 -5.5 17.5 -5.5 14.5 8 ]]
+
+#C draw labels
+[[ LABELSIZE 11 ]]
+[[ LABEL -10 -3 8 "X" ]]
+[[ LABEL -4 -3 8 "Y" ]]
+[[ LABEL 1 -3 8 "0\nZERO" ]]
+[[ LABEL 6 -3 8 "1\nAND" ]]
+[[ LABEL 11 -3 8 "2\n0010" ]]
+[[ LABEL 16 -3 8 "3\nX" ]]
+[[ LABEL 21 -3 8 "4\n0100" ]]
+[[ LABEL 26 -3 8 "5\nY" ]]
+[[ LABEL 31 -3 8 "6\nXOR" ]]
+[[ LABEL 36 -3 8 "7\nOR" ]]
+[[ LABEL 1 8 8 "8\nNOR" ]]
+[[ LABEL 6 8 8 "9\nXNOR" ]]
+[[ LABEL 11 8 8 "10\nNOTY" ]]
+[[ LABEL 16 8 8 "11\n1011" ]]
+[[ LABEL 21 8 8 "12\nNOTX" ]]
+[[ LABEL 26 8 8 "13\n1101" ]]
+[[ LABEL 31 8 8 "14\nNAND" ]]
+[[ LABEL 36 8 8 "15\nONE" ]]
+
+#C Paste in each mode on dead cells
+[[ PASTEMODE 0 ]]
+[[ PASTE glider 0 0 ]]
+[[ PASTEMODE 1 ]]
+[[ PASTE glider 5 0 ]]
+[[ PASTEMODE 2 ]]
+[[ PASTE glider 10 0 ]]
+[[ PASTEMODE 3 ]]
+[[ PASTE glider 15 0 ]]
+[[ PASTEMODE 4 ]]
+[[ PASTE glider 20 0 ]]
+[[ PASTEMODE 5 ]]
+[[ PASTE glider 25 0 ]]
+[[ PASTEMODE 6 ]]
+[[ PASTE glider 30 0 ]]
+[[ PASTEMODE 7 ]]
+[[ PASTE glider 35 0 ]]
+[[ PASTEMODE 8 ]]
+[[ PASTE glider 0 11 ]]
+[[ PASTEMODE 9 ]]
+[[ PASTE glider 5 11 ]]
+[[ PASTEMODE 10 ]]
+[[ PASTE glider 10 11 ]]
+[[ PASTEMODE 11 ]]
+[[ PASTE glider 15 11 ]]
+[[ PASTEMODE 12 ]]
+[[ PASTE glider 20 11 ]]
+[[ PASTEMODE 13 ]]
+[[ PASTE glider 25 11 ]]
+[[ PASTEMODE 14 ]]
+[[ PASTE glider 30 11 ]]
+[[ PASTEMODE 15 ]]
+[[ PASTE glider 35 11 ]]
+
+#C Paste in each mode on alive cells
+[[ PASTEMODE 0 ]]
+[[ PASTE glider 0 4 ]]
+[[ PASTEMODE 1 ]]
+[[ PASTE glider 5 4 ]]
+[[ PASTEMODE 2 ]]
+[[ PASTE glider 10 4 ]]
+[[ PASTEMODE 3 ]]
+[[ PASTE glider 15 4 ]]
+[[ PASTEMODE 4 ]]
+[[ PASTE glider 20 4 ]]
+[[ PASTEMODE 5 ]]
+[[ PASTE glider 25 4 ]]
+[[ PASTEMODE 6 ]]
+[[ PASTE glider 30 4 ]]
+[[ PASTEMODE 7 ]]
+[[ PASTE glider 35 4 ]]
+[[ PASTEMODE 8 ]]
+[[ PASTE glider 0 15 ]]
+[[ PASTEMODE 9 ]]
+[[ PASTE glider 5 15 ]]
+[[ PASTEMODE 10 ]]
+[[ PASTE glider 10 15 ]]
+[[ PASTEMODE 11 ]]
+[[ PASTE glider 15 15 ]]
+[[ PASTEMODE 12 ]]
+[[ PASTE glider 20 15 ]]
+[[ PASTEMODE 13 ]]
+[[ PASTE glider 25 15 ]]
+[[ PASTEMODE 14 ]]
+[[ PASTE glider 30 15 ]]
+[[ PASTEMODE 15 ]]
+[[ PASTE glider 35 15 ]]
+            </textarea>
+			<br>
+			<canvas width="480" height="480"></canvas>
+		</div>
+		<br>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

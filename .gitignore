@@ -13,3 +13,5 @@ end.js
 start.js
 debug.bat
 install.bat
+node_modules
+debug
