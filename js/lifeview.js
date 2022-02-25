@@ -297,7 +297,7 @@
 		/** @const {string} */ screenShotTitle : "LifeViewer Image",
 
 		// build version
-		/** @const {number} */ versionBuild : 703,
+		/** @const {number} */ versionBuild : 704,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13797,7 +13797,8 @@
 
 	// save the current rle to the source document node
 	View.prototype.saveCurrentRLE = function(me) {
-		me.element.innerHTML = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], true);
+		// don't use alias names since it makes it less compatible with other CA simulators
+		me.element.innerHTML = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], false);
 		me.element.value = me.element.innerHTML;
 	};
 

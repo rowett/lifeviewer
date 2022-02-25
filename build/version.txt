@@ -1,3 +1,6 @@
+Build 704
+- don't use alias names for rules when saving RLE
+
 Build 703
 - maximum grid boundary is now always drawn
 
