@@ -1,3 +1,6 @@
+Build 703
+- maximum grid boundary is now always drawn
+
 Build 702
 - fixed an issue with copying Themes
 

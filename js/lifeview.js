@@ -297,7 +297,7 @@
 		/** @const {string} */ screenShotTitle : "LifeViewer Image",
 
 		// build version
-		/** @const {number} */ versionBuild : 702,
+		/** @const {number} */ versionBuild : 703,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",

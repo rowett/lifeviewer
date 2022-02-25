@@ -32065,17 +32065,24 @@
 		    pixelColours = this.pixelColours,
 		    data32 = this.data32,
 		    i = 0, h = 0, w = 0, x = 0, y = 0, dxy = 0, dyy = 0, sy = 0, sx = 0,
+		    xadj = 0, yadj = 0,
+		    xg = this.width,
+		    yg = this.height,
 		    transparentTarget = 0,
 
 		    // index in pixel buffer
-		    idx = 0 | 0,
+		    idx = 0,
 
+		    // layer parameters
 		    layerTarget = 1,
 		    brightness = 1,
 		    brightInc = 0,
 
+		    // max grid size
+		    maxGridSize = this.maxGridSize,
+
 		    // index of pixel colour
-		    col = 0 | 0,
+		    col = 0,
 
 		    // create the width and height masks
 		    wm = this.widthMask & ~mask,
@@ -32085,11 +32092,14 @@
 		    wt = ~mask,
 		    ht = ~mask,
 
-			// last mask
-			lastMask = mask,
+		    // last mask
+		    lastMask = mask,
 
-		    // pixel when off-grid
-		    offGrid = 0 | 0,
+		    // pixel when off max grid
+		    offMaxGrid = this.boundaryColour,
+
+		    // pixel when off grid
+		    offGrid = pixelColours[0],
 
 		    // start with bottom grid
 		    colourGrid = bottomGrid,
@@ -32119,17 +32129,18 @@
 		// create pixel colours
 		this.createPixelColours(brightness);
 
-		// set the off grid colour
-		if (this.width < this.maxGridSize || this.height < this.maxGridSize) {
-			// use the state 0 colour
-			offGrid = pixelColours[0] | 0;
-		} else {
-			// use grey
-			offGrid = this.boundaryColour | 0;
+		// compute the x and y adjustments for full grid size
+		while (xg < maxGridSize) {
+			xadj += xg >> 1;
+			xg <<= 1;
+		}
+		while (yg < maxGridSize) {
+			yadj += yg >> 1;
+			yg <<= 1;
 		}
 
 		// draw each pixel
-		idx = 0 | 0;
+		idx = 0;
 		y = sy;
 
 		for (h = 0; h < this.displayHeight; h += 1) {
@@ -32144,7 +32155,11 @@
 					data32[idx] = pixelColours[col];
 				} else {
 					// use the off grid colour
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 
@@ -32157,7 +32172,11 @@
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
 				} else {
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 				x += dyy;
@@ -32168,7 +32187,11 @@
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
 				} else {
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 				x += dyy;
@@ -32179,7 +32202,11 @@
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
 				} else {
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 				x += dyy;
@@ -32190,7 +32217,11 @@
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
 				} else {
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 				x += dyy;
@@ -32201,7 +32232,11 @@
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
 				} else {
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 				x += dyy;
@@ -32212,7 +32247,11 @@
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
 				} else {
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 				x += dyy;
@@ -32223,7 +32262,11 @@
 					col = colourGrid[y & hm][x & wm] | 0;
 					data32[idx] = pixelColours[col];
 				} else {
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 				x += dyy;
@@ -32444,17 +32487,24 @@
 		    pixelColours = this.pixelColours,
 		    data32 = this.data32,
 		    i = 0, h = 0, w = 0, x = 0, y = 0, dyy = 0, dyx = 0, sy = 0, sx = 0,
+		    xadj = 0, yadj = 0,
+		    xg = this.width,
+		    yg = this.height,
 		    transparentTarget = 0,
 
 		    // index in pixel buffer
-		    idx = 0 | 0,
+		    idx = 0,
 
+		    // layer parameters
 		    layerTarget = 1,
 		    brightness = 1,
 		    brightInc = 0,
 
+		    // max grid size
+		    maxGridSize = this.maxGridSize,
+
 		    // index of pixel colour
-		    col = 0 | 0,
+		    col = 0,
 
 		    // create the width and height masks
 		    wm = this.widthMask & ~mask,
@@ -32464,11 +32514,14 @@
 		    wt = ~mask,
 		    ht = ~mask,
 
-			// last mask
-			lastMask = mask,
+		    // last mask
+		    lastMask = mask,
 
-		    // pixel when off-grid
-		    offGrid = 0 | 0,
+		    // pixel when off max grid
+		    offMaxGrid = this.boundaryColour,
+
+		    // pixel when off grid
+		    offGrid = pixelColours[0],
 
 		    // start with bottom grid
 		    colourGrid = bottomGrid,
@@ -32504,17 +32557,18 @@
 		// create pixel colours
 		this.createPixelColours(brightness);
 
-		// set the off grid colour
-		if (this.width < this.maxGridSize || this.height < this.maxGridSize) {
-			// use the state 0 colour
-			offGrid = pixelColours[0] | 0;
-		} else {
-			// use grey
-			offGrid = this.boundaryColour | 0;
+		// compute the x and y adjustments for full grid size
+		while (xg < maxGridSize) {
+			xadj += xg >> 1;
+			xg <<= 1;
+		}
+		while (yg < maxGridSize) {
+			yadj += yg >> 1;
+			yg <<= 1;
 		}
 
 		// draw each pixel
-		idx = 0 | 0;
+		idx = 0;
 		y = sy;
 
 		for (h = 0; h < this.displayHeight; h += 1) {
@@ -32540,7 +32594,11 @@
 						data32[idx] = pixelColours[col];
 					} else {
 						// use the off grid colour
-						data32[idx] = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							data32[idx] = offGrid;
+						} else {
+							data32[idx] = offMaxGrid;
+						}
 					}
 					idx += 1;
 
@@ -32552,7 +32610,11 @@
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
 					} else {
-						data32[idx] = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							data32[idx] = offGrid;
+						} else {
+							data32[idx] = offMaxGrid;
+						}
 					}
 					idx += 1;
 					x += dyx;
@@ -32562,7 +32624,11 @@
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
 					} else {
-						data32[idx] = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							data32[idx] = offGrid;
+						} else {
+							data32[idx] = offMaxGrid;
+						}
 					}
 					idx += 1;
 					x += dyx;
@@ -32572,7 +32638,11 @@
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
 					} else {
-						data32[idx] = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							data32[idx] = offGrid;
+						} else {
+							data32[idx] = offMaxGrid;
+						}
 					}
 					idx += 1;
 					x += dyx;
@@ -32582,7 +32652,11 @@
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
 					} else {
-						data32[idx] = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							data32[idx] = offGrid;
+						} else {
+							data32[idx] = offMaxGrid;
+						}
 					}
 					idx += 1;
 					x += dyx;
@@ -32592,7 +32666,11 @@
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
 					} else {
-						data32[idx] = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							data32[idx] = offGrid;
+						} else {
+							data32[idx] = offMaxGrid;
+						}
 					}
 					idx += 1;
 					x += dyx;
@@ -32602,7 +32680,11 @@
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
 					} else {
-						data32[idx] = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							data32[idx] = offGrid;
+						} else {
+							data32[idx] = offMaxGrid;
+						}
 					}
 					idx += 1;
 					x += dyx;
@@ -32612,15 +32694,39 @@
 						col = colourGridRow[x & wm] | 0;
 						data32[idx] = pixelColours[col];
 					} else {
-						data32[idx] = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							data32[idx] = offGrid;
+						} else {
+							data32[idx] = offMaxGrid;
+						}
 					}
 					idx += 1;
 					x += dyx;
 				}
 			} else {
 				// draw off grid row
-				data32.fill(offGrid, idx, idx + this.displayWidth + 1);
-				idx += this.displayWidth;
+				if (y + yadj >= 0 && y + yadj < maxGridSize) {
+					x = sx;
+
+					// offset if hex rule
+					if (this.isHex) {
+						x += 0.5 * (y | 0);
+					}
+
+					// process the row
+					for (w = 0; w < this.displayWidth; w += 1) {
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							data32[idx] = offGrid;
+						} else {
+							data32[idx] = offMaxGrid;
+						}
+						idx += 1;
+						x += dyx;
+					}
+				} else {
+					data32.fill(offMaxGrid, idx, idx + this.displayWidth + 1);
+					idx += this.displayWidth;
+				} 
 			}
 
 			// update column position
@@ -33996,6 +34102,9 @@
 		    pixelColours = this.pixelColours,
 		    data32 = this.data32,
 		    i = 0, h = 0, w = 0, x = 0, y = 0, dxy = 0, dyy = 0, sy = 0, sx = 0,
+		    xadj = 0, yadj = 0,
+		    xg = this.width,
+		    yg = this.height,
 		    transparentTarget = 0,
 
 		    // get states 3, 4, 5 and 6
@@ -34005,20 +34114,24 @@
 		    state6 = ViewConstants.stateMap[6] + 128,
 
 		    // index in pixel buffer
-		    idx = 0 | 0,
+		    idx = 0,
 
+		    // layer parameters
 		    layerTarget = 1,
 		    brightness = 1,
 		    brightInc = 0,
 
+		    // max grid size
+		    maxGridSize = this.maxGridSize,
+
 		    // index of pixel colour
-		    col = 0 | 0,
+		    col = 0,
 
 		    // index of overlay colour
-		    over = 0 | 0,
+		    over = 0,
 
 		    // computed pixel colour
-		    pixel = 0 | 0,
+		    pixel = 0,
 
 		    // first alive colour
 		    aliveStart = this.aliveStart,
@@ -34027,15 +34140,18 @@
 		    wm = this.widthMask & ~mask,
 		    hm = this.heightMask & ~mask,
 
-			// last mask
-			lastMask = mask,
+		    // last mask
+		    lastMask = mask,
 
 		    // create the comparison masks for clipping
 		    wt = ~mask,
 		    ht = ~mask,
 
-		    // pixel when off-grid
-		    offGrid = 0 | 0,
+		    // pixel when off max grid
+		    offMaxGrid = this.boundaryColour,
+
+		    // pixel when off grid
+		    offGrid = pixelColours[0],
 
 		    // start with bottom grid
 		    colourGrid = layersGrid,
@@ -34066,17 +34182,18 @@
 		// create pixel colours
 		this.createPixelColours(brightness);
 
-		// set the off grid colour
-		if (this.width < this.maxGridSize || this.height < this.maxGridSize) {
-			// use the state 0 colour
-			offGrid = pixelColours[0] | 0;
-		} else {
-			// use grey
-			offGrid = this.boundaryColour | 0;
+		// compute the x and y adjustments for full grid size
+		while (xg < maxGridSize) {
+			xadj += xg >> 1;
+			xg <<= 1;
+		}
+		while (yg < maxGridSize) {
+			yadj += yg >> 1;
+			yg <<= 1;
 		}
 
 		// draw each pixel
-		idx = 0 | 0;
+		idx = 0;
 		y = sy;
 
 		for (h = 0; h < this.displayHeight; h += 1) {
@@ -34112,7 +34229,11 @@
 					data32[idx] = pixel;
 				} else {
 					// use the off grid colour
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 
@@ -34141,7 +34262,11 @@
 					}
 					data32[idx] = pixel;
 				} else {
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 				x += dyy;
@@ -34168,7 +34293,11 @@
 					}
 					data32[idx] = pixel;
 				} else {
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 				x += dyy;
@@ -34195,7 +34324,11 @@
 					}
 					data32[idx] = pixel;
 				} else {
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 				x += dyy;
@@ -34222,7 +34355,11 @@
 					}
 					data32[idx] = pixel;
 				} else {
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 				x += dyy;
@@ -34249,7 +34386,11 @@
 					}
 					data32[idx] = pixel;
 				} else {
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 				x += dyy;
@@ -34276,7 +34417,11 @@
 					}
 					data32[idx] = pixel;
 				} else {
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 				x += dyy;
@@ -34303,7 +34448,11 @@
 					}
 					data32[idx] = pixel;
 				} else {
-					data32[idx] = offGrid;
+					if (x + xadj >= 0 && x + xadj < maxGridSize && y + yadj >= 0 && y + yadj < maxGridSize) {
+						data32[idx] = offGrid;
+					} else {
+						data32[idx] = offMaxGrid;
+					}
 				}
 				idx += 1;
 				x += dyy;
@@ -35440,6 +35589,9 @@
 		    pixelColours = this.pixelColours,
 		    data32 = this.data32,
 		    i = 0, h = 0, w = 0, x = 0, y = 0, dyy = 0, dyx = 0, sy = 0, sx = 0,
+		    xadj = 0, yadj = 0,
+		    xg = this.width,
+		    yg = this.height,
 		    transparentTarget = 0,
 
 		    // get states 3, 4, 5 and 6
@@ -35451,21 +35603,28 @@
 		    // index in pixel buffer
 		    idx = 0 | 0,
 
+		    // layer parameters
 		    layerTarget = 1,
 		    brightness = 1,
 		    brightInc = 0,
 
+		    // max grid size
+		    maxGridSize = this.maxGridSize,
+
 		    // index of pixel colour
-		    col = 0 | 0,
+		    col = 0,
 
 		    // index of overlay colour
-		    over = 0 | 0,
+		    over = 0,
 
 		    // computed pixel colour
-		    pixel = 0 | 0,
+		    pixel = 0,
 
-		    // pixel when off-grid
-		    offGrid = 0 | 0,
+		    // pixel when off max grid
+		    offMaxGrid = this.boundaryColour,
+
+		    // pixel when off grid
+		    offGrid = pixelColours[0],
 
 		    // first alive colour
 		    aliveStart = this.aliveStart,
@@ -35517,17 +35676,18 @@
 		// create pixel colours
 		this.createPixelColours(brightness);
 
-		// set the off grid colour
-		if (this.width < this.maxGridSize || this.height < this.maxGridSize) {
-			// use the state 0 colour
-			offGrid = pixelColours[0] | 0;
-		} else {
-			// use grey
-			offGrid = this.boundaryColour | 0;
+		// compute the x and y adjustments for full grid size
+		while (xg < maxGridSize) {
+			xadj += xg >> 1;
+			xg <<= 1;
+		}
+		while (yg < maxGridSize) {
+			yadj += yg >> 1;
+			yg <<= 1;
 		}
 
 		// draw each pixel
-		idx = 0 | 0;
+		idx = 0;
 		y = sy;
 
 		for (h = 0; h < this.displayHeight; h += 1) {
@@ -35571,7 +35731,12 @@
 							}
 						}
 					} else {
-						pixel = offGrid;
+						// use the off grid colour
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							pixel = offGrid;
+						} else {
+							pixel = offMaxGrid;
+						}
 					}
 
 					// set the pixel colour
@@ -35601,7 +35766,11 @@
 							}
 						}
 					} else {
-						pixel = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							pixel = offGrid;
+						} else {
+							pixel = offMaxGrid;
+						}
 					}
 					data32[idx] = pixel;
 					idx += 1;
@@ -35627,7 +35796,11 @@
 							}
 						}
 					} else {
-						pixel = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							pixel = offGrid;
+						} else {
+							pixel = offMaxGrid;
+						}
 					}
 					data32[idx] = pixel;
 					idx += 1;
@@ -35653,7 +35826,11 @@
 							}
 						}
 					} else {
-						pixel = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							pixel = offGrid;
+						} else {
+							pixel = offMaxGrid;
+						}
 					}
 					data32[idx] = pixel;
 					idx += 1;
@@ -35679,7 +35856,11 @@
 							}
 						}
 					} else {
-						pixel = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							pixel = offGrid;
+						} else {
+							pixel = offMaxGrid;
+						}
 					}
 					data32[idx] = pixel;
 					idx += 1;
@@ -35705,7 +35886,11 @@
 							}
 						}
 					} else {
-						pixel = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							pixel = offGrid;
+						} else {
+							pixel = offMaxGrid;
+						}
 					}
 					data32[idx] = pixel;
 					idx += 1;
@@ -35731,7 +35916,11 @@
 							}
 						}
 					} else {
-						pixel = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							pixel = offGrid;
+						} else {
+							pixel = offMaxGrid;
+						}
 					}
 					data32[idx] = pixel;
 					idx += 1;
@@ -35757,7 +35946,11 @@
 							}
 						}
 					} else {
-						pixel = offGrid;
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							pixel = offGrid;
+						} else {
+							pixel = offMaxGrid;
+						}
 					}
 					data32[idx] = pixel;
 					idx += 1;
@@ -35765,8 +35958,28 @@
 				}
 			} else {
 				// draw off grid row
-				data32.fill(offGrid, idx, idx + this.displayWidth + 1);
-				idx += this.displayWidth;
+				if (y + yadj >= 0 && y + yadj < maxGridSize) {
+					x = sx;
+
+					// offset if hex rule
+					if (this.isHex) {
+						x += 0.5 * (y | 0);
+					}
+
+					// process the row
+					for (w = 0; w < this.displayWidth; w += 1) {
+						if (x + xadj >= 0 && x + xadj < maxGridSize) {
+							data32[idx] = offGrid;
+						} else {
+							data32[idx] = offMaxGrid;
+						}
+						idx += 1;
+						x += dyx;
+					}
+				} else {
+					data32.fill(offMaxGrid, idx, idx + this.displayWidth + 1);
+					idx += this.displayWidth;
+				}
 			}
 
 			// update column position
