@@ -1573,7 +1573,7 @@
 					if (event.shiftKey) {
 						me.cyclePasteMode(me);
 					} else {
-						if (me.navToggle && !me.navToggle.deleted) {
+						if (me.navToggle && !me.navToggle.deleted && !me.navToggle.locked) {
 							// toggle navigation menu
 							me.navToggle.current = me.toggleSettings([!me.navToggle.current[0]], true, me);
 		

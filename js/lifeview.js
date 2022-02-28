@@ -297,7 +297,7 @@
 		/** @const {string} */ screenShotTitle : "LifeViewer Image",
 
 		// build version
-		/** @const {number} */ versionBuild : 704,
+		/** @const {number} */ versionBuild : 705,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1496,13 +1496,6 @@
 
 		// whether reset is always hard
 		/** @type {boolean} */ this.hardReset = false;
-
-		// moveable menu items original position
-		/** @type {number} */ this.playListX = -1;
-		/** @type {number} */ this.speedRangeX = -1;
-		/** @type {number} */ this.speed1ButtonX = -1;
-		/** @type {number} */ this.directionButtonX = -1;
-		/** @type {number} */ this.stepLabelX = -1;
 
 		// life engine
 		this.engine = null;
@@ -5912,7 +5905,7 @@
 		this.themeButton.locked =  this.multiStateView || this.engine.isNone || this.engine.isRuleTree || this.engine.isSuper;
 
 		// lock major button if hex or triangular grid
-		this.majorButton.locked = (this.engine.isHex && !this.engine.forceRectangles) || (this.engine.isTriangular && !this.engine.forceRectangles);
+		this.majorButton.locked = (this.engine.isHex && !this.engine.forceRectangles) || (this.engine.isTriangular && !this.engine.forceRectangles) || this.engine.gridLineMajor === 0;
 
 		// lock hex cell button if not in hex mode
 		this.hexCellButton.locked = !(this.engine.isHex || this.engine.isTriangular);
@@ -6144,6 +6137,10 @@
 				this.viewMenu.deleted = false;
 			}
 		}
+
+		// lock nav toggle if window height is too short
+		shown = this.displayHeight < ViewConstants.minMenuHeight;
+		this.navToggle.locked = shown;
 	};
 
 	// update infobar
@@ -14880,13 +14877,6 @@
 			// create menu
 			this.createMenus();
 
-			// save position of moveable menu items
-			this.playListX = this.playList.relX;
-			this.speedRangeX = this.speedRange.relX;
-			this.speed1ButtonX = this.speed1Button.relX;
-			this.directionButtonX = this.directionButton.relX;
-			this.stepLabelX = this.stepLabel.relX;
-
 			// register mouse wheel event
 			registerEvent(this.mainCanvas, "wheel", function(event) {me.wheel(me,event);}, false);
 
@@ -16963,26 +16953,6 @@
 
 		// set the pause button
 		me.setPauseIcon(me.generationOn);
-
-		// disable menu controls if height is too small
-		if (me.displayHeight < ViewConstants.minMenuHeight) {
-			// delete the navigation menu toggle
-			me.navToggle.deleted = true;
-
-			// move speed and play controls right
-			me.playList.setX(me.playListX + 45);
-			me.speedRange.setX(me.speedRangeX + 45);
-			me.speed1Button.setX(me.speed1ButtonX + 45);
-			me.directionButton.setX(me.directionButtonX + 45);
-			me.stepLabel.setX(me.stepLabelX + 45);
-		} else {
-			// reset gps and play control position
-			me.playList.setX(me.playListX);
-			me.speedRange.setX(me.speedRangeX);
-			me.speed1Button.setX(me.speed1ButtonX);
-			me.directionButton.setX(me.directionButtonX);
-			me.stepLabel.setX(me.stepLabelX);
-		}
 
 		// resize the zoom slider
 		if (me.displayWidth > ViewConstants.minViewerWidth && !me.isInPopup) {

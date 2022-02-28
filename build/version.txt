@@ -1,3 +1,7 @@
+Build 705
+- grey out rather than hide Settings Menu button when window too short
+- disable Major Gridlines button when [[ GRIDMAJOR 0 ]] set
+
 Build 704
 - don't use alias names for rules when saving RLE
 
