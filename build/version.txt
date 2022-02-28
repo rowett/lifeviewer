@@ -1,3 +1,7 @@
+Build 706
+- disable Identify, Fast Identify, Go to Gen and [[ STARTFROM ]] for [[ VIEWONLY ]] patterns
+- don't assume Generations rule for multi-state patterns if pattern failed to decode
+
 Build 705
 - grey out rather than hide Settings Menu button when window too short
 - disable Major Gridlines button when [[ GRIDMAJOR 0 ]] set

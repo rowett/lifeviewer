@@ -922,7 +922,9 @@
 				} else {
 					// check for go to generation
 					if (event.shiftKey) {
-						me.goToGenPressed(me);
+						if (!me.viewOnly) {
+							me.goToGenPressed(me);
+						}
 					} else {
 						// check if thumbnail mode available
 						if (me.thumbnailEverOn) {

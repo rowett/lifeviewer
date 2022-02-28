@@ -297,7 +297,7 @@
 		/** @const {string} */ screenShotTitle : "LifeViewer Image",
 
 		// build version
-		/** @const {number} */ versionBuild : 705,
+		/** @const {number} */ versionBuild : 706,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2810,7 +2810,7 @@
 			deltas = null;
 
 		// lookup the recipe
-		i =  0;
+		i = 0;
 		while (!found && i < this.recipeList.length) {
 			if (name === this.recipeList[i].name) {
 				found = true;
@@ -2844,7 +2844,7 @@
 			scriptErrors[scriptErrors.length] = [Keywords.recipeWord + " " + name, "name is reserved word"];
 		} else {
 			// check the name does not already exist
-			i =  0;
+			i = 0;
 			while (!found && i < this.recipeList.length) {
 				if (name === this.recipeList[i].name) {
 					found = true;
@@ -3565,7 +3565,7 @@
 			gridRow = grid[(y + panY) & hm];
 
 			// check for multi-state view
-			if (this.multiStateView || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper) {
+			if (this.multiStateView || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || !this.executable) {
 				multiStateRow = pattern.multiStateMap[y];
 				colourGridRow = colourGrid[(y + panY) & hm];
 
@@ -5872,10 +5872,10 @@
 		shown = this.engine.isNone || !this.executable;
 		this.randomizeButton.locked = shown;
 		this.randomizePatternButton.locked = shown;
-		this.identifyButton.locked = shown;
-		this.fastIdentifyButton.locked = shown;
+		this.identifyButton.locked = shown || this.viewOnly;
+		this.fastIdentifyButton.locked = shown || this.viewOnly;
 		this.copyRuleButton.locked = shown;
-		this.goToGenButton.locked = shown;
+		this.goToGenButton.locked = shown || this.viewOnly;
 		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isRuleTree || this.engine.isMargolus);
 
 		// set theme section label text
@@ -5902,7 +5902,7 @@
 		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || (this.engine.isHROT && !(this.engine.HROT.xrange === 1 && this.engine.HROT.type === this.manager.mooreHROT && this.engine.HROT.scount === 2)) || this.engine.isTriangular || this.engine.isVonNeumann;
 
 		// lock theme button if mode doesn't support themes
-		this.themeButton.locked =  this.multiStateView || this.engine.isNone || this.engine.isRuleTree || this.engine.isSuper;
+		this.themeButton.locked = this.multiStateView || this.engine.isNone || this.engine.isRuleTree || this.engine.isSuper;
 
 		// lock major button if hex or triangular grid
 		this.majorButton.locked = (this.engine.isHex && !this.engine.forceRectangles) || (this.engine.isTriangular && !this.engine.forceRectangles) || this.engine.gridLineMajor === 0;
@@ -5954,10 +5954,10 @@
 		this.helpKeysButton.deleted = showTopicButtons;
 		this.helpScriptsButton.deleted = showTopicButtons;
 		this.helpInfoButton.deleted = showTopicButtons;
-		this.helpThemesButton.deleted =  showTopicButtons;
-		this.helpColoursButton.deleted =  showTopicButtons;
-		this.helpAliasesButton.deleted =  showTopicButtons;
-		this.helpMemoryButton.deleted =  showTopicButtons;
+		this.helpThemesButton.deleted = showTopicButtons;
+		this.helpColoursButton.deleted = showTopicButtons;
+		this.helpAliasesButton.deleted = showTopicButtons;
+		this.helpMemoryButton.deleted = showTopicButtons;
 		this.helpAnnotationsButton.deleted = showTopicButtons || (this.waypointManager.numAnnotations() === 0);
 
 		// help sections

@@ -5390,6 +5390,12 @@
 					view.autoStart = false;
 				}
 
+				// startfrom not possible if playback disabled
+				if (view.startFrom !== -1) {
+					scriptErrors[scriptErrors.length] = [Keywords.startFromWord + " " + view.startFrom, notPossibleError];
+					view.startFrom = -1;
+				}
+
 				// stop not possible if playback disabled
 				if (view.stopGeneration !== -1) {
 					scriptErrors[scriptErrors.length] = [Keywords.stopWord + " " + view.stopGeneration, notPossibleError];
