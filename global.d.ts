@@ -49,7 +49,7 @@ declare var Keywords;
 declare var LifeConstants, Life;
 
 // lifeview.js
-declare var typedArrays, DocConfig, Controller, ViewConstants, startAllViewers, updateViewer, updateMe, hideViewer, launchInMolly;
+declare var typedArrays, DocConfig, Controller, ViewConstants, View, startAllViewers, updateViewer, updateMe, hideViewer;
 interface HTMLElement {
     src;
 }

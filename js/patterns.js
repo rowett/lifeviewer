@@ -4289,7 +4289,7 @@
 	};
 
 	// decode HROT rule in Rr,Cc,S,B(,Nn) format
-	PatternManager.prototype.decodeHROTMulti = function(pattern, rule, allocator) {
+	PatternManager.prototype.decodeHROTMulti = function(pattern, /** @type {string} */ rule, allocator) {
 		var value = 0,
 			result = false,
 			maxCount = 0,
@@ -4306,7 +4306,7 @@
 
 		// decode R part
 		if (rule[this.index] !== "r") {
-			this.failureReason = "HROT expected 'R' got '" + rule[this.index].topUpperCase() + "'";
+			this.failureReason = "HROT expected 'R' got '" + rule[this.index].toUpperCase() + "'";
 		} else {
 			// read range
 			value = this.decodeHROTNumber(rule, "R");
@@ -4639,7 +4639,7 @@
 
 		// decode R part
 		if (rule[this.index] !== "r") {
-			this.failureReason = "HROT expected 'R' got '" + rule[this.index].topUpperCase() + "'";
+			this.failureReason = "HROT expected 'R' got '" + rule[this.index].toUpperCase() + "'";
 		} else {
 			// read range
 			nextCode = -1;

@@ -297,7 +297,7 @@
 		/** @const {string} */ screenShotTitle : "LifeViewer Image",
 
 		// build version
-		/** @const {number} */ versionBuild : 706,
+		/** @const {number} */ versionBuild : 707,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13159,7 +13159,7 @@
 	// stop indicator toggle
 	View.prototype.toggleStop = function(newValue, change, me) {
 		if (change) {
-			if (me.stopGeneneration !== -1) {
+			if (me.stopGeneration !== -1) {
 				me.stopDisabled = !newValue[0];
 			}
 		}

@@ -408,7 +408,7 @@
 				this.height = this.iconsImage.height;
 
 				// create a context the same size as the image and draw the image onto it
-				this.iconCanvas = document.createElement("canvas");	// TBD offscreencanvas?
+				this.iconCanvas = document.createElement("canvas");
 				this.iconCanvas.width = this.width;
 				this.iconCanvas.height = this.height;
 				this.iconContext = this.iconCanvas.getContext("2d");
@@ -2967,7 +2967,7 @@
 		me.timingIndex = (me.timingIndex + 1) % me.numTimings;
 
 		// get the total fps
-		total = Math.round(1000 / frame);
+		total = 1000 / frame;
 		if (total > me.refreshRate) {
 			total = me.refreshRate;
 		}

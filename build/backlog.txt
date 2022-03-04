@@ -17,8 +17,8 @@ Planned:
     consistent generation counters in T menu
 
 [DONE]@NAMES support
-    [[ COLOUR @NAME ]]
-    [[ XY = @NAME display ]]
+    [DONE][[ COLOUR @NAME ]]
+    [DONE][[ XY = @NAME display ]]
 
 [DONE]Rainbow rendering
     [DONE]add toggle for 2-state Life-like rules for rainbow rendering

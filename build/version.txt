@@ -1,3 +1,6 @@
+Build 707
+- performance improvement when rendering 2-state patterns using Themes with no history
+
 Build 706
 - disable Identify, Fast Identify, Go to Gen and [[ STARTFROM ]] for [[ VIEWONLY ]] patterns
 - don't assume Generations rule for multi-state patterns if pattern failed to decode

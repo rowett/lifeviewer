@@ -34,7 +34,7 @@
 			case Keywords.noSourceWord:
 			case Keywords.linearWord:
 			case Keywords.bezierWord:
-			case Keywords.triangularCellsWord:
+			case Keywords.triCellsWord:
 			case Keywords.hexCellsWord:
 			case Keywords.squareCellsWord:
 			case Keywords.bordersWord:
@@ -57,7 +57,7 @@
 			case Keywords.polySizeWord:
 			case Keywords.polyTWord:
 			case Keywords.polyAngleWord:
-			case Keywords.polyZoomRangetWord:
+			case Keywords.polyZoomRangeWord:
 			case Keywords.polyTrackWord:
 			case Keywords.polyViewWord:
 			case Keywords.arrowWord:

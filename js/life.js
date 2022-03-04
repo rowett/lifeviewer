@@ -204,11 +204,11 @@
 	 * @constructor
 	 */
 	function Theme(name, deadRange, aliveRange, unoccupied, aliveGen, dyingRangeGen, deadRangeGen, unoccupiedGen) {
-		this.name = name;
-		this.gridDefined = false;
-		this.gridMajor = 10;
-		this.gridColour = 0;
-		this.gridMajorColour = 0;
+		/** @type {string} */ this.name = name;
+		/** @type {boolean} */ this.gridDefined = false;
+		/** @type {number} */ this.gridMajor = 10;
+		/** @type {number} */ this.gridColour = 0;
+		/** @type {number} */ this.gridMajorColour = 0;
 
 		// 2-state theme
 		this.unoccupied = unoccupied;
@@ -220,7 +220,7 @@
 		this.dyingRangeGen = dyingRangeGen;
 		this.deadRangeGen = deadRangeGen;
 		this.unoccupiedGen = unoccupiedGen;
-		this.dyingRangeDynamic = false;
+		/** @type {boolean} */ this.dyingRangeDynamic = false;
 
 		// check for dynamic dying range
 		if (this.dyingRangeGen.endColour.red === -1) {
@@ -238,7 +238,7 @@
 	}
 
 	// copy theme
-	Theme.prototype.set = function(source) {
+	Theme.prototype.set = function(/** @type {Theme} */ source) {
 		this.gridDefined = source.gridDefined;
 		this.gridMajor = source.gridMajor;
 		this.gridColour = source.gridColour;
@@ -314,10 +314,10 @@
 	/**
 	 * @constructor
 	 */
-	function Colour(red, green, blue) {
-		this.red = red;
-		this.green = green;
-		this.blue = blue;
+	function Colour(/** @type {number} */ red, /** @type {number} */ green, /** @type {number} */ blue) {
+		/** @type {number} */ this.red = red;
+		/** @type {number} */ this.green = green;
+		/** @type {number} */ this.blue = blue;
 	}
 
 	// set function
@@ -3849,7 +3849,7 @@
 	};
 
 	// set state (2 state patterns without bounded grid or [R]History)
-	/** @result {number} */
+	/** @returns {number} */
 	Life.prototype.setState2 = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
 		var grid = this.grid16,
 			tileGrid = this.tileGrid,
@@ -4068,7 +4068,7 @@
 	};
 
 	// set state (2 state [R]History patterns without bounded grid)
-	/** @result {number} */
+	/** @returns {number} */
 	Life.prototype.setState2History = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
 		var grid = this.grid16,
 			tileGrid = this.tileGrid,
@@ -4312,7 +4312,7 @@
 	};
 
 	// set state (any pattern)
-	/** @result {number} */
+	/** @returns {number} */
 	Life.prototype.setStateAny = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
 		var grid = this.grid16,
 			tileGrid = this.tileGrid,
@@ -4760,7 +4760,7 @@
 	};
 
 	// dispatcher for getState
-	/** @result {number} */
+	/** @returns {number} */
 	Life.prototype.getState = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
 		switch (this.stateMode) {
 		case LifeConstants.mode2:
@@ -4775,7 +4775,7 @@
 	};
 
 	// dispatcher for setState
-	/** @result {number} */
+	/** @returns {number} */
 	Life.prototype.setState = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
 		switch (this.stateMode) {
 		case LifeConstants.mode2:
@@ -4825,7 +4825,7 @@
 	};
 
 	// get state (2 state patterns without bounded grid or [R]History)
-	/** @result {number} */
+	/** @returns {number} */
 	Life.prototype.getState2 = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
 		// result
 		var /** @type {number} */ result = 0,
@@ -4860,7 +4860,7 @@
 	};
 
 	// get state (2 state [R]History patterns without bounded grid)
-	/** @result {number} */
+	/** @returns {number} */
 	Life.prototype.getState2History = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
 		// result
 		var /** @type {number} */ result = 0,
@@ -4930,7 +4930,7 @@
 	};
 
 	// get state (any pattern)
-	/** @result {number} */
+	/** @returns {number} */
 	Life.prototype.getStateAny = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
 		// result
 		var /** @type {number} */ result = 0,
@@ -30377,7 +30377,7 @@
 	// convert life grid region to pens using tiles but without history
 	Life.prototype.convertToPensTileNoHistory = function() {
 		var h = 0, cr = 0, nextCell = 0,
-		    colourGrid16 = this.colourGrid16,
+		    colourGrid32 = this.colourGrid32,
 		    colourGridRow = null, colourTileRow = null,
 		    colourTileHistoryRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
@@ -30388,8 +30388,8 @@
 		    bottomY = 0, topY = 0, leftX = 0,
 		    tiles = 0, nextTiles = 0,
 
-			// whether the tile is alive
-			tileAlive = 0,
+		    // whether the tile is alive
+		    tileAlive = 0,
 
 		    // set tile height
 		    ySize = this.tileY,
@@ -30461,35 +30461,32 @@
 							while (h < topY) {
 								// get the grid and colour grid row
 								gridRow = grid[h];
-								colourGridRow = colourGrid16[h];
+								colourGridRow = colourGrid32[h];
 
 								// get correct starting colour index
-								cr = (leftX << 3);
+								cr = (leftX << 2);
 
 								// process each 16bit chunk (16 cells) along the row
 								nextCell = gridRow[leftX];
+								if (nextCell) {
+									// determine if anything is alive on the grid
+									tileAlive |= nextCell;
 
-								// determine if anything is alive on the grid
-								this.anythingAlive |= nextCell;
-								tileAlive |= nextCell;
-
-								// lookup next colour
-								colourGridRow[cr] = ((nextCell & 32768) >> 9) | (nextCell & 16384);
-								cr += 1;
-								colourGridRow[cr] = ((nextCell & 8192) >> 7) | ((nextCell & 4096) << 2);
-								cr += 1;
-								colourGridRow[cr] = ((nextCell & 2048) >> 5) | ((nextCell & 1024) << 4);
-								cr += 1;
-								colourGridRow[cr] = ((nextCell & 512) >> 3) | ((nextCell & 256) << 6);
-								cr += 1;
-								colourGridRow[cr] = ((nextCell & 128) >> 1) | ((nextCell & 64) << 8);
-								cr += 1;
-								colourGridRow[cr] = ((nextCell & 32) << 1) | ((nextCell & 16) << 10);
-								cr += 1;
-								colourGridRow[cr] = ((nextCell & 8) << 3) | ((nextCell & 4) << 12);
-								cr += 1;
-								colourGridRow[cr] = ((nextCell & 2) << 5) | ((nextCell & 1) << 14);
-								// cr += 1   - no need for final increment it will be reset next row
+									// lookup next colour
+									colourGridRow[cr] = ((nextCell & 32768) >> 9) | (nextCell & 16384) | ((nextCell & 8192) << 9) | ((nextCell & 4096) << 18);
+									cr += 1;
+									colourGridRow[cr] = ((nextCell & 2048) >> 5) | ((nextCell & 1024) << 4) | ((nextCell & 512) << 13) | ((nextCell & 256) << 22);
+									cr += 1;
+									colourGridRow[cr] = ((nextCell & 128) >> 1) | ((nextCell & 64) << 8) | ((nextCell & 32) << 17) | ((nextCell & 16) << 26);
+									cr += 1;
+									colourGridRow[cr] = ((nextCell & 8) << 3) | ((nextCell & 4) << 12) | ((nextCell & 2) << 21) | ((nextCell & 1) << 30);
+									// cr += 1   - no need for final increment it will be reset next row
+								} else {
+									colourGridRow[cr] = 0;
+									colourGridRow[cr + 1] = 0;
+									colourGridRow[cr + 2] = 0;
+									colourGridRow[cr + 3] = 0;
+								}
 
 								// next row
 								h += 1;
@@ -30513,6 +30510,9 @@
 				// save the tile group
 				colourTileRow[tw] = nextTiles;
 				colourTileHistoryRow[tw] |= nextTiles;
+				if (nextTiles) {
+					this.anythingAlive = 1;
+				}
 			}
 
 			// next tile row
