@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="LifeViewer" content="viewer textarea 60 hide">
+		<script src="../js/compatibility.js"></script>
+		<script src="../js/allocator.js"></script>
+		<script src="../js/alias.js"></script>
+		<script src="../js/canvasmenu.js"></script>
+		<script src="../js/patterns.js"></script>
+		<script src="../js/colours.js"></script>
+		<script src="../js/box.js"></script>
+		<script src="../js/snapshot.js"></script>
+		<script src="../js/life.js"></script>
+		<script src="../js/hrot.js"></script>
+		<script src="../js/random.js"></script>
+		<script src="../js/stars.js"></script>
+		<script src="../js/waypoint.js"></script>
+		<script src="../js/script.js"></script>
+		<script src="../js/window.js"></script>
+		<script src="../js/keywords.js"></script>
+		<script src="../js/help.js"></script>
+		<script src="../js/parser.js"></script>
+		<script src="../js/keys.js"></script>
+		<script src="../js/lifeview.js"></script>
+		<title>LifeViewer Plugin Tests</title>
+	</head>
+	<body>
+		<h1>LifeViewer Plugin Tests</h1>
+		<h2>HD Benchmark</h2>
+		<p>Click on <b>Settings->Pattern->Go To Gen</b> and then enter <b>+1000B</b></p>
+		<div class="viewer">
+			<textarea rows=10 cols=70>
+x = 1, y = 1, rule = B3/S23:P1920,1080
+o!
+[[ RANDWIDTH 1920 RANDHEIGHT 1080 RANDOMIZE ]]
+[[ ZOOM 1 THEME Mono ]]
+[[ NOSTEPBACK NOGRAPH ]]
+			</textarea>
+			<br>
+			<canvas width="600" height="560"></canvas> 
+		</div>
+		<br>
+		<p>LifeViewer Plugin by Chris Rowett</p>
+	</body>
+</html>

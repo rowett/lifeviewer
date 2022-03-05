@@ -1,3 +1,6 @@
+Build 708
+- Go To Gen now supports trailing B for benchmark mode in the generation specification (e.g. 250B)
+
 Build 707
 - performance improvement when rendering 2-state patterns using Themes with no history
 

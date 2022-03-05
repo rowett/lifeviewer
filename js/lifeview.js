@@ -297,7 +297,7 @@
 		/** @const {string} */ screenShotTitle : "LifeViewer Image",
 
 		// build version
-		/** @const {number} */ versionBuild : 707,
+		/** @const {number} */ versionBuild : 708,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -665,6 +665,12 @@
 
 		// target generation for go to
 		this.startFrom = -1;
+
+		// whether to time going to generation
+		this.startFromTiming = -1;
+
+		// how many generations to move
+		this.startFromGens = -1;
 
 		// pattern state names
 		this.stateNames = [];
@@ -6333,7 +6339,9 @@
 
 	// stop start from (go to generation)
 	View.prototype.stopStartFrom = function(me, cancelled, notify) {
-		me.startFrom = -1;
+		var gps = 0,
+		    genTime = 0;
+
 		me.viewMenu.locked = false;
 		if (cancelled) {
 			if (notify) {
@@ -6341,13 +6349,22 @@
 			}
 		} else {
 			if (me.genNotifications) {
-				if (notify) {
+				if (notify || me.startFromTiming !== -1) {
 					me.menuManager.notification.notify("Arrived at generation " + me.engine.counter, 15, 150, 15, true);
+					if (me.startFromTiming !== -1) {
+						genTime = (performance.now() - me.startFromTiming) / 1000;
+						gps = (me.startFromGens / genTime) | 0;
+						me.menuManager.notification.notify("Calculated " + me.startFromGens + " gens in " + genTime.toFixed(1) + "s = " + gps + "gps", 15, 600, 15, false);
+					}
 				}
 			}
 		}
-		me.menuManager.notification.clear(false, false);
+		if (me.startFromTiming === -1) {
+			me.menuManager.notification.clear(false, false);
+		}
 		me.afterEdit("");
+		me.startFrom = -1;
+		me.startFromTiming = -1;
 	};
 
 	// view update for start from
@@ -6362,11 +6379,13 @@
 		me.viewMenu.locked = true;
 
 		// compute the next set of generations without stats for speed
-		while (me.engine.population !== 0 && me.engine.counter < me.startFrom && (performance.now() - startTime < timeLimit)) {
+		while (me.engine.population !== 0 && me.engine.counter < me.startFrom && (me.startFromTiming !== -1 || (performance.now() - startTime < timeLimit))) {
 			// compute the next generation
 			me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify, me);
 			if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
-				me.engine.convertToPensTile();
+				if (me.engine.themeHistory || me.engine.counter == me.startFrom) {
+					me.engine.convertToPensTile();
+				}
 			}
 			// check for just died for 2 state patterns
 			if (me.engine.anythingAlive === 0 && me.engine.multiNumStates <= 2) {
@@ -12950,10 +12969,18 @@
 	View.prototype.goToGenPressed = function(me) {
 		// prompt for generation
 		var result = window.prompt("Enter generation", me.engine.counter),
-			number = 0;
+			number = 0,
+			timing = false;
 
 		// check one was entered
+		me.startFromTiming = -1;
 		if (result !== null) {
+			// check for timing mode
+			if ((result.substr(result.length - 1)).toLowerCase() == "b") {
+				result = result.substr(0, result.length - 1);
+				timing = true;
+			}
+
 			// check for relative generation
 			if (result.substr(0, 1) == "+") {
 				number = me.engine.counter + Number(result.substr(1));
@@ -12980,6 +13007,14 @@
 						me.engine.restoreSavedGrid(me, false);
 						me.setUndoGen(me.engine.counter);
 					}
+
+					// setup timing if requested
+					if (timing) {
+						me.startFromTiming = performance.now();
+					}
+
+					// calculate number of generations to move
+					me.startFromGens = number - me.engine.counter;
 				}
 			} else {
 				me.menuManager.notification.notify("Invalid generation specified", 15, 240, 15, true);
