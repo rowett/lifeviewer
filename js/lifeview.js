@@ -83,9 +83,9 @@
 
 		// min and max random width, height and fill percentage
 		/** @const {number} */ minRandomWidth : 1,
-		/** @const {number} */ maxRandomWidth : 2048,
+		/** @const {number} */ maxRandomWidth : 4096,
 		/** @const {number} */ minRandomHeight : 1,
-		/** @const {number} */ maxRandomHeight : 2048,
+		/** @const {number} */ maxRandomHeight : 4096,
 		/** @const {number} */ minRandomFill : 1,
 		/** @const {number} */ maxRandomFill : 100,
 
@@ -297,7 +297,7 @@
 		/** @const {string} */ screenShotTitle : "LifeViewer Image",
 
 		// build version
-		/** @const {number} */ versionBuild : 708,
+		/** @const {number} */ versionBuild : 709,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3418,6 +3418,22 @@
 	// capture screenshot and display in screenshot window
 	View.prototype.captureScreenShot = function(me) {
 		// capture screenshot
+		var link = document.createElement("a");
+
+		// make the link point to the image
+		link.href = me.mainCanvas.toDataURL("image/png");
+		link.download = "screenshot.png";
+		link.click();
+
+		// remove the new link
+		link.remove();
+
+		// notify that image captured
+		me.menuManager.notification.notify("Image Saved", 15, 300, 15, true);
+	};
+
+	View.prototype.captureScreenShot2 = function(me) {
+		// capture screenshot
 		var dataURL = me.mainCanvas.toDataURL("image/png"),
 		    shotWindow = null,
 		    imageElement = null;
@@ -5881,7 +5897,7 @@
 		this.identifyButton.locked = shown || this.viewOnly;
 		this.fastIdentifyButton.locked = shown || this.viewOnly;
 		this.copyRuleButton.locked = shown;
-		this.goToGenButton.locked = shown || this.viewOnly;
+		this.goToGenButton.locked = !this.executable || this.viewOnly;
 		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isRuleTree || this.engine.isMargolus);
 
 		// set theme section label text

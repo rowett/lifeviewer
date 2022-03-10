@@ -30524,9 +30524,9 @@
 	// convert life grid region to pens using tiles
 	Life.prototype.convertToPensTileRegular = function() {
 		var h = 0, cr = 0, nextCell = 0,
-			colourGrid16 = this.colourGrid16,
-			value16 = 0,
-			colourGridRow16 = null, colourTileRow = null,
+		    colourGrid16 = this.colourGrid16,
+		    value16 = 0,
+		    colourGridRow16 = null, colourTileRow = null,
 		    colourTileHistoryRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileGrid = this.colourTileGrid,
@@ -30618,9 +30618,6 @@
 								// process each 16bit chunk (16 cells) along the row
 								nextCell = gridRow[leftX];
 
-								// determine if anything is alive on the grid
-								this.anythingAlive |= nextCell;
-
 								// lookup next colour
 								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 32768) >> 8) | ((nextCell & 16384) << 1)];
 								tileAlive |= value16;
@@ -30667,9 +30664,10 @@
 							}
 
 							// check if the tile was alive (has any cells not completely faded)
-							if (((tileAlive & 255) > 1) || ((tileAlive >> 8) > 1)) {
+							if ((tileAlive & 0xfefe) !== 0) {
 								// update tile flag
 								nextTiles |= (1 << b);
+								this.anythingAlive = 1;
 							}
 						}
 
