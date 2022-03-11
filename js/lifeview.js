@@ -293,9 +293,6 @@
 		// external viewer window
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
-		// screenshot window
-		/** @const {string} */ screenShotTitle : "LifeViewer Image",
-
 		// build version
 		/** @const {number} */ versionBuild : 709,
 
@@ -3430,40 +3427,6 @@
 
 		// notify that image captured
 		me.menuManager.notification.notify("Image Saved", 15, 300, 15, true);
-	};
-
-	View.prototype.captureScreenShot2 = function(me) {
-		// capture screenshot
-		var dataURL = me.mainCanvas.toDataURL("image/png"),
-		    shotWindow = null,
-		    imageElement = null;
-
-		// check for image tag
-		imageElement = document.getElementById("screenshot");
-		if (imageElement) {
-			imageElement.src = dataURL;
-		} else {
-			// open or lookup the screenshot window
-			shotWindow = window.open("", ViewConstants.screenShotTitle);
-
-			// check if the window opened
-			if (shotWindow) {
-				// set the size of the window
-				shotWindow.width = me.displayWidth + 20;
-				shotWindow.height = me.displayHeight + 20;
-
-				// write the image to the new window
-				shotWindow.document.open();
-				shotWindow.document.write('<!DOCTYPE html>\n<html>\n\t<head>\n\t\t<meta charset="UTF-8">\n\t\t<title>' + ViewConstants.screenShotTitle + '</title>\n\t</head>\n\t<body>\n\t\t<img width="' + me.displayWidth + '" height="' + me.displayHeight + '" src="' + dataURL + '" alt="' + ViewConstants.screenShotTitle + '"/>\n\t</body>\n</html>\n');
-				shotWindow.document.close();
-
-				// notify that image captured
-				me.menuManager.notification.notify("Image Captured", 15, 300, 15, true);
-			} else {
-				// notify that image capture failed
-				me.menuManager.notification.notify("Could not open Image window!", 15, ViewConstants.errorDuration, 15, true);
-			}
-		}
 	};
 
 	// copy pattern to grid position
@@ -14468,11 +14431,11 @@
 
 		// image button
 		this.saveImageButton = this.viewMenu.addButtonItem(this.saveImagePressed, Menu.middle, -100, 75, 180, 40, "Save Image");
-		this.saveImageButton.toolTip = "save image in new window [O]";
+		this.saveImageButton.toolTip = "save image [O]";
 
 		// save graph button
 		this.saveGraphButton = this.viewMenu.addButtonItem(this.saveGraphPressed, Menu.middle, 100, 75, 180, 40, "Save Graph");
-		this.saveGraphButton.toolTip = "save population graph image in new window [Shift O]";
+		this.saveGraphButton.toolTip = "save population graph image [Shift O]";
 
 		// go to generation button
 		this.goToGenButton = this.viewMenu.addButtonItem(this.goToGenPressed, Menu.middle, 100, 125, 180, 40, "Go To Gen");
