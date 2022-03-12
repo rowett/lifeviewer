@@ -1,3 +1,6 @@
+Build 710
+- fix population graph screenshot height
+
 Build 709
 - Save Image and Save Graph will now download a png file
 

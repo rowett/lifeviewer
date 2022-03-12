@@ -11866,14 +11866,14 @@
 	// draw population data
 	Life.prototype.drawPopGraph = function(lines, opacity, fullScreen, thumbnail, view) {
 		var ctx = this.context,
-			xScale = view.viewMenu.xScale,
-			yScale = view.viewMenu.yScale,
-		    borderX = 0, borderY = 48 * yScale,
+		    xScale = view.viewMenu.xScale,
+		    yScale = view.viewMenu.yScale,
+		    borderX = 0, borderY = 40 * yScale,
 		    borderAxis = 40 * xScale,
 		    graphWidth = this.displayWidth - borderX - borderAxis,
 		    graphHeight = this.displayHeight - borderY - borderAxis,
 		    displayX = 0,
-			i = 0,
+		    i = 0,
 		    graphBgColor = "rgb(" + this.graphBgColor[0] + "," + this.graphBgColor[1] + "," + this.graphBgColor[2] + ")",
 		    graphAxisColor = "rgb(" + this.graphAxisColor[0] + "," + this.graphAxisColor[1] + "," + this.graphAxisColor[2] + ")",
 		    graphAliveColor = "rgb(" + this.graphAliveColor[0] + "," + this.graphAliveColor[1] + "," + this.graphAliveColor[2] + ")",
@@ -11883,13 +11883,17 @@
 		// check if data exists
 		if (this.popGraphData && this.popGraphData.length > 0) {
 			// check for full screen
-			if (fullScreen || thumbnail) {
+			if (fullScreen) {
+				graphHeight = this.displayHeight;
 				borderY = 0;
-				graphHeight += borderY * 2;
-			}
-			if (thumbnail) {
-				borderAxis = 0;
-				graphWidth = this.displayWidth - borderX;
+			} else {
+				// check for thumbnail
+				if (thumbnail) {
+					graphHeight = this.displayHeight;
+					borderY = 0;
+					graphWidth = this.displayWidth;
+					borderAxis = 0;
+				}
 			}
 
 			// compute number of samples
@@ -11904,7 +11908,7 @@
 			ctx.fillRect(borderX, borderY, graphWidth + borderAxis, graphHeight);
 			ctx.globalAlpha = 1;
 			if (fullScreen) {
-				graphHeight -= borderY;
+				graphHeight -= borderAxis;
 			}
 
 			// draw labels

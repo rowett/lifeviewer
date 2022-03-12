@@ -825,8 +825,8 @@
 			y = this.renderHelpLine(view, "N", "toggle thumbnail view", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "S", "toggle stars", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "O", "open screenshot in separate window", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Shift O", "open population graph in separate window", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "O", "save screenshot", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift O", "save population graph screenshot", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift U", "toggle UI", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt U", "toggle autohide UI during playback", ctx, x, y, height, helpLine);
 		if (view.engine.multiNumStates === -1) {
