@@ -53,13 +53,11 @@
 		// check type
 		if ((type & AllocBits.floatMask) !== 0) {
 			typeName = "Float";
-		}
-		else {
+		} else {
 			// check sign
 			if ((type & AllocBits.unsignedMask) !== 0) {
 				typeName = "Uint";
-			}
-			else {
+			} else {
 				typeName = "Int";
 			}
 		}
@@ -149,8 +147,7 @@
 
 				// update bytes freed
 				this.totalFreedBytes += allocation.elements * Type.sizeInBytes(allocation.type);
-			}
-			else {
+			} else {
 				i += 1;
 			}
 		}
@@ -162,8 +159,7 @@
 			this.allocations[i].elements = elements;
 			this.allocations[i].number += 1;
 			this.allocations[i].size = elements * Type.sizeInBytes(type);
-		}
-		else {
+		} else {
 			// create a new allocation record
 			i = this.allocations.length;
 			this.allocations[i] = new AllocationInfo(type, elements, name);

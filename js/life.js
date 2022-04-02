@@ -30621,6 +30621,7 @@
 
 								// process each 16bit chunk (16 cells) along the row
 								nextCell = gridRow[leftX];
+								this.anythingAlive |= nextCell;
 
 								// lookup next colour
 								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 32768) >> 8) | ((nextCell & 16384) << 1)];
@@ -30671,7 +30672,6 @@
 							if ((tileAlive & 0xfefe) !== 0) {
 								// update tile flag
 								nextTiles |= (1 << b);
-								this.anythingAlive = 1;
 							}
 						}
 

@@ -5500,11 +5500,23 @@
 		// check if there was a size error
 		if (sizeError || scriptErrors.length) {
 			// enable GUI and reset window size so errors can be seen
-			if (view.requestedWidth !== -1 && (view.requestedWidth < ViewConstants.minViewerWidth)) {
-				view.requestedWidth = ViewConstants.minViewerWidth;
+			if (view.requestedWidth !== -1) {
+				if (view.requestedWidth < ViewConstants.minViewerWidth) {
+					view.requestedWidth = ViewConstants.minViewerWidth;
+				} else {
+					if (view.requestedWidth > view.maxCodeWidth) {
+						view.requestedWidth = view.maxCodeWidth;
+					}
+				}
 			}
-			if (view.requestedHeight !== -1 && (view.requestedHeight < ViewConstants.minMenuHeight)) {
-				view.requestedHeight = ViewConstants.minMenuHeight;
+			if (view.requestedHeight !== -1) {
+				if (view.requestedHeight < ViewConstants.minMenuHeight) {
+					view.requestedHeight = ViewConstants.minMenuHeight;
+				} else {
+					if (view.requestedHeight > ViewConstants.maxViewerHeight) {
+						view.requestedHeight = -1;
+					}
+				}
 			}
 			view.noGUI = false;
 		}

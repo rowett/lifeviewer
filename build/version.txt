@@ -1,3 +1,9 @@
+Build 712
+- fix died generation
+
+Build 711
+- enforce WIDTH and HEIGHT limits
+
 Build 710
 - fix population graph screenshot height
 
