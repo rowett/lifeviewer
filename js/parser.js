@@ -3629,7 +3629,7 @@
 							tempWaypoint = currentWaypoint;
 
 							// STOP goes to initial setting if not defined at a POI
-							if (!currentWaypoint.isPOI && view.waypointManager.numWaypoints > 0) {
+							if (!currentWaypoint.isPOI && view.waypointManager.numWaypoints() > 0) {
 								currentWaypoint = view.waypointManager.firstWaypoint();
 							}
 

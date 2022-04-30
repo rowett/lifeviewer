@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 712,
+		/** @const {number} */ versionBuild : 713,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4965,7 +4965,7 @@
 		    saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
 
 		    // frame target time in ms
-		    frameTargetTime = (1000 / this.refreshRate);
+		    frameTargetTime = (1000 / me.refreshRate);
 
 		// unlock controls
 		me.controlsLocked = false;
@@ -5168,7 +5168,7 @@
 					} else {
 						// draw new message
 						// @ts-ignore
-						me.menuManager.notification.notify(ScriptParser.substituteVariables(this, currentWaypoint.textMessage), 15, 21600, 15, false);
+						me.menuManager.notification.notify(ScriptParser.substituteVariables(me, currentWaypoint.textMessage), 15, 21600, 15, false);
 					}
 	
 					// save message
@@ -5277,7 +5277,7 @@
 					if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled) {
 						// save elapsed time up to the loop generation
 						for (i = 1; i <= stepsTaken; i += 1) {
-							this.saveElapsedTime(currentGen + i, timeSinceLastUpdate, stepsTaken);
+							me.saveElapsedTime(currentGen + i, timeSinceLastUpdate, stepsTaken);
 						}
 
 						// reset
@@ -5304,9 +5304,10 @@
 					}
 				}
 
-				// save elapsed time
+				// save elapsed time for each step actually taken
 				for (i = 1; i <= stepsTaken; i += 1) {
-					this.saveElapsedTime(currentGen + i, timeSinceLastUpdate, stepsTaken);
+					// add the time increment as if all steps could be taken (time will slow when throttled)
+					me.saveElapsedTime(currentGen + i, timeSinceLastUpdate, stepsToTake);
 				}
 
 				// check if life just stopped

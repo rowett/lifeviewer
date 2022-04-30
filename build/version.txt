@@ -1,3 +1,7 @@
+Build 713
+- [[ STOP ]] will now always define initial stop generation unless specified at a [[ POI ]]
+- fixed Waypoint target when playback throttled
+
 Build 712
 - fix died generation
 
