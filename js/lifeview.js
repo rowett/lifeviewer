@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 713,
+		/** @const {number} */ versionBuild : 714,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -11602,7 +11602,12 @@
 			currentOverlayGrid16 = me.engine.overlayGrid16,
 			currentOverlayGrid32 = me.engine.overlayGrid32,
 			currentCounts = null,
-			currentColUsed = null;
+			currentColUsed = null,
+			// save anything alive
+			currentAnythingAlive = me.engine.anythingAlive,
+			currentPop = me.engine.population,
+			currentBirths = me.engine.births,
+			currentDeaths = me.engine.deaths;
 
 		// check for HROT rules
 		if (me.engine.isHROT) {
@@ -11724,6 +11729,10 @@
 		historyBox.bottomY = currentHistoryBox.bottomY;
 		historyBox.rightX = currentHistoryBox.rightX;
 		historyBox.topY = currentHistoryBox.topY;
+		me.engine.anythingAlive = currentAnythingAlive;
+		me.engine.births = currentBirths;
+		me.engine.deaths = currentDeaths;
+		me.engine.population = currentPop;
 
 		// restore HROT
 		if (me.engine.isHROT) {

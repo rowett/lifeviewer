@@ -1,3 +1,6 @@
+Build 714
+- fixed issue with Advance Selection when all cells die in selection
+
 Build 713
 - [[ STOP ]] will now always define initial stop generation unless specified at a [[ POI ]]
 - fixed Waypoint target when playback throttled
