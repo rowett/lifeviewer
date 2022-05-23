@@ -1,3 +1,6 @@
+Build 715
+- implement [R]Super sub-pixel renderer
+
 Build 714
 - fixed issue with Advance Selection when all cells die in selection
 

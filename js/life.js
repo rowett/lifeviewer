@@ -17608,18 +17608,193 @@
 		}
 	};
 
-	// create 2x2 colour grid for 0.5 <= zoom < 1
-	Life.prototype.create2x2ColourGrid16 = function(colourGrid, smallColourGrid) {
-		var cr = 0, h = 0,
+	// create 2x2 colour grid for 0.5 <= zoom < 1 for [R]Super patterns
+	Life.prototype.create2x2ColourGrid16Super = function(colourGrid, smallColourGrid) {
+		var /** @type {number} */ cr = 0,
+		    h = 0,
 		    sourceRow = null,
 		    sourceRow1 = null,
 		    destRow = null,
 		    colourTileHistoryGrid = this.colourTileHistoryGrid,
 		    colourTileHistoryRow = null,
-		    value = 0, th = 0, tw = 0, b = 0,
+		    th = 0, tw = 0, b = 0,
 		    bottomY = 0, topY = 0, leftX = 0,
 		    tiles = 0,
-		    smallValue = 0,
+		    /** @type {number} */ value = 0,
+		    /** @type {number} */ smallValue = 0,
+		    /** @type {number} */ temp = 0,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (in 16bit chunks)
+		    xSize = this.tileX >> 1,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+		    tileCols16 = this.tileCols >> 4;
+
+		// set the initial tile row
+		bottomY = 0;
+		topY = bottomY + ySize;
+
+		// scan each row of tiles
+		for (th = 0; th < tileRows; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			colourTileHistoryRow = colourTileHistoryGrid[th];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = colourTileHistoryRow[tw];
+
+				// check if any are occupied
+				if (tiles) {
+					// compute next colour for each tile in the set
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << b)) !== 0) {
+							// update the small colour grid
+							for (h = bottomY; h < topY; h += 2) {
+								// get destination row
+								destRow = smallColourGrid[h];
+
+								// get the next two rows
+								sourceRow = colourGrid[h];
+								sourceRow1 = colourGrid[h + 1];
+								cr = (leftX << 3);
+
+								// get the maximum of 4 pixels
+								// first two pixels in first row
+								value = sourceRow[cr];
+								smallValue = (value & 255) | ((value & 1) << 5);
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								smallValue -= (temp & (temp >> 255));
+
+								// next two pixels in next row
+								value = sourceRow1[cr];
+								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
+								cr += 1;
+
+								// loop unroll x 7
+								value = sourceRow[cr];
+								smallValue = (value & 255) | ((value & 1) << 5);
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								smallValue -= (temp & (temp >> 255));
+								value = sourceRow1[cr];
+								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
+								cr += 1;
+
+								value = sourceRow[cr];
+								smallValue = (value & 255) | ((value & 1) << 5);
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								smallValue -= (temp & (temp >> 255));
+								value = sourceRow1[cr];
+								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
+								cr += 1;
+
+								value = sourceRow[cr];
+								smallValue = (value & 255) | ((value & 1) << 5);
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								smallValue -= (temp & (temp >> 255));
+								value = sourceRow1[cr];
+								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
+								cr += 1;
+
+								value = sourceRow[cr];
+								smallValue = (value & 255) | ((value & 1) << 5);
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								smallValue -= (temp & (temp >> 255));
+								value = sourceRow1[cr];
+								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
+								cr += 1;
+
+								value = sourceRow[cr];
+								smallValue = (value & 255) | ((value & 1) << 5);
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								smallValue -= (temp & (temp >> 255));
+								value = sourceRow1[cr];
+								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
+								cr += 1;
+
+								value = sourceRow[cr];
+								smallValue = (value & 255) | ((value & 1) << 5);
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								smallValue -= (temp & (temp >> 255));
+								value = sourceRow1[cr];
+								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
+								cr += 1;
+
+								value = sourceRow[cr];
+								smallValue = (value & 255) | ((value & 1) << 5);
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								smallValue -= (temp & (temp >> 255));
+								value = sourceRow1[cr];
+								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
+								cr += 1;
+
+							}
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+			}
+
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+	};
+
+	// create 2x2 colour grid for 0.5 <= zoom < 1
+	Life.prototype.create2x2ColourGrid16 = function(colourGrid, smallColourGrid) {
+		var /** @type {number} */ cr = 0,
+		    h = 0,
+		    sourceRow = null,
+		    sourceRow1 = null,
+		    destRow = null,
+		    colourTileHistoryGrid = this.colourTileHistoryGrid,
+		    colourTileHistoryRow = null,
+		    th = 0, tw = 0, b = 0,
+		    bottomY = 0, topY = 0, leftX = 0,
+		    tiles = 0,
+		    /** @type {number} */ value = 0,
+		    /** @type {number} */ smallValue = 0,
+		    /** @type {number} */ temp = 0,
 
 		    // set tile height
 		    ySize = this.tileY,
@@ -17670,91 +17845,94 @@
 								// first two pixels in first row
 								value = sourceRow[cr];
 								smallValue = value & 255;
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value >> 8);
+								smallValue -= (temp & (temp >> 255));
 
 								// next two pixels in next row
 								value = sourceRow1[cr];
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value & 255);
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - (value >> 8);
+								destRow[cr + cr] = smallValue - (temp & (temp >> 255));
 								cr += 1;
 
-								// loop unroll
+								// loop unroll x 7
 								value = sourceRow[cr];
 								smallValue = value & 255;
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value >> 8);
+								smallValue -= (temp & (temp >> 255));
 								value = sourceRow1[cr];
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value & 255);
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - (value >> 8);
+								destRow[cr + cr] = smallValue - (temp & (temp >> 255));
 								cr += 1;
 
-								// loop unroll
 								value = sourceRow[cr];
 								smallValue = value & 255;
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value >> 8);
+								smallValue -= (temp & (temp >> 255));
 								value = sourceRow1[cr];
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value & 255);
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - (value >> 8);
+								destRow[cr + cr] = smallValue - (temp & (temp >> 255));
 								cr += 1;
 
-								// loop unroll
 								value = sourceRow[cr];
 								smallValue = value & 255;
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value >> 8);
+								smallValue -= (temp & (temp >> 255));
 								value = sourceRow1[cr];
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value & 255);
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - (value >> 8);
+								destRow[cr + cr] = smallValue - (temp & (temp >> 255));
 								cr += 1;
 
-								// loop unroll
 								value = sourceRow[cr];
 								smallValue = value & 255;
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value >> 8);
+								smallValue -= (temp & (temp >> 255));
 								value = sourceRow1[cr];
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value & 255);
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - (value >> 8);
+								destRow[cr + cr] = smallValue - (temp & (temp >> 255));
 								cr += 1;
 
-								// loop unroll
 								value = sourceRow[cr];
 								smallValue = value & 255;
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value >> 8);
+								smallValue -= (temp & (temp >> 255));
 								value = sourceRow1[cr];
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value & 255);
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - (value >> 8);
+								destRow[cr + cr] = smallValue - (temp & (temp >> 255));
 								cr += 1;
 
-								// loop unroll
 								value = sourceRow[cr];
 								smallValue = value & 255;
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value >> 8);
+								smallValue -= (temp & (temp >> 255));
 								value = sourceRow1[cr];
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value & 255);
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - (value >> 8);
+								destRow[cr + cr] = smallValue - (temp & (temp >> 255));
 								cr += 1;
 
-								// loop unroll
 								value = sourceRow[cr];
 								smallValue = value & 255;
-								value >>= 8;
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value >> 8);
+								smallValue -= (temp & (temp >> 255));
 								value = sourceRow1[cr];
-								smallValue = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
-								value >>= 8;
-								destRow[cr + cr] = smallValue - ((smallValue - (value & 255)) & ((smallValue - (value & 255)) >> 255));
+								temp = smallValue - (value & 255);
+								smallValue -= (temp & (temp >> 255));
+								temp = smallValue - (value >> 8);
+								destRow[cr + cr] = smallValue - (temp & (temp >> 255));
+								cr += 1;
 							}
 						}
 
@@ -17863,6 +18041,159 @@
 								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
 								// @ts-ignore
 								destRow[dr] = (value > 0) << 6;
+							}
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+			}
+
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+	};
+
+	// create 4x4 colour grid for 0.25 <= zoom < 0.5
+	Life.prototype.create4x4ColourGrid32Super = function(colourGrid, smallColourGrid) {
+		var h = 0,
+			cr = 0,
+			dr = 0,
+			i = 0,
+		    sourceRow = null,
+		    sourceRow1 = null,
+		    sourceRow2 = null,
+		    sourceRow3 = null,
+		    destRow = null,
+		    colourTileHistoryGrid = this.colourTileHistoryGrid,
+		    colourTileHistoryRow = null,
+		    value = 0, th = 0, tw = 0, b = 0,
+		    bottomY = 0, topY = 0, leftX = 0,
+		    tiles = 0,
+		    /** @type {number} */ smallValue = 0,
+		    /** @type {number} */ temp = 0,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (in 16bit chunks)
+		    xSize = this.tileX >> 1,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+		    tileCols16 = this.tileCols >> 4;
+
+		// set the initial tile row
+		bottomY = 0;
+		topY = bottomY + ySize;
+
+		// scan each row of tiles
+		for (th = 0; th < tileRows; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			colourTileHistoryRow = colourTileHistoryGrid[th];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = colourTileHistoryRow[tw];
+
+				// check if any are occupied
+				if (tiles) {
+					// compute next colour for each tile in the set
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << b)) !== 0) {
+							// update the small colour grid
+							for (h = bottomY; h < topY; h += 4) {
+								// get destination row
+								destRow = smallColourGrid[h];
+
+								// get the next four rows
+								sourceRow = colourGrid[h];
+								sourceRow1 = colourGrid[h + 1];
+								sourceRow2 = colourGrid[h + 2];
+								sourceRow3 = colourGrid[h + 3];
+								cr = (leftX << 2);
+								dr = (leftX << 4);
+
+								// get the maximum of each 4x4 block
+								for (i = 0; i < 4; i += 1) {
+									smallValue = 0;
+
+									value = sourceRow[cr];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow1[cr];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow2[cr];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow3[cr];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									destRow[dr] = smallValue & 31;
+									cr += 1;
+									dr += 4;
+								}
 							}
 						}
 
@@ -18137,6 +18468,345 @@
 		}
 	};
 
+	// create 8x8 colour grid for 0.125 <= zoom < 0.25
+	Life.prototype.create8x8ColourGrid32Super = function(colourGrid, smallColourGrid) {
+		var h = 0,
+			cr = 0,
+			dr = 0,
+			i = 0,
+		    sourceRow = null,
+		    sourceRow1 = null,
+		    sourceRow2 = null,
+		    sourceRow3 = null,
+		    sourceRow4 = null,
+		    sourceRow5 = null,
+		    sourceRow6 = null,
+		    sourceRow7 = null,
+		    destRow = null,
+		    colourTileHistoryGrid = this.colourTileHistoryGrid,
+		    colourTileHistoryRow = null,
+		    value = 0, th = 0, tw = 0, b = 0,
+		    bottomY = 0, topY = 0, leftX = 0,
+		    tiles = 0,
+		    /** @type {number} */ smallValue = 0,
+		    /** @type {number} */ temp = 0,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (in 16bit chunks)
+		    xSize = this.tileX >> 1,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+		    tileCols16 = this.tileCols >> 4;
+
+		// set the initial tile row
+		bottomY = 0;
+		topY = bottomY + ySize;
+
+		// scan each row of tiles
+		for (th = 0; th < tileRows; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			colourTileHistoryRow = colourTileHistoryGrid[th];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = colourTileHistoryRow[tw];
+
+				// check if any are occupied
+				if (tiles) {
+					// compute next colour for each tile in the set
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << b)) !== 0) {
+							// update the small colour grid
+							for (h = bottomY; h < topY; h += 8) {
+								// get destination row
+								destRow = smallColourGrid[h];
+
+								// get the next 8 rows
+								sourceRow = colourGrid[h];
+								sourceRow1 = colourGrid[h + 1];
+								sourceRow2 = colourGrid[h + 2];
+								sourceRow3 = colourGrid[h + 3];
+								sourceRow4 = colourGrid[h + 4];
+								sourceRow5 = colourGrid[h + 5];
+								sourceRow6 = colourGrid[h + 6];
+								sourceRow7 = colourGrid[h + 7];
+								cr = (leftX << 2);
+								dr = (leftX << 4);
+
+								// get the maximum of each 8x8 block
+								for (i = 0; i < 2; i += 1) {
+									smallValue = 0;
+									value = sourceRow[cr];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow[cr + 1];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow1[cr];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow1[cr + 1];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow2[cr];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow2[cr + 1];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow3[cr];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow3[cr + 1];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow4[cr];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow4[cr + 1];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow5[cr];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow5[cr + 1];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow6[cr];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow6[cr + 1];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow7[cr];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									value = sourceRow7[cr + 1];
+									if (value) {
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+										value >>= 8;
+										temp = smallValue - ((value & 255) | ((value & 1) << 5));
+										smallValue -= (temp & (temp >> 255));
+									}
+
+									destRow[dr] = smallValue & 31;
+									cr += 2;
+									dr += 8;
+								}
+							}
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+			}
+
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+	};
 	// create 8x8 colour grid for 0.125 <= zoom < 0.25
 	Life.prototype.create8x8ColourGrid32 = function(colourGrid, smallColourGrid) {
 		var h = 0,
@@ -18541,6 +19211,144 @@
 	};
 
 	// create 16x16 colour grid for 0.0625 <= zoom < 0.125
+	Life.prototype.create16x16ColourGrid32Super = function(colourGrid, smallColourGrid) {
+		var cr = 0,
+			dr = 0,
+		    sourceRow = null,
+		    destRow = null,
+		    colourTileHistoryGrid = this.colourTileHistoryGrid,
+		    colourTileHistoryRow = null,
+		    value = 0, th = 0, tw = 0, b = 0, h = 0,
+		    bottomY = 0, leftX = 0, topY = 0,
+		    tiles = 0,
+		    /** @type {number} */ smallValue = 0,
+		    /** @type {number} */ temp = 0,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (in 16bit chunks)
+		    xSize = this.tileX >> 1,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+		    tileCols16 = this.tileCols >> 4;
+
+		// set the initial tile row
+		bottomY = 0;
+		topY = bottomY + ySize;
+
+		// scan each row of tiles
+		for (th = 0; th < tileRows; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			colourTileHistoryRow = colourTileHistoryGrid[th];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = colourTileHistoryRow[tw];
+
+				// check if any are occupied
+				if (tiles) {
+					// compute next colour for each tile in the set
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << b)) !== 0) {
+							// update the small colour grid
+							smallValue = 0;
+							for (h = bottomY; h < topY; h += 1) {
+								// get the next row
+								sourceRow = colourGrid[h];
+								cr = (leftX << 2);
+
+								// get the maximum of 16 cells
+								value = sourceRow[cr];
+								if (value) {
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+								}
+
+								value = sourceRow[cr + 1];
+								if (value) {
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+								}
+
+								value = sourceRow[cr + 2];
+								if (value) {
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+								}
+
+								value = sourceRow[cr + 3];
+								if (value) {
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+								}
+							}
+
+							// get the destination row
+							destRow = smallColourGrid[bottomY];
+							dr = (leftX << 4);
+							destRow[dr] = smallValue & 31;
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+			}
+
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+	};
+	// create 16x16 colour grid for 0.0625 <= zoom < 0.125
 	Life.prototype.create16x16ColourGrid32 = function(colourGrid, smallColourGrid) {
 		var cr = 0,
 			dr = 0,
@@ -18662,7 +19470,6 @@
 		}
 	};
 
-
 	// create 16x16 colour grid with no history for zoom < 0.0625
 	Life.prototype.create32x32ColourGridNoHistory32 = function(colourGrid, smallColourGrid) {
 		var cr = 0,
@@ -18746,6 +19553,207 @@
 			}
 
 			// next tile row
+			bottomY += ySize + ySize;
+			topY += ySize + ySize;
+		}
+	};
+
+	// create 16x16 colour grid for zoom < 0.0625
+	Life.prototype.create32x32ColourGrid32Super = function(colourGrid, smallColourGrid) {
+		var cr = 0,
+		    dr = 0,
+		    sourceRow = null,
+		    destRow = null,
+		    colourTileHistoryGrid = this.colourTileHistoryGrid,
+		    colourTileHistoryRow1 = null,
+		    colourTileHistoryRow2 = null,
+		    value = 0, th = 0, tw = 0, b = 0, h = 0,
+		    bottomY = 0, leftX = 0, topY = 0,
+		    tiles = 0,
+		    /** @type {number} */ smallValue = 0,
+		    /** @type {number} */ temp =  0,
+
+		    // set tile height
+		    ySize = this.tileY,
+
+		    // tile width (in 16bit chunks)
+		    xSize = this.tileX >> 1,
+
+		    // tile rows
+		    tileRows = this.tileRows,
+
+		    // tile columns in 16 bit values
+		    tileCols16 = this.tileCols >> 4;
+
+		// set the initial two tile rows
+		bottomY = 0;
+		topY = bottomY + ySize + ySize;
+
+		// scan each row pair of tiles
+		for (th = 0; th < tileRows; th += 2) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			colourTileHistoryRow1 = colourTileHistoryGrid[th];
+			colourTileHistoryRow2 = colourTileHistoryGrid[th + 1];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next two tile groups (16 tiles each)
+				tiles = colourTileHistoryRow1[tw] | colourTileHistoryRow2[tw];
+
+				// check if any are occupied
+				if (tiles !== 0) {
+					// compute next colour for each tile in the set
+					for (b = (1 << 15) | (1 << 14); b > 0; b >>= 2) {
+						// check if this tile is occupied
+						if ((tiles & b) !== 0) {
+							// update the small colour grid
+							smallValue = 0;
+							for (h = bottomY; h < topY; h += 1) {
+								// get the next row
+								sourceRow = colourGrid[h];
+								cr = (leftX << 2);
+
+								// get the maximum of 32 cells
+								value = sourceRow[cr];
+								if (value) {
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+								}
+
+								value = sourceRow[cr + 1];
+								if (value) {
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+								}
+
+								value = sourceRow[cr + 2];
+								if (value) {
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+								}
+
+								value = sourceRow[cr + 3];
+								if (value) {
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+								}
+
+								value = sourceRow[cr + 4];
+								if (value) {
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+								}
+
+								value = sourceRow[cr + 5];
+								if (value) {
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+								}
+
+								value = sourceRow[cr + 6];
+								if (value) {
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+								}
+
+								value = sourceRow[cr + 7];
+								if (value) {
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+									value >>= 8;
+									temp = smallValue - ((value & 255) | ((value & 1) << 5));
+									smallValue -= (temp & (temp >> 255));
+								}
+							}
+
+							// get the destination row
+							destRow = smallColourGrid[bottomY];
+							dr = (leftX << 4);
+							destRow[dr] = smallValue & 31;
+						}
+
+						// next tile columns
+						leftX += xSize + xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+			}
+
+			// next tile row pair
 			bottomY += ySize + ySize;
 			topY += ySize + ySize;
 		}
@@ -18936,7 +19944,11 @@
 			this.clearSmallGridOnZoom(this.smallColourGrid);
 
 			if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
-				this.create2x2ColourGrid16(colourGrid16, this.smallColourGrid);
+				if (this.isSuper) {
+					this.create2x2ColourGrid16Super(colourGrid16, this.smallColourGrid);
+				} else {
+					this.create2x2ColourGrid16(colourGrid16, this.smallColourGrid);
+				}
 			} else {
 				this.create2x2ColourGridNoHistory16(colourGrid16, this.smallColourGrid);
 			}
@@ -18947,7 +19959,11 @@
 				this.clearSmallGridOnZoom(this.smallColourGrid);
 
 				if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
-					this.create4x4ColourGrid32(colourGrid32, this.smallColourGrid);
+					if (this.isSuper) {
+						this.create4x4ColourGrid32Super(colourGrid32, this.smallColourGrid);
+					} else {
+						this.create4x4ColourGrid32(colourGrid32, this.smallColourGrid);
+					}
 				} else {
 					this.create4x4ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
 				}
@@ -18958,7 +19974,11 @@
 					this.clearSmallGridOnZoom(this.smallColourGrid);
 
 					if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
-						this.create8x8ColourGrid32(colourGrid32, this.smallColourGrid);
+						if (this.isSuper) {
+							this.create8x8ColourGrid32Super(colourGrid32, this.smallColourGrid);
+						} else {
+							this.create8x8ColourGrid32(colourGrid32, this.smallColourGrid);
+						}
 					} else {
 						this.create8x8ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
 					}
@@ -18969,14 +19989,22 @@
 						this.clearSmallGridOnZoom(this.smallColourGrid);
 
 						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
-							this.create16x16ColourGrid32(colourGrid32, this.smallColourGrid);
+							if (this.isSuper) {
+								this.create16x16ColourGrid32Super(colourGrid32, this.smallColourGrid);
+							} else {
+								this.create16x16ColourGrid32(colourGrid32, this.smallColourGrid);
+							}
 						} else {
 							this.create16x16ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
 						}
 					} else {
 						// zoom < 0.0625
 						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
-							this.create32x32ColourGrid32(colourGrid32, this.smallColourGrid);
+							if (this.isSuper) {
+								this.create32x32ColourGrid32Super(colourGrid32, this.smallColourGrid);
+							} else {
+								this.create32x32ColourGrid32(colourGrid32, this.smallColourGrid);
+							}
 						} else {
 							this.create32x32ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
 						}
