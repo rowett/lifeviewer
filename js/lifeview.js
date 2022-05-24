@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 715,
+		/** @const {number} */ versionBuild : 716,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6570,7 +6570,6 @@
 				me.afterEdit("");
 
 				me.resultsDisplayed = false;
-				me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
 				me.engine.initSearch(me.identify);
 
 				// switch off fast mode

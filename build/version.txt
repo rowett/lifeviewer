@@ -1,3 +1,6 @@
+Build 716
+- don't change camera if all cells die during Identify
+
 Build 715
 - implement [R]Super sub-pixel renderer
 
