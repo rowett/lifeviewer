@@ -203,7 +203,7 @@
 				k += 1;
 
 				// set neighbourhood
-				for (l = 3; l >=0 ; l -= 1) {
+				for (l = 3; l >=0; l -= 1) {
 					if ((w & (1 << l)) !== 0) {
 						row[i] = 1;
 						count += 1;

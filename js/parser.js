@@ -238,8 +238,7 @@
 						// colour is valid
 						badColour = false;
 					}
-				}
-				else{
+				} else {
 					// illegal or missing blue component
 					this.nonNumericTokenError(scriptReader, scriptErrors, whichColour + " " + elementName + " " + redValue + " " + greenValue, "BLUE", "numeric");
 				}
@@ -687,8 +686,7 @@
 								scriptErrors[scriptErrors.length] = [nextToken + " " + colName + " " + redValue + " " + greenValue + " " + blueValue, "BLUE out of range"];
 								badColour = true;
 							}
-						}
-						else{
+						} else {
 							// illegal or missing blue component
 							this.nonNumericTokenError(scriptReader, scriptErrors, nextToken + " " + colName + " " + redValue + " " + greenValue, "BLUE", "numeric");
 							badColour = true;

@@ -48,7 +48,7 @@
 	// @ts-ignore
 	if (!window.cancelRequestAnimationFrame) {
 		// @ts-ignore
-		window.cancelRequestAnimationFrame = (function() { return (window.webkitCancelRequestAnimationFrame || window.mozCancelRequestAnimationFrame || window.oCancelRequestAnimationFrame || window.msCancelRequestAnimationFrame) ; }());
+		window.cancelRequestAnimationFrame = (function() { return (window.webkitCancelRequestAnimationFrame || window.mozCancelRequestAnimationFrame || window.oCancelRequestAnimationFrame || window.msCancelRequestAnimationFrame); }());
 	}
 
 	// implement cross-browser typed arrays

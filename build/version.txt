@@ -1,3 +1,6 @@
+Build 717
+- improve PASTE performance with blank cells
+
 Build 716
 - don't change camera if all cells die during Identify
 

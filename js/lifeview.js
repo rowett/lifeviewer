@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 716,
+		/** @const {number} */ versionBuild : 717,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3345,7 +3345,9 @@
 								dest = this.engine.getState(xOff + x, yOff + y, false);
 								destFlag = (dest === 0 ? 0 : 1);
 								result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
-								this.engine.setState(xOff + x, yOff + y, result, true);
+								if (result !== dest) {
+									this.engine.setState(xOff + x, yOff + y, result, true);
+								}
 							}
 						}
 					}
@@ -9687,7 +9689,7 @@
 					postfix = this.manager.hexTripodPostfix;
 					break;
 			}
-		} else{
+		} else {
 			if (this.engine.isTriangular) {
 				switch (this.engine.triangularNeighbourhood) {
 				case this.manager.triangularEdges:
@@ -12040,7 +12042,7 @@
 							savedLocation = me.pastePosition;
 							me.pastePosition = ViewConstants.pastePositionNW;
 							for (y = bottomY; y <= bottomY + height - me.pasteHeight; y += me.pasteHeight) {
-								for (x = leftX ; x <= leftX + width - me.pasteWidth; x += me.pasteWidth) {
+								for (x = leftX; x <= leftX + width - me.pasteWidth; x += me.pasteWidth) {
 									me.performPaste(me, x + xOff, y + yOff, false);
 								}
 							}
@@ -16872,7 +16874,7 @@
 		if (me.waypointManager.numPOIs()) {
 			me.prevPOIButton.deleted = false;
 			me.nextPOIButton.deleted = false;
-		} else{
+		} else {
 			me.prevPOIButton.deleted = true;
 			me.nextPOIButton.deleted = true;
 		}

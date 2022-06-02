@@ -3823,7 +3823,7 @@
 				// save array in the pattern
 				if (which === "B") {
 					pattern.birthHROT = list;
-				} else{
+				} else {
 					pattern.survivalHROT = list;
 				}
 				result = true;
@@ -7764,7 +7764,7 @@
 				// skip slash comment lines
 				if (nextToken[0] === "/") {
 					reader.skipToNextLine();
-				} else{
+				} else {
 					// check for XPM keyword
 					if (nextToken.toLowerCase() === this.ruleTableIconsXPM) {
 						reader.skipToNextLine();
