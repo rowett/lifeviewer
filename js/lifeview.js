@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 717,
+		/** @const {number} */ versionBuild : 718,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2281,7 +2281,10 @@
 				while (i < cells.length) {
 					// draw first cell
 					x = cells[i] + xOff;
-					state = cells[i + 1] >> 8;
+
+					// get the top byte as unsigned
+					state = (cells[i + 1]  & 0xff00) >> 8;
+
 					y = cells[i + 2] + yOff;
 					wasState6 |= this.engine.setState(x, y, state, true);
 					i += 3;
@@ -4075,7 +4078,7 @@
 				if (me.engine.boundedGridType !== -1) {
 					borderSize += me.engine.boundedGridHeight / 2;
 				} else {
-					borderSize += me.engine.HROT.xrange * 2;
+					borderSize += me.engine.HROT.ncols / 2;
 				}
 			}
 			if (borderSize < ViewConstants.maxStepSpeed) {
@@ -16495,7 +16498,7 @@
 					if (me.engine.boundedGridType !== -1) {
 						borderSize += me.engine.boundedGridHeight / 2;
 					} else {
-						borderSize += me.engine.HROT.xrange * 2;
+						borderSize += neededWidth / 2;
 					}
 				}
 				if (borderSize < ViewConstants.maxStepSpeed) {

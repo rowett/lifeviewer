@@ -1,3 +1,7 @@
+Build 718
+- fix issue with undo/redo and cell states >= 128
+- fixed allocation issue with HROT von Neumnann neighbourhoods
+
 Build 717
 - improve PASTE performance with blank cells
 
