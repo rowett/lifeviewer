@@ -1,3 +1,6 @@
+Build 719
+- fixed issue with converting patterns to [R]History that are already [R]History
+
 Build 718
 - fix issue with undo/redo and cell states >= 128
 - fixed allocation issue with HROT von Neumnann neighbourhoods

@@ -291,7 +291,7 @@
 
 					// h for convert to [R]History
 					case 72:
-						if (me.engine.multiNumStates === -1 || me.engine.isSuper) {
+						if ((me.engine.multiNumStates === -1 && !me.engine.isLifeHistory) || me.engine.isSuper) {
 							me.convertToHistory(me);
 						} else {
 							if (me.engine.isLifeHistory) {
