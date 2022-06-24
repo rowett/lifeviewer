@@ -1,3 +1,6 @@
+Build 720
+- improved [R]Super performance for some patterns
+
 Build 719
 - fixed issue with converting patterns to [R]History that are already [R]History
 
