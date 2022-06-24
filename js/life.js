@@ -21455,11 +21455,12 @@
 										}
 
 										// skip middle cells if not top or bottom tile row
-										if (!isBorder && colIndex === 1 << 15) {
+										if (!isBorder && (colIndex === (1 << 15))) {
 											cr += 13;
 											ccol = (1 << colourGridRow[cr]) | (1 << belowRow[cr]) | (1 << aboveRow[cr]);
-											e = colourGridRow[cr + 1];
-											rcol = (1 << e) | (1 << belowRow[cr + 1]) | (1 << aboveRow[cr + 1]);
+											cr += 1;
+											e = colourGridRow[cr];
+											rcol = (1 << e) | (1 << belowRow[cr]) | (1 << aboveRow[cr]);
 
 											colIndex = 1;
 										} else {
