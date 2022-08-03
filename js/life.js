@@ -21066,6 +21066,47 @@
 		zoomBox.rightX = newRightX;
 	};
 
+	// determine if a static tile is isolated (surrounded by other static tiles)
+	Life.prototype.isIsolated = function(/** @type {number} */ y, /** @type {number} */ x, /** @type {number} */ bit, colourGrid) {
+		var /** @type {number} */ mask = 1 << bit,
+			staticGrid = this.staticTileGrid,
+			topRow = staticGrid[y - 1],
+			midRow = staticGrid[y],
+			bottomRow = staticGrid[y + 1],
+			topColRow = colourGrid[y - 1],
+			midColRow = colourGrid[y],
+			bottomColRow = colourGrid[y + 1],
+			/** @type {number} */ value = 0;
+
+		if (bit === 15) {
+			// left mask
+			mask |= 1 << (bit - 1);
+			value = ((topRow[x] | ~topColRow[x]) & (midRow[x] | ~midColRow[x]) & (bottomRow[x] | ~bottomColRow[x])) & mask;
+			if (value === mask) {
+				x -= 1;
+				mask = 1;
+				value = ((topRow[x] | ~topColRow[x]) & (midRow[x] | ~midColRow[x]) & (bottomRow[x] | ~bottomColRow[x])) & mask;
+			}
+		} else {
+			if (bit === 0) {
+				// right mask
+				mask |= 2;
+				value = ((topRow[x] | ~topColRow[x]) & (midRow[x] | ~midColRow[x]) & (bottomRow[x] | ~bottomColRow[x])) & mask;
+				if (value === mask) {
+					x += 1;
+					mask = 1 << 15;
+					value = ((topRow[x] | ~topColRow[x]) & (midRow[x] | ~midColRow[x]) & (bottomRow[x] | ~bottomColRow[x])) & mask;
+				}
+			} else {
+				// middle mask
+				mask |= (1 << (bit - 1)) | (1 << (bit + 1));
+				value = ((topRow[x] | ~topColRow[x]) & (midRow[x] | ~midColRow[x]) & (bottomRow[x] | ~bottomColRow[x])) & mask;
+			}
+		}
+
+		return (value === mask);
+	};
+
 	// compute super rule next generation (after state 0 and 1)
 	Life.prototype.nextGenerationSuperTileMoore = function() {
 		var h = 0, cr = 0, nextCell = 0,
@@ -21139,6 +21180,9 @@
 
 			// first bit set
 			firstBit = this.firstBit16,
+
+			// number of isolated tile
+			numIsolated = 0,
 
 			// constants
 			/** @const {number} */ aliveWith14 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
@@ -21229,139 +21273,134 @@
 
 							// check if this tile is static
 							if ((staticTiles & (1 << b)) !== 0) {
-								// process each row
-								for (h = bottomY; h < topY; h += 1) {
-									if (h === bottomY || h === topY - 1) {
-										isBorder = true;
-									} else {
-										isBorder = false;
-									}
+								// ignore isolated static tiles
+								if (this.isIsolated(th, tw, b, tileGrid)) {
+									numIsolated += 1;
+								} else {
+									// process each row
+									for (h = bottomY; h < topY; h += 1) {
+										if (h === bottomY || h === topY - 1) {
+											isBorder = true;
+										} else {
+											isBorder = false;
+										}
 
-									// get the grid and colour grid row
-									gridRow = grid[h];
-									colourGridRow = colourGrid[h];
-									if (h === 0) {
-										aboveRow = blankColourRow;
-									} else {
-										aboveRow = colourGrid[h - 1];
-									}
-									if (h === this.height - 1) {
-										belowRow = blankColourRow;
-									} else {
-										belowRow = colourGrid[h + 1];
-									}
-									destRow = outputGrid[h];
+										// get the grid and colour grid row
+										gridRow = grid[h];
+										colourGridRow = colourGrid[h];
+										if (h === 0) {
+											aboveRow = blankColourRow;
+										} else {
+											aboveRow = colourGrid[h - 1];
+										}
+										if (h === this.height - 1) {
+											belowRow = blankColourRow;
+										} else {
+											belowRow = colourGrid[h + 1];
+										}
+										destRow = outputGrid[h];
 
-									// get correct starting colour index
-									cr = (leftX << 4);
+										// get correct starting colour index
+										cr = (leftX << 4);
 
-									// get initial neighbours
-									lcol = 0;
-									if (cr === 0) {
-										c = 0;
-										ccol = 0;
-									} else {
-										c = colourGridRow[cr - 1];
-										ccol = (1 << aboveRow[cr - 1]) | (1 << c) | (1 << belowRow[cr - 1]);
-									}
-									e = colourGridRow[cr];
-									rcol = (1 << e) | (1 << belowRow[cr]) | (1 << aboveRow[cr]);
-
-									// process each 16bit chunk (16 cells) along the row
-									nextCell = gridRow[leftX];
-
-									// process each cell in the chunk
-									colIndex = 1 << 15;
-									while (colIndex > 0) {
-										// get next column
-										cr += 1;
-
-										// shift neighbourhood left
-										c = e;
+										// get initial neighbours
+										lcol = 0;
+										if (cr === 0) {
+											c = 0;
+											ccol = 0;
+										} else {
+											c = colourGridRow[cr - 1];
+											ccol = (1 << aboveRow[cr - 1]) | (1 << c) | (1 << belowRow[cr - 1]);
+										}
 										e = colourGridRow[cr];
-										lcol = ccol;
-										ccol = rcol;
 										rcol = (1 << e) | (1 << belowRow[cr]) | (1 << aboveRow[cr]);
 
-										if (isBorder || colIndex === 1 << 15 || colIndex === 1) {
-											value = c;
-											// typemask has a bit set per state in the neighbouring cells
-											typeMask = lcol | ccol | rcol;
+										// process each 16bit chunk (16 cells) along the row
+										nextCell = gridRow[leftX];
 
-											// handle state 6
-											process = true;
-											if ((typeMask & (1 << 6)) !== 0) {
-												process = false;
-												if (c === 7 || c === 8 || c >= 13) {
-													value = 0;
-												} else {
-													switch (c) {
-														case 1:
-															value = 2;
-															break;
+										// process each cell in the chunk
+										colIndex = 1 << 15;
+										while (colIndex > 0) {
+											// get next column
+											cr += 1;
 
-														case 3:
-														case 5:
-															value = 4;
-															break;
+											// shift neighbourhood left
+											c = e;
+											e = colourGridRow[cr];
+											lcol = ccol;
+											ccol = rcol;
+											rcol = (1 << e) | (1 << belowRow[cr]) | (1 << aboveRow[cr]);
 
-														case 9:
-															value = 10;
-															break;
+											if (isBorder || colIndex === 1 << 15 || colIndex === 1) {
+												value = c;
+												// typemask has a bit set per state in the neighbouring cells
+												typeMask = lcol | ccol | rcol;
 
-														case 11:
-															value = 12;
-															break;
-
-														default:
-															// not handled here so process below
-															process = true;
-															break;
-													}
-												}
-
-												// clear cell in bit grid
-												if (!process && ((c & 1) !== 0)) {
-													gridRow[leftX] &= ~colIndex;
-												}
-											}
-
-											// check whether state still needs processing
-											if (process) {
-												// get cell state from bit grid
-												if ((nextCell & colIndex) !== 0) {
-													// cell alive
-													// was cell alive in this generation
-													if ((c & 1) === 0) {
-														// cell was dead so has been born now
+												// handle state 6
+												process = true;
+												if ((typeMask & (1 << 6)) !== 0) {
+													process = false;
+													if (c === 7 || c === 8 || c >= 13) {
+														value = 0;
+													} else {
 														switch (c) {
-															case 4:
-																value = 3;
+															case 1:
+																value = 2;
 																break;
 
-															case 6:
-																// clear cell in bit grid
-																gridRow[leftX] &= ~colIndex;
+															case 3:
+															case 5:
+																value = 4;
 																break;
 
-															case 8:
-																value = 7;
+															case 9:
+																value = 10;
+																break;
+
+															case 11:
+																value = 12;
 																break;
 
 															default:
-																value = 1;
-																calc = typeMask & alive9to25;
-																if (((typeMask & alive1or3or5or7) === 0) && (calc && (calc & (calc - 1)) === 0)) {
-																	// the bit index gives the cell state
-																	value = 0;
-																	if (calc > 65535) {
-																		calc >>= 16;
-																		value += 16;
-																	}
-																	value += firstBit[calc];
-																} else {
-																	calc = typeMask & alive13or15or17or19or21or23or25;
-																	if (((typeMask & (1 << 3)) !== 0) && ((typeMask & alive1or5or7or9or11) === 0) && (calc && (calc & (calc - 1)) === 0)) {
+																// not handled here so process below
+																process = true;
+																break;
+														}
+													}
+
+													// clear cell in bit grid
+													if (!process && ((c & 1) !== 0)) {
+														gridRow[leftX] &= ~colIndex;
+													}
+												}
+
+												// check whether state still needs processing
+												if (process) {
+													// get cell state from bit grid
+													if ((nextCell & colIndex) !== 0) {
+														// cell alive
+														// was cell alive in this generation
+														if ((c & 1) === 0) {
+															// cell was dead so has been born now
+															switch (c) {
+																case 4:
+																	value = 3;
+																	break;
+
+																case 6:
+																	// clear cell in bit grid
+																	gridRow[leftX] &= ~colIndex;
+																	break;
+
+																case 8:
+																	value = 7;
+																	break;
+
+																default:
+																	value = 1;
+																	calc = typeMask & alive9to25;
+																	if (((typeMask & alive1or3or5or7) === 0) && (calc && (calc & (calc - 1)) === 0)) {
+																		// the bit index gives the cell state
 																		value = 0;
 																		if (calc > 65535) {
 																			calc >>= 16;
@@ -21369,8 +21408,8 @@
 																		}
 																		value += firstBit[calc];
 																	} else {
-																		calc = typeMask & alive9or11;
-																		if (((typeMask & (1 << 7)) !== 0) && ((typeMask & alive1or3or5or13or15or17or19or21or23or25) === 0) && (calc && (calc & (calc - 1)) === 0)) {
+																		calc = typeMask & alive13or15or17or19or21or23or25;
+																		if (((typeMask & (1 << 3)) !== 0) && ((typeMask & alive1or5or7or9or11) === 0) && (calc && (calc & (calc - 1)) === 0)) {
 																			value = 0;
 																			if (calc > 65535) {
 																				calc >>= 16;
@@ -21378,106 +21417,116 @@
 																			}
 																			value += firstBit[calc];
 																		} else {
-																			calc = typeMask & alive7or13or15or17or19or21or23or25;
-																			if (calc && ((typeMask & alive1or3or5or9or11) === 0)) {
-																				value = 13;
+																			calc = typeMask & alive9or11;
+																			if (((typeMask & (1 << 7)) !== 0) && ((typeMask & alive1or3or5or13or15or17or19or21or23or25) === 0) && (calc && (calc & (calc - 1)) === 0)) {
+																				value = 0;
+																				if (calc > 65535) {
+																					calc >>= 16;
+																					value += 16;
+																				}
+																				value += firstBit[calc];
+																			} else {
+																				calc = typeMask & alive7or13or15or17or19or21or23or25;
+																				if (calc && ((typeMask & alive1or3or5or9or11) === 0)) {
+																					value = 13;
+																				}
 																			}
 																		}
 																	}
-																}
-																break;
-														}
-													}
-												} else {
-													// cell dead
-													// was cell alive in this generation
-													if ((c & 1) !== 0) {
-														// cell was alive so has died
-														if (c <= 11) {
-															if (c === 5) {
-																value = 4;
-															} else {
-																value = c + 1;
+																	break;
 															}
-														} else {
-															value = 0;
 														}
 													} else {
-														// cell is still dead
-														if (c >= 14) {
-															switch (c) {
-																case 14:
-																	value = 0;
-																	break;
+														// cell dead
+														// was cell alive in this generation
+														if ((c & 1) !== 0) {
+															// cell was alive so has died
+															if (c <= 11) {
+																if (c === 5) {
+																	value = 4;
+																} else {
+																	value = c + 1;
+																}
+															} else {
+																value = 0;
+															}
+														} else {
+															// cell is still dead
+															if (c >= 14) {
+																switch (c) {
+																	case 14:
+																		value = 0;
+																		break;
 
-																case 16:
-																	if ((typeMask & aliveWith14) !== 0) {
-																		value = 14;
-																	}
-																	break;
+																	case 16:
+																		if ((typeMask & aliveWith14) !== 0) {
+																			value = 14;
+																		}
+																		break;
 
-																case 18:
-																	if ((typeMask & (1 << 22)) !== 0) {
-																		value = 22;
-																	}
-																	break;
+																	case 18:
+																		if ((typeMask & (1 << 22)) !== 0) {
+																			value = 22;
+																		}
+																		break;
 
-																case 20:
-																	if ((typeMask & (1 << 18)) !== 0) {
-																		value = 18;
-																	}
-																	break;
+																	case 20:
+																		if ((typeMask & (1 << 18)) !== 0) {
+																			value = 18;
+																		}
+																		break;
 
-																case 22:
-																	if ((typeMask & (1 << 20)) !== 0) {
-																		value = 20;
-																	}
-																	break;
+																	case 22:
+																		if ((typeMask & (1 << 20)) !== 0) {
+																			value = 20;
+																		}
+																		break;
 
-																case 24:
-																	if ((typeMask & aliveWith14or18) !== 0) {
-																		value = 18;
-																	}
-																	break;
+																	case 24:
+																		if ((typeMask & aliveWith14or18) !== 0) {
+																			value = 18;
+																		}
+																		break;
+																}
 															}
 														}
 													}
 												}
+
+												tileChanged |= (value - c);
+												// output new cell state
+												destRow[cr - 1] = value;
+												if (value > 0) {
+													colOccupied |= colIndex;
+													rowOccupied |= rowIndex;
+												}
 											}
 
-											tileChanged |= (value - c);
-											// output new cell state
-											destRow[cr - 1] = value;
-											if (value > 0) {
-												colOccupied |= colIndex;
-												rowOccupied |= rowIndex;
+											// skip middle cells if not top or bottom tile row
+											if (!isBorder && (colIndex === (1 << 15))) {
+												cr += 13;
+												ccol = (1 << colourGridRow[cr]) | (1 << belowRow[cr]) | (1 << aboveRow[cr]);
+												cr += 1;
+												e = colourGridRow[cr];
+												rcol = (1 << e) | (1 << belowRow[cr]) | (1 << aboveRow[cr]);
+
+												colIndex = 1;
+											} else {
+												// next bit cell
+												colIndex >>= 1;
 											}
 										}
 
-										// skip middle cells if not top or bottom tile row
-										if (!isBorder && (colIndex === (1 << 15))) {
-											cr += 13;
-											ccol = (1 << colourGridRow[cr]) | (1 << belowRow[cr]) | (1 << aboveRow[cr]);
-											cr += 1;
-											e = colourGridRow[cr];
-											rcol = (1 << e) | (1 << belowRow[cr]) | (1 << aboveRow[cr]);
-
-											colIndex = 1;
-										} else {
-											// next bit cell
-											colIndex >>= 1;
-										}
+										// update alive status
+										this.anythingAlive |= nextCell;
+										this.anythingAlive |= colOccupied;  // ensure patterns with just dead cells continue generating
+										rowIndex >>= 1;
 									}
 
-									// update alive status
-									this.anythingAlive |= nextCell;
-									this.anythingAlive |= colOccupied;  // ensure patterns with just dead cells continue generating
-									rowIndex >>= 1;
-								}
-
-								// if the tile changed then mark the tile as not static
-								if (tileChanged !== 0) {
-									staticTiles &= ~(1 << b);
+									// if the tile changed then mark the tile as not static
+									if (tileChanged !== 0) {
+										staticTiles &= ~(1 << b);
+									}
 								}
 							} else {
 								// process each row
@@ -21740,6 +21789,8 @@
 			bottomY += ySize;
 			topY += ySize;
 		}
+
+		//console.log(numIsolated);
 
 		// update bounding box
 		for (tw = 0; tw < width16; tw += 1) {
@@ -37701,6 +37752,9 @@
 
 			// draw the image on the canvas
 			this.context.putImageData(this.imageData, 0, 0);
+
+			// potential fix for Chrome 103 Intel GPU bug
+			this.context.getImageData(0, 0, 1, 1);
 		}
 	};
 
