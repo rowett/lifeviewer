@@ -11671,6 +11671,10 @@
 		// perform super processing
 		if (this.isSuper) {
 			this.nextGenerationSuperTile();
+			if (this.population > 0) {
+				// bitmap population may have been zero
+				this.anythingAlive = 1;
+			}
 		}
 
 		// check if state 6 is on

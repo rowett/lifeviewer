@@ -7481,11 +7481,6 @@
 			pattern.isTriangular = true;
 		}
 
-		// setup number of states for [R]Super patterns
-		if (pattern.isSuper) {
-			pattern.multiNumStates = 26;
-		}
-
 		// check bounded grid size
 		if (pattern.gridType !== -1) {
 			// check for LtL or HROT rules
@@ -7608,6 +7603,13 @@
 			this.executable = false;
 		}
 
+		// check for generations and [R]History
+		if (pattern.multiNumStates !== -1 && pattern.isSuper) {
+			this.failureReason = "[R]Super not valid with Generations";
+			pattern.isSuper = false;
+			this.executable = false;
+		}
+
 		// check for generations and B0
 		if (pattern.multiNumStates !== -1 && this.ruleArray[0] && !(pattern.isLTL || pattern.isHROT)) {
 			this.failureReason = "Generations does not support B0";
@@ -7668,6 +7670,11 @@
 				pattern.gridType = -1;
 				this.executable = false;
 			}
+		}
+
+		// setup number of states for [R]Super patterns
+		if (pattern.isSuper) {
+			pattern.multiNumStates = 26;
 		}
 
 		// check for illegal state numbers

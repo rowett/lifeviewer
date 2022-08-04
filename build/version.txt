@@ -1,3 +1,7 @@
+Build 722
+- fix "Life ended at" message with [R]Super patterns
+- don't allow Generations and Super to be defined together
+
 Build 721
 - experimental fix for blank canvas issue
 
