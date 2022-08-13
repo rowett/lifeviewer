@@ -21278,7 +21278,7 @@
 							// check if this tile is static
 							if ((staticTiles & (1 << b)) !== 0) {
 								// ignore isolated static tiles
-								if (this.isIsolated(th, tw, b, tileGrid)) {
+								if (0 && this.isIsolated(th, tw, b, tileGrid)) {  // TBD need actual fix   0 &&
 									numIsolated += 1;
 								} else {
 									// process each row

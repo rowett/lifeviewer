@@ -1478,8 +1478,7 @@
 				if (event.ctrlKey) {
 					if (event.shiftKey) {
 						// attempt to read RLE from clipboard
-						/*jshint -W119 */
-						navigator.clipboard.readText().then(text => me.loadText(me, text));
+						me.openClipboardPressed(me);
 					} else {
 						me.loadPattern(me);
 					}

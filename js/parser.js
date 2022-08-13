@@ -119,7 +119,6 @@
 			case Keywords.yOffsetWord:
 			case Keywords.zoomWord:
 			case Keywords.alternateZoomWord:
-			case Keywords.integerZoomWord:
 			case Keywords.loopWord:
 			case Keywords.viewOnlyWord:
 			case Keywords.tiltWord:
@@ -4027,12 +4026,6 @@
 									itemValid = true;
 								}
 							}
-							break;
-
-						// integer zoom
-						case Keywords.integerZoomWord:
-							view.integerZoom = true;
-							itemValid = true;
 							break;
 
 						// thumbnail zoom

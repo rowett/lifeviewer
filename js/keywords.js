@@ -115,9 +115,6 @@
 		// draw cell borders
 		/** @const {string} */ bordersWord : "CELLBORDERS",
 
-		// integer zoom
-		/** @const {string} */ integerZoomWord : "INTEGERZOOM",
-
 		// randomize pattern
 		/**@const {string} */ randomizeWord : "RANDOMIZE",
 

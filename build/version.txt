@@ -1,3 +1,19 @@
+Build 725
+- created new Clipboard category in settings menu:
+	- Open Clipboard: opens the clipboard as a pattern
+	- Copy Original: copy the last loaded pattern to the clipboard
+	- Copy Rule: copy the rule definition to the clipboard
+	- Copy Nhood: copy a CoordCA neighbourhood definition to the clipboard
+
+Build 724
+- added two missing UI controls
+	- Settings->Display->Integer Zoom (hotkey Shift 1) sets the Zoom to the nearest integer
+	- Settings->Display->Center Pattern (hotkey Ctrl M) centers the pattern on the Viewer without changing the Zoom
+- centered UI controls in Settings->Playback
+
+Build 723
+- temporary fix for [R]Super static tile issue
+
 Build 722
 - fix "Life ended at" message with [R]Super patterns
 - don't allow Generations and Super to be defined together

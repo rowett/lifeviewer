@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 722,
+		/** @const {number} */ versionBuild : 725,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -840,6 +840,9 @@
 		// whether displaying pattern settings
 		/** @type {boolean} */ this.showPatternSettings = false;
 
+		// whether displaying clipboard settings
+		/** @type {boolean} */ this.showClipboardSettings = false;
+
 		// whether to sync copy with external clipboard
 		/** @type {boolean} */ this.copySyncExternal = false;
 
@@ -1106,9 +1109,6 @@
 
 		// whether graph disable
 		/** @type {boolean} */ this.graphDisabled = false;
-
-		// whether integer zoom enforced
-		/** @type {boolean} */ this.integerZoom = false;
 
 		// save the document element containing the rle
 		this.element = element;
@@ -1742,6 +1742,12 @@
 		// hex cell toggle button
 		this.hexCellButton = null;
 
+		// integer zoom button
+		this.integerZoomButton = null;
+
+		// center pattern button
+		this.centerPatternButton = null;
+
 		// cell borders toggle button
 		this.bordersButton = null;
 
@@ -1793,8 +1799,17 @@
 		// go to generation button
 		this.goToGenButton = null;
 		
+		// open clipboard button
+		this.openClipboardButton = null;
+
+		// copy original pattern button
+		this.copyOriginalButton = null;
+
 		// copy rule button
 		this.copyRuleButton = null;
+
+		// copy neighbourhood button
+		this.copyNeighbourhoodButton = null;
 
 		// back button
 		this.backButton = null;
@@ -1804,6 +1819,9 @@
 
 		// pattern button
 		this.patternButton = null;
+
+		// clipboard button
+		this.clipboardButton = null;
 
 		// display button
 		this.displayButton = null;
@@ -5796,7 +5814,7 @@
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
 		this.escButton.deleted = !(this.isInPopup || this.scriptErrors.length);
 
-		if (this.showDisplaySettings || this.showInfoSettings || this.showPatternSettings || this.showPlaybackSettings || this.showThemeSelection) {
+		if (this.showDisplaySettings || this.showClipboardSettings || this.showInfoSettings || this.showPatternSettings || this.showPlaybackSettings || this.showThemeSelection) {
 			this.backButton.preText = "Back";
 			this.backButton.toolTip = "back to previous menu [Backspace]";
 		} else {
@@ -5812,13 +5830,20 @@
 		this.tiltItem.deleted = shown;
 		this.layersItem.deleted = shown;
 		// setting category buttons
-		shown = hide || this.showThemeSelection || this.showDisplaySettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings;
+		shown = hide || this.showThemeSelection || this.showClipboardSettings || this.showPatternSettings || this.showDisplaySettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings;
 		this.patternButton.deleted = shown;
+		this.clipboardButton.deleted = shown;
 		this.themeButton.deleted = shown;
 		this.infoButton.deleted = shown;
 		this.displayButton.deleted = shown;
 		this.playbackButton.deleted = shown;
 		this.graphButton.deleted = shown;
+		// clipboard category
+		shown = hide || !this.showClipboardSettings;
+		this.openClipboardButton.deleted = shown;
+		this.copyOriginalButton.deleted = shown;
+		this.copyRuleButton.deleted = shown;
+		this.copyNeighbourhoodButton.deleted = shown;
 		// pattern category
 		shown = hide || !this.showPatternSettings;
 		this.ruleButton.deleted = shown;
@@ -5829,10 +5854,8 @@
 		this.randomizePatternButton.deleted = shown;
 		this.identifyButton.deleted = shown;
 		this.fastIdentifyButton.deleted = shown;
-		this.copyRuleButton.deleted = shown;
 		this.saveImageButton.deleted = shown;
 		this.saveGraphButton.deleted = shown;
-		this.goToGenButton.deleted = shown;
 		// info category
 		shown = hide || !this.showInfoSettings;
 		this.fpsButton.deleted = shown;
@@ -5845,6 +5868,8 @@
 		shown = hide || !this.showDisplaySettings;
 		this.hexCellButton.deleted = shown;
 		this.bordersButton.deleted = shown;
+		this.integerZoomButton.deleted = shown;
+		this.centerPatternButton.deleted = shown;
 		this.majorButton.deleted = shown;
 		this.starsButton.deleted = shown;
 		this.labelButton.deleted = shown;
@@ -5853,6 +5878,7 @@
 		this.rainbowButton.deleted = shown;
 		// playback category
 		shown = hide || !this.showPlaybackSettings;
+		this.goToGenButton.deleted = shown;
 		this.historyFitButton.deleted = shown;
 		this.throttleToggle.deleted = shown;
 		this.showLagToggle.deleted = shown;
@@ -5866,11 +5892,12 @@
 		this.identifyButton.locked = shown || this.viewOnly;
 		this.fastIdentifyButton.locked = shown || this.viewOnly;
 		this.copyRuleButton.locked = shown;
+		this.copyNeighbourhoodButton.locked = shown;
 		this.goToGenButton.locked = !this.executable || this.viewOnly;
 		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isRuleTree || this.engine.isMargolus);
 
 		// set theme section label text
-		this.themeSectionLabel.deleted = hide || !(this.showDisplaySettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings);
+		this.themeSectionLabel.deleted = hide || !(this.showDisplaySettings || this.showClipboardSettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings);
 		if (this.showDisplaySettings) {
 			this.themeSectionLabel.preText = "Display";
 		} else {
@@ -5883,7 +5910,11 @@
 					if (this.showPatternSettings) {
 						this.themeSectionLabel.preText = "Pattern";
 					} else {
-						this.themeSectionLabel.preText = "";
+						if (this.showClipboardSettings) {
+							this.themeSectionLabel.preText = "Clipboard";
+						} else {
+							this.themeSectionLabel.preText = "";
+						}
 					}
 				}
 			}
@@ -10522,17 +10553,23 @@
 	// back button
 	View.prototype.backPressed = function(me) {
 		// check if any settings are displayed
-		if (me.showDisplaySettings || me.showInfoSettings || me.showPatternSettings || me.showPlaybackSettings || me.showThemeSelection) {
+		if (me.showDisplaySettings || me.showInfoSettings || me.showClipboardSettings || me.showPatternSettings || me.showPlaybackSettings || me.showThemeSelection) {
 			// clear settings section
 			me.showDisplaySettings = false;
 			me.showInfoSettings = false;
 			me.showPatternSettings = false;
+			me.showClipboardSettings = false;
 			me.showPlaybackSettings = false;
 			me.showThemeSelection = false;
 		} else {
 			// close settings
 			me.navToggle.current = [false];
 		}
+	};
+
+	// clipboard settings button
+	View.prototype.clipboardPressed = function(me) {
+		me.showClipboardSettings = true;
 	};
 
 	// pattern settings button
@@ -10955,6 +10992,17 @@
 		}
 	};
 
+	// integer zoom pressed
+	View.prototype.integerZoomPressed = function(me) {
+		// set zoom to nearest integer
+		me.changeZoom(me, me.engine.zoom * me.engine.originZ, true);
+	};
+
+	// center pattern pressed
+	View.prototype.centerPatternPressed = function(me) {
+		me.fitZoomDisplay(true, true, ViewConstants.fitZoomMiddle);
+	};
+
 	// clear selection
 	View.prototype.doClearSelection = function(me, ctrl) {
 		if (!me.viewOnly) {
@@ -11201,6 +11249,22 @@
 				}
 			}
 		}
+	};
+
+	// copy original pattern pressed
+	View.prototype.copyOriginalPressed = function(me) {
+		me.processCopy(me, true, false);
+	};
+
+	// copy neighbourhood pressed
+	View.prototype.copyNeighbourhoodPressed = function(me) {
+		me.copyNeighbourhood(me);
+	};
+
+	// open clipboard pressed
+	View.prototype.openClipboardPressed = function(me) {
+		/*jshint -W119 */
+		navigator.clipboard.readText().then(text => me.loadText(me, text));
 	};
 
 	// copy pressed
@@ -14360,104 +14424,124 @@
 		this.themeSectionLabel = this.viewMenu.addLabelItem(Menu.north, 0, 100, 120, 40, "");
 
 		// hex/square cell toggle button
-		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -100, -75, 180, 40, ["Use Rectangles"], [this.engine.forceRectangles], Menu.multi);
+		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -100, -100, 180, 40, ["Use Rectangles"], [this.engine.forceRectangles], Menu.multi);
 		this.hexCellButton.toolTip = ["toggle hexagonal cells [?]"];
 
 		// cell borders toggle button
-		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 100, -75, 180, 40, ["Cell Borders"], [this.engine.cellBorders], Menu.multi);
+		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 100, -100, 180, 40, ["Cell Borders"], [this.engine.cellBorders], Menu.multi);
 		this.bordersButton.toolTip = ["toggle cell borders [Alt B]"];
 
 		// major gridlines toggle button
-		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -100, -25, 180, 40, ["Major GridLines"], [this.engine.gridLineMajorEnabled], Menu.multi);
+		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -100, -50, 180, 40, ["Major GridLines"], [this.engine.gridLineMajorEnabled], Menu.multi);
 		this.majorButton.toolTip = ["toggle major gridlines [Shift X]"];
 
 		// stars toggle button
-		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.middle, 100, -25, 180, 40, ["Starfield"], [this.starsOn], Menu.multi);
+		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.middle, 100, -50, 180, 40, ["Starfield"], [this.starsOn], Menu.multi);
 		this.starsButton.toolTip = ["toggle starfield display [S]"];
 
 		// label toggle button
-		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -100, 25, 180, 40, ["Annotations"], [this.showLabels], Menu.multi);
+		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -100, 0, 180, 40, ["Annotations"], [this.showLabels], Menu.multi);
 		this.labelButton.toolTip = ["toggle annotations [Alt L]"];
 
 		// rainbow button
-		this.rainbowButton = this.viewMenu.addListItem(this.viewRainbowToggle, Menu.middle, 100, 25, 180, 40, ["Rainbow"], [this.engine.rainbow], Menu.multi);
+		this.rainbowButton = this.viewMenu.addListItem(this.viewRainbowToggle, Menu.middle, 100, 0, 180, 40, ["Rainbow"], [this.engine.rainbow], Menu.multi);
 		this.rainbowButton.toolTip = ["toggle rainbow mode [Alt W]"]; 
 
 		// autogrid toggle button
-		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, -100, 75, 180, 40, ["Auto GridLines"], [this.autoGrid], Menu.multi);
+		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, -100, 50, 180, 40, ["Auto GridLines"], [this.autoGrid], Menu.multi);
 		this.autoGridButton.toolTip = ["automatically turn on gridlines for Draw and Select and off for Pan [Ctrl G]"]; 
 
 		// alt grid toggle button
-		this.altGridButton = this.viewMenu.addListItem(this.viewAltGridToggle, Menu.middle, 100, 75, 180, 40, ["Alt GridLines"], [this.engine.altGrid], Menu.multi);
+		this.altGridButton = this.viewMenu.addListItem(this.viewAltGridToggle, Menu.middle, 100, 50, 180, 40, ["Alt GridLines"], [this.engine.altGrid], Menu.multi);
 		this.altGridButton.toolTip = ["toggle alternating gridlines [Alt D]"]; 
 
+		// integer zoom button
+		this.integerZoomButton = this.viewMenu.addButtonItem(this.integerZoomPressed, Menu.middle, -100, 100, 180, 40, "Integer Zoom");
+		this.integerZoomButton.toolTip = "set zoom to nearest integer [Shift 1]";
+
+		// center pattern button
+		this.centerPatternButton = this.viewMenu.addButtonItem(this.centerPatternPressed, Menu.middle, 100, 100, 180, 40, "Center Pattern");
+		this.centerPatternButton.toolTip = "center pattern [Ctrl M]";
+
+		// go to generation button
+		this.goToGenButton = this.viewMenu.addButtonItem(this.goToGenPressed, Menu.middle, -100, -50, 180, 40, "Go To Gen");
+		this.goToGenButton.toolTip = "go to specified generation [Shift N]";
+
 		// historyfit toggle button
-		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.middle, -100, -50, 180, 40, ["AutoFit History"], [this.historyFit], Menu.multi);
+		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.middle, 100, -50, 180, 40, ["AutoFit History"], [this.historyFit], Menu.multi);
 		this.historyFitButton.toolTip = ["toggle AutoFit History [Shift H]"];
 
 		// add the throttle toggle button
-		this.throttleToggle = this.viewMenu.addListItem(this.toggleThrottle, Menu.middle, 100, -50, 180, 40, ["Throttle"], [this.canBailOut], Menu.multi);
+		this.throttleToggle = this.viewMenu.addListItem(this.toggleThrottle, Menu.middle, -100, 0, 180, 40, ["Throttle"], [this.canBailOut], Menu.multi);
 		this.throttleToggle.toolTip = ["toggle playback throttling [Alt T]"];
 
 		// add the show lag toggle button
-		this.showLagToggle = this.viewMenu.addListItem(this.toggleShowLag, Menu.middle, -100, 0, 180, 40, ["Perf. Warning"], [this.perfWarning], Menu.multi);
+		this.showLagToggle = this.viewMenu.addListItem(this.toggleShowLag, Menu.middle, 100, 0, 180, 40, ["Perf. Warning"], [this.perfWarning], Menu.multi);
 		this.showLagToggle.toolTip = ["toggle performance warning display [Shift W]"];
 
 		// kill gliders toggle button
-		this.killButton = this.viewMenu.addListItem(this.viewKillToggle, Menu.middle, 100, 0, 180, 40, ["Kill Gliders"], [this.engine.clearGliders], Menu.multi);
+		this.killButton = this.viewMenu.addListItem(this.viewKillToggle, Menu.middle, -100, 50, 180, 40, ["Kill Gliders"], [this.engine.clearGliders], Menu.multi);
 		this.killButton.toolTip = ["toggle kill escaping gliders [Ctrl L]"];
 
 		// autohide toggle button
-		this.autoHideButton = this.viewMenu.addListItem(this.viewAutoHideToggle, Menu.middle, 0, 50, 180, 40, ["AutoHide UI"], [this.hideGUI], Menu.multi);
+		this.autoHideButton = this.viewMenu.addListItem(this.viewAutoHideToggle, Menu.middle, 100, 50, 180, 40, ["AutoHide UI"], [this.hideGUI], Menu.multi);
 		this.autoHideButton.toolTip = ["toggle hide UI on playback [Alt U]"]; 
 
 		// rule button
-		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, -100, -125, 180, 40, "Change Rule");
+		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, -100, -100, 180, 40, "Change Rule");
 		this.ruleButton.toolTip = "change rule [Alt R]";
 
 		// new button
-		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 100, -125, 180, 40, "New Pattern");
+		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 100, -100, 180, 40, "New Pattern");
 		this.newButton.toolTip = "new pattern [Alt N]";
 
 		// load button
-		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, -100, -75, 180, 40, "Load Pattern");
+		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, -100, -50, 180, 40, "Load Pattern");
 		this.loadButton.toolTip = "load last saved pattern [Ctrl O]";
 
 		// save button
-		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 100, -75, 180, 40, "Save Pattern");
+		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 100, -50, 180, 40, "Save Pattern");
 		this.saveButton.toolTip = "save pattern [Ctrl S]";
 
 		// randomize button
-		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, -100, -25, 180, 40, "Rand All");
+		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, -100, 0, 180, 40, "Rand All");
 		this.randomizeButton.toolTip = "randomize pattern and rule [Alt Z]";
 
 		// randomize button
-		this.randomizePatternButton = this.viewMenu.addButtonItem(this.randomizePatternPressed, Menu.middle, 100, -25, 180, 40, "Rand Pattern");
+		this.randomizePatternButton = this.viewMenu.addButtonItem(this.randomizePatternPressed, Menu.middle, 100, 0, 180, 40, "Rand Pattern");
 		this.randomizePatternButton.toolTip = "randomize pattern and keep rule [Ctrl Alt Z]";
 
 		// identify button
-		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, -100, 25, 180, 40, "Identify");
+		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, -100, 50, 180, 40, "Identify");
 		this.identifyButton.toolTip = "identify oscillator or spaceship period [F6]";
 
 		// fast identify button
-		this.fastIdentifyButton = this.viewMenu.addButtonItem(this.fastIdentifyPressed, Menu.middle, 100, 25, 180, 40, "Fast Identify");
+		this.fastIdentifyButton = this.viewMenu.addButtonItem(this.fastIdentifyPressed, Menu.middle, 100, 50, 180, 40, "Fast Identify");
 		this.fastIdentifyButton.toolTip = "quickly identify oscillator or spaceship period [Ctrl F6]";
 
 		// image button
-		this.saveImageButton = this.viewMenu.addButtonItem(this.saveImagePressed, Menu.middle, -100, 75, 180, 40, "Save Image");
+		this.saveImageButton = this.viewMenu.addButtonItem(this.saveImagePressed, Menu.middle, -100, 100, 180, 40, "Save Image");
 		this.saveImageButton.toolTip = "save image [O]";
 
 		// save graph button
-		this.saveGraphButton = this.viewMenu.addButtonItem(this.saveGraphPressed, Menu.middle, 100, 75, 180, 40, "Save Graph");
+		this.saveGraphButton = this.viewMenu.addButtonItem(this.saveGraphPressed, Menu.middle, 100, 100, 180, 40, "Save Graph");
 		this.saveGraphButton.toolTip = "save population graph image [Shift O]";
 
-		// go to generation button
-		this.goToGenButton = this.viewMenu.addButtonItem(this.goToGenPressed, Menu.middle, 100, 125, 180, 40, "Go To Gen");
-		this.goToGenButton.toolTip = "go to specified generation [Shift N]";
+		// open clipboard button
+		this.openClipboardButton = this.viewMenu.addButtonItem(this.openClipboardPressed, Menu.middle, -100, -25, 180, 40, "Open Clipboard");
+		this.openClipboardButton.toolTip = "open clipboard as pattern [Ctrl Shift O]";
+
+		// copy original pattern button
+		this.copyOriginalButton = this.viewMenu.addButtonItem(this.copyOriginalPressed, Menu.middle, 100, -25, 180, 40, "Copy Original");
+		this.copyOriginalButton.toolTip = "copy original pattern [Ctrl Shift C]";
 
 		// copy rule button
-		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, -100, 125, 180, 40, "Copy Rule");
+		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, -100, 25, 180, 40, "Copy Rule");
 		this.copyRuleButton.toolTip = "copy rule definition [Ctrl J]";
+
+		// copy neighbourhood button
+		this.copyNeighbourhoodButton = this.viewMenu.addButtonItem(this.copyNeighbourhoodPressed, Menu.middle, 100, 25, 180, 40, "Copy Nhood");
+		this.copyNeighbourhoodButton.toolTip = "copy CoordCA neighbourhood definition [Ctrl B]";
 
 		// fps button
 		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -100, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
@@ -14543,8 +14627,32 @@
 		this.navToggle.toolTip = ["toggle settings menu [M]"];
 
 		// add the pattern button
-		this.patternButton = this.viewMenu.addButtonItem(this.patternPressed, Menu.middle, 0, -125, 150, 40, "Pattern");
-		this.patternButton.toolTip = "pattern settings";
+		this.patternButton = this.viewMenu.addButtonItem(this.patternPressed, Menu.middle, -100, -75, 150, 40, "Pattern");
+		this.patternButton.toolTip = "pattern settings and actions";
+
+		// add the clipboard button
+		this.clipboardButton = this.viewMenu.addButtonItem(this.clipboardPressed, Menu.middle, 100, -75, 150, 40, "Clipboard");
+		this.clipboardButton.toolTip = "clipboard settings and actions";
+
+		// add the colour theme button
+		this.themeButton = this.viewMenu.addButtonItem(this.themePressed, Menu.middle, -100, 25, 150, 40, "Theme");
+		this.themeButton.toolTip = "choose colour theme";
+
+		// graph toggle button
+		this.graphButton = this.viewMenu.addListItem(this.viewGraphToggle, Menu.middle, 100, 25, 150, 40, ["Graph"], [this.popGraph], Menu.multi);
+		this.graphButton.toolTip = ["toggle population graph display [Y]"];
+
+		// add the display button
+		this.displayButton = this.viewMenu.addButtonItem(this.displayPressed, Menu.middle, -100, -25,  150, 40, "Display");
+		this.displayButton.toolTip = "display settings and actions";
+
+		// add the playback button
+		this.playbackButton = this.viewMenu.addButtonItem(this.playbackPressed, Menu.middle, 100, -25, 150, 40, "Playback");
+		this.playbackButton.toolTip = "playback settings and actions";
+
+		// add the advanced button
+		this.infoButton = this.viewMenu.addButtonItem(this.infoPressed, Menu.middle, 0, 75, 150, 40, "Advanced");
+		this.infoButton.toolTip = "advanced settings and actions";
 
 		// add the back button
 		this.backButton = this.viewMenu.addButtonItem(this.backPressed, Menu.south, 0, -100, 120, 40, "Back");
@@ -14554,26 +14662,6 @@
 		this.cancelButton = this.viewMenu.addButtonItem(this.cancelPressed, Menu.south, 0, -100, 120, 40, "Cancel");
 		this.cancelButton.toolTip = "cancel operation [Esc]";
 		this.cancelButton.overrideLocked = true;
-
-		// add the colour theme button
-		this.themeButton = this.viewMenu.addButtonItem(this.themePressed, Menu.middle, 0, -75, 150, 40, "Theme");
-		this.themeButton.toolTip = "choose colour theme";
-
-		// graph toggle button
-		this.graphButton = this.viewMenu.addListItem(this.viewGraphToggle, Menu.middle, 0, -25, 150, 40, ["Graph"], [this.popGraph], Menu.multi);
-		this.graphButton.toolTip = ["toggle population graph display [Y]"];
-
-		// add the info button
-		this.infoButton = this.viewMenu.addButtonItem(this.infoPressed, Menu.middle, 0, 25, 150, 40, "Advanced");
-		this.infoButton.toolTip = "advanced settings";
-
-		// add the display button
-		this.displayButton = this.viewMenu.addButtonItem(this.displayPressed, Menu.middle, 0, 75,  150, 40, "Display");
-		this.displayButton.toolTip = "display settings";
-
-		// add the playback button
-		this.playbackButton = this.viewMenu.addButtonItem(this.playbackPressed, Menu.middle, 0, 125, 150, 40, "Playback");
-		this.playbackButton.toolTip = "playback settings";
 
 		// add the theme selections
 		lastX = -1;
@@ -14813,7 +14901,7 @@
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.tiltItem, this.backButton, this.themeButton, this.patternButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.autoGridButton, this.altGridButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
+		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.tiltItem, this.backButton, this.themeButton, this.patternButton, this.clipboardButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.autoGridButton, this.altGridButton, this.integerZoomButton, this.centerPatternButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.genLabel, this.genValueLabel, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -15128,9 +15216,6 @@
 		this.engine.originX = 0;
 		this.engine.originY = 0;
 		this.engine.originZ = 1;
-
-		// clear integer zoom
-		this.integerZoom = false;
 
 		// clear autofit
 		this.autoFit = false;
@@ -15688,8 +15773,11 @@
 		// hide playback settings
 		me.showPlaybackSettings = false;
 
-		// hide rule settings
+		// hide pattern settings
 		me.showPatternSettings = false;
+
+		// hide clipboard settings
+		me.showClipboardSettings = false;
 
 		// ensure theme is set
 		me.engine.colourTheme = -1;
