@@ -1,3 +1,7 @@
+Build 726
+- added Settings->Clipboard->Copy All to copy the selection with comments
+- added Settings->Clipboard->Paste To Seln to paste the clipboard into the current selection
+
 Build 725
 - created new Clipboard category in settings menu:
 	- Open Clipboard: opens the clipboard as a pattern

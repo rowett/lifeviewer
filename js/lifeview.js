@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 725,
+		/** @const {number} */ versionBuild : 726,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1801,6 +1801,12 @@
 		
 		// open clipboard button
 		this.openClipboardButton = null;
+
+		// copy with comments button
+		this.copyWithCommentsButton = null;
+
+		// paste to selection button
+		this.pasteToSelectionButton = null;
 
 		// copy original pattern button
 		this.copyOriginalButton = null;
@@ -5829,6 +5835,7 @@
 		this.angleItem.deleted = shown;
 		this.tiltItem.deleted = shown;
 		this.layersItem.deleted = shown;
+
 		// setting category buttons
 		shown = hide || this.showThemeSelection || this.showClipboardSettings || this.showPatternSettings || this.showDisplaySettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings;
 		this.patternButton.deleted = shown;
@@ -5838,12 +5845,16 @@
 		this.displayButton.deleted = shown;
 		this.playbackButton.deleted = shown;
 		this.graphButton.deleted = shown;
+
 		// clipboard category
 		shown = hide || !this.showClipboardSettings;
 		this.openClipboardButton.deleted = shown;
 		this.copyOriginalButton.deleted = shown;
 		this.copyRuleButton.deleted = shown;
 		this.copyNeighbourhoodButton.deleted = shown;
+		this.pasteToSelectionButton.deleted = shown;
+		this.copyWithCommentsButton.deleted = shown;
+
 		// pattern category
 		shown = hide || !this.showPatternSettings;
 		this.ruleButton.deleted = shown;
@@ -5856,6 +5867,7 @@
 		this.fastIdentifyButton.deleted = shown;
 		this.saveImageButton.deleted = shown;
 		this.saveGraphButton.deleted = shown;
+
 		// info category
 		shown = hide || !this.showInfoSettings;
 		this.fpsButton.deleted = shown;
@@ -5864,6 +5876,7 @@
 		this.relativeToggle.deleted = shown;
 		this.relativeToggle.locked = !this.genDefined;
 		this.qualityToggle.deleted = shown;
+
 		// display categoy
 		shown = hide || !this.showDisplaySettings;
 		this.hexCellButton.deleted = shown;
@@ -5876,6 +5889,7 @@
 		this.autoGridButton.deleted = shown;
 		this.altGridButton.deleted = shown;
 		this.rainbowButton.deleted = shown;
+
 		// playback category
 		shown = hide || !this.showPlaybackSettings;
 		this.goToGenButton.deleted = shown;
@@ -5893,6 +5907,8 @@
 		this.fastIdentifyButton.locked = shown || this.viewOnly;
 		this.copyRuleButton.locked = shown;
 		this.copyNeighbourhoodButton.locked = shown;
+		this.copyWithCommentsButton.locked = shown;
+		this.pasteToSelectionButton.locked = shown;
 		this.goToGenButton.locked = !this.executable || this.viewOnly;
 		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isRuleTree || this.engine.isMargolus);
 
@@ -11251,6 +11267,16 @@
 		}
 	};
 
+	// paste to selection pressed
+	View.prototype.pasteToSelectionPressed = function(me) {
+		me.processPaste(me, true);
+	};
+
+	// copy with comments pressed
+	View.prototype.copyWithCommentsPressed = function(me) {
+		me.processCopy(me, false, true);
+	};
+
 	// copy original pattern pressed
 	View.prototype.copyOriginalPressed = function(me) {
 		me.processCopy(me, true, false);
@@ -14528,20 +14554,28 @@
 		this.saveGraphButton.toolTip = "save population graph image [Shift O]";
 
 		// open clipboard button
-		this.openClipboardButton = this.viewMenu.addButtonItem(this.openClipboardPressed, Menu.middle, -100, -25, 180, 40, "Open Clipboard");
+		this.openClipboardButton = this.viewMenu.addButtonItem(this.openClipboardPressed, Menu.middle, -100, -50, 180, 40, "Open Clipboard");
 		this.openClipboardButton.toolTip = "open clipboard as pattern [Ctrl Shift O]";
 
 		// copy original pattern button
-		this.copyOriginalButton = this.viewMenu.addButtonItem(this.copyOriginalPressed, Menu.middle, 100, -25, 180, 40, "Copy Original");
+		this.copyOriginalButton = this.viewMenu.addButtonItem(this.copyOriginalPressed, Menu.middle, 100, -50, 180, 40, "Copy Original");
 		this.copyOriginalButton.toolTip = "copy original pattern [Ctrl Shift C]";
 
 		// copy rule button
-		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, -100, 25, 180, 40, "Copy Rule");
+		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, -100, 0, 180, 40, "Copy Rule");
 		this.copyRuleButton.toolTip = "copy rule definition [Ctrl J]";
 
 		// copy neighbourhood button
-		this.copyNeighbourhoodButton = this.viewMenu.addButtonItem(this.copyNeighbourhoodPressed, Menu.middle, 100, 25, 180, 40, "Copy Nhood");
+		this.copyNeighbourhoodButton = this.viewMenu.addButtonItem(this.copyNeighbourhoodPressed, Menu.middle, 100, 0, 180, 40, "Copy Nhood");
 		this.copyNeighbourhoodButton.toolTip = "copy CoordCA neighbourhood definition [Ctrl B]";
+
+		// copy with comments button
+		this.copyWithCommentsButton = this.viewMenu.addButtonItem(this.copyWithCommentsPressed, Menu.middle, -100, 50, 180, 40, "Copy All");
+		this.copyWithCommentsButton.toolTip = "copy with comments [Ctrl Alt C]";
+
+		// paste to selection button
+		this.pasteToSelectionButton = this.viewMenu.addButtonItem(this.pasteToSelectionPressed, Menu.middle, 100, 50, 180, 40, "Paste To Seln");
+		this.pasteToSelectionButton.toolTip = "paste to selection [Ctrl Shift V]";
 
 		// fps button
 		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -100, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
