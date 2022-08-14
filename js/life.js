@@ -4661,6 +4661,11 @@
 								state = this.historyStates + state;
 							}
 							colourGrid[y][x] = state;
+							// check for [R]Super
+							if (this.isSuper) {
+								// mark tile as not static since it has changed
+								staticTileGrid[y >> 4][x >> 8] &= ~cellAsTileBit;
+							}
 						}
 					} else {
 						// update population for HROT
