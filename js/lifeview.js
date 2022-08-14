@@ -1,4 +1,4 @@
-// LifeViewer plugin
+// LifeViewer Buttonlugin
 // written by Chris Rowett
 
 (function() {
@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 726,
+		/** @const {number} */ versionBuild : 728,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1855,6 +1855,9 @@
 
 		// timing details button
 		this.timingDetailButton = null;
+
+		// clear drawing state button
+		this.clearDrawingStateButton = null;
 
 		// generation label
 		this.genLabel = null;
@@ -5868,14 +5871,13 @@
 		this.saveImageButton.deleted = shown;
 		this.saveGraphButton.deleted = shown;
 
-		// info category
+		// advanced category
 		shown = hide || !this.showInfoSettings;
 		this.fpsButton.deleted = shown;
 		this.timingDetailButton.deleted = shown;
-		this.infoBarButton.deleted = shown;
 		this.relativeToggle.deleted = shown;
 		this.relativeToggle.locked = !this.genDefined;
-		this.qualityToggle.deleted = shown;
+		this.clearDrawingStateButton.deleted = shown;
 
 		// display categoy
 		shown = hide || !this.showDisplaySettings;
@@ -5889,6 +5891,8 @@
 		this.autoGridButton.deleted = shown;
 		this.altGridButton.deleted = shown;
 		this.rainbowButton.deleted = shown;
+		this.qualityToggle.deleted = shown;
+		this.infoBarButton.deleted = shown;
 
 		// playback category
 		shown = hide || !this.showPlaybackSettings;
@@ -6931,6 +6935,10 @@
 				if (me.modeList.current !== ViewConstants.modePan) {
 					me.modeList.current = me.viewModeList(ViewConstants.modePan, true, me);
 				}
+			}
+			// close settings menu
+			if (me.navToggle.current[0]) {
+				me.navToggle.current = me.toggleSettings([false], true, me);
 			}
 		}
 
@@ -13365,6 +13373,11 @@
 		return [me.displayHelp];
 	};
 	
+	// clear drawing state cells
+	View.prototype.clearDrawingCellsPressed = function(me) {
+		me.clearCells(me, false, false);
+	};
+
 	// relative/absolute generation display toggle
 	View.prototype.viewRelativeToggle = function(newValue, change, me) {
 		if (change) {
@@ -14450,43 +14463,51 @@
 		this.themeSectionLabel = this.viewMenu.addLabelItem(Menu.north, 0, 100, 120, 40, "");
 
 		// hex/square cell toggle button
-		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -100, -100, 180, 40, ["Use Rectangles"], [this.engine.forceRectangles], Menu.multi);
+		this.hexCellButton = this.viewMenu.addListItem(this.viewHexCellToggle, Menu.middle, -100, -125, 180, 40, ["Use Rectangles"], [this.engine.forceRectangles], Menu.multi);
 		this.hexCellButton.toolTip = ["toggle hexagonal cells [?]"];
 
 		// cell borders toggle button
-		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 100, -100, 180, 40, ["Cell Borders"], [this.engine.cellBorders], Menu.multi);
+		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 100, -125, 180, 40, ["Cell Borders"], [this.engine.cellBorders], Menu.multi);
 		this.bordersButton.toolTip = ["toggle cell borders [Alt B]"];
 
 		// major gridlines toggle button
-		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -100, -50, 180, 40, ["Major GridLines"], [this.engine.gridLineMajorEnabled], Menu.multi);
+		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -100, -75, 180, 40, ["Major GridLines"], [this.engine.gridLineMajorEnabled], Menu.multi);
 		this.majorButton.toolTip = ["toggle major gridlines [Shift X]"];
 
 		// stars toggle button
-		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.middle, 100, -50, 180, 40, ["Starfield"], [this.starsOn], Menu.multi);
+		this.starsButton = this.viewMenu.addListItem(this.viewStarsToggle, Menu.middle, 100, -75, 180, 40, ["Starfield"], [this.starsOn], Menu.multi);
 		this.starsButton.toolTip = ["toggle starfield display [S]"];
 
 		// label toggle button
-		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -100, 0, 180, 40, ["Annotations"], [this.showLabels], Menu.multi);
+		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -100, -25, 180, 40, ["Annotations"], [this.showLabels], Menu.multi);
 		this.labelButton.toolTip = ["toggle annotations [Alt L]"];
 
 		// rainbow button
-		this.rainbowButton = this.viewMenu.addListItem(this.viewRainbowToggle, Menu.middle, 100, 0, 180, 40, ["Rainbow"], [this.engine.rainbow], Menu.multi);
+		this.rainbowButton = this.viewMenu.addListItem(this.viewRainbowToggle, Menu.middle, 100, -25, 180, 40, ["Rainbow"], [this.engine.rainbow], Menu.multi);
 		this.rainbowButton.toolTip = ["toggle rainbow mode [Alt W]"]; 
 
 		// autogrid toggle button
-		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, -100, 50, 180, 40, ["Auto GridLines"], [this.autoGrid], Menu.multi);
+		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, -100, 25, 180, 40, ["Auto GridLines"], [this.autoGrid], Menu.multi);
 		this.autoGridButton.toolTip = ["automatically turn on gridlines for Draw and Select and off for Pan [Ctrl G]"]; 
 
 		// alt grid toggle button
-		this.altGridButton = this.viewMenu.addListItem(this.viewAltGridToggle, Menu.middle, 100, 50, 180, 40, ["Alt GridLines"], [this.engine.altGrid], Menu.multi);
+		this.altGridButton = this.viewMenu.addListItem(this.viewAltGridToggle, Menu.middle, 100, 25, 180, 40, ["Alt GridLines"], [this.engine.altGrid], Menu.multi);
 		this.altGridButton.toolTip = ["toggle alternating gridlines [Alt D]"]; 
 
+		// infobar toggle button
+		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, -100, 75, 180, 40, ["Info Bar"], [this.infoBarEnabled], Menu.multi);
+		this.infoBarButton.toolTip = ["toggle Information Bar [Shift I]"];
+
+		// quality rendering toggle button
+		this.qualityToggle = this.viewMenu.addListItem(this.viewQualityToggle, Menu.middle, 100, 75, 180, 40, ["Render Quality"], [this.engine.pretty], Menu.multi);
+		this.qualityToggle.toolTip = ["toggle anti-aliased cell display [Ctrl Q]"];
+
 		// integer zoom button
-		this.integerZoomButton = this.viewMenu.addButtonItem(this.integerZoomPressed, Menu.middle, -100, 100, 180, 40, "Integer Zoom");
+		this.integerZoomButton = this.viewMenu.addButtonItem(this.integerZoomPressed, Menu.middle, -100, 125, 180, 40, "Integer Zoom");
 		this.integerZoomButton.toolTip = "set zoom to nearest integer [Shift 1]";
 
 		// center pattern button
-		this.centerPatternButton = this.viewMenu.addButtonItem(this.centerPatternPressed, Menu.middle, 100, 100, 180, 40, "Center Pattern");
+		this.centerPatternButton = this.viewMenu.addButtonItem(this.centerPatternPressed, Menu.middle, 100, 125, 180, 40, "Center Pattern");
 		this.centerPatternButton.toolTip = "center pattern [Ctrl M]";
 
 		// go to generation button
@@ -14578,24 +14599,20 @@
 		this.pasteToSelectionButton.toolTip = "paste to selection [Ctrl Shift V]";
 
 		// fps button
-		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, 0, -100, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
+		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, -100, -25, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
 		this.fpsButton.toolTip = ["toggle timing display [T]"];
 
 		// timing detail button
-		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 0, -50, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
+		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 100, -25, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
 		this.timingDetailButton.toolTip = ["toggle timing details [Shift T]"];
 
-		// infobar toggle button
-		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, 0, 0, 180, 40, ["Display Info Bar"], [this.infoBarEnabled], Menu.multi);
-		this.infoBarButton.toolTip = ["toggle Information Bar [Shift I]"];
-
 		// relative toggle button
-		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, 0, 50, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
+		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, -100, 25, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
 		this.relativeToggle.toolTip = ["toggle absolute/relative generation display [Shift G]"];
 
-		// quality rendering toggle button
-		this.qualityToggle = this.viewMenu.addListItem(this.viewQualityToggle, Menu.middle, 0, 100, 180, 40, ["Render Quality"], [this.engine.pretty], Menu.multi);
-		this.qualityToggle.toolTip = ["toggle anti-aliased cell display [Ctrl Q]"];
+		// clear drawing state cells button
+		this.clearDrawingStateButton = this.viewMenu.addButtonItem(this.clearDrawingCellsPressed, Menu.middle, 100, 25, 180, 40, "Clear Drawing");
+		this.clearDrawingStateButton.toolTip = "clear drawing state cells [Ctrl Alt K]";
 
 		// previous universe button
 		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -100, 120, 40, "Prev");
@@ -14935,7 +14952,11 @@
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.tiltItem, this.backButton, this.themeButton, this.patternButton, this.clipboardButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton, this.escButton, this.autoHideButton, this.autoGridButton, this.altGridButton, this.integerZoomButton, this.centerPatternButton, this.hexCellButton, this.bordersButton, this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.timingDetailButton, this.infoBarButton, this.starsButton, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
+		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.tiltItem, this.backButton, this.themeButton,
+			this.patternButton, this.clipboardButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton,
+			this.escButton, this.autoHideButton, this.autoGridButton, this.altGridButton, this.integerZoomButton, this.centerPatternButton, this.hexCellButton, this.bordersButton,
+			this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.clearDrawingStateButton, this.timingDetailButton, this.infoBarButton, this.starsButton,
+			this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.genLabel, this.genValueLabel, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);

@@ -1,3 +1,9 @@
+Build 728
+- added Settings->Advanced->Clear Drawing to clear all cells in the current drawing state
+
+Build 727
+- mark UI controls that are toggles with +/- in top right
+
 Build 726
 - added Settings->Clipboard->Copy All to copy the selection with comments
 - added Settings->Clipboard->Paste To Seln to paste the clipboard into the current selection

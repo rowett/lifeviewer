@@ -1589,6 +1589,34 @@
 						this.context.fillRect(x + i * itemSize + 1, y + 1, itemSize - 2, height - 2);
 					}
 				}
+
+				// for since item lists (typically used as toggle buttons) show +/x at top right
+				if (l === 1) {
+					// set colour based on whether item is locked
+					if ((item.locked || this.locked) && !item.overrideLocked) {
+						this.context.strokeStyle = item.lockedCol;
+						this.context.globalAlpha = item.lockedAlpha;
+					} else {
+						this.context.strokeStyle = item.borderCol;
+						this.context.globalAlpha = item.borderAlpha;
+					}
+
+					// if the item is selected draw an x
+					this.context.beginPath();
+					if (values[0]) {
+						this.context.moveTo(x + itemSize - 6 + 0.5, y + 5 + 0.5);
+						this.context.lineTo(x + itemSize - 2 + 0.5, y + 1 + 0.5);
+						this.context.moveTo(x + itemSize - 2 + 0.5, y + 5 + 0.5);
+						this.context.lineTo(x + itemSize - 6 + 0.5, y + 1 + 0.5);
+					} else {
+						// otherwise draw a +
+						this.context.moveTo(x + itemSize - 4 + 0.5, y + 5 + 0.5);
+						this.context.lineTo(x + itemSize - 4 + 0.5, y + 1 + 0.5);
+						this.context.moveTo(x + itemSize - 6 + 0.5, y + 3 + 0.5);
+						this.context.lineTo(x + itemSize - 2 + 0.5, y + 3 + 0.5);
+					}
+					this.context.stroke();
+				}
 			} else {
 				for (i = 0; i < l; i += 1) {
 					if (values[i]) {
@@ -1851,8 +1879,7 @@
 						}
 						this.context.strokeRect(item.x + 0.5 + i * w, item.y + 0.5, w - 1, item.height - 1);
 					}
-				}
-				else {
+				} else {
 					w = item.height / l;
 					for (i = 0; i <l; i += 1) {
 						if (this.locked || item.locked || item.itemLocked[i]) {
