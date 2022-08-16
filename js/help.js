@@ -2139,6 +2139,54 @@
 		y = this.renderHelpLine(view, "Advance", this.rgbString(view.customAdvanceColour[0], view.customAdvanceColour[1], view.customAdvanceColour[2]), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
+		// UI colours
+		view.helpSections[sectionNum] = [view.lineNo, "UI"];
+		y = this.renderHelpLine(view, "", "UI:", ctx, x, y, height, helpLine);
+		sectionNum += 1;
+		value = view.customThemeValue[ViewConstants.customThemeUIFG];
+		if (value === -1) {
+			value = 0xffffff; // default white
+		}
+		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Foreground", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
+
+		value = view.customThemeValue[ViewConstants.customThemeUIBG];
+		if (value === -1) {
+			value = 0x000000; // default black
+		}
+		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Background", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
+
+		value = view.customThemeValue[ViewConstants.customThemeUIHighlight];
+		if (value === -1) {
+			value = 0x00F020; // default (0, 240, 32)
+		}
+		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Highlight", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
+
+		value = view.customThemeValue[ViewConstants.customThemeUISelect];
+		if (value === -1) {
+			value = 0x0000FF; // default blue
+		}
+		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Select", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
+
+		value = view.customThemeValue[ViewConstants.customThemeUILocked];
+		if (value === -1) {
+			value = 0x808080; // default grey
+		}
+		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Locked", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
+
+		value = view.customThemeValue[ViewConstants.customThemeUIBorder];
+		if (value === -1) {
+			value = 0xFFFFFF; // default white
+		}
+		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Border", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
+
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		// grid line information
 		view.helpSections[sectionNum] = [view.lineNo, "Gridlines"];
 		sectionNum += 1;

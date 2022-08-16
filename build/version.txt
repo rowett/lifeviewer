@@ -1,3 +1,6 @@
+Build 729
+- add UI colours to Help->Info->UI
+
 Build 728
 - added Settings->Advanced->Clear Drawing to clear all cells in the current drawing state
 
