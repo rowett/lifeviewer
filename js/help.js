@@ -2097,7 +2097,7 @@
 		}
 
 		// check for bounded grid
-		if (view.engine.gridType !== -1) {
+		if (view.engine.boundedGridType !== -1) {
 			// display bounded colour
 			if (view.engine.boundedGridType !== -1 && (view.engine.multiNumStates + view.engine.historyStates < 256)) {
 				this.renderColourBox(view, view.customBoundedColour[0], view.customBoundedColour[1], view.customBoundedColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
