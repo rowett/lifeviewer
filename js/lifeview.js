@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 730,
+		/** @const {number} */ versionBuild : 731,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4135,8 +4135,8 @@
 		me.checkGridSize(me, midBox);
 
 		// clip the selection to the grid
-		xOff = (me.engine.width >> 1) - (me.patternWidth >> 1);
-		yOff = (me.engine.height >> 1) - (me.patternHeight >> 1);
+		xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
+		yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 		if (selBox.leftX + xOff < 0) {
 			selBox.leftX = -xOff;
 			clipped = true;
@@ -7000,6 +7000,7 @@
 		if (change) {
 			// toggle rainbow
 			me.engine.rainbow = newValue[0];
+			me.engine.clearHistoryCells();
 			me.engine.createColourIndex();
 			if ((me.engine.counter & 1) === 0) {
 				me.engine.resetColourGridBox(me.engine.grid16);
@@ -7066,7 +7067,7 @@
 		me.menuManager.setAutoUpdate(true);
 
 		return [me.menuManager.showTiming];
-	};
+	}
 
 	// colour theme
 	View.prototype.setNewTheme = function(newTheme, steps, me) {

@@ -1,3 +1,10 @@
+Build 731
+- clear history states when switching to Rainbow mode
+- fix selections with #CXRLE Pos
+
+Build 730
+- don't show Bounded colour when bounded grid not defined
+
 Build 729
 - add UI colours to Help->Info->UI
 
