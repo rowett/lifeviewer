@@ -11709,6 +11709,9 @@
 				// clear grid boundary
 				if (this.isHROT) {
 					this.clearHRBoundary();
+					if (this.population === 0) {
+						this.anythingAlive = 0;
+					}
 				} else {
 					this.clearGridBoundary();
 				}
