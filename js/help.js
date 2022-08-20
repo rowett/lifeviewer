@@ -1193,6 +1193,7 @@
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.selectWord + " R G B", "set select color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.pasteWord + " R G B", "set paste color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.advanceWord + " R G B", "set advance color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.selectedCellsWord + " R G B", "set selected cells color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.gridWord + " R G B", "set grid color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.gridMajorWord + " R G B", "set grid major color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.starfieldWord + " R G B", "set star color", ctx, x, y, height, helpLine);
@@ -2130,13 +2131,15 @@
 			y = this.renderHelpLine(view, "Error", this.rgbString(255, 96, 96), ctx, x, y, height, helpLine);
 		}
 
-		// select, paste and advance colours
+		// select, paste, advance and selected cells colours
 		this.renderColourBox(view, view.customSelectColour[0], view.customSelectColour[1], view.customSelectColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Select", this.rgbString(view.customSelectColour[0], view.customSelectColour[1], view.customSelectColour[2]), ctx, x, y, height, helpLine);
 		this.renderColourBox(view, view.customPasteColour[0], view.customPasteColour[1], view.customPasteColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Paste", this.rgbString(view.customPasteColour[0], view.customPasteColour[1], view.customPasteColour[2]), ctx, x, y, height, helpLine);
 		this.renderColourBox(view, view.customAdvanceColour[0], view.customAdvanceColour[1], view.customAdvanceColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Advance", this.rgbString(view.customAdvanceColour[0], view.customAdvanceColour[1], view.customAdvanceColour[2]), ctx, x, y, height, helpLine);
+		this.renderColourBox(view, view.customSelectedCellsColour[0], view.customSelectedCellsColour[1], view.customSelectedCellsColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Selected", this.rgbString(view.customSelectedCellsColour[0], view.customSelectedCellsColour[1], view.customSelectedCellsColour[2]), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// UI colours

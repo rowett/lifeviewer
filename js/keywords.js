@@ -290,6 +290,9 @@
 		// advance
 		/** @const {string} */ advanceWord: "ADVANCE",
 
+		// selected cells
+		/** @const {string} */ selectedCellsWord: "SELECTED",
+
 		// autofit word
 		/** @const {string} */ autoFitWord : "AUTOFIT",
 

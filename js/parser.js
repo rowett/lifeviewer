@@ -364,6 +364,12 @@
 				view.engine.selectColour = "rgb(" + redValue + "," + greenValue + "," + blueValue + ")";
 				break;
 
+			case ViewConstants.customThemeSelectedCells:
+				// create custom selected cells colour
+				view.customSelectedCellsColour = [redValue, greenValue, blueValue];
+				view.engine.selectedCellsColour = "rgb(" + redValue + "," + greenValue + "," + blueValue + ")";
+				break;
+
 			case ViewConstants.customThemePaste:
 				// create custom paste colour
 				view.customPasteColour = [redValue, greenValue, blueValue];
@@ -3089,6 +3095,11 @@
 								// advance
 								case Keywords.advanceWord:
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeAdvance, whichColour);
+									break;
+
+								// selected cells
+								case Keywords.selectedCellsWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeSelectedCells, whichColour);
 									break;
 
 								// graph background

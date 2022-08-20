@@ -258,6 +258,7 @@
 		/** @const {number} */ customThemeSelect : 28,
 		/** @const {number} */ customThemePaste : 29,
 		/** @const {number} */ customThemeAdvance : 30,
+		/** @const {number} */ customThemeSelectedCells : 31,
 
 		// state numbers
 		/** @const {number} */ offState : 0,
@@ -294,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 731,
+		/** @const {number} */ versionBuild : 732,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1281,6 +1282,9 @@
 		// advance colour
 		this.customAdvanceColour = [255, 255, 0];
 
+		// selected cells colour
+		this.customSelectedCellsColour = [255, 128, 0];
+
 		// window title element
 		this.titleElement = null;
 
@@ -1392,7 +1396,7 @@
 		/** @type {boolean} */ this.customGridMajor = false;
 
 		// custom theme value
-		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
 		// custom grid colour
 		/** @type {number} */ this.customGridColour = -1;
@@ -7067,7 +7071,7 @@
 		me.menuManager.setAutoUpdate(true);
 
 		return [me.menuManager.showTiming];
-	}
+	};
 
 	// colour theme
 	View.prototype.setNewTheme = function(newTheme, steps, me) {
@@ -16255,6 +16259,7 @@
 		me.customThemeValue[ViewConstants.customThemeSelect] = -1;
 		me.customThemeValue[ViewConstants.customThemePaste] = -1;
 		me.customThemeValue[ViewConstants.customThemeAdvance] = -1;
+		me.customThemeValue[ViewConstants.customThemeSelectedCells] = -1;
 		me.customLabelColour = ViewConstants.labelFontColour;
 		me.customArrowColour = ViewConstants.arrowColour;
 		me.customPolygonColour = ViewConstants.polyColour;
@@ -16360,6 +16365,10 @@
 		// reset advance colour
 		me.customAdvanceColour = [255, 255, 0];
 		me.engine.advanceColour = "rgb(255,255,0)";
+
+		// reset selected cells colour
+		me.customSelectedCellsColour = [255, 128, 0];
+		me.engine.selectedCellsColour = "rgb(255,128,0)";
 
 		// reset waypoints
 		me.waypointManager.reset();

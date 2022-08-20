@@ -1,3 +1,6 @@
+Build 732
+- added [[ COLOR SELECTED R G B|name ]] to define the colour of selected cells during paste
+
 Build 731
 - clear history states when switching to Rainbow mode
 - fix selections with #CXRLE Pos
