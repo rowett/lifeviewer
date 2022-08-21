@@ -1945,155 +1945,131 @@
 		view.tabs[1] = 210;
 		view.tabs[2] = 270;
 		view.tabs[3] = 330;
-		if (view.engine.isNone) {
-			view.helpSections[sectionNum] = [view.lineNo, "Colours"];
-			sectionNum += 1;
-			y = this.renderHelpLine(view, "", "Set:", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Name", view.colourSetName, ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Used", view.patternUsedStates, ctx, x, y, height, helpLine);
-			for (i = 0; i < view.customColourUsed.length; i += 1) {
-				// check if the state is used
-				if (view.customColourUsed[i] !== ViewConstants.stateNotUsed) {
-					// get colour value
-					colourValue = this.rgbString((colourList[i] >> 16) & 255, (colourList[i] >> 8) & 255, colourList[i] & 255);
-					itemName = String(i);
-					
-					// if the colour is custom (but the whole set isn't custom) then add a star to the name
-					if (view.customColourUsed[i] === ViewConstants.stateUsedCustom && !view.allCustom) {
-						itemName += "*";
-					}
 
-					// render the colour box
-					this.renderColourBox(view, colourList[i] >> 16, (colourList[i] >> 8) & 255, colourList[i] & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-					y = this.renderHelpLine(view, itemName, colourValue, ctx, x, y, height, helpLine);
-				}
+		// colour theme information
+		view.helpSections[sectionNum] = [view.lineNo, "Theme"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Theme:", ctx, x, y, height, helpLine);
+		if (!(view.engine.isRuleTree || view.engine.isSuper || view.engine.isNone)) {
+			y = this.renderHelpLine(view, "Name", view.engine.themes[view.engine.colourTheme].name, ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "History", view.historyStates, ctx, x, y, height, helpLine);
+			if (view.engine.multiNumStates <= 2) {
+				y = this.renderHelpLine(view, "Age", view.aliveStates, ctx, x, y, height, helpLine);
+			}
+		}
+		this.renderColourBox(view, view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Background", this.rgbString(view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0]), ctx, x, y, height, helpLine);
+
+		// check for none rule
+		if (view.engine.isNone || view.engine.isRuleTree) {
+			for (i = 1; i < view.engine.multiNumStates; i += 1) {
+				this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+				y = this.renderHelpLine(view, "State " + i, this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
 			}
 		} else {
-			// colour theme information
-			view.helpSections[sectionNum] = [view.lineNo, "Theme"];
-			sectionNum += 1;
-			y = this.renderHelpLine(view, "", "Theme:", ctx, x, y, height, helpLine);
-			if (!(view.engine.isRuleTree || view.engine.isSuper)) {
-				y = this.renderHelpLine(view, "Name", view.engine.themes[view.engine.colourTheme].name, ctx, x, y, height, helpLine);
-				y = this.renderHelpLine(view, "History", view.historyStates, ctx, x, y, height, helpLine);
-				if (view.engine.multiNumStates <= 2) {
-					y = this.renderHelpLine(view, "Age", view.aliveStates, ctx, x, y, height, helpLine);
+			// check for PCA rules
+			if (view.engine.isPCA) {
+				for (i = 1; i < 16; i += 1) {
+					j = i + view.historyStates;
+					this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					itemName = "";
+					if (i & 1) {
+						itemName += "N";
+					}
+					if (i & 2) {
+						itemName += "E";
+					}
+					if (i & 4) {
+						itemName += "S";
+					}
+					if (i & 8) {
+						itemName += "W";
+					}
+					y = this.renderHelpLine(view, itemName, this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
 				}
-			}
-			this.renderColourBox(view, view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "Background", this.rgbString(view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0]), ctx, x, y, height, helpLine);
-
-			// check for none rule
-			if (view.engine.isNone || view.engine.isRuleTree) {
-				for (i = 1; i < view.engine.multiNumStates; i += 1) {
-					this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-					y = this.renderHelpLine(view, "State " + i, this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
+				if (view.historyStates > 0) {
+					j = view.historyStates;
+					this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "Dead", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+					if (view.historyStates > 1) {
+						j = 1;
+						this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+						y = this.renderHelpLine(view, "DeadRamp", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+					}
 				}
 			} else {
-				// check for PCA rules
-				if (view.engine.isPCA) {
-					for (i = 1; i < 16; i += 1) {
-						j = i + view.historyStates;
+				// check for Generations, HROT or Super rules
+				if (view.engine.multiNumStates > 2) {
+					if (view.engine.isSuper) {
+						for (i = 1; i < view.engine.multiNumStates; i += 1) {
+							this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+							y = this.renderHelpLine(view, this.superName(i), this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
+						}
+					} else {
+						// draw the alive state
+						j = view.engine.multiNumStates + view.historyStates - 1; 
 						this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-						itemName = "";
-						if (i & 1) {
-							itemName += "N";
-						}
-						if (i & 2) {
-							itemName += "E";
-						}
-						if (i & 4) {
-							itemName += "S";
-						}
-						if (i & 8) {
-							itemName += "W";
-						}
-						y = this.renderHelpLine(view, itemName, this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
-					}
-					if (view.historyStates > 0) {
-						j = view.historyStates;
-						this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-						y = this.renderHelpLine(view, "Dead", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
-						if (view.historyStates > 1) {
-							j = 1;
+						y = this.renderHelpLine(view, "Alive", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+		
+						// draw dying states
+						for (i = 1; i < view.engine.multiNumStates - 1; i += 1) {
+							j = view.engine.multiNumStates - i + view.historyStates - 1;
 							this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-							y = this.renderHelpLine(view, "DeadRamp", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+							y = this.renderHelpLine(view, "Dying " + i, this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+						}
+						if (view.historyStates > 0) {
+							j = view.historyStates;
+							this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+							y = this.renderHelpLine(view, "Dead", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+							if (view.historyStates > 1) {
+								j = 1;
+								this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+								y = this.renderHelpLine(view, "DeadRamp", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+							}
 						}
 					}
 				} else {
-					// check for Generations, HROT or Super rules
-					if (view.engine.multiNumStates > 2) {
-						if (view.engine.isSuper) {
-							for (i = 1; i < view.engine.multiNumStates; i += 1) {
-								this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-								y = this.renderHelpLine(view, this.superName(i), this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
-							}
-						} else {
-							// draw the alive state
-							j = view.engine.multiNumStates + view.historyStates - 1; 
-							this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-							y = this.renderHelpLine(view, "Alive", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
-			
-							// draw dying states
-							for (i = 1; i < view.engine.multiNumStates - 1; i += 1) {
-								j = view.engine.multiNumStates - i + view.historyStates - 1;
-								this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-								y = this.renderHelpLine(view, "Dying " + i, this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
-							}
-							if (view.historyStates > 0) {
-								j = view.historyStates;
-								this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-								y = this.renderHelpLine(view, "Dead", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
-								if (view.historyStates > 1) {
-									j = 1;
-									this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-									y = this.renderHelpLine(view, "DeadRamp", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
-								}
-							}
-						}
+					// normal theme
+					this.renderColourBox(view, theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "Alive", this.rgbObjectString(theme.aliveRange.startColour), ctx, x, y, height, helpLine);
+	
+					// check if there is a ramp between alive start and end
+					if (theme.aliveRange.startColour.red !== theme.aliveRange.endColour.red || theme.aliveRange.startColour.green !== theme.aliveRange.endColour.green || theme.aliveRange.startColour.blue !== theme.aliveRange.endColour.blue) {
+						this.renderColourBox(view, theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+						y = this.renderHelpLine(view, "AliveRamp", this.rgbObjectString(theme.aliveRange.endColour), ctx, x, y, height, helpLine);
 					} else {
-						// normal theme
-						this.renderColourBox(view, theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-						y = this.renderHelpLine(view, "Alive", this.rgbObjectString(theme.aliveRange.startColour), ctx, x, y, height, helpLine);
-		
-						// check if there is a ramp between alive start and end
-						if (theme.aliveRange.startColour.red !== theme.aliveRange.endColour.red || theme.aliveRange.startColour.green !== theme.aliveRange.endColour.green || theme.aliveRange.startColour.blue !== theme.aliveRange.endColour.blue) {
-							this.renderColourBox(view, theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-							y = this.renderHelpLine(view, "AliveRamp", this.rgbObjectString(theme.aliveRange.endColour), ctx, x, y, height, helpLine);
-						} else {
-							y = this.renderHelpLine(view, "AliveRamp", "    (none)", ctx, x, y, height, helpLine);
-						}
-		
-						// if there are no history states don't draw dead states
-						if (view.historyStates > 0) {
-							this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-							y = this.renderHelpLine(view, "Dead", this.rgbObjectString(theme.deadRange.endColour), ctx, x, y, height, helpLine);
-		
-							// check if there is a ramp between dead start and end
-							if (view.historyStates > 1) {
-								if (theme.deadRange.startColour.red !== theme.deadRange.endColour.red || theme.deadRange.startColour.green !== theme.deadRange.endColour.green || theme.deadRange.startColour.blue !== theme.deadRange.endColour.blue) {
-									this.renderColourBox(view, theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-									y = this.renderHelpLine(view, "DeadRamp", this.rgbObjectString(theme.deadRange.startColour), ctx, x, y, height, helpLine);
-								} else {
-									y = this.renderHelpLine(view, "DeadRamp", "    (none)", ctx, x, y, height, helpLine);
-								}
+						y = this.renderHelpLine(view, "AliveRamp", "    (none)", ctx, x, y, height, helpLine);
+					}
+	
+					// if there are no history states don't draw dead states
+					if (view.historyStates > 0) {
+						this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+						y = this.renderHelpLine(view, "Dead", this.rgbObjectString(theme.deadRange.endColour), ctx, x, y, height, helpLine);
+	
+						// check if there is a ramp between dead start and end
+						if (view.historyStates > 1) {
+							if (theme.deadRange.startColour.red !== theme.deadRange.endColour.red || theme.deadRange.startColour.green !== theme.deadRange.endColour.green || theme.deadRange.startColour.blue !== theme.deadRange.endColour.blue) {
+								this.renderColourBox(view, theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+								y = this.renderHelpLine(view, "DeadRamp", this.rgbObjectString(theme.deadRange.startColour), ctx, x, y, height, helpLine);
+							} else {
+								y = this.renderHelpLine(view, "DeadRamp", "    (none)", ctx, x, y, height, helpLine);
 							}
 						}
 					}
 				}
 			}
-	
-			// check for History rules
-			if (view.engine.isLifeHistory) {
-				for (i = 3; i <= 6; i += 1) {
-					value = 128 + ViewConstants.stateMap[i];
-					colourValue = this.rgbString(view.engine.redChannel[value], view.engine.greenChannel[value], view.engine.blueChannel[value]);
-					itemName = ViewConstants.stateNames[i];
-					
-					// render the colour boX
-					this.renderColourBox(view, view.engine.redChannel[value], view.engine.greenChannel[value], view.engine.blueChannel[value], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-					y = this.renderHelpLine(view, itemName, colourValue, ctx, x, y, height, helpLine);
-				}
+		}
+
+		// check for History rules
+		if (view.engine.isLifeHistory) {
+			for (i = 3; i <= 6; i += 1) {
+				value = 128 + ViewConstants.stateMap[i];
+				colourValue = this.rgbString(view.engine.redChannel[value], view.engine.greenChannel[value], view.engine.blueChannel[value]);
+				itemName = ViewConstants.stateNames[i];
+				
+				// render the colour boX
+				this.renderColourBox(view, view.engine.redChannel[value], view.engine.greenChannel[value], view.engine.blueChannel[value], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+				y = this.renderHelpLine(view, itemName, colourValue, ctx, x, y, height, helpLine);
 			}
 		}
 

@@ -2251,6 +2251,11 @@
 		    // result
 		    result = [];
 
+		// ensure altSpecified propagates from HROT since for some reason it doesn't work on the forum
+		if (this.isHROT) {
+			this.altSpecified = this.HROT.altSpecified;
+		}
+
 		// for alternating rules or Margolus skip odd generations
 		if ((this.isMargolus || this.altSpecified) && ((this.counter & 1) !== 0)) {
 			return result;

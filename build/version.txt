@@ -1,3 +1,10 @@
+Build 735
+- Grid UI control now uses grid colour for background grid
+
+Build 734
+- fixed "none" rule custom colours not displaying in Help
+- fixed Identify sometimes failing with alternating HROT rules
+
 Build 733
 - fix died generation for HROT patterns hitting boundary
 

@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 733,
+		/** @const {number} */ versionBuild : 734,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -14115,6 +14115,26 @@
 				this.iconManager.recolourCol = (255 << 24) | (element & 255) << 16 | (((element >> 8) & 255) << 8) | (element >> 16);
 			} else {
 				this.iconManager.recolourCol = ((element >> 16) << 24) | (((element >> 8) & 255) << 16) | ((element & 255) << 8) | 255;
+			}
+		}
+
+		// check for custom grid
+		element = this.customThemeValue[ViewConstants.customThemeGrid];
+		if (element !== -1) {
+			this.iconManager.recolour = true;
+			if (this.engine.littleEndian) {
+				this.iconManager.recolourGrid = (255 << 24) | (element & 255) << 16 | (((element >> 8) & 255) << 8) | (element >> 16);
+			} else {
+				this.iconManager.recolourGrid = ((element >> 16) << 24) | (((element >> 8) & 255) << 16) | ((element & 255) << 8) | 255;
+			}
+		} else {
+			// set default menu colour (will colour icons correctly)
+			this.iconManager.recolour = true;
+			element = (112 << 16) | (112 << 8) | 112;
+			if (this.engine.littleEndian) {
+				this.iconManager.recolourGrid = (255 << 24) | (element & 255) << 16 | (((element >> 8) & 255) << 8) | (element >> 16);
+			} else {
+				this.iconManager.recolourGrid = ((element >> 16) << 24) | (((element >> 8) & 255) << 16) | ((element & 255) << 8) | 255;
 			}
 		}
 

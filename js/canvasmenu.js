@@ -380,6 +380,9 @@
 		// recolour shade
 		this.recolourCol = -1;
 
+		// recolour grid shade
+		this.recolourGrid = -1;
+
 		// greyed out shade
 		this.greyedOutCol = 0;
 
@@ -399,7 +402,8 @@
 	IconManager.prototype.draw = function(icon, x, y, locked) {
 		var data = null,
 			data32 = null,
-			i = 0;
+			i = 0,
+			recolourGrid = 0;
 
 		// check if image load
 		if (this.iconsImage.width > 0) {
@@ -449,6 +453,10 @@
 				for (i = 0; i < data32.length; i += 1) {
 					if (data32[i] === 0xffffffff) {
 						data32[i] = this.recolourCol;
+					} else {
+						if (data32[i] === 0xff707070) {
+							data32[i] = this.recolourGrid;
+						}
 					}
 				}
 	
