@@ -5178,6 +5178,16 @@
 			if (this.anythingAlive) {
 				// check for reverse direction
 				this.checkReverse(view, this.counter);
+
+				// for PCA clear the next generation
+				if (this.isPCA) {
+					if ((this.counter & 1) === 1) {
+						this.colourGrid.whole.fill(0);
+					} else {
+						this.nextColourGrid.whole.fill(0);
+					}
+				}
+
 				this.nextGeneration(false, true, graphDisabled, view.identify, view);
 				view.fixedPointCounter += view.refreshRate;
 				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
@@ -5188,6 +5198,16 @@
 					// clear the other buffer
 					this.anythingAlive = 1;
 					this.checkReverse(view, this.counter);
+
+					// for PCA clear the next generation
+					if (this.isPCA) {
+						if ((this.counter & 1) === 1) {
+							this.colourGrid.whole.fill(0);
+						} else {
+							this.nextColourGrid.whole.fill(0);
+						}
+					}
+
 					this.nextGeneration(false, false, graphDisabled, view.identify, view);
 					this.anythingAlive = 0;
 					this.counter -= 1;
@@ -5205,16 +5225,37 @@
 		if (this.counter < targetGen) {
 			if (this.anythingAlive) {
 				this.checkReverse(view, this.counter);
+
+				// for PCA clear the next generation
+				if (this.isPCA) {
+					if ((this.counter & 1) === 1) {
+						this.colourGrid.whole.fill(0);
+					} else {
+						this.nextColourGrid.whole.fill(0);
+					}
+				}
+
 				this.nextGeneration(statsOn, true, graphDisabled, view.identify, view);
 				view.fixedPointCounter += view.refreshRate;
 				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
 					this.convertToPensTile();
 				}
+
 				// check for just died for 2 state patterns
 				if (this.anythingAlive === 0 && this.multiNumStates <= 2) {
 					// clear the other buffer
 					this.anythingAlive = 1;
 					this.checkReverse(view, this.counter);
+
+					// for PCA clear the next generation
+					if (this.isPCA) {
+						if ((this.counter & 1) === 1) {
+							this.colourGrid.whole.fill(0);
+						} else {
+							this.nextColourGrid.whole.fill(0);
+						}
+					}
+
 					this.nextGeneration(false, false, graphDisabled, view.identify, view);
 					this.anythingAlive = 0;
 					this.counter -= 1;

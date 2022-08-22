@@ -1,3 +1,7 @@
+Build 736
+- fixed PCA paste in OR mode
+- fixed undo/redo with PCA double buffering
+
 Build 735
 - Grid UI control now uses grid colour for background grid
 

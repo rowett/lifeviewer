@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 734,
+		/** @const {number} */ versionBuild : 736,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -11922,10 +11922,15 @@
 			for (y = 0; y < height; y += 1) {
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
-					if (state > 0) {
-						wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, state, true);
+					if (this.engine.isPCA) {
+						current = this.engine.getState(cellX + x, cellY + y, false);
+						wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, current | state, true);
+					} else {
+						if (state > 0) {
+							wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, state, true);
+						}
+						i += 1;
 					}
-					i += 1;
 				}
 			}
 			break;
@@ -13520,6 +13525,15 @@
 
 	// run forward to a given generation (used by redo)
 	View.prototype.runForwardTo = function(targetGen) {
+		// for PCA clear the next generation
+		if (this.engine.counter < targetGen) {
+			if ((this.engine.counter & 1) === 1) {
+				this.engine.colourGrid.whole.fill(0);
+			} else {
+				this.engine.nextColourGrid.whole.fill(0);
+			}
+		}
+
 		// compute each generation up to just before the target with stats off (for speed)
 		while (this.engine.counter < targetGen - 1) {
 			if (this.engine.anythingAlive) {
