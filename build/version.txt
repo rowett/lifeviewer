@@ -1,3 +1,6 @@
+Build 739
+- fixed blank PCA patterns not showing "New Pattern" message
+
 Build 738
 - fixed Triangular rules with Torus bounded grid
 

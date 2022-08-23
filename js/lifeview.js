@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 738,
+		/** @const {number} */ versionBuild : 739,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -16121,9 +16121,10 @@
 			me.engine.boundedGridVerticalTwist = pattern.gridVerticalTwist;
 
 			// copy states used and state count
-			me.patternStateCount = new Uint32Array(me.patternStates);
+			numberValue = me.engine.multiNumStates === -1 ? 2 : me.engine.multiNumStates;
+			me.patternStateCount = new Uint32Array(numberValue);
 
-			for (i = 0; i < me.patternStates; i += 1) {
+			for (i = 0; i < numberValue; i += 1) {
 				me.patternStateCount[i] = me.manager.stateCount[i];
 			}
 		} else {
