@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 736,
+		/** @const {number} */ versionBuild : 737,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -7092,6 +7092,10 @@
 					this.themeSelections[i].current = [true];
 				}
 			}
+
+			// mark that the Theme has changed so relevant Icons recolour
+			me.iconManager.recolour = true;
+			me.iconManager.recolourGrid = me.engine.gridLineColour;
 		}
 	};
 
@@ -8087,7 +8091,7 @@
 			for (y = bottomY; y <= topY; y += 1) {
 				for (x = leftX; x <= rightX; x += 1) {
 					state = this.engine.getState(x, y, false);
-					if (this.engine.multiNumStates > 2 && !(this.engine.isPCA || this.engine.isRuleTree) && state > 0) { // TBD 
+					if (this.engine.multiNumStates > 2 && !(this.engine.isSuper || this.engine.isPCA || this.engine.isRuleTree) && state > 0) { // TBD 
 						state = this.engine.multiNumStates - state;
 					}
 					if (state === replace) {
@@ -11758,7 +11762,7 @@
 			for (y = zoomBox.bottomY; y <= zoomBox.topY; y += 1) {
 				for (x = zoomBox.leftX; x <= zoomBox.rightX; x += 1) {
 					state = me.engine.getState(x, y, false);
-					if (state > 0 && me.engine.multiNumStates > 2 && !(me.engine.isPCA || me.engine.isRuleTree)) {
+					if (state > 0 && me.engine.multiNumStates > 2 && !(me.engine.isSuper || me.engine.isPCA || me.engine.isRuleTree)) {
 						state = me.engine.multiNumStates - state;
 					}
 					me.pasteBuffer[i] = state;
@@ -11929,8 +11933,8 @@
 						if (state > 0) {
 							wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, state, true);
 						}
-						i += 1;
 					}
+					i += 1;
 				}
 			}
 			break;
@@ -12925,7 +12929,7 @@
 				for (y = y1; y <= y2; y += 1) {
 					for (x = x1; x <= x2; x += 1) {
 						state = me.engine.getState(x + xOff, y + yOff, false);
-						if (!(me.engine.isPCA || me.engine.isRuleTree) && numStates > 2 && state > 0) {
+						if (!(me.engine.isSuper || me.engine.isPCA || me.engine.isRuleTree) && numStates > 2 && state > 0) {
 							state = numStates - state;
 						}
 						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, numStates - state - 1, true);
@@ -15625,7 +15629,7 @@
 					themeRequested = 10;
 				} else {
 					// check for Generations or HROT
-					if (this.engine.multiNumStates > 2 && !(this.engine.isPCA || this.engine.isRuleTree)) {
+					if (this.engine.multiNumStates > 2 && !(this.engine.isSuper || this.engine.isPCA || this.engine.isRuleTree)) {
 						// multi state uses theme 11
 						themeRequested = 11;
 					} else {
@@ -16552,7 +16556,7 @@
 
 			// check rainbow and remove if not supported
 			if (me.engine.rainbow) {
-				if (me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isRuleTree || me.engine.isMargolus) {
+				if (me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isRuleTree || me.engine.isMargolus) {
 					me.engine.rainbow = false;
 				}
 			}

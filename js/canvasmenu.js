@@ -402,8 +402,7 @@
 	IconManager.prototype.draw = function(icon, x, y, locked) {
 		var data = null,
 			data32 = null,
-			i = 0,
-			recolourGrid = 0;
+			i = 0;
 
 		// check if image load
 		if (this.iconsImage.width > 0) {

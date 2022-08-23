@@ -1,3 +1,8 @@
+Build 737
+- Grid UI control now changes grid background when Themes change
+- fixed PCA paste not working
+- fixed invert selection for [R]Super rules
+
 Build 736
 - fixed PCA paste in OR mode
 - fixed undo/redo with PCA double buffering
