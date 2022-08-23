@@ -11059,6 +11059,89 @@
 			} else {
 				grid[topY + 1][(leftX - 1) >> 4] &= ~(1 << (~(leftX - 1) & 15));
 			}
+
+			if (needExtra) {
+				leftX += 1;
+				rightX += 1;
+
+				// bottom right corner
+				sourceX = leftX + ((-horizShift + width) % width);
+				sourceY = bottomY + ((height - 1 + vertShift + height) % height);
+				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+					grid[bottomY - 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+				} else {
+					grid[bottomY - 1][(rightX + 1) >> 4] &= ~(1 << (~(rightX + 1) & 15));
+				}
+
+				// bottom left corner
+				sourceX = leftX + ((width - 1 - horizShift + width) % width);
+				sourceY = bottomY + ((height - 1 - vertShift + height) % height);
+				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+					grid[bottomY - 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+				} else {
+					grid[bottomY - 1][(leftX - 1) >> 4] &= ~(1 << (~(leftX - 1) & 15));
+				}
+
+				// top right corner
+				sourceX = leftX + ((horizShift + width) % width);
+				sourceY = bottomY + ((vertShift + height) % height);
+				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+					grid[topY + 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+				} else {
+					grid[topY + 1][(rightX + 1) >> 4] &= ~(1 << (~(rightX + 1) & 15));
+				}
+
+				// top left corner
+				sourceX = leftX + ((width - 1 + horizShift + width) % width);
+				sourceY = bottomY + ((-vertShift + height) % height);
+				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+					grid[topY + 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+				} else {
+					grid[topY + 1][(leftX - 1) >> 4] &= ~(1 << (~(leftX - 1) & 15));
+				}
+
+				leftX -= 2;
+				rightX -= 2;
+
+				// bottom right corner
+				sourceX = leftX + ((-horizShift + width) % width);
+				sourceY = bottomY + ((height - 1 + vertShift + height) % height);
+				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+					grid[bottomY - 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+				} else {
+					grid[bottomY - 1][(rightX + 1) >> 4] &= ~(1 << (~(rightX + 1) & 15));
+				}
+
+				// bottom left corner
+				sourceX = leftX + ((width - 1 - horizShift + width) % width);
+				sourceY = bottomY + ((height - 1 - vertShift + height) % height);
+				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+					grid[bottomY - 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+				} else {
+					grid[bottomY - 1][(leftX - 1) >> 4] &= ~(1 << (~(leftX - 1) & 15));
+				}
+
+				// top right corner
+				sourceX = leftX + ((horizShift + width) % width);
+				sourceY = bottomY + ((vertShift + height) % height);
+				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+					grid[topY + 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+				} else {
+					grid[topY + 1][(rightX + 1) >> 4] &= ~(1 << (~(rightX + 1) & 15));
+				}
+
+				// top left corner
+				sourceX = leftX + ((width - 1 + horizShift + width) % width);
+				sourceY = bottomY + ((-vertShift + height) % height);
+				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+					grid[topY + 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+				} else {
+					grid[topY + 1][(leftX - 1) >> 4] &= ~(1 << (~(leftX - 1) & 15));
+				}
+
+				leftX += 1;
+				rightX += 1;
+			}
 		}
 	};
 
