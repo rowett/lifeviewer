@@ -13530,11 +13530,13 @@
 	// run forward to a given generation (used by redo)
 	View.prototype.runForwardTo = function(targetGen) {
 		// for PCA clear the next generation
-		if (this.engine.counter < targetGen) {
-			if ((this.engine.counter & 1) === 1) {
-				this.engine.colourGrid.whole.fill(0);
-			} else {
-				this.engine.nextColourGrid.whole.fill(0);
+		if (this.engine.isPCA) {
+			if (this.engine.counter < targetGen) {
+				if ((this.engine.counter & 1) === 1) {
+					this.engine.colourGrid.whole.fill(0);
+				} else {
+					this.engine.nextColourGrid.whole.fill(0);
+				}
 			}
 		}
 
