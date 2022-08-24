@@ -1,3 +1,6 @@
+Build 740
+- fixed an issue with Go To Gen in benchmark mode not growing the grid
+
 Build 739
 - fixed blank PCA patterns not showing "New Pattern" message
 - fixed issue with redo

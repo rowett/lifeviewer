@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 739,
+		/** @const {number} */ versionBuild : 740,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6437,6 +6437,16 @@
 
 			// paste any RLE snippets
 			me.pasteRLEList();
+
+			// check if grid buffer needs to grow
+			// (normally this check happens at render time but we may have processed more generations than expected by that function)
+			if (me.engine.counter && me.engine.anythingAlive) {
+				me.middleBox.leftX = me.engine.zoomBox.leftX;
+				me.middleBox.bottomY = me.engine.zoomBox.bottomY;
+				me.middleBox.rightX = me.engine.zoomBox.rightX;
+				me.middleBox.topY = me.engine.zoomBox.topY;
+				me.checkGridSize(me, me.middleBox);
+			}
 
 			// if paste every is defined then always flag there are alive cells
 			// since cells will appear in the future
