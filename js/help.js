@@ -758,6 +758,7 @@
 		y = this.renderHelpLine(view, "5", "reset angle", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "'", "tilt down", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "/", "tilt up", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "@", "reset tilt", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// view controls, only display if not in multistate mode

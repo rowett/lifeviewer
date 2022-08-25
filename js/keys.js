@@ -455,18 +455,25 @@
 
 			// single quote for tilt up
 			case 192:
-				if (!me.tiltItem.locked) {
-					// get the current value
-					value = me.tiltItem.current[0];
-
-					// decrease tilt
-					value += 0.1;
-					if (value > ViewConstants.maxTilt) {
-						value = ViewConstants.maxTilt;
+				if (event.shiftKey) {
+					// reset tilt
+					if (!me.tiltItem.locked) {
+						me.tiltItem.current = me.viewTiltRange([0, 0], true, me);
 					}
-
-					// update UI
-					me.tiltItem.current = me.viewTiltRange([value, value], true, me);
+				} else {
+					if (!me.tiltItem.locked) {
+						// get the current value
+						value = me.tiltItem.current[0];
+	
+						// decrease tilt
+						value += 0.1;
+						if (value > ViewConstants.maxTilt) {
+							value = ViewConstants.maxTilt;
+						}
+	
+						// update UI
+						me.tiltItem.current = me.viewTiltRange([value, value], true, me);
+					}
 				}
 				break;
 

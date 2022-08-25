@@ -1,3 +1,8 @@
+Build 741
+- hide cell info and selection boxes during initialization
+- extended Tilt so range is now -5 to +5
+- added hotkey @ to reset Tilt to 0
+
 Build 740
 - fixed an issue with Go To Gen in benchmark mode not growing the grid
 

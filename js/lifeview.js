@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 740,
+		/** @const {number} */ versionBuild : 741,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -338,7 +338,7 @@
 		/** @const {number} */ maxZoom : 64,
 		
 		// minimum and maximum tilt
-		/** @const {number} */ minTilt : 0,
+		/** @const {number} */ minTilt : -5,
 		/** @const {number} */ maxTilt : 5,
 
 		// minimum and maximum negative zoom
@@ -4859,6 +4859,7 @@
 		// draw selection size
 		if ((this.isSelection || this.drawingSelection) && (!this.displayHelp || this.displayErrors)) {
 			this.selSizeLabel.enabled = true;
+			this.selSizeLabel.deleted = false;
 			if (this.selectionBox.rightX > this.selectionBox.leftX) {
 				xPos = this.selectionBox.rightX - this.selectionBox.leftX + 1;
 			} else {
@@ -5590,7 +5591,7 @@
 		me.popValue.toolTip = "alive " + me.engine.population;
 		if (me.finitelyBounded()) {
 			// show density
-            me.birthsValue.toolTip = "density " + (((me.engine.population * 100) / (me.engine.boundedGridHeight * me.engine.boundedGridWidth)) | 0) + "%";
+			me.birthsValue.toolTip = "density " + (((me.engine.population * 100) / (me.engine.boundedGridHeight * me.engine.boundedGridWidth)) | 0) + "%";
 		} else {
 			// show births and deaths
 			me.birthsValue.toolTip = "births " + me.engine.births;
@@ -15800,6 +15801,10 @@
 		this.genSpeed = 60;
 		this.gensPerStep = 1;
 		this.speedRange.current = this.viewSpeedRange([this.speedIndex(), 1], true, this);
+
+		// hide labels
+		this.xyLabel.deleted = true;
+		this.selSizeLabel.deleted = true;
 
 		// attempt to load the pattern
 		this.origDisplayWidth = this.displayWidth;
