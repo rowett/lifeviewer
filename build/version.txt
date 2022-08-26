@@ -1,3 +1,10 @@
+Build 743
+- improve handling when rule fails to load
+- add dead zone to Tilt slider
+
+Build 742
+- process any script commands when rule fails to load
+
 Build 741
 - hide cell info and selection boxes during initialization
 - extended Tilt so range is now -5 to +5

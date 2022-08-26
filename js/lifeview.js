@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 741,
+		/** @const {number} */ versionBuild : 743,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -360,6 +360,9 @@
 
 		// dead zone factor in speed control
 		/** @const {number} */ deadZoneSpeed : 0.1,
+
+		// dead zone factor in tilt control
+		/** @const {number} */ deadZoneTilt : 0.05,
 
 		// fixed font
 		/** @const {string} */ fixedFontFamily : "Courier",
@@ -3963,7 +3966,7 @@
 
 		// update tilt control if available
 		if (this.tiltItem) {
-			this.tiltItem.current = this.viewTiltRange([this.engine.tilt, this.engine.tilt], false, this);
+			this.tiltItem.current = this.viewTiltRange([this.convertFromTilt(this.engine.tilt), this.engine.tilt], false, this);
 		}
 	};
 	
@@ -5159,7 +5162,7 @@
 						// set tilt and update tilt control
 						me.engine.tilt = currentWaypoint.tilt;
 						if (me.tiltItem) {
-							me.tiltItem.current = [me.engine.tilt, me.engine.tilt];
+							me.tiltItem.current = [me.convertFromTilt(me.engine.tilt), me.engine.tilt];
 						}
 	
 						// set layers
@@ -7162,9 +7165,7 @@
 
 	// set playback speed
 	View.prototype.viewSpeedRange = function(newValue, change, me) {
-		var perSPart = 1,
-		    stepPart = 1,
-		    label = "",
+		var label = "",
 		    value = me.speedIndex();
 
 		// check if changing
@@ -7179,8 +7180,6 @@
 		}
 
 		// compute the label
-		perSPart = Math.sqrt((me.genSpeed - ViewConstants.minGenSpeed) / (me.refreshRate - ViewConstants.minGenSpeed));
-		stepPart = (me.gensPerStep - ViewConstants.minStepSpeed) / (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed);
 		if (Math.round(me.genSpeed) < me.refreshRate) {
 			label = Math.round(me.genSpeed) + "/s";
 		} else {
@@ -7259,7 +7258,7 @@
 		// reset tilt
 		me.engine.tilt = me.defaultTilt;
 		if (me.tiltItem) {
-			me.tiltItem.current = [me.defaultTilt, me.defaultTilt];
+			me.tiltItem.current = [me.convertFromTilt(me.defaultTilt), me.defaultTilt];
 		}
 
 		// reset x and y
@@ -8571,6 +8570,47 @@
 		return [me.engine.angle, me.engine.angle];
 	};
 
+	// convert Tilt value to 0..1
+	View.prototype.convertFromTilt = function(value) {
+		var result = 0,
+		    mult = 0.5 / (0.5 - ViewConstants.deadZoneTilt / 2);
+
+		result = (value - ViewConstants.minTilt) / (ViewConstants.maxTilt - ViewConstants.minTilt);
+		if (result < (0.5 - ViewConstants.deadZoneTilt / 2)) {
+			result *= mult;
+		} else {
+			if (result > (0.5 + ViewConstants.deadZoneTilt / 2)) {
+				result -= (0.5 + ViewConstants.deadZoneTilt / 2);
+				result = result * mult + 0.5;
+			} else {
+				result = 0.5;
+			}
+		}
+		
+		return result;
+	};
+
+	// convert 0..1 to the Tilt value
+	View.prototype.convertToTilt = function(value) {
+		var result = 0,
+		    mult = 0.5 / (0.5 - ViewConstants.deadZoneTilt / 2);
+		
+		// ignore dead zone
+		if (value < (0.5 - ViewConstants.deadZoneTilt / 2)) {
+			value *= mult;
+		} else {
+			if (value > (0.5 + ViewConstants.deadZoneTilt / 2)) {
+				value -= (0.5 + ViewConstants.deadZoneTilt / 2);
+				value = value * mult + 0.5;
+			} else {
+				value = 0.5;
+			}
+		}
+
+		result = (ViewConstants.maxTilt - ViewConstants.minTilt) * value + ViewConstants.minTilt;
+		return result;
+	};
+
 	// tilt range
 	View.prototype.viewTiltRange = function(newValue, change, me) {
 		// check if changing
@@ -8579,11 +8619,11 @@
 			me.manualChange = true;
 
 			// set tilt
-			me.engine.tilt = newValue[0];
+			me.engine.tilt = me.convertToTilt(newValue[0]);
 		}
 		
 		// return value
-		return [me.engine.tilt, me.engine.tilt];
+		return [newValue[0], me.engine.tilt];
 	};
 
 	// layers range
@@ -10355,7 +10395,7 @@
 
 		// update tilt control if available
 		if (this.tiltItem) {
-			this.tiltItem.current = this.viewTiltRange([this.engine.tilt, this.engine.tilt], false, this);
+			this.tiltItem.current = this.viewTiltRange([this.convertFromTilt(this.engine.tilt), this.engine.tilt], false, this);
 		}
 	};
 
@@ -14503,7 +14543,7 @@
 		this.depthItem.toolTip = "depth between layers [P / L]";
 
 		// add the tilt range
-		this.tiltItem = this.viewMenu.addRangeItem(this.viewTiltRange, Menu.west, 0, 0, 40, 292, ViewConstants.maxTilt, ViewConstants.minTilt, 0, true, "Tilt ", "", 1);
+		this.tiltItem = this.viewMenu.addRangeItem(this.viewTiltRange, Menu.west, 0, 0, 40, 292, 0, 1, 0.5, true, "Tilt ", "", 1);
 		this.tiltItem.toolTip = "camera tilt [' / /]";
 
 		// add the angle range
@@ -15833,6 +15873,9 @@
 
 	// complete pattern start process after lookup failure
 	View.prototype.completeStartFailed = function(pattern, args, me) {
+		// add the pattern comments to the args
+		args[args.length] = pattern.title;
+		args[args.length] = pattern.numStates;
 		me.manager.failureReason = me.lastFailReason;
 		me.manager.executable = true;
 		me.completeStart(null, args, me);
@@ -15854,7 +15897,8 @@
 		    numStatesForRule = 0,
 		    name = "",
 		    growX = false,
-		    growY = false;
+		    growY = false,
+		    comments = "";
 
 		// check for Edge browser
 		if (window.navigator.userAgent.indexOf("Edge") !== -1) {
@@ -16472,211 +16516,222 @@
 		me.standardStep = true;
 		me.standardGPS = true;
 
-		// copy pattern to center
-		if (!pattern) {
-			me.setMenuColours();
-		} else {
-			if (me.engine.isLifeHistory) {
-				me.colourList = [0, 255 << 8, 128, (216 << 16) | (255 << 8) | 216, 255 << 16, (255 << 16) | (255 << 8), (96 << 16) | ( 96 << 8) | 96];
-				me.colourSetName = "[R]History";
-			} else {
-				me.colourList = ColourManager.defaultSet();
-				me.colourSetName = "(default)";
-			}
-
-			// reset controls a script can overwrite
-			me.resetScriptControls();
-
-			// set random seed
-			me.randomSeed = Date.now().toString();
-
-			// check for fullscreen not in popup
-			if (!me.isInPopup && DocConfig.fullScreen) {
-				me.displayWidth = document.body.clientWidth & ~7;
-				me.displayHeight = window.innerHeight - 128;
-				if (me.displayWidth < ViewConstants.minViewerWidth) {
-					me.displayWidth = ViewConstants.minViewerWidth;
-				}
-				if (me.displayHeight < ViewConstants.minViewerHeight) {
-					me.displayHeight = ViewConstants.minViewerHeight;
-				}
-				resizeRequired = true;
-			}
-
-			// read any script in the title
+		// get the comments from the pattern
+		if (pattern) {
 			if (pattern.title) {
-				// decode any script commands
-				numberValue = pattern.numStates;
-				if (me.engine.isLifeHistory) {
-					numberValue = 7;
-				}
-				if (me.engine.isPCA) {
-					numberValue = 16;
-				}
-				if (me.engine.isSuper) {
-					numberValue = 26;
-				}
-				me.readScript(pattern.title, numberValue);
-
-				// set errors to display if any found
-				if (me.scriptErrors.length) {
-					me.displayErrors = 1;
-				}
-
-				// override thumbnail if specified
-				if (me.thumbnail && ignoreThumbnail) {
-					me.thumbnail = false;
-				}
-
-				// check whether to resize canvas width based on script commands
-				if (me.requestedWidth > -1) {
-					// ensure width is a multiple of 8
-					me.requestedWidth &= ~7;
-
-					// check if the width is different than the current width
-					if (me.requestedWidth !== me.displayWidth) {
-						me.displayWidth = me.requestedWidth;
-						resizeRequired = true;
-					}
-				}
-
-				// check whether to resize canvas height based on script commands
-				if (me.requestedHeight > -1) {
-					// check if the height is different than the current height
-					if (me.requestedHeight !== me.displayHeight) {
-						me.displayHeight = me.requestedHeight;
-						resizeRequired = true;
-					}
-				}
-
-				// check whether to resize popup window
-				if (me.isInPopup) {
-					if (me.requestedPopupWidth > -1) {
-						me.requestedPopupWidth &= ~7;
-						if (me.requestedPopupWidth !== me.displayWidth) {
-							me.displayWidth = me.requestedPopupWidth;
-							resizeRequired = true;
-						}
-					} else {
-						if (me.displayWidth < ViewConstants.minViewerWidth) {
-							me.displayWidth = ViewConstants.minViewerWidth;
-						}
-					}
-
-					if (me.requestedPopupHeight > -1) {
-						if (me.requestedPopupHeight !== me.displayHeight) {
-							me.displayHeight = me.requestedPopupHeight;
-							resizeRequired = true;
-						}
-					}
-				}
+				comments = pattern.title;
 			}
-
-			// check rainbow and remove if not supported
-			if (me.engine.rainbow) {
-				if (me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isRuleTree || me.engine.isMargolus) {
-					me.engine.rainbow = false;
-				}
-			}
-
-			// remove history states if pattern is not executable or rule does not support them
-			if (!me.executable || me.engine.isRuleTree || me.engine.isSuper) {
-				me.historyStates = 0;
-			}
-
-			// initialise random number generator from seed
-			me.randGen.init(me.randomSeed);
-
-			// check if popup width has changed
-			if (me.isInPopup) {
-				me.origDisplayWidth = me.displayWidth;
-				me.origDisplayHeight = me.displayHeight;
-				me.scalePopup();
-			}
-
-			// if pattern is too big and has no paste commands then generate error
-			if (pattern.tooBig && me.pasteList.length === 0) {
-				me.executable = false;
-			}
-
-			// setup the state list for drawing
-			me.setupStateList();
-
-			// set the menu colours
+		} else{
+			comments = args[1];
 			me.setMenuColours();
+		}
 
-			// update help topic button positions based on window height
-			me.updateTopicButtonsPosition();
+		if (me.engine.isLifeHistory) {
+			me.colourList = [0, 255 << 8, 128, (216 << 16) | (255 << 8) | 216, 255 << 16, (255 << 16) | (255 << 8), (96 << 16) | ( 96 << 8) | 96];
+			me.colourSetName = "[R]History";
+		} else {
+			me.colourList = ColourManager.defaultSet();
+			me.colourSetName = "(default)";
+		}
 
-			// update selection controls position based on window height
-			me.updateSelectionControlsPosition();
+		// reset controls a script can overwrite
+		me.resetScriptControls();
 
-			// process dynamic themes
-			me.engine.processMultiStateThemes();
+		// set random seed
+		me.randomSeed = Date.now().toString();
 
-			// set history states in engine
-			me.engine.historyStates = me.historyStates;
+		// check for fullscreen not in popup
+		if (!me.isInPopup && DocConfig.fullScreen) {
+			me.displayWidth = document.body.clientWidth & ~7;
+			me.displayHeight = window.innerHeight - 128;
+			if (me.displayWidth < ViewConstants.minViewerWidth) {
+				me.displayWidth = ViewConstants.minViewerWidth;
+			}
+			if (me.displayHeight < ViewConstants.minViewerHeight) {
+				me.displayHeight = ViewConstants.minViewerHeight;
+			}
+			resizeRequired = true;
+		}
 
-			// set alive states in engine
-			me.engine.aliveStates = me.aliveStates;
+		// read any script in the title
+		if (comments !== "") {
+			// decode any script commands
+			if (pattern) {
+				numberValue = pattern.numStates;
+			} else {
+				numberValue = args[2];
+			}
+			if (me.engine.isLifeHistory) {
+				numberValue = 7;
+			}
+			if (me.engine.isPCA) {
+				numberValue = 16;
+			}
+			if (me.engine.isSuper) {
+				numberValue = 26;
+			}
+			me.readScript(comments, numberValue);
 
-			// disable graph if using THUMBLAUNCH and graph not displayed (since there's no way to turn it on)
-			if (me.thumbLaunch && !me.popGraph) {
-				me.graphDisabled = true;
-				me.popGraph = false;
+			// set errors to display if any found
+			if (me.scriptErrors.length) {
+				me.displayErrors = 1;
 			}
 
-			// allocate graph data unless graph disabled
-			me.engine.allocateGraphData(!me.graphDisabled);
+			// override thumbnail if specified
+			if (me.thumbnail && ignoreThumbnail) {
+				me.thumbnail = false;
+			}
 
-			// check pattern size (script command may have increased maximum allowed size)
-			if (pattern.width > me.engine.maxGridSize || pattern.height > me.engine.maxGridSize) {
-				me.failureReason = "Pattern too big (maximum " + me.engine.maxGridSize + "x" + me.engine.maxGridSize + ")";
-				me.tooBig = true;
+			// check whether to resize canvas width based on script commands
+			if (me.requestedWidth > -1) {
+				// ensure width is a multiple of 8
+				me.requestedWidth &= ~7;
+
+				// check if the width is different than the current width
+				if (me.requestedWidth !== me.displayWidth) {
+					me.displayWidth = me.requestedWidth;
+					resizeRequired = true;
+				}
+			}
+
+			// check whether to resize canvas height based on script commands
+			if (me.requestedHeight > -1) {
+				// check if the height is different than the current height
+				if (me.requestedHeight !== me.displayHeight) {
+					me.displayHeight = me.requestedHeight;
+					resizeRequired = true;
+				}
+			}
+
+			// check whether to resize popup window
+			if (me.isInPopup) {
+				if (me.requestedPopupWidth > -1) {
+					me.requestedPopupWidth &= ~7;
+					if (me.requestedPopupWidth !== me.displayWidth) {
+						me.displayWidth = me.requestedPopupWidth;
+						resizeRequired = true;
+					}
+				} else {
+					if (me.displayWidth < ViewConstants.minViewerWidth) {
+						me.displayWidth = ViewConstants.minViewerWidth;
+					}
+				}
+
+				if (me.requestedPopupHeight > -1) {
+					if (me.requestedPopupHeight !== me.displayHeight) {
+						me.displayHeight = me.requestedPopupHeight;
+						resizeRequired = true;
+					}
+				}
+			}
+		}
+
+		// check rainbow and remove if not supported
+		if (me.engine.rainbow) {
+			if (me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isRuleTree || me.engine.isMargolus) {
+				me.engine.rainbow = false;
+			}
+		}
+
+		// remove history states if pattern is not executable or rule does not support them
+		if (!me.executable || me.engine.isRuleTree || me.engine.isSuper) {
+			me.historyStates = 0;
+		}
+
+		// initialise random number generator from seed
+		me.randGen.init(me.randomSeed);
+
+		// check if popup width has changed
+		if (me.isInPopup) {
+			me.origDisplayWidth = me.displayWidth;
+			me.origDisplayHeight = me.displayHeight;
+			me.scalePopup();
+		}
+
+		// if pattern is too big and has no paste commands then generate error
+		if (pattern && pattern.tooBig && me.pasteList.length === 0) {
+			me.executable = false;
+		}
+
+		// setup the state list for drawing
+		me.setupStateList();
+
+		// set the menu colours
+		me.setMenuColours();
+
+		// update help topic button positions based on window height
+		me.updateTopicButtonsPosition();
+
+		// update selection controls position based on window height
+		me.updateSelectionControlsPosition();
+
+		// process dynamic themes
+		me.engine.processMultiStateThemes();
+
+		// set history states in engine
+		me.engine.historyStates = me.historyStates;
+
+		// set alive states in engine
+		me.engine.aliveStates = me.aliveStates;
+
+		// disable graph if using THUMBLAUNCH and graph not displayed (since there's no way to turn it on)
+		if (me.thumbLaunch && !me.popGraph) {
+			me.graphDisabled = true;
+			me.popGraph = false;
+		}
+
+		// allocate graph data unless graph disabled
+		me.engine.allocateGraphData(!me.graphDisabled);
+
+		// check pattern size (script command may have increased maximum allowed size)
+		if (pattern && (pattern.width > me.engine.maxGridSize || pattern.height > me.engine.maxGridSize)) {
+			me.failureReason = "Pattern too big (maximum " + me.engine.maxGridSize + "x" + me.engine.maxGridSize + ")";
+			me.tooBig = true;
+			me.executable = false;
+			me.clearPatternData();
+		}
+
+		// check bounded grid size (script command may have increased maximum allowed size)
+		if (pattern && (pattern.gridType !== -1)) {
+			borderSize = 6;
+
+			// check for LtL or HROT rules
+			if (pattern.isHROT) {
+				borderSize = pattern.rangeHROT * 6;
+			}
+			if (pattern.isLTL) {
+				borderSize = pattern.rangeLTL * 6;
+			}
+			if (pattern.gridWidth >= me.engine.maxGridSize - borderSize || pattern.gridHeight >= me.engine.maxGridSize - borderSize) {
+				// make invalid
+				me.failureReason = "Bounded grid is too big";
 				me.executable = false;
-				me.clearPatternData();
+				me.engine.boundedGridType = -1;
 			}
+		}
 
-			// check bounded grid size (script command may have increased maximum allowed size)
-			if (pattern.gridType !== -1) {
-				borderSize = 6;
+		// update the life rule
+		me.engine.updateLifeRule(me);
 
-				// check for LtL or HROT rules
-				if (pattern.isHROT) {
-					borderSize = pattern.rangeHROT * 6;
-				}
-				if (pattern.isLTL) {
-					borderSize = pattern.rangeLTL * 6;
-				}
-				if (pattern.gridWidth >= me.engine.maxGridSize - borderSize || pattern.gridHeight >= me.engine.maxGridSize - borderSize) {
-					// make invalid
-					me.failureReason = "Bounded grid is too big";
-					me.executable = false;
-					me.engine.boundedGridType = -1;
-				}
-			}
+		// process any rle snippet evolution
+		if (me.isEvolution) {
+			// create the colour index
+			me.engine.createColourIndex();
 
-			// update the life rule
-			me.engine.updateLifeRule(me);
+			// process evolution
+			me.processEvolution();
+		}
 
-			// process any rle snippet evolution
-			if (me.isEvolution) {
-				// create the colour index
-				me.engine.createColourIndex();
+		// mark pattern not clipped to bounded grid
+		me.wasClipped = false;
 
-				// process evolution
-				me.processEvolution();
-			}
-
-			// mark pattern not clipped to bounded grid
-			me.wasClipped = false;
-
-			// get the needed width and height for the grid size
+		// get the needed width and height for the grid size
+		if (pattern) {
 			if (me.engine.boundedGridType !== -1) {
 				// use bounded grid
 				neededWidth = me.engine.boundedGridWidth;
 				neededHeight = me.engine.boundedGridHeight;
-
+	
 				// check for zero dimensions
 				if (neededWidth === 0) {
 					neededWidth = pattern.width;
@@ -16688,165 +16743,167 @@
 				// use pattern
 				neededWidth = pattern.width;
 				neededHeight = pattern.height;
-
+	
 				// add any paste clips
 				if (me.pasteList.length > 0) {
 					neededWidth = me.computeNeededWidth(neededWidth);
 					neededHeight = me.computeNeededHeight(neededHeight);
 				}
 			}
+		}
 
-			// check if the grid is smaller than the pattern and/or bounded grid plus the maximum step speed
-			borderSize = ViewConstants.maxStepSpeed;
-			if (me.engine.isHROT) {
-				borderSize = me.engine.HROT.xrange * 4 + 1;
+		// check if the grid is smaller than the pattern and/or bounded grid plus the maximum step speed
+		borderSize = ViewConstants.maxStepSpeed;
+		if (me.engine.isHROT) {
+			borderSize = me.engine.HROT.xrange * 4 + 1;
+			if (me.engine.boundedGridType !== -1) {
+				borderSize += me.engine.HROT.xrange * 2;
+			}
+			if (me.engine.HROT.type === me.manager.vonNeumannHROT) {
 				if (me.engine.boundedGridType !== -1) {
-					borderSize += me.engine.HROT.xrange * 2;
+					borderSize += me.engine.boundedGridHeight / 2;
+				} else {
+					borderSize += neededWidth / 2;
 				}
-				if (me.engine.HROT.type === me.manager.vonNeumannHROT) {
-					if (me.engine.boundedGridType !== -1) {
-						borderSize += me.engine.boundedGridHeight / 2;
-					} else {
-						borderSize += neededWidth / 2;
-					}
-				}
-				if (borderSize < ViewConstants.maxStepSpeed) {
-					borderSize = ViewConstants.maxStepSpeed;
+			}
+			if (borderSize < ViewConstants.maxStepSpeed) {
+				borderSize = ViewConstants.maxStepSpeed;
+			}
+		}
+
+		// add CXRLE Pos if defined
+		i = me.engine.maxGridSize / 2 - borderSize;
+		if (me.posDefined) {
+			if (me.posXOffset < -i) {
+				me.posXOffset = -i;
+			} else if (me.posXOffset >= i) {
+				me.posXOffset = i - 1;
+			}
+			if (me.posYOffset < -i) {
+				me.posYOffset = -i;
+			} else if (me.posYOffset >= i) {
+				me.posYOffset = i - 1;
+			}
+			me.xOffset += me.posXOffset;
+			me.yOffset += me.posYOffset;
+		}
+
+		// ensure offset in range
+		if (me.xOffset < -i) {
+			me.xOffset = -i;
+		} else if (me.xOffset >= i) {
+			me.xOffset = i - 1;
+		}
+		if (me.yOffset < -i) {
+			me.yOffset = -i;
+		} else if (me.yOffset >= i) {
+			me.yOffset = i - 1;
+		}
+
+		// grow the grid if the pattern is too big to fit
+		growX = (me.engine.width < me.engine.maxGridSize) && ((neededWidth + borderSize + Math.abs(me.xOffset) * 2) >= me.engine.width);
+		growY = (me.engine.height < me.engine.maxGridSize) && ((neededHeight + borderSize + Math.abs(me.yOffset) * 2) >= me.engine.height);
+
+		while (growX || growY) {
+			// grow the grid
+			me.engine.growGrid(growX, growY);
+
+			// update the default x and y
+			if (growX) {
+				me.defaultX += me.engine.width >> 2;
+			}
+			if (growY) {
+				me.defaultY += me.engine.height >> 2;
+			}
+
+			// update the saved x and y
+			if (growX) {
+				me.savedX += me.engine.width >> 2;
+			}
+			if (growY) {
+				me.savedY += me.engine.height >> 2;
+			}
+
+			// check for hex mode
+			if (me.engine.isHex) {
+				if (growY) {
+					me.defaultX -= me.engine.height >> 3;
+					me.savedX -= me.engine.height >> 3;
 				}
 			}
 
-			// add CXRLE Pos if defined
-			i = me.engine.maxGridSize / 2 - borderSize;
-			if (me.posDefined) {
-				if (me.posXOffset < -i) {
-					me.posXOffset = -i;
-				} else if (me.posXOffset >= i) {
-					me.posXOffset = i - 1;
-				}
-				if (me.posYOffset < -i) {
-					me.posYOffset = -i;
-				} else if (me.posYOffset >= i) {
-					me.posYOffset = i - 1;
-				}
-				me.xOffset += me.posXOffset;
-				me.yOffset += me.posYOffset;
-			}
-
-			// ensure offset in range
-			if (me.xOffset < -i) {
-				me.xOffset = -i;
-			} else if (me.xOffset >= i) {
-				me.xOffset = i - 1;
-			}
-			if (me.yOffset < -i) {
-				me.yOffset = -i;
-			} else if (me.yOffset >= i) {
-				me.yOffset = i - 1;
-			}
-
-			// grow the grid if the pattern is too big to fit
+			// see if the grid needs to grow further
 			growX = (me.engine.width < me.engine.maxGridSize) && ((neededWidth + borderSize + Math.abs(me.xOffset) * 2) >= me.engine.width);
 			growY = (me.engine.height < me.engine.maxGridSize) && ((neededHeight + borderSize + Math.abs(me.yOffset) * 2) >= me.engine.height);
+		}
 
-			while (growX || growY) {
-				// grow the grid
-				me.engine.growGrid(growX, growY);
+		// resize the HROT buffer to the current width and height
+		if (pattern && pattern.isHROT) {
+			me.engine.HROT.resize(me.engine.width, me.engine.height);
+		}
 
-				// update the default x and y
-				if (growX) {
-					me.defaultX += me.engine.width >> 2;
-				}
-				if (growY) {
-					me.defaultY += me.engine.height >> 2;
-				}
-
-				// update the saved x and y
-				if (growX) {
-					me.savedX += me.engine.width >> 2;
-				}
-				if (growY) {
-					me.savedY += me.engine.height >> 2;
-				}
-
-				// check for hex mode
-				if (me.engine.isHex) {
-					if (growY) {
-						me.defaultX -= me.engine.height >> 3;
-						me.savedX -= me.engine.height >> 3;
-					}
-				}
-
-				// see if the grid needs to grow further
-				growX = (me.engine.width < me.engine.maxGridSize) && ((neededWidth + borderSize + Math.abs(me.xOffset) * 2) >= me.engine.width);
-				growY = (me.engine.height < me.engine.maxGridSize) && ((neededHeight + borderSize + Math.abs(me.yOffset) * 2) >= me.engine.height);
-			}
-
-			// resize the HROT buffer to the current width and height
-			if (pattern.isHROT) {
-				me.engine.HROT.resize(me.engine.width, me.engine.height);
-			}
-
-			// compute pan X and Y for the pattern on the grid
+		// compute pan X and Y for the pattern on the grid
+		if (pattern) {
 			me.computePanXY(pattern.width, pattern.height);
-			
-			// populate the state 6 mask
-			if (me.engine.isLifeHistory) {
-				// check if state 6 is used
-				if (me.manager.stateCount[6]) {
-					me.engine.populateState6Mask(pattern, me.panX, me.panY);
+		}
+		
+		// populate the state 6 mask
+		if (pattern && me.engine.isLifeHistory) {
+			// check if state 6 is used
+			if (me.manager.stateCount[6]) {
+				me.engine.populateState6Mask(pattern, me.panX, me.panY);
+			}
+		}
+
+		// set custom text colour
+		if (me.customTextColour) {
+			// copy to text colour
+			me.menuManager.notification.colour = "rgb(" + me.customTextColour[0] + "," + me.customTextColour[1] + "," + me.customTextColour[2] + ")";
+		} else {
+			// set default
+			me.menuManager.notification.colour = me.menuManager.notification.priorityColour;
+		}
+
+		// set states used if no custom colours used
+		if (me.customColours === null) {
+			for (i = 0; i < me.colourList.length; i += 1) {
+				if (me.manager.stateCount[i]) {
+					me.customColourUsed[i] = ViewConstants.stateUsedDefault;
+				} else {
+					me.customColourUsed[i] = ViewConstants.stateNotUsed;
 				}
 			}
+		}
 
-			// set custom text colour
-			if (me.customTextColour) {
-				// copy to text colour
-				me.menuManager.notification.colour = "rgb(" + me.customTextColour[0] + "," + me.customTextColour[1] + "," + me.customTextColour[2] + ")";
-			} else {
-				// set default
-				me.menuManager.notification.colour = me.menuManager.notification.priorityColour;
-			}
+		// create LifeHistory overlay colours if required
+		if (me.engine.overlayGrid) {
+			// create overlay colours
+			me.engine.createLHOverlayColours(me.colourList, me.customColours);
 
-			// set states used if no custom colours used
-			if (me.customColours === null) {
-				for (i = 0; i < me.colourList.length; i += 1) {
-					if (me.manager.stateCount[i]) {
-						me.customColourUsed[i] = ViewConstants.stateUsedDefault;
-					} else {
-						me.customColourUsed[i] = ViewConstants.stateNotUsed;
-					}
-				}
-			}
+			// flag overlay drawing required
+			me.engine.drawOverlay = true;
+		} else {
+			me.engine.drawOverlay = false;
+		}
 
-			// create LifeHistory overlay colours if required
-			if (me.engine.overlayGrid) {
-				// create overlay colours
-				me.engine.createLHOverlayColours(me.colourList, me.customColours);
+		// copy pattern to center of grid
+		if (pattern && !pattern.tooBig) {
+			me.copyPatternTo(pattern);
+		}
 
-				// flag overlay drawing required
-				me.engine.drawOverlay = true;
-			} else {
-				me.engine.drawOverlay = false;
-			}
+		// update rule label
+		if (me.patternAliasName !== "") {
+			me.ruleLabel.preText = me.patternAliasName;
+		} else {
+			me.ruleLabel.preText = me.patternRuleName;
+		}
 
-			// copy pattern to center of grid
-			if (!pattern.tooBig) {
-				me.copyPatternTo(pattern);
-			}
-
-			// update rule label
-			if (me.patternAliasName !== "") {
-				me.ruleLabel.preText = me.patternAliasName;
-			} else {
-				me.ruleLabel.preText = me.patternRuleName;
-			}
-
-			// set the tool tip in case the rule name is wider than the label
-			me.ruleLabel.toolTip = me.patternRuleName;
-			
-			// check for alias name
-			if (me.patternAliasName !== "") {
-				me.ruleLabel.toolTip += " alias " + me.patternAliasName;
-			}
+		// set the tool tip in case the rule name is wider than the label
+		me.ruleLabel.toolTip = me.patternRuleName;
+		
+		// check for alias name
+		if (me.patternAliasName !== "") {
+			me.ruleLabel.toolTip += " alias " + me.patternAliasName;
 		}
 
 		// setup oscillator search
@@ -17156,7 +17213,7 @@
 
 		// set the default tilt
 		me.defaultTilt = me.engine.tilt;
-		me.tiltItem.current = [me.defaultTilt, me.defaultTilt];
+		me.tiltItem.current = [me.convertFromTilt(me.defaultTilt), me.defaultTilt];
 
 		// set the default theme
 		me.defaultTheme = me.engine.colourTheme;
@@ -17399,6 +17456,15 @@
 				me.menuManager.notification.notify("Going to generation " + me.startFrom, 15, 10000, 15, false);
 			}
 			me.menuManager.notification.clear(true, false);
+		}
+
+		// turn theme on if pattern error
+		if (!pattern) {
+			var savedNone = me.engine.isNone;
+			me.engine.isNone = false;
+			me.engine.colourChange = 1;
+			me.engine.createColours();
+			me.engine.isNone = savedNone;
 		}
 	};
 

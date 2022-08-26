@@ -442,9 +442,9 @@
 						value = me.tiltItem.current[0];
 	
 						// decrease tilt
-						value -= 0.1;
-						if (value < ViewConstants.minTilt) {
-							value = ViewConstants.minTilt;
+						value -= 0.02;
+						if (value < 0) {
+							value = 0;
 						}
 
 						// update UI
@@ -458,7 +458,7 @@
 				if (event.shiftKey) {
 					// reset tilt
 					if (!me.tiltItem.locked) {
-						me.tiltItem.current = me.viewTiltRange([0, 0], true, me);
+						me.tiltItem.current = me.viewTiltRange([0.5, 0], true, me);
 					}
 				} else {
 					if (!me.tiltItem.locked) {
@@ -466,9 +466,9 @@
 						value = me.tiltItem.current[0];
 	
 						// decrease tilt
-						value += 0.1;
-						if (value > ViewConstants.maxTilt) {
-							value = ViewConstants.maxTilt;
+						value += 0.02;
+						if (value > 1) {
+							value = 1;
 						}
 	
 						// update UI
