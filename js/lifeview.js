@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 743,
+		/** @const {number} */ versionBuild : 744,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4585,7 +4585,7 @@
 			y += h;
 
 			// mod
-			if (!this.lastWasFast && !(this.engine.isHex || this.engine.isTriangular)) {
+			if (!this.lastWasFast && !(this.engine.isHex || this.engine.isTriangular) && !this.engine.isMargolus) {
 				this.identifyModLabel.setPosition(Menu.north, x, y);
 				this.identifyModValueLabel.setPosition(Menu.north, xv, y);
 				y += h;
@@ -5766,7 +5766,7 @@
 		this.identifyBoxLabel.deleted = shown;
 		this.identifyDirectionLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyModLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || this.lastWasFast || (this.engine.isHex || this.engine.isTriangular);
+		this.identifyModLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || this.lastWasFast || (this.engine.isHex || this.engine.isTriangular) || this.engine.isMargolus;
 		this.identifyActiveLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
 		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
@@ -5778,7 +5778,7 @@
 		this.identifyBoxValueLabel.deleted = shown;
 		this.identifyDirectionValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyModValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || this.lastWasFast || (this.engine.isHex || this.engine.isTriangular);
+		this.identifyModValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || this.lastWasFast || (this.engine.isHex || this.engine.isTriangular) || this.engine.isMargolus;
 		this.identifyActiveValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
 		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");

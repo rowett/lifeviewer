@@ -1,3 +1,6 @@
+Build 744
+- remove Mod information in Identify for Margolus and alternating rules
+
 Build 743
 - improve handling when rule fails to load
 - add dead zone to Tilt slider

@@ -156,6 +156,8 @@
 		a.push(["Life without Death", "B3/S012345678"]);
 		a.push(["Life", "B3/S23"]);
 		a.push(["Live Free or Die", "B2/S0"]);
+		a.push(["LifeH", "B3/S23H"]);
+		a.push(["LifeV", "B3/S23V"]);
 		a.push(["Logarithmic replicator rule", "B36/S245"]);
 		a.push(["LongLife", "B345/S5"]);
 		a.push(["Long Life", "B345/S5"]);
