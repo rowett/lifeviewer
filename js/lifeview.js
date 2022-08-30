@@ -3374,12 +3374,20 @@
 
 									// adjust drawing cell position
 									xOff += width >> 2;
+
+									this.defaultX += width >> 2;
+									this.savedX += width >> 2;
+									this.panX += width >> 2;
 								}
 
 								if (height !== this.engine.height) {
 									// same for height
 									height <<= 1;
 									yOff += height >> 2;
+
+									this.defaultY += height >> 2;
+									this.savedY += height >> 2;
+									this.panY += height >> 2;
 								}
 							}
 						}
@@ -3405,12 +3413,20 @@
 
 										// adjust drawing cell position
 										xOff += width >> 2;
+
+										this.defaultX += width >> 2;
+										this.savedX += width >> 2;
+										this.panX += width >> 2;
 									}
 
 									if (height !== this.engine.height) {
 										// same for height
 										height <<= 1;
 										yOff += height >> 2;
+
+										this.defaultY += height >> 2;
+										this.savedY += height >> 2;
+										this.panY += height >> 2;
 									}
 								}
 							}
@@ -3432,12 +3448,20 @@
 
 											// adjust drawing cell position
 											xOff += width >> 2;
+
+											this.defaultX += width >> 2;
+											this.savedX += width >> 2;
+											this.panX += width >> 2;
 										}
 
 										if (height !== this.engine.height) {
 											// same for height
 											height <<= 1;
 											yOff += height >> 2;
+
+											this.defaultY += height >> 2;
+											this.savedY += height >> 2;
+											this.panY += height >> 2;
 										}
 									}
 								}
