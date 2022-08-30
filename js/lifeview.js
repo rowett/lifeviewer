@@ -3365,6 +3365,23 @@
 								}
 							}
 							this.engine.setState(xOff + x, yOff + y, result, true);
+
+							// check for grid growth
+							while (width !== this.engine.width || height !== this.engine.height) {
+								if (width !== this.engine.width) {
+									// double width
+									width <<= 1;
+
+									// adjust drawing cell position
+									xOff += width >> 2;
+								}
+
+								if (height !== this.engine.height) {
+									// same for height
+									height <<= 1;
+									yOff += height >> 2;
+								}
+							}
 						}
 					} else {
 						if (this.engine.isLifeHistory || this.engine.isSuper) {
@@ -3379,6 +3396,23 @@
 									result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
 								}
 								this.engine.setState(xOff + x, yOff + y, result, true);
+
+								// check for grid growth
+								while (width !== this.engine.width || height !== this.engine.height) {
+									if (width !== this.engine.width) {
+										// double width
+										width <<= 1;
+
+										// adjust drawing cell position
+										xOff += width >> 2;
+									}
+
+									if (height !== this.engine.height) {
+										// same for height
+										height <<= 1;
+										yOff += height >> 2;
+									}
+								}
 							}
 						} else {
 							for (x = 0; x < stateRow.length; x += 1) {
@@ -3389,25 +3423,25 @@
 								result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
 								if (result !== dest) {
 									this.engine.setState(xOff + x, yOff + y, result, true);
+
+									// check for grid growth
+									while (width !== this.engine.width || height !== this.engine.height) {
+										if (width !== this.engine.width) {
+											// double width
+											width <<= 1;
+
+											// adjust drawing cell position
+											xOff += width >> 2;
+										}
+
+										if (height !== this.engine.height) {
+											// same for height
+											height <<= 1;
+											yOff += height >> 2;
+										}
+									}
 								}
 							}
-						}
-					}
-
-					// check for grid growth
-					while (width !== this.engine.width || height !== this.engine.height) {
-						if (width !== this.engine.width) {
-							// double width
-							width <<= 1;
-
-							// adjust drawing cell position
-							xOff += width >> 2;
-						}
-
-						if (height !== this.engine.height) {
-							// same for height
-							height <<= 1;
-							yOff += height >> 2;
 						}
 					}
 				}
