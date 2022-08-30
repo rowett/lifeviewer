@@ -1,3 +1,9 @@
+Build 746
+- fixed an issue with grid growing during PASTE
+
+Build 745
+- added script command [[ RANDOMIZE2 ]] to create a random 2-state pattern
+
 Build 744
 - remove Mod information in Identify for Margolus and alternating rules
 

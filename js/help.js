@@ -1266,6 +1266,7 @@
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Randomize:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.randomizeWord, "create random pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.randomize2Word, "create 2-state random pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.randomSeedWord + " <string>", "set random seed", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.randomWidthWord + " <" + ViewConstants.minRandomWidth + ".." + ViewConstants.maxRandomWidth + ">", "set random pattern width", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.randomHeightWord + " <" + ViewConstants.minRandomHeight + ".." + ViewConstants.maxRandomHeight + ">", "set random pattern height", ctx, x, y, height, helpLine);
@@ -2219,6 +2220,7 @@
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Randomize:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Pattern", view.randomizePattern ? "On" : "Off", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "States", view.randomize2Only ? "2" : "All", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Custom Seed", view.randomSeedCustom ? "On" : "Off", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Seed", view.randomSeed, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Width", view.randomWidth, ctx, x, y, height, helpLine);

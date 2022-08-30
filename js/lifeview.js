@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 744,
+		/** @const {number} */ versionBuild : 746,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1092,6 +1092,9 @@
 
 		// whether to randomize pattern
 		/** @type {boolean} */ this.randomizePattern = false;
+
+		// whether to randomize with 2 states or all states
+		/** @type {boolean} */ this.randomize2Only = false;
 
 		// whether randomize pattern in progress
 		/** @type {boolean} */ this.randomizeGuard = false;
@@ -3256,6 +3259,8 @@
 			paste = null,
 			counter = this.engine.counter,
 			mode = ViewConstants.pasteModeOr,
+			width = this.engine.width,
+			height = this.engine.height,
 			source = 0,
 			dest = 0,
 			sourceFlag = 0,
@@ -3386,6 +3391,23 @@
 									this.engine.setState(xOff + x, yOff + y, result, true);
 								}
 							}
+						}
+					}
+
+					// check for grid growth
+					while (width !== this.engine.width || height !== this.engine.height) {
+						if (width !== this.engine.width) {
+							// double width
+							width <<= 1;
+
+							// adjust drawing cell position
+							xOff += width >> 2;
+						}
+
+						if (height !== this.engine.height) {
+							// same for height
+							height <<= 1;
+							yOff += height >> 2;
 						}
 					}
 				}
@@ -10100,7 +10122,7 @@
 		}
 
 		// populate output states
-		if (me.engine.multiNumStates <= 2) {
+		if (me.engine.multiNumStates <= 2 || me.randomize2Only) {
 			outputState[0] = "b";
 			outputState[1] = "o";
 			maxState = 2;
@@ -15362,6 +15384,7 @@
 
 		// clear randomize pattern
 		this.randomizePattern = false;
+		this.randomize2Only = false;
 
 		// clear origin
 		this.engine.originX = 0;

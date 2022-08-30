@@ -39,6 +39,7 @@
 			case Keywords.squareCellsWord:
 			case Keywords.bordersWord:
 			case Keywords.randomizeWord:
+			case Keywords.randomize2Word:
 			case Keywords.randomSeedWord:
 			case Keywords.randomWidthWord:
 			case Keywords.randomHeightWord:
@@ -4618,8 +4619,16 @@
 
 						// randomize word
 						case Keywords.randomizeWord:
-							// read the seed
 							view.randomizePattern = true;
+							view.randomize2Only = false;
+
+							itemValid = true;
+							break;
+
+						// randomize 2-state word
+						case Keywords.randomize2Word:
+							view.randomizePattern = true;
+							view.randomize2Only = true;
 
 							itemValid = true;
 							break;

@@ -652,7 +652,6 @@
 			/** @type {number} */ xp1,
 			/** @type {number} */ count,
 			/** @type {number} */ state,
-			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @const {number} */ mgsp1 = this.engine.multiNumStates + this.engine.historyStates,
 			/** @const {number} */ deadState = this.engine.historyStates,
 			/** @type {Int8Array} */ weightedNeighbourhood = this.weightedNeighbourhood,

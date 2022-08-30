@@ -118,6 +118,9 @@
 		// randomize pattern
 		/**@const {string} */ randomizeWord : "RANDOMIZE",
 
+		// 2-state randomize pattern
+		/**@const {string} */ randomize2Word : "RANDOMIZE2",
+
 		// random seed
 		/** @const {string} */ randomSeedWord : "RANDSEED",
 
