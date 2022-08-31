@@ -1,8 +1,11 @@
+Build 748
+- disable [R]History and Hex Tripod or triangular neighbourhoods
+
 Build 747
 - report [R]Super does not support Hex Tripod
 - fix [R]Super hexagon display
 - report rules with multiple neighbourhoods defined
-- fix [R]History state 6 for hexagonal, hexagonal tripod and von Neumann neighbourhoods
+- fix [R]History state 6 for hexagonal and von Neumann neighbourhoods
 - fix [R]Super hex state 6 issue
 
 Build 746

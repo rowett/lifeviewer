@@ -7588,13 +7588,20 @@
 		// check for "none" and [R]Super
 		if (pattern.isNone && pattern.isSuper && this.failureReason === "") {
 			this.failureReason = "[R]Super not valid with none rule";
-			pattern.isHistory = false;
+			pattern.isSuper = false;
 			this.executable = false;
 		}
 
 		// check for triangular and [R]Super
 		if (pattern.isTriangular && pattern.isSuper && this.failureReason === "") {
 			this.failureReason = "[R]Super not valid with triangular rule";
+			pattern.isSuper = false;
+			this.executable = false;
+		}
+
+		// check for triangular and [R]History
+		if (pattern.isTriangular && pattern.isHistory && this.failureReason === "") {
+			this.failureReason = "[R]History not valid with triangular rule";
 			pattern.isHistory = false;
 			this.executable = false;
 		}
@@ -7606,7 +7613,7 @@
 			this.executable = false;
 		}
 
-		// check for generations and [R]History
+		// check for generations and [R]Super
 		if (pattern.multiNumStates !== -1 && pattern.isSuper) {
 			this.failureReason = "[R]Super not valid with Generations";
 			pattern.isSuper = false;
@@ -7617,6 +7624,13 @@
 		if (pattern.hexNeighbourhood === this.hexTripod && pattern.isSuper) {
 			this.failureReason = "[R]Super not valid with Hex Tripod";
 			pattern.isSuper = false;
+			this.executable = false;
+		}
+
+		// check Hex tripod and [R]History
+		if (pattern.hexNeighbourhood === this.hexTripod && pattern.isHistory) {
+			this.failureReason = "[R]History not valid with Hex Tripod";
+			pattern.isHistory = false;
 			this.executable = false;
 		}
 
