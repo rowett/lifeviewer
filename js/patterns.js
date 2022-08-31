@@ -7318,6 +7318,9 @@
 		    // state used flags and counts
 		    stateCount = this.stateCount,
 			
+		    // neighbourhood count
+		    nCount = 0,
+
 		    // border for bounded grid
 		    border = 4,
 
@@ -7610,6 +7613,13 @@
 			this.executable = false;
 		}
 
+		// check Hex tripod and [R]Super
+		if (pattern.hexNeighbourhood === this.hexTripod && pattern.isSuper) {
+			this.failureReason = "[R]Super not valid with Hex Tripod";
+			pattern.isSuper = false;
+			this.executable = false;
+		}
+
 		// check for generations and B0
 		if (pattern.multiNumStates !== -1 && this.ruleArray[0] && !(pattern.isLTL || pattern.isHROT)) {
 			this.failureReason = "Generations does not support B0";
@@ -7670,6 +7680,24 @@
 				pattern.gridType = -1;
 				this.executable = false;
 			}
+		}
+
+		// check for multiple neighbourhoods
+		if (pattern.isHex) {
+			nCount += 1;
+		}
+		if (pattern.isTriangular) {
+			nCount += 1;
+		}
+		if (pattern.isVonNeumann) {
+			nCount += 1;
+		}
+		if (nCount > 1) {
+			this.failureReason = "Multiple neighbourhoods specified";
+			this.executable = false;
+			pattern.isHex = false;
+			pattern.isTriangular = false;
+			pattern.isVonNeumann = false;
 		}
 
 		// setup number of states for [R]Super patterns

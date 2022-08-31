@@ -6194,13 +6194,16 @@
 		    tileRow2 = null,
 
 		    // tile size (2^n)
-			tilePower = this.tilePower,
+		    tilePower = this.tilePower,
 
-			// state 6 value in colour grid
-			state6 = this.isSuper ? 6 : ViewConstants.stateMap[6] + 128,
+		    // state 6 value in colour grid
+		    state6 = this.isSuper ? 6 : ViewConstants.stateMap[6] + 128,
 
-			// grid
-			grid = this.isSuper ? this.colourGrid : this.overlayGrid;
+		    // grid
+		    grid = this.isSuper ? this.colourGrid : this.overlayGrid,
+
+		    // whether neighbourhood is hex tripod
+		    isTripod = this.isHex && this.hexNeighbourhood === this.manager.hexTripod;
 
 		// clear current mask and cells
 		this.state6Mask.whole.fill(0);
@@ -6231,26 +6234,43 @@
 					cellsRow[offset >> 4] |= (1 << (~offset & 15));
 
 					// set the cells around the state 6 cell in the mask
-					maskRow0[offset >> 4] |= (1 << (~offset & 15));
+					// middle column
+					if (!isTripod) {
+						maskRow0[offset >> 4] |= (1 << (~offset & 15));
+						tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					}
 					maskRow1[offset >> 4] |= (1 << (~offset & 15));
-					maskRow2[offset >> 4] |= (1 << (~offset & 15));
-					tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
 					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					maskRow2[offset >> 4] |= (1 << (~offset & 15));
 					tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+
+					// left column
 					offset = (x - 1) & wm;
-					maskRow0[offset >> 4] |= (1 << (~offset & 15));
-					maskRow1[offset >> 4] |= (1 << (~offset & 15));
-					maskRow2[offset >> 4] |= (1 << (~offset & 15));
-					tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					if (!this.isVonNeumann) {
+						maskRow0[offset >> 4] |= (1 << (~offset & 15));
+						tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					}
+					if (!isTripod) {
+						maskRow1[offset >> 4] |= (1 << (~offset & 15));
+						tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					}
+					if (!(this.isHex || this.isVonNeumann)) {
+						maskRow2[offset >> 4] |= (1 << (~offset & 15));
+						tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					}
+
+					// right column
 					offset = (x + 1) & wm;
-					maskRow0[offset >> 4] |= (1 << (~offset & 15));
+					if (!(this.isHex || this.isVonNeumann)) {
+						maskRow0[offset >> 4] |= (1 << (~offset & 15));
+						tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					}
 					maskRow1[offset >> 4] |= (1 << (~offset & 15));
-					maskRow2[offset >> 4] |= (1 << (~offset & 15));
-					tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
 					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					if (!(this.isVonNeumann || isTripod)) {
+						maskRow2[offset >> 4] |= (1 << (~offset & 15));
+						tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					}
 				}
 			}
 		}
@@ -6288,7 +6308,10 @@
 		    tileRow2 = null,
 
 		    // tile size (2^n)
-		    tilePower = this.tilePower;
+		    tilePower = this.tilePower,
+
+		    // whether neighbourhood is hex tripod
+		    isTripod = this.isHex && this.hexNeighbourhood === this.manager.hexTripod;
 
 		// remove bits from the mask that are state 6 in the pattern
 		for (y = 0; y < height; y += 1) {
@@ -6311,26 +6334,43 @@
 					cellsRow[offset >> 4] |= (1 << (~offset & 15));
 
 					// set the cells around the state 6 cell in the mask
-					maskRow0[offset >> 4] |= (1 << (~offset & 15));
+					// middle column
+					if (!isTripod) {
+						maskRow0[offset >> 4] |= (1 << (~offset & 15));
+						tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					}
 					maskRow1[offset >> 4] |= (1 << (~offset & 15));
-					maskRow2[offset >> 4] |= (1 << (~offset & 15));
-					tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
 					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					maskRow2[offset >> 4] |= (1 << (~offset & 15));
 					tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+
+					// left column
 					offset = (x - 1 + panX) & wm;
-					maskRow0[offset >> 4] |= (1 << (~offset & 15));
-					maskRow1[offset >> 4] |= (1 << (~offset & 15));
-					maskRow2[offset >> 4] |= (1 << (~offset & 15));
-					tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					if (!this.isVonNeumann) {
+						maskRow0[offset >> 4] |= (1 << (~offset & 15));
+						tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					}
+					if (!isTripod) {
+						maskRow1[offset >> 4] |= (1 << (~offset & 15));
+						tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					}
+					if (!(this.isHex || this.isVonNeumann)) {
+						maskRow2[offset >> 4] |= (1 << (~offset & 15));
+						tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					}
+
+					// right column
 					offset = (x + 1 + panX) & wm;
-					maskRow0[offset >> 4] |= (1 << (~offset & 15));
+					if (!(this.isHex || this.isVonNeumann)) {
+						maskRow0[offset >> 4] |= (1 << (~offset & 15));
+						tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					}
 					maskRow1[offset >> 4] |= (1 << (~offset & 15));
-					maskRow2[offset >> 4] |= (1 << (~offset & 15));
-					tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
 					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					if (!(this.isVonNeumann || isTripod)) {
+						maskRow2[offset >> 4] |= (1 << (~offset & 15));
+						tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					}
 				}
 			}
 		}
@@ -7356,10 +7396,16 @@
 				if (this.littleEndian) {
 					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
 						pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+						}
 					}
 				} else {
 					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
 						pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+						}
 					}
 				}
 			} else {
@@ -20264,12 +20310,6 @@
 		    tileStartRow = 0,
 			tileEndRow = tileRows,
 
-			// maximum dead state number
-			deadState = this.historyStates,
-
-			// minimum dead state number
-			minDeadState = (this.historyStates > 0 ? 1 : 0),
-
 			// bit counts
 			bitCounts = this.bitCounts16,
 
@@ -20402,6 +20442,9 @@
 									se = belowRow[cr + 1];
 									value = c;
 
+									// typemask has a bit set per state in the neighbouring cells
+									typeMask = (1 << nw) | (1 << n) | (1 << e) | (1 << w) | (1 << s) | (1 << se);
+
 									// handle state 6
 									process = true;
 									if ((typeMask & (1 << 6)) !== 0) {
@@ -20439,9 +20482,6 @@
 											gridRow[leftX] &= ~colIndex;
 										}
 									}
-
-									// typemask has a bit set per state in the neighbouring cells
-									typeMask = (1 << nw) | (1 << n) | (1 << e) | (1 << w) | (1 << s) | (1 << se);
 
 									// check whether state still needs processing
 									if (process) {
@@ -20769,12 +20809,6 @@
 		    // starting and ending tile row
 		    tileStartRow = 0,
 			tileEndRow = tileRows,
-
-			// maximum dead state number
-			deadState = this.historyStates,
-
-			// minimum dead state number
-			minDeadState = (this.historyStates > 0 ? 1 : 0),
 
 			// bit counts
 			bitCounts = this.bitCounts16,
