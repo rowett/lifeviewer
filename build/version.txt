@@ -1,3 +1,9 @@
+Build 750
+- fix Hexagonal empty pattern zoom and camera position
+
+Build 749
+- fix deaths and population when [R]Super cells killed by state 6
+
 Build 748
 - disable [R]History and Hex Tripod or triangular neighbourhoods
 

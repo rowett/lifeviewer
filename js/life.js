@@ -20466,6 +20466,8 @@
 										// clear cell in bit grid
 										if (!process && ((c & 1) !== 0)) {
 											gridRow[leftX] &= ~colIndex;
+											this.deaths += 1;
+											this.population -= 1;
 										}
 									}
 
@@ -20961,6 +20963,8 @@
 										// clear cell in bit grid
 										if (!process && ((c & 1) !== 0)) {
 											gridRow[leftX] &= ~colIndex;
+											this.deaths += 1;
+											this.population -= 1;
 										}
 									}
 
@@ -21487,6 +21491,8 @@
 												// clear cell in bit grid
 												if (!process && ((c & 1) !== 0)) {
 													gridRow[leftX] &= ~colIndex;
+													this.deaths += 1;
+													this.population -= 1;
 												}
 											}
 
@@ -21731,6 +21737,8 @@
 											// clear cell in bit grid
 											if (!process && ((c & 1) !== 0)) {
 												gridRow[leftX] &= ~colIndex;
+												this.deaths += 1;
+												this.population -= 1;
 											}
 										}
 
@@ -32446,7 +32454,8 @@
 		    swap = 0,
 		    hexX = 0,
 		    minX = 0,
-		    maxX = 0;
+		    maxX = 0,
+		    count = 0;
 
 		// check for PCA, RuleTree or Super rules
 		if (this.isPCA || this.isRuleTree || this.isSuper) {
@@ -32548,6 +32557,7 @@
 					for (x = leftX; x <= rightX; x += 1) {
 						state = colourRow[x];
 						if (state > 0) {
+							count += 1;
 							hexX = x - y / 2;
 							if (hexX < minX) {
 								minX = hexX;
@@ -32566,8 +32576,10 @@
 					rightX = swap;
 				}
 				// check for empty pattern
-				if (rightX < 0 && leftX < 0) {
+				if (count === 0) {
 					width = 0;
+					leftX = (this.width / 2) - topY / 2;
+					rightX = leftX;
 				} else {
 					width = rightX - leftX + 1;
 				}
