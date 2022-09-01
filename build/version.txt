@@ -1,3 +1,6 @@
+Build 751
+- improved selecting cell accuracy on hex grids
+
 Build 750
 - fix Hexagonal empty pattern zoom and camera position
 

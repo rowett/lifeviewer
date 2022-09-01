@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 750,
+		/** @const {number} */ versionBuild : 751,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4476,16 +4476,18 @@
 				displayY = radius * Math.sin(theta * (Math.PI / 180));
 			}
 
-			// compute the x and y cell coordinate
+			// compute the y cell coordinate as an integer
 			yPos = displayY / yZoom - engineY + this.engine.originY;
+			yFrac = yPos - Math.floor(yPos);
+			yPos -= yFrac;
+
+			// compute the x cell coordinate as an integer
 			xPos = (displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX;
 			if (this.engine.isTriangular) {
 				xPos -= (0.2 * (this.engine.zoom / 32));
 			}
 			xFrac = xPos - Math.floor(xPos);
-			yFrac = yPos - Math.floor(yPos);
 			xPos -= xFrac;
-			yPos -= yFrac;
 		}
 
 		// adjust for triangular grid
@@ -4854,16 +4856,18 @@
 				displayY = radius * Math.sin(theta * (Math.PI / 180));
 			}
 
-			// compute the x and y cell coordinate
+			// compute the y cell coordinate as an integer
 			yPos = displayY / yZoom - engineY + this.engine.originY;
+			yFrac = yPos - Math.floor(yPos);
+			yPos -= yFrac;
+
+			// compute the x cell coordinate as an integer
 			xPos = (displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX;
 			if (this.engine.isTriangular) {
 				xPos -= (0.2 * (this.engine.zoom / 32));
 			}
 			xFrac = xPos - Math.floor(xPos);
-			yFrac = yPos - Math.floor(yPos);
 			xPos -= xFrac;
-			yPos -= yFrac;
 
 			// adjust for triangular grid
 			if (this.engine.isTriangular) {
