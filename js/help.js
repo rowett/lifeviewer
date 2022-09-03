@@ -348,7 +348,7 @@
 		    i = 0;
 
 		// add hex representation
-		result += "\t" + ((1 << 24) | (redValue << 16) | (greenValue << 8) | blueValue).toString(16).slice(-6).toUpperCase();
+		result += "\t#" + ((1 << 24) | (redValue << 16) | (greenValue << 8) | blueValue).toString(16).slice(-6).toUpperCase();
 
 		// search the object for a key matching the r, g, b
 		while (i < keys.length && !found) {
@@ -2371,7 +2371,7 @@
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Colours", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "The following names can be used in place of R G B", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "The following names can be used in place of R G B or hex specification", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "for example [[ COLOUR ALIVE Green ]]", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		for (i = 0; i < keys.length; i += 1) {

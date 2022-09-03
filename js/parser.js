@@ -178,6 +178,44 @@
 		return result;
 	};
 
+	// decode hex and return as RGB array or empty array for an error
+	ScriptParser.decodeHex = function(hexString) {
+		var result = [],
+		    i = 1,
+		    valid = true,
+		    value = 0,
+		    asciiZero = "0".charCodeAt(0),
+		    asciia = "a".charCodeAt(0),
+		    c = "";
+
+		// check for 7 characters beginning with # symbol
+		if (hexString.length === 7 && hexString.charAt(0) === "#") {
+			hexString = hexString.toLowerCase();
+
+			while (valid && i <= 6) {
+				c = hexString.charAt(i);
+				if (c >= "0" && c <= "9") {
+					value = value * 16 + (c.charCodeAt(0) - asciiZero);
+					i += 1;
+				} else {
+					if (c >= "a" && c <= "f") {
+						value = value * 16 + (c.charCodeAt(0) - asciia + 10);
+						i += 1;
+					} else {
+						valid = false;
+					}
+				}
+			}
+
+			// check if hex was valid
+			if (valid) {
+				result = [value >> 16, (value >> 8) & 255, value & 255];
+			}
+		}
+
+		return result;
+	};
+
 	// check next script token
 	ScriptParser.nonNumericTokenError = function(scriptReader, scriptErrors, nextToken, itemDescription, itemType) {
 		// check next token
@@ -705,32 +743,47 @@
 				}
 			}
 		} else {
-			// check for colour name
+			// check for hex specification
 			peekToken = scriptReader.peekAtNextToken();
 
-			// check if it is blank or a valid script command
-			colourTriple = ColourManager.colourList[peekToken.toLowerCase()];
-			if (colourTriple !== undefined) {
+			colourTriple = this.decodeHex(peekToken);
+			if (colourTriple.length === 3) {
 				// consume the token
 				peekToken = scriptReader.getNextToken();
 
 				// get the rgb value
-				redValue = colourTriple[1];
-				greenValue = colourTriple[2];
-				blueValue = colourTriple[3];
+				redValue = colourTriple[0];
+				greenValue = colourTriple[1];
+				blueValue = colourTriple[2];
 			} else {
-				badColour = true;
-
-				// illegal colour name
-				if (peekToken === "" || this.isScriptCommand(peekToken)) {
-					// argument missing
-					scriptErrors[scriptErrors.length] = [nextToken + " " + colName, "name missing"];
-				} else {
-					// argument invalid
-					scriptErrors[scriptErrors.length] = [nextToken + " " + colName + " " + peekToken, "name not known"];
-
+				// check for named colour
+				colourTriple = ColourManager.colourList[peekToken.toLowerCase()];
+				if (colourTriple !== undefined) {
 					// consume the token
 					peekToken = scriptReader.getNextToken();
+	
+					// get the rgb value
+					redValue = colourTriple[1];
+					greenValue = colourTriple[2];
+					blueValue = colourTriple[3];
+				} else {
+					badColour = true;
+	
+					// illegal colour name
+					if (peekToken === "" || this.isScriptCommand(peekToken)) {
+						// argument missing
+						scriptErrors[scriptErrors.length] = [nextToken + " " + colName, "name missing"];
+					} else {
+						// argument invalid
+						if (peekToken.charAt(0) === "#") {
+							scriptErrors[scriptErrors.length] = [nextToken + " " + colName + " " + peekToken, "bad hex definition"];
+						} else {
+							scriptErrors[scriptErrors.length] = [nextToken + " " + colName + " " + peekToken, "name not known"];
+						}
+	
+						// consume the token
+						peekToken = scriptReader.getNextToken();
+					}
 				}
 			}
 		}

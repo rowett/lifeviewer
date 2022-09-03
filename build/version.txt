@@ -1,3 +1,6 @@
+Build 754
+- [[ COLOR ]] command now accepts hexadecimal colour specification (must be # followed by six hex digits)
+
 Build 753
 - rule label tooltip now includes neighbourhood
 - [[ TITLE ]] and waypoint text now support #D for neighbourhood name
