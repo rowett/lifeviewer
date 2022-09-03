@@ -308,7 +308,11 @@
 					scriptErrors[scriptErrors.length] = [whichColour + " " + elementName, "name missing"];
 				} else {
 					// argument invalid
-					scriptErrors[scriptErrors.length] = [whichColour + " " + elementName + " " + peekToken, "name not known"];
+					if (peekToken.charAt(0) === "#") {
+						scriptErrors[scriptErrors.length] = [whichColour + " " + elementName + " " + peekToken, "bad hex definition"];
+					} else {
+						scriptErrors[scriptErrors.length] = [whichColour + " " + elementName + " " + peekToken, "name not known"];
+					}
 
 					// consume the token
 					peekToken = scriptReader.getNextToken();
