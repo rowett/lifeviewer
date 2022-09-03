@@ -819,6 +819,11 @@
 							result += ViewConstants.externalViewerTitle;
 							break;
 
+						case "D":
+							// add the rule neighbourhood
+							result += view.getNeighbourhoodName();
+							break;
+
 						case "0":
 							// add the interval time
 							result += this.timeInterval(view, 0);

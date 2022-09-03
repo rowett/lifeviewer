@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 751,
+		/** @const {number} */ versionBuild : 753,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1860,6 +1860,18 @@
 		// next universe button
 		this.nextUniverseButton = null;
 
+		// stop all viewers button
+		this.stopAllButton = null;
+
+		// stop other viewers button
+		this.stopOthersButton = null;
+
+		// reset all viewers button
+		this.resetAllButton = null;
+
+		// snap to nearest 45 angle button
+		this.snapToNearest45Button = null;
+
 		// timing button
 		this.fpsButton = null;
 
@@ -2743,6 +2755,173 @@
 				this.engine.populateState6MaskFromColGrid();
 			}
 		}
+	};
+
+	// get neighbourhood name
+	View.prototype.getNeighbourhoodName = function() {
+		var itemName = "";
+
+		if (this.engine.isMargolus) {
+			itemName = "Margolus";
+		} else {
+			if (this.engine.wolframRule !== -1) {
+				itemName = "1D";
+			} else {
+				if (this.engine.patternDisplayMode) {
+					itemName = "Hexagonal";
+					if (this.engine.hexNeighbourhood === this.manager.hexTripod || this.engine.isHROT && this.engine.HROT.type === this.manager.tripodHROT) {
+						itemName = "Tripod";
+					}
+					if (this.engine.isHROT && this.engine.HROT.type === this.manager.asteriskHROT) {
+						itemName = "Asterisk";
+					}
+					if (this.engine.HROT.yrange > 1) {
+						itemName += " range " + this.engine.HROT.yrange;
+					}
+				} else {
+					if (this.engine.isHROT) {
+						switch(this.engine.HROT.type) {
+						case this.manager.cornerEdgeHROT:
+							itemName = "Corner/Edge";
+							break;
+
+						case this.manager.mooreHROT:
+							itemName = "Moore";
+							break;
+
+						case this.manager.vonNeumannHROT:
+							itemName = "von Neumann";
+							break;
+
+						case this.manager.circularHROT:
+							itemName = "Circular";
+							break;
+
+						case this.manager.crossHROT:
+							itemName = "Cross";
+							break;
+
+						case this.manager.saltireHROT:
+							itemName = "Saltire";
+							break;
+
+						case this.manager.starHROT:
+							itemName = "Star";
+							break;
+
+						case this.manager.l2HROT:
+							itemName = "L2";
+							break;
+
+						case this.manager.hexHROT:
+							itemName = "Hexagonal";
+							break;
+
+						case this.manager.checkerHROT:
+							itemName = "Checkerboard";
+							break;
+
+						case this.manager.alignedCheckerHROT:
+							itemName = "Aligned Checkerboard";
+							break;
+
+						case this.manager.hashHROT:
+							itemName = "Hash";
+							break;
+
+						case this.manager.customHROT:
+							itemName = "Custom";
+							break;
+
+						case this.manager.tripodHROT:
+							itemName = "Tripod";
+							break;
+
+						case this.manager.asteriskHROT:
+							itemName = "Asterisk";
+							break;
+
+						case this.manager.triangularHROT:
+							itemName = "Triangular";
+							break;
+
+						case this.manager.gaussianHROT:
+							itemName = "Gaussian";
+							break;
+
+						case this.manager.weightedHROT:
+							itemName = "Weighted";
+							break;
+						}
+
+						if (this.engine.HROT.type === this.manager.cornerEdgeHROT) {
+							itemName += " range " + this.engine.HROT.cornerRange + "/" + this.engine.HROT.edgeRange;
+						} else {
+							if (this.engine.HROT.yrange > 1) {
+								itemName += " range " + this.engine.HROT.yrange;
+							}
+						}
+					} else {
+						if (this.engine.isTriangular) {
+							itemName = "Triangular";
+							switch (this.engine.triangularNeighbourhood) {
+								case this.manager.triangularEdges:
+									itemName += " Edges";
+									break;
+								case this.manager.triangularVertices:
+									itemName += " Vertices";
+									break;
+								case this.manager.triangularInner:
+									itemName += " Inner";
+									break;
+								case this.manager.triangularOuter:
+									itemName += " Outer";
+									break;
+							}
+						} else {
+							if (this.engine.isRuleTree) {
+								if (this.engine.ruleTableOutput === null) {
+									if (this.engine.ruleTreeNeighbours === 4) {
+										itemName = "von Neumann";
+									} else {
+										itemName = "Moore";
+									}
+								} else {
+									switch (this.engine.ruleTableNeighbourhood) {
+									case PatternConstants.ruleTableVN:
+										itemName = "von Neumann";
+										break;
+									case PatternConstants.ruleTableMoore:
+										itemName = "Moore";
+										break;
+									case PatternConstants.ruleTableHex:
+										itemName = "Hexagonal";
+										break;
+									case PatternConstants.ruleTableOneD:
+										itemName = "1D";
+										break;
+									default:
+										itemName = "unknown";
+									}
+								}
+							} else {
+								if (this.engine.isVonNeumann || this.engine.isPCA) {
+									itemName = "von Neumann";
+								} else {
+									if (this.engine.isNone) {
+										itemName = "none";
+									} else {
+										itemName = "Moore";
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return itemName;
 	};
 
 	// convert rle to cell list
@@ -5970,6 +6149,10 @@
 		this.relativeToggle.deleted = shown;
 		this.relativeToggle.locked = !this.genDefined;
 		this.clearDrawingStateButton.deleted = shown;
+		this.stopAllButton.deleted = shown;
+		this.stopOthersButton.deleted = shown;
+		this.resetAllButton.deleted = shown;
+		this.snapToNearest45Button.deleted = shown;
 
 		// display categoy
 		shown = hide || !this.showDisplaySettings;
@@ -13522,6 +13705,35 @@
 		return [me.displayHelp];
 	};
 	
+	// snap angle to nearest 45 degrees
+	View.prototype.snapToNearest45Pressed = function(me) {
+		var value = me.angleItem.current[0];
+		value = Math.floor((value + 45 / 2) / 45) * 45;
+
+		// wrap if required
+		if (value >= 360) {
+			value = 0;
+		}
+
+		// update UI
+		me.angleItem.current = me.viewAngleRange([value, value], true, me);
+	};
+
+	// stop all viewers
+	View.prototype.stopAllPressed = function(me) {
+		Controller.stopAllViewers();
+	};
+
+	// stop all viewers
+	View.prototype.stopOthersPressed = function(me) {
+		Controller.stopOtherViewers(me);
+	};
+
+	// reset all viewers
+	View.prototype.resetAllPressed = function(me) {
+		Controller.resetAllViewers();
+	};
+
 	// clear drawing state cells
 	View.prototype.clearDrawingCellsPressed = function(me) {
 		me.clearCells(me, false, false);
@@ -14779,20 +14991,36 @@
 		this.pasteToSelectionButton.toolTip = "paste to selection [Ctrl Shift V]";
 
 		// fps button
-		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, -100, -25, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
+		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, -100, -75, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
 		this.fpsButton.toolTip = ["toggle timing display [T]"];
 
 		// timing detail button
-		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 100, -25, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
+		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 100, -75, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
 		this.timingDetailButton.toolTip = ["toggle timing details [Shift T]"];
 
 		// relative toggle button
-		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, -100, 25, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
+		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, -100, -25, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
 		this.relativeToggle.toolTip = ["toggle absolute/relative generation display [Shift G]"];
 
 		// clear drawing state cells button
-		this.clearDrawingStateButton = this.viewMenu.addButtonItem(this.clearDrawingCellsPressed, Menu.middle, 100, 25, 180, 40, "Clear Drawing");
+		this.clearDrawingStateButton = this.viewMenu.addButtonItem(this.clearDrawingCellsPressed, Menu.middle, 100, -25, 180, 40, "Clear Drawing");
 		this.clearDrawingStateButton.toolTip = "clear drawing state cells [Ctrl Alt K]";
+
+		// stop all viewers button
+		this.stopAllButton = this.viewMenu.addButtonItem(this.stopAllPressed, Menu.middle, -100, 25, 180, 40, "Stop All");
+		this.stopAllButton.toolTip = "stop all Viewers [Shift Z]";
+
+		// stop other viewers button
+		this.stopOthersButton = this.viewMenu.addButtonItem(this.stopOthersPressed, Menu.middle, 100, 25, 180, 40, "Stop Others");
+		this.stopOthersButton.toolTip = "stop other Viewers [Z]";
+
+		// reset all viewers button
+		this.resetAllButton = this.viewMenu.addButtonItem(this.resetAllPressed, Menu.middle, -100, 75, 180, 40, "Reset All");
+		this.resetAllButton.toolTip = "reset all Viewers [Shift R]";
+
+		// snap angle to nearest 45 degrees
+		this.snapToNearest45Button = this.viewMenu.addButtonItem(this.snapToNearest45Pressed, Menu.middle, 100, 75, 180, 40, "Snap Angle");
+		this.snapToNearest45Button.toolTip = "snap angle to nearest 45 degrees [Alt /]";
 
 		// previous universe button
 		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -100, 120, 40, "Prev");
@@ -15136,7 +15364,7 @@
 			this.patternButton, this.clipboardButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton,
 			this.escButton, this.autoHideButton, this.autoGridButton, this.altGridButton, this.integerZoomButton, this.centerPatternButton, this.hexCellButton, this.bordersButton,
 			this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.clearDrawingStateButton, this.timingDetailButton, this.infoBarButton, this.starsButton,
-			this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
+			this.resetAllButton, this.stopAllButton, this.stopOthersButton, this.snapToNearest45Button, this.historyFitButton, this.majorButton, this.prevUniverseButton, this.nextUniverseButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.genLabel, this.genValueLabel, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -16990,6 +17218,9 @@
 		if (me.patternAliasName !== "") {
 			me.ruleLabel.toolTip += " alias " + me.patternAliasName;
 		}
+
+		// add the neighbourhood
+		me.ruleLabel.toolTip += "\n" + me.getNeighbourhoodName();
 
 		// setup oscillator search
 		me.resultsDisplayed = false;

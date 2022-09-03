@@ -755,7 +755,10 @@
 		y = this.renderHelpLine(view, ">", "rotate right", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift <", "rotate left 90 degrees", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift >", "rotate right 90 degrees", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt <", "rotate left 45 degrees", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt >", "rotate right 45 degrees", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "5", "reset angle", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Alt /", "snap angle to nearest 45 degrees", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "'", "tilt down", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "/", "tilt up", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "@", "reset tilt", ctx, x, y, height, helpLine);
@@ -989,6 +992,7 @@
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "O", "pattern originator", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "R", "rule name", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "A", "rule alias", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "D", "rule neighbourhood", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "T", "program title", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "G", "current generation (Labels)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "H", "reversible generation (Labels)", ctx, x, y, height, helpLine);
@@ -1485,166 +1489,7 @@
 		}
 
 		// display neighbourhood
-		if (view.engine.isMargolus) {
-			itemName = "Margolus";
-		} else {
-			if (view.engine.wolframRule !== -1) {
-				itemName = "1D";
-			} else {
-				if (view.engine.patternDisplayMode) {
-					itemName = "Hexagonal";
-					if (view.engine.hexNeighbourhood === view.manager.hexTripod || view.engine.isHROT && view.engine.HROT.type === view.manager.tripodHROT) {
-						itemName = "Tripod";
-					}
-					if (view.engine.isHROT && view.engine.HROT.type === view.manager.asteriskHROT) {
-						itemName = "Asterisk";
-					}
-					if (view.engine.HROT.yrange > 1) {
-						itemName += " range " + view.engine.HROT.yrange;
-					}
-				} else {
-					if (view.engine.isHROT) {
-						switch(view.engine.HROT.type) {
-						case view.manager.cornerEdgeHROT:
-							itemName = "Corner/Edge";
-							break;
-
-						case view.manager.mooreHROT:
-							itemName = "Moore";
-							break;
-
-						case view.manager.vonNeumannHROT:
-							itemName = "von Neumann";
-							break;
-
-						case view.manager.circularHROT:
-							itemName = "Circular";
-							break;
-
-						case view.manager.crossHROT:
-							itemName = "Cross";
-							break;
-
-						case view.manager.saltireHROT:
-							itemName = "Saltire";
-							break;
-
-						case view.manager.starHROT:
-							itemName = "Star";
-							break;
-
-						case view.manager.l2HROT:
-							itemName = "L2";
-							break;
-
-						case view.manager.hexHROT:
-							itemName = "Hexagonal";
-							break;
-
-						case view.manager.checkerHROT:
-							itemName = "Checkerboard";
-							break;
-
-						case view.manager.alignedCheckerHROT:
-							itemName = "Aligned Checkerboard";
-							break;
-
-						case view.manager.hashHROT:
-							itemName = "Hash";
-							break;
-
-						case view.manager.customHROT:
-							itemName = "Custom";
-							break;
-
-						case view.manager.tripodHROT:
-							itemName = "Tripod";
-							break;
-
-						case view.manager.asteriskHROT:
-							itemName = "Asterisk";
-							break;
-
-						case view.manager.triangularHROT:
-							itemName = "Triangular";
-							break;
-
-						case view.manager.gaussianHROT:
-							itemName = "Gaussian";
-							break;
-
-						case view.manager.weightedHROT:
-							itemName = "Weighted";
-							break;
-						}
-
-						if (view.engine.HROT.type === view.manager.cornerEdgeHROT) {
-							itemName += " range " + view.engine.HROT.cornerRange + "/" + view.engine.HROT.edgeRange;
-						} else {
-							if (view.engine.HROT.yrange > 1) {
-								itemName += " range " + view.engine.HROT.yrange;
-							}
-						}
-					} else {
-						if (view.engine.isTriangular) {
-							itemName = "Triangular";
-							switch (view.engine.triangularNeighbourhood) {
-								case view.manager.triangularEdges:
-									itemName += " Edges";
-									break;
-								case view.manager.triangularVertices:
-									itemName += " Vertices";
-									break;
-								case view.manager.triangularInner:
-									itemName += " Inner";
-									break;
-								case view.manager.triangularOuter:
-									itemName += " Outer";
-									break;
-							}
-						} else {
-							if (view.engine.isRuleTree) {
-								if (view.engine.ruleTableOutput === null) {
-									if (view.engine.ruleTreeNeighbours === 4) {
-										itemName = "von Neumann";
-									} else {
-										itemName = "Moore";
-									}
-								} else {
-									switch (view.engine.ruleTableNeighbourhood) {
-									case PatternConstants.ruleTableVN:
-										itemName = "von Neumann";
-										break;
-									case PatternConstants.ruleTableMoore:
-										itemName = "Moore";
-										break;
-									case PatternConstants.ruleTableHex:
-										itemName = "Hexagonal";
-										break;
-									case PatternConstants.ruleTableOneD:
-										itemName = "1D";
-										break;
-									default:
-										itemName = "unknown";
-									}
-								}
-							} else {
-								if (view.engine.isVonNeumann || view.engine.isPCA) {
-									itemName = "von Neumann";
-								} else {
-									if (view.engine.isNone) {
-										itemName = "none";
-									} else {
-										itemName = "Moore";
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		y = this.renderHelpLine(view, "N'hood", itemName, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "N'hood", view.getNeighbourhoodName(), ctx, x, y, height, helpLine);
 
 		// output weighted neighbourhood if specified
 		if (view.engine.isHROT) {

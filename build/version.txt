@@ -1,3 +1,16 @@
+Build 753
+- rule label tooltip now includes neighbourhood
+- [[ TITLE ]] and waypoint text now support #D for neighbourhood name
+
+Build 752
+- added new UI controls in Settings->Advanced:
+	- Stop All: stops all running LifeViewers (hotkey Shift Z)
+	- Stop Others: stops other running LifeViewers (hotkey Z)
+	- Reset All: resets all LifeViewers (hotkey Shift R)
+	- Snap Angle: snaps camera angle to nearest 45 degrees (hotkey Alt /)
+- hotkey Alt < rotates the camera left 45 degrees
+- hokey Alt > rotates the camera right 45 degrees
+
 Build 751
 - improved selecting cell accuracy on hex grids
 

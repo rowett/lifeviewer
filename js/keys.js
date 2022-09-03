@@ -413,6 +413,46 @@
 							me.randomPattern(me, false);
 						}
 						break;
+
+					// , for rotate anticlockwise
+					case 188:
+						// get the current value
+						value = me.angleItem.current[0];
+	
+						// decrease by an eighth
+						value -= 45;
+	
+						// wrap if required
+						if (value < 0) {
+							value += 360;
+						}
+
+						// update UI
+						me.angleItem.current = me.viewAngleRange([value, value], true, me);
+						break;
+
+					// . for rotate clockwise
+					case 190:
+						// get the current value
+						value = me.angleItem.current[0];
+	
+						// increase by an eighth
+						value += 45;
+	
+						// wrap if required
+						if (value >= 360) {
+							value -= 360;
+						}
+
+						// update UI
+						me.angleItem.current = me.viewAngleRange([value, value], true, me);
+						break;
+
+					// '/' for snap angle to nearest 45 degrees
+					case 191:
+						// get the current value
+						me.snapToNearest45Pressed(me);
+						break;
 					}
 				}
 
