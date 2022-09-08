@@ -38,6 +38,7 @@
 			case Keywords.hexCellsWord:
 			case Keywords.squareCellsWord:
 			case Keywords.bordersWord:
+			case Keywords.randomCellsWord:
 			case Keywords.randomizeWord:
 			case Keywords.randomize2Word:
 			case Keywords.randomSeedWord:
@@ -2452,6 +2453,130 @@
 									// consume token
 									scriptReader.getNextToken();
 
+									// check for random cells
+									if (stringToken === Keywords.randomCellsWord) {
+										// read random box size
+										x = -1;
+										y = -1;
+
+										if (scriptReader.nextTokenIsNumeric()) {
+											x = scriptReader.getNextTokenAsNumber();
+										}
+										if (scriptReader.nextTokenIsNumeric()) {
+											y = scriptReader.getNextTokenAsNumber();
+										}
+
+										if (x < ViewConstants.minRandomWidth || y < ViewConstants.minRandomHeight || x > ViewConstants.maxRandomWidth || y > ViewConstants.maxRandomHeight) {
+											scriptErrors[scriptErrors.length] = [Keywords.pasteWord + " " + Keywords.randomCellsWord, "invalid random box size"];
+											x = -1;
+										} else {
+											stringToken += x + "," + y;
+										}
+									} else {
+										// concatenate subequent tokens that are valid RLE
+										transToken = scriptReader.peekAtNextToken();
+										while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && view.manager.decodeRLEString(pattern, transToken, false, view.engine.allocator) !== -1) {
+											// consume token
+											scriptReader.getNextToken();
+											// add to rle
+											stringToken += transToken;
+											// look at next token
+											transToken = scriptReader.peekAtNextToken();
+										}
+									}
+
+									// check for optional position
+									if (x !== -1) {
+										x = 0;
+										y = 0;
+
+										if (scriptReader.nextTokenIsNumeric()) {
+											isNumeric = true;
+											x = scriptReader.getNextTokenAsNumber();
+										}
+										if (scriptReader.nextTokenIsNumeric()) {
+											isNumeric = true;
+											y = scriptReader.getNextTokenAsNumber();
+										}
+
+										// check for optional transformation
+										z = -1;
+										transToken = scriptReader.peekAtNextToken();
+										if (transToken !== "") {
+											switch (transToken) {
+											case Keywords.transTypeIdentity:
+												z = ViewConstants.transIdentity;
+												break;
+											case Keywords.transTypeFlip:
+												z = ViewConstants.transFlip;
+												break;
+											case Keywords.transTypeFlipX:
+												z = ViewConstants.transFlipX;
+												break;
+											case Keywords.transTypeFlipY:
+												z = ViewConstants.transFlipY;
+												break;
+											case Keywords.transTypeSwapXY:
+												z = ViewConstants.transSwapXY;
+												break;
+											case Keywords.transTypeSwapXYFlip:
+												z = ViewConstants.transSwapXYFlip;
+												break;
+											case Keywords.transTypeRotateCW:
+												z = ViewConstants.transRotateCW;
+												break;
+											case Keywords.transTypeRotateCCW:
+												z = ViewConstants.transRotateCCW;
+												break;
+											}
+											// eat token if it was valid
+											if (z !== -1) {
+												scriptReader.getNextToken();
+											}
+										}
+										// default to identity if not defined
+										if (z === -1) {
+											z = ViewConstants.transIdentity;
+										}
+
+										// associate the name with the snippet
+										view.addNamedRLE(scriptErrors, peekToken, stringToken, x, y, z);
+
+										// errors are handled in the above function
+										itemValid = true;
+									}
+								}
+							}
+
+							break;
+
+						// paste
+						case Keywords.pasteWord:
+							// get the rle
+							stringToken = scriptReader.peekAtNextToken();
+							if (stringToken !== "") {
+								scriptReader.getNextToken();
+
+								// check for random cells
+								if (stringToken === Keywords.randomCellsWord) {
+									// read random box size
+									x = -1;
+									y = -1;
+
+									if (scriptReader.nextTokenIsNumeric()) {
+										x = scriptReader.getNextTokenAsNumber();
+									}
+									if (scriptReader.nextTokenIsNumeric()) {
+										y = scriptReader.getNextTokenAsNumber();
+									}
+
+									if (x < ViewConstants.minRandomWidth || y < ViewConstants.minRandomWidth || x > ViewConstants.maxRandomWidth || y > ViewConstants.maxRandomHeight) {
+										scriptErrors[scriptErrors.length] = [Keywords.pasteWord + " " + Keywords.randomCellsWord, "invalid random box size"];
+										x = -1;
+									} else {
+										stringToken += x + "," + y;
+									}
+								} else {
 									// concatenate subequent tokens that are valid RLE
 									transToken = scriptReader.peekAtNextToken();
 									while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && view.manager.decodeRLEString(pattern, transToken, false, view.engine.allocator) !== -1) {
@@ -2462,19 +2587,25 @@
 										// look at next token
 										transToken = scriptReader.peekAtNextToken();
 									}
+								}
 
-									// check for optional x and y
+								// check for optional position
+								if (x !== -1) {
 									x = 0;
 									y = 0;
+
+									// get the x position
 									if (scriptReader.nextTokenIsNumeric()) {
 										isNumeric = true;
 										x = scriptReader.getNextTokenAsNumber();
 									}
+	
+									// get the y position
 									if (scriptReader.nextTokenIsNumeric()) {
 										isNumeric = true;
 										y = scriptReader.getNextTokenAsNumber();
 									}
-
+	
 									// check for optional transformation
 									z = -1;
 									transToken = scriptReader.peekAtNextToken();
@@ -2514,97 +2645,14 @@
 									if (z === -1) {
 										z = ViewConstants.transIdentity;
 									}
-
-									// associate the name with the snippet
-									view.addNamedRLE(scriptErrors, peekToken, stringToken, x, y, z);
-
-									// errors are handled in the above function
+	
+									if (!view.addRLE(view.pasteGen, view.pasteEnd, view.pasteDelta, view.pasteEvery, view.pasteMode, view.pasteDeltaX, view.pasteDeltaY, stringToken, x, y, z)) {
+										scriptErrors[scriptErrors.length] = [Keywords.pasteWord + " " + stringToken, "invalid name or rle"];
+									}
+		
+									// errors handled above
 									itemValid = true;
 								}
-							}
-
-							break;
-
-						// paste
-						case Keywords.pasteWord:
-							// get the rle
-							stringToken = scriptReader.peekAtNextToken();
-							if (stringToken !== "") {
-								scriptReader.getNextToken();
-
-								// concatenate subequent tokens that are valid RLE
-								transToken = scriptReader.peekAtNextToken();
-								while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && view.manager.decodeRLEString(pattern, transToken, false, view.engine.allocator) !== -1) {
-									// consume token
-									scriptReader.getNextToken();
-									// add to rle
-									stringToken += transToken;
-									// look at next token
-									transToken = scriptReader.peekAtNextToken();
-								}
-
-								// check for optional position
-								x = 0;
-								y = 0;
-
-								// get the x position
-								if (scriptReader.nextTokenIsNumeric()) {
-									isNumeric = true;
-									x = scriptReader.getNextTokenAsNumber();
-								}
-
-								// get the y position
-								if (scriptReader.nextTokenIsNumeric()) {
-									isNumeric = true;
-									y = scriptReader.getNextTokenAsNumber();
-								}
-
-								// check for optional transformation
-								z = -1;
-								transToken = scriptReader.peekAtNextToken();
-								if (transToken !== "") {
-									switch (transToken) {
-									case Keywords.transTypeIdentity:
-										z = ViewConstants.transIdentity;
-										break;
-									case Keywords.transTypeFlip:
-										z = ViewConstants.transFlip;
-										break;
-									case Keywords.transTypeFlipX:
-										z = ViewConstants.transFlipX;
-										break;
-									case Keywords.transTypeFlipY:
-										z = ViewConstants.transFlipY;
-										break;
-									case Keywords.transTypeSwapXY:
-										z = ViewConstants.transSwapXY;
-										break;
-									case Keywords.transTypeSwapXYFlip:
-										z = ViewConstants.transSwapXYFlip;
-										break;
-									case Keywords.transTypeRotateCW:
-										z = ViewConstants.transRotateCW;
-										break;
-									case Keywords.transTypeRotateCCW:
-										z = ViewConstants.transRotateCCW;
-										break;
-									}
-									// eat token if it was valid
-									if (z !== -1) {
-										scriptReader.getNextToken();
-									}
-								}
-								// default to identity if not defined
-								if (z === -1) {
-									z = ViewConstants.transIdentity;
-								}
-
-								if (!view.addRLE(view.pasteGen, view.pasteEnd, view.pasteDelta, view.pasteEvery, view.pasteMode, view.pasteDeltaX, view.pasteDeltaY, stringToken, x, y, z)) {
-									scriptErrors[scriptErrors.length] = [Keywords.pasteWord + " " + stringToken, "invalid name or rle"];
-								}
-	
-								// errors handled above
-								itemValid = true;
 							}
 
 							break;
@@ -4679,6 +4727,12 @@
 							}
 							break;
 
+						// random cells word
+						case Keywords.randomCellsWord:
+							scriptErrors[scriptErrors.length] = [nextToken, "only valid after " + Keywords.pasteWord];
+							itemValid = true;
+							break;
+							
 						// randomize word
 						case Keywords.randomizeWord:
 							view.randomizePattern = true;

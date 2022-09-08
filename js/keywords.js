@@ -115,11 +115,14 @@
 		// draw cell borders
 		/** @const {string} */ bordersWord : "CELLBORDERS",
 
+		// random cells
+		/** @const {string} */ randomCellsWord : "RANDCELLS",
+
 		// randomize pattern
-		/**@const {string} */ randomizeWord : "RANDOMIZE",
+		/** @const {string} */ randomizeWord : "RANDOMIZE",
 
 		// 2-state randomize pattern
-		/**@const {string} */ randomize2Word : "RANDOMIZE2",
+		/** @const {string} */ randomize2Word : "RANDOMIZE2",
 
 		// random seed
 		/** @const {string} */ randomSeedWord : "RANDSEED",

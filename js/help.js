@@ -1230,7 +1230,7 @@
 		y = this.renderHelpLine(view, Keywords.noSourceWord, "hide pattern source", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.maxGridSizeWord + " <" + ViewConstants.minGridPower + ".." + ViewConstants.maxGridPower + ">", "set maximum grid size 2^n", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.recipeWord + " name X Y (<1..>)+", "create a named recipe", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.rleWord + " name rle", "create a named rle", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.rleWord + " name rle|" + Keywords.randomCellsWord + " W H", "create a named set of cells", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (X Y) (TRANS)", "... X Y and transformation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.transTypeIdentity, "identity", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.transTypeFlip, "flip", ctx, x, y, height, helpLine);
@@ -1240,10 +1240,10 @@
 		y = this.renderHelpLine(view, " " + Keywords.transTypeSwapXYFlip, "swap X and Y and flip", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.transTypeRotateCW, "rotate clockwise", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.transTypeRotateCCW, "rotate counter-clockwise", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.pasteWord + " name|rle (X Y)", "paste rle at optional X Y", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.pasteWord + " name|rle|" + Keywords.randomCellsWord + " W H (X Y)", "paste cells at optional X Y", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (TRANS)", "... optional transformation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteTWord + " <0..>", "set paste generation", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "(recipe|<1..>+)*", "... optional delta list", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (recipe|<1..>+)*", "... optional delta list", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteTWord + " " + Keywords.everyWord + " <1..>", "set paste interval", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (<0..> (<1..>))", "... optional start and end", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteDeltaWord + " X Y", "set position delta for " + Keywords.pasteTWord + " " + Keywords.everyWord, ctx, x, y, height, helpLine);

@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 754,
+		/** @const {number} */ versionBuild : 755,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2929,8 +2929,6 @@
 		var cells = [],
 			i = 0,
 			j = 0,
-			state = 0,
-			states = this.engine.multiNumStates,
 			trans = this.transforms[transform],
 			axx = trans[0],
 			axy = trans[1],
@@ -2938,29 +2936,79 @@
 			ayy = trans[3],
 			pattern = new Pattern("rleToCellList", this.manager),
 			patternRow = null,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper));
+			boxWidth = 0,
+			boxHeight = 0,
+			len = Keywords.randomCellsWord.length,
+			ix = 0,
+			iy = 0,
+			states = this.engine.multiNumStates <= 2 ? 2 : this.engine.multiNumStates,
+			state = 0,
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			fill = this.randomFillPercentage / 100,
+			valid = false;
 
-		// check the RLE is valid
-		rle += " ";
-		if (this.manager.decodeRLEString(pattern, rle, false, this.engine.allocator) !== -1) {
-			if (this.manager.decodeRLEString(pattern, rle, true, this.engine.allocator) !== -1) {
-				// convert to cell list
-				for (j = 0; j < pattern.height; j += 1) {
-					patternRow = pattern.multiStateMap[j];
-					for (i = 0; i < pattern.width; i += 1) {
-						state = patternRow[i];
-						// invert state if Generations
-						if (invertForGenerations && state > 0) {
-							state = states - state;
+		// check if random cells are requested
+		if (rle.substr(0, len) === Keywords.randomCellsWord) {
+			// get the box size
+			rle = rle.substr(len);
+			boxWidth = parseInt(rle.substr(0, rle.indexOf(",")), 10);
+			boxHeight = parseInt(rle.substr(rle.indexOf(",") + 1), 10);
+
+			// create random box
+			i = 0;
+			for (iy = 0; iy < boxHeight; iy += 1) {
+				for (ix = 0; ix < boxWidth; ix += 1) {
+					if (states === 2) {
+						if (this.randGen.random() <= fill) {
+							cells[i] = ix;
+							cells[i + 1] = iy;
+							cells[i + 2] = 1;
+							i += 3;
 						}
-						// create (x, y, state) entry in cells array
-						cells[cells.length] = x + i * axx + j * axy;
-						cells[cells.length] = y + i * ayx + j * ayy;
-						cells[cells.length] = state;
+					} else {
+						if (this.randGen.random() <= fill) {
+							cells[i] = ix;
+							cells[i + 1] = iy;
+							state = ((this.randGen.random() * (states - 1)) | 0) + 1;
+							if (invertForGenerations) {
+								state = states - state;
+							}
+							cells[i + 2] = state;
+							i += 3;
+						}
 					}
 				}
 			}
+
+			// mark valid
+			valid = true;
 		} else {
+			// check the RLE is valid
+			rle += " ";
+			if (this.manager.decodeRLEString(pattern, rle, false, this.engine.allocator) !== -1) {
+				if (this.manager.decodeRLEString(pattern, rle, true, this.engine.allocator) !== -1) {
+					// convert to cell list
+					for (j = 0; j < pattern.height; j += 1) {
+						patternRow = pattern.multiStateMap[j];
+						for (i = 0; i < pattern.width; i += 1) {
+							state = patternRow[i];
+							// invert state if Generations
+							if (invertForGenerations && state > 0) {
+								state = states - state;
+							}
+							// create (x, y, state) entry in cells array
+							cells[cells.length] = x + i * axx + j * axy;
+							cells[cells.length] = y + i * ayx + j * ayy;
+							cells[cells.length] = state;
+						}
+					}
+					valid = true;
+				}
+			}
+		}
+
+		// return error if invalid
+		if (!valid) {
 			cells[0] = "error";
 		}
 
@@ -3159,6 +3207,15 @@
 			namePrefix = rle,
 			evolution = 0,
 			genList = [],
+			boxWidth = 0,
+			boxHeight = 0,
+			len = Keywords.randomCellsWord.length,
+			ix = 0,
+			iy = 0,
+			states = this.engine.multiNumStates <= 2 ? 2 : this.engine.multiNumStates,
+			state = 0,
+			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			fill = this.randomFillPercentage / 100,
 			stateMap = null;
 
 		// check for evolution
@@ -3170,14 +3227,51 @@
 			evolution = this.getEvolution(rle);
 		}
 
-		// check if the rle is a name
-		while (i < this.rleList.length && !found) {
-			if (this.rleList[i].name === namePrefix) {
-				found = true;
-				// make a copy of the cell list
-				cells = this.rleList[i].cells.slice();
-			} else {
-				i += 1;
+		// check if random cells are requested
+		if (namePrefix.substr(0, len) === Keywords.randomCellsWord) {
+			// get the box size
+			namePrefix = namePrefix.substr(len);
+			boxWidth = parseInt(namePrefix.substr(0, namePrefix.indexOf(",")), 10);
+			boxHeight = parseInt(namePrefix.substr(namePrefix.indexOf(",") + 1), 10);
+
+			// create random box
+			i = 0;
+			for (iy = 0; iy < boxHeight; iy += 1) {
+				for (ix = 0; ix < boxWidth; ix += 1) {
+					if (states === 2) {
+						if (this.randGen.random() <= fill) {
+							cells[i] = ix;
+							cells[i + 1] = iy;
+							cells[i + 2] = 1;
+							i += 3;
+						}
+					} else {
+						if (this.randGen.random() <= fill) {
+							cells[i] = ix;
+							cells[i + 1] = iy;
+							state = ((this.randGen.random() * (states - 1)) | 0) + 1;
+							if (invertForGenerations) {
+								state = states - state;
+							}
+							cells[i + 2] = state;
+							i += 3;
+						}
+					}
+				}
+			}
+
+			// mark rle as found
+			found = true;
+		} else {
+			// check if the rle is a name
+			while (i < this.rleList.length && !found) {
+				if (this.rleList[i].name === namePrefix) {
+					found = true;
+					// make a copy of the cell list
+					cells = this.rleList[i].cells.slice();
+				} else {
+					i += 1;
+				}
 			}
 		}
 
@@ -3482,7 +3576,7 @@
 				yOff += paste.bottomY;
 				for (y = 0; y < stateMap.length; y += 1) {
 					stateRow = stateMap[y];
-					if (this.engine.isPCA || this.engine.isRuleTree) {
+					if (numStates > 2 && !(this.engine.isLifeHistory || this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)) {
 						for (x = 0; x < stateRow.length; x += 1) {
 							source = stateRow[x];
 							dest = this.engine.getState(xOff + x, yOff + y, false);
@@ -3539,7 +3633,7 @@
 							if (result < 0) {
 								result = 0;
 							} else {
-								if (result >= numStates) {
+								if (result > numStates) {
 									result = numStates - 1;
 								}
 							}
@@ -3571,38 +3665,88 @@
 							}
 						}
 					} else {
-						if (this.engine.isLifeHistory || this.engine.isSuper) {
+						if (this.engine.isPCA || this.engine.isRuleTree) {
 							for (x = 0; x < stateRow.length; x += 1) {
 								source = stateRow[x];
-								if (mode === ViewConstants.pasteModeCopy) {
-									result = source;
+								dest = this.engine.getState(xOff + x, yOff + y, false);
+								switch (mode) {
+									case ViewConstants.pasteModeZero:
+										result = 0;
+										break;
+									case ViewConstants.pasteModeAnd:
+										result = source & dest;
+										break;
+									case ViewConstants.pasteMode0010:
+										result = source & (numStates - dest);
+										break;
+									case ViewConstants.pasteModeX:
+										result = source;
+										break;
+									case ViewConstants.pasteMode0100:
+										result = (numStates - source) & dest;
+										break;
+									case ViewConstants.pasteModeY:
+										result = dest;
+										break;
+									case ViewConstants.pasteModeXor:
+										result = source ^ dest;
+										break;
+									case ViewConstants.pasteModeOr:
+										result = source | dest;
+										break;
+									case ViewConstants.pasteModeNOr:
+										result = numStates - (source | dest);
+										break;
+									case ViewConstants.pasteModeXNOr:
+										result = numStates - (source ^ dest);
+										break;
+									case ViewConstants.pasteModeNotY:
+										result = numStates - dest;
+										break;
+									case ViewConstants.pasteMode1011:
+										result = source | (numStates - dest);
+										break;
+									case ViewConstants.pasteModeNotX:
+										result = numStates - source;
+										break;
+									case ViewConstants.pasteMode1101:
+										result = (numStates - source) | dest;
+										break;
+									case ViewConstants.pasteModeNAnd:
+										result = numStates - (source & dest);
+										break;
+									case ViewConstants.pasteModeOne:
+										result = 1;
+										break;
+								}
+								if (result < 0) {
+									result = 0;
 								} else {
-									sourceFlag = source & 1;
-									dest = this.engine.getState(xOff + x, yOff + y, false);
-									destFlag = dest & 1;
-									result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
+									if (result >= numStates) {
+										result = numStates - 1;
+									}
 								}
 								this.engine.setState(xOff + x, yOff + y, result, true);
-
+	
 								// check for grid growth
 								while (width !== this.engine.width || height !== this.engine.height) {
 									if (width !== this.engine.width) {
 										// double width
 										width <<= 1;
-
+	
 										// adjust drawing cell position
 										xOff += width >> 2;
-
+	
 										this.defaultX += width >> 2;
 										this.savedX += width >> 2;
 										this.panX += width >> 2;
 									}
-
+	
 									if (height !== this.engine.height) {
 										// same for height
 										height <<= 1;
 										yOff += height >> 2;
-
+	
 										this.defaultY += height >> 2;
 										this.savedY += height >> 2;
 										this.panY += height >> 2;
@@ -3610,37 +3754,77 @@
 								}
 							}
 						} else {
-							for (x = 0; x < stateRow.length; x += 1) {
-								source = stateRow[x];
-								sourceFlag = (source === 0 ? 0 : 1);
-								dest = this.engine.getState(xOff + x, yOff + y, false);
-								destFlag = (dest === 0 ? 0 : 1);
-								result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
-								if (result !== dest) {
+							if (this.engine.isLifeHistory || this.engine.isSuper) {
+								for (x = 0; x < stateRow.length; x += 1) {
+									source = stateRow[x];
+									if (mode === ViewConstants.pasteModeCopy) {
+										result = source;
+									} else {
+										sourceFlag = source & 1;
+										dest = this.engine.getState(xOff + x, yOff + y, false);
+										destFlag = dest & 1;
+										result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
+									}
 									this.engine.setState(xOff + x, yOff + y, result, true);
-
+	
 									// check for grid growth
 									while (width !== this.engine.width || height !== this.engine.height) {
 										if (width !== this.engine.width) {
 											// double width
 											width <<= 1;
-
+	
 											// adjust drawing cell position
 											xOff += width >> 2;
-
+	
 											this.defaultX += width >> 2;
 											this.savedX += width >> 2;
 											this.panX += width >> 2;
 										}
-
+	
 										if (height !== this.engine.height) {
 											// same for height
 											height <<= 1;
 											yOff += height >> 2;
-
+	
 											this.defaultY += height >> 2;
 											this.savedY += height >> 2;
 											this.panY += height >> 2;
+										}
+									}
+								}
+							} else {
+								for (x = 0; x < stateRow.length; x += 1) {
+									source = stateRow[x];
+									sourceFlag = (source === 0 ? 0 : 1);
+									dest = this.engine.getState(xOff + x, yOff + y, false);
+									destFlag = (dest === 0 ? 0 : 1);
+									result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
+									if (result !== dest) {
+										this.engine.setState(xOff + x, yOff + y, result, true);
+	
+										// check for grid growth
+										while (width !== this.engine.width || height !== this.engine.height) {
+											if (width !== this.engine.width) {
+												// double width
+												width <<= 1;
+	
+												// adjust drawing cell position
+												xOff += width >> 2;
+	
+												this.defaultX += width >> 2;
+												this.savedX += width >> 2;
+												this.panX += width >> 2;
+											}
+	
+											if (height !== this.engine.height) {
+												// same for height
+												height <<= 1;
+												yOff += height >> 2;
+	
+												this.defaultY += height >> 2;
+												this.savedY += height >> 2;
+												this.panY += height >> 2;
+											}
 										}
 									}
 								}
@@ -16834,8 +17018,10 @@
 			if (pattern.title) {
 				comments = pattern.title;
 			}
-		} else{
-			comments = args[1];
+		} else {
+			if (args.length > 1) {
+				comments = args[1];
+			}
 			me.setMenuColours();
 		}
 

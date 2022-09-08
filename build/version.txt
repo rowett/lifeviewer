@@ -1,3 +1,8 @@
+Build 755
+- new script command [[ RANDCELLS W H ]] defines a box of random cells
+	- must be used after [[ RLE ]] or [[ PASTE ]] commands
+	- W and H specify the width and heigh of the box (from 1 to 4096)
+
 Build 754
 - [[ COLOR ]] command now accepts hexadecimal colour specification (must be # followed by six hex digits)
 
