@@ -286,37 +286,51 @@
 				this.nonNumericTokenError(scriptReader, scriptErrors, whichColour + " " + elementName + " " + redValue, "GREEN", "numeric");
 			}
 		} else {
-			// check for colour name
+			// check for hex specification
 			peekToken = scriptReader.peekAtNextToken();
 
-			// check if it is blank or a valid script command
-			colourTriple = ColourManager.colourList[peekToken.toLowerCase()];
-			if (colourTriple !== undefined) {
-				// consume the token
+			colourTriple = this.decodeHex(peekToken);
+			if (colourTriple.length === 3) {
+				// conume the token
 				peekToken = scriptReader.getNextToken();
 
 				// get the rgb value
-				redValue = colourTriple[1];
-				greenValue = colourTriple[2];
-				blueValue = colourTriple[3];
+				redValue = colourTriple[0];
+				greenValue = colourTriple[1];
+				blueValue = colourTriple[2];
 
 				// mark good colour
 				badColour = false;
 			} else {
-				// illegal colour name
-				if (peekToken === "" || this.isScriptCommand(peekToken)) {
-					// argument missing
-					scriptErrors[scriptErrors.length] = [whichColour + " " + elementName, "name missing"];
-				} else {
-					// argument invalid
-					if (peekToken.charAt(0) === "#") {
-						scriptErrors[scriptErrors.length] = [whichColour + " " + elementName + " " + peekToken, "bad hex definition"];
-					} else {
-						scriptErrors[scriptErrors.length] = [whichColour + " " + elementName + " " + peekToken, "name not known"];
-					}
-
+				// check for named colour
+				colourTriple = ColourManager.colourList[peekToken.toLowerCase()];
+				if (colourTriple !== undefined) {
 					// consume the token
 					peekToken = scriptReader.getNextToken();
+	
+					// get the rgb value
+					redValue = colourTriple[1];
+					greenValue = colourTriple[2];
+					blueValue = colourTriple[3];
+	
+					// mark good colour
+					badColour = false;
+				} else {
+					// illegal colour name
+					if (peekToken === "" || this.isScriptCommand(peekToken)) {
+						// argument missing
+						scriptErrors[scriptErrors.length] = [whichColour + " " + elementName, "name missing"];
+					} else {
+						// argument invalid
+						if (peekToken.charAt(0) === "#") {
+							scriptErrors[scriptErrors.length] = [whichColour + " " + elementName + " " + peekToken, "bad hex definition"];
+						} else {
+							scriptErrors[scriptErrors.length] = [whichColour + " " + elementName + " " + peekToken, "name not known"];
+						}
+
+						// consume the token
+						peekToken = scriptReader.getNextToken();
+					}
 				}
 			}
 		}

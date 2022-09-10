@@ -1,3 +1,6 @@
+Build 756
+- fixed issue reading hex colour specification for some elements
+
 Build 755
 - new script command [[ RANDCELLS W H ]] defines a box of random cells
 	- must be used after [[ RLE ]] or [[ PASTE ]] commands
