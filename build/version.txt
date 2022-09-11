@@ -1,3 +1,8 @@
+Build 757
+- more accurate cell location when using rectangles on triangular grid
+- hide notifications when Help or Settings opened
+- add rectangular grid icon
+
 Build 756
 - fixed issue reading hex colour specification for some elements
 
