@@ -1,3 +1,7 @@
+Build 758
+- more accurate cell location when using hexagons
+- report different custom or weighted neighbourhoods as an error for alternating rules
+
 Build 757
 - more accurate cell location when using rectangles on triangular grid
 - hide notifications when Help or Settings opened

@@ -1003,6 +1003,9 @@
 		this.neighborhoodHROT = source.neighborhoodHROT;
 		this.multiNumStates = source.multiNumStates;
 		this.numStates = source.numStates;
+		this.customGridType = source.customGridType;
+		this.customNeighbourCount = source.customNeighbourCount;
+		this.customNeighbourhood = source.customNeighbourhood;
 
 		// copy arrays
 		if (source.survivalHROT) {
@@ -1089,6 +1092,11 @@
 		// check for "none" rules
 		if (this.isNone || source.isNone) {
 			return "Alternate can not use none";
+		}
+
+		// check for custom neighbourhoods
+		if (this.customGridType !== source.customGridType || this.customNeighbourCount !== source.customNeighbourCount || this.customNeighbourhood !== source.customNeighbourhood) {
+			return "Alternate has different neighbourhood";
 		}
 
 		// all checks passed
@@ -4890,6 +4898,7 @@
 							}
 						} else {
 							// rules were incompatible
+							pattern.originalRuleName = firstPattern.originalRuleName;
 							result = false;
 						}
 					}

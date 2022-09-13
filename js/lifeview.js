@@ -4851,6 +4851,32 @@
 			}
 			xFrac = xPos - Math.floor(xPos);
 			xPos -= xFrac;
+
+			// handle hex corners
+			if (this.engine.isHex) {
+				if (xFrac < 0.25) {
+					if (yFrac < 0.1) {
+						yPos -= 1;
+						xPos -= 1;
+					} else {
+						if (yFrac >= 0.9) {
+							yPos += 1;
+
+						}
+					}
+				} else {
+					if (xFrac >= 0.75) {
+						if (yFrac < 0.1) {
+							yPos -= 1;
+						} else {
+							if (yFrac >= 0.9) {
+								yPos += 1;
+								xPos += 1;
+							}
+						}
+					}
+				}
+			}
 		}
 
 		// adjust for triangular grid
@@ -5145,6 +5171,32 @@
 		}
 		xFrac = xPos - Math.floor(xPos);
 		xPos -= xFrac;
+
+		// handle hex corners
+		if (this.engine.isHex) {
+			if (xFrac < 0.25) {
+				if (yFrac < 0.1) {
+					yPos -= 1;
+					xPos -= 1;
+				} else {
+					if (yFrac >= 0.9) {
+						yPos += 1;
+
+					}
+				}
+			} else {
+				if (xFrac >= 0.75) {
+					if (yFrac < 0.1) {
+						yPos -= 1;
+					} else {
+						if (yFrac >= 0.9) {
+							yPos += 1;
+							xPos += 1;
+						}
+					}
+				}
+			}
+		}
 
 		// adjust for triangular grid
 		if (this.engine.isTriangular && !this.engine.forceRectangles) {
