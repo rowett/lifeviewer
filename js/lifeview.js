@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 757,
+		/** @const {number} */ versionBuild : 759,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5306,8 +5306,10 @@
 			xPos += this.xOffset;
 			yPos += this.yOffset;
 			if (this.engine.boundedGridType !== -1 && !this.posDefined) {
-				xPos -= Math.floor((this.specifiedWidth === -1 ? this.patternWidth : this.specifiedWidth) / 2);
-				yPos -= Math.floor((this.specifiedHeight === -1 ? this.patternHeight : this.specifiedHeight) / 2);
+				//xPos -= Math.floor((this.specifiedWidth === -1 ? this.patternWidth : this.specifiedWidth) / 2);
+				//yPos -= Math.floor((this.specifiedHeight === -1 ? this.patternHeight : this.specifiedHeight) / 2);
+				xPos -= Math.floor(this.patternWidth / 2);
+				yPos -= Math.floor(this.patternHeight / 2);
 			}
 
 			// check the size of the coordinates

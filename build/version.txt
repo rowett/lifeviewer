@@ -1,3 +1,6 @@
+Build 759
+- ignore pattern specified width and height for bounded grid position
+
 Build 758
 - more accurate cell location when using hexagons
 - report different custom or weighted neighbourhoods as an error for alternating rules

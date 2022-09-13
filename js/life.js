@@ -25089,6 +25089,7 @@
 		this.deaths = deaths;
 		this.anythingAlive = population;
 	};
+
 	// update the life grid using tiles for RuleTree patterns
 	Life.prototype.nextGenerationRuleTreeTile = function() {
 		// check neighbourhood
