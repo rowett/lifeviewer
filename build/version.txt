@@ -1,3 +1,11 @@
+Build 761
+- disable dragging in when UI disabled
+
+Build 760
+- added two new range-1 triangular neighbourhoods:
+	- Triangular Biohazard (postfix LB)
+	- Triangular Radiation (postfix LR)
+
 Build 759
 - ignore pattern specified width and height for bounded grid position
 

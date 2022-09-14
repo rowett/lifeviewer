@@ -399,6 +399,12 @@
 		// valid triangular Outer rule characters
 		/** @const {string} */ this.validTriangularOuterRuleLetters = "0123456";
 
+		// valid triangular Biohazard rule characters
+		/** @const {string} */ this.validTriangularBiohazardRuleLetters = "0123456789";
+
+		// valid triangular Radiation rule characters
+		/** @const {string} */ this.validTriangularRadiationRuleLetters = "0123";
+
 		// triangular mask
 		/** @const {number} */ this.triangularMask = 8191;
 
@@ -413,6 +419,12 @@
 
 		// triangular Outer mask
 		/** @const {number} */ this.triangularOuterMask = 2741;
+
+		// triangular Biohazard mask
+		/** @const {number} */ this.triangularBiohazardMask = 3775;
+
+		// triangular Radiation mask
+		/** @const {number} */ this.triangularRadiationMask = 4420;
 
 		// valid hex tripod rule characters
 		/** @const {string} */ this.validHexTripodRuleLetters = "0123";
@@ -506,6 +518,12 @@
 		// lower case name of Triangular Outer postfix
 		/** @const {string} */ this.triangularOuterPostfix = "lo";
 
+		// lower case name of Triangular Biohazard postfix
+		/** @const {string} */ this.triangularBiohazardPostfix = "lb";
+
+		// lower case name of Triangular Radiation postfix
+		/** @const {string} */ this.triangularRadiationPostfix = "lr";
+
 		// lower case name of Hex postfix
 		/** @const {string} */ this.hexPostfix = "h";
 
@@ -584,6 +602,8 @@
 		/** @const {number} */ this.triangularVertices = 2;
 		/** @const {number} */ this.triangularInner = 3;
 		/** @const {number} */ this.triangularOuter = 4;
+		/** @const {number} */ this.triangularBiohazard = 5;
+		/** @const {number} */ this.triangularRadiation = 6;
 	
 		// hex neighbourhoods
 		/** @const {number} */ this.hexAll = 0;
@@ -1918,6 +1938,18 @@
 		// e3 -- e3 -- e3         -- -- o3 -- --
 		// Mask is: 5454 = b1010101001110
 
+		// Triangular Biohazard neighbourhood is:
+		// -- e1 -- e1 --         -- o1 o1 o1 --
+		// e2 e2 EC e2 e2   and   o2 o2 OC o2 o2
+		// -- e3 e3 e3 --         -- o3 -- o3 --
+		// Mask is: 3775 = b0111010111111
+
+		// Triangular Radiation neighbourhood is:
+		// -- -- e1 -- --         o1 -- -- -- o1
+		// -- -- EC -- --   and   -- -- OC -- --
+		// e3 -- -- -- e3         -- -- o3 -- --
+		// Mask is: 4420 = b1000101000100
+
 		// bit order is:
 		// e3 e3 e3 e3 e3 e1 e1 e1 e2 e2 EC e2 e2
 		// and:
@@ -2572,6 +2604,16 @@
 				digits = 6;
 				ruleMask = this.triangularOuterMask;
 				break;
+
+			case this.triangularBiohazard:
+				digits = 9;
+				ruleMask = this.triangularBiohazardMask;
+				break;
+
+			case this.triangularRadiation:
+				digits = 3;
+				ruleMask = this.triangularRadiationMask;
+				break;
 		}
 
 		// clear arrays
@@ -2679,6 +2721,14 @@
 
 			case this.triangularOuter:
 				letters = this.validTriangularOuterRuleLetters;
+				break;
+
+			case this.triangularBiohazard:
+				letters = this.validTriangularBiohazardRuleLetters;
+				break;
+
+			case this.triangularRadiation:
+				letters = this.validTriangularRadiationRuleLetters;
 				break;
 		}
 
@@ -3041,6 +3091,12 @@
 							break;
 						case this.triangularOuter:
 							pattern.ruleName += this.triangularOuterPostfix.toUpperCase();
+							break;
+						case this.triangularBiohazard:
+							pattern.ruleName += this.triangularBiohazardPostfix.toUpperCase();
+							break;
+						case this.triangularRadiation:
+							pattern.ruleName += this.triangularRadiationPostfix.toUpperCase();
 							break;
 						}
 					}
@@ -5138,6 +5194,12 @@
 		    // triangular Outer postfix length
 		    triangularOuterLength = this.triangularOuterPostfix.length,
 
+		    // triangular Biohazard postfix length
+		    triangularBiohazardLength = this.triangularBiohazardPostfix.length,
+
+		    // triangular Radiation postfix length
+		    triangularRadiationLength = this.triangularRadiationPostfix.length,
+
 		    // von neumann index
 		    vonNeumannIndex = -1,
 
@@ -5639,6 +5701,34 @@
 
 									// update the valid rule letters to triangular letters
 									validRuleLetters = this.validTriangularOuterRuleLetters;
+								}
+
+								// check for triangular Biohazard rules
+								triangularIndex = rule.lastIndexOf(this.triangularBiohazardPostfix);
+								if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularBiohazardLength)) {
+									// rule is a triangular type
+									pattern.isTriangular = true;
+									pattern.triangularNeighbourhood = this.triangularBiohazard;
+
+									// remove the postfix
+									rule = rule.substr(0, rule.length - triangularBiohazardLength);
+
+									// update the valid rule letters to triangular letters
+									validRuleLetters = this.validTriangularBiohazardRuleLetters;
+								}
+
+								// check for triangular Radiation rules
+								triangularIndex = rule.lastIndexOf(this.triangularRadiationPostfix);
+								if ((triangularIndex !== -1) && (triangularIndex === rule.length - triangularRadiationLength)) {
+									// rule is a triangular type
+									pattern.isTriangular = true;
+									pattern.triangularNeighbourhood = this.triangularRadiation;
+
+									// remove the postfix
+									rule = rule.substr(0, rule.length - triangularRadiationLength);
+
+									// update the valid rule letters to triangular letters
+									validRuleLetters = this.validTriangularRadiationRuleLetters;
 								}
 
 								// check for Hex tripod rules

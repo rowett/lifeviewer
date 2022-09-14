@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 759,
+		/** @const {number} */ versionBuild : 761,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2876,6 +2876,12 @@
 									break;
 								case this.manager.triangularOuter:
 									itemName += " Outer";
+									break;
+								case this.manager.triangularBiohazard:
+									itemName += " Biohazard";
+									break;
+								case this.manager.triangularRadiation:
+									itemName += " Radiation";
 									break;
 							}
 						} else {
@@ -9226,7 +9232,9 @@
 
 	// view menu background drag callback
 	View.prototype.viewDrag = function(x, y, dragOn, me) {
-		me.viewDoDrag(x, y, dragOn, me, false);
+		if (!me.noGUI) {
+			me.viewDoDrag(x, y, dragOn, me, false);
+		}
 	};
 
 	// drag help
@@ -10336,6 +10344,14 @@
 					neighbours = 12;
 					postfix = this.manager.triangularPostfix;
 					break;
+				case this.manager.triangularBiohazard:
+					neighbours = 9;
+					postfix = this.manager.triangularBiohazardPostfix;
+					break;
+				case this.manager.triangularRadiation:
+					neighbours = 3;
+					postfix = this.manager.triangularRadiationPostfix;
+					break;
 				}
 			} else {
 				if (this.engine.isVonNeumann) {
@@ -10421,7 +10437,6 @@
 
 		// return the rule name
 		return result;
-
 	};
 
 	// create random Margolus rule name
