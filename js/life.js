@@ -536,6 +536,9 @@
 		/** @type {boolean} */ this.boundedGridHorizontalTwist = false;
 		/** @type {boolean} */ this.boundedGridVerticalTwist = false;
 
+		// bounded grid sphere axis
+		/** @type {boolean} */ this.boundedGridSphereAxisTopLeft = true;
+
 		// remove pattern radius
 		/** @type {number}*/ this.removePatternRadius = ViewConstants.defaultDeleteRadius;
 
@@ -10751,8 +10754,8 @@
 		    width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
 
-			// box offset
-			boxOffset = (this.isMargolus ? -1 : 0),
+		    // box offset
+		    boxOffset = (this.isMargolus ? -1 : 0),
 
 		    // bottom left
 		    leftX = Math.round((this.width - width) / 2) + boxOffset,
@@ -10765,94 +10768,185 @@
 		    // counters
 		    i = 0,
 		    x = 0,
-			y = 0,
-			state = 0;
+		    y = 0,
+		    state = 0;
 
-		// copy adjacent edges
-		for (i = 0; i < width; i += 1) {
-			y = bottomY + i;
-			x = leftX + i;
+		// check which axis to join
+		if (this.boundedGridSphereAxisTopLeft) {
+			// copy adjacent edges
+			for (i = 0; i < width; i += 1) {
+				y = bottomY + i;
+				x = leftX + i;
 
-			// copy left column to below bottom row
-			state = grid[y][leftX];
-			if (state !== 0) {
-				grid[bottomY - 1][x] = state;
+				// copy left column to below bottom row
+				state = grid[y][leftX];
+				if (state !== 0) {
+					grid[bottomY - 1][x] = state;
 
-				// set tile grid
-				colourTileGrid[(bottomY - 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-				staticTileGrid[(bottomY - 1) >> 4][x >> 8] &= ~(1 << (~(x >> 4) & 15));
+					// set tile grid
+					colourTileGrid[(bottomY - 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					staticTileGrid[(bottomY - 1) >> 4][x >> 8] &= ~(1 << (~(x >> 4) & 15));
 
-				// check for tile boundary
-				if (((bottomY - 1) & 15) === 15) {
-					colourTileGrid[((bottomY - 1) >> 4) + 1][x >> 8] |= (1 << (~(x >> 4) & 15));
-					staticTileGrid[((bottomY - 1) >> 4) + 1][x >> 8] &= ~(1 << (~(x >> 4) & 15));
+					// check for tile boundary
+					if (((bottomY - 1) & 15) === 15) {
+						colourTileGrid[((bottomY - 1) >> 4) + 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+						staticTileGrid[((bottomY - 1) >> 4) + 1][x >> 8] &= ~(1 << (~(x >> 4) & 15));
+					}
+				}
+
+				// copy right column to above top row
+				state = grid[y][rightX];
+				if (state !== 0) {
+					grid[topY + 1][x] = state;
+
+					// set tile grid
+					colourTileGrid[(topY + 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					staticTileGrid[(topY + 1) >> 4][x >> 8] &= ~(1 << (~(x >> 4) & 15));
+
+					// check for tile boundary
+					if (((topY + 1) & 15) === 0) {
+						colourTileGrid[((topY + 1) >> 4) - 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+						staticTileGrid[((topY + 1) >> 4) - 1][x >> 8] &= ~(1 << (~(x >> 4) & 15));
+					}
+				}
+
+				// copy bottom row to left of left column
+				state = grid[bottomY][x];
+				if (state !== 0) {
+					grid[y][leftX - 1] = state;
+
+					// set tile grid
+					colourTileGrid[y >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+					staticTileGrid[y >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
+
+					// check for tile boundary
+					if (((leftX - 1) & 15) === 15) {
+						colourTileGrid[y >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+						staticTileGrid[y >> 4][(leftX + 15) >> 8] &= ~(1 << (~((leftX + 15) >> 4) & 15));
+					}
+				}
+
+				// copy top row to right of right column
+				state = grid[topY][x];
+				if (state !== 0) {
+					grid[y][rightX + 1] = state;
+
+					// set tile grid
+					colourTileGrid[y >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+					staticTileGrid[y >> 4][(rightX + 1) >> 8] &= ~(1 << (~((rightX + 1) >> 4) & 15));
+
+					// check for tile boundary
+					if (((rightX + 1) & 15) === 0) {
+						colourTileGrid[y >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+						staticTileGrid[y >> 4][(rightX - 15) >> 8] &= ~(1 << (~((rightX - 15) >> 4) & 15));
+					}
 				}
 			}
 
-			// copy right column to above top row
-			state = grid[y][rightX];
-			if (state !== 0) {
-				grid[topY + 1][x] = state;
+			// top left corner
+			state = grid[topY][leftX];
+			grid[topY + 1][leftX - 1] = state;
 
-				// set tile grid
-				colourTileGrid[(topY + 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-				staticTileGrid[(topY + 1) >> 4][x >> 8] &= ~(1 << (~(x >> 4) & 15));
+			// top right corner
+			state = grid[topY][rightX];
+			grid[topY + 1][rightX + 1] = state;
 
-				// check for tile boundary
-				if (((topY + 1) & 15) === 0) {
-					colourTileGrid[((topY + 1) >> 4) - 1][x >> 8] |= (1 << (~(x >> 4) & 15));
-					staticTileGrid[((topY + 1) >> 4) - 1][x >> 8] &= ~(1 << (~(x >> 4) & 15));
+			// bottom left corner
+			state = grid[bottomY][leftX];
+			grid[bottomY - 1][leftX - 1] = state;
+
+			// bottom right corner
+			state = grid[bottomY][rightX];
+			grid[bottomY - 1][rightX + 1] = state;
+		} else {
+			// copy adjacent edges
+			for (i = 0; i < width; i += 1) {
+				y = bottomY + i;
+				x = leftX + (width - i - 1);
+
+				// copy right column to below bottom row
+				state = grid[y][rightX];
+				if (state !== 0) {
+					grid[bottomY - 1][x] = state;
+
+					// set tile grid
+					colourTileGrid[(bottomY - 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					staticTileGrid[(bottomY - 1) >> 4][x >> 8] &= ~(1 << (~(x >> 4) & 15));
+
+					// check for tile boundary
+					if (((bottomY - 1) & 15) === 15) {
+						colourTileGrid[((bottomY - 1) >> 4) + 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+						staticTileGrid[((bottomY - 1) >> 4) + 1][x >> 8] &= ~(1 << (~(x >> 4) & 15));
+					}
+				}
+
+				// copy left column to above top row
+				state = grid[y][leftX];
+				if (state !== 0) {
+					grid[topY + 1][x] = state;
+
+					// set tile grid
+					colourTileGrid[(topY + 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					staticTileGrid[(topY + 1) >> 4][x >> 8] &= ~(1 << (~(x >> 4) & 15));
+
+					// check for tile boundary
+					if (((topY + 1) & 15) === 0) {
+						colourTileGrid[((topY + 1) >> 4) - 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+						staticTileGrid[((topY + 1) >> 4) - 1][x >> 8] &= ~(1 << (~(x >> 4) & 15));
+					}
+				}
+
+				// copy bottom row to right of right column
+				state = grid[bottomY][x];
+				if (state !== 0) {
+					grid[y][rightX + 1] = state;
+
+					// set tile grid
+					colourTileGrid[y >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+					staticTileGrid[y >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
+
+					// check for tile boundary
+					if (((rightX + 1) & 15) === 0) {
+						colourTileGrid[y >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+						staticTileGrid[y >> 4][(leftX + 15) >> 8] &= ~(1 << (~((leftX + 15) >> 4) & 15));
+						colourTileGrid[y >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+						staticTileGrid[y >> 4][(rightX - 15) >> 8] &= ~(1 << (~((rightX - 15) >> 4) & 15));
+					}
+				}
+
+				// copy top row to left of left column
+				state = grid[topY][x];
+				if (state !== 0) {
+					grid[y][leftX - 1] = state;
+
+					// set tile grid
+					colourTileGrid[y >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+					staticTileGrid[y >> 4][(rightX + 1) >> 8] &= ~(1 << (~((rightX + 1) >> 4) & 15));
+
+					// check for tile boundary
+					if (((leftX + 15) & 15) === 15) {
+						colourTileGrid[y >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+						staticTileGrid[y >> 4][(leftX + 15) >> 8] &= ~(1 << (~((leftX + 15) >> 4) & 15));
+					}
 				}
 			}
 
-			// copy bottom row to left of left column
-			state = grid[bottomY][x];
-			if (state !== 0) {
-				grid[y][leftX - 1] = state;
+			// top left corner
+			state = grid[topY][leftX];
+			grid[topY + 1][leftX - 1] = state;
 
-				// set tile grid
-				colourTileGrid[y >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
-				staticTileGrid[y >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
+			// top right corner
+			state = grid[topY][rightX];
+			grid[topY + 1][rightX + 1] = state;
 
-				// check for tile boundary
-				if (((leftX - 1) & 15) === 15) {
-					colourTileGrid[y >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
-					staticTileGrid[y >> 4][(leftX + 15) >> 8] &= ~(1 << (~((leftX + 15) >> 4) & 15));
-				}
-			}
+			// bottom left corner
+			state = grid[bottomY][leftX];
+			grid[bottomY - 1][leftX - 1] = state;
 
-			// copy top row to right of right column
-			state = grid[topY][x];
-			if (state !== 0) {
-				grid[y][rightX + 1] = state;
-
-				// set tile grid
-				colourTileGrid[y >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
-				staticTileGrid[y >> 4][(rightX + 1) >> 8] &= ~(1 << (~((rightX + 1) >> 4) & 15));
-
-				// check for tile boundary
-				if (((rightX + 1) & 15) === 0) {
-					colourTileGrid[y >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
-					staticTileGrid[y >> 4][(rightX - 15) >> 8] &= ~(1 << (~((rightX - 15) >> 4) & 15));
-				}
-			}
+			// bottom right corner
+			state = grid[bottomY][rightX];
+			grid[bottomY - 1][rightX + 1] = state;
 		}
-
-		// top left corner
-		state = grid[topY][leftX];
-		grid[topY + 1][leftX - 1] = state;
-
-		// top right corner
-		state = grid[topY][rightX];
-		grid[topY + 1][rightX + 1] = state;
-
-		// bottom left corner
-		state = grid[bottomY][leftX];
-		grid[bottomY - 1][leftX - 1] = state;
-
-		// bottom right corner
-		state = grid[bottomY][rightX];
-		grid[bottomY - 1][rightX + 1] = state;
 	};
 
 	// process torus
@@ -11524,8 +11618,8 @@
 		    width = this.boundedGridWidth,
 		    height = this.boundedGridHeight,
 
-			// box offset
-			boxOffset = (this.isMargolus ? -1 : 0),
+		    // box offset
+		    boxOffset = (this.isMargolus ? -1 : 0),
 
 		    // bottom left
 		    leftX = Math.round((this.width - width) / 2) + boxOffset,
@@ -11549,89 +11643,177 @@
 			tileGrid = this.tileGrid;
 		}
 
-		// copy adjacent edges
-		for (i = 0; i < width; i += 1) {
-			y = bottomY + i;
-			x = leftX + i;
+		// check which axis to join
+		if (this.boundedGridSphereAxisTopLeft) {
+			// copy adjacent edges
+			for (i = 0; i < width; i += 1) {
+				y = bottomY + i;
+				x = leftX + i;
 
-			// copy left column to below bottom row
-			if ((grid[y][leftX >> 4] & (1 << (~leftX & 15))) !== 0) {
-				grid[bottomY - 1][x >> 4] |= (1 << (~x & 15));
+				// copy left column to below bottom row
+				if ((grid[y][leftX >> 4] & (1 << (~leftX & 15))) !== 0) {
+					grid[bottomY - 1][x >> 4] |= (1 << (~x & 15));
 
-				// set tile grid
-				tileGrid[(bottomY - 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-				colourTileGrid[(bottomY - 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					// set tile grid
+					tileGrid[(bottomY - 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					colourTileGrid[(bottomY - 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 
-				// check for tile boundary
-				if (((bottomY - 1) & 15) === 15) {
-					tileGrid[((bottomY - 1) >> 4) + 1][x >> 8] |= (1 << (~(x >> 4) & 15));
-					colourTileGrid[((bottomY - 1) >> 4) + 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+					// check for tile boundary
+					if (((bottomY - 1) & 15) === 15) {
+						tileGrid[((bottomY - 1) >> 4) + 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+						colourTileGrid[((bottomY - 1) >> 4) + 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+					}
+				}
+
+				// copy right column to above top row
+				if ((grid[y][rightX >> 4] & (1 << (~rightX & 15))) !== 0) {
+					grid[topY + 1][x >> 4] |= (1 << (~x & 15));
+
+					// set tile grid
+					tileGrid[(topY + 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					colourTileGrid[(topY + 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+
+					// check for tile boundary
+					if (((topY + 1) & 15) === 0) {
+						tileGrid[((topY + 1) >> 4) - 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+						colourTileGrid[((topY + 1) >> 4) - 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+					}
+				}
+
+				// copy bottom row to left of left column
+				if ((grid[bottomY][x >> 4] & (1 << (~x & 15))) !== 0) {
+					grid[y][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+
+					// set tile grid
+					tileGrid[y >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+					colourTileGrid[y >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+					// check for tile boundary
+					if (((leftX - 1) & 15) === 15) {
+						tileGrid[y >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+						colourTileGrid[y >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+					}
+				}
+
+				// copy top row to right of right column
+				if ((grid[topY][x >> 4] & (1 << (~x & 15))) !== 0) {
+					grid[y][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+
+					// set tile grid
+					tileGrid[y >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+					colourTileGrid[y >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+
+					// check for tile boundary
+					if (((rightX + 1) & 15) === 0) {
+						tileGrid[y >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+						colourTileGrid[y >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+					}
 				}
 			}
 
-			// copy right column to above top row
-			if ((grid[y][rightX >> 4] & (1 << (~rightX & 15))) !== 0) {
-				grid[topY + 1][x >> 4] |= (1 << (~x & 15));
+			// top left corner
+			if ((grid[topY][leftX >> 4] & (1 << (~leftX & 15))) !== 0) {
+				grid[topY + 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+			}
 
-				// set tile grid
-				tileGrid[(topY + 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-				colourTileGrid[(topY + 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+			// top right corner
+			if ((grid[topY][rightX >> 4] & (1 << (~rightX & 15))) !== 0) {
+				grid[topY + 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+			}
 
-				// check for tile boundary
-				if (((topY + 1) & 15) === 0) {
-					tileGrid[((topY + 1) >> 4) - 1][x >> 8] |= (1 << (~(x >> 4) & 15));
-					colourTileGrid[((topY + 1) >> 4) - 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+			// bottom left corner
+			if ((grid[bottomY][leftX >> 4] & (1 << (~leftX & 15))) !== 0) {
+				grid[bottomY - 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+			}
+
+			// bottom right corner
+			if ((grid[bottomY][rightX >> 4] & (1 << (~rightX & 15))) !== 0) {
+				grid[bottomY - 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+			}
+		} else {
+			// copy adjacent edges
+			for (i = 0; i < width; i += 1) {
+				y = bottomY + i;
+				x = leftX + (width - i - 1);
+
+				// copy right column to below bottom row
+				if ((grid[y][rightX >> 4] & (1 << (~rightX & 15))) !== 0) {
+					grid[bottomY - 1][x >> 4] |= (1 << (~x & 15));
+
+					// set tile grid
+					tileGrid[(bottomY - 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					colourTileGrid[(bottomY - 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+
+					// check for tile boundary
+					if (((bottomY - 1) & 15) === 15) {
+						tileGrid[((bottomY - 1) >> 4) + 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+						colourTileGrid[((bottomY - 1) >> 4) + 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+					}
+				}
+
+				// copy left column to above top row
+				if ((grid[y][leftX >> 4] & (1 << (~leftX & 15))) !== 0) {
+					grid[topY + 1][x >> 4] |= (1 << (~x & 15));
+
+					// set tile grid
+					tileGrid[(topY + 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+					colourTileGrid[(topY + 1) >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+
+					// check for tile boundary
+					if (((topY + 1) & 15) === 0) {
+						tileGrid[((topY + 1) >> 4) - 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+						colourTileGrid[((topY + 1) >> 4) - 1][x >> 8] |= (1 << (~(x >> 4) & 15));
+					}
+				}
+
+				// copy bottom row to right of right column
+				if ((grid[bottomY][x >> 4] & (1 << (~x & 15))) !== 0) {
+					grid[y][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+
+					// set tile grid
+					tileGrid[y >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+					colourTileGrid[y >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
+					// check for tile boundary
+					if (((rightX + 1) & 15) === 15) {
+						tileGrid[y >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+						colourTileGrid[y >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
+					}
+				}
+
+				// copy top row to left of left column
+				if ((grid[topY][x >> 4] & (1 << (~x & 15))) !== 0) {
+					grid[y][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+
+					// set tile grid
+					tileGrid[y >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+					colourTileGrid[y >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+
+					// check for tile boundary
+					if (((leftX - 1) & 15) === 0) {
+						tileGrid[y >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+						colourTileGrid[y >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
+					}
 				}
 			}
 
-			// copy bottom row to left of left column
-			if ((grid[bottomY][x >> 4] & (1 << (~x & 15))) !== 0) {
-				grid[y][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
-
-				// set tile grid
-				tileGrid[y >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
-				colourTileGrid[y >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
-				// check for tile boundary
-				if (((leftX - 1) & 15) === 15) {
-					tileGrid[y >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
-					colourTileGrid[y >> 4][(leftX + 15) >> 8] |= (1 << (~((leftX + 15) >> 4) & 15));
-				}
+			// top left corner
+			if ((grid[topY][leftX >> 4] & (1 << (~leftX & 15))) !== 0) {
+				grid[topY + 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
 			}
 
-			// copy top row to right of right column
-			if ((grid[topY][x >> 4] & (1 << (~x & 15))) !== 0) {
-				grid[y][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
-
-				// set tile grid
-				tileGrid[y >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
-				colourTileGrid[y >> 4][(rightX + 1) >> 8] |= (1 << (~((rightX + 1) >> 4) & 15));
-
-				// check for tile boundary
-				if (((rightX + 1) & 15) === 0) {
-					tileGrid[y >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
-					colourTileGrid[y >> 4][(rightX - 15) >> 8] |= (1 << (~((rightX - 15) >> 4) & 15));
-				}
+			// top right corner
+			if ((grid[topY][rightX >> 4] & (1 << (~rightX & 15))) !== 0) {
+				grid[topY + 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
 			}
-		}
 
-		// top left corner
-		if ((grid[topY][leftX >> 4] & (1 << (~leftX & 15))) !== 0) {
-			grid[topY + 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
-		}
+			// bottom left corner
+			if ((grid[bottomY][leftX >> 4] & (1 << (~leftX & 15))) !== 0) {
+				grid[bottomY - 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+			}
 
-		// top right corner
-		if ((grid[topY][rightX >> 4] & (1 << (~rightX & 15))) !== 0) {
-			grid[topY + 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
-		}
-
-		// bottom left corner
-		if ((grid[bottomY][leftX >> 4] & (1 << (~leftX & 15))) !== 0) {
-			grid[bottomY - 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
-		}
-
-		// bottom right corner
-		if ((grid[bottomY][rightX >> 4] & (1 << (~rightX & 15))) !== 0) {
-			grid[bottomY - 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+			// bottom right corner
+			if ((grid[bottomY][rightX >> 4] & (1 << (~rightX & 15))) !== 0) {
+				grid[bottomY - 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+			}
 		}
 	};
 

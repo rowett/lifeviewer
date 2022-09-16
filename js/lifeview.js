@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 763,
+		/** @const {number} */ versionBuild : 764,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -16757,6 +16757,7 @@
 			me.engine.boundedGridVerticalShift = pattern.gridVerticalShift;
 			me.engine.boundedGridHorizontalTwist = pattern.gridHorizontalTwist;
 			me.engine.boundedGridVerticalTwist = pattern.gridVerticalTwist;
+			me.engine.boundedGridSphereAxisTopLeft = pattern.gridSphereAxisTopLeft;
 
 			// copy states used and state count
 			numberValue = me.engine.multiNumStates === -1 ? 2 : me.engine.multiNumStates;

@@ -1,3 +1,7 @@
+Build 764
+- spherical bounded grid now supports flipping the axis
+	- adding a '*' after the definition flips the axis (e.g. :S30*)
+
 Build 763
 - fixed an issue validating alternating rules
 

@@ -1647,6 +1647,7 @@
 			} else {
 				y = this.renderHelpLine(view, "Width", view.engine.boundedGridWidth, ctx, x, y, height, helpLine);
 			}
+
 			// sphere only has width
 			if (view.engine.boundedGridType !== 4) {
 				if (view.engine.boundedGridHeight === 0) {
@@ -1671,7 +1672,15 @@
 				if (view.engine.boundedGridVerticalShift !== 0) {
 					y = this.renderHelpLine(view, "V'Shift", view.engine.boundedGridVerticalShift, ctx, x, y, height, helpLine);
 				}
+			} else {
+				// display sphere axis
+				if (view.engine.boundedGridSphereAxisTopLeft) {
+					y = this.renderHelpLine(view, "Axis", "Top Left", ctx, x, y, height, helpLine);
+				} else {
+					y = this.renderHelpLine(view, "Axis", "Top Right", ctx, x, y, height, helpLine);
+				}
 			}
+
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		}
 

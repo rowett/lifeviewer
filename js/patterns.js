@@ -769,6 +769,9 @@
 		// grid vertical twist
 		/** @type {boolean} */ this.gridVerticalTwist = false;
 
+		// grid sphere axis
+		/** @type {boolean} */ this.gridSphereAxisTopLeft = true;
+
 		// original rule name
 		/** @type {string} */ this.originalRuleName = "";
 
@@ -3190,6 +3193,11 @@
 
 			// add width
 			pattern.ruleName += pattern.gridWidth;
+
+			// check for sphere axis
+			if (!pattern.gridSphereAxisTopLeft) {
+				pattern.ruleName += "*";
+			}
 
 			// check for horizontal shift
 			if (pattern.gridHorizontalShift) {
@@ -6734,11 +6742,25 @@
 		var width = this.readValueFromString(source),
 
 		    // set height to width
-		    height = width;
+		    height = width,
+
+		    // check for diagonal axis
+		    topLeft = true,
+
+		    // next character
+		    chr = source[this.index];
 
 		// save width and height
 		pattern.gridWidth = width;
 		pattern.gridHeight = height;
+
+		// save axis
+		if (chr === "*") {
+			topLeft = false;
+			this.index += 1;
+		}
+
+		pattern.gridSphereAxisTopLeft = topLeft;
 	};
 
 	// decode torus and set width to -1 if invalid
@@ -7048,7 +7070,7 @@
 				this.index = 1;
 
 				// check for twist in other type than klein-bottle
-				if (pattern.gridType !== 2 && source.indexOf("*") !== -1) {
+				if (!(pattern.gridType === 2 || pattern.gridType === 4) && source.indexOf("*") !== -1) {
 					pattern.gridWidth = -1;
 				} else {
 					// decode based on type
