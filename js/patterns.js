@@ -4911,7 +4911,7 @@
 						this.failureReason = pattern.isSameFamilyAs(firstPattern);
 						if (this.failureReason === "") {
 							// check for B0 in either rule
-							if ((pattern.isHROT && pattern.birthHROT[0] !== 0) || (!pattern.isTriangular && (this.ruleArray[0] || this.ruleAltArray[0])) || (pattern.isTriangular && ((pattern.birthTriMask & 1) !== 0) || ((firstPattern.birthTriMask & 1) !== 0))) {
+							if ((pattern.isHROT && ((pattern.birthHROT[0] !== 0) || (firstPattern.birthHROT[0] !== 0))) || (!pattern.isTriangular && (this.ruleArray[0] || this.ruleAltArray[0])) || (pattern.isTriangular && ((pattern.birthTriMask & 1) !== 0) || ((firstPattern.birthTriMask & 1) !== 0))) {
 								this.failureReason = "Alternate not supported with B0";
 								result = false;
 							} else {
@@ -7397,8 +7397,57 @@
 		return result;
 	};
 
+	// setup B0 for HROT patterns
+	PatternManager.prototype.setupHROTB0 = function(pattern, allocator) {
+		var births = pattern.birthHROT,
+			survivals = pattern.survivalHROT,
+			altBirths = pattern.altBirthHROT,
+			altSurvivals = pattern.altSurvivalHROT,
+			maxn = this.maxNeighbours(pattern.rangeHROT, pattern.neighborhoodHROT, pattern.customNeighbourCount),
+			i = 0,
+			tempB = new Uint8Array(pattern.birthHROT.length),
+			tempS = new Uint8Array(pattern.survivalHROT.length);
+
+		// check for Smax
+		if (survivals[maxn + 1]) {
+			// B0 with Smax: rule -> NOT(reverse(bits))
+			for (i = 0; i <= maxn; i++) {
+				tempB[i] = 1 - survivals[maxn - i + 1];
+				tempS[i + 1] = 1 - births[maxn - i];
+			}
+			for (i = 0; i <= maxn; i++) {
+				births[i] = tempB[i];
+				survivals[i + 1] = tempS[i + 1];
+			}
+
+			// clear alternating flag since no alternating required
+			this.altSpecified = false;
+		} else {
+			// B0 without Smax needs two rules
+			pattern.altBirthHROT = allocator.allocate(Uint8, pattern.birthHROT.length, "HROT.altBirths");
+			pattern.altSurvivalHROT = allocator.allocate(Uint8, pattern.survivalHROT.length, "HROT.altSurvivals");
+			altBirths = pattern.altBirthHROT;
+			altSurvivals = pattern.altSurvivalHROT;
+
+			// odd rule -> reverse(bits)
+			for (i = 0; i <= maxn; i++) {
+				altBirths[i] = survivals[maxn - i + 1];
+				altSurvivals[i + 1] = births[maxn - i];
+			}
+		
+			// even rule -> NOT(bits)
+			for (i = 0; i <= maxn; i++) {
+				births[i] = 1 - births[i];
+				survivals[i + 1] = 1 - survivals[i + 1];
+			}
+			
+			// set alternating flag
+			this.altSpecified = true;
+		}
+	};
+
 	// decode a Life RLE pattern
-	PatternManager.prototype.decodeRLE = function(pattern, source, allocator) {
+	PatternManager.prototype.decodeRLE = function(/** @type {Pattern} */ pattern, source, allocator) {
 		// index in string
 		var index = 0,
 
@@ -7573,6 +7622,11 @@
 			this.setupHROTfromLTL(pattern, allocator);
 		}
 
+		// check for HROT B0 emulation
+		if (pattern.isHROT && pattern.birthHROT[0] !== 0) {
+			this.setupHROTB0(pattern, allocator);
+		}
+
 		// check for hex HROT patterns
 		if (pattern.isHROT && (pattern.neighborhoodHROT === this.hexHROT || pattern.neighborhoodHROT === this.tripodHROT || pattern.neighborhoodHROT === this.asteriskHROT || ((pattern.neighborhoodHROT === this.weightedHROT || pattern.neighborhoodHROT === this.customHROT) && pattern.customGridType === "H"))) {
 			pattern.isHex = true;
@@ -7606,10 +7660,6 @@
 				this.failureReason = "LtL only supports Plane or Torus";
 				this.executable = false;
 				pattern.gridType = -1;
-			}
-			if (pattern.BminLTL === 0 && pattern.gridType === -1) {
-				this.failureReason = "LtL does not support B0 unbounded";
-				this.executable = false;
 			}
 			if (pattern.gridType === 0 || pattern.gridType === 1) {
 				if (pattern.gridWidth === 0 || pattern.gridHeight === 0) {
@@ -7657,16 +7707,18 @@
 			}
 		}
 
+		// check for HROT B0 and > 2 states
+		if (pattern.isHROT && pattern.multiNumStates > 2) {
+			this.failureReason = "HROT Generations does not support B0";
+			this.executable = false;
+		}
+
 		// check whether HROT bounded grid type is valid
 		if (pattern.isHROT && this.failureReason === "") {
 			if (pattern.gridType > 1) {
 				this.failureReason = "HROT only supports Plane or Torus";
 				this.executable = false;
 				pattern.gridType = -1;
-			}
-			if (pattern.birthHROT && pattern.birthHROT[0] === 1 && pattern.gridType === -1) {
-				this.failureReason = "HROT does not support B0 unbounded";
-				this.executable = false;
 			}
 			if (pattern.gridType === 0 || pattern.gridType === 1) {
 				if (pattern.gridWidth === 0 || pattern.gridHeight === 0) {
