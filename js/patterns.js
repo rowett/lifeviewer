@@ -980,6 +980,19 @@
 		this.ruleTableIcons = null;
 	}
 
+	// check if pattern is HROT and has B0
+	Pattern.prototype.hasHROTB0 = function() {
+		var /** @type {boolean} */ result = false;
+
+		if (this.isHROT) {
+			if (this.birthHROT[0] !== 0) {
+				result = true;
+			}
+		}
+
+		return result;
+	};
+
 	// corner/edge canonical rule name part
 	Pattern.prototype.cornerEdgeCanonical = function(range) {
 		var result = "";
@@ -7494,6 +7507,9 @@
 		    // border for bounded grid
 		    border = 4,
 
+		    // whether HROT pattern has B0
+		    hasHROTB0 = false,
+
 		    // counters
 		    j = 0;
 
@@ -7645,7 +7661,8 @@
 		}
 
 		// check for HROT B0 emulation
-		if (pattern.isHROT && pattern.birthHROT[0] !== 0) {
+		hasHROTB0 = pattern.hasHROTB0();
+		if (hasHROTB0) {
 			this.setupHROTB0(pattern, allocator);
 		}
 
@@ -7730,7 +7747,7 @@
 		}
 
 		// check for HROT B0 and > 2 states
-		if (pattern.isHROT && pattern.multiNumStates > 2) {
+		if (hasHROTB0 && pattern.multiNumStates > 2) {
 			this.failureReason = "HROT Generations does not support B0";
 			this.executable = false;
 		}

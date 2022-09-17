@@ -1,3 +1,6 @@
+Build 765
+- fixed an issue with HROT rule validation
+
 Build 764
 - spherical bounded grid now supports flipping the axis
 	- adding a '*' after the definition flips the axis (e.g. :S30*)
