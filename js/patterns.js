@@ -859,7 +859,7 @@
 		/** @type {number} */ this.rangeHROT = -1;
 
 		// HROT birth array
-		this.birthHROT = null;
+		/** @type {Uint8Array} */ this.birthHROT = null;
 
 		// HROT survival array
 		this.survivalHROT = null;
@@ -984,10 +984,8 @@
 	Pattern.prototype.hasHROTB0 = function() {
 		var /** @type {boolean} */ result = false;
 
-		if (this.isHROT) {
-			if (this.birthHROT[0] !== 0) {
-				result = true;
-			}
+		if (this.isHROT && this.birthHROT[0] !== 0) {
+			result = true;
 		}
 
 		return result;
