@@ -7834,6 +7834,55 @@
 			return;
 		}
 
+		// check for HROT
+		if (this.altSpecified && this.isHROT) {
+			// compare rule arrays
+			i = 0;
+			match = true;
+			length = this.HROT.births.length;
+
+			// check births
+			while (i < length && match) {
+				if (this.HROT.births[i] !== this.HROT.altBirths[i]) {
+					match = false;
+				} else {
+					i += 1;
+				}
+			}
+
+			// if identical then check survivals
+			if (match) {
+				i = 0;
+				length = this.HROT.survivals.length;
+
+				while (i < length && match) {
+					if (this.HROT.survivals[i] !== this.HROT.altSurvivals[i]) {
+						match = false;
+					} else {
+						i += 1;
+					}
+				}
+
+				// if identical then disable alternate rule
+				if (match) {
+					this.altSpecified = false;
+
+					// update the rule name and alias name
+					i = view.patternRuleName.indexOf("|");
+					if (i !== -1) {
+						view.patternRuleName = view.patternRuleName.substr(0, i);
+					}
+					i = view.patternAliasName.indexOf("|");
+					if (i !== -1) {
+						view.patternAliasName = view.patternAliasName.substr(0, i);
+					}
+				}
+			}
+
+			// HROT check done
+			return;
+		}
+
 		// check if alternates are duplicates
 		if (this.altSpecified) {
 			// Margolus and PCA only uses first 16 entries

@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 765,
+		/** @const {number} */ versionBuild : 766,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6619,6 +6619,9 @@
 
 		// lock kill gliders if not supported
 		this.killButton.locked = this.engine.multiNumStates !== -1;
+		if (this.killButton.locked) {
+			this.killButton.current = [false];
+		}
 
 		// drawing tools
 		shown = hide || !this.drawing || !this.showStates || settingsMenuOpen;

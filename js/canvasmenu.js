@@ -1244,7 +1244,13 @@
 
 	// draw shadow string
 	MenuList.prototype.drawShadowString = function(string, item, strikeThrough) {
-		var textWidth, target, i, testString, alignPos;
+		var /** @type {number} */ textWidth,
+		    /** @type {number} */ target,
+		    /** @type {number} */ i,
+		    /** @type {number} */ j,
+		    /** @type {string} */ testString = "",
+		    /** @type {string} */ ellipsis = "\u2026",
+		    /** @type {number} */ alignPos;
 
 		// convert the string to a string
 		string += String();
@@ -1275,15 +1281,18 @@
 
 			if (textWidth >= target - 6) {
 				i = string.length;
+				j = 0;
 
 				// find a shorter string that will fit
 				if (i) {
 					do {
-						i -= 1;
-						testString = string.substr(0, i) + "...";
+						testString = string.substr(0, j) + ellipsis;
 						textWidth = this.context.measureText(testString).width;
+						j += 1;
 					}
-					while (i > 1 && textWidth >= target - 6);
+					while (j < i && textWidth <= target - 10);
+					j -= 1;
+					testString = string.substr(0, j) + ellipsis;
 				}
 				string = testString;
 			}
