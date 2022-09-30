@@ -1,4 +1,5 @@
 Build 769
+- ensure major grid lines start at cell 0, 0 (for unbounded grids)
 - grey out Snap Angle if grid type doesn't support rotation
 
 Build 768

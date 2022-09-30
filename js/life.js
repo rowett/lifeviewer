@@ -361,9 +361,12 @@
 	/**
 	 * @constructor
 	 */
-	function Life(context, /** @type {number} */ displayWidth, /** @type {number} */ displayHeight, /** @type {number} */ gridWidth, /** @type {number} */ gridHeight, manager) {
+	function Life(context, /** @type {number} */ displayWidth, /** @type {number} */ displayHeight, /** @type {number} */ gridWidth, /** @type {number} */ gridHeight, manager, view) {
 		// pattern manager
 		this.manager = manager;
+
+		// view
+		this.view = view;
 
 		// whether last zoom was < 1/16x
 		this.lastZoom16 = true;
@@ -33457,7 +33460,11 @@
 
 		    // compute single cell offset
 		    yOff = (((this.height / 2 - (this.yOff + this.originY)) * yZoomStep) + (h / 2)) % yZoomStep,
-		    xOff = (((this.width / 2 - (this.xOff + this.originX)) * xZoomStep) + (w / 2)) % xZoomStep;
+		    xOff = (((this.width / 2 - (this.xOff + this.originX)) * xZoomStep) + (w / 2)) % xZoomStep,
+
+		    // compute top left of original pattern offset
+		    xPat = (this.view.patternWidth / 2) | 0,
+		    yPat = (this.view.patternHeight / 2) | 0;
 
 		// draw twice if major grid lines enabled
 		if (this.displayGrid) {
@@ -33485,6 +33492,7 @@
 		while (loop) {
 			// compute major grid line vertical offset
 			gridLineNum = -(w / 2 / xZoomStep) - (this.width / 2 - this.xOff - this.originX) | 0;
+			gridLineNum += xPat - 2;
 
 			// extend the number of lines to cope with 45 degrees rotation
 			startX = -xZoomStep * 22;
@@ -33534,6 +33542,7 @@
 
 			// compute major grid line horizontal offset
 			gridLineNum = -(h / 2 / yZoomStep) - (this.height / 2 - this.yOff - this.originY) | 0;
+			gridLineNum += yPat - 2;
 
 			// draw horizontal lines
 			for (y = startY; y < endY; y += yZoomStep) {
@@ -38109,9 +38118,6 @@
 
 			// draw the image on the canvas
 			this.context.putImageData(this.imageData, 0, 0);
-
-			// potential fix for Chrome 103 Intel GPU bug
-			//this.context.getImageData(0, 0, 1, 1);
 		}
 	};
 

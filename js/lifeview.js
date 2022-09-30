@@ -15700,7 +15700,7 @@
 			this.displayHeight = this.mainCanvas.height;
 
 			// initialise life engine
-			this.engine = new Life(this.mainContext, this.displayWidth, this.displayHeight, this.defaultGridWidth, this.defaultGridHeight, this.manager);
+			this.engine = new Life(this.mainContext, this.displayWidth, this.displayHeight, this.defaultGridWidth, this.defaultGridHeight, this.manager, this);
 			this.engine.initEngine(this.mainContext, this.displayWidth, this.displayHeight);
 
 			// create the elapsed times buffer
