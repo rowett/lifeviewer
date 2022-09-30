@@ -140,6 +140,7 @@
 			if (request.name === name) {
 				found = true;
 				request.name = "";
+
 				// call the fail callback on requesters
 				for (j = 0; j < request.failCallback.length; j += 1) {
 					if (request.failCallback[j] !== null) {
@@ -4932,6 +4933,9 @@
 							// check for B0 in either rule
 							if ((pattern.isHROT && ((pattern.birthHROT[0] !== 0) || (firstPattern.birthHROT[0] !== 0))) || (!pattern.isTriangular && (this.ruleArray[0] || this.ruleAltArray[0])) || (pattern.isTriangular && ((pattern.birthTriMask & 1) !== 0) || ((firstPattern.birthTriMask & 1) !== 0))) {
 								this.failureReason = "Alternate not supported with B0";
+								if (pattern.isHROT) {
+									pattern.ruleName = firstPattern.originalRuleName;
+								}
 								result = false;
 							} else {
 								// create rule map for triangular rule
@@ -9443,11 +9447,13 @@
 			// check if a pattern was loaded
 			if (this.failureReason !== "" && !this.tooBig && !this.illegalState) {
 				newPattern.originalFailure = this.failureReason;
-				newPattern.ruleName = newPattern.originalRuleName;
+				newPattern.originalRuleName = newPattern.ruleName;
 				if (newPattern.gridType !== -1) {
 					index = newPattern.ruleName.lastIndexOf(":");
-					newPattern.boundedGridDef = newPattern.ruleName.substr(index);
-					newPattern.ruleName = newPattern.ruleName.substr(0, index);
+					if (index !== -1) {
+						newPattern.boundedGridDef = newPattern.ruleName.substr(index);
+						newPattern.ruleName = newPattern.ruleName.substr(0, index);
+					}
 				} else {
 					newPattern.boundedGridDef = "";
 				}
@@ -9571,13 +9577,14 @@
 				}
 			} else {
 				// inform other requesters that this rule failed to load
+				pattern.originalFailure += "\n\nRepository lookup failed with status " + xhr.status;
 				RuleTreeCache.requestFailed(pattern);
 			}
 		}
 	};
 
 	// error event handler
-	PatternManager.prototype.errorHandler = function(me, event, pattern) {
+	PatternManager.prototype.errorHandler = function(me, event, xhr, pattern) {
 		// inform other requesters that this rule failed to load
 		RuleTreeCache.requestFailed(pattern);
 	};
@@ -9625,7 +9632,7 @@
 	
 			// register load and error events
 			registerEvent(xhr, "load", function(event) {me.loadHandler(me, event, xhr, pattern);}, false);
-			registerEvent(xhr, "error", function(event) {me.errorHandler(me, event, pattern);}, false);
+			registerEvent(xhr, "error", function(event) {me.errorHandler(me, event, xhr, pattern);}, false);
 	
 			// attempt to get the requested resource
 			xhr.open("GET", uri, true);

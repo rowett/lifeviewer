@@ -38111,7 +38111,7 @@
 			this.context.putImageData(this.imageData, 0, 0);
 
 			// potential fix for Chrome 103 Intel GPU bug
-			this.context.getImageData(0, 0, 1, 1);
+			//this.context.getImageData(0, 0, 1, 1);
 		}
 	};
 

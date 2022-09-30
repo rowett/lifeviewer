@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 766,
+		/** @const {number} */ versionBuild : 769,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5967,6 +5967,7 @@
 		me.zoomItem.locked = me.controlsLocked;
 		me.layersItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular || me.engine.isNone;
 		me.depthItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular || me.engine.isNone;
+		me.snapToNearest45Button.locked = me.engine.isHex || me.engine.isTriangular || me.engine.isNone;
 
 		// check if the mouse wheel scrolled
 		if (me.wheelDelta) {
