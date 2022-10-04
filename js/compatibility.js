@@ -44,13 +44,6 @@
 		window.requestAnimationFrame = (function() { return (window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame); }());
 	}
 
-	// implement cross-browser cancelRequestAnimationFrame
-	// @ts-ignore
-	if (!window.cancelRequestAnimationFrame) {
-		// @ts-ignore
-		window.cancelRequestAnimationFrame = (function() { return (window.webkitCancelRequestAnimationFrame || window.mozCancelRequestAnimationFrame || window.oCancelRequestAnimationFrame || window.msCancelRequestAnimationFrame); }());
-	}
-
 	// implement cross-browser typed arrays
 	if (!window.Uint8Array) {
 		window["typedArrays"] = false;

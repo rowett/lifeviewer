@@ -3053,21 +3053,16 @@
 
 		// check if number is valid
 		if (valid) {
-			if (number < 0 || number > 254) {
-				this.failureReason = "Wolfram rule number must be 0-254";
+			if ((number < 0 || number > 254) || ((number & 1) !== 0)) {
+				this.failureReason = "Wolfram rule number must be even from 0-254";
 				valid = false;
 			} else {
-				if ((number & 1) !== 0) {
-					this.failureReason = "Wolfram rule number must be even";
-					valid = false;
-				} else {
-					// build the map
-					this.createWolframMap(ruleArray, number);
-					pattern.wolframRule = number;
+				// build the map
+				this.createWolframMap(ruleArray, number);
+				pattern.wolframRule = number;
 
-					// save the canonical name
-					pattern.ruleName = "W" + number;
-				}
+				// save the canonical name
+				pattern.ruleName = "W" + number;
 			}
 		}
 

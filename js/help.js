@@ -528,6 +528,11 @@
 		sectionNum += 1;
 
 		y = this.renderHelpLine(view, "", ViewConstants.externalViewerTitle + " build " + ViewConstants.versionBuild + " by " + ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
+		if (view.chromeBug) {
+			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "", "If there are no cells displayed please go to chrome://flags", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "", "and set Out-of-process 2D canvas rasterization to Disabled. ", ctx, x, y, height, helpLine);
+		}
 	};
 
 	// render annotations topic

@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 769,
+		/** @const {number} */ versionBuild : 770,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -638,6 +638,9 @@
 	 */
 	function View(element) {
 		var i = 0;
+
+		// whether Chrome bug is in effect
+		this.chromeBug = false;
 
 		// whether playback duration displayed
 		this.showPlayDuration = false;
@@ -16462,6 +16465,37 @@
 		me.completeStart(null, args, me);
 	};
 
+	// check for Chrome bug
+	View.prototype.checkforChromeBug = function() {
+		var i = 0,
+			chromeVersion = 0,
+			uad = null,
+			found = false;
+
+		// check for Chrome
+		// @ts-ignore
+		if (navigator.userAgentData) {
+			// @ts-ignore
+			uad = navigator.userAgentData;
+			if (uad.brands) {
+				for (i = 0; i < uad.brands.length; i += 1) {
+					if (uad.brands[i].brand == "Google Chrome") {
+						found = true;
+						chromeVersion = Number(uad.brands[i].version);
+					}
+				}
+
+			}
+		}
+
+		if (found) {
+			if (chromeVersion >= 103) {
+				this.menuManager.notification.notify("If there are no cells displayed click on Help", 15, 300, 15, false);
+				this.chromeBug = true;
+			}
+		}
+	};
+
 	// complete pattern start process
 	View.prototype.completeStart = function(pattern, args, me) {
 		var numberValue = 0,
@@ -18053,6 +18087,9 @@
 			me.engine.createColours();
 			me.engine.isNone = savedNone;
 		}
+
+		// check for chrome bug
+		me.checkforChromeBug();
 	};
 
 	// start a viewer
