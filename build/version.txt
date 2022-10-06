@@ -1,3 +1,9 @@
+Build 772
+- make warning message specific to Windows Chrome
+
+Build 771
+- fixed an issue with [[ PASTEMODE ]] interfering with UI paste
+
 Build 770
 - improve Wolfram validation message
 - give warning message if on a version of Chrome that needs a workaround to display cells

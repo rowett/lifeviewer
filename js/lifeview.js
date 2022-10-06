@@ -295,7 +295,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 770,
+		/** @const {number} */ versionBuild : 772,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -8283,6 +8283,11 @@
 		return me.currentPasteBuffer;
 	};
 
+	// get UI paste mode
+	View.prototype.getUIPasteMode = function() {
+		return ViewConstants.uiPasteModes[this.pasteModeList.current];
+	};
+
 	// paste mode
 	View.prototype.viewPasteModeList = function(newValue, change, me) {
 		if (change) {
@@ -12499,7 +12504,7 @@
 		}
 
 		// check the paste mode
-		switch (me.pasteMode) {
+		switch (this.getUIPasteMode()) {
 		case ViewConstants.pasteModeOr:
 			i = 0;
 			for (y = 0; y < height; y += 1) {
@@ -16477,14 +16482,15 @@
 		if (navigator.userAgentData) {
 			// @ts-ignore
 			uad = navigator.userAgentData;
-			if (uad.brands) {
-				for (i = 0; i < uad.brands.length; i += 1) {
-					if (uad.brands[i].brand == "Google Chrome") {
-						found = true;
-						chromeVersion = Number(uad.brands[i].version);
+			if (uad.platform === "Windows") {
+				if (uad.brands) {
+					for (i = 0; i < uad.brands.length; i += 1) {
+						if (uad.brands[i].brand == "Google Chrome") {
+							found = true;
+							chromeVersion = Number(uad.brands[i].version);
+						}
 					}
 				}
-
 			}
 		}
 
