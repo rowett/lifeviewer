@@ -1,3 +1,6 @@
+Build 773
+- add OK button to Help warning to permanently hide the warning
+
 Build 772
 - make warning message specific to Windows Chrome
 

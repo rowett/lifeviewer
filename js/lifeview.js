@@ -64,6 +64,9 @@
 		// alt keys that LifeViewer uses (any accesskey attributes that match these will be disabled)
 		/** @const {string} */ altKeys : "0123456789rtyopasghjklxcbn",
 
+		// key for localstorage setting of done flag (for chrome bug)
+		/** @const {string} */ doneKey : "workaround",
+
 		// number of frames for frame rate measurement
 		/** @const {number} */ measurementSteps : 18,
 
@@ -295,7 +298,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 772,
+		/** @const {number} */ versionBuild : 773,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1654,6 +1657,9 @@
 
 		// stop indicator
 		this.stopIndicator = null;
+
+		// done button for bug confirmation
+		this.doneButton = null;
 
 		// help button
 		this.helpToggle = null;
@@ -6511,6 +6517,9 @@
 			this.escButton.bgCol = "red";
 		}
 
+		// help done button
+		this.doneButton.deleted = !(this.chromeBug && this.displayHelp && this.helpTopic === ViewConstants.welcomeTopic);
+
 		// help topics
 		this.topicsButton.deleted = !(this.displayHelp && (this.helpTopic !== ViewConstants.welcomeTopic));
 		this.helpSectionList.deleted = (!(this.displayHelp && (this.helpTopic !== ViewConstants.welcomeTopic))) || !this.showSections;
@@ -8069,6 +8078,12 @@
 		// set the play icon and tooltip
 		this.playList.icon[ViewConstants.modePlay] = this.iconManager.icon(iconName);
 		this.playList.toolTip[ViewConstants.modePlay] = toolTip;
+	};
+
+	// done button pressed
+	View.prototype.donePressed = function(me) {
+		localStorage.setItem(ViewConstants.doneKey, "y");
+		me.checkForChromeBug();
 	};
 
 	// set help topic
@@ -14962,6 +14977,10 @@
 		this.helpSectionList.toolTip = ["", ""];
 		this.helpSectionList.setFont("14px Arial");
 
+		// done button
+		this.doneButton = this.viewMenu.addButtonItem(this.donePressed, Menu.northEast, -110, 40, 60, 40, ["OK"]);
+		this.doneButton.toolTip = "confirm setting disabled and hide warning";
+
 		// help button
 		this.helpToggle = this.viewMenu.addListItem(this.toggleHelp, Menu.northEast, -40, 0, 40, 40, ["Help"], [false], Menu.multi);
 		this.helpToggle.toolTip = ["toggle help display [H]"];
@@ -16471,11 +16490,12 @@
 	};
 
 	// check for Chrome bug
-	View.prototype.checkforChromeBug = function() {
+	View.prototype.checkForChromeBug = function() {
 		var i = 0,
 			chromeVersion = 0,
 			uad = null,
-			found = false;
+			found = false,
+			confirmed = "n";
 
 		// check for Chrome
 		// @ts-ignore
@@ -16496,8 +16516,14 @@
 
 		if (found) {
 			if (chromeVersion >= 103) {
-				this.menuManager.notification.notify("If there are no cells displayed click on Help", 15, 300, 15, false);
-				this.chromeBug = true;
+				// check for user confirmation
+				confirmed = localStorage.getItem(ViewConstants.doneKey);
+				if (confirmed !== "y") {
+					this.menuManager.notification.notify("If there are no cells displayed click on Help", 15, 300, 15, false);
+					this.chromeBug = true;
+				} else {
+					this.chromeBug = false;
+				}
 			}
 		}
 	};
@@ -18095,7 +18121,7 @@
 		}
 
 		// check for chrome bug
-		me.checkforChromeBug();
+		me.checkForChromeBug();
 	};
 
 	// start a viewer
