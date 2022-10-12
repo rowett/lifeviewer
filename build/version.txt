@@ -1,5 +1,5 @@
 Build 774
-- fix setting custom colours for Generations rules and HROT rules
+- fixed setting custom colours for Generations and HROT rules
 
 Build 773
 - add OK button to Help warning to permanently hide the warning

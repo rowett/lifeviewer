@@ -17208,7 +17208,7 @@
 			// decode any script commands
 			if (pattern) {
 				if (pattern.multiNumStates === -1) {
-					numberValue = 2;
+					numberValue = pattern.numStates;
 				} else {
 					numberValue = pattern.multiNumStates;
 				}
