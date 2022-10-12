@@ -298,7 +298,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 773,
+		/** @const {number} */ versionBuild : 774,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -17207,7 +17207,11 @@
 		if (comments !== "") {
 			// decode any script commands
 			if (pattern) {
-				numberValue = pattern.numStates;
+				if (pattern.multiNumStates === -1) {
+					numberValue = 2;
+				} else {
+					numberValue = pattern.multiNumStates;
+				}
 			} else {
 				numberValue = args[2];
 			}

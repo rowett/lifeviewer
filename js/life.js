@@ -7003,7 +7003,7 @@
 						if (current !== -1) {
 							this.redChannel[i + this.historyStates] = current >> 16;
 							this.greenChannel[i + this.historyStates] = (current >> 8) & 255;
-								this.blueChannel[i + this.historyStates] = (current & 255);
+							this.blueChannel[i + this.historyStates] = (current & 255);
 						}
 					}
 				}
@@ -7061,7 +7061,7 @@
 
 						// override with custom colour if specified
 						if (this.customColours && this.customColours.length >= i) {
-							if (!(this.isHROT || this.isPCA || this.isRuleTree)) {
+							if (!(this.isPCA || this.isRuleTree)) {
 								current = this.customColours[this.multiNumStates - i];
 							} else {
 								current = this.customColours[i];
@@ -7069,7 +7069,7 @@
 							if (current !== -1) {
 								this.redChannel[i + this.historyStates] = current >> 16;
 								this.greenChannel[i + this.historyStates] = (current >> 8) & 255;
-									this.blueChannel[i + this.historyStates] = (current & 255);
+								this.blueChannel[i + this.historyStates] = (current & 255);
 							}
 						}
 					}
@@ -7094,7 +7094,7 @@
 
 					// override with custom colour if specified
 					if (this.customColours && this.customColours.length >= i) {
-						if (!(this.isHROT || this.isPCA || this.isRuleTree)) {
+						if (!(this.isPCA || this.isRuleTree)) {
 							current = this.customColours[this.multiNumStates - i];
 						} else {
 							current = this.customColours[i];
