@@ -1,3 +1,6 @@
+Build 775
+- fixed initial population count for HROT generations rules
+
 Build 774
 - fixed setting custom colours for Generations and HROT rules
 

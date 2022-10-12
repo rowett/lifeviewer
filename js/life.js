@@ -5983,15 +5983,21 @@
 		    nextRow = null,
 		    population = 0,
 		    count = 0,
-			bitCounts16 = this.bitCounts16,
-			state = 0,
+		    bitCounts16 = this.bitCounts16,
+		    state = 0,
+		    aliveState = 0,
 
 		    // get grid bounding box
 		    zoomBox = this.zoomBox,
 		    leftX = zoomBox.leftX,
 		    rightX = zoomBox.rightX,
 		    topY = zoomBox.topY,
-			bottomY = zoomBox.bottomY;
+		    bottomY = zoomBox.bottomY;
+
+		// get HROT alive state
+		if (this.isHROT) {
+			aliveState = this.HROT.scount + this.historyStates - 1;
+		}
 
 		// check for HROT or PCA
 		if (this.isHROT || this.isPCA || this.isRuleTree || this.isNone) {
@@ -6007,7 +6013,14 @@
 						if (this.isPCA) {
 							population += bitCounts16[state - this.historyStates];
 						} else {
-							population += 1;
+							if (this.isHROT) {
+								// HROT state 1 is alive, other states are dying and ignored for the count
+								if (state === aliveState) {
+									population += 1;
+								}
+							} else {
+								population += 1;
+							}
 						}
 					}
 				}
