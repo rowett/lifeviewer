@@ -110,7 +110,7 @@
 		// save type and range and allocate widths array
 		this.type = type;
 		this.yrange = range;
-		this.xrange = (isTriangular && !(type == this.manager.customHROT || type == this.manager.weightedHROT)) ? range + range : range;
+		this.xrange = (isTriangular && !(type === this.manager.customHROT || type === this.manager.weightedHROT)) ? range + range : range;
 		this.widths = this.allocator.allocate(Uint32, width, "HROT.widths");
 		this.customNeighbourhood = customNeighbourhood;
 		this.customNeighbourCount = neighbourCount;
@@ -1271,7 +1271,7 @@
 				}
 
 				// check for survival
-				if (start == 1) {
+				if (start === 1) {
 					if (colourGrid[y][x] >= aliveStart) {
 						count2 += 1;
 					}

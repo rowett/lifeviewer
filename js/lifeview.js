@@ -298,7 +298,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 775,
+		/** @const {number} */ versionBuild : 776,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3562,7 +3562,7 @@
 			numStates = this.engine.multiNumStates - 1;
 
 		// get number of states
-		if (numStates == -2) {
+		if (numStates === -2) {
 			if (this.engine.isLifeHistory) {
 				numStates = 6;
 			} else {
@@ -6546,7 +6546,7 @@
 			i = 0;
 			while (i < this.helpSections.length && value < this.displayHeight - (40 + 26) * this.viewMenu.yScale) {
 				captions[i] = this.helpSections[i][1];
-				if (captions[i] == "Top") {
+				if (captions[i] === "Top") {
 					toolTips[i] = "go to top of topic [Home]";
 				} else {
 					toolTips[i] = "";
@@ -6954,7 +6954,7 @@
 			// compute the next generation
 			me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify, me);
 			if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
-				if (me.engine.themeHistory || me.engine.counter == me.startFrom) {
+				if (me.engine.themeHistory || me.engine.counter === me.startFrom) {
 					me.engine.convertToPensTile();
 				}
 			}
@@ -10548,7 +10548,7 @@
 				} else {
 					// Margolus rules first must be 0 or 15
 					value = (this.randGen.random() * 16) | 0;
-					if (value == 15) {
+					if (value === 15) {
 						first15 = true;
 		
 						// mark 15 and 0 used
@@ -13680,16 +13680,16 @@
 		me.startFromTiming = -1;
 		if (result !== null) {
 			// check for timing mode
-			if ((result.substr(result.length - 1)).toLowerCase() == "b") {
+			if ((result.substr(result.length - 1)).toLowerCase() === "b") {
 				result = result.substr(0, result.length - 1);
 				timing = true;
 			}
 
 			// check for relative generation
-			if (result.substr(0, 1) == "+") {
+			if (result.substr(0, 1) === "+") {
 				number = me.engine.counter + Number(result.substr(1));
 			} else {
-				if (result.substr(0, 1) == "-") {
+				if (result.substr(0, 1) === "-") {
 					number = me.engine.counter - Number(result.substr(1));
 				} else {
 					number = Number(result);
@@ -16505,7 +16505,7 @@
 			if (uad.platform === "Windows") {
 				if (uad.brands) {
 					for (i = 0; i < uad.brands.length; i += 1) {
-						if (uad.brands[i].brand == "Google Chrome") {
+						if (uad.brands[i].brand === "Google Chrome" || uad.brands[i].brand === "Brave Browser") {
 							found = true;
 							chromeVersion = Number(uad.brands[i].version);
 						}

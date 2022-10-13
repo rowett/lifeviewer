@@ -120,10 +120,10 @@
 
 	// switch between Help welcome screen and specific topic
 	KeyProcessor.toggleHelpTopic = function(me, topic) {
-		if (me.helpTopic == ViewConstants.welcomeTopic) {
+		if (me.helpTopic === ViewConstants.welcomeTopic) {
 			me.setHelpTopic(topic, me);
 		} else {
-			if (me.helpTopic == topic) {
+			if (me.helpTopic === topic) {
 				me.setHelpTopic(ViewConstants.welcomeTopic, me);
 			}
 		}
@@ -1235,7 +1235,7 @@
 			case 189:
 			case 109: // num -
 				// check for ctrl -
-				if (event.ctrlKey && keyCode == 189) {
+				if (event.ctrlKey && keyCode === 189) {
 					// pass up to browser
 					processed = false;
 				} else {
@@ -1277,7 +1277,7 @@
 			case 187:
 			case 107: // num +
 				// check for ctrl +
-				if (event.ctrlKey && keyCode == 187) {
+				if (event.ctrlKey && keyCode === 187) {
 					// pass up to browser
 					processed = false;
 				} else {

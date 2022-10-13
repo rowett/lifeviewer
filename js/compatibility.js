@@ -119,7 +119,7 @@
 			if (end === undefined) {
 				end = this.length;
 			}
-			if (begin == undefined) {
+			if (begin === undefined) {
 				begin = 0;
 			}
 
@@ -138,7 +138,7 @@
 			if (end === undefined) {
 				end = this.length;
 			}
-			if (begin == undefined) {
+			if (begin === undefined) {
 				begin = 0;
 			}
 
@@ -155,7 +155,7 @@
 			if (end === undefined) {
 				end = this.length;
 			}
-			if (begin == undefined) {
+			if (begin === undefined) {
 				begin = 0;
 			}
 
@@ -172,7 +172,7 @@
 			if (end === undefined) {
 				end = this.length;
 			}
-			if (begin == undefined) {
+			if (begin === undefined) {
 				begin = 0;
 			}
 
@@ -189,7 +189,7 @@
 			if (end === undefined) {
 				end = this.length;
 			}
-			if (begin == undefined) {
+			if (begin === undefined) {
 				begin = 0;
 			}
 
@@ -206,7 +206,7 @@
 			if (end === undefined) {
 				end = this.length;
 			}
-			if (begin == undefined) {
+			if (begin === undefined) {
 				begin = 0;
 			}
 
@@ -223,7 +223,7 @@
 			if (end === undefined) {
 				end = this.length;
 			}
-			if (begin == undefined) {
+			if (begin === undefined) {
 				begin = 0;
 			}
 
@@ -240,7 +240,7 @@
 			if (end === undefined) {
 				end = this.length;
 			}
-			if (begin == undefined) {
+			if (begin === undefined) {
 				begin = 0;
 			}
 
@@ -257,7 +257,7 @@
 			if (end === undefined) {
 				end = this.length;
 			}
-			if (begin == undefined) {
+			if (begin === undefined) {
 				begin = 0;
 			}
 
