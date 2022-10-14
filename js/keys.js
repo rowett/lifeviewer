@@ -1467,22 +1467,19 @@
 					me.autoGridButton.current = me.viewAutoGridToggle([me.autoGrid], true, me);
 					me.menuManager.notification.notify("Auto Grid Lines " + (me.autoGrid ? "On" : "Off"), 15, 40, 15, true);
 				} else {
-					// do not display if view only mode
-					if (!me.viewOnly) {
-						// check for shift
-						if (event.shiftKey) {
-							// toggle relative mode if defined
-							if (me.genDefined) {
-								me.relativeToggle.current = me.viewRelativeToggle([!me.genRelative], true, me);
-								me.menuManager.notification.notify("Generation display " + (me.genRelative ? "Relative" : "Absolute"), 15, 40, 15, true);
-							}
-						} else {
-							// toggle statistics
-							me.viewStats([!me.statsOn], true, me);
-							if (me.genToggle) {
-								me.genToggle.current = [me.statsOn];
-								me.menuManager.toggleRequired = true;
-							}
+					// check for shift
+					if (event.shiftKey) {
+						// toggle relative mode if defined
+						if (me.genDefined) {
+							me.relativeToggle.current = me.viewRelativeToggle([!me.genRelative], true, me);
+							me.menuManager.notification.notify("Generation display " + (me.genRelative ? "Relative" : "Absolute"), 15, 40, 15, true);
+						}
+					} else {
+						// toggle statistics
+						me.viewStats([!me.statsOn], true, me);
+						if (me.genToggle) {
+							me.genToggle.current = [me.statsOn];
+							me.menuManager.toggleRequired = true;
 						}
 					}
 				}

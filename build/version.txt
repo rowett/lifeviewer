@@ -1,3 +1,6 @@
+Build 777
+- allow T menu in VIEWONLY mode
+
 Build 776
 - extend cell display workaround warning to Brave browser
 

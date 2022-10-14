@@ -298,7 +298,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 776,
+		/** @const {number} */ versionBuild : 777,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -17965,9 +17965,6 @@
 			// delete the playback controls
 			me.playList.deleted = true;
 
-			// delete the generation toggle
-			me.genToggle.deleted = true;
-			
 			// delete the progress bar
 			me.progressBar.deleted = true;
 
@@ -18000,11 +17997,17 @@
 			// check if there was an error
 			if (me.failureReason === "") {
 				// label reason is VIEWONLY
-				me.reasonLabel.preText = Keywords.viewOnlyWord;
+				me.reasonLabel.preText = " " + Keywords.viewOnlyWord;
 				me.reasonLabel.fgCol = ViewConstants.helpFontColour;
+				me.reasonLabel.setPosition(Menu.southWest, me.genToggle.width, -40);
+				me.reasonLabel.setWidth(me.displayWidth - (40 + me.genToggle.width));
+				me.genToggle.deleted = false;
 			} else {
 				me.reasonLabel.preText = me.failureReason;
 				me.reasonLabel.fgCol = me.errorsFontColour;
+				me.reasonLabel.setPosition(Menu.southWest, 0, -40);
+				me.reasonLabel.setWidth(me.displayWidth - 40);
+				me.genToggle.deleted = true;
 			}
 		} else {
 			me.reasonLabel.deleted = true;
