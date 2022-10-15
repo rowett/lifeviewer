@@ -1,3 +1,8 @@
+Build 778
+- fixed problem with reset after Rainbow mode switched on
+- restructured some Settings menu options with new General category
+- added Settings->General->Save View and Settings->General->Restore View to save and restore the camera
+
 Build 777
 - allow T menu in VIEWONLY mode
 
