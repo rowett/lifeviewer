@@ -1,3 +1,6 @@
+Build 779
+- fixed issue with KILLGLIDERS
+
 Build 778
 - fixed problem with reset after Rainbow mode switched on
 - restructured some Settings menu options with new General category

@@ -10089,26 +10089,29 @@
 			target = null,
 			current = null;
 
-		for (i = 0; i < l; i += 1) {
-			// get the target of the current glider
-			current = this.potentialClears[i];
-			x = current.xc;
-			y = current.yc;
-
-			// check if target was another edge glider
-			j = 0;
-			found = false;
-			while (!found && j < l) {
-				// ignore same glider
-				if (j !== i) {
-					target = this.potentialClears[j];
-					if (target.x >= x - 4 && target.x <= x + 4 && target.y >= y - 4 && target.y <= y + 4) {
-						// delete glider
-						this.deleteGlider(current.glider, current.x, current.y);
-						found = true;
+		// check for at least two gliders
+		if (l > 1) {
+			for (i = 0; i < l; i += 1) {
+				// get the target of the current glider
+				current = this.potentialClears[i];
+				x = current.xc;
+				y = current.yc;
+	
+				// check if target was another edge glider
+				j = 0;
+				found = false;
+				while (!found && j < l) {
+					// ignore same glider
+					if (j !== i) {
+						target = this.potentialClears[j];
+						if (target.x >= x - 3 && target.x <= x + 3 && target.y >= y - 3 && target.y <= y + 3) {
+							// delete glider
+							this.deleteGlider(current.glider, current.x, current.y);
+							found = true;
+						}
 					}
+					j += 1;
 				}
-				j += 1;
 			}
 		}
 	};
