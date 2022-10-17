@@ -378,10 +378,13 @@
 		this.recolour = true;
 
 		// recolour shade
-		this.recolourCol = -1;
+		this.recolourCol = 0xffffffff;
 
 		// recolour grid shade
-		this.recolourGrid = -1;
+		this.recolourGrid = 0xffffffff;
+
+		// shadow shade
+		this.shadowCol = 0;
 
 		// greyed out shade
 		this.greyedOutCol = 0;
@@ -402,7 +405,15 @@
 	IconManager.prototype.draw = function(icon, x, y, locked) {
 		var data = null,
 			data32 = null,
-			i = 0;
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ destIndex = 0,
+			/** @type {number} */ sourceIndex = 0,
+			/** @type {number} */ numIcons = this.iconList.length,
+			/** @type {number} */ iconWidth = 40,
+			/** @type {number} */ iconHeight = 40,
+			/** @type {number} */ ix = 0,
+			/** @type {number} */ iy = 0;
 
 		// check if image load
 		if (this.iconsImage.width > 0) {
@@ -425,12 +436,30 @@
 	
 			// change the pixel colours if required
 			if (this.recolour) {
-				// get the pixel data
+				// get the pixel data from the loaded icons
+				this.iconContext.clearRect(0, 0, this.iconCanvas.width, this.iconCanvas.height);
 				this.iconContext.drawImage(this.iconsImage, 0, 0);
 				data = this.iconContext.getImageData(0, 0, this.iconCanvas.width, this.iconCanvas.height);
 				data32 = new Uint32Array(data.data.buffer);
 	
-				// change target pixel to new colour
+				// create the icon shadows
+				j = 0;
+				for (i = 0; i < numIcons; i += 1) {
+					for (iy = iconHeight - 2; iy > 1; iy -= 1) {
+						destIndex = j + iy * this.width;
+						sourceIndex = destIndex - 2 - this.width - this.width;
+						for (ix = iconWidth - 2; ix > 1; ix -= 1) {
+							if (data32[destIndex + ix] === 0) {
+								if (data32[sourceIndex + ix] === 0xffffffff) {
+									data32[destIndex + ix] = this.shadowCol;
+								}
+							}
+						}
+					}
+					j += iconWidth;
+				}
+
+				// change target pixel to greyed out colour
 				for (i = 0; i < data32.length; i += 1) {
 					if (data32[i] === 0xffffffff) {
 						data32[i] = this.greyedOutCol;
@@ -443,11 +472,29 @@
 				// create the greyed out icons
 				this.greyedOutImage.src = this.iconCanvas.toDataURL("image/png");
 	
-				// get the pixel data
+				// get the pixel data from the loaded icons
+				this.iconContext.clearRect(0, 0, this.iconCanvas.width, this.iconCanvas.height);
 				this.iconContext.drawImage(this.iconsImage, 0, 0);
 				data = this.iconContext.getImageData(0, 0, this.iconCanvas.width, this.iconCanvas.height);
 				data32 = new Uint32Array(data.data.buffer);
 	
+				// create the icon shadows
+				j = 0;
+				for (i = 0; i < numIcons; i += 1) {
+					for (iy = iconHeight - 2; iy > 1; iy -= 1) {
+						destIndex = j + iy * this.width;
+						sourceIndex = destIndex - 2 - this.width - this.width;
+						for (ix = iconWidth - 2; ix > 1; ix -= 1) {
+							if (data32[destIndex + ix] === 0) {
+								if (data32[sourceIndex + ix] === 0xffffffff) {
+									data32[destIndex + ix] = this.shadowCol;
+								}
+							}
+						}
+					}
+					j += iconWidth;
+				}
+
 				// change target pixel to new colour
 				for (i = 0; i < data32.length; i += 1) {
 					if (data32[i] === 0xffffffff) {

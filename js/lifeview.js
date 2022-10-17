@@ -298,7 +298,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 779,
+		/** @const {number} */ versionBuild : 781,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -10852,10 +10852,14 @@
 			}
 		} else {
 			// check for triangular mode
-			if (this.engine.isTriangular && !this.engine.forceRectangles) {
-				this.gridToggle.icon = [this.iconManager.icon("trianglegrid")];
-			} else {
-				this.gridToggle.icon = [this.iconManager.icon("trirectgrid")];
+			if (this.engine.isTriangular) {
+				if (!this.engine.forceRectangles) {
+					this.gridToggle.icon = [this.iconManager.icon("trianglegrid")];
+				} else {
+					this.gridToggle.icon = [this.iconManager.icon("trirectgrid")];
+				}
+			} else{
+				this.gridToggle.icon = [this.iconManager.icon("grid")];
 			}
 		}
 	};
@@ -14846,6 +14850,13 @@
 		}
 		// save the UI background R G B since the performance colouring uses it
 		this.uiBackgroundRGB = element;
+
+		// use the UI background colour as the shadow colour
+		if (this.engine.littleEndian) {
+			this.iconManager.shadowCol = (255 << 24) | (element & 255) << 16 | (((element >> 8) & 255) << 8) | (element >> 16);
+		} else {
+			this.iconManager.shadowCol = ((element >> 16) << 24) | (((element >> 8) & 255) << 16) | ((element & 255) << 8) | 255;
+		}
 
 		// check for custom highlight
 		element = this.customThemeValue[ViewConstants.customThemeUIHighlight];

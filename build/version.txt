@@ -1,3 +1,10 @@
+Build 781
+- add shadow to greyed out icons
+
+Build 780
+- fixed the wrong grid icon being used for square neighbourhood
+- UI controls with icons now have a shadow
+
 Build 779
 - fixed issue with KILLGLIDERS
 
