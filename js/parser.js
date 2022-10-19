@@ -27,6 +27,7 @@
 			case Keywords.reverseStartWord:
 			case Keywords.textColorWord:
 			case Keywords.errorColorWord:
+			case Keywords.helpColorWord:
 			case Keywords.showGenStatsWord:
 			case Keywords.showTimingWord:
 			case Keywords.extendedTimingWord:
@@ -375,6 +376,12 @@
 				// save for error display
 				view.customErrorColour = [redValue, greenValue, blueValue];
 				view.errorsFontColour = "rgb(" + redValue + "," + greenValue + "," + blueValue + ")";
+				break;
+
+			case ViewConstants.customThemeHelp:
+				// save for help display
+				view.customHelpColour = [redValue, greenValue, blueValue];
+				view.helpFontColour = "rgb(" + redValue + "," + greenValue + "," + blueValue + ")";
 				break;
 
 			case ViewConstants.customThemeLabel:
@@ -1299,6 +1306,7 @@
 		view.customThemeValue[ViewConstants.customThemeGraphBirth] = -1;
 		view.customThemeValue[ViewConstants.customThemeGraphDeath] = -1;
 		view.customThemeValue[ViewConstants.customThemeError] = -1;
+		view.customThemeValue[ViewConstants.customThemeHelp] = -1;
 		view.customThemeValue[ViewConstants.customThemeLabel] = -1;
 		view.customThemeValue[ViewConstants.customThemeUIFG] = -1;
 		view.customThemeValue[ViewConstants.customThemeUIBG] = -1;
@@ -3180,6 +3188,11 @@
 								// error
 								case Keywords.errorColorWord:
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeError, whichColour);
+									break;
+
+								// error
+								case Keywords.helpColorWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeHelp, whichColour);
 									break;
 
 								// label

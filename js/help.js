@@ -69,7 +69,7 @@
 				// set colour based on whether help can scroll up
 				if (!drawingShadow) {
 					if ((view.displayHelp | 0) > 1) {
-						ctx.fillStyle = ViewConstants.helpFontColour;
+						ctx.fillStyle = view.helpFontColour;
 					} else {
 						ctx.fillStyle = ViewConstants.greyFontColour;
 					}
@@ -78,14 +78,14 @@
 
 				// draw the separator
 				if (!drawingShadow) {
-					ctx.fillStyle = ViewConstants.helpFontColour;
+					ctx.fillStyle = view.helpFontColour;
 				}
 				ctx.fillText(separator, x + shadowX + ctx.measureText(up).width, y + shadowY);
 
 				// set colour based on whether help can scroll down
 				if (!drawingShadow) {
 					if ((view.displayHelp | 0) < view.numHelpLines - view.numHelpPerPage) {
-						ctx.fillStyle = ViewConstants.helpFontColour;
+						ctx.fillStyle = view.helpFontColour;
 					} else {
 						ctx.fillStyle = ViewConstants.greyFontColour;
 					}
@@ -94,7 +94,7 @@
 
 				// draw the variable part
 				if (!drawingShadow) {
-					ctx.fillStyle = ViewConstants.helpFontColour;
+					ctx.fillStyle = view.helpFontColour;
 				}
 				ctx.font = view.helpVariableFont;
 				ctx.fillText(text, x + shadowX + (view.tabs[0] * xScale), y + shadowY);
@@ -1209,6 +1209,7 @@
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.starfieldWord + " R G B", "set star color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.textColorWord + " R G B", "set waypoint message color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.errorColorWord + " R G B", "set error message color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.helpColorWord + " R G B", "set help message color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.graphBgColorWord + " R G B", "set graph background color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.graphAxisColorWord + " R G B", "set graph axis color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.graphAliveColorWord + " R G B", "set graph alive color", ctx, x, y, height, helpLine);
@@ -1968,6 +1969,15 @@
 			y = this.renderHelpLine(view, "Error", this.rgbString(255, 96, 96), ctx, x, y, height, helpLine);
 		}
 
+		// display help text colour
+		if (view.customHelpColour) {
+			this.renderColourBox(view, view.customHelpColour[0], view.customHelpColour[1], view.customHelpColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "Help*", this.rgbString(view.customHelpColour[0], view.customHelpColour[1], view.customHelpColour[2]), ctx, x, y, height, helpLine);
+		} else {
+			this.renderColourBox(view, 32, 255, 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "Help", this.rgbString(32, 255, 255), ctx, x, y, height, helpLine);
+		}
+
 		// select, paste, advance and selected cells colours
 		this.renderColourBox(view, view.customSelectColour[0], view.customSelectColour[1], view.customSelectColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Select", this.rgbString(view.customSelectColour[0], view.customSelectColour[1], view.customSelectColour[2]), ctx, x, y, height, helpLine);
@@ -2548,7 +2558,7 @@
 		Help.renderHelpText(view, ctx, 6 * xScale, 14 * yScale, lineHeight, view.displayHelp | 0);
 
 		// draw text
-		ctx.fillStyle = ViewConstants.helpFontColour;
+		ctx.fillStyle = view.helpFontColour;
 		this.shadowX = 0;
 		Help.renderHelpText(view, ctx, 6 * xScale, 14 * yScale, lineHeight, view.displayHelp | 0);
 	};

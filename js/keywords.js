@@ -335,6 +335,9 @@
 		// error colour
 		/** @const {string} */ errorColorWord : "ERROR",
 
+		// help colour
+		/** @const {string} */ helpColorWord : "HELP",
+
 		// [R]History custom colours
 		/** @const {string} */ offColorWord : "OFF",
 		/** @const {string} */ onColorWord : "ON",

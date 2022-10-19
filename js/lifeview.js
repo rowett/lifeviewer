@@ -262,6 +262,7 @@
 		/** @const {number} */ customThemePaste : 29,
 		/** @const {number} */ customThemeAdvance : 30,
 		/** @const {number} */ customThemeSelectedCells : 31,
+		/** @const {number} */ customThemeHelp : 32,
 
 		// state numbers
 		/** @const {number} */ offState : 0,
@@ -298,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 782,
+		/** @const {number} */ versionBuild : 783,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1282,6 +1283,12 @@
 		// error font colour
 		this.errorsFontColour = ViewConstants.errorsFontColour;
 
+		// custom help message colour
+		this.customHelpColour = null;
+
+		// help font colour
+		this.helpFontColour = ViewConstants.helpFontColour;
+
 		// boundary colour (for help display)
 		this.customBoundaryColour = [96, 96, 96];
 
@@ -1411,7 +1418,7 @@
 		/** @type {boolean} */ this.customGridMajor = false;
 
 		// custom theme value
-		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
 		// custom grid colour
 		/** @type {number} */ this.customGridColour = -1;
@@ -16052,6 +16059,8 @@
 		this.customTextColour = null;
 		this.customErrorColour = null;
 		this.errorsFontColour = ViewConstants.errorsFontColour;
+		this.customHelpColour = null;
+		this.helpFontColour = ViewConstants.helpFontColour;
 
 		// reset graph colours
 		this.engine.graphBgColor = this.engine.graphBgDefColor;
@@ -17075,6 +17084,7 @@
 		me.customThemeValue[ViewConstants.customThemePaste] = -1;
 		me.customThemeValue[ViewConstants.customThemeAdvance] = -1;
 		me.customThemeValue[ViewConstants.customThemeSelectedCells] = -1;
+		me.customThemeValue[ViewConstants.customThemeHelp] = -1;
 		me.customLabelColour = ViewConstants.labelFontColour;
 		me.customArrowColour = ViewConstants.arrowColour;
 		me.customPolygonColour = ViewConstants.polyColour;
