@@ -2406,6 +2406,9 @@
 		// default update count
 		this.defaultUpdateCount = 8;
 
+		// default hotkey colour
+		this.hotkeyCol = "rgb(32,255,255)";
+
 		// default background colour
 		this.bgCol = "black";
 		this.bgAlpha = 0.7;
@@ -2570,7 +2573,7 @@
 	};
 
 	// set menu foreground and background colour
-	MenuManager.prototype.setColours = function(fg, bg, highlight, selected, locked, border) {
+	MenuManager.prototype.setColours = function(fg, bg, highlight, selected, locked, border, hotkey) {
 		// set colours for new menus
 		this.fgCol = fg;
 		this.bgCol = bg;
@@ -2578,6 +2581,7 @@
 		this.selectCol = selected;
 		this.lockedCol = locked;
 		this.borderCol = border;
+		this.hotkeyCol = hotkey;
 
 		// set the colours in the current Menu
 		if (this.currentMenu) {
@@ -2882,7 +2886,7 @@
 					textPart = toolTip.substr(0, i + 1);
 					width = oc.measureText(textPart).width;
 					oc.fillText(textPart, x, y);
-					oc.fillStyle = "#80FFFF";
+					oc.fillStyle = this.hotkeyCol;
 					textPart = toolTip.substr(i + 1, j - i - 1);
 					oc.fillText(textPart, x + width, y);
 					oc.fillStyle = this.fgCol;
@@ -2899,7 +2903,7 @@
 						textPart = extraTip.substr(0, i + 1);
 						width = oc.measureText(textPart).width;
 						oc.fillText(textPart, x, y + fontSize + borderSize);
-						oc.fillStyle = "#80FFFF";
+						oc.fillStyle = this.hotkeyCol;
 						textPart = extraTip.substr(i + 1, j - i - 1);
 						oc.fillText(textPart, x + width, y + fontSize + borderSize);
 						oc.fillStyle = this.fgCol;

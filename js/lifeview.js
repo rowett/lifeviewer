@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 783,
+		/** @const {number} */ versionBuild : 784,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -429,9 +429,6 @@
 
 		// error list font colour
 		/** @const {string} */ errorsFontColour : "rgb(255,96,96)",
-
-		// grey font colour (used to grey out text)
-		/** @const {string} */ greyFontColour : "rgb(128,128,128)",
 
 		// minimum and maximum width of the Viewer
 		/** @const {number} */ minNoGUIWidth: 64,
@@ -14897,7 +14894,7 @@
 		}
 
 		// set the menu colours
-		this.menuManager.setColours(fgCol, bgCol, highlightCol, selectedCol, lockedCol, borderCol);
+		this.menuManager.setColours(fgCol, bgCol, highlightCol, selectedCol, lockedCol, borderCol, this.helpFontColour);
 	};
 
 	// create menus

@@ -71,7 +71,7 @@
 					if ((view.displayHelp | 0) > 1) {
 						ctx.fillStyle = view.helpFontColour;
 					} else {
-						ctx.fillStyle = ViewConstants.greyFontColour;
+						ctx.fillStyle = view.menuManager.lockedCol;
 					}
 				}
 				ctx.fillText(up, x + shadowX, y + shadowY);
@@ -87,7 +87,7 @@
 					if ((view.displayHelp | 0) < view.numHelpLines - view.numHelpPerPage) {
 						ctx.fillStyle = view.helpFontColour;
 					} else {
-						ctx.fillStyle = ViewConstants.greyFontColour;
+						ctx.fillStyle = view.menuManager.lockedCol;
 					}
 				}
 				ctx.fillText(down, x + shadowX + ctx.measureText(up + separator).width, y + shadowY);
@@ -2599,7 +2599,7 @@
 				if ((view.displayErrors | 0) > 1) {
 					ctx.fillStyle = view.errorsFontColour;
 				} else {
-					ctx.fillStyle = ViewConstants.greyFontColour;
+					ctx.fillStyle = view.menuManager.lockedCol;
 				}
 			}
 			ctx.fillText(up, x + shadowX, y + shadowY);
@@ -2615,7 +2615,7 @@
 				if ((view.displayErrors | 0) < view.scriptErrors.length - view.numHelpPerPage + 1) {
 					ctx.fillStyle = view.errorsFontColour;
 				} else {
-					ctx.fillStyle = ViewConstants.greyFontColour;
+					ctx.fillStyle = view.menuManager.lockedCol;
 				}
 			}
 			ctx.fillText(down, x + shadowX + ctx.measureText(up + separator).width, y + shadowY);
