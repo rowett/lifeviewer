@@ -298,7 +298,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 781,
+		/** @const {number} */ versionBuild : 782,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -18065,7 +18065,7 @@
 			if (me.failureReason === "") {
 				// label reason is VIEWONLY
 				me.reasonLabel.preText = " " + Keywords.viewOnlyWord;
-				me.reasonLabel.fgCol = ViewConstants.helpFontColour;
+				me.reasonLabel.fgCol = me.menuManager.fgCol;
 				me.reasonLabel.setPosition(Menu.southWest, me.genToggle.width, -40);
 				me.reasonLabel.setWidth(me.displayWidth - (40 + me.genToggle.width));
 				me.genToggle.deleted = false;

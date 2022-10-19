@@ -1,3 +1,6 @@
+Build 782
+- VIEWONLY label now uses the UI foreground colour
+
 Build 781
 - add shadow to greyed out icons
 
