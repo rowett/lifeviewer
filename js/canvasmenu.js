@@ -217,7 +217,7 @@
 			// check if animated colour needed
 			if (this.animate) {
 				this.setAnimatedColour();
-				this.priorityIter = (this.priorityIter + 4) & 255;
+				this.priorityIter = (this.priorityIter + 2) & 255;
 			} else {
 				this.context.fillStyle = this.priorityColour;
 			}
