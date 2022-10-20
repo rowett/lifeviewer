@@ -1,4 +1,4 @@
-// LifeViewer Buttonlugin
+// LifeViewer Plugin
 // written by Chris Rowett
 
 (function() {
@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 784,
+		/** @const {number} */ versionBuild : 785,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",

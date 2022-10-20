@@ -1,3 +1,6 @@
+Build 785
+- colour animated notifications now use UI Foregrount and Selected colours
+
 Build 784
 - hotkeys in tooltips used the Help colour
 - Help menu uses the UI locked colour for disabled items

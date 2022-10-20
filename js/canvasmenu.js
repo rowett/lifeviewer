@@ -169,6 +169,26 @@
 		}
 	};
 
+	// set animated colour for notification
+	TextAlert.prototype.setAnimatedColour = function() {
+		var dR = 0,
+			dG = 0,
+			dB = 0,
+			percent = 0;
+
+		if (this.priorityIter < 128) {
+			percent = this.priorityIter / 128;
+		} else {
+			percent = (255 - this.priorityIter) / 128;
+		}
+
+		dR = this.menuManager.fgR * percent + this.menuManager.selectR * (1 - percent);
+		dG = this.menuManager.fgG * percent + this.menuManager.selectG * (1 - percent);
+		dB = this.menuManager.fgB * percent + this.menuManager.selectB * (1 - percent);
+
+		this.context.fillStyle = "rgb(" + dR + "," + dG + "," + dB + ")";
+	};
+
 	// draw notification string
 	TextAlert.prototype.draw = function(message, isPriority, lineHeight) {
 		var xPos = 0,
@@ -196,11 +216,7 @@
 		if (isPriority) {
 			// check if animated colour needed
 			if (this.animate) {
-				if (this.priorityIter < 128) {
-					this.context.fillStyle = "rgb(" + (this.priorityIter * 2) + "," + (this.priorityIter * 2) + ",255)";
-				} else {
-					this.context.fillStyle = "rgb(" + ((256 - this.priorityIter) * 2) + "," + ((256 - this.priorityIter) * 2) + ",255)";
-				}
+				this.setAnimatedColour();
 				this.priorityIter = (this.priorityIter + 4) & 255;
 			} else {
 				this.context.fillStyle = this.priorityColour;
@@ -1105,7 +1121,7 @@
 		this.fgCol = fg;
 		this.bgCol = bg;
 		this.hlCol = highlight;
-		this.selectCol = selected;
+		this.selectedCol = selected;
 		this.lockedCol = locked;
 		this.borderCol = border;
 
@@ -2416,6 +2432,9 @@
 		// default foreground colour
 		this.fgCol = "white";
 		this.fgAlpha = 1.0;
+		this.fgR = 0;
+		this.fgG = 0;
+		this.fgB = 0;
 
 		// default highlight colour
 		this.hlCol = "rgb(0,240,32)";
@@ -2424,6 +2443,9 @@
 		// default selected colour
 		this.selectedCol = "blue";
 		this.selectedAlpha = 0.7;
+		this.selectedR = 0;
+		this.selectedG = 0;
+		this.selectedB = 0;
 
 		// default locked colour
 		this.lockedCol = "grey";
@@ -2496,6 +2518,8 @@
 
 		// notification
 		this.notification = new TextAlert(25, 100, 25, mainContext, this);
+		this.notification.colour = this.fgCol;
+		this.notification.priorityColour = this.fgCol;
 
 		// last mouse up time
 		this.lastMouseUp = performance.now();
@@ -2529,7 +2553,29 @@
 		registerEvent(mainCanvas, "touchmove", function(event) {me.touchHandler(me, event);}, false);
 		registerEvent(mainCanvas, "touchend", function(event) {me.touchHandler(me, event);}, false);
 		registerEvent(mainCanvas, "touchcancel", function(event) {me.touchHandler(me, event);}, false);
+
+		// setup r g b components
+		this.setRGBComponents();
 	}
+
+	// setup RGB components
+	MenuManager.prototype.setRGBComponents = function() {
+		var style = "";
+
+		// get foregound elements as hex rgb
+		this.mainContext.fillStyle = this.fgCol;
+		style = this.mainContext.fillStyle;
+		this.fgR = Number("0x" + style.substring(1, 3));
+		this.fgG = Number("0x" + style.substring(3, 5));
+		this.fgB = Number("0x" + style.substring(5, 7));
+
+		// get selected elements as hex rgb
+		this.mainContext.fillStyle = this.selectedCol;
+		style = this.mainContext.fillStyle;
+		this.selectR = Number("0x" + style.substring(1, 3));
+		this.selectG = Number("0x" + style.substring(3, 5));
+		this.selectB = Number("0x" + style.substring(5, 7));
+	};
 
 	// reset time intervals
 	MenuManager.prototype.resetTimeIntervals = function() {
@@ -2578,7 +2624,7 @@
 		this.fgCol = fg;
 		this.bgCol = bg;
 		this.hlCol = highlight;
-		this.selectCol = selected;
+		this.selectedCol = selected;
 		this.lockedCol = locked;
 		this.borderCol = border;
 		this.hotkeyCol = hotkey;
@@ -2587,6 +2633,13 @@
 		if (this.currentMenu) {
 			this.currentMenu.setColours(fg, bg, highlight, selected, locked, border);
 		}
+
+		// set notification colour
+		this.notification.colour = fg;
+		this.notification.priorityColour = fg;
+
+		// set RGB components
+		this.setRGBComponents();
 	};
 
 	// create menu
