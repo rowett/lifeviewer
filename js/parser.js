@@ -1290,32 +1290,7 @@
 		// reset custom theme
 		view.customGridMajor = false;
 		view.customTheme = false;
-		view.customThemeValue[ViewConstants.customThemeBackground] = -1;
-		view.customThemeValue[ViewConstants.customThemeAlive] = -1;
-		view.customThemeValue[ViewConstants.customThemeAliveRamp] = -1;
-		view.customThemeValue[ViewConstants.customThemeDead] = -1;
-		view.customThemeValue[ViewConstants.customThemeDeadRamp] = -1;
-		view.customThemeValue[ViewConstants.customThemeGrid] = -1;
-		view.customThemeValue[ViewConstants.customThemeGridMajor] = -1;
-		view.customThemeValue[ViewConstants.customThemeStars] = -1;
-		view.customThemeValue[ViewConstants.customThemeText] = -1;
-		view.customThemeValue[ViewConstants.customThemeBoundary] = -1;
-		view.customThemeValue[ViewConstants.customThemeGraphBg] = -1;
-		view.customThemeValue[ViewConstants.customThemeGraphAxis] = -1;
-		view.customThemeValue[ViewConstants.customThemeGraphAlive] = -1;
-		view.customThemeValue[ViewConstants.customThemeGraphBirth] = -1;
-		view.customThemeValue[ViewConstants.customThemeGraphDeath] = -1;
-		view.customThemeValue[ViewConstants.customThemeError] = -1;
-		view.customThemeValue[ViewConstants.customThemeHelp] = -1;
-		view.customThemeValue[ViewConstants.customThemeLabel] = -1;
-		view.customThemeValue[ViewConstants.customThemeUIFG] = -1;
-		view.customThemeValue[ViewConstants.customThemeUIBG] = -1;
-		view.customThemeValue[ViewConstants.customThemeUIHighlight] = -1;
-		view.customThemeValue[ViewConstants.customThemeUISelect] = -1;
-		view.customThemeValue[ViewConstants.customThemeUILocked] = -1;
-		view.customThemeValue[ViewConstants.customThemeUIBorder] = -1;
-		view.customThemeValue[ViewConstants.customThemeArrow] = -1;
-		view.customThemeValue[ViewConstants.customThemePoly] = -1;
+		view.customThemeValue.fill(-1);
 
 		// clear custom colours
 		view.customColours = null;

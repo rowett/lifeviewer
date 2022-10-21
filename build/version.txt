@@ -1,3 +1,7 @@
+Build 786
+- hide priority notifications when Settings or Help are opened
+- made "Life ended at..." notification consistent
+
 Build 785
 - colour animated notifications now use UI Foregrount and Selected colours
 

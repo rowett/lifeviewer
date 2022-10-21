@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 785,
+		/** @const {number} */ versionBuild : 786,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5901,7 +5901,7 @@
 
 						// notify simulation stopped unless loop defined and enabled
 						if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
-							me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 600, 15, true);
+							me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 600, 15, false);
 						}
 
 						// if the pattern dies again then notify (this would be caused by drawing during playback)
@@ -13836,8 +13836,9 @@
 
 			// hide notification if menu opening
 			if (newValue[0]) {
-				// hide any notification
+				// hide any notifications
 				me.menuManager.notification.clear(false, false);
+				me.menuManager.notification.clear(true, false);
 			}
 		}
 		return newValue;
@@ -14020,8 +14021,9 @@
 					me.navToggle.current = me.toggleSettings([false], true, me);
 				}
 
-				// hide any notification
+				// hide any notifications
 				me.menuManager.notification.clear(false, false);
+				me.menuManager.notification.clear(true, false);
 			} else {
 				// reset to welcome topic on close
 				me.setHelpTopic(ViewConstants.welcomeTopic, me);
@@ -17049,39 +17051,7 @@
 		me.requestedPopupHeight = -1;
 
 		// reset custom theme
-		me.customThemeValue[ViewConstants.customThemeBackground] = -1;
-		me.customThemeValue[ViewConstants.customThemeAlive] = -1;
-		me.customThemeValue[ViewConstants.customThemeAliveRamp] = -1;
-		me.customThemeValue[ViewConstants.customThemeDead] = -1;
-		me.customThemeValue[ViewConstants.customThemeDeadRamp] = -1;
-		me.customThemeValue[ViewConstants.customThemeGrid] = -1;
-		me.customThemeValue[ViewConstants.customThemeGridMajor] = -1;
-		me.customThemeValue[ViewConstants.customThemeStars] = -1;
-		me.customThemeValue[ViewConstants.customThemeText] = -1;
-		me.customThemeValue[ViewConstants.customThemeBoundary] = -1;
-		me.customThemeValue[ViewConstants.customThemeGraphBg] = -1;
-		me.customThemeValue[ViewConstants.customThemeGraphAxis] = -1;
-		me.customThemeValue[ViewConstants.customThemeGraphAlive] = -1;
-		me.customThemeValue[ViewConstants.customThemeGraphBirth] = -1;
-		me.customThemeValue[ViewConstants.customThemeGraphDeath] = -1;
-		me.customThemeValue[ViewConstants.customThemeError] = -1;
-		me.customThemeValue[ViewConstants.customThemeLabel] = -1;
-		me.customThemeValue[ViewConstants.customThemeDying] = -1;
-		me.customThemeValue[ViewConstants.customThemeDyingRamp] = -1;
-		me.customThemeValue[ViewConstants.customThemeUIFG] = -1;
-		me.customThemeValue[ViewConstants.customThemeUIBG] = -1;
-		me.customThemeValue[ViewConstants.customThemeUIHighlight] = -1;
-		me.customThemeValue[ViewConstants.customThemeUISelect] = -1;
-		me.customThemeValue[ViewConstants.customThemeUILocked] = -1;
-		me.customThemeValue[ViewConstants.customThemeUIBorder] = -1;
-		me.customThemeValue[ViewConstants.customThemeArrow] = -1;
-		me.customThemeValue[ViewConstants.customThemePoly] = -1;
-		me.customThemeValue[ViewConstants.customThemeBounded] = -1;
-		me.customThemeValue[ViewConstants.customThemeSelect] = -1;
-		me.customThemeValue[ViewConstants.customThemePaste] = -1;
-		me.customThemeValue[ViewConstants.customThemeAdvance] = -1;
-		me.customThemeValue[ViewConstants.customThemeSelectedCells] = -1;
-		me.customThemeValue[ViewConstants.customThemeHelp] = -1;
+		me.customThemeValue.fill(-1);
 		me.customLabelColour = ViewConstants.labelFontColour;
 		me.customArrowColour = ViewConstants.arrowColour;
 		me.customPolygonColour = ViewConstants.polyColour;
