@@ -3106,6 +3106,8 @@
 			/** @type {number} */ k = 0,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
+			/** @type {number} */ leftOff = 0,
+			/** @type {number} */ rightOff = 0,
 			/** @const {number} */ w2 = this.width / 2 - 0.25,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @const {number} */ pi3 = Math.PI / 3,
@@ -3199,7 +3201,22 @@
 			displayY = (cy + yOff1) * zoom + halfDisplayHeight;
 			// clip to display
 			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
-				for (x = leftX; x <= rightX; x += 1) {
+				/* TBD
+				// adjust to draw hexagonal area
+				var midY = (topY - bottomY) >> 1;
+				var curY = y - bottomY;
+				if (curY < midY) {
+					leftOff = 0;
+					rightOff = curY - midY;
+				} else {
+					leftOff = curY - midY;
+					rightOff = 0;
+				}
+
+				for (x = leftX + leftOff; x <= rightX + rightOff; x += 1) {
+				*/
+
+				for (x = leftX; x <= rightX ; x += 1) {
 					cx = x - w2;
 					displayX = (cx + xOff1 - (cy + yOff1) / 2) * zoom + halfDisplayWidth;
 					// clip to display
@@ -7073,7 +7090,7 @@
 						}
 
 						// override with custom colour if specified
-						if (this.customColours && this.customColours.length >= i) {
+						if (this.customColours && this.customColours.length > i) {
 							if (!(this.isPCA || this.isRuleTree)) {
 								current = this.customColours[this.multiNumStates - i];
 							} else {
@@ -7106,7 +7123,7 @@
 					}
 
 					// override with custom colour if specified
-					if (this.customColours && this.customColours.length >= i) {
+					if (this.customColours && this.customColours.length > i) {
 						if (!(this.isPCA || this.isRuleTree)) {
 							current = this.customColours[this.multiNumStates - i];
 						} else {

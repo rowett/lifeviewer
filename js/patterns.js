@@ -592,6 +592,7 @@
 		/** @const {number} */ this.weightedHROT = 15;
 		/** @const {number} */ this.cornerEdgeHROT = 16;
 		/** @const {number} */ this.alignedCheckerHROT = 17;
+		/** @const {number} */ this.randomHROT = 18;
 
 		// specified width and height from RLE pattern
 		/** @type {number} */ this.specifiedWidth = -1;
@@ -3176,6 +3177,9 @@
 					case this.cornerEdgeHROT:
 						nameLtL += "F" + pattern.cornerEdgeCanonical(pattern.rangeLTL);
 						break;
+					case this.randomHROT:
+						nameLtL += "R";
+						break;
 				}
 
 				// lookup alias
@@ -3437,6 +3441,11 @@
 						}
 						break;
 
+					case "r":
+						this.index += 1;
+						result = this.randomHROT;
+						break;
+
 					default:
 						this.failureReason = "LtL 'N' [ABCDFGHLMNWX23*+#@] got 'N" + next.toUpperCase() + "'";
 						this.index = -1;
@@ -3577,6 +3586,10 @@
 
 			case this.cornerEdgeHROT:
 				result = 8;
+				break;
+
+			case this.randomHROT:
+				result = (range * 2 + 1) * (range * 2 + 1) - 1;
 				break;
 		}
 
@@ -4584,6 +4597,12 @@
 									}
 									break;
 
+								case "r":
+									this.index += 1;
+									pattern.neighborhoodHROT = this.randomHROT;
+									result = true;
+									break;
+
 								default:
 									this.failureReason = "HROT 'N' [ABCDFGHLMNWX23*+#@] got '" + rule[this.index].toUpperCase() + "'";
 									break;
@@ -5233,6 +5252,9 @@
 		    // offset
 		    offset = 0,
 
+		    // original name
+		    tempName = "",
+
 		    // counter
 		    i = 0;
 
@@ -5548,6 +5570,10 @@
 											case this.cornerEdgeHROT:
 												pattern.ruleName += "F" + pattern.cornerEdgeCanonical(pattern.rangeHROT);
 												break;
+
+											case this.randomHROT:
+												pattern.ruleName += "R";
+												break;
 										}
 									}
 								} else {
@@ -5635,6 +5661,10 @@
 
 										case this.cornerEdgeHROT:
 											pattern.ruleName += "F" + pattern.cornerEdgeCanonical(pattern.rangeLTL);
+											break;
+
+										case this.randomHROT:
+											pattern.ruleName += "R";
 											break;
 									}
 
@@ -6043,8 +6073,10 @@
 		// if valid the create the rule
 		if (valid && pattern.wolframRule === -1 && pattern.isLTL === false && pattern.isHROT === false) {
 			// create the canonical name and the rule map
-			pattern.ruleName = this.createRuleMap(pattern, birthPart, survivalPart, base64, ruleArray, ruleTriangularArray);
-			if (this.failureReason !== "") {
+			tempName = this.createRuleMap(pattern, birthPart, survivalPart, base64, ruleArray, ruleTriangularArray);
+			if (this.failureReason === "") {
+				pattern.ruleName = tempName;
+			} else {
 				valid = false;
 			}
 

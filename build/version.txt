@@ -1,3 +1,18 @@
+Build 790
+- fixed issue with step back
+
+Build 789
+- fixed issue with RuleTable and none rules ignoring [[ COLOR BACKGROUND ]]
+
+Build 788
+- added non-deterministic rule specified with LtL/HROT NR neighbourhood
+	- the neighbourhood is Moore but each birth and survival is based on probability
+	- the probabilities are randomly generated and can be made repeatable by specifying a [[ RANDSEED ]]
+	
+Build 787
+- fixed an issue with rule name validation
+- don't show cell display workaround for chromium builds >= 107
+
 Build 786
 - hide priority notifications when Settings or Help are opened
 - made "Life ended at..." notification consistent
