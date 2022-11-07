@@ -893,6 +893,11 @@
 							result += view.patternOriginator;
 							break;
 
+						case "S":
+							// add the random seed
+							result += view.randomSeed;
+							break;
+
 						case "T":
 							// add the program name
 							result += ViewConstants.externalViewerTitle;

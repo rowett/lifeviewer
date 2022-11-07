@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 790,
+		/** @const {number} */ versionBuild : 791,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2874,10 +2874,6 @@
 						case this.manager.weightedHROT:
 							itemName = "Weighted";
 							break;
-
-						case this.manager.randomHROT:
-							itemName = "Moore Random";
-							break;
 						}
 
 						if (this.engine.HROT.type === this.manager.cornerEdgeHROT) {
@@ -2886,6 +2882,10 @@
 							if (this.engine.HROT.yrange > 1) {
 								itemName += " range " + this.engine.HROT.yrange;
 							}
+						}
+
+						if (this.engine.HROT.useRandom) {
+							itemName += " (non-deterministic)";
 						}
 					} else {
 						if (this.engine.isTriangular) {
@@ -10138,10 +10138,6 @@
 				}
 			}
 			break;
-
-		case this.manager.randomHROT:
-			neighbourhood = "R";
-			break;
 		}
 
 		// pick number of survival neighbour counts
@@ -10235,6 +10231,11 @@
 		// add the neighbourhood
 		if (neighbourhood !== "") {
 			result += ",N" + neighbourhood;
+		}
+
+		// add probabilistic flag if enabled
+		if (this.engine.HROT.useRandom) {
+			result += ",P";
 		}
 
 		return result;
@@ -10347,10 +10348,6 @@
 					neighbourhood += "L";
 				}
 			}
-			break;
-
-		case this.manager.randomHROT:
-			neighbourhood = "R";
 			break;
 		}
 
@@ -17096,6 +17093,7 @@
 				me.engine.HROT.births = pattern.birthHROT;
 				me.engine.HROT.survivals = pattern.survivalHROT;
 				me.engine.HROT.scount = pattern.multiNumStates;
+				me.engine.HROT.useRandom = pattern.probabilisticHROT;
 				me.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT, pattern.customNeighbourhood, pattern.customNeighbourCount, pattern.isTriangular, pattern.weightedNeighbourhood, pattern.weightedStates, pattern.cornerRange, pattern.edgeRange);
 				if (me.manager.altSpecified) {
 					me.engine.HROT.altBirths = pattern.altBirthHROT;

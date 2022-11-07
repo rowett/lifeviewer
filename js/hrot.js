@@ -110,6 +110,12 @@
 		for (i = 0; i < this.survivals.length; i += 1) {
 			this.survivalChances[i] = this.myRand.random();
 		}
+
+		// use the same random chance for all births
+		this.birthChances.fill(this.birthChances[0]);
+
+		// use the same random chance for all survivals
+		this.survivalChances.fill(this.survivalChances[0]);
 	};
 
 	// resize counts array
@@ -141,12 +147,6 @@
 			/** @type {Uint16Array} */ rowCount = null;
 
 		// save type and range and allocate widths array
-		if (type === this.manager.randomHROT) {
-			this.useRandom = true;
-		} else {
-			this.useRandom = false;
-		}
-
 		this.type = type;
 		this.yrange = range;
 		this.xrange = (isTriangular && !(type === this.manager.customHROT || type === this.manager.weightedHROT)) ? range + range : range;
@@ -181,13 +181,6 @@
 		switch(type) {
 			case this.manager.mooreHROT:
 			// Moore is a square
-			for (i = 0; i < width; i += 1) {
-				this.widths[i] = range;
-			}
-			break;
-
-			case this.manager.randomHROT:
-			// Random is Moore which is a square
 			for (i = 0; i < width; i += 1) {
 				this.widths[i] = range;
 			}
@@ -506,6 +499,10 @@
 			/** @const {number} */ deadMin = LifeConstants.deadMin,
 			/** @type {number} */ aliveIndex = 0,
 			colourLookup = this.engine.colourLookup,
+			/** @type {boolean} */ useRandom = this.useRandom,
+			myRand = this.myRand,
+			/** @type {Float32Array} */ birthChances = this.birthChances,
+			/** @type {Float32Array} */ survivalChances = this.survivalChances,
 
 			// maximum generations state
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
@@ -535,17 +532,34 @@
 					if (state < aliveStart) {
 						// this cell is dead
 						if (count >= 0 && birthList[count] === 1) {
-							// new cell is born
-							births += 1;
-							aliveIndex = 128;
+							if (useRandom) {
+								if (myRand.random() >= birthChances[count]) {
+									// new cell is born
+									births += 1;
+									aliveIndex = 128;
+								}
+							} else {
+								// new cell is born
+								births += 1;
+								aliveIndex = 128;
+							}
 						}
 					} else {
 						// this cell is alive
-						if (count >= 0 && survivalList[count] === 1) {
-							// this cell survives
-							aliveIndex = 128;
+						if (count >= 0 && survivalList[count] === 0) {
+							if (useRandom) {
+								if (myRand.random() >= survivalChances[count]) {
+									// cell dies
+									deaths += 1;
+								} else {
+									// this cell survives
+									aliveIndex = 128;
+								}
+							} else {
+								deaths += 1;
+							}
 						} else {
-							deaths += 1;
+							aliveIndex = 128;
 						}
 					}
 					state = colourLookup[state + aliveIndex];
@@ -605,9 +619,21 @@
 					if (state <= deadState) {
 						// this cell is dead
 						if (count >= 0 && birthList[count] === 1) {
-							// new cell is born
-							state = maxGenState;
-							births += 1;
+							if (useRandom) {
+								if (myRand.random() >= birthChances[count]) {
+									// new cell is born
+									state = maxGenState;
+									births += 1;
+								} else {
+									if (state > minDeadState) {
+										state -= 1;
+									}
+								}
+							} else {
+								// new cell is born
+								state = maxGenState;
+								births += 1;
+							}
 						} else {
 							if (state > minDeadState) {
 								state -= 1;
@@ -616,9 +642,17 @@
 					} else if (state === maxGenState) {
 						// this cell is alive
 						if (count < 0 || survivalList[count] === 0) {
-							// cell decays by one state
-							state -= 1;
-							deaths += 1;
+							if (useRandom) {
+								if (myRand.random() >= survivalChances[(count < 0 ? 0 : count)]) {
+									// cell decays by one state
+									state -= 1;
+									deaths += 1;
+								}
+							} else {
+								// cell decays by one state
+								state -= 1;
+								deaths += 1;
+							}
 						}
 					} else {
 						// this cell will eventually die
@@ -2061,7 +2095,7 @@
 				bottomY = gridBottomY + yrange;
 			}
 
-			if (type === this.manager.mooreHROT || type === this.manager.randomHROT) {
+			if (type === this.manager.mooreHROT) {
 				leftX -= rx2;
 				bottomY -= ry2;
 				rightX += rx2;
@@ -2077,7 +2111,7 @@
 		}
 
 		// compute counts for given neighborhood
-		if (type === this.manager.mooreHROT || type === this.manager.randomHROT) {
+		if (type === this.manager.mooreHROT) {
 			// temporarily expand bounding box
 			leftX -= rx2;
 			bottomY -= ry2;
@@ -2176,19 +2210,37 @@
 			if (state < aliveStart) {
 				// this cell is dead
 				if (birthList[count] === 1) {
-					// new cell is born
-					births += 1;
-					aliveIndex = 128;
+					if (useRandom) {
+						if (myRand.random() >= birthChances[count]) {
+							// new cell is born
+							births += 1;
+							aliveIndex = 128;
+						}
+					} else {
+						// new cell is born
+						births += 1;
+						aliveIndex = 128;
+					}
 				}
 			} else {
 				// this cell is alive
 				if (survivalList[count] === 0) {
-					// cell dies
-					deaths += 1;
+					if (useRandom) {
+						if (myRand.random() >= survivalChances[count]) {
+							// cell dies
+							deaths += 1;
+						} else {
+							aliveIndex = 128;
+						}
+					} else {
+						// cell dies
+						deaths += 1;
+					}
 				} else {
 					aliveIndex = 128;
 				}
 			}
+
 			// update the cell
 			state = colourLookup[state + aliveIndex];
 			colourGrid[bottomY][leftX] = state;
@@ -2220,7 +2272,7 @@
 					// this cell is dead
 					if (birthList[count] === 1) {
 						if (useRandom) {
-							if (myRand.random() >= birthChances[i]) {
+							if (myRand.random() >= birthChances[count]) {
 								// new cell is born
 								births += 1;
 								aliveIndex = 128;
@@ -2235,7 +2287,7 @@
 					// this cell is alive
 					if (survivalList[count] === 0) {
 						if (useRandom) {
-							if (myRand.random() >= survivalChances[i]) {
+							if (myRand.random() >= survivalChances[count]) {
 								// cell dies
 								deaths += 1;
 							} else {
@@ -2284,7 +2336,7 @@
 					// this cell is dead
 					if (birthList[count] === 1) {
 						if (useRandom) {
-							if (myRand.random() >= birthChances[i]) {
+							if (myRand.random() >= birthChances[count]) {
 								// new cell is born
 								births += 1;
 								aliveIndex = 128;
@@ -2299,7 +2351,7 @@
 					// this cell is alive
 					if (survivalList[count] === 0) {
 						if (useRandom) {
-							if (myRand.random() >= survivalChances[i]) {
+							if (myRand.random() >= survivalChances[count]) {
 								// cell dies
 								deaths += 1;
 							} else{
@@ -2365,7 +2417,7 @@
 						// this cell is dead
 						if (birthList[count] === 1) {
 							if (useRandom) {
-								if (myRand.random() >= birthChances[i]) {
+								if (myRand.random() >= birthChances[count]) {
 									// new cell is born
 									aliveIndex = 128;
 									births += 1;
@@ -2380,7 +2432,7 @@
 						// this cell is alive
 						if (survivalList[count] === 0) {
 							if (useRandom) {
-								if (myRand.random() >= survivalChances[i]) {
+								if (myRand.random() >= survivalChances[count]) {
 									// cell dies
 									deaths += 1;
 								} else {
@@ -2530,15 +2582,32 @@
 						aliveIndex = 0;
 						if (state < aliveStart) {
 							if (birthList[count] === 1) {
-								// new cell is born
-								aliveIndex = 128;
-								births += 1;
+								if (useRandom) {
+									if (myRand.random() >= birthChances[count]) {
+										// new cell is born
+										aliveIndex = 128;
+										births += 1;
+									}
+								} else {
+									// new cell is born
+									aliveIndex = 128;
+									births += 1;
+								}
 							}
 						} else {
 							// this cell is alive
 							if (survivalList[count] === 0) {
-								// cell dies
-								deaths += 1;
+								if (useRandom) {
+									if (myRand.random() >= survivalChances[count]) {
+										// cell dies
+										deaths += 1;
+									} else {
+										aliveIndex = 128;
+									}
+								} else {
+									// cell dies
+									deaths += 1;
+								}
 							} else {
 								aliveIndex = 128;
 							}
@@ -2701,7 +2770,7 @@
 		}
 
 		// compute next generation from counts if not Moore which was done above
-		if (!(type === this.manager.mooreHROT || type === this.manager.randomHROT) && !(type === this.manager.vonNeumannHROT && xrange > this.rangeVN)) {
+		if (type !== this.manager.mooreHROT && !(type === this.manager.vonNeumannHROT && xrange > this.rangeVN)) {
 			this.updateGridFromCountsHROT(leftX, bottomY, rightX, topY, useAlternate);
 		}
 
@@ -3892,7 +3961,7 @@
 				bottomY = gridBottomY + yrange;
 			}
 
-			if (type === this.manager.mooreHROT || type == this.manager.randomHROT) {
+			if (type === this.manager.mooreHROT) {
 				leftX -= rx2;
 				bottomY -= ry2;
 				rightX += rx2;
@@ -3908,7 +3977,7 @@
 		}
 
 		// compute counts for given neighborhood
-		if (type === this.manager.mooreHROT || type === this.manager.randomHROT) {
+		if (type === this.manager.mooreHROT) {
 			// temporarily expand bounding box
 			leftX -= rx2;
 			bottomY -= ry2;
@@ -3961,7 +4030,7 @@
 				// this cell is dead
 				if (birthList[count] === 1) {
 					if (useRandom) {
-						if (myRand.random() >= birthChances[i]) {
+						if (myRand.random() >= birthChances[count]) {
 							// new cell is born
 							state = maxGenState;
 							births += 1;
@@ -3984,7 +4053,7 @@
 				// this cell is alive
 				if (survivalList[count] === 0) {
 					if (useRandom) {
-						if (myRand.random() >= survivalChances[i]) {
+						if (myRand.random() >= survivalChances[count]) {
 							// cell decays by one state
 							state -= 1;
 							deaths += 1;
@@ -4031,9 +4100,21 @@
 				if (state <= deadState) {
 					// this cell is dead
 					if (birthList[count] === 1) {
-						// new cell is born
-						state = maxGenState;
-						births += 1;
+						if (useRandom) {
+							if (myRand.random() >= birthChances[count]) {
+								// new cell is born
+								state = maxGenState;
+								births += 1;
+							} else {
+								if (state > minDeadState) {
+									state -= 1;
+								}
+							}
+						} else {
+							// new cell is born
+							state = maxGenState;
+							births += 1;
+						}
 					} else {
 						if (state > minDeadState) {
 							state -= 1;
@@ -4042,9 +4123,17 @@
 				} else if (state === maxGenState) {
 					// this cell is alive
 					if (survivalList[count] === 0) {
-						// cell decays by one state
-						state -= 1;
-						deaths += 1;
+						if (useRandom) {
+							if (myRand.random() >= survivalChances[count]) {
+								// cell decays by one state
+								state -= 1;
+								deaths += 1;
+							}
+						} else {
+							// cell decays by one state
+							state -= 1;
+							deaths += 1;
+						}
 					}
 				} else {
 					// this cell will eventually die
@@ -4095,7 +4184,7 @@
 					// this cell is dead
 					if (birthList[count] === 1) {
 						if (useRandom) {
-							if (myRand.random() >= birthChances[i]) {
+							if (myRand.random() >= birthChances[count]) {
 								// new cell is born
 								state = maxGenState;
 								births += 1;
@@ -4118,7 +4207,7 @@
 					// this cell is alive
 					if (survivalList[count] === 0) {
 						if (useRandom) {
-							if (myRand.random() >= survivalChances[i]) {
+							if (myRand.random() >= survivalChances[count]) {
 								// cell decays by one state
 								state -= 1;
 								deaths += 1;
@@ -4195,7 +4284,7 @@
 						// this cell is dead
 						if (birthList[count] === 1) {
 							if (useRandom) {
-								if (myRand.random() >= birthChances[i]) {
+								if (myRand.random() >= birthChances[count]) {
 									// new cell is born
 									state = maxGenState;
 									births += 1;
@@ -4218,7 +4307,7 @@
 						// this cell is alive
 						if (survivalList[count] === 0) {
 							if (useRandom) {
-								if (myRand.random() >= survivalChances[i]) {
+								if (myRand.random() >= survivalChances[count]) {
 									// cell decays by one state
 									state -= 1;
 									deaths += 1;
@@ -4536,7 +4625,7 @@
 		}
 
 		// compute next generation from counts if not Moore which was done above
-		if (!(type === this.manager.mooreHROT || type === this.manager.randomHROT) && !(type === this.manager.vonNeumannHROT && xrange > this.rangeVN)) {
+		if (type !== this.manager.mooreHROT && !(type === this.manager.vonNeumannHROT && xrange > this.rangeVN)) {
 			this.updateGridFromCountsHROT(leftX, bottomY, rightX, topY, useAlternate);
 		}
 

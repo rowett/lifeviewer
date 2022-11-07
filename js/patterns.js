@@ -592,7 +592,6 @@
 		/** @const {number} */ this.weightedHROT = 15;
 		/** @const {number} */ this.cornerEdgeHROT = 16;
 		/** @const {number} */ this.alignedCheckerHROT = 17;
-		/** @const {number} */ this.randomHROT = 18;
 
 		// specified width and height from RLE pattern
 		/** @type {number} */ this.specifiedWidth = -1;
@@ -736,6 +735,9 @@
 
 		// original failure reason before repository lookup
 		this.originalFailure = "";
+
+		// whether HROT pattern is probabilistic (non-deterministic)
+		this.probabilisticHROT = false;
 
 		// remove extension from name if present
 		var i = name.lastIndexOf(".");
@@ -3177,9 +3179,6 @@
 					case this.cornerEdgeHROT:
 						nameLtL += "F" + pattern.cornerEdgeCanonical(pattern.rangeLTL);
 						break;
-					case this.randomHROT:
-						nameLtL += "R";
-						break;
 				}
 
 				// lookup alias
@@ -3441,11 +3440,6 @@
 						}
 						break;
 
-					case "r":
-						this.index += 1;
-						result = this.randomHROT;
-						break;
-
 					default:
 						this.failureReason = "LtL 'N' [ABCDFGHLMNWX23*+#@] got 'N" + next.toUpperCase() + "'";
 						this.index = -1;
@@ -3586,10 +3580,6 @@
 
 			case this.cornerEdgeHROT:
 				result = 8;
-				break;
-
-			case this.randomHROT:
-				result = (range * 2 + 1) * (range * 2 + 1) - 1;
 				break;
 		}
 
@@ -4380,14 +4370,15 @@
 		pattern.isHROT = true;
 	};
 
-	// decode HROT rule in Rr,Cc,S,B(,Nn) format
+	// decode HROT rule in Rr,Cc,S,B(,Nn)(,P) format
 	PatternManager.prototype.decodeHROTMulti = function(pattern, /** @type {string} */ rule, allocator) {
 		var value = 0,
 			result = false,
 			maxCount = 0,
 			saveIndex = 0,
 			outer = true,
-			hoodIndex = rule.indexOf(",n");
+			hoodIndex = rule.indexOf(",n"),
+			probIndex = rule.indexOf(",p");
 
 		// reset string index
 		this.index = 0;
@@ -4597,12 +4588,6 @@
 									}
 									break;
 
-								case "r":
-									this.index += 1;
-									pattern.neighborhoodHROT = this.randomHROT;
-									result = true;
-									break;
-
 								default:
 									this.failureReason = "HROT 'N' [ABCDFGHLMNWX23*+#@] got '" + rule[this.index].toUpperCase() + "'";
 									break;
@@ -4687,6 +4672,15 @@
 			// check for trailing characters
 			if (hoodIndex !== -1) {
 				this.index = hoodIndex;
+			}
+
+			// check for probabilistic
+			pattern.probabilisticHROT = false;
+			if (probIndex !== -1) {
+				if (probIndex === this.index) {
+					pattern.probabilisticHROT = true;
+					this.index += 2;
+				}
 			}
 
 			if (this.index !== rule.length) {
@@ -5570,11 +5564,10 @@
 											case this.cornerEdgeHROT:
 												pattern.ruleName += "F" + pattern.cornerEdgeCanonical(pattern.rangeHROT);
 												break;
-
-											case this.randomHROT:
-												pattern.ruleName += "R";
-												break;
 										}
+									}
+									if (pattern.probabilisticHROT) {
+										pattern.ruleName += ",P";
 									}
 								} else {
 									// normalize range for edge/corner rules
@@ -5661,10 +5654,6 @@
 
 										case this.cornerEdgeHROT:
 											pattern.ruleName += "F" + pattern.cornerEdgeCanonical(pattern.rangeLTL);
-											break;
-
-										case this.randomHROT:
-											pattern.ruleName += "R";
 											break;
 									}
 

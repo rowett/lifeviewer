@@ -6882,7 +6882,9 @@
 
 		// check if history was just switched off
 		if (currentHistory && !this.themeHistory && !this.isHROT && this.multiNumStates <= 2) {
-			this.clearHistoryCells();
+			if (!this.rainbow) {
+				this.clearHistoryCells();
+			}
 		}
 
 		// copy grid line colours from theme
@@ -20386,7 +20388,7 @@
 			// create 2x2 colour grid
 			this.clearSmallGridOnZoom(this.smallColourGrid);
 
-			if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
+			if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper || this.rainbow) {
 				if (this.isSuper) {
 					this.create2x2ColourGrid16Super(colourGrid16, this.smallColourGrid);
 				} else {
@@ -20401,7 +20403,7 @@
 				// create 4x4 colour grid
 				this.clearSmallGridOnZoom(this.smallColourGrid);
 
-				if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
+				if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper || this.rainbow) {
 					if (this.isSuper) {
 						this.create4x4ColourGrid32Super(colourGrid32, this.smallColourGrid);
 					} else {
@@ -20416,7 +20418,7 @@
 					// create 8x8 colour grid
 					this.clearSmallGridOnZoom(this.smallColourGrid);
 
-					if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
+					if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper || this.rainbow) {
 						if (this.isSuper) {
 							this.create8x8ColourGrid32Super(colourGrid32, this.smallColourGrid);
 						} else {
@@ -20431,7 +20433,7 @@
 						// create 16x16 colour grid
 						this.clearSmallGridOnZoom(this.smallColourGrid);
 
-						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
+						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper || this.rainbow) {
 							if (this.isSuper) {
 								this.create16x16ColourGrid32Super(colourGrid32, this.smallColourGrid);
 							} else {
@@ -20442,7 +20444,7 @@
 						}
 					} else {
 						// zoom < 0.0625
-						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper) {
+						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper || this.rainbow) {
 							if (this.isSuper) {
 								this.create32x32ColourGrid32Super(colourGrid32, this.smallColourGrid);
 							} else {
@@ -35601,7 +35603,7 @@
 				this.drawGridLines();
 			}
 		} else {
-			// no need to draw the grid since it's already been rendered and there are no overlays (snow, stars, grdlines)
+			// no need to draw the grid since it's already been rendered and there are no overlays (snow, stars, gridlines)
 			this.doDrawGrid = false;
 		}
 	};

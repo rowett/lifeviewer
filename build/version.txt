@@ -1,3 +1,8 @@
+Build 791
+- fixed issue with Rainbow mode and Themes without history
+- added "#S" to strings as a substitution for random seed
+- all HROT neighbourhoods now support non-deterministic births and survivals by adding ",P" (for probabilistic) to the end of the rule
+
 Build 790
 - fixed issue with step back
 
