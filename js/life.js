@@ -32923,7 +32923,7 @@
 		    // pixel offset in bitmap
 		    offset = 0,
 		    end = 0,
-			temp = 0;
+		    temp = 0;
 
 		// order the x coordinates
 		if (startX > endX) {
@@ -32961,14 +32961,14 @@
 	// draw vertical line
 	Life.prototype.drawVLine = function(x, startY, endY, colour) {
 		var data32 = this.data32,
-			w = this.displayWidth,
-			h = this.displayHeight,
+		    w = this.displayWidth,
+		    h = this.displayHeight,
 
 		    // pixel offsets in bitmap
 		    offset = 0,
-			end = 0,
-			endTarget = 0,
-			temp = 0;
+		    end = 0,
+		    endTarget = 0,
+		    temp = 0;
 
 		// order the y coordinates
 		if (startY > endY) {
@@ -33112,8 +33112,8 @@
 	// draw a line
 	Life.prototype.drawLine = function(startX, startY, endX, endY, colour) {
 		var radius = 0, theta = 0,
-			halfDisplayWidth = this.displayWidth / 2,
-			halfDisplayHeight = this.displayHeight / 2;
+		    halfDisplayWidth = this.displayWidth / 2,
+		    halfDisplayHeight = this.displayHeight / 2;
 
 		// check for rotation
 		if (this.camAngle !== 0) {
@@ -33482,16 +33482,16 @@
 		    h = this.displayHeight,
 		    gridCol = this.gridLineColour,
 		    gridBoldCol = this.gridLineBoldColour,
-			xZoomStep = this.camZoom,
-			yZoomStep = this.camZoom * (this.isTriangular ? ViewConstants.sqrt3 : 1),
+		    xZoomStep = this.camZoom,
+		    yZoomStep = this.camZoom * (this.isTriangular ? ViewConstants.sqrt3 : 1),
 		    gridLineNum = 0,
 		    vLineNum = 0,
 		    drawCol = gridCol,
-			targetCol = gridCol,
-			startX = 0, startY = 0, endX = 0, endY = 0,
-			leftX = 0, rightX = w, bottomY = 0, topY = h,
-			drawMajor = (this.gridLineMajor > 0 && this.gridLineMajorEnabled),
-			odd = (this.counter & 1),
+		    targetCol = gridCol,
+		    startX = 0, startY = 0, endX = 0, endY = 0,
+		    leftX = 0, rightX = w, bottomY = 0, topY = h,
+		    drawMajor = (this.gridLineMajor > 0 && this.gridLineMajorEnabled),
+		    odd = (this.counter & 1),
 
 		    // compute single cell offset
 		    yOff = (((this.height / 2 - (this.yOff + this.originY)) * yZoomStep) + (h / 2)) % yZoomStep,

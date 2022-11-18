@@ -217,7 +217,7 @@
 			// check if animated colour needed
 			if (this.animate) {
 				this.setAnimatedColour();
-				this.priorityIter = (this.priorityIter + 2) & 255;
+				this.priorityIter = (this.priorityIter + 4) & 255;
 			} else {
 				this.context.fillStyle = this.priorityColour;
 			}
@@ -3456,6 +3456,11 @@
 				if (me.focusCallback) {
 					me.focusCallback(me.caller);
 				}
+			}
+		} else {
+			if (me.eventWasTouch) {
+				// clear notification as touch released outside viewer
+				me.notification.clear(true, false);
 			}
 		}
 	};

@@ -1752,7 +1752,7 @@
 		y = this.renderHelpLine(view, " ", "Alternating, MAP, Larger than Life (LtL),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Higher-range outer-totalistic (HROT), Gaussian,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Partitioned cellular automata (PCA), Weighted,", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "[R]History and [R]Super", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "[R]History, [R]Super and Non-Deterministic", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Repository", "RuleTable (@TABLE, @TREE, @COLORS and", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "@NAMES)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "BoundedGrid", "Plane, Torus, Klein, Cross-surface and Sphere", ctx, x, y, height, helpLine);
