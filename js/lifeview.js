@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 792,
+		/** @const {number} */ versionBuild : 793,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -7989,10 +7989,8 @@
 			// reset grid and generation counter
 			me.engine.restoreSavedGrid(me, me.noHistory);
 
-			// if in rainbow mode update the colours for the first generation
-			if (me.engine.rainbow) {
-				me.engine.convertToPensTile();
-			}
+			// update the colours for the first generation
+			me.engine.convertToPensTile();
 
 			// mark cells alive
 			me.engine.anythingAlive = 1;

@@ -1,3 +1,6 @@
+Build 793
+- fix issue with initial display after RAINBOW disabled and pattern reset
+
 Build 792
 - clear animated notification when touch released outside Viewer
 - faster animated notification
