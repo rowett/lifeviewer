@@ -1,5 +1,8 @@
+Build 794
+- Identify will now compute Strict Volatility for oscillators in 2-state patterns (excluding RuleTable and Margolus rules)
+
 Build 793
-- fix issue with initial display after RAINBOW disabled and pattern reset
+- fixed issue with initial display after RAINBOW disabled and pattern reset
 
 Build 792
 - clear animated notification when touch released outside Viewer

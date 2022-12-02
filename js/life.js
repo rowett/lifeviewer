@@ -50,6 +50,9 @@
 		// maximum number of generations to check for oscillators
 		/** @const {number} */ maxOscillatorGens : 1048576,
 
+		// maximum period to compute strict volatility
+		/** @const {number} */ maxStrictPeriod : 32768,
+
 		// buffer full
 		/** @const {string} */ bufferFullMessage : "Buffer Full",
 
@@ -367,6 +370,9 @@
 
 		// view
 		this.view = view;
+
+		// last computed strict volatility
+		this.strictVol = -1;
 
 		// whether last zoom was < 1/16x
 		this.lastZoom16 = true;
@@ -1819,10 +1825,183 @@
 		return result;
 	};
 
+	// get oscillator bounding box
+	Life.prototype.getOscillatorBounds = function(/** @type {number} */ period, /** @type {number} */ i) {
+		var	extent = new BoundingBox(0, 0, 0, 0),
+			/** @type {number} */ p = 0,
+			/** @type {number} */ leftX = 16384,
+			/** @type {number} */ rightX = -16384,
+			/** @type {number} */ bottomY = 16384,
+			/** @type {number} */ topY = -16384,
+			/** @type {number} */ cLeftX = 0,
+			/** @type {number} */ cBottomY = 0,
+			/** @type {number} */ cWidth = 0,
+			/** @type {number} */ cHeight = 0,
+			/** @type {number} */ current = 0;
+
+		for (p = 0; p < period; p += 1) {
+			// get the bounding box for the current generation within the oscillator period
+			current = this.boxList[(i + p) << 1];
+			cWidth = current >> 16;
+			cHeight = current & 65535;
+			current = this.boxList[((i + p) << 1) + 1];
+			cLeftX = current >> 16;
+			cBottomY = current & 65535;
+
+			// update the extent
+			if (cLeftX < leftX) {
+				leftX = cLeftX;
+			}
+			if (cBottomY < bottomY) {
+				bottomY = cBottomY;
+			}
+			if (cLeftX + cWidth - 1 > rightX) {
+				rightX = cLeftX + cWidth - 1;
+			}
+			if (cBottomY + cHeight - 1 > topY) {
+				topY = cBottomY + cHeight - 1;
+			}
+		}
+
+		extent.leftX = leftX;
+		extent.bottomY = bottomY;
+		extent.rightX = rightX;
+		extent.topY = topY;
+
+		return extent;
+	};
+
+	// compute strict volatility
+	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, box, view) {
+		var	/** @type {number} */ p = 0,
+			/** @type {number} */ f = 0,
+			/** @type {number} */ thisState = 0,
+			/** @type {boolean} */ computeStrict = false,
+			/** @type {Array} */ frames = null,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Uint8Array} */ currentFrame = null,
+			/** @type {Uint8Array} */ popPhase = new Uint8Array(period),
+			/** @type {Uint16Array} */ popSubPeriod = new Uint16Array(period + 1),
+			/** @type {Uint16Array} */ cellPeriod = null,
+			/** @type {number} */ aliveStart = this.aliveStart,
+			/** @type {number} */ boxWidth = 0,
+			/** @type {number} */ boxHeight = 0,
+			/** @type {boolean} */ anyAlive = false,
+			/** @type {boolean} */ flag = false,
+			/** @type {number} */ popTotal = 0,
+			extent = null;
+
+
+		// determine whether period is small enough to compute strict volatility (since it can take a lot of RAM)
+		if (period <= LifeConstants.maxStrictPeriod && this.multiNumStates <= 2 && !this.isRuleTree && !this.isMargolus) {
+			// compute the maximum box width and height for the oscillator
+			extent = this.getOscillatorBounds(period, i);
+			boxWidth = extent.rightX - extent.leftX + 1;
+			boxHeight = extent.topY - extent.bottomY + 1;
+
+			// allocate memory for each generation in the period
+			frames = Array.matrix(Uint8, period, boxWidth * boxHeight, 0, this.allocator, "Life.strictFrames");
+			cellPeriod = new Uint16Array(boxWidth * boxHeight);
+			computeStrict = true;
+		}
+
+		this.firstCount = true;
+		this.countList.whole.fill(LifeConstants.cellWasDead);
+		for (p = 0; p < period * 2; p += 1) {   // TBD is +1 needed?
+			// compute the next generation
+			this.nextGeneration(false, view.noHistory, view.graphDisabled, view.identify, view);
+			this.convertToPensTile();
+
+			// paste any RLE snippets
+			view.pasteRLEList();
+
+			// add to the strict volatility frame if computing strict volatility
+			if (computeStrict && p < period) {
+				currentFrame = frames[p];
+				f = 0;
+				for (cy = extent.bottomY; cy <= extent.topY; cy += 1) {
+					colourRow = this.colourGrid[cy];
+					for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
+						if (colourRow[cx] >= aliveStart) {
+							currentFrame[f] = 1;
+						}
+						f += 1;
+					}
+				}
+			}
+
+			// compute the hash in slow mode
+			this.getHash(box, false);
+			this.bornList[i + p] = this.births;
+			this.diedList[i + p] = this.deaths;
+		}
+
+		// compute strict volatility
+		if (computeStrict) {
+			// calculate the period of each cell
+			for (cy = 0; cy < boxHeight; cy += 1) {
+				for (cx = 0; cx < boxWidth; cx += 1) {
+					anyAlive = false;
+
+					// check the cell for every generation of the period at this location
+					for (p = 0; p < period; p += 1) {
+						thisState = frames[p][cy * boxWidth + cx];
+						if (thisState) {
+							popPhase[p] += 1;
+							anyAlive = true;
+						}
+					}
+
+					if (anyAlive) {
+						cellPeriod[cy * boxWidth + cx] = period;
+						popTotal += 1;
+					} else {
+						cellPeriod[cy * boxWidth + cx] = 0;
+					}
+				}
+			}
+
+			// calculate the factors of the period
+			for (f = 1; f <= (period / 2); f += 1) {
+				if (period % f) continue;
+				for (cy = 0; cy < boxHeight; cy += 1) {
+					for (cx = 0; cx < boxWidth; cx += 1) {
+						if (cellPeriod[cy * boxWidth + cx] == period) {
+							flag = true;
+							for (p = 0; p <= (period - f - 1); p += 1) {
+								if (frames[p][cy * boxWidth + cx] !== frames[p + f][cy * boxWidth + cx]) {
+									flag = false;
+									break;
+								}
+							}
+							if (flag) {
+								cellPeriod[cy * boxWidth + cx] = f;
+							}
+						}
+					}
+				}
+			}
+
+			// count up the subperiod populations
+			for (cy = 0; cy < boxHeight; cy += 1) {
+				for (cx = 0; cx < boxWidth; cx += 1) {
+					p = cellPeriod[cy * boxWidth + cx];
+					if (p) {
+						popSubPeriod[p] += 1;
+					}
+				}
+			}
+
+			this.strictVol = (Math.round(100 * popSubPeriod[period] / popTotal)) / 100;
+		}
+	};
+
 	// return identify results
 	Life.prototype.identifyResults = function(view, i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast) {
 			// simple version of speed
-		var simpleSpeed = "",
+			var simpleSpeed = "",
 
 			// generation
 			genMessage = String(this.counter - period),
@@ -1875,6 +2054,7 @@
 
 			// volatility
 			volatility = "",
+			strict = "",
 
 			// count list
 			countList = this.countList,
@@ -1892,7 +2072,7 @@
 			tempResult = "",
 
 			// bounding box for pattern
-		    box = (this.isHROT ? this.HROTBox : this.zoomBox),
+			box = (this.isHROT ? this.HROTBox : this.zoomBox),
 
 			// counters
 			x = 0,
@@ -2009,21 +2189,9 @@
 				type = "Oscillator";
 
 				// if not in fast mode then update the cell activity since it may have taken
-				// some generations for the oscillator to form
+				// some generations for the oscillator to form and compute strict volatility
 				if (!fast) {
-					this.firstCount = true;
-					this.countList.whole.fill(0);
-					for (x = 0; x < period * 2; x += 1) {   // TBD is +1 needed?
-						// compute the next generation
-						this.nextGeneration(false, view.noHistory, view.graphDisabled, view.identify, view);
-						this.convertToPensTile();
-
-						// paste any RLE snippets
-						view.pasteRLEList();
-						this.getHash(box, fast);
-						this.bornList[i + x] = this.births;
-						this.diedList[i + x] = this.deaths;
-					}
+					this.computeStrictVolatility(period, i, box, view);
 				}
 			}
 		}
@@ -2181,6 +2349,9 @@
 				}
 			}
 			volatility = String((rotor / (rotor + stator)).toFixed(2));
+			if (this.strictVol >= 0) {
+				strict = String(this.strictVol);
+			}
 		}
 
 		// temperature
@@ -2210,7 +2381,7 @@
 		}
 
 		// return the result
-		return [message, type, direction, simpleSpeed, boxResult, genMessage, popResult, slope, period, heat, volatility, modResult, activeResult, tempResult];
+		return [message, type, direction, simpleSpeed, boxResult, genMessage, popResult, slope, period, heat, volatility, strict, modResult, activeResult, tempResult];
 	};
 
 	// return true if pattern is empty, stable, oscillating or a spaceship
@@ -2256,6 +2427,10 @@
 
 		    // result
 		    result = [];
+
+
+		// clear last strict volatility
+		this.strictVol = -1;
 
 		// ensure altSpecified propagates from HROT since for some reason it doesn't work on the forum
 		if (this.isHROT) {

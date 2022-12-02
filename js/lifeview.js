@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 793,
+		/** @const {number} */ versionBuild : 794,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -742,6 +742,9 @@
 
 		// last oscillator volatility
 		/** @type {string} */ this.lastIdentifyVolatility = "";
+
+		// last oscillator strict volatility
+		/** @type {string} */ this.lastIdentifyStrict = "";
 
 		// last oscillator mod
 		/** @type {string} */ this.lastIdentifyMod = "";
@@ -7105,6 +7108,7 @@
 						me.lastIdentifyPeriod = "";
 						me.lastIdentifyHeat = "";
 						me.lastIdentifyVolatility = "";
+						me.lastIdentifyStrict = "";
 						me.lastIdentifyMod = "";
 						me.lastIdentifyActive = "";
 						me.lastIdentifyTemperature = "";
@@ -7121,9 +7125,10 @@
 							me.lastIdentifyPeriod = identifyResult[8];
 							me.lastIdentifyHeat = identifyResult[9];
 							me.lastIdentifyVolatility = identifyResult[10];
-							me.lastIdentifyMod = identifyResult[11];
-							me.lastIdentifyActive = identifyResult[12];
-							me.lastIdentifyTemperature = identifyResult[13];
+							me.lastIdentifyStrict = identifyResult[11];
+							me.lastIdentifyMod = identifyResult[12];
+							me.lastIdentifyActive = identifyResult[13];
+							me.lastIdentifyTemperature = identifyResult[14];
 	
 							// update result labels
 							me.identifyTypeValueLabel.preText = me.lastIdentifyType;
@@ -7149,7 +7154,13 @@
 							} else {
 								me.identifyHeatValueLabel.toolTip = "min | max | average";
 							}
-							me.identifyVolatilityValueLabel.preText = me.lastIdentifyVolatility;
+							if (me.lastIdentifyStrict === "") {
+								me.identifyVolatilityValueLabel.preText = me.lastIdentifyVolatility;
+								me.identifyVolatilityValueLabel.toolTip = "";
+							} else {
+								me.identifyVolatilityValueLabel.preText = me.lastIdentifyVolatility + " | " + me.lastIdentifyStrict;
+								me.identifyVolatilityValueLabel.toolTip = "normal | strict";
+							}
 							me.identifyModValueLabel.preText = me.lastIdentifyMod;
 							me.identifyActiveValueLabel.preText = me.lastIdentifyActive;
 							me.identifyActiveValueLabel.toolTip = "rotor | stator | total";
@@ -17864,6 +17875,7 @@
 		me.lastIdentifySlope = "none";
 		me.lastIdentifyHeat = "none";
 		me.lastIdentifyVolatility = "none";
+		me.lastIdentifyStrict = "none";
 		me.lastIdentifyMod = "none";
 		me.identify = false;
 		me.identifyButton.current = [me.identify];

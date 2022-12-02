@@ -1598,7 +1598,11 @@
 			}
 			if (view.lastIdentifyType === "Oscillator" && !view.lastWasFast) {
 				y = this.renderHelpLine(view, "Temperature", view.lastIdentifyTemperature, ctx, x, y, height, helpLine);
-				y = this.renderHelpLine(view, "Volatility", view.lastIdentifyVolatility, ctx, x, y, height, helpLine);
+				if (view.lastIdentifyStrict === "") {
+					y = this.renderHelpLine(view, "Volatility", view.lastIdentifyVolatility, ctx, x, y, height, helpLine);
+				} else {
+					y = this.renderHelpLine(view, "Volatility", view.lastIdentifyVolatility + " | " + view.lastIdentifyStrict, ctx, x, y, height, helpLine);
+				}
 			}
 			y = this.renderHelpLine(view, "Generation", view.lastIdentifyGen, ctx, x, y, height, helpLine);
 		}
