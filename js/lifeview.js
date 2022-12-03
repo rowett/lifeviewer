@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 794,
+		/** @const {number} */ versionBuild : 795,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -13897,6 +13897,12 @@
 
 	// identify button action
 	View.prototype.identifyAction = function(me) {
+		// close Help if open
+		if (me.displayHelp !== 0) {
+			me.displayHelp = 0;
+			me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+		}
+
 		// reset check
 		me.engine.checkedMod = false;
 		me.engine.checkModGen = 0;

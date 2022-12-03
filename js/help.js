@@ -1566,11 +1566,10 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// output last oscillator search result
-		view.helpSections[sectionNum] = [view.lineNo, "Identify"];
-		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Identify:", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Enabled", view.identify ? "Yes" : "No", ctx, x, y, height, helpLine);
 		if (view.lastIdentifyType !== "none" && view.lastIdentifyType !== "Empty") {
+			view.helpSections[sectionNum] = [view.lineNo, "Identify"];
+			sectionNum += 1;
+			y = this.renderHelpLine(view, "", "Identify:", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Type", view.lastIdentifyType, ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Cells", view.lastIdentifyCells, ctx, x, y, height, helpLine);
 			if (view.lastIdentifyType === "Oscillator" && !view.lastWasFast) {
@@ -1605,8 +1604,8 @@
 				}
 			}
 			y = this.renderHelpLine(view, "Generation", view.lastIdentifyGen, ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		}
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// grid information
 		view.helpSections[sectionNum] = [view.lineNo, "Grid"];

@@ -372,7 +372,7 @@
 		this.view = view;
 
 		// last computed strict volatility
-		this.strictVol = -1;
+		this.strictVol = "";
 
 		// whether last zoom was < 1/16x
 		this.lastZoom16 = true;
@@ -1994,7 +1994,7 @@
 				}
 			}
 
-			this.strictVol = (Math.round(100 * popSubPeriod[period] / popTotal)) / 100;
+			this.strictVol = (popSubPeriod[period] / popTotal).toFixed(2);
 		}
 	};
 
@@ -2349,9 +2349,7 @@
 				}
 			}
 			volatility = String((rotor / (rotor + stator)).toFixed(2));
-			if (this.strictVol >= 0) {
-				strict = String(this.strictVol);
-			}
+			strict = this.strictVol;
 		}
 
 		// temperature
@@ -2430,7 +2428,7 @@
 
 
 		// clear last strict volatility
-		this.strictVol = -1;
+		this.strictVol = "";
 
 		// ensure altSpecified propagates from HROT since for some reason it doesn't work on the forum
 		if (this.isHROT) {

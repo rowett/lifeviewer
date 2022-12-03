@@ -1,3 +1,7 @@
+Build 795
+- make Strict Volatility use fixed-point notation
+- fixed issue with Help not closing properly when Identify launched
+
 Build 794
 - Identify will now compute Strict Volatility for oscillators in 2-state patterns (excluding RuleTable and Margolus rules)
 
