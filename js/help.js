@@ -1312,9 +1312,6 @@
 			// number of Viewers
 			numViewers = Controller.numViewers(),
 
-			// get the current colour set
-			colourList = view.colourList,
-
 			// get the current theme
 			theme = view.engine.themes[view.engine.colourTheme],
 
@@ -1342,6 +1339,9 @@
 
 		// information
 		view.tabs[0] = 128;
+		view.tabs[1] = 210;
+		view.tabs[2] = 270;
+		view.tabs[3] = 330;
 		view.tabs[4] = 430;
 		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
@@ -1548,6 +1548,7 @@
 			view.tabs[2] = 280;
 			view.tabs[3] = 360;
 			view.tabs[4] = 440;
+
 			// check for built in icons
 			if (view.engine.ruleTableIcons[0].builtIn !== PatternConstants.ruleTableIconNone) {
 				y = this.renderHelpLine(view, "Icons", PatternConstants.ruleTableIconNames[view.engine.ruleTableIcons[0].builtIn], ctx, x, y, height, helpLine);
@@ -1601,6 +1602,20 @@
 					y = this.renderHelpLine(view, "Volatility", view.lastIdentifyVolatility, ctx, x, y, height, helpLine);
 				} else {
 					y = this.renderHelpLine(view, "Volatility", view.lastIdentifyVolatility + " | " + view.lastIdentifyStrict, ctx, x, y, height, helpLine);
+					view.tabs[1] = 210;
+					view.tabs[2] = 310;
+					view.tabs[3] = 410;
+					y = this.renderHelpLine(view, "  Period", "Count\t% Total\t% Rotor", ctx, x, y, height, helpLine);
+					for (i = view.engine.popSubPeriod.length - 1; i > 0; i -= 1) {
+						value = view.engine.popSubPeriod[i];
+						if (value > 0) {
+							if (i > 1) {
+								y = this.renderHelpLine(view, "  " + i, value + "\t" + (100 * value / view.engine.popTotal).toFixed(2) + "%\t" + (100 * value / view.engine.popRotor).toFixed(2) + "%", ctx, x, y, height, helpLine);
+							} else {
+								y = this.renderHelpLine(view, "  " + i, value + "\t" + (100 * value / view.engine.popTotal).toFixed(2) + "%", ctx, x, y, height, helpLine);
+							}
+						}
+					}
 				}
 			}
 			y = this.renderHelpLine(view, "Generation", view.lastIdentifyGen, ctx, x, y, height, helpLine);

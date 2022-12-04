@@ -1,3 +1,8 @@
+Build 796
+- added cell counts for identified oscillators to Help->Info->Identify
+- reduced memory usage for computing strict volatility
+- increase maximum allowed period for strict volatility calculation to 65535
+
 Build 795
 - make Strict Volatility use fixed-point notation
 - fixed issue with Help not closing properly when Identify launched

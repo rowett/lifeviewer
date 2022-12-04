@@ -51,7 +51,7 @@
 		/** @const {number} */ maxOscillatorGens : 1048576,
 
 		// maximum period to compute strict volatility
-		/** @const {number} */ maxStrictPeriod : 32768,
+		/** @const {number} */ maxStrictPeriod : 65535,
 
 		// buffer full
 		/** @const {string} */ bufferFullMessage : "Buffer Full",
@@ -372,10 +372,19 @@
 		this.view = view;
 
 		// last computed strict volatility
-		this.strictVol = "";
+		/** @type {string} */ this.strictVol = "";
+
+		// oscillator population subperiod
+		this.popSubPeriod = null;
+
+		// oscillator population total
+		/** @type {number} */ this.popTotal = 0;
+
+		// oscillator rotor population
+		/** @type {number} */ this.popRotor = 0;
 
 		// whether last zoom was < 1/16x
-		this.lastZoom16 = true;
+		/** @type {boolean} */ this.lastZoom16 = true;
 
 		// allocator
 		this.allocator = new Allocator();
@@ -1875,6 +1884,7 @@
 	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, box, view) {
 		var	/** @type {number} */ p = 0,
 			/** @type {number} */ f = 0,
+			/** @type {number} */ j = 0,
 			/** @type {number} */ thisState = 0,
 			/** @type {boolean} */ computeStrict = false,
 			/** @type {Array} */ frames = null,
@@ -1893,7 +1903,6 @@
 			/** @type {number} */ popTotal = 0,
 			extent = null;
 
-
 		// determine whether period is small enough to compute strict volatility (since it can take a lot of RAM)
 		if (period <= LifeConstants.maxStrictPeriod && this.multiNumStates <= 2 && !this.isRuleTree && !this.isMargolus) {
 			// compute the maximum box width and height for the oscillator
@@ -1901,8 +1910,8 @@
 			boxWidth = extent.rightX - extent.leftX + 1;
 			boxHeight = extent.topY - extent.bottomY + 1;
 
-			// allocate memory for each generation in the period
-			frames = Array.matrix(Uint8, period, boxWidth * boxHeight, 0, this.allocator, "Life.strictFrames");
+			// allocate memory for each generation in the period (allocation is one bit per cell)
+			frames = Array.matrix(Uint8, period, ((boxWidth * boxHeight) >> 3) + 1, 0, this.allocator, "Life.strictFrames");
 			cellPeriod = new Uint16Array(boxWidth * boxHeight);
 			computeStrict = true;
 		}
@@ -1925,7 +1934,7 @@
 					colourRow = this.colourGrid[cy];
 					for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
 						if (colourRow[cx] >= aliveStart) {
-							currentFrame[f] = 1;
+							currentFrame[f >> 3] |= (1 << (f & 7));
 						}
 						f += 1;
 					}
@@ -1947,7 +1956,8 @@
 
 					// check the cell for every generation of the period at this location
 					for (p = 0; p < period; p += 1) {
-						thisState = frames[p][cy * boxWidth + cx];
+						j = cy * boxWidth + cx;
+						thisState = frames[p][j >> 3] & (1 << (j & 7));
 						if (thisState) {
 							popPhase[p] += 1;
 							anyAlive = true;
@@ -1971,7 +1981,8 @@
 						if (cellPeriod[cy * boxWidth + cx] == period) {
 							flag = true;
 							for (p = 0; p <= (period - f - 1); p += 1) {
-								if (frames[p][cy * boxWidth + cx] !== frames[p + f][cy * boxWidth + cx]) {
+								j = cy * boxWidth + cx;
+								if ((frames[p][j >> 3] & (1 << (j & 7))) !== (frames[p + f][j >> 3] & (1 << (j & 7)))) {
 									flag = false;
 									break;
 								}
@@ -1995,6 +2006,8 @@
 			}
 
 			this.strictVol = (popSubPeriod[period] / popTotal).toFixed(2);
+			this.popSubPeriod = popSubPeriod;
+			this.popTotal = popTotal;
 		}
 	};
 
@@ -2350,6 +2363,7 @@
 			}
 			volatility = String((rotor / (rotor + stator)).toFixed(2));
 			strict = this.strictVol;
+			this.popRotor = rotor;
 		}
 
 		// temperature
