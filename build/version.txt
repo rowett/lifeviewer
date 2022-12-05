@@ -1,3 +1,6 @@
+Build 797
+- fixed bounded grid cell placement
+
 Build 796
 - added cell counts for identified oscillators to Help->Info->Identify
 - reduced memory usage for computing strict volatility

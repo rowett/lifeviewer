@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 796,
+		/** @const {number} */ versionBuild : 797,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4039,6 +4039,11 @@
 					panY = Math.round(this.engine.height / 2);
 				}
 			}
+		}
+
+		// clip copy height to number of pattern rows
+		if (copyHeight > pattern.multiStateMap.length) {
+			copyHeight = pattern.multiStateMap.length;
 		}
 
 		// triangular patterns must be on even cell boundaries
@@ -17168,6 +17173,18 @@
 
 			for (i = 0; i < numberValue; i += 1) {
 				me.patternStateCount[i] = me.manager.stateCount[i];
+			}
+
+			// for bounded grid patterns use the specified width
+			if (me.engine.boundedGridType !== -1) {
+				if (me.specifiedWidth !== -1) {
+					me.patternWidth = me.specifiedWidth;
+					pattern.width = me.specifiedWidth;
+				}
+				if (me.specifiedHeight !== -1) {
+					me.patternHeight = me.specifiedHeight;
+					pattern.height = me.specifiedHeight;
+				}
 			}
 		} else {
 			me.clearPatternData();
