@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 797,
+		/** @const {number} */ versionBuild : 798,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3963,11 +3963,6 @@
 		    panX = this.panX,
 		    panY = this.panY,
 
-		    // width and height masks for grid
-		    wm = this.engine.widthMask,
-		    wm16 = this.engine.widthMask >> 4,
-		    hm = this.engine.heightMask,
-
 		    // pattern row and grid row
 		    patternRow = null,
 		    gridRow = null,
@@ -4069,48 +4064,56 @@
 		// update the life grid
 		for (y = 0; y < copyHeight; y += 1) {
 			patternRow = pattern.lifeMap[y];
-			gridRow = grid[(y + panY) & hm];
+			if (y + panY >= 0 && y + panY < this.engine.height) {
+				gridRow = grid[y + panY];
 
-			// check for multi-state view
-			if (this.multiStateView || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || !this.executable) {
-				multiStateRow = pattern.multiStateMap[y];
-				colourGridRow = colourGrid[(y + panY) & hm];
-
-				// copy colour cells
-				for (x = 0; x < copyWidth; x += 1) {
-					state = multiStateRow[x];
-					if (state > 0) {
-						state += this.historyStates;
-					}
-					colourGridRow[(x + panX) & wm] = state;
-				}
-			} else {
-				// check for multi-state pattern
-				if (numStates > 2) {
+				// check for multi-state view
+				if (this.multiStateView || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || !this.executable) {
 					multiStateRow = pattern.multiStateMap[y];
-					colourGridRow = colourGrid[(y + panY) & hm];
-
+					colourGridRow = colourGrid[y + panY];
+	
 					// copy colour cells
 					for (x = 0; x < copyWidth; x += 1) {
-						// reverse order for rendering unless "none" rule is used
-						state = multiStateRow[x];
-						if (state > 0 && !this.engine.isNone) {
-							state = numStates + this.historyStates - state;
+						if (x + panX >= 0 && x + panX < this.engine.width) {
+							state = multiStateRow[x];
+							if (state > 0) {
+								state += this.historyStates;
+							}
+							colourGridRow[x + panX] = state;
 						}
-						colourGridRow[(x + panX) & wm] = state;
+					}
+				} else {
+					// check for multi-state pattern
+					if (numStates > 2) {
+						multiStateRow = pattern.multiStateMap[y];
+						colourGridRow = colourGrid[y + panY];
+	
+						// copy colour cells
+						for (x = 0; x < copyWidth; x += 1) {
+							if (x + panX >= 0 && x + panX < this.engine.width) {
+								// reverse order for rendering unless "none" rule is used
+								state = multiStateRow[x];
+								if (state > 0 && !this.engine.isNone) {
+									state = numStates + this.historyStates - state;
+								}
+								colourGridRow[x + panX] = state;
+							}
+						}
 					}
 				}
-			}
 
-			// copy 2-state cells
-			if (isTwoStateHROT) {
-				colourGridRow = colourGrid[(y + panY) & hm];
-			}
-			for (x = 0; x < copyWidth; x += 1) {
-				if ((patternRow[x >> 4] & (1 << (~x & 15))) !== 0) {
-					gridRow[((x + panX) >> 4) & wm16] |= 1 << (~(x + panX) & 15);
-					if (isTwoStateHROT) {
-						colourGridRow[(x + panX) & wm] = LifeConstants.aliveStart;
+				// copy 2-state cells
+				if (isTwoStateHROT) {
+					colourGridRow = colourGrid[y + panY];
+				}
+				for (x = 0; x < copyWidth; x += 1) {
+					if (x + panX >= 0 && x + panX < this.engine.width) {
+						if ((patternRow[x >> 4] & (1 << (~x & 15))) !== 0) {
+							gridRow[(x + panX) >> 4] |= 1 << (~(x + panX) & 15);
+							if (isTwoStateHROT) {
+								colourGridRow[x + panX] = LifeConstants.aliveStart;
+							}
+						}
 					}
 				}
 			}
@@ -4119,16 +4122,20 @@
 		// copy [R]History states to the overlay grid if required
 		if (overlayGrid) {
 			for (y = 0; y < copyHeight; y += 1) {
-				multiStateRow = pattern.multiStateMap[y];
-				overlayGridRow = overlayGrid[(y + panY) & hm];
+				if (y + panY >= 0 && y + panY < this.engine.height) {
+					multiStateRow = pattern.multiStateMap[y];
+					overlayGridRow = overlayGrid[y + panY];
 
-				// copy states
-				for (x = 0; x < copyWidth; x += 1) {
-					// get the next state
-					state = multiStateRow[x];
-					if (state) {
-						// copy to the overlay grid and convert into ascending importance order
-						overlayGridRow[(x + panX) & wm] = ViewConstants.stateMap[state] + 128;
+					// copy states
+					for (x = 0; x < copyWidth; x += 1) {
+						if (x + panX >= 0 && x + panX < this.engine.width) {
+							// get the next state
+							state = multiStateRow[x];
+							if (state) {
+								// copy to the overlay grid and convert into ascending importance order
+								overlayGridRow[x + panX] = ViewConstants.stateMap[state] + 128;
+							}
+						}
 					}
 				}
 			}
@@ -4457,8 +4464,10 @@
 	View.prototype.computePanXY = function(width, height) {
 		// check for bounded grid with CXRLE Pos
 		if (this.engine.boundedGridType !== -1 && this.posDefined) {
-			this.panX = (this.engine.width >> 1) + this.xOffset;
-			this.panY = (this.engine.height >> 1) + this.yOffset;
+			//this.panX = (this.engine.width >> 1) + this.xOffset;
+			//this.panY = (this.engine.height >> 1) + this.yOffset;
+			this.panX = Math.round((this.engine.width - width) / 2) + this.xOffset;
+			this.panY = Math.round((this.engine.height - height) / 2) + this.yOffset;
 		} else {
 			// compute position to center pattern on display and add the x and y offsets
 			this.panX = Math.round((this.engine.width - width) / 2) + this.xOffset;
@@ -7908,7 +7917,8 @@
 	// reset to first generation
 	View.prototype.reset = function(me) {
 		var hardReset = false,
-		    looping = false;
+		    looping = false,
+		    saveState = false;
 
 		// reset snow if enabled
 		if (this.drawingSnow) {
@@ -8005,8 +8015,11 @@
 			// reset grid and generation counter
 			me.engine.restoreSavedGrid(me, me.noHistory);
 
-			// update the colours for the first generation
+			// update the colours for the first generation (temporariliy disable kill gliders on reset)
+			saveState = me.engine.clearGliders;
+			me.engine.clearGliders = false;
 			me.engine.convertToPensTile();
+			me.engine.clearGliders = saveState;
 
 			// mark cells alive
 			me.engine.anythingAlive = 1;
@@ -16646,11 +16659,17 @@
 		}
 
 		// check for custom gridmajor interval
-		if (this.customGridMajor && themeRequested !== customIndex && this.engine.themes[themeRequested].gridMajor !== this.engine.gridLineMajor) {
+		if ((this.customGridMajor && themeRequested !== customIndex && this.engine.themes[themeRequested].gridMajor !== this.engine.gridLineMajor) || this.customGridColour !== -1 || this.customGridMajorColour !== -1) {
 			// copy the requested theme to the custom theme
 			this.engine.themes[customIndex].set(this.engine.themes[themeRequested]);
 			themeRequested = customIndex;
 			this.engine.themes[customIndex].gridMajor = this.engine.gridLineMajor;
+			if (this.customGridColour !== -1) {
+				this.engine.themes[customIndex].gridColour = this.customGridColour;
+			}
+			if (this.customGridMajorColour !== -1) {
+				this.engine.themes[customIndex].gridMajorColour = this.customGridMajorColour;
+			}
 			this.customTheme = true;
 		}
 
@@ -16779,6 +16798,9 @@
 
 	// start the viewer from a supplied pattern string
 	View.prototype.startViewer = function(patternString, ignoreThumbnail) {
+		var	savedW = 0,
+			savedH = 0;
+
 		// reset playback speed
 		this.genSpeed = 60;
 		this.gensPerStep = 1;
@@ -16800,8 +16822,14 @@
 			this.completeStart(pattern, [ignoreThumbnail], this);
 		} else {
 			// create a dummy pattern so view processing completes otherwise window isn't correctly setup
+			savedW = this.manager.specifiedWidth;
+			savedH = this.manager.specifiedHeight;
+			
 			var temp = this.manager.create("", "x=1,y=1,rule=Life\n!", this.engine.allocator, this.completeStart, this.completeStart, [ignoreThumbnail], this);
 			this.completeStart(temp, [ignoreThumbnail], this);
+
+			this.manager.specifiedWidth = savedW;
+			this.manager.specifiedHeight = savedH;
 
 			// restore original width and height so when pattern loads with new rule we don't scale the window again
 			this.displayWidth = this.origDisplayWidth;

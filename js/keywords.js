@@ -168,6 +168,9 @@
 		// polygon colour attribute name
 		/** @const {string} */ polyWord : "POLY",
 
+		// polygon shadow on/off
+		/** @const {string} */ polyShadowWord : "POLYSHADOW",
+
 		// filled polygon
 		/** @const {string} */ polyFillWord : "POLYFILL",
 
@@ -198,6 +201,9 @@
 		// arrow
 		/** @const {string} */ arrowWord : "ARROW",
 
+		// arrow shadow on/off
+		/** @const {string} */ arrowShadowWord : "ARROWSHADOW",
+
 		// arrow alpha
 		/** @const {string} */ arrowAlphaWord : "ARROWALPHA",
 
@@ -221,6 +227,9 @@
 
 		// label
 		/** @const {string} */ labelWord : "LABEL",
+
+		// label shadow on/off
+		/** @const {string} */ labelShadowWord : "LABELSHADOW",
 
 		// label alpha
 		/** @const {string} */ labelAlphaWord : "LABELALPHA",

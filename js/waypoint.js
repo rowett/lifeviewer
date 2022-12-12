@@ -364,7 +364,10 @@
 	/**
 	 * @constructor
 	 */
-	function Polygon(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tDistance, dx, dy) {
+	function Polygon(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tDistance, dx, dy, shadow) {
+		// shadow on/off
+		this.shadow = shadow;
+
 		// coordinates
 		this.coords = coords;
 
@@ -425,7 +428,10 @@
 	/**
 	 * @constructor
 	 */
-	function Arrow(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tDistance, dx, dy) {
+	function Arrow(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tDistance, dx, dy, shadow) {
+		// shadow on/off
+		this.shadow = shadow;
+
 		// x1 position
 		this.x1 = x1;
 
@@ -495,7 +501,10 @@
 	/**
 	 * @constructor
 	 */
-	function Label(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tDistance, dx, dy) {
+	function Label(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tDistance, dx, dy, shadow) {
+		// shadow on/off
+		this.shadow = shadow;
+
 		// message
 		this.message = "";
 
@@ -616,8 +625,8 @@
 	}
 
 	// create a polygon
-	WaypointManager.prototype.createPolygon = function(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy) {
-		return new Polygon(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy);
+	WaypointManager.prototype.createPolygon = function(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow) {
+		return new Polygon(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow);
 	};
 
 	// clear all polygons
@@ -636,8 +645,8 @@
 	};
 
 	// create an arrow
-	WaypointManager.prototype.createArrow = function(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy) {
-		return new Arrow(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy);
+	WaypointManager.prototype.createArrow = function(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow) {
+		return new Arrow(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow);
 	};
 
 	// clear all arrows
@@ -656,8 +665,8 @@
 	};
 
 	// create a label
-	WaypointManager.prototype.createLabel = function(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy) {
-		return new Label(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy);
+	WaypointManager.prototype.createLabel = function(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow) {
+		return new Label(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow);
 	};
 
 	// clear all labels
@@ -978,6 +987,9 @@
 			// get the next arrow
 			current = this.arrowList[i];
 
+			// skip if drawing shadows layer and this arrow has no shadow
+			if (drawingShadows && !current.shadow) continue;
+
 			// check if the arrow has a defined generation range
 			inrange = true;
 			if (current.t1 !== -1) {
@@ -1232,6 +1244,9 @@
 			current = this.polyList[i];
 			coords = current.coords;
 			length = coords.length;
+
+			// skip if drawing shadows layer and this arrow has no shadow
+			if (drawingShadows && !current.shadow) continue;
 
 			// check if the polygon has a defined generation range
 			inrange = true;
@@ -1717,8 +1732,10 @@
 							xPos = context.measureText(message).width >> 1;
 			
 							// draw shadow
-							context.fillStyle = shadowColour;
-							context.fillText(message, -xPos + shadowOffset, y + shadowOffset);
+							if (current.shadow) {
+								context.fillStyle = shadowColour;
+								context.fillText(message, -xPos + shadowOffset, y + shadowOffset);
+							}
 				
 							// draw message
 							context.fillStyle = current.colour;

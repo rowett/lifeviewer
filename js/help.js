@@ -1098,8 +1098,9 @@
 		y = this.renderHelpLine(view, Keywords.labelAngleWord + " <0..359>", "label angle", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... optionally fix angle", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelViewWord + " D|" + Keywords.offWord, "label view distance", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.labelZoomRangeWord + " MINZOOM MAXZOOM|OFF", "label zoom visibility", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.labelZoomRangeWord + " MINZOOM MAXZOOM|" + Keywords.offWord, "label zoom visibility", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelTrackWord + " DX DY|" + Keywords.fixedWord, "label move per generation", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.labelShadowWord + " (" + Keywords.offWord + ")", "turn label shadow on or off", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowWord + " X1 Y1 X2 Y2 ZOOM", "define arrow at position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... fix position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowSizeWord + " <" + ViewConstants.minLineSize + ".." + ViewConstants.maxLineSize + "> <0.0..1.0>", "line width and head multiple", ctx, x, y, height, helpLine);
@@ -1110,6 +1111,7 @@
 		y = this.renderHelpLine(view, Keywords.arrowViewWord + " D|" + Keywords.offWord, "arrow view distance", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowZoomRangeWord + " MINZOOM MAXZOOM|" + Keywords.offWord, "arrow zoom visibility", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowTrackWord + " DX DY|" + Keywords.fixedWord, "arrow move per generation", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.arrowShadowWord + " (" + Keywords.offWord + ")", "turn arrow shadow on or off", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.polyLineWord + " X1 Y1 X2 Y2 .. ZOOM", "define outline polygon", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... fix position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.polyFillWord + " X1 Y1 X2 Y2 .. ZOOM", "define filled polygon", ctx, x, y, height, helpLine);
@@ -1122,6 +1124,7 @@
 		y = this.renderHelpLine(view, Keywords.polyViewWord + " D|" + Keywords.offWord, "polygon view distance", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.polyZoomRangeWord + " MINZOOM MAXZOOM|" + Keywords.offWord, "polygon zoom visilibility", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.polyTrackWord + " DX DY|" + Keywords.fixedWord, "polygon move per generation", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.polyShadowWord + " (" + Keywords.offWord + ")", "turn polygon shadow on or off", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		view.helpSections[sectionNum] = [view.lineNo, "Display"];
 		sectionNum += 1;

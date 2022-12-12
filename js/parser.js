@@ -63,6 +63,7 @@
 			case Keywords.polyZoomRangeWord:
 			case Keywords.polyTrackWord:
 			case Keywords.polyViewWord:
+			case Keywords.polyShadowWord:
 			case Keywords.arrowWord:
 			case Keywords.arrowAlphaWord:
 			case Keywords.arrowSizeWord:
@@ -71,6 +72,7 @@
 			case Keywords.arrowZoomRangeWord:
 			case Keywords.arrowTrackWord:
 			case Keywords.arrowViewWord:
+			case Keywords.arrowShadowWord:
 			case Keywords.labelWord:
 			case Keywords.labelAlphaWord:
 			case Keywords.labelSizeWord:
@@ -79,6 +81,7 @@
 			case Keywords.labelZoomRangeWord:
 			case Keywords.labelTrackWord:
 			case Keywords.labelViewWord:
+			case Keywords.labelShadowWord:
 			case Keywords.noHistoryWord:
 			case Keywords.noReportWord:
 			case Keywords.noPerfWarningWord:
@@ -1127,6 +1130,9 @@
 			// current polygon
 			currentPolygon = null,
 
+			// current polygon shadow
+			currentPolygonShadow = true,
+
 			// current polygon alpha
 			currentPolygonAlpha = 1,
 
@@ -1154,13 +1160,15 @@
 			currentPolygonMinZ = -1000,
 			currentPolygonMaxZ = -1000,
 
-			// current label
 			// current polygon movement vector
 			currentPolygonDX = 0,
 			currentPolygonDY = 0,
 
 			// current arrow
 			currentArrow = null,
+
+			// current arrow shadow
+			currentArrowShadow = true,
 
 			// current arrow alpha
 			currentArrowAlpha = 1,
@@ -1198,6 +1206,9 @@
 
 			// current label
 			currentLabel = null,
+
+			// current label shadow
+			currentLabelShadow = true,
 
 			// current label alpha
 			currentLabelAlpha = 1,
@@ -1655,10 +1666,23 @@
 								// save the polygon
 								currentPolygon = view.waypointManager.createPolygon(coords, (nextToken === Keywords.polyFillWord), z, currentPolygonMinZ, currentPolygonMaxZ, view.customPolygonColour, currentPolygonAlpha,
 									currentPolygonSize, currentPolygonT1, currentPolygonT2, currentPolygonTFade, currentPolygonAngle, currentPolygonAngleFixed,
-									currentPolygonPositionFixed, currentPolygonVDistance, currentPolygonDX, currentPolygonDY);
+									currentPolygonPositionFixed, currentPolygonVDistance, currentPolygonDX, currentPolygonDY, currentPolygonShadow);
 								view.waypointManager.addPolygon(currentPolygon);
 							}
 
+							break;
+
+						// polygon shadow on/off
+						case Keywords.polyShadowWord:
+							peekToken = scriptReader.peekAtNextToken();
+							if (peekToken === Keywords.offWord) {
+								// consume the token
+								peekToken = scriptReader.getNextToken();
+								currentPolygonShadow = false;
+							} else {
+								currentPolygonShadow = true;
+							}
+							itemValid = true;
 							break;
 
 						// arrow size
@@ -1857,6 +1881,20 @@
 							}
 							break;
 
+						// arrow shadow on/off
+						case Keywords.arrowShadowWord:
+							peekToken = scriptReader.peekAtNextToken();
+							if (peekToken === Keywords.offWord) {
+								// consume the token
+								peekToken = scriptReader.getNextToken();
+								currentArrowShadow = false;
+							} else {
+								currentArrowShadow = true;
+							}
+
+							itemValid = true;
+							break;
+
 						// arrow
 						case Keywords.arrowWord:
 							// get the x position
@@ -1937,7 +1975,7 @@
 																	// save the arrow
 																	currentArrow = view.waypointManager.createArrow(x, y, x2, y2, z, currentArrowMinZ, currentArrowMaxZ, view.customArrowColour, currentArrowAlpha, currentArrowSize,
 																	currentArrowHeadMultiple, currentArrowT1, currentArrowT2, currentArrowTFade, currentArrowAngle, currentArrowAngleFixed,
-																	currentArrowPositionFixed, currentArrowVDistance, currentArrowDX, currentArrowDY);
+																	currentArrowPositionFixed, currentArrowVDistance, currentArrowDX, currentArrowDY, currentArrowShadow);
 																	view.waypointManager.addArrow(currentArrow);
 																	itemValid = true;
 																}
@@ -2330,6 +2368,20 @@
 							}
 							break;
 
+						// label shadow on/off
+						case Keywords.labelShadowWord:
+							peekToken = scriptReader.peekAtNextToken();
+							if (peekToken === Keywords.offWord) {
+								// consume the token
+								peekToken = scriptReader.getNextToken();
+								currentLabelShadow = false;
+							} else {
+								currentLabelShadow = true;
+							}
+
+							itemValid = true;
+							break;
+
 						// label
 						case Keywords.labelWord:
 							// get the x position
@@ -2390,7 +2442,7 @@
 														// save the label
 														currentLabel = view.waypointManager.createLabel(x, y, z, currentLabelMinZ, currentLabelMaxZ, view.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelSizeFixed,
 															currentLabelT1, currentLabelT2, currentLabelTFade, currentLabelAngle, currentLabelAngleFixed, currentLabelPositionFixed,
-															currentLabelVDistance, currentLabelDX, currentLabelDY);
+															currentLabelVDistance, currentLabelDX, currentLabelDY, currentLabelShadow);
 														readingLabel = true;
 														itemValid = true;
 													} else {
@@ -5504,11 +5556,6 @@
 			if (view.customTheme) {
 				// setup custom theme
 				this.setupCustomTheme(view);
-
-				// extend range of the Theme UI slider
-				if (view.themeItem) {
-					view.themeItem.upper = view.engine.numThemes;
-				}
 			}
 
 			// check if playback disabled
