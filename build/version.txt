@@ -1,3 +1,6 @@
+Build 799
+- fixed drawing multi-line Labels without shadows
+
 Build 798
 - added [[ POLYSHADOW (OFF) ]], [[ LABELSHADOW (OFF) ]] and [[ ARROWSHADOW (OFF) ]]
 	- enable/disable shadows for subsequent annotation definitions

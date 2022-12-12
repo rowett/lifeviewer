@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 798,
+		/** @const {number} */ versionBuild : 799,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4037,8 +4037,8 @@
 		}
 
 		// clip copy height to number of pattern rows
-		if (copyHeight > pattern.multiStateMap.length) {
-			copyHeight = pattern.multiStateMap.length;
+		if (copyHeight > pattern.lifeMap.length) {
+			copyHeight = pattern.lifeMap.length;
 		}
 
 		// triangular patterns must be on even cell boundaries

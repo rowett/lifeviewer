@@ -1714,8 +1714,10 @@
 								xPos = context.measureText(line).width >> 1;
 				
 								// draw shadow
-								context.fillStyle = shadowColour;
-								context.fillText(line, -xPos + shadowOffset, y + shadowOffset);
+								if (current.shadow) {
+									context.fillStyle = shadowColour;
+									context.fillText(line, -xPos + shadowOffset, y + shadowOffset);
+								}
 					
 								// draw message
 								context.fillStyle = current.colour;
