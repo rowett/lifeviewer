@@ -8,7 +8,7 @@
 	// define globals
 	/* global Keywords ViewConstants */
 
-    // WaypointConstants singleton
+	// WaypointConstants singleton
 	var WaypointConstants = {
 		// POI mode
 		/** @const {number} */ none : 0,
@@ -968,6 +968,10 @@
 			shadowOffset = 0,
 			tilt = engine.tilt,
 			mode7Angle = tilt - 1,
+			currentX1 = 0,
+			currentY1 = 0,
+			currentX2 = 0,
+			currentY2 = 0,
 			pz = 1,
 			xLeft = 0, yLeft = 0, xRight = 0, yRight = 0,
 			floatCounter = view.fixedPointCounter / view.refreshRate;
@@ -986,6 +990,18 @@
 		for (i = 0; i < this.arrowList.length; i += 1) {
 			// get the next arrow
 			current = this.arrowList[i];
+			currentX1 = current.x1;
+			currentY1 = current.y1;
+			currentX2 = current.x2;
+			currentY2 = current.y2;
+
+			// adjust position if in bounded grid
+			if (view.engine.boundedGridType !== -1) {
+				currentX1 += view.patternWidth >> 1;
+				currentY1 += view.patternHeight >> 1;
+				currentX2 += view.patternWidth >> 1;
+				currentY2 += view.patternHeight >> 1;
+			}
 
 			// skip if drawing shadows layer and this arrow has no shadow
 			if (drawingShadows && !current.shadow) continue;
@@ -1047,7 +1063,7 @@
 					inrange = true;
 					distAlpha = 1;
 					if (current.tDistance !== -1) {
-						rangeFromTarget = view.getDistFromCenter(current.x, current.y);
+						rangeFromTarget = view.getDistFromCenter(currentX1, currentY1);
 						if (rangeFromTarget > current.tDistance) {
 							inrange = false;
 						} else {
@@ -1065,8 +1081,8 @@
 						context.globalAlpha = alphaValue * current.alpha * timeAlpha * distAlpha;
 
 						// get arrow start position
-						cy = current.y1 + yOff - (view.patternHeight >> 1) + 0.5;
-						cx = current.x1 + xOff + hexAdjust - (view.patternWidth >> 1) + 0.5;
+						cy = currentY1 + yOff - (view.patternHeight >> 1) + 0.5;
+						cx = currentX1 + xOff + hexAdjust - (view.patternWidth >> 1) + 0.5;
 						
 						// check for fixed position
 						if (!current.positionLocked) {
@@ -1107,8 +1123,8 @@
 						// draw the arrow
 						y = (cy * yZoom) + halfDisplayHeight;
 						x = (cx * xZoom) + halfDisplayWidth;
-						cx2 = (current.x2 - current.x1) * xZoom;
-						cy2 = (current.y2 - current.y1) * yZoom;
+						cx2 = (currentX2 - currentX1) * xZoom;
+						cy2 = (currentY2 - currentY1) * yZoom;
 						if (engine.isHex) {
 							cx2 -= cy2 / 2;
 						}
@@ -1223,6 +1239,8 @@
 			mode7Angle = tilt - 1,
 			pz = 1,
 			shadowOffset = 0,
+			boundedDx = 0,
+			boundedDy = 0,
 			coords = [], length = 0,
 			coord = 0,
 			floatCounter = view.fixedPointCounter / view.refreshRate;
@@ -1236,6 +1254,12 @@
 		// adjust for hex
 		if (engine.isHex) {
 			xOff += yOff / 2;
+		}
+
+		// get bounded box offset
+		if (view.engine.boundedGridType !== -1) {
+			boundedDx = view.patternWidth >> 1;
+			boundedDy = view.patternHeight >> 1;
 		}
 
 		// draw each polygon
@@ -1305,7 +1329,7 @@
 					inrange = true;
 					distAlpha = 1;
 					if (current.tDistance !== -1) {
-						rangeFromTarget = view.getDistFromCenter(current.x, current.y);
+						rangeFromTarget = view.getDistFromCenter(current.coords[0] + boundedDx, current.coords[1] + boundedDy);
 						if (rangeFromTarget > current.tDistance) {
 							inrange = false;
 						} else {
@@ -1324,8 +1348,8 @@
 
 						// get polygon start position
 						coord = 0;
-						cx = coords[coord] + xOff + hexAdjust - (view.patternWidth >> 1) + 0.5;
-						cy = coords[coord + 1] + yOff - (view.patternHeight >> 1) + 0.5;
+						cx = coords[coord] + boundedDx + xOff + hexAdjust - (view.patternWidth >> 1) + 0.5;
+						cy = coords[coord + 1] + boundedDy + yOff - (view.patternHeight >> 1) + 0.5;
 						coord += 2;
 						
 						// check for fixed position
@@ -1482,6 +1506,8 @@
 			tilt = engine.tilt,
 			mode7Angle = tilt - 1,
 			pz = 1,
+			currentX = 0,
+			currentY = 0,
 			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
 			floatCounter = view.fixedPointCounter / view.refreshRate;
 
@@ -1494,6 +1520,14 @@
 		for (i = 0; i < this.labelList.length; i += 1) {
 			// get the next label
 			current = this.labelList[i];
+			currentX = current.x;
+			currentY = current.y;
+
+			// adjust position if in bounded grid
+			if (view.engine.boundedGridType !== -1) {
+				currentX += view.patternWidth >> 1;
+				currentY += view.patternHeight >> 1;
+			}
 
 			// check if the label has a defined generation range
 			inrange = true;
@@ -1554,7 +1588,7 @@
 					inrange = true;
 					distAlpha = 1;
 					if (current.tDistance !== -1) {
-						rangeFromTarget = view.getDistFromCenter(current.x, current.y);
+						rangeFromTarget = view.getDistFromCenter(currentX, currentY);
 						if (rangeFromTarget > current.tDistance) {
 							inrange = false;
 						} else {
@@ -1572,8 +1606,8 @@
 						context.globalAlpha = alphaValue * current.alpha * timeAlpha * distAlpha;
 
 						// get label position
-						cx = current.x + xOff + hexAdjust - (view.patternWidth >> 1) + 0.5;
-						cy = current.y + yOff - (view.patternHeight >> 1) + 0.5;
+						cx = currentX + xOff + hexAdjust - (view.patternWidth >> 1) + 0.5;
+						cy = currentY + yOff - (view.patternHeight >> 1) + 0.5;
 						
 						// check for fixed position
 						if (!current.positionLocked) {

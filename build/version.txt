@@ -1,3 +1,7 @@
+Build 800
+- fixed annotation coordinates in bounded grids
+- fixed Arrow and Polygon view distance fading
+
 Build 799
 - fixed drawing multi-line Labels without shadows
 

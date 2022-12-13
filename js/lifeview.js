@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 799,
+		/** @const {number} */ versionBuild : 800,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5212,14 +5212,19 @@
 
 		// compute the x and y cell coordinate
 		yPos = displayY / yZoom - engineY + this.engine.originY;
-		yFrac = yPos - Math.floor(yPos);
-		yPos -= yFrac;
+		if ((this.engine.isTriangular && !this.engine.forceRectangles) || this.engine.isHex) {
+			yFrac = yPos - Math.floor(yPos);
+			yPos -= yFrac;
+		}
+
 		xPos = (displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + this.engine.originX;
 		if (this.engine.isTriangular && !this.engine.forceRectangles) {
 			xPos -= (0.2 * (this.engine.zoom / 32));
 		}
-		xFrac = xPos - Math.floor(xPos);
-		xPos -= xFrac;
+		if ((this.engine.isTriangular && !this.engine.forceRectangles) || this.engine.isHex) {
+			xFrac = xPos - Math.floor(xPos);
+			xPos -= xFrac;
+		}
 
 		// handle hex corners
 		if (this.engine.isHex) {
