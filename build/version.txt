@@ -1,3 +1,13 @@
+Build 802
+- fixed issue when too big patterns were crashing the Viewer
+
+Build 801
+- if strict volatility not available show it as N/A in results
+- don't use fixed point for integer values in Identify results
+- fixed custom Themes
+- fixed selection being in the wrong place when actual pattern size is different than specified size
+- fixed CXRLE Pos with bounded grids
+
 Build 800
 - fixed annotation coordinates in bounded grids
 - fixed Arrow and Polygon view distance fading

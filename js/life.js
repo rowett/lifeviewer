@@ -1880,6 +1880,19 @@
 		return extent;
 	};
 
+	// convert number to string with no more than n decimal places
+	Life.prototype.toPlaces = function(/** @type {number} */ value, /** @type {number} */ places) {
+		var /** @type {string} */ result = "";
+
+		if (value === Math.floor(value)) {
+			result = String(value);
+		} else {
+			result = value.toFixed(places);
+		}
+	
+		return result;
+	};
+
 	// compute strict volatility
 	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, box, view) {
 		var	/** @type {number} */ p = 0,
@@ -2005,7 +2018,9 @@
 				}
 			}
 
-			this.strictVol = (popSubPeriod[period] / popTotal).toFixed(2);
+			// display integer strict volatility without decimal places
+			p = popSubPeriod[period] / popTotal;
+			this.strictVol = this.toPlaces(p, 2);
 			this.popSubPeriod = popSubPeriod;
 			this.popTotal = popTotal;
 		}
@@ -2013,83 +2028,83 @@
 
 	// return identify results
 	Life.prototype.identifyResults = function(view, i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast) {
-			// simple version of speed
-			var simpleSpeed = "",
+		// simple version of speed
+		var simpleSpeed = "",
 
-			// generation
-			genMessage = String(this.counter - period),
+		// generation
+		genMessage = String(this.counter - period),
 
-			// type
-			type = "",
+		// type
+		type = "",
 
-			// direction
-			direction = "",
+		// direction
+		direction = "",
 
-			// slope
-			slope = "",
-			divisor = 0,
-			dDeltaX = 0,
-			dDeltaY = 0,
-			dPeriod = 0,
-			maxDelta = 0,
-			minDelta = 0,
+		// slope
+		slope = "",
+		divisor = 0,
+		dDeltaX = 0,
+		dDeltaY = 0,
+		dPeriod = 0,
+		maxDelta = 0,
+		minDelta = 0,
 
-			// max and min population
-			min = this.population,
-			max = min,
-			avg = this.population,
-			total = 0,
-			popResult = "",
+		// max and min population
+		min = this.population,
+		max = min,
+		avg = this.population,
+		total = 0,
+		popResult = "",
 
-			// bounding box
-			current = 0,
-			currentWidth = 0,
-			currentHeight = 0,
-			currentLeft = 0,
-			currentBottom = 0,
-			minX = 16384,
-			maxX = 0,
-			minY = 16384,
-			maxY = 0,
-			boxResult = "",
+		// bounding box
+		current = 0,
+		currentWidth = 0,
+		currentHeight = 0,
+		currentLeft = 0,
+		currentBottom = 0,
+		minX = 16384,
+		maxX = 0,
+		minY = 16384,
+		maxY = 0,
+		boxResult = "",
 
-			// last record to check
-			last = this.oscLength,
-			start = i,
+		// last record to check
+		last = this.oscLength,
+		start = i,
 
-			// heat
-			minHeat = 16384,
-			maxHeat = 0,
-			avgHeat = 0,
-			nextHeat = 0,
-			heatVal = 0,
-			heat = "",
+		// heat
+		minHeat = 16384,
+		maxHeat = 0,
+		avgHeat = 0,
+		nextHeat = 0,
+		heatVal = 0,
+		heat = "",
 
-			// volatility
-			volatility = "",
-			strict = "",
+		// volatility
+		volatility = "",
+		strict = "",
 
-			// count list
-			countList = this.countList,
-			countRow = null,
-			count = 0,
-			rotor = 0,
-			stator = 0,
-			activeResult = "",
+		// count list
+		countList = this.countList,
+		countRow = null,
+		count = 0,
+		rotor = 0,
+		stator = 0,
+		activeResult = "",
 
-			// mod value
-			modValue = this.modValue,
-			modResult = "",
+		// mod value
+		modValue = this.modValue,
+		modResult = "",
 
-			// temperature
-			tempResult = "",
+		// temperature
+		tempResult = "",
 
-			// bounding box for pattern
-			box = (this.isHROT ? this.HROTBox : this.zoomBox),
+		// bounding box for pattern
+		box = (this.isHROT ? this.HROTBox : this.zoomBox),
 
-			// counters
-			x = 0,
-			y = 0;
+		// counters
+		x = 0,
+		y = 0;
 
 		// only use one generation for still life
 		if (period > 0) {
@@ -2228,7 +2243,7 @@
 		} else {
 			// otherwise output min, max and average
 			avg = total / (last - start);
-			popResult = String(min) + " | " + String(max) + " | " + String(avg.toFixed(1));
+			popResult = String(min) + " | " + String(max) + " | " + this.toPlaces(avg, 1);
 		}
 
 		// compute the bounding box
@@ -2297,7 +2312,7 @@
 			} else {
 				// output min, max and average
 				avgHeat = heatVal / (last - start);
-				heat = String(minHeat.toFixed(1) + " | " + maxHeat.toFixed(1) + " | " + avgHeat.toFixed(1));
+				heat = this.toPlaces(minHeat, 1) + " | " + this.toPlaces(maxHeat, 1) + " | " + this.toPlaces(avgHeat, 1);
 			}
 		}
 
@@ -2361,14 +2376,14 @@
 					}
 				}
 			}
-			volatility = String((rotor / (rotor + stator)).toFixed(2));
+			volatility = this.toPlaces(rotor / (rotor + stator), 2);
 			strict = this.strictVol;
 			this.popRotor = rotor;
 		}
 
 		// temperature
 		if (type === "Oscillator" && !fast) {
-			tempResult = String((avgHeat / (rotor + stator)).toFixed(2) + " | " + (avgHeat / rotor).toFixed(2));
+			tempResult = this.toPlaces(avgHeat / (rotor + stator), 2) + " | " + this.toPlaces(avgHeat / rotor, 2);
 		}
 
 		// active cells

@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 800,
+		/** @const {number} */ versionBuild : 802,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3973,10 +3973,6 @@
 		    // state number
 		    state = 0,
 
-		    // pattern copy range
-		    copyWidth = width,
-		    copyHeight = height,
-
 		    // bounded grid range
 		    bLeftX = Math.round(-this.engine.boundedGridWidth / 2),
 		    bRightX = Math.floor((this.engine.boundedGridWidth - 1) / 2),
@@ -3992,9 +3988,6 @@
 		    // number of pattern states
 		    numStates = this.engine.multiNumStates,
 
-		    // whether pattern is inside bounded grid
-		    inside = true,
-			
 		    // whether pattern is 2-state HROT
 		    isTwoStateHROT = (numStates === 2 && this.engine.isHROT);
 
@@ -4003,42 +3996,20 @@
 			// check if pattern is inside bounded grid
 			if (this.engine.boundedGridWidth !== 0) {
 				if (dLeftX < bLeftX || dRightX > bRightX) {
-					inside = false;
+					this.wasClipped = true;
 				}
+			} else {
+				bLeftX = -this.engine.width >> 1;
+				bRightX = (this.engine.width >> 1) - 1;
 			}
 			if (this.engine.boundedGridHeight !== 0) {
-				if (dBottomY < bBottomY || dTopY > bTopY) {
-					inside = false;
+				if (dTopY > bTopY || dBottomY < bBottomY) {
+					this.wasClipped = true;
 				}
+			} else {
+				bBottomY = -this.engine.height >> 1;
+				bTopY = (this.engine.height >> 1) - 1;
 			}
-			if (!inside) {
-				// mark pattern as clipped
-				this.wasClipped = true;
-
-				// check for infinite width
-				if (this.engine.boundedGridWidth !== 0) {
-					panX = Math.round(this.engine.width / 2) + bLeftX;
-					if (copyWidth > bRightX - bLeftX + 1) {
-						copyWidth = bRightX - bLeftX + 1;
-					}
-				} else {
-					panX = Math.round(this.engine.width / 2);
-				}
-				// check for infinite height
-				if (this.engine.boundedGridHeight !== 0) {
-					panY = Math.round(this.engine.height / 2) + bBottomY;
-					if (copyHeight > bTopY - bBottomY + 1) {
-						copyHeight = bTopY - bBottomY + 1;
-					}
-				} else {
-					panY = Math.round(this.engine.height / 2);
-				}
-			}
-		}
-
-		// clip copy height to number of pattern rows
-		if (copyHeight > pattern.lifeMap.length) {
-			copyHeight = pattern.lifeMap.length;
 		}
 
 		// triangular patterns must be on even cell boundaries
@@ -4061,10 +4032,22 @@
 			}
 		}
 
+		// create bounding box for copy
+		if (this.engine.boundedGridType !== -1) {
+			dLeftX = bLeftX;
+			dRightX = bRightX;
+			dBottomY = bBottomY;
+			dTopY = bTopY;
+		}
+		dLeftX += this.engine.width >> 1;
+		dRightX += this.engine.width >> 1;
+		dBottomY += this.engine.height >> 1;
+		dTopY += this.engine.height >> 1;
+
 		// update the life grid
-		for (y = 0; y < copyHeight; y += 1) {
+		for (y = 0; y < height; y += 1) {
 			patternRow = pattern.lifeMap[y];
-			if (y + panY >= 0 && y + panY < this.engine.height) {
+			if (y + panY >= dBottomY && y + panY <= dTopY) {
 				gridRow = grid[y + panY];
 
 				// check for multi-state view
@@ -4073,8 +4056,8 @@
 					colourGridRow = colourGrid[y + panY];
 	
 					// copy colour cells
-					for (x = 0; x < copyWidth; x += 1) {
-						if (x + panX >= 0 && x + panX < this.engine.width) {
+					for (x = 0; x < width; x += 1) {
+						if (x + panX >= dLeftX && x + panX <= dRightX) {
 							state = multiStateRow[x];
 							if (state > 0) {
 								state += this.historyStates;
@@ -4089,8 +4072,8 @@
 						colourGridRow = colourGrid[y + panY];
 	
 						// copy colour cells
-						for (x = 0; x < copyWidth; x += 1) {
-							if (x + panX >= 0 && x + panX < this.engine.width) {
+						for (x = 0; x < width; x += 1) {
+							if (x + panX >= dLeftX && x + panX <= dRightX) {
 								// reverse order for rendering unless "none" rule is used
 								state = multiStateRow[x];
 								if (state > 0 && !this.engine.isNone) {
@@ -4106,8 +4089,8 @@
 				if (isTwoStateHROT) {
 					colourGridRow = colourGrid[y + panY];
 				}
-				for (x = 0; x < copyWidth; x += 1) {
-					if (x + panX >= 0 && x + panX < this.engine.width) {
+				for (x = 0; x < width; x += 1) {
+					if (x + panX >= dLeftX && x + panX <= dRightX) {
 						if ((patternRow[x >> 4] & (1 << (~x & 15))) !== 0) {
 							gridRow[(x + panX) >> 4] |= 1 << (~(x + panX) & 15);
 							if (isTwoStateHROT) {
@@ -4121,14 +4104,14 @@
 
 		// copy [R]History states to the overlay grid if required
 		if (overlayGrid) {
-			for (y = 0; y < copyHeight; y += 1) {
-				if (y + panY >= 0 && y + panY < this.engine.height) {
+			for (y = 0; y < height; y += 1) {
+				if (y + panY >= dBottomY && y + panY <= dTopY) {
 					multiStateRow = pattern.multiStateMap[y];
 					overlayGridRow = overlayGrid[y + panY];
 
 					// copy states
-					for (x = 0; x < copyWidth; x += 1) {
-						if (x + panX >= 0 && x + panX < this.engine.width) {
+					for (x = 0; x < width; x += 1) {
+						if (x + panX >= dLeftX && x + panX <= dRightX) {
 							// get the next state
 							state = multiStateRow[x];
 							if (state) {
@@ -4461,13 +4444,16 @@
 	};
 	
 	// copy pattern pan X and Y
-	View.prototype.computePanXY = function(width, height) {
-		// check for bounded grid with CXRLE Pos
-		if (this.engine.boundedGridType !== -1 && this.posDefined) {
-			//this.panX = (this.engine.width >> 1) + this.xOffset;
-			//this.panY = (this.engine.height >> 1) + this.yOffset;
-			this.panX = Math.round((this.engine.width - width) / 2) + this.xOffset;
-			this.panY = Math.round((this.engine.height - height) / 2) + this.yOffset;
+	View.prototype.computePanXY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ specifiedWidth, /** @type {number} */ specifiedHeight) {
+		// check for bounded grid
+		if (this.engine.boundedGridType !== -1) {
+			if (this.posDefined) {
+				this.panX = Math.round((this.engine.width) / 2) + this.xOffset;
+				this.panY = Math.round((this.engine.height) / 2) + this.yOffset;
+			} else {
+				this.panX = Math.round((this.engine.width - specifiedWidth) / 2);
+				this.panY = Math.round((this.engine.height - specifiedHeight) / 2);
+			}
 		} else {
 			// compute position to center pattern on display and add the x and y offsets
 			this.panX = Math.round((this.engine.width - width) / 2) + this.xOffset;
@@ -4859,14 +4845,14 @@
 	// cell cell location
 	View.prototype.updateCellLocation = function(mouseX, mouseY) {
 		// position relative to display width and height
-		var displayX = mouseX - this.displayWidth / 2,
-		    displayY = mouseY - this.displayHeight / 2,
+		var	displayX = mouseX - this.displayWidth / 2,
+			displayY = mouseY - this.displayHeight / 2,
 
-		    // engine camera x and y
-		    engineY = this.panY - this.engine.yOff,
-		    engineX = this.panX - this.engine.xOff - (this.engine.isHex ? this.engine.yOff / 2 : 0),
+			// engine camera x and y
+			engineY = this.panY - this.engine.yOff,
+			engineX = this.panX - this.engine.xOff - (this.engine.isHex ? this.engine.yOff / 2 : 0),
 
-		    // cell position
+			// cell position
 			yPos = 0, xPos = 0,
 			yFrac = 0, xFrac = 0,
 		    
@@ -4946,6 +4932,7 @@
 		// set cell position
 		this.cellX = xPos + this.panX;
 		this.cellY = yPos + this.panY;
+		console.debug(this.cellX, this.cellY);
 	};
 
 	// draw a line of cells using Bresenham
@@ -5359,11 +5346,13 @@
 			// add the offset to display coordinates
 			xPos += this.xOffset;
 			yPos += this.yOffset;
-			if (this.engine.boundedGridType !== -1 && !this.posDefined) {
-				//xPos -= Math.floor((this.specifiedWidth === -1 ? this.patternWidth : this.specifiedWidth) / 2);
-				//yPos -= Math.floor((this.specifiedHeight === -1 ? this.patternHeight : this.specifiedHeight) / 2);
-				xPos -= Math.floor(this.patternWidth / 2);
-				yPos -= Math.floor(this.patternHeight / 2);
+			if (this.engine.boundedGridType !== -1) {
+				xPos -= Math.floor(this.patternWidth / 2 + (this.specifiedWidth - this.patternWidth) / 2);
+				yPos -= Math.floor(this.patternHeight / 2 + (this.specifiedHeight - this.patternHeight) / 2);
+				if (this.posDefined) {
+					xPos += 2;
+					yPos += 2;
+				}
 			}
 
 			// check the size of the coordinates
@@ -7174,8 +7163,8 @@
 								me.identifyHeatValueLabel.toolTip = "min | max | average";
 							}
 							if (me.lastIdentifyStrict === "") {
-								me.identifyVolatilityValueLabel.preText = me.lastIdentifyVolatility;
-								me.identifyVolatilityValueLabel.toolTip = "";
+								me.identifyVolatilityValueLabel.preText = me.lastIdentifyVolatility + " | N/A";
+								me.identifyVolatilityValueLabel.toolTip = "normal | strict";
 							} else {
 								me.identifyVolatilityValueLabel.preText = me.lastIdentifyVolatility + " | " + me.lastIdentifyStrict;
 								me.identifyVolatilityValueLabel.toolTip = "normal | strict";
@@ -9432,6 +9421,7 @@
 	View.prototype.dragSelect = function(me, x, y) {
 		if (!me.isPasting) {
 			me.doDragSelect(me, x, y);
+			console.debug(me.selectionBox.leftX, me.selectionBox.bottomY, me.selectionBox.rightX, me.selectionBox.topY);
 		}
 	};
 
@@ -9458,6 +9448,9 @@
 
 		// check for infinite dimension bounded grid
 		if (me.boundedGridType !== -1) {
+			xOff = (me.engine.width >> 1);
+			yOff = (me.engine.height >> 1);
+
 			if (me.engine.boundedGridWidth === 0) {
 				leftX = 0;
 				rightX = me.engine.width - 1;
@@ -9529,8 +9522,13 @@
 				// check grid for growth
 				if (me.drawingSelection) {
 					me.checkSelectionSize(me);
-					xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
-					yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+					if (me.boundedGridType !== -1) {
+						xOff = (me.engine.width >> 1);
+						yOff = (me.engine.height >> 1);
+					} else {
+						xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
+						yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+					}
 				}
 
 				// clip to bounded grid if specified
@@ -16628,7 +16626,8 @@
 
 	// setup colour theme
 	View.prototype.setColourTheme = function(themeRequested) {
-		var customIndex = this.engine.numThemes;
+		var	/** @type {number} */ customIndex = this.engine.numThemes,
+			/** @type {number} */ value = 0;
 
 		// check if a theme was requested
 		if (themeRequested === -1) {
@@ -16661,21 +16660,6 @@
 					}
 				}
 			}
-		}
-
-		// check for custom gridmajor interval
-		if ((this.customGridMajor && themeRequested !== customIndex && this.engine.themes[themeRequested].gridMajor !== this.engine.gridLineMajor) || this.customGridColour !== -1 || this.customGridMajorColour !== -1) {
-			// copy the requested theme to the custom theme
-			this.engine.themes[customIndex].set(this.engine.themes[themeRequested]);
-			themeRequested = customIndex;
-			this.engine.themes[customIndex].gridMajor = this.engine.gridLineMajor;
-			if (this.customGridColour !== -1) {
-				this.engine.themes[customIndex].gridColour = this.customGridColour;
-			}
-			if (this.customGridMajorColour !== -1) {
-				this.engine.themes[customIndex].gridMajorColour = this.customGridMajorColour;
-			}
-			this.customTheme = true;
 		}
 
 		// set the theme
@@ -17056,6 +17040,15 @@
 			me.patternWidth = pattern.width;
 			me.patternHeight = pattern.height;
 
+			// if the size is not specified then set it to the actual size
+			if (me.specifiedWidth === -1) {
+				me.specifiedWidth = me.patternWidth;
+			}
+
+			if (me.specifiedHeight === -1) {
+				me.specifiedHeight = me.patternHeight;
+			}
+
 			// read pattern name and originator
 			me.patternName = pattern.name;
 			me.patternOriginator = pattern.originator;
@@ -17206,18 +17199,6 @@
 
 			for (i = 0; i < numberValue; i += 1) {
 				me.patternStateCount[i] = me.manager.stateCount[i];
-			}
-
-			// for bounded grid patterns use the specified width
-			if (me.engine.boundedGridType !== -1) {
-				if (me.specifiedWidth !== -1) {
-					me.patternWidth = me.specifiedWidth;
-					pattern.width = me.specifiedWidth;
-				}
-				if (me.specifiedHeight !== -1) {
-					me.patternHeight = me.specifiedHeight;
-					pattern.height = me.specifiedHeight;
-				}
 			}
 		} else {
 			me.clearPatternData();
@@ -17695,7 +17676,7 @@
 		// check pattern size (script command may have increased maximum allowed size)
 		if (pattern && (pattern.width > me.engine.maxGridSize || pattern.height > me.engine.maxGridSize)) {
 			me.failureReason = "Pattern too big (maximum " + me.engine.maxGridSize + "x" + me.engine.maxGridSize + ")";
-			me.tooBig = true;
+			pattern.tooBig = true;
 			me.executable = false;
 			me.clearPatternData();
 		}
@@ -17853,7 +17834,7 @@
 
 		// compute pan X and Y for the pattern on the grid
 		if (pattern) {
-			me.computePanXY(pattern.width, pattern.height);
+			me.computePanXY(me.patternWidth, me.patternHeight, me.specifiedWidth, me.specifiedHeight);
 		}
 		
 		// populate the state 6 mask
