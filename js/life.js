@@ -33583,8 +33583,8 @@
 			if (mouseX !== -1) {
 				view.updateCellLocation(mouseX, mouseY);
 				if (this.boundedGridType !== -1 && view.posDefined) {
-					xOff += view.patternWidth;
-					yOff += view.patternHeight;
+					xOff += view.patternWidth - 1;
+					yOff += view.patternHeight - 1;
 				}
 				this.drawPasteWithCells(view, view.cellX - xOff, view.cellY - yOff, position, this.pasteColour);
 			}
@@ -33626,8 +33626,8 @@
 		height = y2 - y1 + 1;
 
 		if (this.boundedGridType !== -1 && view.posDefined) {
-			yOff += view.patternHeight;
-			xOff += view.patternWidth;
+			yOff += view.patternHeight - 1;
+			xOff += view.patternWidth - 1;
 		}
 
 		// convert cell coordinates to screen coordinates

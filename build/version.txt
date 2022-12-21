@@ -1,3 +1,6 @@
+Build 803
+- fixed most selection issues
+
 Build 802
 - fixed issue when too big patterns were crashing the Viewer
 

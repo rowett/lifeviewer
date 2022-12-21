@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 802,
+		/** @const {number} */ versionBuild : 803,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4469,11 +4469,11 @@
 	};
 
 	// shorten a number to M or K
-	View.prototype.shortenNumber = function(value) {
-		var pos = value,
-			result = "";
+	View.prototype.shortenNumber = function(/** @type {number} */ value) {
+		var	/** @type {number} */ pos = value,
+			/** @type {string} */ result = "";
 
-		// get absolute valuE
+		// get absolute value
 		if (value < 0) { 
 			value = -value;
 		}
@@ -4932,7 +4932,6 @@
 		// set cell position
 		this.cellX = xPos + this.panX;
 		this.cellY = yPos + this.panY;
-		console.debug(this.cellX, this.cellY);
 	};
 
 	// draw a line of cells using Bresenham
@@ -5346,13 +5345,9 @@
 			// add the offset to display coordinates
 			xPos += this.xOffset;
 			yPos += this.yOffset;
-			if (this.engine.boundedGridType !== -1) {
+			if (this.engine.boundedGridType !== -1 && !this.posDefined) {
 				xPos -= Math.floor(this.patternWidth / 2 + (this.specifiedWidth - this.patternWidth) / 2);
 				yPos -= Math.floor(this.patternHeight / 2 + (this.specifiedHeight - this.patternHeight) / 2);
-				if (this.posDefined) {
-					xPos += 2;
-					yPos += 2;
-				}
 			}
 
 			// check the size of the coordinates
@@ -9421,14 +9416,52 @@
 	View.prototype.dragSelect = function(me, x, y) {
 		if (!me.isPasting) {
 			me.doDragSelect(me, x, y);
-			console.debug(me.selectionBox.leftX, me.selectionBox.bottomY, me.selectionBox.rightX, me.selectionBox.topY);
 		}
+	};
+
+	// compute bounded grid bounding box and grid offset
+	View.prototype.getBoundingBox = function(box, offset) {
+		var	xOff = this.engine.width >> 1,
+			yOff = this.engine.height >> 1;
+
+		if (this.posDefined) {
+			xOff -= Math.floor(this.specifiedWidth / 2) - this.xOffset - this.xOffset;
+			yOff -= Math.floor(this.specifiedHeight / 2) - this.yOffset - this.yOffset;
+		} else {
+			xOff -= Math.floor(this.specifiedWidth / 2);
+			yOff -= Math.floor(this.specifiedHeight / 2);
+		}
+
+		if (this.engine.boundedGridWidth === 0) {
+			box.leftX = 0;
+			box.rightX = this.engine.width - 1;
+		} else {
+			box.leftX = Math.round((this.engine.width - this.engine.boundedGridWidth) / 2) + offset;
+			if (!this.posDefined) {
+				box.leftX += Math.floor((this.specifiedWidth - this.patternWidth) / 2);
+			}
+			box.rightX = box.leftX + this.engine.boundedGridWidth - 1;
+		}
+
+		if (this.engine.boundedGridHeight === 0) {
+			box.bottomY = 0;
+			box.topY = this.engine.height - 1;
+		} else {
+			box.bottomY = Math.round((this.engine.height - this.engine.boundedGridHeight) / 2) + offset;
+			if (!this.posDefined) {
+				box.bottomY += Math.floor((this.specifiedHeight - this.patternHeight) / 2);
+			}
+			box.topY = box.bottomY + this.engine.boundedGridHeight - 1;
+		}
+
+		return [xOff, yOff];
 	};
 
 	// process drag for selection
 	View.prototype.doDragSelect = function(me, x, y) {
 		// selection box
 		var box = me.selectionBox,
+		    boundedBox = new BoundingBox(0, 0, 0, 0),
 
 		    // flag if off the grid
 		    offGrid = false,
@@ -9437,28 +9470,17 @@
 		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 
-		    // bounded grid top left
+		    // box offset for Margolus
 		    /** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
-		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
-		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
 
-		    // bounded grid bottom right
-		    /** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
-		    /** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1;
+		    // x and y offset return from function
+		    xyOff = [];
 
 		// check for infinite dimension bounded grid
-		if (me.boundedGridType !== -1) {
-			xOff = (me.engine.width >> 1);
-			yOff = (me.engine.height >> 1);
-
-			if (me.engine.boundedGridWidth === 0) {
-				leftX = 0;
-				rightX = me.engine.width - 1;
-			}
-			if (me.engine.boundedGridHeight === 0) {
-				bottomY = 0;
-				topY = me.engine.height - 1;
-			}
+		if (me.engine.boundedGridType !== -1) {
+			xyOff = me.getBoundingBox(boundedBox, boxOffset);
+			xOff = xyOff[0];
+			yOff = xyOff[1];
 		}
 
 		// check for drag start
@@ -9481,7 +9503,7 @@
 						offGrid = false;
 						// check if the cell is inside any bounded grid
 						if (me.engine.boundedGridType !== -1) {
-							if (me.cellX < leftX || me.cellX > rightX || me.cellY < bottomY || me.cellY > topY) {
+							if (me.cellX < boundedBox.leftX || me.cellX > boundedBox.rightX || me.cellY < boundedBox.bottomY || me.cellY > boundedBox.topY) {
 								offGrid = true;
 							}
 						}
@@ -9523,8 +9545,9 @@
 				if (me.drawingSelection) {
 					me.checkSelectionSize(me);
 					if (me.boundedGridType !== -1) {
-						xOff = (me.engine.width >> 1);
-						yOff = (me.engine.height >> 1);
+						xyOff = me.getBoundingBox(boundedBox, boxOffset);
+						xOff = xyOff[0];
+						yOff = xyOff[1];
 					} else {
 						xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
 						yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
@@ -9534,40 +9557,40 @@
 				// clip to bounded grid if specified
 				if (me.drawingSelection && me.engine.boundedGridType !== -1) {
 					// adjust for mid-grid
-					leftX -= xOff;
-					rightX -= xOff;
-					bottomY -= yOff;
-					topY -= yOff;
+					boundedBox.leftX -= xOff;
+					boundedBox.rightX -= xOff;
+					boundedBox.bottomY -= yOff;
+					boundedBox.topY -= yOff;
 
 					// test against grid boundaries
 					if (box.leftX < box.rightX) {
-						if (box.leftX < leftX) {
-							box.leftX = leftX;
+						if (box.leftX < boundedBox.leftX) {
+							box.leftX = boundedBox.leftX;
 						}
-						if (box.rightX > rightX) {
-							box.rightX = rightX;
+						if (box.rightX > boundedBox.rightX) {
+							box.rightX = boundedBox.rightX;
 						}
 					} else {
-						if (box.rightX < leftX) {
-							box.rightX = leftX;
+						if (box.rightX < boundedBox.leftX) {
+							box.rightX = boundedBox.leftX;
 						}
-						if (box.leftX > rightX) {
-							box.leftX = rightX;
+						if (box.leftX > boundedBox.rightX) {
+							box.leftX = boundedBox.rightX;
 						}
 					}
 					if (box.bottomY < box.topY) {
-						if (box.bottomY < bottomY) {
-							box.bottomY = bottomY;
+						if (box.bottomY < boundedBox.bottomY) {
+							box.bottomY = boundedBox.bottomY;
 						}
-						if (box.topY > topY) {
-							box.topY = topY;
+						if (box.topY > boundedBox.topY) {
+							box.topY = boundedBox.topY;
 						}
 					} else {
-						if (box.topY < bottomY) {
-							box.topY = bottomY;
+						if (box.topY < boundedBox.bottomY) {
+							box.topY = boundedBox.bottomY;
 						}
-						if (box.bottomY > topY) {
-							box.bottomY = topY;
+						if (box.bottomY > boundedBox.topY) {
+							box.bottomY = boundedBox.topY;
 						}
 					}
 				}
