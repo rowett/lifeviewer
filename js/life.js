@@ -1903,17 +1903,18 @@
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ p = 0,
-			periodCols = [],
+			/** @type {Array} */ periodCols = [],
 			ctx = this.context,
-			leftX = 200,
-			bottomY = 200,
-			cellWidth = 4,
-			cellHeight = 4,
-			width = 0,
-			height = 0,
-			hue = 0,
-			numCols = 0,
-			border = 1;
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ bottomY = 0,
+			/** @type {number} */ cellWidth = 4,
+			/** @type {number} */ cellHeight = 4,
+			/** @type {number} */ width = 0,
+			/** @type {number} */ height = 0,
+			/** @type {number} */ hue = 0,
+			/** @type {number} */ numCols = 0,
+			/** @type {number} */ border = 1,
+			/** @type {number} */ legendWidth = 50;
 
 		// compute required cell width and height
 		width = this.displayWidth - 90;
@@ -1988,7 +1989,39 @@
 			}
 		}
 
+		// draw the legend
+		ctx.font = "11px Arial";
+		if (this.popSubPeriod[this.popSubPeriod.length - 1] === 0) {
+			numCols -= 1;
+		}
 
+		// draw the legend box
+		ctx.lineWidth = 2;
+		ctx.strokeStyle = "white";
+		ctx.strokeRect(leftX - legendWidth - 1, bottomY - 1, legendWidth + 2, (numCols + 2) * 15 + 2);
+		ctx.fillStyle = "rgb(238,238,238)";
+		ctx.fillRect(leftX - legendWidth, bottomY, legendWidth, (numCols + 2) * 15);
+
+		// draw each legend entry
+		y = 0;
+		for (x = this.popSubPeriod.length - 1; x > 0; x -= 1) {
+			p = this.popSubPeriod[x];
+			if (p > 0) {
+				// draw colour
+				ctx.fillStyle = "black";
+				ctx.fillRect(leftX - legendWidth + 2, bottomY + y * 15 + 2, 10, 10);
+				ctx.fillStyle = periodCols[x];
+				ctx.fillRect(leftX - legendWidth, bottomY + y * 15, 10, 10);
+				
+				// draw period
+				ctx.fillStyle = "white";
+				ctx.fillText(String(x), leftX - legendWidth + 25 + 2, bottomY + y * 15 + 2 + 7);
+				ctx.fillStyle = "black";
+				ctx.fillText(String(x), leftX - legendWidth + 25, bottomY + y * 15 + 7);
+
+				y += 1;
+			}
+		}
 	};
 
 	// compute strict volatility
