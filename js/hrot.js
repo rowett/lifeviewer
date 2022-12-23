@@ -914,8 +914,6 @@
 		var counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
-			/** @type {number} */ i,
-			/** @type {number} */ j,
 			/** @type {number} */ count,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @const {number} */ cornerRange = this.cornerRange,
@@ -1494,7 +1492,6 @@
 		var counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
-			/** @type {number} */ i,
 			/** @type {number} */ j,
 			/** @type {number} */ count,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
@@ -2354,7 +2351,7 @@
 							if (myRand.random() >= survivalChances[count]) {
 								// cell dies
 								deaths += 1;
-							} else{
+							} else {
 								aliveIndex = 128;
 							}
 						} else {
@@ -2786,8 +2783,6 @@
 		var counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
-			/** @type {number} */ i,
-			/** @type {number} */ j,
 			/** @type {number} */ count,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
 			/** @const {number} */ cornerRange = this.cornerRange,
@@ -3365,7 +3360,6 @@
 		var counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
-			/** @type {number} */ i,
 			/** @type {number} */ j,
 			/** @type {number} */ count,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,

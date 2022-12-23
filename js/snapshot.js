@@ -1411,7 +1411,7 @@
 			// check whether to create a new snapshot
 			if (this.snapshots.length < this.maxSnapshots) {
 				// create a new snapshot
-				snapshot = this.createSnapshot(width, height, false, counter, usingOverlay);
+				snapshot = this.createSnapshot(width, height, false, usingOverlay);
 				this.index += 1;
 			} else {
 				// get the next snapshot index
@@ -1431,7 +1431,7 @@
 					this.snapshots.pop();
 
 					// create a new final element
-					snapshot = this.createSnapshot(width, height, false, counter, usingOverlay);
+					snapshot = this.createSnapshot(width, height, false, usingOverlay);
 				}
 
 				// get the snapshot at the index
@@ -1528,10 +1528,9 @@
 	};
 
 	// create a snapshot
-	SnapshotManager.prototype.createSnapshot = function(w, h, isReset, counter, usingOverlay) {
+	SnapshotManager.prototype.createSnapshot = function(w, h, isReset, usingOverlay) {
 		// lookup or create a buffer
-		var i = 0,
-		    bufNum = this.getBuffers(w, h, usingOverlay),
+		var bufNum = this.getBuffers(w, h, usingOverlay),
 
 		    // create the new snapshot
 		    result = null;

@@ -1,3 +1,7 @@
+Build 804
+- added cell period map display option in Identify results for Oscillators
+	- hotkey D to toggle
+	
 Build 803
 - fixed most selection issues
 

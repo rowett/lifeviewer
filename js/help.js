@@ -841,6 +841,7 @@
 		if (view.engine.multiNumStates === -1) {
 			y = this.renderHelpLine(view, "Alt W", "toggle rainbow mode", ctx, x, y, height, helpLine);
 		}
+		y = this.renderHelpLine(view, "D", "toggle cell period map", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// pattern controls

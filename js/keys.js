@@ -669,13 +669,16 @@
 				}
 				break;
 
-			// d for toggle states display
+			// d for toggle cell period map or toggle states display
 			case 68:
 				// check for ctrl
 				if (event.ctrlKey) {
 					// toggle states display
 					me.statesToggle.current = me.toggleStates([!me.showStates], true, me);
 					me.menuManager.notification.notify("States Display " + (me.showStates ? "On" : "Off"), 15, 80, 15, true);
+				} else {
+					// toggle cell period map
+					me.identifyStrictToggle.current = me.toggleCellPeriodMap([!me.periodMapDisplayed], true, me);
 				}
 				break;
 

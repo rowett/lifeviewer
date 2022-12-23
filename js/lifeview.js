@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 803,
+		/** @const {number} */ versionBuild : 804,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -664,6 +664,9 @@
 		// first and last time for frame rate measurement
 		this.firstFrame = 0;
 		this.lastFrame = 0;
+
+		// identify cell period map displayed
+		this.periodMapDisplayed = false;
 
 		// last failure reason from PatternManager
 		this.lastFailReason = "";
@@ -1788,6 +1791,9 @@
 
 		// close button for identify
 		this.identifyCloseButton = null;
+
+		// strict volatility toggle
+		this.identifyStrictToggle = null;
 
 		// infobar button
 		this.infoBarButton = null;
@@ -5055,6 +5061,9 @@
 		// close button at same height as banner
 		this.identifyCloseButton.setY(y - 48);
 
+		// cell period map toggle
+		this.identifyStrictToggle.setY(y - 48 + 45);
+
 		// type
 		this.identifyTypeLabel.setPosition(Menu.north, x, y);
 		this.identifyTypeValueLabel.setPosition(Menu.north, xv, y);
@@ -6058,6 +6067,11 @@
 			}
 		}
 
+		// draw cell period map
+		if (me.resultsDisplayed && me.periodMapDisplayed && me.engine.cellPeriod !== null) {
+			me.engine.drawCellPeriodMap(me);
+		}
+
 		// capture screenshot if scheduled
 		if (me.screenShotScheduled) {
 			// check for grid capture
@@ -6073,6 +6087,15 @@
 			if (me.screenShotScheduled === 2) {
 				// restore grid
 				me.engine.drawGrid();
+
+				// check if hexagons or triangles should be drawn
+				if (!me.engine.forceRectangles && me.engine.isHex && me.engine.zoom >= 4) {
+					me.engine.drawHexagons();
+				} else {
+					if (!me.engine.forceRectangles && me.engine.isTriangular && me.engine.zoom >= 4) {
+						me.engine.drawTriangles();
+					}
+				}
 			}
 
 			// mark screenshot complete
@@ -6299,7 +6322,11 @@
 		shown = hide || !this.resultsDisplayed || (this.lastIdentifyType === "Empty") || (this.lastIdentifyType === "none");
 		this.identifyCloseButton.deleted = hide || !this.resultsDisplayed;
 
-		// identify results labels
+		// identify cell period display
+		this.identifyStrictToggle.deleted = hide || !this.resultsDisplayed || this.engine.cellPeriod === null;
+
+		// identify results
+		shown = shown || this.periodMapDisplayed;
 		this.identifyBannerLabel.deleted = shown;
 		this.identifyTypeLabel.deleted = shown;
 		this.identifyCellsLabel.deleted = shown;
@@ -8582,10 +8609,7 @@
 	// switch to state from keyboard shortcut
 	View.prototype.switchToState = function(state) {
 		var numStates = this.engine.multiNumStates,
-			maxDisplayStates = this.maxDisplayStates,
-			origState = state,
-			lowState = 0,
-			highState = 0;
+			maxDisplayStates = this.maxDisplayStates;
 
 		if (numStates === -1) {
 			numStates = 2;
@@ -8595,8 +8619,6 @@
 			numStates = 7;
 			maxDisplayStates = 7;
 		}
-
-		highState = lowState + maxDisplayStates - 1;
 
 		// check the requested state is valid
 		if (state < numStates) {
@@ -10943,7 +10965,7 @@
 				} else {
 					this.gridToggle.icon = [this.iconManager.icon("trirectgrid")];
 				}
-			} else{
+			} else {
 				this.gridToggle.icon = [this.iconManager.icon("grid")];
 			}
 		}
@@ -14159,6 +14181,15 @@
 		return [me.showStates];
 	};
 
+	// cell period map display
+	View.prototype.toggleCellPeriodMap = function(newValue, change, me) {
+		if (change) {
+			me.periodMapDisplayed = newValue[0];
+		}
+
+		return [me.periodMapDisplayed];
+	};
+
 	// pick toggle
 	View.prototype.togglePick = function(newValue, change, me) {
 		if (change) {
@@ -15669,6 +15700,11 @@
 		this.identifyCloseButton = this.viewMenu.addButtonItem(this.identifyClosePressed, Menu.northEast, -40, 45, 40, 40, "X");
 		this.identifyCloseButton.toolTip = "close results [Esc]";
 
+		// identify strict toggle
+		this.identifyStrictToggle = this.viewMenu.addListItem(this.toggleCellPeriodMap, Menu.northEast, -40, 45, 40, 40, ["Map"], [this.periodMapDisplayed], Menu.multi);
+		this.identifyStrictToggle.toolTip = ["toggle cell period map [D]"];
+		this.identifyStrictToggle.setFont("15px Arial");
+
 		// graph close button
 		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -40, 45, 40, 40, "X");
 		this.graphCloseButton.toolTip = "close graph [Y]";
@@ -16649,8 +16685,7 @@
 
 	// setup colour theme
 	View.prototype.setColourTheme = function(themeRequested) {
-		var	/** @type {number} */ customIndex = this.engine.numThemes,
-			/** @type {number} */ value = 0;
+		var	/** @type {number} */ customIndex = this.engine.numThemes;
 
 		// check if a theme was requested
 		if (themeRequested === -1) {
@@ -18504,6 +18539,9 @@
 			me.engine.isNone = savedNone;
 		}
 
+		// clear cell period display toggle
+		me.identifyStrictToggle.current = me.toggleCellPeriodMap([false], true, me);
+
 		// check for chrome bug
 		me.checkForChromeBug();
 	};
@@ -19057,8 +19095,7 @@
 	// complete isPattern check after load failure
 	function completeIsPatternFailed(pattern, args) {
 		// unpack arguments
-		var patternString = args[0],
-			rleItem = args[1],
+		var	rleItem = args[1],
 			textItem = args[2];
 
 		if (pattern) {

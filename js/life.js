@@ -374,6 +374,11 @@
 		// last computed strict volatility
 		/** @type {string} */ this.strictVol = "";
 
+		// last period per cell for oscillator
+		/** @type {Uint16Array} */ this.cellPeriod = null;
+		this.cellPeriodWidth = 0;
+		this.cellPeriodHeight = 0;
+
 		// oscillator population subperiod
 		this.popSubPeriod = null;
 
@@ -1893,6 +1898,99 @@
 		return result;
 	};
 
+	// draw cell period map
+	Life.prototype.drawCellPeriodMap = function(view) {
+		var	/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ p = 0,
+			periodCols = [],
+			ctx = this.context,
+			leftX = 200,
+			bottomY = 200,
+			cellWidth = 4,
+			cellHeight = 4,
+			width = 0,
+			height = 0,
+			hue = 0,
+			numCols = 0,
+			border = 1;
+
+		// compute required cell width and height
+		width = this.displayWidth - 90;
+		height = this.displayHeight - 180;
+		cellWidth = (width / (this.cellPeriodWidth + border + border)) | 0;
+		cellHeight = (height / (this.cellPeriodHeight + border + border)) | 0;
+		if (cellWidth < cellHeight) {
+			cellHeight = cellWidth;
+		} else {
+			cellWidth = cellHeight;
+		}
+		width = cellWidth * (this.cellPeriodWidth + border + border);
+		height = cellHeight * (this.cellPeriodHeight + border + border);
+		leftX = (this.displayWidth - width) >> 1;
+		bottomY = (this.displayHeight - height) >> 1;
+
+		// draw a bordered box
+		ctx.globalAlpha = 1;
+		ctx.lineWidth = 2;
+		ctx.strokeStyle = "white";
+		ctx.strokeRect(leftX - 1, bottomY - 1, width + 2, height + 2);
+		ctx.fillStyle = "rgb(238,238,238)";
+		ctx.fillRect(leftX, bottomY, width, height);
+
+		// count the subperiods excluding period 1 and oscillator period
+		numCols = 0;
+		for (x = 2; x < this.popSubPeriod.length - 1; x++) {
+			if (this.popSubPeriod[x] > 0) {
+				numCols += 1;
+			}
+		}
+
+		// make colours for the subperiods excluding period 1 and oscillator period
+		y = 0;
+		for (x = 2; x < this.popSubPeriod.length - 1; x++) {
+			if (this.popSubPeriod[x] > 0) {
+				hue = Math.floor(360 * (y / numCols));
+				periodCols[x] = "hsl(" + hue + ",100%,70%)";
+				y += 1;
+			}
+		}
+
+		// set colours for period 1 and oscillator period
+		periodCols[1] = "rgb(96,96,96)";
+		periodCols[this.popSubPeriod.length - 1] = "rgb(153,153,153)";
+
+		// draw the cells
+		for (y = 0; y < this.cellPeriodHeight; y += 1) {
+			for (x = 0; x < this.cellPeriodWidth; x += 1) {
+				p = this.cellPeriod[y * this.cellPeriodWidth + x];
+				if (p > 0) {
+					ctx.fillStyle = periodCols[p];
+					ctx.fillRect(leftX + ((x + border) * cellWidth) + border, bottomY + ((y + border) * cellHeight), cellWidth | 0, cellHeight | 0);
+				}
+			}
+		}
+
+		// draw cell grid if large enough cells
+		if (cellWidth > 5) {
+			ctx.strokeStyle = "white";
+			ctx.lineWidth = 1;
+			for (y = 0; y < this.cellPeriodHeight + border + border; y += 1) {
+				ctx.moveTo(0.5 + leftX, 0.5 + bottomY + y * cellHeight);
+				ctx.lineTo(0.5 + leftX + (this.cellPeriodWidth + border + border) * cellWidth, 0.5 + bottomY + y * cellHeight);
+				ctx.stroke();
+			}
+
+			for (x = 0; x < this.cellPeriodWidth + border + border; x += 1) {
+				ctx.moveTo(0.5 + leftX + x * cellWidth, 0.5 + bottomY);
+				ctx.lineTo(0.5 + leftX + x * cellWidth, 0.5 + bottomY + (this.cellPeriodHeight + border + border) * cellHeight);
+				ctx.stroke();
+			}
+		}
+
+
+	};
+
 	// compute strict volatility
 	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, box, view) {
 		var	/** @type {number} */ p = 0,
@@ -1991,7 +2089,7 @@
 				if (period % f) continue;
 				for (cy = 0; cy < boxHeight; cy += 1) {
 					for (cx = 0; cx < boxWidth; cx += 1) {
-						if (cellPeriod[cy * boxWidth + cx] == period) {
+						if (cellPeriod[cy * boxWidth + cx] === period) {
 							flag = true;
 							for (p = 0; p <= (period - f - 1); p += 1) {
 								j = cy * boxWidth + cx;
@@ -2023,6 +2121,9 @@
 			this.strictVol = this.toPlaces(p, 2);
 			this.popSubPeriod = popSubPeriod;
 			this.popTotal = popTotal;
+			this.cellPeriod = cellPeriod;
+			this.cellPeriodWidth = boxWidth;
+			this.cellPeriodHeight = boxHeight;
 		}
 	};
 
@@ -2458,6 +2559,7 @@
 
 		// clear last strict volatility
 		this.strictVol = "";
+		this.cellPeriod = null;
 
 		// ensure altSpecified propagates from HROT since for some reason it doesn't work on the forum
 		if (this.isHROT) {
@@ -3308,8 +3410,6 @@
 			/** @type {number} */ k = 0,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
-			/** @type {number} */ leftOff = 0,
-			/** @type {number} */ rightOff = 0,
 			/** @const {number} */ w2 = this.width / 2 - 0.25,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @const {number} */ pi3 = Math.PI / 3,
@@ -5644,7 +5744,7 @@
 		this.snapshotManager.reset();
 
 		// create reset snapshot
-		this.resetSnapshot = this.snapshotManager.createSnapshot(((this.tileCols - 1) >> 4) + 1, this.tileRows, true, 0, this.drawOverlay);
+		this.resetSnapshot = this.snapshotManager.createSnapshot(((this.tileCols - 1) >> 4) + 1, this.tileRows, true, this.drawOverlay);
 
 		// save initial position for reset
 		this.saveToSnapshot(true, this.grid, this.tileGrid, view);
