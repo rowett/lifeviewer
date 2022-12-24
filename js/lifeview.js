@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 805,
+		/** @const {number} */ versionBuild : 806,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4026,6 +4026,10 @@
 			if ((panY & 1) !== 0) {
 				panY += 1;
 			}
+			dLeftX = panX - (this.engine.width >> 1);
+			dRightX = dLeftX + width - 1;
+			dBottomY = panY - (this.engine.height >> 1);
+			dTopY = dBottomY + height - 1;
 		}
 
 		// Margolus patterns must be on odd cell bounderies
@@ -4036,6 +4040,10 @@
 			if ((panY & 1) === 0) {
 				panY -= 1;
 			}
+			dLeftX = panX - (this.engine.width >> 1);
+			dRightX = dLeftX + width - 1;
+			dBottomY = panY - (this.engine.height >> 1);
+			dTopY = dBottomY + height - 1;
 		}
 
 		// create bounding box for copy
@@ -6067,11 +6075,6 @@
 			}
 		}
 
-		// draw cell period map
-		if (me.resultsDisplayed && me.periodMapDisplayed && me.engine.cellPeriod !== null) {
-			me.engine.drawCellPeriodMap(me);
-		}
-
 		// capture screenshot if scheduled
 		if (me.screenShotScheduled) {
 			// check for grid capture
@@ -6117,6 +6120,11 @@
 		// draw any arrows and labels
 		if (me.showLabels) {
 			me.waypointManager.drawAnnotations(me);
+		}
+
+		// draw cell period map
+		if (me.resultsDisplayed && me.periodMapDisplayed && me.engine.cellPeriod !== null) {
+			me.engine.drawCellPeriodMap(me);
 		}
 
 		// draw population graph if required

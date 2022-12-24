@@ -1,3 +1,9 @@
+Build 806
+- fixed cell period map legend for strict volatility 1
+- fixed cell period map legend text positioning
+- fixed cell period map for alternating rules (including B0)
+- fixed loading triangular rules
+
 Build 805
 - added legend to cell period map
 

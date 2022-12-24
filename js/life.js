@@ -1843,6 +1843,7 @@
 	Life.prototype.getOscillatorBounds = function(/** @type {number} */ period, /** @type {number} */ i) {
 		var	extent = new BoundingBox(0, 0, 0, 0),
 			/** @type {number} */ p = 0,
+			/** @type {number} */ currentP = 0,
 			/** @type {number} */ leftX = 16384,
 			/** @type {number} */ rightX = -16384,
 			/** @type {number} */ bottomY = 16384,
@@ -1853,30 +1854,36 @@
 			/** @type {number} */ cHeight = 0,
 			/** @type {number} */ current = 0;
 
+		currentP = 0;
 		for (p = 0; p < period; p += 1) {
-			// get the bounding box for the current generation within the oscillator period
-			current = this.boxList[(i + p) << 1];
-			cWidth = current >> 16;
-			cHeight = current & 65535;
-			current = this.boxList[((i + p) << 1) + 1];
-			cLeftX = current >> 16;
-			cBottomY = current & 65535;
+			// for alternating rules skip odd generations
+			if (!(this.altSpecified && ((i + p) & 1) !== 0)) {
+				// get the bounding box for the current generation within the oscillator period
+				current = this.boxList[(i + currentP) << 1];
+				cWidth = current >> 16;
+				cHeight = current & 65535;
+				current = this.boxList[((i + currentP) << 1) + 1];
+				cLeftX = current >> 16;
+				cBottomY = current & 65535;
+	
+				// update the extent
+				if (cLeftX < leftX) {
+					leftX = cLeftX;
+				}
+				if (cBottomY < bottomY) {
+					bottomY = cBottomY;
+				}
+				if (cLeftX + cWidth - 1 > rightX) {
+					rightX = cLeftX + cWidth - 1;
+				}
+				if (cBottomY + cHeight - 1 > topY) {
+					topY = cBottomY + cHeight - 1;
+				}
 
-			// update the extent
-			if (cLeftX < leftX) {
-				leftX = cLeftX;
-			}
-			if (cBottomY < bottomY) {
-				bottomY = cBottomY;
-			}
-			if (cLeftX + cWidth - 1 > rightX) {
-				rightX = cLeftX + cWidth - 1;
-			}
-			if (cBottomY + cHeight - 1 > topY) {
-				topY = cBottomY + cHeight - 1;
+				currentP += 1;
 			}
 		}
-
+	
 		extent.leftX = leftX;
 		extent.bottomY = bottomY;
 		extent.rightX = rightX;
@@ -1976,17 +1983,19 @@
 		if (cellWidth > 5) {
 			ctx.strokeStyle = "white";
 			ctx.lineWidth = 1;
+			ctx.beginPath();
 			for (y = 0; y < this.cellPeriodHeight + border + border; y += 1) {
 				ctx.moveTo(0.5 + leftX, 0.5 + bottomY + y * cellHeight);
 				ctx.lineTo(0.5 + leftX + (this.cellPeriodWidth + border + border) * cellWidth, 0.5 + bottomY + y * cellHeight);
-				ctx.stroke();
 			}
+			ctx.stroke();
 
+			ctx.beginPath();
 			for (x = 0; x < this.cellPeriodWidth + border + border; x += 1) {
 				ctx.moveTo(0.5 + leftX + x * cellWidth, 0.5 + bottomY);
 				ctx.lineTo(0.5 + leftX + x * cellWidth, 0.5 + bottomY + (this.cellPeriodHeight + border + border) * cellHeight);
-				ctx.stroke();
 			}
+			ctx.stroke();
 		}
 
 		// draw the legend
@@ -1994,13 +2003,16 @@
 		if (this.popSubPeriod[this.popSubPeriod.length - 1] === 0) {
 			numCols -= 1;
 		}
+		if (this.popSubPeriod[1] === 0) {
+			numCols -= 1;
+		}
 
 		// draw the legend box
 		ctx.lineWidth = 2;
 		ctx.strokeStyle = "white";
-		ctx.strokeRect(leftX - legendWidth - 1, bottomY - 1, legendWidth + 2, (numCols + 2) * 15 + 2);
+		ctx.strokeRect(leftX - legendWidth - 1, bottomY - 1, legendWidth - 2 + 2, (numCols + 2) * 15 + 2);
 		ctx.fillStyle = "rgb(238,238,238)";
-		ctx.fillRect(leftX - legendWidth, bottomY, legendWidth, (numCols + 2) * 15);
+		ctx.fillRect(leftX - legendWidth, bottomY, legendWidth - 2, (numCols + 2) * 15);
 
 		// draw each legend entry
 		y = 0;
@@ -2015,9 +2027,9 @@
 				
 				// draw period
 				ctx.fillStyle = "white";
-				ctx.fillText(String(x), leftX - legendWidth + 25 + 2, bottomY + y * 15 + 2 + 7);
+				ctx.fillText(String(x), leftX - legendWidth + 16 + 2, bottomY + y * 15 + 2 + 7);
 				ctx.fillStyle = "black";
-				ctx.fillText(String(x), leftX - legendWidth + 25, bottomY + y * 15 + 7);
+				ctx.fillText(String(x), leftX - legendWidth + 16, bottomY + y * 15 + 7);
 
 				y += 1;
 			}
@@ -2070,25 +2082,28 @@
 			// paste any RLE snippets
 			view.pasteRLEList();
 
-			// add to the strict volatility frame if computing strict volatility
-			if (computeStrict && p < period) {
-				currentFrame = frames[p];
-				f = 0;
-				for (cy = extent.bottomY; cy <= extent.topY; cy += 1) {
-					colourRow = this.colourGrid[cy];
-					for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
-						if (colourRow[cx] >= aliveStart) {
-							currentFrame[f >> 3] |= (1 << (f & 7));
+			// for alternating rules skip odd generations
+			if (!(this.altSpecified && ((this.counter & 1) !== 0))) {
+				// add to the strict volatility frame if computing strict volatility
+				if (computeStrict && p < period) {
+					currentFrame = frames[p];
+					f = 0;
+					for (cy = extent.bottomY; cy <= extent.topY; cy += 1) {
+						colourRow = this.colourGrid[cy];
+						for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
+							if (colourRow[cx] >= aliveStart) {
+								currentFrame[f >> 3] |= (1 << (f & 7));
+							}
+							f += 1;
 						}
-						f += 1;
 					}
 				}
+	
+				// compute the hash in slow mode
+				this.getHash(box, false);
+				this.bornList[i + p] = this.births;
+				this.diedList[i + p] = this.deaths;
 			}
-
-			// compute the hash in slow mode
-			this.getHash(box, false);
-			this.bornList[i + p] = this.births;
-			this.diedList[i + p] = this.deaths;
 		}
 
 		// compute strict volatility
