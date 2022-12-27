@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 806,
+		/** @const {number} */ versionBuild : 810,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1794,6 +1794,9 @@
 
 		// strict volatility toggle
 		this.identifyStrictToggle = null;
+
+		// save button for identify cell map
+		this.identifySaveCellMapButton = null;
 
 		// infobar button
 		this.infoBarButton = null;
@@ -3935,9 +3938,9 @@
 		this.helpVariableCache = [];
 	};
 
-	// capture screenshot and display in screenshot window
+	// download screenshot
 	View.prototype.captureScreenShot = function(me) {
-		// capture screenshot
+		// create a link
 		var link = document.createElement("a");
 
 		// make the link point to the image
@@ -3950,6 +3953,27 @@
 
 		// notify that image captured
 		me.menuManager.notification.notify("Image Saved", 15, 300, 15, true);
+	};
+
+	// download cell period map
+	View.prototype.downloadCellPeriodMap = function(me) {
+		// create a link
+		if (me.lastIdentifyType === "none" || me.lastIdentifyType === "Empty") {
+			me.menuManager.notification.notify("No Cell Map", 15, 300, 15, true);
+		} else {
+			var link = document.createElement("a");
+
+			// make the link point to the image
+			link.href = me.engine.cellPeriodCanvas.toDataURL("image/png");
+			link.download = "cellmap.png";
+			link.click();
+	
+			// remove the new link
+			link.remove();
+	
+			// notify that image captured
+			me.menuManager.notification.notify("Cell Map Saved", 15, 300, 15, true);
+		}
 	};
 
 	// copy pattern to grid position
@@ -5071,6 +5095,9 @@
 
 		// cell period map toggle
 		this.identifyStrictToggle.setY(y - 48 + 45);
+
+		// save cell period map button
+		this.identifySaveCellMapButton.setY(y - 48 + 90);
 
 		// type
 		this.identifyTypeLabel.setPosition(Menu.north, x, y);
@@ -6327,11 +6354,12 @@
 		}
 
 		// identify close button
-		shown = hide || !this.resultsDisplayed || (this.lastIdentifyType === "Empty") || (this.lastIdentifyType === "none");
-		this.identifyCloseButton.deleted = hide || !this.resultsDisplayed;
+		shown = hide || !this.resultsDisplayed || (this.lastIdentifyType === "Empty") || (this.lastIdentifyType === "none") || settingsMenuOpen;
+		this.identifyCloseButton.deleted = hide || !this.resultsDisplayed || settingsMenuOpen;
 
-		// identify cell period display
-		this.identifyStrictToggle.deleted = hide || !this.resultsDisplayed || this.engine.cellPeriod === null;
+		// identify cell period display and save buttons
+		this.identifyStrictToggle.deleted = hide || !this.resultsDisplayed || this.engine.cellPeriod === null || settingsMenuOpen;
+		this.identifySaveCellMapButton.deleted = hide || !this.resultsDisplayed || this.engine.cellPeriod === null || settingsMenuOpen;
 
 		// identify results
 		shown = shown || this.periodMapDisplayed;
@@ -11522,6 +11550,21 @@
 		me.resultsDisplayed = false;
 	};
 
+	// identify save cell map button
+	View.prototype.identifySavePressed = function(me) {
+		me.downloadCellPeriodMap(me);
+	};
+
+	// display last identify results
+	View.prototype.displayLastIdentifyResults = function(me) {
+		// check if there are results
+		if (me.lastIdentifyType === "Empty" || me.lastIdentifyType === "none" || me.lastIdentifyType === "") {
+			me.menuManager.notification.notify("No Identify Results", 15, 120, 15, false);
+		} else {
+			me.resultsDisplayed = true;
+		}
+	};
+
 	// graph close button
 	View.prototype.graphClosePressed = function(me) {
 		me.popGraph = false;
@@ -14006,6 +14049,9 @@
 					me.menuManager.notification.notify("Identifying...", 15, 216000, 15, false);
 				}
 
+				// set last zoom box to the same as current generation
+				me.engine.lastZoomBox.set(me.engine.zoomBox);
+
 				// create undo point
 				me.afterEdit("");
 			}
@@ -15712,6 +15758,11 @@
 		this.identifyStrictToggle = this.viewMenu.addListItem(this.toggleCellPeriodMap, Menu.northEast, -40, 45, 40, 40, ["Map"], [this.periodMapDisplayed], Menu.multi);
 		this.identifyStrictToggle.toolTip = ["toggle cell period map [D]"];
 		this.identifyStrictToggle.setFont("15px Arial");
+
+		// identify save cell period map
+		this.identifySaveCellMapButton = this.viewMenu.addButtonItem(this.identifySavePressed, Menu.northEast, -40, 45, 40, 40, "Sav");
+		this.identifySaveCellMapButton.toolTip = "download cell period map [Shift D]";
+		this.identifySaveCellMapButton.setFont("15px Arial");
 
 		// graph close button
 		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -40, 45, 40, 40, "X");

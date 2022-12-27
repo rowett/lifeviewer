@@ -371,6 +371,17 @@
 		// view
 		this.view = view;
 
+		// canvas for cell period map
+		this.cellPeriodCanvas = document.createElement("canvas");
+		this.cellPeriodCanvas.width = 1;
+		this.cellPeriodCanvas.height = 1;
+		this.cellPeriodContext = this.cellPeriodCanvas.getContext("2d");
+		this.cellPeriodImage = new Image();
+		this.cellPeriodRGB = [];
+		this.cellPeriodNumCols = 0;
+		this.cellPeriodCellSize = 8;
+		this.cellBorderSize = 1;
+
 		// last computed strict volatility
 		/** @type {string} */ this.strictVol = "";
 
@@ -380,7 +391,7 @@
 		this.cellPeriodHeight = 0;
 
 		// oscillator population subperiod
-		this.popSubPeriod = null;
+		/** @type {Uint16Array} */ this.popSubPeriod = null;
 
 		// oscillator population total
 		/** @type {number} */ this.popTotal = 0;
@@ -663,6 +674,9 @@
 
 		// zoom bounding box
 		this.zoomBox = null;
+
+		// last zoom bounding box
+		this.lastZoomBox = null;
 
 		// alive cell bounding box for HROT
 		this.HROTBox = null;
@@ -1258,7 +1272,7 @@
 				this.boxList = this.allocator.allocate(Uint32, 2 * LifeConstants.maxOscillatorGens, "Life.boxList");
 				this.nextList = this.allocator.allocate(Int32, LifeConstants.maxOscillatorGens, "Life.nextList");
 				this.countList = Array.matrix(Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
-				if (this.multiNumStates > 2) {
+				if (this.multiNumStates > 2 || this.isRuleTree) {
 					this.initList = Array.matrix(Uint8, this.height, this.width, 0, this.allocator, "Life.initList");
 				}
 				this.firstCount = true;
@@ -1492,7 +1506,7 @@
 	};
 
 	// get hash from pattern
-	Life.prototype.getHash = function(box, fast) {
+	Life.prototype.getHash = function(box, /** @type {boolean} */ fast) {
 		var /** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = box.leftX,
@@ -1509,6 +1523,8 @@
 			/** @type {number} */ countS = 0,
 			/** @type {number} */ countW = 0,
 			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
+			/** @type {number} */ hashX = 0,
+			/** @type {number} */ hashY = 0,
 			colourGrid = this.colourGrid,
 			colourRow = null,
 			countList = this.countList,
@@ -1516,7 +1532,9 @@
 			initList = this.initList,
 			initRow = null,
 			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
-			hashBox = this.hashBox;
+			hashBox = this.hashBox,
+			zoomBox = (this.isHROT ? this.HROTBox : this.zoomBox),
+			lastZoomBox = this.lastZoomBox;
 
 		// check for PCA, RuleTree or Super rules
 		if (this.isPCA || this.isRuleTree || this.isSuper) {
@@ -1539,16 +1557,47 @@
 		if (top > hashBox.topY) {
 			hashBox.topY = top;
 		}
+		hashX = x;
+		hashY = y;
+
+		// only check the pattern extent
+		if (x < zoomBox.leftX) {
+			x = zoomBox.leftX;
+		}
+		if (y < zoomBox.bottomY) {
+			y = zoomBox.bottomY;
+		}
+		if (right > zoomBox.rightX) {
+			right = zoomBox.rightX;
+		}
+		if (top > zoomBox.topY) {
+			top = zoomBox.topY;
+		}
+
+		// merge with previous generate extent
+		if (lastZoomBox.leftX < x) {
+			x = lastZoomBox.leftX;
+		}
+		if (lastZoomBox.bottomY < y) {
+			y = lastZoomBox.bottomY;
+		}
+		if (lastZoomBox.rightX > right) {
+			right = lastZoomBox.rightX;
+		}
+		if (lastZoomBox.topY > top) {
+			top = lastZoomBox.topY;
+		}
+		lastZoomBox.set(zoomBox);
 
 		// create a hash from every alive cell
 		for (cy = y; cy <= top; cy += 1) {
-			yshift = cy - y;
+			yshift = cy - hashY;
 			colourRow = colourGrid[cy];
 			if (twoState) {
 				for (cx = x; cx <= right; cx += 1) {
 					if (colourRow[cx] >= aliveStart) {
 						hash = (hash * factor) ^ yshift;
-						hash = (hash * factor) ^ (cx - x);
+						hash = (hash * factor) ^ (cx - hashX);
 					}
 				}
 			} else {
@@ -1556,7 +1605,7 @@
 					for (cx = x; cx <= right; cx += 1) {
 						if ((colourRow[cx] & 1) === 1) {
 							hash = (hash * factor) ^ yshift;
-							hash = (hash * factor) ^ (cx - x);
+							hash = (hash * factor) ^ (cx - hashX);
 						}
 					}
 				} else {
@@ -1566,7 +1615,7 @@
 						if (state > this.historyStates) {
 							state -= this.historyStates;
 							hash = (hash * factor) ^ yshift;
-							hash = (hash * factor) ^ (cx - x);
+							hash = (hash * factor) ^ (cx - hashX);
 							hash = (hash * factor) ^ state;
 						}
 					}
@@ -1576,18 +1625,18 @@
 
 		// update count if not fast mode
 		if (!fast) {
-			for (cy = hashBox.bottomY; cy <= hashBox.topY; cy += 1) {
+			for (cy = y; cy <= top; cy += 1) {
 				colourRow = colourGrid[cy];
 				countRow = countList[cy];
 				if (twoState) {
 					if (this.firstCount) {
-						for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+						for (cx = x; cx <= right; cx += 1) {
 							if (colourRow[cx] >= aliveStart) {
 								countRow[cx] = LifeConstants.cellWasAlive;
 							}
 						}
 					} else {
-						for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+						for (cx = x; cx <= right; cx += 1) {
 							if (colourRow[cx] >= aliveStart) {
 								// update count
 								if (countRow[cx] === LifeConstants.cellWasDead) {
@@ -1605,7 +1654,7 @@
 					if (this.isPCA) {
 						// handle sub-cells
 						if (this.firstCount) {
-							for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+							for (cx = x; cx <= right; cx += 1) {
 								// get the 4 sub-cell states
 								state = colourRow[cx];
 								if (state > this.historyStates) {
@@ -1642,7 +1691,7 @@
 								countRow[cx] = countN | (countE << 2) | (countS << 4) | (countW << 6);
 							}
 						} else {
-							for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+							for (cx = x; cx <= right; cx += 1) {
 								// get the 4 sub-cell counts
 								count = countRow[cx];
 
@@ -1717,7 +1766,7 @@
 					} else {
 						if (this.isSuper) {
 							initRow = initList[cy];
-							for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+							for (cx = x; cx <= right; cx += 1) {
 								if (this.firstCount) {
 									initRow[cx] = colourRow[cx] & 1;
 									if (colourRow[cx] & 1) {
@@ -1744,7 +1793,7 @@
 						} else {
 							// multi-state
 							initRow = initList[cy];
-							for (cx = hashBox.leftX; cx <= hashBox.rightX; cx += 1) {
+							for (cx = x; cx <= right; cx += 1) {
 								if (this.firstCount) {
 									initRow[cx] = colourRow[cx];
 									if (colourRow[cx] > this.historyStates) {
@@ -1905,46 +1954,58 @@
 		return result;
 	};
 
-	// draw cell period map
-	Life.prototype.drawCellPeriodMap = function(view) {
-		var	/** @type {number} */ x = 0,
+	// create cell period map
+	Life.prototype.createCellPeriodMap = function() {
+		var	/** @type {number} */ numCols = 0,
+			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ row = 0,
 			/** @type {number} */ p = 0,
-			/** @type {Array} */ periodCols = [],
-			ctx = this.context,
-			/** @type {number} */ leftX = 0,
-			/** @type {number} */ bottomY = 0,
-			/** @type {number} */ cellWidth = 4,
-			/** @type {number} */ cellHeight = 4,
-			/** @type {number} */ width = 0,
-			/** @type {number} */ height = 0,
+			/** @type {number} */ s = 0,
 			/** @type {number} */ hue = 0,
-			/** @type {number} */ numCols = 0,
-			/** @type {number} */ border = 1,
-			/** @type {number} */ legendWidth = 50;
-
-		// compute required cell width and height
-		width = this.displayWidth - 90;
-		height = this.displayHeight - 180;
-		cellWidth = (width / (this.cellPeriodWidth + border + border)) | 0;
-		cellHeight = (height / (this.cellPeriodHeight + border + border)) | 0;
-		if (cellWidth < cellHeight) {
-			cellHeight = cellWidth;
+			/** @type {number} */ red = 0,
+			/** @type {number} */ green = 0,
+			/** @type {number} */ blue = 0,
+			/** @type {string} */ rgbString = "",
+			/** @type {number} */ pixCol = 0,
+			/** @type {number} */ whiteCol = -1,
+			/** @type {number} */ cellBorderSize = this.cellBorderSize,
+			/** @type {number} */ cellSize = this.cellPeriodCellSize,
+			/** @type {Array} */ periodCols = [],
+			/** @type {boolean} */ drawGrid = false,
+			data = null,
+			/** @type {Uint32Array} */ data32 = null,
+			/** @type {number} */ legendWidth = 50,
+			/** @type {number} */ width = this.displayWidth - (legendWidth + legendWidth + 20),
+			/** @type {number} */ height = this.displayHeight - 180;
+		
+		// determine the image scale to select cell borders
+		x = width / ((this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize);
+		y = height / ((this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize);
+		if (x > y) {
+			s = y;
 		} else {
-			cellWidth = cellHeight;
+			s = x;
 		}
-		width = cellWidth * (this.cellPeriodWidth + border + border);
-		height = cellHeight * (this.cellPeriodHeight + border + border);
-		leftX = (this.displayWidth - width) >> 1;
-		bottomY = (this.displayHeight - height) >> 1;
 
-		// draw a bordered box
-		ctx.globalAlpha = 1;
-		ctx.lineWidth = 2;
-		ctx.strokeStyle = "white";
-		ctx.strokeRect(leftX - 1, bottomY - 1, width + 2, height + 2);
-		ctx.fillStyle = "rgb(238,238,238)";
-		ctx.fillRect(leftX, bottomY, width, height);
+		// attempt to make cells integer width
+		if (s > 1) {
+			s |= 0;
+		} else {
+			// convert to 1 / power of 2
+			x = 0.5;
+			while (x > s) {
+				x /= 2;
+			}
+			s = x;
+		}
+
+		// switch on grid if scale > 4
+		if (s >= 1) {
+			drawGrid = true;
+		}
 
 		// count the subperiods excluding period 1 and oscillator period
 		numCols = 0;
@@ -1953,52 +2014,157 @@
 				numCols += 1;
 			}
 		}
+		this.cellPeriodNumCols = numCols;
 
 		// make colours for the subperiods excluding period 1 and oscillator period
 		y = 0;
 		for (x = 2; x < this.popSubPeriod.length - 1; x++) {
 			if (this.popSubPeriod[x] > 0) {
 				hue = Math.floor(360 * (y / numCols));
-				periodCols[x] = "hsl(" + hue + ",100%,70%)";
+				if (y & 1) {
+					periodCols[x] = "hsl(" + hue + ",100%,70%)";
+				} else {
+					periodCols[x] = "hsl(" + hue + ",100%,40%)";
+				}
 				y += 1;
 			}
 		}
 
 		// set colours for period 1 and oscillator period
+		periodCols[0] = "rgb(238,238,238)";
 		periodCols[1] = "rgb(96,96,96)";
 		periodCols[this.popSubPeriod.length - 1] = "rgb(153,153,153)";
+
+		// convert colours into RGB
+		for (x = 0; x < this.popSubPeriod.length; x += 1) {
+			this.cellPeriodContext.fillStyle = periodCols[x];
+			// @ts-ignore
+			rgbString = this.cellPeriodContext.fillStyle;
+			red = parseInt(rgbString.substring(1, 3), 16);
+			green = parseInt(rgbString.substring(3, 5), 16);
+			blue = parseInt(rgbString.substring(5, 7), 16);
+			this.cellPeriodRGB[x] = (255 << 24) | (blue << 16) | (green << 8) | red;
+		}
+
+		// resize the image and canvas to fix the period map with "cellSize" cells
+		this.cellPeriodImage.width = cellSize * (this.cellPeriodWidth + cellBorderSize + cellBorderSize);
+		this.cellPeriodImage.height = cellSize * (this.cellPeriodHeight + cellBorderSize + cellBorderSize);
+		this.cellPeriodCanvas.width = cellSize * (this.cellPeriodWidth + cellBorderSize + cellBorderSize);
+		this.cellPeriodCanvas.height = cellSize * (this.cellPeriodHeight + cellBorderSize + cellBorderSize);
+
+		// clear the canvas
+		this.cellPeriodContext.fillStyle = "rgb(238,238,238)";
+		this.cellPeriodContext.fillRect(0, 0, this.cellPeriodCanvas.width, this.cellPeriodCanvas.height);
+
+		// get the pixel data
+		data = this.cellPeriodContext.getImageData(0, 0, this.cellPeriodCanvas.width, this.cellPeriodCanvas.height);
+		data32 = new Uint32Array(data.data.buffer);
 
 		// draw the cells
 		for (y = 0; y < this.cellPeriodHeight; y += 1) {
 			for (x = 0; x < this.cellPeriodWidth; x += 1) {
 				p = this.cellPeriod[y * this.cellPeriodWidth + x];
-				if (p > 0) {
-					ctx.fillStyle = periodCols[p];
-					ctx.fillRect(leftX + ((x + border) * cellWidth) + border, bottomY + ((y + border) * cellHeight), cellWidth | 0, cellHeight | 0);
+				pixCol = this.cellPeriodRGB[p];
+				for (cy = 0; cy < cellSize; cy += 1) {
+					row = ((y + cellBorderSize) * cellSize + cy) * (this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize + ((x + cellBorderSize) * cellSize);
+					for (cx = 0; cx < cellSize; cx += 1) {
+						data32[row + cx] = pixCol;
+					}
 				}
 			}
 		}
 
-		// draw cell grid if large enough cells
-		if (cellWidth > 5) {
-			ctx.strokeStyle = "white";
-			ctx.lineWidth = 1;
-			ctx.beginPath();
-			for (y = 0; y < this.cellPeriodHeight + border + border; y += 1) {
-				ctx.moveTo(0.5 + leftX, 0.5 + bottomY + y * cellHeight);
-				ctx.lineTo(0.5 + leftX + (this.cellPeriodWidth + border + border) * cellWidth, 0.5 + bottomY + y * cellHeight);
+		// draw the grid if required
+		if (drawGrid) {
+			for (y = -1; y <= this.cellPeriodHeight; y += 1) {
+				row = ((y + cellBorderSize) * cellSize) * (this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize;
+				for (x = 0; x < (this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize; x += 1) {
+					data32[row + x] = whiteCol;
+				}
 			}
-			ctx.stroke();
 
-			ctx.beginPath();
-			for (x = 0; x < this.cellPeriodWidth + border + border; x += 1) {
-				ctx.moveTo(0.5 + leftX + x * cellWidth, 0.5 + bottomY);
-				ctx.lineTo(0.5 + leftX + x * cellWidth, 0.5 + bottomY + (this.cellPeriodHeight + border + border) * cellHeight);
+			for (x = -1; x <= this.cellPeriodWidth; x += 1) {
+				for (y = 0; y < (this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize; y += 1) {
+					data32[(y * (this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize) + ((x + cellBorderSize + cellBorderSize) * cellSize)] = whiteCol;
+				}
 			}
-			ctx.stroke();
 		}
 
+		// convert RGB array
+		for (x = 0; x < this.popSubPeriod.length; x += 1) {
+			pixCol = this.cellPeriodRGB[x];
+			red = pixCol & 255;
+			green = (pixCol >> 8) & 255;
+			blue = (pixCol >> 16) & 255;
+			this.cellPeriodRGB[x] = (red << 16) | (green << 8) | blue;
+		}
+
+		// update the image
+		this.cellPeriodContext.putImageData(data, 0, 0);
+		this.cellPeriodImage.src = this.cellPeriodCanvas.toDataURL("image/png");
+	};
+
+	// draw cell period map
+	Life.prototype.drawCellPeriodMap = function() {
+		var	/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ p = 0,
+			/** @type {number} */ s = 0,
+			/** @type {number} */ legendWidth = 50,
+			/** @type {number} */ width = this.displayWidth - (legendWidth + legendWidth + 20),
+			/** @type {number} */ height = this.displayHeight - 180,
+			/** @type {number} */ numCols = this.cellPeriodNumCols,
+			/** @type {number} */ cellSize = this.cellPeriodCellSize,
+			/** @type {number} */ cellBorderSize = this.cellBorderSize,
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ bottomY = 0,
+			ctx = this.context;
+
+		// scale the image to fit
+		x = width / ((this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize);
+		y = height / ((this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize);
+		if (x > y) {
+			s = y;
+		} else {
+			s = x;
+		}
+
+		// attempt to make cells integer width
+		if (s > 1) {
+			s |= 0;
+		} else {
+			// convert to 1 / power of 2
+			x = 0.5;
+			while (x > s) {
+				x /= 2;
+			}
+			s = x;
+		}
+
+		// recompute size based on scale factor
+		x = ((this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize) * s;
+		y = ((this.cellPeriodHeight + cellBorderSize + cellBorderSize)  * cellSize) * s;
+
+		// render the map centered on the display
+		ctx.save();
+		leftX = ((this.displayWidth - x) / 2);
+		bottomY = ((this.displayHeight - y) / 2);
+		ctx.translate(leftX, bottomY);
+		ctx.scale(s, s);
+
+		// use image smoothing for scales below 1 pixel per cell
+		if (s < 1) {
+			ctx.imageSmoothingEnabled = true;
+		} else {
+			ctx.imageSmoothingEnabled = false;
+		}
+		ctx.drawImage(this.cellPeriodImage, 0, 0);
+		ctx.imageSmoothingEnabled = false;
+		ctx.restore();
+
 		// draw the legend
+		leftX = 55;
+		bottomY = 180;
 		ctx.font = "11px Arial";
 		if (this.popSubPeriod[this.popSubPeriod.length - 1] === 0) {
 			numCols -= 1;
@@ -2010,6 +2176,7 @@
 		// draw the legend box
 		ctx.lineWidth = 2;
 		ctx.strokeStyle = "white";
+		bottomY = (this.displayHeight - (numCols + 2) * 15) / 2;
 		ctx.strokeRect(leftX - legendWidth - 1, bottomY - 1, legendWidth - 2 + 2, (numCols + 2) * 15 + 2);
 		ctx.fillStyle = "rgb(238,238,238)";
 		ctx.fillRect(leftX - legendWidth, bottomY, legendWidth - 2, (numCols + 2) * 15);
@@ -2022,7 +2189,7 @@
 				// draw colour
 				ctx.fillStyle = "black";
 				ctx.fillRect(leftX - legendWidth + 2, bottomY + y * 15 + 2, 10, 10);
-				ctx.fillStyle = periodCols[x];
+				ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[x].toString(16)).slice(-6);
 				ctx.fillRect(leftX - legendWidth, bottomY + y * 15, 10, 10);
 				
 				// draw period
@@ -2041,9 +2208,11 @@
 		var	/** @type {number} */ p = 0,
 			/** @type {number} */ f = 0,
 			/** @type {number} */ j = 0,
+			/** @type {number} */ bit = 0,
 			/** @type {number} */ thisState = 0,
 			/** @type {boolean} */ computeStrict = false,
 			/** @type {Array} */ frames = null,
+			/** @type {Uint8Array} */ occupiedFrame = null,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
 			/** @type {Uint8Array} */ colourRow = null,
@@ -2057,6 +2226,7 @@
 			/** @type {boolean} */ anyAlive = false,
 			/** @type {boolean} */ flag = false,
 			/** @type {number} */ popTotal = 0,
+			/** @type {number} */ row = 0,
 			extent = null;
 
 		// determine whether period is small enough to compute strict volatility (since it can take a lot of RAM)
@@ -2069,12 +2239,14 @@
 			// allocate memory for each generation in the period (allocation is one bit per cell)
 			frames = Array.matrix(Uint8, period, ((boxWidth * boxHeight) >> 3) + 1, 0, this.allocator, "Life.strictFrames");
 			cellPeriod = new Uint16Array(boxWidth * boxHeight);
+			occupiedFrame = new Uint8Array(((boxWidth * boxHeight) >> 3) + 1);
 			computeStrict = true;
 		}
 
 		this.firstCount = true;
 		this.countList.whole.fill(LifeConstants.cellWasDead);
-		for (p = 0; p < period * 2; p += 1) {   // TBD is +1 needed?
+
+		for (p = 0; p < period * 2; p += 1) {
 			// compute the next generation
 			this.nextGeneration(false, view.noHistory, view.graphDisabled, view.identify, view);
 			this.convertToPensTile();
@@ -2097,6 +2269,11 @@
 							f += 1;
 						}
 					}
+
+					// merge current frame with occupied frame
+					for (cx = 0; cx < occupiedFrame.length; cx += 1) {
+						occupiedFrame[cx] |= currentFrame[cx];
+					}
 				}
 	
 				// compute the hash in slow mode
@@ -2110,24 +2287,27 @@
 		if (computeStrict) {
 			// calculate the period of each cell
 			for (cy = 0; cy < boxHeight; cy += 1) {
+				row = cy * boxWidth;
 				for (cx = 0; cx < boxWidth; cx += 1) {
 					anyAlive = false;
 
-					// check the cell for every generation of the period at this location
-					for (p = 0; p < period; p += 1) {
-						j = cy * boxWidth + cx;
-						thisState = frames[p][j >> 3] & (1 << (j & 7));
-						if (thisState) {
-							popPhase[p] += 1;
-							anyAlive = true;
+					// check if the cell was alive in any generation
+					j = row + cx;
+					bit = (1 << (j & 7));
+					if (occupiedFrame[j >> 3] & bit) {
+						// check the cell for every generation of the period at this location
+						for (p = 0; p < period; p += 1) {
+							thisState = frames[p][j >> 3] & bit;
+							if (thisState) {
+								popPhase[p] += 1;
+								anyAlive = true;
+							}
 						}
 					}
 
 					if (anyAlive) {
-						cellPeriod[cy * boxWidth + cx] = period;
+						cellPeriod[j] = period;
 						popTotal += 1;
-					} else {
-						cellPeriod[cy * boxWidth + cx] = 0;
 					}
 				}
 			}
@@ -2136,18 +2316,20 @@
 			for (f = 1; f <= (period / 2); f += 1) {
 				if (period % f) continue;
 				for (cy = 0; cy < boxHeight; cy += 1) {
+					row = cy * boxWidth;
 					for (cx = 0; cx < boxWidth; cx += 1) {
-						if (cellPeriod[cy * boxWidth + cx] === period) {
+						j = row + cx;
+						if (cellPeriod[j] === period) {
 							flag = true;
+							bit = (1 << (j & 7));
 							for (p = 0; p <= (period - f - 1); p += 1) {
-								j = cy * boxWidth + cx;
-								if ((frames[p][j >> 3] & (1 << (j & 7))) !== (frames[p + f][j >> 3] & (1 << (j & 7)))) {
+								if ((frames[p][j >> 3] & bit) !== (frames[p + f][j >> 3] & bit)) {
 									flag = false;
 									break;
 								}
 							}
 							if (flag) {
-								cellPeriod[cy * boxWidth + cx] = f;
+								cellPeriod[j] = f;
 							}
 						}
 					}
@@ -2156,8 +2338,9 @@
 
 			// count up the subperiod populations
 			for (cy = 0; cy < boxHeight; cy += 1) {
+				row = cy * boxWidth;
 				for (cx = 0; cx < boxWidth; cx += 1) {
-					p = cellPeriod[cy * boxWidth + cx];
+					p = cellPeriod[row + cx];
 					if (p) {
 						popSubPeriod[p] += 1;
 					}
@@ -2172,6 +2355,9 @@
 			this.cellPeriod = cellPeriod;
 			this.cellPeriodWidth = boxWidth;
 			this.cellPeriodHeight = boxHeight;
+
+			// create the cell period map
+			this.createCellPeriodMap();
 		}
 	};
 
@@ -2603,7 +2789,6 @@
 
 		    // result
 		    result = [];
-
 
 		// clear last strict volatility
 		this.strictVol = "";
@@ -7021,6 +7206,7 @@
 
 		// initialise the bounding boxes
 		this.zoomBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
+		this.lastZoomBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
 
 		// initial bounding box for HROT alive cells
 		this.HROTBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);

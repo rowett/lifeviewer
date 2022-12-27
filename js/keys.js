@@ -677,8 +677,13 @@
 					me.statesToggle.current = me.toggleStates([!me.showStates], true, me);
 					me.menuManager.notification.notify("States Display " + (me.showStates ? "On" : "Off"), 15, 80, 15, true);
 				} else {
-					// toggle cell period map
-					me.identifyStrictToggle.current = me.toggleCellPeriodMap([!me.periodMapDisplayed], true, me);
+					// check for shift
+					if (event.shiftKey) {
+						me.downloadCellPeriodMap(me);
+					} else {
+						// toggle cell period map
+						me.identifyStrictToggle.current = me.toggleCellPeriodMap([!me.periodMapDisplayed], true, me);
+					}
 				}
 				break;
 
@@ -1988,7 +1993,11 @@
 					if (event.ctrlKey) {
 						me.fastIdentifyPressed(me);
 					} else {
-						me.identifyPressed(me);
+						if (event.shiftKey) {
+							me.displayLastIdentifyResults(me);
+						} else {
+							me.identifyPressed(me);
+						}
 					}
 				}
 				break;

@@ -842,6 +842,7 @@
 			y = this.renderHelpLine(view, "Alt W", "toggle rainbow mode", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "D", "toggle cell period map", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift D", "download cell period map", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// pattern controls
@@ -857,6 +858,7 @@
 		y = this.renderHelpLine(view, "Ctrl+Alt Z", "randomize pattern only", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F6", "toggle oscillator and spaceship identification", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl F6", "fast identification", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift F6", "display last identification result", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// clipboard controls

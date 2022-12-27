@@ -1,3 +1,19 @@
+Build 810
+- improved cell and border rendering for cell map display
+
+Build 809
+- improved cell period map display
+- hotkey Shift-D to download cell period map
+- fixed crash with Identify and 2-state RuleTable rules
+
+Build 808
+- draw cell period maps that are less than 1 cell per pixel
+- performance improvements when computing strict volatility
+
+Build 807
+- hotkey Shift-F6 will now display any previous Identify result
+- hide Identify controls when Settings menu open
+
 Build 806
 - fixed cell period map legend for strict volatility 1
 - fixed cell period map legend text positioning
