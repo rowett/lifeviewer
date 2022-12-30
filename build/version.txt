@@ -1,3 +1,12 @@
+Build 813
+- added cell period table to Identify results for Oscillators with strict volatility
+
+Build 812
+- use a smaller cell size for large cell period maps
+
+Build 811
+- use larger zoom for scales < 1 for cell map display
+
 Build 810
 - improved cell and border rendering for cell map display
 

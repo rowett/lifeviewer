@@ -371,6 +371,9 @@
 		// view
 		this.view = view;
 
+		// image for cell icons
+		this.cellIconImage = new Image();
+
 		// canvas for cell period map
 		this.cellPeriodCanvas = document.createElement("canvas");
 		this.cellPeriodCanvas.width = 1;
@@ -1574,7 +1577,7 @@
 			top = zoomBox.topY;
 		}
 
-		// merge with previous generate extent
+		// merge with previous generation extent
 		if (lastZoomBox.leftX < x) {
 			x = lastZoomBox.leftX;
 		}
@@ -1972,15 +1975,20 @@
 			/** @type {number} */ pixCol = 0,
 			/** @type {number} */ whiteCol = -1,
 			/** @type {number} */ cellBorderSize = this.cellBorderSize,
-			/** @type {number} */ cellSize = this.cellPeriodCellSize,
+			/** @type {number} */ cellSize = 0,
 			/** @type {Array} */ periodCols = [],
 			/** @type {boolean} */ drawGrid = false,
 			data = null,
 			/** @type {Uint32Array} */ data32 = null,
+			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
 			/** @type {number} */ legendWidth = 50,
-			/** @type {number} */ width = this.displayWidth - (legendWidth + legendWidth + 20),
-			/** @type {number} */ height = this.displayHeight - 180;
+			/** @type {number} */ width = this.displayWidth - (displayScale * (legendWidth + legendWidth + 20)),
+			/** @type {number} */ height = this.displayHeight - (displayScale * 90);
 		
+		// default to large cell size
+		this.cellPeriodCellSize = 8;
+		cellSize = this.cellPeriodCellSize;
+
 		// determine the image scale to select cell borders
 		x = width / ((this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize);
 		y = height / ((this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize);
@@ -1990,21 +1998,14 @@
 			s = x;
 		}
 
-		// attempt to make cells integer width
-		if (s > 1) {
-			s |= 0;
-		} else {
-			// convert to 1 / power of 2
-			x = 0.5;
-			while (x > s) {
-				x /= 2;
-			}
-			s = x;
-		}
-
-		// switch on grid if scale > 4
+		// make cells integer width and enable grid if scale > 1
 		if (s >= 1) {
+			s |= 0;
 			drawGrid = true;
+		} else {
+			// switch to smaller cell size
+			this.cellPeriodCellSize = 2;
+			cellSize = 2;
 		}
 
 		// count the subperiods excluding period 1 and oscillator period
@@ -2104,6 +2105,103 @@
 		this.cellPeriodImage.src = this.cellPeriodCanvas.toDataURL("image/png");
 	};
 
+	// draw a right justified string
+	Life.prototype.drawRightString = function(/** @type {string} */ txt, /** @type {number} */ fieldWidth, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ offset) {
+		var	/** @type {number} */ width = 0,
+			ctx = this.context;
+
+		// measure the text
+		width = ctx.measureText(txt).width;
+
+		// draw the text right aligned
+		ctx.fillText(txt, x + fieldWidth - width + offset, y + offset);
+
+		// return next field start
+		return x + fieldWidth;
+	};
+
+	// draw cell period table
+	Life.prototype.drawCellPeriodTable = function() {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ value = 0,
+			/** @type {number} */ offset = 2,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
+			/** @type {number} */ y = 95 * displayScale,
+			/** @type {number} */ fieldWidth = 80 * displayScale,
+			/** @type {number} */ rowHeight = 18 * displayScale,
+			/** @type {number} */ boxSize = 10 * displayScale,
+			/** @type {number} */ numCols = this.cellPeriodNumCols,
+			/** @type {number} */ leftX = (this.displayWidth - 4 * fieldWidth + 4) >> 1,
+			ctx = this.context;
+
+		// get number of subperiods
+		if (this.popSubPeriod[this.popSubPeriod.length - 1] === 0) {
+			numCols -= 1;
+		}
+		if (this.popSubPeriod[1] === 0) {
+			numCols -= 1;
+		}
+
+		// draw background
+		ctx.fillStyle = "black";
+		ctx.globalAlpha = 0.5;
+		ctx.fillRect(leftX, y - (rowHeight >> 1), 4 * fieldWidth + 4, (numCols + 3) * rowHeight);
+
+		// draw shadow and then text
+		ctx.font = ((15 * displayScale) | 0) + "px Arial";
+		ctx.globalAlpha = 1;
+		ctx.fillStyle = "black";
+		for (j = 0; j < 2; j += 1) {
+			// draw the table header
+			x = leftX;
+			x = this.drawRightString("Period", fieldWidth, x, y, offset);
+			x = this.drawRightString("Count", fieldWidth, x, y, offset);
+			x = this.drawRightString("% Total", fieldWidth, x, y, offset);
+			x = this.drawRightString("% Rotor", fieldWidth, x, y, offset);
+			y += rowHeight;
+
+			// draw the table rows
+			for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
+				value = this.popSubPeriod[i];
+				if (value > 0) {
+					// draw row data
+					x = leftX;
+					x = this.drawRightString(String(i), fieldWidth, x, y, offset);
+					x = this.drawRightString(String(value), fieldWidth, x, y, offset);
+					x = this.drawRightString((100 * value / this.popTotal).toFixed(2) + "%", fieldWidth, x, y, offset);
+
+					if (i > 1) {
+						this.drawRightString((100 * value / this.popRotor).toFixed(2) + "%", fieldWidth, x, y, offset);
+					}
+					y += rowHeight;
+				}
+			}
+
+			// switch to drawing text
+			y = 95 * displayScale;
+			offset = 0;
+			ctx.fillStyle = "white";
+		}
+
+		// draw the legend
+		offset = ((22 * displayScale) >> 1);
+		for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
+			value = this.popSubPeriod[i];
+			if (value > 0) {
+				x = leftX;
+
+				// draw box
+				ctx.fillStyle = "black";
+				ctx.fillRect(leftX + (boxSize >> 1) + 2, y + offset + 2, boxSize, boxSize);
+				ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[i].toString(16)).slice(-6);
+				ctx.fillRect(leftX + (boxSize >> 1), y + offset, boxSize, boxSize);
+				y += rowHeight;
+			}
+		}
+	};
+
 	// draw cell period map
 	Life.prototype.drawCellPeriodMap = function() {
 		var	/** @type {number} */ x = 0,
@@ -2111,8 +2209,9 @@
 			/** @type {number} */ p = 0,
 			/** @type {number} */ s = 0,
 			/** @type {number} */ legendWidth = 50,
-			/** @type {number} */ width = this.displayWidth - (legendWidth + legendWidth + 20),
-			/** @type {number} */ height = this.displayHeight - 180,
+			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
+			/** @type {number} */ width = this.displayWidth - (displayScale * (legendWidth + legendWidth + 20)),
+			/** @type {number} */ height = this.displayHeight - (displayScale * 90),
 			/** @type {number} */ numCols = this.cellPeriodNumCols,
 			/** @type {number} */ cellSize = this.cellPeriodCellSize,
 			/** @type {number} */ cellBorderSize = this.cellBorderSize,
@@ -2129,16 +2228,9 @@
 			s = x;
 		}
 
-		// attempt to make cells integer width
-		if (s > 1) {
+		// make cells integer width if scale >= 1
+		if (s >= 1) {
 			s |= 0;
-		} else {
-			// convert to 1 / power of 2
-			x = 0.5;
-			while (x > s) {
-				x /= 2;
-			}
-			s = x;
 		}
 
 		// recompute size based on scale factor

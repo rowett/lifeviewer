@@ -12,80 +12,80 @@
 	/**
 	 * @constructor
 	 */
-	function TextAlert(appear, hold, disappear, context, menuManager) {
+	function TextAlert(/** @type {number} */ appear, /** @type {number} */ hold, /** @type {number} */ disappear, context, menuManager) {
 		// menu manager
 		this.menuManager = menuManager;
 
 		// steps for text to appear
-		this.textAppear = appear;
+		/** @type {number} */ this.textAppear = appear;
 
 		// steps to hold text
-		this.textHold = hold;
+		/** @type {number} */ this.textHold = hold;
 
 		// steps for text to disappear
-		this.textDisappear = disappear;
+		/** @type {number} */ this.textDisappear = disappear;
 
 		// current text message
-		this.message = "";
+		/** @type {string} */ this.message = "";
 
 		// priority message steps
-		this.priorityAppear = appear;
-		this.priorityHold = hold;
-		this.priorityDisappear = disappear;
+		/** @type {number} */ this.priorityAppear = appear;
+		/** @type {number} */ this.priorityHold = hold;
+		/** @type {number} */ this.priorityDisappear = disappear;
 
 		// current priority message
-		this.priorityMessage = "";
+		/** @type {string} */ this.priorityMessage = "";
 
 		// flag for pending clear used if message is reset before disappear
-		this.pendingNormalClear = false;
-		this.pendingPriorityClear = false;
+		/** @type {boolean} */ this.pendingNormalClear = false;
+		/** @type {boolean} */ this.pendingPriorityClear = false;
 
 		// drawing context
 		this.context = context;
 
 		// whether notification has background
-		this.txtBg = false;
+		/** @type {boolean} */ this.txtBg = false;
 
 		// start time for current notification
-		this.startTime = 0;
+		/** @type {number} */ this.startTime = 0;
 
 		// start time for priority notification
-		this.priorityStart = 0;
+		/** @type {number} */ this.priorityStart = 0;
 
 		// colour for notifications
-		this.colour = "rgb(32,255,255)";
+		/** @type {string} */ this.colour = "rgb(32,255,255)";
 
 		// colour for priority notifications
-		this.priorityColour = "white";
+		/** @type {string} */ this.priorityColour = "white";
 
 		// iterator for animated priority notification colour
-		this.priorityIter = 0;
+		/** @type {number} */ this.priorityIter = 0;
 
 		// whether animation required for priority notification
-		this.animate = false;
+		/** @type {boolean} */ this.animate = false;
 
 		// shadow colour for notifications
-		this.shadowColour = "black";
+		/** @type {string} */ this.shadowColour = "black";
 
 		// background colour for notifications
-		this.backgroundColour = "black";
+		/** @type {string} */ this.backgroundColour = "black";
 		
 		// whether notifications are enabled
-		this.enabled = false;
+		/** @type {boolean} */ this.enabled = false;
 
 		// default font size
-		this.defaultFontSize = 30;
+		/** @type {number} */ this.defaultFontSize = 30;
 
 		// vertical adjust for notifitions
-		this.notificationYOffset = 45;
+		/** @type {number} */ this.notificationYOffset = 45;
 
 		// scale
-		this.scale = 1;
+		/** @type {number} */ this.scale = 1;
 	}
 
 	// return whether a notification is displayed
 	TextAlert.prototype.displayed = function() {
-		var result = false;
+		var	/** @type {boolean} */ result = false;
 
 		// check if standard or priority message are displayed
 		if (this.message !== "" || this.priorityMessage !== "") {
@@ -97,7 +97,7 @@
 	};
 
 	// clear notification
-	TextAlert.prototype.clear = function(priority, immediately) {
+	TextAlert.prototype.clear = function(/** @type {boolean} */ priority, /** @type {boolean} */ immediately) {
 		if (priority) {
 			// check if priority message is displayed
 			if (this.priorityMessage !== "") {
@@ -128,7 +128,7 @@
 	};
 
 	// create notification
-	TextAlert.prototype.notify = function(message, appear, hold, disappear, priority) {
+	TextAlert.prototype.notify = function(/** @type {string} */ message, /** @type {number} */ appear, /** @type {number} */ hold, /** @type {number} */ disappear, /** @type {boolean} */ priority) {
 		// create the notification if enabled
 		if (this.enabled) {
 			// check if this is a priority message
@@ -171,10 +171,10 @@
 
 	// set animated colour for notification
 	TextAlert.prototype.setAnimatedColour = function() {
-		var dR = 0,
-			dG = 0,
-			dB = 0,
-			percent = 0;
+		var	/** @type {number} */ dR = 0,
+			/** @type {number} */ dG = 0,
+			/** @type {number} */ dB = 0,
+			/** @type {number} */ percent = 0;
 
 		if (this.priorityIter < 128) {
 			percent = this.priorityIter / 128;
@@ -190,11 +190,11 @@
 	};
 
 	// draw notification string
-	TextAlert.prototype.draw = function(message, isPriority, lineHeight) {
-		var xPos = 0,
+	TextAlert.prototype.draw = function(/** @type {string} */ message, /** @type {boolean} */ isPriority, /** @type {number} */ lineHeight) {
+		var	/** @type {number} */ xPos = 0,
 
-		    // alpha for background
-		    alpha = 0;
+			// alpha for background
+			/** @type {number} */ alpha = 0;
 
 		// compute x position to center text horizontally
 		xPos = this.context.measureText(message).width >> 1;
@@ -228,25 +228,25 @@
 	};
 
 	// update notification
-	TextAlert.prototype.updateNotification = function(message, appear, hold, disappear, start, offset, isPriority) {
-		var scaleFactor = 0,
-		    elapsedTime = 0,
-			index = 0,
+	TextAlert.prototype.updateNotification = function(/** @type {string} */ message, /** @type {number} */ appear, /** @type {number} */ hold, /** @type {number} */ disappear, /** @type {number} */ start, /** @type {number} */ offset, /** @type {boolean} */ isPriority) {
+		var	/** @type {number} */ scaleFactor = 0,
+			/** @type {number} */ elapsedTime = 0,
+			/** @type {number} */ index = 0,
 
-		    // default font size when not in thumbnail mode
-		    fontSize = this.defaultFontSize * this.scale,
+			// default font size when not in thumbnail mode
+			/** @type {number} */ fontSize = this.defaultFontSize * this.scale,
 
-		    // line height
-		    lineHeight = (this.defaultFontSize + 2) * this.scale,
+			// line height
+			/** @type {number} */ lineHeight = (this.defaultFontSize + 2) * this.scale,
 
-		    // thumbnail divisor
-		    thumbDivisor = this.menuManager.thumbnailDivisor,
+			// thumbnail divisor
+			/** @type {number} */ thumbDivisor = this.menuManager.thumbnailDivisor,
 
-		    // number of pixels from top of display
-		    fromTop = 60 * this.scale,
+			// number of pixels from top of display
+			/** @type {number} */ fromTop = 60 * this.scale,
 
-		    // flag whether to clear message
-		    clearMessage = true;
+			// flag whether to clear message
+			/** @type {boolean} */ clearMessage = true;
 
 		// check for noGUI
 		if (this.menuManager.noGUI) {
@@ -344,7 +344,7 @@
 
 	// update notification
 	TextAlert.prototype.update = function() {
-		var yScale = this.menuManager.currentMenu.yScale;
+		var	/** @type {number} */ yScale = this.menuManager.currentMenu.yScale;
 
 		// update the standard message
 		if (this.updateNotification(this.message, this.textAppear, this.textHold, this.textDisappear, this.startTime, (36 + this.notificationYOffset) * yScale, false)) {
@@ -363,11 +363,11 @@
 	/**
 	 * @constructor
 	 */
-	function Icon(name, width, height, number) {
-		this.name = name;
-		this.width = width;
-		this.height = height;
-		this.number = number;
+	function Icon(/** @type {string} */ name, /** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ number) {
+		/** @type {string} */ this.name = name;
+		/** @type {number} */ this.width = width;
+		/** @type {number} */ this.height = height;
+		/** @type {number} */ this.number = number;
 	}
 	
 	// IconManager
@@ -380,8 +380,8 @@
 
 		// save the icon image
 		this.iconsImage = iconsImage;
-		this.width = 0;
-		this.height = 0;
+		/** @type {number} */ this.width = 0;
+		/** @type {number} */ this.height = 0;
 		this.iconCanvas = null;
 		this.iconContext = null;
 		this.convertedImage = null;
@@ -391,35 +391,35 @@
 		this.iconList = [];
 
 		// whether icons need recolouring
-		this.recolour = true;
+		/** @type {boolean} */ this.recolour = true;
 
 		// recolour shade
-		this.recolourCol = 0xffffffff;
+		/** @type {number} */ this.recolourCol = 0xffffffff;
 
 		// recolour grid shade
-		this.recolourGrid = 0xffffffff;
+		/** @type {number} */ this.recolourGrid = 0xffffffff;
 
 		// shadow shade
-		this.shadowCol = 0;
+		/** @type {number} */ this.shadowCol = 0;
 
 		// greyed out shade
-		this.greyedOutCol = 0;
+		/** @type {number} */ this.greyedOutCol = 0;
 
 		// whether initialised
-		this.init = false;
+		/** @type {boolean} */ this.init = false;
 
 		// scale
-		this.scale = 1;
+		/** @type {number} */ this.scale = 1;
 	}
 
 	// set scale
-	IconManager.prototype.setScale = function(scale) {
-		this.scale = scale;
+	IconManager.prototype.setScale = function(/** @type {number} */ scale) {
+		/** @type {number} */ this.scale = scale;
 	};
 
 	// draw icon
-	IconManager.prototype.draw = function(icon, x, y, locked) {
-		var data = null,
+	IconManager.prototype.draw = function(icon, /** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ locked) {
+		var	data = null,
 			data32 = null,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
@@ -561,8 +561,11 @@
 	};
 
 	// return the named icon
-	IconManager.prototype.icon = function(name) {
-		var a, i = this.iconList, l = this.length(), result = null;
+	IconManager.prototype.icon = function(/** @type {string} */ name) {
+		var	/** @type {number} */ a,
+			i = this.iconList,
+			/** @type {number} */ l = this.length(),
+			result = null;
 
 		// search the list for the named icon
 		a = 0;
@@ -578,10 +581,10 @@
 	};
 
 	// add an icon to the list
-	IconManager.prototype.add = function(name, width, height) {
+	IconManager.prototype.add = function(/** @type {string} */ name, /** @type {number} */ width, /** @type {number} */ height) {
 		// create new icon
-		var iconNum = this.iconList.length,
-		    newIcon = new Icon(name, width, height, iconNum);
+		var	/** @type {number} */ iconNum = this.iconList.length,
+			newIcon = new Icon(name, width, height, iconNum);
 
 		// add to the list of icons
 		this.iconList[iconNum] = newIcon;

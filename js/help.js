@@ -843,6 +843,7 @@
 		}
 		y = this.renderHelpLine(view, "D", "toggle cell period map", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift D", "download cell period map", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "E", "toggle cell period table", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// pattern controls

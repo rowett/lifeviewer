@@ -669,7 +669,7 @@
 				}
 				break;
 
-			// d for toggle cell period map or toggle states display
+			// d for show cell period map or toggle states display
 			case 68:
 				// check for ctrl
 				if (event.ctrlKey) {
@@ -681,8 +681,26 @@
 					if (event.shiftKey) {
 						me.downloadCellPeriodMap(me);
 					} else {
-						// toggle cell period map
-						me.identifyStrictToggle.current = me.toggleCellPeriodMap([!me.periodMapDisplayed], true, me);
+						// show cell period map
+						if (me.lastIdentifyType === "Oscillator") {
+							if (me.periodMapDisplayed === 2) {
+								me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
+							} else {
+								me.identifyStrictToggle.current = me.toggleCellPeriodMap(2, true, me);
+							}
+						}
+					}
+				}
+				break;
+
+			// e for show cell period table
+			case 69:
+				// show cell period table
+				if (me.lastIdentifyType === "Oscillator") {
+					if (me.periodMapDisplayed === 1) {
+						me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
+					} else {
+						me.identifyStrictToggle.current = me.toggleCellPeriodMap(1, true, me);
 					}
 				}
 				break;
