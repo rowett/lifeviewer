@@ -8,7 +8,7 @@
 	// ColourManager singleton
 	var ColourManager = {
 		// default colours
-		defaultColours : [
+		/** @type {Array} */ defaultColours : [
 			48,48,48,
 			0,255,127,127,0,255,148,148,148,128,255,0,255,0,128,
 			0,128,255,1,159,0,159,0,1,255,254,96,0,1,159,96,255,254,
@@ -55,7 +55,7 @@
 			15,113,221,33,0,115,108,23,90,182,215,36],
 
 		// default colour set
-		defaultColourSet : [],
+		/** @type {Array} */ defaultColourSet : [],
 
 		// list of HTML5 standard colours
 		colourList : {
@@ -204,14 +204,15 @@
 	};
 
 	// get the default colour set
+	/** @returns {Array} */
 	ColourManager.defaultSet = function() {
 		return this.defaultColourSet;
 	};
 
 	// initialise the colour manager
 	ColourManager.init = function() {
-		var i = 0,
-		    n = 0;
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ n = 0;
 
 		// initialised if not done already
 		if (!this.initialised) {

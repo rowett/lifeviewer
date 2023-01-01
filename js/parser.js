@@ -224,9 +224,9 @@
 	};
 
 	// check next script token
-	ScriptParser.nonNumericTokenError = function(scriptReader, scriptErrors, nextToken, itemDescription, itemType) {
+	ScriptParser.nonNumericTokenError = function(scriptReader, scriptErrors, /** @type {string} */ nextToken, /** @type {string} */ itemDescription, /** @type {string} */ itemType) {
 		// check next token
-		var peekToken = scriptReader.peekAtNextToken();
+		var	/** @type {string} */ peekToken = scriptReader.peekAtNextToken();
 
 		// check if it is blank or a valid script command
 		if (peekToken === "" || this.isScriptCommand(peekToken)) {

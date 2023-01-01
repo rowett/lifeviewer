@@ -12,7 +12,7 @@
 	/*jshint -W069 */
 
 	// for determining endian
-	var data8 = null,
+	var	data8 = null,
 		data32 = null;
 
 	// cross-browser register event function
@@ -26,11 +26,11 @@
 
 	// implement cross-browser performance now
 	if (!window.performance) {
-
 		/** @suppress {checkTypes} */
 		// @ts-ignore
 		window.performance = {};
 	}
+
 	if (!window.performance.now) {
 		window.performance.now = (function() {
 			// @ts-ignore
@@ -113,8 +113,8 @@
 	if (!window.Uint32Array.prototype.fill) {
 		window["arrayFill"] = false;
 
-		window.Uint32Array.prototype.fill = function(value, begin, end) {
-			var i = 0;
+		window.Uint32Array.prototype.fill = function(/** @type {number} */ value, begin, end) {
+			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
 				end = this.length;
@@ -132,8 +132,8 @@
 	}
 
 	if (!window.Uint16Array.prototype.fill) {
-		window.Uint16Array.prototype.fill = function(value, begin, end) {
-			var i = 0;
+		window.Uint16Array.prototype.fill = function(/** @type {number} */ value, begin, end) {
+			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
 				end = this.length;
@@ -149,8 +149,8 @@
 	}
 
 	if (!window.Uint8Array.prototype.fill) {
-		window.Uint8Array.prototype.fill = function(value, begin, end) {
-			var i = 0;
+		window.Uint8Array.prototype.fill = function(/** @type {number} */ value, begin, end) {
+			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
 				end = this.length;
@@ -166,8 +166,8 @@
 	}
 
 	if (!window.Uint8ClampedArray.prototype.fill) {
-		window.Uint8ClampedArray.prototype.fill = function(value, begin, end) {
-			var i = 0;
+		window.Uint8ClampedArray.prototype.fill = function(/** @type {number} */ value, begin, end) {
+			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
 				end = this.length;
@@ -183,8 +183,8 @@
 	}
 
 	if (!window.Int32Array.prototype.fill) {
-		window.Int32Array.prototype.fill = function(value, begin, end) {
-			var i = 0;
+		window.Int32Array.prototype.fill = function(/** @type {number} */ value, begin, end) {
+			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
 				end = this.length;
@@ -200,8 +200,8 @@
 	}
 
 	if (!window.Int16Array.prototype.fill) {
-		window.Int16Array.prototype.fill = function(value, begin, end) {
-			var i = 0;
+		window.Int16Array.prototype.fill = function(/** @type {number} */ value, begin, end) {
+			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
 				end = this.length;
@@ -217,8 +217,8 @@
 	}
 
 	if (!window.Int8Array.prototype.fill) {
-		window.Int8Array.prototype.fill = function(value, begin, end) {
-			var i = 0;
+		window.Int8Array.prototype.fill = function(/** @type {number} */ value, begin, end) {
+			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
 				end = this.length;
@@ -234,8 +234,8 @@
 	}
 
 	if (!window.Float32Array.prototype.fill) {
-		window.Float32Array.prototype.fill = function(value, begin, end) {
-			var i = 0;
+		window.Float32Array.prototype.fill = function( /** @type {number} */ value, begin, end) {
+			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
 				end = this.length;
@@ -251,8 +251,8 @@
 	}
 
 	if (!window.Float64Array.prototype.fill) {
-		window.Float64Array.prototype.fill = function(value, begin, end) {
-			var i = 0;
+		window.Float64Array.prototype.fill = function( /** @type {number} */ value, begin, end) {
+			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
 				end = this.length;
@@ -272,8 +272,8 @@
 		window["arraySlice"] = false;
 
 		window.Int32Array.prototype.slice = function(begin, end) {
-			var i = 0,
-				size = 0,
+			var	/** @type {number} */ i = 0,
+				/** @type {number} */ size = 0,
 				result = null;
 
 			if (end === undefined) {
@@ -294,8 +294,8 @@
 
 	if (!window.Int16Array.prototype.slice) {
 		window.Int16Array.prototype.slice = function(begin, end) {
-			var i = 0,
-				size = 0,
+			var	/** @type {number} */ i = 0,
+				/** @type {number} */ size = 0,
 				result = null;
 
 			if (end === undefined) {
@@ -314,8 +314,8 @@
 
 	if (!window.Int8Array.prototype.slice) {
 		window.Int8Array.prototype.slice = function(begin, end) {
-			var i = 0,
-				size = 0,
+			var	/** @type {number} */ i = 0,
+				/** @type {number} */ size = 0,
 				result = null;
 
 			if (end === undefined) {
@@ -334,8 +334,8 @@
 
 	if (!window.Uint32Array.prototype.slice) {
 		window.Uint32Array.prototype.slice = function(begin, end) {
-			var i = 0,
-				size = 0,
+			var	/** @type {number} */ i = 0,
+				/** @type {number} */ size = 0,
 				result = null;
 
 			if (end === undefined) {
@@ -354,8 +354,8 @@
 
 	if (!window.Uint16Array.prototype.slice) {
 		window.Uint16Array.prototype.slice = function(begin, end) {
-			var i = 0,
-				size = 0,
+			var	/** @type {number} */ i = 0,
+				/** @type {number} */ size = 0,
 				result = null;
 
 			if (end === undefined) {
@@ -374,8 +374,8 @@
 
 	if (!window.Uint8Array.prototype.slice) {
 		window.Uint8Array.prototype.slice = function(begin, end) {
-			var i = 0,
-				size = 0,
+			var	/** @type {number} */ i = 0,
+				/** @type {number} */ size = 0,
 				result = null;
 
 			if (end === undefined) {
@@ -394,8 +394,8 @@
 
 	if (!window.Uint8ClampedArray.prototype.slice) {
 		window.Uint8ClampedArray.prototype.slice = function(begin, end) {
-			var i = 0,
-				size = 0,
+			var	/** @type {number} */ i = 0,
+				/** @type {number} */ size = 0,
 				result = null;
 
 			if (end === undefined) {
@@ -414,8 +414,8 @@
 
 	if (!window.Float32Array.prototype.slice) {
 		window.Float32Array.prototype.slice = function(begin, end) {
-			var i = 0,
-				size = 0,
+			var	/** @type {number} */ i = 0,
+				/** @type {number} */ size = 0,
 				result = null;
 
 			if (end === undefined) {
@@ -434,8 +434,8 @@
 
 	if (!window.Float64Array.prototype.slice) {
 		window.Float64Array.prototype.slice = function(begin, end) {
-			var i = 0,
-				size = 0,
+			var	/** @type {number} */ i = 0,
+				/** @type {number} */ size = 0,
 				result = null;
 
 			if (end === undefined) {
@@ -466,10 +466,10 @@
 	if (data32.copyWithin) {
 		window["copyWithin"] = true;
 	} else {
-		window.Uint32Array.prototype.copyWithin = function(target, start, end) {
-			var i = 0,
-				size = 0,
-				reverse = false;
+		window.Uint32Array.prototype.copyWithin = function(target, /** @type {number} */ start, end) {
+			var	/** @type {number} */ i = 0,
+				/** @type {number} */ size = 0,
+				/** @type {boolean} */ reverse = false;
 
 			if (end === undefined) {
 				end = this.length;

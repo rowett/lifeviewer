@@ -16,10 +16,12 @@
 
 	// initialise Alias Manager
 	AliasManager.init = function() {
-		var currentDef = "",
-			currentName = "",
-			i = 0, j = 0,
-			a = null, s = null;
+		var	/** @type {string} */ currentDef = "",
+			/** @type {string} */ currentName = "",
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			a = null,
+			s = null;
 
 		// clear the current lists
 		this.aliases = [];
@@ -761,12 +763,12 @@
 	};
 
 	// return rule from alias
-	AliasManager.getRuleFromAlias = function(alias) {
+	AliasManager.getRuleFromAlias = function(/** @type {string} */ alias) {
 		// result
-		var result = null,
+		var	result = null,
 
-		    // counter
-			i = 0;
+			// counter
+			/** @type {number} */ i = 0;
 			
 		// replace any html elements
 		alias = alias.replace(/&amp;/g, "&");
@@ -813,12 +815,12 @@
 	};
 
 	// return alias from rule
-	AliasManager.getAliasFromRule = function(rule) {
+	AliasManager.getAliasFromRule = function(/** @type {string} */ rule) {
 		// result
-		var result = null,
+		var	result = null,
 
-		    // counter
-		    i = 0;
+			// counter
+			/** @type {number} */ i = 0;
 
 		// search the alias list
 		while (i < this.aliases.length && result === null) {

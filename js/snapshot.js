@@ -12,9 +12,9 @@
 	/**
 	 * @constructor
 	 */
-	function Snapshot(manager, index, usingOverlay) {
+	function Snapshot(manager, /** @type {number} */ index, /** @type {boolean} */ usingOverlay) {
 		// buffer index number
-		this.index = index;
+		/** @type {number} */ this.index = index;
 
 		// tile map for grid and colour grid
 		this.tileGrid = manager.tileGrids[index];
@@ -35,69 +35,69 @@
 		this.HROTBox = new BoundingBox(0, 0, 0, 0);
 
 		// statistics
-		this.population = 0;
-		this.births = 0;
-		this.deaths = 0;
+		/** @type {number} */ this.population = 0;
+		/** @type {number} */ this.births = 0;
+		/** @type {number} */ this.deaths = 0;
 
 		// generation and Margolus generation
-		this.counter = 0;
-		this.fixedCounter = 0;
-		this.counterMargolus = 0;
-		this.maxMargolusGen = 0;
+		/** @type {number} */ this.counter = 0;
+		/** @type {number} */ this.fixedCounter = 0;
+		/** @type {number} */ this.counterMargolus = 0;
+		/** @type {number} */ this.maxMargolusGen = 0;
 
 		// anything alive
-		this.anythingAlive = 0;
+		/** @type {number} */ this.anythingAlive = 0;
 
-		// bit counts
+		// manager
 		this.manager = manager;
 	}
 
 	// restore grid using tile map
 	Snapshot.prototype.restoreGridUsingTile = function(grid, tile, life) {
 		// length of tile array
-		var l = tile.length,
+		var	/** @type {number} */ l = tile.length,
 		    
-		    // width of tile row arrays
-		    w = tile[0].length,
+			// width of tile row arrays
+			/** @type {number} */ w = tile[0].length,
 
-		    // iterators
-		    x = 0,
-		    y = 0,
-		    b = 0,
-		    tx = 0,
-		    ty = 0,
+			// iterators
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ b = 0,
+			/** @type {number} */ tx = 0,
+			/** @type {number} */ ty = 0,
+	
+			// buffer index
+			/** @type {number} */ bufInd = 0,
+	
+			// tile row
+			tileRow = null,
+	
+			// tile group (16 tiles)
+			/** @type {number} */ tileGroup = 0,
+	
+			// tile width (in bytes) and height
+			/** @type {number} */ xSize = life.tileX,
+			/** @type {number} */ ySize = life.tileY,
+	
+			// tile on the grid
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ bottomY = 0,
+	
+			// grid buffer
+			buffer = this.gridBuffer,
+	
+			// row index
+			/** @type {number} */ rowIndex = 0,
 
-		    // buffer index
-		    bufInd = 0,
+			// buffer row
+			bufferRow = buffer[rowIndex],
 
-		    // tile row
-		    tileRow = null,
+			// row size
+			/** @type {number} */ rowSize = bufferRow.length,
 
-		    // tile group (16 tiles)
-		    tileGroup = 0,
-
-		    // tile width (in bytes) and height
-		    xSize = life.tileX,
-		    ySize = life.tileY,
-
-		    // tile on the grid
-		    leftX = 0,
-		    bottomY = 0,
-
-		    // grid buffer
-		    buffer = this.gridBuffer,
-
-		    // row index
-		    rowIndex = 0,
-
-		    // buffer row
-		    bufferRow = buffer[rowIndex],
-
-		    // row size
-		    rowSize = bufferRow.length,
-
-		    // next bytes from the buffer
-		    value = 0;
+			// next bytes from the buffer
+			/** @type {number} */ value = 0;
 
 		// restore the tile grid
 		Array.copy(this.tileGrid, tile);
@@ -221,55 +221,55 @@
 	// save grid using tile map
 	Snapshot.prototype.saveGridUsingTile = function(grid, tile, life) {
 		// length of tile array
-		var l = tile.length,
+		var	/** @type {number} */ l = tile.length,
 		    
-		    // width of tile row arrays
-		    w = tile[0].length,
+			// width of tile row arrays
+			/** @type {number} */ w = tile[0].length,
 
-		    // iterators
-		    x = 0,
-		    y = 0,
-		    b = 0,
-		    tx = 0,
-		    ty = 0,
+			// iterators
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ b = 0,
+			/** @type {number} */ tx = 0,
+			/** @type {number} */ ty = 0,
+	
+			// buffer index
+			/** @type {number} */ bufInd = 0,
+	
+			// tile row
+			tileRow = null,
+	
+			// tile group (16 tiles)
+			/** @type {number} */ tileGroup = 0,
+	
+			// count of used tiles
+			/** @type {number} */ usedCount = 0,
+	
+			// tile width (in bytes) and height
+			/** @type {number} */ xSize = life.tileX,
+			/** @type {number} */ ySize = life.tileY,
+	
+			// tile on the grid
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ bottomY = 0,
+	
+			// grid buffer 
+			buffer = this.gridBuffer,
 
-		    // buffer index
-		    bufInd = 0,
+			// row index
+			/** @type {number} */ rowIndex = 0,
 
-		    // tile row
-		    tileRow = null,
+			// first buffer row
+			bufferRow = buffer[rowIndex],
 
-		    // tile group (16 tiles)
-		    tileGroup = 0,
+			// row size
+			/** @type {number} */ rowSize = bufferRow.length,
 
-		    // count of used tiles
-		    usedCount = 0,
+			// number of rows
+			/** @type {number} */ numRows = buffer.length,
 
-		    // tile width (in bytes) and height
-		    xSize = life.tileX,
-		    ySize = life.tileY,
-
-		    // tile on the grid
-		    leftX = 0,
-		    bottomY = 0,
-
-		    // grid buffer 
-		    buffer = this.gridBuffer,
-
-		    // row index
-		    rowIndex = 0,
-
-		    // first buffer row
-		    bufferRow = buffer[rowIndex],
-
-		    // row size
-		    rowSize = bufferRow.length,
-
-		    // number of rows
-		    numRows = buffer.length,
-
-		    // bit counts (from manager)
-		    bitCounts = this.manager.bitCounts;
+			// bit counts (from manager)
+			bitCounts = this.manager.bitCounts;
 
 		// save the tile grid
 		Array.copy(tile, this.tileGrid);
@@ -388,49 +388,49 @@
 	// restore overlay grid using tile map
 	Snapshot.prototype.restoreOverlayGridUsingTile = function(grid, tile, life) {
 		// length of tile array
-		var l = tile.length,
+		var	/** @type {number} */ l = tile.length,
 		    
-		    // width of tile row arrays
-		    w = tile[0].length,
+			// width of tile row arrays
+			/** @type {number} */ w = tile[0].length,
 
-		    // iterators
-		    x = 0,
-		    y = 0,
-		    b = 0,
-		    tx = 0,
-		    ty = 0,
+			// iterators
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ b = 0,
+			/** @type {number} */ tx = 0,
+			/** @type {number} */ ty = 0,
+	
+			// buffer index
+			/** @type {number} */ bufInd = 0,
+	
+			// tile row
+			tileRow = null,
+	
+			// tile group (16 tiles)
+			/** @type {number} */ tileGroup = 0,
+	
+			// tile width (in bytes) and height
+			/** @type {number} */ xSize = life.tileX << 3,
+			/** @type {number} */ ySize = life.tileY,
+	
+			// tile on the grid
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ bottomY = 0,
+	
+			// overlay grid buffer
+			buffer = this.overlayBuffer,
+	
+			// row index
+			/** @type {number} */ rowIndex = 0,
 
-		    // buffer index
-		    bufInd = 0,
+			// buffer row
+			bufferRow = buffer[rowIndex],
+	
+			// row size
+			/** @type {number} */ rowSize = bufferRow.length,
 
-		    // tile row
-		    tileRow = null,
-
-		    // tile group (16 tiles)
-		    tileGroup = 0,
-
-		    // tile width (in bytes) and height
-		    xSize = life.tileX << 3,
-		    ySize = life.tileY,
-
-		    // tile on the grid
-		    leftX = 0,
-		    bottomY = 0,
-
-		    // overlay grid buffer
-		    buffer = this.overlayBuffer,
-
-		    // row index
-		    rowIndex = 0,
-
-		    // buffer row
-		    bufferRow = buffer[rowIndex],
-
-		    // row size
-		    rowSize = bufferRow.length,
-
-		    // next bytes from the buffer
-		    value = 0;
+			// next bytes from the buffer
+			/** @type {number} */ value = 0;
 
 		// restore the colour tile grid
 		Array.copy(this.overlayTileGrid, tile);
@@ -619,49 +619,49 @@
 	// restore colour grid using tile map
 	Snapshot.prototype.restoreColourGridUsingTile = function(grid, tile, life) {
 		// length of tile array
-		var l = tile.length,
+		var	/** @type {number} */ l = tile.length,
 		    
-		    // width of tile row arrays
-		    w = tile[0].length,
+			// width of tile row arrays
+			/** @type {number} */ w = tile[0].length,
+	
+			// iterators
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ b = 0,
+			/** @type {number} */ tx = 0,
+			/** @type {number} */ ty = 0,
+	
+			// buffer index
+			/** @type {number} */ bufInd = 0,
+	
+			// tile row
+			tileRow = null,
+	
+			// tile group (16 tiles)
+			/** @type {number} */ tileGroup = 0,
+	
+			// tile width (in bytes) and height
+			/** @type {number} */ xSize = life.tileX << 3,
+			/** @type {number} */ ySize = life.tileY,
+	
+			// tile on the grid
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ bottomY = 0,
+	
+			// colour grid buffer
+			buffer = this.colourBuffer,
+	
+			// row index
+			/** @type {number} */ rowIndex = 0,
+	
+			// buffer row
+			bufferRow = buffer[rowIndex],
+	
+			// row size
+			/** @type {number} */ rowSize = bufferRow.length,
 
-		    // iterators
-		    x = 0,
-		    y = 0,
-		    b = 0,
-		    tx = 0,
-		    ty = 0,
-
-		    // buffer index
-		    bufInd = 0,
-
-		    // tile row
-		    tileRow = null,
-
-		    // tile group (16 tiles)
-		    tileGroup = 0,
-
-		    // tile width (in bytes) and height
-		    xSize = life.tileX << 3,
-		    ySize = life.tileY,
-
-		    // tile on the grid
-		    leftX = 0,
-		    bottomY = 0,
-
-		    // colour grid buffer
-		    buffer = this.colourBuffer,
-
-		    // row index
-		    rowIndex = 0,
-
-		    // buffer row
-		    bufferRow = buffer[rowIndex],
-
-		    // row size
-		    rowSize = bufferRow.length,
-
-		    // next bytes from the buffer
-		    value = 0;
+			// next bytes from the buffer
+			/** @type {number} */ value = 0;
 
 		// restore the colour tile grid
 		Array.copy(this.colourTileGrid, tile);
@@ -850,55 +850,55 @@
 	// save overlay grid using tile map
 	Snapshot.prototype.saveOverlayGridUsingTile = function(grid, tile, life) {
 		// length of tile array
-		var l = tile.length,
+		var	/** @type {number} */ l = tile.length,
 		    
-		    // width of tile row arrays
-		    w = tile[0].length,
+			// width of tile row arrays
+			/** @type {number} */ w = tile[0].length,
+	
+			// iterators
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ b = 0,
+			/** @type {number} */ tx = 0,
+			/** @type {number} */ ty = 0,
+	
+			// buffer index
+			/** @type {number} */ bufInd = 0,
+	
+			// tile row
+			tileRow = null,
+	
+			// tile group (16 tiles)
+			/** @type {number} */ tileGroup = 0,
+	
+			// count of used tiles
+			/** @type {number} */ usedCount = 0,
+	
+			// tile width (in bytes) and height
+			/** @type {number} */ xSize = life.tileX << 3,
+			/** @type {number} */ ySize = life.tileY,
+	
+			// tile on the grid
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ bottomY = 0,
+	
+			// overlay grid buffer
+			buffer = this.overlayBuffer,
+	
+			// row index
+			/** @type {number} */ rowIndex = 0,
+	
+			// first buffer row
+			bufferRow = buffer[rowIndex],
+	
+			// row size
+			/** @type {number} */ rowSize = bufferRow.length,
+	
+			// number of rows
+			/** @type {number} */ numRows = buffer.length,
 
-		    // iterators
-		    x = 0,
-		    y = 0,
-		    b = 0,
-		    tx = 0,
-		    ty = 0,
-
-		    // buffer index
-		    bufInd = 0,
-
-		    // tile row
-		    tileRow = null,
-
-		    // tile group (16 tiles)
-		    tileGroup = 0,
-
-		    // count of used tiles
-		    usedCount = 0,
-
-		    // tile width (in bytes) and height
-		    xSize = life.tileX << 3,
-		    ySize = life.tileY,
-
-		    // tile on the grid
-		    leftX = 0,
-		    bottomY = 0,
-
-		    // overlay grid buffer
-		    buffer = this.overlayBuffer,
-
-		    // row index
-		    rowIndex = 0,
-
-		    // first buffer row
-		    bufferRow = buffer[rowIndex],
-
-		    // row size
-		    rowSize = bufferRow.length,
-
-		    // number of rows
-		    numRows = buffer.length,
-
-		    // bit counts (from manager)
-		    bitCounts = this.manager.bitCounts;
+			// bit counts (from manager)
+			bitCounts = this.manager.bitCounts;
 
 		// save the colour tile grid
 		Array.copy(tile, this.overlayTileGrid);
@@ -1050,55 +1050,55 @@
 	// save colour grid using tile map
 	Snapshot.prototype.saveColourGridUsingTile = function(grid, tile, life) {
 		// length of tile array
-		var l = tile.length,
+		var	/** @type {number} */ l = tile.length,
 		    
-		    // width of tile row arrays
-		    w = tile[0].length,
+			// width of tile row arrays
+			/** @type {number} */ w = tile[0].length,
+	
+			// iterators
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ b = 0,
+			/** @type {number} */ tx = 0,
+			/** @type {number} */ ty = 0,
+	
+			// buffer index
+			/** @type {number} */ bufInd = 0,
+	
+			// tile row
+			tileRow = null,
+	
+			// tile group (16 tiles)
+			/** @type {number} */ tileGroup = 0,
+	
+			// count of used tiles
+			/** @type {number} */ usedCount = 0,
+	
+			// tile width (in bytes) and height
+			/** @type {number} */ xSize = life.tileX << 3,
+			/** @type {number} */ ySize = life.tileY,
+	
+			// tile on the grid
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ bottomY = 0,
+	
+			// colour grid buffer
+			buffer = this.colourBuffer,
 
-		    // iterators
-		    x = 0,
-		    y = 0,
-		    b = 0,
-		    tx = 0,
-		    ty = 0,
+			// row index
+			/** @type {number} */ rowIndex = 0,
 
-		    // buffer index
-		    bufInd = 0,
+			// first buffer row
+			bufferRow = buffer[rowIndex],
 
-		    // tile row
-		    tileRow = null,
+			// row size
+			/** @type {number} */ rowSize = bufferRow.length,
 
-		    // tile group (16 tiles)
-		    tileGroup = 0,
+			// number of rows
+			/** @type {number} */ numRows = buffer.length,
 
-		    // count of used tiles
-		    usedCount = 0,
-
-		    // tile width (in bytes) and height
-		    xSize = life.tileX << 3,
-		    ySize = life.tileY,
-
-		    // tile on the grid
-		    leftX = 0,
-		    bottomY = 0,
-
-		    // colour grid buffer
-		    buffer = this.colourBuffer,
-
-		    // row index
-		    rowIndex = 0,
-
-		    // first buffer row
-		    bufferRow = buffer[rowIndex],
-
-		    // row size
-		    rowSize = bufferRow.length,
-
-		    // number of rows
-		    numRows = buffer.length,
-
-		    // bit counts (from manager)
-		    bitCounts = this.manager.bitCounts;
+			// bit counts (from manager)
+			bitCounts = this.manager.bitCounts;
 
 		// save the colour tile grid
 		Array.copy(tile, this.colourTileGrid);
@@ -1280,28 +1280,29 @@
 		this.overlayBuffers = [];
 
 		// number of buffers allocated
-		this.numBuffers = 0;
+		/** @type {number} */ this.numBuffers = 0;
 
 		// current snapshot index
-		this.index = -1;
+		/** @type {number} */ this.index = -1;
 
 		// maximum number of snapshots
-		this.maxSnapshots = 51;
+		/** @type {number} */ this.maxSnapshots = 51;
 
 		// bit counts for bytes
 		this.bitCounts = bitcounts;
 
 		// default number of tiles to allocate
-		this.defaultTiles = 128;
+		/** @type {number} */ this.defaultTiles = 128;
 
 		// reset snapshot
 		this.resetSnapshot = null;
 	}
 
 	// return buffer size in bytes
+	/** @returns {number} */
 	SnapshotManager.prototype.bufferSize = function() {
-		var result = 0,
-		    i = 0;
+		var	/** @type {number} */ result = 0,
+			/** @type {number} */ i = 0;
 
 		// sum each snapshot buffer
 		while (i < this.bufferUsed.length) {
@@ -1331,9 +1332,10 @@
 	};
 
 	// return number of buffers used
+	/** @returns {number} */
 	SnapshotManager.prototype.usedBuffers = function() {
-		var result = 0,
-		    i = 0;
+		var	/** @type {number} */ result = 0,
+			/** @type {number} */ i = 0;
 
 		// check each buffer
 		while (i < this.bufferUsed.length) {
@@ -1348,6 +1350,7 @@
 	};
 
 	// return number of buffers allocated
+	/** @returns {number} */
 	SnapshotManager.prototype.buffers = function() {
 		return this.bufferUsed.length;
 	};
@@ -1362,9 +1365,9 @@
 	};
 
 	// get the snapshot before the target generation
-	SnapshotManager.prototype.snapshotBefore = function(generation) {
-		var result = null,
-		    numSnapshots = this.snapshots.length;
+	SnapshotManager.prototype.snapshotBefore = function(/** @type {number} */ generation) {
+		var	result = null,
+			/** @type {number} */ numSnapshots = this.snapshots.length;
 
 		// check if there are any snapshots
 		if (numSnapshots > 0) {
@@ -1398,10 +1401,11 @@
 	};
 
 	// save snapshot
-	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, overlayGrid, overlayTileGrid, zoomBox, HROTBox, population, births, deaths, counter, fixedCounter, counterMargolus, maxMargolusGen, width, height, life, isReset, anythingAlive) {
-		var snapshot = null,
-		    i = 0,
-		    usingOverlay = (overlayGrid !== null);
+	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, overlayGrid, overlayTileGrid, zoomBox, HROTBox, /** @type {number} */ population, /** @type {number} */ births, /** @type {number} */ deaths,
+		/** @type {number} */ counter, /** @type {number} */ fixedCounter, /** @type {number} */ counterMargolus, /** @type {number} */ maxMargolusGen, /** @type {number} */ width, /** @type {number} */ height, life, /** @type {boolean} */ isReset, /** @type {number} */ anythingAlive) {
+		var	snapshot = null,
+			/** @type {number} */ i = 0,
+			/** @type {boolean} */ usingOverlay = (overlayGrid !== null);
 
 		// check if saving to the reset snapshot
 		if (isReset) {
@@ -1476,16 +1480,17 @@
 	};
 
 	// free a buffer
-	SnapshotManager.prototype.freeBuffer = function(number) {
+	SnapshotManager.prototype.freeBuffer = function(/** @type {number} */ number) {
 		// mark the buffer as available
 		this.bufferUsed[number] = false;
 	};
 
 	// create or return a buffer
-	SnapshotManager.prototype.getBuffers = function(width, height, usingOverlay) {
-		var result = 0,
-		    i = 0,
-		    found = false;
+	/** @returns {number} */
+	SnapshotManager.prototype.getBuffers = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {boolean} */ usingOverlay) {
+		var	/** @type {number} */ result = 0,
+			/** @type {number} */ i = 0,
+			/** @type {boolean} */ found = false;
 
 		// check if there is a free buffer
 		while (i < this.numBuffers && !found) {
@@ -1528,12 +1533,12 @@
 	};
 
 	// create a snapshot
-	SnapshotManager.prototype.createSnapshot = function(w, h, isReset, usingOverlay) {
+	SnapshotManager.prototype.createSnapshot = function(/** @type {number} */ w, /** @type {number} */ h, /** @type {boolean} */ isReset, /** @type {boolean} */ usingOverlay) {
 		// lookup or create a buffer
-		var bufNum = this.getBuffers(w, h, usingOverlay),
+		var	/** @type {number} */ bufNum = this.getBuffers(w, h, usingOverlay),
 
-		    // create the new snapshot
-		    result = null;
+			// create the new snapshot
+			result = null;
 
 		// check if this is the reset snapshot
 		if (isReset) {
@@ -1551,14 +1556,14 @@
 	};
 
 	// resize a snapshot
-	SnapshotManager.prototype.resizeSnapshot = function(snapshot, newWidth, newHeight, xOffset, yOffset, xOffsetPixels, yOffsetPixels, useOverlay) {
+	SnapshotManager.prototype.resizeSnapshot = function(/** @type {Snapshot} */ snapshot, /** @type {number} */ newWidth, /** @type {number} */ newHeight, /** @type {number} */ xOffset, /** @type {number} */ yOffset, /** @type {number} */ xOffsetPixels, /** @type {number} */ yOffsetPixels, /** @type {boolean} */ useOverlay) {
 		// get current snapshot tile grid and colour tile grid
-		var currentTileGrid = snapshot.tileGrid,
-		    currentColourTileGrid = snapshot.colourTileGrid,
-		    currentOverlayTileGrid = snapshot.overlayTileGrid,
-		    currentHeight = snapshot.tileGrid.length,
-		    y = 0,
-		    index = snapshot.index;
+		var	currentTileGrid = snapshot.tileGrid,
+			currentColourTileGrid = snapshot.colourTileGrid,
+			currentOverlayTileGrid = snapshot.overlayTileGrid,
+			/** @type {number} */currentHeight = snapshot.tileGrid.length,
+			/** @type {number} */y = 0,
+			/** @type {number} */index = snapshot.index;
 
 		// allocate the new tile grids in the buffer
 		this.tileGrids[index] = Array.matrix(Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.tileGrid" + index);
@@ -1598,9 +1603,9 @@
 	};
 
 	// resize snapshots to fit the new grid
-	SnapshotManager.prototype.resizeSnapshots = function(newWidth, newHeight, xOffset, yOffset, xOffsetPixels, yOffsetPixels, useOverlay) {
-		var i = 0,
-			l = 0;
+	SnapshotManager.prototype.resizeSnapshots = function(/** @type {number} */ newWidth, /** @type {number} */ newHeight, /** @type {number} */ xOffset, /** @type {number} */ yOffset, /** @type {number} */ xOffsetPixels, /** @type {number} */ yOffsetPixels, /** @type {boolean} */ useOverlay) {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ l = 0;
 
 		// grow the reset snapshot
 		if (this.resetSnapshot) {

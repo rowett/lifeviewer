@@ -12,19 +12,19 @@
 	/**
 	 * @constructor
 	 */
-	function Stars(numStars, allocator) {
+	function Stars(/** @type {number} */ numStars, allocator) {
 		// number of stars
-		this.numStars = numStars;
+		/** @type {number} */ this.numStars = numStars;
 
 		// list of stars
-		this.x = allocator.allocate(Float32, 0, "Stars.x"); 
-		this.y = allocator.allocate(Float32, 0, "Stars.y"); 
-		this.z = allocator.allocate(Float32, 0, "Stars.z"); 
+		/** type {Float32Array} */ this.x = allocator.allocate(Float32, 0, "Stars.x"); 
+		/** type {Float32Array} */ this.y = allocator.allocate(Float32, 0, "Stars.y"); 
+		/** type {Float32Array} */ this.z = allocator.allocate(Float32, 0, "Stars.z"); 
 
 		// star colour
-		this.red = 255;
-		this.green = 255;
-		this.blue = 255;
+		/** @type {number} */ this.red = 255;
+		/** @type {number} */ this.green = 255;
+		/** @type {number} */ this.blue = 255;
 
 		// random number generator
 		this.randGen = new Random();
@@ -33,38 +33,38 @@
 		this.randGen.init(Date.now().toString());
 
 		// degrees in a circle
-		this.circleDegrees = 360;
+		/** @type {number} */ this.circleDegrees = 360;
 
 		// degree parts
-		this.degreeParts = 8;
+		/** @type {number} */ this.degreeParts = 8;
 
 		// table for sin and cos
-		this.sin = allocator.allocate(Float32, 0, "Stars.sin");
-		this.cos = allocator.allocate(Float32, 0, "Stars.cos");
+		/** @type {Float32Array} */ this.sin = allocator.allocate(Float32, 0, "Stars.sin");
+		/** @type {Float32Array} */ this.cos = allocator.allocate(Float32, 0, "Stars.cos");
 
 		// conversions
-		this.degToRad = Math.PI / (this.circleDegrees / 2);
-		this.radToDeg = (this.circleDegrees / 2) / Math.PI;
+		/** @type {number} */ this.degToRad = Math.PI / (this.circleDegrees / 2);
+		/** @type {number} */ this.radToDeg = (this.circleDegrees / 2) / Math.PI;
 
 		// save the allocator
 		this.allocator = allocator;
 
 		// whether initialized
-		this.initialized = false;
+		/** @type {boolean} */ this.initialized = false;
 	}
 
 	// initialise stars
-	Stars.prototype.init = function(maxX, maxY, maxZ) {
-		var i = 0,
-		    curX = 0,
-		    curY = 0,
-		    curZ = 0,
-
-		    // number of stars
-		    numStars = this.numStars,
-
-		    // compute the radius of the starfield
-		    radius2 = (maxX * maxX) + (maxY * maxY);
+	Stars.prototype.init = function(/** @type {number} */ maxX, /** @type {number} */ maxY, /** @type {number} */ maxZ) {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ curX = 0,
+			/** @type {number} */ curY = 0,
+			/** @type {number} */ curZ = 0,
+	
+			// number of stars
+			/** @type {number} */ numStars = this.numStars,
+	
+			// compute the radius of the starfield
+			/** @type {number} */ radius2 = (maxX * maxX) + (maxY * maxY);
 
 		// allocate the stars
 		this.x = this.allocator.allocate(Float32, numStars, "Stars.x"); 
@@ -102,44 +102,44 @@
 	
 	// convert stars to display position
 	Stars.prototype.create2D = function(/** @type {number} */ xOff, /** @type {number} */ yOff, /** @type {number} */ zOff, /** @type {number} */ angle, /** @type {number} */ displayWidth, /** @type {number} */ displayHeight, /** @type {Uint32Array} */ pixelBuffer, /** @type {number} */ blackPixel) {
-		var /** @type {number} */ i = 0,
+		var	/** @type {number} */ i = 0,
 
-		    // offset in pixel data
-		    /** @type {number} */ offset = 0,
-
-		    // computed star colour
-		    /** @type {number} */ pixelColour = 0,
-
-		    // z distance and x, y position of star
-		    /** @type {number} */ zDist = 0,
-		    /** @type {number} */ x = 0,
-		    /** @type {number} */ y = 0,
-
-		    // computed angle and radius
-		    /** @type {number} */ theta = 0,
-		    /** @type {number} */ radius = 0,
-
-		    // r g b components of background colour
-		    /** @type {number} */ blackRed = 0,
-		    /** @type {number} */ blackGreen = 0,
-		    /** @type {number} */ blackBlue = 0,
-
-		    // r g b components of star colour
-		    /** @type {number} */ currentRed = 0,
-		    /** @type {number} */ currentGreen = 0,
-		    /** @type {number} */ currentBlue = 0,
-
-		    // half width and height
-		    /** @const {number} */ halfWidth = displayWidth >> 1,
-		    /** @const {number} */ halfHeight = displayHeight >> 1,
-
-		    // width and height minus 1
-		    /** @const {number} */ widthMinus1 = displayWidth - 1,
-		    /** @const {number} */ heightMinus1 = displayHeight - 1,
-
-		    /** @type {number} */ starMinusBlackRed = 0,
-		    /** @type {number} */ starMinusBlackGreen = 0,
-		    /** @type {number} */ starMinusBlackBlue = 0;
+			// offset in pixel data
+			/** @type {number} */ offset = 0,
+	
+			// computed star colour
+			/** @type {number} */ pixelColour = 0,
+	
+			// z distance and x, y position of star
+			/** @type {number} */ zDist = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+	
+			// computed angle and radius
+			/** @type {number} */ theta = 0,
+			/** @type {number} */ radius = 0,
+	
+			// r g b components of background colour
+			/** @type {number} */ blackRed = 0,
+			/** @type {number} */ blackGreen = 0,
+			/** @type {number} */ blackBlue = 0,
+	
+			// r g b components of star colour
+			/** @type {number} */ currentRed = 0,
+			/** @type {number} */ currentGreen = 0,
+			/** @type {number} */ currentBlue = 0,
+	
+			// half width and height
+			/** @const {number} */ halfWidth = displayWidth >> 1,
+			/** @const {number} */ halfHeight = displayHeight >> 1,
+	
+			// width and height minus 1
+			/** @const {number} */ widthMinus1 = displayWidth - 1,
+			/** @const {number} */ heightMinus1 = displayHeight - 1,
+	
+			/** @type {number} */ starMinusBlackRed = 0,
+			/** @type {number} */ starMinusBlackGreen = 0,
+			/** @type {number} */ starMinusBlackBlue = 0;
 
 		// check if initialized
 		if (!this.initialized) {

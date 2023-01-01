@@ -12,9 +12,10 @@
 	var KeyProcessor = {};
 
 	// process keys in copy clipboard mode
-	KeyProcessor.processKeyCopy = function(me, keyCode, event) {
+	/** @returns {boolean} */
+	KeyProcessor.processKeyCopy = function(me, /** @type {number} */ keyCode, event) {
 		// flag event processed
-		var processed = true;
+		var	/** @type {boolean} */ processed = true;
 
 		// check for control-R which would refresh browser
 		if (event.ctrlKey && keyCode === 82) {
@@ -48,9 +49,10 @@
 	};
 
 	// process keys in go to generation mode
-	KeyProcessor.processKeyGoTo = function(me, keyCode, event) {
+	/** @returns {boolean} */
+	KeyProcessor.processKeyGoTo = function(me, /** @type {number} */ keyCode, event) {
 		// flag event processed
-		var processed = true;
+		var	/** @type {boolean} */ processed = true;
 
 		// check for control, meta or alt
 		if (event.ctrlKey || event.metaKey || event.altKey) {
@@ -83,9 +85,10 @@
 	};
 
 	// process keys in identify mode
-	KeyProcessor.processKeyIdentify = function(me, keyCode, event) {
+	/** @returns {boolean} */
+	KeyProcessor.processKeyIdentify = function(me, /** @type {number} */ keyCode, event) {
 		// flag event processed
-		var processed = true;
+		var	/** @type {boolean} */ processed = true;
 
 		// check for control, meta or alt
 		if (event.ctrlKey || event.metaKey || event.altKey) {
@@ -119,7 +122,7 @@
 	};
 
 	// switch between Help welcome screen and specific topic
-	KeyProcessor.toggleHelpTopic = function(me, topic) {
+	KeyProcessor.toggleHelpTopic = function(me, /** @type {number} */ topic) {
 		if (me.helpTopic === ViewConstants.welcomeTopic) {
 			me.setHelpTopic(topic, me);
 		} else {
@@ -130,9 +133,10 @@
 	};
 
 	// process keys in history mode
-	KeyProcessor.processKeyHistory = function(me, keyCode, event) {
+	/** @returns {boolean} */
+	KeyProcessor.processKeyHistory = function(me, /** @type {number} */ keyCode, event) {
 		// flag event processed
-		var processed = true;
+		var	/** @type {boolean} */ processed = true;
 
 		// check for control, meta or alt
 		if (event.ctrlKey || event.metaKey || event.altKey) {
@@ -160,12 +164,13 @@
 	};
 
 	// process key
-	KeyProcessor.processKey = function(me, keyCode, event) {
+	/** @returns {boolean} */
+	KeyProcessor.processKey = function(me, /** @type {number} */ keyCode, event) {
 		// flag event processed
-		var processed = true,
+		var	/** @type {boolean} */ processed = true,
 
-		    // value for changes
-		    value = 0;
+			// value for changes
+			/** @type {number} */ value = 0;
 
 		// check if gui enabled
 		if (me.noGUI) {

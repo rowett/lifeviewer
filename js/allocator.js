@@ -48,7 +48,7 @@
 	// name as string for the given type
 	/** @type function(number) : string */
 	Type.typeName = function(type) {
-		var /** @type {string} */ typeName = "";
+		var	/** @type {string} */ typeName = "";
 
 		// check type
 		if ((type & AllocBits.floatMask) !== 0) {
@@ -80,11 +80,11 @@
 	 */
 	function AllocationInfo(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name) {
 		// save information
-		this.type = type;
-		this.name = name;
-		this.elements = elements;
-		this.size = elements * Type.sizeInBytes(type);
-		this.number = 1;
+		/** @type {number} */ this.type = type;
+		/** @type {string} */ this.name = name;
+		/** @type {number} */ this.elements = elements;
+		/** @type {number} */ this.size = elements * Type.sizeInBytes(type);
+		/** @type {number} */ this.number = 1;
 	}
 
 	// allocator
@@ -93,26 +93,26 @@
 	 */
 	function Allocator() {
 		// allocations
-		this.allocations = [];
+		/** @type {Array} */ this.allocations = [];
 
 		// number of major allocations
-		this.numAllocs = 0;
+		/** @type {number} */ this.numAllocs = 0;
 
 		// number of bytes allocated
-		this.totalBytes = 0;
+		/** @type {number} */ this.totalBytes = 0;
 
 		// number of frees (technically overwrites)
-		this.numFrees = 0;
+		/** @type {number} */ this.numFrees = 0;
 
 		// number of bytes freed
-		this.totalFreedBytes = 0;
+		/** @type {number} */ this.totalFreedBytes = 0;
 	}
 
 	// output a specific allocation as a string
 	/** @type function(number) : string */
 	Allocator.prototype.allocationInfo = function(which) {
-		var result = "",
-		    /** AllocationInfo */ info = null;
+		var	/** @type {string} */ result = "",
+			/** @type {AllocationInfo} */ info = null;
 
 		// check the allocation exists
 		if (which >= 0 && which < this.allocations.length) {
@@ -128,7 +128,7 @@
 	};
 
 	// save allocation information
-	Allocator.prototype.saveAllocationInfo = function(type, elements, name) {
+	Allocator.prototype.saveAllocationInfo = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name) {
 		var i = 0,
 		    found = false,
 		    allocation = null;
@@ -143,7 +143,6 @@
 
 				// update frees
 				this.numFrees += 1;
-				//console.debug(type, elements, name, allocation.elements);
 
 				// update bytes freed
 				this.totalFreedBytes += allocation.elements * Type.sizeInBytes(allocation.type);
@@ -173,10 +172,10 @@
 	};
 
 	// get typed view of a memory buffer
-	Allocator.prototype.typedView = function(whole, type, elements, offset, name) {
-		var result = null,
-		    buffer = whole.buffer,
-		    byteOffset = offset * Type.sizeInBytes(type);
+	Allocator.prototype.typedView = function(whole, /** @type {number} */ type, /** @type {number} */ elements, /** @type {number} */ offset, /** @type {string} */ name) {
+		var	result = null,
+			buffer = whole.buffer,
+			/** @type {number} */ byteOffset = offset * Type.sizeInBytes(type);
 
 		// get view of memory
 		switch (type) {
@@ -236,7 +235,7 @@
 	};
 
 	// get typed memory block
-	Allocator.prototype.typedMemory = function(type, elements, name) {
+	Allocator.prototype.typedMemory = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name) {
 		var result = null;
 
 		// allocate memory
@@ -297,7 +296,7 @@
 	};
 
 	// allocate typed memory
-	Allocator.prototype.allocate = function(type, elements, name) {
+	Allocator.prototype.allocate = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name) {
 		var result = null;
 
 		// get typed block of memory
@@ -315,7 +314,7 @@
 	};
 
 	// allocate typed memory when adding a row to a matrix
-	Allocator.prototype.allocateRow = function(type, elements, name, rows) {
+	Allocator.prototype.allocateRow = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name, /** @type {number} */ rows) {
 		var result = null;
 
 		// get typed block of memory
@@ -333,10 +332,11 @@
 	};
 
 	// create an array matrix for a given type
-	Array.matrix = function(type, m, n, initial, allocator, name) {
-		var i = 0,
-		    mat = [],
-		    whole = null;
+	/** @returns {Array} */
+	Array.matrix = function(/** @type {number} */ type, /** @type {number} */ m, /** @type {number} */ n, /** @type {number} */ initial, allocator, /** @type {string} */ name) {
+		var	/** @type {number} */ i = 0,
+			/** @type {Array} */ mat = [],
+			whole = null;
 
 		// save reference the the type and allocator
 		// @ts-ignore
@@ -373,7 +373,7 @@
 	};
 
 	// add an extra row to an array
-	Array.addRow = function(source, initial, name) {
+	Array.addRow = function(source, /** @type {number} */ initial, /** @type {string} */ name) {
 		var // get the size of the source row
 		    m = source[0].length,
 
@@ -397,7 +397,8 @@
 	};
 
 	// create a typed view of the source matrix
-	Array.matrixView = function(type, source, name) {
+	/** @returns {Array} */
+	Array.matrixView = function(/** @type {number} */ type, source, /** @type {string} */ name) {
 		var y = 0,
 		    h = source.length,
 		    mat = [],
@@ -416,13 +417,14 @@
 	};
 
 	// create an offset view of the source matrix
-	Array.matrixViewWithOffset = function(source, offset, name) {
-		var y = 0,
-		    h = source.length,
-		    mat = [],
-		    allocator = source.allocator,
-		    type = source.type,
-		    elements = source[0].length;
+	/** @returns {Array} */
+	Array.matrixViewWithOffset = function(source, /** @type {number} */ offset, /** @type {string} */ name) {
+		var	/** @type {number} */ y = 0,
+			/** @type {number} */ h = source.length,
+			/** @type {Array} */ mat = [],
+			allocator = source.allocator,
+			/** @type {number} */ type = source.type,
+			/** @type {number} */ elements = source[0].length;
 
 		// iterate over the source array
 		for (y = 0; y < h; y += 1) {

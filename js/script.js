@@ -225,8 +225,9 @@
 	}
 	
 	// get the string between a range of tokens
-	Script.prototype.getStringSection = function(start, end) {
-		var result = "";
+	/** @returns {string} */
+	Script.prototype.getStringSection = function(/** @type {number} */ start, /** @type {number} */ end) {
+		var	/** @type {string} */ result = "";
 
 		// check the token indexes are valid
 		if (start < 0 || start >= this.starts.length || end < 0 || end >= this.starts.length || start > end) {
@@ -266,8 +267,9 @@
 	};
 
 	// check whether there are more tokens on the line
+	/** @returns {boolean} */
 	Script.prototype.moreTokensOnLine = function() {
-		var result = false;
+		var	/** @type {boolean} */ result = false;
 
 		if (this.current < this.starts.length) {
 			if (this.source.charCodeAt(this.starts[this.current]) !== 10) {
@@ -279,8 +281,9 @@
 	};
 
 	// check whether next token is newline
+	/** @returns {boolean} */
 	Script.prototype.nextIsNewline = function() {
-		var result = false; 
+		var	/** @type {boolean} */ result = false; 
 
 		// check if there are more tokens
 		if (this.current < this.starts.length) {
@@ -293,8 +296,9 @@
 	};
 
 	// get next token from source
+	/** @returns {string} */
 	Script.prototype.getNextToken = function() {
-		var result = "";
+		var	/** @type {string} */ result = "";
 
 		// check if there are more tokens
 		if (this.current < this.starts.length) {
@@ -309,8 +313,9 @@
 	};
 
 	// get next token skipping newlines
+	/** @returns {string} */
 	Script.prototype.getNextTokenSkipNewline = function() {
-		var result = "";
+		var	/** @type {string} */ result = "";
 
 		// check if there are more tokens
 		result = this.getNextToken();
@@ -322,8 +327,9 @@
 	};
 
 	// get next token but don't advance
+	/** @returns {string} */
 	Script.prototype.peekAtNextToken = function() {
-		var result = "";
+		var	/** @type {string} */ result = "";
 
 		// check if there are more tokens
 		if (this.current < this.starts.length) {
@@ -335,22 +341,25 @@
 	};
 
 	// search for a specific token and return token index
-	Script.prototype.findToken = function(token, from) {
+	/** @returns {number} */
+	Script.prototype.findToken = function(/** @type {string} */ token, /** @type {number} */ from) {
 		return this.findTokenSomewhere(token, from, false);
 	};
 
 	// search for a specific token at the start of a line and return token index
-	Script.prototype.findTokenAtLineStart = function(token, from) {
+	/** @returns {number} */
+	Script.prototype.findTokenAtLineStart = function(/** @type {string} */ token, /** @type {number} */ from) {
 		return this.findTokenSomewhere(token, from, true);
 	};
 
 	// search for a specific token and return token index
 	// don't update position if token not found
-	Script.prototype.findTokenSomewhere = function(token, from, atLineStart) {
-		var result = -1,
-			current = this.current,
-			found = false,
-			i = 0;
+	/** @returns {number} */
+	Script.prototype.findTokenSomewhere = function(/** @type {string} */ token, /** @type {number} */ from, /** @type {boolean} */ atLineStart) {
+		var	/** @type {number} */ result = -1,
+			/** @type {number} */ current = this.current,
+			/** @type {boolean} */ found = false,
+			/** @type {number} */ i = 0;
 
 		// if from supplied then set current position
 		if (from !== -1) {
@@ -404,24 +413,26 @@
 	};
 
 	// check if a string is numeric
-	Script.prototype.isNumeric = function(token) {
+	/** @returns {boolean} */
+	Script.prototype.isNumeric = function(/** @type {string} */ token) {
 		// check if the token is numeric
-		var result = !isNaN(parseFloat(token)) && isFinite(Number(token));
+		var	/** @type {boolean} */ result = !isNaN(parseFloat(token)) && isFinite(Number(token));
 
 		// return the result
 		return result;
 	};
 
 	// check if a token is a fraction n/m
-	Script.prototype.isFraction = function(token) {
-		var result = false,
+	/** @returns {boolean} */
+	Script.prototype.isFraction = function(/** @type {string} */ token) {
+		var	/** @type {boolean} */ result = false,
 
-		    // find the slash
-		    slashIndex = token.indexOf("/"),
-
-		    // left and right parts
-		    leftPart = "",
-		    rightPart = "";
+			// find the slash
+			/** @type {number} */ slashIndex = token.indexOf("/"),
+	
+			// left and right parts
+			/** @type {string} */ leftPart = "",
+			/** @type {string} */ rightPart = "";
 
 		// check if the token contained a slash
 		if (slashIndex !== -1) {
@@ -437,13 +448,14 @@
 	};
 
 	// return a token as a number
-	Script.prototype.asNumber = function(token) {
-		var result = 0,
+	/** @returns {number} */
+	Script.prototype.asNumber = function(/** @type {string} */ token) {
+		var	/** @type {number} */ result = 0,
 
 		    // slash
-		    slashIndex = 0,
-		    leftPart = "",
-		    rightPart = "";
+		    /** @type {number} */ slashIndex = 0,
+		    /** @type {string} */ leftPart = "",
+		    /** @type {string} */ rightPart = "";
 
 		// check if the token is a fraction
 		if (this.isFraction(token)) {
@@ -468,9 +480,10 @@
 	};
 
 	// get the next token as a number
+	/** @returns {number} */
 	Script.prototype.getNextTokenAsNumber = function() {
-		var result = 0,
-		    token = "";
+		var	/** @type {number} */ result = 0,
+			/** @type {string} */ token = "";
 
 		// check for pre-converted number
 		if (this.current < this.starts.length) {
@@ -490,9 +503,10 @@
 	};
 
 	// check if a token is a number (including a fraction)
+	/** @returns {boolean} */
 	Script.prototype.nextTokenIsNumeric = function() {
-		var result = false,
-		    token = "";
+		var	/** @type {boolean} */ result = false,
+			/** @type {string} */ token = "";
 
 		// check if there are tokens
 		if (this.current < this.starts.length) {
@@ -517,10 +531,11 @@
 	};
 
 	// check if a token forward from here is a number (including a fraction)
-	Script.prototype.forwardTokenIsNumeric = function(howFar) {
-		var result = false,
-			token = "",
-			current = this.current + howFar;
+	/** @returns {boolean} */
+	Script.prototype.forwardTokenIsNumeric = function(/** @type {number} */ howFar) {
+		var	/** @type {boolean} */ result = false,
+			/** @type {string} */ token = "",
+			/** @type {number} */ current = this.current + howFar;
 
 		// check if there are tokens
 		if (current < this.starts.length) {
