@@ -310,7 +310,7 @@
 	};
 
 	// get the count for von Neumann
-	/** @return {number} */
+	/** @returns {number} */
 	HROT.prototype.getCount2 = function(/** @type {number} */ i, /** @type {number} */ j, countRow) {
 		if (i < 0 || i + j < 0 || j - i >= this.ncols) {
 			return 0;
@@ -334,7 +334,7 @@
 	};
 
 	// get the count for von Neumann
-	/** @return {number} */
+	/** @returns {number} */
 	HROT.prototype.getCount = function(/** @type {number} */ i, /** @type {number} */ j) {
 		if (i < 0 || i + j < 0 || j - i >= this.ncols) {
 			return 0;

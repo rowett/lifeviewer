@@ -12,9 +12,9 @@
 	/**
 	 * @constructor
 	 */
-	function TextAlert(/** @type {number} */ appear, /** @type {number} */ hold, /** @type {number} */ disappear, context, menuManager) {
+	function TextAlert(/** @type {number} */ appear, /** @type {number} */ hold, /** @type {number} */ disappear, /** @type {CanvasRenderingContext2D} */ context, /** @type {MenuManager} */ menuManager) {
 		// menu manager
-		this.menuManager = menuManager;
+		/** @type {MenuManager} */ this.menuManager = menuManager;
 
 		// steps for text to appear
 		/** @type {number} */ this.textAppear = appear;
@@ -41,7 +41,7 @@
 		/** @type {boolean} */ this.pendingPriorityClear = false;
 
 		// drawing context
-		this.context = context;
+		/** @type {CanvasRenderingContext2D} */ this.context = context;
 
 		// whether notification has background
 		/** @type {boolean} */ this.txtBg = false;
@@ -84,6 +84,7 @@
 	}
 
 	// return whether a notification is displayed
+	/** @returns {boolean} */
 	TextAlert.prototype.displayed = function() {
 		var	/** @type {boolean} */ result = false;
 
@@ -228,6 +229,7 @@
 	};
 
 	// update notification
+	/** @returns {boolean} */
 	TextAlert.prototype.updateNotification = function(/** @type {string} */ message, /** @type {number} */ appear, /** @type {number} */ hold, /** @type {number} */ disappear, /** @type {number} */ start, /** @type {number} */ offset, /** @type {boolean} */ isPriority) {
 		var	/** @type {number} */ scaleFactor = 0,
 			/** @type {number} */ elapsedTime = 0,
@@ -374,21 +376,21 @@
 	/**
 	 * @constructor
 	 */
-	function IconManager(iconsImage, context) {
+	function IconManager(/** @type {HTMLImageElement} */ iconsImage, /** @type {CanvasRenderingContext2D} */ context) {
 		// save the drawing context
-		this.context = context;
+		/** @type {CanvasRenderingContext2D} */ this.context = context;
 
 		// save the icon image
-		this.iconsImage = iconsImage;
+		/** @type {HTMLImageElement} */ this.iconsImage = iconsImage;
 		/** @type {number} */ this.width = 0;
 		/** @type {number} */ this.height = 0;
 		this.iconCanvas = null;
 		this.iconContext = null;
-		this.convertedImage = null;
-		this.greyedOutImage = null;
+		/** @type {HTMLImageElement} */ this.convertedImage = null;
+		/** @type {HTMLImageElement} */ this.greyedOutImage = null;
 
 		// list of icons
-		this.iconList = [];
+		/** @type {Array} */ this.iconList = [];
 
 		// whether icons need recolouring
 		/** @type {boolean} */ this.recolour = true;
@@ -418,9 +420,9 @@
 	};
 
 	// draw icon
-	IconManager.prototype.draw = function(icon, /** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ locked) {
-		var	data = null,
-			data32 = null,
+	IconManager.prototype.draw = function(/** @type {Icon} */ icon, /** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ locked) {
+		var	/** @type {ImageData} */ data = null,
+			/** @type {Uint32Array} */ data32 = null,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ destIndex = 0,
@@ -556,16 +558,18 @@
 	};
 
 	// return number of icons
+	/** @returns {number} */
 	IconManager.prototype.length = function() {
 		return this.iconList.length;
 	};
 
 	// return the named icon
+	/** @returns {Icon} */
 	IconManager.prototype.icon = function(/** @type {string} */ name) {
 		var	/** @type {number} */ a,
-			i = this.iconList,
+			/** @type {Array<Icon>}*/ i = this.iconList,
 			/** @type {number} */ l = this.length(),
-			result = null;
+			/** @type {Icon} */ result = null;
 
 		// search the list for the named icon
 		a = 0;
@@ -584,7 +588,7 @@
 	IconManager.prototype.add = function(/** @type {string} */ name, /** @type {number} */ width, /** @type {number} */ height) {
 		// create new icon
 		var	/** @type {number} */ iconNum = this.iconList.length,
-			newIcon = new Icon(name, width, height, iconNum);
+			/** @type {Icon} */ newIcon = new Icon(name, width, height, iconNum);
 
 		// add to the list of icons
 		this.iconList[iconNum] = newIcon;
@@ -629,27 +633,40 @@
 	// MenuItem
 	/**
 	 * @constructor
+	 * @param {number} id
+	 * @param {number} position
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} width
+	 * @param {number} height
+	 * @param {number} type
+	 * @param {number} orientation
+	 * @param {boolean} valueDisplay
+	 * @param {string} preText
+	 * @param {string} postText
+	 * @param {number} fixed
+	 * @param {MenuList} owner
 	 */
-	function MenuItem(id, callback, caller, position, x, y, width, height, lower, upper, current, type, orientation, border, valueDisplay, preText, postText, fixed, icon, owner) {
-		var i = 0;
+	function MenuItem(id, callback, caller, position, x, y, width, height, lower, upper, current, type, orientation, valueDisplay, preText, postText, fixed, icon, owner) {
+		var	/** @type {number} */ i = 0;
 
 		// id
-		this.id = id;
+		/** @type {number} */ this.id = id;
 
 		// owning menu
 		this.owner = owner;
 
 		// tool tip
-		this.toolTip = "";
+		/** @type {string} */ this.toolTip = "";
 
 		// item in a multi-select that is highlighted
-		this.highlightItem = -1;
+		/** @type {number} */ this.highlightItem = -1;
 
 		// whether multi-select highlight item is locked
-		this.highlightLocked = false;
+		/** @type {boolean} */ this.highlightLocked = false;
 
 		// whether deleted
-		this.deleted = false;
+		/** @type {boolean} */ this.deleted = false;
 
 		// callback
 		this.callback = callback;
@@ -661,29 +678,26 @@
 		this.icon = icon;
 
 		// absolute position top left
-		this.x = x;
-		this.y = y;
+		/** @type {number} */ this.x = x;
+		/** @type {number} */ this.y = y;
 
 		// relative position
-		this.relX = x;
-		this.relY = y;
+		/** @type {number} */ this.relX = x;
+		/** @type {number} */ this.relY = y;
 
 		// position type
-		this.position = position;
+		/** @type {number} */ this.position = position;
 
 		// width and height
-		this.width = width;
-		this.height = height;
+		/** @type {number} */ this.width = width;
+		/** @type {number} */ this.height = height;
 
 		// relative width and height
-		this.relWidth = width;
-		this.relHeight = height;
-
-		// border thickness (0 for no border)
-		this.border = border;
+		/** @type {number} */ this.relWidth = width;
+		/** @type {number} */ this.relHeight = height;
 
 		// type of menu item
-		this.type = type;
+		/** @type {number} */ this.type = type;
 
 		// menu orientation
 		if (orientation === Menu.auto) {
@@ -698,7 +712,7 @@
 		}
 
 		// text orientation
-		this.textOrientation = this.orientation;
+		/** @type {number} */ this.textOrientation = this.orientation;
 
 		// value range represented (order is important)
 		this.lower = lower;
@@ -713,38 +727,38 @@
 		}
 
 		// whether to display the value
-		this.valueDisplay = valueDisplay;
+		/** @type {boolean} */ this.valueDisplay = valueDisplay;
 
 		// text to prefix to the value
-		this.preText = preText;
+		/** @type {string} */ this.preText = preText;
 
 		// text to postfix after the value
-		this.postText = postText;
+		/** @type {string} */ this.postText = postText;
 
 		// decimal places for the value (-1 not numeric)
-		this.fixed = fixed;
+		/** @type {number} */ this.fixed = fixed;
 
 		// flag for mouse down last update
-		this.lastMouseDown = false;
+		/** @type {boolean} */ this.lastMouseDown = false;
 
 		// last mouse position
-		this.lastMouseX = -1;
-		this.lastMouseY = -1;
+		/** @type {number} */ this.lastMouseX = -1;
+		/** @type {number} */ this.lastMouseY = -1;
 
 		// text alignment
-		this.textAlign = Menu.center;
+		/** @type {number} */ this.textAlign = Menu.center;
 
 		// whether enabled
-		this.enabled = true;
+		/** @type {boolean} */ this.enabled = true;
 
 		// whether locked
-		this.locked = false;
+		/** @type {boolean} */ this.locked = false;
 
 		// whether unlock override is on
-		this.overrideLocked = false;
+		/** @type {boolean} */ this.overrideLocked = false;
 
 		// whether individual list items are locked
-		this.itemLocked = [];
+		/** @type {Array<boolean>} */ this.itemLocked = [];
 		if (this.type === Menu.list) {
 			for (i = 0; i < lower.length; i += 1) {
 				this.itemLocked[i] = false;
@@ -755,17 +769,17 @@
 		this.toggleMenuParents = [];
 
 		// number of toggle menu items
-		this.numToggleMenuParents = 0;
+		/** @type {number} */ this.numToggleMenuParents = 0;
 
 		// invert rule
-		this.invert = false;
+		/** @type {boolean} */ this.invert = false;
 
 		// whether to cascade toggle menu
-		this.cascade = true;
+		/** @type {boolean} */ this.cascade = true;
 
 		// background colour and alpha
-		this.bgCol = owner.bgCol;
-		this.bgAlpha = owner.bgAlpha;
+		/** @type {string} */ this.bgCol = owner.bgCol;
+		/** @type {number} */ this.bgAlpha = owner.bgAlpha;
 
 		// set background colour list
 		if (type === Menu.list) {
@@ -776,56 +790,56 @@
 		}
 
 		// foreground colour and alpha
-		this.fgCol = owner.fgCol;
-		this.fgAlpha = owner.fgAlpha;
+		/** @type {string} */ this.fgCol = owner.fgCol;
+		/** @type {number} */ this.fgAlpha = owner.fgAlpha;
 
 		// highlight colour and alpha when mouse is over item
-		this.hlCol = owner.hlCol;
-		this.hlAlpha = owner.hlAlpha;
+		/** @type {string} */ this.hlCol = owner.hlCol;
+		/** @type {number} */ this.hlAlpha = owner.hlAlpha;
 
 		// selected colour and alpha when item selected
-		this.selectedCol = owner.selectedCol;
-		this.selectedAlpha = owner.selectedAlpha;
+		/** @type {string} */ this.selectedCol = owner.selectedCol;
+		/** @type {number} */ this.selectedAlpha = owner.selectedAlpha;
 
 		// locked colour and alpha when item locked
-		this.lockedCol = owner.lockedCol;
-		this.lockedAlpha = owner.lockedAlpha;
+		/** @type {string} */ this.lockedCol = owner.lockedCol;
+		/** @type {number} */ this.lockedAlpha = owner.lockedAlpha;
 
 		// border colour and alpha
-		this.borderCol = owner.borderCol;
-		this.borderAlpha = owner.borderAlpha;
+		/** @type {string} */ this.borderCol = owner.borderCol;
+		/** @type {number} */ this.borderAlpha = owner.borderAlpha;
 
 		// border thickness (or 0 for no border)
-		this.border = owner.border;
+		/** @type {number} */ this.border = owner.border;
 
 		// decompose the font into size and family
-		this.fontSize = parseInt(owner.defaultFont.substr(0, owner.defaultFont.indexOf("px")), 10);
-		this.fontFamily = owner.defaultFont.substr(owner.defaultFont.indexOf("px") + 3);
+		/** @type {number} */ this.fontSize = parseInt(owner.defaultFont.substr(0, owner.defaultFont.indexOf("px")), 10);
+		/** @type {string} */ this.fontFamily = owner.defaultFont.substr(owner.defaultFont.indexOf("px") + 3);
 	}
 
 	// delete if shown
-	MenuItem.prototype.deleteIfShown = function(del) {
+	MenuItem.prototype.deleteIfShown = function(/** @type {boolean} */ del) {
 		if (!this.deleted && del) {
 			this.deleted = true;
 		}
 	};
 
 	// set font
-	MenuItem.prototype.setFont = function(font) {
+	MenuItem.prototype.setFont = function(/** @type {string} */ font) {
 		this.fontSize = parseInt(font.substr(0, font.indexOf("px")), 10);
 		this.fontFamily = font.substr(font.indexOf("px") + 3);
 	};
 
 	// set item foreground and background colour
-	MenuItem.prototype.setColours = function(fg, bg, highlight, selected, locked, border) {
-		var i = 0;
+	MenuItem.prototype.setColours = function(/** @type {string} */ fg, /** @type {string} */ bg, /** @type {string} */ highlight, /** @type {string} */ selected, /** @type {string} */ locked, /** @type {string} */ border) {
+		var	/** @type {number} */ i = 0;
 
-		this.fgCol = fg;
-		this.bgCol = bg;
-		this.hlCol = highlight;
-		this.selectedCol = selected;
-		this.lockedCol = locked;
-		this.borderCol = border;
+		/** @type {string} */ this.fgCol = fg;
+		/** @type {string} */ this.bgCol = bg;
+		/** @type {string} */ this.hlCol = highlight;
+		/** @type {string} */ this.selectedCol = selected;
+		/** @type {string} */ this.lockedCol = locked;
+		/** @type {string} */ this.borderCol = border;
 		if (this.type === Menu.list) {
 			this.bgColList = [];
 			for (i = 0; i < this.lower.length; i += 1) {
@@ -835,45 +849,45 @@
 	};
 
 	// set border width
-	MenuItem.prototype.setBorder = function(border) {
+	MenuItem.prototype.setBorder = function(/** @type {number} */ border) {
 		this.border = border;
 	};
 
 	// set a new width
-	MenuItem.prototype.setWidth = function(width) {
+	MenuItem.prototype.setWidth = function(/** @type {number} */ width) {
 		this.relWidth = width;
 	};
 
 	// set a new height
-	MenuItem.prototype.setHeight = function(height) {
+	MenuItem.prototype.setHeight = function(/** @type {number} */ height) {
 		this.relHeight = height;
 	};
 
 	// set a new X coordinate
-	MenuItem.prototype.setX = function(x) {
+	MenuItem.prototype.setX = function(/** @type {number} */ x) {
 		this.relX = x;
 	};
 
 	// set a new Y coordinate
-	MenuItem.prototype.setY = function(y) {
+	MenuItem.prototype.setY = function(/** @type {number} */ y) {
 		this.relY = y;
 	};
 
 	// set a new absolute position
-	MenuItem.prototype.setPosition = function(position, x, y) {
+	MenuItem.prototype.setPosition = function(/** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y) {
 		this.position = position;
 		this.relX = x;
 		this.relY = y;
 	};
 
 	// calculate item position
-	MenuItem.prototype.calculatePosition = function(width, height) {
-		var xScale = this.owner.xScale,
-			yScale = this.owner.yScale,
-			relXS = this.relX * xScale,
-			relYS = this.relY * yScale,
-			relWidthS = this.relWidth * xScale,
-			relHeightS = this.relHeight * yScale;
+	MenuItem.prototype.calculatePosition = function(/** @type {number} */ width, /** @type {number} */ height) {
+		var	/** @type {number} */ xScale = this.owner.xScale,
+			/** @type {number} */ yScale = this.owner.yScale,
+			/** @type {number} */ relXS = this.relX * xScale,
+			/** @type {number} */ relYS = this.relY * yScale,
+			/** @type {number} */ relWidthS = this.relWidth * xScale,
+			/** @type {number} */ relHeightS = this.relHeight * yScale;
 
 		// copy the absolute position from the relative position
 		this.x = relXS;
@@ -954,7 +968,7 @@
 
 	// add a toggle menu parent
 	MenuItem.prototype.addToggleMenuParent = function(parentItem, cascade) {
-		var n = this.numToggleMenuParents;
+		var	/** @type {number} */ n = this.numToggleMenuParents;
 
 		// save the parent in the list and increment number
 		this.toggleMenuParents[n] = [parentItem, cascade];
@@ -967,7 +981,8 @@
 	// add a list of specific items to a toggle menu
 	MenuItem.prototype.addItemsToToggleMenu = function(itemList, noCascadeList) {
 		// add the items to the list
-		var i, l;
+		var	/** @type {number} */ i,
+			/** @type {number} */ l;
 
 		// find out how many items are in the list to add
 		l = itemList.length;
@@ -985,8 +1000,9 @@
 	};
 
 	// check if cursor is over this menu item
-	MenuItem.prototype.mouseIsOver = function(mouseX, mouseY) {
-		var result = false;
+	/** @returns {boolean} */
+	MenuItem.prototype.mouseIsOver = function(/** @type {number} */ mouseX, /** @type {number} */ mouseY) {
+		var	/** @type {boolean} */ result = false;
 
 		// check whether this item is enabled
 		if (this.enabled) {
@@ -1010,31 +1026,31 @@
 		this.context = context;
 
 		// x and y scale
-		this.xScale = 1;
-		this.yScale = 1;
+		/** @type {number} */ this.xScale = 1;
+		/** @type {number} */ this.yScale = 1;
 
 		// default font
 		this.defaultFont = defaultFont;
 
 		// whether menu deleted
-		this.deleted = false;
+		/** @type {boolean} */ this.deleted = false;
 
 		// whether menu locked
-		this.locked = false;
+		/** @type {boolean} */ this.locked = false;
 
 		// mouse position
-		this.mouseX = -1;
-		this.mouseY = -1;
-		this.mouseDown = false;
-		this.clickHappened = false;
-		this.origX = -1;
-		this.origY = -1;
+		/** @type {number} */ this.mouseX = -1;
+		/** @type {number} */ this.mouseY = -1;
+		/** @type {boolean} */ this.mouseDown = false;
+		/** @type {boolean} */ this.clickHappened = false;
+		/** @type {number} */ this.origX = -1;
+		/** @type {number} */ this.origY = -1;
 
 		// range highlight width
-		this.rangeHighlightSize = 6;
+		/** @type {number} */ this.rangeHighlightSize = 6;
 
 		// strikethrough width
-		this.strikeThroughWidth = 2;
+		/** @type {number} */ this.strikeThroughWidth = 2;
 
 		// callback function to update
 		this.callback = callback;
@@ -1043,43 +1059,43 @@
 		this.menuItems = [];
 
 		// number of menu items
-		this.numMenuItems = 0;
+		/** @type {number} */ this.numMenuItems = 0;
 
 		// background colour and alpha
-		this.bgCol = "";
-		this.bgAlpha = 0;
+		/** @type {string} */ this.bgCol = "";
+		/** @type {number} */ this.bgAlpha = 0;
 
 		// foreground colour and alpha
-		this.fgCol = "";
-		this.fgAlpha = 0;
+		/** @type {string} */ this.fgCol = "";
+		/** @type {number} */ this.fgAlpha = 0;
 
 		// highlight colour and alpha when mouse is over item
-		this.hlCol = "";
-		this.hlAlpha = 0;
+		/** @type {string} */ this.hlCol = "";
+		/** @type {number} */ this.hlAlpha = 0;
 
 		// selected colour and alpha when item selected
-		this.selectedCol = "";
-		this.selectedAlpha = 0;
+		/** @type {string} */ this.selectedCol = "";
+		/** @type {number} */ this.selectedAlpha = 0;
 
 		// locked colour and alpha when item locked
-		this.lockedCol = "";
-		this.lockedAlpha = 0;
+		/** @type {string} */ this.lockedCol = "";
+		/** @type {number} */ this.lockedAlpha = 0;
 
 		// border colour and alpha
-		this.borderCol = "";
-		this.borderAlpha = 0;
+		/** @type {string} */ this.borderCol = "";
+		/** @type {number} */ this.borderAlpha = 0;
 
 		// border thickness (or 0 for no border)
-		this.border = 0;
+		/** @type {number} */ this.border = 0;
 
 		// default orientation (auto bases orientation on the width and height of the item)
-		this.defaultOrientation = Menu.auto;
+		/** @type {number} */ this.defaultOrientation = Menu.auto;
 
 		// active item
-		this.activeItem = -1;
+		/** @type {number} */ this.activeItem = -1;
 
 		// mouse over item
-		this.mouseOverItem = -1;
+		/** @type {number} */ this.mouseOverItem = -1;
 
 		// wakeup callback when GUI locked
 		this.wakeCallback = null;
@@ -1097,28 +1113,28 @@
 		this.iconManager = null;
 
 		// cursor style for controls
-		this.cursorControls = "auto";
+		/** @type {string} */ this.cursorControls = "auto";
 
 		// cursor style for background
-		this.cursorBackground = "auto";
+		/** @type {string} */ this.cursorBackground = "auto";
 
 		// current cursor style
-		this.cursorCurrent = "auto";
+		/** @type {string} */ this.cursorCurrent = "auto";
 
 		// current set cursor style
-		this.cursorSet = "auto";
+		/** @type {string} */ this.cursorSet = "auto";
 	}
 
 	// resize controls
-	MenuList.prototype.resizeControls = function(scale) {
+	MenuList.prototype.resizeControls = function(/** @type {number} */ scale) {
 		this.xScale = scale;
 		this.yScale = scale;
 		this.manager.notification.scale = scale;
 	};
 
 	// set menu foreground and background colour
-	MenuList.prototype.setColours = function(fg, bg, highlight, selected, locked, border) {
-		var i = 0;
+	MenuList.prototype.setColours = function(/** @type {string} */ fg, /** @type {string} */ bg, /** @type {string} */ highlight, /** @type {string} */ selected, /** @type {string} */ locked, /** @type {string} */ border) {
+		var	/** @type {number} */ i = 0;
 
 		// set colours for new controls
 		this.fgCol = fg;
@@ -1135,8 +1151,8 @@
 	};
 
 	// set border width
-	MenuList.prototype.setBorderWidth = function(border) {
-		var i = 0;
+	MenuList.prototype.setBorderWidth = function(/** @type {number} */ border) {
+		var	/** @type {number} */ i = 0;
 
 		// set width for new controls
 		this.border = border;
@@ -1148,8 +1164,11 @@
 	};
 
 	// check parent toggle menu state for visibility
-	MenuList.prototype.parentMenu = function(parentItem, cascade) {
-		var result = false, i, l = parentItem.numToggleMenuParents;
+	/** @returns {boolean} */
+	MenuList.prototype.parentMenu = function(parentItem, /** @type {boolean} */ cascade) {
+		var	/** @type {boolean} */ result = false,
+			/** @type {number} */ i,
+			/** @type {number} */ l = parentItem.numToggleMenuParents;
 
 		// start from this toggle menu
 		if (parentItem.type === Menu.list && parentItem.upper === Menu.multi) {
@@ -1175,7 +1194,9 @@
 
 	// set whether this item is enabled (visible) based on any toggle menu parents
 	MenuList.prototype.toggleMenu = function(menuItem) {
-		var result = true, i, l = menuItem.numToggleMenuParents;
+		var	/** @type {boolean} */ result = true,
+			/** @type {number} */ i,
+			/** @type {number} */ l = menuItem.numToggleMenuParents;
 
 		// assume enabled
 		result = true;
@@ -1191,7 +1212,8 @@
 
 	// initialise menu list
 	MenuList.prototype.init = function() {
-		var currentItem, i;
+		var	/** @type {MenuItem} */ currentItem,
+			/** @type {number} */ i;
 
 		// iterate over each menu item
 		for (i = 0; i < this.numMenuItems; i += 1) {
@@ -1239,7 +1261,7 @@
 	// add list item
 	MenuList.prototype.addListItem = function(callback, position, x, y, width, height, list, current, selection) {
 		// create the item
-		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, list, selection, current, Menu.list, this.defaultOrientation, this.border, true, "", "", -1, [], this);
+		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, list, selection, current, Menu.list, this.defaultOrientation, true, "", "", -1, [], this);
 
 		// increment the item number
 		this.numMenuItems += 1;
@@ -1251,7 +1273,7 @@
 	// add range item
 	MenuList.prototype.addRangeItem = function(callback, position, x, y, width, height, lower, upper, current, valueDisplay, preText, postText, fixed) {
 		// create the item
-		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, lower, upper, current, Menu.range, this.defaultOrientation, this.border, valueDisplay, preText, postText, fixed, null, this);
+		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, lower, upper, current, Menu.range, this.defaultOrientation, valueDisplay, preText, postText, fixed, null, this);
 
 		// increment the item number
 		this.numMenuItems += 1;
@@ -1263,7 +1285,7 @@
 	// add label item
 	MenuList.prototype.addLabelItem = function(position, x, y, width, height, caption) {
 		// create the item
-		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, null, null, position, x, y, width, height, 0, 0, 0, Menu.label, this.defaultOrientation, this.border, true, caption, "", -1, null, this);
+		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, null, null, position, x, y, width, height, 0, 0, 0, Menu.label, this.defaultOrientation, true, caption, "", -1, null, this);
 
 		// increment the item number
 		this.numMenuItems += 1;
@@ -1275,7 +1297,7 @@
 	// add button item
 	MenuList.prototype.addButtonItem = function(callback, position, x, y, width, height, caption) {
 		// create the item
-		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, 0, 0, 0, Menu.button, this.defaultOrientation, this.border, true, caption, "", -1, null, this);
+		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, 0, 0, 0, Menu.button, this.defaultOrientation, true, caption, "", -1, null, this);
 
 		// increment the item number
 		this.numMenuItems += 1;
@@ -1287,7 +1309,7 @@
 	// add toggle item
 	MenuList.prototype.addToggleItem = function(callback, position, x, y, width, height, lower, upper, current, valueDisplay, preText, postText) {
 		// create the item
-		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, lower, upper, current, Menu.toggle, this.defaultOrientation, this.border, valueDisplay, preText, postText, -1, null, this);
+		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, lower, upper, current, Menu.toggle, this.defaultOrientation, valueDisplay, preText, postText, -1, null, this);
 
 		// increment the item number
 		this.numMenuItems += 1;
@@ -1299,7 +1321,7 @@
 	// add progress bar item
 	MenuList.prototype.addProgressBarItem = function(position, x, y, width, height, lower, upper, current, valueDisplay, preText, postText, fixed) {
 		// create the item
-		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, null, null, position, x, y, width, height, lower, upper, current, Menu.progressBar, this.defaultOrientation, this.border, valueDisplay, preText, postText, fixed, null, this);
+		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, null, null, position, x, y, width, height, lower, upper, current, Menu.progressBar, this.defaultOrientation, valueDisplay, preText, postText, fixed, null, this);
 
 		// increment the item number
 		this.numMenuItems += 1;
@@ -1309,7 +1331,7 @@
 	};
 
 	// draw shadow string
-	MenuList.prototype.drawShadowString = function(string, item, strikeThrough) {
+	MenuList.prototype.drawShadowString = function(/** @type {string} */ string, /** @type {MenuItem} */ item, /** @type {boolean} */ strikeThrough) {
 		var /** @type {number} */ textWidth,
 		    /** @type {number} */ target,
 		    /** @type {number} */ i,
@@ -1409,8 +1431,8 @@
 	};
 
 	// draw label item value
-	MenuList.prototype.drawLabelValue = function(item) {
-		var itemString;
+	MenuList.prototype.drawLabelValue = function(/** @type {MenuItem} */ item) {
+		var	/** @type {string} */ itemString;
 
 		// set the alpha
 		this.context.globalAlpha = this.fgAlpha;
@@ -1423,8 +1445,8 @@
 	};
 
 	// draw button item value
-	MenuList.prototype.drawButtonValue = function(item) {
-		var itemString;
+	MenuList.prototype.drawButtonValue = function(/** @type {MenuItem} */ item) {
+		var	/** @type {string} */ itemString;
 
 		// set the alpha
 		this.context.globalAlpha = this.fgAlpha;
@@ -1437,8 +1459,9 @@
 	};
 
 	// draw progress bar item value
-	MenuList.prototype.drawProgressBarValue = function(item) {
-		var itemString, markerPos;
+	MenuList.prototype.drawProgressBarValue = function(/** @type {MenuItem} */ item) {
+		var	/** @type {string} */ itemString,
+			/** @type {number} */ markerPos;
 
 		// compute the marker position in the bar
 		markerPos = (item.current - item.lower) / (item.upper - item.lower);
@@ -1488,8 +1511,10 @@
 	};
 
 	// draw range item value
-	MenuList.prototype.drawRangeValue = function(item, highlight) {
-		var markerPos, highlightSize, itemString;
+	MenuList.prototype.drawRangeValue = function(/** @type {MenuItem} */ item, /** @type {boolean} */ highlight) {
+		var	/** @type {number} */ markerPos,
+			/** @type {number} */ highlightSize,
+			/** @type {string} */ itemString;
 
 		// compute the marker position in the range
 		markerPos = (item.current[0] - item.lower) / (item.upper - item.lower);
@@ -1569,8 +1594,9 @@
 	};
 
 	// draw toggle item value
-	MenuList.prototype.drawToggleValue = function(item) {
-		var strikeThrough, itemString;
+	MenuList.prototype.drawToggleValue = function(/** @type {MenuItem} */ item) {
+		var	/** @type {boolean} */ strikeThrough,
+			/** @type {string} */ itemString;
 
 		// set the alpha
 		this.context.globalAlpha = this.fgAlpha;
@@ -1594,8 +1620,14 @@
 	};
 
 	// get grid cell value
-	MenuList.prototype.gridCell = function(item) {
-		var cellX, cellY, gridX, gridY, mouseX, mouseY;
+	/** @returns {Array<number>} */
+	MenuList.prototype.gridCell = function(/** @type {MenuItem} */ item) {
+		var	/** @type {number} */ cellX,
+			/** @type {number} */ cellY,
+			/** @type {number} */ gridX,
+			/** @type {number} */ gridY,
+			/** @type {number} */ mouseX,
+			/** @type {number} */ mouseY;
 
 		// read the grid size
 		gridX = item.lower;
@@ -1629,16 +1661,20 @@
 	};
 
 	// draw list values
-	MenuList.prototype.drawListValue = function(item, highlight) {
-		var i, l, list, x, y, itemSize, width, height, orientation, text, itemNum, values;
-
-		// get the item position and size
-		x = item.x;
-		y = item.y;
-		width = item.width;
-		height = item.height;
-		orientation = item.orientation;
-		values = item.current;
+	MenuList.prototype.drawListValue = function(/** @type {MenuItem} */ item, /** @type {boolean} */ highlight) {
+		var	/** @type {number} */ i,
+			/** @type {number} */ l,
+			/** @type {number} */ itemSize,
+			/** @type {string} */ text,
+			/** @type {number} */ itemNum,
+			list,
+			// get the item position and size
+			/** @type {number} */ x = item.x,
+			/** @type {number} */ y = item.y,
+			/** @type {number} */ width = item.width,
+			/** @type {number} */ height = item.height,
+			/** @type {number} */ orientation = item.orientation,
+			values = item.current;
 
 		// get the list items
 		list = item.lower;
@@ -1785,9 +1821,18 @@
 	};
 
 	// draw menu item
-	MenuList.prototype.drawItem = function(item, mouseIsOver, itemNum, activeNum, touch) {
-		var markerPos, highlight, highlightSize, markerX, markerY, mX, mY, i, l, w,
-			canHighlight = true;
+	MenuList.prototype.drawItem = function(/** @type {MenuItem} */ item, /** @type {boolean} */ mouseIsOver, /** @type {number} */ itemNum, /** @type {number} */ activeNum, /** @type {boolean} */ touch) {
+		var	/** @type {number} */ markerPos,
+			/** @type {boolean} */ highlight,
+			/** @type {number} */ highlightSize,
+			/** @type {number} */ markerX,
+			/** @type {number} */ markerY,
+			/** @type {number} */ mX,
+			/** @type {number} */ mY,
+			/** @type {number} */ i,
+			/** @type {number} */ l,
+			/** @type {number} */ w,
+			/** @type {boolean} */ canHighlight = true;
 
 		// highlight disabled if touch events just caused a click
 		if (mouseIsOver && !this.mouseDown && touch) {
@@ -2174,21 +2219,22 @@
 	};
 
 	// set background cursor style
-	MenuList.prototype.setBackgroundCursor = function(cursor) {
+	MenuList.prototype.setBackgroundCursor = function(/** @type {string} */ cursor) {
 		this.cursorBackground = cursor;
 	};
 
 	// draw menu items on the given context and return whether to toggle menus
+	/** @returns {boolean} */
 	MenuList.prototype.drawMenu = function() {
-		var currentItem = null,
-		    mouseIsOver = false,
-		    activeItem = this.activeItem,
-		    i = 0,
-			result = false,
-			currentLocked = false,
-		    canvasWidth = this.context.canvas.width,
-			canvasHeight = this.context.canvas.height,
-			mouseOverGlobalItem = -1;
+		var	/** @type {MenuItem} */ currentItem = null,
+			/** @type {boolean} */ mouseIsOver = false,
+			/** @type {number} */ activeItem = this.activeItem,
+			/** @type {number} */ i = 0,
+			/** @type {boolean} */ result = false,
+			/** @type {boolean} */ currentLocked = false,
+			/** @type {number} */ canvasWidth = this.context.canvas.width,
+			/** @type {number} */ canvasHeight = this.context.canvas.height,
+			/** @type {number} */ mouseOverGlobalItem = -1;
 		
 		// flag no need to toggle menus
 		result = false;
@@ -2346,165 +2392,165 @@
 	/**
 	 * @constructor
 	 */
-	function MenuManager(mainCanvas, mainContext, defaultFont, iconManager, caller, gotFocus) {
-		var me = this,
-		    i = 0;
+	function MenuManager(mainCanvas, /** @type {CanvasRenderingContext2D} */ mainContext, /** @type {string} */ defaultFont, /** @type {IconManager} */ iconManager, caller, /** @type {boolean} */ gotFocus) {
+		var	me = this,
+			/** @type {number} */ i = 0;
 
 		// window zoom
-		this.windowZoom = 1;
+		/** @type {number} */ this.windowZoom = 1;
 
 		// refresh rate
-		this.refreshRate = 60;
+		/** @type {number} */ this.refreshRate = 60;
 
 		// whether event processed
-		this.processedEvent = true;
+		/** @type {boolean} */ this.processedEvent = true;
 
 		// whether updates are idle
-		this.idle = true;
+		/** @type {boolean} */ this.idle = true;
 
 		// minimum tooltip Y offset
-		this.minToolTipY = 40;
+		/** @type {number} */ this.minToolTipY = 40;
 
 		// minimum tooltip X offset
-		this.minToolTipX = 40;
+		/** @type {number} */ this.minToolTipX = 40;
 
 		// tooltip delay
-		this.toolTipDelay = 50;
+		/** @type {number} */ this.toolTipDelay = 50;
 
 		// current tooltip counter
-		this.toolTipCounter = 0;
+		/** @type {number} */ this.toolTipCounter = 0;
 
 		// last tooltip control
-		this.toolTipControl = -1;
+		/** @type {number} */ this.toolTipControl = -1;
 
 		// last tooltip control multi-item
-		this.toolTipMulti = -1;
+		/** @type {number} */ this.toolTipMulti = -1;
 
 		// last active control to stop tooltip once item clicked
-		this.toolTipLastActive = -1;
+		/** @type {number} */ this.toolTipLastActive = -1;
 
 		// flag for passing up mouse events
-		this.passEvents = false;
+		/** @type {boolean} */ this.passEvents = false;
 
 		// caller for callbacks
 		this.caller = caller;
 
 		// whether GUI disabled
-		this.noGUI = false;
+		/** @type {boolean} */ this.noGUI = false;
 
 		// whether RLE copy disabled
-		this.noCopy = false;
+		/** @type {boolean} */ this.noCopy = false;
 
 		// whether thumbnail mode active
-		this.thumbnail = false;
+		/** @type {boolean} */ this.thumbnail = false;
 
 		// whether thumbnail launch mode active
-		this.thumbLaunch = false;
+		/** @type {boolean} */ this.thumbLaunch = false;
 
 		// thumbnail divisor
-		this.thumbnailDivisor = 4;
+		/** @type {number} */ this.thumbnailDivisor = 4;
 
 		// got focus callback
 		this.focusCallback = gotFocus;
 
 		// click to interact flag
-		this.clickToInteract = false;
+		/** @type {boolean} */ this.clickToInteract = false;
 
 		// whether canvas has focus
-		this.hasFocus = false;
+		/** @type {boolean} */ this.hasFocus = false;
 
 		// auto update flag
-		this.autoUpdate = true;
+		/** @type {boolean} */ this.autoUpdate = true;
 
 		// update scheduled flag
-		this.updateScheduled = false;
+		/** @type {boolean} */ this.updateScheduled = false;
 
 		// count of updates to run
-		this.updateCount = 1;
+		/** @type {number} */ this.updateCount = 1;
 
 		// default update count
-		this.defaultUpdateCount = 8;
+		/** @type {number} */ this.defaultUpdateCount = 8;
 
 		// default hotkey colour
-		this.hotkeyCol = "rgb(32,255,255)";
+		/** @type {string} */ this.hotkeyCol = "rgb(32,255,255)";
 
 		// default background colour
-		this.bgCol = "black";
-		this.bgAlpha = 0.7;
+		/** @type {string} */ this.bgCol = "black";
+		/** @type {number} */ this.bgAlpha = 0.7;
 
 		// default foreground colour
-		this.fgCol = "white";
-		this.fgAlpha = 1.0;
-		this.fgR = 0;
-		this.fgG = 0;
-		this.fgB = 0;
+		/** @type {string} */ this.fgCol = "white";
+		/** @type {number} */ this.fgAlpha = 1.0;
+		/** @type {number} */ this.fgR = 0;
+		/** @type {number} */ this.fgG = 0;
+		/** @type {number} */ this.fgB = 0;
 
 		// default highlight colour
-		this.hlCol = "rgb(0,240,32)";
-		this.hlAlpha = 0.7;
+		/** @type {string} */ this.hlCol = "rgb(0,240,32)";
+		/** @type {number} */ this.hlAlpha = 0.7;
 
 		// default selected colour
-		this.selectedCol = "blue";
-		this.selectedAlpha = 0.7;
-		this.selectedR = 0;
-		this.selectedG = 0;
-		this.selectedB = 0;
+		/** @type {string} */ this.selectedCol = "blue";
+		/** @type {number} */ this.selectedAlpha = 0.7;
+		/** @type {number} */ this.selectedR = 0;
+		/** @type {number} */ this.selectedG = 0;
+		/** @type {number} */ this.selectedB = 0;
 
 		// default locked colour
-		this.lockedCol = "grey";
-		this.lockedAlpha = 1.0;
+		/** @type {string} */ this.lockedCol = "grey";
+		/** @type {number} */ this.lockedAlpha = 1.0;
 
 		// border colour and alpha
-		this.borderCol = "rgb(32,255,255)";
-		this.borderAlpha = 1.0;
+		/** @type {string} */ this.borderCol = "rgb(32,255,255)";
+		/** @type {number} */ this.borderAlpha = 1.0;
 
 		// default border width
-		this.border = 1;
+		/** @type {number} */ this.border = 1;
 
 		// callback
 		this.callbackFunction = (function(me) { return function() { me.processCallback(me); }; }(this));
 
 		// icon manager
-		this.iconManager = iconManager;
+		/** @type {IconManager} */ this.iconManager = iconManager;
 
 		// main drawing canvas
 		this.mainCanvas = mainCanvas;
 
 		// main drawing context
-		this.mainContext = mainContext;
+		/** @type {CanvasRenderingContext2D} */ this.mainContext = mainContext;
 
 		// mouse status
-		this.mouseDown = false;
-		this.mouseLastX = -1;
-		this.mouseLastY = -1;
+		/** @type {boolean} */ this.mouseDown = false;
+		/** @type {number} */ this.mouseLastX = -1;
+		/** @type {number} */ this.mouseLastY = -1;
 
 		// whether last event was touch
-		this.eventWasTouch = false;
+		/** @type {boolean} */ this.eventWasTouch = false;
 
 		// current touch id
-		this.currentTouchId = -1;
+		/** @type {number} */ this.currentTouchId = -1;
 
 		// active menu list
-		this.currentMenu = null;
+		/** @type {MenuList} */ this.currentMenu = null;
 
 		// default menu font
-		this.defaultFont = defaultFont;
+		/** @type {string} */ this.defaultFont = defaultFont;
 
 		// whether to display timing information
-		this.showTiming = false;
+		/** @type {boolean} */ this.showTiming = false;
 
 		// whether to display extended timing information
-		this.showExtendedTiming = false;
+		/** @type {boolean} */ this.showExtendedTiming = false;
 
 		// last update
-		this.lastUpdate = performance.now();
+		/** @type {number} */ this.lastUpdate = performance.now();
 
 		// last timings
-		this.numTimings = 5;
-		this.timingIndex = 0;
-		this.lastMenu = [];
-		this.lastWork = [];
-		this.lastFrame = [];
+		/** @type {number} */ this.numTimings = 5;
+		/** @type {number} */ this.timingIndex = 0;
+		/** @type {Array<number>} */ this.lastMenu = [];
+		/** @type {Array<number>} */ this.lastWork = [];
+		/** @type {Array<number>} */ this.lastFrame = [];
 
 		// initialise timing
 		for (i = 0; i < this.numTimings; i += 1) {
@@ -2514,35 +2560,35 @@
 		}
 
 		// new menu to load
-		this.loadMenu = null;
+		/** @type {MenuList} */ this.loadMenu = null;
 
 		// flag if toggle processing required
-		this.toggleRequired = false;
+		/** @type {boolean} */ this.toggleRequired = false;
 
 		// notification
-		this.notification = new TextAlert(25, 100, 25, mainContext, this);
-		this.notification.colour = this.fgCol;
-		this.notification.priorityColour = this.fgCol;
+		/** @type {TextAlert} */ this.notification = new TextAlert(25, 100, 25, mainContext, this);
+		/** @type {string} */ this.notification.colour = this.fgCol;
+		/** @type {string} */ this.notification.priorityColour = this.fgCol;
 
 		// last mouse up time
-		this.lastMouseUp = performance.now();
+		/** @type {number} */ this.lastMouseUp = performance.now();
 
 		// whether update processed since last mouse down
-		this.updateSinceMouseDown = false;
+		/** @type {boolean} */ this.updateSinceMouseDown = false;
 
 		// whether a click happened (mouse up + mouse down before update)
-		this.clickHappened = false;
+		/** @type {boolean} */ this.clickHappened = false;
 
 		// canvas offset
-		this.offsetLeft = 0;
-		this.offsetTop = 0;
+		/** @type {number} */ this.offsetLeft = 0;
+		/** @type {number} */ this.offsetTop = 0;
 
 		// time interval list
-		this.timeIntervals = [];
+		/** @type {Array<number>} */ this.timeIntervals = [];
 
 		// running total for load
-		this.loadTotal = 0;
-		this.loadCount = 0;
+		/** @type {number} */ this.loadTotal = 0;
+		/** @type {number} */ this.loadCount = 0;
 
 		// register event listeners for canvas click
 		registerEvent(mainCanvas, "mousedown", function(event) {me.canvasMouseDown(me, event);}, false);
@@ -2563,7 +2609,7 @@
 
 	// setup RGB components
 	MenuManager.prototype.setRGBComponents = function() {
-		var style = "";
+		var	/** @type {string} */ style = "";
 
 		// get foregound elements as hex rgb
 		this.mainContext.fillStyle = this.fgCol;
@@ -2589,7 +2635,7 @@
 
 	// add time interval
 	MenuManager.prototype.addTimeInterval = function() {
-		var interval = 0;
+		var	/** @type {number} */ interval = 0;
 
 		if (this.loadCount > 0) {
 			interval = this.loadTotal / this.loadCount;
@@ -2600,8 +2646,9 @@
 	};
 
 	// get time interval
-	MenuManager.prototype.getTimeInterval = function(which) {
-		var result = -1;
+	/** @returns {number} */
+	MenuManager.prototype.getTimeInterval = function(/** @type {number} */ which) {
+		var	/** @type {number} */ result = -1;
 
 		if (which >= 0 && which < this.timeIntervals.length) {
 			result = this.timeIntervals[which];
@@ -2611,7 +2658,7 @@
 	};
 
 	// set menu border width
-	MenuManager.prototype.setBorderWidth = function(border) {
+	MenuManager.prototype.setBorderWidth = function(/** @type {number} */ border) {
 		// set border for new menus
 		this.border = border;
 
@@ -2622,7 +2669,7 @@
 	};
 
 	// set menu foreground and background colour
-	MenuManager.prototype.setColours = function(fg, bg, highlight, selected, locked, border, hotkey) {
+	MenuManager.prototype.setColours = function(/** @type {string} */ fg, /** @type {string} */ bg, /** @type {string} */ highlight, /** @type {string} */ selected, /** @type {string} */ locked, /** @type {string} */ border, /** @type {string} */ hotkey) {
 		// set colours for new menus
 		this.fgCol = fg;
 		this.bgCol = bg;
@@ -2646,9 +2693,10 @@
 	};
 
 	// create menu
+	/** @returns {MenuList} */
 	MenuManager.prototype.createMenu = function(callback, activate, caller) {
 		// create menu object
-		var menuList = new MenuList(this, callback, activate, caller, this.mainContext, this.defaultFont);
+		var	/** @type {MenuList} */ menuList = new MenuList(this, callback, activate, caller, this.mainContext, this.defaultFont);
 
 		// set default style
 		menuList.fgCol = this.fgCol;
@@ -2672,57 +2720,58 @@
 	// draw tooltip
 	MenuManager.prototype.drawToolTip = function() {
 		// get current menu
-		var current = this.currentMenu,
+		var	/** @type {MenuList} */ current = this.currentMenu,
 
-		    // x scale
-		    xScale = current.xScale,
+			// x scale
+			/** @type {number} */ xScale = current.xScale,
 
-		    // control
-		    control = null,
+			// control
+			control = null,
 
-		    // control width and height
-		    controlWidth = 0,
-		    controlHeight = 0,
+			// control width and height
+			/** @type {number} */ controlWidth = 0,
+			/** @type {number} */ controlHeight = 0,
 
-		    // control location
-		    controlX = 0,
-		    controlY = 0,
+			// control location
+			/** @type {number} */ controlX = 0,
+			/** @type {number} */ controlY = 0,
 
-		    // get the drawing context
-		    oc = this.mainContext,
+			// get the drawing context
+			/** @type {CanvasRenderingContext2D} */ oc = this.mainContext,
 
-		    // tooltip text
-		    toolTip = "",
-			
-		    // extra line of text if too wide
-		    extraTip = "",
+			// tooltip text
+			/** @type {string} */ toolTip = "",
+				
+			// extra line of text if too wide
+			/** @type {string} */ extraTip = "",
 
-		    // tooltip position
-		    x = 0,
-		    y = 0,
+			// tooltip position
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
 
-		    // tooltip width
-		    width = 0,
-		    extraWidth = 0,
-		    targetWidth = 0,
-		    currentChar = "",
-		    i = 0, j = 0,
-		    textPart = "",
+			// tooltip width
+			/** @type {number} */ width = 0,
+			/** @type {number} */ extraWidth = 0,
+			/** @type {number} */ targetWidth = 0,
+			/** @type {string} */ currentChar = "",
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {string} */ textPart = "",
 
-		    // height for tooltip box
-		    height = 0,
+			// height for tooltip box
+			/** @type {number} */ height = 0,
 
-		    // number of lines of text to draw
-		    lines = 1,
+			// number of lines of text to draw
+			/** @type {number} */ lines = 1,
 
-		    // font size
-		    fontSize = 18,
+			// font size
+			/** @type {number} */ fontSize = 18,
 
-		    // border size
-		    borderSize = 4,
+			// border size
+			/** @type {number} */ borderSize = 4,
 
-		    // whether the tooltip contains a newline
-		    newLine = -1;
+			// whether the tooltip contains a newline
+			/** @type {number} */ newLine = -1;
 
 		// check for active item
 		if (current.activeItem !== -1 || (current.activeItem === -1 && current.mouseOverItem === -1)) {
@@ -2976,27 +3025,37 @@
 
 	// process callback
 	MenuManager.prototype.processCallback = function(me) {
-		var newMenu, newWork, newFrame, menu, work, frame, total, i,
+		var	/** @type {number} */ newMenu,
+			/** @type {number} */ newWork,
+			/** @type {number} */ newFrame,
+			/** @type {number} */ menu,
+			/** @type {number} */ work,
+			/** @type {number} */ frame,
+			/** @type {number} */ total,
+			/** @type {string} */ menuStr,
+			/** @type {string} */ workStr,
+			/** @type {string} */ totalStr,
+			/** @type {number} */ i,
 
-		    // performance load
-		    load = 1,
+			// performance load
+			/** @type {number} */ load = 1,
 
-		    // get the drawing context
-		    oc = me.mainContext,
+			// get the drawing context
+			/** @type {CanvasRenderingContext2D} */ oc = me.mainContext,
 
-		    // text message
-		    message = "",
+			// text message
+			/** @type {string} */ message = "",
 
-		    // text message width
-		    messageWidth = 0,
+			// text message width
+			/** @type {number} */ messageWidth = 0,
 
-		    // timing display position
-		    x = oc.canvas.width - 86,
-			y = 90,
+			// timing display position
+			/** @type {number} */ x = oc.canvas.width - 86,
+			/** @type {number} */ y = 90,
 			
 			// display scale
-			xScale = 1,
-			yScale = 1;
+			/** @type {number} */ xScale = 1,
+			/** @type {number} */ yScale = 1;
 
 		// move fps display if in thumbnail mode
 		if (me.thumbnail) {
@@ -3159,12 +3218,12 @@
 			oc.fillRect(x, y, ((88 * load * xScale) | 0), ((20 * yScale) | 0));
 
 			// convert to one decimal place
-			menu = menu.toFixed(1);
-			work = work.toFixed(1);
+			menuStr = menu.toFixed(1);
+			workStr = work.toFixed(1);
 			if (total.toFixed(1).length < 4) {
-				total = total.toFixed(1);
+				totalStr = total.toFixed(1);
 			} else {
-				total = total | 0;
+				totalStr = String(total | 0);
 			}
 
 			// draw the text shadows
@@ -3172,7 +3231,7 @@
 			oc.fillStyle = "black";
 
 			// draw fps
-			message = total + "fps";
+			message = totalStr + "fps";
 			messageWidth = oc.measureText(message).width;
 			oc.fillText(message, x + ((8 + 28) * xScale) - messageWidth, y + (12 * yScale));
 
@@ -3190,12 +3249,12 @@
 				oc.fillText("focus", x + (6 * xScale), y + (76 * yScale));
 
 				// draw menu ms
-				message = menu + "ms";
+				message = menuStr + "ms";
 				messageWidth = oc.measureText(message).width;
 				oc.fillText(message, x + ((8 + 76) * xScale) - messageWidth, y + (28 * yScale));
 
 				// draw work ms
-				message = work + "ms";
+				message = workStr + "ms";
 				messageWidth = oc.measureText(message).width;
 				oc.fillText(message, x + ((8 + 76) * xScale) - messageWidth, y + (44 * yScale));
 
@@ -3214,7 +3273,7 @@
 			oc.fillStyle = "white";
 
 			// draw fps
-			message = total + "fps";
+			message = totalStr + "fps";
 			messageWidth = oc.measureText(message).width;
 			oc.fillText(message, x + ((6 + 28) * xScale) - messageWidth, y + (10 * yScale));
 
@@ -3232,12 +3291,12 @@
 				oc.fillText("focus", x + (4 * xScale), y + (74 * yScale));
 
 				// draw menu ms
-				message = menu + "ms";
+				message = menuStr + "ms";
 				messageWidth = oc.measureText(message).width;
 				oc.fillText(message, x + ((6 + 76) * xScale) - messageWidth, y + (26 * yScale));
 
 				// draw work ms
-				message = work + "ms";
+				message = workStr + "ms";
 				messageWidth = oc.measureText(message).width;
 				oc.fillText(message, x + ((6 + 76) * xScale) - messageWidth, y + (42 * yScale));
 
@@ -3268,7 +3327,7 @@
 	};
 
 	// set active menu list
-	MenuManager.prototype.activeMenu = function(activeMenuList) {
+	MenuManager.prototype.activeMenu = function(/** @type {MenuList} */ activeMenuList) {
 		// set the icon manager for the acive menu
 		activeMenuList.iconManager = this.iconManager;
 
@@ -3297,7 +3356,9 @@
 
 	// draw active menu
 	MenuManager.prototype.drawMenu = function() {
-		var i, currentMenu, currentItem;
+		var	/** @type {number} */ i,
+			/** @type {MenuList} */ currentMenu,
+			/** @type {MenuItem} */ currentItem;
 
 		// check there is an active menu
 		if (this.currentMenu) {
@@ -3340,9 +3401,9 @@
 	};
 
 	// find touch change by identified
-	MenuManager.prototype.findChangeById = function(changes, id) {
-		var change = null,
-			i = 0;
+	MenuManager.prototype.findChangeById = function(changes, /** @type {number} */ id) {
+		var	change = null,
+			/** @type {number} */i = 0;
 
 		// search the change list for the change with the specified id
 		while (change === null && i < changes.length) {
@@ -3358,7 +3419,7 @@
 
 	// touch event handler
 	MenuManager.prototype.touchHandler = function(me, event) {
-		var changes = event.changedTouches,
+		var	changes = event.changedTouches,
 			thisChange = null;
 			
 		// determine which event was received
@@ -3415,7 +3476,7 @@
 	};
 
 	// perform mouse/touch down event
-	MenuManager.prototype.performDown = function(me, x, y) {
+	MenuManager.prototype.performDown = function(me, /** @type {number} */ x, /** @type {number} */ y) {
 		// update cursor position
 		me.updateCursorPosition(me, x, y);
 	
@@ -3427,7 +3488,7 @@
 	};
 
 	// perform mouse/touch up event
-	MenuManager.prototype.performUp = function(me, x, y) {
+	MenuManager.prototype.performUp = function(me, /** @type {number} */ x, /** @type {number} */ y) {
 		// remember current mouse up time
 		me.lastMouseUp = performance.now();
 
@@ -3469,7 +3530,7 @@
 	};
 
 	// perform mouse/touch move event
-	MenuManager.prototype.performMove = function(me, x, y) {
+	MenuManager.prototype.performMove = function(me, /** @type {number} */ x, /** @type {number} */ y) {
 		// check if this has focus
 		me.checkFocusAndNotify(me);
 
@@ -3486,7 +3547,7 @@
 	// perform mouse/touch out event
 	MenuManager.prototype.performOut = function(me) {
 		// check if enough time has past since last mouse up
-		var timeSinceUp = performance.now() - me.lastMouseUp;
+		var	/** @type {number} */ timeSinceUp = performance.now() - me.lastMouseUp;
 		
 		// check if enough time has past since last mouse up
 		if (timeSinceUp > 1) {
@@ -3521,7 +3582,8 @@
 
 	// mouse down event
 	MenuManager.prototype.canvasMouseDown = function(me, event) {
-		var x = 0, y = 0;
+		var	/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0;
 
 		// check if passing events
 		if (!me.passEvents) {
@@ -3548,7 +3610,8 @@
 
 	// mouse up event
 	MenuManager.prototype.canvasMouseUp = function(me, event) {
-		var x = 0, y = 0;
+		var	/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0;
 
 		// remember current mouse up time
 		me.lastMouseUp = performance.now();
@@ -3606,7 +3669,8 @@
 
 	// mouse move event
 	MenuManager.prototype.canvasMouseMove = function(me, event) {
-		var x = 0, y = 0;
+		var	/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0;
 
 		// check if passing events
 		if (!me.passEvents) {
@@ -3664,7 +3728,7 @@
 	};
 
 	// get cursor position over canvas
-	MenuManager.prototype.updateCursorPosition = function(me, x, y) {
+	MenuManager.prototype.updateCursorPosition = function(me, /** @type {number} */ x, /** @type {number} */ y) {
 		// get the bounding rectangle of the canvas
 		var rect = this.mainCanvas.getBoundingClientRect();
 

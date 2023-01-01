@@ -6229,6 +6229,28 @@
 		// update the infobar
 		me.updateInfoBar();
 
+		// TBD - remove
+		if (me.engine.cellIconImage) {
+			me.mainContext.save();
+			me.mainContext.imageSmoothingEnabled = true;
+			me.mainContext.scale(1, 1);
+			me.mainContext.translate(128, 45);
+			me.mainContext.drawImage(me.engine.cellIconImage, 0, 0);
+			me.mainContext.restore();
+			me.mainContext.save();
+			me.mainContext.imageSmoothingEnabled = true;
+			me.mainContext.translate(160, 45);
+			me.mainContext.scale(0.5, 0.5);
+			me.mainContext.drawImage(me.engine.cellIconImage, 0, 0);
+			me.mainContext.restore();
+			me.mainContext.save();
+			me.mainContext.imageSmoothingEnabled = true;
+			me.mainContext.translate(192, 45);
+			me.mainContext.scale(0.25, 0.25);
+			me.mainContext.drawImage(me.engine.cellIconImage, 0, 0);
+			me.mainContext.restore();
+		}
+
 		// hide the UI controls if help or errors are displayed
 		me.updateUIForHelp(me.displayHelp || me.scriptErrors.length);
 
@@ -17258,7 +17280,12 @@
 			}
 
 			// process icons if loaded
-			me.engine.processIcons(pattern.ruleTableIcons);
+			if (pattern.ruleTableIcons) {
+				var t1 = performance.now();
+				me.engine.processIcons(pattern.ruleTableIcons);
+				t1 = performance.now() - t1;
+				console.debug(t1.toFixed(2));
+			}
 
 			// check if the rule is HROT
 			me.engine.isHROT = pattern.isHROT;

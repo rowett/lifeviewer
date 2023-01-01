@@ -298,7 +298,7 @@
 	};
 
 	// check if theme has colour history
-	/** @return {boolean} */
+	/** @returns {boolean} */
 	Theme.prototype.hasHistory = function(/** @type {boolean} */ isLifeHistory) {
 		var result = true;
 
@@ -331,7 +331,7 @@
 	};
 
 	// is same colour function
-	/** @return {boolean} */
+	/** @returns {boolean} */
 	Colour.prototype.isSameColour = function(compareColour) {
 		var result = false;
 
@@ -372,7 +372,10 @@
 		this.view = view;
 
 		// image for cell icons
-		this.cellIconImage = new Image();
+		this.cellIconImage = null;
+
+		// canvas for cell icons
+		this.cellIconCanvas = null;
 
 		// canvas for cell period map
 		this.cellPeriodCanvas = document.createElement("canvas");
@@ -1249,16 +1252,84 @@
 
 	// process icons
 	Life.prototype.processIcons = function(icons) {
-		//var stateCols = this.ruleTreeColours;
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ src = 0,
+			/** @type {number} */ dst = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ col = 0,
+			/** @type {number} */ rgb = 0,
+			/** @type {number} */ iconSize = 0,
+			/** @type {number} */ numIcons = 0,
+			/** @type {Uint16Array} */ iconData = null,
+			/** @type {Uint32Array} */ iconColours = null,
+			data = null,
+			/** @type {Uint32Array} */ data32 = null,
+			ctx = null;
 
+		// get the icon definitions
 		this.ruleTableIcons = icons;
-		//if (icons !== null) {  TBD !!!
-			//console.debug("states", this.multiNumStates, "colour", stateCols.length, "icons", icons[0].height / icons[0].width, "iconcols", icons[0].colours.length);
-		//}
+
+		// get the size and number of icons
+		iconSize = icons[0].width;
+		numIcons = icons[0].height / iconSize;
+		iconData = icons[0].iconData;
+		iconColours = icons[0].colours;
+
+		// create the cell icon canvas if it doesn't exist
+		if (this.cellIconCanvas === null) {
+			this.cellIconCanvas = document.createElement("canvas");
+			this.cellIconCanvas.width = 32;
+			this.cellIconCanvas.height = 32 * numIcons;
+		}
+
+		// get the context
+		ctx = this.cellIconCanvas.getContext("2d");
+		data = ctx.getImageData(0, 0, this.cellIconCanvas.width, this.cellIconCanvas.height);
+		data32 = new Uint32Array(data.data.buffer);
+		
+		// write them to the canvas
+		src = 0;
+		dst = 0;
+		for (i = 0; i < numIcons; i += 1) {
+			for (y = 0; y < iconSize; y += 1) {
+				for (x = 0; x < iconSize; x += 1) {
+					// get the next source pixel colour number
+					col = iconData[src];
+					src += 1;
+
+					// lookup the rgb for this colour
+					rgb = iconColours[col];
+
+					// write the rgb to the canvas
+					data32[dst] = (255 << 24) | ((rgb & 255) << 16) | (rgb & 0xff00) | (rgb >> 16);
+					dst += 1;
+				}
+
+				// skip right hand column in destination
+				data32[dst] = 0;
+				dst += 1;
+			}
+
+			// skip bottom row in destination
+			for (x = 0; x < iconSize + 1; x += 1) {
+				data32[dst] = 0;
+				dst += 1;
+			}
+		}
+
+		// write the image data back to the canvas
+		ctx.putImageData(data, 0, 0);
+
+		// create the image from the canvas
+		if (this.cellIconImage === null) {
+			this.cellIconImage = new Image();
+		}
+		this.cellIconImage.src = this.cellIconCanvas.toDataURL("image/png");
 	};
 
 	// initialize oscillator search
-	Life.prototype.initSearch = function(on) {
+	Life.prototype.initSearch = function(/** @type {boolean} */ on) {
 		// zero array index
 		this.oscLength = 0;
 
@@ -1308,7 +1379,7 @@
 	};
 
 	// ouput spaceship speed as string
-	Life.prototype.spaceshipSpeed = function(period, deltaX, deltaY) {
+	Life.prototype.spaceshipSpeed = function(/** @type {number} */ period, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
 		var message = deltaX + "," + deltaY;
 
 		// add the speed
@@ -4285,7 +4356,7 @@
 	};
 
 	// convert grid to RLE
-	/** @return {string} */
+	/** @returns {string} */
 	Life.prototype.asRLE = function(view, me, /** @type {boolean} */ addComments, inputStates, outputStates, mapping, useAlias) {
 		var /** @type {string} */ rle = "",
 			zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
@@ -5719,7 +5790,7 @@
 	};
 
 	// count tiles in a grid
-	/** @return {number} */
+	/** @returns {number} */
 	Life.prototype.tileCount = function(tile) {
 		var tileRow = null,
 		    /** @type {number} */ y = 0,
@@ -10619,7 +10690,7 @@
 	};
 
 	// check pattern for glider
-	/** @return {boolean} */
+	/** @returns {boolean} */
 	Life.prototype.findAndDeleteGlider = function(/** @type {Array<Array<number>>} */ glider, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ dx, /** @type {number} */ dy) {
 		var /** @type {boolean} */ found = false,
 			/** @type {Array<number>} */ gliderRow = null,

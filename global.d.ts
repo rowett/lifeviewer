@@ -71,6 +71,9 @@ declare var LTL;
 // pattern.js
 declare var PatternManager, Pattern, RuleTreeCache;
 
+// parser.js
+declare var View, Script, Pattern;
+
 // random.js
 declare var Random;
 

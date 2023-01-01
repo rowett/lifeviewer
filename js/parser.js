@@ -6,17 +6,18 @@
 	"use strict";
 
 	// define globals
-	/* global Int32 ColourManager Script ViewConstants Pattern Keywords WaypointConstants DocConfig */
+	/* global View Int32 ColourManager Script ViewConstants Pattern Keywords WaypointConstants DocConfig */
 
 	// singleton
 	var ScriptParser = {
-		BSnType : "",
-		BSnValue : 0
+		/** @type {string} */ BSnType : "",
+		/** @type {number} */ BSnValue : 0
 	};
 
 	// check if a string is a script command
-	ScriptParser.isScriptCommand = function(tokenString) {
-		var result = true;
+	/** @returns {boolean} */
+	ScriptParser.isScriptCommand = function(/** @type {string} */ tokenString) {
+		var	/** @type {boolean} */ result = true;
 
 		// check if the token is a script command
 		switch (tokenString) {
@@ -184,14 +185,15 @@
 	};
 
 	// decode hex and return as RGB array or empty array for an error
-	ScriptParser.decodeHex = function(hexString) {
-		var result = [],
-		    i = 1,
-		    valid = true,
-		    value = 0,
-		    asciiZero = "0".charCodeAt(0),
-		    asciia = "a".charCodeAt(0),
-		    c = "";
+	/** @returns {Array} */
+	ScriptParser.decodeHex = function(/** @type {string} */ hexString) {
+		var	/** @type {Array} */ result = [],
+			/** @type {number} */ i = 1,
+			/** @type {boolean} */ valid = true,
+			/** @type {number} */ value = 0,
+			/** @type {number} */ asciiZero = "0".charCodeAt(0),
+			/** @type {number} */ asciia = "a".charCodeAt(0),
+			/** @type {string} */ c = "";
 
 		// check for 7 characters beginning with # symbol
 		if (hexString.length === 7 && hexString.charAt(0) === "#") {
@@ -711,8 +713,9 @@
 	};
 
 	// shorten message to fit
-	ScriptParser.shortenMessage = function(message, maxLength) {
-		var result = message;
+	/** @returns {string} */
+	ScriptParser.shortenMessage = function(/** @type {string} */ message, /** @type {number} */ maxLength) {
+		var	/** @type {string} */ result = message;
 
 		// check if the message is longer than the maximum allowed
 		if (message.length > maxLength) {
@@ -1108,239 +1111,242 @@
 	};
 
 	// parse script commands
-	ScriptParser.parseScript = function(view, scriptString, numStates) {
+	ScriptParser.parseScript = function(view, /** @type {string} */ scriptString, /** @type {number} */ numStates) {
 		// create a script from the string
-		var scriptReader = new Script(scriptString, false),
+		var	scriptReader = new Script(scriptString, false),
 
 			// reading tokens
-			readingTokens = false,
+			/** @type {boolean} */ readingTokens = false,
 
-		    // reading title
-		    readingTitle = false,
+			// reading title
+			/** @type {boolean} */ readingTitle = false,
 
-		    // next token
-		    nextToken = "",
+			// next token
+			/** @type {string} */ nextToken = "",
 
-		    // lookahead token
-			peekToken = "",
+			// lookahead token
+			/** @type {string} */ peekToken = "",
 			
 			// string value
-			stringToken = "",
+			/** @type {string} */ stringToken = "",
 
 			// transformation value
-			transToken = "",
+			/** @type {string} */ transToken = "",
 
-		    // whether reading string
-		    readingString = false,
+			// whether reading string
+			/** @type {boolean} */ readingString = false,
 
-		    // string value
-		    stringValue = "",
+			// string value
+			/** @type {string} */ stringValue = "",
 		    
-		    // number value
-			numberValue = 0,
+			// number value
+			/** @type {number} */ numberValue = 0,
 
-		    // item valid flag
-		    itemValid = false,
+			// item valid flag
+			/** @type {boolean} */ itemValid = false,
 
-		    // argument numeric flag
-		    isNumeric = false,
+			// argument numeric flag
+			/** @type {boolean} */ isNumeric = false,
 
-		    // script error list
-		    scriptErrors = view.scriptErrors,
+			// script error list
+			scriptErrors = view.scriptErrors,
 
-		    // error message
-		    notPossibleError = null,
+			// error message
+			notPossibleError = null,
 
-		    // number of custom colours provided
-		    numCustomColours = 0,
+			// number of custom colours provided
+			/** @type {number} */ numCustomColours = 0,
 
-		    // custom colour information
-		    colNum = 0,
+			// custom colour information
+			/** @type {number} */ colNum = 0,
 
-		    // which colour keyword used (for error reporting)
-		    whichColour = "",
+			// which colour keyword used (for error reporting)
+			/** @type {string} */ whichColour = "",
 
 			// whether to add Labels as POIs
-			addLabelsAsPOIs = false,
+			/** @type {boolean} */ addLabelsAsPOIs = false,
 
-		    // current waypoint
-		    currentWaypoint = view.waypointManager.createWaypoint(),
-		    tempWaypoint = null,
+			// current waypoint
+			currentWaypoint = view.waypointManager.createWaypoint(),
+			tempWaypoint = null,
 
-		    // whether waypoints found
-		    waypointsFound = false,
+			// whether waypoints found
+			/** @type {boolean} */ waypointsFound = false,
 
-		    // whether points of interest found
-		    poiFound = false,
+			// whether points of interest found
+			/** @type {boolean} */ poiFound = false,
 
 			// current polygon
 			currentPolygon = null,
 
 			// current polygon shadow
-			currentPolygonShadow = true,
+			/** @type {boolean} */ currentPolygonShadow = true,
 
 			// current polygon alpha
-			currentPolygonAlpha = 1,
+			/** @type {number} */ currentPolygonAlpha = 1,
 
 			// current polygon size
-			currentPolygonSize = ViewConstants.annotationLineThickness,
+			/** @type {number} */ currentPolygonSize = ViewConstants.annotationLineThickness,
 
 			// current polygon T1 and T2
-			currentPolygonT1 = -1,
-			currentPolygonT2 = -1,
+			/** @type {number} */ currentPolygonT1 = -1,
+			/** @type {number} */ currentPolygonT2 = -1,
 
 			// current polygon TFade
-			currentPolygonTFade = 0,
+			/** @type {number} */ currentPolygonTFade = 0,
 
 			// current polygon angle and locked
-			currentPolygonAngle = 0,
-			currentPolygonAngleFixed = false,
+			/** @type {number} */ currentPolygonAngle = 0,
+			/** @type {boolean} */ currentPolygonAngleFixed = false,
 
 			// current position locked
-			currentPolygonPositionFixed = false,
+			/** @type {boolean} */ currentPolygonPositionFixed = false,
 
 			// current polygon visibility distance
-			currentPolygonVDistance = -1,
+			/** @type {number} */ currentPolygonVDistance = -1,
 
 			// current polygon zoom range
-			currentPolygonMinZ = -1000,
-			currentPolygonMaxZ = -1000,
+			/** @type {number} */ currentPolygonMinZ = -1000,
+			/** @type {number} */ currentPolygonMaxZ = -1000,
 
 			// current polygon movement vector
-			currentPolygonDX = 0,
-			currentPolygonDY = 0,
+			/** @type {number} */ currentPolygonDX = 0,
+			/** @type {number} */ currentPolygonDY = 0,
 
 			// current arrow
 			currentArrow = null,
 
 			// current arrow shadow
-			currentArrowShadow = true,
+			/** @type {boolean} */ currentArrowShadow = true,
 
 			// current arrow alpha
-			currentArrowAlpha = 1,
+			/** @type {number} */ currentArrowAlpha = 1,
 
 			// current arrow size
-			currentArrowSize = ViewConstants.annotationLineThickness,
+			/** @type {number} */ currentArrowSize = ViewConstants.annotationLineThickness,
 
 			// current arrow head percentage
-			currentArrowHeadMultiple = ViewConstants.arrowHeadMultiple,
+			/** @type {number} */ currentArrowHeadMultiple = ViewConstants.arrowHeadMultiple,
 
 			// current arrow T1 and T2
-			currentArrowT1 = -1,
-			currentArrowT2 = -1,
+			/** @type {number} */ currentArrowT1 = -1,
+			/** @type {number} */ currentArrowT2 = -1,
 
 			// current arrow TFade
-			currentArrowTFade = 0,
+			/** @type {number} */ currentArrowTFade = 0,
 
 			// current arrow angle and locked
-			currentArrowAngle = 0,
-			currentArrowAngleFixed = false,
+			/** @type {number} */ currentArrowAngle = 0,
+			/** @type {boolean} */ currentArrowAngleFixed = false,
 
 			// current position locked
-			currentArrowPositionFixed = false,
+			/** @type {boolean} */ currentArrowPositionFixed = false,
 
 			// current arrow visibility distance
-			currentArrowVDistance = -1,
+			/** @type {number} */ currentArrowVDistance = -1,
 
 			// current arrow movement vector
-			currentArrowDX = 0,
-			currentArrowDY = 0,
+			/** @type {number} */ currentArrowDX = 0,
+			/** @type {number} */ currentArrowDY = 0,
 
 			// current arrow zoom range
-			currentArrowMinZ = -1000,
-			currentArrowMaxZ = -1000,
+			/** @type {number} */ currentArrowMinZ = -1000,
+			/** @type {number} */ currentArrowMaxZ = -1000,
 
 			// current label
 			currentLabel = null,
 
 			// current label shadow
-			currentLabelShadow = true,
+			/** @type {boolean} */ currentLabelShadow = true,
 
 			// current label alpha
-			currentLabelAlpha = 1,
+			/** @type {number} */ currentLabelAlpha = 1,
 
 			// current label size and locked
-			currentLabelSize = ViewConstants.labelFontSize,
-			currentLabelSizeFixed = false,
+			/** @type {number} */ currentLabelSize = ViewConstants.labelFontSize,
+			/** @type {boolean} */ currentLabelSizeFixed = false,
 
 			// current label T1 and T2
-			currentLabelT1 = -1,
-			currentLabelT2 = -1,
+			/** @type {number} */ currentLabelT1 = -1,
+			/** @type {number} */ currentLabelT2 = -1,
 
 			// current label TFade
-			currentLabelTFade = 0,
+			/** @type {number} */ currentLabelTFade = 0,
 
 			// current label angle and locked
-			currentLabelAngle = 0,
-			currentLabelAngleFixed = false,
+			/** @type {number} */ currentLabelAngle = 0,
+			/** @type {boolean} */ currentLabelAngleFixed = false,
 
 			// current position locked
-			currentLabelPositionFixed = false,
+			/** @type {boolean} */ currentLabelPositionFixed = false,
 
 			// current label visibility distance
-			currentLabelVDistance = -1,
+			/** @type {number} */ currentLabelVDistance = -1,
 
 			// current label movement vector
-			currentLabelDX = 0,
-			currentLabelDY = 0,
+			/** @type {number} */ currentLabelDX = 0,
+			/** @type {number} */ currentLabelDY = 0,
 
 			// current label zoom range
-			currentLabelMinZ = -1000,
-			currentLabelMaxZ = -1000,
+			/** @type {number} */ currentLabelMinZ = -1000,
+			/** @type {number} */ currentLabelMaxZ = -1000,
 
 			// whether reading label
-			readingLabel = false,
+			/** @type {boolean} */ readingLabel = false,
 
-		    // whether colour valid
-		    badColour = false,
+			// whether colour valid
+			/** @type {boolean} */ badColour = false,
 
-		    // type of argument
-		    type = "numeric",
+			// type of argument
+			/** @type {string} */ type = "numeric",
 
-		    // track command parameters
-		    trackPeriod = -1,
-		    trackX = -1,
-		    trackY = -1,
-		    newPeriod = -1,
-		    newX = -1,
-		    newY = -1,
+			// track command parameters
+			/** @type {number} */ trackPeriod = -1,
+			/** @type {number} */ trackX = -1,
+			/** @type {number} */ trackY = -1,
+			/** @type {number} */ newPeriod = -1,
+			/** @type {number} */ newX = -1,
+			/** @type {number} */ newY = -1,
 
-		    // track box command parameters
-		    trackBoxN = 0,
-		    trackBoxS = 0,
-		    trackBoxE = 0,
-		    trackBoxW = 0,
-
+			// track box command parameters
+			/** @type {number} */ trackBoxN = 0,
+			/** @type {number} */ trackBoxS = 0,
+			/** @type {number} */ trackBoxE = 0,
+			/** @type {number} */ trackBoxW = 0,
+	
 			// holders
-			x = 0, y = 0, z = 0,
-			x2 = 0, y2 = 0,
-			coords = [],
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ z = 0,
+			/** @type {number} */ x2 = 0,
+			/** @type {number} */ y2 = 0,
+			/** @type {Array<number>} */ coords = [],
 
-		    // loop counter
-		    i = 0,
+			// loop counter
+			/** @type {number} */ i = 0,
 
 			// dummy pattern for RLE decoding
 			pattern = new Pattern("decode", view.manager),
 
-		    // suppress errors flags
-		    suppressErrors = {
-			x : false,
-			y : false,
-			zoom : false,
-			angle : false,
-			tilt : false,
-			layers : false,
-			depth : false,
-			theme : false,
-			gps : false,
-			step : false,
-			loop : false,
-			stop : false,
-			width : false,
-			height : false,
-			popupWidth: false,
-			popupHeight : false
-		    };
+			// suppress errors flags
+			suppressErrors = {
+				/** @type {boolean} */ x : false,
+				/** @type {boolean} */ y : false,
+				/** @type {boolean} */ zoom : false,
+				/** @type {boolean} */ angle : false,
+				/** @type {boolean} */ tilt : false,
+				/** @type {boolean} */ layers : false,
+				/** @type {boolean} */ depth : false,
+				/** @type {boolean} */ theme : false,
+				/** @type {boolean} */ gps : false,
+				/** @type {boolean} */ step : false,
+				/** @type {boolean} */ loop : false,
+				/** @type {boolean} */ stop : false,
+				/** @type {boolean} */ width : false,
+				/** @type {boolean} */ height : false,
+				/** @type {boolean} */ popupWidth: false,
+				/** @type {boolean} */ popupHeight : false
+			};
 
 		// reset waypoint manager camera flag
 		view.waypointManager.hasCamera = false;
