@@ -698,7 +698,7 @@
 						minY1 = y;
 					}
 					if (y > maxY1) {
-						maxY1 =y;
+						maxY1 = y;
 					}
 				}
 			}

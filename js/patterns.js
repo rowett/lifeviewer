@@ -388,7 +388,7 @@
 		/** @const {string} */ this.decimalDigits = "0123456789";
 
 		// valid triangular rule characters
-		/** @const {string} */ this.validTriangularRuleLetters= "0123456789xyz";
+		/** @const {string} */ this.validTriangularRuleLetters = "0123456789xyz";
 
 		// valid triangular Edges rule characters
 		/** @const {string} */ this.validTriangularEdgesRuleLetters = "0123";
@@ -461,7 +461,7 @@
 		/** @const {Array<number>} */ this.maxLetters = [0, 2, 6, 10, 13, 10, 6, 2, 0];
 
 		// order of letters for canonical format
-		/** @const {Array<Array<number>>} */ this.orderLetters= [[0], [0, 1], [2, 0, 1, 3, 4, 5], [2, 0, 1, 3, 6, 4, 5, 7, 8, 9] , [2, 0, 1, 3, 6, 4, 5, 7, 8, 10, 11, 9, 12], [2, 0, 1, 3, 6, 4, 5, 7, 8, 9], [2, 0, 1, 3, 4, 5], [0, 1], [0]];
+		/** @const {Array<Array<number>>} */ this.orderLetters = [[0], [0, 1], [2, 0, 1, 3, 4, 5], [2, 0, 1, 3, 6, 4, 5, 7, 8, 9] , [2, 0, 1, 3, 6, 4, 5, 7, 8, 10, 11, 9, 12], [2, 0, 1, 3, 6, 4, 5, 7, 8, 9], [2, 0, 1, 3, 4, 5], [0, 1], [0]];
 
 		// rule neighbourhoods
 		/** @const {Array<Array<number>>} */ this.ruleNeighbourhoods = [[1, 2], [5, 10, 3, 40, 33, 68], [69, 42, 11, 7, 98, 13, 14, 70, 41, 97], [325, 170, 15, 45, 99, 71, 106, 102, 43, 101, 105, 78, 108]];
