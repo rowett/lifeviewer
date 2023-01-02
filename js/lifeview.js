@@ -8853,17 +8853,16 @@
 		return numReplaced;
 	};
 
-	// TBD jsdoc
-
 	// clear cells of the current pen colours
-	View.prototype.clearCells = function(me, ctrl, markedOnly) {
-		var	x = 0,
-		    y = 0,
-		    state = 0,
-		    current = me.drawState,
-		    historyBox = me.engine.historyBox,
-		    numCleared = 0,
-		    clearValue = 0;
+	/** @returns {number} */
+	View.prototype.clearCells = function(me, /** @type {boolean} */ ctrl, /** @type {boolean} */ markedOnly) {
+		var	/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ current = me.drawState,
+			historyBox = me.engine.historyBox,
+			/** @type {number} */ numCleared = 0,
+			/** @type {number} */ clearValue = 0;
 			
 		// delete any cell of the current pen colour
 		if (current > 0) {
@@ -8943,36 +8942,36 @@
 	};
 
 	// view play list
-	View.prototype.viewPlayList = function(newValue, change, me) {
+	View.prototype.viewPlayList = function(newValue, /** @type {boolean} */ change, me) {
 		var	result = newValue,
-		    stopMode = me.stopDisabled,
-		    loopMode = me.loopDisabled,
-		    waypointMode = me.waypointsDisabled,
-		    autoStartMode = me.autoStartDisabled,
-		    autoFitMode = me.autoFit,
-		    trackMode = me.trackDisabled,
-		    i = 0,
+		    /** @type {boolean} */ stopMode = me.stopDisabled,
+		    /** @type {boolean} */ loopMode = me.loopDisabled,
+		    /** @type {boolean} */ waypointMode = me.waypointsDisabled,
+		    /** @type {boolean} */ autoStartMode = me.autoStartDisabled,
+		    /** @type {boolean} */ autoFitMode = me.autoFit,
+		    /** @type {boolean} */ trackMode = me.trackDisabled,
+		    /** @type {number} */ i = 0,
 		    message = null,
-		    duration = 40,
-		    numChanged = 0,
+		    /** @type {number} */ duration = 40,
+		    /** @type {number} */ numChanged = 0,
 
 		    // whether loop switched on or off
-		    loopChange = 0,
+		    /** @type {number} */ loopChange = 0,
 
 		    // whether stop switched on or off
-		    stopChange = 0,
+		    /** @type {number} */ stopChange = 0,
 
 		    // whether waypoints switched on or off
-		    waypointsChange = 0,
+		    /** @type {number} */ waypointsChange = 0,
 
 		    // whether track switched on or off
-		    trackChange = 0,
+		    /** @type {number} */ trackChange = 0,
 
 		    // whether autostart switched on or off
-		    autoStartChange = 0,
+		    /** @type {number} */ autoStartChange = 0,
 
 		    // whether autofit switched on or off
-		    autoFitChange = 0;
+		    /** @type {number} */ autoFitChange = 0;
 
 		if (change) {
 			// disable playback draw pause
@@ -9287,7 +9286,7 @@
 	};
 
 	// angle range
-	View.prototype.viewAngleRange = function(newValue, change, me) {
+	View.prototype.viewAngleRange = function(newValue, /** @type {boolean} */ change, me) {
 		// check if changing
 		if (change) {
 			// set manual change happened
@@ -9302,9 +9301,10 @@
 	};
 
 	// convert Tilt value to 0..1
-	View.prototype.convertFromTilt = function(value) {
-		var	result = 0,
-		    mult = 0.5 / (0.5 - ViewConstants.deadZoneTilt / 2);
+	/** @returns {number} */
+	View.prototype.convertFromTilt = function(/** @type {number} */ value) {
+		var	/** @type {number} */ result = 0,
+			/** @type {number} */ mult = 0.5 / (0.5 - ViewConstants.deadZoneTilt / 2);
 
 		result = (value - ViewConstants.minTilt) / (ViewConstants.maxTilt - ViewConstants.minTilt);
 		if (result < (0.5 - ViewConstants.deadZoneTilt / 2)) {
@@ -9322,9 +9322,10 @@
 	};
 
 	// convert 0..1 to the Tilt value
-	View.prototype.convertToTilt = function(value) {
-		var	result = 0,
-		    mult = 0.5 / (0.5 - ViewConstants.deadZoneTilt / 2);
+	/** @returns {number} */
+	View.prototype.convertToTilt = function(/** @type {number} */ value) {
+		var	/** @type {number} */ result = 0,
+			/** @type {number} */ mult = 0.5 / (0.5 - ViewConstants.deadZoneTilt / 2);
 		
 		// ignore dead zone
 		if (value < (0.5 - ViewConstants.deadZoneTilt / 2)) {
@@ -9343,7 +9344,7 @@
 	};
 
 	// tilt range
-	View.prototype.viewTiltRange = function(newValue, change, me) {
+	View.prototype.viewTiltRange = function(newValue, /** @type {boolean} */ change, me) {
 		// check if changing
 		if (change) {
 			// set manual change happened
@@ -9358,7 +9359,7 @@
 	};
 
 	// layers range
-	View.prototype.viewLayersRange = function(newValue, change, me) {
+	View.prototype.viewLayersRange = function(newValue, /** @type {boolean} */ change, me) {
 		var	result;
 
 		// check if changing
@@ -9378,7 +9379,7 @@
 	};
 
 	// depth range
-	View.prototype.viewDepthRange = function(newValue, change, me) {
+	View.prototype.viewDepthRange = function(newValue, /** @type {boolean} */ change, me) {
 		// check if changing
 		if (change) {
 			// set manual change happened
@@ -9394,12 +9395,12 @@
 	};
 
 	// draw cells
-	View.prototype.drawCells = function(toX, toY, fromX, fromY) {
-		var	startCellX = 0,
-			startCellY = 0,
-			endCellX = 0,
-			endCellY = 0,
-			testState = this.drawState;
+	View.prototype.drawCells = function(/** @type {number} */ toX, /** @type {number} */ toY, /** @type {number} */ fromX, /** @type {number} */ fromY) {
+		var	/** @type {number} */ startCellX = 0,
+			/** @type {number} */ startCellY = 0,
+			/** @type {number} */ endCellX = 0,
+			/** @type {number} */ endCellY = 0,
+			/** @type {number} */ testState = this.drawState;
 
 		// check if this is the start of drawing
 		if (fromX === -1 && fromY === -1) {
@@ -9441,7 +9442,7 @@
 	};
 
 	// view menu wakeup callback
-	View.prototype.viewWakeUp = function(x, y, dragOn, me) {
+	View.prototype.viewWakeUp = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ dragOn, me) {
 		// on mouse release pause playback so GUI unhides
 		if (me.hideGUI) {
 			if (!dragOn) {
@@ -9451,16 +9452,16 @@
 	};
 
 	// view menu background drag callback
-	View.prototype.viewDrag = function(x, y, dragOn, me) {
+	View.prototype.viewDrag = function(/**@type {number} */ x, /**@type {number} */ y, /**@type {boolean} */ dragOn, me) {
 		if (!me.noGUI) {
 			me.viewDoDrag(x, y, dragOn, me, false);
 		}
 	};
 
 	// drag help
-	View.prototype.dragHelp = function(me, y) {
+	View.prototype.dragHelp = function(me, /** @type {number} */ y) {
 		// compute the movement
-		var	dy = (me.lastDragY - y) / me.helpFontSize;
+		var	/** @type {number} */ dy = (me.lastDragY - y) / me.helpFontSize;
 
 		// scroll help text
 		if (me.lastDragY !== -1) {
@@ -9475,9 +9476,9 @@
 	};
 
 	// drag errors
-	View.prototype.dragErrors = function(me, y) {
+	View.prototype.dragErrors = function(me, /** @type {number} */ y) {
 		// compute the movement
-		var	dy = (me.lastDragY - y) / me.helpFontSize;
+		var	/** @type {number} */ dy = (me.lastDragY - y) / me.helpFontSize;
 
 		// scroll errors
 		if (me.lastDragY !== -1) {
@@ -9492,13 +9493,13 @@
 	};
 
 	// drag grid (pan)
-	View.prototype.dragPan = function(me, x, y) {
+	View.prototype.dragPan = function(me, /** @type {number} */ x, /** @type {number} */ y) {
 		// compute the movement
-		var	dx = (me.lastDragX - x) / me.engine.camZoom,
-			dy = ((me.lastDragY - y) / me.engine.camZoom) / (me.engine.isTriangular ? ViewConstants.sqrt3 : 1),
-			angle = 0,
-			sinAngle = 0,
-			cosAngle = 0;
+		var	/** @type {number} */ dx = (me.lastDragX - x) / me.engine.camZoom,
+			/** @type {number} */ dy = ((me.lastDragY - y) / me.engine.camZoom) / (me.engine.isTriangular ? ViewConstants.sqrt3 : 1),
+			/** @type {number} */ angle = 0,
+			/** @type {number} */ sinAngle = 0,
+			/** @type {number} */ cosAngle = 0;
 
 		// pan grid
 		if (me.lastDragY !== -1) {
@@ -9531,9 +9532,9 @@
 	};
 
 	// drag draw
-	View.prototype.dragDraw = function(me, x, y) {
-		var	wasPlaying = me.generationOn,
-			savedIndex = me.currentEditIndex;
+	View.prototype.dragDraw = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+		var	/** @type {boolean} */ wasPlaying = me.generationOn,
+			/** @type {number} */ savedIndex = me.currentEditIndex;
 
 		if (!me.pickMode) {
 			// suspend playback
@@ -9558,16 +9559,16 @@
 	};
 
 	// drag select
-	View.prototype.dragSelect = function(me, x, y) {
+	View.prototype.dragSelect = function(me, /** @type {number} */ x, /** @type {number} */ y) {
 		if (!me.isPasting) {
 			me.doDragSelect(me, x, y);
 		}
 	};
 
 	// compute bounded grid bounding box and grid offset
-	View.prototype.getBoundingBox = function(box, offset) {
-		var	xOff = this.engine.width >> 1,
-			yOff = this.engine.height >> 1;
+	View.prototype.getBoundingBox = function(box, /** @type {number} */ offset) {
+		var	/** @type {number} */ xOff = this.engine.width >> 1,
+			/** @type {number} */ yOff = this.engine.height >> 1;
 
 		if (this.posDefined) {
 			xOff -= Math.floor(this.specifiedWidth / 2) - this.xOffset - this.xOffset;
@@ -9603,23 +9604,23 @@
 	};
 
 	// process drag for selection
-	View.prototype.doDragSelect = function(me, x, y) {
+	View.prototype.doDragSelect = function(me, /** @type {number} */ x, /** @type {number} */ y) {
 		// selection box
 		var	box = me.selectionBox,
-		    boundedBox = new BoundingBox(0, 0, 0, 0),
+			boundedBox = new BoundingBox(0, 0, 0, 0),
 
-		    // flag if off the grid
-		    offGrid = false,
+			// flag if off the grid
+			/** @type {boolean} */ offGrid = false,
 
-		    // offset to middle of grid
-		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			// offset to middle of grid
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+	
+			// box offset for Margolus
+			/** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
 
-		    // box offset for Margolus
-		    /** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
-
-		    // x and y offset return from function
-		    xyOff = [];
+			// x and y offset return from function
+			xyOff = [];
 
 		// check for infinite dimension bounded grid
 		if (me.engine.boundedGridType !== -1) {
@@ -9765,21 +9766,21 @@
 	View.prototype.autoShrinkSelection = function(me) {
 		var	selBox = me.selectionBox,
 			zoomBox = me.engine.zoomBox,
-			leftX = selBox.leftX,
-			bottomY = selBox.bottomY,
-			rightX = selBox.rightX,
-			topY = selBox.topY,
-			swap = 0,
-			minX = 0,
-			maxX = 0,
-			minY = 0,
-			maxY = 0,
-			x = 0,
-			y = 0,
-			state = 0,
-			population = 0,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+			/** @type {number} */ leftX = selBox.leftX,
+			/** @type {number} */ bottomY = selBox.bottomY,
+			/** @type {number} */ rightX = selBox.rightX,
+			/** @type {number} */ topY = selBox.topY,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ minX = 0,
+			/** @type {number} */ maxX = 0,
+			/** @type {number} */ minY = 0,
+			/** @type {number} */ maxY = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ population = 0,
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
 		// order bottom left to top right
 		if (leftX > rightX) {
@@ -9849,8 +9850,8 @@
 	// process drag end for selection
 	View.prototype.doDragEndSelect = function(me) {
 		var	selBox = me.selectionBox,
-			width = 0,
-			height = 0;
+			/** @type {number} */ width = 0,
+			/** @type {number} */ height = 0;
 
 		// check if a selection was made
 		if (me.drawingSelection) {
@@ -9882,8 +9883,8 @@
 	};
 
 	// drag ended for pick
-	View.prototype.dragEndPick = function(me, x, y) {
-		var	state = 0;
+	View.prototype.dragEndPick = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+		var	/** @type {number} */ state = 0;
 
 		// check if on window
 		if (x!== -1 && y !== -1) {
@@ -9923,7 +9924,7 @@
 	};
 
 	// view menu background drag
-	View.prototype.viewDoDrag = function(x, y, dragOn, me, fromKey) {
+	View.prototype.viewDoDrag = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ dragOn, me, /** @type {boolean} */ fromKey) {
 		// check if on window (and window has focus - to prevent drawing when clicking to gain focus)
 		if (x !== -1 && y !== -1 && me.menuManager.hasFocus) {
 			// check if this is a drag or cancel drag
@@ -10002,7 +10003,7 @@
 	};
 
 	// move view in the given direction
-	View.prototype.moveView = function(dx, dy) {
+	View.prototype.moveView = function(/** @type {number} */ dx, /** @type {number} */ dy) {
 		// scale movement based on zoom
 		if (this.engine.zoom < 8) {
 			if (dx < 0) {
@@ -10029,11 +10030,11 @@
 	};
 
 	// create icons
-	View.prototype.createIcons = function(context) {
+	View.prototype.createIcons = function(/** @type {CanvasRenderingContext2D} */ context) {
 		// load icon file
-		var	w = 40,
-		    h = 40,
-		    icons = ViewConstants.icons;
+		var	/** @type {number} */ w = 40,
+			/** @type {number} */ h = 40,
+			icons = ViewConstants.icons;
 
 		// check if the icons exist
 		if (icons === null) {
@@ -10100,9 +10101,10 @@
 	};
 
 	// check if a rule is valid
-	View.prototype.ruleIsValid = function(ruleName) {
-		var	result = false,
-			patternText = "x = 1, y = 1, rule = ",
+	/** @returns {boolean} */
+	View.prototype.ruleIsValid = function(/** @type {string} */ ruleName) {
+		var	/** @type {boolean} */ result = false,
+			/** @type {string} */ patternText = "x = 1, y = 1, rule = ",
 			pattern = null;
 
 		// check if the rule name is blank
@@ -10132,8 +10134,8 @@
 
 	// change rule
 	View.prototype.changeRule = function(me) {
-		var	patternText = "",
-			index = -1,
+		var	/** @type {string} */ patternText = "",
+			/** @type {number} */ index = -1,
 			result = window.prompt("Change rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef);
 
 		// check if the prompt was confirmed
@@ -10169,9 +10171,9 @@
 	};
 
 	// convert a pattern from one rule to another
-	View.prototype.convertPattern = function(fromPostfix, toPostfix, fromStates, toStates, mapping) {
-		var	currentRule = this.patternRuleName,
-			patternText = "";
+	View.prototype.convertPattern = function(/** @type {string} */ fromPostfix, /** @type {string} */ toPostfix, /** @type {number} */ fromStates, /** @type {number} */ toStates, mapping) {
+		var	/** @type {string} */ currentRule = this.patternRuleName,
+			/** @type {string} */ patternText = "";
 
 		// remove the from postfix if present
 		if (fromPostfix !== "") {
@@ -10198,10 +10200,10 @@
 
 	// convert [R]History or [R]Standard to [R]Super
 	View.prototype.convertToSuper = function(me) {
-		var	fromPostfix = (me.engine.isLifeHistory ? "History" : ""),
-			fromStates = (me.engine.isLifeHistory ? 7 : 2),
-			toPostfix = "Super",
-			toStates = 26,
+		var	/** @type {string} */ fromPostfix = (me.engine.isLifeHistory ? "History" : ""),
+			/** @type {number} */ fromStates = (me.engine.isLifeHistory ? 7 : 2),
+			/** @type {string} */ toPostfix = "Super",
+			/** @type {number} */ toStates = 26,
 			mapping = (me.engine.isLifeHistory ? ViewConstants.historyToSuperStates : ViewConstants.standardToSuperStates);
 
 		me.convertPattern(fromPostfix, toPostfix, fromStates, toStates, mapping);
@@ -10209,10 +10211,10 @@
 
 	// convert [R]Standard or [R]Super to [R]History
 	View.prototype.convertToHistory = function(me) {
-		var	fromPostfix = (me.engine.isSuper ? "Super" : ""),
-			fromStates = (me.engine.isSuper ? 26 : 2),
-			toPostfix = "History",
-			toStates = 7,
+		var	/** @type {string} */ fromPostfix = (me.engine.isSuper ? "Super" : ""),
+			/** @type {number} */ fromStates = (me.engine.isSuper ? 26 : 2),
+			/** @type {string} */ toPostfix = "History",
+			/** @type {number} */ toStates = 7,
 			mapping = (me.engine.isSuper ? ViewConstants.superToHistoryStates : ViewConstants.standardToHistoryStates);
 
 		me.convertPattern(fromPostfix, toPostfix, fromStates, toStates, mapping);
@@ -10220,26 +10222,27 @@
 
 	// convert [R]History or [R]Super to [R]Standard
 	View.prototype.convertToStandard = function(me) {
-		var	fromPostfix = (me.engine.isLifeHistory ? "History" : "Super"),
-			fromStates = (me.engine.isLifeHistory ? 7 : 26),
-			toPostfix = "",
-			toStates = 2,
+		var	/** @type {string} */ fromPostfix = (me.engine.isLifeHistory ? "History" : "Super"),
+			/** @type {number} */ fromStates = (me.engine.isLifeHistory ? 7 : 26),
+			/** @type {string} */ toPostfix = "",
+			/** @type {number} */ toStates = 2,
 			mapping = (me.engine.isLifeHistory ? ViewConstants.historyToStandardStates : ViewConstants.superToStandardStates);
 
 		me.convertPattern(fromPostfix, toPostfix, fromStates, toStates, mapping);
 	};
 
 	// create random HROT rule name
+	/** @returns {string} */
 	View.prototype.createRandomHROT = function() {
-		var	result = "",
-			neighbours = 0,
-			range = this.engine.HROT.yrange,
-			neighbourhood = "",
-			lastValue = -1,
-			value = 0,
-			number = 0,
-			added = 0,
-			i = 0;
+		var	/** @type {string} */ result = "",
+			/** @type {number} */ neighbours = 0,
+			/** @type {number} */ range = this.engine.HROT.yrange,
+			/** @type {string} */ neighbourhood = "",
+			/** @type {number} */ lastValue = -1,
+			/** @type {number} */ value = 0,
+			/** @type {number} */ number = 0,
+			/** @type {number} */ added = 0,
+			/** @type {number} */ i = 0;
 
 		// set the range
 		result = "R" + range  + ",";
@@ -10441,12 +10444,13 @@
 	};
 
 	// create random LtL rule name
+	/** @returns {string} */
 	View.prototype.createRandomLTL = function() {
-		var	result = "",
-			neighbours = 0,
-			range = this.engine.HROT.yrange,
-			neighbourhood = "",
-			value = 0;
+		var	/** @type {string} */ result = "",
+			/** @type {number} */ neighbours = 0,
+			/** @type {number} */ range = this.engine.HROT.yrange,
+			/** @type {string} */ neighbourhood = "",
+			/** @type {number} */ value = 0;
 
 		// set the range
 		result = "R" + range  + ",";
@@ -10569,9 +10573,10 @@
 	};
 
 	// create random Wolframe rule name
+	/** @returns {string} */
 	View.prototype.createRandomWolfram = function() {
-		var	result = "W",
-			value = 0;
+		var	/** @type {string} */ result = "W",
+			/** @type {number} */ value = 0;
 
 		// pick an even number from 0 to 254
 		value = ((this.randGen.random() * 127) | 0) * 2;
@@ -10580,14 +10585,15 @@
 		return result;
 	};
 
-	// create random LifeLife rule name
-	View.prototype.createRandomLifeLike = function(noB0) {
-		var	result = "B",
-			i = 0,
-			valueB = 0,
-			valueS = 0,
-			neighbours = 8,
-			postfix = "",
+	// create random Life-like rule name
+	/** @returns {string} */
+	View.prototype.createRandomLifeLike = function(/** @type {boolean} */ noB0) {
+		var	/** @type {string} */ result = "B",
+			/** @type {number} */ i = 0,
+			/** @type {number} */ valueB = 0,
+			/** @type {number} */ valueS = 0,
+			/** @type {number} */ neighbours = 8,
+			/** @type {string} */postfix = "",
 			birthChance = null,
 			survivalChance = null;
 
@@ -10722,15 +10728,16 @@
 	};
 
 	// create random Margolus rule name
-	View.prototype.createRandomMargolus = function(isPCA) {
-		var	result = (isPCA ? this.manager.pcaRulePrefix.toUpperCase() + "," : "M"),
-			i = 0,
-			j = 0,
-			value = 0,
-			bit = 0,
-			first15 = false,
-			used = 0,
-			swap = 0,
+	/** @returns {string} */
+	View.prototype.createRandomMargolus = function(/** @type {boolean} */ isPCA) {
+		var	/** @type {string} */ result = (isPCA ? this.manager.pcaRulePrefix.toUpperCase() + "," : "M"),
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ value = 0,
+			/** @type {number} */ bit = 0,
+			/** @type {boolean} */ first15 = false,
+			/** @type {number} */ used = 0,
+			/** @type {number} */ swap = 0,
 			entries = null,
 			candidates = null,
 			aliveCounts = null,
@@ -10878,24 +10885,24 @@
 	};
 
 	// randomize rule and pattern
-	View.prototype.randomPattern = function(me, fixedRule) {
-		var	patternText = "",
-			rleText = "",
+	View.prototype.randomPattern = function(me, /** @type {boolean} */fixedRule) {
+		var	/** @type {string} */ patternText = "",
+			/** @type {string} */ rleText = "",
 			result = null,
-			y = 0,
-			x = 0,
-			state = 0,
-			lastState = 0,
-			count = 0,
-			asciiA = String("A").charCodeAt(0),
-			asciiP = String("p").charCodeAt(0),
+			/** @type {number} */ y = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ lastState = 0,
+			/** @type {number} */ count = 0,
+			/** @type {number} */ asciiA = String("A").charCodeAt(0),
+			/** @type {number} */ asciiP = String("p").charCodeAt(0),
 			outputState = [],
 			aliasName = null,
-			maxState = 0,
-			rows = me.randomHeight,
-			columns = me.randomWidth,
-			fill = me.randomFillPercentage / 100,
-			isAlternating = false;
+			/** @type {number} */ maxState = 0,
+			/** @type {number} */ rows = me.randomHeight,
+			/** @type {number} */ columns = me.randomWidth,
+			/** @type {number} */ fill = me.randomFillPercentage / 100,
+			/** @type {boolean} */isAlternating = false;
 
 		// check if rule is alternating
 		if (me.patternRuleName.indexOf("|") !== -1) {
@@ -11047,7 +11054,7 @@
 
 	// new pattern
 	View.prototype.newPattern = function(me) {
-		var	patternText = "x = 1, y = 1, rule = ",
+		var	/** @type {string} */ patternText = "x = 1, y = 1, rule = ",
 			result = window.prompt("Create new pattern with rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef);
 
 		// check if the prompt was confirmed
@@ -11119,7 +11126,7 @@
 	// update camera during POI transition
 	View.prototype.updateCameraPOI = function() {
 		// compute linear completion
-		var	linearComplete = (this.targetPOI === 0 ? 0 : this.stepsPOI / this.targetPOI),
+		var	/** @type {number} */ linearComplete = (this.targetPOI === 0 ? 0 : this.stepsPOI / this.targetPOI),
 
 		    // compute bezier completion
 		    bezierComplete = this.waypointManager.bezierX(linearComplete, 0, 0, 1, 1),
@@ -11209,10 +11216,10 @@
 	// create POIs from Labels
 	View.prototype.createPOIsFromLabels = function() {
 		var	wm = this.waypointManager,
-			nLabels = wm.numLabels(),
-			i = 0,
-			width = this.patternWidth,
-			height = this.patternHeight,
+			/** @type {number} */ nLabels = wm.numLabels(),
+			/** @type {number} */ i = 0,
+			/** @type {number} */ width = this.patternWidth,
+			/** @type {number} */ height = this.patternHeight,
 			currentWaypoint = wm.createWaypoint(),
 			currentLabel = null;
 
@@ -11233,7 +11240,7 @@
 	};
 
 	// set camera from POI
-	View.prototype.setCameraFromPOI = function(me, poiNumber) {
+	View.prototype.setCameraFromPOI = function(me, /** @type {number} */ poiNumber) {
 		// get the point of interest
 		var	poi = me.waypointManager.poiList[poiNumber];
 
@@ -11380,9 +11387,9 @@
 	};
 
 	// change zoom if no autofit
-	View.prototype.changeZoom = function(me, newZoom, integerOnly) {
+	View.prototype.changeZoom = function(me, /** @type {number} */ newZoom, /** @type {boolean} */ integerOnly) {
 		// compute tracked zoom
-		var	adjustedZoom = newZoom / me.engine.originZ;
+		var	/** @type {number} */ adjustedZoom = newZoom / me.engine.originZ;
 
 		// check for integer zoom
 		if (integerOnly) {
@@ -11526,7 +11533,7 @@
 	};
 
 	// theme selection toggle
-	View.prototype.setThemeFromCallback = function(theme, newValue, change) {
+	View.prototype.setThemeFromCallback = function(theme, newValue, /** @type {boolean} */ change) {
 		if (change) {
 			if (newValue[0]) {
 				// change quickly
@@ -11549,87 +11556,87 @@
 	};
 
 	// theme selection toggles
-	View.prototype.toggleTheme0 = function(newValue, change, me) {
+	View.prototype.toggleTheme0 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(0, newValue, change);
 	};
 
-	View.prototype.toggleTheme1 = function(newValue, change, me) {
+	View.prototype.toggleTheme1 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(1, newValue, change);
 	};
 
-	View.prototype.toggleTheme2 = function(newValue, change, me) {
+	View.prototype.toggleTheme2 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(2, newValue, change);
 	};
 
-	View.prototype.toggleTheme3 = function(newValue, change, me) {
+	View.prototype.toggleTheme3 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(3, newValue, change);
 	};
 
-	View.prototype.toggleTheme4 = function(newValue, change, me) {
+	View.prototype.toggleTheme4 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(4, newValue, change);
 	};
 
-	View.prototype.toggleTheme5 = function(newValue, change, me) {
+	View.prototype.toggleTheme5 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(5, newValue, change);
 	};
 
-	View.prototype.toggleTheme6 = function(newValue, change, me) {
+	View.prototype.toggleTheme6 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(6, newValue, change);
 	};
 
-	View.prototype.toggleTheme7 = function(newValue, change, me) {
+	View.prototype.toggleTheme7 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(7, newValue, change);
 	};
 
-	View.prototype.toggleTheme8 = function(newValue, change, me) {
+	View.prototype.toggleTheme8 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(8, newValue, change);
 	};
 
-	View.prototype.toggleTheme9 = function(newValue, change, me) {
+	View.prototype.toggleTheme9 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(9, newValue, change);
 	};
 
-	View.prototype.toggleTheme10 = function(newValue, change, me) {
+	View.prototype.toggleTheme10 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(10, newValue, change);
 	};
 
-	View.prototype.toggleTheme11 = function(newValue, change, me) {
+	View.prototype.toggleTheme11 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(11, newValue, change);
 	};
 
-	View.prototype.toggleTheme12 = function(newValue, change, me) {
+	View.prototype.toggleTheme12 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(12, newValue, change);
 	};
 
-	View.prototype.toggleTheme13 = function(newValue, change, me) {
+	View.prototype.toggleTheme13 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(13, newValue, change);
 	};
 
-	View.prototype.toggleTheme14 = function(newValue, change, me) {
+	View.prototype.toggleTheme14 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(14, newValue, change);
 	};
 
-	View.prototype.toggleTheme15 = function(newValue, change, me) {
+	View.prototype.toggleTheme15 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(15, newValue, change);
 	};
 
-	View.prototype.toggleTheme16 = function(newValue, change, me) {
+	View.prototype.toggleTheme16 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(16, newValue, change);
 	};
 
-	View.prototype.toggleTheme17 = function(newValue, change, me) {
+	View.prototype.toggleTheme17 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(17, newValue, change);
 	};
 
-	View.prototype.toggleTheme18 = function(newValue, change, me) {
+	View.prototype.toggleTheme18 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(18, newValue, change);
 	};
 
-	View.prototype.toggleTheme19 = function(newValue, change, me) {
+	View.prototype.toggleTheme19 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(19, newValue, change);
 	};
 
-	View.prototype.toggleTheme20 = function(newValue, change, me) {
+	View.prototype.toggleTheme20 = function(newValue, /** @type {boolean} */ change, me) {
 		return me.setThemeFromCallback(20, newValue, change);
 	};
 
@@ -11746,8 +11753,8 @@
 	};
 
 	// clear paste
-	View.prototype.clearPaste = function(me, ctrl) {
-		var	i = 0;
+	View.prototype.clearPaste = function(me, /** @type {boolean} */ ctrl) {
+		var	/** @type {number} */ i = 0;
 
 		if ((me.engine.isLifeHistory || me.engine.isSuper) && ctrl) {
 			while (i < me.pasteBuffer.length) {
@@ -11767,22 +11774,22 @@
 	// clear outside
 	View.prototype.clearOutside = function(me) {
 		var	box = me.selectionBox,
-			x1 = box.leftX,
-			x2 = box.rightX,
-			y1 = box.bottomY,
-			y2 = box.topY,
+			/** @type {number} */ x1 = box.leftX,
+			/** @type {number} */ x2 = box.rightX,
+			/** @type {number} */ y1 = box.bottomY,
+			/** @type {number} */ y2 = box.topY,
 			zoomBox = me.engine.zoomBox,
-			leftX = zoomBox.leftX,
-			rightX = zoomBox.rightX,
-			bottomY = zoomBox.bottomY,
-			topY = zoomBox.topY,
-			x = 0,
-			y = 0,
-			state = 0,
-			swap = 0,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			wasState6 = 0;
+			/** @type {number} */ leftX = zoomBox.leftX,
+			/** @type {number} */ rightX = zoomBox.rightX,
+			/** @type {number} */ bottomY = zoomBox.bottomY,
+			/** @type {number} */ topY = zoomBox.topY,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {number} */ wasState6 = 0;
 
 		if (!me.viewOnly) {
 			// check for selection
@@ -11832,18 +11839,18 @@
 	};
 
 	// clear selection
-	View.prototype.clearSelection = function(me, ctrl) {
+	View.prototype.clearSelection = function(me, /** @type {boolean} */ ctrl) {
 		var	box = me.selectionBox,
-		    x1 = box.leftX,
-		    x2 = box.rightX,
-		    y1 = box.bottomY,
-		    y2 = box.topY,
-		    x = 0,
-		    y = 0,
-		    state = 0,
-		    swap = 0,
-		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+			/** @type {number} */ x1 = box.leftX,
+			/** @type {number} */ x2 = box.rightX,
+			/** @type {number} */ y1 = box.bottomY,
+			/** @type {number} */ y2 = box.topY,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
 		if (!me.viewOnly) {
 			// check for selection
@@ -11918,7 +11925,7 @@
 	};
 
 	// clear selection
-	View.prototype.doClearSelection = function(me, ctrl) {
+	View.prototype.doClearSelection = function(me, /** @type {boolean} */ ctrl) {
 		if (!me.viewOnly) {
 			if (me.isPasting) {
 				me.clearPaste(me, ctrl);
@@ -11947,10 +11954,10 @@
 	View.prototype.selectAllPressed = function(me) {
 		var	selBox = me.selectionBox,
 			zoomBox = me.engine.zoomBox,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			width = 0,
-			height = 0;
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {number} */ width = 0,
+			/** @type {number} */ height = 0;
 
 		// check for empty population
 		if (me.engine.population > 0) {
@@ -11995,7 +12002,7 @@
 	};
 
 	// process cut
-	View.prototype.processCut = function(me, shift, alt) {
+	View.prototype.processCut = function(me, /** @type {boolean} */ shift, /** @type {boolean} */ alt) {
 		if (!me.viewOnly) {
 			// check for sync
 			if (!me.noCopy && me.copySyncExternal) {
@@ -12031,26 +12038,26 @@
 	};
 
 	// cut selection
-	View.prototype.cutSelection = function(me, number, evolveStep, noSave) {
+	View.prototype.cutSelection = function(me, /** @type {number} */ number, /** @type {number} */ evolveStep, /** @type {boolean} */ noSave) {
 		var	box = me.selectionBox,
-		    x1 = box.leftX,
-		    x2 = box.rightX,
-		    y1 = box.bottomY,
-		    y2 = box.topY,
-		    x = 0,
-		    y = 0,
-		    i = 0,
-		    swap = 0,
-		    state = 0,
-		    count = 0,
-		    states = me.engine.multiNumStates,
-		    invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
-		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+		    /** @type {number} */ x1 = box.leftX,
+		    /** @type {number} */ x2 = box.rightX,
+		    /** @type {number} */ y1 = box.bottomY,
+		    /** @type {number} */ y2 = box.topY,
+		    /** @type {number} */ x = 0,
+		    /** @type {number} */ y = 0,
+		    /** @type {number} */ i = 0,
+		    /** @type {number} */ swap = 0,
+		    /** @type {number} */ state = 0,
+		    /** @type {number} */ count = 0,
+		    /** @type {number} */ states = me.engine.multiNumStates,
+		    /** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+		    /** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+		    /** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 		    buffer = null,
-		    width = 0,
-		    height = 0,
-		    wasState6 = 0;
+		    /** @type {number} */ width = 0,
+		    /** @type {number} */ height = 0,
+		    /** @type {number} */ wasState6 = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -12121,7 +12128,7 @@
 	};
 
 	// process copy
-	View.prototype.processCopy = function(me, shift, alt) {
+	View.prototype.processCopy = function(me, /** @type {boolean} */ shift, /** @type {boolean} */ alt) {
 		// check for Help copy
 		if (me.displayHelp !== 0) {
 			Help.copying = true;
@@ -12199,22 +12206,22 @@
 	// create weighted neighbourhood from selection and copy to clipboard
 	View.prototype.copyWeighted = function(me) {
 		var	selBox = me.selectionBox,
-			x1 = selBox.leftX,
-			y1 = selBox.bottomY,
-			x2 = selBox.rightX,
-			y2 = selBox.topY,
-			x = 0,
-			y = 0,
-			i = 0,
-			width = 0,
-			height = 0,
-			state = 0,
-			maxState = 0,
-			swap = 0,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			valid = true,
-			output = "",
+			/** @type {number} */ x1 = selBox.leftX,
+			/** @type {number} */ y1 = selBox.bottomY,
+			/** @type {number} */ x2 = selBox.rightX,
+			/** @type {number} */ y2 = selBox.topY,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ width = 0,
+			/** @type {number} */ height = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ maxState = 0,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {boolean} */ valid = true,
+			/** @type {string} */ output = "",
 			cells = [];
 
 		if (me.isSelection) {
@@ -12298,27 +12305,28 @@
 			me.menuManager.notification.notify("Weighted needs a selection", 15, 180, 15, true);
 		}
 	};
+
 	// create CoordCA neighbourhood from selection and copy to clipboard
 	View.prototype.copyCoordCA = function(me) {
 		var	selBox = me.selectionBox,
-			x1 = selBox.leftX,
-			y1 = selBox.bottomY,
-			x2 = selBox.rightX,
-			y2 = selBox.topY,
-			value = 0,
-			x = 0,
-			y = 0,
-			midX = 0,
-			midY = 0,
-			i = 0,
-			width = 0,
-			height = 0,
-			state = 0,
-			swap = 0,
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			valid = true,
-			output = "";
+			/** @type {number} */ x1 = selBox.leftX,
+			/** @type {number} */ y1 = selBox.bottomY,
+			/** @type {number} */ x2 = selBox.rightX,
+			/** @type {number} */ y2 = selBox.topY,
+			/** @type {number} */ value = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ midX = 0,
+			/** @type {number} */ midY = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ width = 0,
+			/** @type {number} */ height = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {boolean} */ valid = true,
+			/** @type {string} */ output = "";
 
 		if (me.isSelection) {
 			// order selection 
@@ -12407,24 +12415,24 @@
 	};
 
 	// copy selection
-	View.prototype.copySelection = function(me, number) {
+	View.prototype.copySelection = function(me, /** @type {number} */ number) {
 		var	selBox = me.selectionBox,
-			x1 = selBox.leftX,
-			y1 = selBox.bottomY,
-			x2 = selBox.rightX,
-			y2 = selBox.topY,
-			swap = 0,
-			x = 0,
-			y = 0,
-			i = 0,
-			width = 0,
-			height = 0,
-			state = 0,
-			count = 0,
-			states = me.engine.multiNumStates,
-			invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
-			xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {number} */ x1 = selBox.leftX,
+			/** @type {number} */ y1 = selBox.bottomY,
+			/** @type {number} */ x2 = selBox.rightX,
+			/** @type {number} */ y2 = selBox.topY,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ width = 0,
+			/** @type {number} */ height = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ count = 0,
+			/** @type {number} */ states = me.engine.multiNumStates,
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			buffer = null;
 
 		if (me.isSelection) {
@@ -12488,10 +12496,10 @@
 	};
 
 	// evolve pressed
-	View.prototype.evolvePressed = function(me, ctrl, shift) {
+	View.prototype.evolvePressed = function(me, /** @type {boolean} */ shift) {
 		// save paste mode
-		var	savedMode = this.pasteMode,
-			savedSync = this.copySyncExternal;
+		var	/** @type {number} */ savedMode = this.pasteMode,
+			/** @type {boolean} */ savedSync = this.copySyncExternal;
 
 		// check for evolve outside
 		if (shift) {
@@ -12545,30 +12553,30 @@
 
 	// evolve paste
 	View.prototype.evolvePaste = function(me) {
-		var	i = 0,
-			x = 0,
-			y = 0,
-			width = me.pasteWidth,
-			height = me.pasteHeight,
-			state = 0,
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ width = me.pasteWidth,
+			/** @type {number} */ height = me.pasteHeight,
+			/** @type {number} */ state = 0,
 			buffer = me.pasteBuffer,
-			xOff = 0,
-			yOff = 0,
+			/** @type {number} */ xOff = 0,
+			/** @type {number} */ yOff = 0,
 			selBox = me.selectionBox,
 			zoomBox = me.engine.zoomBox,
 			historyBox = me.engine.historyBox,
 			evolveBox = me.evolveBox,
 			// save current grid
-		    currentGrid = me.engine.grid,
-		    currentNextGrid = me.engine.nextGrid,
+			currentGrid = me.engine.grid,
+			currentNextGrid = me.engine.nextGrid,
 			currentColourGrid = me.engine.colourGrid,
 			currentColourGrid16 = me.engine.colourGrid16,
 			currentColourGrid32 = me.engine.colourGrid32,
 			currentSmallColourGrid = me.engine.smallColourGrid,
 			currentNextColourGrid = me.engine.nextColourGrid,
-		    currentTileGrid = me.engine.tileGrid,
-		    currentNextTileGrid = me.engine.nextTileGrid,
-		    currentColourTileGrid = me.engine.colourTileGrid,
+			currentTileGrid = me.engine.tileGrid,
+			currentNextTileGrid = me.engine.nextTileGrid,
+			currentColourTileGrid = me.engine.colourTileGrid,
 			currentColourTileHistoryGrid = me.engine.colourTileHistoryGrid,
 			currentWidth = me.engine.width,
 			currentHeight = me.engine.height,
@@ -12596,10 +12604,10 @@
 			currentCounts = null,
 			currentColUsed = null,
 			// save anything alive
-			currentAnythingAlive = me.engine.anythingAlive,
-			currentPop = me.engine.population,
-			currentBirths = me.engine.births,
-			currentDeaths = me.engine.deaths;
+			/** @type {number} */ currentAnythingAlive = me.engine.anythingAlive,
+			/** @type {number} */ currentPop = me.engine.population,
+			/** @type {number} */ currentBirths = me.engine.births,
+			/** @type {number} */ currentDeaths = me.engine.deaths;
 
 		// check for HROT rules
 		if (me.engine.isHROT) {
@@ -12734,19 +12742,19 @@
 	};
 
 	// perform paste
-	View.prototype.performPaste = function(me, cellX, cellY, saveEdit) {
-		var	i = 0,
-		    x = 0,
-		    y = 0,
-		    width = me.pasteWidth,
-		    height = me.pasteHeight,
-		    state = 0,
-		    current = 0,
-		    buffer = me.pasteBuffer,
-		    midBox = me.middleBox,
-		    origWidth = me.engine.width,
-		    origHeight = me.engine.height,
-		    wasState6 = 0;
+	View.prototype.performPaste = function(me, /** @type {number} */ cellX, /** @type {number} */ cellY, /** @type {boolean} */ saveEdit) {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ width = me.pasteWidth,
+			/** @type {number} */ height = me.pasteHeight,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ current = 0,
+			buffer = me.pasteBuffer,
+			midBox = me.middleBox,
+			/** @type {number} */ origWidth = me.engine.width,
+			/** @type {number} */ origHeight = me.engine.height,
+			/** @type {number} */ wasState6 = 0;
 
 		// adjust paste position based on position mode
 		switch ((me.pastePosition + 0.5) | 0) {
@@ -12870,28 +12878,28 @@
 	};
 
 	// paste at offset from selection
-	View.prototype.pasteOffset = function(me, dx, dy) {
-		var	xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-		    selBox = me.selectionBox,
-		    leftX = selBox.leftX,
-		    bottomY = selBox.bottomY,
-		    rightX = selBox.rightX,
-		    topY = selBox.topY,
-		    width = rightX - leftX + 1,
-		    height = topY - bottomY + 1,
-		    buffer = null,
-		    state = 0,
-		    i = 0,
-		    x = 0,
-		    y = 0,
-		    swap = 0,
-		    direction = "",
-		    bLeftX = 0,
-		    bRightX = me.engine.width - 1,
-		    bBottomY = 0,
-		    bTopY = me.engine.height - 1,
-		    wasState6 = 0;
+	View.prototype.pasteOffset = function(me, /** @type {number} */ dx, /** @type {number} */ dy) {
+		var	/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			selBox = me.selectionBox,
+			/** @type {number} */ leftX = selBox.leftX,
+			/** @type {number} */ bottomY = selBox.bottomY,
+			/** @type {number} */ rightX = selBox.rightX,
+			/** @type {number} */ topY = selBox.topY,
+			/** @type {number} */ width = rightX - leftX + 1,
+			/** @type {number} */ height = topY - bottomY + 1,
+			buffer = null,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ swap = 0,
+			/** @type {string} */ direction = "",
+			/** @type {number} */ bLeftX = 0,
+			/** @type {number} */ bRightX = me.engine.width - 1,
+			/** @type {number} */ bBottomY = 0,
+			/** @type {number} */ bTopY = me.engine.height - 1,
+			/** @type {number} */ wasState6 = 0;
 
 		if (!me.viewOnly) {
 			// check if there is a selection
@@ -12986,21 +12994,21 @@
 	};
 
 	// process paste
-	View.prototype.processPaste = function(me, shift, evolveStep) {
-		var	xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-		    selBox = me.selectionBox,
-		    evolveBox = me.evolveBox,
-		    save = 0,
-		    leftX = selBox.leftX,
-		    bottomY = selBox.bottomY,
-		    rightX = selBox.rightX,
-		    topY = selBox.topY,
-		    width = 0,
-		    height = 0,
-		    savedLocation = 0,
-		    x = 0,
-		    y = 0;
+	View.prototype.processPaste = function(me, /** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
+		var	/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			selBox = me.selectionBox,
+			evolveBox = me.evolveBox,
+			/** @type {number} */ save = 0,
+			/** @type {number} */ leftX = selBox.leftX,
+			/** @type {number} */ bottomY = selBox.bottomY,
+			/** @type {number} */ rightX = selBox.rightX,
+			/** @type {number} */ topY = selBox.topY,
+			/** @type {number} */ width = 0,
+			/** @type {number} */ height = 0,
+			/** @type {number} */ savedLocation = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0;
 
 		if (!me.viewOnly) {
 			// check for copy buffer
@@ -13081,7 +13089,7 @@
 	};
 
 	// paste selection
-	View.prototype.pasteSelection = function(me, number) {
+	View.prototype.pasteSelection = function(me, /** @type {number} */ number) {
 		// get the required paste
 		if (number >= 0 && number < me.pasteBuffers.length) {
 			if (me.pasteBuffers[number] !== null) {
@@ -13104,10 +13112,10 @@
 	};
 
 	// random paste
-	View.prototype.randomPaste = function(me, twoStateOnly) {
-		var	i = 0,
-			state = 0,
-			numStates = me.engine.multiNumStates;
+	View.prototype.randomPaste = function(me, /** @type {boolean} */ twoStateOnly) {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ numStates = me.engine.multiNumStates;
 
 		// check for 2 state patterns
 		if (numStates === -1) {
@@ -13130,20 +13138,20 @@
 	};
 
 	// random selection
-	View.prototype.randomSelection = function(me, twoStateOnly) {
+	View.prototype.randomSelection = function(me, /** @type {boolean} */ twoStateOnly) {
 		var	box = me.selectionBox,
-		    x1 = box.leftX,
-		    x2 = box.rightX,
-		    y1 = box.bottomY,
-		    y2 = box.topY,
-		    x = 0,
-		    y = 0,
-		    state = 0,
-		    swap = 0,
-		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-		    numStates = me.engine.multiNumStates,
-		    wasState6 = 0;
+			/** @type {number} */ x1 = box.leftX,
+			/** @type {number} */ x2 = box.rightX,
+			/** @type {number} */ y1 = box.bottomY,
+			/** @type {number} */ y2 = box.topY,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {number} */ numStates = me.engine.multiNumStates,
+			/** @type {number} */ wasState6 = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -13193,7 +13201,7 @@
 	};
 
 	// random fill
-	View.prototype.randomFill = function(me, twoStateOnly) {
+	View.prototype.randomFill = function(me, /** @type {boolean} */ twoStateOnly) {
 		if (!me.viewOnly) {
 			if (me.isPasting) {
 				me.randomPaste(me, twoStateOnly);
@@ -13217,14 +13225,14 @@
 
 	// flip X paste
 	View.prototype.flipXPaste = function(me) {
-		var	w = me.pasteWidth,
-			h = me.pasteHeight,
-			w2 = w >> 1,
-			x = 0,
-			y = 0,
-			i = 0,
-			swap = 0,
-			state = 0;
+		var	/** @type {number} */ w = me.pasteWidth,
+			/** @type {number} */ h = me.pasteHeight,
+			/** @type {number} */ w2 = w >> 1,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ state = 0;
 
 		// flip each row
 		i = 0;
@@ -13253,20 +13261,20 @@
 	// flip X selection
 	View.prototype.flipXSelection = function(me) {
 		var	box = me.selectionBox,
-		    x1 = box.leftX,
-		    x2 = box.rightX,
-		    y1 = box.bottomY,
-		    y2 = box.topY,
-		    x = 0,
-		    y = 0,
-		    swap = 0,
-		    row = null,
-		    state = 0,
-		    states = me.engine.multiNumStates,
-		    invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
-		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-		    wasState6 = 0;
+			/** @type {number} */ x1 = box.leftX,
+			/** @type {number} */ x2 = box.rightX,
+			/** @type {number} */ y1 = box.bottomY,
+			/** @type {number} */ y2 = box.topY,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ swap = 0,
+			row = null,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ states = me.engine.multiNumStates,
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {number} */ wasState6 = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -13325,14 +13333,14 @@
 
 	// flip Y paste
 	View.prototype.flipYPaste = function(me) {
-		var	w = me.pasteWidth,
-		    h = me.pasteHeight,
-		    h2 = h >> 1,
-		    x = 0,
-		    y = 0,
-		    i = 0,
-		    swap = 0,
-		    state = 0;
+		var	/** @type {number} */w = me.pasteWidth,
+			/** @type {number} */ h = me.pasteHeight,
+			/** @type {number} */ h2 = h >> 1,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ state = 0;
 
 		// flip each column
 		i = 0;
@@ -13361,20 +13369,20 @@
 	// flip Y selection
 	View.prototype.flipYSelection = function(me) {
 		var	box = me.selectionBox,
-		    x1 = box.leftX,
-		    x2 = box.rightX,
-		    y1 = box.bottomY,
-		    y2 = box.topY,
-		    x = 0,
-		    y = 0,
-		    swap = 0,
-		    column = null,
-		    state = 0,
-		    states = me.engine.multiNumStates,
-		    invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
-		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-		    wasState6 = 0;
+			/** @type {number} */ x1 = box.leftX,
+			/** @type {number} */ x2 = box.rightX,
+			/** @type {number} */ y1 = box.bottomY,
+			/** @type {number} */ y2 = box.topY,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ swap = 0,
+			column = null,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ states = me.engine.multiNumStates,
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {number} */ wasState6 = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -13431,12 +13439,12 @@
 	};
 
 	// rotate paste
-	View.prototype.rotatePaste = function(me, clockwise) {
-		var	w = me.pasteWidth,
-			h = me.pasteHeight,
-			x = 0,
-			y = 0,
-			value = 0,
+	View.prototype.rotatePaste = function(me, /** @type {boolean} */ clockwise) {
+		var	/** @type {number} */ w = me.pasteWidth,
+			/** @type {number} */ h = me.pasteHeight,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ value = 0,
 			newBuffer = me.engine.allocator.allocate(Uint8, w * h, "View.pasteBuffer");
 
 		// rotate cells into new buffer
@@ -13467,7 +13475,7 @@
 	};
 
 	// rotate selection
-	View.prototype.rotateSelection = function(me, clockwise, comment) {
+	View.prototype.rotateSelection = function(me, /** @type {boolean} */ clockwise, /** @type {string} */ comment) {
 		me.rotateSelection90(me, clockwise, comment);
 
 		/* TBD
@@ -13484,44 +13492,44 @@
 	};
 
 	// rotate hex selection
-	View.prototype.rotateSelection60 = function(me, clockwise, comment) {
+	View.prototype.rotateSelection60 = function(me, /** @type {boolean} */ clockwise, /** @type {string} */ comment) {
 		var	box = me.selectionBox,
-		    x1 = box.leftX,
-		    x2 = box.rightX,
-		    y1 = box.bottomY,
-		    y2 = box.topY,
-		    x = 0,
-		    y = 0,
-		    swap = 0,
-		    cells = null,
-		    state = 0,
-		    i = 0,
-		    j = 0,
-		    cx = 0,
-		    cy = 0,
-		    w = 0,
-		    h = 0,
-		    newLeftX = 0,
-		    newBottomY = 0,
-		    newRightX = 0,
-		    newTopY = 0,
-		    newX = 0,
-		    newY = 0,
-		    saveLeftX = 0,
-		    saveBottomY = 0,
-		    saveRightX = 0,
-		    saveTopY = 0,
-		    states = me.engine.multiNumStates,
-		    /** @type {boolean} */ rotateFits = true,
-		    /** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
-		    /** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
-		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
-		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
-		    /** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
-		    /** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1,
-		    /** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-		    /** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-		    wasState6 = 0;
+			/** @type {number} */ x1 = box.leftX,
+			/** @type {number} */ x2 = box.rightX,
+			/** @type {number} */ y1 = box.bottomY,
+			/** @type {number} */ y2 = box.topY,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ swap = 0,
+			cells = null,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ w = 0,
+			/** @type {number} */ h = 0,
+			/** @type {number} */ newLeftX = 0,
+			/** @type {number} */ newBottomY = 0,
+			/** @type {number} */ newRightX = 0,
+			/** @type {number} */ newTopY = 0,
+			/** @type {number} */ newX = 0,
+			/** @type {number} */ newY = 0,
+			/** @type {number} */ saveLeftX = 0,
+			/** @type {number} */ saveBottomY = 0,
+			/** @type {number} */ saveRightX = 0,
+			/** @type {number} */ saveTopY = 0,
+			/** @type {number} */ states = me.engine.multiNumStates,
+			/** @type {boolean} */ rotateFits = true,
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			/** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
+			/** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
+			/** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
+			/** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
+			/** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1,
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {number} */ wasState6 = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -13677,46 +13685,46 @@
 	};
 
 	// rotate selection
-	View.prototype.rotateSelection90 = function(me, clockwise, comment) {
+	View.prototype.rotateSelection90 = function(me, /** @type {boolean} */ clockwise, /** @type {string} */ comment) {
 		var	box = me.selectionBox,
-		    x1 = box.leftX,
-		    x2 = box.rightX,
-		    y1 = box.bottomY,
-		    y2 = box.topY,
-		    x = 0,
-		    y = 0,
-		    swap = 0,
-		    cells = null,
-		    state = 0,
-		    i = 0,
-		    cx = 0,
-		    cy = 0,
-		    w = 0,
-		    h = 0,
-		    newLeftX = 0,
-		    newBottomY = 0,
-		    newRightX = 0,
-		    newTopY = 0,
-		    newXInc = 0,
-		    newYInc = 0,
-		    firstNewY = 0,
-		    newX = 0,
-		    newY = 0,
-		    saveLeftX = 0,
-		    saveBottomY = 0,
-		    saveRightX = 0,
-		    saveTopY = 0,
-		    states = me.engine.multiNumStates,
-		    /** @type {boolean} */ rotateFits = true,
-		    /** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
-		    /** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
-		    /** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
-		    /** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
-		    /** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
-		    /** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1,
-		    /** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-		    /** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-		    wasState6 = 0;
+			/** @type {number} */ x1 = box.leftX,
+			/** @type {number} */ x2 = box.rightX,
+			/** @type {number} */ y1 = box.bottomY,
+			/** @type {number} */ y2 = box.topY,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ swap = 0,
+			cells = null,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ w = 0,
+			/** @type {number} */ h = 0,
+			/** @type {number} */ newLeftX = 0,
+			/** @type {number} */ newBottomY = 0,
+			/** @type {number} */ newRightX = 0,
+			/** @type {number} */ newTopY = 0,
+			/** @type {number} */ newXInc = 0,
+			/** @type {number} */ newYInc = 0,
+			/** @type {number} */ firstNewY = 0,
+			/** @type {number} */ newX = 0,
+			/** @type {number} */ newY = 0,
+			/** @type {number} */ saveLeftX = 0,
+			/** @type {number} */ saveBottomY = 0,
+			/** @type {number} */ saveRightX = 0,
+			/** @type {number} */ saveTopY = 0,
+			/** @type {number} */ states = me.engine.multiNumStates,
+			/** @type {boolean} */ rotateFits = true,
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			/** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
+			/** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
+			/** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
+			/** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
+			/** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1,
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {number} */ wasState6 = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -13962,9 +13970,9 @@
 
 	// invert paste
 	View.prototype.invertPaste = function(me) {
-		var	i = 0,
-			state = 0,
-			numStates = me.engine.multiNumStates;
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ numStates = me.engine.multiNumStates;
 
 		if (!me.viewOnly) {
 			// check for 2 state patterns
@@ -13984,18 +13992,18 @@
 	// invert selection
 	View.prototype.invertSelection = function(me) {
 		var	box = me.selectionBox,
-		    x1 = box.leftX,
-		    x2 = box.rightX,
-		    y1 = box.bottomY,
-		    y2 = box.topY,
-		    x = 0,
-		    y = 0,
-		    state = 0,
-		    swap = 0,
-		    xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-		    yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-		    numStates = me.engine.multiNumStates,
-		    wasState6 = 0;
+			/** @type {number} */ x1 = box.leftX,
+			/** @type {number} */ x2 = box.rightX,
+			/** @type {number} */ y1 = box.bottomY,
+			/** @type {number} */ y2 = box.topY,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {number} */ numStates = me.engine.multiNumStates,
+			/** @type {number} */ wasState6 = 0;
 
 		if (!me.viewOnly) {
 			// check for selection
@@ -14054,7 +14062,7 @@
 
 	// reverse direction button
 	View.prototype.directionPressed = function(me) {
-		var	flag = false;
+		var	/** @type {boolean} */ flag = false;
 
 		// check if reverse is pending
 		if (me.engine.reversePending) {
@@ -14089,7 +14097,7 @@
 
 	// copy rule button clicked
 	View.prototype.copyRulePressed = function(me) {
-		var	ruleText = me.patternRuleName;
+		var	/** @type {string} */ ruleText = me.patternRuleName;
 
 		if (me.engine.isRuleTree) {
 			// check the rule cache
@@ -14174,8 +14182,8 @@
 	View.prototype.goToGenPressed = function(me) {
 		// prompt for generation
 		var	result = window.prompt("Enter generation", me.engine.counter),
-			number = 0,
-			timing = false;
+			/** @type {number} */ number = 0,
+			/** @type {boolean} */ timing = false;
 
 		// check one was entered
 		me.startFromTiming = -1;
@@ -14240,7 +14248,7 @@
 	};
 
 	// grid toggle
-	View.prototype.toggleGrid = function(newValue, change, me) {
+	View.prototype.toggleGrid = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			me.engine.displayGrid = newValue[0];
 		}
@@ -14249,7 +14257,7 @@
 	};
 
 	// lines toggle
-	View.prototype.toggleLines = function(newValue, change, me) {
+	View.prototype.toggleLines = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			me.popGraphLines = newValue[0];
 		}
@@ -14258,7 +14266,7 @@
 	};
 
 	// pause while drawing toggle
-	View.prototype.togglePausePlayback = function(newValue, change, me) {
+	View.prototype.togglePausePlayback = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			me.pauseWhileDrawing = newValue[0];
 		}
@@ -14266,7 +14274,7 @@
 	};
 
 	// show lag toggle
-	View.prototype.toggleShowLag = function(newValue, change, me) {
+	View.prototype.toggleShowLag = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			me.perfWarning = newValue[0];
 		}
@@ -14275,7 +14283,7 @@
 	};
 
 	// throttle toggle
-	View.prototype.toggleThrottle = function(newValue, change, me) {
+	View.prototype.toggleThrottle = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			me.canBailOut = newValue[0];
 		}
@@ -14284,7 +14292,7 @@
 	};
 
 	// settings menu toggle
-	View.prototype.toggleSettings = function(newValue, change, me) {
+	View.prototype.toggleSettings = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			// close help if settings opened
 			if (me.displayHelp !== 0 && newValue[0]) {
@@ -14308,7 +14316,7 @@
 	};
 
 	// smart drawing toggle
-	View.prototype.toggleSmart = function(newValue, change, me) {
+	View.prototype.toggleSmart = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			me.smartDrawing = newValue[0];
 		}
@@ -14317,7 +14325,7 @@
 	};
 
 	// states toggle
-	View.prototype.toggleStates = function(newValue, change, me) {
+	View.prototype.toggleStates = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			me.showStates = newValue[0];
 		}
@@ -14326,7 +14334,7 @@
 	};
 
 	// cell period map display
-	View.prototype.toggleCellPeriodMap = function(newValue, change, me) {
+	View.prototype.toggleCellPeriodMap = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			me.periodMapDisplayed = newValue;
 		}
@@ -14335,7 +14343,7 @@
 	};
 
 	// pick toggle
-	View.prototype.togglePick = function(newValue, change, me) {
+	View.prototype.togglePick = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			me.pickMode = newValue[0];
 			if (me.pickMode) {
@@ -14357,7 +14365,7 @@
 	};
 
 	// autofit toggle
-	View.prototype.toggleAutoFit = function(newValue, change, me) {
+	View.prototype.toggleAutoFit = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			me.autoFit = newValue[0];
 
@@ -14371,7 +14379,7 @@
 	};
 
 	// loop indicator toggle
-	View.prototype.toggleLoop = function(newValue, change, me) {
+	View.prototype.toggleLoop = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			// check if loop defined
 			if (me.loopGeneration !== -1) {
@@ -14403,7 +14411,7 @@
 	};
 
 	// autostart indicator toggle
-	View.prototype.toggleAutostart = function(newValue, change, me) {
+	View.prototype.toggleAutostart = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			if (me.autoStart) {
 				me.autoStartDisabled = !newValue[0];
@@ -14414,7 +14422,7 @@
 	};
 
 	// stop indicator toggle
-	View.prototype.toggleStop = function(newValue, change, me) {
+	View.prototype.toggleStop = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			if (me.stopGeneration !== -1) {
 				me.stopDisabled = !newValue[0];
@@ -14425,7 +14433,7 @@
 	};
 
 	// waypoint/track indictor toggle
-	View.prototype.toggleWP = function(newValue, change, me) {
+	View.prototype.toggleWP = function(newValue, /** @type {boolean} */ change, me) {
 		var	result = [false];
 
 		if (change) {
@@ -14484,7 +14492,7 @@
 	};
 
 	// help toggle
-	View.prototype.toggleHelp = function(newValue, change, me) {
+	View.prototype.toggleHelp = function(newValue, /** @type {boolean} */ change, me) {
 		if (change) {
 			me.displayHelp = newValue[0];
 			if (me.displayHelp) {
@@ -14520,7 +14528,8 @@
 
 	// snap angle to nearest 45 degrees
 	View.prototype.snapToNearest45Pressed = function(me) {
-		var	value = me.angleItem.current[0];
+		var	/** @type {number} */ value = me.angleItem.current[0];
+
 		value = Math.floor((value + 45 / 2) / 45) * 45;
 
 		// wrap if required
@@ -14553,7 +14562,7 @@
 	};
 
 	// relative/absolute generation display toggle
-	View.prototype.viewRelativeToggle = function(newValue, change, me) {
+	View.prototype.viewRelativeToggle = function(newValue, /** @type {number} */ change, me) {
 		if (change) {
 			me.genRelative = newValue[0];
 		}
@@ -14562,7 +14571,7 @@
 	};
 
 	// quality rendering display toggle
-	View.prototype.viewQualityToggle = function(newValue, change, me) {
+	View.prototype.viewQualityToggle = function(newValue, /** @type {number} */ change, me) {
 		if (change) {
 			me.engine.pretty = newValue[0];
 			me.engine.initPretty();
@@ -14572,7 +14581,7 @@
 	};
 
 	// stats toggle
-	View.prototype.viewStats = function(newValue, change, me) {
+	View.prototype.viewStats = function(newValue, /** @type {number} */ change, me) {
 		if (change) {
 			me.statsOn = newValue[0];
 
@@ -14610,7 +14619,7 @@
 	};
 
 	// scroll errors up
-	View.prototype.scrollErrorsUp = function(me, amount) {
+	View.prototype.scrollErrorsUp = function(me, /** @type {number} */ amount) {
 		// scroll errors up
 		if (me.displayErrors > 1) {
 			me.displayErrors -= amount;
@@ -14621,7 +14630,7 @@
 	};
 
 	// scroll errors down
-	View.prototype.scrollErrorsDown = function(me, amount) {
+	View.prototype.scrollErrorsDown = function(me, /** @type {number} */ amount) {
 		if (me.displayErrors < me.scriptErrors.length - me.numHelpPerPage + 1) {
 			me.displayErrors += amount;
 			if (me.displayErrors > me.scriptErrors.length - me.numHelpPerPage + 1) {
@@ -14631,7 +14640,7 @@
 	};
 
 	// scroll help up
-	View.prototype.scrollHelpUp = function(me, amount) {
+	View.prototype.scrollHelpUp = function(me, /** @type {number} */ amount) {
 		// scroll help up
 		if (me.displayHelp > 1) {
 			me.displayHelp -= amount;
@@ -14642,7 +14651,7 @@
 	};
 
 	// scroll help down
-	View.prototype.scrollHelpDown = function(me, amount) {
+	View.prototype.scrollHelpDown = function(me, /** @type {number} */ amount) {
 		if (me.displayHelp < me.numHelpLines - me.numHelpPerPage) {
 			me.displayHelp += amount;
 			if (me.displayHelp > me.numHelpLines - me.numHelpPerPage) {
@@ -14654,8 +14663,8 @@
 	// move to previous help section
 	View.prototype.previousHelpSection = function(me) {
 		// find help section before current line
-		var	i = me.helpSections.length - 1,
-		    found = false;
+		var	/** @type {number} */ i = me.helpSections.length - 1,
+			/** @type {boolean} */ found = false;
 
 		while (i >= 0 && !found) {
 			if (me.displayHelp <= me.helpSections[i][0]) {
@@ -14672,8 +14681,8 @@
 	// move to next help section
 	View.prototype.nextHelpSection = function(me) {
 		// find help section after current line
-		var	i = 0,
-		    found = false;
+		var	/** @type {number} */ i = 0,
+			/** @type {boolean} */ found = false;
 
 		while (i < me.helpSections.length && !found) {
 			if (me.displayHelp >= me.helpSections[i][0]) {
@@ -14688,7 +14697,7 @@
 	};
 
 	// run forward to a given generation (used by redo)
-	View.prototype.runForwardTo = function(targetGen) {
+	View.prototype.runForwardTo = function(/** @type {number} */ targetGen) {
 		// for PCA clear the next generation
 		if (this.engine.isPCA) {
 			if (this.engine.counter < targetGen) {
@@ -14748,8 +14757,8 @@
 	};
 
 	// run to given generation (used to step back)
-	View.prototype.runTo = function(targetGen) {
-		var	fading = this.historyStates + (this.engine.multiNumStates > 0 ? this.engine.multiNumStates : 0);
+	View.prototype.runTo = function(/** @type {number} */ targetGen) {
+		var	/** @type {number} */ fading = this.historyStates + (this.engine.multiNumStates > 0 ? this.engine.multiNumStates : 0);
 
 		// check whether history enabled
 		if (!this.noHistory) {
@@ -14818,9 +14827,9 @@
 	};
 
 	// copy string to clipboard
-	View.prototype.copyToClipboard = function(me, contents, twoPhase) {
-		var	elementType = "textarea",
-			processingTime = 0;
+	View.prototype.copyToClipboard = function(me, /** @type {string} */ contents, /** @type {boolean} */ twoPhase) {
+		var	/** @type {string} */ elementType = "textarea",
+			/** @type {number} */ processingTime = 0;
 
 		// remember current window scroll position since Safari moves it
 		me.scrollPosition = document.documentElement.scrollTop || document.body.scrollTop;
@@ -14878,7 +14887,7 @@
 	};
 
 	// complete copy to clipboard
-	View.prototype.completeCopyToClipboard = function(me, twoPhase) {
+	View.prototype.completeCopyToClipboard = function(me, /** @type {boolean} */ twoPhase) {
 		var	selection = null,
 			range = null,
 			element = null;
@@ -14943,16 +14952,17 @@
 	};
 
 	// convert a theme colour object to an RGB string or colour name
+	/** @returns {string} */
 	View.prototype.asColourString = function(colourRGB) {
 		var	colourList = ColourManager.colourList,
 			keys = Object.keys(colourList),
-			redValue = colourRGB.red,
-			greenValue = colourRGB.green,
-			blueValue = colourRGB.blue,
-		    result = "",
-		    found = false,
-		    triple = null,
-		    i = 0;
+			/** @type {number} */ redValue = colourRGB.red,
+			/** @type {number} */ greenValue = colourRGB.green,
+			/** @type {number} */ blueValue = colourRGB.blue,
+			/** @type {string} */ result = "",
+			/** @type {boolean} */ found = false,
+			triple = null,
+			/** @type {number} */ i = 0;
 
 		// search the object for a key matching the r, g, b
 		while (i < keys.length && !found) {
@@ -14982,33 +14992,34 @@
 	};
 
 	// check if two colours are the same
+	/** @returns {boolean} */
 	View.prototype.areSameColour = function(first, second) {
 		return ((first.red === second.red) && (first.green === second.green) && (first.blue === second.blue));
 	};
 
 	// add the current position to the clipboard as script commands
-	View.prototype.copyPosition = function(me, full) {
+	View.prototype.copyPosition = function(me, /** @type {boolean} */ full) {
 		// comment prefix
-		var	commentPrefix = "#C ",
+		var	/** @type {string} */ commentPrefix = "#C ",
 
-		    // start with script start command
-		    string = commentPrefix + Keywords.scriptStartWord + " ",
+			// start with script start command
+			/** @type {string} */ string = commentPrefix + Keywords.scriptStartWord + " ",
 
-		    // compute the x and y coordinates
-		    xVal = -((me.engine.width / 2 - me.engine.xOff - me.engine.originX) | 0),
-			yVal = -((me.engine.height / 2 - me.engine.yOff - me.engine.originY) | 0),
-			xValStr = String(xVal),
-			yValStr = String(yVal),
+			// compute the x and y coordinates
+			/** @type {number} */ xVal = -((me.engine.width / 2 - me.engine.xOff - me.engine.originX) | 0),
+			/** @type {number} */ yVal = -((me.engine.height / 2 - me.engine.yOff - me.engine.originY) | 0),
+			/** @type {string} */ xValStr = String(xVal),
+			/** @type {string} */ yValStr = String(yVal),
 
 			// get the zoom
-			zoom = me.engine.zoom,
-			zoomStr,
+			/** @type {number} */ zoom = me.engine.zoom,
+			/** @type {string} */ zoomStr,
 
 			// get the angle
-			angleStr = me.engine.angle | 0,
+			/** @type {string} */ angleStr = String(me.engine.angle | 0),
 
 			// get the tile
-			tiltStr = me.engine.tilt | 0,
+			/** @type {string} */ tiltStr = String(me.engine.tilt | 0),
 
 			// get the theme
 			theme = me.engine.themes[me.engine.colourTheme];
@@ -15120,8 +15131,8 @@
 	};
 
 	// replace the current rle with the given text
-	View.prototype.loadText = function(me, text) {
-		var	result = false;
+	View.prototype.loadText = function(me, /** @type {string} */ text) {
+		var	/** @type {boolean} */ result = false;
 
 		// check whether prompt required
 		if (me.undoButton.locked || me.randomGuard) {
@@ -15137,7 +15148,7 @@
 	};
 
 	// select and copy reset position rle
-	View.prototype.copyRLE = function(me, twoPhase) {
+	View.prototype.copyRLE = function(me, /** @type {boolean} */ twoPhase) {
 		// copy the source pattern to the clipboard
 		me.copyStartTime = performance.now();
 		if (DocConfig.multi) {
@@ -15148,7 +15159,7 @@
 	};
 
 	// select and copy current rle
-	View.prototype.copyCurrentRLE = function(me, addComments) {
+	View.prototype.copyCurrentRLE = function(me, /** @type {boolean} */ addComments) {
 		// copy the current pattern to the clipboard
 		me.copyStartTime = performance.now();
 		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, addComments, me.engine.multiNumStates, me.engine.multiNumStates, []), false);
@@ -15157,10 +15168,10 @@
 	// key down
 	View.prototype.keyDown = function(me, event) {
 		// get the key code
-		var	keyCode = event.charCode || event.keyCode,
+		var	/** @type {number} */ keyCode = event.charCode || event.keyCode,
 
-		    // flag if key processed
-		    processed = false;
+			// flag if key processed
+			/** @type {boolean} */ processed = false;
 
 		// ignore keys in compute history mode
 		if (me.computeHistory) {
@@ -15239,7 +15250,7 @@
 
 	// update help topic buttons position based on window height
 	View.prototype.updateTopicButtonsPosition = function() {
-		var	y = 0;
+		var	/** @type {number} */ y = 0;
 
 		if (this.displayHeight < ViewConstants.minMenuHeight) {
 			this.helpKeysButton.setPosition(Menu.northWest, 10, 50);
@@ -15273,12 +15284,12 @@
 
 	// set menu colours
 	View.prototype.setMenuColours = function() {
-		var	fgCol = "white",
-			bgCol = "black",
-			highlightCol = "rgb(0,240,32)",
-			selectedCol = "blue",
-			lockedCol = "grey",
-			borderCol = "white",
+		var	/** @type {string} */ fgCol = "white",
+			/** @type {string} */ bgCol = "black",
+			/** @type {string} */ highlightCol = "rgb(0,240,32)",
+			/** @type {string} */ selectedCol = "blue",
+			/** @type {string} */ lockedCol = "grey",
+			/** @type {string} */ borderCol = "white",
 			element;
 
 		// check for custom foreground
@@ -15377,7 +15388,11 @@
 
 	// create menus
 	View.prototype.createMenus = function() {
-		var	i = 0, j = 0, x = 0, y = 0, lastX = 0;
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ lastX = 0;
 
 		// View menu
 
@@ -16227,10 +16242,10 @@
 
 	// attached the viewer to a canvas element
 	View.prototype.attachToCanvas = function(canvasItem) {
-		var	result = false,
-		    me = this,
-		    viewerWidth = 0,
-		    viewerHeight = 0;
+		var	/** @type {boolean} */ result = false,
+			me = this,
+			/** @type {number} */ viewerWidth = 0,
+			/** @type {number} */ viewerHeight = 0;
 
 		// attach to the supplied canvas
 		this.mainCanvas = canvasItem;
@@ -16332,9 +16347,10 @@
 	};
 
 	// get theme name from a number
-	View.prototype.themeName = function(themeNumber) {
+	/** @returns {string} */
+	View.prototype.themeName = function(/** @type {number} */ themeNumber) {
 		var	themes = this.engine.themes,
-		    result = "";
+			/** @type {string} */ result = "";
 
 		// ensure number is integer
 		themeNumber = themeNumber | 0;
@@ -16348,10 +16364,11 @@
 	};
 
 	// get a theme number from theme name
-	View.prototype.themeFromName = function(themeName) {
-		var	found = false,
+	/** @returns {number} */
+	View.prototype.themeFromName = function(/** @type {string} */ themeName) {
+		var	/** @type {boolean} */ found = false,
 			themes = this.engine.themes,
-			i = 0;
+			/** @type {number} */ i = 0;
 
 			// conver to lower case for search
 			themeName = themeName.toLowerCase();
@@ -16433,26 +16450,27 @@
 	};
 
 	// fit message to popup title bar
-	View.prototype.fitTitle = function(message) {
-		var	result = message,
+	/** @returns {string} */
+	View.prototype.fitTitle = function(/** @type {string} */ message) {
+		var	/** @type {string} */ result = message,
 
-		    // rendering context
-		    ctx = this.mainContext,
+			// rendering context
+			/** @type {CanvasRenderingContext2D} */ ctx = this.mainContext,
 
-		    // width of title bar
-		    titleWidth = 500,
+			// width of title bar
+			/** @type {number} */ titleWidth = 500,
 
-		    // length of message in characters
-		    length = message.length,
-
-		    // width in pixels
-		    pxWidth = 0,
-
-		    // index
-			i = length,
+			// length of message in characters
+			/** @type {number} */ length = message.length,
+	
+			// width in pixels
+			/** @type {number} */ pxWidth = 0,
+	
+			// index
+			/** @type {number} */ i = length,
 			
 			// font size
-			itemFontSize = 18;
+			/** @type {number} */ itemFontSize = 18;
 
 		// scale font
 		itemFontSize = (itemFontSize * this.viewMenu.yScale) | 0;
@@ -16480,7 +16498,7 @@
 	};
 
 	// read script
-	View.prototype.readScript = function(scriptString, numStates) {
+	View.prototype.readScript = function(/** @type {string} */ scriptString, /** @type {number} */ numStates) {
 		// @ts-ignore
 		ScriptParser.parseScript(this, scriptString, numStates);
 	};
@@ -16733,10 +16751,10 @@
 
 	// update states list
 	View.prototype.updateStatesList = function() {
-		var	states = this.engine.multiNumStates,
-			i = 0,
-			state = 0,
-			message = "";
+		var	/** @type {number} */ states = this.engine.multiNumStates,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ state = 0,
+			/** @type {string} */ message = "";
 
 		// update the states list and colours list
 		if (states > this.maxDisplayStates) {
@@ -16775,8 +16793,8 @@
 
 	// setup state list for drawing
 	View.prototype.setupStateList = function() {
-		var	states = this.engine.multiNumStates,
-			xScale = this.viewMenu.xScale;
+		var	/** @type {number} */ states = this.engine.multiNumStates,
+			/** @type {number} */ xScale = this.viewMenu.xScale;
 
 		// reset drawing state
 		this.drawState = 1;
@@ -16834,7 +16852,7 @@
 	};
 
 	// setup colour theme
-	View.prototype.setColourTheme = function(themeRequested) {
+	View.prototype.setColourTheme = function(/** @type {number} */ themeRequested) {
 		var	/** @type {number} */ customIndex = this.engine.numThemes;
 
 		// check if a theme was requested
@@ -16876,11 +16894,11 @@
 
 	// scale popup window
 	View.prototype.scalePopup = function() {
-		var	scale = 1,
-			windowWidth = window.innerWidth,
-			windowHeight = window.innerHeight,
-			displayWidth = this.displayWidth,
-			displayHeight = this.displayHeight + 80;
+		var	/** @type {number} */ scale = 1,
+			/** @type {number} */ windowWidth = window.innerWidth,
+			/** @type {number} */ windowHeight = window.innerHeight,
+			/** @type {number} */ displayWidth = this.displayWidth,
+			/** @type {number} */ displayHeight = this.displayHeight + 80;
 			
 		// scale width and height
 		displayWidth *= this.devicePixelRatio;
@@ -16994,9 +17012,9 @@
 	};
 
 	// start the viewer from a supplied pattern string
-	View.prototype.startViewer = function(patternString, ignoreThumbnail) {
-		var	savedW = 0,
-			savedH = 0;
+	View.prototype.startViewer = function(/** @type {string} */ patternString, /** @type {boolean} */ ignoreThumbnail) {
+		var	/** @type {number} */ savedW = 0,
+			/** @type {number} */ savedH = 0;
 
 		// reset playback speed
 		this.genSpeed = 60;
@@ -17050,11 +17068,11 @@
 
 	// check for Chrome bug
 	View.prototype.checkForChromeBug = function() {
-		var	i = 0,
-			chromeVersion = 0,
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ chromeVersion = 0,
 			uad = null,
-			found = false,
-			confirmed = "n";
+			/** @type {boolean} */ found = false,
+			/** @type {string} */ confirmed = "n";
 
 		// check for Chrome
 		// @ts-ignore
@@ -17089,22 +17107,22 @@
 
 	// complete pattern start process
 	View.prototype.completeStart = function(pattern, args, me) {
-		var	numberValue = 0,
-		    savedX = 0,
-		    savedY = 0,
-		    savedThumbnail = false,
-		    resizeRequired = false,
-		    neededWidth = 0,
-		    neededHeight = 0,
-		    borderSize = 0,
-		    i = 0,
-		    ignoreThumbnail = args[0],
-		    stateCount = 0,
-		    numStatesForRule = 0,
-		    name = "",
-		    growX = false,
-		    growY = false,
-		    comments = "";
+		var	/** @type {number} */ numberValue = 0,
+			/** @type {number} */ savedX = 0,
+			/** @type {number} */ savedY = 0,
+			/** @type {boolean} */ savedThumbnail = false,
+			/** @type {boolean} */ resizeRequired = false,
+			/** @type {number} */ neededWidth = 0,
+			/** @type {number} */ neededHeight = 0,
+			/** @type {number} */ borderSize = 0,
+			/** @type {number} */ i = 0,
+			/** @type {boolean} */ ignoreThumbnail = args[0],
+			/** @type {number} */ stateCount = 0,
+			/** @type {number} */ numStatesForRule = 0,
+			/** @type {string} */ name = "",
+			/** @type {boolean} */ growX = false,
+			/** @type {boolean} */ growY = false,
+			/** @type {string} */ comments = "";
 
 		// check for Edge browser
 		if (window.navigator.userAgent.indexOf("Edge") !== -1) {
@@ -17891,7 +17909,6 @@
 			me.failureReason = "Pattern too big (maximum " + me.engine.maxGridSize + "x" + me.engine.maxGridSize + ")";
 			pattern.tooBig = true;
 			me.executable = false;
-			me.clearPatternData();
 		}
 
 		// check bounded grid size (script command may have increased maximum allowed size)
@@ -18703,14 +18720,14 @@
 	};
 
 	// start a viewer
-	function startView(patternString, canvasItem, maxWidth, isInPopup, element) {
-		var	i = 0,
+	function startView(/** @type {string} */ patternString, canvasItem, /** @type {number} */ maxWidth, /** @type {boolean} */ isInPopup, element) {
+		var	/** @type {number} */ i = 0,
 		    
-		    // get the parent of the canvas
-		    parentItem = canvasItem.parentNode,
+			// get the parent of the canvas
+			parentItem = canvasItem.parentNode,
 
-		    // view
-		    newView = null;
+			// view
+			newView = null;
 
 		// check if the viewer already exists
 		i = 0;
@@ -18763,12 +18780,12 @@
 	function readSettingsFromMeta() {
 		// search for the LifeViewer meta tag
 		var	a = document.getElementsByTagName('meta'),
-		    b = 0,
-		    i = 0,
-		    metaItem = null,
-		    content = "",
-		    tokens = null,
-		    value = "";
+			/** @type {number} */ b = 0,
+			/** @type {number} */ i = 0,
+			metaItem = null,
+			/** @type {string} */ content = "",
+			tokens = null,
+			/** @type {string} */ value = "";
 
 		// check if a LifeViewer tag exists
 		for (b = 0; b < a.length; b += 1) {
@@ -18842,7 +18859,7 @@
 	function findDiv(element) {
 		// get the parent of the element
 		var	parentItem = element.parentNode,
-		    found = false;
+			/** @type {boolean} */ found = false;
 
 		// loop until found
 		while (!found) {
@@ -18867,14 +18884,14 @@
 		// get the standalone viewer
 		var	externalViewer = Controller.standaloneViewer(),
 
-		    // get the parent node of the Canvas
-		    parentItem = externalViewer[0].parentNode,
-
-		    // get the associated View
-		    view = externalViewer[1],
-
-		    // get the popup window
-		    popup = externalViewer[2];
+			// get the parent node of the Canvas
+			parentItem = externalViewer[0].parentNode,
+	
+			// get the associated View
+			view = externalViewer[1],
+	
+			// get the popup window
+			popup = externalViewer[2];
 
 		// hide the parent element
 		parentItem.style.display = "none";
@@ -18903,9 +18920,10 @@
 	}
 
 	// clean the pattern text
+	/** @returns {string} */
 	function cleanPattern(element) {
 		// remove HTML tags
-		var	result = element.innerHTML.replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/<br *\/>/gi, "\n").replace(/<br>/gi, "\n").replace(/&nbsp;/gi, " ").replace(/<span class="posthilit">/gi, "").replace(/<\/span>/gi, "").trim();
+		var	/** @type {string} */ result = element.innerHTML.replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/<br *\/>/gi, "\n").replace(/<br>/gi, "\n").replace(/&nbsp;/gi, " ").replace(/<span class="posthilit">/gi, "").replace(/<\/span>/gi, "").trim();
 
 		// remove space or tab at the beginning of lines
 		result = result.replace(/\n[ ]+/g, "\n");
@@ -18925,11 +18943,11 @@
 		// get the parent node
 		var	parentItem = findDiv(element),
 
-		    // find the element containing the pattern
-		    textItem = parentItem.getElementsByTagName(DocConfig.patternSourceName)[0],
+			// find the element containing the pattern
+			textItem = parentItem.getElementsByTagName(DocConfig.patternSourceName)[0],
 
-		    cleanItem = null,
-		    viewer = Controller.viewers[0];
+			cleanItem = null,
+			viewer = Controller.viewers[0];
 
 		// copy the text item into the inner html
 		if (textItem.value) {
@@ -18952,8 +18970,8 @@
 
 	// complete update process after potential async load
 	function completeUpdate(view) {
-		var	itemHeight = 28,
-			itemFontSize = 18,
+		var	/** @type {number} */ itemHeight = 28,
+			/** @type {number} */ itemFontSize = 18,
 			viewer = Controller.standaloneViewer(),
 
 			// get the popup window
@@ -19000,28 +19018,28 @@
 		// get the parent node
 		var	parentItem = findDiv(element),
 
-		    // find the element containing the pattern
-		    textItem = parentItem.getElementsByTagName(DocConfig.patternSourceName)[0],
+			// find the element containing the pattern
+			textItem = parentItem.getElementsByTagName(DocConfig.patternSourceName)[0],
 
-		    // get the pattern contents
-		    cleanItem = cleanPattern(textItem),
+			// get the pattern contents
+			cleanItem = cleanPattern(textItem),
 
-		    // get the standalone viewer
+			// get the standalone viewer
 			viewer = Controller.standaloneViewer(),
 			view = null,
 
-		    // elements
-		    canvasItem = null,
-		    divItem = null,
-		    windowTitleItem = null,
-		    anchorItem = null,
-		    innerDivItem = null,
-		    centerDivItem = null,
+			// elements
+			canvasItem = null,
+			divItem = null,
+			windowTitleItem = null,
+			anchorItem = null,
+			innerDivItem = null,
+			centerDivItem = null,
 			hiddenItem = null,
 
 			// element sizes for scaling
-			itemHeight = 28,
-			itemFontSize = 18,
+			/** @type {number} */ itemHeight = 28,
+			/** @type {number} */ itemFontSize = 18,
 
 			// popup window
 			popup = null;
@@ -19189,7 +19207,7 @@
 	}
 
 	// callback for show pattern error link
-	function patternErrorCallback(event, message) {
+	function patternErrorCallback(event, /** @type {string} */ message) {
 		// stop event propagating
 		if (event.stopPropagation) {
 			event.stopPropagation();
@@ -19201,7 +19219,7 @@
 	}
 
 	// create error
-	function createError(rleItem, textItem, message) {
+	function createError(rleItem, textItem, /** @type {string} */ message) {
 		// add the show in viewer anchor
 		var	anchorItem = rleItem.getElementsByTagName("a")[0],
 			newAnchor = document.createElement("a"),
@@ -19262,7 +19280,7 @@
 	}
 
 	// check if a string is a valid pattern
-	function isPattern(patternString, allocator, manager, rleItem, textItem) {
+	function isPattern(/** @type {string} */ patternString, allocator, manager, rleItem, textItem) {
 		var	pattern = null;
 
 		// attempt to create a pattern
@@ -19289,7 +19307,7 @@
 	// resize event
 	function resizeWindow() {
 		var	view = null,
-			i = 0;
+			/** @type {number} */ i = 0;
 
 		// check for fullscreen viewer
 		if (DocConfig.fullScreen) {
@@ -19333,14 +19351,14 @@
 		var	a = document.getElementsByTagName("div"),
 			b = 0,
 			c = null,
-		    textItem = null,
-		    anchorItem = null,
-		    canvasItem = null,
-		    cleanItem = null,
-		    rleItem = null,
+			textItem = null,
+			anchorItem = null,
+			canvasItem = null,
+			cleanItem = null,
+			rleItem = null,
 			childItem = null,
 			
-		    // temporary allocator and pattern manager
+			// temporary allocator and pattern manager
 			allocator = new Allocator(),
 			manager = new PatternManager();
 

@@ -647,7 +647,7 @@
 					} else {
 						// check for ctrl
 						if (event.ctrlKey || event.shiftKey) {
-							me.evolvePressed(me, event.ctrlKey, event.shiftKey);
+							me.evolvePressed(me, event.shiftKey);
 						} else {
 							// next generation
 							me.nextStep = true;
