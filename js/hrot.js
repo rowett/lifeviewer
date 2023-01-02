@@ -89,12 +89,12 @@
 		this.survivalChances = allocator.allocate(Float32, 0, "HROT.suvivalChances");
 
 		// whether to use random chances
-		this.useRandom = false;
+		/** @type {boolean} */ this.useRandom = false;
 	}
 
 	// set random seed
 	HROT.prototype.setRandomSeed = function(/** @type {string} */ seed) {
-		var /** @type {number} */ i = 0;
+		var	/** @type {number} */ i = 0;
 		
 		// initialize random number generator
 		this.myRand.init(seed);
@@ -128,7 +128,7 @@
 	// set type and range
 	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood, /** @type {number} */ neighbourCount, /** @type {boolean} */ isTriangular, /** @type {Array<number>} */ weightedNeighbourhood, /** @type {Array<number>} */ weightedStates, /** @type {number} */ cornerRange, /** @type {number} */ edgeRange) {
 		// compute widest width
-		var /** @const {number} */ width = range * 2 + 1,
+		var	/** @const {number} */ width = range * 2 + 1,
 			/** @const {number} */ r2 = range * range,
 			/** @const {number} */ r2plus = r2 + range,
 			/** @type {number} */ i = 0,
@@ -359,7 +359,7 @@
 
 	// wrap the grid for HROT torus
 	HROT.prototype.wrapTorusHROT = function(/** @type {number} */ lx, /** @type {number} */ by, /** @type {number} */ rx, /** @type {number} */ ty) {
-		var colourGrid = this.engine.colourGrid,
+		var	colourGrid = this.engine.colourGrid,
 			sourceRow = null,
 			destRow = null,
 			/** @const {number} */ xrange = this.xrange,
@@ -420,7 +420,7 @@
 
 	// clear the outside the bounded grid
 	HROT.prototype.clearHROTOutside = function(/** @type {number} */ lx, /** @type {number} */ by, /** @type {number} */ rx, /** @type {number} */ ty) {
-		var colourGrid = this.engine.colourGrid,
+		var	colourGrid = this.engine.colourGrid,
 			destRow = null,
 			/** @const {number} */ xrange = this.xrange,
 			/** @const {number} */ yrange = this.yrange,
@@ -463,7 +463,7 @@
 
 	// update the life grid region using computed counts
 	HROT.prototype.updateGridFromCountsHROT = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {boolean} */ useAlternate) {
-		var /** @type {number} */ x = 0,
+		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ population = 0,
 			/** @type {number} */ births = 0,
@@ -726,7 +726,7 @@
 
 	// weighted generations neighbourhood optimized range 1 version
 	HROT.prototype.nextGenerationWeightedGenerations = function(/** @const{number} */bottomY, /** @const{number} */topY, /** @const{number} */leftX, /** @const{number} */rightX, /** @const{number} */range) {
-		var /** @type {number} */ y,
+		var	/** @type {number} */ y,
 			/** @type {number} */ x,
 			/** @type {number} */ xm1,
 			/** @type {number} */ xp1,
@@ -843,7 +843,7 @@
 
 	// weighted neighbourhood optimized range 1 version
 	HROT.prototype.nextGenerationWeighted2R1 = function(/** @const{number} */bottomY, /** @const{number} */topY, /** @const{number} */leftX, /** @const{number} */rightX, /** @const{number} */range) {
-		var /** @type {number} */ y,
+		var	/** @type {number} */ y,
 			/** @type {number} */ x,
 			/** @type {number} */ xm1,
 			/** @type {number} */ xp1,
@@ -910,8 +910,8 @@
 	};
 
 	// 2-state corner/edge
-	HROT.prototype.nextGenerationCornerEdge2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationCornerEdge2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ count,
@@ -973,8 +973,8 @@
 	};
 
 	// 2-state asterisk
-	HROT.prototype.nextGenerationAsterisk2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationAsterisk2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1022,8 +1022,8 @@
 	};
 
 	// 2-state tripod
-	HROT.prototype.nextGenerationTripod2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationTripod2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1064,8 +1064,8 @@
 	};
 
 	// 2-state weighted
-	HROT.prototype.nextGenerationWeighted2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationWeighted2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1151,8 +1151,8 @@
 	};
 
 	// 2-state custom
-	HROT.prototype.nextGenerationCustom2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationCustom2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1199,8 +1199,8 @@
 	};
 
 	// 2-state hash
-	HROT.prototype.nextGenerationHash2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationHash2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1293,8 +1293,8 @@
 	};
 
 	// 2-state checkerboard or aligned checkerboard
-	HROT.prototype.nextGenerationCheckerBoth2 = function(leftX, bottomY, rightX, topY, xrange, yrange, start) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationCheckerBoth2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange, /** @type {number} */ start) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1414,18 +1414,18 @@
 	};
 
 	// 2-state checkerboard
-	HROT.prototype.nextGenerationCheckerboard2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+	HROT.prototype.nextGenerationCheckerboard2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		this.nextGenerationCheckerBoth2(leftX, bottomY, rightX, topY, xrange, yrange, 1);
 	};
 
 	// 2-state aligned checkerboard
-	HROT.prototype.nextGenerationAlignedCheckerboard2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+	HROT.prototype.nextGenerationAlignedCheckerboard2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		this.nextGenerationCheckerBoth2(leftX, bottomY, rightX, topY, xrange, yrange, 0);
 	};
 
 	// 2-state hexagonal
-	HROT.prototype.nextGenerationHexagonal2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationHexagonal2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1488,8 +1488,8 @@
 	};
 
 	// 2-state saltire
-	HROT.prototype.nextGenerationSaltire2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationSaltire2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ j,
@@ -1532,8 +1532,8 @@
 	};
 
 	// 2-state star
-	HROT.prototype.nextGenerationStar2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationStar2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1585,8 +1585,8 @@
 	};
 
 	// 2-state cross
-	HROT.prototype.nextGenerationCross2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationCross2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1649,8 +1649,8 @@
 	};
 
 	// 2-state triangular
-	HROT.prototype.nextGenerationTriangular2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationTriangular2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1825,8 +1825,8 @@
 	};
 
 	// 2-state gaussian
-	HROT.prototype.nextGenerationGuassian2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationGuassian2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1902,8 +1902,8 @@
 	};
 
 	// 2-state shaped
-	HROT.prototype.nextGenerationShaped2 = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationShaped2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1960,7 +1960,7 @@
 
 	// update the life grid region using HROT for 2 state patterns
 	HROT.prototype.nextGenerationHROT2 = function(/** @type {boolean} */useAlternate) {
-		var /** @type {number} */ x = 0,
+		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
@@ -2779,8 +2779,8 @@
 	};
 
 	// n-state corner/edge
-	HROT.prototype.nextGenerationCornerEdgeN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationCornerEdgeN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ count,
@@ -2841,8 +2841,8 @@
 	};
 
 	// n-state asterisk
-	HROT.prototype.nextGenerationAsteriskN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationAsteriskN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -2890,8 +2890,8 @@
 	};
 
 	// n-state tripod
-	HROT.prototype.nextGenerationTripodN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationTripodN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -2932,8 +2932,8 @@
 	};
 
 	// n-state weighted
-	HROT.prototype.nextGenerationWeightedN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationWeightedN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3019,8 +3019,8 @@
 	};
 
 	// n-state custom
-	HROT.prototype.nextGenerationCustomN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationCustomN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3067,8 +3067,8 @@
 	};
 
 	// n-state hash
-	HROT.prototype.nextGenerationHashN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationHashN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3161,8 +3161,8 @@
 	};
 
 	// n-state checkerboard or aligned checkerboard
-	HROT.prototype.nextGenerationCheckerBothN = function(leftX, bottomY, rightX, topY, xrange, yrange, start) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationCheckerBothN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange, /** @type {number} */ start) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3282,18 +3282,18 @@
 	};
 
 	// n-state checkerboard
-	HROT.prototype.nextGenerationCheckerboardN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+	HROT.prototype.nextGenerationCheckerboardN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		this.nextGenerationCheckerBothN(leftX, bottomY, rightX, topY, xrange, yrange, 1);
 	};
 
 	// n-state aligned checkerboard
-	HROT.prototype.nextGenerationAlignedCheckerboardN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
+	HROT.prototype.nextGenerationAlignedCheckerboardN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		this.nextGenerationCheckerBothN(leftX, bottomY, rightX, topY, xrange, yrange, 0);
 	};
 
 	// n-state hexagonal
-	HROT.prototype.nextGenerationHexagonalN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationHexagonalN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3356,8 +3356,8 @@
 	};
 
 	// n-state saltire
-	HROT.prototype.nextGenerationSaltireN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationSaltireN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ j,
@@ -3400,8 +3400,8 @@
 	};
 
 	// n-state star
-	HROT.prototype.nextGenerationStarN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationStarN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3453,8 +3453,8 @@
 	};
 
 	// n-state cross
-	HROT.prototype.nextGenerationCrossN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationCrossN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3517,8 +3517,8 @@
 	};
 
 	// n-state triangular
-	HROT.prototype.nextGenerationTriangularN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationTriangularN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3693,8 +3693,8 @@
 	};
 
 	// n-state gaussian
-	HROT.prototype.nextGenerationGuassianN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationGuassianN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3770,8 +3770,8 @@
 	};
 
 	// n-state shaped
-	HROT.prototype.nextGenerationShapedN = function(leftX, bottomY, rightX, topY, xrange, yrange) {
-		var counts = this.counts,
+	HROT.prototype.nextGenerationShapedN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3828,7 +3828,7 @@
 
 	// update the life grid region using HROT for >2 state patterns
 	HROT.prototype.nextGenerationHROTN = function(/** @type {boolean} */ useAlternate) {
-		var /** @type {number} */ x = 0,
+		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
@@ -4633,7 +4633,7 @@
 	// update the life grid using HROT
 	HROT.prototype.nextGenerationHROT = function(/** @type {number} */ counter) {
 		// whether to use the alternte rule
-		var /** @type {boolean} */ useAlternate = false;
+		var	/** @type {boolean} */ useAlternate = false;
 
 		// use alternate rule if specified and odd generation
 		if (this.altSpecified && ((counter & 1) === 1)) {

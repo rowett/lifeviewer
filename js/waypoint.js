@@ -30,105 +30,105 @@
 		this.manager = manager;
 
 		// whether to save interval time
-		this.intervalTime = false;
+		/** @type {boolean} */ this.intervalTime = false;
 
 		// whether waypoint is POI
-		this.isPOI = false;
+		/** @type {boolean} */ this.isPOI = false;
 
 		// whether to reset at POI
-		this.resetAtPOI = false;
+		/** @type {boolean} */ this.resetAtPOI = false;
 
 		// whether to stop or play at POI
-		this.modeAtPOI = WaypointConstants.none;
+		/** @type {number} */ this.modeAtPOI = WaypointConstants.none;
 
 		// POI transition speed
-		this.poiTransitionSpeed = WaypointConstants.poiDefaultSpeed;
+		/** @type {number} */ this.poiTransitionSpeed = WaypointConstants.poiDefaultSpeed;
 
 		// STOP generation
-		this.stopGeneration = -1;
+		/** @type {number} */ this.stopGeneration = -1;
 
 		// LOOP generation
-		this.loopGeneration = -1;
+		/** @type {number} */ this.loopGeneration = -1;
 
 		// camera position
-		this.x = 0;
-		this.y = 0;
+		/** @type {number} */ this.x = 0;
+		/** @type {number} */ this.y = 0;
 
 		// camera angle
-		this.angle = 0;
+		/** @type {number} */ this.angle = 0;
 
 		// camera tilt
-		this.tilt = 0;
+		/** @type {number} */ this.tilt = 0;
 
 		// camera zoom
-		this.zoom = 1;
+		/** @type {number} */ this.zoom = 1;
 
 		// layers
-		this.layers = 1;
+		/** @type {number} */ this.layers = 1;
 
 		// layer depth
-		this.depth = 1;
+		/** @type {number} */ this.depth = 1;
 
 		// colour theme
-		this.theme = 0;
+		/** @type {number} */ this.theme = 0;
 
 		// gps
-		this.gps = 60;
+		/** @type {number} */ this.gps = 60;
 
 		// step size
-		this.step = 1;
+		/** @type {number} */ this.step = 1;
 
 		// target generation
-		this.targetGen = 0;
+		/** @type {number} */ this.targetGen = 0;
 
 		// target time
-		this.targetTime = 0;
+		/** @type {number} */ this.targetTime = 0;
 
 		// text message
-		this.textMessage = "";
+		/** @type {string} */ this.textMessage = "";
 
 		// whether to fit zoom
-		this.fitZoom = false;
+		/** @type {boolean} */ this.fitZoom = false;
 
 		// flags for linear
-		this.xLinear = false;
-		this.yLinear = false;
-		this.zLinear = false;
+		/** @type {boolean} */ this.xLinear = false;
+		/** @type {boolean} */ this.yLinear = false;
+		/** @type {boolean} */ this.zLinear = false;
 
 		// stars
-		this.stars = false;
+		/** @type {boolean} */ this.stars = false;
 
 		// grid
-		this.grid = false;
+		/** @type {boolean} */ this.grid = false;
 
 		// flags for which items were defined
-		this.xDefined = false;
-		this.yDefined = false;
-		this.angleDefined = false;
-		this.tiltDefined = false;
-		this.zoomDefined = false;
-		this.layersDefined = false;
-		this.depthDefined = false;
-		this.themeDefined = false;
-		this.gpsDefined = false;
-		this.stepDefined = false;
-		this.stopGenDefined = false;
-		this.loopGenDefined = false;
-		this.targetGenDefined = false;
-		this.targetTimeDefined = false;
-		this.textDefined = false;
-		this.xModeDefined = false;
-		this.yModeDefined = false;
-		this.zModeDefined = false;
-		this.starsDefined = false;
-		this.gridDefined = false;
+		/** @type {boolean} */ this.xDefined = false;
+		/** @type {boolean} */ this.yDefined = false;
+		/** @type {boolean} */ this.angleDefined = false;
+		/** @type {boolean} */ this.tiltDefined = false;
+		/** @type {boolean} */ this.zoomDefined = false;
+		/** @type {boolean} */ this.layersDefined = false;
+		/** @type {boolean} */ this.depthDefined = false;
+		/** @type {boolean} */ this.themeDefined = false;
+		/** @type {boolean} */ this.gpsDefined = false;
+		/** @type {boolean} */ this.stepDefined = false;
+		/** @type {boolean} */ this.stopGenDefined = false;
+		/** @type {boolean} */ this.loopGenDefined = false;
+		/** @type {boolean} */ this.targetGenDefined = false;
+		/** @type {boolean} */ this.targetTimeDefined = false;
+		/** @type {boolean} */ this.textDefined = false;
+		/** @type {boolean} */ this.xModeDefined = false;
+		/** @type {boolean} */ this.yModeDefined = false;
+		/** @type {boolean} */ this.zModeDefined = false;
+		/** @type {boolean} */ this.starsDefined = false;
+		/** @type {boolean} */ this.gridDefined = false;
 
 		// whether waypoint has been processed
-		this.processed = false;
+		/** @type {boolean} */ this.processed = false;
 	}
 
 	// set a waypoint to the same as another waypoint
-	Waypoint.prototype.set = function(fromWaypoint) {
+	Waypoint.prototype.set = function(/** @type {Waypoint} */ fromWaypoint) {
 		// copy interval time
 		this.intervalTime = fromWaypoint.intervalTime;
 
@@ -189,8 +189,9 @@
 	};
 
 	// return action name as string
+	/** @returns {string} */
 	Waypoint.prototype.actionName = function() {
-		var result = "";
+		var	/** @type {string} */ result = "";
 
 		switch (this.modeAtPOI) {
 		case WaypointConstants.play:
@@ -202,6 +203,7 @@
 		default:
 			break;
 		}
+
 		return result;
 	};
 
@@ -242,7 +244,7 @@
 	};
 
 	// set transition speed
-	Waypoint.prototype.setTransitionSpeed = function(speed, scriptErrors) {
+	Waypoint.prototype.setTransitionSpeed = function(/** @type {number} */ speed, scriptErrors) {
 		if (this.isPOI) {
 			if (this.poiTransitionSpeed !== WaypointConstants.poiDefaultSpeed) {
 				scriptErrors[scriptErrors.length] = [Keywords.poiTransWord + " " + speed, "overwrites " + this.poiTransitionSpeed];
@@ -254,23 +256,23 @@
 	};
 
 	// set a waypoint to an interpolation between two waypoints
-	Waypoint.prototype.interpolate = function(fromWaypoint, toWaypoint, elapsedTime) {
+	Waypoint.prototype.interpolate = function(/** @type {Waypoint} */ fromWaypoint, /** @type {Waypoint} */ toWaypoint, /** @type {number} */ elapsedTime) {
 		// compute the time delta
-		var startTime = fromWaypoint.targetTime + 0.0,
-		    endTime = toWaypoint.targetTime + 0.0,
+		var	/** @type {number} */ startTime = fromWaypoint.targetTime + 0.0,
+			/** @type {number} */ endTime = toWaypoint.targetTime + 0.0,
 
-		    // start and end angle for wrap around
-		    startAngle = fromWaypoint.angle + 0.0,
-		    endAngle = toWaypoint.angle + 0.0,
+			// start and end angle for wrap around
+			/** @type {number} */ startAngle = fromWaypoint.angle + 0.0,
+			/** @type {number} */ endAngle = toWaypoint.angle + 0.0,
 
-		    // default to complete
-		    percentLinearComplete = 1.0,
-		    percentBezierComplete = 1.0,
-
-		    // x, y and zoom percent complete
-		    percentXComplete = 1.0,
-		    percentYComplete = 1.0,
-		    percentZComplete = 1.0;
+			// default to complete
+			/** @type {number} */ percentLinearComplete = 1.0,
+			/** @type {number} */ percentBezierComplete = 1.0,
+	
+			// x, y and zoom percent complete
+			/** @type {number} */ percentXComplete = 1.0,
+			/** @type {number} */ percentYComplete = 1.0,
+			/** @type {number} */ percentZComplete = 1.0;
 		
 		// cap elapsed time to end time
 		if (elapsedTime > endTime) {
@@ -364,58 +366,59 @@
 	/**
 	 * @constructor
 	 */
-	function Polygon(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tDistance, dx, dy, shadow) {
+	function Polygon(coords, /** @type {boolean} */ isFilled, /** @type {number} */ zoom, /** @type {number} */ minZoom, /** @type {number} */ maxZoom, /** @type {string} */ colour, /** @type {number} */ alpha, /** @type {number} */ size, /** @type {number} */ t1, /** @type {number} */ t2, /** @type {number} */ tFade,
+			/** @type {number} */ angle, /** @type {boolean} */ angleLocked, /** @type {boolean} */ positionLocked, /** @type {number} */ tDistance, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {boolean} */ shadow) {
 		// shadow on/off
-		this.shadow = shadow;
+		/** @type {boolean} */ this.shadow = shadow;
 
 		// coordinates
 		this.coords = coords;
 
 		// whether filled
-		this.isFilled = isFilled;
+		/** @type {boolean} */ this.isFilled = isFilled;
 
 		// zoom
-		this.zoom = zoom;
+		/** @type {number} */ this.zoom = zoom;
 
 		// minimum zoom
-		this.minZoom = minZoom;
+		/** @type {number} */ this.minZoom = minZoom;
 
 		// maximum zoom
-		this.maxZoom = maxZoom;
+		/** @type {number} */ this.maxZoom = maxZoom;
 
 		// colour
-		this.colour = colour;
+		/** @type {string} */ this.colour = colour;
 
 		// alpha
-		this.alpha = alpha;
+		/** @type {number} */ this.alpha = alpha;
 
 		// size
-		this.size = size;
+		/** @type {number} */ this.size = size;
 
 		// start generation
-		this.t1 = t1;
+		/** @type {number} */ this.t1 = t1;
 
 		// end generation
-		this.t2 = t2;
+		/** @type {number} */ this.t2 = t2;
 
 		// fade generations
-		this.tFade = tFade;
+		/** @type {number} */ this.tFade = tFade;
 
 		// angle
-		this.angle = angle;
+		/** @type {number} */ this.angle = angle;
 
 		// angle locked when camera rotated
-		this.angleLocked = angleLocked;
+		/** @type {boolean} */ this.angleLocked = angleLocked;
 
 		// position locked when TRACK used
-		this.positionLocked = positionLocked;
+		/** @type {boolean} */ this.positionLocked = positionLocked;
 
 		// target distance
-		this.tDistance = tDistance;
+		/** @type {number} */ this.tDistance = tDistance;
 
 		// label movement vector
-		this.dx = dx;
-		this.dy = dy;
+		/** @type {number} */ this.dx = dx;
+		/** @type {number} */ this.dy = dy;
 
 		// process zoom range
 		if (this.maxZoom === -1000 && this.minZoom === -1000) {
@@ -428,67 +431,68 @@
 	/**
 	 * @constructor
 	 */
-	function Arrow(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tDistance, dx, dy, shadow) {
+	function Arrow(/** @type {number} */ x1, /** @type {number} */ y1, /** @type {number} */ x2, /** @type {number} */ y2, /** @type {number} */ zoom, /** @type {number} */ minZoom, /** @type {number} */ maxZoom, /** @type {string} */ colour,
+			/** @type {number} */ alpha, /** @type {number} */ size, /** @type {number} */ headMultiple, /** @type {number} */ t1, /** @type {number} */ t2, /** @type {number} */ tFade, /** @type {number} */ angle, /** @type {boolean} */ angleLocked, /** @type {boolean} */ positionLocked, /** @type {number} */ tDistance, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {boolean} */ shadow) {
 		// shadow on/off
-		this.shadow = shadow;
+		/** @type {boolean} */ this.shadow = shadow;
 
 		// x1 position
-		this.x1 = x1;
+		/** @type {number} */ this.x1 = x1;
 
 		// y1 position
-		this.y1 = y1;
+		/** @type {number} */ this.y1 = y1;
 
 		// x2 position
-		this.x2 = x2;
+		/** @type {number} */ this.x2 = x2;
 
 		// y2 position
-		this.y2 = y2;
+		/** @type {number} */ this.y2 = y2;
 
 		// zoom
-		this.zoom = zoom;
+		/** @type {number} */ this.zoom = zoom;
 
 		// minimum zoom
-		this.minZoom = minZoom;
+		/** @type {number} */ this.minZoom = minZoom;
 
 		// maximum zoom
-		this.maxZoom = maxZoom;
+		/** @type {number} */ this.maxZoom = maxZoom;
 
 		// colour
-		this.colour = colour;
+		/** @type {string} */ this.colour = colour;
 
 		// alpha
-		this.alpha = alpha;
+		/** @type {number} */ this.alpha = alpha;
 
 		// size
-		this.size = size;
+		/** @type {number} */ this.size = size;
 
 		// head size as multiple of arrow length
-		this.headMultiple = headMultiple;
+		/** @type {number} */ this.headMultiple = headMultiple;
 
 		// start generation
-		this.t1 = t1;
+		/** @type {number} */ this.t1 = t1;
 
 		// end generation
-		this.t2 = t2;
+		/** @type {number} */ this.t2 = t2;
 
 		// fade generations
-		this.tFade = tFade;
+		/** @type {number} */ this.tFade = tFade;
 
 		// angle
-		this.angle = angle;
+		/** @type {number} */ this.angle = angle;
 
 		// angle locked when camera rotated
-		this.angleLocked = angleLocked;
+		/** @type {boolean} */ this.angleLocked = angleLocked;
 
 		// position locked when TRACK used
-		this.positionLocked = positionLocked;
+		/** @type {boolean} */ this.positionLocked = positionLocked;
 
 		// target distance
-		this.tDistance = tDistance;
+		/** @type {number} */ this.tDistance = tDistance;
 
 		// label movement vector
-		this.dx = dx;
-		this.dy = dy;
+		/** @type {number} */ this.dx = dx;
+		/** @type {number} */ this.dy = dy;
 
 		// process zoom range
 		if (this.maxZoom === -1000 && this.minZoom === -1000) {
@@ -501,79 +505,80 @@
 	/**
 	 * @constructor
 	 */
-	function Label(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tDistance, dx, dy, shadow) {
+	function Label(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ zoom, /** @type {number} */ minZoom, /** @type {number} */ maxZoom, /** @type {string} */ colour, /** @type {number} */ alpha,
+			/** @type {number} */ size, /** @type {boolean} */ sizeLocked, /** @type {number} */ t1, /** @type {number} */ t2, /** @type {number} */ tFade, /** @type {number} */ angle, /** @type {boolean} */ angleLocked, /** @type {boolean} */ positionLocked, /** @type {number} */ tDistance, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {boolean} */ shadow) {
 		// shadow on/off
-		this.shadow = shadow;
+		/** @type {boolean} */ this.shadow = shadow;
 
 		// message
 		this.message = "";
 
 		// whether message has population substitution
-		this.popSub = -1;
+		/** @type {number} */ this.popSub = -1;
 
 		// whether message has generation substitution
-		this.genSub = -1;
+		/** @type {number} */ this.genSub = -1;
 
 		// whether message has reverse generation substitution (for PCA and Margolus rules)
-		this.revSub = -1;
+		/** @type {number} */ this.revSub = -1;
 
 		// whether message has relative generation substitution
-		this.relPopSub = -1;
+		/** @type {number} */ this.relGenSub = -1;
 
 		// whether message has relative reverse generation substitution (for PCA and Margolus rules)
-		this.relRevSub = -1;
+		/** @type {number} */ this.relRevSub = -1;
 
 		// x position
-		this.x = x;
+		/** @type {number} */ this.x = x;
 
 		// y position
-		this.y = y;
+		/** @type {number} */ this.y = y;
 
 		// zoom
-		this.zoom = zoom;
+		/** @type {number} */ this.zoom = zoom;
 
 		// minimum zoom
-		this.minZoom = minZoom;
+		/** @type {number} */ this.minZoom = minZoom;
 
 		// maximum zoom
-		this.maxZoom = maxZoom; 
+		/** @type {number} */ this.maxZoom = maxZoom; 
 
 		// colour
-		this.colour = colour;
+		/** @type {string} */ this.colour = colour;
 
 		// alpha
-		this.alpha = alpha;
+		/** @type {number} */ this.alpha = alpha;
 
 		// size
-		this.size = size;
+		/** @type {number} */ this.size = size;
 
 		// whether size locked
-		this.sizeLocked = sizeLocked;
+		/** @type {boolean} */ this.sizeLocked = sizeLocked;
 
 		// start generation
-		this.t1 = t1;
+		/** @type {number} */ this.t1 = t1;
 
 		// end generation
-		this.t2 = t2;
+		/** @type {number} */ this.t2 = t2;
 
 		// fade generations
-		this.tFade = tFade;
+		/** @type {number} */ this.tFade = tFade;
 
 		// angle
-		this.angle = angle;
+		/** @type {number} */ this.angle = angle;
 
 		// angle locked when camera rotated
-		this.angleLocked = angleLocked;
+		/** @type {boolean} */ this.angleLocked = angleLocked;
 
 		// position locked when TRACK used
-		this.positionLocked = positionLocked;
+		/** @type {boolean} */ this.positionLocked = positionLocked;
 
 		// target distance
-		this.tDistance = tDistance;
+		/** @type {number} */ this.tDistance = tDistance;
 
 		// label movement vector
-		this.dx = dx;
-		this.dy = dy;
+		/** @type {number} */ this.dx = dx;
+		/** @type {number} */ this.dy = dy;
 
 		// process zoom range
 		if (this.maxZoom === -1000 && this.minZoom === -1000) {
@@ -603,29 +608,30 @@
 		this.polyList = [];
 
 		// current position
-		this.current = new Waypoint(this);
+		/** @type {Waypoint} */ this.current = new Waypoint(this);
 
 		// temporary start waypoint
-		this.tempStart = new Waypoint(this);
+		/** @type {Waypoint} */ this.tempStart = new Waypoint(this);
 
 		// temporary end waypoint
-		this.tempEnd = new Waypoint(this);
+		/** @type {Waypoint} */ this.tempEnd = new Waypoint(this);
 
 		// whether using the temporary position
-		this.usingTemp = false;
+		/** @type {boolean} */ this.usingTemp = false;
 
 		// waypoint index to return to after temporary glide
-		this.tempIndex = 0;
+		/** @type {number} */ this.tempIndex = 0;
 
 		// whether last waypoint has been reached
-		this.lastReached = false;
+		/** @type {boolean} */ this.lastReached = false;
 
 		// whether waypoints contain camera commands
-		this.hasCamera = false;
+		/** @type {boolean} */ this.hasCamera = false;
 	}
 
 	// create a polygon
-	WaypointManager.prototype.createPolygon = function(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow) {
+	WaypointManager.prototype.createPolygon = function(coords, /** @type {boolean} */ isFilled, /** @type {number} */ zoom, /** @type {number} */ minZoom, /** @type {number} */ maxZoom, /** @type {string} */ colour, /** @type {number} */ alpha,
+			/** @type {number} */ size, /** @type {number} */ t1, /** @type {number} */ t2, /** @type {number} */ tFade, /** @type {number} */ angle, /** @type {boolean} */ angleLocked, /** @type {boolean} */ positionLocked, /** @type {number} */ tdistance, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {boolean} */ shadow) {
 		return new Polygon(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow);
 	};
 
@@ -635,17 +641,19 @@
 	};
 
 	// add a polygon to the list
-	WaypointManager.prototype.addPolygon = function(polygon) {
+	WaypointManager.prototype.addPolygon = function(/** @type {Polygon} */ polygon) {
 		this.polyList[this.polyList.length] = polygon;
 	};
 
 	// return number of polygons
+	/** @returns {number} */
 	WaypointManager.prototype.numPolygons = function() {
 		return this.polyList.length;
 	};
 
 	// create an arrow
-	WaypointManager.prototype.createArrow = function(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow) {
+	WaypointManager.prototype.createArrow = function(/** @type {number} */ x1, /** @type {number} */ y1, /** @type {number} */ x2, /** @type {number} */ y2, /** @type {number} */ zoom, /** @type {number} */ minZoom, /** @type {number} */ maxZoom, /** @type {string} */ colour,
+			/** @type {number} */ alpha, /** @type {number} */ size, /** @type {number} */ headMultiple, /** @type {number} */ t1, /** @type {number} */ t2, /** @type {number} */ tFade, /** @type {number} */ angle, /** @type {boolean} */ angleLocked, /** @type {boolean} */ positionLocked, /** @type {number} */ tdistance, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {boolean} */ shadow) {
 		return new Arrow(x1, y1, x2, y2, zoom, minZoom, maxZoom, colour, alpha, size, headMultiple, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow);
 	};
 
@@ -655,17 +663,19 @@
 	};
 
 	// add an arrow to the list
-	WaypointManager.prototype.addArrow = function(arrow) {
+	WaypointManager.prototype.addArrow = function(/** @type {Arrow} */ arrow) {
 		this.arrowList[this.arrowList.length] = arrow;
 	};
 
 	// return number of arrows
+	/** @returns {number} */
 	WaypointManager.prototype.numArrows = function() {
 		return this.arrowList.length;
 	};
 
 	// create a label
-	WaypointManager.prototype.createLabel = function(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow) {
+	WaypointManager.prototype.createLabel = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ zoom, /** @type {number} */ minZoom, /** @type {number} */ maxZoom, /** @type {string} */ colour, /** @type {number} */ alpha,
+			/** @type {number} */ size, /** @type {boolean} */ sizeLocked, /** @type {number} */ t1, /** @type {number} */ t2, /** @type {number} */ tFade, /** @type {number} */ angle, /** @type {boolean} */ angleLocked, /** @type {boolean} */ positionLocked, /** @type {number} */ tdistance, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {boolean} */ shadow) {
 		return new Label(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow);
 	};
 
@@ -675,7 +685,7 @@
 	};
 
 	// add a label to the list
-	WaypointManager.prototype.addLabel = function(label) {
+	WaypointManager.prototype.addLabel = function(/** @type {Label} */ label) {
 		// check for generation or population substitution
 		label.popSub = label.message.indexOf("#P");
 		label.genSub = label.message.indexOf("#G");
@@ -688,11 +698,13 @@
 	};
 
 	// return number of labels
+	/** @returns {number} */
 	WaypointManager.prototype.numLabels = function() {
 		return this.labelList.length;
 	};
 
 	// return number of annoations
+	/** @returns {number} */
 	WaypointManager.prototype.numAnnotations = function() {
 		return this.numLabels() + this.numArrows() + this.numPolygons();
 	};
@@ -705,10 +717,11 @@
 	};
 
 	// return given polygon as a text string line 1
-	WaypointManager.prototype.polyAsText1 = function(number) {
-		var result = "",
+	/** @returns {string} */
+	WaypointManager.prototype.polyAsText1 = function(/** @type {number} */ number) {
+		var	/** @type {string} */ result = "",
 			current = null,
-			posLocked = "";
+			/** @type {string} */ posLocked = "";
 
 		if (number >= 0 && number < this.polyList.length) {
 			current = this.polyList[number];
@@ -727,11 +740,12 @@
 	};
 
 	// return given polygon as a text string line 2
-	WaypointManager.prototype.polyAsText2 = function(number) {
-		var result = "",
-			zoom = 0,
+	/** @returns {string} */
+	WaypointManager.prototype.polyAsText2 = function(/** @type {number} */ number) {
+		var	/** @type {string} */ result = "",
+			/** @type {number} */ zoom = 0,
 			current = null,
-			angLocked = "";
+			/** @type {string} */ angLocked = "";
 
 		if (number >= 0 && number < this.polyList.length) {
 			current = this.polyList[number];
@@ -749,8 +763,9 @@
 	};
 
 	// return given poly as a text string line 3
-	WaypointManager.prototype.polyAsText3 = function(number) {
-		var result = "",
+	/** @returns {string} */
+	WaypointManager.prototype.polyAsText3 = function(/** @type {number} */ number) {
+		var	/** @type {string} */ result = "",
 			current = null;
 
 		if (number >= 0 && number < this.polyList.length) {
@@ -768,8 +783,9 @@
 	};
 
 	// return polygon colour
-	WaypointManager.prototype.polygonColour = function(number) {
-		var result = "";
+	/** @returns {string} */
+	WaypointManager.prototype.polygonColour = function(/** @type {number} */ number) {
+		var	/** @type {string} */ result = "";
 
 		if (number >= 0 && number < this.polyList.length) {
 			result = this.polyList[number].colour;
@@ -779,10 +795,11 @@
 	};
 
 	// return given arrow as a text string line 1
-	WaypointManager.prototype.arrowAsText1 = function(number) {
-		var result = "",
+	/** @returns {string} */
+	WaypointManager.prototype.arrowAsText1 = function(/** @type {number} */ number) {
+		var	/** @type {string} */ result = "",
 			current = null,
-			posLocked = "";
+			/** @type {string} */ posLocked = "";
 
 		if (number >= 0 && number < this.arrowList.length) {
 			current = this.arrowList[number];
@@ -797,11 +814,12 @@
 	};
 
 	// return given arrow as a text string line 2
-	WaypointManager.prototype.arrowAsText2 = function(number) {
-		var result = "",
-			zoom = 0,
+	/** @returns {string} */
+	WaypointManager.prototype.arrowAsText2 = function(/** @type {number} */ number) {
+		var	/** @type {string} */ result = "",
+			/** @type {number} */ zoom = 0,
 			current = null,
-			angLocked = "";
+			/** @type {string} */ angLocked = "";
 
 		if (number >= 0 && number < this.arrowList.length) {
 			current = this.arrowList[number];
@@ -819,8 +837,9 @@
 	};
 
 	// return given arrow as a text string line 3
-	WaypointManager.prototype.arrowAsText3 = function(number) {
-		var result = "",
+	/** @returns {string} */
+	WaypointManager.prototype.arrowAsText3 = function(/** @type {number} */ number) {
+		var	/** @type {string} */ result = "",
 			current = null;
 
 		if (number >= 0 && number < this.arrowList.length) {
@@ -838,8 +857,9 @@
 	};
 
 	// return arrow colour
-	WaypointManager.prototype.arrowColour = function(number) {
-		var result = "";
+	/** @returns {string} */
+	WaypointManager.prototype.arrowColour = function(/** @type {number} */ number) {
+		var	/** @type {string} */ result = "";
 
 		if (number >= 0 && number < this.arrowList.length) {
 			result = this.arrowList[number].colour;
@@ -849,12 +869,13 @@
 	};
 
 	// return given label as a text string line 1
-	WaypointManager.prototype.labelAsText1 = function(number) {
-		var result = "",
-			zoom = 0,
+	/** @returns {string} */
+	WaypointManager.prototype.labelAsText1 = function(/** @type {number} */ number) {
+		var	/** @type {string} */ result = "",
+			/** @type {number} */ zoom = 0,
 			current = null,
-			posLocked = "",
-			angLocked = "";
+			/** @type {string} */ posLocked = "",
+			/** @type {string} */ angLocked = "";
 
 		if (number >= 0 && number < this.labelList.length) {
 			current = this.labelList[number];
@@ -876,9 +897,10 @@
 	};
 
 	// return given label as a text string line 2
-	WaypointManager.prototype.labelAsText2 = function(number) {
-		var result = "",
-		    current = null;
+	/** @returns {string} */
+	WaypointManager.prototype.labelAsText2 = function(/** @type {number} */ number) {
+		var	/** @type {string} */ result = "",
+			current = null;
 
 		if (number >= 0 && number < this.labelList.length) {
 			current = this.labelList[number];
@@ -895,9 +917,10 @@
 	};
 
 	// return given label as a text string line 3
-	WaypointManager.prototype.labelAsText3 = function(number) {
-		var result = "",
-		    current = null;
+	/** @returns {string} */
+	WaypointManager.prototype.labelAsText3 = function(/** @type {number} */ number) {
+		var	/** @type {string} */ result = "",
+			current = null;
 
 		if (number >= 0 && number < this.labelList.length) {
 			current = this.labelList[number];
@@ -908,8 +931,9 @@
 	};
 
 	// return label colour
-	WaypointManager.prototype.labelColour = function(number) {
-		var result = "";
+	/** @returns {string} */
+	WaypointManager.prototype.labelColour = function(/** @type {number} */ number) {
+		var	/** @type {string} */ result = "";
 
 		if (number >= 0 && number < this.labelList.length) {
 			result = this.labelList[number].colour;
@@ -941,40 +965,50 @@
 	};
 
 	// draw arrows
-	WaypointManager.prototype.drawArrowsLayer = function(view, drawingShadows) {
-		var i = 0,
+	WaypointManager.prototype.drawArrowsLayer = function(view, /** @type {boolean} */ drawingShadows) {
+		var	/** @type {number} */ i = 0,
 			current = null,
 			engine = view.engine,
-			context = engine.context,
-			xOff = engine.width / 2 - engine.xOff - engine.originX,
-			yOff = engine.height / 2 - engine.yOff - engine.originY,
-			yMult = (engine.isTriangular ? ViewConstants.sqrt3 : 1),
-			xZoom = engine.zoom * engine.originZ,
-			yZoom = engine.zoom * engine.originZ * yMult,
-			halfDisplayWidth = engine.displayWidth / 2,
-			halfDisplayHeight = engine.displayHeight / 2,
-			x = 0, y = 0,
-			cx = 0, cy = 0,
-			cx2 = 0, cy2 = 0,
-			currentSize = 0,
-			linearZoom = 1, alphaValue = 1, timeAlpha = 1, distAlpha = 1,
-			counter = view.engine.counter,
-			inrange = false,
-			radius = 0, theta = 0,
-			rangeFromTarget = 0,
-			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
-			headSize = 0,
-			headAngle = 0,
-			shadowOffset = 0,
-			tilt = engine.tilt,
-			mode7Angle = tilt - 1,
-			currentX1 = 0,
-			currentY1 = 0,
-			currentX2 = 0,
-			currentY2 = 0,
-			pz = 1,
-			xLeft = 0, yLeft = 0, xRight = 0, yRight = 0,
-			floatCounter = view.fixedPointCounter / view.refreshRate;
+			/** @type {CanvasRenderingContext2D} */ context = engine.context,
+			/** @type {number} */ xOff = engine.width / 2 - engine.xOff - engine.originX,
+			/** @type {number} */ yOff = engine.height / 2 - engine.yOff - engine.originY,
+			/** @type {number} */ yMult = (engine.isTriangular ? ViewConstants.sqrt3 : 1),
+			/** @type {number} */ xZoom = engine.zoom * engine.originZ,
+			/** @type {number} */ yZoom = engine.zoom * engine.originZ * yMult,
+			/** @type {number} */ halfDisplayWidth = engine.displayWidth / 2,
+			/** @type {number} */ halfDisplayHeight = engine.displayHeight / 2,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ cx2 = 0,
+			/** @type {number} */ cy2 = 0,
+			/** @type {number} */ currentSize = 0,
+			/** @type {number} */ linearZoom = 1,
+			/** @type {number} */ alphaValue = 1,
+			/** @type {number} */ timeAlpha = 1,
+			/** @type {number} */ distAlpha = 1,
+			/** @type {number} */ counter = view.engine.counter,
+			/** @type {boolean} */ inrange = false,
+			/** @type {number} */ radius = 0,
+			/** @type {number} */ theta = 0,
+			/** @type {number} */ rangeFromTarget = 0,
+			/** @type {number} */ hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
+			/** @type {number} */ headSize = 0,
+			/** @type {number} */ headAngle = 0,
+			/** @type {number} */ shadowOffset = 0,
+			/** @type {number} */ tilt = engine.tilt,
+			/** @type {number} */ mode7Angle = tilt - 1,
+			/** @type {number} */ currentX1 = 0,
+			/** @type {number} */ currentY1 = 0,
+			/** @type {number} */ currentX2 = 0,
+			/** @type {number} */ currentY2 = 0,
+			/** @type {number} */ pz = 1,
+			/** @type {number} */ xLeft = 0,
+			/** @type {number} */ yLeft = 0,
+			/** @type {number} */ xRight = 0,
+			/** @type {number} */ yRight = 0,
+			/** @type {number} */ floatCounter = view.fixedPointCounter / view.refreshRate;
 
 		// adjust for hex
 		if (engine.isHex) {
@@ -1213,37 +1247,45 @@
 	};
 
 	// draw polygons
-	WaypointManager.prototype.drawPolygonsLayer = function(view, drawingShadows) {
-		var i = 0,
+	WaypointManager.prototype.drawPolygonsLayer = function(view, /** @type {boolean} */ drawingShadows) {
+		var	/** @type {number} */ i = 0,
 			current = null,
 			engine = view.engine,
-			context = engine.context,
-			xOff = engine.width / 2 - engine.xOff - engine.originX,
-			yOff = engine.height / 2 - engine.yOff - engine.originY,
-			yMult = (engine.isTriangular ? ViewConstants.sqrt3 : 1),
-			xZoom = engine.zoom * engine.originZ,
-			yZoom = engine.zoom * engine.originZ * yMult,
-			halfDisplayWidth = engine.displayWidth / 2,
-			halfDisplayHeight = engine.displayHeight / 2,
-			x = 0, y = 0,
-			cx = 0, cy = 0,
-			cx2 = 0, cy2 = 0,
-			currentSize = 0,
-			linearZoom = 1, alphaValue = 1, timeAlpha = 1, distAlpha = 1,
-			counter = view.engine.counter,
-			inrange = false,
-			radius = 0, theta = 0,
-			rangeFromTarget = 0,
-			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
-			tilt = engine.tilt,
-			mode7Angle = tilt - 1,
-			pz = 1,
-			shadowOffset = 0,
-			boundedDx = 0,
-			boundedDy = 0,
-			coords = [], length = 0,
-			coord = 0,
-			floatCounter = view.fixedPointCounter / view.refreshRate;
+			/** @type {CanvasRenderingContext2D} */ context = engine.context,
+			/** @type {number} */ xOff = engine.width / 2 - engine.xOff - engine.originX,
+			/** @type {number} */ yOff = engine.height / 2 - engine.yOff - engine.originY,
+			/** @type {number} */ yMult = (engine.isTriangular ? ViewConstants.sqrt3 : 1),
+			/** @type {number} */ xZoom = engine.zoom * engine.originZ,
+			/** @type {number} */ yZoom = engine.zoom * engine.originZ * yMult,
+			/** @type {number} */ halfDisplayWidth = engine.displayWidth / 2,
+			/** @type {number} */ halfDisplayHeight = engine.displayHeight / 2,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ cx2 = 0,
+			/** @type {number} */ cy2 = 0,
+			/** @type {number} */ currentSize = 0,
+			/** @type {number} */ linearZoom = 1,
+			/** @type {number} */ alphaValue = 1,
+			/** @type {number} */ timeAlpha = 1,
+			/** @type {number} */ distAlpha = 1,
+			/** @type {number} */ counter = view.engine.counter,
+			/** @type {boolean} */ inrange = false,
+			/** @type {number} */ radius = 0,
+			/** @type {number} */ theta = 0,
+			/** @type {number} */ rangeFromTarget = 0,
+			/** @type {number} */ hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
+			/** @type {number} */ tilt = engine.tilt,
+			/** @type {number} */ mode7Angle = tilt - 1,
+			/** @type {number} */ pz = 1,
+			/** @type {number} */ shadowOffset = 0,
+			/** @type {number} */ boundedDx = 0,
+			/** @type {number} */ boundedDy = 0,
+			coords = [],
+			/** @type {number} */ length = 0,
+			/** @type {number} */ coord = 0,
+			/** @type {number} */ floatCounter = view.fixedPointCounter / view.refreshRate;
 
 		// use the shadow colour if drawing shadows
 		if (drawingShadows) {
@@ -1479,37 +1521,45 @@
 
 	// draw labels
 	WaypointManager.prototype.drawLabels = function(view) {
-		var i = 0,
+		var	/** @type {number} */ i = 0,
 			current = null,
 			engine = view.engine,
-			context = engine.context,
-			xPos = 0,
-			xOff = engine.width / 2 - engine.xOff - engine.originX,
-			yOff = engine.height / 2 - engine.yOff - engine.originY,
-			yMult = (engine.isTriangular ? ViewConstants.sqrt3 : 1),
-			xZoom = engine.zoom * engine.originZ,
-			yZoom = engine.zoom * engine.originZ * yMult,
-			halfDisplayWidth = engine.displayWidth / 2,
-			halfDisplayHeight = engine.displayHeight / 2,
-			x = 0, y = 0,
-			cx = 0, cy = 0,
-			currentSize = 0,
-			shadowColour = ViewConstants.labelShadowColour,
-			fontEnd = "px " + ViewConstants.labelFontFamily,
-			linearZoom = 1, alphaValue = 1, timeAlpha = 1, distAlpha = 1,
-			index = 0, message = "", line = "",
-			counter = view.engine.counter,
-			inrange = false,
-			radius = 0, theta = 0,
-			shadowOffset = 0,
-			rangeFromTarget = 0,
-			tilt = engine.tilt,
-			mode7Angle = tilt - 1,
-			pz = 1,
-			currentX = 0,
-			currentY = 0,
-			hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
-			floatCounter = view.fixedPointCounter / view.refreshRate;
+			/** @type {CanvasRenderingContext2D} */ context = engine.context,
+			/** @type {number} */ xPos = 0,
+			/** @type {number} */ xOff = engine.width / 2 - engine.xOff - engine.originX,
+			/** @type {number} */ yOff = engine.height / 2 - engine.yOff - engine.originY,
+			/** @type {number} */ yMult = (engine.isTriangular ? ViewConstants.sqrt3 : 1),
+			/** @type {number} */ xZoom = engine.zoom * engine.originZ,
+			/** @type {number} */ yZoom = engine.zoom * engine.originZ * yMult,
+			/** @type {number} */ halfDisplayWidth = engine.displayWidth / 2,
+			/** @type {number} */ halfDisplayHeight = engine.displayHeight / 2,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ currentSize = 0,
+			/** @type {string} */ shadowColour = ViewConstants.labelShadowColour,
+			/** @type {string} */ fontEnd = "px " + ViewConstants.labelFontFamily,
+			/** @type {number} */ linearZoom = 1,
+			/** @type {number} */ alphaValue = 1,
+			/** @type {number} */ timeAlpha = 1,
+			/** @type {number} */ distAlpha = 1,
+			/** @type {number} */ index = 0,
+			/** @type {string} */ message = "",
+			/** @type {string} */ line = "",
+			/** @type {number} */ counter = view.engine.counter,
+			/** @type {boolean} */ inrange = false,
+			/** @type {number} */ radius = 0,
+			/** @type {number} */ theta = 0,
+			/** @type {number} */ shadowOffset = 0,
+			/** @type {number} */ rangeFromTarget = 0,
+			/** @type {number} */ tilt = engine.tilt,
+			/** @type {number} */ mode7Angle = tilt - 1,
+			/** @type {number} */ pz = 1,
+			/** @type {number} */ currentX = 0,
+			/** @type {number} */ currentY = 0,
+			/** @type {number} */ hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
+			/** @type {number} */ floatCounter = view.fixedPointCounter / view.refreshRate;
 
 		// adjust for hex
 		if (engine.isHex) {
@@ -1797,9 +1847,9 @@
 	};
 
 	// process step back
-	WaypointManager.prototype.steppedBack = function(elapsedTime) {
-		var i = 0,
-		    current = null;
+	WaypointManager.prototype.steppedBack = function(/** @type {number} */ elapsedTime) {
+		var	/** @type {number} */ i = 0,
+			current = null;
 
 		// mark all waypoints after elasped time as not processed
 		for (i = this.waypointList.length - 1; i >= 0; i -= 1) {
@@ -1813,7 +1863,7 @@
 
 	// reset for playback
 	WaypointManager.prototype.resetPlayback = function() {
-		var i;
+		var	/** @type {number} */ i;
 
 		// mark all waypoints as not processed
 		for (i = 0; i < this.waypointList.length; i += 1) {
@@ -1833,14 +1883,15 @@
 	};
 
 	// return x from a bezier curve
-	WaypointManager.prototype.bezierX = function(t, x0, x1, x2, x3) {
+	/** @returns {number} */
+	WaypointManager.prototype.bezierX = function(/** @type {number} */ t, /** @type {number} */ x0, /** @type {number} */ x1, /** @type {number} */ x2, /** @type {number} */ x3) {
 		// compute coefficients
-		var cX = 3 * (x1 - x0),
-		    bX = 3 * (x2 - x1) - cX,
-		    aX = x3 - x0 - cX - bX,
+		var	/** @type {number} */ cX = 3 * (x1 - x0),
+			/** @type {number} */ bX = 3 * (x2 - x1) - cX,
+			/** @type {number} */ aX = x3 - x0 - cX - bX,
             
-		    // compute the x position
-		    x = (aX * Math.pow(t, 3)) + (bX * Math.pow(t, 2)) + (cX * t) + x0;
+			// compute the x position
+			/** @type {number} */ x = (aX * Math.pow(t, 3)) + (bX * Math.pow(t, 2)) + (cX * t) + x0;
 
 		// return the x component
 		return x;
@@ -1862,19 +1913,21 @@
 	};
 
 	// return the last waypoint
+	/** @returns {Waypoint} */
 	WaypointManager.prototype.lastWaypoint = function() {
 		return this.waypointList[this.waypointList.length - 1];
 	};
 
 	// return time to a given generation
-	WaypointManager.prototype.elapsedTimeTo = function(generation) {
-		var result = 0,
+	/** @returns {number} */
+	WaypointManager.prototype.elapsedTimeTo = function(/** @type {number } */ generation) {
+		var	/** @type {number} */ result = 0,
 		   
 		    // find the closest waypoint to the generation
-		    index = this.findWaypointNear(generation),
+		    /** @type {number} */ index = this.findWaypointNear(generation),
 
 		    // get the waypoint
-		    waypoint = this.waypointList[index],
+		    /** @type {Waypoint} */ waypoint = this.waypointList[index],
 		    previous = null;
 
 		// check if the generation is beyond the waypoint
@@ -1900,10 +1953,11 @@
 	};
 
 	// create temporary position
-	WaypointManager.prototype.createTemporaryPosition = function(x, y, zoom, angle, tilt, layers, depth, theme, gps, step, generation, elapsedTime) {
+	/** @returns {number}  */
+	WaypointManager.prototype.createTemporaryPosition = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ zoom, /** @type {number} */ angle, /** @type {number} */ tilt, /** @type {number} */ layers, /** @type {number} */ depth, /** @type {number} */ theme, /** @type {number} */ gps, /** @type {number} */ step, /** @type {number} */ generation, /** @type {number} */ elapsedTime) {
 		// get the temporary start waypoint
-		var temp = this.tempStart,
-		    result = 0;
+		var	/** @type {Waypoint} */ temp = this.tempStart,
+			/** @type {number} */ result = 0;
 
 		// set temporary waypoint from the supplied parameters
 		temp.x = x;
@@ -1949,23 +2003,26 @@
 	};
 
 	// return the first waypoint
+	/** @returns {Waypoint} */
 	WaypointManager.prototype.firstWaypoint = function() {
 		// return the first waypoint
 		return this.waypointList[0];
 	};
 
 	// return the number of points of interests
+	/** @returns {number} */
 	WaypointManager.prototype.numPOIs = function() {
 		return this.poiList.length;
 	};
 
 	// return the number of waypoints
+	/** @returns {number} */
 	WaypointManager.prototype.numWaypoints = function() {
 		return this.waypointList.length;
 	};
 
 	// add a waypoint to the manager
-	WaypointManager.prototype.add = function(waypoint, view) {
+	WaypointManager.prototype.add = function(/** @type {Waypoint} */ waypoint, view) {
 		// check if this is a waypoint or a point of interest
 		if (waypoint.isPOI) {
 			// add the waypoint to the end of the POI list
@@ -1995,8 +2052,9 @@
 	};
 
 	// check if at or beyond last waypoint
-	WaypointManager.prototype.atLast = function(elapsedTime) {
-		var result = false;
+	/** @returns {boolean} */
+	WaypointManager.prototype.atLast = function(/** @type {number} */ elapsedTime) {
+		var	/** @type {boolean} */ result = false;
 
 		// check if the last used waypoint was the final one
 		if (this.tempIndex >= this.waypointList.length - 1) {
@@ -2011,8 +2069,9 @@
 	};
 
 	// return a short version of a decimal
-	WaypointManager.prototype.shortNumber = function(i, places) {
-		var result = null;
+	/** @returns {string} */
+	WaypointManager.prototype.shortNumber = function(/** @type {number} */ i, /** @type {number} */ places) {
+		var	/** @type {string} */ result = "";
 
 		// check if number is an integer
 		if (i === (i | 0)) {
@@ -2027,10 +2086,11 @@
 	};
 
 	// output a point of interest camera position as text
-	WaypointManager.prototype.poiCameraAsText = function(i) {
+	/** @returns {string} */
+	WaypointManager.prototype.poiCameraAsText = function(/** @type {number} */ i) {
 		// build the text
-		var text = "",
-		    poi = null;
+		var	/** @type {string} */ text = "",
+			poi = null;
 
 		// check whether the requested POI exists
 		if (i >= 0 && i < this.numPOIs()) {
@@ -2061,45 +2121,12 @@
 		return text.substr(1);
 	};
 
-	// output a point of interest action as text
-	WaypointManager.prototype.poiActionAsText = function(i) {
-		// build the text
-		var text = "",
-		    poi = null;
-
-		// check whether the requested POI exists
-		if (i >= 0 && i < this.numPOIs()) {
-			// get the POI
-			poi = this.poiList[i];
-
-			// add reset if defined
-			if (poi.resetAtPOI) {
-				text += " POIRESET";
-			}
-			// add mode if defined
-			if (poi.modeAtPOI === WaypointConstants.play) {
-				text += " POIPLAY";
-			} else {
-				if (poi.modeAtPOI === WaypointConstants.stop)  {
-					text += " POISTOP";
-				}
-			}
-
-			// add transition time if not default
-			if (poi.poiTransitionSpeed !== WaypointConstants.poiDefaultSpeed) {
-				text += " POITRANS " + poi.poiTransitionSpeed;
-			}
-		}
-
-		// return the text
-		return text.substr(1);
-	};
-
 	// output a point of interest loop, stop, gps and step as text
-	WaypointManager.prototype.poiLoopStopGpsStepAsText = function(i) {
+	/** @returns {string} */
+	WaypointManager.prototype.poiLoopStopGpsStepAsText = function(/** @type {number} */ i) {
 		// build the text
-		var text = "",
-		    poi = null;
+		var	/** @type {string} */ text = "",
+			poi = null;
 
 		// check whether the requested POI exists
 		if (i >= 0 && i < this.numPOIs()) {
@@ -2132,10 +2159,11 @@
 	};
 
 	// output a point of interest action as text
-	WaypointManager.prototype.poiActionAsText = function(i) {
+	/** @returns {string} */
+	WaypointManager.prototype.poiActionAsText = function(/** @type {number} */ i) {
 		// build the text
-		var text = "",
-		    poi = null;
+		var	/** @type {string} */ text = "",
+			poi = null;
 
 		// check whether the requested POI exists
 		if (i >= 0 && i < this.numPOIs()) {
@@ -2166,10 +2194,11 @@
 	};
 
 	// output a point of interest theme, depth and layer as text
-	WaypointManager.prototype.poiThemeDepthLayerAsText = function(i) {
+	/** @returns {string} */
+	WaypointManager.prototype.poiThemeDepthLayerAsText = function(/** @type {number} */ i) {
 		// build the text
-		var text = "",
-		    poi = null;
+		var	/** @type {string} */ text = "",
+			poi = null;
 
 		// check whether the requested POI exists
 		if (i >= 0 && i < this.numPOIs()) {
@@ -2198,11 +2227,12 @@
 
 	// output a point of interest start generation as text
 	/* eslint-disable no-unused-vars */
-	WaypointManager.prototype.poiStartGenAsText = function(i, stringDelimiter) {
+	/** @returns {string} */
+	WaypointManager.prototype.poiStartGenAsText = function(/** @type {number} */ i, /** @type {string} */ stringDelimiter) {
 		/* eslint-enable no-unused-vars */
 		// build the text
-		var text = "",
-		    poi = null;
+		var	/** @type {string} */ text = "",
+			poi = null;
 
 		// check whether the requested POI exists
 		if (i >= 0 && i < this.numPOIs()) {
@@ -2220,10 +2250,11 @@
 	};
 
 	// output a point of interest message as text
-	WaypointManager.prototype.poiMessageAsText = function(i, stringDelimiter) {
+	/** @returns {string} */
+	WaypointManager.prototype.poiMessageAsText = function(/** @type {number} */ i, /** @type {string} */ stringDelimiter) {
 		// build the text
-		var text = "",
-		    poi = null;
+		var	/** @type {string} */ text = "",
+			poi = null;
 
 		// check whether the requested POI exists
 		if (i >= 0 && i < this.numPOIs()) {
@@ -2241,13 +2272,14 @@
 	};
 
 	// output a waypoint as text
-	WaypointManager.prototype.waypointAsText = function(i, stringDelimiter) {
+	/** @returns {string} */
+	WaypointManager.prototype.waypointAsText = function(/** @type {number} */ i, /** @type {string} */ stringDelimiter) {
 		// build the text
-		var text = "",
+		var	/** @type {string} */ text = "",
 
-		    // requested waypoint and previous waypoint
-		    requested = null,
-		    previous = null;
+			// requested waypoint and previous waypoint
+			requested = null,
+			previous = null;
 
 		// check whether the requested waypoint exists
 		if (i >= 0 && i < this.numWaypoints()) {
@@ -2313,15 +2345,16 @@
 	};
 
 	// update the current position and return whether waypoints ended
-	WaypointManager.prototype.update = function(view, elapsedTime, generation) {
-		var length = this.waypointList.length,
-		    found = false,
-		    i = this.tempIndex,
-		    origI = i,
-		    current = null,
+	/** @returns {boolean} */
+	WaypointManager.prototype.update = function(view, /** @type {number} */ elapsedTime, /** @type {number} */ generation) {
+		var	/** @type {number} */ length = this.waypointList.length,
+			/** @type {boolean} */ found = false,
+			/** @type {number} */ i = this.tempIndex,
+			/** @type {number} */ origI = i,
+			current = null,
 
-		    // set waypoints not ended
-		    result = false;
+			// set waypoints not ended
+			/** @type {boolean} */ result = false;
 
 		// check if using temporary waypoints
 		if (this.usingTemp) {
@@ -2397,11 +2430,12 @@
 	};
 
 	// return the index of the closest waypoint to a generation
-	WaypointManager.prototype.findWaypointNear = function(generation) {
-		var i = 0,
-		    found = false,
+	/** @returns {number} */
+	WaypointManager.prototype.findWaypointNear = function(/** @type {number} */ generation) {
+		var /** @type {number} */ i = 0,
+		    /** @type {boolean} */ found = false,
 		    waypointList = this.waypointList,
-		    length = this.numWaypoints();
+		    /** @type {number} */ length = this.numWaypoints();
 
 		// find the waypoint at or beyond the specified generation
 		while (i < length && !found) {
@@ -2425,10 +2459,11 @@
 	};
 
 	// find the closest waypoint to a generation
-	WaypointManager.prototype.findClosestWaypoint = function(generation) {
-		var elapsed = 0,
-			generations = 0,
-			result = 0,
+	/** @returns {number} */
+	WaypointManager.prototype.findClosestWaypoint = function(/** @type {number} */ generation) {
+		var	/** @type {number} */ elapsed = 0,
+			/** @type {number} */ generations = 0,
+			/** @type {number} */ result = 0,
 			currWP,
 			prevWP;
 
@@ -2446,7 +2481,7 @@
 	};
 
 	// copy a single initial value into POI
-	WaypointManager.prototype.copyInitial = function(what, poi, scriptErrors, initialDefined) {
+	WaypointManager.prototype.copyInitial = function(/** @type {string} */ what, poi, scriptErrors, /** @type {boolean} */ initialDefined) {
 		// check there is an initial waypoint
 		if (this.numWaypoints() === 0) {
 			scriptErrors[scriptErrors.length] = [what + " " + Keywords.initialWord, "no initial waypoint defined"];
@@ -2598,11 +2633,11 @@
 
 	// prepare waypoints for execution
 	WaypointManager.prototype.prepare = function(scriptErrors, view) {
-		var i = 0,
-		    previous = null,
-		    current = null,
-		    waypointList = this.waypointList,
-		    length = this.numWaypoints();
+		var	/** @type {number} */ i = 0,
+			previous = null,
+			current = null,
+			waypointList = this.waypointList,
+			/** @type {number} */ length = this.numWaypoints();
 
 		// fill in missing items
 		for (i = 1; i < length; i += 1) {

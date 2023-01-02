@@ -241,16 +241,16 @@
 	};
 
 	// read a custom theme element
-	ScriptParser.readCustomThemeElement = function(view, scriptReader, scriptErrors, customThemeElement, whichColour) {
-		var badColour = true,
-		    redValue = 0,
-		    greenValue = 0,
-		    blueValue = 0,
-		    peekToken = null,
-		    colourTriple = null,
+	ScriptParser.readCustomThemeElement = function(view, scriptReader, scriptErrors, /** @type {number} */ customThemeElement, /** @type {number} */ whichColour) {
+		var	/** @type {boolean} */ badColour = true,
+			/** @type {number} */ redValue = 0,
+			/** @type {number} */ greenValue = 0,
+			/** @type {number} */ blueValue = 0,
+			peekToken = null,
+			colourTriple = null,
 
-		    // get the element name
-		    elementName = scriptReader.getNextToken();
+			// get the element name
+			/** @type {string} */ elementName = scriptReader.getNextToken();
 
 		// read the red value
 		if (scriptReader.nextTokenIsNumeric()) {
@@ -492,8 +492,8 @@
 	};
 
 	// setup custom theme
-	ScriptParser.setupCustomTheme = function(view, theme) {
-		var colourValue = 0,
+	ScriptParser.setupCustomTheme = function(view, /** @type {number} */ theme) {
+		var	/** @type {number} */ colourValue = 0,
 			customTheme = view.engine.themes[view.engine.numThemes],
 			themeValue = view.customThemeValue;
 
@@ -728,7 +728,7 @@
 	};
 
 	// validate waypoint message string
-	ScriptParser.validateString = function(message, scriptErrors, readingTitle, readingLabel) {
+	ScriptParser.validateString = function(/** @type {string} */ message, scriptErrors, /** @type {boolean} */ readingTitle, /** @type {boolean} */ readingLabel) {
 		// check for newline
 		var index = message.indexOf("\\n");
 
@@ -749,9 +749,9 @@
 	};
 
 	// raise theme overwrite error
-	ScriptParser.raiseThemeError = function(view, scriptErrors, newTheme, currentTheme) {
-		var errorSource = Keywords.themeWord + " ",
-		    errorReason = "overwrites ";
+	ScriptParser.raiseThemeError = function(view, scriptErrors, /** @type {number} */ newTheme, /** @type {number} */ currentTheme) {
+		var	/** @type {string} */ errorSource = Keywords.themeWord + " ",
+			/** @type {string} */ errorReason = "overwrites ";
 
 		// create the error source
 		if (newTheme >= view.engine.numThemes) {
@@ -772,12 +772,12 @@
 	};
 
 	// decode rgb script value
-	ScriptParser.decodeRGB = function(view, scriptReader, scriptErrors, colNum, nextToken, badColour, colName) {
-		var redValue = 0,
-		    greenValue = 0,
-		    blueValue = 0,
-		    peekToken = null,
-		    colourTriple = null;
+	ScriptParser.decodeRGB = function(view, scriptReader, scriptErrors, /** @type {number} */ colNum, /** @type {string} */ nextToken, /** @type {boolean} */ badColour, /** @type {string} */ colName) {
+		var	/** @type {number} */ redValue = 0,
+			/** @type {number} */ greenValue = 0,
+			/** @type {number} */ blueValue = 0,
+			peekToken = null,
+			colourTriple = null;
 
 		// read the red value
 		if (scriptReader.nextTokenIsNumeric()) {
@@ -878,9 +878,10 @@
 	};
 
 	// output a time interval as a string
-	ScriptParser.timeInterval = function(view, value) {
-		var result = Keywords.variablePrefixSymbol + String(value),
-			interval = view.menuManager.getTimeInterval(value);
+	/** @returns {string} */
+	ScriptParser.timeInterval = function(view, /** @type {number} */ value) {
+		var	/** @type {string} */ result = Keywords.variablePrefixSymbol + String(value),
+			/** @type {number} */ interval = view.menuManager.getTimeInterval(value);
 
 		// check if there was an interval
 		if (interval !== -1) {
@@ -892,10 +893,11 @@
 	};
 
 	// substitute variables in string
-	ScriptParser.substituteVariables = function(view, string) {
-		var result = "",
-		    varIndex = string.indexOf(Keywords.variablePrefixSymbol),
-		    type = "";
+	/** @returns {string} */
+	ScriptParser.substituteVariables = function(view, /** @type {string} */ string) {
+		var	/** @type {string} */ result = "",
+			/** @type {number} */ varIndex = string.indexOf(Keywords.variablePrefixSymbol),
+			/** @type {string} */ type = "";
 
 		// check if there are variables in the string
 		if (varIndex === -1) {
@@ -1037,7 +1039,7 @@
 	};
 
 	// output error message if camera mode already defined
-	ScriptParser.modeDefined = function(isLinear, command, argument, scriptErrors) {
+	ScriptParser.modeDefined = function(/** @type {boolean} */ isLinear, /** @type {string} */ command, /** @type {string} */ argument, scriptErrors) {
 		// check if linear
 		if (isLinear) {
 			// check if linear command
@@ -1057,8 +1059,9 @@
 	};
 
 	// display number to maximum of n places
-	ScriptParser.toPlaces = function(number, places) {
-		var result = "";
+	/** @returns {string} */
+	ScriptParser.toPlaces = function(/** @type {number} */ number, /** @type {number} */ places) {
+		var	/** @type {string} */ result = "";
 
 		if (number === (number | 0)) {
 			result = String(number);
@@ -1070,11 +1073,12 @@
 	};
 
 	// check BNs in valid
-	ScriptParser.validBSn = function(token) {
-		var firstChar = token.substr(0, 1),
-			remainder = token.substr(1),
-			result = false,
-			i = 0;
+	/** @returns {boolean} */
+	ScriptParser.validBSn = function(/** @type {string} */ token) {
+		var	/** @type {string} */ firstChar = token.substr(0, 1),
+			/** @type {string} */ remainder = token.substr(1),
+			/** @type {boolean} */ result = false,
+			/** @type {number} */ i = 0;
 
 		if (firstChar === "B" || firstChar === "S") {
 			this.BSnType = firstChar;
@@ -1096,8 +1100,8 @@
 	};
 
 	// save BSn entry
-	ScriptParser.saveBSn = function(view, value) {
-		var i = 0;
+	ScriptParser.saveBSn = function(view, /** @type {number} */ value) {
+		var	/** @type {number} */ i = 0;
 
 		if (this.BSnType === "B") {
 			i = view.randomChanceBN.length;
