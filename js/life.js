@@ -300,7 +300,7 @@
 	// check if theme has colour history
 	/** @returns {boolean} */
 	Theme.prototype.hasHistory = function(/** @type {boolean} */ isLifeHistory) {
-		var result = true;
+		var	/** @type {boolean} */ result = true;
 
 		// always return true if the pattern is [R]History since history states are saved in RLE
 		if (!isLifeHistory) {
@@ -324,7 +324,7 @@
 	}
 
 	// set function
-	Colour.prototype.set = function(fromColour) {
+	Colour.prototype.set = function(/** @type {Colour} */ fromColour) {
 		this.red = fromColour.red;
 		this.green = fromColour.green;
 		this.blue = fromColour.blue;
@@ -332,8 +332,8 @@
 
 	// is same colour function
 	/** @returns {boolean} */
-	Colour.prototype.isSameColour = function(compareColour) {
-		var result = false;
+	Colour.prototype.isSameColour = function(/** @type {Colour} */ compareColour) {
+		var	/** @type {boolean} */ result = false;
 
 		// check if components are identical
 		if ((this.red === compareColour.red) && (this.green === compareColour.green) && (this.blue === compareColour.blue)) {
@@ -349,13 +349,13 @@
 	/**
 	 * @constructor
 	 */
-	function ColourRange(startColour, endColour) {
+	function ColourRange(/** @type {Colour} */ startColour, /** @type {Colour} */ endColour) {
 		this.startColour = startColour;
 		this.endColour = endColour;
 	}
 
 	// set function
-	ColourRange.prototype.set = function(fromRange) {
+	ColourRange.prototype.set = function(/** @type ColourRange */ fromRange) {
 		this.startColour.set(fromRange.startColour);
 		this.endColour.set(fromRange.endColour);
 	};
@@ -364,7 +364,7 @@
 	/**
 	 * @constructor
 	 */
-	function Life(context, /** @type {number} */ displayWidth, /** @type {number} */ displayHeight, /** @type {number} */ gridWidth, /** @type {number} */ gridHeight, manager, view) {
+	function Life(/** @type {CanvasRenderingContext2D} */ context, /** @type {number} */ displayWidth, /** @type {number} */ displayHeight, /** @type {number} */ gridWidth, /** @type {number} */ gridHeight, manager, view) {
 		// pattern manager
 		this.manager = manager;
 
@@ -384,17 +384,17 @@
 		this.cellPeriodContext = this.cellPeriodCanvas.getContext("2d");
 		this.cellPeriodImage = new Image();
 		this.cellPeriodRGB = [];
-		this.cellPeriodNumCols = 0;
-		this.cellPeriodCellSize = 8;
-		this.cellBorderSize = 1;
+		/** @type {number} */ this.cellPeriodNumCols = 0;
+		/** @type {number} */ this.cellPeriodCellSize = 8;
+		/** @type {number} */ this.cellBorderSize = 1;
 
 		// last computed strict volatility
 		/** @type {string} */ this.strictVol = "";
 
 		// last period per cell for oscillator
 		/** @type {Uint16Array} */ this.cellPeriod = null;
-		this.cellPeriodWidth = 0;
-		this.cellPeriodHeight = 0;
+		/** @type {number} */ this.cellPeriodWidth = 0;
+		/** @type {number} */ this.cellPeriodHeight = 0;
 
 		// oscillator population subperiod
 		/** @type {Uint16Array} */ this.popSubPeriod = null;
@@ -424,7 +424,7 @@
 		/** @type {boolean} */ this.pretty = false;
 
 		// scaling canvas
-		this.sCanvas = null;
+		/** @type {HTMLCanvasElement} */ this.sCanvas = null;
 		this.sContext = null;
 		this.sImageData = null;
 		this.sData32 = null;
@@ -470,7 +470,7 @@
 		this.diedList = null;
 		this.boxList = null;
 		this.nextList = null;
-		this.startItem = 0;
+		/** @type {number} */ this.startItem = 0;
 		/** @type {number} */ this.oscLength = 0;
 		this.countList = null;
 		this.initList = null;
@@ -667,7 +667,7 @@
 		this.snapshotManager = new SnapshotManager(this.allocator, this.bitCounts16);
 
 		// next snapshot generation target
-		this.nextSnapshotTarget = LifeConstants.snapshotInterval;
+		/** @type {number} */ this.nextSnapshotTarget = LifeConstants.snapshotInterval;
 
 		// whether current theme has history
 		/** @type {boolean} */ this.themeHistory = false;
@@ -850,7 +850,7 @@
 		/** @type {Uint32Array} */ this.mode7Buffer = null;
 
 		// drawing context
-		this.context = context;
+		/** @type {CanvasRenderingContext2D} */ this.context = context;
 
 		// bit masks for width and height
 		/** @type {number} */ this.widthMask = 0;
@@ -1027,16 +1027,16 @@
 
 	// initialise pretty rendering
 	Life.prototype.initPretty = function() {
-		var displayWidth = this.displayWidth,
-			displayHeight = this.displayHeight,
-			maxZoom = ViewConstants.maxZoom,
-			width = (displayWidth + maxZoom + maxZoom) << 1,
-			height = (displayHeight + maxZoom + maxZoom) << 1;
+		var	/** @type {number} */ displayWidth = this.displayWidth,
+			/** @type {number} */ displayHeight = this.displayHeight,
+			/** @type {number} */ maxZoom = ViewConstants.maxZoom,
+			/** @type {number} */ width = (displayWidth + maxZoom + maxZoom) << 1,
+			/** @type {number} */ height = (displayHeight + maxZoom + maxZoom) << 1;
 
 		// check if pretty rendering enabled
 		if (this.pretty) {
 			if (this.sCanvas === null) {
-				this.sCanvas = document.createElement("canvas");
+				this.sCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
 			}
 			this.sCanvas.width = width;
 			this.sCanvas.height = height;
@@ -1052,7 +1052,7 @@
 
 	// initialise snow flakes
 	Life.prototype.initSnow = function() {
-		var /** @type {number} */ i = 0,
+		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
@@ -1132,7 +1132,7 @@
 
 	// update and draw snowflakes
 	Life.prototype.drawSnow = function() {
-		var /** @type {number} */ i = 0,
+		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ r = 0,
 			/** @type {number} */ numRevive = 0,
@@ -1379,8 +1379,9 @@
 	};
 
 	// ouput spaceship speed as string
+	/** @returns {string} */
 	Life.prototype.spaceshipSpeed = function(/** @type {number} */ period, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
-		var message = deltaX + "," + deltaY;
+		var	/** @type {string} */ message = deltaX + "," + deltaY;
 
 		// add the speed
 		message = "Spaceship (" + message + ")c";
@@ -1394,30 +1395,31 @@
 	};
 
 	// get mod hash from pattern
-	Life.prototype.getModHash = function(box, transform) {
-		var /** @type {number} */ hash = 31415962,
+	/** @returns {number} */
+	Life.prototype.getModHash = function(box, /** @type {number} */ transform) {
+		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
-			left = box.leftX,
-			bottom = box.bottomY,
-			right = box.rightX,
-			top = box.topY,
-			width = right - left + 1,
-			height = top - bottom + 1,
-			wm1 = width - 1,
-			hm1 = height - 1,
-			checkWidth = width,
-			checkHeight = height,
-			swap = 0,
-			state = 0,
-			twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
-			x = 0,
-			y = 0,
-			cx = 0,
-			cy = 0,
-			iDivHeight = 0,
-			iModHeight = 0,
+			/** @type {number} */ left = box.leftX,
+			/** @type {number} */ bottom = box.bottomY,
+			/** @type {number} */ right = box.rightX,
+			/** @type {number} */ top = box.topY,
+			/** @type {number} */ width = right - left + 1,
+			/** @type {number} */ height = top - bottom + 1,
+			/** @type {number} */ wm1 = width - 1,
+			/** @type {number} */ hm1 = height - 1,
+			/** @type {number} */ checkWidth = width,
+			/** @type {number} */ checkHeight = height,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ state = 0,
+			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ iDivHeight = 0,
+			/** @type {number} */ iModHeight = 0,
 			colourGrid = this.colourGrid,
-			aliveStart = LifeConstants.aliveStart;
+			/** @type {number} */ aliveStart = LifeConstants.aliveStart;
 
 		// check for PCA, RuleTree or Super rules
 		if (this.isPCA || this.isRuleTree || this.isSuper) {
@@ -1527,12 +1529,12 @@
 	};
 
 	// check mod hashes
-	Life.prototype.checkModHash = function(box, updateType) {
-		var i = 0,
-			trans = LifeConstants.modFirstTrans,
-			found = -1,
-			hash = 0,
-			hashY = 0;
+	Life.prototype.checkModHash = function(box, /** @type {boolean} */ updateType) {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ trans = LifeConstants.modFirstTrans,
+			/** @type {number} */ found = -1,
+			/** @type {number} */ hash = 0,
+			/** @type {number} */ hashY = 0;
 
 		while (trans <= LifeConstants.modLastTrans && found === -1) {
 			hash = this.getModHash(box, trans);
@@ -1580,8 +1582,9 @@
 	};
 
 	// get hash from pattern
+	/** @returns {number} */
 	Life.prototype.getHash = function(box, /** @type {boolean} */ fast) {
-		var /** @type {number} */ hash = 31415962,
+		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = box.leftX,
 			/** @type {number} */ y = box.bottomY,
@@ -1904,8 +1907,9 @@
 	};
 
 	// get greatest common divisor
-	Life.prototype.gcd = function(a, b) {
-		var temp = 0;
+	/** @returns {number} */
+	Life.prototype.gcd = function(/** @type {number} */ a, /** @type {number} */ b) {
+		var	/** @type {number} */ temp = 0;
 
 		while (b !== 0) {
 			temp = b;
@@ -1917,10 +1921,11 @@
 	};
 
 	// get oblique displacement name
-	Life.prototype.getDisplacementName = function(x, y) {
-		var result = "Oblique",
-			swap = 0,
-			d = 0;
+	/** @returns {string} */
+	Life.prototype.getDisplacementName = function(/** @type {number} */ x, /** @type {number} */ y) {
+		var	/** @type {string} */ result = "Oblique",
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ d = 0;
 
 		// order the deltas
 		if (x > y) {
@@ -2016,6 +2021,7 @@
 	};
 
 	// convert number to string with no more than n decimal places
+	/** @returns {string} */
 	Life.prototype.toPlaces = function(/** @type {number} */ value, /** @type {number} */ places) {
 		var /** @type {string} */ result = "";
 
@@ -2177,9 +2183,10 @@
 	};
 
 	// draw a right justified string
+	/** @returns {number} */
 	Life.prototype.drawRightString = function(/** @type {string} */ txt, /** @type {number} */ fieldWidth, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ offset) {
 		var	/** @type {number} */ width = 0,
-			ctx = this.context;
+			/** @type {CanvasRenderingContext2D} */ ctx = this.context;
 
 		// measure the text
 		width = ctx.measureText(txt).width;
@@ -2205,7 +2212,7 @@
 			/** @type {number} */ boxSize = 10 * displayScale,
 			/** @type {number} */ numCols = this.cellPeriodNumCols,
 			/** @type {number} */ leftX = (this.displayWidth - 4 * fieldWidth + 4) >> 1,
-			ctx = this.context;
+			/** @type {CanvasRenderingContext2D} */ ctx = this.context;
 
 		// get number of subperiods
 		if (this.popSubPeriod[this.popSubPeriod.length - 1] === 0) {
@@ -2288,7 +2295,7 @@
 			/** @type {number} */ cellBorderSize = this.cellBorderSize,
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ bottomY = 0,
-			ctx = this.context;
+			/** @type {CanvasRenderingContext2D} */ ctx = this.context;
 
 		// scale the image to fit
 		x = width / ((this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize);
@@ -2525,84 +2532,84 @@
 	};
 
 	// return identify results
-	Life.prototype.identifyResults = function(view, i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast) {
+	Life.prototype.identifyResults = function(view, /** @type {number} */i, /** @type {string} */ message, /** @type {number} */period, /** @type {number} */deltaX, /** @type {number} */deltaY, /** @type {number} */boxWidth, /** @type {number} */boxHeight, /** @type {boolean} */ fast) {
 		// simple version of speed
-		var simpleSpeed = "",
+		var	/** @type {string} */ simpleSpeed = "",
 
-		// generation
-		genMessage = String(this.counter - period),
+			// generation
+			/** @type {string} */ genMessage = String(this.counter - period),
 
-		// type
-		type = "",
+			// type
+			/** @type {string} */ type = "",
 
-		// direction
-		direction = "",
+			// direction
+			/** @type {string} */ direction = "",
 
-		// slope
-		slope = "",
-		divisor = 0,
-		dDeltaX = 0,
-		dDeltaY = 0,
-		dPeriod = 0,
-		maxDelta = 0,
-		minDelta = 0,
+			// slope
+			/** @type {string} */ slope = "",
+			/** @type {number} */ divisor = 0,
+			/** @type {number} */ dDeltaX = 0,
+			/** @type {number} */ dDeltaY = 0,
+			/** @type {number} */ dPeriod = 0,
+			/** @type {number} */ maxDelta = 0,
+			/** @type {number} */ minDelta = 0,
 
-		// max and min population
-		min = this.population,
-		max = min,
-		avg = this.population,
-		total = 0,
-		popResult = "",
+			// max and min population
+			/** @type {number} */ min = this.population,
+			/** @type {number} */ max = min,
+			/** @type {number} */ avg = this.population,
+			/** @type {number} */ total = 0,
+			/** @type {string} */ popResult = "",
 
-		// bounding box
-		current = 0,
-		currentWidth = 0,
-		currentHeight = 0,
-		currentLeft = 0,
-		currentBottom = 0,
-		minX = 16384,
-		maxX = 0,
-		minY = 16384,
-		maxY = 0,
-		boxResult = "",
+			// bounding box
+			/** @type {number} */ current = 0,
+			/** @type {number} */ currentWidth = 0,
+			/** @type {number} */ currentHeight = 0,
+			/** @type {number} */ currentLeft = 0,
+			/** @type {number} */ currentBottom = 0,
+			/** @type {number} */ minX = 16384,
+			/** @type {number} */ maxX = 0,
+			/** @type {number} */ minY = 16384,
+			/** @type {number} */ maxY = 0,
+			/** @type {string} */ boxResult = "",
 
-		// last record to check
-		last = this.oscLength,
-		start = i,
+			// last record to check
+			/** @type {number} */ last = this.oscLength,
+			/** @type {number} */ start = i,
+	
+			// heat
+			/** @type {number} */ minHeat = 16384,
+			/** @type {number} */ maxHeat = 0,
+			/** @type {number} */ avgHeat = 0,
+			/** @type {number} */ nextHeat = 0,
+			/** @type {number} */ heatVal = 0,
+			/** @type {string} */ heat = "",
+	
+			// volatility
+			/** @type {string} */ volatility = "",
+			/** @type {string} */ strict = "",
+	
+			// count list
+			countList = this.countList,
+			countRow = null,
+			/** @type {number} */ count = 0,
+			/** @type {number} */ rotor = 0,
+			/** @type {number} */ stator = 0,
+			/** @type {string} */ activeResult = "",
 
-		// heat
-		minHeat = 16384,
-		maxHeat = 0,
-		avgHeat = 0,
-		nextHeat = 0,
-		heatVal = 0,
-		heat = "",
+			// mod value
+			/** @type {number} */ modValue = this.modValue,
+			/** @type {string} */ modResult = "",
+	
+			// temperature
+			/** @type {string} */ tempResult = "",
+	
+			// bounding box for pattern
+			box = (this.isHROT ? this.HROTBox : this.zoomBox),
 
-		// volatility
-		volatility = "",
-		strict = "",
-
-		// count list
-		countList = this.countList,
-		countRow = null,
-		count = 0,
-		rotor = 0,
-		stator = 0,
-		activeResult = "",
-
-		// mod value
-		modValue = this.modValue,
-		modResult = "",
-
-		// temperature
-		tempResult = "",
-
-		// bounding box for pattern
-		box = (this.isHROT ? this.HROTBox : this.zoomBox),
-
-		// counters
-		x = 0,
-		y = 0;
+			// counters
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0;
 
 		// only use one generation for still life
 		if (period > 0) {
@@ -2910,48 +2917,48 @@
 	};
 
 	// return true if pattern is empty, stable, oscillating or a spaceship
-	Life.prototype.oscillating = function(fast, view) {
+	Life.prototype.oscillating = function(/** @type {boolean} */ fast, view) {
 		// get bounding box
-		var box = (this.isHROT ? this.HROTBox : this.zoomBox),
-		    leftX = box.leftX,
-		    bottomY = box.bottomY,
-		    rightX = box.rightX,
-		    topY = box.topY,
-		    boxWidth = rightX - leftX + 1,
-		    boxHeight = topY - bottomY + 1,
+		var	box = (this.isHROT ? this.HROTBox : this.zoomBox),
+			/** @type {number} */ leftX = box.leftX,
+			/** @type {number} */ bottomY = box.bottomY,
+			/** @type {number} */ rightX = box.rightX,
+			/** @type {number} */ topY = box.topY,
+			/** @type {number} */ boxWidth = rightX - leftX + 1,
+			/** @type {number} */ boxHeight = topY - bottomY + 1,
+	
+			// merge size into one value
+			/** @type {number} */ boxSize = (boxWidth << 16) | boxHeight,
+	
+			// merge location into one value
+			/** @type {number} */ boxLocation = (leftX << 16) | bottomY,
+	
+			// hash value of current pattern
+			/** @type {number} */ hash = 0,
+			/** @type {number} */ modHash = 0,
+			/** @type {number} */ currentValue = 0,
 
-		    // merge size into one value
-		    boxSize = (boxWidth << 16) | boxHeight,
-
-		    // merge location into one value
-		    boxLocation = (leftX << 16) | bottomY,
-
-		    // hash value of current pattern
-		    hash = 0,
-		    modHash = 0,
-		    currentValue = 0,
-
-		    // period
-		    period = 0,
-
-		    // flag to quit loop
-		    quitLoop = false,
-		    quit = false,
-
-		    // hash entry index
-		    i = 0,
-		    j = 0,
-		    lastI = 0,
-
-		    // movement vector
-		    deltaX = 0,
-		    deltaY = 0,
-
-		    // message
-		    message = "",
-
-		    // result
-		    result = [];
+			// period
+			/** @type {number} */ period = 0,
+	
+			// flag to quit loop
+			/** @type {boolean} */ quitLoop = false,
+			/** @type {boolean} */ quit = false,
+	
+			// hash entry index
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ lastI = 0,
+	
+			// movement vector
+			/** @type {number} */ deltaX = 0,
+			/** @type {number} */ deltaY = 0,
+	
+			// message
+			/** @type {string} */ message = "",
+	
+			// result
+			result = [];
 
 		// clear last strict volatility
 		this.strictVol = "";
@@ -3093,8 +3100,8 @@
 	};
 
 	// draw triangle cells in selection
-	Life.prototype.drawTriangleCellsInSelection = function(leftX, bottomY, rightX, topY, xOff, yOff, cells) {
-		var /** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
+	Life.prototype.drawTriangleCellsInSelection = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xOff, /** @type {number} */ yOff, cells) {
+		var	/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
 			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
@@ -3204,8 +3211,8 @@
 	};
 
 	// draw triangle selection
-	Life.prototype.drawTriangleSelection = function(leftX, bottomY, rightX, topY, xOff, yOff) {
-		var /** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
+	Life.prototype.drawTriangleSelection = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY/** @type {number} */ , /** @type {number} */ xOff, /** @type {number} */ yOff) {
+		var	 /** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
 			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
@@ -3308,7 +3315,7 @@
 
 	// draw triangles
 	Life.prototype.drawTriangles = function() {
-		var colourGrid = this.colourGrid,
+		var	colourGrid = this.colourGrid,
 			colourRow = null,
 			overlayGrid = this.overlayGrid,
 			overlayRow = null,
@@ -3527,8 +3534,8 @@
 
 	// draw triangle cells
 	Life.prototype.drawTriangleCells = function(/** @type {boolean} */ filled, /** @type {boolean} */ borderWhenFilled, /** @type {boolean} */ drawingSelection) {
-		var /** @type {number} */ i = 0,
-			context = this.context,
+		var	/** @type {number} */ i = 0,
+			/** @type {CanvasRenderingContext2D} */ context = this.context,
 			/** @type {number} */ xOff = this.width / 2 - this.xOff - this.originX,
 			/** @type {number} */ yOff = this.height / 2 - this.yOff - this.originY,
 			/** @const {number} */ xzoom = this.zoom * this.originZ,
@@ -3641,8 +3648,8 @@
 	};
 
 	// draw hex cells in selection
-	Life.prototype.drawHexCellsInSelection = function(leftX, bottomY, rightX, topY, xOff, yOff, cells) {
-		var /** @type {number} */ x = 0,
+	Life.prototype.drawHexCellsInSelection = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xOff, /** @type {number} */ yOff, cells) {
+		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ k = 0,
@@ -3799,8 +3806,8 @@
 	};
 
 	// draw hex selection
-	Life.prototype.drawHexSelection = function(leftX, bottomY, rightX, topY, xOff, yOff) {
-		var /** @type {number} */ x = 0,
+	Life.prototype.drawHexSelection = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xOff, /** @type {number} */ yOff) {
+		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ k = 0,
@@ -3912,6 +3919,8 @@
 				}
 
 				for (x = leftX + leftOff; x <= rightX + rightOff; x += 1) {
+					...
+				}
 				*/
 
 				for (x = leftX; x <= rightX ; x += 1) {
@@ -3965,7 +3974,7 @@
 
 	// draw hexagons
 	Life.prototype.drawHexagons = function() {
-		var colourGrid = this.colourGrid,
+		var	colourGrid = this.colourGrid,
 			colourRow = null,
 			overlayGrid = this.overlayGrid,
 			overlayRow = null,
@@ -4227,8 +4236,8 @@
 
 	// draw hex cells
 	Life.prototype.drawHexCells = function(/** @type {boolean} */ filled, /** @type {boolean} */ borderWhenFilled, /** @type {boolean} */ gridLines, /** @type {boolean} */ drawingSelection) {
-		var /** @type {number} */ i = 0,
-			context = this.context,
+		var	/** @type {number} */ i = 0,
+			/** @type {CanvasRenderingContext2D} */ context = this.context,
 			/** @type {number} */ xOff = this.width / 2 - this.xOff - this.originX,
 			/** @type {number} */ yOff = this.height / 2 - this.yOff - this.originY,
 			/** @const {number} */ zoom = this.zoom * this.originZ,
@@ -4358,7 +4367,7 @@
 	// convert grid to RLE
 	/** @returns {string} */
 	Life.prototype.asRLE = function(view, me, /** @type {boolean} */ addComments, inputStates, outputStates, mapping, useAlias) {
-		var /** @type {string} */ rle = "",
+		var	/** @type {string} */ rle = "",
 			zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
 			/** @type {number} */ leftX = zoomBox.leftX,
 			/** @type {number} */ rightX = zoomBox.rightX,
@@ -4580,7 +4589,7 @@
 	// set state (2 state patterns without bounded grid or [R]History)
 	/** @returns {number} */
 	Life.prototype.setState2 = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
-		var grid = this.grid16,
+		var	grid = this.grid16,
 			tileGrid = this.tileGrid,
 			colourGrid = this.colourGrid,
 			colourTileGrid = this.colourTileGrid,
@@ -4588,10 +4597,10 @@
 			staticTileGrid = this.staticTileGrid,
 			zoomBox = this.zoomBox,
 			historyBox = this.historyBox,
-			cellAsBit = 0,
-			cellAsTileBit = 0,
-			growX = false,
-			growY = false,
+			/** @type {number} */ cellAsBit = 0,
+			/** @type {number} */ cellAsTileBit = 0,
+			/** @type {boolean} */ growX = false,
+			/** @type {boolean} */ growY = false,
 
 			// whether cell should be alive in bit grid
 			/** @type {boolean} */ bitAlive = false,
@@ -4799,7 +4808,7 @@
 	// set state (2 state [R]History patterns without bounded grid)
 	/** @returns {number} */
 	Life.prototype.setState2History = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
-		var grid = this.grid16,
+		var	grid = this.grid16,
 			tileGrid = this.tileGrid,
 			colourGrid = this.colourGrid,
 			colourTileGrid = this.colourTileGrid,
@@ -4808,10 +4817,10 @@
 			overlayGrid = this.overlayGrid,
 			zoomBox = this.zoomBox,
 			historyBox = this.historyBox,
-			cellAsBit = 0,
-			cellAsTileBit = 0,
-			growX = false,
-			growY = false,
+			/** @type {number} */ cellAsBit = 0,
+			/** @type {number} */ cellAsTileBit = 0,
+			/** @type {boolean} */ growX = false,
+			/** @type {boolean} */ growY = false,
 
 			// current cell state
 			/** @type {number} */ current = 0,
@@ -5043,7 +5052,7 @@
 	// set state (any pattern)
 	/** @returns {number} */
 	Life.prototype.setStateAny = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
-		var grid = this.grid16,
+		var	grid = this.grid16,
 			tileGrid = this.tileGrid,
 			colourGrid = this.colourGrid,
 			colourTileGrid = this.colourTileGrid,
@@ -5053,10 +5062,10 @@
 			zoomBox = this.zoomBox,
 			HROTBox = this.HROTBox,
 			historyBox = this.historyBox,
-			cellAsBit = 0,
-			cellAsTileBit = 0,
-			growX = false,
-			growY = false,
+			/** @type {number} */ cellAsBit = 0,
+			/** @type {number} */ cellAsTileBit = 0,
+			/** @type {boolean} */ growX = false,
+			/** @type {boolean} */ growY = false,
 
 			// bounded grid top left
 			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
@@ -5543,7 +5552,7 @@
 
 	// allocate or clear graph data
 	Life.prototype.allocateGraphData = function(/** @type {boolean} */ allocate) {
-		var /** @const {number} */ entries = 1 << LifeConstants.popChunkPower;
+		var	/** @const {number} */ entries = 1 << LifeConstants.popChunkPower;
 
 		if (allocate) {
 			this.popGraphData = Array.matrix(Uint32, 1, entries, 0, this.allocator, "Life.popGraphData");
@@ -5562,9 +5571,9 @@
 	/** @returns {number} */
 	Life.prototype.getState2 = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
 		// result
-		var /** @type {number} */ result = 0,
-		    /** @type {number} */ col = 0,
-		    colourGrid = this.colourGrid;
+		var	/** @type {number} */ result = 0,
+			/** @type {number} */ col = 0,
+			colourGrid = this.colourGrid;
 
 		// check if coordinates are on the grid
 		if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
@@ -5597,14 +5606,14 @@
 	/** @returns {number} */
 	Life.prototype.getState2History = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
 		// result
-		var /** @type {number} */ result = 0,
-		    /** @type {number} */ col = 0,
-		    /** @type {number} */ over = 0,
+		var	/** @type {number} */ result = 0,
+			/** @type {number} */ col = 0,
+			/** @type {number} */ over = 0,
 
-		    // get states 3, 4, 5 and 6
-		    /** @const {number} */ state3 = ViewConstants.stateMap[3] + 128,
-		    /** @const {number} */ state4 = ViewConstants.stateMap[4] + 128,
-		    /** @const {number} */ state5 = ViewConstants.stateMap[5] + 128,
+			// get states 3, 4, 5 and 6
+			/** @const {number} */ state3 = ViewConstants.stateMap[3] + 128,
+			/** @const {number} */ state4 = ViewConstants.stateMap[4] + 128,
+			/** @const {number} */ state5 = ViewConstants.stateMap[5] + 128,
 			/** @const {number} */ state6 = ViewConstants.stateMap[6] + 128;
 
 		// check if coordinates are on the grid
@@ -5667,23 +5676,23 @@
 	/** @returns {number} */
 	Life.prototype.getStateAny = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
 		// result
-		var /** @type {number} */ result = 0,
-		    /** @type {number} */ col = 0,
-		    /** @type {number} */ over = 0,
-
-		    // get states 3, 4, 5 and 6
-		    /** @const {number} */ state3 = ViewConstants.stateMap[3] + 128,
-		    /** @const {number} */ state4 = ViewConstants.stateMap[4] + 128,
-		    /** @const {number} */ state5 = ViewConstants.stateMap[5] + 128,
+		var	/** @type {number} */ result = 0,
+			/** @type {number} */ col = 0,
+			/** @type {number} */ over = 0,
+	
+			// get states 3, 4, 5 and 6
+			/** @const {number} */ state3 = ViewConstants.stateMap[3] + 128,
+			/** @const {number} */ state4 = ViewConstants.stateMap[4] + 128,
+			/** @const {number} */ state5 = ViewConstants.stateMap[5] + 128,
 			/** @const {number} */ state6 = ViewConstants.stateMap[6] + 128,
 
-		    // bounded grid top left
+			// bounded grid top left
 			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
-		    /** @type {number} */ leftX = Math.round((this.width - this.boundedGridWidth) / 2) + boxOffset,
-		    /** @type {number} */ bottomY = Math.round((this.height - this.boundedGridHeight) / 2) + boxOffset,
+			/** @type {number} */ leftX = Math.round((this.width - this.boundedGridWidth) / 2) + boxOffset,
+			/** @type {number} */ bottomY = Math.round((this.height - this.boundedGridHeight) / 2) + boxOffset,
 
-		    // bounded grid bottom right
-		    /** @type {number} */ rightX = leftX + this.boundedGridWidth - 1,
+			// bounded grid bottom right
+			/** @type {number} */ rightX = leftX + this.boundedGridWidth - 1,
 			/** @type {number} */ topY = bottomY + this.boundedGridHeight - 1,
 
 			// colour grid
@@ -5792,16 +5801,16 @@
 	// count tiles in a grid
 	/** @returns {number} */
 	Life.prototype.tileCount = function(tile) {
-		var tileRow = null,
-		    /** @type {number} */ y = 0,
-		    /** @type {number} */ x = 0,
-		    /** @type {number} */ tileGroup = 0,
-		    /** @const {number} */ l = tile.length,
-		    /** @const {number} */ w = tile[0].length,
-		    bitCounts16 = this.bitCounts16,
+		var	tileRow = null,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ tileGroup = 0,
+			/** @const {number} */ l = tile.length,
+			/** @const {number} */ w = tile[0].length,
+			bitCounts16 = this.bitCounts16,
 
-		    // zero count
-		    /** @type {number} */ result = 0;
+			// zero count
+			/** @type {number} */ result = 0;
 
 		// count tiles used
 		for (y = 0; y < l; y += 1) {
@@ -5825,12 +5834,12 @@
 	};
 
 	// check for reverse playback
-	Life.prototype.checkReverse = function(view, gen) {
-		var i = 0,
+	Life.prototype.checkReverse = function(view, /** @type {number} */ gen) {
+		var	/** @type {number} */ i = 0,
 			editList = view.editList,
-			l = editList.length,
+			/** @type {number} */ l = editList.length,
 			record = null,
-			found = false;
+			/** @type {boolean} */ found = false;
 
 		// do nothing if not Margolus rule
 		if (this.isMargolus || this.isPCA) {
