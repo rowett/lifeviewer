@@ -598,7 +598,7 @@
 
 	// stop all viewers except for the specified one
 	/** @returns {number} */
-	Controller.stopOtherViewers = function(/** @type {number} */ thisOne) {
+	Controller.stopOtherViewers = function(/** @type {View} */ thisOne) {
 		var	currentViewer = null,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ result = 0;
@@ -2082,7 +2082,7 @@
 
 		// saved camera
 		/** @type {number} */ this.savedAngle = 0;
-		/** @type {number} */ this.savedtilt = 0;
+		/** @type {number} */ this.savedTilt = 0;
 		/** @type {number} */ this.savedX = 0;
 		/** @type {number} */ this.savedY = 0;
 		/** @type {number} */ this.savedZoom = 1;
@@ -2159,7 +2159,7 @@
 	};
 
 	// open last saved or original pattern
-	View.prototype.loadPattern = function(me) {
+	View.prototype.loadPattern = function(/** @type {View} */ me) {
 		var	/** @type {boolean} */ result = window.confirm("Open last saved pattern?");
 		if (result) {
 			updateMe(me.element);
@@ -2628,7 +2628,7 @@
 	};
 
 	// undo edit
-	View.prototype.undo = function(me) {
+	View.prototype.undo = function(/** @type {View} */ me) {
 		var	/** @type {number} */ gen = 0,
 			/** @type {number} */ counter = me.engine.counter,
 			/** @type {number} */ current = me.editNum,
@@ -2729,7 +2729,7 @@
 	};
 
 	// redo edit
-	View.prototype.redo = function(me) {
+	View.prototype.redo = function(/** @type {View} */ me) {
 		var	/** @type {number} */ counter = me.engine.counter,
 			record = null,
 			selBox = me.selectionBox,
@@ -3953,7 +3953,7 @@
 	};
 
 	// download screenshot
-	View.prototype.captureScreenShot = function(me) {
+	View.prototype.captureScreenShot = function(/** @type {View} */ me) {
 		// create a link
 		var	link = document.createElement("a");
 
@@ -3973,7 +3973,7 @@
 	};
 
 	// download cell period map
-	View.prototype.downloadCellPeriodMap = function(me) {
+	View.prototype.downloadCellPeriodMap = function(/** @type {View} */ me) {
 		// create a link
 		if (me.lastIdentifyType !== "Oscillator") {
 			me.menuManager.notification.notify("No Cell Map", 15, 300, 15, true);
@@ -4215,7 +4215,7 @@
 	};
 
 	// opacity range
-	View.prototype.viewOpacityRange = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewOpacityRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue[0];
 
 		// check if changing
@@ -4227,7 +4227,7 @@
 	};
 
 	// paste position range
-	View.prototype.viewPastePositionRange = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewPastePositionRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.pastePosition = newValue[0];
@@ -4237,7 +4237,7 @@
 	};
 
 	// cycle paste location
-	View.prototype.cyclePasteLocation = function(me) {
+	View.prototype.cyclePasteLocation = function(/** @type {View} */ me) {
 		if (!me.viewOnly) {
 			me.pastePosition = ((me.pastePosition + 0.5) | 0) + 1;
 			if (me.pastePosition >= ViewConstants.numPastePositions) {
@@ -4248,7 +4248,7 @@
 	};
 
 	// random density range
-	View.prototype.viewRandomRange = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewRandomRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.randomDensity = newValue[0];
@@ -4264,7 +4264,7 @@
 	};
 
 	// states range
-	View.prototype.viewStatesRange = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewStatesRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue;
 
 		// check if changing
@@ -4284,7 +4284,7 @@
 	};
 
 	// zoom range
-	View.prototype.viewZoomRange = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewZoomRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue[0],
 			/** @type {number} */ displayValue = 0;
 
@@ -4639,7 +4639,7 @@
 	};
 
 	// check if grid needs to grow
-	View.prototype.checkGridSize = function(me, box) {
+	View.prototype.checkGridSize = function(/** @type {View} */ me, box) {
 		var	/** @type {number} */ borderSize = ViewConstants.maxStepSpeed; 
 
 		// compute border based on algorithm
@@ -4666,7 +4666,7 @@
 
 	// check if the selection needs the grid to grow
 	/** @returns {boolean} */
-	View.prototype.checkSelectionSize = function(me) {
+	View.prototype.checkSelectionSize = function(/** @type {View} */ me) {
 		var	/** @type {boolean} */ clipped = false,
 
 			// convert selection box to middle coordinates
@@ -4723,7 +4723,7 @@
 	};
 
 	// update progress bar for start from
-	View.prototype.updateProgressBarStartFrom = function(me) {
+	View.prototype.updateProgressBarStartFrom = function(/** @type {View} */ me) {
 		// update the progress bar
 		me.progressBar.current = 100 * (me.engine.counter / me.startFrom);
 
@@ -4735,7 +4735,7 @@
 	};
 
 	// update progress bar for copy RLE
-	View.prototype.updateProgressBarCopy = function(me) {
+	View.prototype.updateProgressBarCopy = function(/** @type {View} */ me) {
 		// update the progress bar
 		me.progressBar.current = 100 * (me.tempRLEAmount / me.tempRLELength);
 
@@ -4747,7 +4747,7 @@
 	};
 
 	// update progress bar for history computation
-	View.prototype.updateProgressBarHistory = function(me, targetGen) {
+	View.prototype.updateProgressBarHistory = function(/** @type {View} */ me, /** @type {number} */ targetGen) {
 		// update the progress bar
 		me.progressBar.current = 100 * (me.engine.counter / targetGen);
 
@@ -4759,7 +4759,7 @@
 	};
 
 	// update progress bar
-	View.prototype.updateProgressBar = function(me) {
+	View.prototype.updateProgressBar = function(/** @type {View} */ me) {
 		var	/** @type {boolean} */ isLooping = false,
 			/** @type {boolean} */ waypointsRunning = false,
 			/** @type {number} */ journey = 0,
@@ -5552,7 +5552,7 @@
 	};
 
 	// update generation counter label
-	View.prototype.updateGenerationLabel = function(me) {
+	View.prototype.updateGenerationLabel = function(/** @type {View} */ me) {
 		var	/** @type {number} */ counter = me.engine.counter,
 			/** @type {string} */ separator = " ";
 
@@ -5603,7 +5603,7 @@
 	};
 
 	// update view mode for normal processing
-	View.prototype.viewAnimateNormal = function(/** @type {number} */ timeSinceLastUpdate, me) {
+	View.prototype.viewAnimateNormal = function(/** @type {number} */ timeSinceLastUpdate, /** @type {View} */ me) {
 		// get the current time and mouse wheel
 		var	/** @type {number} */ deltaTime = 0,
 		    /** @type {number} */ currentTime = 0,
@@ -6126,7 +6126,7 @@
 	};
 
 	// render the world
-	View.prototype.renderWorld = function(me, /** @type {boolean} */ tooSlow, /** @type {number} */ deltaTime, /** @type {boolean} */ manualStepping) {
+	View.prototype.renderWorld = function(/** @type {View} */ me, /** @type {boolean} */ tooSlow, /** @type {number} */ deltaTime, /** @type {boolean} */ manualStepping) {
 		// check for autofit
 		if (me.autoFit && (me.generationOn || me.waypointsDefined)) {
 			me.fitZoomDisplay(false, false, ViewConstants.fitZoomPattern);
@@ -6305,7 +6305,7 @@
 		}
 
 		// hide the UI controls if help or errors are displayed
-		me.updateUIForHelp(me.displayHelp || me.scriptErrors.length);
+		me.updateUIForHelp((me.displayHelp || me.scriptErrors.length) !== 0);
 
 		// dim display if settings displayed
 		if (me.navToggle.current[0] && !(me.hideGUI && me.generationOn)) {
@@ -6317,7 +6317,7 @@
 	};
 
 	// update GPS and Step control background based on performance
-	View.prototype.updateControlBackgrounds = function(/** @type {number} */ deltaTime, /** @type {boolean} */ tooSlow, /** @type {boolean} */ manualStepping, me) {
+	View.prototype.updateControlBackgrounds = function(/** @type {number} */ deltaTime, /** @type {boolean} */ tooSlow, /** @type {boolean} */ manualStepping, /** @type {View} */ me) {
 		var	/** @type {number} */ red = 0,
 			/** @type {number} */ green = 0,
 			/** @type {number} */ blue = 0,
@@ -7013,7 +7013,7 @@
 	};
 
 	// view update for copy to clipboard
-	View.prototype.viewAnimateClipboard = function(me) {
+	View.prototype.viewAnimateClipboard = function(/** @type {View} */ me) {
 		var	/** @type {number} */ amountToAdd = me.tempRLEChunkSize,
 			/** @type {number} */ amountLeft = me.tempRLELength - me.tempRLEAmount,
 			textArea = null;
@@ -7086,7 +7086,7 @@
 	};
 
 	// stop start from (go to generation)
-	View.prototype.stopStartFrom = function(me, /** @type {boolean} */ cancelled, /** @type {boolean} */ notify) {
+	View.prototype.stopStartFrom = function(/** @type {View} */ me, /** @type {boolean} */ cancelled, /** @type {boolean} */ notify) {
 		var	/** @type {number} */ gps = 0,
 			/** @type {number} */ genTime = 0;
 
@@ -7116,7 +7116,7 @@
 	};
 
 	// view update for start from
-	View.prototype.viewAnimateStartFrom = function(me) {
+	View.prototype.viewAnimateStartFrom = function(/** @type {View} */ me) {
 		// start time of updates
 		var	/** @type {number} */ startTime = performance.now(),
 
@@ -7195,7 +7195,7 @@
 	};
 
 	// view update for identify
-	View.prototype.viewAnimateIdentify = function(me) {
+	View.prototype.viewAnimateIdentify = function(/** @type {View} */ me) {
 		// start time of updates
 		var	/** @type {number} */ startTime = performance.now(),
 
@@ -7387,7 +7387,7 @@
 	};
 
 	// view update for history calculation
-	View.prototype.viewAnimateHistory = function(me) {
+	View.prototype.viewAnimateHistory = function(/** @type {View} */ me) {
 		// target generation
 		var	/** @type {number} */ targetGen = me.computeHistoryTarget,
 
@@ -7487,7 +7487,7 @@
 	};
 
 	// measure frame rate
-	View.prototype.viewAnimateMeasure = function(timeSinceLastUpdate, me) {
+	View.prototype.viewAnimateMeasure = function(/** @type {number} */ timeSinceLastUpdate, /** @type {View} */ me) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ pixelColour = 0;
 
@@ -7506,7 +7506,7 @@
 			// set the auto update mode
 			me.xyLabel.enabled = false;
 			me.selSizeLabel.enabled = false;
-			me.updateUIForHelp(0);
+			me.updateUIForHelp(false);
 			me.menuManager.setAutoUpdate(true);
 
 			// clear the canvas
@@ -7560,7 +7560,7 @@
 	};
 
 	// update view mode dispatcher
-	View.prototype.viewAnimate = function(/** @type {number} */ timeSinceLastUpdate, me) {
+	View.prototype.viewAnimate = function(/** @type {number} */ timeSinceLastUpdate, /** @type {View} */ me) {
 		// check view mode
 		if (me.computeHistory) {
 			me.viewAnimateHistory(me);
@@ -7586,7 +7586,7 @@
 	};
 
 	// start view mode
-	View.prototype.viewStart = function(me) {
+	View.prototype.viewStart = function(/** @type {View} */ me) {
 		// zero life counter
 		me.engine.counter = 0;
 		me.engine.counterMargolus = 0;
@@ -7616,7 +7616,7 @@
 	};
 
 	// toggle stars display
-	View.prototype.viewStarsToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewStarsToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.starsOn = newValue[0];
@@ -7626,7 +7626,7 @@
 	};
 
 	// toggle history fit mode
-	View.prototype.viewHistoryFitToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewHistoryFitToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.historyFit = newValue[0];
@@ -7636,7 +7636,7 @@
 	};
 
 	// toggle major gridlines display
-	View.prototype.viewMajorToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewMajorToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.engine.gridLineMajorEnabled = newValue[0];
@@ -7646,7 +7646,7 @@
 	};
 
 	// toggle infobar display
-	View.prototype.viewInfoBarToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewInfoBarToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.infoBarEnabled = newValue[0];
@@ -7656,7 +7656,7 @@
 	};
 
 	// toggle graph display
-	View.prototype.viewGraphToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewGraphToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.popGraph = newValue[0];
@@ -7676,7 +7676,7 @@
 	};
 
 	// toggle kill gliders
-	View.prototype.viewKillToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewKillToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.engine.clearGliders = newValue[0];
@@ -7686,7 +7686,7 @@
 	};
 
 	// toggle labels display
-	View.prototype.viewLabelToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewLabelToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.showLabels = newValue[0];
@@ -7696,7 +7696,7 @@
 	};
 
 	// toggle cell borders
-	View.prototype.viewBordersToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewBordersToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// toggle cell borders
@@ -7707,7 +7707,7 @@
 	};
 
 	// toggle auto hide grid
-	View.prototype.viewAutoGridToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewAutoGridToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// toggle auto hide
@@ -7725,7 +7725,7 @@
 	};
 
 	// toggle rainbow mode
-	View.prototype.viewRainbowToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewRainbowToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// toggle rainbow
@@ -7742,7 +7742,7 @@
 	};
 
 	// toggle Margolus alternating grid lines
-	View.prototype.viewAltGridToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewAltGridToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// toggle auto hide
@@ -7752,7 +7752,7 @@
 	};
 
 	// toggle auto hide gui
-	View.prototype.viewAutoHideToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewAutoHideToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// toggle auto hide
@@ -7762,7 +7762,7 @@
 	};
 
 	// toggle hexagonal cells
-	View.prototype.viewHexCellToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewHexCellToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// toggle cell shape
@@ -7774,7 +7774,7 @@
 	};
 
 	// toggle timing detail display
-	View.prototype.viewTimingDetailToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewTimingDetailToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.menuManager.showExtendedTiming = newValue[0];
@@ -7787,7 +7787,7 @@
 	};
 
 	// toggle fps display
-	View.prototype.viewFpsToggle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewFpsToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.menuManager.showTiming = newValue[0];
@@ -7800,7 +7800,7 @@
 	};
 
 	// colour theme
-	View.prototype.setNewTheme = function(/** @type {number} */ newTheme, /** @type {number} */ steps, me) {
+	View.prototype.setNewTheme = function(/** @type {number} */ newTheme, /** @type {number} */ steps, /** @type {View} */ me) {
 		var	/** @type {number} */ i = 0;
 
 		// check if it has changed
@@ -7877,7 +7877,7 @@
 	};
 
 	// set playback speed
-	View.prototype.viewSpeedRange = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewSpeedRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	/** @type {string} */ label = "",
 			value = me.speedIndex();
 
@@ -7903,7 +7903,7 @@
 	};
 
 	// save the camera position
-	View.prototype.saveCamera = function(me) {
+	View.prototype.saveCamera = function(/** @type {View} */ me) {
 		// save zoom
 		me.savedZoom = me.engine.zoom;
 		if (me.thumbnail) {
@@ -7922,7 +7922,7 @@
 	};
 
 	// reset the saved camera
-	View.prototype.resetSavedCamera = function(me) {
+	View.prototype.resetSavedCamera = function(/** @type {View} */ me) {
 		// save start point
 		me.startXPOI = me.engine.width / 2 - me.engine.xOff;
 		me.startYPOI = me.engine.height / 2 - me.engine.yOff;
@@ -7948,7 +7948,7 @@
 	};
 
 	// reset the camera
-	View.prototype.resetCamera = function(me, /** @type {boolean} */ fullReset) {
+	View.prototype.resetCamera = function(/** @type {View} */ me, /** @type {boolean} */ fullReset) {
 		var	/** @type {number} */ numberValue = 0;
 
 		// reset zoom
@@ -8031,7 +8031,7 @@
 	};
 
 	// just reset the generation
-	View.prototype.resetGeneration = function(me) {
+	View.prototype.resetGeneration = function(/** @type {View} */ me) {
 		// reset time
 		me.elapsedTime = 0;
 
@@ -8049,7 +8049,7 @@
 	};
 
 	// reset to first generation
-	View.prototype.reset = function(me) {
+	View.prototype.reset = function(/** @type {View} */ me) {
 		var	/** @type {boolean} */ hardReset = false,
 			/** @type {boolean} */ looping = false,
 			/** @type {boolean} */ saveState = false;
@@ -8274,13 +8274,13 @@
 	};
 
 	// done button pressed
-	View.prototype.donePressed = function(me) {
+	View.prototype.donePressed = function(/** @type {View} */ me) {
 		localStorage.setItem(ViewConstants.doneKey, "y");
 		me.checkForChromeBug();
 	};
 
 	// set help topic
-	View.prototype.setHelpTopic = function(newValue, me) {
+	View.prototype.setHelpTopic = function(newValue, /** @type {View} */ me) {
 		// switch to required topic
 		me.helpTopic = newValue;
 		me.displayHelp = 1;
@@ -8297,47 +8297,47 @@
 	};
 
 	// keys help topic
-	View.prototype.keysTopicPressed = function(me) {
+	View.prototype.keysTopicPressed = function(/** @type {View} */ me) {
 		me.setHelpTopic(ViewConstants.keysTopic, me);
 	};
 
 	// scripts help topic
-	View.prototype.scriptsTopicPressed = function(me) {
+	View.prototype.scriptsTopicPressed = function(/** @type {View} */ me) {
 		me.setHelpTopic(ViewConstants.scriptsTopic, me);
 	};
 
 	// info help topic
-	View.prototype.infoTopicPressed = function(me) {
+	View.prototype.infoTopicPressed = function(/** @type {View} */ me) {
 		me.setHelpTopic(ViewConstants.informationTopic, me);
 	};
 
 	// themes help topic
-	View.prototype.themesTopicPressed = function(me) {
+	View.prototype.themesTopicPressed = function(/** @type {View} */ me) {
 		me.setHelpTopic(ViewConstants.themesTopic, me);
 	};
 
 	// colours help topic
-	View.prototype.coloursTopicPressed = function(me) {
+	View.prototype.coloursTopicPressed = function(/** @type {View} */ me) {
 		me.setHelpTopic(ViewConstants.coloursTopic, me);
 	};
 
 	// aliases help topic
-	View.prototype.aliasesTopicPressed = function(me) {
+	View.prototype.aliasesTopicPressed = function(/** @type {View} */ me) {
 		me.setHelpTopic(ViewConstants.aliasesTopic, me);
 	};
 
 	// memory help topic
-	View.prototype.memoryTopicPressed = function(me) {
+	View.prototype.memoryTopicPressed = function(/** @type {View} */ me) {
 		me.setHelpTopic(ViewConstants.memoryTopic, me);
 	};
 
 	// annotations help topic
-	View.prototype.annotationsTopicPressed = function(me) {
+	View.prototype.annotationsTopicPressed = function(/** @type {View} */ me) {
 		me.setHelpTopic(ViewConstants.annotationsTopic, me);
 	};
 
 	// view help section list
-	View.prototype.viewHelpSectionList = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewHelpSectionList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue;
 
 		if (change) {
@@ -8349,7 +8349,7 @@
 	};
 
 	// auto-shrink selection
-	View.prototype.viewAutoShrinkList = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewAutoShrinkList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.autoShrink = newValue[0];
 			if (me.autoShrink) {
@@ -8361,12 +8361,12 @@
 	};
 
 	// shrink selection button
-	View.prototype.shrinkSelectionPressed = function(me) {
+	View.prototype.shrinkSelectionPressed = function(/** @type {View} */ me) {
 		me.autoShrinkSelection(me);
 	};
 
 	// copy sync with external clipboard
-	View.prototype.viewCopySyncList = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewCopySyncList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.copySyncExternal = newValue[0];
 			if (me.copySyncExternal) {
@@ -8378,7 +8378,7 @@
 	};
 
 	// view mode list
-	View.prototype.viewModeList = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewModeList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue;
 
 		if (change) {
@@ -8468,7 +8468,7 @@
 	};
 
 	// active clipboard
-	View.prototype.viewClipboardList = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewClipboardList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			// set active clipboard
 			me.currentPasteBuffer = newValue;
@@ -8498,7 +8498,7 @@
 	};
 
 	// paste mode
-	View.prototype.viewPasteModeList = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewPasteModeList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.pasteModeForUI = newValue;
 			me.pasteMode = ViewConstants.uiPasteModes[newValue];
@@ -8508,7 +8508,7 @@
 	};
 
 	// cycle paste mode
-	View.prototype.cyclePasteMode = function(me) {
+	View.prototype.cyclePasteMode = function(/** @type {View} */ me) {
 		if (!me.viewOnly) {
 			me.pasteModeForUI += 1;
 			if (me.pasteModeForUI > 3) {
@@ -8698,7 +8698,7 @@
 	};
 
 	// drawing states list
-	View.prototype.viewStateList = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewStateList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue;
 
 		if (change) {
@@ -8765,7 +8765,7 @@
 	};
 
 	// drawing states colours list
-	View.prototype.viewStateColsList = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewStateColsList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue,
 			/** @type {number} */ i = 0;
 
@@ -8855,7 +8855,7 @@
 
 	// clear cells of the current pen colours
 	/** @returns {number} */
-	View.prototype.clearCells = function(me, /** @type {boolean} */ ctrl, /** @type {boolean} */ markedOnly) {
+	View.prototype.clearCells = function(/** @type {View} */ me, /** @type {boolean} */ ctrl, /** @type {boolean} */ markedOnly) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ state = 0,
@@ -8890,7 +8890,7 @@
 						}
 					}
 					if (numCleared > 0) {
-						if (me.isSuper) {
+						if (me.engine.isSuper) {
 							me.afterEdit("clear [R]Super marked cells");
 						} else {
 							me.afterEdit("clear [R]History marked cells");
@@ -8908,7 +8908,7 @@
 						}
 					}
 					if (numCleared > 0) {
-						if (me.isSuper) {
+						if (me.engine.isSuper) {
 							me.afterEdit("clear Super cells");
 						} else {
 							// update state 6 grid
@@ -8942,7 +8942,7 @@
 	};
 
 	// view play list
-	View.prototype.viewPlayList = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewPlayList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue,
 		    /** @type {boolean} */ stopMode = me.stopDisabled,
 		    /** @type {boolean} */ loopMode = me.loopDisabled,
@@ -9286,7 +9286,7 @@
 	};
 
 	// angle range
-	View.prototype.viewAngleRange = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewAngleRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// set manual change happened
@@ -9344,7 +9344,7 @@
 	};
 
 	// tilt range
-	View.prototype.viewTiltRange = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewTiltRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// set manual change happened
@@ -9359,7 +9359,7 @@
 	};
 
 	// layers range
-	View.prototype.viewLayersRange = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewLayersRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result;
 
 		// check if changing
@@ -9379,7 +9379,7 @@
 	};
 
 	// depth range
-	View.prototype.viewDepthRange = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.viewDepthRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// set manual change happened
@@ -9442,7 +9442,7 @@
 	};
 
 	// view menu wakeup callback
-	View.prototype.viewWakeUp = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ dragOn, me) {
+	View.prototype.viewWakeUp = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ dragOn, /** @type {View} */ me) {
 		// on mouse release pause playback so GUI unhides
 		if (me.hideGUI) {
 			if (!dragOn) {
@@ -9452,14 +9452,14 @@
 	};
 
 	// view menu background drag callback
-	View.prototype.viewDrag = function(/**@type {number} */ x, /**@type {number} */ y, /**@type {boolean} */ dragOn, me) {
+	View.prototype.viewDrag = function(/**@type {number} */ x, /**@type {number} */ y, /**@type {boolean} */ dragOn, /** @type {View} */ me) {
 		if (!me.noGUI) {
 			me.viewDoDrag(x, y, dragOn, me, false);
 		}
 	};
 
 	// drag help
-	View.prototype.dragHelp = function(me, /** @type {number} */ y) {
+	View.prototype.dragHelp = function(/** @type {View} */ me, /** @type {number} */ y) {
 		// compute the movement
 		var	/** @type {number} */ dy = (me.lastDragY - y) / me.helpFontSize;
 
@@ -9476,7 +9476,7 @@
 	};
 
 	// drag errors
-	View.prototype.dragErrors = function(me, /** @type {number} */ y) {
+	View.prototype.dragErrors = function(/** @type {View} */ me, /** @type {number} */ y) {
 		// compute the movement
 		var	/** @type {number} */ dy = (me.lastDragY - y) / me.helpFontSize;
 
@@ -9493,7 +9493,7 @@
 	};
 
 	// drag grid (pan)
-	View.prototype.dragPan = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+	View.prototype.dragPan = function(/** @type {View} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// compute the movement
 		var	/** @type {number} */ dx = (me.lastDragX - x) / me.engine.camZoom,
 			/** @type {number} */ dy = ((me.lastDragY - y) / me.engine.camZoom) / (me.engine.isTriangular ? ViewConstants.sqrt3 : 1),
@@ -9532,7 +9532,7 @@
 	};
 
 	// drag draw
-	View.prototype.dragDraw = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+	View.prototype.dragDraw = function(/** @type {View} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		var	/** @type {boolean} */ wasPlaying = me.generationOn,
 			/** @type {number} */ savedIndex = me.currentEditIndex;
 
@@ -9559,7 +9559,7 @@
 	};
 
 	// drag select
-	View.prototype.dragSelect = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+	View.prototype.dragSelect = function(/** @type {View} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		if (!me.isPasting) {
 			me.doDragSelect(me, x, y);
 		}
@@ -9604,7 +9604,7 @@
 	};
 
 	// process drag for selection
-	View.prototype.doDragSelect = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+	View.prototype.doDragSelect = function(/** @type {View} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// selection box
 		var	box = me.selectionBox,
 			boundedBox = new BoundingBox(0, 0, 0, 0),
@@ -9690,7 +9690,7 @@
 				// check grid for growth
 				if (me.drawingSelection) {
 					me.checkSelectionSize(me);
-					if (me.boundedGridType !== -1) {
+					if (me.engine.boundedGridType !== -1) {
 						xyOff = me.getBoundingBox(boundedBox, boxOffset);
 						xOff = xyOff[0];
 						yOff = xyOff[1];
@@ -9745,7 +9745,7 @@
 	};
 
 	// remove selection
-	View.prototype.removeSelection = function(me) {
+	View.prototype.removeSelection = function(/** @type {View} */ me) {
 		me.isSelection = false;
 		me.afterSelectAction = false;
 		me.afterEdit("cancel selection");
@@ -9753,7 +9753,7 @@
 	};
 
 	// drag ended for select
-	View.prototype.dragEndSelect = function(me) {
+	View.prototype.dragEndSelect = function(/** @type {View} */ me) {
 		if (me.isPasting) {
 			// perform paste at the mouse position
 			me.performPaste(me, me.cellX, me.cellY, true);
@@ -9763,7 +9763,7 @@
 	};
 
 	// auto shrink a selection
-	View.prototype.autoShrinkSelection = function(me) {
+	View.prototype.autoShrinkSelection = function(/** @type {View} */ me) {
 		var	selBox = me.selectionBox,
 			zoomBox = me.engine.zoomBox,
 			/** @type {number} */ leftX = selBox.leftX,
@@ -9848,7 +9848,7 @@
 	};
 
 	// process drag end for selection
-	View.prototype.doDragEndSelect = function(me) {
+	View.prototype.doDragEndSelect = function(/** @type {View} */ me) {
 		var	selBox = me.selectionBox,
 			/** @type {number} */ width = 0,
 			/** @type {number} */ height = 0;
@@ -9883,7 +9883,7 @@
 	};
 
 	// drag ended for pick
-	View.prototype.dragEndPick = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+	View.prototype.dragEndPick = function(/** @type {View} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		var	/** @type {number} */ state = 0;
 
 		// check if on window
@@ -9905,7 +9905,7 @@
 	};
 
 	// drag ended for draw
-	View.prototype.dragEndDraw = function(me) {
+	View.prototype.dragEndDraw = function(/** @type {View} */ me) {
 		// resume playback if required
 		if (me.playbackDrawPause) {
 			me.generationOn = true;
@@ -9924,7 +9924,7 @@
 	};
 
 	// view menu background drag
-	View.prototype.viewDoDrag = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ dragOn, me, /** @type {boolean} */ fromKey) {
+	View.prototype.viewDoDrag = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ dragOn, /** @type {View} */ me, /** @type {boolean} */ fromKey) {
 		// check if on window (and window has focus - to prevent drawing when clicking to gain focus)
 		if (x !== -1 && y !== -1 && me.menuManager.hasFocus) {
 			// check if this is a drag or cancel drag
@@ -10133,7 +10133,7 @@
 	};
 
 	// change rule
-	View.prototype.changeRule = function(me) {
+	View.prototype.changeRule = function(/** @type {View} */ me) {
 		var	/** @type {string} */ patternText = "",
 			/** @type {number} */ index = -1,
 			result = window.prompt("Change rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef);
@@ -10199,7 +10199,7 @@
 	};
 
 	// convert [R]History or [R]Standard to [R]Super
-	View.prototype.convertToSuper = function(me) {
+	View.prototype.convertToSuper = function(/** @type {View} */ me) {
 		var	/** @type {string} */ fromPostfix = (me.engine.isLifeHistory ? "History" : ""),
 			/** @type {number} */ fromStates = (me.engine.isLifeHistory ? 7 : 2),
 			/** @type {string} */ toPostfix = "Super",
@@ -10210,7 +10210,7 @@
 	};
 
 	// convert [R]Standard or [R]Super to [R]History
-	View.prototype.convertToHistory = function(me) {
+	View.prototype.convertToHistory = function(/** @type {View} */ me) {
 		var	/** @type {string} */ fromPostfix = (me.engine.isSuper ? "Super" : ""),
 			/** @type {number} */ fromStates = (me.engine.isSuper ? 26 : 2),
 			/** @type {string} */ toPostfix = "History",
@@ -10221,7 +10221,7 @@
 	};
 
 	// convert [R]History or [R]Super to [R]Standard
-	View.prototype.convertToStandard = function(me) {
+	View.prototype.convertToStandard = function(/** @type {View} */ me) {
 		var	/** @type {string} */ fromPostfix = (me.engine.isLifeHistory ? "History" : "Super"),
 			/** @type {number} */ fromStates = (me.engine.isLifeHistory ? 7 : 26),
 			/** @type {string} */ toPostfix = "",
@@ -10885,7 +10885,7 @@
 	};
 
 	// randomize rule and pattern
-	View.prototype.randomPattern = function(me, /** @type {boolean} */fixedRule) {
+	View.prototype.randomPattern = function(/** @type {View} */ me, /** @type {boolean} */fixedRule) {
 		var	/** @type {string} */ patternText = "",
 			/** @type {string} */ rleText = "",
 			result = null,
@@ -11032,7 +11032,7 @@
 		patternText += me.engine.afterTitle;
 
 		// check whether prompt required
-		if (me.undoButton.locked || me.randomGuard) {
+		if (me.undoButton.locked || me.randomizeGuard) {
 			result = true;
 		} else {
 			result = window.confirm("Create new random pattern?");
@@ -11053,7 +11053,7 @@
 	};
 
 	// new pattern
-	View.prototype.newPattern = function(me) {
+	View.prototype.newPattern = function(/** @type {View} */ me) {
 		var	/** @type {string} */ patternText = "x = 1, y = 1, rule = ",
 			result = window.prompt("Create new pattern with rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef);
 
@@ -11103,7 +11103,7 @@
 	};
 
 	// mouse wheel
-	View.prototype.wheel = function(me, event) {
+	View.prototype.wheel = function(/** @type {View} */ me, event) {
 		// check if the canvas has focus
 		if (me.menuManager.hasFocus) {
 			// update wheel position if not computing history
@@ -11240,7 +11240,7 @@
 	};
 
 	// set camera from POI
-	View.prototype.setCameraFromPOI = function(me, /** @type {number} */ poiNumber) {
+	View.prototype.setCameraFromPOI = function(/** @type {View} */ me, /** @type {number} */ poiNumber) {
 		// get the point of interest
 		var	poi = me.waypointManager.poiList[poiNumber];
 
@@ -11387,7 +11387,7 @@
 	};
 
 	// change zoom if no autofit
-	View.prototype.changeZoom = function(me, /** @type {number} */ newZoom, /** @type {boolean} */ integerOnly) {
+	View.prototype.changeZoom = function(/** @type {View} */ me, /** @type {number} */ newZoom, /** @type {boolean} */ integerOnly) {
 		// compute tracked zoom
 		var	/** @type {number} */ adjustedZoom = newZoom / me.engine.originZ;
 
@@ -11423,22 +11423,22 @@
 	};
 
 	// 1x speed pressed
-	View.prototype.speed1Pressed = function(me) {
+	View.prototype.speed1Pressed = function(/** @type {View} */ me) {
 		me.speedRange.current = me.viewSpeedRange([1, 1], true, me);
 	};
 
 	// undo button
-	View.prototype.undoPressed = function(me) {
+	View.prototype.undoPressed = function(/** @type {View} */ me) {
 		me.undo(me);
 	};
 
 	// redo button
-	View.prototype.redoPressed = function(me) {
+	View.prototype.redoPressed = function(/** @type {View} */ me) {
 		me.redo(me);
 	};
 
 	// cancel button
-	View.prototype.cancelPressed = function(me) {
+	View.prototype.cancelPressed = function(/** @type {View} */ me) {
 		if (me.identify) {
 			me.identifyPressed(me);
 		}
@@ -11449,7 +11449,7 @@
 	};
 
 	// back button
-	View.prototype.backPressed = function(me) {
+	View.prototype.backPressed = function(/** @type {View} */ me) {
 		// check if any settings are displayed
 		if (me.showDisplaySettings || me.showInfoSettings || me.showClipboardSettings || me.showPatternSettings || me.showPlaybackSettings || me.showThemeSelection || me.showActionsSettings) {
 			// clear settings section
@@ -11467,68 +11467,68 @@
 	};
 
 	// clipboard settings button
-	View.prototype.clipboardPressed = function(me) {
+	View.prototype.clipboardPressed = function(/** @type {View} */ me) {
 		me.showClipboardSettings = true;
 	};
 
 	// pattern settings button
-	View.prototype.patternPressed = function(me) {
+	View.prototype.patternPressed = function(/** @type {View} */ me) {
 		me.showPatternSettings = true;
 	};
 
 	// display settings button
-	View.prototype.displayPressed = function(me) {
+	View.prototype.displayPressed = function(/** @type {View} */ me) {
 		me.showDisplaySettings = true;
 	};
 
 	// actions settings button
-	View.prototype.actionsPressed = function(me) {
+	View.prototype.actionsPressed = function(/** @type {View} */ me) {
 		me.showActionsSettings = true;
 	};
 
 	// playback settings button
-	View.prototype.playbackPressed = function(me) {
+	View.prototype.playbackPressed = function(/** @type {View} */ me) {
 		me.showPlaybackSettings = true;
 	};
 
 	// info settings button
-	View.prototype.infoPressed = function(me) {
+	View.prototype.infoPressed = function(/** @type {View} */ me) {
 		me.showInfoSettings = true;
 	};
 
 	// new button
-	View.prototype.newPressed = function(me) {
+	View.prototype.newPressed = function(/** @type {View} */ me) {
 		me.newPattern(me);
 	};
 
 	// randomize pattern and rule
-	View.prototype.randomizePressed = function(me) {
+	View.prototype.randomizePressed = function(/** @type {View} */ me) {
 		me.randomPattern(me, false);
 	};
 
 	// randomize pattern and keep current rule
-	View.prototype.randomizePatternPressed = function(me) {
+	View.prototype.randomizePatternPressed = function(/** @type {View} */ me) {
 		me.randomPattern(me, true);
 	};
 
 	// save button
-	View.prototype.savePressed = function(me) {
+	View.prototype.savePressed = function(/** @type {View} */ me) {
 		me.saveCurrentRLE(me);
 		me.menuManager.notification.notify("Saved", 15, 120, 15, true);
 	};
 
 	// load button
-	View.prototype.loadPressed = function(me) {
+	View.prototype.loadPressed = function(/** @type {View} */ me) {
 		me.loadPattern(me);
 	};
 
 	// rule button
-	View.prototype.rulePressed = function(me) {
+	View.prototype.rulePressed = function(/** @type {View} */ me) {
 		me.changeRule(me);
 	};
 
 	// theme button
-	View.prototype.themePressed = function(me) {
+	View.prototype.themePressed = function(/** @type {View} */ me) {
 		me.showThemeSelection = true;
 	};
 
@@ -11556,102 +11556,102 @@
 	};
 
 	// theme selection toggles
-	View.prototype.toggleTheme0 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme0 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(0, newValue, change);
 	};
 
-	View.prototype.toggleTheme1 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme1 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(1, newValue, change);
 	};
 
-	View.prototype.toggleTheme2 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme2 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(2, newValue, change);
 	};
 
-	View.prototype.toggleTheme3 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme3 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(3, newValue, change);
 	};
 
-	View.prototype.toggleTheme4 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme4 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(4, newValue, change);
 	};
 
-	View.prototype.toggleTheme5 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme5 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(5, newValue, change);
 	};
 
-	View.prototype.toggleTheme6 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme6 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(6, newValue, change);
 	};
 
-	View.prototype.toggleTheme7 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme7 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(7, newValue, change);
 	};
 
-	View.prototype.toggleTheme8 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme8 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(8, newValue, change);
 	};
 
-	View.prototype.toggleTheme9 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme9 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(9, newValue, change);
 	};
 
-	View.prototype.toggleTheme10 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme10 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(10, newValue, change);
 	};
 
-	View.prototype.toggleTheme11 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme11 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(11, newValue, change);
 	};
 
-	View.prototype.toggleTheme12 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme12 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(12, newValue, change);
 	};
 
-	View.prototype.toggleTheme13 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme13 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(13, newValue, change);
 	};
 
-	View.prototype.toggleTheme14 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme14 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(14, newValue, change);
 	};
 
-	View.prototype.toggleTheme15 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme15 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(15, newValue, change);
 	};
 
-	View.prototype.toggleTheme16 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme16 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(16, newValue, change);
 	};
 
-	View.prototype.toggleTheme17 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme17 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(17, newValue, change);
 	};
 
-	View.prototype.toggleTheme18 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme18 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(18, newValue, change);
 	};
 
-	View.prototype.toggleTheme19 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme19 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(19, newValue, change);
 	};
 
-	View.prototype.toggleTheme20 = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleTheme20 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(20, newValue, change);
 	};
 
 	// identify close button
-	View.prototype.identifyClosePressed = function(me) {
+	View.prototype.identifyClosePressed = function(/** @type {View} */ me) {
 		me.resultsDisplayed = false;
 	};
 
 	// identify save cell map button
-	View.prototype.identifySavePressed = function(me) {
+	View.prototype.identifySavePressed = function(/** @type {View} */ me) {
 		me.downloadCellPeriodMap(me);
 	};
 
 	// display last identify results
-	View.prototype.displayLastIdentifyResults = function(me) {
+	View.prototype.displayLastIdentifyResults = function(/** @type {View} */ me) {
 		// check if there are results
 		if (me.lastIdentifyType === "Empty" || me.lastIdentifyType === "none" || me.lastIdentifyType === "") {
 			me.menuManager.notification.notify("No Identify Results", 15, 120, 15, false);
@@ -11663,13 +11663,13 @@
 	};
 
 	// graph close button
-	View.prototype.graphClosePressed = function(me) {
+	View.prototype.graphClosePressed = function(/** @type {View} */ me) {
 		me.popGraph = false;
 		me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
 	};
 
 	// esc button
-	View.prototype.escPressed = function(me) {
+	View.prototype.escPressed = function(/** @type {View} */ me) {
 		// check if errors displayed
 		if (me.scriptErrors.length) {
 			// clear errors
@@ -11683,7 +11683,7 @@
 	};
 
 	// previous POI button
-	View.prototype.prevPOIPressed = function(me) {
+	View.prototype.prevPOIPressed = function(/** @type {View} */ me) {
 		// go to previous POI
 		me.currentPOI -= 1;
 		if (me.currentPOI < 0) {
@@ -11695,7 +11695,7 @@
 	};
 
 	// next POI button
-	View.prototype.nextPOIPressed = function(me) {
+	View.prototype.nextPOIPressed = function(/** @type {View} */ me) {
 		// go to next POI
 		me.currentPOI += 1;
 		if (me.currentPOI >= me.waypointManager.numPOIs()) {
@@ -11707,7 +11707,7 @@
 	};
 
 	// next universe button
-	View.prototype.nextUniversePressed = function(me) {
+	View.prototype.nextUniversePressed = function(/** @type {View} */ me) {
 		me.universe += 1;
 		if (me.universe >= Controller.patterns.length) {
 			me.universe = 0;
@@ -11716,7 +11716,7 @@
 	};
 
 	// previous universe button
-	View.prototype.prevUniversePressed = function(me) {
+	View.prototype.prevUniversePressed = function(/** @type {View} */ me) {
 		me.universe -= 1;
 		if (me.universe < 0) {
 			me.universe = Controller.patterns.length - 1;
@@ -11725,7 +11725,7 @@
 	};
 
 	// shrink button
-	View.prototype.shrinkPressed = function(me) {
+	View.prototype.shrinkPressed = function(/** @type {View} */ me) {
 		// switch it on
 		me.switchOnThumbnail();
 
@@ -11742,18 +11742,18 @@
 	};
 
 	// sections button
-	View.prototype.sectionsPressed = function(me) {
+	View.prototype.sectionsPressed = function(/** @type {View} */ me) {
 		me.showSections = true;
 	};
 
 	// topics button
-	View.prototype.topicsPressed = function(me) {
+	View.prototype.topicsPressed = function(/** @type {View} */ me) {
 		// switch to welcome topic
 		me.setHelpTopic(ViewConstants.welcomeTopic, me);
 	};
 
 	// clear paste
-	View.prototype.clearPaste = function(me, /** @type {boolean} */ ctrl) {
+	View.prototype.clearPaste = function(/** @type {View} */ me, /** @type {boolean} */ ctrl) {
 		var	/** @type {number} */ i = 0;
 
 		if ((me.engine.isLifeHistory || me.engine.isSuper) && ctrl) {
@@ -11772,7 +11772,7 @@
 	};
 
 	// clear outside
-	View.prototype.clearOutside = function(me) {
+	View.prototype.clearOutside = function(/** @type {View} */ me) {
 		var	box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
@@ -11839,7 +11839,7 @@
 	};
 
 	// clear selection
-	View.prototype.clearSelection = function(me, /** @type {boolean} */ ctrl) {
+	View.prototype.clearSelection = function(/** @type {View} */ me, /** @type {boolean} */ ctrl) {
 		var	box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
@@ -11914,18 +11914,18 @@
 	};
 
 	// integer zoom pressed
-	View.prototype.integerZoomPressed = function(me) {
+	View.prototype.integerZoomPressed = function(/** @type {View} */ me) {
 		// set zoom to nearest integer
 		me.changeZoom(me, me.engine.zoom * me.engine.originZ, true);
 	};
 
 	// center pattern pressed
-	View.prototype.centerPatternPressed = function(me) {
+	View.prototype.centerPatternPressed = function(/** @type {View} */ me) {
 		me.fitZoomDisplay(true, true, ViewConstants.fitZoomMiddle);
 	};
 
 	// clear selection
-	View.prototype.doClearSelection = function(me, /** @type {boolean} */ ctrl) {
+	View.prototype.doClearSelection = function(/** @type {View} */ me, /** @type {boolean} */ ctrl) {
 		if (!me.viewOnly) {
 			if (me.isPasting) {
 				me.clearPaste(me, ctrl);
@@ -11936,22 +11936,22 @@
 	};
 
 	// clear selection pressed
-	View.prototype.clearSelectionPressed = function(me) {
+	View.prototype.clearSelectionPressed = function(/** @type {View} */ me) {
 		me.doClearSelection(me, false);
 	};
 
 	// clear outside pressed
-	View.prototype.clearOutsidePressed = function(me) {
+	View.prototype.clearOutsidePressed = function(/** @type {View} */ me) {
 		me.clearOutside(me);
 	};
 
 	// clear [R]History or [R]Super pressed
-	View.prototype.clearRHistoryPressed = function(me) {
+	View.prototype.clearRHistoryPressed = function(/** @type {View} */ me) {
 		me.doClearSelection(me, true);
 	};
 
 	// select all pressed
-	View.prototype.selectAllPressed = function(me) {
+	View.prototype.selectAllPressed = function(/** @type {View} */ me) {
 		var	selBox = me.selectionBox,
 			zoomBox = me.engine.zoomBox,
 			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
@@ -12002,7 +12002,7 @@
 	};
 
 	// process cut
-	View.prototype.processCut = function(me, /** @type {boolean} */ shift, /** @type {boolean} */ alt) {
+	View.prototype.processCut = function(/** @type {View} */ me, /** @type {boolean} */ shift, /** @type {boolean} */ alt) {
 		if (!me.viewOnly) {
 			// check for sync
 			if (!me.noCopy && me.copySyncExternal) {
@@ -12033,12 +12033,12 @@
 	};
 
 	// cut pressed
-	View.prototype.cutPressed = function(me) {
+	View.prototype.cutPressed = function(/** @type {View} */ me) {
 		me.processCut(me, false, false);
 	};
 
 	// cut selection
-	View.prototype.cutSelection = function(me, /** @type {number} */ number, /** @type {number} */ evolveStep, /** @type {boolean} */ noSave) {
+	View.prototype.cutSelection = function(/** @type {View} */ me, /** @type {number} */ number, /** @type {boolean} */ evolveStep, /** @type {boolean} */ noSave) {
 		var	box = me.selectionBox,
 		    /** @type {number} */ x1 = box.leftX,
 		    /** @type {number} */ x2 = box.rightX,
@@ -12128,7 +12128,7 @@
 	};
 
 	// process copy
-	View.prototype.processCopy = function(me, /** @type {boolean} */ shift, /** @type {boolean} */ alt) {
+	View.prototype.processCopy = function(/** @type {View} */ me, /** @type {boolean} */ shift, /** @type {boolean} */ alt) {
 		// check for Help copy
 		if (me.displayHelp !== 0) {
 			Help.copying = true;
@@ -12173,38 +12173,38 @@
 	};
 
 	// paste to selection pressed
-	View.prototype.pasteToSelectionPressed = function(me) {
-		me.processPaste(me, true);
+	View.prototype.pasteToSelectionPressed = function(/** @type {View} */ me) {
+		me.processPaste(me, true, false);
 	};
 
 	// copy with comments pressed
-	View.prototype.copyWithCommentsPressed = function(me) {
+	View.prototype.copyWithCommentsPressed = function(/** @type {View} */ me) {
 		me.processCopy(me, false, true);
 	};
 
 	// copy original pattern pressed
-	View.prototype.copyOriginalPressed = function(me) {
+	View.prototype.copyOriginalPressed = function(/** @type {View} */ me) {
 		me.processCopy(me, true, false);
 	};
 
 	// copy neighbourhood pressed
-	View.prototype.copyNeighbourhoodPressed = function(me) {
+	View.prototype.copyNeighbourhoodPressed = function(/** @type {View} */ me) {
 		me.copyNeighbourhood(me);
 	};
 
 	// open clipboard pressed
-	View.prototype.openClipboardPressed = function(me) {
+	View.prototype.openClipboardPressed = function(/** @type {View} */ me) {
 		/*jshint -W119 */
 		navigator.clipboard.readText().then(text => me.loadText(me, text));
 	};
 
 	// copy pressed
-	View.prototype.copyPressed = function(me) {
+	View.prototype.copyPressed = function(/** @type {View} */ me) {
 		me.processCopy(me, false, false);
 	};
 
 	// create weighted neighbourhood from selection and copy to clipboard
-	View.prototype.copyWeighted = function(me) {
+	View.prototype.copyWeighted = function(/** @type {View} */ me) {
 		var	selBox = me.selectionBox,
 			/** @type {number} */ x1 = selBox.leftX,
 			/** @type {number} */ y1 = selBox.bottomY,
@@ -12307,7 +12307,7 @@
 	};
 
 	// create CoordCA neighbourhood from selection and copy to clipboard
-	View.prototype.copyCoordCA = function(me) {
+	View.prototype.copyCoordCA = function(/** @type {View} */ me) {
 		var	selBox = me.selectionBox,
 			/** @type {number} */ x1 = selBox.leftX,
 			/** @type {number} */ y1 = selBox.bottomY,
@@ -12404,7 +12404,7 @@
 	};
 
 	// copy neighbourhood
-	View.prototype.copyNeighbourhood = function(me) {
+	View.prototype.copyNeighbourhood = function(/** @type {View} */ me) {
 		// for multi-state patterns create a weighted neighbourhood
 		if (me.engine.multiNumStates > 2) {
 			me.copyWeighted(me);
@@ -12415,7 +12415,7 @@
 	};
 
 	// copy selection
-	View.prototype.copySelection = function(me, /** @type {number} */ number) {
+	View.prototype.copySelection = function(/** @type {View} */ me, /** @type {number} */ number) {
 		var	selBox = me.selectionBox,
 			/** @type {number} */ x1 = selBox.leftX,
 			/** @type {number} */ y1 = selBox.bottomY,
@@ -12486,7 +12486,7 @@
 	};
 
 	// cancel paste
-	View.prototype.cancelPaste = function(me) {
+	View.prototype.cancelPaste = function(/** @type {View} */ me) {
 		me.isPasting = false;
 		me.menuManager.notification.clear(true, false);
 		if (me.evolvingPaste) {
@@ -12496,7 +12496,7 @@
 	};
 
 	// evolve pressed
-	View.prototype.evolvePressed = function(me, /** @type {boolean} */ shift) {
+	View.prototype.evolvePressed = function(/** @type {View} */ me, /** @type {boolean} */ shift) {
 		// save paste mode
 		var	/** @type {number} */ savedMode = this.pasteMode,
 			/** @type {boolean} */ savedSync = this.copySyncExternal;
@@ -12552,7 +12552,7 @@
 	};
 
 	// evolve paste
-	View.prototype.evolvePaste = function(me) {
+	View.prototype.evolvePaste = function(/** @type {View} */ me) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
@@ -12742,7 +12742,7 @@
 	};
 
 	// perform paste
-	View.prototype.performPaste = function(me, /** @type {number} */ cellX, /** @type {number} */ cellY, /** @type {boolean} */ saveEdit) {
+	View.prototype.performPaste = function(/** @type {View} */ me, /** @type {number} */ cellX, /** @type {number} */ cellY, /** @type {boolean} */ saveEdit) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
@@ -12878,7 +12878,7 @@
 	};
 
 	// paste at offset from selection
-	View.prototype.pasteOffset = function(me, /** @type {number} */ dx, /** @type {number} */ dy) {
+	View.prototype.pasteOffset = function(/** @type {View} */ me, /** @type {number} */ dx, /** @type {number} */ dy) {
 		var	/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			selBox = me.selectionBox,
@@ -12994,7 +12994,7 @@
 	};
 
 	// process paste
-	View.prototype.processPaste = function(me, /** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
+	View.prototype.processPaste = function(/** @type {View} */ me, /** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
 		var	/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			selBox = me.selectionBox,
@@ -13074,7 +13074,7 @@
 	};
 
 	// paste from enter key
-	View.prototype.pasteFromEnter = function(me) {
+	View.prototype.pasteFromEnter = function(/** @type {View} */ me) {
 		if (me.evolvingPaste) {
 			me.processPaste(me, true, false);
 			me.afterSelectAction = false;
@@ -13084,12 +13084,12 @@
 	};
 
 	// paste pressed
-	View.prototype.pastePressed = function(me) {
+	View.prototype.pastePressed = function(/** @type {View} */ me) {
 		me.processPaste(me, false, false);
 	};
 
 	// paste selection
-	View.prototype.pasteSelection = function(me, /** @type {number} */ number) {
+	View.prototype.pasteSelection = function(/** @type {View} */ me, /** @type {number} */ number) {
 		// get the required paste
 		if (number >= 0 && number < me.pasteBuffers.length) {
 			if (me.pasteBuffers[number] !== null) {
@@ -13112,7 +13112,7 @@
 	};
 
 	// random paste
-	View.prototype.randomPaste = function(me, /** @type {boolean} */ twoStateOnly) {
+	View.prototype.randomPaste = function(/** @type {View} */ me, /** @type {boolean} */ twoStateOnly) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ numStates = me.engine.multiNumStates;
@@ -13138,7 +13138,7 @@
 	};
 
 	// random selection
-	View.prototype.randomSelection = function(me, /** @type {boolean} */ twoStateOnly) {
+	View.prototype.randomSelection = function(/** @type {View} */ me, /** @type {boolean} */ twoStateOnly) {
 		var	box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
@@ -13201,7 +13201,7 @@
 	};
 
 	// random fill
-	View.prototype.randomFill = function(me, /** @type {boolean} */ twoStateOnly) {
+	View.prototype.randomFill = function(/** @type {View} */ me, /** @type {boolean} */ twoStateOnly) {
 		if (!me.viewOnly) {
 			if (me.isPasting) {
 				me.randomPaste(me, twoStateOnly);
@@ -13212,19 +13212,19 @@
 	};
 
 	// random pressed
-	View.prototype.randomPressed = function(me) {
+	View.prototype.randomPressed = function(/** @type {View} */ me) {
 		if (!me.viewOnly) {
 			me.randomFill(me, false);
 		}
 	};
 
 	// random 2-state pressed
-	View.prototype.random2Pressed = function(me) {
+	View.prototype.random2Pressed = function(/** @type {View} */ me) {
 		me.randomFill(me, true);
 	};
 
 	// flip X paste
-	View.prototype.flipXPaste = function(me) {
+	View.prototype.flipXPaste = function(/** @type {View} */ me) {
 		var	/** @type {number} */ w = me.pasteWidth,
 			/** @type {number} */ h = me.pasteHeight,
 			/** @type {number} */ w2 = w >> 1,
@@ -13259,7 +13259,7 @@
 	};
 
 	// flip X selection
-	View.prototype.flipXSelection = function(me) {
+	View.prototype.flipXSelection = function(/** @type {View} */ me) {
 		var	box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
@@ -13332,7 +13332,7 @@
 	};
 
 	// flip Y paste
-	View.prototype.flipYPaste = function(me) {
+	View.prototype.flipYPaste = function(/** @type {View} */ me) {
 		var	/** @type {number} */w = me.pasteWidth,
 			/** @type {number} */ h = me.pasteHeight,
 			/** @type {number} */ h2 = h >> 1,
@@ -13367,7 +13367,7 @@
 	};
 
 	// flip Y selection
-	View.prototype.flipYSelection = function(me) {
+	View.prototype.flipYSelection = function(/** @type {View} */ me) {
 		var	box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
@@ -13439,7 +13439,7 @@
 	};
 
 	// rotate paste
-	View.prototype.rotatePaste = function(me, /** @type {boolean} */ clockwise) {
+	View.prototype.rotatePaste = function(/** @type {View} */ me, /** @type {boolean} */ clockwise) {
 		var	/** @type {number} */ w = me.pasteWidth,
 			/** @type {number} */ h = me.pasteHeight,
 			/** @type {number} */ x = 0,
@@ -13475,7 +13475,7 @@
 	};
 
 	// rotate selection
-	View.prototype.rotateSelection = function(me, /** @type {boolean} */ clockwise, /** @type {string} */ comment) {
+	View.prototype.rotateSelection = function(/** @type {View} */ me, /** @type {boolean} */ clockwise, /** @type {string} */ comment) {
 		me.rotateSelection90(me, clockwise, comment);
 
 		/* TBD
@@ -13492,7 +13492,7 @@
 	};
 
 	// rotate hex selection
-	View.prototype.rotateSelection60 = function(me, /** @type {boolean} */ clockwise, /** @type {string} */ comment) {
+	View.prototype.rotateSelection60 = function(/** @type {View} */ me, /** @type {boolean} */ clockwise, /** @type {string} */ comment) {
 		var	box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
@@ -13685,7 +13685,7 @@
 	};
 
 	// rotate selection
-	View.prototype.rotateSelection90 = function(me, /** @type {boolean} */ clockwise, /** @type {string} */ comment) {
+	View.prototype.rotateSelection90 = function(/** @type {View} */ me, /** @type {boolean} */ clockwise, /** @type {string} */ comment) {
 		var	box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
@@ -13892,40 +13892,40 @@
 	};
 
 	// cancel seleciton pressed
-	View.prototype.cancelSelectionPressed = function(me) {
+	View.prototype.cancelSelectionPressed = function(/** @type {View} */ me) {
 		me.removeSelection(me);
 	};
 
 	// nudge left pressed
-	View.prototype.nudgeLeftPressed = function(me) {
+	View.prototype.nudgeLeftPressed = function(/** @type {View} */ me) {
 		if (!me.viewOnly) {
 			me.pasteOffset(me, -1, 0);
 		}
 	};
 
 	// nudge right pressed
-	View.prototype.nudgeRightPressed = function(me) {
+	View.prototype.nudgeRightPressed = function(/** @type {View} */ me) {
 		if (!me.viewOnly) {
 			me.pasteOffset(me, 1, 0);
 		}
 	};
 
 	// nudge up pressed
-	View.prototype.nudgeUpPressed = function(me) {
+	View.prototype.nudgeUpPressed = function(/** @type {View} */ me) {
 		if (!me.viewOnly) {
 			me.pasteOffset(me, 0, -1);
 		}
 	};
 
 	// nudge down pressed
-	View.prototype.nudgeDownPressed = function(me) {
+	View.prototype.nudgeDownPressed = function(/** @type {View} */ me) {
 		if (!me.viewOnly) {
 			me.pasteOffset(me, 0, 1);
 		}
 	};
 
 	// flip X pressed
-	View.prototype.flipXPressed = function(me) {
+	View.prototype.flipXPressed = function(/** @type {View} */ me) {
 		if (!me.viewOnly) {
 			if (me.isPasting) {
 				me.flipXPaste(me);
@@ -13936,7 +13936,7 @@
 	};
 
 	// flip Y pressed
-	View.prototype.flipYPressed = function(me) {
+	View.prototype.flipYPressed = function(/** @type {View} */ me) {
 		if (!me.viewOnly) {
 			if (me.isPasting) {
 				me.flipYPaste(me);
@@ -13947,7 +13947,7 @@
 	};
 
 	// rotate CW pressed
-	View.prototype.rotateCWPressed = function(me) {
+	View.prototype.rotateCWPressed = function(/** @type {View} */ me) {
 		if (!me.viewOnly) {
 			if (me.isPasting) {
 				me.rotatePaste(me, true);
@@ -13958,7 +13958,7 @@
 	};
 
 	// rotate CCW pressed
-	View.prototype.rotateCCWPressed = function(me) {
+	View.prototype.rotateCCWPressed = function(/** @type {View} */ me) {
 		if (!me.viewOnly) {
 			if (me.isPasting) {
 				me.rotatePaste(me, false);
@@ -13969,7 +13969,7 @@
 	};
 
 	// invert paste
-	View.prototype.invertPaste = function(me) {
+	View.prototype.invertPaste = function(/** @type {View} */ me) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ numStates = me.engine.multiNumStates;
@@ -13990,7 +13990,7 @@
 	};
 
 	// invert selection
-	View.prototype.invertSelection = function(me) {
+	View.prototype.invertSelection = function(/** @type {View} */ me) {
 		var	box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
@@ -14050,7 +14050,7 @@
 	};
 
 	// invert selection pressed
-	View.prototype.invertSelectionPressed = function(me) {
+	View.prototype.invertSelectionPressed = function(/** @type {View} */ me) {
 		if (!me.viewOnly) {
 			if (me.isPasting) {
 				me.invertPaste(me);
@@ -14061,7 +14061,7 @@
 	};
 
 	// reverse direction button
-	View.prototype.directionPressed = function(me) {
+	View.prototype.directionPressed = function(/** @type {View} */ me) {
 		var	/** @type {boolean} */ flag = false;
 
 		// check if reverse is pending
@@ -14085,7 +14085,7 @@
 	};
 
 	// fit button
-	View.prototype.fitPressed = function(me) {
+	View.prototype.fitPressed = function(/** @type {View} */ me) {
 		// fit zoom
 		me.fitZoomDisplay(true, true, ViewConstants.fitZoomPattern);
 
@@ -14096,7 +14096,7 @@
 	};
 
 	// copy rule button clicked
-	View.prototype.copyRulePressed = function(me) {
+	View.prototype.copyRulePressed = function(/** @type {View} */ me) {
 		var	/** @type {string} */ ruleText = me.patternRuleName;
 
 		if (me.engine.isRuleTree) {
@@ -14111,7 +14111,7 @@
 	};
 
 	// identify button action
-	View.prototype.identifyAction = function(me) {
+	View.prototype.identifyAction = function(/** @type {View} */ me) {
 		// close Help if open
 		if (me.displayHelp !== 0) {
 			me.displayHelp = 0;
@@ -14169,17 +14169,17 @@
 	};
 
 	// save image button pressed
-	View.prototype.saveImagePressed = function(me) {
+	View.prototype.saveImagePressed = function(/** @type {View} */ me) {
 		me.screenShotScheduled = 1;
 	};
 
 	// save graph image button pressed
-	View.prototype.saveGraphPressed = function(me) {
+	View.prototype.saveGraphPressed = function(/** @type {View} */ me) {
 		me.screenShotScheduled = 2;
 	};
 
 	// go to generation button pressed
-	View.prototype.goToGenPressed = function(me) {
+	View.prototype.goToGenPressed = function(/** @type {View} */ me) {
 		// prompt for generation
 		var	result = window.prompt("Enter generation", me.engine.counter),
 			/** @type {number} */ number = 0,
@@ -14196,12 +14196,14 @@
 
 			// check for relative generation
 			if (result.substr(0, 1) === "+") {
-				number = me.engine.counter + Number(result.substr(1));
+				number = /** @type {!number} */ (me.engine.counter);
+				number += parseInt(result.substr(1), 10);
 			} else {
 				if (result.substr(0, 1) === "-") {
-					number = me.engine.counter - Number(result.substr(1));
+					number = /** @type {!number} */ (me.engine.counter);
+					number -= parseInt(result.substr(1), 10);
 				} else {
-					number = Number(result);
+					number = parseInt(result, 10);
 				}
 			}
 
@@ -14236,19 +14238,19 @@
 	};
 
 	// identify button pressed
-	View.prototype.identifyPressed = function(me) {
+	View.prototype.identifyPressed = function(/** @type {View} */ me) {
 		me.identifyFast = false;
 		me.identifyAction(me);
 	};
 
 	// fast identify button pressed
-	View.prototype.fastIdentifyPressed = function(me) {
+	View.prototype.fastIdentifyPressed = function(/** @type {View} */ me) {
 		me.identifyFast = true;
 		me.identifyAction(me);
 	};
 
 	// grid toggle
-	View.prototype.toggleGrid = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleGrid = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.engine.displayGrid = newValue[0];
 		}
@@ -14257,7 +14259,7 @@
 	};
 
 	// lines toggle
-	View.prototype.toggleLines = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleLines = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.popGraphLines = newValue[0];
 		}
@@ -14266,7 +14268,7 @@
 	};
 
 	// pause while drawing toggle
-	View.prototype.togglePausePlayback = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.togglePausePlayback = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.pauseWhileDrawing = newValue[0];
 		}
@@ -14274,7 +14276,7 @@
 	};
 
 	// show lag toggle
-	View.prototype.toggleShowLag = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleShowLag = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.perfWarning = newValue[0];
 		}
@@ -14283,7 +14285,7 @@
 	};
 
 	// throttle toggle
-	View.prototype.toggleThrottle = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleThrottle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.canBailOut = newValue[0];
 		}
@@ -14292,7 +14294,7 @@
 	};
 
 	// settings menu toggle
-	View.prototype.toggleSettings = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleSettings = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			// close help if settings opened
 			if (me.displayHelp !== 0 && newValue[0]) {
@@ -14316,7 +14318,7 @@
 	};
 
 	// smart drawing toggle
-	View.prototype.toggleSmart = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleSmart = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.smartDrawing = newValue[0];
 		}
@@ -14325,7 +14327,7 @@
 	};
 
 	// states toggle
-	View.prototype.toggleStates = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleStates = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.showStates = newValue[0];
 		}
@@ -14334,7 +14336,7 @@
 	};
 
 	// cell period map display
-	View.prototype.toggleCellPeriodMap = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleCellPeriodMap = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.periodMapDisplayed = newValue;
 		}
@@ -14343,7 +14345,7 @@
 	};
 
 	// pick toggle
-	View.prototype.togglePick = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.togglePick = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.pickMode = newValue[0];
 			if (me.pickMode) {
@@ -14365,7 +14367,7 @@
 	};
 
 	// autofit toggle
-	View.prototype.toggleAutoFit = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleAutoFit = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.autoFit = newValue[0];
 
@@ -14379,7 +14381,7 @@
 	};
 
 	// loop indicator toggle
-	View.prototype.toggleLoop = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleLoop = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			// check if loop defined
 			if (me.loopGeneration !== -1) {
@@ -14411,7 +14413,7 @@
 	};
 
 	// autostart indicator toggle
-	View.prototype.toggleAutostart = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleAutostart = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			if (me.autoStart) {
 				me.autoStartDisabled = !newValue[0];
@@ -14422,7 +14424,7 @@
 	};
 
 	// stop indicator toggle
-	View.prototype.toggleStop = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleStop = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			if (me.stopGeneration !== -1) {
 				me.stopDisabled = !newValue[0];
@@ -14433,7 +14435,7 @@
 	};
 
 	// waypoint/track indictor toggle
-	View.prototype.toggleWP = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleWP = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = [false];
 
 		if (change) {
@@ -14492,7 +14494,7 @@
 	};
 
 	// help toggle
-	View.prototype.toggleHelp = function(newValue, /** @type {boolean} */ change, me) {
+	View.prototype.toggleHelp = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.displayHelp = newValue[0];
 			if (me.displayHelp) {
@@ -14517,17 +14519,17 @@
 	};
 	
 	// save view
-	View.prototype.saveViewPressed = function(me) {
+	View.prototype.saveViewPressed = function(/** @type {View} */ me) {
 		me.saveCamera(me);
 	};
 
 	// restore view
-	View.prototype.restoreViewPressed = function(me) {
+	View.prototype.restoreViewPressed = function(/** @type {View} */ me) {
 		me.resetSavedCamera(me);
 	};
 
 	// snap angle to nearest 45 degrees
-	View.prototype.snapToNearest45Pressed = function(me) {
+	View.prototype.snapToNearest45Pressed = function(/** @type {View} */ me) {
 		var	/** @type {number} */ value = me.angleItem.current[0];
 
 		value = Math.floor((value + 45 / 2) / 45) * 45;
@@ -14542,27 +14544,27 @@
 	};
 
 	// stop all viewers
-	View.prototype.stopAllPressed = function(me) {
+	View.prototype.stopAllPressed = function(/** @type {View} */ me) {
 		Controller.stopAllViewers();
 	};
 
 	// stop all viewers
-	View.prototype.stopOthersPressed = function(me) {
+	View.prototype.stopOthersPressed = function(/** @type {View} */ me) {
 		Controller.stopOtherViewers(me);
 	};
 
 	// reset all viewers
-	View.prototype.resetAllPressed = function(me) {
+	View.prototype.resetAllPressed = function(/** @type {View} */ me) {
 		Controller.resetAllViewers();
 	};
 
 	// clear drawing state cells
-	View.prototype.clearDrawingCellsPressed = function(me) {
+	View.prototype.clearDrawingCellsPressed = function(/** @type {View} */ me) {
 		me.clearCells(me, false, false);
 	};
 
 	// relative/absolute generation display toggle
-	View.prototype.viewRelativeToggle = function(newValue, /** @type {number} */ change, me) {
+	View.prototype.viewRelativeToggle = function(newValue, /** @type {number} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.genRelative = newValue[0];
 		}
@@ -14571,7 +14573,7 @@
 	};
 
 	// quality rendering display toggle
-	View.prototype.viewQualityToggle = function(newValue, /** @type {number} */ change, me) {
+	View.prototype.viewQualityToggle = function(newValue, /** @type {number} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.engine.pretty = newValue[0];
 			me.engine.initPretty();
@@ -14581,7 +14583,7 @@
 	};
 
 	// stats toggle
-	View.prototype.viewStats = function(newValue, /** @type {number} */ change, me) {
+	View.prototype.viewStats = function(newValue, /** @type {number} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.statsOn = newValue[0];
 
@@ -14619,7 +14621,7 @@
 	};
 
 	// scroll errors up
-	View.prototype.scrollErrorsUp = function(me, /** @type {number} */ amount) {
+	View.prototype.scrollErrorsUp = function(/** @type {View} */ me, /** @type {number} */ amount) {
 		// scroll errors up
 		if (me.displayErrors > 1) {
 			me.displayErrors -= amount;
@@ -14630,7 +14632,7 @@
 	};
 
 	// scroll errors down
-	View.prototype.scrollErrorsDown = function(me, /** @type {number} */ amount) {
+	View.prototype.scrollErrorsDown = function(/** @type {View} */ me, /** @type {number} */ amount) {
 		if (me.displayErrors < me.scriptErrors.length - me.numHelpPerPage + 1) {
 			me.displayErrors += amount;
 			if (me.displayErrors > me.scriptErrors.length - me.numHelpPerPage + 1) {
@@ -14640,7 +14642,7 @@
 	};
 
 	// scroll help up
-	View.prototype.scrollHelpUp = function(me, /** @type {number} */ amount) {
+	View.prototype.scrollHelpUp = function(/** @type {View} */ me, /** @type {number} */ amount) {
 		// scroll help up
 		if (me.displayHelp > 1) {
 			me.displayHelp -= amount;
@@ -14651,7 +14653,7 @@
 	};
 
 	// scroll help down
-	View.prototype.scrollHelpDown = function(me, /** @type {number} */ amount) {
+	View.prototype.scrollHelpDown = function(/** @type {View} */ me, /** @type {number} */ amount) {
 		if (me.displayHelp < me.numHelpLines - me.numHelpPerPage) {
 			me.displayHelp += amount;
 			if (me.displayHelp > me.numHelpLines - me.numHelpPerPage) {
@@ -14661,7 +14663,7 @@
 	};
 
 	// move to previous help section
-	View.prototype.previousHelpSection = function(me) {
+	View.prototype.previousHelpSection = function(/** @type {View} */ me) {
 		// find help section before current line
 		var	/** @type {number} */ i = me.helpSections.length - 1,
 			/** @type {boolean} */ found = false;
@@ -14679,7 +14681,7 @@
 	};
 
 	// move to next help section
-	View.prototype.nextHelpSection = function(me) {
+	View.prototype.nextHelpSection = function(/** @type {View} */ me) {
 		// find help section after current line
 		var	/** @type {number} */ i = 0,
 			/** @type {boolean} */ found = false;
@@ -14827,7 +14829,7 @@
 	};
 
 	// copy string to clipboard
-	View.prototype.copyToClipboard = function(me, /** @type {string} */ contents, /** @type {boolean} */ twoPhase) {
+	View.prototype.copyToClipboard = function(/** @type {View} */ me, /** @type {string} */ contents, /** @type {boolean} */ twoPhase) {
 		var	/** @type {string} */ elementType = "textarea",
 			/** @type {number} */ processingTime = 0;
 
@@ -14887,7 +14889,7 @@
 	};
 
 	// complete copy to clipboard
-	View.prototype.completeCopyToClipboard = function(me, /** @type {boolean} */ twoPhase) {
+	View.prototype.completeCopyToClipboard = function(/** @type {View} */ me, /** @type {boolean} */ twoPhase) {
 		var	selection = null,
 			range = null,
 			element = null;
@@ -14998,7 +15000,7 @@
 	};
 
 	// add the current position to the clipboard as script commands
-	View.prototype.copyPosition = function(me, /** @type {boolean} */ full) {
+	View.prototype.copyPosition = function(/** @type {View} */ me, /** @type {boolean} */ full) {
 		// comment prefix
 		var	/** @type {string} */ commentPrefix = "#C ",
 
@@ -15124,18 +15126,18 @@
 	};
 
 	// save the current rle to the source document node
-	View.prototype.saveCurrentRLE = function(me) {
+	View.prototype.saveCurrentRLE = function(/** @type {View} */ me) {
 		// don't use alias names since it makes it less compatible with other CA simulators
 		me.element.innerHTML = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], false);
 		me.element.value = me.element.innerHTML;
 	};
 
 	// replace the current rle with the given text
-	View.prototype.loadText = function(me, /** @type {string} */ text) {
+	View.prototype.loadText = function(/** @type {View} */ me, /** @type {string} */ text) {
 		var	/** @type {boolean} */ result = false;
 
 		// check whether prompt required
-		if (me.undoButton.locked || me.randomGuard) {
+		if (me.undoButton.locked || me.randomizeGuard) {
 			result = true;
 		} else {
 			result = window.confirm("Open clipboard?");
@@ -15148,7 +15150,7 @@
 	};
 
 	// select and copy reset position rle
-	View.prototype.copyRLE = function(me, /** @type {boolean} */ twoPhase) {
+	View.prototype.copyRLE = function(/** @type {View} */ me, /** @type {boolean} */ twoPhase) {
 		// copy the source pattern to the clipboard
 		me.copyStartTime = performance.now();
 		if (DocConfig.multi) {
@@ -15159,14 +15161,14 @@
 	};
 
 	// select and copy current rle
-	View.prototype.copyCurrentRLE = function(me, /** @type {boolean} */ addComments) {
+	View.prototype.copyCurrentRLE = function(/** @type {View} */ me, /** @type {boolean} */ addComments) {
 		// copy the current pattern to the clipboard
 		me.copyStartTime = performance.now();
 		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, addComments, me.engine.multiNumStates, me.engine.multiNumStates, []), false);
 	};
 
 	// key down
-	View.prototype.keyDown = function(me, event) {
+	View.prototype.keyDown = function(/** @type {View} */ me, event) {
 		// get the key code
 		var	/** @type {number} */ keyCode = event.charCode || event.keyCode,
 
@@ -16677,7 +16679,7 @@
 	};
 
 	// callback when viewer gets focus
-	View.prototype.gotFocus = function(me) {
+	View.prototype.gotFocus = function(/** @type {View} */ me) {
 		// check if thumbnail mode on
 		if (me.thumbnail) {
 			me.switchOffThumbnail();
@@ -17057,7 +17059,7 @@
 	};
 
 	// complete pattern start process after lookup failure
-	View.prototype.completeStartFailed = function(pattern, args, me) {
+	View.prototype.completeStartFailed = function(pattern, args, /** @type {View} */ me) {
 		// add the pattern comments to the args
 		args[args.length] = pattern.title;
 		args[args.length] = pattern.numStates;
@@ -17106,7 +17108,7 @@
 	};
 
 	// complete pattern start process
-	View.prototype.completeStart = function(pattern, args, me) {
+	View.prototype.completeStart = function(pattern, args, /** @type {View} */ me) {
 		var	/** @type {number} */ numberValue = 0,
 			/** @type {number} */ savedX = 0,
 			/** @type {number} */ savedY = 0,
@@ -18685,12 +18687,12 @@
 
 		// check for random pattern
 		if (me.randomizePattern && me.failureReason === "") {
-			if (me.randomGuard) {
-				me.randomGuard = false;
+			if (me.randomizeGuard) {
+				me.randomizeGuard = false;
 			} else {
-				me.randomGuard = true;
+				me.randomizeGuard = true;
 				me.randomPattern(me, true);
-				me.randomGuard = false;
+				me.randomizeGuard = false;
 			}
 		}
 

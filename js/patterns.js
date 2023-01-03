@@ -26,7 +26,7 @@
 
 	// add a request to the cache
 	/** @returns {boolean} */
-	RuleTreeCache.addRequest = function(pattern, succeedCallback, failCallback, args, view) {
+	RuleTreeCache.addRequest = function(/** @type {Pattern} */ pattern, succeedCallback, failCallback, args, view) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ l = this.requests.length,
 			request = null,
@@ -87,7 +87,7 @@
 	};
 
 	// remove a request from the cache
-	RuleTreeCache.removeRequest = function(pattern) {
+	RuleTreeCache.removeRequest = function(/** @type {Pattern} */ pattern) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ l = this.requests.length,
@@ -124,7 +124,7 @@
 	};
 
 	// process a failed request 
-	RuleTreeCache.requestFailed = function(pattern) {
+	RuleTreeCache.requestFailed = function(/** @type {Pattern} */ pattern) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ l = this.requests.length,
@@ -157,7 +157,7 @@
 	};
 
 	// add a new rule to the cache
-	RuleTreeCache.add = function(pattern, /** @type {number} */ fetchTime, /** @type {number} */ decodeTime, /** @type {number} */ ruleSize, /** @type {string} */ definition) {
+	RuleTreeCache.add = function(/** @type {Pattern} */ pattern, /** @type {number} */ fetchTime, /** @type {number} */ decodeTime, /** @type {number} */ ruleSize, /** @type {string} */ definition) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ l = this.rules.length,
 			/** @type {boolean} */ found = false,
@@ -205,7 +205,7 @@
 	};
 
 	// populate a pattern from the rule cache
-	RuleTreeCache.loadIfExists = function(pattern) {
+	RuleTreeCache.loadIfExists = function(/** @type {Pattern} */ pattern) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ l = this.rules.length,
 			record = null,
@@ -978,7 +978,7 @@
 		this.ruleTreeA = null;
 
 		// rule tree colours
-		this.ruleTreeColours = null;
+		/** @type {Uint32Array} */ this.ruleTreeColours = null;
 
 		// rule tree names
 		this.ruleTableNames = [];
@@ -1147,7 +1147,7 @@
 	};
 
 	// decode a Cells pattern
-	PatternManager.prototype.decodeCells = function(/** @type {Pattern} */ pattern, source, allocator) {
+	PatternManager.prototype.decodeCells = function(/** @type {Pattern} */ pattern, /** @type {string} */ source, allocator) {
 		var	/** @type {number} */ i,
 			/** @type {number} */ length,
 			/** @type {string} */ chr,
@@ -1947,7 +1947,7 @@
 	};
 	
 	// set triangular totalistic neighbourhood
-	PatternManager.prototype.setTriangularTotalistic = function(ruleTriangularArray, /** @type {number} */ value, /** @type {boolean} */ survival, /** @type {number} */ ruleMask) {
+	PatternManager.prototype.setTriangularTotalistic = function(/** @type {Uint8Array} */ ruleTriangularArray, /** @type {number} */ value, /** @type {boolean} */ survival, /** @type {number} */ ruleMask) {
 		// mask
 		var /** @type {number} */ mask = 0,
 
@@ -2033,7 +2033,7 @@
 	};
 
 	// set totalistic neighbourhood
-	PatternManager.prototype.setTotalistic = function(ruleArray, /** @type {number} */ value, /** @type {boolean} */ survival, /** @type {number} */ hexMask) {
+	PatternManager.prototype.setTotalistic = function(/** @type {Uint8Array} */ ruleArray, /** @type {number} */ value, /** @type {boolean} */ survival, /** @type {number} */ hexMask) {
 		// mask
 		var mask = 0,
 
@@ -2082,7 +2082,7 @@
 	};
 
 	// set symmetrical neighbourhood into 512bit value
-	PatternManager.prototype.setSymmetrical512 = function(ruleArray, /** @type {number} */ x, /** @type {number} */ b) {
+	PatternManager.prototype.setSymmetrical512 = function(/** @type {Uint8Array} */ ruleArray, /** @type {number} */ x, /** @type {number} */ b) {
 		// variables
 		var	/** @type {number} */ y = x,
 
@@ -2106,7 +2106,7 @@
 	};
 
 	// set symmetrical hex neighbourhood
-	PatternManager.prototype.setHexSymmetrical = function(ruleArray, /** @type {number} */ value, /** @type {boolean} */ survival, /** @type {string} */ character, /** @type {number} */ normal, /** @type {number} */ hexMask) {
+	PatternManager.prototype.setHexSymmetrical = function(/** @type {Uint8Array} */ ruleArray, /** @type {number} */ value, /** @type {boolean} */ survival, /** @type {string} */ character, /** @type {number} */ normal, /** @type {number} */ hexMask) {
 		// default values
 		var	/** @type {Array} */ settings = [],
 			/** @type {number} */ i = 0,
@@ -2137,7 +2137,7 @@
 	};
 
 	// set symmetrical neighbourhood
-	PatternManager.prototype.setSymmetrical = function(ruleArray, /** @type {number} */ value, /** @type {boolean} */ survival, /** @type {string} */ character, /** @type {number} */ normal, /** @type {number} */ hexMask) {
+	PatternManager.prototype.setSymmetrical = function(/** @type {Uint8Array} */ ruleArray, /** @type {number} */ value, /** @type {boolean} */ survival, /** @type {string} */ character, /** @type {number} */ normal, /** @type {number} */ hexMask) {
 		// default values
 		var	/** @type {number} */ xOrbit = 0,
 			/** @type {number} */ nIndex = value - 1,
@@ -2172,7 +2172,7 @@
 	};
 
 	// set totalistic birth or survival rule from a string
-	PatternManager.prototype.setTotalisticRuleFromString = function(ruleArray, /** @type {string} */ rule, /** @type {boolean} */ survival, /** @type {number} */ mask) {
+	PatternManager.prototype.setTotalisticRuleFromString = function(/** @type {Uint8Array} */ ruleArray, /** @type {string} */ rule, /** @type {boolean} */ survival, /** @type {number} */ mask) {
 		// current character
 		var	current = null,
 
@@ -2357,7 +2357,7 @@
 
 	// set birth or survival hex rule from a string
 	/** @returns {string} */
-	PatternManager.prototype.setHexRuleFromString = function(ruleArray, /** @type {string} */ rule, /** @type {boolean} */ survival, /** @type {number} */ mask) {
+	PatternManager.prototype.setHexRuleFromString = function(/** @type {Uint8Array} */ ruleArray, /** @type {string} */ rule, /** @type {boolean} */ survival, /** @type {number} */ mask) {
 		// current and next characters
 		var	current = null,
 			next = null,
@@ -2488,7 +2488,7 @@
 
 	// set birth or survival rule from a string
 	/** @returns {string} */
-	PatternManager.prototype.setRuleFromString = function(ruleArray, /** @type {string} */ rule, /** @type {boolean} */ survival) {
+	PatternManager.prototype.setRuleFromString = function(/** @type {Uint8Array} */ ruleArray, /** @type {string} */ rule, /** @type {boolean} */ survival) {
 		// current and next characters
 		var	current = null,
 			next = null,
@@ -2621,7 +2621,7 @@
 	};
 
 	// create the rule map from Wolfram rule number
-	PatternManager.prototype.createWolframMap = function(ruleArray, /** @type {number} */ number) {
+	PatternManager.prototype.createWolframMap = function(/** @type {Uint8Array} */ ruleArray, /** @type {number} */ number) {
 		var	/** @type {number} */ i = 0;
 
 		// set the rule array
@@ -2639,7 +2639,7 @@
 	};
 
 	// create triangular map
-	PatternManager.prototype.createTriMap = function(pattern, ruleTriangularArray, secondTriangularArray) {
+	PatternManager.prototype.createTriMap = function(/** @type {Pattern} */ pattern, /** @type {Uint8Array} */ ruleTriangularArray, /** @type {Uint8Array} */ secondTriangularArray) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ digits = 12,
 			/** @type {number} */ ruleMask = this.triangularMask,
@@ -2761,7 +2761,7 @@
 
 	// create a triangular map from birth and survival strings
 	/** @returns {string} */
-	PatternManager.prototype.createTriangularRuleMap = function(pattern, /** @type {string} */ birthPart, /** @type {string} */ survivalPart, /** @type {number} */ generationsStates, /** @type {number} */ triangularNeighbourhood) {
+	PatternManager.prototype.createTriangularRuleMap = function(/** @type {Pattern} */ pattern, /** @type {string} */ birthPart, /** @type {string} */ survivalPart, /** @type {number} */ generationsStates, /** @type {number} */ triangularNeighbourhood) {
 		var	/** @type {string} */ canonicalName = "",
 			/** @type {string} */ letters = this.validTriangularRuleLetters,
 			/** @type {number} */ i = 0,
@@ -2836,7 +2836,7 @@
 
 	// create the rule map from birth and survival strings
 	/** @returns {string} */
-	PatternManager.prototype.createRuleMap = function(pattern, /** @type {string} */ birthPart, /** @type {string} */ survivalPart, /** @type {string} */ base64, ruleArray) {
+	PatternManager.prototype.createRuleMap = function(/** @type {Pattern} */ pattern, /** @type {string} */ birthPart, /** @type {string} */ survivalPart, /** @type {string} */ base64, ruleArray) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ c = 0,
@@ -2998,7 +2998,7 @@
 
 	// create n-neighbour counts
 	/** @returns {string} */
-	PatternManager.prototype.minusN = function(rule, /** @type {number} */ neighbours) {
+	PatternManager.prototype.minusN = function(/** @type {string} */ rule, /** @type {number} */ neighbours) {
 		var	/** @type {number} */ i = 0,
 
 			// digit to test
@@ -3024,7 +3024,7 @@
 
 	// invert neighbour counts
 	/** @returns {string} */
-	PatternManager.prototype.invertCounts = function(rule) {
+	PatternManager.prototype.invertCounts = function(/** @type {string} */ rule) {
 		var	/** @type {number} */ i = 0,
 
 			// digit to test
@@ -3080,7 +3080,7 @@
 
 	// decode Wolfram rule
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeWolfram = function(pattern, /** @type {string} */ rule, ruleArray) {
+	PatternManager.prototype.decodeWolfram = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, /** @type {Uint8Array} */ ruleArray) {
 		var	/** @type {boolean} */ valid = true,
 
 			// rule number
@@ -3124,7 +3124,7 @@
 	};
 
 	// add postfixes to canonical rule name
-	PatternManager.prototype.addNamePostfixes = function(pattern, /** @type {string} */ base64) {
+	PatternManager.prototype.addNamePostfixes = function(/** @type {Pattern} */ pattern, /** @type {string} */ base64) {
 		var	aliasName = null,
 			/** @type {string} */ nameLtL = "";
 
@@ -3311,7 +3311,7 @@
 
 	// validate base64 MAP string
 	/** @returns {number} */
-	PatternManager.prototype.validateMap = function(/** @type {string} */ base64, pattern) {
+	PatternManager.prototype.validateMap = function(/** @type {string} */ base64, /** @type {Pattern} */ pattern) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ testLen = this.map512Length,
 			/** @type {number} */ currentLen = base64.length;
@@ -3642,7 +3642,7 @@
 
 	// decode LTL rule in Rr,Cc,Mm,Ssmin..smax,Bbmin..bmax,Nn format
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeLTLMC = function(pattern, /** @type {string} */ rule) {
+	PatternManager.prototype.decodeLTLMC = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule) {
 		var	/** @type {number} */ value = 0,
 			/** @type {boolean} */ result = false,
 			/** @type {number} */ maxCells = 0;
@@ -3741,7 +3741,7 @@
 
 	// decode LTL rule in r,bmin,bmax,smin,smax format
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeLTLnum = function(pattern, /** @type {string} */ rule) {
+	PatternManager.prototype.decodeLTLnum = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule) {
 		var	/** @type {number} */ value = 0,
 			/** @type {boolean} */ result = false,
 			/** @type {number} */ maxCells = 0;
@@ -3820,7 +3820,7 @@
 
 	// decode LTL rule in RBTST format
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeLTLRBTST = function(pattern, /** @type {string} */ rule) {
+	PatternManager.prototype.decodeLTLRBTST = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule) {
 		var	/** @type {number} */ value = 0,
 			/** @type {boolean} */ result = false,
 			/** @type {number} */ maxCells = 0;
@@ -3903,7 +3903,7 @@
 
 	// decode HROT hex digits
 	/** @returns {boolean} */
-	PatternManager.prototype.readHexDigits = function(/** @type {string} */ rule, /** @type {string} */ which, /** @type {number} */ numDigits, pattern, allocator) {
+	PatternManager.prototype.readHexDigits = function(/** @type {string} */ rule, /** @type {string} */ which, /** @type {number} */ numDigits, /** @type {Pattern} */ pattern, allocator) {
 		var	/** @type {boolean} */ result = false,
 			/** @type {number} */ hexValue = 0,
 			list = null,
@@ -4093,7 +4093,7 @@
 	// read weighted HROT neighbourhood
 	// rule parameter is lower case
 	/** @returns {number} */
-	PatternManager.prototype.readWeightedNeighbourhood = function(/** @type {string} */ rule, /** @type {number} */ range, /** @type {string} */ family, pattern) {
+	PatternManager.prototype.readWeightedNeighbourhood = function(/** @type {string} */ rule, /** @type {number} */ range, /** @type {string} */ family, /** @type {Pattern} */ pattern) {
 		var	/** @type {number} */ i = this.index,
 			/** @type {number} */ l = rule.length,
 			/** @type {number} */ j = 0,
@@ -4253,7 +4253,7 @@
 	// read corner edge neighbourhood
 	// rule parameter is lower case
 	/** @returns {number} */
-	PatternManager.prototype.readCornerEdge = function(/** @type {string} */ rule, /** @type {number} */ range, /** @type {string} */ family, pattern) {
+	PatternManager.prototype.readCornerEdge = function(/** @type {string} */ rule, /** @type {number} */ range, /** @type {string} */ family, /** @type {Pattern} */ pattern) {
 		var	/** @type {number} */ l = rule.length,
 			/** @type {string} */ item = "",
 			/** @type {number} */ corner = -1,
@@ -4336,7 +4336,7 @@
 	// read custom HROT neighbourhood
 	// rule parameter is lower case
 	/** @returns {number} */
-	PatternManager.prototype.readCustomNeighbourhood = function(/** @type {string} */ rule, /** @type {number} */ range, /** @type {string} */ family, pattern) {
+	PatternManager.prototype.readCustomNeighbourhood = function(/** @type {string} */ rule, /** @type {number} */ range, /** @type {string} */ family, /** @type {Pattern} */ pattern) {
 		var	/** @type {number} */ i = this.index,
 			/** @type {number} */ l = rule.length,
 			/** @type {number} */ numRead = 0,
@@ -4393,7 +4393,7 @@
 	};
 
 	// create HROT arrays from Bmin to Bmax and Smin to Smax
-	PatternManager.prototype.setupHROTfromLTL = function(pattern, allocator) {
+	PatternManager.prototype.setupHROTfromLTL = function(/** @type {Pattern} */ pattern, allocator) {
 		var	/** @type {number} */ range = pattern.rangeLTL,
 			/** @type {number} */ maxCount = 0,
 			/** @type {number} */ i = 0;
@@ -4437,7 +4437,7 @@
 
 	// decode HROT rule in Rr,Cc,S,B(,Nn)(,P) format
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeHROTMulti = function(pattern, /** @type {string} */ rule, allocator) {
+	PatternManager.prototype.decodeHROTMulti = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, allocator) {
 		var	/** @type {number} */ value = 0,
 			/** @type {boolean} */ result = false,
 			/** @type {number} */ maxCount = 0,
@@ -4778,7 +4778,7 @@
 
 	// decode HROT rule in r<num>b<hex>s<hex> format
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeHROTHex = function(pattern, /** @type {string} */ rule, allocator) {
+	PatternManager.prototype.decodeHROTHex = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, allocator) {
 		var	/** @type {number} */ value = 0,
 			/** @type {boolean} */ result = false,
 			// ASCII 0
@@ -4908,7 +4908,7 @@
 
 	// convert array to multi string for HROT
 	/** @returns {string} */
-	PatternManager.prototype.asMulti = function(list, /** @type {number} */ offset) {
+	PatternManager.prototype.asMulti = function(/** @type {Uint8Array} */ list, /** @type {number} */ offset) {
 		var	/** @type {number} */ length = list.length,
 			/** @type {number} */ start = -1,
 			/** @type {string} */ result = "",
@@ -4959,7 +4959,7 @@
 
 	// decode rule string and return whether valid
 	/** @return {boolean} */
-	PatternManager.prototype.decodeRuleString = function(pattern, /** @type {string} */ rule, allocator) {
+	PatternManager.prototype.decodeRuleString = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, allocator) {
 		// check for alternate rules
 		var	/** @type {number} */ altIndex = -1,
 			firstPattern = null,
@@ -5069,7 +5069,7 @@
 
 	// decode PCA rule
 	/** @returns {boolean} */
-	PatternManager.prototype.decodePCA = function(rule, ruleArray) {
+	PatternManager.prototype.decodePCA = function(/** @type {string} */ rule, /** @type {Uint8Array} */ ruleArray) {
 		var	/** @type {boolean} */ valid = true,
 			/** @type {number} */ index = 0,
 			/** @type {number} */ length = rule.length,
@@ -5153,7 +5153,7 @@
 
 	// decode Margolus rule
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeMargolus = function(/** @type {string} */ rule, ruleArray) {
+	PatternManager.prototype.decodeMargolus = function(/** @type {string} */ rule, /** @type {Uint8Array} */ ruleArray) {
 		var 	/** @type {boolean} */ valid = true,
 			/** @type {number} */ index = 0,
 			/** @type {number} */ length = rule.length,
@@ -5233,7 +5233,7 @@
 
 	// decode rule string and return whether valid
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeRuleStringPart = function(pattern, /** @type {string} */ rule, allocator, ruleArray) {
+	PatternManager.prototype.decodeRuleStringPart = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, allocator, /** @type {Uint8Array} */ ruleArray) {
 		// whether the rule contains a slash
 		var	/** @type {number} */ slashIndex = -1,
 
@@ -6152,7 +6152,7 @@
 			this.addNamePostfixes(pattern, base64);
 		} else {
 			// remove rule type
-			pattern.isLtL = false;
+			pattern.isLTL = false;
 			pattern.isHROT = false;
 			pattern.multiNumStates = -1;
 			pattern.isNone = true;
@@ -6164,7 +6164,7 @@
 
 	// decode an RLE string into a pattern
 	/** @returns {number} */
-	PatternManager.prototype.decodeRLEString = function(pattern, /** @type {string} */ string, /** @type {boolean} */ save, allocator) {
+	PatternManager.prototype.decodeRLEString = function(/** @type {Pattern} */ pattern, /** @type {string} */ string, /** @type {boolean} */ save, allocator) {
 		// index of next character
 		var	/** @type {number} */ index = 0,
 
@@ -6496,7 +6496,7 @@
 	};
 
 	// set the pattern originator
-	PatternManager.prototype.setOriginator = function(pattern, /** @type {string} */ source) {
+	PatternManager.prototype.setOriginator = function(/** @type {Pattern} */ pattern, /** @type {string} */ source) {
 		// end of line index
 		var	/** @type {number} */ endIndex = source.indexOf("\n");
 
@@ -6767,7 +6767,7 @@
 	};
 
 	// set the pattern name
-	PatternManager.prototype.setName = function(pattern, /** @type {string} */ source) {
+	PatternManager.prototype.setName = function(/** @type {Pattern} */ pattern, /** @type {string} */ source) {
 		// end of line index
 		var	/** @type {number} */ endIndex = source.indexOf("\n");
 
@@ -6782,7 +6782,7 @@
 
 	// add a line from the source to the title
 	/** @returns {number} */
-	PatternManager.prototype.addToTitle = function(pattern, /** @type {string} */ prefix, /** @type {string} */ source, /** @type {boolean} */ afterRLE) {
+	PatternManager.prototype.addToTitle = function(/** @type {Pattern} */ pattern, /** @type {string} */ prefix, /** @type {string} */ source, /** @type {boolean} */ afterRLE) {
 		// end of line index
 		var	/** @type {number} */ endIndex = source.indexOf("\n"),
 			/** @type {string} */ text = "";
@@ -6844,7 +6844,7 @@
 	};
 
 	// decode sphere and set width to -1 if invalid
-	PatternManager.prototype.decodeSphere = function(pattern, /** @type {string} */ source) {
+	PatternManager.prototype.decodeSphere = function(/** @type {Pattern} */ pattern, /** @type {string} */ source) {
 		// read width
 		var	/** @type {number} */ width = this.readValueFromString(source),
 
@@ -6871,7 +6871,7 @@
 	};
 
 	// decode torus and set width to -1 if invalid
-	PatternManager.prototype.decodeTorus = function(pattern, /** @type {string} */ source) {
+	PatternManager.prototype.decodeTorus = function(/** @type {Pattern} */ pattern, /** @type {string} */ source) {
 		// read width
 		var	/** @type {number} */ width = this.readValueFromString(source),
 
@@ -6965,7 +6965,7 @@
 	};
 
 	// decode klein bottle and set width to -1 if invalid
-	PatternManager.prototype.decodeKlein = function(pattern, /** @type {string} */ source) {
+	PatternManager.prototype.decodeKlein = function(/** @type {Pattern} */ pattern, /** @type {string} */ source) {
 		// read width
 		var	/** @type {number} */ width = this.readValueFromString(source),
 
@@ -7096,7 +7096,7 @@
 	};
 
 	// decode cross-surface and set width to -1 if invalid
-	PatternManager.prototype.decodeCrossSurface = function(pattern, /** @type {string} */ source) {
+	PatternManager.prototype.decodeCrossSurface = function(/** @type {Pattern} */ pattern, /** @type {string} */ source) {
 		// read width
 		var	/** @type {number} */ width = this.readValueFromString(source),
 
@@ -7126,7 +7126,7 @@
 	};
 
 	// decode plane and set width to -1 if invalid
-	PatternManager.prototype.decodePlane = function(pattern, /** @type {string} */ source) {
+	PatternManager.prototype.decodePlane = function(/** @type {Pattern} */ pattern, /** @type {string} */ source) {
 		// read width
 		var	/** @type {number} */ width = this.readValueFromString(source),
 
@@ -7162,7 +7162,7 @@
 
 	// decode bounded grid definition
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeBoundedGrid = function(pattern, /** @type {string} */ source) {
+	PatternManager.prototype.decodeBoundedGrid = function(/** @type {Pattern} */ pattern, /** @type {string} */ source) {
 		// whether definition is valid
 		var	/** @type {boolean} */ valid = false;
 
@@ -7349,7 +7349,7 @@
 
 	// decode rule
 	/** @returns {number} */
-	PatternManager.prototype.decodeRule = function(pattern, /** @type {string} */ source, /** @type {boolean} */ needPrefix, allocator) {
+	PatternManager.prototype.decodeRule = function(/** @type {Pattern} */ pattern, /** @type {string} */ source, /** @type {boolean} */ needPrefix, allocator) {
 		// end of line index
 		var	/** @type {number} */ endIndex = source.indexOf("\n"),
 
@@ -7531,11 +7531,11 @@
 	};
 
 	// setup B0 for HROT patterns
-	PatternManager.prototype.setupHROTB0 = function(pattern, allocator) {
-		var	/** @type {number} */ births = pattern.birthHROT,
-			/** @type {number} */ survivals = pattern.survivalHROT,
-			/** @type {number} */ altBirths = pattern.altBirthHROT,
-			/** @type {number} */ altSurvivals = pattern.altSurvivalHROT,
+	PatternManager.prototype.setupHROTB0 = function(/** @type {Pattern} */ pattern, allocator) {
+		var	/** @type {Uint8Array} */ births = pattern.birthHROT,
+			/** @type {Uint8Array} */ survivals = pattern.survivalHROT,
+			/** @type {Uint8Array} */ altBirths = pattern.altBirthHROT,
+			/** @type {Uint8Array} */ altSurvivals = pattern.altSurvivalHROT,
 			/** @type {number} */ maxn = this.maxNeighbours(pattern.rangeHROT, pattern.neighborhoodHROT, pattern.customNeighbourCount),
 			/** @type {number} */ i = 0,
 			/** @type {Uint8Array} */ tempB = new Uint8Array(pattern.birthHROT.length),
@@ -8064,7 +8064,7 @@
 
 	// decode rule table icons
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeIcons = function(pattern, reader) {
+	PatternManager.prototype.decodeIcons = function(/** @type {Pattern} */ pattern, reader) {
 		var	/** @type {boolean} */ valid = true,
 			/** @type {boolean} */ xpmHeader = false,
 			/** @type {number} */ width = 0,
@@ -8300,7 +8300,7 @@
 	};
 
 	// decode rule table names
-	PatternManager.prototype.decodeNames = function(pattern, reader) {
+	PatternManager.prototype.decodeNames = function(/** @type {Pattern} */ pattern, reader) {
 		var	/** @type {number} */ states = pattern.numStates,
 			/** @type {Array} */ names = [],
 			/** @type {number} */ index = 0,
@@ -8349,7 +8349,7 @@
 	};
 
 	// decode rule table colours
-	PatternManager.prototype.decodeColours = function(pattern, reader) {
+	PatternManager.prototype.decodeColours = function(/** @type {Pattern} */ pattern, reader) {
 		var	/** @type {number} */ states = pattern.numStates,
 			cols = pattern.ruleTreeColours,
 			/** @type {number} */ num1 = 0,
@@ -8424,7 +8424,7 @@
 
 	// pack a single transition
 	/** @returns {boolean} */
-	PatternManager.prototype.packTransition = function(inputs, /** @type {number} */ output, pattern, outputList, lut, dedupe) {
+	PatternManager.prototype.packTransition = function(inputs, /** @type {number} */ output, /** @type {Pattern} */ pattern, outputList, lut, dedupe) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {boolean} */ duplicate = false,
@@ -8494,7 +8494,7 @@
 
 	// get the next permutation of an array of arrays (ignoring the first element)
 	/** @returns {boolean} */
-	PatternManager.prototype.nextPermutation = function(source) {
+	PatternManager.prototype.nextPermutation = function(/** @type {Array} */ source) {
 		var	/** @type {number} */ l = source.length,
 			/** @type {number} */ i = l - 2,
 			/** @type {number} */ j = l - 1,
@@ -8550,7 +8550,7 @@
 	};
 
 	// pack transitions for rule table
-	PatternManager.prototype.packTransitions = function(/** @type {number} */ symmetry, /** @type {number} */ nSymmetries, /** @type {number} */ nInputs, transitionTable, pattern) {
+	PatternManager.prototype.packTransitions = function(/** @type {number} */ symmetry, /** @type {number} */ nSymmetries, /** @type {number} */ nInputs, transitionTable, /** @type {Pattern} */ pattern) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ k = 0,
@@ -8628,7 +8628,7 @@
 
 	// decode rule table table
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeTable = function(pattern, reader) {
+	PatternManager.prototype.decodeTable = function(/** @type {Pattern} */ pattern, reader) {
 		var	/** @type {string} */ nextToken = "",
 			/** @type {number} */ states = -1,
 			/** @type {number} */ neighbourhood = -1,
@@ -9068,7 +9068,7 @@
 	};
 
 	// create default rule tree colours
-	PatternManager.prototype.createDefaultTreeColours = function(pattern, /** @type {number} */ states) {
+	PatternManager.prototype.createDefaultTreeColours = function(/** @type {Pattern} */ pattern, /** @type {number} */ states) {
 		// allocate colour array
 		pattern.ruleTreeColours = new Uint32Array(states);
 
@@ -9087,7 +9087,7 @@
 
 	// decode rule table tree
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeTree = function(pattern, reader) {
+	PatternManager.prototype.decodeTree = function(/** @type {Pattern} */ pattern, reader) {
 		var	/** @type {string} */ nextToken = "",
 			/** @type {number} */ states = -1,
 			/** @type {number} */ neighbours = -1,
@@ -9307,7 +9307,7 @@
 	};
 
 	// decode rule table
-	PatternManager.prototype.decodeRuleTable = function(pattern, /** @type {string} */ ruleText) {
+	PatternManager.prototype.decodeRuleTable = function(/** @type {Pattern} */ pattern, /** @type {string} */ ruleText) {
 		var	/** @type {boolean} */ valid = false,
 			/** @type {number} */ tableIndex = -1,
 			/** @type {number} */ treeIndex = -1,
@@ -9653,7 +9653,7 @@
 	};
 
 	// load event handler
-	PatternManager.prototype.loadHandler = function(me, event, xhr, pattern) {
+	PatternManager.prototype.loadHandler = function(/** @type {PatternManager} */ me, event, xhr, /** @type {Pattern} */ pattern) {
 		// rule table text
 		var	/** @type {string} */ ruleText = "",
 			/** @type {number} */ fetchTime = 0,
@@ -9689,13 +9689,13 @@
 	};
 
 	// error event handler
-	PatternManager.prototype.errorHandler = function(me, event, xhr, pattern) {
+	PatternManager.prototype.errorHandler = function(/** @type {PatternManager} */ me, event, xhr, /** @type {Pattern} */ pattern) {
 		// inform other requesters that this rule failed to load
 		RuleTreeCache.requestFailed(pattern);
 	};
 
 	// load rule table from URI
-	PatternManager.prototype.loadRuleTable = function(pattern, succeedCallback, failCallback, args, view) {
+	PatternManager.prototype.loadRuleTable = function(/** @type {Pattern} */ pattern, succeedCallback, failCallback, args, view) {
 		var	me = this,
 			xhr = null,
 			/** @type {string} */ ruleName = pattern.ruleName,

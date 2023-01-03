@@ -103,7 +103,7 @@
 	};
 
 	// touch event handler
-	PopupWindow.prototype.touchHandler = function(me, event) {
+	PopupWindow.prototype.touchHandler = function(/** @type {PopupWindow} */ me, event) {
 		var	changes = event.changedTouches,
 			thisChange = null;
 			
@@ -153,7 +153,7 @@
 
 	// resize window
 	/* eslint-disable no-unused-vars */
-	PopupWindow.prototype.resizeWindow = function(me, event) {
+	PopupWindow.prototype.resizeWindow = function(/** @type {PopupWindow} */ me, event) {
 		var	view = this.view;
 
 		// check if window needs rescaling
@@ -231,7 +231,7 @@
 	};
 
 	// touch start event
-	PopupWindow.prototype.performDown = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+	PopupWindow.prototype.performDown = function(/** @type {PopupWindow} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// update cursor position
 		me.updateCursorPosition(me, x, y);
 
@@ -243,7 +243,7 @@
 	};
 
 	// perform mouse/touch up event
-	PopupWindow.prototype.performUp = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+	PopupWindow.prototype.performUp = function(/** @type {PopupWindow} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// update cursor position
 		me.updateCursorPosition(me, x, y);
 
@@ -255,7 +255,7 @@
 	};
 
 	// perform mouse/touch move event
-	PopupWindow.prototype.performMove = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+	PopupWindow.prototype.performMove = function(/** @type {PopupWindow} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// check if mouse down (and so dragging)
 		if (me.mouseDown) {
 			me.updatePosition(x - me.mouseLastX, y - me.mouseLastY);
@@ -267,7 +267,7 @@
 	};
 
 	// mouse down event
-	PopupWindow.prototype.elementMouseDown = function(me, event) {
+	PopupWindow.prototype.elementMouseDown = function(/** @type {PopupWindow} */ me, event) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
 
@@ -294,7 +294,7 @@
 	};
 
 	// mouse up event
-	PopupWindow.prototype.elementMouseUp = function(me, event) {
+	PopupWindow.prototype.elementMouseUp = function(/** @type {PopupWindow} */ me, event) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
 
@@ -324,7 +324,7 @@
 	};
 
 	// mouse move event
-	PopupWindow.prototype.elementMouseMove = function(me, event) {
+	PopupWindow.prototype.elementMouseMove = function(/** @type {PopupWindow} */ me, event) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
 
@@ -350,7 +350,7 @@
 	};
 
 	// get cursor position over element
-	PopupWindow.prototype.updateCursorPosition = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+	PopupWindow.prototype.updateCursorPosition = function(/** @type {PopupWindow} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// update position
 		me.mouseLastX = x | 0;
 		me.mouseLastY = y | 0;

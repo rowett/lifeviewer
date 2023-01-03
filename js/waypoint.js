@@ -208,7 +208,7 @@
 	};
 
 	// set play action
-	Waypoint.prototype.setPlayAction = function(scriptErrors) {
+	Waypoint.prototype.setPlayAction = function(/** @type {Array<Array<string,string>>} */ scriptErrors) {
 		if (this.isPOI) {
 			if (this.modeAtPOI !== WaypointConstants.none) {
 				scriptErrors[scriptErrors.length] = [Keywords.poiPlayWord, "overwrites " + this.actionName()];
@@ -220,7 +220,7 @@
 	};
 
 	// set stop action
-	Waypoint.prototype.setStopAction = function(scriptErrors) {
+	Waypoint.prototype.setStopAction = function(/** @type {Array<Array<string,string>>} */ scriptErrors) {
 		if (this.isPOI) {
 			if (this.modeAtPOI !== WaypointConstants.none) {
 				scriptErrors[scriptErrors.length] = [Keywords.poiStopWord, "overwrites " + this.actionName()];
@@ -232,7 +232,7 @@
 	};
 
 	// set reset action
-	Waypoint.prototype.setResetAction = function(scriptErrors) {
+	Waypoint.prototype.setResetAction = function(/** @type {Array<Array<string,string>>} */ scriptErrors) {
 		if (this.isPOI) {
 			if (this.resetAtPOI) {
 				scriptErrors[scriptErrors.length] = [Keywords.poiResetWord, "already defined"];
@@ -244,7 +244,7 @@
 	};
 
 	// set transition speed
-	Waypoint.prototype.setTransitionSpeed = function(/** @type {number} */ speed, scriptErrors) {
+	Waypoint.prototype.setTransitionSpeed = function(/** @type {number} */ speed, /** @type {Array<Array<string,string>>} */ scriptErrors) {
 		if (this.isPOI) {
 			if (this.poiTransitionSpeed !== WaypointConstants.poiDefaultSpeed) {
 				scriptErrors[scriptErrors.length] = [Keywords.poiTransWord + " " + speed, "overwrites " + this.poiTransitionSpeed];
@@ -2481,7 +2481,7 @@
 	};
 
 	// copy a single initial value into POI
-	WaypointManager.prototype.copyInitial = function(/** @type {string} */ what, poi, scriptErrors, /** @type {boolean} */ initialDefined) {
+	WaypointManager.prototype.copyInitial = function(/** @type {string} */ what, poi, /** @type {Array<Array<string,string>>} */ scriptErrors, /** @type {boolean} */ initialDefined) {
 		// check there is an initial waypoint
 		if (this.numWaypoints() === 0) {
 			scriptErrors[scriptErrors.length] = [what + " " + Keywords.initialWord, "no initial waypoint defined"];
@@ -2616,7 +2616,7 @@
 	};
 
 	// copy all initial values into POI
-	WaypointManager.prototype.copyInitialAll = function(poi, scriptErrors) {
+	WaypointManager.prototype.copyInitialAll = function(poi, /** @type {Array<Array<string,string>>} */ scriptErrors) {
 		this.copyInitial(Keywords.xWord, poi, scriptErrors, false);
 		this.copyInitial(Keywords.yWord, poi, scriptErrors, false);
 		this.copyInitial(Keywords.zoomWord, poi, scriptErrors, false);
@@ -2632,7 +2632,7 @@
 	};
 
 	// prepare waypoints for execution
-	WaypointManager.prototype.prepare = function(scriptErrors, view) {
+	WaypointManager.prototype.prepare = function(/** @type {Array<Array<string,string>>} */ scriptErrors, view) {
 		var	/** @type {number} */ i = 0,
 			previous = null,
 			current = null,

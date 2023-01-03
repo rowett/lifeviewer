@@ -967,7 +967,7 @@
 	};
 
 	// add a toggle menu parent
-	MenuItem.prototype.addToggleMenuParent = function(parentItem, cascade) {
+	MenuItem.prototype.addToggleMenuParent = function(/** @type {MenuItem} */ parentItem, /** @type {boolean} */ cascade) {
 		var	/** @type {number} */ n = this.numToggleMenuParents;
 
 		// save the parent in the list and increment number
@@ -1018,7 +1018,7 @@
 	/**
 	 * @constructor
 	 */
-	function MenuList(manager, callback, activate, caller, context, defaultFont) {
+	function MenuList(manager, callback, activate, caller, /** @type {CanvasRenderingContext2D} */ context, /** @type {string} */ defaultFont) {
 		// manager
 		this.manager = manager;
 
@@ -1193,7 +1193,7 @@
 	};
 
 	// set whether this item is enabled (visible) based on any toggle menu parents
-	MenuList.prototype.toggleMenu = function(menuItem) {
+	MenuList.prototype.toggleMenu = function(/** @type {MenuItem} */ menuItem) {
 		var	/** @type {boolean} */ result = true,
 			/** @type {number} */ i,
 			/** @type {number} */ l = menuItem.numToggleMenuParents;
@@ -1259,7 +1259,7 @@
 	};
 
 	// add list item
-	MenuList.prototype.addListItem = function(callback, position, x, y, width, height, list, current, selection) {
+	MenuList.prototype.addListItem = function(callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, list, current, selection) {
 		// create the item
 		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, list, selection, current, Menu.list, this.defaultOrientation, true, "", "", -1, [], this);
 
@@ -1271,7 +1271,7 @@
 	};
 
 	// add range item
-	MenuList.prototype.addRangeItem = function(callback, position, x, y, width, height, lower, upper, current, valueDisplay, preText, postText, fixed) {
+	MenuList.prototype.addRangeItem = function(callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, lower, upper, current, valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText, /** @type{number} */ fixed) {
 		// create the item
 		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, lower, upper, current, Menu.range, this.defaultOrientation, valueDisplay, preText, postText, fixed, null, this);
 
@@ -1283,7 +1283,7 @@
 	};
 
 	// add label item
-	MenuList.prototype.addLabelItem = function(position, x, y, width, height, caption) {
+	MenuList.prototype.addLabelItem = function(/** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, /** @type {string} */ caption) {
 		// create the item
 		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, null, null, position, x, y, width, height, 0, 0, 0, Menu.label, this.defaultOrientation, true, caption, "", -1, null, this);
 
@@ -1295,7 +1295,7 @@
 	};
 
 	// add button item
-	MenuList.prototype.addButtonItem = function(callback, position, x, y, width, height, caption) {
+	MenuList.prototype.addButtonItem = function(callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, /** @type {string} */ caption) {
 		// create the item
 		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, 0, 0, 0, Menu.button, this.defaultOrientation, true, caption, "", -1, null, this);
 
@@ -1307,7 +1307,7 @@
 	};
 
 	// add toggle item
-	MenuList.prototype.addToggleItem = function(callback, position, x, y, width, height, lower, upper, current, valueDisplay, preText, postText) {
+	MenuList.prototype.addToggleItem = function(callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, lower, upper, current, valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText) {
 		// create the item
 		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, lower, upper, current, Menu.toggle, this.defaultOrientation, valueDisplay, preText, postText, -1, null, this);
 
@@ -1319,7 +1319,7 @@
 	};
 
 	// add progress bar item
-	MenuList.prototype.addProgressBarItem = function(position, x, y, width, height, lower, upper, current, valueDisplay, preText, postText, fixed) {
+	MenuList.prototype.addProgressBarItem = function(/** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, lower, upper, current, valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText, /** @type {number} */ fixed) {
 		// create the item
 		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, null, null, position, x, y, width, height, lower, upper, current, Menu.progressBar, this.defaultOrientation, valueDisplay, preText, postText, fixed, null, this);
 
@@ -2392,7 +2392,7 @@
 	/**
 	 * @constructor
 	 */
-	function MenuManager(mainCanvas, /** @type {CanvasRenderingContext2D} */ mainContext, /** @type {string} */ defaultFont, /** @type {IconManager} */ iconManager, caller, /** @type {boolean} */ gotFocus) {
+	function MenuManager(mainCanvas, /** @type {CanvasRenderingContext2D} */ mainContext, /** @type {string} */ defaultFont, /** @type {IconManager} */ iconManager, caller, /** @type {Function} */ gotFocus) {
 		var	me = this,
 			/** @type {number} */ i = 0;
 
@@ -2451,7 +2451,7 @@
 		/** @type {number} */ this.thumbnailDivisor = 4;
 
 		// got focus callback
-		this.focusCallback = gotFocus;
+		/** @type {Function} */ this.focusCallback = gotFocus;
 
 		// click to interact flag
 		/** @type {boolean} */ this.clickToInteract = false;
@@ -3024,7 +3024,7 @@
 	};
 
 	// process callback
-	MenuManager.prototype.processCallback = function(me) {
+	MenuManager.prototype.processCallback = function(/** @type {MenuManager} */ me) {
 		var	/** @type {number} */ newMenu,
 			/** @type {number} */ newWork,
 			/** @type {number} */ newFrame,
@@ -3385,7 +3385,7 @@
 	};
 
 	// schedule next update
-	MenuManager.prototype.scheduleNextUpdate = function(me) {
+	MenuManager.prototype.scheduleNextUpdate = function(/** @type {MenuManager} */ me) {
 		// check whether there is already an update scheduled
 		if (!me.updateScheduled) {
 			// check which event mechanism exists
@@ -3418,7 +3418,7 @@
 	};
 
 	// touch event handler
-	MenuManager.prototype.touchHandler = function(me, event) {
+	MenuManager.prototype.touchHandler = function(/** @type {MenuManager} */ me, event) {
 		var	changes = event.changedTouches,
 			thisChange = null;
 			
@@ -3476,7 +3476,7 @@
 	};
 
 	// perform mouse/touch down event
-	MenuManager.prototype.performDown = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+	MenuManager.prototype.performDown = function(/** @type {MenuManager} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// update cursor position
 		me.updateCursorPosition(me, x, y);
 	
@@ -3488,7 +3488,7 @@
 	};
 
 	// perform mouse/touch up event
-	MenuManager.prototype.performUp = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+	MenuManager.prototype.performUp = function(/** @type {MenuManager} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// remember current mouse up time
 		me.lastMouseUp = performance.now();
 
@@ -3530,7 +3530,7 @@
 	};
 
 	// perform mouse/touch move event
-	MenuManager.prototype.performMove = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+	MenuManager.prototype.performMove = function(/** @type {MenuManager} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// check if this has focus
 		me.checkFocusAndNotify(me);
 
@@ -3539,13 +3539,13 @@
 	};
 
 	// perform mouse/touch over event
-	MenuManager.prototype.performOver = function(me) {
+	MenuManager.prototype.performOver = function(/** @type {MenuManager} */ me) {
 		// check if this has focus
 		me.checkFocusAndNotify(me);
 	};
 
 	// perform mouse/touch out event
-	MenuManager.prototype.performOut = function(me) {
+	MenuManager.prototype.performOut = function(/** @type {MenuManager} */ me) {
 		// check if enough time has past since last mouse up
 		var	/** @type {number} */ timeSinceUp = performance.now() - me.lastMouseUp;
 		
@@ -3581,7 +3581,7 @@
 	};
 
 	// mouse down event
-	MenuManager.prototype.canvasMouseDown = function(me, event) {
+	MenuManager.prototype.canvasMouseDown = function(/** @type {MenuManager} */ me, event) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
 
@@ -3609,7 +3609,7 @@
 	};
 
 	// mouse up event
-	MenuManager.prototype.canvasMouseUp = function(me, event) {
+	MenuManager.prototype.canvasMouseUp = function(/** @type {MenuManager} */ me, event) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
 
@@ -3640,7 +3640,7 @@
 	};
 
 	// check if canvas has focus and if not notify
-	MenuManager.prototype.checkFocusAndNotify = function(me) {
+	MenuManager.prototype.checkFocusAndNotify = function(/** @type {MenuManager} */ me) {
 		// check if this has focus and GUI enabled
 		if (!me.hasFocus) {
 			// check if click to interact has been displayed
@@ -3668,7 +3668,7 @@
 	};
 
 	// mouse move event
-	MenuManager.prototype.canvasMouseMove = function(me, event) {
+	MenuManager.prototype.canvasMouseMove = function(/** @type {MenuManager} */ me, event) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
 
@@ -3696,7 +3696,7 @@
 	};
 
 	// mouse over event
-	MenuManager.prototype.canvasMouseOver = function(me, event) {
+	MenuManager.prototype.canvasMouseOver = function(/** @type {MenuManager} */ me, event) {
 		// check if passing events
 		if (!me.passEvents) {
 			// perform over event
@@ -3712,7 +3712,7 @@
 	};
 
 	// mouse out event
-	MenuManager.prototype.canvasMouseOut = function(me, event) {
+	MenuManager.prototype.canvasMouseOut = function(/** @type {MenuManager} */ me, event) {
 		// check if passing events
 		if (!me.passEvents) {
 			// perform out event
@@ -3728,7 +3728,7 @@
 	};
 
 	// get cursor position over canvas
-	MenuManager.prototype.updateCursorPosition = function(me, /** @type {number} */ x, /** @type {number} */ y) {
+	MenuManager.prototype.updateCursorPosition = function(/** @type {MenuManager} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// get the bounding rectangle of the canvas
 		var rect = this.mainCanvas.getBoundingClientRect();
 
@@ -3757,7 +3757,7 @@
 	};
 
 	// set auto update mode
-	MenuManager.prototype.setAutoUpdate = function(mode) {
+	MenuManager.prototype.setAutoUpdate = function(/** @type {boolean} */ mode) {
 		// check if switching on from off
 		if ((mode || this.notification.displayed()) && !this.autoUpdate) {
 			this.scheduleNextUpdate(this);

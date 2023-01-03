@@ -206,7 +206,7 @@
 	/**
 	 * @constructor
 	 */
-	function Theme(name, deadRange, aliveRange, unoccupied, aliveGen, dyingRangeGen, deadRangeGen, unoccupiedGen) {
+	function Theme(/** @type {string} */ name, /** @type {ColourRange} */ deadRange, /** @type {ColourRange} */ aliveRange, /** @type {Colour} */ unoccupied, aliveGen, /** @type {ColourRange} */ dyingRangeGen, /** @type {ColourRange} */ deadRangeGen, /** @type {Colour} */ unoccupiedGen) {
 		/** @type {string} */ this.name = name;
 		/** @type {boolean} */ this.gridDefined = false;
 		/** @type {number} */ this.gridMajor = 10;
@@ -214,15 +214,15 @@
 		/** @type {number} */ this.gridMajorColour = 0;
 
 		// 2-state theme
-		this.unoccupied = unoccupied;
-		this.aliveRange = aliveRange;
-		this.deadRange = deadRange;
+		/** @type {Colour} */ this.unoccupied = unoccupied;
+		/** @type {ColourRange} */ this.aliveRange = aliveRange;
+		/** @type {ColourRange} */ this.deadRange = deadRange;
 
 		// generations theme
-		this.aliveGen = aliveGen;
-		this.dyingRangeGen = dyingRangeGen;
-		this.deadRangeGen = deadRangeGen;
-		this.unoccupiedGen = unoccupiedGen;
+		/** @type {Colour} */ this.aliveGen = aliveGen;
+		/** @type {ColourRange} */ this.dyingRangeGen = dyingRangeGen;
+		/** @type {ColourRange} */ this.deadRangeGen = deadRangeGen;
+		/** @type {Colour} */ this.unoccupiedGen = unoccupiedGen;
 		/** @type {boolean} */ this.dyingRangeDynamic = false;
 
 		// check for dynamic dying range
@@ -261,7 +261,7 @@
 	};
 
 	// add grid line settings to the theme
-	Theme.prototype.setGridLines = function(gridMajor, gridColour, gridMajorColour) {
+	Theme.prototype.setGridLines = function(/** @type {number} */ gridMajor, /** @type {Colour} */ gridColour, /** @type {Colour} */ gridMajorColour) {
 		this.gridDefined = true;
 		this.gridMajor = gridMajor;
 		this.gridColour = (gridColour.red << 16) | (gridColour.green << 8) | (gridColour.blue);
@@ -269,7 +269,7 @@
 	};
 
 	// set custom grid lines colours
-	Theme.prototype.setGridLineColours = function(gridColour, gridMajorColour) {
+	Theme.prototype.setGridLineColours = function(/** @type {number} */ gridColour, /** @type {number} */ gridMajorColour) {
 		// check if the grid lines colour was specified
 		if (gridColour !== -1) {
 			// yes so set it
@@ -350,8 +350,8 @@
 	 * @constructor
 	 */
 	function ColourRange(/** @type {Colour} */ startColour, /** @type {Colour} */ endColour) {
-		this.startColour = startColour;
-		this.endColour = endColour;
+		/** @type {Colour} */ this.startColour = startColour;
+		/** @type {Colour} */ this.endColour = endColour;
 	}
 
 	// set function
@@ -382,8 +382,8 @@
 		this.cellPeriodCanvas.width = 1;
 		this.cellPeriodCanvas.height = 1;
 		this.cellPeriodContext = this.cellPeriodCanvas.getContext("2d");
-		this.cellPeriodImage = new Image();
-		this.cellPeriodRGB = [];
+		/** @type {HTMLImageElement} */ this.cellPeriodImage = new Image();
+		/** @type {Array<number>} */ this.cellPeriodRGB = [];
 		/** @type {number} */ this.cellPeriodNumCols = 0;
 		/** @type {number} */ this.cellPeriodCellSize = 8;
 		/** @type {number} */ this.cellBorderSize = 1;
@@ -412,7 +412,7 @@
 		this.allocator = new Allocator();
 
 		// list of potential gliders to clear
-		this.potentialClears = [];
+		/** @type {Array} */ this.potentialClears = [];
 
 		// whether to draw 2-state as rainbow
 		/** @type {boolean} */ this.rainbow = false;
@@ -453,7 +453,7 @@
 		this.ruleTableIcons = null;
 
 		// RuleTable
-		this.ruleTableLUT = [];
+		/** @type {Array} */ this.ruleTableLUT = [];
 		/** @type {Uint8Array} */ this.ruleTableOutput = null;
 		/** @type {number} */ this.ruleTableCompressedRules = 0;
 		/** @type {number} */ this.ruleTableNeighbourhood = 0;
@@ -535,11 +535,11 @@
 		this.customColours = null;
 
 		// bit counts for 16bit values
-		this.bitCounts16 = this.allocator.allocate(Uint8, 65536, "Life.bitCounts16");
+		/** @type Uint8Array*/ this.bitCounts16 = this.allocator.allocate(Uint8, 65536, "Life.bitCounts16");
 		this.initBitCounts16();
 
 		// first bit set for 16bit values
-		this.firstBit16 = this.allocator.allocate(Uint8, 65536, "Life.firstBit16");
+		/** @type {Uint8Array} */ this.firstBit16 = this.allocator.allocate(Uint8, 65536, "Life.firstBit16");
 		this.initFirstBit16();
 
 		// population graph array
@@ -583,10 +583,10 @@
 		/** @type {number}*/ this.removePatternRadius = ViewConstants.defaultDeleteRadius;
 
 		// stack for boundary pattern clear
-		this.boundaryX = [];
-		this.boundaryY = [];
-		this.boundaryX[0] = this.allocator.allocate(Int32, LifeConstants.removePatternBufferSize, "Life.boundaryX0");
-		this.boundaryY[0] = this.allocator.allocate(Int32, LifeConstants.removePatternBufferSize, "Life.boundaryY0");
+		/** @type {Array<Int32Array>} */ this.boundaryX = [];
+		/** @type {Array<Int32Array>} */ this.boundaryY = [];
+		/** @type {Int32Array} */ this.boundaryX[0] = this.allocator.allocate(Int32, LifeConstants.removePatternBufferSize, "Life.boundaryX0");
+		/** @type {Int32Array} */ this.boundaryY[0] = this.allocator.allocate(Int32, LifeConstants.removePatternBufferSize, "Life.boundaryY0");
 
 		// number of boundary pages
 		/** @type {number} */ this.boundaryPages = 0;
@@ -814,7 +814,7 @@
 		/** @const {boolean} */ this.littleEndian = littleEndian;
 
 		// list of themes
-		this.themes = [];
+		/** @type {Array<Theme>} */ this.themes = [];
 
 		// current colour range
 		this.deadColCurrent = null;
@@ -838,13 +838,13 @@
 		/** @type {number} */ this.numThemes = -1;
 
 		// 8 bit view of image data required if CanvasPixelArray used
-		this.data8 = null;
+		/** @type {Uint8Array} */ this.data8 = null;
 
 		// 32 bit view of image data
 		/** @type {Uint32Array} */ this.data32 = null;
 
 		// image data
-		this.imageData = null;
+		/** @type {ImageData} */ this.imageData = null;
 
 		// mode 7 buffer
 		/** @type {Uint32Array} */ this.mode7Buffer = null;
@@ -857,69 +857,69 @@
 		/** @type {number} */ this.heightMask = 0;
 
 		// life tile grid and double buffer
-		/** @type {Array} */ this.tileGrid = null;
-		/** @type {Array} */ this.nextTileGrid = null;
+		/** @type {Array<Uint16Array>} */ this.tileGrid = null;
+		/** @type {Array<Uint16Array>} */ this.nextTileGrid = null;
 
 		// static tile grid
-		/** @type {Array} */ this.staticTileGrid = null;
+		/** @type {Array<Uint16Array>} */ this.staticTileGrid = null;
 
 		// life grid and double buffer
-		/** @type {Array} */ this.grid = null;
-		/** @type {Array} */ this.nextGrid = null;
+		/** @type {Array<Uint8Array>} */ this.grid = null;
+		/** @type {Array<Uint8Array>} */ this.nextGrid = null;
 
 		// 16bit view of grid and double buffer
-		/** @type {Array} */ this.grid16 = null;
-		/** @type {Array} */ this.nextGrid16 = null;
+		/** @type {Array<Uint16Array>} */ this.grid16 = null;
+		/** @type {Array<Uint16Array>} */ this.nextGrid16 = null;
 
 		// blank pixel row for fast clear
-		this.blankPixelRow = this.allocator.allocate(Uint32, this.displayWidth, "Life.blankPixelRow");
+		/** @type {Uint32Array} */ this.blankPixelRow = this.allocator.allocate(Uint32, this.displayWidth, "Life.blankPixelRow");
 
 		// blank row for life grid to prevent wrap
-		this.blankRow = this.allocator.allocate(Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow");
+		/** @type {Uint8Array} */ this.blankRow = this.allocator.allocate(Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow");
 
 		// blank row for 16bit life grid
-		this.blankRow16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16");
+		/** @type {Uint16Array} */ this.blankRow16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16");
 
 		// blank tile row to prevent wrap
-		this.blankTileRow = this.allocator.allocate(Uint16, this.tileCols >> 4, "Life.blankTileRow");
+		/** @type {Uint16Array} */ this.blankTileRow = this.allocator.allocate(Uint16, this.tileCols >> 4, "Life.blankTileRow");
 
 		// blank colour row
-		this.blankColourRow = this.allocator.allocate(Uint8, this.width, "Life.blankColourRow");
+		/** @type {Uint8Array} */ this.blankColourRow = this.allocator.allocate(Uint8, this.width, "Life.blankColourRow");
 
 		// colour grid
-		/** @type {Array} */ this.colourGrid = null;
+		/** @type {Array<Uint8Array>} */ this.colourGrid = null;
 
 		// next colour grid for PCA rules
-		/** @type {Array} */ this.nextColourGrid = null;
-		/** @type {Array} */ this.nextcolourGrid16 = null;
-		/** @type {Array} */ this.nextcolourGrid32 = null;
+		/** @type {Array<Uint8Array>} */ this.nextColourGrid = null;
+		/** @type {Array<Uint16Array>} */ this.nextcolourGrid16 = null;
+		/** @type {Array<Uint32Array>} */ this.nextcolourGrid32 = null;
 
 		// small colour grid used for zooms < 1
-		/** @type {Array} */ this.smallColourGrid = null;
+		/** @type {Array<Uint8Array>} */ this.smallColourGrid = null;
 
 		// 16bit view of colour grid
-		/** @type {Array} */ this.colourGrid16 = null;
+		/** @type {Array<Uint16Array>} */ this.colourGrid16 = null;
 
 		// 32bit view of colour grid
-		/** @type {Array} */ this.colourGrid32 = null;
+		/** @type {Array<Uint32Array>} */ this.colourGrid32 = null;
 
 		// overlay grid for LifeHistory
-		/** @type {Array} */ this.overlayGrid = null;
+		/** @type {Array<Uint8Array>} */ this.overlayGrid = null;
 
 		// overlay colour grid used for zooms < 1
-		/** @type {Array} */ this.smallOverlayGrid = null;
+		/** @type {Array<Uint8Array>} */ this.smallOverlayGrid = null;
 
 		// 16bit view of overlay grid
-		/** @type {Array} */ this.overlayGrid16 = null;
+		/** @type {Array<Uint16Array>} */ this.overlayGrid16 = null;
 
 		// 32bit view of overlay grid
-		/** @type {Array} */ this.overlayGrid32 = null;
+		/** @type {Array<Uint32Array>} */ this.overlayGrid32 = null;
 
 		// colour tile grid
-		/** @type {Array} */ this.colourTileGrid = null;
+		/** @type {Array<Uint16Array>} */ this.colourTileGrid = null;
 
 		// colour tile history grid (where life has ever been)
-		/** @type {Array} */ this.colourTileHistoryGrid = null;
+		/** @type {Array<Uint16Array>} */ this.colourTileHistoryGrid = null;
 
 		// state 6 grid for [R]History
 		this.state6Mask = null;
@@ -930,15 +930,15 @@
 		this.state6TileGrid = null;
 
 		// colour definitions
-		this.redChannel = this.allocator.allocate(Uint8, 256, "Life.redChannel");
-		this.greenChannel = this.allocator.allocate(Uint8, 256, "Life.greenChannel");
-		this.blueChannel = this.allocator.allocate(Uint8, 256, "Life.blueChannel");
+		/** @type {Uint8Array} */ this.redChannel = this.allocator.allocate(Uint8, 256, "Life.redChannel");
+		/** @type {Uint8Array} */ this.greenChannel = this.allocator.allocate(Uint8, 256, "Life.greenChannel");
+		/** @type {Uint8Array} */ this.blueChannel = this.allocator.allocate(Uint8, 256, "Life.blueChannel");
 
 		// pixel colours
-		this.pixelColours = this.allocator.allocate(Uint32, 256, "Life.pixelColours");
+		/** @type {Uint32Array} */ this.pixelColours = this.allocator.allocate(Uint32, 256, "Life.pixelColours");
 
 		// ruleTree fast lookup
-		this.ruleTreeLookup = null;
+		/** @type {Uint8Array} */ this.ruleTreeLookup = null;
 
 		// ruleTree lookup bits
 		/** @type {number} */ this.ruleTreeLookupBits = 0;
@@ -964,13 +964,13 @@
 		this.margolusReverseLookup2 = null;
 
 		// colour lookup for next generation
-		this.colourLookup = this.allocator.allocate(Uint16, ((this.aliveMax + 1) * 2) << 8, "Life.colourLookup");
+		/** @type {Uint16Array} */ this.colourLookup = this.allocator.allocate(Uint16, ((this.aliveMax + 1) * 2) << 8, "Life.colourLookup");
 
 		// fast lookup for colour reset
-		this.colourReset = this.allocator.allocate(Uint8, 256 * 8, "Life.colourReset");
+		/** @type {Uint8Array} */ this.colourReset = this.allocator.allocate(Uint8, 256 * 8, "Life.colourReset");
 
 		// grid line colour in raw format R G B
-		this.gridLineRaw = ViewConstants.gridLineRawDefault;
+		/** @type {number} */ this.gridLineRaw = ViewConstants.gridLineRawDefault;
 
 		// grid line colour
 		/** @type {number} */ this.gridLineColour = -1;
@@ -3923,7 +3923,7 @@
 				}
 				*/
 
-				for (x = leftX; x <= rightX ; x += 1) {
+				for (x = leftX; x <= rightX; x += 1) {
 					cx = x - w2;
 					displayX = (cx + xOff1 - (cy + yOff1) / 2) * zoom + halfDisplayWidth;
 					// clip to display
@@ -4366,7 +4366,7 @@
 
 	// convert grid to RLE
 	/** @returns {string} */
-	Life.prototype.asRLE = function(view, me, /** @type {boolean} */ addComments, inputStates, outputStates, mapping, useAlias) {
+	Life.prototype.asRLE = function(view, /** @type {Life} */ me, /** @type {boolean} */ addComments, inputStates, outputStates, mapping, /** @type {boolean} */ useAlias) {
 		var	/** @type {string} */ rle = "",
 			zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
 			/** @type {number} */ leftX = zoomBox.leftX,
@@ -5807,7 +5807,7 @@
 			/** @type {number} */ tileGroup = 0,
 			/** @const {number} */ l = tile.length,
 			/** @const {number} */ w = tile[0].length,
-			bitCounts16 = this.bitCounts16,
+			/** @type {Uint8Array} */ bitCounts16 = this.bitCounts16,
 
 			// zero count
 			/** @type {number} */ result = 0;
@@ -6326,6 +6326,16 @@
 		this.heightMask = this.height - 1;
 	};
 
+
+	// copy data in a grid to the center of a new grid (using by grow grid)
+	Life.prototype.copyGridToCenter = function(/** @type {number} */ currentHeight, /** @type {number} */ yOffset, /** @type {number} */ xOffset, destGrid, sourceGrid) {
+		var	/** @type {number} */ y = 0;
+
+		for (y = 0; y < currentHeight; y += 1) {
+			destGrid[y + yOffset].set(sourceGrid[y], xOffset);
+		}
+	};
+
 	// grow grid
 	Life.prototype.growGrid = function(/** @type {boolean} */ growX, /** @type {boolean} */ growY) {
 		// get the current grid size
@@ -6333,26 +6343,26 @@
 			/** @type {number} */ currentHeight = this.height,
 
 			// get current grid buffers
-			currentGrid = this.grid,
-			currentNextGrid = this.nextGrid,
-			currentColourGrid = this.colourGrid,
-			currentNextColourGrid = this.nextColourGrid,
-			currentSmallColourGrid = this.smallColourGrid,
-			currentOverlayGrid = this.overlayGrid,
-			currentSmallOverlayGrid = this.smallOverlayGrid,
-			currentMaskGrid = this.state6Mask,
-			currentMaskAliveGrid = this.state6Alive,
-			currentMaskCellsGrid = this.state6Cells,
-			currentCountList = this.countList,
-			currentInitList = this.initList,
+			/** @type {Array<Uint8Array>} */ currentGrid = this.grid,
+			/** @type {Array<Uint8Array>} */ currentNextGrid = this.nextGrid,
+			/** @type {Array<Uint8Array>} */ currentColourGrid = this.colourGrid,
+			/** @type {Array<Uint8Array>} */ currentNextColourGrid = this.nextColourGrid,
+			/** @type {Array<Uint8Array>} */ currentSmallColourGrid = this.smallColourGrid,
+			/** @type {Array<Uint8Array>} */ currentOverlayGrid = this.overlayGrid,
+			/** @type {Array<Uint8Array>} */ currentSmallOverlayGrid = this.smallOverlayGrid,
+			/** @type {Array<Uint16Array>} */ currentMaskGrid = this.state6Mask,
+			/** @type {Array<Uint16Array>} */ currentMaskAliveGrid = this.state6Alive,
+			/** @type {Array<Uint16Array>} */ currentMaskCellsGrid = this.state6Cells,
+			/** @type {Array<Uint8Array>} */ currentCountList = this.countList,
+			/** @type {Array<Uint8Array>} */ currentInitList = this.initList,
 
 			// get current tile buffers
-			currentMaskTileGrid = this.state6TileGrid,
-			currentTileGrid = this.tileGrid,
-			currentNextTileGrid = this.nextTileGrid,
-			currentStaticTileGrid = this.staticTileGrid,
-			currentColourTileGrid = this.colourTileGrid,
-			currentColourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Array<Uint16Array>} */ currentMaskTileGrid = this.state6TileGrid,
+			/** @type {Array<Uint16Array>} */ currentTileGrid = this.tileGrid,
+			/** @type {Array<Uint16Array>} */ currentNextTileGrid = this.nextTileGrid,
+			/** @type {Array<Uint16Array>} */ currentStaticTileGrid = this.staticTileGrid,
+			/** @type {Array<Uint16Array>} */ currentColourTileGrid = this.colourTileGrid,
+			/** @type {Array<Uint16Array>} */ currentColourTileHistoryGrid = this.colourTileHistoryGrid,
 
 			// current tile height
 			/** @type {number} */ currentTileHeight = this.tileRows,
@@ -6473,33 +6483,27 @@
 			this.heightMask = this.height - 1;
 
 			// copy the old grids to the center of the new ones
-			for (y = 0; y < currentHeight; y += 1) {
-				this.grid[y + yOffset].set(currentGrid[y], xOffset >> 3);
-				this.nextGrid[y + yOffset].set(currentNextGrid[y], xOffset >> 3);
-				this.colourGrid[y + yOffset].set(currentColourGrid[y], xOffset);
-				this.smallColourGrid[y + yOffset].set(currentSmallColourGrid[y], xOffset);
-				if (this.isPCA || this.isRuleTree || this.isSuper) {
-					this.nextColourGrid[y + yOffset].set(currentNextColourGrid[y], xOffset);
-				}
-				if (this.countList) {
-					this.countList[y + yOffset].set(currentCountList[y], xOffset);
-				}
-				if (this.initList) {
-					this.initList[y + yOffset].set(currentInitList[y], xOffset);
-				}
-
-				// check if overlay grid was allocated
-				if (currentOverlayGrid && currentSmallOverlayGrid) {
-					this.overlayGrid[y + yOffset].set(currentOverlayGrid[y], xOffset);
-					this.smallOverlayGrid[y + yOffset].set(currentSmallOverlayGrid[y], xOffset);
-				}
-
-				// check if the mask was allocated
-				if (currentMaskGrid && currentMaskAliveGrid && currentMaskCellsGrid) {
-					this.state6Mask[y + yOffset].set(currentMaskGrid[y], xOffset >> 4);
-					this.state6Alive[y + yOffset].set(currentMaskAliveGrid[y], xOffset >> 4);
-					this.state6Cells[y + yOffset].set(currentMaskCellsGrid[y], xOffset >> 4);
-				}
+			this.copyGridToCenter(currentHeight, yOffset, xOffset >> 3, this.grid, currentGrid);
+			this.copyGridToCenter(currentHeight, yOffset, xOffset >> 3, this.nextGrid, currentNextGrid);
+			this.copyGridToCenter(currentHeight, yOffset, xOffset, this.colourGrid, currentColourGrid);
+			this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallColourGrid, currentSmallColourGrid);
+			if (this.isPCA || this.isRuleTree || this.isSuper) {
+				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.nextColourGrid, currentNextColourGrid);
+			}
+			if (this.countList) {
+				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.countList, currentCountList);
+			}
+			if (this.initList) {
+				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.initList, currentInitList);
+			}
+			if (currentOverlayGrid && currentSmallOverlayGrid) {
+				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.overlayGrid, currentOverlayGrid);
+				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallOverlayGrid, currentSmallOverlayGrid);
+			}
+			if (currentMaskGrid && currentMaskAliveGrid && currentMaskCellsGrid) {
+				this.copyGridToCenter(currentHeight, yOffset, xOffset >> 4, this.state6Mask, currentMaskGrid);
+				this.copyGridToCenter(currentHeight, yOffset, xOffset >> 4, this.state6Alive, currentMaskAliveGrid);
+				this.copyGridToCenter(currentHeight, yOffset, xOffset >> 4, this.state6Cells, currentMaskCellsGrid);
 			}
 
 			// copy the old tile grids to the center of the new ones
@@ -6510,16 +6514,14 @@
 				xOffsetTile = this.tileGrid[0].length >> 2;
 			}
 
-			for (y = 0; y < currentTileHeight; y += 1) {
-				if (currentMaskTileGrid) {
-					this.state6TileGrid[y + yOffsetTile].set(currentMaskTileGrid[y], xOffsetTile);
-				}
-				this.tileGrid[y + yOffsetTile].set(currentTileGrid[y], xOffsetTile);
-				this.nextTileGrid[y + yOffsetTile].set(currentNextTileGrid[y], xOffsetTile);
-				this.staticTileGrid[y + yOffsetTile].set(currentStaticTileGrid[y], xOffsetTile);
-				this.colourTileGrid[y + yOffsetTile].set(currentColourTileGrid[y], xOffsetTile);
-				this.colourTileHistoryGrid[y + yOffsetTile].set(currentColourTileHistoryGrid[y], xOffsetTile);
+			if (currentMaskTileGrid) {
+				this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.state6TileGrid, currentMaskTileGrid);
 			}
+			this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.tileGrid, currentTileGrid);
+			this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.nextTileGrid, currentNextTileGrid);
+			this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.staticTileGrid, currentStaticTileGrid);
+			this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.colourTileGrid, currentColourTileGrid);
+			this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.colourTileHistoryGrid, currentColourTileHistoryGrid);
 
 			// update the snapshots
 			this.snapshotManager.resizeSnapshots(((this.tileCols - 1) >> 4) + 1, this.tileRows, xOffsetTile, yOffsetTile, xOffset, yOffset, this.drawOverlay);
@@ -6568,7 +6570,7 @@
 
 	// check if the grid buffer needs to grow for one step
 	/** @returns {boolean} */
-	Life.prototype.checkForGrowthStep = function(me, box, /** @type {number} */ maxStep) {
+	Life.prototype.checkForGrowthStep = function(view, box, /** @type {number} */ maxStep) {
 	    // get the current grid width and height
 		var	/** @type {number} */ width = this.width,
 			/** @type {number} */ height = this.height,
@@ -6597,29 +6599,29 @@
 
 				// update the default x and y
 				if (growX) {
-					me.defaultX += this.width >> 2;
-					me.savedX += this.width >> 2;
+					view.defaultX += this.width >> 2;
+					view.savedX += this.width >> 2;
 				}
 
 				if (growY) {
-					me.defaultY += this.height >> 2;
-					me.savedY += this.height >> 2;
+					view.defaultY += this.height >> 2;
+					view.savedY += this.height >> 2;
 				}
 
 				// check for hex mode
-				if (me.engine.isHex) {
+				if (view.engine.isHex) {
 					if (growY) {
-						me.defaultX -= this.height >> 3;
-						me.savedX -= this.height >> 3;
+						view.defaultX -= this.height >> 3;
+						view.savedX -= this.height >> 3;
 					}
 				}
 
 				// update pan position
 				if (growX) {
-					me.panX += this.width >> 2;
+					view.panX += this.width >> 2;
 				}
 				if (growY) {
-					me.panY += this.height >> 2;
+					view.panY += this.height >> 2;
 				}
 
 				// update the box position
@@ -6640,9 +6642,9 @@
 	};
 
 	// check if the grid buffer needs to grow for as many steps as needed
-	Life.prototype.checkForGrowth = function(me, box, /** @type {number} */ maxStep) {
+	Life.prototype.checkForGrowth = function(view, box, /** @type {number} */ maxStep) {
 		// check the next step
-		while (this.checkForGrowthStep(me, box, maxStep)) {
+		while (this.checkForGrowthStep(view, box, maxStep)) {
 			// until no more steps required
 		}
 	};
@@ -6716,7 +6718,7 @@
 			nextRow = null,
 			/** @type {number} */ population = 0,
 			/** @type {number} */ count = 0,
-			bitCounts16 = this.bitCounts16,
+			/** @type {Uint8Array} */ bitCounts16 = this.bitCounts16,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ aliveState = 0,
 	
@@ -7369,7 +7371,7 @@
 			blankRow = this.blankRow,
 			blankColourRow = this.blankColourRow,
 			blankPixelRow = this.blankPixelRow,
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 			/** @type {number} */ pixelColour = 0;
 
 		// set the black pixel colour
@@ -9121,7 +9123,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 	
 			// blank tile row for top and bottom
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 	
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0;
@@ -9436,7 +9438,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 	
 			// blank tile row for top and bottom
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 	
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0;
@@ -10592,7 +10594,7 @@
 			/** @type {number} */ y = 0,
 
 			// cell population to adjust
-			bitCounts16 = this.bitCounts16,
+			/** @type {Uint8Array} */ bitCounts16 = this.bitCounts16,
 			/** @type {number} */ remove = 0,
 			gridy = null;
 
@@ -13325,7 +13327,7 @@
 			/** @type {number} */ popDiff = 0,
 
 			// bit counts
-			bitCounts16 = this.bitCounts16,
+			/** @type {Uint8Array} */ bitCounts16 = this.bitCounts16,
 
 			// 16bit view of grid
 			nextGrid16 = null,
@@ -13422,8 +13424,8 @@
 			/** @type {number} */ page = 0,
 
 			// boundary cell stack
-			/** @type {number} */ bx = this.boundaryX[page],
-			/** @type {number} */ by = this.boundaryY[page],
+			/** @type {Int32Array} */ bx = this.boundaryX[page],
+			/** @type {Int32Array} */ by = this.boundaryY[page],
 			/** @type {number} */ index = 0,
 
 			// maximum buffer size
@@ -13651,8 +13653,8 @@
 			/** @type {number} */ page = 0,
 
 			// boundary cell stack
-			/** @type {number} */ bx = this.boundaryX[page],
-			/** @type {number} */ by = this.boundaryY[page],
+			/** @type {Int32Array} */ bx = this.boundaryX[page],
+			/** @type {Int32Array} */ by = this.boundaryY[page],
 			/** @type {number} */ index = 0,
 
 			// maximum buffer size
@@ -13914,7 +13916,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 
 			// blank tile row for top and bottom
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0,
@@ -13929,7 +13931,7 @@
 			/** @const{number} */ maskR = (1 << 4) | (1 << 3) | (1 << 2) | (1 << 1) | (1 << 0),
 
 			// bit counts for population
-			bitCounts16 = this.bitCounts16,
+			/** @type {Uint8Array} */ bitCounts16 = this.bitCounts16,
 
 			// population statistics
 			/** @type {number} */ population = 0,
@@ -14510,13 +14512,13 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 
 			// blank tile row for top and bottom
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0,
 
 			// bit counts for population
-			bitCounts16 = this.bitCounts16,
+			/** @type {Uint8Array} */ bitCounts16 = this.bitCounts16,
 
 			// population statistics
 			/** @type {number} */ population = 0,
@@ -15321,7 +15323,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 
 			// blank tile row for top and bottom
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0,
@@ -16016,7 +16018,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 	
 			// blank tile row for top and bottom
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 	
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0,
@@ -16554,7 +16556,7 @@
 			/** @type {number} */ rowIndex = 0,
 
 			// population statistics
-			/** @type {number} */ bitCounts16 = this.bitCounts16,
+			/** @type {Uint8Array} */ bitCounts16 = this.bitCounts16,
 			/** @type {number} */ population = 0, births = 0, deaths = 0,
 
 			// height of grid
@@ -16588,7 +16590,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 
 			// blank tile row for top and bottom
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0,
@@ -17803,7 +17805,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 
 			// blank tile row for top and bottom
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0,
@@ -24009,7 +24011,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 	
 			// blank tile row for top and bottom
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 	
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0;
@@ -24587,7 +24589,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 
 			// blank tile row for top and bottom
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0;
@@ -25213,7 +25215,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 
 			// blank tile row for top and bottom
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0;
@@ -25869,7 +25871,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 
 			// blank tile row for top and bottom
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0;
@@ -26525,7 +26527,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 
 			// blank tile row for top and bottom
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 
 			// flag for border of static tile
 			/** @type {boolean} */ isBorder = false,
@@ -28002,7 +28004,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 
 			// blank tile row for top and bottom
-			blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 
 			// flag for border of static tile
 			/** @type {boolean} */ isBorder = false,
@@ -29507,11 +29509,11 @@
 
 	// update the life grid region using tiles for von Neumann RuleTree patterns using array for 1bit states
 	Life.prototype.nextGenerationRuleTreeTileVNLookup1 = function() {
-		var	/** @type {Array<number>} */ gridRow0 = null,
-			/** @type {Array<number>} */ gridRow1 = null,
-			/** @type {Array<number>} */ gridRow2 = null,
-			/** @type {Array<number>} */ nextRow = null,
-			/** @type {Array<number>} */ lookup = this.ruleTreeLookup,
+		var	/** @type {Uint8Array} */ gridRow0 = null,
+			/** @type {Uint8Array} */ gridRow1 = null,
+			/** @type {Uint8Array} */ gridRow2 = null,
+			/** @type {Uint32Array} */ nextRow = null,
+			/** @type {Uint8Array} */ lookup = this.ruleTreeLookup,
 
 			// cells
 			/** @type {number} */ n = 0,
@@ -29528,19 +29530,19 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Array<number>>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Array<number>} */ colourTileHistoryRow = null,
-			/** @type {Array<Array<number>>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Array<number>} */ colourTileRow = null,
-			/** @type {Array<Array<number>>} */ grid = null,
-			/** @type {Array<Array<number>>} */ nextGrid32 = null,
-			/** @type {Array<Array<number>>} */ grid32 = null,
-			/** @type {Array<Array<number>>} */ tileGrid = null,
-			/** @type {Array<Array<number>>} */ nextTileGrid = null,
-			/** @type {Array<number>} */ tileRow = null,
-			/** @type {Array<number>} */ nextTileRow = null,
-			/** @type {Array<number>} */ belowNextTileRow = null,
-			/** @type {Array<number>} */ aboveNextTileRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Array<Uint8Array>} */ grid = null,
+			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
+			/** @type {Array<Uint32Array>} */ grid32 = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Uint16Array} */ tileRow = null,
+			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ belowNextTileRow = null,
+			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
@@ -29596,7 +29598,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 	
 			// blank tile row for top and bottom
-			/** @type {Array<number>} */ blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0;
@@ -30333,13 +30335,13 @@
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
 								for (y = bottomY; y < topY; y += 1) {
-									gridRow1 = grid32[y];
+									nextRow = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells
-									gridRow1[x] = 0;
-									gridRow1[x + 1] = 0;
-									gridRow1[x + 2] = 0;
-									gridRow1[x + 3] = 0;
+									nextRow[x] = 0;
+									nextRow[x + 1] = 0;
+									nextRow[x + 2] = 0;
+									nextRow[x + 3] = 0;
 								}
 							}
 						}
@@ -30362,11 +30364,11 @@
 
 	// update the life grid region using tiles for von Neumann RuleTree patterns using array for 2bit states
 	Life.prototype.nextGenerationRuleTreeTileVNLookup2 = function() {
-		var	/** @type {Array<number>} */ gridRow0 = null,
-			/** @type {Array<number>} */ gridRow1 = null,
-			/** @type {Array<number>} */ gridRow2 = null,
-			/** @type {Array<number>} */ nextRow = null,
-			/** @type {Array<number>} */ lookup = this.ruleTreeLookup,
+		var	/** @type {Uint8Array} */ gridRow0 = null,
+			/** @type {Uint8Array} */ gridRow1 = null,
+			/** @type {Uint8Array} */ gridRow2 = null,
+			/** @type {Uint32Array} */ nextRow = null,
+			/** @type {Uint8Array} */ lookup = this.ruleTreeLookup,
 
 			// cells
 			/** @type {number} */ n = 0,
@@ -30383,19 +30385,19 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Array<number>>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Array<number>} */ colourTileHistoryRow = null,
-			/** @type {Array<Array<number>>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Array<number>} */ colourTileRow = null,
-			/** @type {Array<Array<number>>} */ grid = null,
-			/** @type {Array<Array<number>>} */ nextGrid32 = null,
-			/** @type {Array<Array<number>>} */ grid32 = null,
-			/** @type {Array<Array<number>>} */ tileGrid = null,
-			/** @type {Array<Array<number>>} */ nextTileGrid = null,
-			/** @type {Array<number>} */ tileRow = null,
-			/** @type {Array<number>} */ nextTileRow = null,
-			/** @type {Array<number>} */ belowNextTileRow = null,
-			/** @type {Array<number>} */ aboveNextTileRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Array<Uint8Array>} */ grid = null,
+			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
+			/** @type {Array<Uint32Array>} */ grid32 = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Uint16Array} */ tileRow = null,
+			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ belowNextTileRow = null,
+			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
@@ -30451,7 +30453,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 
 			// blank tile row for top and bottom
-			/** @type {Array<number>} */ blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0;
@@ -31188,13 +31190,13 @@
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
 								for (y = bottomY; y < topY; y += 1) {
-									gridRow1 = grid32[y];
+									nextRow = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells
-									gridRow1[x] = 0;
-									gridRow1[x + 1] = 0;
-									gridRow1[x + 2] = 0;
-									gridRow1[x + 3] = 0;
+									nextRow[x] = 0;
+									nextRow[x + 1] = 0;
+									nextRow[x + 2] = 0;
+									nextRow[x + 3] = 0;
 								}
 							}
 						}
@@ -31217,11 +31219,11 @@
 
 	// update the life grid region using tiles for von Neumann RuleTree patterns using array for 3bit states
 	Life.prototype.nextGenerationRuleTreeTileVNLookup3 = function() {
-		var	/** @type {Array<number>} */ gridRow0 = null,
-			/** @type {Array<number>} */ gridRow1 = null,
-			/** @type {Array<number>} */ gridRow2 = null,
-			/** @type {Array<number>} */ nextRow = null,
-			/** @type {Array<number>} */ lookup = this.ruleTreeLookup,
+		var	/** @type {Uint8Array} */ gridRow0 = null,
+			/** @type {Uint8Array} */ gridRow1 = null,
+			/** @type {Uint8Array} */ gridRow2 = null,
+			/** @type {Uint32Array} */ nextRow = null,
+			/** @type {Uint8Array} */ lookup = this.ruleTreeLookup,
 
 			// cells
 			/** @type {number} */ n = 0,
@@ -31238,19 +31240,19 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Array<number>>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Array<number>} */ colourTileHistoryRow = null,
-			/** @type {Array<Array<number>>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Array<number>} */ colourTileRow = null,
-			/** @type {Array<Array<number>>} */ grid = null,
-			/** @type {Array<Array<number>>} */ nextGrid32 = null,
-			/** @type {Array<Array<number>>} */ grid32 = null,
-			/** @type {Array<Array<number>>} */ tileGrid = null,
-			/** @type {Array<Array<number>>} */ nextTileGrid = null,
-			/** @type {Array<number>} */ tileRow = null,
-			/** @type {Array<number>} */ nextTileRow = null,
-			/** @type {Array<number>} */ belowNextTileRow = null,
-			/** @type {Array<number>} */ aboveNextTileRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Array<Uint8Array>} */ grid = null,
+			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
+			/** @type {Array<Uint32Array>} */ grid32 = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Uint16Array} */ tileRow = null,
+			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ belowNextTileRow = null,
+			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
@@ -31306,7 +31308,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 
 			// blank tile row for top and bottom
-			/** @type {Array<number>} */ blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 	
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0;
@@ -32043,13 +32045,13 @@
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
 								for (y = bottomY; y < topY; y += 1) {
-									gridRow1 = grid32[y];
+									nextRow = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells
-									gridRow1[x] = 0;
-									gridRow1[x + 1] = 0;
-									gridRow1[x + 2] = 0;
-									gridRow1[x + 3] = 0;
+									nextRow[x] = 0;
+									nextRow[x + 1] = 0;
+									nextRow[x + 2] = 0;
+									nextRow[x + 3] = 0;
 								}
 							}
 						}
@@ -32072,11 +32074,11 @@
 
 	// update the life grid region using tiles for von Neumann RuleTree patterns using array for 4bit states
 	Life.prototype.nextGenerationRuleTreeTileVNLookup4 = function() {
-		var	/** @type {Array<number>} */ gridRow0 = null,
-			/** @type {Array<number>} */ gridRow1 = null,
-			/** @type {Array<number>} */ gridRow2 = null,
-			/** @type {Array<number>} */ nextRow = null,
-			/** @type {Array<number>} */ lookup = this.ruleTreeLookup,
+		var	/** @type {Uint8Array} */ gridRow0 = null,
+			/** @type {Uint8Array} */ gridRow1 = null,
+			/** @type {Uint8Array} */ gridRow2 = null,
+			/** @type {Uint32Array} */ nextRow = null,
+			/** @type {Uint8Array} */ lookup = this.ruleTreeLookup,
 
 			// cells
 			/** @type {number} */ n = 0,
@@ -32093,19 +32095,19 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Array<number>>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Array<number>} */ colourTileHistoryRow = null,
-			/** @type {Array<Array<number>>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Array<number>} */ colourTileRow = null,
-			/** @type {Array<Array<number>>} */ grid = null,
-			/** @type {Array<Array<number>>} */ nextGrid32 = null,
-			/** @type {Array<Array<number>>} */ grid32 = null,
-			/** @type {Array<Array<number>>} */ tileGrid = null,
-			/** @type {Array<Array<number>>} */ nextTileGrid = null,
-			/** @type {Array<number>} */ tileRow = null,
-			/** @type {Array<number>} */ nextTileRow = null,
-			/** @type {Array<number>} */ belowNextTileRow = null,
-			/** @type {Array<number>} */ aboveNextTileRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Array<Uint8Array>} */ grid = null,
+			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
+			/** @type {Array<Uint32Array>} */ grid32 = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Uint16Array} */ tileRow = null,
+			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ belowNextTileRow = null,
+			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
@@ -32161,7 +32163,7 @@
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 
 			// blank tile row for top and bottom
-			/** @type {Array<number>} */ blankTileRow = this.blankTileRow,
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0;
@@ -32898,13 +32900,13 @@
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
 								for (y = bottomY; y < topY; y += 1) {
-									gridRow1 = grid32[y];
+									nextRow = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells
-									gridRow1[x] = 0;
-									gridRow1[x + 1] = 0;
-									gridRow1[x + 2] = 0;
-									gridRow1[x + 3] = 0;
+									nextRow[x] = 0;
+									nextRow[x + 1] = 0;
+									nextRow[x + 2] = 0;
+									nextRow[x + 3] = 0;
 								}
 							}
 						}
