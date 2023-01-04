@@ -1,3 +1,11 @@
+Build 815
+- changed Cell Period Map style
+
+Build 814
+- improved position and style of Cell Period table
+- improved style of Cell Period Map legend
+- fixed pattern information for too big patterns
+
 Build 813
 - added cell period table to Identify results for Oscillators with strict volatility
 

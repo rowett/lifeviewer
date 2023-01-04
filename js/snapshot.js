@@ -12,7 +12,7 @@
 	/**
 	 * @constructor
 	 */
-	function Snapshot(manager, /** @type {number} */ index, /** @type {boolean} */ usingOverlay) {
+	function Snapshot(/** @type {SnapshotManager} */ manager, /** @type {number} */ index, /** @type {boolean} */ usingOverlay) {
 		// buffer index number
 		/** @type {number} */ this.index = index;
 
@@ -53,7 +53,7 @@
 	}
 
 	// restore grid using tile map
-	Snapshot.prototype.restoreGridUsingTile = function(grid, tile, life) {
+	Snapshot.prototype.restoreGridUsingTile = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tile, life) {
 		// length of tile array
 		var	/** @type {number} */ l = tile.length,
 		    
@@ -219,7 +219,7 @@
 	};
 
 	// save grid using tile map
-	Snapshot.prototype.saveGridUsingTile = function(grid, tile, life) {
+	Snapshot.prototype.saveGridUsingTile = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tile, life) {
 		// length of tile array
 		var	/** @type {number} */ l = tile.length,
 		    
@@ -386,7 +386,7 @@
 	};
 
 	// restore overlay grid using tile map
-	Snapshot.prototype.restoreOverlayGridUsingTile = function(grid, tile, life) {
+	Snapshot.prototype.restoreOverlayGridUsingTile = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tile, life) {
 		// length of tile array
 		var	/** @type {number} */ l = tile.length,
 		    
@@ -617,7 +617,7 @@
 	};
 
 	// restore colour grid using tile map
-	Snapshot.prototype.restoreColourGridUsingTile = function(grid, tile, life) {
+	Snapshot.prototype.restoreColourGridUsingTile = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tile, life) {
 		// length of tile array
 		var	/** @type {number} */ l = tile.length,
 		    
@@ -848,7 +848,7 @@
 	};
 
 	// save overlay grid using tile map
-	Snapshot.prototype.saveOverlayGridUsingTile = function(grid, tile, life) {
+	Snapshot.prototype.saveOverlayGridUsingTile = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tile, life) {
 		// length of tile array
 		var	/** @type {number} */ l = tile.length,
 		    
@@ -1048,7 +1048,7 @@
 	};
 
 	// save colour grid using tile map
-	Snapshot.prototype.saveColourGridUsingTile = function(grid, tile, life) {
+	Snapshot.prototype.saveColourGridUsingTile = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tile, life) {
 		// length of tile array
 		var	/** @type {number} */ l = tile.length,
 		    
@@ -1251,7 +1251,7 @@
 	/**
 	 * @constructor
 	 */
-	function SnapshotManager(allocator, bitcounts) {
+	function SnapshotManager(allocator, /** @type {Uint8Array} */ bitcounts) {
 		// allocator
 		this.allocator = allocator;
 
@@ -1289,7 +1289,7 @@
 		/** @type {number} */ this.maxSnapshots = 51;
 
 		// bit counts for bytes
-		this.bitCounts = bitcounts;
+		/** @type {Uint8Array} */ this.bitCounts = bitcounts;
 
 		// default number of tiles to allocate
 		/** @type {number} */ this.defaultTiles = 128;
@@ -1401,7 +1401,7 @@
 	};
 
 	// save snapshot
-	SnapshotManager.prototype.saveSnapshot = function(grid, tileGrid, colourGrid, colourTileGrid, overlayGrid, overlayTileGrid, zoomBox, HROTBox, /** @type {number} */ population, /** @type {number} */ births, /** @type {number} */ deaths,
+	SnapshotManager.prototype.saveSnapshot = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tileGrid, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Array<Uint16Array>} */ colourTileGrid, /** @type {Array<Uint8Array>} */ overlayGrid, /** @type {Array<Uint8Array>} */ overlayTileGrid, zoomBox, HROTBox, /** @type {number} */ population, /** @type {number} */ births, /** @type {number} */ deaths,
 		/** @type {number} */ counter, /** @type {number} */ fixedCounter, /** @type {number} */ counterMargolus, /** @type {number} */ maxMargolusGen, /** @type {number} */ width, /** @type {number} */ height, life, /** @type {boolean} */ isReset, /** @type {number} */ anythingAlive) {
 		var	snapshot = null,
 			/** @type {number} */ i = 0,

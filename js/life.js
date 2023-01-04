@@ -535,7 +535,7 @@
 		this.customColours = null;
 
 		// bit counts for 16bit values
-		/** @type Uint8Array*/ this.bitCounts16 = this.allocator.allocate(Uint8, 65536, "Life.bitCounts16");
+		/** @type {Uint8Array} */ this.bitCounts16 = this.allocator.allocate(Uint8, 65536, "Life.bitCounts16");
 		this.initBitCounts16();
 
 		// first bit set for 16bit values
@@ -2050,9 +2050,12 @@
 			/** @type {number} */ blue = 0,
 			/** @type {string} */ rgbString = "",
 			/** @type {number} */ pixCol = 0,
-			/** @type {number} */ whiteCol = -1,
+			/** @type {number} */ gridCol = 0xFF505050,
 			/** @type {number} */ cellBorderSize = this.cellBorderSize,
+			/** @type {number} */ gridBorderSize = 0,
 			/** @type {number} */ cellSize = 0,
+			/** @type {number} */ rowWidth = 0,
+			/** @type {number} */ colHeight = 0,
 			/** @type {Array} */ periodCols = [],
 			/** @type {boolean} */ drawGrid = false,
 			data = null,
@@ -2079,6 +2082,9 @@
 		if (s >= 1) {
 			s |= 0;
 			drawGrid = true;
+
+			// add an extra line at the right and the bottom to complete the grid
+			gridBorderSize = 1;
 		} else {
 			// switch to smaller cell size
 			this.cellPeriodCellSize = 2;
@@ -2109,7 +2115,7 @@
 		}
 
 		// set colours for period 1 and oscillator period
-		periodCols[0] = "rgb(238,238,238)";
+		periodCols[0] = "black";
 		periodCols[1] = "rgb(96,96,96)";
 		periodCols[this.popSubPeriod.length - 1] = "rgb(153,153,153)";
 
@@ -2125,13 +2131,15 @@
 		}
 
 		// resize the image and canvas to fix the period map with "cellSize" cells
-		this.cellPeriodImage.width = cellSize * (this.cellPeriodWidth + cellBorderSize + cellBorderSize);
-		this.cellPeriodImage.height = cellSize * (this.cellPeriodHeight + cellBorderSize + cellBorderSize);
-		this.cellPeriodCanvas.width = cellSize * (this.cellPeriodWidth + cellBorderSize + cellBorderSize);
-		this.cellPeriodCanvas.height = cellSize * (this.cellPeriodHeight + cellBorderSize + cellBorderSize);
+		rowWidth = cellSize * (this.cellPeriodWidth + cellBorderSize + cellBorderSize) + gridBorderSize;
+		colHeight = cellSize * (this.cellPeriodHeight + cellBorderSize + cellBorderSize) + gridBorderSize;
+		this.cellPeriodImage.width = rowWidth;
+		this.cellPeriodImage.height = colHeight;
+		this.cellPeriodCanvas.width = rowWidth;
+		this.cellPeriodCanvas.height = colHeight;
 
 		// clear the canvas
-		this.cellPeriodContext.fillStyle = "rgb(238,238,238)";
+		this.cellPeriodContext.fillStyle = "black";
 		this.cellPeriodContext.fillRect(0, 0, this.cellPeriodCanvas.width, this.cellPeriodCanvas.height);
 
 		// get the pixel data
@@ -2144,7 +2152,7 @@
 				p = this.cellPeriod[y * this.cellPeriodWidth + x];
 				pixCol = this.cellPeriodRGB[p];
 				for (cy = 0; cy < cellSize; cy += 1) {
-					row = ((y + cellBorderSize) * cellSize + cy) * (this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize + ((x + cellBorderSize) * cellSize);
+					row = ((y + cellBorderSize) * cellSize + cy) * rowWidth + ((x + cellBorderSize) * cellSize);
 					for (cx = 0; cx < cellSize; cx += 1) {
 						data32[row + cx] = pixCol;
 					}
@@ -2154,17 +2162,29 @@
 
 		// draw the grid if required
 		if (drawGrid) {
-			for (y = -1; y <= this.cellPeriodHeight; y += 1) {
-				row = ((y + cellBorderSize) * cellSize) * (this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize;
-				for (x = 0; x < (this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize; x += 1) {
-					data32[row + x] = whiteCol;
+			for (y = -1; y <= this.cellPeriodHeight + 1; y += 1) {
+				row = ((y + cellBorderSize) * cellSize) * rowWidth;
+				for (x = 0; x < (this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize + 1; x += 1) {
+					data32[row + x] = gridCol;
 				}
 			}
 
-			for (x = -1; x <= this.cellPeriodWidth; x += 1) {
+			for (x = -1; x <= this.cellPeriodWidth + 1; x += 1) {
 				for (y = 0; y < (this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize; y += 1) {
-					data32[(y * (this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize) + ((x + cellBorderSize + cellBorderSize) * cellSize)] = whiteCol;
+					data32[(y * rowWidth) + ((x + cellBorderSize) * cellSize)] = gridCol;
 				}
+			}
+		} else {
+			// draw a border
+			row = rowWidth * (colHeight - 1);
+			for (x = 0; x < rowWidth; x += 1) {
+				data32[x] = gridCol;
+				data32[x + row] = gridCol;
+			}
+
+			for (y = 0; y < colHeight; y += 1) {
+				data32[y * rowWidth] = gridCol;
+				data32[y * rowWidth + rowWidth - 1] = gridCol;
 			}
 		}
 
@@ -2198,20 +2218,25 @@
 		return x + fieldWidth;
 	};
 
-	// draw cell period table
-	Life.prototype.drawCellPeriodTable = function() {
+	// draw cell period table under and in the style of the supplied label
+	Life.prototype.drawCellPeriodTable = function(label) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ value = 0,
 			/** @type {number} */ offset = 2,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
-			/** @type {number} */ y = 95 * displayScale,
-			/** @type {number} */ fieldWidth = 80 * displayScale,
-			/** @type {number} */ rowHeight = 18 * displayScale,
-			/** @type {number} */ boxSize = 10 * displayScale,
+			/** @type {number} */ startY = label.y + label.height,
+			/** @type {number} */ width = label.width,
+			/** @type {number} */ alpha = label.bgAlpha,
+			/** @type {string} */ bgCol = label.bgCol,
+			/** @type {string} */ fgCol = label.fgCol,
+			/** @type {number} */ y = startY,
+			/** @type {number} */ rowHeight = 24 * displayScale,
+			/** @type {number} */ boxSize = 16 * displayScale,
 			/** @type {number} */ numCols = this.cellPeriodNumCols,
-			/** @type {number} */ leftX = (this.displayWidth - 4 * fieldWidth + 4) >> 1,
+			/** @type {number} */ fieldWidth = (width >> 2) - 1,
+			/** @type {number} */ leftX = (this.displayWidth - width) >> 1,
 			/** @type {CanvasRenderingContext2D} */ ctx = this.context;
 
 		// get number of subperiods
@@ -2223,14 +2248,15 @@
 		}
 
 		// draw background
-		ctx.fillStyle = "black";
-		ctx.globalAlpha = 0.5;
-		ctx.fillRect(leftX, y - (rowHeight >> 1), 4 * fieldWidth + 4, (numCols + 3) * rowHeight);
+		ctx.fillStyle = bgCol;
+		ctx.globalAlpha = alpha;
+		ctx.fillRect(leftX, y, width, (numCols + 3) * rowHeight);
 
 		// draw shadow and then text
-		ctx.font = ((15 * displayScale) | 0) + "px Arial";
+		ctx.font = ((20 * displayScale) | 0) + "px Arial";
 		ctx.globalAlpha = 1;
-		ctx.fillStyle = "black";
+		ctx.fillStyle = bgCol;
+		y += rowHeight >> 1;
 		for (j = 0; j < 2; j += 1) {
 			// draw the table header
 			x = leftX;
@@ -2258,9 +2284,9 @@
 			}
 
 			// switch to drawing text
-			y = 95 * displayScale;
+			y = startY + (rowHeight >> 1);
 			offset = 0;
-			ctx.fillStyle = "white";
+			ctx.fillStyle = fgCol;
 		}
 
 		// draw the legend
@@ -2281,13 +2307,16 @@
 	};
 
 	// draw cell period map
-	Life.prototype.drawCellPeriodMap = function() {
+	Life.prototype.drawCellPeriodMap = function(label) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ p = 0,
 			/** @type {number} */ s = 0,
-			/** @type {number} */ legendWidth = 50,
 			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
+			/** @type {number} */ legendWidth = 50 * displayScale,
+			/** @type {number} */ rowSize = 15 * displayScale,
+			/** @type {number} */ colSize = 16 * displayScale,
+			/** @type {number} */ boxSize = (rowSize * 0.7) | 0,
 			/** @type {number} */ width = this.displayWidth - (displayScale * (legendWidth + legendWidth + 20)),
 			/** @type {number} */ height = this.displayHeight - (displayScale * 90),
 			/** @type {number} */ numCols = this.cellPeriodNumCols,
@@ -2295,6 +2324,9 @@
 			/** @type {number} */ cellBorderSize = this.cellBorderSize,
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ bottomY = 0,
+			/** @type {number} */ alpha = label.bgAlpha,
+			/** @type {string} */ fgCol = label.fgCol,
+			/** @type {string} */ bgCol = label.bgCol,
 			/** @type {CanvasRenderingContext2D} */ ctx = this.context;
 
 		// scale the image to fit
@@ -2312,14 +2344,14 @@
 		}
 
 		// recompute size based on scale factor
-		x = ((this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize) * s;
-		y = ((this.cellPeriodHeight + cellBorderSize + cellBorderSize)  * cellSize) * s;
+		x = this.cellPeriodImage.width * s;
+		y = this.cellPeriodImage.height * s;
 
 		// render the map centered on the display
 		ctx.save();
 		leftX = ((this.displayWidth - x) / 2);
 		bottomY = ((this.displayHeight - y) / 2);
-		ctx.translate(leftX, bottomY);
+		ctx.translate(this.displayWidth >> 1, this.displayHeight >> 1);
 		ctx.scale(s, s);
 
 		// use image smoothing for scales below 1 pixel per cell
@@ -2328,14 +2360,14 @@
 		} else {
 			ctx.imageSmoothingEnabled = false;
 		}
-		ctx.drawImage(this.cellPeriodImage, 0, 0);
+		ctx.drawImage(this.cellPeriodImage, -(this.cellPeriodImage.width >> 1), -(this.cellPeriodImage.height >> 1));
 		ctx.imageSmoothingEnabled = false;
 		ctx.restore();
 
 		// draw the legend
-		leftX = 55;
-		bottomY = 180;
-		ctx.font = "11px Arial";
+		leftX = 55 * displayScale;
+		bottomY = 180 * displayScale;
+		ctx.font = ((11 * displayScale) | 0) + "px Arial";
 		if (this.popSubPeriod[this.popSubPeriod.length - 1] === 0) {
 			numCols -= 1;
 		}
@@ -2344,12 +2376,11 @@
 		}
 
 		// draw the legend box
-		ctx.lineWidth = 2;
-		ctx.strokeStyle = "white";
-		bottomY = (this.displayHeight - (numCols + 2) * 15) / 2;
-		ctx.strokeRect(leftX - legendWidth - 1, bottomY - 1, legendWidth - 2 + 2, (numCols + 2) * 15 + 2);
-		ctx.fillStyle = "rgb(238,238,238)";
-		ctx.fillRect(leftX - legendWidth, bottomY, legendWidth - 2, (numCols + 2) * 15);
+		bottomY = (this.displayHeight - (numCols + 2) * rowSize) / 2;
+		ctx.globalAlpha = alpha;
+		ctx.fillStyle = bgCol;
+		ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, legendWidth - 2 + 3, (numCols + 2) * rowSize + 3);
+		ctx.globalAlpha = 1;
 
 		// draw each legend entry
 		y = 0;
@@ -2358,15 +2389,15 @@
 			if (p > 0) {
 				// draw colour
 				ctx.fillStyle = "black";
-				ctx.fillRect(leftX - legendWidth + 2, bottomY + y * 15 + 2, 10, 10);
+				ctx.fillRect(leftX - legendWidth + 2, bottomY + y * rowSize + 2, boxSize, boxSize);
 				ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[x].toString(16)).slice(-6);
-				ctx.fillRect(leftX - legendWidth, bottomY + y * 15, 10, 10);
+				ctx.fillRect(leftX - legendWidth, bottomY + y * rowSize, boxSize, boxSize);
 				
 				// draw period
-				ctx.fillStyle = "white";
-				ctx.fillText(String(x), leftX - legendWidth + 16 + 2, bottomY + y * 15 + 2 + 7);
-				ctx.fillStyle = "black";
-				ctx.fillText(String(x), leftX - legendWidth + 16, bottomY + y * 15 + 7);
+				ctx.fillStyle = bgCol;
+				ctx.fillText(String(x), leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
+				ctx.fillStyle = fgCol;
+				ctx.fillText(String(x), leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
 
 				y += 1;
 			}

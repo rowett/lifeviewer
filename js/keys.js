@@ -13,7 +13,7 @@
 
 	// process keys in copy clipboard mode
 	/** @returns {boolean} */
-	KeyProcessor.processKeyCopy = function(me, /** @type {number} */ keyCode, event) {
+	KeyProcessor.processKeyCopy = function(me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true;
 
@@ -50,7 +50,7 @@
 
 	// process keys in go to generation mode
 	/** @returns {boolean} */
-	KeyProcessor.processKeyGoTo = function(me, /** @type {number} */ keyCode, event) {
+	KeyProcessor.processKeyGoTo = function(me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true;
 
@@ -86,7 +86,7 @@
 
 	// process keys in identify mode
 	/** @returns {boolean} */
-	KeyProcessor.processKeyIdentify = function(me, /** @type {number} */ keyCode, event) {
+	KeyProcessor.processKeyIdentify = function(me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true;
 
@@ -134,7 +134,7 @@
 
 	// process keys in history mode
 	/** @returns {boolean} */
-	KeyProcessor.processKeyHistory = function(me, /** @type {number} */ keyCode, event) {
+	KeyProcessor.processKeyHistory = function(me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true;
 
@@ -165,7 +165,7 @@
 
 	// process key
 	/** @returns {boolean} */
-	KeyProcessor.processKey = function(me, /** @type {number} */ keyCode, event) {
+	KeyProcessor.processKey = function(me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true,
 

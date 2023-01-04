@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 813,
+		/** @const {number} */ versionBuild : 815,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6204,12 +6204,14 @@
 			me.waypointManager.drawAnnotations(me);
 		}
 
-		// draw cell period map
+		// draw cell period map or table
 		if (me.resultsDisplayed && me.periodMapDisplayed > 0 && me.engine.cellPeriod !== null) {
 			if (me.periodMapDisplayed === 1) {
-				me.engine.drawCellPeriodTable();
+				// draw cell period table below the main banner
+				me.engine.drawCellPeriodTable(me.identifyBannerLabel);
 			} else {
-				me.engine.drawCellPeriodMap();
+				// draw cell period map
+				me.engine.drawCellPeriodMap(me.identifyBannerLabel);
 			}
 		}
 
@@ -6283,6 +6285,7 @@
 		me.updateInfoBar();
 
 		// TBD - remove
+		/*
 		if (me.engine.cellIconImage) {
 			me.mainContext.save();
 			me.mainContext.imageSmoothingEnabled = true;
@@ -6303,6 +6306,7 @@
 			me.mainContext.drawImage(me.engine.cellIconImage, 0, 0);
 			me.mainContext.restore();
 		}
+		*/
 
 		// hide the UI controls if help or errors are displayed
 		me.updateUIForHelp((me.displayHelp || me.scriptErrors.length) !== 0);
@@ -6443,8 +6447,9 @@
 		this.identifySaveCellMapButton.deleted = hide || !this.resultsDisplayed || this.engine.cellPeriod === null || settingsMenuOpen;
 
 		// identify results
-		shown = shown || this.periodMapDisplayed > 0;
+		shown = shown || this.periodMapDisplayed == 2;
 		this.identifyBannerLabel.deleted = shown;
+		shown = shown || this.periodMapDisplayed > 0;
 		this.identifyTypeLabel.deleted = shown;
 		this.identifyCellsLabel.deleted = shown;
 		this.identifyBoxLabel.deleted = shown;
@@ -17360,10 +17365,7 @@
 
 			// process icons if loaded
 			if (pattern.ruleTableIcons) {
-				var t1 = performance.now();
 				me.engine.processIcons(pattern.ruleTableIcons);
-				t1 = performance.now() - t1;
-				console.debug(t1.toFixed(2));
 			}
 
 			// check if the rule is HROT
