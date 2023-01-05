@@ -1554,7 +1554,7 @@
 		}
 
 		// get number of states
-		itemName = view.patternStates;
+		itemName = String(view.patternStates);
 		if (view.patternStates > 2 && view.patternUsedStates !== view.patternStates) {
 			itemName = view.patternUsedStates + " of " + itemName;
 		}

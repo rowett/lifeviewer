@@ -3403,7 +3403,7 @@
 	// find touch change by identified
 	MenuManager.prototype.findChangeById = function(changes, /** @type {number} */ id) {
 		var	change = null,
-			/** @type {number} */i = 0;
+			/** @type {number} */ i = 0;
 
 		// search the change list for the change with the specified id
 		while (change === null && i < changes.length) {

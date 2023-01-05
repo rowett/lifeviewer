@@ -2563,7 +2563,7 @@
 	};
 
 	// return identify results
-	Life.prototype.identifyResults = function(view, /** @type {number} */i, /** @type {string} */ message, /** @type {number} */period, /** @type {number} */deltaX, /** @type {number} */deltaY, /** @type {number} */boxWidth, /** @type {number} */boxHeight, /** @type {boolean} */ fast) {
+	Life.prototype.identifyResults = function(view, /** @type {number} */ i, /** @type {string} */ message, /** @type {number} */ period, /** @type {number} */ deltaX, /** @type {number} */ deltaY, /** @type {number} */ boxWidth, /** @type {number} */ boxHeight, /** @type {boolean} */ fast) {
 		// simple version of speed
 		var	/** @type {string} */ simpleSpeed = "",
 
@@ -35383,7 +35383,7 @@
 
 	// project the life grid onto the canvas with transformation and clipping
 	Life.prototype.renderGridProjectionClipNoRotate = function(bottomGrid, layersGrid, /** @type {number} */ mask, /** @type {boolean} */ drawingSnow) {
-		var	/** @type {number} */w8 = this.displayWidth >> 3,
+		var	/** @type {number} */ w8 = this.displayWidth >> 3,
 			/** @type {Uint32Array} */ pixelColours = this.pixelColours,
 			/** @type {Uint32Array} */ data32 = this.data32,
 			/** @type {number} */ i = 0,

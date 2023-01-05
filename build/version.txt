@@ -2,7 +2,7 @@ Build 817
 - added Settings->General->Last Identify to display last Identify results (hotkey Shift F6)
 
 Build 816
-- improve contrast for some Cell Period Map states
+- improve contrast for some Cell Period Map values
 - prevent hotkeys from switching to Cell Period Map or Cell Period Table when strict volatility not calculated
 
 Build 815

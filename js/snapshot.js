@@ -1401,7 +1401,7 @@
 	};
 
 	// save snapshot
-	SnapshotManager.prototype.saveSnapshot = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tileGrid, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Array<Uint16Array>} */ colourTileGrid, /** @type {Array<Uint8Array>} */ overlayGrid, /** @type {Array<Uint8Array>} */ overlayTileGrid, zoomBox, HROTBox, /** @type {number} */ population, /** @type {number} */ births, /** @type {number} */ deaths,
+	SnapshotManager.prototype.saveSnapshot = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tileGrid, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Array<Uint16Array>} */ colourTileGrid, /** @type {Array<Uint8Array>} */ overlayGrid, /** @type {Array<Uint16Array>} */ overlayTileGrid, zoomBox, HROTBox, /** @type {number} */ population, /** @type {number} */ births, /** @type {number} */ deaths,
 		/** @type {number} */ counter, /** @type {number} */ fixedCounter, /** @type {number} */ counterMargolus, /** @type {number} */ maxMargolusGen, /** @type {number} */ width, /** @type {number} */ height, life, /** @type {boolean} */ isReset, /** @type {number} */ anythingAlive) {
 		var	snapshot = null,
 			/** @type {number} */ i = 0,
@@ -1561,9 +1561,9 @@
 		var	currentTileGrid = snapshot.tileGrid,
 			currentColourTileGrid = snapshot.colourTileGrid,
 			currentOverlayTileGrid = snapshot.overlayTileGrid,
-			/** @type {number} */currentHeight = snapshot.tileGrid.length,
-			/** @type {number} */y = 0,
-			/** @type {number} */index = snapshot.index;
+			/** @type {number} */ currentHeight = snapshot.tileGrid.length,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ index = snapshot.index;
 
 		// allocate the new tile grids in the buffer
 		this.tileGrids[index] = Array.matrix(Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.tileGrid" + index);

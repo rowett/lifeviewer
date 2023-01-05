@@ -725,7 +725,7 @@
 	};
 
 	// weighted generations neighbourhood optimized range 1 version
-	HROT.prototype.nextGenerationWeightedGenerations = function(/** @const{number} */bottomY, /** @const{number} */topY, /** @const{number} */leftX, /** @const{number} */rightX, /** @const{number} */range) {
+	HROT.prototype.nextGenerationWeightedGenerations = function(/** @const{number} */ bottomY, /** @const{number} */ topY, /** @const{number} */ leftX, /** @const{number} */ rightX, /** @const{number} */ range) {
 		var	/** @type {number} */ y,
 			/** @type {number} */ x,
 			/** @type {number} */ xm1,
@@ -842,7 +842,7 @@
 	};
 
 	// weighted neighbourhood optimized range 1 version
-	HROT.prototype.nextGenerationWeighted2R1 = function(/** @const{number} */bottomY, /** @const{number} */topY, /** @const{number} */leftX, /** @const{number} */rightX, /** @const{number} */range) {
+	HROT.prototype.nextGenerationWeighted2R1 = function(/** @const{number} */ bottomY, /** @const{number} */ topY, /** @const{number} */ leftX, /** @const{number} */ rightX, /** @const{number} */ range) {
 		var	/** @type {number} */ y,
 			/** @type {number} */ x,
 			/** @type {number} */ xm1,
@@ -1959,7 +1959,7 @@
 	};
 
 	// update the life grid region using HROT for 2 state patterns
-	HROT.prototype.nextGenerationHROT2 = function(/** @type {boolean} */useAlternate) {
+	HROT.prototype.nextGenerationHROT2 = function(/** @type {boolean} */ useAlternate) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ i = 0,

@@ -2565,7 +2565,7 @@
 	};
 
 	// after edit
-	View.prototype.afterEdit = function(/** @type {string} */comment) {
+	View.prototype.afterEdit = function(/** @type {string} */ comment) {
 		var	/** @type {number} */ counter = this.engine.counter,
 			editCells = null,
 			box = null,
@@ -2979,7 +2979,7 @@
 
 	// convert rle to cell list
 	/** @returns {Array} */
-	View.prototype.rleToCellList = function(/** @type {string} */rle, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ transform) {
+	View.prototype.rleToCellList = function(/** @type {string} */ rle, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ transform) {
 		var	/** @type {Array} */ cells = [],
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
@@ -4218,7 +4218,8 @@
 	};
 
 	// opacity range
-	View.prototype.viewOpacityRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array} */
+	View.prototype.viewOpacityRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue[0];
 
 		// check if changing
@@ -4230,13 +4231,17 @@
 	};
 
 	// paste position range
-	View.prototype.viewPastePositionRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array} */
+	View.prototype.viewPastePositionRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+		var	/** @type {string} */ posName = "";
+
 		// check if changing
 		if (change) {
 			me.pastePosition = newValue[0];
 		}
 
-		return [me.pastePosition, ViewConstants.pastePositionNames[(me.pastePosition + 0.5) | 0]];
+		posName = ViewConstants.pastePositionNames[(me.pastePosition + 0.5) | 0];
+		return [me.pastePosition, posName];
 	};
 
 	// cycle paste location
@@ -4251,7 +4256,8 @@
 	};
 
 	// random density range
-	View.prototype.viewRandomRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array} */
+	View.prototype.viewRandomRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.randomDensity = newValue[0];
@@ -4267,7 +4273,8 @@
 	};
 
 	// states range
-	View.prototype.viewStatesRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array} */
+	View.prototype.viewStatesRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue;
 
 		// check if changing
@@ -4287,7 +4294,8 @@
 	};
 
 	// zoom range
-	View.prototype.viewZoomRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array} */
+	View.prototype.viewZoomRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue[0],
 			/** @type {number} */ displayValue = 0;
 
@@ -4364,7 +4372,7 @@
 	// fit zoom to display width and height
 	View.prototype.fitZoomDisplay = function(/** @type {boolean} */ immediate, /** @type {boolean} */ smooth, /** @type {number} */ fitType) {
 		// get the x, y and zoom that fits the pattern on the display
-		var	/** @type {number} */ fitZoom = 0,
+		var	/** @type {Array<number>} */ fitZoom = [],
 
 			// remember the original x, y and zoom
 			/** @type {number} */ origZoom = this.engine.zoom,
@@ -7626,7 +7634,8 @@
 	};
 
 	// toggle stars display
-	View.prototype.viewStarsToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewStarsToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.starsOn = newValue[0];
@@ -7636,7 +7645,8 @@
 	};
 
 	// toggle history fit mode
-	View.prototype.viewHistoryFitToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewHistoryFitToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.historyFit = newValue[0];
@@ -7646,7 +7656,8 @@
 	};
 
 	// toggle major gridlines display
-	View.prototype.viewMajorToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewMajorToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.engine.gridLineMajorEnabled = newValue[0];
@@ -7656,7 +7667,8 @@
 	};
 
 	// toggle infobar display
-	View.prototype.viewInfoBarToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewInfoBarToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.infoBarEnabled = newValue[0];
@@ -7666,7 +7678,8 @@
 	};
 
 	// toggle graph display
-	View.prototype.viewGraphToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewGraphToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.popGraph = newValue[0];
@@ -7686,7 +7699,8 @@
 	};
 
 	// toggle kill gliders
-	View.prototype.viewKillToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewKillToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.engine.clearGliders = newValue[0];
@@ -7696,7 +7710,8 @@
 	};
 
 	// toggle labels display
-	View.prototype.viewLabelToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewLabelToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.showLabels = newValue[0];
@@ -7706,7 +7721,8 @@
 	};
 
 	// toggle cell borders
-	View.prototype.viewBordersToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewBordersToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// toggle cell borders
@@ -7717,7 +7733,8 @@
 	};
 
 	// toggle auto hide grid
-	View.prototype.viewAutoGridToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewAutoGridToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// toggle auto hide
@@ -7735,7 +7752,8 @@
 	};
 
 	// toggle rainbow mode
-	View.prototype.viewRainbowToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewRainbowToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// toggle rainbow
@@ -7752,7 +7770,8 @@
 	};
 
 	// toggle Margolus alternating grid lines
-	View.prototype.viewAltGridToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewAltGridToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// toggle auto hide
@@ -7762,7 +7781,8 @@
 	};
 
 	// toggle auto hide gui
-	View.prototype.viewAutoHideToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewAutoHideToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// toggle auto hide
@@ -7772,7 +7792,8 @@
 	};
 
 	// toggle hexagonal cells
-	View.prototype.viewHexCellToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewHexCellToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// toggle cell shape
@@ -7784,7 +7805,8 @@
 	};
 
 	// toggle timing detail display
-	View.prototype.viewTimingDetailToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewTimingDetailToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.menuManager.showExtendedTiming = newValue[0];
@@ -7797,7 +7819,8 @@
 	};
 
 	// toggle fps display
-	View.prototype.viewFpsToggle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewFpsToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			me.menuManager.showTiming = newValue[0];
@@ -7887,7 +7910,8 @@
 	};
 
 	// set playback speed
-	View.prototype.viewSpeedRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array} */
+	View.prototype.viewSpeedRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	/** @type {string} */ label = "",
 			value = me.speedIndex();
 
@@ -7904,9 +7928,9 @@
 
 		// compute the label
 		if (Math.round(me.genSpeed) < me.refreshRate) {
-			label = Math.round(me.genSpeed) + "/s";
+			label = String(Math.round(me.genSpeed)) + "/s";
 		} else {
-			label = Math.round(me.gensPerStep) + "x";
+			label = String(Math.round(me.gensPerStep)) + "x";
 		}
 
 		return [value, label];
@@ -8290,7 +8314,7 @@
 	};
 
 	// set help topic
-	View.prototype.setHelpTopic = function(newValue, /** @type {View} */ me) {
+	View.prototype.setHelpTopic = function(/** @type {number} */ newValue, /** @type {View} */ me) {
 		// switch to required topic
 		me.helpTopic = newValue;
 		me.displayHelp = 1;
@@ -8347,8 +8371,9 @@
 	};
 
 	// view help section list
-	View.prototype.viewHelpSectionList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		var	result = newValue;
+	/** @returns {number} */
+	View.prototype.viewHelpSectionList = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+		var	/** @type {number} */ result = newValue;
 
 		if (change) {
 			me.displayHelp = me.helpSections[newValue][0];
@@ -8359,7 +8384,8 @@
 	};
 
 	// auto-shrink selection
-	View.prototype.viewAutoShrinkList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewAutoShrinkList = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.autoShrink = newValue[0];
 			if (me.autoShrink) {
@@ -8376,7 +8402,8 @@
 	};
 
 	// copy sync with external clipboard
-	View.prototype.viewCopySyncList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewCopySyncList = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.copySyncExternal = newValue[0];
 			if (me.copySyncExternal) {
@@ -8388,7 +8415,8 @@
 	};
 
 	// view mode list
-	View.prototype.viewModeList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {number} */
+	View.prototype.viewModeList = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue;
 
 		if (change) {
@@ -8478,7 +8506,8 @@
 	};
 
 	// active clipboard
-	View.prototype.viewClipboardList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {number} */
+	View.prototype.viewClipboardList = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			// set active clipboard
 			me.currentPasteBuffer = newValue;
@@ -8508,7 +8537,8 @@
 	};
 
 	// paste mode
-	View.prototype.viewPasteModeList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {number} */
+	View.prototype.viewPasteModeList = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.pasteModeForUI = newValue;
 			me.pasteMode = ViewConstants.uiPasteModes[newValue];
@@ -8708,7 +8738,8 @@
 	};
 
 	// drawing states list
-	View.prototype.viewStateList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {number} */
+	View.prototype.viewStateList = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue;
 
 		if (change) {
@@ -8775,7 +8806,8 @@
 	};
 
 	// drawing states colours list
-	View.prototype.viewStateColsList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.viewStateColsList = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue,
 			/** @type {number} */ i = 0;
 
@@ -8952,7 +8984,8 @@
 	};
 
 	// view play list
-	View.prototype.viewPlayList = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {number} */
+	View.prototype.viewPlayList = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = newValue,
 		    /** @type {boolean} */ stopMode = me.stopDisabled,
 		    /** @type {boolean} */ loopMode = me.loopDisabled,
@@ -9296,7 +9329,8 @@
 	};
 
 	// angle range
-	View.prototype.viewAngleRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array} */
+	View.prototype.viewAngleRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// set manual change happened
@@ -9354,7 +9388,8 @@
 	};
 
 	// tilt range
-	View.prototype.viewTiltRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array} */
+	View.prototype.viewTiltRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// set manual change happened
@@ -9369,7 +9404,8 @@
 	};
 
 	// layers range
-	View.prototype.viewLayersRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array} */
+	View.prototype.viewLayersRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result;
 
 		// check if changing
@@ -9389,7 +9425,8 @@
 	};
 
 	// depth range
-	View.prototype.viewDepthRange = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array} */
+	View.prototype.viewDepthRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
 			// set manual change happened
@@ -10603,7 +10640,7 @@
 			/** @type {number} */ valueB = 0,
 			/** @type {number} */ valueS = 0,
 			/** @type {number} */ neighbours = 8,
-			/** @type {string} */postfix = "",
+			/** @type {string} */ postfix = "",
 			birthChance = null,
 			survivalChance = null;
 
@@ -10895,7 +10932,7 @@
 	};
 
 	// randomize rule and pattern
-	View.prototype.randomPattern = function(/** @type {View} */ me, /** @type {boolean} */fixedRule) {
+	View.prototype.randomPattern = function(/** @type {View} */ me, /** @type {boolean} */ fixedRule) {
 		var	/** @type {string} */ patternText = "",
 			/** @type {string} */ rleText = "",
 			result = null,
@@ -10912,7 +10949,7 @@
 			/** @type {number} */ rows = me.randomHeight,
 			/** @type {number} */ columns = me.randomWidth,
 			/** @type {number} */ fill = me.randomFillPercentage / 100,
-			/** @type {boolean} */isAlternating = false;
+			/** @type {boolean} */ isAlternating = false;
 
 		// check if rule is alternating
 		if (me.patternRuleName.indexOf("|") !== -1) {
@@ -11543,7 +11580,8 @@
 	};
 
 	// theme selection toggle
-	View.prototype.setThemeFromCallback = function(theme, newValue, /** @type {boolean} */ change) {
+	/** @returns {Array<boolean>} */
+	View.prototype.setThemeFromCallback = function(/** @type {number} */ theme, /** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change) {
 		if (change) {
 			if (newValue[0]) {
 				// change quickly
@@ -11566,87 +11604,108 @@
 	};
 
 	// theme selection toggles
-	View.prototype.toggleTheme0 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme0 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(0, newValue, change);
 	};
 
-	View.prototype.toggleTheme1 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme1 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(1, newValue, change);
 	};
 
-	View.prototype.toggleTheme2 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme2 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(2, newValue, change);
 	};
 
-	View.prototype.toggleTheme3 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme3 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(3, newValue, change);
 	};
 
-	View.prototype.toggleTheme4 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme4 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(4, newValue, change);
 	};
 
-	View.prototype.toggleTheme5 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme5 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(5, newValue, change);
 	};
 
-	View.prototype.toggleTheme6 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme6 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(6, newValue, change);
 	};
 
-	View.prototype.toggleTheme7 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme7 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(7, newValue, change);
 	};
 
-	View.prototype.toggleTheme8 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme8 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(8, newValue, change);
 	};
 
-	View.prototype.toggleTheme9 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme9 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(9, newValue, change);
 	};
 
-	View.prototype.toggleTheme10 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme10 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(10, newValue, change);
 	};
 
-	View.prototype.toggleTheme11 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme11 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(11, newValue, change);
 	};
 
-	View.prototype.toggleTheme12 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme12 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(12, newValue, change);
 	};
 
-	View.prototype.toggleTheme13 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme13 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(13, newValue, change);
 	};
 
-	View.prototype.toggleTheme14 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme14 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(14, newValue, change);
 	};
 
-	View.prototype.toggleTheme15 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme15 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(15, newValue, change);
 	};
 
-	View.prototype.toggleTheme16 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme16 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(16, newValue, change);
 	};
 
-	View.prototype.toggleTheme17 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme17 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(17, newValue, change);
 	};
 
-	View.prototype.toggleTheme18 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme18 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(18, newValue, change);
 	};
 
-	View.prototype.toggleTheme19 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme19 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(19, newValue, change);
 	};
 
-	View.prototype.toggleTheme20 = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleTheme20 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		return me.setThemeFromCallback(20, newValue, change);
 	};
 
@@ -11669,7 +11728,7 @@
 			// close Help if open
 			if (me.displayHelp !== 0) {
 				me.displayHelp = 0;
-				me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+				me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
 			}
 
 			// close settings menu if open
@@ -13355,7 +13414,7 @@
 
 	// flip Y paste
 	View.prototype.flipYPaste = function(/** @type {View} */ me) {
-		var	/** @type {number} */w = me.pasteWidth,
+		var	/** @type {number} */ w = me.pasteWidth,
 			/** @type {number} */ h = me.pasteHeight,
 			/** @type {number} */ h2 = h >> 1,
 			/** @type {number} */ x = 0,
@@ -14137,7 +14196,7 @@
 		// close Help if open
 		if (me.displayHelp !== 0) {
 			me.displayHelp = 0;
-			me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+			me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
 		}
 
 		// reset check
@@ -14206,7 +14265,7 @@
 	// go to generation button pressed
 	View.prototype.goToGenPressed = function(/** @type {View} */ me) {
 		// prompt for generation
-		var	result = window.prompt("Enter generation", me.engine.counter),
+		var	result = window.prompt("Enter generation", String(me.engine.counter)),
 			/** @type {number} */ number = 0,
 			/** @type {boolean} */ timing = false;
 
@@ -14275,7 +14334,8 @@
 	};
 
 	// grid toggle
-	View.prototype.toggleGrid = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleGrid = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.engine.displayGrid = newValue[0];
 		}
@@ -14284,7 +14344,8 @@
 	};
 
 	// lines toggle
-	View.prototype.toggleLines = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleLines = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.popGraphLines = newValue[0];
 		}
@@ -14293,7 +14354,8 @@
 	};
 
 	// pause while drawing toggle
-	View.prototype.togglePausePlayback = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.togglePausePlayback = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.pauseWhileDrawing = newValue[0];
 		}
@@ -14301,7 +14363,8 @@
 	};
 
 	// show lag toggle
-	View.prototype.toggleShowLag = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleShowLag = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.perfWarning = newValue[0];
 		}
@@ -14310,7 +14373,8 @@
 	};
 
 	// throttle toggle
-	View.prototype.toggleThrottle = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleThrottle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.canBailOut = newValue[0];
 		}
@@ -14319,12 +14383,13 @@
 	};
 
 	// settings menu toggle
-	View.prototype.toggleSettings = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @returns {Array<boolean>} */
+	View.prototype.toggleSettings = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			// close help if settings opened
 			if (me.displayHelp !== 0 && newValue[0]) {
 				me.displayHelp = 0;
-				me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+				me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
 			}
 
 			// close theme selection buttons if settings closed
@@ -14343,7 +14408,8 @@
 	};
 
 	// smart drawing toggle
-	View.prototype.toggleSmart = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @return {Array<boolean>} */
+	View.prototype.toggleSmart = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.smartDrawing = newValue[0];
 		}
@@ -14352,7 +14418,8 @@
 	};
 
 	// states toggle
-	View.prototype.toggleStates = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @return {Array<boolean>} */
+	View.prototype.toggleStates = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.showStates = newValue[0];
 		}
@@ -14361,7 +14428,8 @@
 	};
 
 	// cell period map display
-	View.prototype.toggleCellPeriodMap = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @return {number} */
+	View.prototype.toggleCellPeriodMap = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.periodMapDisplayed = newValue;
 		}
@@ -14370,7 +14438,8 @@
 	};
 
 	// pick toggle
-	View.prototype.togglePick = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @return {Array<boolean>} */
+	View.prototype.togglePick = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.pickMode = newValue[0];
 			if (me.pickMode) {
@@ -14392,7 +14461,8 @@
 	};
 
 	// autofit toggle
-	View.prototype.toggleAutoFit = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @return {Array<boolean>} */
+	View.prototype.toggleAutoFit = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.autoFit = newValue[0];
 
@@ -14406,7 +14476,8 @@
 	};
 
 	// loop indicator toggle
-	View.prototype.toggleLoop = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @return {Array<boolean>} */
+	View.prototype.toggleLoop = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			// check if loop defined
 			if (me.loopGeneration !== -1) {
@@ -14438,7 +14509,8 @@
 	};
 
 	// autostart indicator toggle
-	View.prototype.toggleAutostart = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @return {Array<boolean>} */
+	View.prototype.toggleAutostart = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			if (me.autoStart) {
 				me.autoStartDisabled = !newValue[0];
@@ -14449,7 +14521,8 @@
 	};
 
 	// stop indicator toggle
-	View.prototype.toggleStop = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @return {Array<boolean>} */
+	View.prototype.toggleStop = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			if (me.stopGeneration !== -1) {
 				me.stopDisabled = !newValue[0];
@@ -14460,7 +14533,8 @@
 	};
 
 	// waypoint/track indictor toggle
-	View.prototype.toggleWP = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @return {Array<boolean>} */
+	View.prototype.toggleWP = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	result = [false];
 
 		if (change) {
@@ -14519,9 +14593,14 @@
 	};
 
 	// help toggle
-	View.prototype.toggleHelp = function(newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	/** @return {Array<boolean>} */
+	View.prototype.toggleHelp = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
-			me.displayHelp = newValue[0];
+			if (newValue[0]) {
+				me.displayHelp = 1;
+			} else {
+				me.displayHelp = 0;
+			}
 			if (me.displayHelp) {
 				// close settings menu if open
 				if (me.navToggle.current[0]) {
@@ -14540,7 +14619,7 @@
 
 		me.setMousePointer(me.modeList.current);
 
-		return [me.displayHelp];
+		return [me.displayHelp !== 0];
 	};
 	
 	// save view
@@ -14594,7 +14673,8 @@
 	};
 
 	// relative/absolute generation display toggle
-	View.prototype.viewRelativeToggle = function(newValue, /** @type {number} */ change, /** @type {View} */ me) {
+	/** @return {Array<boolean>} */
+	View.prototype.viewRelativeToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.genRelative = newValue[0];
 		}
@@ -14603,7 +14683,8 @@
 	};
 
 	// quality rendering display toggle
-	View.prototype.viewQualityToggle = function(newValue, /** @type {number} */ change, /** @type {View} */ me) {
+	/** @return {Array<boolean>} */
+	View.prototype.viewQualityToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.engine.pretty = newValue[0];
 			me.engine.initPretty();
@@ -14613,7 +14694,8 @@
 	};
 
 	// stats toggle
-	View.prototype.viewStats = function(newValue, /** @type {number} */ change, /** @type {View} */ me) {
+	/** @return {Array<boolean>} */
+	View.prototype.viewStats = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.statsOn = newValue[0];
 
@@ -15558,7 +15640,7 @@
 		this.helpSectionList.setFont("14px Arial");
 
 		// done button
-		this.doneButton = this.viewMenu.addButtonItem(this.donePressed, Menu.northEast, -110, 40, 60, 40, ["OK"]);
+		this.doneButton = this.viewMenu.addButtonItem(this.donePressed, Menu.northEast, -110, 40, 60, 40, "OK");
 		this.doneButton.toolTip = "confirm setting disabled and hide warning";
 
 		// help button
@@ -15567,36 +15649,36 @@
 		this.helpToggle.setFont("16px Arial");
 
 		// help show topics button
-		this.topicsButton = this.viewMenu.addButtonItem(this.topicsPressed, Menu.northEast, -40, 50, 40, 40, ["^"]);
+		this.topicsButton = this.viewMenu.addButtonItem(this.topicsPressed, Menu.northEast, -40, 50, 40, 40, "^");
 		this.topicsButton.toolTip = "show help topics [Backspace]";
 
 		// help sections button
-		this.sectionsButton = this.viewMenu.addButtonItem(this.sectionsPressed, Menu.northEast, -40, 100, 40, 40, ["<"]);
+		this.sectionsButton = this.viewMenu.addButtonItem(this.sectionsPressed, Menu.northEast, -40, 100, 40, 40, "<");
 		this.sectionsButton.toolTip = "show help sections";
 
 		// help individual topic buttons
-		this.helpKeysButton = this.viewMenu.addButtonItem(this.keysTopicPressed, Menu.north, 0, 50, 150, 40, ["Keys"]);
+		this.helpKeysButton = this.viewMenu.addButtonItem(this.keysTopicPressed, Menu.north, 0, 50, 150, 40, "Keys");
 		this.helpKeysButton.toolTip = "show keyboard shortcuts [K]";
 
-		this.helpScriptsButton = this.viewMenu.addButtonItem(this.scriptsTopicPressed, Menu.north, 0, 100, 150, 40, ["Scripts"]);
+		this.helpScriptsButton = this.viewMenu.addButtonItem(this.scriptsTopicPressed, Menu.north, 0, 100, 150, 40, "Scripts");
 		this.helpScriptsButton.toolTip = "show script commands [S]";
 
-		this.helpInfoButton = this.viewMenu.addButtonItem(this.infoTopicPressed, Menu.north, 0, 150, 150, 40, ["Info"]);
+		this.helpInfoButton = this.viewMenu.addButtonItem(this.infoTopicPressed, Menu.north, 0, 150, 150, 40, "Info");
 		this.helpInfoButton.toolTip = "show pattern and engine information [I]";
 
-		this.helpThemesButton = this.viewMenu.addButtonItem(this.themesTopicPressed, Menu.north, 0, 200, 150, 40, ["Themes"]);
+		this.helpThemesButton = this.viewMenu.addButtonItem(this.themesTopicPressed, Menu.north, 0, 200, 150, 40, "Themes");
 		this.helpThemesButton.toolTip = "show colour Themes [T]";
 
-		this.helpColoursButton = this.viewMenu.addButtonItem(this.coloursTopicPressed, Menu.north, 0, 250, 150, 40, ["Colours"]);
+		this.helpColoursButton = this.viewMenu.addButtonItem(this.coloursTopicPressed, Menu.north, 0, 250, 150, 40, "Colours");
 		this.helpColoursButton.toolTip = "show colour names [C]";
 
-		this.helpAliasesButton = this.viewMenu.addButtonItem(this.aliasesTopicPressed, Menu.north, 0, 300, 150, 40, ["Aliases"]);
+		this.helpAliasesButton = this.viewMenu.addButtonItem(this.aliasesTopicPressed, Menu.north, 0, 300, 150, 40, "Aliases");
 		this.helpAliasesButton.toolTip = "show rule aliases [A]";
 
-		this.helpMemoryButton = this.viewMenu.addButtonItem(this.memoryTopicPressed, Menu.north, 0, 350, 150, 40, ["Memory"]);
+		this.helpMemoryButton = this.viewMenu.addButtonItem(this.memoryTopicPressed, Menu.north, 0, 350, 150, 40, "Memory");
 		this.helpMemoryButton.toolTip = "show memory usage [Y]";
 
-		this.helpAnnotationsButton = this.viewMenu.addButtonItem(this.annotationsTopicPressed, Menu.north, 0, 350, 150, 40, ["Annotations"]);
+		this.helpAnnotationsButton = this.viewMenu.addButtonItem(this.annotationsTopicPressed, Menu.north, 0, 350, 150, 40, "Annotations");
 		this.helpAnnotationsButton.toolTip = "show annotations [N]";
 
 		// autofit button
@@ -16078,7 +16160,7 @@
 		this.speedRange.toolTip = "playback speed [+ / -]";
 
 		// add the actual step label
-		this.stepLabel = this.viewMenu.addLabelItem(Menu.southEast, -284, -30, 27, 20, 0);
+		this.stepLabel = this.viewMenu.addLabelItem(Menu.southEast, -284, -30, 27, 20, "0");
 		this.stepLabel.setFont(ViewConstants.statsFont);
 		this.stepLabel.deleted = true;
 
@@ -17681,7 +17763,7 @@
 		me.pastePositionItem.current = me.viewPastePositionRange([ViewConstants.pastePositionNW, ViewConstants.pastePositionNW], true, me);
 
 		// update help UI
-		me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+		me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
 
 		// reset boundary colour
 		me.customBoundaryColour = [96, 96, 96];
