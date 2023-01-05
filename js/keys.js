@@ -687,7 +687,7 @@
 						me.downloadCellPeriodMap(me);
 					} else {
 						// show cell period map
-						if (me.lastIdentifyType === "Oscillator") {
+						if (me.lastIdentifyType === "Oscillator" && me.engine.cellPeriod !== null) {
 							if (me.periodMapDisplayed === 2) {
 								me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
 							} else {
@@ -701,7 +701,7 @@
 			// e for show cell period table
 			case 69:
 				// show cell period table
-				if (me.lastIdentifyType === "Oscillator") {
+				if (me.lastIdentifyType === "Oscillator" && me.engine.cellPeriod !== null) {
 					if (me.periodMapDisplayed === 1) {
 						me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
 					} else {

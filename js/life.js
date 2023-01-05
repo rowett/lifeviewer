@@ -2116,8 +2116,8 @@
 
 		// set colours for period 1 and oscillator period
 		periodCols[0] = "black";
-		periodCols[1] = "rgb(96,96,96)";
-		periodCols[this.popSubPeriod.length - 1] = "rgb(153,153,153)";
+		periodCols[1] = "rgb(128,128,128)";
+		periodCols[this.popSubPeriod.length - 1] = "rgb(238,238,238)";
 
 		// convert colours into RGB
 		for (x = 0; x < this.popSubPeriod.length; x += 1) {

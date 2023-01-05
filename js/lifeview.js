@@ -299,7 +299,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 815,
+		/** @const {number} */ versionBuild : 817,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1915,6 +1915,9 @@
 
 		// restore view button
 		this.restoreViewButton = null;
+
+		// show last identify results button
+		this.lastIdentifyResultsButton = null;
 
 		// clear drawing state button
 		this.clearDrawingStateButton = null;
@@ -6447,7 +6450,7 @@
 		this.identifySaveCellMapButton.deleted = hide || !this.resultsDisplayed || this.engine.cellPeriod === null || settingsMenuOpen;
 
 		// identify results
-		shown = shown || this.periodMapDisplayed == 2;
+		shown = shown || this.periodMapDisplayed === 2;
 		this.identifyBannerLabel.deleted = shown;
 		shown = shown || this.periodMapDisplayed > 0;
 		this.identifyTypeLabel.deleted = shown;
@@ -6592,7 +6595,7 @@
 		this.qualityToggle.deleted = shown;
 		this.infoBarButton.deleted = shown;
 
-		// actions categroy
+		// general categroy
 		shown = hide || !this.showActionsSettings;
 		this.integerZoomButton.deleted = shown;
 		this.centerPatternButton.deleted = shown;
@@ -6600,6 +6603,7 @@
 		this.snapToNearest45Button.deleted = shown;
 		this.saveViewButton.deleted = shown;
 		this.restoreViewButton.deleted = shown;
+		this.lastIdentifyResultsButton.deleted = shown;
 
 		// playback category
 		shown = hide || !this.showPlaybackSettings;
@@ -6615,6 +6619,7 @@
 		this.randomizeButton.locked = shown;
 		this.randomizePatternButton.locked = shown;
 		this.identifyButton.locked = shown || this.viewOnly;
+		this.lastIdentifyResultsButton.locked = shown || this.viewOnly || this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "";
 		this.fastIdentifyButton.locked = shown || this.viewOnly;
 		this.copyRuleButton.locked = shown;
 		this.copyNeighbourhoodButton.locked = shown;
@@ -7336,7 +7341,7 @@
 					me.afterEdit("");
 	
 					me.identifyBannerLabel.preText = identifyResult[0];
-					if (me.lastIdentifyType === "Empty" || me.lastIdentifyType === "none") {
+					if (me.lastIdentifyType === "Empty" || me.lastIdentifyType === "none" || me.lastIdentifyType === "") {
 						me.menuManager.notification.notify(identifyResult[0], 15, 240, 15, false);
 						me.resultsDisplayed = false;
 					} else {
@@ -11661,8 +11666,20 @@
 		if (me.lastIdentifyType === "Empty" || me.lastIdentifyType === "none" || me.lastIdentifyType === "") {
 			me.menuManager.notification.notify("No Identify Results", 15, 120, 15, false);
 		} else {
-			me.periodMapDisplayed = 0;
-			me.identifyStrictToggle.current = me.toggleCellPeriodMap(me.periodMapDisplayed, true, me);
+			// close Help if open
+			if (me.displayHelp !== 0) {
+				me.displayHelp = 0;
+				me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+			}
+
+			// close settings menu if open
+			if (me.navToggle.current[0]) {
+				me.navToggle.current = me.toggleSettings([false], true, me);
+				me.menuManager.toggleRequired = true;
+			}
+
+			// show results
+			me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
 			me.resultsDisplayed = true;
 		}
 	};
@@ -14171,6 +14188,9 @@
 		me.backPressed(me);
 		me.menuManager.toggleRequired = true;
 		me.viewMenu.locked = false;
+
+		// set results to summary
+		me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
 	};
 
 	// save image button pressed
@@ -14531,6 +14551,11 @@
 	// restore view
 	View.prototype.restoreViewPressed = function(/** @type {View} */ me) {
 		me.resetSavedCamera(me);
+	};
+
+	// show last identify results
+	View.prototype.lastIdentifyPressed = function(/** @type {View} */ me) {
+		me.displayLastIdentifyResults(me);
 	};
 
 	// snap angle to nearest 45 degrees
@@ -15930,33 +15955,37 @@
 		this.playbackButton = this.viewMenu.addButtonItem(this.playbackPressed, Menu.middle, 100, -25, 150, 40, "Playback");
 		this.playbackButton.toolTip = "playback settings and actions";
 
-		// add the actions button
+		// add the general button
 		this.actionsButton = this.viewMenu.addButtonItem(this.actionsPressed, Menu.middle, -100, 25,  150, 40, "General");
 		this.actionsButton.toolTip = "general actions";
 
 		// integer zoom button
-		this.integerZoomButton = this.viewMenu.addButtonItem(this.integerZoomPressed, Menu.middle, -100, -50, 180, 40, "Integer Zoom");
+		this.integerZoomButton = this.viewMenu.addButtonItem(this.integerZoomPressed, Menu.middle, -100, -75, 180, 40, "Integer Zoom");
 		this.integerZoomButton.toolTip = "set zoom to nearest integer [Shift 1]";
 
 		// center pattern button
-		this.centerPatternButton = this.viewMenu.addButtonItem(this.centerPatternPressed, Menu.middle, 100, -50, 180, 40, "Center Pattern");
+		this.centerPatternButton = this.viewMenu.addButtonItem(this.centerPatternPressed, Menu.middle, 100, -75, 180, 40, "Center Pattern");
 		this.centerPatternButton.toolTip = "center pattern [Ctrl M]";
 
 		// clear drawing state cells button
-		this.clearDrawingStateButton = this.viewMenu.addButtonItem(this.clearDrawingCellsPressed, Menu.middle, -100, 0, 180, 40, "Clear Drawing");
+		this.clearDrawingStateButton = this.viewMenu.addButtonItem(this.clearDrawingCellsPressed, Menu.middle, -100, -25, 180, 40, "Clear Drawing");
 		this.clearDrawingStateButton.toolTip = "clear drawing state cells [Ctrl Alt K]";
 
 		// snap angle to nearest 45 degrees
-		this.snapToNearest45Button = this.viewMenu.addButtonItem(this.snapToNearest45Pressed, Menu.middle, 100, 0, 180, 40, "Snap Angle");
+		this.snapToNearest45Button = this.viewMenu.addButtonItem(this.snapToNearest45Pressed, Menu.middle, 100, -25, 180, 40, "Snap Angle");
 		this.snapToNearest45Button.toolTip = "snap angle to nearest 45 degrees [Alt /]";
 
 		// save view
-		this.saveViewButton = this.viewMenu.addButtonItem(this.saveViewPressed, Menu.middle, -100, 50, 180, 40, "Save View");
+		this.saveViewButton = this.viewMenu.addButtonItem(this.saveViewPressed, Menu.middle, -100, 25, 180, 40, "Save View");
 		this.saveViewButton.toolTip = "save current view [Shift V]";
 
 		// restore view
-		this.restoreViewButton = this.viewMenu.addButtonItem(this.restoreViewPressed, Menu.middle, 100, 50, 180, 40, "Restore View");
+		this.restoreViewButton = this.viewMenu.addButtonItem(this.restoreViewPressed, Menu.middle, 100, 25, 180, 40, "Restore View");
 		this.restoreViewButton.toolTip = "restore saved view [V]";
+
+		// last identify results
+		this.lastIdentifyResultsButton = this.viewMenu.addButtonItem(this.lastIdentifyPressed, Menu.middle, -100, 75, 180, 40, "Last Identify");
+		this.lastIdentifyResultsButton.toolTip = "show last identify results [Shift F6]";
 
 		// add the advanced button
 		this.infoButton = this.viewMenu.addButtonItem(this.infoPressed, Menu.middle, 100, 25, 150, 40, "Advanced");
@@ -16238,7 +16267,7 @@
 			this.escButton, this.autoHideButton, this.autoGridButton, this.altGridButton, this.integerZoomButton, this.centerPatternButton, this.hexCellButton, this.bordersButton,
 			this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.clearDrawingStateButton, this.timingDetailButton, this.infoBarButton, this.starsButton,
 			this.resetAllButton, this.stopAllButton, this.stopOthersButton, this.snapToNearest45Button, this.historyFitButton, this.majorButton, this.prevUniverseButton,
-			this.nextUniverseButton, this.actionsButton, this.saveViewButton, this.restoreViewButton], []);
+			this.nextUniverseButton, this.actionsButton, this.saveViewButton, this.restoreViewButton, this.lastIdentifyResultsButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.genLabel, this.genValueLabel, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -18716,8 +18745,7 @@
 		}
 
 		// clear cell period display toggle
-		me.periodMapDisplayed = 0;
-		me.identifyStrictToggle.current = me.toggleCellPeriodMap(me.periodMapDisplayed, true, me);
+		me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
 
 		// check for chrome bug
 		me.checkForChromeBug();
