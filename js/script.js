@@ -1,13 +1,6 @@
 // LifeViewer Scripts
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define globals
-	/* global Uint32Array Uint16Array */
-
 	// Script constructor
 	/**
 	 * @constructor
@@ -563,8 +556,3 @@
 	Script.prototype.eatAllTokens = function() {
 		this.current = this.starts.length;
 	};
-
-	/*jshint -W069 */
-	window["Script"] = Script;
-}
-());

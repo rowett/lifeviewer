@@ -1,13 +1,6 @@
 // LifeViewer Plugin
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define globals
-	/* global Uint8Array Random BoundingBox Allocator AliasManager Uint8 Int16 KeyProcessor Pattern PatternManager WaypointConstants WaypointManager Help LifeConstants IconManager Menu Life Stars MenuManager RuleTreeCache registerEvent Keywords ColourManager ScriptParser Uint32Array PopupWindow typedArrays Float32 */
-
 	// LifeViewer document configuration
 	var DocConfig = {
 		// meta tag name
@@ -2176,7 +2169,7 @@
 			
 		// check if a new buffer is needed
 		if (chunk === this.currentEdit.length) {
-			this.currentEdit[chunk] = this.engine.allocator.allocate(Int16, chunkSize, "View.currentEdit" + chunk);
+			this.currentEdit[chunk] = /** @type {!Int16Array} */ (this.engine.allocator.allocate(Type.Int16, chunkSize, "View.currentEdit" + chunk));
 		}
 
 		// return the chunk
@@ -2603,7 +2596,7 @@
 
 			// allocate memory for redo and undo cells and populate
 			if (this.currentEditIndex > 0) {
-				editCells = this.engine.allocator.allocate(Int16, this.currentEditIndex, "View.editCells" + this.editNum);
+				editCells = /** @type {!Int16Array} */ (this.engine.allocator.allocate(Type.Int16, this.currentEditIndex, "View.editCells" + this.editNum));
 				i = 0;
 				j = 0;
 				while (i < finalChunk) {
@@ -3394,7 +3387,7 @@
 			}
 
 			// allocate an array for the rle
-			stateMap = Array.matrix(Uint8, topY - bottomY + 1, rightX - leftX + 1, 0, this.engine.allocator, "View.rle" + this.pasteList.length);
+			stateMap = Array.matrix(Type.Uint8, topY - bottomY + 1, rightX - leftX + 1, 0, this.engine.allocator, "View.rle" + this.pasteList.length);
 
 			// populate the array from the cell list
 			i = 0;
@@ -3505,7 +3498,7 @@
 				item.height = zoomBox.topY - zoomBox.bottomY + 1;
 				item.bottomY = minY;
 				item.leftX = minX;
-				item.map = Array.matrix(Uint8, item.height, item.width, 0, this.engine.allocator, "View.rle" + j);
+				item.map = Array.matrix(Type.Uint8, item.height, item.width, 0, this.engine.allocator, "View.rle" + j);
 
 				// populate the array from the cell list
 				i = 0;
@@ -7015,12 +7008,12 @@
 
 	// save elapsed time at generation
 	View.prototype.saveElapsedTime = function(/** @type {number} */ counter, /** @type {number} */ timeSinceLastUpdate, /** @type {number} */ gensPerStep) {
-		var	buffer = null;
+		var	/** @type {Float32Array} */ buffer = null;
 
 		// save elapsed time
 		if (counter >= this.elapsedTimes.length) {
 			// grow buffer
-			buffer = this.engine.allocator.allocate(Float32, this.elapsedTimes.length + ViewConstants.numElapsedTimes, "View.elapsedTimes");
+			buffer = /** @type {!Float32Array} */ (this.engine.allocator.allocate(Type.Float32, this.elapsedTimes.length + ViewConstants.numElapsedTimes, "View.elapsedTimes"));
 
 			// copy buffer
 			buffer.set(this.elapsedTimes);
@@ -11279,7 +11272,7 @@
 			currentWaypoint.yDefined = true;
 			currentWaypoint.zoom = currentLabel.zoom;
 			currentWaypoint.zoomDefined = true;
-			wm.add(currentWaypoint);
+			wm.add(currentWaypoint, this);
 			if (i < nLabels - 1) {
 				currentWaypoint = wm.createWaypoint();
 			}
@@ -12135,7 +12128,7 @@
 		    /** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
 		    /** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 		    /** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-		    buffer = null,
+		    /** @type {Uint8Array} */ buffer = null,
 		    /** @type {number} */ width = 0,
 		    /** @type {number} */ height = 0,
 		    /** @type {number} */ wasState6 = 0;
@@ -12158,7 +12151,7 @@
 			height = (y2 - y1 + 1);
 
 			// allocate the buffer
-			buffer = me.engine.allocator.allocate(Uint8, width * height, "View.pasteBuffer" + number);
+			buffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + number));
 
 			// copy selection to buffer and clear set cells
 			i = 0;
@@ -12534,7 +12527,7 @@
 			height = (y2 - y1 + 1);
 
 			// allocate the buffer
-			buffer = me.engine.allocator.allocate(Uint8, width * height, "View.pasteBuffer" + number);
+			buffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + number));
 
 			// copy selection to buffer
 			i = 0;
@@ -12725,7 +12718,7 @@
 			// set new paste buffer
 			me.pasteWidth = zoomBox.rightX - zoomBox.leftX + 1;
 			me.pasteHeight = zoomBox.topY - zoomBox.bottomY + 1;
-			me.pasteBuffer = me.engine.allocator.allocate(Uint8, me.pasteWidth * me.pasteHeight, "View.pasteBuffer");
+			me.pasteBuffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, me.pasteWidth * me.pasteHeight, "View.pasteBuffer"));
 
 			// copy cells in
 			i = 0;
@@ -13371,7 +13364,7 @@
 			}
 
 			// allocate the row
-			row = me.engine.allocator.allocate(Uint8, (x2 - x1 + 1), "View.flipRow");
+			row = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, (x2 - x1 + 1), "View.flipRow"));
 
 			// flip each row
 			for (y = y1; y <= y2; y += 1) {
@@ -13479,7 +13472,7 @@
 			}
 
 			// allocate the row
-			column = me.engine.allocator.allocate(Uint8, (y2 - y1 + 1), "View.flipColumn");
+			column = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, (y2 - y1 + 1), "View.flipColumn"));
 
 			// flip each column
 			for (x = x1; x <= x2; x += 1) {
@@ -13526,7 +13519,7 @@
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ value = 0,
-			newBuffer = me.engine.allocator.allocate(Uint8, w * h, "View.pasteBuffer");
+			/** @type {Uint8Array} */ newBuffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, w * h, "View.pasteBuffer"));
 
 		// rotate cells into new buffer
 		for (y = 0; y < h; y += 1) {
@@ -13685,7 +13678,7 @@
 				box.topY = saveTopY;
 			} else {
 				// allocate the cells
-				cells = me.engine.allocator.allocate(Int16, 3 * w * h, "View.rotateCells");
+				cells = /** @type {!Int16Array} */ (me.engine.allocator.allocate(Type.Int16, 3 * w * h, "View.rotateCells"));
 
 				// read each cell in the selection and rotate coordinates
 				cx = w >> 1;
@@ -13893,7 +13886,7 @@
 				}
 
 				// allocate the cells
-				cells = me.engine.allocator.allocate(Int16, 3 * (x2 - x1 + 1) * (y2 - y1 + 1), "View.rotateCells");
+				cells = /** @type {!Int16Array} */ (me.engine.allocator.allocate(Type.Int16, 3 * (x2 - x1 + 1) * (y2 - y1 + 1), "View.rotateCells"));
 
 				// read each cell in the selection and rotate coordinates
 				for (y = y1; y <= y2; y += 1) {
@@ -16421,7 +16414,7 @@
 			this.engine.initEngine(this.mainContext, this.displayWidth, this.displayHeight);
 
 			// create the elapsed times buffer
-			this.elapsedTimes = this.engine.allocator.allocate(Float32, ViewConstants.numElapsedTimes, "View.elapsedTimes");
+			this.elapsedTimes = /** @type {!Float32Array} */ (this.engine.allocator.allocate(Type.Float32, ViewConstants.numElapsedTimes, "View.elapsedTimes"));
 
 			// create the starfield
 			this.starField = new Stars(ViewConstants.numStars, this.engine.allocator);
@@ -18270,7 +18263,7 @@
 		if (me.engine.isRuleTree || me.engine.isNone) {
 			if (me.customThemeValue[ViewConstants.customThemeBackground] !== -1) {
 				if (me.customColours === null) {
-					me.customColours = me.engine.allocator.allocate(Int32, 256, "View.customColours");
+					me.customColours = /** @type {!Int32Array} */ (me.engine.allocator.allocate(Type.Int32, 256, "View.customColours"));
 					me.customColours.fill(-1);
 					me.customColours[0] = me.customThemeValue[ViewConstants.customThemeBackground];
 					me.customThemeValue[ViewConstants.customThemeBackground] = -1;
@@ -19584,5 +19577,3 @@
 	window['updateMe'] = updateMe;
 	window['hideViewer'] = hideViewer;
 	window['lifeViewerBuild'] = ViewConstants.versionBuild;
-}
-());

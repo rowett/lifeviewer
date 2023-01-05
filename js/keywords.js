@@ -1,10 +1,6 @@
 // LifeViewer Keywords
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
 	// script keywords
 	var Keywords = {
 		// string delimiter
@@ -520,8 +516,3 @@
 		// variable prefix
 		/** @const {string} */ variablePrefixSymbol : "#"
 	};
-
-	/*jshint -W069 */
-	window['Keywords'] = Keywords;
-}
-());

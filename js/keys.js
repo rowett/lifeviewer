@@ -1,13 +1,6 @@
 // LifeViewer Keyboard Handling
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define globals
-	/* global hideViewer Controller DocConfig ViewConstants */
-
 	// key processor
 	var KeyProcessor = {};
 
@@ -2043,9 +2036,3 @@
 		// return whether key processed
 		return processed;
 	};
-
-	/*jshint -W069 */
-	window["KeyProcessor"] = KeyProcessor;
-}
-());
-

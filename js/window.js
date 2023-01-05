@@ -1,13 +1,6 @@
 // html5 element menu library
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define globals
-	/* global registerEvent */
-
 	// PopupWindow
 	/**
 	 * @constructor
@@ -355,9 +348,3 @@
 		me.mouseLastX = x | 0;
 		me.mouseLastY = y | 0;
 	};
-
-	/*jshint -W069 */
-	// create the global interface
-	window["PopupWindow"] = PopupWindow;
-}
-());

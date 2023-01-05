@@ -1,13 +1,6 @@
 // allocator
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define globals
-	/* global Uint8Array Uint16Array Uint32Array Int8Array Int16Array Int32Array Float32Array Float64Array */
-
 	// allocation bits
 	var AllocBits = {
 		// - - c f s w w w
@@ -435,18 +428,3 @@
 		// return typed view of matrix at offset
 		return mat;
 	};
-
-	// global interface
-	/*jshint -W069 */
-	window["Allocator"] = Allocator;
-	window["Uint8"] = Type.Uint8;
-	window["Uint8Clamped"] = Type.Uint8Clamped;
-	window["Uint16"] = Type.Uint16;
-	window["Uint32"] = Type.Uint32;
-	window["Int8"] = Type.Int8;
-	window["Int16"] = Type.Int16;
-	window["Int32"] = Type.Int32;
-	window["Float32"] = Type.Float32;
-	window["Float64"] = Type.Float64;
-}
-());

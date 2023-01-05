@@ -1,10 +1,6 @@
 // LifeViewer Colours
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
 	// ColourManager singleton
 	var ColourManager = {
 		// default colours
@@ -227,9 +223,3 @@
 			}
 		}
 	};
-
-	/*jshint -W069 */
-	window["ColourManager"] = ColourManager;
-}
-());
-

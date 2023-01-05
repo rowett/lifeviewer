@@ -1,13 +1,6 @@
 // LifeViewer Waypoint
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
- 
-	// define globals
-	/* global Keywords ViewConstants */
-
 	// WaypointConstants singleton
 	var WaypointConstants = {
 		// POI mode
@@ -2748,12 +2741,3 @@
 			}
 		}
 	};
-
-	/*jshint -W069 */
-	// external interface
-	window["Waypoint"] = Waypoint;
-	window["WaypointManager"] = WaypointManager;
-	window["WaypointConstants"] = WaypointConstants;
-}
-());
-

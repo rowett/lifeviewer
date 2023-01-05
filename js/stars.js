@@ -1,13 +1,6 @@
 // LifeViewer Stars
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define globals
-	/* global Float32 Random littleEndian */
-
 	// Stars constructor
 	/**
 	 * @constructor
@@ -17,9 +10,9 @@
 		/** @type {number} */ this.numStars = numStars;
 
 		// list of stars
-		/** type {Float32Array} */ this.x = allocator.allocate(Float32, 0, "Stars.x"); 
-		/** type {Float32Array} */ this.y = allocator.allocate(Float32, 0, "Stars.y"); 
-		/** type {Float32Array} */ this.z = allocator.allocate(Float32, 0, "Stars.z"); 
+		/** type {Float32Array} */ this.x = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.x")); 
+		/** type {Float32Array} */ this.y = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.y")); 
+		/** type {Float32Array} */ this.z = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.z")); 
 
 		// star colour
 		/** @type {number} */ this.red = 255;
@@ -39,8 +32,8 @@
 		/** @type {number} */ this.degreeParts = 8;
 
 		// table for sin and cos
-		/** @type {Float32Array} */ this.sin = allocator.allocate(Float32, 0, "Stars.sin");
-		/** @type {Float32Array} */ this.cos = allocator.allocate(Float32, 0, "Stars.cos");
+		/** @type {Float32Array} */ this.sin = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.sin"));
+		/** @type {Float32Array} */ this.cos = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.cos"));
 
 		// conversions
 		/** @type {number} */ this.degToRad = Math.PI / (this.circleDegrees / 2);
@@ -67,9 +60,9 @@
 			/** @type {number} */ radius2 = (maxX * maxX) + (maxY * maxY);
 
 		// allocate the stars
-		this.x = this.allocator.allocate(Float32, numStars, "Stars.x"); 
-		this.y = this.allocator.allocate(Float32, numStars, "Stars.y"); 
-		this.z = this.allocator.allocate(Float32, numStars, "Stars.z"); 
+		this.x = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.x")); 
+		this.y = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.y")); 
+		this.z = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.z")); 
 
 		// create random stars
 		for (i = 0; i < numStars; i += 1) {
@@ -89,8 +82,8 @@
 		}
 
 		// populate the sin and cos tables
-		this.sin = this.allocator.allocate(Float32, this.circleDegrees * this.degreeParts, "Stars.sin");
-		this.cos = this.allocator.allocate(Float32, this.circleDegrees * this.degreeParts, "Stars.cos");
+		this.sin = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, this.circleDegrees * this.degreeParts, "Stars.sin"));
+		this.cos = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, this.circleDegrees * this.degreeParts, "Stars.cos"));
 
 		i = 0;
 		while (i < (this.circleDegrees * this.degreeParts)) {
@@ -283,10 +276,3 @@
 			}
 		}
 	};
-
-	/*jshint -W069 */
-	// create the global interface
-	window["Stars"] = Stars;
-}
-());
-

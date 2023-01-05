@@ -2,15 +2,6 @@
 // v1.0 01/Oct/2012
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define globals
-	/* global Int8Array Int16Array Int32Array Uint8Array Uint8ClampedArray Uint16Array Uint32Array Float32Array  Float64Array */
-
-	/*jshint -W069 */
-
 	// for determining endian
 	var	data8 = null,
 		data32 = null;
@@ -46,13 +37,13 @@
 
 	// implement cross-browser typed arrays
 	if (!window.Uint8Array) {
-		window["typedArrays"] = false;
+		window.typedArrays = false;
 
 		/** @suppress {checkTypes} */
 		window.Uint8Array = Array;
 	}
 	else {
-		window["typedArrays"] = true;
+		window.typedArrays = true;
 	}
 
 	if (!window.Uint8ClampedArray) {
@@ -111,7 +102,7 @@
 
 	// check for array fill
 	if (!window.Uint32Array.prototype.fill) {
-		window["arrayFill"] = false;
+		window.arrayFill = false;
 
 		window.Uint32Array.prototype.fill = function(/** @type {number} */ value, begin, end) {
 			var	/** @type {number} */ i = 0;
@@ -128,7 +119,7 @@
 			}
 		};
 	} else {
-		window["arrayFill"] = true;
+		window.arrayFill = true;
 	}
 
 	if (!window.Uint16Array.prototype.fill) {
@@ -269,7 +260,7 @@
 
 	// check for slice
 	if (!window.Int32Array.prototype.slice) {
-		window["arraySlice"] = false;
+		window.arraySlice = false;
 
 		window.Int32Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
@@ -289,7 +280,7 @@
 			return result;
 		};
 	} else {
-		window["arraySlice"] = true;
+		window.arraySlice = true;
 	}
 
 	if (!window.Int16Array.prototype.slice) {
@@ -457,14 +448,14 @@
 	data32[0] = 0x1234;
 	data8 = new Uint8Array(data32.buffer);
 	if (data8[0] === 0x34) {
-		window["littleEndian"] = true;
+		window.littleEndian = true;
 	} else {
-		window["littleEndian"] = false;
+		window.littleEndian = false;
 	}
 	
 	// set copy within flag
 	if (data32.copyWithin) {
-		window["copyWithin"] = true;
+		window.copyWithin = true;
 	} else {
 		window.Uint32Array.prototype.copyWithin = function(target, /** @type {number} */ start, end) {
 			var	/** @type {number} */ i = 0,
@@ -500,10 +491,5 @@
 			return this;
 		};
 
-		window["copyWithin"] = false;
+		window.copyWithin = false;
 	}
-
-	// global interface
-	window["registerEvent"] = registerEvent;
-}
-());

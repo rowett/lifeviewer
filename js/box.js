@@ -1,10 +1,6 @@
 // LifeViewer BoundingBox
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
 	// BoundingBox object
 	/**
 	 * @constructor
@@ -23,9 +19,3 @@
 		/** @type {number} */ this.rightX = source.rightX;
 		/** @type {number} */ this.topY = source.topY;
 	};
-
-	/*jshint -W069 */
-	window["BoundingBox"] = BoundingBox;
-}
-());
-

@@ -1,10 +1,6 @@
 // LifeViewer Alias
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
 	// AliasManager singleton
 	var AliasManager = {
 		// list of alias/rule pairs
@@ -845,10 +841,3 @@
 		// return the alias
 		return result;
 	};
-
-	// global interface
-	/*jshint -W069 */
-	window["AliasManager"] = AliasManager;
-}
-());
-

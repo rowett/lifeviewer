@@ -1,13 +1,6 @@
 // LifeViewer snapshot
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define globals
-	/* global BoundingBox Uint16 Uint32 */
-
 	// Snapshot object
 	/**
 	 * @constructor
@@ -1513,13 +1506,13 @@
 			this.bufferUsed[i] = true;
 		} else {
 			// create a new buffer
-			this.tileGrids[i] = Array.matrix(Uint16, height, width, 0, this.allocator, "Snapshot.tileGrid" + i);
-			this.colourTileGrids[i] = Array.matrix(Uint16, height, width, 0, this.allocator, "Snapshot.colourTileGrid" + i);
-			this.gridBuffers[i] = Array.matrix(Uint32, 1, this.defaultTiles * 8, 0, this.allocator, "Snapshot.gridBuffer" + i);
-			this.colourBuffers[i] = Array.matrix(Uint32, 1, this.defaultTiles * 64, 0, this.allocator, "Snapshot.colourGridBuffer" + i);
+			this.tileGrids[i] = Array.matrix(Type.Uint16, height, width, 0, this.allocator, "Snapshot.tileGrid" + i);
+			this.colourTileGrids[i] = Array.matrix(Type.Uint16, height, width, 0, this.allocator, "Snapshot.colourTileGrid" + i);
+			this.gridBuffers[i] = Array.matrix(Type.Uint32, 1, this.defaultTiles * 8, 0, this.allocator, "Snapshot.gridBuffer" + i);
+			this.colourBuffers[i] = Array.matrix(Type.Uint32, 1, this.defaultTiles * 64, 0, this.allocator, "Snapshot.colourGridBuffer" + i);
 			if (usingOverlay) {
-				this.overlayTileGrids[i] = Array.matrix(Uint16, height, width, 0, this.allocator, "Snapshot.overlayTileGrid" + i);
-				this.overlayBuffers[i] = Array.matrix(Uint32, 1, this.defaultTiles * 64, 0, this.allocator, "Snapshot.overlayGridBuffer" + i);
+				this.overlayTileGrids[i] = Array.matrix(Type.Uint16, height, width, 0, this.allocator, "Snapshot.overlayTileGrid" + i);
+				this.overlayBuffers[i] = Array.matrix(Type.Uint32, 1, this.defaultTiles * 64, 0, this.allocator, "Snapshot.overlayGridBuffer" + i);
 			}
 			this.bufferUsed[i] = true;
 
@@ -1566,10 +1559,10 @@
 			/** @type {number} */ index = snapshot.index;
 
 		// allocate the new tile grids in the buffer
-		this.tileGrids[index] = Array.matrix(Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.tileGrid" + index);
-		this.colourTileGrids[index] = Array.matrix(Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.colourTileGrid" + index);
+		this.tileGrids[index] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.tileGrid" + index);
+		this.colourTileGrids[index] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.colourTileGrid" + index);
 		if (useOverlay) {
-			this.overlayTileGrids[index] = Array.matrix(Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.overlayTileGrid" + index);
+			this.overlayTileGrids[index] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.overlayTileGrid" + index);
 		}
 
 		// set them in the snapshot
@@ -1625,19 +1618,12 @@
 		while (i < this.bufferUsed.length) {
 			if (!this.bufferUsed[i]) {
 				// grow the buffer
-				this.tileGrids[i] = Array.matrix(Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.tileGrid" + i);
-				this.colourTileGrids[i] = Array.matrix(Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.colourTileGrid" + i);
+				this.tileGrids[i] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.tileGrid" + i);
+				this.colourTileGrids[i] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.colourTileGrid" + i);
 				if (useOverlay) {
-					this.overlayTileGrids[i] = Array.matrix(Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.overlayTileGrid" + i);
+					this.overlayTileGrids[i] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.overlayTileGrid" + i);
 				}
 			}
 			i += 1;
 		}
 	};
-
-	/*jshint -W069 */
-	// create the global interface
-	window["SnapshotManager"] = SnapshotManager;
-	window["Snapshot"] = Snapshot;
-}
-());

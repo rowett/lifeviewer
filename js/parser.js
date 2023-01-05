@@ -1,13 +1,6 @@
 // LifeViewer Script Parser
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define globals
-	/* global View Int32 ColourManager Script ViewConstants Pattern Keywords WaypointConstants DocConfig */
-
 	// singleton
 	var ScriptParser = {
 		/** @type {string} */ BSnType : "",
@@ -1370,7 +1363,7 @@
 		// look for a start script token
 		if (scriptReader.findToken(Keywords.scriptStartWord, -1) !== -1) {
 			// reset custom colours
-			view.customColours = view.engine.allocator.allocate(Int32, 256, "View.customColours");
+			view.customColours = /** @type {!Int16Array} */ (view.engine.allocator.allocate(Type.Int32, 256, "View.customColours"));
 			view.customColours.fill(-1);
 
 			nextToken = scriptReader.getNextToken();
@@ -5815,9 +5808,4 @@
 		// sort annotations into zoom order
 		view.waypointManager.sortAnnotations();
 	};
-
-	/*jshint -W069 */
-	window["ScriptParser"] = ScriptParser;
-}
-());
 

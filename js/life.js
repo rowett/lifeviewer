@@ -1,15 +1,5 @@
-/* eslint-disable no-proto */
 // Life
 // written by Chris Rowett
-
-// @ts-check
-
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define globals
-	/* global Random Keywords littleEndian BoundingBox Allocator Float32 Uint8 Uint16 Uint32 Int32 Uint8Array Uint16Array Uint32Array Float32Array SnapshotManager HROT ViewConstants PatternConstants */
 
 	// Life constants
 	/** @const */
@@ -535,11 +525,11 @@
 		this.customColours = null;
 
 		// bit counts for 16bit values
-		/** @type {Uint8Array} */ this.bitCounts16 = this.allocator.allocate(Uint8, 65536, "Life.bitCounts16");
+		/** @type {Uint8Array} */ this.bitCounts16 = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, 65536, "Life.bitCounts16"));
 		this.initBitCounts16();
 
 		// first bit set for 16bit values
-		/** @type {Uint8Array} */ this.firstBit16 = this.allocator.allocate(Uint8, 65536, "Life.firstBit16");
+		/** @type {Uint8Array} */ this.firstBit16 = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, 65536, "Life.firstBit16"));
 		this.initFirstBit16();
 
 		// population graph array
@@ -585,8 +575,8 @@
 		// stack for boundary pattern clear
 		/** @type {Array<Int32Array>} */ this.boundaryX = [];
 		/** @type {Array<Int32Array>} */ this.boundaryY = [];
-		/** @type {Int32Array} */ this.boundaryX[0] = this.allocator.allocate(Int32, LifeConstants.removePatternBufferSize, "Life.boundaryX0");
-		/** @type {Int32Array} */ this.boundaryY[0] = this.allocator.allocate(Int32, LifeConstants.removePatternBufferSize, "Life.boundaryY0");
+		/** @type {Int32Array} */ this.boundaryX[0] = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.removePatternBufferSize, "Life.boundaryX0"));
+		/** @type {Int32Array} */ this.boundaryY[0] = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.removePatternBufferSize, "Life.boundaryY0"));
 
 		// number of boundary pages
 		/** @type {number} */ this.boundaryPages = 0;
@@ -872,19 +862,19 @@
 		/** @type {Array<Uint16Array>} */ this.nextGrid16 = null;
 
 		// blank pixel row for fast clear
-		/** @type {Uint32Array} */ this.blankPixelRow = this.allocator.allocate(Uint32, this.displayWidth, "Life.blankPixelRow");
+		/** @type {Uint32Array} */ this.blankPixelRow = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, this.displayWidth, "Life.blankPixelRow"));
 
 		// blank row for life grid to prevent wrap
-		/** @type {Uint8Array} */ this.blankRow = this.allocator.allocate(Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow");
+		/** @type {Uint8Array} */ this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow"));
 
 		// blank row for 16bit life grid
-		/** @type {Uint16Array} */ this.blankRow16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16");
+		/** @type {Uint16Array} */ this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16"));
 
 		// blank tile row to prevent wrap
-		/** @type {Uint16Array} */ this.blankTileRow = this.allocator.allocate(Uint16, this.tileCols >> 4, "Life.blankTileRow");
+		/** @type {Uint16Array} */ this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow"));
 
 		// blank colour row
-		/** @type {Uint8Array} */ this.blankColourRow = this.allocator.allocate(Uint8, this.width, "Life.blankColourRow");
+		/** @type {Uint8Array} */ this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow"));
 
 		// colour grid
 		/** @type {Array<Uint8Array>} */ this.colourGrid = null;
@@ -930,12 +920,12 @@
 		this.state6TileGrid = null;
 
 		// colour definitions
-		/** @type {Uint8Array} */ this.redChannel = this.allocator.allocate(Uint8, 256, "Life.redChannel");
-		/** @type {Uint8Array} */ this.greenChannel = this.allocator.allocate(Uint8, 256, "Life.greenChannel");
-		/** @type {Uint8Array} */ this.blueChannel = this.allocator.allocate(Uint8, 256, "Life.blueChannel");
+		/** @type {Uint8Array} */ this.redChannel = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, 256, "Life.redChannel"));
+		/** @type {Uint8Array} */ this.greenChannel = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, 256, "Life.greenChannel"));
+		/** @type {Uint8Array} */ this.blueChannel = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, 256, "Life.blueChannel"));
 
 		// pixel colours
-		/** @type {Uint32Array} */ this.pixelColours = this.allocator.allocate(Uint32, 256, "Life.pixelColours");
+		/** @type {Uint32Array} */ this.pixelColours = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 256, "Life.pixelColours"));
 
 		// ruleTree fast lookup
 		/** @type {Uint8Array} */ this.ruleTreeLookup = null;
@@ -964,10 +954,10 @@
 		this.margolusReverseLookup2 = null;
 
 		// colour lookup for next generation
-		/** @type {Uint16Array} */ this.colourLookup = this.allocator.allocate(Uint16, ((this.aliveMax + 1) * 2) << 8, "Life.colourLookup");
+		/** @type {Uint16Array} */ this.colourLookup = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.aliveMax + 1) * 2) << 8, "Life.colourLookup"));
 
 		// fast lookup for colour reset
-		/** @type {Uint8Array} */ this.colourReset = this.allocator.allocate(Uint8, 256 * 8, "Life.colourReset");
+		/** @type {Uint8Array} */ this.colourReset = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, 256 * 8, "Life.colourReset"));
 
 		// grid line colour in raw format R G B
 		/** @type {number} */ this.gridLineRaw = ViewConstants.gridLineRawDefault;
@@ -1016,10 +1006,10 @@
 		this.HROT = new HROT(this.allocator, this, manager);
 
 		// hex or triangle cell coordinates
-		this.coords = this.allocator.allocate(Float32, 1, "Life.coords");
+		/** @type {Float32Array} */ this.coords = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, 1, "Life.coords"));
 
 		// hex or triangle cell colours
-		this.cellColours = this.allocator.allocate(Uint32, 1, "Life.cellColours");
+		/** @type {Uint32Array} */ this.cellColours = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 1, "Life.cellColours"));
 
 		// number of hex or triangle cells
 		/** @type {number} */ this.numCells = 0;
@@ -1338,16 +1328,16 @@
 			// just switched on so check if buffers are allocated
 			if (this.hashList === null) {
 				// allocate buffers
-				this.hashList = this.allocator.allocate(Int32, LifeConstants.maxOscillatorGens, "Life.hashList");
-				this.genList = this.allocator.allocate(Uint32, LifeConstants.maxOscillatorGens, "Life.genList");
-				this.popList = this.allocator.allocate(Uint32, LifeConstants.maxOscillatorGens, "Life.popList");
-				this.bornList = this.allocator.allocate(Uint32, LifeConstants.maxOscillatorGens, "Life.bornList");
-				this.diedList = this.allocator.allocate(Uint32, LifeConstants.maxOscillatorGens, "Life.diedList");
-				this.boxList = this.allocator.allocate(Uint32, 2 * LifeConstants.maxOscillatorGens, "Life.boxList");
-				this.nextList = this.allocator.allocate(Int32, LifeConstants.maxOscillatorGens, "Life.nextList");
-				this.countList = Array.matrix(Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
+				this.hashList = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.maxOscillatorGens, "Life.hashList"));
+				this.genList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.maxOscillatorGens, "Life.genList"));
+				this.popList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.maxOscillatorGens, "Life.popList"));
+				this.bornList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.maxOscillatorGens, "Life.bornList"));
+				this.diedList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.maxOscillatorGens, "Life.diedList"));
+				this.boxList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 2 * LifeConstants.maxOscillatorGens, "Life.boxList"));
+				this.nextList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.maxOscillatorGens, "Life.nextList"));
+				this.countList = Array.matrix(Type.Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
 				if (this.multiNumStates > 2 || this.isRuleTree) {
-					this.initList = Array.matrix(Uint8, this.height, this.width, 0, this.allocator, "Life.initList");
+					this.initList = Array.matrix(Type.Uint8, this.height, this.width, 0, this.allocator, "Life.initList");
 				}
 				this.firstCount = true;
 				this.hashBox.leftX = this.width;
@@ -2438,7 +2428,7 @@
 			boxHeight = extent.topY - extent.bottomY + 1;
 
 			// allocate memory for each generation in the period (allocation is one bit per cell)
-			frames = Array.matrix(Uint8, period, ((boxWidth * boxHeight) >> 3) + 1, 0, this.allocator, "Life.strictFrames");
+			frames = Array.matrix(Type.Uint8, period, ((boxWidth * boxHeight) >> 3) + 1, 0, this.allocator, "Life.strictFrames");
 			cellPeriod = new Uint16Array(boxWidth * boxHeight);
 			occupiedFrame = new Uint8Array(((boxWidth * boxHeight) >> 3) + 1);
 			computeStrict = true;
@@ -3144,8 +3134,8 @@
 			/** @const {number} */ w2 = this.width / 2 - 0.25,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @type {number} */ state = 0,
-			/** @type {Array<number>} */ coords = this.coords,
-			/** @type {Array<number>} */ colours = this.cellColours,
+			/** @type {Float32Array} */ coords = this.coords,
+			/** @type {Uint32Array} */ colours = this.cellColours,
 			/** @type {number} */ yOff1 = this.height / 2 - this.yOff - this.originY + 0.5,
 			/** @type {number} */ xOff1 = this.width / 2 - this.xOff - this.originX + 0.5,
 			/** @type {number} */ zoom = this.zoom * this.originZ,
@@ -3173,8 +3163,8 @@
 
 		// check if buffers have been allocated
 		if (colours.length !== LifeConstants.coordBufferSize) {
-			this.coords = this.allocator.allocate(Float32, 12 * LifeConstants.coordBufferSize, "Life.coords");
-			this.cellColours = this.allocator.allocate(Uint32, LifeConstants.coordBufferSize, "Life.cellColours");
+			this.coords = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, 12 * LifeConstants.coordBufferSize, "Life.coords"));
+			this.cellColours = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.coordBufferSize, "Life.cellColours"));
 			coords = this.coords;
 			colours = this.cellColours;
 		}
@@ -3254,8 +3244,8 @@
 			/** @const {number} */ w2 = this.width / 2 - 0.25,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @type {number} */ state = 0,
-			/** @type {Array<number>} */ coords = this.coords,
-			/** @type {Array<number>} */ colours = this.cellColours,
+			/** @type {Float32Array} */ coords = this.coords,
+			/** @type {Uint32Array} */ colours = this.cellColours,
 			/** @type {number} */ yOff1 = this.height / 2 - this.yOff - this.originY + 0.5,
 			/** @type {number} */ xOff1 = this.width / 2 - this.xOff - this.originX + 0.5,
 			/** @type {number} */ zoom = this.zoom * this.originZ,
@@ -3283,8 +3273,8 @@
 
 		// check if buffers have been allocated
 		if (colours.length !== LifeConstants.coordBufferSize) {
-			this.coords = this.allocator.allocate(Float32, 12 * LifeConstants.coordBufferSize, "Life.coords");
-			this.cellColours = this.allocator.allocate(Uint32, LifeConstants.coordBufferSize, "Life.cellColours");
+			this.coords = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, 12 * LifeConstants.coordBufferSize, "Life.coords"));
+			this.cellColours = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.coordBufferSize, "Life.cellColours"));
 			coords = this.coords;
 			colours = this.cellColours;
 		}
@@ -3368,8 +3358,8 @@
 			/** @type {number} */ state5 = ViewConstants.stateMap[5] + 128,
 			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128,
 			/** @type {number} */ aliveStart = this.aliveStart,
-			/** @type {Array<number>} */ coords = this.coords,
-			/** @type {Array<number>} */ colours = this.cellColours,
+			/** @type {Float32Array} */ coords = this.coords,
+			/** @type {Uint32Array} */ colours = this.cellColours,
 			/** @type {number} */ leftX = zoomBox.leftX,
 			/** @type {number} */ rightX = zoomBox.rightX,
 			/** @type {number} */ bottomY = zoomBox.bottomY,
@@ -3390,8 +3380,8 @@
 
 		// check if buffers have been allocated
 		if (colours.length !== LifeConstants.coordBufferSize) {
-			this.coords = this.allocator.allocate(Float32, 12 * LifeConstants.coordBufferSize, "Life.coords");
-			this.cellColours = this.allocator.allocate(Uint32, LifeConstants.coordBufferSize, "Life.cellColours");
+			this.coords = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, 12 * LifeConstants.coordBufferSize, "Life.coords"));
+			this.cellColours = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.coordBufferSize, "Life.cellColours"));
 			coords = this.coords;
 			colours = this.cellColours;
 		}
@@ -3582,9 +3572,9 @@
 			/** @type {number} */ cy0 = 0,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ lastState = -1,
-			/** @type {Array<number>} */ coords = this.coords,
+			/** @type {Float32Array} */ coords = this.coords,
 			/** @const {number} */ numCoords = this.numCells,
-			/** @type {Array<number>} */ colours = this.cellColours,
+			/** @type {Uint32Array} */ colours = this.cellColours,
 			/** @const {number} */ mask = (1 << LifeConstants.coordBufferBits) - 1;
 
 		// if triangles are filled then sort by colour
@@ -3707,8 +3697,8 @@
 			/** @type {number} */ ya4 = 0,
 			/** @type {number} */ xa5 = 0,
 			/** @type {number} */ ya5 = 0,
-			/** @type {Array<number>} */ coords = this.coords,
-			/** @type {Array<number>} */ colours = this.cellColours,
+			/** @type {Float32Array} */ coords = this.coords,
+			/** @type {Uint32Array} */ colours = this.cellColours,
 			/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
 			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
 			/** @type {number} */ xOff1 = this.width / 2 - this.xOff - this.originX,
@@ -3742,8 +3732,8 @@
 
 		// check if buffers have been allocated
 		if (colours.length !== LifeConstants.coordBufferSize) {
-			this.coords = this.allocator.allocate(Float32, 12 * LifeConstants.coordBufferSize, "Life.coords");
-			this.cellColours = this.allocator.allocate(Uint32, LifeConstants.coordBufferSize, "Life.cellColours");
+			this.coords = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, 12 * LifeConstants.coordBufferSize, "Life.coords"));
+			this.cellColours = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.coordBufferSize, "Life.cellColours"));
 			coords = this.coords;
 			colours = this.cellColours;
 		}
@@ -3864,8 +3854,8 @@
 			/** @type {number} */ ya4 = 0,
 			/** @type {number} */ xa5 = 0,
 			/** @type {number} */ ya5 = 0,
-			/** @type {Array<number>} */ coords = this.coords,
-			/** @type {Array<number>} */ colours = this.cellColours,
+			/** @type {Float32Array} */ coords = this.coords,
+			/** @type {Uint32Array} */ colours = this.cellColours,
 			/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
 			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
 			/** @type {number} */ xOff1 = this.width / 2 - this.xOff - this.originX,
@@ -3899,8 +3889,8 @@
 
 		// check if buffers have been allocated
 		if (colours.length !== LifeConstants.coordBufferSize) {
-			this.coords = this.allocator.allocate(Float32, 12 * LifeConstants.coordBufferSize, "Life.coords");
-			this.cellColours = this.allocator.allocate(Uint32, LifeConstants.coordBufferSize, "Life.cellColours");
+			this.coords = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, 12 * LifeConstants.coordBufferSize, "Life.coords"));
+			this.cellColours = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.coordBufferSize, "Life.cellColours"));
 			coords = this.coords;
 			colours = this.cellColours;
 		}
@@ -4044,8 +4034,8 @@
 			/** @type {number} */ ya4 = 0,
 			/** @type {number} */ xa5 = 0,
 			/** @type {number} */ ya5 = 0,
-			/** @type {Array<number>} */ coords = this.coords,
-			/** @type {Array<number>} */ colours = this.cellColours,
+			/** @type {Float32Array} */ coords = this.coords,
+			/** @type {Uint32Array} */ colours = this.cellColours,
 			/** @type {number} */ leftX = zoomBox.leftX,
 			/** @type {number} */ rightX = zoomBox.rightX,
 			/** @type {number} */ bottomY = zoomBox.bottomY,
@@ -4065,8 +4055,8 @@
 
 		// check if buffers have been allocated
 		if (colours.length !== LifeConstants.coordBufferSize) {
-			this.coords = this.allocator.allocate(Float32, 12 * LifeConstants.coordBufferSize, "Life.coords");
-			this.cellColours = this.allocator.allocate(Uint32, LifeConstants.coordBufferSize, "Life.cellColours");
+			this.coords = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, 12 * LifeConstants.coordBufferSize, "Life.coords"));
+			this.cellColours = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.coordBufferSize, "Life.cellColours"));
 			coords = this.coords;
 			colours = this.cellColours;
 		}
@@ -4288,9 +4278,9 @@
 			/** @type {number} */ batch = 12,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ lastState = -1,
-			/** @type {Array<number>} */ coords = this.coords,
+			/** @type {Float32Array} */ coords = this.coords,
 			/** @const {number} */ numCoords = this.numCells,
-			/** @type {Array<number>} */ colours = this.cellColours,
+			/** @type {Uint32Array} */ colours = this.cellColours,
 			/** @const {number} */ mask = (1 << LifeConstants.coordBufferBits) - 1;
 
 		// adjust for hex
@@ -5586,14 +5576,14 @@
 		var	/** @const {number} */ entries = 1 << LifeConstants.popChunkPower;
 
 		if (allocate) {
-			this.popGraphData = Array.matrix(Uint32, 1, entries, 0, this.allocator, "Life.popGraphData");
-			this.birthGraphData = Array.matrix(Uint32, 1, entries, 0, this.allocator, "Life.birthGraphData");
-			this.deathGraphData = Array.matrix(Uint32, 1, entries, 0, this.allocator, "Life.deathGraphData");
+			this.popGraphData = Array.matrix(Type.Uint32, 1, entries, 0, this.allocator, "Life.popGraphData");
+			this.birthGraphData = Array.matrix(Type.Uint32, 1, entries, 0, this.allocator, "Life.birthGraphData");
+			this.deathGraphData = Array.matrix(Type.Uint32, 1, entries, 0, this.allocator, "Life.deathGraphData");
 			this.popGraphEntries = entries;
 		} else {
-			this.popGraphData = Array.matrix(Uint32, 0, 0, 0, this.allocator, "Life.popGraphData");
-			this.birthGraphData = Array.matrix(Uint32, 0, 0, 0, this.allocator, "Life.birthGraphData");
-			this.deathGraphData = Array.matrix(Uint32, 0, 0, 0, this.allocator, "Life.deathGraphData");
+			this.popGraphData = Array.matrix(Type.Uint32, 0, 0, 0, this.allocator, "Life.popGraphData");
+			this.birthGraphData = Array.matrix(Type.Uint32, 0, 0, 0, this.allocator, "Life.birthGraphData");
+			this.deathGraphData = Array.matrix(Type.Uint32, 0, 0, 0, this.allocator, "Life.deathGraphData");
 			this.popGraphEntries = 0;
 		}
 	};
@@ -6207,18 +6197,18 @@
 		}
 
 		// allocate the new buffers
-		this.grid = Array.matrix(Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.grid");
-		this.nextGrid = Array.matrix(Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.nextGrid");
+		this.grid = Array.matrix(Type.Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.grid");
+		this.nextGrid = Array.matrix(Type.Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.nextGrid");
 
 		// 16bit view of grid and double buffer
-		this.grid16 = Array.matrixView(Uint16, this.grid, "Life.grid16");
-		this.nextGrid16 = Array.matrixView(Uint16, this.nextGrid, "Life.nextGrid16");
+		this.grid16 = Array.matrixView(Type.Uint16, this.grid, "Life.grid16");
+		this.nextGrid16 = Array.matrixView(Type.Uint16, this.nextGrid, "Life.nextGrid16");
 
 		// check if the mask is allocated
 		if (currentMaskGrid) {
-			this.state6Mask = Array.matrix(Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Mask");
-			this.state6Alive = Array.matrix(Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Alive");
-			this.state6Cells = Array.matrix(Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Cells");
+			this.state6Mask = Array.matrix(Type.Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Mask");
+			this.state6Alive = Array.matrix(Type.Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Alive");
+			this.state6Cells = Array.matrix(Type.Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Cells");
 		}
 
 		// recompute the number of tile rows and columns
@@ -6227,53 +6217,53 @@
 
 		// allocate the tile grids
 		if (currentMaskGrid) {
-			this.state6TileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.state6TileGrid");
+			this.state6TileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.state6TileGrid");
 		}
-		this.tileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.tileGrid");
-		this.nextTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid");
-		this.staticTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.staticTileGrid");
-		this.colourTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid");
-		this.colourTileHistoryGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid");
+		this.tileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.tileGrid");
+		this.nextTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid");
+		this.staticTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.staticTileGrid");
+		this.colourTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid");
+		this.colourTileHistoryGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid");
 
 		// blank row for life grid to prevent wrap
-		this.blankRow = this.allocator.allocate(Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow");
+		this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow"));
 
 		// blank row for 16 bit life grid
-		this.blankRow16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16");
+		this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16"));
 
 		// blank tile row to prevent wrap
-		this.blankTileRow = this.allocator.allocate(Uint16, this.tileCols >> 4, "Life.blankTileRow");
+		this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow"));
 
 		// blank colour grid row
-		this.blankColourRow = this.allocator.allocate(Uint8, this.width, "Life.blankColourRow");
+		this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow"));
 
 		// column occupancy array for grid bounding box calculation
-		this.columnOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16");
+		this.columnOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16"));
 
 		// row occupancy array for grid bounding box calculation
-		this.rowOccupied16 = this.allocator.allocate(Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16");
+		this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16"));
 
 		// colour grid
-		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
+		this.colourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
 		if (this.isPCA || this.isRuleTree || this.isSuper) {
-			this.nextColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
-			this.nextColourGrid16 = Array.matrixView(Uint16, this.nextColourGrid, "Life.nextColourGrid16");
-			this.nextColourGrid32 = Array.matrixView(Uint32, this.nextColourGrid, "Life.nextColourGrid32");
+			this.nextColourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
+			this.nextColourGrid16 = Array.matrixView(Type.Uint16, this.nextColourGrid, "Life.nextColourGrid16");
+			this.nextColourGrid32 = Array.matrixView(Type.Uint32, this.nextColourGrid, "Life.nextColourGrid32");
 		} else {
 			this.nextColourGrid = null;
 			this.nextColourGrid16 = null;
 			this.nextColourGrid32 = null;
 		}
-		this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
-		this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
-		this.colourGrid32 = Array.matrixView(Uint32, this.colourGrid, "Life.colourGrid32");
+		this.smallColourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
+		this.colourGrid16 = Array.matrixView(Type.Uint16, this.colourGrid, "Life.colourGrid16");
+		this.colourGrid32 = Array.matrixView(Type.Uint32, this.colourGrid, "Life.colourGrid32");
 
 		// check if overlay grid was allocated
 		if (currentOverlayGrid) {
-			this.overlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid");
-			this.smallOverlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid");
-			this.overlayGrid16 = Array.matrixView(Uint16, this.overlayGrid, "Life.overlayGrid16");
-			this.overlayGrid32 = Array.matrixView(Uint32, this.overlayGrid, "Life.overlayGrid32");
+			this.overlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid");
+			this.smallOverlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid");
+			this.overlayGrid16 = Array.matrixView(Type.Uint16, this.overlayGrid, "Life.overlayGrid16");
+			this.overlayGrid32 = Array.matrixView(Type.Uint32, this.overlayGrid, "Life.overlayGrid32");
 		}
 
 		// create the grid width and height masks
@@ -6291,12 +6281,12 @@
 		this.height = height;
 
 		// allocate the new buffers
-		this.grid = Array.matrix(Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.grid");
-		this.nextGrid = Array.matrix(Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.nextGrid");
+		this.grid = Array.matrix(Type.Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.grid");
+		this.nextGrid = Array.matrix(Type.Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.nextGrid");
 
 		// 16bit view of grid and double buffer
-		this.grid16 = Array.matrixView(Uint16, this.grid, "Life.grid16");
-		this.nextGrid16 = Array.matrixView(Uint16, this.nextGrid, "Life.nextGrid16");
+		this.grid16 = Array.matrixView(Type.Uint16, this.grid, "Life.grid16");
+		this.nextGrid16 = Array.matrixView(Type.Uint16, this.nextGrid, "Life.nextGrid16");
 
 		// recompute the number of tile rows and columns
 		this.tileCols = this.width >> this.tilePower;
@@ -6308,44 +6298,44 @@
 		}
 
 		// allocate tile grids
-		this.tileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.tileGrid");
-		this.nextTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid");
-		this.staticTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.staticTileGrid");
-		this.colourTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid");
-		this.colourTileHistoryGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid");
+		this.tileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.tileGrid");
+		this.nextTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid");
+		this.staticTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.staticTileGrid");
+		this.colourTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid");
+		this.colourTileHistoryGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid");
 
 		// blank row for life grid to prevent wrap
-		this.blankRow = this.allocator.allocate(Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow");
+		this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow"));
 
 		// blank row for 16 bit life grid
-		this.blankRow16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16");
+		this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16"));
 
 		// blank tile row to prevent wrap
-		this.blankTileRow = this.allocator.allocate(Uint16, this.tileCols >> 4, "Life.blankTileRow");
+		this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow"));
 
 		// blank colour grid row
-		this.blankColourRow = this.allocator.allocate(Uint8, this.width, "Life.blankColourRow");
+		this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow"));
 
 		// column occupancy array for grid bounding box calculation
-		this.columnOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16");
+		this.columnOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16"));
 
 		// row occupancy array for grid bounding box calculation
-		this.rowOccupied16 = this.allocator.allocate(Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16");
+		this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16"));
 
 		// colour grid
-		this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
-		this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
-		this.colourGrid32 = Array.matrixView(Uint32, this.colourGrid, "Life.colourGrid32");
+		this.colourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
+		this.colourGrid16 = Array.matrixView(Type.Uint16, this.colourGrid, "Life.colourGrid16");
+		this.colourGrid32 = Array.matrixView(Type.Uint32, this.colourGrid, "Life.colourGrid32");
 		if (this.isPCA || this.isRuleTree || this.isSuper) {
-			this.nextColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
-			this.nextColourGrid16 = Array.matrixView(Uint16, this.nextColourGrid, "Life.nextColourGrid16");
-			this.nextColourGrid32 = Array.matrixView(Uint32, this.nextColourGrid, "Life.nextColourGrid32");
+			this.nextColourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
+			this.nextColourGrid16 = Array.matrixView(Type.Uint16, this.nextColourGrid, "Life.nextColourGrid16");
+			this.nextColourGrid32 = Array.matrixView(Type.Uint32, this.nextColourGrid, "Life.nextColourGrid32");
 		} else {
 			this.nextColourGrid = null;
 			this.nextColourGrid16 = null;
 			this.nextColourGrid32 = null;
 		}
-		this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
+		this.smallColourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
 
 		// check if overlay grid was allocated
 		if (this.overlayGrid) {
@@ -6430,18 +6420,18 @@
 			}
 
 			// allocate the new buffers
-			this.grid = Array.matrix(Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.grid");
-			this.nextGrid = Array.matrix(Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.nextGrid");
+			this.grid = Array.matrix(Type.Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.grid");
+			this.nextGrid = Array.matrix(Type.Uint8, this.height, ((this.width - 1) >> 3) + 1, 0, this.allocator, "Life.nextGrid");
 
 			// 16bit view of grid and double buffer
-			this.grid16 = Array.matrixView(Uint16, this.grid, "Life.grid16");
-			this.nextGrid16 = Array.matrixView(Uint16, this.nextGrid, "Life.nextGrid16");
+			this.grid16 = Array.matrixView(Type.Uint16, this.grid, "Life.grid16");
+			this.nextGrid16 = Array.matrixView(Type.Uint16, this.nextGrid, "Life.nextGrid16");
 
 			// check if the mask is allocated
 			if (currentMaskGrid) {
-				this.state6Mask = Array.matrix(Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Mask");
-				this.state6Alive = Array.matrix(Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Alive");
-				this.state6Cells = Array.matrix(Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Cells");
+				this.state6Mask = Array.matrix(Type.Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Mask");
+				this.state6Alive = Array.matrix(Type.Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Alive");
+				this.state6Cells = Array.matrix(Type.Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Cells");
 			}
 
 			// recompute the number of tile rows and columns
@@ -6450,51 +6440,51 @@
 
 			// allocate the tile grids
 			if (currentMaskGrid) {
-				this.state6TileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.state6TileGrid");
+				this.state6TileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.state6TileGrid");
 			}
-			this.tileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.tileGrid");
-			this.nextTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid");
-			this.staticTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.staticTileGrid");
-			this.colourTileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid");
-			this.colourTileHistoryGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid");
+			this.tileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.tileGrid");
+			this.nextTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid");
+			this.staticTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.staticTileGrid");
+			this.colourTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid");
+			this.colourTileHistoryGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid");
 
 			// blank row for life grid to prevent wrap
-			this.blankRow = this.allocator.allocate(Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow");
+			this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow"));
 
 			// blank row for 16 bit life grid
-			this.blankRow16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16");
+			this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16"));
 
 			// blank tile row to prevent wrap
-			this.blankTileRow = this.allocator.allocate(Uint16, this.tileCols >> 4, "Life.blankTileRow");
+			this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow"));
 
 			// blank colour grid row
-			this.blankColourRow = this.allocator.allocate(Uint8, this.width, "Life.blankColourRow");
+			this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow"));
 
 			// column occupancy array for grid bounding box calculation
-			this.columnOccupied16 = this.allocator.allocate(Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16");
+			this.columnOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16"));
 
 			// row occupancy array for grid bounding box calculation
-			this.rowOccupied16 = this.allocator.allocate(Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16");
+			this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16"));
 
 			// count grid
 			if (currentCountList) {
-				this.countList = Array.matrix(Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
+				this.countList = Array.matrix(Type.Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
 			}
 
 			// init grid
 			if (currentInitList) {
-				this.initList = Array.matrix(Uint8, this.height, this.width, 0, this.allocator, "Life.initList");
+				this.initList = Array.matrix(Type.Uint8, this.height, this.width, 0, this.allocator, "Life.initList");
 			}
 
 			// colour grid
-			this.colourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
-			this.smallColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
-			this.colourGrid16 = Array.matrixView(Uint16, this.colourGrid, "Life.colourGrid16");
-			this.colourGrid32 = Array.matrixView(Uint32, this.colourGrid, "Life.colourGrid32");
+			this.colourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
+			this.smallColourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
+			this.colourGrid16 = Array.matrixView(Type.Uint16, this.colourGrid, "Life.colourGrid16");
+			this.colourGrid32 = Array.matrixView(Type.Uint32, this.colourGrid, "Life.colourGrid32");
 			if (this.isPCA || this.isRuleTree || this.isSuper) {
-				this.nextColourGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
-				this.nextColourGrid16 = Array.matrixView(Uint16, this.nextColourGrid, "Life.nextColourGrid16");
-				this.nextColourGrid32 = Array.matrixView(Uint32, this.nextColourGrid, "Life.nextColourGrid32");
+				this.nextColourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
+				this.nextColourGrid16 = Array.matrixView(Type.Uint16, this.nextColourGrid, "Life.nextColourGrid16");
+				this.nextColourGrid32 = Array.matrixView(Type.Uint32, this.nextColourGrid, "Life.nextColourGrid32");
 			} else {
 				this.nextColourGrid = null;
 				this.nextColourGrid16 = null;
@@ -6503,10 +6493,10 @@
 
 			// check if overlay grid was allocated
 			if (currentOverlayGrid) {
-				this.overlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid");
-				this.smallOverlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid");
-				this.overlayGrid16 = Array.matrixView(Uint16, this.overlayGrid, "Life.overlayGrid16");
-				this.overlayGrid32 = Array.matrixView(Uint32, this.overlayGrid, "Life.overlayGrid32");
+				this.overlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid");
+				this.smallOverlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid");
+				this.overlayGrid16 = Array.matrixView(Type.Uint16, this.overlayGrid, "Life.overlayGrid16");
+				this.overlayGrid32 = Array.matrixView(Type.Uint32, this.overlayGrid, "Life.overlayGrid32");
 			}
 
 			// create the grid width and height masks
@@ -6844,7 +6834,7 @@
 
 		// update the drawing context
 		this.imageData = context.createImageData(context.canvas.width, context.canvas.height);
-		this.allocator.saveAllocationInfo(Uint32, context.canvas.width * context.canvas.height, "Life.imageData");
+		this.allocator.saveAllocationInfo(Type.Uint32, context.canvas.width * context.canvas.height, "Life.imageData");
 
 		// check if buffer is available
 		if (this.imageData.data.buffer) {
@@ -6860,7 +6850,7 @@
 	
 		if (sizeChanged) {
 			// create the new blank pixel row
-			this.blankPixelRow = this.allocator.allocate(Uint32, displayWidth, "Life.blankPixelRow");
+			this.blankPixelRow = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, displayWidth, "Life.blankPixelRow"));
 			for (i = 0; i < displayWidth; i += 1) {
 				this.blankPixelRow[i] = pixelColour;
 			}
@@ -6925,13 +6915,13 @@
 
 	// create the overlay
 	Life.prototype.createOverlay = function() {
-		this.overlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid");
-		this.smallOverlayGrid = Array.matrix(Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid");
+		this.overlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid");
+		this.smallOverlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid");
 		this.smallOverlayGrid4 = Array.matrixViewWithOffset(this.smallOverlayGrid, 1, "Life.smallOverlayGrid4");
 		this.smallOverlayGrid8 = Array.matrixViewWithOffset(this.smallOverlayGrid, 3, "Life.smallOverlayGrid8");
 		this.smallOverlayGrid16 = Array.matrixViewWithOffset(this.smallOverlayGrid, 7, "Life.smallOverlayGrid16");
-		this.overlayGrid16 = Array.matrixView(Uint16, this.overlayGrid, "Life.overlayGrid16");
-		this.overlayGrid32 = Array.matrixView(Uint32, this.overlayGrid, "Life.overlayGrid32");
+		this.overlayGrid16 = Array.matrixView(Type.Uint16, this.overlayGrid, "Life.overlayGrid16");
+		this.overlayGrid32 = Array.matrixView(Type.Uint32, this.overlayGrid, "Life.overlayGrid32");
 	};
 
 	// free the state6 mask
@@ -6945,10 +6935,10 @@
 	// create the state6 mask
 	Life.prototype.createState6Mask = function() {
 		// allocate the mask and alive mask
-		this.state6Mask = Array.matrix(Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Mask");
-		this.state6Alive = Array.matrix(Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Alive");
-		this.state6Cells = Array.matrix(Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Cells");
-		this.state6TileGrid = Array.matrix(Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.state6TileGrid");
+		this.state6Mask = Array.matrix(Type.Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Mask");
+		this.state6Alive = Array.matrix(Type.Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Alive");
+		this.state6Cells = Array.matrix(Type.Uint16, this.height, ((this.width - 1) >> 4) + 1, 0, this.allocator, "Life.state6Cells");
+		this.state6TileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.state6TileGrid");
 	};
 
 	// populate the state6 mask from the colour grid
@@ -8573,7 +8563,7 @@
 		// check lookup is small enough for lookup table
 		if (bitsNeeded <= LifeConstants.maxRuleTreeLookupBits) {
 			// build lookup table
-			this.ruleTreeLookup = this.allocator.allocate(Uint8, (1 << bitsNeeded), "Life.ruleTreeLookup");
+			this.ruleTreeLookup = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, (1 << bitsNeeded), "Life.ruleTreeLookup"));
 
 			// create the bit shifts
 			this.ruleTreeLookupBits = i;
@@ -8734,16 +8724,16 @@
 		// check for PCA
 		if (this.isPCA) {
 			// create lookup array
-			this.margolusLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashPCA, "Life.PCALookup1");
+			this.margolusLookup1 = this.allocator.allocate(Type.Uint16, LifeConstants.hashPCA, "Life.PCALookup1");
 			if (altSpecified) {
-				this.margolusLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashPCA, "Life.PCALookup2");
+				this.margolusLookup2 = this.allocator.allocate(Type.Uint16, LifeConstants.hashPCA, "Life.PCALookup2");
 				this.createPCAIndex(this.margolusLookup2, ruleArray, false);
 				this.createPCAIndex(this.margolusLookup1, ruleAltArray, false);
 
 				// check for alternate
 				if (this.canReverse(ruleArray, false) && this.canReverse(ruleAltArray, false)) {
-					this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashPCA, "Life.PCAReverseLookup1");
-					this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashPCA, "Life.PCAReverseLookup2");
+					this.margolusReverseLookup1 = this.allocator.allocate(Type.Uint16, LifeConstants.hashPCA, "Life.PCAReverseLookup1");
+					this.margolusReverseLookup2 = this.allocator.allocate(Type.Uint16, LifeConstants.hashPCA, "Life.PCAReverseLookup2");
 					this.canReverse(ruleAltArray, false);
 					this.createPCAIndex(this.margolusReverseLookup1, ruleAltArray, true);
 					this.canReverse(ruleArray, false);
@@ -8754,7 +8744,7 @@
 
 				// check for reverse
 				if (this.canReverse(ruleArray, false)) {
-					this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashPCA, "Life.PCAsReverseLookup1");
+					this.margolusReverseLookup1 = this.allocator.allocate(Type.Uint16, LifeConstants.hashPCA, "Life.PCAsReverseLookup1");
 					this.createPCAIndex(this.margolusReverseLookup1, ruleArray, true);
 				}
 			}
@@ -8762,7 +8752,7 @@
 			// check for Margolus
 			if (this.isMargolus) {
 				// create lookup array
-				this.margolusLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusLookup1");
+				this.margolusLookup1 = this.allocator.allocate(Type.Uint16, LifeConstants.hashMargolus, "Life.margolusLookup1");
 
 				//  check for V0 = 15 and V15 = 0
 				if (ruleArray[0] === 15 && ruleArray[15] === 0) {
@@ -8780,22 +8770,22 @@
 				}
 
 				if (altSpecified) {
-					this.margolusLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusLookup2");
+					this.margolusLookup2 = this.allocator.allocate(Type.Uint16, LifeConstants.hashMargolus, "Life.margolusLookup2");
 					this.createMargolusIndex(this.margolusLookup2, ruleArray);
 					this.createMargolusIndex(this.margolusLookup1, ruleAltArray);
 
 					// check for reverse V0=15/V15=0
 					if (savedArray && this.canReverse(savedArray, true)) {
-						this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
-						this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
+						this.margolusReverseLookup1 = this.allocator.allocate(Type.Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
+						this.margolusReverseLookup2 = this.allocator.allocate(Type.Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
 						this.createNonStrobingAlternates(savedArray, ruleAltArray);
 						this.createMargolusIndex(this.margolusReverseLookup1, ruleAltArray);
 						this.createMargolusIndex(this.margolusReverseLookup2, savedArray);
 					} else {
 						// check for alternate
 						if (this.canReverse(ruleArray, false) && this.canReverse(ruleAltArray, false)) {
-							this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
-							this.margolusReverseLookup2 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
+							this.margolusReverseLookup1 = this.allocator.allocate(Type.Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
+							this.margolusReverseLookup2 = this.allocator.allocate(Type.Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup2");
 							this.canReverse(ruleArray, true);
 							this.createMargolusIndex(this.margolusReverseLookup1, ruleArray);
 							this.canReverse(ruleAltArray, true);
@@ -8807,7 +8797,7 @@
 
 					// check for reverse
 					if (this.canReverse(ruleArray, true)) {
-						this.margolusReverseLookup1 = this.allocator.allocate(Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
+						this.margolusReverseLookup1 = this.allocator.allocate(Type.Uint16, LifeConstants.hashMargolus, "Life.margolusReverseLookup1");
 						this.createMargolusIndex(this.margolusReverseLookup1, ruleArray);
 					}
 				}
@@ -8815,9 +8805,9 @@
 				// check for Triangular
 				if (this.isTriangular) {
 					// create lookup arrays
-					this.indexLookupTri1 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri1");
+					this.indexLookupTri1 = this.allocator.allocate(Type.Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri1");
 					if (altSpecified) {
-						this.indexLookupTri2 = this.allocator.allocate(Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri2");
+						this.indexLookupTri2 = this.allocator.allocate(Type.Uint8, LifeConstants.hashTriDouble, "Life.indexLookupTri2");
 						this.createTriangularIndex(this.indexLookupTri2, ruleArray);
 						this.createTriangularIndex(this.indexLookupTri1, ruleAltArray);
 					} else {
@@ -8825,7 +8815,7 @@
 					}
 				} else {
 					// create the first lookup array
-					this.indexLookup63 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup63");
+					this.indexLookup63 = this.allocator.allocate(Type.Uint8, LifeConstants.hash63, "Life.indexLookup63");
 
 					// check for Wolfram
 					if (this.wolframRule === -1) {
@@ -8848,7 +8838,7 @@
 									ruleArray[hashSize - i - 1] = tmp;
 								}
 								odd = true;
-								this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
+								this.indexLookup632 = this.allocator.allocate(Type.Uint8, LifeConstants.hash63, "Life.indexLookup632");
 								this.createLifeIndex63(this.indexLookup632, ruleArray);
 
 								// even rule -> NOT(bits)
@@ -8864,7 +8854,7 @@
 
 					// copy rules from pattern
 					if (this.altSpecified) {
-						this.indexLookup632 = this.allocator.allocate(Uint8, LifeConstants.hash63, "Life.indexLookup632");
+						this.indexLookup632 = this.allocator.allocate(Type.Uint8, LifeConstants.hash63, "Life.indexLookup632");
 						this.createLifeIndex63(this.indexLookup632, ruleArray);
 						this.createLifeIndex63(this.indexLookup63, ruleAltArray);
 					} else {
@@ -13530,8 +13520,8 @@
 								// check if page is allocated
 								if (page > pages) {
 									// allocate new page
-									this.boundaryX[page] = this.allocator.allocate(Int32, max, "Life.boundaryX" + page);
-									this.boundaryY[page] = this.allocator.allocate(Int32, max, "Life.boundaryY" + page);
+									this.boundaryX[page] = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, max, "Life.boundaryX" + page));
+									this.boundaryY[page] = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, max, "Life.boundaryY" + page));
 
 									// save new page
 									pages += 1;
@@ -13764,8 +13754,8 @@
 								// check if page is allocated
 								if (page > pages) {
 									// allocate new page
-									this.boundaryX[page] = this.allocator.allocate(Int32, max, "Life.boundaryX" + page);
-									this.boundaryY[page] = this.allocator.allocate(Int32, max, "Life.boundaryY" + page);
+									this.boundaryX[page] = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, max, "Life.boundaryX" + page));
+									this.boundaryY[page] = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, max, "Life.boundaryY" + page));
 
 									// save new page
 									pages += 1;
@@ -29584,7 +29574,7 @@
 			/** @type {number} */ leftX = 0,
 
 			// column occupied
-			/** @type {Array<number>} */ columnOccupied16 = this.columnOccupied16,
+			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
 			/** @type {number} */ colOccupied = 0,
 			/** @type {number} */ colIndex = 0,
 
@@ -30439,7 +30429,7 @@
 			/** @type {number} */ leftX = 0,
 
 			// column occupied
-			/** @type {Array<number>} */ columnOccupied16 = this.columnOccupied16,
+			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
 			/** @type {number} */ colOccupied = 0,
 			/** @type {number} */ colIndex = 0,
 
@@ -31294,7 +31284,7 @@
 			/** @type {number} */ leftX = 0,
 
 			// column occupied
-			/** @type {Array<number>} */ columnOccupied16 = this.columnOccupied16,
+			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
 			/** @type {number} */ colOccupied = 0,
 			/** @type {number} */ colIndex = 0,
 
@@ -32149,7 +32139,7 @@
 			/** @type {number} */ leftX = 0,
 
 			// column occupied
-			/** @type {Array<number>} */ columnOccupied16 = this.columnOccupied16,
+			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
 			/** @type {number} */ colOccupied = 0,
 			/** @type {number} */ colIndex = 0,
 
@@ -39264,6 +39254,11 @@
 		}
 	};
 
+	// copy back to mode 7 buffer (used to avoid type issue reporting)
+	Life.prototype.mode7Update = function(dest, src) {
+		dest.set(src);
+	};
+
 	// draw canvas
 	Life.prototype.drawGrid = function() {
 		var	/** @type {number} */ i = 0,
@@ -39300,7 +39295,7 @@
 					width = this.context.canvas.width,
 					height = this.context.canvas.height,
 					/** @type {Uint32Array} */ data32 = this.data32,
-					/** @type {Uint32Array} */ mode7 = this.mode7Buffer,
+					mode7 = this.mode7Buffer,
 					halfwidth = width >> 1,
 					halfheight = height >> 1,
 					rowoffset = 0,
@@ -39316,7 +39311,7 @@
 	
 				// create the mode7 buffer if it has not been done so before
 				if (this.mode7Buffer === null) {
-					this.mode7Buffer = this.allocator.allocate(Uint32, width * height, "Life.tiltBuffer");
+					this.mode7Buffer = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, width * height, "Life.tiltBuffer"));
 					mode7 = this.mode7Buffer;
 				}
 
@@ -39361,7 +39356,7 @@
 				}
 
 				// copy projected image to image data
-				data32.set(mode7);
+				this.mode7Update(data32, mode7);
 			}
 
 			// draw the image on the canvas
@@ -39375,10 +39370,3 @@
 
 		data32.fill(pixelColour);
 	};
-
-	/*jshint -W069 */
-	// create the global interface
-	window["LifeConstants"] = LifeConstants;
-	window["Life"] = Life;
-}
-());

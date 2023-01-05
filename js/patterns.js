@@ -2,13 +2,6 @@
 // Supports: Cells, Life 1.05, Life 1.06, RLE pattern formats
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define globals
-	/* global registerEvent DocConfig Uint8 Uint16 Uint8Array Uint16Array Uint32Array Int32Array AliasManager LifeConstants Script Allocator */
-
 	// RuleTreeCache singleton
 	var RuleTreeCache = {
 		// list of rules
@@ -1064,11 +1057,11 @@
 	Pattern.prototype.copyMultiSettingsFrom = function(/** @type {Pattern} */ source, allocator) {
 		// copy arrays
 		if (source.survivalHROT) {
-			this.altSurvivalHROT = allocator.allocate(Uint8, source.survivalHROT.length, "HROT.altSurvivals");
+			this.altSurvivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, source.survivalHROT.length, "HROT.altSurvivals"));
 			this.altSurvivalHROT.set(source.survivalHROT);
 		}
 		if (source.birthHROT) {
-			this.altBirthHROT = allocator.allocate(Uint8, source.birthHROT.length, "HROT.altBirths");
+			this.altBirthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, source.birthHROT.length, "HROT.altBirths"));
 			this.altBirthHROT.set(source.birthHROT);
 		}
 
@@ -1299,7 +1292,7 @@
 			pattern.patternFormat = "Cells";
 
 			// allocate the life array
-			pattern.lifeMap = Array.matrix(Uint16, pattern.height, ((pattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
+			pattern.lifeMap = Array.matrix(Type.Uint16, pattern.height, ((pattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
 
 			// populate the array
 			i = sectionStart;
@@ -1516,7 +1509,7 @@
 			pattern.width = maxX - minX + 1;
 
 			// allocate an array
-			pattern.lifeMap = Array.matrix(Uint16, pattern.height, ((pattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
+			pattern.lifeMap = Array.matrix(Type.Uint16, pattern.height, ((pattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
 			pattern.patternFormat = "Life 1.06";
 
 			// set Conway rule
@@ -1873,11 +1866,11 @@
 			pattern.width = endX - startX + 1;
 
 			// allocate the life array
-			pattern.lifeMap = Array.matrix(Uint16, pattern.height, ((pattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
+			pattern.lifeMap = Array.matrix(Type.Uint16, pattern.height, ((pattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
 			pattern.patternFormat = "Life 1.05";
 
 			// allocate multi-state array
-			pattern.multiStateMap = Array.matrix(Uint8, pattern.height, pattern.width, 0, allocator, "Pattern.multiStateMap");
+			pattern.multiStateMap = Array.matrix(Type.Uint8, pattern.height, pattern.width, 0, allocator, "Pattern.multiStateMap");
 
 			// set rule
 			if (sawCustom) {
@@ -3906,7 +3899,7 @@
 	PatternManager.prototype.readHexDigits = function(/** @type {string} */ rule, /** @type {string} */ which, /** @type {number} */ numDigits, /** @type {Pattern} */ pattern, allocator) {
 		var	/** @type {boolean} */ result = false,
 			/** @type {number} */ hexValue = 0,
-			list = null,
+			/** @type {Uint8Array} */ list = null,
 			/** @type {string} */ allocName = "HROT.",
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
@@ -3937,7 +3930,7 @@
 					extra = 1;
 				}
 				// 4 bits per digit plus zero entry
-				list = allocator.allocate(Uint8, (numDigits << 2) + 1 + extra, allocName);
+				list = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, (numDigits << 2) + 1 + extra, allocName));
 
 				// populate array
 				j = 0;
@@ -4405,8 +4398,8 @@
 		maxCount += pattern.middleLTL;
 
 		// allocate the survival and birth arrays
-		pattern.survivalHROT = allocator.allocate(Uint8, maxCount + 2, "HROT.survivals");
-		pattern.birthHROT = allocator.allocate(Uint8, maxCount + 1, "HROT.births");
+		pattern.survivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 2, "HROT.survivals"));
+		pattern.birthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 1, "HROT.births"));
 
 		// populate the arrays
 		for (i = pattern.SminLTL; i <= pattern.SmaxLTL; i += 1) {
@@ -4419,8 +4412,8 @@
 		// check for alternate rule
 		if (this.altSpecified) {
 			// allocate the alternate survival and birth arrays
-			pattern.altSurvivalHROT = allocator.allocate(Uint8, maxCount + 2, "HROT.altSurvivals");
-			pattern.altBirthHROT = allocator.allocate(Uint8, maxCount + 1, "HROT.altBirths");
+			pattern.altSurvivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 2, "HROT.altSurvivals"));
+			pattern.altBirthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 1, "HROT.altBirths"));
 
 			// populate the arrays
 			for (i = pattern.altSminLTL; i <= pattern.altSmaxLTL; i += 1) {
@@ -4694,7 +4687,7 @@
 							this.failureReason = "HROT expected 'S' got " + rule[this.index].toUpperCase();
 						} else {
 							// read and save survivals
-							pattern.survivalHROT = allocator.allocate(Uint8, maxCount + 2, "HROT.survivals");
+							pattern.survivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 2, "HROT.survivals"));
 							result = this.decodeHROTRange(rule, pattern.survivalHROT, "S", maxCount, outer);
 						}
 					} else {
@@ -4721,7 +4714,7 @@
 							this.failureReason = "HROT expected 'B' got " + rule[this.index].toUpperCase();
 						} else {
 							// read and save survivals
-							pattern.birthHROT = allocator.allocate(Uint8, maxCount + 1, "HROT.births");
+							pattern.birthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 1, "HROT.births"));
 							result = this.decodeHROTRange(rule, pattern.birthHROT, "B", maxCount, outer);
 						}
 					} else {
@@ -6476,10 +6469,10 @@
 				pattern.patternFormat = "RLE";
 			} else {
 				// allocate 2d cell array
-				pattern.lifeMap = Array.matrix(Uint16, y, ((width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
+				pattern.lifeMap = Array.matrix(Type.Uint16, y, ((width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
 
 				// allocate multi-state array
-				pattern.multiStateMap = Array.matrix(Uint8, y, width, 0, allocator, "Pattern.multiStateMap");
+				pattern.multiStateMap = Array.matrix(Type.Uint8, y, width, 0, allocator, "Pattern.multiStateMap");
 
 				// set decoder used
 				pattern.patternFormat = "RLE";
@@ -7557,8 +7550,8 @@
 			this.altSpecified = false;
 		} else {
 			// B0 without Smax needs two rules
-			pattern.altBirthHROT = allocator.allocate(Uint8, pattern.birthHROT.length, "HROT.altBirths");
-			pattern.altSurvivalHROT = allocator.allocate(Uint8, pattern.survivalHROT.length, "HROT.altSurvivals");
+			pattern.altBirthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, pattern.birthHROT.length, "HROT.altBirths"));
+			pattern.altSurvivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, pattern.survivalHROT.length, "HROT.altSurvivals"));
 			altBirths = pattern.altBirthHROT;
 			altSurvivals = pattern.altSurvivalHROT;
 
@@ -9502,7 +9495,7 @@
 			newPattern.invalid = false;
 			newPattern.width = 1;
 			newPattern.height = 1;
-			newPattern.lifeMap = Array.matrix(Uint16, newPattern.height, ((newPattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
+			newPattern.lifeMap = Array.matrix(Type.Uint16, newPattern.height, ((newPattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
 		}
 
 		// remove bounded grid postfix if present
@@ -9744,12 +9737,3 @@
 			xhr.send(null);
 		}
 	};
-
-	/*jshint -W069 */
-	// create the global interface
-	window["PatternConstants"] = PatternConstants;
-	window["PatternManager"] = PatternManager;
-	window["Pattern"] = Pattern;
-	window["RuleTreeCache"] = RuleTreeCache;
-}
-());

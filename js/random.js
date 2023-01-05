@@ -1,12 +1,5 @@
 // Random
 
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define globals
-	/* global Uint8Array */
-
 	// Random object
 	/**
 	 * @constructor
@@ -67,9 +60,3 @@
 		this.j = tj;
 		return number / 18446744073709551616;
 	};
-
-	/*jshint -W069 */
-	// create global interface
-	window["Random"] = Random;
-}
-());

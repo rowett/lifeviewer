@@ -1,13 +1,6 @@
 // LifeViewer Help
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define globals
-	/* global LifeConstants ViewConstants PatternConstants RuleTreeCache ColourManager Keywords WaypointConstants DocConfig Controller AliasManager littleEndian arrayFill arraySlice copyWithin */
-
 	// Help singleton
 	var Help = {
 		// shadow x offset
@@ -2801,7 +2794,3 @@
 		this.renderErrors(view, ctx, 4 * xScale, 12 * yScale, lineHeight, view.displayErrors | 0);
 	};
 
-	/*jshint -W069 */
-	window['Help'] = Help;
-}
-());

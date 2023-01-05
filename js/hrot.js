@@ -1,13 +1,6 @@
 // LifeViewer HROT
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define globals
-	/* global Uint8 Uint32 Random LifeConstants copyWithin */
-
 	// HROT object
 	/**
 	 * @constructor
@@ -26,29 +19,29 @@
 		/** @type {number} */ this.xrange = 1;
 		/** @type {number} */ this.yrange = 1;
 		/** @type {number} */ this.scount = 2;
-		this.births = allocator.allocate(Uint8, 0, "HROT.births");
-		this.survivals = allocator.allocate(Uint8, 0, "HROT.survivals");
-		this.altBirths = allocator.allocate(Uint8, 0, "HROT.altBirths");
-		this.altSurvivals = allocator.allocate(Uint8, 0, "HROT.altSurvivals");
+		/** @type {Uint8Array} */ this.births = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.births"));
+		/** @type {Uint8Array} */ this.survivals = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.survivals"));
+		/** @type {Uint8Array} */ this.altBirths = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.altBirths"));
+		/** @type {Uint8Array} */ this.altSurvivals = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.altSurvivals"));
 		/** @type {number} */ this.type = manager.mooreHROT;
 
 		// neighbourhood array for custom neighbourhoods (will be resized)
-		this.neighbourhood = Array.matrix(Uint8, 1, 1, 0, allocator, "HROT.neighbourhood");
+		this.neighbourhood = Array.matrix(Type.Uint8, 1, 1, 0, allocator, "HROT.neighbourhood");
 
 		// neighbourhood list for custom neighbourhoods (will be resized)
-		this.neighbourList = allocator.allocate(Int16, 0, "HROT.neighbourList");
+		this.neighbourList = /** @type {!Int16Array} */ (allocator.allocate(Type.Int16, 0, "HROT.neighbourList"));
 
 		// neighbour count array (will be resized)
-		this.counts = Array.matrix(Int32, 1, 1, 0, allocator, "HROT.counts");
+		this.counts = Array.matrix(Type.Int32, 1, 1, 0, allocator, "HROT.counts");
 
 		// range width array (will be resized)
-		this.widths = allocator.allocate(Uint32, 0, "HROT.widths");
+		/** @type {Uint32Array} */ this.widths = /** @type {!Uint32Array} */ (allocator.allocate(Type.Uint32, 0, "HROT.widths"));
 
 		// used row array (will be resized)
-		this.colUsed = allocator.allocate(Uint8, 0, "HROT.colUsed");
+		/** @type {Uint8Array} */ this.colUsed = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.colUsed"));
 
 		// weighted neighbourhood array (will be resized)
-		this.weightedNeighbourhood = allocator.allocate(Int8, 0, "HROT.weightedNeighbourhood");
+		this.weightedNeighbourhood = /** @type {!Int8Array} */ (allocator.allocate(Type.Int8, 0, "HROT.weightedNeighbourhood"));
 
 		// weighted states array
 		this.weightedStates = null;
@@ -85,8 +78,8 @@
 		this.myRand.init(Date.now().toString());
 
 		// random chances of births and survivals based on neighbour count
-		this.birthChances = allocator.allocate(Float32, 0, "HROT.birthChances");
-		this.survivalChances = allocator.allocate(Float32, 0, "HROT.suvivalChances");
+		this.birthChances = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "HROT.birthChances"));
+		this.survivalChances = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "HROT.suvivalChances"));
 
 		// whether to use random chances
 		/** @type {boolean} */ this.useRandom = false;
@@ -100,13 +93,13 @@
 		this.myRand.init(seed);
 
 		// create birth chances
-		this.birthChances = this.allocator.allocate(Float32, this.births.length, "HROT.birthChances");
+		this.birthChances = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, this.births.length, "HROT.birthChances"));
 		for (i = 0; i < this.births.length; i += 1) {
 			this.birthChances[i] = this.myRand.random();
 		}
 
 		// create survival chances
-		this.survivalChances = this.allocator.allocate(Float32, this.survivals.length, "HROT.suvivalChances");
+		this.survivalChances = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, this.survivals.length, "HROT.suvivalChances"));
 		for (i = 0; i < this.survivals.length; i += 1) {
 			this.survivalChances[i] = this.myRand.random();
 		}
@@ -121,8 +114,8 @@
 	// resize counts array
 	HROT.prototype.resize = function(/** @type {number} */ width, /** @type {number} */ height) {
 		// resize counts array
-		this.counts = Array.matrix(Int32, height, width, 0, this.allocator, "HROT.counts");
-		this.colUsed = this.allocator.allocate(Uint8, width, "HROT.colUsed");
+		this.counts = Array.matrix(Type.Int32, height, width, 0, this.allocator, "HROT.counts");
+		this.colUsed = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, width, "HROT.colUsed"));
 	};
 
 	// set type and range
@@ -150,7 +143,7 @@
 		this.type = type;
 		this.yrange = range;
 		this.xrange = (isTriangular && !(type === this.manager.customHROT || type === this.manager.weightedHROT)) ? range + range : range;
-		this.widths = this.allocator.allocate(Uint32, width, "HROT.widths");
+		this.widths = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, width, "HROT.widths"));
 		this.customNeighbourhood = customNeighbourhood;
 		this.customNeighbourCount = neighbourCount;
 		this.isTriangular = isTriangular;
@@ -159,7 +152,7 @@
 
 		// copy the weighted neighbourhood if specified
 		if (weightedNeighbourhood) {
-			this.weightedNeighbourhood = this.allocator.allocate(Int8, weightedNeighbourhood.length, "HROT.weightedNeighbourhood");
+			this.weightedNeighbourhood = /** @type {!Int8Array} */ (this.allocator.allocate(Type.Int8, weightedNeighbourhood.length, "HROT.weightedNeighbourhood"));
 			for (i = 0; i < weightedNeighbourhood.length; i += 1) {
 				this.weightedNeighbourhood[i] = weightedNeighbourhood[i];
 			}
@@ -169,7 +162,7 @@
 
 		// copy the weighted states if specified
 		if (weightedStates) {
-			this.weightedStates = this.allocator.allocate(Uint8, weightedStates.length, "HROT.weightedStates");
+			this.weightedStates = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, weightedStates.length, "HROT.weightedStates"));
 			for (i = 0; i < weightedStates.length; i += 1) {
 				this.weightedStates[i] = weightedStates[i];
 			}
@@ -220,7 +213,7 @@
 			// @ is custom neighbourhood
 			case this.manager.customHROT:
 			// resize and populate the array
-			this.neighbourhood = Array.matrix(Uint8, width, width, 0, this.allocator, "HROT.neighbourhood");
+			this.neighbourhood = Array.matrix(Type.Uint8, width, width, 0, this.allocator, "HROT.neighbourhood");
 			rowCount = new Uint16Array(width);
 			k = 0;
 			j = 0;
@@ -285,7 +278,7 @@
 					total += rowCount[i] + 2;
 				}
 			}
-			this.neighbourList = this.allocator.allocate(Int16, total, "HROT.neighbourList");
+			this.neighbourList = /** @type {!Int16Array} */ (this.allocator.allocate(Type.Int16, total, "HROT.neighbourList"));
 
 			// populate the list from each row in the cache
 			k = 0;
@@ -491,8 +484,8 @@
 			HROTBox = this.engine.HROTBox,
 			/** @const {number} */ xrange = this.xrange,
 			/** @const {number} */ yrange = this.yrange,
-			/** Array<number> */ birthList = useAlternate ? this.altBirths : this.births,
-			/** Array<number> */ survivalList = useAlternate ? this.altSurvivals : this.survivals,
+			/** Uint8Array */ birthList = useAlternate ? this.altBirths : this.births,
+			/** Uint8Array */ survivalList = useAlternate ? this.altSurvivals : this.survivals,
 			counts = this.counts,
 			/** @const {number} */ maxGeneration = this.scount - 1,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
@@ -1970,8 +1963,8 @@
 			/** @type {number} */ topY = this.engine.zoomBox.topY,
 			/** @const {number} */ xrange = this.xrange,
 			/** @const {number} */ yrange = this.yrange,
-			/** @const {Array<number>} */ birthList = useAlternate ? this.altBirths : this.births,
-			/** @const {Array<number>} */ survivalList = useAlternate ? this.altSurvivals : this.survivals,
+			/** @const {Uint8Array} */ birthList = useAlternate ? this.altBirths : this.births,
+			/** @const {Uint8Array} */ survivalList = useAlternate ? this.altSurvivals : this.survivals,
 			/** @const {number} */ rx2 = xrange + xrange,
 			/** @const {number} */ ry2 = yrange + yrange,
 			/** @const {number} */ rxp1 = xrange + 1,
@@ -3839,8 +3832,8 @@
 			/** @type {number} */ xrange = this.xrange,
 			/** @type {number} */ yrange = this.yrange,
 			// deal with alternate rules
-			/** Array<number> */ birthList = useAlternate ? this.altBirths : this.births,
-			/** Array<number> */ survivalList = useAlternate ? this.altSurvivals : this.survivals,
+			/** Uint8Array */ birthList = useAlternate ? this.altBirths : this.births,
+			/** Uint8Array */ survivalList = useAlternate ? this.altSurvivals : this.survivals,
 			/** @const {number} */ rx2 = xrange + xrange,
 			/** @const {number} */ ry2 = yrange + yrange,
 			/** @const {number} */ rxp1 = xrange + 1,
@@ -4648,9 +4641,3 @@
 			this.nextGenerationHROTN(useAlternate);
 		}
 	};
-
-	/*jshint -W069 */
-	// create the global interface
-	window["HROT"] = HROT;
-}
-());

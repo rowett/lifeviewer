@@ -1,13 +1,6 @@
 // html5 canvas menu library
 // written by Chris Rowett
 
-(function() {
-	// use strict mode
-	"use strict";
-
-	// define global variables
-	/* global registerEvent Uint32Array */
-
 	// TextAlert
 	/**
 	 * @constructor
@@ -3766,11 +3759,3 @@
 		// set the mode
 		this.autoUpdate = mode;
 	};
-
-	// create the global interface
-	/*jshint -W069 */
-	window["IconManager"] = IconManager;
-	window["Menu"] = Menu;
-	window["MenuManager"] = MenuManager;
-}
-());
