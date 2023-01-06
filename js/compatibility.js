@@ -1,5 +1,4 @@
 // cross-browser compatibility functions
-// v1.0 01/Oct/2012
 // written by Chris Rowett
 
 	// for determining endian

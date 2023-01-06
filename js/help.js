@@ -2793,4 +2793,3 @@
 		ctx.fillStyle = view.errorsFontColour;
 		this.renderErrors(view, ctx, 4 * xScale, 12 * yScale, lineHeight, view.displayErrors | 0);
 	};
-

@@ -5808,4 +5808,3 @@
 		// sort annotations into zoom order
 		view.waypointManager.sortAnnotations();
 	};
-
