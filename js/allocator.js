@@ -102,8 +102,8 @@
 	}
 
 	// output a specific allocation as a string
-	/** @type function(number) : string */
-	Allocator.prototype.allocationInfo = function(which) {
+	/** @returns {string} */
+	Allocator.prototype.allocationInfo = function(/** @type {number} */ which) {
 		var	/** @type {string} */ result = "",
 			/** @type {AllocationInfo} */ info = null;
 
@@ -122,9 +122,9 @@
 
 	// save allocation information
 	Allocator.prototype.saveAllocationInfo = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name) {
-		var i = 0,
-		    found = false,
-		    allocation = null;
+		var	/** @type {number} */ i = 0,
+			/** @type {boolean} */ found = false,
+			/** @type {AllocationInfo} */ allocation = null;
 
 		// check if there was already an allocation with this name
 		while (i < this.allocations.length && !found) {
@@ -165,9 +165,11 @@
 	};
 
 	// get typed view of a memory buffer
-	Allocator.prototype.typedView = function(whole, /** @type {number} */ type, /** @type {number} */ elements, /** @type {number} */ offset, /** @type {string} */ name) {
-		var	result = null,
-			buffer = whole.buffer,
+	/** @returns {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */
+	Allocator.prototype.typedView = function(/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array} */ whole,
+			/** @type {number} */ type, /** @type {number} */ elements, /** @type {number} */ offset, /** @type {string} */ name) {
+		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null,
+			/** @type {ArrayBuffer} */ buffer = whole.buffer,
 			/** @type {number} */ byteOffset = offset * Type.sizeInBytes(type);
 
 		// get view of memory
@@ -228,8 +230,9 @@
 	};
 
 	// get typed memory block
+	/** @returns {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */
 	Allocator.prototype.typedMemory = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name) {
-		var result = null;
+		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null;
 
 		// allocate memory
 		switch (type) {
@@ -289,8 +292,9 @@
 	};
 
 	// allocate typed memory
+	/** @returns {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */
 	Allocator.prototype.allocate = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name) {
-		var result = null;
+		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null;
 
 		// get typed block of memory
 		if (elements > 0) {
@@ -307,8 +311,9 @@
 	};
 
 	// allocate typed memory when adding a row to a matrix
+	/** @returns {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */
 	Allocator.prototype.allocateRow = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name, /** @type {number} */ rows) {
-		var result = null;
+		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null;
 
 		// get typed block of memory
 		if (elements > 0) {
@@ -326,10 +331,10 @@
 
 	// create an array matrix for a given type
 	/** @returns {Array} */
-	Array.matrix = function(/** @type {number} */ type, /** @type {number} */ m, /** @type {number} */ n, /** @type {number} */ initial, allocator, /** @type {string} */ name) {
+	Array.matrix = function(/** @type {number} */ type, /** @type {number} */ m, /** @type {number} */ n, /** @type {number} */ initial, /** @type {Allocator} */ allocator, /** @type {string} */ name) {
 		var	/** @type {number} */ i = 0,
 			/** @type {Array} */ mat = [],
-			whole = null;
+			/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ whole = null;
 
 		// save reference the the type and allocator
 		// @ts-ignore
@@ -392,12 +397,12 @@
 	// create a typed view of the source matrix
 	/** @returns {Array} */
 	Array.matrixView = function(/** @type {number} */ type, source, /** @type {string} */ name) {
-		var y = 0,
-		    h = source.length,
-		    mat = [],
-		    allocator = source.allocator,
-		    elements = source[0].length,
-		    newElements = elements / Type.sizeInBytes(type);
+		var	/** @type {number} */ y = 0,
+			/** @type {number} */ h = source.length,
+			/** @type {Array} */ mat = [],
+			/** @type {Allocator} */ allocator = source.allocator,
+			/** @type {number} */ elements = source[0].length,
+			/** @type {number} */ newElements = elements / Type.sizeInBytes(type);
 
 		// iterate over the source array
 		for (y = 0; y < h; y += 1) {
@@ -415,7 +420,7 @@
 		var	/** @type {number} */ y = 0,
 			/** @type {number} */ h = source.length,
 			/** @type {Array} */ mat = [],
-			allocator = source.allocator,
+			/** @type {Allocator} */ allocator = source.allocator,
 			/** @type {number} */ type = source.type,
 			/** @type {number} */ elements = source[0].length;
 

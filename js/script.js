@@ -5,8 +5,8 @@
 	/**
 	 * @constructor
 	 */
-	function Script(/** @type {string} */ source, /** @const {boolean} */ tokenizeNewline) {
-		var /** @type {number} */ i = 0,
+	function Script(/** @type {string} */ source, /** @type {boolean} */ tokenizeNewline) {
+		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ l = source.length,
 			/** @type {number} */ v = 0,

@@ -1438,19 +1438,19 @@
 		// colour set used
 		/** @type {string} */ this.colourSetName = "";
 		/** @type {number} */ this.colourSetSize = 0;
-		this.colourList = [];
+		/** @type {Array<number>} */ this.colourList = [];
 
 		// whether all colours are custom
 		/** @type {boolean} */ this.allCustom = false;
 
 		// custom colour set
-		this.customColours = null;
+		/** @type {Int32Array} */ this.customColours = null;
 
 		// whether custom colour used
-		this.customColourUsed = [];
+		/** @type {Array<number>} */ this.customColourUsed = [];
 
 		// script error list
-		this.scriptErrors = [];
+		/** @type {Array} */ this.scriptErrors = [];
 
 		// error display line
 		/** @type {number} */ this.displayErrors = 1;
@@ -1474,11 +1474,11 @@
 		/** @type {boolean} */ this.wrapHelpText = false;
 
 		// help information sections
-		this.helpSections = [];
+		/** @type {Array} */ this.helpSections = [];
 
 		// help text width cache
-		this.helpFixedCache = [];
-		this.helpVariableCache = [];
+		/** @type {Array<number>} */ this.helpFixedCache = [];
+		/** @type {Array<number>} */ this.helpVariableCache = [];
 
 		// generation number to stop at
 		/** @type {number} */ this.stopGeneration = -1;
@@ -18338,7 +18338,9 @@
 
 				// check if a custom colour set was defined
 				if (me.customColours) {
-					me.colourList = me.customColours;
+					for (i = 0; i < me.customColours.length; i += 1) {
+						me.colourList[i] = me.customColours[i];
+					}
 				}
 			}
 			me.colourSetSize = me.colourList.length;

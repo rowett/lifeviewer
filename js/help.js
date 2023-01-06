@@ -32,7 +32,7 @@
 
 	// draw a line of help text with up down greyed based on position
 	/** @returns {number} */
-	Help.renderHelpLineUpDown = function(view, /** @type {string} */ up, /** @type {string} */ separator, /** @type {string} */ down, /** @type {string} */ text, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ startLine) {
+	Help.renderHelpLineUpDown = function(/** @type {View} */ view, /** @type {string} */ up, /** @type {string} */ separator, /** @type {string} */ down, /** @type {string} */ text, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ startLine) {
 		var	/** @type {number} */ result = y,
 		    
 			// scale
@@ -122,10 +122,10 @@
 	};
 
 	// render a colour box on a line of help text
-	Help.renderColourBox = function(view, /** @type {number} */ red, /** @type {number} */ green, /** @type {number} */ blue, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ startLine) {
+	Help.renderColourBox = function(/** @type {View} */ view, /** @type {number} */ red, /** @type {number} */ green, /** @type {number} */ blue, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ startLine) {
 		// line number
 		var	/** @type {number} */ lineNo = view.lineNo,
-			currentFill = null;
+			/** @type {string} */ currentFill;
 
 		// only render if context exists
 		if (ctx) {
@@ -135,7 +135,7 @@
 			// check if the line is on the page
 			if (lineNo >= startLine && lineNo <= (startLine + view.numHelpPerPage)) {
 				// remember the current fill style
-				currentFill = ctx.fillStyle;
+				currentFill = /** @type {!string} */ (ctx.fillStyle);
 
 				// check if drawing shadow
 				if (currentFill !== ViewConstants.helpShadowColour) {
@@ -154,9 +154,9 @@
 
 	// measure text line
 	/** @returns {number} */
-	Help.measureText = function(view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {string} */ text, /** @type {number} */ item) {
+	Help.measureText = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {string} */ text, /** @type {number} */ item) {
 		// get the width cache
-		var	widthCache = (item ? view.helpVariableCache : view.helpFixedCache),
+		var	/** @type {Array<number>} */ widthCache = (item ? view.helpVariableCache : view.helpFixedCache),
 		    	/** @type {number} */ result = 0;
 
 		// check if the width exists in the cache
@@ -180,7 +180,7 @@
 
 	// draw a line of help text
 	/** @returns {number} */
-	Help.renderHelpLine = function(view, /** @type {string} */ fixed, /** @type {string} */ text, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ startLine) {
+	Help.renderHelpLine = function(/** @type {View} */ view, /** @type {string} */ fixed, /** @type {string} */ text, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ startLine) {
 		var	/** @type {number} */ result = y,
 
 			// tab index in text
@@ -341,7 +341,7 @@
 	/** @returns {string} */
 	Help.rgbString = function(/** @type {number} */ redValue, /** @type {number} */ greenValue, /** @type {number} */ blueValue) {
 		var	colourList = ColourManager.colourList,
-			keys = Object.keys(colourList),
+			/** @type {Array<string>} */ keys = Object.keys(colourList),
 			/** @type {string} */ result = "    " + redValue + "\t" + greenValue + "\t" + blueValue,
 			/** @type {boolean} */ found = false,
 			triple = null,
@@ -381,7 +381,7 @@
 
 	// return area as string
 	/** @returns {string} */
-	Help.areaString = function(view) {
+	Help.areaString = function(/** @type {View} */ view) {
 		var	/** @type {number} */ width = 0,
 			/** @type {number} */ height = 0,
 			/** @type {string} */ result = "";
@@ -411,7 +411,7 @@
 
 	// return autofit mode name
 	/** @returns {string} */
-	Help.autoFitName = function(view) {
+	Help.autoFitName = function(/** @type {View} */ view) {
 		// determine the mode
 		var	/** @type {string} */ result = "AutoFit";
 
@@ -443,21 +443,21 @@
 
 	// convert rgb(rrr,ggg,bbb) to [r, g, b]
 	/** @returns {Array} */
-	Help.colourFromRGBString = function(colour) {
+	Help.colourFromRGBString = function(/** @type {string} */ colour) {
 		var	/** @type {number} */ red = 0,
 			/** @type {number} */ green = 0,
 			/** @type {number} */ blue = 0,
 			/** @type {number} */ index1 = colour.indexOf(","),
 			/** @type {number} */ index2 = colour.lastIndexOf(",");
 
-		red = colour.substring(4, index1);
-		green = colour.substring(index1 + 1, index2);
-		blue = colour.substring(index2 + 1, colour.length - 1);
+		red = parseInt(colour.substring(4, index1), 10);
+		green = parseInt(colour.substring(index1 + 1, index2), 10);
+		blue = parseInt(colour.substring(index2 + 1, colour.length - 1), 10);
 		return [red, green, blue];
 	};
 
 	// render help text page
-	Help.renderHelpText = function(view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
+	Help.renderHelpText = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
 		var	/** @type {number} */ endLine = 0,
 			/** @type {number} */ topY = y;
 
@@ -517,7 +517,7 @@
 	};
 
 	// render welcome topic
-	Help.renderWelcomeTopic = function(view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
+	Help.renderWelcomeTopic = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
 		// section number
 		var	/** @type {number} */ sectionNum = 0;
 
@@ -544,7 +544,7 @@
 	};
 
 	// render annotations topic
-	Help.renderAnnotationsTopic = function(view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
+	Help.renderAnnotationsTopic = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
 		var	/** @type {number} */ i = 0,
 			/** @type {string} */ itemName = "",
 			/** @type {Array} */ colour = [],
@@ -617,7 +617,7 @@
 	};
 
 	// render keys topic
-	Help.renderKeysTopic = function(view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
+	Help.renderKeysTopic = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ value = 0,
 
@@ -974,7 +974,7 @@
 	};
 
 	// render scripts topic
-	Help.renderScriptsTopic = function(view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
+	Help.renderScriptsTopic = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
 		// section number
 		var	/** @type {number} */ sectionNum = 0;
 
@@ -1321,7 +1321,7 @@
 	};
 
 	// render information topic
-	Help.renderInformationTopic = function(view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
+	Help.renderInformationTopic = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ value = 0,
@@ -1333,7 +1333,7 @@
 			/** @type {number} */ numViewers = Controller.numViewers(),
 
 			// get the current theme
-			theme = view.engine.themes[view.engine.colourTheme],
+			/** @type {Theme} */ theme = view.engine.themes[view.engine.colourTheme],
 
 			// item name and details
 			/** @type {string} */ itemName = "",
@@ -2264,11 +2264,11 @@
 	};
 
 	// render themes topic
-	Help.renderThemesTopic = function(view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
+	Help.renderThemesTopic = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
 		var	/** @type {number} */ i = 0,
 
 			// get the current theme
-			theme = view.engine.themes[view.engine.colourTheme],
+			/** @type {Theme} */ theme = view.engine.themes[view.engine.colourTheme],
 
 			// section number
 			/** @type {number} */ sectionNum = 0,
@@ -2400,13 +2400,13 @@
 	};
 
 	// render colours topic
-	Help.renderColoursTopic = function(view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
+	Help.renderColoursTopic = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
 		var	/** @type {number} */ i = 0,
 
 			// get the named colour list
 			cmList = ColourManager.colourList,
-			keys = Object.keys(cmList),
-			namedCol = null,
+			/** @type {Array<string>} */ keys = Object.keys(cmList),
+			/** @type {Array<number>} */ namedCol = null,
 
 			// section number
 			/** @type {number} */ sectionNum = 0,
@@ -2445,17 +2445,17 @@
 	};
 
 	// render aliases topic
-	Help.renderAliasesTopic = function(view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
+	Help.renderAliasesTopic = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
 		var	/** @type {number} */ i = 0,
 
 			// section number
 			/** @type {number} */ sectionNum = 0,
 
 			// aliases
-			aliases = AliasManager.aliases,
+			/** @type {Array<string>} */ aliases = AliasManager.aliases,
 
 			// alias section names
-			sectionNames = AliasManager.sectionNames;
+			/** @type {Array<string>} */ sectionNames = AliasManager.sectionNames;
 
 		// set initial line
 		view.lineNo = 1;
@@ -2499,7 +2499,7 @@
 	};
 
 	// render memory topic
-	Help.renderMemoryTopic = function(view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
+	Help.renderMemoryTopic = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
 		var	/** @type {number} */ i = 0,
 
 			// section number
@@ -2513,7 +2513,7 @@
 			/** @type {number} */ totalFreedBytes = 0,
 
 			// one of the running Viewers
-			currentView = null;
+			/** @type {View} */ currentView = null;
 
 		// set initial line
 		view.lineNo = 1;
@@ -2572,7 +2572,7 @@
 	};
 
 	// draw help text
-	Help.drawHelpText = function(view) {
+	Help.drawHelpText = function(/** @type {View} */ view) {
 		var	/** @type {CanvasRenderingContext2D} */ ctx = view.mainContext,
 
 			// scale
@@ -2604,7 +2604,7 @@
 
 	// render error with up down greyed based on position
 	/** @returns {number} */
-	Help.renderErrorLineUpDown = function(view, /** @type {string} */ up, /** @type {string} */ separator, /** @type {string} */ down, /** @type {string} */ error, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ startLine) {
+	Help.renderErrorLineUpDown = function(/** @type {View} */ view, /** @type {string} */ up, /** @type {string} */ separator, /** @type {string} */ down, /** @type {string} */ error, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ startLine) {
 		var	/** @type {number} */ result = y,
 
 			// scale
@@ -2682,7 +2682,7 @@
 
 	// render error
 	/** @returns {number} */
-	Help.renderErrorLine = function(view, /** @type {string} */ command, /** @type {string} */ error, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ startLine) {
+	Help.renderErrorLine = function(/** @type {View} */ view, /** @type {string} */ command, /** @type {string} */ error, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ startLine) {
 		var	/** @type {number} */ result = y,
 
 			// scale
@@ -2724,9 +2724,9 @@
 	};
 
 	// render script errors
-	Help.renderErrors = function(view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ errorLine) {
+	Help.renderErrors = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ errorLine) {
 		var	/** @type {number} */ i = 0,
-			scriptErrors = view.scriptErrors,
+			/** @type {Array} */ scriptErrors = view.scriptErrors,
 			/** @type {number} */ topY = y;
 
 		// set initial line
@@ -2758,7 +2758,7 @@
 	};
 
 	// draw script errors
-	Help.drawErrors = function(view) {
+	Help.drawErrors = function(/** @type {View} */ view) {
 		var	/** @type {CanvasRenderingContext2D} */ ctx = view.mainContext,
 
 			// scale

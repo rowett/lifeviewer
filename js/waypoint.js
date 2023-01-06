@@ -18,9 +18,9 @@
 	/**
 	 * @constructor
 	 */
-	function Waypoint(manager) {
+	function Waypoint(/** @type {WaypointManager} */ manager) {
 		// save the manager
-		this.manager = manager;
+		/** @type {WaypointManager} */ this.manager = manager;
 
 		// whether to save interval time
 		/** @type {boolean} */ this.intervalTime = false;
@@ -713,7 +713,7 @@
 	/** @returns {string} */
 	WaypointManager.prototype.polyAsText1 = function(/** @type {number} */ number) {
 		var	/** @type {string} */ result = "",
-			current = null,
+			/** @type {Polygon} */ current = null,
 			/** @type {string} */ posLocked = "";
 
 		if (number >= 0 && number < this.polyList.length) {
@@ -737,7 +737,7 @@
 	WaypointManager.prototype.polyAsText2 = function(/** @type {number} */ number) {
 		var	/** @type {string} */ result = "",
 			/** @type {number} */ zoom = 0,
-			current = null,
+			/** @type {Polygon} */ current = null,
 			/** @type {string} */ angLocked = "";
 
 		if (number >= 0 && number < this.polyList.length) {
@@ -759,7 +759,7 @@
 	/** @returns {string} */
 	WaypointManager.prototype.polyAsText3 = function(/** @type {number} */ number) {
 		var	/** @type {string} */ result = "",
-			current = null;
+			/** @type {Polygon} */ current = null;
 
 		if (number >= 0 && number < this.polyList.length) {
 			current = this.polyList[number];
@@ -791,7 +791,7 @@
 	/** @returns {string} */
 	WaypointManager.prototype.arrowAsText1 = function(/** @type {number} */ number) {
 		var	/** @type {string} */ result = "",
-			current = null,
+			/** @type {Arrow} */ current = null,
 			/** @type {string} */ posLocked = "";
 
 		if (number >= 0 && number < this.arrowList.length) {
@@ -811,7 +811,7 @@
 	WaypointManager.prototype.arrowAsText2 = function(/** @type {number} */ number) {
 		var	/** @type {string} */ result = "",
 			/** @type {number} */ zoom = 0,
-			current = null,
+			/** @type {Arrow} */ current = null,
 			/** @type {string} */ angLocked = "";
 
 		if (number >= 0 && number < this.arrowList.length) {
@@ -833,7 +833,7 @@
 	/** @returns {string} */
 	WaypointManager.prototype.arrowAsText3 = function(/** @type {number} */ number) {
 		var	/** @type {string} */ result = "",
-			current = null;
+			/** @type {Arrow} */ current = null;
 
 		if (number >= 0 && number < this.arrowList.length) {
 			current = this.arrowList[number];
@@ -866,7 +866,7 @@
 	WaypointManager.prototype.labelAsText1 = function(/** @type {number} */ number) {
 		var	/** @type {string} */ result = "",
 			/** @type {number} */ zoom = 0,
-			current = null,
+			/** @type {Label} */ current = null,
 			/** @type {string} */ posLocked = "",
 			/** @type {string} */ angLocked = "";
 
@@ -893,7 +893,7 @@
 	/** @returns {string} */
 	WaypointManager.prototype.labelAsText2 = function(/** @type {number} */ number) {
 		var	/** @type {string} */ result = "",
-			current = null;
+			/** @type {Label} */ current = null;
 
 		if (number >= 0 && number < this.labelList.length) {
 			current = this.labelList[number];
@@ -913,7 +913,7 @@
 	/** @returns {string} */
 	WaypointManager.prototype.labelAsText3 = function(/** @type {number} */ number) {
 		var	/** @type {string} */ result = "",
-			current = null;
+			/** @type {Label} */ current = null;
 
 		if (number >= 0 && number < this.labelList.length) {
 			current = this.labelList[number];
@@ -958,10 +958,10 @@
 	};
 
 	// draw arrows
-	WaypointManager.prototype.drawArrowsLayer = function(view, /** @type {boolean} */ drawingShadows) {
+	WaypointManager.prototype.drawArrowsLayer = function(/** @type {View} */ view, /** @type {boolean} */ drawingShadows) {
 		var	/** @type {number} */ i = 0,
-			current = null,
-			engine = view.engine,
+			/** @type {Arrow} */ current = null,
+			/** @type {Life} */ engine = view.engine,
 			/** @type {CanvasRenderingContext2D} */ context = engine.context,
 			/** @type {number} */ xOff = engine.width / 2 - engine.xOff - engine.originX,
 			/** @type {number} */ yOff = engine.height / 2 - engine.yOff - engine.originY,
@@ -1240,10 +1240,10 @@
 	};
 
 	// draw polygons
-	WaypointManager.prototype.drawPolygonsLayer = function(view, /** @type {boolean} */ drawingShadows) {
+	WaypointManager.prototype.drawPolygonsLayer = function(/** @type {View} */ view, /** @type {boolean} */ drawingShadows) {
 		var	/** @type {number} */ i = 0,
-			current = null,
-			engine = view.engine,
+			/** @type {Polygon} */ current = null,
+			/** @type {Life} */ engine = view.engine,
 			/** @type {CanvasRenderingContext2D} */ context = engine.context,
 			/** @type {number} */ xOff = engine.width / 2 - engine.xOff - engine.originX,
 			/** @type {number} */ yOff = engine.height / 2 - engine.yOff - engine.originY,
@@ -1513,10 +1513,10 @@
 	};
 
 	// draw labels
-	WaypointManager.prototype.drawLabels = function(view) {
+	WaypointManager.prototype.drawLabels = function(/** @type {View} */ view) {
 		var	/** @type {number} */ i = 0,
-			current = null,
-			engine = view.engine,
+			/** @type {Label} */ current = null,
+			/** @type {Life} */ engine = view.engine,
 			/** @type {CanvasRenderingContext2D} */ context = engine.context,
 			/** @type {number} */ xPos = 0,
 			/** @type {number} */ xOff = engine.width / 2 - engine.xOff - engine.originX,
@@ -1842,7 +1842,7 @@
 	// process step back
 	WaypointManager.prototype.steppedBack = function(/** @type {number} */ elapsedTime) {
 		var	/** @type {number} */ i = 0,
-			current = null;
+			/** @type {Waypoint} */ current = null;
 
 		// mark all waypoints after elasped time as not processed
 		for (i = this.waypointList.length - 1; i >= 0; i -= 1) {
@@ -1921,7 +1921,7 @@
 
 		    // get the waypoint
 		    /** @type {Waypoint} */ waypoint = this.waypointList[index],
-		    previous = null;
+		    /** @type {Waypoint} */ previous = null;
 
 		// check if the generation is beyond the waypoint
 		if (generation > waypoint.targetGen) {
@@ -2083,7 +2083,7 @@
 	WaypointManager.prototype.poiCameraAsText = function(/** @type {number} */ i) {
 		// build the text
 		var	/** @type {string} */ text = "",
-			poi = null;
+			/** @type {Waypoint} */ poi = null;
 
 		// check whether the requested POI exists
 		if (i >= 0 && i < this.numPOIs()) {
@@ -2119,7 +2119,7 @@
 	WaypointManager.prototype.poiLoopStopGpsStepAsText = function(/** @type {number} */ i) {
 		// build the text
 		var	/** @type {string} */ text = "",
-			poi = null;
+			/** @type {Waypoint} */ poi = null;
 
 		// check whether the requested POI exists
 		if (i >= 0 && i < this.numPOIs()) {
@@ -2156,7 +2156,7 @@
 	WaypointManager.prototype.poiActionAsText = function(/** @type {number} */ i) {
 		// build the text
 		var	/** @type {string} */ text = "",
-			poi = null;
+			/** @type {Waypoint} */ poi = null;
 
 		// check whether the requested POI exists
 		if (i >= 0 && i < this.numPOIs()) {
@@ -2191,7 +2191,7 @@
 	WaypointManager.prototype.poiThemeDepthLayerAsText = function(/** @type {number} */ i) {
 		// build the text
 		var	/** @type {string} */ text = "",
-			poi = null;
+			/** @type {Waypoint} */ poi = null;
 
 		// check whether the requested POI exists
 		if (i >= 0 && i < this.numPOIs()) {
@@ -2219,13 +2219,12 @@
 	};
 
 	// output a point of interest start generation as text
-	/* eslint-disable no-unused-vars */
 	/** @returns {string} */
-	WaypointManager.prototype.poiStartGenAsText = function(/** @type {number} */ i, /** @type {string} */ stringDelimiter) {
+	WaypointManager.prototype.poiStartGenAsText = function(/** @type {number} */ i) {
 		/* eslint-enable no-unused-vars */
 		// build the text
 		var	/** @type {string} */ text = "",
-			poi = null;
+			/** @type {Waypoint} */ poi = null;
 
 		// check whether the requested POI exists
 		if (i >= 0 && i < this.numPOIs()) {
@@ -2247,7 +2246,7 @@
 	WaypointManager.prototype.poiMessageAsText = function(/** @type {number} */ i, /** @type {string} */ stringDelimiter) {
 		// build the text
 		var	/** @type {string} */ text = "",
-			poi = null;
+			/** @type {Waypoint} */ poi = null;
 
 		// check whether the requested POI exists
 		if (i >= 0 && i < this.numPOIs()) {
@@ -2271,8 +2270,8 @@
 		var	/** @type {string} */ text = "",
 
 			// requested waypoint and previous waypoint
-			requested = null,
-			previous = null;
+			/** @type {Waypoint} */ requested = null,
+			/** @type {Waypoint} */ previous = null;
 
 		// check whether the requested waypoint exists
 		if (i >= 0 && i < this.numWaypoints()) {
@@ -2339,12 +2338,12 @@
 
 	// update the current position and return whether waypoints ended
 	/** @returns {boolean} */
-	WaypointManager.prototype.update = function(view, /** @type {number} */ elapsedTime, /** @type {number} */ generation) {
+	WaypointManager.prototype.update = function(/** @type {View} */ view, /** @type {number} */ elapsedTime, /** @type {number} */ generation) {
 		var	/** @type {number} */ length = this.waypointList.length,
 			/** @type {boolean} */ found = false,
 			/** @type {number} */ i = this.tempIndex,
 			/** @type {number} */ origI = i,
-			current = null,
+			/** @type {Waypoint} */ current = null,
 
 			// set waypoints not ended
 			/** @type {boolean} */ result = false;
@@ -2457,8 +2456,8 @@
 		var	/** @type {number} */ elapsed = 0,
 			/** @type {number} */ generations = 0,
 			/** @type {number} */ result = 0,
-			currWP,
-			prevWP;
+			/** @type {Waypoint} */ currWP,
+			/** @type {Waypoint} */ prevWP;
 
 		// save the index of the closest waypoint
 		this.tempIndex = this.findWaypointNear(generation);
@@ -2609,7 +2608,7 @@
 	};
 
 	// copy all initial values into POI
-	WaypointManager.prototype.copyInitialAll = function(poi, /** @type {Array<Array<string,string>>} */ scriptErrors) {
+	WaypointManager.prototype.copyInitialAll = function(/** @type {Waypoint} */ poi, /** @type {Array<Array<string,string>>} */ scriptErrors) {
 		this.copyInitial(Keywords.xWord, poi, scriptErrors, false);
 		this.copyInitial(Keywords.yWord, poi, scriptErrors, false);
 		this.copyInitial(Keywords.zoomWord, poi, scriptErrors, false);
@@ -2625,11 +2624,11 @@
 	};
 
 	// prepare waypoints for execution
-	WaypointManager.prototype.prepare = function(/** @type {Array<Array<string,string>>} */ scriptErrors, view) {
+	WaypointManager.prototype.prepare = function(/** @type {Array<Array<string,string>>} */ scriptErrors, /** @type {View} */ view) {
 		var	/** @type {number} */ i = 0,
-			previous = null,
-			current = null,
-			waypointList = this.waypointList,
+			/** @type {Waypoint} */ previous = null,
+			/** @type {Waypoint} */ current = null,
+			/** @type {Array<Waypoint>} */ waypointList = this.waypointList,
 			/** @type {number} */ length = this.numWaypoints();
 
 		// fill in missing items

@@ -5,15 +5,15 @@
 	/**
 	 * @constructor
 	 */
-	function HROT(allocator, engine, manager) {
+	function HROT(/** @type {Allocator} */ allocator, /** @type {Life} */ engine, /** @type {PatternManager} */ manager) {
 		// allocator
-		this.allocator = allocator;
+		/** @type {Allocator} */ this.allocator = allocator;
 
 		// engine
-		this.engine = engine;
+		/** @type {Life} */ this.engine = engine;
 
 		// pattern manager
-		this.manager = manager;
+		/** @type {PatternManager} */ this.manager = manager;
 
 		// algorithm parameters
 		/** @type {number} */ this.xrange = 1;
@@ -26,13 +26,13 @@
 		/** @type {number} */ this.type = manager.mooreHROT;
 
 		// neighbourhood array for custom neighbourhoods (will be resized)
-		this.neighbourhood = Array.matrix(Type.Uint8, 1, 1, 0, allocator, "HROT.neighbourhood");
+		/** @type {Array<Uint8Array>} */ this.neighbourhood = Array.matrix(Type.Uint8, 1, 1, 0, allocator, "HROT.neighbourhood");
 
 		// neighbourhood list for custom neighbourhoods (will be resized)
-		this.neighbourList = /** @type {!Int16Array} */ (allocator.allocate(Type.Int16, 0, "HROT.neighbourList"));
+		/** @type {Int16Array} */ this.neighbourList = /** @type {!Int16Array} */ (allocator.allocate(Type.Int16, 0, "HROT.neighbourList"));
 
 		// neighbour count array (will be resized)
-		this.counts = Array.matrix(Type.Int32, 1, 1, 0, allocator, "HROT.counts");
+		/** @type {Array<Int32Array>} */ this.counts = Array.matrix(Type.Int32, 1, 1, 0, allocator, "HROT.counts");
 
 		// range width array (will be resized)
 		/** @type {Uint32Array} */ this.widths = /** @type {!Uint32Array} */ (allocator.allocate(Type.Uint32, 0, "HROT.widths"));
@@ -41,14 +41,14 @@
 		/** @type {Uint8Array} */ this.colUsed = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.colUsed"));
 
 		// weighted neighbourhood array (will be resized)
-		this.weightedNeighbourhood = /** @type {!Int8Array} */ (allocator.allocate(Type.Int8, 0, "HROT.weightedNeighbourhood"));
+		/** @type {Int8Array} */ this.weightedNeighbourhood = /** @type {!Int8Array} */ (allocator.allocate(Type.Int8, 0, "HROT.weightedNeighbourhood"));
 
 		// weighted states array
-		this.weightedStates = null;
+		/** @type {Uint8Array} */ this.weightedStates = null;
 
 		// corner and edge range
-		this.edgeRange = -1;
-		this.cornerRange = -1;
+		/** @type {number} */ this.edgeRange = -1;
+		/** @type {number} */ this.cornerRange = -1;
 
 		// range threshold to use fast von Neumann algorithm
 		/** @const {number} */ this.rangeVN = 6;
@@ -72,14 +72,14 @@
 		/** @type {boolean} */ this.isTriangular = false;
 
 		// random number generation
-		this.myRand = new Random();
+		/** @type {Random} */ this.myRand = new Random();
 
 		// initialize random generator
 		this.myRand.init(Date.now().toString());
 
 		// random chances of births and survivals based on neighbour count
-		this.birthChances = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "HROT.birthChances"));
-		this.survivalChances = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "HROT.suvivalChances"));
+		/** @type {Float32Array} */ this.birthChances = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "HROT.birthChances"));
+		/** @type {Float32Array} */ this.survivalChances = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "HROT.suvivalChances"));
 
 		// whether to use random chances
 		/** @type {boolean} */ this.useRandom = false;
@@ -119,7 +119,7 @@
 	};
 
 	// set type and range
-	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood, /** @type {number} */ neighbourCount, /** @type {boolean} */ isTriangular, /** @type {Array<number>} */ weightedNeighbourhood, /** @type {Array<number>} */ weightedStates, /** @type {number} */ cornerRange, /** @type {number} */ edgeRange) {
+	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood, /** @type {number} */ neighbourCount, /** @type {boolean} */ isTriangular, /** @type {Int8Array} */ weightedNeighbourhood, /** @type {Uint8Array} */ weightedStates, /** @type {number} */ cornerRange, /** @type {number} */ edgeRange) {
 		// compute widest width
 		var	/** @const {number} */ width = range * 2 + 1,
 			/** @const {number} */ r2 = range * range,
@@ -134,7 +134,7 @@
 			/** @type {number} */ total = 0,
 			/** @type {number} */ numInRow = 0,
 			/** @type {number} */ middleK = customNeighbourhood.length >> 1, 
-			/** @type {Array<number>} */ row,
+			/** @type {Uint8Array} */ row,
 			/** @const {string} */ hexDigits = "0123456789abcdef",
 			/** @type {Uint32Array} */ neighbourCache = null,
 			/** @type {Uint16Array} */ rowCount = null;
@@ -350,11 +350,17 @@
 		return this.counts[this.ccht - 1][this.halfccwd + ((i + j + this.ccht + this.halfccwd + 1) % 2)];
 	};
 
+	// copy a slice
+	// dest and src have no type information because of a type check issue
+	HROT.prototype.copySlice = function(dest, source, /** @type number */ left, /** @type {number} */ right, /** @type {number} */ pos) {
+		dest.set(source.slice(left, right + 1), pos);
+	};
+
 	// wrap the grid for HROT torus
 	HROT.prototype.wrapTorusHROT = function(/** @type {number} */ lx, /** @type {number} */ by, /** @type {number} */ rx, /** @type {number} */ ty) {
-		var	colourGrid = this.engine.colourGrid,
-			sourceRow = null,
-			destRow = null,
+		var	/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid,
+			/** @type {Uint8Array} */ sourceRow = null,
+			/** @type {Uint8Array} */ destRow = null,
 			/** @const {number} */ xrange = this.xrange,
 			/** @const {number} */ yrange = this.yrange,
 			/** @type {number} */ x = 0,
@@ -364,14 +370,16 @@
 		for (y = 0; y < yrange; y += 1) {
 			sourceRow = colourGrid[by + y];
 			destRow = colourGrid[ty + y + 1];
-			destRow.set(sourceRow.slice(lx, rx + 1), lx);
+			this.copySlice(destRow, sourceRow, lx, rx + 1, lx);
+			//destRow.set(sourceRow.slice(lx, rx + 1), lx);
 		}
 
 		// copy the top rows to the bottom border
 		for (y = 0; y < yrange; y += 1) {
 			sourceRow = colourGrid[ty - y];
 			destRow = colourGrid[by - y - 1];
-			destRow.set(sourceRow.slice(lx, rx + 1), lx);
+			this.copySlice(destRow, sourceRow, lx, rx + 1, lx);
+			//destRow.set(sourceRow.slice(lx, rx + 1), lx);
 		}
 
 		// copy the left columns to the right border
@@ -397,8 +405,10 @@
 		for (y = 0; y < yrange; y += 1) {
 			sourceRow = colourGrid[by + y];
 			destRow = colourGrid[ty + y + 1];
-			destRow.set(sourceRow.slice(lx, lx + xrange + 1), rx + 1);
-			destRow.set(sourceRow.slice(rx - xrange, rx + 1), lx - xrange - 1);
+			this.copySlice(destRow, sourceRow, lx, lx + xrange + 1, rx + 1);
+			//destRow.set(sourceRow.slice(lx, lx + xrange + 1), rx + 1);
+			this.copySlice(destRow, sourceRow, rx - xrange, rx + 1, lx - xrange - 1);
+			//destRow.set(sourceRow.slice(rx - xrange, rx + 1), lx - xrange - 1);
 		}
 
 		// copy top left cells to bottom right border
@@ -406,15 +416,17 @@
 		for (y = 0; y < yrange; y += 1) {
 			sourceRow = colourGrid[ty - y];
 			destRow = colourGrid[by - y - 1];
-			destRow.set(sourceRow.slice(lx, lx + xrange + 1), rx + 1);
-			destRow.set(sourceRow.slice(rx - xrange, rx + 1), lx - xrange - 1);
+			this.copySlice(destRow, sourceRow, lx, lx + xrange + 1, rx + 1);
+			//destRow.set(sourceRow.slice(lx, lx + xrange + 1), rx + 1);
+			this.copySlice(destRow, sourceRow, rx - xrange, rx + 1, lx - xrange - 1);
+			//destRow.set(sourceRow.slice(rx - xrange, rx + 1), lx - xrange - 1);
 		}
 	};
 
 	// clear the outside the bounded grid
 	HROT.prototype.clearHROTOutside = function(/** @type {number} */ lx, /** @type {number} */ by, /** @type {number} */ rx, /** @type {number} */ ty) {
-		var	colourGrid = this.engine.colourGrid,
-			destRow = null,
+		var	/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid,
+			/** @type {Uint8Array} */ destRow = null,
 			/** @const {number} */ xrange = this.xrange,
 			/** @const {number} */ yrange = this.yrange,
 			/** @type {number} */ y = 0;
@@ -465,11 +477,11 @@
 			/** @type {number} */ count = 0,
 			/** @type {boolean} */ rowAlive = false,
 			/** @type {boolean} */ liveRowAlive = false,
-			colourGrid = this.engine.colourGrid,
-			colourTileHistoryGrid = this.engine.colourTileHistoryGrid,
-			colourRow = null,
-			countRow = null,
-			colourTileRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.engine.colourTileHistoryGrid,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint16Array} */ colourTileRow = null,
 			// bounding box for any cell
 			/** @type {number} */ minX = this.engine.width,
 			/** @type {number} */ maxX = 0,
@@ -480,20 +492,20 @@
 			/** @type {number} */ maxX1 = maxX,
 			/** @type {number} */ minY1 = minY,
 			/** @type {number} */ maxY1 = maxY,
-			zoomBox = this.engine.zoomBox,
-			HROTBox = this.engine.HROTBox,
+			/** @type {BoundingBox} */ zoomBox = this.engine.zoomBox,
+			/** @type {BoundingBox} */ HROTBox = this.engine.HROTBox,
 			/** @const {number} */ xrange = this.xrange,
 			/** @const {number} */ yrange = this.yrange,
-			/** Uint8Array */ birthList = useAlternate ? this.altBirths : this.births,
-			/** Uint8Array */ survivalList = useAlternate ? this.altSurvivals : this.survivals,
-			counts = this.counts,
+			/** @type {Uint8Array} */ birthList = useAlternate ? this.altBirths : this.births,
+			/** @type {Uint8Array} */ survivalList = useAlternate ? this.altSurvivals : this.survivals,
+			/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @const {number} */ maxGeneration = this.scount - 1,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @const {number} */ deadMin = LifeConstants.deadMin,
 			/** @type {number} */ aliveIndex = 0,
-			colourLookup = this.engine.colourLookup,
+			/** @type {Uint16Array} */ colourLookup = this.engine.colourLookup,
 			/** @type {boolean} */ useRandom = this.useRandom,
-			myRand = this.myRand,
+			/** @type {Random} */ myRand = this.myRand,
 			/** @type {Float32Array} */ birthChances = this.birthChances,
 			/** @type {Float32Array} */ survivalChances = this.survivalChances,
 
@@ -904,16 +916,16 @@
 
 	// 2-state corner/edge
 	HROT.prototype.nextGenerationCornerEdge2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ count,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @const {number} */ cornerRange = this.cornerRange,
 			/** @const {number} */ edgeRange = this.edgeRange,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// corner/edge
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -967,16 +979,16 @@
 
 	// 2-state asterisk
 	HROT.prototype.nextGenerationAsterisk2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
 			/** @type {number} */ j,
 			/** @type {number} */ count,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// asterisk
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -1016,16 +1028,16 @@
 
 	// 2-state tripod
 	HROT.prototype.nextGenerationTripod2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
 			/** @type {number} */ j,
 			/** @type {number} */ count,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// tripod
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -1058,7 +1070,7 @@
 
 	// 2-state weighted
 	HROT.prototype.nextGenerationWeighted2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1069,9 +1081,9 @@
 			/** @type {number} */ aliveWeight,
 			/** @type {number} */ count,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// weighted
 		if (this.weightedStates === null) {
@@ -1145,7 +1157,7 @@
 
 	// 2-state custom
 	HROT.prototype.nextGenerationCustom2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1155,9 +1167,9 @@
 			/** @type {number} */ count,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @type {Int16Array} */ neighbourList = this.neighbourList,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// custom
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -1193,7 +1205,7 @@
 
 	// 2-state hash
 	HROT.prototype.nextGenerationHash2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1202,9 +1214,9 @@
 			/** @type {number} */ rowCount,
 			/** @type {number} */ rowCount2,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// hash
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -1287,7 +1299,7 @@
 
 	// 2-state checkerboard or aligned checkerboard
 	HROT.prototype.nextGenerationCheckerBoth2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange, /** @type {number} */ start) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1296,9 +1308,9 @@
 			/** @type {number} */ count2,
 			/** @type {number} */ offset,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// checkerboard
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -1418,16 +1430,16 @@
 
 	// 2-state hexagonal
 	HROT.prototype.nextGenerationHexagonal2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
 			/** @type {number} */ j,
 			/** @type {number} */ count,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// hexagonal
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -1482,15 +1494,15 @@
 
 	// 2-state saltire
 	HROT.prototype.nextGenerationSaltire2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ j,
 			/** @type {number} */ count,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// saltire
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -1526,16 +1538,16 @@
 
 	// 2-state star
 	HROT.prototype.nextGenerationStar2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
 			/** @type {number} */ j,
 			/** @type {number} */ count,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// star
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -1579,7 +1591,7 @@
 
 	// 2-state cross
 	HROT.prototype.nextGenerationCross2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1587,9 +1599,9 @@
 			/** @type {number} */ count,
 			/** @type {number} */ rowCount,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// cross
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -1643,7 +1655,7 @@
 
 	// 2-state triangular
 	HROT.prototype.nextGenerationTriangular2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1653,9 +1665,9 @@
 			/** @type {number} */ count,
 			/** @type {number} */ width,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// triangular
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -1819,7 +1831,7 @@
 
 	// 2-state gaussian
 	HROT.prototype.nextGenerationGuassian2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1828,9 +1840,9 @@
 			/** @type {number} */ weight,
 			/** @type {number} */ count,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// gaussian
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -1896,7 +1908,7 @@
 
 	// 2-state shaped
 	HROT.prototype.nextGenerationShaped2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -1904,10 +1916,10 @@
 			/** @type {number} */ count,
 			/** @type {number} */ width,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
-			widths = this.widths,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Uint32Array} */ widths = this.widths,
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// L2, circular, or short range von Neumann
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -1970,7 +1982,7 @@
 			/** @const {number} */ rxp1 = xrange + 1,
 			/** @const {number} */ ryp1 = yrange + 1,
 			/** @const {number} */ scount = this.scount,
-			counts = this.counts,
+			/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @const {number} */ type = this.type,
 			/** @const {number} */ maxGeneration = scount - 1,
 			/** @type {number} */ count = 0,
@@ -1982,11 +1994,14 @@
 			/** @type {number} */ maxX1 = maxX,
 			/** @type {number} */ minY1 = minY,
 			/** @type {number} */ maxY1 = maxY,
-			colourGrid = this.engine.colourGrid,
-			colourTileHistoryGrid = this.engine.colourTileHistoryGrid,
-			colourRow = null, countRowYpr = null, countRowYmrp1 = null,
-			colourTileRow = null,
-			countRow = null, prevCountRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.engine.colourTileHistoryGrid,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Int32Array} */ countRowYpr = null,
+			/** @type {Int32Array} */ countRowYmrp1 = null,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Int32Array} */ prevCountRow = null,
 			/** @const {number} */ bgWidth = this.engine.boundedGridWidth,
 			/** @const {number} */ bgHeight = this.engine.boundedGridHeight,
 			/** @type {number} */ gridLeftX = 0,
@@ -2007,8 +2022,8 @@
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @const {number} */ deadMin = LifeConstants.deadMin,
 			/** @type {number} */ aliveIndex = 0,
-			colourLookup = this.engine.colourLookup,
-			colUsed = this.colUsed,
+			/** @type {Uint16Array} */ colourLookup = this.engine.colourLookup,
+			/** @type {Uint8Array} */ colUsed = this.colUsed,
 			/** @type {number} */ im1 = 0,
 			/** @type {number} */ im2 = 0,
 			/** @type {number} */ iprm1 = 0,
@@ -2020,15 +2035,15 @@
 			/** @type {number} */ jmr = 0,
 			/** @type {number} */ jpmincol = 0,
 			/** @type {boolean} */ useRandom = this.useRandom,
-			myRand = this.myRand,
+			/** @type {Random} */ myRand = this.myRand,
 			/** @type {Float32Array} */ birthChances = this.birthChances,
 			/** @type {Float32Array} */ survivalChances = this.survivalChances,
-			countRowIm1 = null,
-			countRowIm2 = null,
-			countRowIpr = null,
-			countRowIprm1 = null,
-			countRowImrm1 = null,
-			countRowImrm2 = null;
+			/** @type {Int32Array} */ countRowIm1 = null,
+			/** @type {Int32Array} */ countRowIm2 = null,
+			/** @type {Int32Array} */ countRowIpr = null,
+			/** @type {Int32Array} */ countRowIprm1 = null,
+			/** @type {Int32Array} */ countRowImrm1 = null,
+			/** @type {Int32Array} */ countRowImrm2 = null;
 
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {
@@ -2773,16 +2788,16 @@
 
 	// n-state corner/edge
 	HROT.prototype.nextGenerationCornerEdgeN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ count,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
 			/** @const {number} */ cornerRange = this.cornerRange,
 			/** @const {number} */ edgeRange = this.edgeRange,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// corner/edge
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -2835,16 +2850,16 @@
 
 	// n-state asterisk
 	HROT.prototype.nextGenerationAsteriskN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
 			/** @type {number} */ j,
 			/** @type {number} */ count,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// asterisk
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -2884,16 +2899,16 @@
 
 	// n-state tripod
 	HROT.prototype.nextGenerationTripodN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
 			/** @type {number} */ j,
 			/** @type {number} */ count,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// tripod
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -2926,7 +2941,7 @@
 
 	// n-state weighted
 	HROT.prototype.nextGenerationWeightedN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -2937,9 +2952,9 @@
 			/** @type {number} */ aliveWeight,
 			/** @type {number} */ count,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// weighted
 		if (this.weightedStates === null) {
@@ -3013,7 +3028,7 @@
 
 	// n-state custom
 	HROT.prototype.nextGenerationCustomN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3023,9 +3038,9 @@
 			/** @type {number} */ count,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
 			/** @type {Int16Array} */ neighbourList = this.neighbourList,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// custom
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -3061,7 +3076,7 @@
 
 	// n-state hash
 	HROT.prototype.nextGenerationHashN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3070,9 +3085,9 @@
 			/** @type {number} */ rowCount,
 			/** @type {number} */ rowCount2,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// hash
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -3155,7 +3170,7 @@
 
 	// n-state checkerboard or aligned checkerboard
 	HROT.prototype.nextGenerationCheckerBothN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange, /** @type {number} */ start) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3164,9 +3179,9 @@
 			/** @type {number} */ count2,
 			/** @type {number} */ offset,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// checkerboard
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -3286,16 +3301,16 @@
 
 	// n-state hexagonal
 	HROT.prototype.nextGenerationHexagonalN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
 			/** @type {number} */ j,
 			/** @type {number} */ count,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// hexagonal
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -3350,13 +3365,13 @@
 
 	// n-state saltire
 	HROT.prototype.nextGenerationSaltireN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ j,
 			/** @type {number} */ count,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
-			countRow = null,
+			/** @type {Int32Array} */ countRow = null,
 			colourRow = null,
 			colourGrid = this.engine.colourGrid;
 
@@ -3401,9 +3416,9 @@
 			/** @type {number} */ j,
 			/** @type {number} */ count,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// star
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -3447,7 +3462,7 @@
 
 	// n-state cross
 	HROT.prototype.nextGenerationCrossN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3455,9 +3470,9 @@
 			/** @type {number} */ count,
 			/** @type {number} */ rowCount,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// cross
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -3511,7 +3526,7 @@
 
 	// n-state triangular
 	HROT.prototype.nextGenerationTriangularN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3521,9 +3536,9 @@
 			/** @type {number} */ count,
 			/** @type {number} */ width,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// triangular
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -3687,7 +3702,7 @@
 
 	// n-state gaussian
 	HROT.prototype.nextGenerationGuassianN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3696,9 +3711,9 @@
 			/** @type {number} */ weight,
 			/** @type {number} */ count,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// gaussian
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -3764,7 +3779,7 @@
 
 	// n-state shaped
 	HROT.prototype.nextGenerationShapedN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,
@@ -3772,10 +3787,10 @@
 			/** @type {number} */ count,
 			/** @type {number} */ width,
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
-			widths = this.widths,
-			countRow = null,
-			colourRow = null,
-			colourGrid = this.engine.colourGrid;
+			/** @type {Uint32Array} */ widths = this.widths,
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// L2, circular, or short range von Neumann
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
@@ -3832,13 +3847,13 @@
 			/** @type {number} */ xrange = this.xrange,
 			/** @type {number} */ yrange = this.yrange,
 			// deal with alternate rules
-			/** Uint8Array */ birthList = useAlternate ? this.altBirths : this.births,
-			/** Uint8Array */ survivalList = useAlternate ? this.altSurvivals : this.survivals,
+			/** @type {Uint8Array} */ birthList = useAlternate ? this.altBirths : this.births,
+			/** @type {Uint8Array} */ survivalList = useAlternate ? this.altSurvivals : this.survivals,
 			/** @const {number} */ rx2 = xrange + xrange,
 			/** @const {number} */ ry2 = yrange + yrange,
 			/** @const {number} */ rxp1 = xrange + 1,
 			/** @const {number} */ ryp1 = yrange + 1,
-			counts = this.counts,
+			/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @const {number} */ type = this.type,
 			/** @type {number} */ count = 0,
 			/** @type {number} */ minX = this.engine.width,
@@ -3849,11 +3864,14 @@
 			/** @type {number} */ maxX1 = maxX,
 			/** @type {number} */ minY1 = minY,
 			/** @type {number} */ maxY1 = maxY,
-			colourGrid = this.engine.colourGrid,
-			colourTileHistoryGrid = this.engine.colourTileHistoryGrid,
-			colourRow = null, countRowYpr = null, countRowYmrp1 = null,
-			colourTileRow = null,
-			countRow = null, prevCountRow = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.engine.colourTileHistoryGrid,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Int32Array} */ countRowYpr = null,
+			/** @type {Int32Array} */ countRowYmrp1 = null,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Int32Array} */ prevCountRow = null,
 			/** @const {number} */ bgWidth = this.engine.boundedGridWidth,
 			/** @const {number} */ bgHeight = this.engine.boundedGridHeight,
 			/** @type {number} */ gridLeftX = 0,
@@ -3881,7 +3899,7 @@
 			/** @type {number} */ jmr = 0,
 			/** @type {number} */ jpmincol = 0,
 			/** @type {boolean} */ useRandom = this.useRandom,
-			myRand = this.myRand,
+			/** @type {Random} */ myRand = this.myRand,
 			/** @type {Float32Array} */ birthChances = this.birthChances,
 			/** @type {Float32Array} */ survivalChances = this.survivalChances,
 
@@ -3893,12 +3911,12 @@
 
 			// minimum dead state number
 			/** @const {number} */ minDeadState = (this.engine.historyStates > 0 ? 1 : 0),
-			countRowIm1 = null,
-			countRowIm2 = null,
-			countRowIpr = null,
-			countRowIprm1 = null,
-			countRowImrm1 = null,
-			countRowImrm2 = null;
+			/** @type {Int32Array} */ countRowIm1 = null,
+			/** @type {Int32Array} */ countRowIm2 = null,
+			/** @type {Int32Array} */ countRowIpr = null,
+			/** @type {Int32Array} */ countRowIprm1 = null,
+			/** @type {Int32Array} */ countRowImrm1 = null,
+			/** @type {Int32Array} */ countRowImrm2 = null;
 
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {

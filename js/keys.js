@@ -6,7 +6,7 @@
 
 	// process keys in copy clipboard mode
 	/** @returns {boolean} */
-	KeyProcessor.processKeyCopy = function(me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
+	KeyProcessor.processKeyCopy = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true;
 
@@ -43,7 +43,7 @@
 
 	// process keys in go to generation mode
 	/** @returns {boolean} */
-	KeyProcessor.processKeyGoTo = function(me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
+	KeyProcessor.processKeyGoTo = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true;
 
@@ -63,7 +63,7 @@
 
 		// Esc to cancel
 		case 27:
-			me.stopStartFrom(me, true);
+			me.stopStartFrom(me, true, false);
 			break;
 
 		// ignore other keys
@@ -79,7 +79,7 @@
 
 	// process keys in identify mode
 	/** @returns {boolean} */
-	KeyProcessor.processKeyIdentify = function(me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
+	KeyProcessor.processKeyIdentify = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true;
 
@@ -127,7 +127,7 @@
 
 	// process keys in history mode
 	/** @returns {boolean} */
-	KeyProcessor.processKeyHistory = function(me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
+	KeyProcessor.processKeyHistory = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true;
 
@@ -158,7 +158,7 @@
 
 	// process key
 	/** @returns {boolean} */
-	KeyProcessor.processKey = function(me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
+	KeyProcessor.processKey = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true,
 
@@ -199,7 +199,7 @@
 						// if clipboard already selected then paste
 						if (me.currentPasteBuffer === value) {
 							if (me.isPasting) {
-								me.pasteSelection(me);
+								me.pasteSelection(me, value);
 							} else {
 								me.pastePressed(me);
 							}
@@ -525,7 +525,7 @@
 						me.displayHelp = 0;
 
 						// update the help UI
-						me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+						me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
 						me.menuManager.toggleRequired = true;
 					}
 				} else {
@@ -1020,7 +1020,7 @@
 			// v for reset view
 			case 86:
 				if (event.ctrlKey) {
-					me.processPaste(me, event.shiftKey);
+					me.processPaste(me, event.shiftKey, false);
 				} else {
 					// check for shift key
 					if (event.shiftKey) {
@@ -1738,7 +1738,7 @@
 					}
 
 					// update the help UI
-					me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+					me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
 					me.menuManager.toggleRequired = true;
 				}
 
@@ -1772,7 +1772,7 @@
 							}
 		
 							// update the help UI
-							me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+							me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
 							me.menuManager.toggleRequired = true;
 						}
 					}
@@ -1804,7 +1804,7 @@
 								} else {
 									// check for go to generation
 									if (me.startFrom !== -1) {
-										me.stopStartFrom(me, true);
+										me.stopStartFrom(me, true, false);
 									} else {
 										// close the popup Viewer
 										hideViewer();
@@ -1838,7 +1838,7 @@
 									} else {
 										// check for go to generation
 										if (me.startFrom !== -1) {
-											me.stopStartFrom(me, true);
+											me.stopStartFrom(me, true, false);
 										} else {
 											// check if playing
 											if (me.generationOn) {
@@ -1854,7 +1854,7 @@
 				}
 
 				// update the help UI
-				me.helpToggle.current = me.toggleHelp([me.displayHelp], true, me);
+				me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
 				me.menuManager.toggleRequired = true;
 
 				break;

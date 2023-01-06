@@ -378,7 +378,7 @@
 		/** @type {number} */ this.width = 0;
 		/** @type {number} */ this.height = 0;
 		this.iconCanvas = null;
-		this.iconContext = null;
+		/** @type {CanvasRenderingContext2D} */ this.iconContext = null;
 		/** @type {HTMLImageElement} */ this.convertedImage = null;
 		/** @type {HTMLImageElement} */ this.greyedOutImage = null;
 
@@ -560,7 +560,7 @@
 	/** @returns {Icon} */
 	IconManager.prototype.icon = function(/** @type {string} */ name) {
 		var	/** @type {number} */ a,
-			/** @type {Array<Icon>}*/ i = this.iconList,
+			/** @type {Array<Icon>} */ i = this.iconList,
 			/** @type {number} */ l = this.length(),
 			/** @type {Icon} */ result = null;
 
@@ -597,10 +597,9 @@
 		// menu types
 		range : 0,
 		button : 1,
-		toggle : 2,
-		progressBar : 3,
-		list : 4,
-		label : 5,
+		progressBar : 2,
+		list : 3,
+		label : 4,
 
 		// list selection modes
 		single : 0,
@@ -626,28 +625,16 @@
 	// MenuItem
 	/**
 	 * @constructor
-	 * @param {number} id
-	 * @param {number} position
-	 * @param {number} x
-	 * @param {number} y
-	 * @param {number} width
-	 * @param {number} height
-	 * @param {number} type
-	 * @param {number} orientation
-	 * @param {boolean} valueDisplay
-	 * @param {string} preText
-	 * @param {string} postText
-	 * @param {number} fixed
-	 * @param {MenuList} owner
 	 */
-	function MenuItem(id, callback, caller, position, x, y, width, height, lower, upper, current, type, orientation, valueDisplay, preText, postText, fixed, icon, owner) {
+	function MenuItem(/** @type {number} */ id, callback, /** @type {View} */ caller, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height,
+			lower, /** @type {number} */ upper, current, /** @type {number} */ type, /** @type {number} */ orientation, /** @type {boolean} */ valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText, /** @type {number} */ fixed, icon, /** @type {MenuList} */ owner) {
 		var	/** @type {number} */ i = 0;
 
 		// id
 		/** @type {number} */ this.id = id;
 
 		// owning menu
-		this.owner = owner;
+		/** @type {MenuList} */ this.owner = owner;
 
 		// tool tip
 		/** @type {string} */ this.toolTip = "";
@@ -665,7 +652,7 @@
 		this.callback = callback;
 
 		// caller
-		this.caller = caller;
+		/** @type {View} */ this.caller = caller;
 
 		// icon (list)
 		this.icon = icon;
@@ -693,6 +680,7 @@
 		/** @type {number} */ this.type = type;
 
 		// menu orientation
+		/** @type {number} */ this.orientation = orientation;
 		if (orientation === Menu.auto) {
 			// select orientation based on width and height
 			if (width >= height) {
@@ -700,8 +688,6 @@
 			} else {
 				this.orientation = Menu.vertical;
 			}
-		} else {
-			this.orientation = orientation;
 		}
 
 		// text orientation
@@ -709,7 +695,7 @@
 
 		// value range represented (order is important)
 		this.lower = lower;
-		this.upper = upper;
+		/** @type {number} */ this.upper = upper;
 
 		// current value
 		if (type === Menu.range) {
@@ -759,7 +745,7 @@
 		}
 
 		// toggle menu parents
-		this.toggleMenuParents = [];
+		/** @type {Array} */ this.toggleMenuParents = [];
 
 		// number of toggle menu items
 		/** @type {number} */ this.numToggleMenuParents = 0;
@@ -776,7 +762,7 @@
 
 		// set background colour list
 		if (type === Menu.list) {
-			this.bgColList = [];
+			/** @type {Array<string>} */ this.bgColList = [];
 			for (i = 0; i < lower.length; i += 1) {
 				this.bgColList[i] = this.bgCol;
 			}
@@ -1042,9 +1028,6 @@
 		// range highlight width
 		/** @type {number} */ this.rangeHighlightSize = 6;
 
-		// strikethrough width
-		/** @type {number} */ this.strikeThroughWidth = 2;
-
 		// callback function to update
 		this.callback = callback;
 
@@ -1091,19 +1074,19 @@
 		/** @type {number} */ this.mouseOverItem = -1;
 
 		// wakeup callback when GUI locked
-		this.wakeCallback = null;
+		/** @type {function(number,number,boolean,View):void|null} */ this.wakeCallback = null;
 
 		// callback when no item drag
-		this.dragCallback = null;
+		/** @type {function(number,number,boolean,View):void|null} */ this.dragCallback = null;
 
 		// callback when menu activated
-		this.activateCallback = activate;
+		/** @type {function(View):void} */ this.activateCallback = activate;
 
 		// caller object for callbacks
-		this.caller = caller;
+		/** @type {View} */ this.caller = caller;
 
 		// icon manager
-		this.iconManager = null;
+		/** @type {IconManager} */ this.iconManager = null;
 
 		// cursor style for controls
 		/** @type {string} */ this.cursorControls = "auto";
@@ -1217,14 +1200,6 @@
 
 			// read the current value
 			switch (currentItem.type) {
-			// toggle
-			case Menu.toggle:
-				if (currentItem.callback) {
-					// read the current toggle value
-					currentItem.current = currentItem.callback(currentItem.current === currentItem.upper, false, this.caller) ? currentItem.upper : currentItem.lower;
-				}
-				break;
-
 			// range
 			case Menu.range:
 				if (currentItem.callback) {
@@ -1299,18 +1274,6 @@
 		return this.menuItems[this.numMenuItems - 1];
 	};
 
-	// add toggle item
-	MenuList.prototype.addToggleItem = function(callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, lower, upper, current, valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText) {
-		// create the item
-		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, lower, upper, current, Menu.toggle, this.defaultOrientation, valueDisplay, preText, postText, -1, null, this);
-
-		// increment the item number
-		this.numMenuItems += 1;
-
-		// return the item
-		return this.menuItems[this.numMenuItems - 1];
-	};
-
 	// add progress bar item
 	MenuList.prototype.addProgressBarItem = function(/** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, lower, upper, current, valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText, /** @type {number} */ fixed) {
 		// create the item
@@ -1324,7 +1287,7 @@
 	};
 
 	// draw shadow string
-	MenuList.prototype.drawShadowString = function(/** @type {string} */ string, /** @type {MenuItem} */ item, /** @type {boolean} */ strikeThrough) {
+	MenuList.prototype.drawShadowString = function(/** @type {string} */ string, /** @type {MenuItem} */ item) {
 		var /** @type {number} */ textWidth,
 		    /** @type {number} */ target,
 		    /** @type {number} */ i,
@@ -1402,9 +1365,6 @@
 
 			// draw the shadow
 			this.context.fillStyle = item.bgCol;
-			if (strikeThrough) {
-				this.context.fillRect(2 - alignPos, 2, textWidth, this.strikeThroughWidth);
-			}
 			this.context.fillText(string, 2 - alignPos + 0.5, 2 + 0.5);
 
 			// draw the text
@@ -1414,9 +1374,6 @@
 				this.context.fillStyle = item.fgCol;
 			}
 			this.context.fillText(string, -alignPos + 0.5, 0.5);
-			if (strikeThrough) {
-				this.context.fillRect(-alignPos, 0, textWidth, this.strikeThroughWidth);
-			}
 
 			// restore transformation
 			this.context.restore();
@@ -1434,7 +1391,7 @@
 		itemString = item.preText;
 
 		// draw the string
-		this.drawShadowString(itemString, item, false);
+		this.drawShadowString(itemString, item);
 	};
 
 	// draw button item value
@@ -1448,7 +1405,7 @@
 		itemString = item.preText;
 
 		// draw the string
-		this.drawShadowString(itemString, item, false);
+		this.drawShadowString(itemString, item);
 	};
 
 	// draw progress bar item value
@@ -1499,7 +1456,7 @@
 		// draw the string if non-blank
 		if (itemString !== "") {
 			this.context.globalAlpha = item.fgAlpha;
-			this.drawShadowString(itemString, item, false);
+			this.drawShadowString(itemString, item);
 		}
 	};
 
@@ -1582,26 +1539,22 @@
 		if (itemString !== "") {
 			// draw the string
 			this.context.globalAlpha = this.fgAlpha;
-			this.drawShadowString(itemString, item, false);
+			this.drawShadowString(itemString, item);
 		}
 	};
 
 	// draw toggle item value
 	MenuList.prototype.drawToggleValue = function(/** @type {MenuItem} */ item) {
-		var	/** @type {boolean} */ strikeThrough,
-			/** @type {string} */ itemString;
+		var	/** @type {string} */ itemString;
 
 		// set the alpha
 		this.context.globalAlpha = this.fgAlpha;
-
-		// check for strikethrough
-		strikeThrough = item.lower === "-" && item.upper === "" && item.current === item.lower;
 
 		// build the caption from the pre text
 		itemString = item.preText;
 
 		// add the value if enabled
-		if (item.valueDisplay && !strikeThrough) {
+		if (item.valueDisplay) {
 			itemString += item.current;
 		}
 
@@ -1609,7 +1562,7 @@
 		itemString += item.postText;
 
 		// draw the string
-		this.drawShadowString(itemString, item, strikeThrough);
+		this.drawShadowString(itemString, item);
 	};
 
 	// get grid cell value
@@ -1796,7 +1749,7 @@
 				if (text !== "") {
 					this.context.save();
 					this.context.translate((0.5 + (i - l / 2)) * itemSize, 0);
-					this.drawShadowString(text, item, false);
+					this.drawShadowString(text, item);
 					this.context.restore();
 				}
 			}
@@ -1806,7 +1759,7 @@
 				if (text !== "") {
 					this.context.save();
 					this.context.translate(0, (0.5 + (i - l / 2)) * itemSize);
-					this.drawShadowString(text, item, false);
+					this.drawShadowString(text, item);
 					this.context.restore();
 				}
 			}
@@ -1833,7 +1786,7 @@
 		}
 
 		// button and toggle types use the highlight colour as the background if active or no active item and mouse over
-		if (canHighlight && (itemNum === activeNum || (activeNum === -1 && mouseIsOver)) && (item.type === Menu.button || item.type === Menu.toggle)) {
+		if (canHighlight && (itemNum === activeNum || (activeNum === -1 && mouseIsOver)) && (item.type === Menu.button)) {
 			this.context.fillStyle = item.hlCol;
 			this.context.globalAlpha = item.hlAlpha;
 		} else {
@@ -2038,11 +1991,6 @@
 			this.drawRangeValue(item, canHighlight && ((itemNum === activeNum) || (activeNum === -1 && mouseIsOver)));
 			break;
 
-		// toggle
-		case Menu.toggle:
-			this.drawToggleValue(item);
-			break;
-
 		// progress bar
 		case Menu.progressBar:
 			this.drawProgressBarValue(item);
@@ -2144,20 +2092,6 @@
 				// execute callback
 				if (item.callback) {
 					item.callback(item.caller);
-				}
-				break;
-
-			// toggle clicked
-			case Menu.toggle:
-				// toggle the item value
-				if (item.current === item.upper) {
-					item.current = item.lower;
-				} else {
-					item.current = item.upper;
-				}
-				// execute callback
-				if (item.callback) {
-					item.callback(item.current === item.upper, true, item.caller);
 				}
 				break;
 
@@ -2385,8 +2319,8 @@
 	/**
 	 * @constructor
 	 */
-	function MenuManager(mainCanvas, /** @type {CanvasRenderingContext2D} */ mainContext, /** @type {string} */ defaultFont, /** @type {IconManager} */ iconManager, caller, /** @type {Function} */ gotFocus) {
-		var	me = this,
+	function MenuManager(mainCanvas, /** @type {CanvasRenderingContext2D} */ mainContext, /** @type {string} */ defaultFont, /** @type {IconManager} */ iconManager, /** @type {View} */ caller, /** @type {Function} */ gotFocus) {
+		var	/** @type {MenuManager} */ me = this,
 			/** @type {number} */ i = 0;
 
 		// window zoom
@@ -2426,7 +2360,7 @@
 		/** @type {boolean} */ this.passEvents = false;
 
 		// caller for callbacks
-		this.caller = caller;
+		/** @type {View} */ this.caller = caller;
 
 		// whether GUI disabled
 		/** @type {boolean} */ this.noGUI = false;
@@ -2719,7 +2653,7 @@
 			/** @type {number} */ xScale = current.xScale,
 
 			// control
-			control = null,
+			/** @type {MenuItem} */ control = null,
 
 			// control width and height
 			/** @type {number} */ controlWidth = 0,
@@ -3394,8 +3328,8 @@
 	};
 
 	// find touch change by identified
-	MenuManager.prototype.findChangeById = function(changes, /** @type {number} */ id) {
-		var	change = null,
+	MenuManager.prototype.findChangeById = function(/** @type {TouchList} */ changes, /** @type {number} */ id) {
+		var	/** @type {Touch} */ change = null,
 			/** @type {number} */ i = 0;
 
 		// search the change list for the change with the specified id
@@ -3412,8 +3346,8 @@
 
 	// touch event handler
 	MenuManager.prototype.touchHandler = function(/** @type {MenuManager} */ me, event) {
-		var	changes = event.changedTouches,
-			thisChange = null;
+		var	/** @type {TouchList} */ changes = event.changedTouches,
+			/** @type {Touch} */ thisChange = null;
 			
 		// determine which event was received
 		switch (event.type) {

@@ -217,7 +217,7 @@
 	};
 
 	// check next script token
-	ScriptParser.nonNumericTokenError = function(scriptReader, scriptErrors, /** @type {string} */ nextToken, /** @type {string} */ itemDescription, /** @type {string} */ itemType) {
+	ScriptParser.nonNumericTokenError = function(/** @type {Script} */ scriptReader, /** @type {Array} */ scriptErrors, /** @type {string} */ nextToken, /** @type {string} */ itemDescription, /** @type {string} */ itemType) {
 		// check next token
 		var	/** @type {string} */ peekToken = scriptReader.peekAtNextToken();
 
@@ -234,13 +234,13 @@
 	};
 
 	// read a custom theme element
-	ScriptParser.readCustomThemeElement = function(view, scriptReader, scriptErrors, /** @type {number} */ customThemeElement, /** @type {number} */ whichColour) {
+	ScriptParser.readCustomThemeElement = function(/** @type {View} */ view, /** @type {Script} */ scriptReader, /** @type {Array} */ scriptErrors, /** @type {number} */ customThemeElement, /** @type {number} */ whichColour) {
 		var	/** @type {boolean} */ badColour = true,
 			/** @type {number} */ redValue = 0,
 			/** @type {number} */ greenValue = 0,
 			/** @type {number} */ blueValue = 0,
-			peekToken = null,
-			colourTriple = null,
+			/** @type {string} */ peekToken = "",
+			/** @type {Array<number>} */ colourTriple = null,
 
 			// get the element name
 			/** @type {string} */ elementName = scriptReader.getNextToken();
@@ -485,10 +485,10 @@
 	};
 
 	// setup custom theme
-	ScriptParser.setupCustomTheme = function(view, /** @type {number} */ theme) {
+	ScriptParser.setupCustomTheme = function(/** @type {View} */ view, /** @type {number} */ theme) {
 		var	/** @type {number} */ colourValue = 0,
-			customTheme = view.engine.themes[view.engine.numThemes],
-			themeValue = view.customThemeValue;
+			/** @type {Theme} */ customTheme = view.engine.themes[view.engine.numThemes],
+			/** @type {Array<number>} */  themeValue = view.customThemeValue;
 
 		// if a theme is specified then copy it into the custom theme and override with custom elements
 		if (theme !== -1) {
@@ -742,7 +742,7 @@
 	};
 
 	// raise theme overwrite error
-	ScriptParser.raiseThemeError = function(view, scriptErrors, /** @type {number} */ newTheme, /** @type {number} */ currentTheme) {
+	ScriptParser.raiseThemeError = function(/** @type {View} */ view, /** @type {Array} */ scriptErrors, /** @type {number} */ newTheme, /** @type {number} */ currentTheme) {
 		var	/** @type {string} */ errorSource = Keywords.themeWord + " ",
 			/** @type {string} */ errorReason = "overwrites ";
 
@@ -765,12 +765,12 @@
 	};
 
 	// decode rgb script value
-	ScriptParser.decodeRGB = function(view, scriptReader, scriptErrors, /** @type {number} */ colNum, /** @type {string} */ nextToken, /** @type {boolean} */ badColour, /** @type {string} */ colName) {
+	ScriptParser.decodeRGB = function(/** @type {View} */ view, /** @type {Script} */ scriptReader, /** @type {Array} */ scriptErrors, /** @type {number} */ colNum, /** @type {string} */ nextToken, /** @type {boolean} */ badColour, /** @type {string} */ colName) {
 		var	/** @type {number} */ redValue = 0,
 			/** @type {number} */ greenValue = 0,
 			/** @type {number} */ blueValue = 0,
-			peekToken = null,
-			colourTriple = null;
+			/** @type {string} */ peekToken = "",
+			/** @type {Array<number>} */ colourTriple = null;
 
 		// read the red value
 		if (scriptReader.nextTokenIsNumeric()) {
@@ -872,7 +872,7 @@
 
 	// output a time interval as a string
 	/** @returns {string} */
-	ScriptParser.timeInterval = function(view, /** @type {number} */ value) {
+	ScriptParser.timeInterval = function(/** @type {View} */ view, /** @type {number} */ value) {
 		var	/** @type {string} */ result = Keywords.variablePrefixSymbol + String(value),
 			/** @type {number} */ interval = view.menuManager.getTimeInterval(value);
 
@@ -887,7 +887,7 @@
 
 	// substitute variables in string
 	/** @returns {string} */
-	ScriptParser.substituteVariables = function(view, /** @type {string} */ string) {
+	ScriptParser.substituteVariables = function(/** @type {View} */ view, /** @type {string} */ string) {
 		var	/** @type {string} */ result = "",
 			/** @type {number} */ varIndex = string.indexOf(Keywords.variablePrefixSymbol),
 			/** @type {string} */ type = "";
@@ -1093,7 +1093,7 @@
 	};
 
 	// save BSn entry
-	ScriptParser.saveBSn = function(view, /** @type {number} */ value) {
+	ScriptParser.saveBSn = function(/** @type {View} */ view, /** @type {number} */ value) {
 		var	/** @type {number} */ i = 0;
 
 		if (this.BSnType === "B") {
@@ -1108,7 +1108,7 @@
 	};
 
 	// parse script commands
-	ScriptParser.parseScript = function(view, /** @type {string} */ scriptString, /** @type {number} */ numStates) {
+	ScriptParser.parseScript = function(/** @type {View} */ view, /** @type {string} */ scriptString, /** @type {number} */ numStates) {
 		// create a script from the string
 		var	scriptReader = new Script(scriptString, false),
 
@@ -1164,8 +1164,8 @@
 			/** @type {boolean} */ addLabelsAsPOIs = false,
 
 			// current waypoint
-			currentWaypoint = view.waypointManager.createWaypoint(),
-			tempWaypoint = null,
+			/** @type {Waypoint} */ currentWaypoint = view.waypointManager.createWaypoint(),
+			/** @type {Waypoint} */ tempWaypoint = null,
 
 			// whether waypoints found
 			/** @type {boolean} */ waypointsFound = false,
@@ -1363,7 +1363,7 @@
 		// look for a start script token
 		if (scriptReader.findToken(Keywords.scriptStartWord, -1) !== -1) {
 			// reset custom colours
-			view.customColours = /** @type {!Int16Array} */ (view.engine.allocator.allocate(Type.Int32, 256, "View.customColours"));
+			view.customColours = /** @type {!Int32Array} */ (view.engine.allocator.allocate(Type.Int32, 256, "View.customColours"));
 			view.customColours.fill(-1);
 
 			nextToken = scriptReader.getNextToken();
@@ -4904,7 +4904,7 @@
 							// zoom
 							case Keywords.zoomWord:
 								// check if zoom mode already defined
-								if (currentWaypoint.zoomModeDefined) {
+								if (currentWaypoint.zModeDefined) {
 									this.modeDefined(currentWaypoint.zLinear, Keywords.linearWord, Keywords.zoomWord, scriptErrors);
 								}
 
@@ -4925,7 +4925,7 @@
 								if (currentWaypoint.yModeDefined) {
 									this.modeDefined(currentWaypoint.yLinear, Keywords.linearWord, Keywords.yWord, scriptErrors);
 								}
-								if (currentWaypoint.zoomModeDefined) {
+								if (currentWaypoint.zModeDefined) {
 									this.modeDefined(currentWaypoint.zLinear, Keywords.linearWord, Keywords.zoomWord, scriptErrors);
 								}
 
@@ -4989,7 +4989,7 @@
 							// zoom
 							case Keywords.zoomWord:
 								// check if zoom mode already defined
-								if (currentWaypoint.zoomModeDefined) {
+								if (currentWaypoint.zModeDefined) {
 									this.modeDefined(currentWaypoint.zLinear, Keywords.bezierWord, Keywords.zoomWord, scriptErrors);
 								}
 
@@ -5010,7 +5010,7 @@
 								if (currentWaypoint.yModeDefined) {
 									this.modeDefined(currentWaypoint.yLinear, Keywords.bezierWord, Keywords.yWord, scriptErrors);
 								}
-								if (currentWaypoint.zoomModeDefined) {
+								if (currentWaypoint.zModeDefined) {
 									this.modeDefined(currentWaypoint.zLinear, Keywords.bezierWord, Keywords.zoomWord, scriptErrors);
 								}
 
@@ -5394,13 +5394,13 @@
 							currentWaypoint.stepDefined = tempWaypoint.stepDefined;
 							currentWaypoint.step = tempWaypoint.step;
 						}
-						if (tempWaypoint.stopDefined) {
-							currentWaypoint.stopDefined = tempWaypoint.stopDefined;
-							currentWaypoint.stop = tempWaypoint.stop;
+						if (tempWaypoint.stopGenDefined) {
+							currentWaypoint.stopGenDefined = tempWaypoint.stopGenDefined;
+							currentWaypoint.stopGeneration = tempWaypoint.stopGeneration;
 						}
-						if (tempWaypoint.loopDefined) {
-							currentWaypoint.loopDefined = tempWaypoint.loopDefined;
-							currentWaypoint.loop = tempWaypoint.loop;
+						if (tempWaypoint.loopGenDefined) {
+							currentWaypoint.loopGenDefined = tempWaypoint.loopGenDefined;
+							currentWaypoint.loopGeneration = tempWaypoint.loopGeneration;
 						}
 					}
 				}

@@ -5,7 +5,7 @@
 	/**
 	 * @constructor
 	 */
-	function Stars(/** @type {number} */ numStars, allocator) {
+	function Stars(/** @type {number} */ numStars, /** @type {Allocator} */ allocator) {
 		// number of stars
 		/** @type {number} */ this.numStars = numStars;
 
@@ -20,7 +20,7 @@
 		/** @type {number} */ this.blue = 255;
 
 		// random number generator
-		this.randGen = new Random();
+		/** @type {Random} */ this.randGen = new Random();
 
 		// initialise random seed
 		this.randGen.init(Date.now().toString());
@@ -40,7 +40,7 @@
 		/** @type {number} */ this.radToDeg = (this.circleDegrees / 2) / Math.PI;
 
 		// save the allocator
-		this.allocator = allocator;
+		/** @type {Allocator} */ this.allocator = allocator;
 
 		// whether initialized
 		/** @type {boolean} */ this.initialized = false;

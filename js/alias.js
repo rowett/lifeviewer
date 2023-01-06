@@ -4,10 +4,10 @@
 	// AliasManager singleton
 	var AliasManager = {
 		// list of alias/rule pairs
-		aliases : [],
+		/** @type {Array} */ aliases : [],
 
 		// list of help section names
-		sectionNames : []
+		/** @type {Array<string>} */ sectionNames : []
 	};
 
 	// initialise Alias Manager
@@ -16,8 +16,8 @@
 			/** @type {string} */ currentName = "",
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
-			a = null,
-			s = null;
+			/** @type {Array} */ a = null,
+			/** @type {Array} */ s = null;
 
 		// clear the current lists
 		this.aliases = [];

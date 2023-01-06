@@ -3,8 +3,8 @@
 // written by Chris Rowett
 
 	// for determining endian
-	var	data8 = null,
-		data32 = null;
+	var	/** @type {Uint8Array} */ data8 = null,
+		/** @type {Uint32Array} */ data32 = null;
 
 	// cross-browser register event function
 	function registerEvent(element, event, handler, capture) {
@@ -262,10 +262,11 @@
 	if (!window.Int32Array.prototype.slice) {
 		window.arraySlice = false;
 
+		/** @returns {Int32Array} */
 		window.Int32Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
-				result = null;
+				/** @type {Int32Array} */ result = null;
 
 			if (end === undefined) {
 				end = this.length;
@@ -284,10 +285,11 @@
 	}
 
 	if (!window.Int16Array.prototype.slice) {
+		/** @returns {Int16Array} */
 		window.Int16Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
-				result = null;
+				/** @type {Int16Array} */ result = null;
 
 			if (end === undefined) {
 				end = this.length;
@@ -304,10 +306,11 @@
 	}
 
 	if (!window.Int8Array.prototype.slice) {
+		/** @returns {Int8Array} */
 		window.Int8Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
-				result = null;
+				/** @type {Int8Array} */ result = null;
 
 			if (end === undefined) {
 				end = this.length;
@@ -324,10 +327,11 @@
 	}
 
 	if (!window.Uint32Array.prototype.slice) {
+		/** @returns {Uint32Array} */
 		window.Uint32Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
-				result = null;
+				/** @type {Uint32Array} */ result = null;
 
 			if (end === undefined) {
 				end = this.length;
@@ -344,10 +348,11 @@
 	}
 
 	if (!window.Uint16Array.prototype.slice) {
+		/** @returns {Uint16Array} */
 		window.Uint16Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
-				result = null;
+				/** @type {Uint16Array} */ result = null;
 
 			if (end === undefined) {
 				end = this.length;
@@ -364,10 +369,11 @@
 	}
 
 	if (!window.Uint8Array.prototype.slice) {
+		/** @returns {Uint8Array} */
 		window.Uint8Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
-				result = null;
+				/** @type {Uint8Array} */ result = null;
 
 			if (end === undefined) {
 				end = this.length;
@@ -384,10 +390,11 @@
 	}
 
 	if (!window.Uint8ClampedArray.prototype.slice) {
+		/** @returns {Uint8ClampedArray} */
 		window.Uint8ClampedArray.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
-				result = null;
+				/** @type {Uint8ClampedArray} */ result = null;
 
 			if (end === undefined) {
 				end = this.length;
@@ -404,10 +411,11 @@
 	}
 
 	if (!window.Float32Array.prototype.slice) {
+		/** @returns {Float32Array} */
 		window.Float32Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
-				result = null;
+				/** @type {Float32Array} */ result = null;
 
 			if (end === undefined) {
 				end = this.length;
@@ -424,10 +432,11 @@
 	}
 
 	if (!window.Float64Array.prototype.slice) {
+		/** @returns {Float64Array} */
 		window.Float64Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
-				result = null;
+				/** @type {Float64Array} */ result = null;
 
 			if (end === undefined) {
 				end = this.length;
@@ -457,7 +466,8 @@
 	if (data32.copyWithin) {
 		window.copyWithin = true;
 	} else {
-		window.Uint32Array.prototype.copyWithin = function(target, /** @type {number} */ start, end) {
+		/** @returns {Uint32Array} */
+		window.Uint32Array.prototype.copyWithin = function(/** @type {number} */ target, /** @type {number} */ start, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
 				/** @type {boolean} */ reverse = false;

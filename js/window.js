@@ -5,8 +5,8 @@
 	/**
 	 * @constructor
 	 */
-	function PopupWindow(element, view) {
-		var	me = this,
+	function PopupWindow(element, /** @type {View} */ view) {
+		var	/** @type {PopupWindow} */ me = this,
 			/** @type {string} */ title = element.getElementsByTagName("div")[0];
 
 		// whether using touch events (so ignore mouse events)
@@ -22,10 +22,10 @@
 		this.wrappedElement = element;
 
 		// view
-		this.view = view;
+		/** @type {View} */ this.view = view;
 
 		// menu manager
-		this.menuManager = view.menuManager;
+		/** @type {MenuManager} */ this.menuManager = view.menuManager;
 
 		// current position
 		/** @type {number} */ this.left = 0;
@@ -73,8 +73,8 @@
 	}
 
 	// find touch change by identified
-	PopupWindow.prototype.findChangeById = function(changes, /** @type {number} */ id) {
-		var	change = null,
+	PopupWindow.prototype.findChangeById = function(/** @type {TouchList} */ changes, /** @type {number} */ id) {
+		var	/** @type {Touch} */ change = null,
 			/** @type {number} */ i = 0;
 
 		// search the change list for the change with the specified id
@@ -97,8 +97,8 @@
 
 	// touch event handler
 	PopupWindow.prototype.touchHandler = function(/** @type {PopupWindow} */ me, event) {
-		var	changes = event.changedTouches,
-			thisChange = null;
+		var	/** @type {TouchList} */ changes = event.changedTouches,
+			/** @type {Touch} */ thisChange = null;
 			
 		// mark that touch events are being used (so ignore mouse events)
 		this.usingTouch = true;
@@ -147,7 +147,7 @@
 	// resize window
 	/* eslint-disable no-unused-vars */
 	PopupWindow.prototype.resizeWindow = function(/** @type {PopupWindow} */ me, event) {
-		var	view = this.view;
+		var	/** @type {View} */ view = this.view;
 
 		// check if window needs rescaling
 		view.displayWidth = view.origDisplayWidth;
