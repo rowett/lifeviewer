@@ -637,7 +637,7 @@
 		/** @type {MenuList} */ this.owner = owner;
 
 		// tool tip
-		/** @type {string} */ this.toolTip = "";
+		/** @type {string|Array<string>} */ this.toolTip = null;
 
 		// item in a multi-select that is highlighted
 		/** @type {number} */ this.highlightItem = -1;

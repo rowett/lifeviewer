@@ -953,10 +953,10 @@
 		/** @type {number} */ this.ruleTableStates = -1;
 
 		// rule table LUT
-		this.ruleTableLUT = null;
+		/** @type {Array} */ this.ruleTableLUT = null;
 
 		// rule table output
-		this.ruleTableOutput = null;
+		/** @type {Uint8Array} */ this.ruleTableOutput = null;
 
 		// rule table number of duplicates removed
 		/** @type {number} */ this.ruleTableDups = 0;
@@ -965,16 +965,16 @@
 		/** @type {number} */ this.ruleTableCompressedRules = 0;
 
 		// rule tree b array
-		this.ruleTreeB = null;
+		/** @type {Uint8Array} */ this.ruleTreeB = null;
 
 		// rule tree a array
-		this.ruleTreeA = null;
+		/** @type {Uint32Array} */ this.ruleTreeA = null;
 
 		// rule tree colours
 		/** @type {Uint32Array} */ this.ruleTreeColours = null;
 
 		// rule tree names
-		this.ruleTableNames = [];
+		/** @type {Array<string>} */ this.ruleTableNames = [];
 
 		// rule table icons
 		this.ruleTableIcons = null;

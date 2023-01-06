@@ -437,9 +437,9 @@
 		/** @type {number} */ this.ruleTreeStates = 2;
 		/** @type {number} */ this.ruleTreeNodes = 0;
 		/** @type {number} */ this.ruleTreeBase = -1;
-		/** @type {Array<number>} */ this.ruleTreeA = null;
-		/** @type {Array<number>} */ this.ruleTreeB = null;
-		/** @type {Array<number>} */ this.ruleTreeColours = null;
+		/** @type {Uint32Array} */ this.ruleTreeA = null;
+		/** @type {Uint8Array} */ this.ruleTreeB = null;
+		/** @type {Uint32Array} */ this.ruleTreeColours = null;
 		/** @type {Array} */ this.ruleTableIcons = null;
 
 		// RuleTable
@@ -976,10 +976,10 @@
 		/** @type {number} */ this.definedGridLineMajor = 10;
 
 		// column occupancy array for grid bounding box calculation
-		this.columnOccupied16 = null;
+		/** @type {Uint16Array} */ this.columnOccupied16 = null;
 
 		// row occupancy array for grid bounding box calculation
-		this.rowOccupied16 = null;
+		/** @type {Uint16Array} */ this.rowOccupied16 = null;
 
 		// current maximum grid size
 		/** @type {number} */ this.maxGridSize = 8192;
@@ -5897,7 +5897,7 @@
 	};
 
 	// run to given generation (used to step back)
-	Life.prototype.runTo = function(/** @type {number} */ targetGen, /** @type {boolean} */ statsOn, /** @type {boolean} */ graphDisabled, view) {
+	Life.prototype.runTo = function(/** @type {number} */ targetGen, /** @type {boolean} */ statsOn, /** @type {boolean} */ graphDisabled, /** @type {View} */ view) {
 		// get the latest snapshot
 		var	/** @type {number} */ numSnapshots = this.snapshotManager.snapshots.length,
 			/** @type {Snapshot} */ snapshot = null;
@@ -6161,7 +6161,7 @@
 	};
 
 	// save grid
-	Life.prototype.saveGrid = function(/** @type {boolean} */ noHistory, view) {
+	Life.prototype.saveGrid = function(/** @type {boolean} */ noHistory, /** @type {View} */ view) {
 		// reset snapshot manager
 		this.snapshotManager.reset();
 
@@ -6660,7 +6660,7 @@
 	};
 
 	// check if the grid buffer needs to grow for as many steps as needed
-	Life.prototype.checkForGrowth = function(view, box, /** @type {number} */ maxStep) {
+	Life.prototype.checkForGrowth = function(/** @type {View} */ view, /** @type {BoundingBox} */ box, /** @type {number} */ maxStep) {
 		// check the next step
 		while (this.checkForGrowthStep(view, box, maxStep)) {
 			// until no more steps required
@@ -8532,8 +8532,8 @@
 			/** @type {number} */ wi = 0,
 			/** @type {number} */ index = 0,
 			/** @type {number} */ base = this.ruleTreeBase,
-			/** @type {Array<number>} */ a = this.ruleTreeA,
-			/** @type {Array<number>} */ b = this.ruleTreeB;
+			/** @type {Uint32Array} */ a = this.ruleTreeA,
+			/** @type {Uint8Array} */ b = this.ruleTreeB;
 
 		// compute how many bits needed for states
 		i = 0;
@@ -24493,14 +24493,14 @@
 		this.anythingAlive = population;
 	};
 
-	// jsdoc TBD
 	// update the life grid region using tiles for von Neumann RuleTable patterns
 	Life.prototype.nextGenerationRuleTableTileVN = function() {
-		var	gridRow0 = null,
-			gridRow1 = null,
-			gridRow2 = null,
-			nextRow = null,
-			lut = this.ruleTableLUT,
+		var	/** @type {Uint8Array} */ gridRow0 = null,
+			/** @type {Uint8Array} */ gridRow1 = null,
+			/** @type {Uint8Array} */ gridRow2 = null,
+			/** @type {Uint8Array} */ nextRow = null,
+			/** @type {Uint32Array} */ gridRow32 = null,
+			/** @type {Array} */ lut = this.ruleTableLUT,
 			lut0 = lut[0],
 			lut1 = lut[1],
 			lut2 = lut[2],
@@ -24511,7 +24511,7 @@
 			luts = null,
 			lutw = null,
 			lutc = null,
-			output = this.ruleTableOutput,
+			/** @type {Uint8Array} */ output = this.ruleTableOutput,
 			/** @type {number} */ nCompressed = this.ruleTableCompressedRules,
 			/** @type {number} */ isMatch = 0,
 			/** @type {number} */ iRuleC = 0,
@@ -24531,19 +24531,19 @@
 			/** @type {number} */ bit = 0,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
-			colourTileHistoryGrid = this.colourTileHistoryGrid,
-			colourTileHistoryRow = null,
-			colourTileGrid = this.colourTileGrid,
-			colourTileRow = null,
-			grid = null,
-			nextGrid = null,
-			grid32 = null,
-			tileGrid = null,
-			nextTileGrid = null,
-			tileRow = null,
-			nextTileRow = null,
-			belowNextTileRow = null,
-			aboveNextTileRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Array<Uint8Array>} */ grid = null,
+			/** @type {Array<Uint8Array>} */ nextGrid = null,
+			/** @type {Array<Uint32Array>} */ grid32 = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Uint16Array} */ tileRow = null,
+			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ belowNextTileRow = null,
+			/** @type {Uint16Array} */ aboveNextTileRow = null,
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
@@ -24554,12 +24554,12 @@
 			/** @type {number} */ rightX = 0,
 
 			// column occupied
-			columnOccupied16 = this.columnOccupied16,
+			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
 			/** @type {number} */ colOccupied = 0,
 			/** @type {number} */ colIndex = 0,
 
 			// row occupied
-			rowOccupied16 = this.rowOccupied16,
+			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
 			/** @type {number} */ rowOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
 
@@ -24578,7 +24578,7 @@
 			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
-			zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 
 			// new box extent
 			/** @type {number} */ newBottomY = height,
@@ -25080,13 +25080,13 @@
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
 								for (y = bottomY; y < topY; y += 1) {
-									gridRow1 = grid32[y];
+									gridRow32 = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells
-									gridRow1[x] = 0;
-									gridRow1[x + 1] = 0;
-									gridRow1[x + 2] = 0;
-									gridRow1[x + 3] = 0;
+									gridRow32[x] = 0;
+									gridRow32[x + 1] = 0;
+									gridRow32[x + 2] = 0;
+									gridRow32[x + 3] = 0;
 								}
 							}
 						}
@@ -25109,11 +25109,12 @@
 
 	// update the life grid region using tiles for Moore RuleTable patterns
 	Life.prototype.nextGenerationRuleTableTileMoore = function() {
-		var	gridRow0 = null,
-			gridRow1 = null,
-			gridRow2 = null,
-			nextRow = null,
-			lut = this.ruleTableLUT,
+		var	/** @type {Uint8Array} */ gridRow0 = null,
+			/** @type {Uint8Array} */ gridRow1 = null,
+			/** @type {Uint8Array} */ gridRow2 = null,
+			/** @type {Uint8Array} */ nextRow = null,
+			/** @type {Uint32Array} */ gridRow32 = null,
+			/** @type {Array} */ lut = this.ruleTableLUT,
 			lut0 = lut[0],
 			lut1 = lut[1],
 			lut2 = lut[2],
@@ -25132,7 +25133,7 @@
 			lutsw = null,
 			luts = null,
 			lutse = null,
-			output = this.ruleTableOutput,
+			/** @type {Uint8Array} */ output = this.ruleTableOutput,
 			/** @type {number} */ nCompressed = this.ruleTableCompressedRules,
 			/** @type {number} */ isMatch = 0,
 			/** @type {number} */ iRuleC = 0,
@@ -25157,19 +25158,19 @@
 			/** @type {number} */ bit = 0,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
-			colourTileHistoryGrid = this.colourTileHistoryGrid,
-			colourTileHistoryRow = null,
-			colourTileGrid = this.colourTileGrid,
-			colourTileRow = null,
-			grid = null,
-			nextGrid = null,
-			grid32 = null,
-			tileGrid = null,
-			nextTileGrid = null,
-			tileRow = null,
-			nextTileRow = null,
-			belowNextTileRow = null,
-			aboveNextTileRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Array<Uint8Array>} */ grid = null,
+			/** @type {Array<Uint8Array>} */ nextGrid = null,
+			/** @type {Array<Uint32Array>} */ grid32 = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Uint16Array} */ tileRow = null,
+			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ belowNextTileRow = null,
+			/** @type {Uint16Array} */ aboveNextTileRow = null,
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
@@ -25180,12 +25181,12 @@
 			/** @type {number} */ rightX = 0,
 
 			// column occupied
-			columnOccupied16 = this.columnOccupied16,
+			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
 			/** @type {number} */ colOccupied = 0,
 			/** @type {number} */ colIndex = 0,
 
 			// row occupied
-			rowOccupied16 = this.rowOccupied16,
+			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
 			/** @type {number} */ rowOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
 
@@ -25204,7 +25205,7 @@
 			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
-			zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 
 			// new box extent
 			/** @type {number} */ newBottomY = height,
@@ -25742,13 +25743,13 @@
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
 								for (y = bottomY; y < topY; y += 1) {
-									gridRow1 = grid32[y];
+									gridRow32 = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells
-									gridRow1[x] = 0;
-									gridRow1[x + 1] = 0;
-									gridRow1[x + 2] = 0;
-									gridRow1[x + 3] = 0;
+									gridRow32[x] = 0;
+									gridRow32[x + 1] = 0;
+									gridRow32[x + 2] = 0;
+									gridRow32[x + 3] = 0;
 								}
 							}
 						}
@@ -25771,11 +25772,12 @@
 
 	// update the life grid region using tiles for hexagonal RuleTable patterns
 	Life.prototype.nextGenerationRuleTableTileHex = function() {
-		var	gridRow0 = null,
-			gridRow1 = null,
-			gridRow2 = null,
-			nextRow = null,
-			lut = this.ruleTableLUT,
+		var	/** @type {Uint8Array} */ gridRow0 = null,
+			/** @type {Uint8Array} */ gridRow1 = null,
+			/** @type {Uint8Array} */ gridRow2 = null,
+			/** @type {Uint8Array} */ nextRow = null,
+			/** @type {Uint32Array} */ gridRow32 = null,
+			/** @type {Array} */ lut = this.ruleTableLUT,
 			lut0 = lut[0],
 			lut1 = lut[1],
 			lut2 = lut[2],
@@ -25790,7 +25792,7 @@
 			lutc = null,
 			lutnw = null,
 			lutse = null,
-			output = this.ruleTableOutput,
+			/** @type {Uint8Array} */ output = this.ruleTableOutput,
 			/** @type {number} */ nCompressed = this.ruleTableCompressedRules,
 			/** @type {number} */ isMatch = 0,
 			/** @type {number} */ iRuleC = 0,
@@ -25813,19 +25815,19 @@
 			/** @type {number} */ bit = 0,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
-			colourTileHistoryGrid = this.colourTileHistoryGrid,
-			colourTileHistoryRow = null,
-			colourTileGrid = this.colourTileGrid,
-			colourTileRow = null,
-			grid = null,
-			nextGrid = null,
-			grid32 = null,
-			tileGrid = null,
-			nextTileGrid = null,
-			tileRow = null,
-			nextTileRow = null,
-			belowNextTileRow = null,
-			aboveNextTileRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Array<Uint8Array>} */ grid = null,
+			/** @type {Array<Uint8Array>} */ nextGrid = null,
+			/** @type {Array<Uint32Array>} */ grid32 = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Uint16Array} */ tileRow = null,
+			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ belowNextTileRow = null,
+			/** @type {Uint16Array} */ aboveNextTileRow = null,
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
@@ -25836,12 +25838,12 @@
 			/** @type {number} */ rightX = 0,
 
 			// column occupied
-			columnOccupied16 = this.columnOccupied16,
+			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
 			/** @type {number} */ colOccupied = 0,
 			/** @type {number} */ colIndex = 0,
 
 			// row occupied
-			rowOccupied16 = this.rowOccupied16,
+			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
 			/** @type {number} */ rowOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
 
@@ -25860,7 +25862,7 @@
 			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
-			zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 
 			// new box extent
 			/** @type {number} */ newBottomY = height,
@@ -26383,13 +26385,13 @@
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
 								for (y = bottomY; y < topY; y += 1) {
-									gridRow1 = grid32[y];
+									gridRow32 = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells
-									gridRow1[x] = 0;
-									gridRow1[x + 1] = 0;
-									gridRow1[x + 2] = 0;
-									gridRow1[x + 3] = 0;
+									gridRow32[x] = 0;
+									gridRow32[x + 1] = 0;
+									gridRow32[x + 2] = 0;
+									gridRow32[x + 3] = 0;
 								}
 							}
 						}
@@ -26442,13 +26444,14 @@
 
 	// update the life grid region using tiles for von Neumann RuleTree patterns
 	Life.prototype.nextGenerationRuleTreeTileVN = function() {
-		var	gridRow0 = null,
-			gridRow1 = null,
-			gridRow2 = null,
-			nextRow = null,
-			a = this.ruleTreeA,
-			b = this.ruleTreeB,
-			base = this.ruleTreeBase,
+		var	/** @type {Uint8Array} */ gridRow0 = null,
+			/** @type {Uint8Array} */ gridRow1 = null,
+			/** @type {Uint8Array} */ gridRow2 = null,
+			/** @type {Uint32Array} */ nextRow = null,
+			/** @type {Uint32Array} */ gridRow32 = null,
+			/** @type {Uint32Array} */ a = this.ruleTreeA,
+			/** @type {Uint8Array} */ b = this.ruleTreeB,
+			/** @type {number} */ base = this.ruleTreeBase,
 
 			// cells
 			/** @type {number} */ n = 0,
@@ -26465,20 +26468,20 @@
 			/** @type {number} */ bit = 0,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
-			colourTileHistoryGrid = this.colourTileHistoryGrid,
-			colourTileHistoryRow = null,
-			colourTileGrid = this.colourTileGrid,
-			colourTileRow = null,
-			grid = null,
-			nextGrid32 = null,
-			grid32 = null,
-			tileGrid = null,
-			nextTileGrid = null,
-			tileRow = null,
-			nextTileRow = null,
-			staticTileRow = null,
-			belowNextTileRow = null,
-			aboveNextTileRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Array<Uint8Array>} */ grid = null,
+			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
+			/** @type {Array<Uint32Array>} */ grid32 = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Uint16Array} */ tileRow = null,
+			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ staticTileRow = null,
+			/** @type {Uint16Array} */ belowNextTileRow = null,
+			/** @type {Uint16Array} */ aboveNextTileRow = null,
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
@@ -26491,13 +26494,13 @@
 			/** @type {number} */ tileChanged = 0,
 
 			// column occupied
-			columnOccupied16 = this.columnOccupied16,
+			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
 			/** @type {number} */ colOccupied = 0,
 			/** @type {number} */ colIndex = 0,
 			/** @type {number} */ localCol = 0,
 
 			// row occupied
-			rowOccupied16 = this.rowOccupied16,
+			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
 			/** @type {number} */ rowOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
 
@@ -26516,7 +26519,7 @@
 			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
-			zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 
 			// new box extent
 			/** @type {number} */ newBottomY = height,
@@ -27887,13 +27890,13 @@
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
 								for (y = bottomY; y < topY; y += 1) {
-									gridRow1 = grid32[y];
+									gridRow32 = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells
-									gridRow1[x] = 0;
-									gridRow1[x + 1] = 0;
-									gridRow1[x + 2] = 0;
-									gridRow1[x + 3] = 0;
+									gridRow32[x] = 0;
+									gridRow32[x + 1] = 0;
+									gridRow32[x + 2] = 0;
+									gridRow32[x + 3] = 0;
 								}
 							}
 						}
@@ -27916,13 +27919,14 @@
 
 	// update the life grid region using tiles for Moore RuleTree patterns
 	Life.prototype.nextGenerationRuleTreeTileMoore = function() {
-		var	gridRow0 = null,
-			gridRow1 = null,
-			gridRow2 = null,
-			nextRow = null,
-			a = this.ruleTreeA,
-			b = this.ruleTreeB,
-			base = this.ruleTreeBase,
+		var	/** @type {Uint8Array} */ gridRow0 = null,
+			/** @type {Uint8Array} */ gridRow1 = null,
+			/** @type {Uint8Array} */ gridRow2 = null,
+			/** @type {Uint8Array} */ nextRow = null,
+			/** @type {Uint32Array} */ gridRow32 = null,
+			/** @type {Uint32Array} */ a = this.ruleTreeA,
+			/** @type {Uint8Array} */ b = this.ruleTreeB,
+			/** @type {number} */ base = this.ruleTreeBase,
 
 			// cells
 			/** @type {number} */ n = 0,
@@ -27942,20 +27946,20 @@
 			/** @type {number} */ bit = 0,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
-			colourTileHistoryGrid = this.colourTileHistoryGrid,
-			colourTileHistoryRow = null,
-			colourTileGrid = this.colourTileGrid,
-			colourTileRow = null,
-			grid = null,
-			nextGrid = null,
-			grid32 = null,
-			tileGrid = null,
-			nextTileGrid = null,
-			tileRow = null,
-			nextTileRow = null,
-			staticTileRow = null,
-			belowNextTileRow = null,
-			aboveNextTileRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Array<Uint8Array>} */ grid = null,
+			/** @type {Array<Uint8Array>} */ nextGrid = null,
+			/** @type {Array<Uint32Array>} */ grid32 = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Uint16Array} */ tileRow = null,
+			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ staticTileRow = null,
+			/** @type {Uint16Array} */ belowNextTileRow = null,
+			/** @type {Uint16Array} */ aboveNextTileRow = null,
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
@@ -27968,13 +27972,13 @@
 			/** @type {number} */ tileChanged = 0,
 
 			// column occupied
-			columnOccupied16 = this.columnOccupied16,
+			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
 			/** @type {number} */ colOccupied = 0,
 			/** @type {number} */ colIndex = 0,
 			/** @type {number} */ localCol = 0,
 
 			// row occupied
-			rowOccupied16 = this.rowOccupied16,
+			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
 			/** @type {number} */ rowOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
 
@@ -27993,7 +27997,7 @@
 			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
-			zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 
 			// new box extent
 			/** @type {number} */ newBottomY = height,
@@ -29490,13 +29494,13 @@
 							if ((nextTiles & (1 << bit)) === 0) {
 								// clear source cells for double buffering
 								for (y = bottomY; y < topY; y += 1) {
-									gridRow1 = grid32[y];
+									gridRow32 = grid32[y];
 									x = leftX >> 2;
 									// clear 16 cells
-									gridRow1[x] = 0;
-									gridRow1[x + 1] = 0;
-									gridRow1[x + 2] = 0;
-									gridRow1[x + 3] = 0;
+									gridRow32[x] = 0;
+									gridRow32[x + 1] = 0;
+									gridRow32[x + 2] = 0;
+									gridRow32[x + 3] = 0;
 								}
 							}
 						}
@@ -29568,7 +29572,7 @@
 			/** @type {number} */ colIndex = 0,
 
 			// row occupied
-			rowOccupied16 = this.rowOccupied16,
+			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
 			/** @type {number} */ rowOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
 
@@ -29587,7 +29591,7 @@
 			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
-			zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 
 			// new box extent
 			/** @type {number} */ newBottomY = height,
@@ -30423,7 +30427,7 @@
 			/** @type {number} */ colIndex = 0,
 
 			// row occupied
-			rowOccupied16 = this.rowOccupied16,
+			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
 			/** @type {number} */ rowOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
 
@@ -30442,7 +30446,7 @@
 			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
-			zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 
 			// new box extent
 			/** @type {number} */ newBottomY = height,
@@ -31278,7 +31282,7 @@
 			/** @type {number} */ colIndex = 0,
 
 			// row occupied
-			rowOccupied16 = this.rowOccupied16,
+			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
 			/** @type {number} */ rowOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
 
@@ -31297,7 +31301,7 @@
 			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
-			zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 
 			// new box extent
 			/** @type {number} */ newBottomY = height,
@@ -32133,7 +32137,7 @@
 			/** @type {number} */ colIndex = 0,
 
 			// row occupied
-			rowOccupied16 = this.rowOccupied16,
+			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
 			/** @type {number} */ rowOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
 
@@ -32152,7 +32156,7 @@
 			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
-			zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 
 			// new box extent
 			/** @type {number} */ newBottomY = height,
@@ -32939,13 +32943,13 @@
 
 	// next generation for PCA rules
 	Life.prototype.nextGenerationPCATile = function() {
-		var	indexLookup = this.margolusLookup1,
+		var	/** @type {Uint16Array} */ indexLookup = this.margolusLookup1,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ x = 0,
-			grid = this.colourGrid,
-			nextGrid = this.nextColourGrid,
-			zoomBox = this.zoomBox,
-			historyBox = this.historyBox,
+			/** @type {Array<Uint8Array>} */ grid = this.colourGrid,
+			/** @type {Array<Uint8Array>} */ nextGrid = this.nextColourGrid,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ historyBox = this.historyBox,
 			/** @type {number} */ leftX = historyBox.leftX,
 			/** @type {number} */ bottomY = historyBox.bottomY,
 			/** @type {number} */ rightX = historyBox.rightX,
@@ -32963,15 +32967,15 @@
 			/** @type {number} */ zBottomY = this.height,
 			/** @type {number} */ zRightX = 0,
 			/** @type {number} */ zTopY = 0,
-			colourTileGrid = this.colourTileHistoryGrid,
-			aboveRow = null,
-			gridRow = null,
-			belowRow = null,
-			tileRow = null,
-			nextRow = null,
-			rowAlive = false,
-			zAlive = false,
-			bitCounts = this.bitCounts16,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileHistoryGrid,
+			/** @type {Uint8Array} */ aboveRow = null,
+			/** @type {Uint8Array} */ gridRow = null,
+			/** @type {Uint8Array} */ belowRow = null,
+			/** @type {Uint16Array} */ tileRow = null,
+			/** @type {Uint8Array} */ nextRow = null,
+			/** @type {boolean} */ rowAlive = false,
+			/** @type {boolean} */ zAlive = false,
+			/** @type {Uint8Array} */ bitCounts = this.bitCounts16,
 
 			// maximum dead state number
 			/** @type {number} */ deadState = this.historyStates,
@@ -33194,16 +33198,16 @@
 		var	/** @type {number} */ h = 0,
 			/** @type {number} */ cr = 0,
 			/** @type {number} */ nextCell = 0,
-			colourGrid32 = this.colourGrid32,
-			colourGridRow = null,
-			colourTileRow = null,
-			colourTileHistoryRow = null,
-			colourTileHistoryGrid = this.colourTileHistoryGrid,
-			colourTileGrid = this.colourTileGrid,
-			grid = null,
-			gridRow = null,
-			tileGrid = null,
-			tileGridRow = null,
+			/** @type {Array<Uint32Array>} */ colourGrid32 = this.colourGrid32,
+			/** @type {Uint32Array} */ colourGridRow = null,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Array<Uint16Array>} */ grid = null,
+			/** @type {Uint16Array} */ gridRow = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Uint16Array} */ tileGridRow = null,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ b = 0,
@@ -33351,18 +33355,18 @@
 		var	/** @type {number} */ h = 0,
 			/** @type {number} */ cr = 0,
 			/** @type {number} */ nextCell = 0,
-			colourGrid16 = this.colourGrid16,
+			/** @type {Array<Uint16Array>} */ colourGrid16 = this.colourGrid16,
 			/** @type {number} */ value16 = 0,
-			colourGridRow16 = null,
-			colourTileRow = null,
-			colourTileHistoryRow = null,
-			colourTileHistoryGrid = this.colourTileHistoryGrid,
-			colourTileGrid = this.colourTileGrid,
-			colourLookup = this.colourLookup,
-			grid = null,
-			gridRow = null,
-			tileGrid = null,
-			tileGridRow = null,
+			/** @type {Uint16Array} */ colourGridRow16 = null,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Uint16Array} */ colourLookup = this.colourLookup,
+			/** @type {Array<Uint16Array>} */ grid = null,
+			/** @type {Uint16Array} */ gridRow = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Uint16Array} */ tileGridRow = null,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ b = 0,
@@ -33530,18 +33534,18 @@
 		var	/** @type {number} */ h = 0,
 			/** @type {number} */ cr = 0,
 			/** @type {number} */ nextCell = 0,
-			colourGrid16 = this.colourGrid16,
+			/** @type {Array<Uint16Array>} */ colourGrid16 = this.colourGrid16,
 			/** @type {number} */ value16 = 0,
-			colourGridRow16 = null,
-			colourTileRow = null,
-			colourTileHistoryRow = null,
-			colourTileHistoryGrid = this.colourTileHistoryGrid,
-			colourTileGrid = this.colourTileGrid,
-			colourLookup = this.colourLookup,
-			grid = null,
-			gridRow = null,
-			tileGrid = null,
-			tileGridRow = null,
+			/** @type {Uint16Array} */ colourGridRow16 = null,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Uint16Array} */ colourLookup = this.colourLookup,
+			/** @type {Array<Uint16Array>} */ grid = null,
+			/** @type {Uint16Array} */gridRow = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Uint16Array} */tileGridRow = null,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ b = 0,
@@ -34259,7 +34263,7 @@
 	};
 
 	// draw paste box
-	Life.prototype.drawPasteWithCells = function(view, /** @type {number} */ mouseCellX, /** @type {number} */ mouseCellY, /** @type {number} */ position, /** @type {string} */ colour) {
+	Life.prototype.drawPasteWithCells = function(/** @type {View} */ view, /** @type {number} */ mouseCellX, /** @type {number} */ mouseCellY, /** @type {number} */ position, /** @type {string} */ colour) {
 		var	/** @type {number} */ width = view.pasteWidth,
 			/** @type {number} */ height = view.pasteHeight,
 			/** @type {number} */ x = 0,

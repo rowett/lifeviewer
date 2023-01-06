@@ -119,7 +119,7 @@
 	};
 
 	// set type and range
-	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood, /** @type {number} */ neighbourCount, /** @type {boolean} */ isTriangular, /** @type {Int8Array} */ weightedNeighbourhood, /** @type {Uint8Array} */ weightedStates, /** @type {number} */ cornerRange, /** @type {number} */ edgeRange) {
+	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood, /** @type {number} */ neighbourCount, /** @type {boolean} */ isTriangular, /** @type {Array<number>} */ weightedNeighbourhood, /** @type {Array<number>} */ weightedStates, /** @type {number} */ cornerRange, /** @type {number} */ edgeRange) {
 		// compute widest width
 		var	/** @const {number} */ width = range * 2 + 1,
 			/** @const {number} */ r2 = range * range,

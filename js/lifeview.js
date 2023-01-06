@@ -678,7 +678,7 @@
 		/** @type {number} */ this.startFromGens = -1;
 
 		// pattern state names
-		this.stateNames = [];
+		/** @type {Array<string>} */ this.stateNames = [];
 
 		// whether starting playback pauses others
 		/** @type {boolean} */ this.exclusivePlayback = false;
@@ -699,7 +699,7 @@
 		/** @type {boolean} */ this.needsComplete = false;
 
 		// pattern manager
-		this.manager = new PatternManager();
+		/** @type {PatternManager} */ this.manager = new PatternManager();
 
 		// whether to identify quickly (no Mod calculation)
 		/** @type {boolean} */ this.identifyFast = false;
@@ -759,33 +759,32 @@
 		/** @type {boolean} */ this.identify = false;
 
 		// labels for identify results
-		this.identifyBannerLabel = null;
-		this.identifyTypeLabel = null;
-		this.identifyCellsLabel = null;
-		this.identifyBoxLabel = null;
-		this.identifyDirectionLabel = null;
-		this.identifyPeriodLabel = null;
-		this.identifySlopeLabel = null;
-		this.identifySpeedLabel = null;
-		this.identifyHeatLabel = null;
-		this.identifyVolatilityLabel = null;
-		this.identifyModLabel = null;
-		this.identifyActiveLabel = null;
-		this.identifyTemperatureLabel = null;
+		/** @type {MenuItem} */ this.identifyBannerLabel = null;
+		/** @type {MenuItem} */ this.identifyTypeLabel = null;
+		/** @type {MenuItem} */ this.identifyCellsLabel = null;
+		/** @type {MenuItem} */ this.identifyBoxLabel = null;
+		/** @type {MenuItem} */ this.identifyDirectionLabel = null;
+		/** @type {MenuItem} */ this.identifyPeriodLabel = null;
+		/** @type {MenuItem} */ this.identifySlopeLabel = null;
+		/** @type {MenuItem} */ this.identifySpeedLabel = null;
+		/** @type {MenuItem} */ this.identifyHeatLabel = null;
+		/** @type {MenuItem} */ this.identifyVolatilityLabel = null;
+		/** @type {MenuItem} */ this.identifyModLabel = null;
+		/** @type {MenuItem} */ this.identifyActiveLabel = null;
+		/** @type {MenuItem} */ this.identifyTemperatureLabel = null;
 
 		// labels for identify result values
-		this.identifyActiveLabel = null;
-		this.identifyTypeValueLabel = null;
-		this.identifyCellsValueLabel = null;
-		this.identifyBoxValueLabel = null;
-		this.identifyDirectionValueLabel = null;
-		this.identifyPeriodValueLabel = null;
-		this.identifySlopeValueLabel = null;
-		this.identifySpeedValueLabel = null;
-		this.identifyHeatValueLabel = null;
-		this.identifyModValueLabel = null;
-		this.identifyActiveValueLabel = null;
-		this.identifyTemperatureValueLabel = null;
+		/** @type {MenuItem} */ this.identifyTypeValueLabel = null;
+		/** @type {MenuItem} */ this.identifyCellsValueLabel = null;
+		/** @type {MenuItem} */ this.identifyBoxValueLabel = null;
+		/** @type {MenuItem} */ this.identifyDirectionValueLabel = null;
+		/** @type {MenuItem} */ this.identifyPeriodValueLabel = null;
+		/** @type {MenuItem} */ this.identifySlopeValueLabel = null;
+		/** @type {MenuItem} */ this.identifySpeedValueLabel = null;
+		/** @type {MenuItem} */ this.identifyHeatValueLabel = null;
+		/** @type {MenuItem} */ this.identifyModValueLabel = null;
+		/** @type {MenuItem} */ this.identifyActiveValueLabel = null;
+		/** @type {MenuItem} */ this.identifyTemperatureValueLabel = null;
 
 		// window zoom for high DPI devices
 		/** @type {number} */ this.windowZoom = 1;
@@ -864,7 +863,7 @@
 		/** @type {boolean} */ this.syncNotified = false;
 
 		// paste buffers
-		this.pasteBuffers = [];
+		/** @type {Array} */ this.pasteBuffers = [];
 		for (i = 0; i < 10; i += 1) {
 			this.pasteBuffers[i] = null;
 		}
@@ -889,22 +888,22 @@
 		/** @type {boolean} */ this.afterSelectAction = false;
 
 		// current paste buffer cells
-		this.pasteBuffer = null;
+		/** @type {Uint8Array} */ this.pasteBuffer = null;
 
 		// whether paste is happening
 		/** @type {boolean} */ this.isPasting = false;
 
 		// evolve paste selection box
-		this.evolveBox = new BoundingBox(0, 0, 0, 0);
+		/** @type {BoundingBox} */ this.evolveBox = new BoundingBox(0, 0, 0, 0);
 
 		// selection box
-		this.selectionBox = new BoundingBox(0, 0, 0, 0);
+		/** @type {BoundingBox} */ this.selectionBox = new BoundingBox(0, 0, 0, 0);
 	
 		// middle coordinate selection box
-		this.middleBox = new BoundingBox(0, 0, 0, 0);
+		/** @type {BoundingBox} */ this.middleBox = new BoundingBox(0, 0, 0, 0);
 
 		// random number generator
-		this.randGen = new Random();
+		/** @type {Random} */ this.randGen = new Random();
 
 		// initialise random seed
 		this.randGen.init(Date.now().toString());
@@ -926,7 +925,7 @@
 		/** @type {number} */ this.pasteModeForUI = 2;
 
 		// edit list for undo/redo
-		this.editList = [];
+		/** @type {Array} */ this.editList = [];
 
 		// edit number for undo/redo
 		/** @type {number} */ this.editNum = 0;
@@ -935,7 +934,7 @@
 		/** @type {number} */ this.numEdits = 0;
 
 		// current edit
-		this.currentEdit = [];
+		/** @type {Array} */ this.currentEdit = [];
 
 		// current edit index
 		/** @type {number} */ this.currentEditIndex = 0;
@@ -945,7 +944,7 @@
 		/** @type {number} */ this.stepIndex = 0;
 
 		// list of transformations
-		this.transforms = [];
+		/** @type {Array} */ this.transforms = [];
 		/** @const {Array<number>} */ this.transforms[ViewConstants.transIdentity] = [1, 0, 0, 1];
 		/** @const {Array<number>} */ this.transforms[ViewConstants.transFlip] = [-1, 0, 0, -1];
 		/** @const {Array<number>} */ this.transforms[ViewConstants.transFlipX] = [-1, 0, 0, 1];
@@ -956,16 +955,16 @@
 		/** @const {Array<number>} */ this.transforms[ViewConstants.transRotateCCW] = [0, 1, -1, 0];
 
 		// list of named recipes
-		this.recipeList = [];
+		/** @type {Array} */ this.recipeList = [];
 
 		// recipe delta list
-		this.recipeDelta = [];
+		/** @type {Array<number>} */ this.recipeDelta = [];
 
 		// list of named rle snippets
-		this.rleList = [];
+		/** @type {Array} */ this.rleList = [];
 
 		// list of pastes to perform
-		this.pasteList = [];
+		/** @type {Array} */ this.pasteList = [];
 
 		// rle paste mode
 		/** @type {number} */ this.pasteMode = ViewConstants.pasteModeOr;
@@ -977,7 +976,7 @@
 		/** @type {number} */ this.pasteEnd = -1;
 
 		// rle delta list
-		this.pasteDelta = [];
+		/** @type {Array<number>} */ this.pasteDelta = [];
 
 		// rle paste modulus
 		/** @type {number} */ this.pasteEvery = 0;
@@ -1008,7 +1007,7 @@
 		/** @type {boolean} */ this.isEdge = false;
 
 		// icon manager
-		this.iconManager = null;
+		/** @type {IconManager} */ this.iconManager = null;
 
 		// current UI background RGB
 		/** @type {number} */ this.uiBackgroundRGB = 0;
@@ -1080,7 +1079,7 @@
 		/** @type {number} */ this.fixedPointCounter = 0;
 
 		// elapsed time at each generation
-		this.elapsedTimes = null;
+		/** @type {Float32Array} */ this.elapsedTimes = null;
 
 		// x and y offset of pattern
 		/** @type {number} */ this.panX = 0;
@@ -1275,37 +1274,37 @@
 		/** @type {boolean} */ this.state1Fit = false;
 
 		// custom text message colour
-		this.customTextColour = null;
+		/** @type {Array<number>} */ this.customTextColour = null;
 
 		// custom error message colour
-		this.customErrorColour = null;
+		/** @type {Array<number>} */ this.customErrorColour = null;
 
 		// error font colour
-		this.errorsFontColour = ViewConstants.errorsFontColour;
+		/** @type {string} */ this.errorsFontColour = ViewConstants.errorsFontColour;
 
 		// custom help message colour
-		this.customHelpColour = null;
+		/** @type {Array<number>} */ this.customHelpColour = null;
 
 		// help font colour
-		this.helpFontColour = ViewConstants.helpFontColour;
+		/** @type {string} */ this.helpFontColour = ViewConstants.helpFontColour;
 
 		// boundary colour (for help display)
-		this.customBoundaryColour = [96, 96, 96];
+		/** @type {Array<number>} */ this.customBoundaryColour = [96, 96, 96];
 
 		// bounded colour
-		this.customBoundedColour = [128, 128, 128];
+		/** @type {Array<number>} */ this.customBoundedColour = [128, 128, 128];
 
 		// select colour
-		this.customSelectColour = [0, 255, 0];
+		/** @type {Array<number>} */ this.customSelectColour = [0, 255, 0];
 
 		// paste colour
-		this.customPasteColour = [255, 0, 0];
+		/** @type {Array<number>} */ this.customPasteColour = [255, 0, 0];
 
 		// advance colour
-		this.customAdvanceColour = [255, 255, 0];
+		/** @type {Array<number>} */ this.customAdvanceColour = [255, 255, 0];
 
 		// selected cells colour
-		this.customSelectedCellsColour = [255, 128, 0];
+		/** @type {Array<number>} */ this.customSelectedCellsColour = [255, 128, 0];
 
 		// window title element
 		this.titleElement = null;
@@ -1326,7 +1325,7 @@
 		/** @type {boolean} */ this.starsOn = false;
 
 		// create and initialise stars
-		this.starField = null;
+		/** @type {Stars} */ this.starField = null;
 
 		// whether viewer is in popup window
 		/** @type {boolean} */ this.isInPopup = false;
@@ -1397,7 +1396,7 @@
 		/** @type {number} */ this.patternUsedStates = 0;
 
 		// number of cells in each state
-		this.patternStateCount = null;
+		/** @type {Uint32Array} */ this.patternStateCount = null;
 
 		// pattern format
 		/** @type{string} */ this.patternFormat = "";
@@ -1418,7 +1417,7 @@
 		/** @type {boolean} */ this.customGridMajor = false;
 
 		// custom theme value
-		this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+		/** @type {Array<number>} */ this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
 		// custom grid colour
 		/** @type {number} */ this.customGridColour = -1;
@@ -1427,13 +1426,13 @@
 		/** @type {number} */ this.customGridMajorColour = -1;
 
 		// custom label colour
-		this.customLabelColour = ViewConstants.labelFontColour;
+		/** @type {string} */ this.customLabelColour = ViewConstants.labelFontColour;
 
 		// custom arrow colour
-		this.customArrowColour = ViewConstants.arrowColour;
+		/** @type {string} */ this.customArrowColour = ViewConstants.arrowColour;
 
 		// custom polygon colour
-		this.customPolygonColour = ViewConstants.polyColour;
+		/** @type {string} */ this.customPolygonColour = ViewConstants.polyColour;
 
 		// colour set used
 		/** @type {string} */ this.colourSetName = "";
@@ -1527,7 +1526,7 @@
 		/** @type {boolean} */ this.hardReset = false;
 
 		// life engine
-		this.engine = null;
+		/** @type {Life} */ this.engine = null;
 
 		// elapsed time
 		/** @type {number} */ this.elapsedTime = 0;
@@ -1571,460 +1570,460 @@
 		/** @type {boolean} */ this.statsOn = false;
 
 		// actual step
-		this.stepLabel = null;
+		/** @type {MenuItem} */ this.stepLabel = null;
 
 		// undo button
-		this.undoButton = null;
+		/** @type {MenuItem} */ this.undoButton = null;
 
 		// redo button
-		this.redoButton = null;
+		/** @type {MenuItem} */ this.redoButton = null;
 
 		// copy sync toggle
-		this.copySyncToggle = null;
+		/** @type {MenuItem} */ this.copySyncToggle = null;
 
 		// navigation menu toggle
-		this.navToggle = null;
+		/** @type {MenuItem} */ this.navToggle = null;
 
 		// theme button
-		this.themeButton = null;
+		/** @type {MenuItem} */ this.themeButton = null;
 
 		// throttle toggle
-		this.throttleToggle = null;
+		/** @type {MenuItem} */ this.throttleToggle = null;
 
 		// show lag toggle
-		this.showLagToggle = null;
+		/** @type {MenuItem} */ this.showLagToggle = null;
 
 		// theme selections
-		this.themeSelections = [];
+		/** @type {Array} */ this.themeSelections = [];
 
 		// theme labels
-		this.themeDefaultLabel = null;
-		this.themeClassicLabel = null;
-		this.themeProgramLabel = null;
-		this.themeDebugLabel = null;
+		/** @type {MenuItem} */ this.themeDefaultLabel = null;
+		/** @type {MenuItem} */ this.themeClassicLabel = null;
+		/** @type {MenuItem} */ this.themeProgramLabel = null;
+		/** @type {MenuItem} */ this.themeDebugLabel = null;
 
 		// theme section label
-		this.themeSectionLabel = null;
+		/** @type {MenuItem} */ this.themeSectionLabel = null;
 
 		// angle item
-		this.angleItem = null;
+		/** @type {MenuItem} */ this.angleItem = null;
 
 		// tilt item
-		this.tiltItem = null;
+		/** @type {MenuItem} */ this.tiltItem = null;
 
 		// zoom item
-		this.zoomItem = null;
+		/** @type {MenuItem} */ this.zoomItem = null;
 
 		// depth item
-		this.depthItem = null;
+		/** @type {MenuItem} */ this.depthItem = null;
 
 		// layers item
-		this.layersItem = null;
+		/** @type {MenuItem} */ this.layersItem = null;
 
 		// generation button
-		this.genToggle = null;
+		/** @type {MenuItem} */ this.genToggle = null;
 
 		// relative generation toggle
-		this.relativeToggle = null;
+		/** @type {MenuItem} */ this.relativeToggle = null;
 
 		// quality rendering toggle
-		this.qualityToggle = null;
+		/** @type {MenuItem} */ this.qualityToggle = null;
 
 		// reason label
-		this.reasonLabel = null;
+		/** @type {MenuItem} */ this.reasonLabel = null;
 
 		// opacity item
-		this.opacityItem = null;
+		/** @type {MenuItem} */ this.opacityItem = null;
 
 		// lines toggle
-		this.linesToggle = null;
+		/** @type {MenuItem} */ this.linesToggle = null;
 
 		// infobar label
-		this.infoBarLabelXLeft = null;
-		this.infoBarLabelXValue = null;
-		this.infoBarLabelYLeft = null;
-		this.infoBarLabelYValue = null;
-		this.infoBarLabelAngleLeft = null;
-		this.infoBarLabelAngleValue = null;
-		this.infoBarLabelCenter = null;
-		this.infoBarLabelERight = null;
-		this.infoBarLabelSRight = null;
-		this.infoBarLabelWRight = null;
-		this.infoBarLabelNRight = null;
-		this.infoBarLabelEValueRight = null;
-		this.infoBarLabelSValueRight = null;
-		this.infoBarLabelWValueRight = null;
-		this.infoBarLabelNValueRight = null;
+		/** @type {MenuItem} */ this.infoBarLabelXLeft = null;
+		/** @type {MenuItem} */ this.infoBarLabelXValue = null;
+		/** @type {MenuItem} */ this.infoBarLabelYLeft = null;
+		/** @type {MenuItem} */ this.infoBarLabelYValue = null;
+		/** @type {MenuItem} */ this.infoBarLabelAngleLeft = null;
+		/** @type {MenuItem} */ this.infoBarLabelAngleValue = null;
+		/** @type {MenuItem} */ this.infoBarLabelCenter = null;
+		/** @type {MenuItem} */ this.infoBarLabelERight = null;
+		/** @type {MenuItem} */ this.infoBarLabelSRight = null;
+		/** @type {MenuItem} */ this.infoBarLabelWRight = null;
+		/** @type {MenuItem} */ this.infoBarLabelNRight = null;
+		/** @type {MenuItem} */ this.infoBarLabelEValueRight = null;
+		/** @type {MenuItem} */ this.infoBarLabelSValueRight = null;
+		/** @type {MenuItem} */ this.infoBarLabelWValueRight = null;
+		/** @type {MenuItem} */ this.infoBarLabelNValueRight = null;
 
 		// autostart indicator
-		this.autostartIndicator = null;
+		/** @type {MenuItem} */ this.autostartIndicator = null;
 
 		// waypoints indicator
-		this.waypointsIndicator = null;
+		/** @type {MenuItem} */ this.waypointsIndicator = null;
 
 		// loop indicator
-		this.loopIndicator = null;
+		/** @type {MenuItem} */ this.loopIndicator = null;
 
 		// stop indicator
-		this.stopIndicator = null;
+		/** @type {MenuItem} */ this.stopIndicator = null;
 
 		// done button for bug confirmation
-		this.doneButton = null;
+		/** @type {MenuItem} */ this.doneButton = null;
 
 		// help button
-		this.helpToggle = null;
+		/** @type {MenuItem} */ this.helpToggle = null;
 
 		// topics button
-		this.topicsButton = null;
+		/** @type {MenuItem} */ this.topicsButton = null;
 
 		// spacer to left of states slider
-		this.statesSpacer = null;
+		/** @type {MenuItem} */ this.statesSpacer = null;
 
 		// states slider
-		this.statesSlider = null;
+		/** @type {MenuItem} */ this.statesSlider = null;
 
 		// sections button
-		this.sectionsButton = null;
+		/** @type {MenuItem} */ this.sectionsButton = null;
 
 		// help topic buttons
-		this.helpKeysButton = null;
-		this.helpScriptsButton = null;
-		this.helpInfoButton = null;
-		this.helpThemesButton = null;
-		this.helpColoursButton = null;
-		this.helpAliasesButton = null;
-		this.helpMemoryButton = null;
-		this.helpAnnotationsButton = null;
+		/** @type {MenuItem} */ this.helpKeysButton = null;
+		/** @type {MenuItem} */ this.helpScriptsButton = null;
+		/** @type {MenuItem} */ this.helpInfoButton = null;
+		/** @type {MenuItem} */ this.helpThemesButton = null;
+		/** @type {MenuItem} */ this.helpColoursButton = null;
+		/** @type {MenuItem} */ this.helpAliasesButton = null;
+		/** @type {MenuItem} */ this.helpMemoryButton = null;
+		/** @type {MenuItem} */ this.helpAnnotationsButton = null;
 
 		// help section list
-		this.helpSectionList = null;
+		/** @type {MenuItem} */ this.helpSectionList = null;
 
 		// autofit button
-		this.autoFitToggle = null;
+		/** @type {MenuItem} */ this.autoFitToggle = null;
 
 		// grid toggle
-		this.gridToggle = null;
+		/** @type {MenuItem} */ this.gridToggle = null;
 
 		// library toggle
-		this.libraryToggle = null;
+		/** @type {MenuItem} */ this.libraryToggle = null;
 
 		// clipboard list
-		this.clipboardList = null;
+		/** @type {MenuItem} */ this.clipboardList = null;
 
 		// select all button
-		this.selectAllButton = null;
+		/** @type {MenuItem} */ this.selectAllButton = null;
 
 		// clear selection button
-		this.clearSelectionButton = null;
+		/** @type {MenuItem} */ this.clearSelectionButton = null;
 
 		// clear outside button
-		this.clearOutsideButton = null;
+		/** @type {MenuItem} */ this.clearOutsideButton = null;
 
 		// clear [R]History or [R]Super button
-		this.clearRHistoryButton = null;
+		/** @type {MenuItem} */ this.clearRHistoryButton = null;
 
 		// auto-shrink toggle
-		this.autoShrinkToggle = null;
+		/** @type {MenuItem} */ this.autoShrinkToggle = null;
 
 		// auto-shrink button
-		this.autoShrinkButton = null;
+		/** @type {MenuItem} */ this.autoShrinkButton = null;
 
 		// reverse direction button
-		this.directionButton = null;
+		/** @type {MenuItem} */ this.directionButton = null;
 
 		// speed 1x button
-		this.speed1Button = null;
+		/** @type {MenuItem} */ this.speed1Button = null;
 
 		// fit button
-		this.fitButton = null;
+		/** @type {MenuItem} */ this.fitButton = null;
 
 		// shrink button
-		this.shrinkButton = null;
+		/** @type {MenuItem} */ this.shrinkButton = null;
 
 		// esc button
-		this.escButton = null;
+		/** @type {MenuItem} */ this.escButton = null;
 
 		// label toggle button
-		this.labelButton = null;
+		/** @type {MenuItem} */ this.labelButton = null;
 
 		// kill gliders toggle button
-		this.killButton = null;
+		/** @type {MenuItem} */ this.killButton = null;
 
 		// previous POI button
-		this.prevPOIButton = null;
+		/** @type {MenuItem} */ this.prevPOIButton = null;
 
 		// next POI button
-		this.nextPOIButton = null;
+		/** @type {MenuItem} */ this.nextPOIButton = null;
 
 		// autohide toggle button
-		this.autoHideButton = null;
+		/** @type {MenuItem} */ this.autoHideButton = null;
 
 		// autogrid toggle button
-		this.autoGridButton = null;
+		/** @type {MenuItem} */ this.autoGridButton = null;
 
 		// alternating gridlines toggle button
-		this.altGridButton = null;
+		/** @type {MenuItem} */ this.altGridButton = null;
 
 		// rainbow mode toggle button
-		this.rainbowButton = null;
+		/** @type {MenuItem} */ this.rainbowButton = null;
 
 		// hex cell toggle button
-		this.hexCellButton = null;
+		/** @type {MenuItem} */ this.hexCellButton = null;
 
 		// integer zoom button
-		this.integerZoomButton = null;
+		/** @type {MenuItem} */ this.integerZoomButton = null;
 
 		// center pattern button
-		this.centerPatternButton = null;
+		/** @type {MenuItem} */ this.centerPatternButton = null;
 
 		// cell borders toggle button
-		this.bordersButton = null;
+		/** @type {MenuItem} */ this.bordersButton = null;
 
 		// graph toggle button
-		this.graphButton = null;
+		/** @type {MenuItem} */ this.graphButton = null;
 
 		// close button for graph
-		this.graphCloseButton = null;
+		/** @type {MenuItem} */ this.graphCloseButton = null;
 
 		// close button for identify
-		this.identifyCloseButton = null;
+		/** @type {MenuItem} */ this.identifyCloseButton = null;
 
 		// strict volatility toggle
-		this.identifyStrictToggle = null;
+		/** @type {MenuItem} */ this.identifyStrictToggle = null;
 
 		// save button for identify cell map
-		this.identifySaveCellMapButton = null;
+		/** @type {MenuItem} */ this.identifySaveCellMapButton = null;
 
 		// infobar button
-		this.infoBarButton = null;
+		/** @type {MenuItem} */ this.infoBarButton = null;
 
 		// info button
-		this.infoButton = null;
+		/** @type {MenuItem} */ this.infoButton = null;
 
 		// rule button
-		this.ruleButton = null;
+		/** @type {MenuItem} */ this.ruleButton = null;
 
 		// new button
-		this.newButton = null;
+		/** @type {MenuItem} */ this.newButton = null;
 
 		// save button
-		this.saveButton = null;
+		/** @type {MenuItem} */ this.saveButton = null;
 
 		// load button
-		this.loadButton = null;
+		/** @type {MenuItem} */ this.loadButton = null;
 
 		// randomize pattern and rule button
-		this.randomizeButton = null;
+		/** @type {MenuItem} */ this.randomizeButton = null;
 
 		// ranomize pattern and keep rule button
-		this.randomizePatternButton = null;
+		/** @type {MenuItem} */ this.randomizePatternButton = null;
 
 		// identify button
-		this.identifyButton = null;
+		/** @type {MenuItem} */ this.identifyButton = null;
 
 		// fast identify button
-		this.fastIdentifyButton = null;
+		/** @type {MenuItem} */ this.fastIdentifyButton = null;
 
 		// save image button
-		this.saveImageButton = null;
+		/** @type {MenuItem} */ this.saveImageButton = null;
 
 		// save graph image button
-		this.saveGraphButton = null;
+		/** @type {MenuItem} */ this.saveGraphButton = null;
 
 		// go to generation button
-		this.goToGenButton = null;
+		/** @type {MenuItem} */ this.goToGenButton = null;
 		
 		// open clipboard button
-		this.openClipboardButton = null;
+		/** @type {MenuItem} */ this.openClipboardButton = null;
 
 		// copy with comments button
-		this.copyWithCommentsButton = null;
+		/** @type {MenuItem} */ this.copyWithCommentsButton = null;
 
 		// paste to selection button
-		this.pasteToSelectionButton = null;
+		/** @type {MenuItem} */ this.pasteToSelectionButton = null;
 
 		// copy original pattern button
-		this.copyOriginalButton = null;
+		/** @type {MenuItem} */ this.copyOriginalButton = null;
 
 		// copy rule button
-		this.copyRuleButton = null;
+		/** @type {MenuItem} */ this.copyRuleButton = null;
 
 		// copy neighbourhood button
-		this.copyNeighbourhoodButton = null;
+		/** @type {MenuItem} */ this.copyNeighbourhoodButton = null;
 
 		// back button
-		this.backButton = null;
+		/** @type {MenuItem} */ this.backButton = null;
 
 		// cancel button
-		this.cancelButton = null;
+		/** @type {MenuItem} */ this.cancelButton = null;
 
 		// pattern button
-		this.patternButton = null;
+		/** @type {MenuItem} */ this.patternButton = null;
 
 		// clipboard button
-		this.clipboardButton = null;
+		/** @type {MenuItem} */ this.clipboardButton = null;
 
 		// display button
-		this.displayButton = null;
+		/** @type {MenuItem} */ this.displayButton = null;
 
 		// playback button
-		this.playBackButton = null;
+		/** @type {MenuItem} */ this.playBackButton = null;
 
 		// major button
-		this.majorButton = null;
+		/** @type {MenuItem} */ this.majorButton = null;
 
 		// history fit button
-		this.historyFitButton = null;
+		/** @type {MenuItem} */ this.historyFitButton = null;
 
 		// stars button
-		this.starsButton = null;
+		/** @type {MenuItem} */ this.starsButton = null;
 
 		// previous universe button
-		this.prevUniverseButton = null;
+		/** @type {MenuItem} */ this.prevUniverseButton = null;
 
 		// next universe button
-		this.nextUniverseButton = null;
+		/** @type {MenuItem} */ this.nextUniverseButton = null;
 
 		// stop all viewers button
-		this.stopAllButton = null;
+		/** @type {MenuItem} */ this.stopAllButton = null;
 
 		// stop other viewers button
-		this.stopOthersButton = null;
+		/** @type {MenuItem} */ this.stopOthersButton = null;
 
 		// reset all viewers button
-		this.resetAllButton = null;
+		/** @type {MenuItem} */ this.resetAllButton = null;
 
 		// snap to nearest 45 angle button
-		this.snapToNearest45Button = null;
+		/** @type {MenuItem} */ this.snapToNearest45Button = null;
 
 		// timing button
-		this.fpsButton = null;
+		/** @type {MenuItem} */ this.fpsButton = null;
 
 		// timing details button
-		this.timingDetailButton = null;
+		/** @type {MenuItem} */ this.timingDetailButton = null;
 
 		// save view button
-		this.saveViewButton = null;
+		/** @type {MenuItem} */ this.saveViewButton = null;
 
 		// restore view button
-		this.restoreViewButton = null;
+		/** @type {MenuItem} */ this.restoreViewButton = null;
 
 		// show last identify results button
-		this.lastIdentifyResultsButton = null;
+		/** @type {MenuItem} */ this.lastIdentifyResultsButton = null;
 
 		// clear drawing state button
-		this.clearDrawingStateButton = null;
+		/** @type {MenuItem} */ this.clearDrawingStateButton = null;
 
 		// generation label
-		this.genLabel = null;
+		/** @type {MenuItem} */ this.genLabel = null;
 
 		// generation value label
-		this.genValueLabel = null;
+		/** @type {MenuItem} */ this.genValueLabel = null;
 
 		// time label
-		this.timeLabel = null;
+		/** @type {MenuItem} */ this.timeLabel = null;
 
 		// elapsed time label
-		this.elapsedTimeLabel = null;
+		/** @type {MenuItem} */ this.elapsedTimeLabel = null;
 
 		// xy label
-		this.xyLabel = null;
+		/** @type {MenuItem} */ this.xyLabel = null;
 
 		// selection size label
-		this.selSizeLabel = null;
+		/** @type {MenuItem} */ this.selSizeLabel = null;
 
 		// population label and value
-		this.popLabel = null;
-		this.popValue = null;
+		/** @type {MenuItem} */ this.popLabel = null;
+		/** @type {MenuItem} */ this.popValue = null;
 
 		// births label and value
-		this.birthsLabel = null;
-		this.birthsValue = null;
+		/** @type {MenuItem} */ this.birthsLabel = null;
+		/** @type {MenuItem} */ this.birthsValue = null;
 
 		// deaths label and value
-		this.deathsLabel = null;
-		this.deathsValue = null;
+		/** @type {MenuItem} */ this.deathsLabel = null;
+		/** @type {MenuItem} */ this.deathsValue = null;
 
 		// progress bar
-		this.progressBar = null;
+		/** @type {MenuItem} */ this.progressBar = null;
 
 		// play list (play/pause/reset/step back buttons)
-		this.playList = null;
+		/** @type {MenuItem} */ this.playList = null;
 
 		// mode list (draw/select/pan buttons)
-		this.modeList = null;
+		/** @type {MenuItem} */ this.modeList = null;
 
 		// paste mode list (or/copy/xor/and)
-		this.pasteModeList = null;
+		/** @type {MenuItem} */ this.pasteModeList = null;
 
 		// random button
-		this.randomButton = null;
+		/** @type {MenuItem} */ this.randomButton = null;
 
 		// random 2-state button
-		this.random2Button = null;
+		/** @type {MenuItem} */ this.random2Button = null;
 
 		// random density slider
-		this.randomItem = null;
+		/** @type {MenuItem} */ this.randomItem = null;
 
 		// paste position slider
-		this.pastePositionItem = null;
+		/** @type {MenuItem} */ this.pastePositionItem = null;
 
 		// cut button
-		this.cutButton = null;
+		/** @type {MenuItem} */ this.cutButton = null;
 
 		// copy button
-		this.copyButton = null;
+		/** @type {MenuItem} */ this.copyButton = null;
 
 		// paste button
-		this.pasteButton = null;
+		/** @type {MenuItem} */ this.pasteButton = null;
 
 		// flip X button
-		this.flipXButton = null;
+		/** @type {MenuItem} */ this.flipXButton = null;
 
 		// flip Y button
-		this.flipYButton = null;
+		/** @type {MenuItem} */ this.flipYButton = null;
 
 		// rotate CW button
-		this.rotateCWButton = null;
+		/** @type {MenuItem} */ this.rotateCWButton = null;
 
 		// rotate CCW button
-		this.rotateCCWButton = null;
+		/** @type {MenuItem} */ this.rotateCCWButton = null;
 
 		// nudge left button
-		this.nudgeLeftButton = null;
+		/** @type {MenuItem} */ this.nudgeLeftButton = null;
 
 		// nudge right button
-		this.nudgeRightButton = null;
+		/** @type {MenuItem} */ this.nudgeRightButton = null;
 
 		// nudge up button
-		this.nudgeUpButton = null;
+		/** @type {MenuItem} */ this.nudgeUpButton = null;
 
 		// nudge down button
-		this.nudgeDownButton = null;
+		/** @type {MenuItem} */ this.nudgeDownButton = null;
 
 		// cancel selection button
-		this.cancelSelectionButton = null;
+		/** @type {MenuItem} */ this.cancelSelectionButton = null;
 
 		// invert selection button
-		this.invertSelectionButton = null;
+		/** @type {MenuItem} */ this.invertSelectionButton = null;
 
 		// pick button
-		this.pickToggle = null;
+		/** @type {MenuItem} */ this.pickToggle = null;
 
 		// pause while drawing button
-		this.pausePlaybackToggle = null;
+		/** @type {MenuItem} */ this.pausePlaybackToggle = null;
 
 		// smart drawing button
-		this.smartToggle = null;
+		/** @type {MenuItem} */ this.smartToggle = null;
 
 		// states button
-		this.statesToggle = null;
+		/** @type {MenuItem} */ this.statesToggle = null;
 
 		// states list for drawing
-		this.stateList = null;
+		/** @type {MenuItem} */ this.stateList = null;
 
 		// states colours list for drawing
-		this.stateColsList = null;
+		/** @type {MenuItem} */ this.stateColsList = null;
 
 		// current steps before next view theme change
 		/** @type {number} */ this.viewSteps = 30;
@@ -2037,22 +2036,22 @@
 		/** @type {number} */ this.wheelDelta = 0;
 
 		// rule label
-		this.ruleLabel = null;
+		/** @type {MenuItem} */ this.ruleLabel = null;
 
 		// main canvas
 		this.mainCanvas = null;
 
 		// main context
-		this.mainContext = null;
+		/** @type {CanvasRenderingContext2D} */ this.mainContext = null;
 
 		// generation speed
 		/** @type {number} */ this.genSpeed = 60;
 
 		// menu manager
-		this.menuManager = null;
+		/** @type {MenuManager} */ this.menuManager = null;
 
 		// view menu
-		this.viewMenu = null;
+		/** @type {MenuList} */ this.viewMenu = null;
 
 		// target position
 		/** @type {number} */ this.targetX = 0;
@@ -2128,10 +2127,10 @@
 	// create clipboard tooltips
 	View.prototype.createClipboardTooltips = function() {
 		var	/** @type {number} */ i = 0,
-			buffer = this.pasteBuffers,
-			current = this.currentPasteBuffer,
+			/** @type {Array} */ buffer = this.pasteBuffers,
+			/** @type {number} */ current = this.currentPasteBuffer,
 			/** @type {string} */ tip = "",
-			tips = [];
+			/** @type {Array<string>} */ tips = [];
 
 		for (i = 0; i < 10; i += 1) {
 			if (i === current) {
@@ -2163,6 +2162,7 @@
 	};
 
 	// allocate new chunk for undo/redo buffer
+	/** @returns {Int16Array} */
 	View.prototype.allocateChunk = function() {
 		var	/** @type {number} */ chunkSize = 1 << ViewConstants.editChunkPower,
 			/** @type {number} */ chunk = this.currentEditIndex >> ViewConstants.editChunkPower;
@@ -2187,8 +2187,8 @@
 			/** @type {number} */ chunk = i >> chunkPower,
 			/** @type {number} */ chunkSize = 1 << chunkPower,
 			/** @type {number} */ chunkMask = chunkSize - 1,
-			currentEdit = this.currentEdit,
-			currentChunk = null,
+			/** @type {Array} */ currentEdit = this.currentEdit,
+			/** @type {Int16Array} */ currentChunk = null,
 			/** @type {number} */ xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
 			/** @type {number} */ yOff = (this.engine.height >> 1) - (this.patternHeight >> 1),
 			/** @type {number} */ states = this.engine.multiNumStates,
@@ -2321,7 +2321,7 @@
 	};
 
 	// paste raw cells for undo/redo
-	View.prototype.pasteRaw = function(cells, /** @type {boolean} */ reverse) {
+	View.prototype.pasteRaw = function(/** @type {Uint8Array} */ cells, /** @type {boolean} */ reverse) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
@@ -2399,7 +2399,7 @@
 	View.prototype.setUndoGen = function(/** @type {number} */ gen) {
 		var	/** @type {number} */ i = this.editNum - 1,
 			record = null,
-			selBox = this.selectionBox,
+			/** @type {BoundingBox} */ selBox = this.selectionBox,
 			/** @type {boolean} */ found = false;
 
 		// search for undo records at or before specified generation
@@ -2443,7 +2443,7 @@
 	View.prototype.updateUndoToolTips = function() {
 		var	/** @type {number} */ edit = this.editNum,
 			/** @type {number} */ num = this.numEdits,
-			list = this.editList,
+			/** @type {Array} */ list = this.editList,
 			/** @type {number} */ gen = 0,
 			record = null,
 			/** @type {string} */ tooltip = "";
@@ -2512,9 +2512,9 @@
 
 	// compare two selections and return true if they are the same
 	/** @returns {boolean} */
-	View.prototype.compareSelections = function(first) {
+	View.prototype.compareSelections = function(/** @type {BoundingBox} */ first) {
 		var	/** @type {boolean} */ result = false,
-			second = this.isSelection ? this.selectionBox : null;
+			/** @type {BoundingBox} */ second = this.isSelection ? this.selectionBox : null;
 
 		// check if they are both blank
 		if (first === null && second === null) {
@@ -2536,7 +2536,7 @@
 	};
 
 	// add edit record discarding duplicates
-	View.prototype.addEdit = function(/** @type {number} */ counter, editCells, /** @type {string} */ comment, box) {
+	View.prototype.addEdit = function(/** @type {number} */ counter, /** @type {Int16Array} */ editCells, /** @type {string} */ comment, /** @type {BoundingBox} */ box) {
 		var	/** @type {boolean} */ isDuplicate = false,
 			record = null;
 
@@ -2560,9 +2560,9 @@
 	// after edit
 	View.prototype.afterEdit = function(/** @type {string} */ comment) {
 		var	/** @type {number} */ counter = this.engine.counter,
-			editCells = null,
-			box = null,
-			selBox = this.selectionBox,
+			/** @type {Int16Array} */ editCells = null,
+			/** @type {BoundingBox} */ box = null,
+			/** @type {BoundingBox} */ selBox = this.selectionBox,
 			record = null,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
@@ -2629,8 +2629,8 @@
 			/** @type {number} */ counter = me.engine.counter,
 			/** @type {number} */ current = me.editNum,
 			record = null,
-			selBox = me.selectionBox,
-			selection = null,
+			/** @type {BoundingBox} */ selBox = me.selectionBox,
+			/** @type {BoundingBox} */ selection = null,
 			/** @type {number} */ steps = 1,
 			/** @type {boolean} */ multiStep = false;
 
@@ -2728,7 +2728,7 @@
 	View.prototype.redo = function(/** @type {View} */ me) {
 		var	/** @type {number} */ counter = me.engine.counter,
 			record = null,
-			selBox = me.selectionBox,
+			/** @type {BoundingBox} */ selBox = me.selectionBox,
 			/** @type {number} */ steps = 1,
 			/** @type {boolean} */ multiStep = false;
 
@@ -2976,13 +2976,13 @@
 		var	/** @type {Array} */ cells = [],
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
-			trans = this.transforms[transform],
+			/** @type {Array<number>} */ trans = this.transforms[transform],
 			/** @type {number} */ axx = trans[0],
 			/** @type {number} */ axy = trans[1],
 			/** @type {number} */ ayx = trans[2],
 			/** @type {number} */ ayy = trans[3],
-			pattern = new Pattern("rleToCellList", this.manager),
-			patternRow = null,
+			/** @type {Pattern} */ pattern = new Pattern("rleToCellList", this.manager),
+			/** @type {Uint8Array} */ patternRow = null,
 			/** @type {number} */ boxWidth = 0,
 			/** @type {number} */ boxHeight = 0,
 			/** @type {number} */ len = Keywords.randomCellsWord.length,
@@ -3125,10 +3125,10 @@
 
 	// add existing recipe to delta array
 	/** @returns {boolean} */
-	View.prototype.addRecipe = function(/** @type {string} */ name, deltaList) {
+	View.prototype.addRecipe = function(/** @type {string} */ name, /** @type {Array<number>} */ deltaList) {
 		var	/** @type {number} */ i = 0,
 			/** @type {boolean} */ found = false,
-			deltas = null;
+			/** @type {Array} */ deltas = null;
 
 		// lookup the recipe
 		i = 0;
@@ -3154,13 +3154,12 @@
 	};
 
 	// add recipe to named list
-	View.prototype.addNamedRecipe = function(scriptErrors, /** @type {string} */ name, deltaList) {
+	View.prototype.addNamedRecipe = function(/** @type {Array} */ scriptErrors, /** @type {string} */ name, /** @type {Array<number>} */ deltaList) {
 		var	/** @type {number} */ i = 0,
 			/** @type {boolean} */ found = false,
-			deltas = [];
+			/** @type {Array} */ deltas = [];
 
 		// check the name is not a reserved word
-		// @ts-ignore
 		if (ScriptParser.isScriptCommand(name)) {
 			scriptErrors[scriptErrors.length] = [Keywords.recipeWord + " " + name, "name is reserved word"];
 		} else {
@@ -3198,11 +3197,11 @@
 	};
 
 	// add rle to named list
-	View.prototype.addNamedRLE = function(scriptErrors, /** @type {string} */ name, /** @type {string} */ rle, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ transform) {
+	View.prototype.addNamedRLE = function(/** @type {Array} */ scriptErrors, /** @type {string} */ name, /** @type {string} */ rle, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ transform) {
 		// attempt to decode the rle
 		var	/** @type {number} */ i = 0,
 			/** @type {boolean} */ found = false,
-			cells = [];
+			/** @type {Array} */ cells = [];
 		
 		// check the name is not a reserved word
 		// @ts-ignore
@@ -3240,13 +3239,13 @@
 
 	// add rle to paste list
 	/** @returns {boolean} */
-	View.prototype.addRLE = function(/** @type {number} */ gen, /** @type {number} */ end, deltaList, /** @type {number} */ every, /** @type {number} */ mode, /** @type {number} */ deltaX, /** @type {number} */ deltaY, /** @type {string} */ rle, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ transform) {
+	View.prototype.addRLE = function(/** @type {number} */ gen, /** @type {number} */ end, /** @type {Array<number>} */ deltaList, /** @type {number} */ every, /** @type {number} */ mode, /** @type {number} */ deltaX, /** @type {number} */ deltaY, /** @type {string} */ rle, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ transform) {
 		var	/** @type {number} */ i = 0,
 			/** @type {boolean} */ found = false,
-			cells = [],
+			/** @type {Array} */ cells = [],
 			/** @type {number} */ cellx = 0,
 			/** @type {number} */ celly = 0,
-			trans = this.transforms[transform],
+			/** @type {Array<number>} */ trans = this.transforms[transform],
 			/** @type {number} */ axx = trans[0],
 			/** @type {number} */ axy = trans[1],
 			/** @type {number} */ ayx = trans[2],
@@ -3258,7 +3257,7 @@
 			/** @type {number} */ evolveIndex = rle.indexOf("["),
 			/** @type {string} */ namePrefix = rle,
 			/** @type {number} */ evolution = 0,
-			genList = [],
+			/** @type {Array<number>} */ genList = [],
 			/** @type {number} */ boxWidth = 0,
 			/** @type {number} */ boxHeight = 0,
 			/** @type {number} */ len = Keywords.randomCellsWord.length,
@@ -3268,7 +3267,7 @@
 			/** @type {number} */ state = 0,
 			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
 			/** @type {number} */ fill = this.randomFillPercentage / 100,
-			stateMap = null;
+			/** @type {Array<Uint8Array>} */ stateMap = null;
 
 		// check for evolution
 		if (evolveIndex !== -1) {
@@ -3433,8 +3432,8 @@
 			/** @type {number} */ yOff = 0,
 			/** @type {number} */ minX = 0,
 			/** @type {number} */ minY = 0,
-			zoomBox = this.engine.zoomBox,
-			cells = [];
+			/** @type {BoundingBox} */ zoomBox = this.engine.zoomBox,
+			/** @type {Array<number>} */ cells = [];
 
 		// evolve rle snippets
 		for (j = 0; j < this.pasteList.length; j += 1) {
@@ -3596,8 +3595,8 @@
 			/** @type {number} */ mult = 0,
 			/** @type {number} */ gridWidth = this.engine.width,
 			/** @type {number} */ gridHeight = this.engine.height,
-			stateMap = null,
-			stateRow = null,
+			/** @type {Array<Uint8Array>} */ stateMap = null,
+			/** @type {Uint8Array} */ stateRow = null,
 			/** @type {number} */ numStates = this.engine.multiNumStates - 1;
 
 		// get number of states
@@ -3995,11 +3994,12 @@
 	View.prototype.copyPatternTo = function(pattern) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
+
 			// life grid and colour grid
-			grid = this.engine.grid16,
-			colourGrid = this.engine.colourGrid,
-			nextColourGrid = this.engine.nextColourGrid,
-			overlayGrid = this.engine.overlayGrid,
+			/** @type {Array<Uint16Array>} */ grid = this.engine.grid16,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid,
+			/** @type {Array<Uint8Array>} */ nextColourGrid = this.engine.nextColourGrid,
+			/** @type {Array<Uint8Array>} */ overlayGrid = this.engine.overlayGrid,
 	
 			// lookup pattern width and height
 			/** @type {number} */ width = pattern.width,
@@ -4010,11 +4010,11 @@
 			/** @type {number} */ panY = this.panY,
 	
 			// pattern row and grid row
-			patternRow = null,
-			gridRow = null,
-			multiStateRow = null,
-			colourGridRow = null,
-			overlayGridRow = null,
+			/** @type {Uint8Array} */ patternRow = null,
+			/** @type {Uint16Array} */ gridRow = null,
+			/** @type {Uint8Array} */ multiStateRow = null,
+			/** @type {Uint8Array} */ colourGridRow = null,
+			/** @type {Uint8Array} */ overlayGridRow = null,
 	
 			// state number
 			/** @type {number} */ state = 0,
@@ -4643,7 +4643,7 @@
 	};
 
 	// check if grid needs to grow
-	View.prototype.checkGridSize = function(/** @type {View} */ me, box) {
+	View.prototype.checkGridSize = function(/** @type {View} */ me, /** @type {BoundingBox} */ box) {
 		var	/** @type {number} */ borderSize = ViewConstants.maxStepSpeed; 
 
 		// compute border based on algorithm
@@ -5582,7 +5582,7 @@
 
 		// check for Margolus
 		if (me.engine.isMargolus || me.engine.isPCA) {
-			me.genValueLabel.preText = me.engine.counter;
+			me.genValueLabel.preText = String(me.engine.counter);
 			me.genValueLabel.toolTip = "absolute generation " + me.engine.counter;
 		} else {
 			if (!me.genRelative) {
@@ -5590,16 +5590,16 @@
 				if (counter >= 1000000000) {
 					me.genValueLabel.preText = "1B+";
 				} else {
-					me.genValueLabel.preText = counter;
+					me.genValueLabel.preText = String(counter);
 				}
 				me.genValueLabel.toolTip = "absolute generation " + counter;
 			} else {
 				if (counter >= 1000000000) {
 					me.genValueLabel.preText = "1B+";
 				} else {
-					me.genValueLabel.preText = counter;
+					me.genValueLabel.preText = String(counter);
 				}
-				me.genValueLabel.preText = counter;
+				me.genValueLabel.preText = String(counter);
 				me.genValueLabel.toolTip = "generation " + counter;
 			}
 		}
@@ -5610,47 +5610,47 @@
 	View.prototype.viewAnimateNormal = function(/** @type {number} */ timeSinceLastUpdate, /** @type {View} */ me) {
 		// get the current time and mouse wheel
 		var	/** @type {number} */ deltaTime = 0,
-		    /** @type {number} */ currentTime = 0,
-		    currentWaypoint = me.waypointManager.current,
-		    /** @type {number} */ i = 0,
-
-		    // whether update needed
-		    /** @type {boolean} */ updateNeeded = false,
-
-		    // whether frame budget exceeded (machine too slow)
-		    /** @type {boolean} */ tooSlow = false,
-
-		    // whether at end of waypoints
-		    /** @type {boolean} */ waypointsEnded = false,
-
-		    // whether bailing out of stepping
-		    /** @type {boolean} */ bailout = false,
-			
-		    // whether manual stepping (so ignore bailout)
-		    /** @type {boolean} */ manualStepping = false,
-			
-		    // how many steps to take
-		    /** @type {number} */ stepsToTake = 1,
-
-		    // many many steps taken
-		    /** @type {number} */ stepsTaken = 0,
-
-		    // save died generation
-		    /** @type {number} */ saveGeneration = 0,
-
-		    // current and target generations
-		    /** @type {number} */ currentGen = me.engine.counter,
-		    /** @type {number} */ targetGen = 0,
-
-		    // saved bounding box
-		    zoomBox = me.engine.zoomBox,
-		    saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
-
-		    // frame target time in ms
-		    /** @type {number} */ frameTargetTime = (1000 / me.refreshRate);
-
-		// unlock controls
-		me.controlsLocked = false;
+			/** @type {number} */ currentTime = 0,
+			/** @type {Waypoint} */ currentWaypoint = me.waypointManager.current,
+			/** @type {number} */ i = 0,
+	
+			// whether update needed
+			/** @type {boolean} */ updateNeeded = false,
+	
+			// whether frame budget exceeded (machine too slow)
+			/** @type {boolean} */ tooSlow = false,
+	
+			// whether at end of waypoints
+			/** @type {boolean} */ waypointsEnded = false,
+	
+			// whether bailing out of stepping
+			/** @type {boolean} */ bailout = false,
+				
+			// whether manual stepping (so ignore bailout)
+			/** @type {boolean} */ manualStepping = false,
+				
+			// how many steps to take
+			/** @type {number} */ stepsToTake = 1,
+	
+			// many many steps taken
+			/** @type {number} */ stepsTaken = 0,
+	
+			// save died generation
+			/** @type {number} */ saveGeneration = 0,
+	
+			// current and target generations
+			/** @type {number} */ currentGen = me.engine.counter,
+			/** @type {number} */ targetGen = 0,
+	
+			// saved bounding box
+			/** @type {BoundingBox} */ zoomBox = me.engine.zoomBox,
+			/** @type {BoundingBox} */ saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
+	
+			// frame target time in ms
+			/** @type {number} */ frameTargetTime = (1000 / me.refreshRate);
+	
+			// unlock controls
+			me.controlsLocked = false;
 
 		// check if this is the first frame
 		if (me.justStarted) {
@@ -6413,9 +6413,9 @@
 		var	/** @type {boolean} */ showTopicButtons = !(this.displayHelp && (this.helpTopic === ViewConstants.welcomeTopic)),
 			/** @type {number} */ i = 0,
 			/** @type {number} */ value = 0,
-			captions = [],
-			toolTips = [],
-			settingsMenuOpen = this.navToggle.current[0],
+			/** @type {Array<string>} */ captions = [],
+			/** @type {Array<string>} */ toolTips = [],
+			/** @type {boolean} */ settingsMenuOpen = this.navToggle.current[0],
 			/** @type {boolean} */ shown = false;
 
 		// step back button
@@ -7214,7 +7214,7 @@
 			/** @type {number} */ timeLimit = 13,
 
 			// identify result
-			identifyResult = [];
+			/** @type {Array<string>} */ identifyResult = [];
 
 		// lock the menu
 		me.viewMenu.locked = true;
@@ -7906,7 +7906,7 @@
 	/** @returns {Array} */
 	View.prototype.viewSpeedRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		var	/** @type {string} */ label = "",
-			value = me.speedIndex();
+			/** @type {number} */ value = me.speedIndex();
 
 		// check if changing
 		if (change) {
@@ -8240,7 +8240,8 @@
 			/** @type {string} */ backIconName = "",
 			/** @type {string} */ backToolTip = "",
 			/** @type {string} */ forwardIconName = "",
-			/** @type {string} */ forwardToolTip = "";
+			/** @type {string} */ forwardToolTip = "",
+			/** @type {Array<string>} */ currentToolTips = [];
 
 		// check if playing
 		if (isPlaying) {
@@ -8291,9 +8292,13 @@
 
 		// set the step back and forward icons and tooltips
 		this.playList.icon[ViewConstants.modePause] = this.iconManager.icon(forwardIconName);
-		this.playList.toolTip[ViewConstants.modePause] = forwardToolTip;
+		currentToolTips = /** @type {!Array<string>} */ (this.playList.toolTip);
+		currentToolTips[ViewConstants.modePause] = forwardToolTip;
+		this.playList.toolTip = currentToolTips;
 		this.playList.icon[ViewConstants.modeStepBack] = this.iconManager.icon(backIconName);
-		this.playList.toolTip[ViewConstants.modeStepBack] = backToolTip;
+		currentToolTips = /** @type {!Array<string>} */ (this.playList.toolTip);
+		currentToolTips[ViewConstants.modeStepBack] = backToolTip;
+		this.playList.toolTip = currentToolTips;
 
 		// set the play icon and tooltip
 		this.playList.icon[ViewConstants.modePlay] = this.iconManager.icon(iconName);
@@ -8410,7 +8415,7 @@
 	// view mode list
 	/** @returns {number} */
 	View.prototype.viewModeList = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		var	result = newValue;
+		var	/** @type {number} */ result = newValue;
 
 		if (change) {
 			switch (newValue) {
@@ -8733,7 +8738,7 @@
 	// drawing states list
 	/** @returns {number} */
 	View.prototype.viewStateList = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		var	result = newValue;
+		var	/** @type {number} */ result = newValue;
 
 		if (change) {
 			if (me.engine.multiNumStates <= 2) {
@@ -8801,7 +8806,7 @@
 	// drawing states colours list
 	/** @returns {Array<boolean>} */
 	View.prototype.viewStateColsList = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		var	result = newValue,
+		var	/** @type {Array<boolean>} */ result = newValue,
 			/** @type {number} */ i = 0;
 
 		if (change) {
@@ -8824,8 +8829,8 @@
 			/** @type {number} */ state = 0,
 			/** @type {number} */ numReplaced = 0,
 			/** @type {number} */ current = this.drawState,
-			historyBox = this.engine.historyBox,
-			selBox = this.selectionBox,
+			/** @type {BoundingBox} */ historyBox = this.engine.historyBox,
+			/** @type {BoundingBox} */ selBox = this.selectionBox,
 			/** @type {number} */ leftX = historyBox.leftX,
 			/** @type {number} */ rightX = historyBox.rightX,
 			/** @type {number} */ bottomY = historyBox.bottomY,
@@ -8895,7 +8900,7 @@
 			/** @type {number} */ y = 0,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ current = me.drawState,
-			historyBox = me.engine.historyBox,
+			/** @type {BoundingBox} */ historyBox = me.engine.historyBox,
 			/** @type {number} */ numCleared = 0,
 			/** @type {number} */ clearValue = 0;
 			
@@ -8979,35 +8984,35 @@
 	// view play list
 	/** @returns {number} */
 	View.prototype.viewPlayList = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		var	result = newValue,
-		    /** @type {boolean} */ stopMode = me.stopDisabled,
-		    /** @type {boolean} */ loopMode = me.loopDisabled,
-		    /** @type {boolean} */ waypointMode = me.waypointsDisabled,
-		    /** @type {boolean} */ autoStartMode = me.autoStartDisabled,
-		    /** @type {boolean} */ autoFitMode = me.autoFit,
-		    /** @type {boolean} */ trackMode = me.trackDisabled,
-		    /** @type {number} */ i = 0,
-		    message = null,
-		    /** @type {number} */ duration = 40,
-		    /** @type {number} */ numChanged = 0,
-
-		    // whether loop switched on or off
-		    /** @type {number} */ loopChange = 0,
-
-		    // whether stop switched on or off
-		    /** @type {number} */ stopChange = 0,
-
-		    // whether waypoints switched on or off
-		    /** @type {number} */ waypointsChange = 0,
-
-		    // whether track switched on or off
-		    /** @type {number} */ trackChange = 0,
-
-		    // whether autostart switched on or off
-		    /** @type {number} */ autoStartChange = 0,
-
-		    // whether autofit switched on or off
-		    /** @type {number} */ autoFitChange = 0;
+		var	/** @type {number} */ result = newValue,
+			/** @type {boolean} */ stopMode = me.stopDisabled,
+			/** @type {boolean} */ loopMode = me.loopDisabled,
+			/** @type {boolean} */ waypointMode = me.waypointsDisabled,
+			/** @type {boolean} */ autoStartMode = me.autoStartDisabled,
+			/** @type {boolean} */ autoFitMode = me.autoFit,
+			/** @type {boolean} */ trackMode = me.trackDisabled,
+			/** @type {number} */ i = 0,
+			/** @type {string} */ message = "",
+			/** @type {number} */ duration = 40,
+			/** @type {number} */ numChanged = 0,
+	
+			// whether loop switched on or off
+			/** @type {number} */ loopChange = 0,
+	
+			// whether stop switched on or off
+			/** @type {number} */ stopChange = 0,
+	
+			// whether waypoints switched on or off
+			/** @type {number} */ waypointsChange = 0,
+	
+			// whether track switched on or off
+			/** @type {number} */ trackChange = 0,
+	
+			// whether autostart switched on or off
+			/** @type {number} */ autoStartChange = 0,
+	
+			// whether autofit switched on or off
+			/** @type {number} */ autoFitChange = 0;
 
 		if (change) {
 			// disable playback draw pause
@@ -9399,7 +9404,7 @@
 	// layers range
 	/** @returns {Array} */
 	View.prototype.viewLayersRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		var	result;
+		var	/** @type {number} */ result;
 
 		// check if changing
 		if (change) {
@@ -9606,7 +9611,7 @@
 	};
 
 	// compute bounded grid bounding box and grid offset
-	View.prototype.getBoundingBox = function(box, /** @type {number} */ offset) {
+	View.prototype.getBoundingBox = function(/** @type {BoundingBox} */ box, /** @type {number} */ offset) {
 		var	/** @type {number} */ xOff = this.engine.width >> 1,
 			/** @type {number} */ yOff = this.engine.height >> 1;
 
@@ -9646,8 +9651,8 @@
 	// process drag for selection
 	View.prototype.doDragSelect = function(/** @type {View} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// selection box
-		var	box = me.selectionBox,
-			boundedBox = new BoundingBox(0, 0, 0, 0),
+		var	/** @type {BoundingBox} */ box = me.selectionBox,
+			/** @type {BoundingBox} */ boundedBox = new BoundingBox(0, 0, 0, 0),
 
 			// flag if off the grid
 			/** @type {boolean} */ offGrid = false,
@@ -9660,7 +9665,7 @@
 			/** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
 
 			// x and y offset return from function
-			xyOff = [];
+			/** @type {Array<number>} */ xyOff = [];
 
 		// check for infinite dimension bounded grid
 		if (me.engine.boundedGridType !== -1) {
@@ -9804,8 +9809,8 @@
 
 	// auto shrink a selection
 	View.prototype.autoShrinkSelection = function(/** @type {View} */ me) {
-		var	selBox = me.selectionBox,
-			zoomBox = me.engine.zoomBox,
+		var	/** @type {BoundingBox} */ selBox = me.selectionBox,
+			/** @type {BoundingBox} */ zoomBox = me.engine.zoomBox,
 			/** @type {number} */ leftX = selBox.leftX,
 			/** @type {number} */ bottomY = selBox.bottomY,
 			/** @type {number} */ rightX = selBox.rightX,
@@ -9889,7 +9894,7 @@
 
 	// process drag end for selection
 	View.prototype.doDragEndSelect = function(/** @type {View} */ me) {
-		var	selBox = me.selectionBox,
+		var	/** @type {BoundingBox} */ selBox = me.selectionBox,
 			/** @type {number} */ width = 0,
 			/** @type {number} */ height = 0;
 
@@ -10145,7 +10150,7 @@
 	View.prototype.ruleIsValid = function(/** @type {string} */ ruleName) {
 		var	/** @type {boolean} */ result = false,
 			/** @type {string} */ patternText = "x = 1, y = 1, rule = ",
-			pattern = null;
+			/** @type {Pattern} */ pattern = null;
 
 		// check if the rule name is blank
 		if (ruleName === "") {
@@ -10211,7 +10216,7 @@
 	};
 
 	// convert a pattern from one rule to another
-	View.prototype.convertPattern = function(/** @type {string} */ fromPostfix, /** @type {string} */ toPostfix, /** @type {number} */ fromStates, /** @type {number} */ toStates, mapping) {
+	View.prototype.convertPattern = function(/** @type {string} */ fromPostfix, /** @type {string} */ toPostfix, /** @type {number} */ fromStates, /** @type {number} */ toStates, /** @type {Array<number>} */ mapping) {
 		var	/** @type {string} */ currentRule = this.patternRuleName,
 			/** @type {string} */ patternText = "";
 
@@ -10244,7 +10249,7 @@
 			/** @type {number} */ fromStates = (me.engine.isLifeHistory ? 7 : 2),
 			/** @type {string} */ toPostfix = "Super",
 			/** @type {number} */ toStates = 26,
-			mapping = (me.engine.isLifeHistory ? ViewConstants.historyToSuperStates : ViewConstants.standardToSuperStates);
+			/** @type {Array<number>} */ mapping = (me.engine.isLifeHistory ? ViewConstants.historyToSuperStates : ViewConstants.standardToSuperStates);
 
 		me.convertPattern(fromPostfix, toPostfix, fromStates, toStates, mapping);
 	};
@@ -10255,7 +10260,7 @@
 			/** @type {number} */ fromStates = (me.engine.isSuper ? 26 : 2),
 			/** @type {string} */ toPostfix = "History",
 			/** @type {number} */ toStates = 7,
-			mapping = (me.engine.isSuper ? ViewConstants.superToHistoryStates : ViewConstants.standardToHistoryStates);
+			/** @type {Array<number>} */ mapping = (me.engine.isSuper ? ViewConstants.superToHistoryStates : ViewConstants.standardToHistoryStates);
 
 		me.convertPattern(fromPostfix, toPostfix, fromStates, toStates, mapping);
 	};
@@ -10266,7 +10271,7 @@
 			/** @type {number} */ fromStates = (me.engine.isLifeHistory ? 7 : 26),
 			/** @type {string} */ toPostfix = "",
 			/** @type {number} */ toStates = 2,
-			mapping = (me.engine.isLifeHistory ? ViewConstants.historyToStandardStates : ViewConstants.superToStandardStates);
+			/** @type {Array<number>} */ mapping = (me.engine.isLifeHistory ? ViewConstants.historyToStandardStates : ViewConstants.superToStandardStates);
 
 		me.convertPattern(fromPostfix, toPostfix, fromStates, toStates, mapping);
 	};
@@ -10634,8 +10639,8 @@
 			/** @type {number} */ valueS = 0,
 			/** @type {number} */ neighbours = 8,
 			/** @type {string} */ postfix = "",
-			birthChance = null,
-			survivalChance = null;
+			/** @type {Uint8Array} */ birthChance = null,
+			/** @type {Uint8Array} */ survivalChance = null;
 
 		// get neighbourhood
 		if (this.engine.isHex) {
@@ -10778,11 +10783,11 @@
 			/** @type {boolean} */ first15 = false,
 			/** @type {number} */ used = 0,
 			/** @type {number} */ swap = 0,
-			entries = null,
-			candidates = null,
-			aliveCounts = null,
-			swapCandidates = [],
-			bitCounts = this.engine.bitCounts16;
+			/** @type {Uint8Array} */ entries = null,
+			/** @type {Uint8Array} */ candidates = null,
+			/** @type {Uint8Array} */ aliveCounts = null,
+			/** @type {Array<Uint8Array>} */ swapCandidates = [],
+			/** @type {Uint8Array} */ bitCounts = this.engine.bitCounts16;
 
 		// check for swap rules
 		if (this.randomSwap) {
@@ -10928,7 +10933,7 @@
 	View.prototype.randomPattern = function(/** @type {View} */ me, /** @type {boolean} */ fixedRule) {
 		var	/** @type {string} */ patternText = "",
 			/** @type {string} */ rleText = "",
-			result = null,
+			/** @type {boolean} */ result,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ state = 0,
@@ -10936,8 +10941,8 @@
 			/** @type {number} */ count = 0,
 			/** @type {number} */ asciiA = String("A").charCodeAt(0),
 			/** @type {number} */ asciiP = String("p").charCodeAt(0),
-			outputState = [],
-			aliasName = null,
+			/** @type {Array<string>} */ outputState = [],
+			/** @type {string|null} */ aliasName = null,
 			/** @type {number} */ maxState = 0,
 			/** @type {number} */ rows = me.randomHeight,
 			/** @type {number} */ columns = me.randomWidth,
@@ -11168,16 +11173,16 @@
 		// compute linear completion
 		var	/** @type {number} */ linearComplete = (this.targetPOI === 0 ? 0 : this.stepsPOI / this.targetPOI),
 
-		    // compute bezier completion
-		    bezierComplete = this.waypointManager.bezierX(linearComplete, 0, 0, 1, 1),
-
-		    // get angle
-		    startAngle = this.startAnglePOI,
-		    endAngle = this.endAnglePOI,
-
-		    // get tilt
-		    startTilt = this.startTiltPOI,
-		    endTilt = this.endTiltPOI;
+			// compute bezier completion
+			/** @type {number} */ bezierComplete = this.waypointManager.bezierX(linearComplete, 0, 0, 1, 1),
+	
+			// get angle
+			/** @type {number} */ startAngle = this.startAnglePOI,
+			/** @type {number} */ endAngle = this.endAnglePOI,
+	
+			// get tilt
+			/** @type {number} */ startTilt = this.startTiltPOI,
+			/** @type {number} */ endTilt = this.endTiltPOI;
 
 		// set the camera position
 		this.engine.xOff = this.engine.width / 2 - (this.startXPOI + (bezierComplete * (this.endXPOI - this.startXPOI)));
@@ -11255,13 +11260,13 @@
 
 	// create POIs from Labels
 	View.prototype.createPOIsFromLabels = function() {
-		var	wm = this.waypointManager,
+		var	/** @type {WaypointManager} */ wm = this.waypointManager,
 			/** @type {number} */ nLabels = wm.numLabels(),
 			/** @type {number} */ i = 0,
 			/** @type {number} */ width = this.patternWidth,
 			/** @type {number} */ height = this.patternHeight,
-			currentWaypoint = wm.createWaypoint(),
-			currentLabel = null;
+			/** @type {Waypoint} */ currentWaypoint = wm.createWaypoint(),
+			/** @type {Label} */ currentLabel = null;
 
 		for (i = 0; i < nLabels; i += 1) {
 			currentLabel = wm.labelList[i];
@@ -11282,7 +11287,7 @@
 	// set camera from POI
 	View.prototype.setCameraFromPOI = function(/** @type {View} */ me, /** @type {number} */ poiNumber) {
 		// get the point of interest
-		var	poi = me.waypointManager.poiList[poiNumber];
+		var	/** @type {Waypoint} */ poi = me.waypointManager.poiList[poiNumber];
 
 		// save start point
 		me.startXPOI = me.engine.width / 2 - me.engine.xOff;
@@ -11847,12 +11852,12 @@
 
 	// clear outside
 	View.prototype.clearOutside = function(/** @type {View} */ me) {
-		var	box = me.selectionBox,
+		var	/** @type {BoundingBox} */ box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
 			/** @type {number} */ y1 = box.bottomY,
 			/** @type {number} */ y2 = box.topY,
-			zoomBox = me.engine.zoomBox,
+			/** @type {BoundingBox} */ zoomBox = me.engine.zoomBox,
 			/** @type {number} */ leftX = zoomBox.leftX,
 			/** @type {number} */ rightX = zoomBox.rightX,
 			/** @type {number} */ bottomY = zoomBox.bottomY,
@@ -11914,7 +11919,7 @@
 
 	// clear selection
 	View.prototype.clearSelection = function(/** @type {View} */ me, /** @type {boolean} */ ctrl) {
-		var	box = me.selectionBox,
+		var	/** @type {BoundingBox} */ box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
 			/** @type {number} */ y1 = box.bottomY,
@@ -12026,8 +12031,8 @@
 
 	// select all pressed
 	View.prototype.selectAllPressed = function(/** @type {View} */ me) {
-		var	selBox = me.selectionBox,
-			zoomBox = me.engine.zoomBox,
+		var	/** @type {BoundingBox} */ selBox = me.selectionBox,
+			/** @type {BoundingBox} */ zoomBox = me.engine.zoomBox,
 			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			/** @type {number} */ width = 0,
@@ -12113,25 +12118,25 @@
 
 	// cut selection
 	View.prototype.cutSelection = function(/** @type {View} */ me, /** @type {number} */ number, /** @type {boolean} */ evolveStep, /** @type {boolean} */ noSave) {
-		var	box = me.selectionBox,
-		    /** @type {number} */ x1 = box.leftX,
-		    /** @type {number} */ x2 = box.rightX,
-		    /** @type {number} */ y1 = box.bottomY,
-		    /** @type {number} */ y2 = box.topY,
-		    /** @type {number} */ x = 0,
-		    /** @type {number} */ y = 0,
-		    /** @type {number} */ i = 0,
-		    /** @type {number} */ swap = 0,
-		    /** @type {number} */ state = 0,
-		    /** @type {number} */ count = 0,
-		    /** @type {number} */ states = me.engine.multiNumStates,
-		    /** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
-		    /** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-		    /** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-		    /** @type {Uint8Array} */ buffer = null,
-		    /** @type {number} */ width = 0,
-		    /** @type {number} */ height = 0,
-		    /** @type {number} */ wasState6 = 0;
+		var	/** @type {BoundingBox} */ box = me.selectionBox,
+			/** @type {number} */ x1 = box.leftX,
+			/** @type {number} */ x2 = box.rightX,
+			/** @type {number} */ y1 = box.bottomY,
+			/** @type {number} */ y2 = box.topY,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ count = 0,
+			/** @type {number} */ states = me.engine.multiNumStates,
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {Uint8Array} */ buffer = null,
+			/** @type {number} */ width = 0,
+			/** @type {number} */ height = 0,
+			/** @type {number} */ wasState6 = 0;
 
 		// check for selection
 		if (me.isSelection) {
@@ -12279,7 +12284,7 @@
 
 	// create weighted neighbourhood from selection and copy to clipboard
 	View.prototype.copyWeighted = function(/** @type {View} */ me) {
-		var	selBox = me.selectionBox,
+		var	/** @type {BoundingBox} */ selBox = me.selectionBox,
 			/** @type {number} */ x1 = selBox.leftX,
 			/** @type {number} */ y1 = selBox.bottomY,
 			/** @type {number} */ x2 = selBox.rightX,
@@ -12296,7 +12301,7 @@
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			/** @type {boolean} */ valid = true,
 			/** @type {string} */ output = "",
-			cells = [];
+			/** @type {Array<number>} */ cells = [];
 
 		if (me.isSelection) {
 			// order selection 
@@ -12382,7 +12387,7 @@
 
 	// create CoordCA neighbourhood from selection and copy to clipboard
 	View.prototype.copyCoordCA = function(/** @type {View} */ me) {
-		var	selBox = me.selectionBox,
+		var	/** @type {BoundingBox} */ selBox = me.selectionBox,
 			/** @type {number} */ x1 = selBox.leftX,
 			/** @type {number} */ y1 = selBox.bottomY,
 			/** @type {number} */ x2 = selBox.rightX,
@@ -12490,7 +12495,7 @@
 
 	// copy selection
 	View.prototype.copySelection = function(/** @type {View} */ me, /** @type {number} */ number) {
-		var	selBox = me.selectionBox,
+		var	/** @type {BoundingBox} */ selBox = me.selectionBox,
 			/** @type {number} */ x1 = selBox.leftX,
 			/** @type {number} */ y1 = selBox.bottomY,
 			/** @type {number} */ x2 = selBox.rightX,
@@ -12507,7 +12512,7 @@
 			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
 			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			buffer = null;
+			/** @type {Uint8Array} */ buffer = null;
 
 		if (me.isSelection) {
 			// order selection 
@@ -12633,50 +12638,51 @@
 			/** @type {number} */ width = me.pasteWidth,
 			/** @type {number} */ height = me.pasteHeight,
 			/** @type {number} */ state = 0,
-			buffer = me.pasteBuffer,
+			/** @type {Uint8Array} */ buffer = me.pasteBuffer,
 			/** @type {number} */ xOff = 0,
 			/** @type {number} */ yOff = 0,
-			selBox = me.selectionBox,
-			zoomBox = me.engine.zoomBox,
-			historyBox = me.engine.historyBox,
-			evolveBox = me.evolveBox,
+			/** @type {BoundingBox} */ selBox = me.selectionBox,
+			/** @type {BoundingBox} */ zoomBox = me.engine.zoomBox,
+			/** @type {BoundingBox} */ historyBox = me.engine.historyBox,
+			/** @type {BoundingBox} */ evolveBox = me.evolveBox,
+
 			// save current grid
-			currentGrid = me.engine.grid,
-			currentNextGrid = me.engine.nextGrid,
-			currentColourGrid = me.engine.colourGrid,
-			currentColourGrid16 = me.engine.colourGrid16,
-			currentColourGrid32 = me.engine.colourGrid32,
-			currentSmallColourGrid = me.engine.smallColourGrid,
-			currentNextColourGrid = me.engine.nextColourGrid,
-			currentTileGrid = me.engine.tileGrid,
-			currentNextTileGrid = me.engine.nextTileGrid,
-			currentColourTileGrid = me.engine.colourTileGrid,
-			currentColourTileHistoryGrid = me.engine.colourTileHistoryGrid,
-			currentWidth = me.engine.width,
-			currentHeight = me.engine.height,
-			currentGrid16 = me.engine.grid16,
-			currentNextGrid16 = me.engine.nextGrid16,
-			currentBlankRow = me.engine.blankRow,
-			currentBlankRow16 = me.engine.blankRow16,
-			currentBlankTileRow = me.engine.blankTileRow,
-			currentBlankColourRow = me.engine.blankColourRow,
-			currentTileRows = me.engine.tileRows,
-			currentTileCols = me.engine.tileCols,
-			currentWidthMask = me.engine.widthMask,
-			currentHeightMask = me.engine.heightMask,
-			currentCounter = me.engine.counter,
-			currentZoomBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
-			currentHistoryBox = new BoundingBox(historyBox.leftX, historyBox.bottomY, historyBox.rightX, historyBox.topY),
-			currentState6Mask = me.engine.state6Mask,
-			currentState6Cells = me.engine.state6Cells,
-			currentState6Alive = me.engine.state6Alive,
-			currentState6TileGrid = me.engine.state6TileGrid,
-			currentOverlayGrid = me.engine.overlayGrid,
-			currentSmallOverlayGrid = me.engine.smallOverlayGrid,
-			currentOverlayGrid16 = me.engine.overlayGrid16,
-			currentOverlayGrid32 = me.engine.overlayGrid32,
-			currentCounts = null,
-			currentColUsed = null,
+			/** @type {Array<Uint8Array>} */ currentGrid = me.engine.grid,
+			/** @type {Array<Uint8Array>} */ currentNextGrid = me.engine.nextGrid,
+			/** @type {Array<Uint8Array>} */ currentColourGrid = me.engine.colourGrid,
+			/** @type {Array<Uint16Array>} */ currentColourGrid16 = me.engine.colourGrid16,
+			/** @type {Array<Uint32Array>} */ currentColourGrid32 = me.engine.colourGrid32,
+			/** @type {Array<Uint8Array>} */ currentSmallColourGrid = me.engine.smallColourGrid,
+			/** @type {Array<Uint8Array>} */ currentNextColourGrid = me.engine.nextColourGrid,
+			/** @type {Array<Uint16Array>} */ currentTileGrid = me.engine.tileGrid,
+			/** @type {Array<Uint16Array>} */ currentNextTileGrid = me.engine.nextTileGrid,
+			/** @type {Array<Uint16Array>} */ currentColourTileGrid = me.engine.colourTileGrid,
+			/** @type {Array<Uint16Array>} */ currentColourTileHistoryGrid = me.engine.colourTileHistoryGrid,
+			/** @type {number} */ currentWidth = me.engine.width,
+			/** @type {number} */ currentHeight = me.engine.height,
+			/** @type {Array<Uint16Array>} */ currentGrid16 = me.engine.grid16,
+			/** @type {Array<Uint16Array>} */ currentNextGrid16 = me.engine.nextGrid16,
+			/** @type {Uint8Array} */ currentBlankRow = me.engine.blankRow,
+			/** @type {Uint16Array} */ currentBlankRow16 = me.engine.blankRow16,
+			/** @type {Uint16Array} */ currentBlankTileRow = me.engine.blankTileRow,
+			/** @type {Uint8Array} */ currentBlankColourRow = me.engine.blankColourRow,
+			/** @type {number} */ currentTileRows = me.engine.tileRows,
+			/** @type {number} */ currentTileCols = me.engine.tileCols,
+			/** @type {number} */ currentWidthMask = me.engine.widthMask,
+			/** @type {number} */ currentHeightMask = me.engine.heightMask,
+			/** @type {number} */ currentCounter = me.engine.counter,
+			/** @type {BoundingBox} */ currentZoomBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
+			/** @type {BoundingBox} */ currentHistoryBox = new BoundingBox(historyBox.leftX, historyBox.bottomY, historyBox.rightX, historyBox.topY),
+			/** @type {Array<Uint16Array>} */ currentState6Mask = me.engine.state6Mask,
+			/** @type {Array<Uint16Array>} */ currentState6Cells = me.engine.state6Cells,
+			/** @type {Array<Uint16Array>} */ currentState6Alive = me.engine.state6Alive,
+			/** @type {Array<Uint16Array>} */ currentState6TileGrid = me.engine.state6TileGrid,
+			/** @type {Array<Uint8Array>} */ currentOverlayGrid = me.engine.overlayGrid,
+			/** @type {Array<Uint8Array>} */ currentSmallOverlayGrid = me.engine.smallOverlayGrid,
+			/** @type {Array<Uint16Array>} */ currentOverlayGrid16 = me.engine.overlayGrid16,
+			/** @type {Array<Uint32Array>} */ currentOverlayGrid32 = me.engine.overlayGrid32,
+			/** @type {Array<Int32Array>} */ currentCounts = null,
+			/** @type {Uint8Array} */ currentColUsed = null,
 			// save anything alive
 			/** @type {number} */ currentAnythingAlive = me.engine.anythingAlive,
 			/** @type {number} */ currentPop = me.engine.population,
@@ -12824,8 +12830,8 @@
 			/** @type {number} */ height = me.pasteHeight,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ current = 0,
-			buffer = me.pasteBuffer,
-			midBox = me.middleBox,
+			/** @type {Uint8Array} */ buffer = me.pasteBuffer,
+			/** @type {BoundingBox} */ midBox = me.middleBox,
 			/** @type {number} */ origWidth = me.engine.width,
 			/** @type {number} */ origHeight = me.engine.height,
 			/** @type {number} */ wasState6 = 0;
@@ -12955,14 +12961,14 @@
 	View.prototype.pasteOffset = function(/** @type {View} */ me, /** @type {number} */ dx, /** @type {number} */ dy) {
 		var	/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			selBox = me.selectionBox,
+			/** @type {BoundingBox} */ selBox = me.selectionBox,
 			/** @type {number} */ leftX = selBox.leftX,
 			/** @type {number} */ bottomY = selBox.bottomY,
 			/** @type {number} */ rightX = selBox.rightX,
 			/** @type {number} */ topY = selBox.topY,
 			/** @type {number} */ width = rightX - leftX + 1,
 			/** @type {number} */ height = topY - bottomY + 1,
-			buffer = null,
+			/** @type {Uint8Array} */ buffer = null,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ x = 0,
@@ -13071,8 +13077,8 @@
 	View.prototype.processPaste = function(/** @type {View} */ me, /** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
 		var	/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			selBox = me.selectionBox,
-			evolveBox = me.evolveBox,
+			/** @type {BoundingBox} */ selBox = me.selectionBox,
+			/** @type {BoundingBox} */ evolveBox = me.evolveBox,
 			/** @type {number} */ save = 0,
 			/** @type {number} */ leftX = selBox.leftX,
 			/** @type {number} */ bottomY = selBox.bottomY,
@@ -13213,7 +13219,7 @@
 
 	// random selection
 	View.prototype.randomSelection = function(/** @type {View} */ me, /** @type {boolean} */ twoStateOnly) {
-		var	box = me.selectionBox,
+		var	/** @type {BoundingBox} */ box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
 			/** @type {number} */ y1 = box.bottomY,
@@ -13334,7 +13340,7 @@
 
 	// flip X selection
 	View.prototype.flipXSelection = function(/** @type {View} */ me) {
-		var	box = me.selectionBox,
+		var	/** @type {BoundingBox} */ box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
 			/** @type {number} */ y1 = box.bottomY,
@@ -13342,7 +13348,7 @@
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ swap = 0,
-			row = null,
+			/** @type {Uint8Array} */ row = null,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
 			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
@@ -13442,7 +13448,7 @@
 
 	// flip Y selection
 	View.prototype.flipYSelection = function(/** @type {View} */ me) {
-		var	box = me.selectionBox,
+		var	/** @type {BoundingBox} */ box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
 			/** @type {number} */ y1 = box.bottomY,
@@ -13450,7 +13456,7 @@
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ swap = 0,
-			column = null,
+			/** @type {Uint8Array} */ column = null,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
 			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
@@ -13567,7 +13573,7 @@
 
 	// rotate hex selection
 	View.prototype.rotateSelection60 = function(/** @type {View} */ me, /** @type {boolean} */ clockwise, /** @type {string} */ comment) {
-		var	box = me.selectionBox,
+		var	/** @type {BoundingBox} */ box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
 			/** @type {number} */ y1 = box.bottomY,
@@ -13575,7 +13581,7 @@
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ swap = 0,
-			cells = null,
+			/** @type {Int16Array} */ cells = null,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
@@ -13760,7 +13766,7 @@
 
 	// rotate selection
 	View.prototype.rotateSelection90 = function(/** @type {View} */ me, /** @type {boolean} */ clockwise, /** @type {string} */ comment) {
-		var	box = me.selectionBox,
+		var	/** @type {BoundingBox} */ box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
 			/** @type {number} */ y1 = box.bottomY,
@@ -13768,7 +13774,7 @@
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ swap = 0,
-			cells = null,
+			/** @type {Int16Array} */ cells = null,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ cx = 0,
@@ -14065,7 +14071,7 @@
 
 	// invert selection
 	View.prototype.invertSelection = function(/** @type {View} */ me) {
-		var	box = me.selectionBox,
+		var	/** @type {BoundingBox} */ box = me.selectionBox,
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ x2 = box.rightX,
 			/** @type {number} */ y1 = box.bottomY,
@@ -14528,7 +14534,7 @@
 	// waypoint/track indictor toggle
 	/** @return {Array<boolean>} */
 	View.prototype.toggleWP = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		var	result = [false];
+		var	/** @type {Array<boolean>} */ result = [false];
 
 		if (change) {
 			// check for track
@@ -15060,9 +15066,9 @@
 
 	// convert a theme colour object to an RGB string or colour name
 	/** @returns {string} */
-	View.prototype.asColourString = function(colourRGB) {
+	View.prototype.asColourString = function(/** @type {Colour} */ colourRGB) {
 		var	colourList = ColourManager.colourList,
-			keys = Object.keys(colourList),
+			/** @type {Array<string>} */ keys = Object.keys(colourList),
 			/** @type {number} */ redValue = colourRGB.red,
 			/** @type {number} */ greenValue = colourRGB.green,
 			/** @type {number} */ blueValue = colourRGB.blue,
@@ -15100,7 +15106,7 @@
 
 	// check if two colours are the same
 	/** @returns {boolean} */
-	View.prototype.areSameColour = function(first, second) {
+	View.prototype.areSameColour = function(/** @type {Colour} */ first, /** @type {Colour} */ second) {
 		return ((first.red === second.red) && (first.green === second.green) && (first.blue === second.blue));
 	};
 
@@ -15129,7 +15135,7 @@
 			/** @type {string} */ tiltStr = String(me.engine.tilt | 0),
 
 			// get the theme
-			theme = me.engine.themes[me.engine.colourTheme];
+			/** @type {Theme} */ theme = me.engine.themes[me.engine.colourTheme];
 
 		// check for non-zero generation
 		if (me.engine.counter !== 0) {
@@ -15269,7 +15275,7 @@
 	View.prototype.copyCurrentRLE = function(/** @type {View} */ me, /** @type {boolean} */ addComments) {
 		// copy the current pattern to the clipboard
 		me.copyStartTime = performance.now();
-		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, addComments, me.engine.multiNumStates, me.engine.multiNumStates, []), false);
+		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, addComments, me.engine.multiNumStates, me.engine.multiNumStates, [], false), false);
 	};
 
 	// key down
@@ -16354,7 +16360,7 @@
 	// attached the viewer to a canvas element
 	View.prototype.attachToCanvas = function(canvasItem) {
 		var	/** @type {boolean} */ result = false,
-			me = this,
+			/** @type {View} */ me = this,
 			/** @type {number} */ viewerWidth = 0,
 			/** @type {number} */ viewerHeight = 0;
 
@@ -16460,7 +16466,7 @@
 	// get theme name from a number
 	/** @returns {string} */
 	View.prototype.themeName = function(/** @type {number} */ themeNumber) {
-		var	themes = this.engine.themes,
+		var	/** @type {Array<Theme>} */ themes = this.engine.themes,
 			/** @type {string} */ result = "";
 
 		// ensure number is integer
@@ -16478,7 +16484,7 @@
 	/** @returns {number} */
 	View.prototype.themeFromName = function(/** @type {string} */ themeName) {
 		var	/** @type {boolean} */ found = false,
-			themes = this.engine.themes,
+			/** @type {Array<Theme>} */ themes = this.engine.themes,
 			/** @type {number} */ i = 0;
 
 			// conver to lower case for search
@@ -16503,9 +16509,9 @@
 	};
 
 	// validate waypoints
-	View.prototype.validateWaypoints = function(scriptErrors) {
+	View.prototype.validateWaypoints = function(/** @type {Array} */ scriptErrors) {
 		// fill in waypoint zero
-		var	currentWaypoint = this.waypointManager.firstWaypoint();
+		var	/** @type {Waypoint} */ currentWaypoint = this.waypointManager.firstWaypoint();
 
 		// copy position
 		if (!currentWaypoint.xDefined) {
@@ -17217,7 +17223,7 @@
 	};
 
 	// complete pattern start process
-	View.prototype.completeStart = function(pattern, args, /** @type {View} */ me) {
+	View.prototype.completeStart = function(/** @type {Pattern} */ pattern, args, /** @type {View} */ me) {
 		var	/** @type {number} */ numberValue = 0,
 			/** @type {number} */ savedX = 0,
 			/** @type {number} */ savedY = 0,
@@ -18836,7 +18842,7 @@
 			parentItem = canvasItem.parentNode,
 
 			// view
-			newView = null;
+			/** @type {View} */ newView = null;
 
 		// check if the viewer already exists
 		i = 0;
@@ -18893,7 +18899,7 @@
 			/** @type {number} */ i = 0,
 			metaItem = null,
 			/** @type {string} */ content = "",
-			tokens = null,
+			/** @type {Array<string>} */ tokens = null,
 			/** @type {string} */ value = "";
 
 		// check if a LifeViewer tag exists
@@ -19056,7 +19062,7 @@
 			textItem = parentItem.getElementsByTagName(DocConfig.patternSourceName)[0],
 
 			cleanItem = null,
-			viewer = Controller.viewers[0];
+			/**@type {View} */ viewer = Controller.viewers[0];
 
 		// copy the text item into the inner html
 		if (textItem.value) {
@@ -19078,13 +19084,13 @@
 	}
 
 	// complete update process after potential async load
-	function completeUpdate(view) {
+	function completeUpdate(/**@type {View} */ view) {
 		var	/** @type {number} */ itemHeight = 28,
 			/** @type {number} */ itemFontSize = 18,
-			viewer = Controller.standaloneViewer(),
+			/** @type {Array} */ viewer = Controller.standaloneViewer(),
 
 			// get the popup window
-			popup = viewer[2];
+			/** @type {PopupWindow} */ popup = viewer[2];
 
 		// scale the viewer
 		view.divItem.style.transform = "scale(" + view.windowZoom + "," + view.windowZoom + ")";
@@ -19134,8 +19140,8 @@
 			cleanItem = cleanPattern(textItem),
 
 			// get the standalone viewer
-			viewer = Controller.standaloneViewer(),
-			view = null,
+			/** @type {Array} */ viewer = Controller.standaloneViewer(),
+			/** @type {View} */ view = null,
 
 			// elements
 			canvasItem = null,
@@ -19151,7 +19157,7 @@
 			/** @type {number} */ itemFontSize = 18,
 
 			// popup window
-			popup = null;
+			/** @type {PopupWindow} */ popup = null;
 
 		// check if the standalone viewer exists
 		if (viewer) {
@@ -19356,9 +19362,9 @@
 	}
 
 	// complete isPattern check
-	function completeIsPattern(pattern, args) {
+	function completeIsPattern(/** @type {Pattern} */ pattern, args) {
 		// unpack arguments
-		var	patternString = args[0],
+		var	/** @type {string} */ patternString = args[0],
 			rleItem = args[1],
 			textItem = args[2];
 
@@ -19376,7 +19382,7 @@
 	}
 
 	// complete isPattern check after load failure
-	function completeIsPatternFailed(pattern, args) {
+	function completeIsPatternFailed(/** @type {Pattern} */ pattern, args) {
 		// unpack arguments
 		var	rleItem = args[1],
 			textItem = args[2];
@@ -19389,11 +19395,11 @@
 	}
 
 	// check if a string is a valid pattern
-	function isPattern(/** @type {string} */ patternString, allocator, manager, rleItem, textItem) {
-		var	pattern = null;
+	function isPattern(/** @type {string} */ patternString, /** @type {Allocator} */ allocator, /** @type {PatternManager} */ manager, rleItem, textItem) {
+		var	/** @type {Pattern} */ pattern = null;
 
 		// attempt to create a pattern
-		pattern = manager.create("", patternString, allocator, completeIsPattern, completeIsPatternFailed, [patternString, rleItem, textItem], false, null);
+		pattern = manager.create("", patternString, allocator, completeIsPattern, completeIsPatternFailed, [patternString, rleItem, textItem], null);
 		if (!manager.loadingFromRepository) {
 			completeIsPattern(pattern, [patternString, rleItem, textItem]);
 		}
@@ -19415,7 +19421,7 @@
 
 	// resize event
 	function resizeWindow() {
-		var	view = null,
+		var	/** @type {View} */ view = null,
 			/** @type {number} */ i = 0;
 
 		// check for fullscreen viewer
@@ -19458,7 +19464,7 @@
 	function startAllViewers() {
 		// find all viewers in the document (should be enclosed in <div class="rle">)
 		var	a = document.getElementsByTagName("div"),
-			b = 0,
+			/** @type {number} */ b = 0,
 			c = null,
 			textItem = null,
 			anchorItem = null,
