@@ -2009,7 +2009,7 @@
 	// convert number to string with no more than n decimal places
 	/** @returns {string} */
 	Life.prototype.toPlaces = function(/** @type {number} */ value, /** @type {number} */ places) {
-		var /** @type {string} */ result = "";
+		var	/** @type {string} */ result = "";
 
 		if (value === Math.floor(value)) {
 			result = String(value);
@@ -39285,23 +39285,30 @@
 
 			// tilt
 			if (this.tilt !== 0) {
-				var y, py, sy, x, px, sx, ex, pz,
-					width = this.context.canvas.width,
-					height = this.context.canvas.height,
+				var	/** @type {number} */ y,
+					/** @type {number} */ py,
+					/** @type {number} */ sy,
+					/** @type {number} */ x,
+					/** @type {number} */ px,
+					/** @type {number} */ sx,
+					/** @type {number} */ ex,
+					/** @type {number} */ pz,
+					/** @type {number} */ width = this.context.canvas.width,
+					/** @type {number} */ height = this.context.canvas.height,
 					/** @type {Uint32Array} */ data32 = this.data32,
-					mode7 = this.mode7Buffer,
-					halfwidth = width >> 1,
-					halfheight = height >> 1,
-					rowoffset = 0,
-					projrowoffset = 0,
-					mode7Angle = this.tilt - 1,
-					dx = 0,
+					/** @type {Uint32Array} */ mode7 = this.mode7Buffer,
+					/** @type {number} */ halfwidth = width >> 1,
+					/** @type {number} */ halfheight = height >> 1,
+					/** @type {number} */ rowoffset = 0,
+					/** @type {number} */ projrowoffset = 0,
+					/** @type {number} */ mode7Angle = this.tilt - 1,
+					/** @type {number} */ dx = 0,
 
 					// use pixel 0 colour for pixels not on projected grid
-					offGrid = this.boundaryColour,
+					/** @type {number} */ offGrid = this.boundaryColour,
 
 					// set the number of steps based on the tilt angle
-					mode7Step = (mode7Angle * 2 + 2) / height;
+					/** @type {number} */ mode7Step = (mode7Angle * 2 + 2) / height;
 	
 				// create the mode7 buffer if it has not been done so before
 				if (this.mode7Buffer === null) {

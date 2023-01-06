@@ -1288,13 +1288,13 @@
 
 	// draw shadow string
 	MenuList.prototype.drawShadowString = function(/** @type {string} */ string, /** @type {MenuItem} */ item) {
-		var /** @type {number} */ textWidth,
-		    /** @type {number} */ target,
-		    /** @type {number} */ i,
-		    /** @type {number} */ j,
-		    /** @type {string} */ testString = "",
-		    /** @type {string} */ ellipsis = "\u2026",
-		    /** @type {number} */ alignPos;
+		var	/** @type {number} */ textWidth,
+			/** @type {number} */ target,
+			/** @type {number} */ i,
+			/** @type {number} */ j,
+			/** @type {string} */ testString = "",
+			/** @type {string} */ ellipsis = "\u2026",
+			/** @type {number} */ alignPos;
 
 		// convert the string to a string
 		string += String();
@@ -2518,17 +2518,17 @@
 		/** @type {number} */ this.loadCount = 0;
 
 		// register event listeners for canvas click
-		registerEvent(mainCanvas, "mousedown", function(event) {me.canvasMouseDown(me, event);}, false);
-		registerEvent(mainCanvas, "mousemove", function(event) {me.canvasMouseMove(me, event);}, false);
-		registerEvent(mainCanvas, "mouseup", function(event) {me.canvasMouseUp(me, event);}, false);
-		registerEvent(mainCanvas, "mouseover", function(event) {me.canvasMouseOver(me, event);}, false);
-		registerEvent(mainCanvas, "mouseout", function(event) {me.canvasMouseOut(me, event);}, false);
+		registerEvent(mainCanvas, "mousedown", function(/** @type {MouseEvent} */ event) {me.canvasMouseDown(me, event);}, false);
+		registerEvent(mainCanvas, "mousemove", function(/** @type {MouseEvent} */ event) {me.canvasMouseMove(me, event);}, false);
+		registerEvent(mainCanvas, "mouseup", function(/** @type {MouseEvent} */ event) {me.canvasMouseUp(me, event);}, false);
+		registerEvent(mainCanvas, "mouseover", function(/** @type {MouseEvent} */ event) {me.canvasMouseOver(me, event);}, false);
+		registerEvent(mainCanvas, "mouseout", function(/** @type {MouseEvent} */ event) {me.canvasMouseOut(me, event);}, false);
 
 		// register event listeners for touch
-		registerEvent(mainCanvas, "touchstart", function(event) {me.touchHandler(me, event);}, false);
-		registerEvent(mainCanvas, "touchmove", function(event) {me.touchHandler(me, event);}, false);
-		registerEvent(mainCanvas, "touchend", function(event) {me.touchHandler(me, event);}, false);
-		registerEvent(mainCanvas, "touchcancel", function(event) {me.touchHandler(me, event);}, false);
+		registerEvent(mainCanvas, "touchstart", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
+		registerEvent(mainCanvas, "touchmove", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
+		registerEvent(mainCanvas, "touchend", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
+		registerEvent(mainCanvas, "touchcancel", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
 
 		// setup r g b components
 		this.setRGBComponents();
@@ -3345,7 +3345,7 @@
 	};
 
 	// touch event handler
-	MenuManager.prototype.touchHandler = function(/** @type {MenuManager} */ me, event) {
+	MenuManager.prototype.touchHandler = function(/** @type {MenuManager} */ me, /** @type {TouchEvent} */ event) {
 		var	/** @type {TouchList} */ changes = event.changedTouches,
 			/** @type {Touch} */ thisChange = null;
 			
@@ -3508,7 +3508,7 @@
 	};
 
 	// mouse down event
-	MenuManager.prototype.canvasMouseDown = function(/** @type {MenuManager} */ me, event) {
+	MenuManager.prototype.canvasMouseDown = function(/** @type {MenuManager} */ me, /** @type {MouseEvent} */ event) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
 
@@ -3536,7 +3536,7 @@
 	};
 
 	// mouse up event
-	MenuManager.prototype.canvasMouseUp = function(/** @type {MenuManager} */ me, event) {
+	MenuManager.prototype.canvasMouseUp = function(/** @type {MenuManager} */ me, /** @type {MouseEvent} */ event) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
 
@@ -3595,7 +3595,7 @@
 	};
 
 	// mouse move event
-	MenuManager.prototype.canvasMouseMove = function(/** @type {MenuManager} */ me, event) {
+	MenuManager.prototype.canvasMouseMove = function(/** @type {MenuManager} */ me, /** @type {MouseEvent} */ event) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
 
@@ -3623,7 +3623,7 @@
 	};
 
 	// mouse over event
-	MenuManager.prototype.canvasMouseOver = function(/** @type {MenuManager} */ me, event) {
+	MenuManager.prototype.canvasMouseOver = function(/** @type {MenuManager} */ me, /** @type {MouseEvent} */ event) {
 		// check if passing events
 		if (!me.passEvents) {
 			// perform over event
@@ -3639,7 +3639,7 @@
 	};
 
 	// mouse out event
-	MenuManager.prototype.canvasMouseOut = function(/** @type {MenuManager} */ me, event) {
+	MenuManager.prototype.canvasMouseOut = function(/** @type {MenuManager} */ me, /** @type {MouseEvent} */ event) {
 		// check if passing events
 		if (!me.passEvents) {
 			// perform out event
@@ -3657,7 +3657,7 @@
 	// get cursor position over canvas
 	MenuManager.prototype.updateCursorPosition = function(/** @type {MenuManager} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// get the bounding rectangle of the canvas
-		var rect = this.mainCanvas.getBoundingClientRect();
+		var	rect = this.mainCanvas.getBoundingClientRect();
 
 		// adjust for window scroll
 		if (!window.scrollX) {

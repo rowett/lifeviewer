@@ -359,13 +359,13 @@
 	/**
 	 * @constructor
 	 */
-	function Polygon(coords, /** @type {boolean} */ isFilled, /** @type {number} */ zoom, /** @type {number} */ minZoom, /** @type {number} */ maxZoom, /** @type {string} */ colour, /** @type {number} */ alpha, /** @type {number} */ size, /** @type {number} */ t1, /** @type {number} */ t2, /** @type {number} */ tFade,
+	function Polygon(/** @type {Array<number>} */ coords, /** @type {boolean} */ isFilled, /** @type {number} */ zoom, /** @type {number} */ minZoom, /** @type {number} */ maxZoom, /** @type {string} */ colour, /** @type {number} */ alpha, /** @type {number} */ size, /** @type {number} */ t1, /** @type {number} */ t2, /** @type {number} */ tFade,
 			/** @type {number} */ angle, /** @type {boolean} */ angleLocked, /** @type {boolean} */ positionLocked, /** @type {number} */ tDistance, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {boolean} */ shadow) {
 		// shadow on/off
 		/** @type {boolean} */ this.shadow = shadow;
 
 		// coordinates
-		this.coords = coords;
+		/** @type {Array<number>} */ this.coords = coords;
 
 		// whether filled
 		/** @type {boolean} */ this.isFilled = isFilled;
@@ -504,7 +504,7 @@
 		/** @type {boolean} */ this.shadow = shadow;
 
 		// message
-		this.message = "";
+		/** @type {string} */ this.message = "";
 
 		// whether message has population substitution
 		/** @type {number} */ this.popSub = -1;
@@ -586,19 +586,19 @@
 	 */
 	function WaypointManager() {
 		// list of waypoints
-		this.waypointList = [];
+		/** @type {Array<Waypoint>} */ this.waypointList = [];
 
 		// list of points of interest
-		this.poiList = [];
+		/** @type {Array<Waypoint>} */ this.poiList = [];
 
 		// list of labels
-		this.labelList = [];
+		/** @type {Array<Label>} */ this.labelList = [];
 
 		// list of arrows
-		this.arrowList = [];
+		/** @type {Array<Arrow>} */ this.arrowList = [];
 
 		// list of polygons
-		this.polyList = [];
+		/** @type {Array<Polygon>} */ this.polyList = [];
 
 		// current position
 		/** @type {Waypoint} */ this.current = new Waypoint(this);
@@ -623,7 +623,7 @@
 	}
 
 	// create a polygon
-	WaypointManager.prototype.createPolygon = function(coords, /** @type {boolean} */ isFilled, /** @type {number} */ zoom, /** @type {number} */ minZoom, /** @type {number} */ maxZoom, /** @type {string} */ colour, /** @type {number} */ alpha,
+	WaypointManager.prototype.createPolygon = function(/** @type {Array<number>} */ coords, /** @type {boolean} */ isFilled, /** @type {number} */ zoom, /** @type {number} */ minZoom, /** @type {number} */ maxZoom, /** @type {string} */ colour, /** @type {number} */ alpha,
 			/** @type {number} */ size, /** @type {number} */ t1, /** @type {number} */ t2, /** @type {number} */ tFade, /** @type {number} */ angle, /** @type {boolean} */ angleLocked, /** @type {boolean} */ positionLocked, /** @type {number} */ tdistance, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {boolean} */ shadow) {
 		return new Polygon(coords, isFilled, zoom, minZoom, maxZoom, colour, alpha, size, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow);
 	};
@@ -1275,7 +1275,7 @@
 			/** @type {number} */ shadowOffset = 0,
 			/** @type {number} */ boundedDx = 0,
 			/** @type {number} */ boundedDy = 0,
-			coords = [],
+			/** @type {Array<number>} */ coords = [],
 			/** @type {number} */ length = 0,
 			/** @type {number} */ coord = 0,
 			/** @type {number} */ floatCounter = view.fixedPointCounter / view.refreshRate;
@@ -2424,10 +2424,10 @@
 	// return the index of the closest waypoint to a generation
 	/** @returns {number} */
 	WaypointManager.prototype.findWaypointNear = function(/** @type {number} */ generation) {
-		var /** @type {number} */ i = 0,
-		    /** @type {boolean} */ found = false,
-		    waypointList = this.waypointList,
-		    /** @type {number} */ length = this.numWaypoints();
+		var	/** @type {number} */ i = 0,
+			/** @type {boolean} */ found = false,
+			/** @type {Array<Waypoint>} */ waypointList = this.waypointList,
+			/** @type {number} */ length = this.numWaypoints();
 
 		// find the waypoint at or beyond the specified generation
 		while (i < length && !found) {

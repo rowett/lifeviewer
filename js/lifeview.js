@@ -1343,7 +1343,7 @@
 		/** @type {boolean} */ this.controlsLocked = false;
 
 		// waypoint manager
-		this.waypointManager = new WaypointManager();
+		/** @type {WaypointManager} */ this.waypointManager = new WaypointManager();
 
 		// last waypoint message
 		/** @type{string} */ this.lastWaypointMessage = "";
@@ -11148,7 +11148,7 @@
 	};
 
 	// mouse wheel
-	View.prototype.wheel = function(/** @type {View} */ me, event) {
+	View.prototype.wheel = function(/** @type {View} */ me, /** @type {WheelEvent} */ event) {
 		// check if the canvas has focus
 		if (me.menuManager.hasFocus) {
 			// update wheel position if not computing history
@@ -15279,7 +15279,7 @@
 	};
 
 	// key down
-	View.prototype.keyDown = function(/** @type {View} */ me, event) {
+	View.prototype.keyDown = function(/** @type {View} */ me, /** @type {KeyboardEvent} */ event) {
 		// get the key code
 		var	/** @type {number} */ keyCode = event.charCode || event.keyCode,
 
@@ -16441,7 +16441,7 @@
 			this.createMenus();
 
 			// register mouse wheel event
-			registerEvent(this.mainCanvas, "wheel", function(event) {me.wheel(me,event);}, false);
+			registerEvent(this.mainCanvas, "wheel", function(/** @type {WheelEvent} */ event) {me.wheel(me, event);}, false);
 
 			// enable notifications
 			this.menuManager.notification.enabled = true;
@@ -16450,7 +16450,7 @@
 			this.menuManager.activeMenu(this.viewMenu);
 			
 			// register keyboard input
-			registerEvent(this.mainCanvas, "keydown", function(event) {me.keyDown(me, event);}, false);
+			registerEvent(this.mainCanvas, "keydown", function(/** @type {KeyboardEvent} */ event) {me.keyDown(me, event);}, false);
 
 			// success
 			result = true;
@@ -17131,7 +17131,9 @@
 	// start the viewer from a supplied pattern string
 	View.prototype.startViewer = function(/** @type {string} */ patternString, /** @type {boolean} */ ignoreThumbnail) {
 		var	/** @type {number} */ savedW = 0,
-			/** @type {number} */ savedH = 0;
+			/** @type {number} */ savedH = 0,
+			/** @type {Pattern} */ pattern = null,
+			/** @type {Pattern} */ temp = null;
 
 		// reset playback speed
 		this.genSpeed = 60;
@@ -17145,7 +17147,7 @@
 		// attempt to load the pattern
 		this.origDisplayWidth = this.displayWidth;
 		this.origDisplayHeight = this.displayHeight;
-		var pattern = this.manager.create("", patternString, this.engine.allocator, this.completeStart, this.completeStartFailed, [ignoreThumbnail], this);
+		pattern = this.manager.create("", patternString, this.engine.allocator, this.completeStart, this.completeStartFailed, [ignoreThumbnail], this);
 		this.lastFailReason = this.manager.failureReason;
 
 		// if the pattern loaded synchronously (i.e. did not need a rule definition from the repository) then complete the setup
@@ -17157,7 +17159,7 @@
 			savedW = this.manager.specifiedWidth;
 			savedH = this.manager.specifiedHeight;
 			
-			var temp = this.manager.create("", "x=1,y=1,rule=Life\n!", this.engine.allocator, this.completeStart, this.completeStart, [ignoreThumbnail], this);
+			temp = this.manager.create("", "x=1,y=1,rule=Life\n!", this.engine.allocator, this.completeStart, this.completeStart, [ignoreThumbnail], this);
 			this.completeStart(temp, [ignoreThumbnail], this);
 
 			this.manager.specifiedWidth = savedW;
@@ -17174,7 +17176,7 @@
 	};
 
 	// complete pattern start process after lookup failure
-	View.prototype.completeStartFailed = function(pattern, args, /** @type {View} */ me) {
+	View.prototype.completeStartFailed = function(/** @type {Pattern} */ pattern, /** @type {Array} */ args, /** @type {View} */ me) {
 		// add the pattern comments to the args
 		args[args.length] = pattern.title;
 		args[args.length] = pattern.numStates;
@@ -17223,7 +17225,7 @@
 	};
 
 	// complete pattern start process
-	View.prototype.completeStart = function(/** @type {Pattern} */ pattern, args, /** @type {View} */ me) {
+	View.prototype.completeStart = function(/** @type {Pattern} */ pattern, /** @type {Array} */ args, /** @type {View} */ me) {
 		var	/** @type {number} */ numberValue = 0,
 			/** @type {number} */ savedX = 0,
 			/** @type {number} */ savedY = 0,
@@ -19022,7 +19024,7 @@
 	}
 
 	// callback for hide viewer anchor
-	function hideCallback(event) {
+	function hideCallback(/** @type {PointerEvent} */ event) {
 		hideViewer();
 
 		// stop event propagating
@@ -19101,7 +19103,7 @@
 		popup.displayed = true;
 
 		// ensure popup is within the browser window
-		popup.resizeWindow(popup, null);
+		popup.resizeWindow(popup);
 
 		// scale the elements
 		if (view.viewMenu.yScale !== 1) {
@@ -19322,7 +19324,7 @@
 	}
 
 	// callback for show pattern error link
-	function patternErrorCallback(event, /** @type {string} */ message) {
+	function patternErrorCallback(/** @type {PointerEvent} */ event, /** @type {string} */ message) {
 		// stop event propagating
 		if (event.stopPropagation) {
 			event.stopPropagation();
@@ -19345,7 +19347,7 @@
 		newAnchor.innerHTML = "Show Pattern Error";
 
 		// set the onclick
-		registerEvent(newAnchor, "click", function(event) {patternErrorCallback(event, message);}, false);
+		registerEvent(newAnchor, "click", function(/** @type {PointerEvent} */ event) {patternErrorCallback(event, message);}, false);
 
 		// check if there was an anchor
 		if (anchorItem) {
@@ -19362,7 +19364,7 @@
 	}
 
 	// complete isPattern check
-	function completeIsPattern(/** @type {Pattern} */ pattern, args) {
+	function completeIsPattern(/** @type {Pattern} */ pattern, /** @type {Array} */ args) {
 		// unpack arguments
 		var	/** @type {string} */ patternString = args[0],
 			rleItem = args[1],
@@ -19382,7 +19384,7 @@
 	}
 
 	// complete isPattern check after load failure
-	function completeIsPatternFailed(/** @type {Pattern} */ pattern, args) {
+	function completeIsPatternFailed(/** @type {Pattern} */ pattern, /** @type {Array} */ args) {
 		// unpack arguments
 		var	rleItem = args[1],
 			textItem = args[2];
@@ -19399,14 +19401,14 @@
 		var	/** @type {Pattern} */ pattern = null;
 
 		// attempt to create a pattern
-		pattern = manager.create("", patternString, allocator, completeIsPattern, completeIsPatternFailed, [patternString, rleItem, textItem], null);
+		pattern = manager.create("", patternString, allocator, completeIsPattern, completeIsPatternFailed, [], null);
 		if (!manager.loadingFromRepository) {
 			completeIsPattern(pattern, [patternString, rleItem, textItem]);
 		}
 	}
 
 	// callback for show in viewer anchor
-	function anchorCallback(event) {
+	function anchorCallback(/** @type {PointerEvent} */ event) {
 		/*jshint -W040 */
 		updateViewer(this);
 

@@ -721,9 +721,9 @@
 	};
 
 	// validate waypoint message string
-	ScriptParser.validateString = function(/** @type {string} */ message, scriptErrors, /** @type {boolean} */ readingTitle, /** @type {boolean} */ readingLabel) {
+	ScriptParser.validateString = function(/** @type {string} */ message, /** @type {Array} */ scriptErrors, /** @type {boolean} */ readingTitle, /** @type {boolean} */ readingLabel) {
 		// check for newline
-		var index = message.indexOf("\\n");
+		var	/** @type {number} */ index = message.indexOf("\\n");
 
 		if (index !== -1) {
 			// check whether this is the window title
@@ -1322,8 +1322,11 @@
 			// loop counter
 			/** @type {number} */ i = 0,
 
+			/** @type {number} */ lower = 0,
+			/** @type {boolean} */ sizeError = false,
+
 			// dummy pattern for RLE decoding
-			pattern = new Pattern("decode", view.manager),
+			/** @type {Pattern} */ pattern = new Pattern("decode", view.manager),
 
 			// suppress errors flags
 			suppressErrors = {
@@ -5687,8 +5690,6 @@
 		}
 
 		// check if width was specified
-		var lower = 0;
-		var sizeError = false;
 		if (view.requestedWidth !== -1) {
 			// handle legacy minimum widths
 			lower = ViewConstants.minViewerWidth;

@@ -59,17 +59,17 @@
 		/** @type {number} */ this.resizeDx = 0;
 
 		// register event listeners for element click
-		registerEvent(title, "mousedown", function(event) {me.elementMouseDown(me, event);}, false);
-		registerEvent(document, "mousemove", function(event) {me.elementMouseMove(me, event);}, false);
-		registerEvent(document, "mouseup", function(event) {me.elementMouseUp(me, event);}, false);
+		registerEvent(title, "mousedown", function(/** @type {MouseEvent} */ event) {me.elementMouseDown(me, event);}, false);
+		registerEvent(document, "mousemove", function(/** @type {MouseEvent} */ event) {me.elementMouseMove(me, event);}, false);
+		registerEvent(document, "mouseup", function(/** @type {MouseEvent} */ event) {me.elementMouseUp(me, event);}, false);
 
 		// register event listeners for touch
-		registerEvent(title, "touchstart", function(event) {me.touchHandler(me, event);}, false);
-		registerEvent(title, "touchmove", function(event) {me.touchHandler(me, event);}, false);
-		registerEvent(title, "touchend", function(event) {me.touchHandler(me, event);}, false);
+		registerEvent(title, "touchstart", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
+		registerEvent(title, "touchmove", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
+		registerEvent(title, "touchend", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
 
 		// register event listener for window resize
-		registerEvent(window, "resize", function(event) {me.resizeWindow(me, event);}, false);
+		registerEvent(window, "resize", function() {me.resizeWindow(me);}, false);
 	}
 
 	// find touch change by identified
@@ -96,7 +96,7 @@
 	};
 
 	// touch event handler
-	PopupWindow.prototype.touchHandler = function(/** @type {PopupWindow} */ me, event) {
+	PopupWindow.prototype.touchHandler = function(/** @type {PopupWindow} */ me, /** @type {TouchEvent} */ event) {
 		var	/** @type {TouchList} */ changes = event.changedTouches,
 			/** @type {Touch} */ thisChange = null;
 			
@@ -146,7 +146,7 @@
 
 	// resize window
 	/* eslint-disable no-unused-vars */
-	PopupWindow.prototype.resizeWindow = function(/** @type {PopupWindow} */ me, event) {
+	PopupWindow.prototype.resizeWindow = function(/** @type {PopupWindow} */ me) {
 		var	/** @type {View} */ view = this.view;
 
 		// check if window needs rescaling
@@ -260,7 +260,7 @@
 	};
 
 	// mouse down event
-	PopupWindow.prototype.elementMouseDown = function(/** @type {PopupWindow} */ me, event) {
+	PopupWindow.prototype.elementMouseDown = function(/** @type {PopupWindow} */ me, /** @type {MouseEvent} */ event) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
 
@@ -287,7 +287,7 @@
 	};
 
 	// mouse up event
-	PopupWindow.prototype.elementMouseUp = function(/** @type {PopupWindow} */ me, event) {
+	PopupWindow.prototype.elementMouseUp = function(/** @type {PopupWindow} */ me, /** @type {MouseEvent} */ event) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
 
@@ -317,7 +317,7 @@
 	};
 
 	// mouse move event
-	PopupWindow.prototype.elementMouseMove = function(/** @type {PopupWindow} */ me, event) {
+	PopupWindow.prototype.elementMouseMove = function(/** @type {PopupWindow} */ me, /** @type {MouseEvent} */ event) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
 

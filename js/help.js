@@ -430,8 +430,8 @@
 	/** @returns {string} */
 	Help.pad = function(/** @type {string} */ string, /** @type {number} */ padding) {
 		// compute padding length
-		var	/** @type {number} */ l = padding - string.length;
-			/** @type {string} */ var result = "";
+		var	/** @type {number} */ l = padding - string.length,
+			/** @type {string} */ result = "";
 
 		while (l > 0) {
 			result += " ";

@@ -19,7 +19,7 @@
 
 	// add a request to the cache
 	/** @returns {boolean} */
-	RuleTreeCache.addRequest = function(/** @type {Pattern} */ pattern, succeedCallback, failCallback, args, /** @type {View} */ view) {
+	RuleTreeCache.addRequest = function(/** @type {Pattern} */ pattern, succeedCallback, failCallback, /** @type {Array} */ args, /** @type {View} */ view) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ l = this.requests.length,
 			request = null,
@@ -977,12 +977,12 @@
 		/** @type {Array<string>} */ this.ruleTableNames = [];
 
 		// rule table icons
-		this.ruleTableIcons = null;
+		/** @type {Array} */ this.ruleTableIcons = null;
 	}
 
 	// check if pattern is HROT and has B0
 	Pattern.prototype.hasHROTB0 = function() {
-		var /** @type {boolean} */ result = false;
+		var	/** @type {boolean} */ result = false;
 
 		if (this.isHROT && this.birthHROT[0] !== 0) {
 			result = true;
@@ -1942,15 +1942,15 @@
 	// set triangular totalistic neighbourhood
 	PatternManager.prototype.setTriangularTotalistic = function(/** @type {Uint8Array} */ ruleTriangularArray, /** @type {number} */ value, /** @type {boolean} */ survival, /** @type {number} */ ruleMask) {
 		// mask
-		var /** @type {number} */ mask = 0,
+		var	/** @type {number} */ mask = 0,
 
-		    // neighbours
-		    /** @type {number} */ neighbours = 0,
-		    /** @type {number} */ neighbourhood = 0,
-
-		    // counters
-		    /** @type {number} */ i = 0,
-		    /** @type {number} */ j = 0;
+			// neighbours
+			/** @type {number} */ neighbours = 0,
+			/** @type {number} */ neighbourhood = 0,
+	
+			// counters
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0;
 
 		// compute the mask
 		if (survival) {
@@ -2028,15 +2028,15 @@
 	// set totalistic neighbourhood
 	PatternManager.prototype.setTotalistic = function(/** @type {Uint8Array} */ ruleArray, /** @type {number} */ value, /** @type {boolean} */ survival, /** @type {number} */ hexMask) {
 		// mask
-		var mask = 0,
+		var	/** @type {number} */ mask = 0,
 
-		    // neighbours
-		    neighbours = 0,
-		    neighbourhood = 0,
+			// neighbours
+			/** @type {number} */ neighbours = 0,
+			/** @type {number} */ neighbourhood = 0,
 
-		    // counters
-		    i = 0,
-		    j = 0;
+			// counters
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0;
 
 		// compute the mask
 		if (survival) {
@@ -5147,7 +5147,7 @@
 	// decode Margolus rule
 	/** @returns {boolean} */
 	PatternManager.prototype.decodeMargolus = function(/** @type {string} */ rule, /** @type {Uint8Array} */ ruleArray) {
-		var 	/** @type {boolean} */ valid = true,
+		var	/** @type {boolean} */ valid = true,
 			/** @type {number} */ index = 0,
 			/** @type {number} */ length = rule.length,
 			/** @type {number} */ item = 0,
@@ -9398,7 +9398,7 @@
 
 	// add a pattern to the list
 	/** @returns {Pattern} */
-	PatternManager.prototype.create = function(/** @type {string} */ name, /** @type {string} */ source, /** @type {Allocator} */ allocator, succeedCallback, failCallback, args, /** @type {View} */ view) {
+	PatternManager.prototype.create = function(/** @type {string} */ name, /** @type {string} */ source, /** @type {Allocator} */ allocator, succeedCallback, failCallback, /** @type {Array} */ args, /** @type {View} */ view) {
 		// create a pattern skeleton
 		var	/** @type {Pattern} */ newPattern = new Pattern(name, this),
 			/** @type {number} */ states = 0,
@@ -9646,7 +9646,7 @@
 	};
 
 	// load event handler
-	PatternManager.prototype.loadHandler = function(/** @type {PatternManager} */ me, event, xhr, /** @type {Pattern} */ pattern) {
+	PatternManager.prototype.loadHandler = function(/** @type {PatternManager} */ me, /** @type {ProgressEvent} */ event, /** @type {XMLHttpRequest} */ xhr, /** @type {Pattern} */ pattern) {
 		// rule table text
 		var	/** @type {string} */ ruleText = "",
 			/** @type {number} */ fetchTime = 0,
@@ -9682,13 +9682,13 @@
 	};
 
 	// error event handler
-	PatternManager.prototype.errorHandler = function(/** @type {PatternManager} */ me, event, xhr, /** @type {Pattern} */ pattern) {
+	PatternManager.prototype.errorHandler = function(/** @type {PatternManager} */ me, /** @type {ProgressEvent} */ event, /** @type {Pattern} */ pattern) {
 		// inform other requesters that this rule failed to load
 		RuleTreeCache.requestFailed(pattern);
 	};
 
 	// load rule table from URI
-	PatternManager.prototype.loadRuleTable = function(/** @type {Pattern} */ pattern, succeedCallback, failCallback, args, /** @type {View} */ view) {
+	PatternManager.prototype.loadRuleTable = function(/** @type {Pattern} */ pattern, succeedCallback, failCallback, /** @type {Array} */ args, /** @type {View} */ view) {
 		var	/** @type {PatternManager} */ me = this,
 			/** @type {XMLHttpRequest} */ xhr = null,
 			/** @type {string} */ ruleName = pattern.ruleName,
@@ -9729,8 +9729,8 @@
 			this.ruleSearchURI = uri;
 	
 			// register load and error events
-			registerEvent(xhr, "load", function(event) {me.loadHandler(me, event, xhr, pattern);}, false);
-			registerEvent(xhr, "error", function(event) {me.errorHandler(me, event, xhr, pattern);}, false);
+			registerEvent(xhr, "load", function(/** @type {ProgressEvent} */ event) {me.loadHandler(me, event, xhr, pattern);}, false);
+			registerEvent(xhr, "error", function(/** @type {ProgressEvent} */ event) {me.errorHandler(me, event, pattern);}, false);
 	
 			// attempt to get the requested resource
 			xhr.open("GET", uri, true);

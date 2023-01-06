@@ -1249,28 +1249,28 @@
 		/** @type {Allocator} */ this.allocator = allocator;
 
 		// snapshots
-		this.snapshots = [];
+		/** @type {Array<Snapshot>} */ this.snapshots = [];
 
 		// whether buffer used
-		this.bufferUsed = [];
+		/** @type {Array<boolean>} */ this.bufferUsed = [];
 
 		// tile grids
-		this.tileGrids = [];
+		/** @type {Array<Array<Uint16Array>>} */ this.tileGrids = [];
 
 		// colour tile grids
-		this.colourTileGrids = [];
+		/** @type {Array<Array<Uint16Array>>} */ this.colourTileGrids = [];
 
 		// overlay tile grids
-		this.overlayTileGrids = [];
+		/** @type {Array<Array<Uint16Array>>} */ this.overlayTileGrids = [];
 
 		// grid buffers
-		this.gridBuffers = [];
+		/** @type {Array<Array<Uint32Array>>} */ this.gridBuffers = [];
 
 		// colour buffers
-		this.colourBuffers = [];
+		/** @type {Array<Array<Uint32Array>>} */ this.colourBuffers = [];
 
 		// overlay buffers
-		this.overlayBuffers = [];
+		/** @type {Array<Array<Uint32Array>>} */ this.overlayBuffers = [];
 
 		// number of buffers allocated
 		/** @type {number} */ this.numBuffers = 0;
