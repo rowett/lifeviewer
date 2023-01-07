@@ -3228,7 +3228,7 @@
 	};
 
 	// draw triangle selection
-	Life.prototype.drawTriangleSelection = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY/** @type {number} */ , /** @type {number} */ xOff, /** @type {number} */ yOff) {
+	Life.prototype.drawTriangleSelection = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xOff, /** @type {number} */ yOff) {
 		var	/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
 			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
 			/** @type {number} */ x = 0,

@@ -759,9 +759,10 @@
 	};
 
 	// return rule from alias
+	/** @returns {string|null} */
 	AliasManager.getRuleFromAlias = function(/** @type {string} */ alias) {
 		// result
-		var	result = null,
+		var	/** @type {string|null} */ result = null,
 
 			// counter
 			/** @type {number} */ i = 0;
@@ -811,9 +812,10 @@
 	};
 
 	// return alias from rule
+	/** @returns {string|null} */
 	AliasManager.getAliasFromRule = function(/** @type {string} */ rule) {
 		// result
-		var	result = null,
+		var	/** @type {string|null} */ result = null,
 
 			// counter
 			/** @type {number} */ i = 0;

@@ -373,7 +373,7 @@
 	// add an extra row to an array
 	Array.addRow = function(source, /** @type {number} */ initial, /** @type {string} */ name) {
 		// get the size of the source row
-		var	m = source[0].length,
+		var	/** @type {number} */ m = source[0].length,
 
 			// create the new row
 			row = source.allocator.allocateRow(source.type, m, name, source.length + 1);

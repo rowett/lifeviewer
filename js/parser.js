@@ -1032,7 +1032,7 @@
 	};
 
 	// output error message if camera mode already defined
-	ScriptParser.modeDefined = function(/** @type {boolean} */ isLinear, /** @type {string} */ command, /** @type {string} */ argument, scriptErrors) {
+	ScriptParser.modeDefined = function(/** @type {boolean} */ isLinear, /** @type {string} */ command, /** @type {string} */ argument, /** @type {Array} */ scriptErrors) {
 		// check if linear
 		if (isLinear) {
 			// check if linear command

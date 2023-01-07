@@ -627,7 +627,7 @@
 	 * @constructor
 	 */
 	function MenuItem(/** @type {number} */ id, callback, /** @type {View} */ caller, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height,
-			lower, /** @type {number} */ upper, current, /** @type {number} */ type, /** @type {number} */ orientation, /** @type {boolean} */ valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText, /** @type {number} */ fixed, icon, /** @type {MenuList} */ owner) {
+			/** @type {number|Array<string>} */ lower, /** @type {number} */ upper, /** @type {number|Array<boolean>} */ current, /** @type {number} */ type, /** @type {number} */ orientation, /** @type {boolean} */ valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText, /** @type {number} */ fixed, icon, /** @type {MenuList} */ owner) {
 		var	/** @type {number} */ i = 0;
 
 		// id
@@ -739,7 +739,7 @@
 		// whether individual list items are locked
 		/** @type {Array<boolean>} */ this.itemLocked = [];
 		if (this.type === Menu.list) {
-			for (i = 0; i < lower.length; i += 1) {
+			for (i = 0; i < /** @type {!Array} */ (lower).length; i += 1) {
 				this.itemLocked[i] = false;
 			}
 		}
@@ -763,7 +763,7 @@
 		// set background colour list
 		if (type === Menu.list) {
 			/** @type {Array<string>} */ this.bgColList = [];
-			for (i = 0; i < lower.length; i += 1) {
+			for (i = 0; i < /** @type {!Array} */ (lower).length; i += 1) {
 				this.bgColList[i] = this.bgCol;
 			}
 		}
@@ -794,6 +794,8 @@
 		// decompose the font into size and family
 		/** @type {number} */ this.fontSize = parseInt(owner.defaultFont.substr(0, owner.defaultFont.indexOf("px")), 10);
 		/** @type {string} */ this.fontFamily = owner.defaultFont.substr(owner.defaultFont.indexOf("px") + 3);
+
+		console.debug(id, lower, upper, current);
 	}
 
 	// delete if shown
@@ -813,15 +815,15 @@
 	MenuItem.prototype.setColours = function(/** @type {string} */ fg, /** @type {string} */ bg, /** @type {string} */ highlight, /** @type {string} */ selected, /** @type {string} */ locked, /** @type {string} */ border) {
 		var	/** @type {number} */ i = 0;
 
-		/** @type {string} */ this.fgCol = fg;
-		/** @type {string} */ this.bgCol = bg;
-		/** @type {string} */ this.hlCol = highlight;
-		/** @type {string} */ this.selectedCol = selected;
-		/** @type {string} */ this.lockedCol = locked;
-		/** @type {string} */ this.borderCol = border;
+		this.fgCol = fg;
+		this.bgCol = bg;
+		this.hlCol = highlight;
+		this.selectedCol = selected;
+		this.lockedCol = locked;
+		this.borderCol = border;
 		if (this.type === Menu.list) {
 			this.bgColList = [];
-			for (i = 0; i < this.lower.length; i += 1) {
+			for (i = 0; i < /** @type {!Array} */ (this.lower).length; i += 1) {
 				this.bgColList[i] = this.bgCol;
 			}
 		}
@@ -1414,7 +1416,7 @@
 			/** @type {number} */ markerPos;
 
 		// compute the marker position in the bar
-		markerPos = (item.current - item.lower) / (item.upper - item.lower);
+		markerPos = (/** @type {!number} */ (item.current) - /** @type {!number} */ (item.lower) / (item.upper) - /** @type {!number} */ (item.lower));
 
 		// set the highlight alpha
 		this.context.globalAlpha = item.bgAlpha;
@@ -1444,7 +1446,7 @@
 		if (item.valueDisplay) {
 			// add the value
 			if (item.fixed !== -1) {
-				itemString += item.current.toFixed(item.fixed);
+				itemString += /** @type {!number} */ (item.current).toFixed(item.fixed);
 			} else {
 				itemString += item.current;
 			}
@@ -1467,7 +1469,7 @@
 			/** @type {string} */ itemString;
 
 		// compute the marker position in the range
-		markerPos = (item.current[0] - item.lower) / (item.upper - item.lower);
+		markerPos = (item.current[0] - /** @type {!number} */ (item.lower)) / (item.upper - /** @type {!number} */ (item.lower));
 
 		// get the highlight size
 		highlightSize = this.rangeHighlightSize;
@@ -1576,7 +1578,7 @@
 			/** @type {number} */ mouseY;
 
 		// read the grid size
-		gridX = item.lower;
+		gridX = /** @type {!number} */ (item.lower);
 		gridY = item.upper;
 
 		mouseX = this.mouseX;
@@ -1613,7 +1615,7 @@
 			/** @type {number} */ itemSize,
 			/** @type {string} */ text,
 			/** @type {number} */ itemNum,
-			list,
+			/** @type {Array} */ list,
 			// get the item position and size
 			/** @type {number} */ x = item.x,
 			/** @type {number} */ y = item.y,
@@ -1623,7 +1625,7 @@
 			values = item.current;
 
 		// get the list items
-		list = item.lower;
+		list = /** @type {!Array} */ (item.lower);
 		l = list.length;
 		if (item.orientation === Menu.horizontal) {
 			itemSize = width / l;
@@ -1637,7 +1639,7 @@
 
 		if (item.upper === Menu.single) {
 			// single so draw set item
-			i =  item.current;
+			i =  /** @type {number} */ (item.current);
 			if (i >= 0 && i < l) {
 				if (item.orientation === Menu.horizontal) {
 					this.context.fillRect(x + i * itemSize + 1, y + 1, itemSize - 2, height - 2);
@@ -1800,7 +1802,7 @@
 		// progress bar
 		case Menu.progressBar:
 			// compute the marker position
-			markerPos = (item.current - item.lower) / (item.upper - item.lower);
+			markerPos = (/** @type {!number} */ (item.current) - /** @type {!number} */ (item.lower)) / (item.upper - /** @type {!number} */ (item.lower));
 
 			// set selected colour
 			this.context.fillStyle = item.selectedCol;
@@ -1836,7 +1838,7 @@
 		// range
 		case Menu.range:
 			// compute the marker position in the range
-			markerPos = (item.current[0] - item.lower) / (item.upper - item.lower);
+			markerPos = (item.current[0] - /** @type {!number} */ (item.lower)) / (item.upper - /** @type {!number} */ (item.lower));
 			highlight = canHighlight && ((itemNum === activeNum) || (activeNum === -1 && mouseIsOver));
 
 			// get the highlight size
@@ -1886,7 +1888,7 @@
 
 		// list
 		case Menu.list:
-			l = item.lower.length;
+			l = /** @type {!Array} */ (item.lower).length;
 			if (item.orientation === Menu.horizontal) {
 				w = item.width / l;
 				for (i = 0; i < l; i += 1) {
@@ -1939,7 +1941,7 @@
 
 			case Menu.list:
 				// draw boxes around each list item
-				l = item.lower.length;
+				l = /** @type {!Array} */ (item.lower).length;
 				if (item.orientation === Menu.horizontal) {
 					w = item.width / l;
 					for (i = 0; i < l; i += 1) {
@@ -2024,10 +2026,10 @@
 							mY = item.y + item.height - 1;
 						}
 					}
-					i = ((mY - item.y) / (item.height - 1)) * (item.upper - item.lower) + item.lower;
+					i = ((mY - item.y) / (item.height - 1)) * (item.upper - /** @type {!number} */ (item.lower)) + /** @type {!number} */ (item.lower);
 					if (item.lower < item.upper) {
 						if (i < item.lower) {
-							i = item.lower;
+							i = /** @type {!number} */ (item.lower);
 						}
 						if (i > item.upper) {
 							i = item.upper;
@@ -2037,7 +2039,7 @@
 							i = item.upper;
 						}
 						if (i > item.lower) {
-							i = item.lower;
+							i = /** @type {!number} */ (item.lower);
 						}
 					}
 					item.current[0] = i;
@@ -2053,10 +2055,10 @@
 							mX = item.x + item.width - 1;
 						}
 					}
-					i = ((mX - item.x) / (item.width - 1)) * (item.upper - item.lower) + item.lower;
+					i = ((mX - item.x) / (item.width - 1)) * (item.upper - /** @type {!number} */ (item.lower)) + /** @type {!number} */ (item.lower);
 					if (item.lower < item.upper) {
 						if (i < item.lower) {
-							i = item.lower;
+							i = /** @type {!number} */ (item.lower);
 						}
 						if (i > item.upper) {
 							i = item.upper;
@@ -2066,7 +2068,7 @@
 							i = item.upper;
 						}
 						if (i > item.lower) {
-							i = item.lower;
+							i = /** @type {!number} */ (item.lower);
 						}
 					}
 					item.current[0] = i;
@@ -2098,7 +2100,7 @@
 			// list clicked
 			case Menu.list:
 				// determine which item clicked
-				l = item.lower.length;
+				l = /** @type {!Array} */ (item.lower).length;
 				if (item.orientation === Menu.horizontal) {
 					w = (((this.mouseX - item.x) / item.width) * l) | 0;
 				} else {
@@ -2768,12 +2770,12 @@
 					// check orientation
 					if (control.orientation === Menu.horizontal) {
 						// adjust x position and width
-						controlX += (controlWidth / control.lower.length) * control.highlightItem;
-						controlWidth /= control.lower.length;
+						controlX += (controlWidth / /** @type {!Array} */ (control.lower).length) * control.highlightItem;
+						controlWidth /= /** @type {!Array} */ (control.lower).length;
 					} else {
 						// adjust y position and width
-						controlY += (controlHeight / control.lower.length) * control.highlightItem;
-						controlHeight /= control.lower.length;
+						controlY += (controlHeight / /** @type {!Array} */ (control.lower).length) * control.highlightItem;
+						controlHeight /= /** @type {!Array} */ (control.lower).length;
 					}
 				}
 

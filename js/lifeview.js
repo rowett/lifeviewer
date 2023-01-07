@@ -6830,7 +6830,7 @@
 		this.stateColsList.deleted = shown;
 		if (this.engine.multiNumStates <= 2 && !this.engine.isRuleTree) {
 			// 2-state potentially with LifeHistory
-			for (i = 0; i < this.stateColsList.lower.length; i += 1) {
+			for (i = 0; i < /** @type {!Array} */ (this.stateColsList.lower).length; i += 1) {
 				if (i <= 2) {
 					// 2 state
 					if (i === 0) {
@@ -6848,7 +6848,7 @@
 			}
 		} else {
 			// multi-state generations style
-			for (i = 0; i < this.stateColsList.lower.length; i += 1) {
+			for (i = 0; i < /** @type {!Array} */ (this.stateColsList.lower).length; i += 1) {
 				if (i + this.startState === 0) {
 					value = 0;
 				} else {
@@ -8423,7 +8423,7 @@
 					// drawing
 					me.playbackDrawPause = false;
 					if (me.viewOnly || me.engine.isNone) {
-						result = me.modeList.current;
+						result = /** @type {!number} */ (me.modeList.current);
 					} else {
 						me.drawing = true;
 						// turn off pick mode
@@ -8531,7 +8531,7 @@
 	// get UI paste mode
 	/** @returns {number} */
 	View.prototype.getUIPasteMode = function() {
-		return ViewConstants.uiPasteModes[this.pasteModeList.current];
+		return ViewConstants.uiPasteModes[/** @type {!number} */ (this.pasteModeList.current)];
 	};
 
 	// paste mode
@@ -11754,7 +11754,7 @@
 			// clear errors
 			me.scriptErrors = [];
 			me.displayErrors = 0;
-			me.setMousePointer(me.modeList.current);
+			me.setMousePointer(/** @type {!number} */ (me.modeList.current));
 		} else {
 			// hide the viewer
 			hideViewer();
@@ -14616,7 +14616,7 @@
 			}
 		}
 
-		me.setMousePointer(me.modeList.current);
+		me.setMousePointer(/** @type {!number} */ (me.modeList.current));
 
 		return [me.displayHelp !== 0];
 	};

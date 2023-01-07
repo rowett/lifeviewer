@@ -3118,7 +3118,7 @@
 
 	// add postfixes to canonical rule name
 	PatternManager.prototype.addNamePostfixes = function(/** @type {Pattern} */ pattern, /** @type {string} */ base64) {
-		var	aliasName = null,
+		var	/** @type {string|null} */ aliasName = null,
 			/** @type {string} */ nameLtL = "";
 
 		// add the neighbourhood
@@ -4956,8 +4956,8 @@
 		// check for alternate rules
 		var	/** @type {number} */ altIndex = -1,
 			/** @type {Pattern} */ firstPattern = null,
-			alias = null,
-			/** @type {string} */ aliasName = "",
+			/** @type {string|null} */ alias = null,
+			/** @type {string|null} */ aliasName = "",
 			/** @type {boolean} */ result = false;
 
 		// check if the rule is an alias
@@ -5015,7 +5015,7 @@
 								}
 								// add the alternate alias names if at least one is set or the whole rule was an alias
 								if (aliasName !== "") {
-									pattern.aliasName = aliasName;
+									pattern.aliasName = /*** @type {!string} */ (aliasName);
 								} else {
 									if (pattern.aliasName !== "" || firstPattern.aliasName !== "") {
 										if (pattern.aliasName === "") {

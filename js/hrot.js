@@ -730,7 +730,7 @@
 	};
 
 	// weighted generations neighbourhood optimized range 1 version
-	HROT.prototype.nextGenerationWeightedGenerations = function(/** @const{number} */ bottomY, /** @const{number} */ topY, /** @const{number} */ leftX, /** @const{number} */ rightX, /** @const{number} */ range) {
+	HROT.prototype.nextGenerationWeightedGenerations = function(/** @type{number} */ bottomY, /** @type{number} */ topY, /** @type{number} */ leftX, /** @type{number} */ rightX, /** @type{number} */ range) {
 		var	/** @type {number} */ y,
 			/** @type {number} */ x,
 			/** @type {number} */ xm1,
@@ -847,7 +847,7 @@
 	};
 
 	// weighted neighbourhood optimized range 1 version
-	HROT.prototype.nextGenerationWeighted2R1 = function(/** @const{number} */ bottomY, /** @const{number} */ topY, /** @const{number} */ leftX, /** @const{number} */ rightX, /** @const{number} */ range) {
+	HROT.prototype.nextGenerationWeighted2R1 = function(/** @type{number} */ bottomY, /** @type{number} */ topY, /** @type{number} */ leftX, /** @type{number} */ rightX, /** @type{number} */ range) {
 		var	/** @type {number} */ y,
 			/** @type {number} */ x,
 			/** @type {number} */ xm1,
