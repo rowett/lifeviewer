@@ -377,7 +377,7 @@
 		/** @type {HTMLImageElement} */ this.iconsImage = iconsImage;
 		/** @type {number} */ this.width = 0;
 		/** @type {number} */ this.height = 0;
-		this.iconCanvas = null;
+		/** @type {HTMLCanvasElement} */ this.iconCanvas = null;
 		/** @type {CanvasRenderingContext2D} */ this.iconContext = null;
 		/** @type {HTMLImageElement} */ this.convertedImage = null;
 		/** @type {HTMLImageElement} */ this.greyedOutImage = null;
@@ -433,10 +433,10 @@
 				this.height = this.iconsImage.height;
 
 				// create a context the same size as the image and draw the image onto it
-				this.iconCanvas = document.createElement("canvas");
+				this.iconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
 				this.iconCanvas.width = this.width;
 				this.iconCanvas.height = this.height;
-				this.iconContext = this.iconCanvas.getContext("2d");
+				this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d"));
 	
 				// create a new image for the converted colours
 				this.convertedImage = new Image();
@@ -997,19 +997,19 @@
 	/**
 	 * @constructor
 	 */
-	function MenuList(manager, callback, activate, caller, /** @type {CanvasRenderingContext2D} */ context, /** @type {string} */ defaultFont) {
+	function MenuList(/** @type {MenuManager} */ manager, callback, activate, /** @type {View} */ caller, /** @type {CanvasRenderingContext2D} */ context, /** @type {string} */ defaultFont) {
 		// manager
-		this.manager = manager;
+		/** @type {MenuManager} */ this.manager = manager;
 
 		// context
-		this.context = context;
+		/** @type {CanvasRenderingContext2D} */ this.context = context;
 
 		// x and y scale
 		/** @type {number} */ this.xScale = 1;
 		/** @type {number} */ this.yScale = 1;
 
 		// default font
-		this.defaultFont = defaultFont;
+		/** @type {string} */ this.defaultFont = defaultFont;
 
 		// whether menu deleted
 		/** @type {boolean} */ this.deleted = false;
@@ -1032,7 +1032,7 @@
 		this.callback = callback;
 
 		// holds the list of menu items
-		this.menuItems = [];
+		/** @type {Array<MenuItem>} */ this.menuItems = [];
 
 		// number of menu items
 		/** @type {number} */ this.numMenuItems = 0;
@@ -2319,7 +2319,7 @@
 	/**
 	 * @constructor
 	 */
-	function MenuManager(mainCanvas, /** @type {CanvasRenderingContext2D} */ mainContext, /** @type {string} */ defaultFont, /** @type {IconManager} */ iconManager, /** @type {View} */ caller, /** @type {Function} */ gotFocus) {
+	function MenuManager(/** @type {HTMLCanvasElement} */ mainCanvas, /** @type {CanvasRenderingContext2D} */ mainContext, /** @type {string} */ defaultFont, /** @type {IconManager} */ iconManager, /** @type {View} */ caller, /** @type {Function} */ gotFocus) {
 		var	/** @type {MenuManager} */ me = this,
 			/** @type {number} */ i = 0;
 
@@ -2435,13 +2435,13 @@
 		/** @type {number} */ this.border = 1;
 
 		// callback
-		this.callbackFunction = (function(me) { return function() { me.processCallback(me); }; }(this));
+		this.callbackFunction = (function(/** @type {MenuManager} */ me) { return function() { me.processCallback(me); }; }(this));
 
 		// icon manager
 		/** @type {IconManager} */ this.iconManager = iconManager;
 
 		// main drawing canvas
-		this.mainCanvas = mainCanvas;
+		/** @type {HTMLCanvasElement} */ this.mainCanvas = mainCanvas;
 
 		// main drawing context
 		/** @type {CanvasRenderingContext2D} */ this.mainContext = mainContext;
@@ -2747,7 +2747,7 @@
 				if (Array.isArray(control.toolTip)) {
 					toolTip = "";
 				} else {
-					toolTip = control.toolTip;
+					toolTip = /** @type {!string} */ (control.toolTip);
 				}
 			}
 

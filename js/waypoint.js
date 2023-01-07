@@ -2015,7 +2015,7 @@
 	};
 
 	// add a waypoint to the manager
-	WaypointManager.prototype.add = function(/** @type {Waypoint} */ waypoint, view) {
+	WaypointManager.prototype.add = function(/** @type {Waypoint} */ waypoint, /** @type {View} */ view) {
 		// check if this is a waypoint or a point of interest
 		if (waypoint.isPOI) {
 			// add the waypoint to the end of the POI list

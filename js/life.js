@@ -362,16 +362,16 @@
 		/** @type {View} */ this.view = view;
 
 		// image for cell icons
-		this.cellIconImage = null;
+		/** @type {HTMLImageElement} */ this.cellIconImage = null;
 
 		// canvas for cell icons
-		this.cellIconCanvas = null;
+		/** @type {HTMLCanvasElement} */ this.cellIconCanvas = null;
 
 		// canvas for cell period map
-		this.cellPeriodCanvas = document.createElement("canvas");
+		/** @type {HTMLCanvasElement} */ this.cellPeriodCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
 		this.cellPeriodCanvas.width = 1;
 		this.cellPeriodCanvas.height = 1;
-		/** @type {CanvasRenderingContext2D} */ this.cellPeriodContext = this.cellPeriodCanvas.getContext("2d");
+		/** @type {CanvasRenderingContext2D} */ this.cellPeriodContext = /** @type {!CanvasRenderingContext2D} */ (this.cellPeriodCanvas.getContext("2d"));
 		/** @type {HTMLImageElement} */ this.cellPeriodImage = new Image();
 		/** @type {Array<number>} */ this.cellPeriodRGB = [];
 		/** @type {number} */ this.cellPeriodNumCols = 0;
@@ -414,7 +414,7 @@
 		/** @type {boolean} */ this.pretty = false;
 
 		// scaling canvas
-		this.sCanvas = null;
+		/** @type {HTMLCanvasElement} */ this.sCanvas = null;
 		/** @type {CanvasRenderingContext2D} */ this.sContext = null;
 		/** @type {ImageData} */ this.sImageData = null;
 		/** @type {Uint32Array} */ this.sData32 = null;
@@ -1264,13 +1264,13 @@
 
 		// create the cell icon canvas if it doesn't exist
 		if (this.cellIconCanvas === null) {
-			this.cellIconCanvas = document.createElement("canvas");
+			this.cellIconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
 			this.cellIconCanvas.width = 32;
 			this.cellIconCanvas.height = 32 * numIcons;
 		}
 
 		// get the context
-		ctx = this.cellIconCanvas.getContext("2d");
+		ctx = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas.getContext("2d"));
 		data = ctx.getImageData(0, 0, this.cellIconCanvas.width, this.cellIconCanvas.height);
 		data32 = new Uint32Array(data.data.buffer);
 		
@@ -36593,7 +36593,7 @@
 	Life.prototype.renderGridProjectionPretty = function(/** @type {Array<Uint8Array>} */ grid, /** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ offGridCol, /** @type {boolean} */ drawingSnow, /** @type {boolean} */ drawingStars) {
 		var	/** @type {Uint32Array} */ pixelColours = this.pixelColours,
 			/** @type {Uint32Array} */ sData32 = this.sData32,
-			sCanvas = this.sCanvas,
+			/** @type {HTMLCanvasElement} */ sCanvas = this.sCanvas,
 			/** @type {CanvasRenderingContext2D} */ sContext = this.sContext,
 			/** @type {ImageData} */ sImageData = this.sImageData,
 			/** @const {number} */ intZoom2 = (this.camZoom | 0) << 1,
@@ -36771,7 +36771,7 @@
 	Life.prototype.renderGridOverlayProjectionPretty = function(/** @type {Array<Uint8Array>} */ bottomGrid, /** @type {Array<Uint8Array>} */ layersGrid, /** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ offGridCol, /** @type {boolean} */ drawingSnow, /** @type {boolean} */ drawingStars) {
 		var	/** @type {Uint32Array} */ pixelColours = this.pixelColours,
 			/** @type {Uint32Array} */ sData32 = this.sData32,
-			sCanvas = this.sCanvas,
+			/** @type {HTMLCanvasElement} */ sCanvas = this.sCanvas,
 			/** @type {CanvasRenderingContext2D} */ sContext = this.sContext,
 			/** @type {ImageData} */ sImageData = this.sImageData,
 			/** @const {number} */ intZoom2 = (this.camZoom | 0) << 1,

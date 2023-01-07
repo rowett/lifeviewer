@@ -2039,7 +2039,7 @@
 		/** @type {MenuItem} */ this.ruleLabel = null;
 
 		// main canvas
-		this.mainCanvas = null;
+		/** @type {HTMLCanvasElement} */ this.mainCanvas = null;
 
 		// main context
 		/** @type {CanvasRenderingContext2D} */ this.mainContext = null;
@@ -16358,7 +16358,7 @@
 	};
 
 	// attached the viewer to a canvas element
-	View.prototype.attachToCanvas = function(canvasItem) {
+	View.prototype.attachToCanvas = function(/** @type {HTMLCanvasElement} */ canvasItem) {
 		var	/** @type {boolean} */ result = false,
 			/** @type {View} */ me = this,
 			/** @type {number} */ viewerWidth = 0,
@@ -16400,7 +16400,7 @@
 			}
 
 			// setup the 2d drawing context
-			this.mainContext = this.mainCanvas.getContext("2d", {alpha: false});
+			this.mainContext = /** @type {!CanvasRenderingContext2D} */ (this.mainCanvas.getContext("2d", {alpha: false}));
 			this.mainContext.globalAlpha = 1;
 			this.mainContext.fillStyle = "black";
 			this.mainContext.imageSmoothingEnabled = false;
@@ -18837,11 +18837,11 @@
 	};
 
 	// start a viewer
-	function startView(/** @type {string} */ patternString, canvasItem, /** @type {number} */ maxWidth, /** @type {boolean} */ isInPopup, element) {
+	function startView(/** @type {string} */ patternString, /** @type {HTMLCanvasElement} */ canvasItem, /** @type {number} */ maxWidth, /** @type {boolean} */ isInPopup, element) {
 		var	/** @type {number} */ i = 0,
 		    
 			// get the parent of the canvas
-			parentItem = canvasItem.parentNode,
+			/** @type {Element} */ parentItem = /** @type {!Element} */ (canvasItem.parentNode),
 
 			// view
 			/** @type {View} */ newView = null;
@@ -19146,7 +19146,7 @@
 			/** @type {View} */ view = null,
 
 			// elements
-			canvasItem = null,
+			/** @type {HTMLCanvasElement} */ canvasItem = null,
 			divItem = null,
 			windowTitleItem = null,
 			anchorItem = null,
@@ -19175,7 +19175,7 @@
 			view.viewStart(view);
 		} else {
 			// create canvas and set width and height
-			canvasItem = document.createElement("canvas");
+			canvasItem = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
 			canvasItem.width = ViewConstants.minViewerWidth;
 			canvasItem.height = ViewConstants.minMenuHeight + 80;
 			canvasItem.style.display = "block";
@@ -19470,7 +19470,7 @@
 			c = null,
 			textItem = null,
 			anchorItem = null,
-			canvasItem = null,
+			/** @type {HTMLCanvasElement} */ canvasItem = null,
 			cleanItem = null,
 			rleItem = null,
 			childItem = null,
@@ -19494,7 +19494,7 @@
 			if (rleItem.className === DocConfig.divClassName) {
 				// find the child textarea and canvas
 				textItem = rleItem.getElementsByTagName(DocConfig.patternSourceName)[0];
-				canvasItem = rleItem.getElementsByTagName("canvas")[0];
+				canvasItem = /** @type {!HTMLCanvasElement} */ (rleItem.getElementsByTagName("canvas")[0]);
 
 				// check if the text item contains a child text item
 				childItem = textItem.getElementsByTagName(DocConfig.patternSourceName)[0];
