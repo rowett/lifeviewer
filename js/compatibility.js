@@ -103,7 +103,8 @@
 	if (!window.Uint32Array.prototype.fill) {
 		window.arrayFill = false;
 
-		window.Uint32Array.prototype.fill = function(/** @type {number} */ value, begin, end) {
+		/** @type {function(number,number=,number=):void} */
+		window.Uint32Array.prototype.fill = function(value, begin, end) {
 			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
@@ -122,7 +123,8 @@
 	}
 
 	if (!window.Uint16Array.prototype.fill) {
-		window.Uint16Array.prototype.fill = function(/** @type {number} */ value, begin, end) {
+		/** @type {function(number,number=,number=):void} */
+		window.Uint16Array.prototype.fill = function(value, begin, end) {
 			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
@@ -139,7 +141,8 @@
 	}
 
 	if (!window.Uint8Array.prototype.fill) {
-		window.Uint8Array.prototype.fill = function(/** @type {number} */ value, begin, end) {
+		/** @type {function(number,number=,number=):void} */
+		window.Uint8Array.prototype.fill = function(value, begin, end) {
 			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
@@ -156,7 +159,8 @@
 	}
 
 	if (!window.Uint8ClampedArray.prototype.fill) {
-		window.Uint8ClampedArray.prototype.fill = function(/** @type {number} */ value, begin, end) {
+		/** @type {function(number,number=,number=):void} */
+		window.Uint8ClampedArray.prototype.fill = function(value, begin, end) {
 			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
@@ -173,7 +177,8 @@
 	}
 
 	if (!window.Int32Array.prototype.fill) {
-		window.Int32Array.prototype.fill = function(/** @type {number} */ value, begin, end) {
+		/** @type {function(number,number=,number=):void} */
+		window.Int32Array.prototype.fill = function(value, begin, end) {
 			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
@@ -190,7 +195,8 @@
 	}
 
 	if (!window.Int16Array.prototype.fill) {
-		window.Int16Array.prototype.fill = function(/** @type {number} */ value, begin, end) {
+		/** @type {function(number,number=,number=):void} */
+		window.Int16Array.prototype.fill = function(value, begin, end) {
 			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
@@ -207,7 +213,8 @@
 	}
 
 	if (!window.Int8Array.prototype.fill) {
-		window.Int8Array.prototype.fill = function(/** @type {number} */ value, begin, end) {
+		/** @type {function(number,number=,number=):void} */
+		window.Int8Array.prototype.fill = function(value, begin, end) {
 			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
@@ -224,7 +231,8 @@
 	}
 
 	if (!window.Float32Array.prototype.fill) {
-		window.Float32Array.prototype.fill = function( /** @type {number} */ value, begin, end) {
+		/** @type {function(number,number=,number=):void} */
+		window.Float32Array.prototype.fill = function(value, begin, end) {
 			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
@@ -241,7 +249,8 @@
 	}
 
 	if (!window.Float64Array.prototype.fill) {
-		window.Float64Array.prototype.fill = function( /** @type {number} */ value, begin, end) {
+		/** @type {function(number,number=,number=):void} */
+		window.Float64Array.prototype.fill = function(value, begin, end) {
 			var	/** @type {number} */ i = 0;
 
 			if (end === undefined) {
@@ -261,7 +270,7 @@
 	if (!window.Int32Array.prototype.slice) {
 		window.arraySlice = false;
 
-		/** @returns {Int32Array} */
+		/** @type {function(number=,number=):Int32Array} */
 		window.Int32Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
@@ -284,7 +293,7 @@
 	}
 
 	if (!window.Int16Array.prototype.slice) {
-		/** @returns {Int16Array} */
+		/** @type {function(number=,number=):Int16Array} */
 		window.Int16Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
@@ -305,7 +314,7 @@
 	}
 
 	if (!window.Int8Array.prototype.slice) {
-		/** @returns {Int8Array} */
+		/** @type {function(number=,number=):Int8Array} */
 		window.Int8Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
@@ -326,7 +335,7 @@
 	}
 
 	if (!window.Uint32Array.prototype.slice) {
-		/** @returns {Uint32Array} */
+		/** @type {function(number=,number=):Uint32Array} */
 		window.Uint32Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
@@ -347,7 +356,7 @@
 	}
 
 	if (!window.Uint16Array.prototype.slice) {
-		/** @returns {Uint16Array} */
+		/** @type {function(number=,number=):Uint16Array} */
 		window.Uint16Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
@@ -368,7 +377,7 @@
 	}
 
 	if (!window.Uint8Array.prototype.slice) {
-		/** @returns {Uint8Array} */
+		/** @type {function(number=,number=):Uint8Array} */
 		window.Uint8Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
@@ -389,7 +398,7 @@
 	}
 
 	if (!window.Uint8ClampedArray.prototype.slice) {
-		/** @returns {Uint8ClampedArray} */
+		/** @type {function(number=,number=):Uint8ClampedArray} */
 		window.Uint8ClampedArray.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
@@ -410,7 +419,7 @@
 	}
 
 	if (!window.Float32Array.prototype.slice) {
-		/** @returns {Float32Array} */
+		/** @type {function(number=,number=):Float32Array} */
 		window.Float32Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
@@ -431,7 +440,7 @@
 	}
 
 	if (!window.Float64Array.prototype.slice) {
-		/** @returns {Float64Array} */
+		/** @type {function(number=,number=):Float64Array} */
 		window.Float64Array.prototype.slice = function(begin, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
@@ -465,8 +474,8 @@
 	if (data32.copyWithin) {
 		window.copyWithin = true;
 	} else {
-		/** @returns {Uint32Array} */
-		window.Uint32Array.prototype.copyWithin = function(/** @type {number} */ target, /** @type {number} */ start, end) {
+		/** @type {function(number,number,number=):Uint32Array} */
+		window.Uint32Array.prototype.copyWithin = function(target, start, end) {
 			var	/** @type {number} */ i = 0,
 				/** @type {number} */ size = 0,
 				/** @type {boolean} */ reverse = false;

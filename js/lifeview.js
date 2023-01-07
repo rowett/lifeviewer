@@ -3991,7 +3991,7 @@
 	};
 
 	// copy pattern to grid position
-	View.prototype.copyPatternTo = function(pattern) {
+	View.prototype.copyPatternTo = function(/** @type {Pattern} */ pattern) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 
@@ -4010,7 +4010,7 @@
 			/** @type {number} */ panY = this.panY,
 	
 			// pattern row and grid row
-			/** @type {Uint8Array} */ patternRow = null,
+			/** @type {Uint16Array} */ patternRow = null,
 			/** @type {Uint16Array} */ gridRow = null,
 			/** @type {Uint8Array} */ multiStateRow = null,
 			/** @type {Uint8Array} */ colourGridRow = null,
@@ -19579,11 +19579,6 @@
 
 	/*jshint -W069 */
 	// external interface
-	window['DocConfig'] = DocConfig;
-	window['Controller'] = Controller;
-	window['ViewConstants'] = ViewConstants;
-	window['startAllViewers'] = startAllViewers;
 	window['updateViewer'] = updateViewer;
 	window['updateMe'] = updateMe;
-	window['hideViewer'] = hideViewer;
 	window['lifeViewerBuild'] = ViewConstants.versionBuild;

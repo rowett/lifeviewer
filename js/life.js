@@ -7136,7 +7136,7 @@
 	};
 
 	// reset the colour grid from the grid
-	Life.prototype.resetColourGridBox = function(grid) {
+	Life.prototype.resetColourGridBox = function(/** @type {Array<Uint16Array>} */ grid) {
 		if (this.rainbow) {
 			this.resetColourGridBoxRainbow(grid);
 		} else {
@@ -7145,13 +7145,13 @@
 	};
 
 	// set the colour grid from the grid using rainbow
-	Life.prototype.resetColourGridBoxRainbow = function(/** @type {Array<Uint8Array>} */ grid) {
+	Life.prototype.resetColourGridBoxRainbow = function(/** @type {Array<Uint16Array>} */ grid) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ cr = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {number} */ cells = 0,
-			/** @type {Uint8Array} */ gridRow = null,
+			/** @type {Uint16Array} */ gridRow = null,
 			/** @type {Uint8Array} */ colourRow = null,
 	
 			// get the grid bounding box
@@ -7272,13 +7272,13 @@
 	};
 
 	// set the colour grid from the grid
-	Life.prototype.resetColourGridBoxNormal = function(/** @type {Array<Uint8Array>} */ grid) {
+	Life.prototype.resetColourGridBoxNormal = function(/** @type {Array<Uint16Array>} */ grid) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ cr = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourReset = this.colourReset,
-			/** @type {Uint8Array} */gridRow,
+			/** @type {Uint16Array} */gridRow,
 			/** @type {Uint8Array} */colourRow,
 			/** @type {number} */ rowOffset = 0,
 
@@ -21299,7 +21299,7 @@
 	};
 
 	// clear the small colour grid if last zoom < 1/16x
-	Life.prototype.clearSmallGridOnZoom = function(smallGrid) {
+	Life.prototype.clearSmallGridOnZoom = function(/** @type {Array<Uint8Array>} */ smallGrid) {
 		if (this.lastZoom16) {
 			smallGrid.whole.fill(0);
 		}

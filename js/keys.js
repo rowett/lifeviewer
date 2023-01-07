@@ -115,7 +115,7 @@
 	};
 
 	// switch between Help welcome screen and specific topic
-	KeyProcessor.toggleHelpTopic = function(me, /** @type {number} */ topic) {
+	KeyProcessor.toggleHelpTopic = function(/** @type {View} */ me, /** @type {number} */ topic) {
 		if (me.helpTopic === ViewConstants.welcomeTopic) {
 			me.setHelpTopic(topic, me);
 		} else {

@@ -375,7 +375,7 @@
 
 	// rgb object colour as string
 	/** @returns {string} */
-	Help.rgbObjectString = function(object) {
+	Help.rgbObjectString = function(/** @type {Colour} */ object) {
 		return this.rgbString(object.red, object.green, object.blue);
 	};
 

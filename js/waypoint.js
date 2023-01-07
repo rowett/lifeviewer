@@ -1231,7 +1231,7 @@
 	};
 
 	// draw arrows
-	WaypointManager.prototype.drawArrows = function(view) {
+	WaypointManager.prototype.drawArrows = function(/** @type {View} */ view) {
 		// draw shadows
 		this.drawArrowsLayer(view, true);
 
@@ -1504,7 +1504,7 @@
 	};
 
 	// draw polygons
-	WaypointManager.prototype.drawPolygons = function(view) {
+	WaypointManager.prototype.drawPolygons = function(/** @type {View} */ view) {
 		// draw shadows
 		this.drawPolygonsLayer(view, true);
 
@@ -1833,7 +1833,7 @@
 	};
 
 	// draw annotations
-	WaypointManager.prototype.drawAnnotations = function(view) {
+	WaypointManager.prototype.drawAnnotations = function(/** @type {View} */ view) {
 		this.drawPolygons(view);
 		this.drawArrows(view);
 		this.drawLabels(view);

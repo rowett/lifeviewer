@@ -958,7 +958,7 @@
 	};
 
 	// add a list of specific items to a toggle menu
-	MenuItem.prototype.addItemsToToggleMenu = function(itemList, noCascadeList) {
+	MenuItem.prototype.addItemsToToggleMenu = function(/** @type {Array<MenuItem>} */ itemList, /** @type {Array<MenuItem>} */ noCascadeList) {
 		// add the items to the list
 		var	/** @type {number} */ i,
 			/** @type {number} */ l;
@@ -997,7 +997,7 @@
 	/**
 	 * @constructor
 	 */
-	function MenuList(/** @type {MenuManager} */ manager, callback, activate, /** @type {View} */ caller, /** @type {CanvasRenderingContext2D} */ context, /** @type {string} */ defaultFont) {
+	function MenuList(/** @type {MenuManager} */ manager, /** @type {function(number,View):void} */ callback, /** @type {function(View):void} */ activate, /** @type {View} */ caller, /** @type {CanvasRenderingContext2D} */ context, /** @type {string} */ defaultFont) {
 		// manager
 		/** @type {MenuManager} */ this.manager = manager;
 
@@ -1029,7 +1029,7 @@
 		/** @type {number} */ this.rangeHighlightSize = 6;
 
 		// callback function to update
-		this.callback = callback;
+		/** @type {function(number,View):void} */ this.callback = callback;
 
 		// holds the list of menu items
 		/** @type {Array<MenuItem>} */ this.menuItems = [];
@@ -1141,7 +1141,7 @@
 
 	// check parent toggle menu state for visibility
 	/** @returns {boolean} */
-	MenuList.prototype.parentMenu = function(parentItem, /** @type {boolean} */ cascade) {
+	MenuList.prototype.parentMenu = function(/** @type {MenuItem} */ parentItem, /** @type {boolean} */ cascade) {
 		var	/** @type {boolean} */ result = false,
 			/** @type {number} */ i,
 			/** @type {number} */ l = parentItem.numToggleMenuParents;
@@ -1239,7 +1239,7 @@
 	};
 
 	// add range item
-	MenuList.prototype.addRangeItem = function(callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, lower, upper, current, valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText, /** @type{number} */ fixed) {
+	MenuList.prototype.addRangeItem = function(/** @type {function(Array,boolean,View):Array} */ callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, lower, upper, current, valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText, /** @type{number} */ fixed) {
 		// create the item
 		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, lower, upper, current, Menu.range, this.defaultOrientation, valueDisplay, preText, postText, fixed, null, this);
 
@@ -1263,7 +1263,7 @@
 	};
 
 	// add button item
-	MenuList.prototype.addButtonItem = function(callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, /** @type {string} */ caption) {
+	MenuList.prototype.addButtonItem = function(/** @type {function(View):void|null} */ callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, /** @type {string} */ caption) {
 		// create the item
 		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, 0, 0, 0, Menu.button, this.defaultOrientation, true, caption, "", -1, null, this);
 
@@ -2621,7 +2621,7 @@
 
 	// create menu
 	/** @returns {MenuList} */
-	MenuManager.prototype.createMenu = function(callback, activate, caller) {
+	MenuManager.prototype.createMenu = function(/** @type {function(number,View):void} */ callback, /** @type {function(View): void} */ activate, /** @type {View} */ caller) {
 		// create menu object
 		var	/** @type {MenuList} */ menuList = new MenuList(this, callback, activate, caller, this.mainContext, this.defaultFont);
 

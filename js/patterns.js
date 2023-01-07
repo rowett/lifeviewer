@@ -8417,7 +8417,7 @@
 
 	// pack a single transition
 	/** @returns {boolean} */
-	PatternManager.prototype.packTransition = function(inputs, /** @type {number} */ output, /** @type {Pattern} */ pattern, /** @type {Array<number>} */ outputList, /** @type {Array<Array<Array<number>>>} */ lut, /** @type {Array} */ dedupe) {
+	PatternManager.prototype.packTransition = function(/** @type {Array<Array<number>>} */ inputs, /** @type {number} */ output, /** @type {Pattern} */ pattern, /** @type {Array<number>} */ outputList, /** @type {Array<Array<Array<number>>>} */ lut, /** @type {Array} */ dedupe) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {boolean} */ duplicate = false,
@@ -8525,7 +8525,7 @@
 	};
 
 	// compare arrays of arrays function
-	/** @returns {number} */
+	/** @type {function(Array,Array):number} */
 	PatternManager.prototype.compareArrays = function(a, b) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ aLen = a.length;
@@ -8547,8 +8547,8 @@
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ k = 0,
-			/** @type {Array<number>} */ inputs = [],
-			/** @type {Array<number>} */ permutedInputs = [],
+			/** @type {Array<Array<number>>} */ inputs = [],
+			/** @type {Array<Array<number>>} */ permutedInputs = [],
 			/** @type {Array<Array<number>>} */ remap = [],
 			/** @type {number} */ output = 0,
 			/** @type {Array<number>} */ outputList = [],
@@ -9041,7 +9041,7 @@
 	};
 
 	// create colour ramp
-	PatternManager.prototype.createColourRamp = function(colours, /** @type {number} */ er, /** @type {number} */ eg, /** @type {number} */ eb, /** @type {number} */ sr, /** @type {number} */ sg, /** @type {number} */ sb) {
+	PatternManager.prototype.createColourRamp = function(/** @type {Uint32Array} */ colours, /** @type {number} */ er, /** @type {number} */ eg, /** @type {number} */ eb, /** @type {number} */ sr, /** @type {number} */ sg, /** @type {number} */ sb) {
 		var	/** @type {number} */ states = colours.length,
 			/** @type {number} */ mix = 0,
 			/** @type {number} */ i = 0;
