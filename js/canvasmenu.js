@@ -794,8 +794,6 @@
 		// decompose the font into size and family
 		/** @type {number} */ this.fontSize = parseInt(owner.defaultFont.substr(0, owner.defaultFont.indexOf("px")), 10);
 		/** @type {string} */ this.fontFamily = owner.defaultFont.substr(owner.defaultFont.indexOf("px") + 3);
-
-		console.debug(id, lower, upper, current);
 	}
 
 	// delete if shown

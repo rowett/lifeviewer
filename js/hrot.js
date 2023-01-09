@@ -351,8 +351,8 @@
 	};
 
 	// copy a slice
-	// dest and src have no type information because of a type check issue
-	HROT.prototype.copySlice = function(dest, source, /** @type number */ left, /** @type {number} */ right, /** @type {number} */ pos) {
+	// TBD src has no type information because of a type check issue
+	HROT.prototype.copySlice = function(/** @type {Uint8Array} */ dest, source, /** @type number */ left, /** @type {number} */ right, /** @type {number} */ pos) {
 		dest.set(source.slice(left, right + 1), pos);
 	};
 

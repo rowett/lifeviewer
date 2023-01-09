@@ -73,7 +73,7 @@
 	 */
 	function AllocationInfo(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name) {
 		// save information
-		/** @type {number} */ this.type = type;
+		/** @type {number} */ this.dataType = type;
 		/** @type {string} */ this.name = name;
 		/** @type {number} */ this.elements = elements;
 		/** @type {number} */ this.size = elements * Type.sizeInBytes(type);
@@ -113,7 +113,7 @@
 			info = this.allocations[which];
 
 			// output info
-			result = Type.typeName(info.type) + "\t" + info.elements + "\t" + info.name + "\t" + info.number;
+			result = Type.typeName(info.dataType) + "\t" + info.elements + "\t" + info.name + "\t" + info.number;
 		}
 
 		// return the string
@@ -138,7 +138,7 @@
 				this.numFrees += 1;
 
 				// update bytes freed
-				this.totalFreedBytes += allocation.elements * Type.sizeInBytes(allocation.type);
+				this.totalFreedBytes += allocation.elements * Type.sizeInBytes(allocation.dataType);
 			} else {
 				i += 1;
 			}
@@ -147,7 +147,7 @@
 		// check if the allocation was found
 		if (found) {
 			// update existing slot
-			this.allocations[i].type = type;
+			this.allocations[i].dataType = type;
 			this.allocations[i].elements = elements;
 			this.allocations[i].number += 1;
 			this.allocations[i].size = elements * Type.sizeInBytes(type);
@@ -340,7 +340,7 @@
 		// @ts-ignore
 		mat.allocator = allocator;
 		// @ts-ignore
-		mat.type = type;
+		mat.dataType = type;
 		// @ts-ignore
 		mat.whole = null;
 
@@ -348,7 +348,6 @@
 		whole = allocator.allocate(type, m * n, name);
 
 		// save reference to the whole array
-		// @ts-ignore
 		mat.whole = whole;
 
 		// create rows if they are not empty
@@ -371,12 +370,12 @@
 	};
 
 	// add an extra row to an array
-	Array.addRow = function(source, /** @type {number} */ initial, /** @type {string} */ name) {
+	Array.addRow = function(/** @type {Array} */ source, /** @type {number} */ initial, /** @type {string} */ name) {
 		// get the size of the source row
 		var	/** @type {number} */ m = source[0].length,
 
 			// create the new row
-			row = source.allocator.allocateRow(source.type, m, name, source.length + 1);
+			/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ row = source.allocator.allocateRow(source.dataType, m, name, source.length + 1);
 
 		// check whether to fill with an initial value
 		if (initial !== 0) {
@@ -389,14 +388,14 @@
 	};
 
 	// copy source array matrix to destination matrix
-	Array.copy = function(source, dest) {
+	Array.copy = function(/** @type {Array} */ source, /** @type {Array} */ dest) {
 		// copy buffer
 		dest.whole.set(source.whole);
 	};
 
 	// create a typed view of the source matrix
 	/** @returns {Array} */
-	Array.matrixView = function(/** @type {number} */ type, source, /** @type {string} */ name) {
+	Array.matrixView = function(/** @type {number} */ type, /** @type {Array} */ source, /** @type {string} */ name) {
 		var	/** @type {number} */ y = 0,
 			/** @type {number} */ h = source.length,
 			/** @type {Array} */ mat = [],
@@ -416,12 +415,12 @@
 
 	// create an offset view of the source matrix
 	/** @returns {Array} */
-	Array.matrixViewWithOffset = function(source, /** @type {number} */ offset, /** @type {string} */ name) {
+	Array.matrixViewWithOffset = function(/** @type {Array} */ source, /** @type {number} */ offset, /** @type {string} */ name) {
 		var	/** @type {number} */ y = 0,
 			/** @type {number} */ h = source.length,
 			/** @type {Array} */ mat = [],
 			/** @type {Allocator} */ allocator = source.allocator,
-			/** @type {number} */ type = source.type,
+			/** @type {number} */ type = source.dataType,
 			/** @type {number} */ elements = source[0].length;
 
 		// iterate over the source array

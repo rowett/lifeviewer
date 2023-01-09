@@ -6345,8 +6345,7 @@
 
 
 	// copy data in a grid to the center of a new grid (used by grow grid)
-	// destGrid and sourceGrid have no type information because of a type check issue
-	Life.prototype.copyGridToCenter = function(/** @type {number} */ currentHeight, /** @type {number} */ yOffset, /** @type {number} */ xOffset, destGrid, sourceGrid) {
+	Life.prototype.copyGridToCenter = function(/** @type {number} */ currentHeight, /** @type {number} */ yOffset, /** @type {number} */ xOffset, /** @type {Array} */ destGrid, /** @type {Array} */sourceGrid) {
 		var	/** @type {number} */ y = 0;
 
 		for (y = 0; y < currentHeight; y += 1) {
@@ -39248,8 +39247,8 @@
 	};
 
 	// copy back to mode 7 buffer
-	// dest and src have no type information because of a type check issue
-	Life.prototype.mode7Update = function(dest, src) {
+	// TBD src has no type information because of a type check issue
+	Life.prototype.mode7Update = function(/** @type {Uint32Array} */ dest, src) {
 		dest.set(src);
 	};
 

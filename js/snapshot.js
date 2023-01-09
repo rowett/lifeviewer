@@ -1551,8 +1551,8 @@
 	};
 
 	// copy to center of grid
-	// dest and src have no type information because of a type check issue
-	SnapshotManager.prototype.copyToCenter = function(dest, src, /** @type {number} */ offset) {
+	// TBD src has no type information because of a type check issue
+	SnapshotManager.prototype.copyToCenter = function(/** @type {Uint16Array} */ dest, src, /** @type {number} */ offset) {
 		dest.set(src, offset);
 	};
 

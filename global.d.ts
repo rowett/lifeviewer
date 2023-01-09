@@ -7,7 +7,10 @@ declare var AliasManager;
 declare var Uint8, Uint8Clamped, Uint16, Uint32, Int8, Int16, Int32, Float32, Float64;
 interface Array {
     whole;
+    allocator;
+    dataType;
 }
+
 interface ArrayConstructor {
     matrix;
     addRow;
@@ -21,10 +24,8 @@ interface ArrayConstructor {
 // canvasmenu.js
 
 // colours.js
-declare var ColourManager;
 
 // compatibility.js
-declare var littleEndian;
 interface Window {
     Uint8Array;
     Uint8ClampedArray;
@@ -38,7 +39,6 @@ interface Window {
 }
 
 // help.js
-declare var Help;
 
 // keywords.js
 
@@ -50,23 +50,24 @@ declare var typedArrays, arrayFill, LifeViewerLoaded, arraySlice, littleEndian, 
 interface HTMLElement {
     src;
 }
+
 interface Window {
     width;
     height;
 }
+
 interface Element {
     style;
     offsetWidth;
 }
+
 interface Node {
     className;
 }
 
 // ltl.js
-declare var LTL;
 
 // pattern.js
-declare var RuleTreeCache;
 
 // parser.js
 
