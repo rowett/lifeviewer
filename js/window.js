@@ -5,9 +5,9 @@
 	/**
 	 * @constructor
 	 */
-	function PopupWindow(element, /** @type {View} */ view) {
+	function PopupWindow(/** @type {HTMLDivElement} */ element, /** @type {View} */ view) {
 		var	/** @type {PopupWindow} */ me = this,
-			/** @type {string} */ title = element.getElementsByTagName("div")[0];
+			/** @type {HTMLDivElement} */ title = /** @type {!HTMLDivElement} */ (element.getElementsByTagName("div")[0]);
 
 		// whether using touch events (so ignore mouse events)
 		/** @type {boolean} */ this.usingTouch = false;
@@ -19,7 +19,7 @@
 		/** @type {number} */ this.windowZoom = 1;
 
 		// wrapped element
-		this.wrappedElement = element;
+		/** @type {HTMLDivElement} */ this.wrappedElement = element;
 
 		// view
 		/** @type {View} */ this.view = view;
@@ -73,6 +73,7 @@
 	}
 
 	// find touch change by identified
+	/** @returns {Touch} */
 	PopupWindow.prototype.findChangeById = function(/** @type {TouchList} */ changes, /** @type {number} */ id) {
 		var	/** @type {Touch} */ change = null,
 			/** @type {number} */ i = 0;
@@ -162,32 +163,21 @@
 
 		/* eslint-enable no-unused-vars */
 		// check the popup window is on the display
-		me.setWindowPosition(me.left + me.resizeDx, me.top, me.wrappedElement);
+		me.setWindowPosition(me.left + me.resizeDx, me.top);
 		me.resizeDx = 0;
 	};
 
 	// move element
 	PopupWindow.prototype.updatePosition = function(/** @type {number} */ dx, /** @type {number} */ dy) {
-		// get the wrapped element
-		var	element = this.wrappedElement,
-
-			// get the position of the window
-			/** @type {number} */ x = this.left,
-			/** @type {number} */ y = this.top;
-
-		// add the offset
-		x += dx;
-		y += dy;
-		
-		// set the window position
-		this.setWindowPosition(x, y, element);
+		// set the window position by applying the supplied offset
+		this.setWindowPosition(this.left + dx, this.top + dy);
 	};
 
 	// set window position
-	PopupWindow.prototype.setWindowPosition = function(/** @type {number} */ x, /** @type {number} */ y, element) {
+	PopupWindow.prototype.setWindowPosition = function(/** @type {number} */ x, /** @type {number} */ y) {
 		// get the width and height of the element
-		var	/** @type {number} */ width = element.clientWidth * this.windowZoom,
-			/** @type {number} */ height = element.clientHeight * this.windowZoom,
+		var	/** @type {number} */ width = this.wrappedElement.clientWidth * this.windowZoom,
+			/** @type {number} */ height = this.wrappedElement.clientHeight * this.windowZoom,
 
 			// get the maximum x and y position
 			/** @type {number} */ maxX = window.innerWidth - width,
@@ -214,9 +204,9 @@
 		}
 
 		// update the element
-		element.style.left = (x + "px");
-		element.style.top = (y + "px");
-		element.style.position = "fixed";
+		this.wrappedElement.style.left = (x + "px");
+		this.wrappedElement.style.top = (y + "px");
+		this.wrappedElement.style.position = "fixed";
 
 		// save the new position
 		this.left = x;

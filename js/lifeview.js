@@ -471,19 +471,19 @@
 	// Controller singleton
 	Controller = {
 		// allocator
-		allocator : new Allocator(),
+		/** @type {Allocator} */ allocator : new Allocator(),
 
 		// list of Canvas items and View pairs
-		viewers : [],
+		/** @type {Array} */ viewers : [],
 
 		// standalone viewer
 		/** @type {number} */ standaloneIndex : -1,
 
 		// popup window
-		popupWindow : null,
+		/** @type {PopupWindow} */ popupWindow : null,
 
 		// list of patterns in multiverse mode
-		patterns : []
+		/** @type {Array} */ patterns : []
 	};
 
 	// return standalone viewer
@@ -18841,7 +18841,7 @@
 		var	/** @type {number} */ i = 0,
 		    
 			// get the parent of the canvas
-			/** @type {Element} */ parentItem = /** @type {!Element} */ (canvasItem.parentNode),
+			/** @type {HTMLDivElement} */ parentItem = /** @type {!HTMLDivElement} */ (canvasItem.parentNode),
 
 			// view
 			/** @type {View} */ newView = null;
@@ -18899,14 +18899,14 @@
 		var	a = document.getElementsByTagName('meta'),
 			/** @type {number} */ b = 0,
 			/** @type {number} */ i = 0,
-			metaItem = null,
+			/** @type {HTMLMetaElement} */ metaItem = null,
 			/** @type {string} */ content = "",
 			/** @type {Array<string>} */ tokens = null,
 			/** @type {string} */ value = "";
 
 		// check if a LifeViewer tag exists
 		for (b = 0; b < a.length; b += 1) {
-			metaItem = a[b];
+			metaItem = /** @type {!HTMLMetaElement} */ (a[b]);
 
 			// check if it is a LifeViewer meta tag
 			if (metaItem.name === DocConfig.tagName) {
@@ -19005,10 +19005,10 @@
 			parentItem = externalViewer[0].parentNode,
 	
 			// get the associated View
-			view = externalViewer[1],
+			/** @type {View} */ view = externalViewer[1],
 	
 			// get the popup window
-			popup = externalViewer[2];
+			/** @type {PopupWindow } */ popup = externalViewer[2];
 
 		// hide the parent element
 		parentItem.style.display = "none";
@@ -19063,7 +19063,7 @@
 			// find the element containing the pattern
 			textItem = parentItem.getElementsByTagName(DocConfig.patternSourceName)[0],
 
-			cleanItem = null,
+			/** @type {string} */ cleanItem = "",
 			/**@type {View} */ viewer = Controller.viewers[0];
 
 		// copy the text item into the inner html
@@ -19139,7 +19139,7 @@
 			textItem = parentItem.getElementsByTagName(DocConfig.patternSourceName)[0],
 
 			// get the pattern contents
-			cleanItem = cleanPattern(textItem),
+			/** @type {string} */ cleanItem = cleanPattern(textItem),
 
 			// get the standalone viewer
 			/** @type {Array} */ viewer = Controller.standaloneViewer(),
@@ -19147,12 +19147,12 @@
 
 			// elements
 			/** @type {HTMLCanvasElement} */ canvasItem = null,
-			divItem = null,
-			windowTitleItem = null,
-			anchorItem = null,
-			innerDivItem = null,
-			centerDivItem = null,
-			hiddenItem = null,
+			/** @type {HTMLDivElement} */ divItem = null,
+			/** @type {Node} */ windowTitleItem = null,
+			/** @type {HTMLAnchorElement} */ anchorItem = null,
+			/** @type {HTMLDivElement} */ innerDivItem = null,
+			/** @type {HTMLDivElement} */ centerDivItem = null,
+			/** @type {HTMLAnchorElement} */ hiddenItem = null,
 
 			// element sizes for scaling
 			/** @type {number} */ itemHeight = 28,
@@ -19183,7 +19183,7 @@
 			canvasItem.contentEditable = "false";
 
 			// add a new anchor
-			anchorItem = document.createElement('a');
+			anchorItem = /** @type {!HTMLAnchorElement} */ (document.createElement('a'));
 			anchorItem.setAttribute('href', "#");
 			anchorItem.innerHTML = "&nbsp;X&nbsp;";
 			anchorItem.style.textDecoration = "none";
@@ -19195,7 +19195,7 @@
 			anchorItem.style.fontSize = itemFontSize + "px";
 
 			// add a hidden anchor to center the text
-			hiddenItem = document.createElement('a');
+			hiddenItem = /** @type {!HTMLAnchorElement} */ (document.createElement('a'));
 			hiddenItem.innerHTML = "&nbsp;X&nbsp;";
 			hiddenItem.style.textDecoration = "none";
 			hiddenItem.style.fontFamily = "Lucida Grande,Verdana,Helvetica,Arial,sans-serif";
@@ -19205,7 +19205,7 @@
 			hiddenItem.style.fontSize = itemFontSize + "px";
 
 			// create the center div with the window title text
-			centerDivItem = document.createElement("div");
+			centerDivItem = /** @type {!HTMLDivElement} */ (document.createElement("div"));
 			centerDivItem.style.textAlign = "center";
 			centerDivItem.style.color = "rgb(83,100,130)";
 			centerDivItem.style.fontFamily = "Arial, Verdana, Helvetica, sans-serif";
@@ -19220,7 +19220,7 @@
 			registerEvent(anchorItem, "touchend", hideCallback, false);
 
 			// create enclosing div and set style
-			divItem = document.createElement("div");
+			divItem = /** @type {!HTMLDivElement} */ (document.createElement("div"));
 			divItem.style.display = "none";
 			divItem.style.position = "fixed";
 			divItem.style.border = "1px solid rgb(128,128,128)";
@@ -19236,7 +19236,7 @@
 			divItem.style.margin = "1px";
 
 			// create the selall div
-			innerDivItem = document.createElement("div");
+			innerDivItem = /** @type {!HTMLDivElement} */ (document.createElement("div"));
 			innerDivItem.className = DocConfig.divCodeClassName;
 			innerDivItem.style.backgroundColor = "#FFFFFF";
 			innerDivItem.style.height = itemHeight + "px";
@@ -19298,9 +19298,9 @@
 	// create anchor
 	function createAnchor(rleItem, textItem) {
 		// add the show in viewer anchor
-		var	anchorItem = rleItem.getElementsByTagName("a")[0],
-			newAnchor = document.createElement("a"),
-			nodeItem = null;
+		var	/** @type {HTMLAnchorElement} */ anchorItem = rleItem.getElementsByTagName("a")[0],
+			/** @type {HTMLAnchorElement} */ newAnchor = /** @type {!HTMLAnchorElement} */ (document.createElement("a")),
+			/** @type {Node} */ nodeItem = null;
 
 		// create new anchor
 		newAnchor.setAttribute("href", "#");
@@ -19338,9 +19338,9 @@
 	// create error
 	function createError(rleItem, textItem, /** @type {string} */ message) {
 		// add the show in viewer anchor
-		var	anchorItem = rleItem.getElementsByTagName("a")[0],
-			newAnchor = document.createElement("a"),
-			nodeItem = null;
+		var	/** @type {HTMLAnchorElement} */ anchorItem = rleItem.getElementsByTagName("a")[0],
+			/** @type {HTMLAnchorElement} */ newAnchor = /** @type {!HTMLAnchorElement} */ (document.createElement("a")),
+			/** @type {Node} */ nodeItem = null;
 
 		// create new anchor
 		newAnchor.setAttribute("href", "#");
@@ -19465,19 +19465,19 @@
 	// start all viewers in the document
 	function startAllViewers() {
 		// find all viewers in the document (should be enclosed in <div class="rle">)
-		var	a = document.getElementsByTagName("div"),
-			/** @type {number} */ b = 0,
-			c = null,
+		var	divList = document.getElementsByTagName("div"),
+			/** @type {number} */ i = 0,
+			anchorList = null,
 			textItem = null,
-			anchorItem = null,
-			/** @type {HTMLCanvasElement} */ canvasItem = null,
-			cleanItem = null,
-			rleItem = null,
 			childItem = null,
+			/** @type {HTMLAnchorElement} */ anchorItem = null,
+			/** @type {HTMLCanvasElement} */ canvasItem = null,
+			/** @type {string} */ cleanItem = "",
+			/** @type {HTMLDivElement} */ rleItem = null,
 			
 			// temporary allocator and pattern manager
-			allocator = new Allocator(),
-			manager = new PatternManager();
+			/** @type {Allocator} */ allocator = new Allocator(),
+			/** @type {PatternManager} */ manager = new PatternManager();
 
 		// read settings
 		readSettingsFromMeta();
@@ -19486,9 +19486,9 @@
 		AliasManager.init();
 
 		// search for rle divs
-		for (b = 0; b < a.length; b += 1) {
+		for (i = 0; i < divList.length; i += 1) {
 			// get the next div
-			rleItem = a[b];
+			rleItem = /** @type {!HTMLDivElement} */ (divList[i]);
 
 			// check if it is rle class
 			if (rleItem.className === DocConfig.divClassName) {
@@ -19503,7 +19503,7 @@
 				}
 
 				// check if typedArrays and Canvas are supported
-				if (typedArrays && textItem) {
+				if (Supports.typedArrays && textItem) {
 					// remove any html tags from the text item and trim
 					cleanItem = cleanPattern(textItem);
 
@@ -19535,7 +19535,7 @@
 				}
 			} else {
 				// check if typedArrays are supported
-				if (typedArrays) {
+				if (Supports.typedArrays) {
 					// check if it is a div containing a codebox (that isn't in an rle div)
 					if (rleItem.className === DocConfig.divCodeClassName) {
 						// check if the parent is rle
@@ -19559,11 +19559,11 @@
 		}
 
 		// remove accesskey elements that conflict with LifeViewer
-		c = document.getElementsByTagName("a");
+		anchorList = document.getElementsByTagName("a");
 
-		for (b = 0; b < c.length; b += 1) {
+		for (i = 0; i < anchorList.length; i += 1) {
 			// get the next anchor
-			anchorItem = c[b];
+			anchorItem = /** @type {!HTMLAnchorElement} */ (anchorList[i]);
 			if (anchorItem.accessKey !== "") {
 				// check if it conflicts
 				if (ViewConstants.altKeys.indexOf(anchorItem.accessKey) !== -1) {
@@ -19575,7 +19575,7 @@
 
 	// register event to start viewers when document is loaded
 	registerEvent(window, "load", startAllViewers, false);
-	window.onresize = resizeWindow;
+	registerEvent(window, "resize", resizeWindow, false);
 
 	/*jshint -W069 */
 	// external interface

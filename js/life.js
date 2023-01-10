@@ -798,7 +798,7 @@
 		/** @type {number} */ this.camLayerDepth = 0.1;
 
 		// endian flag
-		/** @const {boolean} */ this.littleEndian = littleEndian;
+		/** @const {boolean} */ this.littleEndian = Supports.littleEndian;
 
 		// list of themes
 		/** @type {Array<Theme>} */ this.themes = [];

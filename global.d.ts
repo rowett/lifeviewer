@@ -1,10 +1,8 @@
 // Global type definitions for LifeViewer
 
 // alias.js
-declare var AliasManager;
 
 // allocator.js
-declare var Uint8, Uint8Clamped, Uint16, Uint32, Int8, Int16, Int32, Float32, Float64;
 interface Array {
     whole;
     allocator;
@@ -45,8 +43,6 @@ interface Window {
 // life.js
 
 // lifeview.js
-declare var typedArrays, arrayFill, LifeViewerLoaded, arraySlice, littleEndian, copyWithin, Controller;
-
 interface HTMLElement {
     src;
 }
@@ -74,10 +70,6 @@ interface Node {
 // random.js
 
 // script.js
-interface NumberConstructor {
-    isNaN;
-    isFinite;
-}
 
 // snapshot.js
 
@@ -86,5 +78,3 @@ interface NumberConstructor {
 // waypoint.js
 
 // window.js
-
-

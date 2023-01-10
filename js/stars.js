@@ -141,7 +141,7 @@
 		}
 
 		// compute black pixel rgb components
-		if (littleEndian) {
+		if (Controller.littleEndian) {
 			blackBlue = (blackPixel >> 16) & 0xff;
 			blackGreen = (blackPixel >> 8) & 0xff;
 			blackRed = blackPixel & 0xff;
@@ -174,8 +174,7 @@
 				// check it is in range
 				if (theta < 0) {
 					theta += this.circleDegrees;
-				}
-				else {
+				} else {
 					if (theta >= this.circleDegrees) {
 						theta -= this.circleDegrees;
 					}
@@ -222,10 +221,9 @@
 					currentBlue = blackBlue + starMinusBlackBlue * zDist;
 
 					// set the pixel
-					if (littleEndian) {
+					if (Controller.littleEndian) {
 						pixelColour = (0xff << 24) | (currentBlue << 16) | (currentGreen << 8) | currentRed;
-					}
-					else {
+					} else {
 						pixelColour = (currentRed << 24) | (currentBlue << 16) | (currentGreen << 8) | 0xff;
 					}
 
@@ -242,10 +240,9 @@
 				currentBlue = blackBlue + starMinusBlackBlue * zDist;
 
 				// set the pixel
-				if (littleEndian) {
+				if (Controller.littleEndian) {
 					pixelColour = (0xff << 24) | (currentBlue << 16) | (currentGreen << 8) | currentRed;
-				}
-				else {
+				} else {
 					pixelColour = (currentRed << 24) | (currentBlue << 16) | (currentGreen << 8) | 0xff;
 				}
 

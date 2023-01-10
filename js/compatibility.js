@@ -1,12 +1,21 @@
 // cross-browser compatibility functions
 // written by Chris Rowett
 
-	// for determining endian
-	var	/** @type {Uint8Array} */ data8 = null,
-		/** @type {Uint32Array} */ data32 = null;
+	// whether browser supports various features
+	var Supports = {
+		/** @type {boolean} */ typedArrays : false,
+		/** @type {boolean} */ arrayFill : false,
+		/** @type {boolean} */ arraySlice : false,
+		/** @type {boolean} */ littleEndian : false,
+		/** @type {boolean} */ copyWithin : false,
+
+		// for determining endian
+		/** @type {Uint8Array} */ data8 : null,
+		/** @type {Uint32Array} */ data32 : null
+	};
 
 	// cross-browser register event function
-	function registerEvent(element, event, handler, capture) {
+	function registerEvent(element, /** @type {string} */ event, handler, /** @type {boolean} */ capture) {
 		if (element.addEventListener) {
 			element.addEventListener(event, handler, capture);
 		} else {
@@ -36,13 +45,12 @@
 
 	// implement cross-browser typed arrays
 	if (!window.Uint8Array) {
-		window.typedArrays = false;
+		Supports.typedArrays = false;
 
 		/** @suppress {checkTypes} */
 		window.Uint8Array = Array;
-	}
-	else {
-		window.typedArrays = true;
+	} else {
+		Supports.typedArrays = true;
 	}
 
 	if (!window.Uint8ClampedArray) {
@@ -101,7 +109,7 @@
 
 	// check for array fill
 	if (!window.Uint32Array.prototype.fill) {
-		window.arrayFill = false;
+		Supports.arrayFill = false;
 
 		/** @type {function(number,number=,number=):void} */
 		window.Uint32Array.prototype.fill = function(value, begin, end) {
@@ -119,7 +127,7 @@
 			}
 		};
 	} else {
-		window.arrayFill = true;
+		Supports.arrayFill = true;
 	}
 
 	if (!window.Uint16Array.prototype.fill) {
@@ -268,7 +276,7 @@
 
 	// check for slice
 	if (!window.Int32Array.prototype.slice) {
-		window.arraySlice = false;
+		Supports.arraySlice = false;
 
 		/** @type {function(number=,number=):Int32Array} */
 		window.Int32Array.prototype.slice = function(begin, end) {
@@ -289,7 +297,7 @@
 			return result;
 		};
 	} else {
-		window.arraySlice = true;
+		Supports.arraySlice = true;
 	}
 
 	if (!window.Int16Array.prototype.slice) {
@@ -461,18 +469,18 @@
 	}
 
 	// set endian flag
-	data32 = new Uint32Array(1);
-	data32[0] = 0x1234;
-	data8 = new Uint8Array(data32.buffer);
-	if (data8[0] === 0x34) {
-		window.littleEndian = true;
+	Supports.data32 = new Uint32Array(1);
+	Supports.data32[0] = 0x1234;
+	Supports.data8 = new Uint8Array(Supports.data32.buffer);
+	if (Supports.data8[0] === 0x34) {
+		Supports.littleEndian = true;
 	} else {
-		window.littleEndian = false;
+		Supports.littleEndian = false;
 	}
 	
 	// set copy within flag
-	if (data32.copyWithin) {
-		window.copyWithin = true;
+	if (Supports.data32.copyWithin) {
+		Supports.copyWithin = true;
 	} else {
 		/** @type {function(number,number,number=):Uint32Array} */
 		window.Uint32Array.prototype.copyWithin = function(target, start, end) {
@@ -509,5 +517,5 @@
 			return this;
 		};
 
-		window.copyWithin = false;
+		Supports.copyWithin = false;
 	}
