@@ -937,17 +937,17 @@
 
 	// sort labels into zoom order for depth drawing
 	WaypointManager.prototype.sortLabels = function() {
-		this.labelList.sort(function(a, b) { return a.zoom - b.zoom; });
+		this.labelList.sort(function(/** @type {Label} */ a, /** @type {Label} */ b) { return a.zoom - b.zoom; });
 	};
 
 	// sort arrows into zoom order for depth drawing
 	WaypointManager.prototype.sortArrows = function() {
-		this.arrowList.sort(function(a, b) { return a.zoom - b.zoom; });
+		this.arrowList.sort(function(/** @type {Arrow} */ a, /** @type {Arrow} */ b) { return a.zoom - b.zoom; });
 	};
 
 	// sort polygons into zoom order for depth drawing
 	WaypointManager.prototype.sortPolygons = function() {
-		this.polyList.sort(function(a, b) { return a.zoom - b.zoom; });
+		this.polyList.sort(function(/** @type {Polygon} */ a, /** @type {Polygon} */ b) { return a.zoom - b.zoom; });
 	};
 
 	// sort annotations into zoom order for depth drawing
@@ -2473,7 +2473,7 @@
 	};
 
 	// copy a single initial value into POI
-	WaypointManager.prototype.copyInitial = function(/** @type {string} */ what, poi, /** @type {Array<Array<string,string>>} */ scriptErrors, /** @type {boolean} */ initialDefined) {
+	WaypointManager.prototype.copyInitial = function(/** @type {string} */ what, /** @type {Waypoint} */ poi, /** @type {Array<Array<string,string>>} */ scriptErrors, /** @type {boolean} */ initialDefined) {
 		// check there is an initial waypoint
 		if (this.numWaypoints() === 0) {
 			scriptErrors[scriptErrors.length] = [what + " " + Keywords.initialWord, "no initial waypoint defined"];

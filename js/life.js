@@ -345,7 +345,7 @@
 	}
 
 	// set function
-	ColourRange.prototype.set = function(/** @type ColourRange */ fromRange) {
+	ColourRange.prototype.set = function(/** @type {ColourRange} */ fromRange) {
 		this.startColour.set(fromRange.startColour);
 		this.endColour.set(fromRange.endColour);
 	};
@@ -12969,7 +12969,7 @@
 	};
 
 	// draw graph
-	Life.prototype.renderGraph = function(/** @type {CanvasRenderingContext2D} */ ctx, /** @type {string} */ graphCol, /** @type {number} */ displayX, /** @type {number} */ graphHeight, /** @type {number} */ borderX, /** @type {number} */ borderY, /** @type {number} */ borderAxis, graphData, /** @type {boolean} */ lines) {
+	Life.prototype.renderGraph = function(/** @type {CanvasRenderingContext2D} */ ctx, /** @type {string} */ graphCol, /** @type {number} */ displayX, /** @type {number} */ graphHeight, /** @type {number} */ borderX, /** @type {number} */ borderY, /** @type {number} */ borderAxis, /** @type {Array<Uint32Array>} */ graphData, /** @type {boolean} */ lines) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
@@ -12993,7 +12993,7 @@
 		if (lines) {
 			ctx.strokeStyle = graphCol;
 			ctx.beginPath();
-			y = (graphHeight - graphHeight * (graphData[0] / this.maxPopValue)) | 0;
+			y = (graphHeight - graphHeight * (graphData[0][0] / this.maxPopValue)) | 0;
 			ctx.moveTo(borderX + borderAxis + 0.5, y + borderY + borderAxis + 0.5);
 		} else {
 			ctx.fillStyle = graphCol;

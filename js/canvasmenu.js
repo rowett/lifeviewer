@@ -1227,7 +1227,7 @@
 	};
 
 	// add list item
-	MenuList.prototype.addListItem = function(callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, list, current, selection) {
+	MenuList.prototype.addListItem = function(callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, /** @type {Array<string>} */ list, /** @type {number|Array<boolean>} */ current, /** @type {number} */ selection) {
 		// create the item
 		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, list, selection, current, Menu.list, this.defaultOrientation, true, "", "", -1, [], this);
 
@@ -1239,7 +1239,7 @@
 	};
 
 	// add range item
-	MenuList.prototype.addRangeItem = function(/** @type {function(Array,boolean,View):Array} */ callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, lower, upper, current, valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText, /** @type{number} */ fixed) {
+	MenuList.prototype.addRangeItem = function(/** @type {function(Array,boolean,View):Array} */ callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, /** @type {number|Array<string>} */ lower, /** @type {number} */ upper, /** @type {number|Array<boolean>} */ current, /** @type {boolean} */ valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText, /** @type{number} */ fixed) {
 		// create the item
 		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, lower, upper, current, Menu.range, this.defaultOrientation, valueDisplay, preText, postText, fixed, null, this);
 
@@ -1275,7 +1275,7 @@
 	};
 
 	// add progress bar item
-	MenuList.prototype.addProgressBarItem = function(/** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, lower, upper, current, valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText, /** @type {number} */ fixed) {
+	MenuList.prototype.addProgressBarItem = function(/** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ lower, /** @type {number} */ upper, /** @type {number} */ current, /** @type {boolean} */ valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText, /** @type {number} */ fixed) {
 		// create the item
 		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, null, null, position, x, y, width, height, lower, upper, current, Menu.progressBar, this.defaultOrientation, valueDisplay, preText, postText, fixed, null, this);
 

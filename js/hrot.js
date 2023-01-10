@@ -304,7 +304,7 @@
 
 	// get the count for von Neumann
 	/** @returns {number} */
-	HROT.prototype.getCount2 = function(/** @type {number} */ i, /** @type {number} */ j, countRow) {
+	HROT.prototype.getCount2 = function(/** @type {number} */ i, /** @type {number} */ j, /** @type {Int32Array} */ countRow) {
 		if (i < 0 || i + j < 0 || j - i >= this.ncols) {
 			return 0;
 		}

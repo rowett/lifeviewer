@@ -19,7 +19,7 @@
 
 	// add a request to the cache
 	/** @returns {boolean} */
-	RuleTreeCache.addRequest = function(/** @type {Pattern} */ pattern, succeedCallback, failCallback, /** @type {Array} */ args, /** @type {View} */ view) {
+	RuleTreeCache.addRequest = function(/** @type {Pattern} */ pattern, /** @type {null|function(Pattern,Array,View):void} */ succeedCallback, /** @type {null|function(Pattern,Array,View):void} */ failCallback, /** @type {Array} */ args, /** @type {View} */ view) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ l = this.requests.length,
 			request = null,
@@ -1054,7 +1054,7 @@
 	};
 
 	// copy multi-state settings from pattern to alternate on this pattern
-	Pattern.prototype.copyMultiSettingsFrom = function(/** @type {Pattern} */ source, allocator) {
+	Pattern.prototype.copyMultiSettingsFrom = function(/** @type {Pattern} */ source, /** @type {Allocator} */ allocator) {
 		// copy arrays
 		if (source.survivalHROT) {
 			this.altSurvivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, source.survivalHROT.length, "HROT.altSurvivals"));
@@ -4008,7 +4008,7 @@
 
 	// decode HROT range
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeHROTRange = function(/** @type {string} */ rule, list, /** @type {string} */ partName, /** @type {number} */ maxCount, /** @type {boolean} */ outer) {
+	PatternManager.prototype.decodeHROTRange = function(/** @type {string} */ rule, /** @type {Uint8Array} */ list, /** @type {string} */ partName, /** @type {number} */ maxCount, /** @type {boolean} */ outer) {
 		var	/** @type {boolean} */ result = true,
 			/** @type {number} */ lower = -1,
 			/** @type {number} */ upper = -1,
@@ -5226,7 +5226,7 @@
 
 	// decode rule string and return whether valid
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeRuleStringPart = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, allocator, /** @type {Uint8Array} */ ruleArray) {
+	PatternManager.prototype.decodeRuleStringPart = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, /** @type {Allocator} */ allocator, /** @type {Uint8Array} */ ruleArray) {
 		// whether the rule contains a slash
 		var	/** @type {number} */ slashIndex = -1,
 
@@ -9398,7 +9398,7 @@
 
 	// add a pattern to the list
 	/** @returns {Pattern} */
-	PatternManager.prototype.create = function(/** @type {string} */ name, /** @type {string} */ source, /** @type {Allocator} */ allocator, succeedCallback, failCallback, /** @type {Array} */ args, /** @type {View} */ view) {
+	PatternManager.prototype.create = function(/** @type {string} */ name, /** @type {string} */ source, /** @type {Allocator} */ allocator, /** @type {null|function(Pattern,Array,View):void} */ succeedCallback, /** @type {null|function(Pattern,Array,View):void} */ failCallback, /** @type {Array} */ args, /** @type {View} */ view) {
 		// create a pattern skeleton
 		var	/** @type {Pattern} */ newPattern = new Pattern(name, this),
 			/** @type {number} */ states = 0,
@@ -9688,7 +9688,7 @@
 	};
 
 	// load rule table from URI
-	PatternManager.prototype.loadRuleTable = function(/** @type {Pattern} */ pattern, succeedCallback, failCallback, /** @type {Array} */ args, /** @type {View} */ view) {
+	PatternManager.prototype.loadRuleTable = function(/** @type {Pattern} */ pattern, /** @type {null|function(Pattern,Array,View):void} */ succeedCallback, /** @type {null|function(Pattern,Array,View):void} */ failCallback, /** @type {Array} */ args, /** @type {View} */ view) {
 		var	/** @type {PatternManager} */ me = this,
 			/** @type {XMLHttpRequest} */ xhr = null,
 			/** @type {string} */ ruleName = pattern.ruleName,
