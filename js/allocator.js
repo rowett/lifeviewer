@@ -1,5 +1,7 @@
-// allocator
+// Allocator
 // written by Chris Rowett
+//
+// Handles typed memory allocation for 1D and 2D arrays.
 
 	// allocation bits
 	var AllocBits = {

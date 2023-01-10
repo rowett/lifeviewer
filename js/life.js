@@ -1,5 +1,7 @@
 // Life
 // written by Chris Rowett
+//
+// Implements many rule families and rendering.
 
 	// Life constants
 	/** @const */

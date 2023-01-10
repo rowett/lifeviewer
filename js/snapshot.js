@@ -1,5 +1,7 @@
 // LifeViewer snapshot
 // written by Chris Rowett
+//
+// Snapshot system to allow step back feature.
 
 	// Snapshot object
 	/**

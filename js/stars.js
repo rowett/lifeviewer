@@ -1,5 +1,7 @@
 // LifeViewer Stars
 // written by Chris Rowett
+//
+// Implements starfield.
 
 	// Stars constructor
 	/**

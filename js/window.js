@@ -1,5 +1,7 @@
-// html5 element menu library
+// Popup Window
 // written by Chris Rowett
+//
+// Handles the standalone LifeViewer popup window.
 
 	// PopupWindow
 	/**

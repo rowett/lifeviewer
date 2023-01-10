@@ -1,5 +1,8 @@
 // Global type definitions for LifeViewer
 
+// start.txt
+var LifeViewerLoaded;
+
 // alias.js
 
 // allocator.js
@@ -45,11 +48,6 @@ interface Window {
 // lifeview.js
 interface HTMLElement {
     src;
-}
-
-interface Window {
-    width;
-    height;
 }
 
 interface Element {

@@ -1,5 +1,7 @@
 // LifeViewer Scripts
 // written by Chris Rowett
+//
+// Converts pattern comments into Script tokens.
 
 	// Script constructor
 	/**

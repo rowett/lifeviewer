@@ -1,5 +1,7 @@
 // LifeViewer HROT
 // written by Chris Rowett
+//
+// Implements HROT/LtL rules.
 
 	// HROT object
 	/**

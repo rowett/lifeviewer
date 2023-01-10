@@ -1,5 +1,7 @@
 // LifeViewer BoundingBox
 // written by Chris Rowett
+//
+// BoundingBox for pattern and selection extent.
 
 	// BoundingBox object
 	/**

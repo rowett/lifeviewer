@@ -1,5 +1,7 @@
 // cross-browser compatibility functions
 // written by Chris Rowett
+//
+// Various cross-browser functions.
 
 	// whether browser supports various features
 	var Supports = {

@@ -1,5 +1,7 @@
 // LifeViewer Script Parser
 // written by Chris Rowett
+//
+// Supports the LifeViewer script language.
 
 	// singleton
 	var ScriptParser = {

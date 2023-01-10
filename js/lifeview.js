@@ -1,5 +1,7 @@
 // LifeViewer Plugin
 // written by Chris Rowett
+//
+// Main LifeViewer application.
 
 	// LifeViewer document configuration
 	var DocConfig = {
@@ -9227,7 +9229,7 @@
 					}
 
 					// zoom text
-					me.menuManager.notification.notify("Play", 15, 40, 15, true);
+					me.menuManager.notification.notify("Play\nBegin", 15, 40, 15, true);
 					me.lastPlaybackMS = performance.now();
 				} else {
 					// pause

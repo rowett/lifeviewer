@@ -1,5 +1,7 @@
 // LifeViewer Keyboard Handling
 // written by Chris Rowett
+//
+// Handles all of the keyboard shortcuts.
 
 	// key processor
 	var KeyProcessor = {};

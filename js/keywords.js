@@ -1,5 +1,7 @@
 // LifeViewer Keywords
 // written by Chris Rowett
+//
+// Keywords for the LifeViewer script language.
 
 	// script keywords
 	var Keywords = {

@@ -1,5 +1,7 @@
 // LifeViewer Help
 // written by Chris Rowett
+//
+// Built-in Help system.
 
 	// Help singleton
 	var Help = {

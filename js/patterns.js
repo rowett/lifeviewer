@@ -1,6 +1,9 @@
 // Pattern decoder
-// Supports: Cells, Life 1.05, Life 1.06, RLE pattern formats
 // written by Chris Rowett
+//
+// Supports decoding various pattern formats: Cells, Life 1.05, Life 1.06, and RLE.
+// Also handles fetching RuleTable rules from a remote repository.
+
 
 	// RuleTreeCache singleton
 	var RuleTreeCache = {

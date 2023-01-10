@@ -1,4 +1,6 @@
 // Random
+// 
+// Pseudo-random number generator.
 
 	// Random object
 	/**

@@ -1,5 +1,7 @@
 // html5 canvas menu library
 // written by Chris Rowett
+//
+// LifeViewer UI library.
 
 	// TextAlert
 	/**
@@ -313,7 +315,7 @@
 				clearMessage = true;
 			} else {
 				// check if the message contains a newline
-				index = message.indexOf("\\n");
+				index = message.indexOf("\n");
 				if (index === -1) {
 					// draw the text
 					this.draw(message, isPriority, lineHeight);
@@ -325,7 +327,7 @@
 					this.context.translate(0, lineHeight);
 
 					// draw the second line
-					this.draw(message.substr(index + 2), isPriority, lineHeight);
+					this.draw(message.substr(index + 1), isPriority, lineHeight);
 				}
 			}
 

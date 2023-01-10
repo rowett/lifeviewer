@@ -1,5 +1,7 @@
 // LifeViewer Alias
 // written by Chris Rowett
+//
+// Manages rule aliases.
 
 	// AliasManager singleton
 	var AliasManager = {

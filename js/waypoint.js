@@ -1,5 +1,8 @@
 // LifeViewer Waypoint
 // written by Chris Rowett
+//
+// Handles the Waypoint system, Points-Of-Interest (POIs).
+// Also handles annotations (Labels, Arrows and Polygons).
 
 	// WaypointConstants singleton
 	var WaypointConstants = {

@@ -1,5 +1,7 @@
 // LifeViewer Colours
 // written by Chris Rowett
+//
+// Handles colour palette and HTML colour names.
 
 	// ColourManager singleton
 	var ColourManager = {
