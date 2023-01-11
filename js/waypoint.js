@@ -1696,7 +1696,7 @@
 
 						// add generation if required
 						if (current.genSub !== -1) {
-							message = message.substr(0, current.genSub) + view.engine.counter + message.substr(current.genSub + 2);
+							message = message.substring(0, current.genSub) + view.engine.counter + message.substring(current.genSub + 2);
 
 							// if other substitutions also exist then recalculate position since it will have changed
 							if (current.popSub !== -1) {
@@ -1715,7 +1715,7 @@
 
 						// add population if required
 						if (current.popSub !== -1) {
-							message = message.substr(0, current.popSub) + view.engine.population + message.substr(current.popSub + 2);
+							message = message.substring(0, current.popSub) + view.engine.population + message.substring(current.popSub + 2);
 
 							// if other subsistutions also exist then recalculate
 							if (current.revSub !== -1) {
@@ -1732,9 +1732,9 @@
 						// add reverse generation if required
 						if (current.revSub !== -1) {
 							if (view.engine.isMargolus || view.engine.isPCA) {
-								message = message.substr(0, current.revSub) + view.engine.counterMargolus + message.substr(current.revSub + 2);
+								message = message.substring(0, current.revSub) + view.engine.counterMargolus + message.substring(current.revSub + 2);
 							} else {
-								message = message.substr(0, current.revSub) + view.engine.counter + message.substr(current.revSub + 2);
+								message = message.substring(0, current.revSub) + view.engine.counter + message.substring(current.revSub + 2);
 							}
 							if (current.relGenSub !== -1) {
 								current.relGenSub = message.indexOf("#I");
@@ -1746,7 +1746,7 @@
 
 						// add relative generation if required
 						if (current.relGenSub !== -1) {
-							message = message.substr(0, current.relGenSub) + (view.engine.counter + view.genOffset) + message.substr(current.relGenSub + 2);
+							message = message.substring(0, current.relGenSub) + (view.engine.counter + view.genOffset) + message.substring(current.relGenSub + 2);
 							if (current.relRevSub !== -1) {
 								current.relRevSub = message.indexOf("#J");
 							}
@@ -1755,9 +1755,9 @@
 						// add relative reverse generation if reuqired
 						if (current.relRevSub !== -1) {
 							if (view.engine.isMargolus || view.engine.isPCA) {
-								message = message.substr(0, current.relRevSub) + (view.engine.counterMargolus + view.genOffset) + message.substr(current.relRevSub + 2);
+								message = message.substring(0, current.relRevSub) + (view.engine.counterMargolus + view.genOffset) + message.substring(current.relRevSub + 2);
 							} else {
-								message = message.substr(0, current.relRevSub) + (view.engine.counter + view.genOffset) + message.substr(current.relRevSub + 2);
+								message = message.substring(0, current.relRevSub) + (view.engine.counter + view.genOffset) + message.substring(current.relRevSub + 2);
 							}
 						}
 
@@ -1787,8 +1787,8 @@
 			
 							while (index !== -1) {
 								// get the next line
-								line = message.substr(0, index);
-								message = message.substr(index + 2);
+								line = message.substring(0, index);
+								message = message.substring(index + 2);
 			
 								// measure text line width
 								xPos = context.measureText(line).width >> 1;
@@ -2114,7 +2114,7 @@
 		}
 
 		// return the text
-		return text.substr(1);
+		return text.substring(1);
 	};
 
 	// output a point of interest loop, stop, gps and step as text
@@ -2151,7 +2151,7 @@
 		}
 
 		// return the text
-		return text.substr(1);
+		return text.substring(1);
 	};
 
 	// output a point of interest action as text
@@ -2186,7 +2186,7 @@
 		}
 
 		// return the text
-		return text.substr(1);
+		return text.substring(1);
 	};
 
 	// output a point of interest theme, depth and layer as text
@@ -2218,7 +2218,7 @@
 		}
 
 		// return the text
-		return text.substr(1);
+		return text.substring(1);
 	};
 
 	// output a point of interest start generation as text
@@ -2241,7 +2241,7 @@
 		}
 
 		// return the text
-		return text.substr(1);
+		return text.substring(1);
 	};
 
 	// output a point of interest message as text
@@ -2263,7 +2263,7 @@
 		}
 
 		// return the text
-		return text.substr(1);
+		return text.substring(1);
 	};
 
 	// output a waypoint as text

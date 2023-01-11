@@ -297,7 +297,7 @@
 
 		// check if there are more tokens
 		if (this.current < this.starts.length) {
-			result = this.source.substr(this.starts[this.current], this.lengths[this.current]);
+			result = this.source.substring(this.starts[this.current], this.starts[this.current] + this.lengths[this.current]);
 
 			// advance to next token
 			this.current += 1;
@@ -328,7 +328,7 @@
 
 		// check if there are more tokens
 		if (this.current < this.starts.length) {
-			result = this.source.substr(this.starts[this.current], this.lengths[this.current]);
+			result = this.source.substring(this.starts[this.current], this.starts[this.current] + this.lengths[this.current]);
 		}
 
 		// return the token
@@ -431,8 +431,8 @@
 
 		// check if the token contained a slash
 		if (slashIndex !== -1) {
-			leftPart = token.substr(0, slashIndex);
-			rightPart = token.substr(slashIndex + 1);
+			leftPart = token.substring(0, slashIndex);
+			rightPart = token.substring(slashIndex + 1);
 
 			// check if they are numeric
 			result = this.isNumeric(leftPart) && this.isNumeric(rightPart);
@@ -456,8 +456,8 @@
 		if (this.isFraction(token)) {
 			// get the left and right parts
 			slashIndex = token.indexOf("/");
-			leftPart = token.substr(0, slashIndex);
-			rightPart = token.substr(slashIndex + 1);
+			leftPart = token.substring(0, slashIndex);
+			rightPart = token.substring(slashIndex + 1);
 
 			// check for divison by zero
 			if (Number(rightPart) !== 0) {
@@ -510,7 +510,7 @@
 				result = true;
 			} else {
 				// inspect the token since it may be a fraction
-				token = this.source.substr(this.starts[this.current], this.lengths[this.current]);
+				token = this.source.substring(this.starts[this.current], this.starts[this.current] + this.lengths[this.current]);
 
 				// check if it is a fraction
 				if (this.isFraction(token)) {
@@ -539,7 +539,7 @@
 				result = true;
 			} else {
 				// inspect the token since it may be a fraction
-				token = this.source.substr(this.starts[current], this.lengths[current]);
+				token = this.source.substring(this.starts[current], this.starts[current] + this.lengths[current]);
 
 				// check if it is a fraction
 				if (this.isFraction(token)) {

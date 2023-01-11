@@ -715,7 +715,7 @@
 		// check if the message is longer than the maximum allowed
 		if (message.length > maxLength) {
 			// get the first section of the message
-			result = message.substr(0, maxLength - 1) + "...";
+			result = message.substring(0, maxLength - 1) + "...";
 		}
 
 		// return the message
@@ -734,7 +734,7 @@
 				scriptErrors[scriptErrors.length] = [Keywords.titleWord + " " + Keywords.stringDelimiter + this.shortenMessage(message, 23) + Keywords.stringDelimiter, "only one line allowed"];
 			} else {
 				// check for second newline and reading label
-				index = message.substr(index + 2).indexOf("\\n");
+				index = message.substring(index + 2).indexOf("\\n");
 				if (index !== -1 && !readingLabel) {
 					// display error
 					scriptErrors[scriptErrors.length] = [Keywords.stringDelimiter + this.shortenMessage(message, 23), "only two lines allowed"];
@@ -902,14 +902,14 @@
 			// substitute each variable
 			while (varIndex !== -1) {
 				// add the portion before the variable to the result
-				result += string.substr(0, varIndex);
+				result += string.substring(0, varIndex);
 
 				// get the variable type
 				if (varIndex + 1 < string.length) {
 					type = string[varIndex + 1];
 				
 					// remove the variable definition
-					string = string.substr(varIndex + 2);
+					string = string.substring(varIndex + 2);
 
 					// determine the variable type
 					switch(type) {
@@ -1021,7 +1021,7 @@
 					// find the next variable
 					varIndex = string.indexOf(Keywords.variablePrefixSymbol);
 				} else {
-					string = string.substr(varIndex + 1);
+					string = string.substring(varIndex + 1);
 					varIndex = -1;
 				}
 			}
@@ -1067,11 +1067,11 @@
 		return result;
 	};
 
-	// check BNs in valid
+	// check BSs is valid
 	/** @returns {boolean} */
 	ScriptParser.validBSn = function(/** @type {string} */ token) {
-		var	/** @type {string} */ firstChar = token.substr(0, 1),
-			/** @type {string} */ remainder = token.substr(1),
+		var	/** @type {string} */ firstChar = token.substring(0, 1),
+			/** @type {string} */ remainder = token.substring(1),
 			/** @type {boolean} */ result = false,
 			/** @type {number} */ i = 0;
 
@@ -1381,7 +1381,7 @@
 					// check if string finished
 					if (nextToken[nextToken.length - 1] === Keywords.stringDelimiter) {
 						// finalise string
-						stringValue = stringValue + " " + nextToken.substr(0, nextToken.length - 1);
+						stringValue = stringValue + " " + nextToken.substring(0, nextToken.length - 1);
 						readingString = false;
 
 						// validate string
@@ -1419,7 +1419,7 @@
 					// check for new string
 					if (nextToken[0] === Keywords.stringDelimiter) {
 						// create the new string
-						stringValue = nextToken.substr(1);
+						stringValue = nextToken.substring(1);
 						readingString = true;
 						
 						// check if string finished
@@ -1427,7 +1427,7 @@
 							readingString = false;
 
 							// remove the trailing delimiter
-							stringValue = stringValue.substr(0, stringValue.length - 1);
+							stringValue = stringValue.substring(0, stringValue.length - 1);
 
 							// validate string
 							this.validateString(stringValue, scriptErrors, readingTitle, readingLabel);
@@ -2955,7 +2955,7 @@
 									i = 0;
 									while (i < 4 && itemValid) {
 										numberValue <<= 1;
-										switch (peekToken.substr(i, 1)) {
+										switch (peekToken.substring(i, i + 1)) {
 											case "1":
 												numberValue |= 1;
 												break;
@@ -3383,8 +3383,9 @@
 
 								// others are errors or state names
 								default:
-									// check if in string
-									if (peekToken.charAt(0) === "\"") {
+									// check if in untermintated string
+									if (peekToken.charAt(0) === "\"" && peekToken.charAt(peekToken.length - 1) !== "\"") {
+										// get more tokens until string terminator found
 										peekToken = scriptReader.getNextToken();
 										do {
 											stringToken = scriptReader.getNextToken();

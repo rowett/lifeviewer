@@ -2997,11 +2997,11 @@
 			/** @type {boolean} */ valid = false;
 
 		// check if random cells are requested
-		if (rle.substr(0, len) === Keywords.randomCellsWord) {
+		if (rle.substring(0, len) === Keywords.randomCellsWord) {
 			// get the box size
-			rle = rle.substr(len);
-			boxWidth = parseInt(rle.substr(0, rle.indexOf(",")), 10);
-			boxHeight = parseInt(rle.substr(rle.indexOf(",") + 1), 10);
+			rle = rle.substring(len);
+			boxWidth = parseInt(rle.substring(0, rle.indexOf(",")), 10);
+			boxHeight = parseInt(rle.substring(rle.indexOf(",") + 1), 10);
 
 			// create random box
 			i = 0;
@@ -3274,18 +3274,18 @@
 		// check for evolution
 		if (evolveIndex !== -1) {
 			// remove the evolution postfix
-			namePrefix = rle.substr(0, evolveIndex);
+			namePrefix = rle.substring(0, evolveIndex);
 
 			// get the number of evolution generations
 			evolution = this.getEvolution(rle);
 		}
 
 		// check if random cells are requested
-		if (namePrefix.substr(0, len) === Keywords.randomCellsWord) {
+		if (namePrefix.substring(0, len) === Keywords.randomCellsWord) {
 			// get the box size
-			namePrefix = namePrefix.substr(len);
-			boxWidth = parseInt(namePrefix.substr(0, namePrefix.indexOf(",")), 10);
-			boxHeight = parseInt(namePrefix.substr(namePrefix.indexOf(",") + 1), 10);
+			namePrefix = namePrefix.substring(len);
+			boxWidth = parseInt(namePrefix.substring(0, namePrefix.indexOf(",")), 10);
+			boxHeight = parseInt(namePrefix.substring(namePrefix.indexOf(",") + 1), 10);
 
 			// create random box
 			i = 0;
@@ -8570,7 +8570,7 @@
 
 		// remove quotes from the name
 		if (name.charAt(0) === "\"") {
-			name = name.substr(1, name.length - 2);
+			name = name.substring(1, name.length - 1);
 		}
 
 		// rule tree states
@@ -8650,8 +8650,8 @@
 							if (name === "alive") {
 								number = 1;
 							} else {
-								if (name.substr(0, 6) === "dying ") {
-									number = Number(name.substr(6)) + 1;
+								if (name.substring(0, 6) === "dying ") {
+									number = Number(name.substring(6)) + 1;
 									if (number >= this.engine.multiNumStates) {
 										number = -1;
 									}
@@ -9229,7 +9229,7 @@
 					}
 
 					// zoom text
-					me.menuManager.notification.notify("Play\nBegin", 15, 40, 15, true);
+					me.menuManager.notification.notify("Play", 15, 40, 15, true);
 					me.lastPlaybackMS = performance.now();
 				} else {
 					// pause
@@ -10194,8 +10194,8 @@
 				// check for bounded grid
 				index = result.indexOf(":");
 				if (index !== -1) {
-					me.patternRuleName = result.substr(0, index);
-					me.patternBoundedGridDef = result.substr(index);
+					me.patternRuleName = result.substring(0, index);
+					me.patternBoundedGridDef = result.substring(index);
 				} else {
 					me.patternRuleName = result;
 					me.patternBoundedGridDef = "";
@@ -10224,7 +10224,7 @@
 
 		// remove the from postfix if present
 		if (fromPostfix !== "") {
-			currentRule = currentRule.substr(0, currentRule.length - fromPostfix.length);
+			currentRule = currentRule.substring(0, currentRule.length - fromPostfix.length);
 		}
 
 		// add the to postfix
@@ -14274,19 +14274,19 @@
 		me.startFromTiming = -1;
 		if (result !== null) {
 			// check for timing mode
-			if ((result.substr(result.length - 1)).toLowerCase() === "b") {
-				result = result.substr(0, result.length - 1);
+			if ((result.substring(result.length - 1)).toLowerCase() === "b") {
+				result = result.substring(0, result.length - 1);
 				timing = true;
 			}
 
 			// check for relative generation
-			if (result.substr(0, 1) === "+") {
+			if (result.substring(0, 1) === "+") {
 				number = /** @type {!number} */ (me.engine.counter);
-				number += parseInt(result.substr(1), 10);
+				number += parseInt(result.substring(1), 10);
 			} else {
-				if (result.substr(0, 1) === "-") {
+				if (result.substring(0, 1) === "-") {
 					number = /** @type {!number} */ (me.engine.counter);
-					number -= parseInt(result.substr(1), 10);
+					number -= parseInt(result.substring(1), 10);
 				} else {
 					number = parseInt(result, 10);
 				}
@@ -16602,14 +16602,14 @@
 		if (pxWidth > titleWidth) {
 			// shorten the text until it fits
 			i -= 1;
-			pxWidth = ctx.measureText(message.substr(0, i) + "...").width;
+			pxWidth = ctx.measureText(message.substring(0, i) + "...").width;
 			while (pxWidth > titleWidth) {
 				i -= 1;
-				pxWidth = ctx.measureText(message.substr(0, i) + "...").width;
+				pxWidth = ctx.measureText(message.substring(0, i) + "...").width;
 			}
 
 			// set the message to the shorter version
-			result = result.substr(0, i) + "...";
+			result = result.substring(0, i) + "...";
 		}
 
 		// return the message

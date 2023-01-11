@@ -740,7 +740,7 @@
 		// remove extension from name if present
 		var	/** @type {number} */ i = name.lastIndexOf(".");
 		if (i !== -1) {
-			name = name.substr(0, i);
+			name = name.substring(0, i);
 		}
 
 		/** @type {string} */ this.name = name;
@@ -3352,7 +3352,7 @@
 	PatternManager.prototype.decodeLTLpart = function (/** @type {string} */ rule, /** @type {string} */ part, /** @type {number} */ lower, /** @type {number} */ upper, /** @type {string} */ partof, /** @type {Pattern} */ pattern) {
 		var	/** @type {number} */ result = 0,
 			/** @type {number} */ partlen = part.length,
-			/** @type {string} */ rulepart = rule.substr(this.index, partlen),
+			/** @type {string} */ rulepart = rule.substring(this.index, this.index + partlen),
 			// ASCII 0
 			/** @type {number} */ asciiZero = String("0").charCodeAt(0),
 			// ASCII 9
@@ -3366,16 +3366,16 @@
 			// check for comma
 			if (part[0] === ",") {
 				if (rulepart[0] === ",") {
-					rulepart = rulepart.substr(1);
+					rulepart = rulepart.substring(1);
 				}
-				part = part.substr(1);
+				part = part.substring(1);
 			}
 			this.failureReason = "LtL expected '" + part.toUpperCase() + "' got '" + rulepart.toUpperCase() + "'";
 			this.index = -1;
 		} else {
 			// remove comma from part if present
 			if (part[0] === ",") {
-				part = part.substr(1);
+				part = part.substring(1);
 			}
 			this.index += partlen;
 			if (this.index < rule.length) {
@@ -4988,9 +4988,9 @@
 			}
 		} else {
 			// check there is only one separator
-			if (rule.substr(altIndex + 1).indexOf(this.altRuleSeparator) === -1) {
+			if (rule.substring(altIndex + 1).indexOf(this.altRuleSeparator) === -1) {
 				// decode first rule
-				result = this.decodeRuleStringPart(pattern, rule.substr(0, altIndex), allocator, this.ruleAltArray);
+				result = this.decodeRuleStringPart(pattern, rule.substring(0, altIndex), allocator, this.ruleAltArray);
 				if (result) {
 					// save the first pattern details
 					firstPattern = new Pattern(pattern.name, this);
@@ -4998,7 +4998,7 @@
 
 					// if succeeded then decode alternate rule
 					pattern.resetSettings();
-					result = this.decodeRuleStringPart(pattern, rule.substr(altIndex + 1), allocator, this.ruleArray);
+					result = this.decodeRuleStringPart(pattern, rule.substring(altIndex + 1), allocator, this.ruleArray);
 					if (result) {
 						// check the two rules are from the same family
 						this.failureReason = pattern.isSameFamilyAs(firstPattern);
@@ -5076,7 +5076,7 @@
 			/** @type {string} */ prefix = this.pcaRulePrefix;
 
 		// check initial character is M
-		if (rule.substr(0, prefix.length) !== prefix) {
+		if (rule.substring(0, prefix.length) !== prefix) {
 			this.failureReason = "PCA rule must start with " + prefix.toUpperCase();
 			valid = false;
 		} else {
@@ -5165,7 +5165,7 @@
 		} else {
 			index += 1;
 			// check for optional "S,D"
-			if (rule.substr(index, index + 2) === "s,d") {
+			if (rule.substring(index, index + 3) === "s,d") {
 				index += 3;
 			}
 
@@ -5334,23 +5334,23 @@
 		}
 
 		// check for MAP
-		if (rule.substr(0, 3).toLowerCase() === "map") {
+		if (rule.substring(0, 3).toLowerCase() === "map") {
 			// decode MAP
-			base64 = rule.substr(3);
+			base64 = rule.substring(3);
 
 			// check for base64 padding
 			validIndex = base64.indexOf("/");
 			if (validIndex === -1) {
 				// no slash version
-				if (base64.substr(-2) === "==") {
+				if (base64.substring(base64.length - 2) === "==") {
 					// remove padding
-					base64 = base64.substr(0, base64.length - 2);
+					base64 = base64.substring(0, base64.length - 2);
 				}
 			} else {
 				// slash version
-				if (base64.substr(validIndex - 2, 2) === "==") {
+				if (base64.substring(validIndex - 2, validIndex) === "==") {
 					// remove padding
-					base64 = base64.substr(0, validIndex - 2) + base64.substr(validIndex);
+					base64 = base64.substring(0, validIndex - 2) + base64.substring(validIndex);
 				}
 			}
 			mapLength = this.validateMap(base64, pattern);
@@ -5359,8 +5359,8 @@
 				valid = true;
 
 				// check for a trailer
-				generationsPart = base64.substr(mapLength);
-				base64 = base64.substr(0, mapLength);
+				generationsPart = base64.substring(mapLength);
+				base64 = base64.substring(0, mapLength);
 
 				// check for generations
 				if (generationsPart[0] === "/") {
@@ -5420,7 +5420,7 @@
 			rule = this.removeWhiteSpace(rule);
 
 			// check for PCA
-			if (rule.substr(0, prefix.length) === prefix) {
+			if (rule.substring(0, prefix.length) === prefix) {
 				valid = this.decodePCA(rule, ruleArray);
 				if (valid) {
 					pattern.isPCA = true;
@@ -5466,7 +5466,7 @@
 									i += 1;
 								}
 								// remove prefix from rule
-								rule = rule.substr(i);
+								rule = rule.substring(i);
 								valid = true;
 							}
 						}
@@ -5505,7 +5505,7 @@
 										valid = false;
 									} else {
 										// remove postfix from rule
-										rule = rule.substr(0, rule.lastIndexOf("g"));
+										rule = rule.substring(0, rule.lastIndexOf("g"));
 										valid = true;
 									}
 								} else {
@@ -5746,7 +5746,7 @@
 									pattern.triangularNeighbourhood = this.triangularAll;
 
 									// remove the postfix
-									rule = rule.substr(0, rule.length - triangularLength);
+									rule = rule.substring(0, rule.length - triangularLength);
 
 									// update the valid rule letters to triangular letters
 									validRuleLetters = this.validTriangularRuleLetters;
@@ -5760,7 +5760,7 @@
 									pattern.triangularNeighbourhood = this.triangularEdges;
 
 									// remove the postfix
-									rule = rule.substr(0, rule.length - triangularEdgesLength);
+									rule = rule.substring(0, rule.length - triangularEdgesLength);
 
 									// update the valid rule letters to triangular letters
 									validRuleLetters = this.validTriangularEdgesRuleLetters;
@@ -5774,7 +5774,7 @@
 									pattern.triangularNeighbourhood = this.triangularVertices;
 
 									// remove the postfix
-									rule = rule.substr(0, rule.length - triangularVerticesLength);
+									rule = rule.substring(0, rule.length - triangularVerticesLength);
 
 									// update the valid rule letters to triangular letters
 									validRuleLetters = this.validTriangularVerticesRuleLetters;
@@ -5788,7 +5788,7 @@
 									pattern.triangularNeighbourhood = this.triangularInner;
 
 									// remove the postfix
-									rule = rule.substr(0, rule.length - triangularInnerLength);
+									rule = rule.substring(0, rule.length - triangularInnerLength);
 
 									// update the valid rule letters to triangular letters
 									validRuleLetters = this.validTriangularInnerRuleLetters;
@@ -5802,7 +5802,7 @@
 									pattern.triangularNeighbourhood = this.triangularOuter;
 
 									// remove the postfix
-									rule = rule.substr(0, rule.length - triangularOuterLength);
+									rule = rule.substring(0, rule.length - triangularOuterLength);
 
 									// update the valid rule letters to triangular letters
 									validRuleLetters = this.validTriangularOuterRuleLetters;
@@ -5816,7 +5816,7 @@
 									pattern.triangularNeighbourhood = this.triangularBiohazard;
 
 									// remove the postfix
-									rule = rule.substr(0, rule.length - triangularBiohazardLength);
+									rule = rule.substring(0, rule.length - triangularBiohazardLength);
 
 									// update the valid rule letters to triangular letters
 									validRuleLetters = this.validTriangularBiohazardRuleLetters;
@@ -5830,7 +5830,7 @@
 									pattern.triangularNeighbourhood = this.triangularRadiation;
 
 									// remove the postfix
-									rule = rule.substr(0, rule.length - triangularRadiationLength);
+									rule = rule.substring(0, rule.length - triangularRadiationLength);
 
 									// update the valid rule letters to triangular letters
 									validRuleLetters = this.validTriangularRadiationRuleLetters;
@@ -5844,7 +5844,7 @@
 									pattern.hexNeighbourhood = this.hexTripod;
 
 									// remove the postfix
-									rule = rule.substr(0, rule.length - hexTripodLength);
+									rule = rule.substring(0, rule.length - hexTripodLength);
 
 									// update the valid rule letters to hex digits
 									validRuleLetters = this.validHexTripodRuleLetters;
@@ -5858,7 +5858,7 @@
 									pattern.hexNeighbourhood = this.hexAll;
 
 									// remove the postfix
-									rule = rule.substr(0, rule.length - hexLength);
+									rule = rule.substring(0, rule.length - hexLength);
 
 									// update the valid rule letters to hex digits
 									validRuleLetters = this.validHexRuleLetters;
@@ -5871,7 +5871,7 @@
 									pattern.isVonNeumann = true;
 
 									// remove the postfix
-									rule = rule.substr(0, rule.length - vonNeumannLength);
+									rule = rule.substring(0, rule.length - vonNeumannLength);
 
 									// update the valid rule letters to vonNeumann digits
 									validRuleLetters = this.vonNeumannDigits;
@@ -5900,7 +5900,7 @@
 										generationsPart = rule.substring(generationsIndex + 1);
 
 										// remove the generations part
-										rule = rule.substr(0, generationsIndex);
+										rule = rule.substring(0, generationsIndex);
 
 										// check for triangular rules
 										triangularIndex = rule.lastIndexOf(this.triangularPostfix);
@@ -5910,7 +5910,7 @@
 											pattern.triangularNeighbourhood = this.triangularAll;
 
 											// remove the postfix
-											rule = rule.substr(0, rule.length - triangularLength);
+											rule = rule.substring(0, rule.length - triangularLength);
 
 											// update the valid rule letters to triangular letters
 											validRuleLetters = this.validTriangularRuleLetters;
@@ -5924,7 +5924,7 @@
 											pattern.triangularNeighbourhood = this.triangularEdges;
 
 											// remove the postfix
-											rule = rule.substr(0, rule.length - triangularEdgesLength);
+											rule = rule.substring(0, rule.length - triangularEdgesLength);
 
 											// update the valid rule letters to triangular letters
 											validRuleLetters = this.validTriangularEdgesRuleLetters;
@@ -5938,7 +5938,7 @@
 											pattern.triangularNeighbourhood = this.triangularVertices;
 
 											// remove the postfix
-											rule = rule.substr(0, rule.length - triangularVerticesLength);
+											rule = rule.substring(0, rule.length - triangularVerticesLength);
 
 											// update the valid rule letters to triangular letters
 											validRuleLetters = this.validTriangularVerticesRuleLetters;
@@ -5951,7 +5951,7 @@
 											pattern.isHex = true;
 
 											// remove the postfix
-											rule = rule.substr(0, rule.length - hexLength);
+											rule = rule.substring(0, rule.length - hexLength);
 
 											// update the valid rule letters to hex digits
 											validRuleLetters = this.validHexRuleLetters;
@@ -5964,7 +5964,7 @@
 											pattern.isVonNeumann = true;
 
 											// remove the postfix
-											rule = rule.substr(0, rule.length - vonNeumannLength);
+											rule = rule.substring(0, rule.length - vonNeumannLength);
 
 											// update the valid rule letters to vonNeumann digits
 											validRuleLetters = this.vonNeumannDigits;
@@ -6751,13 +6751,13 @@
 			exists = source.indexOf(this.posCommand);
 			if (exists !== -1) {
 				// attempt to read the Position
-				this.readPosition(source.substr(exists + this.posCommand.length), true);
+				this.readPosition(source.substring(exists + this.posCommand.length), true);
 			}
 
 			// check if Gen command exists
 			exists = source.indexOf(this.genCommand);
 			if (exists !== -1) {
-				this.readGeneration(source.substr(exists + this.genCommand.length));
+				this.readGeneration(source.substring(exists + this.genCommand.length));
 			}
 		}
 	};
@@ -7427,7 +7427,7 @@
 				boundedIndex = -2;
 			} else {
 				// remove the bounded grid definition
-				ruleString = ruleString.substr(0, boundedIndex).trim();
+				ruleString = ruleString.substring(0, boundedIndex).trim();
 			}
 		}
 
@@ -7438,20 +7438,20 @@
 			pattern.isHistory = true;
 
 			// remove the postfix
-			ruleString = ruleString.substr(0, ruleString.length - historyLength).trim();
+			ruleString = ruleString.substring(0, ruleString.length - historyLength).trim();
 		}
 
 		// check for History when alternate rules defined
 		historyIndex = ruleString.indexOf(this.altRuleSeparator);
 		if (historyIndex !== -1) {
 			// check for History just before separartor
-			if (ruleString.toLowerCase().substr(0, historyIndex).trim().substr(-historyLength) === this.historyPostfix) {
+			if (ruleString.toLowerCase().substring(0, historyIndex).trim().substring(historyIndex - historyLength) === this.historyPostfix) {
 				// rule is a history type
 				pattern.isHistory = true;
 			
 				// remove the postfix
-				temp = ruleString.substr(0, historyIndex).trim();
-				ruleString = temp.substr(0, temp.length - historyLength) + ruleString.substr(historyIndex);
+				temp = ruleString.substring(0, historyIndex).trim();
+				ruleString = temp.substring(0, temp.length - historyLength) + ruleString.substring(historyIndex);
 			}
 		}
 
@@ -7463,20 +7463,20 @@
 				pattern.isSuper = true;
 
 				// remove the postfix
-				ruleString = ruleString.substr(0, ruleString.length - superLength).trim();
+				ruleString = ruleString.substring(0, ruleString.length - superLength).trim();
 			}
 
 			// check for Super when alternate rules defined
 			superIndex = ruleString.indexOf(this.altRuleSeparator);
 			if (superIndex !== -1) {
 				// check for History just before separartor
-				if (ruleString.toLowerCase().substr(0, superIndex).trim().substr(-superLength) === this.superPostfix) {
+				if (ruleString.toLowerCase().substring(0, superIndex).trim().substring(superIndex - superLength) === this.superPostfix) {
 					// rule is a super type
 					pattern.isSuper = true;
 				
 					// remove the postfix
-					temp = ruleString.substr(0, superIndex).trim();
-					ruleString = temp.substr(0, temp.length - superLength) + ruleString.substr(superIndex);
+					temp = ruleString.substring(0, superIndex).trim();
+					ruleString = temp.substring(0, temp.length - superLength) + ruleString.substring(superIndex);
 				}
 			}
 		}
@@ -8106,7 +8106,7 @@
 						// check for quoted line
 						if (nextToken[0] === "\"") {
 							// look for header
-							nextToken = nextToken.substr(1);
+							nextToken = nextToken.substring(1);
 							if (reader.isNumeric(nextToken)) {
 								// decode value
 								width = reader.asNumber(nextToken);
@@ -8122,7 +8122,7 @@
 										// get chars per pixel
 										nextToken = reader.getNextToken();
 										if (nextToken[nextToken.length - 1] === "\"") {
-											nextToken = nextToken.substr(0, nextToken.length - 1);
+											nextToken = nextToken.substring(0, nextToken.length - 1);
 											if (reader.isNumeric(nextToken)) {
 												charsPerPixel = reader.asNumber(nextToken);
 											}
@@ -8201,7 +8201,7 @@
 						// check if reading colours
 						if (lineNo < numColours) {
 							// get colour character
-							colourChar = nextToken.substr(1);
+							colourChar = nextToken.substring(1);
 							if (colourChar.length === charsPerPixel) {
 								if (colourList[colourChar] === undefined) {
 									// read the c character
@@ -8210,7 +8210,7 @@
 										// read the colour value
 										nextToken = reader.getNextToken();
 										if (nextToken[nextToken.length - 1] === "\"") {
-											colourValue = nextToken.substr(0, nextToken.length - 1);
+											colourValue = nextToken.substring(0, nextToken.length - 1);
 											colourNum = parseInt(colourValue, 16);
 											colourList[colourChar] = lineNo;
 											colourValues[lineNo] = colourNum;
@@ -8227,7 +8227,7 @@
 							// reading icon data
 							valid = false;
 							if (nextToken[nextToken.length - 1] === "\"" && ((nextToken.length - 2) === (width * charsPerPixel))) {
-								nextToken = nextToken.substr(1, nextToken.length - 2);
+								nextToken = nextToken.substring(1, nextToken.length - 2);
 								// check each pixel
 								i = 0;
 								valid = true;
@@ -9445,7 +9445,7 @@
 		this.altSpecified = false;
 
 		// check for cells format
-		if (source.substr(0, Cells.magic1.length) === Cells.magic1 || source.substr(0, Cells.magic2.length) === Cells.magic2 || source.substr(0, Cells.magic3.length) === Cells.magic3 || source.substr(0, Cells.magic4.length) === Cells.magic4 || source.substr(0, Cells.magic5.length) === Cells.magic5) {
+		if (source.substring(0, Cells.magic1.length) === Cells.magic1 || source.substring(0, Cells.magic2.length) === Cells.magic2 || source.substring(0, Cells.magic3.length) === Cells.magic3 || source.substring(0, Cells.magic4.length) === Cells.magic4 || source.substring(0, Cells.magic5.length) === Cells.magic5) {
 			// decode Cells format
 			this.decodeCells(newPattern, source, allocator);
 			this.executable = true;
@@ -9456,12 +9456,12 @@
 			this.executable = false;
 
 			// check for Life 1.05 format
-			if (source.substr(0, Life105.magic.length) === Life105.magic) {
+			if (source.substring(0, Life105.magic.length) === Life105.magic) {
 				// decode Life 1.05 format
 				this.decode105(newPattern, source, true, allocator);
 			} else {
 				// check for Life 1.06 format
-				if (source.substr(0, Life106.magic.length) === Life106.magic) {
+				if (source.substring(0, Life106.magic.length) === Life106.magic) {
 					// decode Life 1.06 format
 					this.decode106(newPattern, source, allocator);
 					this.executable = true;
@@ -9504,8 +9504,8 @@
 		// remove bounded grid postfix if present
 		if (newPattern.gridType !== -1) {
 			index = newPattern.ruleName.lastIndexOf(":");
-			newPattern.boundedGridDef = newPattern.ruleName.substr(index);
-			newPattern.ruleName = newPattern.ruleName.substr(0, index);
+			newPattern.boundedGridDef = newPattern.ruleName.substring(index);
+			newPattern.ruleName = newPattern.ruleName.substring(0, index);
 		} else {
 			newPattern.boundedGridDef = "";
 		}
@@ -9551,8 +9551,8 @@
 				if (newPattern.gridType !== -1) {
 					index = newPattern.ruleName.lastIndexOf(":");
 					if (index !== -1) {
-						newPattern.boundedGridDef = newPattern.ruleName.substr(index);
-						newPattern.ruleName = newPattern.ruleName.substr(0, index);
+						newPattern.boundedGridDef = newPattern.ruleName.substring(index);
+						newPattern.ruleName = newPattern.ruleName.substring(0, index);
 					}
 				} else {
 					newPattern.boundedGridDef = "";
@@ -9596,7 +9596,7 @@
 					ruleIndex = newPattern.afterTitle.indexOf(this.ruleTableRuleName);
 					if (ruleIndex !== -1) {
 						// attempt to decode and if successful do not add to cache since this is a local rule
-						ruleText = newPattern.afterTitle.substr(ruleIndex);
+						ruleText = newPattern.afterTitle.substring(ruleIndex);
 						this.decodeRuleTable(newPattern, ruleText);
 					}
 
@@ -9631,7 +9631,7 @@
 				if (i === 0) {
 					result = htmlPage;
 				} else {
-					result = htmlPage.substr(i);
+					result = htmlPage.substring(i);
 				}
 			} else {
 				// present so just keep start to end tag

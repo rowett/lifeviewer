@@ -14,17 +14,18 @@
 	// render truncated LifeSuper state name so final character is always included
 	/** @returns {string} */
 	Help.superName = function(/** @type {number} */ state) {
-		var	/** @type {string} */ name = LifeConstants.namesSuper[state];
+		var	/** @type {string} */ name = LifeConstants.namesSuper[state],
+			/** @type {string} */ nameLastChar = name.substring(name.length - 1);
 
 		if (name.length > 10) {
 			// perform substitutions
 			name = name.replace(/marked/, "mkd");
 			name = name.replace(/trail/, "trl");
 			if (name.length > 10) {
-				if (name.substr(-1) >= "1" && name.substr(-1) <= "9") {
-					name = name.substr(0,9) + name.substr(-1);
+				if (nameLastChar >= "1" && nameLastChar <= "9") {
+					name = name.substring(0, 9) + nameLastChar;
 				} else {
-					name = name.substr(0, 10);
+					name = name.substring(0, 10);
 				}
 			}
 		}
@@ -253,14 +254,14 @@
 			while (tab !== -1) {
 				// draw the text up to the tab at the current tab stop
 				if (shouldDraw) {
-					ctx.fillText(text.substr(0, tab), x + shadowX + (view.tabs[tabNo] * xScale), y + shadowY);
+					ctx.fillText(text.substring(0, tab), x + shadowX + (view.tabs[tabNo] * xScale), y + shadowY);
 				}
 
 				// next tab stop
 				tabNo += 1;
 
 				// check for next tab
-				text = text.substr(tab + 1);
+				text = text.substring(tab + 1);
 				tab = text.indexOf("\t");
 			}
 
@@ -301,14 +302,14 @@
 					}
 					if (divider !== -1) {
 						if (shouldDraw) {
-							ctx.fillText(text.substr(0, divider), x + shadowX + (view.tabs[tabNo] * xScale), y + shadowY);
+							ctx.fillText(text.substring(0, divider), x + shadowX + (view.tabs[tabNo] * xScale), y + shadowY);
 							y += height;
 							result += height;
 						}
 						view.lineNo += 1;
 						shouldDraw = (view.lineNo >= startLine && view.lineNo <= (startLine + view.numHelpPerPage));
 						if (shouldDraw) {
-							ctx.fillText("  " + text.substr(divider), x + shadowX + (view.tabs[tabNo] * xScale), y + shadowY);
+							ctx.fillText("  " + text.substring(divider), x + shadowX + (view.tabs[tabNo] * xScale), y + shadowY);
 						}
 						drewText = true;
 					}
@@ -1488,12 +1489,12 @@
 		}
 
 		// check for MAP rule
-		if (itemName.substr(0, 3) === "MAP" && itemName.length === view.manager.map512Length + 3) {
+		if (itemName.substring(0, 3) === "MAP" && itemName.length === view.manager.map512Length + 3) {
 			// display on multiple lines
 			y = this.renderHelpLine(view, "Rule", "MAP", ctx, x, y, height, helpLine);
 			value = 3;
 			while (value < view.manager.map512Length + 3) {
-				y = this.renderHelpLine(view, "  " + (value - 3), itemName.substr(value, 16), ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "  " + (value - 3), itemName.substring(value, value + 16), ctx, x, y, height, helpLine);
 				value += 16;
 			}
 		} else {
@@ -1837,7 +1838,7 @@
 			for (i = 0; i < RuleTreeCache.rules.length; i += 1) {
 				itemName = RuleTreeCache.rules[i].name;
 				if (itemName.length > 17) {
-					itemName = itemName.substr(0,17) + "*";
+					itemName = itemName.substring(0, 17) + "*";
 				}
 				y = this.renderHelpLine(view, String(i), itemName + "\t" + (RuleTreeCache.meta[i].size >> 10) + "\t" + RuleTreeCache.meta[i].fetch + "ms\t" + RuleTreeCache.meta[i].decode + "ms", ctx, x, y, height, helpLine);
 			}

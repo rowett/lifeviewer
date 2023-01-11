@@ -321,13 +321,13 @@
 					this.draw(message, isPriority, lineHeight);
 				} else {
 					// draw the first line
-					this.draw(message.substr(0, index), isPriority, lineHeight);
+					this.draw(message.substring(0, index), isPriority, lineHeight);
 					
 					// go to next line
 					this.context.translate(0, lineHeight);
 
 					// draw the second line
-					this.draw(message.substr(index + 1), isPriority, lineHeight);
+					this.draw(message.substring(index + 1), isPriority, lineHeight);
 				}
 			}
 
@@ -794,8 +794,8 @@
 		/** @type {number} */ this.border = owner.border;
 
 		// decompose the font into size and family
-		/** @type {number} */ this.fontSize = parseInt(owner.defaultFont.substr(0, owner.defaultFont.indexOf("px")), 10);
-		/** @type {string} */ this.fontFamily = owner.defaultFont.substr(owner.defaultFont.indexOf("px") + 3);
+		/** @type {number} */ this.fontSize = parseInt(owner.defaultFont.substring(0, owner.defaultFont.indexOf("px")), 10);
+		/** @type {string} */ this.fontFamily = owner.defaultFont.substring(owner.defaultFont.indexOf("px") + 3);
 	}
 
 	// delete if shown
@@ -807,8 +807,8 @@
 
 	// set font
 	MenuItem.prototype.setFont = function(/** @type {string} */ font) {
-		this.fontSize = parseInt(font.substr(0, font.indexOf("px")), 10);
-		this.fontFamily = font.substr(font.indexOf("px") + 3);
+		this.fontSize = parseInt(font.substring(0, font.indexOf("px")), 10);
+		this.fontFamily = font.substring(font.indexOf("px") + 3);
 	};
 
 	// set item foreground and background colour
@@ -1332,13 +1332,13 @@
 				// find a shorter string that will fit
 				if (i) {
 					do {
-						testString = string.substr(0, j) + ellipsis;
+						testString = string.substring(0, j) + ellipsis;
 						textWidth = this.context.measureText(testString).width;
 						j += 1;
 					}
 					while (j < i && textWidth <= target - 10);
 					j -= 1;
-					testString = string.substr(0, j) + ellipsis;
+					testString = string.substring(0, j) + ellipsis;
 				}
 				string = testString;
 			}
@@ -2839,7 +2839,7 @@
 					}
 					// find the longest string that fits in the target width
 					i = 1;
-					while (oc.measureText(toolTip.substr(0, i)).width < targetWidth) {
+					while (oc.measureText(toolTip.substring(0, i)).width < targetWidth) {
 						i += 1;
 					}
 					// see if there is a space, comma, slash or pipe nearby
@@ -2856,8 +2856,8 @@
 					}
 
 					// split the string
-					extraTip = toolTip.substr(i - 1);
-					toolTip = toolTip.substr(0, i - 1);
+					extraTip = toolTip.substring(i - 1);
+					toolTip = toolTip.substring(0, i - 1);
 					width = oc.measureText(toolTip).width;
 					extraWidth = oc.measureText(extraTip).width;
 					if (extraWidth > width) {
@@ -2867,9 +2867,9 @@
 				} else {
 					// check for newline
 					if (newLine !== -1) {
-						extraTip = toolTip.substr(newLine + 1);
+						extraTip = toolTip.substring(newLine + 1);
 						extraWidth = oc.measureText(extraTip).width;
-						toolTip = toolTip.substr(0, newLine);
+						toolTip = toolTip.substring(0, newLine);
 						width = oc.measureText(toolTip).width;
 						if (extraWidth > width) {
 							width = extraWidth;
@@ -2917,15 +2917,15 @@
 				i = toolTip.indexOf("[");
 				j = toolTip.lastIndexOf("]");
 				if (i !== -1 && j !== -1) {
-					textPart = toolTip.substr(0, i + 1);
+					textPart = toolTip.substring(0, i + 1);
 					width = oc.measureText(textPart).width;
 					oc.fillText(textPart, x, y);
 					oc.fillStyle = this.hotkeyCol;
-					textPart = toolTip.substr(i + 1, j - i - 1);
+					textPart = toolTip.substring(i + 1, j);
 					oc.fillText(textPart, x + width, y);
 					oc.fillStyle = this.fgCol;
-					textPart = toolTip.substr(j);
-					width = oc.measureText(toolTip.substr(0, j)).width;
+					textPart = toolTip.substring(j);
+					width = oc.measureText(toolTip.substring(0, j)).width;
 					oc.fillText(textPart, x + width, y);
 				} else {
 					oc.fillText(toolTip, x, y);
@@ -2934,15 +2934,15 @@
 					i = extraTip.indexOf("[");
 					j = extraTip.lastIndexOf("]");
 					if (i !== -1 && j !== -1) {
-						textPart = extraTip.substr(0, i + 1);
+						textPart = extraTip.substring(0, i + 1);
 						width = oc.measureText(textPart).width;
 						oc.fillText(textPart, x, y + fontSize + borderSize);
 						oc.fillStyle = this.hotkeyCol;
-						textPart = extraTip.substr(i + 1, j - i - 1);
+						textPart = extraTip.substring(i + 1, j);
 						oc.fillText(textPart, x + width, y + fontSize + borderSize);
 						oc.fillStyle = this.fgCol;
-						textPart = extraTip.substr(j);
-						width = oc.measureText(extraTip.substr(0, j)).width;
+						textPart = extraTip.substring(j);
+						width = oc.measureText(extraTip.substring(0, j)).width;
 						oc.fillText(textPart, x + width, y + fontSize + borderSize);
 					} else {
 						oc.fillText(extraTip, x, y + fontSize + borderSize);

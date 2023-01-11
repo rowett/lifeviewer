@@ -8116,7 +8116,7 @@
 					g = (pixelColours[i] >> 16) & 255;
 					b = (pixelColours[i] >> 8) & 255;
 				}
-				colourStrings[i + 64] = "#" + (0x1000000 + ((r << 16) + (g << 8) + b)).toString(16).substr(1);
+				colourStrings[i + 64] = "#" + (0x1000000 + ((r << 16) + (g << 8) + b)).toString(16).substring(1);
 			}
 		}
 
@@ -8168,14 +8168,14 @@
 					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
 						pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
 						if (needStrings) {
-							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 						}
 					}
 				} else {
 					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
 						pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
 						if (needStrings) {
-							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 						}
 					}
 				}
@@ -8185,14 +8185,14 @@
 					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
 						pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
 						if (needStrings) {
-							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 						}
 					}
 				} else {
 					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
 						pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
 						if (needStrings) {
-							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 						}
 					}
 				}
@@ -8204,7 +8204,7 @@
 				for (i = 0; i < this.aliveStart; i += 1) {
 					pixelColours[i] = (alpha << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
 					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 					}
 				}
 
@@ -8212,7 +8212,7 @@
 				for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
 					pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
 					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 					}
 				}
 
@@ -8220,7 +8220,7 @@
 				for (i = this.aliveMax + 1; i < 256; i += 1) {
 					pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
 					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 					}
 				}
 			} else {
@@ -8228,7 +8228,7 @@
 				for (i = 0; i < this.aliveStart; i += 1) {
 					pixelColours[i] = (redChannel[i] << 24) | (greenChannel[i] << 16) | (blueChannel[i] << 8) | alpha;
 					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 					}
 				}
 
@@ -8236,7 +8236,7 @@
 				for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
 					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
 					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 					}
 				}
 
@@ -8244,7 +8244,7 @@
 				for (i = this.aliveMax + 1; i < 256; i += 1) {
 					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
 					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 					}
 				}
 			}
@@ -8268,7 +8268,7 @@
 				pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
 			}
 			if (needStrings) {
-				colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substr(1);
+				colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 			}
 		}
 	};
@@ -8640,11 +8640,11 @@
 					// update the rule name and alias name
 					i = view.patternRuleName.indexOf("|");
 					if (i !== -1) {
-						view.patternRuleName = view.patternRuleName.substr(0, i);
+						view.patternRuleName = view.patternRuleName.substring(0, i);
 					}
 					i = view.patternAliasName.indexOf("|");
 					if (i !== -1) {
-						view.patternAliasName = view.patternAliasName.substr(0, i);
+						view.patternAliasName = view.patternAliasName.substring(0, i);
 					}
 				}
 			}
@@ -8678,11 +8678,11 @@
 				// update the rule name and alias name
 				i = view.patternRuleName.indexOf("|");
 				if (i !== -1) {
-					view.patternRuleName = view.patternRuleName.substr(0, i);
+					view.patternRuleName = view.patternRuleName.substring(0, i);
 				}
 				i = view.patternAliasName.indexOf("|");
 				if (i !== -1) {
-					view.patternAliasName = view.patternAliasName.substr(0, i);
+					view.patternAliasName = view.patternAliasName.substring(0, i);
 				}
 			}
 
