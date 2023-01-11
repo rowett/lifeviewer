@@ -19335,29 +19335,25 @@
 
 								// find any set cells in each 4x4 block
 								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
-								// @ts-ignore
-								destRow[dr] = (value > 0) << 6;
+								destRow[dr] = ((value ? 1 : 0) << 6);
 								cr += 1;
 								dr += 4;
 
 								// loop unroll
 								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
-								// @ts-ignore
-								destRow[dr] = (value > 0) << 6;
+								destRow[dr] = (value ? 1 : 0) << 6;
 								cr += 1;
 								dr += 4;
 
 								// loop unroll
 								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
-								// @ts-ignore
-								destRow[dr] = (value > 0) << 6;
+								destRow[dr] = (value ? 1 : 0) << 6;
 								cr += 1;
 								dr += 4;
 
 								// loop unroll
 								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
-								// @ts-ignore
-								destRow[dr] = (value > 0) << 6;
+								destRow[dr] = (value ? 1 : 0) << 6;
 							}
 						}
 
@@ -19763,8 +19759,7 @@
 									value |= sourceRow6[cr] | sourceRow6[cr + 1];
 									value |= sourceRow7[cr] | sourceRow7[cr + 1];
 								}
-								// @ts-ignore
-								destRow[dr] = (value > 0) << 6;
+								destRow[dr] = (value ? 1 : 0) << 6;
 								cr += 2;
 								dr += 8;
 
@@ -19779,8 +19774,7 @@
 									value |= sourceRow6[cr] | sourceRow6[cr + 1];
 									value |= sourceRow7[cr] | sourceRow7[cr + 1];
 								}
-								// @ts-ignore
-								destRow[dr] = (value > 0) << 6;
+								destRow[dr] = (value ? 1 : 0) << 6;
 							}
 						}
 
@@ -20537,8 +20531,7 @@
 							}
 
 							// output the cell
-							// @ts-ignore
-							destRow[dr] = (value > 0) << 6;
+							destRow[dr] = (value ? 1 : 0) << 6;
 						}
 
 						// next tile columns
@@ -20899,8 +20892,7 @@
 							}
 
 							// output the cell
-							// @ts-ignore
-							destRow[dr] = (value > 0) << 6;
+							destRow[dr] = (value ? 1 : 0) << 6;
 						}
 
 						// next tile columns

@@ -339,11 +339,8 @@
 			/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ whole = null;
 
 		// save reference the the type and allocator
-		// @ts-ignore
 		mat.allocator = allocator;
-		// @ts-ignore
 		mat.dataType = type;
-		// @ts-ignore
 		mat.whole = null;
 
 		// create whole array

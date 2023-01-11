@@ -3206,7 +3206,6 @@
 			/** @type {Array} */ cells = [];
 		
 		// check the name is not a reserved word
-		// @ts-ignore
 		if (ScriptParser.isScriptCommand(name)) {
 			scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "name is reserved word"];
 		} else {
@@ -5851,7 +5850,6 @@
 						me.menuManager.notification.clear(false, false);
 					} else {
 						// draw new message
-						// @ts-ignore
 						me.menuManager.notification.notify(ScriptParser.substituteVariables(me, currentWaypoint.textMessage), 15, 21600, 15, false);
 					}
 	
@@ -15291,26 +15289,21 @@
 		// ignore keys in compute history mode
 		if (me.computeHistory) {
 			// process the key in history mode
-			// @ts-ignore
 			processed = KeyProcessor.processKeyHistory(me, keyCode, event);
 		} else {
 			if (me.identify) {
 				// process the key in identify mode
-				// @ts-ignore
 				processed = KeyProcessor.processKeyIdentify(me, keyCode, event);
 			} else {
 				// check for clipboard copy
 				if (me.clipboardCopy) {
-					// @ts-ignore
 					processed = KeyProcessor.processKeyCopy(me, keyCode, event);
 				} else {
 					// check for go to generation
 					if (me.startFrom !== -1) {
-						// @ts-ignore
 						processed = KeyProcessor.processKeyGoTo(me, keyCode, event);
 					} else {
 						// process the key
-						// @ts-ignore
 						processed = KeyProcessor.processKey(me, keyCode, event);
 					}
 				}
@@ -16618,7 +16611,6 @@
 
 	// read script
 	View.prototype.readScript = function(/** @type {string} */ scriptString, /** @type {number} */ numStates) {
-		// @ts-ignore
 		ScriptParser.parseScript(this, scriptString, numStates);
 	};
 

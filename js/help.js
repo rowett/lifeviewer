@@ -1817,11 +1817,8 @@
 		y = this.renderHelpLine(view, "Exclusive", (view.exclusivePlayback ? "Yes": "No"), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "IgnorePause", (view.ignorePauseRequests ? "Yes": "No"), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Endian", (Supports.littleEndian ? "Little": "Big"), ctx, x, y, height, helpLine);
-		// @ts-ignore
 		y = this.renderHelpLine(view, "ArrayFill", (Supports.arrayFill ? "Yes": "No"), ctx, x, y, height, helpLine);
-		// @ts-ignore
 		y = this.renderHelpLine(view, "ArraySlice", (Supports.arraySlice ? "Yes": "No"), ctx, x, y, height, helpLine);
-		// @ts-ignore
 		y = this.renderHelpLine(view, "CopyWithin", (Supports.copyWithin ? "Yes": "No"), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 

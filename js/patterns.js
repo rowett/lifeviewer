@@ -8610,7 +8610,6 @@
 		for (i = 0; i < nInputs; i += 1) {
 			pattern.ruleTableLUT[i] = [];
 			for (j = 0; j < pattern.ruleTableStates; j += 1) {
-				// @ts-ignore
 				pattern.ruleTableLUT[i][j] = new Uint32Array(lut[i][j].length);
 				pattern.ruleTableLUT[i][j].set(lut[i][j]);
 			}

@@ -386,20 +386,10 @@
 
 		// copy the left columns to the right border
 		// and the right columns to the left border
-		// @ts-ignore
-		if (copyWithin) {
-			for (y = by; y <= ty; y += 1) {
-				sourceRow = colourGrid[y];
-				sourceRow.copyWithin(rx + 1, lx, lx + xrange + 1);
-				sourceRow.copyWithin(lx - xrange - 1, rx - xrange, rx + 1);
-			}
-		} else {
-			for (y = by; y <= ty; y += 1) {
-				for (x = 0; x < xrange; x += 1) {
-					sourceRow[rx + x + 1] = sourceRow[lx + x];
-					sourceRow[lx - x - 1] = sourceRow[rx - x];
-				}
-			}
+		for (y = by; y <= ty; y += 1) {
+			sourceRow = colourGrid[y];
+			sourceRow.copyWithin(rx + 1, lx, lx + xrange + 1);
+			sourceRow.copyWithin(lx - xrange - 1, rx - xrange, rx + 1);
 		}
 
 		// copy bottom left cells to top right border
@@ -460,7 +450,6 @@
 
 		// clear bottom right border
 		// and bottom left border
-		// @ts-ignore
 		for (y = 0; y < yrange; y += 1) {
 			destRow = colourGrid[by - y - 1];
 			destRow.fill(0, rx + 1, rx + xrange + 2);
@@ -3996,7 +3985,6 @@
 				counts[y].fill(0, leftX, rightX + 1);
 			}
 
-			// @ts-ignore
 			for (y = bottomY + ry2; y <= topY; y += 1) {
 				counts[y].fill(0, leftX, leftX + rx2);
 			}
