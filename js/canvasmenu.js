@@ -2750,6 +2750,9 @@
 					toolTip = "";
 				} else {
 					toolTip = /** @type {!string} */ (control.toolTip);
+					if (toolTip === null) {
+						toolTip = "";
+					}
 				}
 			}
 

@@ -1528,9 +1528,9 @@
 				value = view.engine.HROT.yrange * 2 + 1;
 				for (i = 0; i < value; i += 1) {
 					if (view.engine.HROT.customNeighbourhood.length > value * value) {
-						itemName = " " + view.engine.HROT.customNeighbourhood.substr(i * value * 2, value * 2);
+						itemName = " " + view.engine.HROT.customNeighbourhood.substring(i * value * 2, (i + 1) * value * 2);
 					} else {
-						itemName = " " + view.engine.HROT.customNeighbourhood.substr(i * value, value);
+						itemName = " " + view.engine.HROT.customNeighbourhood.substring(i * value, (i + 1) * value);
 					}
 					y = this.renderHelpLine(view, itemName, "", ctx, x, y, height, helpLine);
 				}

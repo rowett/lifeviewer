@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 817,
+		/** @const {number} */ versionBuild : 818,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -7055,7 +7055,7 @@
 							amountToAdd -= 1;
 						}
 					}
-					textArea.innerHTML = me.tempRLE.substr(me.tempRLEAmount, amountToAdd);
+					textArea.innerHTML = me.tempRLE.substring(me.tempRLEAmount, me.tempRLEAmount + amountToAdd);
 					me.tempRLEAmount += amountToAdd;
 					me.tempInput.appendChild(textArea);
 				}

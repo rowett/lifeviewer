@@ -4200,9 +4200,9 @@
 				}
 			}
 			if (stateWeights.length > 0) {
-				pattern.customNeighbourhood = rule.substr(this.index - (numRead + numSW + 1), numRead + numSW + 1).toLowerCase();
+				pattern.customNeighbourhood = rule.substring(this.index - (numRead + numSW + 1), this.index).toLowerCase();
 			} else {
-				pattern.customNeighbourhood = rule.substr(this.index - numRead, numRead).toLowerCase();
+				pattern.customNeighbourhood = rule.substring(this.index - numRead, this.index).toLowerCase();
 			}
 			pattern.customNeighbourCount = value;
 			pattern.weightedNeighbourhood = weights;
@@ -4367,7 +4367,7 @@
 			pattern.customNeighbourhood = "";
 			pattern.customNeighbourCount = -1;
 		} else {
-			pattern.customNeighbourhood = rule.substr(this.index, numRead).toLowerCase();
+			pattern.customNeighbourhood = rule.substring(this.index, this.index + numRead).toLowerCase();
 			pattern.customNeighbourCount = count;
 			this.index += numRead;
 
@@ -9635,7 +9635,7 @@
 				}
 			} else {
 				// present so just keep start to end tag
-				result = htmlPage.substr(i, k - i);
+				result = htmlPage.substring(i, k);
 			}
 
 			// convert <li> to "# " since this is what comments will have become
