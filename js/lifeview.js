@@ -4730,7 +4730,7 @@
 	// update progress bar for start from
 	View.prototype.updateProgressBarStartFrom = function(/** @type {View} */ me) {
 		// update the progress bar
-		me.progressBar.current = 100 * (me.engine.counter / me.startFrom);
+		me.progressBar.current = 100 * (1 - (me.startFrom - me.engine.counter) / me.startFromGens);
 
 		// show the progress bar
 		me.progressBar.deleted = false;

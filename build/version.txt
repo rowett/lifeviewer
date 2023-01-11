@@ -1,5 +1,6 @@
 Build 818
 - fixed an issue with two line notifications
+- improved the progress bar for Go To Generation
 
 Build 817
 - added Settings->General->Last Identify to display last Identify results (hotkey Shift F6)

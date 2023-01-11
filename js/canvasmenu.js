@@ -1416,7 +1416,7 @@
 			/** @type {number} */ markerPos;
 
 		// compute the marker position in the bar
-		markerPos = (/** @type {!number} */ (item.current) - /** @type {!number} */ (item.lower) / (item.upper) - /** @type {!number} */ (item.lower));
+		markerPos = ((/** @type {!number} */ (item.current) - /** @type {!number} */ (item.lower)) / ((item.upper) - /** @type {!number} */ (item.lower)));
 
 		// set the highlight alpha
 		this.context.globalAlpha = item.bgAlpha;
