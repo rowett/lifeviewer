@@ -1,3 +1,6 @@
+Build 820
+- fixed snapshot issue every 64 generations
+
 Build 819
 - fixed stars not drawing outside actual grid extent during Theme change involving background colour change
 

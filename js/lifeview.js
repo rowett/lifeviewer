@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 819,
+		/** @const {number} */ versionBuild : 820,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3467,6 +3467,7 @@
 					// compute next generation with no stats, history and graph disabled
 					this.engine.nextGeneration(false, true, true, this.identify, this);
 					this.engine.convertToPensTile();
+					this.engine.saveSnapshotIfNeeded(this);
 					gens -= 1;
 				}
 
@@ -5946,6 +5947,9 @@
 						}
 					}
 
+					// save snapshot if needed
+					this.engine.saveSnapshotIfNeeded(me);
+
 					// if no theme history then set anything alive from population
 					if (!me.engine.themeHistory && me.engine.population === 0) {
 						me.engine.anythingAlive = 0;
@@ -7147,6 +7151,10 @@
 					me.engine.convertToPensTile();
 				}
 			}
+
+			// save snapshot if needed
+			me.engine.saveSnapshotIfNeeded(me);
+
 			// check for just died for 2 state patterns
 			if (me.engine.anythingAlive === 0 && me.engine.multiNumStates <= 2) {
 				// clear the other buffer
@@ -7225,6 +7233,7 @@
 			// compute the next generation
 			me.engine.nextGeneration(false, me.noHistory, me.graphDisabled, me.identify, me);
 			me.engine.convertToPensTile();
+			me.engine.saveSnapshotIfNeeded(me);
 
 			// check if grid buffer needs to grow
 			// (normally this check happens at render time but we may have processed more generations than expected by that function)
@@ -7427,6 +7436,7 @@
 			// compute the next generation
 			me.engine.nextGeneration(false, noSnapshots, me.graphDisabled, me.identify, me);
 			me.engine.convertToPensTile();
+			me.engine.saveSnapshotIfNeeded(me);
 
 			// paste any RLE snippets
 			me.pasteRLEList();
@@ -7443,6 +7453,7 @@
 			// compute final generation with stats on if required
 			me.engine.nextGeneration(me.statsOn, false, me.graphDisabled, me.identify, me);
 			me.engine.convertToPensTile();
+			me.engine.saveSnapshotIfNeeded(me);
 
 			// paste any RLE snippets
 			me.pasteRLEList();
@@ -8082,8 +8093,7 @@
 	// reset to first generation
 	View.prototype.reset = function(/** @type {View} */ me) {
 		var	/** @type {boolean} */ hardReset = false,
-			/** @type {boolean} */ looping = false,
-			/** @type {boolean} */ saveState = false;
+			/** @type {boolean} */ looping = false;
 
 		// reset snow if enabled
 		if (this.drawingSnow) {
@@ -8179,12 +8189,6 @@
 		if (!me.multiStateView) {
 			// reset grid and generation counter
 			me.engine.restoreSavedGrid(me, me.noHistory);
-
-			// update the colours for the first generation (temporariliy disable kill gliders on reset)
-			saveState = me.engine.clearGliders;
-			me.engine.clearGliders = false;
-			me.engine.convertToPensTile();
-			me.engine.clearGliders = saveState;
 
 			// mark cells alive
 			me.engine.anythingAlive = 1;
@@ -9263,6 +9267,7 @@
 						for (i = 0; i < me.gensPerStep; i += 1) {
 							me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify, me);
 							me.engine.convertToPensTile();
+							me.engine.saveSnapshotIfNeeded(me);
 							me.fixedPointCounter = me.engine.counter * me.refreshRate;
 						}
 						me.engine.reversePending = true;
@@ -12593,6 +12598,7 @@
 				// step
 				me.engine.nextGeneration(true, me.noHistory, me.graphDisabled, me.identify, me);
 				me.engine.convertToPensTile();
+				me.engine.saveSnapshotIfNeeded(me);
 				me.afterEdit("");
 
 				// process paste but mark advance outside
@@ -12724,6 +12730,8 @@
 		// compute next generation
 		me.engine.nextGeneration(false, true, true, me.identify, me);
 		me.engine.convertToPensTile();
+		me.engine.saveSnapshotIfNeeded(me);
+
 		if (me.engine.anythingAlive) {
 			// set new paste buffer
 			me.pasteWidth = zoomBox.rightX - zoomBox.leftX + 1;
@@ -14830,9 +14838,11 @@
 		while (this.engine.counter < targetGen - 1) {
 			if (this.engine.anythingAlive) {
 				this.engine.nextGeneration(false, false, this.graphDisabled, this.identify, this);
-				if (!(this.engine.anythingAlive === 0 && this.engine.multiNumStates > 2)) {
+				if (!(this.engine.anythingAlive === 0 && this.engine.multiNumStates > 2) || this.engine.snapshotNeeded) {
 					this.engine.convertToPensTile();
 				}
+				this.engine.saveSnapshotIfNeeded(this);
+
 				// check for just died for 2 state patterns
 				if (this.engine.anythingAlive === 0 && this.engine.multiNumStates <= 2) {
 					// clear the other buffer
@@ -14851,9 +14861,11 @@
 		if (this.engine.counter < targetGen) {
 			if (this.engine.anythingAlive) {
 				this.engine.nextGeneration(this.statsOn, false, this.graphDisabled, this.identify, this);
-				if (!(this.engine.anythingAlive === 0 && this.engine.multiNumStates > 2)) {
+				if (!(this.engine.anythingAlive === 0 && this.engine.multiNumStates > 2) || this.engine.snapshotNeeded) {
 					this.engine.convertToPensTile();
 				}
+				this.engine.saveSnapshotIfNeeded(this);
+
 				// check for just died for 2 state patterns
 				if (this.engine.anythingAlive === 0 && this.engine.multiNumStates <= 2) {
 					// clear the other buffer

@@ -363,6 +363,9 @@
 		// view
 		/** @type {View} */ this.view = view;
 
+		// whether snapshot save is required
+		/** @type {boolean} */ this.snapshotNeeded = false;
+
 		// image for cell icons
 		/** @type {HTMLImageElement} */ this.cellIconImage = null;
 
@@ -2438,6 +2441,7 @@
 			// compute the next generation
 			this.nextGeneration(false, view.noHistory, view.graphDisabled, view.identify, view);
 			this.convertToPensTile();
+			this.saveSnapshotIfNeeded(view);
 
 			// paste any RLE snippets
 			view.pasteRLEList();
@@ -5939,9 +5943,11 @@
 
 				this.nextGeneration(false, true, graphDisabled, view.identify, view);
 				view.fixedPointCounter += view.refreshRate;
-				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
+				if (!(this.anythingAlive === 0 && this.multiNumStates > 2) || this.snapshotNeeded) {
 					this.convertToPensTile();
 				}
+				this.saveSnapshotIfNeeded(view);
+
 				// check for just died for 2 state patterns
 				if (this.anythingAlive === 0 && this.multiNumStates <= 2) {
 					// clear the other buffer
@@ -5966,6 +5972,7 @@
 				this.counter += 1;
 				view.fixedPointCounter += view.refreshRate;
 				this.convertToPensTile();
+				this.saveSnapshotIfNeeded(view);
 			}
 			view.pasteRLEList();
 		}
@@ -5986,9 +5993,10 @@
 
 				this.nextGeneration(statsOn, true, graphDisabled, view.identify, view);
 				view.fixedPointCounter += view.refreshRate;
-				if (!(this.anythingAlive === 0 && this.multiNumStates > 2)) {
+				if (!(this.anythingAlive === 0 && this.multiNumStates > 2) || this.snapshotNeeded) {
 					this.convertToPensTile();
 				}
+				this.saveSnapshotIfNeeded(view);
 
 				// check for just died for 2 state patterns
 				if (this.anythingAlive === 0 && this.multiNumStates <= 2) {
@@ -6014,13 +6022,14 @@
 				this.counter += 1;
 				view.fixedPointCounter += view.refreshRate;
 				this.convertToPensTile();
+				this.saveSnapshotIfNeeded(view);
 			}
 			view.pasteRLEList();
 		} else {
 			// for two state rules convert to pens once since colour grid was on previous generation when snapshot saved
-			if (this.multiNumStates === -1 && this.counter > 0) {
-				this.convertToPensTile();
-			}
+			//if (this.multiNumStates === -1 && this.counter > 0) {
+				//this.convertToPensTile();
+			//}
 		}
 
 		// if paste every is defined then always flag there are alive cells
@@ -12751,6 +12760,16 @@
 		this.setBoundedTiles();
 	};
 
+	// save snapshot (called after nextGeneration() and convertToPensTile())
+	Life.prototype.saveSnapshotIfNeeded = function(/** @type {View} */ view) {
+		if (this.snapshotNeeded) {
+			// update the next snapshot generation
+			this.nextSnapshotTarget += LifeConstants.snapshotInterval;
+			this.saveSnapshot(view);
+			this.snapshotNeeded = false;
+		}
+	};
+
 	// compute the next generation unless rule is none
 	Life.prototype.nextGeneration = function(/** @type {boolean} */ statsOn, /** @type {boolean} */ noHistory, /** @type {boolean} */ graphDisabled, /** @type {boolean} */ identify, /** @type {View} */ view) {
 		// do nothing if rule is none
@@ -12776,14 +12795,16 @@
 
 		// check if snapshot should be saved
 		if (this.counter === this.nextSnapshotTarget - 1) {
-			// save snapshot after next generation computed
-			performSave = true;
+			// save snapshot required
+			this.snapshotNeeded = true;
 
 			// check if history is on
 			if (!noHistory) {
 				// turn stats on since save will actually happen
 				statsOn = true;
 			}
+		} else {
+			this.snapshotNeeded = false;
 		}
 
 		// perform bounded grid pre-processing unless rule is HROT
@@ -12901,19 +12922,6 @@
 				} else {
 					this.clearGridBoundary();
 				}
-			}
-		}
-
-		// save snapshot if required
-		if (performSave) {
-			// update the next snapshot generation
-			this.nextSnapshotTarget += LifeConstants.snapshotInterval;
-
-			// check if history is on
-			if (!noHistory) {
-				// save the snapshot
-				this.convertToPensTile();
-				this.saveSnapshot(view);
 			}
 		}
 
