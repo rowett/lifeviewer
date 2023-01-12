@@ -34803,6 +34803,10 @@
 		// check if colour is changing
 		if (this.colourChange) {
 			this.createColours();
+
+			// update background colour since it may have changed
+			colour0 = this.pixelColours[0];
+
 			this.colourChange -= 1;
 			if (!this.colourChange) {
 				// make target current
@@ -35004,6 +35008,7 @@
 
 		// create pixel colours
 		this.createPixelColours(brightness);
+		offGrid = this.pixelColours[0];
 
 		// compute the x and y adjustments for full grid size
 		while (xg < maxGridSize) {
@@ -35441,6 +35446,7 @@
 
 		// create pixel colours
 		this.createPixelColours(brightness);
+		offGrid = this.pixelColours[0];
 
 		// compute the x and y adjustments for full grid size
 		while (xg < maxGridSize) {
@@ -37091,6 +37097,7 @@
 
 		// create pixel colours
 		this.createPixelColours(brightness);
+		offGrid = this.pixelColours[0];
 
 		// compute the x and y adjustments for full grid size
 		while (xg < maxGridSize) {
@@ -38610,6 +38617,7 @@
 
 		// create pixel colours
 		this.createPixelColours(brightness);
+		offGrid = this.pixelColours[0];
 
 		// compute the x and y adjustments for full grid size
 		while (xg < maxGridSize) {

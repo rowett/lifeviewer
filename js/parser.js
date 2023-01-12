@@ -4559,6 +4559,7 @@
 						// rainbow word
 						case Keywords.rainbowWord:
 							view.engine.rainbow = true;
+							view.defaultRainbow = true;
 							itemValid = true;
 							break;
 

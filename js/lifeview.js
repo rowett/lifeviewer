@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 818,
+		/** @const {number} */ versionBuild : 819,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2073,6 +2073,7 @@
 		/** @type {number} */ this.defaultStep = 1;
 		/** @type {number} */ this.defaultLayers = 1;
 		/** @type {number} */ this.defaultDepth = 0.1;
+		/** @type {boolean} */ this.defaultRainbow = false;
 
 		// whether a theme was requested
 		/** @type {number} */ this.themeRequested = -1;
@@ -8026,6 +8027,9 @@
 			// reset depth
 			numberValue = Math.sqrt(me.defaultDepth);
 			me.depthItem.current = me.viewDepthRange([numberValue, numberValue], true, me);
+
+			// reset rainbow
+			me.rainbowButton.current = this.viewRainbowToggle([this.defaultRainbow], true, me);
 		}
 	};
 
@@ -16621,6 +16625,7 @@
 
 		// reset rainbow mode
 		this.engine.rainbow = false;
+		this.defaultRainbow = false;
 
 		// reset start from
 		this.startFrom = -1;
@@ -19395,7 +19400,7 @@
 		var	/** @type {Pattern} */ pattern = null;
 
 		// attempt to create a pattern
-		pattern = manager.create("", patternString, allocator, completeIsPattern, completeIsPatternFailed, [], null);
+		pattern = manager.create("", patternString, allocator, completeIsPattern, completeIsPatternFailed, [patternString, rleItem, textItem], null);
 		if (!manager.loadingFromRepository) {
 			completeIsPattern(pattern, [patternString, rleItem, textItem]);
 		}

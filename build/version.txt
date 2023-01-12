@@ -1,6 +1,10 @@
+Build 819
+- fixed stars not drawing outside actual grid extent during Theme change involving background colour change
+
 Build 818
 - fixed an issue with two line notifications
 - improved the progress bar for Go To Generation
+- if Rainbow mode specified in script commands then make it the default on hard reset
 
 Build 817
 - added Settings->General->Last Identify to display last Identify results (hotkey Shift F6)
