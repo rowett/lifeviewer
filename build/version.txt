@@ -1,3 +1,7 @@
+Build 821
+- fixed Identify Mod for Generations rules
+- added period legend colour information to Help->Info->Identify
+
 Build 820
 - fixed snapshot issue every 64 generations
 

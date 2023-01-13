@@ -1498,12 +1498,19 @@
 								state = ((state & 4) << 1) | ((state & 8) >> 1) | ((state & 1) << 1) | ((state & 2) >> 1);
 								break;
 							}
-						}
 
-						// update the hash value
-						hash = (hash * factor) ^ y;
-						hash = (hash * factor) ^ x;
-						hash = (hash * factor) ^ state;
+							// update the hash value
+							hash = (hash * factor) ^ y;
+							hash = (hash * factor) ^ x;
+							hash = (hash * factor) ^ state;
+						} else {
+							if (this.isRuleTree || state === 1) {
+								// update the hash value
+								hash = (hash * factor) ^ y;
+								hash = (hash * factor) ^ x;
+								hash = (hash * factor) ^ state;
+							}
+						}
 					}
 				}
 
@@ -1682,9 +1689,11 @@
 						state = colourRow[cx];
 						if (state > this.historyStates) {
 							state -= this.historyStates;
-							hash = (hash * factor) ^ yshift;
-							hash = (hash * factor) ^ (cx - hashX);
-							hash = (hash * factor) ^ state;
+							if (this.isRuleTree || state === 1) {
+								hash = (hash * factor) ^ yshift;
+								hash = (hash * factor) ^ (cx - hashX);
+								hash = (hash * factor) ^ state;
+							}
 						}
 					}
 				}
@@ -16574,7 +16583,9 @@
 
 			// population statistics
 			/** @type {Uint8Array} */ bitCounts16 = this.bitCounts16,
-			/** @type {number} */ population = 0, births = 0, deaths = 0,
+			/** @type {number} */ population = 0,
+			/** @type {number} */ births = 0,
+			/** @type {number} */ deaths = 0,
 
 			// height of grid
 			/** @type {number} */ height = this.height,
@@ -34289,8 +34300,10 @@
 			/** @type {number} */ engineY = view.panY - this.yOff,
 			/** @type {number} */ engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0),
 			/** @type {Array<number>} */ coords = [0, 0],
-			/** @type {number} */ dx1 = 0, dx2 = 0,
-			/** @type {number} */ dy1 = 0, dy2 = 0;
+			/** @type {number} */ dx1 = 0,
+			/** @type {number} */ dx2 = 0,
+			/** @type {number} */ dy1 = 0,
+			/** @type {number} */ dy2 = 0;
 	
 		// draw paste rectangle
 		switch (position) {

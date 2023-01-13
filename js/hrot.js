@@ -135,7 +135,7 @@
 			/** @type {number} */ count = 0,
 			/** @type {number} */ total = 0,
 			/** @type {number} */ numInRow = 0,
-			/** @type {number} */ middleK = customNeighbourhood.length >> 1, 
+			/** @type {number} */ middleK = customNeighbourhood.length >> 1,
 			/** @type {Uint8Array} */ row,
 			/** @const {string} */ hexDigits = "0123456789abcdef",
 			/** @type {Uint32Array} */ neighbourCache = null,

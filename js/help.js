@@ -1625,17 +1625,22 @@
 					y = this.renderHelpLine(view, "Volatility", view.lastIdentifyVolatility + " | N/A", ctx, x, y, height, helpLine);
 				} else {
 					y = this.renderHelpLine(view, "Volatility", view.lastIdentifyVolatility + " | " + view.lastIdentifyStrict, ctx, x, y, height, helpLine);
-					view.tabs[1] = 210;
-					view.tabs[2] = 310;
-					view.tabs[3] = 410;
-					y = this.renderHelpLine(view, "  Period", "Count\t% Total\t% Rotor", ctx, x, y, height, helpLine);
+					view.tabs[1] = 215; // % Total
+					view.tabs[2] = 300; // % Rotor
+					view.tabs[3] = 385; // Colour
+					view.tabs[4] = 425;
+					view.tabs[5] = 465;
+					view.tabs[6] = 505;
+					y = this.renderHelpLine(view, "  Period", "    Count\t% Total\t% Rotor\tColour", ctx, x, y, height, helpLine);
 					for (i = view.engine.popSubPeriod.length - 1; i > 0; i -= 1) {
 						value = view.engine.popSubPeriod[i];
 						if (value > 0) {
+							this.renderColourBox(view, view.engine.cellPeriodRGB[i] >> 16, (view.engine.cellPeriodRGB[i] >> 8) & 255, view.engine.cellPeriodRGB[i] & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+							colourValue = this.rgbString(view.engine.cellPeriodRGB[i] >> 16, (view.engine.cellPeriodRGB[i] >> 8) & 255, view.engine.cellPeriodRGB[i] & 255).trim();
 							if (i > 1) {
-								y = this.renderHelpLine(view, "  " + i, value + "\t" + (100 * value / view.engine.popTotal).toFixed(2) + "%\t" + (100 * value / view.engine.popRotor).toFixed(2) + "%", ctx, x, y, height, helpLine);
+								y = this.renderHelpLine(view, "  " + i, "    " + value + "\t" + (100 * value / view.engine.popTotal).toFixed(2) + "%\t" + (100 * value / view.engine.popRotor).toFixed(2) + "%\t" + colourValue, ctx, x, y, height, helpLine);
 							} else {
-								y = this.renderHelpLine(view, "  " + i, value + "\t" + (100 * value / view.engine.popTotal).toFixed(2) + "%", ctx, x, y, height, helpLine);
+								y = this.renderHelpLine(view, "  " + i, "    " + value + "\t" + (100 * value / view.engine.popTotal).toFixed(2) + "%\t\t" + colourValue, ctx, x, y, height, helpLine);
 							}
 						}
 					}
@@ -2178,8 +2183,8 @@
 		y = this.renderHelpLine(view, "", "Stars:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Enabled", view.starsOn ? "On" : "Off", ctx, x, y, height, helpLine);
 
-		this.renderColourBox(view, view.starField.red, view.starField.green, view.starField.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Color", this.rgbObjectString(view.starField), ctx, x, y, height, helpLine);
+		this.renderColourBox(view, view.starField.starColour.red, view.starField.starColour.green, view.starField.starColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Color", this.rgbObjectString(view.starField.starColour), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// script information

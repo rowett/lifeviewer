@@ -17,9 +17,7 @@
 		/** type {Float32Array} */ this.z = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.z")); 
 
 		// star colour
-		/** @type {number} */ this.red = 255;
-		/** @type {number} */ this.green = 255;
-		/** @type {number} */ this.blue = 255;
+		/** @type {Colour} */ this.starColour = new Colour(255, 255, 255);
 
 		// random number generator
 		/** @type {Random} */ this.randGen = new Random();
@@ -152,9 +150,9 @@
 			blackGreen = (blackPixel >> 16) & 0xff;
 			blackBlue = (blackPixel >> 8) & 0xff;
 		}
-		starMinusBlackRed = this.red - blackRed;
-		starMinusBlackGreen = this.green - blackGreen;
-		starMinusBlackBlue = this.blue - blackBlue;
+		starMinusBlackRed = this.starColour.red - blackRed;
+		starMinusBlackGreen = this.starColour.green - blackGreen;
+		starMinusBlackBlue = this.starColour.blue - blackBlue;
 
 		// update each star
 		for (i = 0; i < this.numStars; i += 1) {
