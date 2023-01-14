@@ -1,4 +1,3 @@
-// Life
 // written by Chris Rowett
 //
 // Implements many rule families and rendering.
@@ -191,7 +190,7 @@
 		/** @const {number} */ topLeftSet : 16,
 		/** @const {number} */ topRightSet : 32,
 		/** @const {number} */ bottomLeftSet : 64,
-		/** @const {number} */ bottomRightSet : 128
+		/** @const {number} */ bottomRightSet : 128,
 	};
 
 	// Theme object
@@ -1473,6 +1472,7 @@
 					state = colourGrid[cy + bottom][cx + left];
 					if (state > this.historyStates) {
 						state -= this.historyStates;
+
 						// adjust sub-cells for PCA rules based on transformation
 						if (this.isPCA) {
 							switch (transform) {
@@ -1504,8 +1504,13 @@
 							hash = (hash * factor) ^ x;
 							hash = (hash * factor) ^ state;
 						} else {
-							if (this.isRuleTree || state === 1) {
+							if (this.isRuleTree) {
 								// update the hash value
+								hash = (hash * factor) ^ y;
+								hash = (hash * factor) ^ x;
+								hash = (hash * factor) ^ state;
+							} else {
+								state = this.multiNumStates - state;
 								hash = (hash * factor) ^ y;
 								hash = (hash * factor) ^ x;
 								hash = (hash * factor) ^ state;
@@ -1684,12 +1689,24 @@
 						}
 					}
 				} else {
-					for (cx = x; cx <= right; cx += 1) {
-						// get the raw state
-						state = colourRow[cx];
-						if (state > this.historyStates) {
-							state -= this.historyStates;
-							if (this.isRuleTree || state === 1) {
+					if (this.isRuleTree) {
+						for (cx = x; cx <= right; cx += 1) {
+							// get the raw state
+							state = colourRow[cx];
+							if (state > this.historyStates) {
+								state -= this.historyStates;
+								hash = (hash * factor) ^ yshift;
+								hash = (hash * factor) ^ (cx - hashX);
+								hash = (hash * factor) ^ state;
+							}
+						}
+					} else {
+						for (cx = x; cx <= right; cx += 1) {
+							// get the raw state
+							state = colourRow[cx];
+							if (state > this.historyStates) {
+								state -= this.historyStates;
+								state = this.multiNumStates - state;
 								hash = (hash * factor) ^ yshift;
 								hash = (hash * factor) ^ (cx - hashX);
 								hash = (hash * factor) ^ state;

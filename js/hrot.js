@@ -355,7 +355,7 @@
 	// copy a slice
 	// TBD src has no type information because of a type check issue
 	HROT.prototype.copySlice = function(/** @type {Uint8Array} */ dest, source, /** @type number */ left, /** @type {number} */ right, /** @type {number} */ pos) {
-		dest.set(source.slice(left, right + 1), pos);
+		dest.set(source.slice(left, right), pos);
 	};
 
 	// wrap the grid for HROT torus
@@ -428,7 +428,7 @@
 			colourGrid[ty + y + 1].fill(0, lx, rx + 1);
 		}
 
-		// copy the bottom border
+		// clear the bottom border
 		for (y = 0; y < yrange; y += 1) {
 			colourGrid[by - y - 1].fill(0, lx, rx + 1);
 		}

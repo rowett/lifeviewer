@@ -1631,6 +1631,7 @@
 					view.tabs[4] = 425;
 					view.tabs[5] = 465;
 					view.tabs[6] = 505;
+					view.tabs[7] = 600;
 					y = this.renderHelpLine(view, "  Period", "    Count\t% Total\t% Rotor\tColour", ctx, x, y, height, helpLine);
 					for (i = view.engine.popSubPeriod.length - 1; i > 0; i -= 1) {
 						value = view.engine.popSubPeriod[i];
@@ -1644,6 +1645,10 @@
 							}
 						}
 					}
+					this.renderColourBox(view, 0x50, 0x50, 0x50, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "  Grid", "\t\t\t" + this.rgbString(0x50, 0x50, 0x50).trim(), ctx, x, y, height, helpLine);
+					this.renderColourBox(view, 0, 0, 0, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "  Back", "\t\t\t" + this.rgbString(0, 0, 0).trim(), ctx, x, y, height, helpLine);
 				}
 			}
 			y = this.renderHelpLine(view, "Generation", view.lastIdentifyGen, ctx, x, y, height, helpLine);

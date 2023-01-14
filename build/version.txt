@@ -1,3 +1,10 @@
+Build 823
+- fixed an issue with HROT rules and bounded grids
+
+Build 822
+- added Cell Period Map background and grid colours to Help->Info->Identify
+- fixed Identify Mod for Generations rules again
+
 Build 821
 - fixed Identify Mod for Generations rules
 - added period legend colour information to Help->Info->Identify
