@@ -1,3 +1,6 @@
+Build 824
+- fixed an issue with computing strict volatility with patterns with many cells
+
 Build 823
 - fixed an issue with HROT rules and bounded grids
 

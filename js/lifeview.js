@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 823,
+		/** @const {number} */ versionBuild : 824,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",

@@ -391,7 +391,7 @@
 		/** @type {number} */ this.cellPeriodHeight = 0;
 
 		// oscillator population subperiod
-		/** @type {Uint16Array} */ this.popSubPeriod = null;
+		/** @type {Uint32Array} */ this.popSubPeriod = null;
 
 		// oscillator population total
 		/** @type {number} */ this.popTotal = 0;
@@ -2435,7 +2435,7 @@
 			/** @type {Uint8Array} */ colourRow = null,
 			/** @type {Uint8Array} */ currentFrame = null,
 			/** @type {Uint8Array} */ popPhase = new Uint8Array(period),
-			/** @type {Uint16Array} */ popSubPeriod = new Uint16Array(period + 1),
+			/** @type {Uint32Array} */ popSubPeriod = new Uint32Array(period + 1),
 			/** @type {Uint16Array} */ cellPeriod = null,
 			/** @type {number} */ aliveStart = this.aliveStart,
 			/** @type {number} */ boxWidth = 0,
