@@ -810,6 +810,9 @@
 				y = this.renderHelpLine(view, "Shift Y", "toggle graph lines", ctx, x, y, height, helpLine);
 				y = this.renderHelpLine(view, "7", "decrease graph opacity", ctx, x, y, height, helpLine);
 				y = this.renderHelpLine(view, "9", "increase graph opacity", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "Shift F3", "toggle population plot", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "Shift F4", "toggle births plot", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "Shift F5", "toggle deaths plot", ctx, x, y, height, helpLine);
 			}
 			y = this.renderHelpLine(view, "Shift W", "toggle performance warning", ctx, x, y, height, helpLine);
 		}

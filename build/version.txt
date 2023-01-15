@@ -1,3 +1,9 @@
+Build 825
+- added data toggles to population graph
+	- hotkey Shift F3 to toggle population
+	- hotkey Shift F4 to toggle births
+	- hotkey Shift F5 to toggle deaths
+	
 Build 824
 - fixed an issue with computing strict volatility with patterns with many cells
 

@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 824,
+		/** @const {number} */ versionBuild : 825,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -644,6 +644,11 @@
 
 		// whether playback duration displayed
 		/** @type {boolean} */ this.showPlayDuration = false;
+
+		// population graph elements to plot
+		/** @type {boolean} */ this.graphShowPopulation = true;
+		/** @type {boolean} */ this.graphShowBirths = true;
+		/** @type {boolean} */ this.graphShowDeaths = true;
 
 		// amount of ms of last playback
 		/** @type {number} */ this.lastPlaybackMS = 0;
@@ -1786,6 +1791,9 @@
 
 		// close button for graph
 		/** @type {MenuItem} */ this.graphCloseButton = null;
+
+		/** data selection graph */
+		/** @type {MenuItem} */ this.graphDataToggle = null;
 
 		// close button for identify
 		/** @type {MenuItem} */ this.identifyCloseButton = null;
@@ -6505,6 +6513,7 @@
 		this.opacityItem.deleted = shown;
 		this.graphCloseButton.deleted = shown;
 		this.linesToggle.deleted = shown;
+		this.graphDataToggle.deleted = shown || (this.engine.boundedGridType === 1);
 
 		// cancel button
 		this.cancelButton.deleted = !(this.identify || this.startFrom !== -1);
@@ -7680,6 +7689,19 @@
 		}
 
 		return [me.infoBarEnabled];
+	};
+
+	// toggle graph data elements
+	/** @returns {Array<boolean>} */
+	View.prototype.viewGraphList = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+		// check if changing
+		if (change) {
+			me.graphShowPopulation = newValue[0];
+			me.graphShowBirths = newValue[1];
+			me.graphShowDeaths = newValue[2];
+		}
+
+		return [me.graphShowPopulation, me.graphShowBirths, me.graphShowDeaths];
 	};
 
 	// toggle graph display
@@ -15974,11 +15996,6 @@
 		this.opacityItem = this.viewMenu.addRangeItem(this.viewOpacityRange, Menu.north, 0, 45, 172, 40, 0, 1, this.popGraphOpacity, true, "Opacity ", "%", 0);
 		this.opacityItem.toolTip = "graph opacity [7 / 9]";
 
-		// points/lines toggle
-		this.linesToggle = this.viewMenu.addListItem(this.toggleLines, Menu.northEast, -85, 45, 40, 40, [""], [false], Menu.multi);
-		this.linesToggle.icon = [this.iconManager.icon("lines")];
-		this.linesToggle.toolTip = ["toggle graph lines/points [Shift Y]"];
-
 		// identify close button
 		this.identifyCloseButton = this.viewMenu.addButtonItem(this.identifyClosePressed, Menu.northEast, -40, 45, 40, 40, "X");
 		this.identifyCloseButton.toolTip = "close results [Esc]";
@@ -15997,6 +16014,16 @@
 		// graph close button
 		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -40, 45, 40, 40, "X");
 		this.graphCloseButton.toolTip = "close graph [Y]";
+
+		// points/lines toggle
+		this.linesToggle = this.viewMenu.addListItem(this.toggleLines, Menu.northEast, -85, 45, 40, 40, [""], [false], Menu.multi);
+		this.linesToggle.icon = [this.iconManager.icon("lines")];
+		this.linesToggle.toolTip = ["toggle graph lines/points [Shift Y]"];
+
+		// graph data list
+		this.graphDataToggle = this.viewMenu.addListItem(this.viewGraphList, Menu.northEast, -210, 45, 120, 40, ["Pop", "Bth", "Dth"], [this.graphShowPopulation, this.graphShowBirths, this.graphShowDeaths], Menu.multi);
+		this.graphDataToggle.toolTip = ["toggle population [Shift F3]", "toggle births [Shift F4]", "toggle deaths [Shift F5]"];
+		this.graphDataToggle.setFont("15px Arial");
 
 		// pick toggle
 		this.pickToggle = this.viewMenu.addListItem(this.togglePick, Menu.northWest, 0, 45, 40, 40, [""], [this.pickMode], Menu.multi);
@@ -17260,6 +17287,9 @@
 		} else {
 			me.isEdge = false;
 		}
+
+		// reset graph data elements
+		me.graphDataToggle.current = me.viewGraphList([true, true, true], true, me);
 
 		// turn off pretty rendering
 		me.engine.pretty = false;

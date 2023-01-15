@@ -1985,24 +1985,37 @@
 
 			// f3 for pick mode
 			case 114:
-				if (!me.viewOnly) {
-					me.modeList.current = me.viewModeList(ViewConstants.modeDraw, true, me);
-					if (!me.pickMode) {
-						me.pickToggle.current = me.togglePick([true], true, me);
+				if (event.shiftKey) {
+					me.graphDataToggle.current = me.viewGraphList([!me.graphDataToggle.current[0], me.graphDataToggle.current[1], me.graphDataToggle.current[2]], true, me);
+				} else {
+					if (!me.viewOnly) {
+						me.modeList.current = me.viewModeList(ViewConstants.modeDraw, true, me);
+						if (!me.pickMode) {
+							me.pickToggle.current = me.togglePick([true], true, me);
+						}
 					}
 				}
+
 				break;
 
 			// f4 for select mode
 			case 115:
-				if (!me.modeList.itemLocked[ViewConstants.modeSelect]) {
-					me.modeList.current = me.viewModeList(ViewConstants.modeSelect, true, me);
+				if (event.shiftKey) {
+					me.graphDataToggle.current = me.viewGraphList([me.graphDataToggle.current[0], !me.graphDataToggle.current[1], me.graphDataToggle.current[2]], true, me);
+				} else {
+					if (!me.modeList.itemLocked[ViewConstants.modeSelect]) {
+						me.modeList.current = me.viewModeList(ViewConstants.modeSelect, true, me);
+					}
 				}
 				break;
 
 			// f5 for pan mode
 			case 116:
-				me.modeList.current = me.viewModeList(ViewConstants.modePan, true, me);
+				if (event.shiftKey) {
+					me.graphDataToggle.current = me.viewGraphList([me.graphDataToggle.current[0], me.graphDataToggle.current[1], !me.graphDataToggle.current[2]], true, me);
+				} else {
+					me.modeList.current = me.viewModeList(ViewConstants.modePan, true, me);
+				}
 				break;
 
 			// f6 to toggle oscillator search

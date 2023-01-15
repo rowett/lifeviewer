@@ -13203,15 +13203,21 @@
 
 			// only draw births and deaths if grid is not bounded
 			if (this.boundedGridType === -1) {
-				// draw deaths
-				this.renderGraph(ctx, graphDeathColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.deathGraphData, lines);
+				// draw deaths unless disabled
+				if (view.graphShowDeaths) {
+					this.renderGraph(ctx, graphDeathColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.deathGraphData, lines);
+				}
 
-				// draw births
-				this.renderGraph(ctx, graphBirthColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.birthGraphData, lines);
+				// draw births unless disabled
+				if (view.graphShowBirths) {
+					this.renderGraph(ctx, graphBirthColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.birthGraphData, lines);
+				}
 			}
 
-			// draw population
-			this.renderGraph(ctx, graphAliveColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.popGraphData, lines);
+			// draw population unless disabled but always show in bounded grids
+			if (this.boundedGridType !== -1 || view.graphShowPopulation) {
+				this.renderGraph(ctx, graphAliveColor, displayX, graphHeight - borderY - borderAxis, borderX, borderY, borderAxis, this.popGraphData, lines);
+			}
 
 			// draw axes
 			ctx.strokeStyle = graphAxisColor;
