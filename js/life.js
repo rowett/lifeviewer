@@ -1384,6 +1384,298 @@
 		return message;
 	};
 
+	// get mod hash from 2-state pattern using Rot90
+	/** @returns {number} */
+	Life.prototype.getModHash2ModRot90 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+		var	/** @type {number} */ hash = 31415962,
+			/** @const {number} */ factor = 1000003,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ iDivHeight = 0,
+			/** @type {number} */ iModHeight = 0,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+
+		// create a hash from every alive cell
+		for (y = 0; y < height; y += 1) {
+			for (x = 0; x < width; x += 1) {
+				// adjust the coordinates based on the transformation
+				cx = iDivHeight;
+				cy = hm1 - iModHeight;
+
+				if (colourGrid[cy + bottom][cx + left] >= aliveStart) {
+					// update the hash
+					hash = (hash * factor) ^ y;
+					hash = (hash * factor) ^ x;
+				}
+
+				// update index
+				iModHeight += 1;
+				if (iModHeight === modHeight) {
+					iModHeight = 0;
+					iDivHeight += 1;
+				}
+			}
+		}
+
+		return hash | 0;
+	};
+
+	// get mod hash from 2-state pattern using Rot180
+	/** @returns {number} */
+	Life.prototype.getModHash2ModRot180 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ wm1, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+		var	/** @type {number} */ hash = 31415962,
+			/** @const {number} */ factor = 1000003,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+
+		// create a hash from every alive cell
+		for (y = 0; y < height; y += 1) {
+			cy = hm1 - y;
+			colourRow = colourGrid[cy + bottom];
+			for (x = 0; x < width; x += 1) {
+				// adjust the coordinates based on the transformation
+				cx = wm1 - x;
+
+				if (colourRow[cx + left] >= aliveStart) {
+					// update the hash
+					hash = (hash * factor) ^ y;
+					hash = (hash * factor) ^ x;
+				}
+			}
+		}
+
+		return hash | 0;
+	};
+
+	// get mod hash from 2-state pattern using Rot270
+	/** @returns {number} */
+	Life.prototype.getModHash2ModRot270 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+		var	/** @type {number} */ hash = 31415962,
+			/** @const {number} */ factor = 1000003,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ iDivHeight = 0,
+			/** @type {number} */ iModHeight = 0,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+
+		// create a hash from every alive cell
+		for (y = 0; y < height; y += 1) {
+			for (x = 0; x < width; x += 1) {
+				// adjust the coordinates based on the transformation
+				cx = wm1 - iDivHeight;
+				cy = iModHeight;
+
+				if (colourGrid[cy + bottom][cx + left] >= aliveStart) {
+					// update the hash
+					hash = (hash * factor) ^ y;
+					hash = (hash * factor) ^ x;
+				}
+
+				// update index
+				iModHeight += 1;
+				if (iModHeight === modHeight) {
+					iModHeight = 0;
+					iDivHeight += 1;
+				}
+			}
+		}
+
+		return hash | 0;
+	};
+
+	// get mod hash from 2-state pattern using FlipX
+	/** @returns {number} */
+	Life.prototype.getModHash2ModFlipX = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+		var	/** @type {number} */ hash = 31415962,
+			/** @const {number} */ factor = 1000003,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+
+		// create a hash from every alive cell
+		for (y = 0; y < height; y += 1) {
+			colourRow = colourGrid[y + bottom];
+			for (x = 0; x < width; x += 1) {
+				// adjust the coordinates based on the transformation
+				cx = wm1 - x;
+
+				if (colourRow[cx + left] >= aliveStart) {
+					// update the hash
+					hash = (hash * factor) ^ y;
+					hash = (hash * factor) ^ x;
+				}
+			}
+		}
+
+		return hash | 0;
+	};
+
+	// get mod hash from 2-state pattern using FlipY
+	/** @returns {number} */
+	Life.prototype.getModHash2ModFlipY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+		var	/** @type {number} */ hash = 31415962,
+			/** @const {number} */ factor = 1000003,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+
+		// create a hash from every alive cell
+		for (y = 0; y < height; y += 1) {
+			cy = hm1 - y;
+			colourRow = colourGrid[cy + bottom];
+			for (x = 0; x < width; x += 1) {
+				if (colourRow[x + left] >= aliveStart) {
+					// update the hash
+					hash = (hash * factor) ^ y;
+					hash = (hash * factor) ^ x;
+				}
+			}
+		}
+
+		return hash | 0;
+	};
+
+	// get mod hash from 2-state pattern using Rot90FlipX
+	/** @returns {number} */
+	Life.prototype.getModHash2ModRot90FlipX = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ left, /** @type {number} */ bottom) {
+		var	/** @type {number} */ hash = 31415962,
+			/** @const {number} */ factor = 1000003,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ iDivHeight = 0,
+			/** @type {number} */ iModHeight = 0,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+
+		// create a hash from every alive cell
+		for (y = 0; y < height; y += 1) {
+			for (x = 0; x < width; x += 1) {
+				// adjust the coordinates based on the transformation
+				if (colourGrid[iDivHeight + bottom][iModHeight + left] >= aliveStart) {
+					// update the hash
+					hash = (hash * factor) ^ y;
+					hash = (hash * factor) ^ x;
+				}
+
+				// update index
+				iModHeight += 1;
+				if (iModHeight === modHeight) {
+					iModHeight = 0;
+					iDivHeight += 1;
+				}
+			}
+		}
+
+		return hash | 0;
+	};
+
+	// get mod hash from 2-state pattern using Rot90FlipY
+	/** @returns {number} */
+	Life.prototype.getModHash2ModRot90FlipY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+		var	/** @type {number} */ hash = 31415962,
+			/** @const {number} */ factor = 1000003,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ iDivHeight = 0,
+			/** @type {number} */ iModHeight = 0,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+
+		// create a hash from every alive cell
+		for (y = 0; y < height; y += 1) {
+			for (x = 0; x < width; x += 1) {
+				// adjust the coordinates based on the transformation
+				cx = wm1 - iDivHeight;
+				cy = hm1 - iModHeight;
+
+				if (colourGrid[cy + bottom][cx + left] >= aliveStart) {
+					// update the hash
+					hash = (hash * factor) ^ y;
+					hash = (hash * factor) ^ x;
+				}
+
+				// update index
+				iModHeight += 1;
+				if (iModHeight === modHeight) {
+					iModHeight = 0;
+					iDivHeight += 1;
+				}
+			}
+		}
+
+		return hash | 0;
+	};
+
+
+	// get mod hash from 2-state pattern
+	/** @returns {number} */
+	Life.prototype.getModHash2 = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform) {
+		var	/** @type {number} */ result = 0,
+			/** @const {number} */ left = box.leftX,
+			/** @const {number} */ bottom = box.bottomY,
+			/** @const {number} */ right = box.rightX,
+			/** @const {number} */ top = box.topY,
+			/** @const {number} */ width = right - left + 1,
+			/** @const {number} */ height = top - bottom + 1,
+			/** @const {number} */ wm1 = width - 1,
+			/** @const {number} */ hm1 = height - 1,
+			/** @type {number} */ checkWidth = width,
+			/** @type {number} */ checkHeight = height,
+			/** @type {number} */ swap = 0;
+
+		// if rotate is used then swap check width and height
+		if (transform === LifeConstants.modRot90 || transform === LifeConstants.modRot270 || transform === LifeConstants.modRot90FlipX || transform === LifeConstants.modRot90FlipY) {
+			swap = checkWidth;
+			checkWidth = checkHeight;
+			checkHeight = swap;
+		}
+
+		switch (transform) {
+			case LifeConstants.modRot90:
+				result = this.getModHash2ModRot90(checkWidth, checkHeight, height, hm1, left, bottom);
+				break;
+			case LifeConstants.modRot180:
+				result = this.getModHash2ModRot180(checkWidth, checkHeight, wm1, hm1, left, bottom);
+				break;
+			case LifeConstants.modRot270:
+				result = this.getModHash2ModRot270(checkWidth, checkHeight, height, wm1, left, bottom);
+				break;
+			case LifeConstants.modFlipX:
+				result = this.getModHash2ModFlipX(checkWidth, checkHeight, wm1, left, bottom);
+				break;
+			case LifeConstants.modFlipY:
+				result = this.getModHash2ModFlipY(checkWidth, checkHeight, hm1, left, bottom);
+				break;
+			case LifeConstants.modRot90FlipX:
+				result = this.getModHash2ModRot90FlipX(checkWidth, checkHeight, height, left, bottom);
+				break;
+			case LifeConstants.modRot90FlipY:
+				result = this.getModHash2ModRot90FlipY(checkWidth, checkHeight, height, wm1, hm1, left, bottom);
+				break;
+		}
+
+		return result;
+	};
+
 	// get mod hash from pattern
 	/** @returns {number} */
 	Life.prototype.getModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform) {
@@ -1536,11 +1828,16 @@
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ trans = LifeConstants.modFirstTrans,
 			/** @type {number} */ found = -1,
+			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
 			/** @type {number} */ hash = 0,
 			/** @type {number} */ hashY = 0;
 
 		while (trans <= LifeConstants.modLastTrans && found === -1) {
-			hash = this.getModHash(box, trans);
+			if (twoState) {
+				hash = this.getModHash2(box, trans);
+			} else {
+				hash = this.getModHash(box, trans);
+			}
 
 			// check if updating or just checking
 			if (updateType) {
@@ -2104,8 +2401,8 @@
 			gridBorderSize = 1;
 		} else {
 			// switch to smaller cell size
-			this.cellPeriodCellSize = 2;
-			cellSize = 2;
+			this.cellPeriodCellSize = 1;
+			cellSize = 1;
 		}
 
 		// count the subperiods excluding period 1 and oscillator period

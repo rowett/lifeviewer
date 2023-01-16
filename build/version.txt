@@ -1,3 +1,10 @@
+Build 827
+- improved Identify performance for 2-state patterns
+
+Build 826
+- disable Identify for non-deterministic rules
+- improve Cell Period Map fit
+
 Build 825
 - added data toggles to population graph
 	- hotkey Shift F3 to toggle population

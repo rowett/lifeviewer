@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 825,
+		/** @const {number} */ versionBuild : 827,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6633,7 +6633,7 @@
 		shown = this.engine.isNone || !this.executable;
 		this.randomizeButton.locked = shown;
 		this.randomizePatternButton.locked = shown;
-		this.identifyButton.locked = shown || this.viewOnly;
+		this.identifyButton.locked = shown || this.viewOnly || this.engine.HROT.useRandom;
 		this.lastIdentifyResultsButton.locked = shown || this.viewOnly || this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "";
 		this.fastIdentifyButton.locked = shown || this.viewOnly;
 		this.copyRuleButton.locked = shown;
