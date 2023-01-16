@@ -1,3 +1,6 @@
+Build 829
+- further improved categorisation of some Help->Info items
+
 Build 828
 - improved categorisation of some Help->Info->Theme and Help->Info->UI items
 

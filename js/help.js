@@ -2005,6 +2005,33 @@
 
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
+		// grid line information
+		view.helpSections[sectionNum] = [view.lineNo, "Gridlines"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Gridlines:", ctx, x, y, height, helpLine);
+		itemName = view.engine.displayGrid ? "On" : "Off";
+		if (view.engine.displayGrid && !view.engine.canDisplayGrid()) {
+			itemName += " (Hidden)";
+		}
+		y = this.renderHelpLine(view, "Enabled", itemName, ctx, x, y, height, helpLine);
+
+		// display grid line colour
+		this.renderColourBox(view, view.engine.gridLineRaw >> 16, (view.engine.gridLineRaw >> 8) & 255, view.engine.gridLineRaw & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Line Color", this.rgbString(view.engine.gridLineRaw >> 16, (view.engine.gridLineRaw >> 8) & 255, view.engine.gridLineRaw & 255), ctx, x, y, height, helpLine);
+
+		// display grid line major colour
+		this.renderColourBox(view, view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Major Color", this.rgbString(view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255), ctx, x, y, height, helpLine);
+
+		// grid line major interval
+		if (view.engine.gridLineMajor > 0 && view.engine.gridLineMajorEnabled) {
+			itemName = String(view.engine.gridLineMajor);
+		} else {
+			itemName = "Off";
+		}
+		y = this.renderHelpLine(view, "Interval", itemName, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		// UI colours
 		view.helpSections[sectionNum] = [view.lineNo, "UI"];
 		y = this.renderHelpLine(view, "", "UI:", ctx, x, y, height, helpLine);
@@ -2035,7 +2062,7 @@
 			value = 0x0000FF; // default blue
 		}
 		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Select", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Selected", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
 
 		value = view.customThemeValue[ViewConstants.customThemeUILocked];
 		if (value === -1) {
@@ -2086,40 +2113,13 @@
 		y = this.renderHelpLine(view, "", "Selection Boxes:", ctx, x, y, height, helpLine);
 		// select, paste, advance and selected cells colours
 		this.renderColourBox(view, view.customSelectColour[0], view.customSelectColour[1], view.customSelectColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Select", this.rgbString(view.customSelectColour[0], view.customSelectColour[1], view.customSelectColour[2]), ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Selection", this.rgbString(view.customSelectColour[0], view.customSelectColour[1], view.customSelectColour[2]), ctx, x, y, height, helpLine);
 		this.renderColourBox(view, view.customPasteColour[0], view.customPasteColour[1], view.customPasteColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Paste", this.rgbString(view.customPasteColour[0], view.customPasteColour[1], view.customPasteColour[2]), ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Paste Box", this.rgbString(view.customPasteColour[0], view.customPasteColour[1], view.customPasteColour[2]), ctx, x, y, height, helpLine);
+		this.renderColourBox(view, view.customSelectedCellsColour[0], view.customSelectedCellsColour[1], view.customSelectedCellsColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Paste Cell", this.rgbString(view.customSelectedCellsColour[0], view.customSelectedCellsColour[1], view.customSelectedCellsColour[2]), ctx, x, y, height, helpLine);
 		this.renderColourBox(view, view.customAdvanceColour[0], view.customAdvanceColour[1], view.customAdvanceColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Advance", this.rgbString(view.customAdvanceColour[0], view.customAdvanceColour[1], view.customAdvanceColour[2]), ctx, x, y, height, helpLine);
-		this.renderColourBox(view, view.customSelectedCellsColour[0], view.customSelectedCellsColour[1], view.customSelectedCellsColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Selected", this.rgbString(view.customSelectedCellsColour[0], view.customSelectedCellsColour[1], view.customSelectedCellsColour[2]), ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-
-		// grid line information
-		view.helpSections[sectionNum] = [view.lineNo, "Gridlines"];
-		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Gridlines:", ctx, x, y, height, helpLine);
-		itemName = view.engine.displayGrid ? "On" : "Off";
-		if (view.engine.displayGrid && !view.engine.canDisplayGrid()) {
-			itemName += " (Hidden)";
-		}
-		y = this.renderHelpLine(view, "Enabled", itemName, ctx, x, y, height, helpLine);
-
-		// display grid line colour
-		this.renderColourBox(view, view.engine.gridLineRaw >> 16, (view.engine.gridLineRaw >> 8) & 255, view.engine.gridLineRaw & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Line Color", this.rgbString(view.engine.gridLineRaw >> 16, (view.engine.gridLineRaw >> 8) & 255, view.engine.gridLineRaw & 255), ctx, x, y, height, helpLine);
-
-		// display grid line major colour
-		this.renderColourBox(view, view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Major Color", this.rgbString(view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255), ctx, x, y, height, helpLine);
-
-		// grid line major interval
-		if (view.engine.gridLineMajor > 0 && view.engine.gridLineMajorEnabled) {
-			itemName = String(view.engine.gridLineMajor);
-		} else {
-			itemName = "Off";
-		}
-		y = this.renderHelpLine(view, "Interval", itemName, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// population graph information

@@ -1833,6 +1833,7 @@
 			/** @type {number} */ hash = 0,
 			/** @type {number} */ hashY = 0;
 
+		// check each transformation
 		while (trans <= LifeConstants.modLastTrans && found === -1) {
 			if (twoState) {
 				hash = this.getModHash2(box, trans);
