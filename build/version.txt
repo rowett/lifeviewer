@@ -1,3 +1,6 @@
+Build 828
+- improved categorisation of some Help->Info->Theme and Help->Info->UI items
+
 Build 827
 - improved Identify performance for 2-state patterns
 

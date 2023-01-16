@@ -2003,42 +2003,6 @@
 		this.renderColourBox(view, view.customBoundaryColour[0], view.customBoundaryColour[1], view.customBoundaryColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Boundary", this.rgbString(view.customBoundaryColour[0], view.customBoundaryColour[1], view.customBoundaryColour[2]), ctx, x, y, height, helpLine);
 
-		// display text colour
-		if (view.customTextColour) {
-			this.renderColourBox(view, view.customTextColour[0], view.customTextColour[1], view.customTextColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "Text*", this.rgbString(view.customTextColour[0], view.customTextColour[1], view.customTextColour[2]), ctx, x, y, height, helpLine);
-		} else {
-			this.renderColourBox(view, 255, 255, 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "Text", this.rgbString(255, 255, 255), ctx, x, y, height, helpLine);
-		}
-
-		// display error text colour
-		if (view.customErrorColour) {
-			this.renderColourBox(view, view.customErrorColour[0], view.customErrorColour[1], view.customErrorColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "Error*", this.rgbString(view.customErrorColour[0], view.customErrorColour[1], view.customErrorColour[2]), ctx, x, y, height, helpLine);
-		} else {
-			this.renderColourBox(view, 255, 96, 96, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "Error", this.rgbString(255, 96, 96), ctx, x, y, height, helpLine);
-		}
-
-		// display help text colour
-		if (view.customHelpColour) {
-			this.renderColourBox(view, view.customHelpColour[0], view.customHelpColour[1], view.customHelpColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "Help*", this.rgbString(view.customHelpColour[0], view.customHelpColour[1], view.customHelpColour[2]), ctx, x, y, height, helpLine);
-		} else {
-			this.renderColourBox(view, 32, 255, 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "Help", this.rgbString(32, 255, 255), ctx, x, y, height, helpLine);
-		}
-
-		// select, paste, advance and selected cells colours
-		this.renderColourBox(view, view.customSelectColour[0], view.customSelectColour[1], view.customSelectColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Select", this.rgbString(view.customSelectColour[0], view.customSelectColour[1], view.customSelectColour[2]), ctx, x, y, height, helpLine);
-		this.renderColourBox(view, view.customPasteColour[0], view.customPasteColour[1], view.customPasteColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Paste", this.rgbString(view.customPasteColour[0], view.customPasteColour[1], view.customPasteColour[2]), ctx, x, y, height, helpLine);
-		this.renderColourBox(view, view.customAdvanceColour[0], view.customAdvanceColour[1], view.customAdvanceColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Advance", this.rgbString(view.customAdvanceColour[0], view.customAdvanceColour[1], view.customAdvanceColour[2]), ctx, x, y, height, helpLine);
-		this.renderColourBox(view, view.customSelectedCellsColour[0], view.customSelectedCellsColour[1], view.customSelectedCellsColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Selected", this.rgbString(view.customSelectedCellsColour[0], view.customSelectedCellsColour[1], view.customSelectedCellsColour[2]), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// UI colours
@@ -2087,6 +2051,48 @@
 		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Border", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
 
+		// display text colour
+		if (view.customTextColour) {
+			this.renderColourBox(view, view.customTextColour[0], view.customTextColour[1], view.customTextColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "Text*", this.rgbString(view.customTextColour[0], view.customTextColour[1], view.customTextColour[2]), ctx, x, y, height, helpLine);
+		} else {
+			this.renderColourBox(view, 255, 255, 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "Text", this.rgbString(255, 255, 255), ctx, x, y, height, helpLine);
+		}
+
+		// display error text colour
+		if (view.customErrorColour) {
+			this.renderColourBox(view, view.customErrorColour[0], view.customErrorColour[1], view.customErrorColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "Error*", this.rgbString(view.customErrorColour[0], view.customErrorColour[1], view.customErrorColour[2]), ctx, x, y, height, helpLine);
+		} else {
+			this.renderColourBox(view, 255, 96, 96, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "Error", this.rgbString(255, 96, 96), ctx, x, y, height, helpLine);
+		}
+
+		// display help text colour
+		if (view.customHelpColour) {
+			this.renderColourBox(view, view.customHelpColour[0], view.customHelpColour[1], view.customHelpColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "Help*", this.rgbString(view.customHelpColour[0], view.customHelpColour[1], view.customHelpColour[2]), ctx, x, y, height, helpLine);
+		} else {
+			this.renderColourBox(view, 32, 255, 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "Help", this.rgbString(32, 255, 255), ctx, x, y, height, helpLine);
+		}
+
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
+		// selection colours
+		view.helpSections[sectionNum] = [view.lineNo, "Selection"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Selection Boxes:", ctx, x, y, height, helpLine);
+		// select, paste, advance and selected cells colours
+		this.renderColourBox(view, view.customSelectColour[0], view.customSelectColour[1], view.customSelectColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Select", this.rgbString(view.customSelectColour[0], view.customSelectColour[1], view.customSelectColour[2]), ctx, x, y, height, helpLine);
+		this.renderColourBox(view, view.customPasteColour[0], view.customPasteColour[1], view.customPasteColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Paste", this.rgbString(view.customPasteColour[0], view.customPasteColour[1], view.customPasteColour[2]), ctx, x, y, height, helpLine);
+		this.renderColourBox(view, view.customAdvanceColour[0], view.customAdvanceColour[1], view.customAdvanceColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Advance", this.rgbString(view.customAdvanceColour[0], view.customAdvanceColour[1], view.customAdvanceColour[2]), ctx, x, y, height, helpLine);
+		this.renderColourBox(view, view.customSelectedCellsColour[0], view.customSelectedCellsColour[1], view.customSelectedCellsColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Selected", this.rgbString(view.customSelectedCellsColour[0], view.customSelectedCellsColour[1], view.customSelectedCellsColour[2]), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// grid line information
