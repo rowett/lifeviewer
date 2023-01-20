@@ -315,7 +315,7 @@
 				clearMessage = true;
 			} else {
 				// check if the message contains a newline
-				index = message.indexOf("\n");
+				index = message.indexOf("\\n");
 				if (index === -1) {
 					// draw the text
 					this.draw(message, isPriority, lineHeight);
@@ -327,7 +327,7 @@
 					this.context.translate(0, lineHeight);
 
 					// draw the second line
-					this.draw(message.substring(index + 1), isPriority, lineHeight);
+					this.draw(message.substring(index + 2), isPriority, lineHeight);
 				}
 			}
 

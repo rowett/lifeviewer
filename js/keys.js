@@ -2033,6 +2033,11 @@
 				}
 				break;
 
+			// Ins to show Help sections
+			case 45:
+				me.showSections = true;
+				break;
+
 			// ignore f11 so browser processes it (toggle fullscreen)
 			case 122:
 				processed = false;

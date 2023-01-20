@@ -382,6 +382,16 @@
 		/** @type {number} */ this.cellPeriodCellSize = 8;
 		/** @type {number} */ this.cellBorderSize = 1;
 
+		// identify temporary results
+		/** @type {string} */ this.identifyMessage = "";
+		/** @type {number} */ this.identifyI = 0;
+		/** @type {number} */ this.identifyPeriod = 0;
+		/** @type {number} */ this.identifyDeltaX = 0;
+		/** @type {number} */ this.identifyDeltaY = 0;
+		/** @type {number} */ this.identifyBoxWidth = 0;
+		/** @type {number} */ this.identifyBoxHeight = 0;
+		/** @type {boolean} */ this.identifyFast = false;
+		
 		// last computed strict volatility
 		/** @type {string} */ this.strictVol = "";
 
@@ -1386,24 +1396,24 @@
 
 	// get mod hash from 2-state pattern using Rot90
 	/** @returns {number} */
-	Life.prototype.getModHash2ModRot90 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2Rot90 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
-			/** @type {number} */ cy = 0,
 			/** @type {number} */ iDivHeight = 0,
 			/** @type {number} */ iModHeight = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
 
 		// create a hash from every alive cell
+		iDivHeight = left;
+		hm1 += bottom;
+
 		for (y = 0; y < height; y += 1) {
 			for (x = 0; x < width; x += 1) {
 				// adjust the coordinates based on the transformation
-				cy = hm1 - iModHeight;
-
-				if (colourGrid[cy + bottom][iDivHeight + left] >= aliveStart) {
+				if (colourGrid[hm1 - iModHeight][iDivHeight] >= aliveStart) {
 					// update the hash
 					hash = (hash * factor) ^ y;
 					hash = (hash * factor) ^ x;
@@ -1423,26 +1433,24 @@
 
 	// get mod hash from 2-state pattern using Rot180
 	/** @returns {number} */
-	Life.prototype.getModHash2ModRot180 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ wm1, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2Rot180 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ wm1, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
-			/** @type {number} */ cx = 0,
-			/** @type {number} */ cy = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
 
 		// create a hash from every alive cell
+		wm1 += left;
+		hm1 += bottom;
+
 		for (y = 0; y < height; y += 1) {
-			cy = hm1 - y;
-			colourRow = colourGrid[cy + bottom];
+			colourRow = colourGrid[hm1 - y];
 			for (x = 0; x < width; x += 1) {
 				// adjust the coordinates based on the transformation
-				cx = wm1 - x;
-
-				if (colourRow[cx + left] >= aliveStart) {
+				if (colourRow[wm1 - x] >= aliveStart) {
 					// update the hash
 					hash = (hash * factor) ^ y;
 					hash = (hash * factor) ^ x;
@@ -1455,24 +1463,23 @@
 
 	// get mod hash from 2-state pattern using Rot270
 	/** @returns {number} */
-	Life.prototype.getModHash2ModRot270 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2Rot270 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
-			/** @type {number} */ cx = 0,
 			/** @type {number} */ iDivHeight = 0,
 			/** @type {number} */ iModHeight = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
 
 		// create a hash from every alive cell
+		wm1 += left;
+
 		for (y = 0; y < height; y += 1) {
 			for (x = 0; x < width; x += 1) {
 				// adjust the coordinates based on the transformation
-				cx = wm1 - iDivHeight;
-
-				if (colourGrid[iModHeight + bottom][cx + left] >= aliveStart) {
+				if (colourGrid[iModHeight + bottom][wm1 - iDivHeight] >= aliveStart) {
 					// update the hash
 					hash = (hash * factor) ^ y;
 					hash = (hash * factor) ^ x;
@@ -1492,24 +1499,23 @@
 
 	// get mod hash from 2-state pattern using FlipX
 	/** @returns {number} */
-	Life.prototype.getModHash2ModFlipX = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2FlipX = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
-			/** @type {number} */ cx = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
 
 		// create a hash from every alive cell
+		wm1 += left;
+
 		for (y = 0; y < height; y += 1) {
 			colourRow = colourGrid[y + bottom];
 			for (x = 0; x < width; x += 1) {
 				// adjust the coordinates based on the transformation
-				cx = wm1 - x;
-
-				if (colourRow[cx + left] >= aliveStart) {
+				if (colourRow[wm1 - x] >= aliveStart) {
 					// update the hash
 					hash = (hash * factor) ^ y;
 					hash = (hash * factor) ^ x;
@@ -1522,20 +1528,20 @@
 
 	// get mod hash from 2-state pattern using FlipY
 	/** @returns {number} */
-	Life.prototype.getModHash2ModFlipY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2FlipY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
-			/** @type {number} */ cy = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
 
 		// create a hash from every alive cell
+		hm1 += bottom;
+
 		for (y = 0; y < height; y += 1) {
-			cy = hm1 - y;
-			colourRow = colourGrid[cy + bottom];
+			colourRow = colourGrid[hm1 - y];
 			for (x = 0; x < width; x += 1) {
 				if (colourRow[x + left] >= aliveStart) {
 					// update the hash
@@ -1550,7 +1556,7 @@
 
 	// get mod hash from 2-state pattern using Rot90FlipX
 	/** @returns {number} */
-	Life.prototype.getModHash2ModRot90FlipX = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2Rot90FlipX = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ left, /** @type {number} */ bottom) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
@@ -1561,10 +1567,12 @@
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
 
 		// create a hash from every alive cell
+		iDivHeight += left;
+
 		for (y = 0; y < height; y += 1) {
 			for (x = 0; x < width; x += 1) {
 				// adjust the coordinates based on the transformation
-				if (colourGrid[iModHeight + bottom][iDivHeight + left] >= aliveStart) {
+				if (colourGrid[iModHeight + bottom][iDivHeight] >= aliveStart) {
 					// update the hash
 					hash = (hash * factor) ^ y;
 					hash = (hash * factor) ^ x;
@@ -1584,26 +1592,24 @@
 
 	// get mod hash from 2-state pattern using Rot90FlipY
 	/** @returns {number} */
-	Life.prototype.getModHash2ModRot90FlipY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2Rot90FlipY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
-			/** @type {number} */ cx = 0,
-			/** @type {number} */ cy = 0,
 			/** @type {number} */ iDivHeight = 0,
 			/** @type {number} */ iModHeight = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
 
 		// create a hash from every alive cell
+		wm1 += left;
+		hm1 += bottom;
+
 		for (y = 0; y < height; y += 1) {
 			for (x = 0; x < width; x += 1) {
 				// adjust the coordinates based on the transformation
-				cx = wm1 - iDivHeight;
-				cy = hm1 - iModHeight;
-
-				if (colourGrid[cy + bottom][cx + left] >= aliveStart) {
+				if (colourGrid[hm1 - iModHeight][wm1 - iDivHeight] >= aliveStart) {
 					// update the hash
 					hash = (hash * factor) ^ y;
 					hash = (hash * factor) ^ x;
@@ -1646,31 +1652,31 @@
 
 		switch (transform) {
 			case LifeConstants.modRot90:
-				result = this.getModHash2ModRot90(checkWidth, checkHeight, height, hm1, left, bottom);
+				result = this.getHash2Rot90(checkWidth, checkHeight, height, hm1, left, bottom);
 				break;
 
 			case LifeConstants.modRot180:
-				result = this.getModHash2ModRot180(checkWidth, checkHeight, wm1, hm1, left, bottom);
+				result = this.getHash2Rot180(checkWidth, checkHeight, wm1, hm1, left, bottom);
 				break;
 
 			case LifeConstants.modRot270:
-				result = this.getModHash2ModRot270(checkWidth, checkHeight, height, wm1, left, bottom);
+				result = this.getHash2Rot270(checkWidth, checkHeight, height, wm1, left, bottom);
 				break;
 
 			case LifeConstants.modFlipX:
-				result = this.getModHash2ModFlipX(checkWidth, checkHeight, wm1, left, bottom);
+				result = this.getHash2FlipX(checkWidth, checkHeight, wm1, left, bottom);
 				break;
 
 			case LifeConstants.modFlipY:
-				result = this.getModHash2ModFlipY(checkWidth, checkHeight, hm1, left, bottom);
+				result = this.getHash2FlipY(checkWidth, checkHeight, hm1, left, bottom);
 				break;
 
 			case LifeConstants.modRot90FlipX:
-				result = this.getModHash2ModRot90FlipX(checkWidth, checkHeight, height, left, bottom);
+				result = this.getHash2Rot90FlipX(checkWidth, checkHeight, height, left, bottom);
 				break;
 
 			case LifeConstants.modRot90FlipY:
-				result = this.getModHash2ModRot90FlipY(checkWidth, checkHeight, height, wm1, hm1, left, bottom);
+				result = this.getHash2Rot90FlipY(checkWidth, checkHeight, height, wm1, hm1, left, bottom);
 				break;
 		}
 
@@ -2450,7 +2456,11 @@
 			red = parseInt(rgbString.substring(1, 3), 16);
 			green = parseInt(rgbString.substring(3, 5), 16);
 			blue = parseInt(rgbString.substring(5, 7), 16);
-			this.cellPeriodRGB[x] = (255 << 24) | (blue << 16) | (green << 8) | red;
+			if (this.littleEndian) {
+				this.cellPeriodRGB[x] = (255 << 24) | (blue << 16) | (green << 8) | red;
+			} else {
+				this.cellPeriodRGB[x] = (red << 24) | (green << 16) | (blue << 8) | 255;
+			}
 		}
 
 		// resize the image and canvas to fix the period map with "cellSize" cells
@@ -2514,9 +2524,15 @@
 		// convert RGB array
 		for (x = 0; x < this.popSubPeriod.length; x += 1) {
 			pixCol = this.cellPeriodRGB[x];
-			red = pixCol & 255;
-			green = (pixCol >> 8) & 255;
-			blue = (pixCol >> 16) & 255;
+			if (this.littleEndian) {
+				red = pixCol & 255;
+				green = (pixCol >> 8) & 255;
+				blue = (pixCol >> 16) & 255;
+			} else {
+				red = pixCol >> 24;
+				green = (pixCol >> 16) & 255;
+				blue = (pixCol >> 8) & 255;
+			}
 			this.cellPeriodRGB[x] = (red << 16) | (green << 8) | blue;
 		}
 
@@ -2733,14 +2749,14 @@
 			/** @type {number} */ f = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ bit = 0,
-			/** @type {number} */ thisState = 0,
+			/** @type {number} */ bitRowInBytes = 0,
+			/** @type {number} */ bitFrameInBytes = 0,
 			/** @type {boolean} */ computeStrict = false,
-			/** @type {Array} */ frames = null,
-			/** @type {Uint8Array} */ occupiedFrame = null,
+			/** @type {Uint16Array} */ frames = null,
+			/** @type {Uint16Array} */ occupiedFrame = null,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
 			/** @type {Uint8Array} */ colourRow = null,
-			/** @type {Uint8Array} */ currentFrame = null,
 			/** @type {Uint8Array} */ popPhase = new Uint8Array(period),
 			/** @type {Uint32Array} */ popSubPeriod = new Uint32Array(period + 1),
 			/** @type {Uint16Array} */ cellPeriod = null,
@@ -2748,10 +2764,18 @@
 			/** @type {number} */ boxWidth = 0,
 			/** @type {number} */ boxHeight = 0,
 			/** @type {boolean} */ anyAlive = false,
-			/** @type {boolean} */ flag = false,
+			/** @type {number} */ target = 0,
 			/** @type {number} */ popTotal = 0,
 			/** @type {number} */ row = 0,
-			/** @type {BoundingBox} */ extent = null;
+			/** @type {number} */ off1 = 0,
+			/** @type {number} */ off2 = 0,
+			/** @type {number} */ bitcx = 0,
+			/** @type {number} */ rightcx = 0,
+			/** @type {BoundingBox} */ extent = null,
+			/** @type {number} */ frameTypeMSB = 0,
+			/** @type {number} */ bitStart = 0,
+			/** @type {number} */ v = 0,
+			/** @type {number} */ mult = 0;
 
 		// determine whether period is small enough to compute strict volatility (since it can take a lot of RAM)
 		if (period <= LifeConstants.maxStrictPeriod && this.multiNumStates <= 2 && !this.isRuleTree && !this.isMargolus) {
@@ -2759,11 +2783,19 @@
 			extent = this.getOscillatorBounds(period, i);
 			boxWidth = extent.rightX - extent.leftX + 1;
 			boxHeight = extent.topY - extent.bottomY + 1;
+			bitRowInBytes = ((boxWidth - 1) >> 4) + 1;
+			bitFrameInBytes = bitRowInBytes * boxHeight;
 
 			// allocate memory for each generation in the period (allocation is one bit per cell)
-			frames = Array.matrix(Type.Uint8, period, ((boxWidth * boxHeight) >> 3) + 1, 0, this.allocator, "Life.strictFrames");
+			frames = new Uint16Array(period * bitFrameInBytes);
 			cellPeriod = new Uint16Array(boxWidth * boxHeight);
-			occupiedFrame = new Uint8Array(((boxWidth * boxHeight) >> 3) + 1);
+			occupiedFrame = new Uint16Array(bitFrameInBytes);
+
+			// get the frame data width most significant bit number
+			frameTypeMSB = (frames.BYTES_PER_ELEMENT * 8) - 1;
+			bitStart = 1 << frameTypeMSB;
+
+			// mark computing strict volatility
 			computeStrict = true;
 		}
 
@@ -2783,21 +2815,32 @@
 			if (!(this.altSpecified && ((this.counter & 1) !== 0))) {
 				// add to the strict volatility frame if computing strict volatility
 				if (computeStrict && p < period) {
-					currentFrame = frames[p];
-					f = 0;
+					// process each row of the pattern extent
 					for (cy = extent.bottomY; cy <= extent.topY; cy += 1) {
+						// get the pattern row
 						colourRow = this.colourGrid[cy];
+
+						// find the start of the row
+						f = ((cy - extent.bottomY) * bitRowInBytes) + (p * bitFrameInBytes);
+						bit = bitStart;
+
+						// process the row
 						for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
 							if (colourRow[cx] >= aliveStart) {
-								currentFrame[f >> 3] |= (1 << (f & 7));
+								frames[f] |= bit;
 							}
-							f += 1;
+							bit >>= 1;
+							if (!bit) {
+								bit = bitStart;
+								f += 1;
+							}
 						}
 					}
 
 					// merge current frame with occupied frame
+					f = p * bitFrameInBytes;
 					for (cx = 0; cx < occupiedFrame.length; cx += 1) {
-						occupiedFrame[cx] |= currentFrame[cx];
+						occupiedFrame[cx] |= frames[cx + f];
 					}
 				}
 	
@@ -2812,49 +2855,81 @@
 		if (computeStrict) {
 			// calculate the period of each cell
 			for (cy = 0; cy < boxHeight; cy += 1) {
+				// get the next row offsets
 				row = cy * boxWidth;
+				f = cy * bitRowInBytes;
+				bit = bitStart;
 				for (cx = 0; cx < boxWidth; cx += 1) {
-					anyAlive = false;
-
-					// check if the cell was alive in any generation
-					j = row + cx;
-					bit = (1 << (j & 7));
-					if (occupiedFrame[j >> 3] & bit) {
-						// check the cell for every generation of the period at this location
-						for (p = 0; p < period; p += 1) {
-							thisState = frames[p][j >> 3] & bit;
-							if (thisState) {
-								popPhase[p] += 1;
-								anyAlive = true;
+					// skip empty blocks of cells
+					v = occupiedFrame[f];
+					if (v) {
+						// check if the cell was alive in any generation
+						if (v & bit) {
+							// check the cell for every generation of the period at this location
+							anyAlive = false;
+							j = 0;
+							for (p = 0; p < period; p += 1) {
+								if (frames[j + f] & bit) {
+									popPhase[p] += 1;
+									anyAlive = true;
+								}
+								j += bitFrameInBytes;
+							}
+	
+							if (anyAlive) {
+								cellPeriod[row + cx] = period;
+								popTotal += 1;
 							}
 						}
-					}
 
-					if (anyAlive) {
-						cellPeriod[j] = period;
-						popTotal += 1;
+						bit >>= 1;
+						if (!bit) {
+							bit = bitStart;
+							f += 1;
+						}
+					} else {
+						cx += frameTypeMSB;
+						f += 1;
 					}
 				}
 			}
 
 			// calculate the factors of the period
 			for (f = 1; f <= (period / 2); f += 1) {
-				if (period % f) continue;
-				for (cy = 0; cy < boxHeight; cy += 1) {
-					row = cy * boxWidth;
-					for (cx = 0; cx < boxWidth; cx += 1) {
-						j = row + cx;
-						if (cellPeriod[j] === period) {
-							flag = true;
-							bit = (1 << (j & 7));
-							for (p = 0; p <= (period - f - 1); p += 1) {
-								if ((frames[p][j >> 3] & bit) !== (frames[p + f][j >> 3] & bit)) {
-									flag = false;
-									break;
+				if (period % f === 0) {
+					// check each factor
+					target = period - f;
+					mult = f * bitFrameInBytes;
+
+					for (cy = 0; cy < boxHeight; cy += 1) {
+						row = cy * boxWidth;
+						j = cy * bitRowInBytes;
+						for (bitcx = 0; bitcx < bitRowInBytes; bitcx += 1) {
+							// use the occupancy map to skip blocks of cells that are unoccupied
+							if (occupiedFrame[j + bitcx]) {
+								rightcx = (bitcx + 1) << 4;
+								if (rightcx > boxWidth) {
+									rightcx = boxWidth;
 								}
-							}
-							if (flag) {
-								cellPeriod[j] = f;
+								bit = bitStart;
+								for (cx = bitcx << 4; cx < rightcx; cx += 1) {
+									if (cellPeriod[row + cx] === period) {
+										off1 = bitcx + j;
+										off2 = off1 + mult;
+
+										for (p = 0; p < target; p += 1) {
+											if ((frames[off1] & bit) !== (frames[off2] & bit)) {
+												break;
+											}
+											off1 += bitFrameInBytes;
+											off2 += bitFrameInBytes;
+										}
+										if (p === target) {
+											cellPeriod[row + cx] = f;
+										}
+									}
+									bit >>= 1;
+								}
 							}
 						}
 					}
@@ -2883,6 +2958,7 @@
 
 			// create the cell period map
 			this.createCellPeriodMap();
+
 		}
 	};
 
@@ -3386,7 +3462,16 @@
 									quit = true;
 
 									// create the results
+									this.identifyMessage = message;
+									this.identifyI = i;
+									this.identifyPeriod = period;
+									this.identifyDeltaX = deltaX;
+									this.identifyDeltaY = deltaY;
+									this.identifyBoxWidth = boxWidth;
+									this.identifyBoxHeight = boxHeight;
+									this.identifyFast = fast;
 									result = this.identifyResults(view, i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast);
+									//result = [message];
 								} else {
 									// false positive so try next
 									lastI = i;

@@ -977,6 +977,7 @@
 		y = this.renderHelpLine(view, "Shift Page Down", "scroll down one section", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Home", "go to first help page", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "End", "go to last help page", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Ins", "show help sections", ctx, x, y, height, helpLine);
 	};
 
 	// render scripts topic
@@ -1861,16 +1862,21 @@
 		view.tabs[3] = 330;
 
 		// colour theme information
-		view.helpSections[sectionNum] = [view.lineNo, "Theme"];
-		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Theme:", ctx, x, y, height, helpLine);
 		if (!(view.engine.isRuleTree || view.engine.isSuper || view.engine.isNone)) {
+			view.helpSections[sectionNum] = [view.lineNo, "Theme"];
+			sectionNum += 1;
+			y = this.renderHelpLine(view, "", "Theme:", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Name", view.engine.themes[view.engine.colourTheme].name, ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "History", view.historyStates, ctx, x, y, height, helpLine);
 			if (view.engine.multiNumStates <= 2) {
 				y = this.renderHelpLine(view, "Age", view.aliveStates, ctx, x, y, height, helpLine);
 			}
+			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		}
+
+		view.helpSections[sectionNum] = [view.lineNo, "Cells"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Cells:", ctx, x, y, height, helpLine);
 		this.renderColourBox(view, view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Background", this.rgbString(view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0]), ctx, x, y, height, helpLine);
 
@@ -2003,6 +2009,9 @@
 		this.renderColourBox(view, view.customBoundaryColour[0], view.customBoundaryColour[1], view.customBoundaryColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Boundary", this.rgbString(view.customBoundaryColour[0], view.customBoundaryColour[1], view.customBoundaryColour[2]), ctx, x, y, height, helpLine);
 
+		// display whether cell borders are drawn
+		y = this.renderHelpLine(view, "Borders", view.engine.cellBorders ? "Yes" :  "No", ctx, x, y, height, helpLine);
+
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// grid line information
@@ -2129,6 +2138,32 @@
 		y = this.renderHelpLine(view, "Enabled", view.popGraph ? "On" : "Off", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Disabled", view.graphDisabled ? "On" : "Off", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Mode", view.popGraphLines ? "Lines" : "Points", ctx, x, y, height, helpLine);
+		if (view.engine.boundedGridType === -1) {
+			itemDetails = "";
+			if (view.graphShowPopulation) {
+				itemDetails = "Population";
+			}
+			if (view.graphShowBirths) {
+				if (itemDetails === "") {
+					itemDetails = "Births";
+				} else {
+					itemDetails += ", Births";
+				}
+			}
+			if (view.graphShowDeaths) {
+				if (itemDetails === "") {
+					itemDetails = "Deaths";
+				} else {
+					itemDetails += ", Deaths";
+				}
+			}
+			if (itemDetails === "") {
+				itemDetails = "<none>";
+			}
+		} else {
+			itemDetails = "Population";
+		}
+		y = this.renderHelpLine(view, "Data", itemDetails, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Opacity", view.popGraphOpacity.toFixed(2), ctx, x, y, height, helpLine);
 		this.renderColourBox(view, view.engine.graphBgColor[0], view.engine.graphBgColor[1], view.engine.graphBgColor[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Bg Color", this.rgbString(view.engine.graphBgColor[0], view.engine.graphBgColor[1], view.engine.graphBgColor[2]), ctx, x, y, height, helpLine);

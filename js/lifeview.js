@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 829,
+		/** @const {number} */ versionBuild : 830,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -467,7 +467,15 @@
 		/** @const {number} */ coloursTopic : 5,
 		/** @const {number} */ aliasesTopic : 6,
 		/** @const {number} */ memoryTopic : 7,
-		/** @const {number} */ annotationsTopic : 8
+		/** @const {number} */ annotationsTopic : 8,
+
+		// Identify results phases
+		/** @const {number} */ identResultsNone : 0,
+		/** @const {number} */ identResultsInit : 1,
+		/** @const {number} */ identResultsPhase1 : 2,
+		/** @const {number} */ identResultsPhase2 : 3,
+		/** @const {number} */ identResultsPhase3 : 4
+
 	},
 
 	// Controller singleton
@@ -764,6 +772,9 @@
 
 		// whether computing oscillators
 		/** @type {boolean} */ this.identify = false;
+
+		// whether computing identify results
+		/** @type {number} */ this.identifyResults = ViewConstants.identResultsNone;
 
 		// labels for identify results
 		/** @type {MenuItem} */ this.identifyBannerLabel = null;
@@ -7223,6 +7234,30 @@
 		}
 	};
 
+	// view update for identify results
+	View.prototype.viewAnimateIdentifyResults = function(/** @type {View} */ me) {
+		// start time of updates
+		var	/** @type {number} */ startTime = performance.now(),
+
+			// time budget in ms for this frame
+			/** @type {number} */ timeLimit = 13,
+
+			// identify result
+			/** @type {Array<string>} */ identifyResult = [];
+
+		// lock the menu
+		me.viewMenu.locked = true;
+
+		// render world
+		me.renderWorld(me, false, 0, false);
+
+		// set counters to the current generation
+		me.fixedPointCounter = me.engine.counter * me.refreshRate;
+
+		// set the auto update mode
+		me.menuManager.setAutoUpdate(true);
+	};
+
 	// view update for identify
 	View.prototype.viewAnimateIdentify = function(/** @type {View} */ me) {
 		// start time of updates
@@ -7290,6 +7325,9 @@
 						me.lastIdentifyActive = "";
 						me.lastIdentifyTemperature = "";
 					} else {
+						// switch to results mode
+						//me.identifyResults = ViewConstants.identResultsInit;
+
 						me.lastOscillator = identifyResult[0];
 						me.lastIdentifyType = identifyResult[1];
 						if (me.lastIdentifyType !== "Empty") {
@@ -7597,19 +7635,23 @@
 		if (me.computeHistory) {
 			me.viewAnimateHistory(me);
 		} else {
-			if (me.identify) {
-				me.viewAnimateIdentify(me);
+			if (me.identifyResults !== ViewConstants.identResultsNone) {
+				me.viewAnimateIdentifyResults(me);
 			} else {
-				if (me.clipboardCopy) {
-					me.viewAnimateClipboard(me);
+				if (me.identify) {
+					me.viewAnimateIdentify(me);
 				} else {
-					if (me.startFrom !== -1) {
-						me.viewAnimateStartFrom(me);
+					if (me.clipboardCopy) {
+						me.viewAnimateClipboard(me);
 					} else {
-						if (me.measureFrameRate > 0) {
-							me.viewAnimateMeasure(timeSinceLastUpdate, me);
+						if (me.startFrom !== -1) {
+							me.viewAnimateStartFrom(me);
 						} else {
-							me.viewAnimateNormal(timeSinceLastUpdate, me);
+							if (me.measureFrameRate > 0) {
+								me.viewAnimateMeasure(timeSinceLastUpdate, me);
+							} else {
+								me.viewAnimateNormal(timeSinceLastUpdate, me);
+							}
 						}
 					}
 				}
@@ -15686,7 +15728,7 @@
 
 		// help sections button
 		this.sectionsButton = this.viewMenu.addButtonItem(this.sectionsPressed, Menu.northEast, -40, 100, 40, 40, "<");
-		this.sectionsButton.toolTip = "show help sections";
+		this.sectionsButton.toolTip = "show help sections [Ins]";
 
 		// help individual topic buttons
 		this.helpKeysButton = this.viewMenu.addButtonItem(this.keysTopicPressed, Menu.north, 0, 50, 150, 40, "Keys");
@@ -18742,8 +18784,8 @@
 				// label reason is VIEWONLY
 				me.reasonLabel.preText = " " + Keywords.viewOnlyWord;
 				me.reasonLabel.fgCol = me.menuManager.fgCol;
-				me.reasonLabel.setPosition(Menu.southWest, me.genToggle.width, -40);
-				me.reasonLabel.setWidth(me.displayWidth - (40 + me.genToggle.width));
+				me.reasonLabel.setPosition(Menu.southWest, me.genToggle.relWidth, -40);
+				me.reasonLabel.setWidth(me.displayWidth - (40 + me.genToggle.relWidth));
 				me.genToggle.deleted = false;
 			} else {
 				me.reasonLabel.preText = me.failureReason;

@@ -1,3 +1,10 @@
+Build 830
+- added Population Graph data selection to Help->Info->Graph
+- fixed issue with VIEWONLY label appearing in the wrong place
+- add hotkey Ins to show Help sections within a topic
+- further performance improvement for Identify with 2-state patterns
+- fixed newlines not being converted in waypoint labels
+
 Build 829
 - further improved categorisation of some Help->Info items
 

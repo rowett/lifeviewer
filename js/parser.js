@@ -360,9 +360,9 @@
 
 			case ViewConstants.customThemeStars:
 				// copy to stars colour
-				view.starField.red = redValue;
-				view.starField.green = greenValue;
-				view.starField.blue = blueValue;
+				view.starField.starColour.red = redValue;
+				view.starField.starColour.green = greenValue;
+				view.starField.starColour.blue = blueValue;
 				break;
 
 			case ViewConstants.customThemeText:
