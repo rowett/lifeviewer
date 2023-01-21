@@ -1649,10 +1649,10 @@
 							}
 						}
 					}
-					this.renderColourBox(view, 0x50, 0x50, 0x50, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-					y = this.renderHelpLine(view, "  Grid", "\t\t\t" + this.rgbString(0x50, 0x50, 0x50).trim(), ctx, x, y, height, helpLine);
 					this.renderColourBox(view, 0, 0, 0, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 					y = this.renderHelpLine(view, "  Back", "\t\t\t" + this.rgbString(0, 0, 0).trim(), ctx, x, y, height, helpLine);
+					this.renderColourBox(view, 0x50, 0x50, 0x50, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "  Grid", "\t\t\t" + this.rgbString(0x50, 0x50, 0x50).trim(), ctx, x, y, height, helpLine);
 				}
 			}
 			y = this.renderHelpLine(view, "Generation", view.lastIdentifyGen, ctx, x, y, height, helpLine);
@@ -2101,7 +2101,7 @@
 			this.renderColourBox(view, view.customErrorColour[0], view.customErrorColour[1], view.customErrorColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 			y = this.renderHelpLine(view, "Error*", this.rgbString(view.customErrorColour[0], view.customErrorColour[1], view.customErrorColour[2]), ctx, x, y, height, helpLine);
 		} else {
-			this.renderColourBox(view, 255, 96, 96, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			this.renderColourBox(view, 255, 48, 48, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 			y = this.renderHelpLine(view, "Error", this.rgbString(255, 96, 96), ctx, x, y, height, helpLine);
 		}
 
@@ -2640,8 +2640,8 @@
 		view.numHelpPerPage = ((view.displayHeight / lineHeight) | 0) - 6;
 
 		// dim background
-		ctx.fillStyle = "black";
-		ctx.globalAlpha = 0.5;
+		ctx.fillStyle = view.menuManager.bgCol;
+		ctx.globalAlpha = 0.7;
 		ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 		ctx.globalAlpha = 1;
 
@@ -2834,8 +2834,8 @@
 		view.numHelpPerPage = ((view.displayHeight / lineHeight) | 0) - footerLines;
 
 		// dim background
-		ctx.fillStyle = "black";
-		ctx.globalAlpha = 0.5;
+		ctx.fillStyle = view.menuManager.bgCol;
+		ctx.globalAlpha = 0.7;
 		ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 		ctx.globalAlpha = 1;
 

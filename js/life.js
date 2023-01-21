@@ -1276,56 +1276,58 @@
 		iconData = icons[0].iconData;
 		iconColours = icons[0].colours;
 
-		// create the cell icon canvas if it doesn't exist
-		if (this.cellIconCanvas === null) {
-			this.cellIconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
-			this.cellIconCanvas.width = 32;
-			this.cellIconCanvas.height = 32 * numIcons;
-		}
-
-		// get the context
-		ctx = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas.getContext("2d"));
-		data = ctx.getImageData(0, 0, this.cellIconCanvas.width, this.cellIconCanvas.height);
-		data32 = new Uint32Array(data.data.buffer);
-		
-		// write them to the canvas
-		src = 0;
-		dst = 0;
-		for (i = 0; i < numIcons; i += 1) {
-			for (y = 0; y < iconSize; y += 1) {
-				for (x = 0; x < iconSize; x += 1) {
-					// get the next source pixel colour number
-					col = iconData[src];
-					src += 1;
-
-					// lookup the rgb for this colour
-					rgb = iconColours[col];
-
-					// write the rgb to the canvas
-					data32[dst] = (255 << 24) | ((rgb & 255) << 16) | (rgb & 0xff00) | (rgb >> 16);
+		if (numIcons > 0) {
+			// create the cell icon canvas if it doesn't exist
+			if (this.cellIconCanvas === null) {
+				this.cellIconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+				this.cellIconCanvas.width = 32;
+				this.cellIconCanvas.height = 32 * numIcons;
+			}
+	
+			// get the context
+			ctx = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas.getContext("2d"));
+			data = ctx.getImageData(0, 0, this.cellIconCanvas.width, this.cellIconCanvas.height);
+			data32 = new Uint32Array(data.data.buffer);
+			
+			// write them to the canvas
+			src = 0;
+			dst = 0;
+			for (i = 0; i < numIcons; i += 1) {
+				for (y = 0; y < iconSize; y += 1) {
+					for (x = 0; x < iconSize; x += 1) {
+						// get the next source pixel colour number
+						col = iconData[src];
+						src += 1;
+	
+						// lookup the rgb for this colour
+						rgb = iconColours[col];
+	
+						// write the rgb to the canvas
+						data32[dst] = (255 << 24) | ((rgb & 255) << 16) | (rgb & 0xff00) | (rgb >> 16);
+						dst += 1;
+					}
+	
+					// skip right hand column in destination
+					data32[dst] = 0;
 					dst += 1;
 				}
-
-				// skip right hand column in destination
-				data32[dst] = 0;
-				dst += 1;
+	
+				// skip bottom row in destination
+				for (x = 0; x < iconSize + 1; x += 1) {
+					data32[dst] = 0;
+					dst += 1;
+				}
 			}
-
-			// skip bottom row in destination
-			for (x = 0; x < iconSize + 1; x += 1) {
-				data32[dst] = 0;
-				dst += 1;
+	
+			// write the image data back to the canvas
+			ctx.putImageData(data, 0, 0);
+	
+			// create the image from the canvas
+			if (this.cellIconImage === null) {
+				this.cellIconImage = new Image();
 			}
+			this.cellIconImage.src = this.cellIconCanvas.toDataURL("image/png");
 		}
-
-		// write the image data back to the canvas
-		ctx.putImageData(data, 0, 0);
-
-		// create the image from the canvas
-		if (this.cellIconImage === null) {
-			this.cellIconImage = new Image();
-		}
-		this.cellIconImage.src = this.cellIconCanvas.toDataURL("image/png");
 	};
 
 	// initialize oscillator search

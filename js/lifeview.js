@@ -278,11 +278,8 @@
 		/** @const {Array<string>} */ stateDisplayNames : ["OFF", "ON", "HISTORY", "MARK1", "MARKOFF", "MARK2", "KILL"],
 
 		// min and max red shading for performance display
-		/** @const {number} */ perfMinRed : 0,
-		/** @const {number} */ perfMaxRed : 160,
-
-		// step for red shading
-		/** @const {number} */ perfRedStep : 10,
+		/** @const {number} */ perfMin : 0,
+		/** @const {number} */ perfMax : 16,
 
 		// whether colour theme has colour history
 		/** @const {boolean} */ colourHistory : false,
@@ -294,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 830,
+		/** @const {number} */ versionBuild : 832,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -423,7 +420,7 @@
 		/** @const {string} */ helpShadowColour : "#000000",
 
 		// error list font colour
-		/** @const {string} */ errorsFontColour : "rgb(255,96,96)",
+		/** @const {string} */ errorsFontColour : "rgb(255,48,48)",
 
 		// minimum and maximum width of the Viewer
 		/** @const {number} */ minNoGUIWidth: 64,
@@ -1351,8 +1348,8 @@
 		// line number for error and script drawing
 		/** @type {number} */ this.lineNo = 1;
 
-		// performance colour red component
-		/** @type {number} */ this.perfColRed = 0;
+		// performance colour step
+		/** @type {number} */ this.perfStep = 0;
 
 		// whether just started
 		/** @type {boolean} */ this.justStarted = false;
@@ -6341,8 +6338,8 @@
 
 		// dim display if settings displayed
 		if (me.navToggle.current[0] && !(me.hideGUI && me.generationOn)) {
-			me.mainContext.globalAlpha = 0.5;
-			me.mainContext.fillStyle = "black";
+			me.mainContext.globalAlpha = 0.7;
+			me.mainContext.fillStyle = me.menuManager.bgCol;
 			me.mainContext.fillRect(0, 0, me.mainCanvas.width, me.mainCanvas.height);
 			me.mainContext.globalAlpha = 1;
 		}
@@ -6353,47 +6350,44 @@
 		var	/** @type {number} */ red = 0,
 			/** @type {number} */ green = 0,
 			/** @type {number} */ blue = 0,
+			/** @type {number} */ errorRed = 255,
+			/** @type {number} */ errorGreen = 48,
+			/** @type {number} */ errorBlue = 48,
+			/** @type {number} */ mixWeight = 0,
 			/** @type {string} */ controlColour;
 
 		// check for frame skip or STEP skip
 		if ((tooSlow || deltaTime > ViewConstants.updateThreshold) && !manualStepping) {
 			// ramp the red colour up
-			if (me.perfColRed < ViewConstants.perfMaxRed) {
-				me.perfColRed += ViewConstants.perfRedStep;
+			if (me.perfStep < ViewConstants.perfMax) {
+				me.perfStep += 1;
 			}
 		} else {
 			// ramp the red colour down
-			if (me.perfColRed > ViewConstants.perfMinRed) {
-				me.perfColRed -= ViewConstants.perfRedStep;
+			if (me.perfStep > ViewConstants.perfMin) {
+				me.perfStep -= 1;
 			}
 		}
 
-		// blend the red
+		// get the blend amount
+		mixWeight = me.perfStep / (ViewConstants.perfMax - ViewConstants.perfMin);
+
+		// get the UI background colour
 		red = me.uiBackgroundRGB >> 16;
 		green = (me.uiBackgroundRGB >> 8) & 255;
 		blue = me.uiBackgroundRGB & 255;
-		if (red >= 128) {
-			if (green >= 64 || blue >= 64) {
-				green -= me.perfColRed;
-				blue -= me.perfColRed;
-				if (green < 0) {
-					green = 0;
-				}
-				if (blue < 0) {
-					blue = 0;
-				}
-			} else {
-				green += me.perfColRed;
-				if (green > 255) {
-					green = 255;
-				}
-			}
-		} else {
-			red += me.perfColRed;
-			if (red > 255) {
-				red = 255;
-			}
+
+		// get the error colour
+		if (me.customErrorColour) {
+			errorRed = me.customErrorColour[0];
+			errorGreen = me.customErrorColour[1];
+			errorBlue = me.customErrorColour[2];
 		}
+
+		// blend the colours
+		red = (errorRed * mixWeight + red * (1 - mixWeight)) | 0;
+		green = (errorGreen * mixWeight + green * (1 - mixWeight)) | 0;
+		blue = (errorBlue * mixWeight + blue * (1 - mixWeight)) | 0;
 
 		// set the background on the generation and step UI controls
 		controlColour = "rgb(" + red + "," + green + "," + blue + ")";

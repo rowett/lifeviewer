@@ -1472,6 +1472,11 @@
 						case Keywords.titleWord:
 							// flag reading title
 							readingTitle = true;
+							peekToken = scriptReader.peekAtNextToken();
+							if (peekToken[0] !== Keywords.stringDelimiter) {
+								scriptErrors[scriptErrors.length] = [nextToken, "argument must be a quoted string"];
+								readingTitle = false;
+							}
 
 							itemValid = true;
 							break;
