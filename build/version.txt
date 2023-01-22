@@ -1,3 +1,13 @@
+Build 835
+- made remaining shadow colours use the UI background colour
+- fixed the T button looking selected during pattern load
+
+Build 834
+- made more shadow colours use the UI background colour
+
+Build 833
+- fixed an issue with Icon shadow colour when UI background colour is white
+
 Build 832
 - frame rate warning now uses the Error colour
 - re-ordered some Help->Info->Identify entries

@@ -55,7 +55,7 @@
 		// only render if context exists
 		if (ctx) {
 			// check if drawing shadow
-			if (ctx.fillStyle === ViewConstants.helpShadowColour) {
+			if (ctx.fillStyle === view.menuManager.bgColHex) {
 				drawingShadow = true;
 			}
 
@@ -141,7 +141,7 @@
 				currentFill = /** @type {!string} */ (ctx.fillStyle);
 
 				// check if drawing shadow
-				if (currentFill !== ViewConstants.helpShadowColour) {
+				if (currentFill !== view.menuManager.bgColHex) {
 					// set the box colour
 					ctx.fillStyle = "rgb(" + red + "," + green + "," + blue + ")";
 				}
@@ -2646,7 +2646,7 @@
 		ctx.globalAlpha = 1;
 
 		// draw shadow
-		ctx.fillStyle = ViewConstants.helpShadowColour; 
+		ctx.fillStyle = view.menuManager.bgCol; 
 		this.shadowX = 2;
 		Help.renderHelpText(view, ctx, 6 * xScale, 14 * yScale, lineHeight, view.displayHelp | 0);
 
@@ -2679,7 +2679,7 @@
 			/** @type {number} */ lineNo = view.lineNo;
 
 		// check if drawing shadow
-		if (ctx.fillStyle === ViewConstants.helpShadowColour) {
+		if (ctx.fillStyle === view.menuManager.bgColHex) {
 			drawingShadow = true;
 		}
 
@@ -2840,7 +2840,7 @@
 		ctx.globalAlpha = 1;
 
 		// draw shadow
-		ctx.fillStyle = ViewConstants.helpShadowColour;
+		ctx.fillStyle = view.menuManager.bgCol;
 		this.renderErrors(view, ctx, 6 * xScale, 14 * yScale, lineHeight, view.displayErrors | 0);
 
 		// draw text

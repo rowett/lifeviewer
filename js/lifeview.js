@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 832,
+		/** @const {number} */ versionBuild : 835,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -415,9 +415,6 @@
 
 		// help font colour
 		/** @const {string} */ helpFontColour : "rgb(32,255,255)",
-
-		// help shadow colour (must be in #RRGGBB format)
-		/** @const {string} */ helpShadowColour : "#000000",
 
 		// error list font colour
 		/** @const {string} */ errorsFontColour : "rgb(255,48,48)",
@@ -7561,6 +7558,9 @@
 		} else {
 			pixelColour = 0x000000ff;
 		}
+
+		// hide the progress bar
+		this.progressBar.deleted = true;
 
 		// check if this is the first measurement frame
 		if (me.measureFrameRate === ViewConstants.measurementSteps) {

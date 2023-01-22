@@ -2638,7 +2638,7 @@
 				x = leftX;
 
 				// draw box
-				ctx.fillStyle = "black";
+				ctx.fillStyle = this.view.menuManager.bgCol;
 				ctx.fillRect(leftX + (boxSize >> 1) + 2, y + offset + 2, boxSize, boxSize);
 				ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[i].toString(16)).slice(-6);
 				ctx.fillRect(leftX + (boxSize >> 1), y + offset, boxSize, boxSize);
@@ -2729,7 +2729,7 @@
 			p = this.popSubPeriod[x];
 			if (p > 0) {
 				// draw colour
-				ctx.fillStyle = "black";
+				ctx.fillStyle = this.view.menuManager.bgCol;
 				ctx.fillRect(leftX - legendWidth + 2, bottomY + y * rowSize + 2, boxSize, boxSize);
 				ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[x].toString(16)).slice(-6);
 				ctx.fillRect(leftX - legendWidth, bottomY + y * rowSize, boxSize, boxSize);
@@ -13552,7 +13552,7 @@
 			if (!thumbnail) {
 				ctx.font = ((16 * xScale) | 0) + "px Arial";
 				ctx.textAlign = "center";
-				ctx.fillStyle = "black";
+				ctx.fillStyle = view.menuManager.bgCol;
 				for (i = 2; i >= 0; i -= 2) {
 					ctx.save();
 					ctx.translate(this.displayWidth / 2, graphHeight + borderAxis / 2 - ((6 * xScale) | 0));
@@ -13571,7 +13571,7 @@
 				}
 
 				// draw axes values
-				ctx.fillStyle = "black";
+				ctx.fillStyle = view.menuManager.bgCol;
 				for (i = 2; i >= 0; i -= 2) {
 					ctx.save();
 					ctx.translate(borderX + borderAxis - borderAxis / 2 + ((6 * xScale) | 0), borderY + borderAxis);

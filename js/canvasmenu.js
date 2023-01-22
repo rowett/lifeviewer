@@ -426,7 +426,10 @@
 			/** @type {number} */ iconWidth = 40,
 			/** @type {number} */ iconHeight = 40,
 			/** @type {number} */ ix = 0,
-			/** @type {number} */ iy = 0;
+			/** @type {number} */ iy = 0,
+			/** @type {number} */ shadowCol = this.shadowCol,
+			/** @type {number} */ iconFGHex = 0xffffffff,
+			/** @type {number} */ iconFG = 255 << 24 | 255 << 16 | 255 << 8 | 255;
 
 		// check if image load
 		if (this.iconsImage.width > 0) {
@@ -455,6 +458,11 @@
 				data = this.iconContext.getImageData(0, 0, this.iconCanvas.width, this.iconCanvas.height);
 				data32 = new Uint32Array(data.data.buffer);
 	
+				// ensure shadow colour is different than foreground colour
+				if (shadowCol === iconFG) {
+					shadowCol = 0xfffefeff;
+				}
+
 				// create the icon shadows
 				j = 0;
 				for (i = 0; i < numIcons; i += 1) {
@@ -463,8 +471,8 @@
 						sourceIndex = destIndex - 2 - this.width - this.width;
 						for (ix = iconWidth - 2; ix > 1; ix -= 1) {
 							if (data32[destIndex + ix] === 0) {
-								if (data32[sourceIndex + ix] === 0xffffffff) {
-									data32[destIndex + ix] = this.shadowCol;
+								if (data32[sourceIndex + ix] === iconFGHex) {
+									data32[destIndex + ix] = shadowCol;
 								}
 							}
 						}
@@ -474,7 +482,7 @@
 
 				// change target pixel to greyed out colour
 				for (i = 0; i < data32.length; i += 1) {
-					if (data32[i] === 0xffffffff) {
+					if (data32[i] === iconFGHex) {
 						data32[i] = this.greyedOutCol;
 					}
 				}
@@ -500,7 +508,7 @@
 						for (ix = iconWidth - 2; ix > 1; ix -= 1) {
 							if (data32[destIndex + ix] === 0) {
 								if (data32[sourceIndex + ix] === 0xffffffff) {
-									data32[destIndex + ix] = this.shadowCol;
+									data32[destIndex + ix] = shadowCol;
 								}
 							}
 						}
@@ -2406,6 +2414,9 @@
 		// default background colour
 		/** @type {string} */ this.bgCol = "black";
 		/** @type {number} */ this.bgAlpha = 0.7;
+		
+		// background colour as hex for comparison (this is format returned from ctx.fillStyle())
+		/** @type {string} */ this.bgColHex = "#000000";
 
 		// default foreground colour
 		/** @type {string} */ this.fgCol = "white";
@@ -2619,6 +2630,13 @@
 
 		// set RGB components
 		this.setRGBComponents();
+
+		// setup the text alert colours
+		this.notification.shadowColour = bg;
+
+		// convert the background colour to hex
+		this.mainContext.fillStyle = bg;
+		this.bgColHex = this.mainContext.fillStyle;
 	};
 
 	// create menu
@@ -3124,7 +3142,7 @@
 
 			// draw the shaded rectangle
 			oc.globalAlpha = 0.7;
-			oc.fillStyle = "black";
+			oc.fillStyle = me.bgCol;
 
 			// check for extended timing
 			if (me.showExtendedTiming) {
@@ -3160,7 +3178,7 @@
 
 			// draw the text shadows
 			oc.globalAlpha = 1;
-			oc.fillStyle = "black";
+			oc.fillStyle = me.bgCol;
 
 			// draw fps
 			message = totalStr + "fps";
@@ -3202,7 +3220,7 @@
 			}
 
 			// draw the text
-			oc.fillStyle = "white";
+			oc.fillStyle = me.fgCol;
 
 			// draw fps
 			message = totalStr + "fps";
