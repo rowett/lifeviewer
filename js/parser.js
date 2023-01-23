@@ -4600,11 +4600,7 @@
 						// show generation statistics
 						case Keywords.showGenStatsWord:
 							// show generation statistics
-							view.viewStats([true], true, view);
-							if (view.genToggle) {
-								view.genToggle.current = [view.statsOn];
-								view.menuManager.toggleRequired = true;
-							}
+							view.pendingStatsOn = true;
 
 							itemValid = true;
 							break;

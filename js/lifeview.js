@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 835,
+		/** @const {number} */ versionBuild : 836,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -646,6 +646,9 @@
 
 		// whether playback duration displayed
 		/** @type {boolean} */ this.showPlayDuration = false;
+
+		// whether stats are waiting to switch on (during pattern load after frame time measurement)
+		/** @type {boolean} */ this.pendingStatsOn = false;
 
 		// population graph elements to plot
 		/** @type {boolean} */ this.graphShowPopulation = true;
@@ -5683,6 +5686,13 @@
 			me.updateProgressBar(me);
 		}
 
+		// enable stats if pending
+		if (me.pendingStatsOn) {
+			me.genToggle.current = me.viewStats([true], true, me);
+			me.pendingStatsOn = false;
+			me.menuManager.toggleRequired = true;
+		}
+
 		// copy gens per step from control since it gets overwritten by waypoint playback
 		me.setPlaybackFromIndex(me.speedRange.current[0]);
 
@@ -7567,9 +7577,11 @@
 			// lock the menu
 			me.viewMenu.locked = true;
 
-			// set the auto update mode
+			// hide coordinate and selection size labels
 			me.xyLabel.enabled = false;
 			me.selSizeLabel.enabled = false;
+
+			// udpate menu manager
 			me.updateUIForHelp(false);
 			me.menuManager.setAutoUpdate(true);
 

@@ -1,3 +1,6 @@
+Build 836
+- hide statistics during pattern load
+
 Build 835
 - made remaining shadow colours use the UI background colour
 - fixed the T button looking selected during pattern load
