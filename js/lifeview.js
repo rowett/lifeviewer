@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 836,
+		/** @const {number} */ versionBuild : 838,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6082,10 +6082,31 @@
 					me.engine.counter = saveGeneration;
 				}
 
+				// check for change in playback direction
+				if (me.engine.isMargolus || me.engine.isPCA) {
+					if (me.engine.reversePending) {
+						me.engine.reverseMargolus = !me.engine.reverseMargolus;
+						me.engine.reversePending = false;
+					}
+				}
+
 				// increment generation
 				for (i = 0; i < me.gensPerStep; i += 1) {
 					me.engine.counter += 1;
 					me.saveElapsedTime(me.engine.counter, timeSinceLastUpdate, me.gensPerStep);
+
+					// adjust PCA/Margolus generation based on playback direction
+					if (me.engine.isMargolus || me.engine.isPCA) {
+						if (me.engine.reverseMargolus) {
+							me.engine.counterMargolus -= 1;
+						} else {
+							me.engine.counterMargolus += 1;
+						}
+						// update maximum Margolus generation reached (used for PASTE EVERY)
+						if (me.engine.counterMargolus > me.engine.maxMargolusGen) {
+							me.engine.maxMargolusGen = me.engine.counterMargolus;
+						}
+					}
 				}
 
 				// check for loop
@@ -7519,6 +7540,9 @@
 			if (me.computeHistoryClear) {
 				me.menuManager.notification.clear(true, false);
 			}
+
+			// set the fixed point counter
+			me.fixedPointCounter = me.engine.counter * me.refreshRate;
 
 			// unlock the menu
 			me.viewMenu.locked = false;

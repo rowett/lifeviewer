@@ -2021,10 +2021,16 @@
 							state = colourRow[cx];
 							if (state > this.historyStates) {
 								state -= this.historyStates;
-								state = this.multiNumStates - state;
-								hash = (hash * factor) ^ yshift;
-								hash = (hash * factor) ^ (cx - hashX);
-								hash = (hash * factor) ^ state;
+								if (this.isPCA) {
+									hash = (hash * factor) ^ yshift;
+									hash = (hash * factor) ^ (cx - hashX);
+									hash = (hash * factor) ^ state;
+								} else {
+									state = this.multiNumStates - state;
+									hash = (hash * factor) ^ yshift;
+									hash = (hash * factor) ^ (cx - hashX);
+									hash = (hash * factor) ^ state;
+								}
 							}
 						}
 					}
