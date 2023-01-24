@@ -1,0 +1,6 @@
+if (!window.LifeViewerLoaded) {
+	window.LifeViewerLoaded = true;
+
+(function() {
+	// use strict mode
+	"use strict";
