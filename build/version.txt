@@ -1,3 +1,8 @@
+Build 842
+- added PCA Themes
+- made Help->Themes specific to the rule
+- fixed small rounding issue when creating cell colours
+
 Build 841
 - re-enable Themes Help topic for Margolus rules
 

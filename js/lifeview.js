@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 841,
+		/** @const {number} */ versionBuild : 842,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6763,7 +6763,7 @@
 		this.helpKeysButton.deleted = showTopicButtons;
 		this.helpScriptsButton.deleted = showTopicButtons;
 		this.helpInfoButton.deleted = showTopicButtons;
-		this.helpThemesButton.deleted = showTopicButtons || (this.engine.isNone || this.engine.isSuper || this.engine.isPCA || this.engine.isRuleTree);
+		this.helpThemesButton.deleted = showTopicButtons || (this.engine.isNone || this.engine.isSuper || this.engine.isRuleTree);
 		this.helpColoursButton.deleted = showTopicButtons;
 		this.helpAliasesButton.deleted = showTopicButtons;
 		this.helpMemoryButton.deleted = showTopicButtons;
@@ -15470,7 +15470,7 @@
 	View.prototype.updateTopicButtonsPosition = function() {
 		var	/** @type {number} */ y = 0,
 			/** @type {number} */ inc = 50,
-			/** @type {boolean} */ showThemes = !(this.engine.isNone || this.engine.isPCA || this.engine.isSuper || this.engine.isRuleTree);
+			/** @type {boolean} */ showThemes = !(this.engine.isNone || this.engine.isSuper || this.engine.isRuleTree);
 
 		if (this.displayHeight < ViewConstants.minMenuHeight) {
 			y = 50;

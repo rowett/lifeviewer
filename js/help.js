@@ -1914,8 +1914,12 @@
 					y = this.renderHelpLine(view, "Dead", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
 					if (view.historyStates > 1) {
 						j = 1;
-						this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-						y = this.renderHelpLine(view, "DeadRamp", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+						if (theme.deadRange.startColour.red !== theme.deadRange.endColour.red || theme.deadRange.startColour.green !== theme.deadRange.endColour.green || theme.deadRange.startColour.blue !== theme.deadRange.endColour.blue) {
+							this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+							y = this.renderHelpLine(view, "DeadRamp", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+						} else {
+							y = this.renderHelpLine(view, "DeadRamp", "    (none)", ctx, x, y, height, helpLine);
+						}
 					}
 				}
 			} else {
@@ -1944,8 +1948,12 @@
 							y = this.renderHelpLine(view, "Dead", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
 							if (view.historyStates > 1) {
 								j = 1;
-								this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-								y = this.renderHelpLine(view, "DeadRamp", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+								if (theme.deadRange.startColour.red !== theme.deadRange.endColour.red || theme.deadRange.startColour.green !== theme.deadRange.endColour.green || theme.deadRange.startColour.blue !== theme.deadRange.endColour.blue) {
+									this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+									y = this.renderHelpLine(view, "DeadRamp", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
+								} else {
+									y = this.renderHelpLine(view, "DeadRamp", "    (none)", ctx, x, y, height, helpLine);
+								}
 							}
 						}
 					}
@@ -2011,7 +2019,7 @@
 		y = this.renderHelpLine(view, "Boundary", this.rgbString(view.customBoundaryColour[0], view.customBoundaryColour[1], view.customBoundaryColour[2]), ctx, x, y, height, helpLine);
 
 		// display whether cell borders are drawn
-		y = this.renderHelpLine(view, "Borders", view.engine.cellBorders ? "Yes" :  "No", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Borders", view.engine.cellBorders ? "On" :  "Off", ctx, x, y, height, helpLine);
 
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
@@ -2321,6 +2329,9 @@
 	// render themes topic
 	Help.renderThemesTopic = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
 		var	/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ k = 0,
+			/** @type {string} */ itemName = "", 
 
 			// get the current theme
 			/** @type {Theme} */ theme = view.engine.themes[view.engine.colourTheme],
@@ -2353,105 +2364,153 @@
 		y = this.renderHelpLine(view, "", "Themes are used to provide a visual representation of", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "cell history and longevity and also define grid colours", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = [view.lineNo, "Grid"];
-		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Grid:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "GRID", "grid line colour", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "GRIDMAJOR", "major grid line colour and interval", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = [view.lineNo, "2-State"];
-		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Two-state Themes:", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "BACKGROUND", "cell never occupied", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "ALIVE", "cell just born", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "ALIVERAMP", "cell alive for several generations", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "DEAD", "cell just died", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "DEADRAMP", "cell dead for several generations", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", view.aliveStates + " (" + Keywords.aliveStatesWord + ") states from ALIVE to ALIVERAMP", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", view.historyStates + " (" + Keywords.historyStatesWord + ") states from DEAD to DEADRAMP", ctx, x, y, height, helpLine);
 
-		// draw each 2-state theme except the custom theme
-		for (i = 0; i < view.engine.themes.length - 1; i += 1) {
+		if (view.engine.multiNumStates <= 2) {
+			y = this.renderHelpLine(view, "", "Two-state Themes:", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "BACKGROUND", "cell never occupied", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "ALIVE", "cell just born", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "ALIVERAMP", "cell alive for several generations", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "DEAD", "cell just died", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "DEADRAMP", "cell dead for several generations", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-			theme = view.engine.themes[i];
-			// draw theme name with a '*' if it is the current theme
-			y = this.renderHelpLine(view, "Name" + ((i === view.engine.colourTheme && view.engine.multiNumStates <= 2) ? "*" : ""), theme.name, ctx, x, y, height, helpLine);
-			// background colour
-			this.renderColourBox(view, theme.unoccupied.red, theme.unoccupied.green, theme.unoccupied.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "BACKGROUND", this.rgbObjectString(theme.unoccupied), ctx, x, y, height, helpLine);
-			// alive colour
-			this.renderColourBox(view, theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "ALIVE", this.rgbObjectString(theme.aliveRange.startColour), ctx, x, y, height, helpLine);
-			// alive ramp if different than alive
-			if (!(theme.aliveRange.startColour.red === theme.aliveRange.endColour.red && theme.aliveRange.startColour.green === theme.aliveRange.endColour.green && theme.aliveRange.startColour.blue === theme.aliveRange.endColour.blue)) {
-				this.renderColourBox(view, theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-				y = this.renderHelpLine(view, "ALIVERAMP", this.rgbObjectString(theme.aliveRange.endColour), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "", view.aliveStates + " (" + Keywords.aliveStatesWord + ") states from ALIVE to ALIVERAMP", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "", view.historyStates + " (" + Keywords.historyStatesWord + ") states from DEAD to DEADRAMP", ctx, x, y, height, helpLine);
+
+			// draw each 2-state theme except the custom theme
+			for (i = 0; i < view.engine.themes.length - 1; i += 1) {
+				y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+				theme = view.engine.themes[i];
+				view.helpSections[sectionNum] = [view.lineNo, theme.name];
+				sectionNum += 1;
+				// draw theme name with a '*' if it is the current theme
+				y = this.renderHelpLine(view, "Name" + ((i === view.engine.colourTheme && view.engine.multiNumStates <= 2) ? "*" : ""), theme.name, ctx, x, y, height, helpLine);
+				// background colour
+				this.renderColourBox(view, theme.unoccupied.red, theme.unoccupied.green, theme.unoccupied.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+				y = this.renderHelpLine(view, "BACKGROUND", this.rgbObjectString(theme.unoccupied), ctx, x, y, height, helpLine);
+				// alive colour
+				this.renderColourBox(view, theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+				y = this.renderHelpLine(view, "ALIVE", this.rgbObjectString(theme.aliveRange.startColour), ctx, x, y, height, helpLine);
+				// alive ramp if different than alive
+				if (!(theme.aliveRange.startColour.red === theme.aliveRange.endColour.red && theme.aliveRange.startColour.green === theme.aliveRange.endColour.green && theme.aliveRange.startColour.blue === theme.aliveRange.endColour.blue)) {
+					this.renderColourBox(view, theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "ALIVERAMP", this.rgbObjectString(theme.aliveRange.endColour), ctx, x, y, height, helpLine);
+				}
+				// dead colour
+				this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+				y = this.renderHelpLine(view, "DEAD", this.rgbObjectString(theme.deadRange.endColour), ctx, x, y, height, helpLine);
+				// dead ramp if different than dead
+				if (!(theme.deadRange.startColour.red === theme.deadRange.endColour.red && theme.deadRange.startColour.green === theme.deadRange.endColour.green && theme.deadRange.startColour.blue === theme.deadRange.endColour.blue)) {
+					this.renderColourBox(view, theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "DEADRAMP", this.rgbObjectString(theme.deadRange.startColour), ctx, x, y, height, helpLine);
+				}
+				// check if grid lines are customised
+				if (theme.gridDefined) {
+					// grid line colour
+					this.renderColourBox(view, theme.gridColour >> 16, (theme.gridColour >> 8) & 255, theme.gridColour & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "GRID", this.rgbString(theme.gridColour >> 16, (theme.gridColour >> 8) & 255, theme.gridColour & 255), ctx, x, y, height, helpLine);
+					// major grid line colour
+					this.renderColourBox(view, theme.gridMajorColour >> 16, (theme.gridMajorColour >> 8) & 255, theme.gridMajorColour & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "GRIDMAJOR", this.rgbString(theme.gridMajorColour >> 16, (theme.gridMajorColour >> 8) & 255, theme.gridMajorColour & 255), ctx, x, y, height, helpLine);
+					// major grid line interval
+					y = this.renderHelpLine(view, "GRIDMAJOR", theme.gridMajor, ctx, x, y, height, helpLine);
+				}
 			}
-			// dead colour
-			this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "DEAD", this.rgbObjectString(theme.deadRange.endColour), ctx, x, y, height, helpLine);
-			// dead ramp if different than dead
-			if (!(theme.deadRange.startColour.red === theme.deadRange.endColour.red && theme.deadRange.startColour.green === theme.deadRange.endColour.green && theme.deadRange.startColour.blue === theme.deadRange.endColour.blue)) {
-				this.renderColourBox(view, theme.deadRange.startColour.red, theme.deadRange.startColour.green, theme.deadRange.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-				y = this.renderHelpLine(view, "DEADRAMP", this.rgbObjectString(theme.deadRange.startColour), ctx, x, y, height, helpLine);
-			}
-			// check if grid lines are customised
-			if (theme.gridDefined) {
-				// grid line colour
-				this.renderColourBox(view, theme.gridColour >> 16, (theme.gridColour >> 8) & 255, theme.gridColour & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-				y = this.renderHelpLine(view, "GRID", this.rgbString(theme.gridColour >> 16, (theme.gridColour >> 8) & 255, theme.gridColour & 255), ctx, x, y, height, helpLine);
-				// major grid line colour
-				this.renderColourBox(view, theme.gridMajorColour >> 16, (theme.gridMajorColour >> 8) & 255, theme.gridMajorColour & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-				y = this.renderHelpLine(view, "GRIDMAJOR", this.rgbString(theme.gridMajorColour >> 16, (theme.gridMajorColour >> 8) & 255, theme.gridMajorColour & 255), ctx, x, y, height, helpLine);
-				// major grid line interval
-				y = this.renderHelpLine(view, "GRIDMAJOR", theme.gridMajor, ctx, x, y, height, helpLine);
+		} else {
+			if (view.engine.isPCA) {
+				y = this.renderHelpLine(view, "", "PCA Themes:", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "BACKGROUND", "cell never occupied", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "DEAD", "cell just died", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "DEADRAMP", "cell dead for several generations", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "", view.historyStates + " (" + Keywords.historyStatesWord + ") states from DEAD to DEADRAMP", ctx, x, y, height, helpLine);
+				for (i = 0; i < view.engine.themes.length - 1; i += 1) {
+					y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+					theme = view.engine.themes[i];
+					view.helpSections[sectionNum] = [view.lineNo, theme.name];
+					sectionNum += 1;
+					// draw theme name with a '*' if it is the current theme
+					y = this.renderHelpLine(view, "Name" + ((i === view.engine.colourTheme) ? "*" : ""), theme.name, ctx, x, y, height, helpLine);
+					// background colour
+					this.renderColourBox(view, theme.unoccupied.red, theme.unoccupied.green, theme.unoccupied.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "BACKGROUND", this.rgbObjectString(theme.unoccupied), ctx, x, y, height, helpLine);
+					for (k = 1; k < 16; k += 1) {
+						j = k + view.historyStates;
+						this.renderColourBox(view, theme.pcaCols[k - 1].red, theme.pcaCols[k - 1].green, theme.pcaCols[k - 1].blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+						itemName = "";
+						if (k & 1) {
+							itemName += "N";
+						}
+						if (k & 2) {
+							itemName += "E";
+						}
+						if (k & 4) {
+							itemName += "S";
+						}
+						if (k & 8) {
+							itemName += "W";
+						}
+						y = this.renderHelpLine(view, itemName, this.rgbString(theme.pcaCols[k - 1].red, theme.pcaCols[k - 1].green, theme.pcaCols[k - 1].blue), ctx, x, y, height, helpLine);
+					}
+					// dead colour
+					this.renderColourBox(view, theme.deadRangeGen.endColour.red, theme.deadRangeGen.endColour.green, theme.deadRangeGen.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "DEAD", this.rgbObjectString(theme.deadRangeGen.endColour), ctx, x, y, height, helpLine);
+					// dead ramp if different than dead
+					if (!(theme.deadRangeGen.startColour.red === theme.deadRangeGen.endColour.red && theme.deadRangeGen.startColour.green === theme.deadRangeGen.endColour.green && theme.deadRangeGen.startColour.blue === theme.deadRangeGen.endColour.blue)) {
+						this.renderColourBox(view, theme.deadRangeGen.startColour.red, theme.deadRangeGen.startColour.green, theme.deadRangeGen.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+						y = this.renderHelpLine(view, "DEADRAMP", this.rgbObjectString(theme.deadRangeGen.startColour), ctx, x, y, height, helpLine);
+					}
+				}
+			} else {
+				y = this.renderHelpLine(view, "", "Multi-state Themes:", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "BACKGROUND", "cell never occupied", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "ALIVE", "cell alive", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "DYING", "cell just starting dying", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "DYINGRAMP", "cell about to die", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "DEAD", "cell just died", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "DEADRAMP", "cell dead for several generations", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "", "Rule defines " + (view.engine.multiNumStates < 2 ? "" : String(view.engine.multiNumStates - 1) + " ") + "states from DYING to DYINGRAMP", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "", view.historyStates + " (HISTORYSTATES) states from DEAD to DEADRAMP", ctx, x, y, height, helpLine);
+
+				// draw each multi-state theme except the custom theme
+				for (i = 0; i < view.engine.themes.length - 1; i += 1) {
+					y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+					theme = view.engine.themes[i];
+					view.helpSections[sectionNum] = [view.lineNo, theme.name];
+					sectionNum += 1;
+					// draw theme name with a '*' if it is the current theme
+					y = this.renderHelpLine(view, "Name" + ((i === view.engine.colourTheme && view.engine.multiNumStates > 2) ? "*" : ""), theme.name, ctx, x, y, height, helpLine);
+					// background colour
+					this.renderColourBox(view, theme.unoccupiedGen.red, theme.unoccupiedGen.green, theme.unoccupiedGen.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "BACKGROUND", this.rgbObjectString(theme.unoccupiedGen), ctx, x, y, height, helpLine);
+					// alive colour
+					this.renderColourBox(view, theme.aliveGen.red, theme.aliveGen.green, theme.aliveGen.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "ALIVE", this.rgbObjectString(theme.aliveGen), ctx, x, y, height, helpLine);
+					// dying colour
+					this.renderColourBox(view, theme.dyingRangeGen.endColour.red, theme.dyingRangeGen.endColour.green, theme.dyingRangeGen.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "DYING", this.rgbObjectString(theme.dyingRangeGen.endColour), ctx, x, y, height, helpLine);
+					// dead ramp if different than dead
+					if (!(theme.dyingRangeGen.startColour.red === theme.dyingRangeGen.endColour.red && theme.dyingRangeGen.startColour.green === theme.dyingRangeGen.endColour.green && theme.dyingRangeGen.startColour.blue === theme.dyingRangeGen.endColour.blue)) {
+						this.renderColourBox(view, theme.dyingRangeGen.startColour.red, theme.dyingRangeGen.startColour.green, theme.dyingRangeGen.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+						y = this.renderHelpLine(view, "DYINGRAMP", this.rgbObjectString(theme.dyingRangeGen.startColour), ctx, x, y, height, helpLine);
+					}
+					// dead colour
+					this.renderColourBox(view, theme.deadRangeGen.endColour.red, theme.deadRangeGen.endColour.green, theme.deadRangeGen.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "DEAD", this.rgbObjectString(theme.deadRangeGen.endColour), ctx, x, y, height, helpLine);
+					// dead ramp if different than dead
+					if (!(theme.deadRangeGen.startColour.red === theme.deadRangeGen.endColour.red && theme.deadRangeGen.startColour.green === theme.deadRangeGen.endColour.green && theme.deadRangeGen.startColour.blue === theme.deadRangeGen.endColour.blue)) {
+						this.renderColourBox(view, theme.deadRangeGen.startColour.red, theme.deadRangeGen.startColour.green, theme.deadRangeGen.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+						y = this.renderHelpLine(view, "DEADRAMP", this.rgbObjectString(theme.deadRangeGen.startColour), ctx, x, y, height, helpLine);
+					}
+				}
 			}
 		}
 
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		view.helpSections[sectionNum] = [view.lineNo, "Multi"];
-		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Multi-state Themes:", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "BACKGROUND", "cell never occupied", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "ALIVE", "cell alive", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "DYING", "cell just starting dying", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "DYINGRAMP", "cell about to die", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "DEAD", "cell just died", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "DEADRAMP", "cell dead for several generations", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "Rule defines " + (view.engine.multiNumStates < 2 ? "" : String(view.engine.multiNumStates - 1) + " ") + "states from DYING to DYINGRAMP", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", view.historyStates + " (HISTORYSTATES) states from DEAD to DEADRAMP", ctx, x, y, height, helpLine);
-
-		// draw each multi-state theme except the custom theme
-		for (i = 0; i < view.engine.themes.length - 1; i += 1) {
-			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-			theme = view.engine.themes[i];
-			// draw theme name with a '*' if it is the current theme
-			y = this.renderHelpLine(view, "Name" + ((i === view.engine.colourTheme && view.engine.multiNumStates > 2) ? "*" : ""), theme.name, ctx, x, y, height, helpLine);
-			// background colour
-			this.renderColourBox(view, theme.unoccupiedGen.red, theme.unoccupiedGen.green, theme.unoccupiedGen.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "BACKGROUND", this.rgbObjectString(theme.unoccupiedGen), ctx, x, y, height, helpLine);
-			// alive colour
-			this.renderColourBox(view, theme.aliveGen.red, theme.aliveGen.green, theme.aliveGen.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "ALIVE", this.rgbObjectString(theme.aliveGen), ctx, x, y, height, helpLine);
-			// dying colour
-			this.renderColourBox(view, theme.dyingRangeGen.endColour.red, theme.dyingRangeGen.endColour.green, theme.dyingRangeGen.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "DYING", this.rgbObjectString(theme.dyingRangeGen.endColour), ctx, x, y, height, helpLine);
-			// dead ramp if different than dead
-			if (!(theme.dyingRangeGen.startColour.red === theme.dyingRangeGen.endColour.red && theme.dyingRangeGen.startColour.green === theme.dyingRangeGen.endColour.green && theme.dyingRangeGen.startColour.blue === theme.dyingRangeGen.endColour.blue)) {
-				this.renderColourBox(view, theme.dyingRangeGen.startColour.red, theme.dyingRangeGen.startColour.green, theme.dyingRangeGen.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-				y = this.renderHelpLine(view, "DYINGRAMP", this.rgbObjectString(theme.dyingRangeGen.startColour), ctx, x, y, height, helpLine);
-			}
-			// dead colour
-			this.renderColourBox(view, theme.deadRangeGen.endColour.red, theme.deadRangeGen.endColour.green, theme.deadRangeGen.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "DEAD", this.rgbObjectString(theme.deadRangeGen.endColour), ctx, x, y, height, helpLine);
-			// dead ramp if different than dead
-			if (!(theme.deadRangeGen.startColour.red === theme.deadRangeGen.endColour.red && theme.deadRangeGen.startColour.green === theme.deadRangeGen.endColour.green && theme.deadRangeGen.startColour.blue === theme.deadRangeGen.endColour.blue)) {
-				this.renderColourBox(view, theme.deadRangeGen.startColour.red, theme.deadRangeGen.startColour.green, theme.deadRangeGen.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-				y = this.renderHelpLine(view, "DEADRAMP", this.rgbObjectString(theme.deadRangeGen.startColour), ctx, x, y, height, helpLine);
-			}
-		}
 	};
 
 	// render colours topic

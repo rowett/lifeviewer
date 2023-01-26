@@ -59,13 +59,6 @@
 													"on no-trail 1", "off disappearing", "on no-trail 2", "off vanishing", "on no-trail 3", "off cycling 1",
 													"on no-trail 4", "off cycling 2", "on no-trail 5", "off cycling 3", "on no-trail 6", "hidden", "on no-trail 7"],
 
-		// PCA palette
-		/** @const {Array<Array<number>>} */ coloursPCA : [[0, 0, 0], [255, 0, 0], [0, 255, 0], [128, 128, 0],
-														   [16, 16, 255], [128, 0, 128], [0, 128, 128], [96, 96, 96],
-														   [255, 255, 0], [255, 128, 0], [128, 255, 0], [170, 170, 0],
-														   [144, 144, 144], [170, 85, 85], [85, 128, 43], [128, 128, 64],
-														   [0, 0, 0], [255, 0, 0], [0, 255, 0], [128, 128, 0]],
-
 		// NW glider
 		/** @const {Array<Array<number>>} */ gliderNW0 : [[1, 1, 1],
 														  [1, 0, 0],
@@ -197,7 +190,7 @@
 	/**
 	 * @constructor
 	 */
-	function Theme(/** @type {string} */ name, /** @type {ColourRange} */ deadRange, /** @type {ColourRange} */ aliveRange, /** @type {Colour} */ unoccupied, aliveGen, /** @type {ColourRange} */ dyingRangeGen, /** @type {ColourRange} */ deadRangeGen, /** @type {Colour} */ unoccupiedGen) {
+	function Theme(/** @type {string} */ name, /** @type {ColourRange} */ deadRange, /** @type {ColourRange} */ aliveRange, /** @type {Colour} */ unoccupied, /** @type {Colour} */ aliveGen, /** @type {ColourRange} */ dyingRangeGen, /** @type {ColourRange} */ deadRangeGen, /** @type {Colour} */ unoccupiedGen, /** @type {Array<Colour>} */ pcaCols) {
 		/** @type {string} */ this.name = name;
 		/** @type {boolean} */ this.gridDefined = false;
 		/** @type {number} */ this.gridMajor = 10;
@@ -216,6 +209,9 @@
 		/** @type {Colour} */ this.unoccupiedGen = unoccupiedGen;
 		/** @type {boolean} */ this.dyingRangeDynamic = false;
 
+		// PCA theme
+		/** @type {Array<Colour>} */ this.pcaCols = pcaCols;
+
 		// check for dynamic dying range
 		if (this.dyingRangeGen.endColour.red === -1) {
 			this.dyingRangeDynamic = true;
@@ -229,10 +225,13 @@
 			this.gridColour = ViewConstants.gridLineRawDefault;
 			this.gridMajorColour = ViewConstants.gridLineBoldRawDefault;
 		}
+
 	}
 
 	// copy theme
 	Theme.prototype.set = function(/** @type {Theme} */ source) {
+		var	/** @type {number} */ i = 0;
+
 		this.gridDefined = source.gridDefined;
 		this.gridMajor = source.gridMajor;
 		this.gridColour = source.gridColour;
@@ -249,6 +248,10 @@
 		this.dyingRangeGen.set(source.dyingRangeGen);
 
 		this.dyingRangeDynamic = source.dyingRangeDynamic;
+
+		for (i = 0; i < source.pcaCols.length; i += 1) {
+			this.pcaCols[i] = source.pcaCols[i];
+		}
 	};
 
 	// add grid line settings to the theme
@@ -826,6 +829,9 @@
 		/** @type {ColourRange} */ this.deadGenColCurrent = null;
 		/** @type {Colour} */ this.unoccupiedGenCurrent = null;
 
+		// current PCA theme
+		/** @type {Array<Colour>} */ this.pcaColsCurrent = null;
+
 		// target colour range
 		/** @type {ColourRange} */ this.deadColTarget = null;
 		/** @type {ColourRange} */ this.aliveColTarget = null;
@@ -834,6 +840,9 @@
 		/** @type {ColourRange} */ this.dyingGenColTarget = null;
 		/** @type {ColourRange} */ this.deadGenColTarget = null;
 		/** @type {Colour} */ this.unoccupiedGenTarget = null;
+
+		// target PCA theme
+		/** @type {Array<Colour>} */ this.pcaColsTarget = null;
 
 		// number of colour themes (will be computed when themes are added)
 		/** @type {number} */ this.numThemes = -1;
@@ -7883,119 +7892,204 @@
 	Life.prototype.createColourThemes = function() {
 		var	/** @type {number} */ i = 0;
 
-		// parameter order is:  deadRamp, dead, alive, aliveRamp, unoccupied
-		//						alive, dyingRamp, dying, deadRamp, dead, unoccupied
+		// parameter order is:  (2-state)      deadRamp, dead, alive, aliveRamp, unoccupied
+		//				(generations)  alive, dyingRamp, dying, deadRamp, dead, unoccupied
+		//				(PCA)          pcaCols[N, E, NE, S, NS, ES, NES, W, NW, EW, NEW, SW, NSW, ESW, NESW]
 
 		// monochrome
 		this.themes[i] = new Theme("Mono", new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0),
-									new Colour(255, 255, 255), new ColourRange(new Colour(0, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
+							new Colour(255, 255, 255), new ColourRange(new Colour(0, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0),
+							[new Colour(64, 64, 64), new Colour(64, 64, 64), new Colour(128, 128, 128), new Colour(64, 64, 64),
+							 new Colour(128, 128, 128), new Colour(128, 128, 128), new Colour(192, 192, 192), new Colour(64, 64, 64),
+							 new Colour(128, 128, 128), new Colour(128, 128, 128), new Colour(192, 192, 192), new Colour(128, 128, 128),
+							 new Colour(192, 192, 192), new Colour(192, 192, 192), new Colour(255, 255, 255)]);
 		i += 1;
 
 		// black to dark blue, cyan to white
 		this.themes[i] = new Theme("Blues", new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 255)), new ColourRange(new Colour(0, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0),
-									new Colour(0, 255, 255), new ColourRange(new Colour(0, 0, 255), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 128)), new Colour(0, 0, 0));
+							new Colour(0, 255, 255), new ColourRange(new Colour(0, 0, 255), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 128)), new Colour(0, 0, 0),
+							[new Colour(0, 128, 255), new Colour(0, 255, 128), new Colour(0, 192, 192), new Colour(128, 0, 255),
+							 new Colour(0, 0, 255), new Colour(96, 128, 192), new Colour(128, 255, 224), new Colour(255, 0, 128),
+							 new Colour(96, 96, 192), new Colour(128, 128, 255), new Colour(128, 224, 255), new Colour(192, 0, 192),
+							 new Colour(255, 128, 224), new Colour(224, 128, 225), new Colour(224, 224, 255)]);
 		i += 1;
 
 		// black to red, orange to yellow
 		this.themes[i] = new Theme("Fire", new ColourRange(new Colour(32, 0, 0), new Colour(160, 0, 0)), new ColourRange(new Colour(255, 144, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0),
-									new Colour(255, 144, 0), new ColourRange(new Colour(240, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(32, 0, 0), new Colour(160, 0, 0)), new Colour(0, 0, 0));
+							new Colour(255, 144, 0), new ColourRange(new Colour(240, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(32, 0, 0), new Colour(160, 0, 0)), new Colour(0, 0, 0),
+							[new Colour(128, 0, 0), new Colour(128, 0, 48), new Colour(192, 0, 48), new Colour(128, 48, 48),
+							 new Colour(192, 64, 0), new Colour(192, 48, 64), new Colour(224, 48, 64), new Colour(128, 48, 0),
+							 new Colour(192, 48, 0), new Colour(192, 0, 64), new Colour(224, 48, 64), new Colour(192, 64, 48),
+							 new Colour(224, 64, 48), new Colour(224, 64, 64), new Colour(255, 192, 0)]);
 		i += 1;
 
 		// black to green, cyan to white
 		this.themes[i] = new Theme("Poison", new ColourRange(new Colour(0, 24, 0), new Colour(0, 128, 0)), new ColourRange(new Colour(0, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0),
-									new Colour(0, 255, 255), new ColourRange(new Colour(0, 192, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 24, 0), new Colour(0, 128, 0)), new Colour(0, 0, 0));
+							new Colour(0, 255, 255), new ColourRange(new Colour(0, 192, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 24, 0), new Colour(0, 128, 0)), new Colour(0, 0, 0),
+							[new Colour(0, 128, 255), new Colour(0, 255, 128), new Colour(0, 192, 192), new Colour(64, 0, 255),
+							 new Colour(0, 0, 255), new Colour(48, 128, 192), new Colour(64, 255, 224), new Colour(0, 128, 128),
+							 new Colour(48, 128, 192), new Colour(64, 128, 255), new Colour(64, 224, 255), new Colour(0, 96, 192),
+							 new Colour(64, 128, 224), new Colour(56, 128, 255), new Colour(224, 255, 224)]);
 		i += 1;
 
 		// black to purple, yellow to white
 		this.themes[i] = new Theme("Yellow", new ColourRange(new Colour(0, 47, 0), new Colour(128, 0, 128)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 255)), new Colour(0, 32, 128),
-									new Colour(255, 255, 0), new ColourRange(new Colour(192, 64, 64), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 47, 0), new Colour(128, 0, 128)), new Colour(0, 32, 128));
+							new Colour(255, 255, 0), new ColourRange(new Colour(192, 64, 64), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 47, 0), new Colour(128, 0, 128)), new Colour(0, 32, 128),
+							[new Colour(0, 150, 0), new Colour(50, 100, 0), new Colour(50, 200, 0), new Colour(150, 0, 0),
+							 new Colour(75, 25, 0), new Colour(200, 100, 0), new Colour(200, 225, 0), new Colour(100, 50, 0),
+							 new Colour(100, 200, 0), new Colour(25, 75, 0), new Colour(150, 255, 0), new Colour(200, 50, 0),
+							 new Colour(225, 200, 0), new Colour(255, 225, 0), new Colour(255, 255, 0)]);
 		i += 1;
 
 		// grey scale
 		this.themes[i] = new Theme("Gray", new ColourRange(new Colour(16, 16, 16), new Colour(104, 104, 104)), new ColourRange(new Colour(176, 176, 176), new Colour(240, 240, 240)), new Colour(0, 0, 0),
-									new Colour(240, 240, 240), new ColourRange(new Colour(160, 160, 160), new Colour(-1, -1, -1)), new ColourRange(new Colour(16, 16, 16), new Colour(104, 104, 104)), new Colour(0, 0, 0));
+							new Colour(240, 240, 240), new ColourRange(new Colour(160, 160, 160), new Colour(-1, -1, -1)), new ColourRange(new Colour(16, 16, 16), new Colour(104, 104, 104)), new Colour(0, 0, 0),
+							[new Colour(128, 128, 128), new Colour(128, 128, 128), new Colour(144, 144, 144), new Colour(128, 128, 128),
+							 new Colour(144, 144, 144), new Colour(144, 144, 144), new Colour(160, 160, 160), new Colour(128, 128, 128),
+							 new Colour(144, 144, 144), new Colour(144, 144, 144), new Colour(160, 160, 160), new Colour(144, 144, 144),
+							 new Colour(160, 160, 160), new Colour(160, 160, 160), new Colour(192, 192, 192)]);
 		i += 1;
 
 		// inverse monochrome
 		this.themes[i] = new Theme("Inverse", new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(255, 255, 255),
-									new Colour(0, 0, 0), new ColourRange(new Colour(255, 255, 255), new Colour(-1, -1, -1)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(255, 255, 255));
+							new Colour(0, 0, 0), new ColourRange(new Colour(255, 255, 255), new Colour(-1, -1, -1)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(255, 255, 255),
+							[new Colour(192, 192, 192), new Colour(192, 192, 192), new Colour(128, 128, 128), new Colour(192, 192, 192),
+							 new Colour(128, 128, 128), new Colour(128, 128, 128), new Colour(64, 64, 64), new Colour(192, 192, 192),
+							 new Colour(128, 128, 128), new Colour(128, 128, 128), new Colour(64, 64, 64), new Colour(128, 128, 128),
+							 new Colour(64, 64, 64), new Colour(64, 64, 64), new Colour(0, 0, 0)]);
 		i += 1;
 
 		// white to cyan, blue to black
 		this.themes[i] = new Theme("Day", new ColourRange(new Colour(240, 240, 240), new Colour(0, 255, 255)), new ColourRange(new Colour(0, 0, 255), new Colour(0, 0, 0)), new Colour(255, 255, 255),
-									new Colour(0, 0, 255), new ColourRange(new Colour(0, 255, 255), new Colour(-1, -1, -1)), new ColourRange(new Colour(240, 240, 240), new Colour(0, 192, 192)), new Colour(255, 255, 255));
+							new Colour(0, 0, 255), new ColourRange(new Colour(0, 255, 255), new Colour(-1, -1, -1)), new ColourRange(new Colour(240, 240, 240), new Colour(0, 192, 192)), new Colour(255, 255, 255),
+							[new Colour(192, 224, 255), new Colour(192, 255, 224), new Colour(192, 0, 192), new Colour(224, 192, 255),
+							 new Colour(128, 128, 255), new Colour(96, 96, 192), new Colour(0, 128, 32), new Colour(255, 192, 224),
+							 new Colour(96, 128, 192), new Colour(0, 0, 255), new Colour(0, 32, 128), new Colour(0, 192, 192),
+							 new Colour(128, 0, 32), new Colour(32, 0, 128), new Colour(0, 0, 32)]);
 		i += 1;
 
 		// occupied vs unoccupied
 		this.themes[i] = new Theme("Occupied", new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new Colour(0, 0, 0),
-									new Colour(240, 240, 240), new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new Colour(0, 0, 0));
+							new Colour(240, 240, 240), new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new Colour(0, 0, 0),
+							[new Colour(240, 240, 240), new Colour(240, 240, 240), new Colour(240, 240, 240), new Colour(240, 240, 240),
+							 new Colour(240, 240, 240), new Colour(240, 240, 240), new Colour(240, 240, 240), new Colour(240, 240, 240),
+							 new Colour(240, 240, 240), new Colour(240, 240, 240), new Colour(240, 240, 240), new Colour(240, 240, 240),
+							 new Colour(240, 240, 240), new Colour(240, 240, 240), new Colour(240, 240, 240)]);
 		i += 1;
 
 		// unoccupied, dead and alive only
 		this.themes[i] = new Theme("Red", new ColourRange(new Colour(160, 0, 0), new Colour(160, 0, 0)), new ColourRange(new Colour(240, 240, 240), new Colour(240, 240, 240)), new Colour(0, 0, 0),
-									new Colour(255, 255, 255), new ColourRange(new Colour(160, 160, 160), new Colour(160, 160, 160)), new ColourRange(new Colour(160, 0, 0), new Colour(160, 0, 0)), new Colour(0, 0, 0));
+							new Colour(255, 255, 255), new ColourRange(new Colour(160, 160, 160), new Colour(160, 160, 160)), new ColourRange(new Colour(160, 0, 0), new Colour(160, 0, 0)), new Colour(0, 0, 0),
+							[new Colour(255, 255, 255), new Colour(255, 255, 255), new Colour(255, 255, 255), new Colour(255, 255, 255),
+							 new Colour(255, 255, 255), new Colour(255, 255, 255), new Colour(255, 255, 255), new Colour(255, 255, 255),
+							 new Colour(255, 255, 255), new Colour(255, 255, 255), new Colour(255, 255, 255), new Colour(255, 255, 255),
+							 new Colour(255, 255, 255), new Colour(255, 255, 255), new Colour(255, 255, 255)]);
 		i += 1;
 
 		// LifeHistory
 		this.themes[i] = new Theme("LifeHistory", new ColourRange(new Colour(0, 0, 96), new Colour(0, 0, 160)), new ColourRange(new Colour(0, 240, 0), new Colour(16, 255, 16)), new Colour(0, 0, 0),
-									new Colour(16, 255, 16), new ColourRange(new Colour(0, 128, 160), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 96), new Colour(0, 0, 160)), new Colour(0, 0, 0));
+							new Colour(16, 255, 16), new ColourRange(new Colour(0, 128, 160), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 96), new Colour(0, 0, 160)), new Colour(0, 0, 0),
+							[new Colour(255, 0, 0), new Colour(192, 192, 0), new Colour(224, 144, 0), new Colour(0, 192, 192),
+							 new Colour(192, 144, 144), new Colour(144, 192, 144), new Colour(255, 224, 192), new Colour(0, 0, 255),
+							 new Colour(192, 0, 192), new Colour(144, 144, 192), new Colour(255, 192, 255), new Colour(0, 144, 224),
+							 new Colour(128, 96, 224), new Colour(144, 192, 224), new Colour(224, 224, 224)]);
 		i += 1;
 
 		// Multi-state (Generations and HROT) - yellow to red
 		this.themes[i] = new Theme("Generations", new ColourRange(new Colour(64, 0, 0), new Colour(255, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 255)), new Colour(0, 0, 0),
-									new Colour(255, 255, 0), new ColourRange(new Colour(255, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(64, 0, 0), new Colour(128, 0, 0)), new Colour(0, 0, 0));
+							new Colour(255, 255, 0), new ColourRange(new Colour(255, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(64, 0, 0), new Colour(128, 0, 0)), new Colour(0, 0, 0),
+							[new Colour(255, 128, 0), new Colour(224, 128, 64), new Colour(192, 192, 0), new Colour(255, 16, 32),
+							 new Colour(255, 0, 0), new Colour(192, 128, 48), new Colour(255, 224, 64), new Colour(128, 32, 64),
+							 new Colour(192, 96, 48), new Colour(255, 128, 64), new Colour(255, 224, 64), new Colour(192, 24, 48),
+							 new Colour(224, 128, 128), new Colour(255, 218, 112), new Colour(255, 255, 224)]);
 		i += 1;
 
 		// Golly theme
 		this.themes[i] = new Theme("Golly", new ColourRange(new Colour(48, 48, 48), new Colour(48, 48, 48)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(48, 48, 48),
-									new Colour(255, 255, 0), new ColourRange(new Colour(255, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(48, 48, 48), new Colour(48, 48, 48)), new Colour(48, 48, 48));
+							new Colour(255, 255, 0), new ColourRange(new Colour(255, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(48, 48, 48), new Colour(48, 48, 48)), new Colour(48, 48, 48),
+							[new Colour(0, 255, 127), new Colour(127, 0, 255), new Colour(148, 148, 148), new Colour(128, 255, 9),
+							 new Colour(255, 0, 128), new Colour(0, 128, 255), new Colour(1, 159, 0), new Colour(159, 0, 1),
+							 new Colour(255, 254, 96), new Colour(0, 1, 159), new Colour(96, 255, 254), new Colour(254, 96, 255),
+							 new Colour(126, 125, 21), new Colour(21, 126, 125), new Colour(125, 21, 126)]);
 		this.themes[i].setGridLines(10, new Colour(80, 80, 80), new Colour(112, 112, 112));
 		i += 1;
 
 		// MCell theme
 		this.themes[i] = new Theme("MCell", new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0),
-									new Colour(255, 255, 0), new ColourRange(new Colour(0, 255, 0), new Colour(255, 255, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
+							new Colour(255, 255, 0), new ColourRange(new Colour(0, 255, 0), new Colour(255, 255, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0),
+							[new Colour(255, 255, 0), new Colour(255, 219, 0), new Colour(255, 183, 0), new Colour(255, 147, 0),
+							 new Colour(255, 111, 0), new Colour(255, 75, 0), new Colour(255, 39, 0), new Colour(255, 0, 0),
+							 new Colour(240, 0, 0), new Colour(225, 0, 0), new Colour(210, 0, 0), new Colour(195, 0, 0),
+							 new Colour(180, 0, 0), new Colour(165, 0, 0), new Colour(150, 0, 0)]);
 		this.themes[i].setGridLines(5, new Colour(64, 0, 0), new Colour(99, 3, 1));
 		i += 1;
 
 		// Catagolue theme
 		this.themes[i] = new Theme("Catagolue", new ColourRange(new Colour(160, 221, 204), new Colour(160, 221, 204)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(192, 255, 238),
-									new Colour(0, 0, 0), new ColourRange(new Colour(96, 192, 139), new Colour(2, 129, 2)), new ColourRange(new Colour(160, 221, 204), new Colour(160, 221, 204)), new Colour(192, 255, 238));
+							new Colour(0, 0, 0), new ColourRange(new Colour(96, 192, 139), new Colour(2, 129, 2)), new ColourRange(new Colour(160, 221, 204), new Colour(160, 221, 204)), new Colour(192, 255, 238),
+							[new Colour(0, 0, 0), new Colour(0, 128, 0), new Colour(0, 64, 0), new Colour(255, 0, 0),
+							 new Colour(128, 0, 0), new Colour(128, 64, 0), new Colour(85, 43, 0), new Colour(0, 0, 255),
+							 new Colour(0, 0, 128), new Colour(0, 64, 128), new Colour(0, 43, 85), new Colour(128, 0, 128),
+							 new Colour(85, 0, 85), new Colour(85, 43, 85), new Colour(64, 32, 64)]);
 		this.themes[i].setGridLines(0, new Colour(160, 221, 204), new Colour(160, 221, 204));
 		i += 1;
 
 		// Caterer theme
 		this.themes[i] = new Theme("Caterer", new ColourRange(new Colour(54, 57, 62), new Colour(54, 57, 62)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(54, 57, 62),
-									new Colour(255, 170, 0), new ColourRange(new Colour(255, 85, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(54, 57, 62), new Colour(54, 57, 62)), new Colour(54, 57, 62));
+							new Colour(255, 170, 0), new ColourRange(new Colour(255, 85, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(54, 57, 62), new Colour(54, 57, 62)), new Colour(54, 57, 62),
+							[new Colour(48, 93, 148), new Colour(58, 73, 148), new Colour(144, 137, 188), new Colour(78, 72, 128),
+							 new Colour(134, 137, 218), new Colour(124, 147, 228), new Colour(130, 151, 242), new Colour(78, 93, 118),
+							 new Colour(114, 107, 218), new Colour(114, 137, 238), new Colour(120, 171, 242), new Colour(84, 137, 188),
+							 new Colour(150, 171, 212), new Colour(150, 151, 222), new Colour(186, 205, 255)]);
 		this.themes[i].setGridLines(0, new Colour(0, 0, 0), new Colour(0, 0, 0));
 		i += 1;
 
 		// Life32 theme
 		this.themes[i] = new Theme("Life32", new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new ColourRange(new Colour(0, 0, 128), new Colour(0, 0, 128)), new Colour(255, 255, 255),
-									new Colour(0, 0, 128), new ColourRange(new Colour(0, 0, 64), new Colour(-1, -1, -1)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(255, 255, 255));
+							new Colour(0, 0, 128), new ColourRange(new Colour(0, 0, 64), new Colour(-1, -1, -1)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(255, 255, 255),
+							[new Colour(255, 128, 128), new Colour(192, 192, 128), new Colour(224, 144, 96), new Colour(128, 192, 192),
+							 new Colour(192, 112, 112), new Colour(144, 192, 144), new Colour(128, 96, 64), new Colour(128, 128, 255),
+							 new Colour(192, 96, 192), new Colour(112, 112, 192), new Colour(128, 64, 128), new Colour(96, 144, 224),
+							 new Colour(64, 32, 160), new Colour(32, 96, 128), new Colour(32, 32, 32)]);
 		this.themes[i].setGridLines(5, new Colour(192, 192, 192), new Colour(128, 128, 128));
 		i += 1;
 
 		// Margolus theme
 		this.themes[i] = new Theme("Margolus", new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 128)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 255)), new Colour(0, 0, 0),
-									new Colour(255, 255, 0), new ColourRange(new Colour(64, 64, 128), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 128)), new Colour(0, 0, 0));
+							new Colour(255, 255, 0), new ColourRange(new Colour(64, 64, 128), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 47), new Colour(0, 0, 128)), new Colour(0, 0, 0),
+							[new Colour(255, 128, 0), new Colour(224, 128, 64), new Colour(192, 192, 0), new Colour(255, 16, 32),
+							 new Colour(255, 0, 0), new Colour(192, 128, 48), new Colour(224, 255, 64), new Colour(128, 32, 64),
+							 new Colour(192, 96, 48), new Colour(255, 128, 64), new Colour(255, 224, 64), new Colour(192, 24, 48),
+							 new Colour(224, 128, 128), new Colour(255, 128, 112), new Colour(255, 255, 224)]);
 		this.themes[i].setGridLines(2, new Colour(32, 32, 255), new Colour(64, 64, 128));
 		i += 1;
 
 		// PCA theme
 		this.themes[i] = new Theme("PCA", new ColourRange(new Colour(24, 24, 24), new Colour(64, 64, 64)), new ColourRange(new Colour(176, 176, 176), new Colour(240, 240, 240)), new Colour(0, 0, 0),
-									new Colour(240, 240, 240), new ColourRange(new Colour(160, 160, 160), new Colour(-1, -1, -1)), new ColourRange(new Colour(24, 24, 24), new Colour(64, 64, 64)), new Colour(0, 0, 0));
+							new Colour(240, 240, 240), new ColourRange(new Colour(160, 160, 160), new Colour(-1, -1, -1)), new ColourRange(new Colour(24, 24, 24), new Colour(64, 64, 64)), new Colour(0, 0, 0),
+							[new Colour(255, 0, 0), new Colour(0, 255, 0), new Colour(128, 128, 0), new Colour(16, 16, 255),
+							 new Colour(128, 0, 128), new Colour(0, 128, 128), new Colour(96, 96, 96), new Colour(255, 255, 0),
+							 new Colour(255, 128, 0), new Colour(128, 255, 0), new Colour(170, 170, 0), new Colour(144, 144, 144),
+							 new Colour(170, 85, 85), new Colour(85, 128, 43), new Colour(128, 128, 64)]);
 		i += 1;
 
 		// Book theme
 		this.themes[i] = new Theme("Book", new ColourRange(new Colour(255, 220, 192), new Colour(192, 220, 255)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(255, 255, 255),
-									new Colour(0, 0, 0), new ColourRange(new Colour(24, 24, 24), new Colour(128, 128, 128)), new ColourRange(new Colour(255, 220, 192), new Colour(192, 220, 255)), new Colour(255, 255, 255));
+							new Colour(0, 0, 0), new ColourRange(new Colour(24, 24, 24), new Colour(128, 128, 128)), new ColourRange(new Colour(255, 220, 192), new Colour(192, 220, 255)), new Colour(255, 255, 255),
+							[new Colour(255, 128, 128), new Colour(192, 192, 128), new Colour(224, 144, 96), new Colour(128, 192, 192),
+							 new Colour(192, 112, 112), new Colour(144, 192, 144), new Colour(128, 96, 64), new Colour(128, 128, 255),
+							 new Colour(192, 96, 192), new Colour(112, 112, 192), new Colour(128, 64, 128), new Colour(96, 144, 224),
+							 new Colour(64, 32, 160), new Colour(32, 96, 128), new Colour(32, 32, 32)]);
 		this.themes[i].setGridLines(0, new Colour(192, 192, 192), new Colour(209, 209, 209));
 		i += 1;
 
 		// custom theme
 		this.themes[i] = new Theme(Keywords.themeCustomWord, new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0),
-									new Colour(0, 0, 0), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0));
+							new Colour(0, 0, 0), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0),
+							[new Colour(255, 0, 0), new Colour(0, 255, 0), new Colour(128, 128, 0), new Colour(16, 16, 255),
+							 new Colour(128, 0, 128), new Colour(0, 128, 128), new Colour(96, 96, 96), new Colour(255, 255, 0),
+							 new Colour(255, 128, 0), new Colour(128, 255, 0), new Colour(170, 170, 0), new Colour(144, 144, 144),
+							 new Colour(170, 85, 85), new Colour(85, 128, 43), new Colour(128, 128, 64)]);
 		i += 1;
 
 		// save number of themes less one (for the custom theme)
@@ -8011,6 +8105,11 @@
 		this.dyingGenColCurrent = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.deadGenColCurrent = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.unoccupiedGenCurrent = new Colour(0, 0, 0);
+		// PCA
+		this.pcaColsCurrent = [new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0),
+					     new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0),
+					     new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0),
+					     new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0)];
 
 		// set target colour theme
 		// 2-state
@@ -8022,12 +8121,18 @@
 		this.dyingGenColTarget = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.deadGenColTarget = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.unoccupiedGenTarget = new Colour(0, 0, 0);
+		// PCA
+		this.pcaColsTarget = [new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0),
+					    new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0),
+					    new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0),
+					    new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0)];
 	};
 
 	// set the theme
 	Life.prototype.setTheme = function(/** @type {number} */ theme, /** @type {number} */ switchTime, /** @type {View} */ view) {
 		var	/** @type {Theme} */ newTheme = this.themes[theme],
-			/** @type {boolean} */ currentHistory = this.themeHistory;
+			/** @type {boolean} */ currentHistory = this.themeHistory,
+			/** @type {number} */ i = 0;
 
 		// save the theme
 		this.colourTheme = theme;
@@ -8040,6 +8145,9 @@
 		this.deadGenColCurrent.set(this.deadGenColTarget);
 		this.dyingGenColCurrent.set(this.dyingGenColTarget);
 		this.unoccupiedGenCurrent.set(this.unoccupiedGenTarget);
+		for (i = 0; i < this.pcaColsTarget.length; i += 1) {
+			this.pcaColsCurrent[i] = this.pcaColsTarget[i];
+		}
 
 		// set the colour target to the theme
 		this.aliveColTarget.set(newTheme.aliveRange);
@@ -8049,6 +8157,9 @@
 		this.deadGenColTarget.set(newTheme.deadRangeGen);
 		this.dyingGenColTarget.set(newTheme.dyingRangeGen);
 		this.unoccupiedGenTarget.set(newTheme.unoccupiedGen);
+		for (i = 0; i < this.pcaColsTarget.length; i += 1) {
+			this.pcaColsTarget[i] = newTheme.pcaCols[i];
+		}
 
 		// set the change time
 		this.colourChange = switchTime;
@@ -8231,9 +8342,9 @@
 						this.greenChannel[i] = (this.ruleTreeColours[i] >> 8) & 255;
 						this.blueChannel[i] = this.ruleTreeColours[i] & 255;
 					} else {
-						this.redChannel[i] = this.unoccupiedGenCurrent.red * mixWeight + this.unoccupiedGenTarget.red * (1 - mixWeight);
-						this.greenChannel[i] = this.unoccupiedGenCurrent.green * mixWeight + this.unoccupiedGenTarget.green * (1 - mixWeight);
-						this.blueChannel[i] = this.unoccupiedGenCurrent.blue * mixWeight + this.unoccupiedGenTarget.blue * (1 - mixWeight);
+						this.redChannel[i] = Math.round(this.unoccupiedGenCurrent.red * mixWeight + this.unoccupiedGenTarget.red * (1 - mixWeight));
+						this.greenChannel[i] = Math.round(this.unoccupiedGenCurrent.green * mixWeight + this.unoccupiedGenTarget.green * (1 - mixWeight));
+						this.blueChannel[i] = Math.round(this.unoccupiedGenCurrent.blue * mixWeight + this.unoccupiedGenTarget.blue * (1 - mixWeight));
 					}
 
 					// set generations or PCA colours
@@ -8245,11 +8356,11 @@
 							weight = (i - 1) / (this.multiNumStates - 3);
 						}
 
-						// check for PCA (theme is PCA or Custom)  TBD hard coded theme number!
-						if (this.isPCA && this.colourTheme >= 18) {
-							this.redChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][0];
-							this.greenChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][1];
-							this.blueChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][2];
+						// check for PCA
+						if (this.isPCA) {
+							this.redChannel[i + this.historyStates] = Math.round(this.pcaColsCurrent[i - 1].red * mixWeight + this.pcaColsTarget[i - 1].red * (1 - mixWeight));
+							this.greenChannel[i + this.historyStates] = Math.round(this.pcaColsCurrent[i - 1].green * mixWeight + this.pcaColsTarget[i - 1].green * (1 - mixWeight));
+							this.blueChannel[i + this.historyStates] = Math.round(this.pcaColsCurrent[i - 1].blue * mixWeight + this.pcaColsTarget[i - 1].blue * (1 - mixWeight));
 						} else {
 							if (this.isRuleTree) {
 								this.redChannel[i] = this.ruleTreeColours[i] >> 16;
@@ -8257,19 +8368,19 @@
 								this.blueChannel[i] = this.ruleTreeColours[i] & 255;
 							} else {
 								// compute the red component of the current and target colour
-								currentComponent = this.dyingGenColCurrent.endColour.red * weight + this.dyingGenColCurrent.startColour.red * (1 - weight);
-								targetComponent = this.dyingGenColTarget.endColour.red * weight + this.dyingGenColTarget.startColour.red * (1 - weight);
-								this.redChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+								currentComponent = Math.round(this.dyingGenColCurrent.endColour.red * weight + this.dyingGenColCurrent.startColour.red * (1 - weight));
+								targetComponent = Math.round(this.dyingGenColTarget.endColour.red * weight + this.dyingGenColTarget.startColour.red * (1 - weight));
+								this.redChannel[i + this.historyStates] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 
 								// compute the green component of the current and target colour
-								currentComponent = this.dyingGenColCurrent.endColour.green * weight + this.dyingGenColCurrent.startColour.green * (1 - weight);
-								targetComponent = this.dyingGenColTarget.endColour.green * weight + this.dyingGenColTarget.startColour.green * (1 - weight);
-								this.greenChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+								currentComponent = Math.round(this.dyingGenColCurrent.endColour.green * weight + this.dyingGenColCurrent.startColour.green * (1 - weight));
+								targetComponent = Math.round(this.dyingGenColTarget.endColour.green * weight + this.dyingGenColTarget.startColour.green * (1 - weight));
+								this.greenChannel[i + this.historyStates] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 
 								// compute the blue component of the current and target colour
-								currentComponent = this.dyingGenColCurrent.endColour.blue * weight + this.dyingGenColCurrent.startColour.blue * (1 - weight);
-								targetComponent = this.dyingGenColTarget.endColour.blue * weight + this.dyingGenColTarget.startColour.blue * (1 - weight);
-								this.blueChannel[i + this.historyStates] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+								currentComponent = Math.round(this.dyingGenColCurrent.endColour.blue * weight + this.dyingGenColCurrent.startColour.blue * (1 - weight));
+								targetComponent = Math.round(this.dyingGenColTarget.endColour.blue * weight + this.dyingGenColTarget.startColour.blue * (1 - weight));
+								this.blueChannel[i + this.historyStates] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 							}
 						}
 
@@ -8290,19 +8401,19 @@
 
 					// set alive colour
 					i = this.multiNumStates - 1;
-					if (this.isPCA && this.colourTheme >= 18) {
-						this.redChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][0];
-						this.greenChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][1];
-						this.blueChannel[i + this.historyStates] = LifeConstants.coloursPCA[i][2];
+					if (this.isPCA) {
+						this.redChannel[i + this.historyStates] = Math.round(this.pcaColsCurrent[i - 1].red * mixWeight + this.pcaColsTarget[i - 1].red * (1 - mixWeight));
+						this.greenChannel[i + this.historyStates] = Math.round(this.pcaColsCurrent[i - 1].green * mixWeight + this.pcaColsTarget[i - 1].green * (1 - mixWeight));
+						this.blueChannel[i + this.historyStates] = Math.round(this.pcaColsCurrent[i - 1].blue * mixWeight + this.pcaColsTarget[i - 1].blue * (1 - mixWeight));
 					} else {
 						if (this.isRuleTree) {
 							this.redChannel[i] = this.ruleTreeColours[i] >> 16;
 							this.greenChannel[i] = (this.ruleTreeColours[i] >> 8) & 255;
 							this.blueChannel[i] = this.ruleTreeColours[i] & 255;
 						} else {
-							this.redChannel[i + this.historyStates] = this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight);
-							this.greenChannel[i + this.historyStates] = this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight);
-							this.blueChannel[i + this.historyStates] = this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight);
+							this.redChannel[i + this.historyStates] = Math.round(this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight));
+							this.greenChannel[i + this.historyStates] = Math.round(this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight));
+							this.blueChannel[i + this.historyStates] = Math.round(this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight));
 						}
 					}
 
@@ -8328,19 +8439,19 @@
 							weight = 1;
 						}
 						// compute the red component of the current and target colour
-						currentComponent = this.deadGenColCurrent.startColour.red * weight + this.deadGenColCurrent.endColour.red * (1 - weight);
-						targetComponent = this.deadGenColTarget.startColour.red * weight + this.deadGenColTarget.endColour.red * (1 - weight);
-						this.redChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+						currentComponent = Math.round(this.deadGenColCurrent.startColour.red * weight + this.deadGenColCurrent.endColour.red * (1 - weight));
+						targetComponent = Math.round(this.deadGenColTarget.startColour.red * weight + this.deadGenColTarget.endColour.red * (1 - weight));
+						this.redChannel[i + 1] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 
 						// compute the green component of the current and target colour
-						currentComponent = this.deadGenColCurrent.startColour.green * weight + this.deadGenColCurrent.endColour.green * (1 - weight);
-						targetComponent = this.deadGenColTarget.startColour.green * weight + this.deadGenColTarget.endColour.green * (1 - weight);
-						this.greenChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+						currentComponent = Math.round(this.deadGenColCurrent.startColour.green * weight + this.deadGenColCurrent.endColour.green * (1 - weight));
+						targetComponent = Math.round(this.deadGenColTarget.startColour.green * weight + this.deadGenColTarget.endColour.green * (1 - weight));
+						this.greenChannel[i + 1] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 
 						// compute the blue component of the current and target colour
-						currentComponent = this.deadGenColCurrent.startColour.blue * weight + this.deadGenColCurrent.endColour.blue * (1 - weight);
-						targetComponent = this.deadGenColTarget.startColour.blue * weight + this.deadGenColTarget.endColour.blue * (1 - weight);
-						this.blueChannel[i + 1] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+						currentComponent = Math.round(this.deadGenColCurrent.startColour.blue * weight + this.deadGenColCurrent.endColour.blue * (1 - weight));
+						targetComponent = Math.round(this.deadGenColTarget.startColour.blue * weight + this.deadGenColTarget.endColour.blue * (1 - weight));
+						this.blueChannel[i + 1] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 					}
 
 					// override colour 0 if specified
@@ -8355,23 +8466,23 @@
 				} else {
 					// set unoccupied colour
 					i = 0;
-					this.redChannel[i] = this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight);
-					this.greenChannel[i] = this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight);
-					this.blueChannel[i] = this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight);
+					this.redChannel[i] = Math.round(this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight));
+					this.greenChannel[i] = Math.round(this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight));
+					this.blueChannel[i] = Math.round(this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight));
 
 					// set dead colours and start by clearing unused history colours
 					if (this.historyStates === 0) {
 						for (i = 1; i <= this.deadStart; i += 1) {
-							this.redChannel[i] = this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight);
-							this.greenChannel[i] = this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight);
-							this.blueChannel[i] = this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight);
+							this.redChannel[i] = Math.round(this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight));
+							this.greenChannel[i] = Math.round(this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight));
+							this.blueChannel[i] = Math.round(this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight));
 						}
 					} else {
 						deadMin = this.deadStart - this.historyStates + 1;
 						for (i = 1; i < deadMin; i += 1) {
-							this.redChannel[i] = this.deadColCurrent.startColour.red * mixWeight + this.deadColTarget.startColour.red * (1 - mixWeight);
-							this.greenChannel[i] = this.deadColCurrent.startColour.green * mixWeight + this.deadColTarget.startColour.green * (1 - mixWeight);
-							this.blueChannel[i] = this.deadColCurrent.startColour.blue * mixWeight + this.deadColTarget.startColour.blue * (1 - mixWeight);
+							this.redChannel[i] = Math.round(this.deadColCurrent.startColour.red * mixWeight + this.deadColTarget.startColour.red * (1 - mixWeight));
+							this.greenChannel[i] = Math.round(this.deadColCurrent.startColour.green * mixWeight + this.deadColTarget.startColour.green * (1 - mixWeight));
+							this.blueChannel[i] = Math.round(this.deadColCurrent.startColour.blue * mixWeight + this.deadColTarget.startColour.blue * (1 - mixWeight));
 						}
 						for (i = deadMin; i <= this.deadStart; i += 1) {
 							// compute the weighting between the start and end colours in the range
@@ -8382,19 +8493,19 @@
 							}
 
 							// compute the red component of the current and target colour
-							currentComponent = this.deadColCurrent.startColour.red * weight + this.deadColCurrent.endColour.red * (1 - weight);
-							targetComponent = this.deadColTarget.startColour.red * weight + this.deadColTarget.endColour.red * (1 - weight);
-							this.redChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+							currentComponent = Math.round(this.deadColCurrent.startColour.red * weight + this.deadColCurrent.endColour.red * (1 - weight));
+							targetComponent = Math.round(this.deadColTarget.startColour.red * weight + this.deadColTarget.endColour.red * (1 - weight));
+							this.redChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 
 							// compute the green component of the current and target colour
-							currentComponent = this.deadColCurrent.startColour.green * weight + this.deadColCurrent.endColour.green * (1 - weight);
-							targetComponent = this.deadColTarget.startColour.green * weight + this.deadColTarget.endColour.green * (1 - weight);
-							this.greenChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+							currentComponent = Math.round(this.deadColCurrent.startColour.green * weight + this.deadColCurrent.endColour.green * (1 - weight));
+							targetComponent = Math.round(this.deadColTarget.startColour.green * weight + this.deadColTarget.endColour.green * (1 - weight));
+							this.greenChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 
 							// compute the blue component of the current and target colour
-							currentComponent = this.deadColCurrent.startColour.blue * weight + this.deadColCurrent.endColour.blue * (1 - weight);
-							targetComponent = this.deadColTarget.startColour.blue * weight + this.deadColTarget.endColour.blue * (1 - weight);
-							this.blueChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+							currentComponent = Math.round(this.deadColCurrent.startColour.blue * weight + this.deadColCurrent.endColour.blue * (1 - weight));
+							targetComponent = Math.round(this.deadColTarget.startColour.blue * weight + this.deadColTarget.endColour.blue * (1 - weight));
+							this.blueChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 						}
 					}
 
@@ -8412,19 +8523,19 @@
 						}
 
 						// compute the red component of the current and target colour
-						currentComponent = this.aliveColCurrent.startColour.red * weight + this.aliveColCurrent.endColour.red * (1 - weight);
-						targetComponent = this.aliveColTarget.startColour.red * weight + this.aliveColTarget.endColour.red * (1 - weight);
-						this.redChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+						currentComponent = Math.round(this.aliveColCurrent.startColour.red * weight + this.aliveColCurrent.endColour.red * (1 - weight));
+						targetComponent = Math.round(this.aliveColTarget.startColour.red * weight + this.aliveColTarget.endColour.red * (1 - weight));
+						this.redChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 
 						// compute the green component of the current and target colour
-						currentComponent = this.aliveColCurrent.startColour.green * weight + this.aliveColCurrent.endColour.green * (1 - weight);
-						targetComponent = this.aliveColTarget.startColour.green * weight + this.aliveColTarget.endColour.green * (1 - weight);
-						this.greenChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+						currentComponent = Math.round(this.aliveColCurrent.startColour.green * weight + this.aliveColCurrent.endColour.green * (1 - weight));
+						targetComponent = Math.round(this.aliveColTarget.startColour.green * weight + this.aliveColTarget.endColour.green * (1 - weight));
+						this.greenChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 
 						// compute the blue component of the current and target colour
-						currentComponent = this.aliveColCurrent.startColour.blue * weight + this.aliveColCurrent.endColour.blue * (1 - weight);
-						targetComponent = this.aliveColTarget.startColour.blue * weight + this.aliveColTarget.endColour.blue * (1 - weight);
-						this.blueChannel[i] = currentComponent * mixWeight + targetComponent * (1 - mixWeight);
+						currentComponent = Math.round(this.aliveColCurrent.startColour.blue * weight + this.aliveColCurrent.endColour.blue * (1 - weight));
+						targetComponent = Math.round(this.aliveColTarget.startColour.blue * weight + this.aliveColTarget.endColour.blue * (1 - weight));
+						this.blueChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 					}
 				}
 			}

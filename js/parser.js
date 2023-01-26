@@ -490,7 +490,8 @@
 	ScriptParser.setupCustomTheme = function(/** @type {View} */ view, /** @type {number} */ theme) {
 		var	/** @type {number} */ colourValue = 0,
 			/** @type {Theme} */ customTheme = view.engine.themes[view.engine.numThemes],
-			/** @type {Array<number>} */  themeValue = view.customThemeValue;
+			/** @type {Array<number>} */  themeValue = view.customThemeValue,
+			/** @type {number} */ i = 0;
 
 		// if a theme is specified then copy it into the custom theme and override with custom elements
 		if (theme !== -1) {
@@ -705,6 +706,21 @@
 
 		// set the grid lines colours
 		customTheme.setGridLineColours(themeValue[ViewConstants.customThemeGrid], themeValue[ViewConstants.customThemeGridMajor]);
+
+		// set the PCA colours
+		if (view.engine.isPCA) {
+			for (i = 1; i < 16; i += 1) {
+				if (view.customColours && view.customColours.length > i) {
+					colourValue = view.customColours[i];
+					if (colourValue !== -1) {
+						customTheme.pcaCols[i - 1].red = colourValue >> 16;
+						customTheme.pcaCols[i - 1].green = (colourValue >> 8) & 255;
+						customTheme.pcaCols[i - 1].blue = colourValue & 255;
+						view.customColours[i] = -1;
+					}
+				}
+			}
+		}
 	};
 
 	// shorten message to fit
@@ -3407,6 +3423,9 @@
 									// decode the rgb value
 									if (colNum !== -1) {
 										this.decodeRGB(view, scriptReader, scriptErrors, colNum, nextToken, badColour, peekToken);
+										if (view.engine.isPCA) {
+											view.customTheme = true;
+										}
 									}
 
 									// illegal colour element

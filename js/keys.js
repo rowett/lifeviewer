@@ -1446,7 +1446,7 @@
 			// t for timing display
 			case 84:
 				// check for Help
-				if (me.displayHelp !== 0 && (!(me.engine.isNone || me.engine.isPCA || me.engine.isSuper || me.engine.isRuleTree))) {
+				if (me.displayHelp !== 0 && (!(me.engine.isNone || me.engine.isSuper || me.engine.isRuleTree))) {
 					this.toggleHelpTopic(me, ViewConstants.themesTopic);
 				} else {
 					// check for shift key
