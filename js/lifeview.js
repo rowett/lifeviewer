@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 842,
+		/** @const {number} */ versionBuild : 843,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6674,7 +6674,7 @@
 		this.copyWithCommentsButton.locked = shown;
 		this.pasteToSelectionButton.locked = shown;
 		this.goToGenButton.locked = !this.executable || this.viewOnly;
-		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isRuleTree || this.engine.isMargolus);
+		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isRuleTree);
 
 		// set theme section label text
 		this.themeSectionLabel.deleted = hide || !(this.showDisplaySettings || this.showClipboardSettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings || this.showActionsSettings);
@@ -8283,6 +8283,9 @@
 		if (!me.multiStateView) {
 			// reset grid and generation counter
 			me.engine.restoreSavedGrid(me, me.noHistory);
+
+			// convert to pens so rainbow on/off works
+			me.engine.convertToPensTile();
 
 			// mark cells alive
 			me.engine.anythingAlive = 1;
@@ -18099,7 +18102,7 @@
 
 		// check rainbow and remove if not supported
 		if (me.engine.rainbow) {
-			if (me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isRuleTree || me.engine.isMargolus) {
+			if (me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isRuleTree) {
 				me.engine.rainbow = false;
 			}
 		}

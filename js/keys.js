@@ -389,7 +389,7 @@
 					// w for toggle rainbow display
 					case 87:
 						// toggle rainbow mode
-						if (!(me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isRuleTree || me.engine.isMargolus)) {
+						if (!(me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isRuleTree)) {
 							me.rainbowButton.current = me.viewRainbowToggle([!me.engine.rainbow], true, me);
 						}
 						break;

@@ -4582,8 +4582,10 @@
 
 						// rainbow word
 						case Keywords.rainbowWord:
-							view.engine.rainbow = true;
-							view.defaultRainbow = true;
+							if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isRuleTree)) {
+								view.engine.rainbow = true;
+								view.defaultRainbow = true;
+							}
 							itemValid = true;
 							break;
 

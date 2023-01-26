@@ -1,3 +1,7 @@
+Build 843
+- fixed rainbow mode being allowed for unsupported rules
+- fixed reset when rainbow switched on/off
+
 Build 842
 - added PCA Themes
 - made Help->Themes specific to the rule
