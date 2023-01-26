@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 838,
+		/** @const {number} */ versionBuild : 841,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6763,7 +6763,7 @@
 		this.helpKeysButton.deleted = showTopicButtons;
 		this.helpScriptsButton.deleted = showTopicButtons;
 		this.helpInfoButton.deleted = showTopicButtons;
-		this.helpThemesButton.deleted = showTopicButtons;
+		this.helpThemesButton.deleted = showTopicButtons || (this.engine.isNone || this.engine.isSuper || this.engine.isPCA || this.engine.isRuleTree);
 		this.helpColoursButton.deleted = showTopicButtons;
 		this.helpAliasesButton.deleted = showTopicButtons;
 		this.helpMemoryButton.deleted = showTopicButtons;
@@ -15468,20 +15468,35 @@
 
 	// update help topic buttons position based on window height
 	View.prototype.updateTopicButtonsPosition = function() {
-		var	/** @type {number} */ y = 0;
+		var	/** @type {number} */ y = 0,
+			/** @type {number} */ inc = 50,
+			/** @type {boolean} */ showThemes = !(this.engine.isNone || this.engine.isPCA || this.engine.isSuper || this.engine.isRuleTree);
 
 		if (this.displayHeight < ViewConstants.minMenuHeight) {
-			this.helpKeysButton.setPosition(Menu.northWest, 10, 50);
-			this.helpScriptsButton.setPosition(Menu.north, 0, 50);
-			this.helpInfoButton.setPosition(Menu.northEast, -160, 50);
-			this.helpThemesButton.setPosition(Menu.northWest, 10, 100);
-			this.helpColoursButton.setPosition(Menu.north, 0, 100);
-			this.helpAliasesButton.setPosition(Menu.northEast, -160, 100);
-			if (this.waypointManager.numAnnotations() > 0) {
-				this.helpMemoryButton.setPosition(Menu.northWest, 10, 150);
-				this.helpAnnotationsButton.setPosition(Menu.northEast, -160, 150);
+			y = 50;
+			this.helpKeysButton.setPosition(Menu.northWest, 10, y);
+			this.helpScriptsButton.setPosition(Menu.north, 0, y);
+			this.helpInfoButton.setPosition(Menu.northEast, -160, y);
+			y += inc;
+			if (showThemes) {
+				this.helpThemesButton.setPosition(Menu.northWest, 10, y);
+				this.helpColoursButton.setPosition(Menu.north, 0, y);
+				this.helpAliasesButton.setPosition(Menu.northEast, -160, y);
+				y += inc;
+				if (this.waypointManager.numAnnotations() > 0) {
+					this.helpMemoryButton.setPosition(Menu.northWest, 10, 150);
+					this.helpAnnotationsButton.setPosition(Menu.northEast, -160, 150);
+				} else {
+					this.helpMemoryButton.setPosition(Menu.north, 0, 150);
+				}
 			} else {
-				this.helpMemoryButton.setPosition(Menu.north, 0, 150);
+				this.helpColoursButton.setPosition(Menu.northWest, 10, y);
+				this.helpAliasesButton.setPosition(Menu.north, 0, y);
+				this.helpMemoryButton.setPosition(Menu.northEast, -160, y);
+				y += inc;
+				if (this.waypointManager.numAnnotations() > 0) {
+					this.helpAnnotationsButton.setPosition(Menu.north, 0, y);
+				}
 			}
 		} else {
 			if (this.waypointManager.numAnnotations() > 0) {
@@ -15490,13 +15505,22 @@
 				y = -150;
 			}
 			this.helpKeysButton.setPosition(Menu.middle, 0, y);
-			this.helpScriptsButton.setPosition(Menu.middle, 0, y + 50);
-			this.helpInfoButton.setPosition(Menu.middle, 0, y + 100);
-			this.helpThemesButton.setPosition(Menu.middle, 0, y + 150);
-			this.helpColoursButton.setPosition(Menu.middle, 0, y + 200);
-			this.helpAliasesButton.setPosition(Menu.middle, 0, y + 250);
-			this.helpMemoryButton.setPosition(Menu.middle, 0, y + 300);
-			this.helpAnnotationsButton.setPosition(Menu.middle, 0, y + 350);
+			y += inc;
+			this.helpScriptsButton.setPosition(Menu.middle, 0, y);
+			y += inc;
+			this.helpInfoButton.setPosition(Menu.middle, 0, y);
+			y += inc;
+			if (showThemes) {
+				this.helpThemesButton.setPosition(Menu.middle, 0, y);
+				y += inc;
+			}
+			this.helpColoursButton.setPosition(Menu.middle, 0, y);
+			y += inc;
+			this.helpAliasesButton.setPosition(Menu.middle, 0, y);
+			y += inc;
+			this.helpMemoryButton.setPosition(Menu.middle, 0, y);
+			y += inc;
+			this.helpAnnotationsButton.setPosition(Menu.middle, 0, y);
 		}
 	};
 
@@ -18543,10 +18567,6 @@
 			me.engine.restoreSavedGrid(me, me.noHistory);
 		}
 
-		// set the graph UI control
-		me.graphButton.locked = me.graphDisabled;
-		me.graphButton.current = [me.popGraph];
-
 		// set the performance warning UI control
 		me.showLagToggle.current = [me.perfWarning];
 
@@ -18767,6 +18787,7 @@
 			me.engine.isNone = true;
 			me.engine.isLifeHistory = false;
 			me.engine.isSuper = false;
+			me.updateTopicButtonsPosition();
 		}
 
 		// check whether to disable drawing and selection
@@ -18944,6 +18965,16 @@
 
 		// clear cell period display toggle
 		me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
+
+		// disable population graph if rule is 'none'
+		if (me.engine.isNone) {
+			me.graphDisabled = true;
+			me.popGraph = false;
+		}
+
+		// set the graph UI control
+		me.graphButton.locked = me.graphDisabled;
+		me.graphButton.current = [me.popGraph];
 
 		// check for chrome bug
 		me.checkForChromeBug();

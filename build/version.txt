@@ -1,3 +1,18 @@
+Build 841
+- re-enable Themes Help topic for Margolus rules
+
+Build 840
+- fixed Niemec cells in [R]Super patterns
+- fixed bounding box issue with [R]Super patterns
+
+Build 839
+- stop scaling Population Graph when maximum samples reached
+- show a message on the Population Graph if no data selected to display
+- don't allow the Population Graph with the none rule
+- hide Themes Help topic if not relevant to current rule
+- fixed error message for PCA rules with History postfix
+- added a shadow to the colour boxes displayed in Help
+
 Build 838
 - fixed Margolus/PCA rules T counter not changing after pattern died
 - fixed playback delay after an undo which causes history calculation

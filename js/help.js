@@ -142,12 +142,13 @@
 
 				// check if drawing shadow
 				if (currentFill !== view.menuManager.bgColHex) {
-					// set the box colour
+					// set the box colour and draw it
 					ctx.fillStyle = "rgb(" + red + "," + green + "," + blue + ")";
+					ctx.fillRect(x, y - (height >> 1) - 1, height, height);
+				} else {
+					// draw the box shadow
+					ctx.fillRect(x + 2, y - (height >> 1) - 1 + 2, height, height);
 				}
-
-				// draw the box
-				ctx.fillRect(x, y - (height >> 1) - 1, height, height);
 
 				// reset the colour to the help font colour
 				ctx.fillStyle = currentFill;

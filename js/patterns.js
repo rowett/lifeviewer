@@ -7803,6 +7803,11 @@
 			}
 		}
 		
+		// check for [R]Super rules with Niemiec states
+		if (pattern.isSuper && pattern.isNiemiec) {
+			pattern.isHistory = false;
+		}
+
 		// triangular rules can only have even width bounded grids
 		if (pattern.isTriangular && pattern.gridType !== -1) {
 			if ((pattern.gridWidth & 1) !== 0) {
@@ -7892,14 +7897,22 @@
 
 		// check for generations and [R]History
 		if (pattern.multiNumStates !== -1 && pattern.isHistory && !(pattern.isLTL || pattern.isHROT)) {
-			this.failureReason = "[R]History not valid with Generations";
+			if (pattern.isPCA) {
+				this.failureReason = "[R]History not valid with PCA";
+			} else {
+				this.failureReason = "[R]History not valid with Generations";
+			}
 			pattern.isHistory = false;
 			this.executable = false;
 		}
 
 		// check for generations and [R]Super
 		if (pattern.multiNumStates !== -1 && pattern.isSuper) {
-			this.failureReason = "[R]Super not valid with Generations";
+			if (pattern.isPCA) {
+				this.failureReason = "[R]Super not valid with PCA";
+			} else {
+				this.failureReason = "[R]Super not valid with Generations";
+			}
 			pattern.isSuper = false;
 			this.executable = false;
 		}
