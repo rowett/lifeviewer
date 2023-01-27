@@ -1,3 +1,6 @@
+Build 848
+- fixed Density calculation for PCA rules in Bounded Grids
+
 Build 847
 - hide population data selection buttons for all Bounded Grid types
 

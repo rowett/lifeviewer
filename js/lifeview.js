@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 846,
+		/** @const {number} */ versionBuild : 848,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6294,7 +6294,11 @@
 
 		if (me.finitelyBounded()) {
 			// update births label with density
-			me.birthsValue.preText = (((me.engine.population * 100) / (me.engine.boundedGridHeight * me.engine.boundedGridWidth)) | 0) + "%";
+			if (me.engine.isPCA) {
+				me.birthsValue.preText = (((me.engine.population * 25) / (me.engine.boundedGridHeight * me.engine.boundedGridWidth)) | 0) + "%";
+			} else {
+				me.birthsValue.preText = (((me.engine.population * 100) / (me.engine.boundedGridHeight * me.engine.boundedGridWidth)) | 0) + "%";
+			}
 		} else {
 			// update births label
 			me.birthsValue.preText = me.shortenNumber(me.engine.births);
@@ -6306,7 +6310,11 @@
 		me.popValue.toolTip = "alive " + me.engine.population;
 		if (me.finitelyBounded()) {
 			// show density
-			me.birthsValue.toolTip = "density " + (((me.engine.population * 100) / (me.engine.boundedGridHeight * me.engine.boundedGridWidth)) | 0) + "%";
+			if (me.engine.isPCA) {
+				me.birthsValue.toolTip = "density " + (((me.engine.population * 25) / (me.engine.boundedGridHeight * me.engine.boundedGridWidth)) | 0) + "%";
+			} else {
+				me.birthsValue.toolTip = "density " + (((me.engine.population * 100) / (me.engine.boundedGridHeight * me.engine.boundedGridWidth)) | 0) + "%";
+			}
 		} else {
 			// show births and deaths
 			me.birthsValue.toolTip = "births " + me.engine.births;
