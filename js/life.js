@@ -5754,7 +5754,11 @@
 								this.population += 1;
 							}
 							// set cell
-							colourGrid[y][x] = this.aliveStart;
+							if (this.rainbow) {
+								colourGrid[y][x] = ((x + y) & 127) + 64;
+							} else {
+								colourGrid[y][x] = this.aliveStart;
+							}
 							colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
 							colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
 							grid[y][x >> 4] |= cellAsBit;

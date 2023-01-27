@@ -481,10 +481,15 @@
 						// get the current value
 						value = me.tiltItem.current[0];
 	
-						// decrease tilt
-						value -= 0.02;
-						if (value < 0) {
-							value = 0;
+						// skip dead zone
+						if (value > 0.47 && value < 0.53) {
+							value = 0.46;
+						} else {
+							// decrease tilt
+							value -= 0.02;
+							if (value < 0) {
+								value = 0;
+							}
 						}
 
 						// update UI
@@ -505,12 +510,17 @@
 						// get the current value
 						value = me.tiltItem.current[0];
 	
-						// decrease tilt
-						value += 0.02;
-						if (value > 1) {
-							value = 1;
+						// skip dead zone
+						if (value > 0.47 && value < 0.53) {
+							value = 0.54;
+						} else {
+							// decrease tilt
+							value += 0.02;
+							if (value > 1) {
+								value = 1;
+							}
 						}
-	
+
 						// update UI
 						me.tiltItem.current = me.viewTiltRange([value, value], true, me);
 					}

@@ -1,3 +1,11 @@
+Build 845
+- editing cells in Rainbow mode was drawing new cells in a single colour in Bounded Grids
+- Tilt hotkeys now skip dead zone
+
+Build 844
+- fixed Fast Identify not being disabled for relevant rules
+- fixed Identify and Fast Identify being disabled if a non-deterministic and then deterministic pattern is loaded
+
 Build 843
 - fixed rainbow mode being allowed for unsupported rules
 - fixed reset when rainbow switched on/off

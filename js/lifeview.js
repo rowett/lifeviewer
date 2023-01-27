@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 843,
+		/** @const {number} */ versionBuild : 845,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6667,8 +6667,8 @@
 		this.randomizeButton.locked = shown;
 		this.randomizePatternButton.locked = shown;
 		this.identifyButton.locked = shown || this.viewOnly || this.engine.HROT.useRandom;
+		this.fastIdentifyButton.locked = shown || this.viewOnly || this.engine.HROT.useRandom;
 		this.lastIdentifyResultsButton.locked = shown || this.viewOnly || this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "";
-		this.fastIdentifyButton.locked = shown || this.viewOnly;
 		this.copyRuleButton.locked = shown;
 		this.copyNeighbourhoodButton.locked = shown;
 		this.copyWithCommentsButton.locked = shown;
@@ -8284,8 +8284,12 @@
 			// reset grid and generation counter
 			me.engine.restoreSavedGrid(me, me.noHistory);
 
-			// convert to pens so rainbow on/off works
-			me.engine.convertToPensTile();
+			// re-convert grid to colours so rainbow on/off works
+			if (me.engine.multiNumStates === -1) {
+				me.engine.resetColourGridBox(me.engine.grid16);
+			} else {
+				me.engine.convertToPensTile();
+			}
 
 			// mark cells alive
 			me.engine.anythingAlive = 1;
@@ -13681,197 +13685,197 @@
 	};
 
 	// rotate hex selection
-	View.prototype.rotateSelection60 = function(/** @type {View} */ me, /** @type {boolean} */ clockwise, /** @type {string} */ comment) {
-		var	/** @type {BoundingBox} */ box = me.selectionBox,
-			/** @type {number} */ x1 = box.leftX,
-			/** @type {number} */ x2 = box.rightX,
-			/** @type {number} */ y1 = box.bottomY,
-			/** @type {number} */ y2 = box.topY,
-			/** @type {number} */ x = 0,
-			/** @type {number} */ y = 0,
-			/** @type {number} */ swap = 0,
-			/** @type {Int16Array} */ cells = null,
-			/** @type {number} */ state = 0,
-			/** @type {number} */ i = 0,
-			/** @type {number} */ j = 0,
-			/** @type {number} */ cx = 0,
-			/** @type {number} */ cy = 0,
-			/** @type {number} */ w = 0,
-			/** @type {number} */ h = 0,
-			/** @type {number} */ newLeftX = 0,
-			/** @type {number} */ newBottomY = 0,
-			/** @type {number} */ newRightX = 0,
-			/** @type {number} */ newTopY = 0,
-			/** @type {number} */ newX = 0,
-			/** @type {number} */ newY = 0,
-			/** @type {number} */ saveLeftX = 0,
-			/** @type {number} */ saveBottomY = 0,
-			/** @type {number} */ saveRightX = 0,
-			/** @type {number} */ saveTopY = 0,
-			/** @type {number} */ states = me.engine.multiNumStates,
-			/** @type {boolean} */ rotateFits = true,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
-			/** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
-			/** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
-			/** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
-			/** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
-			/** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1,
-			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			/** @type {number} */ wasState6 = 0;
+	//View.prototype.rotateSelection60 = function(/** @type {View} */ me, /** @type {boolean} */ clockwise, /** @type {string} */ comment) {
+		//var	/** @type {BoundingBox} */ box = me.selectionBox,
+			///** @type {number} */ x1 = box.leftX,
+			///** @type {number} */ x2 = box.rightX,
+			///** @type {number} */ y1 = box.bottomY,
+			///** @type {number} */ y2 = box.topY,
+			///** @type {number} */ x = 0,
+			///** @type {number} */ y = 0,
+			///** @type {number} */ swap = 0,
+			///** @type {Int16Array} */ cells = null,
+			///** @type {number} */ state = 0,
+			///** @type {number} */ i = 0,
+			///** @type {number} */ j = 0,
+			///** @type {number} */ cx = 0,
+			///** @type {number} */ cy = 0,
+			///** @type {number} */ w = 0,
+			///** @type {number} */ h = 0,
+			///** @type {number} */ newLeftX = 0,
+			///** @type {number} */ newBottomY = 0,
+			///** @type {number} */ newRightX = 0,
+			///** @type {number} */ newTopY = 0,
+			///** @type {number} */ newX = 0,
+			///** @type {number} */ newY = 0,
+			///** @type {number} */ saveLeftX = 0,
+			///** @type {number} */ saveBottomY = 0,
+			///** @type {number} */ saveRightX = 0,
+			///** @type {number} */ saveTopY = 0,
+			///** @type {number} */ states = me.engine.multiNumStates,
+			///** @type {boolean} */ rotateFits = true,
+			///** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			///** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
+			///** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
+			///** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
+			///** @type {number} */ rightX = leftX + me.engine.boundedGridWidth - 1,
+			///** @type {number} */ topY = bottomY + me.engine.boundedGridHeight - 1,
+			///** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			///** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			///** @type {number} */ wasState6 = 0;
 
-		// check for selection
-		if (me.isSelection) {
-			if (x1 > x2) {
-				swap = x2;
-				x2 = x1;
-				x1 = swap;
-			}
-			if (y1 > y2) {
-				swap = y2;
-				y2 = y1;
-				y1 = swap;
-			}
+		//// check for selection
+		//if (me.isSelection) {
+			//if (x1 > x2) {
+				//swap = x2;
+				//x2 = x1;
+				//x1 = swap;
+			//}
+			//if (y1 > y2) {
+				//swap = y2;
+				//y2 = y1;
+				//y1 = swap;
+			//}
 
-			// compute width and height of selection
-			w = (x2 - x1 + 1);
-			h = (y2 - y1 + 1);
+			//// compute width and height of selection
+			//w = (x2 - x1 + 1);
+			//h = (y2 - y1 + 1);
 
-			// compute center of rotation
-			cx = x1 + ((w - 1) >> 1);
-			cy = y1 + ((h - 1) >> 1);
+			//// compute center of rotation
+			//cx = x1 + ((w - 1) >> 1);
+			//cy = y1 + ((h - 1) >> 1);
 
-			// compute new x and y
-			newLeftX = cx + y1 - cy;
-			newBottomY = cy + x1 - cx;
-			newRightX = cx + y2 - cy;
-			newTopY = cy + x2 - cx;
+			//// compute new x and y
+			//newLeftX = cx + y1 - cy;
+			//newBottomY = cy + x1 - cx;
+			//newRightX = cx + y2 - cy;
+			//newTopY = cy + x2 - cx;
 
-			// transform selection
-			saveLeftX = box.leftX;
-			saveBottomY = box.bottomY;
-			saveRightX = box.rightX;
-			saveTopY = box.topY;
-			box.leftX = newLeftX;
-			box.bottomY = newBottomY;
-			box.rightX = newRightX;
-			box.topY = newTopY;
-			if (box.leftX > box.rightX) {
-				swap = box.leftX;
-				box.leftX = box.rightX;
-				box.rightX = swap;
-			}
-			if (box.bottomY > box.topY) {
-				swap = box.bottomY;
-				box.bottomY = box.topY;
-				box.topY = swap;
-			}
+			//// transform selection
+			//saveLeftX = box.leftX;
+			//saveBottomY = box.bottomY;
+			//saveRightX = box.rightX;
+			//saveTopY = box.topY;
+			//box.leftX = newLeftX;
+			//box.bottomY = newBottomY;
+			//box.rightX = newRightX;
+			//box.topY = newTopY;
+			//if (box.leftX > box.rightX) {
+				//swap = box.leftX;
+				//box.leftX = box.rightX;
+				//box.rightX = swap;
+			//}
+			//if (box.bottomY > box.topY) {
+				//swap = box.bottomY;
+				//box.bottomY = box.topY;
+				//box.topY = swap;
+			//}
 
-			// check if rotation fits in bounded grid if specified
-			if (me.engine.boundedGridType !== -1) {
-				if (box.leftX + xOff < leftX || box.rightX + xOff > rightX || box.bottomY + yOff < bottomY || box.topY + yOff > topY) {
-					me.menuManager.notification.notify("Rotation does not fit in bounded grid", 15, 180, 15, true);
-					rotateFits = false;
-				}
-			} else {
-				// check if rotation has grown the grid and was clipped
-				if (me.checkSelectionSize(me)) {
-					me.menuManager.notification.notify("Rotation does not fit on grid", 15, 180, 15, true);
-					rotateFits = false;
-				} else {
-					// recompute offset in case grid grew
-					xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
-					yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
-				}
-			}
+			//// check if rotation fits in bounded grid if specified
+			//if (me.engine.boundedGridType !== -1) {
+				//if (box.leftX + xOff < leftX || box.rightX + xOff > rightX || box.bottomY + yOff < bottomY || box.topY + yOff > topY) {
+					//me.menuManager.notification.notify("Rotation does not fit in bounded grid", 15, 180, 15, true);
+					//rotateFits = false;
+				//}
+			//} else {
+				//// check if rotation has grown the grid and was clipped
+				//if (me.checkSelectionSize(me)) {
+					//me.menuManager.notification.notify("Rotation does not fit on grid", 15, 180, 15, true);
+					//rotateFits = false;
+				//} else {
+					//// recompute offset in case grid grew
+					//xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
+					//yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+				//}
+			//}
 
-			// if rotation does not fit then restore original selection box
-			if (!rotateFits) {
-				box.leftX = saveLeftX;
-				box.bottomY = saveBottomY;
-				box.rightX = saveRightX;
-				box.topY = saveTopY;
-			} else {
-				// allocate the cells
-				cells = /** @type {!Int16Array} */ (me.engine.allocator.allocate(Type.Int16, 3 * w * h, "View.rotateCells"));
+			//// if rotation does not fit then restore original selection box
+			//if (!rotateFits) {
+				//box.leftX = saveLeftX;
+				//box.bottomY = saveBottomY;
+				//box.rightX = saveRightX;
+				//box.topY = saveTopY;
+			//} else {
+				//// allocate the cells
+				//cells = /** @type {!Int16Array} */ (me.engine.allocator.allocate(Type.Int16, 3 * w * h, "View.rotateCells"));
 
-				// read each cell in the selection and rotate coordinates
-				cx = w >> 1;
-				cy = h >> 1;
+				//// read each cell in the selection and rotate coordinates
+				//cx = w >> 1;
+				//cy = h >> 1;
 
-				for (y = 0; y < h; y += 1) {
-					for (x = 0; x < w; x += 1) {
-						state = me.engine.getState(x + xOff + x1, y + yOff + y1, false);
-						if (invertForGenerations) {
-							if (state > 0) {
-								state = states - state;
-							}
-						}
-						newX = x - cx;
-						newY = y - cy;
-						if (!clockwise) {
-							for (j = 0; j < 4; j += 1) {
-								swap = newX;
-								newX = newX - newY;
-								newY = swap;
-							}
-						}
-						cells[i] = newX - newY + x1 + cx;
-						cells[i + 1] = newX + y1 + cy;
-						cells[i + 2] = state;
-						i += 3;
-					}
-				}
+				//for (y = 0; y < h; y += 1) {
+					//for (x = 0; x < w; x += 1) {
+						//state = me.engine.getState(x + xOff + x1, y + yOff + y1, false);
+						//if (invertForGenerations) {
+							//if (state > 0) {
+								//state = states - state;
+							//}
+						//}
+						//newX = x - cx;
+						//newY = y - cy;
+						//if (!clockwise) {
+							//for (j = 0; j < 4; j += 1) {
+								//swap = newX;
+								//newX = newX - newY;
+								//newY = swap;
+							//}
+						//}
+						//cells[i] = newX - newY + x1 + cx;
+						//cells[i + 1] = newX + y1 + cy;
+						//cells[i + 2] = state;
+						//i += 3;
+					//}
+				//}
 
-				// recompute offsets in case grid changed
-				xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
-				yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
-	
-				// write the cells to their new positions
-				i = 0;
-				while (i < cells.length) {
-					x = cells[i];
-					y = cells[i + 1];
-					state = cells[i + 2];
-					wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, state, true);
-					i += 3;
-				}
-	
-				// clear outside intersection between new selection and old
-				for (x = x1; x < box.leftX; x += 1) {
-					for (y = y1; y <= y2; y += 1) {
-						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
-					}
-				}
-				for (x = box.rightX + 1; x <= x2; x += 1) {
-					for (y = y1; y <= y2; y += 1) {
-						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
-					}
-				}
-				for (y = y1; y < box.bottomY; y += 1) {
-					for (x = x1; x <= x2; x += 1) {
-						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
-					}
-				}
-				for (y = box.topY + 1; y <= y2; y += 1) {
-					for (x = x1; x <= x2; x += 1) {
-						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
-					}
-				}
-	
-				if (me.engine.isLifeHistory && wasState6) {
-					this.engine.populateState6MaskFromColGrid();
-				}
+				//// recompute offsets in case grid changed
+				//xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
+				//yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
-				// check if shrink needed
-				me.engine.shrinkNeeded = true;
-				me.engine.doShrink();
-	
-				// save edit
-				me.afterEdit(comment);
-			}
-		}
-	};
+				//// write the cells to their new positions
+				//i = 0;
+				//while (i < cells.length) {
+					//x = cells[i];
+					//y = cells[i + 1];
+					//state = cells[i + 2];
+					//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, state, true);
+					//i += 3;
+				//}
+
+				//// clear outside intersection between new selection and old
+				//for (x = x1; x < box.leftX; x += 1) {
+					//for (y = y1; y <= y2; y += 1) {
+						//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+					//}
+				//}
+				//for (x = box.rightX + 1; x <= x2; x += 1) {
+					//for (y = y1; y <= y2; y += 1) {
+						//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+					//}
+				//}
+				//for (y = y1; y < box.bottomY; y += 1) {
+					//for (x = x1; x <= x2; x += 1) {
+						//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+					//}
+				//}
+				//for (y = box.topY + 1; y <= y2; y += 1) {
+					//for (x = x1; x <= x2; x += 1) {
+						//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+					//}
+				//}
+
+				//if (me.engine.isLifeHistory && wasState6) {
+					//this.engine.populateState6MaskFromColGrid();
+				//}
+
+				//// check if shrink needed
+				//me.engine.shrinkNeeded = true;
+				//me.engine.doShrink();
+
+				//// save edit
+				//me.afterEdit(comment);
+			//}
+		//}
+	//};
 
 	// rotate selection
 	View.prototype.rotateSelection90 = function(/** @type {View} */ me, /** @type {boolean} */ clockwise, /** @type {string} */ comment) {
@@ -17386,6 +17390,9 @@
 		} else {
 			me.isEdge = false;
 		}
+
+		// disable HROT non-deterministic mode
+		me.engine.HROT.useRandom = false;
 
 		// reset graph data elements
 		me.graphDataToggle.current = me.viewGraphList([true, true, true], true, me);
