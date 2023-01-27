@@ -33492,7 +33492,7 @@
 		// save statistics
 		this.population = population;
 		this.births = births;
-		this.deaths = deaths;
+		this.death = deaths;
 		this.anythingAlive = population;
 
 		// update bounding boxes

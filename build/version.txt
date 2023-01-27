@@ -1,3 +1,6 @@
+Build 847
+- hide population data selection buttons for all Bounded Grid types
+
 Build 846
 - improve handling of Waypoint messages at T=0
 

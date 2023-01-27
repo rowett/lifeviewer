@@ -6546,7 +6546,7 @@
 		this.opacityItem.deleted = shown;
 		this.graphCloseButton.deleted = shown;
 		this.linesToggle.deleted = shown;
-		this.graphDataToggle.deleted = shown || (this.engine.boundedGridType === 1);
+		this.graphDataToggle.deleted = shown || (this.engine.boundedGridType !== -1);
 
 		// cancel button
 		this.cancelButton.deleted = !(this.identify || this.startFrom !== -1);
