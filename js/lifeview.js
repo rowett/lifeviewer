@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 845,
+		/** @const {number} */ versionBuild : 846,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -8187,7 +8187,8 @@
 	// reset to first generation
 	View.prototype.reset = function(/** @type {View} */ me) {
 		var	/** @type {boolean} */ hardReset = false,
-			/** @type {boolean} */ looping = false;
+			/** @type {boolean} */ looping = false,
+			/** @type {Waypoint} */ currentWaypoint = me.waypointManager.firstWaypoint();
 
 		// reset snow if enabled
 		if (this.drawingSnow) {
@@ -8303,9 +8304,6 @@
 		// reset history box
 		me.engine.resetHistoryBox();
 
-		// clear last waypoint message
-		me.lastWaypointMessage = "";
-
 		// clear last waypoint theme
 		me.lastWaypointTheme = -1;
 
@@ -8323,7 +8321,26 @@
 		me.engine.initSearch(me.identify);
 
 		// clear any waypoint messages
-		me.menuManager.notification.clear(false, false);
+		if (hardReset) {
+			// check for waypoint message
+			if (currentWaypoint.textDefined) {
+				if (currentWaypoint.textMessage !== me.lastWaypointMessage) {
+					// if the message is different then notify
+					me.menuManager.notification.notify(ScriptParser.substituteVariables(me, currentWaypoint.textMessage), 15, 21600, 15, false);
+					me.lastWaypointMessage = currentWaypoint.textMessage;
+				}
+			} else {
+				// clear any waypoint message
+				me.menuManager.notification.clear(false, false);
+				me.lastWaypointMessage = "";
+			}
+		} else {
+			// clear any waypoint messages
+			me.menuManager.notification.clear(false, false);
+
+			// clear last waypoint message
+			me.lastWaypointMessage = "";
+		}
 
 		// reset died generation
 		me.diedGeneration = -1;
@@ -17991,6 +18008,9 @@
 		me.standardStep = true;
 		me.standardGPS = true;
 
+		// clear last waypoint message
+		me.lastWaypointMessage = "";
+
 		// get the comments from the pattern
 		if (pattern) {
 			if (pattern.title) {
@@ -18871,9 +18891,6 @@
 
 		// clear manual change flag
 		me.manualChange = false;
-
-		// clear last waypoint message
-		me.lastWaypointMessage = "";
 
 		// set saved view to current view
 		me.saveCamera(me);

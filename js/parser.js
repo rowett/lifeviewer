@@ -5561,6 +5561,7 @@
 			// set message
 			if (currentWaypoint.textDefined) {
 				view.menuManager.notification.notify(currentWaypoint.textMessage, 15, 1000, 15, false);
+				view.lastWaypointMessage = currentWaypoint.textMessage;
 			}
 
 			// copy stop and loop from the first waypoint

@@ -1,3 +1,6 @@
+Build 846
+- improve handling of Waypoint messages at T=0
+
 Build 845
 - editing cells in Rainbow mode was drawing new cells in a single colour in Bounded Grids
 - Tilt hotkeys now skip dead zone
