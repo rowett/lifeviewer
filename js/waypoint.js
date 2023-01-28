@@ -1885,7 +1885,7 @@
 		var	/** @type {number} */ cX = 3 * (x1 - x0),
 			/** @type {number} */ bX = 3 * (x2 - x1) - cX,
 			/** @type {number} */ aX = x3 - x0 - cX - bX,
-            
+
 			// compute the x position
 			/** @type {number} */ x = (aX * Math.pow(t, 3)) + (bX * Math.pow(t, 2)) + (cX * t) + x0;
 

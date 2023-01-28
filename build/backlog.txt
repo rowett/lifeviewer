@@ -79,7 +79,7 @@ Planned:
 
 [STARTED]PCA rules
     - use tile system
-    
+
 [STARTED]Pattern Editor
     - ability to define rule
     - improved LifeHistory drawing modes

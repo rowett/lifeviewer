@@ -850,7 +850,7 @@
 		/** @type {number} */ this.altSmaxLTL = -1;
 		/** @type {number} */ this.altBminLTL = -1;
 		/** @type {number} */ this.altBmaxLTL = -1;
- 
+
 		// LTL neightborhood
 		/** @type {number} */ this.neighborhoodLTL = -1;
 

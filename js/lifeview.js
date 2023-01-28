@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 848,
+		/** @const {number} */ versionBuild : 849,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6492,7 +6492,7 @@
 		// disable custom theme if not specified
 		for (i = 0; i < ViewConstants.themeOrder.length; i += 1) {
 			if (ViewConstants.themeOrder[i] === this.engine.numThemes) {
-				this.themeSelections[i].locked = !this.customTheme;
+				this.themeSelections[i].locked = !(this.customTheme || this.customGridMajor);
 			}
 		}
 

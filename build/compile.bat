@@ -6,4 +6,4 @@ copy /b start.txt+..\js\compatibility.js+..\js\allocator.js+..\js\alias.js+..\js
 
 @rem run the closure compiler
 "C:\Program Files\Java\jre1.8.0_361\bin\java.exe" -jar compiler.jar -W VERBOSE --jscomp_off=checkVars --compilation_level ADVANCED_OPTIMIZATIONS --js=all.js --js_output_file=lv-plugin.js
- 
+

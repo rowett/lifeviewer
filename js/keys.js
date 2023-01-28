@@ -1684,7 +1684,7 @@
 									value = me.engine.colourTheme - 1;
 									if (value < 0) {
 										// check for custom theme
-										if (me.customTheme) {
+										if (me.customTheme || me.customGridMajor) {
 											value = me.engine.numThemes;
 										} else {
 											value = me.engine.numThemes - 1;
@@ -1695,7 +1695,7 @@
 									value = me.engine.colourTheme + 1;
 	
 									// check for custom theme
-									if (me.customTheme) {
+									if (me.customTheme || me.customGridMajor) {
 										// allow custom theme
 										if (value >= me.engine.numThemes + 1) {
 											value = 0;
