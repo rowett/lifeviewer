@@ -322,7 +322,7 @@
 		// minimum and maximum depth
 		/** @const {number} */ minDepth : 0,
 		/** @const {number} */ maxDepth : 10,
-		
+
 		// display scale for depth
 		/** @const {number} */ depthScale : 10,
 
@@ -332,7 +332,7 @@
 		// minimum and maximum zoom
 		/** @const {number} */ minZoom : 1 / 32,
 		/** @const {number} */ maxZoom : 64,
-		
+
 		// minimum and maximum tilt
 		/** @const {number} */ minTilt : -5,
 		/** @const {number} */ maxTilt : 5,
@@ -913,7 +913,7 @@
 
 		// selection box
 		/** @type {BoundingBox} */ this.selectionBox = new BoundingBox(0, 0, 0, 0);
-	
+
 		// middle coordinate selection box
 		/** @type {BoundingBox} */ this.middleBox = new BoundingBox(0, 0, 0, 0);
 
@@ -1850,7 +1850,7 @@
 
 		// go to generation button
 		/** @type {MenuItem} */ this.goToGenButton = null;
-		
+
 		// open clipboard button
 		/** @type {MenuItem} */ this.openClipboardButton = null;
 
@@ -2185,7 +2185,7 @@
 	View.prototype.allocateChunk = function() {
 		var	/** @type {number} */ chunkSize = 1 << ViewConstants.editChunkPower,
 			/** @type {number} */ chunk = this.currentEditIndex >> ViewConstants.editChunkPower;
-			
+
 		// check if a new buffer is needed
 		if (chunk === this.currentEdit.length) {
 			this.currentEdit[chunk] = /** @type {!Int16Array} */ (this.engine.allocator.allocate(Type.Int16, chunkSize, "View.currentEdit" + chunk));
@@ -2329,7 +2329,7 @@
 					}
 				}
 			}
-	
+
 			// set the state
 			this.diedGeneration = -1;
 			return this.engine.setState(x, y, colour, deadZero);
@@ -2670,13 +2670,13 @@
 					record = me.editList[current - 1];
 					gen = record.gen;
 					selection = record.selection;
-	
+
 					// check for multi-step
 					if (!multiStep && record.action === "advance outside") {
 						multiStep = true;
 						steps = 3;
 					}
-	
+
 					if (record.editCells === null) {
 						if (current > 1) {
 							gen = me.editList[current - 2].gen;
@@ -2685,7 +2685,7 @@
 					if (current > 1) {
 						selection = me.editList[current - 2].selection;
 					}
-		
+
 					// if it is for an earlier generation then go there
 					if (gen < counter) {
 						if (gen === 0) {
@@ -2698,7 +2698,7 @@
 						// paste cells in reverse order
 						me.pasteRaw(record.editCells, true);
 					}
-		
+
 					// restore selection if present
 					if (selection) {
 						selBox.leftX = selection.leftX;
@@ -2711,7 +2711,7 @@
 						me.isSelection = false;
 						me.afterSelectAction = false;
 					}
-	
+
 					// check for reverse playback
 					if (record.action === "reverse playback") {
 						me.engine.reversePending = true;
@@ -3120,11 +3120,11 @@
 		var	/** @type {number} */ pasteLeft = (this.pasteLeftX < 0 ? -this.pasteLeftX : this.pasteLeftX),
 			/** @type {number} */ pasteRight = (this.pasteRightX < 0 ? -this.pasteRightX : this.pasteRightX),
 			/** @type {number} */ pasteMax = (pasteLeft < pasteRight ? pasteRight : pasteLeft) * 2;
-			
+
 		if (neededWidth < pasteMax) {
 			neededWidth = pasteMax;
 		}
-		
+
 		return neededWidth;
 	};
 
@@ -3134,11 +3134,11 @@
 		var	/** @type {number} */ pasteBottom = (this.pasteBottomY < 0 ? -this.pasteBottomY : this.pasteBottomY),
 			/** @type {number} */ pasteTop = (this.pasteTopY < 0 ? -this.pasteTopY : this.pasteTopY),
 			/** @type {number} */ pasteMax = (pasteBottom < pasteTop ? pasteTop : pasteBottom) * 2;
-			
+
 		if (neededHeight < pasteMax) {
 			neededHeight = pasteMax;
 		}
-		
+
 		return neededHeight;
 	};
 
@@ -3221,7 +3221,7 @@
 		var	/** @type {number} */ i = 0,
 			/** @type {boolean} */ found = false,
 			/** @type {Array} */ cells = [];
-		
+
 		// check the name is not a reserved word
 		if (ScriptParser.isScriptCommand(name)) {
 			scriptErrors[scriptErrors.length] = [Keywords.rleWord + " " + name, "name is reserved word"];
@@ -3575,7 +3575,7 @@
 				}
 			}
 		}
-	
+
 		return needsPaste;
 	};
 
@@ -3799,26 +3799,26 @@
 									}
 								}
 								this.engine.setState(xOff + x, yOff + y, result, true);
-	
+
 								// check for grid growth
 								while (width !== this.engine.width || height !== this.engine.height) {
 									if (width !== this.engine.width) {
 										// double width
 										width <<= 1;
-	
+
 										// adjust drawing cell position
 										xOff += width >> 2;
-	
+
 										this.defaultX += width >> 2;
 										this.savedX += width >> 2;
 										this.panX += width >> 2;
 									}
-	
+
 									if (height !== this.engine.height) {
 										// same for height
 										height <<= 1;
 										yOff += height >> 2;
-	
+
 										this.defaultY += height >> 2;
 										this.savedY += height >> 2;
 										this.panY += height >> 2;
@@ -3838,26 +3838,26 @@
 										result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
 									}
 									this.engine.setState(xOff + x, yOff + y, result, true);
-	
+
 									// check for grid growth
 									while (width !== this.engine.width || height !== this.engine.height) {
 										if (width !== this.engine.width) {
 											// double width
 											width <<= 1;
-	
+
 											// adjust drawing cell position
 											xOff += width >> 2;
-	
+
 											this.defaultX += width >> 2;
 											this.savedX += width >> 2;
 											this.panX += width >> 2;
 										}
-	
+
 										if (height !== this.engine.height) {
 											// same for height
 											height <<= 1;
 											yOff += height >> 2;
-	
+
 											this.defaultY += height >> 2;
 											this.savedY += height >> 2;
 											this.panY += height >> 2;
@@ -3873,26 +3873,26 @@
 									result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
 									if (result !== dest) {
 										this.engine.setState(xOff + x, yOff + y, result, true);
-	
+
 										// check for grid growth
 										while (width !== this.engine.width || height !== this.engine.height) {
 											if (width !== this.engine.width) {
 												// double width
 												width <<= 1;
-	
+
 												// adjust drawing cell position
 												xOff += width >> 2;
-	
+
 												this.defaultX += width >> 2;
 												this.savedX += width >> 2;
 												this.panX += width >> 2;
 											}
-	
+
 											if (height !== this.engine.height) {
 												// same for height
 												height <<= 1;
 												yOff += height >> 2;
-	
+
 												this.defaultY += height >> 2;
 												this.savedY += height >> 2;
 												this.panY += height >> 2;
@@ -4000,10 +4000,10 @@
 			link.href = me.engine.cellPeriodCanvas.toDataURL("image/png");
 			link.download = "cellmap.png";
 			link.click();
-	
+
 			// remove the new link
 			link.remove();
-	
+
 			// notify that image captured
 			me.menuManager.notification.notify("Cell Map Saved", 15, 300, 15, true);
 		}
@@ -4019,43 +4019,43 @@
 			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid,
 			/** @type {Array<Uint8Array>} */ nextColourGrid = this.engine.nextColourGrid,
 			/** @type {Array<Uint8Array>} */ overlayGrid = this.engine.overlayGrid,
-	
+
 			// lookup pattern width and height
 			/** @type {number} */ width = pattern.width,
 			/** @type {number} */ height = pattern.height,
-	
+
 			// get x and y grid position
 			/** @type {number} */ panX = this.panX,
 			/** @type {number} */ panY = this.panY,
-	
+
 			// pattern row and grid row
 			/** @type {Uint16Array} */ patternRow = null,
 			/** @type {Uint16Array} */ gridRow = null,
 			/** @type {Uint8Array} */ multiStateRow = null,
 			/** @type {Uint8Array} */ colourGridRow = null,
 			/** @type {Uint8Array} */ overlayGridRow = null,
-	
+
 			// state number
 			/** @type {number} */ state = 0,
-	
+
 			// bounded grid range
 			/** @type {number} */ bLeftX = Math.round(-this.engine.boundedGridWidth / 2),
 			/** @type {number} */ bRightX = Math.floor((this.engine.boundedGridWidth - 1) / 2),
 			/** @type {number} */ bBottomY = Math.round(-this.engine.boundedGridHeight / 2),
 			/** @type {number} */ bTopY = Math.floor((this.engine.boundedGridHeight - 1) / 2),
-	
+
 			// pattern destination
 			/** @type {number} */ dLeftX = panX - (this.engine.width >> 1),
 			/** @type {number} */ dRightX = dLeftX + width - 1,
 			/** @type {number} */ dBottomY = panY - (this.engine.height >> 1),
 			/** @type {number} */ dTopY = dBottomY + height - 1,
-				
+
 			// number of pattern states
 			/** @type {number} */ numStates = this.engine.multiNumStates,
-	
+
 			// whether pattern is 2-state HROT
 			/** @type {boolean} */ isTwoStateHROT = (numStates === 2 && this.engine.isHROT);
-	
+
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {
 			// check if pattern is inside bounded grid
@@ -4127,7 +4127,7 @@
 				if (this.multiStateView || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || !this.executable) {
 					multiStateRow = pattern.multiStateMap[y];
 					colourGridRow = colourGrid[y + panY];
-	
+
 					// copy colour cells
 					for (x = 0; x < width; x += 1) {
 						if (x + panX >= dLeftX && x + panX <= dRightX) {
@@ -4143,7 +4143,7 @@
 					if (numStates > 2) {
 						multiStateRow = pattern.multiStateMap[y];
 						colourGridRow = colourGrid[y + panY];
-	
+
 						// copy colour cells
 						for (x = 0; x < width; x += 1) {
 							if (x + panX >= dLeftX && x + panX <= dRightX) {
@@ -4390,15 +4390,15 @@
 			/** @type {number} */ origZoom = this.engine.zoom,
 			/** @type {number} */ origX = this.engine.xOff,
 			/** @type {number} */ origY = this.engine.yOff,
-	
+
 			// deltas
 			/** @type {number} */ zoomDelta = 0,
 			/** @type {number} */ xDelta = 0,
 			/** @type {number} */ yDelta = 0,
-	
+
 			// sum weight
 			/** @type {number} */ weight = this.autoFitWeight,
-				
+
 			// offset for selection
 			/** @type {number} */ swap = 0,
 			middleBox = this.middleBox,
@@ -4526,7 +4526,7 @@
 			this.tiltItem.current = this.viewTiltRange([this.convertFromTilt(this.engine.tilt), this.engine.tilt], false, this);
 		}
 	};
-	
+
 	// compute pattern pan X and Y
 	View.prototype.computePanXY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ specifiedWidth, /** @type {number} */ specifiedHeight) {
 		// check for bounded grid
@@ -4607,10 +4607,10 @@
 			/** @type {number} */ y = this.menuManager.mouseLastY,
 			/** @type {number} */ newX = 0,
 			/** @type {number} */ newY = 0,
-	
+
 			// compute new zoom
 			/** @type {number} */ newZoom = currentZoom + zoomDelta,
-	
+
 			// get current angle and compute sin and cos
 			/** @type {number} */ angle = -this.engine.angle,
 			/** @type {number} */ sinAngle = Math.sin(angle / 180 * Math.PI),
@@ -4869,7 +4869,7 @@
 			// engine camera x and y
 			/** @type {number} */ engineY = this.panY - this.engine.yOff,
 			/** @type {number} */ engineX = this.panX - this.engine.xOff - (this.engine.isHex ? this.engine.yOff / 2 : 0),
-	
+
 			// engine origin x and y
 			/** @type {number} */ originX = this.engine.originX,
 			/** @type {number} */ originY = this.engine.originY,
@@ -4879,7 +4879,7 @@
 			/** @type {number} */ xPos = 0,
 			/** @type {number} */ yFrac = 0,
 			/** @type {number} */ xFrac = 0,
-		    
+
 			// rotation
 			/** @type {number} */ theta = 0,
 			/** @type {number} */ radius = 0,
@@ -4955,7 +4955,7 @@
 			/** @type {number} */ xPos = 0,
 			/** @type {number} */ yFrac = 0,
 			/** @type {number} */ xFrac = 0,
-		    
+
 			// x and y zoom
 			/** @type {number} */ xZoom = this.engine.zoom,
 			/** @type {number} */ yZoom = this.engine.zoom * (this.engine.isTriangular ? ViewConstants.sqrt3 : 1),
@@ -5029,7 +5029,7 @@
 				}
 			}
 		}
-		
+
 		// set cell position
 		this.cellX = xPos + this.panX;
 		this.cellY = yPos + this.panY;
@@ -5045,10 +5045,10 @@
 			/** @type {number} */ e2 = 0,
 			/** @type {number} */ width = this.engine.width,
 			/** @type {number} */ height = this.engine.height,
-	
+
 			// whether [R]History state6 changed
 			/** @type {number} */ result = 0;
-	
+
 		// set the first point
 		result = this.setStateWithUndo(startX, startY, colour, true);
 
@@ -5291,13 +5291,13 @@
 			// x and y zoom
 			/** @type {number} */ xZoom = this.engine.zoom,
 			/** @type {number} */ yZoom = this.engine.zoom * (this.engine.isTriangular ? ViewConstants.sqrt3 : 1),
-	
+
 			// cell position
 			/** @type {number} */ yPos = 0,
 			/** @type {number} */ xPos = 0,
 			/** @type {number} */ yFrac = 0,
 			/** @type {number} */ xFrac = 0,
-	
+
 			// rotation
 			/** @type {number} */ theta = 0,
 			/** @type {number} */ radius = 0;
@@ -5380,7 +5380,7 @@
 			// engine camera x and y
 			/** @type {number} */ engineY = this.panY - this.engine.yOff,
 			/** @type {number} */ engineX = this.panX - this.engine.xOff - (this.engine.isHex ? this.engine.yOff / 2 : 0),
-	
+
 			// engine origin x and y
 			/** @type {number} */ originX = this.engine.originX,
 			/** @type {number} */ originY = this.engine.originY,
@@ -5388,30 +5388,30 @@
 			// x and y zoom
 			/** @type {number} */ xZoom = this.engine.zoom,
 			/** @type {number} */ yZoom = this.engine.zoom * (this.engine.isTriangular ? ViewConstants.sqrt3 : 1),
-	
+
 			// cell position
 			/** @type {number} */ yPos = 0,
 			/** @type {number} */ xPos = 0,
 			/** @type {number} */ yFrac = 0,
 			/** @type {number} */ xFrac = 0,
-			
+
 			// display strings
 			/** @type {string} */ xDisplay = "",
 			/** @type {string} */ yDisplay = "",
 			/** @type {number} */ stateDisplay = 0,
-				
+
 			// display limit
 			/** @type {number} */ displayLimit = this.engine.maxGridSize > 9999 ? 99999 : 9999,
-	
+
 			// rotation
 			/** @type {number} */ theta = 0,
 			/** @type {number} */ radius = 0,
-	
+
 			// bounded grid top left
 			/** @type {number} */ boxOffset = (this.engine.isMargolus ? -1 : 0),
 			/** @type {number} */ leftX = Math.round((-this.engine.boundedGridWidth) / 2) + boxOffset,
 			/** @type {number} */ bottomY = Math.round((-this.engine.boundedGridHeight) / 2) + boxOffset,
-	
+
 			// bounded grid bottom right
 			/** @type {number} */ rightX = leftX + this.engine.boundedGridWidth - 1,
 			/** @type {number} */ topY = bottomY + this.engine.boundedGridHeight - 1;
@@ -5632,42 +5632,42 @@
 			/** @type {number} */ currentTime = 0,
 			/** @type {Waypoint} */ currentWaypoint = me.waypointManager.current,
 			/** @type {number} */ i = 0,
-	
+
 			// whether update needed
 			/** @type {boolean} */ updateNeeded = false,
-	
+
 			// whether frame budget exceeded (machine too slow)
 			/** @type {boolean} */ tooSlow = false,
-	
+
 			// whether at end of waypoints
 			/** @type {boolean} */ waypointsEnded = false,
-	
+
 			// whether bailing out of stepping
 			/** @type {boolean} */ bailout = false,
-				
+
 			// whether manual stepping (so ignore bailout)
 			/** @type {boolean} */ manualStepping = false,
-				
+
 			// how many steps to take
 			/** @type {number} */ stepsToTake = 1,
-	
+
 			// many many steps taken
 			/** @type {number} */ stepsTaken = 0,
-	
+
 			// save died generation
 			/** @type {number} */ saveGeneration = 0,
-	
+
 			// current and target generations
 			/** @type {number} */ currentGen = me.engine.counter,
 			/** @type {number} */ targetGen = 0,
-	
+
 			// saved bounding box
 			/** @type {BoundingBox} */ zoomBox = me.engine.zoomBox,
 			/** @type {BoundingBox} */ saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
-	
+
 			// frame target time in ms
 			/** @type {number} */ frameTargetTime = (1000 / me.refreshRate);
-	
+
 			// unlock controls
 			me.controlsLocked = false;
 
@@ -5746,19 +5746,19 @@
 				if (me.manualChange && !me.waypointManager.atLast(me.elapsedTime + timeSinceLastUpdate)) {
 					// clear flag
 					me.manualChange = false;
-	
+
 					// create temporary position
 					me.elapsedTime = me.waypointManager.createTemporaryPosition(me.engine.width / 2 - me.engine.xOff, me.engine.height / 2 - me.engine.yOff, me.engine.zoom, me.engine.angle, me.engine.tilt, me.engine.layers, me.engine.layerDepth * ViewConstants.depthScale, me.engine.colourTheme, me.genSpeed, me.gensPerStep, me.engine.counter, me.elapsedTime);
 				}
-			
+
 				// check for fit zoom
 				if (currentWaypoint.fitZoom) {
 					// fit zoom
 					me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
-	
+
 					// clear manual change flag that fit zoom will set
 					me.manualChange = false;
-	
+
 					// copy fit zoom to current waypoint
 					currentWaypoint.x = me.engine.width / 2 - me.engine.xOff;
 					currentWaypoint.y = me.engine.height / 2 - me.engine.yOff;
@@ -5814,7 +5814,7 @@
 					if (me.thumbnail) {
 						me.engine.zoom = me.engine.zoom / me.thumbnailDivisor;
 					}
-	
+
 					// update the zoom control
 					if (me.zoomItem) {
 						me.zoomItem.current = me.viewZoomRange([me.engine.zoom, me.engine.zoom], false, me);
@@ -5832,13 +5832,13 @@
 						if (me.tiltItem) {
 							me.tiltItem.current = [me.convertFromTilt(me.engine.tilt), me.engine.tilt];
 						}
-	
+
 						// set layers
 						me.engine.layers = currentWaypoint.layers;
 						if (me.layersItem) {
 							me.layersItem.current = [me.engine.layers, me.engine.layers];
 						}
-	
+
 						// set layer depth
 						me.engine.layerDepth = (currentWaypoint.depth / ViewConstants.depthScale) + ViewConstants.minDepth;
 						if (me.depthItem) {
@@ -5857,7 +5857,7 @@
 
 				// set grid TBD
 				//me.engine.displayGrid = currentWaypoint.grid; 
-	
+
 				// if waypoints not ended then work out whether to step to next generation
 				if (currentWaypoint.targetGen > me.engine.counter) {
 					me.nextStep = true;
@@ -5866,7 +5866,7 @@
 				} else {
 					me.nextStep = false;
 				}
-	
+
 				// check if a new waypoint message is available
 				if (currentWaypoint.textMessage !== me.lastWaypointMessage) {
 					// check if cancelling
@@ -5877,11 +5877,11 @@
 						// draw new message
 						me.menuManager.notification.notify(ScriptParser.substituteVariables(me, currentWaypoint.textMessage), 15, 21600, 15, false);
 					}
-	
+
 					// save message
 					me.lastWaypointMessage = currentWaypoint.textMessage;
 				}
-	
+
 				// check if a new theme is available
 				if (currentWaypoint.theme !== me.lastWaypointTheme) {
 					// fade to new theme
@@ -6437,7 +6437,7 @@
 
 			// current zoom now
 			/** @type {number} */ currentZoom = 0,
-	
+
 			// origin offset
 			/** @type {number} */ originCounter = this.fixedPointCounter / this.refreshRate;
 
@@ -7002,7 +7002,7 @@
 		this.infoBarLabelXValue.preText = xValStr;
 		this.infoBarLabelYValue.preText = yValStr;
 		this.infoBarLabelAngleValue.preText = (this.engine.angle.toFixed(0) + "\u00B0");
-		
+
 		// update the infobar trackbox E, S, W and N speeds
 		this.infoBarLabelEValueRight.preText = this.currentTrackSpeedE.toFixed(3);
 		this.infoBarLabelSValueRight.preText = this.currentTrackSpeedS.toFixed(3);
@@ -7027,7 +7027,7 @@
 			this.currentTrackSpeedW = (this.engine.zoomBox.leftX - this.engine.initialBox.leftX) / this.engine.counter;
 		}
 	};
-	
+
 	// update indicators
 	View.prototype.updateIndicators = function() {
 		// autofit
@@ -7374,7 +7374,7 @@
 							me.lastIdentifyMod = identifyResult[12];
 							me.lastIdentifyActive = identifyResult[13];
 							me.lastIdentifyTemperature = identifyResult[14];
-	
+
 							// update result labels
 							me.identifyTypeValueLabel.preText = me.lastIdentifyType;
 							me.identifyCellsValueLabel.preText = me.lastIdentifyCells;
@@ -7416,7 +7416,7 @@
 
 						// save fast setting
 						me.lastWasFast = me.identifyFast;
-	
+
 						// set label position for results
 						me.setResultsPosition();
 					}
@@ -7427,7 +7427,7 @@
 						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 					}
 					me.afterEdit("");
-	
+
 					me.identifyBannerLabel.preText = identifyResult[0];
 					if (me.lastIdentifyType === "Empty" || me.lastIdentifyType === "none" || me.lastIdentifyType === "") {
 						me.menuManager.notification.notify(identifyResult[0], 15, 240, 15, false);
@@ -7494,13 +7494,13 @@
 
 			// time budget in ms for this frame
 			/** @type {number} */ timeLimit = 13,
-	
+
 			// whether to save snapshots during next generation
 			/** @type {boolean} */ noSnapshots = true,
-	
+
 			// compute number of generations in snapshot buffer
 			/** @type {number} */ snapshotBufferGens = me.engine.snapshotManager.maxSnapshots * LifeConstants.snapshotInterval;
-	
+
 		// compute the next set of generations without stats for speed
 		while (me.engine.counter < targetGen - 1 && (performance.now() - startTime < timeLimit)) {
 			// check whether to save snapshots
@@ -7558,7 +7558,7 @@
 			// lock the menu
 			me.viewMenu.locked = true;
 		}
-		
+
 		// update progress bar
 		me.updateProgressBarHistory(me, targetGen);
 
@@ -7846,7 +7846,7 @@
 		if (change) {
 			// toggle auto hide
 			me.autoGrid = newValue[0];
-			
+
 			// check if just switched on and grid is off
 			if (me.autoGrid && !me.engine.displayGrid) {
 				// if in Draw or Select mode then turn on grid
@@ -8212,7 +8212,7 @@
 		if (me.elapsedTime === 0 || me.hardReset) {
 			hardReset = true;
 		}
-		
+
 		// check if looping
 		if (!me.loopDisabled && me.loopGeneration !== -1) {
 			if (me.engine.counter >= me.loopGeneration) {
@@ -8566,7 +8566,7 @@
 					}
 					// turn off pasting
 					me.cancelPaste(me);
-				
+
 					// check for autogrid
 					if (me.autoGrid) {
 						me.gridToggle.current = me.toggleGrid([true], true, me);
@@ -8972,7 +8972,7 @@
 			/** @type {number} */ swap = 0,
 			/** @type {number} */ xOff = (this.engine.width >> 1) - (this.patternWidth >> 1) + (this.xOffset << 1),
 			/** @type {number} */ yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1);
-			
+
 		// adjust current state if generations style
 		if (this.engine.multiNumStates > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)) {
 			if (replace > 0) {
@@ -9037,7 +9037,7 @@
 			/** @type {BoundingBox} */ historyBox = me.engine.historyBox,
 			/** @type {number} */ numCleared = 0,
 			/** @type {number} */ clearValue = 0;
-			
+
 		// delete any cell of the current pen colour
 		if (current > 0) {
 			// adjust current state if generations style
@@ -9129,22 +9129,22 @@
 			/** @type {string} */ message = "",
 			/** @type {number} */ duration = 40,
 			/** @type {number} */ numChanged = 0,
-	
+
 			// whether loop switched on or off
 			/** @type {number} */ loopChange = 0,
-	
+
 			// whether stop switched on or off
 			/** @type {number} */ stopChange = 0,
-	
+
 			// whether waypoints switched on or off
 			/** @type {number} */ waypointsChange = 0,
-	
+
 			// whether track switched on or off
 			/** @type {number} */ trackChange = 0,
-	
+
 			// whether autostart switched on or off
 			/** @type {number} */ autoStartChange = 0,
-	
+
 			// whether autofit switched on or off
 			/** @type {number} */ autoFitChange = 0;
 
@@ -9402,7 +9402,7 @@
 						if (me.engine.counter > 0) {
 							// adjust undo stack pointer
 							me.setUndoGen(me.engine.counter - me.gensPerStep);
-	
+
 							// run from start to previous generation
 							me.runTo(me.engine.counter - me.gensPerStep);
 						}
@@ -9472,7 +9472,7 @@
 			// set angle
 			me.engine.angle = newValue[0];
 		}
-		
+
 		// return value
 		return [me.engine.angle, me.engine.angle];
 	};
@@ -9494,7 +9494,7 @@
 				result = 0.5;
 			}
 		}
-		
+
 		return result;
 	};
 
@@ -9503,7 +9503,7 @@
 	View.prototype.convertToTilt = function(/** @type {number} */ value) {
 		var	/** @type {number} */ result = 0,
 			/** @type {number} */ mult = 0.5 / (0.5 - ViewConstants.deadZoneTilt / 2);
-		
+
 		// ignore dead zone
 		if (value < (0.5 - ViewConstants.deadZoneTilt / 2)) {
 			value *= mult;
@@ -9531,7 +9531,7 @@
 			// set tilt
 			me.engine.tilt = me.convertToTilt(newValue[0]);
 		}
-		
+
 		// return value
 		return [newValue[0], me.engine.tilt];
 	};
@@ -9689,16 +9689,16 @@
 			} else {
 				angle = -me.engine.angle;
 			}
-	
+
 			// only update position if controls not locked
 			if (!me.controlsLocked) {
 				// compute x and y
 				sinAngle = Math.sin(angle / 180 * Math.PI);
 				cosAngle = Math.cos(angle / 180 * Math.PI);
-	
+
 				// set manual change happened
 				me.manualChange = true;
-	
+
 				// update position
 				me.engine.xOff += dx * cosAngle + dy * (-sinAngle);
 				me.engine.yOff += dx * sinAngle + dy * cosAngle;
@@ -9795,7 +9795,7 @@
 			// offset to middle of grid
 			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-	
+
 			// box offset for Margolus
 			/** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
 
@@ -10017,7 +10017,7 @@
 				}
 			}
 		}
-		
+
 		// save section box if there were live cells
 		if (population > 0) {
 			selBox.leftX = minX;
@@ -10223,7 +10223,7 @@
 
 			// load the icons from the image file
 			icons.src = "data:image/png;base64,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";
-				
+
 			// save the image
 			ViewConstants.icons = icons;
 		}
@@ -10828,7 +10828,7 @@
 				}
 			}
 		}
-		
+
 		// compute the chance of creating each condition
 		birthChance = new Uint8Array(neighbours + 1);
 		survivalChance = new Uint8Array(neighbours + 1);
@@ -10992,7 +10992,7 @@
 					value = (this.randGen.random() * 16) | 0;
 					if (value === 15) {
 						first15 = true;
-		
+
 						// mark 15 and 0 used
 						used |= (1 << 15);
 						used |= 1;
@@ -11005,12 +11005,12 @@
 				}
 				result += String(value);
 				i -= 1;
-	
+
 				// create remaining entries
 				while (used !== 65535) {
 					// pick next entry
 					value = (this.randGen.random() * i) | 0;
-	
+
 					// find which entry it was
 					bit = 0;
 					while (value >= 0) {
@@ -11023,7 +11023,7 @@
 					used |= (1 << (bit - 1));
 					i -= 1;
 				}
-	
+
 				// add final 0 if first was 15
 				if (first15) {
 					result += ",0";
@@ -11043,13 +11043,13 @@
 					}
 				}
 				result += String(value) + ",";
-	
+
 				// create 14 random entries
 				for (i = 1; i < 15; i += 1) {
 					value = (this.randGen.random() * 16) | 0;
 					result += String(value) + ",";
 				}
-	
+
 				// create last entry which must be 0 if first was 15
 				if (first15) {
 					value = 0;
@@ -11059,7 +11059,7 @@
 				result += String(value);
 			}
 		}
-	
+
 		// return the rule name
 		return result;
 	};
@@ -11184,7 +11184,7 @@
 					}
 				}
 			}
-		
+
 			// check for [R]History
 			if (me.engine.isLifeHistory) {
 				me.patternRuleName += "History";
@@ -11194,7 +11194,7 @@
 			if (me.engine.isSuper) {
 				me.patternRuleName += "Super";
 			}
-	
+
 			// check if there is an alias for the generated pattern name
 			aliasName = AliasManager.getAliasFromRule(me.patternRuleName);
 			if (aliasName !== null) {
@@ -11310,11 +11310,11 @@
 
 			// compute bezier completion
 			/** @type {number} */ bezierComplete = this.waypointManager.bezierX(linearComplete, 0, 0, 1, 1),
-	
+
 			// get angle
 			/** @type {number} */ startAngle = this.startAnglePOI,
 			/** @type {number} */ endAngle = this.endAnglePOI,
-	
+
 			// get tilt
 			/** @type {number} */ startTilt = this.startTiltPOI,
 			/** @type {number} */ endTilt = this.endTiltPOI;
@@ -11950,7 +11950,7 @@
 
 		// hide navigation
 		me.navToggle.current[0] = false;
-		
+
 		// mark toggle required
 		me.menuManager.toggleRequired = true;
 	};
@@ -12022,7 +12022,7 @@
 				x2 += xOff;
 				y1 += yOff;
 				y2 += yOff;
-	
+
 				// clear cells outside selection
 				for (y = bottomY; y <= topY; y += 1) {
 					for (x = leftX; x <= rightX; x += 1) {
@@ -12079,7 +12079,7 @@
 					y2 = y1;
 					y1 = swap;
 				}
-	
+
 				if ((me.engine.isLifeHistory || me.engine.isSuper) && ctrl) {
 					// clear [R]History or [R]Super states in selection
 					for (y = y1; y <= y2; y += 1) {
@@ -12105,14 +12105,14 @@
 						}
 					}
 				}
-	
+
 				// check if shrink needed
 				me.engine.shrinkNeeded = true;
 				me.engine.doShrink();
-	
+
 				// mark nothing happened since selection
 				me.afterSelectAction = false;
-	
+
 				// save edit
 				if ((me.engine.isLifeHistory || me.engine.isSuper) && ctrl) {
 					if (me.engine.isLifeHistory) {
@@ -12178,7 +12178,7 @@
 			// update the pattern extent
 			me.engine.shrinkNeeded = true;
 			me.engine.doShrink();
-	
+
 			// for HROT patterns use alive states only
 			if (!me.engine.isSuper && !me.engine.isRuleTree && (me.engine.isPCA || (me.engine.isHROT && me.engine.multiNumStates === 2) || me.engine.multiNumStates > 2)) {
 				me.engine.getAliveStatesBox(selBox);
@@ -12193,7 +12193,7 @@
 				selBox.rightX = zoomBox.rightX - xOff;
 				selBox.topY = zoomBox.topY - yOff;
 			}
-	
+
 			me.isSelection = true;
 			me.afterSelectAction = false;
 			if (selBox.rightX < selBox.leftX) {
@@ -12240,7 +12240,7 @@
 					}
 				}
 			}
-	
+
 			// cut to the current clipboard
 			me.cutSelection(me, me.currentPasteBuffer, false, false);
 		}
@@ -12374,7 +12374,7 @@
 					}
 				}
 			}
-	
+
 			// copy to the standard clipboard
 			if (me.isSelection) {
 				me.copySelection(me, me.currentPasteBuffer);
@@ -12751,7 +12751,7 @@
 						me.cutPressed(me);
 						this.copySyncExternal = savedSync;
 					}
-		
+
 					// check whether there is something to paste
 					if (me.canPaste) {
 						me.evolvePaste(me);
@@ -12876,7 +12876,7 @@
 					i += 1;
 				}
 			}
-	
+
 			// update selection
 			if (!me.evolvingPaste) {
 				if (selBox.leftX < selBox.rightX) {
@@ -12897,7 +12897,7 @@
 				evolveBox.rightX = evolveBox.leftX + me.pasteWidth - 1;
 				evolveBox.topY = evolveBox.bottomY + me.pasteHeight - 1;
 			}
-	
+
 			// mark paste is evolving
 			me.evolvingPaste = true;
 		} else {
@@ -13188,7 +13188,7 @@
 					selBox.rightX += dx;
 					selBox.bottomY += dy;
 					selBox.topY += dy;
-	
+
 					// save edit
 					if (dx === 0) {
 						if (dy === -1) {
@@ -13255,7 +13255,7 @@
 						}
 						width = rightX - leftX + 1;
 						height = topY - bottomY + 1;
-	
+
 						// check the paste fits in the selection box
 						if (me.pasteWidth > width || me.pasteHeight > height) {
 							me.menuManager.notification.notify("Paste does not fit in selection", 15, 180, 15, true);
@@ -13316,7 +13316,7 @@
 				me.pasteBuffer = me.pasteBuffers[number].buffer;
 				me.pasteWidth = me.pasteBuffers[number].width;
 				me.pasteHeight = me.pasteBuffers[number].height;
-		
+
 				// switch to select mode
 				if (me.modeList.current !== ViewConstants.modeSelect) {
 					me.modeList.current = me.viewModeList(ViewConstants.modeSelect, true, me);
@@ -14062,7 +14062,7 @@
 				// recompute offsets in case grid changed
 				xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
 				yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
-	
+
 				// write the cells to their new positions
 				i = 0;
 				while (i < cells.length) {
@@ -14072,7 +14072,7 @@
 					wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, state, true);
 					i += 3;
 				}
-	
+
 				// clear outside intersection between new selection and old
 				for (x = x1; x < box.leftX; x += 1) {
 					for (y = y1; y <= y2; y += 1) {
@@ -14094,7 +14094,7 @@
 						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
 					}
 				}
-	
+
 				if (me.engine.isLifeHistory && wasState6) {
 					this.engine.populateState6MaskFromColGrid();
 				}
@@ -14102,7 +14102,7 @@
 				// check if shrink needed
 				me.engine.shrinkNeeded = true;
 				me.engine.doShrink();
-	
+
 				// save edit
 				me.afterEdit(comment);
 			}
@@ -14197,7 +14197,7 @@
 			if (numStates === -1) {
 				numStates = 2;
 			}
-	
+
 			// invert cells in paste:
 			while (i < me.pasteBuffer.length) {
 				state = me.pasteBuffer[i];
@@ -14236,12 +14236,12 @@
 					y2 = y1;
 					y1 = swap;
 				}
-	
+
 				// check for 2 state patterns
 				if (numStates === -1) {
 					numStates = 2;
 				}
-	
+
 				// invert cells in selection
 				for (y = y1; y <= y2; y += 1) {
 					for (x = x1; x <= x2; x += 1) {
@@ -14260,7 +14260,7 @@
 				// check if shrink needed
 				me.engine.shrinkNeeded = true;
 				me.engine.doShrink();
-	
+
 				// save edit
 				me.afterEdit("invert cells in selection");
 			}
@@ -14758,7 +14758,7 @@
 
 		return [me.displayHelp !== 0];
 	};
-	
+
 	// save view
 	View.prototype.saveViewPressed = function(/** @type {View} */ me) {
 		me.saveCamera(me);
@@ -15029,7 +15029,7 @@
 				// restore the elapsed time
 				this.elapsedTime = this.elapsedTimes[targetGen];
 				this.fixedPointCounter = targetGen * this.refreshRate;
-	
+
 				// don't actually step back if pattern is dead at the requested generation
 				if (this.diedGeneration !== -1 && targetGen > this.diedGeneration + fading) {
 					this.engine.counter = targetGen;
@@ -15037,28 +15037,28 @@
 					// run to target generation
 					this.engine.runTo(targetGen, this.statsOn, this.graphDisabled, this);
 				}
-	
+
 				// restore the elapsed time again
 				this.elapsedTime = this.elapsedTimes[targetGen];
 				this.fixedPointCounter = targetGen * this.refreshRate;
 
 				// notify waypoint manager of change
 				this.waypointManager.steppedBack(this.elapsedTime);
-	
+
 				// mark manual change
 				this.manualChange = true;
-	
+
 				// check if the target generation was reached
 				if (targetGen !== this.engine.counter) {
 					// need to compute history
 					this.computeHistory = true;
-	
+
 					// set history target generation
 					this.computeHistoryTarget = targetGen;
-	
+
 					// reset
 					this.engine.restoreSavedGrid(this, false);
-	
+
 					// compute history
 					this.menuManager.notification.notify("Computing previous generations", 15, 10000, 15, true);
 					this.computeHistoryClear = true;
@@ -15241,7 +15241,7 @@
 		} else {
 			result = redValue + " " + greenValue + " " + blueValue;
 		}
-	
+
 		// return the string
 		return result;
 	};
@@ -16111,7 +16111,7 @@
 		this.escButton = this.viewMenu.addButtonItem(this.escPressed, Menu.southEast, -40, -85, 40, 40, "Esc");
 		this.escButton.toolTip = "close errors";
 		this.escButton.setFont("16px Arial");
-		
+
 		// previous POI button
 		this.prevPOIButton = this.viewMenu.addButtonItem(this.prevPOIPressed, Menu.west, 10, 0, 40, 40, "<");
 		this.prevPOIButton.toolTip = "go to previous POI [Shift J]";
@@ -16543,7 +16543,7 @@
 			if (viewerWidth !== this.maxCodeWidth && DocConfig.limitWidth) {
 				viewerWidth = this.maxCodeWidth;
 			}
-			
+
 			// check the canvas is not too narrow
 			if (viewerWidth < ViewConstants.minViewerWidth) {
 				viewerWidth = ViewConstants.minViewerWidth;
@@ -16596,7 +16596,7 @@
 
 			// create the menu manager
 			this.menuManager = new MenuManager(this.mainCanvas, this.mainContext, "24px Arial", this.iconManager, this, this.gotFocus);
-			
+
 			// disable fps display
 			this.menuManager.showTiming = false;
 
@@ -16614,7 +16614,7 @@
 
 			// load view menu
 			this.menuManager.activeMenu(this.viewMenu);
-			
+
 			// register keyboard input
 			registerEvent(this.mainCanvas, "keydown", function(/** @type {KeyboardEvent} */ event) {me.keyDown(me, event);}, false);
 
@@ -16745,13 +16745,13 @@
 
 			// length of message in characters
 			/** @type {number} */ length = message.length,
-	
+
 			// width in pixels
 			/** @type {number} */ pxWidth = 0,
-	
+
 			// index
 			/** @type {number} */ i = length,
-			
+
 			// font size
 			/** @type {number} */ itemFontSize = 18;
 
@@ -16913,7 +16913,7 @@
 		this.engine.clearGliders = false;
 		this.engine.numClearedGliders = 0;
 	};
-	
+
 	// switch off thumbnail view
 	View.prototype.switchOffThumbnail = function() {
 		// check for launch mode
@@ -17007,7 +17007,7 @@
 		this.thumbOrigWidth = this.displayWidth;
 		this.thumbOrigHeight = this.displayHeight;
 		this.thumbOrigZoom = this.engine.zoom;
-		
+
 		// save the help position
 		this.thumbOrigHelpPosition = this.displayHelp;
 
@@ -17111,7 +17111,7 @@
 				this.stateList.setWidth(80);
 				this.stateList.toolTip = ["dead [Ctrl 0]", "alive [Ctrl 1]"];
 				this.stateList.current = this.drawState;
-	
+
 				// add state colours for editor
 				this.stateColsList.lower = ["", ""];
 				this.stateColsList.setWidth(80);
@@ -17182,7 +17182,7 @@
 			/** @type {number} */ windowHeight = window.innerHeight,
 			/** @type {number} */ displayWidth = this.displayWidth,
 			/** @type {number} */ displayHeight = this.displayHeight + 80;
-			
+
 		// scale width and height
 		displayWidth *= this.devicePixelRatio;
 		displayHeight *= this.devicePixelRatio;
@@ -17324,7 +17324,7 @@
 			// create a dummy pattern so view processing completes otherwise window isn't correctly setup
 			savedW = this.manager.specifiedWidth;
 			savedH = this.manager.specifiedHeight;
-			
+
 			temp = this.manager.create("", "x=1,y=1,rule=Life\n!", this.engine.allocator, this.completeStart, this.completeStart, [ignoreThumbnail], this);
 			this.completeStart(temp, [ignoreThumbnail], this);
 
@@ -17957,7 +17957,7 @@
 		// reset select colour
 		me.customSelectColour = [0, 255, 0];
 		me.engine.selectColour = "rgb(0,255,0)";
-		
+
 		// reset paste colour
 		me.customPasteColour = [255, 0, 0];
 		me.engine.pasteColour = "rgb(255,0,0)";
@@ -18242,7 +18242,7 @@
 				// use bounded grid
 				neededWidth = me.engine.boundedGridWidth;
 				neededHeight = me.engine.boundedGridHeight;
-	
+
 				// check for zero dimensions
 				if (neededWidth === 0) {
 					neededWidth = pattern.width;
@@ -18254,7 +18254,7 @@
 				// use pattern
 				neededWidth = pattern.width;
 				neededHeight = pattern.height;
-	
+
 				// add any paste clips
 				if (me.pasteList.length > 0) {
 					neededWidth = me.computeNeededWidth(neededWidth);
@@ -18357,7 +18357,7 @@
 		if (pattern) {
 			me.computePanXY(me.patternWidth, me.patternHeight, me.specifiedWidth, me.specifiedHeight);
 		}
-		
+
 		// populate the state 6 mask
 		if (pattern && me.engine.isLifeHistory) {
 			// check if state 6 is used
@@ -18411,7 +18411,7 @@
 
 		// set the tool tip in case the rule name is wider than the label
 		me.ruleLabel.toolTip = me.patternRuleName;
-		
+
 		// check for alias name
 		if (me.patternAliasName !== "") {
 			me.ruleLabel.toolTip += " alias " + me.patternAliasName;
@@ -18656,7 +18656,7 @@
 
 		// set the Information Bar UI control
 		me.infoBarButton.current = [me.infoBarEnabled];
-		
+
 		// set the relative generation display UI control
 		me.relativeToggle.current = [me.genRelative];
 
@@ -19018,7 +19018,7 @@
 	// start a viewer
 	function startView(/** @type {string} */ patternString, /** @type {HTMLCanvasElement} */ canvasItem, /** @type {number} */ maxWidth, /** @type {boolean} */ isInPopup, element) {
 		var	/** @type {number} */ i = 0,
-		    
+
 			// get the parent of the canvas
 			/** @type {HTMLDivElement} */ parentItem = /** @type {!HTMLDivElement} */ (canvasItem.parentNode),
 
@@ -19117,7 +19117,7 @@
 						case DocConfig.limitToken:
 							DocConfig.limitWidth = true;
 							break;
-						
+
 						// viewer is in multiverse mode
 						case DocConfig.multiToken:
 							DocConfig.multi = true;
@@ -19150,7 +19150,7 @@
 			}
 		}
 	}
-	
+
 	// find LifeViewer enclosing div
 	function findDiv(element) {
 		// get the parent of the element
@@ -19174,7 +19174,7 @@
 
 		return parentItem;
 	}
-		
+
 	// hide the external viewer
 	function hideViewer() {
 		// get the standalone viewer
@@ -19182,10 +19182,10 @@
 
 			// get the parent node of the Canvas
 			parentItem = externalViewer[0].parentNode,
-	
+
 			// get the associated View
 			/** @type {View} */ view = externalViewer[1],
-	
+
 			// get the popup window
 			/** @type {PopupWindow } */ popup = externalViewer[2];
 
@@ -19277,7 +19277,7 @@
 		view.divItem.style.transform = "scale(" + view.windowZoom + "," + view.windowZoom + ")";
 		view.divItem.style.transformOrigin = "top left";
 		view.resize();
-		
+
 		// mark popup as displayed
 		popup.displayed = true;
 
@@ -19653,7 +19653,7 @@
 			/** @type {HTMLCanvasElement} */ canvasItem = null,
 			/** @type {string} */ cleanItem = "",
 			/** @type {HTMLDivElement} */ rleItem = null,
-			
+
 			// temporary allocator and pattern manager
 			/** @type {Allocator} */ allocator = new Allocator(),
 			/** @type {PatternManager} */ manager = new PatternManager();
@@ -19700,7 +19700,7 @@
 								textItem.style.height = DocConfig.patternSourceMaxHeight + "px";
 							}
 						}
-						
+
 						// initalise viewer not in popup
 						//canvasItem.style.outline = "none";
 						canvasItem.contentEditable = "false";
@@ -19724,10 +19724,10 @@
 							if (textItem) {
 								// remove any html tags from the text item and trim
 								cleanItem = cleanPattern(textItem);
-							
+
 								// null the anchor so we can tell if it gets created
 								anchorItem = null;
-							
+
 								// check if the contents is a valid pattern (will add to Controller if in multiverse mode)
 								isPattern(cleanItem, allocator, manager, rleItem, textItem);
 							}

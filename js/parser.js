@@ -308,12 +308,12 @@
 				if (colourTriple !== undefined) {
 					// consume the token
 					peekToken = scriptReader.getNextToken();
-	
+
 					// get the rgb value
 					redValue = colourTriple[1];
 					greenValue = colourTriple[2];
 					blueValue = colourTriple[3];
-	
+
 					// mark good colour
 					badColour = false;
 				} else {
@@ -850,14 +850,14 @@
 				if (colourTriple !== undefined) {
 					// consume the token
 					peekToken = scriptReader.getNextToken();
-	
+
 					// get the rgb value
 					redValue = colourTriple[1];
 					greenValue = colourTriple[2];
 					blueValue = colourTriple[3];
 				} else {
 					badColour = true;
-	
+
 					// illegal colour name
 					if (peekToken === "" || this.isScriptCommand(peekToken)) {
 						// argument missing
@@ -869,7 +869,7 @@
 						} else {
 							scriptErrors[scriptErrors.length] = [nextToken + " " + colName + " " + peekToken, "name not known"];
 						}
-	
+
 						// consume the token
 						peekToken = scriptReader.getNextToken();
 					}
@@ -923,7 +923,7 @@
 				// get the variable type
 				if (varIndex + 1 < string.length) {
 					type = string[varIndex + 1];
-				
+
 					// remove the variable definition
 					string = string.substring(varIndex + 2);
 
@@ -1141,7 +1141,7 @@
 
 			// lookahead token
 			/** @type {string} */ peekToken = "",
-			
+
 			// string value
 			/** @type {string} */ stringToken = "",
 
@@ -1153,7 +1153,7 @@
 
 			// string value
 			/** @type {string} */ stringValue = "",
-		    
+
 			// number value
 			/** @type {number} */ numberValue = 0,
 
@@ -1328,7 +1328,7 @@
 			/** @type {number} */ trackBoxS = 0,
 			/** @type {number} */ trackBoxE = 0,
 			/** @type {number} */ trackBoxW = 0,
-	
+
 			// holders
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
@@ -1437,7 +1437,7 @@
 						// create the new string
 						stringValue = nextToken.substring(1);
 						readingString = true;
-						
+
 						// check if string finished
 						if (nextToken[nextToken.length - 1] === Keywords.stringDelimiter) {
 							readingString = false;
@@ -1722,7 +1722,7 @@
 								scriptErrors[scriptErrors.length] = [nextToken, "requires at least 2 coordinate pairs"];
 								itemValid = false;
 							}
-							
+
 							// check zoom exists
 							if (itemValid && z === -1000) {
 								itemValid = false;
@@ -2046,7 +2046,7 @@
 																		currentArrowPositionFixed = true;
 																		peekToken = scriptReader.peekAtNextToken();
 																	}
-																	
+
 																	// save the arrow
 																	currentArrow = view.waypointManager.createArrow(x, y, x2, y2, z, currentArrowMinZ, currentArrowMaxZ, view.customArrowColour, currentArrowAlpha, currentArrowSize,
 																	currentArrowHeadMultiple, currentArrowT1, currentArrowT2, currentArrowTFade, currentArrowAngle, currentArrowAngleFixed,
@@ -2287,7 +2287,7 @@
 												y = -(1 / numberValue);
 											}
 										}
-	
+
 										// check max >= min
 										if (y !== -1000) {
 											if (y < x) {
@@ -2349,7 +2349,7 @@
 												y = -(1 / numberValue);
 											}
 										}
-	
+
 										// check max >= min
 										if (y !== -1000) {
 											if (y < x) {
@@ -2411,7 +2411,7 @@
 												y = -(1 / numberValue);
 											}
 										}
-	
+
 										// check max >= min
 										if (y !== -1000) {
 											if (y < x) {
@@ -2728,13 +2728,13 @@
 										isNumeric = true;
 										x = scriptReader.getNextTokenAsNumber();
 									}
-	
+
 									// get the y position
 									if (scriptReader.nextTokenIsNumeric()) {
 										isNumeric = true;
 										y = scriptReader.getNextTokenAsNumber();
 									}
-	
+
 									// check for optional transformation
 									z = -1;
 									transToken = scriptReader.peekAtNextToken();
@@ -2774,11 +2774,11 @@
 									if (z === -1) {
 										z = ViewConstants.transIdentity;
 									}
-	
+
 									if (!view.addRLE(view.pasteGen, view.pasteEnd, view.pasteDelta, view.pasteEvery, view.pasteMode, view.pasteDeltaX, view.pasteDeltaY, stringToken, x, y, z)) {
 										scriptErrors[scriptErrors.length] = [Keywords.pasteWord + " " + stringToken, "invalid name or rle"];
 									}
-		
+
 									// errors handled above
 									itemValid = true;
 								}
@@ -2876,7 +2876,7 @@
 													// check for optional end gen
 													if (scriptReader.nextTokenIsNumeric()) {
 														numberValue = scriptReader.getNextTokenAsNumber();
-	
+
 														// check it is in range
 														if (numberValue >= view.pasteGen + view.pasteEvery) {
 															view.pasteEnd = numberValue;
@@ -2994,10 +2994,10 @@
 									// check for numeric value
 									if (scriptReader.nextTokenIsNumeric()) {
 										isNumeric = true;
-	
+
 										// get the value
 										numberValue = scriptReader.getNextTokenAsNumber() | 0;
-	
+
 										// check it is in range
 										if (numberValue >= 0 && numberValue <= 15) {
 											view.pasteMode = numberValue;
@@ -3261,7 +3261,7 @@
 								case Keywords.themeDeadRampWord:
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDeadRamp, whichColour);
 									break;
-								
+
 								// dying
 								case Keywords.themeDyingWord:
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDying, whichColour);
@@ -3271,7 +3271,7 @@
 								case Keywords.themeDyingRampWord:
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDyingRamp, whichColour);
 									break;
-								
+
 								// grid
 								case Keywords.gridWord:
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeGrid, whichColour);
@@ -4563,7 +4563,7 @@
 										if (peekToken === Keywords.initialWord) {
 											// token valid so eat it
 											peekToken = scriptReader.getNextToken();
-	
+
 											// copy from initial waypoint
 											view.waypointManager.copyInitial(Keywords.themeWord, currentWaypoint, scriptErrors, view.initialTheme);
 											view.initialTheme = true;
@@ -4869,7 +4869,7 @@
 							scriptErrors[scriptErrors.length] = [nextToken, "only valid after " + Keywords.pasteWord];
 							itemValid = true;
 							break;
-							
+
 						// randomize word
 						case Keywords.randomizeWord:
 							view.randomizePattern = true;
@@ -5185,7 +5185,7 @@
 
 									// add the current waypoint to the list
 									view.waypointManager.add(currentWaypoint, view);
-									
+
 									// create a new waypoint
 									currentWaypoint = view.waypointManager.createWaypoint();
 
@@ -5438,7 +5438,7 @@
 				if (waypointsFound) {
 					for (i = 0; i < view.waypointManager.numWaypoints(); i += 1) {
 						currentWaypoint = view.waypointManager.waypointList[i];
-						
+
 						// check if AUTOFIT used
 						if (currentWaypoint.fitZoom) {
 							// check if X, Y or ZOOM are defined
@@ -5523,12 +5523,12 @@
 				if (currentWaypoint.tiltDefined) {
 					view.engine.tilt = currentWaypoint.tilt;
 				}
-	
+
 				// set depth
 				if (currentWaypoint.depthDefined) {
 					view.engine.layerDepth = (currentWaypoint.depth / ViewConstants.depthScale) + ViewConstants.minDepth;
 				}
-	
+
 				// set layers
 				if (currentWaypoint.layersDefined) {
 					view.engine.layers = currentWaypoint.layers;
@@ -5630,7 +5630,7 @@
 				// clear custom colours
 				view.customColours = null;
 			}
-			
+
 			// check if custom theme provided
 			if (view.customTheme || view.customGridMajor || view.customGridColour !== -1 || view.customGridMajorColour !== -1) {
 				// setup custom theme

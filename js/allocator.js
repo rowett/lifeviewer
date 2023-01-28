@@ -180,7 +180,7 @@
 		case Type.Uint8:
 			result = new Uint8Array(buffer, byteOffset, elements);
 			break;
-		
+
 		// unsigned 8bit clamped integer
 		case Type.Uint8Clamped:
 			result = new Uint8Array(buffer, byteOffset, elements);
@@ -242,7 +242,7 @@
 		case Type.Uint8:
 			result = new Uint8Array(elements);
 			break;
-		
+
 		// unsigned 8bit clamped integer
 		case Type.Uint8Clamped:
 			result = new Uint8Array(elements);

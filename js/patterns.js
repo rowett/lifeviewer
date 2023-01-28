@@ -603,14 +603,14 @@
 		/** @const {number} */ this.triangularOuter = 4;
 		/** @const {number} */ this.triangularBiohazard = 5;
 		/** @const {number} */ this.triangularRadiation = 6;
-	
+
 		// hex neighbourhoods
 		/** @const {number} */ this.hexAll = 0;
 		/** @const {number} */ this.hexTripod = 1;
 
 		// alternate rule separator
 		/** @const {string} */ this.altRuleSeparator = "|";
-		
+
 		// whether alternate rule specified
 		/** @type {boolean} */ this.altSpecified = false;
 
@@ -885,7 +885,7 @@
 		/** @type {string} */ this.customNeighbourhood = "";
 		/** @type {number} */ this.customNeighbourCount = -1;
 		/** @type {string} */ this.customGridType = "";
-		
+
 		// HROT weighted neighbourhood
 		/** @type {Array<number>} */ this.weightedNeighbourhood = null;
 
@@ -1358,7 +1358,7 @@
 			/** @type {number} */ y,
 			/** @type {boolean} */ negative,
 			/** @type {boolean} */ sawPosition,
-	
+
 			// item types
 			/** @const {number} */ waiting = 0,
 			/** @const {number} */ xPos = 1,
@@ -1552,19 +1552,19 @@
 			/** @const {number} */ cellsMode = 3,
 			/** @const {number} */ readCustomRule = 4,
 			/** @const {number} */ readPosition = 5,
-	
+
 			// item types
 			/** @type {number} */ waiting = 0,
 			/** @type {number} */ xPos = 1,
 			/** @type {number} */ yPos = 2,
-	
+
 			// sections
 			/** @type {Array} */ sections = [],
 			/** @type {number} */ numSections = 0,
 
 			// parse the source
 			/** @type {number} */ length = source.length,
-	
+
 			// custom rule
 			/** @type {string} */ customRule = "",
 			/** @type {boolean} */ sawCustom = false,
@@ -1668,7 +1668,7 @@
 					break;
 				}
 				break;
-			
+
 			// reading title
 			case readTitle:
 				// add to title
@@ -1839,7 +1839,7 @@
 			sections[numSections] = new Life105Section(startX, startY, maxWidth, height, sectionStart, i - 1);
 			numSections += 1;
 		}
-		
+
 		// process the sections to determine grid size
 		if (numSections && !ended) {
 			// get the size of the first section
@@ -1941,7 +1941,7 @@
 			}
 		}
 	};
-	
+
 	// set triangular totalistic neighbourhood
 	PatternManager.prototype.setTriangularTotalistic = function(/** @type {Uint8Array} */ ruleTriangularArray, /** @type {number} */ value, /** @type {boolean} */ survival, /** @type {number} */ ruleMask) {
 		// mask
@@ -1950,7 +1950,7 @@
 			// neighbours
 			/** @type {number} */ neighbours = 0,
 			/** @type {number} */ neighbourhood = 0,
-	
+
 			// counters
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0;
@@ -2740,7 +2740,7 @@
 					this.setTriangularTotalistic(ruleTriangularArray, i, false, ruleMask);
 				}
 			}
-	
+
 			// add survival digits
 			for (i = 0; i <= digits; i += 1) {
 				if ((sMask & (1 << i)) !== 0) {
@@ -2890,11 +2890,11 @@
 							mask = 186;
 						}
 					}
-			
+
 					// clear the rule array
 					tempArray.fill(0);
 					ruleArray.fill(0);
-	
+
 					// create swap array for hex
 					for (i = 0; i < tempArray.length; i += 1) {
 						if (isHex) {
@@ -2903,12 +2903,12 @@
 							swapArray[i] = (i & 448) >> 6 | i & 56 | (i & 7) << 6;
 						}
 					}
-			
+
 					// check for base64 map rules
 					if (base64 !== "") {
 						// create the canonical name
 						canonicalName = "MAP";
-			
+
 						// decode the base64 string
 						for (i = 0; i < fullchars; i += 1) {
 							canonicalName += base64[i];
@@ -2926,14 +2926,14 @@
 							tempArray[j] = c & 1;
 							j += 1;
 						}
-			
+
 						// decode final character
 						c = this.base64Characters.indexOf(base64[i]);
 						tempArray[j] = c >> 5;
 						j += 1;
 						tempArray[j] = (c >> 4) & 1;
 						canonicalName += this.base64Characters[c & ((1 << 5) | (1 << 4))];
-			
+
 						// copy into array using the neighbourhood mask
 						for (i = 0; i < 512; i += 1) {
 							k = 0;
@@ -2948,7 +2948,7 @@
 							}
 							ruleArray[swapArray[i]] = tempArray[k];
 						}
-			
+
 						// check for generation states
 						if (generationsStates !== -1) {
 							canonicalName += "/" + generationsStates;
@@ -2958,25 +2958,25 @@
 						if (isVonNeumann) {
 							// set the von Neumann birth rule
 							birthName = this.setTotalisticRuleFromString(ruleArray, birthPart, false, mask);
-				
+
 							// set the von Neumann survival rule
 							survivalName = this.setTotalisticRuleFromString(ruleArray, survivalPart, true, mask);
 						} else {
 							if (isHex) {
 								// set the hex birth rule
 								birthName = this.setHexRuleFromString(ruleArray, birthPart, false, mask);
-			
+
 								// set the hex survival rule
 								survivalName = this.setHexRuleFromString(ruleArray, survivalPart, true, mask);
 							} else {
 								// set the Moore birth rule
 								birthName = this.setRuleFromString(ruleArray, birthPart, false);
-					
+
 								// set the Moore survival rule
 								survivalName = this.setRuleFromString(ruleArray, survivalPart, true);
 							}
 						}
-				
+
 						// create the canonical name
 						if (generationsStates !== -1) {
 							canonicalName = survivalName + "/" + birthName + "/" + generationsStates;
@@ -3081,10 +3081,10 @@
 
 			// rule number
 			/** @type {number} */ number = 0,
-	
+
 			// digit value
 			/** @type {number} */ digit = 0,
-	
+
 			// counter
 			/** @type {number} */ i = 1;
 
@@ -3260,7 +3260,7 @@
 			if (pattern.gridHorizontalShift) {
 				pattern.ruleName += "+" + pattern.gridHorizontalShift;
 			}
-			
+
 			// check for horizontal twist
 			if (pattern.gridHorizontalTwist) {
 				pattern.ruleName += "*";
@@ -3275,7 +3275,7 @@
 				if (pattern.gridVerticalShift) {
 					pattern.ruleName += "+" + pattern.gridVerticalShift;
 				}
-				
+
 				// check for horizontal twist
 				if (pattern.gridVerticalTwist) {
 					pattern.ruleName += "*";
@@ -3385,7 +3385,7 @@
 				next = "";
 				nextCode = -1;
 			}
-			
+
 			// check for N part
 			if (part === "n") {
 				// check for neighborhood
@@ -3480,7 +3480,7 @@
 							this.index = -1;
 						}
 						break;
-				
+
 					case "f":
 						this.index += 1;
 						result = this.readCornerEdge(rule, range, "LtL", pattern);
@@ -3650,7 +3650,7 @@
 		value = this.decodeLTLpart(rule, "r", this.minRangeLTL, this.maxRangeLTL, "", pattern);
 		if (this.index !== -1) {
 			pattern.rangeLTL = value;
-			
+
 			// decode C part
 			value = this.decodeLTLpart(rule, ",c", this.minStatesLTL, this.maxStatesLTL, "", pattern);
 			if (this.index !== -1) {
@@ -3754,7 +3754,7 @@
 		value = this.decodeLTLpart(rule, "", this.minRangeLTL, this.maxRangeLTL, "", pattern);
 		if (this.index !== -1) {
 			pattern.rangeLTL = value;
-			
+
 			// decode first B part
 			value = this.decodeLTLpart(rule, ",", 0, -1, "", pattern);
 			if (this.index !== -1) {
@@ -3837,7 +3837,7 @@
 		value = this.decodeLTLpart(rule, "r", this.minRangeLTL, this.maxRangeLTL, "", pattern);
 		if (this.index !== -1) {
 			pattern.rangeLTL = value;
-			
+
 			// decode first B part
 			value = this.decodeLTLpart(rule, "b", 0, -1, "", pattern);
 			if (this.index !== -1) {
@@ -4111,7 +4111,7 @@
 			i += 1;
 		}
 		numRead = i - this.index;
-		
+
 		// check for length 1
 		if (numRead === needed1) {
 			while (this.index < i) {
@@ -4393,7 +4393,7 @@
 		var	/** @type {number} */ range = pattern.rangeLTL,
 			/** @type {number} */ maxCount = 0,
 			/** @type {number} */ i = 0;
-			
+
 		// copy the range and neighborhood
 		pattern.rangeHROT = range;
 		pattern.neighborhoodHROT = pattern.neighborhoodLTL;
@@ -4585,7 +4585,7 @@
 									this.index += 1;
 									result = true;
 									break;
-								
+
 								case "d":
 									pattern.neighborhoodHROT = this.alignedCheckerHROT;
 									this.index += 1;
@@ -4764,7 +4764,7 @@
 				}
 			}
 		}
-		
+
 		if (result) {
 			pattern.isHROT = true;
 		}
@@ -4933,7 +4933,7 @@
 					// reset run
 					start = -1;
 				}
-				
+
 			}
 			// next item
 			i += 1;
@@ -5256,7 +5256,7 @@
 
 			// generations part of rule
 			generationsPart = null,
-	
+
 			// alias
 			alias = null,
 
@@ -5274,52 +5274,52 @@
 
 			// hex postfix length
 			/** @type {number} */ hexLength = this.hexPostfix.length,
-	
+
 			// triangular index
 			/** @type {number} */ triangularIndex = -1,
-	
+
 			// triangular postfix length
 			/** @type {number} */ triangularLength = this.triangularPostfix.length,
-	
+
 			// triangular Edges postfix length
 			/** @type {number} */ triangularEdgesLength = this.triangularEdgesPostfix.length,
-	
+
 			// triangular Vertices postfix length
 			/** @type {number} */ triangularVerticesLength = this.triangularVerticesPostfix.length,
-	
+
 			// triangular Inner postfix length
 			/** @type {number} */ triangularInnerLength = this.triangularInnerPostfix.length,
-	
+
 			// triangular Outer postfix length
 			/** @type {number} */ triangularOuterLength = this.triangularOuterPostfix.length,
-	
+
 			// triangular Biohazard postfix length
 			/** @type {number} */ triangularBiohazardLength = this.triangularBiohazardPostfix.length,
-	
+
 			// triangular Radiation postfix length
 			/** @type {number} */ triangularRadiationLength = this.triangularRadiationPostfix.length,
-	
+
 			// von neumann index
 			/** @type {number} */ vonNeumannIndex = -1,
-	
+
 			// von neumann postfix length
 			/** @type {number} */ vonNeumannLength = this.vonNeumannPostfix.length,
-	
+
 			// base64 map string
 			/** @type {string} */ base64 = "",
-				
+
 			// PCA prefix
 			/** @type {string} */ prefix = this.pcaRulePrefix,
-	
+
 			// offset
 			/** @type {number} */ offset = 0,
-	
+
 			// original name
 			/** @type {string} */ tempName = "",
-	
+
 			// counter
 			/** @type {number} */ i = 0;
-	
+
 		// zero the first element of the rule array so later B0 checks don't fail
 		ruleArray[0] = 0;
 
@@ -5482,7 +5482,7 @@
 								// attempt to decode generations states
 								i = validIndex + 1;
 								pattern.multiNumStates = 0;
-			
+
 								// read generations digits
 								validIndex = 0;
 								while (i < rule.length && validIndex !== -1) {
@@ -5494,7 +5494,7 @@
 										i += 1;
 									}
 								}
-			
+
 								// check if digits were present
 								if (i === rule.length) {
 									// check if generations states are valid
@@ -5612,7 +5612,7 @@
 											case this.tripodHROT:
 												pattern.ruleName += "3";
 												break;
-												
+
 											case this.asteriskHROT:
 												pattern.ruleName += "A";
 												break;
@@ -5879,7 +5879,7 @@
 
 								// check if the rule contains a slash
 								slashIndex = rule.indexOf("/");
-								
+
 								// if no slash then check for underscore
 								if (slashIndex === -1) {
 									slashIndex = rule.indexOf("_");
@@ -6031,7 +6031,7 @@
 											survivalPart = rule.substring(0, slashIndex);
 										}
 									}
-			
+
 									// remove "b" or "s" if present
 									if (bIndex !== -1 && birthPart) {
 										if (birthPart[0] === "b") {
@@ -6043,7 +6043,7 @@
 											survivalPart = survivalPart.substring(1);
 										}
 									}
-			
+
 									// if generations then check it is valid
 									if (generationsPart !== null) {
 										i = 0;
@@ -6053,12 +6053,12 @@
 											birthPart = null;
 										} else {
 											pattern.multiNumStates = 0;
-			
+
 											// check for and ignore G or C so "23/3/2", "B3/S23/G2" and "B3/S23/C2" are all supported
 											if (i < generationsPart.length && (generationsPart[i].toLowerCase() === "g" || generationsPart[i].toLowerCase() === "c")) {
 												i += 1;
 											}
-				
+
 											// read generations digits
 											validIndex = 0;
 											while (i < generationsPart.length && validIndex !== -1) {
@@ -6075,7 +6075,7 @@
 												}
 												i += 1;
 											}
-			
+
 											// check if generations states are valid
 											if (pattern.multiNumStates !== -1 && (pattern.multiNumStates < 2 || pattern.multiNumStates > 256)) {
 												// mark as invalid
@@ -6085,12 +6085,12 @@
 											}
 										}
 									}
-			
+
 									// check if rule split correctly
 									if (birthPart !== null && survivalPart !== null) {
 										// mark as potentially valid
 										valid = true;
-			
+
 										// check the birth part is valid
 										i = 0;
 										while (i < birthPart.length) {
@@ -6103,7 +6103,7 @@
 												i += 1;
 											}
 										}
-			
+
 										// check the survival part is valid
 										if (valid) {
 											i = 0;
@@ -6169,34 +6169,34 @@
 
 			// flag if finished
 			/** @type {boolean} */ finished = false,
-	
+
 			// flag if valid
 			/** @type {boolean} */ valid = true,
-	
+
 			// current and next character
 			/** @type {string} */ current,
 			/** @type {string} */ next,
-	
+
 			// width of pattern
 			/** @type {number} */ width = 0,
-	
+
 			// position in pattern
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
-	
+
 			// state number for cell (or -1 if not a cell)
 			/** @type {number} */ stateNum = -1,
-	
+
 			// run counter
 			/** @type {number} */ runCount = 0,
-	
+
 			// mapping from ASCII to state number
 			/** @type {number} */ codeA = String("A").charCodeAt(0) - 1,
 			/** @type {number} */ codep = String("p").charCodeAt(0) - 1,
-	
+
 			// state counts
 			/** @type {Uint32Array} */ stateCount = this.stateCount;
-				
+
 		// get the first character
 		next = string[index];
 
@@ -6243,7 +6243,7 @@
 				// state 0 cell
 				stateNum = 0;
 				break;
-				
+
 			// Niemiec z cell
 			case "z":
 				// state 7 cell
@@ -6282,7 +6282,7 @@
 				// move down required number of rows
 				y += runCount;
 				runCount = 0;
-				
+
 				// update width
 				if (x > width) {
 					width = x;
@@ -6441,7 +6441,7 @@
 					// move down required number of rows
 					y += runCount;
 					runCount = 0;
-				
+
 					// update width
 					if (x > width) {
 						width = x;
@@ -6620,13 +6620,13 @@
 			// whether x and y are negative
 			/** @type {boolean} */ negX = false,
 			/** @type {boolean} */ negY = false,
-	
+
 			// digit value
 			/** @type {number} */ digit = 0,
-	
+
 			// whether character found
 			/** @type {boolean} */ found = false,
-	
+
 			// counter
 			/** @type {number} */ i = 0;
 
@@ -6877,7 +6877,7 @@
 			// shift values
 			/** @type {number} */ shiftWidth = 0,
 			/** @type {number} */ shiftHeight = 0,
-	
+
 			// next character
 			/** @type {string} */ chr = "";
 
@@ -6971,11 +6971,11 @@
 			// shift values
 			/** @type {number} */ shiftWidth = 0,
 			/** @type {number} */ shiftHeight = 0,
-	
+
 			// twists
 			/** @type {boolean} */ horizontalTwist = false,
 			/** @type {boolean} */ verticalTwist = false,
-	
+
 			// next character
 			/** @type {string} */ chr = "";
 
@@ -7183,34 +7183,34 @@
 						// plane
 						this.decodePlane(pattern, source);
 						break;
-					
+
 					case 1:
 						// tube/torus
 						this.decodeTorus(pattern, source);
 						break;
-	
+
 					case 2:
 						// klein-bottle
 						this.decodeKlein(pattern, source);
 						break;
-	
+
 					case 3:
 						// cross-surface
 						this.decodeCrossSurface(pattern, source);
 						break;
-	
+
 					case 4:
 						// sphere
 						this.decodeSphere(pattern, source);
 						break;
-					
+
 					default:
 						// others are invalid
 						pattern.gridWidth = -1;
 					}
 				}
 			}
-	
+
 			// check for extra characters after bounded grid
 			if (this.index !== source.length) {
 				pattern.gridWidth = -1;
@@ -7354,13 +7354,13 @@
 
 			// bounded grid index
 			/** @type {number} */ boundedIndex = -1,
-			
+
 			// colon index
 			/** @type {number} */ colonIndex = -1,
 
 			// history index
 			/** @type {number} */ historyIndex = -1,
-			
+
 			// history postfix length
 			/** @type {number} */ historyLength = this.historyPostfix.length,
 
@@ -7448,7 +7448,7 @@
 			if (ruleString.toLowerCase().substring(0, historyIndex).trim().substring(historyIndex - historyLength) === this.historyPostfix) {
 				// rule is a history type
 				pattern.isHistory = true;
-			
+
 				// remove the postfix
 				temp = ruleString.substring(0, historyIndex).trim();
 				ruleString = temp.substring(0, temp.length - historyLength) + ruleString.substring(historyIndex);
@@ -7473,7 +7473,7 @@
 				if (ruleString.toLowerCase().substring(0, superIndex).trim().substring(superIndex - superLength) === this.superPostfix) {
 					// rule is a super type
 					pattern.isSuper = true;
-				
+
 					// remove the postfix
 					temp = ruleString.substring(0, superIndex).trim();
 					ruleString = temp.substring(0, temp.length - superLength) + ruleString.substring(superIndex);
@@ -7563,13 +7563,13 @@
 				altBirths[i] = survivals[maxn - i + 1];
 				altSurvivals[i + 1] = births[maxn - i];
 			}
-		
+
 			// even rule -> NOT(bits)
 			for (i = 0; i <= maxn; i++) {
 				births[i] = 1 - births[i];
 				survivals[i + 1] = 1 - survivals[i + 1];
 			}
-			
+
 			// set alternating flag
 			this.altSpecified = true;
 		}
@@ -7594,7 +7594,7 @@
 
 			// state used flags and counts
 			/** @type {Uint32Array} */ stateCount = this.stateCount,
-			
+
 			// neighbourhood count
 			/** @type {number} */ nCount = 0,
 
@@ -7640,7 +7640,7 @@
 		pattern.afterTitle = "";
 		pattern.numStates = 2;
 		pattern.numUsedStates = 0;
-		
+
 		// clear the state used counts
 		stateCount.fill(0);
 
@@ -7802,7 +7802,7 @@
 				}
 			}
 		}
-		
+
 		// check for [R]Super rules with Niemiec states
 		if (pattern.isSuper && pattern.isNiemiec) {
 			pattern.isHistory = false;
@@ -8123,15 +8123,15 @@
 							if (reader.isNumeric(nextToken)) {
 								// decode value
 								width = reader.asNumber(nextToken);
-	
+
 								// get height
 								if (reader.nextTokenIsNumeric()) {
 									height = reader.getNextTokenAsNumber();
-	
+
 									// get number of colours
 									if (reader.nextTokenIsNumeric()) {
 										numColours = reader.getNextTokenAsNumber();
-	
+
 										// get chars per pixel
 										nextToken = reader.getNextToken();
 										if (nextToken[nextToken.length - 1] === "\"") {
@@ -8143,7 +8143,7 @@
 									}
 								}
 							}
-	
+
 							// check if header decoded
 							if (width > 0 && height > 0 && charsPerPixel >= 1 && charsPerPixel <= 2 && height % width === 0) {
 								// header valid so check width is supported
@@ -8488,7 +8488,7 @@
 				}
 				pattern.ruleTableCompressedRules += 1;
 			}
-	
+
 			// populate the LUT
 			for (i = 0; i < nInputs; i += 1) {
 				possibles = inputs[i];
@@ -8726,7 +8726,7 @@
 				if (neighbourhood !== -1) {
 					if (reader.getNextToken() === ":") {
 						nextToken = reader.getNextToken();
-	
+
 						// search the neighbourhood symmetries
 						found = false;
 						j = 0;
@@ -9481,7 +9481,7 @@
 					// assume RLE format
 					if (source[0] === "#" || source[0] === "x") {
 						this.decodeRLE(newPattern, source, allocator);
-						
+
 						// check if it decoded
 						if (newPattern.lifeMap === null && !newPattern.tooBig && !newPattern.invalid) {
 							// attempt Life 1.05 format with no header
@@ -9726,7 +9726,7 @@
 		} else {
 			pattern.allocator = null;
 		}
-	
+
 		// add this request to the list and check if there is already a request for this rule
 		if (RuleTreeCache.addRequest(pattern, succeedCallback, failCallback, args, view)) {
 			// nothing to do
@@ -9738,15 +9738,15 @@
 			if (DocConfig.repositoryLocation !== "") {
 				uri = DocConfig.repositoryLocation + ruleName + DocConfig.rulePostfix;
 			}
-	
+
 			// save rule name for use in error message
 			this.ruleSearchName = ruleName;
 			this.ruleSearchURI = uri;
-	
+
 			// register load and error events
 			registerEvent(xhr, "load", function(/** @type {ProgressEvent} */ event) {me.loadHandler(me, event, xhr, pattern);}, false);
 			registerEvent(xhr, "error", function(/** @type {ProgressEvent} */ event) {me.errorHandler(me, event, pattern);}, false);
-	
+
 			// attempt to get the requested resource
 			xhr.open("GET", uri, true);
 			xhr.send(null);

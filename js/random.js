@@ -22,12 +22,12 @@
 		for (i = 0; i < 256; i += 1) {
 			k[i] = i;
 		}
-		
+
 		j = 0;
 		for (i = 0; i < 256; i += 1)
 		{
 			j = (j + k[i] + seed.charCodeAt(i % seed.length)) & 255;
-			
+
 			t = k[i];
 			k[i] = k[j];
 			k[j] = t;
@@ -35,7 +35,7 @@
 		this.i = 0;
 		this.j = 0;
 	};
-		
+
 	// get random number
 	/** @returns {number} */
 	Random.prototype.random = function() {
@@ -50,7 +50,7 @@
 		for (i = 0; i < 8; i += 1) {
 			ti = (ti + 1) & 255;
 			tj = (tj + k[ti]) & 255;
-				
+
 			t = k[ti];
 			k[ti] = k[tj];
 			k[tj] = t;

@@ -838,7 +838,7 @@ for name, pattern, sym in SIMPLE_TARGETS:
   for i, v in enumerate(variants):
     p = len(v) / 2
     TARGETS.append((name+str(i), v, p))
-  
+
 def patterns_identical(cells1, cells2):
   if len(cells1) != len(cells2):
     return False
@@ -863,7 +863,7 @@ def get_shooting_range(cells):
     min_d1 = min(min_d1, cells[i] + cells[i+1])
     max_d1 = max(max_d1, cells[i] + cells[i+1])
     min_d2 = min(min_d2, cells[i] - cells[i+1])
-  
+
   min_lane = min_d1 - 6
   max_lane = max_d1 + 3
   shift = 6 - min_d2 // 2
@@ -908,7 +908,7 @@ def to_hashable(cells):
 
   minx = min(cells[::2])
   miny = min(cells[1::2])
-  
+
   hash = 0
   for i in range(0, len(cells), 2):
     hash ^= randoms[64 * ((cells[i] - minx) & 63) + ((cells[i+1] - miny) & 63)]
@@ -923,11 +923,11 @@ def bombard_final(start, lanes, cells, period, debug, flipx, flipy):
   cells = g.transform(cells, 0, 0, flipx, 0, 0, flipy)
 
   min_lane, max_lane, shift = get_shooting_range(cells)
-  
+
   for lane_num in range(min_lane, max_lane + 1):
 
     for parity in range(period):
-      
+
       lane = (lane_num, parity)
       start_cells = get_pattern_to_try(cells, lane[0], lane[1], shift)
       new_cells = g.evolve(start_cells, MAX_GENERATIONS)
@@ -969,11 +969,11 @@ for n in range(MAX_GLIDERS):
 
   queue = new_queue
   new_queue = []
-  
+
   count = 0
 
   for start, lanes, last, period, debug in queue:
-  
+
     g.show(str((n+1,count,len(queue))))
     count += 1
 
@@ -982,7 +982,7 @@ for n in range(MAX_GLIDERS):
     for lane_num in range(min_lane, max_lane + 1):
 
       for parity in range(period):
-        
+
         lane = (lane_num, parity)
         start_cells = get_pattern_to_try(last, lane[0], lane[1], shift)
         new_cells = g.evolve(start_cells, MAX_GENERATIONS)
@@ -1002,17 +1002,17 @@ for n in range(MAX_GLIDERS):
         seen.add(new_hashable)
         if new_period > 1:
           seen.add(to_hashable(g.evolve(new_cells, 1)))
-        
+
         new_lanes = lanes + [lane]
         new_debug = debug + [start_cells]
-          
+
         bombard_final(start, new_lanes, new_cells, new_period, new_debug, 1, 1)
         bombard_final(start, new_lanes, new_cells, new_period, new_debug, 1, -1)
         bombard_final(start, new_lanes, new_cells, new_period, new_debug, -1, -1)
 
         if n + 1 < MAX_GLIDERS:
           new_queue.append( (start, new_lanes, new_cells, new_period, new_debug) )
-				
+
 			</textarea>
 			<br>
 			<canvas width="480" height="480"></canvas>

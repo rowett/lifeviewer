@@ -102,7 +102,7 @@
 	PopupWindow.prototype.touchHandler = function(/** @type {PopupWindow} */ me, /** @type {TouchEvent} */ event) {
 		var	/** @type {TouchList} */ changes = event.changedTouches,
 			/** @type {Touch} */ thisChange = null;
-			
+
 		// mark that touch events are being used (so ignore mouse events)
 		this.usingTouch = true;
 
@@ -137,7 +137,7 @@
 			}
 			break;
 		}
-	
+
 		// stop event propagating
 		if (event.stopPropagation) {
 			event.stopPropagation();
@@ -184,7 +184,7 @@
 			// get the maximum x and y position
 			/** @type {number} */ maxX = window.innerWidth - width,
 			/** @type {number} */ maxY = window.innerHeight - height,
-			
+
 			// scrollbar width
 			/** @type {number} */ scrollBarWidth = window.innerWidth - document.body.clientWidth;
 
@@ -266,7 +266,7 @@
 				x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
 				y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
 			}
-	
+
 			// perform down event
 			me.performDown(me, x, y);
 		}
@@ -295,7 +295,7 @@
 					x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
 					y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
 				}
-	
+
 				// update cursor position
 				me.performUp(me, x, y);
 			}
@@ -325,7 +325,7 @@
 					x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
 					y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
 				}
-	
+
 				// update cursor position
 				me.performMove(me, x, y);
 			}

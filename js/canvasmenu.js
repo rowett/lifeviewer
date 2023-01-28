@@ -64,7 +64,7 @@
 
 		// background colour for notifications
 		/** @type {string} */ this.backgroundColour = "black";
-		
+
 		// whether notifications are enabled
 		/** @type {boolean} */ this.enabled = false;
 
@@ -276,7 +276,7 @@
 					// reduce the font size by the thumbnail divisor
 					fontSize = (fontSize / thumbDivisor);
 					lineHeight = (lineHeight / thumbDivisor) | 0;
-					
+
 					// reduce the offset
 					offset = (offset / thumbDivisor) | 0;
 
@@ -322,7 +322,7 @@
 				} else {
 					// draw the first line
 					this.draw(message.substring(0, index), isPriority, lineHeight);
-					
+
 					// go to next line
 					this.context.translate(0, lineHeight);
 
@@ -366,7 +366,7 @@
 		/** @type {number} */ this.height = height;
 		/** @type {number} */ this.number = number;
 	}
-	
+
 	// IconManager
 	/**
 	 * @constructor
@@ -442,14 +442,14 @@
 				this.iconCanvas.width = this.width;
 				this.iconCanvas.height = this.height;
 				this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d"));
-	
+
 				// create a new image for the converted colours
 				this.convertedImage = new Image();
-	
+
 				// create a new image for the greyed out icons
 				this.greyedOutImage = new Image();
 			}
-	
+
 			// change the pixel colours if required
 			if (this.recolour) {
 				// get the pixel data from the loaded icons
@@ -457,7 +457,7 @@
 				this.iconContext.drawImage(this.iconsImage, 0, 0);
 				data = this.iconContext.getImageData(0, 0, this.iconCanvas.width, this.iconCanvas.height);
 				data32 = new Uint32Array(data.data.buffer);
-	
+
 				// ensure shadow colour is different than foreground colour
 				if (shadowCol === iconFG) {
 					shadowCol = 0xfffefeff;
@@ -486,19 +486,19 @@
 						data32[i] = this.greyedOutCol;
 					}
 				}
-	
+
 				// put back the pixel data
 				this.iconContext.putImageData(data, 0, 0);
-	
+
 				// create the greyed out icons
 				this.greyedOutImage.src = this.iconCanvas.toDataURL("image/png");
-	
+
 				// get the pixel data from the loaded icons
 				this.iconContext.clearRect(0, 0, this.iconCanvas.width, this.iconCanvas.height);
 				this.iconContext.drawImage(this.iconsImage, 0, 0);
 				data = this.iconContext.getImageData(0, 0, this.iconCanvas.width, this.iconCanvas.height);
 				data32 = new Uint32Array(data.data.buffer);
-	
+
 				// create the icon shadows
 				j = 0;
 				for (i = 0; i < numIcons; i += 1) {
@@ -526,7 +526,7 @@
 						}
 					}
 				}
-	
+
 				// put back the pixel data
 				this.iconContext.putImageData(data, 0, 0);
 				this.recolour = false;
@@ -1725,7 +1725,7 @@
 					}
 				}
 			}
-			
+
 			// save the highlight item
 			item.highlightItem = itemNum;
 		} else {
@@ -1859,7 +1859,7 @@
 					// horizontal marker
 					markerPos *= (item.width - 3);
 					markerPos = (markerPos + 1) | 0;
-			
+
 					// draw left part
 					markerX = markerPos - highlightSize;
 					if (markerX > 0) {
@@ -2172,7 +2172,7 @@
 			/** @type {number} */ canvasWidth = this.context.canvas.width,
 			/** @type {number} */ canvasHeight = this.context.canvas.height,
 			/** @type {number} */ mouseOverGlobalItem = -1;
-		
+
 		// flag no need to toggle menus
 		result = false;
 
@@ -2245,7 +2245,7 @@
 							mouseIsOver = true;
 						}
 					}
-				
+
 					// update the mouse over item
 					if (mouseIsOver && !this.mouseDown) {
 						this.mouseOverItem = i;
@@ -2414,7 +2414,7 @@
 		// default background colour
 		/** @type {string} */ this.bgCol = "black";
 		/** @type {number} */ this.bgAlpha = 0.7;
-		
+
 		// background colour as hex for comparison (this is format returned from ctx.fillStyle())
 		/** @type {string} */ this.bgColHex = "#000000";
 
@@ -2688,7 +2688,7 @@
 
 			// tooltip text
 			/** @type {string} */ toolTip = "",
-				
+
 			// extra line of text if too wide
 			/** @type {string} */ extraTip = "",
 
@@ -3002,7 +3002,7 @@
 			// timing display position
 			/** @type {number} */ x = oc.canvas.width - 86,
 			/** @type {number} */ y = 90,
-			
+
 			// display scale
 			/** @type {number} */ xScale = 1,
 			/** @type {number} */ yScale = 1;
@@ -3298,7 +3298,7 @@
 			if (this.currentMenu.activateCallback) {
 				this.currentMenu.activateCallback(this.currentMenu.caller);
 			}
-			
+
 			// schedule callback
 			this.scheduleNextUpdate(this);
 		}
@@ -3371,7 +3371,7 @@
 	MenuManager.prototype.touchHandler = function(/** @type {MenuManager} */ me, /** @type {TouchEvent} */ event) {
 		var	/** @type {TouchList} */ changes = event.changedTouches,
 			/** @type {Touch} */ thisChange = null;
-			
+
 		// determine which event was received
 		switch (event.type) {
 		// touch start
@@ -3412,7 +3412,7 @@
 			}
 			break;
 		}
-	
+
 		// mark last event as a touch event
 		me.eventWasTouch = true;
 
@@ -3429,10 +3429,10 @@
 	MenuManager.prototype.performDown = function(/** @type {MenuManager} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// update cursor position
 		me.updateCursorPosition(me, x, y);
-	
+
 		// mark mouse down
 		me.mouseDown = true;
-	
+
 		// mark that no update has happened since this mouse down
 		me.updateSinceMouseDown = false;
 	};
@@ -3462,10 +3462,10 @@
 					me.mainCanvas.focus();
 				}
 				me.hasFocus = true;
-	
+
 				// clear click to focus notification
 				me.notification.clear(true, false);
-	
+
 				// call focus callback if registered
 				if (me.focusCallback) {
 					me.focusCallback(me.caller);
@@ -3498,7 +3498,7 @@
 	MenuManager.prototype.performOut = function(/** @type {MenuManager} */ me) {
 		// check if enough time has past since last mouse up
 		var	/** @type {number} */ timeSinceUp = performance.now() - me.lastMouseUp;
-		
+
 		// check if enough time has past since last mouse up
 		if (timeSinceUp > 1) {
 			// check if window has focus
@@ -3512,7 +3512,7 @@
 
 			// mark mouse not down
 			me.mouseDown = false;
-			
+
 			// clear mouse coordinates
 			me.mouseLastX = -1;
 			me.mouseLastY = -1;
@@ -3545,7 +3545,7 @@
 				x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
 				y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
 			}
-			
+
 			// perform down event
 			me.performDown(me, x, y);
 
@@ -3712,7 +3712,7 @@
 		if ((mode || this.notification.displayed()) && !this.autoUpdate) {
 			this.scheduleNextUpdate(this);
 		}
-	
+
 		// set the mode
 		this.autoUpdate = mode;
 	};

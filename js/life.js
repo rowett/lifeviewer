@@ -394,7 +394,7 @@
 		/** @type {number} */ this.identifyBoxWidth = 0;
 		/** @type {number} */ this.identifyBoxHeight = 0;
 		/** @type {boolean} */ this.identifyFast = false;
-		
+
 		// last computed strict volatility
 		/** @type {string} */ this.strictVol = "";
 
@@ -1292,12 +1292,12 @@
 				this.cellIconCanvas.width = 32;
 				this.cellIconCanvas.height = 32 * numIcons;
 			}
-	
+
 			// get the context
 			ctx = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas.getContext("2d"));
 			data = ctx.getImageData(0, 0, this.cellIconCanvas.width, this.cellIconCanvas.height);
 			data32 = new Uint32Array(data.data.buffer);
-			
+
 			// write them to the canvas
 			src = 0;
 			dst = 0;
@@ -1307,30 +1307,30 @@
 						// get the next source pixel colour number
 						col = iconData[src];
 						src += 1;
-	
+
 						// lookup the rgb for this colour
 						rgb = iconColours[col];
-	
+
 						// write the rgb to the canvas
 						data32[dst] = (255 << 24) | ((rgb & 255) << 16) | (rgb & 0xff00) | (rgb >> 16);
 						dst += 1;
 					}
-	
+
 					// skip right hand column in destination
 					data32[dst] = 0;
 					dst += 1;
 				}
-	
+
 				// skip bottom row in destination
 				for (x = 0; x < iconSize + 1; x += 1) {
 					data32[dst] = 0;
 					dst += 1;
 				}
 			}
-	
+
 			// write the image data back to the canvas
 			ctx.putImageData(data, 0, 0);
-	
+
 			// create the image from the canvas
 			if (this.cellIconImage === null) {
 				this.cellIconImage = new Image();
@@ -2340,7 +2340,7 @@
 				current = this.boxList[((i + currentP) << 1) + 1];
 				cLeftX = current >> 16;
 				cBottomY = current & 65535;
-	
+
 				// update the extent
 				if (cLeftX < leftX) {
 					leftX = cLeftX;
@@ -2358,7 +2358,7 @@
 				currentP += 1;
 			}
 		}
-	
+
 		extent.leftX = leftX;
 		extent.bottomY = bottomY;
 		extent.rightX = rightX;
@@ -2377,7 +2377,7 @@
 		} else {
 			result = value.toFixed(places);
 		}
-	
+
 		return result;
 	};
 
@@ -2411,7 +2411,7 @@
 			/** @type {number} */ legendWidth = 50,
 			/** @type {number} */ width = this.displayWidth - (displayScale * (legendWidth + legendWidth + 20)),
 			/** @type {number} */ height = this.displayHeight - (displayScale * 90);
-		
+
 		// default to large cell size
 		this.cellPeriodCellSize = 8;
 		cellSize = this.cellPeriodCellSize;
@@ -2748,7 +2748,7 @@
 				ctx.fillRect(leftX - legendWidth + 2, bottomY + y * rowSize + 2, boxSize, boxSize);
 				ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[x].toString(16)).slice(-6);
 				ctx.fillRect(leftX - legendWidth, bottomY + y * rowSize, boxSize, boxSize);
-				
+
 				// draw period
 				ctx.fillStyle = bgCol;
 				ctx.fillText(String(x), leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
@@ -2860,7 +2860,7 @@
 						occupiedFrame[cx] |= frames[cx + f];
 					}
 				}
-	
+
 				// compute the hash in slow mode
 				this.getHash(box, false);
 				this.bornList[i + p] = this.births;
@@ -2892,7 +2892,7 @@
 								}
 								j += bitFrameInBytes;
 							}
-	
+
 							if (anyAlive) {
 								cellPeriod[row + cx] = period;
 								popTotal += 1;
@@ -3024,7 +3024,7 @@
 			// last record to check
 			/** @type {number} */ last = this.oscLength,
 			/** @type {number} */ start = i,
-	
+
 			// heat
 			/** @type {number} */ minHeat = 16384,
 			/** @type {number} */ maxHeat = 0,
@@ -3032,11 +3032,11 @@
 			/** @type {number} */ nextHeat = 0,
 			/** @type {number} */ heatVal = 0,
 			/** @type {string} */ heat = "",
-	
+
 			// volatility
 			/** @type {string} */ volatility = "",
 			/** @type {string} */ strict = "",
-	
+
 			// count list
 			/** @type {Array<Uint8Array>} */ countList = this.countList,
 			/** @type {Uint8Array} */ countRow = null,
@@ -3048,10 +3048,10 @@
 			// mod value
 			/** @type {number} */ modValue = this.modValue,
 			/** @type {string} */ modResult = "",
-	
+
 			// temperature
 			/** @type {string} */ tempResult = "",
-	
+
 			// bounding box for pattern
 			/** @type {BoundingBox} */ box = (this.isHROT ? this.HROTBox : this.zoomBox),
 
@@ -3375,13 +3375,13 @@
 			/** @type {number} */ topY = box.topY,
 			/** @type {number} */ boxWidth = rightX - leftX + 1,
 			/** @type {number} */ boxHeight = topY - bottomY + 1,
-	
+
 			// merge size into one value
 			/** @type {number} */ boxSize = (boxWidth << 16) | boxHeight,
-	
+
 			// merge location into one value
 			/** @type {number} */ boxLocation = (leftX << 16) | bottomY,
-	
+
 			// hash value of current pattern
 			/** @type {number} */ hash = 0,
 			/** @type {number} */ modHash = 0,
@@ -3389,23 +3389,23 @@
 
 			// period
 			/** @type {number} */ period = 0,
-	
+
 			// flag to quit loop
 			/** @type {boolean} */ quitLoop = false,
 			/** @type {boolean} */ quit = false,
-	
+
 			// hash entry index
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ lastI = 0,
-	
+
 			// movement vector
 			/** @type {number} */ deltaX = 0,
 			/** @type {number} */ deltaY = 0,
-	
+
 			// message
 			/** @type {string} */ message = "",
-	
+
 			// result
 			/** @type {Array} */ result = [];
 
@@ -6141,7 +6141,7 @@
 		var	/** @type {number} */ result = 0,
 			/** @type {number} */ col = 0,
 			/** @type {number} */ over = 0,
-	
+
 			// get states 3, 4, 5 and 6
 			/** @const {number} */ state3 = ViewConstants.stateMap[3] + 128,
 			/** @const {number} */ state4 = ViewConstants.stateMap[4] + 128,
@@ -7045,7 +7045,7 @@
 			// growth direction
 			/** @type {boolean} */ growX = false,
 			/** @type {boolean} */ growY = false,
-	
+
 			// whether the buffer grew
 			/** @type {boolean} */ result = false;
 
@@ -7189,7 +7189,7 @@
 			/** @type {Uint8Array} */ bitCounts16 = this.bitCounts16,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ aliveState = 0,
-	
+
 			// get grid bounding box
 			/** @type {BoundingBox} */zoomBox = this.zoomBox,
 			/** @type {number} */ leftX = zoomBox.leftX,
@@ -7272,7 +7272,7 @@
 		// save the display width and height
 		this.displayWidth = displayWidth;
 		this.displayHeight = displayHeight;
-	
+
 		// clear the old buffers
 		this.imageData = null;
 		this.data32 = null;
@@ -7294,17 +7294,17 @@
 			// create an 8bit view of the buffer
 			this.data8 = new Uint8Array(this.data32.buffer);
 		}
-	
+
 		if (sizeChanged) {
 			// create the new blank pixel row
 			this.blankPixelRow = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, displayWidth, "Life.blankPixelRow"));
 			for (i = 0; i < displayWidth; i += 1) {
 				this.blankPixelRow[i] = pixelColour;
 			}
-	
+
 			// clear pixels
 			this.clearPixels(pixelColour);
-	
+
 			// resize the scale canvas to double the drawing canvas plus one zoom cell
 			this.initPretty();
 		}
@@ -7414,13 +7414,13 @@
 			/** @type {Uint16Array} */ tileRow0 = null,
 			/** @type {Uint16Array} */ tileRow1 = null,
 			/** @type {Uint16Array} */ tileRow2 = null,
-	
+
 			// tile size (2^n)
 			/** @type {number} */ tilePower = this.tilePower,
-	
+
 			// state 6 value in colour grid
 			/** @type {number} */ state6 = this.isSuper ? 6 : ViewConstants.stateMap[6] + 128,
-	
+
 			// grid
 			/** @type {Array<Uint8Array>} */ grid = this.isSuper ? this.colourGrid : this.overlayGrid;
 
@@ -7501,30 +7501,30 @@
 			/** @type {Uint16Array} */ maskRow1 = null,
 			/** @type {Uint16Array} */ maskRow2 = null,
 			/** @type {Uint16Array} */ cellsRow = null,
-	
+
 			// pattern width and height
 			/** @type {number} */ width = pattern.width,
 			/** @type {number} */ height = pattern.height,
-	
+
 			// width and height masks
 			/** @type {number} */ wm = this.widthMask,
 			/** @type {number} */ hm = this.heightMask,
-	
+
 			// multi-state view
 			/** @type {Uint8Array} */ multiStateRow = null,
-	
+
 			// bit offset
 			/** @type {number} */ offset = 0,
-	
+
 			// tile grid
 			/** @type {Array<Uint16Array>} */ tileGrid = this.state6TileGrid,
 			/** @type {Uint16Array} */ tileRow0 = null,
 			/** @type {Uint16Array} */ tileRow1 = null,
 			/** @type {Uint16Array} */ tileRow2 = null,
-	
+
 			// tile size (2^n)
 			/** @type {number} */ tilePower = this.tilePower;
-	
+
 		// remove bits from the mask that are state 6 in the pattern
 		for (y = 0; y < height; y += 1) {
 			// get the rows
@@ -7602,7 +7602,7 @@
 			/** @type {number} */ cells = 0,
 			/** @type {Uint16Array} */ gridRow = null,
 			/** @type {Uint8Array} */ colourRow = null,
-	
+
 			// get the grid bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 			/** @type {number} */ leftX = zoomBox.leftX >> 4,
@@ -9554,31 +9554,31 @@
 
 			// overlay row
 			/** @type {Uint8Array} */ overlayRow = null,
-	
+
 			// tile grid
 			/** @type {Array<Uint16Array>} */ tileGrid = this.tileGrid,
-	
+
 			// tile row
 			/** @type {Uint16Array} */ tileRow = null,
-	
+
 			// width of overlay
 			/** @type {number} */ width = this.width,
-	
+
 			// height of overlay
 			/** @type {number} */ height = this.height,
-	
+
 			// tile size (2^n)
 			/** @type {number} */ tilePower = this.tilePower,
 
 			// whether something alive in the row
 			/** @type {number} */ rowAlive = 0,
-	
+
 			// top and bottom bounding box
 			/** @type {number} */ topY = this.zoomBox.topY,
 			/** @type {number} */ bottomY = this.zoomBox.bottomY,
 			/** @type {number} */ leftX = this.zoomBox.leftX,
 			/** @type {number} */ rightX = this.zoomBox.rightX,
-	
+
 			// counters
 			/** @type {number} */ h = 0,
 			/** @type {number} */ w = 0;
@@ -9636,7 +9636,7 @@
 			/** @type {number} */ output = 0,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
-	
+
 			// grid
 			/** @type {Array<Uint16Array>} */ grid = this.grid16,
 			/** @type {Uint16Array} */ gridRow = null,
@@ -9644,13 +9644,13 @@
 			// source tile grid (from next tile grid template)
 			/** @type {Array<Uint16Array>} */ tileGrid = this.nextTileGrid,
 			/** @type {Uint16Array} */ tileRow = null,
-	
+
 			// destination tile grid
 			/** @type {Array<Uint16Array>} */ nextTileGrid = this.tileGrid,
 			/** @type {Uint16Array} */ nextTileRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
-	
+
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
@@ -9658,32 +9658,32 @@
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
-	
+
 			// left and right tile grid masks
 			/** @type {number} */ leftMask = (this.isTriangular ? 49152 : 32768),
 			/** @type {number} */ rightMask = (this.isTriangular ? 3 : 1),
-	
+
 			// flag if any cells in the tile are alive
 			/** @type {boolean} */ tileAlive = false,
-	
+
 			// set tile height
 			/** @type {number} */ ySize = this.tileY,
-	
+
 			// tile width (in 16 bit chunks)
 			/** @type {number} */ xSize = this.tileX >> 1,
-	
+
 			// tile rows
 			/** @type {number} */ tileRows = this.tileRows,
-	
+
 			// tile columns in 16 bit values
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
-	
+
 			// blank tile row for top and bottom
 			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
-	
+
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0;
-	
+
 		// set the initial tile row
 		bottomY = 0;
 		topY = bottomY + ySize;
@@ -9950,25 +9950,25 @@
 			/** @type {number} */ output = 0,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
-	
+
 			// grid
 			/** @type {Array<Uint16Array>} */ grid = this.grid16,
 			/** @type {Uint16Array} */ gridRow = null,
-	
+
 			// source tile grid (from next tile grid template)
 			/** @type {Array<Uint16Array>} */ tileGrid = this.nextTileGrid,
 			/** @type {Uint16Array} */ tileRow = null,
-	
+
 			// colour tile grid
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourGridRow = null,
-	
+
 			// destination tile grid
 			/** @type {Array<Uint16Array>} */ nextTileGrid = this.tileGrid,
 			/** @type {Uint16Array} */ nextTileRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
-	
+
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
@@ -9977,28 +9977,28 @@
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ cr = 0,
-	
+
 			// flag if any cells in the tile are alive
 			/** @type {boolean} */ tileAlive = false,
-	
+
 			// set tile height
 			/** @type {number} */ ySize = this.tileY,
-	
+
 			// tile width (in 16 bit chunks)
 			/** @type {number} */ xSize = this.tileX >> 1,
-	
+
 			// tile rows
 			/** @type {number} */ tileRows = this.tileRows,
-	
+
 			// tile columns in 16 bit values
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
-	
+
 			// blank tile row for top and bottom
 			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
-	
+
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0;
-	
+
 		// set the initial tile row
 		bottomY = 0;
 		topY = bottomY + ySize;
@@ -10469,17 +10469,17 @@
 			// width and height
 			/** @type {number} */ height = this.height,
 			/** @type {number} */ width = this.width,
-	
+
 			// colour grid
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourGridRow = null,
-	
+
 			// new box extent
 			/** @type {number} */ newBottomY = this.height,
 			/** @type {number} */ newTopY = -1,
 			/** @type {number} */ newLeftX = this.width,
 			/** @type {number} */ newRightX = -1,
-	
+
 			// flag for live cells in a row
 			/** @type {boolean} */ rowAlive = false;
 
@@ -10556,43 +10556,43 @@
 		var	/** @type {number} */ w = 0,
 			/** @type {number} */ h = 0,
 			/** @type {number} */ input = 0,
-	
+
 			// width in 16bit chunks
 			/** @type {number} */ w16 = this.width >> 4,
-	
+
 			// width and height
 			/** @type {number} */ height = this.height,
 			/** @type {number} */ width = this.width,
-	
+
 			// life grid
 			/** @type {Array<Uint16Array>} */ grid16 = this.grid16,
 			/** @type {Uint16Array} */ gridRow16 = null,
-	
+
 			// overlay colour grid
 			/** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
 			/** @type {Uint8Array} */ overlayRow = null,
-	
+
 			// colour grid
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourGridRow = null,
-	
+
 			// bounding boxes
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 			/** @type {BoundingBox} */ HROTBox = this.HROTBox,
 			/** @type {BoundingBox} */ initialBox = this.initialBox,
-	
+
 			// new box extent
 			/** @type {number} */ newBottomY = this.height,
 			/** @type {number} */ newTopY = -1,
 			/** @type {number} */ newLeftX = this.width,
 			/** @type {number} */ newRightX = -1,
-	
+
 			// new overlay extent
 			/** @type {number} */ overlayBottomY = this.height,
 			/** @type {number} */ overlayTopY = -1,
 			/** @type {number} */ overlayLeftX = this.width,
 			/** @type {number} */ overlayRightX = -1,
-	
+
 			// flag if something in the row was alive
 			/** @type {number} */ rowAlive = 0,
 
@@ -10801,26 +10801,26 @@
 		var	/** @type {number} */ w = 0,
 			/** @type {number} */ h = 0,
 			/** @type {number} */ input = 0,
-	
+
 			// width in 16bit chunks
 			/** @type {number} */ w16 = this.width >> 4,
-	
+
 			// width and height
 			/** @type {number} */ height = this.height,
 			/** @type {number} */ width = this.width,
-	
+
 			// life grid
 			/** @type {Array<Uint16Array>} */ grid16 = this.grid16,
 			/** @type {Uint16Array} */ gridRow16 = null,
-	
+
 			// overlay colour grid
 			/** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
 			/** @type {Uint8Array} */ overlayRow = null,
-	
+
 			// colour grid
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourGridRow = null,
-	
+
 			// bounding boxes
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 			/** @type {BoundingBox} */ HROTBox = this.HROTBox,
@@ -10831,7 +10831,7 @@
 			/** @type {number} */ newTopY = -1,
 			/** @type {number} */ newLeftX = this.width,
 			/** @type {number} */ newRightX = -1,
-	
+
 			// new overlay extent
 			/** @type {number} */ overlayBottomY = this.height,
 			/** @type {number} */ overlayTopY = -1,
@@ -10852,13 +10852,13 @@
 			// colour tile grids
 			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
 			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-	
+
 			// bottom tile row
 			/** @type {number} */ bottomY = 0,
-	
+
 			// top tile row
 			/** @type {number} */ topY = 0,
-	
+
 			// left tile group column
 			/** @type {number} */ leftX = 0,
 
@@ -11421,7 +11421,7 @@
 				current = this.potentialClears[i];
 				x = current.xc;
 				y = current.yc;
-	
+
 				// check if target was another edge glider
 				j = 0;
 				found = false;
@@ -11663,19 +11663,19 @@
 			// bottom left
 			/** @type {number} */ leftX = Math.round((this.width - width) / 2) + boxOffset,
 			/** @type {number} */ bottomY = Math.round((this.height - height) / 2) + boxOffset,
-	
+
 			// top right
 			/** @type {number} */ rightX = leftX + width - 1,
 			/** @type {number} */ topY = bottomY + height - 1,
-	
+
 			// horizontal and vertical shifts
 			/** @type {number} */ horizShift = this.boundedGridHorizontalShift,
 			/** @type {number} */ vertShift = this.boundedGridVerticalShift,
-	
+
 			// colour tile grid
 			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileHistoryGrid,
 			/** @type {Array<Uint16Array>} */ staticTileGrid = this.staticTileGrid,
-	
+
 			// counters
 			/** @type {number} */ sourceX = 0,
 			/** @type {number} */ sourceY = 0,
@@ -11837,19 +11837,19 @@
 			// bottom left
 			/** @type {number} */ leftX = Math.round((this.width - width) / 2) + boxOffset,
 			/** @type {number} */ bottomY = Math.round((this.height - height) / 2) + boxOffset,
-	
+
 			// top right
 			/** @type {number} */ rightX = leftX + width - 1,
 			/** @type {number} */ topY = bottomY + height - 1,
-	
+
 			// horizontal and vertical shifts
 			/** @type {number} */ horizShift = this.boundedGridHorizontalShift,
 			/** @type {number} */ vertShift = this.boundedGridVerticalShift,
-	
+
 			// horizontal and vertical twists
 			/** @type {boolean} */ horizTwist = this.boundedGridHorizontalTwist,
 			/** @type {boolean} */ vertTwist = this.boundedGridVerticalTwist,
-	
+
 			// counters
 			/** @type {number} */ sourceX = 0,
 			/** @type {number} */ sourceY = 0,
@@ -12034,11 +12034,11 @@
 			// bottom left
 			/** @type {number} */ leftX = Math.round((this.width - width) / 2) + boxOffset,
 			/** @type {number} */ bottomY = Math.round((this.height - height) / 2) + boxOffset,
-	
+
 			// top right
 			/** @type {number} */ rightX = leftX + width - 1,
 			/** @type {number} */ topY = bottomY + height - 1,
-	
+
 			// counters
 			/** @type {number} */ i = 0,
 			/** @type {number} */ source = 0,
@@ -12352,22 +12352,22 @@
 			// bounded grid width and height
 			/** @type {number} */ width = this.boundedGridWidth,
 			/** @type {number} */ height = this.boundedGridHeight,
-	
+
 			// box offset
 			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
 
 			// bottom left
 			/** @type {number} */ leftX = Math.round((this.width - width) / 2) + boxOffset,
 			/** @type {number} */ bottomY = Math.round((this.height - height) / 2) + boxOffset,
-	
+
 			// top right
 			/** @type {number} */ rightX = leftX + width - 1,
 			/** @type {number} */ topY = bottomY + height - 1,
-	
+
 			// horizontal and vertical shifts
 			/** @type {number} */ horizShift = this.boundedGridHorizontalShift,
 			/** @type {number} */ vertShift = this.boundedGridVerticalShift,
-	
+
 			// flag if extra horizontal cell is needed for triangular grid
 			/** @type {boolean} */ needExtra = (this.isTriangular && leftX > 0 && rightX < this.width - 1),
 
@@ -14028,14 +14028,14 @@
 			// start and end of current page
 			/** @type {number} */ start = 0,
 			/** @type {number} */ end = max,
-	
+
 			// boundary cell radius
 			/** @type {number} */ radius = this.removePatternRadius,
-	
+
 			// width and height mask
 			/** @type {number} */ widthMask = this.widthMask,
 			/** @type {number} */ heightMask = this.heightMask,
-	
+
 			// number of cells cleared
 			/** @type {number} */ cleared = 0;
 
@@ -14528,7 +14528,7 @@
 			/** @type {number} */ population = 0,
 			/** @type {number} */ births = 0,
 			/** @type {number} */ deaths = 0;
-		   
+
 		// switch buffers each generation
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextGrid16;
@@ -16580,40 +16580,40 @@
 
 			// height of grid
 			/** @type {number} */ height = this.height,
-	
+
 			// width of grid
 			/** @type {number} */ width = this.width,
-	
+
 			// width of grid in 16 bit chunks
 			/** @type {number} */ width16 = width >> 4,
-	
+
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
-	
+
 			// new box extent
 			/** @type {number} */ newBottomY = height,
 			/** @type {number} */ newTopY = -1,
 			/** @type {number} */ newLeftX = width,
 			/** @type {number} */ newRightX = -1,
-	
+
 			// set tile height
 			/** @type {number} */ ySize = this.tileY,
-	
+
 			// tile width (in 16 bit chunks)
 			/** @type {number} */ xSize = this.tileX >> 1,
-	
+
 			// tile rows
 			/** @type {number} */ tileRows = this.tileRows,
-	
+
 			// tile columns in 16 bit values
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
-	
+
 			// blank tile row for top and bottom
 			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
-	
+
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0,
-	
+
 			// starting and ending tile row
 			/** @type {number} */ tileStartRow = 0,
 			/** @type {number} */ tileEndRow = tileRows,
@@ -17154,10 +17154,10 @@
 
 			// height of grid
 			/** @type {number} */ height = this.height,
-	
+
 			// width of grid
 			/** @type {number} */ width = this.width,
-	
+
 			// width of grid in 16 bit chunks
 			/** @type {number} */ width16 = width >> 4,
 
@@ -19516,16 +19516,16 @@
 			/** @type {number} */ value = 0,
 			/** @type {number} */ smallValue = 0,
 			/** @type {number} */ temp = 0,
-	
+
 			// set tile height
 			/** @type {number} */ ySize = this.tileY,
-	
+
 			// tile width (in 16bit chunks)
 			/** @type {number} */ xSize = this.tileX >> 1,
-	
+
 			// tile rows
 			/** @type {number} */ tileRows = this.tileRows,
-	
+
 			// tile columns in 16 bit values
 			/** @type {number} */ tileCols16 = this.tileCols >> 4;
 
@@ -19695,13 +19695,13 @@
 
 			// set tile height
 			/** @type {number} */ ySize = this.tileY,
-	
+
 			// tile width (in 16bit chunks)
 			/** @type {number} */ xSize = this.tileX >> 1,
-	
+
 			// tile rows
 			/** @type {number} */ tileRows = this.tileRows,
-	
+
 			// tile columns in 16 bit values
 			/** @type {number} */ tileCols16 = this.tileCols >> 4;
 
@@ -21154,13 +21154,13 @@
 
 			// set tile height
 			/** @type {number} */ ySize = this.tileY,
-	
+
 			// tile width (in 16bit chunks)
 			/** @type {number} */ xSize = this.tileX >> 1,
-	
+
 			// tile rows
 			/** @type {number} */ tileRows = this.tileRows,
-	
+
 			// tile columns in 16 bit values
 			/** @type {number} */ tileCols16 = this.tileCols >> 4;
 
@@ -22083,7 +22083,7 @@
 
 			// tile columns in 16 bit values
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
-	
+
 			// starting and ending tile row
 			/** @type {number} */ tileStartRow = 0,
 			/** @type {number} */ tileEndRow = tileRows,
@@ -23089,7 +23089,7 @@
 
 			// flag for border of static tile
 			/** @type {boolean} */ isBorder = false,
-			
+
 			// mask of types in the neighbourhood
 			/** @type {number} */ typeMask = 0,
 
@@ -24090,13 +24090,13 @@
 
 			// set tile height
 			/** @type {number} */ ySize = this.tileY,
-	
+
 			// tile width (in 16bit chunks)
 			/** @type {number} */ xSize = this.tileX >> 1,
-	
+
 			// tile rows
 			/** @type {number} */ tileRows = this.tileRows,
-	
+
 			// tile columns in 16 bit values
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
 
@@ -24304,10 +24304,10 @@
 
 			// height of grid
 			/** @type {number} */ height = this.height,
-	
+
 			// width of grid
 			/** @type {number} */ width = this.width,
-	
+
 			// width of grid in 16 bit chunks
 			/** @type {number} */ width16 = width >> 4,
 
@@ -24319,22 +24319,22 @@
 			/** @type {number} */ newTopY = -1,
 			/** @type {number} */ newLeftX = width,
 			/** @type {number} */ newRightX = -1,
-	
+
 			// set tile height
 			/** @type {number} */ ySize = this.tileY,
-	
+
 			// tile width (use height since we need bytes)
 			/** @type {number} */ xSize = this.tileY,
-	
+
 			// tile rows
 			/** @type {number} */ tileRows = this.tileRows,
-	
+
 			// tile columns in 16 bit values
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
-	
+
 			// blank tile row for top and bottom
 			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
-	
+
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0;
 
@@ -26170,7 +26170,7 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-	
+
 			// width of grid in 16 bit chunks
 			/** @type {number} */ width16 = width >> 4,
 
@@ -28305,7 +28305,7 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-	
+
 			// width of grid in 16 bit chunks
 			/** @type {number} */ width16 = width >> 4,
 
@@ -29911,19 +29911,19 @@
 			/** @type {number} */ newTopY = -1,
 			/** @type {number} */ newLeftX = width,
 			/** @type {number} */ newRightX = -1,
-	
+
 			// set tile height
 			/** @type {number} */ ySize = this.tileY,
 
 			// tile width (use height since we need bytes)
 			/** @type {number} */ xSize = this.tileY,
-	
+
 			// tile rows
 			/** @type {number} */ tileRows = this.tileRows,
-	
+
 			// tile columns in 16 bit values
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
-	
+
 			// blank tile row for top and bottom
 			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 
@@ -30766,10 +30766,10 @@
 			/** @type {number} */ newTopY = -1,
 			/** @type {number} */ newLeftX = width,
 			/** @type {number} */ newRightX = -1,
-	
+
 			// set tile height
 			/** @type {number} */ ySize = this.tileY,
-	
+
 			// tile width (use height since we need bytes)
 			/** @type {number} */ xSize = this.tileY,
 
@@ -31636,7 +31636,7 @@
 
 			// blank tile row for top and bottom
 			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
-	
+
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0;
 
@@ -33309,7 +33309,7 @@
 			// bottom left
 			/** @type {number} */ bLeftX = Math.round((this.width - width) / 2),
 			/** @type {number} */ bBottomY = Math.round((this.height - height) / 2),
-	
+
 			// top right
 			/** @type {number} */ bRightX = bLeftX + width - 1,
 			/** @type {number} */ bTopY = bBottomY + height - 1;
@@ -33548,7 +33548,7 @@
 			// starting and ending tile row
 			/** @type {number} */ tileStartRow = 0,
 			/** @type {number} */ tileEndRow = tileRows;
-	
+
 		// clear anything alive
 		this.anythingAlive = 0;
 
@@ -33700,10 +33700,10 @@
 
 			// tile rows
 			/** @type {number} */ tileRows = this.tileRows,
-	
+
 			// tile columns in 16 bit values
 			/** @type {number} */ tileCols16 = this.tileCols >> 4,
-	
+
 			// starting and ending tile row
 			/** @type {number} */ tileStartRow = 0,
 			/** @type {number} */ tileEndRow = tileRows;
@@ -34388,7 +34388,7 @@
 		var	/** @type {Uint32Array} */ data32 = this.data32,
 			/** @type {number} */ w = this.displayWidth,
 			/** @type {number} */ h = this.displayHeight,
-	
+
 			// pixel offsets in bitmap
 			/** @type {number} */ offset = 0,
 			/** @type {number} */ end = 0,
@@ -34605,7 +34605,7 @@
 			/** @type {number} */ dx2 = 0,
 			/** @type {number} */ dy1 = 0,
 			/** @type {number} */ dy2 = 0;
-	
+
 		// draw paste rectangle
 		switch (position) {
 		case ViewConstants.pastePositionNW:
@@ -34935,7 +34935,7 @@
 			// compute single cell offset
 			/** @type {number} */ yOff = (((this.height / 2 - (this.yOff + this.originY)) * yZoomStep) + (h / 2)) % yZoomStep,
 			/** @type {number} */ xOff = (((this.width / 2 - (this.xOff + this.originX)) * xZoomStep) + (w / 2)) % xZoomStep,
-	
+
 			// compute top left of original pattern offset
 			/** @type {number} */ xPat = (this.view.patternWidth / 2) | 0,
 			/** @type {number} */ yPat = (this.view.patternHeight / 2) | 0;
@@ -35066,11 +35066,11 @@
 			/** @type {number} */ rightX = leftX + width + 1,
 			/** @type {number} */ bottomY = Math.round((this.height - height) / 2 - 1) + boxOffset,
 			/** @type {number} */ topY = bottomY + height + 1,
-	
+
 			// top and bottom row
 			/** @type {Uint8Array} */ bottomRow = colourGrid[bottomY],
 			/** @type {Uint8Array} */ topRow = colourGrid[topY],
-	
+
 			// counter
 			/** @type {number} */ i = 0;
 
@@ -35274,18 +35274,18 @@
 
 			// index in pixel buffer
 			/** @type {number} */ idx = 0,
-	
+
 			// layer parameters
 			/** @type {number} */ layerTarget = 1,
 			/** @type {number} */ brightness = 1,
 			/** @type {number} */ brightInc = 0,
-	
+
 			// max grid size
 			/** @type {number} */ maxGridSize = this.maxGridSize,
-	
+
 			// index of pixel colour
 			/** @type {number} */ col = 0,
-	
+
 			// create the width and height masks
 			/** @type {number} */ wm = this.widthMask & ~mask,
 			/** @type {number} */ hm = this.heightMask & ~mask,
@@ -35296,16 +35296,16 @@
 
 			// last mask
 			/** @type {number} */ lastMask = mask,
-	
+
 			// pixel when off max grid
 			/** @type {number} */ offMaxGrid = this.boundaryColour,
-	
+
 			// pixel when off grid
 			/** @type {number} */ offGrid = pixelColours[0],
-	
+
 			// start with bottom grid
 			colourGrid = bottomGrid,
-	
+
 			// current layer zoom
 			/** @type {number} */ layerZoom = this.camZoom;
 
@@ -35703,10 +35703,10 @@
 			/** @type {number} */ xg = this.width,
 			/** @type {number} */ yg = this.height,
 			/** @type {number} */ transparentTarget = 0,
-	
+
 			// index in pixel buffer
 			/** @type {number} */ idx = 0,
-	
+
 			// layer parameters
 			/** @type {number} */ layerTarget = 1,
 			/** @type {number} */ brightness = 1,
@@ -36173,14 +36173,14 @@
 
 			// index in pixel buffer
 			/** @type {number} */ idx = 0,
-	
+
 			/** @type {number} */ layerTarget = 1,
 			/** @type {number} */ brightness = 1,
 			/** @type {number} */ brightInc = 0,
-	
+
 			// index of pixel colour
 			/** @type {number} */ col = 0,
-	
+
 			// create the width and height masks
 			/** @type {number} */ wm = this.widthMask & ~mask,
 			/** @type {number} */ hm = this.heightMask & ~mask,
@@ -36190,7 +36190,7 @@
 
 			// start with bottom grid
 			colourGrid = bottomGrid,
-	
+
 			// current layer zoom
 			/** @type {number} */ layerZoom = this.camZoom;
 
@@ -36490,14 +36490,14 @@
 			/** @type {number} */ sy = 0,
 			/** @type {number} */ sx = 0,
 			/** @type {number} */ transparentTarget = 0,
-	
+
 			// index in pixel buffer
 			/** @type {number} */ idx = 0,
-	
+
 			/** @type {number} */ layerTarget = 1,
 			/** @type {number} */ brightness = 1,
 			/** @type {number} */ brightInc = 0,
-	
+
 			// index of pixel colour
 			/** @type {number} */ col = 0,
 
@@ -36513,7 +36513,7 @@
 
 			// colour grid row
 			colourGridRow = null,
-	
+
 			// current layer zoom
 			/** @type {number} */ layerZoom = this.camZoom;
 
@@ -36808,15 +36808,15 @@
 			// display width and height
 			/** @type {number} */ width = this.displayWidth,
 			/** @type {number} */ height = this.displayHeight,
-	
+
 			// compute bottom left
 			/** @type {number} */ bottomLeftY = -((this.displayWidth / 2) * (-dxy) + (this.displayHeight / 2) * dyy / yFactor) + this.camYOff,
 			/** @type {number} */ bottomLeftX = -((this.displayWidth / 2) * dyy + (this.displayHeight / 2) * dxy) + this.camXOff,
-	
+
 			// compute bottom right
 			/** @type {number} */ bottomRightY = bottomLeftY + width * (-dxy),
 			/** @type {number} */ bottomRightX = bottomLeftX + width * dyy,
-	
+
 			// compute top left
 			/** @type {number} */ topLeftY = bottomLeftY + height * dyy / yFactor,
 			/** @type {number} */ topLeftX = bottomLeftX + height * dxy,
@@ -37344,13 +37344,13 @@
 			/** @type {number} */ xg = this.width,
 			/** @type {number} */ yg = this.height,
 			/** @type {number} */ transparentTarget = 0,
-	
+
 			// get states 3, 4, 5 and 6
 			/** @type {number} */ state3 = ViewConstants.stateMap[3] + 128,
 			/** @type {number} */ state4 = ViewConstants.stateMap[4] + 128,
 			/** @type {number} */ state5 = ViewConstants.stateMap[5] + 128,
 			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128,
-	
+
 			// index in pixel buffer
 			/** @type {number} */ idx = 0,
 
@@ -37919,32 +37919,32 @@
 			/** @type {number} */ sy = 0,
 			/** @type {number} */ sx = 0,
 			/** @type {number} */ transparentTarget = 0,
-	
+
 			// get states 3, 4, 5 and 6
 			/** @type {number} */ state3 = ViewConstants.stateMap[3] + 128,
 			/** @type {number} */ state4 = ViewConstants.stateMap[4] + 128,
 			/** @type {number} */ state5 = ViewConstants.stateMap[5] + 128,
 			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128,
-	
+
 			// index in pixel buffer
 			/** @type {number} */ idx = 0,
-	
+
 			/** @type {number} */ layerTarget = 1,
 			/** @type {number} */ brightness = 1,
 			/** @type {number} */ brightInc = 0,
 
 			// index of pixel colour
 			/** @type {number} */ col = 0,
-	
+
 			// index of overlay colour
 			/** @type {number} */ over = 0,
-	
+
 			// computed pixel colour
 			/** @type {number} */ pixel = 0,
-	
+
 			// first alive colour
 			/** @type {number} */ aliveStart = this.aliveStart,
-	
+
 			// create the width and height masks
 			/** @type {number} */ wm = this.widthMask & ~mask,
 			/** @type {number} */ hm = this.heightMask & ~mask,
@@ -37955,7 +37955,7 @@
 			// start with bottom grid
 			/** @type {Array<Uint8Array>} */ colourGrid = layersGrid,
 			/** @type {Array<Uint8Array>} */ overlayGrid = bottomGrid,
-	
+
 			// current layer zoom
 			/** @type {number} */ layerZoom = this.camZoom;
 
@@ -38382,13 +38382,13 @@
 			/** @type {number} */ sy = 0,
 			/** @type {number} */ sx = 0,
 			/** @type {number} */ transparentTarget = 0,
-	
+
 			// get states 3, 4, 5 and 6
 			/** @type {number} */ state3 = ViewConstants.stateMap[3] + 128,
 			/** @type {number} */ state4 = ViewConstants.stateMap[4] + 128,
 			/** @type {number} */ state5 = ViewConstants.stateMap[5] + 128,
 			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128,
-	
+
 			// index in pixel buffer
 			/** @type {number} */ idx = 0,
 
@@ -39471,15 +39471,15 @@
 			// compute bottom left
 			/** @type {number} */ bottomLeftY = -((this.displayWidth / 2) * (-dxy) + (this.displayHeight / 2) * dyy) + this.camYOff,
 			/** @type {number} */ bottomLeftX = -((this.displayWidth / 2) * dyy + (this.displayHeight / 2) * dxy) + this.camXOff,
-	
+
 			// compute bottom right
 			/** @type {number} */ bottomRightY = bottomLeftY + width * (-dxy),
 			/** @type {number} */ bottomRightX = bottomLeftX + width * dyy,
-	
+
 			// compute top left
 			/** @type {number} */ topLeftY = bottomLeftY + height * dyy,
 			/** @type {number} */ topLeftX = bottomLeftX + height * dxy,
-	
+
 			// compute top right
 			/** @type {number} */ topRightY = topLeftY + width * (-dxy),
 			/** @type {number} */ topRightX = topLeftX + width * dyy,
@@ -39632,7 +39632,7 @@
 
 					// set the number of steps based on the tilt angle
 					/** @type {number} */ mode7Step = (mode7Angle * 2 + 2) / height;
-	
+
 				// create the mode7 buffer if it has not been done so before
 				if (this.mode7Buffer === null) {
 					this.mode7Buffer = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, width * height, "Life.tiltBuffer"));

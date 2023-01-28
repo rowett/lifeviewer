@@ -52,10 +52,10 @@
 			/** @type {number} */ curX = 0,
 			/** @type {number} */ curY = 0,
 			/** @type {number} */ curZ = 0,
-	
+
 			// number of stars
 			/** @type {number} */ numStars = this.numStars,
-	
+
 			// compute the radius of the starfield
 			/** @type {number} */ radius2 = (maxX * maxX) + (maxY * maxY);
 
@@ -92,44 +92,44 @@
 			i += 1;
 		}
 	};
-	
+
 	// convert stars to display position
 	Stars.prototype.create2D = function(/** @type {number} */ xOff, /** @type {number} */ yOff, /** @type {number} */ zOff, /** @type {number} */ angle, /** @type {number} */ displayWidth, /** @type {number} */ displayHeight, /** @type {Uint32Array} */ pixelBuffer, /** @type {number} */ blackPixel) {
 		var	/** @type {number} */ i = 0,
 
 			// offset in pixel data
 			/** @type {number} */ offset = 0,
-	
+
 			// computed star colour
 			/** @type {number} */ pixelColour = 0,
-	
+
 			// z distance and x, y position of star
 			/** @type {number} */ zDist = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
-	
+
 			// computed angle and radius
 			/** @type {number} */ theta = 0,
 			/** @type {number} */ radius = 0,
-	
+
 			// r g b components of background colour
 			/** @type {number} */ blackRed = 0,
 			/** @type {number} */ blackGreen = 0,
 			/** @type {number} */ blackBlue = 0,
-	
+
 			// r g b components of star colour
 			/** @type {number} */ currentRed = 0,
 			/** @type {number} */ currentGreen = 0,
 			/** @type {number} */ currentBlue = 0,
-	
+
 			// half width and height
 			/** @const {number} */ halfWidth = displayWidth >> 1,
 			/** @const {number} */ halfHeight = displayHeight >> 1,
-	
+
 			// width and height minus 1
 			/** @const {number} */ widthMinus1 = displayWidth - 1,
 			/** @const {number} */ heightMinus1 = displayHeight - 1,
-	
+
 			/** @type {number} */ starMinusBlackRed = 0,
 			/** @type {number} */ starMinusBlackGreen = 0,
 			/** @type {number} */ starMinusBlackBlue = 0;
@@ -183,12 +183,12 @@
 				// convert to part degrees
 				theta *= this.degreeParts;
 				theta |= 0;
-				
+
 				// compute rotated position
 				x = radius * this.cos[theta];
 				y = radius * this.sin[theta];
 			}
-			
+
 			// create the 2D position
 			zDist = (this.z[i] / zOff) * 2;
 			//x = ((displayWidth / 2) + (x / zDist)) | 0;

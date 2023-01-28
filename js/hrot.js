@@ -90,7 +90,7 @@
 	// set random seed
 	HROT.prototype.setRandomSeed = function(/** @type {string} */ seed) {
 		var	/** @type {number} */ i = 0;
-		
+
 		// initialize random number generator
 		this.myRand.init(seed);
 
@@ -1664,7 +1664,7 @@
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
 			countRow = counts[y];
 			x = leftX - xrange;
-			
+
 			// for the first cell compute the whole neighbourhood
 			count = 0;
 			k = (x + y) & 1;
@@ -2748,7 +2748,7 @@
 				}
 			}
 		}
-	
+
 		// adjust range if using bounded grid
 		if (this.engine.boundedGridType !== -1) {
 			if (leftX < gridLeftX + xrange) {
@@ -3535,7 +3535,7 @@
 		for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
 			countRow = counts[y];
 			x = leftX - xrange;
-			
+
 			// for the first cell compute the whole neighbourhood
 			count = 0;
 			k = (x + y) & 1;

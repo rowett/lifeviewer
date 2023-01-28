@@ -479,7 +479,7 @@
 	} else {
 		Supports.littleEndian = false;
 	}
-	
+
 	// set copy within flag
 	if (Supports.data32.copyWithin) {
 		Supports.copyWithin = true;

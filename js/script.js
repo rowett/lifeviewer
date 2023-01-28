@@ -114,7 +114,7 @@
 							tokens += 1;
 							inToken = false;
 						}
-	
+
 						// add separator token
 						starts[tokens] = i;
 						lengths[tokens] = 1;
@@ -218,7 +218,7 @@
 		this.current = 0;
 		this.source = source;
 	}
-	
+
 	// get the string between a range of tokens
 	/** @returns {string} */
 	Script.prototype.getStringSection = function(/** @type {number} */ start, /** @type {number} */ end) {
@@ -402,7 +402,7 @@
 		if (result !== -1) {
 			this.current = current;
 		}
-		
+
 		// return the token index
 		return result;
 	};
@@ -424,7 +424,7 @@
 
 			// find the slash
 			/** @type {number} */ slashIndex = token.indexOf("/"),
-	
+
 			// left and right parts
 			/** @type {string} */ leftPart = "",
 			/** @type {string} */ rightPart = "";

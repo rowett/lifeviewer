@@ -37,7 +37,7 @@
 	/** @returns {number} */
 	Help.renderHelpLineUpDown = function(/** @type {View} */ view, /** @type {string} */ up, /** @type {string} */ separator, /** @type {string} */ down, /** @type {string} */ text, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ startLine) {
 		var	/** @type {number} */ result = y,
-		    
+
 			// scale
 			/** @type {number} */ xScale = view.viewMenu.xScale,
 			/** @type {number} */ yScale = view.viewMenu.xScale,
@@ -372,7 +372,7 @@
 				i += 1;
 			}
 		}
-	
+
 		// return the string
 		return result;
 	};
@@ -533,7 +533,7 @@
 
 		// reset sections
 		view.helpSections = [];
-		
+
 		// title
 		view.tabs[0] = 108;
 		view.helpSections[sectionNum] = [view.lineNo, "Top"];
@@ -567,7 +567,7 @@
 
 		// reset sections
 		view.helpSections = [];
-		
+
 		// annotations 
 		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
@@ -636,10 +636,10 @@
 
 		// reset sections
 		view.helpSections = [];
-		
+
 		// enable line wrap
 		view.wrapHelpText = true;
-		
+
 		// keyboard commands
 		view.tabs[0] = 124;
 		view.helpSections[sectionNum] = [view.lineNo, "Top"];
@@ -1935,7 +1935,7 @@
 						j = view.engine.multiNumStates + view.historyStates - 1; 
 						this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 						y = this.renderHelpLine(view, "Alive", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
-		
+
 						// draw dying states
 						for (i = 1; i < view.engine.multiNumStates - 1; i += 1) {
 							j = view.engine.multiNumStates - i + view.historyStates - 1;
@@ -1961,7 +1961,7 @@
 					// normal theme
 					this.renderColourBox(view, theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 					y = this.renderHelpLine(view, "Alive", this.rgbObjectString(theme.aliveRange.startColour), ctx, x, y, height, helpLine);
-	
+
 					// check if there is a ramp between alive start and end
 					if (theme.aliveRange.startColour.red !== theme.aliveRange.endColour.red || theme.aliveRange.startColour.green !== theme.aliveRange.endColour.green || theme.aliveRange.startColour.blue !== theme.aliveRange.endColour.blue) {
 						this.renderColourBox(view, theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
@@ -1969,12 +1969,12 @@
 					} else {
 						y = this.renderHelpLine(view, "AliveRamp", "    (none)", ctx, x, y, height, helpLine);
 					}
-	
+
 					// if there are no history states don't draw dead states
 					if (view.historyStates > 0) {
 						this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 						y = this.renderHelpLine(view, "Dead", this.rgbObjectString(theme.deadRange.endColour), ctx, x, y, height, helpLine);
-	
+
 						// check if there is a ramp between dead start and end
 						if (view.historyStates > 1) {
 							if (theme.deadRange.startColour.red !== theme.deadRange.endColour.red || theme.deadRange.startColour.green !== theme.deadRange.endColour.green || theme.deadRange.startColour.blue !== theme.deadRange.endColour.blue) {
@@ -1995,7 +1995,7 @@
 				value = 128 + ViewConstants.stateMap[i];
 				colourValue = this.rgbString(view.engine.redChannel[value], view.engine.greenChannel[value], view.engine.blueChannel[value]);
 				itemName = ViewConstants.stateNames[i];
-				
+
 				// render the colour boX
 				this.renderColourBox(view, view.engine.redChannel[value], view.engine.greenChannel[value], view.engine.blueChannel[value], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 				y = this.renderHelpLine(view, itemName, colourValue, ctx, x, y, height, helpLine);
@@ -2350,7 +2350,7 @@
 
 		// reset sections
 		view.helpSections = [];
-		
+
 		// themes list
 		view.tabs[0] = 130;
 		view.tabs[1] = 200;
@@ -2536,7 +2536,7 @@
 
 		// reset sections
 		view.helpSections = [];
-		
+
 		// display colour names
 		view.tabs[0] = 260;
 		view.tabs[1] = 330;
@@ -2637,7 +2637,7 @@
 
 		// reset sections
 		view.helpSections = [];
-		
+
 		// memory
 		view.tabs[0] = 128;
 		view.tabs[1] = 200;
@@ -2731,10 +2731,10 @@
 
 			// get the width of the command
 			/** @type {number} */ width = 0,
-	
+
 			// only change colour if not drawing shadow
 			/** @type {boolean} */ drawingShadow = false,
-	
+
 			// get line number
 			/** @type {number} */ lineNo = view.lineNo;
 
@@ -2804,7 +2804,7 @@
 
 			// get the width of the command
 			/** @type {number} */ width = 0,
-	
+
 			// line number
 			/** @type {number} */ lineNo = view.lineNo;
 
@@ -2881,7 +2881,7 @@
 
 			// text line height in pixels
 			/** @type {number} */ lineHeight = 19 * yScale,
-	
+
 			// number of footer lines
 			/** @type {number} */ footerLines = 7;
 

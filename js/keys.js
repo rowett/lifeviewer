@@ -214,7 +214,7 @@
 						value -= 1;
 						if (value >= 0 && value < me.waypointManager.numPOIs()) {
 							me.currentPOI = value;
-	
+
 							// set camera
 							me.setCameraFromPOI(me, me.currentPOI);
 						}
@@ -418,10 +418,10 @@
 					case 188:
 						// get the current value
 						value = me.angleItem.current[0];
-	
+
 						// decrease by an eighth
 						value -= 45;
-	
+
 						// wrap if required
 						if (value < 0) {
 							value += 360;
@@ -435,10 +435,10 @@
 					case 190:
 						// get the current value
 						value = me.angleItem.current[0];
-	
+
 						// increase by an eighth
 						value += 45;
-	
+
 						// wrap if required
 						if (value >= 360) {
 							value -= 360;
@@ -480,7 +480,7 @@
 					if (!me.tiltItem.locked) {
 						// get the current value
 						value = me.tiltItem.current[0];
-	
+
 						// skip dead zone
 						if (value > 0.47 && value < 0.53) {
 							value = 0.46;
@@ -509,7 +509,7 @@
 					if (!me.tiltItem.locked) {
 						// get the current value
 						value = me.tiltItem.current[0];
-	
+
 						// skip dead zone
 						if (value > 0.47 && value < 0.53) {
 							value = 0.54;
@@ -627,7 +627,7 @@
 								if (me.engine.counter > 0) {
 									// run from start to previous step
 									me.runTo(me.engine.counter - me.gensPerStep);
-	
+
 									// adjust undo stack pointer
 									me.setUndoGen(me.engine.counter - me.gensPerStep + 1);
 								}
@@ -1018,7 +1018,7 @@
 							} else {
 								// switch it on
 								me.switchOnThumbnail();
-		
+
 								// close help if open
 								if (me.displayHelp) {
 									me.displayHelp = 0;
@@ -1045,7 +1045,7 @@
 							// reset camera
 							me.resetSavedCamera(me);
 							me.menuManager.notification.notify("Restored camera position", 15, 100, 15, true);
-	
+
 							// flag manual change made if paused
 							if (!me.generationOn) {
 								me.manualChange = true;
@@ -1121,7 +1121,7 @@
 					if (event.shiftKey) {
 						// set zoom to nearest integer
 						me.changeZoom(me, me.engine.zoom * me.engine.originZ, true);
-	
+
 						// display notification
 						me.menuManager.notification.notify("Integer Zoom", 15, 40, 15, true);
 					} else {
@@ -1354,7 +1354,7 @@
 					if (!me.angleItem.locked) {
 						// get the current value
 						value = me.angleItem.current[0];
-	
+
 						// check for shift key
 						if (event.shiftKey) {
 							// decrease by a quarter
@@ -1363,7 +1363,7 @@
 							// decrease by a degree
 							value -= 1;
 						}
-	
+
 						// wrap if required
 						if (value < 0) {
 							value += 360;
@@ -1383,7 +1383,7 @@
 					if (!me.angleItem.locked) {
 						// get the current value
 						value = me.angleItem.current[0];
-	
+
 						// check for shift key
 						if (event.shiftKey) {
 							// increase by a quarter
@@ -1392,12 +1392,12 @@
 							// increase by a degree
 							value += 1;
 						}
-	
+
 						// wrap if required
 						if (value >= 360) {
 							value -= 360;
 						}
-	
+
 						// update UI
 						me.angleItem.current = me.viewAngleRange([value, value], true, me);
 					}
@@ -1469,7 +1469,7 @@
 					}
 				}
 				break;
-				
+
 			// u for UI or reverse playback for Margolus
 			case 85:
 				if (event.shiftKey) {
@@ -1542,7 +1542,7 @@
 						if (!me.fitButton.locked) {
 							me.fitZoomDisplay(true, true, ViewConstants.fitZoomPattern);
 							me.menuManager.notification.notify("Fit Pattern", 15, 80, 15, true);
-	
+
 							// flag manual change made if paused
 							if (!me.generationOn) {
 								me.manualChange = true;
@@ -1657,7 +1657,7 @@
 						if (me.navToggle && !me.navToggle.deleted && !me.navToggle.locked) {
 							// toggle navigation menu
 							me.navToggle.current = me.toggleSettings([!me.navToggle.current[0]], true, me);
-		
+
 							// mark toggle required
 							me.menuManager.toggleRequired = true;
 						}
@@ -1693,7 +1693,7 @@
 								} else {
 									// increment colour theme
 									value = me.engine.colourTheme + 1;
-	
+
 									// check for custom theme
 									if (me.customTheme || me.customGridMajor) {
 										// allow custom theme
@@ -1707,7 +1707,7 @@
 										}
 									}
 								}
-	
+
 								// set the new theme
 								me.setNewTheme(value, me.engine.colourChangeSteps, me);
 								if (!me.engine.isNone && !me.showThemeSelection) {
@@ -1782,7 +1782,7 @@
 									me.setHelpTopic(ViewConstants.informationTopic, me);
 								}
 							}
-		
+
 							// update the help UI
 							me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
 							me.menuManager.toggleRequired = true;

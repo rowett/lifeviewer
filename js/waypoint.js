@@ -264,12 +264,12 @@
 			// default to complete
 			/** @type {number} */ percentLinearComplete = 1.0,
 			/** @type {number} */ percentBezierComplete = 1.0,
-	
+
 			// x, y and zoom percent complete
 			/** @type {number} */ percentXComplete = 1.0,
 			/** @type {number} */ percentYComplete = 1.0,
 			/** @type {number} */ percentZComplete = 1.0;
-		
+
 		// cap elapsed time to end time
 		if (elapsedTime > endTime) {
 			elapsedTime = endTime;
@@ -1060,12 +1060,12 @@
 						}
 					}
 				}
-	
+
 				// do not draw if too big or too small
 				if (xZoom >= current.minZoom && xZoom <= current.maxZoom) {
 					// convert zoom into a linear range
 					linearZoom = Math.log(xZoom / current.minZoom) / Math.log(current.maxZoom / current.minZoom);
-	
+
 					// make more transparent if in bottom or top 20% of linear range
 					if (linearZoom <= 0.25) {
 						alphaValue = linearZoom * 4;
@@ -1113,7 +1113,7 @@
 						// get arrow start position
 						cy = currentY1 + yOff - (view.patternHeight >> 1) + 0.5;
 						cx = currentX1 + xOff + hexAdjust - (view.patternWidth >> 1) + 0.5;
-						
+
 						// check for fixed position
 						if (!current.positionLocked) {
 							cx += engine.originX;
@@ -1128,18 +1128,18 @@
 							cx += current.dx * floatCounter;
 							cy += current.dy * floatCounter;
 						}
-	
+
 						// check for camera rotation
 						if (engine.camAngle !== 0) {
 							// compute radius
 							radius = Math.sqrt((cx * cx) + (cy * cy));
-	
+
 							// apply angle
 							theta = Math.atan2(cy, cx) * (180 / Math.PI);
-	
+
 							// add current rotation
 							theta += engine.camAngle;
-	
+
 							// compute rotated position
 							cx = radius * Math.cos(theta * (Math.PI / 180));
 							cy = radius * Math.sin(theta * (Math.PI / 180));
@@ -1149,7 +1149,7 @@
 						if (engine.isHex) {
 							cx -= cy / 2;
 						}
-	
+
 						// draw the arrow
 						y = (cy * yZoom) + halfDisplayHeight;
 						x = (cx * xZoom) + halfDisplayWidth;
@@ -1158,7 +1158,7 @@
 						if (engine.isHex) {
 							cx2 -= cy2 / 2;
 						}
-	
+
 						// compute arrow head size
 						if (current.headMultiple === 0) {
 							headSize = 0;
@@ -1184,19 +1184,19 @@
 								theta += engine.camAngle;
 							}
 							context.rotate(theta / 180 * Math.PI);
-			
+
 							// set line width
 							context.lineWidth = currentSize;
-	
+
 							// set line colour if not drawing shadows
 							if (!drawingShadows) {
 								context.strokeStyle = current.colour;
 							}
-	
+
 							// set round line cap and join
 							context.lineCap = "round";
 							context.lineJoin = "round";
-	
+
 							// compute the head position
 							if (headSize > 0) {
 								headAngle = Math.atan2(cy2, cx2);
@@ -1205,7 +1205,7 @@
 								xRight = Math.cos(-Math.PI * 0.85 + headAngle);
 								yRight = Math.sin(-Math.PI * 0.85 + headAngle);
 							}
-	
+
 							// draw arrow layer
 							if (shadowOffset > 0) {
 								context.translate(shadowOffset, shadowOffset);
@@ -1220,7 +1220,7 @@
 								context.lineTo(cx2 + headSize * xRight, cy2 + headSize * yRight);
 							}
 							context.stroke();
-		
+
 							// restore context
 							context.restore();
 						}
@@ -1334,12 +1334,12 @@
 						}
 					}
 				}
-	
+
 				// do not draw if too big or too small
 				if (xZoom >= current.minZoom && xZoom <= current.maxZoom) {
 					// convert zoom into a linear range
 					linearZoom = Math.log(xZoom / current.minZoom) / Math.log(current.maxZoom / current.minZoom);
-	
+
 					// make more transparent if in bottom or top 20% of linear range
 					if (linearZoom <= 0.25) {
 						alphaValue = linearZoom * 4;
@@ -1389,7 +1389,7 @@
 						cx = coords[coord] + boundedDx + xOff + hexAdjust - (view.patternWidth >> 1) + 0.5;
 						cy = coords[coord + 1] + boundedDy + yOff - (view.patternHeight >> 1) + 0.5;
 						coord += 2;
-						
+
 						// check for fixed position
 						if (!current.positionLocked) {
 							cx += engine.originX;
@@ -1404,18 +1404,18 @@
 							cx += current.dx * floatCounter;
 							cy += current.dy * floatCounter;
 						}
-	
+
 						// check for camera rotation
 						if (engine.camAngle !== 0) {
 							// compute radius
 							radius = Math.sqrt((cx * cx) + (cy * cy));
-	
+
 							// apply angle
 							theta = Math.atan2(cy, cx) * (180 / Math.PI);
-	
+
 							// add current rotation
 							theta += engine.camAngle;
-	
+
 							// compute rotated position
 							cx = radius * Math.cos(theta * (Math.PI / 180));
 							cy = radius * Math.sin(theta * (Math.PI / 180));
@@ -1425,7 +1425,7 @@
 						if (engine.isHex) {
 							cx -= cy / 2;
 						}
-	
+
 						// draw the polygon
 						y = (cy * yZoom) + halfDisplayHeight;
 						x = (cx * xZoom) + halfDisplayWidth;
@@ -1445,7 +1445,7 @@
 								cx2 -= cy2 / 2;
 							}
 							coord += 2;
-		
+
 							// rotate context for drawing
 							context.save();
 							context.translate(x, y);
@@ -1455,10 +1455,10 @@
 								theta += engine.camAngle;
 							}
 							context.rotate(theta / 180 * Math.PI);
-			
+
 							// set line width
 							context.lineWidth = currentSize;
-	
+
 							// set line colour if not drawing shadows
 							if (!drawingShadows) {
 								if (current.isFilled) {
@@ -1467,11 +1467,11 @@
 									context.strokeStyle = current.colour;
 								}
 							}
-	
+
 							// set round line cap and join
 							context.lineCap = "round";
 							context.lineJoin = "round";
-	
+
 							// draw polygon layer
 							if (shadowOffset > 0) {
 								context.translate(shadowOffset, shadowOffset);
@@ -1493,7 +1493,7 @@
 							} else {
 								context.stroke();
 							}
-	
+
 							// restore context
 							context.restore();
 						}
@@ -1600,13 +1600,13 @@
 						shadowOffset = 3;
 					}
 				}
-	
+
 				// do not draw if too big or too small
 				if (xZoom >= current.minZoom && xZoom <= current.maxZoom) {
 					// convert zoom into a linear range
 					linearZoom = Math.log(xZoom / current.minZoom) / Math.log(current.maxZoom / current.minZoom);
 					context.font = currentSize + fontEnd;
-	
+
 					// make more transparent if in bottom or top 25% of linear range
 					if (linearZoom <= 0.25) {
 						alphaValue = linearZoom * 4;
@@ -1654,7 +1654,7 @@
 						// get label position
 						cx = currentX + xOff + hexAdjust - (view.patternWidth >> 1) + 0.5;
 						cy = currentY + yOff - (view.patternHeight >> 1) + 0.5;
-						
+
 						// check for fixed position
 						if (!current.positionLocked) {
 							cx += engine.originX;
@@ -1669,23 +1669,23 @@
 							cx += current.dx * floatCounter;
 							cy += current.dy * floatCounter;
 						}
-	
+
 						// check for camera rotation
 						if (engine.camAngle !== 0) {
 							// compute radius
 							radius = Math.sqrt((cx * cx) + (cy * cy));
-	
+
 							// apply angle
 							theta = Math.atan2(cy, cx) * (180 / Math.PI);
-	
+
 							// add current rotation
 							theta += engine.camAngle;
-	
+
 							// compute rotated position
 							cx = radius * Math.cos(theta * (Math.PI / 180));
 							cy = radius * Math.sin(theta * (Math.PI / 180));
 						}
-	
+
 						// adjust for hex
 						if (engine.isHex) {
 							cx -= cy / 2;
@@ -1764,7 +1764,7 @@
 						index = message.indexOf("\\n");
 						y = (cy * yZoom) + halfDisplayHeight;
 						x = (cx * xZoom) + halfDisplayWidth;
-	
+
 						// check for tilt
 						if (tilt !== 0) {
 							pz = -mode7Angle + (mode7Angle * 2 + 2) / engine.displayHeight * (engine.displayHeight - y);
@@ -1784,45 +1784,45 @@
 							}
 							context.rotate(theta / 180 * Math.PI);
 							y = 0;
-			
+
 							while (index !== -1) {
 								// get the next line
 								line = message.substring(0, index);
 								message = message.substring(index + 2);
-			
+
 								// measure text line width
 								xPos = context.measureText(line).width >> 1;
-				
+
 								// draw shadow
 								if (current.shadow) {
 									context.fillStyle = shadowColour;
 									context.fillText(line, -xPos + shadowOffset, y + shadowOffset);
 								}
-					
+
 								// draw message
 								context.fillStyle = current.colour;
 								context.fillText(line, -xPos, y);
-		
+
 								// compute y coordinate for next text line
 								y += currentSize;
-			
+
 								// check for more lines
 								index = message.indexOf("\\n");
 							}
-			
+
 							// measure final text line width
 							xPos = context.measureText(message).width >> 1;
-			
+
 							// draw shadow
 							if (current.shadow) {
 								context.fillStyle = shadowColour;
 								context.fillText(message, -xPos + shadowOffset, y + shadowOffset);
 							}
-				
+
 							// draw message
 							context.fillStyle = current.colour;
 							context.fillText(message, -xPos, y);
-		
+
 							// restore context
 							context.restore();
 						}
@@ -1918,7 +1918,7 @@
 	/** @returns {number} */
 	WaypointManager.prototype.elapsedTimeTo = function(/** @type {number } */ generation) {
 		var	/** @type {number} */ result = 0,
-		   
+
 		    // find the closest waypoint to the generation
 		    /** @type {number} */ index = this.findWaypointNear(generation),
 
@@ -2038,7 +2038,7 @@
 				if (waypoint.gpsDefined && !waypoint.stepDefined) {
 					waypoint.step = ViewConstants.minStepSpeed;
 				}
-				
+
 				// if step defined then default gens per second
 				if (waypoint.stepDefined) {
 					waypoint.gps = view.refreshRate;
@@ -2395,7 +2395,7 @@
 						this.waypointList[i].y = this.current.y;
 						this.waypointList[i].zoom = this.current.zoom;
 					}
-					
+
 					// interpolate between waypoints
 					this.current.interpolate(this.waypointList[i - 1], this.waypointList[i], elapsedTime);
 				} else {
@@ -2706,7 +2706,7 @@
 				if (current.gpsDefined && !current.stepDefined) {
 					current.step = ViewConstants.minStepSpeed;
 				}
-				
+
 				// if step defined then default gens per second
 				if (current.stepDefined) {
 					current.gps = view.refreshRate;

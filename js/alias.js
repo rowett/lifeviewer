@@ -768,7 +768,7 @@
 
 			// counter
 			/** @type {number} */ i = 0;
-			
+
 		// replace any html elements
 		alias = alias.replace(/&amp;/g, "&");
 
@@ -803,7 +803,7 @@
 						result = this.aliases[i][1];
 					}
 				}
-	
+
 				// next alias
 				i += 1;
 			}

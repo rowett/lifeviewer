@@ -95,7 +95,7 @@ Build 825
 	- hotkey Shift F3 to toggle population
 	- hotkey Shift F4 to toggle births
 	- hotkey Shift F5 to toggle deaths
-	
+
 Build 824
 - fixed an issue with computing strict volatility with patterns with many cells
 
@@ -238,7 +238,7 @@ Build 788
 - added non-deterministic rule specified with LtL/HROT NR neighbourhood
 	- the neighbourhood is Moore but each birth and survival is based on probability
 	- the probabilities are randomly generated and can be made repeatable by specifying a [[ RANDSEED ]]
-	
+
 Build 787
 - fixed an issue with rule name validation
 - don't show cell display workaround for chromium builds >= 107
@@ -1036,7 +1036,7 @@ Build 580
 - cells on a Triangular grid can now be drawn as Triangles (the default) or Rectangles (faster)
 	- toggle with hotkey / or Settings->Display->Triangles
 	- override the default with script command [[ SQUARECELLS ]]
-	
+
 Build 579
 - new script command [[ POIADDLABELS ]] will automatically create a POI from each Label definition
 - new script command [[ AGESTATES <0..63> ]] defines the number of age states to display for a live cell when using Themes
@@ -1242,7 +1242,7 @@ Build 538
 Build 537
 - added support for Checkerboard neighbourhood for LtL and HROT rules
 	- specify with NB
-	
+
 Build 536
 - fixed "New pattern" message for non-RLE format patterns
 
@@ -1284,7 +1284,7 @@ Build 528
 Build 527
 - added support for Saltire and Star neighbourhoods for LtL and HROT rules
 	- specify with NX (Saltire) and N* (Star)
-	
+
 Build 526
 - added support for Cross neighbourhood for LtL and HROT rules
 	- specify with N+
@@ -1349,7 +1349,7 @@ Build 512
 - Randomize now supports alternating rules
 - Margolus gridlines now alternate by default
 - bounded grids were clipping Margolus patterns
-	
+
 Build 511
 - fix STEP in Waypoints
 
@@ -1957,7 +1957,7 @@ Build 393
 	- rules where n0 = 15 and n15 = 0 are replaced with equivalent rules that don't strobe
 	- rules where n0 is not zero apart from the case above are not allowed
 - using [[ GRIDMAJOR ]] creates a custom Theme
-	
+
 Build 392
 - fixed an issue where rotate selection was incorrect when grid grew
 - performance improvement for editing tasks for 2-state Life-like and [R]History patterns
