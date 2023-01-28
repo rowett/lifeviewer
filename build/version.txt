@@ -1,3 +1,9 @@
+Build 851
+- fixed Rainbow rendering after Step Back to T=0
+
+Build 850
+- fixed PCA rules not calculating deaths correctly
+
 Build 849
 - fixed Custom Theme being greyed out when only GRIDMAJOR customised
 

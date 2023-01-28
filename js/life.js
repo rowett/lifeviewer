@@ -33417,17 +33417,10 @@
 					if (x > nRightX) {
 						nRightX = x;
 					}
-
-					// update births
-					//if (w <= deadState) {
-						//births += 1;
-					//}
 				} else {
 					// check for death
 					state = w;
 					if (state > deadState) {
-						// update deaths
-						//deaths += 1;
 						state = deadState;
 					} else {
 						// check for dying
@@ -33492,7 +33485,7 @@
 		// save statistics
 		this.population = population;
 		this.births = births;
-		this.death = deaths;
+		this.deaths = deaths;
 		this.anythingAlive = population;
 
 		// update bounding boxes

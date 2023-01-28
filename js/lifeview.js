@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 849,
+		/** @const {number} */ versionBuild : 851,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -8331,7 +8331,7 @@
 		// clear any waypoint messages
 		if (hardReset) {
 			// check for waypoint message
-			if (currentWaypoint.textDefined) {
+			if (currentWaypoint && currentWaypoint.textDefined) {
 				if (currentWaypoint.textMessage !== me.lastWaypointMessage) {
 					// if the message is different then notify
 					me.menuManager.notification.notify(ScriptParser.substituteVariables(me, currentWaypoint.textMessage), 15, 21600, 15, false);
@@ -9405,6 +9405,13 @@
 
 							// run from start to previous generation
 							me.runTo(me.engine.counter - me.gensPerStep);
+
+							// re-convert grid to colours so rainbow on/off works
+							if (me.engine.multiNumStates === -1) {
+								me.engine.resetColourGridBox(me.engine.grid16);
+							} else {
+								me.engine.convertToPensTile();
+							}
 						}
 					}
 				} else {
