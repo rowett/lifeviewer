@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 851,
+		/** @const {number} */ versionBuild : 855,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -7962,6 +7962,9 @@
 			// mark that the Theme has changed so relevant Icons recolour
 			me.iconManager.recolour = true;
 			me.iconManager.recolourGrid = me.engine.gridLineColour;
+
+			// update the grid major button
+			me.majorButton.current = [me.engine.gridLineMajorEnabled && me.engine.gridLineMajor > 0];
 		}
 	};
 
@@ -8294,10 +8297,12 @@
 			me.engine.restoreSavedGrid(me, me.noHistory);
 
 			// re-convert grid to colours so rainbow on/off works
-			if (me.engine.multiNumStates === -1) {
-				me.engine.resetColourGridBox(me.engine.grid16);
-			} else {
-				me.engine.convertToPensTile();
+			if (!me.engine.isLifeHistory) {
+				if (me.engine.multiNumStates === -1) {
+					me.engine.resetColourGridBox(me.engine.grid16);
+				} else {
+					me.engine.convertToPensTile();
+				}
 			}
 
 			// mark cells alive
@@ -9407,10 +9412,14 @@
 							me.runTo(me.engine.counter - me.gensPerStep);
 
 							// re-convert grid to colours so rainbow on/off works
-							if (me.engine.multiNumStates === -1) {
-								me.engine.resetColourGridBox(me.engine.grid16);
-							} else {
-								me.engine.convertToPensTile();
+							if (me.engine.counter === 0) {
+								if (!me.engine.isLifeHistory) {
+									if (me.engine.multiNumStates === -1) {
+										me.engine.resetColourGridBox(me.engine.grid16);
+									} else {
+										me.engine.convertToPensTile();
+									}
+								}
 							}
 						}
 					}

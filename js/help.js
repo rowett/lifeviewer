@@ -1643,7 +1643,7 @@
 						if (value > 0) {
 							this.renderColourBox(view, view.engine.cellPeriodRGB[i] >> 16, (view.engine.cellPeriodRGB[i] >> 8) & 255, view.engine.cellPeriodRGB[i] & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 							colourValue = this.rgbString(view.engine.cellPeriodRGB[i] >> 16, (view.engine.cellPeriodRGB[i] >> 8) & 255, view.engine.cellPeriodRGB[i] & 255).trim();
-							if (i > 1) {
+							if (i > ((view.engine.isMargolus || view.engine.altSpecified) ? 2 : 1)) {
 								y = this.renderHelpLine(view, "  " + i, "    " + value + "\t" + (100 * value / view.engine.popTotal).toFixed(2) + "%\t" + (100 * value / view.engine.popRotor).toFixed(2) + "%\t" + colourValue, ctx, x, y, height, helpLine);
 							} else {
 								y = this.renderHelpLine(view, "  " + i, "    " + value + "\t" + (100 * value / view.engine.popTotal).toFixed(2) + "%\t\t" + colourValue, ctx, x, y, height, helpLine);

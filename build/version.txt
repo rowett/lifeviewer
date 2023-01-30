@@ -1,3 +1,17 @@
+Build 855
+- fixed Select All for multi-state patterns in Bounded Grids
+- fixed Reset and Step Back to T=0 clearing [R]History state 2 cells
+- Identify with alternating or Margolus rules no longer shows period 2 cells as part of the Rotor
+
+Build 854
+- fixed issue with Select All and multi-state patterns
+
+Build 853
+- fixed Major GridLines button state when interval 0 used
+
+Build 852
+- fixed a cosmetic issue with Step Back
+
 Build 851
 - fixed Rainbow rendering after Step Back to T=0
 

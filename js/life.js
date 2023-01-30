@@ -2593,7 +2593,8 @@
 			/** @type {number} */ numCols = this.cellPeriodNumCols,
 			/** @type {number} */ fieldWidth = (width >> 2) - 1,
 			/** @type {number} */ leftX = (this.displayWidth - width) >> 1,
-			/** @type {CanvasRenderingContext2D} */ ctx = this.context;
+			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
+			/** @type {boolean} */ alternating = (this.isMargolus || this.altSpecified);
 
 		// get number of subperiods
 		if (this.popSubPeriod[this.popSubPeriod.length - 1] === 0) {
@@ -2632,7 +2633,7 @@
 					x = this.drawRightString(String(value), fieldWidth, x, y, offset);
 					x = this.drawRightString((100 * value / this.popTotal).toFixed(2) + "%", fieldWidth, x, y, offset);
 
-					if (i > 1) {
+					if (i > (alternating ? 2 : 1)) {
 						this.drawRightString((100 * value / this.popRotor).toFixed(2) + "%", fieldWidth, x, y, offset);
 					}
 					y += rowHeight;
@@ -10459,12 +10460,12 @@
 		blankTileRow.fill(0);
 	};
 
-	// get alive states selection box (used for HROT patterns)
+	// get alive states selection box (used for HROT and Generations patterns)
 	Life.prototype.getAliveStatesBox = function(/** @type {BoundingBox} */ selBox) {
 		var	/** @type {number} */ w = 0,
 			/** @type {number} */ h = 0,
 			/** @type {number} */ state = 0,
-			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {number} */ aliveStart = this.historyStates + 1,
 
 			// width and height
 			/** @type {number} */ height = this.height,
@@ -10480,6 +10481,17 @@
 			/** @type {number} */ newLeftX = this.width,
 			/** @type {number} */ newRightX = -1,
 
+			// box offset for bounded grid
+			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
+
+			// bounded grid top left
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ bottomY = 0,
+
+			// bounded grid bottom right
+			/** @type {number} */ rightX = 0,
+			/** @type {number} */ topY = 0,
+
 			// flag for live cells in a row
 			/** @type {boolean} */ rowAlive = false;
 
@@ -10490,15 +10502,39 @@
 			}
 		}
 
+		// check if using bounded grid
+		if (this.boundedGridType === -1) {
+			leftX = 0;
+			rightX = width - 1;
+			bottomY = 0;
+			topY = height - 1;
+		} else {
+			if (this.boundedGridWidth === 0) {
+				leftX = 0;
+				rightX = width - 1;
+			} else {
+				leftX = Math.round((this.width - this.boundedGridWidth) / 2) + boxOffset;
+			      rightX = leftX + this.boundedGridWidth;
+			}
+
+			if (this.boundedGridHeight === 0) {
+				bottomY = 0;
+				topY = height - 1;
+			} else {
+				bottomY = Math.round((this.height - this.boundedGridHeight) / 2) + boxOffset;
+				topY = bottomY + this.boundedGridHeight;
+			}
+		}
+
 		// check each row
-		for (h = 0; h < height; h += 1) {
+		for (h = bottomY; h < topY; h += 1) {
 			colourGridRow = colourGrid[h];
 			rowAlive = false;
 
 			// check each column
-			for (w = 0; w < width; w += 1) {
+			for (w = leftX; w < rightX; w += 1) {
 				state = colourGridRow[w];
-				if (state >= aliveStart && state < 255) {
+				if (state >= aliveStart && state <= 255) {
 					rowAlive = true;
 
 					if (w < newLeftX) {
@@ -10524,9 +10560,9 @@
 		// ensure the box is not blank
 		if (newTopY < 0 || newBottomY >= height || newLeftX >= width || newRightX < 0) {
 			// set the box to the middle
-			newTopY = height >> 1;
+			newTopY = (topY - bottomY) >> 1;
 			newBottomY = newTopY;
-			newLeftX = width >> 1;
+			newLeftX = (rightX - leftX) >> 1;
 			newRightX = newLeftX;
 		}
 
