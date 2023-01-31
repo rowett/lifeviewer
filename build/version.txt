@@ -1,3 +1,25 @@
+Build 861
+- fixed Go To Gen not displaying generations when a Theme with no history is selected
+- fixed clearing patterns hitting the boundary population calculation
+- fixed Identify showing symmetry for Mod when it is the same as the Period
+
+Build 860
+- fixed issue calculating Mod for Identify
+
+Build 859
+- fixed [R]Super population statistics with state 6 cells
+- fixed [R]Super not displaying "Life ended at" message when all cells die
+
+Build 858
+- fixed VIEWONLY and Error label width when THUMBNAIL used
+
+Build 857
+- fixed issue with metrics being forgotten when toggling Stats
+- handle final generation for Generations rules when all cells die during Identify
+
+Build 856
+- improved error message for alternating rules with nested alternating aliases
+
 Build 855
 - fixed Select All for multi-state patterns in Bounded Grids
 - fixed Reset and Step Back to T=0 clearing [R]History state 2 cells

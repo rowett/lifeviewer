@@ -768,14 +768,14 @@
 		if (newTheme >= view.engine.numThemes) {
 			errorSource += Keywords.themeCustomWord;
 		} else {
-			errorSource += newTheme;
+			errorSource += view.engine.themes[newTheme].name;
 		}
 
 		// create the error reason
 		if (currentTheme >= view.engine.numThemes) {
 			errorReason += Keywords.themeCustomWord;
 		} else {
-			errorReason += currentTheme;
+			errorReason += view.engine.themes[currentTheme].name;
 		}
 
 		// raise the error

@@ -4961,6 +4961,9 @@
 			/** @type {Pattern} */ firstPattern = null,
 			/** @type {string|null} */ alias = null,
 			/** @type {string|null} */ aliasName = "",
+			/** @type {string|null} */ alias1 = null,
+			/** @type {string|null} */ alias2 = null,
+			/** @type {boolean} */ nestedAlternate = false,
 			/** @type {boolean} */ result = false;
 
 		// check if the rule is an alias
@@ -4987,8 +4990,24 @@
 				}
 			}
 		} else {
+			// expand any aliases in the rule
+			nestedAlternate = false;
+			alias1 = AliasManager.getRuleFromAlias(rule.substring(0, altIndex));
+			if (alias1 !== null) {
+				if (alias1.indexOf(this.altRuleSeparator) !== -1) {
+					nestedAlternate = true;
+				}
+			}
+
+			alias2 = AliasManager.getRuleFromAlias(rule.substring(altIndex + 1));
+			if (alias2 !== null) {
+				if (alias2.indexOf(this.altRuleSeparator) !== -1) {
+					nestedAlternate = true;
+				}
+			}
+
 			// check there is only one separator
-			if (rule.substring(altIndex + 1).indexOf(this.altRuleSeparator) === -1) {
+			if ((rule.substring(altIndex + 1).indexOf(this.altRuleSeparator) === -1) && !nestedAlternate) {
 				// decode first rule
 				result = this.decodeRuleStringPart(pattern, rule.substring(0, altIndex), allocator, this.ruleAltArray);
 				if (result) {

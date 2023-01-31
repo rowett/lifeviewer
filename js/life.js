@@ -55,7 +55,7 @@
 
 		// [R]Super state names
 		/** @const {Array<string>} */ namesSuper : ["dead", "on", "off", "marked on trail", "marked off trail", "marked on alt", "boundary",
-													"marked on no-trail", "marked off no-trail", "on trail 1", "off trail 1", "on trail", "off trail 2",
+													"marked on no-trail", "marked off no-trail", "on trail 2", "off trail 2", "on trail 3", "off trail 3",
 													"on no-trail 1", "off disappearing", "on no-trail 2", "off vanishing", "on no-trail 3", "off cycling 1",
 													"on no-trail 4", "off cycling 2", "on no-trail 5", "off cycling 3", "on no-trail 6", "hidden", "on no-trail 7"],
 
@@ -2822,7 +2822,7 @@
 
 		for (p = 0; p < period * 2; p += 1) {
 			// compute the next generation
-			this.nextGeneration(false, view.noHistory, view.graphDisabled, view.identify, view);
+			this.nextGeneration(view.noHistory, view.graphDisabled, view.identify, view);
 			this.convertToPensTile();
 			this.saveSnapshotIfNeeded(view);
 
@@ -3352,7 +3352,7 @@
 				modResult = String(modValue);
 			} else {
 				// check the mod is a divisor of the period
-				if (period % modValue === 0) {
+				if (period % modValue === 0 && period !== modValue) {
 					modResult = String(modValue) + " (" + LifeConstants.modTypeName[this.modType] + ")";
 				} else {
 					modValue = period;
@@ -3441,7 +3441,8 @@
 				quitLoop = false;
 
 				// get the start item
-				i = this.startItem;
+				//i = this.startItem;
+				i = 0;
 				lastI = -1;
 
 				// search the hash list
@@ -3452,11 +3453,11 @@
 						lastI = i;
 						i = this.nextList[i];
 					} else {
-						if (hash < this.hashList[i]) {
+						if (hash < currentValue) {
 							// hash value less so truncate list here
 							quitLoop = true;
 						} else {
-							if (hash === this.hashList[i]) {
+							if (hash === currentValue) {
 								j = i << 1;
 								// hash matched so check population and bounding box
 								if ((this.population === this.popList[i]) && boxSize === this.boxList[j]) {
@@ -6343,7 +6344,7 @@
 	};
 
 	// run to given generation (used to step back)
-	Life.prototype.runTo = function(/** @type {number} */ targetGen, /** @type {boolean} */ statsOn, /** @type {boolean} */ graphDisabled, /** @type {View} */ view) {
+	Life.prototype.runTo = function(/** @type {number} */ targetGen, /** @type {boolean} */ graphDisabled, /** @type {View} */ view) {
 		// get the latest snapshot
 		var	/** @type {number} */ numSnapshots = this.snapshotManager.snapshots.length,
 			/** @type {Snapshot} */ snapshot = null;
@@ -6381,7 +6382,7 @@
 					}
 				}
 
-				this.nextGeneration(false, true, graphDisabled, view.identify, view);
+				this.nextGeneration(true, graphDisabled, view.identify, view);
 				view.fixedPointCounter += view.refreshRate;
 				if (!(this.anythingAlive === 0 && this.multiNumStates > 2) || this.snapshotNeeded) {
 					this.convertToPensTile();
@@ -6403,7 +6404,7 @@
 						}
 					}
 
-					this.nextGeneration(false, false, graphDisabled, view.identify, view);
+					this.nextGeneration(false, graphDisabled, view.identify, view);
 					this.anythingAlive = 0;
 					this.counter -= 1;
 					view.fixedPointCounter -= view.refreshRate;
@@ -6431,7 +6432,7 @@
 					}
 				}
 
-				this.nextGeneration(statsOn, true, graphDisabled, view.identify, view);
+				this.nextGeneration(true, graphDisabled, view.identify, view);
 				view.fixedPointCounter += view.refreshRate;
 				if (!(this.anythingAlive === 0 && this.multiNumStates > 2) || this.snapshotNeeded) {
 					this.convertToPensTile();
@@ -6453,7 +6454,7 @@
 						}
 					}
 
-					this.nextGeneration(false, false, graphDisabled, view.identify, view);
+					this.nextGeneration(false, graphDisabled, view.identify, view);
 					this.anythingAlive = 0;
 					this.counter -= 1;
 					view.fixedPointCounter -= view.refreshRate;
@@ -11150,7 +11151,7 @@
 	};
 
 	// clear boundary
-	Life.prototype.clearBoundary = function(/** @type {number} */ extra, /** @type {boolean} */ statsOn) {
+	Life.prototype.clearBoundary = function(/** @type {number} */ extra) {
 		// life grid
 		var	/** @type {Array<Uint16Array>} */ grid = null,
 			/** @type {Array<Uint8Array>} */ colourGrid = null,
@@ -11258,9 +11259,7 @@
 			}
 
 			// adjust population
-			if (statsOn) {
-				this.population -= remove;
-			}
+			this.population -= remove;
 		}
 
 		// check for Generations or HROT
@@ -13247,7 +13246,7 @@
 	};
 
 	// post-process bounded grid
-	Life.prototype.postProcessBoundedGrid = function(/** @type {boolean} */ statsOn) {
+	Life.prototype.postProcessBoundedGrid = function() {
 		var	/** @type {number} */ i = 1,
 			/** @type {number} */ limit = 1;
 
@@ -13263,7 +13262,7 @@
 
 		// clear boundaries
 		for (i = 1; i <= limit + 1; i += 1) {
-			this.clearBoundary(i, statsOn);
+			this.clearBoundary(i);
 		}
 	};
 
@@ -13348,10 +13347,10 @@
 	};
 
 	// compute the next generation unless rule is none
-	Life.prototype.nextGeneration = function(/** @type {boolean} */ statsOn, /** @type {boolean} */ noHistory, /** @type {boolean} */ graphDisabled, /** @type {boolean} */ identify, /** @type {View} */ view) {
+	Life.prototype.nextGeneration = function(/** @type {boolean} */ noHistory, /** @type {boolean} */ graphDisabled, /** @type {boolean} */ identify, /** @type {View} */ view) {
 		// do nothing if rule is none
 		if (!this.isNone) {
-			this.processNextGen(statsOn, noHistory, graphDisabled, identify, view);
+			this.processNextGen(noHistory, graphDisabled, identify, view);
 		} else {
 			this.anythingAlive = 1;
 			this.counter += 1;
@@ -13359,27 +13358,15 @@
 	};
 
 	// compute the next generation with or without statistics
-	Life.prototype.processNextGen = function(/** @type {boolean} */ statsOn, /** @type {boolean} */ noHistory, /** @type {boolean} */ graphDisabled, /** @type {boolean} */ identify, /** @type {View} */ view) {
-		var	/** @type {boolean} */ performSave = false,
-			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+	Life.prototype.processNextGen = function(/** @type {boolean} */ noHistory, /** @type {boolean} */ graphDisabled, /** @type {boolean} */ identify, /** @type {View} */ view) {
+		var	/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 			/** @type {BoundingBox} */ historyBox = this.historyBox,
 			/** @type {number} */ boundarySize = 16;
-
-		// turn stats on unless graph disabled or identify running
-		if (!graphDisabled || identify) {
-			statsOn = true;
-		}
 
 		// check if snapshot should be saved
 		if (this.counter === this.nextSnapshotTarget - 1) {
 			// save snapshot required
 			this.snapshotNeeded = true;
-
-			// check if history is on
-			if (!noHistory) {
-				// turn stats on since save will actually happen
-				statsOn = true;
-			}
 		} else {
 			this.snapshotNeeded = false;
 		}
@@ -13413,25 +13400,13 @@
 						this.HROT.nextGenerationHROT(this.counter);
 					} else {
 						// stats are required if they are on but not for multi-state rules which compute their own stats
-						if (statsOn && this.multiNumStates < 2 || this.isSuper) {
-							if (this.isMargolus) {
-								this.nextGenerationMargolusTile();
-							} else {
-								if (this.isTriangular) {
-									this.nextGenerationTriTile();
-								} else {
-									this.nextGenerationTile();
-								}
-							}
+						if (this.isMargolus) {
+							this.nextGenerationMargolusTile();
 						} else {
-							if (this.isMargolus) {
-								this.nextGenerationOnlyMargolusTile();
+							if (this.isTriangular) {
+								this.nextGenerationTriTile();
 							} else {
-								if (this.isTriangular) {
-									this.nextGenerationOnlyTriTile();
-								} else {
-									this.nextGenerationOnlyTile();
-								}
+								this.nextGenerationTile();
 							}
 						}
 					}
@@ -13463,6 +13438,7 @@
 		// perform super processing
 		if (this.isSuper) {
 			this.nextGenerationSuperTile();
+			this.anythingAlive = 0;
 			if (this.population > 0) {
 				// bitmap population may have been zero
 				this.anythingAlive = 1;
@@ -13477,7 +13453,7 @@
 
 		// perform bounded grid post-processing
 		if (this.boundedGridType !== -1 && !this.isHROT) {
-			this.postProcessBoundedGrid(statsOn);
+			this.postProcessBoundedGrid();
 		}
 
 		// clear boundary if maximum grid size
@@ -13516,21 +13492,17 @@
 			historyBox.topY = zoomBox.topY;
 		}
 
-		// update population graph if stats are on
+		// update population graph
 		if (this.counter < LifeConstants.maxPopSamples) {
-			if (statsOn) {
-				this.savePopulationData(this.population, this.births, this.deaths);
-				if (this.population > this.maxPopValue) {
-					this.maxPopValue = this.population;
-				}
-				if (this.births > this.maxPopValue) {
-					this.maxPopValue = this.births;
-				}
-				if (this.deaths > this.maxPopValue) {
-					this.maxPopValue = this.deaths;
-				}
-			} else {
-				this.savePopulationData(0, 0, 0);
+			this.savePopulationData(this.population, this.births, this.deaths);
+			if (this.population > this.maxPopValue) {
+				this.maxPopValue = this.population;
+			}
+			if (this.births > this.maxPopValue) {
+				this.maxPopValue = this.births;
+			}
+			if (this.deaths > this.maxPopValue) {
+				this.maxPopValue = this.deaths;
 			}
 		}
 	};
@@ -14081,8 +14053,10 @@
 		index += 1;
 
 		// remove the cell
-		grid16[y][x >> 4] &= ~(1 << (~x & 15));
-		cleared += 1;
+		if (grid16[y][x >> 4] & (1 << (~x & 15))) {
+			grid16[y][x >> 4] &= ~(1 << (~x & 15));
+			cleared += 1;
+		}
 
 		// keep going until all cells processed
 		while (index > 0) {
@@ -14314,8 +14288,10 @@
 		index += 1;
 
 		// remove the cell
-		colourGrid[y][x] = 0;
-		cleared += 1;
+		if (colourGrid[y][x] >= alive) {
+			colourGrid[y][x] = 0;
+			cleared += 1;
+		}
 
 		// keep going until all cells processed
 		while (index > 0) {
@@ -15881,1262 +15857,6 @@
 		this.deaths = deaths;
 	};
 
-	// update the life grid region using tiles for Margolus grid (no stats)
-	Life.prototype.nextGenerationOnlyMargolusTile = function() {
-		var	/** @type {Uint16Array} */ indexLookup = this.margolusLookup1,
-			/** @type {number} */ h = 0,
-			/** @type {number} */ b = 0,
-			/** @type {number} */ val0 = 0,
-			/** @type {number} */ val1 = 0,
-			/** @type {number} */ output = 0,
-			/** @type {number} */ th = 0,
-			/** @type {number} */ tw = 0,
-			/** @type {number} */ output0 = 0,
-			/** @type {number} */ output1 = 0,
-			/** @type {Array<Uint16Array>} */ grid = null,
-			/** @type {Array<Uint16Array>} */ nextGrid = null,
-			/** @type {Array<Uint16Array>} */ tileGrid = null,
-			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
-			/** @type {Uint16Array} */ tileRow = null,
-			/** @type {Uint16Array} */ nextTileRow = null,
-			/** @type {Uint16Array} */ belowNextTileRow = null,
-			/** @type {Uint16Array} */ aboveNextTileRow = null,
-			/** @type {number} */ tiles = 0,
-			/** @type {number} */ nextTiles = 0,
-			/** @type {number} */ belowNextTiles = 0,
-			/** @type {number} */ aboveNextTiles = 0,
-			/** @type {number} */ bottomY = 0,
-			/** @type {number} */ topY = 0,
-			/** @type {number} */ leftX = 0,
-
-			// which cells were set in source
-			/** @type {number} */ origValue = 0,
-
-			// whether on right tile column
-			/** @type {boolean} */ rightTile = false,
-
-			// column occupied
-			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
-			/** @type {number} */ colOccupied = 0,
-
-			// height of grid
-			/** @type {number} */ height = this.height,
-
-			// width of grid
-			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
-
-			// get the bounding box
-			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
-
-			// new box extent
-			/** @type {number} */ newBottomY = height,
-			/** @type {number} */ newTopY = -1,
-			/** @type {number} */ newLeftX = width,
-			/** @type {number} */ newRightX = -1,
-
-			// set tile height
-			/** @type {number} */ ySize = this.tileY,
-
-			// tile width (in 16 bit chunks)
-			/** @type {number} */ xSize = this.tileX >> 1,
-
-			// tile rows
-			/** @type {number} */ tileRows = this.tileRows,
-
-			// tile columns in 16 bit values
-			/** @type {number} */ tileCols16 = this.tileCols >> 4,
-
-			// blank tile row for top and bottom
-			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
-
-			// flags for edges of tile occupied
-			/** @type {number} */ neighbours = 0,
-
-			// counter for even/odd
-			/** @type {number} */ counter = this.counter & 1;
-
-		// check for change in playback direction
-		if (this.reversePending) {
-			this.reverseMargolus = !this.reverseMargolus;
-			this.reversePending = false;
-		}
-
-		// switch buffers each generation
-		if (counter !== 0) {
-			grid = this.nextGrid16;
-			nextGrid = this.grid16;
-			tileGrid = this.nextTileGrid;
-			nextTileGrid = this.tileGrid;
-
-			// check for reverse playback
-			if (this.reverseMargolus) {
-				if (this.altSpecified) {
-					indexLookup = this.margolusReverseLookup1;
-				} else {
-					indexLookup = this.margolusReverseLookup1;
-				}
-			}
-		} else {
-			grid = this.grid16;
-			nextGrid = this.nextGrid16;
-			tileGrid = this.tileGrid;
-			nextTileGrid = this.nextTileGrid;
-			if (this.altSpecified) {
-				indexLookup = this.margolusLookup2;
-			}
-
-			// check for reverse playback
-			if (this.reverseMargolus) {
-				if (this.altSpecified) {
-					indexLookup = this.margolusReverseLookup2;
-				} else {
-					indexLookup = this.margolusReverseLookup1;
-				}
-			}
-		}
-
-		// invert odd/even for reverse playback
-		if (this.reverseMargolus) {
-			counter = 1 - counter;
-		}
-
-		// clear column occupied flags
-		columnOccupied16.fill(0);
-
-		// set the initial tile row
-		bottomY = 1 - counter;
-		topY = bottomY + ySize;
-
-		// clear the next tile grid
-		nextTileGrid.whole.fill(0);
-
-		// scan each row of tiles
-		for (th = 0; th < tileGrid.length; th += 1) {
-			// set initial tile column
-			leftX = 0;
-
-			// get the tile row
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-
-			// get the tile row below
-			if (th > 0) {
-				belowNextTileRow = nextTileGrid[th - 1];
-			} else {
-				belowNextTileRow = blankTileRow;
-			}
-
-			// get the tile row above
-			if (th < tileRows - 1) {
-				aboveNextTileRow = nextTileGrid[th + 1];
-			} else {
-				aboveNextTileRow = blankTileRow;
-			}
-
-			// scan each set of tiles
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				// get the next tile group (16 tiles)
-				tiles = tileRow[tw];
-
-				// check if any are occupied
-				if (tiles) {
-					// get the destination (with any set because of edges)
-					nextTiles = nextTileRow[tw];
-					belowNextTiles = belowNextTileRow[tw];
-					aboveNextTiles = aboveNextTileRow[tw];
-
-					// compute next generation for each set tile
-					for (b = 15; b >= 0; b -= 1) {
-						// check if on right tile
-						if (b === 0 && tw === tileCols16 - 1) {
-							rightTile = true;
-						} else {
-							rightTile = false;
-						}
-
-						// check if this tile needs computing
-						if ((tiles & (1 << b)) !== 0) {
-							// mark no cells in this column
-							colOccupied = 0;
-
-							// clear the edge flags
-							neighbours = 0;
-
-							// check for even/odd phase
-							if (counter !== 0) {
-								// even phase
-								// process bottom row
-								h = bottomY;
-								origValue = 0;
-
-								// get original value for next two rows
-								val0 = grid[h][leftX];
-								val1 = grid[h + 1][leftX];
-								origValue |= (val0 | val1);
-
-								// get output
-								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
-								output0 = output & 65280;
-								output1 = (output & 255) << 8;
-								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
-								output0 |= (output >> 8);
-								output1 |= (output & 255);
-
-								// save output 16bits
-								nextGrid[h][leftX] = output0;
-								nextGrid[h + 1][leftX] = output1;
-
-								// check if any cells are set
-								output = output0 | output1;
-								if (output) {
-									// update column occupied flag
-									colOccupied |= output;
-
-									// update min and max row
-									if (h < newBottomY) {
-										newBottomY = h;
-									}
-									if (h + 1 > newTopY) {
-										newTopY = h + 1;
-									}
-
-									// check for left column now set
-									if (output) {
-										if ((output & 49152) !== 0) {
-											neighbours |= LifeConstants.bottomLeftSet;
-										}
-
-										// check for right column now set
-										if ((output & 3) !== 0) {
-											neighbours |= LifeConstants.bottomRightSet;
-										}
-
-										// bottom row set
-										neighbours |= LifeConstants.bottomSet;
-									}
-								}
-
-								// process middle rows of the tile
-								h += 2;
-								while (h < topY - 2) {
-									// get original value for next two rows
-									val0 = grid[h][leftX];
-									val1 = grid[h + 1][leftX];
-									origValue |= (val0 | val1);
-
-									// get output
-									output = indexLookup[(val0 & 65280) | (val1 >> 8)];
-									output0 = output & 65280;
-									output1 = (output & 255) << 8;
-									output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
-									output0 |= (output >> 8);
-									output1 |= (output & 255);
-
-									// save output 16bits
-									nextGrid[h][leftX] = output0;
-									nextGrid[h + 1][leftX] = output1;
-
-									// check if any cells are set
-									output = output0 | output1;
-									if (output) {
-										// update column occupied flag
-										colOccupied |= output;
-
-										// update min and max row
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h + 1 > newTopY) {
-											newTopY = h + 1;
-										}
-									}
-
-									// next row
-									h += 2;
-								}
-
-								// process top row
-								val0 = grid[h][leftX];
-								val1 = grid[h + 1][leftX];
-								origValue |= (val0 | val1);
-
-								// get output
-								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
-								output0 = output & 65280;
-								output1 = (output & 255) << 8;
-								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
-								output0 |= (output >> 8);
-								output1 |= (output & 255);
-
-								// save output 16bits
-								nextGrid[h][leftX] = output0;
-								nextGrid[h + 1][leftX] = output1;
-
-								// check if any cells are set
-								output = output0 | output1;
-								if (output) {
-									// update column occupied flag
-									colOccupied |= output;
-
-									// update min and max row
-									if (h < newBottomY) {
-										newBottomY = h;
-									}
-									if (h + 1 > newTopY) {
-										newTopY = h + 1;
-									}
-
-									// check for left column now set
-									if (output) {
-										if ((output & 49152) !== 0) {
-											neighbours |= LifeConstants.topLeftSet;
-										}
-
-										// check for right column now set
-										if ((output & 3) !== 0) {
-											neighbours |= LifeConstants.topRightSet;
-										}
-
-										// top row set
-										neighbours |= LifeConstants.topSet;
-									}
-								}
-
-								// check which columns contained cells
-								if (colOccupied) {
-									// check for right column set in this tile or left column set in right hand tile
-									if ((colOccupied & 49152) !== 0) {
-										neighbours |= LifeConstants.leftSet;
-									}
-									if ((colOccupied & 3) !== 0) {
-										neighbours |= LifeConstants.rightSet;
-									}
-
-									// save the column occupied cells
-									columnOccupied16[leftX] |= colOccupied;
-								}
-
-								// if there were new cells or original cells then ensure right and top right get processed next generation
-								if (colOccupied || origValue) {
-									neighbours |= LifeConstants.topRightSet;
-									neighbours |= LifeConstants.rightSet;
-								}
-							} else {
-								// odd phase
-								// process bottom row
-								h = bottomY;
-								origValue = 0;
-
-								// check for right hand tile
-								if (rightTile) {
-									// get original value for next two rows
-									val0 = (grid[h][leftX] << 1) & 65535;
-									val1 = (grid[h + 1][leftX] << 1) & 65535;
-								} else {
-									// get original value for next two rows
-									val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
-									val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
-								}
-								origValue |= (val0 | val1);
-
-								// get output
-								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
-								output0 = output & 65280;
-								output1 = (output & 255) << 8;
-								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
-								output0 |= (output >> 8);
-								output1 |= (output & 255);
-
-								// save output 16bits
-								if (rightTile) {
-									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
-									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
-								} else {
-									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
-									nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
-									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
-									nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
-								}
-
-								// check if any cells are set
-								output = output0 | output1;
-								if (output) {
-									// update column occupied flag
-									colOccupied |= output;
-
-									// update min and max row
-									if (h < newBottomY) {
-										newBottomY = h;
-									}
-									if (h + 1 > newTopY) {
-										newTopY = h + 1;
-									}
-
-									// there is no neighbour below since this is the odd phase
-								}
-
-								// process middle rows of the tile
-								h += 2;
-								while (h < topY - 2) {
-									// get original value for next two rows
-									if (rightTile) {
-										val0 = (grid[h][leftX] << 1) & 65535;
-										val1 = (grid[h + 1][leftX] << 1)  & 65535;
-									} else {
-										val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
-										val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
-									}
-									origValue |= (val0 | val1);
-
-									// get output
-									output = indexLookup[(val0 & 65280) | (val1 >> 8)];
-									output0 = output & 65280;
-									output1 = (output & 255) << 8;
-									output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
-									output0 |= (output >> 8);
-									output1 |= (output & 255);
-
-									// save output 16bits
-									if (rightTile) {
-										nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
-										nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
-									} else {
-										nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
-										nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
-										nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
-										nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
-									}
-
-									// check if any cells are set
-									output = output0 | output1;
-									if (output) {
-										// update column occupied flag
-										colOccupied |= output;
-
-										// update min and max row
-										if (h < newBottomY) {
-											newBottomY = h;
-										}
-										if (h + 1 > newTopY) {
-											newTopY = h + 1;
-										}
-									}
-
-									// next row
-									h += 2;
-								}
-
-								// process top row
-								if (rightTile) {
-									val0 = (grid[h][leftX] << 1) & 65535;
-									val1 = (grid[h + 1][leftX] << 1) & 65535;
-								} else {
-									val0 = ((grid[h][leftX] << 1) | (grid[h][leftX + 1] >> 15)) & 65535;
-									val1 = ((grid[h + 1][leftX] << 1) | (grid[h + 1][leftX + 1] >> 15)) & 65535;
-								}
-								origValue |= (val0 | val1);
-
-								// get output
-								output = indexLookup[(val0 & 65280) | (val1 >> 8)];
-								output0 = output & 65280;
-								output1 = (output & 255) << 8;
-								output = indexLookup[(val0 & 255) << 8 | (val1 & 255)];
-								output0 |= (output >> 8);
-								output1 |= (output & 255);
-
-								// save output 16bits
-								if (rightTile) {
-									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
-									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
-								} else {
-									nextGrid[h][leftX] = (nextGrid[h][leftX] & 32768) | (output0 >> 1);
-									nextGrid[h][leftX + 1] = (nextGrid[h][leftX + 1] & 32767) | ((output0 & 1) << 15);
-									nextGrid[h + 1][leftX] = (nextGrid[h + 1][leftX] & 32768) | (output1 >> 1);
-									nextGrid[h + 1][leftX + 1] = (nextGrid[h + 1][leftX + 1] & 32767) | ((output1 & 1) << 15);
-								}
-
-								// check if any cells are set
-								output = output0 | output1;
-								if (output) {
-									// update column occupied flag
-									colOccupied |= output;
-
-									// update min and max row
-									if (h < newBottomY) {
-										newBottomY = h;
-									}
-									if (h + 1 > newTopY) {
-										newTopY = h + 1;
-									}
-
-									// check for right column set in this tile or left column set in right hand tile
-									if ((output & 3) !== 0) {
-											neighbours |= LifeConstants.topRightSet;
-									}
-
-									// top row set
-									neighbours |= LifeConstants.topSet;
-								}
-
-								if (val0 | val1) {
-									if (((val0 | val1) & 3) !== 0) {
-										neighbours |= LifeConstants.topRightSet;
-									}
-									neighbours |= LifeConstants.topSet;
-								}
-
-								// check which columns contained cells
-								if (colOccupied) {
-									// check for right column set in this tile or left column set in right hand tile
-									if ((colOccupied & 3) !== 0) {
-										neighbours |= LifeConstants.rightSet;
-									}
-
-									// save the column occupied cells
-									columnOccupied16[leftX] |= colOccupied >> 1;
-									columnOccupied16[leftX + 1] |= ((colOccupied & 1) << 15);
-								}
-
-								// if original had right most cell set this is actually the left cell of the tile to the right
-								if ((origValue & 1) !== 0) {
-									neighbours |= LifeConstants.rightSet;
-								}
-							}
-
-							// check if the source or output were alive
-							if (colOccupied || origValue) {
-								// update
-								nextTiles |= (1 << b);
-
-								// check for neighbours
-								if (neighbours) {
-									// check whether left edge occupied
-									if ((neighbours & LifeConstants.leftSet) !== 0) {
-										if (b < 15) {
-											nextTiles |= (1 << (b + 1));
-										} else {
-											// set in previous set if not at left edge
-											if ((tw > 0) && (leftX > 0)) {
-												nextTileRow[tw - 1] |= 1;
-											}
-										}
-									}
-
-									// check whether right edge occupied
-									if ((neighbours & LifeConstants.rightSet) !== 0) {
-										if (b > 0) {
-											nextTiles |= (1 << (b - 1));
-										} else {
-											// set carry over to go into next set if not at right edge
-											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
-												nextTileRow[tw + 1] |= (1 << 15);
-											}
-										}
-									}
-
-									// check whether bottom edge occupied
-									if ((neighbours & LifeConstants.bottomSet) !== 0) {
-										// set in lower tile set
-										belowNextTiles |= (1 << b);
-									}
-
-									// check whether top edge occupied
-									if ((neighbours & LifeConstants.topSet) !== 0) {
-										// set in upper tile set
-										aboveNextTiles |= (1 << b);
-									}
-
-									// check whether bottom left occupied
-									if ((neighbours & LifeConstants.bottomLeftSet) !== 0) {
-										if (b < 15) {
-											belowNextTiles |= (1 << (b + 1));
-										} else {
-											if ((tw > 0) && (leftX > 0)) {
-												belowNextTileRow[tw - 1] |= 1;
-											}
-										}
-									}
-
-									// check whether bottom right occupied
-									if ((neighbours & LifeConstants.bottomRightSet) !== 0) {
-										if (b > 0) {
-											belowNextTiles |= (1 << (b - 1));
-										} else {
-											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
-												belowNextTileRow[tw + 1] |= (1 << 15);
-											}
-										}
-									}
-
-									// check whether top left occupied
-									if ((neighbours & LifeConstants.topLeftSet) !== 0) {
-										if (b < 15) {
-											aboveNextTiles |= (1 << (b + 1));
-										} else {
-											if ((tw > 0) && (leftX > 0)) {
-												aboveNextTileRow[tw - 1] |= 1;
-											}
-										}
-									}
-
-									// check whether top right occupied
-									if ((neighbours & LifeConstants.topRightSet) !== 0) {
-										if (b > 0) {
-											aboveNextTiles |= (1 << (b - 1));
-										} else {
-											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
-												aboveNextTileRow[tw + 1] |= (1 << 15);
-											}
-										}
-									}
-								}
-							}
-						}
-
-						// next tile columns
-						leftX += xSize;
-					}
-
-					// save the tile groups
-					nextTileRow[tw] |= nextTiles;
-					if (th > 0) {
-						belowNextTileRow[tw] |= belowNextTiles;
-					}
-					if (th < tileRows - 1) {
-						aboveNextTileRow[tw] |= aboveNextTiles;
-					}
-				} else {
-					// skip tile set
-					leftX += xSize << 4;
-				}
-			}
-
-			// next tile rows
-			bottomY += ySize;
-			topY += ySize;
-			if (topY >= height) {
-				topY = height - 1;
-			}
-		}
-
-		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
-
-		// clear the blank tile row since it may have been written to at top and bottom
-		blankTileRow.fill(0);
-	};
-
-	// update the life grid region using tiles for triangular grid (no stats)
-	Life.prototype.nextGenerationOnlyTriTile = function() {
-		var	/** @type {Uint8Array} */ indexLookup = this.indexLookupTri1,
-			/** @type {Uint16Array} */ gridRow0 = null,
-			/** @type {Uint16Array} */ gridRow1 = null,
-			/** @type {Uint16Array} */ gridRow2 = null,
-			/** @type {number} */ h = 0,
-			/** @type {number} */ b = 0,
-			/** @type {number} */ swap = 0,
-			/** @type {number} */ val0 = 0,
-			/** @type {number} */ val1 = 0,
-			/** @type {number} */ val2 = 0,
-			/** @type {number} */ output = 0,
-			/** @type {number} */ th = 0,
-			/** @type {number} */ tw = 0,
-			/** @type {Array<Uint16Array>} */ grid = null,
-			/** @type {Array<Uint16Array>} */ nextGrid = null,
-			/** @type {Array<Uint16Array>} */ tileGrid = null,
-			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
-			/** @type {Uint16Array} */ tileRow = null,
-			/** @type {Uint16Array} */ nextTileRow = null,
-			/** @type {Uint16Array} */ belowNextTileRow = null,
-			/** @type {Uint16Array} */ aboveNextTileRow = null,
-			/** @type {number} */ tiles = 0,
-			/** @type {number} */ nextTiles = 0,
-			/** @type {number} */ belowNextTiles = 0,
-			/** @type {number} */ aboveNextTiles = 0,
-			/** @type {number} */ bottomY = 0,
-			/** @type {number} */ topY = 0,
-			/** @type {number} */ leftX = 0,
-
-			// which cells were set in source
-			/** @type {number} */ origValue = 0,
-
-			// column occupied
-			columnOccupied16 = this.columnOccupied16,
-			/** @type {number} */ colOccupied = 0,
-
-			// height of grid
-			/** @type {number} */ height = this.height,
-
-			// width of grid
-			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
-
-			// get the bounding box
-			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
-
-			// new box extent
-			/** @type {number} */ newBottomY = height,
-			/** @type {number} */ newTopY = -1,
-			/** @type {number} */ newLeftX = width,
-			/** @type {number} */ newRightX = -1,
-
-			// set tile height
-			/** @type {number} */ ySize = this.tileY,
-
-			// tile width (in 16 bit chunks)
-			/** @type {number} */ xSize = this.tileX >> 1,
-
-			// tile rows
-			/** @type {number} */ tileRows = this.tileRows,
-
-			// tile columns in 16 bit values
-			/** @type {number} */ tileCols16 = this.tileCols >> 4,
-
-			// blank tile row for top and bottom
-			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
-
-			// flags for edges of tile occupied
-			/** @type {number} */ neighbours = 0,
-
-			// starting and ending tile row
-			/** @type {number} */ tileStartRow = 0,
-			/** @type {number} */ tileEndRow = tileRows,
-
-			// left, middle and right bitmasks for rule lookup
-			/** @const{number} */ maskL = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8),
-			/** @const{number} */ maskC = (1 << 7) | (1 << 6) | (1 << 5),
-			/** @const{number} */ maskR = (1 << 4) | (1 << 3) | (1 << 2) | (1 << 1) | (1 << 0);
-
-		// switch buffers each generation
-		if ((this.counter & 1) !== 0) {
-			grid = this.nextGrid16;
-			nextGrid = this.grid16;
-			tileGrid = this.nextTileGrid;
-			nextTileGrid = this.tileGrid;
-			if (this.altSpecified) {
-				indexLookup = this.indexLookupTri2;
-			}
-		} else {
-			grid = this.grid16;
-			nextGrid = this.nextGrid16;
-			tileGrid = this.tileGrid;
-			nextTileGrid = this.nextTileGrid;
-		}
-
-		// clear column occupied flags
-		columnOccupied16.fill(0);
-
-		// check start and end row are in range
-		if (tileStartRow < 0) {
-			tileStartRow = 0;
-		}
-		if (tileEndRow > tileRows) {
-			tileEndRow = tileRows;
-		}
-
-		// set the initial tile row
-		bottomY = tileStartRow << this.tilePower;
-		topY = bottomY + ySize;
-
-		// clear the next tile grid
-		nextTileGrid.whole.fill(0);
-
-		// scan each row of tiles
-		for (th = tileStartRow; th < tileEndRow; th += 1) {
-			// set initial tile column
-			leftX = 0;
-
-			// get the tile row
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-
-			// get the tile row below
-			if (th > 0) {
-				belowNextTileRow = nextTileGrid[th - 1];
-			} else {
-				belowNextTileRow = blankTileRow;
-			}
-
-			// get the tile row above
-			if (th < tileRows - 1) {
-				aboveNextTileRow = nextTileGrid[th + 1];
-			} else {
-				aboveNextTileRow = blankTileRow;
-			}
-
-			// scan each set of tiles
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				// get the next tile group (16 tiles)
-				tiles = tileRow[tw];
-
-				// check if any are occupied
-				if (tiles) {
-					// get the destination (with any set because of edges)
-					nextTiles = nextTileRow[tw];
-					belowNextTiles = belowNextTileRow[tw];
-					aboveNextTiles = aboveNextTileRow[tw];
-
-					// compute next generation for each set tile
-					for (b = 15; b >= 0; b -= 1) {
-						// check if this tile needs computing
-						if ((tiles & (1 << b)) !== 0) {
-							// mark no cells in this column
-							colOccupied = 0;
-
-							// clear the edge flags
-							neighbours = 0;
-
-							// process the bottom row of the tile
-							h = bottomY;
-
-							// deal with bottom row of the grid
-							if (h === 0) {
-								gridRow0 = this.blankRow16;
-							} else {
-								gridRow0 = grid[h - 1];
-							}
-
-							// current row
-							gridRow1 = grid[h];
-
-							// next row
-							gridRow2 = grid[h + 1];
-
-							// get original value (used for top row only and then to determine if any cells were alive in tile)
-							origValue = gridRow1[leftX];
-
-							// process normal tile
-							val0 = (gridRow0[leftX - 1] << 18) | (gridRow0[leftX] << 2) | (gridRow0[leftX + 1] >> 14);
-							val1 = (gridRow1[leftX - 1] << 18) | (origValue << 2) | (gridRow1[leftX + 1] >> 14);
-							val2 = (gridRow2[leftX - 1] << 18) | (gridRow2[leftX] << 2) | (gridRow2[leftX + 1] >> 14);
-
-							// get output
-							output = indexLookup[((val0 >> 7) & maskL) | ((val2 >> 11) & maskC) | ((val1 >> 15) & maskR)] << 15;
-							output |= indexLookup[((val2 >> 6) & maskL) | ((val0 >> 10) & maskC) | ((val1 >> 14) & maskR)] << 14;
-							output |= indexLookup[((val0 >> 5) & maskL) | ((val2 >> 9) & maskC) | ((val1 >> 13) & maskR)] << 13;
-							output |= indexLookup[((val2 >> 4) & maskL) | ((val0 >> 8) & maskC) | ((val1 >> 12) & maskR)] << 12;
-							output |= indexLookup[((val0 >> 3) & maskL) | ((val2 >> 7) & maskC) | ((val1 >> 11) & maskR)] << 11;
-							output |= indexLookup[((val2 >> 2) & maskL) | ((val0 >> 6) & maskC) | ((val1 >> 10) & maskR)] << 10;
-							output |= indexLookup[((val0 >> 1) & maskL) | ((val2 >> 5) & maskC) | ((val1 >> 9) & maskR)] << 9;
-							output |= indexLookup[((val2 >> 0) & maskL) | ((val0 >> 4) & maskC) | ((val1 >> 8) & maskR)] << 8;
-							output |= indexLookup[((val0 << 1) & maskL) | ((val2 >> 3) & maskC) | ((val1 >> 7) & maskR)] << 7;
-							output |= indexLookup[((val2 << 2) & maskL) | ((val0 >> 2) & maskC) | ((val1 >> 6) & maskR)] << 6;
-							output |= indexLookup[((val0 << 3) & maskL) | ((val2 >> 1) & maskC) | ((val1 >> 5) & maskR)] << 5;
-							output |= indexLookup[((val2 << 4) & maskL) | ((val0 >> 0) & maskC) | ((val1 >> 4) & maskR)] << 4;
-							output |= indexLookup[((val0 << 5) & maskL) | ((val2 << 1) & maskC) | ((val1 >> 3) & maskR)] << 3;
-							output |= indexLookup[((val2 << 6) & maskL) | ((val0 << 2) & maskC) | ((val1 >> 2) & maskR)] << 2;
-							output |= indexLookup[((val0 << 7) & maskL) | ((val2 << 3) & maskC) | ((val1 >> 1) & maskR)] << 1;
-							output |= indexLookup[((val2 << 8) & maskL) | ((val0 << 4) & maskC) | ((val1 >> 0) & maskR)] << 0;
-
-							// save output 16bits
-							nextGrid[h][leftX] = output;
-
-							// check if any cells are set
-							if (output) {
-								// update column occupied flag
-								colOccupied |= output;
-
-								// update min and max row
-								if (h < newBottomY) {
-									newBottomY = h;
-								}
-								if (h > newTopY) {
-									newTopY = h;
-								}
-
-								// check for left column now set (need two cells)
-								if ((output & 49152) !== 0) {
-									neighbours |= LifeConstants.bottomLeftSet;
-								}
-
-								// check for right column now set (need two cells)
-								if ((output & 3) !== 0) {
-									neighbours |= LifeConstants.bottomRightSet;
-								}
-
-								// bottom row set
-								neighbours |= LifeConstants.bottomSet;
-							}
-
-							// process middle rows of the tile
-							h += 1;
-							while (h < topY - 1) {
-								// get original value for next row
-								origValue |= gridRow2[leftX];
-
-								// next row
-								gridRow2 = grid[h + 1];
-
-								// read three rows
-								val0 = val1;
-								val1 = val2;
-								val2 = (gridRow2[leftX - 1] << 18) | (gridRow2[leftX] << 2) | (gridRow2[leftX + 1] >> 14);
-
-								// check for odd/even
-								if ((h & 1) !== 0) {
-									swap = val0;
-									val0 = val2;
-									val2 = swap;
-								}
-
-								// get output
-								output = indexLookup[((val0 >> 7) & maskL) | ((val2 >> 11) & maskC) | ((val1 >> 15) & maskR)] << 15;
-								output |= indexLookup[((val2 >> 6) & maskL) | ((val0 >> 10) & maskC) | ((val1 >> 14) & maskR)] << 14;
-								output |= indexLookup[((val0 >> 5) & maskL) | ((val2 >> 9) & maskC) | ((val1 >> 13) & maskR)] << 13;
-								output |= indexLookup[((val2 >> 4) & maskL) | ((val0 >> 8) & maskC) | ((val1 >> 12) & maskR)] << 12;
-								output |= indexLookup[((val0 >> 3) & maskL) | ((val2 >> 7) & maskC) | ((val1 >> 11) & maskR)] << 11;
-								output |= indexLookup[((val2 >> 2) & maskL) | ((val0 >> 6) & maskC) | ((val1 >> 10) & maskR)] << 10;
-								output |= indexLookup[((val0 >> 1) & maskL) | ((val2 >> 5) & maskC) | ((val1 >> 9) & maskR)] << 9;
-								output |= indexLookup[((val2 >> 0) & maskL) | ((val0 >> 4) & maskC) | ((val1 >> 8) & maskR)] << 8;
-								output |= indexLookup[((val0 << 1) & maskL) | ((val2 >> 3) & maskC) | ((val1 >> 7) & maskR)] << 7;
-								output |= indexLookup[((val2 << 2) & maskL) | ((val0 >> 2) & maskC) | ((val1 >> 6) & maskR)] << 6;
-								output |= indexLookup[((val0 << 3) & maskL) | ((val2 >> 1) & maskC) | ((val1 >> 5) & maskR)] << 5;
-								output |= indexLookup[((val2 << 4) & maskL) | ((val0 >> 0) & maskC) | ((val1 >> 4) & maskR)] << 4;
-								output |= indexLookup[((val0 << 5) & maskL) | ((val2 << 1) & maskC) | ((val1 >> 3) & maskR)] << 3;
-								output |= indexLookup[((val2 << 6) & maskL) | ((val0 << 2) & maskC) | ((val1 >> 2) & maskR)] << 2;
-								output |= indexLookup[((val0 << 7) & maskL) | ((val2 << 3) & maskC) | ((val1 >> 1) & maskR)] << 1;
-								output |= indexLookup[((val2 << 8) & maskL) | ((val0 << 4) & maskC) | ((val1 >> 0) & maskR)] << 0;
-
-								// check for odd/even
-								if ((h & 1) !== 0) {
-									swap = val0;
-									val0 = val2;
-									val2 = swap;
-								}
-
-								// save output 16bits
-								nextGrid[h][leftX] = output;
-
-								// check if any cells are set
-								if (output) {
-									// update column occupied flag
-									colOccupied |= output;
-
-									// update min and max row
-									if (h < newBottomY) {
-										newBottomY = h;
-									}
-									if (h > newTopY) {
-										newTopY = h;
-									}
-								}
-
-								// next row
-								h += 1;
-							}
-
-							// get original value
-							origValue |= gridRow2[leftX];
-
-							// deal with top row
-							if (h === this.height - 1) {
-								gridRow2 = this.blankRow16;
-							} else {
-								gridRow2 = grid[h + 1];
-							}
-
-							// read three rows
-							val0 = val1;
-							val1 = val2;
-							val2 = (gridRow2[leftX - 1] << 18) | (gridRow2[leftX] << 2) | (gridRow2[leftX + 1] >> 14);
-
-							// check for odd/even
-							if ((h & 1) !== 0) {
-								swap = val0;
-								val0 = val2;
-								val2 = swap;
-							}
-
-							// get output
-							output = indexLookup[((val0 >> 7) & maskL) | ((val2 >> 11) & maskC) | ((val1 >> 15) & maskR)] << 15;
-							output |= indexLookup[((val2 >> 6) & maskL) | ((val0 >> 10) & maskC) | ((val1 >> 14) & maskR)] << 14;
-							output |= indexLookup[((val0 >> 5) & maskL) | ((val2 >> 9) & maskC) | ((val1 >> 13) & maskR)] << 13;
-							output |= indexLookup[((val2 >> 4) & maskL) | ((val0 >> 8) & maskC) | ((val1 >> 12) & maskR)] << 12;
-							output |= indexLookup[((val0 >> 3) & maskL) | ((val2 >> 7) & maskC) | ((val1 >> 11) & maskR)] << 11;
-							output |= indexLookup[((val2 >> 2) & maskL) | ((val0 >> 6) & maskC) | ((val1 >> 10) & maskR)] << 10;
-							output |= indexLookup[((val0 >> 1) & maskL) | ((val2 >> 5) & maskC) | ((val1 >> 9) & maskR)] << 9;
-							output |= indexLookup[((val2 >> 0) & maskL) | ((val0 >> 4) & maskC) | ((val1 >> 8) & maskR)] << 8;
-							output |= indexLookup[((val0 << 1) & maskL) | ((val2 >> 3) & maskC) | ((val1 >> 7) & maskR)] << 7;
-							output |= indexLookup[((val2 << 2) & maskL) | ((val0 >> 2) & maskC) | ((val1 >> 6) & maskR)] << 6;
-							output |= indexLookup[((val0 << 3) & maskL) | ((val2 >> 1) & maskC) | ((val1 >> 5) & maskR)] << 5;
-							output |= indexLookup[((val2 << 4) & maskL) | ((val0 >> 0) & maskC) | ((val1 >> 4) & maskR)] << 4;
-							output |= indexLookup[((val0 << 5) & maskL) | ((val2 << 1) & maskC) | ((val1 >> 3) & maskR)] << 3;
-							output |= indexLookup[((val2 << 6) & maskL) | ((val0 << 2) & maskC) | ((val1 >> 2) & maskR)] << 2;
-							output |= indexLookup[((val0 << 7) & maskL) | ((val2 << 3) & maskC) | ((val1 >> 1) & maskR)] << 1;
-							output |= indexLookup[((val2 << 8) & maskL) | ((val0 << 4) & maskC) | ((val1 >> 0) & maskR)] << 0;
-
-							// check for odd/even
-							if ((h & 1) !== 0) {
-								swap = val0;
-								val0 = val2;
-								val2 = swap;
-							}
-
-							// save output 16bits
-							nextGrid[h][leftX] = output;
-
-							// check if any cells are set
-							if (output) {
-								// update column occupied flag
-								colOccupied |= output;
-
-								// update min and max row
-								if (h < newBottomY) {
-									newBottomY = h;
-								}
-								if (h > newTopY) {
-									newTopY = h;
-								}
-
-								// check for left column now set
-								if ((output & 49152) !== 0) {
-									neighbours |= LifeConstants.topLeftSet;
-								}
-
-								// check for right column now set
-								if ((output & 3) !== 0) {
-									neighbours |= LifeConstants.topRightSet;
-								}
-
-								// top row set
-								neighbours |= LifeConstants.topSet;
-							}
-
-							// check which columns contained cells
-							if (colOccupied) {
-								// check for left column set (need two cells)
-								if ((colOccupied & 49152) !== 0) {
-									neighbours |= LifeConstants.leftSet;
-								}
-
-								// check for right column set (need two cells)
-								if ((colOccupied & 3) !== 0) {
-									neighbours |= LifeConstants.rightSet;
-								}
-							}
-
-							// save the column occupied cells
-							columnOccupied16[leftX] |= colOccupied;
-
-							// check if the source or output were alive
-							if (colOccupied || origValue) {
-								// update
-								nextTiles |= (1 << b);
-
-								// check for neighbours
-								if (neighbours) {
-									// check whether left edge occupied
-									if ((neighbours & LifeConstants.leftSet) !== 0) {
-										if (b < 15) {
-											nextTiles |= (1 << (b + 1));
-										} else {
-											// set in previous set if not at left edge
-											if ((tw > 0) && (leftX > 0)) {
-												nextTileRow[tw - 1] |= 1;
-											}
-										}
-									}
-
-									// check whether right edge occupied
-									if ((neighbours & LifeConstants.rightSet) !== 0) {
-										if (b > 0) {
-											nextTiles |= (1 << (b - 1));
-										} else {
-											// set carry over to go into next set if not at right edge
-											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
-												nextTileRow[tw + 1] |= (1 << 15);
-											}
-										}
-									}
-
-									// check whether bottom edge occupied
-									if ((neighbours & LifeConstants.bottomSet) !== 0) {
-										// set in lower tile set
-										belowNextTiles |= (1 << b);
-									}
-
-									// check whether top edge occupied
-									if ((neighbours & LifeConstants.topSet) !== 0) {
-										// set in upper tile set
-										aboveNextTiles |= (1 << b);
-									}
-
-									// check whether bottom left occupied
-									if ((neighbours & LifeConstants.bottomLeftSet) !== 0) {
-										if (b < 15) {
-											belowNextTiles |= (1 << (b + 1));
-										} else {
-											if ((tw > 0) && (leftX > 0)) {
-												belowNextTileRow[tw - 1] |= 1;
-											}
-										}
-									}
-
-									// check whether bottom right occupied
-									if ((neighbours & LifeConstants.bottomRightSet) !== 0) {
-										if (b > 0) {
-											belowNextTiles |= (1 << (b - 1));
-										} else {
-											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
-												belowNextTileRow[tw + 1] |= (1 << 15);
-											}
-										}
-									}
-
-									// check whether top left occupied
-									if ((neighbours & LifeConstants.topLeftSet) !== 0) {
-										if (b < 15) {
-											aboveNextTiles |= (1 << (b + 1));
-										} else {
-											if ((tw > 0) && (leftX > 0)) {
-												aboveNextTileRow[tw - 1] |= 1;
-											}
-										}
-									}
-
-									// check whether top right occupied
-									if ((neighbours & LifeConstants.topRightSet) !== 0) {
-										if (b > 0) {
-											aboveNextTiles |= (1 << (b - 1));
-										} else {
-											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
-												aboveNextTileRow[tw + 1] |= (1 << 15);
-											}
-										}
-									}
-								}
-							}
-						}
-
-						// next tile columns
-						leftX += xSize;
-					}
-
-					// save the tile groups
-					nextTileRow[tw] |= nextTiles;
-					if (th > 0) {
-						belowNextTileRow[tw] |= belowNextTiles;
-					}
-					if (th < tileRows - 1) {
-						aboveNextTileRow[tw] |= aboveNextTiles;
-					}
-				} else {
-					// skip tile set
-					leftX += xSize << 4;
-				}
-			}
-
-			// next tile rows
-			bottomY += ySize;
-			topY += ySize;
-		}
-
-		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
-
-		// clear the blank tile row since it may have been written to at top and bottom
-		blankTileRow.fill(0);
-	};
-
 	// update the life grid region using tiles
 	Life.prototype.nextGenerationTile = function() {
 		var	/** @type {Uint8Array} */ indexLookup63 = this.indexLookup63,
@@ -18359,1048 +17079,6 @@
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
-	};
-
-	// update the life grid region using tiles (no stats)
-	Life.prototype.nextGenerationOnlyTile = function() {
-		var	/** @type {Uint8Array} */ indexLookup63 = this.indexLookup63,
-			/** @type {Uint16Array} */ gridRow0 = null,
-			/** @type {Uint16Array} */ gridRow1 = null,
-			/** @type {Uint16Array} */ gridRow2 = null,
-			/** @type {number} */ h = 0,
-			/** @type {number} */ b = 0,
-			/** @type {number} */ val0 = 0,
-			/** @type {number} */ val1 = 0,
-			/** @type {number} */ val2 = 0,
-			/** @type {number} */ output = 0,
-			/** @type {number} */ th = 0,
-			/** @type {number} */ tw = 0,
-			/** @type {Array<Uint16Array>} */ grid = null,
-			/** @type {Array<Uint16Array>} */ nextGrid = null,
-			/** @type {Array<Uint16Array>} */ tileGrid = null,
-			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
-			/** @type {Uint16Array} */ tileRow = null,
-			/** @type {Uint16Array} */ nextTileRow = null,
-			/** @type {Uint16Array} */ belowNextTileRow = null,
-			/** @type {Uint16Array} */ aboveNextTileRow = null,
-			/** @type {number} */ tiles = 0,
-			/** @type {number} */ nextTiles = 0,
-			/** @type {number} */ belowNextTiles = 0,
-			/** @type {number} */ aboveNextTiles = 0,
-			/** @type {number} */ bottomY = 0,
-			/** @type {number} */ topY = 0,
-			/** @type {number} */ leftX = 0,
-
-			// which cells were set in source
-			/** @type {number} */ origValue = 0,
-
-			// column occupied
-			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
-			/** @type {number} */ colOccupied = 0,
-
-			// row occupied
-			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
-			/** @type {number} */ rowOccupied = 0,
-			/** @type {number} */ rowIndex = 0,
-
-			// height of grid
-			/** @type {number} */ height = this.height,
-
-			// width of grid
-			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
-
-			// get the bounding box
-			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
-
-			// new box extent
-			/** @type {number} */ newBottomY = height,
-			/** @type {number} */ newTopY = -1,
-			/** @type {number} */ newLeftX = width,
-			/** @type {number} */ newRightX = -1,
-
-			// set tile height
-			/** @type {number} */ ySize = this.tileY,
-
-			// tile width (in 16 bit chunks)
-			/** @type {number} */ xSize = this.tileX >> 1,
-
-			// tile rows
-			/** @type {number} */ tileRows = this.tileRows,
-
-			// tile columns in 16 bit values
-			/** @type {number} */ tileCols16 = this.tileCols >> 4,
-
-			// blank tile row for top and bottom
-			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
-
-			// flags for edges of tile occupied
-			/** @type {number} */ neighbours = 0,
-
-			// bounded grid width and height
-			/** @type {number} */ bWidth = this.boundedGridWidth,
-			/** @type {number} */ bHeight = this.boundedGridHeight,
-
-			// bottom left
-			/** @type {number} */ bLeftX = Math.round((this.width - bWidth) / 2),
-			/** @type {number} */ bBottomY = Math.round((this.height - bHeight) / 2),
-
-			// top right
-			/** @type {number} */ bRightX = bLeftX + bWidth - 1,
-			/** @type {number} */ bTopY = bBottomY + bHeight - 1;
-
-		// switch buffers each generation
-		if ((this.counter & 1) !== 0) {
-			grid = this.nextGrid16;
-			nextGrid = this.grid16;
-			tileGrid = this.nextTileGrid;
-			nextTileGrid = this.tileGrid;
-
-			// get alternate lookup buffer if specified
-			if (this.altSpecified) {
-				indexLookup63 = this.indexLookup632;
-			}
-		} else {
-			grid = this.grid16;
-			nextGrid = this.nextGrid16;
-			tileGrid = this.tileGrid;
-			nextTileGrid = this.nextTileGrid;
-		}
-
-		// clear column occupied flags
-		columnOccupied16.fill(0);
-
-		// clear row occupied flags
-		rowOccupied16.fill(0);
-
-		// set the initial tile row
-		bottomY = 0;
-		topY = bottomY + ySize;
-
-		// clear the next tile grid
-		nextTileGrid.whole.fill(0);
-
-		// scan each row of tiles
-		for (th = 0; th < tileGrid.length; th += 1) {
-			// set initial tile column
-			leftX = 0;
-
-			// get the tile row
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-
-			// get the tile row below
-			if (th > 0) {
-				belowNextTileRow = nextTileGrid[th - 1];
-			} else {
-				belowNextTileRow = blankTileRow;
-			}
-
-			// get the tile row above
-			if (th < tileRows - 1) {
-				aboveNextTileRow = nextTileGrid[th + 1];
-			} else {
-				aboveNextTileRow = blankTileRow;
-			}
-
-			// scan each set of tiles
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				// get the next tile group (16 tiles)
-				tiles = tileRow[tw];
-
-				// check if any are occupied
-				if (tiles) {
-					// get the destination (with any set because of edges)
-					nextTiles = nextTileRow[tw];
-					belowNextTiles = belowNextTileRow[tw];
-					aboveNextTiles = aboveNextTileRow[tw];
-
-					// compute next generation for each set tile
-					for (b = 15; b >= 0; b -= 1) {
-						// check if this tile needs computing
-						if ((tiles & (1 << b)) !== 0) {
-							// mark no cells in this column
-							colOccupied = 0;
-
-							// mark no cells in the tile rows
-							rowOccupied = 0;
-
-							// clear the edge flags
-							neighbours = 0;
-
-							// process the bottom row of the tile
-							h = bottomY;
-							rowIndex = 32768;
-
-							// deal with bottom row of the grid
-							if (h === 0) {
-								gridRow0 = this.blankRow16;
-							} else {
-								gridRow0 = grid[h - 1];
-							}
-
-							// current row
-							gridRow1 = grid[h];
-
-							// next row
-							gridRow2 = grid[h + 1];
-
-							// get original value (used for top row only and then to determine if any cells were alive in tile)
-							origValue = gridRow1[leftX];
-
-							// check if at left edge of grid
-							if (!leftX) {
-								// process left edge tile first row
-								val0 = (gridRow0[leftX] << 1) | (gridRow0[leftX + 1] >> 15);
-								val1 = (origValue << 1) | (gridRow1[leftX + 1] >> 15);
-								val2 = (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-								output = val0 | val1 | val2;
-								if (output) {
-									// get first 4 bits
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-
-									// add three sets of 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-
-									// check if any cells are set
-									if (output) {
-										// update row and column occupied flags
-										colOccupied |= output;
-										rowOccupied |= rowIndex;
-
-										// check for right column now set
-										if ((output & 1) !== 0) {
-											neighbours |= LifeConstants.bottomRightSet;
-										}
-
-										// bottom row set
-										neighbours |= LifeConstants.bottomSet;
-									}
-								}
-
-								// save output 16bits
-								nextGrid[h][leftX] = output;
-
-								// process left edge tile middle rows
-								h += 1;
-								rowIndex >>= 1;
-								while (h < topY - 1) {
-									// get original value for next row
-									origValue |= gridRow2[leftX];
-
-									// next row
-									gridRow2 = grid[h + 1];
-
-									// read three rows
-									val0 = val1;
-									val1 = val2;
-									val2 = (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										// get first 4 bits
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-
-										// add three sets of 4 bits
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-
-										// check if any cells are set
-										if (output) {
-											// update row and column occupied flags
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-
-									// save output 16bits
-									nextGrid[h][leftX] = output;
-
-									// next row
-									h += 1;
-									rowIndex >>= 1;
-								}
-
-								// process left edge last row
-								origValue |= gridRow2[leftX];
-
-								// deal with top row
-								if (h === this.height - 1) {
-									gridRow2 = this.blankRow16;
-								} else {
-									gridRow2 = grid[h + 1];
-								}
-
-								// read three rows
-								val0 = val1;
-								val1 = val2;
-								val2 = (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-								output = val0 | val1 | val2;
-								if (output) {
-									// get first 4 bits
-									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-
-									// get next 4 bits
-									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-
-									// check if any cells are set
-									if (output) {
-										// update row and column occupied flags
-										colOccupied |= output;
-										rowOccupied |= rowIndex;
-
-										// check for right column now set
-										if ((output & 1) !== 0) {
-											neighbours |= LifeConstants.topRightSet;
-										}
-
-										// top row set
-										neighbours |= LifeConstants.topSet;
-									}
-								}
-
-								// save output 16bits
-								nextGrid[h][leftX] = output;
-							} else {
-								// check if at right edge
-								if (leftX >= width16 - 1) {
-									// process right edge tile first row
-									val0 = ((gridRow0[leftX - 1] & 1) << 17) | (gridRow0[leftX] << 1);
-									val1 = ((gridRow1[leftX - 1] & 1) << 17) | (origValue << 1);
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1);
-									output = val0 | val1 | val2;
-									if (output) {
-										// get first 4 bits
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-
-										// add three sets of 4 bits
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-
-										// check if any cells are set
-										if (output) {
-											// update row and column occupied flags
-													colOccupied |= output;
-											rowOccupied |= rowIndex;
-
-											// check for left column now set
-											if ((output & 32768) !== 0) {
-												neighbours |= LifeConstants.bottomLeftSet;
-											}
-
-											// bottom row set
-											neighbours |= LifeConstants.bottomSet;
-										}
-									}
-
-									// save output 16bits
-									nextGrid[h][leftX] = output;
-
-									// process left edge tile middle rows
-									h += 1;
-									rowIndex >>= 1;
-									while (h < topY - 1) {
-										// get original value for next row
-										origValue |= gridRow2[leftX];
-
-										// next row
-										gridRow2 = grid[h + 1];
-
-										// read three rows
-										val0 = val1;
-										val1 = val2;
-										val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1);
-										output = val0 | val1 | val2;
-										if (output) {
-											// get first 4 bits
-											output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-
-											// add three sets of 4 bits
-											output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-											output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-											output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-
-											// check if any cells are set
-											if (output) {
-												// update row and column occupied flags
-												colOccupied |= output;
-												rowOccupied |= rowIndex;
-											}
-										}
-
-										// save output 16bits
-										nextGrid[h][leftX] = output;
-
-										// next row
-										h += 1;
-										rowIndex >>= 1;
-									}
-
-									// process left edge last row
-									origValue |= gridRow2[leftX];
-
-									// deal with top row
-									if (h === this.height - 1) {
-										gridRow2 = this.blankRow16;
-									} else {
-										gridRow2 = grid[h + 1];
-									}
-
-									// read three rows
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1);
-									output = val0 | val1 | val2;
-									if (output) {
-										// get first 4 bits
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-
-										// get next 4 bits
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-
-										// check if any cells are set
-										if (output) {
-											// update row and column occupied flags
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-
-											// check for left column now set
-											if ((output & 32768) !== 0) {
-													neighbours |= LifeConstants.topLeftSet;
-											}
-
-											// top row set
-											neighbours |= LifeConstants.topSet;
-										}
-									}
-
-									// save output 16bits
-									nextGrid[h][leftX] = output;
-								} else {
-									// process normal tile
-									val0 = ((gridRow0[leftX - 1] & 1) << 17) | (gridRow0[leftX] << 1) | (gridRow0[leftX + 1] >> 15);
-									val1 = ((gridRow1[leftX - 1] & 1) << 17) | (origValue << 1) | (gridRow1[leftX + 1] >> 15);
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										// get first 4 bits
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-
-										// add three sets of 4 bits
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-
-										// check if any cells are set
-										if (output) {
-											// update row and column occupied flags
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-
-											// check for left column now set
-											if ((output & 32768) !== 0) {
-												neighbours |= LifeConstants.bottomLeftSet;
-											}
-
-											// check for right column now set
-											if ((output & 1) !== 0) {
-												neighbours |= LifeConstants.bottomRightSet;
-											}
-
-											// bottom row set
-											neighbours |= LifeConstants.bottomSet;
-										}
-									}
-
-									// save output 16bits
-									nextGrid[h][leftX] = output;
-
-									// process middle rows of the tile
-									h += 1;
-									rowIndex >>= 1;
-
-									// get original value for next row
-									origValue |= gridRow2[leftX];
-
-									// next row
-									gridRow2 = grid[h + 1];
-
-									// read three rows
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										// get first 4 bits
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-
-										// get next 4 bits
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-
-										// check if any cells are set
-										if (output) {
-											// update row and column occupied flags
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-
-									// save output 16bits
-									nextGrid[h][leftX] = output;
-
-									// next row
-									h += 1;
-									rowIndex >>= 1;
-
-									// loop unroll
-									origValue |= gridRow2[leftX];
-									gridRow2 = grid[h + 1];
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-										if (output) {
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-									nextGrid[h][leftX] = output;
-									h += 1;
-									rowIndex >>= 1;
-
-									// loop unroll
-									origValue |= gridRow2[leftX];
-									gridRow2 = grid[h + 1];
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-										if (output) {
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-									nextGrid[h][leftX] = output;
-									h += 1;
-									rowIndex >>= 1;
-
-									// loop unroll
-									origValue |= gridRow2[leftX];
-									gridRow2 = grid[h + 1];
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-										if (output) {
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-									nextGrid[h][leftX] = output;
-									h += 1;
-									rowIndex >>= 1;
-
-									// loop unroll
-									origValue |= gridRow2[leftX];
-									gridRow2 = grid[h + 1];
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-										if (output) {
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-									nextGrid[h][leftX] = output;
-									h += 1;
-									rowIndex >>= 1;
-
-									// loop unroll
-									origValue |= gridRow2[leftX];
-									gridRow2 = grid[h + 1];
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-										if (output) {
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-									nextGrid[h][leftX] = output;
-									h += 1;
-									rowIndex >>= 1;
-
-									// loop unroll
-									origValue |= gridRow2[leftX];
-									gridRow2 = grid[h + 1];
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-										if (output) {
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-									nextGrid[h][leftX] = output;
-									h += 1;
-									rowIndex >>= 1;
-
-									// loop unroll
-									origValue |= gridRow2[leftX];
-									gridRow2 = grid[h + 1];
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-										if (output) {
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-									nextGrid[h][leftX] = output;
-									h += 1;
-									rowIndex >>= 1;
-
-									// loop unroll
-									origValue |= gridRow2[leftX];
-									gridRow2 = grid[h + 1];
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-										if (output) {
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-									nextGrid[h][leftX] = output;
-									h += 1;
-									rowIndex >>= 1;
-
-									// loop unroll
-									origValue |= gridRow2[leftX];
-									gridRow2 = grid[h + 1];
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-										if (output) {
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-									nextGrid[h][leftX] = output;
-									h += 1;
-									rowIndex >>= 1;
-
-									// loop unroll
-									origValue |= gridRow2[leftX];
-									gridRow2 = grid[h + 1];
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-										if (output) {
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-									nextGrid[h][leftX] = output;
-									h += 1;
-									rowIndex >>= 1;
-
-									// loop unroll
-									origValue |= gridRow2[leftX];
-									gridRow2 = grid[h + 1];
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-										if (output) {
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-									nextGrid[h][leftX] = output;
-									h += 1;
-									rowIndex >>= 1;
-
-									// loop unroll
-									origValue |= gridRow2[leftX];
-									gridRow2 = grid[h + 1];
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-										if (output) {
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-									nextGrid[h][leftX] = output;
-									h += 1;
-									rowIndex >>= 1;
-
-									// loop unroll
-									origValue |= gridRow2[leftX];
-									gridRow2 = grid[h + 1];
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-										if (output) {
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-										}
-									}
-									nextGrid[h][leftX] = output;
-									h += 1;
-									rowIndex >>= 1;
-
-									// get original value
-									origValue |= gridRow2[leftX];
-
-									// deal with top row
-									if (h === this.height - 1) {
-										gridRow2 = this.blankRow16;
-									} else {
-										gridRow2 = grid[h + 1];
-									}
-
-									// read three rows
-									val0 = val1;
-									val1 = val2;
-									val2 = ((gridRow2[leftX - 1] & 1) << 17) | (gridRow2[leftX] << 1) | (gridRow2[leftX + 1] >> 15);
-									output = val0 | val1 | val2;
-									if (output) {
-										// get first 4 bits
-										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
-
-										// get next 4 bits
-										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
-										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
-										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
-
-										// check if any cells are set
-										if (output) {
-											// update row and column occupied flag
-											colOccupied |= output;
-											rowOccupied |= rowIndex;
-
-											// check for left column now set
-											if ((output & 32768) !== 0) {
-												neighbours |= LifeConstants.topLeftSet;
-											}
-
-											// check for right column now set
-											if ((output & 1) !== 0) {
-												neighbours |= LifeConstants.topRightSet;
-											}
-
-											// top row set
-											neighbours |= LifeConstants.topSet;
-										}
-									}
-
-									// save output 16bits
-									nextGrid[h][leftX] = output;
-								}
-							}
-
-							// check which columns contained cells
-							if (colOccupied) {
-								// check for left column set
-								if ((colOccupied & 32768) !== 0) {
-									neighbours |= LifeConstants.leftSet;
-								}
-
-								// check for right column set
-								if ((colOccupied & 1) !== 0) {
-									neighbours |= LifeConstants.rightSet;
-								}
-							}
-
-							// save the column occupied cells
-							columnOccupied16[leftX] |= colOccupied;
-
-							// check if the source or output were alive
-							if (colOccupied || origValue) {
-								// update
-								nextTiles |= (1 << b);
-
-								// check for neighbours
-								if (neighbours) {
-									// check whether left edge occupied
-									if ((neighbours & LifeConstants.leftSet) !== 0) {
-										if (b < 15) {
-											nextTiles |= (1 << (b + 1));
-										} else {
-											// set in previous set if not at left edge
-											if ((tw > 0) && (leftX > 0)) {
-												nextTileRow[tw - 1] |= 1;
-											}
-										}
-									}
-
-									// check whether right edge occupied
-									if ((neighbours & LifeConstants.rightSet) !== 0) {
-										if (b > 0) {
-											nextTiles |= (1 << (b - 1));
-										} else {
-											// set carry over to go into next set if not at right edge
-											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
-												nextTileRow[tw + 1] |= (1 << 15);
-											}
-										}
-									}
-
-									// check whether bottom edge occupied
-									if ((neighbours & LifeConstants.bottomSet) !== 0) {
-										// set in lower tile set
-										belowNextTiles |= (1 << b);
-									}
-
-									// check whether top edge occupied
-									if ((neighbours & LifeConstants.topSet) !== 0) {
-										// set in upper tile set
-										aboveNextTiles |= (1 << b);
-									}
-
-									// check whether bottom left occupied
-									if ((neighbours & LifeConstants.bottomLeftSet) !== 0) {
-										if (b < 15) {
-											belowNextTiles |= (1 << (b + 1));
-										} else {
-											if ((tw > 0) && (leftX > 0)) {
-												belowNextTileRow[tw - 1] |= 1;
-											}
-										}
-									}
-
-									// check whether bottom right occupied
-									if ((neighbours & LifeConstants.bottomRightSet) !== 0) {
-										if (b > 0) {
-											belowNextTiles |= (1 << (b - 1));
-										} else {
-											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
-												belowNextTileRow[tw + 1] |= (1 << 15);
-											}
-										}
-									}
-
-									// check whether top left occupied
-									if ((neighbours & LifeConstants.topLeftSet) !== 0) {
-										if (b < 15) {
-											aboveNextTiles |= (1 << (b + 1));
-										} else {
-											if ((tw > 0) && (leftX > 0)) {
-												aboveNextTileRow[tw - 1] |= 1;
-											}
-										}
-									}
-
-									// check whether top right occupied
-									if ((neighbours & LifeConstants.topRightSet) !== 0) {
-										if (b > 0) {
-											aboveNextTiles |= (1 << (b - 1));
-										} else {
-											if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
-												aboveNextTileRow[tw + 1] |= (1 << 15);
-											}
-										}
-									}
-								}
-							}
-
-							// save the row occupied falgs
-							rowOccupied16[th] |= rowOccupied;
-						}
-
-						// next tile columns
-						leftX += xSize;
-					}
-
-					// save the tile groups
-					nextTileRow[tw] |= nextTiles;
-					if (th > 0) {
-						belowNextTileRow[tw] |= belowNextTiles;
-					}
-					if (th < tileRows - 1) {
-						aboveNextTileRow[tw] |= aboveNextTiles;
-					}
-				} else {
-					// skip tile set
-					leftX += xSize << 4;
-				}
-			}
-
-			// next tile rows
-			bottomY += ySize;
-			topY += ySize;
-		}
-
-		// remove bounded grid column and row entries (+1 in all directions)
-		if (this.boundedGridType !== -1) {
-			if (bWidth !== 0) {
-				columnOccupied16[(bLeftX - 1) >> 4] &= ~(1 << (~(bLeftX - 1) & 15));
-				columnOccupied16[(bRightX + 1) >> 4] &= ~(1 << (~(bRightX + 1) & 15));
-				columnOccupied16[(bLeftX - 2) >> 4] &= ~(1 << (~(bLeftX - 2) & 15));
-				columnOccupied16[(bRightX + 2) >> 4] &= ~(1 << (~(bRightX + 2) & 15));
-			}
-			if (bHeight !== 0) {
-				rowOccupied16[(bBottomY - 1) >> 4] &= ~(1 << (~(bBottomY - 1) & 15));
-				rowOccupied16[(bTopY + 1) >> 4] &= ~(1 << (~(bTopY + 1) & 15));
-				rowOccupied16[(bBottomY - 2) >> 4] &= ~(1 << (~(bBottomY - 2) & 15));
-				rowOccupied16[(bTopY + 2) >> 4] &= ~(1 << (~(bTopY + 2) & 15));
-			}
-		}
-
-		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
-
-		// clear the blank tile row since it may have been written to at top and bottom
-		blankTileRow.fill(0);
 	};
 
 	// create 2x2 colour grid with no history for 0.5 <= zoom < 1
@@ -23100,9 +20778,6 @@
 			/** @type {Uint16Array} */ gridRow = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Uint16Array} */ tileGridRow = null,
-			/** @type {Uint16Array} */ staticTileRow = null,
-			/** @type {Array<Uint16Array>} */ staticTileGrid = this.staticTileGrid,
-			/** @type {number} */ tileChanged = 0,
 			/** @type {number} */ value = 0,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
@@ -23122,9 +20797,6 @@
 			/** @type {number} */ newTopY = -1,
 			/** @type {number} */ newBottomY = height,
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
-
-			// flag for border of static tile
-			/** @type {boolean} */ isBorder = false,
 
 			// mask of types in the neighbourhood
 			/** @type {number} */ typeMask = 0,
@@ -23223,7 +20895,6 @@
 			tileGridRow = tileGrid[th];
 			colourTileRow = colourTileGrid[th];
 			colourTileHistoryRow = colourTileHistoryGrid[th];
-			staticTileRow = staticTileGrid[th];
 
 			// scan each set of tiles
 			for (tw = 0; tw < tileCols16; tw += 1) {
@@ -23249,9 +20920,6 @@
 
 							// clear type mask
 							typeMask = 0;
-
-							// clear tile changed flag
-							tileChanged = 0;
 
 							// process each row
 							for (h = bottomY; h < topY; h += 1) {
@@ -23339,9 +21007,11 @@
 
 										// clear cell in bit grid
 										if (!process && ((c & 1) !== 0)) {
-											gridRow[leftX] &= ~colIndex;
-											this.deaths += 1;
-											this.population -= 1;
+											if (gridRow[leftX] & colIndex) {
+												gridRow[leftX] &= ~colIndex;
+												this.deaths += 1;
+												this.population -= 1;
+											}
 										}
 									}
 
@@ -23360,7 +21030,11 @@
 
 													case 6:
 														// clear cell in bit grid
-														gridRow[leftX] &= ~colIndex;
+														if (gridRow[leftX] & colIndex) {
+															gridRow[leftX] &= ~colIndex;
+															this.deaths += 1;
+															this.population -=1;
+														}
 														break;
 
 													case 8:
@@ -23466,7 +21140,6 @@
 
 									// output new cell state
 									destRow[cr - 1] = value;
-									tileChanged |= (value - c);
 									if (value > 0) {
 										colOccupied |= colIndex;
 										rowOccupied |= rowIndex;
