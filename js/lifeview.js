@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 862,
+		/** @const {number} */ versionBuild : 863,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5956,7 +5956,6 @@
 						// convert life grid to pen colours unless Generations just died (since this will start fading dead cells)
 						if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
 							me.engine.convertToPensTile();
-							me.pasteRLEList();
 
 							// if paste every is defined then always flag there are alive cells
 							// since cells will appear in the future
@@ -5965,6 +5964,7 @@
 							}
 						}
 					}
+					me.pasteRLEList();
 
 					// save snapshot if needed
 					this.engine.saveSnapshotIfNeeded(me);
@@ -6092,6 +6092,7 @@
 				for (i = 0; i < me.gensPerStep; i += 1) {
 					me.engine.counter += 1;
 					me.saveElapsedTime(me.engine.counter, timeSinceLastUpdate, me.gensPerStep);
+					me.pasteRLEList();
 
 					// adjust PCA/Margolus generation based on playback direction
 					if (me.engine.isMargolus || me.engine.isPCA) {
@@ -18580,13 +18581,16 @@
 			for (i = 1; i < numStatesForRule; i += 1) {
 				stateCount += me.patternStateCount[i];
 			}
-			if (pattern && stateCount === 0 && me.engine.population === 0 && !me.isPasteEvery) {
+
+			if (pattern && me.engine.population === 0 && !me.isPasteEvery) {
 				me.emptyStart = true;
-				if (!me.engine.isNone) {
-					if (pattern.tooBig) {
-						me.menuManager.notification.notify("Pattern too big!", 15, ViewConstants.errorDuration, 15, false);
-					} else {
-						me.menuManager.notification.notify("New Pattern", 15, 300, 15, false);
+				if (stateCount === 0) {
+					if (!me.engine.isNone) {
+						if (pattern.tooBig) {
+							me.menuManager.notification.notify("Pattern too big!", 15, ViewConstants.errorDuration, 15, false);
+						} else {
+							me.menuManager.notification.notify("New Pattern", 15, 300, 15, false);
+						}
 					}
 				}
 			} else {

@@ -1,3 +1,7 @@
+Build 863
+- ensure PASTE is processed even when all cells die in the same generation
+- don't show "Life ended at" if there were no alive states originally in the pattern
+
 Build 862
 - fixed an Identify issue with PCA rules and Rot180
 
