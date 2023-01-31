@@ -1790,7 +1790,7 @@
 								state = ((state << 1) & 15) | ((state & 8) >> 3);
 								break;
 							case LifeConstants.modRot180:
-								state = ((state & 3 << 2) | (state & 12 >> 2));
+								state = ((state & 3) << 2) | ((state & 12) >> 2);
 								break;
 							case LifeConstants.modRot270:
 								state = ((state >> 1) & 15) | ((state & 1) << 3);
@@ -2793,7 +2793,9 @@
 			/** @type {number} */ frameTypeMSB = 0,
 			/** @type {number} */ bitStart = 0,
 			/** @type {number} */ v = 0,
-			/** @type {number} */ mult = 0;
+			/** @type {number} */ mult = 0,
+			/** @type {number} */ hash = 0,
+			/** @type {number} */ modHash = 0;
 
 		// determine whether period is small enough to compute strict volatility (since it can take a lot of RAM)
 		if (period <= LifeConstants.maxStrictPeriod && this.multiNumStates <= 2 && !this.isRuleTree && !this.isMargolus) {
@@ -2820,6 +2822,7 @@
 		this.firstCount = true;
 		this.countList.whole.fill(LifeConstants.cellWasDead);
 
+		this.startItem = i + p;
 		for (p = 0; p < period * 2; p += 1) {
 			// compute the next generation
 			this.nextGeneration(view.noHistory, view.graphDisabled, view.identify, view);
@@ -2863,9 +2866,36 @@
 				}
 
 				// compute the hash in slow mode
-				this.getHash(box, false);
+				hash = this.getHash(box, false);
+				this.hashList[i + p] = hash;
+				this.genList[i + p] = this.counter;
+				this.nextList[i + p] = -1;
+				if (i + p > 0) {
+					this.nextList[i + p - 1] = i + p;
+				}
 				this.bornList[i + p] = this.births;
 				this.diedList[i + p] = this.deaths;
+
+				// check for mod matches if one hasn't already been found (ignore for non-square grid)
+				if (this.modValue === -1 && !(this.isHex || this.isTriangular)) {
+					modHash = this.checkModHash(box, true);
+					if (modHash !== -1) {
+						this.modValue = this.counter - this.genList[modHash];
+						this.checkModGen = this.counter + this.modValue;
+						this.checkModHashValue = hash;
+					}
+				} else {
+					// check if the Mod was correct by testing next Mod period
+					if (this.modValue !== -1 && !this.checkedMod && this.counter === this.checkModGen) {
+						modHash = this.checkModHash(box, false);
+						if (modHash !== -1) {
+							this.checkedMod = true;
+						} else {
+							// Mod was not a match so reset
+							this.modValue = -1;
+						}
+					}
+				}
 			}
 		}
 
@@ -3047,7 +3077,6 @@
 			/** @type {string} */ activeResult = "",
 
 			// mod value
-			/** @type {number} */ modValue = this.modValue,
 			/** @type {string} */ modResult = "",
 
 			// temperature
@@ -3347,16 +3376,16 @@
 
 		// mod value
 		if (!fast && !(this.isHex || this.isTriangular)) {
-			if (modValue <= 0) {
-				modValue = period;
-				modResult = String(modValue);
+			if (this.modValue <= 0) {
+				this.modValue = period;
+				modResult = String(this.modValue);
 			} else {
 				// check the mod is a divisor of the period
-				if (period % modValue === 0 && period !== modValue) {
-					modResult = String(modValue) + " (" + LifeConstants.modTypeName[this.modType] + ")";
+				if (period % this.modValue === 0 && period !== this.modValue) {
+					modResult = String(this.modValue) + " (" + LifeConstants.modTypeName[this.modType] + ")";
 				} else {
-					modValue = period;
-					modResult = String(modValue);
+					this.modValue = period;
+					modResult = String(this.modValue);
 				}
 			}
 		}
@@ -3441,8 +3470,7 @@
 				quitLoop = false;
 
 				// get the start item
-				//i = this.startItem;
-				i = 0;
+				i = this.startItem;
 				lastI = -1;
 
 				// search the hash list
@@ -3521,27 +3549,6 @@
 							this.startItem = this.oscLength;
 						} else {
 							this.nextList[lastI] = this.oscLength;
-						}
-					}
-
-					// check for mod matches if one hasn't already been found (ignore for non-square grid)
-					if (this.modValue === -1 && !fast && !(this.isHex || this.isTriangular)) {
-						modHash = this.checkModHash(box, true);
-						if (modHash !== -1) {
-							this.modValue = this.counter - this.genList[modHash];
-							this.checkModGen = this.counter + this.modValue;
-							this.checkModHashValue = hash;
-						}
-					} else {
-						// check if the Mod was correct by testing next Mod period
-						if (this.modValue !== -1 && !this.checkedMod && this.counter === this.checkModGen) {
-							modHash = this.checkModHash(box, false);
-							if (modHash !== -1) {
-								this.checkedMod = true;
-							} else {
-								// Mod was not a match so reset
-								this.modValue = -1;
-							}
 						}
 					}
 

@@ -1,3 +1,6 @@
+Build 862
+- fixed an Identify issue with PCA rules and Rot180
+
 Build 861
 - fixed Go To Gen not displaying generations when a Theme with no history is selected
 - fixed clearing patterns hitting the boundary population calculation
