@@ -1,3 +1,8 @@
+Build 864
+- fixed issue with Dying colours not being defined correctly
+- when constrasting colours are automatically generated for Themes ensure they are visually different
+- always display grid line settings in Help->Themes
+
 Build 863
 - ensure PASTE is processed even when all cells die in the same generation
 - don't show "Life ended at" if there were no alive states originally in the pattern

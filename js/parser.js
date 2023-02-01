@@ -486,6 +486,32 @@
 		}
 	};
 
+	// get a colour visually different than the supplied one
+	/** @returns {number} */
+	ScriptParser.getDifferentColour = function(/** @type {number} */ colourRGB) {
+		var	/** @type {number} */ red = colourRGB & 255,
+			/** @type {number} */ green = (colourRGB >> 8) & 255,
+			/** @type {number} */ blue = (colourRGB >> 16),
+			/** @type {number} */ dRed = 255 - red,
+			/** @type {number} */ dGreen = 255 - green,
+			/** @type {number} */ dBlue = 255 - blue;
+
+		// check distance between each component
+		if (Math.abs(red - dRed) < 64) {
+			dRed = (dRed + 64) & 255;
+		}
+		
+		if (Math.abs(green - dGreen) < 64) {
+			dGreen = (dGreen + 64) & 255;
+		}
+		
+		if (Math.abs(blue - dBlue) < 64) {
+			dBlue = (dBlue + 64) & 255;
+		}
+		
+		return (dBlue << 16) | (dGreen << 8) | dRed;
+	};
+
 	// setup custom theme
 	ScriptParser.setupCustomTheme = function(/** @type {View} */ view, /** @type {number} */ theme) {
 		var	/** @type {number} */ colourValue = 0,
@@ -511,13 +537,13 @@
 				colourValue = themeValue[ViewConstants.customThemeDead];
 				if (colourValue !== -1) {
 					// set alive to the inverse of dead
-					themeValue[ViewConstants.customThemeAlive] = 0xffffff - colourValue;
+					themeValue[ViewConstants.customThemeAlive] = this.getDifferentColour(colourValue);
 				} else {
 					// check if background is defined
 					colourValue = themeValue[ViewConstants.customThemeBackground];
 					if (colourValue !== -1) {
 						// set alive to the inverse of background
-						themeValue[ViewConstants.customThemeAlive] = 0xffffff - colourValue;
+						themeValue[ViewConstants.customThemeAlive] = this.getDifferentColour(colourValue);
 					} else {
 						// set alive to white
 						themeValue[ViewConstants.customThemeAlive] = 0xffffff;
@@ -530,7 +556,7 @@
 		if (theme === -1) {
 			if (themeValue[ViewConstants.customThemeBackground] === -1 && themeValue[ViewConstants.customThemeDead] === -1) {
 				// both missing so set background to the inverse of alive
-				themeValue[ViewConstants.customThemeBackground] = 0xffffff - themeValue[ViewConstants.customThemeAlive];
+				themeValue[ViewConstants.customThemeBackground] = this.getDifferentColour(themeValue[ViewConstants.customThemeAlive]);
 			}
 		}
 
@@ -688,7 +714,7 @@
 		// check if the dyingramp is specified
 		colourValue = themeValue[ViewConstants.customThemeDyingRamp];
 		if (colourValue === -1) {
-			if (theme === 1) {
+			if (theme === -1) {
 				// use the dying colour if specified or the background otherwise
 				colourValue = themeValue[ViewConstants.customThemeDying];
 				if (colourValue === -1) {
