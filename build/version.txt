@@ -1,3 +1,6 @@
+Build 866
+- enable Strict Volatility for [R]Super rules
+
 Build 865
 - re-enabled Mod for Spaceships
 - fixed Identify for [R]Super spaceships

@@ -2783,6 +2783,7 @@
 			/** @type {Uint16Array} */ occupiedFrame = null,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
 			/** @type {Uint8Array} */ popPhase = new Uint8Array(period),
 			/** @type {Uint32Array} */ popSubPeriod = new Uint32Array(period + 1),
@@ -2806,7 +2807,7 @@
 			/** @type {number} */ hash = 0;
 
 		// determine whether period is small enough to compute strict volatility (since it can take a lot of RAM)
-		if (period <= LifeConstants.maxStrictPeriod && this.multiNumStates <= 2 && !this.isRuleTree && !this.isMargolus) {
+		if (period <= LifeConstants.maxStrictPeriod && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree && !this.isMargolus) {
 			// compute the maximum box width and height for the oscillator
 			extent = this.getOscillatorBounds(period, i);
 			boxWidth = extent.rightX - extent.leftX + 1;
@@ -2844,24 +2845,47 @@
 			if (!(this.altSpecified && ((this.counter & 1) !== 0))) {
 				// add to the strict volatility frame if computing strict volatility
 				if (computeStrict && p < period) {
+					// swap grids every generation
+					if (this.isSuper) {
+						colourGrid = this.colourGrid;
+						if ((this.counter & 1) !== 0) {
+							colourGrid = this.nextColourGrid;
+						}
+					}
+
 					// process each row of the pattern extent
 					for (cy = extent.bottomY; cy <= extent.topY; cy += 1) {
 						// get the pattern row
-						colourRow = this.colourGrid[cy];
+						colourRow = colourGrid[cy];
 
 						// find the start of the row
 						f = ((cy - extent.bottomY) * bitRowInBytes) + (p * bitFrameInBytes);
 						bit = bitStart;
 
-						// process the row
-						for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
-							if (colourRow[cx] >= aliveStart) {
-								frames[f] |= bit;
+						// check for Super rules
+						if (this.isSuper) {
+							// process the row
+							for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
+								if (colourRow[cx] & 1) {
+									frames[f] |= bit;
+								}
+								bit >>= 1;
+								if (!bit) {
+									bit = bitStart;
+									f += 1;
+								}
 							}
-							bit >>= 1;
-							if (!bit) {
-								bit = bitStart;
-								f += 1;
+						} else {
+							// process the row
+							for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
+								if (colourRow[cx] >= aliveStart) {
+									frames[f] |= bit;
+								}
+								bit >>= 1;
+								if (!bit) {
+									bit = bitStart;
+									f += 1;
+								}
 							}
 						}
 					}
@@ -2993,7 +3017,6 @@
 
 			// create the cell period map
 			this.createCellPeriodMap();
-
 		}
 	};
 
@@ -3596,7 +3619,7 @@
 					}
 
 					// check for mod matches if one hasn't already been found (ignore for non-square grid)
-					if (this.modValue === -1 && !(this.isHex || this.isTriangular)) {
+					if (this.modValue === -1 && !fast && !(this.isHex || this.isTriangular)) {
 						modHash = this.checkModHash(box, true);
 						if (modHash !== -1) {
 							this.modValue = this.counter - this.genList[modHash];
