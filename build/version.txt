@@ -1,3 +1,7 @@
+Build 865
+- re-enabled Mod for Spaceships
+- fixed Identify for [R]Super spaceships
+
 Build 864
 - fixed issue with Dying colours not being defined correctly
 - when constrasting colours are automatically generated for Themes ensure they are visually different

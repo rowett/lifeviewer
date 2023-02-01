@@ -1779,51 +1779,58 @@
 						hash = (hash * factor) ^ x;
 					}
 				} else {
-					state = colourGrid[cy + bottom][cx + left];
-					if (state > this.historyStates) {
-						state -= this.historyStates;
-
-						// adjust sub-cells for PCA rules based on transformation
-						if (this.isPCA) {
-							switch (transform) {
-							case LifeConstants.modRot90:
-								state = ((state << 1) & 15) | ((state & 8) >> 3);
-								break;
-							case LifeConstants.modRot180:
-								state = ((state & 3) << 2) | ((state & 12) >> 2);
-								break;
-							case LifeConstants.modRot270:
-								state = ((state >> 1) & 15) | ((state & 1) << 3);
-								break;
-							case LifeConstants.modFlipX:
-								state = (state & 5) | ((state & 2) << 2) | ((state & 8) >> 2);
-								break;
-							case LifeConstants.modFlipY:
-								state = (state & 10) | ((state & 1) << 2) | ((state & 4) >> 2);
-								break;
-							case LifeConstants.modRot90FlipX:
-								state = ((state & 8) >> 3) | ((state & 4) >> 1) | ((state & 2) << 1) | ((state & 1) << 3);
-								break;
-							case LifeConstants.modRot90FlipY:
-								state = ((state & 4) << 1) | ((state & 8) >> 1) | ((state & 1) << 1) | ((state & 2) >> 1);
-								break;
-							}
-
-							// update the hash value
+					if (this.isSuper) {
+						if (colourGrid[cy + bottom][cx + left] & 1) {
 							hash = (hash * factor) ^ y;
 							hash = (hash * factor) ^ x;
-							hash = (hash * factor) ^ state;
-						} else {
-							if (this.isRuleTree) {
+						}
+					} else {
+						state = colourGrid[cy + bottom][cx + left];
+						if (state > this.historyStates) {
+							state -= this.historyStates;
+
+							// adjust sub-cells for PCA rules based on transformation
+							if (this.isPCA) {
+								switch (transform) {
+								case LifeConstants.modRot90:
+									state = ((state << 1) & 15) | ((state & 8) >> 3);
+									break;
+								case LifeConstants.modRot180:
+									state = ((state & 3) << 2) | ((state & 12) >> 2);
+									break;
+								case LifeConstants.modRot270:
+									state = ((state >> 1) & 15) | ((state & 1) << 3);
+									break;
+								case LifeConstants.modFlipX:
+									state = (state & 5) | ((state & 2) << 2) | ((state & 8) >> 2);
+									break;
+								case LifeConstants.modFlipY:
+									state = (state & 10) | ((state & 1) << 2) | ((state & 4) >> 2);
+									break;
+								case LifeConstants.modRot90FlipX:
+									state = ((state & 8) >> 3) | ((state & 4) >> 1) | ((state & 2) << 1) | ((state & 1) << 3);
+									break;
+								case LifeConstants.modRot90FlipY:
+									state = ((state & 4) << 1) | ((state & 8) >> 1) | ((state & 1) << 1) | ((state & 2) >> 1);
+									break;
+								}
+	
 								// update the hash value
 								hash = (hash * factor) ^ y;
 								hash = (hash * factor) ^ x;
 								hash = (hash * factor) ^ state;
 							} else {
-								state = this.multiNumStates - state;
-								hash = (hash * factor) ^ y;
-								hash = (hash * factor) ^ x;
-								hash = (hash * factor) ^ state;
+								if (this.isRuleTree) {
+									// update the hash value
+									hash = (hash * factor) ^ y;
+									hash = (hash * factor) ^ x;
+									hash = (hash * factor) ^ state;
+								} else {
+									state = this.multiNumStates - state;
+									hash = (hash * factor) ^ y;
+									hash = (hash * factor) ^ x;
+									hash = (hash * factor) ^ state;
+								}
 							}
 						}
 					}
@@ -1965,33 +1972,35 @@
 		hashY = y;
 
 		// only check the pattern extent
-		if (x < zoomBox.leftX) {
-			x = zoomBox.leftX;
+		if (!this.isSuper) {
+			if (x < zoomBox.leftX) {
+				x = zoomBox.leftX;
+			}
+			if (y < zoomBox.bottomY) {
+				y = zoomBox.bottomY;
+			}
+			if (right > zoomBox.rightX) {
+				right = zoomBox.rightX;
+			}
+			if (top > zoomBox.topY) {
+				top = zoomBox.topY;
+			}
+	
+			// merge with previous generation extent
+			if (lastZoomBox.leftX < x) {
+				x = lastZoomBox.leftX;
+			}
+			if (lastZoomBox.bottomY < y) {
+				y = lastZoomBox.bottomY;
+			}
+			if (lastZoomBox.rightX > right) {
+				right = lastZoomBox.rightX;
+			}
+			if (lastZoomBox.topY > top) {
+				top = lastZoomBox.topY;
+			}
+			lastZoomBox.set(zoomBox);
 		}
-		if (y < zoomBox.bottomY) {
-			y = zoomBox.bottomY;
-		}
-		if (right > zoomBox.rightX) {
-			right = zoomBox.rightX;
-		}
-		if (top > zoomBox.topY) {
-			top = zoomBox.topY;
-		}
-
-		// merge with previous generation extent
-		if (lastZoomBox.leftX < x) {
-			x = lastZoomBox.leftX;
-		}
-		if (lastZoomBox.bottomY < y) {
-			y = lastZoomBox.bottomY;
-		}
-		if (lastZoomBox.rightX > right) {
-			right = lastZoomBox.rightX;
-		}
-		if (lastZoomBox.topY > top) {
-			top = lastZoomBox.topY;
-		}
-		lastZoomBox.set(zoomBox);
 
 		// create a hash from every alive cell
 		for (cy = y; cy <= top; cy += 1) {
@@ -2794,8 +2803,7 @@
 			/** @type {number} */ bitStart = 0,
 			/** @type {number} */ v = 0,
 			/** @type {number} */ mult = 0,
-			/** @type {number} */ hash = 0,
-			/** @type {number} */ modHash = 0;
+			/** @type {number} */ hash = 0;
 
 		// determine whether period is small enough to compute strict volatility (since it can take a lot of RAM)
 		if (period <= LifeConstants.maxStrictPeriod && this.multiNumStates <= 2 && !this.isRuleTree && !this.isMargolus) {
@@ -2875,27 +2883,6 @@
 				}
 				this.bornList[i + p] = this.births;
 				this.diedList[i + p] = this.deaths;
-
-				// check for mod matches if one hasn't already been found (ignore for non-square grid)
-				if (this.modValue === -1 && !(this.isHex || this.isTriangular)) {
-					modHash = this.checkModHash(box, true);
-					if (modHash !== -1) {
-						this.modValue = this.counter - this.genList[modHash];
-						this.checkModGen = this.counter + this.modValue;
-						this.checkModHashValue = hash;
-					}
-				} else {
-					// check if the Mod was correct by testing next Mod period
-					if (this.modValue !== -1 && !this.checkedMod && this.counter === this.checkModGen) {
-						modHash = this.checkModHash(box, false);
-						if (modHash !== -1) {
-							this.checkedMod = true;
-						} else {
-							// Mod was not a match so reset
-							this.modValue = -1;
-						}
-					}
-				}
 			}
 		}
 
@@ -3405,6 +3392,12 @@
 			/** @type {number} */ topY = box.topY,
 			/** @type {number} */ boxWidth = rightX - leftX + 1,
 			/** @type {number} */ boxHeight = topY - bottomY + 1,
+			/** @type {number} */ minx = 0,
+			/** @type {number} */ miny = 0,
+			/** @type {number} */ maxx = 0,
+			/** @type {number} */ maxy = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
 
 			// merge size into one value
 			/** @type {number} */ boxSize = (boxWidth << 16) | boxHeight,
@@ -3432,6 +3425,10 @@
 			// movement vector
 			/** @type {number} */ deltaX = 0,
 			/** @type {number} */ deltaY = 0,
+
+			// colour grid
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ colourRow = null,
 
 			// message
 			/** @type {string} */ message = "",
@@ -3462,6 +3459,52 @@
 				boxHeight = 0;
 				quit = true;
 			} else {
+				// for super rules create a bounding box of just the alive cells
+				if (this.isSuper) {
+					// swap grids every generation
+					if ((this.counter & 1) !== 0) {
+						colourGrid = this.nextColourGrid;
+					}
+
+					// find the first alive cell from the bottom left
+					minx = rightX;
+					maxx = leftX;
+					miny = topY;
+					maxy = bottomY;
+
+					for (y = bottomY; y <= topY; y += 1) {
+						colourRow = colourGrid[y];
+						for (x = leftX; x <= rightX; x += 1) {
+							if (colourRow[x] & 1) {
+								if (x < minx) {
+									minx = x;
+								}
+								if (x > maxx) {
+									maxx = x;
+								}
+
+								if (y < miny) {
+									miny = y;
+								}
+								if (y > maxy) {
+									maxy = y;
+								}
+							}
+						}
+					}
+
+					// update the bounding box
+					leftX = minx;
+					bottomY = miny;
+					rightX = maxx;
+					topY = maxy;
+					boxWidth = rightX - leftX + 1;
+					boxHeight = topY - bottomY + 1;
+					boxSize = (boxWidth << 16) | boxHeight;
+					boxLocation = (leftX << 16) | bottomY;
+					box = new BoundingBox(leftX, bottomY, rightX, topY);
+				}
+
 				// get the hash of the current pattern in fast mode since slow mode parameters
 				// will be calculated once oscillator is found
 				hash = this.getHash(box, true);
@@ -3549,6 +3592,27 @@
 							this.startItem = this.oscLength;
 						} else {
 							this.nextList[lastI] = this.oscLength;
+						}
+					}
+
+					// check for mod matches if one hasn't already been found (ignore for non-square grid)
+					if (this.modValue === -1 && !(this.isHex || this.isTriangular)) {
+						modHash = this.checkModHash(box, true);
+						if (modHash !== -1) {
+							this.modValue = this.counter - this.genList[modHash];
+							this.checkModGen = this.counter + this.modValue;
+							this.checkModHashValue = hash;
+						}
+					} else {
+						// check if the Mod was correct by testing next Mod period
+						if (this.modValue !== -1 && !this.checkedMod && this.counter === this.checkModGen) {
+							modHash = this.checkModHash(box, false);
+							if (modHash !== -1) {
+								this.checkedMod = true;
+							} else {
+								// Mod was not a match so reset
+								this.modValue = -1;
+							}
 						}
 					}
 
