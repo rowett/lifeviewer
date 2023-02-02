@@ -8175,7 +8175,7 @@
 
 		// Book theme
 		this.themes[i] = new Theme("Book", new ColourRange(new Colour(255, 220, 192), new Colour(192, 220, 255)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(255, 255, 255),
-							new Colour(0, 0, 0), new ColourRange(new Colour(24, 24, 24), new Colour(128, 128, 128)), new ColourRange(new Colour(255, 220, 192), new Colour(192, 220, 255)), new Colour(255, 255, 255),
+							new Colour(0, 0, 0), new ColourRange(new Colour(128, 128, 128), new Colour(48, 48, 48)), new ColourRange(new Colour(255, 220, 192), new Colour(192, 220, 255)), new Colour(255, 255, 255),
 							[new Colour(255, 128, 128), new Colour(192, 192, 128), new Colour(224, 144, 96), new Colour(128, 192, 192),
 							 new Colour(192, 112, 112), new Colour(144, 192, 144), new Colour(128, 96, 64), new Colour(128, 128, 255),
 							 new Colour(192, 96, 192), new Colour(112, 112, 192), new Colour(128, 64, 128), new Colour(96, 144, 224),
@@ -13567,7 +13567,13 @@
 						this.anythingAlive = 0;
 					}
 				} else {
+					// clear bit grid boundary
 					this.clearGridBoundary();
+
+					// check for generations
+					if (this.multiNumStates !== -1 && !this.isHROT && !this.isPCA && !this.isRuleTree && !this.isSuper) {
+						this.nextGenerationGenerations();
+					}
 				}
 			}
 		}
@@ -15241,8 +15247,10 @@
 			// check for reverse playback
 			if (this.reverseMargolus) {
 				if (this.altSpecified) {
+					// use reverse 1
 					indexLookup = this.margolusReverseLookup1;
 				} else {
+					// always use reverse 1 if alt not specified
 					indexLookup = this.margolusReverseLookup1;
 				}
 			}
@@ -15258,8 +15266,10 @@
 			// check for reverse playback
 			if (this.reverseMargolus) {
 				if (this.altSpecified) {
+					// use reverse 2
 					indexLookup = this.margolusReverseLookup2;
 				} else {
+					// always use reverse 1 if alt not specified
 					indexLookup = this.margolusReverseLookup1;
 				}
 			}
@@ -31142,8 +31152,10 @@
 			// check for reverse playback
 			if (this.reverseMargolus) {
 				if (this.altSpecified) {
-					indexLookup = this.margolusReverseLookup1;
+					// use reverse 2
+					indexLookup = this.margolusReverseLookup2;
 				} else {
+					// always use reverse 1 if alt not specified
 					indexLookup = this.margolusReverseLookup1;
 				}
 			}
@@ -31157,8 +31169,10 @@
 			// check for reverse playback
 			if (this.reverseMargolus) {
 				if (this.altSpecified) {
-					indexLookup = this.margolusReverseLookup2;
+					// use reverse 1
+					indexLookup = this.margolusReverseLookup1;
 				} else {
+					// always use reverse 1 if alt not specified
 					indexLookup = this.margolusReverseLookup1;
 				}
 			}

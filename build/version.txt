@@ -1,3 +1,18 @@
+Build 870
+- fixed random cell generation for PCA rules
+
+Build 869
+- fixed Generations patterns hitting grid extent
+- fixed Identify when patterns die
+- fixed StartFrom when patterns die
+
+Build 868
+- change how DYING is reported for 3 state Generations patterns
+
+Build 867
+- fixed reverse playback for PCA alternating patterns
+- fixed DYINGRAMP for a few Themes
+
 Build 866
 - enable Strict Volatility for [R]Super rules
 

@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 866,
+		/** @const {number} */ versionBuild : 870,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2973,17 +2973,17 @@
 								if (this.engine.isVonNeumann || this.engine.isPCA) {
 									itemName = "von Neumann";
 								} else {
-									if (this.engine.isNone) {
-										itemName = "none";
-									} else {
-										itemName = "Moore";
-									}
+									itemName = "Moore";
 								}
 							}
 						}
 					}
 				}
 			}
+		}
+
+		if (this.engine.isNone) {
+			itemName = "none";
 		}
 
 		return itemName;
@@ -3024,23 +3024,52 @@
 			i = 0;
 			for (iy = 0; iy < boxHeight; iy += 1) {
 				for (ix = 0; ix < boxWidth; ix += 1) {
-					if (states === 2) {
+					if (this.engine.isPCA) {
+						state = 0;
+
+						// N
 						if (this.randGen.random() <= fill) {
-							cells[i] = ix;
-							cells[i + 1] = iy;
-							cells[i + 2] = 1;
-							i += 3;
+							state |= 1;
 						}
-					} else {
+
+						// E
 						if (this.randGen.random() <= fill) {
-							cells[i] = ix;
-							cells[i + 1] = iy;
-							state = ((this.randGen.random() * (states - 1)) | 0) + 1;
-							if (invertForGenerations) {
-								state = states - state;
+							state |= 2;
+						}
+
+						// S
+						if (this.randGen.random() <= fill) {
+							state |= 4;
+						}
+
+						// W
+						if (this.randGen.random() <= fill) {
+							state |= 8;
+						}
+
+						cells[i] = ix;
+						cells[i + 1] = iy;
+						cells[i + 2] = state;
+						i += 3;
+					} else {
+						if (states === 2) {
+							if (this.randGen.random() <= fill) {
+								cells[i] = ix;
+								cells[i + 1] = iy;
+								cells[i + 2] = 1;
+								i += 3;
 							}
-							cells[i + 2] = state;
-							i += 3;
+						} else {
+							if (this.randGen.random() <= fill) {
+								cells[i] = ix;
+								cells[i + 1] = iy;
+								state = ((this.randGen.random() * (states - 1)) | 0) + 1;
+								if (invertForGenerations) {
+									state = states - state;
+								}
+								cells[i + 2] = state;
+								i += 3;
+							}
 						}
 					}
 				}
@@ -3706,7 +3735,7 @@
 								result = 0;
 							} else {
 								if (result > numStates) {
-									result = numStates - 1;
+									result = numStates;
 								}
 							}
 							this.engine.setState(xOff + x, yOff + y, result, true);
@@ -3794,8 +3823,8 @@
 								if (result < 0) {
 									result = 0;
 								} else {
-									if (result >= numStates) {
-										result = numStates - 1;
+									if (result > numStates) {
+										result = numStates;
 									}
 								}
 								this.engine.setState(xOff + x, yOff + y, result, true);
@@ -5964,6 +5993,8 @@
 							}
 						}
 					}
+
+					// paste any RLE snippets
 					me.pasteRLEList();
 
 					// save snapshot if needed
@@ -7199,28 +7230,54 @@
 			me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
 			if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
 				me.engine.convertToPensTile();
-			}
 
-			// save snapshot if needed
-			me.engine.saveSnapshotIfNeeded(me);
-
-			// check for just died for 2 state patterns
-			if (me.engine.anythingAlive === 0 && me.engine.multiNumStates <= 2) {
-				// clear the other buffer
-				saveBirths = me.engine.births;
-				saveDeaths = me.engine.deaths;
-
-				me.engine.anythingAlive = 1;
-				me.engine.nextGeneration(false, me.graphDisabled, me.identify, me);
-				me.engine.counter -= 1;
-				me.engine.anythingAlive = 0;
-
-				me.engine.births = saveBirths;
-				me.engine.deaths = saveDeaths;
+				// if paste every is defined then always flag there are alive cells
+				// since cells will appear in the future
+				if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
+					me.engine.anythingAlive = 1;
+				}
 			}
 
 			// paste any RLE snippets
 			me.pasteRLEList();
+
+			// save snapshot if needed
+			me.engine.saveSnapshotIfNeeded(me);
+
+			// if no theme history then set anything alive from population
+			if (!me.engine.themeHistory && me.engine.population === 0) {
+				me.engine.anythingAlive = 0;
+			}
+
+			// check if life just stopped
+			if (!me.engine.anythingAlive) {
+				// set fade interval
+				me.fading = me.historyStates + (me.engine.multiNumStates > 0 ? me.engine.multiNumStates : 0);
+
+				// remember the generation that life stopped
+				if (me.diedGeneration === -1) {
+					me.diedGeneration = me.engine.counter;
+
+					// clear the bit grids
+					if (me.engine.isSuper) {
+						me.engine.anythingAlive = 1;
+					} else {
+						if (me.engine.isPCA || me.engine.isRuleTree) {
+							me.engine.clearGrids(false);
+						} else {
+							me.engine.clearGrids(true);
+						}
+					}
+
+					// notify simulation stopped unless loop defined and enabled
+					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
+						me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 600, 15, false);
+					}
+
+					// if the pattern dies again then notify (this would be caused by drawing during playback)
+					me.emptyStart = false;
+				}
+			}
 
 			// check if grid buffer needs to grow
 			// (normally this check happens at render time but we may have processed more generations than expected by that function)
@@ -7232,22 +7289,8 @@
 				me.checkGridSize(me, me.middleBox);
 			}
 
-			// if paste every is defined then always flag there are alive cells
-			// since cells will appear in the future
-			if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
-				me.engine.anythingAlive = 1;
-			}
-
 			// save elapsed time
 			me.saveElapsedTime(me.engine.counter, 0, 1);
-
-			// check if life died
-			if (me.engine.population === 0) {
-				me.startFrom = me.engine.counter;
-				if (me.diedGeneration === -1) {
-					me.diedGeneration = me.engine.counter;
-				}
-			}
 		}
 
 		// render world
@@ -7262,11 +7305,9 @@
 		// set the auto update mode
 		me.menuManager.setAutoUpdate(true);
 
-		if (me.engine.counter >= me.startFrom) {
+		// stop if target reached or all cells died
+		if ((me.engine.counter >= me.startFrom) || me.engine.population === 0) {
 			me.stopStartFrom(me, !me.engine.anythingAlive, false);
-			if (me.engine.population === 0) {
-				me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 240, 15, false);
-			}
 		}
 	};
 
@@ -7312,13 +7353,56 @@
 		while (me.identify && (performance.now() - startTime < timeLimit) && me.engine.anythingAlive) {
 			// compute the next generation
 			me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
+
 			// convert life grid to pen colours unless Generations just died (since this will start fading dead cells)
 			if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
 				me.engine.convertToPensTile();
-				me.pasteRLEList();
+
+				// if paste every is defined then always flag there are alive cells
+				// since cells will appear in the future
+				if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
+					me.engine.anythingAlive = 1;
+				}
+			}
+			me.pasteRLEList();
+
+			// save snapshot if needed
+			this.engine.saveSnapshotIfNeeded(me);
+
+			// if no theme history then set anything alive from population
+			if (!me.engine.themeHistory && me.engine.population === 0) {
+				me.engine.anythingAlive = 0;
 			}
 
-			me.engine.saveSnapshotIfNeeded(me);
+			// check if life just stopped
+			if (!me.engine.anythingAlive) {
+				// set fade interval
+				me.fading = me.historyStates + (me.engine.multiNumStates > 0 ? me.engine.multiNumStates : 0);
+
+				// remember the generation that life stopped
+				if (me.diedGeneration === -1) {
+					me.diedGeneration = me.engine.counter;
+
+					// clear the bit grids
+					if (me.engine.isSuper) {
+						me.engine.anythingAlive = 1;
+					} else {
+						if (me.engine.isPCA || me.engine.isRuleTree) {
+							me.engine.clearGrids(false);
+						} else {
+							me.engine.clearGrids(true);
+						}
+					}
+
+					// notify simulation stopped unless loop defined and enabled
+					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
+						me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 600, 15, false);
+					}
+
+					// if the pattern dies again then notify (this would be caused by drawing during playback)
+					me.emptyStart = false;
+				}
+			}
 
 			// check if grid buffer needs to grow
 			// (normally this check happens at render time but we may have processed more generations than expected by that function)
@@ -7329,7 +7413,6 @@
 				me.middleBox.topY = me.engine.zoomBox.topY;
 				me.checkGridSize(me, me.middleBox);
 			}
-
 
 			// save elapsed time
 			me.saveElapsedTime(me.engine.counter, 0, 1);
@@ -7470,16 +7553,6 @@
 
 				// unlock the menu
 				me.viewMenu.locked = false;
-
-				// mark the died generation
-				me.diedGeneration = me.engine.counter;
-
-				// set fade interval
-				me.fading = me.historyStates + (me.engine.multiNumStates > 0 ? me.engine.multiNumStates : 0);
-
-				// notify Life ended
-				me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 240, 15, false);
-				me.menuManager.notification.clear(true, false);
 			}
 		}
 
@@ -7679,23 +7752,23 @@
 	// update view mode dispatcher
 	View.prototype.viewAnimate = function(/** @type {number} */ timeSinceLastUpdate, /** @type {View} */ me) {
 		// check view mode
-		if (me.computeHistory) {
-			me.viewAnimateHistory(me);
+		if (me.measureFrameRate > 0) {
+			me.viewAnimateMeasure(timeSinceLastUpdate, me);
 		} else {
-			if (me.identifyResults !== ViewConstants.identResultsNone) {
-				me.viewAnimateIdentifyResults(me);
+			if (me.computeHistory) {
+				me.viewAnimateHistory(me);
 			} else {
-				if (me.identify) {
-					me.viewAnimateIdentify(me);
+				if (me.identifyResults !== ViewConstants.identResultsNone) {
+					me.viewAnimateIdentifyResults(me);
 				} else {
-					if (me.clipboardCopy) {
-						me.viewAnimateClipboard(me);
+					if (me.identify) {
+						me.viewAnimateIdentify(me);
 					} else {
-						if (me.startFrom !== -1) {
-							me.viewAnimateStartFrom(me);
+						if (me.clipboardCopy) {
+							me.viewAnimateClipboard(me);
 						} else {
-							if (me.measureFrameRate > 0) {
-								me.viewAnimateMeasure(timeSinceLastUpdate, me);
+							if (me.startFrom !== -1) {
+								me.viewAnimateStartFrom(me);
 							} else {
 								me.viewAnimateNormal(timeSinceLastUpdate, me);
 							}
@@ -11139,18 +11212,68 @@
 		// create random pattern
 		for (y = 0; y < rows; y += 1) {
 			// check for live cell
-			if (this.randGen.random() <= fill) {
-				lastState = ((this.randGen.random() * (maxState - 1)) | 0) + 1;
-			} else {
+			if (this.engine.isPCA) {
 				lastState = 0;
+				
+				// N
+				if (this.randGen.random() <= fill) {
+					lastState |= 1;
+				}
+
+				// S
+				if (this.randGen.random() <= fill) {
+					lastState |= 2;
+				}
+
+				// E
+				if (this.randGen.random() <= fill) {
+					lastState |= 4;
+				}
+
+				// W
+				if (this.randGen.random() <= fill) {
+					lastState |= 8;
+				}
+			} else {
+				if (this.randGen.random() <= fill) {
+					lastState = ((this.randGen.random() * (maxState - 1)) | 0) + 1;
+				} else {
+					lastState = 0;
+				}
 			}
+
 			count = 1;
 			for (x = 1; x < columns; x += 1) {
-				if (this.randGen.random() <= fill) {
-					state = ((this.randGen.random() * (maxState - 1)) | 0) + 1;
-				} else {
+				if (this.engine.isPCA) {
 					state = 0;
+					
+					// N
+					if (this.randGen.random() <= fill) {
+						state |= 1;
+					}
+
+					// S
+					if (this.randGen.random() <= fill) {
+						state |= 2;
+					}
+
+					// E
+					if (this.randGen.random() <= fill) {
+						state |= 4;
+					}
+
+					// W
+					if (this.randGen.random() <= fill) {
+						state |= 8;
+					}
+				} else {
+					if (this.randGen.random() <= fill) {
+						state = ((this.randGen.random() * (maxState - 1)) | 0) + 1;
+					} else {
+						state = 0;
+					}
 				}
+
 				if (state !== lastState) {
 					if (count > 1) {
 						rleText += count;
@@ -13366,17 +13489,46 @@
 		}
 
 		// randomize cells
-		for (i = 0; i < me.pasteBuffer.length; i += 1) {
-			if (me.randGen.random() * 100 <= me.randomDensity) {
-				if (numStates === 2 || twoStateOnly) {
-					state = me.drawState;
-				} else {
-					state = ((me.randGen.random() * (numStates - 1)) | 0) + 1;
-				}
-			} else {
+		if (me.engine.isPCA) {
+			for (i = 0; i < me.pasteBuffer.length; i += 1) {
 				state = 0;
+
+				// N
+				if (me.randGen.random() * 100 <= me.randomDensity) {
+					state |= 1;
+				}
+
+				// E
+				if (me.randGen.random() * 100 <= me.randomDensity) {
+					state |= 2;
+				}
+				
+				// S
+				if (me.randGen.random() * 100 <= me.randomDensity) {
+					state |= 4;
+				}
+
+				// W
+				if (me.randGen.random() * 100 <= me.randomDensity) {
+					state |= 8;
+				}
+
+				me.pasteBuffer[i] = state;
 			}
-			me.pasteBuffer[i] = state;
+		} else {
+			for (i = 0; i < me.pasteBuffer.length; i += 1) {
+				if (me.randGen.random() * 100 <= me.randomDensity) {
+					if (numStates === 2 || twoStateOnly) {
+						state = me.drawState;
+					} else {
+						state = ((me.randGen.random() * (numStates - 1)) | 0) + 1;
+					}
+				} else {
+					state = 0;
+				}
+
+				me.pasteBuffer[i] = state;
+			}
 		}
 	};
 
@@ -13415,18 +13567,48 @@
 			}
 
 			// draw random cells
-			for (y = y1; y <= y2; y += 1) {
-				for (x = x1; x <= x2; x += 1) {
-					if (me.randGen.random() * 100 <= me.randomDensity) {
-						if (numStates === 2 || twoStateOnly) {
-							state = me.drawState;
-						} else {
-							state = ((me.randGen.random() * (numStates - 1)) | 0) + 1;
-						}
-					} else {
+			if (me.engine.isPCA) {
+				for (y = y1; y <= y2; y += 1) {
+					for (x = x1; x <= x2; x += 1) {
 						state = 0;
+
+						// N
+						if (me.randGen.random() * 100 <= me.randomDensity) {
+							state |= 1;
+						}
+
+						// E
+						if (me.randGen.random() * 100 <= me.randomDensity) {
+							state |= 2;
+						}
+						
+						// S
+						if (me.randGen.random() * 100 <= me.randomDensity) {
+							state |= 4;
+						}
+
+						// W
+						if (me.randGen.random() * 100 <= me.randomDensity) {
+							state |= 8;
+						}
+
+						wasState6 = me.setStateWithUndo(x + xOff, y + yOff, state, true);
 					}
-					wasState6 = me.setStateWithUndo(x + xOff, y + yOff, state, true);
+				}
+			} else {
+				for (y = y1; y <= y2; y += 1) {
+					for (x = x1; x <= x2; x += 1) {
+						if (me.randGen.random() * 100 <= me.randomDensity) {
+							if (numStates === 2 || twoStateOnly) {
+								state = me.drawState;
+							} else {
+								state = ((me.randGen.random() * (numStates - 1)) | 0) + 1;
+							}
+						} else {
+							state = 0;
+						}
+						wasState6 = me.setStateWithUndo(x + xOff, y + yOff, state, true);
+					}
 				}
 			}
 
@@ -18994,7 +19176,12 @@
 		// notify if start from is defined
 		if (me.startFrom !== -1) {
 			if (me.genNotifications) {
-				me.menuManager.notification.notify("Going to generation " + me.startFrom, 15, 10000, 15, false);
+				if (me.engine.population === 0) {
+					me.menuManager.notification.notify("Empty Pattern", 15, 360, 15, false);
+					me.startFrom = -1;
+				} else {
+					me.menuManager.notification.notify("Going to generation " + me.startFrom, 15, 10000, 15, false);
+				}
 			}
 			me.menuManager.notification.clear(true, false);
 		}

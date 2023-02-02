@@ -4805,6 +4805,9 @@
 
 						// random chance Life-Like rule word
 						case Keywords.randomChanceWord:
+							isNumeric = false;
+							type = "a valid item";
+
 							// check the argument
 							peekToken = scriptReader.peekAtNextToken();
 							switch(peekToken) {
