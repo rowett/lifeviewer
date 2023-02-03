@@ -8116,7 +8116,7 @@
 
 		// MCell theme
 		this.themes[i] = new Theme("MCell", new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(255, 255, 0), new Colour(255, 255, 0)), new Colour(0, 0, 0),
-							new Colour(255, 255, 0), new ColourRange(new Colour(0, 255, 0), new Colour(255, 255, 0)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0),
+							new Colour(255, 255, 0), new ColourRange(new Colour(0, 255, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0),
 							[new Colour(255, 255, 0), new Colour(255, 219, 0), new Colour(255, 183, 0), new Colour(255, 147, 0),
 							 new Colour(255, 111, 0), new Colour(255, 75, 0), new Colour(255, 39, 0), new Colour(255, 0, 0),
 							 new Colour(240, 0, 0), new Colour(225, 0, 0), new Colour(210, 0, 0), new Colour(195, 0, 0),
@@ -13567,13 +13567,8 @@
 						this.anythingAlive = 0;
 					}
 				} else {
-					// clear bit grid boundary
+					// clear bit grid boundary (and Generations alive states too)
 					this.clearGridBoundary();
-
-					// check for generations
-					if (this.multiNumStates !== -1 && !this.isHROT && !this.isPCA && !this.isRuleTree && !this.isSuper) {
-						this.nextGenerationGenerations();
-					}
 				}
 			}
 		}
@@ -14112,7 +14107,7 @@
 	};
 
 	// remove pattern starting at a given cell
-	Life.prototype.removePattern = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {Array<Uint16Array>} */ grid16) {
+	Life.prototype.removePattern = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {Array<Uint16Array>} */ grid16, /** @type {Array<Uint8Array>} */ colourGrid) {
 		var	/** @type {number} */ tx = 0,
 			/** @type {number} */ ty = 0,
 
@@ -14144,6 +14139,9 @@
 			/** @type {number} */ widthMask = this.widthMask,
 			/** @type {number} */ heightMask = this.heightMask,
 
+			// dying state for Generations
+			/** @type {number} */ dyingState = this.multiNumStates + this.historyStates - 2,
+
 			// number of cells cleared
 			/** @type {number} */ cleared = 0;
 
@@ -14156,6 +14154,10 @@
 		if (grid16[y][x >> 4] & (1 << (~x & 15))) {
 			grid16[y][x >> 4] &= ~(1 << (~x & 15));
 			cleared += 1;
+
+			if (this.multiNumStates !== -1) {
+				colourGrid[y][x] = dyingState;
+			}
 		}
 
 		// keep going until all cells processed
@@ -14189,6 +14191,9 @@
 							// remove the cell
 							grid16[ty][tx >> 4] &= ~(1 << (~tx & 15));
 							cleared += 1;
+							if (this.multiNumStates !== -1) {
+								colourGrid[ty][tx] = dyingState;
+							}
 
 							// stack the cell
 							if (index === end) {
@@ -14231,7 +14236,7 @@
 	};
 
 	// remove pattern at top or bottom
-	Life.prototype.removePatternY = function(/** @type {number} */ x16, /** @type {number} */ y, /** @type {Array<Uint16Array>} */ grid16) {
+	Life.prototype.removePatternY = function(/** @type {number} */ x16, /** @type {number} */ y, /** @type {Array<Uint16Array>} */ grid16, /** @type {Array<Uint8Array>} */ colourGrid) {
 		// source word
 		var	/** @type {number} */ source = grid16[y][x16],
 
@@ -14241,34 +14246,35 @@
 		while (x >= 0) {
 			if ((source & (1 << x)) !== 0) {
 				// remove pattern
-				this.removePattern((x16 << 4) + (~x & 15), y, grid16);
+				this.removePattern((x16 << 4) + (~x & 15), y, grid16, colourGrid);
 			}
 			x -= 1;
 		}
 	};
 
 	// remove pattern at left
-	Life.prototype.removePatternLeft = function(/** @type {number} */ x16, /** @type {number} */ y, /** @type {Array<Uint16Array>} */ grid16) {
+	Life.prototype.removePatternLeft = function(/** @type {number} */ x16, /** @type {number} */ y, /** @type {Array<Uint16Array>} */ grid16, /** @type {Array<Uint8Array>} */ colourGrid) {
 		// compute starting x
 		var	/** @type {number} */ x = (x16 << 4);
 
 		// remove pattern
-		this.removePattern(x, y, grid16);
+		this.removePattern(x, y, grid16, colourGrid);
 	};
 
 	// remove pattern at right
-	Life.prototype.removePatternRight = function(/** @type {number} */ x16, /** @type {number} */ y, /** @type {Array<Uint16Array>} */ grid16) {
+	Life.prototype.removePatternRight = function(/** @type {number} */ x16, /** @type {number} */ y, /** @type {Array<Uint16Array>} */ grid16, /** @type {Array<Uint8Array>} */ colourGrid) {
 		// compute starting x
 		var	/** @type {number} */ x = (x16 << 4) + 15;
 
 		// remove pattern
-		this.removePattern(x, y, grid16);
+		this.removePattern(x, y, grid16, colourGrid);
 	};
 
 	// remove patterns that touch the boundary
 	Life.prototype.clearGridBoundary = function() {
 		// 16bit view of grid
 		var	/** @type {Array<Uint16Array>} */ grid16 = null,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 
 			// height and width
 			/** @type {number} */ ht = 0,
@@ -14308,12 +14314,12 @@
 		while (w < wt) {
 			// check the top row
 			if (topGridRow[w]) {
-				this.removePatternY(w, 0, grid16);
+				this.removePatternY(w, 0, grid16, colourGrid);
 			}
 
 			// check the bottom row
 			if (bottomGridRow[w]) {
-				this.removePatternY(w, ht - 1, grid16);
+				this.removePatternY(w, ht - 1, grid16, colourGrid);
 			}
 
 			// next column
@@ -14325,12 +14331,12 @@
 		while (h < ht) {
 			// check the left column
 			if ((grid16[h][0] & leftMask) !== 0) {
-				this.removePatternLeft(0, h, grid16);
+				this.removePatternLeft(0, h, grid16, colourGrid);
 			}
 
 			// check the right column
 			if ((grid16[h][wt - 1] & rightMask) !== 0) {
-				this.removePatternRight(wt - 1, h, grid16);
+				this.removePatternRight(wt - 1, h, grid16, colourGrid);
 			}
 
 			// next row

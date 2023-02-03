@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 870,
+		/** @const {number} */ versionBuild : 873,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -7203,7 +7203,7 @@
 				}
 			}
 		}
-		if (me.startFromTiming === -1) {
+		if (me.startFromTiming === -1 && me.engine.population !== 0) {
 			me.menuManager.notification.clear(false, false);
 		}
 		me.afterEdit("");
@@ -7217,9 +7217,7 @@
 		var	/** @type {number} */ startTime = performance.now(),
 
 			// time budget in ms for this frame
-			/** @type {number} */ timeLimit = 13,
-			/** @type {number} */ saveBirths = 0,
-			/** @type {number} */ saveDeaths = 0;
+			/** @type {number} */ timeLimit = 13;
 
 		// lock the menu
 		me.viewMenu.locked = true;
@@ -17895,6 +17893,9 @@
 
 			// copy states used and state count
 			numberValue = me.engine.multiNumStates === -1 ? 2 : me.engine.multiNumStates;
+			if (me.engine.isLifeHistory) {
+				numberValue = 7;
+			}
 			me.patternStateCount = new Uint32Array(numberValue);
 
 			for (i = 0; i < numberValue; i += 1) {
@@ -18754,16 +18755,22 @@
 			// reset population
 			me.engine.resetPopulationBox(me.engine.grid16, me.engine.colourGrid);
 
-			// count non-zero states
+			// count non-zero states (excluding dead cells)
 			stateCount = 0;
 			numStatesForRule = me.engine.multiNumStates;
-			if (numStatesForRule === -1) {
-				numStatesForRule = 2;
+			if (me.engine.isLifeHistory) {
+				numStatesForRule = 7;
+			} else {
+				if (numStatesForRule === -1) {
+					numStatesForRule = 2;
+				}
 			}
+
 			for (i = 1; i < numStatesForRule; i += 1) {
 				stateCount += me.patternStateCount[i];
 			}
 
+			// display message if pattern is too big or has no alive cells
 			if (pattern && me.engine.population === 0 && !me.isPasteEvery) {
 				me.emptyStart = true;
 				if (stateCount === 0) {

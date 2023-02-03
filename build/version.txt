@@ -1,3 +1,14 @@
+Build 873
+- don't display GRIDMAJOR colour in Help->Themes if GRIDMAJOR is 0
+
+Build 872
+- don't display "New Pattern" unless there are alive cells in the pattern
+- updated MCell Theme
+- fixed Generations patterns being deleted at the grid border
+
+Build 871
+- ensure "none" rules report neighbourhood as "none"
+
 Build 870
 - fixed random cell generation for PCA rules
 
