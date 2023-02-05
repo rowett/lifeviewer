@@ -1802,12 +1802,13 @@
 		y = this.renderHelpLine(view, "N'hoods", "Moore, Hexagonal, von Neumann, Triangular, 1D,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Circular, Cross, L2, Saltire, Star, Checkerboard,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Aligned Checkerboard, Hash, Tripod, Asterisk,", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Far Corners/Edges and Custom (CoordCA)", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Far Corners/Edges, Custom (CoordCA),", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Gaussian and Weighted", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Rules", "Wolfram, Totalistic, Generations, Margolus,", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Isotropic Non-Totalistic (Hensel, Callahan),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Alternating, MAP, Larger than Life (LtL),", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Higher-range outer-totalistic (HROT), Gaussian,", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "Partitioned cellular automata (PCA), Weighted,", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Higher-range outer-totalistic (HROT),", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "Partitioned cellular automata (PCA),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "[R]History, [R]Super and Non-Deterministic", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Repository", "RuleTable (@TABLE, @TREE, @COLORS and", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "@NAMES)", ctx, x, y, height, helpLine);

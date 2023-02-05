@@ -6001,7 +6001,7 @@
 					this.engine.saveSnapshotIfNeeded(me);
 
 					// if no theme history then set anything alive from population
-					if (!me.engine.themeHistory && me.engine.population === 0) {
+					if (me.engine.themeHistory && me.engine.population === 0) {
 						me.engine.anythingAlive = 0;
 					}
 
@@ -6048,7 +6048,7 @@
 				}
 
 				// check if life just stopped
-				if (!me.engine.anythingAlive) {
+				if (me.engine.population === 0) {
 					// set fade interval
 					me.fading = me.historyStates + (me.engine.multiNumStates > 0 ? me.engine.multiNumStates : 0);
 
@@ -7248,7 +7248,7 @@
 			}
 
 			// check if life just stopped
-			if (!me.engine.anythingAlive) {
+			if (me.engine.population === 0) {
 				// set fade interval
 				me.fading = me.historyStates + (me.engine.multiNumStates > 0 ? me.engine.multiNumStates : 0);
 
@@ -7373,7 +7373,7 @@
 			}
 
 			// check if life just stopped
-			if (!me.engine.anythingAlive) {
+			if (me.engine.population === 0) {
 				// set fade interval
 				me.fading = me.historyStates + (me.engine.multiNumStates > 0 ? me.engine.multiNumStates : 0);
 

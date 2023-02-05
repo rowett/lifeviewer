@@ -1,8 +1,10 @@
 Build 873
+- fixed "Life ended at" message for Generations patterns
 - don't display GRIDMAJOR colour in Help->Themes if GRIDMAJOR is 0
+- updated Help->Info->Engine
 
 Build 872
-- don't display "New Pattern" unless there are alive cells in the pattern
+- only display "New Pattern" when there are no cells in the pattern
 - updated MCell Theme
 - fixed Generations patterns being deleted at the grid border
 
