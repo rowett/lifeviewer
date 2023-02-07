@@ -124,6 +124,42 @@
 		return result;
 	};
 
+	// render an icon on a line of help text
+	Help.renderIcon = function(/** @type {View} */ view, /** @type {number} */ state, /** @type {number} */ iconSize, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ startLine) {
+		// line number
+		var	/** @type {number} */ lineNo = view.lineNo,
+			/** @type {string} */ currentFill;
+
+		// only render if context exists
+		if (ctx) {
+			// reduce height to create a 1 pixel border
+			height -= 6;
+
+			// check if the line is on the page
+			if (lineNo >= startLine && lineNo <= (startLine + view.numHelpPerPage)) {
+				// remember the current fill style
+				currentFill = /** @type {!string} */ (ctx.fillStyle);
+
+				// check if drawing shadow
+				if (this.shadowX === 0) {
+					// draw the icon
+					ctx.save();
+					ctx.imageSmoothingEnabled = true;
+					ctx.translate(x, y - (height >> 1) - 1);
+					ctx.scale(height / iconSize, height / iconSize);
+					ctx.drawImage(view.engine.cellIconImage, 0, (iconSize + 1) * state, iconSize, iconSize, 0, 0, iconSize, iconSize);
+					ctx.restore();
+				} else {
+					// draw the icon shadow
+					ctx.fillRect(x + 2, y - (height >> 1) - 1 + 2, height, height);
+				}
+
+				// reset the colour to the help font colour
+				ctx.fillStyle = currentFill;
+			}
+		}
+	};
+
 	// render a colour box on a line of help text
 	Help.renderColourBox = function(/** @type {View} */ view, /** @type {number} */ red, /** @type {number} */ green, /** @type {number} */ blue, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ startLine) {
 		// line number
@@ -141,7 +177,7 @@
 				currentFill = /** @type {!string} */ (ctx.fillStyle);
 
 				// check if drawing shadow
-				if (currentFill !== view.menuManager.bgColHex) {
+				if (this.shadowX === 0) {
 					// set the box colour and draw it
 					ctx.fillStyle = "rgb(" + red + "," + green + "," + blue + ")";
 					ctx.fillRect(x, y - (height >> 1) - 1, height, height);
@@ -1333,6 +1369,8 @@
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ value = 0,
+			/** @type {number} */ iconWidth = 0,
+			/** @type {number} */ iconHeight = 0,
 
 			// flag
 			/** @type {boolean} */ flag = false,
@@ -1581,11 +1619,24 @@
 			if (view.engine.ruleTableIcons[0].builtIn !== PatternConstants.ruleTableIconNone) {
 				y = this.renderHelpLine(view, "Icons", PatternConstants.ruleTableIconNames[view.engine.ruleTableIcons[0].builtIn], ctx, x, y, height, helpLine);
 			} else {
+				// draw the @ICONS information
 				y = this.renderHelpLine(view, "Icons", "Size\tNumber\tColours\tGrayScale", ctx, x, y, height, helpLine);
 				for (i = 0; i < view.engine.ruleTableIcons.length; i += 1) {
 					value = view.engine.ruleTableIcons[i].width;
 					itemName = value + "x" + value + "\t" + view.engine.ruleTableIcons[i].height / value + "\t" + view.engine.ruleTableIcons[i].numColours + "\t" + (view.engine.ruleTableIcons[i].greyScale ? "Yes" : "No");
 					y = this.renderHelpLine(view, "  Set " + i, itemName, ctx, x, y, height, helpLine);
+				}
+
+				// draw the Icons
+				if (view.engine.cellIconImage) {
+					iconHeight = view.engine.ruleTableIcons[0].height;
+					iconWidth = view.engine.ruleTableIcons[0].width;
+	
+					for (j = 0; j < iconHeight / iconWidth; j += 1) {
+						this.renderIcon(view, j, iconWidth, ctx, x + view.tabs[0] * xScale, y, height, helpLine);
+						itemName = view.getStateName(j);
+						y = this.renderHelpLine(view, "Icon " + j, "      " + itemName, ctx, x, y, height, helpLine);
+					}
 				}
 			}
 		}
@@ -2187,6 +2238,16 @@
 		y = this.renderHelpLine(view, "Death Color", this.rgbString(view.engine.graphDeathColor[0], view.engine.graphDeathColor[1], view.engine.graphDeathColor[2]), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
+		// starfield information
+		view.helpSections[sectionNum] = [view.lineNo, "Stars"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Stars:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Enabled", view.starsOn ? "On" : "Off", ctx, x, y, height, helpLine);
+
+		this.renderColourBox(view, view.starField.starColour.red, view.starField.starColour.green, view.starField.starColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Color", this.rgbObjectString(view.starField.starColour), ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		// random parameter information
 		view.helpSections[sectionNum] = [view.lineNo, "Randomize"];
 		sectionNum += 1;
@@ -2234,16 +2295,6 @@
 				}
 			}
 		}
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-
-		// starfield information
-		view.helpSections[sectionNum] = [view.lineNo, "Stars"];
-		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Stars:", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Enabled", view.starsOn ? "On" : "Off", ctx, x, y, height, helpLine);
-
-		this.renderColourBox(view, view.starField.starColour.red, view.starField.starColour.green, view.starField.starColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Color", this.rgbObjectString(view.starField.starColour), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// script information
@@ -2424,7 +2475,11 @@
 				}
 
 				// major grid line interval
-				y = this.renderHelpLine(view, "GRIDMAJOR", theme.gridMajor, ctx, x, y, height, helpLine);
+				if (view.engine.isMargolus && theme.gridMajor > 0) {
+					y = this.renderHelpLine(view, "GRIDMAJOR", 2, ctx, x, y, height, helpLine);
+				} else {
+					y = this.renderHelpLine(view, "GRIDMAJOR", theme.gridMajor, ctx, x, y, height, helpLine);
+				}
 			}
 		} else {
 			if (view.engine.isPCA) {

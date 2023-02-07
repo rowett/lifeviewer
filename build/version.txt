@@ -1,3 +1,15 @@
+Build 875
+- ensure PCA rules continue to process history when all alive cells die
+- don't persist PCA state colour
+- fixed setting PCA state colour with a number not creating a Custom Theme
+- fixed issue with Help showing colours boxes or icons when UIBACKGROUND and HELP colours are the same
+
+Build 874
+- fixed "Life ended at" message when Step Back causes cells to become alive after all dead
+- show @ICONS definitions in Help->Info->Pattern
+- moved Help->Info->Stars above Help->Info->Randomize
+- Help->Info->Themes now correctly shows GRIDMAJOR as 2 for Margolus Themes that have a non-zero GRIDMAJOR
+
 Build 873
 - fixed "Life ended at" message for Generations patterns
 - don't display GRIDMAJOR colour in Help->Themes if GRIDMAJOR is 0

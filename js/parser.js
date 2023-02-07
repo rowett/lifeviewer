@@ -519,6 +519,13 @@
 			/** @type {Array<number>} */  themeValue = view.customThemeValue,
 			/** @type {number} */ i = 0;
 
+		// reset the custom theme to default
+		if (view.engine.isPCA) {
+			for (i = 0; i < 15; i += 1) {
+				customTheme.pcaCols[i].set(view.engine.themes[18].pcaCols[i]);
+			}
+		}
+
 		// if a theme is specified then copy it into the custom theme and override with custom elements
 		if (theme !== -1) {
 			customTheme.set(view.engine.themes[theme]);
@@ -2711,6 +2718,7 @@
 							stringToken = scriptReader.peekAtNextToken();
 							if (stringToken !== "") {
 								scriptReader.getNextToken();
+								x = -99999;
 
 								// check for random cells
 								if (stringToken === Keywords.randomCellsWord) {
@@ -3226,6 +3234,10 @@
 
 								// decode the rgb value
 								this.decodeRGB(view, scriptReader, scriptErrors, colNum, nextToken, badColour, colNum);
+
+								if (view.engine.isPCA) {
+									view.customTheme = true;
+								}
 							} else {
 								// check if it is a custom theme element
 								peekToken = scriptReader.peekAtNextToken();

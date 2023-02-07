@@ -8259,7 +8259,7 @@
 							// reading icon data
 							valid = false;
 							if (nextToken[nextToken.length - 1] === "\"" && ((nextToken.length - 2) === (width * charsPerPixel))) {
-								nextToken = nextToken.substring(1, nextToken.length - 2);
+								nextToken = nextToken.substring(1, nextToken.length - 1);
 								// check each pixel
 								i = 0;
 								valid = true;

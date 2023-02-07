@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 873,
+		/** @const {number} */ versionBuild : 874,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5941,6 +5941,11 @@
 		// compute next generation if required
 		deltaTime = 0;
 		if (me.nextStep) {
+			// always mark PCA as alive
+			if (me.engine.isPCA) {
+				me.engine.anythingAlive = 1;
+			}
+
 			// check if anything is alive
 			if (me.engine.anythingAlive) {
 				// get current time
@@ -6057,10 +6062,10 @@
 						me.diedGeneration = me.engine.counter;
 
 						// clear the bit grids
-						if (me.engine.isSuper) {
+						if (me.engine.isSuper || me.engine.isPCA) {
 							me.engine.anythingAlive = 1;
 						} else {
-							if (me.engine.isPCA || me.engine.isRuleTree) {
+							if (me.engine.isRuleTree) {
 								me.engine.clearGrids(false);
 							} else {
 								me.engine.clearGrids(true);
@@ -7260,7 +7265,8 @@
 					if (me.engine.isSuper) {
 						me.engine.anythingAlive = 1;
 					} else {
-						if (me.engine.isPCA || me.engine.isRuleTree) {
+						//if (me.engine.isPCA || me.engine.isRuleTree) {
+						if (me.engine.isRuleTree) {
 							me.engine.clearGrids(false);
 						} else {
 							me.engine.clearGrids(true);
@@ -7385,7 +7391,8 @@
 					if (me.engine.isSuper) {
 						me.engine.anythingAlive = 1;
 					} else {
-						if (me.engine.isPCA || me.engine.isRuleTree) {
+						//if (me.engine.isPCA || me.engine.isRuleTree) {
+						if (me.engine.isRuleTree) {
 							me.engine.clearGrids(false);
 						} else {
 							me.engine.clearGrids(true);
@@ -9488,8 +9495,17 @@
 							// adjust undo stack pointer
 							me.setUndoGen(me.engine.counter - me.gensPerStep);
 
+							// check current population
+							numChanged = me.engine.population;
+
 							// run from start to previous generation
 							me.runTo(me.engine.counter - me.gensPerStep);
+
+							// check if population was zero and is now non-zero after step back
+							if (numChanged === 0 && me.engine.population > 0) {
+								// reset died generation since cells are alive now
+								me.diedGeneration = -1;
+							}
 
 							// re-convert grid to colours so rainbow on/off works
 							if (me.engine.counter === 0) {
@@ -17716,6 +17732,9 @@
 
 		// clear was LtL
 		me.wasLtL = false;
+
+		// clear icons
+		me.engine.ruleTableIcons = null;
 
 		// check if the pattern was created successfully
 		if (pattern) {

@@ -1276,6 +1276,9 @@
 			/** @type {Uint32Array} */ data32 = null,
 			/** @type {CanvasRenderingContext2D} */ ctx = null;
 
+		// clear previous Icon Image
+		this.cellIconImage = null;
+
 		// get the icon definitions
 		this.ruleTableIcons = icons;
 
@@ -1285,7 +1288,8 @@
 		iconData = icons[0].iconData;
 		iconColours = icons[0].colours;
 
-		if (numIcons > 0) {
+		// for now only process size 31 icons TBD
+		if (numIcons > 0 && iconSize === 31) {
 			// create the cell icon canvas if it doesn't exist
 			if (this.cellIconCanvas === null) {
 				this.cellIconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
@@ -8161,7 +8165,7 @@
 							 new Colour(255, 0, 0), new Colour(192, 128, 48), new Colour(224, 255, 64), new Colour(128, 32, 64),
 							 new Colour(192, 96, 48), new Colour(255, 128, 64), new Colour(255, 224, 64), new Colour(192, 24, 48),
 							 new Colour(224, 128, 128), new Colour(255, 128, 112), new Colour(255, 255, 224)]);
-		this.themes[i].setGridLines(2, new Colour(32, 32, 255), new Colour(64, 64, 128));
+		this.themes[i].setGridLines(2, new Colour(64, 64, 128), new Colour(32, 32, 255));
 		i += 1;
 
 		// PCA theme
@@ -8278,8 +8282,8 @@
 		this.gridLineRaw  = newTheme.gridColour;
 		this.gridLineBoldRaw = newTheme.gridMajorColour;
 
-		// if the Theme is not custom and the pattern is Margolus then set grid major to 2
-		if (theme !== this.numThemes && this.isMargolus) {
+		// if the Theme is not custom and the pattern is Margolus then set grid major to 2 unless the Theme specifies it as zero
+		if (theme !== this.numThemes && this.isMargolus && newTheme.gridMajor !== 0) {
 			this.gridLineMajor = 2;
 		} else {
 			// copy grid line major interval from theme
