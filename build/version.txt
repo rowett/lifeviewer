@@ -1,8 +1,10 @@
 Build 875
 - ensure PCA rules continue to process history when all alive cells die
 - don't persist PCA state colour
-- fixed setting PCA state colour with a number not creating a Custom Theme
-- fixed issue with Help showing colours boxes or icons when UIBACKGROUND and HELP colours are the same
+- fixed setting state colour with a number or state name not creating a Custom Theme
+- fixed issue with Help displaying colour boxes or icons incorrectly when UIBACKGROUND and HELP colours are the same
+- fixed "Life ended at" message after Undo
+- fixed Mod calculation for HROT Generations patterns
 
 Build 874
 - fixed "Life ended at" message when Step Back causes cells to become alive after all dead

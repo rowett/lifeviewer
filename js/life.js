@@ -562,9 +562,6 @@
 		/** @type {number} */ this.originY = 0;
 		/** @type {number} */ this.originZ = 1;
 
-		// whether anything is alive
-		/** @type {number} */ this.anythingAlive = 0;
-
 		// bounded grid type
 		/** @type {number} */ this.boundedGridType = -1;
 
@@ -1276,8 +1273,9 @@
 			/** @type {Uint32Array} */ data32 = null,
 			/** @type {CanvasRenderingContext2D} */ ctx = null;
 
-		// clear previous Icon Image
+		// clear previous Icon Image and Canvas
 		this.cellIconImage = null;
+		this.cellIconCanvas = null;
 
 		// get the icon definitions
 		this.ruleTableIcons = icons;
@@ -1974,37 +1972,6 @@
 		}
 		hashX = x;
 		hashY = y;
-
-		// only check the pattern extent
-		if (!this.isSuper) {
-			if (x < zoomBox.leftX) {
-				x = zoomBox.leftX;
-			}
-			if (y < zoomBox.bottomY) {
-				y = zoomBox.bottomY;
-			}
-			if (right > zoomBox.rightX) {
-				right = zoomBox.rightX;
-			}
-			if (top > zoomBox.topY) {
-				top = zoomBox.topY;
-			}
-	
-			// merge with previous generation extent
-			if (lastZoomBox.leftX < x) {
-				x = lastZoomBox.leftX;
-			}
-			if (lastZoomBox.bottomY < y) {
-				y = lastZoomBox.bottomY;
-			}
-			if (lastZoomBox.rightX > right) {
-				right = lastZoomBox.rightX;
-			}
-			if (lastZoomBox.topY > top) {
-				top = lastZoomBox.topY;
-			}
-			lastZoomBox.set(zoomBox);
-		}
 
 		// create a hash from every alive cell
 		for (cy = y; cy <= top; cy += 1) {
@@ -2840,10 +2807,10 @@
 			// compute the next generation
 			this.nextGeneration(view.noHistory, view.graphDisabled, view.identify, view);
 			this.convertToPensTile();
-			this.saveSnapshotIfNeeded(view);
-
-			// paste any RLE snippets
 			view.pasteRLEList();
+			this.savePopulationData();
+
+			this.saveSnapshotIfNeeded(view);
 
 			// for alternating rules skip odd generations
 			if (!(this.altSpecified && ((this.counter & 1) !== 0))) {
@@ -5232,9 +5199,6 @@
 
 			// draw alive or dead
 			if (bitAlive) {
-				// mark a cell is alive
-				this.anythingAlive = 1;
-
 				// adjust population if cell was dead
 				if ((grid[y][x >> 4] & cellAsBit) === 0) {
 					this.population += 1;
@@ -5456,9 +5420,6 @@
 
 			// draw alive or dead
 			if (bitAlive) {
-				// mark a cell is alive
-				this.anythingAlive = 1;
-
 				// adjust population if cell was dead
 				if ((grid[y][x >> 4] & cellAsBit) === 0) {
 					this.population += 1;
@@ -5757,7 +5718,6 @@
 							}
 						}
 					} else {
-						this.anythingAlive = 1;
 						if (this.isPCA) {
 							if (current <= this.historyStates) {
 								this.population += this.bitCounts16[state];
@@ -5846,9 +5806,6 @@
 
 						// draw alive or dead
 						if (bitAlive) {
-							// mark a cell is alive
-							this.anythingAlive = 1;
-
 							// adjust population if cell was dead
 							if ((grid[y][x >> 4] & cellAsBit) === 0) {
 								this.population += 1;
@@ -5974,14 +5931,12 @@
 							aliveState = this.aliveStart;
 							if (state === 1) {
 								state = this.aliveStart;
-								this.anythingAlive = 1;
 							}
 							colourGrid[y][x] = state;
 						} else {
 							aliveState = this.multiNumStates - 1 + this.historyStates;
 							if (state > 0) {
 								state = this.historyStates + state;
-								this.anythingAlive = 1;
 							}
 							colourGrid[y][x] = state;
 						}
@@ -6465,116 +6420,27 @@
 			view.pasteRLEList();
 		}
 
-		// play from the snapshot counter to just before the target with stats off (for speed)
-		while (this.counter < targetGen - 1) {
-			if (this.anythingAlive) {
-				// check for reverse direction
-				this.checkReverse(view, this.counter);
+		// play from the snapshot counter to the target
+		while (this.counter < targetGen) {
+			// check for reverse direction
+			this.checkReverse(view, this.counter);
 
-				// for PCA clear the next generation
-				if (this.isPCA) {
-					if ((this.counter & 1) === 1) {
-						this.colourGrid.whole.fill(0);
-					} else {
-						this.nextColourGrid.whole.fill(0);
-					}
+			// for PCA clear the next generation
+			if (this.isPCA) {
+				if ((this.counter & 1) === 1) {
+					this.colourGrid.whole.fill(0);
+				} else {
+					this.nextColourGrid.whole.fill(0);
 				}
-
-				this.nextGeneration(true, graphDisabled, view.identify, view);
-				view.fixedPointCounter += view.refreshRate;
-				if (!(this.anythingAlive === 0 && this.multiNumStates > 2) || this.snapshotNeeded) {
-					this.convertToPensTile();
-				}
-				this.saveSnapshotIfNeeded(view);
-
-				// check for just died for 2 state patterns
-				if (this.anythingAlive === 0 && this.multiNumStates <= 2) {
-					// clear the other buffer
-					this.anythingAlive = 1;
-					this.checkReverse(view, this.counter);
-
-					// for PCA clear the next generation
-					if (this.isPCA) {
-						if ((this.counter & 1) === 1) {
-							this.colourGrid.whole.fill(0);
-						} else {
-							this.nextColourGrid.whole.fill(0);
-						}
-					}
-
-					this.nextGeneration(false, graphDisabled, view.identify, view);
-					this.anythingAlive = 0;
-					this.counter -= 1;
-					view.fixedPointCounter -= view.refreshRate;
-				}
-			} else {
-				this.counter += 1;
-				view.fixedPointCounter += view.refreshRate;
-				this.convertToPensTile();
-				this.saveSnapshotIfNeeded(view);
 			}
+
+			this.nextGeneration(true, graphDisabled, view.identify, view);
+			view.fixedPointCounter += view.refreshRate;
+			this.convertToPensTile();
 			view.pasteRLEList();
-		}
+			this.savePopulationData();
 
-		// compute the final generation with stats on if required
-		if (this.counter < targetGen) {
-			if (this.anythingAlive) {
-				this.checkReverse(view, this.counter);
-
-				// for PCA clear the next generation
-				if (this.isPCA) {
-					if ((this.counter & 1) === 1) {
-						this.colourGrid.whole.fill(0);
-					} else {
-						this.nextColourGrid.whole.fill(0);
-					}
-				}
-
-				this.nextGeneration(true, graphDisabled, view.identify, view);
-				view.fixedPointCounter += view.refreshRate;
-				if (!(this.anythingAlive === 0 && this.multiNumStates > 2) || this.snapshotNeeded) {
-					this.convertToPensTile();
-				}
-				this.saveSnapshotIfNeeded(view);
-
-				// check for just died for 2 state patterns
-				if (this.anythingAlive === 0 && this.multiNumStates <= 2) {
-					// clear the other buffer
-					this.anythingAlive = 1;
-					this.checkReverse(view, this.counter);
-
-					// for PCA clear the next generation
-					if (this.isPCA) {
-						if ((this.counter & 1) === 1) {
-							this.colourGrid.whole.fill(0);
-						} else {
-							this.nextColourGrid.whole.fill(0);
-						}
-					}
-
-					this.nextGeneration(false, graphDisabled, view.identify, view);
-					this.anythingAlive = 0;
-					this.counter -= 1;
-					view.fixedPointCounter -= view.refreshRate;
-				}
-			} else {
-				this.counter += 1;
-				view.fixedPointCounter += view.refreshRate;
-				this.convertToPensTile();
-				this.saveSnapshotIfNeeded(view);
-			}
-			view.pasteRLEList();
-		} else {
-			// for two state rules convert to pens once since colour grid was on previous generation when snapshot saved
-			//if (this.multiNumStates === -1 && this.counter > 0) {
-				//this.convertToPensTile();
-			//}
-		}
-
-		// if paste every is defined then always flag there are alive cells
-		// since cells will appear in the future
-		if (view.isPasteEvery) {
-			this.anythingAlive = 1;
+			this.saveSnapshotIfNeeded(view);
 		}
 	};
 
@@ -6656,9 +6522,6 @@
 		this.population = snapshot.population;
 		this.births = snapshot.births;
 		this.deaths = snapshot.deaths;
-
-		// restore the alive flags
-		this.anythingAlive = snapshot.anythingAlive;
 	};
 
 	// save snapshot
@@ -6707,7 +6570,7 @@
 		}
 
 		// create the snapshot
-		this.snapshotManager.saveSnapshot(grid, tileGrid, colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.colourTileHistoryGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, view.fixedPointCounter, this.counterMargolus, this.maxMargolusGen, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset, this.anythingAlive);
+		this.snapshotManager.saveSnapshot(grid, tileGrid, colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.colourTileHistoryGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, view.fixedPointCounter, this.counterMargolus, this.maxMargolusGen, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset);
 	};
 
 	// save grid
@@ -7150,7 +7013,7 @@
 			/** @type {boolean} */ result = false;
 
 		// check if already at maximum size
-		if ((width < this.maxGridSize || height < this.maxGridSize) && this.anythingAlive) {
+		if ((width < this.maxGridSize || height < this.maxGridSize) && this.population > 0) {
 			// check bounding box
 			if (width < this.maxGridSize && (box.leftX <= maxStep || box.rightX >= (width - maxStep))) {
 				growX = true;
@@ -13450,7 +13313,6 @@
 		if (!this.isNone) {
 			this.processNextGen(noHistory, graphDisabled, identify, view);
 		} else {
-			this.anythingAlive = 1;
 			this.counter += 1;
 		}
 	};
@@ -13480,32 +13342,29 @@
 			this.state6Pre();
 		}
 
-		// check if any bitmap cells are alive
-		if (this.anythingAlive) {
-			// check for RuleTable rule
-			if (this.isRuleTree) {
-				if (this.ruleTableOutput === null) {
-					this.nextGenerationRuleTreeTile();
-				} else {
-					this.nextGenerationRuleTableTile();
-				}
+		// check for RuleTable rule
+		if (this.isRuleTree) {
+			if (this.ruleTableOutput === null) {
+				this.nextGenerationRuleTreeTile();
 			} else {
-				if (this.isPCA) {
-					this.nextGenerationPCATile();
+				this.nextGenerationRuleTableTile();
+			}
+		} else {
+			if (this.isPCA) {
+				this.nextGenerationPCATile();
+			} else {
+				if (this.isHROT) {
+					// compute HROT next generation
+					this.HROT.nextGenerationHROT(this.counter);
 				} else {
-					if (this.isHROT) {
-						// compute HROT next generation
-						this.HROT.nextGenerationHROT(this.counter);
+					// stats are required if they are on but not for multi-state rules which compute their own stats
+					if (this.isMargolus) {
+						this.nextGenerationMargolusTile();
 					} else {
-						// stats are required if they are on but not for multi-state rules which compute their own stats
-						if (this.isMargolus) {
-							this.nextGenerationMargolusTile();
+						if (this.isTriangular) {
+							this.nextGenerationTriTile();
 						} else {
-							if (this.isTriangular) {
-								this.nextGenerationTriTile();
-							} else {
-								this.nextGenerationTile();
-							}
+							this.nextGenerationTile();
 						}
 					}
 				}
@@ -13536,11 +13395,6 @@
 		// perform super processing
 		if (this.isSuper) {
 			this.nextGenerationSuperTile();
-			this.anythingAlive = 0;
-			if (this.population > 0) {
-				// bitmap population may have been zero
-				this.anythingAlive = 1;
-			}
 		}
 
 		// check if state 6 is on
@@ -13567,9 +13421,6 @@
 				// clear grid boundary
 				if (this.isHROT) {
 					this.clearHRBoundary();
-					if (this.population === 0) {
-						this.anythingAlive = 0;
-					}
 				} else {
 					// clear bit grid boundary (and Generations alive states too)
 					this.clearGridBoundary();
@@ -13590,10 +13441,16 @@
 		if (zoomBox.topY > historyBox.topY) {
 			historyBox.topY = zoomBox.topY;
 		}
+	};
+
+	// save population data
+	Life.prototype.savePopulationData = function() {
+		var	/** @type {number} */ popChunk = this.counter >> LifeConstants.popChunkPower,
+			/** @type {number} */ popOffset = this.counter & ((1 << LifeConstants.popChunkPower) - 1);
+
 
 		// update population graph
 		if (this.counter < LifeConstants.maxPopSamples) {
-			this.savePopulationData(this.population, this.births, this.deaths);
 			if (this.population > this.maxPopValue) {
 				this.maxPopValue = this.population;
 			}
@@ -13603,26 +13460,20 @@
 			if (this.deaths > this.maxPopValue) {
 				this.maxPopValue = this.deaths;
 			}
-		}
-	};
 
-	// save population data
-	Life.prototype.savePopulationData = function(/** @type {number} */ population, /** @type {number} */ births, /** @type {number} */ deaths) {
-		var	/** @type {number} */ popChunk = this.counter >> LifeConstants.popChunkPower,
-			/** @type {number} */ popOffset = this.counter & ((1 << LifeConstants.popChunkPower) - 1);
-
-		if (this.popGraphData && this.popGraphData.length > 0) {
-			// see if a new chunk needs to be allocated
-			if (this.counter >= this.popGraphEntries) {
-				// allocate new chunk
-				Array.addRow(this.popGraphData, 0, "Life.popGraphData");
-				Array.addRow(this.birthGraphData, 0, "Life.birthGraphData");
-				Array.addRow(this.deathGraphData, 0, "Life.deathGraphData");
-				this.popGraphEntries += (1 << LifeConstants.popChunkPower);
+			if (this.popGraphData && this.popGraphData.length > 0) {
+				// see if a new chunk needs to be allocated
+				if (this.counter >= this.popGraphEntries) {
+					// allocate new chunk
+					Array.addRow(this.popGraphData, 0, "Life.popGraphData");
+					Array.addRow(this.birthGraphData, 0, "Life.birthGraphData");
+					Array.addRow(this.deathGraphData, 0, "Life.deathGraphData");
+					this.popGraphEntries += (1 << LifeConstants.popChunkPower);
+				}
+				this.popGraphData[popChunk][popOffset] = this.population;
+				this.birthGraphData[popChunk][popOffset] = this.births;
+				this.deathGraphData[popChunk][popOffset] = this.deaths;
 			}
-			this.popGraphData[popChunk][popOffset] = population;
-			this.birthGraphData[popChunk][popOffset] = births;
-			this.deathGraphData[popChunk][popOffset] = deaths;
 		}
 	};
 
@@ -19931,9 +19782,6 @@
 			/** @const {number} */ alive9or11 = (1 << 9) | (1 << 11),
 			/** @const {number} */ alive1or3or5or13or15or17or19or21or23or25 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
 
-		// clear anything alive
-		this.anythingAlive = 0;
-
 		// select the correct grid
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextGrid16;
@@ -20258,9 +20106,7 @@
 									cr += 1;
 								}
 
-								// update alive status
-								this.anythingAlive |= nextCell;
-								this.anythingAlive |= colOccupied;  // ensure patterns with just dead cells continue generating
+								// next row
 								rowIndex >>= 1;
 							}
 							columnOccupied16[leftX] |= colOccupied;
@@ -20450,9 +20296,6 @@
 			/** @const {number} */ alive13or15or17or19or21or23or25 = (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
 			/** @const {number} */ alive9or11 = (1 << 9) | (1 << 11),
 			/** @const {number} */ alive1or3or5or13or15or17or19or21or23or25 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
-
-		// clear anything alive
-		this.anythingAlive = 0;
 
 		// select the correct grid
 		if ((this.counter & 1) !== 0) {
@@ -20773,9 +20616,7 @@
 									cr += 1;
 								}
 
-								// update alive status
-								this.anythingAlive |= nextCell;
-								this.anythingAlive |= colOccupied;  // ensure patterns with just dead cells continue generating
+								// bext row
 								rowIndex >>= 1;
 							}
 							columnOccupied16[leftX] |= colOccupied;
@@ -20965,9 +20806,6 @@
 			/** @const {number} */ alive13or15or17or19or21or23or25 = (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
 			/** @const {number} */ alive9or11 = (1 << 9) | (1 << 11),
 			/** @const {number} */ alive1or3or5or13or15or17or19or21or23or25 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
-
-		// clear anything alive
-		this.anythingAlive = 0;
 
 		// select the correct grid
 		if ((this.counter & 1) !== 0) {
@@ -21263,9 +21101,7 @@
 									colIndex >>= 1;
 								}
 
-								// update alive status
-								this.anythingAlive |= nextCell;
-								this.anythingAlive |= colOccupied;  // ensure patterns with just dead cells continue generating
+								// next row
 								rowIndex >>= 1;
 							}
 
@@ -21438,9 +21274,6 @@
 
 			// minimum dead state number
 			/** @type {number} */ minDeadState = (this.historyStates > 0 ? 1 : 0);
-
-		// clear anything alive
-		this.anythingAlive = 0;
 
 		// select the correct grid
 		if ((this.counter & 1) !== 0) {
@@ -21653,7 +21486,6 @@
 
 								// save the updated state 1 cells to the bitmap
 								gridRow[leftX] = nextCell;
-								this.anythingAlive |= nextCell;
 								rowIndex >>= 1;
 							}
 							columnOccupied16[leftX] |= colOccupied;
@@ -21880,7 +21712,7 @@
 					}
 				}
 			} else {
-				if (!this.anythingAlive) {
+				if (this.population === 0) {
 					this.generationsDecayOnly();
 				}
 			}
@@ -21889,7 +21721,6 @@
 				// only supported for 2-state patterns
 				if (this.multiNumStates === -1) {
 					this.clearEscapingGliders();
-					this.anythingAlive = this.population;
 				}
 			}
 		}
@@ -22626,7 +22457,6 @@
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
-		this.anythingAlive = population;
 	};
 
 	// update the life grid region using tiles for von Neumann RuleTable patterns
@@ -23240,7 +23070,6 @@
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
-		this.anythingAlive = population;
 	};
 
 	// update the life grid region using tiles for Moore RuleTable patterns
@@ -23903,7 +23732,6 @@
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
-		this.anythingAlive = population;
 	};
 
 	// update the life grid region using tiles for hexagonal RuleTable patterns
@@ -24545,7 +24373,6 @@
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
-		this.anythingAlive = population;
 	};
 
 	// update the life grid using tiles for RuleTree patterns
@@ -26050,7 +25877,6 @@
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
-		this.anythingAlive = population;
 	};
 
 	// update the life grid region using tiles for Moore RuleTree patterns
@@ -27654,7 +27480,6 @@
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
-		this.anythingAlive = population;
 	};
 
 	// update the life grid region using tiles for von Neumann RuleTree patterns using array for 1bit states
@@ -28509,7 +28334,6 @@
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
-		this.anythingAlive = population;
 	};
 
 	// update the life grid region using tiles for von Neumann RuleTree patterns using array for 2bit states
@@ -29364,7 +29188,6 @@
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
-		this.anythingAlive = population;
 	};
 
 	// update the life grid region using tiles for von Neumann RuleTree patterns using array for 3bit states
@@ -30219,7 +30042,6 @@
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
-		this.anythingAlive = population;
 	};
 
 	// update the life grid region using tiles for von Neumann RuleTree patterns using array for 4bit states
@@ -31074,7 +30896,6 @@
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
-		this.anythingAlive = population;
 	};
 
 	// next generation for PCA rules
@@ -31150,9 +30971,6 @@
 			this.reverseMargolus = !this.reverseMargolus;
 			this.reversePending = false;
 		}
-
-		// clear anything alive
-		this.anythingAlive = 0;
 
 		// select the correct grid
 		if ((this.counter & 1) !== 0) {
@@ -31313,7 +31131,6 @@
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
-		this.anythingAlive = population;
 
 		// update bounding boxes
 		historyBox.leftX = nLeftX;
@@ -31368,9 +31185,6 @@
 			// starting and ending tile row
 			/** @type {number} */ tileStartRow = 0,
 			/** @type {number} */ tileEndRow = tileRows;
-
-		// clear anything alive
-		this.anythingAlive = 0;
 
 		// select the correct grid
 		if ((this.counter & 1) !== 0) {
@@ -31472,9 +31286,6 @@
 				// save the tile group
 				colourTileRow[tw] = nextTiles;
 				colourTileHistoryRow[tw] |= nextTiles;
-				if (nextTiles) {
-					this.anythingAlive = 1;
-				}
 			}
 
 			// next tile row
@@ -31527,9 +31338,6 @@
 			// starting and ending tile row
 			/** @type {number} */ tileStartRow = 0,
 			/** @type {number} */ tileEndRow = tileRows;
-
-		// clear anything alive
-		this.anythingAlive = 0;
 
 		// select the correct grid
 		if ((this.counter & 1) !== 0) {
@@ -31589,7 +31397,6 @@
 
 								// process each 16bit chunk (16 cells) along the row
 								nextCell = gridRow[leftX];
-								this.anythingAlive |= nextCell;
 
 								// lookup next colour
 								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 32768) >> 8) | ((nextCell & 16384) << 1)];
@@ -31707,9 +31514,6 @@
 			/** @type {number} */ tileStartRow = 0,
 			/** @type {number} */ tileEndRow = tileRows;
 
-		// clear anything alive
-		this.anythingAlive = 0;
-
 		// select the correct grid
 		if ((this.counter & 1) !== 0) {
 			grid = this.nextGrid16;
@@ -31768,9 +31572,6 @@
 
 								// process each 16bit chunk (16 cells) along the row
 								nextCell = gridRow[leftX];
-
-								// determine if anything is alive on the grid
-								this.anythingAlive |= nextCell;
 
 								// lookup next colour
 								value16 = colourLookup[((nextCell & 49152) >> 7) | ((h + cr + cr) & 127)];

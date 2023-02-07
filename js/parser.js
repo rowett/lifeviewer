@@ -3235,9 +3235,8 @@
 								// decode the rgb value
 								this.decodeRGB(view, scriptReader, scriptErrors, colNum, nextToken, badColour, colNum);
 
-								if (view.engine.isPCA) {
-									view.customTheme = true;
-								}
+								// mark the Theme as custom
+								view.customTheme = true;
 							} else {
 								// check if it is a custom theme element
 								peekToken = scriptReader.peekAtNextToken();
@@ -3461,9 +3460,7 @@
 									// decode the rgb value
 									if (colNum !== -1) {
 										this.decodeRGB(view, scriptReader, scriptErrors, colNum, nextToken, badColour, peekToken);
-										if (view.engine.isPCA) {
-											view.customTheme = true;
-										}
+										view.customTheme = true;
 									}
 
 									// illegal colour element

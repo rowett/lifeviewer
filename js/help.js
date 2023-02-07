@@ -427,7 +427,7 @@
 			/** @type {string} */ result = "";
 
 		// check if any cells are alive
-		if (view.engine.anythingAlive) {
+		if (view.engine.population > 0) {
 			// cells alive so get dimensions from bounding box
 			width = view.engine.zoomBox.rightX - view.engine.zoomBox.leftX + 1;
 			height = view.engine.zoomBox.topY - view.engine.zoomBox.bottomY + 1;

@@ -40,9 +40,6 @@
 		/** @type {number} */ this.counterMargolus = 0;
 		/** @type {number} */ this.maxMargolusGen = 0;
 
-		// anything alive
-		/** @type {number} */ this.anythingAlive = 0;
-
 		// manager
 		/** @type {SnapshotManager} */ this.manager = manager;
 	}
@@ -1398,7 +1395,7 @@
 
 	// save snapshot
 	SnapshotManager.prototype.saveSnapshot = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tileGrid, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Array<Uint16Array>} */ colourTileGrid, /** @type {Array<Uint8Array>} */ overlayGrid, /** @type {Array<Uint16Array>} */ overlayTileGrid, /** @type {BoundingBox} */ zoomBox, /** @type {BoundingBox} */ HROTBox, /** @type {number} */ population, /** @type {number} */ births, /** @type {number} */ deaths,
-		/** @type {number} */ counter, /** @type {number} */ fixedCounter, /** @type {number} */ counterMargolus, /** @type {number} */ maxMargolusGen, /** @type {number} */ width, /** @type {number} */ height, life, /** @type {boolean} */ isReset, /** @type {number} */ anythingAlive) {
+		/** @type {number} */ counter, /** @type {number} */ fixedCounter, /** @type {number} */ counterMargolus, /** @type {number} */ maxMargolusGen, /** @type {number} */ width, /** @type {number} */ height, /** @type {Life} */ life, /** @type {boolean} */ isReset) {
 		var	/** @type {Snapshot} */ snapshot = null,
 			/** @type {number} */ i = 0,
 			/** @type {boolean} */ usingOverlay = (overlayGrid !== null);
@@ -1438,9 +1435,6 @@
 				snapshot = this.snapshots[this.index];
 			}
 		}
-
-		// save the alive flags
-		snapshot.anythingAlive = anythingAlive;
 
 		// save the grid
 		snapshot.saveGridUsingTile(grid, tileGrid, life);

@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 874,
+		/** @const {number} */ versionBuild : 875,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1378,9 +1378,6 @@
 		// number of script commands and errors
 		/** @type {number} */ this.numScriptCommands = 0;
 		/** @type {number} */ this.numScriptErrors = 0;
-
-		// number of frames when fading after stop
-		/** @type {number} */ this.fading = 0;
 
 		// maximum width due to code element
 		/** @type {number} */ this.maxCodeWidth = ViewConstants.maxViewerWidth;
@@ -2655,8 +2652,11 @@
 
 		// do nothing if step back disabled
 		if (!me.noHistory) {
+			// clear died generation
+			me.diedGeneration = -1;
+
 			// stop playback
-			if (this.generationOn) {
+			if (me.generationOn) {
 				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 
 				// stopping playback will have added an undo record
@@ -2731,14 +2731,14 @@
 			}
 
 			// update tooltips
-			this.updateUndoToolTips();
+			me.updateUndoToolTips();
 
 			// check if shrink needed
-			this.engine.doShrink();
+			me.engine.doShrink();
 
 			// update state 6 grid
-			if (this.engine.isLifeHistory) {
-				this.engine.populateState6MaskFromColGrid();
+			if (me.engine.isLifeHistory) {
+				me.engine.populateState6MaskFromColGrid();
 			}
 		}
 	};
@@ -2799,14 +2799,14 @@
 			}
 
 			// update tooltips
-			this.updateUndoToolTips();
+			me.updateUndoToolTips();
 
 			// check if shrink needed
-			this.engine.doShrink();
+			me.engine.doShrink();
 
 			// update state 6 grid
-			if (this.engine.isLifeHistory) {
-				this.engine.populateState6MaskFromColGrid();
+			if (me.engine.isLifeHistory) {
+				me.engine.populateState6MaskFromColGrid();
 			}
 		}
 	};
@@ -3934,12 +3934,6 @@
 					}
 				}
 			}
-		}
-
-		// if paste every is defined then always flag there are alive cells
-		// since cells will appear in the future
-		if (this.isPasteEvery || counter <= this.maxPasteGen) {
-			this.engine.anythingAlive = 1;
 		}
 
 		// paste any edits
@@ -5941,229 +5935,128 @@
 		// compute next generation if required
 		deltaTime = 0;
 		if (me.nextStep) {
-			// always mark PCA as alive
-			if (me.engine.isPCA) {
-				me.engine.anythingAlive = 1;
-			}
+			// get current time
+			currentTime = performance.now();
 
-			// check if anything is alive
-			if (me.engine.anythingAlive) {
-				// get current time
-				currentTime = performance.now();
+			// compute how many steps there are to take
+			stepsToTake = targetGen - currentGen;
+			stepsTaken = 0;
 
-				// compute how many steps there are to take
-				stepsToTake = targetGen - currentGen;
-				stepsTaken = 0;
+			// check if statistics are displayed and if so compute them
+			while (!bailout && (me.engine.counter < targetGen)) {
+				// compute time since generations started
+				deltaTime = performance.now() - currentTime;
 
-				// check if statistics are displayed and if so compute them
-				while (!bailout && (me.engine.counter < targetGen)) {
-					// compute time since generations started
-					deltaTime = performance.now() - currentTime;
-
-					// check for stop or delta time being too large or single step (ignore time for manual stepping)
-					if ((me.engine.counter === me.stopGeneration - 1 && !me.stopDisabled) || ((deltaTime > ViewConstants.updateThreshold) && !manualStepping)) {
-						// if at stop generation then actually bailout
-						if (me.engine.counter === me.stopGeneration - 1 && !me.stopDisabled) {
-							bailout = true;
-						} else {
-							// if lagging then bailout if enabled
-							bailout = me.canBailOut;
-						}
-					}
-
-					// check for reverse playback switch
-					if (me.engine.reversePending) {
-						me.afterEdit("reverse playback");
-					}
-
-					// check if this is the last generation in the step
-					saveBox.set(zoomBox);
-
-					// compute next generation
-					me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
-
-					// next step
-					stepsTaken += 1;
-
-					// check theme has history or this is the last generation in the step
-					if (me.engine.themeHistory || me.anyPasteThisGen() || (me.engine.counter === targetGen) || bailout) {
-						// convert life grid to pen colours unless Generations just died (since this will start fading dead cells)
-						if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
-							me.engine.convertToPensTile();
-
-							// if paste every is defined then always flag there are alive cells
-							// since cells will appear in the future
-							if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
-								me.engine.anythingAlive = 1;
-							}
-						}
-					}
-
-					// paste any RLE snippets
-					me.pasteRLEList();
-
-					// save snapshot if needed
-					this.engine.saveSnapshotIfNeeded(me);
-
-					// if no theme history then set anything alive from population
-					if (me.engine.themeHistory && me.engine.population === 0) {
-						me.engine.anythingAlive = 0;
-					}
-
-					// if nothing alive now then restore last bounding box
-					if (me.engine.anythingAlive === 0) {
-						zoomBox.set(saveBox);
-					}
-
-					// check for loop
-					if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled) {
-						// save elapsed time up to the loop generation
-						for (i = 1; i <= stepsTaken; i += 1) {
-							me.saveElapsedTime(currentGen + i, timeSinceLastUpdate, stepsTaken);
-						}
-
-						// reset
-						me.elapsedTime = 0;
-						me.reset(me);
-						currentGen = 0;
-						targetGen = 0;
-
-						// check if autostart defined but disabled
-						if (me.autoStart && me.autoStartDisabled) {
-							me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
-							me.menuManager.notification.notify("LOOP reached - Play to continue ", 15, 180, 15, true);
-						}
-
-						// lock controls if waypoints ended
-						if (waypointsEnded) {
-							me.controlsLocked = true;
-						}
-					}
-
-					// check for all cells died
-					if (!me.engine.anythingAlive) {
+				// check for stop or delta time being too large or single step (ignore time for manual stepping)
+				if ((me.engine.counter === me.stopGeneration - 1 && !me.stopDisabled) || ((deltaTime > ViewConstants.updateThreshold) && !manualStepping)) {
+					// if at stop generation then actually bailout
+					if (me.engine.counter === me.stopGeneration - 1 && !me.stopDisabled) {
 						bailout = true;
+					} else {
+						// if lagging then bailout if enabled
+						bailout = me.canBailOut;
 					}
 				}
 
-				// save elapsed time for each step actually taken
-				for (i = 1; i <= stepsTaken; i += 1) {
-					// add the time increment as if all steps could be taken (time will slow when throttled)
-					me.saveElapsedTime(currentGen + i, timeSinceLastUpdate, stepsToTake);
+				// check for reverse playback switch
+				if (me.engine.reversePending) {
+					me.afterEdit("reverse playback");
 				}
 
-				// check if life just stopped
+				// check if this is the last generation in the step
+				saveBox.set(zoomBox);
+
+				// compute next generation
+				me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
+
+				// next step
+				stepsTaken += 1;
+
+				// check theme has history or this is the last generation in the step
+				me.engine.convertToPensTile();
+
+				// paste any RLE snippets
+				me.pasteRLEList();
+
+				// save population data
+				me.engine.savePopulationData();
+
+				// save snapshot if needed
+				me.engine.saveSnapshotIfNeeded(me);
+
+				// if nothing alive now then restore last bounding box
 				if (me.engine.population === 0) {
-					// set fade interval
-					me.fading = me.historyStates + (me.engine.multiNumStates > 0 ? me.engine.multiNumStates : 0);
-
-					// remember the generation that life stopped
-					if (me.diedGeneration === -1) {
-						me.diedGeneration = me.engine.counter;
-
-						// clear the bit grids
-						if (me.engine.isSuper || me.engine.isPCA) {
-							me.engine.anythingAlive = 1;
-						} else {
-							if (me.engine.isRuleTree) {
-								me.engine.clearGrids(false);
-							} else {
-								me.engine.clearGrids(true);
-							}
-						}
-
-						// notify simulation stopped unless loop defined and enabled
-						if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
-							me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 600, 15, false);
-						}
-
-						// if the pattern dies again then notify (this would be caused by drawing during playback)
-						me.emptyStart = false;
-					}
-				}
-
-				// remove steps not taken from target counter
-				me.fixedPointCounter -= (stepsToTake - stepsTaken) * me.refreshRate;
-				if (me.fixedPointCounter < 0) {
-					me.fixedPointCounter = 0;
-				}
-
-				// if not enough steps taken then display actual number
-				if ((stepsTaken < stepsToTake) && ((me.engine.counter !== me.stopGeneration) || me.stopDisabled) && me.perfWarning) {
-					me.updateStepLabel(stepsTaken);
-				} else {
-					me.clearStepSamples();
-				}
-			} else {
-				// clear step samples
-				me.clearStepSamples();
-				me.engine.births = 0;
-				me.engine.deaths = 0;
-
-				// check if still fading
-				if (me.fading) {
-					// decrease fade time
-					me.fading -= 1;
-
-					// remember the current generation and set to died generation
-					saveGeneration = me.engine.counter;
-					me.engine.counter = me.diedGeneration;
-
-					// update colour grid
-					me.engine.convertToPensTile();
-
-					// restore current generation
-					me.engine.counter = saveGeneration;
-				}
-
-				// check for change in playback direction
-				if (me.engine.isMargolus || me.engine.isPCA) {
-					if (me.engine.reversePending) {
-						me.engine.reverseMargolus = !me.engine.reverseMargolus;
-						me.engine.reversePending = false;
-					}
-				}
-
-				// increment generation
-				for (i = 0; i < me.gensPerStep; i += 1) {
-					me.engine.counter += 1;
-					me.saveElapsedTime(me.engine.counter, timeSinceLastUpdate, me.gensPerStep);
-					me.pasteRLEList();
-
-					// adjust PCA/Margolus generation based on playback direction
-					if (me.engine.isMargolus || me.engine.isPCA) {
-						if (me.engine.reverseMargolus) {
-							me.engine.counterMargolus -= 1;
-						} else {
-							me.engine.counterMargolus += 1;
-						}
-						// update maximum Margolus generation reached (used for PASTE EVERY)
-						if (me.engine.counterMargolus > me.engine.maxMargolusGen) {
-							me.engine.maxMargolusGen = me.engine.counterMargolus;
-						}
-					}
+					zoomBox.set(saveBox);
 				}
 
 				// check for loop
 				if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled) {
+					// save elapsed time up to the loop generation
+					for (i = 1; i <= stepsTaken; i += 1) {
+						me.saveElapsedTime(currentGen + i, timeSinceLastUpdate, stepsTaken);
+					}
+
 					// reset
 					me.elapsedTime = 0;
 					me.reset(me);
+					currentGen = 0;
+					targetGen = 0;
+
+					// check if autostart defined but disabled
+					if (me.autoStart && me.autoStartDisabled) {
+						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+						me.menuManager.notification.notify("LOOP reached - Play to continue ", 15, 180, 15, true);
+					}
 
 					// lock controls if waypoints ended
 					if (waypointsEnded) {
 						me.controlsLocked = true;
 					}
 				}
+
+				// check for all cells died
+				if (me.engine.population === 0) {
+					bailout = true;
+				}
 			}
 
-			// check for stop
-			if (me.engine.counter === me.stopGeneration && !me.stopDisabled) {
-				// stop
-				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
-				if (me.genNotifications) {
-					me.menuManager.notification.notify("STOP reached - Play to continue ", 15, 180, 15, true);
+			// save elapsed time for each step actually taken
+			for (i = 1; i <= stepsTaken; i += 1) {
+				// add the time increment as if all steps could be taken (time will slow when throttled)
+				me.saveElapsedTime(currentGen + i, timeSinceLastUpdate, stepsToTake);
+			}
+
+			// check if life just stopped
+			if (me.engine.population === 0) {
+				// remember the generation that life stopped
+				if (me.diedGeneration === -1) {
+					me.diedGeneration = me.engine.counter;
+
+					// notify simulation stopped unless loop defined and enabled
+					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
+						if (me.engine.isPCA || me.engine.isMargolus) {
+							me.menuManager.notification.notify("Life ended at generation " + me.engine.counterMargolus, 15, 600, 15, false);
+						} else {
+							me.menuManager.notification.notify("Life ended at generation " + me.engine.counter, 15, 600, 15, false);
+						}
+					}
+
+					// if the pattern dies again then notify (this would be caused by drawing during playback)
+					me.emptyStart = false;
 				}
+			}
+
+			// remove steps not taken from target counter
+			me.fixedPointCounter -= (stepsToTake - stepsTaken) * me.refreshRate;
+			if (me.fixedPointCounter < 0) {
+				me.fixedPointCounter = 0;
+			}
+
+			// if not enough steps taken then display actual number
+			if ((stepsTaken < stepsToTake) && ((me.engine.counter !== me.stopGeneration) || me.stopDisabled) && me.perfWarning) {
+				me.updateStepLabel(stepsTaken);
+			} else {
+				me.clearStepSamples();
 			}
 		} else {
 			// clear step samples
@@ -6279,7 +6172,7 @@
 		me.engine.drawSelections(me);
 
 		// check if grid buffer needs to grow
-		if (me.engine.counter && me.engine.anythingAlive) {
+		if (me.engine.counter && me.engine.population > 0) {
 			me.middleBox.leftX = me.engine.zoomBox.leftX;
 			me.middleBox.bottomY = me.engine.zoomBox.bottomY;
 			me.middleBox.rightX = me.engine.zoomBox.rightX;
@@ -7231,51 +7124,30 @@
 		while (me.engine.population !== 0 && me.engine.counter < me.startFrom && (me.startFromTiming !== -1 || (performance.now() - startTime < timeLimit))) {
 			// compute the next generation
 			me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
-			if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
-				me.engine.convertToPensTile();
-
-				// if paste every is defined then always flag there are alive cells
-				// since cells will appear in the future
-				if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
-					me.engine.anythingAlive = 1;
-				}
-			}
+			me.engine.convertToPensTile();
 
 			// paste any RLE snippets
 			me.pasteRLEList();
 
+			// save population data
+			me.engine.savePopulationData();
+
 			// save snapshot if needed
 			me.engine.saveSnapshotIfNeeded(me);
 
-			// if no theme history then set anything alive from population
-			if (!me.engine.themeHistory && me.engine.population === 0) {
-				me.engine.anythingAlive = 0;
-			}
-
 			// check if life just stopped
 			if (me.engine.population === 0) {
-				// set fade interval
-				me.fading = me.historyStates + (me.engine.multiNumStates > 0 ? me.engine.multiNumStates : 0);
-
 				// remember the generation that life stopped
 				if (me.diedGeneration === -1) {
 					me.diedGeneration = me.engine.counter;
 
-					// clear the bit grids
-					if (me.engine.isSuper) {
-						me.engine.anythingAlive = 1;
-					} else {
-						//if (me.engine.isPCA || me.engine.isRuleTree) {
-						if (me.engine.isRuleTree) {
-							me.engine.clearGrids(false);
-						} else {
-							me.engine.clearGrids(true);
-						}
-					}
-
 					// notify simulation stopped unless loop defined and enabled
 					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
-						me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 600, 15, false);
+						if (me.engine.isPCA || me.engine.isMargolus) {
+							me.menuManager.notification.notify("Life ended at generation " + me.engine.counterMargolus, 15, 600, 15, false);
+						} else {
+							me.menuManager.notification.notify("Life ended at generation " + me.engine.counter, 15, 600, 15, false);
+						}
 					}
 
 					// if the pattern dies again then notify (this would be caused by drawing during playback)
@@ -7285,7 +7157,7 @@
 
 			// check if grid buffer needs to grow
 			// (normally this check happens at render time but we may have processed more generations than expected by that function)
-			if (me.engine.counter && me.engine.anythingAlive) {
+			if (me.engine.counter && me.engine.population > 0) {
 				me.middleBox.leftX = me.engine.zoomBox.leftX;
 				me.middleBox.bottomY = me.engine.zoomBox.bottomY;
 				me.middleBox.rightX = me.engine.zoomBox.rightX;
@@ -7311,7 +7183,7 @@
 
 		// stop if target reached or all cells died
 		if ((me.engine.counter >= me.startFrom) || me.engine.population === 0) {
-			me.stopStartFrom(me, !me.engine.anythingAlive, false);
+			me.stopStartFrom(me, me.engine.population === 0, false);
 		}
 	};
 
@@ -7354,54 +7226,31 @@
 		me.viewMenu.locked = true;
 
 		// compute the next set of generations without stats for speed
-		while (me.identify && (performance.now() - startTime < timeLimit) && me.engine.anythingAlive) {
+		while (me.identify && (performance.now() - startTime < timeLimit) && me.engine.population > 0) {
 			// compute the next generation
 			me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
-
-			// convert life grid to pen colours unless Generations just died (since this will start fading dead cells)
-			if (!(me.engine.anythingAlive === 0 && me.engine.multiNumStates > 2)) {
-				me.engine.convertToPensTile();
-
-				// if paste every is defined then always flag there are alive cells
-				// since cells will appear in the future
-				if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
-					me.engine.anythingAlive = 1;
-				}
-			}
+			me.engine.convertToPensTile();
 			me.pasteRLEList();
+
+			// save population data
+			me.engine.savePopulationData();
 
 			// save snapshot if needed
 			this.engine.saveSnapshotIfNeeded(me);
 
-			// if no theme history then set anything alive from population
-			if (!me.engine.themeHistory && me.engine.population === 0) {
-				me.engine.anythingAlive = 0;
-			}
-
 			// check if life just stopped
 			if (me.engine.population === 0) {
-				// set fade interval
-				me.fading = me.historyStates + (me.engine.multiNumStates > 0 ? me.engine.multiNumStates : 0);
-
 				// remember the generation that life stopped
 				if (me.diedGeneration === -1) {
 					me.diedGeneration = me.engine.counter;
 
-					// clear the bit grids
-					if (me.engine.isSuper) {
-						me.engine.anythingAlive = 1;
-					} else {
-						//if (me.engine.isPCA || me.engine.isRuleTree) {
-						if (me.engine.isRuleTree) {
-							me.engine.clearGrids(false);
-						} else {
-							me.engine.clearGrids(true);
-						}
-					}
-
 					// notify simulation stopped unless loop defined and enabled
 					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
-						me.menuManager.notification.notify("Life ended at generation " + me.diedGeneration, 15, 600, 15, false);
+						if (me.engine.isPCA || me.engine.isMargolus) {
+							me.menuManager.notification.notify("Life ended at generation " + me.engine.counterMargolus, 15, 600, 15, false);
+						} else {
+							me.menuManager.notification.notify("Life ended at generation " + me.engine.counter, 15, 600, 15, false);
+						}
 					}
 
 					// if the pattern dies again then notify (this would be caused by drawing during playback)
@@ -7411,7 +7260,7 @@
 
 			// check if grid buffer needs to grow
 			// (normally this check happens at render time but we may have processed more generations than expected by that function)
-			if (me.engine.counter && me.engine.anythingAlive) {
+			if (me.engine.counter && me.engine.population > 0) {
 				me.middleBox.leftX = me.engine.zoomBox.leftX;
 				me.middleBox.bottomY = me.engine.zoomBox.bottomY;
 				me.middleBox.rightX = me.engine.zoomBox.rightX;
@@ -7422,14 +7271,8 @@
 			// save elapsed time
 			me.saveElapsedTime(me.engine.counter, 0, 1);
 
-			// if paste every is defined then always flag there are alive cells
-			// since cells will appear in the future
-			if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
-				me.engine.anythingAlive = 1;
-			}
-
 			// check if any cells are alive
-			if (me.engine.anythingAlive) {
+			if (me.engine.population > 0) {
 				// compute oscillators
 				identifyResult = me.engine.oscillating(me.identifyFast, me);
 				if (identifyResult.length > 0) {
@@ -7588,8 +7431,8 @@
 			// compute number of generations in snapshot buffer
 			/** @type {number} */ snapshotBufferGens = me.engine.snapshotManager.maxSnapshots * LifeConstants.snapshotInterval;
 
-		// compute the next set of generations without stats for speed
-		while (me.engine.counter < targetGen - 1 && (performance.now() - startTime < timeLimit)) {
+		// compute the next set of generations
+		while (me.engine.counter < targetGen && (performance.now() - startTime < timeLimit)) {
 			// check whether to save snapshots
 			if (targetGen - 1 - me.engine.counter <= snapshotBufferGens) {
 				noSnapshots = false;
@@ -7600,34 +7443,16 @@
 			// compute the next generation
 			me.engine.nextGeneration(noSnapshots, me.graphDisabled, me.identify, me);
 			me.engine.convertToPensTile();
-			me.engine.saveSnapshotIfNeeded(me);
-
-			// paste any RLE snippets
 			me.pasteRLEList();
 
-			// if paste every is defined then always flag there are alive cells
-			// since cells will appear in the future
-			if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
-				me.engine.anythingAlive = 1;
-			}
+			// save population data
+			me.engine.savePopulationData();
+
+			me.engine.saveSnapshotIfNeeded(me);
 		}
 
 		// check if complete
-		if (me.engine.counter === targetGen - 1) {
-			// compute final generation
-			me.engine.nextGeneration(false, me.graphDisabled, me.identify, me);
-			me.engine.convertToPensTile();
-			me.engine.saveSnapshotIfNeeded(me);
-
-			// paste any RLE snippets
-			me.pasteRLEList();
-
-			// if paste every is defined then always flag there are alive cells
-			// since cells will appear in the future
-			if (me.isPasteEvery || me.engine.counter <= me.maxPasteGen) {
-				me.engine.anythingAlive = 1;
-			}
-
+		if (me.engine.counter === targetGen) {
 			// switch back to normal mode
 			me.computeHistory = false;
 
@@ -7800,9 +7625,6 @@
 		me.engine.yOff = me.engine.height >> 1;
 		me.engine.xOff &= (me.engine.width - 1);
 		me.engine.yOff &= (me.engine.height - 1);
-
-		// mark something alive
-		me.engine.anythingAlive = 1;
 
 		// flag just started for first frame measurement
 		me.justStarted = true;
@@ -8274,9 +8096,6 @@
 			// reset grid and generation counter
 			me.engine.restoreSavedGrid(me, me.noHistory);
 
-			// mark cells alive
-			me.engine.anythingAlive = 1;
-
 			// reset history box
 			me.engine.resetHistoryBox();
 		}
@@ -8391,9 +8210,6 @@
 					me.engine.convertToPensTile();
 				}
 			}
-
-			// mark cells alive
-			me.engine.anythingAlive = 1;
 		}
 
 		// reset population data for graph
@@ -9486,6 +9302,10 @@
 							me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
 							me.engine.convertToPensTile();
 							me.engine.saveSnapshotIfNeeded(me);
+
+							// save population data
+							me.engine.savePopulationData();
+
 							me.fixedPointCounter = me.engine.counter * me.refreshRate;
 						}
 						me.engine.reversePending = true;
@@ -9726,10 +9546,9 @@
 			}
 		}
 
-		// if the population is now non-zero then reset anything alive and died generation
+		// if the population is now non-zero then reset died generation
 		if (this.engine.population > 0) {
 			this.diedGeneration = -1;
-			this.engine.anythingAlive = 1;
 		}
 	};
 
@@ -12982,7 +12801,6 @@
 			/** @type {Array<Int32Array>} */ currentCounts = null,
 			/** @type {Uint8Array} */ currentColUsed = null,
 			// save anything alive
-			/** @type {number} */ currentAnythingAlive = me.engine.anythingAlive,
 			/** @type {number} */ currentPop = me.engine.population,
 			/** @type {number} */ currentBirths = me.engine.births,
 			/** @type {number} */ currentDeaths = me.engine.deaths;
@@ -13020,7 +12838,7 @@
 		me.engine.convertToPensTile();
 		me.engine.saveSnapshotIfNeeded(me);
 
-		if (me.engine.anythingAlive) {
+		if (me.engine.population > 0) {
 			// set new paste buffer
 			me.pasteWidth = zoomBox.rightX - zoomBox.leftX + 1;
 			me.pasteHeight = zoomBox.topY - zoomBox.bottomY + 1;
@@ -13109,7 +12927,6 @@
 		historyBox.bottomY = currentHistoryBox.bottomY;
 		historyBox.rightX = currentHistoryBox.rightX;
 		historyBox.topY = currentHistoryBox.topY;
-		me.engine.anythingAlive = currentAnythingAlive;
 		me.engine.births = currentBirths;
 		me.engine.deaths = currentDeaths;
 		me.engine.population = currentPop;
@@ -15155,50 +14972,16 @@
 			}
 		}
 
-		// compute each generation up to just before the target with stats off (for speed)
-		while (this.engine.counter < targetGen - 1) {
-			if (this.engine.anythingAlive) {
-				this.engine.nextGeneration(false, this.graphDisabled, this.identify, this);
-				if (!(this.engine.anythingAlive === 0 && this.engine.multiNumStates > 2) || this.engine.snapshotNeeded) {
-					this.engine.convertToPensTile();
-				}
-				this.engine.saveSnapshotIfNeeded(this);
-
-				// check for just died for 2 state patterns
-				if (this.engine.anythingAlive === 0 && this.engine.multiNumStates <= 2) {
-					// clear the other buffer
-					this.engine.anythingAlive = 1;
-					this.engine.nextGeneration(false, this.graphDisabled, this.identify, this);
-					this.engine.counter -= 1;
-				}
-			} else {
-				this.engine.counter += 1;
-				this.engine.convertToPensTile();
-			}
+		// compute each generation up to the target
+		while (this.engine.counter < targetGen) {
+			this.engine.nextGeneration(false, this.graphDisabled, this.identify, this);
+			this.engine.convertToPensTile();
 			this.pasteRLEList();
-		}
 
-		// compute the final generation
-		if (this.engine.counter < targetGen) {
-			if (this.engine.anythingAlive) {
-				this.engine.nextGeneration(false, this.graphDisabled, this.identify, this);
-				if (!(this.engine.anythingAlive === 0 && this.engine.multiNumStates > 2) || this.engine.snapshotNeeded) {
-					this.engine.convertToPensTile();
-				}
-				this.engine.saveSnapshotIfNeeded(this);
+			// save population data
+			this.engine.savePopulationData();
 
-				// check for just died for 2 state patterns
-				if (this.engine.anythingAlive === 0 && this.engine.multiNumStates <= 2) {
-					// clear the other buffer
-					this.engine.anythingAlive = 1;
-					this.engine.nextGeneration(false, this.graphDisabled, this.identify, this);
-					this.engine.counter -= 1;
-				}
-			} else {
-				this.engine.counter += 1;
-				this.engine.convertToPensTile();
-			}
-			this.pasteRLEList();
+			this.engine.saveSnapshotIfNeeded(this);
 		}
 
 		// restore the elapsed time
@@ -17949,9 +17732,6 @@
 		// read any failure reason
 		me.failureReason = me.manager.failureReason;
 
-		// set anything alive flags
-		me.engine.anythingAlive = 1;
-
 		// reset delete pattern radius
 		me.engine.removePatternRadius = ViewConstants.defaultDeleteRadius;
 
@@ -18972,9 +18752,6 @@
 		me.defaultDepth = me.engine.layerDepth;
 		numberValue = Math.sqrt(me.defaultDepth);
 		me.depthItem.current = me.viewDepthRange([numberValue, numberValue], true, me);
-
-		// mark something alive
-		me.engine.anythingAlive = 1;
 
 		// check whether autostart required
 		if (me.autoStart && !me.autoStartDisabled) {

@@ -715,8 +715,6 @@
 			HROTBox.rightX = maxX1;
 			HROTBox.bottomY = minY1;
 			HROTBox.topY = maxY1;
-		} else {
-			this.engine.anythingAlive = 0;
 		}
 	};
 
@@ -2512,8 +2510,6 @@
 				this.engine.HROTBox.rightX = maxX1;
 				this.engine.HROTBox.bottomY = minY1;
 				this.engine.HROTBox.topY = maxY1;
-			} else {
-				this.engine.anythingAlive = 0;
 			}
 		} else {
 			if (type === this.manager.vonNeumannHROT && xrange > this.rangeVN) {
@@ -2665,8 +2661,6 @@
 					this.engine.HROTBox.rightX = maxX1;
 					this.engine.HROTBox.bottomY = minY1;
 					this.engine.HROTBox.topY = maxY1;
-				} else {
-					this.engine.anythingAlive = 0;
 				}
 			} else {
 				// determine neighbourhood type
@@ -4376,8 +4370,6 @@
 				this.engine.HROTBox.rightX = maxX1;
 				this.engine.HROTBox.bottomY = minY1;
 				this.engine.HROTBox.topY = maxY1;
-			} else {
-				this.engine.anythingAlive = 0;
 			}
 		} else {
 			if (type === this.manager.vonNeumannHROT && xrange > this.rangeVN) {
@@ -4518,8 +4510,6 @@
 					this.engine.HROTBox.rightX = maxX1;
 					this.engine.HROTBox.bottomY = minY1;
 					this.engine.HROTBox.topY = maxY1;
-				} else {
-					this.engine.anythingAlive = 0;
 				}
 			} else {
 				// determine neighbourhood type
