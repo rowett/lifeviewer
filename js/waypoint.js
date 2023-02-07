@@ -2466,11 +2466,13 @@
 		this.tempIndex = this.findWaypointNear(generation);
 
 		// interpolate elapsed time
-		currWP = this.waypointList[this.tempIndex];
-		prevWP = this.waypointList[this.tempIndex - 1];
-		elapsed = currWP.targetTime - prevWP.targetTime;
-		generations = currWP.targetGen - prevWP.targetGen;
-		result = (elapsed * (generation - prevWP.targetGen) / generations) + prevWP.targetTime;
+		if (this.tempIndex > 0) {
+			currWP = this.waypointList[this.tempIndex];
+			prevWP = this.waypointList[this.tempIndex - 1];
+			elapsed = currWP.targetTime - prevWP.targetTime;
+			generations = currWP.targetGen - prevWP.targetGen;
+			result = (elapsed * (generation - prevWP.targetGen) / generations) + prevWP.targetTime;
+		}
 
 		return result;
 	};

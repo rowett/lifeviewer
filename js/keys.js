@@ -671,9 +671,20 @@
 				} else {
 					if (me.trackDefined) {
 						me.waypointsIndicator.current = me.toggleWP([me.trackDisabled], true, me);
+						if (me.loopGeneration !== -1) {
+							me.menuManager.notification.notify("Track and Loop " + (me.trackDisabled ? "Off" : "On"), 15, 40, 15, true);
+						} else {
+							me.menuManager.notification.notify("Track " + (me.trackDisabled ? "Off" : "On"), 15, 40, 15, true);
+
+						}
 					} else {
 						if (me.waypointsDefined) {
 							me.waypointsIndicator.current = me.toggleWP([me.waypointsDisabled], true, me);
+							if (me.loopGeneration !== -1) {
+								me.menuManager.notification.notify("Waypoints and Loop " + (me.waypointsDisabled ? "Off" : "On"), 15, 40, 15, true);
+							} else {
+								me.menuManager.notification.notify("Waypoints " + (me.waypointsDisabled ? "Off" : "On"), 15, 40, 15, true);
+							}
 						}
 					}
 				}

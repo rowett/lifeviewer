@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 875,
+		/** @const {number} */ versionBuild : 878,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6058,6 +6058,15 @@
 			} else {
 				me.clearStepSamples();
 			}
+
+			// check for stop
+			if (me.engine.counter === me.stopGeneration && !me.stopDisabled) {
+				// stop
+				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+				if (me.genNotifications) {
+					me.menuManager.notification.notify("STOP reached - Play to continue ", 15, 180, 15, true);
+				}
+			}
 		} else {
 			// clear step samples
 			me.clearStepSamples();
@@ -6187,12 +6196,15 @@
 
 		// draw cell period map or table
 		if (me.resultsDisplayed && me.periodMapDisplayed > 0 && me.engine.cellPeriod !== null) {
-			if (me.periodMapDisplayed === 1) {
-				// draw cell period table below the main banner
-				me.engine.drawCellPeriodTable(me.identifyBannerLabel);
-			} else {
-				// draw cell period map
-				me.engine.drawCellPeriodMap(me.identifyBannerLabel);
+			// don't display if Help or Settings open
+			if (me.displayHelp === 0 && me.navToggle.current[0] === false) {
+				if (me.periodMapDisplayed === 1) {
+					// draw cell period table below the main banner
+					me.engine.drawCellPeriodTable(me.identifyBannerLabel);
+				} else {
+					// draw cell period map
+					me.engine.drawCellPeriodMap(me.identifyBannerLabel);
+				}
 			}
 		}
 
@@ -6513,6 +6525,11 @@
 		} else {
 			this.backButton.preText = "Close";
 			this.backButton.toolTip = "close menu [Backspace]";
+		}
+
+		this.altGridButton.locked = !(this.engine.isMargolus && this.engine.gridLineMajor === 2);
+		if (this.altGridButton.locked) {
+			this.altGridButton.current = [false];
 		}
 
 		// settings menu
@@ -14724,10 +14741,6 @@
 				if (me.loopGeneration !== -1) {
 					// set loop to track mode
 					me.loopDisabled = me.trackDisabled;
-					me.menuManager.notification.notify("Loop and Track " + (me.loopDisabled ? "Off" : "On"), 15, 40, 15, true);
-				} else {
-					// just track
-					me.menuManager.notification.notify("Track " + (me.trackDisabled ? "Off" : "On"), 15, 40, 15, true);
 				}
 			} else {
 				// check for waypoints
@@ -14748,10 +14761,6 @@
 					if (me.loopGeneration !== -1) {
 						// set loop to waypoints mode
 						me.loopDisabled = me.waypointsDisabled;
-						me.menuManager.notification.notify("Loop and Waypoints " + (me.loopDisabled ? "Off" : "On"), 15, 40, 15, true);
-					} else {
-						// just waypoints
-						me.menuManager.notification.notify("Waypoints " + (me.waypointsDisabled ? "Off" : "On"), 15, 40, 15, true);
 					}
 				}
 			}

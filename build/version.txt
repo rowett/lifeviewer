@@ -1,3 +1,19 @@
+Build 878
+- disable Alt GridLines if GRIDMAJOR is not 2
+- Custom Themes are now based on the default Theme for the rule type
+
+Build 877
+- don't show Waypoint toggle message from UI control
+- re-enable STOP
+- improve error message when illegal PCA state name specified for COLOR
+- fixed a crash when Waypoints enabled at first Waypoint
+- fixed an issue where Generations was fading at double speed
+- added Mod FlipXorYorRot90or270
+
+Build 876
+- hide Cell Period Map and Cell Period Table if Help or Settings open
+- fixed bounding box issue with Strict Volatility
+
 Build 875
 - ensure PCA rules continue to process history when all alive cells die
 - don't persist PCA state colour

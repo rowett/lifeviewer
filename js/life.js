@@ -31,12 +31,13 @@
 		/** @const {number} */ modLastTrans : 6,  // last native transformation, combinations follow
 		/** @const {number} */ modFlipXorY : 7,
 		/** @const {number} */ modRotCWorCCW : 8,
+		/** @const {number} */ modFlipXorYorRotCWorCCW : 9,
 
 		// maximum number of bits for rule tree lookup
 		/** @const {number} */ maxRuleTreeLookupBits : 20,
 
 		// mod type names
-		/** @const {Array<string>} */ modTypeName : ["RotCCW", "RotCW", "FlipX", "FlipY", "FlipXY", "RotCWFlipX", "RotCWFlipY", "FlipXorY", "RotCWorCCW"],
+		/** @const {Array<string>} */ modTypeName : ["RotCCW", "RotCW", "FlipX", "FlipY", "FlipXY", "RotCWFlipX", "RotCWFlipY", "FlipXorY", "RotCWorCCW", "FlipXorYorRotCWorCCW"],
 
 		// maximum number of generations to check for oscillators
 		/** @const {number} */ maxOscillatorGens : 1048576,
@@ -268,26 +269,12 @@
 		if (gridColour !== -1) {
 			// yes so set it
 			this.gridColour = gridColour;
-		} else {
-			// no so pick the light or dark default based on the background colour
-			if (((this.unoccupied.red + this.unoccupied.green + this.unoccupied.blue) / 3) >= 128) {
-				this.gridColour = ViewConstants.gridLineLightRawDefault;
-			} else {
-				this.gridColour = ViewConstants.gridLineRawDefault;
-			}
 		}
 
 		// check if the major grid lines colour was specified
 		if (gridMajorColour !== -1) {
 			// yes so set it
 			this.gridMajorColour = gridMajorColour;
-		} else {
-			// no so pick the light or dark default based on the background colour
-			if (((this.unoccupied.red + this.unoccupied.green + this.unoccupied.blue) / 3) >= 128) {
-				this.gridMajorColour = ViewConstants.gridLineLightBoldRawDefault;
-			} else {
-				this.gridMajorColour = ViewConstants.gridLineBoldRawDefault;
-			}
 		}
 	};
 
@@ -1887,6 +1874,24 @@
 								}
 								if (hashY === hash) {
 									this.modType = LifeConstants.modFlipXorY;
+
+									// check for Rot90
+									if (twoState) {
+										hashY = this.getModHash2(box, LifeConstants.modRot90);
+									} else {
+										hashY = this.getModHash(box, LifeConstants.modRot90);
+									}
+									if (hashY === hash) {
+										// check for Rot270
+										if (twoState) {
+											hashY = this.getModHash2(box, LifeConstants.modRot90);
+										} else {
+											hashY = this.getModHash(box, LifeConstants.modRot90);
+										}
+										if (hashY === hash) {
+											this.modType = LifeConstants.modFlipXorYorRotCWorCCW;
+										}
+									}
 								}
 							}	
 
@@ -1899,6 +1904,25 @@
 								}
 								if (hashY === hash) {
 									this.modType = LifeConstants.modRotCWorCCW;
+
+									// check for Flip X
+									if (twoState) {
+										hashY = this.getModHash2(box, LifeConstants.modFlipX);
+									} else {
+										hashY = this.getModHash(box, LifeConstants.modFlipX);
+									}
+									if (hashY === hash) {
+										// check for Flip Y
+										if (twoState) {
+											hashY = this.getModHash2(box, LifeConstants.modFlipY);
+										} else {
+											hashY = this.getModHash(box, LifeConstants.modFlipY);
+										}
+										if (hashY === hash) {
+											this.modType = LifeConstants.modFlipXorYorRotCWorCCW;
+										}
+									}
+
 								}
 							}
 						}
@@ -1945,9 +1969,7 @@
 			/** @type {Array<Uint8Array>} */ initList = this.initList,
 			/** @type {Uint8Array} */ initRow = null,
 			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
-			/** @type {BoundingBox} */ hashBox = this.hashBox,
-			/** @type {BoundingBox} */ zoomBox = (this.isHROT ? this.HROTBox : this.zoomBox),
-			/** @type {BoundingBox} */ lastZoomBox = this.lastZoomBox;
+			/** @type {BoundingBox} */ hashBox = this.hashBox;
 
 		// check for PCA, RuleTree or Super rules
 		if (this.isPCA || this.isRuleTree || this.isSuper) {
@@ -3183,7 +3205,7 @@
 				// if not in fast mode then update the cell activity since it may have taken
 				// some generations for the oscillator to form and compute strict volatility
 				if (!fast) {
-					this.computeStrictVolatility(period, i, box, view);
+					this.computeStrictVolatility(period, i, this.hashBox, view);
 				}
 			}
 		}
@@ -8067,11 +8089,13 @@
 		this.aliveColCurrent = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.deadColCurrent = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.unoccupiedCurrent = new Colour(0, 0, 0);
+
 		// multi-state
 		this.aliveGenColCurrent = new Colour(0, 0, 0);
 		this.dyingGenColCurrent = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.deadGenColCurrent = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.unoccupiedGenCurrent = new Colour(0, 0, 0);
+
 		// PCA
 		this.pcaColsCurrent = [new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0),
 					     new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0),
@@ -8083,11 +8107,13 @@
 		this.aliveColTarget = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.deadColTarget = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.unoccupiedTarget = new Colour(0, 0, 0);
+
 		// multi-state
 		this.aliveGenColTarget = new Colour(0, 0, 0);
 		this.dyingGenColTarget = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.deadGenColTarget = new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0));
 		this.unoccupiedGenTarget = new Colour(0, 0, 0);
+
 		// PCA
 		this.pcaColsTarget = [new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0),
 					    new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0), new Colour(0, 0, 0),
@@ -21587,117 +21613,11 @@
 		this.deaths = deaths;
 	};
 
-	// compute generations rule next generation for decay only
-	Life.prototype.generationsDecayOnly = function() {
-		var	/** @type {number} */ h = 0,
-			/** @type {number} */ cr = 0,
-			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
-			/** @type {Uint8Array} */ colourGridRow = null,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {number} */ value = 0,
-			/** @type {number} */ th = 0,
-			/** @type {number} */ tw = 0,
-			/** @type {number} */ b = 0,
-			/** @type {number} */ n = 0,
-			/** @type {number} */ bottomY = 0,
-			/** @type {number} */ topY = 0,
-			/** @type {number} */ leftX = 0,
-			/** @type {number} */ tiles = 0,
-
-			// set tile height
-			/** @type {number} */ ySize = this.tileY,
-
-			// tile width (in 16bit chunks)
-			/** @type {number} */ xSize = this.tileX >> 1,
-
-			// tile rows
-			/** @type {number} */ tileRows = this.tileRows,
-
-			// tile columns in 16 bit values
-			/** @type {number} */ tileCols16 = this.tileCols >> 4,
-
-			// starting and ending tile row
-			/** @type {number} */ tileStartRow = 0,
-			/** @type {number} */ tileEndRow = tileRows,
-
-			// minimum dead state number
-			/** @type {number} */ minDeadState = (this.historyStates > 0 ? 1 : 0);
-
-		// check start and end row are in range
-		if (tileStartRow < 0) {
-			tileStartRow = 0;
-		}
-		if (tileEndRow > tileRows) {
-			tileEndRow = tileRows;
-		}
-
-		// set the initial tile row
-		bottomY = tileStartRow << this.tilePower;
-		topY = bottomY + ySize;
-
-		// scan each row of tiles
-		for (th = tileStartRow; th < tileEndRow; th += 1) {
-			// set initial tile column
-			leftX = 0;
-
-			// get the colour tile history rows
-			colourTileHistoryRow = colourTileHistoryGrid[th];
-
-			// scan each set of tiles
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				// get the next tile group (16 tiles)
-				tiles = colourTileHistoryRow[tw];
-
-				// check if any are occupied
-				if (tiles) {
-					// compute next colour for each tile in the set
-					for (b = 15; b >= 0; b -= 1) {
-						// check if this tile is occupied
-						if ((tiles & (1 << b)) !== 0) {
-							// process each row
-							for (h = bottomY; h < topY; h += 1) {
-								// get colour grid row
-								colourGridRow = colourGrid[h];
-
-								// get correct starting colour index
-								cr = (leftX << 4);
-
-								// process each cell in the chunk
-								for (n = 15; n >= 0; n -= 1) {
-									// get next colour cell
-									value = colourGridRow[cr];
-
-									// process the Generations rule
-									if (value > minDeadState) {
-										value -= 1;
-										colourGridRow[cr] = value;
-									}
-									cr += 1;
-								}
-							}
-						}
-
-						// next tile columns
-						leftX += xSize;
-					}
-				} else {
-					// skip tile set
-					leftX += xSize << 4;
-				}
-			}
-
-			// next tile row
-			bottomY += ySize;
-			topY += ySize;
-		}
-	};
-
 	// convert life grid region to pens using tiles
 	Life.prototype.convertToPensTile = function() {
 		// ignore if rule is none, PCA, RuleTable or Super
 		if (!(this.isNone || this.isPCA || this.isRuleTree || this.isSuper)) {
-			// check for generations or HROT rule
+			// ignore Generations
 			if (this.multiNumStates === -1) {
 				// check for rainbow
 				if (this.rainbow) {
@@ -21711,11 +21631,8 @@
 						this.convertToPensTileNoHistory();
 					}
 				}
-			} else {
-				if (this.population === 0) {
-					this.generationsDecayOnly();
-				}
 			}
+
 			// clear ecaping gliders if enabled
 			if (this.clearGliders) {
 				// only supported for 2-state patterns
