@@ -1,3 +1,12 @@
+Build 885
+- draw the Population Graph below Identify results
+- fixed Waypoint AutoFit issue with Margolus rules
+- fixed custom PCA colours being persisted
+
+Build 884
+- fixed crash when PCA patterns hit grid boundary
+- changed "Empty Pattern" message for Select and Identify
+
 Build 883
 - show DYINGRAMP for 3-state Generations rules in Help->Themes
 - fixed not being able to specify custom PCA N colour
@@ -6,7 +15,7 @@ Build 883
 Build 882
 - increase maximum STARTFROM generation to 4194304
 - "Life ended at" message now includes PASTEs
-- fixed COLOR dead to refer to Dead COLOUR and not Background
+- fixed COLOR dead to refer to Dead colour and not Background
 
 Build 881
 - don't display "Life ended at" if there are pending PASTEs

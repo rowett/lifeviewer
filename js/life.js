@@ -251,7 +251,7 @@
 		this.dyingRangeDynamic = source.dyingRangeDynamic;
 
 		for (i = 0; i < source.pcaCols.length; i += 1) {
-			this.pcaCols[i] = source.pcaCols[i];
+			this.pcaCols[i].set(source.pcaCols[i]);
 		}
 	};
 
@@ -15498,7 +15498,7 @@
 											newTopY = h;
 										}
 									}
-									if (output0) {
+									if (output1) {
 										if (h + 1 < newBottomY) {
 											newBottomY = h + 1;
 										}
@@ -30924,17 +30924,17 @@
 		}
 
 		// ensure on display
-		if (bottomY < 1) {
-			bottomY = 1;
+		if (bottomY < 2) {
+			bottomY = 2;
 		}
-		if (topY > this.height - 2) {
-			topY = this.height - 2;
+		if (topY > this.height - 3) {
+			topY = this.height - 3;
 		}
 		if (leftX < 1) {
 			leftX = 1;
 		}
-		if (rightX > this.width - 2) {
-			rightX = this.width - 2;
+		if (rightX > this.width - 3) {
+			rightX = this.width - 3;
 		}
 
 		// process each cell in the bounding box

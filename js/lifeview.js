@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 883,
+		/** @const {number} */ versionBuild : 885,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6039,7 +6039,7 @@
 						}
 					}
 
-					// stop the simulation
+					// stop the simulation unless the pattern was empty and this is after step 1
 					me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 
 					// if the pattern dies again then notify (this would be caused by drawing during playback)
@@ -6195,6 +6195,11 @@
 			me.waypointManager.drawAnnotations(me);
 		}
 
+		// draw population graph if required
+		if (me.popGraph && !(me.drawing || me.selecting)) {
+			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail, me);
+		}
+
 		// draw cell period map or table
 		if (me.resultsDisplayed && me.periodMapDisplayed > 0 && me.engine.cellPeriod !== null) {
 			// don't display if Help or Settings open
@@ -6207,11 +6212,6 @@
 					me.engine.drawCellPeriodMap(me.identifyBannerLabel);
 				}
 			}
-		}
-
-		// draw population graph if required
-		if (me.popGraph && !(me.drawing || me.selecting)) {
-			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail, me);
 		}
 
 		// display help if requested
@@ -12182,7 +12182,7 @@
 			}
 			me.afterEdit("select all (" + width + " x " + height + ")");
 		} else {
-			me.menuManager.notification.notify("Empty Pattern", 15, 120, 15, false);
+			me.menuManager.notification.notify("No live cells to Select", 15, 120, 15, false);
 			if (me.isSelection) {
 				me.removeSelection(me);
 			}
@@ -14373,7 +14373,7 @@
 
 		// check if anything is alive
 		if (me.engine.population === 0) {
-			me.menuManager.notification.notify("Empty Pattern", 15, 120, 15, false);
+			me.menuManager.notification.notify("No live cells to Identify", 15, 120, 15, false);
 			me.identify = false;
 			me.resultsDisplayed = false;
 		} else {
@@ -18968,7 +18968,7 @@
 		if (me.startFrom !== -1) {
 			if (me.genNotifications) {
 				if (me.engine.population === 0) {
-					me.menuManager.notification.notify("Empty Pattern", 15, 360, 15, false);
+					me.menuManager.notification.notify("No live cells", 15, 360, 15, false);
 					me.startFrom = -1;
 				} else {
 					me.menuManager.notification.notify("Going to generation " + me.startFrom, 15, 10000, 15, false);
