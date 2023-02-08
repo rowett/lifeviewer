@@ -1,3 +1,11 @@
+Build 881
+- don't display "Life ended at" if there are pending PASTEs
+- remove unused colour from Help->Themes for 3-state Generations patterns
+
+Build 880
+- adjusted Dying colour for Mono and Inverse Themes
+- playback will now stop when Life ends (unless there are pending PASTEs)
+
 Build 879
 - fixed Alt GridLines button not having correct visual state
 - only apply custom colours when Custom Theme active

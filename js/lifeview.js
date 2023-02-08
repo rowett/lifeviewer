@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 879,
+		/** @const {number} */ versionBuild : 881,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6032,12 +6032,20 @@
 				if (me.diedGeneration === -1) {
 					me.diedGeneration = me.engine.counter;
 
+					// stop the simulation unless there are pending pastes
+					if (!(me.isPasteEvery || me.engine.counter <= me.maxPasteGen)) {
+						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+					}
+
 					// notify simulation stopped unless loop defined and enabled
 					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
-						if (me.engine.isPCA || me.engine.isMargolus) {
-							me.menuManager.notification.notify("Life ended at generation " + me.engine.counterMargolus, 15, 600, 15, false);
-						} else {
-							me.menuManager.notification.notify("Life ended at generation " + me.engine.counter, 15, 600, 15, false);
+						// don't notify if there are pending pastes
+						if (!(me.isPasteEvery || me.engine.counter <= me.maxPasteGen)) {
+							if (me.engine.isPCA || me.engine.isMargolus) {
+								me.menuManager.notification.notify("Life ended at generation " + me.engine.counterMargolus, 15, 600, 15, false);
+							} else {
+								me.menuManager.notification.notify("Life ended at generation " + me.engine.counter, 15, 600, 15, false);
+							}
 						}
 					}
 

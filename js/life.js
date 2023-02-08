@@ -7887,7 +7887,7 @@
 
 		// monochrome
 		this.themes[i] = new Theme("Mono", new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(0, 0, 0),
-							new Colour(255, 255, 255), new ColourRange(new Colour(0, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0),
+							new Colour(255, 255, 255), new ColourRange(new Colour(64, 64, 64), new Colour(-1, -1, -1)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(0, 0, 0),
 							[new Colour(64, 64, 64), new Colour(64, 64, 64), new Colour(128, 128, 128), new Colour(64, 64, 64),
 							 new Colour(128, 128, 128), new Colour(128, 128, 128), new Colour(192, 192, 192), new Colour(64, 64, 64),
 							 new Colour(128, 128, 128), new Colour(128, 128, 128), new Colour(192, 192, 192), new Colour(128, 128, 128),
@@ -7941,7 +7941,7 @@
 
 		// inverse monochrome
 		this.themes[i] = new Theme("Inverse", new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new ColourRange(new Colour(0, 0, 0), new Colour(0, 0, 0)), new Colour(255, 255, 255),
-							new Colour(0, 0, 0), new ColourRange(new Colour(255, 255, 255), new Colour(-1, -1, -1)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(255, 255, 255),
+							new Colour(0, 0, 0), new ColourRange(new Colour(192, 192, 192), new Colour(-1, -1, -1)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(255, 255, 255),
 							[new Colour(192, 192, 192), new Colour(192, 192, 192), new Colour(128, 128, 128), new Colour(192, 192, 192),
 							 new Colour(128, 128, 128), new Colour(128, 128, 128), new Colour(64, 64, 64), new Colour(192, 192, 192),
 							 new Colour(128, 128, 128), new Colour(128, 128, 128), new Colour(64, 64, 64), new Colour(128, 128, 128),
