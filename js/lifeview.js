@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 878,
+		/** @const {number} */ versionBuild : 879,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6530,6 +6530,8 @@
 		this.altGridButton.locked = !(this.engine.isMargolus && this.engine.gridLineMajor === 2);
 		if (this.altGridButton.locked) {
 			this.altGridButton.current = [false];
+		} else {
+			this.altGridButton.current = [this.engine.altGrid];
 		}
 
 		// settings menu

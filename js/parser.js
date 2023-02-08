@@ -549,6 +549,23 @@
 			customTheme.gridMajor = view.engine.gridLineMajor;
 		}
 
+		// convert state 0 and 1 to Custom Theme elements
+		if (view.customColours) {
+			if (view.customColours.length > 0) {
+				if (view.customColours[0] !== -1) {
+					themeValue[ViewConstants.customThemeBackground] = view.customColours[0];
+					view.customColours[0] = -1;
+				}
+			}
+
+			if (view.customColours.length > 1) {
+				if (view.customColours[1] !== -1) {
+					themeValue[ViewConstants.customThemeAlive] = view.customColours[1];
+					view.customColours[1] = -1;
+				}
+			}
+		}
+
 		// 2-state patterns
 
 		// set the background colour

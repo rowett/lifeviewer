@@ -8377,8 +8377,8 @@
 							}
 						}
 
-						// override with custom colour if specified
-						if (this.customColours && this.customColours.length > i) {
+						// override with custom colour if specified and the Custom Theme is active
+						if (this.customColours && this.customColours.length > i && this.colourTheme === this.numThemes) {
 							if (!(this.isPCA || this.isRuleTree)) {
 								current = this.customColours[this.multiNumStates - i];
 							} else {
@@ -8411,7 +8411,7 @@
 					}
 
 					// override with custom colour if specified
-					if (this.customColours && this.customColours.length > i) {
+					if (this.customColours && this.customColours.length > i && this.colourTheme === this.numThemes) {
 						if (!(this.isPCA || this.isRuleTree)) {
 							current = this.customColours[this.multiNumStates - i];
 						} else {
@@ -8448,7 +8448,7 @@
 					}
 
 					// override colour 0 if specified
-					if (this.customColours && this.customColours.length > 0) {
+					if (this.customColours && this.customColours.length > 0 && this.colourTheme === this.numThemes) {
 						current = this.customColours[0];
 						if (current !== -1) {
 							this.redChannel[0] = current >> 16;

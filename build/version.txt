@@ -1,3 +1,7 @@
+Build 879
+- fixed Alt GridLines button not having correct visual state
+- only apply custom colours when Custom Theme active
+
 Build 878
 - disable Alt GridLines if GRIDMAJOR is not 2
 - Custom Themes are now based on the default Theme for the rule type

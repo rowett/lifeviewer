@@ -270,7 +270,7 @@
 
 					// d for toggle alternating grid
 					case 68:
-						if (me.engine.isMargolus) {
+						if (me.engine.isMargolus && me.engine.gridLineMajor === 2) {
 							me.altGridButton.current = me.viewAltGridToggle([!me.engine.altGrid], true, me);
 							me.menuManager.notification.notify("Alternating Gridlines " + (me.engine.altGrid ? "On" : "Off"), 15, 40, 15, true);
 						}
