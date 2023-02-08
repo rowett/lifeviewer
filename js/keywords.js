@@ -14,6 +14,9 @@
 		// script end
 		/** @const {string} */ scriptEndWord : "]]",
 
+		// no snow
+		/** @const {string} */ noSnowWord : "NOSNOW",
+
 		// quality
 		/** @const {string} */ qualityWord : "QUALITY",
 

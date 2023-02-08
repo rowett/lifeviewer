@@ -69,7 +69,7 @@
 		/** @const {number} */ measureStart : 10,
 
 		// maximum start from generation
-		/** @const {number} */ maxStartFromGeneration : 1048576,
+		/** @const {number} */ maxStartFromGeneration : 4194304,
 
 		// fit zoom types
 		/** @const {number} */ fitZoomPattern : 0,
@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 881,
+		/** @const {number} */ versionBuild : 883,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -461,15 +461,7 @@
 		/** @const {number} */ coloursTopic : 5,
 		/** @const {number} */ aliasesTopic : 6,
 		/** @const {number} */ memoryTopic : 7,
-		/** @const {number} */ annotationsTopic : 8,
-
-		// Identify results phases
-		/** @const {number} */ identResultsNone : 0,
-		/** @const {number} */ identResultsInit : 1,
-		/** @const {number} */ identResultsPhase1 : 2,
-		/** @const {number} */ identResultsPhase2 : 3,
-		/** @const {number} */ identResultsPhase3 : 4
-
+		/** @const {number} */ annotationsTopic : 8
 	},
 
 	// Controller singleton
@@ -644,6 +636,9 @@
 		// whether Chrome bug is in effect
 		/** @type {boolean} */ this.chromeBug = false;
 
+		// whether secret snow is disabled
+		/** @type {boolean} */ this.snowDisabled = false;
+
 		// whether playback duration displayed
 		/** @type {boolean} */ this.showPlayDuration = false;
 
@@ -769,9 +764,6 @@
 
 		// whether computing oscillators
 		/** @type {boolean} */ this.identify = false;
-
-		// whether computing identify results
-		/** @type {number} */ this.identifyResults = ViewConstants.identResultsNone;
 
 		// labels for identify results
 		/** @type {MenuItem} */ this.identifyBannerLabel = null;
@@ -5648,6 +5640,12 @@
 		me.genLabel.toolTip = me.genValueLabel.toolTip;
 	};
 
+	// check if Life has ended (including any future PASTE commands)
+	/** @returns {boolean} */
+	View.prototype.lifeEnded = function() {
+		return !(this.engine.population > 0 || this.isPasteEvery || this.engine.counter <= this.maxPasteGen);
+	};
+
 	// update view mode for normal processing
 	View.prototype.viewAnimateNormal = function(/** @type {number} */ timeSinceLastUpdate, /** @type {View} */ me) {
 		// get the current time and mouse wheel
@@ -5978,11 +5976,11 @@
 				// paste any RLE snippets
 				me.pasteRLEList();
 
-				// save population data
-				me.engine.savePopulationData();
-
 				// save snapshot if needed
 				me.engine.saveSnapshotIfNeeded(me);
+
+				// save population data
+				me.engine.savePopulationData();
 
 				// if nothing alive now then restore last bounding box
 				if (me.engine.population === 0) {
@@ -6015,7 +6013,7 @@
 				}
 
 				// check for all cells died
-				if (me.engine.population === 0) {
+				if (me.lifeEnded()) {
 					bailout = true;
 				}
 			}
@@ -6027,27 +6025,22 @@
 			}
 
 			// check if life just stopped
-			if (me.engine.population === 0) {
+			if (me.lifeEnded()) {
 				// remember the generation that life stopped
 				if (me.diedGeneration === -1) {
 					me.diedGeneration = me.engine.counter;
 
-					// stop the simulation unless there are pending pastes
-					if (!(me.isPasteEvery || me.engine.counter <= me.maxPasteGen)) {
-						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
-					}
-
 					// notify simulation stopped unless loop defined and enabled
 					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
-						// don't notify if there are pending pastes
-						if (!(me.isPasteEvery || me.engine.counter <= me.maxPasteGen)) {
-							if (me.engine.isPCA || me.engine.isMargolus) {
-								me.menuManager.notification.notify("Life ended at generation " + me.engine.counterMargolus, 15, 600, 15, false);
-							} else {
-								me.menuManager.notification.notify("Life ended at generation " + me.engine.counter, 15, 600, 15, false);
-							}
+						if (me.engine.isPCA || me.engine.isMargolus) {
+							me.menuManager.notification.notify("Life ended at generation " + me.engine.counterMargolus, 15, 600, 15, false);
+						} else {
+							me.menuManager.notification.notify("Life ended at generation " + me.engine.counter, 15, 600, 15, false);
 						}
 					}
+
+					// stop the simulation
+					me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 
 					// if the pattern dies again then notify (this would be caused by drawing during playback)
 					me.emptyStart = false;
@@ -7128,7 +7121,7 @@
 				}
 			}
 		}
-		if (me.startFromTiming === -1 && me.engine.population !== 0) {
+		if (me.startFromTiming === -1 && (me.engine.population !== 0 || (me.pasteEvery || me.engine.counter <= me.maxPasteGen))) {
 			me.menuManager.notification.clear(false, false);
 		}
 		me.afterEdit("");
@@ -7147,8 +7140,8 @@
 		// lock the menu
 		me.viewMenu.locked = true;
 
-		// compute the next set of generations without stats for speed
-		while (me.engine.population !== 0 && me.engine.counter < me.startFrom && (me.startFromTiming !== -1 || (performance.now() - startTime < timeLimit))) {
+		// compute the next set of generations
+		while (!me.lifeEnded() && me.engine.counter < me.startFrom && (me.startFromTiming !== -1 || (performance.now() - startTime < timeLimit))) {
 			// compute the next generation
 			me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
 			me.engine.convertToPensTile();
@@ -7156,14 +7149,14 @@
 			// paste any RLE snippets
 			me.pasteRLEList();
 
-			// save population data
-			me.engine.savePopulationData();
-
 			// save snapshot if needed
 			me.engine.saveSnapshotIfNeeded(me);
 
+			// save population data
+			me.engine.savePopulationData();
+
 			// check if life just stopped
-			if (me.engine.population === 0) {
+			if (me.lifeEnded()) {
 				// remember the generation that life stopped
 				if (me.diedGeneration === -1) {
 					me.diedGeneration = me.engine.counter;
@@ -7209,33 +7202,9 @@
 		me.menuManager.setAutoUpdate(true);
 
 		// stop if target reached or all cells died
-		if ((me.engine.counter >= me.startFrom) || me.engine.population === 0) {
-			me.stopStartFrom(me, me.engine.population === 0, false);
+		if ((me.engine.counter >= me.startFrom) || me.lifeEnded()) {
+			me.stopStartFrom(me, me.engine.population === 0 && !(me.pasteEvery || me.engine.counter <= me.maxPasteGen), false);
 		}
-	};
-
-	// view update for identify results
-	View.prototype.viewAnimateIdentifyResults = function(/** @type {View} */ me) {
-		// start time of updates
-		var	/** @type {number} */ startTime = performance.now(),
-
-			// time budget in ms for this frame
-			/** @type {number} */ timeLimit = 13,
-
-			// identify result
-			/** @type {Array<string>} */ identifyResult = [];
-
-		// lock the menu
-		me.viewMenu.locked = true;
-
-		// render world
-		me.renderWorld(me, false, 0, false);
-
-		// set counters to the current generation
-		me.fixedPointCounter = me.engine.counter * me.refreshRate;
-
-		// set the auto update mode
-		me.menuManager.setAutoUpdate(true);
 	};
 
 	// view update for identify
@@ -7253,7 +7222,7 @@
 		me.viewMenu.locked = true;
 
 		// compute the next set of generations without stats for speed
-		while (me.identify && (performance.now() - startTime < timeLimit) && me.engine.population > 0) {
+		while (me.identify && (performance.now() - startTime < timeLimit) && (me.engine.population > 0 || me.pasteEvery || me.engine.counter <= me.maxPasteGen)) {
 			// compute the next generation
 			me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
 			me.engine.convertToPensTile();
@@ -7273,10 +7242,13 @@
 
 					// notify simulation stopped unless loop defined and enabled
 					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
-						if (me.engine.isPCA || me.engine.isMargolus) {
-							me.menuManager.notification.notify("Life ended at generation " + me.engine.counterMargolus, 15, 600, 15, false);
-						} else {
-							me.menuManager.notification.notify("Life ended at generation " + me.engine.counter, 15, 600, 15, false);
+						// don't notify if there are pending pastes
+						if (!(me.isPasteEvery || me.engine.counter <= me.maxPasteGen)) {
+							if (me.engine.isPCA || me.engine.isMargolus) {
+								me.menuManager.notification.notify("Life ended at generation " + me.engine.counterMargolus, 15, 600, 15, false);
+							} else {
+								me.menuManager.notification.notify("Life ended at generation " + me.engine.counter, 15, 600, 15, false);
+							}
 						}
 					}
 
@@ -7299,7 +7271,7 @@
 			me.saveElapsedTime(me.engine.counter, 0, 1);
 
 			// check if any cells are alive
-			if (me.engine.population > 0) {
+			if (me.engine.population > 0 || me.pasteEvery || me.engine.counter <= me.maxPasteGen) {
 				// compute oscillators
 				identifyResult = me.engine.oscillating(me.identifyFast, me);
 				if (identifyResult.length > 0) {
@@ -7322,9 +7294,7 @@
 						me.lastIdentifyActive = "";
 						me.lastIdentifyTemperature = "";
 					} else {
-						// switch to results mode
-						//me.identifyResults = ViewConstants.identResultsInit;
-
+						// check results
 						me.lastOscillator = identifyResult[0];
 						me.lastIdentifyType = identifyResult[1];
 						if (me.lastIdentifyType !== "Empty") {
@@ -7615,20 +7585,16 @@
 			if (me.computeHistory) {
 				me.viewAnimateHistory(me);
 			} else {
-				if (me.identifyResults !== ViewConstants.identResultsNone) {
-					me.viewAnimateIdentifyResults(me);
+				if (me.identify) {
+					me.viewAnimateIdentify(me);
 				} else {
-					if (me.identify) {
-						me.viewAnimateIdentify(me);
+					if (me.clipboardCopy) {
+						me.viewAnimateClipboard(me);
 					} else {
-						if (me.clipboardCopy) {
-							me.viewAnimateClipboard(me);
+						if (me.startFrom !== -1) {
+							me.viewAnimateStartFrom(me);
 						} else {
-							if (me.startFrom !== -1) {
-								me.viewAnimateStartFrom(me);
-							} else {
-								me.viewAnimateNormal(timeSinceLastUpdate, me);
-							}
+							me.viewAnimateNormal(timeSinceLastUpdate, me);
 						}
 					}
 				}
@@ -9103,7 +9069,7 @@
 					me.generationOn = true;
 
 					// set flag whether pattern was empty and playback is on
-					if (me.engine.population === 0) {
+					if (me.engine.population === 0 && me.engine.counter === 0) {
 						me.emptyStart = true;
 					} else {
 						me.emptyStart = false;
@@ -9284,7 +9250,7 @@
 					me.afterEdit("");
 
 					// set flag whether pattern was empty and playback is on
-					if (me.engine.population === 0) {
+					if (me.engine.population === 0 && me.engine.counter === 0) {
 						me.emptyStart = true;
 					} else {
 						me.emptyStart = false;
@@ -9398,7 +9364,7 @@
 					me.afterEdit("");
 
 					// set flag whether pattern was empty and playback is on
-					if (me.engine.population === 0) {
+					if (me.engine.population === 0 && me.engine.counter === 0) {
 						me.emptyStart = true;
 					} else {
 						me.emptyStart = false;
@@ -16787,6 +16753,9 @@
 		// reset show play duration
 		this.showPlayDuration = false;
 
+		// clear disable snow
+		this.snowDisabled = false;
+
 		// reset rainbow mode
 		this.engine.rainbow = false;
 		this.defaultRainbow = false;
@@ -18966,7 +18935,7 @@
 		}
 
 		// check if snow needed
-		if ((me.engine.zoom === 8 || me.engine.zoom === 0.125) && me.numScriptCommands > 0 && (me.numScriptCommands & 3) === 0 && (me.rleList.length & 5) === 1) {
+		if (!me.snowDisabled && (me.engine.zoom === 8 || me.engine.zoom === 0.125) && me.numScriptCommands > 0 && (me.numScriptCommands & 3) === 0 && (me.rleList.length & 5) === 1) {
 			me.drawingSnow = true;
 			me.engine.initSnow();
 		} else {

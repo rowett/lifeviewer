@@ -1,6 +1,17 @@
+Build 883
+- show DYINGRAMP for 3-state Generations rules in Help->Themes
+- fixed not being able to specify custom PCA N colour
+- fixed Icon state numbering in Help->Info->Pattern
+
+Build 882
+- increase maximum STARTFROM generation to 4194304
+- "Life ended at" message now includes PASTEs
+- fixed COLOR dead to refer to Dead COLOUR and not Background
+
 Build 881
 - don't display "Life ended at" if there are pending PASTEs
 - remove unused colour from Help->Themes for 3-state Generations patterns
+- added script command [[ NOSNOW ]] to disable secret snow
 
 Build 880
 - adjusted Dying colour for Mono and Inverse Themes

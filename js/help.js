@@ -1634,8 +1634,8 @@
 	
 					for (j = 0; j < iconHeight / iconWidth; j += 1) {
 						this.renderIcon(view, j, iconWidth, ctx, x + view.tabs[0] * xScale, y, height, helpLine);
-						itemName = view.getStateName(j);
-						y = this.renderHelpLine(view, "Icon " + j, "      " + itemName, ctx, x, y, height, helpLine);
+						itemName = view.getStateName(j + 1);
+						y = this.renderHelpLine(view, "Icon " + String(j + 1), "      " + itemName, ctx, x, y, height, helpLine);
 					}
 				}
 			}
@@ -2580,10 +2580,12 @@
 						this.renderColourBox(view, theme.dyingRangeGen.endColour.red, theme.dyingRangeGen.endColour.green, theme.dyingRangeGen.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 						y = this.renderHelpLine(view, "DYING", this.rgbObjectString(theme.dyingRangeGen.endColour), ctx, x, y, height, helpLine);
 	
-						// dead ramp if different than dead
-						if (!(theme.dyingRangeGen.startColour.red === theme.dyingRangeGen.endColour.red && theme.dyingRangeGen.startColour.green === theme.dyingRangeGen.endColour.green && theme.dyingRangeGen.startColour.blue === theme.dyingRangeGen.endColour.blue)) {
-							this.renderColourBox(view, theme.dyingRangeGen.startColour.red, theme.dyingRangeGen.startColour.green, theme.dyingRangeGen.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-							y = this.renderHelpLine(view, "DYINGRAMP", this.rgbObjectString(theme.dyingRangeGen.startColour), ctx, x, y, height, helpLine);
+						// dying ramp if different than dying
+						if (view.engine.multiNumStates > 3) {
+							if (!(theme.dyingRangeGen.startColour.red === theme.dyingRangeGen.endColour.red && theme.dyingRangeGen.startColour.green === theme.dyingRangeGen.endColour.green && theme.dyingRangeGen.startColour.blue === theme.dyingRangeGen.endColour.blue)) {
+								this.renderColourBox(view, theme.dyingRangeGen.startColour.red, theme.dyingRangeGen.startColour.green, theme.dyingRangeGen.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+								y = this.renderHelpLine(view, "DYINGRAMP", this.rgbObjectString(theme.dyingRangeGen.startColour), ctx, x, y, height, helpLine);
+							}
 						}
 					}
 
@@ -2592,11 +2594,9 @@
 					y = this.renderHelpLine(view, "DEAD", this.rgbObjectString(theme.deadRangeGen.endColour), ctx, x, y, height, helpLine);
 
 					// dead ramp if different than dead and more than 3 states
-					if (view.engine.multiNumStates > 3) {
-						if (!(theme.deadRangeGen.startColour.red === theme.deadRangeGen.endColour.red && theme.deadRangeGen.startColour.green === theme.deadRangeGen.endColour.green && theme.deadRangeGen.startColour.blue === theme.deadRangeGen.endColour.blue)) {
-							this.renderColourBox(view, theme.deadRangeGen.startColour.red, theme.deadRangeGen.startColour.green, theme.deadRangeGen.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-							y = this.renderHelpLine(view, "DEADRAMP", this.rgbObjectString(theme.deadRangeGen.startColour), ctx, x, y, height, helpLine);
-						}
+					if (!(theme.deadRangeGen.startColour.red === theme.deadRangeGen.endColour.red && theme.deadRangeGen.startColour.green === theme.deadRangeGen.endColour.green && theme.deadRangeGen.startColour.blue === theme.deadRangeGen.endColour.blue)) {
+						this.renderColourBox(view, theme.deadRangeGen.startColour.red, theme.deadRangeGen.startColour.green, theme.deadRangeGen.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+						y = this.renderHelpLine(view, "DEADRAMP", this.rgbObjectString(theme.deadRangeGen.startColour), ctx, x, y, height, helpLine);
 					}
 
 					// grid line colour

@@ -111,6 +111,7 @@
 			case Keywords.pauseWord:
 			case Keywords.gridWord:
 			case Keywords.gridMajorWord:
+			case Keywords.noSnowWord:
 			case Keywords.qualityWord:
 			case Keywords.suppressWord:
 			case Keywords.colorWord:
@@ -553,13 +554,13 @@
 		if (view.customColours) {
 			if (view.customColours.length > 0) {
 				if (view.customColours[0] !== -1) {
-					themeValue[ViewConstants.customThemeBackground] = view.customColours[0];
+					themeValue[ViewConstants.customThemeDead] = view.customColours[0];
 					view.customColours[0] = -1;
 				}
 			}
 
 			if (view.customColours.length > 1) {
-				if (view.customColours[1] !== -1) {
+				if (view.customColours[1] !== -1 && !view.engine.isPCA) {
 					themeValue[ViewConstants.customThemeAlive] = view.customColours[1];
 					view.customColours[1] = -1;
 				}
@@ -2489,6 +2490,12 @@
 								}
 							}
 
+							break;
+
+						// disable secret snow
+						case Keywords.noSnowWord:
+							view.snowDisabled = true;
+							itemValid = true;
 							break;
 
 						// quality rendering
