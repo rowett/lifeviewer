@@ -12180,6 +12180,9 @@
 			/** @type {number} */ rightX = leftX + width - 1,
 			/** @type {number} */ topY = bottomY + height - 1,
 
+			// number of history states
+			/** @type {number} */ historyStates = this.historyStates,
+
 			// counters
 			/** @type {number} */ i = 0,
 			/** @type {number} */ x = 0,
@@ -12195,7 +12198,11 @@
 
 				// copy left column to below bottom row
 				state = grid[y][leftX];
-				if (state !== 0) {
+				if (state > historyStates) {
+					if (this.isPCA) {
+						state -= historyStates;
+						state = (((state >> 1) & 15) | ((state & 1) << 3)) + historyStates;
+					}
 					grid[bottomY - 1][x] = state;
 
 					// set tile grid
@@ -12211,7 +12218,11 @@
 
 				// copy right column to above top row
 				state = grid[y][rightX];
-				if (state !== 0) {
+				if (state > historyStates) {
+					if (this.isPCA) {
+						state -= historyStates;
+						state = (((state >> 1) & 15) | ((state & 1) << 3)) + historyStates;
+					}
 					grid[topY + 1][x] = state;
 
 					// set tile grid
@@ -12227,7 +12238,11 @@
 
 				// copy bottom row to left of left column
 				state = grid[bottomY][x];
-				if (state !== 0) {
+				if (state > historyStates) {
+					if (this.isPCA) {
+						state -= historyStates;
+						state = (((state << 1) & 15) | ((state & 8) >> 3)) + historyStates;
+					}
 					grid[y][leftX - 1] = state;
 
 					// set tile grid
@@ -12243,7 +12258,11 @@
 
 				// copy top row to right of right column
 				state = grid[topY][x];
-				if (state !== 0) {
+				if (state > historyStates) {
+					if (this.isPCA) {
+						state -= historyStates;
+						state = (((state << 1) & 15) | ((state & 8) >> 3)) + historyStates;
+					}
 					grid[y][rightX + 1] = state;
 
 					// set tile grid
@@ -12281,7 +12300,11 @@
 
 				// copy right column to below bottom row
 				state = grid[y][rightX];
-				if (state !== 0) {
+				if (state > historyStates) {
+					if (this.isPCA) {
+						state -= historyStates;
+						state = (((state << 1) & 15) | ((state & 8) >> 3)) + historyStates;
+					}
 					grid[bottomY - 1][x] = state;
 
 					// set tile grid
@@ -12297,7 +12320,11 @@
 
 				// copy left column to above top row
 				state = grid[y][leftX];
-				if (state !== 0) {
+				if (state > historyStates) {
+					if (this.isPCA) {
+						state -= historyStates;
+						state = (((state << 1) & 15) | ((state & 8) >> 3)) + historyStates;
+					}
 					grid[topY + 1][x] = state;
 
 					// set tile grid
@@ -12313,7 +12340,11 @@
 
 				// copy bottom row to right of right column
 				state = grid[bottomY][x];
-				if (state !== 0) {
+				if (state > historyStates) {
+					if (this.isPCA) {
+						state -= historyStates;
+						state = (((state >> 1) & 15) | ((state & 1) << 3)) + historyStates;
+					}
 					grid[y][rightX + 1] = state;
 
 					// set tile grid
@@ -12331,7 +12362,11 @@
 
 				// copy top row to left of left column
 				state = grid[topY][x];
-				if (state !== 0) {
+				if (state > historyStates) {
+					if (this.isPCA) {
+						state -= historyStates;
+						state = (((state >> 1) & 15) | ((state & 1) << 3)) + historyStates;
+					}
 					grid[y][leftX - 1] = state;
 
 					// set tile grid

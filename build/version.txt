@@ -1,3 +1,7 @@
+Build 886
+- fixed Spherical Bounded Grids for PCA rules
+- fixed specifying history state colour for [R]History rules
+
 Build 885
 - draw the Population Graph below Identify results
 - fixed Waypoint AutoFit issue with Margolus rules
