@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 886,
+		/** @const {number} */ versionBuild : 887,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -996,7 +996,7 @@
 		/** @type {boolean} */ this.isPasteEvery = false;
 
 		// maximum paste generation (exlcuding paste every snippets)
-		/** @type {number} */ this.maxPasteGen = 0;
+		/** @type {number} */ this.maxPasteGen = -1;
 
 		// whether there is evolution to do
 		/** @type {boolean} */ this.isEvolution = false;
@@ -5515,7 +5515,18 @@
 					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
 				}
 			} else {
-				this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
+				// compute the grid extent
+				leftX = -(this.engine.maxGridSize - this.patternWidth) >> 1;
+				rightX = leftX + this.engine.maxGridSize - 1;
+				bottomY = leftX;
+				topY = rightX;
+
+				// display the state
+				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
+				} else {
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
+				}
 			}
 			this.xyLabel.deleted = false;
 		}
@@ -9083,9 +9094,6 @@
 				me.afterEdit("");
 				me.reset(me);
 
-				// reset undo/redo list
-				me.currentEditIndex = 0;
-
 				// build reset message
 				message = "Reset";
 
@@ -9294,12 +9302,33 @@
 						for (i = 0; i < me.gensPerStep; i += 1) {
 							me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
 							me.engine.convertToPensTile();
+							me.pasteRLEList();
 							me.engine.saveSnapshotIfNeeded(me);
 
 							// save population data
 							me.engine.savePopulationData();
 
 							me.fixedPointCounter = me.engine.counter * me.refreshRate;
+
+							// check if life jsut stopped
+							if (me.lifeEnded()) {
+								// remember the generation that life stopped
+								if (me.diedGeneration === -1) {
+									me.diedGeneration = me.engine.counter;
+
+									// notify simulation stopped unless loop defined and enabled
+									if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
+										if (me.engine.isPCA || me.engine.isMargolus) {
+											me.menuManager.notification.notify("Life ended at generation " + me.engine.counterMargolus, 15, 600, 15, false);
+										} else {
+											me.menuManager.notification.notify("Life ended at generation " + me.engine.counter, 15, 600, 15, false);
+										}
+									}
+
+									// if the pattern dies again then notify (this would be caused by drawing during playback)
+									me.emptyStart = false;
+								}
+							}
 						}
 						me.engine.reversePending = true;
 					} else {
@@ -14461,27 +14490,33 @@
 
 			if (number >= 0 && number <= ViewConstants.maxStartFromGeneration) {
 				if (number !== me.engine.counter) {
-					me.startFrom = number;
-					me.navToggle.current = me.toggleSettings([false], true, me);
-					me.menuManager.toggleRequired = true;
-					if (me.genNotifications) {
-						me.menuManager.notification.notify("Going to generation " + number, 15, 10000, 15, false);
+					// check for zero population
+					if (me.lifeEnded()) {
+						me.menuManager.notification.notify("No live cells", 15, 360, 15, false);
+					} else {
+						// move to specified generation
+						me.startFrom = number;
+						me.navToggle.current = me.toggleSettings([false], true, me);
+						me.menuManager.toggleRequired = true;
+						if (me.genNotifications) {
+							me.menuManager.notification.notify("Going to generation " + number, 15, 10000, 15, false);
+						}
+						me.menuManager.notification.clear(true, false);
+	
+						// if the required generation is earlier then reset
+						if (number < me.engine.counter) {
+							me.engine.restoreSavedGrid(me, false);
+							me.setUndoGen(me.engine.counter);
+						}
+	
+						// setup timing if requested
+						if (timing) {
+							me.startFromTiming = performance.now();
+						}
+	
+						// calculate number of generations to move
+						me.startFromGens = number - me.engine.counter;
 					}
-					me.menuManager.notification.clear(true, false);
-
-					// if the required generation is earlier then reset
-					if (number < me.engine.counter) {
-						me.engine.restoreSavedGrid(me, false);
-						me.setUndoGen(me.engine.counter);
-					}
-
-					// setup timing if requested
-					if (timing) {
-						me.startFromTiming = performance.now();
-					}
-
-					// calculate number of generations to move
-					me.startFromGens = number - me.engine.counter;
 				}
 			} else {
 				me.menuManager.notification.notify("Invalid generation specified", 15, 240, 15, true);
@@ -17486,7 +17521,7 @@
 		me.isPasteEvery = false;
 		me.pasteDeltaX = 0;
 		me.pasteDeltaY = 0;
-		me.maxPasteGen = 0;
+		me.maxPasteGen = -1;
 		me.isEvolution = false;
 		me.pasteLeftX = ViewConstants.bigInteger;
 		me.pasteRightX = -ViewConstants.bigInteger;

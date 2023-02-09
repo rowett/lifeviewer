@@ -1,3 +1,9 @@
+Build 887
+- show cell as [boundary] if outside grid
+- display "No live cells" if Go To Gen used with no alive cells
+- improve Undo handling at T=0
+- fixed Margolus patterns not displaying "Life ended at" if stepping back
+
 Build 886
 - fixed Spherical Bounded Grids for PCA rules
 - fixed specifying history state colour for [R]History rules
