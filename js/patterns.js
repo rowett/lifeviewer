@@ -7806,6 +7806,13 @@
 			}
 		}
 
+		// check whether Spherical bounded grid has been specified for a Triangular rule
+		if (pattern.isTriangular && pattern.gridType === 4 && this.failureReason === "") {
+			this.failureReason = "Triangular rules do not support Sphere";
+			this.executable = false;
+			pattern.gridType = -1;
+		}
+
 		// check whether LTL bounded grid type is valid
 		if (pattern.isLTL && this.failureReason === "") {
 			if (pattern.gridType > 1) {

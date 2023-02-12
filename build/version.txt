@@ -1,3 +1,17 @@
+Build 890
+- fixed Klein and Cross-Surface Bounded Grids for Triangular rules
+- disable Sphere Bounded Grid for Triangular rules
+- fixed playback stopping after 1 generation if initial pattern was empty
+
+Build 889
+- fixed step being locked to 1 after all cells die
+- fixed [R]History state6 cell processing with Bounded Grids
+- fixed [R]Super patterns hitting the boundary not always being visually deleted
+- fixed Random Fill not correctly overwriting state 6 [R]History cells
+
+Build 888
+- fixed issue with custom colours for RuleTree or [R]Super rules
+
 Build 887
 - show cell as [boundary] if outside grid
 - display "No live cells" if Go To Gen used with no alive cells

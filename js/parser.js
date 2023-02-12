@@ -550,8 +550,8 @@
 			customTheme.gridMajor = view.engine.gridLineMajor;
 		}
 
-		// convert state 0, 1 and 2 to Custom Theme elements
-		if (view.customColours) {
+		// convert state 0, 1 and 2 to Custom Theme elements unless RuleTree rule used
+		if (view.customColours && !(view.engine.isRuleTree || view.engine.isSuper)) {
 			if (view.customColours.length > 0) {
 				if (view.customColours[0] !== -1) {
 					themeValue[ViewConstants.customThemeDead] = view.customColours[0];

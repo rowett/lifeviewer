@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 887,
+		/** @const {number} */ versionBuild : 890,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5686,9 +5686,6 @@
 			// many many steps taken
 			/** @type {number} */ stepsTaken = 0,
 
-			// save died generation
-			/** @type {number} */ saveGeneration = 0,
-
 			// current and target generations
 			/** @type {number} */ currentGen = me.engine.counter,
 			/** @type {number} */ targetGen = 0,
@@ -5698,10 +5695,13 @@
 			/** @type {BoundingBox} */ saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
 
 			// frame target time in ms
-			/** @type {number} */ frameTargetTime = (1000 / me.refreshRate);
+			/** @type {number} */ frameTargetTime = (1000 / me.refreshRate),
 
-			// unlock controls
-			me.controlsLocked = false;
+			// flag if Life was empty before step started
+			/** @type {boolean} */ wasEmpty = false;
+
+		// unlock controls
+		me.controlsLocked = false;
 
 		// check if this is the first frame
 		if (me.justStarted) {
@@ -5951,6 +5951,9 @@
 			stepsToTake = targetGen - currentGen;
 			stepsTaken = 0;
 
+			// check if Life was already dead before steps started
+			wasEmpty = me.lifeEnded();
+
 			// check if statistics are displayed and if so compute them
 			while (!bailout && (me.engine.counter < targetGen)) {
 				// compute time since generations started
@@ -6023,8 +6026,8 @@
 					}
 				}
 
-				// check for all cells died
-				if (me.lifeEnded()) {
+				// bail out if all cells died unless they were already dead before step started
+				if (me.lifeEnded() && !wasEmpty) {
 					bailout = true;
 				}
 			}
@@ -6051,7 +6054,9 @@
 					}
 
 					// stop the simulation unless the pattern was empty and this is after step 1
-					me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+					if (!wasEmpty) {
+						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+					}
 
 					// if the pattern dies again then notify (this would be caused by drawing during playback)
 					me.emptyStart = false;
@@ -13460,7 +13465,7 @@
 						} else {
 							state = 0;
 						}
-						wasState6 = me.setStateWithUndo(x + xOff, y + yOff, state, true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, state, true);
 					}
 				}
 			}
